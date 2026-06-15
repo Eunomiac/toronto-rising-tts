@@ -97,6 +97,66 @@ local function getTarotDeck()
     return getObjectFromGUID(G.GUIDS.TAROT_DECK_PINK)
 end
 
+local TAROT_DECK_TAG = "TarotDeck"
+local TAROT_SEAT_OBJECT_TAG = "PinkObject"
+
+--- Loose tarot cards on the table (or in hand) carry both tags; the deck itself does too.
+--- @param obj Object|nil
+--- @param deck Object
+--- @return boolean
+local function isLooseTarotCard(obj, deck)
+    if obj == nil or deck == nil then
+        return false
+    end
+    if obj == deck then
+        return false
+    end
+    if obj.isDestroyed ~= nil and obj.isDestroyed() then
+        return false
+    end
+    if obj.hasTag == nil then
+        return false
+    end
+    if obj.hasTag(TAROT_DECK_TAG) ~= true or obj.hasTag(TAROT_SEAT_OBJECT_TAG) ~= true then
+        return false
+    end
+    if obj.type ~= "Card" then
+        return false
+    end
+    local deckGuid = deck.getGUID()
+    if type(deckGuid) == "string" and obj.getGUID() == deckGuid then
+        return false
+    end
+    return true
+end
+
+--- Before hiding, sweep tagged loose cards back into the Pink tarot deck.
+local function returnLooseTarotCardsToDeck()
+    local deck = getTarotDeck()
+    if deck == nil then
+        print("[TarotButton] Cannot return cards: tarot deck missing.")
+        return
+    end
+    if deck.putObject == nil then
+        print("[TarotButton] Cannot return cards: deck putObject unavailable.")
+        return
+    end
+    local tagged = getObjectsWithTag(TAROT_DECK_TAG)
+    if type(tagged) ~= "table" then
+        return
+    end
+    local returned = 0
+    for _, obj in ipairs(tagged) do
+        if isLooseTarotCard(obj, deck) then
+            deck.putObject(obj)
+            returned = returned + 1
+        end
+    end
+    if returned > 0 then
+        print("[TarotButton] Returned " .. tostring(returned) .. " loose tarot card(s) to deck before hide.")
+    end
+end
+
 --- @param token number
 --- @return boolean
 local function isTokenCurrent(token)
@@ -164,6 +224,9 @@ local function applyTarotState(targetOn, token)
     end
     if not isTokenCurrent(token) then
         return
+    end
+    if not targetOn then
+        returnLooseTarotCardsToDeck()
     end
     local state = targetOn and STATE_ON or STATE_OFF
     for i = 1, #TAROT_KEYS do

@@ -43,7 +43,7 @@ Related: [`lua-wait-api-policy.md`](lua-wait-api-policy.md), [`lua-pcall-policy.
 
 ## When to refactor away
 
-- Lists, toggles, or labels that can be **pre-declared** in XML with stable `id`s (Storyteller NPC panel pattern: `NPCS.refreshStorytellerUI` uses `setUiAttrSafe` / `setUiActiveSafe` only).
+- Lists, toggles, or labels that can be **pre-declared** in XML with stable `id`s (Scenes library panel pattern: attribute-only refresh via `core/storyteller_scenes_panel.ttslua`).
 - Refreshing a subsection by `getXml` + string splice + `setXml` — prefer a static container `id` and update children via attributes.
 - Any **per-frame** or **high-frequency** sync path (use `Sync` + targeted attribute reconciliation instead).
 
@@ -66,6 +66,6 @@ Do not add call sites without review; bump the **last** log line to the new tota
 | `core/soundscape_debug_panel.ttslua` | 166 | **Runtime** Global `UI.setXml` after `getXml` splice | **Approved** — debug soundscape panel; dynamic category/track lists |
 | `objects/npc_control_board_ui.ttslua` | 52 | **Runtime** `obj.UI.setXml` for CONTROL_BOARD toolbar | **Approved** — embedded from `ui/objects/npc_control_board.xml` via `npm run npc-control-board-ui:generate`; fingerprint skip |
 
-**No `setXmlTable` in scanned trees.** NPC Storyteller panel previously used full refresh; now `NPCS.refreshStorytellerUI` is attribute-only (`core/npcs.ttslua`). Scenes library panel uses pre-declared XML rows (`core/storyteller_scenes_panel.ttslua`).
+**No `setXmlTable` in scanned trees.** Scenes library panel uses pre-declared XML rows (`core/storyteller_scenes_panel.ttslua`). Legacy Storyteller NPC toolbar panel (`panel_npcs`) removed TOR-181 — CONTROL_BOARD XmlUI only.
 
 **Outside gate:** `.dev/scripts/generate_csheet_defaults_lua.js`, `.dev/scripts/generate_npc_control_board_ui_lua.js`, and editor-bundled Global XML are not `*.ttslua` under `core/`, `global/`, `lib/`, `objects/`, `ui/`.

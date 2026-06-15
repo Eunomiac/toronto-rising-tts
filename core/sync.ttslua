@@ -402,11 +402,6 @@ function Sync.full(opts)
         if type(RUI) == "table" and type(RUI.refreshAll) == "function" then
             RUI.refreshAll()
         end
-        U.delay(function()
-            if type(NPCS) == "table" and type(NPCS.refreshStorytellerUIIfVisible) == "function" then
-                NPCS.refreshStorytellerUIIfVisible()
-            end
-        end, 0.15)
         callIfFunction(NPCS.ensureAllNpcsPreloaded, { deferUiRefresh = true })
     end
 

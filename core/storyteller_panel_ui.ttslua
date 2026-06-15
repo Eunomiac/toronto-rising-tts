@@ -1,5 +1,5 @@
 --[[
-    Storyteller HUD toolbar: mutually exclusive bottom-bar panels (Scenes, Sound, PCs, Phases, NPCs).
+    Storyteller HUD toolbar: mutually exclusive bottom-bar panels (Scenes, Sound, PCs, Phases).
     Tied to XML ids in ui/storyteller/ — not for generic reuse; keep out of lib/util.
 ]]
 local U = require("lib.util")
@@ -13,7 +13,6 @@ local STORYTELLER_PANELS = {
     soundscape = { panel = "panel_soundscape", toggle = "toggle_soundscape" },
     pcs = { panel = "panel_pcs", toggle = "toggle_pcs" },
     phases = { panel = "panel_phases", toggle = "toggle_phases" },
-    npcs = { panel = "panel_npcs", toggle = "toggle_npcs" },
 }
 
 --- Wrapper for the pop-out content (all panels). Hidden when none selected.
@@ -51,9 +50,9 @@ end
 --- Selects a storyteller panel (mutually exclusive: only one open at a time).
 --- Shows the content area, hides all panels, shows the selected one, and updates toggle button highlight.
 --- Clicking the same top button again hides the content area (all toggles inactive).
---- When `forceOpen` is true, the same-tab collapse is skipped (e.g. after `UI.setXml` when the NPC panel was already open).
+--- When `forceOpen` is true, the same-tab collapse is skipped (e.g. after `UI.setXml` when a panel was already open).
 ---
---- @param panelKey string One of: "scenes", "soundscape", "pcs", "phases", "npcs"
+--- @param panelKey string One of: "scenes", "soundscape", "pcs", "phases"
 --- @param forceOpen boolean|nil If true, always apply the open-panel branch (no toggle-close).
 function StorytellerPanelUI.selectStorytellerPanel(panelKey, forceOpen)
     if type(panelKey) ~= "string" then

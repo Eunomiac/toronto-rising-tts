@@ -262,5 +262,15 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-06-15 | DONE | TOR-174 | NPC token on ST dice bag → roll; restore home + STR.initiateFromBagLabel; author confirmed |
 | 2026-06-15 | UPDATE | TOR-181 | Cleared `blockedBy` TOR-174; resurfaced Focus #3 |
 | 2026-06-15 | UPDATE | RUNNING TASKLIST **Focus** | TOR-173 #1; TOR-179 #2; TOR-181 #3; TOR-174 Done this cycle |
+| 2026-06-15 | DONE | TOR-173 | Stage placement lerp on Apply — anchor-family batching; author confirmed; commit `81d3710` |
+| 2026-06-15 | UPDATE | RUNNING TASKLIST **Focus** | TOR-201 #1 (perf); TOR-181 #2; TOR-179 #3; TOR-173 Done this cycle |
+| 2026-06-15 | DONE | TOR-201 | Gameboard frame hitch — author confirmed perf largely addressed |
+| 2026-06-15 | DONE | TOR-181 | Retire Storyteller NPC toolbar panel — removed panel_npcs + refresh/dispatch paths |
+| 2026-06-15 | UPDATE | RUNNING TASKLIST **Focus** | TOR-179 #1; dice E2E #2; TOR-96 #3; TOR-201/181 Done this cycle |
+| 2026-06-15 | DONE | TOR-179 | Unified NPC seat figurine identity — author confirmed; duplicate audit clean |
+| 2026-06-15 | UPDATE | RUNNING TASKLIST **Focus** | Dice E2E #1; TOR-96 #2; TOR-169 #3; TOR-179 Done this cycle |
+| 2026-06-15 | UPDATE | TOR-162 | Re-homed to roll-conditions UI slice (UI & HUD, parent TOR-37, `module:conditions`); related TOR-209/TOR-54; off Dice E2E Focus |
+| 2026-06-15 | UPDATE | TOR-209 | Related TOR-162; batch Opts + roll-panel condition display |
+| 2026-06-15 | UPDATE | RUNNING TASKLIST **Focus** | TOR-96 #1; TOR-169 #2; TOR-172 #3; roll conditions slice deferred (TOR-162 + TOR-209) |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

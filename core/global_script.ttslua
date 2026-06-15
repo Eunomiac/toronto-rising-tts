@@ -1664,10 +1664,6 @@ end
 function HUD_selectStorytellerPanel(player, button, id)
     local panelKey = string.gsub(id, "^toggle_", "")
     StorytellerPanelUI.selectStorytellerPanel(panelKey)
-    -- TTS applies U.setAttribute asynchronously; deferred refresh merges rows after the panel is active in XML.
-    if panelKey == "npcs" and NPCS and NPCS.refreshStorytellerUIDeferred then
-        NPCS.refreshStorytellerUIDeferred()
-    end
     if panelKey == "pcs" and PCST and PCST.refreshAllRows then
         Wait.frames(function()
             PCST.refreshAllRows()
@@ -2845,10 +2841,6 @@ function UpdateUIDisplays(delta)
         HO.syncAll()
     end
 
-    -- NPC storyteller panel: do not refresh here. `UpdateUIDisplays` runs on phase/scene/etc.;
-    -- NPC panel updates are triggered by NPC changes and when the NPC tab is opened
-    -- (`HUD_selectStorytellerPanel` → deferred refresh).
-
     if wants("pcstRows") and PCST and PCST.refreshAllRows then
         PCST.refreshAllRows()
     end
@@ -2861,46 +2853,6 @@ function UpdateUIDisplays(delta)
         if GameStateOverlay and type(GameStateOverlay.reconcileFromState) == "function" then
             GameStateOverlay.reconcileFromState()
         end
-    end
-end
-
---- Resolve UI element id for NPC panel controls (onClick / mouse handlers).
---- TTS sometimes passes the element id in `value` instead of `id`.
---- @param value any
---- @param id any
---- @return string|nil
-local function resolveNpcPanelRouteId(value, id)
-    if type(id) == "string" and id ~= "" then
-        return id
-    end
-    if type(value) == "string" and string.match(value, "^npc_") then
-        return value
-    end
-    return nil
-end
-
---- Routed NPC panel button clicks (stable ids generated in panel_npcs.xml).
---- TTS passes (player, value, id); value is mouse button string for Button (e.g. "-1").
-function HUD_npcDispatch(player, value, id)
-    local routeId = resolveNpcPanelRouteId(value, id)
-    if NPCS and NPCS.dispatchNpcUiClick then
-        NPCS.dispatchNpcUiClick(routeId)
-    end
-end
-
---- Hold-to-spotlight: mouse down on ◎ control.
-function HUD_npcSpotDown(player, value, id)
-    local routeId = resolveNpcPanelRouteId(value, id)
-    if NPCS and NPCS.dispatchNpcSpotDown and routeId then
-        NPCS.dispatchNpcSpotDown(routeId)
-    end
-end
-
---- Hold-to-spotlight: mouse up on ◎ control.
-function HUD_npcSpotUp(player, value, id)
-    local routeId = resolveNpcPanelRouteId(value, id)
-    if NPCS and NPCS.dispatchNpcSpotUp and routeId then
-        NPCS.dispatchNpcSpotUp(routeId)
     end
 end
 

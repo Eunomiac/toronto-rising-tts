@@ -1588,19 +1588,7 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
               local disp = SRI.readRoleColorIdentity(o)
               if disp ~= nil then
                 local role, _ = SRI.parseRoleAndSuffix(disp)
-                if role == "SEAT_FIGURE" and not isPlayerSeatKey(color) then
-                  if NPCS.isNpcSeatFigureForLayout(o, color) then
-                    if byRole["SEAT_FIGURE"] ~= nil and byRole["SEAT_FIGURE"] ~= o then
-                      error(
-                        "rotational-seat-layout: seat '"
-                        .. color
-                        .. "' has two figurines for SEAT_FIGURE (from GM Notes)"
-                      )
-                    end
-                    byRole["SEAT_FIGURE"] = o
-                  end
-                  -- Workshop placement anchor (`SEAT_FIGURE_*` without cutout): skip.
-                elseif byRole[role] ~= nil then
+                if byRole[role] ~= nil and byRole[role] ~= o then
                   error(
                     "rotational-seat-layout: seat '"
                     .. color
@@ -1611,15 +1599,6 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
                 else
                   byRole[role] = o
                 end
-              elseif not isPlayerSeatKey(color) and NPCS.isNpcSeatFigureForLayout(o, color) then
-                if byRole["SEAT_FIGURE"] ~= nil and byRole["SEAT_FIGURE"] ~= o then
-                  error(
-                    "rotational-seat-layout: seat '"
-                    .. color
-                    .. "' has two pooled figurines tagged for SEAT_FIGURE"
-                  )
-                end
-                byRole["SEAT_FIGURE"] = o
               else
                 local objGuid = tostring(o.getGUID() or "unknown-guid")
                 local objNotes = o.getGMNotes ~= nil and tostring(o.getGMNotes() or "") or ""
@@ -2343,17 +2322,11 @@ local function findObjectForSeatRoleCorrection(seatKey, roleKey)
     return nil
   end
   for _, o in ipairs(objs) do
-    if roleKey == "SEAT_FIGURE" and not isPlayerSeatKey(seatKey) then
-      if NPCS.isNpcSeatFigureForLayout(o, seatKey) then
+    local disp = SRI.readRoleColorIdentity(o)
+    if disp ~= nil then
+      local rk, _ = SRI.parseRoleAndSuffix(disp)
+      if rk == roleKey then
         return o
-      end
-    else
-      local disp = SRI.readRoleColorIdentity(o)
-      if disp ~= nil then
-        local rk, _ = SRI.parseRoleAndSuffix(disp)
-        if rk == roleKey then
-          return o
-        end
       end
     end
   end
@@ -2451,7 +2424,7 @@ end
 ---     scale = { x = <number>, y = ..., z = ... }  -- optional; omitted axes keep current scale
 ---   }
 --- }
---- `postCorrectionsBySeatRole` applies the same shape per seat/role (e.g. pooled `SEAT_FIGURE` at `NPC1`).
+--- `postCorrectionsBySeatRole` applies the same shape per seat/role (PC workshop figurines and pooled NPC cutouts).
 --- Corrections run only for seats in the filtered layout pass (`computed.byColor` / `playerToPositionMap`).
 --- @param sourceObjects table
 --- @param computed table|nil

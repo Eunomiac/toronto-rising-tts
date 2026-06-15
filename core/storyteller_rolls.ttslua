@@ -391,7 +391,7 @@ function STR.onDiceBagClick(params)
         if RUI.openStRollNameModal ~= nil then
             RUI.openStRollNameModal(dieKind)
         else
-            print("[StorytellerRolls] Start a roll from the NPC panel (R) first.")
+            print("[StorytellerRolls] Start a roll from the ST roll row or drop an NPC token on a dice bag first.")
         end
         return
     end

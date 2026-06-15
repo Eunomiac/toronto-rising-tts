@@ -78,7 +78,6 @@ Runtime order:
 11. `SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked()`.
 12. Bootstrap first pass only:
     - `RUI.refreshAll()` when available.
-    - Schedule `NPCS.refreshStorytellerUIIfVisible()` after `0.15` seconds.
     - Overlay-only UI retries are folded into the unified bootstrap retry schedule (step 5 above).
 13. Set `didBootstrapFullSync = true`.
 

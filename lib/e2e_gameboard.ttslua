@@ -437,7 +437,7 @@ function E2E_GB.probeFigurineAtStageUv(characterKey, u, v, tol)
     return dist3(fig.getPosition(), want)
 end
 
---- @return number count of pooled seat figurines on `seatKey` tag
+--- @return number count of seat figurines on `seatKey` tag (pooled cutout or `SEAT_FIGURE_<seat>` GM Notes)
 function E2E_GB.probeDuplicateSeatFigure(seatKey)
     local tag = tostring(seatKey) .. "Object"
     local count = 0
@@ -445,6 +445,14 @@ function E2E_GB.probeDuplicateSeatFigure(seatKey)
     for _, obj in ipairs(objs) do
         if NPCS.isPooledFigurineObject(obj) then
             count = count + 1
+        else
+            local identity = SRI.readRoleColorIdentity(obj)
+            if identity ~= nil then
+                local role, suffix = SRI.parseRoleAndSuffix(identity)
+                if role == "SEAT_FIGURE" and string.upper(suffix or "") == string.upper(seatKey) then
+                    count = count + 1
+                end
+            end
         end
     end
     return count
@@ -975,31 +983,6 @@ function E2E_GB.runFull()
     return ok
 end
 
-local function seedDuplicateSeatFigure(seatKey)
-    local tag = tostring(seatKey) .. "Object"
-    local template = nil
-    for _, obj in ipairs(getObjectsWithTag(tag) or {}) do
-        if NPCS.isPooledFigurineObject(obj) then
-            template = obj
-            break
-        end
-    end
-    if template == nil then
-        return false, "no pooled figurine on " .. tag .. " to clone"
-    end
-    if template.clone == nil then
-        return false, "Object.clone unavailable"
-    end
-    local pos = template.getPosition()
-    local cloneParams = { position = pos }
-    local clone = template.clone(cloneParams)
-    if not U.isGameObject(clone) then
-        return false, "clone failed"
-    end
-    SRI.setRoleColorIdentity(clone, "SEAT_FIGURE", seatKey)
-    return true, nil
-end
-
 local function runDeferredD172(failures)
     if type(Gameboard.applySnapGroupDefaultLightOnPaletteDrop) ~= "function" then
         failures[#failures + 1] = "D172: applySnapGroupDefaultLightOnPaletteDrop missing"
@@ -1107,28 +1090,24 @@ local function runDeferredD177b(failures)
         S.setStateVal(false, "seatLayout", "occupiedNPCSlots", seatKey)
     end
     S.validateState()
-    local okSeed, errSeed = seedDuplicateSeatFigure("NPC1")
-    if not okSeed then
-        failures[#failures + 1] = "D177b: could not seed duplicate — " .. tostring(errSeed)
-        return
-    end
-    local before = E2E_GB.probeDuplicateSeatFigure("NPC1")
     Sync.npcs({ force = true, reason = "e2e_d177b" })
-    local after = E2E_GB.probeDuplicateSeatFigure("NPC1")
-    if after == 0 and before >= 2 then
-        failures[#failures + 1] = "D177b unexpected PASS: duplicates deduped (update deferred suite)"
-    elseif after >= 2 then
-        failures[#failures + 1] = "D177b TOR-177: duplicate SEAT_FIGURE_NPC1 remain after reconcile (expected until dedupe ships)"
-    else
-        failures[#failures + 1] = "D177b: ambiguous duplicate count before=" .. tostring(before) .. " after=" .. tostring(after)
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local dup = E2E_GB.probeDuplicateSeatFigure(seatKey)
+        if dup > 0 then
+            failures[#failures + 1] = "D177b: unoccupied "
+                .. seatKey
+                .. " still has "
+                .. tostring(dup)
+                .. " pooled SEAT_FIGURE(s) after reconcile (delete workshop ghost anchors from save)"
+        end
     end
 end
 
---- Expected FAIL probes until TOR-177b dedupe ships; D173 API probe passes when TOR-173 ships.
---- @return boolean always false until features land (FAIL lines are harness success)
+--- Expected FAIL probes until TOR-172 ships; D173/D174/D177b pass when shipped.
+--- @return boolean always false until D172 ships (FAIL lines are harness success)
 function E2E_GB.runDeferred()
     local failures = {}
-    print("[gbE2eRunDeferred] Expected FAIL on D177b until dedupe ships; D173 API probe when TOR-173 shipped.")
+    print("[gbE2eRunDeferred] Expected FAIL on D172 until palette defaultLightMode ships; D173/D174/D177b pass when shipped.")
     runDeferredD172(failures)
     runDeferredD173(failures)
     runDeferredD177b(failures)

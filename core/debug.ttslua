@@ -3941,7 +3941,7 @@ local function exportObjectDisplayName(obj)
     return ""
 end
 
---- True when an `NPC#Object`-tagged object is a seat figurine (pooled NPC cutout or workshop `SEAT_FIGURE_*`).
+--- True when an `NPC#Object`-tagged object is a seat figurine (pooled NPC cutout with `SEAT_FIGURE_*` or `npcInstance:` identity).
 --- @param obj Object|nil
 --- @param npcsModule table core.npcs
 --- @return boolean
@@ -4886,13 +4886,12 @@ end
 --- Use to debug duplicate SEAT_FIGURE errors: `lua DEBUG.findObjectsByRole("SEAT_FIGURE_NPC1")`
 --- @param roleQuery string Full identity (`SEAT_FIGURE_NPC1`) or role prefix (`SEAT_FIGURE`, `CSHEET_PAGE_1`)
 --- @param options table|nil `{ seatTag?: string, includeLegacy?: boolean, print?: boolean }`
---- @return table[] rows `{ guid, roleIdentity, gmNotes, legacyIdentity, name, nickname, tags, seatSuffix?, layoutFigurine?, workshopAnchor? }`
+--- @return table[] rows `{ guid, roleIdentity, gmNotes, legacyIdentity, name, nickname, tags, seatSuffix? }`
 function DEBUG.findObjectsByRole(roleQuery, options)
     options = options or {}
     local seatTag = options.seatTag
     local includeLegacy = options.includeLegacy ~= false
     local doPrint = options.print ~= false
-    local NPCS = require("core.npcs")
     local rows = {}
 
     for _, obj in ipairs(getObjects() or {}) do
@@ -4918,12 +4917,6 @@ function DEBUG.findObjectsByRole(roleQuery, options)
                         tags = tags,
                         seatSuffix = suffix,
                     }
-                    if suffix ~= nil and type(NPCS.isNpcSeatFigureForLayout) == "function" then
-                        row.layoutFigurine = NPCS.isNpcSeatFigureForLayout(obj, suffix)
-                    end
-                    if suffix ~= nil and type(NPCS.isWorkshopNpcSeatFigureAnchor) == "function" then
-                        row.workshopAnchor = NPCS.isWorkshopNpcSeatFigureAnchor(obj, suffix)
-                    end
                     rows[#rows + 1] = row
                 end
             end
@@ -4941,14 +4934,6 @@ function DEBUG.findObjectsByRole(roleQuery, options)
                 .. " match(es)"
         )
         for i, row in ipairs(rows) do
-            local extras = {}
-            if row.layoutFigurine then
-                extras[#extras + 1] = "layoutFigurine"
-            end
-            if row.workshopAnchor then
-                extras[#extras + 1] = "workshopAnchor"
-            end
-            local extraStr = #extras > 0 and (" [" .. table.concat(extras, ", ") .. "]") or ""
             print(
                 "  "
                     .. tostring(i)
@@ -4958,7 +4943,6 @@ function DEBUG.findObjectsByRole(roleQuery, options)
                     .. tostring(row.roleIdentity)
                     .. " nick="
                     .. tostring(row.nickname)
-                    .. extraStr
             )
             if row.legacyIdentity ~= nil then
                 print("     legacyIdentity=" .. tostring(row.legacyIdentity))

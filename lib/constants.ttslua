@@ -1674,40 +1674,40 @@ C.TableSourceObjects = {
       anchorSeatKey = "NPC4",
       rotationDelta = Vector({ 0, 180, 0 }),
       position = { y = -40 }
-    },
-    [G.GUIDS.SEAT_FIGURE_BROWN] = {
-      position = { y = -50 }
-    },
-    [G.GUIDS.SEAT_FIGURE_PURPLE] = {
-      position = { y = -50.67 }
     }
   },
-  --- Applied to the live object in each seat/role (e.g. pooled `SEAT_FIGURE` at `NPC1`), not fixed workshop GUIDs.
+  --- Per-seat `SEAT_FIGURE` Y tweaks after layout (PC workshop figurines and pooled NPC cutouts share this table).
   postCorrectionsBySeatRole = {
+    Brown = {
+      SEAT_FIGURE = {
+        position = { y = -50 },
+      },
+    },
+    Purple = {
+      SEAT_FIGURE = {
+        position = { y = -50.67 },
+      },
+    },
     NPC1 = {
       SEAT_FIGURE = {
-        position = { y = -52.89},
-        scale = { x = 1, y = 1, z = 1 }
-      }
+        position = { y = -52.89 },
+      },
     },
     NPC2 = {
       SEAT_FIGURE = {
         position = { y = -52.89 },
-        scale = { x = 1, y = 1, z = 1 }
-      }
+      },
     },
     NPC3 = {
       SEAT_FIGURE = {
         position = { y = -52.89 },
-        scale = { x = 1, y = 1, z = 1 }
-      }
+      },
     },
     NPC4 = {
       SEAT_FIGURE = {
         position = { y = -52.89 },
-        scale = { x = 1, y = 1, z = 1 }
-      }
-    }
+      },
+    },
   },
   -- Derived from C.RedCameraAngles (and aligned with C.UniversalCameraAngles runtime merge behavior).
   -- This avoids duplicating mode-key lists in multiple places.

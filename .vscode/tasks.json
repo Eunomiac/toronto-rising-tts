@@ -156,26 +156,6 @@
       }
     },
     {
-      "label": "Generate NPC panel XML from npcs_data",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        ".dev/scripts/generate_npc_panel_xml.js"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "problemMatcher": [],
-      "group": {
-        "kind": "build",
-        "isDefault": false
-      },
-      "presentation": {
-        "reveal": "silent",
-        "panel": "shared"
-      }
-    },
-    {
       "label": "Custom UI Assets: Full Pipeline (Build -> Pause -> Merge)",
       "type": "shell",
       "command": "node",

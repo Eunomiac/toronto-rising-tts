@@ -24,7 +24,7 @@ Flexible tree for Storyteller-readable output only.
 
 Optional overrides per mode key (`off`, `standard`, `spotlight`). **Merge rule:** for each mode, start from `NPCS.lights[mode]` and **deep-merge** `npcData.lighting[mode]` on top when present. When the instance’s `areaKey` is **`__stage_board__`** (gameboard STAGE_BOARD placements, not legacy table-side areas), **deep-merge** `NPCS.stageLights[mode]` after that. Unlisted modes use globals only.
 
-**Figurine cutout scale:** `figurine.scale` (stage / legacy areas / preload image scalar) and `figurine.seatedScale` (table seat via `assignNpcToSeat` / rotational layout). Transform scale stays at the active/preload pool uniform; Custom Figurine `image_scalar` is updated on placement changes.
+**Figurine cutout scale:** `figurine.scale` in npcs_data drives Custom Figurine `image_scalar` at preload, table seat, and stage. Transform scale stays at the active/preload pool uniform (`1` when active, small when in preload).
 
 ---
 
@@ -71,7 +71,7 @@ The `preload` entry in [`lib/npcs_data.ttslua`](../../lib/npcs_data.ttslua) `D.a
 
 **Load audit:** `NPCS.restoreAfterStateLoad` runs `NPCS.auditDuplicatePooledSpotlights` after register and again after preload warm-up; duplicates log `[NPCS] ERROR load-after-preload: duplicate pooled npc_light` and raise a Storyteller alert. Manual audit: `lua DEBUG.auditDuplicatePooledSpotlights({ alert = true })`. **Dedupe (opt-in):** `lua DEBUG.auditDuplicatePooledSpotlights({ destroyDuplicates = true, phase = "manual-dedupe" })` — keeps `npcs.instances[key].lightGuid` when that object still exists, else the first in-world light not claimed by another instance; destroys other `NPC Light <key>` objects and prunes `gameState.lights` registry keys. Not run automatically on load. Full pool reset: `destroyAllNpcWorldObjects` in `.dev/testbed/TEST BED.ttslua`.
 
-**Table seats:** The pooled figurine receives the seat `*Object` tag (e.g. `NPC1Object`) and is moved as role **`SEAT_FIGURE`** by `lib.rotational-seat-layout` (same Red-template rotation as PC figures). `C.TableSourceObjects.postCorrectionsBySeatRole` applies seat Y/scale (e.g. 1.25× at the table). Display **Name** stays the NPC **full name** (tooltip). The paired **area spotlight** is moved to the character’s **preload slot** (OFF, hidden, small scale) while seated; workshop **`SEAT_LIGHT_1/2_NPC*`** lights (virtual hand-zone rig) are reconciled via `L.reconcileForPlayer`. Unseating clears seat tags, returns the figurine to preload, and restores `npc_figurine` + area spotlight behavior.
+**Table seats:** The pooled figurine receives the seat `*Object` tag (e.g. `NPC1Object`), GM Notes **`SEAT_FIGURE_<seatKey>`** (same identity model as PC figurines), and is moved as role **`SEAT_FIGURE`** by `lib.rotational-seat-layout`. `C.TableSourceObjects.postCorrectionsBySeatRole` applies per-seat Y correction (PC and NPC share the table). Display **Name** stays the NPC **full name** (tooltip). Unseating restores `npcInstance:` GM Notes. The paired **area spotlight** is moved to the character’s **preload slot** (OFF, hidden, small scale) while seated; workshop **`SEAT_LIGHT_1/2_NPC*`** lights (virtual hand-zone rig) are reconciled via `L.reconcileForPlayer`.
 
 `gameState.sessionScene.npcWorld` carries **`byArea` only** for Scene Constructor intent. **`Sync.full`** → **`NPCS.reconcileAllFromState`** resolves placement intent (Step Zero), clears stale area/seat placements, seats allowed NPCs synchronously via rotational layout, applies narrative presence visibility, then populates stage areas — without wholesale stash-all before every `byArea` apply.
 
@@ -111,10 +111,10 @@ World slot center:
 
 ## Storyteller UI (summary)
 
-* **NPCs** toggle on the storyteller tool bar opens `panel_npcs` (see [`ui/storyteller/panel_storyteller_toolbar.xml`](../../ui/storyteller/panel_storyteller_toolbar.xml)).
-* Spawn groups / individuals, move, clear area, remove, light toggle (`off` / `standard`), **hold name** for `spotlight` (mouse up restores previous mode).
+* **CONTROL_BOARD** (`ui/objects/npc_control_board.xml`) is the Storyteller surface for NPC seat assignment, stage placements, Apply/Clear, and dice-bag rolls — see [Storyteller Gameboard Control.md](Storyteller%20Gameboard%20Control.md).
+* Legacy **`panel_npcs`** toolbar tab removed (TOR-181); area spawn/move/clear flows use scene `byArea` + reconciler or gameboard only.
 * **Manual drags:** dropping a tagged NPC figurine refreshes its paired light from the same math as above.
-* **Admin scene transitions:** switching from admin `DARK` to `STANDARD`/`BRIGHT` now re-applies each spawned NPC's current light mode after staged scene lighting completes, so NPC panel toggle state and actual light output stay in sync.
+* **Admin scene transitions:** switching from admin `DARK` to `STANDARD`/`BRIGHT` re-applies each spawned NPC's current light mode after staged scene lighting completes.
 
 ---
 

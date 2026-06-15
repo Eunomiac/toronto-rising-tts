@@ -1,5 +1,5 @@
 <!-- Storyteller bottom-right tool bar + pop-out panels (Black) -->
-<!-- Agent guidance: .dev/HUD_FUNCTIONS.md; .dev/NPC Object Spawning & Spotlighting/NPC Object Overview.md (NPCs toggle). -->
+<!-- Agent guidance: .dev/HUD_FUNCTIONS.md -->
 
 <Panel id="storytellerToolbarRoot" visibility="Host" rectAlignment="UpperLeft" offsetXY="50 00" width="1280" height="800">
   <Button id="toggleElem_storytellerToolbarBody" class="hud_storyteller_button hud_storyteller_button_icon" rectAlignment="UpperLeft" width="30" height="30" onClick="HUD_togglePanel">►</Button>
@@ -15,8 +15,6 @@
         onClick="HUD_selectStorytellerPanel" textColor="#FFFFFF" />
       <Button id="toggle_phases" text="Phases" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
         onClick="HUD_selectStorytellerPanel" textColor="#FFFFFF" />
-      <Button id="toggle_npcs" text="NPCs" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
-        onClick="HUD_selectStorytellerPanel" textColor="#FFFFFF" />
     </HorizontalLayout>
 
     <!-- padding: Panel acts as layout group (TTS Layout/Grouping). Inner VL uses flexibleHeight so children get real vertical space. -->
@@ -27,8 +25,6 @@
         <Include src="panel_soundscape.xml" />
         <Include src="panel_pcs.xml" />
         <Include src="panel_phases.xml" />
-        <Include src="panel_npcs_defaults.xml" />
-        <Include src="panel_npcs.xml" />
       </VerticalLayout>
     </Panel>
       </VerticalLayout>

@@ -43,7 +43,7 @@ Same as [Dice-E2E](Dice-E2E.md): one client, **Black** recommended for Storytell
 | `gbE2eRunSmoke()` | Automated S0–S7 + **HUMAN GATE** scene Apply |
 | `gbE2eContinue()` | After human gate (`scene_apply` or `reload`) |
 | `gbE2eRunFull()` | Deep F/G/H suites (+ optional reload gate) |
-| `gbE2eRunDeferred()` | **Expected FAIL** until TOR-173/174/dedupe (D172 + D175 pass when shipped) |
+| `gbE2eRunDeferred()` | **Expected FAIL** until D172 ships (D173 + D174 + D175 + D177b pass when shipped) |
 | `gbConfirm(label, { … })` | Single-step assert |
 
 Every macro ends with **`[gbConfirm] PASS`** or **`[gbConfirm] FAIL`** + line list.
@@ -151,10 +151,10 @@ lua gbE2eRunDeferred()
 | ID | Linear | Fails today because |
 | --- | --- | --- |
 | D172 | TOR-172 | Palette-drop `defaultLightMode` handler + ring-1 STANDARD in data |
-| D173 | TOR-173 | No stage placement lerp |
+| D173 | TOR-173 | *(shipped — stage lerp API + author playtest confirmed)* |
 | D175 | TOR-175 | *(shipped — `assertD175AnchorSpreadOrdering` in smoke)* |
 | D174 | TOR-174 | *(shipped — API guards in smoke; manual ST bag drop confirmed)* |
-| D177b | TOR-177 follow-up | Duplicate `SEAT_FIGURE_NPC1` remain after reconcile |
+| D177b | TOR-179 | *(shipped — author confirmed; duplicate audit clean)* |
 
 When a feature lands, move its probe from deferred into `gbE2eRunFull` and expect **PASS**.
 
