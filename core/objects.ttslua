@@ -24,8 +24,59 @@ local S = require("core.state")
 -- LOCKED / HIDDEN OBJECTS (from C.LockedObjects, C.HiddenObjects)
 -- ============================================================================
 
---- Sets `interactable = false` for every GUID in `C.LockedObjects`, and `setInvisibleTo(colors)` for each entry in `C.HiddenObjects`. Missing objects are skipped after a console warning. Called from Global `onLoad` after state init.
-function O.ApplyLockedAndHiddenFromConstants()
+local lockedObjectGuidSet = nil
+
+local function rebuildLockedObjectGuidSet()
+    lockedObjectGuidSet = {}
+    local locked = C.LockedObjects
+    if U.Type(locked) ~= "table" then
+        return
+    end
+    for i = 1, #locked do
+        local guid = locked[i]
+        if U.Type(guid) == "string" and guid ~= "" then
+            lockedObjectGuidSet[guid] = true
+        end
+    end
+end
+
+rebuildLockedObjectGuidSet()
+
+--- @param guid string|nil
+--- @return boolean
+function O.isLockedObjectGuid(guid)
+    return U.Type(guid) == "string" and guid ~= "" and lockedObjectGuidSet[guid] == true
+end
+
+--- True when every `C.LockedObjects` GUID resolves and custom assets finished loading (`loading_custom == false`).
+--- @return boolean
+function O.areLockedObjectsReadyForInteractableLock()
+    local locked = C.LockedObjects
+    if U.Type(locked) ~= "table" then
+        return true
+    end
+    for i = 1, #locked do
+        local guid = locked[i]
+        if U.Type(guid) == "string" and guid ~= "" then
+            local obj = getObjectFromGUID(guid)
+            if obj == nil then
+                return false
+            end
+            if obj.loading_custom == true then
+                return false
+            end
+        end
+    end
+    return true
+end
+
+--- @param options table|nil `{ warnMissing?: boolean }`
+--- @return table `{ applied: number, missing: number, missingGuids: string[] }`
+local function applyLockedObjectsFromConstants(options)
+    options = type(options) == "table" and options or {}
+    local warnMissing = options.warnMissing == true
+    local applied, missing = 0, 0
+    local missingGuids = {}
     local locked = C.LockedObjects
     if U.Type(locked) == "table" then
         for i = 1, #locked do
@@ -34,30 +85,24 @@ function O.ApplyLockedAndHiddenFromConstants()
                 local obj = getObjectFromGUID(guid)
                 if obj ~= nil then
                     obj.interactable = false
-                else
-                    print(
-                        string.format(
-                            "[O.ApplyLockedAndHiddenFromConstants] Warning: C.LockedObjects — no object for GUID %s",
-                            guid
-                        )
-                    )
-                end
-            end
-        end
-    end
-
-    local hidden = C.HiddenObjects
-    if U.Type(hidden) == "table" then
-        for guid, colors in pairs(hidden) do
-            if U.Type(guid) == "string" and guid ~= "" and U.Type(colors) == "table" then
-                local obj = getObjectFromGUID(guid)
-                if obj ~= nil and type(obj.setInvisibleTo) == "function" then
-                    obj.setInvisibleTo(colors)
-                else
-                    if obj == nil then
+                    applied = applied + 1
+                    if options.logSummary == true and guid == G.GUIDS.THE_FLOOR then
                         print(
                             string.format(
-                                "[O.ApplyLockedAndHiddenFromConstants] Warning: C.HiddenObjects — no object for GUID %s",
+                                "[O.ApplyLockedObjectsFromConstants] THE_FLOOR (%s) interactable=%s loading_custom=%s",
+                                guid,
+                                tostring(obj.interactable),
+                                tostring(obj.loading_custom)
+                            )
+                        )
+                    end
+                else
+                    missing = missing + 1
+                    missingGuids[#missingGuids + 1] = guid
+                    if warnMissing then
+                        print(
+                            string.format(
+                                "[O.ApplyLockedObjectsFromConstants] Warning: C.LockedObjects — no object for GUID %s",
                                 guid
                             )
                         )
@@ -66,6 +111,83 @@ function O.ApplyLockedAndHiddenFromConstants()
             end
         end
     end
+    if options.logSummary == true then
+        local total = U.Type(locked) == "table" and #locked or 0
+        print(
+            string.format(
+                "[O.ApplyLockedObjectsFromConstants] interactable=false on %d/%d locked object(s); %d unresolved",
+                applied,
+                total,
+                missing
+            )
+        )
+    end
+    return { applied = applied, missing = missing, missingGuids = missingGuids }
+end
+
+--- @param options table|nil `{ warnMissing?: boolean }`
+--- @return table `{ applied: number, missing: number, missingGuids: string[] }`
+local function applyHiddenObjectsFromConstants(options)
+    options = type(options) == "table" and options or {}
+    local warnMissing = options.warnMissing == true
+    local applied, missing = 0, 0
+    local missingGuids = {}
+    local hidden = C.HiddenObjects
+    if U.Type(hidden) == "table" then
+        for guid, colors in pairs(hidden) do
+            if U.Type(guid) == "string" and guid ~= "" and U.Type(colors) == "table" then
+                local obj = getObjectFromGUID(guid)
+                if obj ~= nil and type(obj.setInvisibleTo) == "function" then
+                    obj.setInvisibleTo(colors)
+                    applied = applied + 1
+                else
+                    if obj == nil then
+                        missing = missing + 1
+                        missingGuids[#missingGuids + 1] = guid
+                        if warnMissing then
+                            print(
+                                string.format(
+                                    "[O.ApplyHiddenObjectsFromConstants] Warning: C.HiddenObjects — no object for GUID %s",
+                                    guid
+                                )
+                            )
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return { applied = applied, missing = missing, missingGuids = missingGuids }
+end
+
+--- Sets `interactable = false` for every GUID in `C.LockedObjects`.
+--- @param options table|nil `{ warnMissing?: boolean }`
+--- @return table
+function O.ApplyLockedObjectsFromConstants(options)
+    return applyLockedObjectsFromConstants(options)
+end
+
+--- Applies `C.HiddenObjects` invisibility for every configured GUID.
+--- @param options table|nil `{ warnMissing?: boolean }`
+--- @return table
+function O.ApplyHiddenObjectsFromConstants(options)
+    return applyHiddenObjectsFromConstants(options)
+end
+
+--- Sets `interactable = false` for every GUID in `C.LockedObjects`, and `setInvisibleTo(colors)` for each entry in `C.HiddenObjects`. Called from Global startup readiness gate after objects finish loading.
+--- @param options table|nil `{ warnMissing?: boolean, logSummary?: boolean }`
+--- @return table `{ locked: table, hidden: table }`
+function O.ApplyLockedAndHiddenFromConstants(options)
+    return {
+        locked = applyLockedObjectsFromConstants(options),
+        hidden = applyHiddenObjectsFromConstants(options),
+    }
+end
+
+--- Startup gate entry: lock interactable + apply hidden visibility once objects are ready.
+--- @return table `{ locked: table, hidden: table }`
+function O.ApplyLockedAndHiddenAtStartupGate()
+    return O.ApplyLockedAndHiddenFromConstants({ warnMissing = true, logSummary = true })
 end
 
 --- Viewer colors used when a seat is narratively absent (hide from everyone).
