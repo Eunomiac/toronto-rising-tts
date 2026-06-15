@@ -55,11 +55,11 @@ _Stack rank for the current cycle (2026-06-06, inbox perf + dice bugs). **Preced
 - [x] **Oblivion rouse checks:** Finish end-to-end (`C.RollType.ROUSE_OBLIVION` — UI, validation, result handling). _(Shipped in dice pt.2: TOR-51, TOR-131; in-game verification recommended.)_ _(TOR-75)_
 - [x] **Rouse check Roll doubles pool:** Clicking Roll after PRE_ROLL staging spawns duplicate Rouse/Obliv-Rouse dice (pool doubles). _(TOR-198 — `spawnMissingPoolDiceForColor`; author confirmed resolved 2026-06-14.)_
 - [ ] **Oblivion Rouse copy:** Prompt `Hunger or Stain?`; post-choice broadcast `Hunger Roused` / `Stained` (not stuck on choose prompt). _(TOR-214)_
-- [ ] **Hunger 5 voluntary rouse lockout:** At Hunger 5, lock Blood Surge + Obliv-Rouse bags; allow forced standard Rouse checks; failed rouse → frenzy resist D4. _(TOR-203)_
+- [x] **Hunger 5 voluntary rouse lockout:** At Hunger 5, Blood Surge + Obliv-Rouse locked; forced standard Rouse allowed; failed rouse → Frenzy Resist D4 queue. _(TOR-203 — 2026-06-15)_
 
 ## Camera
 
-- [ ] Nudge the **Red** player **`sheet`** preset slightly farther back on **Z** (away from table center) so the center-top game-state overlay does not block the top of the character sheet. _(TOR-78)_
+- [x] Nudge the **Red** player **`sheet`** preset slightly farther back on **Z** (away from table center) so the center-top game-state overlay does not block the top of the character sheet. _(TOR-78 — 2026-06-15)_
 
 ## NPC Spawning
 
@@ -84,7 +84,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Widen Far Left / Far Right NPC angles:** Canceled — superseded by TOR-169 gameboard. _(TOR-166)_
 - [x] **Mid-Center + Far-Center NPC areas:** Canceled — superseded by TOR-169. _(TOR-167)_
 - [x] **NPC area cutouts on scene apply:** Mis-nested `npcWorld` at import root (spreadsheet JSON) left `sessionScene.npcWorld.byArea` empty — scene apply/reconcile was fine when data was nested correctly. Fixed spreadsheet; import validator now rejects unexpected root keys (no hoisting). _(TOR-135)_
-- [ ] _New feature:_ Storyteller rolls dice for NPCs from the dice control panel — spawn/show dice tray, appropriate camera angle, roll-controller wiring for NPC/non-player identity. _(TOR-79)_
+- [x] **ST rolls dice for NPCs:** Control-board token on ST dice bag → `STR.initiateFromBagLabel` (TOR-174); ST dashboard roll pipeline; ST roll camera intentionally no-op for Black. _(TOR-79 — 2026-06-15)_
 - [x] **NPC token on ST dice bag:** Drop control token on dice bag → roll for that NPC with bag type; token returns to committed home (placement, homeland seat row, or palette). _(TOR-174 — author confirmed 2026-06-15.)_
 - [x] **Seated snap row token scale:** Seat snaps `{0.7,1,0.7}`; polar/palette/off-board `{0.2,1,0.2}` on pick-up, drop, and mirror. _(TOR-199 — author confirmed 2026-06-15.)_
 - [x] **Seat snap Y-rotation:** Board-local **Y=180°** (`snapYawOffsetDeg`) on nine seat-row snaps offsets CONTROL_BOARD world Y=180°. _(TOR-200 — author confirmed 2026-06-15.)_
@@ -97,8 +97,8 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 
 - [x] On load, emitters automatically play tracks from the last save. _(Mitigation: **Silence for save** on Sound panel → `Soundscape.prepareEmittersForSave()`; fold into End Session sequence when defined.)_ _(TOR-71)_
 - [ ] **Background music policy:** In any phase **other than Session Start**, background music should always play. When the active site or scene specifies no music, default to the **`Main`** playlist (`lib/soundscape_catalog.ttslua`). _(TOR-77)_
-- [ ] **Site weather ducking:** Site (not only indoors/outdoors) sets the weather audio ducking multiplier in soundscape. _(TOR-80)_
-- [ ] **Thunder indoor ducking:** Thunder one-shots should use the same indoor/site weather ducking multiplier as rain/wind (`playCatalogEntry` skips `weatherThunder`). _(TOR-150)_
+- [x] **Site weather ducking:** Site `weatherDucking` applies via `state.siteWeatherDucking` regardless of indoors/outdoors. _(TOR-80 — 2026-06-15)_
+- [x] **Thunder indoor ducking:** `triggerThunder` uses `weatherVolume()` like rain/wind. _(TOR-150 — 2026-06-15)_
 - [x] **Weather audio burst on scene switch:** Silent stub + zero gain before looping clip swap; one-frame deferred volume arm; rain/wind hold same effect without restart; library Apply defers `markReconciledToCurrentState` after weather apply. Author verified on scene switch. _(TOR-136)_
 - [x] **Soundscape resync after load:** **Silence for save** no longer wipes `gameState.soundscape` via `stopAll`; load reconcile applies preserved scene audio until **TOR-152** adds explicit active-scene vs Main-only load branch. _(TOR-138)_
 - [ ] **Soundscape fade on blindfold down:** During library Apply, fade BGM + location + weather when blindfolds come down; weather: full fade-out on track change, duck to lower volume on same-track volume mismatch (see Linear). _(TOR-147)_
@@ -109,25 +109,25 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] Test-bed helpers to apply seat-light settings from Red to all active seats. _( `TestBed_applyPlayerSeatLightsFromRed`.)_ _(TOR-61)_
 - [ ] **Storyteller dice tray lights:** Keep `storytellerDiceLight1`–`3` OFF in steady state; only ON during live ST roll in matching drawer (`LIGHTMODES_REGISTRY_KEYS_ORDERED` currently forces STANDARD). _(TOR-149)_
 - [ ] **Centralize light modes (`C.LightModes`):** Remove legacy keys (`BRIGHT`, `DIM`, `TENSION`, `STANDARD`, `AdminDark`, `AdminStandard`, `AdminBright`, `AdminDebug`); update `DEBUG`/`DARK`; Scenes panel dynamic 5-wide preset grid (all keys; active = green bg / white text). **`L.LIGHTMODES` unchanged.** _(TOR-81)_
-- [ ] **Scenes/locations** drive global/seat light mode via state → `Scenes.reconcileFromState` / lighting reconciler (no dual apply). _(TOR-84)_
+- [x] **Scenes/locations** drive global/seat light mode via state → `Scenes.reconcileFromState` / lighting reconciler (no dual apply). _(TOR-84 — 2026-06-15)_
 - [x] **Site skybox:** `sessionScene.siteKey` → `Scenes.reconcileSkyboxFromState` (`C.Sites[*].skyboxURL` or random `C.GenericSkyboxes` via `Backgrounds.setCustomURL`). _(TOR-58)_
 
 ## Scenes Panel & Scene State
 
 - [x] Dark panel backgrounds, site modal layout, scene location as text, scene time controls, real-time clock toggle, chronicle weather removed, game-state overlay. _(See completed UI Panels items below.)_ _(TOR-63)_
-- [ ] **District/site labels:** Keep Scenes panel display fields in sync with `gameState.sessionScene` after modal picks and library Apply. _(TOR-82)_
+- [x] **District/site labels:** Scenes panel labels sync via `U.setAttribute`; site pick derives `districtKey` from `C.Sites`. _(TOR-82 — 2026-06-15)_
 - [ ] **Site modal overlap:** Fix overlapping site buttons so district-specific rows are fully clickable (not covered by generic site bucket). _(TOR-83)_
-- [ ] **Sites import — unicode minus in offsetXY:** Build script normalizes Google Sheet `−` (U+2212) → ASCII `-` in all `C.Sites` `offsetXY` values. _(TOR-137)_
+- [x] **Sites import — unicode minus in offsetXY:** `.dev/scripts/normalize_sites_offset_xy.js` normalizes U+2212 → ASCII `-`. _(TOR-137 — 2026-06-15)_
 - [ ] **Scenes panel UI trim + 3-column library:** Remove instructional copy; scene buttons show name + status only; three-column grid. _(TOR-139)_
 - [ ] **Apply active scene — four clock buttons:** Replace single switch button with Apply (scene clock), Apply x5 until present, Apply = PRESENT, Apply (Present); all apply full scene. _(TOR-142)_
 - [ ] **Default no-scene environment:** When no live library scene — Table B1, five PC seats, empty NPC world, OutdoorDim, Main BGM, cleared location/weather on table (do not write cleared location to library or PC pins); overlay blanks date/time + hides weather (do **not** mutate scene-library `clock` or present-day clock — display only); random generic skybox. _(TOR-151)_
 - [ ] **Restore scene on Play load / Start→Play:** Resync active library scene when entering Play with one set; otherwise apply default no-scene (**TOR-151**). Includes **load soundscape branch**: active scene (`lastAppliedKey`) → site + narrative + chronicle weather like Apply; no scene → Main BGM only. _(TOR-152)_
 - [x] **End scene library sync:** `detachLiveTableFromLibraryMirror()` before clearing live location — stops mirroring, clears `lastAppliedKey` + `activeKey`, UI hides mirroring when no on-table scene; prevents live→library writeback of cleared keys. _(TOR-145)_
-- [ ] **Delete active scene:** End live scene first when deleting the row that is still on the table. _(TOR-146)_
+- [x] **Delete active scene:** Deleting live `lastAppliedKey` row calls `endSceneNarrative` first. _(TOR-146 — 2026-06-15)_
 - [ ] **Pre-Apply seat presence modal:** Before blindfold scene transition, ST modal with per-seat present/absent toggles so PCs can be left behind at prior location. _(TOR-157)_
-- [ ] **Real-time clock too fast (intermittent):** Narrative clock ~6–12× expected rate; investigate duplicate tickers, uncleared `U.delay` intervals on scene Apply/load, or compounded `realTimeSpeed`. _(TOR-148)_
+- [x] **Real-time clock too fast (intermittent):** `ensureTicker` no-ops when already armed; stop before re-arm on Apply/load/clock Apply. _(TOR-148 — 2026-06-15)_
 - [x] **Site fog:** Site controls whether the fog object is enabled/disabled (`C.Sites.isTopFogActive` or indoor/outdoor default → `sessionScene.isTopFogActive` → `Scenes.reconcileTopFogFromState`). _(TOR-56)_
-- [ ] **Site & district modifiers:** Apply to rolls (and possibly stats) only for characters marked **present** in the active scene/seat layout. _(TOR-85)_
+- [x] **Site & district modifiers:** Apply to rolls (and possibly stats) only for characters marked **present** in the active scene/seat layout (`Conditions.reconcileLocationHostedForPlayer` + `isSeatPresentInScene`). _(TOR-85 — 2026-06-15)_
 - [ ] **Resonance after hunting rolls:** Odds function (location + desired resonance + hunt result); presentation + random pick; optional victim deck. _(TOR-206)_
 
 ## UI Panels
@@ -140,9 +140,9 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Player game-state overlay:** Center-top phase, date, time (`ui/shared/game_state_overlay.xml`, `core/game_state_overlay.ttslua`). _(TOR-62)_
 - [ ] **Center-top overlay polish:** Scale down overlay; fix background image alignment/scaling. _(TOR-86)_
 - [ ] **Weather on overlay:** Show weather icon/label on center-top overlay (aligned with chronicle/scene clock), not only Scenes panel. _(TOR-87)_
-- [ ] **PCs panel:** Manually deactivate a PC (absent without removing data). _(TOR-88)_
+- [x] **PCs panel deactivate PC:** Canceled — superseded by control-board `pc_control_token` seat row (INBOX Active). _(TOR-88 — canceled 2026-06-15)_
 - [ ] **PCs panel:** Set PC map location via popout modal (writes state, reconciles overlays). _(Open: same as `seatPresent`/district-site or separate map pin?)_ _(TOR-89)_
-- [ ] **Map pins — unmappable locations:** Hide pin at unmappable PC site until mappable travel; do not resurrect stale offset when PC absent from scene; at unmappable **scene** site hide only **active** PCs' pins (absent PCs with mappable locations stay visible). _(TOR-153)_
+- [x] **Map pins — unmappable locations:** `C.isSiteMappable`; hide absent/stale pins; unmappable scene hides active PCs only; absent may keep cached mappable offset. _(TOR-153 — 2026-06-15)_
 - [ ] **Phase system redesign:** Four primary phases (`Start`, `Play`, `Spotlight`, `End`); Play sub-phases (`Scene`, `Downtime`, `Memoriam`); trim PHASES panel copy; **Begin Session** / **End Session** buttons; `sessionNum` in gameState + spaced roman overlay; theme playlist on Start/End; silent Spotlight. _(TOR-143)_ _(Supersedes canceled TOR-90.)_
 - [ ] **Scrolling viewbox:** Author experimenting in TTS on scroll-container height — no implementation until after tinkering. _(TOR-91)_
 - [ ] **Sound panel UI trim + larger text:** Remove excess instructional copy; increase Text element font size. _(TOR-140)_
@@ -164,7 +164,7 @@ _Blocked: author must define data binding approach before substantial implementa
 
 ## Players & Connection
 
-- [ ] **Auto seat/color on connect** from Steam ID (chronicle mapping). _(TOR-94)_
+- [x] **Auto seat/color on connect** from Steam ID (`onPlayerConnect` + `C.PlayerData` chronicle mapping). _(TOR-94 — 2026-06-15)_
 - [ ] **Play as NPC:** PC at table uses NPC sheet/figurine; `sessionScene.npcRoleOverride` / `seatSlots`; lighting exception per Scene Constructor spec ([Scene Constructor Overview](Scene%20Constructor/Scene%20Constructor%20Overview.md)). _(TOR-95)_
 
 ## Table Objects

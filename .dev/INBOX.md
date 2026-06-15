@@ -3,6 +3,8 @@
 ## Active
 
 - [Clock/Time] Need a way to "fast forward" time in an animated fashion, lerping with a slow acceleration towards a date with an eased slow down on approach. Clock should update each frame, speeding up and slowing down as the game takes a time jump into the future/past.
+- [Control Board] Implement PC token controls: Activate/Deactivate seats, allow play as another NPC
+  - When adopting the role of another NPC, a check should be performed for a matching character sheet object (searched by tag), and replace the player's normal sheet with the NPC's
 
 ---
 
@@ -20,7 +22,7 @@
 
 - 2026-06-15 [bug] Stage→seat pooled spotlight left at stage pose — `parkPooledSpotlightForSeatedNpc` on seat identity (preload slot, OFF, hidden, cancel deferred align)
 - 2026-06-15 [bug] Stage NPC pooled spotlight Y misaligned until token light toggle — defer light align until figurine bounds ready after `image_scalar`/`reload()` (`deferNpcSpotlightAlignedToFigurine`)
-- 2026-06-15 [inbox] CONTROL_BOARD snaps dual-tag `npc_control_token` + `pc_control_token` (all polar + seat-row snaps); Clear skips parking tokens on PC seat-row columns
+- 2026-06-15 TOR-84/85/79 Done; TOR-88 Canceled (PC tokens). Quick-fix batch: TOR-78,80,82,94,137,146,148,150,153,203 shipped; TOR-152+147 deferred with TOR-151 epic.
 - 2026-06-15 TOR-211 — [workshop] Set up player seat lights for famulus models
 - 2026-06-15 TOR-212 — [workshop] Famulus figurines/lights Brown & Red — rotate with hand zone (like Pink Tarot)
 - 2026-06-15 TOR-213 — [workshop] Remove roll-sequence player light intensity boost

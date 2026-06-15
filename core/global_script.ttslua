@@ -722,6 +722,9 @@ function GlobalDiceBagClick(params)
                 GlobalSpawnDefaultPoolDiceForActive({ color = color })
             end
         elseif dieKind == DK.KIND_OBLIV_ROUSE then
+            if math.floor(tonumber(S.getPlayerVal(color, "hunger")) or 0) >= C.MAX_HUNGER then
+                return
+            end
             if RC.initiateRoll(color, {
                 rollType = C.RollType.ROUSE_OBLIVION,
                 label = "",
@@ -778,6 +781,10 @@ function GlobalDiceBagClick(params)
             -- PRE_ROLL: Hunger bag toggles Blood Surge. Pool hunger dice in SETUP come from
             -- Hunger-bag spawn; auto-hunger redirect applies to Normal-bag clicks only.
             local meta = type(active.meta) == "table" and active.meta or {}
+            local hunger = math.floor(tonumber(S.getPlayerVal(color, "hunger")) or 0)
+            if hunger >= C.MAX_HUNGER then
+                return
+            end
             if meta.bloodSurgeActive == true then
                 RC.addBloodSurgeRouse(color)
             else
@@ -786,6 +793,9 @@ function GlobalDiceBagClick(params)
             return
         end
         if dieKind == DK.KIND_ROUSE or dieKind == DK.KIND_OBLIV_ROUSE then
+            if math.floor(tonumber(S.getPlayerVal(color, "hunger")) or 0) >= C.MAX_HUNGER then
+                return
+            end
             spawnRequestedDie(color, dieKind)
             return
         end
@@ -1360,6 +1370,9 @@ function onLoad(saved_data)
     -- Synchronization orchestration (step 2): consolidate the onLoad fan-out into Sync.full().
     setStartupAction("initial-sync-full")
     Sync.full({ reason = "onLoad_initial" })
+    if GameStateOverlay and type(GameStateOverlay.stopTicker) == "function" then
+        GameStateOverlay.stopTicker()
+    end
     if GameStateOverlay and type(GameStateOverlay.ensureTicker) == "function" then
         GameStateOverlay.ensureTicker()
     end
@@ -2114,6 +2127,13 @@ function HUD_scenesPickSite(player, button, id)
     end
     HUD_scenesCloseLocationModals(player, button, id)
     S.setStateVal(key, "sessionScene", "siteKey")
+    local site = C.Sites[key]
+    if type(site) == "table" then
+        local dk = C.resolveDistrictKeyForDistrictTable(site.district)
+        if type(dk) == "string" and dk ~= "" then
+            S.setStateVal(dk, "sessionScene", "districtKey")
+        end
+    end
     StorytellerScenesPanel.refresh()
     Sync.ui({ gameStateOverlay = true })
     U.AlertGM("Site set: " .. key .. " — click Apply location + soundscape when ready.")
@@ -3923,4 +3943,18 @@ function HUD_rollSTAction(player, value, id)
         RC.confirmRoll(color)
     end
     -- For PRE_ROLL / ROLLING: ST can only set difficulty or cancel; no action button action
+end
+
+--- TTS: player joined or changed seat color.
+function onPlayerChangeColor(color)
+    if M ~= nil and type(M.onPlayerChangeColor) == "function" then
+        M.onPlayerChangeColor(color)
+    end
+end
+
+--- TTS: player connected (assign chronicle seat when mapped in C.PlayerData).
+function onPlayerConnect(player_color)
+    if M ~= nil and type(M.tryAutoAssignSeatFromChronicle) == "function" then
+        M.tryAutoAssignSeatFromChronicle(player_color)
+    end
 end

@@ -10,6 +10,7 @@ local DBV = {}
 local DK = require("lib.dice_kinds")
 local G = require("lib.guids")
 local C = require("lib.constants")
+local S = require("core.state")
 
 DBV.DISABLED_Y = -200
 --- World Y above this threshold means the bag is already active (visible at rest).
@@ -202,6 +203,16 @@ function DBV.isBagEnabled(color, kind)
     return isBagActiveAtRest(bag)
 end
 
+--- @param color string
+--- @return boolean
+local function isAtMaxHunger(color)
+    if type(color) ~= "string" then
+        return false
+    end
+    local hunger = math.floor(tonumber(S.getPlayerVal(color, "hunger")) or 0)
+    return hunger >= C.MAX_HUNGER
+end
+
 --- Apply hunger / rouse / obliv bag visibility for one player seat.
 -- @param color string
 -- @param active table|nil  active roll record
@@ -222,6 +233,9 @@ function DBV.reconcileForPlayer(color, active)
 
     local rouseOn = pool.oblivRouse == 0
     local oblivOn = pool.rouse == 0
+    if isAtMaxHunger(color) then
+        oblivOn = false
+    end
 
     local hungerGuid = bagGuidForKind(color, DK.KIND_HUNGER)
     local rouseGuid = bagGuidForKind(color, DK.KIND_ROUSE)

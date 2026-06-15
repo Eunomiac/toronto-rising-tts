@@ -425,7 +425,8 @@ local function maybeQueueFrenzyOnHungerCap(color, hungerBefore)
     end
     RC.queueRoll(color, {
         rollType = C.RollType.FRENZY,
-        label    = "Frenzy Check (Hunger would exceed maximum)",
+        label    = "Frenzy Resist (Hunger at maximum)",
+        pool     = { normal = 4, hunger = 0 },
     })
 end
 
@@ -2180,6 +2181,11 @@ function RC.activateBloodSurge(color)
     if active == nil then return false end
     if active.rollType ~= C.RollType.STANDARD then return false end
     if active.phase ~= C.RollPhase.PRE_ROLL then return false end
+
+    local hunger = math.floor(tonumber(S.getPlayerVal(color, "hunger")) or 0)
+    if hunger >= C.MAX_HUNGER then
+        return false
+    end
 
     ensureActiveShape(active)
     if active.meta.bloodSurgeActive then

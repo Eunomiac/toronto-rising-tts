@@ -475,6 +475,51 @@ function M.onPlayerAction(playerColor, action, clickState)
 end
 
 --[[
+    Try chronicle seat assignment when a player connects (Steam ID → C.PlayerData.color).
+    @param color string Current TTS seat color (often White before assignment).
+]]
+function M.tryAutoAssignSeatFromChronicle(color)
+    if color == "Grey" then
+        return
+    end
+
+    local player = Player[color]
+    if player == nil or not U.isPlayer(player) then
+        return
+    end
+
+    local playerID = S.getStorageID(player)
+    if playerID == nil then
+        return
+    end
+
+    local chronicle = C.PlayerData[playerID]
+    if type(chronicle) ~= "table" or type(chronicle.color) ~= "string" then
+        return
+    end
+
+    local targetColor = chronicle.color
+    if not U.isIn(targetColor, C.PlayerColors) then
+        return
+    end
+
+    if color == targetColor then
+        M.onPlayerChangeColor(color)
+        return
+    end
+
+    local occupant = Player[targetColor]
+    if occupant ~= nil and U.isPlayer(occupant) then
+        local occupantId = S.getStorageID(occupant)
+        if type(occupantId) == "string" and occupantId ~= playerID then
+            return
+        end
+    end
+
+    player.changeColor(targetColor)
+end
+
+--[[
     Handle player color/seat selection
     Triggered when a player chooses a seat color (Brown, Orange, Red, Pink).
     Extracts their steam_id and ensures they have a state entry. New players get

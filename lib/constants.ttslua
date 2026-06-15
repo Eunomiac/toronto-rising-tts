@@ -1055,7 +1055,7 @@ C.RedCameraAngles = {
   },
   sheet = {
     cameraMode = "FirstPerson",
-    position = Vector({ 0.0000, 5.8436, -52.0298 }),
+    position = Vector({ 0.0000, 5.8436, -53.0298 }),
     pitch = 70.5275,
     yaw = 0,
     distance = 11,
@@ -2332,7 +2332,8 @@ C.Districts = {
 -- Optional `skyboxURL` (string): custom table background applied via `Scenes.reconcileSkyboxFromState` when this site is live (`sessionScene.siteKey`). When omitted, a random entry from `C.GenericSkyboxes` is used.
 -- Optional `isSilent = true`: full ambient mute (background, location ambience, weather); featured music may still be played via Storyteller action. Merge with `Soundscape.applyContext(Soundscape.contextFromSite(site))`.
 -- Optional `isTopFogActive` (boolean): when set, `SceneLibrary.applySiteTopFogToSessionScene` writes `sessionScene.isTopFogActive` on location apply; when omitted, indoor sites default fog off and outdoor on.
--- `weatherDucking` (number 0..1): indoor weather volume multiplier passed through `Soundscape.applyContext` (outdoor always uses catalog outdoor multiplier).
+-- `weatherDucking` (number 0..1): per-site weather volume multiplier via `Soundscape.applyContext` (`state.siteWeatherDucking`); when omitted, indoor/outdoor catalog defaults apply.
+-- Optional `mappable` (boolean, default true): when false, active PCs' map pins hide at this scene site; absent PCs may keep a cached mappable offset.
 
 -- Generic skyboxes: A random skybox from this list should be assigned whenever a scene is set at a site without a skyboxURL.
 C.GenericSkyboxes = {
@@ -2377,6 +2378,34 @@ function C.resolveSkyboxURLForSite(siteKey)
     return nil
   end
   return pick
+end
+
+--- Resolves `C.Districts` table key for a district object reference from `C.Sites[*].district`.
+--- @param district table|nil
+--- @return string|nil
+function C.resolveDistrictKeyForDistrictTable(district)
+  if type(district) ~= "table" then
+    return nil
+  end
+  for key, dist in pairs(C.Districts or {}) do
+    if dist == district then
+      return key
+    end
+  end
+  return nil
+end
+
+--- Whether a site supports map pin placement (`mappable` defaults true when omitted).
+--- @param site table|nil
+--- @return boolean
+function C.isSiteMappable(site)
+  if type(site) ~= "table" then
+    return false
+  end
+  if site.mappable == false then
+    return false
+  end
+  return true
 end
 
 C.Sites = {

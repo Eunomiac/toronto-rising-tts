@@ -633,7 +633,7 @@ function StorytellerScenesPanel.refresh()
         elseif type(dk) == "string" and dk ~= "" then
             dLabel = dk
         end
-        UI.setValue("scenes_districtNameDisplay", dLabel)
+        U.setAttribute("scenes_districtNameDisplay", "text", dLabel)
 
         local sLabel = "—"
         if type(sk) == "string" and sk ~= "" and C.Sites[sk] ~= nil and type(C.Sites[sk].name) == "string" then
@@ -641,7 +641,7 @@ function StorytellerScenesPanel.refresh()
         elseif type(sk) == "string" and sk ~= "" then
             sLabel = sk
         end
-        UI.setValue("scenes_siteNameDisplay", sLabel)
+        U.setAttribute("scenes_siteNameDisplay", "text", sLabel)
 
         local activeKeyForClock = getActiveLibraryKey()
         if activeKeyForClock ~= nil and clockDraft.sceneKey ~= activeKeyForClock then
@@ -835,6 +835,10 @@ function StorytellerScenesPanel.deleteActiveSceneArmed(player)
     end
     if now < sceneLibDeleteArmedUntil then
         sceneLibDeleteArmedUntil = 0
+        local lastApplied = S.getStateVal("sceneLibrary", "lastAppliedKey")
+        if type(lastApplied) == "string" and lastApplied == K then
+            StorytellerScenesPanel.endSceneNarrative(player)
+        end
         local order = S.getStateVal("sceneLibrary", "order")
         if type(order) ~= "table" then
             order = {}
@@ -992,6 +996,9 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player)
         syncAfterLocationReconcileAndRefreshSheets("StorytellerScenesPanel.sceneLibraryApply")
 
         StorytellerScenesPanel.refresh()
+        if GameStateOverlay and type(GameStateOverlay.stopTicker) == "function" then
+            GameStateOverlay.stopTicker()
+        end
         if GameStateOverlay and type(GameStateOverlay.ensureTicker) == "function" then
             GameStateOverlay.ensureTicker()
         end
@@ -1162,6 +1169,11 @@ function StorytellerScenesPanel.applyLocationFromInputs(player)
         return
     end
 
+    local derivedDistrict = C.resolveDistrictKeyForDistrictTable(site.district)
+    if type(derivedDistrict) == "string" and derivedDistrict ~= "" then
+        dKey = derivedDistrict
+    end
+
     if dKey ~= "" and C.Districts[dKey] == nil then
         U.AlertGM("Unknown district key: " .. tostring(dKey))
         return
@@ -1251,6 +1263,9 @@ function StorytellerScenesPanel.applyClockFromInputs(player)
         Sync.full({ reason = "StorytellerScenesPanel.clock" })
     end
 
+    if GameStateOverlay and type(GameStateOverlay.stopTicker) == "function" then
+        GameStateOverlay.stopTicker()
+    end
     if GameStateOverlay and type(GameStateOverlay.ensureTicker) == "function" then
         GameStateOverlay.ensureTicker()
     end

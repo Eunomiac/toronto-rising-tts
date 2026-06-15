@@ -938,6 +938,7 @@ local function applyMapPanelHud(playerID, seatColor, hud)
         end
 
         local siteEntry = (sessionSiteKey ~= "") and C.Sites[sessionSiteKey] or nil
+        local sessionSiteMappable = C.isSiteMappable(siteEntry)
         local offsetRaw = (type(siteEntry) == "table" and type(siteEntry.offsetXY) == "string") and trimHudKey(siteEntry.offsetXY) or ""
         local ox, oy = offsetRaw:match("^(%S+)%s+(%S+)$")
         local offsetStr = nil
@@ -947,16 +948,30 @@ local function applyMapPanelHud(playerID, seatColor, hud)
 
         for _, pinColor in ipairs(MAP_PIN_PLAYER_COLORS) do
             local pinId = "playerHud_playerPin_" .. pinColor .. "_" .. seatColor
+            local shouldMove = pinShouldMoveToSite(pinColor)
+            local cachedOffset = pinOffsetCache[pinId]
+
             if sessionSiteKey == "" or not offsetStr then
+                applyCachedMapPanelBool(playerID, pinId, false, setMapStackImageVisibility)
+                pinOffsetCache[pinId] = nil
+            elseif not shouldMove then
+                if sessionSiteMappable == false and type(cachedOffset) == "string" and cachedOffset ~= "" then
+                    applyCachedMapPanelBool(playerID, pinId, true, setMapStackImageVisibility)
+                    if pinOffsetCache[pinId] ~= cachedOffset then
+                        U.setAttribute(pinId, "offsetXY", cachedOffset)
+                    end
+                else
+                    applyCachedMapPanelBool(playerID, pinId, false, setMapStackImageVisibility)
+                    pinOffsetCache[pinId] = nil
+                end
+            elseif sessionSiteMappable == false then
                 applyCachedMapPanelBool(playerID, pinId, false, setMapStackImageVisibility)
                 pinOffsetCache[pinId] = nil
             else
                 applyCachedMapPanelBool(playerID, pinId, true, setMapStackImageVisibility)
-                if pinShouldMoveToSite(pinColor) then
-                    if pinOffsetCache[pinId] ~= offsetStr then
-                        U.setAttribute(pinId, "offsetXY", offsetStr)
-                        pinOffsetCache[pinId] = offsetStr
-                    end
+                if pinOffsetCache[pinId] ~= offsetStr then
+                    U.setAttribute(pinId, "offsetXY", offsetStr)
+                    pinOffsetCache[pinId] = offsetStr
                 end
             end
         end

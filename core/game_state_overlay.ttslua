@@ -599,7 +599,12 @@ end
 function GameStateOverlay.ensureTicker()
     local ck = S.getStateVal("sessionScene", "clock")
     if type(ck) == "table" and ck.useRealTime == true then
+        if tickerHandle ~= nil then
+            return
+        end
         scheduleNextTick()
+    else
+        GameStateOverlay.stopTicker()
     end
 end
 

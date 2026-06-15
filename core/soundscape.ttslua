@@ -232,12 +232,12 @@ end
 --- @param state table soundscape state from `ensureState()`
 --- @return number
 local function resolveWeatherDuckingMultiplier(state)
-    if state.isIndoors ~= true then
-        return tonumber(Catalog.DEFAULTS.weatherDucking.outdoorMultiplier) or 1
-    end
     local siteMult = tonumber(state.siteWeatherDucking)
     if siteMult ~= nil then
         return siteMult
+    end
+    if state.isIndoors ~= true then
+        return tonumber(Catalog.DEFAULTS.weatherDucking.outdoorMultiplier) or 1
     end
     return tonumber(Catalog.DEFAULTS.weatherDucking.indoorMultiplier) or 1
 end
@@ -2003,7 +2003,8 @@ function Soundscape.triggerThunder(hitKey)
     if thunder == nil then
         return false, "Unknown thunder hit: " .. tostring(hitKey)
     end
-    return playCatalogEntry("weatherThunder", thunder, thunder.volume or 0.7, 0)
+    local naturalVol = tonumber(thunder.volume) or 0.7
+    return playCatalogEntry("weatherThunder", thunder, weatherVolume(naturalVol), 0)
 end
 
 --- Sets the location ambience layer.
