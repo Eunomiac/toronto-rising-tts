@@ -1562,6 +1562,31 @@ function onObjectPickUp(player_color, object)
     end
 end
 
+--- TOR-174: NPC control token on Storyteller dice bag → restore home + initiate roll.
+--- @param params table `{ token: Object, playerColor?: string }`
+--- @return boolean true when the drop was consumed
+function GlobalGameboardTokenDroppedOnDiceBag(params)
+    if type(params) ~= "table" then
+        return false
+    end
+    local token = params.token
+    local playerColor = params.playerColor
+    if type(playerColor) ~= "string" then
+        return false
+    end
+    if playerColor ~= "Black" and playerColor ~= "Host" then
+        return false
+    end
+    if token == nil or token.hasTag == nil or token.hasTag("npc_control_token") ~= true then
+        return false
+    end
+    local Gameboard = require("core.npc_gameboard")
+    if type(Gameboard.tryNpcControlTokenDroppedOnStorytellerDiceBag) ~= "function" then
+        return false
+    end
+    return Gameboard.tryNpcControlTokenDroppedOnStorytellerDiceBag(token, playerColor) == true
+end
+
 --- When a figurine is dropped after dragging, refresh its paired NPC spotlight.
 function onObjectDrop(playerColor, object)
     if object == nil or object.hasTag == nil then
@@ -1572,6 +1597,11 @@ function onObjectDrop(playerColor, object)
         NPCS.onObjectDropped(object)
     end
     if object.hasTag("npc_control_token") == true then
+        if playerColor == "Black" or playerColor == "Host" then
+            if GlobalGameboardTokenDroppedOnDiceBag({ token = object, playerColor = playerColor }) then
+                return
+            end
+        end
         local Gameboard = require("core.npc_gameboard")
         if Gameboard.onNpcControlTokenDropped then
             Gameboard.onNpcControlTokenDropped(object, playerColor)

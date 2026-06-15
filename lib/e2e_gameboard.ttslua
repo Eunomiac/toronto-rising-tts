@@ -716,6 +716,7 @@ local function runSmokeAutomated(failures)
     GlobalGameboardClear({})
 
     assertD175AnchorSpreadOrdering(failures)
+    runDeferredD174(failures)
 
     return true
 end
@@ -1057,10 +1058,24 @@ local function assertD175AnchorSpreadOrdering(failures)
 end
 
 local function runDeferredD174(failures)
-    if type(GlobalGameboardTokenDroppedOnDiceBag) == "function" then
-        failures[#failures + 1] = "D174 unexpected: dice-bag drop handler exists — move test to full"
-    else
-        failures[#failures + 1] = "D174 TOR-174: NPC token on ST dice bag roll+return not implemented (expected until TOR-174)"
+    if type(GlobalGameboardTokenDroppedOnDiceBag) ~= "function" then
+        failures[#failures + 1] = "D174: GlobalGameboardTokenDroppedOnDiceBag missing"
+        return
+    end
+    local Gameboard = require("core.npc_gameboard")
+    if type(Gameboard.tryNpcControlTokenDroppedOnStorytellerDiceBag) ~= "function" then
+        failures[#failures + 1] = "D174: tryNpcControlTokenDroppedOnStorytellerDiceBag missing"
+        return
+    end
+    if type(Gameboard.restoreNpcControlTokenHome) ~= "function" then
+        failures[#failures + 1] = "D174: restoreNpcControlTokenHome missing"
+        return
+    end
+    if Gameboard.tryNpcControlTokenDroppedOnStorytellerDiceBag(nil, "Black") == true then
+        failures[#failures + 1] = "D174: nil token should not consume drop"
+    end
+    if GlobalGameboardTokenDroppedOnDiceBag({ token = nil, playerColor = "Red" }) == true then
+        failures[#failures + 1] = "D174: non-Host drop should not consume"
     end
 end
 
@@ -1091,10 +1106,9 @@ end
 --- @return boolean always false until features land (FAIL lines are harness success)
 function E2E_GB.runDeferred()
     local failures = {}
-    print("[gbE2eRunDeferred] Expected FAIL on D172–D174, D177b until linked issues ship (D175 in smoke).")
+    print("[gbE2eRunDeferred] Expected FAIL on D172–D173, D177b until linked issues ship (D174/D175 in smoke).")
     runDeferredD172(failures)
     runDeferredD173(failures)
-    runDeferredD174(failures)
     runDeferredD177b(failures)
     printGbResult("gbE2eRunDeferred (expected FAIL)", failures)
     return false

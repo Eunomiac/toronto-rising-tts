@@ -20,7 +20,7 @@ If the guard fails, **return immediately** — no logging in the hot path unless
 
 | Handler | File | Frequency | Guard status | Notes |
 | --- | --- | --- | --- | --- |
-| `onObjectDrop` | `core/global_script.ttslua` | **Very high** | **Pass** | `hasTag("npc_figurine")` / `hasTag("npc_control_token")` only |
+| `onObjectDrop` | `core/global_script.ttslua` | **Very high** | **Pass** | `hasTag("npc_figurine")` / `hasTag("npc_control_token")` only; TOR-174 ST bag path returns before board drop handler |
 | `onObjectPickUp` | `core/global_script.ttslua` | High | **Pass** | `hasTag("npc_control_token")` before `require("core.npc_gameboard")` |
 | `onObjectEnterZone` | `core/zones.ttslua` via Global | Medium | **N/A (disabled)** | Handlers `nil` until manual `ActivateZones()`; unused in Toronto Rising |
 | `onObjectLeaveZone` | `core/zones.ttslua` via Global | Medium | **N/A (disabled)** | Same; `Z.onLoad` calls `DeactivateZones` |
@@ -35,6 +35,8 @@ If the guard fails, **return immediately** — no logging in the hot path unless
 | `NPCS.isPooledFigurineObject` | `core/npcs.ttslua` | **Pass** | `npc_figurine` **or** seat `*Object` tag + GM notes + Figurine_Custom |
 | `NPCS.resolveNpcNameFromFigurine` | `core/npcs.ttslua` | **Pass** | GM Notes, then O(1) `figurineGuidToNpcName` cache (rebuilt on bulk instance replace) |
 | `Gameboard.onNpcControlTokenDropped` | `core/npc_gameboard.ttslua` | **Pass** | `isNpcControlToken` + palette/anchor flags before `waitForCondition` |
+| `Gameboard.tryNpcControlTokenDroppedOnStorytellerDiceBag` | `core/npc_gameboard.ttslua` | **Pass** | Host/Black + `dieKindNearStorytellerDiceBag` before restore/roll |
+| `GlobalGameboardTokenDroppedOnDiceBag` | `core/global_script.ttslua` | **Pass** | tag + player color before `require("core.npc_gameboard")` |
 | `Gameboard.onNpcControlTokenPickUp` | `core/npc_gameboard.ttslua` | **Pass** | `isNpcControlToken` |
 
 ## Zones (unused — performance)

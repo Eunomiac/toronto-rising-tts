@@ -817,6 +817,35 @@ function Palette.syncTokensToPalette(palette, options)
     return moved
 end
 
+--- Park one token on its roster snap (face-down palette parking rotation).
+--- @param palette Object
+--- @param token Object
+--- @param characterKey string
+--- @return boolean
+function Palette.parkTokenAtAssignedSnap(palette, token, characterKey)
+    if not U.isGameObject(palette) or not U.isGameObject(token) then
+        return false
+    end
+    if U.Type(characterKey) ~= "string" or characterKey == "" then
+        return false
+    end
+    local assignments = Palette.buildTokenSnapAssignments()
+    local snapIndex = assignments[characterKey]
+    if U.Type(snapIndex) ~= "number" then
+        return false
+    end
+    local pos = Palette.worldPositionForSnapIndex(palette, snapIndex)
+    if pos == nil then
+        return false
+    end
+    token.setPosition(pos)
+    Palette.applyPaletteParkingRotation(palette, token)
+    if token.setInvisibleTo ~= nil then
+        token.setInvisibleTo(C.PlayerColors or {})
+    end
+    return true
+end
+
 --- @param board Object|nil
 --- @param options table|nil { force?: boolean }
 --- @return boolean

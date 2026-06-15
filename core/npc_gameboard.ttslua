@@ -11,6 +11,8 @@ local U = require("lib.util")
 local C = require("lib.constants")
 local G = require("lib.guids")
 local DATA = require("lib.npc_gameboard_data")
+local DK = require("lib.dice_kinds")
+local NPCS_DATA = require("lib.npcs_data")
 
 --- First `require("core.state")` during luabundle registration can return nil (circular load).
 --- Re-fetch until `core.state` has finished registering.
@@ -3282,6 +3284,189 @@ local function mirrorControlTokenToPlacementRow(token, board, row)
     ensureDefaultNpcControlTokenScale(token)
     token.setRotation(rotationForNpcControlToken(boardYaw, relYaw, faceUp))
     Gameboard.setHiddenFromPlayerColors(token)
+end
+
+--- Horizontal hit radius for NPC control token dropped on a Storyteller dice bag (TOR-174).
+local ST_DICE_BAG_TOKEN_DROP_RADIUS = 9
+local storytellerDiceBagDropEntries = nil
+
+--- @return table[] { kind: string, guid: string }
+local function storytellerDiceBagDropEntriesList()
+    if storytellerDiceBagDropEntries ~= nil then
+        return storytellerDiceBagDropEntries
+    end
+    storytellerDiceBagDropEntries = {}
+    local bags = G.GetAllStorytellerDiceBagGUIDs()
+    for kind, guid in pairs(bags) do
+        if type(kind) == "string" and type(guid) == "string" and guid ~= "" then
+            storytellerDiceBagDropEntries[#storytellerDiceBagDropEntries + 1] = {
+                kind = kind,
+                guid = guid,
+            }
+        end
+    end
+    return storytellerDiceBagDropEntries
+end
+
+--- @param pos Vector|table|nil
+--- @return string|nil bag pool key (`normal`, `hunger`, …) when within hit radius
+local function dieKindNearStorytellerDiceBag(pos)
+    if pos == nil then
+        return nil
+    end
+    local bestKind = nil
+    local bestDist = ST_DICE_BAG_TOKEN_DROP_RADIUS
+    for _, entry in ipairs(storytellerDiceBagDropEntriesList()) do
+        local bag = getObjectFromGUID(entry.guid)
+        if U.isGameObject(bag) and bag.getPosition ~= nil then
+            local dist = U.HorizontalDistance(pos, bag.getPosition())
+            if dist < bestDist then
+                bestDist = dist
+                bestKind = entry.kind
+            end
+        end
+    end
+    return bestKind
+end
+
+--- @param characterKey string
+--- @return string|nil homeland NPC seat key when assigned
+local function homelandSeatForCharacterKey(characterKey)
+    if type(characterKey) ~= "string" or characterKey == "" then
+        return nil
+    end
+    local occupied = stateModule().getStateVal("seatLayout", "occupiedNPCSlots")
+    if type(occupied) ~= "table" then
+        return nil
+    end
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        if occupied[seatKey] == characterKey then
+            return seatKey
+        end
+    end
+    return nil
+end
+
+--- @param characterKey string
+--- @return string|nil NPC full name for ST roll label
+local function npcDisplayNameForCharacterKey(characterKey)
+    if type(characterKey) ~= "string" or characterKey == "" then
+        return nil
+    end
+    local def = type(NPCS_DATA.characters) == "table" and NPCS_DATA.characters[characterKey] or nil
+    if type(def) == "table" then
+        local display = def.fullName or def.name
+        if type(display) == "string" and display ~= "" then
+            return display
+        end
+    end
+    return characterKey
+end
+
+--- Re-apply committed token home from state (stage placement, homeland seat row, or palette).
+--- @param token Object
+--- @param characterKey string|nil
+--- @return boolean restored
+function Gameboard.restoreNpcControlTokenHome(token, characterKey)
+    if not isNpcControlToken(token) then
+        return false
+    end
+    characterKey = characterKey or resolveTokenCharacterKey(token)
+    if type(characterKey) ~= "string" or characterKey == "" then
+        return false
+    end
+    local guid = tostring(token.getGUID() or "")
+    if guid ~= "" then
+        tokenPickedUpFromPaletteGuid[guid] = nil
+    end
+
+    local placements = stateModule().getStateVal("sessionScene", "npcWorld", "placements")
+    local placementRow = type(placements) == "table" and normalizePlacementRow(placements[characterKey]) or nil
+    if placementRow ~= nil then
+        local board = getControlBoard()
+        if isGameObject(board) then
+            mirrorControlTokenToPlacementRow(token, board, placementRow)
+            return true
+        end
+    end
+
+    local seatKey = homelandSeatForCharacterKey(characterKey)
+    if type(seatKey) == "string" and seatKey ~= "" then
+        local board = getControlBoard()
+        if isGameObject(board) then
+            local seatCatalog = seatRowCatalogByNpcSeatKey(Gameboard.buildControlBoardSnapCatalog(board, nil))
+            local entry = seatCatalog[seatKey]
+            if type(entry) == "table" then
+                local NPCS = require("core.npcs")
+                local present = true
+                if type(NPCS.resolveSeatNarrativePresence) == "function" then
+                    present = NPCS.resolveSeatNarrativePresence(seatKey) == true
+                end
+                mirrorSeatRowControlToken(token, board, entry, present)
+                return true
+            end
+        end
+    end
+
+    local palette = getControlBoardPalette()
+    if isGameObject(palette) and Palette.parkTokenAtAssignedSnap(palette, token, characterKey) then
+        ensureDefaultNpcControlTokenScale(token)
+        return true
+    end
+    return false
+end
+
+--- Storyteller drops NPC control token on a dice bag → restore home from state + initiate NPC roll (TOR-174).
+--- @param token Object
+--- @param playerColor string|nil
+--- @return boolean true when drop was consumed (hit an ST bag)
+function Gameboard.tryNpcControlTokenDroppedOnStorytellerDiceBag(token, playerColor)
+    if not isNpcControlToken(token) then
+        return false
+    end
+    if playerColor ~= "Black" and playerColor ~= "Host" then
+        return false
+    end
+    if token.getPosition == nil then
+        return false
+    end
+    local bagKind = dieKindNearStorytellerDiceBag(token.getPosition())
+    if bagKind == nil then
+        return false
+    end
+    local characterKey = resolveTokenCharacterKey(token)
+    if type(characterKey) ~= "string" or characterKey == "" then
+        return false
+    end
+    local label = npcDisplayNameForCharacterKey(characterKey)
+    if type(label) ~= "string" or label == "" then
+        return false
+    end
+
+    Gameboard.restoreNpcControlTokenHome(token, characterKey)
+
+    local dieKind = bagKind
+    if dieKind ~= DK.KIND_NORMAL
+        and dieKind ~= DK.KIND_HUNGER
+        and dieKind ~= DK.KIND_ROUSE
+        and dieKind ~= DK.KIND_OBLIV_ROUSE
+        and dieKind ~= DK.KIND_WEREWOLF
+        and dieKind ~= DK.KIND_RAGE then
+        dieKind = DK.KIND_NORMAL
+    end
+
+    local STR = require("core.storyteller_rolls")
+    local ok = STR.initiateFromBagLabel(label, dieKind)
+    if ok ~= true then
+        print(
+            "[Gameboard] ST dice-bag token drop: roll not started for "
+                .. label
+                .. " ("
+                .. tostring(dieKind)
+                .. ")"
+        )
+    end
+    return true
 end
 
 --- Position static table/seat markers for active table.
