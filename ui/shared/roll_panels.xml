@@ -425,11 +425,11 @@
 </Panel>
 
 <!-- ============================================================================ -->
-<!-- 3. RESULT BROADCAST PANEL (ui/shared/panel_roll_results.xml)                  -->
+<!-- 3. RESULT BROADCAST PANEL (panel_roll_results.xml)                  -->
 <!-- Visible to ALL players (no visibility filter). Shown briefly when a roll     -->
 <!-- resolves; auto-hides after C.ROLL_RESULT_BROADCAST_SECONDS.                  -->
 <!-- ============================================================================ -->
-<Include src="ui/shared/panel_roll_results.xml" />
+<Include src="panel_roll_results.xml" />
 
 <!-- Storyteller roll name modal (bag click without live roll) -->
 <Panel id="rollStName_modal" active="False" visibility="Black|Host"

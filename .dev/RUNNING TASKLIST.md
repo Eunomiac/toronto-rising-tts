@@ -16,7 +16,7 @@ _Stack rank for the current cycle (2026-06-06, inbox perf + dice bugs). **Preced
 
 | # | Issue | Why now |
 | --- | --- | --- |
-| 1 | **TOR-200** — Seat snap Y-rotation 180° | Seat-row snap should apply y-rotation 0, not 180° — verify after 4a9370f upright fix |
+| 1 | **TOR-200** — Seat snap Y-rotation 180° | Seat-row snaps need board-local Y=180° to offset CONTROL_BOARD world Y=180° |
 | 2 | **TOR-202** — Duplicate table model on board | Only one CONTROL_BOARD table model for active `currentTableKey` |
 | 3 | **TOR-199** — Seated snap row token 2× scale | Seat-assignment tokens scale 2× on Apply; revert off seat snaps |
 
@@ -88,7 +88,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [ ] _New feature:_ Storyteller rolls dice for NPCs from the dice control panel — spawn/show dice tray, appropriate camera angle, roll-controller wiring for NPC/non-player identity. _(TOR-79)_
 - [ ] **NPC token on ST dice bag:** Drop control token on dice bag → roll for that NPC with bag type; return token to prior board snap or palette. Deferred until TOR-169 stabilizes. _(TOR-174)_
 - [ ] **Seated snap row token 2× scale:** On Apply, tokens on seat-assignment snaps scale 2×; revert when moved off seat snaps. _(TOR-199)_
-- [ ] **Seat snap Y-rotation zero:** Seat-assignment snaps should apply y-rotation 0, not 180°. _(TOR-200)_
+- [ ] **Seat snap Y-rotation:** Seat-assignment snaps use board-local **Y=180°** (`snapYawOffsetDeg`) so tokens land upright on the Y=180° CONTROL_BOARD. _(TOR-200)_
 - [x] **Clear / token-drop lag:** O(1) listener gates + figurine GUID cache (TOR-197); reopen if lag persists in play. _(TOR-201)_
 - [ ] **Duplicate table model on board:** Only one table model on CONTROL_BOARD — active `currentTableKey` only. _(TOR-202)_
 

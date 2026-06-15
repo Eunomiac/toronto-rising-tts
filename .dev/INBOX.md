@@ -5,7 +5,8 @@
 - [Quick] Set up player seat lights for famulus models
 - [Quick] Register famulus figurines and lights for Brown and Red such that they are rotated along with the player's hand zone, like the Pink player's Tarot deck
 - [Quick] Remove increase of light intensity during a roll sequence on player lights
-
+- [Dice] The message "Choose Hunger or Stain" should be changed to "Hunger or Stain?" (so it will fit). Also, the broadcast message after the player has made such a choice on an Oblivion Rouse check should read "Hunger Roused" or "Stained" (currently it reads "Choose Hunger or Stain" even after the choice has been made).
+- [NPC Seat Positions] Periodically on control board refresh, seated NPCs are having their seat scale reset to default.  Seated NPCs must always have their figurine transforms modified according to `C.TableSourceObjects.postCorrectionsBySeatRole`, both y-positions and scale.
 
 ---
 

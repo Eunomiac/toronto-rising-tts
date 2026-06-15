@@ -606,25 +606,6 @@ local function rotationForNpcControlToken(boardYaw, yawDeg, faceUp)
     return Vector(0, boardYaw + (yawDeg or 0), rz)
 end
 
---- Seat-row tokens: world upright (Y=0 on minimap tile); Z flip for narrative presence only (TOR-200).
---- Not polar yaw toward origin and not board world yaw — tokens stay visually upright on the tile.
---- @param faceUp boolean
---- @return Vector
-local function rotationForSeatRowControlToken(faceUp)
-    local rz = faceUp and 0 or 180
-    return Vector(0, 0, rz)
-end
-
---- @param token Object
---- @return boolean
-local function seatRowTokenWorldYawIsUpright(token)
-    if not isGameObject(token) then
-        return false
-    end
-    local yaw = ((objectYawDeg(token) % 360) + 360) % 360
-    return yaw < 0.5 or yaw > 359.5
-end
-
 local TOKEN_SCALE_MATCH_EPS = 0.02
 
 --- @param token Object
@@ -693,30 +674,23 @@ local function isNearSeatRowUv(board, u, v)
     return math.abs(v - rowV) <= 0.08 and u >= (uMin - 0.05) and u <= (uMax + 0.05)
 end
 
+--- Programmatic mirror onto a seat-row catalog entry (Apply / Clear / reconcile — manual drops use `rotation_snap` only).
 --- @param token Object
 --- @param board Object
---- @param faceUpOverride boolean|nil When set, use for rotation instead of reading token flip state.
-local function applySeatRowControlTokenPresentation(token, board, faceUpOverride)
-    if not isGameObject(token) or not isGameObject(board) then
+--- @param entry table catalog entry with `u`, `v`, `yawDeg`
+--- @param faceUp boolean|nil narrative presence; default from token flip
+local function mirrorSeatRowControlToken(token, board, entry, faceUp)
+    if not isGameObject(token) or not isGameObject(board) or type(entry) ~= "table" then
         return
     end
-    local faceUp = faceUpOverride
     if faceUp == nil then
         faceUp = tokenRotationIsFaceUp(token)
     end
-    local rot = rotationForSeatRowControlToken(faceUp)
-    token.setRotation(rot)
+    token.setPosition(Gameboard.worldOnControlBoard(board, entry.u, entry.v))
     applySeatRowNpcControlTokenScale(token)
+    local boardYaw = objectYawDeg(board)
+    token.setRotation(rotationForNpcControlToken(boardYaw, entry.yawDeg, faceUp))
     Gameboard.setHiddenFromPlayerColors(token)
-    -- TTS rotation_snap can re-apply snap yaw after settle; reassert world Y=0 (TOR-200).
-    U.delay(function()
-        if not isGameObject(token) or not isTokenOnControlBoardSurface(board, token) then
-            return
-        end
-        if not seatRowTokenWorldYawIsUpright(token) or tokenRotationIsFaceUp(token) ~= faceUp then
-            token.setRotation(rot)
-        end
-    end, 0.05)
 end
 
 --- @param token Object
@@ -2010,7 +1984,7 @@ local function buildSeatRowSnapEntries(board, polarCount)
     if uMax < uMin then
         uMin, uMax = uMax, uMin
     end
-    -- Seat-row snaps stay upright on the tile; do not yaw toward polar origin. PC columns invert Z.
+    -- Seat-row: fixed board-local yaw (offsets CONTROL_BOARD world Y=180°); PC columns add Z flip.
     local yawDeg = ((tonumber(seatCfg.snapYawOffsetDeg) or 0) % 360 + 360) % 360
     local pcSnapZDeg = ((tonumber(seatCfg.pcSnapZDeg) or 0) % 360 + 360) % 360
     local entries = {}
@@ -2374,6 +2348,7 @@ local function controlBoardSnapFingerprintFor(board, config)
     local seatCfg = resolveControlBoardSeatRowConfig()
     if seatCfg ~= nil then
         parts[#parts + 1] = "seatRow:v:" .. tostring(seatCfg.v)
+        parts[#parts + 1] = "seatRow:yaw:" .. tostring(tonumber(seatCfg.snapYawOffsetDeg) or 0)
         parts[#parts + 1] = "seatRow:pcZ:" .. tostring(tonumber(seatCfg.pcSnapZDeg) or 0)
         for i = 1, #(seatCfg.columns or {}) do
             local col = seatCfg.columns[i]
@@ -3182,8 +3157,7 @@ function Gameboard.relocateHomelandSeatTokensAfterClear(board)
                 if type(NPCS.resolveSeatNarrativePresence) == "function" then
                     present = NPCS.resolveSeatNarrativePresence(seatKey) == true
                 end
-                token.setPosition(Gameboard.worldOnControlBoard(board, entry.u, entry.v))
-                applySeatRowControlTokenPresentation(token, board)
+                mirrorSeatRowControlToken(token, board, entry, present)
             end
         end
     end
@@ -3361,8 +3335,7 @@ function Gameboard.reconcileControlBoardFromState(opts)
                         if type(NPCS.resolveSeatNarrativePresence) == "function" then
                             present = NPCS.resolveSeatNarrativePresence(seatKey) == true
                         end
-                        token.setPosition(Gameboard.worldOnControlBoard(board, entry.u, entry.v))
-                        applySeatRowControlTokenPresentation(token, board, present)
+                        mirrorSeatRowControlToken(token, board, entry, present)
                     end
                 end
             end
@@ -3550,10 +3523,10 @@ local function placeTokenOnControlBoardSnap(token, snapEntry, board, boardYaw)
     token.setPosition(snapEntry.worldPos)
     local faceUp = tokenRotationIsFaceUp(token)
     if type(snapEntry) == "table" and snapEntry.snapKind == SNAP_KIND_SEAT then
-        applySeatRowControlTokenPresentation(token, board)
-        return
+        applySeatRowNpcControlTokenScale(token)
+    else
+        ensureDefaultNpcControlTokenScale(token)
     end
-    ensureDefaultNpcControlTokenScale(token)
     token.setRotation(rotationForNpcControlToken(boardYaw, snapEntry.yawDeg, faceUp))
     Gameboard.setHiddenFromPlayerColors(token)
 end
@@ -3902,7 +3875,7 @@ function Gameboard.applySnapGroupDefaultLightOnPaletteDrop(token)
     return applySnapGroupDefaultLightAtEntry(token, entry, board, cfg)
 end
 
---- Global onObjectDrop hook: seat-row presentation, palette defaultLightMode, anchor-family spread.
+--- Global onObjectDrop hook: seat-row scale, palette defaultLightMode, anchor-family spread.
 --- @param token Object
 --- @param playerColor string|nil
 function Gameboard.onNpcControlTokenDropped(token, playerColor)
@@ -3922,20 +3895,16 @@ function Gameboard.onNpcControlTokenDropped(token, playerColor)
     local wantPaletteLight = tokenGuid ~= "" and tokenPickedUpFromPaletteGuid[tokenGuid] == true
     local wantAnchorSpread = tokenGuid ~= "" and anchorDropEligibleByTokenGuid[tokenGuid] == true
     local u, v = uvFromWorldOnBoard(board, token.getPosition())
-    local wantSeatRow = isNearSeatRowUv(board, u, v)
-    if not wantPaletteLight and not wantAnchorSpread and not wantSeatRow then
+    if isNearSeatRowUv(board, u, v) then
+        applySeatRowNpcControlTokenScale(token)
+    end
+    if not wantPaletteLight and not wantAnchorSpread then
         return
     end
 
     local fuzziness = snapMatchFuzzinessForBoard(board)
-    if wantSeatRow then
-        applySeatRowControlTokenPresentation(token, board)
-    end
     U.waitForCondition(
         function()
-            if wantSeatRow then
-                applySeatRowControlTokenPresentation(token, board)
-            end
             if wantPaletteLight then
                 local lightResult = Gameboard.applySnapGroupDefaultLightOnPaletteDrop(token)
                 if lightResult.applied == true then
@@ -3960,26 +3929,14 @@ function Gameboard.onNpcControlTokenDropped(token, playerColor)
             if not isTokenOnControlBoardSurface(board, token) then
                 return false
             end
-            if wantSeatRow then
-                local dropU, dropV = uvFromWorldOnBoard(board, token.getPosition())
-                if isNearSeatRowUv(board, dropU, dropV) then
-                    return true
-                end
-            end
             local entry = resolveTokenSnapCatalogEntry(board, token, fuzziness, nil)
             if entry == nil then
                 return false
             end
-            if wantSeatRow and entry.snapKind == SNAP_KIND_SEAT then
-                return true
-            end
             if wantAnchorSpread and entry.isAnchor ~= true then
                 return false
             end
-            if wantAnchorSpread or wantPaletteLight then
-                return true
-            end
-            return false
+            return true
         end,
         1.0
     )
