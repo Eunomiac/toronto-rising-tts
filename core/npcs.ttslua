@@ -692,6 +692,48 @@ function NPCS.isNpcSeatOccupantStageBound(seatKey)
     return isNpcSeatOccupantStageBound(seatKey)
 end
 
+local NPC_HOMELAND_SEAT_LIGHT_REFS = {
+    NPC1 = { "npcLight2NPC1", "npcLight1NPC1" },
+    NPC2 = { "npcLight2NPC2", "npcLight1NPC2" },
+    NPC3 = { "npcLight2NPC3", "npcLight1NPC3" },
+    NPC4 = { "npcLight2NPC4", "npcLight1NPC4" },
+}
+
+--- Persist OFF and apply homeland seat spotlights for one NPC seat (TOR-178 stage-bound).
+--- @param seatKey string
+--- @param opts table|nil `{ force?: boolean }`
+local function syncNpcHomelandSeatSpotlightsOff(seatKey, opts)
+    opts = U.Type(opts) == "table" and opts or {}
+    if not isValidNpcSeatKey(seatKey) then
+        return
+    end
+    local lightRefs = NPC_HOMELAND_SEAT_LIGHT_REFS[seatKey]
+    if U.Type(lightRefs) ~= "table" then
+        return
+    end
+    local force = opts.force == true
+    for i = 1, #lightRefs do
+        local lightRef = lightRefs[i]
+        if U.Type(lightRef) == "string" and lightRef ~= "" then
+            S.setStateVal("OFF", "lights", lightRef)
+            L.reconcileLightRef(lightRef, 0, { force = force })
+        end
+    end
+end
+
+--- Both homeland seat spotlights OFF for every stage-bound NPC seat (idempotent).
+local function reconcileNpcHomelandSeatSpotlightsWhenStageBound()
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        if isNpcSeatOccupantStageBound(seatKey) then
+            syncNpcHomelandSeatSpotlightsOff(seatKey, { force = true })
+        end
+    end
+end
+
+function NPCS.reconcileHomelandSeatSpotlightsForStageBound()
+    reconcileNpcHomelandSeatSpotlightsWhenStageBound()
+end
+
 --- @param lit Object|nil
 --- @param hidden boolean
 local function setPooledSpotlightHidden(lit, hidden)
@@ -2701,7 +2743,11 @@ local function reconcileSeatNarrativePresenceFromIntent(intent)
                     end
                 end
             end
-            L.reconcileForPlayer(seatKey)
+            if U.Type(info.areaBoundOccupant) == "string" and info.areaBoundOccupant ~= "" then
+                syncNpcHomelandSeatSpotlightsOff(seatKey, { force = true })
+            else
+                L.reconcileForPlayer(seatKey)
+            end
         end
     end
 end
@@ -2837,6 +2883,8 @@ function NPCS.reconcileAllFromState(opts)
     end
 
     npcReconcileInProgress = false
+
+    reconcileNpcHomelandSeatSpotlightsWhenStageBound()
 
     if allOk then
         lastNpcReconcileFingerprint = fp

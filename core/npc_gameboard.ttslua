@@ -992,15 +992,16 @@ end
 
 --- Shared fast Sync.npcs path used by control-board interactions.
 --- @param reason string
---- @param seatMutation boolean|nil When true, run seat unassign/assign steps (TOR-180 Apply).
-local function syncNpcsFromControlBoard(reason, seatMutation)
+--- @param opts table|nil `{ seatMutation?: boolean, placementMutation?: boolean }`
+local function syncNpcsFromControlBoard(reason, opts)
+    opts = type(opts) == "table" and opts or {}
+    local seatMutation = opts.seatMutation == true
+    local placementMutation = opts.placementMutation == true
     local Sync = require("core.sync")
     --- Clear: vacate off-board homelands first; on-board homelands re-seat via Step Three (TOR-178).
+    --- Placement-only Apply (seat → stage) needs Steps Three–Four for homeland chair/lights (TOR-178).
     local onlySteps = { 1, 5 }
-    if seatMutation == true then
-        onlySteps = { 1, 2, 3, 4, 5 }
-    end
-    if reason == "gameboard_clear" then
+    if seatMutation or placementMutation or reason == "gameboard_clear" then
         onlySteps = { 1, 2, 3, 4, 5 }
     end
     Sync.npcs({
@@ -1121,7 +1122,10 @@ function Gameboard.applyFromControlBoard()
     elseif seatChanged then
         lastControlBoardMirrorFingerprint = nil
     end
-    syncNpcsFromControlBoard("gameboard_apply", seatChanged)
+    syncNpcsFromControlBoard("gameboard_apply", {
+        seatMutation = seatChanged,
+        placementMutation = placementChanged,
+    })
     print(
         "[Gameboard] Apply: "
             .. tostring(#rows)
@@ -1344,10 +1348,6 @@ local function tableComponentActiveForOccupiedSlots(parentTable, componentName)
         return true
     end
     if not npcSeatOccupiedOnTable(usedBy) then
-        return false
-    end
-    local NPCS = require("core.npcs")
-    if type(NPCS.isNpcSeatOccupantStageBound) == "function" and NPCS.isNpcSeatOccupantStageBound(usedBy) then
         return false
     end
     return true
@@ -3111,16 +3111,7 @@ local function describeTableComponentMarker(marker, activeTable)
         usedByOccupied = npcSeatOccupiedOnTable(usedBy)
     end
     row.usedByOccupied = usedByOccupied
-    local stageBound = false
-    if usedByOccupied == true then
-        local NPCS = require("core.npcs")
-        if type(NPCS.isNpcSeatOccupantStageBound) == "function" and NPCS.isNpcSeatOccupantStageBound(usedBy) then
-            stageBound = true
-            usedByOccupied = false
-            row.reasons[#row.reasons + 1] = "used_by_stage_bound"
-        end
-    end
-    if usedByOccupied == false and stageBound ~= true then
+    if usedByOccupied == false then
         row.reasons[#row.reasons + 1] = "used_by_seat_empty"
     end
     local show = parentTable == activeTable

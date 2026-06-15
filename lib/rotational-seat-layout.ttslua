@@ -2203,9 +2203,6 @@ local function applyTableComponentsState(tableCfg, occupiedNPCSlots, isActive)
         local usedBy = componentCfg.usedBy
         if shouldActivate and U.Type(usedBy) == "string" then
           shouldActivate = occupiedNPCSlots[usedBy] ~= nil and occupiedNPCSlots[usedBy] ~= false
-          if shouldActivate and type(NPCS.isNpcSeatOccupantStageBound) == "function" and NPCS.isNpcSeatOccupantStageBound(usedBy) then
-            shouldActivate = false
-          end
         end
         applyTableObjectState(obj, componentCfg, shouldActivate)
       end
@@ -2913,6 +2910,9 @@ function M.resolveSeatObjectsFromTable(tableRef, sourceObjects, options)
     local L = require("core.lighting")
     if L ~= nil and type(L.reconcileAllPlayers) == "function" then
       L.reconcileAllPlayers()
+    end
+    if type(NPCS.reconcileHomelandSeatSpotlightsForStageBound) == "function" then
+      NPCS.reconcileHomelandSeatSpotlightsForStageBound()
     end
     local HO = require("core.hud_overlays")
     if HO ~= nil and type(HO.syncAll) == "function" then
