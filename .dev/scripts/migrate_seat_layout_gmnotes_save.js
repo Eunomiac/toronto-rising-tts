@@ -85,10 +85,19 @@ function readRoleColorIdentity(obj, validSuffixes) {
   return matchesRoleColorPattern(gm, validSuffixes);
 }
 
-function readLegacyRoleColorIdentity(obj, validSuffixes) {
+/**
+ * @returns {{ identity: string|null, source: "Name"|"Nickname"|null }}
+ */
+function readLegacyRoleColorIdentityWithSource(obj, validSuffixes) {
   const name = matchesRoleColorPattern(obj.Name, validSuffixes);
-  if (name) return name;
-  return matchesRoleColorPattern(obj.Nickname, validSuffixes);
+  if (name) return { identity: name, source: "Name" };
+  const nick = matchesRoleColorPattern(obj.Nickname, validSuffixes);
+  if (nick) return { identity: nick, source: "Nickname" };
+  return { identity: null, source: null };
+}
+
+function readLegacyRoleColorIdentity(obj, validSuffixes) {
+  return readLegacyRoleColorIdentityWithSource(obj, validSuffixes).identity;
 }
 
 function isHandZoneObject(obj) {
@@ -139,7 +148,10 @@ function migrateObjectState(obj, ctx, summary, reason) {
 
   summary.scanned += 1;
   const guid = trim(obj.GUID) || "unknown-guid";
-  const legacy = readLegacyRoleColorIdentity(obj, ctx.validSuffixes);
+  const { identity: legacy, source: legacySource } = readLegacyRoleColorIdentityWithSource(
+    obj,
+    ctx.validSuffixes
+  );
   const current = readRoleColorIdentity(obj, ctx.validSuffixes);
 
   if (!legacy && current) {
@@ -155,6 +167,7 @@ function migrateObjectState(obj, ctx, summary, reason) {
     guid,
     reason,
     legacy,
+    legacySource,
     previousGmNotes: obj.GMNotes || "",
     previousName: obj.Name || "",
     previousNickname: obj.Nickname || "",
@@ -167,11 +180,12 @@ function migrateObjectState(obj, ctx, summary, reason) {
   }
 
   obj.GMNotes = legacy;
-  if (ctx.clearLegacy) {
-    if (matchesRoleColorPattern(obj.Name, ctx.validSuffixes)) {
+  if (ctx.clearLegacy && legacySource) {
+    if (legacySource === "Name") {
       obj.Name = "";
+    } else if (legacySource === "Nickname") {
+      obj.Nickname = "";
     }
-    obj.Nickname = "";
   }
   summary.migrated += 1;
   summary.details.push(detail);
@@ -283,7 +297,7 @@ Options:
   --save <path>          Save JSON path (default: .dev/TS_Save_230.json)
   --outputSave <path>    Write path (default: same as --save)
   --no-backup            Skip timestamped backup when overwriting input
-  --keep-legacy-names    Do not clear Nickname after copying to GMNotes (Name is never cleared unless it was ROLE_COLOR)
+  --keep-legacy-names    Do not clear Name/Nickname after copying to GMNotes (only the source field is cleared)
   -h, --help             Show this help
 
 Aliases: --input / --output (same as --save / --outputSave)

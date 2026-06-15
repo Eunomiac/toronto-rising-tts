@@ -2576,8 +2576,9 @@ local function commitNpcSeatLayout(intent)
     }
     local tableKey = S.getStateVal("seatLayout", "currentTableKey")
     local rsl = require("lib.rotational-seat-layout")
+    -- Fingerprint ignores in-area occupants (preload/stage); orchestrated seating must force layout.
     if rsl ~= nil and type(rsl.SyncTable) == "function" then
-        rsl.SyncTable(tableKey)
+        rsl.SyncTable(tableKey, { force = true })
     end
     lastNpcLayoutCommit = {
         tableKey = U.Type(tableKey) == "string" and tableKey or "",

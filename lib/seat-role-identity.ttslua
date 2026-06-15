@@ -140,51 +140,52 @@ end
 
 --- Migration only: read legacy Name then Nickname.
 --- @param obj Object
---- @return string|nil
-function SRI.readLegacyRoleColorIdentity(obj)
+--- @return string|nil identity
+--- @return "Name"|"Nickname"|nil source
+function SRI.readLegacyRoleColorIdentityWithSource(obj)
   if obj == nil then
-    return nil
+    return nil, nil
   end
   local nameRaw = obj.getName and obj.getName() or ""
   local name = trim(nameRaw)
   if name ~= "" and SRI.matchesRoleColorPattern(name) then
-    return name
+    return name, "Name"
   end
   local data = obj.getData and obj.getData() or {}
   local nick = trim(data.Nickname or "")
   if nick ~= "" and SRI.matchesRoleColorPattern(nick) then
-    return nick
+    return nick, "Nickname"
   end
-  return nil
+  return nil, nil
 end
 
---- Migration only: clear Nickname after GM Notes identity is set. Name is left alone
---- unless it matched ROLE_COLOR (builtin prefab names like Custom_Assetbundle must not be cleared).
+--- Migration only: read legacy Name then Nickname.
+--- @param obj Object
+--- @return string|nil
+function SRI.readLegacyRoleColorIdentity(obj)
+  local identity, _ = SRI.readLegacyRoleColorIdentityWithSource(obj)
+  return identity
+end
+
+--- Migration only: clear the Name or Nickname field that supplied legacy ROLE_COLOR identity.
 --- @param obj Object
 --- @return boolean
 function SRI.clearLegacyRoleNameFields(obj)
   if obj == nil then
     return false
   end
-  local function trimLocal(s)
-    if U.Type(s) ~= "string" then
-      return ""
-    end
-    return string.match(s, "^%s*(.-)%s*$") or ""
+  local _, source = SRI.readLegacyRoleColorIdentityWithSource(obj)
+  if source == nil then
+    return false
   end
   local cleared = false
-  local legacyName = trimLocal(obj.getName and obj.getName() or "")
-  if legacyName ~= "" and SRI.matchesRoleColorPattern(legacyName) and obj.setName then
+  if source == "Name" and obj.setName then
     obj.setName("")
     cleared = true
-  end
-  if JSON ~= nil and obj.getJSON ~= nil and obj.reload ~= nil then
+  elseif source == "Nickname" and JSON ~= nil and obj.getJSON ~= nil and obj.reload ~= nil then
     local state = JSON.decode(obj.getJSON(false))
     if U.Type(state) == "table" then
       state.Nickname = ""
-      if legacyName ~= "" and SRI.matchesRoleColorPattern(legacyName) then
-        state.Name = ""
-      end
       obj.reload(JSON.encode(state))
       cleared = true
     end
