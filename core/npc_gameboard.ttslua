@@ -4176,6 +4176,9 @@ end
 --- @param token Object
 --- @param playerColor string|nil
 function Gameboard.onNpcControlTokenDropped(token, playerColor)
+    if playerColor ~= "Black" and playerColor ~= "Host" then
+        return
+    end
     if not isNpcControlToken(token) then
         return
     end

@@ -7,7 +7,7 @@ TTS invokes Global and object event handlers on **every** matching world event. 
 
 ## Rule: one cheap guard before any work
 
-Every high-frequency handler must be able to **reject unrelated events in one O(1) step** (typical: tag, GUID, object type, or a single `hasTag` / `getGUID` compare) before:
+Every high-frequency handler must be able to **reject unrelated events in one O(1) step** (typical: player color for Storyteller-only paths, tag, GUID, object type, or a single `hasTag` / `getGUID` compare) before:
 
 - `require()` of heavy modules
 - Iterating `gameState` or NPC instance tables
@@ -20,8 +20,8 @@ If the guard fails, **return immediately** — no logging in the hot path unless
 
 | Handler | File | Frequency | Guard status | Notes |
 | --- | --- | --- | --- | --- |
-| `onObjectDrop` | `core/global_script.ttslua` | **Very high** | **Pass** | `hasTag` gates; TOR-174 only when Host/Black **and** `storytellerDiceBagKindNearPosition` before `require("core.npc_gameboard")` |
-| `onObjectPickUp` | `core/global_script.ttslua` | High | **Pass** | `hasTag("npc_control_token")` before `require("core.npc_gameboard")` |
+| `onObjectDrop` | `core/global_script.ttslua` | **Very high** | **Pass** | `isStorytellerPlayerColor` first; then `hasTag` gates; TOR-174 bag proximity before `require("core.npc_gameboard")` |
+| `onObjectPickUp` | `core/global_script.ttslua` | High | **Pass** | `isStorytellerPlayerColor` first; then `hasTag("npc_control_token")` before `require("core.npc_gameboard")` |
 | `onObjectEnterZone` | `core/zones.ttslua` via Global | Medium | **N/A (disabled)** | Handlers `nil` until manual `ActivateZones()`; unused in Toronto Rising |
 | `onObjectLeaveZone` | `core/zones.ttslua` via Global | Medium | **N/A (disabled)** | Same; `Z.onLoad` calls `DeactivateZones` |
 | `onObjectRandomize` | `core/global_script.ttslua` | High (rolls) | **Pass** | `hasTag("d10")` before `getTags` / roll FSM |

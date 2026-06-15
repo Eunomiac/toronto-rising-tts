@@ -1552,6 +1552,12 @@ function DeactivateZones()
     onObjectLeaveZone = nil  -- TTS allows nil to disable zone handlers
 end
 
+--- @param color string|nil
+--- @return boolean true for Storyteller seat (`Black`) or Host spectator
+local function isStorytellerPlayerColor(color)
+    return color == "Black" or color == "Host"
+end
+
 --- TOR-174: O(1) world-XZ proximity to Storyteller dice bags (global pre-gate before `require("core.npc_gameboard")`).
 --- @param pos Vector|table|nil
 --- @return string|nil bag kind when within hit radius
@@ -1580,6 +1586,9 @@ end
 
 --- Palette → CONTROL_BOARD drops: remember pick-up origin for per-ring defaultLightMode (TOR-172).
 function onObjectPickUp(player_color, object)
+    if not isStorytellerPlayerColor(player_color) then
+        return
+    end
     if object ~= nil and object.hasTag ~= nil and object.hasTag("npc_control_token") == true then
         local Gameboard = require("core.npc_gameboard")
         if type(Gameboard.onNpcControlTokenPickUp) == "function" then
@@ -1597,10 +1606,7 @@ function GlobalGameboardTokenDroppedOnDiceBag(params)
     end
     local token = params.token
     local playerColor = params.playerColor
-    if type(playerColor) ~= "string" then
-        return false
-    end
-    if playerColor ~= "Black" and playerColor ~= "Host" then
+    if type(playerColor) ~= "string" or not isStorytellerPlayerColor(playerColor) then
         return false
     end
     if token == nil or token.hasTag == nil or token.hasTag("npc_control_token") ~= true then
@@ -1615,6 +1621,9 @@ end
 
 --- When a figurine is dropped after dragging, refresh its paired NPC spotlight.
 function onObjectDrop(playerColor, object)
+    if not isStorytellerPlayerColor(playerColor) then
+        return
+    end
     if object == nil or object.hasTag == nil then
         return
     end
@@ -1623,12 +1632,10 @@ function onObjectDrop(playerColor, object)
         NPCS.onObjectDropped(object)
     end
     if object.hasTag("npc_control_token") == true then
-        if playerColor == "Black" or playerColor == "Host" then
-            local pos = object.getPosition ~= nil and object.getPosition() or nil
-            if pos ~= nil and storytellerDiceBagKindNearPosition(pos) ~= nil then
-                if GlobalGameboardTokenDroppedOnDiceBag({ token = object, playerColor = playerColor }) then
-                    return
-                end
+        local pos = object.getPosition ~= nil and object.getPosition() or nil
+        if pos ~= nil and storytellerDiceBagKindNearPosition(pos) ~= nil then
+            if GlobalGameboardTokenDroppedOnDiceBag({ token = object, playerColor = playerColor }) then
+                return
             end
         end
         local Gameboard = require("core.npc_gameboard")
