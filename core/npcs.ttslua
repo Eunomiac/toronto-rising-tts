@@ -753,6 +753,38 @@ local function setPooledSpotlightHidden(lit, hidden)
     end
 end
 
+--- While seated, pooled area spotlight lives at preload slot (OFF, hidden, small scale); workshop seat lights own the table.
+--- Cancels pending deferred stage light-align sequences.
+--- @param npcName string
+--- @param lit Object|nil
+local function parkPooledSpotlightForSeatedNpc(npcName, lit)
+    if U.Type(npcName) ~= "string" or npcName == "" or not U.isGameObject(lit) then
+        return
+    end
+    deferredLightAlignGeneration[npcName] = (deferredLightAlignGeneration[npcName] or 0) + 1
+    local slot = stablePreloadSlotIndex(npcName)
+    if U.Type(slot) == "number" then
+        local pos = NPCS.computeSlotWorldPosition(PRELOAD_AREA_KEY, slot)
+        if lit.setPosition ~= nil then
+            lit.setPosition(Vector(
+                pos.x + NPC_LIGHT_SPAWN_OFFSET.x,
+                pos.y + NPC_LIGHT_SPAWN_OFFSET.y,
+                pos.z + NPC_LIGHT_SPAWN_OFFSET.z
+            ))
+        end
+    end
+    if lit.setScale ~= nil then
+        lit.setScale(Vector(NPC_PRELOAD_LIGHT_SCALE, NPC_PRELOAD_LIGHT_SCALE, NPC_PRELOAD_LIGHT_SCALE))
+    end
+    setPooledSpotlightHidden(lit, true)
+    local rec = getInstances()[npcName]
+    if U.Type(rec) == "table" then
+        rec.npcLightMode = "OFF"
+        setInstanceRecord(npcName, rec)
+        NPCS.applyCurrentLightMode(npcName, 0, { force = true })
+    end
+end
+
 --- NPC figurines stay TTS-locked at all times (players cannot drag); `rec.locked` is Storyteller "pin" for script moves only.
 --- @param fig Object|nil
 local function ensureNpcFigurinePhysicsLocked(fig)
@@ -906,6 +938,7 @@ local function applyNpcFigurineSeatIdentity(fig, lit, npcName, seatKey)
     end
     applyNpcPairPhysicalPresentation(fig, lit, SEAT_PLACEMENT_KEY, npcName)
     setPooledSpotlightHidden(lit, true)
+    parkPooledSpotlightForSeatedNpc(npcName, lit)
 end
 
 --- Restore preload/area tags after leaving a table seat; reset GM Notes to `npcInstance:` identity.

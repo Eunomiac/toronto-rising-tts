@@ -127,7 +127,7 @@ The assigned character has a row in `sessionScene.npcWorld.placements` (stage-bo
 
 - **Physical:** Remove figurine from the seat (untag `NPC<#>Object`, hide seat spotlight pairing) — same as case 3 physical off.
 - **State:** **Keep** `occupiedNPCSlots` / `seatSlots` so **Clear** or empty `placements` returns the NPC to that seat (Step Three), not preload/palette as the end state.
-- **Step One:** When stage intent drops and resolved target is **Seat**, do not park to preload before Step Three (Step Three seats from stage or preload).
+- **Step One:** When stage intent drops and resolved target is **Seat**, do not park the **figurine** to preload before Step Three (Step Three seats from stage or preload). Step Three still **parks the pooled area spotlight** to preload (OFF, hidden) via `parkPooledSpotlightForSeatedNpc`.
 
 ### Narrative absence — do not unseat
 

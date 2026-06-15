@@ -17,6 +17,7 @@
 
 ## Processed
 
+- 2026-06-15 [bug] Stage→seat pooled spotlight left at stage pose — `parkPooledSpotlightForSeatedNpc` on seat identity (preload slot, OFF, hidden, cancel deferred align)
 - 2026-06-15 [bug] Stage NPC pooled spotlight Y misaligned until token light toggle — defer light align until figurine bounds ready after `image_scalar`/`reload()` (`deferNpcSpotlightAlignedToFigurine`)
 - 2026-06-15 [inbox] CONTROL_BOARD snaps dual-tag `npc_control_token` + `pc_control_token` (all polar + seat-row snaps); Clear skips parking tokens on PC seat-row columns
 - 2026-06-15 TOR-211 — [workshop] Set up player seat lights for famulus models
