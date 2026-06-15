@@ -1610,7 +1610,10 @@ C.TableSourceObjects = {
     "SIGNAL_CANDLE",
     "SIGNAL_FIRE",
     "HUNGER_SMOKE",
-    "SEAT_LIGHT_3"
+    "SEAT_LIGHT_3",
+    "FAMULUS_LIGHT_1",
+    "FAMULUS_LIGHT_2",
+    "FAMULUS_FIGURINE"
   },
   all = {
     "SEAT_CHAIR",

@@ -12,6 +12,7 @@ local G = require("lib.guids")
 local Gameboard = require("core.npc_gameboard")
 local NPCS = require("core.npcs")
 local Sync = require("core.sync")
+local SRI = require("lib.seat-role-identity")
 local DATA = require("lib.npc_gameboard_data")
 local Palette = require("lib.npc_control_board_palette")
 
@@ -439,15 +440,11 @@ end
 --- @return number count of pooled seat figurines on `seatKey` tag
 function E2E_GB.probeDuplicateSeatFigure(seatKey)
     local tag = tostring(seatKey) .. "Object"
-    local wantName = "SEAT_FIGURE_" .. tostring(seatKey)
     local count = 0
     local objs = getObjectsWithTag(tag) or {}
     for _, obj in ipairs(objs) do
         if NPCS.isPooledFigurineObject(obj) then
-            local name = obj.getName and obj.getName() or ""
-            if name == wantName or string.match(tostring(name), "^SEAT_FIGURE_") then
-                count = count + 1
-            end
+            count = count + 1
         end
     end
     return count
@@ -998,9 +995,7 @@ local function seedDuplicateSeatFigure(seatKey)
     if not U.isGameObject(clone) then
         return false, "clone failed"
     end
-    if clone.setName ~= nil then
-        clone.setName("SEAT_FIGURE_" .. tostring(seatKey))
-    end
+    SRI.setRoleColorIdentity(clone, "SEAT_FIGURE", seatKey)
     return true, nil
 end
 

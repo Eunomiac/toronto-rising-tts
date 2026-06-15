@@ -240,7 +240,7 @@ require("ui.ui_csheet")
 
 The TTS extension often scrambles these (e.g. pasting a csheet `<Include>` or the Global-injected fallback `click_*` script onto the board object). Run **`npm run tts-objects:fix-stubs`** after Save & Play if stub **content** drifts; the build task also **deletes** stray `.xml` stubs on Lua-only objects when the extension copies csheet UI onto dice bags, candles, etc.
 
-**Stub filenames vs GUIDs:** Save & Play keys off `.tts/objects/{Nickname}.{guid}.lua`. `fix_tts_object_stubs` only normalizes file **content** (one-line `require(...)`); it does **not** check that the `{guid}` suffix matches `lib/guids.ttslua`. After workshop edits or a partial sync, nicknames can point at the wrong GUID (e.g. `DICEBAG_ROUSE_PURPLE.03cb81.lua` while the live rouse bag is `70c7cf`) — Save & Play then never repairs the broken object. **`npm run build`** runs **`check:tts-object-stub-guids`** after stub fix (skips when `.tts/objects` is absent). On failure: **Get Lua Scripts** from TTS to refresh filenames from the save, then `npm run tts-objects:fix-stubs`, then Save & Play.
+**Stub filenames vs GUIDs:** TTS Tools syncs `.tts/objects/{displayNickname}.{guid}.lua` (and `.xml`, `.data.json`). Display nicknames are free-form (e.g. `Aishe - p.1.c4abec.lua`); **role identity** for build tooling comes from the companion `.data.json` → **`GMNotes`** (e.g. `CSHEET_PAGE_1_PINK`). `fix_tts_object_stubs` normalizes stub **content** from that role; **`check:tts-object-stub-guids`** verifies the filename `{guid}` suffix matches `lib/guids.ttslua` for that role. After workshop edits or a partial sync, the wrong GUID can land on a nickname — Save & Play then never repairs the broken object. **`npm run build`** runs both gates (skips when `.tts/objects` is absent). On failure: **Get Lua Scripts** from TTS to refresh from the save, then `npm run tts-objects:fix-stubs`, then Save & Play.
 
 **Pages 3–6** (`CSHEET_PAGE_3_*` … `CSHEET_PAGE_6_*`) use separate entries so each page’s XML builder (and embedded templates when shipped) is **not** bundled into all ~80 sheet objects:
 
@@ -257,7 +257,7 @@ Object scripts run in a **separate Lua VM** from Global. They must not pull the 
 
 | Layer | Module | Role |
 | ----- | ------ | ---- |
-| Object UI (shared) | `ui/ui_csheet_core.ttslua` via `ui/ui_csheet.ttslua` or `ui/ui_csheet_pageN.ttslua` | Page/seat from object name; navigation; applies UI from Global payloads |
+| Object UI (shared) | `ui/ui_csheet_core.ttslua` via `ui/ui_csheet.ttslua` or `ui/ui_csheet_pageN.ttslua` | Page/seat from GM Notes `CSHEET_PAGE_<n>_<COLOR>` (`lib/csheet_identity.ttslua`); navigation; applies UI from Global payloads |
 | Sheet diffs (Global) | `GlobalCollectSheetImageUpdates({ playerID, pageNum })` → resolves registry effects → `lib/pc_sheet_collect.ttslua` | Dot/box `setAttribute` list |
 | Dynamic page XML (pages 3–6 objects) | `require("ui.ui_csheet_pageN")` → `ui/ui_csheet_pageN_local.ttslua` → `lib/csheet_pageN_xml.ttslua` | `self.UI.setXml` in object VM; page 3 live, 4–6 placeholder until templates ship |
 | BP decals (object) | `lib/blood_potency_decals.ttslua` bundled into CSHEET object script | `self.getDecals` / `self.setDecals` — uses `lib/blood_potency_derived.ttslua` (not `lib.effective_stats`) |

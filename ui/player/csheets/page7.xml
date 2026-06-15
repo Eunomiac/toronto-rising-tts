@@ -51,20 +51,4 @@ Dot ids: <dot_image_name>_bloodPotency_<slot_number>
   <Button id="pageBack" class="page_navigation page_back" />
   <Button id="pageInner" class="page_navigation page_inner_right" />
 
-
-  <Panel id="rollBroadcast_root" class="rollBroadcast_root">
-    <VerticalLayout id="rollBroadcast_container" class="rollBroadcast_container">
-
-
-    </VerticalLayout>
-  </Panel>
-
-
-  <Panel id="rollST_root" class="rollST_root">
-    <VerticalLayout id="rollST_container" class="rollST_container">
-
-
-    </VerticalLayout>
-  </Panel>
-
 </Panel>

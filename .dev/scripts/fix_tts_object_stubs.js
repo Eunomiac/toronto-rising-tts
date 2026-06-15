@@ -3,13 +3,13 @@
 /**
  * Normalizes scrambled one-line stubs under `.tts/objects`:
  *
- * - **XML:** `CSHEET_PAGE_<n>_*.xml` → `<Include src="ui/player/csheets/page<n>.xml" />`
- * - **XML:** `CONTROL_BOARD.*.xml` → `<Include src="ui/objects/npc_control_board.xml" />`
- * - **XML:** `CONTROL_BOARD_PALETTE.*.xml` → `<Panel />` (palette has no XmlUI toolbar)
- * - **XML:** remove stray `.xml` for Lua-only objects (`DICEBAG_*`, `SIGNAL_CANDLE_*`, `SOUNDSCAPE_*`,
- *   `TAROT_BUTTON_*`) — they use `createButton`, not Custom UI (extension often pastes csheet Includes)
- * - **Lua / TTS Lua:** `.lua` or `.ttslua` files whose names start with a known prefix → a single
- *   `require("...")` line derived from the prefix (see `LUA_STUB_RULES`).
+ * Stub **filenames** are `{displayNickname}.{guid}.*` (TTS Tools sync). **Role identity**
+ * for managed objects comes from companion `.data.json` → `GMNotes` (e.g. `CSHEET_PAGE_1_PINK`).
+ *
+ * - **XML:** `GMNotes` `CSHEET_PAGE_<n>_*` → `<Include src="ui/player/csheets/page<n>.xml" />`
+ * - **XML:** `CONTROL_BOARD` → npc control board Include; `CONTROL_BOARD_PALETTE` → `<Panel />`
+ * - **XML:** remove stray `.xml` for Lua-only roles (`DICEBAG_*`, `SIGNAL_CANDLE_*`, …)
+ * - **Lua:** one-line `require("...")` from role prefix (see `LUA_STUB_RULES`).
  *
  * Run from repo root:
  *   node .dev/scripts/fix_tts_object_stubs.js
@@ -17,81 +17,23 @@
  * Optional:
  *   node .dev/scripts/fix_tts_object_stubs.js --dry-run
  *   node .dev/scripts/fix_tts_object_stubs.js --quiet
- *
- * `--quiet` (build mode): exit 0 when `.tts/objects` is missing; no output when there is nothing
- * to scan or everything is already correct; one summary line when any file was written; errors
- * always go to stderr.
  */
 const fs = require("fs");
 const path = require("path");
 
+const {
+  listStubFiles,
+  resolveRoleKeyForStub,
+} = require("../../.tools/tts-object-stubs/tts-object-stub-identity.js");
+
 /** @type {readonly string[]} */
 const OBJECTS_REL_PATH = [".tts", "objects"];
 
-/** Filename prefix pattern: CSHEET_PAGE_<digits>_ */
+/** Role key pattern: CSHEET_PAGE_<digits>_ */
 const CSHEET_PAGE_XML_RE = /^CSHEET_PAGE_(\d+)_/i;
 
-/** Filename prefix patterns for gameboard object Custom UI stubs. */
-const CONTROL_BOARD_PALETTE_XML_RE = /^CONTROL_BOARD_PALETTE\./i;
-const CONTROL_BOARD_XML_RE = /^CONTROL_BOARD\./i;
-
 /**
- * @param {string} objectFilename  e.g. `DICEBAG_NORMAL_PINK.4637da.xml`
- * @returns {boolean}
- */
-function isLuaOnlyObjectXmlStub(objectFilename) {
-  if (!objectFilename.toLowerCase().endsWith(".xml")) {
-    return false;
-  }
-  const stem = objectFilename.slice(0, -".xml".length).toUpperCase();
-  for (const prefix of LUA_ONLY_NO_XML_PREFIXES) {
-    if (stem.startsWith(prefix)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-/**
- * @param {string} objectFilename
- * @returns {string | null}
- */
-function expectedControlBoardPaletteXmlLine(objectFilename) {
-  if (!CONTROL_BOARD_PALETTE_XML_RE.test(objectFilename)) {
-    return null;
-  }
-  if (!objectFilename.toLowerCase().endsWith(".xml")) {
-    return null;
-  }
-  return `<Panel />`;
-}
-
-/**
- * @param {string} objectFilename
- * @returns {string | null}
- */
-function expectedControlBoardXmlIncludeLine(objectFilename) {
-  if (CONTROL_BOARD_PALETTE_XML_RE.test(objectFilename)) {
-    return null;
-  }
-  if (!CONTROL_BOARD_XML_RE.test(objectFilename)) {
-    return null;
-  }
-  if (!objectFilename.toLowerCase().endsWith(".xml")) {
-    return null;
-  }
-  return `<Include src="ui/objects/npc_control_board.xml" />`;
-}
-
-/**
- * Longer prefixes first for predictable matching if new rules are added later.
- * Match is case-insensitive on the filename stem (basename without `.lua` / `.ttslua`).
- *
- * @type {readonly { prefix: string, line: string }[]}
- */
-/**
- * Object name prefixes that have a Lua stub but must not have a `.tts/objects` Custom UI stub.
- * (Invisible `createButton` / Global routing — not XmlUI `<Include>` sheets.)
+ * Object role prefixes that have a Lua stub but must not have a `.tts/objects` Custom UI stub.
  *
  * @type {readonly string[]}
  */
@@ -109,7 +51,6 @@ const LUA_STUB_RULES = [
   { prefix: "SOUNDSCAPE", line: `require("core.soundscape_emitter_object")` },
   { prefix: "TAROT_BUTTON", line: `require("ui.ui_tarot_button")` },
   { prefix: "DICEBAG", line: `require("objects.dice_bag")` },
-  // Dynamic XML pages: separate entries so template builders are not bundled on all ~80 sheet objects.
   { prefix: "CSHEET_PAGE_3", line: `require("ui.ui_csheet_page3")` },
   { prefix: "CSHEET_PAGE_4", line: `require("ui.ui_csheet_page4")` },
   { prefix: "CSHEET_PAGE_5", line: `require("ui.ui_csheet_page5")` },
@@ -141,28 +82,59 @@ function expectedCsheetIncludeLine(pageNum) {
 }
 
 /**
- * @param {string} objectFilename Full filename e.g. `TAROT_BUTTON_PINK.4dc8ad.lua`
- * @returns {string | null} Lua stem used for prefix matching, or null if not a stub extension
+ * @param {string|null} roleKey
+ * @returns {boolean}
  */
-function luaStemForMatching(objectFilename) {
-  const lower = objectFilename.toLowerCase();
-  if (lower.endsWith(".ttslua")) {
-    return objectFilename.slice(0, -".ttslua".length);
+function isLuaOnlyObjectXmlStubForRole(roleKey) {
+  if (roleKey === null) {
+    return false;
   }
-  if (lower.endsWith(".lua")) {
-    return objectFilename.slice(0, -".lua".length);
+  const upper = roleKey.toUpperCase();
+  for (const prefix of LUA_ONLY_NO_XML_PREFIXES) {
+    if (upper.startsWith(prefix)) {
+      return true;
+    }
   }
-  return null;
+  return false;
 }
 
 /**
- * @param {string} stem
+ * @param {string|null} roleKey
  * @returns {string | null}
  */
-function expectedLuaRequireLine(stem) {
-  const upperStem = stem.toUpperCase();
+function expectedControlBoardPaletteXmlLine(roleKey) {
+  if (roleKey === null || !roleKey.toUpperCase().startsWith("CONTROL_BOARD_PALETTE")) {
+    return null;
+  }
+  return `<Panel />`;
+}
+
+/**
+ * @param {string|null} roleKey
+ * @returns {string | null}
+ */
+function expectedControlBoardXmlIncludeLine(roleKey) {
+  if (roleKey === null) {
+    return null;
+  }
+  const upper = roleKey.toUpperCase();
+  if (upper.startsWith("CONTROL_BOARD_PALETTE")) {
+    return null;
+  }
+  if (!upper.startsWith("CONTROL_BOARD")) {
+    return null;
+  }
+  return `<Include src="ui/objects/npc_control_board.xml" />`;
+}
+
+/**
+ * @param {string} roleKey
+ * @returns {string | null}
+ */
+function expectedLuaRequireLine(roleKey) {
+  const upperRole = roleKey.toUpperCase();
   for (const rule of LUA_STUB_RULES) {
-    if (upperStem.startsWith(rule.prefix)) {
+    if (upperRole.startsWith(rule.prefix)) {
       return rule.line;
     }
   }
@@ -192,22 +164,20 @@ function logicalLines(raw) {
 
 /**
  * @param {string} objectsDir
- * @param {string[]} entries
- * @returns {StubTarget[]}
- */
-/**
- * @param {string} objectsDir
- * @param {string[]} entries
  * @returns {string[]} absolute paths of Lua-only object XML stubs to delete
  */
-function collectLuaOnlyXmlRemovals(objectsDir, entries) {
+function collectLuaOnlyXmlRemovals(objectsDir) {
   /** @type {string[]} */
   const out = [];
-  for (const name of entries) {
-    if (!isLuaOnlyObjectXmlStub(name)) {
+  for (const stub of listStubFiles(objectsDir)) {
+    if (stub.ext !== "xml") {
       continue;
     }
-    out.push(path.join(objectsDir, name));
+    const roleKey = resolveRoleKeyForStub(objectsDir, stub.displayStem, stub.guid);
+    if (!isLuaOnlyObjectXmlStubForRole(roleKey)) {
+      continue;
+    }
+    out.push(path.join(objectsDir, stub.fileName));
   }
   out.sort((a, b) => a.localeCompare(b, "en"));
   return out;
@@ -215,42 +185,45 @@ function collectLuaOnlyXmlRemovals(objectsDir, entries) {
 
 /**
  * @param {string} objectsDir
- * @param {string[]} entries
  * @returns {StubTarget[]}
  */
-function collectCsheetXmlTargets(objectsDir, entries) {
+function collectCsheetXmlTargets(objectsDir) {
   /** @type {StubTarget[]} */
   const out = [];
-  for (const name of entries) {
-    if (!name.toLowerCase().endsWith(".xml")) {
+  for (const stub of listStubFiles(objectsDir)) {
+    if (stub.ext !== "xml") {
       continue;
     }
-    if (isLuaOnlyObjectXmlStub(name)) {
+    const roleKey = resolveRoleKeyForStub(objectsDir, stub.displayStem, stub.guid);
+    if (isLuaOnlyObjectXmlStubForRole(roleKey)) {
       continue;
     }
-    const paletteXmlWant = expectedControlBoardPaletteXmlLine(name);
+    const paletteXmlWant = expectedControlBoardPaletteXmlLine(roleKey);
     if (paletteXmlWant !== null) {
       out.push({
-        fullPath: path.join(objectsDir, name),
+        fullPath: path.join(objectsDir, stub.fileName),
         want: paletteXmlWant,
       });
       continue;
     }
-    const controlBoardWant = expectedControlBoardXmlIncludeLine(name);
+    const controlBoardWant = expectedControlBoardXmlIncludeLine(roleKey);
     if (controlBoardWant !== null) {
       out.push({
-        fullPath: path.join(objectsDir, name),
+        fullPath: path.join(objectsDir, stub.fileName),
         want: controlBoardWant,
       });
       continue;
     }
-    const match = CSHEET_PAGE_XML_RE.exec(name);
-    if (!match) {
+    if (roleKey === null) {
+      continue;
+    }
+    const match = CSHEET_PAGE_XML_RE.exec(roleKey);
+    if (match === null) {
       continue;
     }
     const pageNum = match[1];
     out.push({
-      fullPath: path.join(objectsDir, name),
+      fullPath: path.join(objectsDir, stub.fileName),
       want: expectedCsheetIncludeLine(pageNum),
     });
   }
@@ -260,23 +233,25 @@ function collectCsheetXmlTargets(objectsDir, entries) {
 
 /**
  * @param {string} objectsDir
- * @param {string[]} entries
  * @returns {StubTarget[]}
  */
-function collectLuaStubTargets(objectsDir, entries) {
+function collectLuaStubTargets(objectsDir) {
   /** @type {StubTarget[]} */
   const out = [];
-  for (const name of entries) {
-    const stem = luaStemForMatching(name);
-    if (stem === null) {
+  for (const stub of listStubFiles(objectsDir)) {
+    if (stub.ext !== "lua" && stub.ext !== "ttslua") {
       continue;
     }
-    const want = expectedLuaRequireLine(stem);
+    const roleKey = resolveRoleKeyForStub(objectsDir, stub.displayStem, stub.guid);
+    if (roleKey === null) {
+      continue;
+    }
+    const want = expectedLuaRequireLine(roleKey);
     if (want === null) {
       continue;
     }
     out.push({
-      fullPath: path.join(objectsDir, name),
+      fullPath: path.join(objectsDir, stub.fileName),
       want,
     });
   }
@@ -391,10 +366,9 @@ function main() {
     return;
   }
 
-  const entries = fs.readdirSync(objectsDir);
-  const xmlRemovePaths = collectLuaOnlyXmlRemovals(objectsDir, entries);
-  const xmlTargets = collectCsheetXmlTargets(objectsDir, entries);
-  const luaTargets = collectLuaStubTargets(objectsDir, entries);
+  const xmlRemovePaths = collectLuaOnlyXmlRemovals(objectsDir);
+  const xmlTargets = collectCsheetXmlTargets(objectsDir);
+  const luaTargets = collectLuaStubTargets(objectsDir);
 
   if (quiet && xmlRemovePaths.length === 0 && xmlTargets.length === 0 && luaTargets.length === 0) {
     return;

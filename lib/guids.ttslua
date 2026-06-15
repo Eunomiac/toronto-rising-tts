@@ -68,6 +68,13 @@ G.GUIDS = {
     SEAT_LIGHT_3_PINK = "7d3caf",
     SEAT_LIGHT_3_PURPLE = "2ebbcc",
 
+    FAMULUS_LIGHT_1_RED = "a751b5",
+    FAMULUS_LIGHT_1_BROWN = "645352",
+    FAMULUS_LIGHT_2_RED = "dd1763",
+    FAMULUS_LIGHT_2_BROWN = "c78daf",
+    FAMULUS_FIGURINE_RED = "2975dc",
+    FAMULUS_FIGURINE_BROWN = "c334ae",
+
     -- Soundscape AssetBundle Objects
 
     -- SYNC: `core/global_script.ttslua` `TR_EARLY_SOUNDSCAPE_EMITTER_GUIDS` (zero-require silence on load)
@@ -217,8 +224,6 @@ G.GUIDS = {
     TAROT_DRAWER_ANCHOR_ON_PINK = "936758",
     TAROT_DRAWER_ANCHOR_OFF_PINK = "c1f530",
     TAROT_DECK_ANCHOR_PINK = "764db1",
-    FAMULUS_FIGURINE_RED = "2975dc",
-    FAMULUS_FIGURINE_BROWN = "c334ae",
 
     -- Anchors (for animations)
     CSHEET_DICE_DRAWER_ANCHOR_ON_BROWN = "2f15c3",

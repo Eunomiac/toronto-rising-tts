@@ -1,0 +1,195 @@
+--[[
+    Seat layout role identity (lib/seat-role-identity.ttslua)
+
+    Runtime identity for rotational seat layout and related systems (e.g. NPC spotlight
+    GUID fallback). Workshop objects use GM Notes only: `ROLE_COLOR` (e.g. `SEAT_LIGHT_1_RED`).
+    Name and Nickname are not read at runtime.
+
+    `readLegacyRoleColorIdentity` exists for one-time migration only.
+]]
+
+local SRI = {}
+
+local U = require("lib.util")
+local C = require("lib.constants")
+
+--- @param s string|nil
+--- @return string
+local function trim(s)
+  if U.Type(s) ~= "string" then
+    return ""
+  end
+  return string.match(s, "^%s*(.-)%s*$") or ""
+end
+
+--- True if string matches ROLE_UPPERPATTERN (suffix is uppercase alphanumeric seat id).
+--- @param s string
+--- @return boolean
+function SRI.matchesRoleColorPattern(s)
+  local role, suffix = string.match(s, "^(.+)_([%u%d]+)$")
+  if role == nil or suffix == nil or role == "" then
+    return false
+  end
+  for i = 1, #C.PlayerColors do
+    local color = C.PlayerColors[i]
+    if U.Type(color) == "string" and string.upper(color) == suffix then
+      return true
+    end
+  end
+  for i = 1, #(C.NPCSeats or {}) do
+    local npcSeat = C.NPCSeats[i]
+    if U.Type(npcSeat) == "string" and string.upper(npcSeat) == suffix then
+      return true
+    end
+  end
+  return false
+end
+
+--- @param roleIdentity string
+--- @return string roleKey
+--- @return string suffixUpper
+function SRI.parseRoleAndSuffix(roleIdentity)
+  local role, suffix = string.match(roleIdentity, "^(.+)_([%u%d]+)$")
+  if role == nil or suffix == nil or role == "" then
+    error("seat-role-identity: invalid ROLE_COLOR identity '" .. tostring(roleIdentity) .. "'")
+  end
+  return role, suffix
+end
+
+--- @param obj Object|nil
+--- @return string|nil
+function SRI.readRoleColorIdentity(obj)
+  if obj == nil or obj.getGMNotes == nil then
+    return nil
+  end
+  local notes = trim(obj.getGMNotes() or "")
+  if notes ~= "" and SRI.matchesRoleColorPattern(notes) then
+    return notes
+  end
+  return nil
+end
+
+--- @param obj Object|nil
+--- @param label string error context
+--- @return string roleIdentity
+function SRI.requireRoleColorIdentity(obj, label)
+  local identity = SRI.readRoleColorIdentity(obj)
+  if identity ~= nil then
+    return identity
+  end
+  local notes = obj ~= nil and obj.getGMNotes ~= nil and trim(obj.getGMNotes() or "") or ""
+  error(
+    tostring(label)
+    .. ": object has no ROLE_COLOR GM Notes (got GMNotes='"
+    .. tostring(notes)
+    .. "')"
+  )
+end
+
+--- @param roleIdentity string ROLE_COLOR identity (e.g. `SEAT_LIGHT_1_RED`)
+--- @return Object|nil
+function SRI.findObjectByRoleIdentity(roleIdentity)
+  if U.Type(roleIdentity) ~= "string" or roleIdentity == "" then
+    return nil
+  end
+  local identityUpper = string.upper(trim(roleIdentity))
+  local all = getAllObjects() or {}
+  for _, obj in ipairs(all) do
+    if obj ~= nil and obj.getGMNotes ~= nil then
+      local notesUpper = string.upper(trim(obj.getGMNotes() or ""))
+      if notesUpper == identityUpper then
+        return obj
+      end
+    end
+  end
+  return nil
+end
+
+--- @param roleIdentity string
+--- @param label string error context
+--- @return Object
+function SRI.requireObjectByRoleIdentity(roleIdentity, label)
+  local obj = SRI.findObjectByRoleIdentity(roleIdentity)
+  if obj ~= nil then
+    return obj
+  end
+  error(
+    tostring(label)
+    .. ": no object with ROLE_COLOR GM Notes '"
+    .. tostring(roleIdentity)
+    .. "'"
+  )
+end
+
+--- Writes `roleKey .. "_" .. string.upper(seatColor)` to GM Notes. Does not change Name.
+--- @param obj Object
+--- @param roleKey string
+--- @param seatColor string
+function SRI.setRoleColorIdentity(obj, roleKey, seatColor)
+  if obj == nil then
+    return
+  end
+  if U.Type(roleKey) ~= "string" or roleKey == "" or U.Type(seatColor) ~= "string" or trim(seatColor) == "" then
+    return
+  end
+  local identity = roleKey .. "_" .. string.upper(trim(seatColor))
+  if obj.setGMNotes then
+    obj.setGMNotes(identity)
+  end
+end
+
+--- Migration only: read legacy Name then Nickname.
+--- @param obj Object
+--- @return string|nil
+function SRI.readLegacyRoleColorIdentity(obj)
+  if obj == nil then
+    return nil
+  end
+  local nameRaw = obj.getName and obj.getName() or ""
+  local name = trim(nameRaw)
+  if name ~= "" and SRI.matchesRoleColorPattern(name) then
+    return name
+  end
+  local data = obj.getData and obj.getData() or {}
+  local nick = trim(data.Nickname or "")
+  if nick ~= "" and SRI.matchesRoleColorPattern(nick) then
+    return nick
+  end
+  return nil
+end
+
+--- Migration only: clear Nickname after GM Notes identity is set. Name is left alone
+--- unless it matched ROLE_COLOR (builtin prefab names like Custom_Assetbundle must not be cleared).
+--- @param obj Object
+--- @return boolean
+function SRI.clearLegacyRoleNameFields(obj)
+  if obj == nil then
+    return false
+  end
+  local function trimLocal(s)
+    if U.Type(s) ~= "string" then
+      return ""
+    end
+    return string.match(s, "^%s*(.-)%s*$") or ""
+  end
+  local cleared = false
+  local legacyName = trimLocal(obj.getName and obj.getName() or "")
+  if legacyName ~= "" and SRI.matchesRoleColorPattern(legacyName) and obj.setName then
+    obj.setName("")
+    cleared = true
+  end
+  if JSON ~= nil and obj.getJSON ~= nil and obj.reload ~= nil then
+    local state = JSON.decode(obj.getJSON(false))
+    if U.Type(state) == "table" then
+      state.Nickname = ""
+      if legacyName ~= "" and SRI.matchesRoleColorPattern(legacyName) then
+        state.Name = ""
+      end
+      obj.reload(JSON.encode(state))
+      cleared = true
+    end
+  end
+  return cleared
+end
+
+return SRI

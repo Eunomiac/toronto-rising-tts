@@ -32,6 +32,7 @@ local S = require("core.state")
 local C = require("lib.constants")
 local G = require("lib.guids")
 local OP = require("lib.object_positions")
+local SRI = require("lib.seat-role-identity")
 
 -- Last-wins: each SetLightMode bumps this; in-flight lerp steps no-op when stale.
 local transitionEpoch = {}
@@ -180,7 +181,7 @@ L.LIGHTMODES = {
           enabled = true,
           range = 101.139198,
           angle = 134.550003,
-          intensity = 4.738969,
+          intensity = 1.800000,
           color = Color(0.525551, 0.522316, 0.522316)
         },
         HUNGRY = {
@@ -208,7 +209,7 @@ L.LIGHTMODES = {
           enabled = true,
           range = 101.139198,
           angle = 134.550003,
-          intensity = 4.738969,
+          intensity = 1.800000,
           color = Color(0.525551, 0.522316, 0.522316)
         },
         HUNGRY = {
@@ -236,7 +237,7 @@ L.LIGHTMODES = {
           enabled = true,
           range = 101.139198,
           angle = 134.550003,
-          intensity = 4.738969,
+          intensity = 1.800000,
           color = Color(0.525551, 0.522316, 0.522316)
         },
         HUNGRY = {
@@ -264,7 +265,7 @@ L.LIGHTMODES = {
           enabled = true,
           range = 101.139198,
           angle = 134.550003,
-          intensity = 4.738969,
+          intensity = 1.800000,
           color = Color(0.525551, 0.522316, 0.522316)
         },
         HUNGRY = {
@@ -292,7 +293,7 @@ L.LIGHTMODES = {
           enabled = true,
           range = 101.139198,
           angle = 134.550003,
-          intensity = 4.738969,
+          intensity = 1.800000,
           color = Color(0.525551, 0.522316, 0.522316)
         },
         HUNGRY = {
@@ -685,6 +686,82 @@ L.LIGHTMODES = {
           intensity = 1,
           color = Color(0.525551, 0.525551, 0.525551)
         }
+    },
+    famulusLight1Red = {
+      guid = G.GUIDS.FAMULUS_LIGHT_1_RED,
+      isPlayerLight = true,
+      default = "OFF",
+      OFF = {
+        enabled = false,
+        range = 48.018639,
+        angle = 0,
+        intensity = 0,
+        color = Color(0.525551, 0.525551, 0.525551)
+      },
+      STANDARD = {
+        enabled = true,
+        range = 36.769680,
+        angle = 70.546043,
+        intensity = 3.592103,
+        color = Color(0.583932, 0.583932, 0.555321)
+      }
+    },
+    famulusLight1Brown = {
+      guid = G.GUIDS.FAMULUS_LIGHT_1_BROWN,
+      isPlayerLight = true,
+      default = "OFF",
+      OFF = {
+        enabled = false,
+        range = 48.018639,
+        angle = 0,
+        intensity = 0,
+        color = Color(0.525551, 0.525551, 0.525551)
+      },
+      STANDARD = {
+        enabled = true,
+        range = 36.769680,
+        angle = 70.546043,
+        intensity = 3.592103,
+        color = Color(0.583932, 0.583932, 0.555321)
+      }
+    },
+    famulusLight2Red = {
+      guid = G.GUIDS.FAMULUS_LIGHT_2_RED,
+      isPlayerLight = true,
+      default = "OFF",
+      OFF = {
+        enabled = false,
+        range = 48.018639,
+        angle = 0,
+        intensity = 0,
+        color = Color(0.525551, 0.525551, 0.525551)
+      },
+      STANDARD = {
+        enabled = true,
+        range = 54.938881,
+        angle = 68.086990,
+        intensity = 1.777461,
+        color = Color(0.815978, 0.817312, 0.777266)
+      }
+    },
+    famulusLight2Brown = {
+      guid = G.GUIDS.FAMULUS_LIGHT_2_BROWN,
+      isPlayerLight = true,
+      default = "OFF",
+      OFF = {
+        enabled = false,
+        range = 48.018639,
+        angle = 0,
+        intensity = 0,
+        color = Color(0.525551, 0.525551, 0.525551)
+      },
+      STANDARD = {
+        enabled = true,
+        range = 54.938881,
+        angle = 68.086990,
+        intensity = 1.777461,
+        color = Color(0.815978, 0.817312, 0.777266)
+      }
     },
     storytellerDiceLight1 = {
       guid = G.GUIDS.DICE_LIGHT_STORYTELLER_1,
@@ -1601,36 +1678,33 @@ function L.onDiceDrawerStateChanged(playerColor, drawerOpen)
 end
 
 --- @param lightRef string
---- @return string|nil
+--- @return string
 local function resolveNpcSeatLightGuid(lightRef)
     local seatKey = NPC_LIGHT_TO_SEAT[lightRef]
     local roleName = NPC_LIGHT_ROLE_BY_REF[lightRef]
     if U.Type(seatKey) ~= "string" or U.Type(roleName) ~= "string" then
-        return nil
+        error(
+            "lighting: resolveNpcSeatLightGuid called for unmapped light ref '"
+            .. tostring(lightRef)
+            .. "'"
+        )
     end
-    ---@diagnostic disable-next-line: undefined-global
-    local tagged = getObjectsWithTag(seatKey .. "Object")
-    if U.Type(tagged) ~= "table" then
-        return nil
+    local expectedIdentity = roleName .. "_" .. string.upper(seatKey)
+    local obj = SRI.requireObjectByRoleIdentity(
+        expectedIdentity,
+        "lighting: resolveNpcSeatLightGuid for " .. tostring(lightRef)
+    )
+    local guid = obj.getGUID()
+    if U.Type(guid) ~= "string" or guid == "" then
+        error(
+            "lighting: object with GM Notes '"
+            .. expectedIdentity
+            .. "' has no GUID (light ref "
+            .. tostring(lightRef)
+            .. ")"
+        )
     end
-    local roleNeedle = roleName .. "_" .. seatKey
-    for _, obj in ipairs(tagged) do
-        if U.isGameObject(obj) and obj.getGUID ~= nil then
-            local objName = string.upper(tostring(obj.getName() or ""))
-            local objNick = string.upper(tostring(obj.getNickname() or ""))
-            local matchByRole = string.find(objName, roleNeedle, 1, true)
-                or string.find(objName, roleName, 1, true)
-                or string.find(objNick, roleNeedle, 1, true)
-                or string.find(objNick, roleName, 1, true)
-            if matchByRole then
-                local guid = obj.getGUID()
-                if U.Type(guid) == "string" and guid ~= "" then
-                    return guid
-                end
-            end
-        end
-    end
-    return nil
+    return guid
 end
 
 --- @param lightRef string
@@ -1689,14 +1763,17 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
 
     if lData ~= nil then
         if U.Type(lData.guid) ~= "string" or lData.guid == "" then
-            local resolvedGuid = resolveNpcSeatLightGuid(lightRef)
-            if U.Type(resolvedGuid) == "string" and resolvedGuid ~= "" then
-                lData.guid = resolvedGuid
+            if NPC_LIGHT_TO_SEAT[lightRef] ~= nil then
+                lData.guid = resolveNpcSeatLightGuid(lightRef)
             end
         end
         if U.Type(lData.guid) ~= "string" or lData.guid == "" then
             if NPC_LIGHT_TO_SEAT[lightRef] ~= nil then
-                return nil
+                error(
+                    "lighting: NPC seat light '"
+                    .. tostring(lightRef)
+                    .. "' has no registry GUID and GM Notes resolution failed"
+                )
             end
         end
         if not isNpcSeatLightActive(lightRef) then

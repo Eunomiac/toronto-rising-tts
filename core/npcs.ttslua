@@ -14,6 +14,7 @@ local C = require("lib.constants")
 local L = require("core.lighting")
 local DATA = require("lib.npcs_data")
 local NLIGHT = require("lib.npcs_light_spawn_defaults")
+local SRI = require("lib.seat-role-identity")
 
 NPCS.characters = DATA.characters or {}
 NPCS.lights = DATA.lights or {}
@@ -636,6 +637,33 @@ function NPCS.isPooledFigurineObject(obj)
         return false
     end
     return U.Type(obj.getCustomObject()) == "table"
+end
+
+--- True when this tagged object is the live NPC seat figurine that owns layout role `SEAT_FIGURE`.
+--- Pooled cutouts (`npcInstance:` GM Notes) or seated cutouts with `SEAT_FIGURE_<seatKey>` GM Notes.
+--- Workshop placement anchors (no `Figurine_Custom` cutout) are excluded — see `isWorkshopNpcSeatFigureAnchor`.
+--- @param obj Object|nil
+--- @param seatKey string e.g. `NPC1`
+--- @return boolean
+function NPCS.isNpcSeatFigureForLayout(obj, seatKey)
+    if not U.isGameObject(obj) or U.Type(seatKey) ~= "string" or seatKey == "" then
+        return false
+    end
+    if obj.hasTag == nil or obj.hasTag(seatTagForKey(seatKey)) ~= true then
+        return false
+    end
+    if NPCS.isPooledFigurineObject(obj) then
+        return true
+    end
+    if obj.getCustomObject == nil or U.Type(obj.getCustomObject()) ~= "table" then
+        return false
+    end
+    local identity = SRI.readRoleColorIdentity(obj)
+    if identity == nil then
+        return false
+    end
+    local role, suffix = SRI.parseRoleAndSuffix(identity)
+    return role == "SEAT_FIGURE" and string.upper(suffix) == string.upper(seatKey)
 end
 
 --- @param lit Object|nil
@@ -2592,25 +2620,25 @@ local function reconcileStepThreeSeatPlacements(intent)
     return allOk
 end
 
---- Workshop `SEAT_FIGURE_*` anchor on an NPC seat tag — layout reference only; pooled figurine owns the live seat pose.
+--- Workshop `SEAT_FIGURE_*` placement anchor on an NPC seat tag — layout reference only; live cutout figurine owns the seat pose.
 --- @param obj Object|nil
 --- @return boolean
 local function isWorkshopNpcSeatFigureAnchor(obj)
     if not U.isGameObject(obj) or NPCS.isPooledFigurineObject(obj) then
         return false
     end
-    local nameRaw = obj.getName ~= nil and tostring(obj.getName() or "") or ""
-    if string.match(nameRaw, "^SEAT_FIGURE_") then
-        return true
+    local identity = SRI.readRoleColorIdentity(obj)
+    if identity == nil then
+        return false
     end
-    if obj.getData ~= nil then
-        local data = obj.getData() or {}
-        local nick = tostring(data.Nickname or "")
-        if nick ~= "" and string.match(nick, "^SEAT_FIGURE_") then
-            return true
-        end
+    local role, suffix = SRI.parseRoleAndSuffix(identity)
+    if role ~= "SEAT_FIGURE" then
+        return false
     end
-    return false
+    if NPCS.isNpcSeatFigureForLayout(obj, suffix) then
+        return false
+    end
+    return true
 end
 
 --- Step Four: narrative presence visibility + seat lights for assigned PC and NPC seats.

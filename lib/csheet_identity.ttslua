@@ -1,0 +1,117 @@
+--[[
+  CSHEET_PAGE_<n>_<COLOR> identity (bundle-safe; no lib.constants).
+
+  Runtime identity: GM Notes only (`CSHEET_PAGE_1_PINK`). Display Nickname is free-form.
+]]
+
+local CI = {}
+
+--- @param s string|nil
+--- @return string
+local function trim(s)
+  if type(s) ~= "string" then
+    return ""
+  end
+  return string.match(s, "^%s*(.-)%s*$") or ""
+end
+
+--- @param identity string
+--- @return number|nil pageNum
+--- @return string|nil seatColor e.g. `PINK`
+function CI.parsePageRoleFromIdentity(identity)
+  local t = string.upper(trim(identity))
+  local pageStr, color = t:match("^CSHEET_PAGE_(%d+)_([A-Z]+)$")
+  if pageStr == nil or color == nil then
+    return nil, nil
+  end
+  return tonumber(pageStr), color
+end
+
+--- @param notes string
+--- @return number|nil pageNum
+--- @return string|nil seatColor
+function CI.parsePageRoleFromGmNotes(notes)
+  return CI.parsePageRoleFromIdentity(notes)
+end
+
+--- GM Notes only; returns nil when notes are empty or not `CSHEET_PAGE_*` (filtering non-csheets).
+--- @param obj Object|nil
+--- @return number|nil pageNum
+--- @return string|nil seatColor
+function CI.readPageRoleFromObject(obj)
+  if obj == nil or obj.getGMNotes == nil then
+    return nil, nil
+  end
+  local notes = trim(obj.getGMNotes() or "")
+  if notes == "" then
+    return nil, nil
+  end
+  return CI.parsePageRoleFromIdentity(notes)
+end
+
+--- GM Notes only; errors when this object should be a character sheet but identity is missing or invalid.
+--- @param obj Object|nil
+--- @param label string error context
+--- @return number pageNum
+--- @return string seatColor
+function CI.requirePageRoleFromObject(obj, label)
+  local ctx = tostring(label or "csheet")
+  if obj == nil then
+    error(ctx .. ": nil object")
+  end
+  if obj.getGMNotes == nil then
+    error(ctx .. ": object does not support getGMNotes")
+  end
+  local notes = trim(obj.getGMNotes() or "")
+  if notes == "" then
+    local guid = obj.getGUID ~= nil and obj.getGUID() or "unknown-guid"
+    error(ctx .. ": missing CSHEET_PAGE GM Notes (guid=" .. tostring(guid) .. ")")
+  end
+  local pageNum, seatColor = CI.parsePageRoleFromIdentity(notes)
+  if pageNum == nil or seatColor == nil then
+    error(ctx .. ": invalid CSHEET_PAGE GM Notes '" .. notes .. "'")
+  end
+  return pageNum, seatColor
+end
+
+--- Player-color ownership tag (e.g. `Brown` → `BrownObject`).
+--- @param seatColor string
+--- @return string|nil
+function CI.seatColorObjectTag(seatColor)
+  if type(seatColor) ~= "string" or seatColor == "" then
+    return nil
+  end
+  local c = string.lower(seatColor)
+  if c == "" then
+    return nil
+  end
+  return c:sub(1, 1):upper() .. c:sub(2) .. "Object"
+end
+
+--- @param pageNum number
+--- @param colorUpper string
+--- @return string e.g. `CSHEET_PAGE_1_PINK`
+function CI.pageRoleGmNotes(pageNum, colorUpper)
+  return string.format("CSHEET_PAGE_%d_%s", tonumber(pageNum), string.upper(tostring(colorUpper)))
+end
+
+--- @param obj Object|nil
+--- @param pageNum number
+--- @param colorUpper string
+--- @return boolean
+function CI.objectMatchesPageRole(obj, pageNum, colorUpper)
+  local p, c = CI.readPageRoleFromObject(obj)
+  if p == nil or c == nil then
+    return false
+  end
+  return p == tonumber(pageNum) and string.upper(c) == string.upper(tostring(colorUpper))
+end
+
+--- @param seatColor string canonical or any case e.g. `Brown`, `PINK`
+--- @param pageRoleColor string color segment from identity e.g. `PINK`
+--- @return boolean
+function CI.seatColorMatchesPageRole(seatColor, pageRoleColor)
+  return string.lower(tostring(seatColor or "")) == string.lower(tostring(pageRoleColor or ""))
+end
+
+return CI

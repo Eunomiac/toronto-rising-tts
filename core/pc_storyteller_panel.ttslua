@@ -10,6 +10,7 @@ local Conditions = require("core.conditions")
 local PCS = require("lib.pcs_data")
 local U = require("lib.util")
 local Sync = require("core.sync")
+local CI = require("lib.csheet_identity")
 
 --- @type table<string, table>
 local buffers = {}
@@ -57,26 +58,25 @@ local ACTIONS_SKIP_OVERLAY_REFRESH = {
   hungerDown = true,
 }
 
---- Scan objects named CSHEET_PAGE_*_<COLOR> and refresh embedded UI.
---- TTS object names typically use uppercase seat (e.g. `_BROWN`); panel ids use canonical `C.PlayerColors` spelling (`Brown`).
+--- Scan character sheets for a seat color (GM Notes `CSHEET_PAGE_*_<COLOR>`) and refresh embedded UI.
 --- @param seatColor string e.g. "Brown"
 function PCST.refreshCharacterSheetsForColor(seatColor)
   if type(seatColor) ~= "string" then
     return
   end
-  local seatLower = string.lower(seatColor)
-  local all = getAllObjects()
-  if type(all) ~= "table" then
+  local tag = CI.seatColorObjectTag(seatColor)
+  if tag == nil then
     return
   end
-  for _, obj in ipairs(all) do
+  local tagged = getObjectsWithTag(tag)
+  if type(tagged) ~= "table" then
+    return
+  end
+  for _, obj in ipairs(tagged) do
     if obj ~= nil then
-      local name = obj.getName()
-      if type(name) == "string" then
-        local colFromName = name:match("^CSHEET_PAGE_%d+_(%a+)$")
-        if type(colFromName) == "string" and string.lower(colFromName) == seatLower then
-          obj.call("refreshFromGameState")
-        end
+      local _, pageColor = CI.readPageRoleFromObject(obj)
+      if type(pageColor) == "string" and CI.seatColorMatchesPageRole(seatColor, pageColor) then
+        obj.call("refreshFromGameState")
       end
     end
   end

@@ -355,11 +355,19 @@ function LightDebugFocus.activate(player)
 
     pushAllSlidersToUi()
     local name = "?"
-    local data = obj.getData and obj.getData()
-    if data and data.Nickname and data.Nickname ~= "" then
-        name = data.Nickname
-    elseif obj.getName and obj.getName() then
-        name = obj.getName() or "?"
+    if obj.getGMNotes ~= nil then
+        local notes = tostring(obj.getGMNotes() or "")
+        if notes ~= "" then
+            name = notes
+        end
+    end
+    if name == "?" then
+        local data = obj.getData and obj.getData()
+        if data and data.Nickname and data.Nickname ~= "" then
+            name = data.Nickname
+        elseif obj.getName and obj.getName() then
+            name = obj.getName() or "?"
+        end
     end
     UI.setValue("dl_debug_light_label", name .. " [" .. guid .. "]")
     U.setAttribute("panel_debug_light_root", "active", true)

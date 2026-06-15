@@ -23,6 +23,7 @@ G = require("lib.guids")
 L = require("core.lighting")
 O = require("core.objects")
 local Sync = require("core.sync")
+local SRI = require("lib.seat-role-identity")
 LightTest = require("core.light_test")
 -- Bundler tracing: `lib.workspace_ndjson_log` is otherwise only required from inside DEBUG.* at runtime
 -- and can be omitted from Save & Play bundles → a late require there fails in-game. Keep one top-level require.
@@ -3868,18 +3869,12 @@ function DEBUG.logNpcPlacementIntentToFile(filename)
     )
 end
 
---- Display name for export rows (Nickname wins over Name, matching layout conventions).
+--- Display name for export rows (Name only; Nickname is not a TTS Object API method).
 --- @param obj Object|nil
 --- @return string
 local function exportObjectDisplayName(obj)
     if not U.isGameObject(obj) then
         return ""
-    end
-    if obj.getNickname ~= nil then
-        local nickname = obj.getNickname()
-        if U.Type(nickname) == "string" and nickname ~= "" then
-            return nickname
-        end
     end
     if obj.getName ~= nil then
         return tostring(obj.getName() or "")
@@ -3898,12 +3893,14 @@ local function isNpcSeatFigurineObject(obj, npcsModule)
     if type(npcsModule.isPooledFigurineObject) == "function" and npcsModule.isPooledFigurineObject(obj) then
         return true
     end
-    local disp = exportObjectDisplayName(obj)
-    local roleKey = string.match(disp, "^(.+)_")
-    if roleKey == "SEAT_FIGURE" then
-        return true
+    local identity = SRI.readRoleColorIdentity(obj)
+    if identity ~= nil then
+        local role, _ = SRI.parseRoleAndSuffix(identity)
+        if role == "SEAT_FIGURE" then
+            return true
+        end
     end
-    if disp == "Figurine_Custom" then
+    if exportObjectDisplayName(obj) == "Figurine_Custom" then
         return true
     end
     return false
@@ -4760,6 +4757,182 @@ function DEBUG.spawnNpcControlBoardTokens(options)
     return spawned
 end
 
+--- One-time: copy seat-layout `ROLE_COLOR` from Name/Nickname into GM Notes (see `.dev/Rotational Coordinate Generator.md`).
+--- @param options table|nil `{ dryRun?: boolean, clearLegacy?: boolean }`
+--- @return table summary
+function DEBUG.migrateSeatLayoutRolesToGmNotes(options)
+    local R = require("lib.rotational-seat-layout")
+    return R.migrateRoleIdentityToGmNotes(C.TableSourceObjects, options)
+end
+
+--- @param s string|nil
+--- @return string
+local function trimRoleQuery(s)
+    if U.Type(s) ~= "string" then
+        return ""
+    end
+    return string.match(s, "^%s*(.-)%s*$") or ""
+end
+
+--- True when `identity` matches `roleQuery` (exact ROLE_COLOR or role prefix / suffix).
+--- @param identity string|nil
+--- @param roleQuery string
+--- @return boolean
+local function roleIdentityMatchesQuery(identity, roleQuery)
+    if type(identity) ~= "string" or identity == "" then
+        return false
+    end
+    if type(roleQuery) ~= "string" or roleQuery == "" then
+        return false
+    end
+    local iu = string.upper(trimRoleQuery(identity))
+    local qu = string.upper(trimRoleQuery(roleQuery))
+    if iu == qu then
+        return true
+    end
+    local role, suffix = SRI.parseRoleAndSuffix(iu)
+    if role == qu then
+        return true
+    end
+    if suffix ~= nil and role .. "_" .. suffix == qu then
+        return true
+    end
+    if #qu < #iu and string.sub(iu, 1, #qu) == qu and string.sub(iu, #qu + 1, #qu + 1) == "_" then
+        return true
+    end
+    return false
+end
+
+--- Collect tag names on an object (empty table when none).
+--- @param obj Object|nil
+--- @return string[]
+local function collectObjectTags(obj)
+    local tags = {}
+    if not U.isGameObject(obj) or obj.getTags == nil then
+        return tags
+    end
+    local raw = obj.getTags()
+    if type(raw) ~= "table" then
+        return tags
+    end
+    for _, tag in ipairs(raw) do
+        if type(tag) == "string" and tag ~= "" then
+            tags[#tags + 1] = tag
+        end
+    end
+    return tags
+end
+
+--- Scan all table objects whose GM Notes (or legacy Name/Nickname) match a role identity.
+--- Use to debug duplicate SEAT_FIGURE errors: `lua DEBUG.findObjectsByRole("SEAT_FIGURE_NPC1")`
+--- @param roleQuery string Full identity (`SEAT_FIGURE_NPC1`) or role prefix (`SEAT_FIGURE`, `CSHEET_PAGE_1`)
+--- @param options table|nil `{ seatTag?: string, includeLegacy?: boolean, print?: boolean }`
+--- @return table[] rows `{ guid, roleIdentity, gmNotes, legacyIdentity, name, nickname, tags, seatSuffix?, layoutFigurine?, workshopAnchor? }`
+function DEBUG.findObjectsByRole(roleQuery, options)
+    options = options or {}
+    local seatTag = options.seatTag
+    local includeLegacy = options.includeLegacy ~= false
+    local doPrint = options.print ~= false
+    local NPCS = require("core.npcs")
+    local rows = {}
+
+    for _, obj in ipairs(getObjects() or {}) do
+        if U.isGameObject(obj) then
+            local tags = collectObjectTags(obj)
+            local seatTagOk = seatTag == nil
+                or (obj.hasTag ~= nil and obj.hasTag(seatTag .. "Object") == true)
+            if seatTagOk then
+                local gmNotes = obj.getGMNotes ~= nil and tostring(obj.getGMNotes() or "") or ""
+                local identity = SRI.readRoleColorIdentity(obj)
+                local legacy = includeLegacy and SRI.readLegacyRoleColorIdentity(obj) or nil
+                local matched = roleIdentityMatchesQuery(identity, roleQuery)
+                    or (legacy ~= nil and roleIdentityMatchesQuery(legacy, roleQuery))
+                if matched then
+                    local _, suffix = SRI.parseRoleAndSuffix(identity or legacy or "")
+                    local row = {
+                        guid = obj.getGUID and obj.getGUID() or nil,
+                        roleIdentity = identity or legacy,
+                        gmNotes = gmNotes,
+                        legacyIdentity = (legacy ~= nil and legacy ~= identity) and legacy or nil,
+                        name = obj.getName ~= nil and tostring(obj.getName() or "") or "",
+                        nickname = exportObjectDisplayName(obj),
+                        tags = tags,
+                        seatSuffix = suffix,
+                    }
+                    if suffix ~= nil and type(NPCS.isNpcSeatFigureForLayout) == "function" then
+                        row.layoutFigurine = NPCS.isNpcSeatFigureForLayout(obj, suffix)
+                    end
+                    if suffix ~= nil and type(NPCS.isWorkshopNpcSeatFigureAnchor) == "function" then
+                        row.workshopAnchor = NPCS.isWorkshopNpcSeatFigureAnchor(obj, suffix)
+                    end
+                    rows[#rows + 1] = row
+                end
+            end
+        end
+    end
+
+    if doPrint then
+        print(
+            "DEBUG.findObjectsByRole('"
+                .. tostring(roleQuery)
+                .. "'"
+                .. (seatTag and (", seatTag=" .. seatTag) or "")
+                .. "): "
+                .. tostring(#rows)
+                .. " match(es)"
+        )
+        for i, row in ipairs(rows) do
+            local extras = {}
+            if row.layoutFigurine then
+                extras[#extras + 1] = "layoutFigurine"
+            end
+            if row.workshopAnchor then
+                extras[#extras + 1] = "workshopAnchor"
+            end
+            local extraStr = #extras > 0 and (" [" .. table.concat(extras, ", ") .. "]") or ""
+            print(
+                "  "
+                    .. tostring(i)
+                    .. ". guid="
+                    .. tostring(row.guid)
+                    .. " identity="
+                    .. tostring(row.roleIdentity)
+                    .. " nick="
+                    .. tostring(row.nickname)
+                    .. extraStr
+            )
+            if row.legacyIdentity ~= nil then
+                print("     legacyIdentity=" .. tostring(row.legacyIdentity))
+            end
+            if row.tags and #row.tags > 0 then
+                print("     tags=" .. table.concat(row.tags, ", "))
+            end
+        end
+    end
+
+    return rows
+end
+
+--- Alias for `DEBUG.findObjectsByRole`.
+DEBUG.scanObjectsByRole = DEBUG.findObjectsByRole
+
+--- Return GUID strings only (console: `lua table.concat(DEBUG.guidsByRole("SEAT_FIGURE_NPC1"), ", ")`).
+--- @param roleQuery string
+--- @param options table|nil
+--- @return string[]
+function DEBUG.guidsByRole(roleQuery, options)
+    options = options or {}
+    options.print = false
+    local rows = DEBUG.findObjectsByRole(roleQuery, options)
+    local guids = {}
+    for _, row in ipairs(rows) do
+        if row.guid ~= nil then
+            guids[#guids + 1] = row.guid
+        end
+    end
+    return guids
+end
+
 --[[
     Help/Documentation
 ]]
@@ -4783,6 +4956,9 @@ function DEBUG.help()
     print("  logStateToFile(filename?)       - Log game state to file (JSON)")
     print("  logNpcPlacementIntentToFile(filename?) - Log Step Zero NPC placement intent (reconcile verify)")
     print("  exportNpcSeatFigurinesToFile(path?)     - Export NPC#Object figurines (name + GUID) to debug_logs")
+    print("  migrateSeatLayoutRolesToGmNotes(opts?) - Copy ROLE_COLOR Name/Nick -> GM Notes (opts.dryRun)")
+    print("  findObjectsByRole(query, opts?)        - Scan GM Notes role → GUID rows (opts.seatTag, opts.print)")
+    print("  guidsByRole(query, opts?)              - Same scan; returns GUID string array only")
     print("  logSceneToFile(filename?)       - Log scene info to file")
     print("  logZonesToFile(filename?)       - Log zone info to file")
     print("  logTestToFile(name, passed, details?, filename?) - Log test result")

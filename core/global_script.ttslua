@@ -236,7 +236,7 @@ require("lib.console")
 ]]
 --- Resolve steam id for a character sheet seat color. Uses Global bundle `C` + `C.PlayerColors` so
 --- object UI scripts do not depend on their embedded copy of `lib.constants` matching the game.
---- @param rawSeatColor string e.g. "PURPLE" or "Purple" from `CSHEET_PAGE_<n>_<COLOR>` object name
+--- @param rawSeatColor string e.g. "PURPLE" or "Purple" from csheet GM Notes `CSHEET_PAGE_<n>_<COLOR>`
 --- @return string|nil
 function GlobalResolveSheetPlayerID(rawSeatColor)
     if type(rawSeatColor) ~= "string" or rawSeatColor == "" then

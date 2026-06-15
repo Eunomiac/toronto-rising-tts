@@ -10,8 +10,9 @@
       for virtual slots (cameras, lights). Anchor azimuth uses `options.anchorIndex` (default 1), not
       necessarily the hand zone or first slot.
     - resolveSeatObjects: tag templates (not hand zones — tags affect zone behavior);
-      for each non-template seat, move/clone pieces then set Name + Nickname to `ROLE_<SEAT>` and swap
-      tags: remove reference `{Color}Object`, add target `{Color}Object`.
+      for each non-template seat, move existing tagged pieces (never clone missing roles) then write
+      `ROLE_<SEAT>` to GM Notes and swap tags: remove reference `{Color}Object`, add target `{Color}Object`.
+      Layout role identity lives in GM Notes (Name is free for player-facing tooltips).
 
     Requires sendExternalMessage and a listener on 39998 (repo tts-bridge) for file export on generate + spawn; paths are under .dev/.debug/ (see core.debug).
 
@@ -30,6 +31,7 @@ local S = require("core.state")
 local OP = require("lib.object_positions")
 local L_LIGHT = require("core.lighting")
 local NPCS = require("core.npcs")
+local SRI = require("lib.seat-role-identity")
 
 --- Lazy load: core.debug is large; only needed for workspace file export helpers.
 --- @return table
@@ -236,79 +238,14 @@ local function segmentNominalAzimuthDeg(angleSegmentOne, numSegments, segmentInd
   return angleSegmentOne + (segmentIndex1Based - 1) * stepDeg
 end
 
---- True if string matches ROLE_UPPERPATTERN (suffix is uppercase alphanumeric).
---- @param s string
---- @return boolean
-local function matchesRoleColorPattern(s)
-  local role, suffix = string.match(s, "^(.+)_([%u%d]+)$")
-  if role == nil or suffix == nil or role == "" then
-    return false
-  end
-  for i = 1, #C.PlayerColors do
-    local color = C.PlayerColors[i]
-    if U.Type(color) == "string" and string.upper(color) == suffix then
-      return true
-    end
-  end
-  for i = 1, #C.NPCSeats do
-    local npcSeat = C.NPCSeats[i]
-    if U.Type(npcSeat) == "string" and string.upper(npcSeat) == suffix then
-      return true
-    end
-  end
-  return false
-end
-
---- Same naming rules as templates: object Name, else Custom Name (Nickname in data).
---- @param obj Object
---- @return string|nil
-local function tryMatchingDisplayName(obj)
-  if obj == nil then
-    return nil
-  end
-  local nameRaw = obj.getName and obj.getName() or ""
-  local name = trim(nameRaw)
-  if name ~= "" and matchesRoleColorPattern(name) then
-    return name
-  end
-  local data = obj.getData and obj.getData() or {}
-  local nick = trim(data.Nickname or "")
-  if nick ~= "" and matchesRoleColorPattern(nick) then
-    return nick
-  end
-  return nil
-end
-
 --- @param obj Object
 --- @param index number
---- @return string displayName
-local function resolveTemplateDisplayName(obj, index)
-  local d = tryMatchingDisplayName(obj)
-  if d ~= nil then
-    return d
-  end
-  local nameRaw = obj.getName and obj.getName() or ""
-  local data = obj.getData and obj.getData() or {}
-  error(
-    "rotational-seat-layout: template object index "
-    .. tostring(index)
-    .. " has no valid ROLE_COLOR name or Nickname (tried Name='"
-    .. tostring(nameRaw)
-    .. "', Nickname='"
-    .. tostring(data.Nickname or "")
-    .. "')"
+--- @return string roleIdentity
+local function resolveTemplateRoleIdentity(obj, index)
+  return SRI.requireRoleColorIdentity(
+    obj,
+    "rotational-seat-layout: template object index " .. tostring(index)
   )
-end
-
---- @param displayName string
---- @return string roleKey
---- @return string suffixUpper
-local function parseRoleAndSuffix(displayName)
-  local role, suffix = string.match(displayName, "^(.+)_([%u%d]+)$")
-  if role == nil or suffix == nil or role == "" then
-    error("rotational-seat-layout: invalid ROLE_COLOR display name '" .. tostring(displayName) .. "'")
-  end
-  return role, suffix
 end
 
 --- True if `ref` is a Frame-only entry: table with `position` and `rotation`, no object `guid`.
@@ -327,12 +264,14 @@ local function isFrameEntry(ref)
   return true
 end
 
---- ROLE_COLOR display name for a Frame table (Name, Nickname, displayName, name, or templateName).
+--- ROLE_COLOR identity for a Frame table (`GMNotes`, then legacy Name/Nickname fields in export JSON).
 --- @param frame table
 --- @param index number
 --- @return string displayName
 local function resolveFrameTemplateDisplayName(frame, index)
   local candidates = {
+    frame.GMNotes,
+    frame.gmNotes,
     frame.Name,
     frame.Nickname,
     frame.displayName,
@@ -342,7 +281,7 @@ local function resolveFrameTemplateDisplayName(frame, index)
   for _, c in ipairs(candidates) do
     if U.Type(c) == "string" then
       local t = trim(c)
-      if t ~= "" and matchesRoleColorPattern(t) then
+      if t ~= "" and SRI.matchesRoleColorPattern(t) then
         return t
       end
     end
@@ -350,7 +289,7 @@ local function resolveFrameTemplateDisplayName(frame, index)
   error(
     "rotational-seat-layout: frame entry index "
     .. tostring(index)
-    .. " needs Name, Nickname, displayName, name, or templateName matching ROLE_COLOR pattern"
+    .. " needs GMNotes, Name, Nickname, displayName, name, or templateName matching ROLE_COLOR pattern"
   )
 end
 
@@ -374,9 +313,9 @@ local function isHandZoneObject(obj)
   if t == "HandTrigger" then
     return true
   end
-  local disp = tryMatchingDisplayName(obj)
+  local disp = SRI.readRoleColorIdentity(obj)
   if disp ~= nil then
-    local roleKey, _ = parseRoleAndSuffix(disp)
+    local roleKey, _ = SRI.parseRoleAndSuffix(disp)
     if isHandZoneRoleKey(roleKey) then
       return true
     end
@@ -668,30 +607,6 @@ local function collectTemplateGroups(sourceGroups)
   }
 end
 
---- @param displayName string
---- @return Object|nil
-local function findObjectByDisplayName(displayName)
-  if U.Type(displayName) ~= "string" or displayName == "" then
-    return nil
-  end
-  local displayUpper = string.upper(trim(displayName))
-  local all = getAllObjects() or {}
-  for _, obj in ipairs(all) do
-    if obj ~= nil then
-      local nameUpper = string.upper(trim(obj.getName and obj.getName() or ""))
-      if nameUpper == displayUpper then
-        return obj
-      end
-      local data = obj.getData and obj.getData() or {}
-      local nickUpper = string.upper(trim(data.Nickname or ""))
-      if nickUpper == displayUpper then
-        return obj
-      end
-    end
-  end
-  return nil
-end
-
 --- @param ref any
 --- @param referencePlayerColor string
 --- @param label string
@@ -709,14 +624,14 @@ local function resolveObjectRefWithRoleSupport(ref, referencePlayerColor, label)
   if refTrim == "" then
     return nil
   end
-  local attemptedDisplayName = nil
-  if matchesRoleColorPattern(refTrim) then
-    attemptedDisplayName = refTrim
-    obj = findObjectByDisplayName(refTrim)
+  local attemptedRoleIdentity = nil
+  if SRI.matchesRoleColorPattern(refTrim) then
+    attemptedRoleIdentity = refTrim
+    obj = SRI.findObjectByRoleIdentity(refTrim)
   elseif string.match(refTrim, "^[%u%d_]+$") ~= nil then
     local roleName = refTrim .. "_" .. refUpperColor
-    attemptedDisplayName = roleName
-    obj = findObjectByDisplayName(roleName)
+    attemptedRoleIdentity = roleName
+    obj = SRI.findObjectByRoleIdentity(roleName)
   end
   if obj == nil and label ~= nil then
     error(
@@ -727,8 +642,8 @@ local function resolveObjectRefWithRoleSupport(ref, referencePlayerColor, label)
       .. tostring(ref)
       .. " | referencePlayerColor="
       .. tostring(referencePlayerColor)
-      .. " | attemptedDisplayName="
-      .. tostring(attemptedDisplayName)
+      .. " | attemptedRoleIdentity="
+      .. tostring(attemptedRoleIdentity)
     )
   end
   return obj
@@ -811,7 +726,7 @@ local function resolveSeatTemplateSlots(entries, referencePlayerColor)
     if isFrameEntry(ref) then
       slot.isFrame = true
       local disp = resolveFrameTemplateDisplayName(ref, i)
-      local roleKey, suffixUpper = parseRoleAndSuffix(disp)
+      local roleKey, suffixUpper = SRI.parseRoleAndSuffix(disp)
       if suffixUpper ~= refUpper then
         error(
           "rotational-seat-layout: frame entry "
@@ -842,8 +757,8 @@ local function resolveSeatTemplateSlots(entries, referencePlayerColor)
       if obj == nil then
         error("rotational-seat-layout: could not resolve source template entry [" .. tostring(i) .. "] to an Object")
       end
-      local disp = resolveTemplateDisplayName(obj, i)
-      local roleKey, suffixUpper = parseRoleAndSuffix(disp)
+      local disp = resolveTemplateRoleIdentity(obj, i)
+      local roleKey, suffixUpper = SRI.parseRoleAndSuffix(disp)
       if suffixUpper ~= refUpper then
         error(
           "rotational-seat-layout: template object "
@@ -1270,28 +1185,7 @@ local function replaceSeatOwnershipTags(obj, removeTag, addTag)
   obj.setTags(out)
 end
 
---- Sets Name and save-data Nickname to `roleKey .. "_" .. string.upper(seatColor)` (e.g. `CSHEET_PAGE_1_ORANGE`).
---- Hand zones are skipped (their UI names follow different rules).
---- @param obj Object
---- @param roleKey string
---- @param seatColor string seat id from the map (e.g. `"Orange"`)
-local function setRoleColorDisplayName(obj, roleKey, seatColor)
-  if obj == nil then
-    return
-  end
-  if isHandZoneObject(obj) or isHandZoneRoleKey(roleKey) then
-    return
-  end
-  if U.Type(roleKey) ~= "string" or roleKey == "" or U.Type(seatColor) ~= "string" or trim(seatColor) == "" then
-    return
-  end
-  local newDisplay = roleKey .. "_" .. string.upper(trim(seatColor))
-  if obj.setName then
-    obj.setName(newDisplay)
-  end
-end
-
---- After move or clone: strip reference `{Color}Object` tag, add target seat tag, and rename Name/Nickname suffix.
+--- After move: strip reference `{Color}Object` tag, add target seat tag, and update GM Notes role suffix.
 --- @param obj Object
 --- @param roleKey string template role (e.g. `CSHEET_PAGE_1`)
 --- @param seatColor string target seat key (e.g. `"Orange"`)
@@ -1299,7 +1193,9 @@ end
 --- @param seatTag string e.g. `OrangeObject`
 local function applySeatObjectIdentity(obj, roleKey, seatColor, referenceTag, seatTag)
   replaceSeatOwnershipTags(obj, referenceTag, seatTag)
-  setRoleColorDisplayName(obj, roleKey, seatColor)
+  if not isHandZoneObject(obj) and not isHandZoneRoleKey(roleKey) then
+    SRI.setRoleColorIdentity(obj, roleKey, seatColor)
+  end
 end
 
 --- Validate inputs, compute frames, write frame-ref workspace file. On success returns a table consumed by resolveSeatObjects.
@@ -1533,7 +1429,7 @@ function M.generateRotationalCoordinates(
 end
 
 --- Tag templates; for non-template seats, move existing tagged objects that match each template slot
---- by ROLE key (Name or Nickname in ROLE_SUFFIX pattern; suffix may differ per seat), clone only missing slots, write GUID map.
+--- by ROLE key (GM Notes `ROLE_SUFFIX`; suffix may differ per seat), skip missing slots, write GUID map.
 ---
 --- @param computed table return value of generateRotationalCoordinates (includes referencePlayerColor)
 --- @param sourceObjects table same nested shape passed to generateRotationalCoordinates: `{ player = {...}, other = {...}, all = {...} }`
@@ -1648,10 +1544,12 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
     end
   end
 
-  --- [color] = { [role] = guid } for non-template colors (moved or cloned)
+  --- [color] = { [role] = guid } for non-template colors (moved; empty string when slot skipped)
   local cloneGuidByColorRole = {}
-  --- [color] = { [role] = Object } for non-template colors (moved or cloned)
+  --- [color] = { [role] = Object } for non-template colors (moved; nil when slot skipped)
   local seatObjByColorRole = {}
+  --- [color] = { roleKey, ... } roles with no tagged object for that seat (skipped, not cloned)
+  local skippedSlotsByColor = {}
   local handZoneMoveBySeat = {}
   handZoneMoveBySeat[referencePlayerColor] = referenceHandZoneMove
   local followerTransformsBySeat = {}
@@ -1682,72 +1580,62 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
       local seatTag = objectTagForPlayerColor(color)
       local tagged = getObjectsWithTag(seatTag)
       local byRole = {}
-      local skippedNoPattern = 0
-      local skippedNoPatternDetails = {}
       if U.Type(tagged) == "table" then
         for _, o in ipairs(tagged) do
           if o ~= nil and o.getGUID then
             local og = o.getGUID()
             if not templateGuidSet[og] and not relativeGuidSet[og] then
-              local disp = tryMatchingDisplayName(o)
+              local disp = SRI.readRoleColorIdentity(o)
               if disp ~= nil then
-                local role, _ = parseRoleAndSuffix(disp)
+                local role, _ = SRI.parseRoleAndSuffix(disp)
                 if role == "SEAT_FIGURE" and not isPlayerSeatKey(color) then
-                  -- Workshop anchor keeps SEAT_FIGURE_* Name; pooled figurine owns SEAT_FIGURE for layout.
+                  if NPCS.isNpcSeatFigureForLayout(o, color) then
+                    if byRole["SEAT_FIGURE"] ~= nil and byRole["SEAT_FIGURE"] ~= o then
+                      error(
+                        "rotational-seat-layout: seat '"
+                        .. color
+                        .. "' has two figurines for SEAT_FIGURE (from GM Notes)"
+                      )
+                    end
+                    byRole["SEAT_FIGURE"] = o
+                  end
+                  -- Workshop placement anchor (`SEAT_FIGURE_*` without cutout): skip.
                 elseif byRole[role] ~= nil then
                   error(
                     "rotational-seat-layout: seat '"
                     .. color
                     .. "' has two tagged objects with role '"
                     .. role
-                    .. "' (from Name/Nickname); cannot pick one to move"
+                    .. "' (from GM Notes); cannot pick one to move"
                   )
                 else
                   byRole[role] = o
                 end
-              elseif not isPlayerSeatKey(color) and NPCS.isPooledFigurineObject(o) then
-                local sk = deriveSeatKeyFromObjectTag(o)
-                if sk == color then
-                  if byRole["SEAT_FIGURE"] ~= nil and byRole["SEAT_FIGURE"] ~= o then
-                    error(
-                      "rotational-seat-layout: seat '"
-                      .. color
-                      .. "' has two pooled figurines tagged for SEAT_FIGURE"
-                    )
-                  end
-                  byRole["SEAT_FIGURE"] = o
+              elseif not isPlayerSeatKey(color) and NPCS.isNpcSeatFigureForLayout(o, color) then
+                if byRole["SEAT_FIGURE"] ~= nil and byRole["SEAT_FIGURE"] ~= o then
+                  error(
+                    "rotational-seat-layout: seat '"
+                    .. color
+                    .. "' has two pooled figurines tagged for SEAT_FIGURE"
+                  )
                 end
+                byRole["SEAT_FIGURE"] = o
               else
-                skippedNoPattern = skippedNoPattern + 1
-                local objGuid = "unknown-guid"
-                local objName = "unknown-name"
-                local objNick = "unknown-nickname"
-                objGuid = tostring(o.getGUID() or objGuid)
-                objName = tostring(o.getName() or objName)
-                local data = o.getData and o.getData() or {}
-                objNick = tostring(data.Nickname or objNick)
-                table.insert(
-                  skippedNoPatternDetails,
-                  string.format("%s [name='%s', nick='%s']", objGuid, objName, objNick)
+                local objGuid = tostring(o.getGUID() or "unknown-guid")
+                local objNotes = o.getGMNotes ~= nil and tostring(o.getGMNotes() or "") or ""
+                error(
+                  "rotational-seat-layout: seat '"
+                  .. color
+                  .. "' tagged object "
+                  .. objGuid
+                  .. " has no ROLE_COLOR GM Notes (got GMNotes='"
+                  .. objNotes
+                  .. "')"
                 )
               end
             end
           end
         end
-      end
-      if skippedNoPattern > 0 then
-        local detailSuffix = ""
-        if #skippedNoPatternDetails > 0 then
-          detailSuffix = " Offenders: " .. table.concat(skippedNoPatternDetails, ", ")
-        end
-        print(
-          "[rotational-seat-layout] seat '"
-          .. color
-          .. "': "
-          .. tostring(skippedNoPattern)
-          .. " tagged object(s) have no ROLE_COLOR Name/Nickname (not moved); new clones may duplicate them."
-          .. detailSuffix
-        )
       end
 
       cloneGuidByColorRole[color] = {}
@@ -1840,47 +1728,10 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
             cloneGuidByColorRole[color][expectedRole] = eg
             seatObjByColorRole[color][expectedRole] = existing
           else
-            local src = resolveObjectRefWithRoleSupport(
-              slot.sourceRef,
-              referencePlayerColor,
-              "clone source object for seat '" .. tostring(color) .. "' role '" .. tostring(expectedRole) .. "'"
-            )
-            if src == nil then
-              error(
-                "rotational-seat-layout: cannot clone missing slot for color '"
-                .. color
-                .. "' role '"
-                .. expectedRole
-                .. " (frame-only template with no object to clone)"
-              )
-            end
-            local newObj = src.clone({
-              position = { x = pos.x, y = pos.y, z = pos.z },
-              rotation = { x = rot.x, y = rot.y, z = rot.z },
-            })
-            if newObj == nil then
-              error(
-                "rotational-seat-layout: clone returned nil for color '"
-                .. color
-                .. "' role "
-                .. tostring(expectedRole)
-              )
-            end
-            placeObjectExact(newObj, pos, rot)
-            applySeatObjectIdentity(newObj, expectedRole, color, templateTag, seatTag)
-            maybeSetHandZoneSeatColor(newObj, expectedRole, color)
-            local ng = newObj.getGUID and newObj.getGUID() or ""
-            if ng == "" then
-              error(
-                "rotational-seat-layout: cloned object has empty GUID for color '"
-                .. color
-                .. "' index "
-                .. tostring(i)
-                .. ")"
-              )
-            end
-            cloneGuidByColorRole[color][expectedRole] = ng
-            seatObjByColorRole[color][expectedRole] = newObj
+            cloneGuidByColorRole[color][expectedRole] = ""
+            seatObjByColorRole[color][expectedRole] = nil
+            skippedSlotsByColor[color] = skippedSlotsByColor[color] or {}
+            table.insert(skippedSlotsByColor[color], expectedRole)
           end
         end
       end
@@ -1895,7 +1746,13 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
           if o.getGUID ~= nil then
               guid = tostring(o.getGUID() or guid)
           end
-          if o.getName ~= nil then
+          if o.getGMNotes ~= nil then
+              local notes = tostring(o.getGMNotes() or "")
+              if notes ~= "" then
+                  name = notes
+              end
+          end
+          if name == "unknown-name" and o.getName ~= nil then
               name = tostring(o.getName() or name)
           end
           orphanDetails[#orphanDetails + 1] = string.format("%s (%s)", name, guid)
@@ -1911,6 +1768,18 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
           .. " tagged object(s) did not match any template slot (left in place)."
           .. " Unmatched: "
           .. table.concat(orphanDetails, ", ")
+        )
+      end
+      local skippedRoles = skippedSlotsByColor[color]
+      if U.Type(skippedRoles) == "table" and #skippedRoles > 0 then
+        table.sort(skippedRoles)
+        print(
+          "[rotational-seat-layout] seat '"
+          .. color
+          .. "': "
+          .. tostring(#skippedRoles)
+          .. " template slot(s) had no matching object (skipped, not cloned): "
+          .. table.concat(skippedRoles, ", ")
         )
       end
     end
@@ -2053,23 +1922,23 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
           }
         else
           local objByRole = seatObjByColorRole[color]
-          if U.Type(objByRole) ~= "table" or objByRole[rk] == nil then
-            error(
-              "rotational-seat-layout: internal error: missing moved/cloned object for color '"
-              .. color
-              .. "' role "
-              .. tostring(rk)
-            )
+          local liveObj = U.Type(objByRole) == "table" and objByRole[rk] or nil
+          if liveObj ~= nil then
+            transformNested[color][rk] = {
+              position = liveObj.getPosition(),
+              rotation = liveObj.getRotation(),
+            }
+          else
+            transformNested[color][rk] = {
+              position = Vector(frComputed.position),
+              rotation = Vector(frComputed.rotation),
+            }
           end
-          transformNested[color][rk] = {
-            position = objByRole[rk].getPosition(),
-            rotation = objByRole[rk].getRotation(),
-          }
         end
       end
-      if (guid == nil or guid == "") and not slotFrame then
+      if (guid == nil or guid == "") and not slotFrame and color == referencePlayerColor then
         error(
-          "rotational-seat-layout: could not resolve object GUID for color '"
+          "rotational-seat-layout: could not resolve object GUID for reference seat '"
           .. color
           .. "' role '"
           .. rk
@@ -2470,13 +2339,13 @@ local function findObjectForSeatRoleCorrection(seatKey, roleKey)
   end
   for _, o in ipairs(objs) do
     if roleKey == "SEAT_FIGURE" and not isPlayerSeatKey(seatKey) then
-      if NPCS.isPooledFigurineObject(o) and deriveSeatKeyFromObjectTag(o) == seatKey then
+      if NPCS.isNpcSeatFigureForLayout(o, seatKey) then
         return o
       end
     else
-      local disp = tryMatchingDisplayName(o)
+      local disp = SRI.readRoleColorIdentity(o)
       if disp ~= nil then
-        local rk, _ = parseRoleAndSuffix(disp)
+        local rk, _ = SRI.parseRoleAndSuffix(disp)
         if rk == roleKey then
           return o
         end
@@ -2655,10 +2524,10 @@ local function applyPostCorrections(sourceObjects, computed)
       ---@cast computed table
       local byColor = computed.byColor
       local seatKey = deriveSeatKeyFromObjectTag(obj)
-      local disp = tryMatchingDisplayName(obj)
+      local disp = SRI.readRoleColorIdentity(obj)
       if U.Type(seatKey) == "string" and U.Type(disp) == "string" then
         ---@cast disp string
-        local roleKey, _ = parseRoleAndSuffix(disp)
+        local roleKey, _ = SRI.parseRoleAndSuffix(disp)
         local pack = byColor[seatKey]
         if U.Type(pack) == "table" and U.Type(pack.slots) == "table" then
           for i = 1, #pack.slots do
@@ -3170,6 +3039,142 @@ function M.clearGeneratedSeatObjects(sourceObjects, seatKeys, blacklist)
   end
 
   return destroyed
+end
+
+--- Collect seat-layout objects that may still carry legacy Name/Nickname role identity.
+--- @param sourceObjects table|nil defaults to `C.TableSourceObjects`
+--- @return table[] rows `{ obj, reason }`
+local function collectSeatLayoutMigrationCandidates(sourceObjects)
+  local src = sourceObjects or C.TableSourceObjects
+  local sourceGroups = resolveSourceTemplateGroups(src)
+  local seenGuid = {}
+  local rows = {}
+
+  local function addCandidate(obj, reason)
+    if obj == nil or obj.getGUID == nil then
+      return
+    end
+    if isHandZoneObject(obj) then
+      return
+    end
+    local guid = obj.getGUID()
+    if U.Type(guid) ~= "string" or guid == "" or seenGuid[guid] then
+      return
+    end
+    seenGuid[guid] = true
+    rows[#rows + 1] = { obj = obj, reason = reason }
+  end
+
+  for i = 1, #C.PlayerColors do
+    local seatKey = C.PlayerColors[i]
+    local tagged = getObjectsWithTag(objectTagForPlayerColor(seatKey)) or {}
+    for j = 1, #tagged do
+      addCandidate(tagged[j], "tag:" .. seatKey)
+    end
+  end
+  for i = 1, #(C.NPCSeats or {}) do
+    local seatKey = C.NPCSeats[i]
+    local tagged = getObjectsWithTag(objectTagForPlayerColor(seatKey)) or {}
+    for j = 1, #tagged do
+      addCandidate(tagged[j], "tag:" .. seatKey)
+    end
+  end
+  for i = 1, #sourceGroups.relative do
+    local relRef = sourceGroups.relative[i]
+    local relObj = U.getObject(relRef, true)
+    if relObj == nil and U.Type(relRef) == "string" then
+      relObj = getObjectFromGUID(relRef)
+    end
+    addCandidate(relObj, "relative")
+  end
+
+  return rows
+end
+
+--- One-time migration: copy legacy Name/Nickname `ROLE_COLOR` identity into GM Notes and clear Name/Nickname.
+--- Run from the TTS console: `lua DEBUG.migrateSeatLayoutRolesToGmNotes()` (dry-run: `{ dryRun = true }`).
+---
+--- @param sourceObjects table|nil defaults to `C.TableSourceObjects`
+--- @param options table|nil `{ dryRun?: boolean, clearLegacy?: boolean }` — `clearLegacy` defaults true
+--- @return table summary
+function M.migrateRoleIdentityToGmNotes(sourceObjects, options)
+  options = type(options) == "table" and options or {}
+  local dryRun = options.dryRun == true
+  local clearLegacy = options.clearLegacy ~= false
+  local candidates = collectSeatLayoutMigrationCandidates(sourceObjects)
+  local summary = {
+    dryRun = dryRun,
+    scanned = #candidates,
+    migrated = 0,
+    alreadyMigrated = 0,
+    skippedNoLegacy = 0,
+    failed = {},
+    details = {},
+  }
+
+  for i = 1, #candidates do
+    local row = candidates[i]
+    local obj = row.obj
+    local guid = obj.getGUID and obj.getGUID() or "unknown-guid"
+    local legacy = SRI.readLegacyRoleColorIdentity(obj)
+    local current = SRI.readRoleColorIdentity(obj)
+
+    if legacy == nil and current ~= nil then
+      summary.alreadyMigrated = summary.alreadyMigrated + 1
+    elseif legacy == nil then
+      summary.skippedNoLegacy = summary.skippedNoLegacy + 1
+    else
+      local detail = {
+        guid = guid,
+        reason = row.reason,
+        legacy = legacy,
+        previousGmNotes = obj.getGMNotes and obj.getGMNotes() or "",
+      }
+      if dryRun then
+        summary.migrated = summary.migrated + 1
+        summary.details[#summary.details + 1] = detail
+      else
+        local okNotes = false
+        if obj.setGMNotes then
+          okNotes = obj.setGMNotes(legacy) ~= false
+        end
+        local okClear = true
+        if clearLegacy then
+          okClear = not isHandZoneObject(obj) and SRI.clearLegacyRoleNameFields(obj)
+        end
+        if okNotes then
+          summary.migrated = summary.migrated + 1
+          summary.details[#summary.details + 1] = detail
+        else
+          summary.failed[#summary.failed + 1] = {
+            guid = guid,
+            legacy = legacy,
+            error = "setGMNotes failed or unavailable",
+          }
+        end
+        if not okClear and clearLegacy then
+          print(
+            "[rotational-seat-layout] migrate: cleared GM Notes for "
+            .. guid
+            .. " but Name/Nickname may need manual clear (reload failed)"
+          )
+        end
+      end
+    end
+  end
+
+  print(
+    string.format(
+      "[rotational-seat-layout] migrateRoleIdentityToGmNotes%s: scanned=%d migrated=%d already=%d skippedNoLegacy=%d failed=%d",
+      dryRun and " (dry-run)" or "",
+      summary.scanned,
+      summary.migrated,
+      summary.alreadyMigrated,
+      summary.skippedNoLegacy,
+      #summary.failed
+    )
+  )
+  return summary
 end
 
 return M

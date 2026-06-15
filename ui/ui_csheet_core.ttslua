@@ -1,5 +1,5 @@
 ---@diagnostic disable: undefined-global, lowercase-global
--- Character sheet object UI: derive owner from object name CSHEET_PAGE_<n>_<COLOR>.
+-- Character sheet object UI: derive owner from GM Notes `CSHEET_PAGE_<n>_<COLOR>`.
 -- Entry stubs: `require("ui.ui_csheet")` (pages 1–2, 7–8) or `require("ui.ui_csheet_pageN")` (pages 3–6).
 -- A second global `function onLoad()` after the entry require replaces onLoad and breaks navigation.
 -- Any page index n is accepted; automated dot/box toggles are controlled per page in
@@ -104,6 +104,7 @@ local CC = require("lib.csheet_constants")
 local CU = require("lib.csheet_util")
 local CP = require("lib.csheet_pose")
 local BPD = require("lib.blood_potency_decals")
+local CI = require("lib.csheet_identity")
 
 --- Register tracker glyphs/images with Global (separate Lua VM). No-op if Global unavailable.
 local function pushTrackerDisplayToGlobal()
@@ -131,26 +132,36 @@ local function sheetHasAlignmentDoneTag()
   return self.hasTag(CSHEET_ALIGNMENT_DONE_TAG) == true
 end
 
---- Parse sheet object Name (nickname), e.g. `CSHEET_PAGE_3_PINK` → page 3, color `PINK`.
---- Color is the segment after the second underscore (same info as the `<Color>Object` tag: RedObject, …).
---- @param name string
---- @return number|nil, string|nil
-local function parseSheetObjectName(name)
-  if type(name) ~= "string" then
-    return nil, nil
+--- @param s string|nil
+--- @return string
+local function trim(s)
+  if type(s) ~= "string" then
+    return ""
   end
-  local p, c = name:match("^CSHEET_PAGE_(%d+)_(%a+)$")
-  if not p then
-    return nil, nil
-  end
-  return tonumber(p), c
+  return string.match(s, "^%s*(.-)%s*$") or ""
 end
 
---- Re-parse this object's nickname into `pageNum` / `seatColor`.
+--- Re-parse this object's GM Notes into `pageNum` / `seatColor`.
 --- Call from UI callbacks so navigation still works if a host script replaced `onLoad` after `require`.
-local function syncSheetContextFromObjectName()
-  local name = self.getName()
-  pageNum, seatColor = parseSheetObjectName(name)
+local function syncSheetContextFromGmNotes()
+  local label = "csheet"
+  if self.getGUID ~= nil then
+    label = "csheet:" .. tostring(self.getGUID())
+  end
+  pageNum, seatColor = CI.requirePageRoleFromObject(self, label)
+end
+
+--- Label for error messages (GM Notes role, else GUID).
+--- @return string
+local function csheetObjectLabel()
+  local notes = self.getGMNotes and trim(self.getGMNotes() or "") or ""
+  if notes ~= "" then
+    return notes
+  end
+  if self.getGUID ~= nil then
+    return tostring(self.getGUID() or "csheet")
+  end
+  return "csheet"
 end
 
 --- Player-color tag used to find owned sheet objects (e.g. `"BrownObject"`).
@@ -257,15 +268,7 @@ local function getCsheetDisableThresholdY()
   return 0
 end
 
---- Expected object name for a page (`CSHEET_PAGE_<n>_<COLOR>` with color in ALL CAPS).
---- @param pageNum number
---- @param colorUpper string
---- @return string
-local function expectedCsheetNickname(pageNum, colorUpper)
-  return string.format("CSHEET_PAGE_%d_%s", pageNum, string.upper(colorUpper))
-end
-
---- Scan objects tagged `<Color>Object` for the exact nickname pattern.
+--- Scan objects tagged `<Color>Object` for matching `CSHEET_PAGE_<n>_<COLOR>` GM Notes.
 --- @param colorUpper string
 --- @param pageNum number
 --- @return Object|nil
@@ -274,20 +277,19 @@ local function findCsheetPageByColorTagScan(colorUpper, pageNum)
   if tag == nil then
     return nil
   end
-  local wantName = expectedCsheetNickname(pageNum, colorUpper)
   local objs = getObjectsWithTag(tag)
   if type(objs) ~= "table" then
     return nil
   end
   for _, o in ipairs(objs) do
-    if o ~= nil and o.getName() == wantName then
+    if CI.objectMatchesPageRole(o, pageNum, colorUpper) then
       return o
     end
   end
   return nil
 end
 
---- Locate one character sheet page by seat ownership tag and exact object nickname.
+--- Locate one character sheet page by seat ownership tag and GM Notes role.
 --- @param colorUpper string
 --- @param pageNum number
 --- @return Object|nil
@@ -456,7 +458,7 @@ end
 --- Replace dynamic-page markup from PCS-backed stats (`self.UI.setXml`).
 --- Cheap no-op when not a dynamic page, fingerprint unchanged, or builder returns empty (placeholder).
 local function applyPageDynamicXml()
-  syncSheetContextFromObjectName()
+  syncSheetContextFromGmNotes()
   local cfg = PAGE_DYNAMIC_XML[pageNum]
   if cfg == nil then
     return
@@ -532,7 +534,7 @@ end
 --- @param stats table
 --- @param resolvedStatChanges table|nil merged condition statChanges from Global
 local function applyBloodPotencyDecals(stats, resolvedStatChanges)
-  syncSheetContextFromObjectName()
+  syncSheetContextFromGmNotes()
   if pageNum ~= 1 and pageNum ~= 2 then
     return
   end
@@ -549,7 +551,7 @@ local function applyBloodPotencyDecals(stats, resolvedStatChanges)
   end
 
   -- getDecals / setDecals and URL tables must stay in this object script VM (TTS resource ownership).
-  local objectLabel = tostring(self.getName())
+  local objectLabel = csheetObjectLabel()
   local nextDecals = BPD.buildSetDecalsPayload(
     self.getDecals(),
     stats,
@@ -562,14 +564,14 @@ local function applyBloodPotencyDecals(stats, resolvedStatChanges)
   end
   local ok = self.setDecals(nextDecals)
   if ok ~= true then
-    error(string.format("[ui_csheet] applyBloodPotencyDecals: setDecals failed on %s", tostring(self.getName())))
+    error(string.format("[ui_csheet] applyBloodPotencyDecals: setDecals failed on %s", csheetObjectLabel()))
   end
   lastBloodPotencyDecalFingerprint = fp
 end
 
 --- Refresh images and XP from merged game state (fetched in Global script).
 function refreshCharacterSheetUi()
-  syncSheetContextFromObjectName()
+  syncSheetContextFromGmNotes()
   resolvePlayer()
   if playerID == nil or playerID == CC.StorytellerID or pageNum == nil then
     return
@@ -611,8 +613,18 @@ function refreshCharacterSheetUi()
   end
 end
 
-function onLoad()
-  syncSheetContextFromObjectName()
+function CSHEET.onLoad()
+  syncSheetContextFromGmNotes()
+  if pageNum == nil or seatColor == nil then
+    local gm = self.getGMNotes ~= nil and trim(self.getGMNotes() or "") or ""
+    print(
+      string.format(
+        "[ui_csheet] %s: no CSHEET_PAGE_* identity (GMNotes='%s') — navigation/stats disabled; re-save after GM Notes migration",
+        csheetObjectLabel(),
+        gm
+      )
+    )
+  end
   local disableThresholdY = getCsheetDisableThresholdY()
   local py = self.getPosition().y
   local visible = (py >= disableThresholdY)
@@ -646,14 +658,13 @@ function onLoad()
   end, 30)
 end
 
---- Called from global script after PC state changes (object.call).
-function refreshFromGameState()
+function CSHEET.refreshFromGameState()
   refreshCharacterSheetUi()
 end
 
 --- UI: forward from an even page (2, 4, 6) to the next spread.
-function onPageForward()
-  syncSheetContextFromObjectName()
+function CSHEET.onPageForward()
+  syncSheetContextFromGmNotes()
   if pageNum == nil or seatColor == nil then
     return
   end
@@ -665,8 +676,8 @@ function onPageForward()
 end
 
 --- UI: back from an odd page (3, 5, 7) to the previous spread.
-function onPageBack()
-  syncSheetContextFromObjectName()
+function CSHEET.onPageBack()
+  syncSheetContextFromGmNotes()
   if pageNum == nil or seatColor == nil then
     return
   end
@@ -679,8 +690,8 @@ end
 
 --- UI: inner spine click — switch clicker to this sheet owner's camera preset (sheetRed, …).
 --- @param player table TTS player who clicked
-function onPageInnerClick(player, value, id)
-  syncSheetContextFromObjectName()
+function CSHEET.onPageInnerClick(player, value, id)
+  syncSheetContextFromGmNotes()
   if pageNum == nil or seatColor == nil then
     return
   end
@@ -695,5 +706,26 @@ function onPageInnerClick(player, value, id)
     sheetSeatColor = seatColor,
   })
 end
+
+--- Register TTS global entry points (XmlUI onClick + lifecycle). Entry stubs require this module.
+function CSHEET.bindTtsEntryPoints()
+  function onLoad()
+    CSHEET.onLoad()
+  end
+  function onPageForward()
+    CSHEET.onPageForward()
+  end
+  function onPageBack()
+    CSHEET.onPageBack()
+  end
+  function onPageInnerClick(player, value, id)
+    CSHEET.onPageInnerClick(player, value, id)
+  end
+  function refreshFromGameState()
+    CSHEET.refreshFromGameState()
+  end
+end
+
+CSHEET.bindTtsEntryPoints()
 
 return CSHEET
