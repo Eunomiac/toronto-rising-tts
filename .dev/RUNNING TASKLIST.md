@@ -68,7 +68,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Preload pool:** Spawn all NPC figurines off-table (preload grid, small scale) so cutout images are loaded before activation. _( `npcs_data` preload at y = -200; `NPCS.ensureAllNpcsPreloaded`.)_ _(TOR-60)_
 - [x] **Seat spawn:** Pooled figurine uses seat `*Object` tag + `SEAT_FIGURE` rotational layout; `postCorrectionsBySeatRole`; area spotlight hidden at seat; workshop `SEAT_LIGHT_*_NPC*` only. _(TOR-64)_
 - [x] **Seat tags:** `npc_figurine` ↔ `NPCnObject` on seat/unseat; layout matches pooled figurine by tag + `Figurine_Custom` (`NPCS.isPooledFigurineObject`). _(TOR-65)_
-- [ ] **Group spawn exclusion:** When spawning an NPC group into a stage area, do not pull members who are already seated (e.g. `fiveKeys` spawn must leave `myleneHamelin` in her table seat). _(TOR-76)_
+- [x] **Group spawn exclusion:** When spawning an NPC group into a stage area, do not pull members who are already seated (e.g. `fiveKeys` spawn must leave `myleneHamelin` in her table seat). _(TOR-76)_
 - [ ] **Storyteller NPC gameboard (Phase A):** `STAGE_BOARD` + `CONTROL_BOARD`, tokens, markers, configurable `CONTROL_BOARD_SNAP` grid (~160 snaps), Apply/Clear wired; `placements` v3 + `Sync.npcs`. Phase B: Read/Lock/Load, spotlight. Phase C panel retirement Done (TOR-181). _(TOR-169)_ — workshop objects + GUIDs in TTS save required; Save & Play to confirm snap geometry/rotation
 - [x] **Control board tokens on load:** Mirror on-stage NPCs from `sessionScene.npcWorld.placements` (exact u,v + Z flip); pull from palette via tag scan; palette onLoad no longer parks all tokens. _(TOR-170)_
 - [x] **Figurine yaw from master origin:** `Gameboard.placementBoardRelYawDeg` uses top-level `CONTROL_BOARD_SNAP.origin`; stage figurines + Apply scan ignore token Y; Z flip only for light mode. _(TOR-171)_
@@ -96,7 +96,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 ## Soundscape
 
 - [x] On load, emitters automatically play tracks from the last save. _(Mitigation: **Silence for save** on Sound panel → `Soundscape.prepareEmittersForSave()`; fold into End Session sequence when defined.)_ _(TOR-71)_
-- [ ] **Background music policy:** In any phase **other than Session Start**, background music should always play. When the active site or scene specifies no music, default to the **`Main`** playlist (`lib/soundscape_catalog.ttslua`). _(TOR-77)_
+- [x] **Background music policy:** In any phase **other than Session Start**, background music should always play. When the active site or scene specifies no music, default to the **`Main`** playlist (`lib/soundscape_catalog.ttslua`). _(TOR-77)_
 - [x] **Site weather ducking:** Site `weatherDucking` applies via `state.siteWeatherDucking` regardless of indoors/outdoors. _(TOR-80 — 2026-06-15)_
 - [x] **Thunder indoor ducking:** `triggerThunder` uses `weatherVolume()` like rain/wind. _(TOR-150 — 2026-06-15)_
 - [x] **Weather audio burst on scene switch:** Silent stub + zero gain before looping clip swap; one-frame deferred volume arm; rain/wind hold same effect without restart; library Apply defers `markReconciledToCurrentState` after weather apply. Author verified on scene switch. _(TOR-136)_

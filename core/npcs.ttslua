@@ -371,6 +371,15 @@ local function isValidNpcSeatKey(seatKey)
     return U.Type(seatKey) == "string" and U.isIn(seatKey, C.NPCSeats or {})
 end
 
+--- @param rec table|nil
+--- @return boolean
+local function isNpcSeatedAtTable(rec)
+    if U.Type(rec) ~= "table" then
+        return false
+    end
+    return U.Type(rec.seatedSeatKey) == "string" and isValidNpcSeatKey(rec.seatedSeatKey)
+end
+
 --- @param npcName string
 --- @return boolean
 local function validateNpcNameKey(npcName)
@@ -1376,6 +1385,16 @@ local isNpcLocked
 --- @param npcName string
 function NPCS.getInstanceRecord(npcName)
     return getInstances()[npcName]
+end
+
+--- Whether an NPC figurine is seated at a narrative table seat (group spawn must not pull them).
+--- @param characterKey string
+--- @return boolean
+function NPCS.isCharacterSeatedAtTable(characterKey)
+    if U.Type(characterKey) ~= "string" or characterKey == "" then
+        return false
+    end
+    return isNpcSeatedAtTable(getInstances()[characterKey])
 end
 
 --- Registry key used in L.LIGHTMODES and gameState.lights.
@@ -3371,7 +3390,8 @@ function NPCS.spawnGroup(groupId, areaKey)
     for _, row in ipairs(rows) do
         local rec = instances[row.name]
         local locked = rec and isNpcLocked(rec)
-        if not locked then
+        local seated = rec and isNpcSeatedAtTable(rec)
+        if not locked and not seated then
             movableCount = movableCount + 1
             local preferred = row.idx
             local slot = nil

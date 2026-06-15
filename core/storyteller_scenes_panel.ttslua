@@ -1054,6 +1054,9 @@ function StorytellerScenesPanel.endSceneNarrative(player)
     if SS.setLocationAudio ~= nil then
         SS.setLocationAudio("none")
     end
+    if S.getStateVal("currentPhase") ~= C.Phases.SESSION_START and SS.setMusicMood ~= nil then
+        SS.setMusicMood("main")
+    end
     if SS.reapplyWeatherNaturalVolumes ~= nil then
         SS.reapplyWeatherNaturalVolumes()
     end

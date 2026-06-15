@@ -4291,14 +4291,20 @@ function Gameboard.tryAnchorFamilyGroupSpread(droppedToken)
     end
     local members = Palette.getSortedGroupMembers(groupId)
     local byKey = buildTokenByCharacterKey()
+    local NPCS = require("core.npcs")
     local toPlace = {}
     for _, member in ipairs(members) do
-        local tok = byKey[member.characterKey]
-        if tok ~= nil and tok ~= droppedToken and not isTokenOnControlBoardSurface(board, tok) then
-            toPlace[#toPlace + 1] = {
-                token = tok,
-                slotIndex = member.slotIndex,
-            }
+        if type(NPCS.isCharacterSeatedAtTable) == "function"
+            and NPCS.isCharacterSeatedAtTable(member.characterKey) then
+            -- TOR-76: seated table NPCs stay put during family anchor spread.
+        else
+            local tok = byKey[member.characterKey]
+            if tok ~= nil and tok ~= droppedToken and not isTokenOnControlBoardSurface(board, tok) then
+                toPlace[#toPlace + 1] = {
+                    token = tok,
+                    slotIndex = member.slotIndex,
+                }
+            end
         end
     end
     table.sort(toPlace, function(a, b)

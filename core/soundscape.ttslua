@@ -16,6 +16,7 @@
 local Soundscape = {}
 local U = require("lib.util")
 local S = require("core.state")
+local C = require("lib.constants")
 local G = require("lib.guids")
 local Catalog = require("lib.soundscape_catalog")
 
@@ -1182,6 +1183,41 @@ end
 --- Stable fingerprint for fields driven by `applySoundscapeReconcileFromStateSnapshot`.
 --- @param state table
 --- @return string
+--- Outside Session Start, ambient background music should always play (Main when unspecified).
+--- @return boolean
+local function backgroundMusicPolicyRequiresMain()
+    local phase = S.getStateVal("currentPhase")
+    return phase ~= nil and phase ~= C.Phases.SESSION_START
+end
+
+--- Treat explicit `"none"` playlist keys as absent so Main default can apply.
+--- @param context table
+--- @return table
+local function clearNoneBackgroundMusicKeys(context)
+    if type(context) ~= "table" then
+        return {}
+    end
+    if context.locationMusic == "none" then
+        context.locationMusic = nil
+    end
+    if context.musicMood == "none" then
+        context.musicMood = nil
+    end
+    return context
+end
+
+--- @return boolean, string
+local function applyDefaultMainBackgroundMusicIfNeeded()
+    if not backgroundMusicPolicyRequiresMain() then
+        return true, "Session Start: background music optional"
+    end
+    local state = ensureState()
+    if state.siteSilent == true then
+        return true, "Silent site: background remains off"
+    end
+    return Soundscape.setMusicMood(Catalog.DEFAULTS.musicMood)
+end
+
 local function soundscapeReconcileFingerprint(state)
     if type(state) ~= "table" then
         return ""
@@ -1217,6 +1253,8 @@ local function applySoundscapeReconcileFromStateSnapshot(state)
         elseif type(state.musicMood) == "string" then
             Soundscape.setMusicMood(state.musicMood)
         end
+    elseif backgroundMusicPolicyRequiresMain() then
+        Soundscape.setMusicMood(state.musicMood or Catalog.DEFAULTS.musicMood)
     end
     if type(state.location) == "string" and state.location ~= Catalog.DEFAULTS.location then
         Soundscape.setLocationAudio(state.location)
@@ -1615,6 +1653,7 @@ function Soundscape.applyContext(context)
     if type(context) ~= "table" then
         return { ok = false, message = "Soundscape.applyContext requires a table" }
     end
+    context = Soundscape.withDefaultBackgroundMusic(context)
 
     if type(context.appliedSiteKey) == "string" and context.appliedSiteKey ~= "" then
         ensureState().lastAppliedSiteKey = context.appliedSiteKey
@@ -1668,6 +1707,9 @@ function Soundscape.applyContext(context)
         if context.locationAudio ~= nil or context.location ~= nil then
             collect(Soundscape.setLocationAudio(context.locationAudio or context.location))
         end
+        if backgroundMusicPolicyRequiresMain() and ensureState().backgroundMusicEnabled ~= true then
+            collect(applyDefaultMainBackgroundMusicIfNeeded())
+        end
     end
 
     if context.featuredMusic ~= nil then
@@ -1710,7 +1752,9 @@ function Soundscape.mergeSessionSceneNarrativeIntoContext(sessionScene, base)
     if type(sn) ~= "table" then
         return out
     end
-    if type(sn.backgroundMusic) == "string" and string.match(sn.backgroundMusic, "%S") then
+    if type(sn.backgroundMusic) == "string"
+        and string.match(sn.backgroundMusic, "%S")
+        and sn.backgroundMusic ~= "none" then
         out.musicMood = sn.backgroundMusic
     end
     if type(sn.location) == "string" and string.match(sn.location, "%S") then
@@ -1730,11 +1774,11 @@ end
 --- @param context table|nil
 --- @return table
 function Soundscape.withDefaultBackgroundMusic(context)
-    local out = type(context) == "table" and context or {}
+    local out = clearNoneBackgroundMusicKeys(type(context) == "table" and context or {})
     if out.isSilent == true then
         return out
     end
-    if out.musicMood == nil and out.locationMusic == nil then
+    if out.musicMood == nil and out.locationMusic == nil and backgroundMusicPolicyRequiresMain() then
         out.musicMood = Catalog.DEFAULTS.musicMood
     end
     return out
@@ -1785,7 +1829,10 @@ function Soundscape.contextFromSite(site, siteKey)
     local sc = site.soundscape
     if type(sc) == "table" then
         local bg = sc.backgroundMusic
-        if type(bg) == "table" and type(bg.playlist) == "string" and bg.playlist ~= "" then
+        if type(bg) == "table"
+            and type(bg.playlist) == "string"
+            and bg.playlist ~= ""
+            and bg.playlist ~= "none" then
             ctx.locationMusic = bg.playlist
         end
         local loc = sc.location
@@ -1793,7 +1840,7 @@ function Soundscape.contextFromSite(site, siteKey)
             ctx.location = loc.track
         end
     end
-    return ctx
+    return Soundscape.withDefaultBackgroundMusic(ctx)
 end
 
 --- Sets the Storyteller-controlled background music mood.
@@ -1816,6 +1863,9 @@ end
 function Soundscape.setLocationMusic(playlistKey)
     clearSiteSilentLatch()
     if playlistKey == "none" then
+        if backgroundMusicPolicyRequiresMain() then
+            return Soundscape.setMusicMood(Catalog.DEFAULTS.musicMood)
+        end
         musicGeneration = musicGeneration + 1
         local state = ensureState()
         state.locationMusic = Catalog.DEFAULTS.locationMusic
