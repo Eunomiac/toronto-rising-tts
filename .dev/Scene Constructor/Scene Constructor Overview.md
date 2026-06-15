@@ -30,6 +30,8 @@ On successful import: upsert `sceneLibrary.scenes[sceneKey]`, set `title`, set *
 
 ### Full import JSON example (copy-paste)
 
+**Annotated template:** [`import-template-full.jsonc`](import-template-full.jsonc) — schema v2 with every optional `sessionScene` field and inline comments (remove comments before paste). Minimal example: [`SchemaV2.jsonc`](SchemaV2.jsonc).
+
 Below is one **complete** wrapper object valid for the Import modal: all five **PC** `seatSlots` keys are present (required). All four **NPC** keys are listed here explicitly; any **omitted** NPC key is auto-filled as `{ "slotEmpty": true }` by the importer. Replace `characterKey` values with keys that exist in your chronicle’s character data (`D.characters` / PCS). **`npcRoleOverride` is not authored in JSON** — the importer rebuilds it from PC `seatSlots` (`isPlayingNPC` + `npcCharacterKey`). **`chronicleWeatherFollowSchedule`** and **`chronicleWeatherManualHold`** are **not authored** for imports that use `soundscapeNarrative` weather — set **`wind`**, **`rain`**, and **`thunderstorm`** together or omit all three; the importer derives the two booleans (see **Soundscape**). You may omit **`seatPresent`** when every PC row sets **`isPresent`** (see **Seat slots**). `soundscapeNarrative` is optional intent for **future** scene-apply wiring; `sessionScene` is still merged and defaults backfilled in `S.validateState`.
 
 ```json

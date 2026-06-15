@@ -955,7 +955,7 @@ local function applyMapPanelHud(playerID, seatColor, hud)
                 applyCachedMapPanelBool(playerID, pinId, false, setMapStackImageVisibility)
                 pinOffsetCache[pinId] = nil
             elseif not shouldMove then
-                if sessionSiteMappable == false and type(cachedOffset) == "string" and cachedOffset ~= "" then
+                if type(cachedOffset) == "string" and cachedOffset ~= "" then
                     applyCachedMapPanelBool(playerID, pinId, true, setMapStackImageVisibility)
                     if pinOffsetCache[pinId] ~= cachedOffset then
                         U.setAttribute(pinId, "offsetXY", cachedOffset)

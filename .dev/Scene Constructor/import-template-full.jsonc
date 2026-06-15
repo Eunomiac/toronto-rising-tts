@@ -1,0 +1,149 @@
+// Scene library import template — paste into Scenes panel Import modal after removing comments.
+// Parser: core/scene_library.ttslua (`SceneLibrary.validateAndNormalizeImportPayload`)
+// Docs: .dev/Scene Constructor/Scene Constructor Overview.md
+// Max schemaVersion: 2. Import does NOT activate the scene (receivesLiveWrites stays false).
+
+{
+  // Recommended. 1 = legacy (lightingPresetKey may be null). 2 = current strict rules.
+  "schemaVersion": 2,
+
+  // Stable library id — [a-zA-Z][a-zA-Z0-9_]* (e.g. openingCouncil).
+  "sceneKey": "openingCouncil",
+
+  // Button label in the Scene library panel.
+  "title": "Opening Council",
+
+  "sessionScene": {
+
+    // v2 REQUIRED: key in C.LightModes (e.g. IndoorBright, OutdoorDim).
+    "lightingPresetKey": "IndoorBright",
+
+    // v2 REQUIRED: reconciles TOP_FOG object on (true) / off (false).
+    "isTopFogActive": false,
+
+    // Optional: C.Tables key → RSL.SetTableTo on Apply (e.g. "Table A", "Table B1").
+    "tableKey": "Table B1",
+
+    // Optional sparse seat presence — usually OMIT; use seatSlots[].isPresent instead.
+    // "seatPresent": { "Red": true, "NPC1": true },
+
+    // REQUIRED on import: all five PC colors (Brown, Orange, Red, Pink, Purple).
+    // NPC1–NPC4 optional (missing → importer adds { "slotEmpty": true }).
+    "seatSlots": {
+      "Brown": {
+        "characterKey": "fomorach", // Chronicle PC key (pcs_data)
+        "isPlayingNPC": false,
+        "isPresent": true // Drives seatPresent + lighting “present”
+      },
+      "Orange": {
+        "characterKey": "rashid",
+        "isPlayingNPC": false,
+        "isPresent": true
+      },
+      "Red": {
+        "characterKey": "lordLucien", // Real PC even when playing an NPC
+        "isPlayingNPC": true,
+        "npcCharacterKey": "myleneHamelin", // REQUIRED when isPlayingNPC is true
+        "isPresent": true
+      },
+      "Pink": {
+        "characterKey": "aishe",
+        "isPlayingNPC": false,
+        "isPresent": false // Narratively absent from this scene
+      },
+      "Purple": {
+        "characterKey": "blackCaesar",
+        "isPlayingNPC": false,
+        "isPresent": true
+      },
+      "NPC1": {
+        "characterKey": "adrianVarga", // NPC bench seat occupied
+        "isPresent": true
+      },
+      "NPC2": { "slotEmpty": true },
+      "NPC3": { "slotEmpty": true },
+      "NPC4": { "slotEmpty": true }
+    },
+
+    // DO NOT author — rebuilt from PC seatSlots on import (isPlayingNPC + npcCharacterKey).
+    // "npcRoleOverride": { "Red": "myleneHamelin" },
+
+    // Optional chronicle location (flat keys, not a nested location object).
+    "districtKey": "BayStFinancial",
+    "siteKey": "StRegisCouncilChamber",
+
+    // v2 REQUIRED object. isPresentDay REQUIRED boolean.
+    "clock": {
+      // All five datetime fields together, OR all omitted (present-day flags-only).
+      // Partial datetime is INVALID. isPresentDay false ⇒ all five REQUIRED.
+      "hour": 22,
+      "minute": 15,
+      "day": 14,
+      "month": 9,
+      "year": 2026,
+
+      "useRealTime": true, // Narrative clock ticks with wall time
+      "realTimeSpeed": 1, // 1 = one fiction minute per 60 real seconds when useRealTime
+      "isPresentDay": true // v2 REQUIRED
+    },
+
+    // DO NOT author on import — derived from soundscapeNarrative weather triple.
+    // "chronicleWeatherFollowSchedule": true,
+    // "chronicleWeatherManualHold": false,
+
+    // Optional: merged into active.rollOptions on roll start (keys: roll type or "all").
+    "rollDefaults": {
+      "all": {
+        "numberOfRerolls": 1
+      },
+      "skill": {
+        "bestialVisible": false
+      }
+    },
+
+    // Optional: applied on scene Apply → gameState.soundscape.
+    // wind + rain + thunderstorm: ALL three set or ALL omitted (mixed is invalid).
+  "soundscapeNarrative": {
+      "backgroundMusic": "casaLoma", // Catalog mood / playlist key
+      "location": "library", // Location ambience track key
+      "wind": "silent", // Layer keys — trio rule applies
+      "rain": "silent",
+      "thunderstorm": false, // false counts as “set” for the weather trio
+      "isIndoors": true
+    },
+
+    "npcWorld": {
+      // Optional: when true, control-board token UV mirror skips overwrite on reconcile.
+      "layoutLock": false,
+
+      // Authoritative stage layout: characterKey → STAGE_BOARD u/v (0–1).
+      "placements": {
+        "adrianVarga": {
+          "u": 0.18,
+          "v": 0.72,
+          "yaw": 0, // Optional degrees
+          "npcLightMode": "OFF", // OFF | STANDARD | SPOTLIGHT
+          "groundLevel": -15 // Optional world Y; else derived from snap ring
+        },
+        "theAristocrat": {
+          "u": 0.42,
+          "v": 0.55,
+          "npcLightMode": "STANDARD"
+        }
+      },
+
+      // Import convenience: converted to placements then cleared. placements wins on duplicate key.
+      "byArea": {
+        "nearLeft": {
+          "1": { "characterKey": "zuriOluwusi", "npcLightMode": "OFF" }
+        },
+        "centerForward": {},
+        "nearRight": {},
+        "farLeft": {},
+        "farRight": {}
+      }
+
+      // NEVER author — import rejects npcWorld.preload (engine-managed preload pool).
+    }
+  }
+}
