@@ -550,6 +550,61 @@ local function resolveTokenCharacterKey(obj)
     return nil
 end
 
+--- Live control token for a character key (CONTROL_BOARD or palette).
+--- @param characterKey string
+--- @return Object|nil
+local function controlTokenForCharacterKey(characterKey)
+    if type(characterKey) ~= "string" or characterKey == "" then
+        return nil
+    end
+    for _, obj in ipairs(getObjectsWithTag(TAG_TOKEN) or {}) do
+        if isGameObject(obj) and resolveTokenCharacterKey(obj) == characterKey then
+            return obj
+        end
+    end
+    return nil
+end
+
+--- Unassign homeland seats when the character's token is not on the CONTROL_BOARD minimap (palette / off-board = out of play).
+--- @param board Object|nil
+--- @return boolean changed
+local function releaseHomelandSeatsForOffBoardTokens(board)
+    board = board or getControlBoard()
+    if not isGameObject(board) then
+        return false
+    end
+    local NPCS = require("core.npcs")
+    local occupied = stateModule().getStateVal("seatLayout", "occupiedNPCSlots")
+    if type(occupied) ~= "table" then
+        return false
+    end
+    local changed = false
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local ck = occupied[seatKey]
+        if type(ck) == "string" and ck ~= "" then
+            local token = controlTokenForCharacterKey(ck)
+            local onBoard = isGameObject(token) and isTokenOnControlBoardSurface(board, token)
+            if not onBoard then
+                local ok, err = NPCS.unseatNpc(ck)
+                if not ok then
+                    print(
+                        "[Gameboard] release homeland seat (token off board): "
+                            .. tostring(ck)
+                            .. ": "
+                            .. tostring(err)
+                    )
+                else
+                    changed = true
+                end
+            end
+        end
+    end
+    if changed then
+        print("[Gameboard] homeland seat(s) released — token not on CONTROL_BOARD")
+    end
+    return changed
+end
+
 --- @param deg number|nil
 --- @return boolean true when axis reads as flipped (~180°)
 local function eulerAxisFlippedDeg(deg)
@@ -940,13 +995,13 @@ end
 --- @param seatMutation boolean|nil When true, run seat unassign/assign steps (TOR-180 Apply).
 local function syncNpcsFromControlBoard(reason, seatMutation)
     local Sync = require("core.sync")
-    --- Clear empties stage placements but keeps seat assignments — Step Three re-seats (TOR-178).
+    --- Clear: vacate off-board homelands first; on-board homelands re-seat via Step Three (TOR-178).
     local onlySteps = { 1, 5 }
     if seatMutation == true then
         onlySteps = { 1, 2, 3, 4, 5 }
     end
     if reason == "gameboard_clear" then
-        onlySteps = { 1, 3, 5 }
+        onlySteps = { 1, 2, 3, 4, 5 }
     end
     Sync.npcs({
         reason = reason,
@@ -958,8 +1013,8 @@ local function syncNpcsFromControlBoard(reason, seatMutation)
 end
 
 --- True when an empty NPC seat snap should clear `occupiedNPCSlots` on Apply.
---- Keep assignment only when the token is on a polar minimap snap this scan (TOR-178 case 4).
---- Off-board / in-air tokens do not count as stage placement.
+--- Keep assignment only while the token remains on the CONTROL_BOARD minimap (polar/stage snap this scan).
+--- Palette and off-board tokens do not retain a homeland seat.
 --- @param characterKey string
 --- @param polarOnBoardByCharacter table<string, boolean>
 --- @return boolean
@@ -1084,22 +1139,38 @@ function Gameboard.clearControlBoard()
     if hadPlacements then
         stateModule().setStateVal({}, "sessionScene", "npcWorld", "placements")
     end
+    local board = getControlBoard()
+    local seatReleased = releaseHomelandSeatsForOffBoardTokens(board)
     local palette = getControlBoardPalette()
     local moved = 0
     if isGameObject(palette) then
-        local board = getControlBoard()
         moved = Palette.syncTokensToPalette(palette, {
-            skipParkIf = function(token, _ck)
+            skipParkIf = function(token, ck)
                 if not isGameObject(board) then
                     return false
                 end
-                local entry = resolveTokenSnapCatalogEntry(
-                    board,
-                    token,
-                    snapMatchFuzzinessForBoard(board),
-                    nil
-                )
-                return type(entry) == "table" and entry.snapKind == SNAP_KIND_SEAT
+                if not isTokenOnControlBoardSurface(board, token) then
+                    return false
+                end
+                if type(ck) ~= "string" or ck == "" then
+                    return false
+                end
+                local occupied = stateModule().getStateVal("seatLayout", "occupiedNPCSlots")
+                if type(occupied) ~= "table" then
+                    return false
+                end
+                for _, assigned in pairs(occupied) do
+                    if assigned == ck then
+                        local entry = resolveTokenSnapCatalogEntry(
+                            board,
+                            token,
+                            snapMatchFuzzinessForBoard(board),
+                            nil
+                        )
+                        return type(entry) == "table" and entry.snapKind == SNAP_KIND_SEAT
+                    end
+                end
+                return false
             end,
         })
         if isGameObject(board) then
@@ -1117,7 +1188,7 @@ function Gameboard.clearControlBoard()
             print("[Gameboard] Clear: placements already empty (CONTROL_BOARD_PALETTE missing — tokens not parked)")
         end
     end
-    if not hadPlacements and moved == 0 then
+    if not hadPlacements and moved == 0 and not seatReleased then
         print("[Gameboard] Clear: no state/token changes — skipped figurine sync")
         Gameboard.reconcileControlBoardFromState({ force = true })
         return true, nil
@@ -1272,7 +1343,14 @@ local function tableComponentActiveForOccupiedSlots(parentTable, componentName)
     if type(usedBy) ~= "string" or usedBy == "" then
         return true
     end
-    return npcSeatOccupiedOnTable(usedBy)
+    if not npcSeatOccupiedOnTable(usedBy) then
+        return false
+    end
+    local NPCS = require("core.npcs")
+    if type(NPCS.isNpcSeatOccupantStageBound) == "function" and NPCS.isNpcSeatOccupantStageBound(usedBy) then
+        return false
+    end
+    return true
 end
 
 --- World XZ around a table segment (seat arc), from C.Tables layout data.
@@ -3033,7 +3111,16 @@ local function describeTableComponentMarker(marker, activeTable)
         usedByOccupied = npcSeatOccupiedOnTable(usedBy)
     end
     row.usedByOccupied = usedByOccupied
-    if usedByOccupied == false then
+    local stageBound = false
+    if usedByOccupied == true then
+        local NPCS = require("core.npcs")
+        if type(NPCS.isNpcSeatOccupantStageBound) == "function" and NPCS.isNpcSeatOccupantStageBound(usedBy) then
+            stageBound = true
+            usedByOccupied = false
+            row.reasons[#row.reasons + 1] = "used_by_stage_bound"
+        end
+    end
+    if usedByOccupied == false and stageBound ~= true then
         row.reasons[#row.reasons + 1] = "used_by_seat_empty"
     end
     local show = parentTable == activeTable

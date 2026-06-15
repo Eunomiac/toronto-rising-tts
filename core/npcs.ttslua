@@ -511,6 +511,25 @@ local function resolveAssignedCharacterForSeat(seatKey)
     return nil
 end
 
+--- True when `occupiedNPCSlots[seatKey]` is assigned and that character has a control-board stage row.
+--- @param seatKey string
+--- @return boolean
+local function isNpcSeatOccupantStageBound(seatKey)
+    if not isValidNpcSeatKey(seatKey) then
+        return false
+    end
+    local occupant = resolveAssignedCharacterForSeat(seatKey)
+    if U.Type(occupant) ~= "string" or occupant == "" then
+        return false
+    end
+    local placements = S.getStateVal("sessionScene", "npcWorld", "placements")
+    if U.Type(placements) ~= "table" then
+        return false
+    end
+    local row = placements[occupant]
+    return U.Type(row) == "table" and tonumber(row.u) ~= nil and tonumber(row.v) ~= nil
+end
+
 --- @param seatKey string
 --- @return string
 local function seatTagForKey(seatKey)
@@ -666,6 +685,13 @@ function NPCS.isNpcSeatFigureForLayout(obj, seatKey)
     return role == "SEAT_FIGURE" and string.upper(suffix) == string.upper(seatKey)
 end
 
+--- Homeland seat assigned in `occupiedNPCSlots` and character has a control-board stage placement row (TOR-178 phase C).
+--- @param seatKey string
+--- @return boolean
+function NPCS.isNpcSeatOccupantStageBound(seatKey)
+    return isNpcSeatOccupantStageBound(seatKey)
+end
+
 --- @param lit Object|nil
 --- @param hidden boolean
 local function setPooledSpotlightHidden(lit, hidden)
@@ -805,10 +831,11 @@ local function applyNpcFigurineSeatIdentity(fig, lit, npcName, seatKey)
     setPooledSpotlightHidden(lit, true)
 end
 
---- Restore preload/area tags after leaving a table seat.
+--- Restore preload/area tags after leaving a table seat; reset GM Notes to `npcInstance:` identity.
 --- @param fig Object
 --- @param lit Object|nil
-local function clearNpcFigurineSeatIdentity(fig, lit)
+--- @param npcName string|nil When omitted, resolved from instance record or `npcInstance:` GM Notes.
+local function clearNpcFigurineSeatIdentity(fig, lit, npcName)
     local tags = fig.getTags and fig.getTags() or {}
     if U.Type(tags) ~= "table" then
         tags = {}
@@ -838,6 +865,26 @@ local function clearNpcFigurineSeatIdentity(fig, lit)
     end
     if fig.setTags ~= nil then
         fig.setTags(out)
+    end
+    if U.Type(npcName) ~= "string" or npcName == "" then
+        if U.isGameObject(fig) then
+            local guid = fig.getGUID and fig.getGUID() or ""
+            if guid ~= "" then
+                for name, rec in pairs(getInstances()) do
+                    if U.Type(rec) == "table" and rec.figurineGuid == guid then
+                        npcName = name
+                        break
+                    end
+                end
+            end
+            if (U.Type(npcName) ~= "string" or npcName == "") and fig.getGMNotes ~= nil then
+                local notes = tostring(fig.getGMNotes() or "")
+                npcName = string.match(notes, "^" .. GM_PREFIX .. "(.+)$")
+            end
+        end
+    end
+    if U.Type(npcName) == "string" and npcName ~= "" and fig.setGMNotes ~= nil then
+        fig.setGMNotes(GM_PREFIX .. npcName)
     end
     setPooledSpotlightHidden(lit, false)
 end
@@ -1099,12 +1146,8 @@ local function assignNpcToSeat(npcName, seatKey, opts)
     if not npcInstanceIsParkedInPreload(rec) then
         local seatedElsewhere = U.Type(rec.seatedSeatKey) == "string" and isValidNpcSeatKey(rec.seatedSeatKey)
         if rec.areaKey == STAGE_BOARD_AREA_KEY then
+            -- TOR-178 phase B: keep figurine at stage pose; Step Three + layout commit seats directly.
             rec.stagePlacement = nil
-            rec.areaKey = PRELOAD_AREA_KEY
-            local slot = stablePreloadSlotIndex(npcName)
-            if U.Type(slot) == "number" then
-                rec.slotIndex = slot
-            end
             setInstanceRecord(npcName, rec)
             rec = getInstances()[npcName]
         elseif not seatedElsewhere then
@@ -1168,6 +1211,7 @@ local function assignNpcToSeat(npcName, seatKey, opts)
     end
     rec.seatedSeatKey = seatKey
     rec.stagePlacement = nil
+    rec.areaKey = SEAT_PLACEMENT_KEY
     rec.npcLightMode = "STANDARD"
     setInstanceRecord(npcName, rec)
     return true, nil
@@ -2419,18 +2463,6 @@ local function reconcileStepEnabled(opts, stepNum)
     return false
 end
 
---- @param intent table
---- @return boolean
-local function anyPhysicalSeatAllowed(intent)
-    for _, seatKey in ipairs(C.NPCSeats or {}) do
-        local info = intent.bySeat[seatKey]
-        if U.Type(info) == "table" and info.physicalSeatAllowed == true then
-            return true
-        end
-    end
-    return false
-end
-
 --- Step One: remove NPCs from stage areas that resolved intent no longer assigns there.
 --- @param intent table
 --- @return boolean allOk
@@ -2615,9 +2647,7 @@ local function reconcileStepThreeSeatPlacements(intent)
             end
         end
     end
-    if anyPhysicalSeatAllowed(intent) then
-        commitNpcSeatLayout(intent)
-    end
+    commitNpcSeatLayout(intent)
     return allOk
 end
 

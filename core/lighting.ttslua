@@ -1510,6 +1510,15 @@ local function computeSeatSpotlightPriorityOverride(lightRef, seatKey)
         return "OFF"
     end
 
+    if not isPlayerSeat then
+        local NPCS = require("core.npcs")
+        if type(NPCS.isNpcSeatOccupantStageBound) == "function"
+            and NPCS.isNpcSeatOccupantStageBound(seatKey)
+            and lData.OFF ~= nil then
+            return "OFF"
+        end
+    end
+
     if isPlayerSeat then
         local conditionMode = getConditionLightOverrideMode(lightRef, seatKey)
         if U.Type(conditionMode) == "string" and lData[conditionMode] ~= nil then

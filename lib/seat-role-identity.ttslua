@@ -168,11 +168,13 @@ function SRI.readLegacyRoleColorIdentity(obj)
 end
 
 --- Migration only: clear Name and/or Nickname when each field matches ROLE_COLOR (independent of GM Notes source).
+--- Nickname requires getJSON/reload; there is no setNickname API.
 --- @param obj Object
---- @return boolean
+--- @return boolean ok All requested legacy fields were cleared
+--- @return string|nil err When ok is false: `json_api_unavailable`, `nickname_requires_json_reload`, `json_decode_failed`, `reload_failed`, etc.
 function SRI.clearLegacyRoleNameFields(obj)
   if obj == nil then
-    return false
+    return false, "nil_object"
   end
   local name = trim(obj.getName and obj.getName() or "")
   local data = obj.getData and obj.getData() or {}
@@ -180,30 +182,50 @@ function SRI.clearLegacyRoleNameFields(obj)
   local clearName = name ~= "" and SRI.matchesRoleColorPattern(name)
   local clearNick = nick ~= "" and SRI.matchesRoleColorPattern(nick)
   if not clearName and not clearNick then
-    return false
+    return false, "nothing_to_clear"
   end
 
-  -- Single reload when JSON API is available — setName before reload would be reverted by stale state.Name.
-  if JSON ~= nil and obj.getJSON ~= nil and obj.reload ~= nil then
-    local state = JSON.decode(obj.getJSON(false))
-    if U.Type(state) ~= "table" then
-      return false
+  local jsonAvailable = JSON ~= nil and obj.getJSON ~= nil and obj.reload ~= nil
+  if jsonAvailable then
+    local jsonStr = obj.getJSON(false)
+    if jsonStr == nil or jsonStr == "" then
+      jsonStr = obj.getJSON(true)
     end
-    if clearName then
-      state.Name = ""
+    if jsonStr ~= nil and jsonStr ~= "" then
+      local decOk, state = pcall(JSON.decode, jsonStr)
+      if decOk and U.Type(state) == "table" then
+        if clearName then
+          state.Name = ""
+        end
+        if clearNick then
+          state.Nickname = ""
+        end
+        local encOk, encoded = pcall(JSON.encode, state)
+        if encOk and U.Type(encoded) == "string" then
+          local reloadOk = pcall(function()
+            obj.reload(encoded)
+          end)
+          if reloadOk then
+            return true, nil
+          end
+        end
+      end
     end
-    if clearNick then
-      state.Nickname = ""
-    end
-    obj.reload(JSON.encode(state))
-    return true
   end
 
+  -- Name-only fallback when JSON reload is unavailable or failed.
   if clearName and obj.setName then
     obj.setName("")
-    return true
+    if clearNick then
+      return false, jsonAvailable and "nickname_requires_json_reload" or "json_api_unavailable"
+    end
+    return true, nil
   end
-  return false
+
+  if clearNick then
+    return false, jsonAvailable and "nickname_requires_json_reload" or "json_api_unavailable"
+  end
+  return false, "json_api_unavailable"
 end
 
 return SRI

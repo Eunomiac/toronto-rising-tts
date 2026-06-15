@@ -2203,6 +2203,9 @@ local function applyTableComponentsState(tableCfg, occupiedNPCSlots, isActive)
         local usedBy = componentCfg.usedBy
         if shouldActivate and U.Type(usedBy) == "string" then
           shouldActivate = occupiedNPCSlots[usedBy] ~= nil and occupiedNPCSlots[usedBy] ~= false
+          if shouldActivate and type(NPCS.isNpcSeatOccupantStageBound) == "function" and NPCS.isNpcSeatOccupantStageBound(usedBy) then
+            shouldActivate = false
+          end
         end
         applyTableObjectState(obj, componentCfg, shouldActivate)
       end
@@ -2315,9 +2318,12 @@ local function enforceNPCSeatObjectVisibility(sourceObjects, occupiedNPCSlots, t
     local occupied = occupiedNPCSlots[seatKey] ~= nil and occupiedNPCSlots[seatKey] ~= false
     local targetHasSeat = tableSeatPresence[seatKey] == true
     local currentHasSeat = currentSeatPresence[seatKey] == true
+    local stageBound = occupied
+        and type(NPCS.isNpcSeatOccupantStageBound) == "function"
+        and NPCS.isNpcSeatOccupantStageBound(seatKey)
     if occupied and targetHasSeat then
       setSeatVisible(seatKey, true)
-      syncSeatLightMode(seatKey, true)
+      syncSeatLightMode(seatKey, not stageBound)
     elseif occupied and currentHasSeat and (not targetHasSeat) then
       setSeatVisible(seatKey, false)
       syncSeatLightMode(seatKey, false)
@@ -3108,6 +3114,7 @@ function M.migrateRoleIdentityToGmNotes(sourceObjects, options)
     migrated = 0,
     alreadyMigrated = 0,
     skippedNoLegacy = 0,
+    clearFailed = {},
     failed = {},
     details = {},
   }
@@ -3139,8 +3146,9 @@ function M.migrateRoleIdentityToGmNotes(sourceObjects, options)
           okNotes = obj.setGMNotes(legacy) ~= false
         end
         local okClear = true
-        if clearLegacy then
-          okClear = not isHandZoneObject(obj) and SRI.clearLegacyRoleNameFields(obj)
+        local clearErr = nil
+        if clearLegacy and not isHandZoneObject(obj) then
+          okClear, clearErr = SRI.clearLegacyRoleNameFields(obj)
         end
         if okNotes then
           summary.migrated = summary.migrated + 1
@@ -3152,11 +3160,23 @@ function M.migrateRoleIdentityToGmNotes(sourceObjects, options)
             error = "setGMNotes failed or unavailable",
           }
         end
-        if not okClear and clearLegacy then
+        if not okClear and clearLegacy and not isHandZoneObject(obj) then
+          summary.clearFailed[#summary.clearFailed + 1] = {
+            guid = guid,
+            legacy = legacy,
+            error = clearErr or "unknown",
+          }
+          local hint = ""
+          if clearErr == "nickname_requires_json_reload" or clearErr == "json_api_unavailable" then
+            hint = " — use offline save migration (npm run tts-save:migrate-seat-gmnotes)"
+          end
           print(
-            "[rotational-seat-layout] migrate: cleared GM Notes for "
-            .. guid
-            .. " but Name/Nickname may need manual clear (reload failed)"
+            "[rotational-seat-layout] migrate: GM Notes set for "
+              .. guid
+              .. " but legacy clear failed ("
+              .. tostring(clearErr)
+              .. ")"
+              .. hint
           )
         end
       end
@@ -3165,12 +3185,13 @@ function M.migrateRoleIdentityToGmNotes(sourceObjects, options)
 
   print(
     string.format(
-      "[rotational-seat-layout] migrateRoleIdentityToGmNotes%s: scanned=%d migrated=%d already=%d skippedNoLegacy=%d failed=%d",
+      "[rotational-seat-layout] migrateRoleIdentityToGmNotes%s: scanned=%d migrated=%d already=%d skippedNoLegacy=%d clearFailed=%d failed=%d",
       dryRun and " (dry-run)" or "",
       summary.scanned,
       summary.migrated,
       summary.alreadyMigrated,
       summary.skippedNoLegacy,
+      #summary.clearFailed,
       #summary.failed
     )
   )
