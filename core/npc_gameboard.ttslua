@@ -1020,6 +1020,7 @@ local function syncNpcsFromControlBoard(reason, opts)
         onlySteps = onlySteps,
         deferUiRefresh = true,
         skipPreloadPopulate = true,
+        animateStageMoves = reason == "gameboard_apply",
     })
 end
 
@@ -2904,6 +2905,144 @@ function Gameboard.placementBoardRelYawDeg(u, v, config)
     end
     local towardOrigin = snapYawTowardOriginDeg(board, u, v, originU, originV)
     return ((towardOrigin + ringYawOffsetDeg) % 360 + 360) % 360
+end
+
+--- @param catalog table[]
+--- @param familyId string
+--- @return table|nil anchor catalog entry (`familyK == 0`)
+local function anchorCatalogEntryForFamilyId(catalog, familyId)
+    if type(catalog) ~= "table" or type(familyId) ~= "string" or familyId == "" then
+        return nil
+    end
+    for _, entry in ipairs(catalog) do
+        if entry.familyId == familyId and entry.isAnchor == true then
+            return entry
+        end
+    end
+    return nil
+end
+
+--- @param board Object
+--- @param anchorEntry table catalog entry with `worldPos`
+--- @param cfg table CONTROL_BOARD_SNAP config
+--- @return number distance in CONTROL_BOARD world XZ from master origin to anchor
+local function anchorWorldDistanceFromMasterOrigin(board, anchorEntry, cfg)
+    if type(anchorEntry) ~= "table" or anchorEntry.worldPos == nil then
+        return math.huge
+    end
+    local originU = tonumber(cfg.origin.u) or 0.5
+    local originV = tonumber(cfg.origin.v) or 0.35
+    local originLp = boardLocalFromUv(board, originU, originV)
+    local originWorld = boardLocalToWorld(board, originLp)
+    local ap = anchorEntry.worldPos
+    local odx = (ap.x or 0) - (originWorld.x or 0)
+    local odz = (ap.z or 0) - (originWorld.z or 0)
+    return math.sqrt(odx * odx + odz * odz)
+end
+
+--- Resolve a persisted placement u/v to the same anchor-family catalog row used by anchor spread.
+--- Prefers board u/v match; falls back to STAGE world XZ nearest snap when scan drift exceeds tolerance.
+--- @param u number normalized placement u
+--- @param v number normalized placement v
+--- @param config table|nil Defaults to DATA.CONTROL_BOARD_SNAP
+--- @return table|nil catalog entry with `familyId`, `familyK`, `isAnchor`, …
+function Gameboard.resolvePlacementSnapCatalogEntry(u, v, config)
+    u = tonumber(u)
+    v = tonumber(v)
+    if u == nil or v == nil then
+        return nil
+    end
+    local board = getControlBoard()
+    if not isGameObject(board) then
+        return nil
+    end
+    local catalog = Gameboard.buildControlBoardSnapCatalog(board, config)
+    local bestUv = nil
+    local bestUvDist2 = math.huge
+    for _, entry in ipairs(catalog) do
+        if entry.snapKind ~= SNAP_KIND_SEAT and entry.u ~= nil and entry.v ~= nil then
+            local du = u - entry.u
+            local dv = v - entry.v
+            local d2 = du * du + dv * dv
+            if d2 < bestUvDist2 then
+                bestUvDist2 = d2
+                bestUv = entry
+            end
+        end
+    end
+    local uvTol = 0.02
+    if bestUv ~= nil and bestUvDist2 <= uvTol * uvTol then
+        return bestUv
+    end
+    local targetWorld = Gameboard.worldFromUv(u, v, {
+        groundLevel = Gameboard.groundLevelForSnapUv(u, v, config),
+    })
+    local bestWorld = nil
+    local bestWorldDist2 = math.huge
+    for _, entry in ipairs(catalog) do
+        if entry.snapKind ~= SNAP_KIND_SEAT and entry.worldPos ~= nil then
+            local wp = entry.worldPos
+            local dx = (wp.x or 0) - targetWorld.x
+            local dz = (wp.z or 0) - targetWorld.z
+            local d2 = dx * dx + dz * dz
+            if d2 < bestWorldDist2 then
+                bestWorldDist2 = d2
+                bestWorld = entry
+            end
+        end
+    end
+    return bestWorld or bestUv
+end
+
+--- Sort key for stage lerp anchor-family batches: center-out on destination anchor; tie-break by anchor travel.
+--- @param srcEntry table|nil catalog entry at move start
+--- @param destEntry table|nil catalog entry at move end
+--- @param config table|nil Defaults to DATA.CONTROL_BOARD_SNAP
+--- @return number lower = earlier in orchestrator
+function Gameboard.stageLerpFamilyGroupSortKey(srcEntry, destEntry, config)
+    if type(destEntry) ~= "table" then
+        return math.huge
+    end
+    local board = getControlBoard()
+    if not isGameObject(board) then
+        return math.huge
+    end
+    local cfg = resolveControlBoardSnapConfig(config)
+    local catalog = Gameboard.buildControlBoardSnapCatalog(board, config)
+    local destFamilyId = destEntry.familyId
+    local destAnchor = anchorCatalogEntryForFamilyId(catalog, destFamilyId) or destEntry
+    local destDist = anchorWorldDistanceFromMasterOrigin(board, destAnchor, cfg)
+    local travel = 0
+    if type(srcEntry) == "table" and type(srcEntry.familyId) == "string" then
+        local srcAnchor = anchorCatalogEntryForFamilyId(catalog, srcEntry.familyId) or srcEntry
+        if type(srcAnchor) == "table" and srcAnchor.worldPos ~= nil and destAnchor.worldPos ~= nil then
+            local sp = srcAnchor.worldPos
+            local dp = destAnchor.worldPos
+            local tdx = (dp.x or 0) - (sp.x or 0)
+            local tdz = (dp.z or 0) - (sp.z or 0)
+            travel = math.sqrt(tdx * tdx + tdz * tdz)
+        end
+    end
+    return destDist + travel * 0.001
+end
+
+--- Destination anchor-family for stage lerp batching (TOR-173): same `familyId` grouping as anchor spread.
+--- @param u number normalized placement u
+--- @param v number normalized placement v
+--- @param config table|nil Defaults to DATA.CONTROL_BOARD_SNAP
+--- @return table|nil `{ areaKey: string, sortKey: number, familyId: string, snapEntry: table }`
+function Gameboard.stageAreaGroupForPlacement(u, v, config)
+    local entry = Gameboard.resolvePlacementSnapCatalogEntry(u, v, config)
+    if entry == nil then
+        return nil
+    end
+    local familyId = entry.familyId or (tostring(entry.ringIndex) .. ":" .. tostring(entry.rayIndex))
+    return {
+        areaKey = familyId,
+        sortKey = Gameboard.stageLerpFamilyGroupSortKey(nil, entry, config),
+        familyId = familyId,
+        snapEntry = entry,
+    }
 end
 
 --- Minimal object Lua when the save has no bundled CONTROL_BOARD script (GUID bea29a).

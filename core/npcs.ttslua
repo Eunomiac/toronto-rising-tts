@@ -840,7 +840,8 @@ local function figurineImageScalarForNpc(npcName, placementKind)
     return scalar
 end
 
---- Figurine resting, custom mesh loaded, and bounds tall enough for spotlight Y from `getBounds` (not preload-scale feet).
+--- Figurine custom mesh loaded and bounds tall enough for spotlight Y from `getBounds` (not preload-scale feet).
+--- Script-locked stage placements may keep `resting == false` after `setPosition`; do not gate on resting.
 --- @param fig Object|nil
 --- @param npcName string
 --- @return boolean
@@ -849,9 +850,6 @@ local function npcFigurineReadyForLightAlign(fig, npcName)
         return false
     end
     if fig.loading_custom == true then
-        return false
-    end
-    if fig.resting ~= true then
         return false
     end
     if fig.getBounds == nil then
@@ -1024,6 +1022,30 @@ local function clearNpcFigurineSeatIdentity(fig, lit, npcName)
     setPooledSpotlightHidden(lit, false)
 end
 
+--- Persist `gameState.lights` mode for a pooled NPC spotlight (no world apply).
+--- @param npcName string
+--- @param desiredMode string OFF|STANDARD|SPOTLIGHT
+local function syncStageNpcLightState(npcName, desiredMode)
+    local rec = getInstances()[npcName]
+    if U.Type(rec) ~= "table" or U.Type(rec.lightGuid) ~= "string" or rec.lightGuid == "" then
+        return
+    end
+    local reg = NPCS.lightRegistryName(rec.lightGuid)
+    local modeKey = spotlightHeld[npcName] and "SPOTLIGHT" or desiredMode
+    if L.LIGHTMODES[reg] == nil then
+        L.registerNpcSpotlightModes(npcName, rec.lightGuid)
+    end
+    S.setStateVal(modeKey, "lights", reg)
+end
+
+--- Cancel pending `deferNpcSpotlightAlignedToFigurine` sequences (e.g. before lerp commit or immediate re-apply).
+--- @param npcName string
+function NPCS.cancelDeferredSpotlightAlign(npcName)
+    if U.Type(npcName) == "string" and npcName ~= "" then
+        deferredLightAlignGeneration[npcName] = (deferredLightAlignGeneration[npcName] or 0) + 1
+    end
+end
+
 --- Resolve spotlight from figurine bounds after active-scale presentation (not preload-scale feet offset).
 --- @param npcName string
 --- @param fig Object|nil
@@ -1035,6 +1057,26 @@ local function applyNpcSpotlightAlignedToFigurine(npcName, fig, transitionTime)
     lightAlignFigOverride[npcName] = fig
     NPCS.applyCurrentLightMode(npcName, transitionTime, { force = true })
     lightAlignFigOverride[npcName] = nil
+end
+
+--- Apply current stage light mode to the world now (mode + approximate pose); does not wait for bounds reload.
+--- @param npcName string
+--- @param fig Object|nil
+--- @param lit Object|nil
+--- @param transitionTime number|nil
+local function applyStageNpcSpotlightNow(npcName, fig, lit, transitionTime)
+    if U.Type(npcName) ~= "string" or npcName == "" or not U.isGameObject(fig) then
+        return
+    end
+    NPCS.cancelDeferredSpotlightAlign(npcName)
+    if U.isGameObject(lit) then
+        setPooledSpotlightHidden(lit, false)
+    end
+    local rec = getInstances()[npcName]
+    if U.Type(rec) == "table" then
+        syncStageNpcLightState(npcName, rec.npcLightMode or "STANDARD")
+    end
+    applyNpcSpotlightAlignedToFigurine(npcName, fig, transitionTime or 0)
 end
 
 --- Wait for figurine bounds after `applyNpcFigurineImageScalar` / `reload()` before spotlight Y align (stage placement race).
@@ -2677,6 +2719,8 @@ local function reconcileStepOneAreaRemovals(intent)
                 if not keep then
                     if U.Type(ci) == "table" and ci.target == "seat" then
                         -- Step Three re-seats from stage; avoid parking to preload first.
+                    elseif U.Type(ci) == "table" and ci.target == "stage" then
+                        -- Step Five repositions on stage (lerp or snap); do not park paired spotlight to preload first.
                     else
                         local ok, err = NPCS.retreatNpcInstanceToPreloadPool(name, {
                             skipUiRefresh = true,
@@ -2899,8 +2943,10 @@ end
 
 --- Step Five (a): gameboard `placements` on STAGE_BOARD.
 --- @param intent table
+--- @param opts table|nil `{ reason?, animateStageMoves?, deferUiRefresh? }`
 --- @return boolean allOk
-local function reconcileStepFiveStagePlacements(intent)
+local function reconcileStepFiveStagePlacements(intent, opts)
+    opts = U.Type(opts) == "table" and opts or {}
     local allOk = true
     local needPool = false
     for name, ci in pairs(intent.byCharacter) do
@@ -2913,6 +2959,8 @@ local function reconcileStepFiveStagePlacements(intent)
     if needPool then
         NPCS.ensureAllNpcsPreloaded({ deferUiRefresh = true, immediate = true })
     end
+    local lerpCandidates = {}
+    local NPCStageLerp = require("core.npc_stage_lerp")
     for name, ci in pairs(intent.byCharacter) do
         if U.Type(ci) == "table" and ci.target == "stage" then
             local placement = {
@@ -2926,24 +2974,33 @@ local function reconcileStepFiveStagePlacements(intent)
                 skipUiRefresh = true,
                 skipSeatSync = true,
             }
-            local ok, err = NPCS.moveNpcToStagePlacement(name, placement, modeOpt)
-            if not ok then
-                local repairOk, repairErr = NPCS.ensureNpcInPreloadZone(name, {
-                    deferUiRefresh = true,
-                    skipSeatSync = true,
-                    forceNpcLightMode = "OFF",
-                })
-                if repairOk then
-                    ok, err = NPCS.moveNpcToStagePlacement(name, placement, modeOpt)
-                else
-                    print("[NPCS] step5 stage preload repair " .. tostring(name) .. ": " .. tostring(repairErr))
+            local rec = getInstances()[name]
+            local lerpCandidate = NPCStageLerp.evaluateCandidate(name, rec, placement, opts)
+            if lerpCandidate ~= nil then
+                lerpCandidates[#lerpCandidates + 1] = lerpCandidate
+            else
+                local ok, err = NPCS.moveNpcToStagePlacement(name, placement, modeOpt)
+                if not ok then
+                    local repairOk, repairErr = NPCS.ensureNpcInPreloadZone(name, {
+                        deferUiRefresh = true,
+                        skipSeatSync = true,
+                        forceNpcLightMode = "OFF",
+                    })
+                    if repairOk then
+                        ok, err = NPCS.moveNpcToStagePlacement(name, placement, modeOpt)
+                    else
+                        print("[NPCS] step5 stage preload repair " .. tostring(name) .. ": " .. tostring(repairErr))
+                    end
+                end
+                if not ok then
+                    allOk = false
+                    print("[NPCS] step5 stage placement " .. tostring(name) .. ": " .. tostring(err))
                 end
             end
-            if not ok then
-                allOk = false
-                print("[NPCS] step5 stage placement " .. tostring(name) .. ": " .. tostring(err))
-            end
         end
+    end
+    if #lerpCandidates > 0 then
+        NPCStageLerp.runQueued(lerpCandidates)
     end
     return allOk
 end
@@ -3023,7 +3080,7 @@ function NPCS.reconcileAllFromState(opts)
         reconcileSeatNarrativePresenceFromIntent(intent)
     end
     if reconcileStepEnabled(opts, 5) then
-        if not reconcileStepFiveStagePlacements(intent) then
+        if not reconcileStepFiveStagePlacements(intent, opts) then
             allOk = false
         end
         if opts.skipPreloadPopulate ~= true and not reconcileStepFivePreloadPopulate(intent) then
@@ -3208,6 +3265,76 @@ function NPCS.moveNpcToArea(npcName, areaKey, opts)
     return true, nil
 end
 
+--- @param npcName string
+--- @return boolean
+function NPCS.isSpotlightHeld(npcName)
+    return spotlightHeld[npcName] == true
+end
+
+--- Temporary figurine override for `buildResolvedLightModeTable` during stage lerp bake.
+--- @param npcName string
+--- @param fig Object|nil
+function NPCS.setLightAlignFigOverride(npcName, fig)
+    if fig == nil or not U.isGameObject(fig) then
+        lightAlignFigOverride[npcName] = nil
+    else
+        lightAlignFigOverride[npcName] = fig
+    end
+end
+
+--- Apply stage presentation + spotlight reconcile after TOR-173 lerp (figurine pose already at target).
+--- @param npcName string
+--- @param transitionTime number|nil
+function NPCS.finalizeStageLerpWorld(npcName, transitionTime)
+    if U.Type(npcName) ~= "string" or npcName == "" then
+        return
+    end
+    local rec = getInstances()[npcName]
+    if U.Type(rec) ~= "table" then
+        return
+    end
+    local fig = getObjectFromGUID(rec.figurineGuid or "")
+    local lit = getObjectFromGUID(rec.lightGuid or "")
+    if not U.isGameObject(fig) then
+        return
+    end
+    applyNpcPairPhysicalPresentation(fig, lit, STAGE_BOARD_AREA_KEY, npcName)
+    applyStageNpcSpotlightNow(npcName, fig, lit, transitionTime)
+    deferNpcSpotlightAlignedToFigurine(npcName, fig, lit, transitionTime or 0)
+end
+
+--- Commit stage placement + light mode to state without moving world objects (TOR-173 lerp prep).
+--- @param npcName string
+--- @param placement table
+--- @return boolean
+function NPCS.commitStagePlacementState(npcName, placement)
+    if type(placement) ~= "table" then
+        return false
+    end
+    local rec = getInstances()[npcName]
+    if rec == nil then
+        return false
+    end
+    local desiredMode = normalizedStageNpcLightMode(placement)
+    rec.areaKey = STAGE_BOARD_AREA_KEY
+    rec.slotIndex = 0
+    local Gameboard = require("core.npc_gameboard")
+    local derivedYaw = 0
+    if type(Gameboard.placementBoardRelYawDeg) == "function" then
+        derivedYaw = Gameboard.placementBoardRelYawDeg(placement.u, placement.v)
+    end
+    rec.stagePlacement = {
+        u = tonumber(placement.u),
+        v = tonumber(placement.v),
+        yaw = derivedYaw,
+        groundLevel = tonumber(placement.groundLevel),
+    }
+    rec.npcLightMode = desiredMode
+    setInstanceRecord(npcName, rec)
+    syncStageNpcLightState(npcName, desiredMode)
+    return true
+end
+
 --- Move pooled NPC to a gameboard stage placement (not a legacy `areas` slot).
 --- @param npcName string
 --- @param placement table `{ u, v, yaw?, npcLightMode? }`
@@ -3266,6 +3393,7 @@ function NPCS.moveNpcToStagePlacement(npcName, placement, opts)
         end
         rec.npcLightMode = desiredMode
         setInstanceRecord(npcName, rec)
+        applyStageNpcSpotlightNow(npcName, fig, lit, 0)
         deferNpcSpotlightAlignedToFigurine(npcName, fig, lit, 0)
         if not opts.skipUiRefresh then
             NPCS.refreshStorytellerUIIfVisible()
@@ -3289,7 +3417,7 @@ function NPCS.moveNpcToStagePlacement(npcName, placement, opts)
     rec.npcLightMode = desiredMode
     setInstanceRecord(npcName, rec)
     applyNpcPairPhysicalPresentation(fig, lit, STAGE_BOARD_AREA_KEY, npcName)
-    setPooledSpotlightHidden(lit, false)
+    applyStageNpcSpotlightNow(npcName, fig, lit, 0)
     deferNpcSpotlightAlignedToFigurine(npcName, fig, lit, 0)
     if not skipSeatSync then
         requestSeatLayoutSync()
@@ -3297,6 +3425,23 @@ function NPCS.moveNpcToStagePlacement(npcName, placement, opts)
     if not opts.skipUiRefresh then
         NPCS.refreshStorytellerUIIfVisible()
     end
+    return true, nil
+end
+
+--- Single-NPC stage lerp entry (Apply-only eligibility); batch path uses `NPCStageLerp.runQueued`.
+--- @param npcName string
+--- @param placement table
+--- @param opts table|nil `{ reason?, animateStageMoves? }`
+--- @return boolean, string|nil
+function NPCS.moveNpcToStagePlacementLerp(npcName, placement, opts)
+    opts = U.Type(opts) == "table" and opts or {}
+    local rec = getInstances()[npcName]
+    local NPCStageLerp = require("core.npc_stage_lerp")
+    local candidate = NPCStageLerp.evaluateCandidate(npcName, rec, placement, opts)
+    if candidate == nil then
+        return NPCS.moveNpcToStagePlacement(npcName, placement, opts)
+    end
+    NPCStageLerp.runQueued({ candidate })
     return true, nil
 end
 

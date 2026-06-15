@@ -97,6 +97,8 @@ Compare resolved intent to NPCs currently in **stage areas** (not preload). Retu
 1. Has no area row in resolved intent (target is **Seat** or **Preload**), or
 2. Was in an area slot that resolved intent assigns to a **different** character.
 
+**Stage reposition (TOR-173):** When resolved target remains **Stage** but u/v/yaw changed, Step One does **not** park the figurine or pooled spotlight to preload — Step Five moves them in place (lerp on Apply, or instant snap). Same deferral pattern as seat-bound stage drops (case 4).
+
 Do not remove NPCs from preload here; preload is the hub between steps.
 
 ---
@@ -212,8 +214,10 @@ Step Five runs two passes (implementation order):
 
 | Pass | Target | Action |
 | --- | --- | --- |
-| **(a) Stage** | `sessionScene.npcWorld.placements` (gameboard u/v) | `moveNpcToStagePlacement` — world Y from **STAGE_BOARD** / `groundLevel` |
+| **(a) Stage** | `sessionScene.npcWorld.placements` (gameboard u/v) | **Instant:** `moveNpcToStagePlacement` for preload→stage, seat→stage, load, blindfold, Clear, non-Apply sync. **Lerp (TOR-173):** when `Sync.npcs` passes `reason = gameboard_apply` + `animateStageMoves` and `NPCStageLerp.evaluateCandidate` passes — commit state first, then one `GlobalStageLerpOrchestrator` batch (area-grouped, center-out). |
 | **(b) Preload** | Step Zero target **Preload** | `ensureNpcInPreloadZone` — world Y = `areas.preload.groundLevel` (**-200**) |
+
+**Stage lerp eligibility (Apply only):** figurine already on `STAGE_BOARD`; no blindfold/transition; start or end light involves `STANDARD` (or `SPOTLIGHT` when held); position/yaw and/or mode change. Same-snap mode-only changes animate light (G/H timing) with frozen position. Escape hatch: blindfold or re-Apply mid-flight → snap all to committed state. Large batches stay on the lerp path; `staggerCandidateScale` / `staggerScaleMax` stretch **between-family** delays only. **Grouping:** anchor-family `familyId` (same as anchor spread / `tryAnchorFamilyGroupSpread`); leader (`familyK == 0`) moves first, siblings follow in `orderFamilySnapsForAnchorSpread` center-out order with even `withinFamilyStaggerSec`. Multiple families order center-out on destination anchor distance (tie-break: anchor travel). Tunables: `lib/npc_gameboard_data.ttslua` → `D.STAGE_PLACEMENT_LERP`.
 
 Characters with active **placements** rows are **not** preload targets; park them only after Clear / empty `placements`. Control-board tokens mirror from `placements` in `Gameboard.reconcileControlBoardFromState`.
 

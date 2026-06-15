@@ -54,7 +54,7 @@ Do **not** split rotation into manual `rotX` / `rotY` / `rotZ` in data. The scri
 
 Whenever the figurine **moves or rotates**, this pipeline is re-run (UI moves, `onObjectDrop`, and optional future hooks) so the paired light stays aligned.
 
-**Stage placement timing:** `moveNpcToStagePlacement` defers spotlight apply until the figurine is **resting**, **`loading_custom` is false**, and bounds height reflects active **`image_scalar`** (after `reload()`). Immediate apply after `applyNpcFigurineImageScalar` can read preload-scale bounds and place the light near the figurine’s feet (~2″ above root Y).
+**Stage placement timing:** `moveNpcToStagePlacement` applies spotlight mode **immediately** (`applyStageNpcSpotlightNow`), then schedules a deferred bounds pass to refine Y after `image_scalar` / `reload()`. Deferred-only apply can leave lights off until a later Apply completes stale sequences.
 
 ### Spawn source
 

@@ -2,6 +2,7 @@
 
 ## Active
 
+- [Clock/Time] Need a way to "fast forward" time in an animated fashion, lerping with a slow acceleration towards a date with an eased slow down on approach. Clock should update each frame, speeding up and slowing down as the game takes a time jump into the future/past.
 
 ---
 

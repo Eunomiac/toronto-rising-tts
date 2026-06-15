@@ -1020,12 +1020,34 @@ local function runDeferredD172(failures)
 end
 
 local function runDeferredD173(failures)
-    if type(NPCS.moveNpcToStagePlacementLerp) == "function" then
-        failures[#failures + 1] = "D173 unexpected: stage lerp API exists — move test to gbE2eRunFull"
-    else
-        failures[#failures + 1] = "D173 TOR-173: stage placement lerp not implemented (expected until TOR-173)"
-        print("[gbE2eRunDeferred] VISUAL_CAPTURE: when lerp ships, screenshot mid-flight between two Applies")
+    local NPCStageLerp = require("core.npc_stage_lerp")
+    if type(NPCStageLerp.runQueued) ~= "function" then
+        failures[#failures + 1] = "D173: NPCStageLerp.runQueued missing"
     end
+    if type(NPCStageLerp.evaluateCandidate) ~= "function" then
+        failures[#failures + 1] = "D173: NPCStageLerp.evaluateCandidate missing"
+    end
+    if type(NPCS.moveNpcToStagePlacementLerp) ~= "function" then
+        failures[#failures + 1] = "D173: NPCS.moveNpcToStagePlacementLerp missing"
+    end
+    if type(GlobalStageLerpOrchestrator) ~= "function" then
+        failures[#failures + 1] = "D173: GlobalStageLerpOrchestrator missing"
+    end
+    if type(Gameboard.stageAreaGroupForPlacement) ~= "function" then
+        failures[#failures + 1] = "D173: Gameboard.stageAreaGroupForPlacement missing"
+    end
+    if type(Gameboard.resolvePlacementSnapCatalogEntry) ~= "function" then
+        failures[#failures + 1] = "D173: Gameboard.resolvePlacementSnapCatalogEntry missing"
+    end
+    if type(Gameboard.stageLerpFamilyGroupSortKey) ~= "function" then
+        failures[#failures + 1] = "D173: Gameboard.stageLerpFamilyGroupSortKey missing"
+    end
+    local Gbd = require("lib.npc_gameboard_data")
+    local lerpCfg = Gbd.STAGE_PLACEMENT_LERP
+    if type(lerpCfg) ~= "table" or tonumber(lerpCfg.positionDurationSec) == nil then
+        failures[#failures + 1] = "D173: DATA.STAGE_PLACEMENT_LERP tunables missing"
+    end
+    print("[gbE2eRunDeferred] D173 TOR-173 stage lerp API probe OK — manual Save & Play for motion/light timing")
 end
 
 --- TOR-175: spread snap order is center-out on board XZ (inner pair then outer), left before right per ring.
@@ -1102,11 +1124,11 @@ local function runDeferredD177b(failures)
     end
 end
 
---- Expected FAIL probes until TOR-172/173/175/174 and dedupe ship.
+--- Expected FAIL probes until TOR-177b dedupe ships; D173 API probe passes when TOR-173 ships.
 --- @return boolean always false until features land (FAIL lines are harness success)
 function E2E_GB.runDeferred()
     local failures = {}
-    print("[gbE2eRunDeferred] Expected FAIL on D172–D173, D177b until linked issues ship (D174/D175 in smoke).")
+    print("[gbE2eRunDeferred] Expected FAIL on D177b until dedupe ships; D173 API probe when TOR-173 shipped.")
     runDeferredD172(failures)
     runDeferredD173(failures)
     runDeferredD177b(failures)

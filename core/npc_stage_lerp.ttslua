@@ -1,0 +1,686 @@
+--[[
+    TOR-173: Apply-only stage placement lerp for NPC figurines already on stage.
+    Single Global orchestrator coroutine per Apply batch; state commits at anim start.
+]]
+
+local NPCStageLerp = {}
+
+local U = require("lib.util")
+local DATA = require("lib.npc_gameboard_data")
+
+local lerpEpoch = 0
+local orchestratorRunning = false
+local inFlightNpcs = {}
+local pendingBatch = nil
+
+local function npcsModule()
+    return require("core.npcs")
+end
+
+local function gameboardModule()
+    return require("core.npc_gameboard")
+end
+
+local function lightingModule()
+    return require("core.lighting")
+end
+
+local function stateModule()
+    return require("core.state")
+end
+
+local function hudBlindfoldModule()
+    return require("core.hud_blindfold")
+end
+
+local function lerpConfig()
+    return DATA.STAGE_PLACEMENT_LERP or {}
+end
+
+local function easeSineInOut(t)
+    return -(math.cos(math.pi * t) - 1) / 2
+end
+
+local function applyConfiguredEase(t)
+    local cfg = lerpConfig()
+    if cfg.ease == "sineInOut" or cfg.ease == nil then
+        return easeSineInOut(t)
+    end
+    return t
+end
+
+local function yawDiffDeg(a, b)
+    local da = (((tonumber(b) or 0) - (tonumber(a) or 0) + 180) % 360) - 180
+    return math.abs(da)
+end
+
+local function lerpYawShortest(startYaw, endYaw, t)
+    local a = tonumber(startYaw) or 0
+    local b = tonumber(endYaw) or 0
+    local da = ((b - a + 180) % 360) - 180
+    return (a + da * t) % 360
+end
+
+local function bakeVectorPath(startVec, endVec, frames)
+    local path = {}
+    for i = 0, frames do
+        local t = applyConfiguredEase(i / frames)
+        path[i] = startVec:lerp(endVec, t)
+    end
+    return path
+end
+
+local function bakeYawPath(startYaw, endYaw, frames)
+    local path = {}
+    for i = 0, frames do
+        local t = applyConfiguredEase(i / frames)
+        path[i] = lerpYawShortest(startYaw, endYaw, t)
+    end
+    return path
+end
+
+local function normalizedStageLightMode(placement)
+    local mode = placement and placement.npcLightMode
+    if mode == "OFF" or mode == "STANDARD" or mode == "SPOTLIGHT" then
+        return mode
+    end
+    return "STANDARD"
+end
+
+local function effectiveLitMode(npcName, rawMode)
+    local NPCS = npcsModule()
+    if type(NPCS.isSpotlightHeld) == "function" and NPCS.isSpotlightHeld(npcName) then
+        return "SPOTLIGHT"
+    end
+    return normalizedStageLightMode({ npcLightMode = rawMode })
+end
+
+local function litCategory(mode)
+    if mode == "OFF" then
+        return "OFF"
+    end
+    if mode == "STANDARD" or mode == "SPOTLIGHT" then
+        return "LIT"
+    end
+    return "OFF"
+end
+
+local function placementPositionChanged(rec, placement)
+    local stored = rec and rec.stagePlacement
+    if type(stored) ~= "table" or type(placement) ~= "table" then
+        return true
+    end
+    local u = tonumber(placement.u)
+    local v = tonumber(placement.v)
+    if u == nil or v == nil then
+        return true
+    end
+    local du = math.abs((tonumber(stored.u) or 0) - u)
+    local dv = math.abs((tonumber(stored.v) or 0) - v)
+    if du >= 0.002 or dv >= 0.002 then
+        return true
+    end
+    if (tonumber(stored.groundLevel) or nil) ~= (tonumber(placement.groundLevel) or nil) then
+        return true
+    end
+    local Gameboard = gameboardModule()
+    local derivedYaw = 0
+    if type(Gameboard.placementBoardRelYawDeg) == "function" then
+        derivedYaw = Gameboard.placementBoardRelYawDeg(u, v)
+    end
+    return yawDiffDeg(stored.yaw, derivedYaw) >= 1
+end
+
+local function resolveFigurineEndPose(placement)
+    local Gameboard = gameboardModule()
+    local u = tonumber(placement.u)
+    local v = tonumber(placement.v)
+    local groundLevel = tonumber(placement.groundLevel)
+    if groundLevel == nil and type(Gameboard.groundLevelForSnapUv) == "function" then
+        groundLevel = Gameboard.groundLevelForSnapUv(u, v)
+    end
+    local pos = Gameboard.worldFromUv(u, v, { groundLevel = groundLevel })
+    local relYaw = Gameboard.placementBoardRelYawDeg(u, v)
+    local yawDeg = relYaw
+    if type(Gameboard.stageFigurineWorldYawDeg) == "function" then
+        yawDeg = Gameboard.stageFigurineWorldYawDeg(relYaw)
+    end
+    return pos, yawDeg
+end
+
+local function bakeLightPose(npcName, fig, modeKey)
+    local NPCS = npcsModule()
+    if type(NPCS.buildResolvedLightModeTable) ~= "function" then
+        return nil, nil
+    end
+    if type(NPCS.setLightAlignFigOverride) == "function" then
+        NPCS.setLightAlignFigOverride(npcName, fig)
+    end
+    local modeTable = NPCS.buildResolvedLightModeTable(npcName, modeKey)
+    if type(NPCS.setLightAlignFigOverride) == "function" then
+        NPCS.setLightAlignFigOverride(npcName, nil)
+    end
+    if type(modeTable) ~= "table" then
+        return nil, nil
+    end
+    return modeTable.position, modeTable.rotation
+end
+
+local function snapNpcToCommittedState(npcName)
+    local NPCS = npcsModule()
+    local rec = NPCS.getInstanceRecord(npcName)
+    if type(rec) ~= "table" or type(rec.stagePlacement) ~= "table" then
+        return
+    end
+    local pl = {
+        u = rec.stagePlacement.u,
+        v = rec.stagePlacement.v,
+        yaw = rec.stagePlacement.yaw,
+        groundLevel = rec.stagePlacement.groundLevel,
+        npcLightMode = rec.npcLightMode,
+    }
+    NPCS.moveNpcToStagePlacement(npcName, pl, {
+        skipUiRefresh = true,
+        skipSeatSync = true,
+        force = true,
+    })
+end
+
+local function snapAllInFlight()
+    for npcName, _ in pairs(inFlightNpcs) do
+        snapNpcToCommittedState(npcName)
+    end
+    inFlightNpcs = {}
+end
+
+local function cancelEpoch()
+    lerpEpoch = lerpEpoch + 1
+    snapAllInFlight()
+    pendingBatch = nil
+end
+
+local function shouldEscapeToSnap(_candidates)
+    local HUDBF = hudBlindfoldModule()
+    if type(HUDBF.getActiveTransitionVariant) == "function" and HUDBF.getActiveTransitionVariant() ~= nil then
+        return true, "blindfold"
+    end
+    return false, nil
+end
+
+local function staggerMultiplier(cfg, candidateCount)
+    local n = tonumber(candidateCount) or 0
+    if n <= 1 then
+        return 1
+    end
+    local scale = tonumber(cfg.staggerCandidateScale) or 0
+    if scale <= 0 then
+        return 1
+    end
+    local mult = 1 + (n - 1) * scale
+    local maxMult = tonumber(cfg.staggerScaleMax)
+    if maxMult and maxMult > 0 and mult > maxMult then
+        mult = maxMult
+    end
+    return mult
+end
+
+local function snapAllCandidates(candidates)
+    for i = 1, #candidates do
+        local c = candidates[i]
+        if type(c) == "table" and type(c.npcName) == "string" then
+            snapNpcToCommittedState(c.npcName)
+        end
+    end
+end
+
+local function snapEntryForPlacement(pl)
+    local Gameboard = gameboardModule()
+    if type(Gameboard.resolvePlacementSnapCatalogEntry) ~= "function" or type(pl) ~= "table" then
+        return nil
+    end
+    return Gameboard.resolvePlacementSnapCatalogEntry(pl.u, pl.v)
+end
+
+local function sortFamilyMembersForStagger(items)
+    if type(items) ~= "table" or #items == 0 then
+        return items
+    end
+    local Gameboard = gameboardModule()
+    local leaders = {}
+    local siblings = {}
+    for i = 1, #items do
+        local item = items[i]
+        local de = item.destEntry
+        if type(de) == "table" and de.isAnchor == true then
+            leaders[#leaders + 1] = item
+        else
+            siblings[#siblings + 1] = item
+        end
+    end
+    if #siblings > 1 and type(Gameboard.orderFamilySnapsForAnchorSpread) == "function" then
+        local anchorEntry = type(leaders[1]) == "table" and leaders[1].destEntry or nil
+        if anchorEntry == nil then
+            for i = 1, #siblings do
+                local de = siblings[i].destEntry
+                if type(de) == "table" and de.isAnchor == true then
+                    anchorEntry = de
+                    break
+                end
+            end
+        end
+        local siblingEntries = {}
+        for i = 1, #siblings do
+            siblingEntries[i] = siblings[i].destEntry
+        end
+        Gameboard.orderFamilySnapsForAnchorSpread(siblingEntries, anchorEntry, nil)
+        local bySnapIndex = {}
+        for i = 1, #siblings do
+            local de = siblings[i].destEntry
+            if type(de) == "table" and de.snapIndex ~= nil then
+                bySnapIndex[de.snapIndex] = siblings[i]
+            end
+        end
+        local orderedSiblings = {}
+        for i = 1, #siblingEntries do
+            local entry = siblingEntries[i]
+            local item = entry and bySnapIndex[entry.snapIndex] or nil
+            if item ~= nil then
+                orderedSiblings[#orderedSiblings + 1] = item
+            end
+        end
+        if #orderedSiblings == #siblings then
+            siblings = orderedSiblings
+        end
+    end
+    local out = {}
+    for i = 1, #leaders do
+        out[#out + 1] = leaders[i]
+    end
+    for i = 1, #siblings do
+        out[#out + 1] = siblings[i]
+    end
+    return out
+end
+
+local function groupCandidatesByAnchorFamily(candidates)
+    local Gameboard = gameboardModule()
+    local byFamily = {}
+    for i = 1, #candidates do
+        local c = candidates[i]
+        local pl = c.placement
+        local destEntry = snapEntryForPlacement(pl)
+        local srcEntry = snapEntryForPlacement(c.startPlacement)
+        local grp = nil
+        if type(Gameboard.stageAreaGroupForPlacement) == "function" and type(pl) == "table" then
+            grp = Gameboard.stageAreaGroupForPlacement(pl.u, pl.v)
+        end
+        local familyId = type(destEntry) == "table" and destEntry.familyId
+            or (type(grp) == "table" and grp.familyId)
+            or ("unknown:" .. tostring(i))
+        local sortKey = math.huge
+        if type(Gameboard.stageLerpFamilyGroupSortKey) == "function" then
+            sortKey = Gameboard.stageLerpFamilyGroupSortKey(srcEntry, destEntry)
+        elseif type(grp) == "table" then
+            sortKey = tonumber(grp.sortKey) or sortKey
+        end
+        if byFamily[familyId] == nil then
+            byFamily[familyId] = {
+                familyId = familyId,
+                sortKey = sortKey,
+                items = {},
+            }
+        end
+        local bucket = byFamily[familyId]
+        bucket.items[#bucket.items + 1] = {
+            candidate = c,
+            destEntry = destEntry,
+            srcEntry = srcEntry,
+            familyId = familyId,
+        }
+        if sortKey < bucket.sortKey then
+            bucket.sortKey = sortKey
+        end
+    end
+    local families = {}
+    for _, bucket in pairs(byFamily) do
+        bucket.items = sortFamilyMembersForStagger(bucket.items)
+        families[#families + 1] = bucket
+    end
+    table.sort(families, function(a, b)
+        return (a.sortKey or 0) < (b.sortKey or 0)
+    end)
+    return families
+end
+
+local function buildAnimForCandidate(candidate, startDelayFrames, frames, durationSec)
+    local NPCS = npcsModule()
+    local npcName = candidate.npcName
+    local placement = candidate.placement
+    local rec = NPCS.getInstanceRecord(npcName)
+    if type(rec) ~= "table" then
+        return nil
+    end
+    local fig = getObjectFromGUID(rec.figurineGuid or "")
+    local lit = getObjectFromGUID(rec.lightGuid or "")
+    if not U.isGameObject(fig) then
+        return nil
+    end
+    local startPos = fig.getPosition()
+    local startRot = fig.getRotation()
+    local startYaw = startRot.y or 0
+    local endPos, endYaw = resolveFigurineEndPose(placement)
+    local modeOnly = candidate.modeOnly == true
+    local startMode = effectiveLitMode(npcName, candidate.startNpcLightMode or rec.npcLightMode)
+    local endMode = effectiveLitMode(npcName, normalizedStageLightMode(placement))
+    local endModeKey = endMode
+    local startLightPos = nil
+    local startLightRot = nil
+    local endLightPos = nil
+    local endLightRot = nil
+    if U.isGameObject(lit) then
+        startLightPos = lit.getPosition()
+        startLightRot = lit.getRotation()
+        if not modeOnly then
+            local savedPos = fig.getPosition()
+            local savedRot = fig.getRotation()
+            fig.setPosition(endPos)
+            fig.setRotation(Vector(0, endYaw, 0))
+            endLightPos, endLightRot = bakeLightPose(npcName, fig, endModeKey)
+            fig.setPosition(savedPos)
+            fig.setRotation(savedRot)
+        else
+            endLightPos = startLightPos
+            endLightRot = startLightRot
+        end
+    end
+    local figPath = modeOnly and nil or bakeVectorPath(startPos, endPos, frames)
+    local yawPath = modeOnly and nil or bakeYawPath(startYaw, endYaw, frames)
+    local lightPath = nil
+    local lightRotPath = nil
+    if not modeOnly and startLightPos ~= nil and endLightPos ~= nil then
+        lightPath = bakeVectorPath(startLightPos, endLightPos, frames)
+        if startLightRot ~= nil and endLightRot ~= nil then
+            lightRotPath = {}
+            for i = 0, frames do
+                local t = applyConfiguredEase(i / frames)
+                lightRotPath[i] = startLightRot:lerp(endLightRot, t)
+            end
+        end
+    end
+    local reg = nil
+    if type(rec.lightGuid) == "string" and rec.lightGuid ~= "" then
+        reg = NPCS.lightRegistryName(rec.lightGuid)
+    end
+    return {
+        npcName = npcName,
+        fig = fig,
+        lit = lit,
+        reg = reg,
+        figPath = figPath,
+        yawPath = yawPath,
+        lightPath = lightPath,
+        lightRotPath = lightRotPath,
+        frames = frames,
+        durationSec = durationSec,
+        startDelayFrames = startDelayFrames,
+        modeOnly = modeOnly,
+        startLit = litCategory(startMode),
+        endLit = litCategory(endMode),
+        lightOnFired = false,
+        lightOffFired = false,
+        done = false,
+    }
+end
+
+local function applyAnimFrame(anim, localFrame)
+    if anim.modeOnly then
+        return
+    end
+    local idx = math.min(math.max(localFrame, 0), anim.frames)
+    if anim.figPath and anim.figPath[idx] then
+        anim.fig.setPosition(anim.figPath[idx])
+    end
+    if anim.yawPath and anim.yawPath[idx] then
+        anim.fig.setRotation(Vector(0, anim.yawPath[idx], 0))
+    end
+    if U.isGameObject(anim.lit) then
+        if anim.lightPath and anim.lightPath[idx] then
+            anim.lit.setPosition(anim.lightPath[idx])
+        end
+        if anim.lightRotPath and anim.lightRotPath[idx] then
+            anim.lit.setRotation(anim.lightRotPath[idx])
+        end
+    end
+end
+
+local function tickLightModeTransitions(anim, localFrame)
+    if type(anim.reg) ~= "string" or anim.reg == "" then
+        return
+    end
+    local L = lightingModule()
+    local cfg = lerpConfig()
+    local t = localFrame / math.max(anim.frames, 1)
+    if anim.startLit == "LIT" and anim.endLit == "OFF" and not anim.lightOffFired then
+        anim.lightOffFired = true
+        L.reconcileLightRef(anim.reg, anim.durationSec, { force = true })
+    elseif anim.startLit == "OFF" and anim.endLit == "LIT" then
+        local delayFrac = tonumber(cfg.lightOnDelayFrac) or 0.75
+        if t >= delayFrac and not anim.lightOnFired then
+            anim.lightOnFired = true
+            local spring = tonumber(cfg.lightOnSpringSec) or 0.25
+            L.reconcileLightRef(anim.reg, spring, { force = true })
+        end
+    end
+end
+
+local function finalizeAnim(anim)
+    applyAnimFrame(anim, anim.frames)
+    if anim.endLit == "LIT" then
+        local NPCS = npcsModule()
+        local cfg = lerpConfig()
+        local spring = tonumber(cfg.lightOnSpringSec) or 0.25
+        local trans = (anim.startLit == "OFF" and not anim.lightOnFired) and spring or 0
+        if type(NPCS.finalizeStageLerpWorld) == "function" then
+            NPCS.finalizeStageLerpWorld(anim.npcName, trans)
+        elseif anim.startLit == "OFF" and not anim.lightOnFired and type(anim.reg) == "string" then
+            local L = lightingModule()
+            L.reconcileLightRef(anim.reg, spring, { force = true })
+            anim.lightOnFired = true
+        end
+    end
+    inFlightNpcs[anim.npcName] = nil
+end
+
+local function buildBatchAnimations(families, cfg, withinStaggerFrames, betweenStaggerFrames, fps)
+    local anims = {}
+    local maxEnd = 0
+    local familyBaseFrames = 0
+    for familyIdx = 1, #families do
+        local family = families[familyIdx]
+        local items = family and family.items or {}
+        local builtInFamily = 0
+        for itemIdx = 1, #items do
+            local wrapped = items[itemIdx]
+            local candidate = type(wrapped) == "table" and (wrapped.candidate or wrapped) or nil
+            if type(candidate) == "table" then
+                local modeOnly = candidate.modeOnly == true
+                local durationSec = modeOnly
+                    and (tonumber(cfg.modeOnlyDurationSec) or 0.8)
+                    or (tonumber(cfg.positionDurationSec) or 1.2)
+                local frames = math.max(1, math.ceil(durationSec * fps))
+                local startDelay = familyBaseFrames + builtInFamily * withinStaggerFrames
+                local anim = buildAnimForCandidate(candidate, startDelay, frames, durationSec)
+                if anim ~= nil then
+                    builtInFamily = builtInFamily + 1
+                    anims[#anims + 1] = anim
+                    local endFrame = startDelay + frames
+                    if endFrame > maxEnd then
+                        maxEnd = endFrame
+                    end
+                end
+            end
+        end
+        if builtInFamily > 0 then
+            familyBaseFrames = familyBaseFrames + (builtInFamily - 1) * withinStaggerFrames + betweenStaggerFrames
+        end
+    end
+    return anims, maxEnd
+end
+
+--- Eligibility filter for stage lerp (rules A–B).
+--- @param npcName string
+--- @param rec table instance record
+--- @param placement table target placement
+--- @param opts table|nil `{ reason?, animateStageMoves? }`
+--- @return table|nil candidate `{ npcName, placement }`
+function NPCStageLerp.evaluateCandidate(npcName, rec, placement, opts)
+    opts = type(opts) == "table" and opts or {}
+    if opts.reason ~= "gameboard_apply" or opts.animateStageMoves ~= true then
+        return nil
+    end
+    if type(rec) ~= "table" or type(placement) ~= "table" then
+        return nil
+    end
+    local NPCS = npcsModule()
+    if rec.areaKey ~= NPCS.STAGE_BOARD_AREA_KEY then
+        return nil
+    end
+    local HUDBF = hudBlindfoldModule()
+    if type(HUDBF.getActiveTransitionVariant) == "function" and HUDBF.getActiveTransitionVariant() ~= nil then
+        return nil
+    end
+    local startMode = effectiveLitMode(npcName, rec.npcLightMode)
+    local endMode = effectiveLitMode(npcName, normalizedStageLightMode(placement))
+    local involvesStandard = startMode == "STANDARD" or endMode == "STANDARD"
+        or startMode == "SPOTLIGHT" or endMode == "SPOTLIGHT"
+    if not involvesStandard then
+        return nil
+    end
+    local posChange = placementPositionChanged(rec, placement)
+    local modeChange = startMode ~= endMode
+    if not posChange and not modeChange then
+        return nil
+    end
+    local startPlacement = nil
+    local stored = rec.stagePlacement
+    if type(stored) == "table" then
+        startPlacement = {
+            u = stored.u,
+            v = stored.v,
+            yaw = stored.yaw,
+            groundLevel = stored.groundLevel,
+        }
+    end
+    return {
+        npcName = npcName,
+        placement = placement,
+        startPlacement = startPlacement,
+        modeOnly = not posChange,
+        startNpcLightMode = rec.npcLightMode,
+    }
+end
+
+--- Commit stage placement + light mode to state without moving world objects.
+--- @param npcName string
+--- @param placement table
+--- @return boolean
+function NPCStageLerp.commitTargetState(npcName, placement)
+    local NPCS = npcsModule()
+    if type(NPCS.commitStagePlacementState) == "function" then
+        return NPCS.commitStagePlacementState(npcName, placement) == true
+    end
+    return false
+end
+
+--- Queue lerp candidates and start the single Global orchestrator (or snap on escape).
+--- @param candidates table[]
+function NPCStageLerp.runQueued(candidates)
+    candidates = type(candidates) == "table" and candidates or {}
+    if #candidates == 0 then
+        return
+    end
+    cancelEpoch()
+    local escape, reason = shouldEscapeToSnap(candidates)
+    if escape then
+        print("[NPCStageLerp] escape snap (" .. tostring(reason) .. ") for " .. tostring(#candidates) .. " candidate(s)")
+        for i = 1, #candidates do
+            NPCStageLerp.commitTargetState(candidates[i].npcName, candidates[i].placement)
+        end
+        snapAllCandidates(candidates)
+        return
+    end
+    local NPCS = npcsModule()
+    for i = 1, #candidates do
+        local npcName = candidates[i].npcName
+        if type(npcName) == "string" and type(NPCS.cancelDeferredSpotlightAlign) == "function" then
+            NPCS.cancelDeferredSpotlightAlign(npcName)
+        end
+        NPCStageLerp.commitTargetState(npcName, candidates[i].placement)
+    end
+    local epoch = lerpEpoch
+    pendingBatch = {
+        epoch = epoch,
+        families = groupCandidatesByAnchorFamily(candidates),
+        candidateCount = #candidates,
+    }
+    for i = 1, #candidates do
+        inFlightNpcs[candidates[i].npcName] = true
+    end
+    orchestratorRunning = true
+    startLuaCoroutine(Global, "GlobalStageLerpOrchestrator")
+end
+
+--- Global coroutine body (called from global_script.ttslua).
+function NPCStageLerp.runOrchestratorCoroutine()
+    local batch = pendingBatch
+    if type(batch) ~= "table" or batch.epoch ~= lerpEpoch then
+        orchestratorRunning = false
+        return 1
+    end
+    local cfg = lerpConfig()
+    local fps = tonumber(cfg.pathFps) or 60
+    local staggerMult = staggerMultiplier(cfg, batch.candidateCount)
+    local withinStaggerFrames = math.ceil((tonumber(cfg.withinFamilyStaggerSec) or tonumber(cfg.withinAreaStaggerSec) or 0.12) * fps)
+    local betweenStaggerFrames = math.ceil((tonumber(cfg.betweenFamilyStaggerSec) or tonumber(cfg.betweenAreaStaggerSec) or 0.35) * staggerMult * fps)
+    local families = batch.families or batch.areas or {}
+    local anims, maxEnd = buildBatchAnimations(families, cfg, withinStaggerFrames, betweenStaggerFrames, fps)
+    for frame = 0, maxEnd do
+        if batch.epoch ~= lerpEpoch then
+            orchestratorRunning = false
+            return 1
+        end
+        for i = 1, #anims do
+            local anim = anims[i]
+            if frame >= anim.startDelayFrames then
+                local localFrame = frame - anim.startDelayFrames
+                if localFrame <= anim.frames then
+                    applyAnimFrame(anim, localFrame)
+                    tickLightModeTransitions(anim, localFrame)
+                elseif not anim.done then
+                    finalizeAnim(anim)
+                    anim.done = true
+                end
+            end
+        end
+        coroutine.yield(0)
+    end
+    for i = 1, #anims do
+        if not anims[i].done then
+            finalizeAnim(anims[i])
+            anims[i].done = true
+        end
+    end
+    pendingBatch = nil
+    orchestratorRunning = false
+    return 1
+end
+
+function NPCStageLerp.isOrchestratorRunning()
+    return orchestratorRunning
+end
+
+function NPCStageLerp.cancelEpoch()
+    cancelEpoch()
+end
+
+return NPCStageLerp

@@ -322,7 +322,7 @@ function Sync.npcCutouts()
 end
 
 --- Narrow NPC + gameboard mirror pass (Apply/Clear, placement-only edits).
---- @param opts table|nil `{ force?, reason?, deferUiRefresh?, onlySteps?, skipPreloadPopulate? }`
+--- @param opts table|nil `{ force?, reason?, deferUiRefresh?, onlySteps?, skipPreloadPopulate?, animateStageMoves? }`
 function Sync.npcs(opts)
     opts = type(opts) == "table" and opts or {}
     local t0 = os.clock()
@@ -335,6 +335,8 @@ function Sync.npcs(opts)
         force = opts.force == true,
         onlySteps = opts.onlySteps,
         skipPreloadPopulate = opts.skipPreloadPopulate == true,
+        reason = reason,
+        animateStageMoves = opts.animateStageMoves == true,
     })
     finishSyncMetrics("npcs", t0, { reason = reason })
 end

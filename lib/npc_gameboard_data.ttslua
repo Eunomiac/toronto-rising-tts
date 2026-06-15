@@ -147,6 +147,22 @@ D.PALETTE_GROUP_BLACKLIST = {
   princesCourt = true,
 }
 
+--- Stage figurine placement lerp on CONTROL_BOARD Apply (TOR-173). Tune in Save & Play without logic edits.
+D.STAGE_PLACEMENT_LERP = {
+  positionDurationSec = 1.2,
+  modeOnlyDurationSec = 0.8,
+  withinFamilyStaggerSec = 0.12,
+  betweenFamilyStaggerSec = 0.35,
+  --- Stretch between-family delay only (within-family stays even). No hard cap on batch size.
+  staggerCandidateScale = 0.04,
+  --- Optional ceiling on stagger multiplier (nil / 0 = no ceiling).
+  staggerScaleMax = 5,
+  lightOnDelayFrac = 0.75,
+  lightOnSpringSec = 0.25,
+  pathFps = 60,
+  ease = "sineInOut",
+}
+
 --- Enumerate every table key and component name from C.Tables (for marker registry).
 --- @return table[] { tableKey, componentKey? }
 function D.enumerateTableMarkerEntries()

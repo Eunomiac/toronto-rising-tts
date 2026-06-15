@@ -338,6 +338,12 @@ function GlobalGameboardApply(params)
     return ok == true
 end
 
+--- TOR-173: single orchestrator coroutine for stage placement lerp batches on Apply.
+function GlobalStageLerpOrchestrator()
+    local NPCStageLerp = require("core.npc_stage_lerp")
+    return NPCStageLerp.runOrchestratorCoroutine()
+end
+
 --- NPC gameboard: Clear with double-click confirm (object `click_clear` → Global.call).
 --- @param params table|nil `{ player_color?: string }`
 --- @return boolean
