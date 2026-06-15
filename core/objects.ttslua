@@ -26,14 +26,29 @@ local S = require("core.state")
 
 local lockedObjectGuidSet = nil
 
+--- @return number listed, number nilSlots
+local function countLockedObjectListEntries()
+    local locked = C.LockedObjects
+    if U.Type(locked) ~= "table" then
+        return 0, 0
+    end
+    local listed, nilSlots = 0, 0
+    for _, guid in pairs(locked) do
+        listed = listed + 1
+        if U.Type(guid) ~= "string" or guid == "" then
+            nilSlots = nilSlots + 1
+        end
+    end
+    return listed, nilSlots
+end
+
 local function rebuildLockedObjectGuidSet()
     lockedObjectGuidSet = {}
     local locked = C.LockedObjects
     if U.Type(locked) ~= "table" then
         return
     end
-    for i = 1, #locked do
-        local guid = locked[i]
+    for _, guid in pairs(locked) do
         if U.Type(guid) == "string" and guid ~= "" then
             lockedObjectGuidSet[guid] = true
         end
@@ -55,8 +70,7 @@ function O.areLockedObjectsReadyForInteractableLock()
     if U.Type(locked) ~= "table" then
         return true
     end
-    for i = 1, #locked do
-        local guid = locked[i]
+    for _, guid in pairs(locked) do
         if U.Type(guid) == "string" and guid ~= "" then
             local obj = getObjectFromGUID(guid)
             if obj == nil then
@@ -79,8 +93,7 @@ local function applyLockedObjectsFromConstants(options)
     local missingGuids = {}
     local locked = C.LockedObjects
     if U.Type(locked) == "table" then
-        for i = 1, #locked do
-            local guid = locked[i]
+        for _, guid in pairs(locked) do
             if U.Type(guid) == "string" and guid ~= "" then
                 local obj = getObjectFromGUID(guid)
                 if obj ~= nil then
@@ -112,13 +125,15 @@ local function applyLockedObjectsFromConstants(options)
         end
     end
     if options.logSummary == true then
-        local total = U.Type(locked) == "table" and #locked or 0
+        local listed, nilSlots = countLockedObjectListEntries()
+        local expected = listed - nilSlots
         print(
             string.format(
-                "[O.ApplyLockedObjectsFromConstants] interactable=false on %d/%d locked object(s); %d unresolved",
+                "[O.ApplyLockedObjectsFromConstants] interactable=false on %d/%d locked object(s); %d unresolved%s",
                 applied,
-                total,
-                missing
+                expected,
+                missing,
+                nilSlots > 0 and string.format(" (%d nil registry slot(s) in C.LockedObjects)", nilSlots) or ""
             )
         )
     end

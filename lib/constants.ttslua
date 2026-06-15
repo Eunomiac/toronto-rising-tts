@@ -569,6 +569,7 @@ C.BloodPotencyDecalSlots = {
 -- #region Hiding & Locking Objects
 
 -- C.LockedObjects is a table of all objects that should be set `interactable = false` on every load, presented as GUIDs.
+-- Every entry must resolve to a non-empty string GUID; a nil hole stops Lua `#` / `ipairs` and skips later entries.
 C.LockedObjects = {
   G.GUIDS.TABLES.TABLE_A,
   G.GUIDS.TABLES.TABLE_B,
@@ -608,7 +609,9 @@ C.LockedObjects = {
   G.GUIDS.CSHEET_DICE_DRAWER_PINK,
   G.GUIDS.CSHEET_DICE_DRAWER_PURPLE,
   G.GUIDS.CSHEET_DICE_DRAWER_RED,
-  G.GUIDS.DICE_DRAWER_STORYTELLER,
+  G.GUIDS.DICE_DRAWER_STORYTELLER_1,
+  G.GUIDS.DICE_DRAWER_STORYTELLER_2,
+  G.GUIDS.DICE_DRAWER_STORYTELLER_3,
   G.GUIDS.PRINCE_SIGNET_BORDER_RED,
   G.GUIDS.PRINCE_SIGNET_RED,
   G.GUIDS.PRINCE_CURTAIN_RED,
@@ -1739,6 +1742,10 @@ local LIGHTMODES_REGISTRY_KEYS_ORDERED = {
   "playerLight3Pink",
   "playerLight3Brown",
   "playerLight3Purple",
+  "famulusLight1Red",
+  "famulusLight1Brown",
+  "famulusLight2Red",
+  "famulusLight2Brown",
   "storytellerDiceLight1",
   "storytellerDiceLight2",
   "storytellerDiceLight3"
@@ -1997,6 +2004,10 @@ C.LightModes = {
       playerLight1Purple = "STANDARD",
       playerLight2Purple = "STANDARD",
       playerLight3Purple = "STANDARD",
+      famulusLight1Red = "STANDARD",
+      famulusLight1Brown = "STANDARD",
+      famulusLight2Red = "STANDARD",
+      famulusLight2Brown = "STANDARD",
       npcLight1NPC1 = "STANDARD",
       npcLight1NPC2 = "STANDARD",
       npcLight1NPC3 = "STANDARD",
@@ -2037,6 +2048,10 @@ C.LightModes = {
       playerLight1Purple = "STANDARD",
       playerLight2Purple = "STANDARD",
       playerLight3Purple = "STANDARD",
+      famulusLight1Red = "STANDARD",
+      famulusLight1Brown = "STANDARD",
+      famulusLight2Red = "STANDARD",
+      famulusLight2Brown = "STANDARD",
       npcLight1NPC1 = "STANDARD",
       npcLight1NPC2 = "STANDARD",
       npcLight1NPC3 = "STANDARD",
@@ -2077,6 +2092,10 @@ C.LightModes = {
       playerLight1Purple = "STANDARD",
       playerLight2Purple = "STANDARD",
       playerLight3Purple = "STANDARD",
+      famulusLight1Red = "STANDARD",
+      famulusLight1Brown = "STANDARD",
+      famulusLight2Red = "STANDARD",
+      famulusLight2Brown = "STANDARD",
       npcLight1NPC1 = "STANDARD",
       npcLight1NPC2 = "STANDARD",
       npcLight1NPC3 = "STANDARD",
