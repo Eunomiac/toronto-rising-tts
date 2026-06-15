@@ -74,6 +74,9 @@ function onObjectDrop(playerColor, object)
     if object == nil or object.hasTag == nil then
         return
     end
+    if not isStorytellerPlayerColor(playerColor) then
+        return
+    end
     if object.hasTag("npc_figurine") == true and NPCS and NPCS.onObjectDropped then
         NPCS.onObjectDropped(object)
     end

@@ -604,6 +604,65 @@ function DEBUG.gbE2eContinue()
     return E2E_GB.runContinue()
 end
 
+--- Print last gameboard interaction profile (Apply/Clear/token drop).
+--- @param label string|nil optional prefix for console line
+--- @return table|nil
+local function printGameboardInteractionProfile(label)
+    local Gameboard = require("core.npc_gameboard")
+    local profile = Gameboard.getLastInteractionProfile()
+    if type(profile) ~= "table" then
+        print("[DEBUG] gameboard profile: (none — run Apply, Clear, or drop a token first)")
+        return nil
+    end
+    local prefix = type(label) == "string" and label ~= "" and (label .. " ") or ""
+    print(
+        "[DEBUG] "
+            .. prefix
+            .. "gameboard profile reason="
+            .. tostring(profile.reason)
+            .. " phaseA_ms="
+            .. string.format("%.2f", tonumber(profile.phaseA_ms) or 0)
+            .. " catalog_builds="
+            .. tostring(profile.catalog_builds or 0)
+            .. " tag_scans="
+            .. tostring(profile.tag_scans or 0)
+    )
+    return profile
+end
+
+--- Reset gameboard interaction profile snapshot.
+function DEBUG.resetGameboardProfile()
+    local Gameboard = require("core.npc_gameboard")
+    Gameboard.resetInteractionProfile()
+    print("[DEBUG] gameboard profile reset")
+end
+
+--- Run Apply and print interaction profile (seat Apply hitch baseline).
+--- @return boolean ok
+function DEBUG.profileGameboardApply()
+    local Gameboard = require("core.npc_gameboard")
+    Gameboard.resetInteractionProfile()
+    local ok = Gameboard.applyFromControlBoard()
+    printGameboardInteractionProfile("Apply")
+    return ok == true
+end
+
+--- Run Clear and print interaction profile.
+--- @return boolean ok
+function DEBUG.profileGameboardClear()
+    local Gameboard = require("core.npc_gameboard")
+    Gameboard.resetInteractionProfile()
+    local ok = Gameboard.clearControlBoard()
+    printGameboardInteractionProfile("Clear")
+    return ok == true
+end
+
+--- Print last token-drop profile (drop a control token first, then call).
+--- @return table|nil
+function DEBUG.profileGameboardTokenDrop()
+    return printGameboardInteractionProfile("TokenDrop")
+end
+
 --- Snap table from DEBUG.installNpcControlBoardSnaps options (flat fields or `{ config = … }`).
 --- @param options table|nil
 --- @return table|nil
@@ -4998,6 +5057,10 @@ function DEBUG.help()
     print("  gbE2eContinue()          - Resume after HUMAN GATE (scene_apply / reload)")
     print("  gbConfirm(label, expected) - Single assert (placements, intent, probes)")
     print("  dumpNpcPlacements()      - Print sessionScene.npcWorld.placements")
+    print("  profileGameboardApply()  - Apply + hitch profile (phaseA_ms, catalog_builds) _(TOR-201)_")
+    print("  profileGameboardClear()  - Clear + hitch profile")
+    print("  profileGameboardTokenDrop() - Last token-drop profile (drop first)")
+    print("  resetGameboardProfile()  - Clear profile snapshot")
     print("\nQUICK SETTERS (prefer Scenes/Sound panels for narrative apply):")
     print("  setHunger(color, value)  - Set player hunger (e.g., setHunger('Red', 3))")
     print("  soundscapeMusic(mood)    - Set music mood: main, intrigue, combat")

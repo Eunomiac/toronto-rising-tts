@@ -52,12 +52,20 @@ local boardUvHalfExtentsCache = {}
 local anchorDropEligibleByTokenGuid = {}
 --- @type table<string, boolean> token guid -> picked up while on CONTROL_BOARD_PALETTE (TOR-172 palette-drop flip).
 local tokenPickedUpFromPaletteGuid = {}
+--- Default-config snap catalog cache: key = boardGuid:fingerprint → catalog entries.
+--- @type table<string, table[]>
+local defaultSnapCatalogCache = {}
+--- @type table|nil Last completed interaction profile snapshot (Apply/Clear/drop).
+local lastInteractionProfile = nil
+--- @type table|nil In-flight profile counters for the current interaction.
+local activeInteractionProfile = nil
 --- Forward declaration (Lua local-function order): defined after helper dependencies.
 local rebuildAnchorDropEligibilityCache
 local resolveTokenSnapCatalogEntry
 local isNpcSeatRowColumn
 local parkVacatedNpcControlTokensToPalette
 local buildTokenByCharacterKey
+local controlBoardSnapFingerprintFor
 --- World XZ tolerance when matching tokens to installed control-board snap points.
 local CONTROL_BOARD_SNAP_MATCH_FUZZINESS = 0.45
 --- Prevents recursive anchor-family spread when programmatic moves fire onObjectDrop.
@@ -811,6 +819,7 @@ function Gameboard.scanControlBoardTokens(board)
         return out
     end
     local fuzziness = snapMatchFuzzinessForBoard(board)
+    noteInteractionTagScan(1)
     for _, obj in ipairs(getObjectsWithTag(TAG_TOKEN) or {}) do
         if isGameObject(obj) and isTokenOnMinimapTokenSurface(board, obj) then
             local characterKey = resolveTokenCharacterKey(obj)
@@ -1001,6 +1010,8 @@ local function placementsCount(placements)
 end
 
 --- Shared fast Sync.npcs path used by control-board interactions.
+--- Orchestrator fingerprint skip (npcReconcileFingerprint) applies when force is false.
+--- RSL layout force inside commitNpcSeatLayout (TOR-210) is separate and unchanged.
 --- @param reason string
 --- @param opts table|nil `{ seatMutation?: boolean, placementMutation?: boolean }`
 local function syncNpcsFromControlBoard(reason, opts)
@@ -1016,12 +1027,67 @@ local function syncNpcsFromControlBoard(reason, opts)
     end
     Sync.npcs({
         reason = reason,
-        force = true,
+        force = false,
         onlySteps = onlySteps,
         deferUiRefresh = true,
         skipPreloadPopulate = true,
         animateStageMoves = reason == "gameboard_apply",
     })
+end
+
+--- @param reason string
+local function beginInteractionProfile(reason)
+    activeInteractionProfile = {
+        reason = reason,
+        catalog_builds = 0,
+        tag_scans = 0,
+        startedAt = os.clock(),
+    }
+end
+
+--- @param t0 number os.clock at interaction start
+local function finishInteractionProfile(t0)
+    if type(activeInteractionProfile) ~= "table" then
+        return
+    end
+    activeInteractionProfile.phaseA_ms = (os.clock() - (t0 or activeInteractionProfile.startedAt)) * 1000
+    lastInteractionProfile = activeInteractionProfile
+    activeInteractionProfile = nil
+end
+
+--- @return table|nil
+function Gameboard.getLastInteractionProfile()
+    return lastInteractionProfile
+end
+
+--- Clear profile snapshot (does not affect catalog cache).
+function Gameboard.resetInteractionProfile()
+    lastInteractionProfile = nil
+    activeInteractionProfile = nil
+end
+
+--- @param count number|nil defaults to 1
+local function noteInteractionTagScan(count)
+    if type(activeInteractionProfile) ~= "table" then
+        return
+    end
+    activeInteractionProfile.tag_scans = (activeInteractionProfile.tag_scans or 0) + (tonumber(count) or 1)
+end
+
+--- @param board Object|nil When nil, clears entire default-config catalog cache.
+local function invalidateDefaultSnapCatalogCache(board)
+    if not isGameObject(board) then
+        defaultSnapCatalogCache = {}
+        return
+    end
+    local guidPrefix = tostring(board.getGUID()) .. ":"
+    local nextCache = {}
+    for key, catalog in pairs(defaultSnapCatalogCache) do
+        if type(key) ~= "string" or string.sub(key, 1, #guidPrefix) ~= guidPrefix then
+            nextCache[key] = catalog
+        end
+    end
+    defaultSnapCatalogCache = nextCache
 end
 
 --- True when an empty NPC seat snap should clear `occupiedNPCSlots` on Apply.
@@ -1097,8 +1163,11 @@ end
 --- Apply CONTROL_BOARD tokens → state → Sync.npcs.
 --- @return boolean ok, string|nil message
 function Gameboard.applyFromControlBoard()
+    beginInteractionProfile("apply")
+    local t0 = os.clock()
     local board = getControlBoard()
     if not isGameObject(board) then
+        finishInteractionProfile(t0)
         return false, "CONTROL_BOARD not found — set G.GUIDS.CONTROL_BOARD in lib/guids.ttslua"
     end
     local rows = Gameboard.scanControlBoardTokens(board)
@@ -1122,6 +1191,7 @@ function Gameboard.applyFromControlBoard()
     local placementChanged = not placementsMapsEqual(placements, existing)
     if not seatChanged and not placementChanged then
         print("[Gameboard] Apply: placements and seat row unchanged — skipped figurine reconcile")
+        finishInteractionProfile(t0)
         return true, nil
     end
     if placementChanged then
@@ -1144,12 +1214,15 @@ function Gameboard.applyFromControlBoard()
             .. (seatChanged and "; seat row" or "")
             .. " → Sync.npcs"
     )
+    finishInteractionProfile(t0)
     return true, nil
 end
 
 --- Remove tokens from control board and clear placements in state.
 --- @return boolean ok, string|nil message
 function Gameboard.clearControlBoard()
+    beginInteractionProfile("clear")
+    local t0 = os.clock()
     local hadPlacements = placementsCount(stateModule().getStateVal("sessionScene", "npcWorld", "placements")) > 0
     if hadPlacements then
         stateModule().setStateVal({}, "sessionScene", "npcWorld", "placements")
@@ -1183,8 +1256,7 @@ function Gameboard.clearControlBoard()
                 end
                 for _, assigned in pairs(occupied) do
                     if assigned == ck then
-                        local homelandEntry = resolveTokenSnapCatalogEntry(board, token, fuzz, nil)
-                        return type(homelandEntry) == "table" and homelandEntry.snapKind == SNAP_KIND_SEAT
+                        return type(entry) == "table" and entry.snapKind == SNAP_KIND_SEAT
                     end
                 end
                 return false
@@ -1208,9 +1280,11 @@ function Gameboard.clearControlBoard()
     if not hadPlacements and moved == 0 and not seatReleased then
         print("[Gameboard] Clear: no state/token changes — skipped figurine sync")
         Gameboard.reconcileControlBoardFromState({ force = true })
+        finishInteractionProfile(t0)
         return true, nil
     end
     syncNpcsFromControlBoard("gameboard_clear")
+    finishInteractionProfile(t0)
     return true, nil
 end
 
@@ -2355,6 +2429,7 @@ function Gameboard.formatSnapFamiliesCsv(byRole)
 end
 
 --- Snap catalog with family metadata (anchor = familyK 0 at each ray).
+--- Default config (config nil) is cached by board fingerprint; explicit config always rebuilds.
 --- @param board Object
 --- @param config table|nil Defaults to DATA.CONTROL_BOARD_SNAP
 --- @return table[]
@@ -2362,8 +2437,26 @@ function Gameboard.buildControlBoardSnapCatalog(board, config)
     if not isGameObject(board) then
         error("Gameboard.buildControlBoardSnapCatalog: board object required")
     end
-    local cfg, rings = validateControlBoardSnapConfig(resolveControlBoardSnapConfig(config))
-    return buildControlBoardSnapEntries(board, cfg, rings)
+    if config ~= nil then
+        if type(activeInteractionProfile) == "table" then
+            activeInteractionProfile.catalog_builds = (activeInteractionProfile.catalog_builds or 0) + 1
+        end
+        local cfg, rings = validateControlBoardSnapConfig(resolveControlBoardSnapConfig(config))
+        return buildControlBoardSnapEntries(board, cfg, rings)
+    end
+    local fp = controlBoardSnapFingerprintFor(board, nil)
+    local cacheKey = tostring(board.getGUID()) .. ":" .. fp
+    local cached = defaultSnapCatalogCache[cacheKey]
+    if type(cached) == "table" then
+        return cached
+    end
+    if type(activeInteractionProfile) == "table" then
+        activeInteractionProfile.catalog_builds = (activeInteractionProfile.catalog_builds or 0) + 1
+    end
+    local cfg, rings = validateControlBoardSnapConfig(resolveControlBoardSnapConfig(nil))
+    local catalog = buildControlBoardSnapEntries(board, cfg, rings)
+    defaultSnapCatalogCache[cacheKey] = catalog
+    return catalog
 end
 
 --- Build TTS snap points in board-local space (combined ray + family angles per ring).
@@ -2392,7 +2485,7 @@ end
 --- @param board Object
 --- @param config table|nil
 --- @return string
-local function controlBoardSnapFingerprintFor(board, config)
+controlBoardSnapFingerprintFor = function(board, config)
     local cfg = resolveControlBoardSnapConfig(config)
     local sx, sz = boardMapExtents(board)
     local parts = {
@@ -2456,7 +2549,6 @@ end
 function Gameboard.installPolarSnaps(board, options)
     options = type(options) == "table" and options or {}
     board = board or getControlBoard()
-    boardUvHalfExtentsCache = {}
     if not isGameObject(board) or board.setSnapPoints == nil then
         print("[Gameboard] installPolarSnaps: CONTROL_BOARD missing or has no setSnapPoints")
         return false
@@ -2466,6 +2558,8 @@ function Gameboard.installPolarSnaps(board, options)
     if options.force ~= true and polarSnapInstallFingerprint == fp then
         return true
     end
+    boardUvHalfExtentsCache = {}
+    invalidateDefaultSnapCatalogCache(board)
     local points = Gameboard.buildControlBoardSnapPoints(board, cfg)
     if #points < 1 then
         print("[Gameboard] installPolarSnaps: no snap points built")
@@ -2475,6 +2569,7 @@ function Gameboard.installPolarSnaps(board, options)
     if ok then
         polarSnapInstallFingerprint = fp
         installedPolarSnapConfig = resolveControlBoardSnapConfig(cfg)
+        Gameboard.buildControlBoardSnapCatalog(board, nil)
         print(
             "[Gameboard] Control-board snaps installed ("
                 .. tostring(#points)
@@ -3634,7 +3729,6 @@ function Gameboard.reconcileControlBoardFromState(opts)
         print("[Gameboard] reconcileControlBoardFromState: core.state unavailable")
         return
     end
-    boardUvHalfExtentsCache = {}
     local board = getControlBoard()
     if not isGameObject(board) then
         return
@@ -3655,6 +3749,7 @@ function Gameboard.reconcileControlBoardFromState(opts)
         rebuildAnchorDropEligibilityCache(board)
         return
     end
+    boardUvHalfExtentsCache = {}
     lastControlBoardMirrorFingerprint = mirrorFp
     local allMarkers = getObjectsWithTag(TAG_TABLE) or {}
     for _, tag in ipairs({ TAG_PC, TAG_NPC_SEAT, TAG_COMPONENT }) do
@@ -4321,12 +4416,16 @@ function Gameboard.onNpcControlTokenDropped(token, playerColor)
     if not isNpcControlToken(token) then
         return
     end
+    beginInteractionProfile("token_drop")
+    local t0 = os.clock()
     local board = getControlBoard()
     if not isGameObject(board) then
+        finishInteractionProfile(t0)
         return
     end
     if not isTokenOnControlBoardSurface(board, token) then
         ensureDefaultNpcControlTokenScale(token)
+        finishInteractionProfile(t0)
         return
     end
 
@@ -4342,6 +4441,7 @@ function Gameboard.onNpcControlTokenDropped(token, playerColor)
         ensureDefaultNpcControlTokenScale(token)
     end
     if not wantPaletteLight and not wantAnchorSpread then
+        finishInteractionProfile(t0)
         return
     end
 
@@ -4383,6 +4483,7 @@ function Gameboard.onNpcControlTokenDropped(token, playerColor)
         end,
         1.0
     )
+    finishInteractionProfile(t0)
 end
 
 --- @param placements table|nil

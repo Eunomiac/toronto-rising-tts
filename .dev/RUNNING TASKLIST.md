@@ -92,7 +92,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Seat snap Y-rotation:** Board-local **Y=180°** (`snapYawOffsetDeg`) on nine seat-row snaps offsets CONTROL_BOARD world Y=180°. _(TOR-200 — author confirmed 2026-06-15.)_
 - [x] **Apply seat/table snap doesn't seat NPC:** `commitNpcSeatLayout` → `RSL.SyncTable({ force = true })`; layout fingerprint no longer skips in-area occupants on Apply. _(TOR-210 — author confirmed 2026-06-15.)_
 - [x] **Seated NPC scale reset on refresh:** Canceled — scale `postCorrectionsBySeatRole` not needed; Y correction only in `C.TableSourceObjects`. _(TOR-215 — descoped 2026-06-15.)_
-- [x] **Clear / token-drop lag:** O(1) listener gates + figurine GUID cache (TOR-197); reopen if lag persists in play. _(TOR-201)_
+- [ ] **Gameboard frame hitch (Apply/Clear):** Tier 1 — snap catalog cache, orchestrator `force=false`, uv-extents fix, `DEBUG.profileGameboard*`. Pending Save & Play author verify. _(TOR-201 — reopened 2026-06-15)_
 - [x] **Duplicate table model on board:** Inactive `gameboard_table` markers stashed at `MARKER_STASH_WORLD_Y` when `tableKey ~= currentTableKey`. _(TOR-202 — author confirmed 2026-06-15.)_
 
 ## Soundscape

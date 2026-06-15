@@ -4,6 +4,7 @@
 
 | Rank | Topic | Status |
 | --- | --- | --- |
+| 0 | **Interaction points (gameboard Apply/Clear/drop)** | **In progress (TOR-201)** — snap catalog cache keyed by `controlBoardSnapFingerprintFor`; orchestrator `force=false` on control-board path; `DEBUG.profileGameboardApply/Clear/TokenDrop`; see [Plan Review](Control%20Board%20Frame%20Hitch%20%E2%80%94%20Plan%20Review.md) |
 | 1 | `Sync.player` duplicate overlay/HUD | **Done** — `HO.reconcileForSeat` / `HUP.reconcileForSeat`; scoped `UpdateUIDisplays`; no duplicate `overlays` / all-player `playerHud` |
 | 2 | Startup bootstrap stacks | **Done** — readiness-gated `scheduleBootstrapCoordinator()` (poll `0.35s`, max `10s`) replaces blind `BOOTSTRAP_RETRY_OFFSETS_SEC`; `L.seatSpotlightsResolvable()` + pending init-light probe; bootstrap metrics (`earlyExit`, `ticksRun`, `lightsDeferredRemaining`) |
 | 3 | Seat lighting redundant lerps | **Partial** — `lastReconciledModeByRef` + `L.invalidateReconcileCache()`; bootstrap ticks use `opts.bootstrap` → `transitionTime = 0`; seat-presentation orchestrator fingerprint skips full `reconcileAllPlayers` when PC light + overlay inputs unchanged |
@@ -28,6 +29,7 @@ All recommendations preserve the synchronization contract: `gameState` remains t
 
 | Rank | Hotspot | Impact hypothesis | Frequency evidence | Classification |
 | --- | --- | --- | --- | --- |
+| 0 | **Gameboard Apply/Clear/token drop** | **High** | Every ST seat assign, Clear, control-token drop | Catalog cache + orchestrator fingerprint (stop `force=true` bypass); `DEBUG.profileGameboard*` |
 | 1 | `Sync.player(color)` double all-seat overlay/HUD fan-out | High | Common: hunger, conditions, rouse/remorse | Quick win + structural split |
 | 2 | Startup `Sync.full` plus deferred retry stacks | High | Every load / reload | Structural bootstrap coordinator |
 | 3 | Seat lighting all-player reconciliation and 2s lerp churn | High | Full sync, table/seat changes, load retries | Diff cache / force-aware reconcile |
@@ -35,6 +37,26 @@ All recommendations preserve the synchronization contract: `gameState` remains t
 | 5 | NPC preload pool and scene NPC world reconcile | Medium-high | Load, scene library apply, scene NPC placement | Measurement + batch split |
 | 6 | `UpdateUIDisplays` broad deltas and full refresh fallbacks | Medium | Panel opens, reset, debug, sync | Narrow UI delta API |
 | 7 | Map/HUD player UI refresh work | Medium | Player HUD delta, map hover/pan | Keep targeted map path; add player-scoped HUD path |
+
+## 0. Gameboard interaction points (Apply / Clear / token drop)
+
+**Symptom:** Frame hitch on Storyteller Apply (especially seat-row changes), Clear, and palette/anchor token drops — not animation duration.
+
+**Evidence (2026-06-15 plan review)**
+
+- `resolveTokenSnapCatalogEntry` rebuilds full snap catalog per call (~9 `buildControlBoardSnapCatalog` sites + ~10 resolver sites).
+- `syncNpcsFromControlBoard` passed `force = true`, bypassing `npcReconcileFingerprint` skip in `NPCS.reconcileAllFromState`.
+- Separate load-bearing force: `commitNpcSeatLayout` → `RSL.SyncTable({ force = true })` (TOR-210) — do not conflate.
+- Partial fixes already shipped: empty-diff early return (Apply L1123, Clear L1208); drop scale-only path (`b16f26b`).
+
+**Tier 1 shipped / in progress**
+
+- Default-config snap catalog cache keyed by `controlBoardSnapFingerprintFor`.
+- `boardUvHalfExtentsCache` wipe only when mirror/install actually runs.
+- Orchestrator `force = false` on control-board Sync.npcs path.
+- `DEBUG.profileGameboardApply()` / `Clear()` / `TokenDrop()` — `phaseA_ms`, `catalog_builds`, `tag_scans`.
+
+**Measure before Tier 2:** If hitch remains after Tier 1, document spans before Phase A/B or registry work. See [Control Board Frame Hitch — Plan Review.md](Control%20Board%20Frame%20Hitch%20%E2%80%94%20Plan%20Review.md).
 
 ## 1. `Sync.player(color)` double all-seat overlay/HUD fan-out
 
