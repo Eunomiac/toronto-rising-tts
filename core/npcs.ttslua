@@ -2881,9 +2881,9 @@ function NPCS.reconcileAllFromState(opts)
         end
     end
 
-    npcReconcileInProgress = false
-
     reconcileNpcHomelandSeatSpotlightsWhenStageBound()
+
+    npcReconcileInProgress = false
 
     if allOk then
         lastNpcReconcileFingerprint = fp
