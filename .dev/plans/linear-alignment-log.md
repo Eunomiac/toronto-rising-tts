@@ -254,5 +254,7 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-06-15 | UPDATE | RUNNING TASKLIST **Focus** | TOR-210 #1; TOR-202 #2; TOR-178 #3; TOR-200/199 Done this cycle |
 | 2026-06-15 | INBOX | 5 bullets promoted | TOR-211–213 workshop (TOR-43); TOR-214 dice copy; TOR-215 seated NPC scale reset |
 | 2026-06-15 | UPDATE | TOR-154 | Scope expanded to full `C.LockedObjects`; Focus #2 |
+| 2026-06-15 | DONE | TOR-154 | C.LockedObjects interactable lock — nil-hole + startup-gate apply; author confirmed 70/70 |
+| 2026-06-15 | UPDATE | RUNNING TASKLIST **Focus** | TOR-210 #1; TOR-202 #2; TOR-215 #3; TOR-154 Done |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
