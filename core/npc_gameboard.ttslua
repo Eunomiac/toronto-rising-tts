@@ -606,11 +606,117 @@ local function rotationForNpcControlToken(boardYaw, yawDeg, faceUp)
     return Vector(0, boardYaw + (yawDeg or 0), rz)
 end
 
---- Seat-row tokens: upright on the minimap tile ({0,0,0} board-local + Z flip for presence).
+--- Seat-row tokens: world upright (Y=0 on minimap tile); Z flip for narrative presence only (TOR-200).
+--- Not polar yaw toward origin and not board world yaw — tokens stay visually upright on the tile.
 --- @param faceUp boolean
 --- @return Vector
 local function rotationForSeatRowControlToken(faceUp)
-    return Vector(0, 0, faceUp and 0 or 180)
+    local rz = faceUp and 0 or 180
+    return Vector(0, 0, rz)
+end
+
+--- @param token Object
+--- @return boolean
+local function seatRowTokenWorldYawIsUpright(token)
+    if not isGameObject(token) then
+        return false
+    end
+    local yaw = ((objectYawDeg(token) % 360) + 360) % 360
+    return yaw < 0.5 or yaw > 359.5
+end
+
+local TOKEN_SCALE_MATCH_EPS = 0.02
+
+--- @param token Object
+--- @param sx number
+--- @param sy number
+--- @param sz number
+--- @return boolean
+local function tokenScaleIsNear(token, sx, sy, sz)
+    if not isGameObject(token) or token.getScale == nil then
+        return false
+    end
+    local s = token.getScale()
+    if s == nil then
+        return false
+    end
+    return math.abs((s.x or 0) - sx) <= TOKEN_SCALE_MATCH_EPS
+        and math.abs((s.y or 0) - sy) <= TOKEN_SCALE_MATCH_EPS
+        and math.abs((s.z or 0) - sz) <= TOKEN_SCALE_MATCH_EPS
+end
+
+--- @param token Object
+--- @param sx number
+--- @param sy number
+--- @param sz number
+local function setNpcControlTokenScale(token, sx, sy, sz)
+    if isGameObject(token) and token.setScale ~= nil then
+        token.setScale({ x = sx, y = sy, z = sz })
+    end
+end
+
+--- Revert enlarged seat-row token scale when leaving seat snaps (TOR-199).
+--- @param token Object
+--- @return boolean true when scale was changed
+local function ensureDefaultNpcControlTokenScale(token)
+    local d = DATA.NPC_CONTROL_TOKEN_SCALE_POLAR
+    if not tokenScaleIsNear(token, d.x, d.y, d.z) then
+        setNpcControlTokenScale(token, d.x, d.y, d.z)
+        return true
+    end
+    return false
+end
+
+--- @param token Object
+local function applySeatRowNpcControlTokenScale(token)
+    local s = DATA.NPC_CONTROL_TOKEN_SCALE_SEAT_ROW
+    if not tokenScaleIsNear(token, s.x, s.y, s.z) then
+        setNpcControlTokenScale(token, s.x, s.y, s.z)
+    end
+end
+
+--- @param board Object
+--- @param u number
+--- @param v number
+--- @return boolean
+local function isNearSeatRowUv(board, u, v)
+    if not isGameObject(board) or type(u) ~= "number" or type(v) ~= "number" then
+        return false
+    end
+    local seatCfg = DATA.CONTROL_BOARD_SEAT_ROW
+    if type(seatCfg) ~= "table" then
+        return false
+    end
+    local rowV = tonumber(seatCfg.v) or 0.15
+    local uMin = tonumber(seatCfg.uMin) or 0.35
+    local uMax = tonumber(seatCfg.uMax) or 0.65
+    return math.abs(v - rowV) <= 0.08 and u >= (uMin - 0.05) and u <= (uMax + 0.05)
+end
+
+--- @param token Object
+--- @param board Object
+--- @param faceUpOverride boolean|nil When set, use for rotation instead of reading token flip state.
+local function applySeatRowControlTokenPresentation(token, board, faceUpOverride)
+    if not isGameObject(token) or not isGameObject(board) then
+        return
+    end
+    local faceUp = faceUpOverride
+    if faceUp == nil then
+        faceUp = tokenRotationIsFaceUp(token)
+    end
+    local rot = rotationForSeatRowControlToken(faceUp)
+    token.setRotation(rot)
+    applySeatRowNpcControlTokenScale(token)
+    Gameboard.setHiddenFromPlayerColors(token)
+    -- TTS rotation_snap can re-apply snap yaw after settle; reassert world Y=0 (TOR-200).
+    U.delay(function()
+        if not isGameObject(token) or not isTokenOnControlBoardSurface(board, token) then
+            return
+        end
+        if not seatRowTokenWorldYawIsUpright(token) or tokenRotationIsFaceUp(token) ~= faceUp then
+            token.setRotation(rot)
+        end
+    end, 0.05)
 end
 
 --- @param token Object
@@ -2414,6 +2520,7 @@ local function parkNpcTokenOnPalette(token, characterKey)
         return false
     end
     token.setPosition(wp)
+    ensureDefaultNpcControlTokenScale(token)
     Palette.applyPaletteParkingRotation(palette, token)
     if token.setInvisibleTo ~= nil then
         token.setInvisibleTo(C.PlayerColors or {})
@@ -3076,8 +3183,7 @@ function Gameboard.relocateHomelandSeatTokensAfterClear(board)
                     present = NPCS.resolveSeatNarrativePresence(seatKey) == true
                 end
                 token.setPosition(Gameboard.worldOnControlBoard(board, entry.u, entry.v))
-                token.setRotation(rotationForSeatRowControlToken(present))
-                Gameboard.setHiddenFromPlayerColors(token)
+                applySeatRowControlTokenPresentation(token, board)
             end
         end
     end
@@ -3100,6 +3206,7 @@ local function mirrorControlTokenToPlacementRow(token, board, row)
     local boardYaw = objectYawDeg(board)
     local relYaw = Gameboard.placementBoardRelYawDeg(u, v)
     local faceUp = row.npcLightMode ~= "OFF"
+    ensureDefaultNpcControlTokenScale(token)
     token.setRotation(rotationForNpcControlToken(boardYaw, relYaw, faceUp))
     Gameboard.setHiddenFromPlayerColors(token)
 end
@@ -3255,8 +3362,7 @@ function Gameboard.reconcileControlBoardFromState(opts)
                             present = NPCS.resolveSeatNarrativePresence(seatKey) == true
                         end
                         token.setPosition(Gameboard.worldOnControlBoard(board, entry.u, entry.v))
-                        token.setRotation(rotationForSeatRowControlToken(present))
-                        Gameboard.setHiddenFromPlayerColors(token)
+                        applySeatRowControlTokenPresentation(token, board, present)
                     end
                 end
             end
@@ -3443,6 +3549,11 @@ end
 local function placeTokenOnControlBoardSnap(token, snapEntry, board, boardYaw)
     token.setPosition(snapEntry.worldPos)
     local faceUp = tokenRotationIsFaceUp(token)
+    if type(snapEntry) == "table" and snapEntry.snapKind == SNAP_KIND_SEAT then
+        applySeatRowControlTokenPresentation(token, board)
+        return
+    end
+    ensureDefaultNpcControlTokenScale(token)
     token.setRotation(rotationForNpcControlToken(boardYaw, snapEntry.yawDeg, faceUp))
     Gameboard.setHiddenFromPlayerColors(token)
 end
@@ -3562,6 +3673,7 @@ local function applySnapGroupDefaultLightAtEntry(token, entry, board, cfg)
         result.reason = "seat_snap"
         return result
     end
+    ensureDefaultNpcControlTokenScale(token)
     if type(cfg) ~= "table" then
         cfg = resolveControlBoardSnapConfig(nil)
     end
@@ -3736,12 +3848,13 @@ function Gameboard.tryAnchorFamilyGroupSpread(droppedToken)
     return { placed = placed, reason = "ok", groupId = groupId }
 end
 
---- Record palette origin on pick-up so the next CONTROL_BOARD drop can apply ring `defaultLightMode` (TOR-172).
+--- Record palette origin on pick-up; revert seat-row scale when leaving the board (TOR-199).
 --- @param token Object|nil
 function Gameboard.onNpcControlTokenPickUp(token)
     if not isNpcControlToken(token) then
         return
     end
+    ensureDefaultNpcControlTokenScale(token)
     local palette = getControlBoardPalette()
     if not isGameObject(palette) then
         return
@@ -3789,28 +3902,39 @@ function Gameboard.applySnapGroupDefaultLightOnPaletteDrop(token)
     return applySnapGroupDefaultLightAtEntry(token, entry, board, cfg)
 end
 
---- Global onObjectDrop hook: wait for TTS snap to settle, then try anchor-family spread.
+--- Global onObjectDrop hook: seat-row presentation, palette defaultLightMode, anchor-family spread.
 --- @param token Object
 --- @param playerColor string|nil
 function Gameboard.onNpcControlTokenDropped(token, playerColor)
     if not isNpcControlToken(token) then
         return
     end
-    local tokenGuid = tostring(token.getGUID() or "")
-    local wantPaletteLight = tokenGuid ~= "" and tokenPickedUpFromPaletteGuid[tokenGuid] == true
-    local wantAnchorSpread = tokenGuid ~= "" and anchorDropEligibleByTokenGuid[tokenGuid] == true
-    if not wantPaletteLight and not wantAnchorSpread then
-        return
-    end
     local board = getControlBoard()
     if not isGameObject(board) then
         return
     end
+    if not isTokenOnControlBoardSurface(board, token) then
+        ensureDefaultNpcControlTokenScale(token)
+        return
+    end
+
+    local tokenGuid = tostring(token.getGUID() or "")
+    local wantPaletteLight = tokenGuid ~= "" and tokenPickedUpFromPaletteGuid[tokenGuid] == true
+    local wantAnchorSpread = tokenGuid ~= "" and anchorDropEligibleByTokenGuid[tokenGuid] == true
+    local u, v = uvFromWorldOnBoard(board, token.getPosition())
+    local wantSeatRow = isNearSeatRowUv(board, u, v)
+    if not wantPaletteLight and not wantAnchorSpread and not wantSeatRow then
+        return
+    end
+
     local fuzziness = snapMatchFuzzinessForBoard(board)
+    if wantSeatRow then
+        applySeatRowControlTokenPresentation(token, board)
+    end
     U.waitForCondition(
         function()
-            if not isGameObject(token) then
-                return
+            if wantSeatRow then
+                applySeatRowControlTokenPresentation(token, board)
             end
             if wantPaletteLight then
                 local lightResult = Gameboard.applySnapGroupDefaultLightOnPaletteDrop(token)
@@ -3836,14 +3960,26 @@ function Gameboard.onNpcControlTokenDropped(token, playerColor)
             if not isTokenOnControlBoardSurface(board, token) then
                 return false
             end
+            if wantSeatRow then
+                local dropU, dropV = uvFromWorldOnBoard(board, token.getPosition())
+                if isNearSeatRowUv(board, dropU, dropV) then
+                    return true
+                end
+            end
             local entry = resolveTokenSnapCatalogEntry(board, token, fuzziness, nil)
             if entry == nil then
                 return false
             end
+            if wantSeatRow and entry.snapKind == SNAP_KIND_SEAT then
+                return true
+            end
             if wantAnchorSpread and entry.isAnchor ~= true then
                 return false
             end
-            return true
+            if wantAnchorSpread or wantPaletteLight then
+                return true
+            end
+            return false
         end,
         1.0
     )

@@ -43,6 +43,10 @@ D.MINIMAP_TABLE_EXTRA_LOCAL_Y = 0.06
 --- Local Y above CONTROL_BOARD_PALETTE surface for token snaps.
 D.PALETTE_SURFACE_LOCAL_Y = 0.18
 
+--- NPC control token scale on CONTROL_BOARD polar/stage snaps vs seat-assignment row (TOR-199).
+D.NPC_CONTROL_TOKEN_SCALE_POLAR = { x = 0.2, y = 1, z = 0.2 }
+D.NPC_CONTROL_TOKEN_SCALE_SEAT_ROW = { x = 0.7, y = 1, z = 0.7 }
+
 --- Fallback world XZ footprint when STAGE_BOARD is not in the save yet.
 D.DEFAULT_STAGE_WORLD = {
   centerX = 0,
