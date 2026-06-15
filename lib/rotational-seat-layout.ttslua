@@ -2911,7 +2911,12 @@ function M.resolveSeatObjectsFromTable(tableRef, sourceObjects, options)
   do
     local L = require("core.lighting")
     if L ~= nil and type(L.reconcileAllPlayers) == "function" then
-      L.reconcileAllPlayers()
+      local playerOpts = { skipStageBoundNpcSeats = true }
+      if type(NPCS.isReconcileOrchestratorInProgress) == "function"
+          and NPCS.isReconcileOrchestratorInProgress() then
+        playerOpts.skipNpcSeats = true
+      end
+      L.reconcileAllPlayers(playerOpts)
     end
     local orchestratorActive = type(NPCS.isReconcileOrchestratorInProgress) == "function"
         and NPCS.isReconcileOrchestratorInProgress()

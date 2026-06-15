@@ -148,6 +148,7 @@ function Sync.invalidateAllReconcileCaches()
     callIfFunction(Scenes.invalidateReconcileCache)
     callIfFunction(Soundscape.invalidateReconcileCache)
     callIfFunction(HO.invalidateOverlayInputCache)
+    callIfFunction(NPCS.invalidateHomelandStageBoundSpotlightsCache)
     invalidateSeatPresentationFingerprint()
 end
 

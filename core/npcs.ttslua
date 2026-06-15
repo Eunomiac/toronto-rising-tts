@@ -705,6 +705,21 @@ local NPC_HOMELAND_SEAT_LIGHT_REFS = {
     NPC4 = { "npcLight2NPC4", "npcLight1NPC4" },
 }
 
+--- Fingerprint of stage-bound homeland seats (placements + occupied slots); gates duplicate OFF applies.
+--- @return string
+local function homelandStageBoundSpotlightsFingerprint()
+    local parts = {}
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        if isNpcSeatOccupantStageBound(seatKey) then
+            parts[#parts + 1] = seatKey .. "=OFF"
+        end
+    end
+    table.sort(parts)
+    return table.concat(parts, "\n")
+end
+
+local lastHomelandStageBoundSpotlightsFingerprint = nil
+
 --- Persist OFF and apply homeland seat spotlights for one NPC seat (TOR-178 stage-bound).
 --- @param seatKey string
 --- @param opts table|nil `{ force?: boolean }`
@@ -729,15 +744,25 @@ end
 
 --- Sole orchestrator pass: homeland seat spotlights OFF for every stage-bound NPC seat.
 local function reconcileNpcHomelandSeatSpotlightsWhenStageBound()
+    local fp = homelandStageBoundSpotlightsFingerprint()
+    if fp == lastHomelandStageBoundSpotlightsFingerprint then
+        return
+    end
     for _, seatKey in ipairs(C.NPCSeats or {}) do
         if isNpcSeatOccupantStageBound(seatKey) then
-            syncNpcHomelandSeatSpotlightsOff(seatKey, { force = true })
+            syncNpcHomelandSeatSpotlightsOff(seatKey, { force = false })
         end
     end
+    lastHomelandStageBoundSpotlightsFingerprint = fp
 end
 
 function NPCS.reconcileHomelandSeatSpotlightsForStageBound()
     reconcileNpcHomelandSeatSpotlightsWhenStageBound()
+end
+
+--- Clear homeland spotlight reconcile skip cache (e.g. `Sync.invalidateAllReconcileCaches`).
+function NPCS.invalidateHomelandStageBoundSpotlightsCache()
+    lastHomelandStageBoundSpotlightsFingerprint = nil
 end
 
 --- @param lit Object|nil
@@ -2969,6 +2994,10 @@ function NPCS.reconcileAllFromState(opts)
             Gameboard.reconcileControlBoardFromState()
         end
         return
+    end
+
+    if force then
+        lastHomelandStageBoundSpotlightsFingerprint = nil
     end
 
     local intent = resolveNpcPlacementIntent()

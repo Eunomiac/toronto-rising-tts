@@ -1614,16 +1614,24 @@ function L.reconcileForPlayer(seatKey, opts)
 end
 
 --- Reconcile all player lights from state.
---- @param opts table|nil forwarded to `L.reconcileForPlayer`; `skipNpcSeats` skips NPC seat keys
+--- @param opts table|nil forwarded to `L.reconcileForPlayer`; `skipNpcSeats` skips all NPC seats; `skipStageBoundNpcSeats` skips stage-bound homeland NPC seats (owned by `NPCS.reconcileHomelandSeatSpotlightsForStageBound`)
 function L.reconcileAllPlayers(opts)
     opts = type(opts) == "table" and opts or {}
     local skipNpc = opts.skipNpcSeats == true
+    local skipStageBoundNpc = opts.skipStageBoundNpcSeats == true
     for _, color in ipairs(C.PlayerColors or {}) do
         L.reconcileForPlayer(color, opts)
     end
     if not skipNpc then
+        local NPCS = require("core.npcs")
         for _, seatKey in ipairs(C.NPCSeats or {}) do
-            L.reconcileForPlayer(seatKey, opts)
+            if skipStageBoundNpc
+                and type(NPCS.isNpcSeatOccupantStageBound) == "function"
+                and NPCS.isNpcSeatOccupantStageBound(seatKey) then
+                -- skip: homeland workshop spotlights reconciled by NPC orchestrator / RSL tail pass
+            else
+                L.reconcileForPlayer(seatKey, opts)
+            end
         end
     end
 end

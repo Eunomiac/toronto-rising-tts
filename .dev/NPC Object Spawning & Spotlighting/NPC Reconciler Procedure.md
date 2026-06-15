@@ -202,6 +202,8 @@ Reverse the above: PC hidden-object visibility per `C.HiddenObjects`; pooled NPC
 
 *Implementation note:* PC and NPC paths may use different existing helpers (`O.reconcilePcSeatHiddenObjectsFromState` / `O.applyPcSeatHiddenObjectPresence` for `C.HiddenObjects`, `L.reconcileForPlayer`, NPC tag visibility in `core/npcs.ttslua`, etc.) as long as the outcomes above are met. `NPCS.reconcileAllFromState` Step Four applies PC hidden-object visibility and NPC figurine/chair invisibility and seat lights after layout commit A.
 
+**Stage-bound homeland seats (TOR-178):** Step Four skips `L.reconcileForPlayer` when `areaBoundOccupant` is set. Homeland `npcLight1/2NPC*` OFF is applied once at orchestrator end via `reconcileNpcHomelandSeatSpotlightsWhenStageBound` (fingerprint-gated). Layout sync (`resolveSeatObjectsFromTable`) skips stage-bound NPC seats in `L.reconcileAllPlayers` and runs the same homeland pass only when the orchestrator is inactive; duplicate OFF applies for the same fingerprint are no-ops.
+
 ---
 
 ## Step Five: Populate world from resolved intent
