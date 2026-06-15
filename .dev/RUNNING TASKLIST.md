@@ -16,13 +16,13 @@ _Stack rank for the current cycle (2026-06-06, inbox perf + dice bugs). **Preced
 
 | # | Issue | Why now |
 | --- | --- | --- |
-| 1 | **TOR-200** — Seat snap Y-rotation 180° | Seat-row snaps need board-local Y=180° to offset CONTROL_BOARD world Y=180° |
-| 2 | **TOR-202** — Duplicate table model on board | Only one CONTROL_BOARD table model for active `currentTableKey` |
-| 3 | **TOR-199** — Seated snap row token 2× scale | Seat-assignment tokens scale 2× on Apply; revert off seat snaps |
+| 1 | **TOR-210** — Apply seat/table snap doesn't seat NPC | Fresh playtest bug — token on seat row + Apply doesn't place figurine at table |
+| 2 | **TOR-154** — C.LockedObjects not interactable=false | Locked GUIDs (floor, plinth, STAGE_BOARD, tables, …) still pickable after load |
+| 3 | **TOR-202** — Duplicate table model on board | Only one CONTROL_BOARD table model for active `currentTableKey` |
 
 **Also in cycle (below top stack):** **TOR-169** (Storyteller NPC gameboard umbrella), **TOR-178** (seat ↔ stage figurine transfer), **TOR-173** (lerp stage moves on Apply).
 
-**Done this cycle:** TOR-198 (Rouse check Roll doubles staged dice — `spawnMissingPoolDiceForColor`, author confirmed resolved). TOR-197 (event listener O(1) gates + Event Listener Policy). TOR-201 (Clear/token-drop lag — listener audit fix; reopen if lag persists). TOR-180 (control-board seat-assignment snap row — assign/presence/Clear homelands). TOR-172 (palette-drop ring `defaultLightMode` flip + stage light preview). TOR-175 (anchor family spread center-out alternating). TOR-155 (roll panel pool dots color coding). TOR-164 (Dice-E2E harness + doc). TOR-138 (silence-for-save no longer wipes soundscape state; load branch → TOR-152). TOR-141 baseline shipped (`.dev/E2E Playbooks/`); issue stays **In Progress** as living doc (`living-doc` label). TOR-159 (frenzy at hunger 5 threshold). TOR-158 (Blood Surge + conditions). **TOR-169 session:** circular-require load fix, Z-axis token flip, placements-only reconcile + byArea migration (`a0271ac`). **TOR-170/171:** load token mirror + master-origin figurine yaw (`5c3d37b`). **TOR-176/177:** Host-only control-board XmlUI + hide workshop seat-figure anchors (`b58e2fb`).
+**Done this cycle:** TOR-200 (seat snap Y-rotation — board-local Y=180° offsets CONTROL_BOARD world Y=180°; author confirmed). TOR-199 (seat-row token scale 0.7 on seat snaps, 0.2 polar; drop-handler scale revert). TOR-198 (Rouse check Roll doubles staged dice — `spawnMissingPoolDiceForColor`, author confirmed resolved). TOR-197 (event listener O(1) gates + Event Listener Policy). TOR-201 (Clear/token-drop lag — listener audit fix; reopen if lag persists). TOR-180 (control-board seat-assignment snap row — assign/presence/Clear homelands). TOR-172 (palette-drop ring `defaultLightMode` flip + stage light preview). TOR-175 (anchor family spread center-out alternating). TOR-155 (roll panel pool dots color coding). TOR-164 (Dice-E2E harness + doc). TOR-138 (silence-for-save no longer wipes soundscape state; load branch → TOR-152). TOR-141 baseline shipped (`.dev/E2E Playbooks/`); issue stays **In Progress** as living doc (`living-doc` label). TOR-159 (frenzy at hunger 5 threshold). TOR-158 (Blood Surge + conditions). **TOR-169 session:** circular-require load fix, Z-axis token flip, placements-only reconcile + byArea migration (`a0271ac`). **TOR-170/171:** load token mirror + master-origin figurine yaw (`5c3d37b`). **TOR-176/177:** Host-only control-board XmlUI + hide workshop seat-figure anchors (`b58e2fb`).
 
 **Ongoing (not Focus stack):** TOR-141 — maintain E2E playbooks when dice/scenes/debug testing changes.
 
@@ -56,6 +56,7 @@ _Stack rank for the current cycle (2026-06-06, inbox perf + dice bugs). **Preced
   - **Cascade:** As Standard, with two changes. First, the number of successes on each roll becomes a positive modifier to the dice pool of the next roll. Second, if any roll fails, the test ends immediately in failure.
 - [x] **Oblivion rouse checks:** Finish end-to-end (`C.RollType.ROUSE_OBLIVION` — UI, validation, result handling). _(Shipped in dice pt.2: TOR-51, TOR-131; in-game verification recommended.)_ _(TOR-75)_
 - [x] **Rouse check Roll doubles pool:** Clicking Roll after PRE_ROLL staging spawns duplicate Rouse/Obliv-Rouse dice (pool doubles). _(TOR-198 — `spawnMissingPoolDiceForColor`; author confirmed resolved 2026-06-14.)_
+- [ ] **Oblivion Rouse copy:** Prompt `Hunger or Stain?`; post-choice broadcast `Hunger Roused` / `Stained` (not stuck on choose prompt). _(TOR-214)_
 - [ ] **Hunger 5 voluntary rouse lockout:** At Hunger 5, lock Blood Surge + Obliv-Rouse bags; allow forced standard Rouse checks; failed rouse → frenzy resist D4. _(TOR-203)_
 
 ## Camera
@@ -87,8 +88,10 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **NPC area cutouts on scene apply:** Mis-nested `npcWorld` at import root (spreadsheet JSON) left `sessionScene.npcWorld.byArea` empty — scene apply/reconcile was fine when data was nested correctly. Fixed spreadsheet; import validator now rejects unexpected root keys (no hoisting). _(TOR-135)_
 - [ ] _New feature:_ Storyteller rolls dice for NPCs from the dice control panel — spawn/show dice tray, appropriate camera angle, roll-controller wiring for NPC/non-player identity. _(TOR-79)_
 - [ ] **NPC token on ST dice bag:** Drop control token on dice bag → roll for that NPC with bag type; return token to prior board snap or palette. Deferred until TOR-169 stabilizes. _(TOR-174)_
-- [ ] **Seated snap row token 2× scale:** On Apply, tokens on seat-assignment snaps scale 2×; revert when moved off seat snaps. _(TOR-199)_
-- [ ] **Seat snap Y-rotation:** Seat-assignment snaps use board-local **Y=180°** (`snapYawOffsetDeg`) so tokens land upright on the Y=180° CONTROL_BOARD. _(TOR-200)_
+- [x] **Seated snap row token scale:** Seat snaps `{0.7,1,0.7}`; polar/palette/off-board `{0.2,1,0.2}` on pick-up, drop, and mirror. _(TOR-199 — author confirmed 2026-06-15.)_
+- [x] **Seat snap Y-rotation:** Board-local **Y=180°** (`snapYawOffsetDeg`) on nine seat-row snaps offsets CONTROL_BOARD world Y=180°. _(TOR-200 — author confirmed 2026-06-15.)_
+- [ ] **Apply seat/table snap doesn't seat NPC:** Token on seat row + Apply updates control board but figurine not at physical table. _(TOR-210)_
+- [ ] **Seated NPC scale reset on refresh:** Control board refresh drops `postCorrectionsBySeatRole` scale/Y on seated figurines. _(TOR-215)_
 - [x] **Clear / token-drop lag:** O(1) listener gates + figurine GUID cache (TOR-197); reopen if lag persists in play. _(TOR-201)_
 - [ ] **Duplicate table model on board:** Only one table model on CONTROL_BOARD — active `currentTableKey` only. _(TOR-202)_
 
@@ -164,7 +167,7 @@ _Blocked: author must define data binding approach before substantial implementa
 
 ## Table Objects
 
-- [ ] **Locked floor/plinth:** `THE_FLOOR` and `TABLE_PLINTH` in `C.LockedObjects` but still interactable after load — verify GUIDs vs workshop, re-apply lock, audit late `interactable` writes. _(TOR-154)_
+- [ ] **C.LockedObjects interactable lock:** Every GUID in `C.LockedObjects` must get `interactable = false` on load via `ApplyLockedAndHiddenFromConstants`; audit GUID mismatches, missing entries (e.g. `STAGE_BOARD`), and late re-enable paths. _(TOR-154)_
 - [ ] **Tarot hide:** `G.GUIDS.TAROT_BUTTON_PINK` / [`ui/ui_tarot_button.ttslua`](../ui/ui_tarot_button.ttslua) — when hiding the deck, return all drawn tarot cards to the deck first, then hide (no orphans on table). _(TOR-96)_
 - [ ] **Compulsions deck:** Indistinct deck; face on draw per player; drop → lerp lock by sheet on Bestial Failure. _(TOR-204)_
 
@@ -205,4 +208,7 @@ _Workshop save, external art, or design TBD outside the repo. Each row has an op
 | Tune audio volumes | Emitters, weather, ducking in save | TOR-112 |
 | Generic encounter NPC list | Chronicle content incl. Memoriams | TOR-207 |
 | ST improv stats reference | Pool spreads; lock stats when used in play | TOR-208 |
+| Famulus seat lights | Player seat lights for famulus models | TOR-211 |
+| Famulus Brown/Red hand zone | Figurines + lights rotate with hand zone (like Pink Tarot) | TOR-212 |
+| Roll light intensity boost | Remove player light intensity increase during roll sequence | TOR-213 |
 | Scene Constructor (Google Sheets) | Import/export workflow — author to define approach first | TOR-113 |

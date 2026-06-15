@@ -3895,8 +3895,12 @@ function Gameboard.onNpcControlTokenDropped(token, playerColor)
     local wantPaletteLight = tokenGuid ~= "" and tokenPickedUpFromPaletteGuid[tokenGuid] == true
     local wantAnchorSpread = tokenGuid ~= "" and anchorDropEligibleByTokenGuid[tokenGuid] == true
     local u, v = uvFromWorldOnBoard(board, token.getPosition())
+    -- Seat-row scale only; rotation comes from snap points. Skip waitForCondition when palette/anchor
+    -- flags are false — b16f26b entered wait with wantSeatRow alone and timed out up to 1s.
     if isNearSeatRowUv(board, u, v) then
         applySeatRowNpcControlTokenScale(token)
+    else
+        ensureDefaultNpcControlTokenScale(token)
     end
     if not wantPaletteLight and not wantAnchorSpread then
         return

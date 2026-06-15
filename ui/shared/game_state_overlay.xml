@@ -7,7 +7,7 @@
 
   <VerticalLayout class="gameStateOverlay_topCenter" width="900" height="170" rectAlignment="UpperCenter" childAlignment="MiddleCenter" spacing="0" padding="5 5 5 5" scale="1" offsetXY="0 20" />
 
-  <VerticalLayout class="gameStateOverlay_topRight" width="372" height="110" rectAlignment="UpperRight" childAlignment="UpperRight" spacing="5" padding="5 5 5 5" offsetXY="2 0" />
+  <VerticalLayout class="gameStateOverlay_topRight" width="272" height="110" rectAlignment="UpperRight" childAlignment="UpperRight" spacing="5" padding="5 5 5 5" offsetXY="2 0" />
 
   <Image class="gameStateOverlay_background" raycastTarget="false" preserveAspect="true" ignoreLayout="true" width="100%" rectAlignment="UpperCenter" />
 

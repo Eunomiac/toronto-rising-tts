@@ -2,11 +2,6 @@
 
 ## Active
 
-- [Quick] Set up player seat lights for famulus models
-- [Quick] Register famulus figurines and lights for Brown and Red such that they are rotated along with the player's hand zone, like the Pink player's Tarot deck
-- [Quick] Remove increase of light intensity during a roll sequence on player lights
-- [Dice] The message "Choose Hunger or Stain" should be changed to "Hunger or Stain?" (so it will fit). Also, the broadcast message after the player has made such a choice on an Oblivion Rouse check should read "Hunger Roused" or "Stained" (currently it reads "Choose Hunger or Stain" even after the choice has been made).
-- [NPC Seat Positions] Periodically on control board refresh, seated NPCs are having their seat scale reset to default.  Seated NPCs must always have their figurine transforms modified according to `C.TableSourceObjects.postCorrectionsBySeatRole`, both y-positions and scale.
 
 ---
 
@@ -22,6 +17,12 @@
 
 ## Processed
 
+- 2026-06-15 TOR-211 — [workshop] Set up player seat lights for famulus models
+- 2026-06-15 TOR-212 — [workshop] Famulus figurines/lights Brown & Red — rotate with hand zone (like Pink Tarot)
+- 2026-06-15 TOR-213 — [workshop] Remove roll-sequence player light intensity boost
+- 2026-06-15 TOR-214 — [dice] Oblivion Rouse Hunger/Stain prompt + broadcast copy
+- 2026-06-15 TOR-215 — [bug] Seated NPC figurine scale resets on control board refresh
+- 2026-06-15 TOR-210 — [bug] Apply + seat/table snap does not seat NPC at table
 - 2026-06-06 TOR-197 — [agent] Event listener early-return audit + policy (Focus #1)
 - 2026-06-06 TOR-198 — [bug] Rouse check Roll doubles staged dice pool (Focus #2)
 - 2026-06-06 TOR-199 — [NPC gameboard] Seated snap row token 2× scale on Apply

@@ -248,5 +248,11 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-06-06 | DONE | TOR-197 | O(1) physical listener gates, figurine GUID cache, zones deactivated on load; Event Listener Policy |
 | 2026-06-06 | DONE | TOR-201 | Clear/token-drop lag — resolved via TOR-197 listener audit; author may reopen if lag persists |
 | 2026-06-06 | UPDATE | RUNNING TASKLIST **Focus** | TOR-198 top; TOR-197/201 Done this cycle |
+| 2026-06-15 | DONE | TOR-200 | Seat snap Y-rotation — board-local Y=180° offsets CONTROL_BOARD world Y=180°; author confirmed |
+| 2026-06-15 | DONE | TOR-199 | Seat-row token scale 0.7/0.2 polar; drop-handler scale revert; author confirmed |
+| 2026-06-15 | CREATE | TOR-210 | Bug: Apply + seat/table snap does not seat NPC at table (High; Focus #1; parent TOR-169) |
+| 2026-06-15 | UPDATE | RUNNING TASKLIST **Focus** | TOR-210 #1; TOR-202 #2; TOR-178 #3; TOR-200/199 Done this cycle |
+| 2026-06-15 | INBOX | 5 bullets promoted | TOR-211–213 workshop (TOR-43); TOR-214 dice copy; TOR-215 seated NPC scale reset |
+| 2026-06-15 | UPDATE | TOR-154 | Scope expanded to full `C.LockedObjects`; Focus #2 |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
