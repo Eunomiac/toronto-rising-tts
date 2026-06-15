@@ -110,7 +110,7 @@ Example: ring 3, `num=5`, `angleDelta=4`, `anchorDeg=90` → **82°, 86°, 90°,
 
 - **Duplicates** at overlapping angles are allowed (no dedupe).
 - Candidates with `u` or `v` outside `[0, 1]` are omitted (not clamped).
-- Every snap uses `rotation_snap = true`, `tags = { "npc_control_token" }` (tagged snaps match control tokens), and board-local yaw **toward the master/default `origin`** plus ring-level or default `snapYawOffsetDeg`.
+- Every snap uses `rotation_snap = true`, `tags = D.CONTROL_BOARD_SNAP_TAGS` (`npc_control_token` + `pc_control_token`), and board-local yaw **toward the master/default `origin`** plus ring-level or default `snapYawOffsetDeg`.
 - Per-ring `origin` sets the ellipse center for that ring; when it differs from the master origin, **family angles** rotate so the anchor faces the master (token yaw still faces the master origin).
 
 ## Visual illustrations

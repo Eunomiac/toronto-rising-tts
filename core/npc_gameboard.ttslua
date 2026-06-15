@@ -31,6 +31,8 @@ end
 local Palette = require("lib.npc_control_board_palette")
 
 local TAG_TOKEN = DATA.TAG_NPC_CONTROL_TOKEN
+local CONTROL_BOARD_SNAP_TAGS = DATA.CONTROL_BOARD_SNAP_TAGS
+    or { TAG_TOKEN, DATA.TAG_PC_CONTROL_TOKEN or "pc_control_token" }
 local TAG_PC = DATA.TAG_GAMEBOARD_PC_SEAT
 local TAG_NPC_SEAT = DATA.TAG_GAMEBOARD_NPC_SEAT
 local TAG_TABLE = DATA.TAG_GAMEBOARD_TABLE
@@ -1159,19 +1161,21 @@ function Gameboard.clearControlBoard()
                 if type(ck) ~= "string" or ck == "" then
                     return false
                 end
+                local fuzz = snapMatchFuzzinessForBoard(board)
+                local entry = resolveTokenSnapCatalogEntry(board, token, fuzz, nil)
+                if type(entry) == "table"
+                    and entry.snapKind == SNAP_KIND_SEAT
+                    and entry.columnKind == "pc" then
+                    return true
+                end
                 local occupied = stateModule().getStateVal("seatLayout", "occupiedNPCSlots")
                 if type(occupied) ~= "table" then
                     return false
                 end
                 for _, assigned in pairs(occupied) do
                     if assigned == ck then
-                        local entry = resolveTokenSnapCatalogEntry(
-                            board,
-                            token,
-                            snapMatchFuzzinessForBoard(board),
-                            nil
-                        )
-                        return type(entry) == "table" and entry.snapKind == SNAP_KIND_SEAT
+                        local homelandEntry = resolveTokenSnapCatalogEntry(board, token, fuzz, nil)
+                        return type(homelandEntry) == "table" and homelandEntry.snapKind == SNAP_KIND_SEAT
                     end
                 end
                 return false
@@ -2370,7 +2374,7 @@ function Gameboard.buildControlBoardSnapPoints(board, config)
             position = { entry.localPos.x, entry.localPos.y, entry.localPos.z },
             rotation = { 0, entry.yawDeg, snapZ },
             rotation_snap = true,
-            tags = { TAG_TOKEN },
+            tags = CONTROL_BOARD_SNAP_TAGS,
         }
     end
     return points

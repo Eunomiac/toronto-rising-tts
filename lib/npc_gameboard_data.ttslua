@@ -12,6 +12,9 @@ local D = {}
 --- Object tags (workshop).
 D.TAG_NPC_CONTROL_BOARD = "npc_control_board"
 D.TAG_NPC_CONTROL_TOKEN = "npc_control_token"
+D.TAG_PC_CONTROL_TOKEN = "pc_control_token"
+--- Every CONTROL_BOARD minimap snap (polar rings + seat row) accepts NPC and PC control tokens.
+D.CONTROL_BOARD_SNAP_TAGS = { D.TAG_NPC_CONTROL_TOKEN, D.TAG_PC_CONTROL_TOKEN }
 D.TAG_GAMEBOARD_PC_SEAT = "gameboard_pc_seat"
 D.TAG_GAMEBOARD_NPC_SEAT = "gameboard_npc_seat"
 D.TAG_GAMEBOARD_TABLE = "gameboard_table"

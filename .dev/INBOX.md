@@ -2,8 +2,6 @@
 
 ## Active
 
-Add the tag `pc_control_token` to all nine of the snap points on the Control Stage that are beneath the table model, and that represent seated characters at the table. (This is so we can distinguish PC tokens from NPC tokens, preventing them from being cleared on Clear or otherwise handled like NPCs)
-
 ---
 
 ## Needs clarification
@@ -18,6 +16,7 @@ Add the tag `pc_control_token` to all nine of the snap points on the Control Sta
 
 ## Processed
 
+- 2026-06-15 [inbox] CONTROL_BOARD snaps dual-tag `npc_control_token` + `pc_control_token` (all polar + seat-row snaps); Clear skips parking tokens on PC seat-row columns
 - 2026-06-15 TOR-211 — [workshop] Set up player seat lights for famulus models
 - 2026-06-15 TOR-212 — [workshop] Famulus figurines/lights Brown & Red — rotate with hand zone (like Pink Tarot)
 - 2026-06-15 TOR-213 — [workshop] Remove roll-sequence player light intensity boost
