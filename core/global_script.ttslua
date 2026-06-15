@@ -1559,7 +1559,7 @@ local function storytellerDiceBagKindNearPosition(pos)
     if pos == nil then
         return nil
     end
-    local radius = 9
+    local radius = 3
     local bestKind = nil
     local bestDist = radius
     local bags = G.GetAllStorytellerDiceBagGUIDs()

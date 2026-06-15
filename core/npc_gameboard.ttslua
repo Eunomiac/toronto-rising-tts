@@ -3287,7 +3287,7 @@ local function mirrorControlTokenToPlacementRow(token, board, row)
 end
 
 --- Horizontal hit radius for NPC control token dropped on a Storyteller dice bag (TOR-174).
-local ST_DICE_BAG_TOKEN_DROP_RADIUS = 9
+local ST_DICE_BAG_TOKEN_DROP_RADIUS = 3
 local storytellerDiceBagDropEntries = nil
 
 --- @return table[] { kind: string, guid: string }
