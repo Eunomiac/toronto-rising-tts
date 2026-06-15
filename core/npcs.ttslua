@@ -721,7 +721,7 @@ local function syncNpcHomelandSeatSpotlightsOff(seatKey, opts)
     end
 end
 
---- Both homeland seat spotlights OFF for every stage-bound NPC seat (idempotent).
+--- Sole orchestrator pass: homeland seat spotlights OFF for every stage-bound NPC seat.
 local function reconcileNpcHomelandSeatSpotlightsWhenStageBound()
     for _, seatKey in ipairs(C.NPCSeats or {}) do
         if isNpcSeatOccupantStageBound(seatKey) then
@@ -2714,7 +2714,8 @@ local function isWorkshopNpcSeatFigureAnchor(obj)
     return true
 end
 
---- Step Four: narrative presence visibility + seat lights for assigned PC and NPC seats.
+--- Step Four: narrative presence visibility; seat lights for non-stage-bound NPC seats only.
+--- Stage-bound homeland spotlights reconcile once at orchestrator end (after Step Five).
 --- @param intent table
 local function reconcileSeatNarrativePresenceFromIntent(intent)
     local O = require("core.objects")
@@ -2743,9 +2744,7 @@ local function reconcileSeatNarrativePresenceFromIntent(intent)
                     end
                 end
             end
-            if U.Type(info.areaBoundOccupant) == "string" and info.areaBoundOccupant ~= "" then
-                syncNpcHomelandSeatSpotlightsOff(seatKey, { force = true })
-            else
+            if U.Type(info.areaBoundOccupant) ~= "string" or info.areaBoundOccupant == "" then
                 L.reconcileForPlayer(seatKey)
             end
         end
@@ -2913,6 +2912,12 @@ end
 --- @return table|nil
 function NPCS.getReconcileLayoutContext()
     return npcReconcileLayoutContext
+end
+
+--- True while `NPCS.reconcileAllFromState` is running (layout/light deferral for stage-bound homelands).
+--- @return boolean
+function NPCS.isReconcileOrchestratorInProgress()
+    return npcReconcileInProgress
 end
 
 --- Places pooled NPC figurines into table seats from `seatLayout.occupiedNPCSlots`.
