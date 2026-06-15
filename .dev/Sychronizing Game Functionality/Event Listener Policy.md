@@ -20,7 +20,7 @@ If the guard fails, **return immediately** — no logging in the hot path unless
 
 | Handler | File | Frequency | Guard status | Notes |
 | --- | --- | --- | --- | --- |
-| `onObjectDrop` | `core/global_script.ttslua` | **Very high** | **Pass** | `hasTag("npc_figurine")` / `hasTag("npc_control_token")` only; TOR-174 ST bag path returns before board drop handler |
+| `onObjectDrop` | `core/global_script.ttslua` | **Very high** | **Pass** | `hasTag` gates; TOR-174 only when Host/Black **and** `storytellerDiceBagKindNearPosition` before `require("core.npc_gameboard")` |
 | `onObjectPickUp` | `core/global_script.ttslua` | High | **Pass** | `hasTag("npc_control_token")` before `require("core.npc_gameboard")` |
 | `onObjectEnterZone` | `core/zones.ttslua` via Global | Medium | **N/A (disabled)** | Handlers `nil` until manual `ActivateZones()`; unused in Toronto Rising |
 | `onObjectLeaveZone` | `core/zones.ttslua` via Global | Medium | **N/A (disabled)** | Same; `Z.onLoad` calls `DeactivateZones` |

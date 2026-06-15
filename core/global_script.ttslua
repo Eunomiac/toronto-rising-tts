@@ -1552,6 +1552,32 @@ function DeactivateZones()
     onObjectLeaveZone = nil  -- TTS allows nil to disable zone handlers
 end
 
+--- TOR-174: O(1) world-XZ proximity to Storyteller dice bags (global pre-gate before `require("core.npc_gameboard")`).
+--- @param pos Vector|table|nil
+--- @return string|nil bag kind when within hit radius
+local function storytellerDiceBagKindNearPosition(pos)
+    if pos == nil then
+        return nil
+    end
+    local radius = 9
+    local bestKind = nil
+    local bestDist = radius
+    local bags = G.GetAllStorytellerDiceBagGUIDs()
+    for kind, guid in pairs(bags) do
+        if type(kind) == "string" and type(guid) == "string" and guid ~= "" then
+            local bag = getObjectFromGUID(guid)
+            if bag ~= nil and bag.getPosition ~= nil then
+                local dist = U.HorizontalDistance(pos, bag.getPosition())
+                if dist < bestDist then
+                    bestDist = dist
+                    bestKind = kind
+                end
+            end
+        end
+    end
+    return bestKind
+end
+
 --- Palette → CONTROL_BOARD drops: remember pick-up origin for per-ring defaultLightMode (TOR-172).
 function onObjectPickUp(player_color, object)
     if object ~= nil and object.hasTag ~= nil and object.hasTag("npc_control_token") == true then
@@ -1598,8 +1624,11 @@ function onObjectDrop(playerColor, object)
     end
     if object.hasTag("npc_control_token") == true then
         if playerColor == "Black" or playerColor == "Host" then
-            if GlobalGameboardTokenDroppedOnDiceBag({ token = object, playerColor = playerColor }) then
-                return
+            local pos = object.getPosition ~= nil and object.getPosition() or nil
+            if pos ~= nil and storytellerDiceBagKindNearPosition(pos) ~= nil then
+                if GlobalGameboardTokenDroppedOnDiceBag({ token = object, playerColor = playerColor }) then
+                    return
+                end
             end
         end
         local Gameboard = require("core.npc_gameboard")

@@ -3367,7 +3367,7 @@ end
 --- @param token Object
 --- @param characterKey string|nil
 --- @return boolean restored
-function Gameboard.restoreNpcControlTokenHome(token, characterKey)
+local function restoreNpcControlTokenHome(token, characterKey)
     if not isNpcControlToken(token) then
         return false
     end
@@ -3420,7 +3420,7 @@ end
 --- @param token Object
 --- @param playerColor string|nil
 --- @return boolean true when drop was consumed (hit an ST bag)
-function Gameboard.tryNpcControlTokenDroppedOnStorytellerDiceBag(token, playerColor)
+local function tryNpcControlTokenDroppedOnStorytellerDiceBag(token, playerColor)
     if not isNpcControlToken(token) then
         return false
     end
@@ -3428,6 +3428,14 @@ function Gameboard.tryNpcControlTokenDroppedOnStorytellerDiceBag(token, playerCo
         return false
     end
     if token.getPosition == nil then
+        return false
+    end
+    local board = getControlBoard()
+    if isGameObject(board) and isTokenOnMinimapTokenSurface(board, token) then
+        return false
+    end
+    local palette = getControlBoardPalette()
+    if isGameObject(palette) and Palette.isTokenOnPaletteBoard(palette, token) then
         return false
     end
     local bagKind = dieKindNearStorytellerDiceBag(token.getPosition())
@@ -3443,7 +3451,7 @@ function Gameboard.tryNpcControlTokenDroppedOnStorytellerDiceBag(token, playerCo
         return false
     end
 
-    Gameboard.restoreNpcControlTokenHome(token, characterKey)
+    restoreNpcControlTokenHome(token, characterKey)
 
     local dieKind = bagKind
     if dieKind ~= DK.KIND_NORMAL
@@ -3468,6 +3476,9 @@ function Gameboard.tryNpcControlTokenDroppedOnStorytellerDiceBag(token, playerCo
     end
     return true
 end
+
+Gameboard.restoreNpcControlTokenHome = restoreNpcControlTokenHome
+Gameboard.tryNpcControlTokenDroppedOnStorytellerDiceBag = tryNpcControlTokenDroppedOnStorytellerDiceBag
 
 --- Position static table/seat markers for active table.
 --- @param opts table|nil `{ force?: boolean }`
