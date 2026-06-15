@@ -3046,6 +3046,9 @@ function NPCS.reconcileAllFromState(opts)
 
     local fp = npcReconcileFingerprint()
     if not force and fp == lastNpcReconcileFingerprint then
+        --- Tail reconcilers with own fingerprint gates — same as full path end (TOR-178 / TOR-201).
+        --- Skipping these violated sync contract when homeland cache was invalidated alone.
+        reconcileNpcHomelandSeatSpotlightsWhenStageBound()
         local Gameboard = require("core.npc_gameboard")
         if type(Gameboard.reconcileControlBoardFromState) == "function" then
             Gameboard.reconcileControlBoardFromState()
