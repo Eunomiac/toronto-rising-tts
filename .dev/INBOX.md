@@ -2,6 +2,10 @@
 
 ## Active
 
+- [Quick] Set up player seat lights for famulus models
+- [Quick] Register famulus figurines and lights for Brown and Red such that they are rotated along with the player's hand zone, like the Pink player's Tarot deck
+- [Quick] Remove increase of light intensity during a roll sequence on player lights
+
 
 ---
 
