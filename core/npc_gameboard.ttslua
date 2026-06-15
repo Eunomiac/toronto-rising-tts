@@ -2973,6 +2973,23 @@ local function stashTableComponentMarker(marker, componentName)
     lockControlBoardMarker(marker)
 end
 
+--- Park inactive table minimap markers off the control surface (locked).
+--- @param marker Object
+--- @param tableKey string|nil Used to spread stash X slightly per table
+local function stashTableMarker(marker, tableKey)
+    if not isGameObject(marker) or marker.setPosition == nil then
+        return
+    end
+    local stashY = tonumber(DATA.MARKER_STASH_WORLD_Y) or -200
+    local pos = marker.getPosition()
+    local offsetX = 0
+    if type(tableKey) == "string" then
+        offsetX = (string.byte(tableKey, 1) or 0) * 0.02
+    end
+    marker.setPosition(Vector({ x = pos.x + offsetX, y = stashY, z = pos.z }))
+    lockControlBoardMarker(marker)
+end
+
 --- Build diagnostics for a control-board table-component marker.
 --- @param marker Object
 --- @param activeTable string|nil
@@ -3247,6 +3264,8 @@ function Gameboard.reconcileControlBoardFromState(opts)
                             extraLocalY = tonumber(DATA.MINIMAP_TABLE_EXTRA_LOCAL_Y) or 0.06,
                         }
                     )
+                else
+                    stashTableMarker(obj, tableKey)
                 end
             elseif compKey ~= nil then
                 local markerRow = describeTableComponentMarker(obj, activeTable)

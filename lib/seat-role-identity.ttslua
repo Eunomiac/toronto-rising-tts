@@ -174,23 +174,36 @@ function SRI.clearLegacyRoleNameFields(obj)
   if obj == nil then
     return false
   end
-  local cleared = false
   local name = trim(obj.getName and obj.getName() or "")
-  if name ~= "" and SRI.matchesRoleColorPattern(name) and obj.setName then
-    obj.setName("")
-    cleared = true
-  end
   local data = obj.getData and obj.getData() or {}
   local nick = trim(data.Nickname or "")
-  if nick ~= "" and SRI.matchesRoleColorPattern(nick) and JSON ~= nil and obj.getJSON ~= nil and obj.reload ~= nil then
-    local state = JSON.decode(obj.getJSON(false))
-    if U.Type(state) == "table" then
-      state.Nickname = ""
-      obj.reload(JSON.encode(state))
-      cleared = true
-    end
+  local clearName = name ~= "" and SRI.matchesRoleColorPattern(name)
+  local clearNick = nick ~= "" and SRI.matchesRoleColorPattern(nick)
+  if not clearName and not clearNick then
+    return false
   end
-  return cleared
+
+  -- Single reload when JSON API is available — setName before reload would be reverted by stale state.Name.
+  if JSON ~= nil and obj.getJSON ~= nil and obj.reload ~= nil then
+    local state = JSON.decode(obj.getJSON(false))
+    if U.Type(state) ~= "table" then
+      return false
+    end
+    if clearName then
+      state.Name = ""
+    end
+    if clearNick then
+      state.Nickname = ""
+    end
+    obj.reload(JSON.encode(state))
+    return true
+  end
+
+  if clearName and obj.setName then
+    obj.setName("")
+    return true
+  end
+  return false
 end
 
 return SRI
