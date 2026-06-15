@@ -1686,26 +1686,26 @@ C.TableSourceObjects = {
   postCorrectionsBySeatRole = {
     NPC1 = {
       SEAT_FIGURE = {
-        position = { y = -67 },
-        scale = { x = 1.25, y = 1.25, z = 1.25 }
+        position = { y = -52.89},
+        scale = { x = 1, y = 1, z = 1 }
       }
     },
     NPC2 = {
       SEAT_FIGURE = {
-        position = { y = -67 },
-        scale = { x = 1.25, y = 1.25, z = 1.25 }
+        position = { y = -52.89 },
+        scale = { x = 1, y = 1, z = 1 }
       }
     },
     NPC3 = {
       SEAT_FIGURE = {
-        position = { y = -67 },
-        scale = { x = 1.25, y = 1.25, z = 1.25 }
+        position = { y = -52.89 },
+        scale = { x = 1, y = 1, z = 1 }
       }
     },
     NPC4 = {
       SEAT_FIGURE = {
-        position = { y = -67 },
-        scale = { x = 1.25, y = 1.25, z = 1.25 }
+        position = { y = -52.89 },
+        scale = { x = 1, y = 1, z = 1 }
       }
     }
   },

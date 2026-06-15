@@ -167,22 +167,22 @@ function SRI.readLegacyRoleColorIdentity(obj)
   return identity
 end
 
---- Migration only: clear the Name or Nickname field that supplied legacy ROLE_COLOR identity.
+--- Migration only: clear Name and/or Nickname when each field matches ROLE_COLOR (independent of GM Notes source).
 --- @param obj Object
 --- @return boolean
 function SRI.clearLegacyRoleNameFields(obj)
   if obj == nil then
     return false
   end
-  local _, source = SRI.readLegacyRoleColorIdentityWithSource(obj)
-  if source == nil then
-    return false
-  end
   local cleared = false
-  if source == "Name" and obj.setName then
+  local name = trim(obj.getName and obj.getName() or "")
+  if name ~= "" and SRI.matchesRoleColorPattern(name) and obj.setName then
     obj.setName("")
     cleared = true
-  elseif source == "Nickname" and JSON ~= nil and obj.getJSON ~= nil and obj.reload ~= nil then
+  end
+  local data = obj.getData and obj.getData() or {}
+  local nick = trim(data.Nickname or "")
+  if nick ~= "" and SRI.matchesRoleColorPattern(nick) and JSON ~= nil and obj.getJSON ~= nil and obj.reload ~= nil then
     local state = JSON.decode(obj.getJSON(false))
     if U.Type(state) == "table" then
       state.Nickname = ""

@@ -100,6 +100,16 @@ function readLegacyRoleColorIdentity(obj, validSuffixes) {
   return readLegacyRoleColorIdentityWithSource(obj, validSuffixes).identity;
 }
 
+/** Clear Name and/or Nickname when each field independently matches ROLE_COLOR. */
+function clearLegacyRoleColorFields(obj, validSuffixes) {
+  if (matchesRoleColorPattern(obj.Name, validSuffixes)) {
+    obj.Name = "";
+  }
+  if (matchesRoleColorPattern(obj.Nickname, validSuffixes)) {
+    obj.Nickname = "";
+  }
+}
+
 function isHandZoneObject(obj) {
   if (trim(obj.Name) === "HandTrigger") return true;
   const legacy = trim(obj.Nickname) || trim(obj.Name);
@@ -180,12 +190,8 @@ function migrateObjectState(obj, ctx, summary, reason) {
   }
 
   obj.GMNotes = legacy;
-  if (ctx.clearLegacy && legacySource) {
-    if (legacySource === "Name") {
-      obj.Name = "";
-    } else if (legacySource === "Nickname") {
-      obj.Nickname = "";
-    }
+  if (ctx.clearLegacy) {
+    clearLegacyRoleColorFields(obj, ctx.validSuffixes);
   }
   summary.migrated += 1;
   summary.details.push(detail);
@@ -297,7 +303,7 @@ Options:
   --save <path>          Save JSON path (default: .dev/TS_Save_230.json)
   --outputSave <path>    Write path (default: same as --save)
   --no-backup            Skip timestamped backup when overwriting input
-  --keep-legacy-names    Do not clear Name/Nickname after copying to GMNotes (only the source field is cleared)
+  --keep-legacy-names    Do not clear Name/Nickname after copying to GMNotes (each field cleared only when it matches ROLE_COLOR)
   -h, --help             Show this help
 
 Aliases: --input / --output (same as --save / --outputSave)
