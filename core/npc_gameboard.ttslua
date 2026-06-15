@@ -554,6 +554,12 @@ local function resolveTokenCharacterKey(obj)
     return nil
 end
 
+--- @param obj Object|nil
+--- @return boolean
+local function isNpcControlToken(obj)
+    return isGameObject(obj) and obj.hasTag ~= nil and obj.hasTag(TAG_TOKEN) == true
+end
+
 --- Live control token for a character key (CONTROL_BOARD or palette).
 --- @param characterKey string
 --- @return Object|nil
@@ -3691,12 +3697,6 @@ function Gameboard.debugDescribeControlBoardTableComponents(options)
         count = #rows,
         rows = rows,
     }
-end
-
---- @param obj Object|nil
---- @return boolean
-local function isNpcControlToken(obj)
-    return isGameObject(obj) and obj.hasTag ~= nil and obj.hasTag(TAG_TOKEN) == true
 end
 
 --- Nearest installed snap catalog entry for a token on CONTROL_BOARD (world XZ within fuzziness).
