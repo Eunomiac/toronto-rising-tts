@@ -73,7 +73,7 @@ All recommendations preserve the synchronization contract: `gameState` remains t
 - Bootstrap branch calls `NPCS.registerRestoredInstancesFromState`, `L.InitLights`, fingerprint-aware `reconcileSeatPresentationFromState`, then `scheduleBootstrapCoordinator()` (readiness poll, early exit when spotlights resolve). See `core/sync.ttslua`.
 - `requestSeatLayoutSync` and deferred `R.SyncTable` no-op when `RSL.isLayoutSyncCurrent()` — gate still waits for deferred attempt, not full layout work.
 - `global_script` separately schedules `R.SyncTable()` at `0.5`; `R.SyncTable` ends by calling `L.reconcileAllPlayers()` and `HO.syncAll()`. See `core/global_script.ttslua:526-536` and `lib/rotational-seat-layout.ttslua:2876-2888`.
-- **Mitigated (2026-06):** `R.SyncTable` / `resolveSeatObjectsFromTable` short-circuit when stable layout fingerprint (table key + filtered `playerToPositionMap` seats) is unchanged; `opts.force` and `R.invalidateLayoutSyncCache()` bypass (same-table `SetTableTo`, `Sync.full({ force = true })`). Startup passes 2–3 should collapse to one full layout + skip logs.
+- **Mitigated (2026-06):** `R.SyncTable` / `resolveSeatObjectsFromTable` short-circuit when stable layout fingerprint (table key + filtered `playerToPositionMap` seats) is unchanged; `opts.force` and `R.invalidateLayoutSyncCache()` bypass (same-table `SetTableTo`, `Sync.full({ force = true })`, `NPCS.commitNpcSeatLayout`). Startup passes 2–3 should collapse to one full layout + skip logs.
 
 **Top call sites**
 
