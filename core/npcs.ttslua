@@ -102,6 +102,8 @@ local spotlightHeld = {}
 
 --- Spawn callback only: `buildResolvedLightModeTable` prefers this object over `getObjectFromGUID` (GUID index can lag the live `fig`).
 local lightAlignFigOverride = {}
+--- Bumped when a new deferred stage light-align sequence starts; stale sequences no-op on completion.
+local deferredLightAlignGeneration = {}
 
 --- Custom_Assetbundle spotlights: `L.GetLight` can be true while `loading_custom` is still true; component `set` calls are then ignored (matches `U.waitUntil` object-resting checks in `lib.util`).
 --- @param lightGuid string
@@ -128,6 +130,10 @@ local lastNpcPanelLayoutFingerprint = nil
 local NPC_LIGHT_SPAWN_OFFSET = { x = 3, y = 8, z = 3 }
 --- After `npcSpotlightReadyForApply`, extra wall-clock delay before `SetLightMode` so the spotlight beam reliably applies on spawn.
 local NPC_LIGHT_POST_READY_DELAY_SEC = 1.5
+--- Minimum figurine `getBounds().size.y` before bounds-based spotlight Y (guards `image_scalar` + `reload()` race).
+local NPC_FIGURINE_LIGHT_ALIGN_MIN_BOUNDS_Y = 10
+--- After figurine bounds pass, brief settle before `buildResolvedLightModeTable` (stage reposition; shorter than spawn).
+local NPC_STAGE_LIGHT_POST_BOUNDS_DELAY_SEC = 0.25
 
 --- Extra yaw (degrees) for figurines in NPC **area** slots only. `Figurine_Custom` front/back UVs face opposite the legacy single-image cutouts for the same `atan2` pivot math toward table center.
 --- Table **seats**: pooled figurine gets the seat `*Object` tag and is moved as `SEAT_FIGURE` by rotational layout.
@@ -777,6 +783,35 @@ local function figurineImageScalarForNpc(npcName, placementKind)
     return scalar
 end
 
+--- Figurine resting, custom mesh loaded, and bounds tall enough for spotlight Y from `getBounds` (not preload-scale feet).
+--- @param fig Object|nil
+--- @param npcName string
+--- @return boolean
+local function npcFigurineReadyForLightAlign(fig, npcName)
+    if not U.isGameObject(fig) then
+        return false
+    end
+    if fig.loading_custom == true then
+        return false
+    end
+    if fig.resting ~= true then
+        return false
+    end
+    if fig.getBounds == nil then
+        return false
+    end
+    local b = fig.getBounds()
+    if b == nil or b.size == nil then
+        return false
+    end
+    local sy = b.size.y or b.size[2] or 0
+    local minSy = math.max(
+        NPC_FIGURINE_LIGHT_ALIGN_MIN_BOUNDS_Y,
+        figurineImageScalarForNpc(npcName, "stage") * 0.75
+    )
+    return sy >= minSy
+end
+
 --- Apply npcs_data cutout scale via Custom Figurine `image_scalar` (Transform scale is uniform pool/active only).
 --- @param fig Object|nil
 --- @param npcName string
@@ -942,6 +977,59 @@ local function applyNpcSpotlightAlignedToFigurine(npcName, fig, transitionTime)
     lightAlignFigOverride[npcName] = fig
     NPCS.applyCurrentLightMode(npcName, transitionTime, { force = true })
     lightAlignFigOverride[npcName] = nil
+end
+
+--- Wait for figurine bounds after `applyNpcFigurineImageScalar` / `reload()` before spotlight Y align (stage placement race).
+--- @param npcName string
+--- @param fig Object|nil
+--- @param lit Object|nil
+--- @param transitionTime number|nil
+local function deferNpcSpotlightAlignedToFigurine(npcName, fig, lit, transitionTime)
+    if not U.isGameObject(fig) then
+        return
+    end
+    deferredLightAlignGeneration[npcName] = (deferredLightAlignGeneration[npcName] or 0) + 1
+    local gen = deferredLightAlignGeneration[npcName]
+    local deferFig = fig
+    local deferLit = lit
+    local deferTrans = transitionTime
+    local deferName = npcName
+    U.RunSequence({
+        function()
+            return 0
+        end,
+        function()
+            return function()
+                if deferredLightAlignGeneration[deferName] ~= gen then
+                    return true
+                end
+                return npcFigurineReadyForLightAlign(deferFig, deferName)
+            end
+        end,
+        function()
+            if U.isGameObject(deferLit) then
+                local lg = deferLit.getGUID and deferLit.getGUID() or ""
+                local reg = NPCS.lightRegistryName(lg)
+                return function()
+                    if deferredLightAlignGeneration[deferName] ~= gen then
+                        return true
+                    end
+                    return npcSpotlightReadyForApply(lg, reg)
+                end
+            end
+            return NPC_STAGE_LIGHT_POST_BOUNDS_DELAY_SEC
+        end,
+        function()
+            return NPC_STAGE_LIGHT_POST_BOUNDS_DELAY_SEC
+        end,
+        function()
+            if deferredLightAlignGeneration[deferName] ~= gen then
+                return 0
+            end
+            applyNpcSpotlightAlignedToFigurine(deferName, deferFig, deferTrans)
+            return 0
+        end,
+    })
 end
 
 --- Shortest angular distance in degrees (yaw wraps at 360).
@@ -3116,7 +3204,7 @@ function NPCS.moveNpcToStagePlacement(npcName, placement, opts)
         end
         rec.npcLightMode = desiredMode
         setInstanceRecord(npcName, rec)
-        applyNpcSpotlightAlignedToFigurine(npcName, fig, 0)
+        deferNpcSpotlightAlignedToFigurine(npcName, fig, lit, 0)
         if not opts.skipUiRefresh then
             NPCS.refreshStorytellerUIIfVisible()
         end
@@ -3140,7 +3228,7 @@ function NPCS.moveNpcToStagePlacement(npcName, placement, opts)
     setInstanceRecord(npcName, rec)
     applyNpcPairPhysicalPresentation(fig, lit, STAGE_BOARD_AREA_KEY, npcName)
     setPooledSpotlightHidden(lit, false)
-    applyNpcSpotlightAlignedToFigurine(npcName, fig, 0)
+    deferNpcSpotlightAlignedToFigurine(npcName, fig, lit, 0)
     if not skipSeatSync then
         requestSeatLayoutSync()
     end

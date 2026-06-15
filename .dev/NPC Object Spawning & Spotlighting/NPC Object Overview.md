@@ -54,6 +54,8 @@ Do **not** split rotation into manual `rotX` / `rotY` / `rotZ` in data. The scri
 
 Whenever the figurine **moves or rotates**, this pipeline is re-run (UI moves, `onObjectDrop`, and optional future hooks) so the paired light stays aligned.
 
+**Stage placement timing:** `moveNpcToStagePlacement` defers spotlight apply until the figurine is **resting**, **`loading_custom` is false**, and bounds height reflects active **`image_scalar`** (after `reload()`). Immediate apply after `applyNpcFigurineImageScalar` can read preload-scale bounds and place the light near the figurine’s feet (~2″ above root Y).
+
 ### Spawn source
 
 * **Figurine:** `spawnObjectData` with embedded `Figurine_Custom` / `CustomImage` (see `core/npcs.ttslua`). Figurines are **always** TTS-locked via `ensureNpcFigurinePhysicsLocked` (spawn + every script placement). **`rec.locked`** is the Storyteller panel “pin in place” (blocks script moves only). **Tooltips** off in the preload pool; on when active in a stage area or at a seat.
