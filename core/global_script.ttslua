@@ -2126,14 +2126,16 @@ function HUD_scenesPickSite(player, button, id)
         return
     end
     HUD_scenesCloseLocationModals(player, button, id)
-    S.setStateVal(key, "sessionScene", "siteKey")
     local site = C.Sites[key]
+    local dKey = nil
     if type(site) == "table" then
-        local dk = C.resolveDistrictKeyForDistrictTable(site.district)
-        if type(dk) == "string" and dk ~= "" then
-            S.setStateVal(dk, "sessionScene", "districtKey")
+        local derivedDistrict = C.resolveDistrictKeyForDistrictTable(site.district)
+        if type(derivedDistrict) == "string" and derivedDistrict ~= "" then
+            dKey = derivedDistrict
         end
     end
+    S.setStateVal(dKey, "sessionScene", "districtKey")
+    S.setStateVal(key, "sessionScene", "siteKey")
     StorytellerScenesPanel.refresh()
     Sync.ui({ gameStateOverlay = true })
     U.AlertGM("Site set: " .. key .. " — click Apply location + soundscape when ready.")

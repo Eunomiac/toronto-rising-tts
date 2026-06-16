@@ -1206,18 +1206,6 @@ local function clearNoneBackgroundMusicKeys(context)
     return context
 end
 
---- @return boolean, string
-local function applyDefaultMainBackgroundMusicIfNeeded()
-    if not backgroundMusicPolicyRequiresMain() then
-        return true, "Session Start: background music optional"
-    end
-    local state = ensureState()
-    if state.siteSilent == true then
-        return true, "Silent site: background remains off"
-    end
-    return Soundscape.setMusicMood(Catalog.DEFAULTS.musicMood)
-end
-
 local function soundscapeReconcileFingerprint(state)
     if type(state) ~= "table" then
         return ""
@@ -1254,6 +1242,7 @@ local function applySoundscapeReconcileFromStateSnapshot(state)
             Soundscape.setMusicMood(state.musicMood)
         end
     elseif backgroundMusicPolicyRequiresMain() then
+        -- Load / Sync.full path when state still has BGM disabled; applyContext uses withDefaultBackgroundMusic + setMusicMood only.
         Soundscape.setMusicMood(state.musicMood or Catalog.DEFAULTS.musicMood)
     end
     if type(state.location) == "string" and state.location ~= Catalog.DEFAULTS.location then
@@ -1706,9 +1695,6 @@ function Soundscape.applyContext(context)
         end
         if context.locationAudio ~= nil or context.location ~= nil then
             collect(Soundscape.setLocationAudio(context.locationAudio or context.location))
-        end
-        if backgroundMusicPolicyRequiresMain() and ensureState().backgroundMusicEnabled ~= true then
-            collect(applyDefaultMainBackgroundMusicIfNeeded())
         end
     end
 
