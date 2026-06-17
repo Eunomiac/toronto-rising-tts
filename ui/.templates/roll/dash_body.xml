@@ -1,5 +1,5 @@
 <!-- TARGET: ui/shared/roll_dash_generated.xml -->
-<VerticalLayout spacing="4" childAlignment="UpperLeft" childForceExpandHeight="false" childForceExpandWidth="true" width="@@DASH_WIDTH@@">
+<VerticalLayout id="rollDash_ST_content" spacing="4" childAlignment="UpperLeft" childForceExpandHeight="false" childForceExpandWidth="true" width="@@DASH_WIDTH@@">
 @@ACTIVE_HEADER@@
 @@PC_ROWS@@
 @@SLOTS_HEADER@@

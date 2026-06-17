@@ -48,7 +48,7 @@ const SEAT_ROW_BG = {
 };
 
 /** Must match rollPanel_ST in ui/shared/roll_panels.xml (outer width + horizontal padding). */
-const ST_PANEL_OUTER_WIDTH = 750;
+const ST_PANEL_OUTER_WIDTH = 550;
 const ST_PANEL_PADDING_H = 10;
 
 /** Dashboard content width (inner area inside rollPanel_ST padding). */

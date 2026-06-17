@@ -8,6 +8,7 @@
 
 <!-- 2. General shared classes -->
 <Include src="defaults_classes.xml" />
+<Include src="shared/panel_roll_controls_defaults.xml" />
 
 <!-- 4. Player HUD (per-color panels) -->
 <Panel id="HUD_PANEL_PLAYER" class="hud_root_panel">
@@ -44,7 +45,6 @@
   <Include src="player/panel_overlay_blindfold.xml" />
 
   <!-- Roll control panels (generated per player color) -->
-  <Include src="player/panel_roll_controls_defaults.xml" />
   <Include src="player/panel_roll_controls.xml" />
 
 </Panel>

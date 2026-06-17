@@ -888,7 +888,7 @@ function RC.initiateRoll(color, config)
 
     if skipSetup then
         rollCamera(color, "roll")
-        if DK.poolTotal(pool) > 0 then
+        if color ~= "Black" and DK.poolTotal(pool) > 0 then
             Wait.frames(function()
                 Global.call("GlobalSpawnActivePoolDiceForActive", { color = color })
             end, 2)
@@ -1050,7 +1050,9 @@ function RC.openRoll(color)
     setActive(color, active)
     notifyStateChanged(color)
     rollCamera(color, "roll")
-    Global.call("GlobalSpawnActivePoolDiceForActive", { color = color })
+    if color ~= "Black" then
+        Global.call("GlobalSpawnActivePoolDiceForActive", { color = color })
+    end
     return true
 end
 

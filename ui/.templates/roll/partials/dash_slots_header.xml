@@ -1,13 +1,13 @@
 <!-- Storyteller drawer slots header (up to 3 uncleared NPC rolls) -->
 <Panel id="rollDash_stSlotsHeader"
   active="False"
-  width="@@DASH_WIDTH@@"
-  height="20">
+  preferredWidth="@@DASH_WIDTH@@"
+  preferredHeight="20">
   <Text
     rectAlignment="UpperLeft"
     offsetXY="0 4"
-    preferredWidth="@@DASH_WIDTH@@"
-    preferredHeight="16"
+    width="@@DASH_WIDTH@@"
+    height="16"
     fontSize="11"
     fontStyle="Bold"
     color="#AAAAAA"

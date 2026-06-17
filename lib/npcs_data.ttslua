@@ -526,8 +526,8 @@ D.characters = {
     labelColor = "rgba(0.82, 0, 0.78, 0.5)",
     figurine = {
       images = {
-        front = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/evanescentBlue.webp",
-        back = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/NPC%20Cutouts/evanescentBlueBack.webp"
+        front = "https://steamusercontent-a.akamaihd.net/ugc/16230303958793176602/A81C5BCDD68FFFE0686C25AE19B3037547289691/",
+        back = "https://steamusercontent-a.akamaihd.net/ugc/9730466716390260633/64DB0012B17C5A1E766D3088922F2AF5BBF592D2/"
       },
       scale = 50,
     },

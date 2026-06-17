@@ -197,8 +197,6 @@ function STR.initiateNpcRoll(rawLabel, rollType)
 
     if not skipSetupForRollType(rt) then
         RC.openRoll(ST_COLOR)
-    else
-        Global.call("GlobalSpawnDefaultPoolDiceForActive", { color = ST_COLOR })
     end
     local RUI = require("core.roll_ui")
     if RUI.refreshSTDashboard ~= nil then
@@ -312,10 +310,53 @@ end
 --- Delay between ST programmatic die rolls (seconds). Stagger helps avoid pile-ups.
 local ST_PHYSICAL_ROLL_STAGGER_SEC = 0.1
 
+--- Resolve staged die GUIDs captured before ST bag `releaseDice` cleared tracking.
+-- @param dieGuids string[]|nil
+-- @return Object[]
+local function resolveStagedDieObjects(dieGuids)
+    if type(dieGuids) ~= "table" or #dieGuids == 0 then
+        return {}
+    end
+    local list = {}
+    for _, guid in ipairs(dieGuids) do
+        if type(guid) == "string" then
+            local obj = getObjectFromGUID(guid)
+            if obj ~= nil then
+                list[#list + 1] = obj
+            end
+        end
+    end
+    return list
+end
+
+--- Collect physical dice for the active Black roll (staged GUIDs first, then tag scan).
+-- @param rollId string
+-- @param dieGuids string[]|nil
+-- @return Object[]
+local function collectTrayDiceForPhysicalRoll(rollId, dieGuids)
+    local diceList = resolveStagedDieObjects(dieGuids)
+    if #diceList > 0 then
+        return diceList
+    end
+
+    local RC = require("core.roll_controller")
+    local _, objectsByKind = RC._getDicePoolsForRoll(ST_COLOR, rollId)
+    for _, kind in ipairs(DK.ALL_KINDS) do
+        for _, obj in ipairs(objectsByKind[kind] or {}) do
+            if obj ~= nil then
+                diceList[#diceList + 1] = obj
+            end
+        end
+    end
+    return diceList
+end
+
 --- Physical roll for every die in the active tray (TTS `Object.randomize`, same as R key).
 -- Dice must be unlocked first; call only after `releaseBagDice("Black")` has waited for the ST drawer.
 -- Each die is lifted, tumbles, and settles; `onObjectRandomize` drives RC debounce/recalculate.
-function STR.physicalRollTrayDice()
+-- @param opts table|nil  { dieGuids?: string[] } GUIDs from bags before release (preferred)
+function STR.physicalRollTrayDice(opts)
+    opts = type(opts) == "table" and opts or {}
     local active = getBlackActive()
     if active == nil or type(active.id) ~= "string" then
         return
@@ -324,42 +365,54 @@ function STR.physicalRollTrayDice()
         return
     end
 
-    local RC = require("core.roll_controller")
-    local _, objectsByKind = RC._getDicePoolsForRoll(ST_COLOR, active.id)
+    local rollId = active.id
+    local dieGuids = opts.dieGuids
 
-    local diceList = {}
-    for _, kind in ipairs(DK.ALL_KINDS) do
-        for _, obj in ipairs(objectsByKind[kind] or {}) do
+    local function runPhysicalRoll()
+        active = getBlackActive()
+        if active == nil or active.phase ~= C.RollPhase.ROLLING then
+            return
+        end
+
+        local diceList = collectTrayDiceForPhysicalRoll(rollId, dieGuids)
+        if #diceList == 0 then
+            return
+        end
+
+        local index = 1
+        local function rollNextDie()
+            if index > #diceList then
+                return
+            end
+            local obj = diceList[index]
+            index = index + 1
             if obj ~= nil then
                 if obj.getLock ~= nil and obj.getLock() == true then
                     obj.setLock(false)
                 end
-                diceList[#diceList + 1] = obj
+                if obj.randomize ~= nil then
+                    local ok = obj.randomize(ST_COLOR)
+                    if ok ~= true then
+                        obj.randomize()
+                    end
+                end
+            end
+            if index <= #diceList then
+                U.delay(rollNextDie, ST_PHYSICAL_ROLL_STAGGER_SEC)
             end
         end
+
+        rollNextDie()
     end
 
-    if #diceList == 0 then
+    local diceList = collectTrayDiceForPhysicalRoll(rollId, dieGuids)
+    if #diceList > 0 then
+        runPhysicalRoll()
         return
     end
 
-    local index = 1
-    local function rollNextDie()
-        if index > #diceList then
-            return
-        end
-        local obj = diceList[index]
-        index = index + 1
-        if obj.randomize ~= nil then
-            -- Optional seat color attributes the roll to Storyteller for TTS callbacks.
-            obj.randomize(ST_COLOR)
-        end
-        if index <= #diceList then
-            U.delay(rollNextDie, ST_PHYSICAL_ROLL_STAGGER_SEC)
-        end
-    end
-
-    rollNextDie()
+    -- Tag scan can lag briefly after unlock; retry once before giving up.
+    U.delay(runPhysicalRoll, 0.15)
 end
 
 --- Called when Black roll state changes (hooked from global_script).
@@ -378,7 +431,7 @@ function STR.onFirstDieSpawned()
     end
 end
 
---- ST bag click while a live Black roll is in PRE_ROLL.
+--- ST bag click while a live Black roll is in SETUP / PRE_ROLL (pool state only until Roll).
 -- @param params table  { dieKind }
 function STR.onDiceBagClick(params)
     if type(params) ~= "table" then return end
@@ -395,7 +448,7 @@ function STR.onDiceBagClick(params)
         end
         return
     end
-    if active.phase ~= C.RollPhase.PRE_ROLL then
+    if active.phase ~= C.RollPhase.PRE_ROLL and active.phase ~= C.RollPhase.SETUP then
         return
     end
 
@@ -413,10 +466,10 @@ function STR.onDiceBagClick(params)
         return
     end
 
-    Global.call("GlobalSpawnDieFromStorytellerBag", { dieKind = dieKind })
+    Global.call("GlobalAdjustStorytellerPoolKind", { dieKind = dieKind, delta = 1 })
 end
 
---- ST bag right-click while a live Black roll is in PRE_ROLL (remove one die).
+--- ST bag right-click while a live Black roll is in SETUP / PRE_ROLL (remove one die from pool state).
 -- @param params table  { dieKind }
 function STR.onDiceBagRightClick(params)
     if type(params) ~= "table" then return end
@@ -424,7 +477,7 @@ function STR.onDiceBagRightClick(params)
     if type(dieKind) ~= "string" then return end
 
     local active = getBlackActive()
-    if active == nil or active.phase ~= C.RollPhase.PRE_ROLL then
+    if active == nil or (active.phase ~= C.RollPhase.PRE_ROLL and active.phase ~= C.RollPhase.SETUP) then
         return
     end
 
@@ -439,7 +492,7 @@ function STR.onDiceBagRightClick(params)
         return
     end
 
-    Global.call("GlobalRemoveDieFromBag", { color = ST_COLOR, dieKind = dieKind })
+    Global.call("GlobalAdjustStorytellerPoolKind", { dieKind = dieKind, delta = -1 })
 end
 
 --- Cancel a occupied slot from the ST slot panel (may or may not be live).

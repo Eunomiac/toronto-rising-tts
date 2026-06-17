@@ -653,7 +653,7 @@ local function phaseLabel(active, color)
         elseif phase == C.RollPhase.PRE_ROLL then
             local pool = DK.normalizePool(active.pool)
             if DK.poolTotal(pool) == 0 then
-                return "Spawn dice from ST bags"
+                return "Configure pool via strips or ST bags, then ROLL"
             end
             local noTakeHalf = C.RollTypesNoTakeHalf[active.rollType]
             if noTakeHalf or not RO.getForActive(active, RO.ROLL_TAKE_HALF) then
@@ -896,14 +896,33 @@ local function refreshStRollPanel(active)
 
     refreshDiceImages("rollPanelST_die_%d", active.diceFaces)
 
-    local resultLabel, succStr, margStr = resultDisplayStrings(active.rollType, active.result)
-    uiSetValue("rollPanelST_result", resultLabel)
-    uiSetValue("rollPanelST_successes", succStr)
-    uiSetValue("rollPanelST_margin", margStr)
-
     local isPreRoll  = active.phase == C.RollPhase.PRE_ROLL
     local isRolling  = active.phase == C.RollPhase.ROLLING
     local isPostRoll = active.phase == C.RollPhase.POST_ROLL
+
+    local result = active.result
+    local hidesDifficulty = active.rollType == C.RollType.SIMPLE_CHECK
+    if result ~= nil and isPostRoll then
+        local resultClassStr = rollResResultClassString(result)
+        local resultText = panelResultDisplayText(active.rollType, result, active.difficulty)
+        uiSetClass("rollPanelST_result", resultClassStr)
+        if rollControlResultNeedsMiddleCenterAlignment(result) then
+            U.setAttributes("rollPanelST_result", { text = resultText, rectAlignment = "MiddleCenter" })
+        else
+            uiSetValue("rollPanelST_result", resultText)
+        end
+    else
+        uiSetClass("rollPanelST_result", "roll_text rollRes_resultDisplay")
+        uiSetValue("rollPanelST_result", "")
+    end
+
+    local showSuccessesRow = isPostRoll and result ~= nil and not hidesDifficulty
+    uiSetActive("rollPanelST_successes_container", showSuccessesRow)
+    if showSuccessesRow then
+        uiSetValue("rollPanelST_successes", string.format("%d success%s",
+            result.successes, result.successes == 1 and "" or "es"))
+    end
+
     local hasPool    = DK.poolTotal(pool) > 0
     local canHalf    = isPreRoll
         and hasPool

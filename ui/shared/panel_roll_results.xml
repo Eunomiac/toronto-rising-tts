@@ -18,7 +18,7 @@
   <Image class="rollRes_image_background" height = "550" width = "1200" offsetXY = "0 -15" preserveAspect = "false" />
 
   <Image class="rollRes_image_figure"
-    height = "900" rectAlignment = "UpperCenter" />
+    height = "900" rectAlignment = "UpperCenter" showAnimation = "FadeIn" animationDelay = "2" />
 
   <Image class="rollRes_image_border"
     width = "100%" />

@@ -1,13 +1,13 @@
 <!-- ACTIVE ROLLS header for rollDash_ST -->
 <Panel
-  width="@@DASH_WIDTH@@"
-  height="30"
+  preferredWidth="@@DASH_WIDTH@@"
+  preferredHeight="30"
   color="#000000">
   <Text
-    rectAlignment="UpperLeft"
-    offsetXY="5 5"
-    preferredWidth="@@DASH_INNER_W@@"
-    preferredHeight="20"
+    rectAlignment="MiddleRight"
+    offsetXY="0 0"
+    width="@@DASH_INNER_W@@"
+    height="30"
     fontSize="14"
     fontStyle="Bold"
     color="#C9A84C"

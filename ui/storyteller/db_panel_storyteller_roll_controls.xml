@@ -35,9 +35,9 @@
   <HorizontalLayout class="rollPanelST_diceRolls_container" spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false" childForceExpandHeight="false" minHeight="48" preferredHeight="48" />
   <Image class="rollPanelST_die" active="false" preferredWidth="30" preserveAspect="True" />
 
-  <HorizontalLayout class="rollPanelST_successes_container" spacing="10" childAlignment="MiddleCenter" />
-  <Text class="rollPanelST_successes" fontSize="12" color="#CCCCCC" />
-  <Text class="rollPanelST_margin" fontSize="12" color="#AAAAAA" />
+  <HorizontalLayout class="rollPanelST_successes_container" spacing="10" height = "40" rectAlignment = "LowerCenter" childForceExpandHeight = "true" childAlignment="MiddleRight" childForceExpandWidth="false" padding="0 50 0 0" />
+
+  <Text class="rollPanelST_successes" fontSize="18" fontStyle="Bold" color="#CCCCCC" alignment="MiddleRight" />
 
 </Defaults>
 
@@ -73,7 +73,7 @@ UI.setAttributes("db_rollPanelST", {width = "600"})
     <HorizontalLayout id="db_rollPanelST_rousePool_container" active="true">
       <Text id="db_rollPanelST_pool_rouse" class="rollPanelST_rousePool_text" text="◆◆◆◆◆" />
       <!--
-      UI.setAttributes("db_rollPanelST_pool_obliv", {fontSize = "24"})
+      UI.setAttributes("db_rollPanelST_pool_obliv", {})
       -->
       <Text id="db_rollPanelST_pool_obliv" class="rollPanelST_oblivPool_text" text="◆◆" />
     </HorizontalLayout>
@@ -83,26 +83,26 @@ UI.setAttributes("db_rollPanelST", {width = "600"})
     -->
     <HorizontalLayout id="db_rollPanelST_normalPool_container" class="rollPanelST_normalPool_container" >
       <!--
-      UI.setAttributes("db_rollPanelST_pool_normal", {fontSize = "24"})
+      UI.setAttributes("db_rollPanelST_pool_normal", {})
       -->
       <Text id="db_rollPanelST_pool_normal" class="rollPanelST_normalPool_text" text="◆◆◆" />
       <!--
-      UI.setAttributes("db_rollPanelST_pool_hunger", {fontSize = "24"})
+      UI.setAttributes("db_rollPanelST_pool_hunger", {})
       -->
       <Text id="db_rollPanelST_pool_hunger" class="rollPanelST_hungerPool_text" text="◆◆" />
       <!--
-      UI.setAttributes("db_rollPanelST_pool_werewolf", {fontSize = "24"})
+      UI.setAttributes("db_rollPanelST_pool_werewolf", {})
       -->
       <Text id="db_rollPanelST_pool_werewolf" class="rollPanelST_werewolfPool_text" text="◆◆" />
       <!--
-      UI.setAttributes("db_rollPanelST_pool_rage", {fontSize = "24"})
+      UI.setAttributes("db_rollPanelST_pool_rage", {})
       -->
       <Text id="db_rollPanelST_pool_rage" class="rollPanelST_ragePool_text" text="◆◆" />
     </HorizontalLayout>
   </HorizontalLayout>
 
   <!--
-  UI.setAttributes("db_rollPanelST_dicePool", {color = "rgba(1, 0, 0, 0.15)" offsetXY = "0 -90"})
+  UI.setAttributes("db_rollPanelST_dicePool", {})
   -->
   <HorizontalLayout id="db_rollPanelST_dicePool" class="rollPanelST_dicePool" offsetXY = "0 -90">
     <!-- Grid Strip Control: Hunger Dice -->
@@ -155,10 +155,6 @@ UI.setAttributes("db_rollPanelST", {width = "600"})
 
   </HorizontalLayout>
 
-
-
-
-
   <HorizontalLayout id="db_rollPanelST_diceRolls_container" class="rollPanelST_diceRolls_container">
     <Image id="db_rollPanelST_die_1" class="rollPanelST_die" image="dieFace_normal_crit" active="true" />
     <Image id="db_rollPanelST_die_2" class="rollPanelST_die" image="dieFace_normal_ankh" active="true" />
@@ -178,24 +174,20 @@ UI.setAttributes("db_rollPanelST", {width = "600"})
   </HorizontalLayout>
 
   <!--
-  UI.setAttributes("db_rollPanelST_result", {})
+  UI.setAttributes("db_rollPanelST_result", {text = "WIN +1"})
+  UI.setClass("db_rollPanelST_result", "roll_text rollRes_resultDisplay rollRes_result_win")
   -->
-  <Text id="db_rollPanelST_result" fontSize="18" fontStyle="Bold" color="#FFD700" alignment="MiddleCenter" text="">
+  <Text id="db_rollPanelST_result" class="roll_text rollRes_resultDisplay rollRes_result_win" text="WIN +1">
   </Text>
   <!--
   UI.setAttributes("db_rollPanelST_successes_container", {})
   -->
-  <HorizontalLayout id="db_rollPanelST_successes_container" class="rollPanelST_successes_container" spacing="10" childAlignment="MiddleCenter">
+  <HorizontalLayout id="db_rollPanelST_successes_container" class="rollPanelST_successes_container" offsetXY = "0 100">
   <!--
   UI.setAttributes("db_rollPanelST_successes", {})
   -->
-    <Text id="db_rollPanelST_successes" class="rollPanelST_successes" fontSize="12" color="#CCCCCC" text="">
-    </Text>
-    <!--
-    UI.setAttributes("db_rollPanelST_margin", {})
-    -->
-    <Text id="db_rollPanelST_margin" class="rollPanelST_margin" fontSize="12" color="#AAAAAA" text="">
-    </Text>
+    <Text id="db_rollPanelST_successes" class="rollPanelST_successes" text="5 Successes" />
+
   </HorizontalLayout>
 
   <!--

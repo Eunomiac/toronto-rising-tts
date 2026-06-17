@@ -302,6 +302,18 @@ function getSpawnedCount()
     return #spawnedDice
 end
 
+--- GUIDs of dice still on this bag's staging arc (before `releaseDice` clears tracking).
+-- @return string[]
+function getStagedDiceGuids()
+    local guids = {}
+    for _, die in ipairs(spawnedDice) do
+        if die ~= nil then
+            guids[#guids + 1] = die.getGUID()
+        end
+    end
+    return guids
+end
+
 --- Moves locked staged dice to the bag's current staging arc (e.g. after bag Y was raised).
 -- @param params table|nil  { arcCenter?: {x,y,z} }
 function repositionStagedDice(params)
@@ -447,7 +459,8 @@ function removeLastSpawnedDie(params)
 end
 
 function autoSpawn(params)
-    local count = (type(params) == "table" and type(params.count) == "number")
+    params = type(params) == "table" and params or {}
+    local count = type(params.count) == "number"
         and math.max(0, math.floor(params.count))
         or 0
     if count == 0 then return end
@@ -462,8 +475,9 @@ function autoSpawn(params)
         return
     end
 
+    local arcCenter = params.arcCenter
     for _ = 1, count do
-        spawnDie(bagColor, dieType, {})
+        spawnDie(bagColor, dieType, { arcCenter = arcCenter })
     end
 end
 
