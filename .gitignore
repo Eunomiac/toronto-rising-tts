@@ -42,6 +42,7 @@ logs/
 .dev/TS_Save_230.json
 .dev/build-logs/effective-stats-gate.txt
 .dev/build-logs/pcall-gate.txt
+.dev/build-logs/tts-object-stub-guids-gate.txt
 .dev/testbed/TEST BED.ttslua
 lib/e2e_playbook_dice.ttslua
 
@@ -67,7 +68,6 @@ build/
 .dev/storyteller-dashboard/dist/
 
 assets/images/Clipboard Image.jpg
-.dev/build-logs/tts-object-stub-guids-gate.txt
 # Local Sheets Obsidian dashboard runtime artifacts
 .dev/sheets-obsidian-dashboard/.env
 .dev/sheets-obsidian-dashboard/.local/
