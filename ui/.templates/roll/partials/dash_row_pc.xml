@@ -1,0 +1,42 @@
+<!-- @@COLOR@@ @@ROW_BG@@ — PC active-roll dashboard row (shown/hidden by RUI.refreshSTDashboard) -->
+<Panel id="rollDash_row_@@COLOR@@"
+  active="False"
+  flexibleWidth="1"
+  padding="0 0 0 0"
+  childForceExpandWidth="true">
+  <HorizontalLayout color="@@ROW_BG@@" spacing="6" childAlignment="MiddleLeft" flexibleWidth="1" padding="5 5 5 5">
+    <Text id="rollDash_name_@@COLOR@@" fontSize="12" color="#FFFFFF" flexibleWidth="1" text="@@COLOR@@" />
+    <Text id="rollDash_type_@@COLOR@@" fontSize="11" color="#AAAAAA" flexibleWidth="1" text="" />
+    <Text id="rollDash_phase_@@COLOR@@" fontSize="11" color="#CCCCCC" flexibleWidth="1" text="" />
+    <Text id="rollDash_pool_@@COLOR@@" fontSize="11" color="#CCCCCC" flexibleWidth="1" text="" />
+    <InputField id="rollDash_difficulty_@@COLOR@@"
+      fontSize="12"
+      flexibleWidth="1"
+      preferredWidth="50"
+      minWidth="50"
+      text=""
+      placeholder="Diff"
+      onValueChanged="HUD_rollSetDifficulty" />
+    ##IF @@SHOW_OPTS@@##
+    <Button id="rollDash_opts_@@COLOR@@"
+      fontSize="10"
+      preferredWidth="44"
+      flexibleWidth="0"
+      onClick="HUD_rollOptsOpen"
+      text="Opts" />
+    ##ENDIF##
+    <Button id="rollDash_btn_@@COLOR@@"
+      fontSize="11"
+      preferredWidth="60"
+      flexibleWidth="0"
+      onClick="HUD_rollSTAction"
+      text="OPEN" />
+    <Button id="rollDash_cancel_@@COLOR@@"
+      fontSize="11"
+      preferredWidth="24"
+      flexibleWidth="0"
+      color="rgba(0.6,0.1,0.1,1)"
+      onClick="HUD_rollCancel"
+      text="X" />
+  </HorizontalLayout>
+</Panel>

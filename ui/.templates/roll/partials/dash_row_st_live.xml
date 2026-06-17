@@ -1,0 +1,65 @@
+<!-- Storyteller (Black) NPC / Werewolf live-roll dashboard row -->
+<Panel id="rollDash_row_Black"
+  active="False"
+  flexibleWidth="1"
+  padding="0 0 0 0"
+  childForceExpandWidth="true">
+  <HorizontalLayout color="#333333" spacing="4" childAlignment="MiddleLeft" flexibleWidth="1" padding="5 5 5 5">
+    <Text id="rollDash_name_Black" fontSize="12" color="#FFFFFF" preferredWidth="90" text="ST Roll" />
+    <Text id="rollDash_type_Black" fontSize="11" color="#AAAAAA" preferredWidth="90" text="" />
+    <Text id="rollDash_phase_Black" fontSize="11" color="#CCCCCC" preferredWidth="60" text="" />
+    <Text id="rollDash_pool_Black" fontSize="11" color="#CCCCCC" preferredWidth="50" text="" />
+    <InputField id="rollDash_difficulty_Black"
+      fontSize="12"
+      preferredWidth="40"
+      preferredHeight="24"
+      text=""
+      placeholder="Diff"
+      onValueChanged="HUD_rollSetDifficulty" />
+    <Button id="rollDash_btn_Black"
+      fontSize="10"
+      preferredWidth="64"
+      preferredHeight="24"
+      onClick="HUD_rollSTAction"
+      text="OPEN" />
+    ##IF @@SHOW_OBLIV_BUTTONS@@##
+    <Button id="rollDash_btnOblivHunger_Black"
+      active="False"
+      fontSize="9"
+      preferredWidth="72"
+      preferredHeight="24"
+      onClick="HUD_rollConfirmOblivChoice"
+      text="HUNGER" />
+    <Button id="rollDash_btnOblivStain_Black"
+      active="False"
+      fontSize="9"
+      preferredWidth="64"
+      preferredHeight="24"
+      onClick="HUD_rollConfirmOblivChoice"
+      text="STAIN" />
+    ##ENDIF##
+    ##IF @@SHOW_BRUTAL_BUTTONS@@##
+    <Button id="rollDash_btnBrutalFail_Black"
+      active="False"
+      fontSize="9"
+      preferredWidth="56"
+      preferredHeight="24"
+      onClick="HUD_rollConfirmBrutalChoice"
+      text="FAIL" />
+    <Button id="rollDash_btnBrutalViolence_Black"
+      active="False"
+      fontSize="9"
+      preferredWidth="72"
+      preferredHeight="24"
+      onClick="HUD_rollConfirmBrutalChoice"
+      text="VIOLENCE" />
+    ##ENDIF##
+    <Button id="rollDash_cancel_Black"
+      fontSize="11"
+      preferredWidth="24"
+      preferredHeight="24"
+      color="rgba(0.6,0.1,0.1,1)"
+      onClick="HUD_rollCancel"
+      text="X" />
+  </HorizontalLayout>
+</Panel>

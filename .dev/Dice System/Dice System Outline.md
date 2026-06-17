@@ -708,8 +708,10 @@ All roll-related UI element IDs follow a consistent naming pattern:
 
 | Element | ID Pattern | Notes |
 | ------------- | ----------------------- | --------------- |
-| ST Roll Dashboard panel | `rollDash_ST` | Visibility: `"Black\|Host"` |
-| ST row for player color | `rollDash_row_<Color>` | One per player color |
+| ST Roll Dashboard panel | `rollDash_ST` | Visibility: `"Black\|Host"`; body from generated `ui/shared/roll_dash_generated.xml` |
+| ST row for player color | `rollDash_row_<Color>` | One per `C.PlayerColors`; template `ui/.templates/roll/partials/dash_row_pc.xml` |
+| ST drawer slot row | `rollDash_stRow_<1-3>` | CLEAR strip; template `dash_slot_row.xml` |
+| ST Black live dashboard row | `rollDash_row_Black` | NPC/Werewolf; template `dash_row_st_live.xml` (inline Obliv/Brutal buttons) |
 | ST difficulty input field | `rollDash_difficulty_<Color>` | `InputField` |
 | ST open/confirm button | `rollDash_btn_<Color>` | Label changes by phase |
 | Player Roll Panel (PC) | `rollControl_root_<Color>` | Generated: `ui/player/panel_roll_controls.xml` from `ui/.templates/panel_roll_controls.xml`; visibility `"<Color>"` |
@@ -838,31 +840,20 @@ function HUD_rollInitiate(player, value, id) end
 
 ## 10. UI XML Design
 
-**ST dashboard, `rollPanel_Black`, and result broadcast:** [`ui/shared/roll_panels.xml`](../../ui/shared/roll_panels.xml) (included from `ui/Global.xml` at root level).
+**ST dashboard, `rollPanel_Black`, and result broadcast:** [`ui/shared/roll_panels.xml`](../../ui/shared/roll_panels.xml) (included from `ui/Global.xml` at root level). Dashboard **rows** are generated [`ui/shared/roll_dash_generated.xml`](../../ui/shared/roll_dash_generated.xml) from [`ui/.templates/roll/`](../../ui/.templates/roll/) (`npm run roll-dashboard:generate`).
 
 **PC player roll control panels:** generated [`ui/player/panel_roll_controls.xml`](../../ui/player/panel_roll_controls.xml) from [`ui/.templates/panel_roll_controls.xml`](../../ui/.templates/panel_roll_controls.xml) (`xml_color_template_generator.js`); included inside `HUD_PANEL_PLAYER` in `ui/Global.xml`.
 
 ### 10.1 ST Roll Dashboard
 
 ```xml
-<!-- ST Roll Dashboard (visibility: Black|Host only) -->
-<Panel id="rollDash_ST"
-  visibility="Black|Host"
-  active="True"
-  rectAlignment="LowerRight"
-  ... >
-  <VerticalLayout>
-    <Text>ACTIVE ROLLS</Text>
-    <!-- One row per player color, generated at load or dynamically shown/hidden -->
-    <!-- Per row: player name | roll type | phase | difficulty input | action button | cancel -->
-    <Panel id="rollDash_row_Brown" active="False" ...>...</Panel>
-    <Panel id="rollDash_row_Orange" active="False" ...>...</Panel>
-    <Panel id="rollDash_row_Red" active="False" ...>...</Panel>
-    <Panel id="rollDash_row_Pink" active="False" ...>...</Panel>
-    <Panel id="rollDash_row_Purple" active="False" ...>...</Panel>
-  </VerticalLayout>
+<!-- ST Roll Dashboard shell (visibility via rollPanel_ST default: Black|Host) -->
+<Panel id="rollDash_ST" class="rollPanel_ST">
+  <Include src="roll_dash_generated.xml" />
 </Panel>
 ```
+
+Generated body (`roll_dash_generated.xml`) contains: ACTIVE ROLLS header, five PC rows (`rollDash_row_<Color>`), STORYTELLER SLOTS header + three slot rows (`rollDash_stRow_<n>`), and Black live row (`rollDash_row_Black`). Edit layouts in `ui/.templates/roll/partials/`; refresh logic unchanged in `RUI.refreshSTDashboard()`.
 
 ### 10.2 Player Roll Panels (PC colors — generated template)
 

@@ -1,0 +1,13 @@
+<!-- ACTIVE ROLLS header for rollDash_ST -->
+<Panel color="#000000" padding="5 5 5 5" flexibleWidth="1">
+  <Text
+    fontSize="14"
+    fontStyle="Bold"
+    color="#C9A84C"
+    text="ACTIVE ROLLS"
+    alignment="MiddleRight"
+    preferredHeight="20"
+    minHeight="20"
+    flexibleHeight="0"
+    flexibleWidth="1" />
+</Panel>

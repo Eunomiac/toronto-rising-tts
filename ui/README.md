@@ -157,6 +157,18 @@ The generator ensures no `@@color@@` remains in outputs when expansion was requi
 
 Add `<Include src="player/your_file_generated.xml" />` (or the path relative to `ui/` used in your layout XML) from the appropriate parent under `ui/Global.xml`’s include graph.
 
+### ST roll dashboard rows (`ui/.templates/roll/`)
+
+Storyteller **Active Rolls** dashboard rows (`rollDash_row_*`, slot strip, Black live row) are composed at **build time** from partials:
+
+- **Partials:** `ui/.templates/roll/partials/` (`dash_row_pc.xml`, `dash_row_st_live.xml`, `dash_slot_row.xml`, headers)
+- **Composer:** `ui/.templates/roll/dash_body.xml` (`<!-- TARGET: ui/shared/roll_dash_generated.xml -->`)
+- **Script:** `.dev/scripts/generate_roll_dashboard_xml.js` (uses `.dev/scripts/ui_xml_template_engine.js` — same `@@KEY@@` + `##IF @@KEY@@##` semantics as `lib/ui_xml_template.ttslua`)
+- **Output:** `ui/shared/roll_dash_generated.xml` — included from `rollDash_ST` in `ui/shared/roll_panels.xml`
+- **Run:** `npm run roll-dashboard:generate` (also in `npm run build`)
+
+Edit partials to change layout; `RUI.refreshSTDashboard()` still drives labels and visibility via element ids (no Global `setXml`).
+
 ### Adding a new template
 
 1. Add `ui/.templates/<name>.xml` with the `TARGET` line first, then a single root element.

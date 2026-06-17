@@ -1,0 +1,4 @@
+<!-- Storyteller drawer slots header (up to 3 uncleared NPC rolls) -->
+<Panel id="rollDash_stSlotsHeader" active="False" flexibleWidth="1" padding="4 0 0 0">
+  <Text fontSize="11" fontStyle="Bold" color="#AAAAAA" text="STORYTELLER SLOTS" />
+</Panel>

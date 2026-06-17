@@ -358,7 +358,7 @@ Some panels are assembled at runtime via `UI.setXml` (character sheet **pages 3�
 - **Conditionals**: `##IF @@NAME@@##` … `##ENDIF##` — inner XML is kept only when the caller included `NAME` in the params table (omit keys you do not want rendered).
 - **Build**: `npm run ui-xml-templates:embed` (also in `npm run build`) writes **`lib/ui_xml_templates.ttslua`**.
 - **Consumers**: Domain modules map data → params and call `require("lib.ui_xml_template").apply(templateKey, params, opts)`; use `opts.rawKeys` for values that are already XML fragments (column slot concatenations).
-- **Not the same as color templates**: Top-level `ui/.templates/*.xml` files with `<!-- TARGET: ui/... -->` are processed by `xml_color_template_generator.js` into shipped per-color UI files. Nested folders such as `ui/.templates/csheet/` are **embed-only** (no `TARGET` line).
+- **Not the same as color templates**: Top-level `ui/.templates/*.xml` files with `<!-- TARGET: ui/... -->` are processed by `xml_color_template_generator.js` into shipped per-color UI files. Nested folders such as `ui/.templates/csheet/` are **embed-only** (no `TARGET` line). **`ui/.templates/roll/`** is a **build-time composer** (partials + `dash_body.xml` → `ui/shared/roll_dash_generated.xml` via `npm run roll-dashboard:generate`); not embedded in Lua and not expanded by the color generator.
 
 ## File Structure
 

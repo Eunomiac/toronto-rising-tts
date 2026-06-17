@@ -1,0 +1,10 @@
+<!-- @@SLOT_INDEX@@ — one ST drawer slot summary row -->
+<Panel id="rollDash_stRow_@@SLOT_INDEX@@" active="False" flexibleWidth="1" padding="0 0 2 0">
+  <HorizontalLayout color="#2a2a2a" spacing="6" childAlignment="MiddleLeft" padding="4 4 4 4">
+    <Text id="rollDash_stLabel_@@SLOT_INDEX@@" fontSize="11" color="#FFFFFF" preferredWidth="120" text="" />
+    <Text id="rollDash_stPhase_@@SLOT_INDEX@@" fontSize="10" color="#CCCCCC" preferredWidth="70" text="" />
+    <Text id="rollDash_stLive_@@SLOT_INDEX@@" fontSize="10" color="#C9A84C" preferredWidth="36" text="" />
+    <Button id="rollDash_stCancel_@@SLOT_INDEX@@" fontSize="10" preferredWidth="50" preferredHeight="22"
+      onClick="HUD_rollCancel" text="CLEAR" />
+  </HorizontalLayout>
+</Panel>

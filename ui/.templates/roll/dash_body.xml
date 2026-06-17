@@ -1,0 +1,8 @@
+<!-- TARGET: ui/shared/roll_dash_generated.xml -->
+<VerticalLayout spacing="4" childAlignment="UpperLeft" childForceExpandHeight="false" childForceExpandWidth="true">
+@@ACTIVE_HEADER@@
+@@PC_ROWS@@
+@@SLOTS_HEADER@@
+@@SLOT_ROWS@@
+@@ST_LIVE_ROW@@
+</VerticalLayout>
