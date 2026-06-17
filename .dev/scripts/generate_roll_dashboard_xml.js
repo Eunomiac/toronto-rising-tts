@@ -47,9 +47,13 @@ const SEAT_ROW_BG = {
   Purple: "#9900ff",
 };
 
+/** Must match rollPanel_ST in ui/shared/roll_panels.xml (outer width + horizontal padding). */
+const ST_PANEL_OUTER_WIDTH = 750;
+const ST_PANEL_PADDING_H = 10;
+
 /** Vertical stack — pixel offsets for absolute-positioned dashboard rows. */
 const DASH_LAYOUT = {
-  WIDTH: 730,
+  WIDTH: ST_PANEL_OUTER_WIDTH - ST_PANEL_PADDING_H * 2,
   ROW_GAP: 4,
   HEADER_H: 30,
   PC_ROW_H: 34,
@@ -251,4 +255,11 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { main, SEAT_ROW_BG, DASH_LAYOUT, VerticalStack };
+module.exports = {
+  main,
+  SEAT_ROW_BG,
+  ST_PANEL_OUTER_WIDTH,
+  ST_PANEL_PADDING_H,
+  DASH_LAYOUT,
+  VerticalStack,
+};

@@ -149,7 +149,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 
 ### Roll conditions (UI)
 
-- [x] **ST roll dashboard row XML templates:** `ui/.templates/roll/` partials → build-time `roll_dash_generated.xml`; fixed pixel `offsetXY` layout (ST panel width 730). _(TOR-218)_
+- [x] **ST roll dashboard row XML templates:** `ui/.templates/roll/` partials → build-time `roll_dash_generated.xml`; fixed pixel `offsetXY` layout (`rollPanel_ST` 750px outer / 730px content). _(TOR-218)_
 - [ ] **ST per-roll Opts modal:** `crits`, `bestialNull`, etc. persist in Opts modal and apply to `active.rollOptions` before classify. Batch with TOR-209 when expanding conditions registry. _(TOR-162)_
 - [ ] **Roll panel active conditions:** Show readable condition names on roll panel; registry display-name field. _(TOR-209)_
 

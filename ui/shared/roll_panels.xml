@@ -9,13 +9,14 @@
 
 <Defaults>
 
+  <!-- Outer 750 = inner 730 (DASH_LAYOUT.WIDTH) + 10px horizontal padding each side -->
   <Panel class="rollPanel_ST"
     visibility="Black|Host"
     active="False"
     rectAlignment="LowerRight"
     offsetXY="0 0"
     padding="10 10 10 10"
-    width="730" />
+    width="750" />
 
   <Panel class="rollPanel_player"
     active="False"
