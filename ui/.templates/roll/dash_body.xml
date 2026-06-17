@@ -1,8 +1,8 @@
 <!-- TARGET: ui/shared/roll_dash_generated.xml -->
-<Panel width="@@DASH_WIDTH@@" height="@@BODY_HEIGHT@@" rectAlignment="UpperLeft" offsetXY="0 0">
+<VerticalLayout spacing="4" childAlignment="UpperLeft" childForceExpandHeight="false" childForceExpandWidth="true" width="@@DASH_WIDTH@@">
 @@ACTIVE_HEADER@@
 @@PC_ROWS@@
 @@SLOTS_HEADER@@
 @@SLOT_ROWS@@
 @@ST_LIVE_ROW@@
-</Panel>
+</VerticalLayout>

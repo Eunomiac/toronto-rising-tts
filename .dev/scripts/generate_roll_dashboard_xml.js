@@ -51,42 +51,10 @@ const SEAT_ROW_BG = {
 const ST_PANEL_OUTER_WIDTH = 750;
 const ST_PANEL_PADDING_H = 10;
 
-/** Vertical stack — pixel offsets for absolute-positioned dashboard rows. */
+/** Dashboard content width (inner area inside rollPanel_ST padding). */
 const DASH_LAYOUT = {
   WIDTH: ST_PANEL_OUTER_WIDTH - ST_PANEL_PADDING_H * 2,
-  ROW_GAP: 4,
-  HEADER_H: 30,
-  PC_ROW_H: 34,
-  SLOTS_HEADER_H: 20,
-  SLOT_ROW_H: 30,
-  ST_ROW_H: 34,
 };
-
-/**
- * Tracks offsetXY Y for stacked dashboard rows.
- */
-class VerticalStack {
-  constructor() {
-    this.y = 0;
-  }
-
-  /**
-   * @param {number} height
-   * @returns {string}
-   */
-  place(height) {
-    const offsetY = this.y;
-    this.y += height + DASH_LAYOUT.ROW_GAP;
-    return String(offsetY);
-  }
-
-  /**
-   * @returns {number}
-   */
-  bodyHeight() {
-    return this.y > 0 ? this.y - DASH_LAYOUT.ROW_GAP : 0;
-  }
-}
 
 /**
  * @param {string} projectRoot
@@ -144,7 +112,6 @@ function main(projectRoot) {
     "ui/.templates/roll/partials/dash_slots_header.xml"
   );
 
-  const stack = new VerticalStack();
   const dashWidth = String(DASH_LAYOUT.WIDTH);
   const dashInnerW = String(DASH_LAYOUT.WIDTH - 10);
   const dashDims = { DASH_WIDTH: dashWidth, DASH_INNER_W: dashInnerW };
@@ -152,7 +119,7 @@ function main(projectRoot) {
   const activeHeader = apply(
     tplActiveHeader,
     "dash_active_header",
-    { ...dashDims, ROW_OFFSET_Y: stack.place(DASH_LAYOUT.HEADER_H) },
+    dashDims,
     undefined
   );
 
@@ -166,7 +133,6 @@ function main(projectRoot) {
           COLOR: color,
           ROW_BG: SEAT_ROW_BG[color] || "#333333",
           SHOW_OPTS: true,
-          ROW_OFFSET_Y: stack.place(DASH_LAYOUT.PC_ROW_H),
         },
         undefined
       )
@@ -176,7 +142,7 @@ function main(projectRoot) {
   const slotsHeader = apply(
     tplSlotsHeader,
     "dash_slots_header",
-    { ...dashDims, ROW_OFFSET_Y: stack.place(DASH_LAYOUT.SLOTS_HEADER_H) },
+    dashDims,
     undefined
   );
 
@@ -188,7 +154,6 @@ function main(projectRoot) {
         {
           ...dashDims,
           SLOT_INDEX: String(i),
-          ROW_OFFSET_Y: stack.place(DASH_LAYOUT.SLOT_ROW_H),
         },
         undefined
       )
@@ -202,7 +167,6 @@ function main(projectRoot) {
       ...dashDims,
       SHOW_OBLIV_BUTTONS: true,
       SHOW_BRUTAL_BUTTONS: true,
-      ROW_OFFSET_Y: stack.place(DASH_LAYOUT.ST_ROW_H),
     },
     undefined
   );
@@ -216,7 +180,6 @@ function main(projectRoot) {
     "dash_body",
     {
       ...dashDims,
-      BODY_HEIGHT: String(stack.bodyHeight()),
       ACTIVE_HEADER: activeHeader,
       PC_ROWS: pcRows,
       SLOTS_HEADER: slotsHeader,
@@ -261,5 +224,4 @@ module.exports = {
   ST_PANEL_OUTER_WIDTH,
   ST_PANEL_PADDING_H,
   DASH_LAYOUT,
-  VerticalStack,
 };

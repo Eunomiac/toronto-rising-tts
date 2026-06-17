@@ -211,6 +211,7 @@ local HO = require("core.hud_overlays")
 NPCS = require("core.npcs")
 PCST = require("core.pc_storyteller_panel")
 local DiceDrawer = require("lib.dice_drawer")
+local STD = require("lib.st_dice_drawer")
 local DBV = require("lib.dice_bag_visibility")
 
 -- Load debug module (only in development). Must be global so TTS console `lua DEBUG.foo()` works.
@@ -3398,21 +3399,50 @@ function GlobalWaitDrawerThenReleaseBagDice()
             job.onComplete()
         end
     end, function()
+        if job.color == "Black" and type(job.stDrawerSlot) == "number" then
+            return STD.isRaisedForRelease(job.stDrawerSlot)
+        end
         local y = DiceDrawer.getPositionY(job.color)
         return type(y) == "number" and y > DRAWER_RELEASE_MIN_Y
     end, false, 10)
     return 1
 end
 
---- Opens drawer if needed, waits until y > 2.5, then unlocks staged dice.
+--- Opens drawer if needed, waits until raised, then unlocks staged dice.
 -- @param color string
 -- @param onComplete function|nil  optional callback after dice are released
 local function releaseBagDice(color, onComplete)
     if color == "Black" then
-        unlockStagedBagDice(color)
-        if type(onComplete) == "function" then
-            onComplete()
+        local slot = nil
+        local pid = S.getPlayerID(color)
+        if pid ~= nil then
+            local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+            if type(active) == "table" and type(active.stDrawerSlot) == "number" then
+                slot = active.stDrawerSlot
+                local STR = require("core.storyteller_rolls")
+                STR.activateDrawerForSlot(slot)
+            end
         end
+        if slot == nil then
+            unlockStagedBagDice(color)
+            if type(onComplete) == "function" then
+                onComplete()
+            end
+            return
+        end
+        if STD.isRaisedForRelease(slot) then
+            unlockStagedBagDice(color)
+            if type(onComplete) == "function" then
+                onComplete()
+            end
+            return
+        end
+        drawerReleaseJobQueue[#drawerReleaseJobQueue + 1] = {
+            color = color,
+            onComplete = onComplete,
+            stDrawerSlot = slot,
+        }
+        startLuaCoroutine(Global, "GlobalWaitDrawerThenReleaseBagDice")
         return
     end
     DiceDrawer.openForRoll(color)
@@ -3595,6 +3625,16 @@ function HUD_rollRollButton(player, value, id)
 
     local didAutoSpawn = spawnActivePoolDiceForActive(color)
 
+    if color == "Black" then
+        local pid = S.getPlayerID(color)
+        if pid ~= nil then
+            local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+            if active ~= nil then
+                openDiceTrayOnFirstPoolDie(color, active)
+            end
+        end
+    end
+
     -- Release staged dice in PRE_ROLL while hunger/rouse bags are still at rest Y,
     -- then advance to ROLLING (hunger bag stays raised through ROLLING; hidden at POST_ROLL).
     local function afterDiceReleased()
@@ -3602,10 +3642,10 @@ function HUD_rollRollButton(player, value, id)
             return
         end
         if color == "Black" then
-            Wait.frames(function()
+            U.delay(function()
                 local STR = require("core.storyteller_rolls")
                 STR.physicalRollTrayDice()
-            end, 3)
+            end, 0.15)
         end
     end
 
@@ -3613,8 +3653,8 @@ function HUD_rollRollButton(player, value, id)
         releaseBagDice(color, afterDiceReleased)
     end
 
-    if didAutoSpawn then
-        Wait.frames(releaseThenStartRolling, 10)
+    if didAutoSpawn and color ~= "Black" then
+        U.delay(releaseThenStartRolling, 0.2)
     else
         releaseThenStartRolling()
     end

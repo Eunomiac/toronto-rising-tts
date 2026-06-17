@@ -6,9 +6,9 @@
 
 <Defaults>
 
-  <Panel class="rollPanelST" rectAlignment = "MiddleLeft" height = "300" width = "700" color = "rgba(0, 0, 0, 1)" />
+  <Panel class="rollPanelST" rectAlignment = "MiddleCenter" height = "300" width = "600" color = "rgba(0, 0, 0, 1)" />
 
-  <HorizontalLayout class="rollPanelST_header_container" rectAlignment="UpperCenter" height = "50" childAlignment = "UpperCenter" childForceExpandHeight = "false"/>
+  <HorizontalLayout class="rollPanelST_header_container" rectAlignment="UpperCenter" height = "60" childAlignment = "UpperCenter" childForceExpandHeight = "false"/>
 
   <Text class="rollPanelST_type_text" fontSize="14" fontStyle="Bold" color="#C9A84C" alignment="MiddleLeft" />
   <Text class="rollPanelST_roller_text" fontSize = "34" fontStyle="Bold" color = "#FFFFFF" alignment = "MiddleCenter" />
@@ -43,14 +43,14 @@
 
 
 <!--
-UI.setAttributes("db_rollPanelST", {})
+UI.setAttributes("db_rollPanelST", {width = "600"})
 -->
-<Panel id="db_rollPanelST" visibility="Black|Host" class="rollPanelST" active="true">
+<Panel id="db_rollPanelST" visibility="Black|Host" class="rollPanelST" active="true" rectAlignment = "MiddleLeft">
   <!--
   UI.setAttributes("db_rollPanelST_header_container", {})
 -->
 
-  <HorizontalLayout id="db_rollPanelST_header_container" class="rollPanelST_header_container" rectAlignment="UpperCenter" childAlignment = "MiddleCenter" height = "30">
+  <HorizontalLayout id="db_rollPanelST_header_container" class="rollPanelST_header_container">
     <!--
     UI.setAttributes("db_rollPanelST_type", {})
     -->

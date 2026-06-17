@@ -2,9 +2,7 @@
 <Panel id="rollDash_stSlotsHeader"
   active="False"
   width="@@DASH_WIDTH@@"
-  height="20"
-  rectAlignment="UpperLeft"
-  offsetXY="0 @@ROW_OFFSET_Y@@">
+  height="20">
   <Text
     rectAlignment="UpperLeft"
     offsetXY="0 4"

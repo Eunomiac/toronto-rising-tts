@@ -313,7 +313,7 @@ end
 local ST_PHYSICAL_ROLL_STAGGER_SEC = 0.1
 
 --- Physical roll for every die in the active tray (TTS `Object.randomize`, same as R key).
--- Dice must be unlocked first; call only after `releaseBagDice("Black")` (or unlock here).
+-- Dice must be unlocked first; call only after `releaseBagDice("Black")` has waited for the ST drawer.
 -- Each die is lifted, tumbles, and settles; `onObjectRandomize` drives RC debounce/recalculate.
 function STR.physicalRollTrayDice()
     local active = getBlackActive()

@@ -1,11 +1,9 @@
 <!-- Generated file. Edit ui/.templates/roll/dash_body.xml and partials under ui/.templates/roll/partials/ only. -->
 <!-- Regenerate: node .dev/scripts/generate_roll_dashboard_xml.js -->
-<Panel width="730" height="384" rectAlignment="UpperLeft" offsetXY="0 0">
+<VerticalLayout spacing="4" childAlignment="UpperLeft" childForceExpandHeight="false" childForceExpandWidth="true" width="730">
 <Panel
   width="730"
   height="30"
-  rectAlignment="UpperLeft"
-  offsetXY="0 0"
   color="#000000">
   <Text
     rectAlignment="UpperLeft"
@@ -22,8 +20,6 @@
   active="False"
   width="730"
   height="34"
-  rectAlignment="UpperLeft"
-  offsetXY="0 34"
   color="#654321">
   <Text id="rollDash_name_Brown"
     rectAlignment="UpperLeft"
@@ -98,8 +94,6 @@
   active="False"
   width="730"
   height="34"
-  rectAlignment="UpperLeft"
-  offsetXY="0 72"
   color="#b45914">
   <Text id="rollDash_name_Orange"
     rectAlignment="UpperLeft"
@@ -174,8 +168,6 @@
   active="False"
   width="730"
   height="34"
-  rectAlignment="UpperLeft"
-  offsetXY="0 110"
   color="#ff0000">
   <Text id="rollDash_name_Red"
     rectAlignment="UpperLeft"
@@ -250,8 +242,6 @@
   active="False"
   width="730"
   height="34"
-  rectAlignment="UpperLeft"
-  offsetXY="0 148"
   color="#ff008c">
   <Text id="rollDash_name_Pink"
     rectAlignment="UpperLeft"
@@ -326,8 +316,6 @@
   active="False"
   width="730"
   height="34"
-  rectAlignment="UpperLeft"
-  offsetXY="0 186"
   color="#9900ff">
   <Text id="rollDash_name_Purple"
     rectAlignment="UpperLeft"
@@ -401,9 +389,7 @@
 <Panel id="rollDash_stSlotsHeader"
   active="False"
   width="730"
-  height="20"
-  rectAlignment="UpperLeft"
-  offsetXY="0 224">
+  height="20">
   <Text
     rectAlignment="UpperLeft"
     offsetXY="0 4"
@@ -418,8 +404,6 @@
   active="False"
   width="730"
   height="30"
-  rectAlignment="UpperLeft"
-  offsetXY="0 248"
   color="#2a2a2a">
   <Text id="rollDash_stLabel_1"
     rectAlignment="UpperLeft"
@@ -458,8 +442,6 @@
   active="False"
   width="730"
   height="30"
-  rectAlignment="UpperLeft"
-  offsetXY="0 282"
   color="#2a2a2a">
   <Text id="rollDash_stLabel_2"
     rectAlignment="UpperLeft"
@@ -498,8 +480,6 @@
   active="False"
   width="730"
   height="30"
-  rectAlignment="UpperLeft"
-  offsetXY="0 316"
   color="#2a2a2a">
   <Text id="rollDash_stLabel_3"
     rectAlignment="UpperLeft"
@@ -538,8 +518,6 @@
   active="False"
   width="730"
   height="34"
-  rectAlignment="UpperLeft"
-  offsetXY="0 350"
   color="#333333">
   <Text id="rollDash_name_Black"
     rectAlignment="UpperLeft"
@@ -640,4 +618,4 @@
     onClick="HUD_rollCancel"
     text="X" />
 </Panel>
-</Panel>
+</VerticalLayout>

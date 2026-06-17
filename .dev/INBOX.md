@@ -5,7 +5,13 @@
 - [Clock/Time] Need a way to "fast forward" time in an animated fashion, lerping with a slow acceleration towards a date with an eased slow down on approach. Clock should update each frame, speeding up and slowing down as the game takes a time jump into the future/past.
 - [Control Board] Implement PC token controls: Activate/Deactivate seats, allow play as another NPC
   - When adopting the role of another NPC, a check should be performed for a matching character sheet object (searched by tag), and replace the player's normal sheet with the NPC's
+- [Control Board] [Quick Fix] When updating the "Snaps" button to toggle it on/off, the text color must be reset to #FFFFFF (TTS reverts the text color to black on any update of attributes)
 - [Seated NPCs] When an NPC figurine is seated at the table, its model scale should be set to `53`, and restored to the scale defined in `npcs_data.tts` when they are moved out of a seat (either to the stage or to the preload area)
+- [Storyteller Roll Controls] Refactor the Storyteller Roll Control strip/row (that appears in the list of live rolls for Storyteller control) into an `.xml` file that is parsed by build tooling, so it can be edited as an XML file rather than hardcoding the XML into the script.
+- [Storyteller Roll Panel] For Storyteller rolls (i.e. rolling for NPCs), I'd like a few changes made to make use in-game much easier.
+  1. Dice should not be spawned into the Storyteller dice drawers until the Storyteller clicks "Roll" (at which point they should be automatically rolled after being spawned)
+  2. **Grid Strip Controls:** A grid group of a row of 10 squares, each with a given color but a default alpha of 0.25. When any grid square is hovered over, it and all grid squares to the left are set to alpha 1. When clicked, a grid square should gain a white outline and it, and all squares to the left, should be set to default alpha of 0.75 (the hover-over alpha to 1 should trump this).  This is how the Storyteller will configure the number of dice in Storyteller dice pools.  A red grid strip of five squares will control hunger dice, and below it, a grey strip of 15 squares will control normal dice. Below that, a green strip of 10 squares will control difficulty.
+
 
 ---
 
