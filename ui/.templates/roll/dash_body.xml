@@ -1,5 +1,5 @@
 <!-- TARGET: ui/shared/roll_dash_generated.xml -->
-<Panel width="730" height="@@BODY_HEIGHT@@" rectAlignment="UpperLeft" offsetXY="0 0">
+<Panel width="@@DASH_WIDTH@@" height="@@BODY_HEIGHT@@" rectAlignment="UpperLeft" offsetXY="0 0">
 @@ACTIVE_HEADER@@
 @@PC_ROWS@@
 @@SLOTS_HEADER@@

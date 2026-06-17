@@ -167,7 +167,7 @@ Storyteller **Active Rolls** dashboard rows (`rollDash_row_*`, slot strip, Black
 - **Output:** `ui/shared/roll_dash_generated.xml` — included from `rollDash_ST` in `ui/shared/roll_panels.xml`
 - **Run:** `npm run roll-dashboard:generate` (also in `npm run build`)
 
-Edit partials to change layout (`offsetXY`, `preferredWidth`/`preferredHeight`); `RUI.refreshSTDashboard()` still drives labels and visibility via element ids (no Global `setXml`). Dashboard uses fixed pixel positioning (no `flexibleWidth`); widen `rollPanel_ST` in `roll_panels.xml` if you add columns.
+Edit partials to change layout (`offsetXY`, `preferredWidth`/`preferredHeight`); `RUI.refreshSTDashboard()` still drives labels and visibility via element ids (no Global `setXml`). Dashboard width is `DASH_LAYOUT.WIDTH` in `generate_roll_dashboard_xml.js` (730px today) — passed as `@@DASH_WIDTH@@` to every row partial; change that constant and `rollPanel_ST` width together.
 
 ### Adding a new template
 

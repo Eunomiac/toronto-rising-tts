@@ -2,7 +2,7 @@
 <!-- Regenerate: node .dev/scripts/generate_roll_dashboard_xml.js -->
 <Panel width="730" height="384" rectAlignment="UpperLeft" offsetXY="0 0">
 <Panel
-  width="520"
+  width="730"
   height="30"
   rectAlignment="UpperLeft"
   offsetXY="0 0"
@@ -10,7 +10,7 @@
   <Text
     rectAlignment="UpperLeft"
     offsetXY="5 5"
-    preferredWidth="510"
+    preferredWidth="720"
     preferredHeight="20"
     fontSize="14"
     fontStyle="Bold"
@@ -20,7 +20,7 @@
 </Panel>
 <Panel id="rollDash_row_Brown"
   active="False"
-  width="520"
+  width="730"
   height="34"
   rectAlignment="UpperLeft"
   offsetXY="0 34"
@@ -96,7 +96,7 @@
 </Panel>
 <Panel id="rollDash_row_Orange"
   active="False"
-  width="520"
+  width="730"
   height="34"
   rectAlignment="UpperLeft"
   offsetXY="0 72"
@@ -172,7 +172,7 @@
 </Panel>
 <Panel id="rollDash_row_Red"
   active="False"
-  width="520"
+  width="730"
   height="34"
   rectAlignment="UpperLeft"
   offsetXY="0 110"
@@ -248,7 +248,7 @@
 </Panel>
 <Panel id="rollDash_row_Pink"
   active="False"
-  width="520"
+  width="730"
   height="34"
   rectAlignment="UpperLeft"
   offsetXY="0 148"
@@ -324,7 +324,7 @@
 </Panel>
 <Panel id="rollDash_row_Purple"
   active="False"
-  width="520"
+  width="730"
   height="34"
   rectAlignment="UpperLeft"
   offsetXY="0 186"
@@ -400,14 +400,14 @@
 </Panel>
 <Panel id="rollDash_stSlotsHeader"
   active="False"
-  width="520"
+  width="730"
   height="20"
   rectAlignment="UpperLeft"
   offsetXY="0 224">
   <Text
     rectAlignment="UpperLeft"
     offsetXY="0 4"
-    preferredWidth="520"
+    preferredWidth="730"
     preferredHeight="16"
     fontSize="11"
     fontStyle="Bold"
@@ -416,7 +416,7 @@
 </Panel>
 <Panel id="rollDash_stRow_1"
   active="False"
-  width="520"
+  width="730"
   height="30"
   rectAlignment="UpperLeft"
   offsetXY="0 248"
@@ -456,7 +456,7 @@
 </Panel>
 <Panel id="rollDash_stRow_2"
   active="False"
-  width="520"
+  width="730"
   height="30"
   rectAlignment="UpperLeft"
   offsetXY="0 282"
@@ -496,7 +496,7 @@
 </Panel>
 <Panel id="rollDash_stRow_3"
   active="False"
-  width="520"
+  width="730"
   height="30"
   rectAlignment="UpperLeft"
   offsetXY="0 316"

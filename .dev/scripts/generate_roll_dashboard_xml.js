@@ -141,11 +141,14 @@ function main(projectRoot) {
   );
 
   const stack = new VerticalStack();
+  const dashWidth = String(DASH_LAYOUT.WIDTH);
+  const dashInnerW = String(DASH_LAYOUT.WIDTH - 10);
+  const dashDims = { DASH_WIDTH: dashWidth, DASH_INNER_W: dashInnerW };
 
   const activeHeader = apply(
     tplActiveHeader,
     "dash_active_header",
-    { ROW_OFFSET_Y: stack.place(DASH_LAYOUT.HEADER_H) },
+    { ...dashDims, ROW_OFFSET_Y: stack.place(DASH_LAYOUT.HEADER_H) },
     undefined
   );
 
@@ -155,6 +158,7 @@ function main(projectRoot) {
         tplPc,
         "dash_row_pc",
         {
+          ...dashDims,
           COLOR: color,
           ROW_BG: SEAT_ROW_BG[color] || "#333333",
           SHOW_OPTS: true,
@@ -168,7 +172,7 @@ function main(projectRoot) {
   const slotsHeader = apply(
     tplSlotsHeader,
     "dash_slots_header",
-    { ROW_OFFSET_Y: stack.place(DASH_LAYOUT.SLOTS_HEADER_H) },
+    { ...dashDims, ROW_OFFSET_Y: stack.place(DASH_LAYOUT.SLOTS_HEADER_H) },
     undefined
   );
 
@@ -178,6 +182,7 @@ function main(projectRoot) {
         tplSlot,
         "dash_slot_row",
         {
+          ...dashDims,
           SLOT_INDEX: String(i),
           ROW_OFFSET_Y: stack.place(DASH_LAYOUT.SLOT_ROW_H),
         },
@@ -190,6 +195,7 @@ function main(projectRoot) {
     tplSt,
     "dash_row_st_live",
     {
+      ...dashDims,
       SHOW_OBLIV_BUTTONS: true,
       SHOW_BRUTAL_BUTTONS: true,
       ROW_OFFSET_Y: stack.place(DASH_LAYOUT.ST_ROW_H),
@@ -205,6 +211,7 @@ function main(projectRoot) {
     bodyTemplate,
     "dash_body",
     {
+      ...dashDims,
       BODY_HEIGHT: String(stack.bodyHeight()),
       ACTIVE_HEADER: activeHeader,
       PC_ROWS: pcRows,
