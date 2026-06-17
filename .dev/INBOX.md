@@ -12,7 +12,6 @@
   1. Dice should not be spawned into the Storyteller dice drawers until the Storyteller clicks "Roll" (at which point they should be automatically rolled after being spawned)
   2. **Grid Strip Controls:** A grid group of a row of 10 squares, each with a given color but a default alpha of 0.25. When any grid square is hovered over, it and all grid squares to the left are set to alpha 1. When clicked, a grid square should gain a white outline and it, and all squares to the left, should be set to default alpha of 0.75 (the hover-over alpha to 1 should trump this).  This is how the Storyteller will configure the number of dice in Storyteller dice pools.  A red grid strip of five squares will control hunger dice, and below it, a grey strip of 15 squares will control normal dice. Below that, a green strip of 10 squares will control difficulty.
 
-
 ---
 
 ## Needs clarification

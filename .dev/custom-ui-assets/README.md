@@ -65,7 +65,7 @@ node .tools/custom-ui-assets/build-upload-manifest-from-sites-constants.js --bat
 
 The script prints a suggested **`--batchStart`** for the next run when the slice does not reach the last key. Run **Save & Play**, spawn upload, merge, clear tokens, then regenerate the next batch.
 
-**Committed stubs:** `lib/custom_ui_upload_manifest.ttslua`, `lib/npc_token_upload_manifest.ttslua`, and `lib/npc_token_hosted_urls.ttslua` are always present in git (empty data). Global `require()` at load must not fail on a fresh clone; manifest scripts **overwrite** these files when you generate assets.
+**Committed stubs:** `lib/custom_ui_upload_manifest.ttslua`, `lib/npc_token_upload_manifest.ttslua`, `lib/npc_group_upload_manifest.ttslua`, and `lib/npc_token_hosted_urls.ttslua` are always present in git (empty data). Global `require()` at load must not fail on a fresh clone; manifest scripts **overwrite** these files when you generate assets.
 
 **Manifest only** (writes `manifest.json`, `manifest.lua`, and `lib/custom_ui_upload_manifest.ttslua`):
 
@@ -97,9 +97,68 @@ lua DEBUG.spawnCustomUiUploadBatchFromManifest(customUiUploadManifest, { columns
 
 Then Cloud Manager → **Upload All Loaded Files**, save the game, press Enter in the terminal to run merge, and finally `lua DEBUG.clearCustomUiUploadTokens()`.
 
-## NPC gameboard tokens (`tokenFront_*` / `tokenBack_*`)
+## NPC unified groups (figurine + control-board tokens)
 
-For **TOR-169** control-board tokens, place paired WEBPs in the repo folder:
+**Preferred** workflow for NPC images. Place all four WEBPs per character in:
+
+**`assets/images/NPCs/`**
+
+| File | Custom UI asset `Name` after upload |
+| --- | --- |
+| `<characterKey>.webp` | `<characterKey>` (figurine front) |
+| `<characterKey>Back.webp` | `<characterKey>Back` (figurine back) |
+| `tokenFront_<characterKey>.webp` | `tokenFront_<characterKey>` (board token front) |
+| `tokenBack_<characterKey>.webp` | `tokenBack_<characterKey>` (board token back) |
+
+The scanner **requires complete 4-file groups**; any orphan or missing file aborts with an error.
+
+**Build manifest** (skips groups already hosted in save `CustomUIAssets`; writes `.dev/custom-ui-assets/npc-group-manifest.json` and `lib/npc_group_upload_manifest.ttslua`):
+
+```text
+npm run custom-ui-assets:manifest-npc-groups
+```
+
+Batched upload (default **15 characters** = 60 upload temps per manifest):
+
+```text
+npm run custom-ui-assets:manifest-npc-groups:batch -- --batchStart adrianVarga
+```
+
+Flags: `--dir <path>`, `--save` / `--saveName`, `--skipSaveCheck`, `--warnUnknownKeys`, `--batch`, `--batchMax`, `--batchStart`.
+
+**Full pipeline** (manifest → pause for TTS upload → merge → extract token pairs → registry gap report):
+
+```text
+npm run custom-ui-assets:pipeline-npc-groups
+```
+
+Or with batch flags forwarded:
+
+```text
+npm run custom-ui-assets:pipeline -- --mode npc-groups --saveName 230 --batch
+```
+
+**TTS — Cloud upload:** Save & Play → `lua DEBUG.spawnNpcGroupUploadBatch({ columns = 12, gap = 2, startY = 3 })` → Cloud Manager **Upload All Loaded Files** → save game.
+
+**Merge / extract / report:**
+
+```text
+npm run custom-ui-assets:merge-npc-groups
+npm run custom-ui-assets:extract-npc-token-urls
+npm run custom-ui-assets:report-npc-registry-gaps
+```
+
+After extract: Save & Play → `lua DEBUG.applyNpcControlTokenHostedImages()` (or re-run `spawnNpcControlBoardTokens`).
+
+**Registry gap report:** lists character keys uploaded in the manifest but missing from `D.characters` in `lib/npcs_data.ttslua`, with figurine front/back hosted URLs for copy-paste. Written to `.dev/custom-ui-assets/npc-registry-gap-report.txt`.
+
+VS Code task **Custom UI Assets: Build Manifest from Image Files** → mode **`npc-groups`**.
+
+## NPC gameboard tokens (`tokenFront_*` / `tokenBack_*`) — legacy split folder
+
+**Legacy:** token-only manifest from split folder. Prefer **NPC unified groups** above (`assets/images/NPCs/`).
+
+For **TOR-169** control-board tokens only, paired WEBPs may still live in:
 
 **`assets/images/NPC Tokens/`**
 
@@ -160,7 +219,9 @@ Outputs:
 
 VS Code task **Custom UI Assets: Build Manifest from Image Files** → mode **`npc-tokens`**.
 
-## NPC figurine cutouts (`npc_figurine` → character key)
+## NPC figurine cutouts (`npc_figurine` → character key) — legacy
+
+**Legacy:** figurine-object merge from save. Prefer **NPC unified groups** (upload figurine front/back via `npm run custom-ui-assets:manifest-npc-groups`).
 
 For pooled NPC figurines already in the save (`npc_figurine` tag, `Figurine_Custom`, Nickname = `D.characters.fullName`), copy each figurine’s **front** `CustomImage.ImageURL` into the save root **`CustomUIAssets`** with **`Name`** = the character key from `lib/npcs_data.ttslua` (e.g. `rashid`, `lordLucien`).
 
@@ -196,6 +257,8 @@ npm run custom-ui-assets:pipeline -- --mode directory --input <relativeFolder> -
 See `--help`-style comments at the top of:
 
 - `.tools/custom-ui-assets/build-upload-manifest.js`
-- `.tools/custom-ui-assets/build-upload-manifest-from-sites-constants.js`
+- `.tools/custom-ui-assets/build-upload-manifest-from-npc-tokens.js`
+- `.tools/custom-ui-assets/build-upload-manifest-from-npc-groups.js`
+- `.tools/custom-ui-assets/report-npc-upload-registry-gaps.js`
 - `.tools/custom-ui-assets/run-custom-ui-assets-pipeline.js`
 - `.tools/custom-ui-assets/merge-custom-ui-assets.js`

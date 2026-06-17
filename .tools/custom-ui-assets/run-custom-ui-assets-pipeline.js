@@ -4,6 +4,7 @@
 // Agent guidance: .dev/TTS_BUNDLING_SETUP.md; .dev/custom-ui-assets/ (manifest sources).
 
 const path = require("path");
+const fs = require("fs");
 const { spawnSync } = require("child_process");
 const readline = require("readline");
 
@@ -78,7 +79,9 @@ async function main() {
   const buildDirScript = path.resolve(".tools/custom-ui-assets/build-upload-manifest.js");
   const buildSitesScript = path.resolve(".tools/custom-ui-assets/build-upload-manifest-from-sites-constants.js");
   const buildNpcTokensScript = path.resolve(".tools/custom-ui-assets/build-upload-manifest-from-npc-tokens.js");
+  const buildNpcGroupsScript = path.resolve(".tools/custom-ui-assets/build-upload-manifest-from-npc-groups.js");
   const extractNpcTokensScript = path.resolve(".tools/custom-ui-assets/extract-npc-token-hosted-urls.js");
+  const reportNpcGapsScript = path.resolve(".tools/custom-ui-assets/report-npc-upload-registry-gaps.js");
   const convertScript = path.resolve(".tools/custom-ui-assets/convert-png-to-webp.js");
   const mergeByNameScript = path.resolve(".tools/custom-ui-assets/merge-custom-ui-assets-from-save-name.js");
 
@@ -133,6 +136,38 @@ async function main() {
     if (buildExit !== 0) {
       process.exit(buildExit);
     }
+  } else if (mode === "npc-groups") {
+    const inputDir = (args.input || args.dir || "assets/images/NPCs").trim();
+
+    console.log("=== Mode: npc-groups (figurine + token 4-file sets) ===");
+    console.log("");
+    console.log("=== Step 1/4: Build NPC group manifest (skip already-hosted in save) ===");
+    const groupBuildArgs = [
+      "--dir",
+      inputDir,
+      "--saveName",
+      saveName,
+      "--out",
+      ".dev/custom-ui-assets/npc-group-manifest.json",
+      "--moduleOut",
+      "lib/npc_group_upload_manifest.ttslua",
+    ];
+    if (args.batch === "1" || args.batch === "true") {
+      groupBuildArgs.push("--batch");
+    }
+    if (args.batchMax !== undefined && String(args.batchMax).length > 0) {
+      groupBuildArgs.push("--batchMax", String(args.batchMax));
+    }
+    if (args.batchStart !== undefined && String(args.batchStart).trim() !== "") {
+      groupBuildArgs.push("--batchStart", String(args.batchStart).trim());
+    }
+    if (args.warnUnknownKeys === "1" || args.warnUnknownKeys === "true") {
+      groupBuildArgs.push("--warnUnknownKeys");
+    }
+    const buildExit = runNodeScript(buildNpcGroupsScript, groupBuildArgs);
+    if (buildExit !== 0) {
+      process.exit(buildExit);
+    }
   } else if (mode === "sites-from-constants") {
     const constantsPath = args.constants || "lib/constants.ttslua";
     const skipMissing = args.skipMissing === "1" || args.skipMissing === "true";
@@ -169,55 +204,105 @@ async function main() {
       process.exit(buildExit);
     }
   } else {
-    throw new Error(`Unknown --mode "${mode}" (use "directory", "sites-from-constants", or "npc-tokens")`);
+    throw new Error(
+      `Unknown --mode "${mode}" (use "directory", "sites-from-constants", "npc-tokens", or "npc-groups")`,
+    );
   }
 
   const manifestPath =
     mode === "npc-tokens"
       ? ".dev/custom-ui-assets/npc-token-manifest.json"
-      : ".dev/custom-ui-assets/manifest.json";
+      : mode === "npc-groups"
+        ? ".dev/custom-ui-assets/npc-group-manifest.json"
+        : ".dev/custom-ui-assets/manifest.json";
 
-  console.log("");
-  console.log("=== Manual TTS Steps Required ===");
-  console.log("1) In TTS, run Save & Play.");
-  if (mode === "npc-tokens") {
-    console.log("2) In TTS console, run: lua DEBUG.spawnNpcTokenUploadBatch({ columns = 12, gap = 2, startY = 3 })");
-  } else {
-    console.log("2) In TTS console, run: lua DEBUG.spawnCustomUiUploadBatch()");
-  }
-  console.log("3) Open Cloud Manager and click Upload All Loaded Files.");
-  console.log("4) Save the game.");
-  console.log("");
-  await waitForEnter("Press Enter after you finish the manual TTS steps...");
+  const assetsOutPath =
+    mode === "npc-groups"
+      ? ".dev/custom-ui-assets/npc-group-generated-assets.json"
+      : ".dev/custom-ui-assets/generated-assets.json";
 
-  console.log("");
-  console.log("=== Step 3/3: Merge hosted URLs into save CustomUIAssets ===");
-  const mergeExit = runNodeScript(mergeByNameScript, [
-    "--saveName",
-    saveName,
-    "--manifest",
-    manifestPath,
-    "--assetsOut",
-    ".dev/custom-ui-assets/generated-assets.json",
-  ]);
-  if (mergeExit !== 0) {
-    process.exit(mergeExit);
+  let pendingCharacterCount = -1;
+  if (mode === "npc-groups") {
+    const manifestAbs = path.resolve(manifestPath);
+    if (fs.existsSync(manifestAbs)) {
+      const manifestData = JSON.parse(fs.readFileSync(manifestAbs, "utf8"));
+      pendingCharacterCount =
+        typeof manifestData.characterCount === "number" ? manifestData.characterCount : -1;
+    }
   }
 
-  if (mode === "npc-tokens") {
+  const skipManualTts = mode === "npc-groups" && pendingCharacterCount === 0;
+
+  if (!skipManualTts) {
     console.log("");
-    console.log("=== Step 4/4: Extract paired NPC token URLs ===");
+    console.log("=== Manual TTS Steps Required ===");
+    console.log("1) In TTS, run Save & Play.");
+    if (mode === "npc-tokens") {
+      console.log("2) In TTS console, run: lua DEBUG.spawnNpcTokenUploadBatch({ columns = 12, gap = 2, startY = 3 })");
+    } else if (mode === "npc-groups") {
+      console.log(
+        "2) In TTS console, run: lua DEBUG.spawnNpcGroupUploadBatch({ columns = 12, gap = 2, startY = 3 })",
+      );
+    } else {
+      console.log("2) In TTS console, run: lua DEBUG.spawnCustomUiUploadBatch()");
+    }
+    console.log("3) Open Cloud Manager and click Upload All Loaded Files.");
+    console.log("4) Save the game.");
+    console.log("");
+    await waitForEnter("Press Enter after you finish the manual TTS steps...");
+  } else {
+    console.log("");
+    console.log("=== Manual TTS Steps Skipped (no pending NPC groups in manifest) ===");
+  }
+
+  if (!skipManualTts) {
+    console.log("");
+    console.log("=== Merge hosted URLs into save CustomUIAssets ===");
+    const mergeExit = runNodeScript(mergeByNameScript, [
+      "--saveName",
+      saveName,
+      "--manifest",
+      manifestPath,
+      "--assetsOut",
+      assetsOutPath,
+    ]);
+    if (mergeExit !== 0) {
+      process.exit(mergeExit);
+    }
+  }
+
+  if (mode === "npc-tokens" || (mode === "npc-groups" && !skipManualTts)) {
+    console.log("");
+    console.log("=== Extract paired NPC token URLs ===");
     const extractExit = runNodeScript(extractNpcTokensScript, []);
     if (extractExit !== 0) {
       process.exit(extractExit);
     }
   }
 
+  if (mode === "npc-groups") {
+    console.log("");
+    console.log("=== Registry gap report (uploaded keys missing from D.characters) ===");
+    const reportExit = runNodeScript(reportNpcGapsScript, [
+      "--saveName",
+      saveName,
+      "--manifest",
+      manifestPath,
+      "--assetsOut",
+      assetsOutPath,
+    ]);
+    if (reportExit !== 0) {
+      process.exit(reportExit);
+    }
+  }
+
   console.log("");
   console.log("Pipeline complete.");
-  console.log("Next (in TTS): lua DEBUG.clearCustomUiUploadTokens()");
-  if (mode === "npc-tokens") {
-    console.log("Hosted pairs: lib/npc_token_hosted_urls.ttslua");
+  if (!skipManualTts) {
+    console.log("Next (in TTS): lua DEBUG.clearCustomUiUploadTokens()");
+  }
+  if (mode === "npc-tokens" || mode === "npc-groups") {
+    console.log("Hosted token pairs: lib/npc_token_hosted_urls.ttslua");
   }
 }
 

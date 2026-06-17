@@ -447,6 +447,7 @@
       "options": [
         "folder",
         "sites",
+        "npc-groups",
         "npc-tokens"
       ],
       "default": "folder"
@@ -454,7 +455,7 @@
     {
       "id": "customUiAssetsImageFolder",
       "type": "promptString",
-      "description": "Relative image folder (folder mode: new_images; npc-tokens mode: NPC Tokens; ignored for sites)",
+      "description": "Relative image folder (folder mode: new_images; npc-groups: NPCs; npc-tokens: NPC Tokens; ignored for sites)",
       "default": "assets\\images\\new_images"
     },
     {

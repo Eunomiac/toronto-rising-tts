@@ -1,0 +1,9 @@
+-- Committed stub (safe for Save & Play before manifest generation).
+-- Overwritten by: npm run custom-ui-assets:manifest-npc-groups (or manifest-npc-groups:batch)
+-- Required by DEBUG.loadCustomUiUploadManifest("lib.npc_group_upload_manifest")
+local M = {
+  source = "npc-groups",
+  assets = {}
+}
+
+return M

@@ -1190,6 +1190,17 @@ function DEBUG.rollE2eSeatPrep(targetColor)
     rollE2eSeatPrepInternal(targetColor)
 end
 
+--- E2E spawn params: Black requires `fromRollClick` (production defers spawn until Roll).
+-- @param color string
+-- @return table
+local function rollE2eSpawnActivePoolParams(color)
+    local params = { color = color }
+    if color == "Black" then
+        params.fromRollClick = true
+    end
+    return params
+end
+
 --- Spawns staged dice for auto-populated roll types after rollTest / rollTestNoDiff openRoll.
 -- @param color string
 -- @param rollType string  C.RollType value
@@ -1204,7 +1215,7 @@ local function rollE2eSpawnDefaultPoolIfNeeded(color, rollType)
         print("[rollE2eSpawnDefaultPoolIfNeeded] WARN: Global.call unavailable — pool die may be missing")
         return
     end
-    Global.call("GlobalSpawnDefaultPoolDiceForActive", { color = color })
+    Global.call("GlobalSpawnDefaultPoolDiceForActive", rollE2eSpawnActivePoolParams(color))
 end
 
 --- Initiates, opens, and arms a roll for a player in one shot.
@@ -1928,7 +1939,7 @@ function DEBUG.rollE2eSpawnActivePool(color)
         print("[rollE2eSpawnActivePool] FAIL: Global.call unavailable")
         return false
     end
-    Global.call("GlobalSpawnActivePoolDiceForActive", { color = color })
+    Global.call("GlobalSpawnActivePoolDiceForActive", rollE2eSpawnActivePoolParams(color))
     return true
 end
 
@@ -2352,7 +2363,7 @@ function DEBUG.rollE2eSetPoolAndSpawn(color, normal, hunger)
         print("[rollE2eSetPoolAndSpawn] FAIL: Global.call unavailable")
         return false
     end
-    Global.call("GlobalSpawnActivePoolDiceForActive", { color = color })
+    Global.call("GlobalSpawnActivePoolDiceForActive", rollE2eSpawnActivePoolParams(color))
 
     local pid = S.getPlayerID(color)
     local active = pid and S.getStateVal("playerData", pid, "hud", "rollData", "active")
@@ -2461,7 +2472,7 @@ function DEBUG.rollE2eAddPoolKindSpawn(color, kind, count)
             print("[rollE2eAddPoolKindSpawn] FAIL: RC.setPoolKindCount failed for " .. color)
             return false
         end
-        Global.call("GlobalSpawnActivePoolDiceForActive", { color = color })
+        Global.call("GlobalSpawnActivePoolDiceForActive", rollE2eSpawnActivePoolParams(color))
     end
 
     local pid = S.getPlayerID(color)
@@ -4144,6 +4155,7 @@ local DEBUG_UPLOAD_MANIFEST_MODULE = "lib.custom_ui_upload_manifest"
 -- No init console noise — upload guidance prints only when DEBUG.loadCustomUiUploadManifest is invoked.
 local CUSTOM_UI_UPLOAD_MANIFEST = require("lib.custom_ui_upload_manifest")
 local NPC_TOKEN_UPLOAD_MANIFEST = require("lib.npc_token_upload_manifest")
+local NPC_GROUP_UPLOAD_MANIFEST = require("lib.npc_group_upload_manifest")
 local NPC_TOKEN_HOSTED_URLS = require("lib.npc_token_hosted_urls")
 DEBUG.customUiUploadManifest = CUSTOM_UI_UPLOAD_MANIFEST
 
@@ -4384,6 +4396,13 @@ end
 -- @return number Count of spawned tokens
 function DEBUG.spawnNpcTokenUploadBatch(options)
     return DEBUG.spawnCustomUiUploadBatch(options, "lib.npc_token_upload_manifest")
+end
+
+--- Spawn upload tokens from lib.npc_group_upload_manifest (figurine + token 4-file sets).
+-- @param options table|nil Optional grid: columns, gap, startY, etc.
+-- @return number Count of spawned tokens
+function DEBUG.spawnNpcGroupUploadBatch(options)
+    return DEBUG.spawnCustomUiUploadBatch(options, "lib.npc_group_upload_manifest")
 end
 
 --- Spawn a batch from the default generated manifest module.
@@ -5078,6 +5097,8 @@ function DEBUG.help()
     print("                          - Spawn from loaded/default manifest module")
     print("  DEBUG.spawnNpcTokenUploadBatch(options?)")
     print("                          - Spawn tokenFront_* / tokenBack_* from lib.npc_token_upload_manifest")
+    print("  DEBUG.spawnNpcGroupUploadBatch(options?)")
+    print("                          - Spawn figurine + token assets from lib.npc_group_upload_manifest")
     print("  DEBUG.spawnNpcControlBoardTokens(options?)")
     print("                          - Spawn 61 paired gameboard tokens on CONTROL_BOARD (palette grid)")
     print("  DEBUG.clearNpcControlBoardTokens()")
@@ -5156,6 +5177,7 @@ spawnCustomUiUploadBatchFromManifest = DEBUG.spawnCustomUiUploadBatchFromManifes
 spawnCustomUiUploadBatchFromJson = DEBUG.spawnCustomUiUploadBatchFromJson
 spawnCustomUiUploadBatch = DEBUG.spawnCustomUiUploadBatch
 spawnNpcTokenUploadBatch = DEBUG.spawnNpcTokenUploadBatch
+spawnNpcGroupUploadBatch = DEBUG.spawnNpcGroupUploadBatch
 spawnNpcControlBoardTokens = DEBUG.spawnNpcControlBoardTokens
 clearNpcControlBoardTokens = DEBUG.clearNpcControlBoardTokens
 gbConfirm = DEBUG.gbConfirm

@@ -174,7 +174,7 @@ Gameboard control tokens are **Custom_Tile** objects — **circle** shape (`Type
 
 Source WEBPs:
 
-**`assets/images/NPC Tokens/`** — `tokenFront_<characterKey>.webp`, `tokenBack_<characterKey>.webp`
+**`assets/images/NPCs/`** — per character: `<characterKey>.webp`, `<characterKey>Back.webp`, `tokenFront_<characterKey>.webp`, `tokenBack_<characterKey>.webp` (see `.dev/custom-ui-assets/README.md` § NPC unified groups). Legacy split folder: `assets/images/NPC Tokens/` with `tokenFront_*` / `tokenBack_*` only.
 
 Pipeline (full detail: [`.dev/custom-ui-assets/README.md`](../custom-ui-assets/README.md)):
 
