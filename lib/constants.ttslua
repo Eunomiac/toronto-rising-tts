@@ -835,6 +835,9 @@ C.WP_REROLL_DIE_REST_MAX_WAIT_SECONDS = 45
 -- Must match the delayed cleanup in global_script (dice destroy + drawer close).
 C.ROLL_RESULT_BROADCAST_SECONDS = 6
 
+-- Delay after UI.hide before clearing rollRes_* content (panel_roll_results.xml animationDuration is 0.5).
+C.ROLL_RESULT_BROADCAST_HIDE_CLEANUP_SECONDS = 1
+
 -- #endregion
 
 -- #region Object Positions

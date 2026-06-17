@@ -136,7 +136,7 @@
         <Image id="rollRes_rouseDie_1_3" class="rollRes_rouseDie" image="" active="false" offsetXY = "60 20"/>
         <Image id="rollRes_rouseDie_1_2" class="rollRes_rouseDie" image="" active="false" offsetXY = "90 20"/>
         <Image id="rollRes_rouseDie_1_1" class="rollRes_rouseDie" image="" active="false" offsetXY = "120 20"/>
-        <Text id="rollRes_rouseText_1" class="rollRes_rouseText" text = "" active="false" offsetXY = "160 5"/>
+        <Text id="rollRes_rouseText_1" class="rollRes_rouseText" text = "" active="true" offsetXY = "160 5"/>
       </Panel>
 
       <Text id="rollRes_rollType" class="rollRes_rollType" text="" offsetXY = "0 280" />
@@ -159,7 +159,7 @@
         <Image id="rollRes_die_14" class="rollRes_die" image="" active="false" />
         <Image id="rollRes_die_15" class="rollRes_die" image="" active="false" />
       </HorizontalLayout>
-      <HorizontalLayout class="rollRes_successesContainer" offsetXY = "0 40">
+      <HorizontalLayout id="rollRes_successesContainer" class="rollRes_successesContainer" offsetXY = "0 40" active="false">
 
         <Text id="rollRes_successes" class="roll_text rollRes_successes" text="" />
         <Text id="rollRes_successesPhrase" class="roll_text rollRes_successesPhrase" text="" />

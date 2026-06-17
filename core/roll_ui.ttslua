@@ -425,7 +425,7 @@ local CHARKEY_TO_FIGURE_ASSET = {
 -- @param result table|nil
 -- @return string
 local function rollResResultClassString(result)
-    return rollControlResultClassString(result):gsub("rollControl_", "rollRes_", 1)
+    return rollControlResultClassString(result):gsub("rollControl_", "rollRes_")
 end
 
 --- Map rouse strip narrative to rollRes_rouseText panel label.
@@ -475,6 +475,7 @@ local function applyRollResLayoutForRollType(rollTypeKey)
 end
 
 local BROADCAST_FIGURE_ID = "rollRes_screen_content_figure"
+local broadcastHideCleanupHandle
 
 --- Re-enable figure slot after hide so the next broadcast can show a cutout again.
 local function restoreBroadcastFigureForNextRoll()
@@ -504,12 +505,14 @@ local function resetBroadcastPanel()
     uiSetValue("rollRes_successes", "")
     uiSetValue("rollRes_successesPhrase", "")
     uiSetValue("rollRes_difficulty", "")
+    uiSetActive("rollRes_successesContainer", false)
     uiSetActive("rollRes_difficultyDisplay", false)
     uiSetClass("rollRes_resultDisplay", "roll_text rollRes_resultDisplay")
     uiSetValue("rollRes_resultDisplay", "")
     for panel = 1, 2 do
         uiSetActive(string.format("rollRes_rousePanel_%d", panel), false)
         uiSetValue(string.format("rollRes_rouseText_%d", panel), "")
+        uiSetActive(string.format("rollRes_rouseText_%d", panel), false)
         for slot = 1, MAX_ROUSE_SLOTS do
             local id = string.format("rollRes_rouseDie_%d_%d", panel, slot)
             U.setAttribute(id, "image", "")
@@ -521,6 +524,21 @@ local function resetBroadcastPanel()
         U.setAttribute(id, "image", "")
         uiSetActive(id, false)
     end
+end
+
+--- Cancel deferred post-hide reset when a new broadcast is shown early.
+local function cancelBroadcastHideCleanup()
+    U.stopDelay(broadcastHideCleanupHandle)
+    broadcastHideCleanupHandle = nil
+end
+
+--- Clear rollRes_* fields after hide animation finishes (do not reset synchronously on UI.hide).
+local function scheduleBroadcastPanelCleanupAfterHide()
+    cancelBroadcastHideCleanup()
+    broadcastHideCleanupHandle = U.delay(function()
+        broadcastHideCleanupHandle = nil
+        resetBroadcastPanel()
+    end, C.ROLL_RESULT_BROADCAST_HIDE_CLEANUP_SECONDS)
 end
 
 --- Fill rollRes_rousePanel_* from rouseOutcomeStrips (up to two panels).
@@ -544,13 +562,15 @@ local function refreshBroadcastRousePanels(rouseStrips)
             if strip.pendingChoice == true then
                 narrative = ""
             end
-            uiSetValue(string.format("rollRes_rouseText_%d", panel), rouseStripLabelText(narrative))
+            local textId = string.format("rollRes_rouseText_%d", panel)
+            local labelText = rouseStripLabelText(narrative)
+            uiSetValue(textId, labelText)
+            uiSetActive(textId, labelText ~= "")
             local values = type(strip.values) == "table" and strip.values or {}
             local kind = type(strip.kind) == "string" and strip.kind or DK.KIND_ROUSE
             for slot = 1, MAX_ROUSE_SLOTS do
                 local id = string.format("rollRes_rouseDie_%d_%d", panel, slot)
-                local valueIndex = MAX_ROUSE_SLOTS - slot + 1
-                local value = values[valueIndex]
+                local value = values[slot]
                 if value ~= nil then
                     U.setAttribute(id, "image", dieFaceImage(value, { kind = kind }))
                     uiSetActive(id, true)
@@ -1227,6 +1247,7 @@ function RUI.showResultBroadcast(color, result, label)
     U.Val("RUI.showResultBroadcast()", {color = color},
         U.Type(color) == "string", "color must be a string")
 
+    cancelBroadcastHideCleanup()
     resetBroadcastPanel()
 
     local pid = S.getPlayerID(color)
@@ -1269,7 +1290,9 @@ function RUI.showResultBroadcast(color, result, label)
     end
 
     if result ~= nil then
-        if not hidesDifficulty then
+        local showSuccessesRow = not hidesDifficulty
+        uiSetActive("rollRes_successesContainer", showSuccessesRow)
+        if showSuccessesRow then
             uiSetValue("rollRes_successes", tostring(result.successes))
             uiSetValue("rollRes_successesPhrase",
                 result.successes == 1 and "Success" or "Successes")
@@ -1289,6 +1312,7 @@ function RUI.showResultBroadcast(color, result, label)
             uiSetValue(resultId, resultText)
         end
     else
+        uiSetActive("rollRes_successesContainer", false)
         uiSetClass("rollRes_resultDisplay", "roll_text rollRes_resultDisplay")
         uiSetValue("rollRes_resultDisplay", "ROLL COMPLETE")
     end
@@ -1297,7 +1321,7 @@ function RUI.showResultBroadcast(color, result, label)
 
     U.delay(function()
         UI.hide("rollRes_panel")
-        restoreBroadcastFigureForNextRoll()
+        scheduleBroadcastPanelCleanupAfterHide()
     end, C.ROLL_RESULT_BROADCAST_SECONDS)
 end
 
@@ -1305,7 +1329,7 @@ end
 -- @usage RUI.hideResultBroadcast()
 function RUI.hideResultBroadcast()
     UI.hide("rollRes_panel")
-    restoreBroadcastFigureForNextRoll()
+    scheduleBroadcastPanelCleanupAfterHide()
 end
 
 --- Restores the last result from a player's history to the broadcast panel.
