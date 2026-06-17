@@ -19,6 +19,7 @@
   padding="0 0 0 0"
   childForceExpandWidth="true">
   <HorizontalLayout color="#654321" spacing="6" childAlignment="MiddleLeft" flexibleWidth="1" padding="5 5 5 5">
+    
     <Text id="rollDash_name_Brown" fontSize="12" color="#FFFFFF" flexibleWidth="1" text="Brown" />
     <Text id="rollDash_type_Brown" fontSize="11" color="#AAAAAA" flexibleWidth="1" text="" />
     <Text id="rollDash_phase_Brown" fontSize="11" color="#CCCCCC" flexibleWidth="1" text="" />
@@ -32,12 +33,17 @@
       placeholder="Diff"
       onValueChanged="HUD_rollSetDifficulty" />
     
+    
+    
+    
     <Button id="rollDash_opts_Brown"
       fontSize="10"
       preferredWidth="44"
       flexibleWidth="0"
       onClick="HUD_rollOptsOpen"
       text="Opts" />
+    
+    
     
     <Button id="rollDash_btn_Brown"
       fontSize="11"
@@ -52,6 +58,8 @@
       color="rgba(0.6,0.1,0.1,1)"
       onClick="HUD_rollCancel"
       text="X" />
+    
+    
   </HorizontalLayout>
 </Panel>
 <Panel id="rollDash_row_Orange"
@@ -60,39 +68,39 @@
   padding="0 0 0 0"
   childForceExpandWidth="true">
   <HorizontalLayout color="#b45914" spacing="6" childAlignment="MiddleLeft" flexibleWidth="1" padding="5 5 5 5">
-    <Text id="rollDash_name_Orange" fontSize="12" color="#FFFFFF" flexibleWidth="1" text="Orange" />
-    <Text id="rollDash_type_Orange" fontSize="11" color="#AAAAAA" flexibleWidth="1" text="" />
-    <Text id="rollDash_phase_Orange" fontSize="11" color="#CCCCCC" flexibleWidth="1" text="" />
-    <Text id="rollDash_pool_Orange" fontSize="11" color="#CCCCCC" flexibleWidth="1" text="" />
+    
+    
+    <Text id="rollDash_name_Orange" fontSize="12" color="#FFFFFF" preferredWidth="70" text="Orange" />
+    <Text id="rollDash_type_Orange" fontSize="11" color="#AAAAAA" preferredWidth="110" text="" />
+    <Text id="rollDash_phase_Orange" fontSize="11" color="#CCCCCC" preferredWidth="70" text="" />
+    <Text id="rollDash_pool_Orange" fontSize="11" color="#CCCCCC" preferredWidth="50" text="" />
     <InputField id="rollDash_difficulty_Orange"
       fontSize="12"
-      flexibleWidth="1"
-      preferredWidth="50"
-      minWidth="50"
+      preferredWidth="40"
+      preferredHeight="24"
       text=""
       placeholder="Diff"
       onValueChanged="HUD_rollSetDifficulty" />
     
-    <Button id="rollDash_opts_Orange"
-      fontSize="10"
-      preferredWidth="44"
-      flexibleWidth="0"
-      onClick="HUD_rollOptsOpen"
-      text="Opts" />
+    
+    
+    ##ENDIF##
+    
     
     <Button id="rollDash_btn_Orange"
       fontSize="11"
-      preferredWidth="60"
-      flexibleWidth="0"
+      preferredWidth="70"
+      preferredHeight="24"
       onClick="HUD_rollSTAction"
       text="OPEN" />
     <Button id="rollDash_cancel_Orange"
       fontSize="11"
       preferredWidth="24"
-      flexibleWidth="0"
+      preferredHeight="24"
       color="rgba(0.6,0.1,0.1,1)"
       onClick="HUD_rollCancel"
       text="X" />
+    
   </HorizontalLayout>
 </Panel>
 <Panel id="rollDash_row_Red"
@@ -101,39 +109,39 @@
   padding="0 0 0 0"
   childForceExpandWidth="true">
   <HorizontalLayout color="#ff0000" spacing="6" childAlignment="MiddleLeft" flexibleWidth="1" padding="5 5 5 5">
-    <Text id="rollDash_name_Red" fontSize="12" color="#FFFFFF" flexibleWidth="1" text="Red" />
-    <Text id="rollDash_type_Red" fontSize="11" color="#AAAAAA" flexibleWidth="1" text="" />
-    <Text id="rollDash_phase_Red" fontSize="11" color="#CCCCCC" flexibleWidth="1" text="" />
-    <Text id="rollDash_pool_Red" fontSize="11" color="#CCCCCC" flexibleWidth="1" text="" />
+    
+    
+    <Text id="rollDash_name_Red" fontSize="12" color="#FFFFFF" preferredWidth="70" text="Red" />
+    <Text id="rollDash_type_Red" fontSize="11" color="#AAAAAA" preferredWidth="110" text="" />
+    <Text id="rollDash_phase_Red" fontSize="11" color="#CCCCCC" preferredWidth="70" text="" />
+    <Text id="rollDash_pool_Red" fontSize="11" color="#CCCCCC" preferredWidth="50" text="" />
     <InputField id="rollDash_difficulty_Red"
       fontSize="12"
-      flexibleWidth="1"
-      preferredWidth="50"
-      minWidth="50"
+      preferredWidth="40"
+      preferredHeight="24"
       text=""
       placeholder="Diff"
       onValueChanged="HUD_rollSetDifficulty" />
     
-    <Button id="rollDash_opts_Red"
-      fontSize="10"
-      preferredWidth="44"
-      flexibleWidth="0"
-      onClick="HUD_rollOptsOpen"
-      text="Opts" />
+    
+    
+    ##ENDIF##
+    
     
     <Button id="rollDash_btn_Red"
       fontSize="11"
-      preferredWidth="60"
-      flexibleWidth="0"
+      preferredWidth="70"
+      preferredHeight="24"
       onClick="HUD_rollSTAction"
       text="OPEN" />
     <Button id="rollDash_cancel_Red"
       fontSize="11"
       preferredWidth="24"
-      flexibleWidth="0"
+      preferredHeight="24"
       color="rgba(0.6,0.1,0.1,1)"
       onClick="HUD_rollCancel"
       text="X" />
+    
   </HorizontalLayout>
 </Panel>
 <Panel id="rollDash_row_Pink"
@@ -142,39 +150,39 @@
   padding="0 0 0 0"
   childForceExpandWidth="true">
   <HorizontalLayout color="#ff008c" spacing="6" childAlignment="MiddleLeft" flexibleWidth="1" padding="5 5 5 5">
-    <Text id="rollDash_name_Pink" fontSize="12" color="#FFFFFF" flexibleWidth="1" text="Pink" />
-    <Text id="rollDash_type_Pink" fontSize="11" color="#AAAAAA" flexibleWidth="1" text="" />
-    <Text id="rollDash_phase_Pink" fontSize="11" color="#CCCCCC" flexibleWidth="1" text="" />
-    <Text id="rollDash_pool_Pink" fontSize="11" color="#CCCCCC" flexibleWidth="1" text="" />
+    
+    
+    <Text id="rollDash_name_Pink" fontSize="12" color="#FFFFFF" preferredWidth="70" text="Pink" />
+    <Text id="rollDash_type_Pink" fontSize="11" color="#AAAAAA" preferredWidth="110" text="" />
+    <Text id="rollDash_phase_Pink" fontSize="11" color="#CCCCCC" preferredWidth="70" text="" />
+    <Text id="rollDash_pool_Pink" fontSize="11" color="#CCCCCC" preferredWidth="50" text="" />
     <InputField id="rollDash_difficulty_Pink"
       fontSize="12"
-      flexibleWidth="1"
-      preferredWidth="50"
-      minWidth="50"
+      preferredWidth="40"
+      preferredHeight="24"
       text=""
       placeholder="Diff"
       onValueChanged="HUD_rollSetDifficulty" />
     
-    <Button id="rollDash_opts_Pink"
-      fontSize="10"
-      preferredWidth="44"
-      flexibleWidth="0"
-      onClick="HUD_rollOptsOpen"
-      text="Opts" />
+    
+    
+    ##ENDIF##
+    
     
     <Button id="rollDash_btn_Pink"
       fontSize="11"
-      preferredWidth="60"
-      flexibleWidth="0"
+      preferredWidth="70"
+      preferredHeight="24"
       onClick="HUD_rollSTAction"
       text="OPEN" />
     <Button id="rollDash_cancel_Pink"
       fontSize="11"
       preferredWidth="24"
-      flexibleWidth="0"
+      preferredHeight="24"
       color="rgba(0.6,0.1,0.1,1)"
       onClick="HUD_rollCancel"
       text="X" />
+    
   </HorizontalLayout>
 </Panel>
 <Panel id="rollDash_row_Purple"
@@ -183,39 +191,39 @@
   padding="0 0 0 0"
   childForceExpandWidth="true">
   <HorizontalLayout color="#9900ff" spacing="6" childAlignment="MiddleLeft" flexibleWidth="1" padding="5 5 5 5">
-    <Text id="rollDash_name_Purple" fontSize="12" color="#FFFFFF" flexibleWidth="1" text="Purple" />
-    <Text id="rollDash_type_Purple" fontSize="11" color="#AAAAAA" flexibleWidth="1" text="" />
-    <Text id="rollDash_phase_Purple" fontSize="11" color="#CCCCCC" flexibleWidth="1" text="" />
-    <Text id="rollDash_pool_Purple" fontSize="11" color="#CCCCCC" flexibleWidth="1" text="" />
+    
+    
+    <Text id="rollDash_name_Purple" fontSize="12" color="#FFFFFF" preferredWidth="70" text="Purple" />
+    <Text id="rollDash_type_Purple" fontSize="11" color="#AAAAAA" preferredWidth="110" text="" />
+    <Text id="rollDash_phase_Purple" fontSize="11" color="#CCCCCC" preferredWidth="70" text="" />
+    <Text id="rollDash_pool_Purple" fontSize="11" color="#CCCCCC" preferredWidth="50" text="" />
     <InputField id="rollDash_difficulty_Purple"
       fontSize="12"
-      flexibleWidth="1"
-      preferredWidth="50"
-      minWidth="50"
+      preferredWidth="40"
+      preferredHeight="24"
       text=""
       placeholder="Diff"
       onValueChanged="HUD_rollSetDifficulty" />
     
-    <Button id="rollDash_opts_Purple"
-      fontSize="10"
-      preferredWidth="44"
-      flexibleWidth="0"
-      onClick="HUD_rollOptsOpen"
-      text="Opts" />
+    
+    
+    ##ENDIF##
+    
     
     <Button id="rollDash_btn_Purple"
       fontSize="11"
-      preferredWidth="60"
-      flexibleWidth="0"
+      preferredWidth="70"
+      preferredHeight="24"
       onClick="HUD_rollSTAction"
       text="OPEN" />
     <Button id="rollDash_cancel_Purple"
       fontSize="11"
       preferredWidth="24"
-      flexibleWidth="0"
+      preferredHeight="24"
       color="rgba(0.6,0.1,0.1,1)"
       onClick="HUD_rollCancel"
       text="X" />
+    
   </HorizontalLayout>
 </Panel>
 <Panel id="rollDash_stSlotsHeader" active="False" flexibleWidth="1" padding="4 0 0 0">

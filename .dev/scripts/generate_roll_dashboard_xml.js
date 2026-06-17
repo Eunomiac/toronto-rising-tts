@@ -105,18 +105,21 @@ function main(projectRoot) {
   );
 
   const pcRows = colors
-    .map((color) =>
-      apply(
+    .map((color) => {
+      const layoutKey =
+        color === "Brown" ? "USE_FLEX_COLUMNS" : "USE_FIXED_COLUMNS";
+      return apply(
         tplPc,
         "dash_row_pc",
         {
           COLOR: color,
           ROW_BG: SEAT_ROW_BG[color] || "#333333",
           SHOW_OPTS: true,
+          [layoutKey]: true,
         },
         undefined
-      )
-    )
+      );
+    })
     .join("\n");
 
   const slotRows = [1, 2, 3]

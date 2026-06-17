@@ -5,6 +5,7 @@
   padding="0 0 0 0"
   childForceExpandWidth="true">
   <HorizontalLayout color="@@ROW_BG@@" spacing="6" childAlignment="MiddleLeft" flexibleWidth="1" padding="5 5 5 5">
+    ##IF @@USE_FLEX_COLUMNS@@##
     <Text id="rollDash_name_@@COLOR@@" fontSize="12" color="#FFFFFF" flexibleWidth="1" text="@@COLOR@@" />
     <Text id="rollDash_type_@@COLOR@@" fontSize="11" color="#AAAAAA" flexibleWidth="1" text="" />
     <Text id="rollDash_phase_@@COLOR@@" fontSize="11" color="#CCCCCC" flexibleWidth="1" text="" />
@@ -17,7 +18,22 @@
       text=""
       placeholder="Diff"
       onValueChanged="HUD_rollSetDifficulty" />
+    ##ENDIF##
+    ##IF @@USE_FIXED_COLUMNS@@##
+    <Text id="rollDash_name_@@COLOR@@" fontSize="12" color="#FFFFFF" preferredWidth="70" text="@@COLOR@@" />
+    <Text id="rollDash_type_@@COLOR@@" fontSize="11" color="#AAAAAA" preferredWidth="110" text="" />
+    <Text id="rollDash_phase_@@COLOR@@" fontSize="11" color="#CCCCCC" preferredWidth="70" text="" />
+    <Text id="rollDash_pool_@@COLOR@@" fontSize="11" color="#CCCCCC" preferredWidth="50" text="" />
+    <InputField id="rollDash_difficulty_@@COLOR@@"
+      fontSize="12"
+      preferredWidth="40"
+      preferredHeight="24"
+      text=""
+      placeholder="Diff"
+      onValueChanged="HUD_rollSetDifficulty" />
+    ##ENDIF##
     ##IF @@SHOW_OPTS@@##
+    ##IF @@USE_FLEX_COLUMNS@@##
     <Button id="rollDash_opts_@@COLOR@@"
       fontSize="10"
       preferredWidth="44"
@@ -25,6 +41,16 @@
       onClick="HUD_rollOptsOpen"
       text="Opts" />
     ##ENDIF##
+    ##IF @@USE_FIXED_COLUMNS@@##
+    <Button id="rollDash_opts_@@COLOR@@"
+      fontSize="10"
+      preferredWidth="44"
+      preferredHeight="24"
+      onClick="HUD_rollOptsOpen"
+      text="Opts" />
+    ##ENDIF##
+    ##ENDIF##
+    ##IF @@USE_FLEX_COLUMNS@@##
     <Button id="rollDash_btn_@@COLOR@@"
       fontSize="11"
       preferredWidth="60"
@@ -38,5 +64,21 @@
       color="rgba(0.6,0.1,0.1,1)"
       onClick="HUD_rollCancel"
       text="X" />
+    ##ENDIF##
+    ##IF @@USE_FIXED_COLUMNS@@##
+    <Button id="rollDash_btn_@@COLOR@@"
+      fontSize="11"
+      preferredWidth="70"
+      preferredHeight="24"
+      onClick="HUD_rollSTAction"
+      text="OPEN" />
+    <Button id="rollDash_cancel_@@COLOR@@"
+      fontSize="11"
+      preferredWidth="24"
+      preferredHeight="24"
+      color="rgba(0.6,0.1,0.1,1)"
+      onClick="HUD_rollCancel"
+      text="X" />
+    ##ENDIF##
   </HorizontalLayout>
 </Panel>
