@@ -50,7 +50,7 @@ Quick chat commands: `/dbcheck` (compact) and `/dbfullcheck` (full).
 
 - **`Sync.full()`** (no options or `force` omitted/false): reconciles **scene** and **soundscape** only when persisted **fingerprints** changed; runs seat lights + overlays once; **`UpdateUIDisplays`** uses a **narrow delta** (overlays omitted — `HO.syncAll` already ran).
 - **`Sync.full({ force = true })`**: Storyteller **repair** path from **Sync All (force)** — bypasses fingerprints, runs **full** UI refresh (includes overlays / legacy breadth).
-- **`HUD_syncIncremental`** / **Sync (incremental)** debug button: explicit incremental pass with a chat hint to use force if drift persists.
+- **`Sync.full({ force = true })`** via **Sync All (force)** debug button: full reconciliation when incremental fingerprints may have drifted.
 - **Escape hatches** if the world drifted but state did not: `Scenes.invalidateReconcileCache()`, `Soundscape.invalidateReconcileCache()`, then `Sync.full({ force = true })`.
 
 - [ ] Do setters mutate state only (no hidden world side effects)?

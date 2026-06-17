@@ -7,9 +7,9 @@
 ]]
 
 local C = require("lib.constants")
-local G = require("lib.guids")
 local CU = require("lib.csheet_util")
 local OP = require("lib.object_positions_object")
+local TarotObjects = require("lib.tarot_objects")
 
 local STATE_OFF = "off"
 local STATE_ON = "on"
@@ -87,47 +87,23 @@ local function runWhenSeatLayoutReady(callback, attempt)
     retry(startAttempt)
 end
 
+--- @param key string
+--- @return Object|nil
+local function resolveTarotObject(key)
+    if key == "TAROT_BUTTON_PINK" then
+        return self
+    end
+    return TarotObjects.resolveByGuidsKey(key)
+end
+
 --- @return Object|nil
 local function getTarotDrawer()
-    return getObjectFromGUID(G.GUIDS.TAROT_DRAWER_PINK)
+    return resolveTarotObject("TAROT_DRAWER_PINK")
 end
 
 --- @return Object|nil
 local function getTarotDeck()
-    return getObjectFromGUID(G.GUIDS.TAROT_DECK_PINK)
-end
-
-local TAROT_DECK_TAG = "TarotDeck"
-local TAROT_SEAT_OBJECT_TAG = "PinkObject"
-
---- Loose tarot cards on the table (or in hand) carry both tags; the deck itself does too.
---- @param obj Object|nil
---- @param deck Object
---- @return boolean
-local function isLooseTarotCard(obj, deck)
-    if obj == nil or deck == nil then
-        return false
-    end
-    if obj == deck then
-        return false
-    end
-    if obj.isDestroyed ~= nil and obj.isDestroyed() then
-        return false
-    end
-    if obj.hasTag == nil then
-        return false
-    end
-    if obj.hasTag(TAROT_DECK_TAG) ~= true or obj.hasTag(TAROT_SEAT_OBJECT_TAG) ~= true then
-        return false
-    end
-    if obj.type ~= "Card" then
-        return false
-    end
-    local deckGuid = deck.getGUID()
-    if type(deckGuid) == "string" and obj.getGUID() == deckGuid then
-        return false
-    end
-    return true
+    return resolveTarotObject("TAROT_DECK_PINK")
 end
 
 --- Before hiding, sweep tagged loose cards back into the Pink tarot deck.
@@ -141,13 +117,9 @@ local function returnLooseTarotCardsToDeck()
         print("[TarotButton] Cannot return cards: deck putObject unavailable.")
         return
     end
-    local tagged = getObjectsWithTag(TAROT_DECK_TAG)
-    if type(tagged) ~= "table" then
-        return
-    end
     local returned = 0
-    for _, obj in ipairs(tagged) do
-        if isLooseTarotCard(obj, deck) then
+    for _, obj in ipairs(TarotObjects.getTaggedObjects()) do
+        if TarotObjects.isLooseCard(obj, deck) then
             deck.putObject(obj)
             returned = returned + 1
         end
@@ -167,12 +139,7 @@ end
 --- @param state string
 --- @param token number
 local function applyObjectState(key, state, token)
-    local guid = G.GUIDS[key]
-    if type(guid) ~= "string" or guid == "" then
-        print("[TarotButton] Missing GUID for key: " .. tostring(key))
-        return
-    end
-    local obj = getObjectFromGUID(guid)
+    local obj = resolveTarotObject(key)
     if obj == nil then
         print("[TarotButton] Missing object for key: " .. tostring(key))
         return

@@ -4,172 +4,210 @@
 
 <Defaults>
 
-  <Panel class="rollPanel_result"
-    active="False"
-    rectAlignment="UpperCenter"
-    childAlignment="UpperCenter"
-    childForceExpandWidth="true"
-    childForceExpandHeight="false"
-    offsetXY="0 -60"
-    width="560"
-    padding="16 12 16 12" />
+  <Panel class="rollRes_screen"
+    color = "rgba(0, 0, 0, 0.97)"
+    width = "100%"
+    height = "100%" rectAlignment="MiddleCenter" offsetXY="0 0" showAnimation = "FadeIn" hideAnimation = "FadeOut" animationDuration = "0.5" />
 
-  <VerticalLayout class="rollPanel_result_content"
-    spacing="8"
-    childAlignment="UpperCenter"
-    childForceExpandWidth="true"
-    childForceExpandHeight="false"
-    color="#000000" />
+  <Panel class="rollRes_screen_content_spacer" flexibleWidth="1" flexibleHeight="1" />
 
-  <Text class="rollResult_name"
-    fontSize="16"
-    fontStyle="Bold"
-    color="#C9A84C"
-    alignment="MiddleCenter"
-    text="" />
+  <Panel class="rollRes_screen_content"
+    height = "100%"
+    width = "900" rectAlignment="MiddleCenter" />
 
-  <HorizontalLayout class="rollResult_diceRow"
-    spacing="20"
-    childAlignment="MiddleCenter"
-    childForceExpandWidth="false"
-    childForceExpandHeight="false"
-    minHeight="54"
-    preferredHeight="54"/>
+  <Image class="rollRes_image" preserveAspect="true" rectAlignment = "MiddleCenter" />
 
-  <HorizontalLayout class="rollResult_diceContainer_small"
-    scale="0.7"
-    pivot="0 1" />
+  <Image class="rollRes_image_background" height = "550" width = "1200" offsetXY = "0 -15" preserveAspect = "false" />
 
-  <Image class="rollResult_die"
-    active="false"
-    preferredWidth="34"
-    preserveAspect="True" />
+  <Image class="rollRes_image_figure"
+    height = "900" rectAlignment = "UpperCenter" />
 
-  <Text class="roll_text"
-    fontSize="32"
-    fontStyle="Bold"
-    color="#FFFFFF" />
+  <Image class="rollRes_image_border"
+    width = "100%" />
 
-  <Panel class="rollResult_spacer" flexibleWidth="1" />
+  <Image class="rollRes_image_border_top"  />
 
-  <HorizontalLayout class="rollResult_successesContainer"
-    childForceExpandWidth="false"
-    childAlignment="MiddleCenter"
-    preferredWidth="0"
-    spacing="20"
-    preferredHeight="100"
-    minHeight="100"
-    flexibleHeight="0" />
+  <Image class="rollRes_image_border_bottom" />
 
-  <Text class="rollResult_successes"
-    fontSize="80"
-    flexibleWidth="0"
-    outline="#000000"
-    outlineSize="5 5" />
+  <Panel class="rollRes_rousePanel" height = "40" />
+  <Image class="rollRes_rouseDie" rectAlignment = "UpperLeft" width = "40" height = "60" outline = "#000000" outlineSize = "-1 1" preserveAspect = "true" />
 
-  <Text class="rollResult_successesPhrase"
-    flexibleWidth="0" />
 
-  <HorizontalLayout class="rollResult_difficultyDisplayContainer" spacing="15" />
+  <Text class = "rollRes_rouseText" rectAlignment = "UpperLeft" fontSize = "32" color = "#FF0000" alignment = "MiddleLeft" fontStyle = "BoldAndItalic" horizontalOverflow = "overflow" shadow = "#000000" shadowDistance = "3 -3" outline = "#000000" outlineSize = "2 -2"/>
 
-  <Text class="rollResult_difficultyVS" color="#990000" />
+  <Text class = "rollRes_rollType" rectAlignment = "MiddleCenter" fontSize = "18" color = "#b39542" alignment = "MiddleLeft" fontStyle = "BoldAndItalic" horizontalOverflow = "overflow" shadow = "#000000" shadowDistance = "3 -3" outline = "#000000" outlineSize = "2 -2"/>
+  <Text class = "rollRes_rollIntro" rectAlignment = "MiddleCenter" fontSize = "32" color = "#ffe59d" alignment = "MiddleLeft" fontStyle = "Bold" horizontalOverflow = "overflow" shadow = "#000000" shadowDistance = "3 -3" outline = "#000000" outlineSize = "2 -2"/>
 
-  <Text class="rollResult_difficulty"
-    fontSize="80"
-    color="#FF0000"
-    outline="#000000"
-    outlineSize="5 5" />
+  <Image class="rollRes_die"  preferredWidth = "0" minWidth = "80" preserveAspect = "true" />
 
-  <HorizontalLayout class="rollResult_resultDisplayContainer"
-    childForceExpandWidth="false"
-    childAlignment="MiddleCenter"
-    preferredWidth="0"
-    spacing="20"
-    preferredHeight="125"
-    flexibleHeight="0" />
 
-  <Text class="rollResult_resultDisplay"
-    pivot="0 0.75"
-    horizontalOverflow="Overflow"
-    fontSize="100"
-    outline="#000000"
-    outlineSize="3 3"
-    alignment="MiddleCenter"
-    ignoreLayout="true"
-    rectAlignment="MiddleCenter" />
+  <HorizontalLayout class="rollRes_diceContainer" height = "120" width = "2000" childAlignment = "MiddleCenter" childForceExpandWidth = "false" />
 
-  <Text class="rollResult_result_win" color="#c8c8c8" />
-  <Text class="rollResult_result_failure" color="#ff0000" />
-  <Text class="rollResult_result_totalFailure" color="#000000" outline="#990000" outlineSize="5 5" scale="0.75 1" offsetXY="-380 50" />
-  <Text class="rollResult_result_criticalWin" color="#ffffff" outline="#FFDD00" outlineSize="2 2" />
-  <Text class="rollResult_result_messyCritical" color="#ffffff" outline="#FF0000" outlineSize="3 3" />
-  <Text class="rollResult_result_bestialFailure" color="#990000" outline="#FF0000" outlineSize="2 2" scale="0.75 1" offsetXY="-420 50" />
-  <Text class="rollResult_result_totalBestialFailure" color="#440000" outline="#FF0000" outlineSize="5 5" scale="0.75 1" offsetXY="-545 50" rectAlignment="MiddleCenter" />
-  <Text class="rollResult_result_brutalFailure" outline="#ff7300" outlineSize="5 5" color="#990000" />
-  <Text class="rollResult_result_brutalOutcome" color="#ff9100" outline="#ff0000" outlineSize="2 2" scale="0.9 1" />
+  <HorizontalLayout class="rollRes_successesContainer" childAlignment = "MiddleRight" childForceExpandWidth="false" preferredWidth="0" spacing="20" preferredHeight="44" minHeight="44" flexibleHeight="0"/>
+
+  <Text class="rollRes_successes"
+    fontSize = "60"
+    color = "#ffffff"
+    outline = "#000000"
+    outlineSize = "5 5"
+    alignment = "MiddleRight"
+    fontStyle = "Bold"
+    horizontalOverflow = "overflow"
+    shadow = "#000000"
+     flexibleWidth="0"
+    shadowDistance = "3 -3" />
+
+  <Text class="rollRes_successesPhrase"
+    fontSize = "32"
+    color = "#ffffff"
+    alignment = "MiddleRight"
+    fontStyle = "Bold"
+    horizontalOverflow = "overflow"
+    shadow = "#000000"
+     flexibleWidth="0"
+    shadowDistance = "3 -3" />
+  <HorizontalLayout class="rollRes_difficultyDisplayContainer" spacing="15" />
+  <Text class="rollRes_difficultyVS"
+    fontSize = "32"
+    color = "#990000"
+    alignment = "MiddleRight"
+    fontStyle = "Bold"
+    horizontalOverflow = "overflow"
+    shadow = "#000000"
+     flexibleWidth="0"
+    shadowDistance = "3 -3" />
+
+  <Text class="rollRes_difficulty"
+    fontSize = "60"
+    color = "#FF0000"
+    outline = "#000000"
+    outlineSize = "5 5"
+    alignment = "MiddleRight"
+    fontStyle = "Bold"
+    horizontalOverflow = "overflow"
+    shadow = "#000000"
+     flexibleWidth="0"
+    shadowDistance = "3 -3" />
+
+  <Text class="rollRes_resultDisplay"
+    fontSize = "100"
+    color = "#ffffff"
+    outline = "#000000"
+    outlineSize = "3 3"
+    alignment = "MiddleRight"
+    fontStyle = "Bold"
+    horizontalOverflow = "overflow"
+    shadow = "#000000"
+    shadowDistance = "3 -3" />
+
+  <Text class="rollRes_result_win" color="#c8c8c8" />
+  <Text class="rollRes_result_failure" color="#ff0000" />
+  <Text class="rollRes_result_totalFailure" color="#000000" outline="#990000" outlineSize="5 5" />
+  <Text class="rollRes_result_criticalWin" color="#ffffff" outline="#FFDD00" outlineSize="2 2" />
+  <Text class="rollRes_result_messyCritical" color="#ffffff" outline="#FF0000" outlineSize="3 3" />
+  <Text class="rollRes_result_bestialFailure" color="#990000" outline="#FF0000" outlineSize="2 2" />
+  <Text class="rollRes_result_totalBestialFailure" color="#440000" outline="#FF0000" outlineSize="5 5" alignment="MiddleCenter" fontSize = "80" />
+  <Text class="rollRes_result_brutalFailure" outline="#ff7300" outlineSize="5 5" color="#990000" />
+  <Text class="rollRes_result_brutalOutcome" color="#ff9100" outline="#ff0000" outlineSize="2 2" />
 
 </Defaults>
 
-<Panel id="db_rollResult_panel" class="rollPanel_result" visibility="Black|Host" active="true" offsetXY="600 -60">
+<!-- NOTE: Use UI.show/UI.hide to activate this panel to play animations. -->
+<Panel id="rollRes_panel" class="rollRes_screen" visibility="Black|Host" active="false">
 
-  <VerticalLayout id="db_rollPanel_result_content" class="rollPanel_result_content">
+  <Panel class="rollRes_screen_content">
+    <!--
+  NOTE: Set these attributes when displaying the results for any roll other than a Rouse Check or an Oblivion Rouse Check.
+  (Parameters for those will be defined later; for now, just use these values for those rolls as well, but they should be configurable for when I get the proper values figured out)
 
-    <Text id="db_rollResult_name" class="rollResult_name" text="Debug Roller — Standard Test: Stealth vs. Guard" />
+  UI.setAttributes("rollRes_screen_content_background", { height = "380", offsetXY = "0 75" })
+  -->
+    <Image id="rollRes_screen_content_background" class="rollRes_image rollRes_image_background" image="resultsBG" />
+    <!--
+  NOTE: The 'image' attribute of this element should be set to the image of the character that is rolling the dice.
+  For PCs, this is `charKey` from C.PlayerData.
+  For NPCs, this is `name` from D.characters (from npcs_data.ttslua). Depending on how the roll is started, you may need to map `fullName` to `name` for the image (perhaps a helper function in npcs_data.ttslua to do this?)
+  -->
+    <Image id="rollRes_screen_content_figure" class="rollRes_image rollRes_image_figure" image="" />
 
-    <HorizontalLayout id="db_rollResult_diceRow" class="rollResult_diceRow">
-      <HorizontalLayout id="db_rollResult_rouseDiceContainer" class="rollResult_diceContainer rollResult_diceContainer_small" active="false">
-        <Image id="db_rollResult_rouseDie_1" class="rollResult_die" active="false" />
-        <Image id="db_rollResult_rouseDie_2" class="rollResult_die" active="false" />
-        <Image id="db_rollResult_rouseDie_3" class="rollResult_die" active="false" />
-        <Image id="db_rollResult_rouseDie_4" class="rollResult_die" active="false" />
-        <Image id="db_rollResult_rouseDie_5" class="rollResult_die" active="false" />
+    <Image class="rollRes_image rollRes_image_border rollRes_image_border_top" image="resultsBorder" offsetXY = "0 350" />
+    <!--
+  NOTE: Set these attributes when displaying the results for any roll other than a Rouse Check or an Oblivion Rouse Check.
+  (Parameters for those will be defined later; for now, just use these values for those rolls as well, but they should be configurable for when I get the proper values figured out)
+
+  UI.setAttributes("rollRes_screen_content_border_bottom", { offsetXY = "0 -200" })
+  -->
+    <Image id="rollRes_screen_content_border_bottom" class="rollRes_image rollRes_image_border rollRes_image_border_bottom" image="resultsBorderBottom" offsetXY = "0 -200" />
+
+    <Panel class="rollRes_body_container">
+
+  <!-- NOTE: Set this panel active when there are two Rouse Checks in the roll. Then, set the proper images and active status for each image in index order (they are reversed here deliberately). -->
+      <Panel id="rollRes_rousePanel_2" class="rollRes_rousePanel" offsetXY = "-250 350" scale="0.75" active="false">
+        <Image id="rollRes_rouseDie_2_5" class="rollRes_rouseDie" image="" active="false" offsetXY = "0 20" />
+        <Image id="rollRes_rouseDie_2_4" class="rollRes_rouseDie" image="" active="false" offsetXY = "30 20" />
+        <Image id="rollRes_rouseDie_2_3" class="rollRes_rouseDie" image="" active="false" offsetXY = "60 20" />
+        <Image id="rollRes_rouseDie_2_2" class="rollRes_rouseDie" image="" active="false" offsetXY = "90 20" />
+        <Image id="rollRes_rouseDie_2_1" class="rollRes_rouseDie" image="" active="false" offsetXY = "120 20" />
+  <!-- NOTE: Set this text to "ROUSED" or "ROUSED &amp; STAINED" based on the roll, or to an empty string if neither applies (don't use phrases like "SUCCESS", just leave it blank.) -->
+        <Text id="rollRes_rouseText_2" class="rollRes_rouseText" text = "" active="true" offsetXY = "160 5"/>
+
+      </Panel>
+
+  <!-- NOTE: Set this panel active when there is at least one Rouse Check in the roll. Then, set the proper images and active status for each image in index order (they are reversed here deliberately). -->
+      <Panel id="rollRes_rousePanel_1" class="rollRes_rousePanel" offsetXY = "-250 310" scale="0.75" active="false">
+        <Image id="rollRes_rouseDie_1_5" class="rollRes_rouseDie" image="" active="false"  offsetXY = "0 20" />
+        <Image id="rollRes_rouseDie_1_4" class="rollRes_rouseDie" image="" active="false" offsetXY = "30 20"/>
+        <Image id="rollRes_rouseDie_1_3" class="rollRes_rouseDie" image="" active="false" offsetXY = "60 20"/>
+        <Image id="rollRes_rouseDie_1_2" class="rollRes_rouseDie" image="" active="false" offsetXY = "90 20"/>
+        <Image id="rollRes_rouseDie_1_1" class="rollRes_rouseDie" image="" active="false" offsetXY = "120 20"/>
+  <!-- NOTE: Set this text to "ROUSED" or "ROUSED &amp; STAINED" based on the roll, or to an empty string if neither applies (don't use phrases like "SUCCESS", just leave it blank.) -->
+        <Text id="rollRes_rouseText_1" class="rollRes_rouseText" text = "" active="false" offsetXY = "160 5"/>
+
+      </Panel>
+
+  <!-- NOTE: Set this text to the roll type, in proper case (e.g. "Standard Roll", "Frenzy Roll", "Rouse Check", etc.). Do not include any other text here. -->
+      <Text id="rollRes_rollType" class="rollRes_rollType" text="" offsetXY = "0 280" />
+  <!-- NOTE: Set this text to the name of the character that is rolling the dice, in proper case (e.g. "Mylene 'the Puck' Hamelin", "Stirling Siskin", "Adrian Varga", etc.), followed by the string " rolls ...". Do not include any other text here. -->
+      <Text id="rollRes_rollIntro" class="rollRes_rollIntro" text="" offsetXY = "0 230" />
+
+      <HorizontalLayout class="rollRes_diceContainer" offsetXY = "0 140">
+        <Image id="rollRes_die_1" class="rollRes_die" image="" active="false" />
+        <Image id="rollRes_die_2" class="rollRes_die" image="" active="false" />
+        <Image id="rollRes_die_3" class="rollRes_die" image="" active="false" />
+        <Image id="rollRes_die_4" class="rollRes_die" image="" active="false" />
+        <Image id="rollRes_die_5" class="rollRes_die" image="" active="false" />
+        <Image id="rollRes_die_6" class="rollRes_die" image="" active="false" />
+        <Image id="rollRes_die_7" class="rollRes_die" image="" active="false" />
+        <Image id="rollRes_die_8" class="rollRes_die" image="" active="false" />
+        <Image id="rollRes_die_9" class="rollRes_die" image="" active="false" />
+        <Image id="rollRes_die_10" class="rollRes_die" image="" active="false" />
+        <Image id="rollRes_die_11" class="rollRes_die" image="" active="false" />
+        <Image id="rollRes_die_12" class="rollRes_die" image="" active="false" />
+        <Image id="rollRes_die_13" class="rollRes_die" image="" active="false" />
+        <Image id="rollRes_die_14" class="rollRes_die" image="" active="false" />
+        <Image id="rollRes_die_15" class="rollRes_die" image="" active="false" />
+      </HorizontalLayout>
+      <HorizontalLayout class="rollRes_successesContainer" offsetXY = "0 40">
+
+        <!-- NOTE: Set to the number of successes rolled, as an integer. -->
+        <Text id="rollRes_successes" class="roll_text rollRes_successes" text="" />
+        <!-- NOTE: Set to "Successes" if zero/multiple successes, or to "Success" if only one success.-->
+        <Text id="rollRes_successesPhrase" class="roll_text rollRes_successesPhrase" text="" />
+        <!-- NOTE: Activate this panel when there is a Difficulty to display, deactivate otherwise.-->
+        <HorizontalLayout id="rollRes_difficultyDisplay" class="rollRes_difficultyDisplayContainer" spacing="15" active="false">
+          <Text class="roll_text rollRes_difficultyVS" text="vs." />
+          <!-- NOTE: Set to the Difficulty, as an integer. -->
+          <Text id="rollRes_difficulty" class="roll_text rollRes_difficulty" text="" />
+        </HorizontalLayout>
       </HorizontalLayout>
 
-      <HorizontalLayout id="db_rollResult_bloodSurgeRouseDiceContainer" class="rollResult_diceContainer rollResult_diceContainer_small" active="false">
-        <Image id="db_rollResult_bloodSurgeRouseDie_1" class="rollResult_die" active="false" />
-        <Image id="db_rollResult_bloodSurgeRouseDie_2" class="rollResult_die" active="false" />
-        <Image id="db_rollResult_bloodSurgeRouseDie_3" class="rollResult_die" active="false" />
-        <Image id="db_rollResult_bloodSurgeRouseDie_4" class="rollResult_die" active="false" />
-        <Image id="db_rollResult_bloodSurgeRouseDie_5" class="rollResult_die" active="false" />
-      </HorizontalLayout>
+      <!-- NOTE: Set this text to the result of the roll, in proper case (e.g. "WIN +1", "FAILURE", "TOTAL BESTIAL FAILURE –12", etc.). Do not include any other text here.
+      * also UI.setClass("roll_text rollRes_resultDisplay rollRes_result_<resultClass>")
+      * for negative numbers, use the actual minus sign (not a hyphen)
+      -->
+      <Text id="rollRes_resultDisplay" class="roll_text rollRes_resultDisplay" text="" offsetXY = "0 -50"/>
 
-      <HorizontalLayout id="db_rollResult_diceContainer" class="rollResult_diceContainer">
-        <Image id="db_rollResult_die_1" class="rollResult_die" active="true" image="dieFace_normal_ankh" />
-        <Image id="db_rollResult_die_2" class="rollResult_die" active="true" image="dieFace_normal_blank" />
-        <Image id="db_rollResult_die_3" class="rollResult_die" active="true" image="dieFace_hunger_ankh" />
-        <Image id="db_rollResult_die_4" class="rollResult_die" active="true" image="dieFace_normal_crit" />
-        <Image id="db_rollResult_die_5" class="rollResult_die" active="true" image="dieFace_normal_blank" />
-        <Image id="db_rollResult_die_6" class="rollResult_die" active="false" />
-        <Image id="db_rollResult_die_7" class="rollResult_die" active="false" />
-        <Image id="db_rollResult_die_8" class="rollResult_die" active="false" />
-        <Image id="db_rollResult_die_9" class="rollResult_die" active="false" />
-        <Image id="db_rollResult_die_10" class="rollResult_die" active="false" />
-        <Image id="db_rollResult_die_11" class="rollResult_die" active="false" />
-        <Image id="db_rollResult_die_12" class="rollResult_die" active="false" />
-        <Image id="db_rollResult_die_13" class="rollResult_die" active="false" />
-        <Image id="db_rollResult_die_14" class="rollResult_die" active="false" />
-        <Image id="db_rollResult_die_15" class="rollResult_die" active="false" />
-      </HorizontalLayout>
-    </HorizontalLayout>
+    </Panel>
+  </Panel>
 
-    <Text id="db_rollResult_rouseStrips" fontSize="12" color="#BBBBBB" alignment="MiddleCenter" text="" active="false" />
-
-    <HorizontalLayout id="db_rollResult_successesContainer" class="rollResult_successesContainer" active="true">
-      <Panel id="db_rollResult_successesContainer_spacerLeading" class="rollResult_spacer" />
-      <Text id="db_rollResult_successes" class="roll_text rollResult_successes" text="4" />
-      <Text id="db_rollResult_successesPhrase" class="roll_text rollResult_successesPhrase" text="Successes" />
-      <HorizontalLayout id="db_rollResult_difficultyDisplay" class="rollResult_difficultyDisplayContainer" spacing="15" active="true">
-        <Text id="db_rollResult_difficultyVS" class="roll_text rollResult_difficultyVS" text="vs. Difficulty" />
-        <Text id="db_rollResult_difficulty" class="roll_text rollResult_difficulty" text="3" />
-      </HorizontalLayout>
-      <Panel id="db_rollResult_successesContainer_spacerTrailing" class="rollResult_spacer" />
-    </HorizontalLayout>
-
-    <HorizontalLayout id="db_rollResult_resultDisplayContainer" class="rollResult_resultDisplayContainer" active="true">
-      <Panel id="db_rollResult_resultDisplayContainer_spacerLeading" class="rollResult_spacer" />
-      <Text id="db_rollResult_resultDisplay" class="roll_text rollResult_resultDisplay rollResult_result_win" text="SUCCESS +1" />
-      <Panel id="db_rollResult_resultDisplayContainer_spacerTrailing" class="rollResult_spacer" />
-    </HorizontalLayout>
-
-  </VerticalLayout>
 </Panel>

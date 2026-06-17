@@ -210,7 +210,6 @@ local HUDP = require("core.hud_player")
 local HO = require("core.hud_overlays")
 NPCS = require("core.npcs")
 PCST = require("core.pc_storyteller_panel")
-SoundscapeDebugPanel = require("core.soundscape_debug_panel")
 local DiceDrawer = require("lib.dice_drawer")
 local DBV = require("lib.dice_bag_visibility")
 
@@ -2338,24 +2337,6 @@ function HUD_printState(player, button, id)
     )
 end
 
---- Print per-seat light reconciliation diagnostics to workspace file.
--- Writes **.dev/.debug/debug_logs/seat_lights.txt** when the tts-bridge listens on 39998.
--- @param player Player The player who clicked (Host/Black)
--- @param button string Button value
--- @param id string The UI element ID
-function HUD_debugSeatLights(player, button, id)
-    if not DEBUG or type(DEBUG.logSeatLightsToFile) ~= "function" then
-        broadcastToColor("Debug Seat Lights: DEBUG.logSeatLightsToFile missing.", player.color, {1, 0.5, 0})
-        return
-    end
-    DEBUG.logSeatLightsToFile("seat_lights")
-    broadcastToColor(
-        "Seat light diagnostics written to .dev/.debug/debug_logs/seat_lights.txt",
-        player.color,
-        {0, 1, 1}
-    )
-end
-
 --- Force a full synchronization pass from current state.
 -- @param player Player The player who clicked (Host/Black)
 -- @param button string Button value
@@ -2371,19 +2352,6 @@ function HUD_syncAll(player, button, id)
         player.color,
         {0, 1, 1}
     )
-end
-
---- Incremental sync from current state (fingerprints + narrow UI); use when desync is unlikely or for routine refresh.
---- @param player Player
---- @param button string
---- @param id string
-function HUD_syncIncremental(player, button, id)
-    if not Sync or type(Sync.full) ~= "function" then
-        broadcastToColor("Sync incremental: Sync.full missing.", player.color, {1, 0.5, 0})
-        return
-    end
-    Sync.full({ force = false, reason = "HUD_syncIncremental" })
-    broadcastToColor("Incremental sync triggered (use Sync All if overlay/scene/audio drift persists).", player.color, {0, 1, 1})
 end
 
 --- Force-hide startup loading overlays for all player colors.
@@ -2655,48 +2623,6 @@ function HUD_debugCameraAngle(player, button, id)
         return
     end
     broadcastToColor(tostring(message), player.color, {0, 1, 1})
-end
-
---- Open the catalog-driven soundscape debug panel.
--- @param player Player
--- @param button string|nil
--- @param id string|nil
-function HUD_debugSoundscapeActivate(player, button, id)
-    if SoundscapeDebugPanel and SoundscapeDebugPanel.activate then
-        SoundscapeDebugPanel.activate(player)
-    else
-        broadcastToColor("Debug Soundscape: module not loaded.", player.color, {1, 0.35, 0})
-    end
-end
-
---- Play a debug soundscape track routed by the debug panel.
--- @param player Player
--- @param button string|nil
--- @param id string
-function HUD_debugSoundscapePlay(player, button, id)
-    if SoundscapeDebugPanel and SoundscapeDebugPanel.onPlay then
-        SoundscapeDebugPanel.onPlay(player, button, id)
-    end
-end
-
---- Adjust a debug soundscape track volume immediately.
--- @param player Player
--- @param value number|string
--- @param id string
-function HUD_debugSoundscapeVolume(player, value, id)
-    if SoundscapeDebugPanel and SoundscapeDebugPanel.onVolume then
-        SoundscapeDebugPanel.onVolume(player, value, id)
-    end
-end
-
---- Close the soundscape debug panel.
--- @param player Player
--- @param button string|nil
--- @param id string|nil
-function HUD_debugSoundscapeDone(player, button, id)
-    if SoundscapeDebugPanel and SoundscapeDebugPanel.done then
-        SoundscapeDebugPanel.done()
-    end
 end
 
 --[[
@@ -3949,6 +3875,17 @@ end
 
 --- TTS: player joined or changed seat color.
 function onPlayerChangeColor(color)
+    if type(color) == "string" and color ~= "Grey" then
+        local seated = Player[color]
+        if seated ~= nil and U.isPlayer(seated) then
+            local playerID = S.getStorageID(seated)
+            if playerID == C.StorytellerID and CameraDebugFocus ~= nil
+                and type(CameraDebugFocus.syncStorytellerCameraForSeatColor) == "function"
+            then
+                CameraDebugFocus.syncStorytellerCameraForSeatColor(color)
+            end
+        end
+    end
     if M ~= nil and type(M.onPlayerChangeColor) == "function" then
         M.onPlayerChangeColor(color)
     end

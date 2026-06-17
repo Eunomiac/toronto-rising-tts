@@ -160,6 +160,27 @@ Outputs:
 
 VS Code task **Custom UI Assets: Build Manifest from Image Files** → mode **`npc-tokens`**.
 
+## NPC figurine cutouts (`npc_figurine` → character key)
+
+For pooled NPC figurines already in the save (`npc_figurine` tag, `Figurine_Custom`, Nickname = `D.characters.fullName`), copy each figurine’s **front** `CustomImage.ImageURL` into the save root **`CustomUIAssets`** with **`Name`** = the character key from `lib/npcs_data.ttslua` (e.g. `rashid`, `lordLucien`).
+
+Use after figurines have been uploaded in TTS (Steam-hosted URLs) or while they still point at repo `raw.githubusercontent.com` URLs.
+
+```text
+npm run custom-ui-assets:merge-npc-figurines:dry-run
+npm run custom-ui-assets:merge-npc-figurines
+```
+
+Live save (TTS Saves folder):
+
+```text
+npm run custom-ui-assets:merge-npc-figurines:live
+```
+
+Override paths: `--save <path>`, `--saveName <id>`, `--npcsData lib/npcs_data.ttslua`, `--assetsOut .dev/custom-ui-assets/npc-figurine-generated-assets.json`.
+
+Writes `.dev/custom-ui-assets/npc-figurine-generated-assets.json` (merged entries only). Reload the save in TTS after merging.
+
 ## Folder mode (legacy)
 
 Scans a directory of images (PNG→WEBP conversion, then manifest from filenames):

@@ -1,7 +1,0 @@
-<Panel id="panel_debug_soundscape_root" active="false" visibility="Host" color="rgba(0,0,0,0.90)" padding="12 12 12 12" width="1100" height="1850" rectAlignment="MiddleCenter" raycastTarget="true" scale="0.8">
-  <VerticalLayout id="ds_dynamic_root" spacing="6" childForceExpandWidth="true" childForceExpandHeight="false">
-    <Text fontSize="18" color="#FFDD00">Debug Soundscape</Text>
-    <Text fontSize="11" color="#CCCCCC">Open this panel to build the catalog-driven soundscape volume controls.</Text>
-    <Button preferredWidth="120" preferredHeight="32" onClick="HUD_debugSoundscapeDone">Close</Button>
-  </VerticalLayout>
-</Panel>

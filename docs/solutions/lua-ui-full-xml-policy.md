@@ -38,7 +38,7 @@ Related: [`lua-wait-api-policy.md`](lua-wait-api-policy.md), [`lua-pcall-policy.
 ## When full refresh is acceptable
 
 1. **Object UI with runtime-generated structure** where editor `<Include>` does not apply to strings passed to `setXml` (character sheet page 3: backgrounds / merits / flaws).
-2. **Dev/debug panels** with dynamic lists not worth static row matrices (approved: `core/soundscape_debug_panel.ttslua`), if kept out of player-facing hot paths.
+2. **Dev/debug panels** with dynamic lists not worth static row matrices, if kept out of player-facing hot paths.
 3. **Bootstrap** loading bundled Global XML from the global script when that is the initial `setXml` at load (not counted if it lives outside scanned trees).
 
 ## When to refactor away
@@ -63,7 +63,6 @@ Do not add call sites without review; bump the **last** log line to the new tota
 | File | Line | Kind | Verdict |
 |------|------|------|---------|
 | `ui/ui_csheet_core.ttslua` | 506 | **Runtime** `self.UI.setXml` for PCS dynamic pages | **Approved** — dynamic page XML; runtime strings cannot use editor `<Include>`; fingerprint skip |
-| `core/soundscape_debug_panel.ttslua` | 166 | **Runtime** Global `UI.setXml` after `getXml` splice | **Approved** — debug soundscape panel; dynamic category/track lists |
 | `objects/npc_control_board_ui.ttslua` | 52 | **Runtime** `obj.UI.setXml` for CONTROL_BOARD toolbar | **Approved** — embedded from `ui/objects/npc_control_board.xml` via `npm run npc-control-board-ui:generate`; fingerprint skip |
 
 **No `setXmlTable` in scanned trees.** Scenes library panel uses pre-declared XML rows (`core/storyteller_scenes_panel.ttslua`). Legacy Storyteller NPC toolbar panel (`panel_npcs`) removed TOR-181 — CONTROL_BOARD XmlUI only.

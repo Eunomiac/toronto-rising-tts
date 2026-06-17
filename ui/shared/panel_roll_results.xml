@@ -1,5 +1,6 @@
 <Defaults>
 
+
   <Panel class="rollPanel_result"
     active="False"
     rectAlignment="UpperCenter"
@@ -38,7 +39,7 @@
 
   <Image class="rollResult_die"
     active="false"
-    preferredWidth="34"
+    preferredHeight="51"
     preserveAspect="True" />
 
   <Text class="roll_text"
@@ -53,25 +54,26 @@
     childAlignment="MiddleCenter"
     preferredWidth="0"
     spacing="20"
-    preferredHeight="100"
-    minHeight="100"
+    preferredHeight="44"
+    minHeight="44"
     flexibleHeight="0" />
 
   <Text class="rollResult_successes"
-    fontSize="80"
+    fontSize="40"
     flexibleWidth="0"
     outline="#000000"
     outlineSize="5 5" />
 
   <Text class="rollResult_successesPhrase"
-    flexibleWidth="0" />
+    flexibleWidth="0"
+    fontSize = "24" />
 
   <HorizontalLayout class="rollResult_difficultyDisplayContainer" spacing="15" />
 
-  <Text class="rollResult_difficultyVS" color="#990000" />
+  <Text class="rollResult_difficultyVS" color="#990000" fontSize = "24" />
 
   <Text class="rollResult_difficulty"
-    fontSize="80"
+    fontSize="40"
     color="#FF0000"
     outline="#000000"
     outlineSize="5 5" />
@@ -85,9 +87,9 @@
     flexibleHeight="0" />
 
   <Text class="rollResult_resultDisplay"
-    pivot="0 0.75"
+    pivot="0 0.5"
     horizontalOverflow="Overflow"
-    fontSize="100"
+    fontSize="70"
     outline="#000000"
     outlineSize="3 3"
     alignment="MiddleCenter"
@@ -96,7 +98,7 @@
 
   <Text class="rollResult_result_win" color="#c8c8c8" />
   <Text class="rollResult_result_failure" color="#ff0000" />
-  <Text class="rollResult_result_totalFailure" color="#000000" outline="#990000" outlineSize="5 5" scale="0.75 1" offsetXY="-380 50" />
+  <Text class="rollResult_result_totalFailure" color="#000000" outline="#990000" outlineSize="5 5" scale="0.75 1" offsetXY="25 50" />
   <Text class="rollResult_result_criticalWin" color="#ffffff" outline="#FFDD00" outlineSize="2 2" />
   <Text class="rollResult_result_messyCritical" color="#ffffff" outline="#FF0000" outlineSize="3 3" />
   <Text class="rollResult_result_bestialFailure" color="#990000" outline="#FF0000" outlineSize="2 2" scale="0.75 1" offsetXY="-420 50" />

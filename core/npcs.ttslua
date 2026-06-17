@@ -709,7 +709,7 @@ local function setPooledSpotlightHidden(lit, hidden)
         return
     end
     if hidden then
-        lit.setInvisibleTo(C.PlayerColors or {})
+        lit.setInvisibleTo(C.HideFromPcSeatsAndSpectators or {})
     else
         lit.setInvisibleTo({})
     end

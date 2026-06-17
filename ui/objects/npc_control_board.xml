@@ -3,12 +3,14 @@
 <Defaults>
   <Button class="gb_toolbar_btn" fontSize="52" preferredHeight="72" minHeight="60" preferredWidth="170" minWidth="140" textColor="#FFFFFF" />
 </Defaults>
-<Panel id="gb_root" visibility="Black|Host" active="true" rectAlignment="LowerLeft" width="1100" height="100" scale="0.1 0.1 0.1" position="1 -100 -22" pivot="0 0">
+<Panel id="gb_root" visibility="Black|Host" active="true" rectAlignment="LowerLeft" width="1280" height="100" scale="0.1 0.1 0.1" position="1 -100 -22" pivot="0 0">
   <HorizontalLayout spacing="18" padding="8 8 8 8" childAlignment="MiddleCenter" childForceExpandWidth="false" height="100%" width="100%">
     <Button id="gb_apply" class="gb_toolbar_btn" onClick="click_apply"
       colors="#336644|#448855|#55AA66|#333333">Apply</Button>
     <Button id="gb_clear" class="gb_toolbar_btn" onClick="click_clear"
       colors="#663333|#884444|#AA5555|#333333">Clear</Button>
+    <Button id="gb_snaps" class="gb_toolbar_btn" onClick="click_snaps_toggle"
+      colors="#336644|#448855|#55AA66|#333333">Snaps On</Button>
     <Button id="gb_read" class="gb_toolbar_btn" onClick="click_read_stub" fontSize="46" preferredWidth="150"
       colors="#444455|#555566|#666677|#333333" textColor="#DDDDDD">Read</Button>
     <Button id="gb_lock" class="gb_toolbar_btn" onClick="click_lock_stub" fontSize="46" preferredWidth="150"

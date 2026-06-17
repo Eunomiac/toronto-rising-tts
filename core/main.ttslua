@@ -57,7 +57,7 @@ function M.setupPlayers()
       getObjectFromGUID(G.GUIDS.GM_TABLE), nil, { box = true, far = true }
     ),
     function(v)
-      v.setInvisibleTo(C.PlayerColors)
+      v.setInvisibleTo(C.HideFromPcSeatsAndSpectators)
     end
   )
 

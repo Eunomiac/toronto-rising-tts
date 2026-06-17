@@ -5,6 +5,7 @@
 - [Clock/Time] Need a way to "fast forward" time in an animated fashion, lerping with a slow acceleration towards a date with an eased slow down on approach. Clock should update each frame, speeding up and slowing down as the game takes a time jump into the future/past.
 - [Control Board] Implement PC token controls: Activate/Deactivate seats, allow play as another NPC
   - When adopting the role of another NPC, a check should be performed for a matching character sheet object (searched by tag), and replace the player's normal sheet with the NPC's
+- [Seated NPCs] When an NPC figurine is seated at the table, its model scale should be set to `53`, and restored to the scale defined in `npcs_data.tts` when they are moved out of a seat (either to the stage or to the preload area)
 
 ---
 

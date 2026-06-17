@@ -186,7 +186,7 @@ lua soundscapeLocation("sewers")
 lua soundscapeStopAll()
 ```
 
-Use **Debug Soundscape** (Storyteller DEBUG panel) to audition catalog tracks with per-lane volume sliders.
+Use the Storyteller **Sound** panel or Scenes **Apply location** to audition catalog tracks during play.
 
 ## File logging
 
@@ -202,8 +202,8 @@ lua logAllToFiles()
 
 Storyteller **== DEBUG ==** column (no automated test suites):
 
-- Print State, Debug Seat Lights, Sync incremental / Sync All (force)
-- **Debug Soundscape**, **Debug Camera**, **Debug Light** (+ GUID field)
+- Print State, Sync All (force)
+- **Debug Camera**, **Debug Light** (+ GUID field)
 
 Legacy **Testing Suites** (Run All Tests, Lighting & Signals, Easing) were removed in TOR-141.
 

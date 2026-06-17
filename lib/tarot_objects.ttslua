@@ -1,0 +1,167 @@
+--[[
+    Tarot object resolution (lib/tarot_objects.ttslua)
+
+    Pink tarot deck/drawer/button can lose their workshop GUID when the deck is spread
+    or reassembled. Prefer G.GUIDS lookup, then `Tarot` tag (legacy `TarotDeck` fallback),
+    then stable object nicknames for anchors.
+]]
+
+local G = require("lib.guids")
+
+local TarotObjects = {}
+
+local TAROT_TAG = "Tarot"
+local TAROT_LEGACY_TAG = "TarotDeck"
+local TAROT_GUID_PREFIX = "TAROT_"
+
+--- @type table<string, string> guid -> G.GUIDS key for tarot family
+local guidToTarotKey = {}
+
+for key, guid in pairs(G.GUIDS or {}) do
+    if type(key) == "string" and type(guid) == "string" and guid ~= ""
+        and string.sub(key, 1, #TAROT_GUID_PREFIX) == TAROT_GUID_PREFIX
+    then
+        guidToTarotKey[guid] = key
+    end
+end
+
+--- @return Object[]
+function TarotObjects.getTaggedObjects()
+    local tagged = getObjectsWithTag(TAROT_TAG)
+    if type(tagged) ~= "table" or #tagged < 1 then
+        tagged = getObjectsWithTag(TAROT_LEGACY_TAG) or {}
+    end
+    return tagged
+end
+
+--- @param obj Object|nil
+--- @return boolean
+function TarotObjects.hasTarotTag(obj)
+    if obj == nil or obj.hasTag == nil then
+        return false
+    end
+    return obj.hasTag(TAROT_TAG) == true or obj.hasTag(TAROT_LEGACY_TAG) == true
+end
+
+--- @param nickname string
+--- @return Object|nil
+local function findByNickname(nickname)
+    if type(nickname) ~= "string" or nickname == "" then
+        return nil
+    end
+    if getObjects == nil then
+        return nil
+    end
+    for _, obj in ipairs(getObjects()) do
+        if obj ~= nil and obj.getName ~= nil and obj.getName() == nickname then
+            return obj
+        end
+    end
+    return nil
+end
+
+--- @param guidsKey string e.g. TAROT_DECK_PINK
+--- @return Object|nil
+function TarotObjects.resolveByGuidsKey(guidsKey)
+    if type(guidsKey) ~= "string" or guidsKey == "" then
+        return nil
+    end
+    local guid = G.GUIDS[guidsKey]
+    if type(guid) == "string" and guid ~= "" then
+        local obj = getObjectFromGUID(guid)
+        if obj ~= nil then
+            return obj
+        end
+    end
+
+    if guidsKey == "TAROT_DECK_PINK" then
+        for _, obj in ipairs(TarotObjects.getTaggedObjects()) do
+            if obj.type == "Deck" then
+                return obj
+            end
+        end
+        return nil
+    end
+
+    if guidsKey == "TAROT_DRAWER_PINK" then
+        for _, obj in ipairs(TarotObjects.getTaggedObjects()) do
+            if obj.type ~= "Deck" and obj.type ~= "Card" then
+                local nick = obj.getName ~= nil and obj.getName() or ""
+                if string.find(nick, "DRAWER", 1, true) then
+                    return obj
+                end
+            end
+        end
+        for _, obj in ipairs(TarotObjects.getTaggedObjects()) do
+            if obj.type ~= "Deck" and obj.type ~= "Card" then
+                local nick = obj.getName ~= nil and obj.getName() or ""
+                if not string.find(nick, "BUTTON", 1, true)
+                    and not string.find(nick, "ANCHOR", 1, true)
+                then
+                    return obj
+                end
+            end
+        end
+        return findByNickname(guidsKey)
+    end
+
+    if guidsKey == "TAROT_BUTTON_PINK" then
+        for _, obj in ipairs(TarotObjects.getTaggedObjects()) do
+            if obj.type ~= "Deck" and obj.type ~= "Card" then
+                local nick = obj.getName ~= nil and obj.getName() or ""
+                if string.find(nick, "BUTTON", 1, true) then
+                    return obj
+                end
+            end
+        end
+        return findByNickname(guidsKey)
+    end
+
+    if string.find(guidsKey, "_ANCHOR_", 1, true) then
+        return findByNickname(guidsKey)
+    end
+
+    return nil
+end
+
+--- @param ref string GUID (or other string ref equal to a tarot G.GUIDS value)
+--- @return Object|nil
+function TarotObjects.resolveByGuid(ref)
+    if type(ref) ~= "string" or ref == "" then
+        return nil
+    end
+    local obj = getObjectFromGUID(ref)
+    if obj ~= nil then
+        return obj
+    end
+    local guidsKey = guidToTarotKey[ref]
+    if guidsKey == nil then
+        return nil
+    end
+    return TarotObjects.resolveByGuidsKey(guidsKey)
+end
+
+--- @param deck Object
+--- @param obj Object|nil
+--- @return boolean
+function TarotObjects.isLooseCard(obj, deck)
+    if obj == nil or deck == nil or obj == deck then
+        return false
+    end
+    if obj.isDestroyed ~= nil and obj.isDestroyed() then
+        return false
+    end
+    if not TarotObjects.hasTarotTag(obj) then
+        return false
+    end
+    if obj.type ~= "Card" then
+        return false
+    end
+    local deckGuid = deck.getGUID()
+    if type(deckGuid) == "string" and obj.getGUID() == deckGuid then
+        return false
+    end
+    return true
+end
+
+return TarotObjects

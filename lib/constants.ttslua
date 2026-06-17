@@ -70,6 +70,11 @@ C.PlayerColors = {
   "Brown", "Orange", "Red", "Pink", "Purple"
 }
 
+--- When an object is hidden from every PC seat, also hide from spectators (White/Grey). Never use this list to *grant* visibility to White/Grey alone.
+C.HideFromPcSeatsAndSpectators = {
+  "Brown", "Orange", "Red", "Pink", "Purple", "White", "Grey",
+}
+
 --- Resolve playerRef to a storage / Steam ID string (Storyteller normalized to C.StorytellerID).
 -- Accepts a TTS Player, steam id key, nickname key in C.PlayerIDs, seat color, playerName, charKey, or "Host"/"Storyteller".
 -- @param playerRef Player|string

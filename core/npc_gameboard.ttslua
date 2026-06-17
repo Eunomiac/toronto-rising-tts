@@ -2542,6 +2542,53 @@ controlBoardSnapFingerprintFor = function(board, config)
     return table.concat(parts, ":")
 end
 
+--- @return boolean True unless `sessionScene.npcWorld.controlBoardSnapsEnabled` is explicitly false.
+function Gameboard.areControlBoardSnapsEnabled()
+    local S = stateModule()
+    if type(S) ~= "table" or type(S.getStateVal) ~= "function" then
+        return true
+    end
+    local nw = S.getStateVal("sessionScene", "npcWorld")
+    if type(nw) == "table" and nw.controlBoardSnapsEnabled == false then
+        return false
+    end
+    return true
+end
+
+--- Enable or disable CONTROL_BOARD polar snaps (persists in `sessionScene.npcWorld`).
+--- @param enabled boolean
+--- @param options table|nil `{ board?: Object }`
+--- @return boolean enabled after call
+function Gameboard.setControlBoardSnapsEnabled(enabled, options)
+    options = type(options) == "table" and options or {}
+    local S = stateModule()
+    if type(S) == "table" and type(S.setStateVal) == "function" then
+        S.setStateVal(enabled ~= false, "sessionScene", "npcWorld", "controlBoardSnapsEnabled")
+    end
+    local board = options.board or getControlBoard()
+    if not isGameObject(board) or board.setSnapPoints == nil then
+        return enabled ~= false
+    end
+    if enabled == false then
+        board.setSnapPoints({})
+        polarSnapInstallFingerprint = nil
+        installedPolarSnapConfig = nil
+        invalidateDefaultSnapCatalogCache(board)
+        print("[Gameboard] Control-board snaps disabled (cleared on " .. tostring(board.getGUID()) .. ")")
+        return false
+    end
+    Gameboard.installPolarSnaps(board, { force = true })
+    return true
+end
+
+--- Flip CONTROL_BOARD snap grid on/off.
+--- @param options table|nil `{ board?: Object }`
+--- @return boolean enabled after toggle
+function Gameboard.toggleControlBoardSnaps(options)
+    local nextEnabled = not Gameboard.areControlBoardSnapsEnabled()
+    return Gameboard.setControlBoardSnapsEnabled(nextEnabled, options)
+end
+
 --- Install CONTROL_BOARD snap points (idempotent; safe from Global reconcile).
 --- @param board Object|nil Defaults to G.GUIDS.CONTROL_BOARD
 --- @param options table|nil { force?: boolean, config?: table }
@@ -2552,6 +2599,15 @@ function Gameboard.installPolarSnaps(board, options)
     if not isGameObject(board) or board.setSnapPoints == nil then
         print("[Gameboard] installPolarSnaps: CONTROL_BOARD missing or has no setSnapPoints")
         return false
+    end
+    if Gameboard.areControlBoardSnapsEnabled() ~= true then
+        if #board.getSnapPoints() > 0 then
+            board.setSnapPoints({})
+            polarSnapInstallFingerprint = nil
+            installedPolarSnapConfig = nil
+            invalidateDefaultSnapCatalogCache(board)
+        end
+        return true
     end
     local cfg = resolveControlBoardSnapConfig(options.config)
     local fp = controlBoardSnapFingerprintFor(board, cfg)

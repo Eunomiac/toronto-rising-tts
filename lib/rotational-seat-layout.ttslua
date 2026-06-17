@@ -32,6 +32,7 @@ local OP = require("lib.object_positions")
 local L_LIGHT = require("core.lighting")
 local NPCS = require("core.npcs")
 local SRI = require("lib.seat-role-identity")
+local TarotObjects = require("lib.tarot_objects")
 
 --- Lazy load: core.debug is large; only needed for workspace file export helpers.
 --- @return table
@@ -615,6 +616,12 @@ local function resolveObjectRefWithRoleSupport(ref, referencePlayerColor, label)
   local obj = U.getObject(ref, true)
   if obj ~= nil then
     return obj
+  end
+  if U.Type(ref) == "string" then
+    obj = TarotObjects.resolveByGuid(ref)
+    if obj ~= nil then
+      return obj
+    end
   end
   if U.Type(ref) ~= "string" then
     return nil
@@ -3072,7 +3079,7 @@ local function collectSeatLayoutMigrationCandidates(sourceObjects)
     local relRef = sourceGroups.relative[i]
     local relObj = U.getObject(relRef, true)
     if relObj == nil and U.Type(relRef) == "string" then
-      relObj = getObjectFromGUID(relRef)
+      relObj = TarotObjects.resolveByGuid(relRef)
     end
     addCandidate(relObj, "relative")
   end

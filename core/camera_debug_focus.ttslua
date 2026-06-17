@@ -373,6 +373,39 @@ function CameraDebugFocus.modeNameFromPresetButtonId(id)
     return string.sub(id, #prefix + 1)
 end
 
+--- Auto-run when Storyteller changes seat: copy PC `cameraAngles` or clear for Black/White/Grey.
+-- @param color string New TTS seat color
+-- @return boolean ok
+-- @return string message
+function CameraDebugFocus.syncStorytellerCameraForSeatColor(color)
+    if type(color) ~= "string" or color == "" or color == "Grey" then
+        return false, "Invalid color."
+    end
+    if S == nil or type(S.getPlayerData) ~= "function" or type(S.setStateVal) ~= "function" then
+        return false, "State module unavailable."
+    end
+    if C == nil or C.StorytellerID == nil then
+        return false, "Constants unavailable."
+    end
+    if color == "Black" or color == "White" then
+        activeSpoofColor = nil
+        refreshSpoofButtons()
+        S.setStateVal(nil, "playerData", C.StorytellerID, "cameraAngles")
+        return true, "Storyteller cameraAngles cleared (" .. color .. ")."
+    end
+    if type(C.PlayerColors) == "table" and U.isIn(color, C.PlayerColors) then
+        local pdata = S.getPlayerData(color)
+        if type(pdata) ~= "table" or type(pdata.cameraAngles) ~= "table" then
+            return false, "No cameraAngles for seat '" .. color .. "'."
+        end
+        activeSpoofColor = color
+        refreshSpoofButtons()
+        S.setStateVal(U.merge({}, pdata.cameraAngles), "playerData", C.StorytellerID, "cameraAngles")
+        return true, "Storyteller cameraAngles synced from " .. color .. "."
+    end
+    return false, "Seat '" .. color .. "' has no camera angle profile."
+end
+
 --- Admin Spoofing: copy seat `cameraAngles` into Storyteller state, or clear selection when toggling active color off.
 -- @param player Player
 -- @param color string Seat color (e.g. Brown)

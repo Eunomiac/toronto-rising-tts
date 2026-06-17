@@ -19,8 +19,6 @@ Per the TTS **InputField** note ([Input Elements](https://api.tabletopsimulator.
 | Handler | XML Element(s) | Params | Behavior |
 | ------- | ---------------- | ------ | -------- |
 | `HUD_printState` | `Print State` button | `(player, button, id)` | Calls `DEBUG.logStateToFile("game_state")`. Writes **`.dev/.debug/debug_logs/game_state.txt`** when the tts-bridge listens on **39998**. |
-| `HUD_debugSeatLights` | `Debug Seat Lights` button | `(player, button, id)` | Calls `DEBUG.logSeatLightsToFile("seat_lights")`. Writes **`.dev/.debug/debug_logs/seat_lights.txt`** for per-seat desired/current mode diagnostics. |
-| `HUD_syncIncremental` | `Sync (incremental)` button | `(player, button, id)` | Calls `Sync.full({ force = false })` — fingerprints + narrow UI delta; faster routine refresh. |
 | `HUD_syncAll` | `Sync All (force)` button | `(player, button, id)` | Calls `Sync.full({ force = true })` — bypass scene/soundscape fingerprints; full `UpdateUIDisplays` (overlay repair). |
 | `HUD_clearLoadingOverlay` | `Clear Loading Overlay` button | `(player, button, id)` | Calls `hideStartupLoadingOverlays()` to force-hide `overlay_loadingScreen_<Color>` for all player seats (debug/manual escape hatch). Automatic hide on load uses **`U.RunSequence`** in **`core/global_script.ttslua`** `onLoad` (gates + wall-clock delay). Do not use **`U.waitForCondition`** with nested **`U.delay`** for that path — TTS can fire the timer immediately. |
 | `HUD_debugLightGuidInput` | `dl_guid` `InputField` | `(player, value, id)` | Caches typed GUID (`LightDebugFocus.onGuidInput`). Per TTS docs, `InputField` text is not obtainable outside `onValueChanged`/`onEndEdit`; this handler is the primary source of truth. |

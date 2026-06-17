@@ -263,7 +263,6 @@ test("soundscape Lua files parse as Lua 5.1", () => {
     "core/scenes.ttslua",
     "core/global_script.ttslua",
     "core/debug.ttslua",
-    "core/soundscape_debug_panel.ttslua",
     "core/storyteller_panel_ui.ttslua",
     ".dev/testbed/TEST BED.ttslua",
   ].forEach((relativePath) => {
@@ -366,52 +365,4 @@ test("soundscape uses standard lane behavior by emitter count", () => {
   );
   assert.ok(runtime.includes("playCatalogEntry(\"weatherThunder\", thunder, thunder.volume or 0.7, 0)"), "thunder should play immediately at full volume without fade-out/fade-in");
   assert.equal(runtime.includes("playSingleEmitterFadeOutIn(\"weatherThunder\""), false, "thunder should never use same-emitter fade-out/fade-in");
-});
-
-test("soundscape debug panel is wired through UI and global handlers", () => {
-  const hud = readRepoFile("ui/storyteller/hud_storyteller.xml");
-  const panel = readRepoFile("ui/storyteller/panel_debug_soundscape.xml");
-  const globalScript = readRepoFile("core/global_script.ttslua");
-  const panelController = readRepoFile("core/soundscape_debug_panel.ttslua");
-
-  [
-    "HUD_debugSoundscapeActivate",
-    "panel_debug_soundscape.xml",
-    "Debug Soundscape",
-  ].forEach((needle) => {
-    assert.ok(hud.includes(needle), `hud missing ${needle}`);
-  });
-
-  [
-    "id=\"panel_debug_soundscape_root\"",
-    "id=\"ds_dynamic_root\"",
-    "Debug Soundscape",
-  ].forEach((needle) => {
-    assert.ok(panel.includes(needle), `debug panel missing ${needle}`);
-  });
-
-  [
-    "SoundscapeDebugPanel = require(\"core.soundscape_debug_panel\")",
-    "function HUD_debugSoundscapeActivate(player, button, id)",
-    "function HUD_debugSoundscapePlay(player, button, id)",
-    "function HUD_debugSoundscapeVolume(player, value, id)",
-    "function HUD_debugSoundscapeDone(player, button, id)",
-  ].forEach((needle) => {
-    assert.ok(globalScript.includes(needle), `global script missing ${needle}`);
-  });
-
-  [
-    "function SoundscapeDebugPanel.activate(player)",
-    "function SoundscapeDebugPanel.onPlay(player, button, id)",
-    "function SoundscapeDebugPanel.onVolume(player, value, id)",
-    "function SoundscapeDebugPanel.done()",
-    "Soundscape.getDebugCategories()",
-    "Playing Tracks",
-    "onClick=\"HUD_debugSoundscapePlay\"",
-    "onValueChanged=\"HUD_debugSoundscapeVolume\"",
-    "Soundscape.playDebugTrack(categoryKey, trackKey)",
-    "Soundscape.setDebugTrackVolume(categoryKey, trackKey, volume)",
-  ].forEach((needle) => {
-    assert.ok(panelController.includes(needle), `panel controller missing ${needle}`);
-  });
 });
