@@ -474,9 +474,31 @@ local function applyRollResLayoutForRollType(rollTypeKey)
     U.setAttributes("rollRes_screen_content_border_bottom", { offsetXY = "0 -200" })
 end
 
+local BROADCAST_FIGURE_ID = "rollRes_screen_content_figure"
+
+--- Re-enable figure slot after hide so the next broadcast can show a cutout again.
+local function restoreBroadcastFigureForNextRoll()
+    U.setAttribute(BROADCAST_FIGURE_ID, "image", "")
+    uiSetActive(BROADCAST_FIGURE_ID, true)
+end
+
+--- @param color string
+--- @param pid string|nil
+--- @param label string|nil
+local function applyBroadcastFigure(color, pid, label)
+    local figureKey = resolveRollFigureAssetKey(color, pid, label)
+    if type(figureKey) == "string" and figureKey ~= "" then
+        U.setAttribute(BROADCAST_FIGURE_ID, "image", figureKey)
+        uiSetActive(BROADCAST_FIGURE_ID, true)
+    else
+        U.setAttribute(BROADCAST_FIGURE_ID, "image", "")
+        uiSetActive(BROADCAST_FIGURE_ID, false)
+    end
+end
+
 --- Clear broadcast panel dynamic fields before each show.
 local function resetBroadcastPanel()
-    U.setAttribute("rollRes_screen_content_figure", "image", "")
+    restoreBroadcastFigureForNextRoll()
     uiSetValue("rollRes_rollType", "")
     uiSetValue("rollRes_rollIntro", "")
     uiSetValue("rollRes_successes", "")
@@ -1226,8 +1248,7 @@ function RUI.showResultBroadcast(color, result, label)
         end
     end
 
-    local figureKey = resolveRollFigureAssetKey(color, pid, label)
-    U.setAttribute("rollRes_screen_content_figure", "image", figureKey)
+    applyBroadcastFigure(color, pid, label)
 
     applyRollResLayoutForRollType(rollTypeKey)
 
@@ -1276,6 +1297,7 @@ function RUI.showResultBroadcast(color, result, label)
 
     U.delay(function()
         UI.hide("rollRes_panel")
+        restoreBroadcastFigureForNextRoll()
     end, C.ROLL_RESULT_BROADCAST_SECONDS)
 end
 
@@ -1283,6 +1305,7 @@ end
 -- @usage RUI.hideResultBroadcast()
 function RUI.hideResultBroadcast()
     UI.hide("rollRes_panel")
+    restoreBroadcastFigureForNextRoll()
 end
 
 --- Restores the last result from a player's history to the broadcast panel.
