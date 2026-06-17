@@ -47,6 +47,43 @@ const SEAT_ROW_BG = {
   Purple: "#9900ff",
 };
 
+/** Vertical stack — pixel offsets for absolute-positioned dashboard rows. */
+const DASH_LAYOUT = {
+  WIDTH: 730,
+  ROW_GAP: 4,
+  HEADER_H: 30,
+  PC_ROW_H: 34,
+  SLOTS_HEADER_H: 20,
+  SLOT_ROW_H: 30,
+  ST_ROW_H: 34,
+};
+
+/**
+ * Tracks offsetXY Y for stacked dashboard rows.
+ */
+class VerticalStack {
+  constructor() {
+    this.y = 0;
+  }
+
+  /**
+   * @param {number} height
+   * @returns {string}
+   */
+  place(height) {
+    const offsetY = this.y;
+    this.y += height + DASH_LAYOUT.ROW_GAP;
+    return String(offsetY);
+  }
+
+  /**
+   * @returns {number}
+   */
+  bodyHeight() {
+    return this.y > 0 ? this.y - DASH_LAYOUT.ROW_GAP : 0;
+  }
+}
+
 /**
  * @param {string} projectRoot
  * @param {string} relPath
@@ -86,7 +123,6 @@ function parseTargetFromFirstLine(fileText, templatePath) {
  */
 function main(projectRoot) {
   const root = projectRoot || path.resolve(__dirname, "../..");
-  const partialsDir = path.join(root, "ui", ".templates", "roll", "partials");
   const bodyPath = path.join(root, "ui", ".templates", "roll", "dash_body.xml");
 
   const constantsPath = path.join(root, "lib", "constants.ttslua");
@@ -95,36 +131,58 @@ function main(projectRoot) {
   const tplPc = loadPartial(root, "ui/.templates/roll/partials/dash_row_pc.xml");
   const tplSt = loadPartial(root, "ui/.templates/roll/partials/dash_row_st_live.xml");
   const tplSlot = loadPartial(root, "ui/.templates/roll/partials/dash_slot_row.xml");
-  const activeHeader = loadPartial(
+  const tplActiveHeader = loadPartial(
     root,
     "ui/.templates/roll/partials/dash_active_header.xml"
   );
-  const slotsHeader = loadPartial(
+  const tplSlotsHeader = loadPartial(
     root,
     "ui/.templates/roll/partials/dash_slots_header.xml"
   );
 
+  const stack = new VerticalStack();
+
+  const activeHeader = apply(
+    tplActiveHeader,
+    "dash_active_header",
+    { ROW_OFFSET_Y: stack.place(DASH_LAYOUT.HEADER_H) },
+    undefined
+  );
+
   const pcRows = colors
-    .map((color) => {
-      const layoutKey =
-        color === "Brown" ? "USE_FLEX_COLUMNS" : "USE_FIXED_COLUMNS";
-      return apply(
+    .map((color) =>
+      apply(
         tplPc,
         "dash_row_pc",
         {
           COLOR: color,
           ROW_BG: SEAT_ROW_BG[color] || "#333333",
           SHOW_OPTS: true,
-          [layoutKey]: true,
+          ROW_OFFSET_Y: stack.place(DASH_LAYOUT.PC_ROW_H),
         },
         undefined
-      );
-    })
+      )
+    )
     .join("\n");
+
+  const slotsHeader = apply(
+    tplSlotsHeader,
+    "dash_slots_header",
+    { ROW_OFFSET_Y: stack.place(DASH_LAYOUT.SLOTS_HEADER_H) },
+    undefined
+  );
 
   const slotRows = [1, 2, 3]
     .map((i) =>
-      apply(tplSlot, "dash_slot_row", { SLOT_INDEX: String(i) }, undefined)
+      apply(
+        tplSlot,
+        "dash_slot_row",
+        {
+          SLOT_INDEX: String(i),
+          ROW_OFFSET_Y: stack.place(DASH_LAYOUT.SLOT_ROW_H),
+        },
+        undefined
+      )
     )
     .join("\n");
 
@@ -134,6 +192,7 @@ function main(projectRoot) {
     {
       SHOW_OBLIV_BUTTONS: true,
       SHOW_BRUTAL_BUTTONS: true,
+      ROW_OFFSET_Y: stack.place(DASH_LAYOUT.ST_ROW_H),
     },
     undefined
   );
@@ -146,6 +205,7 @@ function main(projectRoot) {
     bodyTemplate,
     "dash_body",
     {
+      BODY_HEIGHT: String(stack.bodyHeight()),
       ACTIVE_HEADER: activeHeader,
       PC_ROWS: pcRows,
       SLOTS_HEADER: slotsHeader,
@@ -184,4 +244,4 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { main, SEAT_ROW_BG };
+module.exports = { main, SEAT_ROW_BG, DASH_LAYOUT, VerticalStack };

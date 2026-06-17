@@ -15,7 +15,7 @@
     rectAlignment="LowerRight"
     offsetXY="0 0"
     padding="10 10 10 10"
-    width="520" />
+    width="730" />
 
   <Panel class="rollPanel_player"
     active="False"
