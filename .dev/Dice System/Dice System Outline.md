@@ -724,14 +724,15 @@ All roll-related UI element IDs follow a consistent naming pattern:
 | Player "Take Half" button | `rollControl_btnHalf_<Color>` | `PRE_ROLL` when eligible |
 | Player "Spend WP" button | `rollControl_btnWP_<Color>` | `POST_ROLL` when available |
 | Player "Confirm" button | `rollControl_btnConfirm_<Color>` | `POST_ROLL` when no pending Obliv/Brutal choice; interactable only while `batonHolder` is `PLAYER` (greyed when ST confirms) |
-| Result Broadcast Panel | `rollResult_panel` | Shared; no visibility filter; `ui/shared/panel_roll_results.xml` |
-| Broadcast roller name | `rollResult_name` | |
-| Broadcast die images | `rollResult_rouseDie_*`, `rollResult_bloodSurgeRouseDie_*`, `rollResult_die_*` | Partitioned strips (mirrors roll control panel) |
-| Broadcast rouse strips | `rollResult_rouseStrips` | Compact outcome rows when present |
-| Broadcast successes row | `rollResult_successesContainer` | Hidden for Rouse / Remorse / Simple Check |
-| Broadcast successes | `rollResult_successes`, `rollResult_successesPhrase` | Number + "Success"/"Successes" |
-| Broadcast difficulty | `rollResult_difficultyDisplay`, `rollResult_difficulty` | Hidden when no difficulty was set |
-| Broadcast result | `rollResult_resultDisplay` | ALL CAPS headline + signed margin on same line; class via `rollResult_result_*` |
+| Result Broadcast Panel | `rollRes_panel` | Shared; fullscreen; fade in/out via `UI.show`/`UI.hide`; `ui/shared/panel_roll_results.xml` |
+| Broadcast roll type | `rollRes_rollType` | `C.RollTypeLabel` |
+| Broadcast roll intro | `rollRes_rollIntro` | `"{charName} rolls …"` |
+| Broadcast figure | `rollRes_screen_content_figure` | CustomUIAssets key (`charKey` or NPC `name`) |
+| Broadcast rouse panels | `rollRes_rousePanel_1/2`, `rollRes_rouseDie_{n}_{slot}`, `rollRes_rouseText_{n}` | Up to two rouse strips; labels `ROUSED`, `ROUSED & STAINED`, `STAINED` |
+| Broadcast standard dice | `rollRes_die_1..15` | Normal/hunger/werewolf/rage only |
+| Broadcast successes | `rollRes_successes`, `rollRes_successesPhrase` | Omitted for Rouse / Remorse / Simple Check |
+| Broadcast difficulty | `rollRes_difficultyDisplay`, `rollRes_difficulty` | Hidden when no difficulty was set |
+| Broadcast result | `rollRes_resultDisplay` | ALL CAPS headline + signed margin; class via `rollRes_result_*` |
 
 **InputField contract (ST difficulty):** The `rollDash_difficulty_<Color>` fields use **`onValueChanged="HUD_rollSetDifficulty"`**; difficulty is taken from the callback **`value`** argument, not from `UI.getValue`. That matches the TTS rule that `InputField` text is only available inside `onValueChanged` / `onEndEdit` ([Input Elements — InputField](https://api.tabletopsimulator.com/ui/inputelements/)). Project-wide guidance: [`.dev/SOLVING ISSUES & DEBUGGING.md`](../SOLVING%20ISSUES%20%26%20DEBUGGING.md) (*Global UI `InputField` — typed text*).
 
@@ -896,7 +897,7 @@ PC seats use `rollControl_*` element ids (see template). Legacy example below is
 
 Canonical markup: `ui/shared/panel_roll_results.xml` (included from `ui/shared/roll_panels.xml` → `ui/Global.xml`).
 
-Key element IDs mirror the PC roll control result section: partitioned die strips (`rollResult_rouseDie_*`, `rollResult_bloodSurgeRouseDie_*`, `rollResult_die_*`), `rollResult_successesContainer` + `rollResult_resultDisplayContainer`, and combined headline+margin on `rollResult_resultDisplay` (class tokens `rollResult_result_*`).
+Key element IDs: fullscreen `rollRes_panel`; split header (`rollRes_rollType`, `rollRes_rollIntro`); figure cutout (`rollRes_screen_content_figure`); up to two rouse strip panels; standard die row `rollRes_die_1..15`; successes + optional difficulty; combined headline+margin on `rollRes_resultDisplay` (class tokens `rollRes_result_*`). Use `UI.show`/`UI.hide` for fade animations.
 
 ---
 

@@ -1498,4 +1498,34 @@ D.characters = {
   }
 }
 
+--- Case-insensitive display name → D.characters key (CustomUIAssets cutout name).
+-- @param displayName string
+-- @return string|nil
+function D.resolveCharacterKeyByDisplayName(displayName)
+    if type(displayName) ~= "string" then
+        return nil
+    end
+    local needle = displayName:match("^%s*(.-)%s*$")
+    if needle == "" then
+        return nil
+    end
+    local lower = string.lower(needle)
+    for key, def in pairs(D.characters or {}) do
+        if type(key) == "string" and string.lower(key) == lower then
+            return key
+        end
+        if type(def) == "table" then
+            local fullName = type(def.fullName) == "string" and def.fullName or nil
+            local name = type(def.name) == "string" and def.name or nil
+            if fullName ~= nil and string.lower(fullName) == lower then
+                return key
+            end
+            if name ~= nil and string.lower(name) == lower then
+                return key
+            end
+        end
+    end
+    return nil
+end
+
 return D

@@ -5,7 +5,7 @@
     Manages the three roll-related UI surfaces:
       1. ST Roll Dashboard  (rollDash_ST)          — Storyteller only; shows all active rolls
       2. Player Roll Panels (rollControl_<Color> PC; rollPanel_Black ST) — Per-player roll UI
-      3. Result Broadcast   (rollResult_panel)      — Shared; shows last resolved result
+      3. Result Broadcast   (rollRes_panel)         — Shared; fullscreen roll result display
 
     This module is the ONLY place that calls UI.show/hide/setValue for roll elements.
     It is called by the RC.onRollStateChanged callback registered in global_script.
@@ -26,6 +26,7 @@ local C = require("lib.constants")
 local U = require("lib.util")
 local RO = require("lib.roll_options")
 local DK = require("lib.dice_kinds")
+local NPC_DATA = require("lib.npcs_data")
 -- Note: core.dice is NOT required here; formatted dice strings are cached on
 -- the active record as active.diceDisplay by RC.recalculate().
 
@@ -227,7 +228,7 @@ end
 --- Updates the pre-defined die image slots in a HUD panel.
 -- Activates the first N slots with the correct face images, hides the rest.
 -- @param idPrefix string  Shared prefix for image element IDs (e.g. "rollPanel_die_%d_Brown"
---                         or "rollResult_die_%d"). Must include a %d placeholder for the slot index.
+--                         or "rollRes_die_%d"). Must include a %d placeholder for the slot index.
 -- @param diceFaces table|nil  Sorted face records from Dice.buildDiceFaces(); nil clears all slots.
 local function refreshDiceImages(idPrefix, diceFaces)
     local faces = (U.Type(diceFaces) == "table") and diceFaces or {}
@@ -415,29 +416,138 @@ local function rollControlResultNeedsMiddleCenterAlignment(result)
     return ROLL_CONTROL_RESULT_NEEDS_MIDDLE_CENTER[result.resultClass] == true
 end
 
---- Broadcast `rollResult_resultDisplay` class string (mirrors rollControl result classes).
+--- PC charKey → CustomUIAssets cutout name when they differ.
+local CHARKEY_TO_FIGURE_ASSET = {
+    lucien = "lordLucien",
+}
+
+--- Full `rollRes_resultDisplay` class string for a classified result.
 -- @param result table|nil
 -- @return string
-local function rollResultResultClassString(result)
-    return rollControlResultClassString(result):gsub("rollControl_", "rollResult_", 1)
+local function rollResResultClassString(result)
+    return rollControlResultClassString(result):gsub("rollControl_", "rollRes_", 1)
 end
 
---- Partitioned die images for rollResult_* broadcast panel (mirrors refreshPlayerControlDiceImages).
+--- Map rouse strip narrative to rollRes_rouseText panel label.
+-- @param narrative string|nil
+-- @return string
+local function rouseStripLabelText(narrative)
+    if type(narrative) ~= "string" or narrative == "" then
+        return ""
+    end
+    if narrative == "Hunger Roused & Stained" then
+        return "ROUSED & STAINED"
+    end
+    if narrative == "Hunger Roused" then
+        return "ROUSED"
+    end
+    if narrative == "Stained" then
+        return "STAINED"
+    end
+    return ""
+end
+
+--- @param color string
+--- @param pid string|nil
+--- @param label string|nil
+--- @return string CustomUIAssets image name (may be empty)
+local function resolveRollFigureAssetKey(color, pid, label)
+    if pid ~= nil then
+        local pdata = S.getStateVal("playerData", pid)
+        if type(pdata) == "table" and type(pdata.charKey) == "string" and pdata.charKey ~= "" then
+            return CHARKEY_TO_FIGURE_ASSET[pdata.charKey] or pdata.charKey
+        end
+    end
+    if color == "Black" and type(label) == "string" and label ~= "" then
+        local npcKey = NPC_DATA.resolveCharacterKeyByDisplayName(label)
+        if type(npcKey) == "string" and npcKey ~= "" then
+            return npcKey
+        end
+    end
+    return ""
+end
+
+--- Default layout attrs for rollRes background/border (Rouse-specific dims deferred).
+-- @param rollTypeKey string|nil
+local function applyRollResLayoutForRollType(rollTypeKey)
+    U.setAttributes("rollRes_screen_content_background", { height = "380", offsetXY = "0 75" })
+    U.setAttributes("rollRes_screen_content_border_bottom", { offsetXY = "0 -200" })
+end
+
+--- Clear broadcast panel dynamic fields before each show.
+local function resetBroadcastPanel()
+    U.setAttribute("rollRes_screen_content_figure", "image", "")
+    uiSetValue("rollRes_rollType", "")
+    uiSetValue("rollRes_rollIntro", "")
+    uiSetValue("rollRes_successes", "")
+    uiSetValue("rollRes_successesPhrase", "")
+    uiSetValue("rollRes_difficulty", "")
+    uiSetActive("rollRes_difficultyDisplay", false)
+    uiSetClass("rollRes_resultDisplay", "roll_text rollRes_resultDisplay")
+    uiSetValue("rollRes_resultDisplay", "")
+    for panel = 1, 2 do
+        uiSetActive(string.format("rollRes_rousePanel_%d", panel), false)
+        uiSetValue(string.format("rollRes_rouseText_%d", panel), "")
+        for slot = 1, MAX_ROUSE_SLOTS do
+            local id = string.format("rollRes_rouseDie_%d_%d", panel, slot)
+            U.setAttribute(id, "image", "")
+            uiSetActive(id, false)
+        end
+    end
+    for i = 1, MAX_DIE_SLOTS do
+        local id = string.format("rollRes_die_%d", i)
+        U.setAttribute(id, "image", "")
+        uiSetActive(id, false)
+    end
+end
+
+--- Fill rollRes_rousePanel_* from rouseOutcomeStrips (up to two panels).
+-- @param rouseStrips table|nil
+local function refreshBroadcastRousePanels(rouseStrips)
+    local strips = (type(rouseStrips) == "table") and rouseStrips or {}
+    if #strips > 2 then
+        print(string.format(
+            "[RUI] refreshBroadcastRousePanels: %d strips; only first 2 shown on broadcast panel",
+            #strips
+        ))
+    end
+    for panel = 1, 2 do
+        local strip = strips[panel]
+        local panelId = string.format("rollRes_rousePanel_%d", panel)
+        if type(strip) ~= "table" then
+            uiSetActive(panelId, false)
+        else
+            uiSetActive(panelId, true)
+            local narrative = strip.narrative
+            if strip.pendingChoice == true then
+                narrative = ""
+            end
+            uiSetValue(string.format("rollRes_rouseText_%d", panel), rouseStripLabelText(narrative))
+            local values = type(strip.values) == "table" and strip.values or {}
+            local kind = type(strip.kind) == "string" and strip.kind or DK.KIND_ROUSE
+            for slot = 1, MAX_ROUSE_SLOTS do
+                local id = string.format("rollRes_rouseDie_%d_%d", panel, slot)
+                local valueIndex = MAX_ROUSE_SLOTS - slot + 1
+                local value = values[valueIndex]
+                if value ~= nil then
+                    U.setAttribute(id, "image", dieFaceImage(value, { kind = kind }))
+                    uiSetActive(id, true)
+                else
+                    U.setAttribute(id, "image", "")
+                    uiSetActive(id, false)
+                end
+            end
+        end
+    end
+end
+
+--- Standard pool dice only (rouse kinds use rollRes_rousePanel_*).
 -- @param diceFaces table|nil
-local function refreshBroadcastDiceImages(diceFaces)
-    local faces = (U.Type(diceFaces) == "table") and diceFaces or {}
-    local rouseFaces = filterFacesByKinds(faces, { DK.KIND_ROUSE, DK.KIND_OBLIV_ROUSE })
-    local bloodSurgeFaces = filterFacesByKinds(faces, { DK.KIND_BLOOD_SURGE_ROUSE })
-    local standardFaces = filterFacesByKinds(faces, {
+local function refreshBroadcastStandardDice(diceFaces)
+    local standardFaces = filterFacesByKinds(diceFaces, {
         DK.KIND_NORMAL, DK.KIND_HUNGER, DK.KIND_WEREWOLF, DK.KIND_RAGE,
     })
-
-    uiSetActive("rollResult_rouseDiceContainer", #rouseFaces > 0)
-    uiSetActive("rollResult_bloodSurgeRouseDiceContainer", #bloodSurgeFaces > 0)
-
-    refreshDieImageStrip("rollResult_rouseDie_%d", rouseFaces, MAX_ROUSE_SLOTS)
-    refreshDieImageStrip("rollResult_bloodSurgeRouseDie_%d", bloodSurgeFaces, MAX_ROUSE_SLOTS)
-    refreshDieImageStrip("rollResult_die_%d", standardFaces, MAX_DIE_SLOTS)
+    refreshDieImageStrip("rollRes_die_%d", standardFaces, MAX_DIE_SLOTS)
 end
 
 --- Partitioned die images for rollControl_* PC panels (rouse / blood surge / standard strips).
@@ -649,30 +759,6 @@ local function resultDisplayStrings(rollType, result)
         and string.format("Margin: %s", signedMargin)
         or ""
     return label, succStr, margStr
-end
-
---- Formats rouse outcome strips for broadcast (one line per strip).
--- @param strips table|nil
--- @return string
-local function formatRouseStrips(strips)
-    if type(strips) ~= "table" or #strips == 0 then
-        return ""
-    end
-    local lines = {}
-    for _, strip in ipairs(strips) do
-        if type(strip) == "table" then
-            local vals = strip.values or {}
-            local parts = {}
-            for _, v in ipairs(vals) do
-                parts[#parts + 1] = tostring(v)
-            end
-            local faceStr = #parts > 0 and table.concat(parts, ", ") or "—"
-            local label = strip.label or "Rouse"
-            local narrative = strip.narrative or ""
-            lines[#lines + 1] = string.format("%s [%s]: %s", label, faceStr, narrative)
-        end
-    end
-    return table.concat(lines, "\n")
 end
 
 --- Shows or hides pending-resolution confirm buttons on a roll panel (PC rollControl_* or ST rollPanel_*).
@@ -1119,13 +1205,14 @@ function RUI.showResultBroadcast(color, result, label)
     U.Val("RUI.showResultBroadcast()", {color = color},
         U.Type(color) == "string", "color must be a string")
 
-    -- Character name from state (charName preferred; falls back to playerName, then color)
+    resetBroadcastPanel()
+
     local pid = S.getPlayerID(color)
     local rollerName = characterName(pid, color)
+    if color == "Black" and type(label) == "string" and label ~= "" then
+        rollerName = label
+    end
 
-    -- Read roll metadata from the most recent history entry.
-    -- active is already nil by the time this fires (confirmRoll clears it first),
-    -- so history is the only reliable source for rollType, diceDisplay, and diceFaces.
     local rollTypeKey = ""
     local diceFaces   = nil
     local rouseStrips = nil
@@ -1139,17 +1226,16 @@ function RUI.showResultBroadcast(color, result, label)
         end
     end
 
-    local stripsStr = formatRouseStrips(rouseStrips)
-    uiSetValue("rollResult_rouseStrips", stripsStr)
-    uiSetActive("rollResult_rouseStrips", stripsStr ~= "")
+    local figureKey = resolveRollFigureAssetKey(color, pid, label)
+    U.setAttribute("rollRes_screen_content_figure", "image", figureKey)
 
-    -- Header line: "<Name> — <Roll Type Label>" (or with sub-label if provided)
-    local rollTypeLabel = C.RollTypeLabel[rollTypeKey] or ""
-    local headerStr = label and label ~= ""
-        and string.format("%s — %s: %s", rollerName, rollTypeLabel, label)
-        or string.format("%s — %s", rollerName, rollTypeLabel)
+    applyRollResLayoutForRollType(rollTypeKey)
 
-    uiSetValue("rollResult_name", headerStr)
+    uiSetValue("rollRes_rollType", C.RollTypeLabel[rollTypeKey] or "")
+    uiSetValue("rollRes_rollIntro", rollerName .. " rolls …")
+
+    refreshBroadcastRousePanels(rouseStrips)
+    refreshBroadcastStandardDice(diceFaces)
 
     local hidesDifficulty = rollTypeKey == C.RollType.SIMPLE_CHECK
         or rollTypeKey == C.RollType.ROUSE
@@ -1162,23 +1248,18 @@ function RUI.showResultBroadcast(color, result, label)
     end
 
     if result ~= nil then
-        refreshBroadcastDiceImages(diceFaces)
-
-        local showSuccessesRow = not hidesDifficulty
-        uiSetActive("rollResult_successesContainer", showSuccessesRow)
-        if showSuccessesRow then
-            uiSetValue("rollResult_successes", tostring(result.successes))
-            uiSetValue("rollResult_successesPhrase",
+        if not hidesDifficulty then
+            uiSetValue("rollRes_successes", tostring(result.successes))
+            uiSetValue("rollRes_successesPhrase",
                 result.successes == 1 and "Success" or "Successes")
             local showDifficulty = difficulty ~= nil
-            uiSetActive("rollResult_difficultyDisplay", showDifficulty)
-            uiSetValue("rollResult_difficulty",
+            uiSetActive("rollRes_difficultyDisplay", showDifficulty)
+            uiSetValue("rollRes_difficulty",
                 showDifficulty and difficultyStr(difficulty) or "")
         end
 
-        uiSetActive("rollResult_resultDisplayContainer", true)
-        local resultId = "rollResult_resultDisplay"
-        local resultClassStr = rollResultResultClassString(result)
+        local resultId = "rollRes_resultDisplay"
+        local resultClassStr = rollResResultClassString(result)
         local resultText = panelResultDisplayText(rollTypeKey, result, difficulty)
         uiSetClass(resultId, resultClassStr)
         if rollControlResultNeedsMiddleCenterAlignment(result) then
@@ -1187,25 +1268,21 @@ function RUI.showResultBroadcast(color, result, label)
             uiSetValue(resultId, resultText)
         end
     else
-        refreshBroadcastDiceImages(nil)
-        uiSetActive("rollResult_successesContainer", false)
-        uiSetActive("rollResult_resultDisplayContainer", true)
-        uiSetClass("rollResult_resultDisplay", "roll_text rollResult_resultDisplay")
-        uiSetValue("rollResult_resultDisplay", "ROLL COMPLETE")
+        uiSetClass("rollRes_resultDisplay", "roll_text rollRes_resultDisplay")
+        uiSetValue("rollRes_resultDisplay", "ROLL COMPLETE")
     end
 
-    uiSetActive("rollResult_panel", true)
+    UI.show("rollRes_panel")
 
-    -- Auto-hide when staged dice cleanup runs (same delay as global_script.destroyBagDice).
     U.delay(function()
-        uiSetActive("rollResult_panel", false)
+        UI.hide("rollRes_panel")
     end, C.ROLL_RESULT_BROADCAST_SECONDS)
 end
 
 --- Immediately hides the Roll Result Broadcast Panel.
 -- @usage RUI.hideResultBroadcast()
 function RUI.hideResultBroadcast()
-    uiSetActive("rollResult_panel", false)
+    UI.hide("rollRes_panel")
 end
 
 --- Restores the last result from a player's history to the broadcast panel.
