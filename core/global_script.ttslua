@@ -3572,6 +3572,9 @@ local function colorFromRollElementId(id)
     if type(id) ~= "string" or id == "" then
         return nil
     end
+    if string.sub(id, 1, 12) == "rollPanelST_" then
+        return "Black"
+    end
     for _, color in ipairs(ROLL_UI_COLOR_SUFFIXES) do
         if #id > #color and string.sub(id, -#color) == color
             and string.sub(id, -#color - 1, -#color - 1) == "_"
@@ -3773,6 +3776,32 @@ function HUD_rollSetDifficulty(player, value, id)
         return
     end
     RC.setDifficulty(color, math.floor(difficulty))
+end
+
+-- ============================================================================
+-- GRID STRIP CONTROLS (generic; lib/grid_strip.ttslua)
+-- ============================================================================
+
+local GridStrip = require("lib.grid_strip")
+
+function HUD_gridStripCellMouseEnter(player, value, id)
+    if type(id) ~= "string" then return end
+    GridStrip.onCellMouseEnter(player, id)
+end
+
+function HUD_gridStripCellMouseDown(player, value, id)
+    if type(id) ~= "string" then return end
+    GridStrip.onCellMouseDown(player, id)
+end
+
+function HUD_gridStripCellMouseUp(player, value, id)
+    if type(id) ~= "string" then return end
+    GridStrip.onCellMouseUp(player, id)
+end
+
+function HUD_gridStripMouseExit(player, value, id)
+    if type(id) ~= "string" then return end
+    GridStrip.onStripMouseExit(player, id)
 end
 
 -- ============================================================================

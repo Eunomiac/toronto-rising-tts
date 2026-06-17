@@ -55,6 +55,7 @@
 <!-- Black (Storyteller) — live NPC/Werewolf roll controls (Host sees all player panels too) -->
 <Panel id="rollPanel_Black"
   visibility="Black|Host"
+  active="False"
   class="rollPanel_player">
   <VerticalLayout class="rollPanel_player_content">
     <Text id="rollPanel_type_Black"   fontSize="14" fontStyle="Bold" color="#C9A84C" alignment="MiddleCenter" text="" />

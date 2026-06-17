@@ -4,7 +4,7 @@
     Translates roll state (playerData.rollData.active) into TTS XML UI updates.
     Manages the three roll-related UI surfaces:
       1. ST Roll Dashboard  (rollDash_ST)          — Storyteller only; shows all active rolls
-      2. Player Roll Panels (rollControl_<Color> PC; rollPanel_Black ST) — Per-player roll UI
+      2. Player Roll Panels (rollControl_<Color> PC; rollPanelST ST) — Per-player roll UI
       3. Result Broadcast   (rollRes_panel)         — Shared; fullscreen roll result display
 
     This module is the ONLY place that calls UI.show/hide/setValue for roll elements.
@@ -27,6 +27,8 @@ local U = require("lib.util")
 local RO = require("lib.roll_options")
 local DK = require("lib.dice_kinds")
 local NPC_DATA = require("lib.npcs_data")
+local GridStrip = require("lib.grid_strip")
+local RC = require("core.roll_controller")
 -- Note: core.dice is NOT required here; formatted dice strings are cached on
 -- the active record as active.diceDisplay by RC.recalculate().
 
@@ -117,6 +119,26 @@ local function diamonds(count)
         parts[i] = "◆"
     end
     return table.concat(parts, "")
+end
+
+--- Pool dot Text ids for rollPanelST (ui/storyteller/panel_storyteller_roll_controls.xml).
+local ST_POOL_DOT_FIELDS = {
+    { poolKey = "rouse",      idSuffix = "rouse" },
+    { poolKey = "normal",     idSuffix = "normal" },
+    { poolKey = "hunger",     idSuffix = "hunger" },
+    { poolKey = "oblivRouse", idSuffix = "obliv" },
+    { poolKey = "werewolf",   idSuffix = "werewolf" },
+    { poolKey = "rage",       idSuffix = "rage" },
+}
+
+--- Updates colored pool-dot Text elements on the live ST roll panel.
+-- @param pool table  Normalized pool counts from DK.normalizePool
+local function refreshStPoolDots(pool)
+    pool = DK.normalizePool(pool)
+    for _, field in ipairs(ST_POOL_DOT_FIELDS) do
+        local count = pool[field.poolKey] or 0
+        uiSetValue(string.format("rollPanelST_pool_%s", field.idSuffix), diamonds(count))
+    end
 end
 
 --- Pool dot Text ids per dice kind (legacy rollPanel_Black / roll_panels.xml).
@@ -627,7 +649,7 @@ local function phaseLabel(active, color)
 
     if color == "Black" then
         if phase == C.RollPhase.SETUP then
-            return "Set difficulty (dashboard), then OPEN"
+            return "Configure pool and difficulty, then ROLL"
         elseif phase == C.RollPhase.PRE_ROLL then
             local pool = DK.normalizePool(active.pool)
             if DK.poolTotal(pool) == 0 then
@@ -829,6 +851,89 @@ local function refreshPendingResolutionButtons(color, active, useControlPanel)
     end
 end
 
+--- Pending-resolution confirm buttons on rollPanelST (no seat suffix on ids).
+-- @param active table|nil
+local function refreshStRollPanelPendingButtons(active)
+    local pending = active ~= nil and active.pendingResolution or nil
+    local isPostRoll = active ~= nil and active.phase == C.RollPhase.POST_ROLL
+    local showObliv = isPostRoll and pending == C.PendingResolution.OBLIV_HUNGER_STAIN
+    local showBrutal = isPostRoll and pending == C.PendingResolution.BRUTAL_FAIL_VIOLENCE
+
+    uiSetActive("rollPanelST_btnOblivHunger", showObliv)
+    uiSetActive("rollPanelST_btnOblivStain", showObliv)
+    uiSetActive("rollPanelST_btnBrutalFail", showBrutal)
+    uiSetActive("rollPanelST_btnBrutalViolence", showBrutal)
+    if showObliv or showBrutal then
+        uiSetActive("rollPanelST_btnConfirm", false)
+    end
+end
+
+--- Refreshes the live Storyteller roll panel (rollPanelST) for Black-seat NPC rolls.
+-- @param active table|nil
+local function refreshStRollPanel(active)
+    local panelId = "rollPanelST"
+
+    uiSetActive("rollPanel_Black", false)
+
+    if active == nil then
+        uiSetActive(panelId, false)
+        RUI.refreshStRollGridStrips(nil)
+        return
+    end
+
+    uiSetActive(panelId, true)
+
+    uiSetValue("rollPanelST_type", C.RollTypeLabel[active.rollType] or active.rollType or "")
+    local rollerName = ""
+    if type(active.label) == "string" and active.label ~= "" then
+        rollerName = active.label
+    end
+    uiSetValue("rollPanelST_roller", rollerName)
+    uiSetValue("rollPanelST_phase", phaseLabel(active, "Black"))
+
+    local pool = DK.normalizePool(active.pool)
+    refreshStPoolDots(pool)
+
+    refreshDiceImages("rollPanelST_die_%d", active.diceFaces)
+
+    local resultLabel, succStr, margStr = resultDisplayStrings(active.rollType, active.result)
+    uiSetValue("rollPanelST_result", resultLabel)
+    uiSetValue("rollPanelST_successes", succStr)
+    uiSetValue("rollPanelST_margin", margStr)
+
+    local isPreRoll  = active.phase == C.RollPhase.PRE_ROLL
+    local isRolling  = active.phase == C.RollPhase.ROLLING
+    local isPostRoll = active.phase == C.RollPhase.POST_ROLL
+    local hasPool    = DK.poolTotal(pool) > 0
+    local canHalf    = isPreRoll
+        and hasPool
+        and C.RollTypesNoTakeHalf[active.rollType] ~= true
+        and RO.getForActive(active, RO.ROLL_TAKE_HALF)
+    local canRecalc  = (isRolling or isPostRoll)
+        and (not active.tookHalf or active.takeHalfAwaitingRouse == true)
+
+    uiSetActive("rollPanelST_btnRoll", isPreRoll)
+    uiSetInteractable("rollPanelST_btnRoll", hasPool)
+    uiSetActive("rollPanelST_btnHalf", canHalf)
+
+    local wpAvailable = isPostRoll
+        and active.willpower ~= nil
+        and active.willpower.available == true
+    local pendingChoice = isPostRoll and (
+        active.pendingResolution == C.PendingResolution.OBLIV_HUNGER_STAIN
+        or active.pendingResolution == C.PendingResolution.BRUTAL_FAIL_VIOLENCE
+    )
+    uiSetActive("rollPanelST_btnWP", wpAvailable)
+    uiSetActive("rollPanelST_btnRecalc", canRecalc)
+    local showConfirm = isPostRoll and not pendingChoice
+    uiSetActive("rollPanelST_btnConfirm", showConfirm)
+    uiSetInteractable("rollPanelST_btnConfirm", showConfirm)
+    refreshStRollPanelPendingButtons(active)
+    uiSetActive("rollPanelST_btnCancel", true)
+
+    RUI.refreshStRollGridStrips(active)
+end
+
 -- ============================================================================
 -- PUBLIC API — PLAYER ROLL PANEL
 -- ============================================================================
@@ -953,118 +1058,7 @@ function RUI.refreshPlayerRollPanel(color)
         return
     end
 
-    local panelId = string.format("rollPanel_%s", color)
-    local isStPanel = true
-
-    if active == nil then
-        -- No active roll: hide the panel entirely
-        uiSetActive(panelId, false)
-        return
-    end
-
-    -- Player seats: hide during ST-initiated SETUP until OPEN. Black (live ST roll) always
-    -- shows the control panel whenever a roll is active.
-    local showInSetup = active.initiator == "player" or isStPanel
-    if active.phase == C.RollPhase.SETUP and not showInSetup then
-        uiSetActive(panelId, false)
-        return
-    end
-
-    -- Player seats: hide POST_ROLL when only the ST can confirm (no WP / no pending choice).
-    -- Black keeps the panel visible for CONFIRM, Oblivion, and Brutal buttons.
-    if active.phase == C.RollPhase.POST_ROLL and not isStPanel then
-        local wpAvailable = active.willpower ~= nil and active.willpower.available == true
-        local pendingChoice = active.pendingResolution == C.PendingResolution.OBLIV_HUNGER_STAIN
-            or active.pendingResolution == C.PendingResolution.BRUTAL_FAIL_VIOLENCE
-        if not wpAvailable and not pendingChoice then
-            uiSetActive(panelId, false)
-            return
-        end
-    end
-
-    -- Panel is active: show it and update all fields
-    uiSetActive(panelId, true)
-
-    -- Phase label
-    uiSetValue(string.format("rollPanel_phase_%s", color), phaseLabel(active, color))
-
-    -- Roll type label (ST panel may append active.label for dashboard context)
-    local rollLabel = C.RollTypeLabel[active.rollType] or active.rollType or ""
-    if type(active.label) == "string" and active.label ~= "" then
-        rollLabel = string.format("%s: %s", rollLabel, active.label)
-    end
-    uiSetValue(string.format("rollPanel_type_%s", color), rollLabel)
-
-    -- Pool display: colored ◆ per kind (XML Text color); rouse strip left of main kinds (TOR-155).
-    local pool = DK.normalizePool(active.pool)
-    refreshPoolDots(color, pool)
-
-    -- Difficulty display: hidden until POST_ROLL so the player cannot see it before
-    -- deciding whether to roll or Take Half. The ST communicates it verbally if needed.
-    -- Rouse and Remorse have an implicit difficulty of 1 that is irrelevant to display.
-    local hidesDifficulty = active.rollType == C.RollType.SIMPLE_CHECK
-        or active.rollType == C.RollType.ROUSE
-        or active.rollType == C.RollType.ROUSE_OBLIVION
-        or active.rollType == C.RollType.REMORSE
-    local showDifficulty = (not hidesDifficulty) and (active.phase == C.RollPhase.POST_ROLL)
-    uiSetValue(string.format("rollPanel_diff_%s", color),
-        showDifficulty
-            and string.format("Difficulty: %s", difficultyStr(active.difficulty))
-            or (hidesDifficulty and "" or "Difficulty: —"))
-
-    -- Dice display: update the pre-defined image slots from the sorted face list cached by
-    -- RC.recalculate(). Slots beyond the rolled count are hidden. Take Half has no diceFaces
-    -- (nil), so all slots clear, matching the expectation that no dice were physically rolled.
-    refreshDiceImages(
-        string.format("rollPanel_die_%%d_%s", color),
-        active.diceFaces)
-
-    -- Result display (narrative labels for Rouse and Remorse override generic class names)
-    local resultLabel, succStr, margStr = resultDisplayStrings(active.rollType, active.result)
-    uiSetValue(string.format("rollPanel_result_%s", color), resultLabel)
-    uiSetValue(string.format("rollPanel_successes_%s", color), succStr)
-    uiSetValue(string.format("rollPanel_margin_%s", color), margStr)
-
-    -- Button visibility and interactable state
-    local isPreRoll  = active.phase == C.RollPhase.PRE_ROLL
-    local isRolling  = active.phase == C.RollPhase.ROLLING
-    local isPostRoll = active.phase == C.RollPhase.POST_ROLL
-    local hasPool    = DK.poolTotal(pool) > 0
-    local canHalf    = isPreRoll
-        and hasPool
-        and C.RollTypesNoTakeHalf[active.rollType] ~= true
-        and RO.getForActive(active, RO.ROLL_TAKE_HALF)
-    -- Recalculate is shown in ROLLING (manual override) and POST_ROLL (corrections/WP reroll).
-    -- Hidden for Take Half (no physical dice to read).
-    local canRecalc  = (isRolling or isPostRoll)
-        and (not active.tookHalf or active.takeHalfAwaitingRouse == true)
-
-    -- ROLL button: shown in PRE_ROLL, but greyed (non-interactable) if pool is zero.
-    -- Pool of zero means no dice were spawned and no default pool is set — block the roll.
-    uiSetActive(string.format("rollPanel_btnRoll_%s", color), isPreRoll)
-    uiSetInteractable(string.format("rollPanel_btnRoll_%s", color), hasPool)
-
-    -- TAKE HALF button: greyed out when pool is zero (no dice to halve).
-    uiSetActive(string.format("rollPanel_btnHalf_%s", color), canHalf)
-
-    local wpAvailable = isPostRoll
-        and active.willpower ~= nil
-        and active.willpower.available == true
-    local pendingChoice = isPostRoll and (
-        active.pendingResolution == C.PendingResolution.OBLIV_HUNGER_STAIN
-        or active.pendingResolution == C.PendingResolution.BRUTAL_FAIL_VIOLENCE
-    )
-    uiSetActive(string.format("rollPanel_btnWP_%s",      color), wpAvailable)
-    uiSetActive(string.format("rollPanel_btnRecalc_%s",  color), canRecalc)
-    local showConfirm = isPostRoll and not pendingChoice
-    if not isStPanel then
-        showConfirm = wpAvailable and not pendingChoice
-    end
-    uiSetActive(string.format("rollPanel_btnConfirm_%s", color), showConfirm)
-    uiSetInteractable(string.format("rollPanel_btnConfirm_%s", color), showConfirm)
-    refreshPendingResolutionButtons(color, active, false)
-    -- Cancel is always visible when a roll is active
-    uiSetActive(string.format("rollPanel_btnCancel_%s",  color), true)
+    refreshStRollPanel(active)
 end
 
 -- ============================================================================
@@ -1533,5 +1527,159 @@ function RUI.refreshAll()
     end
     RUI.refreshSTDashboard()
 end
+
+-- ============================================================================
+-- ST ROLL PANEL — GRID STRIP CONTROLS (rollPanelST context)
+-- ============================================================================
+
+--- @param player table|nil
+--- @return boolean
+local function isStRollPanelInteractor(player)
+    if player == nil or type(player.color) ~= "string" then
+        return false
+    end
+    return player.color == "Black" or player.color == "Host"
+end
+
+--- @return table|nil active roll for Black seat
+local function getBlackActiveRoll()
+    local pid = S.getPlayerID("Black")
+    if pid == nil then
+        return nil
+    end
+    return S.getStateVal("playerData", pid, "hud", "rollData", "active")
+end
+
+--- Maps grid-strip kind to dice pool kind (Werewolf rolls use rage/werewolf).
+--- @param stripKind string  hunger | normal
+--- @param rollType string|nil
+--- @return string|nil DK kind
+local function poolKindForGridStrip(stripKind, rollType)
+    if stripKind == "hunger" then
+        return rollType == C.RollType.WEREWOLF and DK.KIND_RAGE or DK.KIND_HUNGER
+    end
+    if stripKind == "normal" then
+        return rollType == C.RollType.WEREWOLF and DK.KIND_WEREWOLF or DK.KIND_NORMAL
+    end
+    return nil
+end
+
+--- Selected pool count for a strip kind, or nil when unset (base alpha).
+--- @param stripKind string
+--- @param active table|nil
+--- @return number|nil
+local function selectedPoolCountForStrip(stripKind, active)
+    if active == nil then
+        return nil
+    end
+    local dk = poolKindForGridStrip(stripKind, active.rollType)
+    if dk == nil then
+        return nil
+    end
+    local pool = DK.normalizePool(active.pool)
+    local count = pool[dk] or 0
+    if count <= 0 then
+        return nil
+    end
+    return count
+end
+
+--- Refreshes grid-strip visuals on the live Storyteller roll panel (`gridStrip_rollPanelST_*`).
+--- @param active table|nil  Black seat active roll, or nil to clear strips
+function RUI.refreshStRollGridStrips(active)
+    GridStrip.refreshContext("rollPanelST", function(kind)
+        if kind == "difficulty" then
+            if active == nil or active.difficulty == nil then
+                return nil
+            end
+            return active.difficulty
+        end
+        return selectedPoolCountForStrip(kind, active)
+    end)
+end
+
+local function stPoolStripCanInteract(_ctx)
+    if not isStRollPanelInteractor(_ctx.player) then
+        return false
+    end
+    local active = getBlackActiveRoll()
+    if active == nil then
+        return false
+    end
+    return active.phase == C.RollPhase.SETUP or active.phase == C.RollPhase.PRE_ROLL
+end
+
+local function stDifficultyStripCanInteract(_ctx)
+    if not isStRollPanelInteractor(_ctx.player) then
+        return false
+    end
+    local active = getBlackActiveRoll()
+    if active == nil then
+        return false
+    end
+    return active.phase ~= C.RollPhase.RESOLVED
+end
+
+GridStrip.registerContext("rollPanelST", {
+    buildStripId = function(kind)
+        return "gridStrip_rollPanelST_" .. kind
+    end,
+    kinds = {
+        hunger = {
+            minValue = 1,
+            maxValue = 5,
+            baseAlpha = 0.15,
+            canInteract = stPoolStripCanInteract,
+            getSelectedValue = function(_ctx)
+                return selectedPoolCountForStrip("hunger", getBlackActiveRoll())
+            end,
+            onCommit = function(_ctx, value)
+                local active = getBlackActiveRoll()
+                if active == nil then
+                    return
+                end
+                local dk = poolKindForGridStrip("hunger", active.rollType)
+                if dk ~= nil then
+                    RC.setPoolKindCount("Black", dk, value)
+                end
+            end,
+        },
+        normal = {
+            minValue = 1,
+            maxValue = 10,
+            baseAlpha = 0.15,
+            canInteract = stPoolStripCanInteract,
+            getSelectedValue = function(_ctx)
+                return selectedPoolCountForStrip("normal", getBlackActiveRoll())
+            end,
+            onCommit = function(_ctx, value)
+                local active = getBlackActiveRoll()
+                if active == nil then
+                    return
+                end
+                local dk = poolKindForGridStrip("normal", active.rollType)
+                if dk ~= nil then
+                    RC.setPoolKindCount("Black", dk, value)
+                end
+            end,
+        },
+        difficulty = {
+            minValue = 0,
+            maxValue = 10,
+            baseAlpha = 0.15,
+            canInteract = stDifficultyStripCanInteract,
+            getSelectedValue = function(_ctx)
+                local active = getBlackActiveRoll()
+                if active == nil or active.difficulty == nil then
+                    return nil
+                end
+                return active.difficulty
+            end,
+            onCommit = function(_ctx, value)
+                RC.setDifficulty("Black", value)
+            end,
+        },
+    },
+})
 
 return RUI

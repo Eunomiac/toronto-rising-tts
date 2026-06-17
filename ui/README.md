@@ -169,6 +169,23 @@ Storyteller **Active Rolls** dashboard rows (`rollDash_row_*`, slot strip, Black
 
 Edit partials to change layout (`offsetXY`, `preferredWidth`/`preferredHeight`); `RUI.refreshSTDashboard()` still drives labels and visibility via element ids (no Global `setXml`). Dashboard content width is `DASH_LAYOUT.WIDTH` in `generate_roll_dashboard_xml.js` (730px today = `rollPanel_ST` outer 750px minus 10px horizontal padding each side); change `ST_PANEL_OUTER_WIDTH` / `ST_PANEL_PADDING_H` and `rollPanel_ST` width together.
 
+### Grid strip controls (`lib/grid_strip.ttslua`)
+
+Reusable hover/select strips for pool counts, difficulty, etc. **Live** consumer: [`ui/storyteller/panel_storyteller_roll_controls.xml`](storyteller/panel_storyteller_roll_controls.xml) (`gridStrip_rollPanelST_*`). **Design mockup** (always visible, non-interactive strips): [`ui/storyteller/db_panel_storyteller_roll_controls.xml`](storyteller/db_panel_storyteller_roll_controls.xml).
+
+**Handlers** (wire in XML `Defaults` or per-element): `HUD_gridStripCellMouseEnter`, `HUD_gridStripCellMouseDown`, `HUD_gridStripCellMouseUp`, `HUD_gridStripMouseExit` (on strip `GridLayout` parent).
+
+**ID contract** — every id contains a `gridStrip` underscore segment; optional prefix (e.g. `db_`) before it:
+
+| Element | Tokens after prefix | Example |
+| --- | --- | --- |
+| Strip | `gridStrip`, `context`, `kind` | `db_gridStrip_rollPanelST_hunger` |
+| Cell | above + numeric `index` | `db_gridStrip_rollPanelST_hunger_3` |
+
+**Register a new panel:** `GridStrip.registerContext("myContext", { buildStripId = function(kind) return "db_gridStrip_myContext_" .. kind end, kinds = { ... } })` with per-kind `minValue`, `maxValue`, `baseAlpha`, `canInteract(ctx)`, `getSelectedValue(ctx)`, `onCommit(ctx, value)`. Refresh via `GridStrip.refreshContext("myContext", function(kind) return selected end)`.
+
+See [Dice System Outline §10.4](../.dev/Dice%20System/Dice%20System%20Outline.md) for ST roll panel wiring.
+
 ### Adding a new template
 
 1. Add `ui/.templates/<name>.xml` with the `TARGET` line first, then a single root element.

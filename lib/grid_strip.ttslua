@@ -1,0 +1,404 @@
+--[[
+    Grid Strip UI (lib/grid_strip.ttslua)
+
+    Reusable hover/select grid controls for TTS XmlUI.
+    Parses element ids containing a `gridStrip` underscore segment; dispatches
+    mouse events through a per-context registry.
+
+    ID contract: see ui/README.md § Grid strip controls.
+]]
+
+local GridStrip = {}
+
+local U = require("lib.util")
+
+local contexts = {}
+local stripRuntime = {}
+local baseRgbByCell = {}
+
+local ALPHA = {
+    HOVER_CELL = 0.75,
+    HOVER_LEFT = 0.50,
+    HOVER_RIGHT = 0.15,
+    PRESSED = 1.00,
+    SELECTED = 1.00,
+    UNSELECTED_RIGHT = 0.05,
+}
+
+--- @param parts string[]
+--- @param fromIdx number
+--- @param toIdx number
+--- @return string
+local function concatParts(parts, fromIdx, toIdx)
+    local t = {}
+    for i = fromIdx, toIdx do
+        t[#t + 1] = parts[i]
+    end
+    return table.concat(t, "_")
+end
+
+--- @param id string
+--- @return table|nil parsed { prefix, context, kind, index, stripId, isCell }
+local function parseGridStripId(id)
+    if type(id) ~= "string" or id == "" then
+        return nil
+    end
+
+    local parts = {}
+    for part in string.gmatch(id, "[^_]+") do
+        parts[#parts + 1] = part
+    end
+
+    local gridIdx = nil
+    for i, p in ipairs(parts) do
+        if p == "gridStrip" then
+            gridIdx = i
+            break
+        end
+    end
+    if gridIdx == nil then
+        return nil
+    end
+
+    local prefix = nil
+    if gridIdx > 1 then
+        prefix = concatParts(parts, 1, gridIdx - 1)
+    end
+
+    local tailLen = #parts - gridIdx + 1
+    if tailLen == 3 then
+        return {
+            prefix = prefix,
+            context = parts[gridIdx + 1],
+            kind = parts[gridIdx + 2],
+            index = nil,
+            stripId = id,
+            isCell = false,
+        }
+    end
+    if tailLen == 4 then
+        local index = tonumber(parts[gridIdx + 3])
+        if index == nil then
+            return nil
+        end
+        return {
+            prefix = prefix,
+            context = parts[gridIdx + 1],
+            kind = parts[gridIdx + 2],
+            index = index,
+            stripId = concatParts(parts, gridIdx, gridIdx + 2),
+            isCell = true,
+        }
+    end
+    return nil
+end
+
+--- @param str string|nil
+--- @return number|nil r
+--- @return number|nil g
+--- @return number|nil b
+--- @return number|nil a
+local function parseRgba(str)
+    if type(str) ~= "string" then
+        return nil
+    end
+    local r, g, b, a = str:match("^rgba%(([%d%.]+),%s*([%d%.]+),%s*([%d%.]+),%s*([%d%.]+)%)$")
+    if r == nil then
+        return nil
+    end
+    return tonumber(r), tonumber(g), tonumber(b), tonumber(a)
+end
+
+--- @param r number
+--- @param g number
+--- @param b number
+--- @param a number
+--- @return string
+local function formatRgba(r, g, b, a)
+    return string.format("rgba(%s, %s, %s, %s)", r, g, b, a)
+end
+
+--- @param cellId string
+--- @return table { r, g, b }
+local function getBaseRgb(cellId)
+    local cached = baseRgbByCell[cellId]
+    if cached ~= nil then
+        return cached
+    end
+    local colorStr = UI.getAttribute(cellId, "color")
+    local r, g, b = parseRgba(colorStr)
+    if r == nil then
+        cached = { r = 1, g = 1, b = 1 }
+    else
+        cached = { r = r, g = g, b = b }
+    end
+    baseRgbByCell[cellId] = cached
+    return cached
+end
+
+--- @param cellId string
+--- @param alpha number
+local function setCellAlpha(cellId, alpha)
+    local rgb = getBaseRgb(cellId)
+    U.setAttribute(cellId, "color", formatRgba(rgb.r, rgb.g, rgb.b, alpha))
+end
+
+--- @param stripId string
+--- @return table
+local function runtimeForStrip(stripId)
+    local rt = stripRuntime[stripId]
+    if rt == nil then
+        rt = { hoverIndex = nil, mouseDownIndex = nil }
+        stripRuntime[stripId] = rt
+    end
+    return rt
+end
+
+--- @param contextName string
+--- @return table|nil
+local function getContext(contextName)
+    if type(contextName) ~= "string" then
+        return nil
+    end
+    return contexts[contextName]
+end
+
+--- @param contextName string
+--- @param kind string
+--- @return table|nil tag
+--- @return table|nil ctxReg
+local function getTag(contextName, kind)
+    local ctxReg = getContext(contextName)
+    if ctxReg == nil or type(ctxReg.kinds) ~= "table" then
+        return nil, nil
+    end
+    return ctxReg.kinds[kind], ctxReg
+end
+
+--- @param tag table
+--- @param index number
+--- @return string
+local function cellIdForIndex(stripId, index)
+    return stripId .. "_" .. tostring(index)
+end
+
+--- @param tag table
+--- @param stripId string
+--- @param index number
+--- @param selectedValue number|nil
+--- @param hoverIndex number|nil
+--- @param mouseDownIndex number|nil
+local function alphaForCell(tag, index, selectedValue, hoverIndex, mouseDownIndex)
+    if mouseDownIndex ~= nil and index == mouseDownIndex then
+        return ALPHA.PRESSED
+    end
+    if hoverIndex ~= nil then
+        if index == hoverIndex then
+            return ALPHA.HOVER_CELL
+        end
+        if index < hoverIndex then
+            return ALPHA.HOVER_LEFT
+        end
+        return ALPHA.HOVER_RIGHT
+    end
+    if selectedValue == nil then
+        return tag.baseAlpha or 0.15
+    end
+    if index <= selectedValue then
+        return ALPHA.SELECTED
+    end
+    return ALPHA.UNSELECTED_RIGHT
+end
+
+--- @param stripId string
+--- @param tag table
+--- @param selectedValue number|nil
+--- @param hoverIndex number|nil
+--- @param mouseDownIndex number|nil
+local function applyStripVisuals(stripId, tag, selectedValue, hoverIndex, mouseDownIndex)
+    local minV = tag.minValue or 0
+    local maxV = tag.maxValue or 0
+    for index = minV, maxV do
+        local cellId = cellIdForIndex(stripId, index)
+        local alpha = alphaForCell(tag, index, selectedValue, hoverIndex, mouseDownIndex)
+        setCellAlpha(cellId, alpha)
+    end
+end
+
+--- @param ctxReg table
+--- @param kind string
+--- @return string|nil
+local function resolveStripId(ctxReg, kind)
+    if type(ctxReg.buildStripId) == "function" then
+        return ctxReg.buildStripId(kind)
+    end
+    return nil
+end
+
+--- Register a panel context and its strip kinds.
+-- @param contextName string  Registry key (e.g. "rollPanelST")
+-- @param spec table  { buildStripId = fn(kind)->stripId, kinds = { hunger = tag, ... } }
+function GridStrip.registerContext(contextName, spec)
+    if type(contextName) ~= "string" or type(spec) ~= "table" then
+        error("GridStrip.registerContext: invalid arguments", 2)
+    end
+    contexts[contextName] = spec
+end
+
+--- @param stripId string
+--- @param tag table
+--- @param selectedValue number|nil
+function GridStrip.refreshStrip(stripId, tag, selectedValue)
+    if type(stripId) ~= "string" or type(tag) ~= "table" then
+        return
+    end
+    local rt = runtimeForStrip(stripId)
+    rt.hoverIndex = nil
+    rt.mouseDownIndex = nil
+    applyStripVisuals(stripId, tag, selectedValue, nil, nil)
+end
+
+--- Refresh every strip registered under a context.
+-- @param contextName string
+-- @param valueFn function(kind) -> selected value or nil
+function GridStrip.refreshContext(contextName, valueFn)
+    local ctxReg = getContext(contextName)
+    if ctxReg == nil or type(ctxReg.kinds) ~= "table" then
+        return
+    end
+    for kind, tag in pairs(ctxReg.kinds) do
+        local stripId = resolveStripId(ctxReg, kind)
+        if stripId ~= nil then
+            local selected = nil
+            if type(valueFn) == "function" then
+                selected = valueFn(kind)
+            end
+            GridStrip.refreshStrip(stripId, tag, selected)
+        end
+    end
+end
+
+--- @param player table
+--- @param parsed table
+--- @return table ctx
+local function buildHandlerCtx(player, parsed)
+    return {
+        player = player,
+        cellId = parsed.isCell and (parsed.stripId .. "_" .. tostring(parsed.index)) or nil,
+        stripId = parsed.stripId,
+        prefix = parsed.prefix,
+        context = parsed.context,
+        kind = parsed.kind,
+        index = parsed.index,
+    }
+end
+
+--- @param player table
+--- @param cellId string
+function GridStrip.onCellMouseEnter(player, cellId)
+    local parsed = parseGridStripId(cellId)
+    if parsed == nil or not parsed.isCell then
+        return
+    end
+    local tag = getTag(parsed.context, parsed.kind)
+    if tag == nil then
+        return
+    end
+    local ctx = buildHandlerCtx(player, parsed)
+    if type(tag.canInteract) == "function" and not tag.canInteract(ctx) then
+        return
+    end
+
+    local rt = runtimeForStrip(parsed.stripId)
+    rt.hoverIndex = parsed.index
+
+    local selected = nil
+    if type(tag.getSelectedValue) == "function" then
+        selected = tag.getSelectedValue(ctx)
+    end
+    applyStripVisuals(parsed.stripId, tag, selected, rt.hoverIndex, rt.mouseDownIndex)
+end
+
+--- @param player table
+--- @param cellId string
+function GridStrip.onCellMouseDown(player, cellId)
+    local parsed = parseGridStripId(cellId)
+    if parsed == nil or not parsed.isCell then
+        return
+    end
+    local tag = getTag(parsed.context, parsed.kind)
+    if tag == nil then
+        return
+    end
+    local ctx = buildHandlerCtx(player, parsed)
+    if type(tag.canInteract) == "function" and not tag.canInteract(ctx) then
+        return
+    end
+
+    local rt = runtimeForStrip(parsed.stripId)
+    rt.mouseDownIndex = parsed.index
+
+    local selected = nil
+    if type(tag.getSelectedValue) == "function" then
+        selected = tag.getSelectedValue(ctx)
+    end
+    applyStripVisuals(parsed.stripId, tag, selected, rt.hoverIndex, rt.mouseDownIndex)
+end
+
+--- @param player table
+--- @param cellId string
+function GridStrip.onCellMouseUp(player, cellId)
+    local parsed = parseGridStripId(cellId)
+    if parsed == nil or not parsed.isCell then
+        return
+    end
+    local tag, ctxReg = getTag(parsed.context, parsed.kind)
+    if tag == nil then
+        return
+    end
+    local ctx = buildHandlerCtx(player, parsed)
+    if type(tag.canInteract) == "function" and not tag.canInteract(ctx) then
+        return
+    end
+
+    local rt = runtimeForStrip(parsed.stripId)
+    rt.mouseDownIndex = nil
+
+    if type(tag.onCommit) == "function" then
+        tag.onCommit(ctx, parsed.index)
+    end
+
+    local selected = parsed.index
+    if type(tag.getSelectedValue) == "function" then
+        selected = tag.getSelectedValue(ctx)
+    end
+    applyStripVisuals(parsed.stripId, tag, selected, rt.hoverIndex, nil)
+end
+
+--- @param player table
+--- @param stripId string
+function GridStrip.onStripMouseExit(player, stripId)
+    local parsed = parseGridStripId(stripId)
+    if parsed == nil or parsed.isCell then
+        return
+    end
+    local tag = getTag(parsed.context, parsed.kind)
+    if tag == nil then
+        return
+    end
+
+    local rt = runtimeForStrip(parsed.stripId)
+    rt.hoverIndex = nil
+    rt.mouseDownIndex = nil
+
+    local ctx = buildHandlerCtx(player, parsed)
+    local selected = nil
+    if type(tag.getSelectedValue) == "function" then
+        selected = tag.getSelectedValue(ctx)
+    end
+    applyStripVisuals(parsed.stripId, tag, selected, nil, nil)
+end
+
+GridStrip.parseGridStripId = parseGridStripId
+
+return GridStrip

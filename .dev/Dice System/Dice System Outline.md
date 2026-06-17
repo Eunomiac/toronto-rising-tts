@@ -890,6 +890,21 @@ Canonical markup: `ui/shared/panel_roll_results.xml` (included from `ui/shared/r
 
 Key element IDs: fullscreen `rollRes_panel`; split header (`rollRes_rollType`, `rollRes_rollIntro`); figure cutout (`rollRes_screen_content_figure`); up to two rouse strip panels; standard die row `rollRes_die_1..15`; successes + optional difficulty; combined headline+margin on `rollRes_resultDisplay` (class tokens `rollRes_result_*`). Use `UI.show`/`UI.hide` for fade animations.
 
+### 10.4 Storyteller roll panel grid strips (`rollPanelST`)
+
+**Live panel:** [`ui/storyteller/panel_storyteller_roll_controls.xml`](../../ui/storyteller/panel_storyteller_roll_controls.xml) (`rollPanelST`, visibility `Black|Host`, hidden until a Black-seat roll is active). **Design mockup:** [`ui/storyteller/db_panel_storyteller_roll_controls.xml`](../../ui/storyteller/db_panel_storyteller_roll_controls.xml) (`db_rollPanelST`, always visible; grid strips are non-interactive). Both included from [`ui/storyteller/hud_storyteller.xml`](../../ui/storyteller/hud_storyteller.xml).
+
+**Generic library:** [`lib/grid_strip.ttslua`](../../lib/grid_strip.ttslua) — parse ids, hover/selected alpha, `(context, kind)` registry. HUD delegates: `HUD_gridStripCellMouseEnter`, `HUD_gridStripCellMouseDown`, `HUD_gridStripCellMouseUp`, `HUD_gridStripMouseExit` in `global_script.ttslua`.
+
+**ID contract** (optional prefix before `gridStrip`, e.g. `db_` on the design mockup only):
+
+| Element | Pattern | Example (live) |
+| --- | --- | --- |
+| Strip (`GridLayout`) | `gridStrip_<context>_<kind>` | `gridStrip_rollPanelST_hunger` |
+| Cell (`Panel`) | strip id + `_` + index | `gridStrip_rollPanelST_normal_3` |
+
+Registry context **`rollPanelST`** (registered in `core/roll_ui.ttslua`): kinds `hunger` (1–5), `normal` (1–10), `difficulty` (0–10). Commits map to `RC.setPoolKindCount` / `RC.setDifficulty` on Black; Werewolf rolls map `hunger`→rage, `normal`→werewolf. Full panel refresh: `refreshStRollPanel(active)` from `RUI.refreshPlayerRollPanel("Black")`; grid strips: `RUI.refreshStRollGridStrips(active)`.
+
 ---
 
 ## 11. Control Flow — Step-by-Step Per Roll Type

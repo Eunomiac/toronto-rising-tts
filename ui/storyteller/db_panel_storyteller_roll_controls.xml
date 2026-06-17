@@ -1,0 +1,217 @@
+<!-- Global UI dump from TEST BED.ttslua -->
+<!-- element id: rollPanel -->
+<!-- source: UI.getXml -->
+<!-- generated: 2026-06-17T15:42:05Z -->
+
+
+<Defaults>
+
+  <Panel class="rollPanelST" rectAlignment = "MiddleLeft" height = "300" width = "700" color = "rgba(0, 0, 0, 1)" />
+
+  <HorizontalLayout class="rollPanelST_header_container" rectAlignment="UpperCenter" height = "50" childAlignment = "UpperCenter" childForceExpandHeight = "false"/>
+
+  <Text class="rollPanelST_type_text" fontSize="14" fontStyle="Bold" color="#C9A84C" alignment="MiddleLeft" />
+  <Text class="rollPanelST_roller_text" fontSize = "34" fontStyle="Bold" color = "#FFFFFF" alignment = "MiddleCenter" />
+  <Text class="rollPanelST_phase_text" fontSize="12" fontStyle="Bold" color="#CCCCCC" alignment="MiddleRight" />
+
+  <HorizontalLayout class="rollPanelST_dicePool_container" height = "40" rectAlignment = "UpperLeft" spacing = "16" childAlignment = "MiddleLeft" offsetXY = "0 -50" childForceExpandHeight = "true" childForceExpandWidth = "false" padding = "100 0 0 0" />
+
+  <HorizontalLayout class="rollPanelST_rousePool_container" spacing="4" childAlignment="MiddleCenter" childForceExpandWidth="false" />
+  <Text class="rollPanelST_rousePool_text" fontSize="24" color="#8B1A1A" />
+  <HorizontalLayout class="rollPanelST_normalPool_container" spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false" />
+  <Text class="rollPanelST_normalPool_text" fontSize="24" color="#FFFFFF"  />
+  <Text class="rollPanelST_hungerPool_text" fontSize="24" color="#CC3333"  />
+  <Text class="rollPanelST_oblivPool_text" fontSize="24" color="#5C2D7A"  />
+  <Text class="rollPanelST_werewolfPool_text" fontSize="24" color="#9ACD32" />
+  <Text class="rollPanelST_ragePool_text" fontSize="24" color="#FF8C00" />
+
+  <HorizontalLayout class="rollPanelST_dicePool" height="20" rectAlignment = "UpperCenter" childAlignment = "MiddleLeft" padding = "100 0 0 0" spacing="10" childForceExpandWidth="false" />
+  <GridLayout class="grid_strip_design" cellSize = "10 20" height = "20" spacing = "6" startCorner = "UpperLeft" startAxis = "Horizontal" constraint = "FixedRowCount" constraintCount = "1" />
+  <Panel class="grid_strip_cell_design" outline = "#000000" outlineSize = "-1 1" />
+  <Panel class="grid_strip_cell_hunger" color = "rgba(1, 0, 0, 0.15)" />
+  <Panel class="grid_strip_cell_normal" color = "rgba(0.5, 0.5, 0.5, 0.15)" />
+  <Panel class="grid_strip_cell_difficulty" color = "rgba(0, 1, 0, 0.15)" />
+
+  <HorizontalLayout class="rollPanelST_diceRolls_container" spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false" childForceExpandHeight="false" minHeight="48" preferredHeight="48" />
+  <Image class="rollPanelST_die" active="false" preferredWidth="30" preserveAspect="True" />
+
+  <HorizontalLayout class="rollPanelST_successes_container" spacing="10" childAlignment="MiddleCenter" />
+  <Text class="rollPanelST_successes" fontSize="12" color="#CCCCCC" />
+  <Text class="rollPanelST_margin" fontSize="12" color="#AAAAAA" />
+
+</Defaults>
+
+
+<!--
+UI.setAttributes("db_rollPanelST", {})
+-->
+<Panel id="db_rollPanelST" visibility="Black|Host" class="rollPanelST" active="true">
+  <!--
+  UI.setAttributes("db_rollPanelST_header_container", {})
+-->
+
+  <HorizontalLayout id="db_rollPanelST_header_container" class="rollPanelST_header_container" rectAlignment="UpperCenter" childAlignment = "MiddleCenter" height = "30">
+    <!--
+    UI.setAttributes("db_rollPanelST_type", {})
+    -->
+    <Text id="db_rollPanelST_type" class="rollPanelST_type_text" text="Standard Roll" />
+
+    <!--
+    UI.setAttributes("db_rollPanelST_roller", {})
+    -->
+    <Text id="db_rollPanelST_roller" class="rollPanelST_roller_text" text = "Mason Schmidt" />
+    <Text id="db_rollPanelST_phase" class="rollPanelST_phase_text" text="Spawn dice from ST bags" />
+  </HorizontalLayout>
+
+  <!--
+  UI.setAttributes("db_rollPanelST_dicePool_container", {})
+  -->
+  <HorizontalLayout id="db_rollPanelST_dicePool_container" class="rollPanelST_dicePool_container" active="true">
+    <!--
+    UI.setAttributes("db_rollPanelST_rousePool_container", {})
+    -->
+    <HorizontalLayout id="db_rollPanelST_rousePool_container" active="true">
+      <Text id="db_rollPanelST_pool_rouse" class="rollPanelST_rousePool_text" text="◆◆◆◆◆" />
+      <!--
+      UI.setAttributes("db_rollPanelST_pool_obliv", {fontSize = "24"})
+      -->
+      <Text id="db_rollPanelST_pool_obliv" class="rollPanelST_oblivPool_text" text="◆◆" />
+    </HorizontalLayout>
+
+    <!--
+    UI.setAttributes("db_rollPanelST_normalPool_container", {})
+    -->
+    <HorizontalLayout id="db_rollPanelST_normalPool_container" class="rollPanelST_normalPool_container" >
+      <!--
+      UI.setAttributes("db_rollPanelST_pool_normal", {fontSize = "24"})
+      -->
+      <Text id="db_rollPanelST_pool_normal" class="rollPanelST_normalPool_text" text="◆◆◆" />
+      <!--
+      UI.setAttributes("db_rollPanelST_pool_hunger", {fontSize = "24"})
+      -->
+      <Text id="db_rollPanelST_pool_hunger" class="rollPanelST_hungerPool_text" text="◆◆" />
+      <!--
+      UI.setAttributes("db_rollPanelST_pool_werewolf", {fontSize = "24"})
+      -->
+      <Text id="db_rollPanelST_pool_werewolf" class="rollPanelST_werewolfPool_text" text="◆◆" />
+      <!--
+      UI.setAttributes("db_rollPanelST_pool_rage", {fontSize = "24"})
+      -->
+      <Text id="db_rollPanelST_pool_rage" class="rollPanelST_ragePool_text" text="◆◆" />
+    </HorizontalLayout>
+  </HorizontalLayout>
+
+  <!--
+  UI.setAttributes("db_rollPanelST_dicePool", {color = "rgba(1, 0, 0, 0.15)" offsetXY = "0 -90"})
+  -->
+  <HorizontalLayout id="db_rollPanelST_dicePool" class="rollPanelST_dicePool" offsetXY = "0 -90">
+    <!-- Grid Strip Control: Hunger Dice -->
+    <!--
+    UI.setAttributes("db_gridStrip_rollPanelST_hunger", {})
+    -->
+    <GridLayout id="db_gridStrip_rollPanelST_hunger" class="grid_strip_design grid_strip_hunger" active="true">
+    <!--
+    UI.setAttributes("db_gridStrip_rollPanelST_hunger_1", { })
+    -->
+      <Panel id="db_gridStrip_rollPanelST_hunger_1" class="grid_strip_cell_design grid_strip_cell_hunger" />
+      <Panel id="db_gridStrip_rollPanelST_hunger_2" class="grid_strip_cell_design grid_strip_cell_hunger" />
+      <Panel id="db_gridStrip_rollPanelST_hunger_3" class="grid_strip_cell_design grid_strip_cell_hunger" />
+      <Panel id="db_gridStrip_rollPanelST_hunger_4" class="grid_strip_cell_design grid_strip_cell_hunger" />
+      <Panel id="db_gridStrip_rollPanelST_hunger_5" class="grid_strip_cell_design grid_strip_cell_hunger" />
+    </GridLayout>
+
+    <!-- Grid Strip Control: Normal Dice -->
+    <!--
+    UI.setAttributes("db_gridStrip_rollPanelST_normal", {})
+    -->
+    <GridLayout id="db_gridStrip_rollPanelST_normal" class="grid_strip_design grid_strip_normal" active="true">
+      <Panel id="db_gridStrip_rollPanelST_normal_1" class="grid_strip_cell_design grid_strip_cell_normal"  />
+      <Panel id="db_gridStrip_rollPanelST_normal_2" class="grid_strip_cell_design grid_strip_cell_normal"  />
+      <Panel id="db_gridStrip_rollPanelST_normal_3" class="grid_strip_cell_design grid_strip_cell_normal"  />
+      <Panel id="db_gridStrip_rollPanelST_normal_4" class="grid_strip_cell_design grid_strip_cell_normal"  />
+      <Panel id="db_gridStrip_rollPanelST_normal_5" class="grid_strip_cell_design grid_strip_cell_normal"  />
+      <Panel id="db_gridStrip_rollPanelST_normal_6" class="grid_strip_cell_design grid_strip_cell_normal"  />
+      <Panel id="db_gridStrip_rollPanelST_normal_7" class="grid_strip_cell_design grid_strip_cell_normal"  />
+      <Panel id="db_gridStrip_rollPanelST_normal_8" class="grid_strip_cell_design grid_strip_cell_normal"  />
+      <Panel id="db_gridStrip_rollPanelST_normal_9" class="grid_strip_cell_design grid_strip_cell_normal"  />
+      <Panel id="db_gridStrip_rollPanelST_normal_10" class="grid_strip_cell_design grid_strip_cell_normal"  />
+    </GridLayout>
+
+
+    <!-- Grid Strip Control: Difficulty -->
+    <GridLayout id="db_gridStrip_rollPanelST_difficulty" class="grid_strip_design grid_strip_difficulty" active="true">
+      <Panel id="db_gridStrip_rollPanelST_difficulty_0" class="grid_strip_cell_design grid_strip_cell_difficulty" />
+      <Panel id="db_gridStrip_rollPanelST_difficulty_1" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
+      <Panel id="db_gridStrip_rollPanelST_difficulty_2" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
+      <Panel id="db_gridStrip_rollPanelST_difficulty_3" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
+      <Panel id="db_gridStrip_rollPanelST_difficulty_4" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
+      <Panel id="db_gridStrip_rollPanelST_difficulty_5" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
+      <Panel id="db_gridStrip_rollPanelST_difficulty_6" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
+      <Panel id="db_gridStrip_rollPanelST_difficulty_7" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
+      <Panel id="db_gridStrip_rollPanelST_difficulty_8" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
+      <Panel id="db_gridStrip_rollPanelST_difficulty_9" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
+      <Panel id="db_gridStrip_rollPanelST_difficulty_10" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
+    </GridLayout>
+
+  </HorizontalLayout>
+
+
+
+
+
+  <HorizontalLayout id="db_rollPanelST_diceRolls_container" class="rollPanelST_diceRolls_container">
+    <Image id="db_rollPanelST_die_1" class="rollPanelST_die" image="dieFace_normal_crit" active="true" />
+    <Image id="db_rollPanelST_die_2" class="rollPanelST_die" image="dieFace_normal_ankh" active="true" />
+    <Image id="db_rollPanelST_die_3" class="rollPanelST_die" image="dieFace_normal_ankh" active="true" />
+    <Image id="db_rollPanelST_die_4" class="rollPanelST_die" image="dieFace_normal_ankh" active="true" />
+    <Image id="db_rollPanelST_die_5" class="rollPanelST_die" image="dieFace_normal_ankh" active="true" />
+    <Image id="db_rollPanelST_die_6" class="rollPanelST_die" image="dieFace_normal_blank" active="true" />
+    <Image id="db_rollPanelST_die_7" class="rollPanelST_die" image="dieFace_normal_blank" active="true" />
+    <Image id="db_rollPanelST_die_8" class="rollPanelST_die" image="dieFace_normal_blank" active="true" />
+    <Image id="db_rollPanelST_die_9" class="rollPanelST_die" image="dieFace_normal_blank" active="true" />
+    <Image id="db_rollPanelST_die_10" class="rollPanelST_die" image="dieFace_normal_blank" active="true" />
+    <Image id="db_rollPanelST_die_11" class="rollPanelST_die" image="dieFace_normal_blank" active="true" />
+    <Image id="db_rollPanelST_die_12" class="rollPanelST_die" image="dieFace_normal_blank" active="true" />
+    <Image id="db_rollPanelST_die_13" class="rollPanelST_die" image="dieFace_normal_blank" active="true" />
+    <Image id="db_rollPanelST_die_14" class="rollPanelST_die" image="dieFace_normal_blank" active="true" />
+    <Image id="db_rollPanelST_die_15" class="rollPanelST_die" image="dieFace_normal_blank" active="true" />
+  </HorizontalLayout>
+
+  <!--
+  UI.setAttributes("db_rollPanelST_result", {})
+  -->
+  <Text id="db_rollPanelST_result" fontSize="18" fontStyle="Bold" color="#FFD700" alignment="MiddleCenter" text="">
+  </Text>
+  <!--
+  UI.setAttributes("db_rollPanelST_successes_container", {})
+  -->
+  <HorizontalLayout id="db_rollPanelST_successes_container" class="rollPanelST_successes_container" spacing="10" childAlignment="MiddleCenter">
+  <!--
+  UI.setAttributes("db_rollPanelST_successes", {})
+  -->
+    <Text id="db_rollPanelST_successes" class="rollPanelST_successes" fontSize="12" color="#CCCCCC" text="">
+    </Text>
+    <!--
+    UI.setAttributes("db_rollPanelST_margin", {})
+    -->
+    <Text id="db_rollPanelST_margin" class="rollPanelST_margin" fontSize="12" color="#AAAAAA" text="">
+    </Text>
+  </HorizontalLayout>
+
+  <!--
+  UI.setAttributes("db_horizontalLayout_6", {})
+  -->
+  <HorizontalLayout id="db_rollPanelST_buttons_container" spacing="8" childAlignment="MiddleCenter" rectAlignment="LowerCenter" height = "20">
+    <Button id="db_rollPanelST_btnRoll" active="true" fontSize="13" preferredWidth="90" preferredHeight="30" color="rgba(0.1,0.4,0.1,1)" onClick="HUD_rollRollButton" text="ROLL" interactable="false" />
+    <Button id="db_rollPanelST_btnHalf" active="false" fontSize="11" preferredWidth="100" preferredHeight="30" color="rgba(0.2,0.2,0.5,1)" onClick="HUD_rollTakeHalf" text="TAKE HALF" />
+    <Button id="db_rollPanelST_btnWP" active="false" fontSize="11" preferredWidth="140" preferredHeight="30" color="rgba(0.4,0.1,0.1,1)" onClick="HUD_rollSpendWP" text="SPEND WILLPOWER" />
+    <Button id="db_rollPanelST_btnRecalc" active="false" fontSize="11" preferredWidth="110" preferredHeight="30" color="rgba(0.25,0.25,0.35,1)" onClick="HUD_rollRecalculate" text="RECALCULATE" />
+    <Button id="db_rollPanelST_btnConfirm" active="false" fontSize="13" preferredWidth="90" preferredHeight="30" color="rgba(0.1,0.4,0.1,1)" onClick="HUD_rollConfirm" text="CONFIRM" interactable="false" />
+    <Button id="db_rollPanelST_btnCancel" active="true" fontSize="11" preferredWidth="70" preferredHeight="30" color="rgba(0.5,0.1,0.1,1)" onClick="HUD_rollCancel" text="CANCEL" />
+    <Button id="db_rollPanelST_btnOblivHunger" active="false" fontSize="10" preferredWidth="130" preferredHeight="28" color="rgba(0.3,0.2,0.5,1)" onClick="HUD_rollConfirmOblivChoice" text="CONFIRM — HUNGER" />
+    <Button id="db_rollPanelST_btnOblivStain" active="false" fontSize="10" preferredWidth="120" preferredHeight="28" color="rgba(0.35,0.15,0.35,1)" onClick="HUD_rollConfirmOblivChoice" text="CONFIRM — STAIN" />
+    <Button id="db_rollPanelST_btnBrutalFail" active="false" fontSize="10" preferredWidth="110" preferredHeight="28" color="rgba(0.4,0.15,0.1,1)" onClick="HUD_rollConfirmBrutalChoice" text="CONFIRM FAIL" />
+    <Button id="db_rollPanelST_btnBrutalViolence" active="false" fontSize="10" preferredWidth="130" preferredHeight="28" color="rgba(0.5,0.1,0.1,1)" onClick="HUD_rollConfirmBrutalChoice" text="CONFIRM VIOLENCE" />
+  </HorizontalLayout>
+
+</Panel>
