@@ -5,6 +5,7 @@
 <!--   2. Player Roll Panels — PC: ui/player/panel_roll_controls.xml (generated)   -->
 <!--      ST live roll: rollPanel_Black in this file                               -->
 <!--   3. Result Broadcast (rollResult_panel)      — ui/shared/panel_roll_results.xml -->
+<!--   3b. Debug Broadcast (db_rollResult_panel)   — ui/shared/panel_debug_broadcast.xml -->
 <!-- Agent guidance: .dev/Dice System/Dice System Outline.md §8, §10               -->
 
 <Defaults>
@@ -430,6 +431,10 @@
 <!-- resolves; auto-hides after C.ROLL_RESULT_BROADCAST_SECONDS.                  -->
 <!-- ============================================================================ -->
 <Include src="panel_roll_results.xml" />
+
+<!-- Debug broadcast mirror (panel_debug_broadcast.xml) — Host|Black only;      -->
+<!-- active at load for iterative UI.setAttributes() tuning (db_* element ids).     -->
+<Include src="panel_debug_broadcast.xml" />
 
 <!-- Storyteller roll name modal (bag click without live roll) -->
 <Panel id="rollStName_modal" active="False" visibility="Black|Host"
