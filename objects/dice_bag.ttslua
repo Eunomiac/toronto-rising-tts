@@ -481,12 +481,22 @@ function autoSpawn(params)
     end
 end
 
-function releaseDice()
+function releaseDice(params)
+    params = type(params) == "table" and params or {}
+    local dice = {}
     for _, die in ipairs(spawnedDice) do
         if die ~= nil then
-            die.setLock(false)
+            dice[#dice + 1] = die
         end
     end
+
+    for _, die in ipairs(dice) do
+        die.setLock(false)
+        if params.randomize == true and die.randomize ~= nil then
+            die.randomize()
+        end
+    end
+
     -- ST dice stay on the table after release; drop bag tracking so a later roll
     -- does not pull resolved dice back into the spawn arc.
     if isStorytellerBag() then

@@ -905,7 +905,7 @@ Key element IDs: fullscreen `rollRes_panel`; split header (`rollRes_rollType`, `
 
 Registry context **`rollPanelST`** (registered in `core/roll_ui.ttslua`): kinds `hunger` (1–5), `normal` (1–10), `difficulty` (0–10). Commits map to `RC.setPoolKindCount` / `RC.setDifficulty` on Black; Werewolf rolls map `hunger`→rage, `normal`→werewolf. Full panel refresh: `refreshStRollPanel(active)` from `RUI.refreshPlayerRollPanel("Black")`; grid strips: `RUI.refreshStRollGridStrips(active)`.
 
-**Physical dice (Black only):** pool counts are configured in state (grid strips, ST bag clicks) during SETUP/PRE_ROLL; bags do not spawn dice until **ROLL** (`HUD_rollRollButton` / dashboard ROLL → `spawnActivePoolDiceForActive` with `fromRollClick`). Drawer opens on Roll, waits until raised (`STD.isRaisedForRelease`), then releases and `STR.physicalRollTrayDice`.
+**Physical dice (Black only):** pool counts are configured in state (grid strips, ST bag clicks) during SETUP/PRE_ROLL; bags do not spawn dice until **ROLL** (`HUD_rollRollButton` / dashboard ROLL → `spawnActivePoolDiceForActive` with `fromRollClick`). Drawer opens on Roll, waits until raised (`STD.isRaisedForRelease`), then `finishRollRelease`: `RC.startRolling` → unlock + `Object.randomize()` per die in `dice_bag.releaseDice({ randomize = true })` (same frame, direct object refs).
 
 ---
 
