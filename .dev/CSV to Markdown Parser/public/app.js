@@ -104,6 +104,29 @@ function wireCache() {
     });
   }
   document.getElementById('savePreset').addEventListener('click', savePreset);
+  document.getElementById('runTypescript').addEventListener('click', runTypescript);
+}
+
+function collectRequestBody(form, endpoint) {
+  const body = Object.fromEntries(new FormData(form).entries());
+  if (endpoint === '/api/sheet-to-json') body.outputName = field('presetName')?.value.trim() ?? '';
+  return body;
+}
+
+async function runTypescript() {
+  const status = document.getElementById('presetStatus');
+  const button = document.getElementById('runTypescript');
+  button.disabled = true;
+  setStatus(status, 'Running TypeScript…', true);
+  try {
+    const result = await postJson('/api/run-typescript', {});
+    const detail = result.stdout || result.stderr || `Markdown root: ${result.mdRoot}`;
+    setStatus(status, `TypeScript complete. ${detail}`.trim(), true);
+  } catch (error) {
+    setStatus(status, error.message, false);
+  } finally {
+    button.disabled = false;
+  }
 }
 
 async function wire(formId, endpoint, statusId, previewId, previewKey) {
@@ -117,9 +140,13 @@ async function wire(formId, endpoint, statusId, previewId, previewKey) {
     setStatus(status, 'Processing…', true);
     try {
       await postJson('/api/form-cache', collectFields());
-      const result = await postJson(endpoint, form);
+      const result = await postJson(endpoint, collectRequestBody(form, endpoint));
       setStatus(status, `Wrote ${result.filePath}`, true);
       preview.textContent = previewKey === 'json' ? JSON.stringify(result[previewKey], null, 2) : result[previewKey];
+      if (endpoint === '/api/sheet-to-json') {
+        field('jsonText').value = JSON.stringify(result.json, null, 2);
+        saveCache();
+      }
     } catch (error) {
       setStatus(status, error.message, false);
     } finally {

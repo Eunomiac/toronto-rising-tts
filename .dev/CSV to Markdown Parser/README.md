@@ -49,6 +49,10 @@ The Sheet-to-JSON schema accepts JSON with comments and trailing commas. Blank h
 
 The dashboard saves the current input fields to `.form-cache.json` as you type and restores them when the app starts. Named saves are stored in `.saved-presets.json`; use the Save field/button to create or overwrite a named save, then use the top-row preset buttons to restore one. These files are local-only and ignored by git.
 
+## TypeScript Markdown generation
+
+The app creates `ts/entry.ts` in the app workspace at startup. Edit that file to rapidly iterate on custom Markdown generation, then run `npm run csv-to-markdown:ts:run` from the repo root or click **Run TS** in the dashboard. To emit a stripped JavaScript copy next to the entry file, run `npm run csv-to-markdown:ts:compile`. The generated entry includes typed helpers: `processOutputJSON(target)`, `outputMarkdownFile(filePath, content)`, and `purgeMarkdownFiles()`. Markdown files are written under `md/` by default. Override `TS_DIR` or `MD_DIR` in `.env` if you need absolute paths.
+
 ## Outputs
 
 Generated files are written to `.dev/CSV to Markdown Parser/output/` with timestamped filenames by default. Set `OUTPUT_DIR` in `.env` to override it; relative paths are resolved from the app workspace, and absolute paths are used as-is.

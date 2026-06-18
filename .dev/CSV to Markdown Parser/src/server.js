@@ -3,6 +3,7 @@ import http from 'node:http';
 import crypto from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { ensureTypeScriptEntry, runTypeScriptEntry } from './ts-workflow.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const appRoot = path.join(__dirname, '..');
@@ -14,9 +15,10 @@ function timestamp() {
   return new Date().toISOString().replace(/[:.]/g, '-');
 }
 
-async function writeOutput(prefix, extension, content) {
+async function writeOutput(prefix, extension, content, outputName = '') {
   await fs.mkdir(outputDir, { recursive: true });
-  const filename = `${prefix}-${timestamp()}.${extension}`;
+  const safeName = String(outputName || '').trim().replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-+|-+$/g, '').replace(new RegExp(`\\.${extension}$`), '');
+  const filename = safeName ? `${safeName}.${extension}` : `${prefix}-${timestamp()}.${extension}`;
   const filePath = path.join(outputDir, filename);
   await fs.writeFile(filePath, content, 'utf8');
   return filePath;
@@ -281,12 +283,16 @@ const server = http.createServer(async (request, response) => {
       await fs.writeFile(presetsPath, `${JSON.stringify(presets, null, 2)}\n`, 'utf8');
       return sendJson(response, 200, { ok: true, presets });
     }
+    if (request.method === 'POST' && requestUrl.pathname === '/api/run-typescript') {
+      const result = await runTypeScriptEntry();
+      return sendJson(response, result.ok ? 200 : 400, result);
+    }
     if (request.method === 'POST' && requestUrl.pathname === '/api/sheet-to-json') {
-      const { sheetUrl, range, schemaText } = await readJsonBody(request);
+      const { sheetUrl, range, schemaText, outputName } = await readJsonBody(request);
       if (!sheetUrl || !range || !schemaText) throw new Error('Sheet link, named range, and schema are required.');
       const schema = parseSchemaText(schemaText);
       const json = rowsToJson(await fetchSheetValues(sheetUrl, range), schema);
-      const filePath = await writeOutput('sheet-json', 'json', `${JSON.stringify(json, null, 2)}\n`);
+      const filePath = await writeOutput('sheet-json', 'json', `${JSON.stringify(json, null, 2)}\n`, outputName);
       return sendJson(response, 200, { ok: true, filePath, json });
     }
     if (request.method === 'POST' && requestUrl.pathname === '/api/json-to-markdown') {
@@ -302,6 +308,8 @@ const server = http.createServer(async (request, response) => {
     return sendJson(response, 400, { ok: false, error: error.message });
   }
 });
+
+await ensureTypeScriptEntry();
 
 server.listen(port, () => {
   console.log(`CSV to Markdown Parser running at http://localhost:${port}`);

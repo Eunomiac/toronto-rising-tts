@@ -6,6 +6,9 @@
   "type": "module",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "node --watch src/server.js"
+    "dev": "node --watch src/server.js",
+    "ts:init": "node src/ts-workflow.js init",
+    "ts:run": "node src/ts-workflow.js run",
+    "ts:compile": "node src/ts-workflow.js compile"
   }
 }
