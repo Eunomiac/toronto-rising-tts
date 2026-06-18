@@ -46,21 +46,39 @@ function loadEnv(filePath) {
   }).catch(() => undefined);
 }
 
+function getRedirectUri() {
+  return process.env.GOOGLE_REDIRECT_URI || `http://localhost:${port}/api/auth/callback`;
+}
+
 async function getServiceAccount() {
   if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) return JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
   if (process.env.GOOGLE_SERVICE_ACCOUNT_KEY_FILE) {
     const keyPath = path.resolve(appRoot, process.env.GOOGLE_SERVICE_ACCOUNT_KEY_FILE);
     return JSON.parse(await fs.readFile(keyPath, 'utf8'));
   }
-  throw new Error('Missing Google credentials. Set GOOGLE_SERVICE_ACCOUNT_KEY_FILE or GOOGLE_SERVICE_ACCOUNT_JSON in .env.');
+  return null;
+}
+
+function hasOAuthClient() {
+  return Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
 }
 
 function base64Url(input) {
   return Buffer.from(input).toString('base64url');
 }
 
-async function getAccessToken() {
-  const account = await getServiceAccount();
+async function requestToken(body) {
+  const response = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams(body)
+  });
+  const payload = await response.json();
+  if (!response.ok) throw new Error(payload.error_description || payload.error || 'Unable to obtain Google access token.');
+  return payload;
+}
+
+async function getServiceAccountToken(account) {
   const now = Math.floor(Date.now() / 1000);
   const header = base64Url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
   const claim = base64Url(JSON.stringify({
@@ -72,14 +90,40 @@ async function getAccessToken() {
   }));
   const unsigned = `${header}.${claim}`;
   const signature = crypto.createSign('RSA-SHA256').update(unsigned).sign(account.private_key, 'base64url');
-  const response = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion: `${unsigned}.${signature}` })
+  return (await requestToken({ grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion: `${unsigned}.${signature}` })).access_token;
+}
+
+const userTokenPath = path.join(appRoot, '.google-token.json');
+
+async function readUserToken() {
+  try { return JSON.parse(await fs.readFile(userTokenPath, 'utf8')); } catch { return null; }
+}
+
+async function saveUserToken(token) {
+  await fs.writeFile(userTokenPath, `${JSON.stringify(token, null, 2)}\n`, 'utf8');
+}
+
+async function getUserAccessToken() {
+  const token = await readUserToken();
+  if (!token) throw new Error('Google user OAuth is not connected. Open /api/auth/google first, then retry.');
+  if (token.access_token && token.expires_at && token.expires_at > Date.now() + 60_000) return token.access_token;
+  if (!token.refresh_token) throw new Error('Google OAuth token is expired and has no refresh token. Reconnect at /api/auth/google.');
+  const refreshed = await requestToken({
+    client_id: process.env.GOOGLE_CLIENT_ID,
+    client_secret: process.env.GOOGLE_CLIENT_SECRET,
+    refresh_token: token.refresh_token,
+    grant_type: 'refresh_token'
   });
-  const payload = await response.json();
-  if (!response.ok) throw new Error(payload.error_description || payload.error || 'Unable to obtain Google access token.');
-  return payload.access_token;
+  const next = { ...token, ...refreshed, refresh_token: refreshed.refresh_token || token.refresh_token, expires_at: Date.now() + (refreshed.expires_in * 1000) };
+  await saveUserToken(next);
+  return next.access_token;
+}
+
+async function getAccessToken() {
+  const account = await getServiceAccount();
+  if (account) return getServiceAccountToken(account);
+  if (hasOAuthClient()) return getUserAccessToken();
+  throw new Error('Missing Google credentials. Set service-account credentials or GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and GOOGLE_REDIRECT_URI in .env.');
 }
 
 async function fetchSheetValues(sheetUrl, range) {
@@ -170,7 +214,36 @@ async function serveStatic(request, response) {
 
 const server = http.createServer(async (request, response) => {
   try {
-    if (request.method === 'POST' && request.url === '/api/sheet-to-json') {
+    const requestUrl = new URL(request.url, `http://localhost:${port}`);
+    if (request.method === 'GET' && requestUrl.pathname === '/api/auth/google') {
+      if (!hasOAuthClient()) throw new Error('Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env first.');
+      const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+      authUrl.search = new URLSearchParams({
+        client_id: process.env.GOOGLE_CLIENT_ID,
+        redirect_uri: getRedirectUri(),
+        response_type: 'code',
+        scope: 'https://www.googleapis.com/auth/spreadsheets.readonly',
+        access_type: 'offline',
+        prompt: 'consent'
+      });
+      response.writeHead(302, { Location: authUrl.toString() });
+      return response.end();
+    }
+    if (request.method === 'GET' && requestUrl.pathname === '/api/auth/callback') {
+      const code = requestUrl.searchParams.get('code');
+      if (!code) throw new Error('Missing OAuth code in callback.');
+      const token = await requestToken({
+        code,
+        client_id: process.env.GOOGLE_CLIENT_ID,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET,
+        redirect_uri: getRedirectUri(),
+        grant_type: 'authorization_code'
+      });
+      await saveUserToken({ ...token, expires_at: Date.now() + (token.expires_in * 1000) });
+      response.writeHead(200, { 'Content-Type': 'text/html' });
+      return response.end('<h1>Google Sheets connected.</h1><p>You may close this tab and return to the parser.</p>');
+    }
+    if (request.method === 'POST' && requestUrl.pathname === '/api/sheet-to-json') {
       const { sheetUrl, range, schemaText } = await readJsonBody(request);
       if (!sheetUrl || !range || !schemaText) throw new Error('Sheet link, named range, and schema are required.');
       const schema = JSON.parse(stripJsonComments(schemaText));
@@ -178,7 +251,7 @@ const server = http.createServer(async (request, response) => {
       const filePath = await writeOutput('sheet-json', 'json', `${JSON.stringify(json, null, 2)}\n`);
       return sendJson(response, 200, { ok: true, filePath, json });
     }
-    if (request.method === 'POST' && request.url === '/api/json-to-markdown') {
+    if (request.method === 'POST' && requestUrl.pathname === '/api/json-to-markdown') {
       const { jsonText, templateText } = await readJsonBody(request);
       if (!jsonText || !templateText) throw new Error('JSON and Markdown template are required.');
       const markdown = renderMarkdown(JSON.parse(jsonText), templateText);
