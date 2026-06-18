@@ -892,9 +892,6 @@ end
 --- True while Black physical bag spawn runs from the Roll button (gates drawer hooks).
 local blackRollPhysicalSpawnActive = false
 
---- Staged ST dice GUIDs captured in `unlockStagedBagDice` before `releaseDice` clears bag tracking.
-local blackPhysicalRollDieGuids = nil
-
 --- Opens the seat dice tray when the active pool has staged dice (SETUP / PRE_ROLL / ROLLING).
 -- Authoritative for auto-spawn (pre-filled Remorse pool, ST Open) and Auto-Hunger bag spawns.
 -- Black: only during Roll-click spawn (`blackRollPhysicalSpawnActive`); Roll handler opens drawer after spawn.
@@ -3422,7 +3419,10 @@ local drawerReleaseJobQueue = {}
 
 --- Unlocks staged bag dice for one seat (drawer must already be opening or open).
 -- @param color string
-local function unlockStagedBagDice(color)
+-- @param opts table|nil  `{ physicalRoll?: boolean }` Black Roll: randomize each die as it unlocks
+local function unlockStagedBagDice(color, opts)
+    opts = type(opts) == "table" and opts or {}
+    local physicalRoll = opts.physicalRoll == true
     if color == "Black" then
         local pid = S.getPlayerID(color)
         if pid ~= nil then
@@ -3432,34 +3432,47 @@ local function unlockStagedBagDice(color)
                 STR.onFirstDieSpawned()
             end
         end
-        blackPhysicalRollDieGuids = {}
         local bags = G.GetAllStorytellerDiceBagGUIDs()
         for _, guid in pairs(bags) do
             if type(guid) == "string" then
                 local bag = getObjectFromGUID(guid)
                 if bag ~= nil then
                     bag.call("ensureRollTagsOnStagedDice")
-                    local stagedGuids = bag.call("getStagedDiceGuids")
-                    if type(stagedGuids) == "table" then
-                        for _, dieGuid in ipairs(stagedGuids) do
-                            if type(dieGuid) == "string" then
-                                blackPhysicalRollDieGuids[#blackPhysicalRollDieGuids + 1] = dieGuid
-                            end
-                        end
-                    end
                 end
             end
         end
         for _, guid in pairs(bags) do
             if type(guid) == "string" then
                 local bag = getObjectFromGUID(guid)
-                if bag ~= nil then bag.call("releaseDice") end
+                if bag ~= nil then
+                    if physicalRoll then
+                        bag.call("releaseDice", { randomize = true })
+                    else
+                        bag.call("releaseDice")
+                    end
+                end
             end
         end
         return
     end
     callBagFunction(color, "ensureRollTagsOnStagedDice")
     callBagFunction(color, "releaseDice")
+end
+
+--- Advances to ROLLING and unlocks staged dice (drawer must already be raised when applicable).
+-- Black: startRolling first so `onObjectRandomize` sees ROLLING, then unlock + randomize in bag.
+-- @param color string
+-- @return boolean
+local function finishRollRelease(color)
+    if color == "Black" then
+        if RC.startRolling(color) ~= true then
+            return false
+        end
+        unlockStagedBagDice(color, { physicalRoll = true })
+        return true
+    end
+    unlockStagedBagDice(color)
+    return RC.startRolling(color) == true
 end
 
 --- Coroutine: wait until dice drawer is raised, then unlock staged dice.
@@ -3469,7 +3482,7 @@ function GlobalWaitDrawerThenReleaseBagDice()
         return 1
     end
     U.waitUntil(function()
-        unlockStagedBagDice(job.color)
+        finishRollRelease(job.color)
         if type(job.onComplete) == "function" then
             job.onComplete()
         end
@@ -3499,14 +3512,14 @@ local function releaseBagDice(color, onComplete)
             end
         end
         if slot == nil then
-            unlockStagedBagDice(color)
+            finishRollRelease(color)
             if type(onComplete) == "function" then
                 onComplete()
             end
             return
         end
         if STD.isRaisedForRelease(slot) then
-            unlockStagedBagDice(color)
+            finishRollRelease(color)
             if type(onComplete) == "function" then
                 onComplete()
             end
@@ -3523,7 +3536,7 @@ local function releaseBagDice(color, onComplete)
     DiceDrawer.openForRoll(color)
     local y = DiceDrawer.getPositionY(color)
     if type(y) == "number" and y > DRAWER_RELEASE_MIN_Y then
-        unlockStagedBagDice(color)
+        finishRollRelease(color)
         if type(onComplete) == "function" then
             onComplete()
         end
@@ -3711,24 +3724,9 @@ function HUD_rollRollButton(player, value, id)
         end
     end
 
-    -- Release staged dice in PRE_ROLL while hunger/rouse bags are still at rest Y,
-    -- then advance to ROLLING (hunger bag stays raised through ROLLING; hidden at POST_ROLL).
-    local function afterDiceReleased()
-        if RC.startRolling(color) ~= true then
-            return
-        end
-        if color == "Black" then
-            local dieGuids = blackPhysicalRollDieGuids
-            blackPhysicalRollDieGuids = nil
-            U.delay(function()
-                local STR = require("core.storyteller_rolls")
-                STR.physicalRollTrayDice({ dieGuids = dieGuids })
-            end, 0.2)
-        end
-    end
-
+    -- Release staged dice once the drawer is up; Black also physical-randomizes on unlock.
     local function releaseThenStartRolling()
-        releaseBagDice(color, afterDiceReleased)
+        releaseBagDice(color)
     end
 
     if didAutoSpawn and color ~= "Black" then
