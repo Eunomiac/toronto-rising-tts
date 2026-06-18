@@ -1,0 +1,6 @@
+.env
+.google-token.json
+service-account.json
+.form-cache.json
+.saved-presets.json
+output/
