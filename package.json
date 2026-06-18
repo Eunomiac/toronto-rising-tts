@@ -63,7 +63,12 @@
     "code-review:test": "vitest run --config .tools/code-review/vitest.config.ts",
     "code-review:validate": "npm run code-review:build && node .tools/code-review/dist/cli.js validate",
     "code-review:help": "npm run code-review:build && node .tools/code-review/dist/cli.js help",
-    "tts-bridge:listen": "npm run tts-bridge:build && node .tools/tts-bridge/dist/listen.js"
+    "tts-bridge:listen": "npm run tts-bridge:build && node .tools/tts-bridge/dist/listen.js",
+    "csv-to-markdown:start": "npm --prefix \".dev/CSV to Markdown Parser\" start",
+    "csv-to-markdown:dev": "npm --prefix \".dev/CSV to Markdown Parser\" run dev",
+    "csv-to-markdown:ts:init": "npm --prefix \".dev/CSV to Markdown Parser\" run ts:init",
+    "csv-to-markdown:ts:run": "npm --prefix \".dev/CSV to Markdown Parser\" run ts:run",
+    "csv-to-markdown:ts:compile": "npm --prefix \".dev/CSV to Markdown Parser\" run ts:compile"
   },
   "keywords": [
     "tabletop-simulator",

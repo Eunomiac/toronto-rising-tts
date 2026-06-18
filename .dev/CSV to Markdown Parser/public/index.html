@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CSV to Markdown Parser</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div><h1>CSV to Markdown Parser</h1><p>Local dashboard for Sheet → JSON → Markdown workflows.</p></div>
+      <a class="badge" href="/api/auth/google" target="_blank" rel="noreferrer">Connect Google</a>
+    </header>
+    <section class="savebar" aria-label="Saved field sets">
+      <div id="presetButtons" class="preset-buttons"></div>
+      <label class="save-name">Save as<input name="presetName" id="presetName" placeholder="Preset name" /></label>
+      <button type="button" id="savePreset" disabled>Save</button>
+      <button type="button" id="runTypescript">Run TS</button>
+      <output id="presetStatus"></output>
+    </section>
+    <section class="grid">
+      <form class="panel" id="sheetForm">
+        <h2>Google Sheet to JSON</h2>
+        <label>Google Sheet link or ID<input name="sheetUrl" placeholder="https://docs.google.com/spreadsheets/d/..." required /></label>
+        <label>Named range<input name="range" placeholder="Sheet1!A1:Z or MyNamedRange" required /></label>
+        <label class="grow">Schema / mapping<textarea name="schemaText" spellcheck="false" required>{
+  "name": "Name",
+  "isActive": "Is Active?",
+  "type": "Species, Kind or Template",
+  "status": {
+    "[Sect]": "Sect Status",
+    "[Clan]": "Clan Status"
+  }
+}</textarea></label>
+        <button type="submit">Process to JSON</button>
+        <output id="sheetStatus"></output>
+        <pre id="jsonPreview"></pre>
+      </form>
+      <form class="panel" id="markdownForm">
+        <h2>JSON to Markdown Parser</h2>
+        <label class="grow">JSON input<textarea name="jsonText" spellcheck="false" required>[
+  { "name": "Example", "type": "Kindred", "isActive": true }
+]</textarea></label>
+        <label class="grow">Markdown template <small>Use {{path.to.value}} placeholders; arrays render once per item.</small><textarea name="templateText" spellcheck="false" required># {{name}}
+
+- Type: {{type}}
+- Active: {{isActive}}</textarea></label>
+        <button type="submit">Process to Markdown</button>
+        <output id="markdownStatus"></output>
+        <pre id="markdownPreview"></pre>
+      </form>
+    </section>
+  </main>
+  <script src="/app.js" type="module"></script>
+</body>
+</html>
