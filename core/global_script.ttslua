@@ -731,12 +731,8 @@ function GlobalDiceBagClick(params)
 
     if active.rollType == C.RollType.STANDARD then
         if dieKind == DK.KIND_HUNGER then
-            if phase == C.RollPhase.SETUP then
-                spawnRequestedDie(color, dieKind)
-                return
-            end
-            -- PRE_ROLL: Hunger bag toggles Blood Surge. Pool hunger dice in SETUP come from
-            -- Hunger-bag spawn; auto-hunger redirect applies to Normal-bag clicks only.
+            -- Hunger bag toggles Blood Surge (SETUP and PRE_ROLL). Pool hunger dice come from
+            -- Normal-bag auto-hunger redirect only, not from the Hunger bag.
             local meta = type(active.meta) == "table" and active.meta or {}
             local hunger = math.floor(tonumber(S.getPlayerVal(color, "hunger")) or 0)
             if hunger >= C.MAX_HUNGER then
@@ -3468,6 +3464,15 @@ end
 
 local blackRollSequenceRunning = false
 
+--- U.waitUntil testRef: ST drawer slot has finished rising (`STD.isRaisedForRelease`).
+-- @param slot number
+-- @return function
+local function blackRollWaitDrawerRaised(slot)
+    return function()
+        return STD.isRaisedForRelease(slot)
+    end
+end
+
 --- ST Roll click: tray open → spawn → move to tray → 1s hover → unlock + simultaneous roll.
 local function runBlackRollSequence()
     local pid = S.getPlayerID("Black")
@@ -3492,15 +3497,21 @@ local function runBlackRollSequence()
         function()
             local STR = require("core.storyteller_rolls")
             STR.activateDrawerForSlot(slot)
-            return 0.5
+            return blackRollWaitDrawerRaised(slot)
         end,
         function()
             spawnBlackPoolLocked()
             return 0.5
         end,
         function()
+            return blackRollWaitDrawerRaised(slot)
+        end,
+        function()
             moveBlackStagedDiceToTray()
             return 1
+        end,
+        function()
+            return blackRollWaitDrawerRaised(slot)
         end,
         function()
             if RC.startRolling("Black") ~= true then
@@ -3515,6 +3526,7 @@ local function runBlackRollSequence()
             return nil
         end,
     }, {
+        maxWait = 10,
         onComplete = function()
             blackRollSequenceRunning = false
         end,

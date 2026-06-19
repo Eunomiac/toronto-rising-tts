@@ -177,6 +177,23 @@
       }
     },
     {
+      "label": "NPCs: Report missing D.characters stubs from disk",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        ".dev/scripts/report-missing-npc-characters-from-disk.js"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "focus": true
+      }
+    },
+    {
       "label": "Custom UI Assets: Build Manifest from Image Files",
       "type": "shell",
       "command": "node",

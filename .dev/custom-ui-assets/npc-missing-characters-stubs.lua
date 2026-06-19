@@ -1,0 +1,5 @@
+-- Generated 2026-06-19T08:24:59.166Z
+-- Source: assets/images/NPCs
+-- Registry: lib/npcs_data.ttslua
+-- Complete disk groups: 108; registered: 66; missing: 42
+-- Paste blocks below into D.characters in lib/npcs_data.ttslua

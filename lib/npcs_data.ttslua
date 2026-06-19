@@ -375,6 +375,594 @@ D.characters = {
       note = "Stats not set."
     }
   },
+  abbasFaruk = {
+    name = "abbasFaruk",
+    fullName = "Abbas Faruk",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      touchstone = 1
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  agnesBellanger = {
+    name = "agnesBellanger",
+    fullName = "Agnes Bellanger",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      memoriam = 1
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  bertrice = {
+    name = "bertrice",
+    fullName = "Bertrice",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      autarkis = 2
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  chokesOnMoonlight = {
+    name = "chokesOnMoonlight",
+    fullName = "Chokes-On-Moonlight",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      friendlyNeighborhoodSpiders = 1
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  chokesOnMoonlightGarou = {
+    name = "chokesOnMoonlightGarou",
+    fullName = "Chokes-On-Moonlight",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      friendlyNeighborhoodSpidersGarou = 1
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  christopherGiovanniJr = {
+    name = "christopherGiovanniJr",
+    fullName = "Christopher Giovanni Jr.",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      wychwoodHecata = 7
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  daevaAnitaMorris = {
+    name = "daevaAnitaMorris",
+    fullName = "Daeva (Anita Morris)",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      aapilu = 2
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  daevaGabrielCollard = {
+    name = "daevaGabrielCollard",
+    fullName = "Daeva (Gabriel Collard)",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      aapilu = 3
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  daevaNasirKhan = {
+    name = "daevaNasirKhan",
+    fullName = "Daeva (Nasir Khan)",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      aapilu = 1
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  drake = {
+    name = "drake",
+    fullName = "Drake",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      autarkis = 3
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  enzoCaruso = {
+    name = "enzoCaruso",
+    fullName = "Vincenzo \"Enzo\" Caruso",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      touchstone = 2
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  fangsAtTheCradle = {
+    name = "fangsAtTheCradle",
+    fullName = "Fangs-at-the-Cradle",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      friendlyNeighborhoodSpiders = 2
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  fangsAtTheCradleGarou = {
+    name = "fangsAtTheCradleGarou",
+    fullName = "Fangs-at-the-Cradle",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      friendlyNeighborhoodSpidersGarou = 2
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  jeanDucheskiI = {
+    name = "jeanDucheskiI",
+    fullName = "Jean Ducheski I",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      criseDeLwa = 2
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  jeanDucheskiIII = {
+    name = "jeanDucheskiIII",
+    fullName = "Jean Ducheski III",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      ducheskiRevenant = 1
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  jervaisDeLaCroix = {
+    name = "jervaisDeLaCroix",
+    fullName = "Jervais de la Croix",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      memoriam = 2
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  jezdimirDucheski = {
+    name = "jezdimirDucheski",
+    fullName = "Jezdimir Ducheski",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      ducheskiRevenant = 2
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  kadePhillips = {
+    name = "kadePhillips",
+    fullName = "Kade Phillips",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      touchstone = 3
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  kieraVaughan = {
+    name = "kieraVaughan",
+    fullName = "Kiera Vaughan",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      touchstone = 4
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  kingstonBlack = {
+    name = "kingstonBlack",
+    fullName = "Kingston Black",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      jarvisJacks = 2
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  ladyAvelineDubois = {
+    name = "ladyAvelineDubois",
+    fullName = "Lady Aveline Dubois",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      memoriam = 3
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  mamboAbigail = {
+    name = "mamboAbigail",
+    fullName = "Mambo Abigail",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      wychwoodHecata = 5
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  mara = {
+    name = "mara",
+    fullName = "Mara",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      deepSix = 2
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  marieBouschard = {
+    name = "marieBouschard",
+    fullName = "Marie Bouschard",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      civilian = 1
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  maxFloyd = {
+    name = "maxFloyd",
+    fullName = "Maxwell \"Max\" Floyd",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      jarvisJacks = 1
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  miriamRavenscroft = {
+    name = "miriamRavenscroft",
+    fullName = "Miriam Ravenscroft",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      touchstone = 5
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  moltsInShadow = {
+    name = "moltsInShadow",
+    fullName = "Molts-in-Shadow",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      friendlyNeighborhoodSpiders = 3
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  moltsInShadowGarou = {
+    name = "moltsInShadowGarou",
+    fullName = "Molts-in-Shadow",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      friendlyNeighborhoodSpidersGarou = 3
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  mrEasy = {
+    name = "mrEasy",
+    fullName = "Mr. Easy",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      jarvisJacks = 4
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  palis = {
+    name = "palis",
+    fullName = "Palis",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      beesHive = 7
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  percivalCavendish = {
+    name = "percivalCavendish",
+    fullName = "Percival Cavendish",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      civilian = 2
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  ponticulus = {
+    name = "ponticulus",
+    fullName = "Ponticulus",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      criseDeLwa = 1
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  rebeccaRossellini = {
+    name = "rebeccaRossellini",
+    fullName = "Rebecca Rossellini",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      criseDeLwa = 3
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  rotInTheRiver = {
+    name = "rotInTheRiver",
+    fullName = "Rot-in-the-River",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      friendlyNeighborhoodSpiders = 4
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  rotInTheRiverGarou = {
+    name = "rotInTheRiverGarou",
+    fullName = "Rot-in-the-River",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      friendlyNeighborhoodSpidersGarou = 4
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  severinKoslov = {
+    name = "severinKoslov",
+    fullName = "Severin Koslov",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      wychwoodHecata = 6
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  stalksTheTangle = {
+    name = "stalksTheTangle",
+    fullName = "Stalks-the-Tangle",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      friendlyNeighborhoodSpiders = 5
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  stalksTheTangleGarou = {
+    name = "stalksTheTangleGarou",
+    fullName = "Stalks-the-Tangle",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      friendlyNeighborhoodSpidersGarou = 5
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  theIslandDevil = {
+    name = "theIslandDevil",
+    fullName = "The Island Devil",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      autarkis = 1
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  theUnshadowedThrone = {
+    name = "theUnshadowedThrone",
+    fullName = "The Unshadowed Throne",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      aapilu = 4
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  twist = {
+    name = "twist",
+    fullName = "Twist",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      jarvisJacks = 3
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
+  uwuByteMe = {
+    name = "uwuByteMe",
+    fullName = "uwu_byte_me",
+    labelColor = "rgba(255, 255, 255, 0.5)",
+    figurine = {
+      scale = 53,
+    },
+    groups = {
+      civilian = 3
+    },
+    stats = {
+      note = "Stats not set."
+    }
+  },
   bee = {
     name = "bee",
     fullName = "Bee",

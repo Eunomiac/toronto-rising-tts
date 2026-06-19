@@ -662,7 +662,7 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
     outlineSize = "2 -2"
     fontStyle = "Bold"
     textColor = "#FFFFFF"
-    text="<"
+    text="B"
     onClick="HUD_rollBroadcast" />
 
   <Button id="rollDash_stCancel_1"
@@ -740,7 +740,7 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
     outlineSize = "2 -2"
     fontStyle = "Bold"
     textColor = "#FFFFFF"
-    text="<"
+    text="B"
     onClick="HUD_rollBroadcast" />
 
   <Button id="rollDash_stCancel_2"
@@ -818,7 +818,7 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
     outlineSize = "2 -2"
     fontStyle = "Bold"
     textColor = "#FFFFFF"
-    text="<"
+    text="B"
     onClick="HUD_rollBroadcast" />
 
   <Button id="rollDash_stCancel_3"

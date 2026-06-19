@@ -2182,7 +2182,9 @@ function RC.activateBloodSurge(color)
     local active = getActive(color)
     if active == nil then return false end
     if active.rollType ~= C.RollType.STANDARD then return false end
-    if active.phase ~= C.RollPhase.PRE_ROLL then return false end
+    if active.phase ~= C.RollPhase.SETUP and active.phase ~= C.RollPhase.PRE_ROLL then
+        return false
+    end
 
     local hunger = math.floor(tonumber(S.getPlayerVal(color, "hunger")) or 0)
     if hunger >= C.MAX_HUNGER then
@@ -2236,7 +2238,9 @@ function RC.addBloodSurgeRouse(color)
     local active = getActive(color)
     if active == nil then return false end
     if active.rollType ~= C.RollType.STANDARD then return false end
-    if active.phase ~= C.RollPhase.PRE_ROLL then return false end
+    if active.phase ~= C.RollPhase.SETUP and active.phase ~= C.RollPhase.PRE_ROLL then
+        return false
+    end
     ensureActiveShape(active)
     if active.meta.bloodSurgeActive ~= true then
         return false
@@ -2256,7 +2260,9 @@ function RC.removeOneBloodSurgeRouse(color)
     local active = getActive(color)
     if active == nil then return false end
     if active.rollType ~= C.RollType.STANDARD then return false end
-    if active.phase ~= C.RollPhase.PRE_ROLL then return false end
+    if active.phase ~= C.RollPhase.SETUP and active.phase ~= C.RollPhase.PRE_ROLL then
+        return false
+    end
     ensureActiveShape(active)
     if active.meta.bloodSurgeActive ~= true then
         return false
@@ -2325,7 +2331,9 @@ function RC.deactivateBloodSurge(color)
     local active = getActive(color)
     if active == nil then return false end
     if active.rollType ~= C.RollType.STANDARD then return false end
-    if active.phase ~= C.RollPhase.PRE_ROLL then return false end
+    if active.phase ~= C.RollPhase.SETUP and active.phase ~= C.RollPhase.PRE_ROLL then
+        return false
+    end
 
     ensureActiveShape(active)
     if active.meta.bloodSurgeActive ~= true then
