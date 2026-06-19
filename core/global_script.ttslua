@@ -217,6 +217,47 @@ local DBV = require("lib.dice_bag_visibility")
 -- Load debug module (only in development). Must be global so TTS console `lua DEBUG.foo()` works.
 DEBUG = require("core.debug")
 
+local AGENT_DEBUG_LOG = "debug-ac55f9.log"
+local agentDebugSessionOpen = false
+
+--- @param hypothesisId string
+--- @param location string
+--- @param message string
+--- @param data table|nil
+local function agentDebugLog(hypothesisId, location, message, data)
+    if DEBUG == nil or DEBUG.workspaceNdjsonAppend == nil then
+        return
+    end
+    if not agentDebugSessionOpen then
+        agentDebugSessionOpen = true
+        local W = require("lib.workspace_ndjson_log")
+        W.mirrorAppendToPrint = true
+        DEBUG.workspaceNdjsonBegin(AGENT_DEBUG_LOG)
+    end
+    DEBUG.workspaceNdjsonAppend(AGENT_DEBUG_LOG, {
+        sessionId = "ac55f9",
+        hypothesisId = hypothesisId,
+        location = location,
+        message = message,
+        data = data or {},
+        runId = "pre-fix",
+    })
+end
+
+--- Global.call bridge for object-script NDJSON (e.g. dice_bag.releaseDice).
+-- @param params table  { hypothesisId?, location?, message?, data? }
+function GlobalAgentDebugLog(params)
+    if type(params) ~= "table" then
+        return
+    end
+    agentDebugLog(
+        params.hypothesisId or "-",
+        params.location or "GlobalAgentDebugLog",
+        params.message or "-",
+        params.data
+    )
+end
+
 -- Load Console++ integration (optional - enables external command support)
 -- This allows external tools to send commands to the game via onExternalMessage
 require("lib.console")
@@ -3017,6 +3058,22 @@ function onObjectRandomize(obj, playerColor)
         RC.onWpRerollDieRandomized(color, obj)
     end
 
+    if color == "Black" then
+        local pidDbg = S.getPlayerID(color)
+        local phaseDbg = nil
+        if pidDbg ~= nil then
+            local activeDbg = S.getStateVal("playerData", pidDbg, "hud", "rollData", "active")
+            if type(activeDbg) == "table" then
+                phaseDbg = activeDbg.phase
+            end
+        end
+        agentDebugLog("H5", "onObjectRandomize", "Black die randomized", {
+            dieGuid = obj.getGUID and obj.getGUID() or nil,
+            playerColor = playerColor,
+            phase = phaseDbg,
+        })
+    end
+
     -- Delegate debounce reset to roll controller
     RC.onDieSettledSignal(color)
 end
@@ -3424,6 +3481,7 @@ local function unlockStagedBagDice(color, opts)
     opts = type(opts) == "table" and opts or {}
     local physicalRoll = opts.physicalRoll == true
     if color == "Black" then
+        agentDebugLog("H3", "unlockStagedBagDice", "Black unlock", { physicalRoll = physicalRoll })
         local pid = S.getPlayerID(color)
         if pid ~= nil then
             local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
@@ -3465,7 +3523,20 @@ end
 -- @return boolean
 local function finishRollRelease(color)
     if color == "Black" then
-        if RC.startRolling(color) ~= true then
+        local phaseBefore = nil
+        local pid = S.getPlayerID(color)
+        if pid ~= nil then
+            local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+            if type(active) == "table" then
+                phaseBefore = active.phase
+            end
+        end
+        local started = RC.startRolling(color)
+        agentDebugLog("H1", "finishRollRelease", "startRolling", {
+            phaseBefore = phaseBefore,
+            started = started,
+        })
+        if started ~= true then
             return false
         end
         unlockStagedBagDice(color, { physicalRoll = true })
@@ -3712,6 +3783,26 @@ function HUD_rollRollButton(player, value, id)
     GlobalRollSeatCamera({ color = color, mode = "diceTray" })
 
     local didAutoSpawn = spawnActivePoolDiceForActive(color, { fromRollClick = true })
+
+    if color == "Black" then
+        local pidBlack = S.getPlayerID(color)
+        local phaseAtRoll = nil
+        local poolTotalAtRoll = nil
+        if pidBlack ~= nil then
+            local activeAtRoll = S.getStateVal("playerData", pidBlack, "hud", "rollData", "active")
+            if type(activeAtRoll) == "table" then
+                phaseAtRoll = activeAtRoll.phase
+                if type(activeAtRoll.pool) == "table" then
+                    poolTotalAtRoll = DK.poolTotal(DK.normalizePool(activeAtRoll.pool))
+                end
+            end
+        end
+        agentDebugLog("H2", "HUD_rollRollButton", "Roll clicked", {
+            didAutoSpawn = didAutoSpawn,
+            phaseAtRoll = phaseAtRoll,
+            poolTotalAtRoll = poolTotalAtRoll,
+        })
+    end
 
     if color == "Black" then
         local pid = S.getPlayerID(color)
