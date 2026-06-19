@@ -1087,65 +1087,9 @@ end
 --- Refreshes the ST Roll Dashboard to reflect the current state of all active player rolls.
 -- Shows/hides per-player rows based on whether each player has an active roll.
 -- Updates roll type, phase, pool, and difficulty for each row.
+-- Storyteller (Black) live rolls appear only in drawer slot rows (`rollDash_stRow_*`).
 --
 -- @usage RUI.refreshSTDashboard()
---- Refreshes the Storyteller (Black) dashboard row for NPC / Werewolf rolls.
-local function refreshSTBlackDashboardRow()
-    local pid = S.getPlayerID("Black")
-    local active = nil
-    if pid ~= nil then
-        active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
-    end
-
-    local rowId = "rollDash_row_Black"
-    if active == nil then
-        uiSetActive(rowId, false)
-        uiSetInputField("rollDash_difficulty_Black", "")
-        return false
-    end
-
-    uiSetActive(rowId, true)
-    local nameStr = active.label and active.label ~= "" and active.label or "Storyteller"
-    uiSetValue("rollDash_name_Black", nameStr)
-    uiSetValue("rollDash_type_Black", C.RollTypeLabel[active.rollType] or active.rollType or "")
-    uiSetValue("rollDash_phase_Black", active.phase or "")
-    uiSetValue("rollDash_pool_Black", formatPoolCompact(active.pool))
-    uiSetInputField("rollDash_difficulty_Black",
-        active.difficulty ~= nil and tostring(active.difficulty) or "")
-
-    local btnLabel = "OPEN"
-    local btnInteract = true
-    if active.phase == C.RollPhase.PRE_ROLL then
-        btnLabel = "ROLL"
-        local pool = DK.normalizePool(active.pool)
-        btnInteract = DK.poolTotal(pool) > 0
-    elseif active.phase == C.RollPhase.ROLLING then
-        btnLabel = "ROLLING"
-        btnInteract = false
-    elseif active.phase == C.RollPhase.POST_ROLL then
-        if active.pendingResolution ~= nil then
-            btnLabel = "CHOICE"
-            btnInteract = false
-        else
-            btnLabel = "CONFIRM"
-            btnInteract = true
-        end
-    end
-    local dashBtn = "rollDash_btn_Black"
-    U.setAttribute(dashBtn, "text", btnLabel)
-    uiSetInteractable(dashBtn, btnInteract)
-
-    local showObliv = active.phase == C.RollPhase.POST_ROLL
-        and active.pendingResolution == C.PendingResolution.OBLIV_HUNGER_STAIN
-    local showBrutal = active.phase == C.RollPhase.POST_ROLL
-        and active.pendingResolution == C.PendingResolution.BRUTAL_FAIL_VIOLENCE
-    uiSetActive("rollDash_btnOblivHunger_Black", showObliv)
-    uiSetActive("rollDash_btnOblivStain_Black", showObliv)
-    uiSetActive("rollDash_btnBrutalFail_Black", showBrutal)
-    uiSetActive("rollDash_btnBrutalViolence_Black", showBrutal)
-
-    return true
-end
 
 --- Refreshes the three Storyteller drawer slot summary rows.
 -- @return boolean true when at least one uncleared slot needs CLEAR
@@ -1177,10 +1121,7 @@ function RUI.refreshSTSlotRows()
 end
 
 function RUI.refreshSTDashboard()
-    local hasAnyActive = refreshSTBlackDashboardRow()
-    if RUI.refreshSTSlotRows() then
-        hasAnyActive = true
-    end
+    local hasAnyActive = RUI.refreshSTSlotRows()
 
     for _, color in ipairs(C.PlayerColors) do
         local pid    = S.getPlayerID(color)
@@ -1192,10 +1133,7 @@ function RUI.refreshSTDashboard()
         local rowId = string.format("rollDash_row_%s", color)
         if active == nil then
             uiSetActive(rowId, false)
-            -- Clear the difficulty input so it shows blank on the next roll.
-            -- Must use setAttribute (not setValue) — TTS drops setValue calls on
-            -- inactive elements, leaving the stale value visible on the next show.
-            uiSetInputField(string.format("rollDash_difficulty_%s", color), "")
+            RUI.refreshDashDifficultyStrip(color, nil)
         else
             hasAnyActive = true
             uiSetActive(rowId, true)
@@ -1213,29 +1151,7 @@ function RUI.refreshSTDashboard()
             -- Pool
             uiSetValue(string.format("rollDash_pool_%s",  color), formatPoolCompact(active.pool))
 
-            -- Difficulty: shown in input field for ST to set; blank when not yet set.
-            -- Use uiSetInputField (setAttribute) to ensure the value updates reliably.
-            uiSetInputField(string.format("rollDash_difficulty_%s", color),
-                active.difficulty ~= nil and tostring(active.difficulty) or "")
-
-            -- Action button label changes by phase.
-            -- UI.setValue does not update Button text in TTS; setAttribute must be used.
-            local btnLabel = "OPEN"
-            if active.phase == C.RollPhase.PRE_ROLL
-                or active.phase == C.RollPhase.ROLLING then
-                btnLabel = "OVERRIDE"
-            elseif active.phase == C.RollPhase.POST_ROLL then
-                if active.pendingResolution ~= nil then
-                    btnLabel = "CHOICE"
-                else
-                    btnLabel = "CONFIRM"
-                end
-            end
-            local dashBtn = string.format("rollDash_btn_%s", color)
-            U.setAttribute(dashBtn, "text", btnLabel)
-            local dashPending = active.phase == C.RollPhase.POST_ROLL
-                and active.pendingResolution ~= nil
-            uiSetInteractable(dashBtn, not dashPending)
+            RUI.refreshDashDifficultyStrip(color, active)
         end
     end
 
@@ -1637,6 +1553,94 @@ local function stDifficultyStripCanInteract(_ctx)
         return false
     end
     return active.phase ~= C.RollPhase.RESOLVED
+end
+
+-- ============================================================================
+-- ST ROLL DASHBOARD — GRID STRIP CONTROLS (rollDash<Color> contexts)
+-- ============================================================================
+
+--- @param color string
+--- @return table|nil
+local function getPcActiveRoll(color)
+    local pid = S.getPlayerID(color)
+    if pid == nil then
+        return nil
+    end
+    return S.getStateVal("playerData", pid, "hud", "rollData", "active")
+end
+
+--- Refreshes the difficulty grid strip on one ST dashboard PC row (`gridStrip_rollDash<Color>_difficulty`).
+--- @param color string
+--- @param active table|nil
+function RUI.refreshDashDifficultyStrip(color, active)
+    local contextName = "rollDash" .. color
+    GridStrip.refreshContext(contextName, function(kind)
+        if kind == "difficulty" then
+            if active == nil or active.difficulty == nil then
+                return nil
+            end
+            return active.difficulty
+        end
+        return nil
+    end)
+end
+
+--- @param color string
+--- @return boolean
+local function dashDifficultyStripCanInteract(color, player)
+    if not isStRollPanelInteractor(player) then
+        return false
+    end
+    local active = getPcActiveRoll(color)
+    if active == nil then
+        return false
+    end
+    return active.phase ~= C.RollPhase.RESOLVED
+end
+
+--- Registers one PC dashboard grid-strip context (`rollDashBrown`, …).
+--- @param color string
+local function registerRollDashGridStripContext(color)
+    local contextName = "rollDash" .. color
+    GridStrip.registerContext(contextName, {
+        buildStripId = function(kind)
+            return "gridStrip_" .. contextName .. "_" .. kind
+        end,
+        kinds = {
+            difficulty = {
+                minValue = 0,
+                maxValue = 10,
+                baseAlpha = 0.15,
+                canInteract = function(ctx)
+                    return dashDifficultyStripCanInteract(color, ctx.player)
+                end,
+                getSelectedValue = function(_ctx)
+                    local active = getPcActiveRoll(color)
+                    if active == nil or active.difficulty == nil then
+                        return nil
+                    end
+                    return active.difficulty
+                end,
+                onCommit = function(_ctx, value)
+                    local activeBefore = getPcActiveRoll(color)
+                    if activeBefore == nil then
+                        return
+                    end
+                    local openAfter = activeBefore.phase == C.RollPhase.SETUP
+                    if RC.setDifficulty(color, value) ~= true then
+                        return
+                    end
+                    if openAfter then
+                        RC.openRoll(color)
+                    end
+                end,
+            },
+        },
+    })
+end
+
+for _, color in ipairs(C.PlayerColors) do
+    registerRollDashGridStripContext(color)
 end
 
 GridStrip.registerContext("rollPanelST", {

@@ -159,9 +159,9 @@ Add `<Include src="player/your_file_generated.xml" />` (or the path relative to 
 
 ### ST roll dashboard rows (`ui/.templates/roll/`)
 
-Storyteller **Active Rolls** dashboard rows (`rollDash_row_*`, slot strip, Black live row) are composed at **build time** from partials:
+Storyteller **Active Rolls** dashboard rows (`rollDash_row_*`, slot strip) are composed at **build time** from partials:
 
-- **Partials:** `ui/.templates/roll/partials/` (`dash_row_pc.xml`, `dash_row_st_live.xml`, `dash_slot_row.xml`, headers)
+- **Partials:** `ui/.templates/roll/partials/` (`dash_row_pc.xml`, `dash_slot_row.xml`, headers)
 - **Composer:** `ui/.templates/roll/dash_body.xml` (`<!-- TARGET: ui/shared/roll_dash_generated.xml -->`)
 - **Script:** `.dev/scripts/generate_roll_dashboard_xml.js` (uses `.dev/scripts/ui_xml_template_engine.js` — same `@@KEY@@` + `##IF @@KEY@@##` semantics as `lib/ui_xml_template.ttslua`)
 - **Output:** `ui/shared/roll_dash_generated.xml` — included from `rollDash_ST` in `ui/shared/roll_panels.xml`
@@ -171,7 +171,7 @@ Edit partials to change layout (`offsetXY`, `preferredWidth`/`preferredHeight`);
 
 ### Grid strip controls (`lib/grid_strip.ttslua`)
 
-Reusable hover/select strips for pool counts, difficulty, etc. **Live** consumer: [`ui/storyteller/panel_storyteller_roll_controls.xml`](storyteller/panel_storyteller_roll_controls.xml) (`gridStrip_rollPanelST_*`). **Design mockup** (always visible, non-interactive strips): [`ui/storyteller/db_panel_storyteller_roll_controls.xml`](storyteller/db_panel_storyteller_roll_controls.xml).
+Reusable hover/select strips for pool counts, difficulty, etc. **Live consumers:** [`ui/storyteller/panel_storyteller_roll_controls.xml`](storyteller/panel_storyteller_roll_controls.xml) (`gridStrip_rollPanelST_*`); ST Roll Dashboard PC rows (`gridStrip_rollDash<Color>_difficulty` in generated `roll_dash_generated.xml`). **Design mockup** (always visible, non-interactive strips): [`ui/storyteller/db_panel_storyteller_roll_controls.xml`](storyteller/db_panel_storyteller_roll_controls.xml).
 
 **Handlers** (wire in XML `Defaults` or per-element): `HUD_gridStripCellMouseEnter`, `HUD_gridStripCellMouseDown`, `HUD_gridStripCellMouseUp`, `HUD_gridStripMouseExit` (on strip `GridLayout` parent).
 
@@ -184,7 +184,7 @@ Reusable hover/select strips for pool counts, difficulty, etc. **Live** consumer
 
 **Register a new panel:** `GridStrip.registerContext("myContext", { buildStripId = function(kind) return "db_gridStrip_myContext_" .. kind end, kinds = { ... } })` with per-kind `minValue`, `maxValue`, `baseAlpha`, `canInteract(ctx)`, `getSelectedValue(ctx)`, `onCommit(ctx, value)`. Refresh via `GridStrip.refreshContext("myContext", function(kind) return selected end)`.
 
-See [Dice System Outline §10.4](../.dev/Dice%20System/Dice%20System%20Outline.md) for ST roll panel wiring.
+See [Dice System Outline §10.4–10.5](../.dev/Dice%20System/Dice%20System%20Outline.md) for ST roll panel and dashboard wiring.
 
 ### Adding a new template
 

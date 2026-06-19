@@ -16,7 +16,7 @@
 
 
 
-    Global reconcile and objects/npc_control_board.ttslua call installObjectUi.
+    Global reconcile (`Gameboard.ensureControlBoardObjectUi`) calls installObjectUi.
 
 ]]
 
@@ -105,8 +105,6 @@ function NPC_CONTROL_BOARD_UI.installObjectUi(obj)
     if ok then
 
         lastInstalledXmlFingerprint = fingerprint
-
-        print("[npc_control_board_ui] XmlUI installed from ui/objects/npc_control_board.xml on " .. tostring(obj.getGUID()))
 
     else
 

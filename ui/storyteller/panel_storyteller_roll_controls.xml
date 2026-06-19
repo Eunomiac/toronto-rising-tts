@@ -8,11 +8,11 @@
 
   <Panel class="rollPanelST" rectAlignment = "MiddleCenter" height = "300" width = "700" color = "rgba(0, 0, 0, 1)" />
 
-  <HorizontalLayout class="rollPanelST_header_container" rectAlignment="UpperCenter" height = "60" childAlignment = "UpperCenter" childForceExpandHeight = "false"/>
+  <HorizontalLayout class="rollPanelST_header_container" rectAlignment="UpperCenter" height = "40" childAlignment = "UpperLeft" childForceExpandHeight = "false"/>
 
-  <Text class="rollPanelST_type_text" fontSize="14" fontStyle="Bold" color="#C9A84C" alignment="MiddleLeft" />
-  <Text class="rollPanelST_roller_text" fontSize = "34" fontStyle="Bold" color = "#FFFFFF" alignment = "MiddleCenter" />
-  <Text class="rollPanelST_phase_text" fontSize="12" fontStyle="Bold" color="#CCCCCC" alignment="MiddleRight" />
+  <Text class="rollPanelST_type_text" ignoreLayout = "true" rectAlignment = "UpperLeft" offsetXY = "0 30" fontSize="14" fontStyle="Bold" color="#C9A84C" alignment="MiddleLeft" />
+  <Text class="rollPanelST_roller_text" fontSize = "34" fontStyle="Bold" color = "#FFFFFF" alignment = "MiddleLeft" />
+  <Text class="rollPanelST_phase_text" fontSize="12" fontStyle="Bold" color="#CCCCCC" alignment="MiddleRight" horizontalOverflow = "overflow" />
 
   <HorizontalLayout class="rollPanelST_dicePool_container" height = "40" rectAlignment = "UpperLeft" spacing = "16" childAlignment = "MiddleLeft" offsetXY = "0 -50" childForceExpandHeight = "true" childForceExpandWidth = "false" padding = "100 0 0 0" />
 
@@ -26,11 +26,7 @@
   <Text class="rollPanelST_ragePool_text" fontSize="24" color="#FF8C00" />
 
   <HorizontalLayout class="rollPanelST_dicePool" height="20" rectAlignment = "UpperCenter" childAlignment = "MiddleLeft" padding = "100 0 0 0" spacing="10" childForceExpandWidth="false" />
-  <GridLayout class="grid_strip" cellSize = "10 20" height = "20" spacing = "6" startCorner = "UpperLeft" startAxis = "Horizontal" constraint = "FixedRowCount" constraintCount = "1" onMouseExit="HUD_gridStripMouseExit" />
-  <Panel class="grid_strip_cell" outline = "#000000" outlineSize = "-1 1" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
-  <Panel class="grid_strip_cell_hunger" color = "rgba(1, 0, 0, 0.15)" />
-  <Panel class="grid_strip_cell_normal" color = "rgba(0.5, 0.5, 0.5, 0.15)" />
-  <Panel class="grid_strip_cell_difficulty" color = "rgba(0, 1, 0, 0.15)" />
+
 
   <HorizontalLayout class="rollPanelST_diceRolls_container" spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false" childForceExpandHeight="false" minHeight="48" preferredHeight="48" />
   <Image class="rollPanelST_die" active="false" preferredWidth="30" preserveAspect="True" />
@@ -43,9 +39,21 @@
 
 
 <Panel id="rollPanelST" visibility="Black|Host" class="rollPanelST" active="false">
+<!--
+UI.setAttributes("rollPanelST_header_container", {color = "rgba(1, 0, 0, 0.15)", padding = "0 0 0 0", height = "40", childAlignment = "UpperLeft"})
+-->
   <HorizontalLayout id="rollPanelST_header_container" class="rollPanelST_header_container" >
+  <!--
+  UI.setAttributes("rollPanelST_type", {ignoreLayout = "true", rectAlignment = "UpperLeft", offsetXY = "0 30", alignment = "MiddleLeft", text = "Standard Roll" })
+  -->
     <Text id="rollPanelST_type" class="rollPanelST_type_text" text="" />
+    <!--
+    UI.setAttributes("rollPanelST_roller", {fontSize = "34", fontStyle = "Bold", color = "#FFFFFF", alignment = "MiddleLeft" })
+    -->
     <Text id="rollPanelST_roller" class="rollPanelST_roller_text" text = "" />
+    <!--
+    UI.setAttributes("rollPanelST_phase", {fontSize = "12", fontStyle = "Bold", color = "#CCCCCC", alignment = "MiddleRight", horizontalOverflow = "overflow" })
+    -->
     <Text id="rollPanelST_phase" class="rollPanelST_phase_text" text="" />
   </HorizontalLayout>
 
@@ -90,7 +98,10 @@
 
     <!-- Grid Strip Control: Difficulty -->
     <GridLayout id="gridStrip_rollPanelST_difficulty" class="grid_strip grid_strip_difficulty">
-      <Panel id="gridStrip_rollPanelST_difficulty_0" class="grid_strip_cell grid_strip_cell_difficulty" />
+    <!--
+    UI.setAttributes("gridStrip_rollPanelST_difficulty_0", {offsetXY = "0 10", outline = "#FF0000", outlineSize = "1 1"})
+    -->
+      <Panel id="gridStrip_rollPanelST_difficulty_0" class="grid_strip_cell grid_strip_cell_difficulty" outline = "#FF0000" outlineSize = "1 1" />
       <Panel id="gridStrip_rollPanelST_difficulty_1" class="grid_strip_cell grid_strip_cell_difficulty"  />
       <Panel id="gridStrip_rollPanelST_difficulty_2" class="grid_strip_cell grid_strip_cell_difficulty"  />
       <Panel id="gridStrip_rollPanelST_difficulty_3" class="grid_strip_cell grid_strip_cell_difficulty"  />

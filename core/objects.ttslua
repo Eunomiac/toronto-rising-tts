@@ -99,16 +99,6 @@ local function applyLockedObjectsFromConstants(options)
                 if obj ~= nil then
                     obj.interactable = false
                     applied = applied + 1
-                    if options.logSummary == true and guid == G.GUIDS.THE_FLOOR then
-                        print(
-                            string.format(
-                                "[O.ApplyLockedObjectsFromConstants] THE_FLOOR (%s) interactable=%s loading_custom=%s",
-                                guid,
-                                tostring(obj.interactable),
-                                tostring(obj.loading_custom)
-                            )
-                        )
-                    end
                 else
                     missing = missing + 1
                     missingGuids[#missingGuids + 1] = guid
@@ -124,7 +114,7 @@ local function applyLockedObjectsFromConstants(options)
             end
         end
     end
-    if options.logSummary == true then
+    if options.logSummary == true and missing > 0 then
         local listed, nilSlots = countLockedObjectListEntries()
         local expected = listed - nilSlots
         print(

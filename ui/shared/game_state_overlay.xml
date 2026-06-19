@@ -52,8 +52,8 @@ UI.setAttributes("gameStateOverlay_timeAndLocation_background", {offsetXY = "0 1
       <Text id="gameStateOverlay_weatherWind" class="small_red_text" text="" />
     </HorizontalLayout>
     <HorizontalLayout class="gameStateOverlay_temperature" spacing="5" childAlignment="UpperRight">
-      <Text id="gameStateOverlay_temperatureC" class="large_red_text" text="10°C" />
-      <Text id="gameStateOverlay_temperatureF" class="small_red_text" fontStyle="Italic" text="(10°F)" />
+      <Text id="gameStateOverlay_temperatureC" class="large_red_text" text="" />
+      <Text id="gameStateOverlay_temperatureF" class="small_red_text" fontStyle="Italic" text="" />
     </HorizontalLayout>
 
   </VerticalLayout>

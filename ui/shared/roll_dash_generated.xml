@@ -21,55 +21,83 @@
   preferredWidth="530"
   preferredHeight="34"
   color="#654321">
+
+  <Defaults>
+    <GridLayout class="grid_strip"  />
+  <Panel class="grid_strip_cell"  />
+  <Panel class="grid_strip_cell_hunger" color = "rgba(1, 0, 0, 0.15)" />
+  <Panel class="grid_strip_cell_normal" color = "rgba(0.5, 0.5, 0.5, 0.15)" />
+  <Panel class="grid_strip_cell_difficulty" color = "rgba(0, 1, 0, 0.15)" />
+
+  </Defaults>
+
+
+
   <Text id="rollDash_name_Brown"
     rectAlignment="MiddleLeft"
     alignment = "MiddleLeft"
     offsetXY="5 0"
-    width="70"
+    width="120"
     height="34"
-    fontSize="12"
+    fontSize="14"
     fontStyle="Bold"
     color="#FFFFFF"
     text="Brown" />
   <Text id="rollDash_type_Brown"
     rectAlignment="UpperLeft"
     alignment = "UpperCenter"
-    offsetXY="75 -5"
-    width="80"
+    offsetXY="100 -3"
+    width="150"
     height="16"
-    fontSize="11"
-    color="#AAAAAA"
+    fontSize="14"
+    color="#FFFFFF"
+    fontStyle = "Bold"
     text="" />
   <Text id="rollDash_phase_Brown"
     rectAlignment="LowerLeft"
     alignment = "LowerCenter"
-    offsetXY="75 5"
-    width="80"
+    offsetXY="100 3"
+    width="150"
     height="16"
-    fontSize="11"
-    color="#CCCCCC"
+    fontSize="12"
+    fontStyle="Italic"
+    color="#BBBBBB"
     text="" />
+
+<!--
+UI.setAttributes("rollDash_type_Brown", {fontStyle = "Bold", fontSize = "14", color = "#FFFFFF", width = "150", offsetXY = "100 -3"})
+UI.setAttributes("rollDash_phase_Brown", {fontStyle = "Italic", fontSize = "12", color = "#BBBBBB", width = "150", offsetXY = "100 3"})
+UI.setAttributes("rollDash_pool_Brown", {text = "3H + 11N", alignment = "MiddleRight", width = "100", offsetXY = "190 0", fontStyle = "Bold", fontSize = "14", color = "#FFFFFF"})
+-->
+
+
   <Text id="rollDash_pool_Brown"
     rectAlignment="MiddleLeft"
-    alignment = "MiddleLeft"
-    offsetXY="160 0"
-    width="50"
+    alignment = "MiddleRight"
+    offsetXY="190 0"
+    width="100"
     height="34"
-    fontSize="11"
-    color="#CCCCCC"
+    fontSize="14"
+    fontStyle = "Bold"
+    color="#FFFFFF"
     text="" />
-  <GridLayout id="gridStrip_rollDashBrown_difficulty" class="grid_strip_design grid_strip_difficulty" active="true">
-    <Panel id="gridStrip_rollDashBrown_difficulty_0" class="grid_strip_cell_design grid_strip_cell_difficulty" />
-    <Panel id="gridStrip_rollDashBrown_difficulty_1" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashBrown_difficulty_2" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashBrown_difficulty_3" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashBrown_difficulty_4" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashBrown_difficulty_5" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashBrown_difficulty_6" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashBrown_difficulty_7" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashBrown_difficulty_8" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashBrown_difficulty_9" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashBrown_difficulty_10" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
+
+<!--
+UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
+-->
+  <GridLayout id="gridStrip_rollDashBrown_difficulty" class="grid_strip grid_strip_difficulty" active="true" offsetXY = "-70 0" cellSize = "10 20" height = "20" spacing = "2" startCorner = "UpperLeft" startAxis = "Horizontal" constraint = "FixedRowCount" constraintCount = "1" onMouseExit="HUD_gridStripMouseExit" rectAlignment = "MiddleRight" width = "130">
+
+    <Panel id="gridStrip_rollDashBrown_difficulty_0" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" outline = "#FF0000" outlineSize = "1 1" />
+    <Panel id="gridStrip_rollDashBrown_difficulty_1" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashBrown_difficulty_2" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashBrown_difficulty_3" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashBrown_difficulty_4" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashBrown_difficulty_5" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashBrown_difficulty_6" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashBrown_difficulty_7" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashBrown_difficulty_8" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashBrown_difficulty_9" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashBrown_difficulty_10" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
   </GridLayout>
   
   <Button id="rollDash_opts_Brown"
@@ -107,55 +135,83 @@
   preferredWidth="530"
   preferredHeight="34"
   color="#b45914">
+
+  <Defaults>
+    <GridLayout class="grid_strip"  />
+  <Panel class="grid_strip_cell"  />
+  <Panel class="grid_strip_cell_hunger" color = "rgba(1, 0, 0, 0.15)" />
+  <Panel class="grid_strip_cell_normal" color = "rgba(0.5, 0.5, 0.5, 0.15)" />
+  <Panel class="grid_strip_cell_difficulty" color = "rgba(0, 1, 0, 0.15)" />
+
+  </Defaults>
+
+
+
   <Text id="rollDash_name_Orange"
     rectAlignment="MiddleLeft"
     alignment = "MiddleLeft"
     offsetXY="5 0"
-    width="70"
+    width="120"
     height="34"
-    fontSize="12"
+    fontSize="14"
     fontStyle="Bold"
     color="#FFFFFF"
     text="Orange" />
   <Text id="rollDash_type_Orange"
     rectAlignment="UpperLeft"
     alignment = "UpperCenter"
-    offsetXY="75 -5"
-    width="80"
+    offsetXY="100 -3"
+    width="150"
     height="16"
-    fontSize="11"
-    color="#AAAAAA"
+    fontSize="14"
+    color="#FFFFFF"
+    fontStyle = "Bold"
     text="" />
   <Text id="rollDash_phase_Orange"
     rectAlignment="LowerLeft"
     alignment = "LowerCenter"
-    offsetXY="75 5"
-    width="80"
+    offsetXY="100 3"
+    width="150"
     height="16"
-    fontSize="11"
-    color="#CCCCCC"
+    fontSize="12"
+    fontStyle="Italic"
+    color="#BBBBBB"
     text="" />
+
+<!--
+UI.setAttributes("rollDash_type_Brown", {fontStyle = "Bold", fontSize = "14", color = "#FFFFFF", width = "150", offsetXY = "100 -3"})
+UI.setAttributes("rollDash_phase_Brown", {fontStyle = "Italic", fontSize = "12", color = "#BBBBBB", width = "150", offsetXY = "100 3"})
+UI.setAttributes("rollDash_pool_Brown", {text = "3H + 11N", alignment = "MiddleRight", width = "100", offsetXY = "190 0", fontStyle = "Bold", fontSize = "14", color = "#FFFFFF"})
+-->
+
+
   <Text id="rollDash_pool_Orange"
     rectAlignment="MiddleLeft"
-    alignment = "MiddleLeft"
-    offsetXY="160 0"
-    width="50"
+    alignment = "MiddleRight"
+    offsetXY="190 0"
+    width="100"
     height="34"
-    fontSize="11"
-    color="#CCCCCC"
+    fontSize="14"
+    fontStyle = "Bold"
+    color="#FFFFFF"
     text="" />
-  <GridLayout id="gridStrip_rollDashOrange_difficulty" class="grid_strip_design grid_strip_difficulty" active="true">
-    <Panel id="gridStrip_rollDashOrange_difficulty_0" class="grid_strip_cell_design grid_strip_cell_difficulty" />
-    <Panel id="gridStrip_rollDashOrange_difficulty_1" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashOrange_difficulty_2" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashOrange_difficulty_3" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashOrange_difficulty_4" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashOrange_difficulty_5" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashOrange_difficulty_6" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashOrange_difficulty_7" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashOrange_difficulty_8" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashOrange_difficulty_9" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashOrange_difficulty_10" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
+
+<!--
+UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
+-->
+  <GridLayout id="gridStrip_rollDashOrange_difficulty" class="grid_strip grid_strip_difficulty" active="true" offsetXY = "-70 0" cellSize = "10 20" height = "20" spacing = "2" startCorner = "UpperLeft" startAxis = "Horizontal" constraint = "FixedRowCount" constraintCount = "1" onMouseExit="HUD_gridStripMouseExit" rectAlignment = "MiddleRight" width = "130">
+
+    <Panel id="gridStrip_rollDashOrange_difficulty_0" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" outline = "#FF0000" outlineSize = "1 1" />
+    <Panel id="gridStrip_rollDashOrange_difficulty_1" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashOrange_difficulty_2" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashOrange_difficulty_3" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashOrange_difficulty_4" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashOrange_difficulty_5" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashOrange_difficulty_6" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashOrange_difficulty_7" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashOrange_difficulty_8" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashOrange_difficulty_9" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashOrange_difficulty_10" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
   </GridLayout>
   
   <Button id="rollDash_opts_Orange"
@@ -193,55 +249,83 @@
   preferredWidth="530"
   preferredHeight="34"
   color="#ff0000">
+
+  <Defaults>
+    <GridLayout class="grid_strip"  />
+  <Panel class="grid_strip_cell"  />
+  <Panel class="grid_strip_cell_hunger" color = "rgba(1, 0, 0, 0.15)" />
+  <Panel class="grid_strip_cell_normal" color = "rgba(0.5, 0.5, 0.5, 0.15)" />
+  <Panel class="grid_strip_cell_difficulty" color = "rgba(0, 1, 0, 0.15)" />
+
+  </Defaults>
+
+
+
   <Text id="rollDash_name_Red"
     rectAlignment="MiddleLeft"
     alignment = "MiddleLeft"
     offsetXY="5 0"
-    width="70"
+    width="120"
     height="34"
-    fontSize="12"
+    fontSize="14"
     fontStyle="Bold"
     color="#FFFFFF"
     text="Red" />
   <Text id="rollDash_type_Red"
     rectAlignment="UpperLeft"
     alignment = "UpperCenter"
-    offsetXY="75 -5"
-    width="80"
+    offsetXY="100 -3"
+    width="150"
     height="16"
-    fontSize="11"
-    color="#AAAAAA"
+    fontSize="14"
+    color="#FFFFFF"
+    fontStyle = "Bold"
     text="" />
   <Text id="rollDash_phase_Red"
     rectAlignment="LowerLeft"
     alignment = "LowerCenter"
-    offsetXY="75 5"
-    width="80"
+    offsetXY="100 3"
+    width="150"
     height="16"
-    fontSize="11"
-    color="#CCCCCC"
+    fontSize="12"
+    fontStyle="Italic"
+    color="#BBBBBB"
     text="" />
+
+<!--
+UI.setAttributes("rollDash_type_Brown", {fontStyle = "Bold", fontSize = "14", color = "#FFFFFF", width = "150", offsetXY = "100 -3"})
+UI.setAttributes("rollDash_phase_Brown", {fontStyle = "Italic", fontSize = "12", color = "#BBBBBB", width = "150", offsetXY = "100 3"})
+UI.setAttributes("rollDash_pool_Brown", {text = "3H + 11N", alignment = "MiddleRight", width = "100", offsetXY = "190 0", fontStyle = "Bold", fontSize = "14", color = "#FFFFFF"})
+-->
+
+
   <Text id="rollDash_pool_Red"
     rectAlignment="MiddleLeft"
-    alignment = "MiddleLeft"
-    offsetXY="160 0"
-    width="50"
+    alignment = "MiddleRight"
+    offsetXY="190 0"
+    width="100"
     height="34"
-    fontSize="11"
-    color="#CCCCCC"
+    fontSize="14"
+    fontStyle = "Bold"
+    color="#FFFFFF"
     text="" />
-  <GridLayout id="gridStrip_rollDashRed_difficulty" class="grid_strip_design grid_strip_difficulty" active="true">
-    <Panel id="gridStrip_rollDashRed_difficulty_0" class="grid_strip_cell_design grid_strip_cell_difficulty" />
-    <Panel id="gridStrip_rollDashRed_difficulty_1" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashRed_difficulty_2" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashRed_difficulty_3" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashRed_difficulty_4" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashRed_difficulty_5" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashRed_difficulty_6" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashRed_difficulty_7" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashRed_difficulty_8" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashRed_difficulty_9" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashRed_difficulty_10" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
+
+<!--
+UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
+-->
+  <GridLayout id="gridStrip_rollDashRed_difficulty" class="grid_strip grid_strip_difficulty" active="true" offsetXY = "-70 0" cellSize = "10 20" height = "20" spacing = "2" startCorner = "UpperLeft" startAxis = "Horizontal" constraint = "FixedRowCount" constraintCount = "1" onMouseExit="HUD_gridStripMouseExit" rectAlignment = "MiddleRight" width = "130">
+
+    <Panel id="gridStrip_rollDashRed_difficulty_0" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" outline = "#FF0000" outlineSize = "1 1" />
+    <Panel id="gridStrip_rollDashRed_difficulty_1" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashRed_difficulty_2" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashRed_difficulty_3" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashRed_difficulty_4" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashRed_difficulty_5" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashRed_difficulty_6" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashRed_difficulty_7" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashRed_difficulty_8" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashRed_difficulty_9" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashRed_difficulty_10" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
   </GridLayout>
   
   <Button id="rollDash_opts_Red"
@@ -279,55 +363,83 @@
   preferredWidth="530"
   preferredHeight="34"
   color="#ff008c">
+
+  <Defaults>
+    <GridLayout class="grid_strip"  />
+  <Panel class="grid_strip_cell"  />
+  <Panel class="grid_strip_cell_hunger" color = "rgba(1, 0, 0, 0.15)" />
+  <Panel class="grid_strip_cell_normal" color = "rgba(0.5, 0.5, 0.5, 0.15)" />
+  <Panel class="grid_strip_cell_difficulty" color = "rgba(0, 1, 0, 0.15)" />
+
+  </Defaults>
+
+
+
   <Text id="rollDash_name_Pink"
     rectAlignment="MiddleLeft"
     alignment = "MiddleLeft"
     offsetXY="5 0"
-    width="70"
+    width="120"
     height="34"
-    fontSize="12"
+    fontSize="14"
     fontStyle="Bold"
     color="#FFFFFF"
     text="Pink" />
   <Text id="rollDash_type_Pink"
     rectAlignment="UpperLeft"
     alignment = "UpperCenter"
-    offsetXY="75 -5"
-    width="80"
+    offsetXY="100 -3"
+    width="150"
     height="16"
-    fontSize="11"
-    color="#AAAAAA"
+    fontSize="14"
+    color="#FFFFFF"
+    fontStyle = "Bold"
     text="" />
   <Text id="rollDash_phase_Pink"
     rectAlignment="LowerLeft"
     alignment = "LowerCenter"
-    offsetXY="75 5"
-    width="80"
+    offsetXY="100 3"
+    width="150"
     height="16"
-    fontSize="11"
-    color="#CCCCCC"
+    fontSize="12"
+    fontStyle="Italic"
+    color="#BBBBBB"
     text="" />
+
+<!--
+UI.setAttributes("rollDash_type_Brown", {fontStyle = "Bold", fontSize = "14", color = "#FFFFFF", width = "150", offsetXY = "100 -3"})
+UI.setAttributes("rollDash_phase_Brown", {fontStyle = "Italic", fontSize = "12", color = "#BBBBBB", width = "150", offsetXY = "100 3"})
+UI.setAttributes("rollDash_pool_Brown", {text = "3H + 11N", alignment = "MiddleRight", width = "100", offsetXY = "190 0", fontStyle = "Bold", fontSize = "14", color = "#FFFFFF"})
+-->
+
+
   <Text id="rollDash_pool_Pink"
     rectAlignment="MiddleLeft"
-    alignment = "MiddleLeft"
-    offsetXY="160 0"
-    width="50"
+    alignment = "MiddleRight"
+    offsetXY="190 0"
+    width="100"
     height="34"
-    fontSize="11"
-    color="#CCCCCC"
+    fontSize="14"
+    fontStyle = "Bold"
+    color="#FFFFFF"
     text="" />
-  <GridLayout id="gridStrip_rollDashPink_difficulty" class="grid_strip_design grid_strip_difficulty" active="true">
-    <Panel id="gridStrip_rollDashPink_difficulty_0" class="grid_strip_cell_design grid_strip_cell_difficulty" />
-    <Panel id="gridStrip_rollDashPink_difficulty_1" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashPink_difficulty_2" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashPink_difficulty_3" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashPink_difficulty_4" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashPink_difficulty_5" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashPink_difficulty_6" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashPink_difficulty_7" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashPink_difficulty_8" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashPink_difficulty_9" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashPink_difficulty_10" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
+
+<!--
+UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
+-->
+  <GridLayout id="gridStrip_rollDashPink_difficulty" class="grid_strip grid_strip_difficulty" active="true" offsetXY = "-70 0" cellSize = "10 20" height = "20" spacing = "2" startCorner = "UpperLeft" startAxis = "Horizontal" constraint = "FixedRowCount" constraintCount = "1" onMouseExit="HUD_gridStripMouseExit" rectAlignment = "MiddleRight" width = "130">
+
+    <Panel id="gridStrip_rollDashPink_difficulty_0" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" outline = "#FF0000" outlineSize = "1 1" />
+    <Panel id="gridStrip_rollDashPink_difficulty_1" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashPink_difficulty_2" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashPink_difficulty_3" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashPink_difficulty_4" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashPink_difficulty_5" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashPink_difficulty_6" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashPink_difficulty_7" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashPink_difficulty_8" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashPink_difficulty_9" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashPink_difficulty_10" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
   </GridLayout>
   
   <Button id="rollDash_opts_Pink"
@@ -365,55 +477,83 @@
   preferredWidth="530"
   preferredHeight="34"
   color="#9900ff">
+
+  <Defaults>
+    <GridLayout class="grid_strip"  />
+  <Panel class="grid_strip_cell"  />
+  <Panel class="grid_strip_cell_hunger" color = "rgba(1, 0, 0, 0.15)" />
+  <Panel class="grid_strip_cell_normal" color = "rgba(0.5, 0.5, 0.5, 0.15)" />
+  <Panel class="grid_strip_cell_difficulty" color = "rgba(0, 1, 0, 0.15)" />
+
+  </Defaults>
+
+
+
   <Text id="rollDash_name_Purple"
     rectAlignment="MiddleLeft"
     alignment = "MiddleLeft"
     offsetXY="5 0"
-    width="70"
+    width="120"
     height="34"
-    fontSize="12"
+    fontSize="14"
     fontStyle="Bold"
     color="#FFFFFF"
     text="Purple" />
   <Text id="rollDash_type_Purple"
     rectAlignment="UpperLeft"
     alignment = "UpperCenter"
-    offsetXY="75 -5"
-    width="80"
+    offsetXY="100 -3"
+    width="150"
     height="16"
-    fontSize="11"
-    color="#AAAAAA"
+    fontSize="14"
+    color="#FFFFFF"
+    fontStyle = "Bold"
     text="" />
   <Text id="rollDash_phase_Purple"
     rectAlignment="LowerLeft"
     alignment = "LowerCenter"
-    offsetXY="75 5"
-    width="80"
+    offsetXY="100 3"
+    width="150"
     height="16"
-    fontSize="11"
-    color="#CCCCCC"
+    fontSize="12"
+    fontStyle="Italic"
+    color="#BBBBBB"
     text="" />
+
+<!--
+UI.setAttributes("rollDash_type_Brown", {fontStyle = "Bold", fontSize = "14", color = "#FFFFFF", width = "150", offsetXY = "100 -3"})
+UI.setAttributes("rollDash_phase_Brown", {fontStyle = "Italic", fontSize = "12", color = "#BBBBBB", width = "150", offsetXY = "100 3"})
+UI.setAttributes("rollDash_pool_Brown", {text = "3H + 11N", alignment = "MiddleRight", width = "100", offsetXY = "190 0", fontStyle = "Bold", fontSize = "14", color = "#FFFFFF"})
+-->
+
+
   <Text id="rollDash_pool_Purple"
     rectAlignment="MiddleLeft"
-    alignment = "MiddleLeft"
-    offsetXY="160 0"
-    width="50"
+    alignment = "MiddleRight"
+    offsetXY="190 0"
+    width="100"
     height="34"
-    fontSize="11"
-    color="#CCCCCC"
+    fontSize="14"
+    fontStyle = "Bold"
+    color="#FFFFFF"
     text="" />
-  <GridLayout id="gridStrip_rollDashPurple_difficulty" class="grid_strip_design grid_strip_difficulty" active="true">
-    <Panel id="gridStrip_rollDashPurple_difficulty_0" class="grid_strip_cell_design grid_strip_cell_difficulty" />
-    <Panel id="gridStrip_rollDashPurple_difficulty_1" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashPurple_difficulty_2" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashPurple_difficulty_3" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashPurple_difficulty_4" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashPurple_difficulty_5" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashPurple_difficulty_6" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashPurple_difficulty_7" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashPurple_difficulty_8" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashPurple_difficulty_9" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
-    <Panel id="gridStrip_rollDashPurple_difficulty_10" class="grid_strip_cell_design grid_strip_cell_difficulty"  />
+
+<!--
+UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
+-->
+  <GridLayout id="gridStrip_rollDashPurple_difficulty" class="grid_strip grid_strip_difficulty" active="true" offsetXY = "-70 0" cellSize = "10 20" height = "20" spacing = "2" startCorner = "UpperLeft" startAxis = "Horizontal" constraint = "FixedRowCount" constraintCount = "1" onMouseExit="HUD_gridStripMouseExit" rectAlignment = "MiddleRight" width = "130">
+
+    <Panel id="gridStrip_rollDashPurple_difficulty_0" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" outline = "#FF0000" outlineSize = "1 1" />
+    <Panel id="gridStrip_rollDashPurple_difficulty_1" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashPurple_difficulty_2" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashPurple_difficulty_3" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashPurple_difficulty_4" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashPurple_difficulty_5" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashPurple_difficulty_6" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashPurple_difficulty_7" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashPurple_difficulty_8" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashPurple_difficulty_9" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+    <Panel id="gridStrip_rollDashPurple_difficulty_10" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
   </GridLayout>
   
   <Button id="rollDash_opts_Purple"
@@ -449,15 +589,17 @@
 <Panel id="rollDash_stSlotsHeader"
   active="False"
   preferredWidth="530"
+  color = "#111111"
   preferredHeight="20">
   <Text
-    rectAlignment="UpperLeft"
-    offsetXY="0 4"
+    rectAlignment="MiddleRight"
+    alignment = "MiddleRight"
+    offsetXY="0 0"
     width="530"
-    height="16"
-    fontSize="11"
+    height="20"
+    fontSize="14"
     fontStyle="Bold"
-    color="#AAAAAA"
+    color="#FFFFFF"
     text="STORYTELLER SLOTS" />
 </Panel>
 <Panel id="rollDash_stRow_1"
@@ -465,217 +607,233 @@
   preferredWidth="530"
   preferredHeight="30"
   color="#2a2a2a">
+
+<!--
+  UI.setAttributes("rollDash_stLabel_1", {fontSize = "12", fontStyle = "Bold", color = "#FFFFFF", width = "120", offsetXY = "4 0", rectAlignment = "MiddleLeft", horizontalOverflow = "overflow", alignment = "MiddleLeft", height = "30"})
+  UI.setAttributes("rollDash_stPhase_1", {height = "30", fontSize = "12", fontStyle = "Italic", color = "#CCCCCC", width = "70", offsetXY = "260 0"})
+  UI.setAttributes("rollDash_stLive_1", {fontStyle = "Bold",height = "30", fontSize = "10", color = "#C9A84C", width = "36", offsetXY = "226 0"})
+  UI.setAttributes("rollDash_stCancel_1", {fontSize = "10", width = "50", offsetXY = "248 4"})
+-->
+
   <Text id="rollDash_stLabel_1"
-    rectAlignment="UpperLeft"
-    offsetXY="4 7"
+    rectAlignment="MiddleLeft"
+    offsetXY="4 0"
     width="120"
-    height="16"
-    fontSize="11"
+    height="30"
+    fontSize="12"
+    fontStyle = "Bold"
     color="#FFFFFF"
+    horizontalOverflow = "overflow"
+    alignment = "MiddleLeft"
     text="" />
   <Text id="rollDash_stPhase_1"
-    rectAlignment="UpperLeft"
-    offsetXY="130 8"
+    rectAlignment="MiddleLeft"
+    offsetXY="160 0"
     width="70"
-    height="14"
-    fontSize="10"
+    height="30"
+    fontSize="12"
+    fontStyle = "Italic"
     color="#CCCCCC"
+    horizontalOverflow = "overflow"
+    alignment = "MiddleLeft"
     text="" />
+
+    <!--
+    UI.setAttributes("rollDash_stLive_1", {text = "Live Roll", height = "30", fontSize = "10", color = "#C9A84C", width = "36", offsetXY = "226 0"})
+    -->
   <Text id="rollDash_stLive_1"
-    rectAlignment="UpperLeft"
-    offsetXY="206 8"
+    rectAlignment="MiddleLeft"
+    offsetXY="226 0"
     width="36"
-    height="14"
+    height="30"
     fontSize="10"
     color="#C9A84C"
     text="" />
+
+  <Button id="rollDash_stBroadcast_1"
+
+    rectAlignment="MiddleRight"
+    offsetXY="-10 0"
+    width="24"
+    height="24"
+    fontSize="14"
+    color="#00ffd5"
+    outline="#FFFFFF"
+    outlineSize = "2 -2"
+    fontStyle = "Bold"
+    textColor = "#FFFFFF"
+    text="<"
+    onClick="HUD_rollBroadcast" />
+
   <Button id="rollDash_stCancel_1"
-    rectAlignment="UpperLeft"
-    offsetXY="248 4"
-    width="50"
-    height="22"
-    fontSize="10"
-    onClick="HUD_rollCancel"
-    text="CLEAR" />
+
+    rectAlignment="MiddleRight"
+    offsetXY="-10 0"
+    width="24"
+    height="24"
+    fontSize="14"
+    color="rgba(0.6,0.1,0.1,1)"
+    outline="#FFFFFF"
+    outlineSize = "2 -2"
+    fontStyle = "Bold"
+    textColor = "#FFFFFF"
+    text="X"
+    onClick="HUD_rollCancel" />
 </Panel>
 <Panel id="rollDash_stRow_2"
   active="False"
   preferredWidth="530"
   preferredHeight="30"
   color="#2a2a2a">
+
+<!--
+  UI.setAttributes("rollDash_stLabel_1", {fontSize = "12", fontStyle = "Bold", color = "#FFFFFF", width = "120", offsetXY = "4 0", rectAlignment = "MiddleLeft", horizontalOverflow = "overflow", alignment = "MiddleLeft", height = "30"})
+  UI.setAttributes("rollDash_stPhase_1", {height = "30", fontSize = "12", fontStyle = "Italic", color = "#CCCCCC", width = "70", offsetXY = "260 0"})
+  UI.setAttributes("rollDash_stLive_1", {fontStyle = "Bold",height = "30", fontSize = "10", color = "#C9A84C", width = "36", offsetXY = "226 0"})
+  UI.setAttributes("rollDash_stCancel_1", {fontSize = "10", width = "50", offsetXY = "248 4"})
+-->
+
   <Text id="rollDash_stLabel_2"
-    rectAlignment="UpperLeft"
-    offsetXY="4 7"
+    rectAlignment="MiddleLeft"
+    offsetXY="4 0"
     width="120"
-    height="16"
-    fontSize="11"
+    height="30"
+    fontSize="12"
+    fontStyle = "Bold"
     color="#FFFFFF"
+    horizontalOverflow = "overflow"
+    alignment = "MiddleLeft"
     text="" />
   <Text id="rollDash_stPhase_2"
-    rectAlignment="UpperLeft"
-    offsetXY="130 8"
+    rectAlignment="MiddleLeft"
+    offsetXY="160 0"
     width="70"
-    height="14"
-    fontSize="10"
+    height="30"
+    fontSize="12"
+    fontStyle = "Italic"
     color="#CCCCCC"
+    horizontalOverflow = "overflow"
+    alignment = "MiddleLeft"
     text="" />
+
+    <!--
+    UI.setAttributes("rollDash_stLive_1", {text = "Live Roll", height = "30", fontSize = "10", color = "#C9A84C", width = "36", offsetXY = "226 0"})
+    -->
   <Text id="rollDash_stLive_2"
-    rectAlignment="UpperLeft"
-    offsetXY="206 8"
+    rectAlignment="MiddleLeft"
+    offsetXY="226 0"
     width="36"
-    height="14"
+    height="30"
     fontSize="10"
     color="#C9A84C"
     text="" />
+
+  <Button id="rollDash_stBroadcast_2"
+
+    rectAlignment="MiddleRight"
+    offsetXY="-10 0"
+    width="24"
+    height="24"
+    fontSize="14"
+    color="#00ffd5"
+    outline="#FFFFFF"
+    outlineSize = "2 -2"
+    fontStyle = "Bold"
+    textColor = "#FFFFFF"
+    text="<"
+    onClick="HUD_rollBroadcast" />
+
   <Button id="rollDash_stCancel_2"
-    rectAlignment="UpperLeft"
-    offsetXY="248 4"
-    width="50"
-    height="22"
-    fontSize="10"
-    onClick="HUD_rollCancel"
-    text="CLEAR" />
+
+    rectAlignment="MiddleRight"
+    offsetXY="-10 0"
+    width="24"
+    height="24"
+    fontSize="14"
+    color="rgba(0.6,0.1,0.1,1)"
+    outline="#FFFFFF"
+    outlineSize = "2 -2"
+    fontStyle = "Bold"
+    textColor = "#FFFFFF"
+    text="X"
+    onClick="HUD_rollCancel" />
 </Panel>
 <Panel id="rollDash_stRow_3"
   active="False"
   preferredWidth="530"
   preferredHeight="30"
   color="#2a2a2a">
+
+<!--
+  UI.setAttributes("rollDash_stLabel_1", {fontSize = "12", fontStyle = "Bold", color = "#FFFFFF", width = "120", offsetXY = "4 0", rectAlignment = "MiddleLeft", horizontalOverflow = "overflow", alignment = "MiddleLeft", height = "30"})
+  UI.setAttributes("rollDash_stPhase_1", {height = "30", fontSize = "12", fontStyle = "Italic", color = "#CCCCCC", width = "70", offsetXY = "260 0"})
+  UI.setAttributes("rollDash_stLive_1", {fontStyle = "Bold",height = "30", fontSize = "10", color = "#C9A84C", width = "36", offsetXY = "226 0"})
+  UI.setAttributes("rollDash_stCancel_1", {fontSize = "10", width = "50", offsetXY = "248 4"})
+-->
+
   <Text id="rollDash_stLabel_3"
-    rectAlignment="UpperLeft"
-    offsetXY="4 7"
+    rectAlignment="MiddleLeft"
+    offsetXY="4 0"
     width="120"
-    height="16"
-    fontSize="11"
+    height="30"
+    fontSize="12"
+    fontStyle = "Bold"
     color="#FFFFFF"
+    horizontalOverflow = "overflow"
+    alignment = "MiddleLeft"
     text="" />
   <Text id="rollDash_stPhase_3"
-    rectAlignment="UpperLeft"
-    offsetXY="130 8"
+    rectAlignment="MiddleLeft"
+    offsetXY="160 0"
     width="70"
-    height="14"
-    fontSize="10"
+    height="30"
+    fontSize="12"
+    fontStyle = "Italic"
     color="#CCCCCC"
+    horizontalOverflow = "overflow"
+    alignment = "MiddleLeft"
     text="" />
+
+    <!--
+    UI.setAttributes("rollDash_stLive_1", {text = "Live Roll", height = "30", fontSize = "10", color = "#C9A84C", width = "36", offsetXY = "226 0"})
+    -->
   <Text id="rollDash_stLive_3"
-    rectAlignment="UpperLeft"
-    offsetXY="206 8"
+    rectAlignment="MiddleLeft"
+    offsetXY="226 0"
     width="36"
-    height="14"
+    height="30"
     fontSize="10"
     color="#C9A84C"
     text="" />
-  <Button id="rollDash_stCancel_3"
-    rectAlignment="UpperLeft"
-    offsetXY="248 4"
-    width="50"
-    height="22"
-    fontSize="10"
-    onClick="HUD_rollCancel"
-    text="CLEAR" />
-</Panel>
-<Panel id="rollDash_row_Black"
-  active="False"
-  preferredWidth="530"
-  preferredHeight="34"
-  color="#333333">
-  <Text id="rollDash_name_Black"
-    rectAlignment="UpperLeft"
-    offsetXY="5 8"
-    width="90"
-    height="18"
-    fontSize="12"
-    color="#FFFFFF"
-    text="ST Roll" />
-  <Text id="rollDash_type_Black"
-    rectAlignment="UpperLeft"
-    offsetXY="99 9"
-    width="90"
-    height="16"
-    fontSize="11"
-    color="#AAAAAA"
-    text="" />
-  <Text id="rollDash_phase_Black"
-    rectAlignment="UpperLeft"
-    offsetXY="193 9"
-    width="60"
-    height="16"
-    fontSize="11"
-    color="#CCCCCC"
-    text="" />
-  <Text id="rollDash_pool_Black"
-    rectAlignment="UpperLeft"
-    offsetXY="257 9"
-    width="50"
-    height="16"
-    fontSize="11"
-    color="#CCCCCC"
-    text="" />
-  <InputField id="rollDash_difficulty_Black"
-    rectAlignment="UpperLeft"
-    offsetXY="311 5"
-    width="40"
-    height="24"
-    fontSize="12"
-    text=""
-    placeholder="Diff"
-    onValueChanged="HUD_rollSetDifficulty" />
-  <Button id="rollDash_btn_Black"
-    rectAlignment="UpperLeft"
-    offsetXY="355 5"
-    width="64"
-    height="24"
-    fontSize="10"
-    onClick="HUD_rollSTAction"
-    text="OPEN" />
-  
-  <Button id="rollDash_btnOblivHunger_Black"
-    active="False"
-    rectAlignment="UpperLeft"
-    offsetXY="423 5"
-    width="72"
-    height="24"
-    fontSize="9"
-    onClick="HUD_rollConfirmOblivChoice"
-    text="HUNGER" />
-  <Button id="rollDash_btnOblivStain_Black"
-    active="False"
-    rectAlignment="UpperLeft"
-    offsetXY="499 5"
-    width="64"
-    height="24"
-    fontSize="9"
-    onClick="HUD_rollConfirmOblivChoice"
-    text="STAIN" />
-  
-  
-  <Button id="rollDash_btnBrutalFail_Black"
-    active="False"
-    rectAlignment="UpperLeft"
-    offsetXY="567 5"
-    width="56"
-    height="24"
-    fontSize="9"
-    onClick="HUD_rollConfirmBrutalChoice"
-    text="FAIL" />
-  <Button id="rollDash_btnBrutalViolence_Black"
-    active="False"
-    rectAlignment="UpperLeft"
-    offsetXY="627 5"
-    width="72"
-    height="24"
-    fontSize="9"
-    onClick="HUD_rollConfirmBrutalChoice"
-    text="VIOLENCE" />
-  
-  <Button id="rollDash_cancel_Black"
-    rectAlignment="UpperLeft"
-    offsetXY="703 5"
+
+  <Button id="rollDash_stBroadcast_3"
+
+    rectAlignment="MiddleRight"
+    offsetXY="-10 0"
     width="24"
     height="24"
-    fontSize="11"
+    fontSize="14"
+    color="#00ffd5"
+    outline="#FFFFFF"
+    outlineSize = "2 -2"
+    fontStyle = "Bold"
+    textColor = "#FFFFFF"
+    text="<"
+    onClick="HUD_rollBroadcast" />
+
+  <Button id="rollDash_stCancel_3"
+
+    rectAlignment="MiddleRight"
+    offsetXY="-10 0"
+    width="24"
+    height="24"
+    fontSize="14"
     color="rgba(0.6,0.1,0.1,1)"
-    onClick="HUD_rollCancel"
-    text="X" />
+    outline="#FFFFFF"
+    outlineSize = "2 -2"
+    fontStyle = "Bold"
+    textColor = "#FFFFFF"
+    text="X"
+    onClick="HUD_rollCancel" />
 </Panel>
 </VerticalLayout>

@@ -57,6 +57,22 @@
 
 local U = {}
 
+-- Monotonic load timeline (`os.clock()` since first ensure); shared by Global + core modules.
+local TR_LOAD_MONO_CLOCK_T0 = nil
+
+--- Establish load timeline t0 (idempotent). Call from Global chunk before other load logs.
+function U.ensureLoadClockT0()
+    if TR_LOAD_MONO_CLOCK_T0 == nil then
+        TR_LOAD_MONO_CLOCK_T0 = os.clock()
+    end
+end
+
+--- @return string prefix like `[load+0.012s] `
+function U.loadElapsedPrefix()
+    U.ensureLoadClockT0()
+    return string.format("[load+%.3fs] ", os.clock() - TR_LOAD_MONO_CLOCK_T0)
+end
+
 -- ============================================================================
 -- MATH & NUMERIC UTILITIES
 -- ============================================================================

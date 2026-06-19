@@ -445,7 +445,6 @@ local function sanitizeSavedPlayerData(statePlayerData)
             local staticData = C.PlayerData[playerID]
             for key, _ in pairs(dynamicData) do
                 if staticData[key] ~= nil then
-                    print("[State] Sanitizing: Removing static key '" .. tostring(key) .. "' from saved playerData for player '" .. tostring(playerID) .. "'")
                     dynamicData[key] = nil
                 end
             end
@@ -512,7 +511,7 @@ function S.InitializeGameState(saved_data)
             saved_data = JSON.decode(saved_data)
         end
 
-        print("State: Loading saved game state.")
+        print(U.loadElapsedPrefix() .. "State: Loading saved game state.")
 
         -- Start with defaults, then merge saved data (saved data takes precedence)
         gameState = U.clone(S.GetDefaultGameState())
@@ -535,9 +534,6 @@ function S.InitializeGameState(saved_data)
     end
 
     -- Merge C.PlayerData (static) on top of gameState.playerData (dynamic)
-    -- This creates the complete player data structure used at runtime
-    -- gameState.playerData at this point contains only dynamic values (from save or defaults)
-    print("State: Merging static player data from constants...")
     local completePlayerData = S.mergePlayerData(gameState.playerData)
     gameState.playerData = completePlayerData
 
@@ -721,10 +717,7 @@ function S.validateState()
                 entry.sessionScene = {}
             end
             mergeSessionSceneDefaults(entry.sessionScene, S.GetDefaultGameState().sessionScene)
-            local _, libMigrated = NpcPlacementsConvert.normalizeSessionScene(entry.sessionScene)
-            if libMigrated then
-                print("[state] sceneLibrary: migrated legacy byArea → placements in a library row")
-            end
+            NpcPlacementsConvert.normalizeSessionScene(entry.sessionScene)
             if SceneLibrary and type(SceneLibrary.syncNpcRoleOverrideFromSeatSlots) == "function" then
                 SceneLibrary.syncNpcRoleOverrideFromSeatSlots(entry.sessionScene)
             end

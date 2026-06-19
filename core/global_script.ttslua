@@ -23,21 +23,7 @@
 -- until `onLoad`, so `function onLoad` repeats this + schedules Wait retries.
 -- GUIDs MUST match `lib/guids.ttslua` `SOUNDSCAPE_*` (see SYNC comment there).
 -- ---------------------------------------------------------------------------
--- Monotonic load timeline for console: t0 = first `trEarlySilenceSoundscapeEmitters` call
--- (`os.clock()`, seconds since Lua VM start — good for relative ordering during load).
-local TR_LOAD_MONO_CLOCK_T0 = nil
-
-local function trLoadEnsureT0()
-    if TR_LOAD_MONO_CLOCK_T0 == nil then
-        TR_LOAD_MONO_CLOCK_T0 = os.clock()
-    end
-end
-
---- @return string prefix like "[load+0.012s] "
-local function trLoadElapsedPrefix()
-    trLoadEnsureT0()
-    return string.format("[load+%.3fs] ", os.clock() - TR_LOAD_MONO_CLOCK_T0)
-end
+U = require("lib.util")
 
 local TR_EARLY_SOUNDSCAPE_EMITTER_GUIDS = {
   "2870fb",
@@ -88,21 +74,15 @@ end
 
 --- @param phaseLabel string identifies this pass in the TTS console load timeline
 local function trEarlySilenceSoundscapeEmitters(phaseLabel)
-    trLoadEnsureT0()
+    U.ensureLoadClockT0()
     local label = type(phaseLabel) == "string" and phaseLabel or "sync-immediate"
-    print(trLoadElapsedPrefix() .. "[SoundscapeEarly] begin: " .. label)
     local getObj = rawget(_G, "getObjectFromGUID")
     if type(getObj) ~= "function" then
-        print(trLoadElapsedPrefix() .. "[SoundscapeEarly] skip: getObjectFromGUID unavailable (" .. label .. ")")
         return
     end
-    local total = #TR_EARLY_SOUNDSCAPE_EMITTER_GUIDS
-    local resolved = 0
-    local silentSwapped = 0
     for _, guid in ipairs(TR_EARLY_SOUNDSCAPE_EMITTER_GUIDS) do
         local obj = getObj(guid)
         if obj ~= nil then
-            resolved = resolved + 1
             trEarlyHardSilenceSources(obj)
             local ab = obj.AssetBundle
             if ab ~= nil and ab.getLoopingEffects ~= nil and ab.playLoopingEffect ~= nil then
@@ -111,7 +91,6 @@ local function trEarlySilenceSoundscapeEmitters(phaseLabel)
                     for _, eff in ipairs(effects) do
                         if type(eff) == "table" and eff.name == "silent" and type(eff.index) == "number" then
                             ab.playLoopingEffect(eff.index)
-                            silentSwapped = silentSwapped + 1
                             break
                         end
                     end
@@ -120,18 +99,6 @@ local function trEarlySilenceSoundscapeEmitters(phaseLabel)
             trEarlyHardSilenceSources(obj)
         end
     end
-    print(
-        trLoadElapsedPrefix()
-            .. "[SoundscapeEarly] complete: "
-            .. label
-            .. " (emitters resolved "
-            .. tostring(resolved)
-            .. "/"
-            .. tostring(total)
-            .. ", silent loop applied "
-            .. tostring(silentSwapped)
-            .. ")"
-    )
 end
 
 --- Wall-clock delays after which we re-run silence (emitters often do not exist during the Global chunk).
@@ -143,7 +110,6 @@ local function trScheduleEarlySoundscapeSilenceDeferred(schedulerLabel)
     local tag = type(schedulerLabel) == "string" and schedulerLabel or "unknown"
     local W = rawget(_G, "Wait")
     if type(W) ~= "table" or type(W.time) ~= "function" then
-        print(trLoadElapsedPrefix() .. "[SoundscapeEarly] note: Wait.time unavailable (" .. tag .. ") — deferred passes skipped")
         return false
     end
     for _, sec in ipairs(TR_EARLY_SILENCE_DEFERRAL_SECONDS) do
@@ -152,14 +118,6 @@ local function trScheduleEarlySoundscapeSilenceDeferred(schedulerLabel)
             trEarlySilenceSoundscapeEmitters(tag .. "-wait-" .. tostring(delay))
         end, delay)
     end
-    print(
-        trLoadElapsedPrefix()
-            .. "[SoundscapeEarly] scheduled "
-            .. tostring(#TR_EARLY_SILENCE_DEFERRAL_SECONDS)
-            .. " deferred passes ("
-            .. tag
-            .. ")"
-    )
     return true
 end
 
@@ -167,7 +125,6 @@ end
 trEarlySilenceSoundscapeEmitters("chunk-sync-immediate")
 
 -- Load shared utilities and constants
-U = require("lib.util")
 C = require("lib.constants")
 DK = require("lib.dice_kinds")
 G = require("lib.guids")
@@ -216,47 +173,6 @@ local DBV = require("lib.dice_bag_visibility")
 
 -- Load debug module (only in development). Must be global so TTS console `lua DEBUG.foo()` works.
 DEBUG = require("core.debug")
-
-local AGENT_DEBUG_LOG = "debug-ac55f9.log"
-local agentDebugSessionOpen = false
-
---- @param hypothesisId string
---- @param location string
---- @param message string
---- @param data table|nil
-local function agentDebugLog(hypothesisId, location, message, data)
-    if DEBUG == nil or DEBUG.workspaceNdjsonAppend == nil then
-        return
-    end
-    if not agentDebugSessionOpen then
-        agentDebugSessionOpen = true
-        local W = require("lib.workspace_ndjson_log")
-        W.mirrorAppendToPrint = true
-        DEBUG.workspaceNdjsonBegin(AGENT_DEBUG_LOG)
-    end
-    DEBUG.workspaceNdjsonAppend(AGENT_DEBUG_LOG, {
-        sessionId = "ac55f9",
-        hypothesisId = hypothesisId,
-        location = location,
-        message = message,
-        data = data or {},
-        runId = "pre-fix",
-    })
-end
-
---- Global.call bridge for object-script NDJSON (e.g. dice_bag.releaseDice).
--- @param params table  { hypothesisId?, location?, message?, data? }
-function GlobalAgentDebugLog(params)
-    if type(params) ~= "table" then
-        return
-    end
-    agentDebugLog(
-        params.hypothesisId or "-",
-        params.location or "GlobalAgentDebugLog",
-        params.message or "-",
-        params.data
-    )
-end
 
 -- Load Console++ integration (optional - enables external command support)
 -- This allows external tools to send commands to the game via onExternalMessage
@@ -1374,24 +1290,23 @@ function onLoad(saved_data)
     trEarlySilenceSoundscapeEmitters("onLoad-sync-immediate")
     trScheduleEarlySoundscapeSilenceDeferred("onLoad")
 
-    print(trLoadElapsedPrefix() .. "--- VTM5E Module Loaded ---")
+    print(U.loadElapsedPrefix() .. "--- VTM5E Module Loaded ---")
     local startupLastAction = "onLoad:start"
+    local startupStepsSilent = {
+        ["clear-debug-logs"] = true,
+        ["zones-onload"] = true,
+    }
 
     --- @param action string
     local function setStartupAction(action)
         if type(action) == "string" and action ~= "" then
             if startupLastAction ~= action then
                 startupLastAction = action
-                print(trLoadElapsedPrefix() .. "Startup step: " .. tostring(startupLastAction))
+                if startupStepsSilent[action] ~= true then
+                    print(U.loadElapsedPrefix() .. "Startup step: " .. tostring(startupLastAction))
+                end
             end
         end
-    end
-
-    -- Print host Steam ID for hardcoding into C.StorytellerID (lib/constants.ttslua)
-    setStartupAction("resolve-host-steam-id")
-    local host = U.getHost and U.getHost()
-    if host and host.steam_id then
-        print(trLoadElapsedPrefix() .. "Host Steam ID (use for C.StorytellerID in lib/constants.ttslua): " .. tostring(host.steam_id))
     end
 
     -- Clear all debug logs to start fresh for this session
@@ -1511,7 +1426,7 @@ function onLoad(saved_data)
             end
             setStartupAction("startup-ready-delay-before-overlay-hide")
             print(
-                trLoadElapsedPrefix()
+                U.loadElapsedPrefix()
                     .. "Startup readiness gate complete: waiting "
                     .. tostring(startupOverlayHideDelaySeconds)
                     .. "s before hiding loading overlay."
@@ -1526,7 +1441,7 @@ function onLoad(saved_data)
             setStartupAction("startup-ready-hide-loading-overlays")
             hideStartupLoadingOverlays()
             setStartupAction("startup-ready-complete")
-            print(trLoadElapsedPrefix() .. "Startup readiness gate complete: loading overlay hidden.")
+            print(U.loadElapsedPrefix() .. "Startup readiness gate complete: loading overlay hidden.")
             return 0
         end,
     }, 180)
@@ -1534,7 +1449,7 @@ function onLoad(saved_data)
     -- Debug module help (optional - shows available test commands)
     -- DEBUG.help()
 
-    print(trLoadElapsedPrefix() .. "Module initialization complete.")
+    print(U.loadElapsedPrefix() .. "Module initialization complete.")
 end
 
 --[[
@@ -3058,22 +2973,6 @@ function onObjectRandomize(obj, playerColor)
         RC.onWpRerollDieRandomized(color, obj)
     end
 
-    if color == "Black" then
-        local pidDbg = S.getPlayerID(color)
-        local phaseDbg = nil
-        if pidDbg ~= nil then
-            local activeDbg = S.getStateVal("playerData", pidDbg, "hud", "rollData", "active")
-            if type(activeDbg) == "table" then
-                phaseDbg = activeDbg.phase
-            end
-        end
-        agentDebugLog("H5", "onObjectRandomize", "Black die randomized", {
-            dieGuid = obj.getGUID and obj.getGUID() or nil,
-            playerColor = playerColor,
-            phase = phaseDbg,
-        })
-    end
-
     -- Delegate debounce reset to roll controller
     RC.onDieSettledSignal(color)
 end
@@ -3311,11 +3210,13 @@ end
 
 --- Auto-spawns missing pool dice for Black (Storyteller bags).
 -- @param pool table
+-- @param opts table|nil  `{ deferTrayPlacement?: boolean }` omit arc center until a later reposition step
 -- @return boolean true if any autoSpawn ran
-local function autoSpawnBlackPool(pool)
+local function autoSpawnBlackPool(pool, opts)
+    opts = type(opts) == "table" and opts or {}
     local didAutoSpawn = false
-    local arcCenter = storytellerArcCenterForActive()
-    if arcCenter == nil then
+    local arcCenter = opts.deferTrayPlacement == true and nil or storytellerArcCenterForActive()
+    if arcCenter == nil and opts.deferTrayPlacement ~= true then
         print("[Roll] autoSpawnBlackPool: no ST drawer arc center (missing stDrawerSlot?)")
     end
     local spawnPlan = {
@@ -3474,40 +3375,88 @@ local DRAWER_RELEASE_MIN_Y = 2.5
 --- FIFO jobs for `GlobalWaitDrawerThenReleaseBagDice` (one coroutine per enqueue; local `job` per run).
 local drawerReleaseJobQueue = {}
 
---- Unlocks staged bag dice for one seat (drawer must already be opening or open).
--- @param color string
--- @param opts table|nil  `{ physicalRoll?: boolean }` Black Roll: randomize each die as it unlocks
-local function unlockStagedBagDice(color, opts)
-    opts = type(opts) == "table" and opts or {}
-    local physicalRoll = opts.physicalRoll == true
-    if color == "Black" then
-        agentDebugLog("H3", "unlockStagedBagDice", "Black unlock", { physicalRoll = physicalRoll })
-        local pid = S.getPlayerID(color)
-        if pid ~= nil then
-            local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
-            if type(active) == "table" and type(active.stDrawerSlot) == "number" then
-                local STR = require("core.storyteller_rolls")
-                STR.onFirstDieSpawned()
+--- Ensures roll tags on all ST staged dice before unlock/randomize.
+local function ensureBlackStagedRollTags()
+    local bags = G.GetAllStorytellerDiceBagGUIDs()
+    for _, guid in pairs(bags) do
+        if type(guid) == "string" then
+            local bag = getObjectFromGUID(guid)
+            if bag ~= nil then
+                bag.call("ensureRollTagsOnStagedDice")
             end
         end
+    end
+end
+
+--- Instant snap of locked ST staged dice to the drawer tray arc (setPosition, not smooth).
+local function instantRepositionBlackStagedDice()
+    local arcCenter = storytellerArcCenterForActive()
+    local bags = G.GetAllStorytellerDiceBagGUIDs()
+    for _, guid in pairs(bags) do
+        if type(guid) == "string" then
+            local bag = getObjectFromGUID(guid)
+            if bag ~= nil then
+                bag.call("repositionStagedDice", { arcCenter = arcCenter })
+            end
+        end
+    end
+end
+
+--- Spawns missing ST pool dice locked at the bag (tray placement deferred to a later step).
+local function spawnBlackPoolLocked()
+    local pid = S.getPlayerID("Black")
+    if pid == nil then
+        return
+    end
+    local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+    if active == nil then
+        return
+    end
+    local pool = DK.normalizePool(active.pool)
+    blackRollPhysicalSpawnActive = true
+    autoSpawnBlackPool(pool, { deferTrayPlacement = true })
+    blackRollPhysicalSpawnActive = false
+end
+
+--- Instantly snaps locked ST staged dice onto the drawer tray arc and tags them for the roll.
+local function moveBlackStagedDiceToTray()
+    instantRepositionBlackStagedDice()
+    ensureBlackStagedRollTags()
+end
+
+--- Randomize every die in the active Black roll at once (Global context; fires onObjectRandomize).
+-- @param rollId string
+local function randomizeBlackTrayDiceSimultaneous(rollId)
+    if type(rollId) ~= "string" then
+        return
+    end
+    local _, objectsByKind = RC._getDicePoolsForRoll("Black", rollId)
+    for _, kind in ipairs(DK.ALL_KINDS) do
+        for _, die in ipairs(objectsByKind[kind] or {}) do
+            if die ~= nil and die.randomize ~= nil then
+                if die.getLock ~= nil and die.getLock() == true then
+                    die.setLock(false)
+                end
+                local ok = die.randomize("Black")
+                if ok ~= true then
+                    die.randomize()
+                end
+            end
+        end
+    end
+end
+
+--- Unlocks staged bag dice for one seat (drawer must already be opening or open).
+-- @param color string
+local function unlockStagedBagDice(color)
+    if color == "Black" then
+        ensureBlackStagedRollTags()
         local bags = G.GetAllStorytellerDiceBagGUIDs()
         for _, guid in pairs(bags) do
             if type(guid) == "string" then
                 local bag = getObjectFromGUID(guid)
                 if bag ~= nil then
-                    bag.call("ensureRollTagsOnStagedDice")
-                end
-            end
-        end
-        for _, guid in pairs(bags) do
-            if type(guid) == "string" then
-                local bag = getObjectFromGUID(guid)
-                if bag ~= nil then
-                    if physicalRoll then
-                        bag.call("releaseDice", { randomize = true })
-                    else
-                        bag.call("releaseDice")
-                    end
+                    bag.call("releaseDice")
                 end
             end
         end
@@ -3517,29 +3466,84 @@ local function unlockStagedBagDice(color, opts)
     callBagFunction(color, "releaseDice")
 end
 
+local blackRollSequenceRunning = false
+
+--- ST Roll click: tray open → spawn → move to tray → 1s hover → unlock + simultaneous roll.
+local function runBlackRollSequence()
+    local pid = S.getPlayerID("Black")
+    if pid == nil then
+        return
+    end
+    local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+    if active == nil or active.phase ~= C.RollPhase.PRE_ROLL then
+        return
+    end
+    if type(active.stDrawerSlot) ~= "number" then
+        return
+    end
+    if blackRollSequenceRunning then
+        return
+    end
+    blackRollSequenceRunning = true
+    local slot = active.stDrawerSlot
+    local rollId = active.id
+
+    U.RunSequenceWithOptions({
+        function()
+            local STR = require("core.storyteller_rolls")
+            STR.activateDrawerForSlot(slot)
+            return 0.5
+        end,
+        function()
+            spawnBlackPoolLocked()
+            return 0.5
+        end,
+        function()
+            moveBlackStagedDiceToTray()
+            return 1
+        end,
+        function()
+            if RC.startRolling("Black") ~= true then
+                return nil
+            end
+            unlockStagedBagDice("Black")
+            local activeNow = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+            if activeNow == nil or activeNow.phase ~= C.RollPhase.ROLLING then
+                return nil
+            end
+            randomizeBlackTrayDiceSimultaneous(activeNow.id or rollId)
+            return nil
+        end,
+    }, {
+        onComplete = function()
+            blackRollSequenceRunning = false
+        end,
+    })
+end
+
 --- Advances to ROLLING and unlocks staged dice (drawer must already be raised when applicable).
--- Black: startRolling first so `onObjectRandomize` sees ROLLING, then unlock + randomize in bag.
+-- Black legacy/debug path: startRolling → 1s hover → unlock + simultaneous randomize.
 -- @param color string
 -- @return boolean
 local function finishRollRelease(color)
     if color == "Black" then
-        local phaseBefore = nil
         local pid = S.getPlayerID(color)
+        local delayedRollId = nil
         if pid ~= nil then
             local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
-            if type(active) == "table" then
-                phaseBefore = active.phase
+            if type(active) == "table" and type(active.id) == "string" then
+                delayedRollId = active.id
             end
         end
-        local started = RC.startRolling(color)
-        agentDebugLog("H1", "finishRollRelease", "startRolling", {
-            phaseBefore = phaseBefore,
-            started = started,
-        })
-        if started ~= true then
-            return false
-        end
-        unlockStagedBagDice(color, { physicalRoll = true })
+        U.delay(function()
+            if RC.startRolling(color) ~= true then
+                return
+            end
+            unlockStagedBagDice(color)
+            if type(delayedRollId) == "string" then
+                randomizeBlackTrayDiceSimultaneous(delayedRollId)
+            end
+        end, 1)
         return true
     end
     unlockStagedBagDice(color)
@@ -3782,45 +3786,19 @@ function HUD_rollRollButton(player, value, id)
 
     GlobalRollSeatCamera({ color = color, mode = "diceTray" })
 
+    if color == "Black" then
+        runBlackRollSequence()
+        return
+    end
+
     local didAutoSpawn = spawnActivePoolDiceForActive(color, { fromRollClick = true })
 
-    if color == "Black" then
-        local pidBlack = S.getPlayerID(color)
-        local phaseAtRoll = nil
-        local poolTotalAtRoll = nil
-        if pidBlack ~= nil then
-            local activeAtRoll = S.getStateVal("playerData", pidBlack, "hud", "rollData", "active")
-            if type(activeAtRoll) == "table" then
-                phaseAtRoll = activeAtRoll.phase
-                if type(activeAtRoll.pool) == "table" then
-                    poolTotalAtRoll = DK.poolTotal(DK.normalizePool(activeAtRoll.pool))
-                end
-            end
-        end
-        agentDebugLog("H2", "HUD_rollRollButton", "Roll clicked", {
-            didAutoSpawn = didAutoSpawn,
-            phaseAtRoll = phaseAtRoll,
-            poolTotalAtRoll = poolTotalAtRoll,
-        })
-    end
-
-    if color == "Black" then
-        local pid = S.getPlayerID(color)
-        if pid ~= nil then
-            local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
-            if active ~= nil and type(active.stDrawerSlot) == "number" then
-                local STR = require("core.storyteller_rolls")
-                STR.activateDrawerForSlot(active.stDrawerSlot)
-            end
-        end
-    end
-
-    -- Release staged dice once the drawer is up; Black also physical-randomizes on unlock.
+    -- Release staged dice once the drawer is up.
     local function releaseThenStartRolling()
         releaseBagDice(color)
     end
 
-    if didAutoSpawn and color ~= "Black" then
+    if didAutoSpawn then
         U.delay(releaseThenStartRolling, 0.2)
     else
         releaseThenStartRolling()

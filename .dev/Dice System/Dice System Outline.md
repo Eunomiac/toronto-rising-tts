@@ -710,10 +710,9 @@ All roll-related UI element IDs follow a consistent naming pattern:
 | ------------- | ----------------------- | --------------- |
 | ST Roll Dashboard panel | `rollDash_ST` | Visibility: `"Black\|Host"`; body from generated `ui/shared/roll_dash_generated.xml` |
 | ST row for player color | `rollDash_row_<Color>` | One per `C.PlayerColors`; template `ui/.templates/roll/partials/dash_row_pc.xml` |
-| ST drawer slot row | `rollDash_stRow_<1-3>` | CLEAR strip; template `dash_slot_row.xml` |
-| ST Black live dashboard row | `rollDash_row_Black` | NPC/Werewolf; template `dash_row_st_live.xml` (inline Obliv/Brutal buttons) |
-| ST difficulty input field | `rollDash_difficulty_<Color>` | `InputField` |
-| ST open/confirm button | `rollDash_btn_<Color>` | Label changes by phase |
+| ST drawer slot row | `rollDash_stRow_<1-3>` | Live ST roll summary + CLEAR; template `dash_slot_row.xml` |
+| ST dashboard difficulty strip | `gridStrip_rollDash<Color>_difficulty` | Grid strip (0–10); SETUP click sets difficulty and opens roll (`RC.openRoll`) |
+| ST open/confirm button | `rollDash_btn_<Color>` | Removed from dashboard; confirm/cancel live on player roll panel |
 | Player Roll Panel (PC) | `rollControl_root_<Color>` | Generated: `ui/player/panel_roll_controls.xml` from `ui/.templates/panel_roll_controls.xml`; visibility `"<Color>"` |
 | ST live roll panel | `rollPanel_Black` | In `ui/shared/roll_panels.xml`; includes Recalculate |
 | Player roll type | `rollControl_rollType_<Color>` | Title-case `C.RollTypeLabel` |
@@ -736,7 +735,9 @@ All roll-related UI element IDs follow a consistent naming pattern:
 | Broadcast difficulty | `rollRes_difficultyDisplay`, `rollRes_difficulty` | Hidden when no difficulty was set |
 | Broadcast result | `rollRes_resultDisplay` | ALL CAPS headline + signed margin; class via `rollRes_result_*` |
 
-**InputField contract (ST difficulty):** The `rollDash_difficulty_<Color>` fields use **`onValueChanged="HUD_rollSetDifficulty"`**; difficulty is taken from the callback **`value`** argument, not from `UI.getValue`. That matches the TTS rule that `InputField` text is only available inside `onValueChanged` / `onEndEdit` ([Input Elements — InputField](https://api.tabletopsimulator.com/ui/inputelements/)). Project-wide guidance: [`.dev/SOLVING ISSUES & DEBUGGING.md`](../SOLVING%20ISSUES%20%26%20DEBUGGING.md) (*Global UI `InputField` — typed text*).
+**ST dashboard difficulty (grid strip):** `gridStrip_rollDash<Color>_difficulty` cells use the generic grid-strip HUD handlers. Registry context **`rollDash<Color>`** (one per `C.PlayerColors`, registered in `core/roll_ui.ttslua`): kind `difficulty` (0–10). On commit: `RC.setDifficulty`; when the roll is still in **SETUP**, also `RC.openRoll` (replaces the former Open button). Refresh: `RUI.refreshDashDifficultyStrip(color, active)` from `RUI.refreshSTDashboard()`.
+
+**Legacy InputField contract:** If `rollDash_difficulty_<Color>` InputFields are reintroduced, use **`onValueChanged="HUD_rollSetDifficulty"`** and read difficulty from the callback **`value`** argument only ([Input Elements — InputField](https://api.tabletopsimulator.com/ui/inputelements/)). Project-wide guidance: [`.dev/SOLVING ISSUES & DEBUGGING.md`](../SOLVING%20ISSUES%20%26%20DEBUGGING.md) (*Global UI `InputField` — typed text*).
 
 ---
 
@@ -853,7 +854,7 @@ function HUD_rollInitiate(player, value, id) end
 </Panel>
 ```
 
-Generated body (`roll_dash_generated.xml`) contains: ACTIVE ROLLS header, five PC rows (`rollDash_row_<Color>`), STORYTELLER SLOTS header + three slot rows (`rollDash_stRow_<n>`), and Black live row (`rollDash_row_Black`). Edit layouts in `ui/.templates/roll/partials/`; refresh logic unchanged in `RUI.refreshSTDashboard()`.
+Generated body (`roll_dash_generated.xml`) contains: ACTIVE ROLLS header, five PC rows (`rollDash_row_<Color>`), STORYTELLER SLOTS header + three slot rows (`rollDash_stRow_<n>`). ST live-roll controls live in `panel_storyteller_roll_controls.xml`, not the dashboard. Edit layouts in `ui/.templates/roll/partials/`; `RUI.refreshSTDashboard()` drives labels and visibility.
 
 ### 10.2 Player Roll Panels (PC colors — generated template)
 
@@ -905,7 +906,15 @@ Key element IDs: fullscreen `rollRes_panel`; split header (`rollRes_rollType`, `
 
 Registry context **`rollPanelST`** (registered in `core/roll_ui.ttslua`): kinds `hunger` (1–5), `normal` (1–10), `difficulty` (0–10). Commits map to `RC.setPoolKindCount` / `RC.setDifficulty` on Black; Werewolf rolls map `hunger`→rage, `normal`→werewolf. Full panel refresh: `refreshStRollPanel(active)` from `RUI.refreshPlayerRollPanel("Black")`; grid strips: `RUI.refreshStRollGridStrips(active)`.
 
-**Physical dice (Black only):** pool counts are configured in state (grid strips, ST bag clicks) during SETUP/PRE_ROLL; bags do not spawn dice until **ROLL** (`HUD_rollRollButton` / dashboard ROLL → `spawnActivePoolDiceForActive` with `fromRollClick`). Drawer opens on Roll, waits until raised (`STD.isRaisedForRelease`), then `finishRollRelease`: `RC.startRolling` → unlock + `Object.randomize()` per die in `dice_bag.releaseDice({ randomize = true })` (same frame, direct object refs).
+### 10.5 ST Roll Dashboard difficulty strips (`rollDash<Color>`)
+
+**Template:** [`ui/.templates/roll/partials/dash_row_pc.xml`](../../ui/.templates/roll/partials/dash_row_pc.xml) → generated [`ui/shared/roll_dash_generated.xml`](../../ui/shared/roll_dash_generated.xml).
+
+One registry context per PC seat: **`rollDashBrown`**, **`rollDashOrange`**, etc. (context id = `rollDash` + color, no underscore). Strip id: `gridStrip_rollDash<Color>_difficulty`; cells `…_0` … `…_10`.
+
+Kind **`difficulty`** only (0–10). **`onCommit`:** `RC.setDifficulty(<Color>, value)`; if phase is **SETUP**, also **`RC.openRoll(<Color>)`** (replaces the removed Open button). **`canInteract`:** Black/Host only; not when roll is RESOLVED. Refresh: **`RUI.refreshDashDifficultyStrip(color, active)`** from **`RUI.refreshSTDashboard()`**.
+
+**Physical dice (Black only):** pool counts are configured in state (grid strips, ST bag clicks) during SETUP/PRE_ROLL; bags do not spawn dice until **ROLL**. `HUD_rollRollButton` drives **`U.RunSequenceWithOptions`**: (1) smooth-open ST drawer (`STR.activateDrawerForSlot`), wait 0.5s; (2) spawn locked dice at bags (`spawnBlackPoolLocked`, no tray arc yet), wait 0.5s; (3) instant `setPosition` onto tray arc (`moveBlackStagedDiceToTray`), wait 1s (locked hover); (4) `RC.startRolling` + bag `releaseDice` unlock + simultaneous `Object.randomize("Black")` from Global (`randomizeBlackTrayDiceSimultaneous`) in one step. ST tray placement uses instant positioning; drawer motion stays smooth.
 
 ---
 

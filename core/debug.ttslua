@@ -4136,8 +4136,6 @@ function DEBUG.clearAllLogs()
     -- Seed append-style logs in memory only; first log line triggers the first disk write.
     logCache["debug_log"] = sessionHeader
     logCache["test_results"] = sessionHeader
-
-    print("DEBUG: Debug log session started (cache cleared; no log files written on load)")
 end
 
 --[[

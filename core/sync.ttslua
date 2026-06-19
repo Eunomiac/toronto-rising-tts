@@ -355,9 +355,6 @@ function Sync.full(opts)
     opts = type(opts) == "table" and opts or {}
     local force = opts.force == true
     local reason = type(opts.reason) == "string" and opts.reason or ""
-    if reason ~= "" then
-        print("[Sync.full] reason=" .. reason .. " force=" .. tostring(force))
-    end
 
     local t0 = os.clock()
     local reconcileOpts = force and { force = true } or {}

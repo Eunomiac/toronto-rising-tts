@@ -418,14 +418,12 @@ local function requestSeatLayoutSync()
     end
     local rsl = require("lib.rotational-seat-layout")
     if rsl ~= nil and type(rsl.isLayoutSyncCurrent) == "function" and rsl.isLayoutSyncCurrent() then
-        print("[npcs] requestSeatLayoutSync skipped (layout fingerprint unchanged)")
         return
     end
     seatSyncQueued = true
     U.delay(function()
         seatSyncQueued = false
         if rsl ~= nil and type(rsl.isLayoutSyncCurrent) == "function" and rsl.isLayoutSyncCurrent() then
-            print("[npcs] requestSeatLayoutSync skipped (layout fingerprint unchanged)")
             return
         end
         if rsl ~= nil and type(rsl.SyncTable) == "function" then
@@ -3918,14 +3916,6 @@ function NPCS.ensureAllNpcsPreloaded(opts)
             missing[#missing + 1] = name
         end
     end
-
-    emitNpcPreloadMetrics({
-        phase = "start",
-        characterCount = #names,
-        missingCount = #missing,
-        batchSize = opts.immediate == true and #missing or PRELOAD_SPAWN_BATCH_SIZE,
-        immediate = opts.immediate == true,
-    })
 
     if #missing == 0 then
         if opts.auditAfterPreload == true then

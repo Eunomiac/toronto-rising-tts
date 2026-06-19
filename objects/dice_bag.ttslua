@@ -232,7 +232,9 @@ function spawnDie(bagColor, dieType, opts)
     local spawnRadius = radiusForSpawnKind(dieType, bloodSurgeRouse)
 
     -- Per-ring arc slots (Rouse bag may hold manual rouse + Blood Surge rouse at different radii).
-    repositionStagedDiceOnRingArc(bagColor, arcCenter, bagKind, spawnedDice, true)
+    -- ST tray: instant setPosition so dice are in place before Roll randomize; players keep smooth staging.
+    local useSmoothStaging = not isStorytellerBag()
+    repositionStagedDiceOnRingArc(bagColor, arcCenter, bagKind, spawnedDice, useSmoothStaging)
 
     local ringCount = 0
     for _, staged in ipairs(spawnedDice) do
@@ -441,7 +443,8 @@ function removeLastSpawnedDie(params)
         bagColor = "Black"
     end
     local bagKind = getDieType()
-    repositionStagedDiceOnRingArc(bagColor, arcCenter, bagKind, spawnedDice, true)
+    local useSmoothStaging = not isStorytellerBag()
+    repositionStagedDiceOnRingArc(bagColor, arcCenter, bagKind, spawnedDice, useSmoothStaging)
 
     local reportColor = bagColor
     if reportColor == nil and isStorytellerBag() then
@@ -490,35 +493,9 @@ function releaseDice(params)
         end
     end
 
-    local randomizeResults = {}
     for _, die in ipairs(dice) do
         die.setLock(false)
-        local entry = {
-            guid = die.getGUID(),
-            hasRandomize = die.randomize ~= nil,
-        }
-        if params.randomize == true and die.randomize ~= nil then
-            entry.randomizeReturn = die.randomize()
-        end
-        randomizeResults[#randomizeResults + 1] = entry
     end
-
-    -- #region agent log
-    Global.call("GlobalAgentDebugLog", {
-        hypothesisId = "H3",
-        location = "dice_bag.releaseDice",
-        message = "releaseDice",
-        data = {
-            bagGuid = self.getGUID(),
-            dieKind = getDieType(),
-            stagedCount = #dice,
-            paramsType = type(params),
-            randomizeFlag = params.randomize,
-            isStoryteller = isStorytellerBag(),
-            randomizeResults = randomizeResults,
-        },
-    })
-    -- #endregion
 
     -- ST dice stay on the table after release; drop bag tracking so a later roll
     -- does not pull resolved dice back into the spawn arc.

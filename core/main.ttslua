@@ -29,12 +29,12 @@ local S = require("core.state")
     Sets up game systems and prepares for play.
 ]]
 function M.onLoad()
-  print("Main: Core module loaded.")
+  print(U.loadElapsedPrefix() .. "Main: Core module loaded.")
   -- Initialize systems
   M.setupPlayers()
   M.syncPhase()   -- Sync UI/features based on current phase
 
-  print("Main: Module initialization complete.")
+  print(U.loadElapsedPrefix() .. "Main: Module initialization complete.")
 end
 
 --[[
@@ -43,12 +43,11 @@ end
     Promotes players and applies one-time table visibility setup.
 ]]
 function M.setupPlayers()
-  print("Main: Setting up players.")
+  print(U.loadElapsedPrefix() .. "Main: Setting up players.")
 
   -- Promote all players (give them full permissions)
   for _, player in ipairs(Player.getPlayers()) do
     player.promoted = true
-    print("Main: Promoted player " .. player.color)
   end
 
   -- Objects on / above the Storyteller table: GM table + GM light use `C.HiddenObjects` via O.ApplyLockedAndHiddenFromConstants() in Global.onLoad.
@@ -176,7 +175,7 @@ function M.syncPhase()
     S.setCurrentPhase(currentPhase)
   end
 
-  print("Main: Syncing phase - " .. currentPhase)
+  print(U.loadElapsedPrefix() .. "Main: Syncing phase - " .. currentPhase)
 
   -- TODO: Phase-specific logic
   -- - Update UI visibility based on phase

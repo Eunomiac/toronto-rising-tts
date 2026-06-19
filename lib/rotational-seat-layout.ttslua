@@ -1555,8 +1555,6 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
   local cloneGuidByColorRole = {}
   --- [color] = { [role] = Object } for non-template colors (moved; nil when slot skipped)
   local seatObjByColorRole = {}
-  --- [color] = { roleKey, ... } roles with no tagged object for that seat (skipped, not cloned)
-  local skippedSlotsByColor = {}
   local handZoneMoveBySeat = {}
   handZoneMoveBySeat[referencePlayerColor] = referenceHandZoneMove
   local followerTransformsBySeat = {}
@@ -1716,8 +1714,6 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
           else
             cloneGuidByColorRole[color][expectedRole] = ""
             seatObjByColorRole[color][expectedRole] = nil
-            skippedSlotsByColor[color] = skippedSlotsByColor[color] or {}
-            table.insert(skippedSlotsByColor[color], expectedRole)
           end
         end
       end
@@ -1754,18 +1750,6 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
           .. " tagged object(s) did not match any template slot (left in place)."
           .. " Unmatched: "
           .. table.concat(orphanDetails, ", ")
-        )
-      end
-      local skippedRoles = skippedSlotsByColor[color]
-      if U.Type(skippedRoles) == "table" and #skippedRoles > 0 then
-        table.sort(skippedRoles)
-        print(
-          "[rotational-seat-layout] seat '"
-          .. color
-          .. "': "
-          .. tostring(#skippedRoles)
-          .. " template slot(s) had no matching object (skipped, not cloned): "
-          .. table.concat(skippedRoles, ", ")
         )
       end
     end
@@ -2839,7 +2823,6 @@ function M.resolveSeatObjectsFromTable(tableRef, sourceObjects, options)
   end
   local layoutFingerprint = computeLayoutSyncFingerprint(tableKey)
   if not force and layoutFingerprint ~= nil and layoutFingerprint == lastLayoutSyncFingerprint then
-    print("[rotational-seat-layout] SyncTable skipped (layout fingerprint unchanged)")
     return nil
   end
   if opts.currentTableKey == nil then

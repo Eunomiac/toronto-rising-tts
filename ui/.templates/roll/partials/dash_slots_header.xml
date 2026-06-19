@@ -2,14 +2,16 @@
 <Panel id="rollDash_stSlotsHeader"
   active="False"
   preferredWidth="@@DASH_WIDTH@@"
+  color = "#111111"
   preferredHeight="20">
   <Text
-    rectAlignment="UpperLeft"
-    offsetXY="0 4"
+    rectAlignment="MiddleRight"
+    alignment = "MiddleRight"
+    offsetXY="0 0"
     width="@@DASH_WIDTH@@"
-    height="16"
-    fontSize="11"
+    height="20"
+    fontSize="14"
     fontStyle="Bold"
-    color="#AAAAAA"
+    color="#FFFFFF"
     text="STORYTELLER SLOTS" />
 </Panel>

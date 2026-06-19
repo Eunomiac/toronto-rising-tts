@@ -1,13 +1,31 @@
 # Inbox
 
+## Quick Fixes
+> Note to Agent processing the Inbox: For each bullet point listed in this section, check to see whether the fix is simple enough to do right now rather than logging it to Linear. You have full permission to implement and commit a fix to any of these bullets to the repo, assuming they actually _are_ quick fixes. If they are more complex than that, log them to Linear as with the bullets in the "Active" header, below.
+
+- [Control Board] [Quick Fix] When updating the "Snaps" button to toggle it on/off, the text color must be reset to #FFFFFF (TTS reverts the text color to black on any update of attributes)
+
 ## Active
 
-- NOTE TO AGENT: When you see this message, immediately ask the user to look into moving save data from `D:\OneDrive\Documents\My Games\Tabletop Simulator` to C-drive, by symlink if necessary
+- IMPORTANT: All testing has been done in single-player environments, with myself logged in as Host. We need to check how TTS runs scripts when non-Host clients connect -- do they run the same onLoad functions? If so, we need to exit those functions early whenever they would perform functions that are Host/Storyteller only (such as syncing the NPC stage, moving objects, setting up objects, etc)
 - [Clock/Time] Need a way to "fast forward" time in an animated fashion, lerping with a slow acceleration towards a date with an eased slow down on approach. Clock should update each frame, speeding up and slowing down as the game takes a time jump into the future/past.
 - [Control Board] Implement PC token controls: Activate/Deactivate seats, allow play as another NPC
   - When adopting the role of another NPC, a check should be performed for a matching character sheet object (searched by tag), and replace the player's normal sheet with the NPC's
-- [Control Board] [Quick Fix] When updating the "Snaps" button to toggle it on/off, the text color must be reset to #FFFFFF (TTS reverts the text color to black on any update of attributes)
 - [Seated NPCs] When an NPC figurine is seated at the table, its model scale should be set to `53`, and restored to the scale defined in `npcs_data.tts` when they are moved out of a seat (either to the stage or to the preload area)
+- [Storyteller Roll Control Panel] Rerolling dice for spending willpower needs to be redesigned so it can be done from the panel itself:
+  - Once a Storyteller roll has completed and results are presented on the Storyteller roll control panel, dice images should be clickable: A single-click highlights (via `outline`) the die, another click removes the highlight.
+  - If any dice are highlighted, a "Reroll" button should appear at the bottom of the panel. When clicked, all currently-highlighted dice in the panel are randomized again on the board (while all other dice remain locked). This might require adding an index to the GM notes of each die, or recording their GUIDs, so the control panel dice images can be mapped to their object counterparts.
+  - There should be zero restrictions placed on Storyteller rerolls: They can reroll multiple times (until they click "Confirm"), they can reroll hunger dice, they can reroll more than three dice.
+- [Dice Display Strips] Whenever dice results are displayed (player roll control panel, storyteller roll control panel, or roll result broadcast panel), the dice must be presented in the correct order:
+  - Rouse/Oblivion-Rouse Checks -> Obliv Fang+Stain -> Obliv Stain -> Obliv/Rouse Fang -> Obliv/Rouse Blank
+  - Standard Rolls: Hunger Crits -> Normal Crits -> Hunger Successes -> Normal Successes -> Hunger Blanks -> Normal Blanks -> Hunger Skull
+  - Werewolf Rolls: Rage Crits -> Werewolf Crits -> Rage Successes -> Werewolf Successes -> Rage Blanks -> Werewolf Blanks -> Rage Jaws
+      ... HOWEVER, if the result is a Brutal Outcome (i.e. the Storyteller "Confirms Violence"), then in the result broadcast panel, all Rage Jaws dice should be moved to the front of the line, before the Rage Crits
+  - In all of the above cases, no spacing should be added between groups of dice
+  - Rouse Checks and Oblivion Rouse checks are fine as they are
+- [Secret Storyteller Rolls] If the Storyteller _right_-clicks on the "Roll" button on the Storyteller Control Panel, the following changes should occur in the roll process: 0.5s after the dice are randomized above the player table, they should immediately be hidden via setInvisibleTo to all player colors. Otherwise, there should be no change to how the dice and dice tray are handled (i.e. they should all still remain on the table, until the Storyteller "clears" the roll.)
+- [Secret Storyteller Rolls] If the Storyteller _right_-clicks on the "Confirm" or "Take Half" button on the Storyteller Control Panel, no results should be broadcast.
+- [Secret Storyteller Rolls] Adjacent to the "Clear" button on the main Roll Control dashboard should be a "Broadcast" button, which will broadcast the results of the roll when clicked.
 
 ---
 

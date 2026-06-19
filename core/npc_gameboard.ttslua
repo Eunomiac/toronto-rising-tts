@@ -2627,7 +2627,8 @@ function Gameboard.installPolarSnaps(board, options)
         installedPolarSnapConfig = resolveControlBoardSnapConfig(cfg)
         Gameboard.buildControlBoardSnapCatalog(board, nil)
         print(
-            "[Gameboard] Control-board snaps installed ("
+            U.loadElapsedPrefix()
+                .. "[Gameboard] Control-board snaps installed ("
                 .. tostring(#points)
                 .. " points on "
                 .. tostring(board.getGUID())
@@ -3305,6 +3306,19 @@ function Gameboard.ensureControlBoardObjectUi(board)
     BoardUi.installObjectButtons(board)
 end
 
+--- Refresh XmlUI `gb_snaps` toolbar label from `sessionScene.npcWorld.controlBoardSnapsEnabled`.
+--- @param board Object|nil
+function Gameboard.syncControlBoardSnapsToggleLabel(board)
+    board = board or getControlBoard()
+    if not isGameObject(board) or board.UI == nil or type(board.UI.setAttributes) ~= "function" then
+        return
+    end
+    local enabled = Gameboard.areControlBoardSnapsEnabled()
+    local label = enabled and "Snaps On" or "Snaps Off"
+    local colors = enabled and "#336644|#448855|#55AA66|#333333" or "#555566|#666677|#777788|#333333"
+    board.UI.setAttributes("gb_snaps", { text = label, colors = colors })
+end
+
 --- Static minimap markers (not npc_control_token): locked so physics does not shove them apart.
 --- @param marker Object|nil
 local function lockControlBoardMarker(marker)
@@ -3792,6 +3806,7 @@ function Gameboard.reconcileControlBoardFromState(opts)
     Gameboard.installPolarSnaps(board)
     Gameboard.ensureControlBoardObjectCallbacks(board)
     Gameboard.ensureControlBoardObjectUi(board)
+    Gameboard.syncControlBoardSnapsToggleLabel(board)
 
     local npcWorld = S.getStateVal("sessionScene", "npcWorld")
     local activeTable = S.getStateVal("seatLayout", "currentTableKey")

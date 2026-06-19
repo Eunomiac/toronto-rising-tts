@@ -101,7 +101,6 @@ function main(projectRoot) {
   const colors = readPlayerColorsFromConstants(constantsPath);
 
   const tplPc = loadPartial(root, "ui/.templates/roll/partials/dash_row_pc.xml");
-  const tplSt = loadPartial(root, "ui/.templates/roll/partials/dash_row_st_live.xml");
   const tplSlot = loadPartial(root, "ui/.templates/roll/partials/dash_slot_row.xml");
   const tplActiveHeader = loadPartial(
     root,
@@ -160,17 +159,6 @@ function main(projectRoot) {
     )
     .join("\n");
 
-  const stLiveRow = apply(
-    tplSt,
-    "dash_row_st_live",
-    {
-      ...dashDims,
-      SHOW_OBLIV_BUTTONS: true,
-      SHOW_BRUTAL_BUTTONS: true,
-    },
-    undefined
-  );
-
   const bodyRaw = fs.readFileSync(bodyPath, "utf8");
   const targetRel = parseTargetFromFirstLine(bodyRaw, bodyPath);
   const bodyTemplate = stripLeadingParametersComment(bodyRaw);
@@ -184,7 +172,6 @@ function main(projectRoot) {
       PC_ROWS: pcRows,
       SLOTS_HEADER: slotsHeader,
       SLOT_ROWS: slotRows,
-      ST_LIVE_ROW: stLiveRow,
     },
     {
       rawKeys: {
@@ -192,7 +179,6 @@ function main(projectRoot) {
         PC_ROWS: true,
         SLOTS_HEADER: true,
         SLOT_ROWS: true,
-        ST_LIVE_ROW: true,
       },
     }
   );

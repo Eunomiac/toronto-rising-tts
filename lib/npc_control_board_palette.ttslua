@@ -860,34 +860,6 @@ function Palette.installSnaps(board, options)
         return false
     end
     local ok = board.setSnapPoints(points)
-    if ok then
-        local hx, hz = boardLocalHalfExtents(board)
-        local cfg = paletteSnapConfig()
-        local usedRows = Palette.parkingUsedRowCount()
-        print(
-            "[Palette] Snaps installed ("
-                .. tostring(#points)
-                .. " on "
-                .. tostring(board.getGUID())
-                .. "; halfX="
-                .. string.format("%.3f", hx)
-                .. " halfZ="
-                .. string.format("%.3f", hz)
-                .. " u "
-                .. string.format("%.2f", cfg.parkingUMin)
-                .. "-"
-                .. string.format("%.2f", cfg.parkingUMax)
-                .. " v "
-                .. string.format("%.2f", cfg.parkingVMin)
-                .. "-"
-                .. string.format("%.2f", cfg.parkingVMax)
-                .. " pad="
-                .. string.format("%.2f", cfg.parkingEdgePadding)
-                .. " rows="
-                .. tostring(usedRows)
-                .. " even-spaced)"
-        )
-    end
     return ok == true
 end
 
