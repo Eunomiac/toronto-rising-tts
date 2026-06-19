@@ -399,7 +399,6 @@ function Sync.full(opts)
         if type(RUI) == "table" and type(RUI.refreshAll) == "function" then
             RUI.refreshAll()
         end
-        callIfFunction(NPCS.ensureAllNpcsPreloaded, { deferUiRefresh = true })
     end
 
     didBootstrapFullSync = true

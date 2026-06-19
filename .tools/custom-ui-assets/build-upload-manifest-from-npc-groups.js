@@ -95,6 +95,7 @@ async function main() {
   const moduleOut = path.resolve(args.moduleOut || "lib/npc_group_upload_manifest.ttslua");
   const warnUnknownKeys = args.warnUnknownKeys === "1" || args.warnUnknownKeys === "true";
   const skipSaveCheck = args.skipSaveCheck === "1" || args.skipSaveCheck === "true";
+  const skipInject = args.skipInject === "1" || args.skipInject === "true";
 
   const dirPath = path.isAbsolute(inputDir) ? path.normalize(inputDir) : path.resolve(inputDir);
   console.log(`NPC group image directory: ${dirPath}`);
@@ -123,18 +124,50 @@ async function main() {
     knownCharacterKeys = extractCharacterKeysFromNpcsData(npcsText);
   }
 
-  if (warnUnknownKeys && knownCharacterKeys !== null) {
+  /** @type {import("./lib/npc-asset-helpers").NpcAssetGroup[]} */
+  let registeredGroups = groups;
+  /** @type {string[]} */
+  const skippedUnregisteredKeys = [];
+  if (knownCharacterKeys !== null) {
+    registeredGroups = [];
     for (const group of groups) {
-      if (!knownCharacterKeys.has(group.characterKey)) {
-        console.warn(
-          `WARN: "${group.characterKey}" not in D.characters (${path.basename(npcsDataPath)}) — will still include in manifest`,
-        );
+      if (knownCharacterKeys.has(group.characterKey)) {
+        registeredGroups.push(group);
+      } else {
+        skippedUnregisteredKeys.push(group.characterKey);
       }
+    }
+    skippedUnregisteredKeys.sort((a, b) => a.localeCompare(b, "en"));
+  }
+
+  if (warnUnknownKeys) {
+    console.warn(
+      "NOTE: --warnUnknownKeys is deprecated; unregistered disk groups are always skipped now.",
+    );
+  }
+
+  if (!skipInject && (args.save || args.saveName)) {
+    const injectScript = path.resolve(".tools/custom-ui-assets/inject-npc-world-from-groups.js");
+    /** @type {string[]} */
+    const injectArgs = [injectScript, "--dir", dirPath, "--npcsData", npcsDataPath];
+    if (args.save && args.save.trim() !== "") {
+      injectArgs.push("--save", path.resolve(args.save.trim()));
+    } else {
+      injectArgs.push("--saveName", (args.saveName || "230").trim());
+    }
+    if (args["dry-run"] === "1" || args.dryRun === "1") {
+      injectArgs.push("--dry-run");
+    }
+    console.log("Running NPC world inject into save before manifest...");
+    const { spawnSync } = require("child_process");
+    const injectResult = spawnSync(process.execPath, injectArgs, { stdio: "inherit" });
+    if (injectResult.status !== 0) {
+      process.exit(injectResult.status || 1);
     }
   }
 
   /** @type {import("./lib/npc-asset-helpers").NpcAssetGroup[]} */
-  let pendingGroups = groups;
+  let pendingGroups = registeredGroups;
   /** @type {string[]} */
   const alreadyHostedKeys = [];
 
@@ -150,7 +183,7 @@ async function main() {
     const saveRoot = JSON.parse(fs.readFileSync(savePath, "utf8"));
     const assetMap = readCustomUiAssetMap(saveRoot);
     pendingGroups = [];
-    for (const group of groups) {
+    for (const group of registeredGroups) {
       if (isNpcGroupFullyHosted(assetMap, group.characterKey)) {
         alreadyHostedKeys.push(group.characterKey);
       } else {
@@ -158,7 +191,7 @@ async function main() {
       }
     }
     console.log(
-      `Save hosted check: ${groups.length} total groups, ${alreadyHostedKeys.length} already hosted, ${pendingGroups.length} pending`,
+      `Save hosted check: ${registeredGroups.length} registered groups, ${alreadyHostedKeys.length} already hosted, ${pendingGroups.length} pending`,
     );
   }
 
@@ -170,6 +203,8 @@ async function main() {
       count: 0,
       characterCount: 0,
       totalGroupsScanned: groups.length,
+      registeredGroupCount: registeredGroups.length,
+      skippedUnregisteredKeys,
       alreadyHostedCount: alreadyHostedKeys.length,
       alreadyHostedKeys,
       pendingCharacterKeys: [],
@@ -239,6 +274,8 @@ async function main() {
     count: assets.length,
     characterCount: sliceGroups.length,
     totalGroupsScanned: groups.length,
+    registeredGroupCount: registeredGroups.length,
+    skippedUnregisteredKeys,
     alreadyHostedCount: alreadyHostedKeys.length,
     alreadyHostedKeys,
     totalPendingGroups: pendingGroups.length,
@@ -267,6 +304,15 @@ async function main() {
   );
   if (knownCharacterKeys !== null) {
     console.log(`D.characters registry has ${knownCharacterKeys.size} keys in ${path.basename(npcsDataPath)}`);
+  }
+  if (skippedUnregisteredKeys.length > 0) {
+    console.log("");
+    console.log(
+      `Skipped ${skippedUnregisteredKeys.length} disk group(s) not in D.characters (not uploaded):`,
+    );
+    for (const key of skippedUnregisteredKeys) {
+      console.log(`  - ${key}`);
+    }
   }
   console.log("");
   console.log("NEXT (TTS):");

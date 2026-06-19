@@ -339,6 +339,239 @@ function groupToManifestAssets(group) {
   });
 }
 
+const NPC_FIGURINE_TAG = "npc_figurine";
+const NPC_CONTROL_TOKEN_TAG = "npc_control_token";
+const GM_FIGURINE_PREFIX = "npcInstance:";
+const GM_TOKEN_PREFIX = "npcToken:";
+const NPC_PRELOAD_FIGURE_SCALE = 0.12;
+const AREA_NPC_FIGURINE_YAW_OFFSET_DEG = 180;
+
+/**
+ * @typedef {{ fullName: string; scale: number }} NpcCharacterMeta
+ */
+
+/**
+ * @param {string} fullText
+ * @returns {Map<string, NpcCharacterMeta>}
+ */
+function extractCharacterMetaFromNpcsData(fullText) {
+  const inner = extractCharactersTableInner(fullText);
+
+  /** @type {{ key: string; start: number }[]} */
+  const headers = [];
+  const headerRe = /^  ([A-Za-z0-9_]+) = \{\r?\n/gm;
+  let m = headerRe.exec(inner);
+  while (m !== null) {
+    headers.push({ key: m[1], start: m.index });
+    m = headerRe.exec(inner);
+  }
+
+  /** @type {Map<string, NpcCharacterMeta>} */
+  const meta = new Map();
+  for (let i = 0; i < headers.length; i += 1) {
+    const { key, start } = headers[i];
+    const end = i + 1 < headers.length ? headers[i + 1].start : inner.length;
+    const block = inner.slice(start, end);
+    const fnMatch = /fullName\s*=\s*"([^"]+)"/.exec(block);
+    const scaleMatch = /figurine\s*=\s*\{[\s\S]*?scale\s*=\s*(\d+)/.exec(block);
+    const scaleRaw = scaleMatch ? Number(scaleMatch[1]) : 8;
+    let scale = Number.isFinite(scaleRaw) ? scaleRaw : 8;
+    if (scale < 1) {
+      scale = 1;
+    }
+    if (scale > 500) {
+      scale = 500;
+    }
+    meta.set(key, {
+      fullName: fnMatch ? fnMatch[1] : key,
+      scale,
+    });
+  }
+  return meta;
+}
+
+/**
+ * @typedef {{ rotation: number; distance: number; groundLevel: number; spreadBlend: number; positions: { x: number; z: number }[] }} PreloadAreaConfig
+ */
+
+/**
+ * @param {string} fullText
+ * @returns {PreloadAreaConfig}
+ */
+function parsePreloadAreaFromNpcsData(fullText) {
+  const preloadMatch = /preload\s*=\s*\{([\s\S]*?)\n  \},/.exec(fullText);
+  if (!preloadMatch) {
+    throw new Error('Could not find D.areas.preload block in npcs_data.');
+  }
+  const block = preloadMatch[1];
+  const num = (re, fallback) => {
+    const match = re.exec(block);
+    return match ? Number(match[1]) : fallback;
+  };
+  const rotation = num(/rotation\s*=\s*(-?\d+(?:\.\d+)?)/, 0);
+  const distance = num(/distance\s*=\s*(-?\d+(?:\.\d+)?)/, 0);
+  const groundLevel = num(/groundLevel\s*=\s*(-?\d+(?:\.\d+)?)/, -200);
+  const spreadBlend = num(/spreadBlend\s*=\s*(-?\d+(?:\.\d+)?)/, 0);
+
+  /** @type {{ x: number; z: number }[]} */
+  const positions = [];
+  const posRe = /\{\s*x\s*=\s*(-?\d+(?:\.\d+)?),\s*z\s*=\s*(-?\d+(?:\.\d+)?)\s*\}/g;
+  let pm = posRe.exec(block);
+  while (pm !== null) {
+    positions.push({ x: Number(pm[1]), z: Number(pm[2]) });
+    pm = posRe.exec(block);
+  }
+  if (positions.length === 0) {
+    throw new Error("preload.positions empty in npcs_data.");
+  }
+  return { rotation, distance, groundLevel, spreadBlend, positions };
+}
+
+/**
+ * @param {number} x
+ * @param {number} z
+ * @param {number} rad
+ * @returns {{ x: number; z: number }}
+ */
+function rotateXZ(x, z, rad) {
+  const c = Math.cos(rad);
+  const s = Math.sin(rad);
+  return { x: x * c - z * s, z: x * s + z * c };
+}
+
+/**
+ * Preload slot world position (matches `NPCS.computeSlotWorldPosition` when ref distance is 0).
+ * @param {PreloadAreaConfig} area
+ * @param {number} slotIndex 1-based
+ * @returns {{ x: number; y: number; z: number }}
+ */
+function computePreloadSlotWorldPosition(area, slotIndex) {
+  const slot = area.positions[slotIndex - 1];
+  if (!slot) {
+    throw new Error(`preload slot ${slotIndex} out of range (${area.positions.length} positions).`);
+  }
+  const rad = (area.rotation * Math.PI) / 180;
+  const rotated = rotateXZ(slot.x, slot.z, rad);
+  const cx = Math.sin(rad) * area.distance;
+  const cz = Math.cos(rad) * area.distance;
+  return { x: cx + rotated.x, y: area.groundLevel, z: cz + rotated.z };
+}
+
+/**
+ * @param {PreloadAreaConfig} area
+ * @returns {number}
+ */
+function figurineYawDegreesForArea(area) {
+  const rad = (area.rotation * Math.PI) / 180;
+  const pivotX = Math.sin(rad) * area.distance;
+  const pivotZ = Math.cos(rad) * area.distance;
+  if (Math.abs(pivotX) < 1e-9 && Math.abs(pivotZ) < 1e-9) {
+    return AREA_NPC_FIGURINE_YAW_OFFSET_DEG;
+  }
+  return (Math.atan2(-pivotX, -pivotZ) * 180) / Math.PI + AREA_NPC_FIGURINE_YAW_OFFSET_DEG;
+}
+
+/**
+ * @param {string} characterKey
+ * @param {NpcCharacterMeta} meta
+ * @param {PreloadAreaConfig} preloadArea
+ * @param {number} slotIndex
+ * @param {string} frontUrl
+ * @param {string} backUrl
+ * @param {string} guid
+ * @returns {Record<string, unknown>}
+ */
+function buildNpcFigurineObjectState(characterKey, meta, preloadArea, slotIndex, frontUrl, backUrl, guid) {
+  const pos = computePreloadSlotWorldPosition(preloadArea, slotIndex);
+  const yawDeg = figurineYawDegreesForArea(preloadArea);
+  const us = NPC_PRELOAD_FIGURE_SCALE;
+  return {
+    GUID: guid,
+    Name: "Figurine_Custom",
+    Transform: {
+      posX: pos.x,
+      posY: pos.y,
+      posZ: pos.z,
+      rotX: 0,
+      rotY: yawDeg,
+      rotZ: 0,
+      scaleX: us,
+      scaleY: us,
+      scaleZ: us,
+    },
+    Nickname: meta.fullName,
+    Description: "",
+    GMNotes: `${GM_FIGURINE_PREFIX}${characterKey}`,
+    AltLookAngle: { x: 0, y: 0, z: 0 },
+    ColorDiffuse: { r: 1, g: 1, b: 1 },
+    LayoutGroupSortIndex: 0,
+    Value: 0,
+    Locked: true,
+    Grid: false,
+    Snap: false,
+    IgnoreFoW: false,
+    MeasureMovement: false,
+    DragSelectable: true,
+    Autoraise: true,
+    Sticky: false,
+    Tooltip: false,
+    GridProjection: false,
+    HideWhenFaceDown: false,
+    Hands: false,
+    CustomImage: {
+      ImageURL: frontUrl,
+      ImageSecondaryURL: backUrl,
+      ImageScalar: meta.scale,
+      WidthScale: 0,
+    },
+    CustomFigurine: {
+      UseMinimalCollider: true,
+    },
+    LuaScript: "",
+    LuaScriptState: "",
+    XmlUI: "",
+    Tags: [NPC_FIGURINE_TAG],
+  };
+}
+
+/**
+ * @returns {string}
+ */
+function generateTtsGuid() {
+  const bytes = require("crypto").randomBytes(3);
+  return bytes.toString("hex");
+}
+
+/**
+ * @param {unknown} node
+ * @param {string} prefix
+ * @returns {string|null}
+ */
+function characterKeyFromGmNotesPrefix(node, prefix) {
+  if (!node || typeof node !== "object" || Array.isArray(node)) {
+    return null;
+  }
+  const obj = /** @type {Record<string, unknown>} */ (node);
+  const notes = obj.GMNotes;
+  if (typeof notes !== "string" || !notes.startsWith(prefix)) {
+    return null;
+  }
+  const key = notes.slice(prefix.length);
+  return /^[A-Za-z0-9_]+$/.test(key) ? key : null;
+}
+
+/**
+ * @param {unknown} node
+ * @returns {boolean}
+ */
+function objectHasTag(node, tag) {
+  if (!node || typeof node !== "object" || Array.isArray(node)) {
+    return false;
+  }
+  const tags = /** @type {Record<string, unknown>} */ (node).Tags;
+  return Array.isArray(tags) && tags.includes(tag);
+}
+
 module.exports = {
   TOKEN_FRONT_RE,
   TOKEN_BACK_RE,
@@ -359,4 +592,17 @@ module.exports = {
   scanNpcGroupsInDirectory,
   findBatchStartIndex,
   groupToManifestAssets,
+  extractCharacterMetaFromNpcsData,
+  parsePreloadAreaFromNpcsData,
+  computePreloadSlotWorldPosition,
+  figurineYawDegreesForArea,
+  buildNpcFigurineObjectState,
+  generateTtsGuid,
+  characterKeyFromGmNotesPrefix,
+  objectHasTag,
+  NPC_FIGURINE_TAG,
+  NPC_CONTROL_TOKEN_TAG,
+  GM_FIGURINE_PREFIX,
+  GM_TOKEN_PREFIX,
+  NPC_PRELOAD_FIGURE_SCALE,
 };

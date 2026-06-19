@@ -9,7 +9,7 @@
 | 2 | Startup bootstrap stacks | **Done** — readiness-gated `scheduleBootstrapCoordinator()` (poll `0.35s`, max `10s`) replaces blind `BOOTSTRAP_RETRY_OFFSETS_SEC`; `L.seatSpotlightsResolvable()` + pending init-light probe; bootstrap metrics (`earlyExit`, `ticksRun`, `lightsDeferredRemaining`) |
 | 3 | Seat lighting redundant lerps | **Partial** — `lastReconciledModeByRef` + `L.invalidateReconcileCache()`; bootstrap ticks use `opts.bootstrap` → `transitionTime = 0`; seat-presentation orchestrator fingerprint skips full `reconcileAllPlayers` when PC light + overlay inputs unchanged |
 | 4 | Soundscape deferred duplicates | **Done** — `pendingSoundscapeReconcileFingerprint` + `soundscapeReconcileGeneration`; fade-step metrics |
-| 5 | NPC preload / scene world | **Partial** — batched `ensureAllNpcsPreloaded`; `requestSeatLayoutSync` + deferred `R.SyncTable` skip via `RSL.isLayoutSyncCurrent()` / `lastLayoutSyncFingerprint`; `npc_preload` agent metrics |
+| 5 | NPC preload / scene world | **Done** — no runtime figurine spawn or `setCustomObject`/`reload()` on placement; `NPCS.auditPreloadPoolFigurines`; workshop-baked figurine images via inject script; `npc_preload` audit metrics |
 | 6 | `UpdateUIDisplays` broad deltas | **Done** — `delta.colors` seat filter |
 | 7 | Map/HUD scoped refresh | **Deferred** — cross-seat HUD split (`reconcileSeatHud` / `reconcileCrossSeatRows`) not started |
 | — | Overlay desired-input fingerprint | **Done** — `HO.reconcileForSeat` per-seat `lastDesiredVisibilityFpBySeat`; `HO.invalidateOverlayInputCache()` on force |
@@ -174,24 +174,22 @@ All recommendations preserve the synchronization contract: `gameState` remains t
 
 ## 5. NPC preload pool and scene NPC world reconcile
 
-**Symptom:** Load can spawn missing pairs for every NPC character into the under-table preload pool. Scene NPC world reconcile is fingerprinted, but when it does run, it can stash all spawned NPCs to preload, ensure each placement exists, and move/spawn each authored placement.
+**Symptom (resolved):** Load used to spawn missing figurine/light pairs for every NPC character and re-apply `setCustomObject` + `reload()` on every placement sync.
 
-**Evidence**
+**Evidence (current)**
 
-- `NPCS.restoreAfterStateLoad()` registers existing NPC spotlights, repairs seated records, calls `requestSeatLayoutSync()`, and calls `NPCS.ensureAllNpcsPreloaded({ deferUiRefresh = true })`. See `core/npcs.ttslua:1901-1954`.
-- `NPCS.ensureAllNpcsPreloaded` sorts every `NPCS.characters` key and spawns missing rows into preload. See `core/npcs.ttslua:1956-1977`.
-- `NPCS.spawnNpcAtSlot` uses `spawnObjectData` for the figurine, then `spawnObjectData` for the light in the callback, registers the light, and schedules a deferred light apply sequence with `NPC_LIGHT_POST_READY_DELAY_SEC = 1.5`. See `core/npcs.ttslua:1133-1316`.
-- `NPCS.reconcileSessionSceneNpcWorldFromState` fingerprints `sessionScene.npcWorld.byArea`, stashes all NPCs to preload when placement intent exists, then ensures and moves each authored placement. See `core/npcs.ttslua:1378-1433`.
+- `NPCS.restoreAfterStateLoad()` → `NPCS.auditPreloadPoolFigurines` (errors if workshop `npc_figurine` missing; adopt-only `ensureNpcInPreloadZone`; spotlight repair only).
+- `applyNpcPairPhysicalPresentation` adjusts Transform scale/tooltip only — no figurine image reload.
+- Figurine images injected into save via `npm run custom-ui-assets:inject-npc-world` before Cloud upload.
+- `NPCS.reconcileAllFromState` fingerprints placement intent; step 5 adopts missing instance rows without figurine spawn.
 
 **Top call sites**
 
-1. Bootstrap `Sync.full` -> `NPCS.restoreAfterStateLoad`: `core/sync.ttslua:147-151`.
-2. `NPCS.restoreAfterStateLoad` -> `ensureAllNpcsPreloaded`: `core/npcs.ttslua:1901-1954`.
-3. Runtime `Sync.full` -> `NPCS.reconcileSessionSceneNpcWorldFromState`: `core/sync.ttslua:163-166`.
-4. Scene library apply -> `Sync.full`: `core/storyteller_scenes_panel.ttslua:531-532`.
-5. NPC panel/group actions call `spawnOrMoveIndividual`, `moveNpcToArea`, or `spawnGroup`: `core/npcs.ttslua:1991-2146`.
+1. Bootstrap `Sync.full` -> `NPCS.restoreAfterStateLoad`: `core/sync.ttslua`.
+2. Scene library apply -> `Sync.full` -> `NPCS.reconcileSessionSceneNpcWorldFromState`.
+3. NPC panel/group actions call `spawnOrMoveIndividual`, `moveNpcToArea`, or `spawnGroup`.
 
-**Why legal but costly:** The preload pool is a deliberate TTS workaround to warm figurine art and avoid activation stalls. It is costly because `spawnObjectData` is one of the heaviest TTS calls, paired lights double that count, and deferred light readiness adds timer pressure.
+**Why it was costly:** Runtime `spawnObjectData` for every catalog NPC plus per-placement `reload()` on all figurines. Workshop-baked pool removes both.
 
 **Recommendations**
 

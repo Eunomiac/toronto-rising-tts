@@ -1,21 +1,23 @@
 #!/usr/bin/env node
 "use strict";
 
-// Report character keys uploaded in an NPC group manifest that are missing from D.characters.
-// Prints figurine front/back hosted URLs for copy-paste into npcs_data.
+// Report NPC asset registry gaps after manifest / inject:
+// - disk groups skipped (not in D.characters)
+// - registry keys missing complete disk groups
+// - optional: tokens missing from save (from inject report)
 
 const fs = require("fs");
 const path = require("path");
-const { resolveSavePath } = require("../tts-save/resolve-save-path");
 const {
-  deriveNpcGroupAssetNames,
+  DEFAULT_NPC_GROUP_IMAGE_DIR,
   ensureParentDir,
   extractCharacterKeysFromNpcsData,
-  isHostedSteamUrl,
-  readCustomUiAssetMap,
+  scanNpcGroupsInDirectory,
 } = require("./lib/npc-asset-helpers");
 
 const DEFAULT_REPORT_OUT = ".dev/custom-ui-assets/npc-registry-gap-report.txt";
+const DEFAULT_MANIFEST = ".dev/custom-ui-assets/npc-group-manifest.json";
+const DEFAULT_INJECT_REPORT = ".dev/custom-ui-assets/npc-inject-report.json";
 
 /**
  * @param {string[]} argv
@@ -40,80 +42,63 @@ function parseArgs(argv) {
   return args;
 }
 
-/**
- * @param {string} manifestPath
- * @returns {string[]}
- */
-function readCharacterKeysFromManifest(manifestPath) {
-  const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
-  if (Array.isArray(manifest.pendingCharacterKeys) && manifest.pendingCharacterKeys.length > 0) {
-    return manifest.pendingCharacterKeys.map((k) => String(k));
-  }
-  if (Array.isArray(manifest.assets)) {
-    /** @type {Set<string>} */
-    const keys = new Set();
-    for (const asset of manifest.assets) {
-      if (asset && typeof asset === "object" && typeof asset.characterKey === "string") {
-        keys.add(asset.characterKey);
-      }
-    }
-    return [...keys].sort((a, b) => a.localeCompare(b, "en"));
-  }
-  return [];
-}
-
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  const manifestPath = path.resolve(args.manifest || ".dev/custom-ui-assets/npc-group-manifest.json");
+  const manifestPath = path.resolve(args.manifest || DEFAULT_MANIFEST);
   const npcsDataPath = path.resolve(args.npcsData || "lib/npcs_data.ttslua");
   const reportOut = path.resolve(args.out || DEFAULT_REPORT_OUT);
+  const injectReportPath = path.resolve(args.injectReport || DEFAULT_INJECT_REPORT);
+  const inputDir = path.resolve(args.dir || args.input || DEFAULT_NPC_GROUP_IMAGE_DIR);
 
-  if (!fs.existsSync(manifestPath)) {
-    throw new Error(`Manifest not found: ${manifestPath}`);
-  }
   if (!fs.existsSync(npcsDataPath)) {
     throw new Error(`NPC data file not found: ${npcsDataPath}`);
   }
 
-  const uploadedKeys = readCharacterKeysFromManifest(manifestPath);
-  if (uploadedKeys.length === 0) {
-    console.log("No character keys in manifest (empty or already-hosted batch); nothing to report.");
-    return;
-  }
-
   const npcsText = fs.readFileSync(npcsDataPath, "utf8");
   const knownKeys = extractCharacterKeysFromNpcsData(npcsText);
-  const missingKeys = uploadedKeys.filter((key) => !knownKeys.has(key));
+  const sortedRegistryKeys = [...knownKeys].sort((a, b) => a.localeCompare(b, "en"));
 
-  if (missingKeys.length === 0) {
-    console.log("All uploaded character keys exist in D.characters.");
-    return;
+  /** @type {string[]} */
+  let skippedUnregisteredKeys = [];
+  if (fs.existsSync(manifestPath)) {
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+    if (Array.isArray(manifest.skippedUnregisteredKeys)) {
+      skippedUnregisteredKeys = manifest.skippedUnregisteredKeys.map((k) => String(k));
+    }
   }
 
-  const saveArg = (args.save || "").trim();
-  const saveNameArg = (args.saveName || "").trim();
-  let assetMap = new Map();
-  if (saveArg || saveNameArg) {
-    const savePath = saveArg
-      ? path.resolve(saveArg)
-      : resolveSavePath(saveNameArg, args.savesDir).savePath;
-    if (!fs.existsSync(savePath)) {
-      throw new Error(`Save file not found: ${savePath}`);
+  /** @type {string[]} */
+  let registryMissingDiskGroup = [];
+  /** @type {string[]} */
+  let tokensMissing = [];
+  if (fs.existsSync(injectReportPath)) {
+    const injectReport = JSON.parse(fs.readFileSync(injectReportPath, "utf8"));
+    if (Array.isArray(injectReport.registryMissingDiskGroup)) {
+      registryMissingDiskGroup = injectReport.registryMissingDiskGroup.map((k) => String(k));
     }
-    const saveRoot = JSON.parse(fs.readFileSync(savePath, "utf8"));
-    assetMap = readCustomUiAssetMap(saveRoot);
-  } else {
-    const assetsOut = path.resolve(
-      args.assetsOut || ".dev/custom-ui-assets/npc-group-generated-assets.json",
-    );
-    if (fs.existsSync(assetsOut)) {
-      const rows = JSON.parse(fs.readFileSync(assetsOut, "utf8"));
-      if (Array.isArray(rows)) {
-        for (const row of rows) {
-          if (row && typeof row === "object" && typeof row.Name === "string" && typeof row.URL === "string") {
-            assetMap.set(row.Name, row.URL);
-          }
-        }
+    if (Array.isArray(injectReport.tokensMissing)) {
+      tokensMissing = injectReport.tokensMissing.map((k) => String(k));
+    }
+    if (
+      skippedUnregisteredKeys.length === 0
+      && Array.isArray(injectReport.skippedUnregisteredKeys)
+    ) {
+      skippedUnregisteredKeys = injectReport.skippedUnregisteredKeys.map((k) => String(k));
+    }
+  }
+
+  if (fs.existsSync(inputDir)) {
+    const { groups, errors } = scanNpcGroupsInDirectory(inputDir);
+    if (errors.length === 0) {
+      const diskKeys = new Set(groups.map((g) => g.characterKey));
+      if (registryMissingDiskGroup.length === 0) {
+        registryMissingDiskGroup = sortedRegistryKeys.filter((key) => !diskKeys.has(key));
+      }
+      if (skippedUnregisteredKeys.length === 0) {
+        skippedUnregisteredKeys = groups
+          .map((g) => g.characterKey)
+          .filter((key) => !knownKeys.has(key))
+          .sort((a, b) => a.localeCompare(b, "en"));
       }
     }
   }
@@ -122,22 +107,23 @@ async function main() {
   const lines = [
     "# NPC registry gap report",
     `# Generated: ${new Date().toISOString()}`,
-    `# Keys uploaded in manifest but missing from D.characters (${missingKeys.length})`,
+    "",
+    "## Disk groups skipped (not in D.characters)",
+    skippedUnregisteredKeys.length > 0
+      ? skippedUnregisteredKeys.map((k) => `- ${k}`).join("\n")
+      : "(none)",
+    "",
+    "## D.characters keys missing complete 4-file disk group",
+    registryMissingDiskGroup.length > 0
+      ? registryMissingDiskGroup.map((k) => `- ${k}`).join("\n")
+      : "(none)",
+    "",
+    "## Registry keys with no npc_control_token in save (inject)",
+    tokensMissing.length > 0
+      ? tokensMissing.map((k) => `- ${k} (run DEBUG.spawnNpcControlBoardTokens)`).join("\n")
+      : "(none — or inject report not found)",
     "",
   ];
-
-  for (const key of missingKeys) {
-    const names = deriveNpcGroupAssetNames(key);
-    const frontUrl = assetMap.get(names.figurineFront) || "(not found in save/generated assets)";
-    const backUrl = assetMap.get(names.figurineBack) || "(not found in save/generated assets)";
-    lines.push(`${key}:`);
-    lines.push(`  front: ${frontUrl}`);
-    lines.push(`  back: ${backUrl}`);
-    if (!isHostedSteamUrl(frontUrl) || !isHostedSteamUrl(backUrl)) {
-      lines.push("  NOTE: figurine URLs may be missing — run merge after Cloud upload");
-    }
-    lines.push("");
-  }
 
   const reportText = `${lines.join("\n")}\n`;
   ensureParentDir(reportOut);
@@ -145,6 +131,14 @@ async function main() {
 
   console.log(reportText);
   console.log(`Report written: ${reportOut}`);
+
+  const hasGaps =
+    skippedUnregisteredKeys.length > 0
+    || registryMissingDiskGroup.length > 0
+    || tokensMissing.length > 0;
+  if (hasGaps) {
+    process.exitCode = 1;
+  }
 }
 
 main().catch((err) => {

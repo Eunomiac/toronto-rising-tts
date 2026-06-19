@@ -6,15 +6,14 @@ Data for all NPCs is contained in `NPCS.characters` (loaded from [`lib/npcs_data
 
 * `name`: Key in `NPCS.characters` and the spawned object name.
 * `fullName`: Display name for UI.
-* `figurine`: Front/back image URLs and `scale` (see below).
+* `figurine`: `scale` only (spotlight bounds math + save inject `ImageScalar`). Front/back URLs live on workshop `npc_figurine` objects, not in this registry.
 * `stats`: Arbitrary nested data; rendered by `NPCS.displayStats(npcName)`.
 * `lighting`: Optional per-mode overrides (see merge rules below).
 * `groups`: Map of group id → slot index within that group (used when spawning a whole group into an area).
 
 ### `npcData.figurine`
 
-* `images.front` / `images.back`: URLs for `Figurine_Custom` (`image` / `image_secondary`).
-* `scale`: **Number** passed to `setCustomObject` as **`image_scalar`** (save JSON: `CustomImage.ImageScalar`; import dialog **Card Scale**) — **not** Transform `setScale`.
+* `scale`: **Number** for save inject `CustomImage.ImageScalar` and runtime spotlight bounds gating — **not** Transform `setScale`. Images are set once on workshop figurines via `npm run custom-ui-assets:inject-npc-world`.
 
 ### `npcData.stats`
 
@@ -24,7 +23,7 @@ Flexible tree for Storyteller-readable output only.
 
 Optional overrides per mode key (`off`, `standard`, `spotlight`). **Merge rule:** for each mode, start from `NPCS.lights[mode]` and **deep-merge** `npcData.lighting[mode]` on top when present. When the instance’s `areaKey` is **`__stage_board__`** (gameboard STAGE_BOARD placements, not legacy table-side areas), **deep-merge** `NPCS.stageLights[mode]` after that. Unlisted modes use globals only.
 
-**Figurine cutout scale:** `figurine.scale` in npcs_data drives Custom Figurine `image_scalar` at preload, table seat, and stage. Transform scale stays at the active/preload pool uniform (`1` when active, small when in preload).
+**Figurine cutout scale:** `figurine.scale` is baked into save `ImageScalar` at inject time. Runtime only adjusts Transform scale (preload vs active) and tooltips — no `setCustomObject` / `reload()` on placement.
 
 ---
 
@@ -54,12 +53,12 @@ Do **not** split rotation into manual `rotX` / `rotY` / `rotZ` in data. The scri
 
 Whenever the figurine **moves or rotates**, this pipeline is re-run (UI moves, `onObjectDrop`, and optional future hooks) so the paired light stays aligned.
 
-**Stage placement timing:** `moveNpcToStagePlacement` applies spotlight mode **immediately** (`applyStageNpcSpotlightNow`), then schedules a deferred bounds pass to refine Y after `image_scalar` / `reload()`. Deferred-only apply can leave lights off until a later Apply completes stale sequences.
+**Stage placement timing:** `moveNpcToStagePlacement` applies spotlight mode **immediately** (`applyStageNpcSpotlightNow`), then schedules a deferred bounds pass to refine Y after figurine mesh load (`loading_custom` / `getBounds`).
 
 ### Spawn source
 
-* **Figurine:** `spawnObjectData` with embedded `Figurine_Custom` / `CustomImage` (see `core/npcs.ttslua`). Figurines are **always** TTS-locked via `ensureNpcFigurinePhysicsLocked` (spawn + every script placement). **`rec.locked`** is the Storyteller panel “pin in place” (blocks script moves only). **Tooltips** off in the preload pool; on when active in a stage area or at a seat.
-* **Light:** `clone()` from a **template object** in the save whose hierarchy matches `getLightComponent` in `core/lighting.ttslua` (child name matching `^spotlight`). Set GUID constant in [`lib/guids.ttslua`](../../lib/guids.ttslua) (`NPC_LIGHT_CLONE_TEMPLATE`).
+* **Figurine:** Workshop `npc_figurine` objects in the TTS save (`npcInstance:<characterKey>` GM notes). Runtime **does not** spawn figurines; `NPCS.auditPreloadPoolFigurines` errors if any registry key is missing. Figurines are **always** TTS-locked via `ensureNpcFigurinePhysicsLocked`. **`rec.locked`** is the Storyteller panel “pin in place” (blocks script moves only). **Tooltips** off in the preload pool; on when active in a stage area or at a seat.
+* **Light:** `spawnObjectData` for missing `npc_light` only (spotlight repair). Existing pooled lights are adopted by nickname `NPC Light <characterKey>`.
 
 ---
 
@@ -67,9 +66,9 @@ Whenever the figurine **moves or rotates**, this pipeline is re-run (UI moves, `
 
 The `preload` entry in [`lib/npcs_data.ttslua`](../../lib/npcs_data.ttslua) `D.areas` is an **off-table** grid at **world Y = -200** (`groundLevel`). It is omitted from the Storyteller NPC panel (`excludeFromNpcPanel = true`). **`autoLight = false`** so parked pool lights default **OFF** (under-table pool).
 
-**Global pool:** `NPCS.ensureAllNpcsPreloaded` (called from `NPCS.restoreAfterStateLoad`) spawns **every** `NPCS.characters` entry into deterministic preload slots (runtime-expanded grid), **small scale**, **figurine tooltips off**. Before spawning, `ensureNpcInPreloadZone` / `spawnNpcAtSlot` scan for an existing pooled figurine whose GM notes are exactly `npcInstance:<characterKey>` and **adopt** it into the preload slot instead of creating a duplicate. Paired spotlights are resolved the same way: `findExistingPooledSpotlightForNpcName` matches display name `NPC Light <characterKey>` on tagged `npc_light` objects (instance `lightGuid` first, then first unclaimed nickname match). **`NPCS.spawnNpcAtSlot` only accepts the `preload` area** — activating on stage (`moveNpcToArea`) or at table seats (`assignNpcToSeat`) **moves** the pooled figurine + light; missing instances or activation without a parked preload record **errors** (`npcPoolPolicyError`).
+**Global pool:** `NPCS.auditPreloadPoolFigurines` (called from `NPCS.restoreAfterStateLoad`) verifies every `NPCS.characters` key has an in-world `npc_figurine`. `ensureNpcInPreloadZone` **adopts** orphaned workshop figurines into preload slots and **repairs** missing spotlights only — it does not create figurines. Activating on stage (`moveNpcToArea`) or at table seats (`assignNpcToSeat`) **moves** the pooled figurine + light; missing figurines **error** (`npcPoolPolicyError` / audit `error()` on load).
 
-**Load audit:** `NPCS.restoreAfterStateLoad` runs `NPCS.auditDuplicatePooledSpotlights` after register and again after preload warm-up; duplicates log `[NPCS] ERROR load-after-preload: duplicate pooled npc_light` and raise a Storyteller alert. Manual audit: `lua DEBUG.auditDuplicatePooledSpotlights({ alert = true })`. **Dedupe (opt-in):** `lua DEBUG.auditDuplicatePooledSpotlights({ destroyDuplicates = true, phase = "manual-dedupe" })` — keeps `npcs.instances[key].lightGuid` when that object still exists, else the first in-world light not claimed by another instance; destroys other `NPC Light <key>` objects and prunes `gameState.lights` registry keys. Not run automatically on load. Full pool reset: `destroyAllNpcWorldObjects` in `.dev/testbed/TEST BED.ttslua`.
+**Load audit:** `NPCS.restoreAfterStateLoad` runs `NPCS.auditDuplicatePooledSpotlights` after register and again after preload audit; duplicates log `[NPCS] ERROR load-after-preload: duplicate pooled npc_light` and raise a Storyteller alert. Manual audit: `lua DEBUG.auditDuplicatePooledSpotlights({ alert = true })`. **Dedupe (opt-in):** `lua DEBUG.auditDuplicatePooledSpotlights({ destroyDuplicates = true, phase = "manual-dedupe" })`.
 
 **Table seats:** The pooled figurine receives the seat `*Object` tag (e.g. `NPC1Object`), GM Notes **`SEAT_FIGURE_<seatKey>`** (same identity model as PC figurines), and is moved as role **`SEAT_FIGURE`** by `lib.rotational-seat-layout`. `C.TableSourceObjects.postCorrectionsBySeatRole` applies per-seat Y correction (PC and NPC share the table). Display **Name** stays the NPC **full name** (tooltip). Unseating restores `npcInstance:` GM Notes. The paired **area spotlight** is moved to the character’s **preload slot** (OFF, hidden, small scale) while seated; workshop **`SEAT_LIGHT_1/2_NPC*`** lights (virtual hand-zone rig) are reconciled via `L.reconcileForPlayer`.
 

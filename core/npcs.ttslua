@@ -169,73 +169,6 @@ local function cloneObjectDataForSpawn(data)
     return shallow
 end
 
---- Save-format `data` for `spawnObjectData` (`Figurine_Custom` + `CustomImage` keys match `Object.getData()`).
---- Spawning this way embeds image URLs from the first frame; `spawnObject({ type = "Figurine_Custom" })` + callback
---- `setCustomObject` can still trigger an empty Custom Figurine / Custom Asset dialog on some TTS builds even when URLs are valid.
---- @param spawnPos { x: number, y: number, z: number }
---- @param yawDeg number
---- @param nickname string
---- @param gmNotes string
---- @param tags table
---- @param imageURL string
---- @param imageSecondaryURL string
---- @param imageScalar number
---- @param uniformFigureScale number|nil
---- @return table
-local function buildNpcFigurineSpawnData(spawnPos, yawDeg, nickname, gmNotes, tags, imageURL, imageSecondaryURL, imageScalar, uniformFigureScale)
-    local us = tonumber(uniformFigureScale)
-    if us == nil or us ~= us or us <= 0 then
-        us = 1
-    end
-    return {
-        GUID = "",
-        Name = "Figurine_Custom",
-        Transform = {
-            posX = spawnPos.x,
-            posY = spawnPos.y,
-            posZ = spawnPos.z,
-            rotX = 0,
-            rotY = yawDeg,
-            rotZ = 0,
-            scaleX = us,
-            scaleY = us,
-            scaleZ = us,
-        },
-        Nickname = nickname,
-        Description = "",
-        GMNotes = gmNotes,
-        AltLookAngle = { x = 0, y = 0, z = 0 },
-        ColorDiffuse = { r = 1, g = 1, b = 1 },
-        LayoutGroupSortIndex = 0,
-        Value = 0,
-        Locked = true,
-        Grid = false,
-        Snap = false,
-        IgnoreFoW = false,
-        MeasureMovement = false,
-        DragSelectable = true,
-        Autoraise = true,
-        Sticky = false,
-        Tooltip = false,
-        GridProjection = false,
-        HideWhenFaceDown = false,
-        Hands = false,
-        CustomImage = {
-            ImageURL = imageURL,
-            ImageSecondaryURL = imageSecondaryURL,
-            ImageScalar = imageScalar,
-            WidthScale = 0,
-        },
-        CustomFigurine = {
-            UseMinimalCollider = true,
-        },
-        LuaScript = "",
-        LuaScriptState = "",
-        XmlUI = "",
-        Tags = tags,
-    }
-end
-
 --- Avoid C# null-ref when alerting: U.AlertGM uses U.getHost().color (host may be missing in edge setups).
 --- @param message string
 local function safeAlertGM(message)
@@ -797,39 +730,12 @@ local function npcFigurineReadyForLightAlign(fig, npcName)
     return sy >= minSy
 end
 
---- Apply npcs_data cutout scale via Custom Figurine `image_scalar` (Transform scale is uniform pool/active only).
---- @param fig Object|nil
---- @param npcName string
---- @param placementKind string `"stage"` | `"seat"` | `"preload"`
-local function applyNpcFigurineImageScalar(fig, npcName, placementKind)
-    if not U.isGameObject(fig) or fig.setCustomObject == nil then
-        return
-    end
-    local def = NPCS.characters[npcName]
-    if U.Type(def) ~= "table" then
-        return
-    end
-    local front = def.figurine and def.figurine.images and def.figurine.images.front or ""
-    local back = def.figurine and def.figurine.images and def.figurine.images.back or ""
-    if U.Type(front) ~= "string" or front == "" then
-        return
-    end
-    local scalar = figurineImageScalarForNpc(npcName, placementKind)
-    fig.setCustomObject({
-        image = front,
-        image_secondary = back,
-        image_scalar = scalar,
-    })
-    if fig.reload ~= nil then
-        fig.reload()
-    end
-end
-
---- Figurine scale + tooltip and paired spotlight scale (preload = small, tooltips off; active areas/seats = full, tooltips on).
+--- Figurine Transform scale + tooltip and paired spotlight scale (preload = small, tooltips off; active areas/seats = full, tooltips on).
+--- Figurine cutout images are baked on workshop `npc_figurine` objects; runtime does not call `setCustomObject` / `reload`.
 --- @param fig Object|nil
 --- @param lit Object|nil
 --- @param areaKey string
---- @param npcName string|nil when set, applies figurine `scale` (`image_scalar`) from npcs_data
+--- @param npcName string|nil
 local function applyNpcPairPhysicalPresentation(fig, lit, areaKey, npcName)
     local isPreload = (areaKey == PRELOAD_AREA_KEY)
     local fs = isPreload and NPC_PRELOAD_FIGURE_SCALE or NPC_ACTIVE_FIGURE_SCALE
@@ -842,15 +748,6 @@ local function applyNpcPairPhysicalPresentation(fig, lit, areaKey, npcName)
     end
     if U.isGameObject(lit) and lit.setScale ~= nil then
         lit.setScale(Vector(ls, ls, ls))
-    end
-    if U.Type(npcName) == "string" and npcName ~= "" and U.isGameObject(fig) then
-        local placementKind = "stage"
-        if areaKey == PRELOAD_AREA_KEY then
-            placementKind = "preload"
-        elseif areaKey == SEAT_PLACEMENT_KEY then
-            placementKind = "seat"
-        end
-        applyNpcFigurineImageScalar(fig, npcName, placementKind)
     end
     ensureNpcFigurinePhysicsLocked(fig)
 end
@@ -1010,7 +907,7 @@ local function applyStageNpcSpotlightNow(npcName, fig, lit, transitionTime)
     applyNpcSpotlightAlignedToFigurine(npcName, fig, transitionTime or 0)
 end
 
---- Wait for figurine bounds after `applyNpcFigurineImageScalar` / `reload()` before spotlight Y align (stage placement race).
+--- Wait for figurine mesh bounds (`loading_custom` / `getBounds`) before spotlight Y align (stage placement race).
 --- @param npcName string
 --- @param fig Object|nil
 --- @param lit Object|nil
@@ -2210,196 +2107,26 @@ local function adoptExistingPooledFigurineAtPreloadSlot(npcName, figurine, slotI
 end
 
 --- @param npcName string
+--- @return string
+local function missingPooledFigurineErr(npcName)
+    return "Missing workshop npc_figurine for "
+        .. tostring(npcName)
+        .. " (tag npc_figurine, GM notes "
+        .. GM_PREFIX
+        .. tostring(npcName)
+        .. "). Run npm run custom-ui-assets:inject-npc-world on the save."
+end
+
+--- @param npcName string
 --- @param areaKey string
 --- @param slotIndex number
---- @param opts table|nil optional: deferUiRefresh — when true, skip storyteller NPC panel rebuild (caller refreshes once, e.g. group spawn).
---- @return boolean, string|nil error
+--- @param opts table|nil
+--- @return boolean, string|nil
 function NPCS.spawnNpcAtSlot(npcName, areaKey, slotIndex, opts)
-    if areaKey ~= PRELOAD_AREA_KEY then
-        npcPoolPolicyError(
-            "spawnNpcAtSlot: spawning is only allowed into preload; use moveNpcToArea to activate on stage or at seats."
-        )
-    end
-    opts = U.Type(opts) == "table" and opts or {}
-    local deferUiRefresh = opts.deferUiRefresh == true
-    local skipSeatSync = opts.skipSeatSync == true
-    if not validateNpcNameKey(npcName) then
-        return false, "Invalid npc name (use letters, numbers, underscore only)."
-    end
-    local def = NPCS.characters[npcName]
-    if def == nil then
-        return false, "Unknown NPC: " .. npcName
-    end
-    if getInstances()[npcName] ~= nil then
-        return false, "NPC already spawned."
-    end
-    local area = NPCS.areas[areaKey]
-    if area == nil or U.Type(slotIndex) ~= "number" or slotIndex < 1 or slotIndex > #area.positions then
-        return false, "Invalid area or slot."
-    end
-    if areaKey == PRELOAD_AREA_KEY then
-        ensurePreloadLayoutCapacity()
-        local resolved = resolveSlotForMove(PRELOAD_AREA_KEY, slotIndex, nil)
-        if resolved == nil then
-            return false, "No free slot in preload pool."
-        end
-        slotIndex = resolved
-    end
-    if areaKey == PRELOAD_AREA_KEY then
-        local existingFig = findExistingPooledFigurineForNpcName(npcName)
-        if existingFig ~= nil then
-            return adoptExistingPooledFigurineAtPreloadSlot(npcName, existingFig, slotIndex, opts)
-        end
-    end
-    local front = def.figurine and def.figurine.images and def.figurine.images.front or ""
-    local back = def.figurine and def.figurine.images and def.figurine.images.back or ""
-    if U.Type(front) ~= "string" or front == "" then
-        return false, "Set figurine.images.front in lib/npcs_data for " .. npcName
-    end
-    local spawnPos = NPCS.computeSlotWorldPosition(areaKey, slotIndex)
-
-    local isPreloadArea = (areaKey == PRELOAD_AREA_KEY)
-    local figureUniformScale = isPreloadArea and NPC_PRELOAD_FIGURE_SCALE or NPC_ACTIVE_FIGURE_SCALE
-    local lightUniformScale = isPreloadArea and NPC_PRELOAD_LIGHT_SCALE or NPC_ACTIVE_LIGHT_SCALE
-
-    --- Final facing matches `applyFigurinePlacement` so the cutout is not briefly wrong-rotated at spawn.
-    local areaForSpawn = NPCS.areas[areaKey]
-    local yawDeg = 0
-    if areaForSpawn then
-        local rad = math.rad(areaForSpawn.rotation)
-        local pivotX = math.sin(rad) * areaForSpawn.distance
-        local pivotZ = math.cos(rad) * areaForSpawn.distance
-        yawDeg = math.atan2(-pivotX, -pivotZ) * (180 / math.pi) + AREA_NPC_FIGURINE_YAW_OFFSET_DEG
-    end
-
-    --- Save JSON: CustomImage.ImageScalar (float). Not Transform scale. Lua setCustomObject uses snake_case `image_scalar`.
-    local imageScalar = tonumber(def.figurine and def.figurine.scale) or 8
-    if imageScalar < 1 then
-        imageScalar = 1
-    end
-    if imageScalar > 500 then
-        imageScalar = 500
-    end
-
-    --- Figurine: `spawnObjectData` with embedded `CustomImage` (URLs in save-shape) avoids the empty Custom Figurine
-    --- import dialog that `spawnObject({ type = "Figurine_Custom" })` + `setCustomObject` can show before images apply.
-    --- Trade-off: `spawnObjectData` has no `sound = false` knob (Base API); brief spawn sound vs silent `spawnObject`.
-    local figData = buildNpcFigurineSpawnData(
-        spawnPos,
-        yawDeg,
-        def.fullName or def.name or npcName,
-        GM_PREFIX .. npcName,
-        { TAG_FIG },
-        front,
-        back,
-        imageScalar,
-        figureUniformScale
+    npcPoolPolicyError(
+        "spawnNpcAtSlot removed: NPC figurines must exist in the workshop save. "
+            .. missingPooledFigurineErr(npcName)
     )
-    local spawnedFig
-    ---@diagnostic disable-next-line: undefined-global
-    spawnedFig = spawnObjectData({
-            data = figData,
-            callback_function = function(fig)
-                if fig == nil then
-                    print("[NPCS] spawn callback: nil figurine for " .. tostring(npcName))
-                    safeAlertGM("NPCS spawn: nil figurine for " .. tostring(npcName))
-                    return
-                end
-                ensureNpcFigurinePhysicsLocked(fig)
-
-                --- Light: `spawnObjectData` from embedded save-shape defaults (lib/npcs_light_spawn_defaults.ttslua).
-                --- No in-world template object required — unlike `Object.clone()`, `spawnObject` / `spawnObjectData` do not.
-                local defaults = NLIGHT.NPC_LIGHT_OBJECT_DATA_DEFAULTS
-                if U.Type(defaults) ~= "table" then
-                    error("NPC_LIGHT_OBJECT_DATA_DEFAULTS missing (lib/npcs_light_spawn_defaults)")
-                end
-                local lightData = cloneObjectDataForSpawn(defaults)
-                if lightData == nil then
-                    error("NPC light spawn data copy failed for " .. npcName)
-                end
-                lightData.Nickname = npcPooledLightExpectedNickname(npcName)
-                lightData.Tags = { TAG_LIT }
-                if U.Type(lightData.Transform) == "table" then
-                    lightData.Transform.scaleX = lightUniformScale
-                    lightData.Transform.scaleY = lightUniformScale
-                    lightData.Transform.scaleZ = lightUniformScale
-                end
-
-                local lx = spawnPos.x + NPC_LIGHT_SPAWN_OFFSET.x
-                local ly = spawnPos.y + NPC_LIGHT_SPAWN_OFFSET.y
-                local lz = spawnPos.z + NPC_LIGHT_SPAWN_OFFSET.z
-                ---@diagnostic disable-next-line: undefined-global
-                local lit = spawnObjectData({
-                    data = lightData,
-                    position = { lx, ly, lz },
-                })
-                if lit == nil then
-                    error("spawnObjectData returned nil for NPC light " .. npcName)
-                end
-                -- Hide light arrow marker by default: UI "Looping Effect = 2" maps to API index 1 (0-based).
-                if lit.AssetBundle ~= nil and lit.AssetBundle.playLoopingEffect ~= nil then
-                    lit.AssetBundle.playLoopingEffect(1)
-                end
-                ensureSpotlightTag(lit)
-                applyNpcPairPhysicalPresentation(fig, lit, areaKey, npcName)
-                local lg = lit.getGUID and lit.getGUID() or ""
-                if lg == "" then
-                    error("spawned NPC light has no GUID for " .. npcName)
-                end
-                L.registerNpcSpotlightModes(npcName, lg)
-                local rec = {
-                    figurineGuid = fig.getGUID(),
-                    lightGuid = lg,
-                    areaKey = areaKey,
-                    slotIndex = slotIndex,
-                    npcLightMode = effectiveNpcLightModeForAreaPlacement(areaForSpawn, opts),
-                    --- Storyteller panel "lock in place" (blocks script moves); not TTS object lock (always locked).
-                    locked = false,
-                }
-                setInstanceRecord(npcName, rec)
-                if not skipSeatSync then
-                    requestSeatLayoutSync()
-                end
-                --- Defer: applying modes inside this callback can deadlock TTS until the callback returns. The
-                --- spotlight Custom_Assetbundle also needs `npcSpotlightReadyForApply` plus a short post-ready delay
-                --- before `SetLightMode` takes effect (see `NPC_LIGHT_POST_READY_DELAY_SEC`).
-                local deferFig = fig
-                local deferLg = lg
-                local deferName = npcName
-                U.RunSequence({
-                    function()
-                        return 0
-                    end,
-                    function()
-                        local reg = NPCS.lightRegistryName(deferLg)
-                        return function()
-                            return npcSpotlightReadyForApply(deferLg, reg)
-                        end
-                    end,
-                    function()
-                        return NPC_LIGHT_POST_READY_DELAY_SEC
-                    end,
-                    function()
-                        lightAlignFigOverride[deferName] = deferFig
-                        -- pcall: Deferred apply races teardown of the freshly spawned light; we must clear lightAlignFigOverride even when SetLightMode throws so later layout passes do not read a stale figurine override. Propagating would leave override pinned and obscure the real lighting error behind secondary faults.
-                        local applyOk, applyErr = pcall(function()
-                            NPCS.applyCurrentLightMode(deferName, 0)
-                        end)
-                        lightAlignFigOverride[deferName] = nil
-                        if not applyOk then
-                            print("[NPCS] deferred applyCurrentLightMode failed: " .. tostring(applyErr))
-                            safeAlertGM("NPCS spawn light apply: " .. tostring(applyErr))
-                        end
-                        return 0
-                    end,
-                })
-            end,
-        })
-    if spawnedFig == nil then
-        return false, "NPC spawn (spawnObjectData figurine): spawnObjectData returned nil"
-    end
-
-    return true, nil
 end
 
 --- True when figurine world pose matches the preload grid slot (guards state/physical desync).
@@ -2421,8 +2148,8 @@ local function figurinePhysicallyAtPreloadSlot(fig, slotIndex)
     return dy < 2 and dx < 3 and dz < 3
 end
 
---- Ensure `npcName` exists in the global under-table preload pool (stable slot). Used for single-NPC repair
---- (seating, broken GUID respawn) and after failed scene placement; catalog-wide warm-up is `ensureAllNpcsPreloaded`.
+--- Ensure `npcName` is linked in the global under-table preload pool (stable slot). Adopts in-world
+--- workshop figurines only; does not spawn figurines. Spotlight repair still spawns missing `npc_light`.
 --- @param npcName string
 --- @param opts table|nil `deferUiRefresh`, `skipSeatSync`, `forceNpcLightMode`
 --- @return boolean ok
@@ -2446,12 +2173,7 @@ function NPCS.ensureNpcInPreloadZone(npcName, opts)
     if rec ~= nil then
         local fig = getObjectFromGUID(rec.figurineGuid or "")
         if fig == nil then
-            setInstanceRecord(npcName, nil)
-            local respawnSlot = resolvePreloadSlotForMove(npcName, slot)
-            if respawnSlot == nil then
-                return false, "No free slot in preload pool."
-            end
-            return NPCS.spawnNpcAtSlot(npcName, PRELOAD_AREA_KEY, respawnSlot, opts)
+            return false, missingPooledFigurineErr(npcName)
         end
         local resolvedSlot = resolvePreloadSlotForMove(npcName, slot)
         if resolvedSlot == nil then
@@ -2498,7 +2220,7 @@ function NPCS.ensureNpcInPreloadZone(npcName, opts)
     if existingFig ~= nil then
         return adoptExistingPooledFigurineAtPreloadSlot(npcName, existingFig, spawnSlot, opts)
     end
-    return NPCS.spawnNpcAtSlot(npcName, PRELOAD_AREA_KEY, spawnSlot, opts)
+    return false, missingPooledFigurineErr(npcName)
 end
 
 --- Applies `gameState.sessionScene.npcWorld.placements`: forwards to unified orchestrator.
@@ -2847,16 +2569,14 @@ end
 local function reconcileStepFiveStagePlacements(intent, opts)
     opts = U.Type(opts) == "table" and opts or {}
     local allOk = true
-    local needPool = false
     for name, ci in pairs(intent.byCharacter) do
-        if U.Type(ci) == "table" and ci.target == "stage" then
-            if getInstances()[name] == nil then
-                needPool = true
+        if U.Type(ci) == "table" and ci.target == "stage" and getInstances()[name] == nil then
+            local ok, err = NPCS.ensureNpcInPreloadZone(name, { deferUiRefresh = true, skipSeatSync = true })
+            if not ok then
+                allOk = false
+                print("[NPCS] step5 stage adopt preload " .. tostring(name) .. ": " .. tostring(err))
             end
         end
-    end
-    if needPool then
-        NPCS.ensureAllNpcsPreloaded({ deferUiRefresh = true, immediate = true })
     end
     local lerpCandidates = {}
     local NPCStageLerp = require("core.npc_stage_lerp")
@@ -2909,16 +2629,14 @@ end
 --- @return boolean allOk
 local function reconcileStepFivePreloadPopulate(intent)
     local allOk = true
-    local needPool = false
     for name, ci in pairs(intent.byCharacter) do
-        if U.Type(ci) == "table" and ci.target == "preload" then
-            if getInstances()[name] == nil then
-                needPool = true
+        if U.Type(ci) == "table" and ci.target == "preload" and getInstances()[name] == nil then
+            local ok, err = NPCS.ensureNpcInPreloadZone(name, { deferUiRefresh = true, skipSeatSync = true })
+            if not ok then
+                allOk = false
+                print("[NPCS] step5 preload adopt " .. tostring(name) .. ": " .. tostring(err))
             end
         end
-    end
-    if needPool then
-        NPCS.ensureAllNpcsPreloaded({ deferUiRefresh = true, immediate = true })
     end
     for name, ci in pairs(intent.byCharacter) do
         if U.Type(ci) == "table" and ci.target == "preload" then
@@ -3055,14 +2773,7 @@ function NPCS.spawnOrMoveIndividual(npcName, areaKey, opts)
             .. tostring(npcName)
             .. "' has no pooled instance; global preload pool is missing this entry (see console)."
     end
-    if stablePreloadSlotIndex(npcName) == nil and U.Type(opts.preferredSlot) ~= "number" then
-        return false, "No preload slot for NPC."
-    end
-    local slot = resolvePreloadSlotForMove(npcName, opts.preferredSlot)
-    if slot == nil then
-        return false, "No free slot in preload pool."
-    end
-    return NPCS.spawnNpcAtSlot(npcName, PRELOAD_AREA_KEY, slot, opts)
+    return NPCS.ensureNpcInPreloadZone(npcName, opts)
 end
 
 --- @param npcName string
@@ -3707,11 +3418,6 @@ function NPCS.unseatNpc(npcName)
     return true, nil
 end
 
---- How many missing preload spawns to issue per scheduled batch tick.
-local PRELOAD_SPAWN_BATCH_SIZE = 2
---- Delay between preload spawn batches (seconds).
-local PRELOAD_SPAWN_BATCH_DELAY_SEC = 0.12
-
 --- @param payload table
 local function emitNpcPreloadMetrics(payload)
     if type(U.emitForAgent) ~= "function" then
@@ -3895,86 +3601,78 @@ function NPCS.auditDuplicatePooledSpotlights(opts)
     }
 end
 
---- Register restored instances and warm the preload pool (save/load bootstrap entry point).
+--- Register restored instances and audit the workshop preload pool (save/load bootstrap entry point).
 function NPCS.restoreAfterStateLoad()
     NPCS.registerRestoredInstancesFromState()
     NPCS.auditDuplicatePooledSpotlights({ phase = "load-after-register" })
-    NPCS.ensureAllNpcsPreloaded({ deferUiRefresh = true, auditAfterPreload = true })
+    NPCS.auditPreloadPoolFigurines({ deferUiRefresh = true, auditAfterPreload = true, hardError = true })
 end
 
---- Spawn missing `NPCS.characters` entries into the under-table preload pool.
---- @param opts table|nil `deferUiRefresh`, `immediate`, `auditAfterPreload` (load bootstrap: duplicate `npc_light` scan + alert)
-function NPCS.ensureAllNpcsPreloaded(opts)
+--- Verify every `NPCS.characters` key has an in-world `npc_figurine`; adopt instance rows when needed.
+--- @param opts table|nil `deferUiRefresh`, `auditAfterPreload`, `hardError` (default true on load bootstrap)
+--- @return boolean ok
+--- @return string|nil err
+function NPCS.auditPreloadPoolFigurines(opts)
     ensurePreloadLayoutCapacity()
     opts = U.Type(opts) == "table" and opts or {}
     local names = U.getKeys(NPCS.characters or {})
     table.sort(names)
 
-    local missing = {}
+    local missingFigurines = {}
+    for _, name in ipairs(names) do
+        if validateNpcNameKey(name) and findExistingPooledFigurineForNpcName(name) == nil then
+            missingFigurines[#missingFigurines + 1] = name
+        end
+    end
+
+    if #missingFigurines > 0 then
+        local msg = "Missing workshop npc_figurine for: " .. table.concat(missingFigurines, ", ")
+        emitNpcPreloadMetrics({
+            phase = "audit_failed",
+            characterCount = #names,
+            missingCount = #missingFigurines,
+        })
+        if opts.hardError ~= false then
+            error("[NPCS] " .. msg, 2)
+        end
+        return false, msg
+    end
+
+    local adoptFailures = {}
     for _, name in ipairs(names) do
         if validateNpcNameKey(name) and getInstances()[name] == nil then
-            missing[#missing + 1] = name
-        end
-    end
-
-    if #missing == 0 then
-        if opts.auditAfterPreload == true then
-            NPCS.auditDuplicatePooledSpotlights({ phase = "load-after-preload", alert = true })
-        end
-        return
-    end
-
-    local function afterSpawns(spawnPairsIssued)
-        emitNpcPreloadMetrics({
-            phase = "complete",
-            characterCount = #names,
-            missingCount = #missing,
-            spawnPairsIssued = spawnPairsIssued,
-            immediate = opts.immediate == true,
-        })
-        if opts.deferUiRefresh == true then
-            requestSeatLayoutSync()
-        end
-        if opts.auditAfterPreload == true then
-            NPCS.auditDuplicatePooledSpotlights({ phase = "load-after-preload", alert = true })
-        end
-    end
-
-    if opts.immediate == true then
-        local spawnPairsIssued = 0
-        for _, name in ipairs(missing) do
             local ok, err = NPCS.ensureNpcInPreloadZone(name, { deferUiRefresh = true, skipSeatSync = true })
-            spawnPairsIssued = spawnPairsIssued + 1
             if not ok then
-                print("[NPCS] ensureAllNpcsPreloaded failed for " .. tostring(name) .. ": " .. tostring(err))
+                adoptFailures[#adoptFailures + 1] = tostring(name) .. ": " .. tostring(err)
             end
         end
-        afterSpawns(spawnPairsIssued)
-        return
     end
 
-    local spawnIndex = 1
-    local spawnPairsIssued = 0
-
-    local function spawnNextBatch()
-        local batchEnd = math.min(spawnIndex + PRELOAD_SPAWN_BATCH_SIZE - 1, #missing)
-        for i = spawnIndex, batchEnd do
-            local name = missing[i]
-            local ok, err = NPCS.ensureNpcInPreloadZone(name, { deferUiRefresh = true, skipSeatSync = true })
-            spawnPairsIssued = spawnPairsIssued + 1
-            if not ok then
-                print("[NPCS] ensureAllNpcsPreloaded failed for " .. tostring(name) .. ": " .. tostring(err))
-            end
+    if #adoptFailures > 0 then
+        local msg = "Preload pool adopt failed: " .. table.concat(adoptFailures, "; ")
+        if opts.hardError ~= false then
+            error("[NPCS] " .. msg, 2)
         end
-        spawnIndex = batchEnd + 1
-        if spawnIndex <= #missing then
-            U.delay(spawnNextBatch, PRELOAD_SPAWN_BATCH_DELAY_SEC)
-        else
-            afterSpawns(spawnPairsIssued)
-        end
+        return false, msg
     end
 
-    spawnNextBatch()
+    emitNpcPreloadMetrics({
+        phase = "audit_ok",
+        characterCount = #names,
+        missingCount = 0,
+    })
+    if opts.deferUiRefresh == true then
+        requestSeatLayoutSync()
+    end
+    if opts.auditAfterPreload == true then
+        NPCS.auditDuplicatePooledSpotlights({ phase = "load-after-preload", alert = true })
+    end
+    return true, nil
+end
+
+--- @deprecated Use `NPCS.auditPreloadPoolFigurines` — runtime no longer spawns figurines.
+function NPCS.ensureAllNpcsPreloaded(opts)
+    return NPCS.auditPreloadPoolFigurines(opts)
 end
 
 --- Recursive stats text for Storyteller (console or UI).

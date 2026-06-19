@@ -272,5 +272,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-06-15 | UPDATE | TOR-162 | Re-homed to roll-conditions UI slice (UI & HUD, parent TOR-37, `module:conditions`); related TOR-209/TOR-54; off Dice E2E Focus |
 | 2026-06-15 | UPDATE | TOR-209 | Related TOR-162; batch Opts + roll-panel condition display |
 | 2026-06-15 | UPDATE | RUNNING TASKLIST **Focus** | TOR-96 #1; TOR-169 #2; TOR-172 #3; roll conditions slice deferred (TOR-162 + TOR-209) |
+| 2026-06-17 | SHIPPED | _(create Linear — NPC figurine save-baked perf)_ | Runtime: no figurine spawn / no `setCustomObject`+`reload` on placement; `NPCS.auditPreloadPoolFigurines`; stripped `figurine.images` from `npcs_data`; `inject-npc-world-from-groups.js` + manifest registry gate; docs + Performance Audit §5 Done. Related TOR-219 (npc-groups upload). **Author:** run inject + Cloud upload on save before Save & Play. |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

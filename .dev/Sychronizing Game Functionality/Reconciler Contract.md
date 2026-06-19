@@ -68,7 +68,7 @@ Runtime order:
      2. `L.InitLights()`.
      3. Seat presentation (may skip on fingerprint).
      4. `scheduleBootstrapCoordinator()` — polls every `0.35s` up to `10s` until `L.seatSpotlightsResolvable()` and no pending `InitLightsDeferred` retries; each tick runs only deferred init lights and/or presentation when still needed (`opts.bootstrap = true` → zero lerp on PC seat lights).
-     5. After UI refresh: `NPCS.ensureAllNpcsPreloaded({ deferUiRefresh = true })` (batched spawns).
+     5. After UI refresh: `NPCS.auditPreloadPoolFigurines({ deferUiRefresh = true })` on load only (no runtime figurine spawn).
    - Runtime passes: same bundle; PC-only seat lights (`skipNpcSeats = true`); NPC seat lights in orchestrator Step Four.
 7. `NPCS.reconcileAllFromState({ deferUiRefresh = true, force })` — Steps Zero–Five in order (area removals → seat removals → seat placements + synchronous layout commit → presence visibility/lights → area populate). Replaces the former split `reconcileSessionSceneNpcWorldFromState` + `reconcileOccupiedNpcSeatsFromState` calls.
 9. Bootstrap first pass only: `HUDP.reconcileCameraOverlaySelfMatchRowsFromXmlDefaults()`.
