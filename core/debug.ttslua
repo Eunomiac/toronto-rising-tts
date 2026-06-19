@@ -4244,7 +4244,9 @@ local function normalizeUploadManifest(manifest)
                 seenNames[name] = true
                 table.insert(normalized, {
                     name = name,
-                    fileUrl = fileUrl
+                    fileUrl = fileUrl,
+                    kind = asset.kind,
+                    characterKey = asset.characterKey,
                 })
             end
         end
@@ -4256,6 +4258,186 @@ local function normalizeUploadManifest(manifest)
     end
 
     return normalized
+end
+
+--- @param asset table
+--- @param spawnPos table
+--- @return boolean
+local function spawnSingleUploadToken(asset, spawnPos)
+    ---@diagnostic disable-next-line: undefined-global
+    local obj = spawnObject({
+        type = "Custom_Token",
+        position = spawnPos,
+        sound = false
+    })
+
+    if obj == nil then
+        print("DEBUG: Failed to spawn token for " .. tostring(asset.name))
+        return false
+    end
+
+    obj.setName(asset.name)
+    obj.setGMNotes(DEBUG_UPLOAD_GMNOTES_PREFIX .. asset.name)
+    if obj.setTags ~= nil then
+        obj.setTags({ DEBUG_UPLOAD_TAG, asset.name })
+    end
+    obj.setCustomObject({
+        image = asset.fileUrl,
+        thickness = 0.2,
+        merge_distance = 15,
+        stackable = false
+    })
+    if obj.setLock ~= nil then
+        obj.setLock(true)
+    end
+    return true
+end
+
+--- Figurine_Custom with front + back file:/// URLs (Back WEBPs are often near-transparent on flat tokens).
+--- Object Name is the front asset name; merge maps ImageSecondaryURL to `<name>Back`.
+--- @param frontAsset table
+--- @param backAsset table
+--- @param spawnPos table
+--- @return boolean
+local function spawnNpcGroupUploadFigurinePair(frontAsset, backAsset, spawnPos)
+    ---@diagnostic disable-next-line: undefined-global
+    local obj = spawnObject({
+        type = "Figurine_Custom",
+        position = spawnPos,
+        sound = false
+    })
+
+    if obj == nil then
+        print("DEBUG: Failed to spawn figurine for " .. tostring(frontAsset.name))
+        return false
+    end
+
+    obj.setName(frontAsset.name)
+    obj.setGMNotes(DEBUG_UPLOAD_GMNOTES_PREFIX .. "figurine:" .. frontAsset.name)
+    if obj.setTags ~= nil then
+        obj.setTags({ DEBUG_UPLOAD_TAG, frontAsset.name })
+    end
+    obj.setCustomObject({
+        image = frontAsset.fileUrl,
+        image_secondary = backAsset.fileUrl,
+    })
+    if obj.setLock ~= nil then
+        obj.setLock(true)
+    end
+    return true
+end
+
+--- @param assets table[]
+--- @return table<string, table<string, table>>
+local function groupNpcGroupManifestAssets(assets)
+    local byKey = {}
+
+    for _, asset in ipairs(assets) do
+        local characterKey = asset.characterKey
+        if U.Type(characterKey) ~= "string" or characterKey == "" then
+            local kind = asset.kind or ""
+            if kind == "figurineFront" then
+                characterKey = asset.name
+            elseif kind == "figurineBack" and U.Type(asset.name) == "string" and string.sub(asset.name, -4) == "Back" then
+                characterKey = string.sub(asset.name, 1, -5)
+            elseif kind == "tokenFront" and U.Type(asset.name) == "string" then
+                local prefix = "tokenFront_"
+                if string.sub(asset.name, 1, #prefix) == prefix then
+                    characterKey = string.sub(asset.name, #prefix + 1)
+                end
+            elseif kind == "tokenBack" and U.Type(asset.name) == "string" then
+                local prefix = "tokenBack_"
+                if string.sub(asset.name, 1, #prefix) == prefix then
+                    characterKey = string.sub(asset.name, #prefix + 1)
+                end
+            end
+        end
+
+        if U.Type(characterKey) == "string" and characterKey ~= "" then
+            if byKey[characterKey] == nil then
+                byKey[characterKey] = {}
+            end
+            local kind = asset.kind
+            if U.Type(kind) == "string" and kind ~= "" then
+                byKey[characterKey][kind] = asset
+            end
+        end
+    end
+
+    return byKey
+end
+
+--- NPC unified groups: one Figurine_Custom per character (front+back) plus token upload temps.
+--- @param manifest table Manifest object (with .assets) or direct assets array
+--- @param options table|nil Optional controls: startX/startY/startZ/gap/columns/offset/limit
+--- @return number Count of spawned upload objects
+local function spawnNpcGroupUploadBatchFromManifest(manifest, options)
+    local assets = normalizeUploadManifest(manifest)
+    if assets == nil then
+        return 0
+    end
+
+    local grouped = groupNpcGroupManifestAssets(assets)
+    local characterKeys = {}
+    for key in pairs(grouped) do
+        characterKeys[#characterKeys + 1] = key
+    end
+    table.sort(characterKeys)
+
+    local opts = parseUploadOptions(options, #characterKeys * 3)
+    local spawned = 0
+    local processed = 0
+    local charIndex = 0
+
+    for _, characterKey in ipairs(characterKeys) do
+        charIndex = charIndex + 1
+        if charIndex > opts.offset and spawned < opts.limit then
+            local row = grouped[characterKey]
+            if U.Type(row) == "table" then
+                local function nextSpawnPos()
+                    local gridRow = math.floor(processed / opts.columns)
+                    local col = processed % opts.columns
+                    processed = processed + 1
+                    return {
+                        x = opts.startX + (col * opts.gap),
+                        y = opts.startY,
+                        z = opts.startZ + (gridRow * opts.gap)
+                    }
+                end
+
+                local figurineFront = row.figurineFront
+                local figurineBack = row.figurineBack
+                if figurineFront ~= nil and figurineBack ~= nil then
+                    if spawnNpcGroupUploadFigurinePair(figurineFront, figurineBack, nextSpawnPos()) then
+                        spawned = spawned + 1
+                    end
+                elseif figurineFront ~= nil or figurineBack ~= nil then
+                    print("DEBUG: Skipping incomplete figurine pair for " .. tostring(characterKey))
+                end
+
+                if spawned < opts.limit then
+                    local tokenFront = row.tokenFront
+                    if tokenFront ~= nil and spawnSingleUploadToken(tokenFront, nextSpawnPos()) then
+                        spawned = spawned + 1
+                    end
+                end
+
+                if spawned < opts.limit then
+                    local tokenBack = row.tokenBack
+                    if tokenBack ~= nil and spawnSingleUploadToken(tokenBack, nextSpawnPos()) then
+                        spawned = spawned + 1
+                    end
+                end
+            end
+        end
+    end
+
+    print(
+        "DEBUG.spawnNpcGroupUploadBatchFromManifest: Spawned "
+            .. tostring(spawned)
+            .. " upload objects (figurine pairs + token temps)"
+    )
+    return spawned
 end
 
 --- Spawn a batch of temporary Custom_Token objects from a manifest table.
@@ -4284,32 +4466,9 @@ function DEBUG.spawnCustomUiUploadBatchFromManifest(manifest, options)
                 z = opts.startZ + (row * opts.gap)
             }
 
-            ---@diagnostic disable-next-line: undefined-global
-            local obj = spawnObject({
-                type = "Custom_Token",
-                position = spawnPos,
-                sound = false
-            })
-
-            if obj ~= nil then
-                obj.setName(asset.name)
-                obj.setGMNotes(DEBUG_UPLOAD_GMNOTES_PREFIX .. asset.name)
-                if obj.setTags ~= nil then
-                    obj.setTags({ DEBUG_UPLOAD_TAG, asset.name })
-                end
-                obj.setCustomObject({
-                    image = asset.fileUrl,
-                    thickness = 0.2,
-                    merge_distance = 15,
-                    stackable = false
-                })
-                if obj.setLock ~= nil then
-                    obj.setLock(true)
-                end
+            if spawnSingleUploadToken(asset, spawnPos) then
                 spawned = spawned + 1
                 processed = processed + 1
-            else
-                print("DEBUG: Failed to spawn token for " .. asset.name)
             end
         end
     end
@@ -4400,7 +4559,12 @@ end
 -- @param options table|nil Optional grid: columns, gap, startY, etc.
 -- @return number Count of spawned tokens
 function DEBUG.spawnNpcGroupUploadBatch(options)
-    return DEBUG.spawnCustomUiUploadBatch(options, "lib.npc_group_upload_manifest")
+    local manifest = DEBUG.loadCustomUiUploadManifest("lib.npc_group_upload_manifest", true)
+    if U.Type(manifest) ~= "table" then
+        print("DEBUG.spawnNpcGroupUploadBatch: no manifest loaded")
+        return 0
+    end
+    return spawnNpcGroupUploadBatchFromManifest(manifest, options)
 end
 
 --- Spawn a batch from the default generated manifest module.
@@ -4447,7 +4611,7 @@ function DEBUG.clearCustomUiUploadTokens()
         end
     end
 
-    print("DEBUG.clearCustomUiUploadTokens: Deleted " .. tostring(deleted) .. " uploader tokens (matched by tag or GM notes)")
+    print("DEBUG.clearCustomUiUploadTokens: Deleted " .. tostring(deleted) .. " upload temps (tokens or figurines)")
     return deleted
 end
 
@@ -5096,7 +5260,7 @@ function DEBUG.help()
     print("  DEBUG.spawnNpcTokenUploadBatch(options?)")
     print("                          - Spawn tokenFront_* / tokenBack_* from lib.npc_token_upload_manifest")
     print("  DEBUG.spawnNpcGroupUploadBatch(options?)")
-    print("                          - Spawn figurine + token assets from lib.npc_group_upload_manifest")
+    print("                          - Spawn Figurine_Custom pairs + token temps from lib.npc_group_upload_manifest")
     print("  DEBUG.spawnNpcControlBoardTokens(options?)")
     print("                          - Spawn 61 paired gameboard tokens on CONTROL_BOARD (palette grid)")
     print("  DEBUG.clearNpcControlBoardTokens()")

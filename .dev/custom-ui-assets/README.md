@@ -145,7 +145,7 @@ Or with batch flags forwarded:
 npm run custom-ui-assets:pipeline -- --mode npc-groups --saveName 230 --batch
 ```
 
-**TTS — Cloud upload:** Save & Play → `lua DEBUG.spawnNpcGroupUploadBatch({ columns = 12, gap = 2, startY = 3 })` → Cloud Manager **Upload All Loaded Files** → save game. Figurines/tokens already in the save with `file:///` URLs are converted to Steam URLs on save as well.
+**TTS — Cloud upload:** Save & Play → `lua DEBUG.spawnNpcGroupUploadBatch({ columns = 12, gap = 2, startY = 3 })` → Cloud Manager **Upload All Loaded Files** → save game. Figurine fronts/backs spawn as **Figurine_Custom** pairs (`<name>.webp` + `<name>Back.webp`); token sides still use flat upload temps. Figurines/tokens already in the save with `file:///` URLs are converted to Steam URLs on save as well.
 
 **Merge / extract / apply world / report:**
 
@@ -155,6 +155,8 @@ npm run custom-ui-assets:extract-npc-token-urls
 npm run custom-ui-assets:apply-npc-hosted-world
 npm run custom-ui-assets:report-npc-registry-gaps
 ```
+
+**Save path:** `merge-npc-groups`, `extract-npc-token-urls`, and `apply-npc-hosted-world` default to the live TTS save via `--saveName 230` (`D:/OneDrive/Documents/My Games/Tabletop Simulator/Saves/TS_Save_230.json`). Override with `--save <path>` or `--saveName <id>` on the underlying Node scripts if needed.
 
 The **full pipeline** runs merge → extract → **apply hosted world** automatically after you finish the manual Cloud upload step. `apply-npc-hosted-world` patches figurine `CustomImage` URLs and creates or updates `npc_control_token` tiles in the save JSON using hosted Steam URLs — no `DEBUG.spawnNpcControlBoardTokens` or `DEBUG.applyNpcControlTokenHostedImages` required for newly uploaded batches.
 

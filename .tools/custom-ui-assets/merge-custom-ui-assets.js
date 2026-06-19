@@ -5,6 +5,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const { resolveSavePath } = require("../tts-save/resolve-save-path");
 
 /**
  * @typedef {{
@@ -121,6 +122,56 @@ function extractHostedUrlFromNode(node) {
 }
 
 /**
+ * Extract hosted secondary (back) image URL from an object-like node.
+ * @param {Record<string, unknown>} node
+ * @returns {string | null}
+ */
+function extractHostedSecondaryUrlFromNode(node) {
+  const candidatePaths = [
+    ["CustomImage", "ImageSecondaryURL"],
+    ["CustomImage", "ImageSecondaryUrl"],
+    ["CustomObject", "image_secondary"],
+    ["CustomData", "CustomImage", "ImageSecondaryURL"],
+    ["CustomData", "CustomObject", "image_secondary"],
+  ];
+
+  for (const pathParts of candidatePaths) {
+    let current = node;
+    let validPath = true;
+
+    for (const part of pathParts) {
+      const value = current[part];
+      if (value === undefined || value === null || (typeof value !== "object" && part !== pathParts[pathParts.length - 1])) {
+        validPath = false;
+        break;
+      }
+      if (part === pathParts[pathParts.length - 1]) {
+        if (isHostedSteamUrl(value)) {
+          return value;
+        }
+      } else {
+        current = /** @type {Record<string, unknown>} */ (value);
+      }
+    }
+
+    if (!validPath) {
+      continue;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Figurine upload temps are named with the front asset key; back maps to `<name>Back`.
+ * @param {string} frontName
+ * @returns {string}
+ */
+function deriveFigurineBackAssetName(frontName) {
+  return `${frontName}Back`;
+}
+
+/**
  * Recursively walk the save JSON to locate object nodes by name.
  * @param {unknown} node
  * @param {(obj: Record<string, unknown>) => void} onObject
@@ -162,24 +213,35 @@ function getOrCreateCustomAssets(saveRoot) {
   return { key: "CustomUIAssets", assets: /** @type {Record<string, unknown>[]} */ (saveRoot.CustomUIAssets) };
 }
 
+/**
+ * @param {Record<string, string>} args
+ * @returns {string}
+ */
+function resolveSavePathFromArgs(args) {
+  if (args.save) {
+    return path.resolve(args.save);
+  }
+  if (args.saveName) {
+    return resolveSavePath(args.saveName.trim(), args.savesDir).savePath;
+  }
+  throw new Error("Required argument missing: --save <save.json> or --saveName <id> (e.g. 230)");
+}
+
 function main() {
   const args = parseArgs(process.argv.slice(2));
-  const savePathArg = args.save;
   const manifestPathArg = args.manifest;
-  const outputSaveArg = args.outputSave || savePathArg;
   const assetsOutArg = args.assetsOut || "";
 
-  if (!savePathArg) {
-    throw new Error("Required argument missing: --save <save.json>");
-  }
   if (!manifestPathArg) {
     throw new Error("Required argument missing: --manifest <manifest.json>");
   }
 
-  const savePath = path.resolve(savePathArg);
+  const savePath = resolveSavePathFromArgs(args);
   const manifestPath = path.resolve(manifestPathArg);
-  const outputSavePath = path.resolve(outputSaveArg);
+  const outputSavePath = args.outputSave ? path.resolve(args.outputSave) : savePath;
   const assetsOutPath = assetsOutArg ? path.resolve(assetsOutArg) : "";
+
+  console.log(`Save: ${savePath}`);
 
   if (!fs.existsSync(savePath)) {
     throw new Error(`Save file does not exist: ${savePath}`);
@@ -212,14 +274,19 @@ function main() {
     if (typeof rawName !== "string") {
       return;
     }
-    if (!manifestNameSet.has(rawName)) {
-      return;
+    if (manifestNameSet.has(rawName)) {
+      const maybeUrl = extractHostedUrlFromNode(obj);
+      if (maybeUrl) {
+        extractedUrls.set(rawName, maybeUrl);
+      }
     }
-    const maybeUrl = extractHostedUrlFromNode(obj);
-    if (!maybeUrl) {
-      return;
+    const backName = deriveFigurineBackAssetName(rawName);
+    if (manifestNameSet.has(backName) && !extractedUrls.has(backName)) {
+      const secondaryUrl = extractHostedSecondaryUrlFromNode(obj);
+      if (secondaryUrl) {
+        extractedUrls.set(backName, secondaryUrl);
+      }
     }
-    extractedUrls.set(rawName, maybeUrl);
   });
 
   const missingNames = manifest.assets

@@ -6,6 +6,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const { resolveSavePath } = require("../tts-save/resolve-save-path");
 
 const FRONT_NAME_RE = /^tokenFront_([A-Za-z0-9_]+)$/i;
 const BACK_NAME_RE = /^tokenBack_([A-Za-z0-9_]+)$/i;
@@ -195,13 +196,28 @@ function buildLuaModule(complete) {
   ].join("\n");
 }
 
+/**
+ * @param {Record<string, string>} args
+ * @returns {string}
+ */
+function resolveSavePathFromArgs(args) {
+  if (args.save) {
+    return path.resolve(args.save);
+  }
+  if (args.saveName) {
+    return resolveSavePath(args.saveName.trim(), args.savesDir).savePath;
+  }
+  return path.resolve(".dev/TS_Save_230.json");
+}
+
 function main() {
   const args = parseArgs(process.argv.slice(2));
   const generatedAssetsPath = path.resolve(
-    args.generatedAssets || ".dev/custom-ui-assets/npc-generated-assets.json",
+    args.generatedAssets || ".dev/custom-ui-assets/npc-group-generated-assets.json",
   );
-  const fallbackGeneratedPath = path.resolve(".dev/custom-ui-assets/generated-assets.json");
-  const savePath = path.resolve(args.save || ".dev/TS_Save_230.json");
+  const fallbackGeneratedPath = path.resolve(".dev/custom-ui-assets/npc-generated-assets.json");
+  const savePath = resolveSavePathFromArgs(args);
+  console.log(`Save: ${savePath}`);
   const jsonOut = path.resolve(args.out || ".dev/custom-ui-assets/npc-token-hosted-urls.json");
   const luaOut = path.resolve(args.luaOut || "lib/npc_token_hosted_urls.ttslua");
 
