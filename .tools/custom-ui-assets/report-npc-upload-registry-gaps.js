@@ -88,17 +88,14 @@ async function main() {
   }
 
   if (fs.existsSync(inputDir)) {
-    const { groups, errors } = scanNpcGroupsInDirectory(inputDir);
-    if (errors.length === 0) {
-      const diskKeys = new Set(groups.map((g) => g.characterKey));
+    const scanResult = scanNpcGroupsInDirectory(inputDir, { registeredKeys: knownKeys });
+    if (scanResult.errors.length === 0) {
+      const diskKeys = new Set(scanResult.groups.map((g) => g.characterKey));
       if (registryMissingDiskGroup.length === 0) {
         registryMissingDiskGroup = sortedRegistryKeys.filter((key) => !diskKeys.has(key));
       }
       if (skippedUnregisteredKeys.length === 0) {
-        skippedUnregisteredKeys = groups
-          .map((g) => g.characterKey)
-          .filter((key) => !knownKeys.has(key))
-          .sort((a, b) => a.localeCompare(b, "en"));
+        skippedUnregisteredKeys = scanResult.skippedUnregisteredKeys;
       }
     }
   }
@@ -120,7 +117,7 @@ async function main() {
     "",
     "## Registry keys with no npc_control_token in save (inject)",
     tokensMissing.length > 0
-      ? tokensMissing.map((k) => `- ${k} (run DEBUG.spawnNpcControlBoardTokens)`).join("\n")
+      ? tokensMissing.map((k) => `- ${k} (run npm run custom-ui-assets:apply-npc-hosted-world after upload)`).join("\n")
       : "(none — or inject report not found)",
     "",
   ];

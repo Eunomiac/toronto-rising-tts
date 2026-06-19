@@ -79,7 +79,12 @@ function main() {
     process.exit(1);
   }
 
-  const { groups, errors } = scanNpcGroupsInDirectory(imageDir);
+  const npcsText = fs.readFileSync(npcsDataPath, "utf8");
+  const registeredKeys = extractCharacterKeysFromNpcsData(npcsText);
+
+  const { groups, errors, skippedUnregisteredKeys } = scanNpcGroupsInDirectory(imageDir, {
+    registeredKeys,
+  });
   if (errors.length > 0) {
     console.warn(`Scan warnings (${errors.length}):`);
     for (const err of errors) {
@@ -88,17 +93,13 @@ function main() {
     console.warn("");
   }
 
-  const npcsText = fs.readFileSync(npcsDataPath, "utf8");
-  const registeredKeys = extractCharacterKeysFromNpcsData(npcsText);
-
-  const diskKeys = groups.map((group) => group.characterKey);
-  const missingKeys = diskKeys.filter((key) => !registeredKeys.has(key));
+  const missingKeys = skippedUnregisteredKeys;
 
   const lines = [
     `-- Generated ${new Date().toISOString()}`,
     `-- Source: ${path.relative(process.cwd(), imageDir).replace(/\\/g, "/")}`,
     `-- Registry: ${path.relative(process.cwd(), npcsDataPath).replace(/\\/g, "/")}`,
-    `-- Complete disk groups: ${groups.length}; registered: ${registeredKeys.size}; missing: ${missingKeys.length}`,
+    `-- Complete registered disk groups: ${groups.length}; unregistered on disk: ${missingKeys.length}; registry size: ${registeredKeys.size}`,
     `-- Paste blocks below into D.characters in lib/npcs_data.ttslua`,
     "",
   ];

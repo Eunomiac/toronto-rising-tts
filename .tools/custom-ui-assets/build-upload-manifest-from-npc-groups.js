@@ -106,8 +106,19 @@ async function main() {
     );
   }
 
-  const { groups, errors } = scanNpcGroupsInDirectory(dirPath);
-  if (groups.length === 0 && errors.length === 0) {
+  /** @type {Set<string> | null} */
+  let knownCharacterKeys = null;
+  if (fs.existsSync(npcsDataPath)) {
+    const npcsText = fs.readFileSync(npcsDataPath, "utf8");
+    knownCharacterKeys = extractCharacterKeysFromNpcsData(npcsText);
+  }
+
+  const scanOptions = knownCharacterKeys !== null ? { registeredKeys: knownCharacterKeys } : {};
+  const { groups: registeredGroups, errors, skippedUnregisteredKeys } = scanNpcGroupsInDirectory(
+    dirPath,
+    scanOptions,
+  );
+  if (registeredGroups.length === 0 && errors.length === 0 && skippedUnregisteredKeys.length === 0) {
     throw new Error(`No complete NPC 4-file groups found in: ${dirPath}`);
   }
   if (errors.length > 0) {
@@ -117,39 +128,29 @@ async function main() {
     throw new Error(`NPC group scan failed:\n${shown.join("\n")}${extra}`);
   }
 
-  /** @type {Set<string> | null} */
-  let knownCharacterKeys = null;
-  if (fs.existsSync(npcsDataPath)) {
-    const npcsText = fs.readFileSync(npcsDataPath, "utf8");
-    knownCharacterKeys = extractCharacterKeysFromNpcsData(npcsText);
-  }
-
-  /** @type {import("./lib/npc-asset-helpers").NpcAssetGroup[]} */
-  let registeredGroups = groups;
-  /** @type {string[]} */
-  const skippedUnregisteredKeys = [];
-  if (knownCharacterKeys !== null) {
-    registeredGroups = [];
-    for (const group of groups) {
-      if (knownCharacterKeys.has(group.characterKey)) {
-        registeredGroups.push(group);
-      } else {
-        skippedUnregisteredKeys.push(group.characterKey);
-      }
-    }
-    skippedUnregisteredKeys.sort((a, b) => a.localeCompare(b, "en"));
-  }
-
   if (warnUnknownKeys) {
     console.warn(
       "NOTE: --warnUnknownKeys is deprecated; unregistered disk groups are always skipped now.",
     );
   }
 
+  if (skippedUnregisteredKeys.length > 0) {
+    console.log(
+      `Skipping ${skippedUnregisteredKeys.length} complete disk group(s) not in D.characters (inject + manifest use registered keys only).`,
+    );
+  }
+
   if (!skipInject && (args.save || args.saveName)) {
     const injectScript = path.resolve(".tools/custom-ui-assets/inject-npc-world-from-groups.js");
     /** @type {string[]} */
-    const injectArgs = [injectScript, "--dir", dirPath, "--npcsData", npcsDataPath];
+    const injectArgs = [
+      injectScript,
+      "--dir",
+      dirPath,
+      "--npcsData",
+      npcsDataPath,
+      "--registeredOnly",
+    ];
     if (args.save && args.save.trim() !== "") {
       injectArgs.push("--save", path.resolve(args.save.trim()));
     } else {
@@ -158,7 +159,9 @@ async function main() {
     if (args["dry-run"] === "1" || args.dryRun === "1") {
       injectArgs.push("--dry-run");
     }
-    console.log("Running NPC world inject into save before manifest...");
+    console.log(
+      `Running NPC world inject for ${registeredGroups.length} registered group(s) into save...`,
+    );
     const { spawnSync } = require("child_process");
     const injectResult = spawnSync(process.execPath, injectArgs, { stdio: "inherit" });
     if (injectResult.status !== 0) {
@@ -202,7 +205,7 @@ async function main() {
       inputDirectory: dirPath,
       count: 0,
       characterCount: 0,
-      totalGroupsScanned: groups.length,
+      totalGroupsScanned: registeredGroups.length + skippedUnregisteredKeys.length,
       registeredGroupCount: registeredGroups.length,
       skippedUnregisteredKeys,
       alreadyHostedCount: alreadyHostedKeys.length,
@@ -273,7 +276,7 @@ async function main() {
     inputDirectory: dirPath,
     count: assets.length,
     characterCount: sliceGroups.length,
-    totalGroupsScanned: groups.length,
+    totalGroupsScanned: registeredGroups.length + skippedUnregisteredKeys.length,
     registeredGroupCount: registeredGroups.length,
     skippedUnregisteredKeys,
     alreadyHostedCount: alreadyHostedKeys.length,

@@ -81,6 +81,9 @@ async function main() {
   const buildNpcTokensScript = path.resolve(".tools/custom-ui-assets/build-upload-manifest-from-npc-tokens.js");
   const buildNpcGroupsScript = path.resolve(".tools/custom-ui-assets/build-upload-manifest-from-npc-groups.js");
   const extractNpcTokensScript = path.resolve(".tools/custom-ui-assets/extract-npc-token-hosted-urls.js");
+  const applyNpcHostedWorldScript = path.resolve(
+    ".tools/custom-ui-assets/apply-npc-hosted-world-from-upload.js",
+  );
   const reportNpcGapsScript = path.resolve(".tools/custom-ui-assets/report-npc-upload-registry-gaps.js");
   const convertScript = path.resolve(".tools/custom-ui-assets/convert-png-to-webp.js");
   const mergeByNameScript = path.resolve(".tools/custom-ui-assets/merge-custom-ui-assets-from-save-name.js");
@@ -280,6 +283,21 @@ async function main() {
     }
   }
 
+  if (mode === "npc-groups" && !skipManualTts) {
+    console.log("");
+    console.log("=== Apply hosted URLs to figurines + control-board tokens in save ===");
+    const applyWorldArgs = [
+      "--saveName",
+      saveName,
+      "--assetsOut",
+      assetsOutPath,
+    ];
+    const applyExit = runNodeScript(applyNpcHostedWorldScript, applyWorldArgs);
+    if (applyExit !== 0) {
+      process.exit(applyExit);
+    }
+  }
+
   if (mode === "npc-groups") {
     console.log("");
     console.log("=== Registry gap report (uploaded keys missing from D.characters) ===");
@@ -303,6 +321,9 @@ async function main() {
   }
   if (mode === "npc-tokens" || mode === "npc-groups") {
     console.log("Hosted token pairs: lib/npc_token_hosted_urls.ttslua");
+  }
+  if (mode === "npc-groups" && !skipManualTts) {
+    console.log("Figurines + control-board tokens patched in save — reload in TTS (Save & Play).");
   }
 }
 

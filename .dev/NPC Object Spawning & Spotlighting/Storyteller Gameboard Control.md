@@ -178,8 +178,9 @@ Source WEBPs:
 
 Pipeline (full detail: [`.dev/custom-ui-assets/README.md`](../custom-ui-assets/README.md)):
 
+**Preferred (NPC unified groups):** `npm run custom-ui-assets:pipeline-npc-groups` — inject → manifest → TTS upload → merge → extract → **`apply-npc-hosted-world`** (patches figurines + creates/updates control-board tokens in save JSON with hosted URLs). Reload save in TTS.
+
+**Legacy token-only folder:**
+
 1. `npm run custom-ui-assets:manifest-npc-tokens`
-2. **Gameboard tokens (61, paired front/back):** Save & Play → `lua DEBUG.spawnNpcControlBoardTokens()` — spawns flip tiles with tag `npc_control_token` and GM notes `npcToken:<characterKey>`, then parks on **CONTROL_BOARD_PALETTE**. Uses `file:///` from the manifest until hosted URLs exist.
-3. **Cloud upload (122 single-face temp tokens):** `lua DEBUG.spawnNpcTokenUploadBatch({ columns = 12, gap = 2, startY = 3 })` → Cloud Manager → **Upload All Loaded Files** → save game → `lua DEBUG.clearCustomUiUploadTokens()`
-4. Merge with `npc-token-manifest.json`, then `npm run custom-ui-assets:extract-npc-token-urls`
-5. Save & Play → `lua DEBUG.applyNpcControlTokenHostedImages()` — refreshes existing control-board tokens from `lib/npc_token_hosted_urls` (or re-run `spawnNpcControlBoardTokens` after extract)
+2. Cloud upload temps → merge → extract → `npm run custom-ui-assets:apply-npc-hosted-world` (or `lua DEBUG.spawnNpcControlBoardTokens()` + `applyNpcControlTokenHostedImages()`)

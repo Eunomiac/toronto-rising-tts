@@ -20,15 +20,11 @@ const {
   computePreloadSlotWorldPosition,
   buildNpcFigurineObjectState,
   generateTtsGuid,
-  characterKeyFromGmNotesPrefix,
-  objectHasTag,
   scanNpcGroupsInDirectory,
-  GM_FIGURINE_PREFIX,
-  GM_TOKEN_PREFIX,
-  NPC_FIGURINE_TAG,
-  NPC_CONTROL_TOKEN_TAG,
   figurineYawDegreesForArea,
-  NPC_PRELOAD_FIGURE_SCALE,
+  indexExistingNpcObjects,
+  patchFigurineObject,
+  patchTokenObject,
 } = require("./lib/npc-asset-helpers");
 
 /**
@@ -54,104 +50,10 @@ function parseArgs(argv) {
   return args;
 }
 
-/**
- * @param {unknown} node
- * @param {Map<string, Record<string, unknown>>} figurinesByKey
- * @param {Map<string, Record<string, unknown>>} tokensByKey
- */
-function indexExistingNpcObjects(node, figurinesByKey, tokensByKey) {
-  if (node === null || node === undefined) {
-    return;
-  }
-  if (Array.isArray(node)) {
-    for (let i = 0; i < node.length; i += 1) {
-      indexExistingNpcObjects(node[i], figurinesByKey, tokensByKey);
-    }
-    return;
-  }
-  if (typeof node !== "object") {
-    return;
-  }
-
-  const obj = /** @type {Record<string, unknown>} */ (node);
-  const figKey = characterKeyFromGmNotesPrefix(obj, GM_FIGURINE_PREFIX);
-  if (figKey !== null && (objectHasTag(obj, NPC_FIGURINE_TAG) || obj.Name === "Figurine_Custom")) {
-    figurinesByKey.set(figKey, obj);
-  }
-  const tokenKey = characterKeyFromGmNotesPrefix(obj, GM_TOKEN_PREFIX);
-  if (tokenKey !== null && objectHasTag(obj, NPC_CONTROL_TOKEN_TAG)) {
-    tokensByKey.set(tokenKey, obj);
-  }
-
-  for (const [key, value] of Object.entries(obj)) {
-    if (key === "LuaScript") {
-      continue;
-    }
-    indexExistingNpcObjects(value, figurinesByKey, tokensByKey);
-  }
-}
-
-/**
- * @param {Record<string, unknown>} obj
- * @param {string} frontUrl
- * @param {string} backUrl
- * @param {number} imageScalar
- * @param {{ x: number; y: number; z: number }} pos
- * @param {number} yawDeg
- */
-function patchFigurineObject(obj, frontUrl, backUrl, imageScalar, pos, yawDeg) {
-  let customImage = obj.CustomImage;
-  if (!customImage || typeof customImage !== "object" || Array.isArray(customImage)) {
-    customImage = {};
-    obj.CustomImage = customImage;
-  }
-  const img = /** @type {Record<string, unknown>} */ (customImage);
-  img.ImageURL = frontUrl;
-  img.ImageSecondaryURL = backUrl;
-  img.ImageScalar = imageScalar;
-  img.WidthScale = 0;
-
-  let transform = obj.Transform;
-  if (!transform || typeof transform !== "object" || Array.isArray(transform)) {
-    transform = {};
-    obj.Transform = transform;
-  }
-  const t = /** @type {Record<string, unknown>} */ (transform);
-  t.posX = pos.x;
-  t.posY = pos.y;
-  t.posZ = pos.z;
-  t.rotY = yawDeg;
-  t.scaleX = NPC_PRELOAD_FIGURE_SCALE;
-  t.scaleY = NPC_PRELOAD_FIGURE_SCALE;
-  t.scaleZ = NPC_PRELOAD_FIGURE_SCALE;
-  obj.Locked = true;
-  obj.Tooltip = false;
-  if (!Array.isArray(obj.Tags)) {
-    obj.Tags = [NPC_FIGURINE_TAG];
-  } else if (!obj.Tags.includes(NPC_FIGURINE_TAG)) {
-    obj.Tags.push(NPC_FIGURINE_TAG);
-  }
-}
-
-/**
- * @param {Record<string, unknown>} obj
- * @param {string} frontUrl
- * @param {string} backUrl
- */
-function patchTokenObject(obj, frontUrl, backUrl) {
-  let customImage = obj.CustomImage;
-  if (!customImage || typeof customImage !== "object" || Array.isArray(customImage)) {
-    customImage = {};
-    obj.CustomImage = customImage;
-  }
-  const img = /** @type {Record<string, unknown>} */ (customImage);
-  img.ImageURL = frontUrl;
-  img.ImageSecondaryURL = backUrl;
-}
-
 function main() {
   const args = parseArgs(process.argv.slice(2));
   const dryRun = args["dry-run"] === "1" || args.dryRun === "1";
+  const registeredOnly = args.registeredOnly === "1" || args.registeredOnly === "true";
   const inputDir = (args.dir || args.input || DEFAULT_NPC_GROUP_IMAGE_DIR).trim();
   const npcsDataPath = path.resolve(args.npcsData || "lib/npcs_data.ttslua");
   const dirPath = path.isAbsolute(inputDir) ? path.normalize(inputDir) : path.resolve(inputDir);
@@ -176,7 +78,11 @@ function main() {
   const preloadArea = parsePreloadAreaFromNpcsData(npcsText);
   const sortedRegistryKeys = [...knownKeys].sort((a, b) => a.localeCompare(b, "en"));
 
-  const { groups, errors } = scanNpcGroupsInDirectory(dirPath);
+  const scanOptions = registeredOnly ? { registeredKeys: knownKeys } : {};
+  const { groups, errors, skippedUnregisteredKeys } = scanNpcGroupsInDirectory(
+    dirPath,
+    scanOptions,
+  );
   if (errors.length > 0) {
     const cap = 20;
     const shown = errors.slice(0, cap);
@@ -186,14 +92,6 @@ function main() {
 
   /** @type {Map<string, import("./lib/npc-asset-helpers").NpcAssetGroup>} */
   const groupByKey = new Map(groups.map((g) => [g.characterKey, g]));
-
-  /** @type {string[]} */
-  const skippedUnregisteredKeys = [];
-  for (const group of groups) {
-    if (!knownKeys.has(group.characterKey)) {
-      skippedUnregisteredKeys.push(group.characterKey);
-    }
-  }
 
   const saveRoot = JSON.parse(fs.readFileSync(savePath, "utf8"));
   if (!Array.isArray(saveRoot.ObjectStates)) {
@@ -215,7 +113,7 @@ function main() {
   /** @type {string[]} */
   const tokensPatched = [];
   /** @type {string[]} */
-  const tokensMissing = [];
+  const tokensPendingHosted = [];
   /** @type {string[]} */
   const registryMissingDiskGroup = [];
   /** @type {string[]} */
@@ -261,7 +159,7 @@ function main() {
       patchTokenObject(existingToken, tokenFrontUrl, tokenBackUrl);
       tokensPatched.push(characterKey);
     } else {
-      tokensMissing.push(characterKey);
+      tokensPendingHosted.push(characterKey);
     }
   }
 
@@ -276,11 +174,16 @@ function main() {
 
   console.log(`Save: ${savePath}`);
   console.log(`Registry keys: ${sortedRegistryKeys.length}`);
-  console.log(`Disk groups (complete): ${groups.length}`);
+  console.log(`Registered disk groups (complete): ${groups.length}`);
+  if (skippedUnregisteredKeys.length > 0) {
+    console.log(`Skipped unregistered disk groups: ${skippedUnregisteredKeys.length}`);
+  }
   console.log(`Figurines patched: ${figurinesPatched.length}`);
   console.log(`Figurines created: ${figurinesCreated.length}`);
   console.log(`Tokens patched: ${tokensPatched.length}`);
-  console.log(`Tokens missing in save (run DEBUG.spawnNpcControlBoardTokens): ${tokensMissing.length}`);
+  console.log(
+    `Tokens pending (created after upload via apply-npc-hosted-world): ${tokensPendingHosted.length}`,
+  );
 
   if (skippedUnregisteredKeys.length > 0) {
     console.log("");
@@ -296,10 +199,10 @@ function main() {
       console.log(`  - ${key}`);
     }
   }
-  if (tokensMissing.length > 0) {
+  if (tokensPendingHosted.length > 0) {
     console.log("");
-    console.log("Registry keys with figurine inject but no npc_control_token in save:");
-    for (const key of tokensMissing) {
+    console.log("Registry keys awaiting hosted-world apply (post-merge pipeline step):");
+    for (const key of tokensPendingHosted) {
       console.log(`  - ${key}`);
     }
   }
@@ -314,7 +217,8 @@ function main() {
     figurinesPatched,
     figurinesCreated,
     tokensPatched,
-    tokensMissing,
+    tokensPendingHosted,
+    tokensMissing: tokensPendingHosted,
     skippedUnregisteredKeys: skippedUnregisteredKeys.sort((a, b) => a.localeCompare(b, "en")),
     registryMissingDiskGroup,
     registryMissingFigurineAfter,
@@ -336,6 +240,7 @@ function main() {
   fs.writeFileSync(savePath, `${JSON.stringify(saveRoot)}\n`, "utf8");
   console.log(`Save updated: ${savePath}`);
   console.log(">>> Reload save in TTS, then Cloud Manager → Upload All Loaded Files → save again.");
+  console.log(">>> After merge, run apply-npc-hosted-world to create missing tokens with hosted URLs.");
 }
 
 main();

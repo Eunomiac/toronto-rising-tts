@@ -194,6 +194,27 @@
       }
     },
     {
+      "label": "Custom UI Assets: Apply NPC hosted world to save",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        ".tools/custom-ui-assets/apply-npc-hosted-world-from-upload.js",
+        "--saveName",
+        "${input:customUiAssetsSaveName}",
+        "--assetsOut",
+        ".dev/custom-ui-assets/npc-group-generated-assets.json"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "focus": true
+      }
+    },
+    {
       "label": "Custom UI Assets: Build Manifest from Image Files",
       "type": "shell",
       "command": "node",
