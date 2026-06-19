@@ -41,6 +41,10 @@ The redirect URI must exactly match one of the authorized redirect URIs configur
 
 Use this when you have a downloaded service-account key JSON file. Place it at `./service-account.json`, set `GOOGLE_SERVICE_ACCOUNT_KEY_FILE=./service-account.json`, and share the target Google Sheet with the service account `client_email`.
 
+## Range targeting
+
+The range field accepts a full A1 range like `Sheet1!A1:Z`, a named range, or an exact sheet tab name. When an exact sheet tab name is entered, the app fetches the entire sheet and treats row 1 as the header row.
+
 ## Schema notes
 
 The Sheet-to-JSON schema accepts JSON with comments and trailing commas. Blank header cells in the selected input range are ignored; only named columns can be referenced by schema leaf values or square-bracket key interpolation.

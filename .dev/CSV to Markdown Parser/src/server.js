@@ -129,10 +129,31 @@ async function getAccessToken() {
   throw new Error('Missing Google credentials. Set service-account credentials or GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and GOOGLE_REDIRECT_URI in .env.');
 }
 
+function quoteSheetTitle(title) {
+  return `'${String(title).replace(/'/g, "''")}'`;
+}
+
+function mightBeWholeSheetRange(range) {
+  const trimmed = String(range || '').trim();
+  return Boolean(trimmed) && !/[!:]/.test(trimmed);
+}
+
+async function resolveRange(spreadsheetId, range, token) {
+  const trimmed = String(range || '').trim();
+  if (!mightBeWholeSheetRange(trimmed)) return trimmed;
+  const metadataUrl = `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId)}?fields=sheets.properties.title`;
+  const metadataResponse = await fetch(metadataUrl, { headers: { Authorization: `Bearer ${token}` } });
+  const metadata = await metadataResponse.json();
+  if (!metadataResponse.ok) throw new Error(metadata.error?.message || 'Unable to fetch sheet metadata.');
+  const match = (metadata.sheets || []).map((sheet) => sheet.properties?.title).find((title) => title === trimmed);
+  return match ? quoteSheetTitle(match) : trimmed;
+}
+
 async function fetchSheetValues(sheetUrl, range) {
   const id = extractSpreadsheetId(sheetUrl);
   const token = await getAccessToken();
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(id)}/values/${encodeURIComponent(range)}`;
+  const resolvedRange = await resolveRange(id, range, token);
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(id)}/values/${encodeURIComponent(resolvedRange)}`;
   const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
   const payload = await response.json();
   if (!response.ok) throw new Error(payload.error?.message || 'Unable to fetch sheet values.');
