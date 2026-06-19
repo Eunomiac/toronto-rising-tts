@@ -10,8 +10,5 @@
     "ts:init": "node src/ts-workflow.js init",
     "ts:run": "node src/ts-workflow.js run",
     "ts:compile": "node src/ts-workflow.js compile"
-  },
-  "devDependencies": {
-    "@types/node": "^25.9.3"
   }
 }
