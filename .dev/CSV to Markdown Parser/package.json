@@ -1,0 +1,14 @@
+{
+  "name": "csv-to-markdown-parser",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local dashboard for Google Sheet to JSON and JSON to Markdown conversion.",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "ts:init": "node src/ts-workflow.js init",
+    "ts:run": "node src/ts-workflow.js run",
+    "ts:compile": "node src/ts-workflow.js compile"
+  }
+}
