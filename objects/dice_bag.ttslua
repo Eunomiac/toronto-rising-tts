@@ -224,6 +224,11 @@ end
 --- @param opts table|nil  { bloodSurgePool?, bloodSurgeRouse?, arcCenter? }
 --- @param arcCenter Vector|table|nil  World-space arc center (ST drawer tray); nil uses Normal bag for players
 function spawnDie(bagColor, dieType, opts)
+    if Global ~= nil and type(Global.call) == "function" then
+        if Global.call("GlobalRequireHostForWorldMutation", { context = "dice_bag.spawnDie" }) ~= true then
+            return
+        end
+    end
     opts = type(opts) == "table" and opts or {}
     local bloodSurgePool = opts.bloodSurgePool == true
     local bloodSurgeRouse = opts.bloodSurgeRouse == true

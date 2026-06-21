@@ -1957,41 +1957,128 @@ function U.getHost()
 	return Player.Brown
 end
 
---- True when this game **client** is the table Host (server), not a joining peer.
---- Solo / Studio / no seated local player: returns true (same machine runs bootstrap).
+--- Storyteller Steam ID (`C.StorytellerID`) — available after Global loads `lib.constants`.
+--- @return string
+local function storytellerSteamId()
+	local c = rawget(_G, "C")
+	if type(c) == "table" and type(c.StorytellerID) == "string" and c.StorytellerID ~= "" then
+		return c.StorytellerID
+	end
+	return "76561198002132577"
+end
+
+--- @param playerRef Player|string|nil TTS Player from callbacks, or seat color when only color is provided
+--- @return Player|nil
+local function resolvePlayerRef(playerRef)
+	if playerRef == nil then
+		return nil
+	end
+	if U.isPlayer(playerRef) then
+		return playerRef
+	end
+	if type(playerRef) ~= "string" or playerRef == "" or playerRef == "Grey" then
+		return nil
+	end
+	if Player == nil or type(Player.getAvailableColors) ~= "function" then
+		return nil
+	end
+	if not U.isIn(playerRef, Player.getAvailableColors()) then
+		return nil
+	end
+	local p = Player[playerRef]
+	if U.isPlayer(p) then
+		return p
+	end
+	return nil
+end
+
+--- Sole seated/spectator Player when exactly one human is visible (onLoad bootstrap only).
+--- @return Player|nil
+local function solePlayerRefOrNil()
+	if Player == nil or type(Player.getPlayers) ~= "function" then
+		return nil
+	end
+	local seen = {}
+	local function note(p)
+		if not U.isPlayer(p) or type(p.steam_id) ~= "string" or p.steam_id == "" then
+			return
+		end
+		seen[p] = true
+	end
+	for _, p in ipairs(Player.getPlayers()) do
+		if p.seated == true then
+			note(p)
+		end
+	end
+	if type(Player.getSpectators) == "function" then
+		for _, p in ipairs(Player.getSpectators()) do
+			note(p)
+		end
+	end
+	local only = nil
+	local count = 0
+	for p, _ in pairs(seen) do
+		count = count + 1
+		only = p
+	end
+	if count == 1 then
+		return only
+	end
+	return nil
+end
+
+--- True when `playerRef` is the Storyteller (`C.StorytellerID`), any seat color.
+--- Prefer the **Player instance** from event callbacks (`onPlayerAction`, HUD `player`, etc.).
+--- When a handler only receives seat color (`onObjectDrop`, `onObjectPickUp`), pass that string — resolved via `Player[color]`.
+--- @param playerRef Player|string|nil
+--- @return boolean
+function U.isStorytellerSteamPlayer(playerRef)
+	local p = resolvePlayerRef(playerRef)
+	if p == nil or type(p.steam_id) ~= "string" or p.steam_id == "" then
+		return false
+	end
+	return tostring(p.steam_id) == storytellerSteamId()
+end
+
+--- True when this **client** is the Storyteller machine (`C.StorytellerID`), regardless of seat color.
+--- Solo / Studio / nobody seated yet: returns true (bootstrap runs until a non-ST client is identifiable).
 --- @return boolean
 function U.isHostClient()
-	if Player == nil or type(Player.getPlayers) ~= "function" then
+	if Player == nil then
 		return true
 	end
-	local players = Player.getPlayers()
-	if type(players) ~= "table" or #players == 0 then
+	local sole = solePlayerRefOrNil()
+	if sole ~= nil then
+		return U.isStorytellerSteamPlayer(sole)
+	end
+	if type(Player.getPlayers) == "function" then
+		local players = Player.getPlayers()
+		if type(players) ~= "table" or #players == 0 then
+			return true
+		end
+	else
 		return true
 	end
-	local hostPlayer = nil
-	for _, p in ipairs(players) do
-		if p ~= nil and p.host == true then
-			hostPlayer = p
-			break
+	return false
+end
+
+local hostWorldMutationBlockLogged = {}
+
+--- True when this machine may apply world I/O or reconcile (Host client). Join clients return false.
+--- @param context string|nil optional label for one-time DEBUG log when blocked
+--- @return boolean
+function U.requireHostForWorldMutation(context)
+	if U.isHostClient() then
+		return true
+	end
+	if type(context) == "string" and context ~= "" and hostWorldMutationBlockLogged[context] ~= true then
+		hostWorldMutationBlockLogged[context] = true
+		local dbg = rawget(_G, "DEBUG")
+		if type(dbg) == "table" and dbg.isVerbose == true then
+			print("[HostAuthority] blocked non-host: " .. context)
 		end
 	end
-	if hostPlayer == nil or type(hostPlayer.steam_id) ~= "string" or hostPlayer.steam_id == "" then
-		return true
-	end
-	local localSteamId = nil
-	if type(Player.getColors) == "function" then
-		for _, color in ipairs(Player.getColors()) do
-			local seated = Player[color]
-			if seated ~= nil and seated.seated == true and type(seated.steam_id) == "string" and seated.steam_id ~= "" then
-				localSteamId = seated.steam_id
-				break
-			end
-		end
-	end
-	if localSteamId == nil then
-		return true
-	end
-	return hostPlayer.steam_id == localSteamId
+	return false
 end
 
 --- Storyteller / GM interaction gate — seated Storyteller color is `Black` (`C.StorytellerColor`).

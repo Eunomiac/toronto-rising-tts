@@ -23,6 +23,23 @@ local function resolveControlBoardClickColor(arg1, arg2)
     return nil
 end
 
+--- @param arg1 Player|Object|nil
+--- @param arg2 string|nil
+--- @return boolean
+local function isStorytellerSteamClick(arg1, arg2)
+    if Global == nil or type(Global.call) ~= "function" then
+        return false
+    end
+    if arg1 ~= nil and type(arg1.steam_id) == "string" then
+        return Global.call("GlobalIsStorytellerSteamPlayer", { player = arg1 }) == true
+    end
+    local color = resolveControlBoardClickColor(arg1, arg2)
+    if color == nil then
+        return false
+    end
+    return Global.call("GlobalIsStorytellerSteamPlayer", { player_color = color }) == true
+end
+
 function onLoad()
     if Global ~= nil and type(Global.call) == "function" then
         Global.call("GlobalGameboardSyncSnapsToggleLabel", { boardGuid = self.getGUID() })
@@ -30,8 +47,7 @@ function onLoad()
 end
 
 function click_apply(player, value, id)
-    local player_color = resolveControlBoardClickColor(player, value)
-    if player_color ~= "Black" then
+    if not isStorytellerSteamClick(player, value) then
         return
     end
     Global.call("GlobalGameboardApply", {})
@@ -39,7 +55,7 @@ end
 
 function click_clear(player, value, id)
     local player_color = resolveControlBoardClickColor(player, value)
-    if player_color ~= "Black" then
+    if not isStorytellerSteamClick(player, value) then
         return
     end
     Global.call("GlobalGameboardClearClick", { player_color = player_color })
@@ -47,7 +63,7 @@ end
 
 function click_snaps_toggle(player, value, id)
     local player_color = resolveControlBoardClickColor(player, value)
-    if player_color ~= "Black" then
+    if not isStorytellerSteamClick(player, value) then
         return
     end
     local enabled = nil
@@ -61,30 +77,30 @@ function click_snaps_toggle(player, value, id)
 end
 
 function click_read_stub(player, value, id)
-    local player_color = resolveControlBoardClickColor(player, value)
-    if player_color ~= "Black" then
+    if not isStorytellerSteamClick(player, value) then
         return
     end
+    local player_color = resolveControlBoardClickColor(player, value)
     if broadcastToColor ~= nil then
         broadcastToColor("Read: Phase B (not wired yet).", player_color, { 1, 0.8, 0.4 })
     end
 end
 
 function click_lock_stub(player, value, id)
-    local player_color = resolveControlBoardClickColor(player, value)
-    if player_color ~= "Black" then
+    if not isStorytellerSteamClick(player, value) then
         return
     end
+    local player_color = resolveControlBoardClickColor(player, value)
     if broadcastToColor ~= nil then
         broadcastToColor("Lock: Phase B (not wired yet).", player_color, { 1, 0.8, 0.4 })
     end
 end
 
 function click_load_stub(player, value, id)
-    local player_color = resolveControlBoardClickColor(player, value)
-    if player_color ~= "Black" then
+    if not isStorytellerSteamClick(player, value) then
         return
     end
+    local player_color = resolveControlBoardClickColor(player, value)
     if broadcastToColor ~= nil then
         broadcastToColor("Load: Phase B (not wired yet).", player_color, { 1, 0.8, 0.4 })
     end

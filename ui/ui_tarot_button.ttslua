@@ -139,6 +139,11 @@ end
 --- @param state string
 --- @param token number
 local function applyObjectState(key, state, token)
+    if Global ~= nil and type(Global.call) == "function" then
+        if Global.call("GlobalRequireHostForWorldMutation", { context = "tarot.applyObjectState" }) ~= true then
+            return
+        end
+    end
     local obj = resolveTarotObject(key)
     if obj == nil then
         print("[TarotButton] Missing object for key: " .. tostring(key))

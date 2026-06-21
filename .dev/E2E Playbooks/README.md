@@ -66,6 +66,6 @@ Full rules, layout (100-char banner with spaces around text), and a copy-paste t
 - [Reconciler Contract](../Sychronizing%20Game%20Functionality/Reconciler%20Contract.md)
 - [TTS_MCP.md](../TTS_MCP.md) — agent execute / `TR_AGENT_V1` lines
 
-## TOR-144 (out of scope here)
+## TOR-144 (multiplayer E2E)
 
-After solo suites pass, **TOR-144** (multiplayer E2E) adds a checklist for multiple real clients — optional until you can invite others.
+After solo suites pass, run **[Multiplayer-E2E.md](Multiplayer-E2E.md)** with a second real client — Host authority guards must prevent duplicate world I/O.

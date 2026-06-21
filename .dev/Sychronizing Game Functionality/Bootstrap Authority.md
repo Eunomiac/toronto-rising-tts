@@ -1,18 +1,57 @@
 # Bootstrap & Load Authority (TTS multiplayer)
 
-**Linear:** TOR-221 (Non-Host onLoad Host-only guard audit)  
+**Linear:** TOR-221 (Non-Host onLoad Host-only guard audit)
 **Related:** [Event Listener Policy](Event%20Listener%20Policy.md), [Reconciler Contract](Reconciler%20Contract.md), TOR-144 (multiplayer E2E playbook)
 
 Toronto Rising has been developed and tested **solo Host** (Storyteller seated at **Black**). When real clients join, TTS runs **Global `onLoad` and object `onLoad` on every client**. World mutations and reconcilers must run on the **Host client only**; joining clients hydrate `gameState` and refresh **UI**.
 
-## Two authority axes
+## Authority model: identity axes + outcome tiers
+
+### Identity axes (who / which machine)
 
 | Axis | Check | Use for |
 | --- | --- | --- |
-| **GM / Storyteller interaction** | `U.isStorytellerPlayerColor(color)` — **`Black`** (`C.StorytellerColor`) or TTS **`Host`** spectator alias | Clicks, drops, picks, Apply/Clear, scene import, ST panel mutations |
-| **Host client (server)** | `U.isHostClient()` — local seated `steam_id` matches the session Host player | `onLoad` bootstrap, `Sync.full`, `Sync.npcs`, `Sync.lighting`, object moves, snap install |
+| **Storyteller identity (interaction)** | `U.isStorytellerSteamPlayer(playerRef)` | Who triggered an ST-only action — any seat |
+| **Storyteller seat alias (XmlUI)** | `U.isStorytellerPlayerColor(color)` — `Black` / `Host` | Legacy object XmlUI; prefer steam when Player is available |
+| **Storyteller machine (execution)** | `U.isHostClient()` or `U.requireHostForWorldMutation(context)` | Which client runs bootstrap, reconcile, and world I/O |
 
-**Do not conflate them.** The GM may be seated at Black on the Host machine; a joining PC is neither Host client nor Black. A promoted guest is not the GM unless they are seated at Black (or Host alias for spectator GM).
+**Do not conflate them.** Steam gate alone is **not** enough on fan-out events: when the Storyteller drops a token, `onObjectDrop` runs on **every** client and steam checks pass on all of them.
+
+### Outcome tiers (what the handler does)
+
+| Tier | Examples | Rule |
+| --- | --- | --- |
+| **A — UI only** | `Sync.ui`, `UpdateUIDisplays`, panel toggles, modal open | Any client |
+| **B — State mutation** | `S.setStateVal`, roll FSM (`RC.*`) | Host for ST panel + `Global.call` fan-out; clicker-only PC HUD may mirror state until live broadcast exists (see roll split) |
+| **C — World / reconcile** | `Sync.full`, `Sync.npcs`, `setPosition`, `L.SetLightMode`, spawns | **Host only** — `U.requireHostForWorldMutation` |
+
+### Event delivery (TTS)
+
+| Delivery | Handlers | Host guard |
+| --- | --- | --- |
+| **Fan-out (all clients)** | `onObjectDrop`, `onObjectRandomize`, `Global.call`, `onPlayerConnect`, `onLoad` | Required before Tier C; steam first when ST-only |
+| **Clicker-only** | Global XmlUI `HUD_*`, object `click_*` | Host before Tier C; ST steam for panel mutations |
+
+### Roll / fan-out state split
+
+- **Tier C on fan-out** (e.g. `onObjectRandomize` → eventual `Sync.player` lights): host only (`Sync.player` runs `L.reconcileForPlayer` on host; UI/overlays on all clients).
+- **Tier B on fan-out** (roll debounce FSM): may run on all clients when inputs are engine-synced; do **not** host-guard the entire `onObjectRandomize` body if that breaks local roll UI on join clients.
+- **PC roll clicks**: route spawns/releases through **`Global.call`** so the Host executes Tier C even when a join client clicked.
+
+### Live `gameState` broadcast (follow-up)
+
+Join clients load `gameState` from save on `onLoad` but do not receive runtime Lua table updates from the Host between saves. Full multiplayer state parity may need a future bridge; this audit focuses on **duplicate world I/O**.
+
+## Callback `playerRef` shapes (TTS)
+
+| Handler | Activating player arg | Gate with |
+| --- | --- | --- |
+| `onPlayerAction(player, …)` | **Player** instance | `U.isStorytellerSteamPlayer(player)` |
+| `onPlayerPing(player, …)` | **Player** instance | same |
+| HUD `function HUD_*(player, …)` | **Player** instance | same |
+| `onObjectDrop(playerColor, object)` | **seat color** string | `U.isStorytellerSteamPlayer(playerColor)` |
+| `onObjectPickUp(player_color, object)` | **seat color** string | same |
+| Control board `click_*` | `player.color` (often Black-only) | object script + optional steam check |
 
 ## TTS behavior (summary)
 
@@ -45,7 +84,9 @@ Toronto Rising has been developed and tested **solo Host** (Storyteller seated a
 | `Sync.full` | `Sync.ui` incremental delta only; returns `false` |
 | `Sync.npcs` | No-op |
 | `Sync.lighting` | No-op |
-| `Sync.ui` / `Sync.player` | Allowed (UI-only) |
+| `Sync.soundscape` / `Sync.lightRef` / `Sync.npcCutouts` | No-op |
+| `Sync.ui` | Allowed (all clients) |
+| `Sync.player` | `L.reconcileForPlayer` host-only; HUD/overlays/`UpdateUIDisplays` on all clients |
 
 Host remains the **sole mutator** for bootstrap reconcilers; joiners must not leave the world out of sync with `gameState` by running duplicate reconcile passes.
 
@@ -58,24 +99,34 @@ Host remains the **sole mutator** for bootstrap reconcilers; joiners must not le
 | `core/soundscape_emitter_object.ttslua` | None (local AudioSource mute) | Per-emitter; low risk |
 | `objects/dice_bag.ttslua` | Click handlers use seat color | Roll spawn uses Host-side flow |
 
-## GM interaction pattern (player color)
+## Storyteller interaction pattern (steam identity)
 
-Use **`U.isStorytellerPlayerColor(player_color)`** at the top of Global hot paths (same as legacy `isStorytellerPlayerColor` in `global_script.ttslua`):
+Use **`U.isStorytellerSteamPlayer(playerRef)`** at the top of Global hot paths — pass the **Player** from the callback when available, otherwise the **seat color** string:
 
 ```lua
 function onObjectDrop(playerColor, object)
-    if not U.isStorytellerPlayerColor(playerColor) then
+    if not U.isStorytellerSteamPlayer(playerColor) then
         return
+    end
+    if not U.requireHostForWorldMutation("onObjectDrop") then
+        return
+    end
+    -- ...
+end
+
+function onPlayerAction(player, action, targets)
+    if not U.isStorytellerSteamPlayer(player) then
+        return false
     end
     -- ...
 end
 ```
 
-Object XmlUI handlers (control board): **`player.color == "Black"`** before `Global.call` — see TOR-176.
+Object XmlUI handlers (control board): **`player.color == "Black"`** before `Global.call` — see TOR-176. Prefer adding **`U.isStorytellerSteamPlayer(player)`** when the handler receives a Player instance.
 
 ## Adding bootstrap or load hooks
 
-1. Decide **Host client** vs **GM color** vs **all clients**.
+1. Decide **Storyteller machine** (`U.isHostClient`) vs **Storyteller steam** (`U.isStorytellerSteamPlayer`) vs **all clients**.
 2. Prefer **early return** at the entry point — do not hide reconcile inside state setters (see workspace synchronization conventions).
 3. Document new handlers in this file and [Event Listener Policy](Event%20Listener%20Policy.md) when they are event-driven.
 4. Multiplayer verification belongs in **TOR-144** after this audit ships.

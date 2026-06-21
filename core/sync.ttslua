@@ -268,7 +268,9 @@ function Sync.player(color)
 
     local t0 = os.clock()
 
-    callIfFunction(L.reconcileForPlayer, color)
+    if U.isHostClient() then
+        callIfFunction(L.reconcileForPlayer, color)
+    end
 
     local player = Player and Player[color] or nil
     if player ~= nil then
@@ -311,6 +313,9 @@ function Sync.lightRef(lightRef, transitionTime)
     if type(lightRef) ~= "string" or lightRef == "" then
         return
     end
+    if not U.isHostClient() then
+        return
+    end
     callIfFunction(L.reconcileLightRef, lightRef, transitionTime)
 end
 
@@ -318,11 +323,17 @@ end
 --- @param opts table|nil forwarded to `Soundscape.reconcileFromState` (e.g. `{ force = true }`).
 function Sync.soundscape(opts)
     opts = type(opts) == "table" and opts or {}
+    if not U.isHostClient() then
+        return
+    end
     callIfFunction(Soundscape.reconcileFromState, opts)
 end
 
 --- NPC state/world reconciliation from current state.
 function Sync.npcCutouts()
+    if not U.isHostClient() then
+        return
+    end
     callIfFunction(NPCS.restoreAfterStateLoad)
 end
 
