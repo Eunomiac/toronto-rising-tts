@@ -686,11 +686,11 @@ local function ensureNpcFigurinePhysicsLocked(fig)
     end
 end
 
---- Per-character figurine Transform scale from `figurine.scale` in npcs_data (seat + stage/active).
---- Also used for spotlight bounds gating (`npcFigurineReadyForLightAlign`).
+--- Custom Figurine `ImageScalar` from `figurine.scale` in npcs_data (save inject + spotlight bounds gating).
+--- Not Transform `setScale` — see `applyNpcPairPhysicalPresentation` for Transform (preload 0.12 / active 1).
 --- @param npcName string
 --- @return number
-local function figurineTransformScaleForNpc(npcName)
+local function figurineImageScalarForNpc(npcName)
     local def = NPCS.characters[npcName]
     local figDef = U.Type(def) == "table" and def.figurine or nil
     local scalar = tonumber(figDef and figDef.scale)
@@ -725,27 +725,20 @@ local function npcFigurineReadyForLightAlign(fig, npcName)
     local sy = b.size.y or b.size[2] or 0
     local minSy = math.max(
         NPC_FIGURINE_LIGHT_ALIGN_MIN_BOUNDS_Y,
-        figurineTransformScaleForNpc(npcName) * 0.75
+        figurineImageScalarForNpc(npcName) * 0.75
     )
     return sy >= minSy
 end
 
---- Figurine Transform scale + tooltip and paired spotlight scale (preload = small, tooltips off; seat/stage = `figurine.scale` from npcs_data).
---- Figurine cutout images are baked on workshop `npc_figurine` objects; runtime does not call `setCustomObject` / `reload`.
+--- Figurine Transform scale + tooltip and paired spotlight scale (preload = small, tooltips off; active areas/seats = full, tooltips on).
+--- Figurine cutout ImageScalar (`figurine.scale` in npcs_data) is save-baked; runtime does not call `setCustomObject` / `reload`.
 --- @param fig Object|nil
 --- @param lit Object|nil
 --- @param areaKey string
 --- @param npcName string|nil
 local function applyNpcPairPhysicalPresentation(fig, lit, areaKey, npcName)
     local isPreload = (areaKey == PRELOAD_AREA_KEY)
-    local fs
-    if isPreload then
-        fs = NPC_PRELOAD_FIGURE_SCALE
-    elseif U.Type(npcName) == "string" and npcName ~= "" then
-        fs = figurineTransformScaleForNpc(npcName)
-    else
-        fs = NPC_ACTIVE_FIGURE_SCALE
-    end
+    local fs = isPreload and NPC_PRELOAD_FIGURE_SCALE or NPC_ACTIVE_FIGURE_SCALE
     local ls = isPreload and NPC_PRELOAD_LIGHT_SCALE or NPC_ACTIVE_LIGHT_SCALE
     if U.isGameObject(fig) and fig.setScale ~= nil then
         fig.setScale(Vector(fs, fs, fs))
