@@ -3,9 +3,9 @@ alwaysApply: true
 ---
 # Toronto Rising — Linear tracking (primary responsibility)
 
-- check `TOR-*` issues before starting work; set **In Progress** when starting; mark **Done** with a comment when finishing; when closing a **Focus** / **Deferred** gate or **`blockedBy` prerequisite**, run the **deferred resurfacing** survey (unblock dependents, propose labeled resurfacing candidates — do not auto-promote inbox-deferred items to Focus); keep `.dev/RUNNING TASKLIST.md` checkboxes and `_(TOR-XX)_` ids aligned with Linear. Never treat Linear sync as optional or defer it. In chat and summaries, never cite a bare `TOR-XXX` without a few words of context (tasklist/Linear title).
-- **Precedence vs priority:** Use **Focus** + Linear **`blockedBy`** for work order; use Linear **Priority** for intrinsic importance. Deferral ≠ Low. Use **`blockedBy` liberally** for sequencing with **anti-gridlock** rules (star pattern, ~1–6 direct blockers, no peer meshes).
-- **Inbox back-burner:** On `/tr-inbox`, do not defer inbox-promoted work from Focus without a **Back-burner proposal** (Focus + proposed blockers + proposed priority) and author confirmation first.
+- check `TOR-*` issues before starting work; set **In Progress** when starting; mark **Done** with a comment when finishing; when closing a **Focus** gate or **`blockedBy` prerequisite**, run the **gate-close survey** (unblock dependents, propose labeled Focus candidates — do not auto-promote without author direction); keep `.dev/RUNNING TASKLIST.md` checkboxes and `_(TOR-XX)_` ids aligned with Linear. Never treat Linear sync as optional or defer it. In chat and summaries, never cite a bare `TOR-XXX` without a few words of context (tasklist/Linear title).
+- **Precedence vs priority:** Use **Focus** + Linear **`blockedBy`** for work order; use Linear **Priority** for intrinsic importance. Not in Focus ≠ Low. Use **`blockedBy` liberally** for sequencing with **anti-gridlock** rules (star pattern, ~1–6 direct blockers, no peer meshes).
+- **No back-burner deferral:** On **`/tr-inbox`**, do **not** use **Deferred this cycle** or back-burner proposals — apply **`blockedBy`** directly for sequencing. See `.cursor/commands/tr-inbox.md` § No back-burner deferral.
 
 **Linear is a primary source of truth for project state**, alongside the codebase. Agents must treat Linear synchronization as part of completing work — not an optional follow-up.
 
@@ -35,7 +35,7 @@ Tables with a dedicated title/description column satisfy this for rows in that t
 
 | Axis | Surfaces | Agent rule |
 | --- | --- | --- |
-| **Precedence** | **Focus** stack, **Deferred this cycle**, Linear **`blocks` / `blockedBy`** | “Do A before B” — use **`blockedBy` liberally** when B should wait for A (hard or soft sequencing). Author removes wrong blocks in Linear. |
+| **Precedence** | **Focus** stack + Linear **`blocks` / `blockedBy`** | “Do A before B” — use **`blockedBy` liberally** when B should wait for A (hard or soft sequencing). Author removes wrong blocks in Linear. |
 | **Priority** | Linear **Priority** only | Intrinsic urgency/importance when scheduled. **Deferral from Focus does not imply Low.** Open bugs elsewhere do **not** auto-downgrade unrelated issues. |
 
 ### Linear relationship types (when to use which)
@@ -46,7 +46,7 @@ Tables with a dedicated title/description column satisfy this for rows in that t
 | **`blockedBy` / `blocks`** | Sequencing — prerequisite should finish first (**liberal use OK** for “should complete before”) |
 | **`relatedTo`** | Same theme or context — **no** implied order |
 
-**Agent guardrails:** One direction per sequencing pair (A blocks B, not both ways). Prefer **`parentId`** for decomposition, not blocking. Avoid circular **`blockedBy`** chains. When deferring inbox work, propose **`blockedBy`** + priority separately in **Back-burner proposal**.
+**Agent guardrails:** One direction per sequencing pair (A blocks B, not both ways). Prefer **`parentId`** for decomposition, not blocking. Avoid circular **`blockedBy`** chains. On **`/tr-inbox`**, set **`blockedBy`** on waiting issues directly — no back-burner approval step.
 
 ### Anti-gridlock (avoid block proliferation)
 
@@ -55,7 +55,7 @@ Liberal blocking is for **auditable sequencing**, not a dense dependency mesh. G
 **Do:**
 
 - Attach blockers **to the waiting issue only** (star pattern): `TOR-143 (phase redesign) blockedBy TOR-141 (E2E playbooks)` — prerequisites do not block each other unless truly required.
-- Keep **`blockedBy` lists short and direct** — typically **1–6** prerequisites on the dependent issue; name each with a label in the Back-burner proposal.
+- Keep **`blockedBy` lists short and direct** — typically **1–6** prerequisites on the dependent issue; name each with a label in chat/Linear sync.
 - Block on **concrete gate issues** (Focus bugs, regression harness, a specific refactor) — not “everything in Backlog.”
 - Use **`relatedTo`** when issues share context but order is flexible.
 - **Remove obsolete `blocks` relations** when a prerequisite is **Done** or deferral is lifted (see Focus step 5 in DEVELOPMENT_WORKFLOW).
@@ -64,18 +64,23 @@ Liberal blocking is for **auditable sequencing**, not a dense dependency mesh. G
 
 - Make **deferred peers block each other** (e.g. TOR-139 blocks TOR-140) unless one genuinely depends on the other’s output.
 - Add **transitive duplicates** when the chain is already implied (if B blocks C, do not also make A block C when B already blocks C and A blocks B — pick the minimal set).
-- Turn **Focus stack order** into a full mesh — Focus + **Deferred this cycle** already express cycle precedence; `blockedBy` should capture **specific** “wait for these” gates, not re-link the entire board.
+- Turn **Focus stack order** into a full mesh — Focus expresses cycle precedence; `blockedBy` should capture **specific** “wait for these” gates, not re-link the entire board.
 
-If a Back-burner proposal would add **more than ~6** blockers on one issue, stop and justify in chat — or propose a **single** umbrella blocker (e.g. “after TOR-141 (E2E playbooks)”) instead.
+If an issue needs **more than ~6** blockers, stop and justify in chat — or use a **single** umbrella blocker (e.g. “after TOR-141 (E2E playbooks)”) instead.
 
-## Inbox back-burner confirmation (`/tr-inbox`)
+## No back-burner deferral (`/tr-inbox` — author policy 2026-06-21)
 
-Before an item **promoted from INBOX** is excluded from Focus or marked **Deferred this cycle**:
+**Deferred this cycle / back-burner proposals are paused** — no resurfacing mechanism when gates close.
 
-1. Present a **Back-burner proposal**: `TOR-XXX (label)`, proposed Focus treatment, **proposed blockers** (labeled), **proposed Linear priority** (separate from deferral), and rationale.
-2. **Wait for author confirmation** before writing deferrals, **`blockedBy`** links, or priority changes — unless the author explicitly overrode in the same session.
+On **`/tr-inbox`**:
 
-**Never** set Linear **Low** on a deferred inbox item unless the author confirms low *importance* — not merely “not this cycle.”
+- **Do not** add or update **Deferred this cycle** in RUNNING TASKLIST
+- **Do not** present back-burner proposals or wait for approval before **`blockedBy`**
+- **Do** apply **`blockedBy`** on waiting issues (star pattern) and keep promotions in domain tasklist sections
+
+**Never** set Linear **Low** because work is not Focus #1 — that is sequencing, not low importance.
+
+See `.cursor/commands/tr-inbox.md` § No back-burner deferral.
 
 ## Capture vs scheduled work
 
@@ -88,10 +93,10 @@ Before an item **promoted from INBOX** is excluded from Focus or marked **Deferr
 2. **When starting** — Set issue **In Progress**; confirm tasklist bullet has the correct `_(TOR-XX)_`. Prompt the author once to rename the Cursor chat to **`TOR-XX — short title`** (agents cannot rename chats programmatically — see `.cursor/commands/tr-start.md` § Agent chat title).
 3. **When finishing** — Mark **Done** (or **Canceled** if descoped) with a comment: what changed, key files, verification, commit refs. Update tasklist `[ ]` → `[x]` if applicable. Reference `TOR-XX` in commit body when committing. **`living-doc` issues:** baseline may be `[x]` on tasklist but issue stays **In Progress** — see § Living documentation.
 
-   **Deferred resurfacing (gate closes):** When the closed issue is on **Focus**, listed in **Deferred this cycle**, or is a **`blockedBy` prerequisite** for other open work:
+   **Gate-close survey:** When the closed issue is on **Focus** or is a **`blockedBy` prerequisite** for other open work:
    - Remove stale **`blockedBy`** on Linear dependents whose prerequisites are now **Done** or **Canceled**.
-   - Skim **Deferred this cycle** and Linear dependents (issues that **`blockedBy`** the closed id); note any that should **resurface** (unblocked or named in Deferred).
-   - In the **Done** comment or session chat, **propose** (do not auto-apply) Focus or priority changes — a short labeled list (`TOR-XXX (title)`), typically 1–3 items. **Inbox-promoted deferrals** still need author OK before moving into Focus (see § Inbox back-burner confirmation).
+   - List open dependents that **`blockedBy`** the closed id.
+   - In the **Done** comment or session chat, **propose** (do not auto-apply) Focus or priority changes — a short labeled list (`TOR-XXX (title)`), typically 1–3 items.
 4. **Commits during work** — After each logical unit, commit **without asking**; never prompt “want me to commit?” (always yes). See `.cursorrules` § Git Commits.
 5. **When discovering new work** — INBOX one-liner if capture-only; otherwise create Linear issue in the correct **domain project**, add `source:tasklist` if from tasklist, append `_(TOR-XX)_` to tasklist, set **In Progress** if starting immediately.
 6. **When finding bugs on shipped features** — Create a **Bug** issue; `relatedTo` the original **Done** feature issue. Do not reopen unrelated Done issues.

@@ -172,7 +172,7 @@ Modules should be loaded in dependency order:
 
 **Clarification loop:** Questions and answers live **in INBOX.md** (`?` / `Answer:` on the same item). Chat echo is optional; the file is authoritative. Re-run **`/tr-inbox`** after answering.
 
-**Back-burner confirmation:** When triage would **defer from Focus** an **inbox-promoted** item, the agent **must propose** Focus treatment, **`blockedBy`** links, and Linear **priority** (separate axes) with rationale, and **wait for author OK** before writing. See **`/tr-inbox`**. Do not auto-set **Low** priority because of deferral.
+**Sequencing (no back-burner):** **`/tr-inbox`** does **not** use **Deferred this cycle** or back-burner proposals — there is no resurfacing mechanism for that list. Promotions not in Focus get tasklist domain bullets + Linear **`blockedBy`** applied directly. See **`/tr-inbox`** § No back-burner deferral. Do not auto-set **Low** priority because work is not Focus #1.
 
 **Linear ID context:** Agents never cite bare `TOR-XXX` without a short label (tasklist/Linear title) in chat, Deferred lines, or summaries.
 
@@ -180,11 +180,15 @@ Modules should be loaded in dependency order:
 
 ### Agent triage (“process the inbox”)
 
-When the user says **“process the inbox”** (or similar), run **both phases** below in one session unless the user explicitly asked for “clarifications only”.
+When the user says **“process the inbox”** (or **`/tr-inbox`**), follow [`.cursor/commands/tr-inbox.md`](../.cursor/commands/tr-inbox.md) — **Quick Fixes first** (implement-or-promote), then Phase 1 / Phase 2 below, then **INBOX cleanup** (remove handled bullets, keep headers, no `_(empty)_`-style placeholders).
+
+#### Quick Fixes (before Phase 1)
+
+See **`/tr-inbox`** Part A.0. Small fixes may be **implemented and committed during triage**; only non-trivial items promote like Active.
 
 #### Phase 1 — Clarify (park + `?` bullets)
 
-1. Read **Active** and **Needs clarification** in [`.dev/INBOX.md`](INBOX.md).
+1. Read **Quick Fixes**, **Active**, and **Needs clarification** in [`.dev/INBOX.md`](INBOX.md).
 2. For each item **without an `Answer:`** on every open `?` bullet:
    - Search the codebase and Linear for context; resolve alone when unambiguous.
    - If still unclear: **move the item** from Active → **Needs clarification** (subsection: **Unclear Bugs** / **Unclear Intents** / **Unclear Ideas**).
@@ -204,13 +208,13 @@ For every item Phase 1 marked ready (clear Active lines + answered Needs clarifi
 | **Actionable, scoped** — clear enough to schedule or track as planned work | Linear issue **+** RUNNING TASKLIST `[ ]` bullet with `_(TOR-XX)_`; labels `Bug` / `Improvement` / `Feature` + `module:*` + `source:tasklist`; domain project + epic when applicable |
 | **Worth tracking, not schedulable yet** — vague idea, needs design, large unknown scope | Linear **Backlog** only (no tasklist); note “Promoted from INBOX” in description |
 | **Bug on shipped feature** | `Bug` + `relatedTo` original **Done** feature issue |
-| **Duplicate** | Processed entry referencing existing `TOR-*`; no new issue |
-| **Dismiss** | Processed as `dismissed — reason` |
-| **Trivial fix** (only if user asked to fix during triage) | Fix in code; Linear Bug **Done**; Processed with TOR id |
+| **Duplicate** | Log in [`.dev/plans/linear-alignment-log.md`](plans/linear-alignment-log.md); no new issue |
+| **Dismiss** | Alignment log as `dismissed — reason` |
+| **Quick fix shipped** (Part A.0) | Fix in code + commit; Linear **Done** or alignment log `shipped` |
 
-3. **Move** promoted/dismissed/duplicate lines → **Processed** (`YYYY-MM-DD TOR-XXX — summary`).
-4. Leave **Needs clarification** items that still lack answers in place; remove answered items after promotion.
-5. Preserve section headers in Active / Needs clarification; do not delete structure.
+3. **Move** promoted/dismissed/duplicate lines → **Processed** (`YYYY-MM-DD TOR-XXX — summary`); also log in [`.dev/plans/linear-alignment-log.md`](plans/linear-alignment-log.md).
+4. Leave **Needs clarification** items that still lack answers in place; remove handled bullets from Quick Fixes / Active / answered clarification subsections.
+5. **Keep section headers**; do **not** add placeholder lines under sections that have no remaining bullets.
 6. **Never** leave tasklist-scheduled promotions without both Linear and RUNNING TASKLIST sync.
 
 **Cadence:** when user says “process the inbox”; optionally at session end if user added Active items that session; when Active + unanswered Needs clarification total ~5–10 items.
@@ -221,7 +225,7 @@ For every item Phase 1 marked ready (clear Active lines + answered Needs clarifi
 
 | Surface | Role |
 | --- | --- |
-| `.dev/INBOX.md` | Ephemeral capture; not authoritative for status |
+| `.dev/INBOX.md` | Ephemeral capture; not authoritative for status; headers persist after triage |
 | **Linear** | Status, history, bug anchors |
 | `.dev/RUNNING TASKLIST.md` | Shaped planned work with `_(TOR-XX)_`; **Focus** = current stack rank |
 | `docs/solutions/` | Patterns after solving — **not** a tracker |
@@ -234,12 +238,12 @@ After inbox promotion or when the user asks **“what’s next”**, **“priori
 
 | Axis | Where | Meaning |
 | --- | --- | --- |
-| **Precedence** | **Focus** table, **Deferred this cycle**, Linear **`blockedBy`** | Work order — what to do *now* vs later; “complete A before B” |
+| **Precedence** | **Focus** table + Linear **`blockedBy`** | Work order — what to do *now* vs later; “complete A before B” |
 | **Priority** | Linear **Priority** field | Intrinsic importance when an issue *is* scheduled — **independent** of open bugs elsewhere |
 
 **Agent rules:**
 
-- **Deferral ≠ Low priority.** Deferred inbox features may stay **Medium** or **High** in Linear.
+- **Deferral ≠ Low priority.** Work waiting on prerequisites may stay **Medium** or **High** in Linear.
 - **Do not** lower unrelated issues’ priority because Focus has bugs.
 - **Use `blockedBy` liberally** for sequencing (hard or soft “should finish first”). Author audits and removes wrong blocks in Linear — easier than surveying priority drift.
 - **`parentId`** = hierarchy/decomposition; **`relatedTo`** = thematic link, no order; **`blockedBy`** = sequencing.
@@ -251,12 +255,12 @@ After inbox promotion or when the user asks **“what’s next”**, **“priori
 ### Steps
 
 1. Read **Focus** at the top of [`.dev/RUNNING TASKLIST.md`](RUNNING%20TASKLIST.md) — authoritative stack rank for the current cycle.
-2. Cross-check **Linear**: open **Bug** issues, non-epic **In Progress**, Focus ids, and **`blockedBy`** on deferred work.
+2. Cross-check **Linear**: open **Bug** issues, non-epic **In Progress**, Focus ids, and **`blockedBy`** on dependents.
 3. Recommend **one** next item (usually top unchecked Focus row). Precedence favors bugs/regressions unless the user is blocked on ST workflow.
 4. When the user adjusts rank, **update Focus**; set Linear **priority** on intrinsic importance; add **`blockedBy`** for sequencing — not as a substitute for priority.
-5. On Focus item **Done**: check off in domain section, remove or renumber Focus row, update Linear **Done** + comment; run **deferred resurfacing** (below); remove obsolete **`blockedBy`** / **blocks** on dependents if applicable.
-6. **Inbox back-burner gate:** Before deferring **inbox-promoted-this-session** items from Focus, present **Back-burner proposal** (Focus + proposed blockers + proposed priority) and get author confirmation. See **`/tr-inbox`**.
-7. **Deferred this cycle** and all agent-facing id lists: every `TOR-XXX` gets a short label (e.g. `TOR-139 (scenes panel trim + library grid)`).
+5. On Focus item **Done**: check off in domain section, remove or renumber Focus row, update Linear **Done** + comment; run **gate-close survey** (below); remove obsolete **`blockedBy`** on dependents if applicable.
+6. **Do not** update **Deferred this cycle** — paused (no resurfacing mechanism); sequence via **`blockedBy`** only. See **`/tr-inbox`**.
+7. Agent-facing id lists: every `TOR-XXX` gets a short label (e.g. `TOR-139 (scenes panel trim + library grid)`).
 
 **Cadence:** re-stack Focus after **“process the inbox”** or **`/tr-inbox`**, before a play session, or ~weekly — not on every small fix.
 
@@ -297,13 +301,15 @@ Linear is the source of truth for project state. [`.dev/RUNNING TASKLIST.md`](RU
 2. Change the tasklist checkbox to `[x]`; keep the TOR id.
 3. Reference the TOR id in git commit bodies (see `.cursorrules`).
 
-### Deferred resurfacing (when marking Done or Canceled)
+### Gate-close survey (when marking Done or Canceled)
 
-Run this **lightweight survey** when the closed issue is on **Focus**, in **Deferred this cycle**, or blocks other open work via **`blockedBy`**. Skip for trivial fixes unrelated to cycle gates (e.g. typo in an unrelated module).
+Run this **lightweight survey** when the closed issue is on **Focus** or is a **`blockedBy` prerequisite** for other open work. Skip for trivial fixes unrelated to cycle gates (e.g. typo in an unrelated module).
 
 1. **Unblock** — In Linear, remove **`blockedBy`** links on dependents that listed this issue as a prerequisite (star pattern only; do not edit unrelated issues).
-2. **Scan** — Read **Deferred this cycle** in RUNNING TASKLIST and list open issues that **`blockedBy`** the closed id or cite it in their resurface note.
-3. **Propose** — In the **Done** comment or chat, suggest which deferred items should move up (Focus slot and/or priority), with labeled ids (`TOR-XXX (short title)`), typically 1–3 candidates. **Do not** auto-promote inbox-deferred items into Focus without **Back-burner** author OK.
+2. **Scan** — List open issues that **`blockedBy`** the closed id.
+3. **Propose** — In the **Done** comment or chat, suggest Focus or priority changes for newly unblocked work, with labeled ids (`TOR-XXX (short title)`), typically 1–3 candidates. **Do not** auto-promote into Focus without author direction in chat.
+
+**Note:** **Deferred this cycle** is **paused** — do not rely on it for resurfacing. Unblocking + Focus re-stack is the mechanism.
 
 Full agent rule: `.cursor/rules/toronto-rising-linear.mdc` § Agent workflow step 3.
 
@@ -336,7 +342,7 @@ Work that requires **author action outside the IDE** (TTS workshop save, playtes
 ### When descoping or deferring
 
 - Linear → **Canceled** (true descope) or **Backlog** with reason; move or strikethrough the tasklist item.
-- **Focus deferral:** add to **Deferred this cycle**; set **`blockedBy`** on the deferred issue toward prerequisites — do not auto-set **Low** priority.
+- **Sequencing (not deferral lists):** set **`blockedBy`** on the waiting issue toward prerequisites — do not auto-set **Low** priority; do **not** add to **Deferred this cycle** (paused).
 - Do not delete Linear issues.
 
 ### Issue relationships (Linear MCP)
