@@ -47,7 +47,7 @@ Do **not** split rotation into manual `rotX` / `rotY` / `rotZ` in data. The scri
 
 1. Reads figurine **axis-aligned bounds** (`getBounds()`).
 2. Computes **face target** in world space: horizontal center of bounds, Y = `topY - lookAtYShift * height`.
-3. Computes **light Y** = `topY - positionYShift * height` **+ scalar elevation** when registry `figurine.scale` > 53 (linear ramp from baseline 53; Ian Rammond scalar 63 anchor: +10.99 world Y).
+3. Computes **light Y** = `topY - positionYShift * height` **+ scalar elevation** when registry `figurine.scale` > 53 (linear ramp from baseline 53; Ian Rammond scalar 63 anchor: +35.99 world Y, target Y ≈ 57).
 4. **Horizontal placement:** from the figurine’s **position** `(px, pz)` (table center in XZ), let `dir = normalize(px, pz)` in the XZ plane (direction from table center `(0,0,0)` toward the NPC). Place the light at `(px + dir.x * distance, lightY, pz + dir.z * distance)` so it sits **outward** from the table center relative to the figure (consistent with figures facing the center).
 5. **Rotation:** `U.lookAtRotation(lightPosition, faceTarget)` → full pitch/yaw for the spotlight object.
 

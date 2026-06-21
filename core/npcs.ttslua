@@ -145,7 +145,7 @@ local NPC_SEAT_FIGURINE_IMAGE_SCALAR = 53
 --- Baseline registry scalar for bounds-based spotlight Y; larger cutouts need extra elevation (Ian Rammond cal).
 local NPC_FIGURINE_LIGHT_BASELINE_SCALAR = 53
 local NPC_FIGURINE_LIGHT_CAL_REF_SCALAR = 63
-local NPC_FIGURINE_LIGHT_CAL_REF_DELTA_Y = 10.99
+local NPC_FIGURINE_LIGHT_CAL_REF_DELTA_Y = 35.99
 
 --- Tolerance when comparing figurine ImageScalar before skipping `reload()`.
 local FIGURINE_IMAGE_SCALAR_EPS = 0.05
