@@ -842,6 +842,43 @@ function DEBUG.toggleAllSpotlightArrows()
     return summary
 end
 
+--- Set every Spotlight-tagged object to Looping Effect UI slot 2 (invisible arrow).
+--- Same object set as `DEBUG.toggleAllSpotlightArrows` (`getObjectsWithTag("Spotlight")`).
+--- UI slot 2 → API index 1 (0-based), matching the Toggle Spotlights debug control.
+--- Console: `lua DEBUG.hideAllSpotlightArrows()`
+--- @return table
+function DEBUG.hideAllSpotlightArrows()
+    local SPOTLIGHT_INVISIBLE_LOOPING_EFFECT_UI = 2
+    local targetIdx0 = SPOTLIGHT_INVISIBLE_LOOPING_EFFECT_UI - 1
+    local spotlights = getObjectsWithTag("Spotlight") or {}
+    local updated = 0
+    local skipped = 0
+    for _, obj in ipairs(spotlights) do
+        local ab = obj and obj.AssetBundle or nil
+        if ab ~= nil and ab.getLoopingEffectIndex ~= nil and ab.playLoopingEffect ~= nil then
+            local currentIdx0 = ab.getLoopingEffectIndex()
+            if type(currentIdx0) == "number" and currentIdx0 == targetIdx0 then
+                skipped = skipped + 1
+            elseif type(currentIdx0) == "number" then
+                ab.playLoopingEffect(targetIdx0)
+                updated = updated + 1
+            else
+                skipped = skipped + 1
+            end
+        else
+            skipped = skipped + 1
+        end
+    end
+    local summary = {
+        tagged = #spotlights,
+        updated = updated,
+        skipped = skipped,
+        targetLoopingEffectUi = SPOTLIGHT_INVISIBLE_LOOPING_EFFECT_UI,
+    }
+    print("[DEBUG.hideAllSpotlightArrows] " .. JSON.encode(summary))
+    return summary
+end
+
 --- Inspect soundscape AssetBundle emitters, looping/trigger effect names, and AudioSource counts.
 -- @return table
 function DEBUG.inspectSoundscapeAudio()

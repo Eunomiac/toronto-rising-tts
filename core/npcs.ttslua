@@ -143,11 +143,11 @@ local NPC_ACTIVE_LIGHT_SCALE = 1
 local NPC_SEAT_FIGURINE_IMAGE_SCALAR = 53
 
 --- Baseline registry scalar for bounds-based spotlight Y; larger cutouts need look-at + position tweaks.
---- Lord Lucien (53): head ≈ 41.8 — bounds formula correct with no extra. Ian Rammond (63): head ≈ 57.91.
+--- Lord Lucien (53): head ≈ 41.8 — bounds formula correct with no extra. Ian Rammond (63): head ≈ 57.91 (+ fudge for upper-face aim).
 local NPC_FIGURINE_LIGHT_BASELINE_SCALAR = 53
 local NPC_FIGURINE_LIGHT_CAL_REF_SCALAR = 63
-local NPC_FIGURINE_LIGHT_CAL_FACE_DELTA_Y = 16.11
-local NPC_FIGURINE_LIGHT_CAL_POSITION_DELTA_Y = 0
+local NPC_FIGURINE_LIGHT_CAL_FACE_DELTA_Y = 24
+local NPC_FIGURINE_LIGHT_CAL_POSITION_DELTA_Y = 12
 
 --- Tolerance when comparing figurine ImageScalar before skipping `reload()`.
 local FIGURINE_IMAGE_SCALAR_EPS = 0.05

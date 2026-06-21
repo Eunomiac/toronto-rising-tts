@@ -100,7 +100,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Snaps toggle text color:** Reset `gb_snaps` label to `#FFFFFF` on every `UI.setAttributes` refresh (TTS reverts to black). _(TOR-220 — 2026-06-21)_
 - [x] **Seated NPC active scale 53:** Set figurine ImageScalar 53 at table seat; restore `npcs_data` `figurine.scale` on unseat/stage/preload. _(TOR-223)_
 - [x] **Palette parking snap Z offset:** Nudge token parking snaps toward vMax for group labels beneath (`parkingSnapLocalZOffset` default 0.1). _(TOR-227)_
-- [x] **NPC spotlight Y on seat→stage:** Seated NPC moved to lit stage placement — spotlight spawns at feet instead of bounds-aligned Y. _(TOR-234 — defer waits for off-seat ImageScalar; scalar>53 face +16.11@63 look-at ramp, position ramp 0)_
+- [x] **NPC spotlight Y on seat→stage:** Seated NPC moved to lit stage placement — spotlight spawns at feet instead of bounds-aligned Y. _(TOR-234 — seat→stage ImageScalar defer; scalar>53 face +24 / position +12 @63)_
 
 ## Soundscape
 
@@ -232,4 +232,4 @@ _Workshop save, external art, or design TBD outside the repo. Each row has an op
 | Famulus Brown/Red hand zone | Figurines + lights rotate with hand zone (like Pink Tarot) | TOR-212 |
 | Roll light intensity boost | Remove player light intensity increase during roll sequence | TOR-213 |
 | Scene Constructor (Google Sheets) | Import/export workflow — author to define approach first | TOR-113 |
-| NPC figurine back images | Re-upload per-character figurine backs after upload pipeline set token backs | TOR-235 |
+| NPC figurine back images | ~~Re-upload per-character figurine backs~~ **Done 2026-06-21:** generic transparent back applied in save via console pass | TOR-235 ✓ |
