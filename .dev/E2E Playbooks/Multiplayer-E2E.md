@@ -4,6 +4,19 @@
 
 **Setup:** Two real TTS clients — **Host** (Storyteller machine) + **Join client** (PC). Save & Play from repo on Host; join from invite.
 
+## Host authority gates (required multi-client pass)
+
+Mechanical host guards shipped in commit `34215a5` (extends TOR-221 bootstrap audit) are **not validated** until this playbook runs with **two or more connected clients**. Solo Host regression alone is insufficient.
+
+**Pass criteria for the gate:**
+
+- Every row in the verification matrix below is exercised with Host + at least one join client.
+- Join client console shows `U.isHostClient() == false` while connected.
+- No scenario produces duplicate world mutations (double Apply, stacked audio fades, duplicate dice spawns, join-client figurine moves on load).
+- Document any `gameState` vs world mismatch on join client as a known gap (live state broadcast not yet implemented).
+
+Do not treat host authority work as fully closed until this section passes.
+
 ## Verification matrix
 
 | Scenario | Host expected | Join client expected | Pass if |

@@ -2,8 +2,6 @@
 
 ## Quick Fixes
 
-- [Roll Result Broadcast] When the Storyteller rolls multiple live rolls with the same NPC, a parenthetical index is added to the NPC's name (e.g. "Mara", "Mara (2)", etc.).  When the results of these secondary rolls are broadcast, the image of the NPC cutout is not resolved (because there is no "Mara (2)" cutout). Expected Behavior:  The parenthetical index should be pruned from the name before the NPC cutout image is derived.
-
 ## Active
 
 ---
@@ -20,6 +18,7 @@
 
 ## Processed
 
+2026-06-21 Roll broadcast NPC cutout — prune ST duplicate-roll label suffix " (N)" before cutout lookup (`roll_ui.resolveRollFigureAssetKey`)
 2026-06-21 Clear off-world tokens — Y-aware board/palette surface checks; confirmed Clear parks fallen tokens
 2026-06-21 Clear first-click lag — arm confirm only (no stray recovery scan on first click)
 2026-06-21 TOR-235 — Figurine backs fixed in save (generic transparent back URL; Done)

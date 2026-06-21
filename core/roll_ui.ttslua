@@ -171,6 +171,21 @@ local function trimLabel(s)
     return (s:gsub("^%s+", ""):gsub("%s+$", ""))
 end
 
+--- ST roll dashboard disambiguates duplicate NPC labels as "Mara (2)"; cutout lookup uses base name.
+-- @param label string|nil
+-- @return string
+local function pruneRollLabelDisambiguationSuffix(label)
+    if type(label) ~= "string" then
+        return ""
+    end
+    local trimmed = trimLabel(label)
+    local base = trimmed:match("^(.-)%s+%(%d+%)$")
+    if type(base) == "string" and base ~= "" then
+        return trimLabel(base)
+    end
+    return trimmed
+end
+
 --- Formats a compact pool string for the ST dashboard (e.g. "5N + 2H" or "1H" or "—").
 -- @param pool table|nil  { normal = number, hunger = number }
 -- @return string
@@ -481,7 +496,7 @@ local function resolveRollFigureAssetKey(color, pid, label)
         end
     end
     if color == "Black" and type(label) == "string" and label ~= "" then
-        local npcKey = NPC_DATA.resolveCharacterKeyByDisplayName(label)
+        local npcKey = NPC_DATA.resolveCharacterKeyByDisplayName(pruneRollLabelDisambiguationSuffix(label))
         if type(npcKey) == "string" and npcKey ~= "" then
             return npcKey
         end
