@@ -1,7 +1,7 @@
 # Event Listener Policy (TTS)
 
-**Linear:** TOR-197 (event listener early-return audit + policy)
-**Related:** [Performance Audit](Performance%20Audit.md), [Reconciler Contract](Reconciler%20Contract.md), TOR-201 (Clear / token-drop lag)
+**Linear:** TOR-197 (event listener early-return audit + policy)  
+**Related:** [Bootstrap Authority](Bootstrap%20Authority.md) (TOR-221 load/bootstrap guards), [Performance Audit](Performance%20Audit.md), [Reconciler Contract](Reconciler%20Contract.md), TOR-201 (Clear / token-drop lag)
 
 TTS invokes Global and object event handlers on **every** matching world event. Handlers that run heavy logic (module `require`, state scans, reconcile, coroutine polls) on unrelated objects cause session lag — especially `onObjectDrop` during NPC control-board editing.
 
@@ -15,6 +15,8 @@ Every high-frequency handler must be able to **reject unrelated events in one O(
 - Calling `Sync.*` or domain reconcilers
 
 If the guard fails, **return immediately** — no logging in the hot path unless `DEBUG` gated.
+
+**GM vs Host client:** Storyteller-only **interaction** gates use **`U.isStorytellerPlayerColor(color)`** (`Black` / `Host`). **Load and reconcile** gates use **`U.isHostClient()`** — see [Bootstrap Authority](Bootstrap%20Authority.md).
 
 ## Global handlers (inventory)
 
@@ -98,6 +100,7 @@ end
 
 ## Follow-ups (outside TOR-197 scope)
 
+- [x] TOR-221 — Bootstrap Authority doc + `U.isHostClient` / join-client `onLoad` branch + `Sync.full|npcs|lighting` non-Host guards
 - [ ] `Sync.full` / `Sync.npcs` call-site pass — see TOR-168, Performance Audit rank 1.
 - [ ] Agent review Prompt 2 — dual-apply on drop paths (TOR-102).
 - [ ] If scripting zones are adopted later: zone GUID/type guard before any logic in `Z.onObjectEnterZone` / `Z.onObjectLeaveZone`.

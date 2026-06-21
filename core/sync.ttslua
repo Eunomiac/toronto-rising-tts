@@ -295,6 +295,9 @@ end
 --- @param opts table|nil forwarded to `Scenes.reconcileFromState` (e.g. `{ force = true }`).
 function Sync.lighting(opts)
     opts = type(opts) == "table" and opts or {}
+    if not U.isHostClient() then
+        return
+    end
     callIfFunction(Scenes.reconcileFromState, opts)
     callIfFunction(Scenes.reconcileTopFogFromState, opts)
     callIfFunction(Scenes.reconcileSkyboxFromState, opts)
@@ -327,6 +330,9 @@ end
 --- @param opts table|nil `{ force?, reason?, deferUiRefresh?, onlySteps?, skipPreloadPopulate?, animateStageMoves? }`
 function Sync.npcs(opts)
     opts = type(opts) == "table" and opts or {}
+    if not U.isHostClient() then
+        return
+    end
     local t0 = os.clock()
     local reason = type(opts.reason) == "string" and opts.reason or ""
     if reason ~= "" then
@@ -355,6 +361,10 @@ end
 --- @param opts table|nil `{ force = boolean?, reason = string? }` — `force` bypasses scene/soundscape fingerprints and runs full `UpdateUIDisplays`.
 function Sync.full(opts)
     opts = type(opts) == "table" and opts or {}
+    if not U.isHostClient() then
+        Sync.ui(SYNC_INCREMENTAL_UI_DELTA)
+        return false
+    end
     local force = opts.force == true
     local reason = type(opts.reason) == "string" and opts.reason or ""
 

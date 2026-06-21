@@ -346,13 +346,54 @@ local function isTokenOnMinimapTokenSurface(board, token)
     return true
 end
 
---- True when token is on CONTROL_BOARD minimap, excluding CONTROL_BOARD_PALETTE storage.
---- Declared before `Gameboard.recoverStrayNpcTokensToPalette` (Lua local scope — see docs/solutions/lua-local-function-order.md).
+--- Token on CONTROL_BOARD minimap (not palette): loose XZ (2.5× tile) — drop handlers, snap settle, scans.
+--- Does not require surface Y (tokens mid-snap or seat scale still count as on-board).
 --- @param board Object
 --- @param token Object
 --- @return boolean
 local function isTokenOnControlBoardSurface(board, token)
-    return isTokenOnMinimapTokenSurface(board, token)
+    if not isGameObject(board) or not isGameObject(token) then
+        return false
+    end
+    local palette = getControlBoardPalette()
+    if isGameObject(palette) and Palette.isTokenOnPaletteBoard(palette, token) then
+        return false
+    end
+    for _, obj in ipairs(objectsOnControlBoard(board, TAG_TOKEN)) do
+        if obj == token then
+            return true
+        end
+    end
+    return false
+end
+
+--- Same XZ band as `isTokenOnControlBoardSurface` plus surface Y — Clear parking / stray recovery only.
+--- Off-world tokens under the board footprint are not treated as on-board.
+--- @param board Object
+--- @param token Object
+--- @return boolean
+local function isTokenOnControlBoardFace(board, token)
+    if not isGameObject(board) or not isGameObject(token) then
+        return false
+    end
+    local palette = getControlBoardPalette()
+    if isGameObject(palette) and Palette.isTokenOnPaletteBoard(palette, token) then
+        return false
+    end
+    local localPos = boardWorldToLocal(board, token.getPosition())
+    if localPos == nil then
+        return false
+    end
+    local halfX, halfZ = boardLocalSurfaceHalfExtents(board)
+    local margin = 2.5
+    if math.abs(localPos.x or 0) > halfX * margin or math.abs(localPos.z or 0) > halfZ * margin then
+        return false
+    end
+    local surfaceY = tonumber(DATA.MINIMAP_SURFACE_LOCAL_Y) or 0.18
+    if math.abs((localPos.y or 0) - surfaceY) > MINIMAP_TOKEN_SURFACE_Y_TOLERANCE then
+        return false
+    end
+    return true
 end
 
 --- @param board Object
@@ -1225,7 +1266,7 @@ function Gameboard.clearControlBoard()
                 if not isGameObject(board) then
                     return false
                 end
-                if not isTokenOnControlBoardSurface(board, token) then
+                if not isTokenOnControlBoardFace(board, token) then
                     return false
                 end
                 if type(ck) ~= "string" or ck == "" then
@@ -1287,7 +1328,7 @@ function Gameboard.recoverStrayNpcTokensToPalette()
     end
     return Palette.recoverStrayTokensToPalette(palette, {
         isOnControlBoard = function(token)
-            return isGameObject(board) and isTokenOnControlBoardSurface(board, token)
+            return isGameObject(board) and isTokenOnControlBoardFace(board, token)
         end,
     })
 end

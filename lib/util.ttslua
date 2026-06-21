@@ -1957,6 +1957,51 @@ function U.getHost()
 	return Player.Brown
 end
 
+--- True when this game **client** is the table Host (server), not a joining peer.
+--- Solo / Studio / no seated local player: returns true (same machine runs bootstrap).
+--- @return boolean
+function U.isHostClient()
+	if Player == nil or type(Player.getPlayers) ~= "function" then
+		return true
+	end
+	local players = Player.getPlayers()
+	if type(players) ~= "table" or #players == 0 then
+		return true
+	end
+	local hostPlayer = nil
+	for _, p in ipairs(players) do
+		if p ~= nil and p.host == true then
+			hostPlayer = p
+			break
+		end
+	end
+	if hostPlayer == nil or type(hostPlayer.steam_id) ~= "string" or hostPlayer.steam_id == "" then
+		return true
+	end
+	local localSteamId = nil
+	if type(Player.getColors) == "function" then
+		for _, color in ipairs(Player.getColors()) do
+			local seated = Player[color]
+			if seated ~= nil and seated.seated == true and type(seated.steam_id) == "string" and seated.steam_id ~= "" then
+				localSteamId = seated.steam_id
+				break
+			end
+		end
+	end
+	if localSteamId == nil then
+		return true
+	end
+	return hostPlayer.steam_id == localSteamId
+end
+
+--- Storyteller / GM interaction gate — seated Storyteller color is `Black` (`C.StorytellerColor`).
+--- `Host` is the TTS spectator alias when the GM is not seated at Black.
+--- @param color string|nil
+--- @return boolean
+function U.isStorytellerPlayerColor(color)
+	return color == "Black" or color == "Host"
+end
+
 function U.getZoneBounds(zone)
 	local zoneExtent = U.map(zone.getScale(), function(val) return 0.5 * val end)
 	local zonePos = zone.getPosition()

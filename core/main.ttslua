@@ -37,6 +37,12 @@ function M.onLoad()
   print(U.loadElapsedPrefix() .. "Main: Module initialization complete.")
 end
 
+--- Joining (non-Host) client: UI/phase only — no table visibility or state inference.
+function M.onLoadJoinClient()
+  print(U.loadElapsedPrefix() .. "Main: Joining client bootstrap (UI only).")
+  M.syncPhase()
+end
+
 --[[
     Setup player data structures and roles
     Promotes all players and initializes player-specific game state.

@@ -354,6 +354,9 @@ end
 --- @param params table|nil `{ force?: boolean }`
 --- @return boolean
 function GlobalGameboardInstallPaletteSnaps(params)
+    if not U.isHostClient() then
+        return false
+    end
     local Gameboard = require("core.npc_gameboard")
     local force = type(params) == "table" and params.force == true
     return Gameboard.installPaletteSnaps(nil, { force = force })
@@ -1316,10 +1319,6 @@ function GlobalSetSheetCamera(params)
 end
 
 function onLoad(saved_data)
-    -- Emitters and `Wait.time` are typically available here; chunk-level pass often sees 0/9 GUIDs.
-    trEarlySilenceSoundscapeEmitters("onLoad-sync-immediate")
-    trScheduleEarlySoundscapeSilenceDeferred("onLoad")
-
     print(U.loadElapsedPrefix() .. "--- VTM5E Module Loaded ---")
     local startupLastAction = "onLoad:start"
     local startupStepsSilent = {
@@ -1339,13 +1338,30 @@ function onLoad(saved_data)
         end
     end
 
+    -- Initialize game state from saved data or defaults (all clients — HUD reads gameState).
+    setStartupAction("initialize-game-state")
+    S.InitializeGameState(saved_data)
+
+    if not U.isHostClient() then
+        setStartupAction("join-client-ui-bootstrap")
+        M.onLoadJoinClient()
+        if GameStateOverlay and type(GameStateOverlay.ensureTicker) == "function" then
+            GameStateOverlay.ensureTicker()
+        end
+        Sync.full({ reason = "onLoad_join_client" })
+        setStartupAction("join-client-bootstrap-complete")
+        print(U.loadElapsedPrefix() .. "Joining client: skipped Host world bootstrap.")
+        return
+    end
+
+    -- Host client only below: emitters, reconcilers, object moves, setup.
+    trEarlySilenceSoundscapeEmitters("onLoad-sync-immediate")
+    trScheduleEarlySoundscapeSilenceDeferred("onLoad")
+
     -- Clear all debug logs to start fresh for this session
     setStartupAction("clear-debug-logs")
     DEBUG.clearAllLogs()
 
-    -- Initialize game state from saved data or defaults
-    setStartupAction("initialize-game-state")
-    S.InitializeGameState(saved_data)
     if Scenes ~= nil and type(Scenes.syncSessionLightingPresetForLocation) == "function" then
         Scenes.syncSessionLightingPresetForLocation()
     end
@@ -1596,7 +1612,7 @@ end
 --- @param color string|nil
 --- @return boolean true for Storyteller seat (`Black`) or Host spectator
 local function isStorytellerPlayerColor(color)
-    return color == "Black" or color == "Host"
+    return U.isStorytellerPlayerColor(color)
 end
 
 --- TOR-174: O(1) world-XZ proximity to Storyteller dice bags (global pre-gate before `require("core.npc_gameboard")`).
