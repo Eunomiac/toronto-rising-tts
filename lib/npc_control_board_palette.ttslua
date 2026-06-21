@@ -626,6 +626,9 @@ local function tokenCharacterKey(obj)
     return nil
 end
 
+--- Max board-local |Y − surface| for a token to count as on the palette tile.
+local PALETTE_TOKEN_SURFACE_Y_TOLERANCE = 0.4
+
 --- @param board Object
 --- @param worldPos Vector|table
 --- @return boolean
@@ -648,10 +651,17 @@ local function isWorldPosOnPaletteBoard(board, worldPos)
     local u = 0.5 + (lp.x or 0) / (2 * halfX)
     local v = 0.5 + (lp.z or 0) / (2 * halfZ)
     local slack = 0.015
-    return u >= cfg.parkingUMin - slack
-        and u <= cfg.parkingUMax + slack
-        and v >= cfg.parkingVMin - slack
-        and v <= cfg.parkingVMax + slack
+    if u < cfg.parkingUMin - slack or u > cfg.parkingUMax + slack then
+        return false
+    end
+    if v < cfg.parkingVMin - slack or v > cfg.parkingVMax + slack then
+        return false
+    end
+    local surfaceY = tonumber(DATA.PALETTE_SURFACE_LOCAL_Y) or 0.18
+    if math.abs((lp.y or 0) - surfaceY) > PALETTE_TOKEN_SURFACE_Y_TOLERANCE then
+        return false
+    end
+    return true
 end
 
 --- Tokens on palette surface (tag scan + board-local bounds).

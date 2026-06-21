@@ -53,7 +53,7 @@ Do **not** split rotation into manual `rotX` / `rotY` / `rotZ` in data. The scri
 
 Whenever the figurine **moves or rotates**, this pipeline is re-run (UI moves, `onObjectDrop`, and optional future hooks) so the paired light stays aligned.
 
-**Stage placement timing:** `moveNpcToStagePlacement` syncs spotlight state via `applyStageNpcSpotlightNow` (bounds align only when ImageScalar + `getBounds` are ready), then `deferNpcSpotlightAlignedToFigurine` waits for off-seat ImageScalar restore after seat→stage (seat uses scalar 53 until reload) before bounds-based Y.
+**Stage placement timing:** `moveNpcToStagePlacement` syncs spotlight state via `applyStageNpcSpotlightNow` (bounds align only when ImageScalar + `getBounds` are ready), then `deferNpcSpotlightAlignedToFigurine` waits for off-seat ImageScalar restore after seat→stage (seat uses scalar 53 until reload) before bounds-based Y. `buildResolvedLightModeTable` uses the figurine’s **live** `ImageScalar` for the large-cutout Y ramp (not registry alone) so ramp matches the mesh that produced `getBounds`.
 
 ### Spawn source
 

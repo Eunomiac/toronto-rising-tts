@@ -315,27 +315,6 @@ local function objectsOnControlBoard(board, tag)
     return out
 end
 
---- True when token is on CONTROL_BOARD minimap, excluding CONTROL_BOARD_PALETTE storage.
---- Declared before `Gameboard.recoverStrayNpcTokensToPalette` (Lua local scope — see docs/solutions/lua-local-function-order.md).
---- @param board Object
---- @param token Object
---- @return boolean
-local function isTokenOnControlBoardSurface(board, token)
-    if not isGameObject(board) or not isGameObject(token) then
-        return false
-    end
-    local palette = getControlBoardPalette()
-    if isGameObject(palette) and Palette.isTokenOnPaletteBoard(palette, token) then
-        return false
-    end
-    for _, obj in ipairs(objectsOnControlBoard(board, TAG_TOKEN)) do
-        if obj == token then
-            return true
-        end
-    end
-    return false
-end
-
 --- Max board-local |Y − surface| for a token to count as on the minimap (not dragged off / in the air).
 local MINIMAP_TOKEN_SURFACE_Y_TOLERANCE = 0.4
 
@@ -365,6 +344,15 @@ local function isTokenOnMinimapTokenSurface(board, token)
         return false
     end
     return true
+end
+
+--- True when token is on CONTROL_BOARD minimap, excluding CONTROL_BOARD_PALETTE storage.
+--- Declared before `Gameboard.recoverStrayNpcTokensToPalette` (Lua local scope — see docs/solutions/lua-local-function-order.md).
+--- @param board Object
+--- @param token Object
+--- @return boolean
+local function isTokenOnControlBoardSurface(board, token)
+    return isTokenOnMinimapTokenSurface(board, token)
 end
 
 --- @param board Object
@@ -1288,7 +1276,8 @@ function Gameboard.clearControlBoard()
     return true, nil
 end
 
---- First Clear click: return lost tokens (not on CONTROL_BOARD or palette) to palette parking slots.
+--- Return lost tokens (not on CONTROL_BOARD or palette) to palette parking slots.
+--- Used by console / tooling; confirmed Clear parks via `Palette.syncTokensToPalette`.
 --- @return number moved
 function Gameboard.recoverStrayNpcTokensToPalette()
     local palette = getControlBoardPalette()
@@ -1331,19 +1320,8 @@ function Gameboard.tryConfirmClear(playerColor)
     local now = os.time()
     if clearArmExpireByColor[color] == nil or now > clearArmExpireByColor[color] then
         clearArmExpireByColor[color] = now + 5
-        local recovered = Gameboard.recoverStrayNpcTokensToPalette()
         if broadcastToColor ~= nil then
-            local msg = "Click Clear again within 5s to confirm."
-            if recovered > 0 then
-                msg = "Returned "
-                    .. tostring(recovered)
-                    .. " stray token(s) to the palette. "
-                    .. msg
-            end
-            broadcastToColor(msg, color, { 1, 0.35, 0.35 })
-        end
-        if recovered > 0 then
-            print("[Gameboard] Clear (arm): recovered " .. tostring(recovered) .. " stray token(s) to palette")
+            broadcastToColor("Click Clear again within 5s to confirm.", color, { 1, 0.35, 0.35 })
         end
         return false
     end

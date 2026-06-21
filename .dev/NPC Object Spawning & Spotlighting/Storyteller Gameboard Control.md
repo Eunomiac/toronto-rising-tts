@@ -119,7 +119,7 @@ Manual repair: `npm run tts-objects:fix-stubs` or VS Code task **Fix TTS object 
 
 **Palette vs activated:** Tokens on **CONTROL_BOARD_PALETTE** are inactive storage; **Apply** ignores them until a token is on a CONTROL_BOARD polar snap. **Clear** runs `Palette.syncTokensToPalette` (group order from `lib/npcs_data` `characters[].groups`, minus `PALETTE_GROUP_BLACKLIST` e.g. `princesCourt`).
 
-**Console fallback:** `lua GlobalGameboardApply()` / `lua GlobalGameboardClearClick({ player_color = "Black" })` (Storyteller only; first Clear call recovers stray tokens + arms confirm; second call within 5s completes Clear). Manual stray recovery: `lua print(require("core.npc_gameboard").recoverStrayNpcTokensToPalette())`.
+**Console fallback:** `lua GlobalGameboardApply()` / `lua GlobalGameboardClearClick({ player_color = "Black" })` (Storyteller only; first Clear click arms 5s confirm only; second click within 5s runs Clear). Manual stray recovery: `lua print(require("core.npc_gameboard").recoverStrayNpcTokensToPalette())`.
 
 **Apply performance:** When scanned token placements match persisted `sessionScene.npcWorld.placements` and the seat row is unchanged, Apply skips figurine reconcile (logs `placements unchanged`). Placement-only edits run `Sync.npcs` steps **1 + 5** only. **Seat-row** edits (assign / vacate / presence) run steps **1–5** (includes seat teardown, layout commit, presence). `reconcileControlBoardFromState` skips marker/token mirror when its fingerprint is unchanged (invalidated on seat vacate). CONTROL_BOARD XmlUI install no longer calls `clearButtons()` every reconcile when XML is already loaded.
 

@@ -848,6 +848,18 @@ local function applyNpcFigurineImageScalarForPlacement(fig, npcName, areaKey)
     return applyFigurineImageScalarIfNeeded(fig, figurineImageScalarForNpc(npcName))
 end
 
+--- ImageScalar to use for spotlight Y ramp — must match the mesh that produced `getBounds`, not registry alone.
+--- @param fig Object|nil
+--- @param npcName string
+--- @return number
+local function figurineImageScalarForLightAlign(fig, npcName)
+    local scalar = readFigurineImageScalar(fig)
+    if scalar ~= nil then
+        return scalar
+    end
+    return expectedFigurineImageScalarForNpcPlacement(npcName)
+end
+
 --- Figurine custom mesh loaded and bounds tall enough for spotlight Y from `getBounds` (not preload-scale feet).
 --- Script-locked stage placements may keep `resting == false` after `setPosition`; do not gate on resting.
 --- @param fig Object|nil
@@ -874,9 +886,10 @@ local function npcFigurineReadyForLightAlign(fig, npcName)
         return false
     end
     local sy = b.size.y or b.size[2] or 0
+    local alignScalar = expectedFigurineImageScalarForNpcPlacement(npcName)
     local minSy = math.max(
         NPC_FIGURINE_LIGHT_ALIGN_MIN_BOUNDS_Y,
-        figurineImageScalarForNpc(npcName) * 0.75
+        alignScalar * 0.75
     )
     return sy >= minSy
 end
@@ -1701,7 +1714,7 @@ function NPCS.buildResolvedLightModeTable(npcName, modeKey)
     local lookFrac = tonumber(mode.lookAtYShift) or 0.5
     local posFrac = tonumber(mode.positionYShift) or 0.3
     local dist = tonumber(mode.distance) or 15
-    local scalar = figurineImageScalarForNpc(npcName)
+    local scalar = figurineImageScalarForLightAlign(fig, npcName)
     local faceY = topY - lookFrac * sy + extraNpcSpotlightFaceYForScalar(scalar)
     local lightY = topY - posFrac * sy + extraNpcSpotlightLightYForScalar(scalar)
     local px, pz = cx, cz
