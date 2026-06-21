@@ -142,6 +142,11 @@ local NPC_ACTIVE_LIGHT_SCALE = 1
 --- Custom Figurine ImageScalar at table seats (TTS figurine custom-property scale — not Transform `setScale`).
 local NPC_SEAT_FIGURINE_IMAGE_SCALAR = 53
 
+--- Baseline registry scalar for bounds-based spotlight Y; larger cutouts need extra elevation (Ian Rammond cal).
+local NPC_FIGURINE_LIGHT_BASELINE_SCALAR = 53
+local NPC_FIGURINE_LIGHT_CAL_REF_SCALAR = 63
+local NPC_FIGURINE_LIGHT_CAL_REF_DELTA_Y = 10.99
+
 --- Tolerance when comparing figurine ImageScalar before skipping `reload()`.
 local FIGURINE_IMAGE_SCALAR_EPS = 0.05
 
@@ -709,6 +714,32 @@ local function figurineImageScalarForNpc(npcName)
     return scalar
 end
 
+--- ImageScalar expected for the NPC's current placement (seat 53 vs registry off-seat scale).
+--- @param npcName string
+--- @return number
+local function expectedFigurineImageScalarForNpcPlacement(npcName)
+    local rec = getInstances()[npcName]
+    if U.Type(rec) == "table" and rec.areaKey == SEAT_PLACEMENT_KEY then
+        return NPC_SEAT_FIGURINE_IMAGE_SCALAR
+    end
+    return figurineImageScalarForNpc(npcName)
+end
+
+--- Extra spotlight world Y for registry scalars above baseline (linear ramp; Ian Rammond anchor).
+--- @param scalar number
+--- @return number
+local function extraNpcSpotlightLightYForScalar(scalar)
+    local s = tonumber(scalar)
+    if s == nil or s <= NPC_FIGURINE_LIGHT_BASELINE_SCALAR then
+        return 0
+    end
+    local span = NPC_FIGURINE_LIGHT_CAL_REF_SCALAR - NPC_FIGURINE_LIGHT_BASELINE_SCALAR
+    if span <= 0 then
+        return 0
+    end
+    return (s - NPC_FIGURINE_LIGHT_BASELINE_SCALAR) * (NPC_FIGURINE_LIGHT_CAL_REF_DELTA_Y / span)
+end
+
 --- Read current Custom Figurine ImageScalar (custom-property card scale), not Transform scale.
 --- @param fig Object|nil
 --- @return number|nil
@@ -809,6 +840,12 @@ local function npcFigurineReadyForLightAlign(fig, npcName)
         return false
     end
     if fig.loading_custom == true then
+        return false
+    end
+    if not figurineImageScalarMatches(
+        readFigurineImageScalar(fig),
+        expectedFigurineImageScalarForNpcPlacement(npcName)
+    ) then
         return false
     end
     if fig.getBounds == nil then
@@ -984,7 +1021,7 @@ local function applyNpcSpotlightAlignedToFigurine(npcName, fig, transitionTime)
     lightAlignFigOverride[npcName] = nil
 end
 
---- Apply current stage light mode to the world now (mode + approximate pose); does not wait for bounds reload.
+--- Apply current stage light mode to state + visibility; bounds align only when ImageScalar and mesh are ready.
 --- @param npcName string
 --- @param fig Object|nil
 --- @param lit Object|nil
@@ -1001,7 +1038,9 @@ local function applyStageNpcSpotlightNow(npcName, fig, lit, transitionTime)
     if U.Type(rec) == "table" then
         syncStageNpcLightState(npcName, rec.npcLightMode or "STANDARD")
     end
-    applyNpcSpotlightAlignedToFigurine(npcName, fig, transitionTime or 0)
+    if npcFigurineReadyForLightAlign(fig, npcName) then
+        applyNpcSpotlightAlignedToFigurine(npcName, fig, transitionTime or 0)
+    end
 end
 
 --- Wait for figurine mesh bounds (`loading_custom` / `getBounds`) before spotlight Y align (stage placement race).
@@ -1645,7 +1684,7 @@ function NPCS.buildResolvedLightModeTable(npcName, modeKey)
     local posFrac = tonumber(mode.positionYShift) or 0.3
     local dist = tonumber(mode.distance) or 15
     local faceY = topY - lookFrac * sy
-    local lightY = topY - posFrac * sy
+    local lightY = topY - posFrac * sy + extraNpcSpotlightLightYForScalar(figurineImageScalarForNpc(npcName))
     local px, pz = cx, cz
     local len2 = px * px + pz * pz
     local ux, uz

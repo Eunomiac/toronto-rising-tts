@@ -47,13 +47,13 @@ Do **not** split rotation into manual `rotX` / `rotY` / `rotZ` in data. The scri
 
 1. Reads figurine **axis-aligned bounds** (`getBounds()`).
 2. Computes **face target** in world space: horizontal center of bounds, Y = `topY - lookAtYShift * height`.
-3. Computes **light Y** = `topY - positionYShift * height`.
+3. Computes **light Y** = `topY - positionYShift * height` **+ scalar elevation** when registry `figurine.scale` > 53 (linear ramp from baseline 53; Ian Rammond scalar 63 anchor: +10.99 world Y).
 4. **Horizontal placement:** from the figurine’s **position** `(px, pz)` (table center in XZ), let `dir = normalize(px, pz)` in the XZ plane (direction from table center `(0,0,0)` toward the NPC). Place the light at `(px + dir.x * distance, lightY, pz + dir.z * distance)` so it sits **outward** from the table center relative to the figure (consistent with figures facing the center).
 5. **Rotation:** `U.lookAtRotation(lightPosition, faceTarget)` → full pitch/yaw for the spotlight object.
 
 Whenever the figurine **moves or rotates**, this pipeline is re-run (UI moves, `onObjectDrop`, and optional future hooks) so the paired light stays aligned.
 
-**Stage placement timing:** `moveNpcToStagePlacement` applies spotlight mode **immediately** (`applyStageNpcSpotlightNow`), then schedules a deferred bounds pass to refine Y after figurine mesh load (`loading_custom` / `getBounds`).
+**Stage placement timing:** `moveNpcToStagePlacement` syncs spotlight state via `applyStageNpcSpotlightNow` (bounds align only when ImageScalar + `getBounds` are ready), then `deferNpcSpotlightAlignedToFigurine` waits for off-seat ImageScalar restore after seat→stage (seat uses scalar 53 until reload) before bounds-based Y.
 
 ### Spawn source
 
