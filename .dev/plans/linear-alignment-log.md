@@ -280,5 +280,9 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-06-21 | DONE | TOR-220 | Snaps toggle — `textColor = "#FFFFFF"` on `Gameboard.syncControlBoardSnapsToggleLabel` |
 | 2026-06-21 | UPDATE | RUNNING TASKLIST **Focus** | Back-burner/deferred cycle **paused** (author); inbox promotions in domain sections + Linear blockers only |
 | 2026-06-21 | DONE | TOR-223 | Seated NPC figurine ImageScalar 53 at table seat; restore `npcs_data` `figurine.scale` off-seat; `applyFigurineImageScalarIfNeeded` skips `reload()` when already at target. `core/npcs.ttslua`; docs NPC Overview + Performance Audit §5. |
+| 2026-06-21 | INBOX | 6 items | TOR-227 palette snap Z offset (shipped); TOR-228–231 Projects design/planning (External In Progress); TOR-232 Projects implementation (`blockedBy` TOR-228–231) |
+| 2026-06-21 | DONE | TOR-227 | Palette parking snap Z offset — `D.CONTROL_BOARD_PALETTE_SNAP.parkingSnapLocalZOffset` 0.1; `lib/npc_control_board_palette.ttslua` |
+| 2026-06-21 | CREATE | TOR-228–231 | Projects human-gate design issues (External In Progress, High, parent TOR-38) |
+| 2026-06-21 | CREATE | TOR-232 | Projects system implementation (Backlog High; `blockedBy` TOR-228,229,230,231; related TOR-99, TOR-222) |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

@@ -189,6 +189,7 @@ local function paletteSnapConfig()
         parkingVMin = vMin,
         parkingVMax = vMax,
         parkingEdgePadding = tonumber(cfg.parkingEdgePadding) or 0.06,
+        parkingSnapLocalZOffset = tonumber(cfg.parkingSnapLocalZOffset) or 0,
         snapYawOffsetDeg = tonumber(cfg.snapYawOffsetDeg) or 180,
     }
 end
@@ -306,7 +307,8 @@ end
 local function boardLocalFromUv(board, u, v)
     local halfX, halfZ = boardLocalHalfExtents(board)
     local surfaceY = tonumber(DATA.PALETTE_SURFACE_LOCAL_Y) or 0.18
-    return Vector((u - 0.5) * 2 * halfX, surfaceY, (v - 0.5) * 2 * halfZ)
+    local zOffset = paletteSnapConfig().parkingSnapLocalZOffset
+    return Vector((u - 0.5) * 2 * halfX, surfaceY, (v - 0.5) * 2 * halfZ + zOffset)
 end
 
 --- @param deg number|nil

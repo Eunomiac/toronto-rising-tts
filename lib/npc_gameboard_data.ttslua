@@ -114,6 +114,8 @@ D.CONTROL_BOARD_PALETTE_SNAP = {
   --- Example top-half only after shortening Z: parkingVMin = 0.52, parkingVMax = 0.98
   parkingVMin = nil,
   parkingVMax = nil,
+  --- Board-local +Z toward vMax; default ≈ half polar token diameter (tile ~1u × scale 0.2).
+  parkingSnapLocalZOffset = 0.1,
   snapYawOffsetDeg = 180,
 }
 
