@@ -273,5 +273,12 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-06-15 | UPDATE | TOR-209 | Related TOR-162; batch Opts + roll-panel condition display |
 | 2026-06-15 | UPDATE | RUNNING TASKLIST **Focus** | TOR-96 #1; TOR-169 #2; TOR-172 #3; roll conditions slice deferred (TOR-162 + TOR-209) |
 | 2026-06-17 | SHIPPED | _(create Linear — NPC figurine save-baked perf)_ | Runtime: no figurine spawn / no `setCustomObject`+`reload` on placement; `NPCS.auditPreloadPoolFigurines`; stripped `figurine.images` from `npcs_data`; `inject-npc-world-from-groups.js` + manifest registry gate; docs + Performance Audit §5 Done. Related TOR-219 (npc-groups upload). **Author:** run inject + Cloud upload on save before Save & Play. |
+| 2026-06-21 | INBOX | 8 bullets promoted | TOR-220 (Snaps text color); TOR-221 (non-Host onLoad audit); TOR-222 (clock fast-forward); TOR-95 expanded (PC token controls); TOR-223 (seated scale 53); TOR-224 (ST panel reroll); TOR-225 (dice strip sort); TOR-226 (secret ST rolls) |
+| 2026-06-21 | UPDATE | TOR-95 | INBOX scope — control board PC token seat row + sheet swap by tag; `blockedBy` TOR-180 |
+| 2026-06-21 | UPDATE | TOR-144 | `blockedBy` TOR-221; Todo |
+| 2026-06-21 | UPDATE | Linear relations | TOR-222 `blockedBy` TOR-142; TOR-223 `blockedBy` TOR-169; TOR-224 `blockedBy` TOR-218; TOR-225 `blockedBy` TOR-224; TOR-226 `blockedBy` TOR-224; TOR-95 `blockedBy` TOR-180; TOR-144 `blockedBy` TOR-221 |
+| 2026-06-21 | DONE | TOR-220 | Snaps toggle — `textColor = "#FFFFFF"` on `Gameboard.syncControlBoardSnapsToggleLabel` |
+| 2026-06-21 | UPDATE | RUNNING TASKLIST **Focus** | Back-burner/deferred cycle **paused** (author); inbox promotions in domain sections + Linear blockers only |
+| 2026-06-21 | DONE | TOR-223 | Seated NPC figurine ImageScalar 53 at table seat; restore `npcs_data` `figurine.scale` off-seat; `applyFigurineImageScalarIfNeeded` skips `reload()` when already at target. `core/npcs.ttslua`; docs NPC Overview + Performance Audit §5. |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

@@ -179,7 +179,7 @@ All recommendations preserve the synchronization contract: `gameState` remains t
 **Evidence (current)**
 
 - `NPCS.restoreAfterStateLoad()` → `NPCS.auditPreloadPoolFigurines` (errors if workshop `npc_figurine` missing; adopt-only `ensureNpcInPreloadZone`; spotlight repair only).
-- `applyNpcPairPhysicalPresentation` adjusts Transform scale/tooltip only — no figurine image reload.
+- `applyNpcPairPhysicalPresentation` adjusts Transform scale/tooltip; ImageScalar via `applyFigurineImageScalarIfNeeded` only when seat vs off-seat target differs (no reload if already at target).
 - Figurine images injected into save via `npm run custom-ui-assets:inject-npc-world` before Cloud upload.
 - `NPCS.reconcileAllFromState` fingerprints placement intent; step 5 adopts missing instance rows without figurine spawn.
 

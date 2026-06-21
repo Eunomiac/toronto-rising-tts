@@ -139,6 +139,12 @@ local NPC_PRELOAD_LIGHT_SCALE = 0.12
 local NPC_ACTIVE_FIGURE_SCALE = 1
 local NPC_ACTIVE_LIGHT_SCALE = 1
 
+--- Custom Figurine ImageScalar at table seats (TTS figurine custom-property scale — not Transform `setScale`).
+local NPC_SEAT_FIGURINE_IMAGE_SCALAR = 53
+
+--- Tolerance when comparing figurine ImageScalar before skipping `reload()`.
+local FIGURINE_IMAGE_SCALAR_EPS = 0.05
+
 --- Deep-clone TTS object state for `spawnObjectData` and clear `GUID` so the engine assigns a new id (avoids mutating live template data).
 --- @param data table|nil
 --- @return table|nil
@@ -703,6 +709,96 @@ local function figurineImageScalarForNpc(npcName)
     return scalar
 end
 
+--- Read current Custom Figurine ImageScalar (custom-property card scale), not Transform scale.
+--- @param fig Object|nil
+--- @return number|nil
+local function readFigurineImageScalar(fig)
+    if not U.isGameObject(fig) then
+        return nil
+    end
+    if fig.getData ~= nil then
+        local data = fig.getData()
+        if U.Type(data) == "table" and U.Type(data.CustomImage) == "table" then
+            local ci = data.CustomImage
+            local fromData = tonumber(ci.ImageScalar) or tonumber(ci.ImageScale)
+            if fromData ~= nil then
+                return fromData
+            end
+        end
+    end
+    if fig.getCustomObject ~= nil then
+        local co = fig.getCustomObject()
+        if U.Type(co) == "table" then
+            local fromCo = tonumber(co.image_scalar) or tonumber(co.card_scale) or tonumber(co.scale)
+            if fromCo ~= nil then
+                return fromCo
+            end
+        end
+    end
+    return nil
+end
+
+--- @param current number|nil
+--- @param target number
+--- @return boolean
+local function figurineImageScalarMatches(current, target)
+    if current == nil or target == nil then
+        return false
+    end
+    return math.abs(current - target) <= FIGURINE_IMAGE_SCALAR_EPS
+end
+
+--- Apply figurine ImageScalar when it differs; requires `setCustomObject` + `reload()`.
+--- @param fig Object|nil
+--- @param targetScalar number
+--- @return boolean reloaded
+local function applyFigurineImageScalarIfNeeded(fig, targetScalar)
+    if not U.isGameObject(fig) or fig.setCustomObject == nil or fig.reload == nil then
+        return false
+    end
+    local target = tonumber(targetScalar)
+    if target == nil or target ~= target or target < 1 then
+        return false
+    end
+    if target > 500 then
+        target = 500
+    end
+    if figurineImageScalarMatches(readFigurineImageScalar(fig), target) then
+        return false
+    end
+    local co = fig.getCustomObject()
+    if U.Type(co) ~= "table" then
+        return false
+    end
+    local image = co.image
+    if U.Type(image) ~= "string" or image == "" then
+        return false
+    end
+    local params = {
+        image = image,
+        image_secondary = co.image_secondary or image,
+        image_scalar = target,
+    }
+    fig.setCustomObject(params)
+    fig.reload()
+    return true
+end
+
+--- Seat vs off-seat ImageScalar for pooled NPC figurines (TOR-223).
+--- @param fig Object|nil
+--- @param npcName string|nil
+--- @param areaKey string
+--- @return boolean reloaded
+local function applyNpcFigurineImageScalarForPlacement(fig, npcName, areaKey)
+    if not U.isGameObject(fig) or U.Type(npcName) ~= "string" or npcName == "" then
+        return false
+    end
+    if areaKey == SEAT_PLACEMENT_KEY then
+        return applyFigurineImageScalarIfNeeded(fig, NPC_SEAT_FIGURINE_IMAGE_SCALAR)
+    end
+    return applyFigurineImageScalarIfNeeded(fig, figurineImageScalarForNpc(npcName))
+end
+
 --- Figurine custom mesh loaded and bounds tall enough for spotlight Y from `getBounds` (not preload-scale feet).
 --- Script-locked stage placements may keep `resting == false` after `setPosition`; do not gate on resting.
 --- @param fig Object|nil
@@ -731,7 +827,7 @@ local function npcFigurineReadyForLightAlign(fig, npcName)
 end
 
 --- Figurine Transform scale + tooltip and paired spotlight scale (preload = small, tooltips off; active areas/seats = full, tooltips on).
---- Figurine cutout ImageScalar (`figurine.scale` in npcs_data) is save-baked; runtime does not call `setCustomObject` / `reload`.
+--- ImageScalar (figurine custom-property scale) applied separately when placement changes — see `applyNpcFigurineImageScalarForPlacement`.
 --- @param fig Object|nil
 --- @param lit Object|nil
 --- @param areaKey string
@@ -750,6 +846,7 @@ local function applyNpcPairPhysicalPresentation(fig, lit, areaKey, npcName)
         lit.setScale(Vector(ls, ls, ls))
     end
     ensureNpcFigurinePhysicsLocked(fig)
+    applyNpcFigurineImageScalarForPlacement(fig, npcName, areaKey)
 end
 
 --- Swap pooled figurine tags for table-seat layout (`SEAT_FIGURE` role); hide paired area spotlight.

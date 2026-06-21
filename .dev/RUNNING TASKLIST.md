@@ -97,7 +97,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Gameboard frame hitch (Apply/Clear):** Tier 1 cache/profile + follow-up perf pass; author confirmed largely addressed. _(TOR-201 — 2026-06-15)_
 - [x] **Duplicate table model on board:** Inactive `gameboard_table` markers stashed at `MARKER_STASH_WORLD_Y` when `tableKey ~= currentTableKey`. _(TOR-202 — author confirmed 2026-06-15.)_
 - [x] **Snaps toggle text color:** Reset `gb_snaps` label to `#FFFFFF` on every `UI.setAttributes` refresh (TTS reverts to black). _(TOR-220 — 2026-06-21)_
-- [ ] **Seated NPC active scale 53:** Set figurine ImageScalar 53 at table seat; restore `npcs_data` `figurine.scale` on unseat/stage/preload. _(TOR-223)_
+- [x] **Seated NPC active scale 53:** Set figurine ImageScalar 53 at table seat; restore `npcs_data` `figurine.scale` on unseat/stage/preload. _(TOR-223)_
 
 ## Soundscape
 
