@@ -94,7 +94,7 @@ function RO.resolveOblivRouseDice(values)
             return {
                 hungerDelta = 0,
                 stainDelta = 0,
-                narrative = "Choose Hunger or Stain",
+                narrative = "Hunger or Stain?",
                 pendingChoice = true,
             }
         end

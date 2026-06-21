@@ -1674,7 +1674,10 @@ function RC.confirmRoll(color)
         and active.result.brutalNarrative ~= ""
 
     -- Do a final live read to ensure result reflects current table state
-    if not active.tookHalf and not brutalLocked and active.takeHalfAwaitingRouse ~= true then
+    if not active.tookHalf
+        and not brutalLocked
+        and active.oblivChoiceResolved ~= true
+        and active.takeHalfAwaitingRouse ~= true then
         local preResult      = active.result
         local preDiceFaces   = active.diceFaces
         local preDiceDisplay = active.diceDisplay
@@ -2040,6 +2043,7 @@ function RC.confirmOblivionChoice(color, choice)
                 end
             end
         end
+        active.oblivChoiceResolved = true
         active.pendingResolution = nil
         setActive(color, active)
         notifyStateChanged(color)
@@ -2067,6 +2071,7 @@ function RC.confirmOblivionChoice(color, choice)
             end
         end
     end
+    active.oblivChoiceResolved = true
     active.pendingResolution = nil
     setActive(color, active)
     notifyStateChanged(color)

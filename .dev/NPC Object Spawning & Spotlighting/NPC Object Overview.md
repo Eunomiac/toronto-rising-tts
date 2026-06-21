@@ -23,7 +23,7 @@ Flexible tree for Storyteller-readable output only.
 
 Optional overrides per mode key (`off`, `standard`, `spotlight`). **Merge rule:** for each mode, start from `NPCS.lights[mode]` and **deep-merge** `npcData.lighting[mode]` on top when present. When the instance’s `areaKey` is **`__stage_board__`** (gameboard STAGE_BOARD placements, not legacy table-side areas), **deep-merge** `NPCS.stageLights[mode]` after that. Unlisted modes use globals only.
 
-**Figurine cutout scale:** `figurine.scale` is baked into save `ImageScalar` at inject time. Runtime only adjusts Transform scale (preload vs active) and tooltips — no `setCustomObject` / `reload()` on placement.
+* **Figurine cutout scale:** `figurine.scale` in `npcs_data` drives save inject `ImageScalar` and runtime **Transform** scale for seated and stage/active placements (`applyNpcPairPhysicalPresentation`). Preload pool uses small Transform scale (`0.12`); seat and stage restore per-character `figurine.scale` (typically 53). No `setCustomObject` / `reload()` on placement.
 
 ---
 
