@@ -325,6 +325,40 @@ function GlobalGameboardClear(params)
     return ok == true
 end
 
+--- NPC gameboard: refresh XmlUI snaps toggle label on CONTROL_BOARD (object onLoad / reconcile).
+--- @param params table|nil `{ boardGuid?: string }`
+function GlobalGameboardSyncSnapsToggleLabel(params)
+    local Gameboard = require("core.npc_gameboard")
+    local board = nil
+    if type(params) == "table" and type(params.boardGuid) == "string" then
+        board = getObjectFromGUID(params.boardGuid)
+    end
+    Gameboard.syncControlBoardSnapsToggleLabel(board)
+end
+
+--- NPC gameboard: toggle CONTROL_BOARD snap grid (object XmlUI `click_snaps_toggle`).
+--- @param params table|nil `{ boardGuid?: string }`
+--- @return boolean enabled after toggle
+function GlobalGameboardToggleControlBoardSnaps(params)
+    local Gameboard = require("core.npc_gameboard")
+    local board = nil
+    if type(params) == "table" and type(params.boardGuid) == "string" then
+        board = getObjectFromGUID(params.boardGuid)
+    end
+    local enabled = Gameboard.toggleControlBoardSnaps({ board = board })
+    Gameboard.syncControlBoardSnapsToggleLabel(board)
+    return enabled
+end
+
+--- NPC gameboard: install palette parking snaps (CONTROL_BOARD_PALETTE object onLoad).
+--- @param params table|nil `{ force?: boolean }`
+--- @return boolean
+function GlobalGameboardInstallPaletteSnaps(params)
+    local Gameboard = require("core.npc_gameboard")
+    local force = type(params) == "table" and params.force == true
+    return Gameboard.installPaletteSnaps(nil, { force = force })
+end
+
 --- Returns the phase string of a player's active roll, or nil if no roll is active.
 -- Called by dice bag objects (via Global.call) so they know whether to spawn a die
 -- or initiate a new roll when clicked.

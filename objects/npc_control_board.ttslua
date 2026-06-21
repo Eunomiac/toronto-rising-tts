@@ -5,9 +5,9 @@
     TTS Editor: `.tts/objects/CONTROL_BOARD.bea29a.ttslua` + `.xml` → Save & Play.
     XmlUI toolbar on the tile (csheet-style scale/rotation). Source: ui/objects/npc_control_board.xml
     (embed: npm run npc-control-board-ui:generate). Snap grid + XmlUI install: `Gameboard.reconcileControlBoardFromState`.
-]]
 
-local Gameboard = require("core.npc_gameboard")
+    Bundle-safe: no require("core.*") — board logic lives in Global via Global.call.
+]]
 
 --- XmlUI: `(player, value, id)`; legacy createButton: `(_, clickColor, altClick)`.
 --- @param arg1 Player|Object|nil
@@ -24,7 +24,9 @@ local function resolveControlBoardClickColor(arg1, arg2)
 end
 
 function onLoad()
-    Gameboard.syncControlBoardSnapsToggleLabel(self)
+    if Global ~= nil and type(Global.call) == "function" then
+        Global.call("GlobalGameboardSyncSnapsToggleLabel", { boardGuid = self.getGUID() })
+    end
 end
 
 function click_apply(player, value, id)
@@ -48,8 +50,10 @@ function click_snaps_toggle(player, value, id)
     if player_color ~= "Black" then
         return
     end
-    local enabled = Gameboard.toggleControlBoardSnaps({ board = self })
-    Gameboard.syncControlBoardSnapsToggleLabel(self)
+    local enabled = nil
+    if Global ~= nil and type(Global.call) == "function" then
+        enabled = Global.call("GlobalGameboardToggleControlBoardSnaps", { boardGuid = self.getGUID() })
+    end
     if broadcastToColor ~= nil then
         local msg = enabled and "Control-board snap points enabled." or "Control-board snap points disabled."
         broadcastToColor(msg, player_color, { 0, 1, 1 })

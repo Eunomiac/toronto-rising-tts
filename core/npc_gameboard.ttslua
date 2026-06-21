@@ -3212,6 +3212,12 @@ local function resolveControlBoardClickColor(arg1, arg2)
     return nil
 end
 
+function onLoad()
+    if Global ~= nil and type(Global.call) == "function" then
+        Global.call("GlobalGameboardSyncSnapsToggleLabel", { boardGuid = self.getGUID() })
+    end
+end
+
 function click_apply(player, value, id)
     local player_color = resolveControlBoardClickColor(player, value)
     if player_color ~= "Black" then
@@ -3226,6 +3232,21 @@ function click_clear(player, value, id)
         return
     end
     Global.call("GlobalGameboardClearClick", { player_color = player_color })
+end
+
+function click_snaps_toggle(player, value, id)
+    local player_color = resolveControlBoardClickColor(player, value)
+    if player_color ~= "Black" then
+        return
+    end
+    local enabled = nil
+    if Global ~= nil and type(Global.call) == "function" then
+        enabled = Global.call("GlobalGameboardToggleControlBoardSnaps", { boardGuid = self.getGUID() })
+    end
+    if broadcastToColor ~= nil then
+        local msg = enabled and "Control-board snap points enabled." or "Control-board snap points disabled."
+        broadcastToColor(msg, player_color, { 0, 1, 1 })
+    end
 end
 
 function click_read_stub(player, value, id)
@@ -3316,7 +3337,7 @@ function Gameboard.syncControlBoardSnapsToggleLabel(board)
     local enabled = Gameboard.areControlBoardSnapsEnabled()
     local label = enabled and "Snaps On" or "Snaps Off"
     local colors = enabled and "#336644|#448855|#55AA66|#333333" or "#555566|#666677|#777788|#333333"
-    board.UI.setAttributes("gb_snaps", { text = label, colors = colors })
+    board.UI.setAttributes("gb_snaps", { text = label, colors = colors, textColor = "#FFFFFF" })
 end
 
 --- Static minimap markers (not npc_control_token): locked so physics does not shove them apart.
@@ -3807,6 +3828,7 @@ function Gameboard.reconcileControlBoardFromState(opts)
     Gameboard.ensureControlBoardObjectCallbacks(board)
     Gameboard.ensureControlBoardObjectUi(board)
     Gameboard.syncControlBoardSnapsToggleLabel(board)
+    Gameboard.installPaletteSnaps(nil, { force = opts.force == true })
 
     local npcWorld = S.getStateVal("sessionScene", "npcWorld")
     local activeTable = S.getStateVal("seatLayout", "currentTableKey")

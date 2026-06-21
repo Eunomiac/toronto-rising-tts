@@ -253,15 +253,15 @@ require("ui.ui_csheet_page6")   -- history / XP log (placeholder)
 
 Each entry loads `ui/ui_csheet_pageN_local.ttslua` (registers `lib/csheet_pageN_xml` on `_G`) then `ui/ui_csheet_core.ttslua`. Default pages (1–2, 7–8) must **not** pull another page’s template chain. Page 3 adds ~+30 KB vs the default entry; pages 4–6 placeholders add only a few KB until real templates land.
 
-Object scripts run in a **separate Lua VM** from Global. They must not pull the full game stack (`lib.pc_stats` → `core.sync`, etc.). Thin modules and `Global.call` keep each CSHEET bundle small (~tens of KB vs ~1.4 MB before slimming). **Signal candles** use `GlobalToggleSignalFireState`; **tarot** uses `lib/object_positions_object.ttslua` (not `lib/object_positions.ttslua`).
+Object scripts run in a **separate Lua VM** from Global. They must not pull the full game stack (`lib.pc_stats` → `core.sync`, etc.). Thin modules and `Global.call` keep each CSHEET bundle small (~tens of KB vs ~1.4 MB before slimming). **Signal candles** use `GlobalToggleSignalFireState`; **NPC CONTROL_BOARD / PALETTE** use `GlobalGameboardApply`, `GlobalGameboardToggleControlBoardSnaps`, `GlobalGameboardInstallPaletteSnaps` (no `require("core.npc_gameboard")` on objects); **tarot** uses `lib/object_positions_object.ttslua` (not `lib/object_positions.ttslua`).
 
 | Layer | Module | Role |
 | ----- | ------ | ---- |
 | Object UI (shared) | `ui/ui_csheet_core.ttslua` via `ui/ui_csheet.ttslua` or `ui/ui_csheet_pageN.ttslua` | Page/seat from GM Notes `CSHEET_PAGE_<n>_<COLOR>` (`lib/csheet_identity.ttslua`); navigation; applies UI from Global payloads |
 | Sheet diffs (Global) | `GlobalCollectSheetImageUpdates({ playerID, pageNum })` → resolves registry effects → `lib/pc_sheet_collect.ttslua` | Dot/box `setAttribute` list |
 | Dynamic page XML (pages 3–6 objects) | `require("ui.ui_csheet_pageN")` → `ui/ui_csheet_pageN_local.ttslua` → `lib/csheet_pageN_xml.ttslua` | `self.UI.setXml` in object VM; page 3 live, 4–6 placeholder until templates ship |
-| BP decals (object) | `lib/blood_potency_decals.ttslua` bundled into CSHEET object script | `self.getDecals` / `self.setDecals` — uses `lib/blood_potency_derived.ttslua` (not `lib.effective_stats`) |
-| Object-only | `lib/csheet_constants.ttslua`, `lib/csheet_util.ttslua`, `lib/csheet_pose.ttslua`, `lib/blood_potency_derived.ttslua`, `lib/object_positions_object.ttslua` | CSHEET poses, delay, BP derived row lookup, tarot pose — no `core.*` |
+| BP decals (object) | `lib/blood_potency_decals.ttslua` bundled into CSHEET object script | `self.getDecals` / `self.setDecals` — uses `lib/blood_potency_derived.ttslua` + `lib/blood_potency_constants.ttslua` (not `lib.constants` or `lib.effective_stats`) |
+| Object-only | `lib/csheet_constants.ttslua`, `lib/csheet_util.ttslua`, `lib/csheet_pose.ttslua`, `lib/blood_potency_constants.ttslua`, `lib/blood_potency_derived.ttslua`, `lib/object_positions_object.ttslua` | CSHEET poses, delay, BP tables/decals, tarot pose — no `core.*`, no full `lib.constants` |
 
 **Verify bundle size**
 
@@ -271,7 +271,7 @@ npm run tts-save:measure-bundles        # sizes + regression checks
 npm run tts-save:measure-bundles -- --estimate   # require-tree only
 ```
 
-Without `.tts/bundled/` output, the script prints a **require-tree estimate** from `ui.ui_csheet` and flags heavy modules (`core.*`, `lib.pc_stats`, `lib.constants`, …). After Save & Play bundles one CSHEET object, it also reports `.tts/bundled/CSHEET_*.lua` sizes and regression checks.
+Without `.tts/bundled/` output, the script prints a **require-tree estimate** from `ui.ui_csheet` and flags heavy modules (`core.*`, `lib.pc_stats`, `lib.constants`, …). `lib.blood_potency_constants` is allowed on the CSHEET path. After Save & Play bundles one CSHEET object, it also reports `.tts/bundled/CSHEET_*.lua` sizes and regression checks. NPC Control Board bundles must stay under 10 KB with no `core.*` modules.
 
 **Save loading asset inventory (in-game “Loading (N/M)” bar)**
 

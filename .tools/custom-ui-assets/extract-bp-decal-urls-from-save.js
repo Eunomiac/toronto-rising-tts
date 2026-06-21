@@ -4,6 +4,8 @@
 // Scan a TTS save JSON for Blood Potency decal variant keys (bloodSurge2, mending1, …).
 // Primary source: save root DecalPallet[] ({ Name, ImageURL, Size }) from Mod → Decals upload.
 // Fallback: AttachedDecals[].CustomDecal on objects; CustomUIAssets / CustomAssets (Name + URL).
+// Lua output (--luaOut) is a BPC.BloodPotencyDecalUrls snippet for lib/blood_potency_constants.ttslua
+// (lib/constants.ttslua re-exports via require).
 
 const fs = require("fs");
 const path = require("path");
@@ -231,12 +233,12 @@ function printReport(found) {
 }
 
 /**
- * Emit Lua table lines for C.BloodPotencyDecalUrls.
+ * Emit Lua table lines for BPC.BloodPotencyDecalUrls (lib/blood_potency_constants.ttslua).
  * @param {Map<string, { url: string }>} found
  * @returns {string}
  */
 function toLuaTable(found) {
-  const lines = ["C.BloodPotencyDecalUrls = {"];
+  const lines = ["BPC.BloodPotencyDecalUrls = {"];
   for (const key of [...BP_VARIANT_KEY_PATTERN].sort()) {
     const row = found.get(key);
     if (!row) {

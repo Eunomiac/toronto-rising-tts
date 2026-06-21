@@ -7,7 +7,7 @@
 
 local BPDer = {}
 
-local C = require("lib.constants")
+local BPC = require("lib.blood_potency_constants")
 
 local BP_DERIVED_KEYS = { "bloodSurge", "mending", "discBonus", "discReroll", "baneSeverity" }
 
@@ -52,10 +52,10 @@ end
 --- @return table bloodSurge, mending, discBonus, discReroll, baneSeverity
 function BPDer.derivedFromStats(stats, statChanges)
   local rating = BPDer.ratingFromStats(stats, statChanges)
-  local row = C.BloodPotency[rating]
+  local row = BPC.BloodPotency[rating]
   if type(row) ~= "table" then
     error(string.format(
-      "blood_potency_derived.derivedFromStats: C.BloodPotency[%s] is missing",
+      "blood_potency_derived.derivedFromStats: BloodPotency[%s] is missing",
       tostring(rating)
     ))
   end
@@ -64,7 +64,7 @@ function BPDer.derivedFromStats(stats, statChanges)
     local v = row[statKey]
     if v == nil then
       error(string.format(
-        "blood_potency_derived.derivedFromStats: C.BloodPotency[%s].%s is missing",
+        "blood_potency_derived.derivedFromStats: BloodPotency[%s].%s is missing",
         tostring(rating),
         statKey
       ))

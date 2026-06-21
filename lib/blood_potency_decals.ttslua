@@ -6,7 +6,7 @@
 
 local BPD = {}
 
-local C = require("lib.constants")
+local BPC = require("lib.blood_potency_constants")
 local BPDer = require("lib.blood_potency_derived")
 
 local BP_STAT_KEYS = { "bloodSurge", "mending", "discBonus", "discReroll", "baneSeverity" }
@@ -31,7 +31,7 @@ local function assertProductionDecalUrl(url, context)
   end
   if url:find("REPLACE_ME", 1, true) ~= nil then
     error(string.format(
-      "blood_potency_decals: placeholder URL for %s — replace C.BloodPotencyDecalUrls entry with a real Steam CDN URL",
+      "blood_potency_decals: placeholder URL for %s — replace BloodPotencyDecalUrls entry with a real Steam CDN URL",
       tostring(context)
     ))
   end
@@ -60,9 +60,9 @@ end
 --- @return string
 function BPD.resolveDecalUrl(statKey, value)
   local key = BPD.imageKeyForStat(statKey, value)
-  local catalog = C.BloodPotencyDecalUrls
+  local catalog = BPC.BloodPotencyDecalUrls
   if type(catalog) ~= "table" then
-    error("blood_potency_decals.resolveDecalUrl: C.BloodPotencyDecalUrls is missing")
+    error("blood_potency_decals.resolveDecalUrl: BloodPotencyDecalUrls is missing")
   end
   local url = catalog[key]
   return assertProductionDecalUrl(url, key)
@@ -78,9 +78,9 @@ end
 --- @param pageNum number
 --- @return string[]|nil
 function BPD.slotsForPage(pageNum)
-  local slotsByPage = C.BloodPotencyDecalSlots
+  local slotsByPage = BPC.BloodPotencyDecalSlots
   if type(slotsByPage) ~= "table" then
-    error("blood_potency_decals.slotsForPage: C.BloodPotencyDecalSlots is missing")
+    error("blood_potency_decals.slotsForPage: BloodPotencyDecalSlots is missing")
   end
   if pageNum == 1 then
     return slotsByPage.page1
@@ -108,7 +108,7 @@ function BPD.resolveDecalsForPage(stats, pageNum, resolvedStatChanges)
   local updates = {}
   for _, slot in ipairs(slots) do
     if type(slot) ~= "string" or slot == "" then
-      error("blood_potency_decals.resolveDecalsForPage: invalid slot name in C.BloodPotencyDecalSlots")
+      error("blood_potency_decals.resolveDecalsForPage: invalid slot name in BloodPotencyDecalSlots")
     end
     local value = derived[slot]
     if value == nil then

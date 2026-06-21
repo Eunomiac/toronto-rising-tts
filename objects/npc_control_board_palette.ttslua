@@ -5,11 +5,11 @@
     TTS Editor — Script:
     require("objects.npc_control_board_palette")
 
-    Installs sparse snaps at token parking slots (20×40 logical layout) and parks by group (see lib/npc_control_board_palette).
+    Installs sparse snaps at token parking slots via Global (bundle-safe; palette logic in core.npc_gameboard).
 ]]
 
-local Palette = require("lib.npc_control_board_palette")
-
 function onLoad()
-    Palette.installSnaps(self, { force = true })
+    if Global ~= nil and type(Global.call) == "function" then
+        Global.call("GlobalGameboardInstallPaletteSnaps", { force = true })
+    end
 end

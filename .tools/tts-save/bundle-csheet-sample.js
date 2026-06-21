@@ -40,6 +40,14 @@ const SAMPLES = [
     outName: "TAROT_BUTTON_PINK.sample.lua",
     entry: 'require("ui.ui_tarot_button")\n',
   },
+  {
+    outName: "NPC_CONTROL_BOARD.sample.lua",
+    entry: 'require("objects.npc_control_board")\n',
+  },
+  {
+    outName: "NPC_CONTROL_BOARD_PALETTE.sample.lua",
+    entry: 'require("objects.npc_control_board_palette")\n',
+  },
 ];
 
 /**
