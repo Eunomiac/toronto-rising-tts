@@ -173,6 +173,8 @@ local function getDefaultPlayerHUD()
             -- Nested panels: nil until opened (Lua will create tables keyed by internal ids)
             coteries = nil,
             princesCourt = nil,
+            -- Prince's Court reference: last viewed page (1–3); persists while panel is closed
+            princesCourtPage = 1,
 
             -- Nestedless reference panels: booleans default to false (hidden)
             chronicleTenets = false,
@@ -842,6 +844,17 @@ function S.validateState()
                 end
                 if ref.princesCourt ~= nil and type(ref.princesCourt) ~= "table" then
                     ref.princesCourt = nil
+                end
+
+                if ref.princesCourtPage == nil then
+                    ref.princesCourtPage = 1
+                else
+                    local page = math.floor(tonumber(ref.princesCourtPage) or 1)
+                    if page < 1 or page > 3 then
+                        ref.princesCourtPage = 1
+                    else
+                        ref.princesCourtPage = page
+                    end
                 end
 
                 -- Nestedless reference panels: booleans default to false

@@ -22,48 +22,23 @@
   <Image id="playerHud_refPanel_memoriam_@@color@@" active="false" class="popupImage" image="refPanel_Memoriam" />
 
   <Panel id="playerHud_refPanel_princesCourt_@@color@@" class="princesCourt-reference" active="false">
-    <HorizontalLayout class="princesCourt-row">
-      <Panel id="playerHud_princesCourtBtnWrap_lucien_@@color@@" visibility="Black|Orange|Brown|Pink|Purple">
-        <Image id="playerHud_princesCourtBtn_lucien_@@color@@" image="toggle_lucien_inactive" raycastTarget="true"
-          onMouseDown="HUD_playerPrincesCourt_mouseDown"
-          onMouseUp="HUD_playerPrincesCourt_mouseUp"
-          onMouseEnter="HUD_playerPrincesCourt_hoverOn"
-          onMouseExit="HUD_playerPrincesCourt_hoverOff" />
-        <Image id="playerHud_princesCourtBtn_lucien_@@color@@" image="toggle_lucien_hover" active="false" />
-      </Panel>
-      <Panel id="playerHud_princesCourtBtnWrap_fomorach_@@color@@" visibility="Black|Red|Orange|Brown|Pink">
-        <Image id="playerHud_princesCourtBtn_fomorach_@@color@@" image="toggle_fomorach_inactive" raycastTarget="true"
-          onMouseDown="HUD_playerPrincesCourt_mouseDown"
-          onMouseUp="HUD_playerPrincesCourt_mouseUp"
-          onMouseEnter="HUD_playerPrincesCourt_hoverOn"
-          onMouseExit="HUD_playerPrincesCourt_hoverOff" />
-        <Image id="playerHud_princesCourtBtn_fomorach_@@color@@" image="toggle_fomorach_hover" active="false" />
-      </Panel>
-      <Panel id="playerHud_princesCourtBtnWrap_blackCaesar_@@color@@" visibility="Black|Red|Orange|Pink|Purple">
-        <Image id="playerHud_princesCourtBtn_blackCaesar_@@color@@" image="toggle_blackCaesar_inactive" raycastTarget="true"
-          onMouseDown="HUD_playerPrincesCourt_mouseDown"
-          onMouseUp="HUD_playerPrincesCourt_mouseUp"
-          onMouseEnter="HUD_playerPrincesCourt_hoverOn"
-          onMouseExit="HUD_playerPrincesCourt_hoverOff" />
-        <Image id="playerHud_princesCourtBtn_blackCaesar_@@color@@" image="toggle_blackCaesar_hover" active="false" />
-      </Panel>
-      <Panel id="playerHud_princesCourtBtnWrap_aishe_@@color@@" visibility="Black|Red|Orange|Brown|Purple">
-        <Image id="playerHud_princesCourtBtn_aishe_@@color@@" image="toggle_aishe_inactive" raycastTarget="true"
-          onMouseDown="HUD_playerPrincesCourt_mouseDown"
-          onMouseUp="HUD_playerPrincesCourt_mouseUp"
-          onMouseEnter="HUD_playerPrincesCourt_hoverOn"
-          onMouseExit="HUD_playerPrincesCourt_hoverOff" />
-        <Image id="playerHud_princesCourtBtn_aishe_@@color@@" image="toggle_aishe_hover" active="false" />
-      </Panel>
-      <Panel id="playerHud_princesCourtBtnWrap_rashid_@@color@@" visibility="Black|Red|Brown|Pink|Purple">
-        <Image id="playerHud_princesCourtBtn_rashid_@@color@@" image="toggle_rashid_inactive" raycastTarget="true"
-          onMouseDown="HUD_playerPrincesCourt_mouseDown"
-          onMouseUp="HUD_playerPrincesCourt_mouseUp"
-          onMouseEnter="HUD_playerPrincesCourt_hoverOn"
-          onMouseExit="HUD_playerPrincesCourt_hoverOff" />
-        <Image id="playerHud_princesCourtBtn_rashid_@@color@@" image="toggle_rashid_hover" active="false" />
-      </Panel>
-    </HorizontalLayout>
+    <Panel id="playerHud_refPanel_PrincesCourt_page1_@@color@@" class="princesCourt-page">
+      <Image class="princeCourt_page" image="refPanel_PrincesCourt_page1" />
+      <Image id="playerHud_navigateTo_page2_@@color@@" class="navButton navButton_right" image="navigate_right"
+        raycastTarget="true" onMouseDown="HUD_playerPrincesCourt_navigate" />
+    </Panel>
+    <Panel id="playerHud_refPanel_PrincesCourt_page2_@@color@@" class="princesCourt-page">
+      <Image id="playerHud_navigateTo_page1_@@color@@" class="navButton navButton_left" image="navigate_left"
+        raycastTarget="true" onMouseDown="HUD_playerPrincesCourt_navigate" />
+      <Image class="princeCourt_page" image="refPanel_PrincesCourt_page2" />
+      <Image id="playerHud_navigateTo_page3_@@color@@" class="navButton navButton_right" image="navigate_right"
+        raycastTarget="true" onMouseDown="HUD_playerPrincesCourt_navigate" />
+    </Panel>
+    <Panel id="playerHud_refPanel_PrincesCourt_page3_@@color@@" class="princesCourt-page">
+      <Image id="playerHud_navigateTo_page2_@@color@@" class="navButton navButton_left" image="navigate_left"
+        raycastTarget="true" onMouseDown="HUD_playerPrincesCourt_navigate" />
+      <Image class="princeCourt_page" image="refPanel_PrincesCourt_page3" />
+    </Panel>
   </Panel>
 
   <Panel id="playerHud_refPanel_coteries_@@color@@" class="coterie-reference" active="false">

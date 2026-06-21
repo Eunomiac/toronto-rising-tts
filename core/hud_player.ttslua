@@ -10,6 +10,7 @@
 -- - `playerData.hud.reference.<key>` :
 --    - nested: `coteries` / `princesCourt` are tables (nil = closed)
 --    - nestedless: booleans (true = persistent-open; currently defaults to false)
+-- - `playerData.hud.reference.princesCourtPage` : 1|2|3 (default 1; persists while panel closed)
 -- - `playerData.hud.reference.coteries.<coterieKey>` : boolean (true while holding popup)
 --
 -- Agent guidance: .dev/HUDs & Overlays/Player HUD Overview.md; .dev/TESTING.md.
@@ -21,11 +22,6 @@ local Main = require("core.main")
 local L = require("core.lighting")
 
 local HUDP = {}
-
--- TEMPORARY: When true, selecting "The Court" (Prince's Court) on the right sidebar
--- does not show the reference overlay (portrait row / any ref art in that panel).
--- Sidebar active/hover state is unchanged. Set to false to show the reference again.
-local TEMP_SUPPRESS_PRINCES_COURT_REFERENCE_DISPLAY = true
 
 -- PlayerID -> temporary nestedless reference panel key for click-and-hold
 -- While this is set, Update will override the visible reference panel.
@@ -542,6 +538,37 @@ local function setActive(elementID, isActive)
     U.setAttribute(elementID, "active", isActive and "true" or "false")
 end
 
+--- Clamps Prince's Court reference page to 1–3.
+-- @param page number|nil
+-- @return number
+local function normalizePrincesCourtPage(page)
+    local n = math.floor(tonumber(page) or 1)
+    if n < 1 then
+        return 1
+    end
+    if n > 3 then
+        return 3
+    end
+    return n
+end
+
+--- Shows one Prince's Court page panel when the reference is open.
+-- @param seatColor string
+-- @param ref table|nil `playerData.hud.reference`
+-- @param showPanel boolean
+local function reconcilePrincesCourtPagesFromState(seatColor, ref, showPanel)
+    if type(seatColor) ~= "string" then
+        return
+    end
+    local page = normalizePrincesCourtPage(type(ref) == "table" and ref.princesCourtPage or nil)
+    for p = 1, 3 do
+        setActive(
+            "playerHud_refPanel_PrincesCourt_page" .. p .. "_" .. seatColor,
+            showPanel == true and p == page
+        )
+    end
+end
+
 --- Sets right-sidebar overlay Image visibility: `color` only (`active` stays true in XML).
 -- @param elementID string
 -- @param isVisible boolean
@@ -765,6 +792,24 @@ local function parseMapDistrictToggleKeyFromId(id, seatColor)
         return nil
     end
     return districtKey
+end
+
+--- Parses a Prince's Court nav button id to extract the target page (1–3).
+-- Id format: `playerHud_navigateTo_page<N>_<Color>`
+-- @param id string
+-- @param seatColor string
+-- @return number|nil
+local function parsePrincesCourtPageFromNavigateId(id, seatColor)
+    if type(id) ~= "string" or type(seatColor) ~= "string" then
+        return nil
+    end
+    local prefix = "playerHud_navigateTo_page"
+    local suffix = "_" .. seatColor
+    if id:sub(1, #prefix) ~= prefix or id:sub(-#suffix) ~= suffix then
+        return nil
+    end
+    local pageStr = id:sub(#prefix + 1, #id - #suffix)
+    return normalizePrincesCourtPage(tonumber(pageStr))
 end
 
 --- Parses coterie grid button base id to extract the `coterieKey`.
@@ -1044,10 +1089,8 @@ function HUDP.updatePlayerUI(player, color)
     -- Top-level reference panels
     setActive("playerHud_refPanel_coteries_" .. seatColor, showRefKey == "coteries")
     local showPrincesCourtRef = showRefKey == "princesCourt"
-    if TEMP_SUPPRESS_PRINCES_COURT_REFERENCE_DISPLAY then
-        showPrincesCourtRef = false
-    end
     setActive("playerHud_refPanel_princesCourt_" .. seatColor, showPrincesCourtRef)
+    reconcilePrincesCourtPagesFromState(seatColor, ref, showPrincesCourtRef)
 
     for refKey, _ in pairs(NESTEDLESS_REF_KEYS) do
         setActive("playerHud_refPanel_" .. refKey .. "_" .. seatColor, showRefKey == refKey)
@@ -1529,6 +1572,28 @@ function HUD_playerCoteriesGrid_mouseUp(player, value, id)
 
     local popupID = "playerHud_coteriePopup_" .. coterieKey .. "_" .. color
     setActive(popupID, false)
+end
+
+--- Mouse down on a Prince's Court page navigation button.
+-- Updates `playerData.hud.reference.princesCourtPage` and refreshes the visible page.
+function HUD_playerPrincesCourt_navigate(player, value, id)
+    local playerID, color = getPlayerIDAndColor(player)
+    if not playerID or type(id) ~= "string" or type(color) ~= "string" then
+        return
+    end
+
+    local targetPage = parsePrincesCourtPageFromNavigateId(id, color)
+    if targetPage == nil then
+        return
+    end
+
+    local currentPage = S.getStateVal("playerData", playerID, "hud", "reference", "princesCourtPage")
+    if normalizePrincesCourtPage(currentPage) == targetPage then
+        return
+    end
+
+    S.setStateVal(targetPage, "playerData", playerID, "hud", "reference", "princesCourtPage")
+    HUDP.updatePlayerUI(player, color)
 end
 
 -- ============================================================================

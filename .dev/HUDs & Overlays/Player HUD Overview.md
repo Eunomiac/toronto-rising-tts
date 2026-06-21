@@ -284,7 +284,7 @@ The map no longer includes a site card panel. Current site imagery is **`gameSta
 
 ### Central Panel: The Prince's Court Reference
 
-(Yet to be implemented)
+Three-page reference overlay toggled from the right sidebar (`toggle_PrincesCourt_*`). Pages use `refPanel_PrincesCourt_page1`–`page3` with `navigate_left` / `navigate_right` buttons. State: `playerData.hud.reference.princesCourt` (`nil` = closed, table = open) and `playerData.hud.reference.princesCourtPage` (`1`–`3`, default `1`, persists while closed). Handler: `HUD_playerPrincesCourt_navigate` in `core/hud_player.ttslua`.
 
 ---
 
@@ -403,7 +403,7 @@ Core panels should be stacked in the central display panel at the bottom, so tha
 
 This group contains buttons that reveal various reference panels. Only one reference panel can be visible at a time: when a reference panel is revealed, all other reference panels are hidden. Reference panel state is stored under `playerData.hud.reference` using canonical keys: `coteries`, `princesCourt`, `chronicleTenets`, `socialCombat`, `physicalCombat`, `frenzy`, `rolls`, `memoriam`, `projects`, `experience`.
 
-Reference panels can be nested, containing their own set of buttons that reveal further reference panels.  Nested panels (e.g. Coteries popup, Prince's Court popup) use keys like `playerData.hud.reference.coteries.<coterieId>`.
+Reference panels can be nested, containing their own set of buttons that reveal further reference panels. Coterie popups use keys like `playerData.hud.reference.coteries.<coterieId>`. Prince's Court uses a separate `princesCourtPage` field for pagination.
 
 **Click Action — panel has nested panels:** Turn off any other reference panels at the same level, then toggle this panel and set `playerData.hud.reference.[referencePanelKey] = true`.
 **Click Action - panel has no nested panels:** Show this panel (and hide any toggled-on reference panel at the same level) while the mouse button is held; on release, hide it and restore the previous toggled panel. Same rule for nested content: if a nested panel has its own nested panels, use toggle; otherwise use click-and-hold.
@@ -422,7 +422,7 @@ This first set of reference panel toggle buttons contains:
 | `toggle_ChronicleTenets_hover` | Hovering over Chronicle Tenets toggle. | ✅ |
 | `toggle_ChronicleTenets_active` | Active Chronicle Tenets toggle. | ✅ |
 
-- **Prince's Court Reference** — A row of images for the *other* PCs (exclude the current player). PC keys come from each player's `charKey` in `C.PlayerData` (matching keys under `PCs` in `lib/json/PCS.json`, e.g. `lucien`, `fomorach`, `blackCaesar`, `aishe`, `rashid`). Clicking a PC image reveals a popup with that PC's character sheet; state uses `playerData.hud.reference.princesCourt.<pcKey>` or similar.
+- **Prince's Court Reference** — A three-page reference overlay (`refPanel_PrincesCourt_page1`–`page3`) with left/right navigation buttons. Sidebar toggle opens the panel on the player's last viewed page (`playerData.hud.reference.princesCourtPage`, default `1`). Open/closed state uses `playerData.hud.reference.princesCourt` (`nil` = closed, table = open). Nav buttons update `princesCourtPage` and swap the active page panel.
 - **Coteries Reference** — A central grid of images corresponding to NPC coteries in the city. Only coteries with `inCoterieRef = true` in `C.CHRONICLE_DATA.coteries` appear in this reference (e.g. `beesHive`, `fiveKeys`, `harpies`, `ironGuard`, `line`, `midnightMass`, `moonClub`, `petitioners`, `redeemers`, `redFlag`, `regencyUniversityChantry`, `scarlettAndBoys`, `wychwoodHecata`). Clicking a coterie image reveals a popup panel with more information; state uses `playerData.hud.reference.coteries.<coterieKey>`.
 - **Chronicle Tenets Reference** — A single `refPanel_ChronicleTenets` image.
 
@@ -681,8 +681,10 @@ state.playerData[playerID]  (merged: static + dynamic)
 ├── hud
 │   ├── activeCorePanel           "map" | "sheet" | nil
 │   ├── reference
+│   │   ├── princesCourt          table | nil   (open = table, closed = nil)
+│   │   ├── princesCourtPage      1 | 2 | 3     (default 1)
 │   │   ├── [referencePanelKey]   boolean   (e.g. chronicleTenets, socialCombat, …)
-│   │   └── … (nested keys for Coteries, Prince's Court popups)
+│   │   └── coteries.<coterieKey> boolean   (true while holding coterie popup)
 │   └── map
 │       ├── overlays
 │       │   └── [overlayKey]      boolean
