@@ -11,6 +11,7 @@ local PCS = require("lib.pcs_data")
 local U = require("lib.util")
 local Sync = require("core.sync")
 local CI = require("lib.csheet_identity")
+local HUDP = require("core.hud_player")
 
 --- @type table<string, table>
 local buffers = {}
@@ -80,6 +81,7 @@ function PCST.refreshCharacterSheetsForColor(seatColor)
       end
     end
   end
+  HUDP.reconcilePrincesCourtTrackersForPanelSeat(seatColor)
 end
 
 --- Refresh every seat's CSHEET objects (after scene/location reconcile with skipPresentation).

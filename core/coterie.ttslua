@@ -1,0 +1,80 @@
+--- Coterie chronicle data (`gameState.coterieData`) bootstrap and Prince's Court HUD reconciliation.
+-- Initial seed: `lib/json/Coterie.json` via `lib/coterie_data.ttslua`.
+-- Agent guidance: .dev/Projects/Project System Overview.md; .dev/HUDs & Overlays/Player HUD Overview.md
+
+local U = require("lib.util")
+local C = require("lib.constants")
+local S = require("core.state")
+local CoterieData = require("lib.coterie_data")
+local CC = require("lib.coterie_collect")
+
+local Coterie = {}
+
+local lastUiByHudSeat = {}
+
+--- @return table deep copy of JSON defaults
+function Coterie.getDefaultData()
+    return U.clone(CoterieData.getDecoded(), true)
+end
+
+--- Ensure `gameState.coterieData` exists and backfills missing keys from JSON defaults.
+function Coterie.ensureInState()
+    local data = S.getStateVal("coterieData")
+    local defaults = Coterie.getDefaultData()
+    if type(data) ~= "table" then
+        S.setStateVal(U.clone(defaults, true), "coterieData")
+        return
+    end
+    S.mergeDefaults(data, defaults)
+end
+
+function Coterie.invalidateReconcileCache()
+    lastUiByHudSeat = {}
+end
+
+--- Apply collected coterie HUD diffs for one player HUD seat (incremental cache).
+-- @param hudSeatColor string
+-- @param updates table[]
+local function applyHudUpdates(hudSeatColor, updates)
+    if type(hudSeatColor) ~= "string" or type(updates) ~= "table" then
+        return
+    end
+    if lastUiByHudSeat[hudSeatColor] == nil then
+        lastUiByHudSeat[hudSeatColor] = {}
+    end
+    local cache = lastUiByHudSeat[hudSeatColor]
+    for _, u in ipairs(updates) do
+        local id = u.id
+        local attrs = u.attributes
+        if type(id) == "string" and type(attrs) == "table" then
+            for attrName, attrVal in pairs(attrs) do
+                local cacheKey = id .. "\0" .. attrName
+                local sval = tostring(attrVal)
+                if cache[cacheKey] ~= sval then
+                    U.setAttribute(id, attrName, sval)
+                    cache[cacheKey] = sval
+                end
+            end
+        end
+    end
+end
+
+--- Refresh Prince's Court coterie dots text + page-2 domain dots for one HUD seat.
+-- @param hudSeatColor string
+function Coterie.reconcileForHudSeat(hudSeatColor)
+    if type(hudSeatColor) ~= "string" or hudSeatColor == "" then
+        return
+    end
+    local coterieData = S.getStateVal("coterieData")
+    local updates = CC.collectPrincesCourtHudUpdates(coterieData, hudSeatColor)
+    applyHudUpdates(hudSeatColor, updates)
+end
+
+--- Refresh coterie HUD elements on every player HUD.
+function Coterie.reconcileAll()
+    for _, hudSeatColor in ipairs(C.PlayerColors or {}) do
+        Coterie.reconcileForHudSeat(hudSeatColor)
+    end
+end
+
+return Coterie

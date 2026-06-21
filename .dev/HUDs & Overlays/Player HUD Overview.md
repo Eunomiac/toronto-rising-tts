@@ -284,7 +284,11 @@ The map no longer includes a site card panel. Current site imagery is **`gameSta
 
 ### Central Panel: The Prince's Court Reference
 
-Three-page reference overlay toggled from the right sidebar (`toggle_PrincesCourt_*`). Pages use `refPanel_PrincesCourt_page1`–`page3` with `navigate_left` / `navigate_right` buttons. State: `playerData.hud.reference.princesCourt` (`nil` = closed, table = open) and `playerData.hud.reference.princesCourtPage` (`1`–`3`, default `1`, persists while closed). Handler: `HUD_playerPrincesCourt_navigate` in `core/hud_player.ttslua`.
+Three-page reference overlay toggled from the right sidebar (`toggle_PrincesCourt_*`). Pages use `refPanel_PrincesCourt_page1`–`page3` with `navigate_left` / `navigate_right` buttons. State: `playerData.hud.reference.princesCourt` (`nil` = closed, table = open) and `playerData.hud.reference.princesCourtPage` (`1`–`3`, default `1`, persists while closed). Handler: `HUD_playerPrincesCourt_navigate` in `core/hud_player.ttslua` (writes `princesCourtPage` on the clicker's storage id; UI ids use the HUD seat suffix `_Red`, etc.).
+
+**Coterie chronicle data (`gameState.coterieData`):** Seeded on load from `lib/json/Coterie.json` (embedded via `lib/coterie_data.ttslua`; regenerate with `node .dev/scripts/generate_coterie_data_lua.js`). Reconciled to Global UI by `core/coterie.ttslua` (`Coterie.reconcileAll` on `Sync.full`, per-seat refresh in `HUDP.updatePlayerUI`). Currently synced fields: `dots` → `coterie_dots_text_<Color>` on every player HUD; `chasse`, `lien`, `portillon`, `haven` → `dot_on_<key>_<1–5>_<Color>` on Prince's Court page 2. Backgrounds/merits/flaws columns are placeholders until a later phase.
+
+**Page 1 tracker dots:** Five columns (one per seat color) mirror CSHEET page-1 health / willpower / humanity boxes and hunger slots. XML ids use `box_{layer}_{stat}_{index}_{ColumnSeat}_{HudSeat}` (e.g. `box_on_health_3_Purple_Brown`). Reconcile: `HUDP.reconcilePrincesCourtTrackersForHudSeat` when the reference is open on page 1; `HUDP.reconcilePrincesCourtTrackersForPanelSeat` from `PCST.refreshCharacterSheetsForColor` (same trigger as CSHEET object refresh). Logic: `PSC.collectPrincesCourtTrackerUpdates` in `lib/pc_sheet_collect.ttslua` (wraps page-1 `collectSheetImageUpdates` + hunger).
 
 ---
 

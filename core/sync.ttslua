@@ -17,6 +17,7 @@ local Soundscape = require("core.soundscape")
 local NPCS = require("core.npcs")
 local SceneLibrary = require("core.scene_library")
 local HUDP = require("core.hud_player")
+local Coterie = require("core.coterie")
 local HO = require("core.hud_overlays")
 local HUP = require("core.hud_hunger_pulse")
 local RSL = require("lib.rotational-seat-layout")
@@ -149,6 +150,7 @@ function Sync.invalidateAllReconcileCaches()
     callIfFunction(Soundscape.invalidateReconcileCache)
     callIfFunction(HO.invalidateOverlayInputCache)
     callIfFunction(NPCS.invalidateHomelandStageBoundSpotlightsCache)
+    callIfFunction(Coterie.invalidateReconcileCache)
     invalidateSeatPresentationFingerprint()
 end
 
@@ -388,6 +390,8 @@ function Sync.full(opts)
     end
 
     callIfFunction(SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked)
+
+    callIfFunction(Coterie.reconcileAll)
 
     if force then
         Sync.ui()

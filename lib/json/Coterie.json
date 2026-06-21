@@ -1,0 +1,71 @@
+{
+  "dots": 6,
+  "coterieBackgrounds": [
+    {
+      "base": 1,
+      "temp": 4,
+      "description": [
+        "As the most powerful coterie in the city, you have access to a vast array of resources."
+      ],
+      "focus": "",
+      "max": 5,
+      "name": "Resources",
+      "rules": [
+        "You may commit coterie Resources to Projects or other endeavors."
+      ]
+    }
+  ],
+  "coterieMerits": [],
+  "coterieFlaws": [
+    {
+      "base": 5,
+      "description": [
+        "You have earned the enmity of a very powerful, very ancient, very mysterious enemy."
+      ],
+      "max": 5,
+      "focus": "[REDACTED]",
+      "name": "Adversary",
+      "rules": [
+        "Your enemy is a methuselah or a cabal of powerful elders.",
+        "The Storyteller should use them at least once per story."
+      ],
+      "temp": 0
+    }
+  ],
+  "chasse": 3,
+  "lien": 1,
+  "portillon": 3,
+  "haven": 4,
+  "domainBackgrounds": [],
+  "domainMerits": [
+    {
+      "base": 2,
+      "description": [
+        "You have a fleet of vehicles and the staff to drive them."
+      ],
+      "max": 5,
+      "name": "Transportation",
+      "rules": [],
+      "temp": 0
+    }
+  ],
+  "domainFlaws": [
+    {
+      "base": 2,
+      "description": [
+        "Your domain comes with certain responsibilities."
+      ],
+      "max": 2,
+      "name": "Custodians",
+      "focus": "",
+      "rules": [
+        "You must secure the main entry points of Union Station and the Billy Bishop Ferry (from Billy Bishop Airport, on Centre Island) against unauthorized entry by Kindred of any sect.",
+        "Failure to do so will result in loss of reputation, trust in your rule, or worse."
+      ],
+      "temp": 0
+    }
+  ],
+  "havenBackgrounds": [],
+  "havenMerits": [],
+  "havenFlaws": []
+}

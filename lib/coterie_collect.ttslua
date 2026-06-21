@@ -1,0 +1,51 @@
+--- Collect Global UI attribute updates for Prince's Court coterie display from `gameState.coterieData`.
+-- Agent guidance: .dev/HUDs & Overlays/Player HUD Overview.md
+
+local CC = {}
+
+local DOMAIN_DOT_KEYS = { "chasse", "lien", "portillon", "haven" }
+local MAX_DOMAIN_DOTS = 5
+
+--- Build UI updates for coterie dots text (page 1 header) and domain rating dots (page 2).
+-- @param coterieData table|nil `gameState.coterieData`
+-- @param hudSeatColor string HUD owner seat suffix (Purple, Pink, Red, Orange, Brown)
+-- @return table[] list of { id = string, attributes = table }
+function CC.collectPrincesCourtHudUpdates(coterieData, hudSeatColor)
+    local updates = {}
+
+    local function add(id, attrs)
+        updates[#updates + 1] = { id = id, attributes = attrs }
+    end
+
+    if type(hudSeatColor) ~= "string" or hudSeatColor == "" then
+        return updates
+    end
+
+    local dots = 0
+    if type(coterieData) == "table" then
+        dots = tonumber(coterieData.dots) or 0
+    end
+    add("coterie_dots_text_" .. hudSeatColor, { text = tostring(dots) })
+
+    for _, key in ipairs(DOMAIN_DOT_KEYS) do
+        local rating = 0
+        if type(coterieData) == "table" then
+            rating = tonumber(coterieData[key]) or 0
+        end
+        if rating < 0 then
+            rating = 0
+        elseif rating > MAX_DOMAIN_DOTS then
+            rating = MAX_DOMAIN_DOTS
+        end
+        rating = math.floor(rating)
+        for slot = 1, MAX_DOMAIN_DOTS do
+            add("dot_on_" .. key .. "_" .. slot .. "_" .. hudSeatColor, {
+                active = (slot <= rating) and "true" or "false",
+            })
+        end
+    end
+
+    return updates
+end
+
+return CC

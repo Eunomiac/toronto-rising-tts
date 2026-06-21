@@ -328,4 +328,58 @@ function PSC.collectSheetImageUpdates(stats, resolvedStatChanges, pageNum)
   return updates
 end
 
+--- Build Global HUD attribute updates for Prince's Court page-1 tracker columns.
+--- CSHEET ids (`box_on_health_1`) gain `_{panelSeatColor}_{hudSeatColor}` (e.g. `_Purple_Brown`).
+--- @param stats table|nil when nil, every box in the column is hidden
+--- @param resolvedStatChanges table|nil merged statChanges from condition_effects
+--- @param panelSeatColor string column seat (Purple, Pink, …)
+--- @param hudSeatColor string HUD owner seat
+--- @return table[] list of { id = string, attributes = { active = "true"|"false", image?: string } }
+function PSC.collectPrincesCourtTrackerUpdates(stats, resolvedStatChanges, panelSeatColor, hudSeatColor)
+  local suffix = "_" .. tostring(panelSeatColor) .. "_" .. tostring(hudSeatColor)
+  local updates = {}
+
+  local function push(id, active, imageName)
+    local attrs = { active = active and "true" or "false" }
+    if type(imageName) == "string" and imageName ~= "" then
+      attrs.image = imageName
+    end
+    updates[#updates + 1] = { id = id, attributes = attrs }
+  end
+
+  if type(stats) ~= "table" then
+    for _, trackerKey in ipairs({ "health", "willpower" }) do
+      for i = 1, 10 do
+        push("box_agg_" .. trackerKey .. "_" .. i .. suffix, false)
+        push("box_sup_" .. trackerKey .. "_" .. i .. suffix, false)
+        push("box_on_" .. trackerKey .. "_" .. i .. suffix, false)
+      end
+    end
+    for i = 1, 10 do
+      push("box_on_humanity_" .. i .. suffix, false)
+      push("box_stain_humanity_" .. i .. suffix, false)
+      push("box_impaired_humanity_" .. i .. suffix, false)
+    end
+    for i = 1, 5 do
+      push("box_on_hunger_" .. i .. suffix, false)
+    end
+    return updates
+  end
+
+  local base = PSC.collectSheetImageUpdates(stats, resolvedStatChanges, 1)
+  for _, u in ipairs(base) do
+    local id = u.id
+    if type(id) == "string" and id:match("^box_") then
+      updates[#updates + 1] = { id = id .. suffix, attributes = u.attributes }
+    end
+  end
+
+  local hunger = math.max(0, math.min(5, math.floor(tonumber(stats.hunger) or 0)))
+  for i = 1, 5 do
+    push("box_on_hunger_" .. i .. suffix, i <= hunger)
+  end
+
+  return updates
+end
+
 return PSC

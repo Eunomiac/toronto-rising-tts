@@ -18,6 +18,7 @@ P.disciplineKeyFromDotElementId = PSC.disciplineKeyFromDotElementId
 P.effectiveTempForAggregate = PSC.effectiveTempForAggregate
 P.effectiveTempForDot = PSC.effectiveTempForDot
 P.collectSheetImageUpdates = PSC.collectSheetImageUpdates
+P.collectPrincesCourtTrackerUpdates = PSC.collectPrincesCourtTrackerUpdates
 
 --- Tracker glyphs / sheet images from Global (`GlobalRegisterTrackerDisplay`); nil until a sheet object loads.
 --- @return table|nil

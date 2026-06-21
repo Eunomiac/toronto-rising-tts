@@ -936,6 +936,11 @@ function S.validateState()
             end
         end
     end
+
+    do
+        local Coterie = require("core.coterie")
+        Coterie.ensureInState()
+    end
 end
 
 -- ============================================================================
@@ -1195,6 +1200,14 @@ local function buildSaveState()
     if gameState.stRollSettings and type(gameState.stRollSettings) == "table" then
         if isValueSafeForState(gameState.stRollSettings, "stRollSettings") then
             saveState.stRollSettings = U.clone(gameState.stRollSettings, true)
+        end
+    end
+
+    if gameState.coterieData and type(gameState.coterieData) == "table" then
+        if isValueSafeForState(gameState.coterieData, "coterieData") then
+            saveState.coterieData = U.clone(gameState.coterieData, true)
+        else
+            print("[WARNING] buildSaveState: coterieData omitted — failed isValueSafeForState")
         end
     end
 
