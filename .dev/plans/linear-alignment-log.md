@@ -284,5 +284,10 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-06-21 | DONE | TOR-227 | Palette parking snap Z offset — `D.CONTROL_BOARD_PALETTE_SNAP.parkingSnapLocalZOffset` 0.1; `lib/npc_control_board_palette.ttslua` |
 | 2026-06-21 | CREATE | TOR-228–231 | Projects human-gate design issues (External In Progress, High, parent TOR-38) |
 | 2026-06-21 | CREATE | TOR-232 | Projects system implementation (Backlog High; `blockedBy` TOR-228,229,230,231; related TOR-99, TOR-222) |
+| 2026-06-21 | INBOX | 3 items | TOR-233 PCS tracker width (shipped); TOR-234 NPC spotlight Y seat→stage; TOR-235 workshop figurine backs |
+| 2026-06-21 | DONE | TOR-233 | PCs panel — `pcs_track_damage`/`pcs_track_hum` 280px, panel width 680; `npm run build` OK |
+| 2026-06-21 | CREATE | TOR-234 | Bug NPC spotlight Y seat→lit stage (High Todo; parent TOR-169) |
+| 2026-06-21 | CREATE | TOR-235 | Workshop figurine back re-upload (`workshop-only`; parent TOR-43) |
+| 2026-06-21 | UPDATE | RUNNING TASKLIST **Focus** | TOR-221 #1; TOR-234 #2; TOR-169 #3; TOR-83 #4 |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

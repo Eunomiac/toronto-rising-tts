@@ -1,7 +1,7 @@
 <!-- Classes for Storyteller PCs panel (`panel_pcs.xml`). Seat tint `color` stays per-Panel; ids and row label text stay on elements. -->
 <!-- Agent guidance: .dev/tts-api/UI API/Defaults.md -->
 <Defaults>
-  <Panel class="pcs_panel_root" padding="6 6 6 6" width="620" color="rgba(0, 0, 0, 0.8)" />
+  <Panel class="pcs_panel_root" padding="6 6 6 6" width="680" color="rgba(0, 0, 0, 0.8)" />
   <VerticalLayout class="pcs_root_vl" spacing="8" childAlignment="UpperLeft" childForceExpandWidth="false" />
 
   <Panel class="pcs_seat_block" padding="6 8 6 8" />
@@ -15,8 +15,8 @@
   <Text class="pcs_prefix_wide" fontSize="11" fontStyle="Bold" color="#FFFFFF" preferredWidth="42" minWidth="42" flexibleWidth="0" alignment="MiddleLeft" />
   <Text class="pcs_prefix_hg" fontSize="11" fontStyle="Bold" color="#FFFFFF" preferredWidth="36" minWidth="36" flexibleWidth="0" alignment="MiddleLeft" />
 
-  <Text class="pcs_track_damage" fontSize="27" fontStyle="Bold" color="#EEEEEE" preferredWidth="110" minWidth="72" flexibleWidth="1" alignment="MiddleLeft" />
-  <Text class="pcs_track_hum" fontSize="27" fontStyle="Bold"  color="#E8DDFF" preferredWidth="110" minWidth="72" flexibleWidth="1" alignment="MiddleLeft" />
+  <Text class="pcs_track_damage" fontSize="27" fontStyle="Bold" color="#EEEEEE" preferredWidth="280" minWidth="280" flexibleWidth="0" alignment="MiddleLeft" />
+  <Text class="pcs_track_hum" fontSize="27" fontStyle="Bold"  color="#E8DDFF" preferredWidth="280" minWidth="280" flexibleWidth="0" alignment="MiddleLeft" />
 
   <Text class="pcs_buf_agg" fontSize="11" color="#FFCCCC" preferredWidth="34" minWidth="34" flexibleWidth="0" alignment="MiddleCenter" />
   <Text class="pcs_buf_neutral" fontSize="11" color="#EEEEEE" preferredWidth="34" minWidth="34" flexibleWidth="0" alignment="MiddleCenter" />
