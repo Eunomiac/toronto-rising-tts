@@ -318,7 +318,7 @@ local function eulerAxisFlippedDeg(deg)
     return norm > 90 and norm < 270
 end
 
---- Face-up ⇒ STANDARD when later read by `Gameboard.tokenLightModeFromFlip`; palette parking is OFF (face-down).
+--- Face-up ⇒ STANDARD when later read by `Gameboard.tokenLightModeFromFlip`; palette parking uses face-up (lights-on art).
 --- Prefer transform up-vector (matches control-board token logic); fall back to euler Z/X.
 --- @param token Object|nil
 --- @return boolean
@@ -348,7 +348,7 @@ local function paletteTokenIsFaceUp(token)
     return true
 end
 
---- Apply face-down parking rotation; re-apply once after snap settle (palette snaps use `rotation_snap`).
+--- Apply face-up parking rotation; re-apply once after snap settle (palette snaps use `rotation_snap`).
 --- @param palette Object
 --- @param token Object
 function Palette.applyPaletteParkingRotation(palette, token)
@@ -365,13 +365,13 @@ function Palette.applyPaletteParkingRotation(palette, token)
         if type(Palette.isTokenOnPaletteBoard) ~= "function" or not Palette.isTokenOnPaletteBoard(palette, token) then
             return
         end
-        if paletteTokenIsFaceUp(token) then
+        if not paletteTokenIsFaceUp(token) then
             token.setRotation(Palette.rotationForPaletteParking(palette))
         end
     end, 0.05)
 end
 
---- Palette parking: face-down (Z=180) so `tokenLightModeFromFlip` reads OFF on the control board.
+--- Palette parking: face-up (Z=0) so parked tokens show lights-on art.
 --- @param palette Object
 --- @return Vector
 function Palette.rotationForPaletteParking(palette)
@@ -381,7 +381,7 @@ function Palette.rotationForPaletteParking(palette)
         boardYaw = (boardRot and boardRot.y) or 0
     end
     local yawOffset = paletteSnapConfig().snapYawOffsetDeg
-    return Vector(0, boardYaw + yawOffset, 180)
+    return Vector(0, boardYaw + yawOffset, 0)
 end
 
 --- @param board Object|nil unused; kept for debug API stability
@@ -462,8 +462,8 @@ local function snapPointForGridIndex(board, snapIndex, usedRowCount)
     local lp = boardLocalFromUv(board, u, v)
     return {
         position = { lp.x, lp.y, lp.z },
-        --- Match `rotationForPaletteParking` (Y offset + Z flip = lights OFF on the control board).
-        rotation = { 0, yawDeg, 180 },
+        --- Match `rotationForPaletteParking` (board-local Y offset; Z=0 = face-up / lights-on art).
+        rotation = { 0, yawDeg, 0 },
         rotation_snap = true,
         tags = { TAG_TOKEN },
     }
@@ -770,12 +770,12 @@ function Palette.syncTokensToPalette(palette, options)
                 nearestIndex = snapPointsForFind[nearestSlot].snapIndex
             end
             local needPos = nearestIndex ~= wantIndex
-            local wasFaceUp = paletteTokenIsFaceUp(token)
+            local wasFaceDown = not paletteTokenIsFaceUp(token)
             if needPos then
                 token.setPosition(snapWorld[wantIndex])
             end
             Palette.applyPaletteParkingRotation(palette, token)
-            if needPos or wasFaceUp then
+            if needPos or wasFaceDown then
                 moved = moved + 1
             end
         end
@@ -800,7 +800,7 @@ function Palette.syncTokensToPalette(palette, options)
                             slotCorrect = snapPointsForFind[nearestSlot].snapIndex == wantIndex
                         end
                     end
-                    local wasFaceUp = paletteTokenIsFaceUp(token)
+                    local wasFaceDown = not paletteTokenIsFaceUp(token)
                     if not slotCorrect then
                         token.setPosition(snapWorld[wantIndex])
                     end
@@ -808,7 +808,7 @@ function Palette.syncTokensToPalette(palette, options)
                     if token.setInvisibleTo ~= nil then
                         token.setInvisibleTo(C.PlayerColors or {})
                     end
-                    if not slotCorrect or wasFaceUp then
+                    if not slotCorrect or wasFaceDown then
                         moved = moved + 1
                     end
                 end
@@ -819,7 +819,7 @@ function Palette.syncTokensToPalette(palette, options)
     return moved
 end
 
---- Park one token on its roster snap (face-down palette parking rotation).
+--- Park one token on its roster snap (face-up palette parking rotation).
 --- @param palette Object
 --- @param token Object
 --- @param characterKey string
