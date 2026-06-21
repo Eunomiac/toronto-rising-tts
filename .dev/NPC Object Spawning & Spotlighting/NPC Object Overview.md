@@ -46,8 +46,8 @@ NPC-specific (no fixed `position` / `rotation` in data):
 Do **not** split rotation into manual `rotX` / `rotY` / `rotZ` in data. The script:
 
 1. Reads figurine **axis-aligned bounds** (`getBounds()`).
-2. Computes **face target** in world space: horizontal center of bounds, Y = `topY - lookAtYShift * height`.
-3. Computes **light Y** = `topY - positionYShift * height` **+ scalar elevation** when registry `figurine.scale` > 53 (linear ramp from baseline 53; Ian Rammond scalar 63 anchor: +35.99 world Y, target Y ≈ 57).
+2. Computes **face target Y** = `topY - lookAtYShift * height` **+ face scalar ramp** when registry `figurine.scale` > 53 (Lord Lucien scalar 53 head ≈ 41.8; Ian Rammond scalar 63 head ≈ 57.91 → +16.11 world Y at ref).
+3. Computes **light Y** = `topY - positionYShift * height` **+ position scalar ramp** (default 0; tune `NPC_FIGURINE_LIGHT_CAL_POSITION_DELTA_Y` if the lamp body needs lift after aim is correct).
 4. **Horizontal placement:** from the figurine’s **position** `(px, pz)` (table center in XZ), let `dir = normalize(px, pz)` in the XZ plane (direction from table center `(0,0,0)` toward the NPC). Place the light at `(px + dir.x * distance, lightY, pz + dir.z * distance)` so it sits **outward** from the table center relative to the figure (consistent with figures facing the center).
 5. **Rotation:** `U.lookAtRotation(lightPosition, faceTarget)` → full pitch/yaw for the spotlight object.
 

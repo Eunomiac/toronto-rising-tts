@@ -142,10 +142,12 @@ local NPC_ACTIVE_LIGHT_SCALE = 1
 --- Custom Figurine ImageScalar at table seats (TTS figurine custom-property scale — not Transform `setScale`).
 local NPC_SEAT_FIGURINE_IMAGE_SCALAR = 53
 
---- Baseline registry scalar for bounds-based spotlight Y; larger cutouts need extra elevation (Ian Rammond cal).
+--- Baseline registry scalar for bounds-based spotlight Y; larger cutouts need look-at + position tweaks.
+--- Lord Lucien (53): head ≈ 41.8 — bounds formula correct with no extra. Ian Rammond (63): head ≈ 57.91.
 local NPC_FIGURINE_LIGHT_BASELINE_SCALAR = 53
 local NPC_FIGURINE_LIGHT_CAL_REF_SCALAR = 63
-local NPC_FIGURINE_LIGHT_CAL_REF_DELTA_Y = 35.99
+local NPC_FIGURINE_LIGHT_CAL_FACE_DELTA_Y = 16.11
+local NPC_FIGURINE_LIGHT_CAL_POSITION_DELTA_Y = 0
 
 --- Tolerance when comparing figurine ImageScalar before skipping `reload()`.
 local FIGURINE_IMAGE_SCALAR_EPS = 0.05
@@ -725,19 +727,35 @@ local function expectedFigurineImageScalarForNpcPlacement(npcName)
     return figurineImageScalarForNpc(npcName)
 end
 
---- Extra spotlight world Y for registry scalars above baseline (linear ramp; Ian Rammond anchor).
+--- Linear extra world Y for registry scalars above baseline (0 at scalar 53, full delta at ref scalar).
 --- @param scalar number
+--- @param refDeltaY number
 --- @return number
-local function extraNpcSpotlightLightYForScalar(scalar)
+local function extraNpcSpotlightScalarRampY(scalar, refDeltaY)
     local s = tonumber(scalar)
-    if s == nil or s <= NPC_FIGURINE_LIGHT_BASELINE_SCALAR then
+    local delta = tonumber(refDeltaY)
+    if s == nil or delta == nil or delta == 0 or s <= NPC_FIGURINE_LIGHT_BASELINE_SCALAR then
         return 0
     end
     local span = NPC_FIGURINE_LIGHT_CAL_REF_SCALAR - NPC_FIGURINE_LIGHT_BASELINE_SCALAR
     if span <= 0 then
         return 0
     end
-    return (s - NPC_FIGURINE_LIGHT_BASELINE_SCALAR) * (NPC_FIGURINE_LIGHT_CAL_REF_DELTA_Y / span)
+    return (s - NPC_FIGURINE_LIGHT_BASELINE_SCALAR) * (delta / span)
+end
+
+--- Extra look-at (face) world Y for large ImageScalar cutouts (Ian Rammond anchor).
+--- @param scalar number
+--- @return number
+local function extraNpcSpotlightFaceYForScalar(scalar)
+    return extraNpcSpotlightScalarRampY(scalar, NPC_FIGURINE_LIGHT_CAL_FACE_DELTA_Y)
+end
+
+--- Extra spotlight object world Y for large ImageScalar cutouts (modest; aim fix carries most of the lift).
+--- @param scalar number
+--- @return number
+local function extraNpcSpotlightLightYForScalar(scalar)
+    return extraNpcSpotlightScalarRampY(scalar, NPC_FIGURINE_LIGHT_CAL_POSITION_DELTA_Y)
 end
 
 --- Read current Custom Figurine ImageScalar (custom-property card scale), not Transform scale.
@@ -1683,8 +1701,9 @@ function NPCS.buildResolvedLightModeTable(npcName, modeKey)
     local lookFrac = tonumber(mode.lookAtYShift) or 0.5
     local posFrac = tonumber(mode.positionYShift) or 0.3
     local dist = tonumber(mode.distance) or 15
-    local faceY = topY - lookFrac * sy
-    local lightY = topY - posFrac * sy + extraNpcSpotlightLightYForScalar(figurineImageScalarForNpc(npcName))
+    local scalar = figurineImageScalarForNpc(npcName)
+    local faceY = topY - lookFrac * sy + extraNpcSpotlightFaceYForScalar(scalar)
+    local lightY = topY - posFrac * sy + extraNpcSpotlightLightYForScalar(scalar)
     local px, pz = cx, cz
     local len2 = px * px + pz * pz
     local ux, uz
