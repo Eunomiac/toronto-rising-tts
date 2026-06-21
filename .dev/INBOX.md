@@ -2,6 +2,8 @@
 
 ## Quick Fixes
 
+- [Roll Result Broadcast] When the Storyteller rolls multiple live rolls with the same NPC, a parenthetical index is added to the NPC's name (e.g. "Mara", "Mara (2)", etc.).  When the results of these secondary rolls are broadcast, the image of the NPC cutout is not resolved (because there is no "Mara (2)" cutout). Expected Behavior:  The parenthetical index should be pruned from the name before the NPC cutout image is derived.
+
 ## Active
 
 ---
