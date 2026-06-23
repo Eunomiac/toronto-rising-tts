@@ -310,5 +310,8 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-06-23 | CREATE | TOR-247 | Rotational seat index layout (Todo Medium; parent TOR-35; related TOR-66) |
 | 2026-06-23 | UPDATE | TOR-245 | `blockedBy` TOR-151 (default no-scene environment) |
 | 2026-06-23 | UPDATE | RUNNING TASKLIST | TOR-240–242 Done bullets; TOR-244/245/247 domain bullets; Focus Also-in-cycle |
+| 2026-06-23 | CREATE | TOR-248 | Multi-client TTS session workflow (External Todo, human-gate; parent TOR-141; blocks TOR-144) |
+| 2026-06-23 | UPDATE | TOR-144 | `blockedBy` TOR-248; removed from Focus stack |
+| 2026-06-23 | UPDATE | RUNNING TASKLIST **Focus** | #1 TOR-83, #2 TOR-236, #3 TOR-165; TOR-144 → Also in cycle |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

@@ -68,4 +68,6 @@ Full rules, layout (100-char banner with spaces around text), and a copy-paste t
 
 ## TOR-144 (multiplayer E2E)
 
-After solo suites pass, run **[Multiplayer-E2E.md](Multiplayer-E2E.md)** with a second real client — Host authority guards must prevent duplicate world I/O.
+**Prerequisite:** **TOR-248** (Establish multi-client TTS session workflow — External Todo, author human gate). Execution of the multiplayer playbook is blocked until you have a repeatable Host + join-client setup.
+
+After solo suites pass and **TOR-248** is satisfied, run **[Multiplayer-E2E.md](Multiplayer-E2E.md)** with a second real client — Host authority guards must prevent duplicate world I/O.
