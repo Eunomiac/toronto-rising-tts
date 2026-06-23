@@ -36,7 +36,7 @@ end
 --- @param statChanges table|nil merged condition statChanges for effective tracker math
 --- @return boolean
 function Derive.shouldDerivedBeActive(def, stats, activeConditions, statChanges)
-  if type(def) ~= "table" or def.kind ~= "derived" then
+  if type(def) ~= "table" or not CD.isAutoDerived(def) then
     return false
   end
   if type(def.derive) ~= "function" then
@@ -60,7 +60,7 @@ function Derive.evaluateDesiredDerived(stats, activeConditions, statChanges)
   end
   local active = type(activeConditions) == "table" and activeConditions or {}
   for id, def in pairs(CD.Defs) do
-    if type(def) == "table" and def.kind == "derived" then
+    if CD.isAutoDerived(def) then
       if Derive.shouldDerivedBeActive(def, stats, active, statChanges) then
         desired[id] = true
       end

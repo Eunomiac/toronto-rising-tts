@@ -39,7 +39,7 @@ end
 --- @param activeConditions table
 --- @return boolean
 local function rollSectionApplies(def, stats, activeConditions)
-  if (def.kind == "location" or def.kind == "scene") and type(def.derive) == "function" then
+  if CD.isSessionHostedCondition(def) and type(def.derive) == "function" then
     return def.derive(stats, activeConditions) == true
   end
   return true

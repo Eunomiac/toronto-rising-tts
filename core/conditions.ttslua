@@ -254,8 +254,11 @@ function Conditions.setManual(playerID, conditionId, instanceOrTrue)
     return
   end
   local def = CD.getDef(conditionId)
-  if def.kind ~= "manual" then
-    error("Conditions.setManual: \"" .. conditionId .. "\" is not a manual condition")
+  if def.canApplyManually ~= true then
+    error("Conditions.setManual: \"" .. conditionId .. "\" cannot be applied manually")
+  end
+  if type(def.instanceSchema) == "table" then
+    error("Conditions.setManual: \"" .. conditionId .. "\" requires setEvent with instance data")
   end
   local value = instanceOrTrue
   if value == nil then
@@ -274,8 +277,11 @@ function Conditions.setEvent(playerID, conditionId, instance)
     return
   end
   local def = CD.getDef(conditionId)
-  if def.kind ~= "event" then
-    error("Conditions.setEvent: \"" .. conditionId .. "\" is not an event condition")
+  if def.canApplyManually ~= true then
+    error("Conditions.setEvent: \"" .. conditionId .. "\" cannot be applied manually")
+  end
+  if type(def.instanceSchema) ~= "table" then
+    error("Conditions.setEvent: \"" .. conditionId .. "\" does not use instance data")
   end
   assertPersistedShape(conditionId, instance)
   S.setStateVal(instance, "playerData", playerID, "conditions", conditionId)
@@ -364,7 +370,7 @@ function Conditions.reconcileDerivedForPlayer(playerID)
   local changed = false
 
   for id, def in pairs(CD.Defs) do
-    if type(def) == "table" and def.kind == "derived" then
+    if CD.isAutoDerived(def) then
       local want = desired[id] == true
       local has = conditions[id] ~= nil
       local sticky = def.deriveSticky == true
@@ -398,7 +404,7 @@ function Conditions.reconcileDerivedAllPlayers()
   end
 end
 
---- Append validated location-kind condition ids from a district or site constants row.
+--- Append validated manually-applicable condition ids from a district or site constants row.
 --- @param out table<string, boolean>
 --- @param locRow table|nil
 --- @param sourceLabel string for errors
@@ -415,28 +421,26 @@ local function collectLocationIdsFromRow(out, locRow, sourceLabel)
       )
     end
     local def = CD.getDef(conditionId)
-    if def.kind ~= "location" then
+    if not CD.canListInSceneOrLocation(def) then
       error(
         "Conditions: "
           .. sourceLabel
           .. " references \""
           .. conditionId
-          .. "\" which is kind \""
-          .. tostring(def.kind)
-          .. "\" (expected location)"
+          .. "\" which has canApplyManually false (automatic-only conditions cannot be hosted)"
       )
     end
     out[conditionId] = true
   end
 end
 
---- @param kind string|nil
+--- @param def table|nil
 --- @return boolean
-local function isHostedKind(kind)
-  return kind == "location" or kind == "scene"
+local function isHostedConditionDef(def)
+  return CD.isSessionHostedCondition(def)
 end
 
---- Append scene-kind condition ids from `sessionScene.conditions`.
+--- Append scene condition ids from `sessionScene.conditions`.
 --- @param out table<string, boolean>
 local function collectSceneIdsFromSession(out)
   local arr = S.getStateVal("sessionScene", "conditions")
@@ -450,13 +454,11 @@ local function collectSceneIdsFromSession(out)
       )
     end
     local def = CD.getDef(conditionId)
-    if def.kind ~= "scene" then
+    if not CD.canListInSceneOrLocation(def) then
       error(
         "Conditions: sessionScene.conditions references \""
           .. conditionId
-          .. "\" which is kind \""
-          .. tostring(def.kind)
-          .. "\" (expected scene)"
+          .. "\" which has canApplyManually false (automatic-only conditions cannot be hosted)"
       )
     end
     out[conditionId] = true
@@ -492,7 +494,7 @@ function Conditions.collectLocationHostedIdsForSession()
   return desired
 end
 
---- Union of hosted condition ids: site + district (`location`) and `sessionScene.conditions` (`scene`).
+--- Union of hosted condition ids: site + district and `sessionScene.conditions` (all `canApplyManually` true).
 --- @return table<string, boolean>
 function Conditions.collectHostedIdsForSession()
   local desired = Conditions.collectLocationHostedIdsForSession()
@@ -508,7 +510,7 @@ local function isSeatPresentInScene(seatColor)
   return L.isPlayerPresentInActiveSeatLayout(seatColor)
 end
 
---- Reconcile hosted (`location` + `scene`) condition keys for one PC.
+--- Reconcile hosted conditions for one PC.
 --- @param playerID string
 --- @param desired table<string, boolean>
 --- @param present boolean
@@ -529,7 +531,7 @@ local function reconcileHostedForPlayer(playerID, desired, present, skipPresenta
   local changed = false
 
   for id, def in pairs(CD.Defs) do
-    if type(def) == "table" and isHostedKind(def.kind) and conditions[id] ~= nil then
+    if isHostedConditionDef(def) and conditions[id] ~= nil then
       if not present or desired[id] ~= true then
         S.setStateVal(nil, "playerData", playerID, "conditions", id)
         changed = true
@@ -563,7 +565,7 @@ local function reconcileHostedForPlayer(playerID, desired, present, skipPresenta
   return changed
 end
 
---- Apply or remove hosted conditions (location + scene) for all PCs at the current session.
+--- Apply or remove hosted conditions for all PCs at the current session.
 --- @param opts table|nil `{ skipPresentation = boolean? }` — when true, mutate only; caller must sync (e.g. `Sync.full`)
 function Conditions.reconcileHostedForSession(opts)
   local skipPresentation = type(opts) == "table" and opts.skipPresentation == true

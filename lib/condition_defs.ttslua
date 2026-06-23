@@ -1,13 +1,12 @@
 --[[
   Static registry of condition definitions (not persisted).
   Each derived condition owns a `derive(stats, activeConditions, statChanges?)` function.
-  Required on every entry: id, type ("roll"|"stat"|"ui"), displayName, kind.
+  Required on every entry: id, type ("roll"|"stat"|"ui"), displayName, canApplyManually (boolean).
   Agent guidance: .dev/PC Data & Tracking/Conditions System Guide.md
 ]]
 
 local CD = {}
 
-local C = require("lib.constants")
 local PSC = require("lib.pc_sheet_collect")
 
 --- Keys forbidden in persisted condition values (legacy inline factory payloads).
@@ -81,6 +80,20 @@ local function validateDefMetadata(def)
   if type(def.displayName) ~= "string" or def.displayName == "" then
     error("condition_defs: \"" .. tostring(def.id) .. "\" missing displayName")
   end
+  if type(def.canApplyManually) ~= "boolean" then
+    error(
+      "condition_defs: \""
+        .. tostring(def.id)
+        .. "\" missing canApplyManually (boolean)"
+    )
+  end
+  if def.canApplyManually == false and type(def.derive) ~= "function" then
+    error(
+      "condition_defs: \""
+        .. tostring(def.id)
+        .. "\" has canApplyManually false but no derive function"
+    )
+  end
 end
 
 --- @type table<string, table>
@@ -89,7 +102,7 @@ CD.Defs = {
     id = "torpor",
     type = "stat",
     displayName = "Torpor",
-    kind = "derived",
+    canApplyManually = true,
     priority = 100,
     deriveSticky = true,
     derive = function(stats, _activeConditions, statChanges)
@@ -112,7 +125,7 @@ CD.Defs = {
     id = "impairedHealth",
     type = "stat",
     displayName = "Impaired Health",
-    kind = "derived",
+    canApplyManually = false,
     priority = 40,
     suppressedBy = { "torpor" },
     derive = function(stats, _activeConditions, statChanges)
@@ -140,7 +153,7 @@ CD.Defs = {
     id = "impairedWillpower",
     type = "stat",
     displayName = "Impaired Willpower",
-    kind = "derived",
+    canApplyManually = false,
     priority = 40,
     suppressedBy = { "torpor" },
     derive = function(stats, _activeConditions, statChanges)
@@ -171,7 +184,7 @@ CD.Defs = {
     id = "impairedHumanity",
     type = "stat",
     displayName = "Impaired Humanity",
-    kind = "derived",
+    canApplyManually = false,
     priority = 50,
     derive = function(stats, _activeConditions, statChanges)
       if type(stats.humanity) ~= "table" then
@@ -200,7 +213,7 @@ CD.Defs = {
     id = "hudFrenzy",
     type = "ui",
     displayName = "Frenzy",
-    kind = "manual",
+    canApplyManually = true,
     priority = 30,
     statChanges = {},
     hud = { overlay = "overlay_frenzy" },
@@ -209,7 +222,7 @@ CD.Defs = {
     id = "hudBlindfold",
     type = "ui",
     displayName = "Blindfold",
-    kind = "event",
+    canApplyManually = true,
     priority = 70,
     instanceSchema = { variant = "number" },
     statChanges = {},
@@ -219,7 +232,7 @@ CD.Defs = {
     id = "bumpBloodPotency",
     type = "stat",
     displayName = "Blood Potency +1",
-    kind = "location",
+    canApplyManually = true,
     priority = 10,
     derive = function(stats, _activeConditions)
       return CD.statsHasBloodPotencyRating(stats)
@@ -230,7 +243,7 @@ CD.Defs = {
     id = "bonusWpReroll",
     type = "roll",
     displayName = "Bonus WP Reroll",
-    kind = "scene",
+    canApplyManually = true,
     priority = 15,
     statChanges = {},
     roll = { wpRerollCountBonus = 1 },
@@ -239,7 +252,7 @@ CD.Defs = {
     id = "noTakeHalf",
     type = "roll",
     displayName = "No Take Half",
-    kind = "standard",
+    canApplyManually = true,
     priority = 20,
     statChanges = {},
     roll = { takeHalfAllowed = false },
@@ -248,7 +261,7 @@ CD.Defs = {
     id = "noWPReroll",
     type = "roll",
     displayName = "No WP Reroll",
-    kind = "standard",
+    canApplyManually = true,
     priority = 20,
     statChanges = {},
     roll = { wpRerollAllowed = false },
@@ -257,7 +270,7 @@ CD.Defs = {
     id = "noHungerDice",
     type = "roll",
     displayName = "No Hunger Dice",
-    kind = "standard",
+    canApplyManually = true,
     priority = 20,
     statChanges = {},
     roll = { hungerDiceAllowed = false },
@@ -266,7 +279,7 @@ CD.Defs = {
     id = "noCriticals",
     type = "roll",
     displayName = "No Criticals",
-    kind = "standard",
+    canApplyManually = true,
     priority = 20,
     statChanges = {},
     roll = { countCriticalPairs = false },
@@ -275,7 +288,7 @@ CD.Defs = {
     id = "canRerollHunger",
     type = "roll",
     displayName = "Can Reroll Hunger",
-    kind = "standard",
+    canApplyManually = true,
     priority = 25,
     statChanges = {},
     roll = { wpCanRerollHunger = true },
@@ -284,9 +297,8 @@ CD.Defs = {
     id = "bestialNull",
     type = "roll",
     displayName = "Bestial Null",
-    kind = "standard",
+    canApplyManually = true,
     priority = 30,
-    rollVisibleForRollType = { [C.RollType.STANDARD] = true },
     statChanges = {},
     roll = { bestialNull = true },
   },
@@ -317,12 +329,49 @@ function CD.isKnownId(conditionId)
   return type(conditionId) == "string" and CD.Defs[conditionId] ~= nil
 end
 
---- Standard roll conditions shown in the ST Roll Options modal (type roll + kind standard).
+--- @param def table|nil
+--- @return boolean
+function CD.isAutoDerived(def)
+  return type(def) == "table" and def.canApplyManually == false
+end
+
+--- Scene / district / site condition lists may only reference manually applicable ids.
+--- @param def table|nil
+--- @return boolean
+function CD.canListInSceneOrLocation(def)
+  return type(def) == "table" and def.canApplyManually == true
+end
+
+--- Conditions reconciled by session hosting (location + scene), not ST UI toggles.
+--- @param def table|nil
+--- @return boolean
+function CD.isSessionHostedCondition(def)
+  if type(def) ~= "table" or def.canApplyManually ~= true or def.type == "ui" then
+    return false
+  end
+  return type(def.derive) == "function" or type(def.roll) == "table"
+end
+
+--- Roll conditions shown in the ST Roll Options modal (per-roll overlay toggles).
+--- @param def table|nil
+--- @return boolean
+function CD.isPerRollOptsCondition(def)
+  if type(def) ~= "table" or def.type ~= "roll" then
+    return false
+  end
+  if CD.STRUCTURAL_NEGATING_REVERSE[def.id] ~= nil then
+    return true
+  end
+  local roll = def.roll
+  return type(roll) == "table" and roll.bestialNull == true
+end
+
+--- Roll condition ids for the ST Roll Options modal.
 --- @return string[]
 function CD.listRollConditionIds()
   local ids = {}
   for id, def in pairs(CD.Defs) do
-    if type(def) == "table" and def.type == "roll" and def.kind == "standard" then
+    if CD.isPerRollOptsCondition(def) then
       ids[#ids + 1] = id
     end
   end
@@ -335,24 +384,6 @@ function CD.listRollConditionIds()
     return a < b
   end)
   return ids
-end
-
---- @param conditionId string
---- @param rollType string|nil
---- @return boolean
-function CD.isRollConditionVisibleForRollType(conditionId, rollType)
-  local def = CD.Defs[conditionId]
-  if type(def) ~= "table" then
-    return false
-  end
-  local vis = def.rollVisibleForRollType
-  if type(vis) ~= "table" then
-    return true
-  end
-  if type(rollType) ~= "string" or rollType == "" then
-    return false
-  end
-  return vis[rollType] == true
 end
 
 --- @param activeConditions table|nil

@@ -91,8 +91,8 @@
     // "chronicleWeatherFollowSchedule": true,
     // "chronicleWeatherManualHold": false,
 
-    // Optional: registry condition ids (kind = scene) for present PCs while scene is active.
-    "conditions": ["sceneBonusWpReroll"],
+    // Optional: registry condition ids (canApplyManually = true) for present PCs while scene is active.
+    "conditions": ["bonusWpReroll"],
 
     // Optional: applied on scene Apply → gameState.soundscape.
     // wind + rain + thunderstorm: ALL three set or ALL omitted (mixed is invalid).

@@ -36,7 +36,7 @@ local IMPORT_MISNESTED_SESSION_KEYS = {
     lightingPresetKey = "Move lightingPresetKey inside sessionScene.",
     isTopFogActive = "Move isTopFogActive inside sessionScene.",
     soundscapeNarrative = "Move soundscapeNarrative inside sessionScene.",
-    rollDefaults = "rollDefaults is removed — use sessionScene.conditions (array of registry ids with kind scene). Move rollDefaults inside sessionScene if mis-nested.",
+    rollDefaults = "rollDefaults is removed — use sessionScene.conditions (array of registry ids with canApplyManually true). Move rollDefaults inside sessionScene if mis-nested.",
     conditions = "Move conditions inside sessionScene.",
     tableKey = "Move tableKey inside sessionScene.",
     seatPresent = "Move seatPresent inside sessionScene.",
@@ -223,7 +223,7 @@ local function rejectRollDefaultsForImport(sessionScene)
     end
     if sessionScene.rollDefaults ~= nil then
         return false,
-            "sessionScene.rollDefaults: removed — use sessionScene.conditions (array of registry ids with kind scene). Per-rollType keys are not supported."
+            "sessionScene.rollDefaults: removed — use sessionScene.conditions (array of registry ids with canApplyManually true). Per-rollType keys are not supported."
     end
     return true, nil
 end
@@ -262,15 +262,13 @@ local function validateSessionSceneConditionsForImport(conditions)
                     .. "\"."
         end
         local def = CD.getDef(conditionId)
-        if def.kind ~= "scene" then
+        if not CD.canListInSceneOrLocation(def) then
             return false,
                 "sessionScene.conditions["
                     .. tostring(i)
                     .. "]: \""
                     .. conditionId
-                    .. "\" is kind \""
-                    .. tostring(def.kind)
-                    .. "\" — scene import only allows kind scene (location ids belong on C.Sites / C.Districts)."
+                    .. "\" has canApplyManually false — only manually applicable conditions may be listed on import."
         end
     end
     return true, nil

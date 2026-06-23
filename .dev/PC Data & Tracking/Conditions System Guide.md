@@ -8,17 +8,24 @@ Canonical reference for creating or changing **any** condition in Toronto Rising
 
 > **Read this section first.** Full detail is in the sections below.
 
-### Which kind?
+### `canApplyManually`
 
-| Situation | `kind` | Typical mutation |
-| --- | --- | --- |
-| Auto from stats (damage, humanity stains, …) | `derived` | `Conditions.reconcileDerivedForPlayer` on stat paths; load |
-| Storyteller panel toggle (frenzy, blindfold) | `manual` | `Conditions.setManual` / `clear` |
-| Scene-driven (transition blindfold) | `event` | `Conditions.setEvent` / `clear` |
-| District/site while PC is **present** at scene | `location` | `conditions` on `C.Districts` / `C.Sites` row + `reconcileHostedForSession` |
-| Scene bundle while PC is **present** | `scene` | `conditions` array on `sessionScene` (Scene Constructor import) + `reconcileHostedForSession` |
+| Value | Meaning |
+| --- | --- |
+| `false` | Automatic only (e.g. torpor, impaired health). Has `derive`; never listed on scene/location import; never `setManual` / `setEvent`. |
+| `true` | May be applied manually, listed on `sessionScene.conditions` / `C.Districts` / `C.Sites`, or toggled from ST UI. May still have `derive` for gating (e.g. `bumpBloodPotency`). |
 
-**Effect type** (stat vs roll) is **not** a `kind` — use registry channels (`statChanges`, `roll`, `hud`, `lighting`). A hosted row may reference roll conditions, stat conditions, or both (e.g. `bumpBloodPotency` on Dupont is stat; `sceneBonusWpReroll` is roll).
+**Effect type** (`type` = roll | stat | ui) is separate from manual applicability — use registry channels (`statChanges`, `roll`, `hud`, `lighting`).
+
+### Typical mutation paths
+
+| Situation | Typical mutation |
+| --- | --- |
+| Auto from stats (damage, humanity stains, …) | `canApplyManually = false` → `reconcileDerivedForPlayer` on stat paths; load |
+| Storyteller panel toggle (frenzy) | `canApplyManually = true`, no `instanceSchema` → `setManual` / `clear` |
+| Instance payload (blindfold variant) | `canApplyManually = true`, `instanceSchema` → `setEvent` / `clear` |
+| District/site while PC is **present** | `canApplyManually = true` on `C.Districts` / `C.Sites` row + `reconcileHostedForSession` |
+| Scene bundle while PC is **present** | `canApplyManually = true` on `sessionScene.conditions` (Scene Constructor import) + `reconcileHostedForSession` |
 
 ### Which effect channels?
 
@@ -31,31 +38,29 @@ Canonical reference for creating or changing **any** condition in Toronto Rising
 
 ### Checklist
 
-1. Add entry to [`lib/condition_defs.ttslua`](../../lib/condition_defs.ttslua): `id`, `kind`, `priority`, effect channels.
-2. If `derived`, `location`, or `scene`: add `derive(stats, activeConditions, statChanges?)`; optional `deriveSticky`, `suppressedBy`. Derived reconcile passes merged `statChanges` from `Effects.resolveForPlayer`.
+1. Add entry to [`lib/condition_defs.ttslua`](../../lib/condition_defs.ttslua): `id`, `type`, `displayName`, `canApplyManually`, `priority`, effect channels.
+2. If `canApplyManually = false`: add `derive(stats, activeConditions, statChanges?)`; optional `deriveSticky`, `suppressedBy`. If `canApplyManually = true` with hosting: optional `derive` for gating at reconcile time.
 3. Wire **mutation** (skip if reconcile handles it):
-   - Stats → `Conditions.reconcileDerivedForPlayer` on the mutation path
-   - Hosted (location or scene) → `conditions` on district/site row or `sessionScene.conditions`; `reconcileHostedForSession` on scene lifecycle hooks
-   - ST toggle → `Conditions.setManual` / `clear`
-   - Scene event → `Conditions.setEvent` / `clear`
+   - Auto (`canApplyManually = false`) → `Conditions.reconcileDerivedForPlayer` on the mutation path
+   - Hosted → `conditions` on district/site row or `sessionScene.conditions`; `reconcileHostedForSession` on scene lifecycle hooks
+   - ST toggle (no `instanceSchema`) → `Conditions.setManual` / `clear`
+   - Instance payload → `Conditions.setEvent` / `clear`
 4. Roll effect → add `roll = { ... }`; pick tier (§6). Tier 1 = registry only; Tier 3 = handler module.
 5. New HUD overlay → `ui/.templates/panel_overlays.xml` + `HO.allManagedOverlayIdsForSeat`.
 6. Update `ConditionId` in [PC Tracking doc](PC%20Tracking%20&%20State%20Behavior.md) if adding a new id.
 7. **Do not** scatter `CD.Defs` / `playerData.conditions` reads in consumers; **do not** hide reconciliation inside state setters.
 
-### Kind decision tree
+### Decision tree
 
 ```
-Auto from current stats?
-  → derived (+ reconcileDerivedForPlayer on relevant stat writes)
-Tied to district/site while present?
-  → location (+ row in C.Districts / C.Sites)
-Scene-specific while present?
-  → scene (+ sessionScene.conditions in Scene Constructor import)
-ST toggles in panel?
-  → manual
-Scene transition / one-shot instance?
-  → event (+ instanceSchema if needed)
+Auto from current stats only (never manual / scene list)?
+  → canApplyManually = false (+ derive + reconcileDerivedForPlayer on stat writes)
+Listed on district/site or sessionScene.conditions?
+  → canApplyManually = true (+ optional derive for gating)
+ST toggles in panel (boolean)?
+  → canApplyManually = true, no instanceSchema → setManual
+Needs instance payload (blindfold variant)?
+  → canApplyManually = true, instanceSchema → setEvent
 ```
 
 ### Roll effect decision tree (only if `roll` channel needed)
@@ -114,30 +119,24 @@ Do not embed world side effects in `S.setStateVal` for stats without an explicit
 
 ---
 
-## 2. Condition kinds
+## 2. `canApplyManually`
 
-### `derived`
+### `canApplyManually = false` (automatic only)
 
-- `derive(stats, activeConditions)` returns whether the condition **should** be active.
+- Requires `derive(stats, activeConditions, statChanges?)`.
 - `Conditions.reconcileDerivedForPlayer` adds/removes keys from stats (+ `suppressedBy`, `deriveSticky`).
 - `deriveSticky = true` (torpor): reconcile **adds** when derive is true; **never auto-removes** when false — only `Conditions.clear`.
+- **Cannot** appear on `sessionScene.conditions`, district/site rows, or `setManual` / `setEvent`.
 
-### `manual`
+### `canApplyManually = true`
 
-- Set/cleared by Storyteller: `Conditions.setManual(playerID, id, true | instance)`.
-- No `derive` function.
+- May be listed on scene import, `C.Districts` / `C.Sites`, or applied via ST APIs.
+- **Boolean toggle:** no `instanceSchema` → `Conditions.setManual(playerID, id, true)`.
+- **Instance payload:** `instanceSchema` present → `Conditions.setEvent(playerID, id, instance)` (e.g. blindfold `variant` 1..6).
+- **Hosted session:** `Conditions.reconcileHostedForSession` applies listed ids to **present** PCs only. Unions site/district rows and `sessionScene.conditions`.
+- Optional `derive` gates who receives a hosted key and when effects apply (e.g. `bumpBloodPotency` only for vampires with BP).
 
-### `event`
-
-- Scene-driven with required instance: `Conditions.setEvent(playerID, id, instance)`.
-- `instanceSchema` on registry entry (e.g. blindfold `variant` 1..6).
-
-### `location`
-
-- Listed on `C.Districts[*].conditions` and/or `C.Sites[*].conditions` (string refs).
-- `Conditions.reconcileHostedForSession` applies to **present** PCs only (`L.isPlayerPresentInActiveSeatLayout`). Unions site/district (`location`) and `sessionScene.conditions` (`scene`).
-- Optional `opts.skipPresentation = true`: mutation only — use when the caller will run `Sync.full` (avoids double HUD/light apply via `afterChange`).
-- Optional `derive` gates who receives the key and presentation effects.
+Pass `{ skipPresentation = true }` to `reconcileHostedForSession` when the caller runs `Sync.full` immediately afterward.
 
 ---
 
@@ -176,13 +175,13 @@ See §6. Snapshot on `active.rollPolicy` at roll initiate; `RC` reads policy onl
 
 ---
 
-## 5. Registry examples (one per kind)
+## 5. Registry examples
 
-**Derived — torpor** (`deriveSticky`, suppressed downstream impaired health via separate `suppressedBy` on those entries):
+**Automatic — torpor** (`canApplyManually = false`, `deriveSticky`, suppressed downstream impaired health via separate `suppressedBy` on those entries):
 
 ```lua
 torpor = {
-  kind = "derived",
+  canApplyManually = false,
   priority = 100,
   deriveSticky = true,
   derive = function(stats, _activeConditions) ... end,
@@ -191,34 +190,34 @@ torpor = {
 }
 ```
 
-**Manual — hudFrenzy:**
+**Manual ST toggle — hudFrenzy:**
 
 ```lua
 hudFrenzy = {
-  kind = "manual",
+  canApplyManually = true,
   priority = 30,
   hud = { overlay = "overlay_frenzy" },
 }
 ```
 
-**Standard roll — bestialNull:** `kind = "standard"`, `type = "roll"`, `roll = { bestialNull = true }`. Shown in Roll Options modal (Standard rolls only). Dice-E2E Suite F applies via `rollE2eApplyConditions("Brown", { "bestialNull" })`.
+**Per-roll overlay — bestialNull:** `type = "roll"`, `canApplyManually = true`, `roll = { bestialNull = true }`. Shown in Roll Options modal for all roll types. Dice-E2E Suite F applies via `rollE2eApplyConditions("Brown", { "bestialNull" })`.
 
-**Event — hudTransitionBlindfold:**
+**Event instance — hudBlindfold:**
 
 ```lua
-hudTransitionBlindfold = {
-  kind = "event",
+hudBlindfold = {
+  canApplyManually = true,
   priority = 70,
   instanceSchema = { variant = "number" },
   hud = { blindfoldVariant = true },
 }
 ```
 
-**Location — bumpBloodPotency** (Dupont district):
+**Hosted location — bumpBloodPotency** (Dupont district):
 
 ```lua
 bumpBloodPotency = {
-  kind = "location",
+  canApplyManually = true,
   priority = 10,
   derive = function(stats, _activeConditions)
     return CD.statsHasBloodPotencyRating(stats)
@@ -283,23 +282,24 @@ Conditions may declare **`roll = { ... }`**. At `RC.initiateRoll`, `Conditions.r
 ### Roll examples
 
 ```lua
--- Tier 1: double Blood Surge bonus dice
+-- Tier 1: double Blood Surge bonus dice (automatic from stats)
 doubleBloodSurge = {
-  kind = "derived",
+  canApplyManually = false,
   priority = 20,
+  derive = function(stats) ... end,
   roll = { bloodSurgeDiceMultiplier = 2 },
 }
 
--- Tier 1: allow Hunger dice on WP reroll
+-- Tier 1: allow Hunger dice on WP reroll (hosted or manual)
 allowHungerWpReroll = {
-  kind = "manual",
+  canApplyManually = true,
   priority = 15,
   roll = { wpCanRerollHunger = true },
 }
 
 -- Tier 3: mandatory full reroll on WP spend (handler stub)
 compulsionFullReroll = {
-  kind = "manual",
+  canApplyManually = true,
   priority = 80,
   roll = {
     wpRerollScope = "all_mandatory",
@@ -321,7 +321,7 @@ Implementation checklist: [`.dev/plans/roll-conditions-policy-layer.md`](../plan
 
 ## 7. Walkthrough — add a derived stat penalty
 
-1. Add `myCondition` to `CD.Defs` with `kind = "derived"`, `derive`, `statChanges`, optional `hud`/`lighting`.
+1. Add `myCondition` to `CD.Defs` with `canApplyManually = false`, `derive`, `statChanges`, optional `hud`/`lighting`.
 2. Call `Conditions.reconcileDerivedForPlayer(playerID)` from the stat mutation path that should trigger it.
 3. No sheet/HUD/light code changes if using existing channels.
 4. Test with `DEBUG.dumpConditions(seatColor)`.

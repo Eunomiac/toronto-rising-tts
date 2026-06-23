@@ -8,7 +8,7 @@ Toronto Rising stores **which** conditions are active in `gameState.playerData[i
 
 | Module | Role |
 | --- | --- |
-| `lib/condition_defs.ttslua` | Registry: per-condition `derive(stats, activeConditions, statChanges?)`, effects, priority |
+| `lib/condition_defs.ttslua` | Registry: per-condition `derive(stats, activeConditions, statChanges?)`, effects, priority, `canApplyManually` |
 | `lib/condition_derive.ttslua` | Generic derive wrapper (`suppressedBy`); passes merged `statChanges` into derive |
 | `lib/condition_effects.ttslua` | Pure merge → `statChanges`, `hudElementIds`, `lightingModes` |
 | `lib/condition_roll_policies.ttslua` | Pure merge → roll policy snapshot |
@@ -28,13 +28,13 @@ conditions = {
 
 Legacy inline payloads (`statChanges`, `hudChanges`, `lightingModeChanges`) **error on load**.
 
-## Derived condition shape
+## Automatic conditions (`canApplyManually = false`)
 
-Each derived entry owns its derivation logic:
+Each automatic entry owns its derivation logic:
 
 ```lua
 impairedHealth = {
-  kind = "derived",
+  canApplyManually = false,
   priority = 40,
   suppressedBy = { "torpor" },
   derive = function(stats, _activeConditions, statChanges)
@@ -50,21 +50,19 @@ impairedHealth = {
 
 Optional `deriveSticky = true` (e.g. torpor): reconcile may add when derive is true, but never auto-removes when derive is false.
 
-Manual/event conditions have no `derive` function — set/cleared by callers.
-
-## Hosted conditions (`location` + `scene`)
+## Hosted conditions (scene + location lists)
 
 Optional `conditions = { "conditionId", ... }` on:
 
-- `C.Districts[*]` and `C.Sites[*]` — registry keys with `kind = "location"`
-- `sessionScene` (Scene Constructor import) — registry keys with `kind = "scene"`
+- `C.Districts[*]` and `C.Sites[*]`
+- `sessionScene` (Scene Constructor import)
 
-Stat vs roll behavior is defined by registry **effect channels** (`statChanges`, `roll`, …), not by hosting source.
+Each id must have **`canApplyManually = true`**. Stat vs roll behavior is defined by registry **effect channels** (`statChanges`, `roll`, …), not by hosting source.
 
 `Conditions.reconcileHostedForSession()` unions site + district + `sessionScene.conditions`, then for each PC:
 
 - **Present** (`L.isPlayerPresentInActiveSeatLayout`) — add missing hosted keys when optional `derive(stats, …)` passes; remove keys no longer listed or failing derive.
-- **Absent** — remove all `location` and `scene` keys.
+- **Absent** — remove session-hosted stat/roll conditions (not UI toggles like `hudFrenzy`).
 
 Pass `{ skipPresentation = true }` when the caller runs `Sync.full` immediately afterward (scene apply, location apply, table switch, load). The caller must also run `PCST.refreshAllCharacterSheets()` after `Sync.full` (`StorytellerScenesPanel.reconcileHostedSyncAndPresentSheets`).
 
@@ -74,24 +72,24 @@ Example registry entries:
 
 ```lua
 bumpBloodPotency = {
-  kind = "location",
+  canApplyManually = true,
   derive = function(stats, _activeConditions)
     return CD.statsHasBloodPotencyRating(stats)
   end,
   statChanges = { bloodPotency = 1 },
 }
 
-sceneBonusWpReroll = {
-  kind = "scene",
+bonusWpReroll = {
+  canApplyManually = true,
   roll = { wpRerollCountBonus = 1 },
 }
 ```
 
-Effect resolution re-checks `derive` for hosted kinds so presentation stays gated if stats change without a reconcile pass.
+Effect resolution re-checks `derive` for session-hosted conditions with a derive function so presentation stays gated if stats change without a reconcile pass.
 
 ## Adding a condition
 
-See the **8-step checklist** in [Conditions System Guide §0](../../.dev/PC%20Data%20&%20Tracking/Conditions%20System%20Guide.md#agent-quick-guide--adding-or-changing-a-condition). Roll effects: Guide §6.
+See the **checklist** in [Conditions System Guide §0](../../.dev/PC%20Data%20&%20Tracking/Conditions%20System%20Guide.md#agent-quick-guide--adding-or-changing-a-condition). Roll effects: Guide §6.
 
 ## When conditions refresh
 

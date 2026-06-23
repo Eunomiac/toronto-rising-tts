@@ -8,7 +8,7 @@ Before adding or changing any condition, read the **Agent quick guide** in [`.de
 
 ## Contract
 
-- **Registry:** `lib/condition_defs.ttslua` — kinds (`derived`, `manual`, `event`, `location`), effect channels (`statChanges`, `hud`, `lighting`, `roll`).
+- **Registry:** `lib/condition_defs.ttslua` — `canApplyManually` (boolean), effect channels (`statChanges`, `hud`, `lighting`, `roll`).
 - **Persisted:** `playerData.conditions` stores active ids (+ instance data only); never inline effect payloads.
 - **Mutation:** reconcile / `setManual` / `setEvent` / `clear` / location reconcile — then `Conditions.afterChange` (per-player presentation; mirrors `Sync.player` without requiring `core.sync`).
 - **Presentation:** consumers call `Conditions.resolveForPlayer(playerID)` — do not scatter `CD.Defs` reads.

@@ -68,7 +68,7 @@ end
 
 --- Merge all active conditions for one player into resolved effect channels.
 --- @param activeConditions table|nil
---- @param stats table|nil used for location-kind derive gating at resolve time
+--- @param stats table|nil used for hosted derive gating at resolve time
 --- @param seatColor string
 --- @return table { statChanges = table, hudElementIds = table, lightingModes = table }
 function Effects.resolveForPlayer(activeConditions, stats, seatColor)
@@ -93,7 +93,7 @@ function Effects.resolveForPlayer(activeConditions, stats, seatColor)
       local instance = validatedInstance(activeConditions[conditionId], def)
 
       local applyEffects = true
-      if (def.kind == "location" or def.kind == "scene") and type(def.derive) == "function" then
+      if CD.isSessionHostedCondition(def) and type(def.derive) == "function" then
         applyEffects = def.derive(stats, activeConditions) == true
       end
       if applyEffects then

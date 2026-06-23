@@ -338,7 +338,7 @@ function S.GetDefaultGameState()
             chronicleWeatherFollowSchedule = true,
             --- When true, chronicle weather is not auto-applied on clock updates (manual soundscape override). Scene Constructor import may set this from the same narrative weather triple.
             chronicleWeatherManualHold = false,
-            --- Registry condition ids active for present PCs while this scene is applied (`kind = "scene"`).
+            --- Registry condition ids active for present PCs while this scene is applied (`canApplyManually` true).
             conditions = {},
             --- Optional narrative soundscape columns consumed on scene apply (maps into `gameState.soundscape` / chronicle flags; no parallel weather stream).
             soundscapeNarrative = {},
