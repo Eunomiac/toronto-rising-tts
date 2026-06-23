@@ -7,6 +7,7 @@
 
 local CD = {}
 
+local C = require("lib.constants")
 local PSC = require("lib.pc_sheet_collect")
 
 --- Keys forbidden in persisted condition values (legacy inline factory payloads).
@@ -208,16 +209,6 @@ CD.Defs = {
     id = "hudBlindfold",
     type = "ui",
     displayName = "Blindfold",
-    kind = "manual",
-    priority = 60,
-    instanceSchema = { variant = "number" },
-    statChanges = {},
-    hud = { blindfoldVariant = true },
-  },
-  hudTransitionBlindfold = {
-    id = "hudTransitionBlindfold",
-    type = "ui",
-    displayName = "Transition Blindfold",
     kind = "event",
     priority = 70,
     instanceSchema = { variant = "number" },
@@ -235,25 +226,14 @@ CD.Defs = {
     end,
     statChanges = { bloodPotency = 1 },
   },
-  sceneBonusWpReroll = {
-    id = "sceneBonusWpReroll",
+  bonusWpReroll = {
+    id = "bonusWpReroll",
     type = "roll",
     displayName = "Bonus WP Reroll",
     kind = "scene",
     priority = 15,
     statChanges = {},
     roll = { wpRerollCountBonus = 1 },
-  },
-  sceneVitaeCharge = {
-    id = "sceneVitaeCharge",
-    type = "stat",
-    displayName = "Vitae Charge",
-    kind = "scene",
-    priority = 12,
-    derive = function(stats, _activeConditions)
-      return CD.statsHasBloodPotencyRating(stats)
-    end,
-    statChanges = { bloodPotency = 1 },
   },
   noTakeHalf = {
     id = "noTakeHalf",
@@ -306,7 +286,7 @@ CD.Defs = {
     displayName = "Bestial Null",
     kind = "standard",
     priority = 30,
-    rollVisibleForRollType = { STANDARD = true },
+    rollVisibleForRollType = { [C.RollType.STANDARD] = true },
     statChanges = {},
     roll = { bestialNull = true },
   },
