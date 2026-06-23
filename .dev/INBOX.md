@@ -4,8 +4,6 @@
 
 ## Active
 
---
-
 ---
 
 ## Needs clarification
@@ -20,6 +18,12 @@
 
 ## Processed
 
+2026-06-23 TOR-240 — No Take Half player panel phase label (shipped)
+2026-06-23 TOR-241 — Player dice spawn arc RING_STEP 1.5 (shipped)
+2026-06-23 TOR-242 — CONTROL_BOARD seat row lower-left u/v (shipped)
+2026-06-23 TOR-244 — Scene library selection preview + edit-before-apply (promoted)
+2026-06-23 TOR-245 — Map pins last active location + timestamp (promoted; blockedBy TOR-151)
+2026-06-23 TOR-247 — Rotational seat index layout (promoted)
 2026-06-21 Roll broadcast NPC cutout — prune ST duplicate-roll label suffix " (N)" before cutout lookup (`roll_ui.resolveRollFigureAssetKey`)
 2026-06-21 Clear off-world tokens — Y-aware board/palette surface checks; confirmed Clear parks fallen tokens
 2026-06-21 Clear first-click lag — arm confirm only (no stray recovery scan on first click)

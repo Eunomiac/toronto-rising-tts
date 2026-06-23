@@ -13,7 +13,7 @@ local G = require("lib.guids")
 
 RADIUS   = 8
 -- Player staging rings (concentric arcs around the Normal bag). Normal ring uses RADIUS.
-RING_STEP = 2
+RING_STEP = 1.5
 SPAWN_RING_HUNGER = 1
 SPAWN_RING_NORMAL = 2
 SPAWN_RING_ROUSE = 3
@@ -210,15 +210,19 @@ local function worldArcPoint(bagColor, arcCenter, i, total, radius)
     return { x = world.x, y = STAGING_WORLD_Y, z = world.z }
 end
 
+local spawnPostRollDie
+
 function spawnDieRedirect(params)
     if type(params) ~= "table" or type(params.bagColor) ~= "string" or type(params.dieType) ~= "string" then
         return
+    end
+    if params.postRollModify == true then
+        return spawnPostRollDie(params)
     end
     spawnDie(params.bagColor, params.dieType, {
         bloodSurgePool = params.bloodSurgePool == true,
         bloodSurgeRouse = params.bloodSurgeRouse == true,
         arcCenter = params.arcCenter,
-        postRollModify = params.postRollModify == true,
     })
 end
 
@@ -283,8 +287,52 @@ function spawnDie(bagColor, dieType, opts)
         bloodSurgeRouse = bloodSurgeRouse,
         stagedCount = #spawnedDice,
         manualRouseCount = bagKind == DK.KIND_ROUSE and countManualRouseDice() or nil,
-        postRollModify = opts.postRollModify == true,
     })
+end
+
+--- POST_ROLL ST correction: one die above the tray (no arc reposition of existing pool dice).
+-- @param params table  { bagColor: string, dieType: string }
+-- @return string|nil die GUID
+spawnPostRollDie = function(params)
+    params = type(params) == "table" and params or {}
+    local bagColor = params.bagColor
+    local dieType = params.dieType
+    if Global ~= nil and type(Global.call) == "function" then
+        if Global.call("GlobalRequireHostForWorldMutation", { context = "dice_bag.spawnPostRollDie" }) ~= true then
+            return nil
+        end
+    end
+    if type(bagColor) ~= "string" or type(dieType) ~= "string" then
+        return nil
+    end
+    local scatterPos = Global.call("GlobalDiceTrayScatterPosition", { color = bagColor })
+    if type(scatterPos) ~= "table" then
+        print("[DiceBag] spawnPostRollDie: no tray scatter position for " .. tostring(bagColor))
+        return nil
+    end
+    local die = self.takeObject({
+        position = scatterPos,
+        rotation = randomRotation(),
+    })
+    if die == nil then
+        print("[DiceBag] spawnPostRollDie: takeObject returned nil (bag GUID " .. tostring(self.getGUID()) .. ")")
+        return nil
+    end
+
+    die.setScale({ SCALE, SCALE, SCALE })
+    die.setLock(true)
+    die.script_state = " "
+
+    Global.call("GlobalTagDieForActiveRoll", {
+        color = bagColor,
+        dieGuid = die.getGUID(),
+    })
+    Global.call("GlobalOnBagDieSpawned", {
+        color = bagColor,
+        dieType = dieType,
+        postRollModify = true,
+    })
+    return die.getGUID()
 end
 
 --- Tags staged dice with the active roll id when leave-container did not run (E2E auto-spawn path).
@@ -509,21 +557,6 @@ function releaseDice(params)
     if isStorytellerBag() then
         spawnedDice = {}
     end
-end
-
---- Unlocks the last staged die and drops bag tracking (ST post-roll pool add).
--- @return string|nil die GUID
-function releaseLastStagedPostRollDie()
-    if #spawnedDice == 0 then
-        return nil
-    end
-    local die = spawnedDice[#spawnedDice]
-    table.remove(spawnedDice, #spawnedDice)
-    if die == nil then
-        return nil
-    end
-    die.setLock(false)
-    return die.getGUID()
 end
 
 function destroyDice()

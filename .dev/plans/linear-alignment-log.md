@@ -296,5 +296,19 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-06-23 | UPDATE | TOR-144 | Removed stale `blockedBy` TOR-221 (Done) |
 | 2026-06-23 | DONE | TOR-239 | Scene `conditions` import; deprecate `rollDefaults`; `reconcileHostedForSession` |
 | 2026-06-23 | UPDATE | RUNNING TASKLIST | TOR-239 bullet Scenes Panel; TOR-85 reconcile API name |
+| 2026-06-23 | DONE | TOR-162 | ST per-roll Opts modal persist/apply — author confirmed; commits `c5ed049`, `7989820`, `db0f2b4`, `0a5f839` |
+| 2026-06-23 | DONE | TOR-209 | Roll panel active conditions display — batched with TOR-162 |
+| 2026-06-23 | DONE | TOR-243 | Block scene/table layout while loose `d10` on table — author confirmed guard |
+| 2026-06-23 | DONE | TOR-246 | ST POST_ROLL D/H/N pool modification on dashboard — commit `e60fab7` |
+| 2026-06-23 | UPDATE | RUNNING TASKLIST **Focus** | Roll conditions slice (TOR-162 + TOR-209) moved to Done this cycle; added TOR-243, TOR-246 bullets |
+| 2026-06-23 | INBOX | 6 items | Quick fixes TOR-240–242 (shipped); Active promotions TOR-244, TOR-245, TOR-247 |
+| 2026-06-23 | DONE | TOR-240 | No Take Half player PRE_ROLL label — `core/roll_ui.ttslua` |
+| 2026-06-23 | DONE | TOR-241 | Player dice spawn arc — `RING_STEP` 2→1.5 in `objects/dice_bag.ttslua` |
+| 2026-06-23 | DONE | TOR-242 | CONTROL_BOARD seat row lower-left — `D.CONTROL_BOARD_SEAT_ROW` u/v |
+| 2026-06-23 | CREATE | TOR-244 | Scene library selection preview + edit-before-apply (Todo Medium; parent TOR-33) |
+| 2026-06-23 | CREATE | TOR-245 | Map pins last active location + timestamp (Todo Medium; parent TOR-37; related TOR-89) |
+| 2026-06-23 | CREATE | TOR-247 | Rotational seat index layout (Todo Medium; parent TOR-35; related TOR-66) |
+| 2026-06-23 | UPDATE | TOR-245 | `blockedBy` TOR-151 (default no-scene environment) |
+| 2026-06-23 | UPDATE | RUNNING TASKLIST | TOR-240–242 Done bullets; TOR-244/245/247 domain bullets; Focus Also-in-cycle |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

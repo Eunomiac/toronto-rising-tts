@@ -737,6 +737,7 @@ local function phaseLabel(active, color)
         local pool       = active.pool or {}
         local totalPool  = (pool.normal or 0) + (pool.hunger or 0)
         local noTakeHalf = C.RollTypesNoTakeHalf[active.rollType]
+            or not RO.getForActive(active, RO.ROLL_TAKE_HALF)
 
         if totalPool == 0 then
             return "Ready — Assemble Your Dice Pool"
