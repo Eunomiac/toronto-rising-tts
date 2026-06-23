@@ -2,7 +2,7 @@
 
 /**
  * Composes ST Roll Options modal XML from ui/.templates/roll/roll_options_modal.xml.
- * Roll condition buttons are generated from lib/condition_defs.ttslua (type roll + kind standard).
+ * Roll condition buttons are generated from lib/condition_defs.ttslua (per-roll overlay toggles).
  * Run: node .dev/scripts/generate_roll_options_modal_xml.js
  */
 
@@ -56,7 +56,14 @@ function readStandardRollConditions(defsPath) {
   let match;
   while ((match = entryRe.exec(body)) !== null) {
     const block = match[2];
-    if (!/type\s*=\s*"roll"/.test(block) || !/kind\s*=\s*"standard"/.test(block)) {
+    if (!/type\s*=\s*"roll"/.test(block)) {
+      continue;
+    }
+    const isNegating = /\b(noTakeHalf|noWPReroll|noHungerDice|noCriticals|canRerollHunger)\b/.test(
+      match[1]
+    );
+    const hasBestialNull = /bestialNull\s*=\s*true/.test(block);
+    if (!isNegating && !hasBestialNull) {
       continue;
     }
     const idMatch = block.match(/id\s*=\s*"([^"]+)"/);
@@ -73,7 +80,7 @@ function readStandardRollConditions(defsPath) {
     return a.id.localeCompare(b.id);
   });
   if (entries.length === 0) {
-    throw new Error("No standard roll conditions found in CD.Defs");
+    throw new Error("No per-roll overlay roll conditions found in CD.Defs");
   }
   return entries;
 }

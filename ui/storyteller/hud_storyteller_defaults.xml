@@ -155,5 +155,8 @@
   <Panel class="grid_strip_cell_hunger" color = "rgba(1, 0, 0, 0.15)" />
   <Panel class="grid_strip_cell_normal" color = "rgba(0.5, 0.5, 0.5, 0.15)" />
   <Panel class="grid_strip_cell_difficulty" color = "rgba(0, 1, 0, 0.15)" />
+  <Text class="grid_strip_cell_difficulty_text" fontSize="9" fontStyle="Bold" />
+  <Text class="grid_strip_cell_hunger_text" fontSize="9" fontStyle="Bold" />
+  <Text class="grid_strip_cell_normal_text" fontSize="9" fontStyle="Bold" />
 
 </Defaults>

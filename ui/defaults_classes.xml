@@ -252,4 +252,102 @@
     outline = "rgba(1, 1, 0, 1)"
     padding = "25 25 25 25"
   />
+
+  <!-- Roll Options Panel Classes -->
+
+  <Panel class="rollOpts_modal"
+    visibility="Black|Host"
+    active="False"
+    rectAlignment="MiddleCenter"
+    offsetXY="0 0"
+    width="460"
+    padding="16 16 16 16"
+    childForceExpandHeight="false" />
+
+  <VerticalLayout class="rollOpts_modal_content"
+    spacing="10"
+    childAlignment="UpperCenter"
+    childForceExpandWidth="true"
+    color="#1A1A1AE6"
+    padding = "10 10 10 10" />
+
+  <Text class="rollOpts_modal_description"
+    fontSize="11"
+    color="#888888"
+    alignment="MiddleCenter" />
+
+  <Text class="rollOpts_modal_title"
+   fontSize="18"
+   fontStyle="Bold"
+   color="#C9A84C"
+   alignment="MiddleCenter" />
+
+  <Text class="rollOpts_modal_header"
+   fontSize="16"
+   fontStyle="Bold"
+   color="#CCCCCC"
+   alignment="MiddleCenter" />
+
+  <Text class="rollOpts_modal_subheader"
+   fontSize="12"
+   fontStyle="Bold"
+   color="#FFDDCC"
+   alignment="MiddleCenter" />
+
+  <HorizontalLayout class="rollOpts_modal_horiz_toggle_container"
+    minHeight = "30"
+    preferredHeight = "30"
+    flexibleHeight = "0"
+    childAlignment = "MiddleCenter"
+    spacing="4"
+    padding="4 0 8 0" />
+
+  <HorizontalLayout class="rollOpts_modal_horiz_input_container"
+    minHeight = "30"
+    preferredHeight = "30"
+    flexibleHeight = "0"
+    childAlignment = "MiddleCenter"
+    spacing="4"
+    padding="4 0 8 0" />
+
+  <Button class="rollOpts_toggle"
+    fontSize = "11"
+    fontStyle = "Bold" />
+
+  <Button class="rollOpts_toggle_on"
+    color = "#00FF00"
+    textColor = "#000000" />
+  <Button class="rollOpts_toggle_off"
+    color = "#999999"
+    textColor = "#FFFFFF" />
+
+  <Text class="rollOpts_modal_input_label"
+    fontSize="11"
+    color="#AAAAAA"
+    alignment="MiddleRight" />
+
+  <InputField class="rollOpts_modal_input_field"
+    fontSize="13"
+    preferredWidth="28"
+    minWidth="28"
+    flexibleWidth="0"
+    minHeight = "28"
+    padding = "0 0 0 0"
+    fontStyle = "Bold"
+    onValueChanged="HUD_rollOptsInputChanged"
+    onEndEdit="HUD_rollOptsInputChanged" />
+
+  <HorizontalLayout class="rollOpts_modal_horiz_button_container"
+   spacing="12"
+   childAlignment="MiddleCenter"
+   padding="8 0 0 0" />
+
+  <VerticalLayout class="rollOpts_conditions_column" childForceExpandWidth="true" />
+
+  <Button class="rollOpts_button"
+    fontSize="14"
+    preferredWidth="120"
+    preferredHeight="32"
+    textColor = "#FFFFFF"
+    fontStyle = "Bold" />
 </Defaults>

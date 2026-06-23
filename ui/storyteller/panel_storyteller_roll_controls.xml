@@ -26,7 +26,9 @@
   <Text class="rollPanelST_ragePool_text" fontSize="24" color="#FF8C00" />
 
   <HorizontalLayout class="rollPanelST_dicePool" height="20" rectAlignment = "UpperCenter" childAlignment = "MiddleLeft" padding = "100 0 0 0" spacing="10" childForceExpandWidth="false" />
-
+  <Text class="grid_strip_cell_hunger_text" fontSize="9" fontStyle="Bold" color="#FFFFFF" />
+  <Text class="grid_strip_cell_normal_text" fontSize="9" fontStyle="Bold" color="#FFFFFF" />
+  <Text class="grid_strip_cell_difficulty_text" fontSize="9" fontStyle="Bold" color="#FFFFFF" />
 
   <HorizontalLayout class="rollPanelST_diceRolls_container" spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false" childForceExpandHeight="false" minHeight="48" preferredHeight="48" />
   <Image class="rollPanelST_die" active="false" preferredWidth="30" preserveAspect="True" />
@@ -75,25 +77,59 @@ UI.setAttributes("rollPanelST_header_container", {color = "rgba(1, 0, 0, 0.15)",
 
     <!-- Grid Strip Control: Hunger Dice -->
     <GridLayout id="gridStrip_rollPanelST_hunger" class="grid_strip grid_strip_hunger">
-      <Panel id="gridStrip_rollPanelST_hunger_1" class="grid_strip_cell grid_strip_cell_hunger" />
-      <Panel id="gridStrip_rollPanelST_hunger_2" class="grid_strip_cell grid_strip_cell_hunger" />
-      <Panel id="gridStrip_rollPanelST_hunger_3" class="grid_strip_cell grid_strip_cell_hunger" />
-      <Panel id="gridStrip_rollPanelST_hunger_4" class="grid_strip_cell grid_strip_cell_hunger" />
-      <Panel id="gridStrip_rollPanelST_hunger_5" class="grid_strip_cell grid_strip_cell_hunger" />
+      <Panel id="gridStrip_rollPanelST_hunger_1" class="grid_strip_cell grid_strip_cell_hunger" >
+
+      <!--
+      UI.setAttributes("db_gridStrip_rollPanelST_hunger_1_text", {fontSize = "9", fontStyle = "Bold", color="#FFFFFF"})
+      -->
+        <Text id="db_gridStrip_rollPanelST_hunger_1_text" class="grid_strip_cell_hunger_text" text="1" />
+      </Panel>
+      <Panel id="gridStrip_rollPanelST_hunger_2" class="grid_strip_cell grid_strip_cell_hunger" >
+        <Text id="db_gridStrip_rollPanelST_hunger_2_text" class="grid_strip_cell_hunger_text" text="2" />
+      </Panel>
+      <Panel id="gridStrip_rollPanelST_hunger_3" class="grid_strip_cell grid_strip_cell_hunger" >
+        <Text id="db_gridStrip_rollPanelST_hunger_3_text" class="grid_strip_cell_hunger_text" text="3" />
+      </Panel>
+      <Panel id="gridStrip_rollPanelST_hunger_4" class="grid_strip_cell grid_strip_cell_hunger" >
+        <Text id="db_gridStrip_rollPanelST_hunger_4_text" class="grid_strip_cell_hunger_text" text="4" />
+      </Panel>
+      <Panel id="gridStrip_rollPanelST_hunger_5" class="grid_strip_cell grid_strip_cell_hunger" >
+        <Text id="db_gridStrip_rollPanelST_hunger_5_text" class="grid_strip_cell_hunger_text" text="5" />
+      </Panel>
     </GridLayout>
 
     <!-- Grid Strip Control: Normal Dice -->
     <GridLayout id="gridStrip_rollPanelST_normal" class="grid_strip grid_strip_normal">
-      <Panel id="gridStrip_rollPanelST_normal_1" class="grid_strip_cell grid_strip_cell_normal"  />
-      <Panel id="gridStrip_rollPanelST_normal_2" class="grid_strip_cell grid_strip_cell_normal"  />
-      <Panel id="gridStrip_rollPanelST_normal_3" class="grid_strip_cell grid_strip_cell_normal"  />
-      <Panel id="gridStrip_rollPanelST_normal_4" class="grid_strip_cell grid_strip_cell_normal"  />
-      <Panel id="gridStrip_rollPanelST_normal_5" class="grid_strip_cell grid_strip_cell_normal"  />
-      <Panel id="gridStrip_rollPanelST_normal_6" class="grid_strip_cell grid_strip_cell_normal"  />
-      <Panel id="gridStrip_rollPanelST_normal_7" class="grid_strip_cell grid_strip_cell_normal"  />
-      <Panel id="gridStrip_rollPanelST_normal_8" class="grid_strip_cell grid_strip_cell_normal"  />
-      <Panel id="gridStrip_rollPanelST_normal_9" class="grid_strip_cell grid_strip_cell_normal"  />
-      <Panel id="gridStrip_rollPanelST_normal_10" class="grid_strip_cell grid_strip_cell_normal"  />
+      <Panel id="gridStrip_rollPanelST_normal_1" class="grid_strip_cell grid_strip_cell_normal" >
+        <Text id="db_gridStrip_rollPanelST_normal_1_text" class="grid_strip_cell_normal_text" text="1" />
+      </Panel>
+      <Panel id="gridStrip_rollPanelST_normal_2" class="grid_strip_cell grid_strip_cell_normal" >
+        <Text id="db_gridStrip_rollPanelST_normal_2_text" class="grid_strip_cell_normal_text" text="2" />
+      </Panel>
+      <Panel id="gridStrip_rollPanelST_normal_3" class="grid_strip_cell grid_strip_cell_normal" >
+        <Text id="db_gridStrip_rollPanelST_normal_3_text" class="grid_strip_cell_normal_text" text="3" />
+      </Panel>
+      <Panel id="gridStrip_rollPanelST_normal_4" class="grid_strip_cell grid_strip_cell_normal" >
+        <Text id="db_gridStrip_rollPanelST_normal_4_text" class="grid_strip_cell_normal_text" text="4" />
+      </Panel>
+      <Panel id="gridStrip_rollPanelST_normal_5" class="grid_strip_cell grid_strip_cell_normal" >
+        <Text id="db_gridStrip_rollPanelST_normal_5_text" class="grid_strip_cell_normal_text" text="5" />
+      </Panel>
+      <Panel id="gridStrip_rollPanelST_normal_6" class="grid_strip_cell grid_strip_cell_normal" >
+        <Text id="db_gridStrip_rollPanelST_normal_6_text" class="grid_strip_cell_normal_text" text="6" />
+      </Panel>
+      <Panel id="gridStrip_rollPanelST_normal_7" class="grid_strip_cell grid_strip_cell_normal" >
+        <Text id="db_gridStrip_rollPanelST_normal_7_text" class="grid_strip_cell_normal_text" text="7" />
+      </Panel>
+      <Panel id="gridStrip_rollPanelST_normal_8" class="grid_strip_cell grid_strip_cell_normal" >
+        <Text id="db_gridStrip_rollPanelST_normal_8_text" class="grid_strip_cell_normal_text" text="8" />
+      </Panel>
+      <Panel id="gridStrip_rollPanelST_normal_9" class="grid_strip_cell grid_strip_cell_normal" >
+        <Text id="db_gridStrip_rollPanelST_normal_9_text" class="grid_strip_cell_normal_text" text="9" />
+      </Panel>
+      <Panel id="gridStrip_rollPanelST_normal_10" class="grid_strip_cell grid_strip_cell_normal" >
+        <Text id="db_gridStrip_rollPanelST_normal_10_text" class="grid_strip_cell_normal_text" text="10" />
+      </Panel>
     </GridLayout>
 
     <!-- Grid Strip Control: Difficulty -->
@@ -101,17 +137,39 @@ UI.setAttributes("rollPanelST_header_container", {color = "rgba(1, 0, 0, 0.15)",
     <!--
     UI.setAttributes("gridStrip_rollPanelST_difficulty_0", {offsetXY = "0 10", outline = "#FF0000", outlineSize = "1 1"})
     -->
-      <Panel id="gridStrip_rollPanelST_difficulty_0" class="grid_strip_cell grid_strip_cell_difficulty" outline = "#FF0000" outlineSize = "1 1" />
-      <Panel id="gridStrip_rollPanelST_difficulty_1" class="grid_strip_cell grid_strip_cell_difficulty"  />
-      <Panel id="gridStrip_rollPanelST_difficulty_2" class="grid_strip_cell grid_strip_cell_difficulty"  />
-      <Panel id="gridStrip_rollPanelST_difficulty_3" class="grid_strip_cell grid_strip_cell_difficulty"  />
-      <Panel id="gridStrip_rollPanelST_difficulty_4" class="grid_strip_cell grid_strip_cell_difficulty"  />
-      <Panel id="gridStrip_rollPanelST_difficulty_5" class="grid_strip_cell grid_strip_cell_difficulty"  />
-      <Panel id="gridStrip_rollPanelST_difficulty_6" class="grid_strip_cell grid_strip_cell_difficulty"  />
-      <Panel id="gridStrip_rollPanelST_difficulty_7" class="grid_strip_cell grid_strip_cell_difficulty"  />
-      <Panel id="gridStrip_rollPanelST_difficulty_8" class="grid_strip_cell grid_strip_cell_difficulty"  />
-      <Panel id="gridStrip_rollPanelST_difficulty_9" class="grid_strip_cell grid_strip_cell_difficulty"  />
-      <Panel id="gridStrip_rollPanelST_difficulty_10" class="grid_strip_cell grid_strip_cell_difficulty"  />
+      <Panel id="gridStrip_rollPanelST_difficulty_0" class="grid_strip_cell grid_strip_cell_difficulty" outline = "#FF0000" outlineSize = "1 1">
+        <Text id="db_gridStrip_rollPanelST_difficulty_0_text" class="grid_strip_cell_difficulty_text" text="0" />
+      </Panel>
+      <Panel id="gridStrip_rollPanelST_difficulty_1" class="grid_strip_cell grid_strip_cell_difficulty" >
+        <Text id="db_gridStrip_rollPanelST_difficulty_1_text" class="grid_strip_cell_difficulty_text" text="1" />
+      </Panel>
+      <Panel id="gridStrip_rollPanelST_difficulty_2" class="grid_strip_cell grid_strip_cell_difficulty" >
+        <Text id="db_gridStrip_rollPanelST_difficulty_2_text" class="grid_strip_cell_difficulty_text" text="2" />
+      </Panel>
+      <Panel id="gridStrip_rollPanelST_difficulty_3" class="grid_strip_cell grid_strip_cell_difficulty" >
+        <Text id="db_gridStrip_rollPanelST_difficulty_3_text" class="grid_strip_cell_difficulty_text" text="3" />
+      </Panel>
+      <Panel id="gridStrip_rollPanelST_difficulty_4" class="grid_strip_cell grid_strip_cell_difficulty" >
+        <Text id="db_gridStrip_rollPanelST_difficulty_4_text" class="grid_strip_cell_difficulty_text" text="4" />
+      </Panel>
+      <Panel id="gridStrip_rollPanelST_difficulty_5" class="grid_strip_cell grid_strip_cell_difficulty" >
+        <Text id="db_gridStrip_rollPanelST_difficulty_5_text" class="grid_strip_cell_difficulty_text" text="5" />
+      </Panel>
+      <Panel id="gridStrip_rollPanelST_difficulty_6" class="grid_strip_cell grid_strip_cell_difficulty" >
+        <Text id="db_gridStrip_rollPanelST_difficulty_6_text" class="grid_strip_cell_difficulty_text" text="6" />
+      </Panel>
+      <Panel id="gridStrip_rollPanelST_difficulty_7" class="grid_strip_cell grid_strip_cell_difficulty" >
+        <Text id="db_gridStrip_rollPanelST_difficulty_7_text" class="grid_strip_cell_difficulty_text" text="7" />
+      </Panel>
+      <Panel id="gridStrip_rollPanelST_difficulty_8" class="grid_strip_cell grid_strip_cell_difficulty" >
+        <Text id="db_gridStrip_rollPanelST_difficulty_8_text" class="grid_strip_cell_difficulty_text" text="8" />
+      </Panel>
+      <Panel id="gridStrip_rollPanelST_difficulty_9" class="grid_strip_cell grid_strip_cell_difficulty" >
+        <Text id="db_gridStrip_rollPanelST_difficulty_9_text" class="grid_strip_cell_difficulty_text" text="9" />
+      </Panel>
+      <Panel id="gridStrip_rollPanelST_difficulty_10" class="grid_strip_cell grid_strip_cell_difficulty" >
+        <Text id="db_gridStrip_rollPanelST_difficulty_10_text" class="grid_strip_cell_difficulty_text" text="10" />
+      </Panel>
     </GridLayout>
 
   </HorizontalLayout>
