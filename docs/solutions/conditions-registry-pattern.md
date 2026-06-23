@@ -52,20 +52,25 @@ Optional `deriveSticky = true` (e.g. torpor): reconcile may add when derive is t
 
 Manual/event conditions have no `derive` function — set/cleared by callers.
 
-## Location-hosted conditions
+## Hosted conditions (`location` + `scene`)
 
-Optional `conditions = { "conditionId", ... }` on `C.Districts[*]` and `C.Sites[*]` (string refs to registry keys with `kind = "location"`).
+Optional `conditions = { "conditionId", ... }` on:
 
-`Conditions.reconcileLocationHostedForScene()` unions site + district ids from `sessionScene`, then for each PC:
+- `C.Districts[*]` and `C.Sites[*]` — registry keys with `kind = "location"`
+- `sessionScene` (Scene Constructor import) — registry keys with `kind = "scene"`
 
-- **Present** (`L.isPlayerPresentInActiveSeatLayout`) — add missing location keys when optional `derive(stats, …)` passes; remove keys no longer listed or failing derive.
-- **Absent** — remove all location-kind keys (location effects do not apply off-scene).
+Stat vs roll behavior is defined by registry **effect channels** (`statChanges`, `roll`, …), not by hosting source.
 
-Pass `{ skipPresentation = true }` when the caller runs `Sync.full` immediately afterward (scene apply, location apply, table switch, load) to avoid double HUD/light reconciliation. The caller must also run `PCST.refreshAllCharacterSheets()` after `Sync.full` so CSHEET page 1 dots and BP decals reflect location `statChanges` (`StorytellerScenesPanel` centralizes this in `reconcileLocationSyncAndPresentSheets`).
+`Conditions.reconcileHostedForSession()` unions site + district + `sessionScene.conditions`, then for each PC:
+
+- **Present** (`L.isPlayerPresentInActiveSeatLayout`) — add missing hosted keys when optional `derive(stats, …)` passes; remove keys no longer listed or failing derive.
+- **Absent** — remove all `location` and `scene` keys.
+
+Pass `{ skipPresentation = true }` when the caller runs `Sync.full` immediately afterward (scene apply, location apply, table switch, load). The caller must also run `PCST.refreshAllCharacterSheets()` after `Sync.full` (`StorytellerScenesPanel.reconcileHostedSyncAndPresentSheets`).
 
 Triggers: location Apply, scene library apply, End scene, seat presence toggle, table switch, game load.
 
-Example registry entry:
+Example registry entries:
 
 ```lua
 bumpBloodPotency = {
@@ -75,9 +80,14 @@ bumpBloodPotency = {
   end,
   statChanges = { bloodPotency = 1 },
 }
+
+sceneBonusWpReroll = {
+  kind = "scene",
+  roll = { wpRerollCountBonus = 1 },
+}
 ```
 
-Effect resolution re-checks `derive` for location kind so presentation stays gated if stats change without a reconcile pass.
+Effect resolution re-checks `derive` for hosted kinds so presentation stays gated if stats change without a reconcile pass.
 
 ## Adding a condition
 

@@ -289,5 +289,12 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-06-21 | CREATE | TOR-234 | Bug NPC spotlight Y seat→lit stage (High Todo; parent TOR-169) |
 | 2026-06-21 | CREATE | TOR-235 | Workshop figurine back re-upload (`workshop-only`; parent TOR-43) |
 | 2026-06-21 | UPDATE | RUNNING TASKLIST **Focus** | TOR-221 #1; TOR-234 #2; TOR-169 #3; TOR-83 #4 |
+| 2026-06-23 | CREATE | TOR-236 | NPC vs PC control token contract (Todo High; parent TOR-169; related TOR-95, TOR-180) |
+| 2026-06-23 | CREATE | TOR-237 | Control board Read/Lock/Load toolbar (Todo High; parent TOR-169) |
+| 2026-06-23 | CREATE | TOR-238 | Hover token → stage figurine spotlight preview (Todo Medium; parent TOR-169; related TOR-172; not TOR-98 game phase) |
+| 2026-06-23 | UPDATE | TOR-95 | `blockedBy` TOR-236; removed stale `blockedBy` TOR-180 (Done) |
+| 2026-06-23 | UPDATE | TOR-144 | Removed stale `blockedBy` TOR-221 (Done) |
+| 2026-06-23 | DONE | TOR-239 | Scene `conditions` import; deprecate `rollDefaults`; `reconcileHostedForSession` |
+| 2026-06-23 | UPDATE | RUNNING TASKLIST | TOR-239 bullet Scenes Panel; TOR-85 reconcile API name |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

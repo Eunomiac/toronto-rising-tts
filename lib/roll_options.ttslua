@@ -143,20 +143,6 @@ function RO.seedActiveRoll(active)
     U.Val("RO.seedActiveRoll()", {active = active},
         type(active) == "table", "active must be a table")
     active.rollOptions = RO.defaultsForRollType(active.rollType)
-    local sceneRoll = S.getStateVal("sessionScene", "rollDefaults")
-    if type(sceneRoll) == "table" then
-        local forType = sceneRoll[active.rollType]
-        if type(forType) ~= "table" then
-            forType = sceneRoll.all
-        end
-        if type(forType) == "table" then
-            for k, v in pairs(forType) do
-                if v ~= nil then
-                    active.rollOptions[k] = v
-                end
-            end
-        end
-    end
     RO.sanitizeRollOptions(active)
 end
 

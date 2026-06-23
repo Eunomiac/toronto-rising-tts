@@ -2,6 +2,8 @@
 
 Implemented per the Conditions System plan (registry-driven, hard migration, no legacy shims). Roll policy layer: [Conditions System Guide §6](../PC%20Data%20&%20Tracking/Conditions%20System%20Guide.md#6-roll-policy-layer).
 
+**Scene-hosted conditions + `rollDefaults` removal:** [unified-hosted-conditions-and-scene-import.md](unified-hosted-conditions-and-scene-import.md)
+
 ## Layout
 
 - `lib/condition_defs.ttslua` — definitions (per-condition `derive` functions)

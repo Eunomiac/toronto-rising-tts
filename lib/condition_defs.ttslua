@@ -208,10 +208,28 @@ CD.Defs = {
     id = "bumpBloodPotency",
     kind = "location",
     priority = 10,
-    --- Active for vampires with a Blood Potency rating (location reconciler sets the key).
+    --- Active for vampires with a Blood Potency rating (hosted reconciler sets the key).
     --- @param stats table
     --- @param _activeConditions table|nil
     --- @return boolean
+    derive = function(stats, _activeConditions)
+      return CD.statsHasBloodPotencyRating(stats)
+    end,
+    statChanges = { bloodPotency = 1 },
+  },
+  --- Scene-import example: extra WP reroll while scene is active (see `sessionScene.conditions`).
+  sceneBonusWpReroll = {
+    id = "sceneBonusWpReroll",
+    kind = "scene",
+    priority = 15,
+    statChanges = {},
+    roll = { wpRerollCountBonus = 1 },
+  },
+  --- Scene-import example: +1 Blood Potency while scene is active (vampires only).
+  sceneVitaeCharge = {
+    id = "sceneVitaeCharge",
+    kind = "scene",
+    priority = 12,
     derive = function(stats, _activeConditions)
       return CD.statsHasBloodPotencyRating(stats)
     end,

@@ -91,15 +91,8 @@
     // "chronicleWeatherFollowSchedule": true,
     // "chronicleWeatherManualHold": false,
 
-    // Optional: merged into active.rollOptions on roll start (keys: roll type or "all").
-    "rollDefaults": {
-      "all": {
-        "numberOfRerolls": 1
-      },
-      "standard": {
-        "bestialNull": false
-      }
-    },
+    // Optional: registry condition ids (kind = scene) for present PCs while scene is active.
+    "conditions": ["sceneBonusWpReroll"],
 
     // Optional: applied on scene Apply → gameState.soundscape.
     // wind + rain + thunderstorm: ALL three set or ALL omitted (mixed is invalid).

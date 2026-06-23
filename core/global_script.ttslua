@@ -1458,7 +1458,7 @@ function onLoad(saved_data)
     local Conditions = require("core.conditions")
     Conditions.validateAllPersisted()
     Conditions.reconcileDerivedAllPlayers()
-    Conditions.reconcileLocationHostedForScene({ skipPresentation = true })
+    Conditions.reconcileHostedForSession({ skipPresentation = true })
 
     -- AssetBundles often resume Unity looping AudioSources from the save before reconcile runs; mute stray loops immediately.
     setStartupAction("soundscape-bootstrap-silence")

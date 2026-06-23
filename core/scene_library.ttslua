@@ -12,6 +12,7 @@ local SceneLibrary = {}
 
 local C = require("lib.constants")
 local U = require("lib.util")
+local CD = require("lib.condition_defs")
 local NpcPlacementsConvert = require("lib.npc_placements_convert")
 
 --- Highest `schemaVersion` this build accepts from import JSON.
@@ -35,7 +36,8 @@ local IMPORT_MISNESTED_SESSION_KEYS = {
     lightingPresetKey = "Move lightingPresetKey inside sessionScene.",
     isTopFogActive = "Move isTopFogActive inside sessionScene.",
     soundscapeNarrative = "Move soundscapeNarrative inside sessionScene.",
-    rollDefaults = "Move rollDefaults inside sessionScene.",
+    rollDefaults = "rollDefaults is removed — use sessionScene.conditions (array of registry ids with kind scene). Move rollDefaults inside sessionScene if mis-nested.",
+    conditions = "Move conditions inside sessionScene.",
     tableKey = "Move tableKey inside sessionScene.",
     seatPresent = "Move seatPresent inside sessionScene.",
     npcRoleOverride = "Remove npcRoleOverride from import root — it is rebuilt from seatSlots inside sessionScene.",
@@ -175,6 +177,13 @@ local function normalizeSeatSlotsForImport(sessionScene)
     end
     SceneLibrary.syncNpcRoleOverrideFromSeatSlots(out)
     applyChronicleWeatherFromSoundscapeForImport(out)
+    if type(out.conditions) == "table" then
+        local condCopy = {}
+        for i, id in ipairs(out.conditions) do
+            condCopy[i] = id
+        end
+        out.conditions = condCopy
+    end
     if type(out.npcWorld) == "table" then
         local migrated = NpcPlacementsConvert.mergeByAreaIntoPlacements(out.npcWorld)
         if migrated > 0 then
@@ -204,75 +213,64 @@ end
 
 local NARRATIVE_CLOCK_DATETIME_KEYS = { "year", "month", "day", "hour", "minute" }
 
---- Roll-type keys allowed under `sessionScene.rollDefaults` (must match `active.rollType` or `all`).
-local ROLL_DEFAULTS_TYPE_KEYS = { all = true }
-for _, rollType in pairs(C.RollType or {}) do
-    if type(rollType) == "string" and rollType ~= "" then
-        ROLL_DEFAULTS_TYPE_KEYS[rollType] = true
-    end
-end
-
---- Per-roll option keys allowed under each `rollDefaults` entry (`lib/roll_options.ttslua` `RO.ROLL_*`).
-local ROLL_DEFAULTS_OPTION_KEYS = {
-    takeHalf = "boolean",
-    wpReroll = "boolean",
-    hungerDice = "boolean",
-    bestialNull = "boolean",
-    crits = "boolean",
-    canRerollHunger = "boolean",
-    numberOfRerolls = "number",
-    numberOfDiceRerolled = "number",
-}
-
---- @param rollDefaults table|nil
+--- Rejects deprecated `sessionScene.rollDefaults` (use `conditions` array instead).
+--- @param sessionScene table|nil
 --- @return boolean ok
 --- @return string|nil err
-local function validateRollDefaultsForImport(rollDefaults)
-    if rollDefaults == nil then
+local function rejectRollDefaultsForImport(sessionScene)
+    if type(sessionScene) ~= "table" then
         return true, nil
     end
-    if type(rollDefaults) ~= "table" then
-        return false, "sessionScene.rollDefaults: must be an object if present."
+    if sessionScene.rollDefaults ~= nil then
+        return false,
+            "sessionScene.rollDefaults: removed — use sessionScene.conditions (array of registry ids with kind scene). Per-rollType keys are not supported."
     end
-    for typeKey, opts in pairs(rollDefaults) do
-        if ROLL_DEFAULTS_TYPE_KEYS[typeKey] ~= true then
+    return true, nil
+end
+
+--- Validates `sessionScene.conditions` for Scene Constructor import.
+--- @param conditions any
+--- @return boolean ok
+--- @return string|nil err
+local function validateSessionSceneConditionsForImport(conditions)
+    if conditions == nil then
+        return true, nil
+    end
+    if type(conditions) ~= "table" then
+        return false, "sessionScene.conditions: must be an array of condition id strings if present."
+    end
+    local n = #conditions
+    for k, _ in pairs(conditions) do
+        if type(k) ~= "number" then
+            return false, "sessionScene.conditions: must be an array (numeric indices only), not an object."
+        end
+    end
+    for i = 1, n do
+        local conditionId = conditions[i]
+        if type(conditionId) ~= "string" or string.match(conditionId, "%S") == nil then
             return false,
-                "sessionScene.rollDefaults."
-                    .. tostring(typeKey)
-                    .. ": unknown roll type — use all or a C.RollType value (e.g. standard, simpleCheck, rouse)."
+                "sessionScene.conditions["
+                    .. tostring(i)
+                    .. "]: expected non-empty string condition id."
         end
-        if type(opts) ~= "table" then
-            return false, "sessionScene.rollDefaults." .. tostring(typeKey) .. ": must be an object."
+        if not CD.isKnownId(conditionId) then
+            return false,
+                "sessionScene.conditions["
+                    .. tostring(i)
+                    .. "]: unknown condition id \""
+                    .. conditionId
+                    .. "\"."
         end
-        for optKey, optVal in pairs(opts) do
-            local expectedType = ROLL_DEFAULTS_OPTION_KEYS[optKey]
-            if expectedType == nil then
-                return false,
-                    "sessionScene.rollDefaults."
-                        .. tostring(typeKey)
-                        .. "."
-                        .. tostring(optKey)
-                        .. ": unknown roll option — use takeHalf, wpReroll, hungerDice, bestialNull, crits, canRerollHunger, numberOfRerolls, or numberOfDiceRerolled."
-            end
-            if expectedType == "boolean" then
-                if optVal ~= true and optVal ~= false then
-                    return false,
-                        "sessionScene.rollDefaults."
-                            .. tostring(typeKey)
-                            .. "."
-                            .. tostring(optKey)
-                            .. ": must be true or false."
-                end
-            elseif expectedType == "number" then
-                if type(optVal) ~= "number" or optVal ~= optVal then
-                    return false,
-                        "sessionScene.rollDefaults."
-                            .. tostring(typeKey)
-                            .. "."
-                            .. tostring(optKey)
-                            .. ": must be a number."
-                end
-            end
+        local def = CD.getDef(conditionId)
+        if def.kind ~= "scene" then
+            return false,
+                "sessionScene.conditions["
+                    .. tostring(i)
+                    .. "]: \""
+                    .. conditionId
+                    .. "\" is kind \""
+                    .. tostring(def.kind)
+                    .. "\" — scene import only allows kind scene (location ids belong on C.Sites / C.Districts)."
         end
     end
     return true, nil
@@ -433,9 +431,14 @@ function SceneLibrary.validateAndNormalizeImportPayload(raw)
         return false, errWeather or "sessionScene.soundscapeNarrative: weather trio validation failed.", nil
     end
 
-    local okRollDefaults, errRollDefaults = validateRollDefaultsForImport(sessionScene.rollDefaults)
-    if not okRollDefaults then
-        return false, errRollDefaults, nil
+    local okRejectRollDefaults, errRejectRollDefaults = rejectRollDefaultsForImport(sessionScene)
+    if not okRejectRollDefaults then
+        return false, errRejectRollDefaults, nil
+    end
+
+    local okConditions, errConditions = validateSessionSceneConditionsForImport(sessionScene.conditions)
+    if not okConditions then
+        return false, errConditions, nil
     end
 
     if schemaNum >= 2 then

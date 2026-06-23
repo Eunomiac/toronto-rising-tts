@@ -58,7 +58,7 @@
       "realTimeSpeed": 1,
       "isPresentDay": true
     },
-    "rollDefaults": {},
+    "conditions": [],
     "soundscapeNarrative": {
       "location": "library",
     },

@@ -374,6 +374,39 @@ local function collectLocationIdsFromRow(out, locRow, sourceLabel)
   end
 end
 
+--- @param kind string|nil
+--- @return boolean
+local function isHostedKind(kind)
+  return kind == "location" or kind == "scene"
+end
+
+--- Append scene-kind condition ids from `sessionScene.conditions`.
+--- @param out table<string, boolean>
+local function collectSceneIdsFromSession(out)
+  local arr = S.getStateVal("sessionScene", "conditions")
+  if type(arr) ~= "table" then
+    return
+  end
+  for _, conditionId in ipairs(arr) do
+    if type(conditionId) ~= "string" or conditionId == "" then
+      error(
+        "Conditions: invalid condition id in sessionScene.conditions (expected non-empty string)"
+      )
+    end
+    local def = CD.getDef(conditionId)
+    if def.kind ~= "scene" then
+      error(
+        "Conditions: sessionScene.conditions references \""
+          .. conditionId
+          .. "\" which is kind \""
+          .. tostring(def.kind)
+          .. "\" (expected scene)"
+      )
+    end
+    out[conditionId] = true
+  end
+end
+
 --- Union of location-hosted condition ids from current session site + district.
 --- @return table<string, boolean>
 function Conditions.collectLocationHostedIdsForSession()
@@ -403,6 +436,14 @@ function Conditions.collectLocationHostedIdsForSession()
   return desired
 end
 
+--- Union of hosted condition ids: site + district (`location`) and `sessionScene.conditions` (`scene`).
+--- @return table<string, boolean>
+function Conditions.collectHostedIdsForSession()
+  local desired = Conditions.collectLocationHostedIdsForSession()
+  collectSceneIdsFromSession(desired)
+  return desired
+end
+
 --- Whether a PC seat is present in the active scene (table + narrative absence rules).
 --- @param seatColor string
 --- @return boolean
@@ -411,13 +452,13 @@ local function isSeatPresentInScene(seatColor)
   return L.isPlayerPresentInActiveSeatLayout(seatColor)
 end
 
---- Reconcile location-hosted condition keys for one PC.
+--- Reconcile hosted (`location` + `scene`) condition keys for one PC.
 --- @param playerID string
 --- @param desired table<string, boolean>
 --- @param present boolean
 --- @param skipPresentation boolean|nil when true, mutation only (caller syncs)
 --- @return boolean changed
-local function reconcileLocationHostedForPlayer(playerID, desired, present, skipPresentation)
+local function reconcileHostedForPlayer(playerID, desired, present, skipPresentation)
   if playerID == C.StorytellerID then
     return false
   end
@@ -432,7 +473,7 @@ local function reconcileLocationHostedForPlayer(playerID, desired, present, skip
   local changed = false
 
   for id, def in pairs(CD.Defs) do
-    if type(def) == "table" and def.kind == "location" and conditions[id] ~= nil then
+    if type(def) == "table" and isHostedKind(def.kind) and conditions[id] ~= nil then
       if not present or desired[id] ~= true then
         S.setStateVal(nil, "playerData", playerID, "conditions", id)
         changed = true
@@ -466,11 +507,11 @@ local function reconcileLocationHostedForPlayer(playerID, desired, present, skip
   return changed
 end
 
---- Apply or remove location-hosted conditions for all PCs present at the current scene.
+--- Apply or remove hosted conditions (location + scene) for all PCs at the current session.
 --- @param opts table|nil `{ skipPresentation = boolean? }` — when true, mutate only; caller must sync (e.g. `Sync.full`)
-function Conditions.reconcileLocationHostedForScene(opts)
+function Conditions.reconcileHostedForSession(opts)
   local skipPresentation = type(opts) == "table" and opts.skipPresentation == true
-  local desired = Conditions.collectLocationHostedIdsForSession()
+  local desired = Conditions.collectHostedIdsForSession()
   local pd = S.getStateVal("playerData")
   if type(pd) ~= "table" then
     return
@@ -480,9 +521,14 @@ function Conditions.reconcileLocationHostedForScene(opts)
     if type(playerID) == "string" and playerID ~= C.StorytellerID and type(row) == "table" then
       local seatColor = seatColorForPlayer(playerID)
       local present = type(seatColor) == "string" and isSeatPresentInScene(seatColor) == true
-      reconcileLocationHostedForPlayer(playerID, desired, present, skipPresentation)
+      reconcileHostedForPlayer(playerID, desired, present, skipPresentation)
     end
   end
+end
+
+--- @deprecated use `reconcileHostedForSession` — retained for call-site compatibility.
+function Conditions.reconcileLocationHostedForScene(opts)
+  Conditions.reconcileHostedForSession(opts)
 end
 
 return Conditions

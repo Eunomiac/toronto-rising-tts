@@ -15,7 +15,10 @@ Canonical reference for creating or changing **any** condition in Toronto Rising
 | Auto from stats (damage, humanity stains, …) | `derived` | `Conditions.reconcileDerivedForPlayer` on stat paths; load |
 | Storyteller panel toggle (frenzy, blindfold) | `manual` | `Conditions.setManual` / `clear` |
 | Scene-driven (transition blindfold) | `event` | `Conditions.setEvent` / `clear` |
-| District/site while PC is **present** at scene | `location` | `conditions` on `C.Districts` / `C.Sites` row + `reconcileLocationHostedForScene` |
+| District/site while PC is **present** at scene | `location` | `conditions` on `C.Districts` / `C.Sites` row + `reconcileHostedForSession` |
+| Scene bundle while PC is **present** | `scene` | `conditions` array on `sessionScene` (Scene Constructor import) + `reconcileHostedForSession` |
+
+**Effect type** (stat vs roll) is **not** a `kind` — use registry channels (`statChanges`, `roll`, `hud`, `lighting`). A hosted row may reference roll conditions, stat conditions, or both (e.g. `bumpBloodPotency` on Dupont is stat; `sceneBonusWpReroll` is roll).
 
 ### Which effect channels?
 
@@ -29,10 +32,10 @@ Canonical reference for creating or changing **any** condition in Toronto Rising
 ### Checklist
 
 1. Add entry to [`lib/condition_defs.ttslua`](../../lib/condition_defs.ttslua): `id`, `kind`, `priority`, effect channels.
-2. If `derived` or `location`: add `derive(stats, activeConditions, statChanges?)`; optional `deriveSticky`, `suppressedBy`. Derived reconcile passes merged `statChanges` from `Effects.resolveForPlayer`.
+2. If `derived`, `location`, or `scene`: add `derive(stats, activeConditions, statChanges?)`; optional `deriveSticky`, `suppressedBy`. Derived reconcile passes merged `statChanges` from `Effects.resolveForPlayer`.
 3. Wire **mutation** (skip if reconcile handles it):
    - Stats → `Conditions.reconcileDerivedForPlayer` on the mutation path
-   - Location → `conditions = { "id" }` on district/site; reconciler runs on location/presence changes
+   - Hosted (location or scene) → `conditions` on district/site row or `sessionScene.conditions`; `reconcileHostedForSession` on scene lifecycle hooks
    - ST toggle → `Conditions.setManual` / `clear`
    - Scene event → `Conditions.setEvent` / `clear`
 4. Roll effect → add `roll = { ... }`; pick tier (§6). Tier 1 = registry only; Tier 3 = handler module.
@@ -47,6 +50,8 @@ Auto from current stats?
   → derived (+ reconcileDerivedForPlayer on relevant stat writes)
 Tied to district/site while present?
   → location (+ row in C.Districts / C.Sites)
+Scene-specific while present?
+  → scene (+ sessionScene.conditions in Scene Constructor import)
 ST toggles in panel?
   → manual
 Scene transition / one-shot instance?
@@ -130,7 +135,7 @@ Do not embed world side effects in `S.setStateVal` for stats without an explicit
 ### `location`
 
 - Listed on `C.Districts[*].conditions` and/or `C.Sites[*].conditions` (string refs).
-- `Conditions.reconcileLocationHostedForScene` applies to **present** PCs only (`L.isPlayerPresentInActiveSeatLayout`).
+- `Conditions.reconcileHostedForSession` applies to **present** PCs only (`L.isPlayerPresentInActiveSeatLayout`). Unions site/district (`location`) and `sessionScene.conditions` (`scene`).
 - Optional `opts.skipPresentation = true`: mutation only — use when the caller will run `Sync.full` (avoids double HUD/light apply via `afterChange`).
 - Optional `derive` gates who receives the key and presentation effects.
 
@@ -163,9 +168,9 @@ See §6. Snapshot on `active.rollPolicy` at roll initiate; `RC` reads policy onl
 | ST torpor clear | `clear("torpor")` → `reconcileDerivedForPlayer` |
 | ST frenzy/blindfold | `setManual` / `clear` → `afterChange` |
 | Scene transition blindfold | `setEvent` / `clear` → `afterChange` |
-| Game load | `validateAllPersisted` → `reconcileDerivedAllPlayers` → `reconcileLocationHostedForScene` |
-| Location / scene / End scene | `reconcileLocationHostedForScene` |
-| Seat presence / table switch | `reconcileLocationHostedForScene` |
+| Game load | `validateAllPersisted` → `reconcileDerivedAllPlayers` → `reconcileHostedForSession` |
+| Location / scene apply / End scene | `reconcileHostedForSession` |
+| Seat presence / table switch | `reconcileHostedForSession` |
 | Roll initiate | `resolveRollPolicy` → `applyRollPolicyToActive` |
 | Hunger, XP, other stats alone | **No** automatic derive reconcile |
 
@@ -231,9 +236,8 @@ Conditions may declare **`roll = { ... }`**. At `RC.initiateRoll`, `Conditions.r
 ### Merge order (with ST roll options)
 
 1. `RO.defaultsForRollType`
-2. `sessionScene.rollDefaults`
-3. **Condition roll policy** (from registry)
-4. ST modal overrides — **except** keys listed in `rollPolicy.locked`
+2. **Condition roll policy** (from registry via active `playerData.conditions`)
+3. ST modal overrides — **except** keys listed in `rollPolicy.locked`
 
 ### Policy schema (v1)
 

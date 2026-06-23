@@ -278,7 +278,7 @@ type PlayerConditions = Partial<Record<ConditionId, PersistedCondition>>;
 | `Conditions.clear(playerID, id)` | Remove any condition (incl. ST torpor clear) |
 | `Conditions.reconcileDerivedForPlayer(playerID)` | Sync derived keys from stats |
 | `Conditions.reconcileDerivedAllPlayers()` | Load / bulk repair |
-| `Conditions.reconcileLocationHostedForScene(opts?)` | Apply/remove location-kind keys from `C.Districts` / `C.Sites` for present PCs; `skipPresentation` when followed by `Sync.full` |
+| `Conditions.reconcileHostedForSession(opts?)` | Apply/remove hosted (`location` + `scene`) keys for present PCs; `skipPresentation` when followed by `Sync.full` |
 | `Conditions.afterChange(playerID)` | Per-player presentation (lights, HUD, overlays, sheets) — mirrors `Sync.player` |
 | `Conditions.resolveForPlayer(playerID)` | Merged statChanges / HUD ids / lighting modes |
 | `EffectiveStats.forPlayer(playerID)` / `forSeat(color)` | **Preferred** read-time stat math (tracker max, BP, dots) |
@@ -295,16 +295,16 @@ type PlayerConditions = Partial<Record<ConditionId, PersistedCondition>>;
 | ST torpor clear | `clear("torpor")` → `reconcileDerivedForPlayer` |
 | ST frenzy/blindfold toggle | `setManual` / `clear` → `afterChange` (no derive) |
 | Scene transition blindfold | `setEvent` / `clear` → `afterChange` |
-| Game load | `validateAllPersisted` → `reconcileDerivedAllPlayers` → `reconcileLocationHostedForScene` |
-| Location Apply / scene bundle / End scene | `reconcileLocationHostedForScene` |
-| Seat presence toggle / table switch | `reconcileLocationHostedForScene` (present-only location keys) |
+| Game load | `validateAllPersisted` → `reconcileDerivedAllPlayers` → `reconcileHostedForSession` |
+| Location Apply / scene bundle / End scene | `reconcileHostedForSession` |
+| Seat presence toggle / table switch | `reconcileHostedForSession` (present-only hosted keys) |
 | Hunger, XP, other stats | **No** automatic condition reconcile unless the mutation path adds it |
 
 **Two phases:**
 
 1. **Derive (mutation)** — recompute which *derived* IDs belong in `playerData.conditions` from current `stats` (+ `suppressedBy` / `deriveSticky`).
-2. **Location (mutation)** — add/remove *location* IDs from district/site `conditions` lists for PCs **present** in the active scene (`L.isPlayerPresentInActiveSeatLayout`).
-3. **Apply (presentation)** — `afterChange` reconciles seat lights, HUD, overlays, and character sheets for that PC. Consumers also **read** resolved effects on demand (`resolveForPlayer`) during sheet collect, lighting reconcile, and rolls.
+2. **Hosted (mutation)** — add/remove `location` and `scene` ids from district/site rows and `sessionScene.conditions` for PCs **present** in the active scene (`L.isPlayerPresentInActiveSeatLayout`).
+3. **Apply (presentation)** — `afterChange` reconciles seat lights, HUD, overlays, and character sheets for that PC. Consumers also **read** resolved effects on demand (`resolveForPlayer`, `resolveRollPolicy`) during sheet collect, lighting reconcile, and rolls.
 
 **Load policy:** Unknown ids or legacy inline payloads (`statChanges`, `hudChanges`, `lightingModeChanges`, …) → **`error(...)`** (no migrator). One-time fix: clear `conditions = {}` or restore a pre-migration save.
 

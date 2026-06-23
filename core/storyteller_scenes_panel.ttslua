@@ -22,35 +22,37 @@ local StorytellerPanelUI = require("core.storyteller_panel_ui")
 local HUDBF = require("core.hud_blindfold")
 local PCST = require("core.pc_storyteller_panel")
 
---- Reconcile location-hosted PC conditions after session location or seat presence changes.
-local function reconcileLocationHostedConditions(opts)
+--- Reconcile hosted PC conditions (location + scene) after session location, scene bundle, or seat presence changes.
+local function reconcileHostedConditions(opts)
     local Conditions = require("core.conditions")
-    if type(Conditions.reconcileLocationHostedForScene) == "function" then
+    if type(Conditions.reconcileHostedForSession) == "function" then
+        Conditions.reconcileHostedForSession(opts)
+    elseif type(Conditions.reconcileLocationHostedForScene) == "function" then
         Conditions.reconcileLocationHostedForScene(opts)
     end
 end
 
---- CSHEET page 1/2 dots and BP decals after location reconcile used skipPresentation.
-local function refreshCharacterSheetsAfterLocationReconcile()
+--- CSHEET page 1/2 dots and BP decals after hosted reconcile used skipPresentation.
+local function refreshCharacterSheetsAfterHostedReconcile()
     if PCST and type(PCST.refreshAllCharacterSheets) == "function" then
         PCST.refreshAllCharacterSheets()
     end
 end
 
---- `Sync.full` then refresh all character sheets (caller already ran location reconcile).
+--- `Sync.full` then refresh all character sheets (caller already ran hosted reconcile).
 --- @param reason string
-local function syncAfterLocationReconcileAndRefreshSheets(reason)
+local function syncAfterHostedReconcileAndRefreshSheets(reason)
     if Sync and type(Sync.full) == "function" then
         Sync.full({ reason = reason })
     end
-    refreshCharacterSheetsAfterLocationReconcile()
+    refreshCharacterSheetsAfterHostedReconcile()
 end
 
---- Location condition mutation (skipPresentation) + world sync + sheet/decal presentation.
+--- Hosted condition mutation (skipPresentation) + world sync + sheet/decal presentation.
 --- @param reason string
-local function reconcileLocationSyncAndPresentSheets(reason)
-    reconcileLocationHostedConditions({ skipPresentation = true })
-    syncAfterLocationReconcileAndRefreshSheets(reason)
+local function reconcileHostedSyncAndPresentSheets(reason)
+    reconcileHostedConditions({ skipPresentation = true })
+    syncAfterHostedReconcileAndRefreshSheets(reason)
 end
 
 local GREEN = "#228B22|#32CD32|#006400|#228B22"
@@ -977,7 +979,7 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player)
             primeSoundscapeReconcile = true
         end
 
-        reconcileLocationHostedConditions({ skipPresentation = true })
+        reconcileHostedConditions({ skipPresentation = true })
 
         if S.getStateVal("sessionScene", "chronicleWeatherManualHold") ~= true then
             if type(ChronicleWeather.applyScheduledWeather) == "function" then
@@ -993,7 +995,7 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player)
             HUDP.armPinRelocationSceneCast()
         end
 
-        syncAfterLocationReconcileAndRefreshSheets("StorytellerScenesPanel.sceneLibraryApply")
+        syncAfterHostedReconcileAndRefreshSheets("StorytellerScenesPanel.sceneLibraryApply")
 
         StorytellerScenesPanel.refresh()
         if GameStateOverlay and type(GameStateOverlay.stopTicker) == "function" then
@@ -1063,7 +1065,7 @@ function StorytellerScenesPanel.endSceneNarrative(player)
     if SS.invalidateReconcileCache ~= nil then
         SS.invalidateReconcileCache()
     end
-    reconcileLocationSyncAndPresentSheets("StorytellerScenesPanel.endScene")
+    reconcileHostedSyncAndPresentSheets("StorytellerScenesPanel.endScene")
     if Sync and type(Sync.ui) == "function" then
         Sync.ui({ gameStateOverlay = true })
     end
@@ -1087,7 +1089,7 @@ function StorytellerScenesPanel.onHudClick(player, button, id)
         HUDBF.runTransition(function()
             S.setStateVal(tableKey, "sessionScene", "tableKey")
             RSL.SetTableTo(tableKey, { skipTransitionBlindfold = true })
-            reconcileLocationSyncAndPresentSheets("StorytellerScenesPanel.table")
+            reconcileHostedSyncAndPresentSheets("StorytellerScenesPanel.table")
             StorytellerScenesPanel.refresh()
             return true
         end)
@@ -1103,7 +1105,7 @@ function StorytellerScenesPanel.onHudClick(player, button, id)
         if U.isIn(seatKey, C.PlayerColors or {}) and type(O.applyPcSeatHiddenObjectPresence) == "function" then
             O.applyPcSeatHiddenObjectPresence(seatKey, nextPresent)
         end
-        reconcileLocationSyncAndPresentSheets("StorytellerScenesPanel.seatPresence")
+        reconcileHostedSyncAndPresentSheets("StorytellerScenesPanel.seatPresence")
         StorytellerScenesPanel.refresh()
         if type(UpdateUIDisplays) == "function" then
             UpdateUIDisplays({ playerHud = true })
@@ -1199,7 +1201,7 @@ function StorytellerScenesPanel.applyLocationFromInputs(player)
     if SS.markReconciledToCurrentState ~= nil then
         SS.markReconciledToCurrentState()
     end
-    reconcileLocationSyncAndPresentSheets("StorytellerScenesPanel.location")
+    reconcileHostedSyncAndPresentSheets("StorytellerScenesPanel.location")
     StorytellerScenesPanel.refresh()
     U.AlertGM(result and result.message or "Location applied.")
 end

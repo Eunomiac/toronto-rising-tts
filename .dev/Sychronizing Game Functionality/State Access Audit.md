@@ -4,7 +4,7 @@
 
 **Scope:** `core/`, `lib/`, `ui/`, `.dev/`
 
-**Schema baseline:** `core/state.ttslua` `S.GetDefaultGameState()` (`currentPhase`, Steam-ID-keyed `playerData`, `lights`, `zones`, `scene`, `soundscape`, `seatLayout`, `npcs.instances`, `presentDayClock`, `sessionScene`, `sceneLibrary`, `stRollSettings`) and `.dev/Scene Constructor/SchemaV2.jsonc` (`sessionScene.lightingPresetKey`, `seatSlots`, `clock`, `rollDefaults`, `soundscapeNarrative`, `npcWorld.byArea`).
+**Schema baseline:** `core/state.ttslua` `S.GetDefaultGameState()` (`currentPhase`, Steam-ID-keyed `playerData`, `lights`, `zones`, `scene`, `soundscape`, `seatLayout`, `npcs.instances`, `presentDayClock`, `sessionScene`, `sceneLibrary`, `stRollSettings`) and `.dev/Scene Constructor/SchemaV2.jsonc` (`sessionScene.lightingPresetKey`, `seatSlots`, `clock`, `conditions`, `soundscapeNarrative`, `npcWorld.byArea`).
 
 **Count summary:** P0: 3, P1: 5, P2: 7.
 

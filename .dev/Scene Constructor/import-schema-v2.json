@@ -59,11 +59,7 @@
       "realTimeSpeed": 1,
       "isPresentDay": true
     },
-    "rollDefaults": {
-      "all": {
-        "numberOfRerolls": 1
-      }
-    },
+    "conditions": ["sceneBonusWpReroll"],
     "soundscapeNarrative": {
       "backgroundMusic": "casaLoma",
       "location": "library",
