@@ -34,6 +34,12 @@ for structuralKey, negatingId in pairs(CD.STRUCTURAL_NEGATING) do
   CD.STRUCTURAL_NEGATING_REVERSE[negatingId] = structuralKey
 end
 
+--- Roll policy keys on standalone (non-negating) per-roll overlay toggles in the ST Opts modal.
+CD.PER_ROLL_OPTS_OVERLAY = {
+  bestialNull = true,
+  wpCanRerollHunger = true,
+}
+
 --- Tracker max from stats base + temp only (no condition stat deltas).
 --- @param stats table|nil
 --- @param trackerKey string
@@ -363,7 +369,15 @@ function CD.isPerRollOptsCondition(def)
     return true
   end
   local roll = def.roll
-  return type(roll) == "table" and roll.bestialNull == true
+  if type(roll) ~= "table" then
+    return false
+  end
+  for overlayKey in pairs(CD.PER_ROLL_OPTS_OVERLAY) do
+    if roll[overlayKey] == true then
+      return true
+    end
+  end
+  return false
 end
 
 --- Roll condition ids for the ST Roll Options modal.

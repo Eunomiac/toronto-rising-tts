@@ -59,11 +59,13 @@ function readStandardRollConditions(defsPath) {
     if (!/type\s*=\s*"roll"/.test(block)) {
       continue;
     }
-    const isNegating = /\b(noTakeHalf|noWPReroll|noHungerDice|noCriticals|canRerollHunger)\b/.test(
+    const isNegating = /\b(noTakeHalf|noWPReroll|noHungerDice|noCriticals)\b/.test(
       match[1]
     );
-    const hasBestialNull = /bestialNull\s*=\s*true/.test(block);
-    if (!isNegating && !hasBestialNull) {
+    const hasOverlayToggle =
+      /bestialNull\s*=\s*true/.test(block) ||
+      /wpCanRerollHunger\s*=\s*true/.test(block);
+    if (!isNegating && !hasOverlayToggle) {
       continue;
     }
     const idMatch = block.match(/id\s*=\s*"([^"]+)"/);
