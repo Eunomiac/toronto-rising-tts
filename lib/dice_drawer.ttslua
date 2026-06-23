@@ -7,6 +7,7 @@
 local C = require("lib.constants")
 local OP = require("lib.object_positions")
 local L = require("core.lighting")
+local U = require("lib.util")
 
 local DD = {}
 
@@ -129,6 +130,23 @@ function DD.closeAfterRoll(color)
   local entry = key ~= nil and C.ObjectPositions[key] or nil
   local resolvedPose = OP.resolveStatePose(obj, entry or {}, "off") or pose
   OP.applyResolvedPose(obj, resolvedPose, OP.DEFAULT_TRANSITION_DURATION, 0, { useSmoothSetters = true })
+end
+
+--- Random world position above the seat dice tray (for single-die post-roll spawns).
+-- @param color string
+-- @param yShift number|nil  Vertical offset above drawer bounds (default 3)
+-- @param padPercent number|nil  Inward padding 0–1 on X/Z (default 0.15)
+-- @return table|nil  { x, y, z }
+function DD.getScatterSpawnPosition(color, yShift, padPercent)
+  local drawer = findDiceDrawerObject(color)
+  if drawer == nil then
+    return nil
+  end
+  local pos = U.getScatterPosition(drawer, yShift or 3, padPercent or 0.15)
+  if pos == nil then
+    return nil
+  end
+  return { x = pos.x, y = pos.y, z = pos.z }
 end
 
 return DD

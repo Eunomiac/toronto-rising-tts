@@ -1055,6 +1055,41 @@ function GlobalOnBagDieRemoved(params)
     end
 end
 
+--- Seconds to hold a post-roll correction die locked above the tray before randomize (ST roll hover).
+local POST_ROLL_DIE_HOVER_SEC = 1
+
+--- Unlocks and randomizes one die (ST roll / post-roll correction path).
+-- @param color string
+-- @param die Object
+-- @return boolean
+local function randomizeReleasedDieForRoll(color, die)
+    if die == nil or die.randomize == nil then
+        return false
+    end
+    if die.getLock ~= nil and die.getLock() == true then
+        die.setLock(false)
+    end
+    local ok = die.randomize(color)
+    if ok ~= true then
+        die.randomize()
+    end
+    return true
+end
+
+--- Random spawn point above a seat dice tray (`U.getScatterPosition` on the drawer prop).
+-- @param params table  { color: string, yShift?: number, padPercent?: number }
+-- @return table|nil  { x, y, z }
+function GlobalDiceTrayScatterPosition(params)
+    if type(params) ~= "table" then
+        return nil
+    end
+    local color = params.color
+    if type(color) ~= "string" then
+        return nil
+    end
+    return DiceDrawer.getScatterSpawnPosition(color, params.yShift, params.padPercent)
+end
+
 --- Bag GUID for a player pool kind (normal / hunger / rouse / oblivRouse).
 -- @param color string
 -- @param dieKind string
@@ -1159,12 +1194,10 @@ function GlobalPostRollAddDie(params)
     if bag == nil then
         return false
     end
-    bag.call("spawnDieRedirect", {
+    local dieGuid = bag.call("spawnPostRollDie", {
         bagColor = color,
         dieType = dieKind,
-        postRollModify = true,
     })
-    local dieGuid = bag.call("releaseLastStagedPostRollDie")
     if type(dieGuid) ~= "string" then
         return false
     end
@@ -1175,14 +1208,13 @@ function GlobalPostRollAddDie(params)
     DK.ensureMeta(active)
     active.meta.stPostRollModifyLock = true
     S.setStateVal(active, "playerData", pid, "hud", "rollData", "active")
-    local die = getObjectFromGUID(dieGuid)
-    if die == nil or die.randomize == nil then
-        return false
-    end
-    local ok = die.randomize(color)
-    if ok ~= true then
-        die.randomize()
-    end
+    U.delay(function()
+        local die = getObjectFromGUID(dieGuid)
+        if die == nil then
+            return
+        end
+        randomizeReleasedDieForRoll(color, die)
+    end, POST_ROLL_DIE_HOVER_SEC)
     return true
 end
 

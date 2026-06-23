@@ -19,12 +19,12 @@ UI.setAttributes("rollDash_row_Brown", {preferredHeight = "50", childAlignment =
   <Panel class="grid_strip_cell_postRoll"
     outline = "#000000"
     outlineSize = "0.5 -0.5" />
-  <Panel class="grid_strip_cell_postRoll_remDie" color = "#999999" />
-  <Panel class="grid_strip_cell_postRoll_addDie" color = "#999999" />
-  <Panel class="grid_strip_cell_postRoll_remHungerDie" color = "#990000" />
-  <Panel class="grid_strip_cell_postRoll_addHungerDie" color = "#990000" />
-  <Panel class="grid_strip_cell_postRoll_remStandardDie" color = "#444444" />
-  <Panel class="grid_strip_cell_postRoll_addStandardDie" color = "#444444" />
+  <Panel class="grid_strip_cell_postRoll_remDie" color = "rgba(0.6, 0.6, 0.6, 1)" />
+  <Panel class="grid_strip_cell_postRoll_addDie" color = "rgba(0.6, 0.6, 0.6, 1)" />
+  <Panel class="grid_strip_cell_postRoll_remHungerDie" color = "rgba(0.6, 0, 0, 1)" />
+  <Panel class="grid_strip_cell_postRoll_addHungerDie" color = "rgba(0.6, 0, 0, 1)" />
+  <Panel class="grid_strip_cell_postRoll_remStandardDie" color = "rgba(0.2667, 0.2667, 0.2667, 1)" />
+  <Panel class="grid_strip_cell_postRoll_addStandardDie" color = "rgba(0.2667, 0.2667, 0.2667, 1)" />
   <Text class="grid_strip_cell_postRoll_text" color = "#FFFFFF" />
   <Text class="grid_strip_cell_label_text" color = "#FFFFFF"/>
 
@@ -76,18 +76,18 @@ UI.setAttributes("rollDash_row_Brown", {preferredHeight = "50", childAlignment =
 <!--
 UI.setAttributes("rollDash_type_Brown", {fontStyle = "Bold", fontSize = "14", color = "#FFFFFF", width = "150", offsetXY = "100 -3"})
 UI.setAttributes("rollDash_phase_Brown", {fontStyle = "Italic", fontSize = "12", color = "#BBBBBB", width = "150", offsetXY = "100 3"})
-UI.setAttributes("rollDash_pool_Brown", {text = "3H + 11N", alignment = "MiddleRight", width = "100", offsetXY = "190 0", fontStyle = "Bold", fontSize = "14", color = "#FFFFFF"})
+UI.setAttributes("rollDash_pool_Brown", {width = "200", offsetXY = "100 0", fontSize = "14", fontStyle = "Normal", alignment = "MiddleLeft"})
 -->
 
 
   <Text id="rollDash_pool_@@COLOR@@"
     rectAlignment="MiddleLeft"
-    alignment = "MiddleRight"
-    offsetXY="190 0"
-    width="100"
+    alignment = "MiddleLeft"
+    offsetXY="100 0"
+    width="200"
     height="34"
     fontSize="14"
-    fontStyle = "Bold"
+    fontStyle = "Normal"
     color="#FFFFFF"
     text="" />
 
