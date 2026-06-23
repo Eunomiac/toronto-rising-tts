@@ -96,8 +96,8 @@
       "all": {
         "numberOfRerolls": 1
       },
-      "skill": {
-        "bestialVisible": false
+      "standard": {
+        "bestialNull": false
       }
     },
 
@@ -108,8 +108,8 @@
       "location": "library", // Location ambience track key
       "wind": "silent", // Layer keys — trio rule applies
       "rain": "silent",
-      "thunderstorm": false, // false counts as “set” for the weather trio
-      "isIndoors": true
+      "thunderstorm": false // false counts as “set” for the weather trio
+      // isIndoors is NOT read from soundscapeNarrative on apply — indoor/outdoor ducking comes from C.Sites[siteKey].
     },
 
     "npcWorld": {

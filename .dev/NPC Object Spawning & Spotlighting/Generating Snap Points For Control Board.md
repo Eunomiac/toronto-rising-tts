@@ -234,6 +234,24 @@ lua local G = require("core.npc_gameboard"); print(G.resolveSnapRingIndexForUv(0
 
 Pass a **full** config when overriding — partial tables fail validation.
 
+## CSV export (snap groups)
+
+After Save & Play, with **External Editor** enabled and the **TTS Tools** extension handling `sendExternalMessage` (same as `logStateToFile` — do not run the repo MCP bridge on port 39998 at the same time):
+
+```lua
+lua DEBUG.exportControlBoardSnapGroupsToFile()
+```
+
+Writes **`.dev/.debug/debug_logs/control_board_snap_groups.txt`** (CSV body; `.txt` is the debug module convention). Optional basename: `DEBUG.exportControlBoardSnapGroupsToFile("my_snaps")`.
+
+| Column | Meaning |
+| --- | --- |
+| `group` | 0-based polar **family** id (`ringIndex:rayIndex` cluster). Sorted: inner rings first; within a ring, anchors at master `origin.u` first, then by anchor `u`. |
+| `index` | 0-based slot within the family: **0** = anchor (`familyK == 0`); **1…** = coterie spread order (`Gameboard.orderFamilySnapsForAnchorSpread` — center-out, screen-left before screen-right). |
+| `u`, `v` | Board-normalized coordinates on CONTROL_BOARD. |
+
+Seat-row snaps are excluded. Optional config override: second arg is a full `CONTROL_BOARD_SNAP` table (same as `DEBUG.previewControlBoardSnapCount(config)`).
+
 ## Additional Guidelines
 
 * All snap points are rotational snaps oriented to face the `origin`.

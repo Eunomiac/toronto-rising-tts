@@ -760,6 +760,34 @@ function DEBUG.exportControlBoardSnapFamilies(config, options)
     return byRole
 end
 
+--- Write CONTROL_BOARD polar snap groups to CSV content via `writeToFile` (same path as `logStateToFile`).
+--- Group/index ordering matches anchor-family coterie spread (`orderFamilySnapsForAnchorSpread`).
+--- Requires TTS Tools extension / External Editor (`sendExternalMessage`); see `.dev/DEBUG_FILE_LOGGING.md`.
+--- @param filename string|nil Basename without extension (default: `control_board_snap_groups` → `debug_logs/control_board_snap_groups.txt`)
+--- @param config table|nil Full `CONTROL_BOARD_SNAP` table or nil for DATA default
+--- @return table[] rows written
+function DEBUG.exportControlBoardSnapGroupsToFile(filename, config)
+    filename = (type(filename) == "string" and filename ~= "") and filename or "control_board_snap_groups"
+    local Gameboard = require("core.npc_gameboard")
+    local rows = Gameboard.buildControlBoardSnapGroupExportRows(config)
+    local csv = Gameboard.formatControlBoardSnapGroupsCsv(rows)
+    writeToFile(filename, csv, "none", false)
+    print(
+        "DEBUG: CONTROL_BOARD snap groups logged to "
+            .. WORKSPACE_DEBUG_WRITE_ROOT
+            .. "/"
+            .. LOG_DIR
+            .. "/"
+            .. filename
+            .. "."
+            .. LOG_EXTENSION
+            .. " ("
+            .. tostring(#rows)
+            .. " row(s), CSV body)"
+    )
+    return rows
+end
+
 --- Display zone status
 function DEBUG.showZones()
     printTestHeader("Zone Status")
@@ -5217,6 +5245,7 @@ function DEBUG.help()
     print("  logStateToFile(filename?)       - Log game state to file (JSON)")
     print("  logNpcPlacementIntentToFile(filename?) - Log Step Zero NPC placement intent (reconcile verify)")
     print("  exportNpcSeatFigurinesToFile(path?)     - Export NPC#Object figurines (name + GUID) to debug_logs")
+    print("  exportControlBoardSnapGroupsToFile(filename?, config?) - CSV polar snap groups (logStateToFile path)")
     print("  migrateSeatLayoutRolesToGmNotes(opts?) - Copy ROLE_COLOR Name/Nick -> GM Notes (opts.dryRun)")
     print("  findObjectsByRole(query, opts?)        - Scan GM Notes role → GUID rows (opts.seatTag, opts.print)")
     print("  guidsByRole(query, opts?)              - Same scan; returns GUID string array only")

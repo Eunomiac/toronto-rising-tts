@@ -204,6 +204,80 @@ end
 
 local NARRATIVE_CLOCK_DATETIME_KEYS = { "year", "month", "day", "hour", "minute" }
 
+--- Roll-type keys allowed under `sessionScene.rollDefaults` (must match `active.rollType` or `all`).
+local ROLL_DEFAULTS_TYPE_KEYS = { all = true }
+for _, rollType in pairs(C.RollType or {}) do
+    if type(rollType) == "string" and rollType ~= "" then
+        ROLL_DEFAULTS_TYPE_KEYS[rollType] = true
+    end
+end
+
+--- Per-roll option keys allowed under each `rollDefaults` entry (`lib/roll_options.ttslua` `RO.ROLL_*`).
+local ROLL_DEFAULTS_OPTION_KEYS = {
+    takeHalf = "boolean",
+    wpReroll = "boolean",
+    hungerDice = "boolean",
+    bestialNull = "boolean",
+    crits = "boolean",
+    canRerollHunger = "boolean",
+    numberOfRerolls = "number",
+    numberOfDiceRerolled = "number",
+}
+
+--- @param rollDefaults table|nil
+--- @return boolean ok
+--- @return string|nil err
+local function validateRollDefaultsForImport(rollDefaults)
+    if rollDefaults == nil then
+        return true, nil
+    end
+    if type(rollDefaults) ~= "table" then
+        return false, "sessionScene.rollDefaults: must be an object if present."
+    end
+    for typeKey, opts in pairs(rollDefaults) do
+        if ROLL_DEFAULTS_TYPE_KEYS[typeKey] ~= true then
+            return false,
+                "sessionScene.rollDefaults."
+                    .. tostring(typeKey)
+                    .. ": unknown roll type — use all or a C.RollType value (e.g. standard, simpleCheck, rouse)."
+        end
+        if type(opts) ~= "table" then
+            return false, "sessionScene.rollDefaults." .. tostring(typeKey) .. ": must be an object."
+        end
+        for optKey, optVal in pairs(opts) do
+            local expectedType = ROLL_DEFAULTS_OPTION_KEYS[optKey]
+            if expectedType == nil then
+                return false,
+                    "sessionScene.rollDefaults."
+                        .. tostring(typeKey)
+                        .. "."
+                        .. tostring(optKey)
+                        .. ": unknown roll option — use takeHalf, wpReroll, hungerDice, bestialNull, crits, canRerollHunger, numberOfRerolls, or numberOfDiceRerolled."
+            end
+            if expectedType == "boolean" then
+                if optVal ~= true and optVal ~= false then
+                    return false,
+                        "sessionScene.rollDefaults."
+                            .. tostring(typeKey)
+                            .. "."
+                            .. tostring(optKey)
+                            .. ": must be true or false."
+                end
+            elseif expectedType == "number" then
+                if type(optVal) ~= "number" or optVal ~= optVal then
+                    return false,
+                        "sessionScene.rollDefaults."
+                            .. tostring(typeKey)
+                            .. "."
+                            .. tostring(optKey)
+                            .. ": must be a number."
+                end
+            end
+        end
+    end
+    return true, nil
+end
+
 --- Counts how many of year/month/day/hour/minute are numeric on `clock`.
 --- @param clock table|nil
 --- @return integer
@@ -357,6 +431,11 @@ function SceneLibrary.validateAndNormalizeImportPayload(raw)
     local okWeather, errWeather = validateSoundscapeWeatherTrioForImport(sessionScene)
     if not okWeather then
         return false, errWeather or "sessionScene.soundscapeNarrative: weather trio validation failed.", nil
+    end
+
+    local okRollDefaults, errRollDefaults = validateRollDefaultsForImport(sessionScene.rollDefaults)
+    if not okRollDefaults then
+        return false, errRollDefaults, nil
     end
 
     if schemaNum >= 2 then

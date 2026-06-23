@@ -4483,6 +4483,125 @@ function Gameboard.tryAnchorFamilyGroupSpread(droppedToken)
     return { placed = placed, reason = "ok", groupId = groupId }
 end
 
+--- Polar snap families for CONTROL_BOARD export (excludes seat-row snaps).
+--- @param catalog table[] from `buildControlBoardSnapCatalog`
+--- @return table<string, table> familyId → `{ anchor, siblings, ringIndex, rayIndex }`
+local function collectPolarSnapFamiliesFromCatalog(catalog)
+    local families = {}
+    for _, entry in ipairs(catalog) do
+        if entry.snapKind ~= SNAP_KIND_SEAT and type(entry.familyId) == "string" then
+            local fam = families[entry.familyId]
+            if fam == nil then
+                fam = {
+                    anchor = nil,
+                    siblings = {},
+                    ringIndex = entry.ringIndex,
+                    rayIndex = entry.rayIndex,
+                }
+                families[entry.familyId] = fam
+            end
+            if entry.isAnchor == true then
+                fam.anchor = entry
+            else
+                fam.siblings[#fam.siblings + 1] = entry
+            end
+        end
+    end
+    return families
+end
+
+--- Sort polar snap families for stable `group` indices: ring ascending (inner first);
+--- within ring, anchors at master origin u first, then anchor u ascending.
+--- @param groups table[] mutable list of family tables
+--- @param cfg table CONTROL_BOARD_SNAP config
+local function sortPolarSnapFamiliesForExport(groups, cfg)
+    local masterU = tonumber(cfg and cfg.origin and cfg.origin.u) or 0.5
+    local uEps = 1e-4
+    table.sort(groups, function(a, b)
+        local ra = tonumber(a.ringIndex) or 0
+        local rb = tonumber(b.ringIndex) or 0
+        if ra ~= rb then
+            return ra < rb
+        end
+        local ua = tonumber(a.anchor and a.anchor.u) or 0
+        local ub = tonumber(b.anchor and b.anchor.u) or 0
+        local aCentered = math.abs(ua - masterU) <= uEps
+        local bCentered = math.abs(ub - masterU) <= uEps
+        if aCentered ~= bCentered then
+            return aCentered
+        end
+        if math.abs(ua - ub) > uEps then
+            return ua < ub
+        end
+        return (tonumber(a.rayIndex) or 0) < (tonumber(b.rayIndex) or 0)
+    end)
+end
+
+--- Rows for CONTROL_BOARD polar snap group export (`group`, `index`, `u`, `v`).
+--- `group` is 0-based: rings inner→outer; within ring centered anchors first, then by anchor u.
+--- `index` is 0-based per group: anchor 0; siblings match anchor-family coterie spread order.
+--- @param config table|nil Defaults to DATA.CONTROL_BOARD_SNAP
+--- @return table[] rows `{ group, index, u, v }`
+function Gameboard.buildControlBoardSnapGroupExportRows(config)
+    local board = getControlBoard()
+    if not isGameObject(board) then
+        error("Gameboard.buildControlBoardSnapGroupExportRows: CONTROL_BOARD object required")
+    end
+    local cfg = resolveControlBoardSnapConfig(config)
+    local catalog = Gameboard.buildControlBoardSnapCatalog(board, config)
+    local families = collectPolarSnapFamiliesFromCatalog(catalog)
+    local groups = {}
+    for _, fam in pairs(families) do
+        if type(fam.anchor) == "table" then
+            groups[#groups + 1] = fam
+        end
+    end
+    sortPolarSnapFamiliesForExport(groups, cfg)
+    local rows = {}
+    for groupIndex, fam in ipairs(groups) do
+        local groupId = groupIndex - 1
+        local anchor = fam.anchor
+        local siblings = {}
+        for i = 1, #fam.siblings do
+            siblings[i] = fam.siblings[i]
+        end
+        Gameboard.orderFamilySnapsForAnchorSpread(siblings, anchor, board)
+        rows[#rows + 1] = {
+            group = groupId,
+            index = 0,
+            u = anchor.u,
+            v = anchor.v,
+        }
+        for snapIndex, sib in ipairs(siblings) do
+            rows[#rows + 1] = {
+                group = groupId,
+                index = snapIndex,
+                u = sib.u,
+                v = sib.v,
+            }
+        end
+    end
+    return rows
+end
+
+--- CSV for `buildControlBoardSnapGroupExportRows` (`group,index,u,v` header).
+--- @param rows table[]
+--- @return string
+function Gameboard.formatControlBoardSnapGroupsCsv(rows)
+    rows = type(rows) == "table" and rows or {}
+    local lines = { "group,index,u,v" }
+    for _, row in ipairs(rows) do
+        lines[#lines + 1] = string.format(
+            "%d,%d,%.6f,%.6f",
+            tonumber(row.group) or 0,
+            tonumber(row.index) or 0,
+            tonumber(row.u) or 0,
+            tonumber(row.v) or 0
+        )
+    end
+    return table.concat(lines, "\n") .. "\n"
+end
+
 --- Record palette origin on pick-up; revert seat-row scale when leaving the board (TOR-199).
 --- @param token Object|nil
 function Gameboard.onNpcControlTokenPickUp(token)
