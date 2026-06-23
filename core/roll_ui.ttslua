@@ -225,6 +225,15 @@ local rollOptsDraft = {
 local ROLL_OPTS_TOGGLE_CLASS_ON = "rollOpts_toggle rollOpts_toggle_on"
 local ROLL_OPTS_TOGGLE_CLASS_OFF = "rollOpts_toggle rollOpts_toggle_off"
 
+local ROLL_OPTS_TOGGLE_ATTRS_ON = {
+    color = "#00FF00",
+    textColor = "#000000",
+}
+local ROLL_OPTS_TOGGLE_ATTRS_OFF = {
+    color = "#999999",
+    textColor = "#FFFFFF",
+}
+
 local STRUCTURAL_UI_IDS = {
     [RO.ROLL_TAKE_HALF]   = "rollOpts_roll_takeHalf",
     [RO.ROLL_WP_REROLL]   = "rollOpts_roll_wpReroll",
@@ -243,6 +252,38 @@ local PERM_UI_KEYS = {
 --- @param on boolean
 local function rollOptsSetToggleClass(elementId, on)
     UI.setClass(elementId, on and ROLL_OPTS_TOGGLE_CLASS_ON or ROLL_OPTS_TOGGLE_CLASS_OFF)
+    U.setAttributes(elementId, on and ROLL_OPTS_TOGGLE_ATTRS_ON or ROLL_OPTS_TOGGLE_ATTRS_OFF)
+end
+
+--- Keep structural + negating condition draft entries aligned (coupled toggles).
+local function rollOptsReconcileCoupledDraft()
+    for structuralKey, negatingId in pairs(CD.STRUCTURAL_NEGATING) do
+        local structuralOn = rollOptsDraft.structural[structuralKey] == true
+        rollOptsDraft.conditions[negatingId] = not structuralOn
+    end
+end
+
+--- Paint roll-options modal toggles + numeric fields from rollOptsDraft.
+-- @param rollType string|nil
+local function rollOptsPaintModalFromDraft(rollType)
+    for uiId, permKey in pairs(PERM_UI_KEYS) do
+        rollOptsSetToggleClass(uiId, rollOptsDraft.permanent[permKey] == true)
+    end
+    for structuralKey, uiId in pairs(STRUCTURAL_UI_IDS) do
+        rollOptsSetToggleClass(uiId, rollOptsDraft.structural[structuralKey] == true)
+    end
+    for _, conditionId in ipairs(CD.listRollConditionIds()) do
+        local visible = CD.isRollConditionVisibleForRollType(conditionId, rollType)
+        local uiId = "rollCondition_" .. conditionId
+        uiSetActive(uiId, visible)
+        if visible then
+            rollOptsSetToggleClass(uiId, rollOptsDraft.conditions[conditionId] == true)
+        end
+    end
+    uiSetInputField("rollOpts_roll_numberOfRerolls", rollOptsDraft.numberOfRerolls)
+    uiSetInputField("rollOpts_roll_numberOfDiceRerolled", rollOptsDraft.numberOfDiceRerolled)
+    uiSetInteractable("rollOpts_roll_takeHalf",   not RO.isTakeHalfLocked(rollType))
+    uiSetInteractable("rollOpts_roll_hungerDice", not RO.isHungerDiceLocked(rollType))
 end
 
 --- Sync negating condition toggle when a structural toggle changes.
@@ -1355,9 +1396,6 @@ function RUI.openRollOptionsModal(color)
         [RO.PERM_AUTO_REMORSE] = RO.getPermanent(RO.PERM_AUTO_REMORSE),
         [RO.PERM_AUTO_HUNGER]  = RO.getPermanent(RO.PERM_AUTO_HUNGER),
     }
-    for uiId, permKey in pairs(PERM_UI_KEYS) do
-        rollOptsSetToggleClass(uiId, rollOptsDraft.permanent[permKey] == true)
-    end
 
     rollOptsDraft.structural = {
         [RO.ROLL_TAKE_HALF]   = RO.getForActive(active, RO.ROLL_TAKE_HALF),
@@ -1365,34 +1403,23 @@ function RUI.openRollOptionsModal(color)
         [RO.ROLL_HUNGER_DICE] = RO.getForActive(active, RO.ROLL_HUNGER_DICE),
         [RO.ROLL_CRITS]       = RO.getForActive(active, RO.ROLL_CRITS),
     }
-    for structuralKey, uiId in pairs(STRUCTURAL_UI_IDS) do
-        rollOptsSetToggleClass(uiId, rollOptsDraft.structural[structuralKey] == true)
-    end
 
     rollOptsDraft.conditions = {}
     local rt = active.rollType
     for _, conditionId in ipairs(CD.listRollConditionIds()) do
-        local visible = CD.isRollConditionVisibleForRollType(conditionId, rt)
-        local uiId = "rollCondition_" .. conditionId
-        uiSetActive(uiId, visible)
-        if visible then
-            local on = Conditions.isRollConditionEffective(pid, active, conditionId)
-            rollOptsDraft.conditions[conditionId] = on
-            rollOptsSetToggleClass(uiId, on)
+        if CD.isRollConditionVisibleForRollType(conditionId, rt) then
+            rollOptsDraft.conditions[conditionId] =
+                Conditions.isRollConditionEffective(pid, active, conditionId)
         end
     end
+    rollOptsReconcileCoupledDraft()
 
-    local rerollsStr = tostring(RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_REROLLS))
-    local diceRerolledStr = tostring(RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_DICE_REROLLED))
-    rollOptsDraft.numberOfRerolls = rerollsStr
-    rollOptsDraft.numberOfDiceRerolled = diceRerolledStr
-    uiSetInputField("rollOpts_roll_numberOfRerolls", rerollsStr)
-    uiSetInputField("rollOpts_roll_numberOfDiceRerolled", diceRerolledStr)
+    rollOptsDraft.numberOfRerolls = tostring(RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_REROLLS))
+    rollOptsDraft.numberOfDiceRerolled = tostring(RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_DICE_REROLLED))
 
-    uiSetInteractable("rollOpts_roll_takeHalf",   not RO.isTakeHalfLocked(rt))
-    uiSetInteractable("rollOpts_roll_hungerDice", not RO.isHungerDiceLocked(rt))
-
+    -- Show modal before painting toggles (setClass/color on inactive children is unreliable in TTS).
     uiSetActive("rollOpts_modal", true)
+    rollOptsPaintModalFromDraft(rt)
 end
 
 --- Toggles one roll-options modal button (permanent, structural, or roll condition).
