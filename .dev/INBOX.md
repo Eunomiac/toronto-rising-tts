@@ -4,6 +4,8 @@
 
 ## Active
 
+- [NPC Control Board] When an NPC occupies a seat but is moved to an area on the stage, their seat should remain occupied by that NPC -- just deactivated, with their figurine moved to the stage. On a "Clear", that NPC should return to their claimed seat. Importantly, this includes scene library definitions where an NPC is registered as both occupying a seat AND occupying a stage position: This is fine, as long as their seat is flagged "`isPresent = false`" -- the scene should be set up with that seat occupied but inactive, and the NPC properly positioned on the stage. If an NPC is registered as being in two places at once (i.e. in two positions on the stage, or in an _active_ seat and a stage position), the scene JSON import should fail to validate.
+
 ---
 
 ## Needs clarification

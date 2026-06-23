@@ -405,7 +405,7 @@ Core panels should be stacked in the central display panel at the bottom, so tha
 
 ### Group 2: Reference Panel Set #1
 
-This group contains buttons that reveal various reference panels. Only one reference panel can be visible at a time: when a reference panel is revealed, all other reference panels are hidden. Reference panel state is stored under `playerData.hud.reference` using canonical keys: `coteries`, `princesCourt`, `chronicleTenets`, `socialCombat`, `physicalCombat`, `frenzy`, `rolls`, `memoriam`, `projects`, `experience`.
+This group contains buttons that reveal various reference panels. Only one reference panel can be visible at a time: when a reference panel is revealed, all other reference panels are hidden. Reference panel state is stored under `playerData.hud.reference` using canonical keys: `coteries`, `princesCourt`, `chronicleTenets`, `socialCombat`, `physicalCombat`, `threats`, `frenzy`, `rolls`, `memoriam`, `projects`, `experience`.
 
 Reference panels can be nested, containing their own set of buttons that reveal further reference panels. Coterie popups use keys like `playerData.hud.reference.coteries.<coterieId>`. Prince's Court uses a separate `princesCourtPage` field for pagination.
 

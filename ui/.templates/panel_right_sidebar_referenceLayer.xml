@@ -68,7 +68,6 @@
   <Image id="playerHud_refPanel_frenzy_@@color@@" active="false" class="popupImage" image="refPanel_Frenzy" />
   <Image id="playerHud_refPanel_recovery_@@color@@" active="false" class="popupImage" image="refPanel_Recovery" />
   <Image id="playerHud_refPanel_resonance_@@color@@" active="false" class="popupImage" image="refPanel_Resonance" />
-  <Image id="playerHud_refPanel_theHunt_@@color@@" active="false" class="popupImage" image="refPanel_theHunt" />
   <Image id="playerHud_refPanel_experience_@@color@@" active="false" class="popupImage" image="refPanel_Experience" />
   <Image id="playerHud_refPanel_advantages_@@color@@" active="false" class="popupImage" image="refPanel_Advantages" />
   <Image id="playerHud_refPanel_projects_@@color@@" active="false" class="popupImage" image="refPanel_Projects" />

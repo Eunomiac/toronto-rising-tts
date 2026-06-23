@@ -69,7 +69,6 @@
   <Image id="playerHud_refPanel_frenzy_Brown" active="false" class="popupImage" image="refPanel_Frenzy" />
   <Image id="playerHud_refPanel_recovery_Brown" active="false" class="popupImage" image="refPanel_Recovery" />
   <Image id="playerHud_refPanel_resonance_Brown" active="false" class="popupImage" image="refPanel_Resonance" />
-  <Image id="playerHud_refPanel_theHunt_Brown" active="false" class="popupImage" image="refPanel_theHunt" />
   <Image id="playerHud_refPanel_experience_Brown" active="false" class="popupImage" image="refPanel_Experience" />
   <Image id="playerHud_refPanel_advantages_Brown" active="false" class="popupImage" image="refPanel_Advantages" />
   <Image id="playerHud_refPanel_projects_Brown" active="false" class="popupImage" image="refPanel_Projects" />
@@ -899,7 +898,6 @@ UI.setAttributes("page_2_left_Red", {width = "710", color = "rgba(1, 0, 0, 0.15)
   <Image id="playerHud_refPanel_frenzy_Orange" active="false" class="popupImage" image="refPanel_Frenzy" />
   <Image id="playerHud_refPanel_recovery_Orange" active="false" class="popupImage" image="refPanel_Recovery" />
   <Image id="playerHud_refPanel_resonance_Orange" active="false" class="popupImage" image="refPanel_Resonance" />
-  <Image id="playerHud_refPanel_theHunt_Orange" active="false" class="popupImage" image="refPanel_theHunt" />
   <Image id="playerHud_refPanel_experience_Orange" active="false" class="popupImage" image="refPanel_Experience" />
   <Image id="playerHud_refPanel_advantages_Orange" active="false" class="popupImage" image="refPanel_Advantages" />
   <Image id="playerHud_refPanel_projects_Orange" active="false" class="popupImage" image="refPanel_Projects" />
@@ -1729,7 +1727,6 @@ UI.setAttributes("page_2_left_Red", {width = "710", color = "rgba(1, 0, 0, 0.15)
   <Image id="playerHud_refPanel_frenzy_Red" active="false" class="popupImage" image="refPanel_Frenzy" />
   <Image id="playerHud_refPanel_recovery_Red" active="false" class="popupImage" image="refPanel_Recovery" />
   <Image id="playerHud_refPanel_resonance_Red" active="false" class="popupImage" image="refPanel_Resonance" />
-  <Image id="playerHud_refPanel_theHunt_Red" active="false" class="popupImage" image="refPanel_theHunt" />
   <Image id="playerHud_refPanel_experience_Red" active="false" class="popupImage" image="refPanel_Experience" />
   <Image id="playerHud_refPanel_advantages_Red" active="false" class="popupImage" image="refPanel_Advantages" />
   <Image id="playerHud_refPanel_projects_Red" active="false" class="popupImage" image="refPanel_Projects" />
@@ -2559,7 +2556,6 @@ UI.setAttributes("page_2_left_Red", {width = "710", color = "rgba(1, 0, 0, 0.15)
   <Image id="playerHud_refPanel_frenzy_Pink" active="false" class="popupImage" image="refPanel_Frenzy" />
   <Image id="playerHud_refPanel_recovery_Pink" active="false" class="popupImage" image="refPanel_Recovery" />
   <Image id="playerHud_refPanel_resonance_Pink" active="false" class="popupImage" image="refPanel_Resonance" />
-  <Image id="playerHud_refPanel_theHunt_Pink" active="false" class="popupImage" image="refPanel_theHunt" />
   <Image id="playerHud_refPanel_experience_Pink" active="false" class="popupImage" image="refPanel_Experience" />
   <Image id="playerHud_refPanel_advantages_Pink" active="false" class="popupImage" image="refPanel_Advantages" />
   <Image id="playerHud_refPanel_projects_Pink" active="false" class="popupImage" image="refPanel_Projects" />
@@ -3389,7 +3385,6 @@ UI.setAttributes("page_2_left_Red", {width = "710", color = "rgba(1, 0, 0, 0.15)
   <Image id="playerHud_refPanel_frenzy_Purple" active="false" class="popupImage" image="refPanel_Frenzy" />
   <Image id="playerHud_refPanel_recovery_Purple" active="false" class="popupImage" image="refPanel_Recovery" />
   <Image id="playerHud_refPanel_resonance_Purple" active="false" class="popupImage" image="refPanel_Resonance" />
-  <Image id="playerHud_refPanel_theHunt_Purple" active="false" class="popupImage" image="refPanel_theHunt" />
   <Image id="playerHud_refPanel_experience_Purple" active="false" class="popupImage" image="refPanel_Experience" />
   <Image id="playerHud_refPanel_advantages_Purple" active="false" class="popupImage" image="refPanel_Advantages" />
   <Image id="playerHud_refPanel_projects_Purple" active="false" class="popupImage" image="refPanel_Projects" />

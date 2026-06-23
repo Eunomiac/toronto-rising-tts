@@ -448,6 +448,7 @@ local NESTEDLESS_REF_KEYS = {
     rolls = true,
     socialCombat = true,
     physicalCombat = true,
+    threats = true,
     frenzy = true,
     recovery = true,
     resonance = true,

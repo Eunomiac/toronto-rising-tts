@@ -112,15 +112,6 @@
         onMouseEnter="HUD_playerRightSidebar_hoverOn"
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
-      <Image
-        id="playerHud_RSidebarBtn_ref_theHunt_Brown"
-        class="hover_button hover_button_base"
-        image="toggle_theHunt_inactive"
-        onMouseDown="HUD_playerRightSidebar_mouseDown"
-        onMouseUp="HUD_playerRightSidebar_mouseUp"
-        onMouseEnter="HUD_playerRightSidebar_hoverOn"
-        onMouseExit="HUD_playerRightSidebar_hoverOff"
-      />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
       <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
@@ -224,11 +215,6 @@
         class="hover_button hover_button_hover"
         image="toggle_Resonance_hover"
       />
-      <Image
-        id="playerHud_RSidebarBtn_ref_theHunt_Brown_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_theHunt_hover"
-      />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
 
           <Text class="spacer_20" preferredHeight="30"/>
@@ -316,11 +302,6 @@
         id="playerHud_RSidebarBtn_ref_resonance_Brown_active"
         class="hover_button hover_button_active"
         image="toggle_Resonance_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_theHunt_Brown_active"
-        class="hover_button hover_button_active"
-        image="toggle_theHunt_active"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
 
@@ -462,15 +443,6 @@
         onMouseEnter="HUD_playerRightSidebar_hoverOn"
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
-      <Image
-        id="playerHud_RSidebarBtn_ref_theHunt_Orange"
-        class="hover_button hover_button_base"
-        image="toggle_theHunt_inactive"
-        onMouseDown="HUD_playerRightSidebar_mouseDown"
-        onMouseUp="HUD_playerRightSidebar_mouseUp"
-        onMouseEnter="HUD_playerRightSidebar_hoverOn"
-        onMouseExit="HUD_playerRightSidebar_hoverOff"
-      />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
       <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
@@ -574,11 +546,6 @@
         class="hover_button hover_button_hover"
         image="toggle_Resonance_hover"
       />
-      <Image
-        id="playerHud_RSidebarBtn_ref_theHunt_Orange_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_theHunt_hover"
-      />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
 
           <Text class="spacer_20" preferredHeight="30"/>
@@ -666,11 +633,6 @@
         id="playerHud_RSidebarBtn_ref_resonance_Orange_active"
         class="hover_button hover_button_active"
         image="toggle_Resonance_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_theHunt_Orange_active"
-        class="hover_button hover_button_active"
-        image="toggle_theHunt_active"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
 
@@ -812,15 +774,6 @@
         onMouseEnter="HUD_playerRightSidebar_hoverOn"
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
-      <Image
-        id="playerHud_RSidebarBtn_ref_theHunt_Red"
-        class="hover_button hover_button_base"
-        image="toggle_theHunt_inactive"
-        onMouseDown="HUD_playerRightSidebar_mouseDown"
-        onMouseUp="HUD_playerRightSidebar_mouseUp"
-        onMouseEnter="HUD_playerRightSidebar_hoverOn"
-        onMouseExit="HUD_playerRightSidebar_hoverOff"
-      />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
       <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
@@ -924,11 +877,6 @@
         class="hover_button hover_button_hover"
         image="toggle_Resonance_hover"
       />
-      <Image
-        id="playerHud_RSidebarBtn_ref_theHunt_Red_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_theHunt_hover"
-      />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
 
           <Text class="spacer_20" preferredHeight="30"/>
@@ -1016,11 +964,6 @@
         id="playerHud_RSidebarBtn_ref_resonance_Red_active"
         class="hover_button hover_button_active"
         image="toggle_Resonance_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_theHunt_Red_active"
-        class="hover_button hover_button_active"
-        image="toggle_theHunt_active"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
 
@@ -1162,15 +1105,6 @@
         onMouseEnter="HUD_playerRightSidebar_hoverOn"
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
-      <Image
-        id="playerHud_RSidebarBtn_ref_theHunt_Pink"
-        class="hover_button hover_button_base"
-        image="toggle_theHunt_inactive"
-        onMouseDown="HUD_playerRightSidebar_mouseDown"
-        onMouseUp="HUD_playerRightSidebar_mouseUp"
-        onMouseEnter="HUD_playerRightSidebar_hoverOn"
-        onMouseExit="HUD_playerRightSidebar_hoverOff"
-      />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
       <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
@@ -1274,11 +1208,6 @@
         class="hover_button hover_button_hover"
         image="toggle_Resonance_hover"
       />
-      <Image
-        id="playerHud_RSidebarBtn_ref_theHunt_Pink_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_theHunt_hover"
-      />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
 
           <Text class="spacer_20" preferredHeight="30"/>
@@ -1366,11 +1295,6 @@
         id="playerHud_RSidebarBtn_ref_resonance_Pink_active"
         class="hover_button hover_button_active"
         image="toggle_Resonance_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_theHunt_Pink_active"
-        class="hover_button hover_button_active"
-        image="toggle_theHunt_active"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
 
@@ -1512,15 +1436,6 @@
         onMouseEnter="HUD_playerRightSidebar_hoverOn"
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
-      <Image
-        id="playerHud_RSidebarBtn_ref_theHunt_Purple"
-        class="hover_button hover_button_base"
-        image="toggle_theHunt_inactive"
-        onMouseDown="HUD_playerRightSidebar_mouseDown"
-        onMouseUp="HUD_playerRightSidebar_mouseUp"
-        onMouseEnter="HUD_playerRightSidebar_hoverOn"
-        onMouseExit="HUD_playerRightSidebar_hoverOff"
-      />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
       <Text class="spacer_20" preferredHeight="30"/>
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
@@ -1624,11 +1539,6 @@
         class="hover_button hover_button_hover"
         image="toggle_Resonance_hover"
       />
-      <Image
-        id="playerHud_RSidebarBtn_ref_theHunt_Purple_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_theHunt_hover"
-      />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
 
           <Text class="spacer_20" preferredHeight="30"/>
@@ -1716,11 +1626,6 @@
         id="playerHud_RSidebarBtn_ref_resonance_Purple_active"
         class="hover_button hover_button_active"
         image="toggle_Resonance_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_theHunt_Purple_active"
-        class="hover_button hover_button_active"
-        image="toggle_theHunt_active"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
 
