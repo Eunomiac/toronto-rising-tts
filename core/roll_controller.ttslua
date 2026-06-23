@@ -608,8 +608,6 @@ local CLASSIFICATION_OPT_BUILDERS = {
     function(active, opts)
         opts.bestialNull = type(active.rollPolicy) == "table"
             and active.rollPolicy.bestialNull == true
-            and type(active) == "table"
-            and active.rollType == C.RollType.STANDARD
     end,
 }
 
@@ -1058,6 +1056,134 @@ function RC.adjustPoolKindCount(color, kind, delta)
     return true
 end
 
+--- Whether the ST dashboard post-roll pool strip may modify this roll.
+-- @param color string
+-- @param active table|nil
+-- @return boolean
+function RC.canPostRollModifyPool(color, active)
+    if type(color) ~= "string" or type(active) ~= "table" then
+        return false
+    end
+    if active.phase ~= C.RollPhase.POST_ROLL then
+        return false
+    end
+    if active.rollType ~= C.RollType.STANDARD then
+        return false
+    end
+    if active.tookHalf == true and active.takeHalfAwaitingRouse ~= true then
+        return false
+    end
+    return true
+end
+
+--- Adjusts one pool kind during POST_ROLL (ST dashboard corrections).
+-- @param color string
+-- @param kind string
+-- @param delta number
+-- @return boolean
+function RC.adjustPostRollPoolKind(color, kind, delta)
+    U.Val("RC.adjustPostRollPoolKind()", { color = color, kind = kind, delta = delta },
+        U.Type(color) == "string" and U.Type(kind) == "string" and U.Type(delta) == "number",
+        "invalid arguments")
+    local active = getActive(color)
+    if not RC.canPostRollModifyPool(color, active) then
+        return false
+    end
+    if kind ~= DK.KIND_NORMAL and kind ~= DK.KIND_HUNGER then
+        return false
+    end
+    ensureActiveShape(active)
+    local pool = DK.normalizePool(active.pool)
+    local nextVal = math.max(0, math.floor((pool[kind] or 0) + delta))
+    if delta < 0 and nextVal == pool[kind] then
+        return false
+    end
+    active.pool[kind] = nextVal
+    setActive(color, active)
+    notifyStateChanged(color)
+    return true
+end
+
+--- Locks every physical die on the table for the active roll.
+-- @param color string
+-- @return boolean
+function RC.lockRollDicePool(color)
+    local active = getActive(color)
+    if active == nil or type(active.id) ~= "string" then
+        return false
+    end
+    lockAllRollDiceObjects(color, active.id)
+    return true
+end
+
+--- Resolves which die kind an ST post-roll add action should spawn.
+-- @param color string
+-- @param action string  addDie | addHungerDie | addStandardDie
+-- @return string|nil DK.KIND_*
+function RC.resolvePostRollSpawnKind(color, action)
+    local active = getActive(color)
+    if not RC.canPostRollModifyPool(color, active) then
+        return nil
+    end
+    if action == "addHungerDie" then
+        if not RO.getForActive(active, RO.ROLL_HUNGER_DICE) then
+            return nil
+        end
+        return DK.KIND_HUNGER
+    end
+    if action == "addStandardDie" then
+        return DK.KIND_NORMAL
+    end
+    if action == "addDie" then
+        if not RO.getForActive(active, RO.ROLL_HUNGER_DICE) then
+            return DK.KIND_NORMAL
+        end
+        if RO.getPermanent(RO.PERM_AUTO_HUNGER) then
+            local ch = math.floor(tonumber(S.getPlayerVal(color, "hunger")) or 0)
+            local pool = DK.normalizePool(active.pool)
+            if (pool.hunger or 0) < ch then
+                return DK.KIND_HUNGER
+            end
+        end
+        return DK.KIND_NORMAL
+    end
+    return nil
+end
+
+--- Resolves which die kind an ST post-roll remove action should destroy.
+-- @param color string
+-- @param action string  remDie | remHungerDie | remStandardDie
+-- @return string|nil DK.KIND_*
+function RC.resolvePostRollRemoveKind(color, action)
+    local active = getActive(color)
+    if not RC.canPostRollModifyPool(color, active) then
+        return nil
+    end
+    local pool = DK.normalizePool(active.pool)
+    if action == "remDie" then
+        if (pool.normal or 0) > 0 then
+            return DK.KIND_NORMAL
+        end
+        if (pool.hunger or 0) > 0 then
+            return DK.KIND_HUNGER
+        end
+        return nil
+    end
+    if action == "remHungerDie" then
+        if (pool.hunger or 0) > 0 then
+            return DK.KIND_HUNGER
+        end
+        return nil
+    end
+    if action == "remStandardDie" then
+        if (pool.normal or 0) > 0 then
+            return DK.KIND_NORMAL
+        end
+        return nil
+    end
+    return nil
+end
+
 --- Advances the roll from SETUP to PRE_ROLL. Baton passes to PLAYER.
 -- @param color string
 -- @return boolean
@@ -1499,6 +1625,14 @@ function RC.recalculate(color)
         -- Lock entire pool whenever dice finish settling (initial roll or WP wave). Unlock only
         -- when the player spends Willpower (applyWpRerollWaveStart).
         lockAllRollDiceObjects(color, active.id)
+    end
+
+    if active.phase == C.RollPhase.POST_ROLL
+        and type(active.meta) == "table"
+        and active.meta.stPostRollModifyLock == true
+    then
+        lockAllRollDiceObjects(color, active.id)
+        active.meta.stPostRollModifyLock = nil
     end
 
     setActive(color, active)

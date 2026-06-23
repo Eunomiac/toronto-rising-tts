@@ -218,6 +218,7 @@ function spawnDieRedirect(params)
         bloodSurgePool = params.bloodSurgePool == true,
         bloodSurgeRouse = params.bloodSurgeRouse == true,
         arcCenter = params.arcCenter,
+        postRollModify = params.postRollModify == true,
     })
 end
 
@@ -282,6 +283,7 @@ function spawnDie(bagColor, dieType, opts)
         bloodSurgeRouse = bloodSurgeRouse,
         stagedCount = #spawnedDice,
         manualRouseCount = bagKind == DK.KIND_ROUSE and countManualRouseDice() or nil,
+        postRollModify = opts.postRollModify == true,
     })
 end
 
@@ -507,6 +509,21 @@ function releaseDice(params)
     if isStorytellerBag() then
         spawnedDice = {}
     end
+end
+
+--- Unlocks the last staged die and drops bag tracking (ST post-roll pool add).
+-- @return string|nil die GUID
+function releaseLastStagedPostRollDie()
+    if #spawnedDice == 0 then
+        return nil
+    end
+    local die = spawnedDice[#spawnedDice]
+    table.remove(spawnedDice, #spawnedDice)
+    if die == nil then
+        return nil
+    end
+    die.setLock(false)
+    return die.getGUID()
 end
 
 function destroyDice()

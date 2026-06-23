@@ -987,6 +987,12 @@ function GlobalOnBagDieSpawned(params)
     local prevTotal = DK.poolTotal(pool)
 
     local ok = false
+    if params.postRollModify == true then
+        if active.phase == C.RollPhase.POST_ROLL then
+            ok = RC.adjustPostRollPoolKind(color, dieType, 1)
+        end
+        return
+    end
     if params.bloodSurgeRouse == true then
         ok = RC.adjustPoolKindCount(color, DK.KIND_BLOOD_SURGE_ROUSE, 1)
     elseif dieType == DK.KIND_ROUSE then
@@ -1047,6 +1053,166 @@ function GlobalOnBagDieRemoved(params)
     else
         RC.adjustPoolKindCount(color, poolKind, -1)
     end
+end
+
+--- Bag GUID for a player pool kind (normal / hunger / rouse / oblivRouse).
+-- @param color string
+-- @param dieKind string
+-- @return string|nil
+local function playerBagGuidForDieKind(color, dieKind)
+    if dieKind == DK.KIND_NORMAL then
+        return G.GetDiceNormalGUID(color)
+    end
+    if dieKind == DK.KIND_HUNGER then
+        return G.GetDiceHungerGUID(color)
+    end
+    if dieKind == DK.KIND_ROUSE then
+        return G.GetDiceRouseGUID(color)
+    end
+    if dieKind == DK.KIND_OBLIV_ROUSE then
+        return G.GetDiceOblivRouseGUID(color)
+    end
+    return nil
+end
+
+--- Picks a random on-table die of a kind for the active roll.
+-- @param color string
+-- @param rollId string
+-- @param dieKind string
+-- @return Object|nil
+local function pickRandomTableDieForRoll(color, rollId, dieKind)
+    if RC == nil then
+        return nil
+    end
+    local objsByKind = RC._getDiceObjectsByKindForRoll(color, rollId)
+    local list = objsByKind[dieKind] or {}
+    if #list == 0 then
+        return nil
+    end
+    return list[math.random(#list)]
+end
+
+--- ST dashboard: remove one physical die and recalculate (POST_ROLL pool correction).
+-- @param params table  { color: string, dieKind: string }
+-- @return boolean
+function GlobalPostRollRemoveDie(params)
+    if not U.requireHostForWorldMutation("GlobalPostRollRemoveDie") then
+        return false
+    end
+    if type(params) ~= "table" or RC == nil then
+        return false
+    end
+    local color = params.color
+    local dieKind = params.dieKind
+    if type(color) ~= "string" or type(dieKind) ~= "string" then
+        return false
+    end
+    local pid = S.getPlayerID(color)
+    if pid == nil then
+        return false
+    end
+    local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+    if not RC.canPostRollModifyPool(color, active) or type(active.id) ~= "string" then
+        return false
+    end
+    local obj = pickRandomTableDieForRoll(color, active.id, dieKind)
+    if obj == nil then
+        return false
+    end
+    destroyObject(obj)
+    if RC.adjustPostRollPoolKind(color, dieKind, -1) ~= true then
+        return false
+    end
+    RC.recalculate(color)
+    RC.lockRollDicePool(color)
+    return true
+end
+
+--- ST dashboard: spawn one die, randomize it, and debounce-recalculate (POST_ROLL).
+-- @param params table  { color: string, dieKind: string }
+-- @return boolean
+function GlobalPostRollAddDie(params)
+    if not U.requireHostForWorldMutation("GlobalPostRollAddDie") then
+        return false
+    end
+    if type(params) ~= "table" or RC == nil then
+        return false
+    end
+    local color = params.color
+    local dieKind = params.dieKind
+    if type(color) ~= "string" or type(dieKind) ~= "string" then
+        return false
+    end
+    local pid = S.getPlayerID(color)
+    if pid == nil then
+        return false
+    end
+    local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+    if not RC.canPostRollModifyPool(color, active) then
+        return false
+    end
+    local guid = playerBagGuidForDieKind(color, dieKind)
+    if type(guid) ~= "string" then
+        return false
+    end
+    local bag = getObjectFromGUID(guid)
+    if bag == nil then
+        return false
+    end
+    bag.call("spawnDieRedirect", {
+        bagColor = color,
+        dieType = dieKind,
+        postRollModify = true,
+    })
+    local dieGuid = bag.call("releaseLastStagedPostRollDie")
+    if type(dieGuid) ~= "string" then
+        return false
+    end
+    active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+    if active == nil then
+        return false
+    end
+    DK.ensureMeta(active)
+    active.meta.stPostRollModifyLock = true
+    S.setStateVal(active, "playerData", pid, "hud", "rollData", "active")
+    local die = getObjectFromGUID(dieGuid)
+    if die == nil or die.randomize == nil then
+        return false
+    end
+    local ok = die.randomize(color)
+    if ok ~= true then
+        die.randomize()
+    end
+    return true
+end
+
+--- ST dashboard post-roll pool strip commit (add/remove one die).
+-- @param params table  { color: string, action: string }
+-- @return boolean
+function GlobalPostRollModifyPool(params)
+    if type(params) ~= "table" or RC == nil then
+        return false
+    end
+    local color = params.color
+    local action = params.action
+    if type(color) ~= "string" or type(action) ~= "string" then
+        return false
+    end
+    if string.sub(action, 1, 3) == "add" then
+        local dieKind = RC.resolvePostRollSpawnKind(color, action)
+        if dieKind == nil then
+            return false
+        end
+        return GlobalPostRollAddDie({ color = color, dieKind = dieKind }) == true
+    end
+    if string.sub(action, 1, 3) == "rem" then
+        local dieKind = RC.resolvePostRollRemoveKind(color, action)
+        if dieKind == nil then
+            return false
+        end
+        return GlobalPostRollRemoveDie({ color = color, dieKind = dieKind }) == true
+    end
+    return false
 end
 
 --- Spawns one die from the bag object registered for this logical kind (GUID lookup).
@@ -4283,6 +4449,37 @@ end
 function HUD_gridStripMouseExit(player, value, id)
     if type(id) ~= "string" then return end
     GridStrip.onStripMouseExit(player, id)
+end
+
+function HUD_postRollCellMouseEnter(player, value, id)
+    if RUI.onPostRollCellMouseEnter then
+        RUI.onPostRollCellMouseEnter(player, id)
+    end
+end
+
+function HUD_postRollCellMouseExit(player, value, id)
+    if RUI.onPostRollCellMouseExit then
+        RUI.onPostRollCellMouseExit(player, id)
+    end
+end
+
+function HUD_postRollCellMouseDown(player, value, id)
+    if RUI.onPostRollCellMouseDown then
+        RUI.onPostRollCellMouseDown(player, id)
+    end
+end
+
+function HUD_postRollCellMouseUp(player, value, id)
+    if not requireStorytellerHostForMutation(player, "HUD_postRollCellMouseUp") then
+        return
+    end
+    local color, action = nil, nil
+    if RUI.onPostRollCellMouseUp then
+        color, action = RUI.onPostRollCellMouseUp(player, id)
+    end
+    if type(color) == "string" and type(action) == "string" then
+        Global.call("GlobalPostRollModifyPool", { color = color, action = action })
+    end
 end
 
 -- ============================================================================

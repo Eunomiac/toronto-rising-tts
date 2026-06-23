@@ -225,15 +225,6 @@ local rollOptsDraft = {
 local ROLL_OPTS_TOGGLE_CLASS_ON = "rollOpts_toggle rollOpts_toggle_on"
 local ROLL_OPTS_TOGGLE_CLASS_OFF = "rollOpts_toggle rollOpts_toggle_off"
 
-local ROLL_OPTS_TOGGLE_ATTRS_ON = {
-    color = "#00FF00",
-    textColor = "#000000",
-}
-local ROLL_OPTS_TOGGLE_ATTRS_OFF = {
-    color = "#999999",
-    textColor = "#FFFFFF",
-}
-
 local STRUCTURAL_UI_IDS = {
     [RO.ROLL_TAKE_HALF]   = "rollOpts_roll_takeHalf",
     [RO.ROLL_WP_REROLL]   = "rollOpts_roll_wpReroll",
@@ -252,38 +243,6 @@ local PERM_UI_KEYS = {
 --- @param on boolean
 local function rollOptsSetToggleClass(elementId, on)
     UI.setClass(elementId, on and ROLL_OPTS_TOGGLE_CLASS_ON or ROLL_OPTS_TOGGLE_CLASS_OFF)
-    U.setAttributes(elementId, on and ROLL_OPTS_TOGGLE_ATTRS_ON or ROLL_OPTS_TOGGLE_ATTRS_OFF)
-end
-
---- Keep structural + negating condition draft entries aligned (coupled toggles).
-local function rollOptsReconcileCoupledDraft()
-    for structuralKey, negatingId in pairs(CD.STRUCTURAL_NEGATING) do
-        local structuralOn = rollOptsDraft.structural[structuralKey] == true
-        rollOptsDraft.conditions[negatingId] = not structuralOn
-    end
-end
-
---- Paint roll-options modal toggles + numeric fields from rollOptsDraft.
--- @param rollType string|nil
-local function rollOptsPaintModalFromDraft(rollType)
-    for uiId, permKey in pairs(PERM_UI_KEYS) do
-        rollOptsSetToggleClass(uiId, rollOptsDraft.permanent[permKey] == true)
-    end
-    for structuralKey, uiId in pairs(STRUCTURAL_UI_IDS) do
-        rollOptsSetToggleClass(uiId, rollOptsDraft.structural[structuralKey] == true)
-    end
-    for _, conditionId in ipairs(CD.listRollConditionIds()) do
-        local visible = CD.isRollConditionVisibleForRollType(conditionId, rollType)
-        local uiId = "rollCondition_" .. conditionId
-        uiSetActive(uiId, visible)
-        if visible then
-            rollOptsSetToggleClass(uiId, rollOptsDraft.conditions[conditionId] == true)
-        end
-    end
-    uiSetInputField("rollOpts_roll_numberOfRerolls", rollOptsDraft.numberOfRerolls)
-    uiSetInputField("rollOpts_roll_numberOfDiceRerolled", rollOptsDraft.numberOfDiceRerolled)
-    uiSetInteractable("rollOpts_roll_takeHalf",   not RO.isTakeHalfLocked(rollType))
-    uiSetInteractable("rollOpts_roll_hungerDice", not RO.isHungerDiceLocked(rollType))
 end
 
 --- Sync negating condition toggle when a structural toggle changes.
@@ -1221,6 +1180,7 @@ function RUI.refreshSTDashboard()
         if active == nil then
             uiSetActive(rowId, false)
             RUI.refreshDashDifficultyStrip(color, nil)
+            RUI.refreshDashPostRollStrips(color, nil)
         else
             hasAnyActive = true
             uiSetActive(rowId, true)
@@ -1242,6 +1202,7 @@ function RUI.refreshSTDashboard()
                 RUI.formatEffectiveRollConditionLabels(pid, active))
 
             RUI.refreshDashDifficultyStrip(color, active)
+            RUI.refreshDashPostRollStrips(color, active)
         end
     end
 
@@ -1396,6 +1357,9 @@ function RUI.openRollOptionsModal(color)
         [RO.PERM_AUTO_REMORSE] = RO.getPermanent(RO.PERM_AUTO_REMORSE),
         [RO.PERM_AUTO_HUNGER]  = RO.getPermanent(RO.PERM_AUTO_HUNGER),
     }
+    for uiId, permKey in pairs(PERM_UI_KEYS) do
+        rollOptsSetToggleClass(uiId, rollOptsDraft.permanent[permKey] == true)
+    end
 
     rollOptsDraft.structural = {
         [RO.ROLL_TAKE_HALF]   = RO.getForActive(active, RO.ROLL_TAKE_HALF),
@@ -1403,23 +1367,31 @@ function RUI.openRollOptionsModal(color)
         [RO.ROLL_HUNGER_DICE] = RO.getForActive(active, RO.ROLL_HUNGER_DICE),
         [RO.ROLL_CRITS]       = RO.getForActive(active, RO.ROLL_CRITS),
     }
+    for structuralKey, uiId in pairs(STRUCTURAL_UI_IDS) do
+        rollOptsSetToggleClass(uiId, rollOptsDraft.structural[structuralKey] == true)
+    end
 
     rollOptsDraft.conditions = {}
-    local rt = active.rollType
     for _, conditionId in ipairs(CD.listRollConditionIds()) do
-        if CD.isRollConditionVisibleForRollType(conditionId, rt) then
-            rollOptsDraft.conditions[conditionId] =
-                Conditions.isRollConditionEffective(pid, active, conditionId)
-        end
+        local uiId = "rollCondition_" .. conditionId
+        uiSetActive(uiId, true)
+        local on = Conditions.isRollConditionEffective(pid, active, conditionId)
+        rollOptsDraft.conditions[conditionId] = on
+        rollOptsSetToggleClass(uiId, on)
     end
-    rollOptsReconcileCoupledDraft()
 
-    rollOptsDraft.numberOfRerolls = tostring(RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_REROLLS))
-    rollOptsDraft.numberOfDiceRerolled = tostring(RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_DICE_REROLLED))
+    local rt = active.rollType
+    local rerollsStr = tostring(RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_REROLLS))
+    local diceRerolledStr = tostring(RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_DICE_REROLLED))
+    rollOptsDraft.numberOfRerolls = rerollsStr
+    rollOptsDraft.numberOfDiceRerolled = diceRerolledStr
+    uiSetInputField("rollOpts_roll_numberOfRerolls", rerollsStr)
+    uiSetInputField("rollOpts_roll_numberOfDiceRerolled", diceRerolledStr)
 
-    -- Show modal before painting toggles (setClass/color on inactive children is unreliable in TTS).
+    uiSetInteractable("rollOpts_roll_takeHalf",   not RO.isTakeHalfLocked(rt))
+    uiSetInteractable("rollOpts_roll_hungerDice", not RO.isHungerDiceLocked(rt))
+
     uiSetActive("rollOpts_modal", true)
-    rollOptsPaintModalFromDraft(rt)
 end
 
 --- Toggles one roll-options modal button (permanent, structural, or roll condition).
@@ -1722,6 +1694,137 @@ function RUI.refreshDashDifficultyStrip(color, active)
         end
         return nil
     end)
+end
+
+--- Toggles difficulty vs post-roll modification strips on one ST dashboard row.
+--- @param color string
+--- @param active table|nil
+function RUI.refreshDashPostRollStrips(color, active)
+    local showPostRoll = active ~= nil
+        and RC.canPostRollModifyPool(color, active)
+    local showDifficulty = active ~= nil
+        and active.phase ~= C.RollPhase.RESOLVED
+        and not showPostRoll
+    uiSetActive(string.format("gridStrip_rollDash%s_difficulty", color), showDifficulty)
+    uiSetActive(string.format("gridStrip_rollDash%s_postRollModifications", color), showPostRoll)
+end
+
+--- @param id string|nil
+--- @return string|nil color
+--- @return string|nil action
+local function parsePostRollDashCellId(id)
+    if type(id) ~= "string" then
+        return nil, nil
+    end
+    local color, action = string.match(id, "^gridStrip_rollDash(%w+)_postRollModification_(.+)$")
+    if color == nil or action == nil then
+        return nil, nil
+    end
+    for _, c in ipairs(C.PlayerColors) do
+        if c == color then
+            return color, action
+        end
+    end
+    return nil, nil
+end
+
+local POST_ROLL_CELL_COLORS = {
+    remDie            = "#999999",
+    addDie            = "#BBBBBB",
+    remHungerDie      = "#990000",
+    addHungerDie      = "#CC2222",
+    remStandardDie    = "#444444",
+    addStandardDie    = "#666666",
+}
+
+local POST_ROLL_CELL_HOVER = {
+    remDie            = "#BBBBBB",
+    addDie            = "#DDDDDD",
+    remHungerDie      = "#BB3333",
+    addHungerDie      = "#EE4444",
+    remStandardDie    = "#666666",
+    addStandardDie    = "#888888",
+}
+
+local postRollDashPressedCellId = nil
+
+--- @param cellId string
+--- @param actionKey string|nil
+--- @param hovered boolean
+--- @param pressed boolean
+local function paintPostRollDashCell(cellId, actionKey, hovered, pressed)
+    if type(cellId) ~= "string" or type(actionKey) ~= "string" then
+        return
+    end
+    local color = POST_ROLL_CELL_COLORS[actionKey]
+    if pressed then
+        color = "#FFFFFF"
+    elseif hovered then
+        color = POST_ROLL_CELL_HOVER[actionKey] or color
+    end
+    if color ~= nil then
+        UI.setAttributes(cellId, { color = color })
+    end
+end
+
+--- @param player table|nil
+--- @param color string|nil
+--- @return boolean
+local function canUsePostRollDashStrip(player, color)
+    if not isStRollPanelInteractor(player) then
+        return false
+    end
+    if type(color) ~= "string" then
+        return false
+    end
+    local active = getPcActiveRoll(color)
+    return RC.canPostRollModifyPool(color, active)
+end
+
+--- ST dashboard post-roll strip: hover highlight.
+function RUI.onPostRollCellMouseEnter(player, id)
+    local color, action = parsePostRollDashCellId(id)
+    if not canUsePostRollDashStrip(player, color) then
+        return
+    end
+    paintPostRollDashCell(id, action, true, postRollDashPressedCellId == id)
+end
+
+--- ST dashboard post-roll strip: clear hover.
+function RUI.onPostRollCellMouseExit(player, id)
+    local color, action = parsePostRollDashCellId(id)
+    if color == nil then
+        return
+    end
+    if postRollDashPressedCellId == id then
+        return
+    end
+    paintPostRollDashCell(id, action, false, false)
+end
+
+--- ST dashboard post-roll strip: press highlight.
+function RUI.onPostRollCellMouseDown(player, id)
+    local color, action = parsePostRollDashCellId(id)
+    if not canUsePostRollDashStrip(player, color) then
+        return
+    end
+    postRollDashPressedCellId = id
+    paintPostRollDashCell(id, action, true, true)
+end
+
+--- ST dashboard post-roll strip: add/remove one pool die.
+function RUI.onPostRollCellMouseUp(player, id)
+    local color, action = parsePostRollDashCellId(id)
+    local wasPressed = postRollDashPressedCellId == id
+    postRollDashPressedCellId = nil
+    if color == nil or action == nil then
+        return
+    end
+    paintPostRollDashCell(id, action, false, false)
+    if not wasPressed or not canUsePostRollDashStrip(player, color) then
+        return
+    end
+    return color, action
 end
 
 --- @param color string

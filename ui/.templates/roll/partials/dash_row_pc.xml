@@ -1,8 +1,12 @@
 <!-- @@COLOR@@ @@ROW_BG@@ — PC active-roll dashboard row (absolute pixel layout) -->
+
+<!--
+UI.setAttributes("rollDash_row_Brown", {preferredHeight = "50", childAlignment = "UpperCenter", childForceExpandHeight = "false"})
+-->
 <Panel id="rollDash_row_@@COLOR@@"
   active="False"
   preferredWidth="@@DASH_WIDTH@@"
-  preferredHeight="34"
+  preferredHeight="50"
   color="@@ROW_BG@@">
 
   <Defaults>
@@ -11,7 +15,18 @@
   <Panel class="grid_strip_cell_hunger" color = "rgba(1, 0, 0, 0.15)" />
   <Panel class="grid_strip_cell_normal" color = "rgba(0.5, 0.5, 0.5, 0.15)" />
   <Panel class="grid_strip_cell_difficulty" color = "rgba(0, 1, 0, 0.15)" />
-  <Text class="grid_strip_cell_difficulty_text" fontSize="9" fontStyle="Bold" />
+  <Text class="grid_strip_cell_text" fontSize="9" fontStyle="Bold" />
+  <Panel class="grid_strip_cell_postRoll"
+    outline = "#000000"
+    outlineSize = "0.5 -0.5" />
+  <Panel class="grid_strip_cell_postRoll_remDie" color = "#999999" />
+  <Panel class="grid_strip_cell_postRoll_addDie" color = "#999999" />
+  <Panel class="grid_strip_cell_postRoll_remHungerDie" color = "#990000" />
+  <Panel class="grid_strip_cell_postRoll_addHungerDie" color = "#990000" />
+  <Panel class="grid_strip_cell_postRoll_remStandardDie" color = "#444444" />
+  <Panel class="grid_strip_cell_postRoll_addStandardDie" color = "#444444" />
+  <Text class="grid_strip_cell_postRoll_text" color = "#FFFFFF" />
+  <Text class="grid_strip_cell_label_text" color = "#FFFFFF"/>
 
   </Defaults>
 
@@ -93,39 +108,99 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
     <!--
     UI.setAttributes("db_gridStrip_rollDashBrown_difficulty_0_text", {fontStyle = "Bold", text = "10", fontSize = "9"})
     -->
-      <Text id="db_gridStrip_rollDash@@COLOR@@_difficulty_0_text" class="grid_strip_cell_difficulty_text" text="0" />
+      <Text id="db_gridStrip_rollDash@@COLOR@@_difficulty_0_text" class="grid_strip_cell_text" text="0" />
     </Panel>
     <Panel id="gridStrip_rollDash@@COLOR@@_difficulty_1" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp">
-      <Text id="db_gridStrip_rollDash@@COLOR@@_difficulty_1_text" class="grid_strip_cell_difficulty_text" text="1" />
+      <Text id="db_gridStrip_rollDash@@COLOR@@_difficulty_1_text" class="grid_strip_cell_text" text="1" />
     </Panel>
     <Panel id="gridStrip_rollDash@@COLOR@@_difficulty_2" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp">
-      <Text id="db_gridStrip_rollDash@@COLOR@@_difficulty_2_text" class="grid_strip_cell_difficulty_text" text="2" />
+      <Text id="db_gridStrip_rollDash@@COLOR@@_difficulty_2_text" class="grid_strip_cell_text" text="2" />
     </Panel>
     <Panel id="gridStrip_rollDash@@COLOR@@_difficulty_3" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp">
-      <Text id="db_gridStrip_rollDash@@COLOR@@_difficulty_3_text" class="grid_strip_cell_difficulty_text" text="3" />
+      <Text id="db_gridStrip_rollDash@@COLOR@@_difficulty_3_text" class="grid_strip_cell_text" text="3" />
     </Panel>
     <Panel id="gridStrip_rollDash@@COLOR@@_difficulty_4" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp">
-      <Text id="db_gridStrip_rollDash@@COLOR@@_difficulty_4_text" class="grid_strip_cell_difficulty_text" text="4" />
+      <Text id="db_gridStrip_rollDash@@COLOR@@_difficulty_4_text" class="grid_strip_cell_text" text="4" />
     </Panel>
     <Panel id="gridStrip_rollDash@@COLOR@@_difficulty_5" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp">
-      <Text id="db_gridStrip_rollDash@@COLOR@@_difficulty_5_text" class="grid_strip_cell_difficulty_text" text="5" />
+      <Text id="db_gridStrip_rollDash@@COLOR@@_difficulty_5_text" class="grid_strip_cell_text" text="5" />
     </Panel>
     <Panel id="gridStrip_rollDash@@COLOR@@_difficulty_6" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp">
-      <Text id="db_gridStrip_rollDash@@COLOR@@_difficulty_6_text" class="grid_strip_cell_difficulty_text" text="6" />
+      <Text id="db_gridStrip_rollDash@@COLOR@@_difficulty_6_text" class="grid_strip_cell_text" text="6" />
     </Panel>
     <Panel id="gridStrip_rollDash@@COLOR@@_difficulty_7" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp">
-      <Text id="db_gridStrip_rollDash@@COLOR@@_difficulty_7_text" class="grid_strip_cell_difficulty_text" text="7" />
+      <Text id="db_gridStrip_rollDash@@COLOR@@_difficulty_7_text" class="grid_strip_cell_text" text="7" />
     </Panel>
     <Panel id="gridStrip_rollDash@@COLOR@@_difficulty_8" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp">
-      <Text id="db_gridStrip_rollDash@@COLOR@@_difficulty_8_text" class="grid_strip_cell_difficulty_text" text="8" />
+      <Text id="db_gridStrip_rollDash@@COLOR@@_difficulty_8_text" class="grid_strip_cell_text" text="8" />
     </Panel>
     <Panel id="gridStrip_rollDash@@COLOR@@_difficulty_9" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp">
-      <Text id="db_gridStrip_rollDash@@COLOR@@_difficulty_9_text" class="grid_strip_cell_difficulty_text" text="9" />
+      <Text id="db_gridStrip_rollDash@@COLOR@@_difficulty_9_text" class="grid_strip_cell_text" text="9" />
     </Panel>
     <Panel id="gridStrip_rollDash@@COLOR@@_difficulty_10" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp">
-      <Text id="db_gridStrip_rollDash@@COLOR@@_difficulty_10_text" class="grid_strip_cell_difficulty_text" text="10" />
+      <Text id="db_gridStrip_rollDash@@COLOR@@_difficulty_10_text" class="grid_strip_cell_text" text="10" />
     </Panel>
   </GridLayout>
+
+  <!-- Once the player has rolled their dice, the difficulty grid strip should be hidden and the post-roll strip should be shown.
+      When a die is removed from the pool, a random die of the appropriate type should be chosen and removed (including the physical die object), then the results recalculated.
+      When a die is added to the pool, a random die of the appropriate type should be chosen and added (including the physical die object), automatically randomized (as with a Storyteller roll) then the results recalculated.
+      The Storyteller dash display of the dice pool should also be synced with any of these changes.
+  -->
+
+  <!--
+  UI.hide("gridStrip_rollDashBrown_difficulty")
+  UI.show("gridStrip_rollDashBrown_postRollModifications")
+
+  UI.setAttributes("gridStrip_rollDashBrown_postRollModifications", {})
+  UI.setAttributes("gridStrip_rollDashBrown_postRollModification_remDie", {})
+  UI.setAttributes("db_gridStrip_rollDashBrown_postRollModification_remDie_text", {})
+  UI.setAttributes("gridStrip_rollDashBrown_postRollModification_addDie", {})
+  UI.setAttributes("gridStrip_rollDashBrown_postRollModification_addDie_text", {})
+  UI.setAttributes("gridStrip_rollDashBrown_postRollModification_remHungerDie", {})
+  UI.setAttributes("gridStrip_rollDashBrown_postRollModification_remHungerDie_text", {})
+  UI.setAttributes("gridStrip_rollDashBrown_postRollModification_addHungerDie", {})
+  UI.setAttributes("gridStrip_rollDashBrown_postRollModification_addHungerDie_text", {})
+  UI.setAttributes("gridStrip_rollDashBrown_postRollModification_remStandardDie", {})
+  UI.setAttributes("gridStrip_rollDashBrown_postRollModification_remStandardDie_text", {})
+  UI.setAttributes("gridStrip_rollDashBrown_postRollModification_addStandardDie", {})
+  UI.setAttributes("gridStrip_rollDashBrown_postRollModification_addStandardDie_text", {})
+  -->
+  <GridLayout id="gridStrip_rollDash@@COLOR@@_postRollModifications" class="grid_strip grid_strip_postRoll grid_strip_postRoll_remDie" active="false" offsetXY = "-70 0" cellSize = "10 20" height = "20" spacing = "2" startCorner = "UpperLeft" startAxis = "Horizontal" constraint = "FixedRowCount" constraintCount = "1" rectAlignment = "MiddleRight" width = "130">
+    <Panel class="grid_strip_cell grid_strip_label_cell">
+      <Text class="grid_strip_cell_text grid_strip_cell_label_text" text="D" alignment="MiddleRight" />
+    </Panel>
+    <!-- Clicking either of these buttons should ADD or REMOVE the appropriate die given the player's Hunger rating (i.e. auto-hunger on)-->
+    <Panel id="gridStrip_rollDash@@COLOR@@_postRollModification_remDie" class="grid_strip_cell grid_strip_cell_postRoll grid_strip_postRoll_remDie" onMouseEnter="HUD_postRollCellMouseEnter" onMouseExit="HUD_postRollCellMouseExit" onMouseDown="HUD_postRollCellMouseDown" onMouseUp="HUD_postRollCellMouseUp">
+      <Text id="db_gridStrip_rollDash@@COLOR@@_postRollModification_remDie_text" class="grid_strip_cell_text grid_strip_cell_postRoll_text" text="▼" />
+    </Panel>
+    <Panel id="gridStrip_rollDash@@COLOR@@_postRollModification_addDie" class="grid_strip_cell grid_strip_cell_postRoll grid_strip_postRoll_addDie" onMouseEnter="HUD_postRollCellMouseEnter" onMouseExit="HUD_postRollCellMouseExit" onMouseDown="HUD_postRollCellMouseDown" onMouseUp="HUD_postRollCellMouseUp">
+      <Text id="db_gridStrip_rollDash@@COLOR@@_postRollModification_addDie_text" class="grid_strip_cell_text grid_strip_cell_postRoll_text" text="▲" />
+    </Panel>
+    <Panel class="grid_strip_cell grid_strip_spacer_cell" />
+    <Panel class="grid_strip_cell grid_strip_label_cell">
+      <Text class="grid_strip_cell_text grid_strip_cell_label_text" text="H" alignment="MiddleRight" />
+    </Panel>
+    <!-- Clicking either of these buttons should ADD or REMOVE a Hunger die, regardless of Hunger rating. -->
+    <Panel id="gridStrip_rollDash@@COLOR@@_postRollModification_remHungerDie" class="grid_strip_cell grid_strip_cell_postRoll grid_strip_postRoll_remHungerDie" onMouseEnter="HUD_postRollCellMouseEnter" onMouseExit="HUD_postRollCellMouseExit" onMouseDown="HUD_postRollCellMouseDown" onMouseUp="HUD_postRollCellMouseUp">
+      <Text id="db_gridStrip_rollDash@@COLOR@@_postRollModification_remHungerDie_text" class="grid_strip_cell_text grid_strip_cell_postRoll_text" text="▼" />
+    </Panel>
+    <Panel id="gridStrip_rollDash@@COLOR@@_postRollModification_addHungerDie" class="grid_strip_cell grid_strip_cell_postRoll grid_strip_postRoll_addHungerDie" onMouseEnter="HUD_postRollCellMouseEnter" onMouseExit="HUD_postRollCellMouseExit" onMouseDown="HUD_postRollCellMouseDown" onMouseUp="HUD_postRollCellMouseUp">
+      <Text id="db_gridStrip_rollDash@@COLOR@@_postRollModification_addHungerDie_text" class="grid_strip_cell_text grid_strip_cell_postRoll_text grid_strip_cell_postRoll_text" text="▲" />
+    </Panel>
+    <Panel class="grid_strip_cell grid_strip_spacer_cell" />
+    <Panel class="grid_strip_cell grid_strip_label_cell">
+      <Text class="grid_strip_cell_text grid_strip_cell_label_text" text="N" alignment="MiddleRight" />
+    </Panel>
+    <!-- Clicking either of these buttons should ADD or REMOVE a Normal die, regardless of Hunger rating. -->
+    <Panel id="gridStrip_rollDash@@COLOR@@_postRollModification_remStandardDie" class="grid_strip_cell grid_strip_cell_postRoll grid_strip_postRoll_remStandardDie" onMouseEnter="HUD_postRollCellMouseEnter" onMouseExit="HUD_postRollCellMouseExit" onMouseDown="HUD_postRollCellMouseDown" onMouseUp="HUD_postRollCellMouseUp">
+      <Text id="db_gridStrip_rollDash@@COLOR@@_postRollModification_remStandardDie_text" class="grid_strip_cell_text grid_strip_cell_postRoll_text" text="▼" />
+    </Panel>
+    <Panel id="gridStrip_rollDash@@COLOR@@_postRollModification_addStandardDie" class="grid_strip_cell grid_strip_cell_postRoll grid_strip_postRoll_addStandardDie" onMouseEnter="HUD_postRollCellMouseEnter" onMouseExit="HUD_postRollCellMouseExit" onMouseDown="HUD_postRollCellMouseDown" onMouseUp="HUD_postRollCellMouseUp">
+      <Text id="db_gridStrip_rollDash@@COLOR@@_postRollModification_addStandardDie_text" class="grid_strip_cell_text grid_strip_cell_postRoll_text" text="▲" />
+    </Panel>
+  </GridLayout>
+
   ##IF @@SHOW_OPTS@@##
   <Button id="rollDash_opts_@@COLOR@@"
     rectAlignment="MiddleRight"
