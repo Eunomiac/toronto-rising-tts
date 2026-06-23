@@ -98,12 +98,12 @@ UI.setAttributes("rollDash_pool_Brown", {width = "200", offsetXY = "100 0", font
 
   <Text id="rollDash_pool_Brown"
     rectAlignment="MiddleLeft"
-    alignment = "MiddleCenter"
-    offsetXY="190 0"
-    width="100"
+    alignment = "MiddleLeft"
+    offsetXY="100 0"
+    width="200"
     height="34"
     fontSize="14"
-    fontStyle = "Bold"
+    fontStyle = "Normal"
     color="#FFFFFF"
     text="" />
 
@@ -330,12 +330,12 @@ UI.setAttributes("rollDash_pool_Brown", {width = "200", offsetXY = "100 0", font
 
   <Text id="rollDash_pool_Orange"
     rectAlignment="MiddleLeft"
-    alignment = "MiddleCenter"
-    offsetXY="190 0"
-    width="100"
+    alignment = "MiddleLeft"
+    offsetXY="100 0"
+    width="200"
     height="34"
     fontSize="14"
-    fontStyle = "Bold"
+    fontStyle = "Normal"
     color="#FFFFFF"
     text="" />
 
@@ -562,12 +562,12 @@ UI.setAttributes("rollDash_pool_Brown", {width = "200", offsetXY = "100 0", font
 
   <Text id="rollDash_pool_Red"
     rectAlignment="MiddleLeft"
-    alignment = "MiddleCenter"
-    offsetXY="190 0"
-    width="100"
+    alignment = "MiddleLeft"
+    offsetXY="100 0"
+    width="200"
     height="34"
     fontSize="14"
-    fontStyle = "Bold"
+    fontStyle = "Normal"
     color="#FFFFFF"
     text="" />
 
@@ -794,12 +794,12 @@ UI.setAttributes("rollDash_pool_Brown", {width = "200", offsetXY = "100 0", font
 
   <Text id="rollDash_pool_Pink"
     rectAlignment="MiddleLeft"
-    alignment = "MiddleCenter"
-    offsetXY="190 0"
-    width="100"
+    alignment = "MiddleLeft"
+    offsetXY="100 0"
+    width="200"
     height="34"
     fontSize="14"
-    fontStyle = "Bold"
+    fontStyle = "Normal"
     color="#FFFFFF"
     text="" />
 
@@ -1026,12 +1026,12 @@ UI.setAttributes("rollDash_pool_Brown", {width = "200", offsetXY = "100 0", font
 
   <Text id="rollDash_pool_Purple"
     rectAlignment="MiddleLeft"
-    alignment = "MiddleCenter"
-    offsetXY="190 0"
-    width="100"
+    alignment = "MiddleLeft"
+    offsetXY="100 0"
+    width="200"
     height="34"
     fontSize="14"
-    fontStyle = "Bold"
+    fontStyle = "Normal"
     color="#FFFFFF"
     text="" />
 
