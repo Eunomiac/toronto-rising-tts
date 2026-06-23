@@ -93,10 +93,10 @@ D.CONTROL_BOARD_SNAP = {
       validSnaps = {
         minU = 0.35, maxU = 0.65, minV = 0.5, maxV = 0.6 }
     }, -- Mid Center, Mid Left, Mid Right
-    { num = 6, angleDelta = 360 / 6, rays = 1, groundLevel = -30, radialStagger = 0, maxU = 0.25, maxV = 0.55, origin = { u = 0.2, v = 0.5 }, defaultLightMode = "OFF" }, -- Far Left
+    { num = 6, angleDelta = 360 / 6, rays = 1, groundLevel = -30, radialStagger = 0, maxU = 0.3, maxV = 0.65, origin = { u = 0.25, v = 0.6 }, defaultLightMode = "OFF" }, -- Far Left
     { num = 6, angleDelta = 360 / 6, rays = 1, groundLevel = -10, radialStagger = 0, maxU = 0.45, maxV = 0.85, origin = { u = 0.4, v = 0.8 }, defaultLightMode = "OFF" }, -- Far Center-Left
     { num = 6, angleDelta = 360 / 6, rays = 1, groundLevel = -10, radialStagger = 0, maxU = 0.65, maxV = 0.85, origin = { u = 0.6, v = 0.8 }, defaultLightMode = "OFF" }, -- Far Center-Right
-    { num = 6, angleDelta = 360 / 6, rays = 1, groundLevel = -30, radialStagger = 0, maxU = 0.85, maxV = 0.55, origin = { u = 0.8, v = 0.5 }, defaultLightMode = "OFF" }, -- Far Right
+    { num = 6, angleDelta = 360 / 6, rays = 1, groundLevel = -30, radialStagger = 0, maxU = 0.8, maxV = 0.65, origin = { u = 0.75, v = 0.6 }, defaultLightMode = "OFF" }, -- Far Right
   }
 }
 
