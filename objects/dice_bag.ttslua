@@ -290,7 +290,7 @@ function spawnDie(bagColor, dieType, opts)
     })
 end
 
---- POST_ROLL ST correction: one die above the tray (no arc reposition of existing pool dice).
+--- POST_ROLL ST correction: one die on a random arc slot (no reposition of existing pool dice).
 -- @param params table  { bagColor: string, dieType: string }
 -- @return string|nil die GUID
 spawnPostRollDie = function(params)
@@ -305,13 +305,12 @@ spawnPostRollDie = function(params)
     if type(bagColor) ~= "string" or type(dieType) ~= "string" then
         return nil
     end
-    local scatterPos = Global.call("GlobalDiceTrayScatterPosition", { color = bagColor })
-    if type(scatterPos) ~= "table" then
-        print("[DiceBag] spawnPostRollDie: no tray scatter position for " .. tostring(bagColor))
-        return nil
-    end
+    local spawnRadius = radiusForSpawnKind(dieType, false)
+    local arcSlots = 8
+    local ringSlot = math.random(1, arcSlots)
+    local spawnPos = worldArcPoint(bagColor, nil, ringSlot, arcSlots, spawnRadius)
     local die = self.takeObject({
-        position = scatterPos,
+        position = spawnPos,
         rotation = randomRotation(),
     })
     if die == nil then

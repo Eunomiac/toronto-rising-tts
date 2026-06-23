@@ -1076,20 +1076,6 @@ local function randomizeReleasedDieForRoll(color, die)
     return true
 end
 
---- Random spawn point above a seat dice tray (`U.getScatterPosition` on the drawer prop).
--- @param params table  { color: string, yShift?: number, padPercent?: number }
--- @return table|nil  { x, y, z }
-function GlobalDiceTrayScatterPosition(params)
-    if type(params) ~= "table" then
-        return nil
-    end
-    local color = params.color
-    if type(color) ~= "string" then
-        return nil
-    end
-    return DiceDrawer.getScatterSpawnPosition(color, params.yShift, params.padPercent)
-end
-
 --- Bag GUID for a player pool kind (normal / hunger / rouse / oblivRouse).
 -- @param color string
 -- @param dieKind string
