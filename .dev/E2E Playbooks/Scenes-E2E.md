@@ -79,6 +79,8 @@ DEBUG.inspectSoundscapeAudio()
 
 **Apply scene:** blindfold ~**2 s** lead-in + **10 s** settle → `PresentDayClock.resolveAndApplyActivationClock` → `HUDP.armPinRelocationSceneCast()` (one HUD pass) → `Sync.full`.
 
+**Dice on table:** Scene Apply and Scenes-panel table toggles are blocked while any loose `d10`-tagged die exists on the table (`RSL.hasLooseDiceOnTable` — containers excluded). Finish or cancel rolls before switching layout.
+
 ---
 
 ## Step 0 — Cleanup

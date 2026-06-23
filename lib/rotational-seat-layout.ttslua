@@ -2921,6 +2921,30 @@ function M.SyncTable(tableKey, opts)
   return M.resolveSeatObjectsFromTable(tostring(key), nil, opts)
 end
 
+--- True when any module die is loose on the table (`getObjectsWithTag` excludes container contents).
+--- @return boolean
+function M.hasLooseDiceOnTable()
+  local tagged = getObjectsWithTag("d10")
+  return U.Type(tagged) == "table" and #tagged > 0
+end
+
+--- Alerts the GM and returns true when table/scene layout changes must wait for rolls to finish.
+--- @param operationLabel string|nil e.g. `"switch table layout"` or `"apply a library scene"`
+--- @return boolean true when the caller should abort
+function M.alertAndBlockIfDiceOnTable(operationLabel)
+  if not M.hasLooseDiceOnTable() then
+    return false
+  end
+  local label = U.Type(operationLabel) == "string" and operationLabel ~= "" and operationLabel
+      or "change table layout"
+  U.AlertGM(
+    "Cannot "
+      .. label
+      .. " while dice are on the table. Finish or cancel active rolls first (Confirm / Cancel on the roll dashboard)."
+  )
+  return true
+end
+
 --- Production entrypoint for table switching.
 --- If `tableKey` is already active, a full sync is run in case the scene drifted.
 --- Otherwise resolves seat geometry synchronously; transition blindfold is owned by `core.hud_blindfold`
@@ -2930,6 +2954,9 @@ end
 --- @return table|nil computed when immediate sync/switch path is used
 function M.SetTableTo(tableKey, opts)
   opts = opts or {}
+  if M.alertAndBlockIfDiceOnTable("switch table layout") then
+    return nil
+  end
   local resolvedKey, _ = resolveTableRef(tableKey)
   local currentTableKey = S.getStateVal("seatLayout", "currentTableKey")
   if currentTableKey == resolvedKey then

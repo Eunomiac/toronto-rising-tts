@@ -887,6 +887,10 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player)
         return
     end
 
+    if RSL.alertAndBlockIfDiceOnTable("apply a library scene") then
+        return
+    end
+
     closeScenesPanel()
 
     HUDBF.runTransitionAfterLeadIn(function()
@@ -1084,6 +1088,9 @@ function StorytellerScenesPanel.onHudClick(player, button, id)
         local tableKey = TABLE_TOGGLE_IDS[id]
         if C.Tables[tableKey] == nil then
             U.AlertGM("Unknown table key: " .. tostring(tableKey))
+            return
+        end
+        if RSL.alertAndBlockIfDiceOnTable("switch table layout") then
             return
         end
         HUDBF.runTransition(function()
