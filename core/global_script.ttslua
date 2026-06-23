@@ -4343,6 +4343,13 @@ function HUD_rollOptsCancel(player, value, id)
     RUI.closeRollOptionsModal()
 end
 
+--- Toggles a roll-options modal button (permanent, structural, or roll condition).
+function HUD_rollOptsToggle(player, value, id)
+    if RUI and RUI.toggleRollOptsButton then
+        RUI.toggleRollOptsButton(id)
+    end
+end
+
 function HUD_rollStNameInputChanged(player, value, id)
     if RUI.onStRollNameInputChanged then
         RUI.onStRollNameInputChanged(player, value, id)

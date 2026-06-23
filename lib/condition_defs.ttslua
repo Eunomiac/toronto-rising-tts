@@ -1,6 +1,7 @@
 --[[
   Static registry of condition definitions (not persisted).
   Each derived condition owns a `derive(stats, activeConditions, statChanges?)` function.
+  Required on every entry: id, type ("roll"|"stat"|"ui"), displayName, kind.
   Agent guidance: .dev/PC Data & Tracking/Conditions System Guide.md
 ]]
 
@@ -17,8 +18,23 @@ CD.LEGACY_PERSISTED_KEYS = {
   blindfoldVariant = true,
 }
 
+CD.VALID_TYPES = { roll = true, stat = true, ui = true }
+
+--- Structural roll-option key → negating standard roll condition id.
+CD.STRUCTURAL_NEGATING = {
+  takeHalf = "noTakeHalf",
+  wpReroll = "noWPReroll",
+  hungerDice = "noHungerDice",
+  crits = "noCriticals",
+}
+
+--- Negating roll condition id → structural rollOptions key.
+CD.STRUCTURAL_NEGATING_REVERSE = {}
+for structuralKey, negatingId in pairs(CD.STRUCTURAL_NEGATING) do
+  CD.STRUCTURAL_NEGATING_REVERSE[negatingId] = structuralKey
+end
+
 --- Tracker max from stats base + temp only (no condition stat deltas).
---- Deprecated: prefer `PSC.trackerMaxFromStats(stats, statChanges, key)` with merged statChanges.
 --- @param stats table|nil
 --- @param trackerKey string
 --- @return number
@@ -52,17 +68,29 @@ function CD.statsHasBloodPotencyRating(stats)
   return true
 end
 
+--- @param def table
+local function validateDefMetadata(def)
+  if type(def.type) ~= "string" or not CD.VALID_TYPES[def.type] then
+    error(
+      "condition_defs: \""
+        .. tostring(def.id)
+        .. "\" missing or invalid type (expected roll|stat|ui)"
+    )
+  end
+  if type(def.displayName) ~= "string" or def.displayName == "" then
+    error("condition_defs: \"" .. tostring(def.id) .. "\" missing displayName")
+  end
+end
+
 --- @type table<string, table>
 CD.Defs = {
   torpor = {
     id = "torpor",
+    type = "stat",
+    displayName = "Torpor",
     kind = "derived",
     priority = 100,
     deriveSticky = true,
-    --- Active when aggravated health damage fills the track.
-    --- @param stats table
-    --- @param _activeConditions table|nil
-    --- @return boolean
     derive = function(stats, _activeConditions, statChanges)
       local maxBoxes = PSC.trackerMaxFromStats(stats, statChanges, "health")
       if maxBoxes < 1 then
@@ -81,13 +109,11 @@ CD.Defs = {
   },
   impairedHealth = {
     id = "impairedHealth",
+    type = "stat",
+    displayName = "Impaired Health",
     kind = "derived",
     priority = 40,
     suppressedBy = { "torpor" },
-    --- Active when total health damage fills the track (not while torpor suppresses).
-    --- @param stats table
-    --- @param _activeConditions table|nil
-    --- @return boolean
     derive = function(stats, _activeConditions, statChanges)
       local maxBoxes = PSC.trackerMaxFromStats(stats, statChanges, "health")
       if maxBoxes < 1 then
@@ -111,13 +137,11 @@ CD.Defs = {
   },
   impairedWillpower = {
     id = "impairedWillpower",
+    type = "stat",
+    displayName = "Impaired Willpower",
     kind = "derived",
     priority = 40,
     suppressedBy = { "torpor" },
-    --- Active when total willpower damage fills the track.
-    --- @param stats table
-    --- @param _activeConditions table|nil
-    --- @return boolean
     derive = function(stats, _activeConditions, statChanges)
       local maxBoxes = PSC.trackerMaxFromStats(stats, statChanges, "willpower")
       if maxBoxes < 1 then
@@ -144,12 +168,10 @@ CD.Defs = {
   },
   impairedHumanity = {
     id = "impairedHumanity",
+    type = "stat",
+    displayName = "Impaired Humanity",
     kind = "derived",
     priority = 50,
-    --- Active when stain collision creates an impaired humanity box.
-    --- @param stats table
-    --- @param _activeConditions table|nil
-    --- @return boolean
     derive = function(stats, _activeConditions, statChanges)
       if type(stats.humanity) ~= "table" then
         return false
@@ -175,21 +197,17 @@ CD.Defs = {
   },
   hudFrenzy = {
     id = "hudFrenzy",
+    type = "ui",
+    displayName = "Frenzy",
     kind = "manual",
     priority = 30,
     statChanges = {},
     hud = { overlay = "overlay_frenzy" },
   },
-  --- E2E-only manual condition (Dice-E2E Suite F). Not for chronicle play — remove via console after test.
-  e2eBestialNull = {
-    id = "e2eBestialNull",
-    kind = "manual",
-    priority = 5,
-    statChanges = {},
-    roll = { bestialNull = true },
-  },
   hudBlindfold = {
     id = "hudBlindfold",
+    type = "ui",
+    displayName = "Blindfold",
     kind = "manual",
     priority = 60,
     instanceSchema = { variant = "number" },
@@ -198,6 +216,8 @@ CD.Defs = {
   },
   hudTransitionBlindfold = {
     id = "hudTransitionBlindfold",
+    type = "ui",
+    displayName = "Transition Blindfold",
     kind = "event",
     priority = 70,
     instanceSchema = { variant = "number" },
@@ -206,28 +226,28 @@ CD.Defs = {
   },
   bumpBloodPotency = {
     id = "bumpBloodPotency",
+    type = "stat",
+    displayName = "Blood Potency +1",
     kind = "location",
     priority = 10,
-    --- Active for vampires with a Blood Potency rating (hosted reconciler sets the key).
-    --- @param stats table
-    --- @param _activeConditions table|nil
-    --- @return boolean
     derive = function(stats, _activeConditions)
       return CD.statsHasBloodPotencyRating(stats)
     end,
     statChanges = { bloodPotency = 1 },
   },
-  --- Scene-import example: extra WP reroll while scene is active (see `sessionScene.conditions`).
   sceneBonusWpReroll = {
     id = "sceneBonusWpReroll",
+    type = "roll",
+    displayName = "Bonus WP Reroll",
     kind = "scene",
     priority = 15,
     statChanges = {},
     roll = { wpRerollCountBonus = 1 },
   },
-  --- Scene-import example: +1 Blood Potency while scene is active (vampires only).
   sceneVitaeCharge = {
     id = "sceneVitaeCharge",
+    type = "stat",
+    displayName = "Vitae Charge",
     kind = "scene",
     priority = 12,
     derive = function(stats, _activeConditions)
@@ -235,7 +255,68 @@ CD.Defs = {
     end,
     statChanges = { bloodPotency = 1 },
   },
+  noTakeHalf = {
+    id = "noTakeHalf",
+    type = "roll",
+    displayName = "No Take Half",
+    kind = "standard",
+    priority = 20,
+    statChanges = {},
+    roll = { takeHalfAllowed = false },
+  },
+  noWPReroll = {
+    id = "noWPReroll",
+    type = "roll",
+    displayName = "No WP Reroll",
+    kind = "standard",
+    priority = 20,
+    statChanges = {},
+    roll = { wpRerollAllowed = false },
+  },
+  noHungerDice = {
+    id = "noHungerDice",
+    type = "roll",
+    displayName = "No Hunger Dice",
+    kind = "standard",
+    priority = 20,
+    statChanges = {},
+    roll = { hungerDiceAllowed = false },
+  },
+  noCriticals = {
+    id = "noCriticals",
+    type = "roll",
+    displayName = "No Criticals",
+    kind = "standard",
+    priority = 20,
+    statChanges = {},
+    roll = { countCriticalPairs = false },
+  },
+  canRerollHunger = {
+    id = "canRerollHunger",
+    type = "roll",
+    displayName = "Can Reroll Hunger",
+    kind = "standard",
+    priority = 25,
+    statChanges = {},
+    roll = { wpCanRerollHunger = true },
+  },
+  bestialNull = {
+    id = "bestialNull",
+    type = "roll",
+    displayName = "Bestial Null",
+    kind = "standard",
+    priority = 30,
+    rollVisibleForRollType = { STANDARD = true },
+    statChanges = {},
+    roll = { bestialNull = true },
+  },
 }
+
+for _id, def in pairs(CD.Defs) do
+  if type(def) == "table" then
+    validateDefMetadata(def)
+  end
+end
 
 --- @param conditionId string
 --- @return table
@@ -256,7 +337,44 @@ function CD.isKnownId(conditionId)
   return type(conditionId) == "string" and CD.Defs[conditionId] ~= nil
 end
 
---- Sorted condition ids by registry priority ascending (deterministic merge order).
+--- Standard roll conditions shown in the ST Roll Options modal (type roll + kind standard).
+--- @return string[]
+function CD.listRollConditionIds()
+  local ids = {}
+  for id, def in pairs(CD.Defs) do
+    if type(def) == "table" and def.type == "roll" and def.kind == "standard" then
+      ids[#ids + 1] = id
+    end
+  end
+  table.sort(ids, function(a, b)
+    local na = CD.Defs[a].displayName or a
+    local nb = CD.Defs[b].displayName or b
+    if na ~= nb then
+      return na < nb
+    end
+    return a < b
+  end)
+  return ids
+end
+
+--- @param conditionId string
+--- @param rollType string|nil
+--- @return boolean
+function CD.isRollConditionVisibleForRollType(conditionId, rollType)
+  local def = CD.Defs[conditionId]
+  if type(def) ~= "table" then
+    return false
+  end
+  local vis = def.rollVisibleForRollType
+  if type(vis) ~= "table" then
+    return true
+  end
+  if type(rollType) ~= "string" or rollType == "" then
+    return false
+  end
+  return vis[rollType] == true
+end
+
 --- @param activeConditions table|nil
 --- @return string[]
 function CD.sortedActiveIds(activeConditions)

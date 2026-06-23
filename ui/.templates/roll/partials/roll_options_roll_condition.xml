@@ -1,0 +1,6 @@
+<!-- Parameters:
+@@CONDITION_KEY@@ - key of the roll condition
+@@CONDITION_NAME@@ - display name of the roll condition
+-->
+
+<Button id="rollCondition_@@CONDITION_KEY@@" class="rollOpts_toggle rollOpts_toggle_off" onClick="HUD_rollOptsToggle" text="@@CONDITION_NAME@@" />

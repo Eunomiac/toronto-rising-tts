@@ -157,15 +157,71 @@ end
 --- @param playerID string
 --- @return table
 function Conditions.resolveRollPolicy(playerID)
+  return Conditions.resolveRollPolicyForActive(playerID, nil)
+end
+
+--- Build effective condition keys for one roll (playerData + per-roll overlay).
+--- @param playerID string
+--- @param active table|nil
+--- @return table
+function Conditions.buildEffectiveConditionsForRoll(playerID, active)
+  local effective = {}
+  if playerID == C.StorytellerID then
+    return effective
+  end
+  local base = S.getStateVal("playerData", playerID, "conditions")
+  if type(base) == "table" then
+    for id, val in pairs(base) do
+      effective[id] = val
+    end
+  end
+  local overlay = type(active) == "table" and active.rollConditionOverlay or nil
+  if type(overlay) == "table" then
+    if type(overlay.forceOff) == "table" then
+      for id, on in pairs(overlay.forceOff) do
+        if on == true then
+          effective[id] = nil
+        end
+      end
+    end
+    if type(overlay.forceOn) == "table" then
+      for id, on in pairs(overlay.forceOn) do
+        if on == true then
+          effective[id] = true
+        end
+      end
+    end
+  end
+  return effective
+end
+
+--- Whether a roll condition id is active for this roll (persisted + overlay).
+--- @param playerID string
+--- @param active table|nil
+--- @param conditionId string
+--- @return boolean
+function Conditions.isRollConditionEffective(playerID, active, conditionId)
+  if type(conditionId) ~= "string" or conditionId == "" then
+    return false
+  end
+  local effective = Conditions.buildEffectiveConditionsForRoll(playerID, active)
+  return effective[conditionId] ~= nil
+end
+
+--- Merge roll policy for one roll including per-roll condition overlay.
+--- @param playerID string
+--- @param active table|nil
+--- @return table
+function Conditions.resolveRollPolicyForActive(playerID, active)
   if type(playerID) ~= "string" or playerID == "" then
-    error("Conditions.resolveRollPolicy: playerID required")
+    error("Conditions.resolveRollPolicyForActive: playerID required")
   end
   if playerID == C.StorytellerID then
     return RollPolicies.empty()
   end
   local stats = S.getStateVal("playerData", playerID, "stats")
-  local conditions = S.getStateVal("playerData", playerID, "conditions") or {}
-  return RollPolicies.mergeForPlayer(conditions, stats)
+  local effective = Conditions.buildEffectiveConditionsForRoll(playerID, active)
+  return RollPolicies.mergeForPlayer(effective, stats)
 end
 
 --- @param playerID string

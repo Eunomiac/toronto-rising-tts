@@ -276,11 +276,11 @@ U.RunSequence({
   function() printHeader("", 2) end,
   function() printHeader("", 1) end,
   function() print("") end,
-  function() printHeader("Dice E2E: SUITE F - Conditions roll policy (e2eBestialNull)", 1) end,
+  function() printHeader("Dice E2E: SUITE F - Conditions roll policy (bestialNull)", 1) end,
   function() printHeader("F1 - Baseline (no condition)", 2) end,
   rollCancelAll,
   function()
-    rollE2eClearConditions("Brown", { "e2eBestialNull" })
+    rollE2eClearConditions("Brown", { "bestialNull" })
     rollTest("Brown", 2, C.RollType.STANDARD, "E2E F baseline", 1)
     rollE2eSetPoolAndSpawn("Brown", 3, 1)
     rollConfirm("Brown", { pool = { normal = 3, hunger = 1, rouse = 0 } })
@@ -300,10 +300,10 @@ U.RunSequence({
     })
   end,
   function() printHeader("", 2) end,
-  function() printHeader("F2 - With e2eBestialNull", 2) end,
+  function() printHeader("F2 - With bestialNull", 2) end,
   rollCancelAll,
   function()
-    rollE2eApplyConditions("Brown", { "e2eBestialNull" })
+    rollE2eApplyConditions("Brown", { "bestialNull" })
     rollTest("Brown", 2, C.RollType.STANDARD, "E2E F bestialNull", 1)
     rollE2eSetPoolAndSpawn("Brown", 3, 1)
     rollConfirm("Brown", { pool = { normal = 3, hunger = 1, rouse = 0 } })
@@ -320,10 +320,10 @@ U.RunSequence({
         result = { resultClass = "bestialFailure", successes = 1, margin = -1 },
         rollPolicy = { bestialNull = true },
       },
-      contributingIncludes = { "e2eBestialNull" },
+      contributingIncludes = { "bestialNull" },
     })
   end,
-  function() rollE2eClearConditions("Brown", { "e2eBestialNull" }) end,
+  function() rollE2eClearConditions("Brown", { "bestialNull" }) end,
   function() printHeader("", 2) end,
   function() printHeader("", 1) end,
   function() print("") end,

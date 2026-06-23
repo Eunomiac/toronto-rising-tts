@@ -171,7 +171,7 @@ See §6. Snapshot on `active.rollPolicy` at roll initiate; `RC` reads policy onl
 | Game load | `validateAllPersisted` → `reconcileDerivedAllPlayers` → `reconcileHostedForSession` |
 | Location / scene apply / End scene | `reconcileHostedForSession` |
 | Seat presence / table switch | `reconcileHostedForSession` |
-| Roll initiate | `resolveRollPolicy` → `applyRollPolicyToActive` |
+| Roll initiate | `resolveRollPolicyForActive` → `RC.computeEffectiveRollState` |
 | Hunger, XP, other stats alone | **No** automatic derive reconcile |
 
 ---
@@ -201,7 +201,7 @@ hudFrenzy = {
 }
 ```
 
-**Manual — e2eBestialNull (E2E only):** `roll = { bestialNull = true }` for Dice-E2E Suite F. Apply via `rollE2eApplyConditions`; not for chronicle play.
+**Standard roll — bestialNull:** `kind = "standard"`, `type = "roll"`, `roll = { bestialNull = true }`. Shown in Roll Options modal (Standard rolls only). Dice-E2E Suite F applies via `rollE2eApplyConditions("Brown", { "bestialNull" })`.
 
 **Event — hudTransitionBlindfold:**
 
@@ -231,7 +231,7 @@ bumpBloodPotency = {
 
 ## 6. Roll policy layer
 
-Conditions may declare **`roll = { ... }`**. At `RC.initiateRoll`, `Conditions.resolveRollPolicy(playerID)` merges all active conditions' roll tables (derive-gated, priority-ordered) into **`active.rollPolicy`**. `RC.applyRollPolicyToActive` seeds `rollOptions`; `RC` and handlers read the snapshot — never `CD.Defs` directly.
+Conditions may declare **`roll = { ... }`**. At `RC.initiateRoll`, `Conditions.resolveRollPolicyForActive(playerID, active)` merges persisted conditions plus per-roll `active.rollConditionOverlay` into **`active.rollPolicy`**. `RC.computeEffectiveRollState` seeds effective structural `rollOptions`; `RC` and handlers read the snapshot — never `CD.Defs` directly.
 
 ### Merge order (with ST roll options)
 
@@ -244,7 +244,7 @@ Conditions may declare **`roll = { ... }`**. At `RC.initiateRoll`, `Conditions.r
 | Key | Type | Merge | Consumer |
 | --- | --- | --- | --- |
 | `bloodSurgeDiceMultiplier` | number | multiply (default 1) | `RC.activateBloodSurge` |
-| `wpCanRerollHunger` | boolean | OR | seeds `RO.ROLL_CAN_REROLL_HUNGER` |
+| `wpCanRerollHunger` | boolean | OR | `active.rollPolicy.wpCanRerollHunger` (WP reroll wave) |
 | `wpRerollCountBonus` | number | sum | `ROLL_NUMBER_OF_REROLLS` |
 | `countCriticalPairs` | boolean | last-wins by priority | `CLASSIFICATION_OPT_BUILDERS` |
 | `bestialNull` | boolean | OR | classification builder |

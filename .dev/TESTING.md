@@ -152,7 +152,7 @@ lua rollE2eExpectBroadcast({ color = "Brown", visible = true, resultClass = "Win
 lua rollForceConfirm("Brown")   -- automation only; human E2E steps use panel Confirm
 lua rollStTest("E2E", C.RollType.STANDARD)
 lua rollStSlots()
-lua rollE2eApplyConditions("Brown", { "e2eBestialNull" })
+lua rollE2eApplyConditions("Brown", { "bestialNull" })
 lua rollE2eClearConditions("Brown")
 ```
 

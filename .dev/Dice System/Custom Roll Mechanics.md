@@ -38,14 +38,14 @@ Use this bucket for **what happens on the table** between phases, independent of
 
 - **Declared** in registry `roll = { ... }` on condition entries ([Conditions System Guide §6](../PC%20Data%20&%20Tracking/Conditions%20System%20Guide.md#6-roll-policy-layer)).
 - **Merged** at roll initiate by `Conditions.resolveRollPolicy` → `lib/condition_roll_policies.ttslua`.
-- **Snapshotted** on `active.rollPolicy`; `RC.applyRollPolicyToActive` seeds `rollOptions` (respecting `locked`).
+- **Snapshotted** on `active.rollPolicy`; `RC.computeEffectiveRollState` derives effective structural `rollOptions` (respecting `locked` and per-roll overlay).
 - **Tier 1** keys (surge multiplier, hunger reroll, classification flags) need no `RC` conditionals beyond apply + existing hooks.
 - **Tier 2** enums (`wpRerollScope`) branch in `applyWpRerollWaveStart`.
 - **Tier 3** lifecycle (`handlers`) dispatches via `core/roll_condition_handlers.ttslua`.
 
 | Hook | Policy / handler use |
 | --- | --- |
-| `RC.initiateRoll` | snapshot + `applyRollPolicyToActive` |
+| `RC.initiateRoll` | overlay seed + `computeEffectiveRollState` |
 | `RC.activateBloodSurge` | `bloodSurgeDiceMultiplier` |
 | `CLASSIFICATION_OPT_BUILDERS` | `countCriticalPairs`, `bestialNull` from policy |
 | `applyWpRerollWaveStart` | `wpRerollScope` |
@@ -84,7 +84,7 @@ Roll FSM must **not** scan `playerData.conditions` — only `active.rollPolicy`.
 | Concern | Primary locations |
 |--------|-------------------|
 | Per-roll keys & defaults | `lib/roll_options.ttslua` |
-| Condition roll policy merge | `lib/condition_roll_policies.ttslua`, `Conditions.resolveRollPolicy`, `RC.applyRollPolicyToActive` |
+| Condition roll policy merge | `lib/condition_roll_policies.ttslua`, `Conditions.resolveRollPolicyForActive`, `RC.computeEffectiveRollState` |
 | Tier 3 roll handlers | `core/roll_condition_handlers.ttslua` |
 | `opts` assembly for classify | `CLASSIFICATION_OPT_BUILDERS`, `RC.classifyOptsFromActive` — `core/roll_controller.ttslua` |
 | Result math | `core/dice.ttslua` |

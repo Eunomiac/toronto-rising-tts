@@ -85,7 +85,7 @@ You do **not** need a second player connected. `rollTest` / `rollStTest` move th
 | `rollE2eOpenRoll(color)`                                             | ST **Open** (SETUP → PRE_ROLL) after SETUP pool assembly |
 | `rollStTest(label?, type?)`                                              | Seat prep on **Black** + ST NPC roll                                        |
 | `rollSetFaces(color, { normal, hunger, rouse, bloodSurgeRouse, oblivRouse, werewolf, rage })` | After settle: set faces + `RC.recalculate` (use **`bloodSurgeRouse`**, not `rouse`, for surge dice) |
-| `rollE2eApplyConditions` / `rollE2eClearConditions`                      | Suite F (`e2eBestialNull`)                                                  |
+| `rollE2eApplyConditions` / `rollE2eClearConditions`                      | Suite F (`bestialNull`)                                                  |
 | `rollCancel(color)`                                                      | Cancel roll; non-Black returns Host to **Black**; **Black** clears ST slots |
 | `rollConfirm(color, expected)`                                           | Assert roll state; prints **PASS** / **FAIL** + mismatch list (E2E)         |
 | `rollForceConfirm(color)`                                                | Force **CONFIRM** in POST_ROLL (automation only — not in human step lists)  |
@@ -244,7 +244,7 @@ RC.setRollOptions("Brown", { wpReroll = true, numberOfDiceRerolled = 3, canRerol
 - Step 0: Clear all active rolls.
 - Suites A–E: Smoke path (~30 min). Standard roll, cancel, dedicated rouse, Oblivion rouse (Purple), ST NPC roll.
 - Suite E2: Optional difficulty (TOR-163). E2c is covered by Suite O O2b.
-- Suite F: Conditions roll policy (`e2eBestialNull`).
+- Suite F: Conditions roll policy (`bestialNull`).
 - Suite G: Result classification G1–G7. G6/G7: call `RC.setRollOptions` after `rollTest`, before settle.
 - Suite H: Take Half (TOR-73).
 - Suite I: Spend Willpower I1–I4.
@@ -292,7 +292,7 @@ Record new failures in Linear; keep brief notes here when a step blocks the suit
 | D Oblivion dedicated (Purple)   | ☐    |                          |
 | E ST standard                   | ☐    |                          |
 | E2 Optional difficulty          | ☐    | E2a–E2c (+ O2b)           |
-| F Conditions (`e2eBestialNull`) | ☐    | F1–F2                    |
+| F Conditions (`bestialNull`) | ☐    | F1–F2                    |
 | G Classification                | ☐    | G1–G7                    |
 | H Take Half                     | ☐    | H1–H1c, H2–H2b           |
 | I Spend WP                      | ☐    | I1–I4                    |

@@ -11,6 +11,7 @@
   <Panel class="grid_strip_cell_hunger" color = "rgba(1, 0, 0, 0.15)" />
   <Panel class="grid_strip_cell_normal" color = "rgba(0.5, 0.5, 0.5, 0.15)" />
   <Panel class="grid_strip_cell_difficulty" color = "rgba(0, 1, 0, 0.15)" />
+  <Text class="grid_strip_cell_difficulty_text" fontSize="9" fontStyle="Bold" />
 
   </Defaults>
 
@@ -46,6 +47,16 @@
     fontStyle="Italic"
     color="#BBBBBB"
     text="" />
+  <Text id="rollDash_conds_@@COLOR@@"
+    rectAlignment="LowerLeft"
+    alignment = "LowerLeft"
+    offsetXY="255 3"
+    width="200"
+    height="14"
+    fontSize="10"
+    fontStyle="Italic"
+    color="#AAAAAA"
+    text="" />
 
 <!--
 UI.setAttributes("rollDash_type_Brown", {fontStyle = "Bold", fontSize = "14", color = "#FFFFFF", width = "150", offsetXY = "100 -3"})
@@ -70,17 +81,50 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
 -->
   <GridLayout id="gridStrip_rollDash@@COLOR@@_difficulty" class="grid_strip grid_strip_difficulty" active="true" offsetXY = "-70 0" cellSize = "10 20" height = "20" spacing = "2" startCorner = "UpperLeft" startAxis = "Horizontal" constraint = "FixedRowCount" constraintCount = "1" onMouseExit="HUD_gridStripMouseExit" rectAlignment = "MiddleRight" width = "130">
 
-    <Panel id="gridStrip_rollDash@@COLOR@@_difficulty_0" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" outline = "#FF0000" outlineSize = "1 1" />
-    <Panel id="gridStrip_rollDash@@COLOR@@_difficulty_1" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
-    <Panel id="gridStrip_rollDash@@COLOR@@_difficulty_2" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
-    <Panel id="gridStrip_rollDash@@COLOR@@_difficulty_3" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
-    <Panel id="gridStrip_rollDash@@COLOR@@_difficulty_4" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
-    <Panel id="gridStrip_rollDash@@COLOR@@_difficulty_5" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
-    <Panel id="gridStrip_rollDash@@COLOR@@_difficulty_6" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
-    <Panel id="gridStrip_rollDash@@COLOR@@_difficulty_7" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
-    <Panel id="gridStrip_rollDash@@COLOR@@_difficulty_8" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
-    <Panel id="gridStrip_rollDash@@COLOR@@_difficulty_9" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
-    <Panel id="gridStrip_rollDash@@COLOR@@_difficulty_10" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" />
+  <!--
+  UI.setAttributes("gridStrip_rollDashBrown_difficulty_0", {flexibleHeight = "0", minWidth = "20", flexibleWidth = "0", preferredHeight = "10", height = "", ignoreLayout = "false", outlineSize = "3 -3"})
+
+  Pretty-print the Xml content of the element we're setting attributes for:
+  print(UI.getXml("gridStrip_rollDashBrown_difficulty_0"))
+  -->
+
+
+    <Panel id="gridStrip_rollDash@@COLOR@@_difficulty_0" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp" outline = "#FF0000" outlineSize = "1 1">
+    <!--
+    UI.setAttributes("db_gridStrip_rollDashBrown_difficulty_0_text", {fontStyle = "Bold", text = "10", fontSize = "9"})
+    -->
+      <Text id="db_gridStrip_rollDash@@COLOR@@_difficulty_0_text" class="grid_strip_cell_difficulty_text" text="0" />
+    </Panel>
+    <Panel id="gridStrip_rollDash@@COLOR@@_difficulty_1" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp">
+      <Text id="db_gridStrip_rollDash@@COLOR@@_difficulty_1_text" class="grid_strip_cell_difficulty_text" text="1" />
+    </Panel>
+    <Panel id="gridStrip_rollDash@@COLOR@@_difficulty_2" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp">
+      <Text id="db_gridStrip_rollDash@@COLOR@@_difficulty_2_text" class="grid_strip_cell_difficulty_text" text="2" />
+    </Panel>
+    <Panel id="gridStrip_rollDash@@COLOR@@_difficulty_3" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp">
+      <Text id="db_gridStrip_rollDash@@COLOR@@_difficulty_3_text" class="grid_strip_cell_difficulty_text" text="3" />
+    </Panel>
+    <Panel id="gridStrip_rollDash@@COLOR@@_difficulty_4" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp">
+      <Text id="db_gridStrip_rollDash@@COLOR@@_difficulty_4_text" class="grid_strip_cell_difficulty_text" text="4" />
+    </Panel>
+    <Panel id="gridStrip_rollDash@@COLOR@@_difficulty_5" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp">
+      <Text id="db_gridStrip_rollDash@@COLOR@@_difficulty_5_text" class="grid_strip_cell_difficulty_text" text="5" />
+    </Panel>
+    <Panel id="gridStrip_rollDash@@COLOR@@_difficulty_6" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp">
+      <Text id="db_gridStrip_rollDash@@COLOR@@_difficulty_6_text" class="grid_strip_cell_difficulty_text" text="6" />
+    </Panel>
+    <Panel id="gridStrip_rollDash@@COLOR@@_difficulty_7" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp">
+      <Text id="db_gridStrip_rollDash@@COLOR@@_difficulty_7_text" class="grid_strip_cell_difficulty_text" text="7" />
+    </Panel>
+    <Panel id="gridStrip_rollDash@@COLOR@@_difficulty_8" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp">
+      <Text id="db_gridStrip_rollDash@@COLOR@@_difficulty_8_text" class="grid_strip_cell_difficulty_text" text="8" />
+    </Panel>
+    <Panel id="gridStrip_rollDash@@COLOR@@_difficulty_9" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp">
+      <Text id="db_gridStrip_rollDash@@COLOR@@_difficulty_9_text" class="grid_strip_cell_difficulty_text" text="9" />
+    </Panel>
+    <Panel id="gridStrip_rollDash@@COLOR@@_difficulty_10" class="grid_strip_cell grid_strip_cell_difficulty" onMouseEnter="HUD_gridStripCellMouseEnter" onMouseDown="HUD_gridStripCellMouseDown" onMouseUp="HUD_gridStripCellMouseUp">
+      <Text id="db_gridStrip_rollDash@@COLOR@@_difficulty_10_text" class="grid_strip_cell_difficulty_text" text="10" />
+    </Panel>
   </GridLayout>
   ##IF @@SHOW_OPTS@@##
   <Button id="rollDash_opts_@@COLOR@@"

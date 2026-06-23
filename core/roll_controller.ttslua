@@ -51,6 +51,7 @@ local P    = require("lib.pc_stats")
 local ES   = require("lib.effective_stats")
 local Conditions = require("core.conditions")
 local RollConditionHandlers = require("core.roll_condition_handlers")
+local CD = require("lib.condition_defs")
 local PCST = require("core.pc_storyteller_panel")
 local Sync = require("core.sync")
 
@@ -172,10 +173,8 @@ end
 
 --- Roll-option keys guarded by rollPolicy.locked (policy schema field names).
 local RO_OPTION_LOCK_POLICY_KEY = {
-    [RO.ROLL_CAN_REROLL_HUNGER]       = "wpCanRerollHunger",
     [RO.ROLL_NUMBER_OF_REROLLS]       = "numberOfRerolls",
     [RO.ROLL_CRITS]                   = "countCriticalPairs",
-    [RO.ROLL_BESTIAL_NULL]            = "bestialNull",
     [RO.ROLL_TAKE_HALF]               = "takeHalfAllowed",
 }
 
@@ -191,40 +190,71 @@ local function wpRerollScopeForActive(active)
     return "selective"
 end
 
---- Applies merged condition roll policy into active.rollOptions (respects locked).
+--- Resolves roll policy + effective structural rollOptions from overlay and conditions.
+-- @param color string
 -- @param active table  Active roll record (mutated)
-function RC.applyRollPolicyToActive(active)
-    if type(active) ~= "table" or type(active.rollPolicy) ~= "table" then
+function RC.computeEffectiveRollState(color, active)
+    if type(active) ~= "table" then
+        return
+    end
+    local pid = S.getPlayerID(color)
+    if pid == nil then
         return
     end
 
-    local policy = active.rollPolicy
-    local locked = policy.locked or {}
-    active.rollOptions = active.rollOptions or RO.defaultsForRollType(active.rollType or "")
-
-    if policy.wpCanRerollHunger == true and locked.wpCanRerollHunger ~= true then
-        active.rollOptions[RO.ROLL_CAN_REROLL_HUNGER] = true
+    if type(active.rollConditionOverlay) ~= "table" then
+        active.rollConditionOverlay = { forceOn = {}, forceOff = {} }
     end
+    if type(active.rollConditionOverlay.forceOn) ~= "table" then
+        active.rollConditionOverlay.forceOn = {}
+    end
+    if type(active.rollConditionOverlay.forceOff) ~= "table" then
+        active.rollConditionOverlay.forceOff = {}
+    end
+
+    active.rollOptions = active.rollOptions or RO.defaultsForRollType(active.rollType or "")
+    active.rollPolicy = Conditions.resolveRollPolicyForActive(pid, active)
+
+    local policy = active.rollPolicy
+    local locked = type(policy.locked) == "table" and policy.locked or {}
+    local rt = active.rollType or ""
+    local defaults = RO.defaultsForRollType(rt)
 
     local bonus = tonumber(policy.wpRerollCountBonus) or 0
     if bonus ~= 0 and locked.numberOfRerolls ~= true then
-        local base = RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_REROLLS)
-        active.rollOptions[RO.ROLL_NUMBER_OF_REROLLS] = math.max(0, base + bonus)
+        local base = active.rollOptions[RO.ROLL_NUMBER_OF_REROLLS]
+        if type(base) ~= "number" then
+            base = defaults[RO.ROLL_NUMBER_OF_REROLLS]
+        end
+        active.rollOptions[RO.ROLL_NUMBER_OF_REROLLS] = math.max(0, math.floor(base + bonus))
     end
 
-    if type(policy.countCriticalPairs) == "boolean" and locked.countCriticalPairs ~= true then
-        active.rollOptions[RO.ROLL_CRITS] = policy.countCriticalPairs
+    local function structuralBaseline(key)
+        local v = active.rollOptions[key]
+        if v == nil then
+            return defaults[key] == true
+        end
+        return v == true
     end
 
-    if policy.bestialNull == true and locked.bestialNull ~= true then
-        active.rollOptions[RO.ROLL_BESTIAL_NULL] = true
+    local takeHalf = structuralBaseline(RO.ROLL_TAKE_HALF) and policy.takeHalfAllowed ~= false
+    local wpReroll = structuralBaseline(RO.ROLL_WP_REROLL) and policy.wpRerollAllowed ~= false
+    local hungerDice = structuralBaseline(RO.ROLL_HUNGER_DICE) and policy.hungerDiceAllowed ~= false
+    local crits = structuralBaseline(RO.ROLL_CRITS)
+    if type(policy.countCriticalPairs) == "boolean" then
+        crits = policy.countCriticalPairs
     end
 
-    if policy.takeHalfAllowed == false and locked.takeHalfAllowed ~= true then
-        active.rollOptions[RO.ROLL_TAKE_HALF] = false
-    end
+    active.rollOptions[RO.ROLL_TAKE_HALF] = takeHalf
+    active.rollOptions[RO.ROLL_WP_REROLL] = wpReroll
+    active.rollOptions[RO.ROLL_HUNGER_DICE] = hungerDice
+    active.rollOptions[RO.ROLL_CRITS] = crits
 
     RO.sanitizeRollOptions(active)
+end
+
+--- @deprecated use `RC.computeEffectiveRollState(color, active)`
+function RC.applyRollPolicyToActive(_active)
 end
 
 --- Initializes willpower counters from roll options (call after RO.seedActiveRoll).
@@ -326,13 +356,14 @@ local function lockAllRollDiceObjects(color, rollId)
 end
 
 --- After initial POST_ROLL settle, all dice are locked (see recalculate). Here we unlock
---- normals for rerolling and lock hunger unless RO.ROLL_CAN_REROLL_HUNGER (applied now, not carried from prior phase).
+--- normals for rerolling and lock hunger unless rollPolicy.wpCanRerollHunger (applied now, not carried from prior phase).
 -- @param color string
 -- @param active table
 local function applyWpRerollWaveStart(color, active)
     cancelWpDieLockWaitsForColor(color)
     active.willpower.rerollRandomizedGuids = {}
-    local canHunger = RO.getForActive(active, RO.ROLL_CAN_REROLL_HUNGER)
+    local canHunger = type(active.rollPolicy) == "table"
+        and active.rollPolicy.wpCanRerollHunger == true
     local scope = wpRerollScopeForActive(active)
     local objsByKind = RC._getDiceObjectsByKindForRoll(color, active.id)
     for _, kind in ipairs(diceKindsForActive(active)) do
@@ -575,10 +606,9 @@ local CLASSIFICATION_OPT_BUILDERS = {
         end
     end,
     function(active, opts)
-        local fromPolicy = type(active.rollPolicy) == "table"
+        opts.bestialNull = type(active.rollPolicy) == "table"
             and active.rollPolicy.bestialNull == true
-        local fromOpts = RO.getForActive(active, RO.ROLL_BESTIAL_NULL)
-        opts.bestialNull = (fromPolicy or fromOpts)
+            and type(active) == "table"
             and active.rollType == C.RollType.STANDARD
     end,
 }
@@ -874,10 +904,10 @@ function RC.initiateRoll(color, config)
     }
 
     RO.seedActiveRoll(active)
+    active.rollConditionOverlay = { forceOn = {}, forceOff = {} }
     local policyPlayerID = S.getPlayerID(color)
     if policyPlayerID ~= nil then
-        active.rollPolicy = Conditions.resolveRollPolicy(policyPlayerID)
-        RC.applyRollPolicyToActive(active)
+        RC.computeEffectiveRollState(color, active)
         RollConditionHandlers.run("onRollInitiated", color, active)
     end
     seedWillpowerBlock(active)
@@ -2173,7 +2203,7 @@ function RC.promoteDedicatedRouseToStandard(color)
     active.rollType = C.RollType.STANDARD
     active.difficulty = nil
     RO.seedActiveRoll(active)
-    RC.applyRollPolicyToActive(active)
+    RC.computeEffectiveRollState(color, active)
     seedWillpowerBlock(active)
     setActive(color, active)
     notifyStateChanged(color)
@@ -2372,9 +2402,92 @@ function RC.toggleBloodSurge(color)
     return RC.activateBloodSurge(color)
 end
 
+--- Ensures per-roll condition overlay table exists on active roll.
+-- @param active table
+local function ensureRollConditionOverlay(active)
+    if type(active.rollConditionOverlay) ~= "table" then
+        active.rollConditionOverlay = { forceOn = {}, forceOff = {} }
+    end
+    if type(active.rollConditionOverlay.forceOn) ~= "table" then
+        active.rollConditionOverlay.forceOn = {}
+    end
+    if type(active.rollConditionOverlay.forceOff) ~= "table" then
+        active.rollConditionOverlay.forceOff = {}
+    end
+end
+
+--- Apply overlay patch for one roll condition id (on = active, off = inactive).
+-- @param active table
+-- @param conditionId string
+-- @param wantActive boolean
+local function setOverlayConditionWant(active, conditionId, wantActive)
+    ensureRollConditionOverlay(active)
+    if wantActive then
+        active.rollConditionOverlay.forceOn[conditionId] = true
+        active.rollConditionOverlay.forceOff[conditionId] = nil
+    else
+        active.rollConditionOverlay.forceOff[conditionId] = true
+        active.rollConditionOverlay.forceOn[conditionId] = nil
+    end
+end
+
+--- Coupled structural toggle → negating roll condition overlay.
+-- @param active table
+-- @param structuralKey string rollOptions key
+-- @param wantOn boolean structural toggle desired on
+local function applyStructuralCoupledOverlay(active, structuralKey, wantOn)
+    local negatingId = CD.STRUCTURAL_NEGATING[structuralKey]
+    if type(negatingId) ~= "string" then
+        return
+    end
+    if wantOn then
+        setOverlayConditionWant(active, negatingId, false)
+        active.rollOptions[structuralKey] = true
+    else
+        setOverlayConditionWant(active, negatingId, true)
+        active.rollOptions[structuralKey] = false
+    end
+end
+
+--- Merge per-roll condition overlay patch and recompute effective state.
+-- @param color string
+-- @param patch table|nil `{ forceOn = { id = true }, forceOff = { id = true } }`
+-- @return boolean
+function RC.setRollConditionOverlay(color, patch)
+    U.Val("RC.setRollConditionOverlay()", { color = color, patch = patch },
+        U.Type(color) == "string", "color must be a string")
+
+    local active = getActive(color)
+    if active == nil then
+        return false
+    end
+    ensureRollConditionOverlay(active)
+    if type(patch) == "table" then
+        if type(patch.forceOn) == "table" then
+            for id, on in pairs(patch.forceOn) do
+                if on == true and type(id) == "string" then
+                    setOverlayConditionWant(active, id, true)
+                end
+            end
+        end
+        if type(patch.forceOff) == "table" then
+            for id, off in pairs(patch.forceOff) do
+                if off == true and type(id) == "string" then
+                    setOverlayConditionWant(active, id, false)
+                end
+            end
+        end
+    end
+    RC.computeEffectiveRollState(color, active)
+    setActive(color, active)
+    tryClassifyResultInternal(color)
+    notifyStateChanged(color)
+    return true
+end
+
 --- Merges Storyteller per-roll option overrides into the active roll.
 -- @param color string
--- @param opts table  Partial rollOptions boolean map
+-- @param opts table  Partial rollOptions map
 -- @return boolean
 function RC.setRollOptions(color, opts)
     U.Val("RC.setRollOptions()", {color = color, opts = opts},
@@ -2392,18 +2505,45 @@ function RC.setRollOptions(color, opts)
     if type(active.rollPolicy) == "table" and type(active.rollPolicy.locked) == "table" then
         locked = active.rollPolicy.locked
     end
+
+    local E2E_SHIM = {
+        crits = RO.ROLL_CRITS,
+        bestialNull = "bestialNull",
+    }
+
     for k, v in pairs(opts) do
         local policyLockKey = RO_OPTION_LOCK_POLICY_KEY[k]
         if policyLockKey ~= nil and locked[policyLockKey] == true then
             print(string.format(
                 "[RC] setRollOptions: ignored locked option %s for %s (roll policy)",
                 tostring(k), color))
+        elseif k == "bestialNull" then
+            if type(v) == "boolean" then
+                setOverlayConditionWant(active, "bestialNull", v)
+            end
+        elseif k == "canRerollHunger" then
+            if type(v) == "boolean" then
+                setOverlayConditionWant(active, "canRerollHunger", v)
+            end
+        elseif type(v) == "boolean" and CD.STRUCTURAL_NEGATING[k] ~= nil then
+            applyStructuralCoupledOverlay(active, k, v)
+        elseif E2E_SHIM[k] ~= nil and type(v) == "boolean" then
+            local mapped = E2E_SHIM[k]
+            if mapped == RO.ROLL_CRITS then
+                applyStructuralCoupledOverlay(active, RO.ROLL_CRITS, v)
+            elseif mapped == "bestialNull" then
+                setOverlayConditionWant(active, "bestialNull", v)
+            end
         elseif locked[k] == true then
             print(string.format(
                 "[RC] setRollOptions: ignored locked option %s for %s (roll policy)",
                 tostring(k), color))
         elseif type(v) == "boolean" then
-            active.rollOptions[k] = v
+            if CD.STRUCTURAL_NEGATING[k] then
+                applyStructuralCoupledOverlay(active, k, v)
+            else
+                active.rollOptions[k] = v
+            end
         elseif type(v) == "number" then
             active.rollOptions[k] = math.floor(v)
         elseif type(v) == "string" then
@@ -2413,7 +2553,8 @@ function RC.setRollOptions(color, opts)
             end
         end
     end
-    RO.sanitizeRollOptions(active)
+
+    RC.computeEffectiveRollState(color, active)
     if type(active.willpower) == "table" and type(active.willpower.rerollsRemaining) == "number" then
         local cap = RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_REROLLS)
         if active.willpower.rerollsRemaining > cap then

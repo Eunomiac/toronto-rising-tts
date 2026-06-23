@@ -24,6 +24,8 @@ function RollPolicies.empty()
     countCriticalPairs = nil,
     bestialNull = false,
     takeHalfAllowed = true,
+    wpRerollAllowed = true,
+    hungerDiceAllowed = true,
     wpRerollScope = "selective",
     handlers = {},
     locked = {},
@@ -80,6 +82,14 @@ function RollPolicies.mergeConditionRoll(roll, acc, conditionId, priority)
 
   if roll.takeHalfAllowed == false then
     acc.takeHalfAllowed = false
+  end
+
+  if roll.wpRerollAllowed == false then
+    acc.wpRerollAllowed = false
+  end
+
+  if roll.hungerDiceAllowed == false then
+    acc.hungerDiceAllowed = false
   end
 
   local scope = roll.wpRerollScope

@@ -25,10 +25,8 @@ RO.PERM_AUTO_ROUSE_LEGACY = "autoRouse"
 RO.ROLL_TAKE_HALF     = "takeHalf"
 RO.ROLL_WP_REROLL     = "wpReroll"
 RO.ROLL_HUNGER_DICE   = "hungerDice"
-RO.ROLL_BESTIAL_NULL  = "bestialNull"
 RO.ROLL_CRITS         = "crits"
 -- Willpower reroll tuning (per-roll; ST Roll Options modal)
-RO.ROLL_CAN_REROLL_HUNGER      = "canRerollHunger"
 RO.ROLL_NUMBER_OF_REROLLS      = "numberOfRerolls"
 RO.ROLL_NUMBER_OF_DICE_REROLLED = "numberOfDiceRerolled"
 
@@ -68,11 +66,9 @@ function RO.defaultsForRollType(rollType)
         [RO.ROLL_TAKE_HALF]    = C.RollTypesNoTakeHalf[rollType] ~= true,
         [RO.ROLL_WP_REROLL]    = C.RollTypesNoWillpower[rollType] ~= true,
         [RO.ROLL_HUNGER_DICE]  = C.RollTypesWithoutHunger[rollType] ~= true,
-        [RO.ROLL_BESTIAL_NULL] = false,
         -- Goal rolls disable critical pair bonuses by default, but the ST can
         -- still toggle this per roll in the options modal for edge-case rulings.
         [RO.ROLL_CRITS]        = C.RollTypesNoCriticals[rollType] ~= true,
-        [RO.ROLL_CAN_REROLL_HUNGER]       = false,
         [RO.ROLL_NUMBER_OF_REROLLS]       = 1,
         [RO.ROLL_NUMBER_OF_DICE_REROLLED] = 3,
     }
@@ -99,13 +95,6 @@ function RO.isRouseFamilyRoll(rollType)
     return rollType == C.RollType.ROUSE or rollType == C.RollType.ROUSE_OBLIVION
 end
 
---- True when Bestial Null row is shown (Standard rolls only).
--- @param rollType string
--- @return boolean
-function RO.isBestialNullVisible(rollType)
-    return rollType == C.RollType.STANDARD
-end
-
 --- Enforces structural locks for roll types where some options are not meaningful.
 -- @param active table  Active roll record (mutated)
 function RO.sanitizeRollOptions(active)
@@ -116,9 +105,6 @@ function RO.sanitizeRollOptions(active)
     end
     if RO.isHungerDiceLocked(rt) then
         active.rollOptions[RO.ROLL_HUNGER_DICE] = false
-    end
-    if not RO.isBestialNullVisible(rt) then
-        active.rollOptions[RO.ROLL_BESTIAL_NULL] = false
     end
 
     local nR = active.rollOptions[RO.ROLL_NUMBER_OF_REROLLS]

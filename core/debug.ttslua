@@ -2360,7 +2360,7 @@ end
 --- Apply temporary manual conditions for E2E (e.g. Suite F). Cleared with rollE2eClearConditions.
 -- @param color string
 -- @param conditionIds table Array of condition id strings from condition_defs
--- @usage lua rollE2eApplyConditions("Brown", { "e2eBestialNull" })
+-- @usage lua rollE2eApplyConditions("Brown", { "bestialNull" })
 function DEBUG.rollE2eApplyConditions(color, conditionIds)
     if type(color) ~= "string" or type(conditionIds) ~= "table" then
         print("Usage: rollE2eApplyConditions(color, { 'conditionId', ... })")
@@ -2382,7 +2382,7 @@ end
 
 --- Clear manual conditions applied for E2E on one seat.
 -- @param color string
--- @param conditionIds table|nil  If nil, clears e2eBestialNull
+-- @param conditionIds table|nil  If nil, clears bestialNull
 function DEBUG.rollE2eClearConditions(color, conditionIds)
     if type(color) ~= "string" then
         print("Usage: rollE2eClearConditions(color, conditionIds?)")
@@ -2394,7 +2394,7 @@ function DEBUG.rollE2eClearConditions(color, conditionIds)
     end
     local ids = conditionIds
     if type(ids) ~= "table" then
-        ids = { "e2eBestialNull" }
+        ids = { "bestialNull" }
     end
     local Conditions = require("core.conditions")
     for _, cid in ipairs(ids) do
@@ -5262,7 +5262,7 @@ function DEBUG.help()
     print("  rollTestNoDiff(color, type?, label?, hungerLevel?) - Arm PRE_ROLL without ST difficulty")
     print("  rollE2eSeatPrep(color)     - Manual prep only; rollTest/rollStTest include this")
     print("  rollSetFaces(color, { normal={7,7}, hunger={10,1} }) - Set faces + recalculate (POST_ROLL)")
-    print("  rollE2eApplyConditions(color, { 'e2eBestialNull' }) / rollE2eClearConditions(color, ids?)")
+    print("  rollE2eApplyConditions(color, { 'bestialNull' }) / rollE2eClearConditions(color, ids?)")
     print("  rollE2eSetPoolAndSpawn / rollE2eSetPoolAutoHunger / rollE2eAddPoolKindSpawn / rollE2eExpectBroadcast")
     print("  rollE2eWaitForDiceTray / rollE2eSpawnActivePool / rollE2ePrepareRollRelease")
     print("  rollState(color)         - Print active roll record for a player")

@@ -50,8 +50,8 @@ RollConditionHandlers.HANDLERS = {
       if type(active.willpower) ~= "table" then
         return
       end
-      local RO = require("lib.roll_options")
-      local canHunger = RO.getForActive(active, RO.ROLL_CAN_REROLL_HUNGER)
+      local canHunger = type(active.rollPolicy) == "table"
+        and active.rollPolicy.wpCanRerollHunger == true
       active.willpower.mandatoryFullRerollRequired = collectEligibleDieGuids(color, active, canHunger)
       active.willpower.mandatoryFullRerollComplete = false
     end,

@@ -25,6 +25,8 @@ local S = require("core.state")
 local C = require("lib.constants")
 local U = require("lib.util")
 local RO = require("lib.roll_options")
+local CD = require("lib.condition_defs")
+local Conditions = require("core.conditions")
 local DK = require("lib.dice_kinds")
 local NPC_DATA = require("lib.npcs_data")
 local GridStrip = require("lib.grid_strip")
@@ -211,36 +213,65 @@ local rollOptsTargetColor = nil
 local stRollNamePendingDieKind = nil
 local stRollNameDraft = ""
 
---- Stashed numeric InputField text for roll options modal (TTS InputField contract).
+--- Stashed roll options modal draft (Toggle buttons use setClass, not isOn).
 local rollOptsDraft = {
+    permanent = {},
+    structural = {},
+    conditions = {},
     numberOfRerolls = "1",
     numberOfDiceRerolled = "3",
 }
 
---- Sets a Toggle's on state (TTS uses string "true"/"false" on isOn).
--- @param elementId string
--- @param on boolean
-local function uiToggleSet(elementId, on)
-    U.setAttribute(elementId, "isOn", on and "true" or "false")
+local ROLL_OPTS_TOGGLE_CLASS_ON = "rollOpts_toggle rollOpts_toggle_on"
+local ROLL_OPTS_TOGGLE_CLASS_OFF = "rollOpts_toggle rollOpts_toggle_off"
+
+local STRUCTURAL_UI_IDS = {
+    [RO.ROLL_TAKE_HALF]   = "rollOpts_roll_takeHalf",
+    [RO.ROLL_WP_REROLL]   = "rollOpts_roll_wpReroll",
+    [RO.ROLL_HUNGER_DICE] = "rollOpts_roll_hungerDice",
+    [RO.ROLL_CRITS]       = "rollOpts_roll_crits",
+}
+
+local PERM_UI_KEYS = {
+    rollOpts_perm_autoApplyRouseOutcomes = RO.PERM_AUTO_APPLY_ROUSE_OUTCOMES,
+    rollOpts_perm_autoWp                 = RO.PERM_AUTO_WP,
+    rollOpts_perm_autoRemorse            = RO.PERM_AUTO_REMORSE,
+    rollOpts_perm_autoHunger             = RO.PERM_AUTO_HUNGER,
+}
+
+--- @param elementId string
+--- @param on boolean
+local function rollOptsSetToggleClass(elementId, on)
+    UI.setClass(elementId, on and ROLL_OPTS_TOGGLE_CLASS_ON or ROLL_OPTS_TOGGLE_CLASS_OFF)
 end
 
---- Reads a Toggle's on state.
--- TTS may return string "true"/"false", boolean, or number; normalize so Apply matches the UI.
--- @param elementId string
--- @return boolean
-local function uiToggleGet(elementId)
-    local t = UI.getAttribute(elementId, "isOn")
-    if t == true or t == 1 then
-        return true
+--- Sync negating condition toggle when a structural toggle changes.
+-- @param structuralKey string
+-- @param structuralOn boolean
+local function rollOptsSyncNegatingFromStructural(structuralKey, structuralOn)
+    local negatingId = CD.STRUCTURAL_NEGATING[structuralKey]
+    if type(negatingId) ~= "string" then
+        return
     end
-    if t == false or t == 0 then
-        return false
+    local conditionOn = not structuralOn
+    rollOptsDraft.conditions[negatingId] = conditionOn
+    rollOptsSetToggleClass("rollCondition_" .. negatingId, conditionOn)
+end
+
+--- Sync structural toggle when a negating condition toggle changes.
+-- @param conditionId string
+-- @param conditionOn boolean
+local function rollOptsSyncStructuralFromNegating(conditionId, conditionOn)
+    local structuralKey = CD.STRUCTURAL_NEGATING_REVERSE[conditionId]
+    if type(structuralKey) ~= "string" then
+        return
     end
-    if type(t) == "string" then
-        local lower = string.lower(t)
-        return lower == "true" or lower == "1" or lower == "yes"
+    local structuralOn = not conditionOn
+    rollOptsDraft.structural[structuralKey] = structuralOn
+    local uiId = STRUCTURAL_UI_IDS[structuralKey]
+    if uiId ~= nil then
+        rollOptsSetToggleClass(uiId, structuralOn)
     end
-    return false
 end
 
 -- Maximum die image slots: standard strip (PC rollControl_die_N) / Black panel / broadcast.
@@ -1166,6 +1197,9 @@ function RUI.refreshSTDashboard()
             -- Pool
             uiSetValue(string.format("rollDash_pool_%s",  color), formatPoolCompact(active.pool))
 
+            uiSetValue(string.format("rollDash_conds_%s", color),
+                RUI.formatEffectiveRollConditionLabels(pid, active))
+
             RUI.refreshDashDifficultyStrip(color, active)
         end
     end
@@ -1313,20 +1347,40 @@ function RUI.openRollOptionsModal(color)
     if active == nil then return end
 
     rollOptsTargetColor = color
+    RC.computeEffectiveRollState(color, active)
 
-    uiToggleSet("rollOpts_perm_autoApplyRouseOutcomes",
-        RO.getPermanent(RO.PERM_AUTO_APPLY_ROUSE_OUTCOMES))
-    uiToggleSet("rollOpts_perm_autoWp",      RO.getPermanent(RO.PERM_AUTO_WP))
-    uiToggleSet("rollOpts_perm_autoRemorse", RO.getPermanent(RO.PERM_AUTO_REMORSE))
-    uiToggleSet("rollOpts_perm_autoHunger",  RO.getPermanent(RO.PERM_AUTO_HUNGER))
+    rollOptsDraft.permanent = {
+        [RO.PERM_AUTO_APPLY_ROUSE_OUTCOMES] = RO.getPermanent(RO.PERM_AUTO_APPLY_ROUSE_OUTCOMES),
+        [RO.PERM_AUTO_WP]      = RO.getPermanent(RO.PERM_AUTO_WP),
+        [RO.PERM_AUTO_REMORSE] = RO.getPermanent(RO.PERM_AUTO_REMORSE),
+        [RO.PERM_AUTO_HUNGER]  = RO.getPermanent(RO.PERM_AUTO_HUNGER),
+    }
+    for uiId, permKey in pairs(PERM_UI_KEYS) do
+        rollOptsSetToggleClass(uiId, rollOptsDraft.permanent[permKey] == true)
+    end
 
-    local ro = active.rollOptions or RO.defaultsForRollType(active.rollType)
-    uiToggleSet("rollOpts_roll_takeHalf",    ro[RO.ROLL_TAKE_HALF] == true)
-    uiToggleSet("rollOpts_roll_wpReroll",    ro[RO.ROLL_WP_REROLL] == true)
-    uiToggleSet("rollOpts_roll_hungerDice",  ro[RO.ROLL_HUNGER_DICE] == true)
-    uiToggleSet("rollOpts_roll_bestialNull", ro[RO.ROLL_BESTIAL_NULL] == true)
-    uiToggleSet("rollOpts_roll_canRerollHunger", ro[RO.ROLL_CAN_REROLL_HUNGER] == true)
-    uiToggleSet("rollOpts_roll_crits",       ro[RO.ROLL_CRITS] ~= false)
+    rollOptsDraft.structural = {
+        [RO.ROLL_TAKE_HALF]   = RO.getForActive(active, RO.ROLL_TAKE_HALF),
+        [RO.ROLL_WP_REROLL]   = RO.getForActive(active, RO.ROLL_WP_REROLL),
+        [RO.ROLL_HUNGER_DICE] = RO.getForActive(active, RO.ROLL_HUNGER_DICE),
+        [RO.ROLL_CRITS]       = RO.getForActive(active, RO.ROLL_CRITS),
+    }
+    for structuralKey, uiId in pairs(STRUCTURAL_UI_IDS) do
+        rollOptsSetToggleClass(uiId, rollOptsDraft.structural[structuralKey] == true)
+    end
+
+    rollOptsDraft.conditions = {}
+    local rt = active.rollType
+    for _, conditionId in ipairs(CD.listRollConditionIds()) do
+        local visible = CD.isRollConditionVisibleForRollType(conditionId, rt)
+        local uiId = "rollCondition_" .. conditionId
+        uiSetActive(uiId, visible)
+        if visible then
+            local on = Conditions.isRollConditionEffective(pid, active, conditionId)
+            rollOptsDraft.conditions[conditionId] = on
+            rollOptsSetToggleClass(uiId, on)
+        end
+    end
 
     local rerollsStr = tostring(RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_REROLLS))
     local diceRerolledStr = tostring(RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_DICE_REROLLED))
@@ -1335,12 +1389,68 @@ function RUI.openRollOptionsModal(color)
     uiSetInputField("rollOpts_roll_numberOfRerolls", rerollsStr)
     uiSetInputField("rollOpts_roll_numberOfDiceRerolled", diceRerolledStr)
 
-    local rt = active.rollType
-    uiSetInteractable("rollOpts_roll_takeHalf",    not RO.isTakeHalfLocked(rt))
-    uiSetInteractable("rollOpts_roll_hungerDice",  not RO.isHungerDiceLocked(rt))
-    uiSetActive("rollOpts_row_bestialNull", RO.isBestialNullVisible(rt))
+    uiSetInteractable("rollOpts_roll_takeHalf",   not RO.isTakeHalfLocked(rt))
+    uiSetInteractable("rollOpts_roll_hungerDice", not RO.isHungerDiceLocked(rt))
 
     uiSetActive("rollOpts_modal", true)
+end
+
+--- Toggles one roll-options modal button (permanent, structural, or roll condition).
+-- @param id string  Button element id
+function RUI.toggleRollOptsButton(id)
+    if type(id) ~= "string" or rollOptsTargetColor == nil then
+        return
+    end
+
+    local permKey = PERM_UI_KEYS[id]
+    if permKey ~= nil then
+        local nextOn = rollOptsDraft.permanent[permKey] ~= true
+        rollOptsDraft.permanent[permKey] = nextOn
+        rollOptsSetToggleClass(id, nextOn)
+        return
+    end
+
+    for structuralKey, uiId in pairs(STRUCTURAL_UI_IDS) do
+        if id == uiId then
+            local nextOn = rollOptsDraft.structural[structuralKey] ~= true
+            rollOptsDraft.structural[structuralKey] = nextOn
+            rollOptsSetToggleClass(id, nextOn)
+            rollOptsSyncNegatingFromStructural(structuralKey, nextOn)
+            return
+        end
+    end
+
+    local prefix = "rollCondition_"
+    if string.sub(id, 1, #prefix) == prefix then
+        local conditionId = string.sub(id, #prefix + 1)
+        if not CD.isKnownId(conditionId) then
+            return
+        end
+        local nextOn = rollOptsDraft.conditions[conditionId] ~= true
+        rollOptsDraft.conditions[conditionId] = nextOn
+        rollOptsSetToggleClass(id, nextOn)
+        rollOptsSyncStructuralFromNegating(conditionId, nextOn)
+    end
+end
+
+--- Comma-separated display names for effective roll-type conditions on the ST dashboard.
+-- @param pid string|nil
+-- @param active table|nil
+-- @return string
+function RUI.formatEffectiveRollConditionLabels(pid, active)
+    if pid == nil or type(active) ~= "table" then
+        return ""
+    end
+    local effective = Conditions.buildEffectiveConditionsForRoll(pid, active)
+    local labels = {}
+    for conditionId, _ in pairs(effective) do
+        local def = CD.Defs[conditionId]
+        if type(def) == "table" and def.type == "roll" then
+            labels[#labels + 1] = def.displayName or conditionId
+        end
+    end
+    table.sort(labels)
+    return table.concat(labels, ", ")
 end
 
 -- ============================================================================
@@ -1409,7 +1519,7 @@ function RUI.closeRollOptionsModal()
     uiSetActive("rollOpts_modal", false)
 end
 
---- Reads Toggle states and applies permanent + per-roll options; closes the modal.
+--- Reads draft toggle states and applies permanent + per-roll options; closes the modal.
 -- @param rcModule table  core.roll_controller module (passed from global_script to avoid require cycles)
 -- @usage RUI.applyRollOptionsModal(RC)
 function RUI.applyRollOptionsModal(rcModule)
@@ -1423,30 +1533,17 @@ function RUI.applyRollOptionsModal(rcModule)
     end
     local color = rollOptsTargetColor
 
-    RO.setPermanentAll({
-        [RO.PERM_AUTO_APPLY_ROUSE_OUTCOMES] = uiToggleGet("rollOpts_perm_autoApplyRouseOutcomes"),
-        [RO.PERM_AUTO_WP]      = uiToggleGet("rollOpts_perm_autoWp"),
-        [RO.PERM_AUTO_REMORSE] = uiToggleGet("rollOpts_perm_autoRemorse"),
-        [RO.PERM_AUTO_HUNGER]  = uiToggleGet("rollOpts_perm_autoHunger"),
-    })
-
-    local pidAct    = S.getPlayerID(color)
-    local activeRow = pidAct and S.getStateVal("playerData", pidAct, "hud", "rollData", "active")
-    local rt        = activeRow and activeRow.rollType or nil
+    RO.setPermanentAll(rollOptsDraft.permanent)
 
     local rollOptsApply = {
-        [RO.ROLL_TAKE_HALF]   = uiToggleGet("rollOpts_roll_takeHalf"),
-        [RO.ROLL_WP_REROLL]   = uiToggleGet("rollOpts_roll_wpReroll"),
-        [RO.ROLL_HUNGER_DICE] = uiToggleGet("rollOpts_roll_hungerDice"),
-        [RO.ROLL_CRITS]       = uiToggleGet("rollOpts_roll_crits"),
+        [RO.ROLL_TAKE_HALF]   = rollOptsDraft.structural[RO.ROLL_TAKE_HALF] == true,
+        [RO.ROLL_WP_REROLL]   = rollOptsDraft.structural[RO.ROLL_WP_REROLL] == true,
+        [RO.ROLL_HUNGER_DICE] = rollOptsDraft.structural[RO.ROLL_HUNGER_DICE] == true,
+        [RO.ROLL_CRITS]       = rollOptsDraft.structural[RO.ROLL_CRITS] == true,
+        canRerollHunger       = rollOptsDraft.conditions.canRerollHunger == true,
+        bestialNull           = rollOptsDraft.conditions.bestialNull == true,
     }
-    if rt ~= nil and RO.isBestialNullVisible(rt) then
-        rollOptsApply[RO.ROLL_BESTIAL_NULL] = uiToggleGet("rollOpts_roll_bestialNull")
-    else
-        rollOptsApply[RO.ROLL_BESTIAL_NULL] = false
-    end
 
-    rollOptsApply[RO.ROLL_CAN_REROLL_HUNGER] = uiToggleGet("rollOpts_roll_canRerollHunger")
     local rerollsNum = tonumber(rollOptsDraft.numberOfRerolls)
     if rerollsNum == nil then
         error("RUI.applyRollOptionsModal: rollOptsDraft.numberOfRerolls is not a number", 2)
