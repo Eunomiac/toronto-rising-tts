@@ -19,7 +19,7 @@ local TRANSITION_SETTLE_DELAY_SEC = 10
 --- Must exceed blindfold slide-in duration (`overlay_anim_slide_top` = 1s) so heavy work does not hitch the animation.
 local TRANSITION_WORK_LEAD_IN_SEC = 2
 local BLINDFOLD_VARIANT_COUNT = 6
-local TRANSITION_CONDITION_KEY = "hudTransitionBlindfold"
+local TRANSITION_CONDITION_KEY = "hudBlindfold"
 
 local activeTransitionVariant = nil
 local pendingEndDelayId = nil

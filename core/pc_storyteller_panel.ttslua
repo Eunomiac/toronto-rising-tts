@@ -165,7 +165,6 @@ function PCST.refreshRow(color)
 
   local frenzyOn = S.getStateVal("playerData", pid, "conditions", "hudFrenzy") ~= nil
   local blindOn = S.getStateVal("playerData", pid, "conditions", "hudBlindfold") ~= nil
-      or S.getStateVal("playerData", pid, "conditions", "hudTransitionBlindfold") ~= nil
   safeSetAttr("pcs_" .. color .. "_frenzyToggle", "text", frenzyOn and "Frenzy●" or "Frenzy○")
   safeSetAttr("pcs_" .. color .. "_blindfoldToggle", "text", blindOn and "Blind●" or "Blind○")
 

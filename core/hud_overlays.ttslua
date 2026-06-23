@@ -188,7 +188,7 @@ local function desiredBlindfoldFromWant(want, seatColor, playerID)
   if type(playerID) == "string" and playerID ~= "" and playerID ~= C.StorytellerID then
     local conditions = S.getStateVal("playerData", playerID, "conditions")
     if type(conditions) == "table" then
-      local transition = conditions.hudTransitionBlindfold
+      local transition = conditions.hudBlindfold
       if type(transition) == "table" then
         variant = tonumber(transition.blindfoldVariant)
       end
