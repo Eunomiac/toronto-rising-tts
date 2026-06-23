@@ -161,7 +161,7 @@ Design notes: [`.dev/plans/2026-04-15-run-sequence-waituntil-orchestration.md`](
 | `npm run tts-bridge:test` | Vitest suite for the bridge (mock TTS, no game). |
 | `npm run tts-mcp:compile` | Compile only `tts-mcp` (assumes `tts-bridge` already built). |
 | `npm run tts-mcp:build` | Build bridge + MCP (`tts-bridge:build` then `tts-mcp:compile`). |
-| `npm run build` | **Default module tooling build** (same as `build:all-tooling`): **`check:pcall-gate`**, then PCS/CSheet/UI/NPC generators and object stubs. Bound to **Ctrl+Shift+B** via `.vscode/tasks.json`. Does **not** compile MCP. |
+| `npm run build` | **Default module tooling build** (same as `build:all-tooling`): **`check:tts-object-stub-guids`**, then **`check:pcall-gate`**, then PCS/CSheet/UI/NPC generators and object stubs. Bound to **Ctrl+Shift+B** via `.vscode/tasks.json`. Does **not** compile MCP. |
 | `npm run build:all-tooling` | Same pipeline as `npm run build` (explicit name). |
 | `npm run tts-mcp:start` | Run the MCP server on stdio (normally Cursor spawns this; useful for debugging). |
 | `npm run tts-bridge:listen` | Bridge only: listen on **39998** and persist Lua **`sendExternalMessage`** `type: "write"` to **`.dev/.debug/`** (no MCP). |

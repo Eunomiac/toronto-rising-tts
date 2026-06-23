@@ -18,7 +18,7 @@ That includes **comments and strings** that contain those substrings — avoid p
 
 Wait API policy detail: [`lua-wait-api-policy.md`](lua-wait-api-policy.md). Full-UI XML policy: [`lua-ui-full-xml-policy.md`](lua-ui-full-xml-policy.md). Local function order: [`lua-local-function-order.md`](lua-local-function-order.md).
 
-`npm run build` / `npm run build:all-tooling` (default **Ctrl+Shift+B** pipeline) runs **`check:pcall-gate` first** so a failed gate stops before Lua generators. MCP compile (`npm run tts-mcp:build`) is a separate task. For other workflows, chain `npm run check:pcall-gate` manually before build steps, or run it in CI.
+`npm run build` / `npm run build:all-tooling` (default **Ctrl+Shift+B** pipeline) runs **`check:tts-object-stub-guids` first**, then **`check:pcall-gate`**, so a failed gate stops before Lua generators. MCP compile (`npm run tts-mcp:build`) is a separate task. For other workflows, chain the gates manually before build steps, or run them in CI.
 
 ## When `pcall` is temporarily allowed
 
