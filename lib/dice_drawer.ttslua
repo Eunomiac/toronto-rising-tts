@@ -133,20 +133,33 @@ function DD.closeAfterRoll(color)
 end
 
 --- Random world position above the seat dice tray (for single-die post-roll spawns).
+-- Samples in drawer-local XZ (tray footprint) so rotated character-sheet trays stay in bounds.
 -- @param color string
--- @param yShift number|nil  Vertical offset above drawer bounds (default 3)
--- @param padPercent number|nil  Inward padding 0–1 on X/Z (default 0.15)
+-- @param yShift number|nil  Vertical offset above drawer pivot Y (default 3)
+-- @param padPercent number|nil  Inward padding 0–1 on local X/Z (default 0.15)
 -- @return table|nil  { x, y, z }
 function DD.getScatterSpawnPosition(color, yShift, padPercent)
   local drawer = findDiceDrawerObject(color)
   if drawer == nil then
     return nil
   end
-  local pos = U.getScatterPosition(drawer, yShift or 3, padPercent or 0.15)
-  if pos == nil then
+  local scale = drawer.getScale()
+  if type(scale) ~= "table" or scale.x == nil or scale.y == nil or scale.z == nil then
     return nil
   end
-  return { x = pos.x, y = pos.y, z = pos.z }
+  padPercent = padPercent or 0.15
+  yShift = yShift or 3
+  local halfSpanX = 0.5 * scale.x * (1 - padPercent)
+  local halfSpanZ = 0.5 * scale.z * (1 - padPercent)
+  local localX = U.randBetween(-halfSpanX, halfSpanX)
+  local localZ = U.randBetween(-halfSpanZ, halfSpanZ)
+  local surfaceLocalY = scale.y * 0.5
+  local worldPt = drawer.positionToWorld({ x = localX, y = surfaceLocalY, z = localZ })
+  if type(worldPt) ~= "table" or worldPt.x == nil or worldPt.z == nil then
+    return nil
+  end
+  local pivotY = drawer.getPosition().y
+  return { x = worldPt.x, y = pivotY + yShift, z = worldPt.z }
 end
 
 return DD

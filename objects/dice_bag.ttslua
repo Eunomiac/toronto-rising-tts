@@ -332,6 +332,7 @@ spawnPostRollDie = function(params)
         dieType = dieType,
         postRollModify = true,
     })
+    table.insert(spawnedDice, die)
     return die.getGUID()
 end
 

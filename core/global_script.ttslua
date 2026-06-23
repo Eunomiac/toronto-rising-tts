@@ -1194,9 +1194,11 @@ function GlobalPostRollAddDie(params)
     if bag == nil then
         return false
     end
-    local dieGuid = bag.call("spawnPostRollDie", {
+    -- spawnPostRollDie is local on the bag; route through global spawnDieRedirect.
+    local dieGuid = bag.call("spawnDieRedirect", {
         bagColor = color,
         dieType = dieKind,
+        postRollModify = true,
     })
     if type(dieGuid) ~= "string" then
         return false
@@ -3259,6 +3261,37 @@ RUI = require("core.roll_ui")
 local pendingRollCleanup = {}
 local pendingRollCleanupTimerIds = {}
 
+--- Destroys on-table dice tagged with a roll id (player seats). Used by cancel and post-broadcast cleanup.
+-- @param color string
+-- @param rollId string
+local function destroyPlayerTableDiceForRoll(color, rollId)
+    if type(color) ~= "string" or type(rollId) ~= "string" or color == "Black" then
+        return
+    end
+    local ownerTag = color .. "Object"
+    for _, kind in ipairs(DK.ALL_KINDS) do
+        local dieTag = DK.kindToTag(kind)
+        if dieTag ~= nil then
+            local candidates = getObjectsWithAllTags({ dieTag, "d10", ownerTag })
+            for _, obj in ipairs(candidates) do
+                if DK.gmNotesMatchRoll(obj.getGMNotes(), rollId) then
+                    destroyObject(obj)
+                end
+            end
+        end
+    end
+end
+
+--- Bag destroy + table sweep after result broadcast (or early bag click during delay).
+-- @param color string
+-- @param rollId string|nil
+local function finishPostBroadcastRollCleanup(color, rollId)
+    if type(rollId) == "string" then
+        destroyPlayerTableDiceForRoll(color, rollId)
+    end
+    destroyBagDice(color)
+end
+
 --- Stops a scheduled post-broadcast dice cleanup for a seat (if any).
 -- @param color string
 local function cancelPendingRollCleanup(color)
@@ -3305,17 +3338,25 @@ RC.onRollResolved = function(color, result, label)
     if color == "Black" then
         return
     end
+    local rollId = nil
+    local pid = S.getPlayerID(color)
+    if pid ~= nil then
+        local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+        if type(active) == "table" and type(active.id) == "string" then
+            rollId = active.id
+        end
+    end
     -- Drawer stays open until the broadcast hides and dice are destroyed (see below).
     local existingTimerId = pendingRollCleanupTimerIds[color]
     if existingTimerId ~= nil then
         U.stopDelay(existingTimerId)
     end
 
-    pendingRollCleanup[color] = true
+    pendingRollCleanup[color] = rollId or true
     pendingRollCleanupTimerIds[color] = U.delay(function()
         pendingRollCleanup[color] = nil
         pendingRollCleanupTimerIds[color] = nil
-        destroyBagDice(color)
+        finishPostBroadcastRollCleanup(color, rollId)
     end, C.ROLL_RESULT_BROADCAST_SECONDS)
 end
 
@@ -3331,8 +3372,13 @@ function GlobalConsumePendingRollCleanup(params)
     local color = params.color
     if type(color) ~= "string" then return false end
 
-    if pendingRollCleanup[color] ~= true then
+    if pendingRollCleanup[color] == nil then
         return false
+    end
+
+    local rollId = pendingRollCleanup[color]
+    if rollId == true then
+        rollId = nil
     end
 
     local timerId = pendingRollCleanupTimerIds[color]
@@ -3341,7 +3387,7 @@ function GlobalConsumePendingRollCleanup(params)
     end
     pendingRollCleanup[color] = nil
     pendingRollCleanupTimerIds[color] = nil
-    destroyBagDice(color)
+    finishPostBroadcastRollCleanup(color, rollId)
     return true
 end
 
@@ -4206,23 +4252,7 @@ function GlobalDestroyPlayerTableDiceForRoll(params)
         return
     end
     if type(params) ~= "table" then return end
-    local color = params.color
-    local rollId = params.rollId
-    if type(color) ~= "string" or type(rollId) ~= "string" or color == "Black" then
-        return
-    end
-    local ownerTag = color .. "Object"
-    for _, kind in ipairs(DK.ALL_KINDS) do
-        local dieTag = DK.kindToTag(kind)
-        if dieTag ~= nil then
-            local candidates = getObjectsWithAllTags({ dieTag, "d10", ownerTag })
-            for _, obj in ipairs(candidates) do
-                if DK.gmNotesMatchRoll(obj.getGMNotes(), rollId) then
-                    destroyObject(obj)
-                end
-            end
-        end
-    end
+    destroyPlayerTableDiceForRoll(params.color, params.rollId)
 end
 
 --- Destroys all hovering dice for a player.
