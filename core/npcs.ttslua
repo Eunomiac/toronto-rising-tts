@@ -3531,14 +3531,11 @@ function NPCS.resolveSeatNarrativePresence(seatKey)
     return resolveSeatPresenceForSeat(seatKey)
 end
 
---- Writes `seatSlots.isPresent` and mirrored `seatPresent` for one NPC seat.
+--- Writes `seatSlots.isPresent` and mirrored `seatPresent` for any seat key (NPC seat or PC color).
+--- Caller validates the seat key; this is the shared mutation used by NPC + PC presence setters.
 --- @param seatKey string
 --- @param present boolean
---- @return boolean
-function NPCS.setNpcSeatNarrativePresence(seatKey, present)
-    if not isValidNpcSeatKey(seatKey) then
-        return false
-    end
+local function writeSeatNarrativePresence(seatKey, present)
     local ss = S.getStateVal("sessionScene", "seatSlots")
     if U.Type(ss) ~= "table" then
         ss = {}
@@ -3561,6 +3558,39 @@ function NPCS.setNpcSeatNarrativePresence(seatKey, present)
     sp = U.clone(sp, true)
     sp[seatKey] = present == true
     S.setStateVal(sp, "sessionScene", "seatPresent")
+end
+
+--- Writes `seatSlots.isPresent` and mirrored `seatPresent` for one NPC seat.
+--- @param seatKey string
+--- @param present boolean
+--- @return boolean
+function NPCS.setNpcSeatNarrativePresence(seatKey, present)
+    if not isValidNpcSeatKey(seatKey) then
+        return false
+    end
+    writeSeatNarrativePresence(seatKey, present)
+    return true
+end
+
+--- Narrative presence for a PC seat (player color). Same `seatSlots`/`seatPresent` slice as NPC seats.
+--- @param color string player color in `C.PlayerColors`
+--- @return boolean
+function NPCS.resolvePlayerSeatPresence(color)
+    if not U.isIn(color, C.PlayerColors or {}) then
+        return true
+    end
+    return resolveSeatPresenceForSeat(color)
+end
+
+--- Activate/deactivate a PC seat from the CONTROL_BOARD `pc_control_token` (TOR-236).
+--- @param color string player color in `C.PlayerColors`
+--- @param present boolean
+--- @return boolean
+function NPCS.setPlayerSeatPresence(color, present)
+    if not U.isIn(color, C.PlayerColors or {}) then
+        return false
+    end
+    writeSeatNarrativePresence(color, present)
     return true
 end
 

@@ -22,6 +22,8 @@ D.TAG_GAMEBOARD_TABLE_COMPONENT = "gameboard_table_component"
 
 --- GM notes / description prefixes for marker identity.
 D.TOKEN_GM_PREFIX = "npcToken:"
+--- PC control tokens are color-bound: GM Notes `pcToken:<Color>` (e.g. `pcToken:Red`) pins the token to that PC seat-row column.
+D.PC_TOKEN_GM_PREFIX = "pcToken:"
 D.MARKER_TABLE_PREFIX = "gameboardTable:"
 D.MARKER_COMPONENT_PREFIX = "gameboardComponent:"
 D.MARKER_PC_SEAT_PREFIX = "gameboardPcSeat:"

@@ -598,6 +598,32 @@ local function isNpcControlToken(obj)
     return isGameObject(obj) and obj.hasTag ~= nil and obj.hasTag(TAG_TOKEN) == true
 end
 
+--- @param obj Object|nil
+--- @return boolean
+local function isPcControlToken(obj)
+    return isGameObject(obj) and obj.hasTag ~= nil and obj.hasTag(TAG_PC_TOKEN) == true
+end
+
+--- Player color a `pc_control_token` is bound to via GM Notes `pcToken:<Color>` (case-insensitive).
+--- @param obj Object|nil
+--- @return string|nil color canonical `C.PlayerColors` value
+local function resolvePcTokenSeatColor(obj)
+    if not isGameObject(obj) then
+        return nil
+    end
+    local raw = readMarkerKey(obj, DATA.PC_TOKEN_GM_PREFIX)
+    if type(raw) ~= "string" or raw == "" then
+        return nil
+    end
+    local lower = string.lower(raw)
+    for _, color in ipairs(C.PlayerColors or {}) do
+        if type(color) == "string" and string.lower(color) == lower then
+            return color
+        end
+    end
+    return nil
+end
+
 --- Live control token for a character key (CONTROL_BOARD or palette).
 --- @param characterKey string
 --- @return Object|nil
@@ -861,6 +887,33 @@ local function scanSeatRowTokensBySeatKey(board)
                         present = tokenRotationIsFaceUp(obj),
                     }
                 end
+            end
+        end
+    end
+    return out
+end
+
+--- PC control tokens on CONTROL_BOARD seat-row PC columns (`snapKind = seat`, `columnKind = pc`).
+--- Keyed by the seat-row column color the token sits on; presence from token flip (TOR-236).
+--- @param board Object
+--- @return table<string, table> color -> `{ color, present }`
+local function scanSeatRowPcTokensByColor(board)
+    local out = {}
+    if not isGameObject(board) then
+        return out
+    end
+    local fuzziness = snapMatchFuzzinessForBoard(board)
+    for _, obj in ipairs(getObjectsWithTag(TAG_PC_TOKEN) or {}) do
+        if isGameObject(obj) and isTokenOnMinimapTokenSurface(board, obj) then
+            local entry = resolveTokenSnapCatalogEntry(board, obj, fuzziness, nil)
+            if type(entry) == "table"
+                and entry.snapKind == SNAP_KIND_SEAT
+                and entry.columnKind == "pc"
+                and U.isIn(entry.seatKey, C.PlayerColors or {}) then
+                out[entry.seatKey] = {
+                    color = entry.seatKey,
+                    present = tokenRotationIsFaceUp(obj),
+                }
             end
         end
     end
@@ -1190,6 +1243,35 @@ local function applySeatRowFromControlBoard(board, polarOnBoardByCharacter)
     return changed, vacatedKeys
 end
 
+--- Seat-row Apply for PC columns: `pc_control_token` flip → `seatSlots[color].isPresent` (TOR-236).
+--- Apply-time only — sets presence for colors that have a PC token on their column; PCs without a
+--- token are left untouched (connection-driven presence stays intact pre-TOR-247 seat decoupling).
+--- @param board Object
+--- @return boolean changed
+local function applyPcSeatRowFromControlBoard(board)
+    local byColor = scanSeatRowPcTokensByColor(board)
+    if next(byColor) == nil then
+        return false
+    end
+    local NPCS = require("core.npcs")
+    local changed = false
+    for _, color in ipairs(C.PlayerColors or {}) do
+        local scan = byColor[color]
+        if scan ~= nil then
+            local wantPresent = scan.present == true
+            if NPCS.resolvePlayerSeatPresence(color) ~= wantPresent then
+                if NPCS.setPlayerSeatPresence(color, wantPresent) then
+                    changed = true
+                end
+            end
+        end
+    end
+    if changed then
+        print("[Gameboard] Apply: PC seat row updated")
+    end
+    return changed
+end
+
 --- Apply CONTROL_BOARD tokens → state → Sync.npcs.
 --- @return boolean ok, string|nil message
 function Gameboard.applyFromControlBoard()
@@ -1208,6 +1290,7 @@ function Gameboard.applyFromControlBoard()
         end
     end
     local seatChanged, vacatedKeys = applySeatRowFromControlBoard(board, polarOnBoardByCharacter)
+    local pcSeatChanged = applyPcSeatRowFromControlBoard(board)
     local placements = placementsMapFromRows(rows)
     if seatChanged and type(vacatedKeys) == "table" then
         for i = 1, #vacatedKeys do
@@ -1219,7 +1302,8 @@ function Gameboard.applyFromControlBoard()
     end
     local existing = stateModule().getStateVal("sessionScene", "npcWorld", "placements")
     local placementChanged = not placementsMapsEqual(placements, existing)
-    if not seatChanged and not placementChanged then
+    local seatMutated = seatChanged or pcSeatChanged
+    if not seatMutated and not placementChanged then
         print("[Gameboard] Apply: placements and seat row unchanged — skipped figurine reconcile")
         finishInteractionProfile(t0)
         return true, nil
@@ -1230,18 +1314,18 @@ function Gameboard.applyFromControlBoard()
     if seatChanged and type(vacatedKeys) == "table" and #vacatedKeys > 0 then
         parkVacatedNpcControlTokensToPalette(vacatedKeys, board)
         lastControlBoardMirrorFingerprint = nil
-    elseif seatChanged then
+    elseif seatMutated then
         lastControlBoardMirrorFingerprint = nil
     end
     syncNpcsFromControlBoard("gameboard_apply", {
-        seatMutation = seatChanged,
+        seatMutation = seatMutated,
         placementMutation = placementChanged,
     })
     print(
         "[Gameboard] Apply: "
             .. tostring(#rows)
             .. " stage token(s)"
-            .. (seatChanged and "; seat row" or "")
+            .. (seatMutated and "; seat row" or "")
             .. " → Sync.npcs"
     )
     finishInteractionProfile(t0)
@@ -2208,6 +2292,19 @@ local function seatRowCatalogByNpcSeatKey(catalog)
     local out = {}
     for _, entry in ipairs(catalog) do
         if entry.snapKind == SNAP_KIND_SEAT and isNpcSeatRowColumn({ seatKey = entry.seatKey, kind = "npc" }) then
+            out[entry.seatKey] = entry
+        end
+    end
+    return out
+end
+
+--- @param catalog table[]
+--- @return table<string, table> PC color -> seat-row catalog entry (`columnKind = pc`)
+local function seatRowCatalogByPcColor(catalog)
+    local out = {}
+    for _, entry in ipairs(catalog) do
+        if entry.snapKind == SNAP_KIND_SEAT and entry.columnKind == "pc"
+            and U.isIn(entry.seatKey, C.PlayerColors or {}) then
             out[entry.seatKey] = entry
         end
     end
@@ -4009,6 +4106,22 @@ function Gameboard.reconcileControlBoardFromState(opts)
                 local token = byChar[characterKey]
                 if isGameObject(token) and isTokenOnMinimapTokenSurface(board, token) then
                     mirrorControlTokenToPlacementRow(token, board, row)
+                end
+            end
+        end
+
+        --- Pin each color-bound `pc_control_token` to its PC seat-row column; flip matches
+        --- current `seatSlots[color].isPresent` (state authoritative — TOR-236). PCs without a
+        --- token are untouched (full token authority deferred to TOR-247 seat decoupling).
+        local pcCatalog = seatRowCatalogByPcColor(Gameboard.buildControlBoardSnapCatalog(board, nil))
+        if next(pcCatalog) ~= nil then
+            for _, obj in ipairs(getObjectsWithTag(TAG_PC_TOKEN) or {}) do
+                if isGameObject(obj) then
+                    local color = resolvePcTokenSeatColor(obj)
+                    local entry = color ~= nil and pcCatalog[color] or nil
+                    if entry ~= nil then
+                        mirrorSeatRowControlToken(obj, board, entry, NPCS.resolvePlayerSeatPresence(color))
+                    end
                 end
             end
         end
