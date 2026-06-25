@@ -1317,6 +1317,10 @@ function Gameboard.applyFromControlBoard()
     elseif seatMutated then
         lastControlBoardMirrorFingerprint = nil
     end
+    if pcSeatChanged then
+        local Conditions = require("core.conditions")
+        Conditions.reconcileHostedForSession()
+    end
     syncNpcsFromControlBoard("gameboard_apply", {
         seatMutation = seatMutated,
         placementMutation = placementChanged,

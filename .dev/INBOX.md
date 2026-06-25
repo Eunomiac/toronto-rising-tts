@@ -2,23 +2,7 @@
 
 ## Quick Fixes
 
-- [Player Activation & Scene Presence] When a player's seat is deactivated, any location and/or scene Conditions on that player should be disabled -- by deactivating that player, they are no longer present at the location or in the scene. Likewise, if a player's seat is _activated_, any scene and/or location conditions should be enabled on that player.
-- [Dice Rolls] When a player makes a roll in which Blood Surge is active, Take Half should be _disabled_.
-
 ## Active
-
-- [Automatic Table Selection] In `C.Tables`, we currently have a `Table A`, a `Table B`, and then several variants of `Table B` based on the number of available NPC slots at the table -- `Table B1`, `Table B2`, etc. I'd like to change this so that, when a table is called by its letter alone (e.g. "`Table B`"), the script checks to see if their are numbered variants ("`Table B<#>`"). If NOT, then there must be an entry for the table as given ("`Table B`"), and that is the data that should be returned.  If there ARE variants, then there will not be `Table B` data -- instead, the script checks how many NPC seats are occupied, appends that number to the table reference, and loads the data for that table automatically. (This will require changing the current `Table B` entry to `Table B5`, corresponding to the available NPC slots -- even though only four are defined, there are technically enough sides for five, so this is where that particular table model should be registered.) With no `Table B` entry, the number of occupied NPC slots must be counted and appended to the key, and that data returned.  (If that key cannot be found -- e.g. no `Table B0` when zero NPC slots are occupied -- throw an error.)
-- [New Roll Types] These new roll types should be added to the PCs panel alongside the other rolls, and registered as unique roll types.
-  * Willpower Roll -- Auto-populate the pool with a number of Standard Dice equal to the player's _undamaged_ Willpower boxes. No Hunger Dice, no Blood Surge, and No WP Reroll should be enabled for this roll.
-  * Discipline Roll -- Auto-populate the pool with a number of dice equal to the player's discipline bonus (`C.BloodPotency[character's blood potency rating].discBonus`). Auto-hunger is enabled. Take Half is _disabled_.
-  * Humanity Roll -- Auto-populate the pool with the player's Humanity rating worth of Standard Dice. No Hunger dice, no Blood Surge, no Take Half, and no spending Willpower to reroll.
-  * Frenzy Roll -- (We already have this roll type, but it should be updated to function as follows). Auto-populate the pool with a number of Standard Dice equal to the player's _undamaged_ Willpower PLUS one-third their Humanity rating, rounded down. No Hunger Dice, no Blood Surge, no Take Half, no WP Reroll.
-- [Roll Options Storyteller Dash Modal] Above the "Permanent" header, two HorizontalLayout rows of buttons have been added, which need to be wired to up allow the Storyteller to change the roll type.
-  - Only one button can be active at a time; clicking one should turn the others off, using the same method as other buttons on the Roll Options modal (i.e. by setting their class)
-  - When a roll is initiated, the button corresponding to the initial roll type should be toggled on.
-  - The "O-Rouse" button should be hidden for all rolls by players who do not have an Oblivion-Rouse Dice Bag.
-  - When a roll is selected, all conditions enforced by that roll should be automatically applied -- those described above, and those already defined for existing roll type definitions.
-  - When a roll type is changed, the dice pool should be reset -- all dice should be cleared from the pool, and then any auto-populate logic for the new roll type should be applied.
 
 ---
 
@@ -34,6 +18,15 @@
 
 ## Processed
 
+2026-06-25 TOR-255 — Blood Surge active disables Take Half (shipped)
+2026-06-25 TOR-256 — PC seat deactivate/activate syncs hosted scene+location conditions (shipped)
+2026-06-25 TOR-257 — NPC figurine tooltips sync with player visibility (shipped)
+2026-06-25 TOR-258 — Automatic table selection by occupied NPC seat count (promoted)
+2026-06-25 TOR-259 — Willpower, Discipline, Humanity, Frenzy roll types (promoted)
+2026-06-25 TOR-260 — ST Roll Options dash roll-type selector rows (promoted; blockedBy TOR-259)
+2026-06-25 TOR-261 — Workshop pentagonal Table B0 model (promoted; human gate)
+2026-06-25 TOR-262 — Single live PC roll + lower other trays (promoted)
+2026-06-25 TOR-263 — Session number + End Session button (promoted; relatedTo TOR-143)
 2026-06-25 ST dice arcs — Rage dice → Hunger (inner) arc not shared w/ Werewolf; ST arc cap 7/arc (vs player 10) (shipped)
 2026-06-25 TOR-252 — NPC roll broadcast figurine for duplicate fullName (shipped; authoritative `npcCharacterKey`)
 2026-06-25 TOR-253 — Dice spawn-arc overflow layering (cap 10/arc; elevate + nudge extras) (shipped)
@@ -45,7 +38,7 @@
 2026-06-23 TOR-241 — Player dice spawn arc RING_STEP 1.5 (shipped)
 2026-06-23 TOR-242 — CONTROL_BOARD seat row lower-left u/v (shipped)
 2026-06-23 TOR-244 — Scene library selection preview + edit-before-apply (promoted)
-2026-06-23 TOR-245 — Map pins last active location + timestamp (promoted; blockedBy TOR-151)
+2026-06-23 TOR-245 — Map pins last active location + timestamp (promoted)
 2026-06-23 TOR-247 — Rotational seat index layout (promoted)
 2026-06-21 Roll broadcast NPC cutout — prune ST duplicate-roll label suffix " (N)" before cutout lookup (`roll_ui.resolveRollFigureAssetKey`)
 2026-06-21 Clear off-world tokens — Y-aware board/palette surface checks; confirmed Clear parks fallen tokens

@@ -711,7 +711,8 @@ local function phaseLabel(active, color)
                 return "Configure pool via strips or ST bags, then ROLL"
             end
             local noTakeHalf = C.RollTypesNoTakeHalf[active.rollType]
-            if noTakeHalf or not RO.getForActive(active, RO.ROLL_TAKE_HALF) then
+            local surgeActive = active.meta ~= nil and active.meta.bloodSurgeActive == true
+            if noTakeHalf or surgeActive or not RO.getForActive(active, RO.ROLL_TAKE_HALF) then
                 return "Assemble pool, then ROLL (auto-throws dice)"
             end
             return "Assemble pool, then Roll or Take Half"
@@ -745,7 +746,9 @@ local function phaseLabel(active, color)
         -- difficulty stays hidden from this panel until POST_ROLL (see rollPanel_diff_*).
         local pool       = active.pool or {}
         local totalPool  = (pool.normal or 0) + (pool.hunger or 0)
+        local surgeActive = active.meta ~= nil and active.meta.bloodSurgeActive == true
         local noTakeHalf = C.RollTypesNoTakeHalf[active.rollType]
+            or surgeActive
             or not RO.getForActive(active, RO.ROLL_TAKE_HALF)
 
         if totalPool == 0 then
@@ -980,8 +983,10 @@ local function refreshStRollPanel(active)
     end
 
     local hasPool    = DK.poolTotal(pool) > 0
+    local surgeActive = active.meta ~= nil and active.meta.bloodSurgeActive == true
     local canHalf    = isPreRoll
         and hasPool
+        and not surgeActive
         and C.RollTypesNoTakeHalf[active.rollType] ~= true
         and RO.getForActive(active, RO.ROLL_TAKE_HALF)
     local canRecalc  = (isRolling or isPostRoll)
@@ -1083,8 +1088,10 @@ local function refreshPcRollControlPanel(color, active)
     local isSetup = active.phase == C.RollPhase.SETUP
     local isRolling = active.phase == C.RollPhase.ROLLING
     local hasPool = DK.poolTotal(pool) > 0
+    local surgeActive = active.meta ~= nil and active.meta.bloodSurgeActive == true
     local canHalf = isPreRoll
         and hasPool
+        and not surgeActive
         and C.RollTypesNoTakeHalf[active.rollType] ~= true
         and RO.getForActive(active, RO.ROLL_TAKE_HALF)
     -- Take Half only after ST opens (PRE_ROLL); pool assembly in SETUP is roll-button gated only.

@@ -1368,6 +1368,10 @@ function RC.takeHalf(color)
         print(string.format("[RC] takeHalf: Take Half disabled for this roll (%s)", color))
         return false
     end
+    if active.meta ~= nil and active.meta.bloodSurgeActive == true then
+        print(string.format("[RC] takeHalf: Take Half disabled while Blood Surge is active (%s)", color))
+        return false
+    end
 
     ensureActiveShape(active)
     local pool = DK.normalizePool(active.pool)

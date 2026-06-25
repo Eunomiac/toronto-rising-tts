@@ -1435,6 +1435,13 @@ function L.isPlayerPresentInActiveSeatLayout(seatKey)
     if U.Type(seatKey) ~= "string" then
         return false
     end
+    local ss = S.getStateVal("sessionScene", "seatSlots")
+    if U.Type(ss) == "table" then
+        local row = ss[seatKey]
+        if U.Type(row) == "table" and row.isPresent ~= nil and row.isPresent == false then
+            return false
+        end
+    end
     local currentTableKey = S.getStateVal("seatLayout", "currentTableKey")
     if U.Type(currentTableKey) ~= "string" or currentTableKey == "" then
         -- No table filter active: do not force seats OFF.

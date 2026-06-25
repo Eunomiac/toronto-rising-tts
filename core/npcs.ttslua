@@ -2735,6 +2735,9 @@ local function reconcileSeatNarrativePresenceFromIntent(intent)
                         else
                             obj.setInvisibleTo(hideColors)
                         end
+                        if NPCS.isPooledFigurineObject(obj) and obj.tooltip ~= nil then
+                            obj.tooltip = visible
+                        end
                     end
                 end
             end
