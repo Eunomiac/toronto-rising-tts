@@ -756,9 +756,9 @@ local function phaseLabel(active, color)
         if active.willpower ~= nil and active.willpower.wpRerollWave == true then
             local cap = RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_DICE_REROLLED)
             if cap <= 0 then
-                return "Reroll dice — hover each die, press R"
+                return "Reroll dice — hover each die, press R (or Confirm)"
             end
-            return string.format("Reroll up to %d dice — hover die, press R", cap)
+            return string.format("Reroll up to %d dice — hover die, press R (or Confirm)", cap)
         end
         return "Roll Your Dice!"
     elseif phase == C.RollPhase.POST_ROLL then
@@ -985,13 +985,16 @@ local function refreshStRollPanel(active)
     local wpAvailable = isPostRoll
         and active.willpower ~= nil
         and active.willpower.available == true
+    local isWpWaveRolling = isRolling
+        and active.willpower ~= nil
+        and active.willpower.wpRerollWave == true
     local pendingChoice = isPostRoll and (
         active.pendingResolution == C.PendingResolution.OBLIV_HUNGER_STAIN
         or active.pendingResolution == C.PendingResolution.BRUTAL_FAIL_VIOLENCE
     )
     uiSetActive("rollPanelST_btnWP", wpAvailable)
     uiSetActive("rollPanelST_btnRecalc", canRecalc)
-    local showConfirm = isPostRoll and not pendingChoice
+    local showConfirm = (isPostRoll or isWpWaveRolling) and not pendingChoice
     uiSetActive("rollPanelST_btnConfirm", showConfirm)
     uiSetInteractable("rollPanelST_btnConfirm", showConfirm)
     refreshStRollPanelPendingButtons(active)
@@ -1069,6 +1072,7 @@ local function refreshPcRollControlPanel(color, active)
 
     local isPreRoll = active.phase == C.RollPhase.PRE_ROLL
     local isSetup = active.phase == C.RollPhase.SETUP
+    local isRolling = active.phase == C.RollPhase.ROLLING
     local hasPool = DK.poolTotal(pool) > 0
     local canHalf = isPreRoll
         and hasPool
@@ -1086,14 +1090,17 @@ local function refreshPcRollControlPanel(color, active)
     local wpAvailable = isPostRoll
         and active.willpower ~= nil
         and active.willpower.available == true
+    local isWpWaveRolling = isRolling
+        and active.willpower ~= nil
+        and active.willpower.wpRerollWave == true
     local pendingChoice = isPostRoll and (
         active.pendingResolution == C.PendingResolution.OBLIV_HUNGER_STAIN
         or active.pendingResolution == C.PendingResolution.BRUTAL_FAIL_VIOLENCE
     )
     uiSetActive(string.format("rollControl_btnWP_%s", color), wpAvailable)
-    local showConfirm = isPostRoll and not pendingChoice
+    local showConfirm = (isPostRoll or isWpWaveRolling) and not pendingChoice
     local playerHoldsBaton = active.batonHolder == C.BatonHolder.PLAYER
-    local canConfirm = showConfirm and playerHoldsBaton
+    local canConfirm = showConfirm and (playerHoldsBaton or isWpWaveRolling)
     uiSetActive(string.format("rollControl_btnConfirm_%s", color), showConfirm)
     uiSetInteractable(string.format("rollControl_btnConfirm_%s", color), canConfirm)
     refreshPendingResolutionButtons(color, active, true)

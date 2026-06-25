@@ -339,5 +339,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-06-25 | NOTE | TOR-236 | Author confirmed Apply-time PC seat activate/deactivate works in-game |
 | 2026-06-25 | UPDATE | TOR-152 | Augmented scope: Control Board sync on scene load must also reconcile `pc_control_token` flips to `seatSlots[color].isPresent` (not just NPC tokens); `relatedTo` TOR-236/TOR-237; reconcile pin exists (TOR-236), TOR-152 ensures it runs on load path |
 | 2026-06-25 | DOC | TOR-141 | E2E: Scenes Suite D2 + `gbE2eVerifyPcTokens` harness (reload + scene Apply PC token mirror); Gameboard reload/scene_apply gates extended |
+| 2026-06-25 | IN PROGRESS | TOR-165 | WP reroll wave: debounce only chosen dice; cap auto-finish; Confirm during ROLLING wave |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

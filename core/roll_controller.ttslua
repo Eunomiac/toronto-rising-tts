@@ -1443,6 +1443,77 @@ function RC.startRolling(color)
     return true
 end
 
+local function countWpRerollChosen(active)
+    local chosen = active.willpower and active.willpower.rerollRandomizedGuids
+    if type(chosen) ~= "table" then
+        return 0
+    end
+    local n = 0
+    for _ in pairs(chosen) do
+        n = n + 1
+    end
+    return n
+end
+
+--- True when every die marked randomized this WP wave is locked (settled).
+local function allChosenWpDiceLocked(color, active)
+    local chosen = active.willpower and active.willpower.rerollRandomizedGuids
+    if type(chosen) ~= "table" then
+        return false
+    end
+    local hasChosen = false
+    for guid, _ in pairs(chosen) do
+        hasChosen = true
+        local o = getObjectFromGUID(guid)
+        if not U.isGameObject(o) or o.getLock() ~= true then
+            return false
+        end
+    end
+    return hasChosen
+end
+
+--- Lock pool and run recalculate so ROLLING + wpRerollWave → POST_ROLL.
+local function finishWpRerollWaveFromRolling(color)
+    local active = getActive(color)
+    if active == nil or active.phase ~= C.RollPhase.ROLLING then
+        return false
+    end
+    if active.willpower == nil or active.willpower.wpRerollWave ~= true then
+        return false
+    end
+    cancelDebounce(color)
+    lockAllRollDiceObjects(color, active.id)
+    RC.recalculate(color)
+    active = getActive(color)
+    return active ~= nil and active.phase == C.RollPhase.POST_ROLL
+end
+
+--- When reroll cap N is reached and every chosen die has locked after settle, end the wave.
+local function tryFinishWpRerollWaveWhenCapSatisfied(color)
+    local active = getActive(color)
+    if active == nil or active.phase ~= C.RollPhase.ROLLING then
+        return
+    end
+    if active.willpower == nil or active.willpower.wpRerollWave ~= true then
+        return
+    end
+    local scope = wpRerollScopeForActive(active)
+    local cap = RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_DICE_REROLLED)
+    if scope == "all_optional" or scope == "all_mandatory" then
+        return
+    end
+    if cap <= 0 then
+        return
+    end
+    if countWpRerollChosen(active) < cap then
+        return
+    end
+    if not allChosenWpDiceLocked(color, active) then
+        return
+    end
+    finishWpRerollWaveFromRolling(color)
+end
+
 --- True when global onObjectRandomize should schedule the settle debounce for this die.
 -- Custom Dice expose faces via getRotationValue(); getValue() is not always numeric.
 -- @param obj Object
@@ -1476,14 +1547,25 @@ end
 -- No die values are captured here; reading happens in RC._getDiceForRoll.
 --
 -- @param color string  Player seat color
--- @usage RC.onDieSettledSignal("Red")   -- called from global_script.onObjectRandomize
-function RC.onDieSettledSignal(color)
+-- @param obj Object|nil die that randomized (required during WP reroll wave)
+-- @usage RC.onDieSettledSignal("Red", dieObj)   -- called from global_script.onObjectRandomize
+function RC.onDieSettledSignal(color, obj)
     if U.Type(color) ~= "string" then return end
 
     local active = getActive(color)
     if active == nil then return end
     if active.tookHalf and active.takeHalfAwaitingRouse ~= true then return end
     if active.phase ~= C.RollPhase.ROLLING and active.phase ~= C.RollPhase.POST_ROLL then return end
+
+    if active.willpower ~= nil and active.willpower.wpRerollWave == true then
+        if not U.isGameObject(obj) then
+            return
+        end
+        local chosen = active.willpower.rerollRandomizedGuids
+        if type(chosen) ~= "table" or chosen[obj.getGUID()] ~= true then
+            return
+        end
+    end
 
     local myHandle = string.format("%d_%d", math.floor(os.time() * 1000), math.random(99999))
     _debounceHandles[color] = myHandle
@@ -1737,6 +1819,7 @@ function RC.onWpRerollDieRandomized(color, obj)
 
             _wpDieLockWaitTokens[timerKey] = nil
             o.setLock(true)
+            tryFinishWpRerollWaveWhenCapSatisfied(color)
         end,
         function()
             return _wpDieLockWaitTokens[timerKey] ~= nonce
@@ -1817,6 +1900,11 @@ function RC.confirmRoll(color)
         return false
     end
     ensureWillpowerShape(active)
+    if active.phase == C.RollPhase.ROLLING
+        and active.willpower ~= nil
+        and active.willpower.wpRerollWave == true then
+        return finishWpRerollWaveFromRolling(color)
+    end
     if active.phase ~= C.RollPhase.POST_ROLL then
         print(string.format("[RC] confirmRoll: %s roll is not in POST_ROLL (phase: %s)", color, active.phase))
         return false

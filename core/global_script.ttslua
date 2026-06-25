@@ -3470,7 +3470,7 @@ function onObjectRandomize(obj, playerColor)
     end
 
     -- Delegate debounce reset to roll controller
-    RC.onDieSettledSignal(color)
+    RC.onDieSettledSignal(color, obj)
 end
 
 --- Called by TTS when any object leaves a container (bag, deck, etc.).
