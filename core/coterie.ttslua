@@ -6,6 +6,7 @@ local U = require("lib.util")
 local C = require("lib.constants")
 local S = require("core.state")
 local CoterieData = require("lib.coterie_data")
+local CoterieHydrate = require("lib.coterie_hydrate")
 local CC = require("lib.coterie_collect")
 
 local Coterie = {}
@@ -26,6 +27,7 @@ function Coterie.ensureInState()
         return
     end
     S.mergeDefaults(data, defaults)
+    CoterieHydrate.hydrateCoterieData(data)
 end
 
 function Coterie.invalidateReconcileCache()

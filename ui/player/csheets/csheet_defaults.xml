@@ -40,7 +40,7 @@
   <HorizontalLayout class="5_dots" padding="0 100 0 0" />
   <HorizontalLayout class="6_dots" padding="0 120 0 0" />
 
-  <Text class="box_text_title_text" resizeTextForBestFit="true" horizontalOverflow="Truncate" verticalOverflow="Truncate" alignment="MiddleLeft" color="#FFFFFF" resizeTextMinSize="14" resizeTextMaxSize="24" fontStyle="Bold" />
+  <Text class="box_text_title_text" resizeTextForBestFit="true" horizontalOverflow="Truncate" verticalOverflow="Truncate" alignment="MiddleLeft" color="#FFFFFF" resizeTextMinSize="14" resizeTextMaxSize="24" fontStyle="Bold" flexibleWidth = "1" />
   <Text class="flaw_title" color="#FF0000" />
   <Panel class="box_text_panel_title_dotline" ignoreLayout="true" rectAlignment="MiddleRight" width="120" height="24" />
   <Image class="box_text_title_dot" height="40" width="40" offsetXY="-5 10" rectAlignment="MiddleRight" active="true" />
@@ -54,7 +54,7 @@
   <!-- Box Container: Body -->
   <Panel class="box_text_panel_body" padding="0 0 0 0" color="#000000" />
   <VerticalLayout class="box_text_panel_body" padding="0 0 0 0" color="#000000" />
-  <Text class="box_text" resizeTextForBestFit="true" resizeTextMinSize="14" resizeTextMaxSize="24" horizontalOverflow="Wrap" verticalOverflow="Truncate" alignment="UpperLeft" color="#DDDDDD" />
+  <Text class="box_text" resizeTextForBestFit="true" resizeTextMinSize="24" resizeTextMaxSize="24" horizontalOverflow="Wrap" verticalOverflow="Truncate" alignment="UpperLeft" color="#DDDDDD" />
   <Text class="flavor_text" fontStyle="BoldAndItalic" color="#FFFFFF"  />
 
 

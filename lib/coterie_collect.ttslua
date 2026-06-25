@@ -3,29 +3,115 @@
 
 local CC = {}
 
+local TRAIT = require("lib.trait_sheet_xml")
+local PCT = require("lib.princes_court_trait_xml")
+
 local DOMAIN_DOT_KEYS = { "chasse", "lien", "portillon", "haven" }
 local MAX_DOMAIN_DOTS = 5
 
---- Build UI updates for coterie dots text (page 1 header) and domain rating dots (page 2).
+--- @param pageNum integer
+--- @param sectionKey string
+--- @param index integer 0-based visible index in array
+--- @param hudSeatColor string
+--- @return string rootId
+local function traitBlockRootId(pageNum, sectionKey, index, hudSeatColor)
+  return string.format("pc_p%d_%s_%d_%s", pageNum, sectionKey, index, hudSeatColor)
+end
+
+--- @param pageNum integer
+--- @param sectionKey string
+--- @param index integer
+--- @param hudSeatColor string
+--- @param suffix string e.g. "title", "flavor", "rules"
+--- @return string
+local function traitElementId(pageNum, sectionKey, index, hudSeatColor, suffix)
+  return string.format("pc_p%d_%s_%d_%s_%s", pageNum, sectionKey, index, suffix, hudSeatColor)
+end
+
+--- @param pageNum integer
+--- @param sectionKey string
+--- @param index integer
+--- @param slot integer 1-based
+--- @param hudSeatColor string
+--- @return string
+local function traitDotId(pageNum, sectionKey, index, slot, hudSeatColor)
+  return string.format("pc_p%d_%s_%d_dot_%d_%s", pageNum, sectionKey, index, slot, hudSeatColor)
+end
+
+--- @param updates table[]
+--- @param id string
+--- @param attrs table
+local function addUpdate(updates, id, attrs)
+  updates[#updates + 1] = { id = id, attributes = attrs }
+end
+
+--- @param coterieData table|nil
+--- @param hudSeatColor string
+--- @return table[] list of { id = string, attributes = table }
+function CC.collectPrincesCourtTraitBlankUpdates(coterieData, hudSeatColor)
+  local updates = {}
+  if type(hudSeatColor) ~= "string" or hudSeatColor == "" then
+    return updates
+  end
+  if type(coterieData) ~= "table" then
+    return updates
+  end
+
+  for _, group in ipairs(PCT.listTraitGroups()) do
+    local arr = coterieData[group.arrayKey]
+    if type(arr) == "table" then
+      local visibleIndex = 0
+      for _, entry in ipairs(arr) do
+        if type(entry) == "table" and entry.blank == true then
+          local pageNum = group.pageNum
+          local sectionKey = group.sectionKey
+          local isFlaw = group.isFlaw == true
+          local rootId = traitBlockRootId(pageNum, sectionKey, visibleIndex, hudSeatColor)
+          local titleId = traitElementId(pageNum, sectionKey, visibleIndex, hudSeatColor, "title")
+          local flavorId = traitElementId(pageNum, sectionKey, visibleIndex, hudSeatColor, "flavor")
+          local rulesId = traitElementId(pageNum, sectionKey, visibleIndex, hudSeatColor, "rules")
+
+          if entry.active == true then
+            addUpdate(updates, rootId, { active = "true" })
+            addUpdate(updates, titleId, { text = TRAIT.entryTitleUpper(entry) })
+
+            local flavor = TRAIT.joinMultilineField(entry.description)
+            addUpdate(updates, flavorId, { text = flavor or "" })
+
+            local rules = TRAIT.joinMultilineField(entry.rules)
+            addUpdate(updates, rulesId, { text = rules or "" })
+
+            local slotCount, baseCount, tempCount = TRAIT.slotBaseAndTemp(entry)
+            local filledImg = isFlaw and "dot_red" or "dot_yellow"
+            for slot = 1, slotCount do
+              local img = TRAIT.dotImageForTraitSlot(slot, slotCount, baseCount, tempCount, filledImg)
+              addUpdate(updates, traitDotId(pageNum, sectionKey, visibleIndex, slot, hudSeatColor), {
+                image = img,
+                active = "true",
+              })
+            end
+          else
+            addUpdate(updates, rootId, { active = "false" })
+          end
+        end
+        visibleIndex = visibleIndex + 1
+      end
+    end
+  end
+
+  return updates
+end
+
+--- Build UI updates for domain rating dots (page 2) and blank trait slots.
 -- @param coterieData table|nil `gameState.coterieData`
 -- @param hudSeatColor string HUD owner seat suffix (Purple, Pink, Red, Orange, Brown)
 -- @return table[] list of { id = string, attributes = table }
 function CC.collectPrincesCourtHudUpdates(coterieData, hudSeatColor)
     local updates = {}
 
-    local function add(id, attrs)
-        updates[#updates + 1] = { id = id, attributes = attrs }
-    end
-
     if type(hudSeatColor) ~= "string" or hudSeatColor == "" then
         return updates
     end
-
-    local dots = 0
-    if type(coterieData) == "table" then
-        dots = tonumber(coterieData.dots) or 0
-    end
-    add("coterie_dots_text_" .. hudSeatColor, { text = tostring(dots) })
 
     for _, key in ipairs(DOMAIN_DOT_KEYS) do
         local rating = 0
@@ -39,10 +125,15 @@ function CC.collectPrincesCourtHudUpdates(coterieData, hudSeatColor)
         end
         rating = math.floor(rating)
         for slot = 1, MAX_DOMAIN_DOTS do
-            add("dot_on_" .. key .. "_" .. slot .. "_" .. hudSeatColor, {
+            addUpdate(updates, "dot_on_" .. key .. "_" .. slot .. "_" .. hudSeatColor, {
                 active = (slot <= rating) and "true" or "false",
             })
         end
+    end
+
+    local blankUpdates = CC.collectPrincesCourtTraitBlankUpdates(coterieData, hudSeatColor)
+    for i = 1, #blankUpdates do
+        updates[#updates + 1] = blankUpdates[i]
     end
 
     return updates

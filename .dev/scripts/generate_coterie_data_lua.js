@@ -30,6 +30,8 @@ CoterieData.RAW_JSON = ${open}
 const footer = `
 ${close}
 
+local CoterieHydrate = require("lib.coterie_hydrate")
+
 function CoterieData.getDecoded()
   if CoterieData._cache == nil then
     if JSON == nil or type(JSON.decode) ~= "function" then
@@ -39,7 +41,7 @@ function CoterieData.getDecoded()
     if type(data) ~= "table" then
       error("CoterieData.getDecoded: invalid JSON")
     end
-    CoterieData._cache = data
+    CoterieData._cache = CoterieHydrate.hydrateCoterieData(data)
   end
   return CoterieData._cache
 end

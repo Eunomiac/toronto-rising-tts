@@ -12,8 +12,11 @@ const path = require("path");
 
 const { makeLongBracketLiteral } = require("./generate_csheet_defaults_lua");
 
-/** Runtime-embed templates only (not top-level `ui/.templates/*.xml` color-expansion sources). */
-const DEFAULT_TEMPLATE_ROOT_REL = ["ui", ".templates", "csheet"];
+/** Runtime-embed template roots (not top-level `ui/.templates/*.xml` color-expansion sources). */
+const DEFAULT_TEMPLATE_ROOTS_REL = [
+  ["ui", ".templates", "csheet"],
+  ["ui", ".templates", "princes_court"],
+];
 const TEMPLATE_KEY_BASE_REL = ["ui", ".templates"];
 const DEFAULT_OUT_REL = ["lib", "ui_xml_templates.ttslua"];
 const GENERATOR_REL = ".dev/scripts/embed_ui_xml_templates.js";
@@ -101,19 +104,23 @@ function buildLuaModule(templates, sourceRootRel) {
  */
 function main(projectRoot) {
   const root = projectRoot || path.resolve(__dirname, "../..");
-  const templateRoot = path.join(root, ...DEFAULT_TEMPLATE_ROOT_REL);
   const keyBaseDir = path.join(root, ...TEMPLATE_KEY_BASE_REL);
   const outPath = path.join(root, ...DEFAULT_OUT_REL);
 
-  if (!fs.existsSync(templateRoot)) {
-    throw new Error(`Template root not found: ${templateRoot}`);
+  const files = [];
+  const sourceRoots = [];
+  for (const rootRel of DEFAULT_TEMPLATE_ROOTS_REL) {
+    const templateRoot = path.join(root, ...rootRel);
+    if (!fs.existsSync(templateRoot)) {
+      console.warn(`[embed_ui_xml_templates] Skipping missing root: ${templateRoot}`);
+      continue;
+    }
+    sourceRoots.push(path.relative(root, templateRoot).split(path.sep).join("/"));
+    collectXmlFiles(templateRoot, keyBaseDir, files);
   }
 
-  const files = [];
-  collectXmlFiles(templateRoot, keyBaseDir, files);
-
   if (files.length === 0) {
-    throw new Error(`No .xml templates under ${templateRoot}`);
+    throw new Error("No .xml templates found under configured template roots");
   }
 
   const templates = files.map(({ key, fullPath }) => {
@@ -126,7 +133,7 @@ function main(projectRoot) {
     return { key, body };
   }).filter((t) => t !== null);
 
-  const sourceRootRel = path.relative(root, templateRoot).split(path.sep).join("/");
+  const sourceRootRel = sourceRoots.join(", ");
   const lua = buildLuaModule(templates, sourceRootRel);
 
   fs.mkdirSync(path.dirname(outPath), { recursive: true });

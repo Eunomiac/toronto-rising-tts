@@ -187,7 +187,23 @@ Projects will be displayed in the form of boxed XML elements derived from partia
 
 1. All PC participants CSHEETS, on page 5
 2. The "Projects" Storyteller panel
-3. The "Court" sidebar reference panel (yet to be completed)
+3. The "Court" sidebar reference panel (Prince's Court reference — trait columns on pages 1–2)
+
+#### `gameState.coterieData` (Prince's Court reference)
+
+Authoritative JSON: `lib/json/Coterie.json` → `lib/coterie_data.ttslua` (regenerate: `node .dev/scripts/generate_coterie_data_lua.js`).
+
+Trait entries use the same PCS-shaped fields as character sheet backgrounds/merits/flaws: `name`, `focus`, `base`, `temp`, `max`, `description[]`, `rules[]`, optional `source`. Nine arrays:
+
+| Array | Prince's Court region |
+| --- | --- |
+| `coterieBackgrounds`, `coterieMerits`, `coterieFlaws` | Page 1 right (`page_1_right`) |
+| `domainBackgrounds`, `domainMerits`, `domainFlaws` | Page 2 left (`page_2_left`) |
+| `havenBackgrounds`, `havenMerits`, `havenFlaws` | Page 2 right (`page_2_right`) |
+
+Each trait array receives **three blank slots** appended by `lib/coterie_hydrate.ttslua` after JSON decode (not authored in the Google Sheet export). Blanks use `blank: true`, `active: false`. Set `active: true` and fill fields in state; `Coterie.reconcileForHudSeat` updates pre-baked UI ids. Rebuild from JSON between sessions to reset sheet-backed traits; blank slot structure is re-hydrated on load via `Coterie.ensureInState`.
+
+Also: `dots`, `chasse`, `lien`, `portillon`, `haven` (domain rating integers) — runtime `setAttribute` only.
 
 ####
 

@@ -47,6 +47,8 @@
       width = "24"
       active = "true" />
 
+    <!-- <Image class="box_text_title_dot" height = "20" width = "20" /> -->
+
     <VerticalLayout class="page"
       width = "710"
       padding = "8 8 50 50" />
@@ -58,6 +60,17 @@
     <VerticalLayout class="page_left"
       rectAlignment = "MiddleLeft"
       offsetXY = "20 0" />
+
+    <Text class="box_text" resizeTextMinSize = "8" resizeTextMaxSize = "14" />
+    <Text class="box_text_title_text" resizeTextMinSize = "8" resizeTextMaxSize = "14" />
+
+    <VerticalLayout class="box_text_container" padding="5 5 0 0" />
+      <HorizontalLayout class="1_dot" padding="0 20 0 0" />
+  <HorizontalLayout class="2_dots" padding="0 40 0 0" />
+  <HorizontalLayout class="3_dots" padding="0 60 0 0" />
+  <HorizontalLayout class="4_dots" padding="0 80 0 0" />
+  <HorizontalLayout class="5_dots" padding="0 100 0 0" />
+  <HorizontalLayout class="6_dots" padding="0 120 0 0" />
 
   </Defaults>
 
@@ -578,9 +591,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
         <!-- Coterie Backgrounds -->
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_bg_0_Brown" class="box_text_container" active="true">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_bg_0_title_Brown" class="box_text_title_text" text="RESOURCES" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
-    <Panel class="box_text_panel_title_dotline">
+  <HorizontalLayout id="db_p2_bg_0_title_bar_Brown" class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_bg_0_title_Brown" class="box_text_title_text" text="RESOURCES" />
+    <Panel id="db_p2_bg_0_panel_title_dotline_Brown" class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_bg_0_dot_1_Brown" image="dot_white" class="dot box_text_title_dot dot_1" />
       
@@ -601,17 +614,17 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_0_flavor_Brown" class="box_text flavor_text" text="As the most powerful coterie in the city, you have access to a vast array of resources." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_bg_0_rules_Brown" class="box_text rules_text" text="You may commit coterie Resources to Projects or other endeavors." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_bg_0_flavor_Brown" class="box_text flavor_text" text="While not personally wealthy, your control over the Bay Street Financial District gives you access to a vast array of resources." />
+    <Text id="pc_p2_bg_0_rules_Brown" class="box_text rules_text" text="You may commit coterie Resources to Projects or other endeavors." />
   </VerticalLayout>
   
   
 </VerticalLayout></VerticalLayout>
           <VerticalLayout class="box_column"></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_bg_1_Brown" class="box_text_container" active="false">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_bg_1_title_Brown" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
-    <Panel class="box_text_panel_title_dotline">
+  <HorizontalLayout id="db_p2_bg_1_title_bar_Brown" class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_bg_1_title_Brown" class="box_text_title_text" text="" />
+    <Panel id="db_p2_bg_1_panel_title_dotline_Brown" class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_bg_1_dot_1_Brown" image="dot_blank" class="dot box_text_title_dot dot_1" />
       
@@ -632,15 +645,15 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_1_flavor_Brown" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_bg_1_rules_Brown" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_bg_1_flavor_Brown" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_bg_1_rules_Brown" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p2_bg_2_Brown" class="box_text_container" active="false">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_bg_2_title_Brown" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
-    <Panel class="box_text_panel_title_dotline">
+  <HorizontalLayout id="db_p2_bg_2_title_bar_Brown" class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_bg_2_title_Brown" class="box_text_title_text" text="" />
+    <Panel id="db_p2_bg_2_panel_title_dotline_Brown" class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_bg_2_dot_1_Brown" image="dot_blank" class="dot box_text_title_dot dot_1" />
       
@@ -661,15 +674,15 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_2_flavor_Brown" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_bg_2_rules_Brown" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_bg_2_flavor_Brown" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_bg_2_rules_Brown" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p2_bg_3_Brown" class="box_text_container" active="false">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_bg_3_title_Brown" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
-    <Panel class="box_text_panel_title_dotline">
+  <HorizontalLayout id="db_p2_bg_3_title_bar_Brown" class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_bg_3_title_Brown" class="box_text_title_text" text="" />
+    <Panel id="db_p2_bg_3_panel_title_dotline_Brown" class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_bg_3_dot_1_Brown" image="dot_blank" class="dot box_text_title_dot dot_1" />
       
@@ -690,8 +703,8 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_3_flavor_Brown" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_bg_3_rules_Brown" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_bg_3_flavor_Brown" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_bg_3_rules_Brown" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
@@ -706,7 +719,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_merit_0_Brown" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 2_dots">
-    <Text id="pc_p2_merit_0_title_Brown" class="box_text_title_text" text="MULTI-LEVEL LOREKEEPING" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_0_title_Brown" class="box_text_title_text" text="MULTI-LEVEL LOREKEEPING" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_0_dot_1_Brown" image="dot_yellow" class="dot box_text_title_dot dot_1" />
@@ -724,7 +737,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   
 </VerticalLayout><VerticalLayout id="pc_p2_merit_3_Brown" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 1_dot">
-    <Text id="pc_p2_merit_3_title_Brown" class="box_text_title_text" text="ALL ACCESS" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_3_title_Brown" class="box_text_title_text" text="ALL ACCESS" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_3_dot_1_Brown" image="dot_yellow" class="dot box_text_title_dot dot_1" />
@@ -741,7 +754,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
 </VerticalLayout></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_merit_1_Brown" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 3_dots">
-    <Text id="pc_p2_merit_1_title_Brown" class="box_text_title_text" text="EVERYTHING IS CONNECTED" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_1_title_Brown" class="box_text_title_text" text="EVERYTHING IS CONNECTED" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_1_dot_1_Brown" image="dot_yellow" class="dot box_text_title_dot dot_1" />
@@ -761,7 +774,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   
 </VerticalLayout><VerticalLayout id="pc_p2_merit_4_Brown" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 2_dots">
-    <Text id="pc_p2_merit_4_title_Brown" class="box_text_title_text" text="CALL TO PURPOSE" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_4_title_Brown" class="box_text_title_text" text="CALL TO PURPOSE" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_4_dot_1_Brown" image="dot_yellow" class="dot box_text_title_dot dot_1" />
@@ -780,7 +793,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
 </VerticalLayout></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_merit_2_Brown" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 2_dots">
-    <Text id="pc_p2_merit_2_title_Brown" class="box_text_title_text" text="CONTEXTUAL CONTACT" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_2_title_Brown" class="box_text_title_text" text="CONTEXTUAL CONTACT" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_2_dot_1_Brown" image="dot_yellow" class="dot box_text_title_dot dot_1" />
@@ -798,7 +811,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   
 </VerticalLayout><VerticalLayout id="pc_p2_merit_5_Brown" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_merit_5_title_Brown" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_5_title_Brown" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_5_dot_1_Brown" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -820,14 +833,14 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_merit_5_flavor_Brown" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_merit_5_rules_Brown" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_merit_5_flavor_Brown" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_merit_5_rules_Brown" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p2_merit_6_Brown" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_merit_6_title_Brown" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_6_title_Brown" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_6_dot_1_Brown" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -849,14 +862,14 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_merit_6_flavor_Brown" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_merit_6_rules_Brown" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_merit_6_flavor_Brown" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_merit_6_rules_Brown" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p2_merit_7_Brown" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_merit_7_title_Brown" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_7_title_Brown" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_7_dot_1_Brown" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -878,8 +891,8 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_merit_7_flavor_Brown" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_merit_7_rules_Brown" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_merit_7_flavor_Brown" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_merit_7_rules_Brown" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
@@ -894,7 +907,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_flaw_0_Brown" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_flaw_0_title_Brown" class="box_text_title_text flaw_title" text="ADVERSARY: [REDACTED]" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_flaw_0_title_Brown" class="box_text_title_text flaw_title" text="ADVERSARY: [REDACTED]" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_flaw_0_dot_1_Brown" image="dot_red" class="dot box_text_title_dot dot_1" />
@@ -916,9 +929,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_0_flavor_Brown" class="box_text flavor_text" text="You have earned the enmity of a very powerful, very ancient, very mysterious enemy." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_flaw_0_flavor_Brown" class="box_text flavor_text" text="You have earned the enmity of a very powerful, very ancient, very mysterious enemy." />
     <Text id="pc_p2_flaw_0_rules_Brown" class="box_text rules_text" text="Your enemy is a methuselah or a cabal of powerful elders.
-The Storyteller should use them at least once per story." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+The Storyteller should use them at least once per story." />
   </VerticalLayout>
   
   
@@ -926,7 +939,7 @@ The Storyteller should use them at least once per story." resizeTextForBestFit="
           <VerticalLayout class="box_column"></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_flaw_1_Brown" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_flaw_1_title_Brown" class="box_text_title_text flaw_title" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_flaw_1_title_Brown" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_flaw_1_dot_1_Brown" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -948,14 +961,14 @@ The Storyteller should use them at least once per story." resizeTextForBestFit="
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_1_flavor_Brown" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_flaw_1_rules_Brown" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_flaw_1_flavor_Brown" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_flaw_1_rules_Brown" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p2_flaw_2_Brown" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_flaw_2_title_Brown" class="box_text_title_text flaw_title" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_flaw_2_title_Brown" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_flaw_2_dot_1_Brown" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -977,14 +990,14 @@ The Storyteller should use them at least once per story." resizeTextForBestFit="
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_2_flavor_Brown" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_flaw_2_rules_Brown" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_flaw_2_flavor_Brown" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_flaw_2_rules_Brown" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p2_flaw_3_Brown" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_flaw_3_title_Brown" class="box_text_title_text flaw_title" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_flaw_3_title_Brown" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_flaw_3_dot_1_Brown" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -1006,8 +1019,8 @@ The Storyteller should use them at least once per story." resizeTextForBestFit="
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_3_flavor_Brown" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_flaw_3_rules_Brown" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_flaw_3_flavor_Brown" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_flaw_3_rules_Brown" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
@@ -1079,7 +1092,7 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_merit_0_Brown" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_merit_0_title_Brown" class="box_text_title_text" text="TRANSPORTATION" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_merit_0_title_Brown" class="box_text_title_text" text="TRANSPORTATION" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_merit_0_dot_1_Brown" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -1101,8 +1114,8 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_0_flavor_Brown" class="box_text flavor_text" text="You have a fleet of vehicles and the staff to drive them." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_merit_0_rules_Brown" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_merit_0_flavor_Brown" class="box_text flavor_text" text="You have a fleet of vehicles and the staff to drive them." />
+    <Text id="pc_p3_merit_0_rules_Brown" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
@@ -1110,7 +1123,7 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
           <VerticalLayout class="box_column"></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_merit_1_Brown" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_merit_1_title_Brown" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_merit_1_title_Brown" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_merit_1_dot_1_Brown" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -1132,14 +1145,14 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_1_flavor_Brown" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_merit_1_rules_Brown" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_merit_1_flavor_Brown" class="box_text flavor_text" text="" />
+    <Text id="pc_p3_merit_1_rules_Brown" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p3_merit_2_Brown" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_merit_2_title_Brown" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_merit_2_title_Brown" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_merit_2_dot_1_Brown" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -1161,14 +1174,14 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_2_flavor_Brown" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_merit_2_rules_Brown" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_merit_2_flavor_Brown" class="box_text flavor_text" text="" />
+    <Text id="pc_p3_merit_2_rules_Brown" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p3_merit_3_Brown" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_merit_3_title_Brown" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_merit_3_title_Brown" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_merit_3_dot_1_Brown" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -1190,8 +1203,8 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_3_flavor_Brown" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_merit_3_rules_Brown" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_merit_3_flavor_Brown" class="box_text flavor_text" text="" />
+    <Text id="pc_p3_merit_3_rules_Brown" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
@@ -1206,7 +1219,7 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_flaw_0_Brown" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 2_dots">
-    <Text id="pc_p3_flaw_0_title_Brown" class="box_text_title_text flaw_title" text="CUSTODIANS" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_flaw_0_title_Brown" class="box_text_title_text flaw_title" text="CUSTODIANS" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_flaw_0_dot_1_Brown" image="dot_red" class="dot box_text_title_dot dot_1" />
@@ -1222,9 +1235,9 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_0_flavor_Brown" class="box_text flavor_text" text="Your domain comes with certain responsibilities." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_flaw_0_flavor_Brown" class="box_text flavor_text" text="Your domain comes with certain responsibilities." />
     <Text id="pc_p3_flaw_0_rules_Brown" class="box_text rules_text" text="You must secure the main entry points of Union Station and the Billy Bishop Ferry (from Billy Bishop Airport, on Centre Island) against unauthorized entry by Kindred of any sect.
-Failure to do so will result in loss of reputation, trust in your rule, or worse." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+Failure to do so will result in loss of reputation, trust in your rule, or worse." />
   </VerticalLayout>
   
   
@@ -1232,7 +1245,7 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
           <VerticalLayout class="box_column"></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_flaw_1_Brown" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_flaw_1_title_Brown" class="box_text_title_text flaw_title" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_flaw_1_title_Brown" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_flaw_1_dot_1_Brown" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -1254,14 +1267,14 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_1_flavor_Brown" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_flaw_1_rules_Brown" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_flaw_1_flavor_Brown" class="box_text flavor_text" text="" />
+    <Text id="pc_p3_flaw_1_rules_Brown" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p3_flaw_2_Brown" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_flaw_2_title_Brown" class="box_text_title_text flaw_title" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_flaw_2_title_Brown" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_flaw_2_dot_1_Brown" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -1283,14 +1296,14 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_2_flavor_Brown" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_flaw_2_rules_Brown" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_flaw_2_flavor_Brown" class="box_text flavor_text" text="" />
+    <Text id="pc_p3_flaw_2_rules_Brown" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p3_flaw_3_Brown" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_flaw_3_title_Brown" class="box_text_title_text flaw_title" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_flaw_3_title_Brown" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_flaw_3_dot_1_Brown" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -1312,8 +1325,8 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_3_flavor_Brown" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_flaw_3_rules_Brown" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_flaw_3_flavor_Brown" class="box_text flavor_text" text="" />
+    <Text id="pc_p3_flaw_3_rules_Brown" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
@@ -1499,6 +1512,8 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
       width = "24"
       active = "true" />
 
+    <!-- <Image class="box_text_title_dot" height = "20" width = "20" /> -->
+
     <VerticalLayout class="page"
       width = "710"
       padding = "8 8 50 50" />
@@ -1510,6 +1525,17 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
     <VerticalLayout class="page_left"
       rectAlignment = "MiddleLeft"
       offsetXY = "20 0" />
+
+    <Text class="box_text" resizeTextMinSize = "8" resizeTextMaxSize = "14" />
+    <Text class="box_text_title_text" resizeTextMinSize = "8" resizeTextMaxSize = "14" />
+
+    <VerticalLayout class="box_text_container" padding="5 5 0 0" />
+      <HorizontalLayout class="1_dot" padding="0 20 0 0" />
+  <HorizontalLayout class="2_dots" padding="0 40 0 0" />
+  <HorizontalLayout class="3_dots" padding="0 60 0 0" />
+  <HorizontalLayout class="4_dots" padding="0 80 0 0" />
+  <HorizontalLayout class="5_dots" padding="0 100 0 0" />
+  <HorizontalLayout class="6_dots" padding="0 120 0 0" />
 
   </Defaults>
 
@@ -2030,9 +2056,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
         <!-- Coterie Backgrounds -->
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_bg_0_Orange" class="box_text_container" active="true">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_bg_0_title_Orange" class="box_text_title_text" text="RESOURCES" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
-    <Panel class="box_text_panel_title_dotline">
+  <HorizontalLayout id="db_p2_bg_0_title_bar_Orange" class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_bg_0_title_Orange" class="box_text_title_text" text="RESOURCES" />
+    <Panel id="db_p2_bg_0_panel_title_dotline_Orange" class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_bg_0_dot_1_Orange" image="dot_white" class="dot box_text_title_dot dot_1" />
       
@@ -2053,17 +2079,17 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_0_flavor_Orange" class="box_text flavor_text" text="As the most powerful coterie in the city, you have access to a vast array of resources." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_bg_0_rules_Orange" class="box_text rules_text" text="You may commit coterie Resources to Projects or other endeavors." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_bg_0_flavor_Orange" class="box_text flavor_text" text="While not personally wealthy, your control over the Bay Street Financial District gives you access to a vast array of resources." />
+    <Text id="pc_p2_bg_0_rules_Orange" class="box_text rules_text" text="You may commit coterie Resources to Projects or other endeavors." />
   </VerticalLayout>
   
   
 </VerticalLayout></VerticalLayout>
           <VerticalLayout class="box_column"></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_bg_1_Orange" class="box_text_container" active="false">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_bg_1_title_Orange" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
-    <Panel class="box_text_panel_title_dotline">
+  <HorizontalLayout id="db_p2_bg_1_title_bar_Orange" class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_bg_1_title_Orange" class="box_text_title_text" text="" />
+    <Panel id="db_p2_bg_1_panel_title_dotline_Orange" class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_bg_1_dot_1_Orange" image="dot_blank" class="dot box_text_title_dot dot_1" />
       
@@ -2084,15 +2110,15 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_1_flavor_Orange" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_bg_1_rules_Orange" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_bg_1_flavor_Orange" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_bg_1_rules_Orange" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p2_bg_2_Orange" class="box_text_container" active="false">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_bg_2_title_Orange" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
-    <Panel class="box_text_panel_title_dotline">
+  <HorizontalLayout id="db_p2_bg_2_title_bar_Orange" class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_bg_2_title_Orange" class="box_text_title_text" text="" />
+    <Panel id="db_p2_bg_2_panel_title_dotline_Orange" class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_bg_2_dot_1_Orange" image="dot_blank" class="dot box_text_title_dot dot_1" />
       
@@ -2113,15 +2139,15 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_2_flavor_Orange" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_bg_2_rules_Orange" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_bg_2_flavor_Orange" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_bg_2_rules_Orange" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p2_bg_3_Orange" class="box_text_container" active="false">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_bg_3_title_Orange" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
-    <Panel class="box_text_panel_title_dotline">
+  <HorizontalLayout id="db_p2_bg_3_title_bar_Orange" class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_bg_3_title_Orange" class="box_text_title_text" text="" />
+    <Panel id="db_p2_bg_3_panel_title_dotline_Orange" class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_bg_3_dot_1_Orange" image="dot_blank" class="dot box_text_title_dot dot_1" />
       
@@ -2142,8 +2168,8 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_3_flavor_Orange" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_bg_3_rules_Orange" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_bg_3_flavor_Orange" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_bg_3_rules_Orange" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
@@ -2158,7 +2184,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_merit_0_Orange" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 2_dots">
-    <Text id="pc_p2_merit_0_title_Orange" class="box_text_title_text" text="MULTI-LEVEL LOREKEEPING" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_0_title_Orange" class="box_text_title_text" text="MULTI-LEVEL LOREKEEPING" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_0_dot_1_Orange" image="dot_yellow" class="dot box_text_title_dot dot_1" />
@@ -2176,7 +2202,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   
 </VerticalLayout><VerticalLayout id="pc_p2_merit_3_Orange" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 1_dot">
-    <Text id="pc_p2_merit_3_title_Orange" class="box_text_title_text" text="ALL ACCESS" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_3_title_Orange" class="box_text_title_text" text="ALL ACCESS" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_3_dot_1_Orange" image="dot_yellow" class="dot box_text_title_dot dot_1" />
@@ -2193,7 +2219,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
 </VerticalLayout></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_merit_1_Orange" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 3_dots">
-    <Text id="pc_p2_merit_1_title_Orange" class="box_text_title_text" text="EVERYTHING IS CONNECTED" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_1_title_Orange" class="box_text_title_text" text="EVERYTHING IS CONNECTED" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_1_dot_1_Orange" image="dot_yellow" class="dot box_text_title_dot dot_1" />
@@ -2213,7 +2239,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   
 </VerticalLayout><VerticalLayout id="pc_p2_merit_4_Orange" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 2_dots">
-    <Text id="pc_p2_merit_4_title_Orange" class="box_text_title_text" text="CALL TO PURPOSE" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_4_title_Orange" class="box_text_title_text" text="CALL TO PURPOSE" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_4_dot_1_Orange" image="dot_yellow" class="dot box_text_title_dot dot_1" />
@@ -2232,7 +2258,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
 </VerticalLayout></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_merit_2_Orange" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 2_dots">
-    <Text id="pc_p2_merit_2_title_Orange" class="box_text_title_text" text="CONTEXTUAL CONTACT" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_2_title_Orange" class="box_text_title_text" text="CONTEXTUAL CONTACT" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_2_dot_1_Orange" image="dot_yellow" class="dot box_text_title_dot dot_1" />
@@ -2250,7 +2276,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   
 </VerticalLayout><VerticalLayout id="pc_p2_merit_5_Orange" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_merit_5_title_Orange" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_5_title_Orange" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_5_dot_1_Orange" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -2272,14 +2298,14 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_merit_5_flavor_Orange" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_merit_5_rules_Orange" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_merit_5_flavor_Orange" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_merit_5_rules_Orange" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p2_merit_6_Orange" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_merit_6_title_Orange" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_6_title_Orange" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_6_dot_1_Orange" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -2301,14 +2327,14 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_merit_6_flavor_Orange" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_merit_6_rules_Orange" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_merit_6_flavor_Orange" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_merit_6_rules_Orange" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p2_merit_7_Orange" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_merit_7_title_Orange" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_7_title_Orange" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_7_dot_1_Orange" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -2330,8 +2356,8 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_merit_7_flavor_Orange" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_merit_7_rules_Orange" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_merit_7_flavor_Orange" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_merit_7_rules_Orange" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
@@ -2346,7 +2372,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_flaw_0_Orange" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_flaw_0_title_Orange" class="box_text_title_text flaw_title" text="ADVERSARY: [REDACTED]" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_flaw_0_title_Orange" class="box_text_title_text flaw_title" text="ADVERSARY: [REDACTED]" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_flaw_0_dot_1_Orange" image="dot_red" class="dot box_text_title_dot dot_1" />
@@ -2368,9 +2394,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_0_flavor_Orange" class="box_text flavor_text" text="You have earned the enmity of a very powerful, very ancient, very mysterious enemy." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_flaw_0_flavor_Orange" class="box_text flavor_text" text="You have earned the enmity of a very powerful, very ancient, very mysterious enemy." />
     <Text id="pc_p2_flaw_0_rules_Orange" class="box_text rules_text" text="Your enemy is a methuselah or a cabal of powerful elders.
-The Storyteller should use them at least once per story." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+The Storyteller should use them at least once per story." />
   </VerticalLayout>
   
   
@@ -2378,7 +2404,7 @@ The Storyteller should use them at least once per story." resizeTextForBestFit="
           <VerticalLayout class="box_column"></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_flaw_1_Orange" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_flaw_1_title_Orange" class="box_text_title_text flaw_title" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_flaw_1_title_Orange" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_flaw_1_dot_1_Orange" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -2400,14 +2426,14 @@ The Storyteller should use them at least once per story." resizeTextForBestFit="
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_1_flavor_Orange" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_flaw_1_rules_Orange" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_flaw_1_flavor_Orange" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_flaw_1_rules_Orange" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p2_flaw_2_Orange" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_flaw_2_title_Orange" class="box_text_title_text flaw_title" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_flaw_2_title_Orange" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_flaw_2_dot_1_Orange" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -2429,14 +2455,14 @@ The Storyteller should use them at least once per story." resizeTextForBestFit="
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_2_flavor_Orange" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_flaw_2_rules_Orange" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_flaw_2_flavor_Orange" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_flaw_2_rules_Orange" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p2_flaw_3_Orange" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_flaw_3_title_Orange" class="box_text_title_text flaw_title" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_flaw_3_title_Orange" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_flaw_3_dot_1_Orange" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -2458,8 +2484,8 @@ The Storyteller should use them at least once per story." resizeTextForBestFit="
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_3_flavor_Orange" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_flaw_3_rules_Orange" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_flaw_3_flavor_Orange" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_flaw_3_rules_Orange" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
@@ -2531,7 +2557,7 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_merit_0_Orange" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_merit_0_title_Orange" class="box_text_title_text" text="TRANSPORTATION" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_merit_0_title_Orange" class="box_text_title_text" text="TRANSPORTATION" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_merit_0_dot_1_Orange" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -2553,8 +2579,8 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_0_flavor_Orange" class="box_text flavor_text" text="You have a fleet of vehicles and the staff to drive them." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_merit_0_rules_Orange" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_merit_0_flavor_Orange" class="box_text flavor_text" text="You have a fleet of vehicles and the staff to drive them." />
+    <Text id="pc_p3_merit_0_rules_Orange" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
@@ -2562,7 +2588,7 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
           <VerticalLayout class="box_column"></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_merit_1_Orange" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_merit_1_title_Orange" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_merit_1_title_Orange" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_merit_1_dot_1_Orange" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -2584,14 +2610,14 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_1_flavor_Orange" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_merit_1_rules_Orange" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_merit_1_flavor_Orange" class="box_text flavor_text" text="" />
+    <Text id="pc_p3_merit_1_rules_Orange" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p3_merit_2_Orange" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_merit_2_title_Orange" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_merit_2_title_Orange" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_merit_2_dot_1_Orange" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -2613,14 +2639,14 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_2_flavor_Orange" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_merit_2_rules_Orange" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_merit_2_flavor_Orange" class="box_text flavor_text" text="" />
+    <Text id="pc_p3_merit_2_rules_Orange" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p3_merit_3_Orange" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_merit_3_title_Orange" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_merit_3_title_Orange" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_merit_3_dot_1_Orange" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -2642,8 +2668,8 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_3_flavor_Orange" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_merit_3_rules_Orange" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_merit_3_flavor_Orange" class="box_text flavor_text" text="" />
+    <Text id="pc_p3_merit_3_rules_Orange" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
@@ -2658,7 +2684,7 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_flaw_0_Orange" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 2_dots">
-    <Text id="pc_p3_flaw_0_title_Orange" class="box_text_title_text flaw_title" text="CUSTODIANS" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_flaw_0_title_Orange" class="box_text_title_text flaw_title" text="CUSTODIANS" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_flaw_0_dot_1_Orange" image="dot_red" class="dot box_text_title_dot dot_1" />
@@ -2674,9 +2700,9 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_0_flavor_Orange" class="box_text flavor_text" text="Your domain comes with certain responsibilities." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_flaw_0_flavor_Orange" class="box_text flavor_text" text="Your domain comes with certain responsibilities." />
     <Text id="pc_p3_flaw_0_rules_Orange" class="box_text rules_text" text="You must secure the main entry points of Union Station and the Billy Bishop Ferry (from Billy Bishop Airport, on Centre Island) against unauthorized entry by Kindred of any sect.
-Failure to do so will result in loss of reputation, trust in your rule, or worse." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+Failure to do so will result in loss of reputation, trust in your rule, or worse." />
   </VerticalLayout>
   
   
@@ -2684,7 +2710,7 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
           <VerticalLayout class="box_column"></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_flaw_1_Orange" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_flaw_1_title_Orange" class="box_text_title_text flaw_title" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_flaw_1_title_Orange" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_flaw_1_dot_1_Orange" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -2706,14 +2732,14 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_1_flavor_Orange" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_flaw_1_rules_Orange" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_flaw_1_flavor_Orange" class="box_text flavor_text" text="" />
+    <Text id="pc_p3_flaw_1_rules_Orange" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p3_flaw_2_Orange" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_flaw_2_title_Orange" class="box_text_title_text flaw_title" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_flaw_2_title_Orange" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_flaw_2_dot_1_Orange" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -2735,14 +2761,14 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_2_flavor_Orange" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_flaw_2_rules_Orange" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_flaw_2_flavor_Orange" class="box_text flavor_text" text="" />
+    <Text id="pc_p3_flaw_2_rules_Orange" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p3_flaw_3_Orange" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_flaw_3_title_Orange" class="box_text_title_text flaw_title" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_flaw_3_title_Orange" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_flaw_3_dot_1_Orange" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -2764,8 +2790,8 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_3_flavor_Orange" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_flaw_3_rules_Orange" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_flaw_3_flavor_Orange" class="box_text flavor_text" text="" />
+    <Text id="pc_p3_flaw_3_rules_Orange" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
@@ -2951,6 +2977,8 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
       width = "24"
       active = "true" />
 
+    <!-- <Image class="box_text_title_dot" height = "20" width = "20" /> -->
+
     <VerticalLayout class="page"
       width = "710"
       padding = "8 8 50 50" />
@@ -2962,6 +2990,17 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
     <VerticalLayout class="page_left"
       rectAlignment = "MiddleLeft"
       offsetXY = "20 0" />
+
+    <Text class="box_text" resizeTextMinSize = "8" resizeTextMaxSize = "14" />
+    <Text class="box_text_title_text" resizeTextMinSize = "8" resizeTextMaxSize = "14" />
+
+    <VerticalLayout class="box_text_container" padding="5 5 0 0" />
+      <HorizontalLayout class="1_dot" padding="0 20 0 0" />
+  <HorizontalLayout class="2_dots" padding="0 40 0 0" />
+  <HorizontalLayout class="3_dots" padding="0 60 0 0" />
+  <HorizontalLayout class="4_dots" padding="0 80 0 0" />
+  <HorizontalLayout class="5_dots" padding="0 100 0 0" />
+  <HorizontalLayout class="6_dots" padding="0 120 0 0" />
 
   </Defaults>
 
@@ -3482,9 +3521,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
         <!-- Coterie Backgrounds -->
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_bg_0_Red" class="box_text_container" active="true">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_bg_0_title_Red" class="box_text_title_text" text="RESOURCES" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
-    <Panel class="box_text_panel_title_dotline">
+  <HorizontalLayout id="db_p2_bg_0_title_bar_Red" class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_bg_0_title_Red" class="box_text_title_text" text="RESOURCES" />
+    <Panel id="db_p2_bg_0_panel_title_dotline_Red" class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_bg_0_dot_1_Red" image="dot_white" class="dot box_text_title_dot dot_1" />
       
@@ -3505,17 +3544,17 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_0_flavor_Red" class="box_text flavor_text" text="As the most powerful coterie in the city, you have access to a vast array of resources." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_bg_0_rules_Red" class="box_text rules_text" text="You may commit coterie Resources to Projects or other endeavors." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_bg_0_flavor_Red" class="box_text flavor_text" text="While not personally wealthy, your control over the Bay Street Financial District gives you access to a vast array of resources." />
+    <Text id="pc_p2_bg_0_rules_Red" class="box_text rules_text" text="You may commit coterie Resources to Projects or other endeavors." />
   </VerticalLayout>
   
   
 </VerticalLayout></VerticalLayout>
           <VerticalLayout class="box_column"></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_bg_1_Red" class="box_text_container" active="false">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_bg_1_title_Red" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
-    <Panel class="box_text_panel_title_dotline">
+  <HorizontalLayout id="db_p2_bg_1_title_bar_Red" class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_bg_1_title_Red" class="box_text_title_text" text="" />
+    <Panel id="db_p2_bg_1_panel_title_dotline_Red" class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_bg_1_dot_1_Red" image="dot_blank" class="dot box_text_title_dot dot_1" />
       
@@ -3536,15 +3575,15 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_1_flavor_Red" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_bg_1_rules_Red" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_bg_1_flavor_Red" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_bg_1_rules_Red" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p2_bg_2_Red" class="box_text_container" active="false">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_bg_2_title_Red" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
-    <Panel class="box_text_panel_title_dotline">
+  <HorizontalLayout id="db_p2_bg_2_title_bar_Red" class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_bg_2_title_Red" class="box_text_title_text" text="" />
+    <Panel id="db_p2_bg_2_panel_title_dotline_Red" class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_bg_2_dot_1_Red" image="dot_blank" class="dot box_text_title_dot dot_1" />
       
@@ -3565,15 +3604,15 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_2_flavor_Red" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_bg_2_rules_Red" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_bg_2_flavor_Red" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_bg_2_rules_Red" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p2_bg_3_Red" class="box_text_container" active="false">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_bg_3_title_Red" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
-    <Panel class="box_text_panel_title_dotline">
+  <HorizontalLayout id="db_p2_bg_3_title_bar_Red" class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_bg_3_title_Red" class="box_text_title_text" text="" />
+    <Panel id="db_p2_bg_3_panel_title_dotline_Red" class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_bg_3_dot_1_Red" image="dot_blank" class="dot box_text_title_dot dot_1" />
       
@@ -3594,8 +3633,8 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_3_flavor_Red" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_bg_3_rules_Red" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_bg_3_flavor_Red" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_bg_3_rules_Red" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
@@ -3610,7 +3649,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_merit_0_Red" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 2_dots">
-    <Text id="pc_p2_merit_0_title_Red" class="box_text_title_text" text="MULTI-LEVEL LOREKEEPING" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_0_title_Red" class="box_text_title_text" text="MULTI-LEVEL LOREKEEPING" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_0_dot_1_Red" image="dot_yellow" class="dot box_text_title_dot dot_1" />
@@ -3628,7 +3667,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   
 </VerticalLayout><VerticalLayout id="pc_p2_merit_3_Red" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 1_dot">
-    <Text id="pc_p2_merit_3_title_Red" class="box_text_title_text" text="ALL ACCESS" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_3_title_Red" class="box_text_title_text" text="ALL ACCESS" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_3_dot_1_Red" image="dot_yellow" class="dot box_text_title_dot dot_1" />
@@ -3645,7 +3684,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
 </VerticalLayout></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_merit_1_Red" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 3_dots">
-    <Text id="pc_p2_merit_1_title_Red" class="box_text_title_text" text="EVERYTHING IS CONNECTED" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_1_title_Red" class="box_text_title_text" text="EVERYTHING IS CONNECTED" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_1_dot_1_Red" image="dot_yellow" class="dot box_text_title_dot dot_1" />
@@ -3665,7 +3704,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   
 </VerticalLayout><VerticalLayout id="pc_p2_merit_4_Red" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 2_dots">
-    <Text id="pc_p2_merit_4_title_Red" class="box_text_title_text" text="CALL TO PURPOSE" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_4_title_Red" class="box_text_title_text" text="CALL TO PURPOSE" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_4_dot_1_Red" image="dot_yellow" class="dot box_text_title_dot dot_1" />
@@ -3684,7 +3723,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
 </VerticalLayout></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_merit_2_Red" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 2_dots">
-    <Text id="pc_p2_merit_2_title_Red" class="box_text_title_text" text="CONTEXTUAL CONTACT" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_2_title_Red" class="box_text_title_text" text="CONTEXTUAL CONTACT" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_2_dot_1_Red" image="dot_yellow" class="dot box_text_title_dot dot_1" />
@@ -3702,7 +3741,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   
 </VerticalLayout><VerticalLayout id="pc_p2_merit_5_Red" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_merit_5_title_Red" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_5_title_Red" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_5_dot_1_Red" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -3724,14 +3763,14 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_merit_5_flavor_Red" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_merit_5_rules_Red" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_merit_5_flavor_Red" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_merit_5_rules_Red" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p2_merit_6_Red" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_merit_6_title_Red" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_6_title_Red" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_6_dot_1_Red" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -3753,14 +3792,14 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_merit_6_flavor_Red" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_merit_6_rules_Red" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_merit_6_flavor_Red" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_merit_6_rules_Red" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p2_merit_7_Red" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_merit_7_title_Red" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_7_title_Red" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_7_dot_1_Red" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -3782,8 +3821,8 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_merit_7_flavor_Red" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_merit_7_rules_Red" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_merit_7_flavor_Red" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_merit_7_rules_Red" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
@@ -3798,7 +3837,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_flaw_0_Red" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_flaw_0_title_Red" class="box_text_title_text flaw_title" text="ADVERSARY: [REDACTED]" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_flaw_0_title_Red" class="box_text_title_text flaw_title" text="ADVERSARY: [REDACTED]" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_flaw_0_dot_1_Red" image="dot_red" class="dot box_text_title_dot dot_1" />
@@ -3820,9 +3859,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_0_flavor_Red" class="box_text flavor_text" text="You have earned the enmity of a very powerful, very ancient, very mysterious enemy." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_flaw_0_flavor_Red" class="box_text flavor_text" text="You have earned the enmity of a very powerful, very ancient, very mysterious enemy." />
     <Text id="pc_p2_flaw_0_rules_Red" class="box_text rules_text" text="Your enemy is a methuselah or a cabal of powerful elders.
-The Storyteller should use them at least once per story." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+The Storyteller should use them at least once per story." />
   </VerticalLayout>
   
   
@@ -3830,7 +3869,7 @@ The Storyteller should use them at least once per story." resizeTextForBestFit="
           <VerticalLayout class="box_column"></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_flaw_1_Red" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_flaw_1_title_Red" class="box_text_title_text flaw_title" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_flaw_1_title_Red" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_flaw_1_dot_1_Red" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -3852,14 +3891,14 @@ The Storyteller should use them at least once per story." resizeTextForBestFit="
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_1_flavor_Red" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_flaw_1_rules_Red" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_flaw_1_flavor_Red" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_flaw_1_rules_Red" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p2_flaw_2_Red" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_flaw_2_title_Red" class="box_text_title_text flaw_title" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_flaw_2_title_Red" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_flaw_2_dot_1_Red" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -3881,14 +3920,14 @@ The Storyteller should use them at least once per story." resizeTextForBestFit="
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_2_flavor_Red" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_flaw_2_rules_Red" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_flaw_2_flavor_Red" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_flaw_2_rules_Red" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p2_flaw_3_Red" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_flaw_3_title_Red" class="box_text_title_text flaw_title" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_flaw_3_title_Red" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_flaw_3_dot_1_Red" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -3910,8 +3949,8 @@ The Storyteller should use them at least once per story." resizeTextForBestFit="
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_3_flavor_Red" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_flaw_3_rules_Red" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_flaw_3_flavor_Red" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_flaw_3_rules_Red" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
@@ -3983,7 +4022,7 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_merit_0_Red" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_merit_0_title_Red" class="box_text_title_text" text="TRANSPORTATION" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_merit_0_title_Red" class="box_text_title_text" text="TRANSPORTATION" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_merit_0_dot_1_Red" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -4005,8 +4044,8 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_0_flavor_Red" class="box_text flavor_text" text="You have a fleet of vehicles and the staff to drive them." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_merit_0_rules_Red" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_merit_0_flavor_Red" class="box_text flavor_text" text="You have a fleet of vehicles and the staff to drive them." />
+    <Text id="pc_p3_merit_0_rules_Red" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
@@ -4014,7 +4053,7 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
           <VerticalLayout class="box_column"></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_merit_1_Red" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_merit_1_title_Red" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_merit_1_title_Red" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_merit_1_dot_1_Red" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -4036,14 +4075,14 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_1_flavor_Red" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_merit_1_rules_Red" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_merit_1_flavor_Red" class="box_text flavor_text" text="" />
+    <Text id="pc_p3_merit_1_rules_Red" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p3_merit_2_Red" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_merit_2_title_Red" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_merit_2_title_Red" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_merit_2_dot_1_Red" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -4065,14 +4104,14 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_2_flavor_Red" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_merit_2_rules_Red" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_merit_2_flavor_Red" class="box_text flavor_text" text="" />
+    <Text id="pc_p3_merit_2_rules_Red" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p3_merit_3_Red" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_merit_3_title_Red" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_merit_3_title_Red" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_merit_3_dot_1_Red" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -4094,8 +4133,8 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_3_flavor_Red" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_merit_3_rules_Red" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_merit_3_flavor_Red" class="box_text flavor_text" text="" />
+    <Text id="pc_p3_merit_3_rules_Red" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
@@ -4110,7 +4149,7 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_flaw_0_Red" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 2_dots">
-    <Text id="pc_p3_flaw_0_title_Red" class="box_text_title_text flaw_title" text="CUSTODIANS" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_flaw_0_title_Red" class="box_text_title_text flaw_title" text="CUSTODIANS" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_flaw_0_dot_1_Red" image="dot_red" class="dot box_text_title_dot dot_1" />
@@ -4126,9 +4165,9 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_0_flavor_Red" class="box_text flavor_text" text="Your domain comes with certain responsibilities." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_flaw_0_flavor_Red" class="box_text flavor_text" text="Your domain comes with certain responsibilities." />
     <Text id="pc_p3_flaw_0_rules_Red" class="box_text rules_text" text="You must secure the main entry points of Union Station and the Billy Bishop Ferry (from Billy Bishop Airport, on Centre Island) against unauthorized entry by Kindred of any sect.
-Failure to do so will result in loss of reputation, trust in your rule, or worse." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+Failure to do so will result in loss of reputation, trust in your rule, or worse." />
   </VerticalLayout>
   
   
@@ -4136,7 +4175,7 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
           <VerticalLayout class="box_column"></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_flaw_1_Red" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_flaw_1_title_Red" class="box_text_title_text flaw_title" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_flaw_1_title_Red" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_flaw_1_dot_1_Red" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -4158,14 +4197,14 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_1_flavor_Red" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_flaw_1_rules_Red" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_flaw_1_flavor_Red" class="box_text flavor_text" text="" />
+    <Text id="pc_p3_flaw_1_rules_Red" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p3_flaw_2_Red" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_flaw_2_title_Red" class="box_text_title_text flaw_title" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_flaw_2_title_Red" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_flaw_2_dot_1_Red" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -4187,14 +4226,14 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_2_flavor_Red" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_flaw_2_rules_Red" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_flaw_2_flavor_Red" class="box_text flavor_text" text="" />
+    <Text id="pc_p3_flaw_2_rules_Red" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p3_flaw_3_Red" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_flaw_3_title_Red" class="box_text_title_text flaw_title" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_flaw_3_title_Red" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_flaw_3_dot_1_Red" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -4216,8 +4255,8 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_3_flavor_Red" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_flaw_3_rules_Red" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_flaw_3_flavor_Red" class="box_text flavor_text" text="" />
+    <Text id="pc_p3_flaw_3_rules_Red" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
@@ -4403,6 +4442,8 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
       width = "24"
       active = "true" />
 
+    <!-- <Image class="box_text_title_dot" height = "20" width = "20" /> -->
+
     <VerticalLayout class="page"
       width = "710"
       padding = "8 8 50 50" />
@@ -4414,6 +4455,17 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
     <VerticalLayout class="page_left"
       rectAlignment = "MiddleLeft"
       offsetXY = "20 0" />
+
+    <Text class="box_text" resizeTextMinSize = "8" resizeTextMaxSize = "14" />
+    <Text class="box_text_title_text" resizeTextMinSize = "8" resizeTextMaxSize = "14" />
+
+    <VerticalLayout class="box_text_container" padding="5 5 0 0" />
+      <HorizontalLayout class="1_dot" padding="0 20 0 0" />
+  <HorizontalLayout class="2_dots" padding="0 40 0 0" />
+  <HorizontalLayout class="3_dots" padding="0 60 0 0" />
+  <HorizontalLayout class="4_dots" padding="0 80 0 0" />
+  <HorizontalLayout class="5_dots" padding="0 100 0 0" />
+  <HorizontalLayout class="6_dots" padding="0 120 0 0" />
 
   </Defaults>
 
@@ -4934,9 +4986,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
         <!-- Coterie Backgrounds -->
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_bg_0_Pink" class="box_text_container" active="true">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_bg_0_title_Pink" class="box_text_title_text" text="RESOURCES" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
-    <Panel class="box_text_panel_title_dotline">
+  <HorizontalLayout id="db_p2_bg_0_title_bar_Pink" class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_bg_0_title_Pink" class="box_text_title_text" text="RESOURCES" />
+    <Panel id="db_p2_bg_0_panel_title_dotline_Pink" class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_bg_0_dot_1_Pink" image="dot_white" class="dot box_text_title_dot dot_1" />
       
@@ -4957,17 +5009,17 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_0_flavor_Pink" class="box_text flavor_text" text="As the most powerful coterie in the city, you have access to a vast array of resources." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_bg_0_rules_Pink" class="box_text rules_text" text="You may commit coterie Resources to Projects or other endeavors." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_bg_0_flavor_Pink" class="box_text flavor_text" text="While not personally wealthy, your control over the Bay Street Financial District gives you access to a vast array of resources." />
+    <Text id="pc_p2_bg_0_rules_Pink" class="box_text rules_text" text="You may commit coterie Resources to Projects or other endeavors." />
   </VerticalLayout>
   
   
 </VerticalLayout></VerticalLayout>
           <VerticalLayout class="box_column"></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_bg_1_Pink" class="box_text_container" active="false">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_bg_1_title_Pink" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
-    <Panel class="box_text_panel_title_dotline">
+  <HorizontalLayout id="db_p2_bg_1_title_bar_Pink" class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_bg_1_title_Pink" class="box_text_title_text" text="" />
+    <Panel id="db_p2_bg_1_panel_title_dotline_Pink" class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_bg_1_dot_1_Pink" image="dot_blank" class="dot box_text_title_dot dot_1" />
       
@@ -4988,15 +5040,15 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_1_flavor_Pink" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_bg_1_rules_Pink" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_bg_1_flavor_Pink" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_bg_1_rules_Pink" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p2_bg_2_Pink" class="box_text_container" active="false">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_bg_2_title_Pink" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
-    <Panel class="box_text_panel_title_dotline">
+  <HorizontalLayout id="db_p2_bg_2_title_bar_Pink" class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_bg_2_title_Pink" class="box_text_title_text" text="" />
+    <Panel id="db_p2_bg_2_panel_title_dotline_Pink" class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_bg_2_dot_1_Pink" image="dot_blank" class="dot box_text_title_dot dot_1" />
       
@@ -5017,15 +5069,15 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_2_flavor_Pink" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_bg_2_rules_Pink" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_bg_2_flavor_Pink" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_bg_2_rules_Pink" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p2_bg_3_Pink" class="box_text_container" active="false">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_bg_3_title_Pink" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
-    <Panel class="box_text_panel_title_dotline">
+  <HorizontalLayout id="db_p2_bg_3_title_bar_Pink" class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_bg_3_title_Pink" class="box_text_title_text" text="" />
+    <Panel id="db_p2_bg_3_panel_title_dotline_Pink" class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_bg_3_dot_1_Pink" image="dot_blank" class="dot box_text_title_dot dot_1" />
       
@@ -5046,8 +5098,8 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_3_flavor_Pink" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_bg_3_rules_Pink" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_bg_3_flavor_Pink" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_bg_3_rules_Pink" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
@@ -5062,7 +5114,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_merit_0_Pink" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 2_dots">
-    <Text id="pc_p2_merit_0_title_Pink" class="box_text_title_text" text="MULTI-LEVEL LOREKEEPING" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_0_title_Pink" class="box_text_title_text" text="MULTI-LEVEL LOREKEEPING" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_0_dot_1_Pink" image="dot_yellow" class="dot box_text_title_dot dot_1" />
@@ -5080,7 +5132,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   
 </VerticalLayout><VerticalLayout id="pc_p2_merit_3_Pink" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 1_dot">
-    <Text id="pc_p2_merit_3_title_Pink" class="box_text_title_text" text="ALL ACCESS" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_3_title_Pink" class="box_text_title_text" text="ALL ACCESS" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_3_dot_1_Pink" image="dot_yellow" class="dot box_text_title_dot dot_1" />
@@ -5097,7 +5149,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
 </VerticalLayout></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_merit_1_Pink" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 3_dots">
-    <Text id="pc_p2_merit_1_title_Pink" class="box_text_title_text" text="EVERYTHING IS CONNECTED" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_1_title_Pink" class="box_text_title_text" text="EVERYTHING IS CONNECTED" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_1_dot_1_Pink" image="dot_yellow" class="dot box_text_title_dot dot_1" />
@@ -5117,7 +5169,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   
 </VerticalLayout><VerticalLayout id="pc_p2_merit_4_Pink" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 2_dots">
-    <Text id="pc_p2_merit_4_title_Pink" class="box_text_title_text" text="CALL TO PURPOSE" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_4_title_Pink" class="box_text_title_text" text="CALL TO PURPOSE" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_4_dot_1_Pink" image="dot_yellow" class="dot box_text_title_dot dot_1" />
@@ -5136,7 +5188,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
 </VerticalLayout></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_merit_2_Pink" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 2_dots">
-    <Text id="pc_p2_merit_2_title_Pink" class="box_text_title_text" text="CONTEXTUAL CONTACT" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_2_title_Pink" class="box_text_title_text" text="CONTEXTUAL CONTACT" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_2_dot_1_Pink" image="dot_yellow" class="dot box_text_title_dot dot_1" />
@@ -5154,7 +5206,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   
 </VerticalLayout><VerticalLayout id="pc_p2_merit_5_Pink" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_merit_5_title_Pink" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_5_title_Pink" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_5_dot_1_Pink" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -5176,14 +5228,14 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_merit_5_flavor_Pink" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_merit_5_rules_Pink" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_merit_5_flavor_Pink" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_merit_5_rules_Pink" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p2_merit_6_Pink" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_merit_6_title_Pink" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_6_title_Pink" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_6_dot_1_Pink" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -5205,14 +5257,14 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_merit_6_flavor_Pink" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_merit_6_rules_Pink" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_merit_6_flavor_Pink" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_merit_6_rules_Pink" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p2_merit_7_Pink" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_merit_7_title_Pink" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_7_title_Pink" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_7_dot_1_Pink" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -5234,8 +5286,8 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_merit_7_flavor_Pink" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_merit_7_rules_Pink" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_merit_7_flavor_Pink" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_merit_7_rules_Pink" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
@@ -5250,7 +5302,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_flaw_0_Pink" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_flaw_0_title_Pink" class="box_text_title_text flaw_title" text="ADVERSARY: [REDACTED]" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_flaw_0_title_Pink" class="box_text_title_text flaw_title" text="ADVERSARY: [REDACTED]" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_flaw_0_dot_1_Pink" image="dot_red" class="dot box_text_title_dot dot_1" />
@@ -5272,9 +5324,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_0_flavor_Pink" class="box_text flavor_text" text="You have earned the enmity of a very powerful, very ancient, very mysterious enemy." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_flaw_0_flavor_Pink" class="box_text flavor_text" text="You have earned the enmity of a very powerful, very ancient, very mysterious enemy." />
     <Text id="pc_p2_flaw_0_rules_Pink" class="box_text rules_text" text="Your enemy is a methuselah or a cabal of powerful elders.
-The Storyteller should use them at least once per story." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+The Storyteller should use them at least once per story." />
   </VerticalLayout>
   
   
@@ -5282,7 +5334,7 @@ The Storyteller should use them at least once per story." resizeTextForBestFit="
           <VerticalLayout class="box_column"></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_flaw_1_Pink" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_flaw_1_title_Pink" class="box_text_title_text flaw_title" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_flaw_1_title_Pink" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_flaw_1_dot_1_Pink" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -5304,14 +5356,14 @@ The Storyteller should use them at least once per story." resizeTextForBestFit="
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_1_flavor_Pink" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_flaw_1_rules_Pink" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_flaw_1_flavor_Pink" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_flaw_1_rules_Pink" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p2_flaw_2_Pink" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_flaw_2_title_Pink" class="box_text_title_text flaw_title" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_flaw_2_title_Pink" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_flaw_2_dot_1_Pink" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -5333,14 +5385,14 @@ The Storyteller should use them at least once per story." resizeTextForBestFit="
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_2_flavor_Pink" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_flaw_2_rules_Pink" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_flaw_2_flavor_Pink" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_flaw_2_rules_Pink" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p2_flaw_3_Pink" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_flaw_3_title_Pink" class="box_text_title_text flaw_title" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_flaw_3_title_Pink" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_flaw_3_dot_1_Pink" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -5362,8 +5414,8 @@ The Storyteller should use them at least once per story." resizeTextForBestFit="
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_3_flavor_Pink" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_flaw_3_rules_Pink" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_flaw_3_flavor_Pink" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_flaw_3_rules_Pink" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
@@ -5435,7 +5487,7 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_merit_0_Pink" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_merit_0_title_Pink" class="box_text_title_text" text="TRANSPORTATION" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_merit_0_title_Pink" class="box_text_title_text" text="TRANSPORTATION" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_merit_0_dot_1_Pink" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -5457,8 +5509,8 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_0_flavor_Pink" class="box_text flavor_text" text="You have a fleet of vehicles and the staff to drive them." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_merit_0_rules_Pink" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_merit_0_flavor_Pink" class="box_text flavor_text" text="You have a fleet of vehicles and the staff to drive them." />
+    <Text id="pc_p3_merit_0_rules_Pink" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
@@ -5466,7 +5518,7 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
           <VerticalLayout class="box_column"></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_merit_1_Pink" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_merit_1_title_Pink" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_merit_1_title_Pink" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_merit_1_dot_1_Pink" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -5488,14 +5540,14 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_1_flavor_Pink" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_merit_1_rules_Pink" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_merit_1_flavor_Pink" class="box_text flavor_text" text="" />
+    <Text id="pc_p3_merit_1_rules_Pink" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p3_merit_2_Pink" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_merit_2_title_Pink" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_merit_2_title_Pink" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_merit_2_dot_1_Pink" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -5517,14 +5569,14 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_2_flavor_Pink" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_merit_2_rules_Pink" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_merit_2_flavor_Pink" class="box_text flavor_text" text="" />
+    <Text id="pc_p3_merit_2_rules_Pink" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p3_merit_3_Pink" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_merit_3_title_Pink" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_merit_3_title_Pink" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_merit_3_dot_1_Pink" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -5546,8 +5598,8 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_3_flavor_Pink" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_merit_3_rules_Pink" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_merit_3_flavor_Pink" class="box_text flavor_text" text="" />
+    <Text id="pc_p3_merit_3_rules_Pink" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
@@ -5562,7 +5614,7 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_flaw_0_Pink" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 2_dots">
-    <Text id="pc_p3_flaw_0_title_Pink" class="box_text_title_text flaw_title" text="CUSTODIANS" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_flaw_0_title_Pink" class="box_text_title_text flaw_title" text="CUSTODIANS" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_flaw_0_dot_1_Pink" image="dot_red" class="dot box_text_title_dot dot_1" />
@@ -5578,9 +5630,9 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_0_flavor_Pink" class="box_text flavor_text" text="Your domain comes with certain responsibilities." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_flaw_0_flavor_Pink" class="box_text flavor_text" text="Your domain comes with certain responsibilities." />
     <Text id="pc_p3_flaw_0_rules_Pink" class="box_text rules_text" text="You must secure the main entry points of Union Station and the Billy Bishop Ferry (from Billy Bishop Airport, on Centre Island) against unauthorized entry by Kindred of any sect.
-Failure to do so will result in loss of reputation, trust in your rule, or worse." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+Failure to do so will result in loss of reputation, trust in your rule, or worse." />
   </VerticalLayout>
   
   
@@ -5588,7 +5640,7 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
           <VerticalLayout class="box_column"></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_flaw_1_Pink" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_flaw_1_title_Pink" class="box_text_title_text flaw_title" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_flaw_1_title_Pink" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_flaw_1_dot_1_Pink" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -5610,14 +5662,14 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_1_flavor_Pink" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_flaw_1_rules_Pink" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_flaw_1_flavor_Pink" class="box_text flavor_text" text="" />
+    <Text id="pc_p3_flaw_1_rules_Pink" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p3_flaw_2_Pink" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_flaw_2_title_Pink" class="box_text_title_text flaw_title" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_flaw_2_title_Pink" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_flaw_2_dot_1_Pink" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -5639,14 +5691,14 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_2_flavor_Pink" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_flaw_2_rules_Pink" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_flaw_2_flavor_Pink" class="box_text flavor_text" text="" />
+    <Text id="pc_p3_flaw_2_rules_Pink" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p3_flaw_3_Pink" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_flaw_3_title_Pink" class="box_text_title_text flaw_title" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_flaw_3_title_Pink" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_flaw_3_dot_1_Pink" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -5668,8 +5720,8 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_3_flavor_Pink" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_flaw_3_rules_Pink" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_flaw_3_flavor_Pink" class="box_text flavor_text" text="" />
+    <Text id="pc_p3_flaw_3_rules_Pink" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
@@ -5855,6 +5907,8 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
       width = "24"
       active = "true" />
 
+    <!-- <Image class="box_text_title_dot" height = "20" width = "20" /> -->
+
     <VerticalLayout class="page"
       width = "710"
       padding = "8 8 50 50" />
@@ -5866,6 +5920,17 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
     <VerticalLayout class="page_left"
       rectAlignment = "MiddleLeft"
       offsetXY = "20 0" />
+
+    <Text class="box_text" resizeTextMinSize = "8" resizeTextMaxSize = "14" />
+    <Text class="box_text_title_text" resizeTextMinSize = "8" resizeTextMaxSize = "14" />
+
+    <VerticalLayout class="box_text_container" padding="5 5 0 0" />
+      <HorizontalLayout class="1_dot" padding="0 20 0 0" />
+  <HorizontalLayout class="2_dots" padding="0 40 0 0" />
+  <HorizontalLayout class="3_dots" padding="0 60 0 0" />
+  <HorizontalLayout class="4_dots" padding="0 80 0 0" />
+  <HorizontalLayout class="5_dots" padding="0 100 0 0" />
+  <HorizontalLayout class="6_dots" padding="0 120 0 0" />
 
   </Defaults>
 
@@ -6386,9 +6451,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
         <!-- Coterie Backgrounds -->
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_bg_0_Purple" class="box_text_container" active="true">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_bg_0_title_Purple" class="box_text_title_text" text="RESOURCES" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
-    <Panel class="box_text_panel_title_dotline">
+  <HorizontalLayout id="db_p2_bg_0_title_bar_Purple" class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_bg_0_title_Purple" class="box_text_title_text" text="RESOURCES" />
+    <Panel id="db_p2_bg_0_panel_title_dotline_Purple" class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_bg_0_dot_1_Purple" image="dot_white" class="dot box_text_title_dot dot_1" />
       
@@ -6409,17 +6474,17 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_0_flavor_Purple" class="box_text flavor_text" text="As the most powerful coterie in the city, you have access to a vast array of resources." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_bg_0_rules_Purple" class="box_text rules_text" text="You may commit coterie Resources to Projects or other endeavors." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_bg_0_flavor_Purple" class="box_text flavor_text" text="While not personally wealthy, your control over the Bay Street Financial District gives you access to a vast array of resources." />
+    <Text id="pc_p2_bg_0_rules_Purple" class="box_text rules_text" text="You may commit coterie Resources to Projects or other endeavors." />
   </VerticalLayout>
   
   
 </VerticalLayout></VerticalLayout>
           <VerticalLayout class="box_column"></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_bg_1_Purple" class="box_text_container" active="false">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_bg_1_title_Purple" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
-    <Panel class="box_text_panel_title_dotline">
+  <HorizontalLayout id="db_p2_bg_1_title_bar_Purple" class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_bg_1_title_Purple" class="box_text_title_text" text="" />
+    <Panel id="db_p2_bg_1_panel_title_dotline_Purple" class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_bg_1_dot_1_Purple" image="dot_blank" class="dot box_text_title_dot dot_1" />
       
@@ -6440,15 +6505,15 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_1_flavor_Purple" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_bg_1_rules_Purple" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_bg_1_flavor_Purple" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_bg_1_rules_Purple" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p2_bg_2_Purple" class="box_text_container" active="false">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_bg_2_title_Purple" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
-    <Panel class="box_text_panel_title_dotline">
+  <HorizontalLayout id="db_p2_bg_2_title_bar_Purple" class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_bg_2_title_Purple" class="box_text_title_text" text="" />
+    <Panel id="db_p2_bg_2_panel_title_dotline_Purple" class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_bg_2_dot_1_Purple" image="dot_blank" class="dot box_text_title_dot dot_1" />
       
@@ -6469,15 +6534,15 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_2_flavor_Purple" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_bg_2_rules_Purple" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_bg_2_flavor_Purple" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_bg_2_rules_Purple" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p2_bg_3_Purple" class="box_text_container" active="false">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_bg_3_title_Purple" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
-    <Panel class="box_text_panel_title_dotline">
+  <HorizontalLayout id="db_p2_bg_3_title_bar_Purple" class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_bg_3_title_Purple" class="box_text_title_text" text="" />
+    <Panel id="db_p2_bg_3_panel_title_dotline_Purple" class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_bg_3_dot_1_Purple" image="dot_blank" class="dot box_text_title_dot dot_1" />
       
@@ -6498,8 +6563,8 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_3_flavor_Purple" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_bg_3_rules_Purple" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_bg_3_flavor_Purple" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_bg_3_rules_Purple" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
@@ -6514,7 +6579,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_merit_0_Purple" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 2_dots">
-    <Text id="pc_p2_merit_0_title_Purple" class="box_text_title_text" text="MULTI-LEVEL LOREKEEPING" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_0_title_Purple" class="box_text_title_text" text="MULTI-LEVEL LOREKEEPING" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_0_dot_1_Purple" image="dot_yellow" class="dot box_text_title_dot dot_1" />
@@ -6532,7 +6597,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   
 </VerticalLayout><VerticalLayout id="pc_p2_merit_3_Purple" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 1_dot">
-    <Text id="pc_p2_merit_3_title_Purple" class="box_text_title_text" text="ALL ACCESS" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_3_title_Purple" class="box_text_title_text" text="ALL ACCESS" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_3_dot_1_Purple" image="dot_yellow" class="dot box_text_title_dot dot_1" />
@@ -6549,7 +6614,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
 </VerticalLayout></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_merit_1_Purple" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 3_dots">
-    <Text id="pc_p2_merit_1_title_Purple" class="box_text_title_text" text="EVERYTHING IS CONNECTED" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_1_title_Purple" class="box_text_title_text" text="EVERYTHING IS CONNECTED" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_1_dot_1_Purple" image="dot_yellow" class="dot box_text_title_dot dot_1" />
@@ -6569,7 +6634,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   
 </VerticalLayout><VerticalLayout id="pc_p2_merit_4_Purple" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 2_dots">
-    <Text id="pc_p2_merit_4_title_Purple" class="box_text_title_text" text="CALL TO PURPOSE" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_4_title_Purple" class="box_text_title_text" text="CALL TO PURPOSE" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_4_dot_1_Purple" image="dot_yellow" class="dot box_text_title_dot dot_1" />
@@ -6588,7 +6653,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
 </VerticalLayout></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_merit_2_Purple" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 2_dots">
-    <Text id="pc_p2_merit_2_title_Purple" class="box_text_title_text" text="CONTEXTUAL CONTACT" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_2_title_Purple" class="box_text_title_text" text="CONTEXTUAL CONTACT" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_2_dot_1_Purple" image="dot_yellow" class="dot box_text_title_dot dot_1" />
@@ -6606,7 +6671,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   
 </VerticalLayout><VerticalLayout id="pc_p2_merit_5_Purple" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_merit_5_title_Purple" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_5_title_Purple" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_5_dot_1_Purple" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -6628,14 +6693,14 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_merit_5_flavor_Purple" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_merit_5_rules_Purple" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_merit_5_flavor_Purple" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_merit_5_rules_Purple" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p2_merit_6_Purple" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_merit_6_title_Purple" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_6_title_Purple" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_6_dot_1_Purple" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -6657,14 +6722,14 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_merit_6_flavor_Purple" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_merit_6_rules_Purple" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_merit_6_flavor_Purple" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_merit_6_rules_Purple" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p2_merit_7_Purple" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_merit_7_title_Purple" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_merit_7_title_Purple" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_merit_7_dot_1_Purple" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -6686,8 +6751,8 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_merit_7_flavor_Purple" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_merit_7_rules_Purple" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_merit_7_flavor_Purple" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_merit_7_rules_Purple" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
@@ -6702,7 +6767,7 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_flaw_0_Purple" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_flaw_0_title_Purple" class="box_text_title_text flaw_title" text="ADVERSARY: [REDACTED]" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_flaw_0_title_Purple" class="box_text_title_text flaw_title" text="ADVERSARY: [REDACTED]" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_flaw_0_dot_1_Purple" image="dot_red" class="dot box_text_title_dot dot_1" />
@@ -6724,9 +6789,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_0_flavor_Purple" class="box_text flavor_text" text="You have earned the enmity of a very powerful, very ancient, very mysterious enemy." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_flaw_0_flavor_Purple" class="box_text flavor_text" text="You have earned the enmity of a very powerful, very ancient, very mysterious enemy." />
     <Text id="pc_p2_flaw_0_rules_Purple" class="box_text rules_text" text="Your enemy is a methuselah or a cabal of powerful elders.
-The Storyteller should use them at least once per story." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+The Storyteller should use them at least once per story." />
   </VerticalLayout>
   
   
@@ -6734,7 +6799,7 @@ The Storyteller should use them at least once per story." resizeTextForBestFit="
           <VerticalLayout class="box_column"></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_flaw_1_Purple" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_flaw_1_title_Purple" class="box_text_title_text flaw_title" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_flaw_1_title_Purple" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_flaw_1_dot_1_Purple" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -6756,14 +6821,14 @@ The Storyteller should use them at least once per story." resizeTextForBestFit="
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_1_flavor_Purple" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_flaw_1_rules_Purple" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_flaw_1_flavor_Purple" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_flaw_1_rules_Purple" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p2_flaw_2_Purple" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_flaw_2_title_Purple" class="box_text_title_text flaw_title" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_flaw_2_title_Purple" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_flaw_2_dot_1_Purple" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -6785,14 +6850,14 @@ The Storyteller should use them at least once per story." resizeTextForBestFit="
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_2_flavor_Purple" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_flaw_2_rules_Purple" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_flaw_2_flavor_Purple" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_flaw_2_rules_Purple" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p2_flaw_3_Purple" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_flaw_3_title_Purple" class="box_text_title_text flaw_title" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p2_flaw_3_title_Purple" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p2_flaw_3_dot_1_Purple" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -6814,8 +6879,8 @@ The Storyteller should use them at least once per story." resizeTextForBestFit="
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_3_flavor_Purple" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p2_flaw_3_rules_Purple" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p2_flaw_3_flavor_Purple" class="box_text flavor_text" text="" />
+    <Text id="pc_p2_flaw_3_rules_Purple" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
@@ -6887,7 +6952,7 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_merit_0_Purple" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_merit_0_title_Purple" class="box_text_title_text" text="TRANSPORTATION" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_merit_0_title_Purple" class="box_text_title_text" text="TRANSPORTATION" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_merit_0_dot_1_Purple" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -6909,8 +6974,8 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_0_flavor_Purple" class="box_text flavor_text" text="You have a fleet of vehicles and the staff to drive them." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_merit_0_rules_Purple" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_merit_0_flavor_Purple" class="box_text flavor_text" text="You have a fleet of vehicles and the staff to drive them." />
+    <Text id="pc_p3_merit_0_rules_Purple" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
@@ -6918,7 +6983,7 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
           <VerticalLayout class="box_column"></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_merit_1_Purple" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_merit_1_title_Purple" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_merit_1_title_Purple" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_merit_1_dot_1_Purple" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -6940,14 +7005,14 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_1_flavor_Purple" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_merit_1_rules_Purple" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_merit_1_flavor_Purple" class="box_text flavor_text" text="" />
+    <Text id="pc_p3_merit_1_rules_Purple" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p3_merit_2_Purple" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_merit_2_title_Purple" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_merit_2_title_Purple" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_merit_2_dot_1_Purple" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -6969,14 +7034,14 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_2_flavor_Purple" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_merit_2_rules_Purple" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_merit_2_flavor_Purple" class="box_text flavor_text" text="" />
+    <Text id="pc_p3_merit_2_rules_Purple" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p3_merit_3_Purple" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_merit_3_title_Purple" class="box_text_title_text" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_merit_3_title_Purple" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_merit_3_dot_1_Purple" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -6998,8 +7063,8 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_3_flavor_Purple" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_merit_3_rules_Purple" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_merit_3_flavor_Purple" class="box_text flavor_text" text="" />
+    <Text id="pc_p3_merit_3_rules_Purple" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
@@ -7014,7 +7079,7 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_flaw_0_Purple" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 2_dots">
-    <Text id="pc_p3_flaw_0_title_Purple" class="box_text_title_text flaw_title" text="CUSTODIANS" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_flaw_0_title_Purple" class="box_text_title_text flaw_title" text="CUSTODIANS" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_flaw_0_dot_1_Purple" image="dot_red" class="dot box_text_title_dot dot_1" />
@@ -7030,9 +7095,9 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_0_flavor_Purple" class="box_text flavor_text" text="Your domain comes with certain responsibilities." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_flaw_0_flavor_Purple" class="box_text flavor_text" text="Your domain comes with certain responsibilities." />
     <Text id="pc_p3_flaw_0_rules_Purple" class="box_text rules_text" text="You must secure the main entry points of Union Station and the Billy Bishop Ferry (from Billy Bishop Airport, on Centre Island) against unauthorized entry by Kindred of any sect.
-Failure to do so will result in loss of reputation, trust in your rule, or worse." resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+Failure to do so will result in loss of reputation, trust in your rule, or worse." />
   </VerticalLayout>
   
   
@@ -7040,7 +7105,7 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
           <VerticalLayout class="box_column"></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_flaw_1_Purple" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_flaw_1_title_Purple" class="box_text_title_text flaw_title" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_flaw_1_title_Purple" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_flaw_1_dot_1_Purple" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -7062,14 +7127,14 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_1_flavor_Purple" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_flaw_1_rules_Purple" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_flaw_1_flavor_Purple" class="box_text flavor_text" text="" />
+    <Text id="pc_p3_flaw_1_rules_Purple" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p3_flaw_2_Purple" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_flaw_2_title_Purple" class="box_text_title_text flaw_title" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_flaw_2_title_Purple" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_flaw_2_dot_1_Purple" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -7091,14 +7156,14 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_2_flavor_Purple" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_flaw_2_rules_Purple" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_flaw_2_flavor_Purple" class="box_text flavor_text" text="" />
+    <Text id="pc_p3_flaw_2_rules_Purple" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p3_flaw_3_Purple" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_flaw_3_title_Purple" class="box_text_title_text flaw_title" text="" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text id="pc_p3_flaw_3_title_Purple" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
       
       <Image id="pc_p3_flaw_3_dot_1_Purple" image="dot_blank" class="dot box_text_title_dot dot_1" />
@@ -7120,8 +7185,8 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_3_flavor_Purple" class="box_text flavor_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text id="pc_p3_flaw_3_rules_Purple" class="box_text rules_text" text="" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p3_flaw_3_flavor_Purple" class="box_text flavor_text" text="" />
+    <Text id="pc_p3_flaw_3_rules_Purple" class="box_text rules_text" text="" />
   </VerticalLayout>
   
   

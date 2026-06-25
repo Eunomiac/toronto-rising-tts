@@ -27,6 +27,7 @@ logs/
 # TTS specific
 *.json.bak
 *.lua.bak
+ui/.templates/.build/
 
 # TTS extension generated files (bundled output)
 .tts/bundled/

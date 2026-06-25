@@ -2066,6 +2066,11 @@ local STORYTELLER_SOUND_GREY = "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
 local STORYTELLER_SOUND_GREEN = "#228B22|#32CD32|#006400|#228B22"
 local STORYTELLER_SOUND_DISABLED = "#333333|#444444|#555555|rgba(0.2,0.2,0.2,0.5)"
 
+local DEBUG_SEAT_COLOR_ORDER = { "Black", "Red", "Orange", "Brown", "Pink", "Purple" }
+local DEBUG_SEAT_OUTLINE_ACTIVE = "#FF0000"
+local DEBUG_SEAT_OUTLINE_INACTIVE = "rgba(0,0,0,0)"
+local DEBUG_SEAT_OUTLINE_SIZE_ACTIVE = "4 4"
+
 local SOUNDSCAPE_MOOD_BUTTONS = {
     main = "soundscapeMood_main",
     intrigue = "soundscapeMood_intrigue",
@@ -2127,6 +2132,55 @@ local function syncAdminLightSceneButtons()
             colors = isActive and ADMIN_LIGHT_SCENE_BUTTON_COLORS_ACTIVE or ADMIN_LIGHT_SCENE_BUTTON_COLORS_INACTIVE,
             textColor = "#FFFFFF",
             fontStyle = "Bold",
+        })
+    end
+end
+
+--- @param seatColor string
+--- @return string
+local function debugSeatButtonId(seatColor)
+    return "debugSeat_" .. tostring(seatColor)
+end
+
+--- @param id string|nil
+--- @return string|nil
+local function seatColorFromDebugSeatButtonId(id)
+    if type(id) ~= "string" then
+        return nil
+    end
+    local seatColor = string.match(id, "^debugSeat_(%w+)$")
+    if seatColor == nil then
+        return nil
+    end
+    for _, allowed in ipairs(DEBUG_SEAT_COLOR_ORDER) do
+        if allowed == seatColor then
+            return seatColor
+        end
+    end
+    return nil
+end
+
+--- Host's current TTS seat (Storyteller may not be Black).
+--- @return string|nil
+local function hostCurrentSeatColor()
+    local host = U.getHost()
+    if host == nil then
+        return nil
+    end
+    if C ~= nil and type(C.GetPlayerColor) == "function" then
+        return C.GetPlayerColor(host) or host.color
+    end
+    return host.color
+end
+
+--- Red outline on the debug seat button matching the Host's current seat.
+local function syncDebugSeatColorButtons()
+    local active = hostCurrentSeatColor()
+    for _, seatColor in ipairs(DEBUG_SEAT_COLOR_ORDER) do
+        local isActive = active == seatColor
+        U.setAttributes(debugSeatButtonId(seatColor), {
+            outline = isActive and DEBUG_SEAT_OUTLINE_ACTIVE or DEBUG_SEAT_OUTLINE_INACTIVE,
+            outlineSize = isActive and DEBUG_SEAT_OUTLINE_SIZE_ACTIVE or "0 0",
         })
     end
 end
@@ -3127,6 +3181,9 @@ function UpdateUIDisplays(delta)
 
     if wants("adminLighting") then
         syncAdminLightSceneButtons()
+    end
+    if refreshAll or wants("debugSeatColors") then
+        syncDebugSeatColorButtons()
     end
     if wants("scenesPanel") then
         if StorytellerScenesPanel and StorytellerScenesPanel.refresh then
@@ -4496,6 +4553,43 @@ end
 -- DICE SYSTEM DEBUG HUD HANDLERS (Host only; wired to admin panel buttons)
 -- ============================================================================
 
+--- Debug admin row: left-click seat swap; right-click `default<Color>` camera for clicker.
+-- id format: `debugSeat_<Color>` (e.g. `debugSeat_Brown`)
+-- @param button string TTS mouse button (`"-1"` left, `"-2"` right)
+function HUD_debugSeatColor(player, button, id)
+    if player == nil then
+        return
+    end
+    local targetColor = seatColorFromDebugSeatButtonId(id)
+    if targetColor == nil then
+        print(string.format("[HUD_debugSeatColor] Could not parse color from id: %s", tostring(id)))
+        return
+    end
+
+    if button == "-2" then
+        if M ~= nil and type(M.setCamera) == "function" then
+            M.setCamera(player, "default" .. targetColor)
+        end
+        return
+    end
+
+    if type(player.changeColor) ~= "function" then
+        return
+    end
+    if player.color ~= targetColor then
+        local ok = player.changeColor(targetColor)
+        if ok ~= true and player.color ~= targetColor then
+            broadcastToColor(
+                "Could not change to " .. targetColor .. " (seat may be occupied).",
+                player.color,
+                { 1, 0.35, 0 }
+            )
+        end
+    end
+    hideStartupLoadingOverlays()
+    syncDebugSeatColorButtons()
+end
+
 --- Admin panel: arm a quick test roll for a player color (difficulty 2, Standard).
 -- Calls DEBUG.rollTest so it can be re-pressed between runs without cleanup.
 -- id format: "debugRoll_<Color>"  (e.g. "debugRoll_Brown")
@@ -4621,6 +4715,7 @@ function onPlayerChangeColor(color)
             M.onPlayerChangeColor(color)
         end
     end
+    syncDebugSeatColorButtons()
 end
 
 --- TTS: player connected (assign chronicle seat when mapped in C.PlayerData).

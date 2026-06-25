@@ -1,0 +1,465 @@
+--[[
+  Shared trait-box XML builder: 3-column greedy packing + PCS-shaped entry → partial template params.
+  Used by lib/csheet_page3_xml.ttslua (CSHEET page 3) and lib/princes_court_trait_xml.ttslua (Prince's Court reference).
+
+  Visibility modes (opts.visibilityMode):
+  - "sheetDisplay" (default): omit entry when entry.sheetDisplay == false (CSHEET).
+  - "active": always emit; root BLOCK_ACTIVE is "false" when entry.active == false (Prince's Court blanks).
+]]
+
+local M = {}
+
+local TPL = require("lib.ui_xml_template")
+
+--- Maximum dots supported by title-bar classes (1_dot ... 6_dots).
+M.MAX_TITLE_DOTS = 6
+
+--- Heuristic weights for 3-column greedy balancing (keep in sync with .dev/scripts/lib/trait_sheet_xml.js).
+M.W_TITLE = 10
+M.W_DESC_LINE = 3
+M.W_RULE_LINE = 2
+M.W_SOURCE = 2
+
+--- @param s string|nil
+--- @return string
+local function trimWhitespace(s)
+  if type(s) ~= "string" or s == "" then
+    return ""
+  end
+  return (s:gsub("^%s+", ""):gsub("%s+$", ""))
+end
+
+--- @param entry table
+--- @return string
+function M.entryTitleUpper(entry)
+  if type(entry) ~= "table" then
+    return ""
+  end
+  local name = entry.name
+  local focus = entry.focus
+  local nameStr = type(name) == "string" and name or ""
+  local focusStr = type(focus) == "string" and trimWhitespace(focus) or ""
+  if focusStr ~= "" then
+    return string.upper(nameStr .. ": " .. focusStr)
+  end
+  return string.upper(nameStr)
+end
+
+--- @param n number
+--- @return string
+function M.titleBarDotClass(n)
+  local N = math.floor(tonumber(n) or 1)
+  if N < 1 then
+    N = 1
+  end
+  if N == 1 then
+    return "1_dot"
+  end
+  return tostring(N) .. "_dots"
+end
+
+--- @param entry table
+--- @return integer slotCount
+--- @return integer baseCount
+function M.slotAndBase(entry)
+  if type(entry) ~= "table" then
+    return 1, 0
+  end
+  local maxV = entry.max
+  local baseV = entry.base
+  local slot = tonumber(maxV)
+  if slot == nil then
+    slot = tonumber(baseV)
+  end
+  if slot == nil or slot < 1 then
+    slot = 1
+  end
+  slot = math.min(M.MAX_TITLE_DOTS, math.floor(slot))
+  local base = math.floor(tonumber(baseV) or 0)
+  base = math.max(0, math.min(base, slot))
+  return slot, base
+end
+
+--- @param entry table
+--- @return integer slotCount
+--- @return integer baseCount
+--- @return integer tempCount
+function M.slotBaseAndTemp(entry)
+  local slotCount, baseCount = M.slotAndBase(entry)
+  local tempCount = 0
+  if type(entry) == "table" then
+    tempCount = math.floor(tonumber(entry.temp) or 0)
+  end
+  tempCount = math.max(0, tempCount)
+  tempCount = math.min(tempCount, math.max(0, slotCount - baseCount))
+  return slotCount, baseCount, tempCount
+end
+
+--- Title-bar dot image for slot index `i` (1 = left, slotCount = right).
+--- Base dots are rightmost (yellow/red); temp extends leftward (white); remainder blank.
+--- @param i integer 1-based slot index
+--- @param slotCount integer
+--- @param baseCount integer
+--- @param tempCount integer
+--- @param filledImg string e.g. dot_yellow or dot_red
+--- @return string image id
+function M.dotImageForTraitSlot(i, slotCount, baseCount, tempCount, filledImg)
+  local totalFilled = baseCount + tempCount
+  if totalFilled > slotCount then
+    tempCount = math.max(0, slotCount - baseCount)
+    totalFilled = baseCount + tempCount
+  end
+  if totalFilled <= 0 or i < (slotCount - totalFilled + 1) then
+    return "dot_blank"
+  end
+  if i <= slotCount - baseCount then
+    return "dot_white"
+  end
+  return filledImg
+end
+
+--- @param lines any
+--- @return string[]
+local function coerceStringLines(lines)
+  if type(lines) == "string" then
+    if trimWhitespace(lines) == "" then
+      return {}
+    end
+    return { lines }
+  end
+  if type(lines) ~= "table" then
+    return {}
+  end
+  local out = {}
+  for _, line in ipairs(lines) do
+    if type(line) == "string" then
+      out[#out + 1] = line
+    end
+  end
+  return out
+end
+
+--- @param lines any
+--- @return string|nil
+function M.joinMultilineField(lines)
+  local arr = coerceStringLines(lines)
+  if #arr == 0 then
+    return nil
+  end
+  return table.concat(arr, "\n")
+end
+
+--- @param text string|nil
+--- @return integer
+local function countDisplayLines(text)
+  if type(text) ~= "string" or text == "" then
+    return 0
+  end
+  local n = 0
+  for _ in string.gmatch(text, "[^\n]+") do
+    n = n + 1
+  end
+  if n == 0 then
+    return 1
+  end
+  return n
+end
+
+--- @param entry table|nil
+--- @return string|nil
+function M.formatSourceLine(entry)
+  if type(entry) ~= "table" then
+    return nil
+  end
+  local src = entry.source
+  if type(src) ~= "table" then
+    return nil
+  end
+  local book = type(src.book) == "string" and src.book or ""
+  local page = tonumber(src.page)
+  if book == "" and (page == nil or page == 0) then
+    return nil
+  end
+  if book == "" then
+    return "p." .. tostring(page or 0)
+  end
+  if page == nil then
+    return book
+  end
+  return book .. ", p." .. tostring(page)
+end
+
+--- @param entry table|nil
+--- @param opts table|nil
+--- @return boolean
+local function isEntryIncluded(entry, opts)
+  if type(entry) ~= "table" then
+    return false
+  end
+  opts = type(opts) == "table" and opts or {}
+  local mode = opts.visibilityMode or "sheetDisplay"
+  if mode == "active" then
+    return true
+  end
+  return entry.sheetDisplay ~= false
+end
+
+--- @param params table
+--- @param entry table
+--- @param flavor string|nil
+--- @param rules string|nil
+--- @param opts table
+local function applyTraitBodyTextParams(params, entry, flavor, rules, opts)
+  local isBlankRuntimeTarget = opts.visibilityMode == "active" and entry.blank == true
+  if flavor ~= nil or rules ~= nil or isBlankRuntimeTarget then
+    params.HAS_BODY_TEXT = "1"
+    params.FLAVOR_TEXT = flavor or ""
+    params.RULES_TEXT = rules or ""
+  end
+end
+
+--- @param entry table
+--- @param sectionKey string
+--- @param entryIndex integer
+--- @param isFlaw boolean
+--- @param opts table
+--- @return table
+--- @return integer
+function M.buildTraitBlockParams(entry, sectionKey, entryIndex, isFlaw, opts)
+  opts = type(opts) == "table" and opts or {}
+  local pageNum = opts.pageNum or 3
+  local slotCount, baseCount, tempCount = M.slotBaseAndTemp(entry)
+  local filledImg = isFlaw and "dot_red" or "dot_yellow"
+  local params = {
+    TITLE_BAR_DOT_CLASS = M.titleBarDotClass(slotCount),
+    TITLE_TEXT = M.entryTitleUpper(entry),
+    PAGE_NUM = tostring(pageNum),
+    INDEX = tostring(entryIndex),
+    SECTION = sectionKey,
+  }
+  for i = 1, slotCount do
+    params["DOT_IMG_" .. tostring(i)] = M.dotImageForTraitSlot(i, slotCount, baseCount, tempCount, filledImg)
+  end
+
+  local flavor = M.joinMultilineField(entry.description)
+  local rules = M.joinMultilineField(entry.rules)
+  applyTraitBodyTextParams(params, entry, flavor, rules, opts)
+  local sourceLine = M.formatSourceLine(entry)
+  if sourceLine ~= nil then
+    params.SOURCE_TEXT = sourceLine
+  end
+
+  if opts.visibilityMode == "active" then
+    params.BLOCK_ACTIVE = (entry.active == false) and "false" or "true"
+  end
+
+  if type(opts.extraParams) == "function" then
+    local extra = opts.extraParams(entry, sectionKey, entryIndex, isFlaw)
+    if type(extra) == "table" then
+      for k, v in pairs(extra) do
+        params[k] = v
+      end
+    end
+  end
+
+  local w = M.W_TITLE + countDisplayLines(flavor) * M.W_DESC_LINE + countDisplayLines(rules) * M.W_RULE_LINE
+  if sourceLine ~= nil then
+    w = w + M.W_SOURCE
+  end
+  if entry.blank == true and entry.active == false then
+    w = 1
+  end
+  return params, w
+end
+
+--- @param entry table
+--- @param sectionKey string
+--- @param entryIndex integer
+--- @param isFlaw boolean
+--- @param opts table|nil
+--- @return string
+--- @return integer
+function M.buildTraitBoxXml(entry, sectionKey, entryIndex, isFlaw, opts)
+  if type(entry) ~= "table" then
+    return "", 0
+  end
+  opts = type(opts) == "table" and opts or {}
+  if not isEntryIncluded(entry, opts) then
+    return "", 0
+  end
+  local templateKeyBySection = opts.templateKeyBySection
+  if type(templateKeyBySection) ~= "table" then
+    error("[trait_sheet_xml] opts.templateKeyBySection required")
+  end
+  local templateKey = templateKeyBySection[sectionKey]
+  if templateKey == nil then
+    error("[trait_sheet_xml] Unknown sectionKey: " .. tostring(sectionKey))
+  end
+  local params, w = M.buildTraitBlockParams(entry, sectionKey, entryIndex, isFlaw, opts)
+  if w <= 0 then
+    return "", 0
+  end
+  local xml = TPL.apply(templateKey, params)
+  return xml, w
+end
+
+--- @param entries table
+--- @param realItems table[]
+--- @param blankItems table[]
+local function partitionEntries(entries, opts)
+  local realItems = {}
+  local blankItems = {}
+  if type(entries) ~= "table" then
+    return realItems, blankItems
+  end
+  local visibleIndex = 0
+  for _, entry in ipairs(entries) do
+    if type(entry) == "table" and isEntryIncluded(entry, opts) then
+      local isBlank = entry.blank == true
+      local sectionKey = opts.sectionKey
+      local isFlaw = opts.isFlaw == true
+      local xml, w = M.buildTraitBoxXml(entry, sectionKey, visibleIndex, isFlaw, opts)
+      visibleIndex = visibleIndex + 1
+      if w > 0 and xml ~= "" then
+        local item = { w = w, xml = xml }
+        if isBlank and opts.pinBlanksToColumn3 == true then
+          blankItems[#blankItems + 1] = item
+        else
+          realItems[#realItems + 1] = item
+        end
+      end
+    end
+  end
+  return realItems, blankItems
+end
+
+--- @param items table[]
+--- @return string
+--- @return string
+--- @return string
+local function packItemsGreedy(items)
+  if #items == 0 then
+    return "", "", ""
+  end
+  table.sort(items, function(a, b)
+    return a.w > b.w
+  end)
+  local cols = { { w = 0, chunks = {} }, { w = 0, chunks = {} }, { w = 0, chunks = {} } }
+  for _, it in ipairs(items) do
+    local best = 1
+    for c = 2, 3 do
+      if cols[c].w < cols[best].w then
+        best = c
+      end
+    end
+    cols[best].w = cols[best].w + it.w
+    cols[best].chunks[#cols[best].chunks + 1] = it.xml
+  end
+  return table.concat(cols[1].chunks), table.concat(cols[2].chunks), table.concat(cols[3].chunks)
+end
+
+--- @param entries table
+--- @param sectionKey string
+--- @param isFlaw boolean
+--- @param opts table|nil
+--- @return string col1
+--- @return string col2
+--- @return string col3
+function M.buildBalancedColumnContents(entries, sectionKey, isFlaw, opts)
+  local packOpts = {}
+  if type(opts) == "table" then
+    for k, v in pairs(opts) do
+      packOpts[k] = v
+    end
+  end
+  packOpts.sectionKey = sectionKey
+  packOpts.isFlaw = isFlaw
+
+  if type(entries) ~= "table" or #entries == 0 then
+    return "", "", ""
+  end
+
+  local realItems, blankItems = partitionEntries(entries, packOpts)
+  local c1, c2, c3 = packItemsGreedy(realItems)
+
+  if packOpts.pinBlanksToColumn3 == true and #blankItems > 0 then
+    local blankXml = {}
+    for _, it in ipairs(blankItems) do
+      blankXml[#blankXml + 1] = it.xml
+    end
+    c3 = c3 .. table.concat(blankXml)
+  end
+
+  return c1, c2, c3
+end
+
+--- @param entry table|nil
+--- @return string
+function M.fingerprintOneTraitEntry(entry)
+  if type(entry) ~= "table" then
+    return ""
+  end
+  local name = tostring(entry.name or "")
+  local focus = tostring(entry.focus or "")
+  local base = tostring(tonumber(entry.base) or 0)
+  local tempStr = tostring(tonumber(entry.temp) or 0)
+  local maxStr = ""
+  if entry.max ~= nil then
+    maxStr = tostring(tonumber(entry.max) or 0)
+  end
+  local desc = ""
+  if type(entry.description) == "table" then
+    local d = {}
+    for i = 1, #entry.description do
+      d[#d + 1] = tostring(entry.description[i] or "")
+    end
+    desc = table.concat(d, "\n")
+  elseif type(entry.description) == "string" then
+    desc = entry.description
+  end
+  local rules = ""
+  if type(entry.rules) == "table" then
+    local r = {}
+    for i = 1, #entry.rules do
+      r[#r + 1] = tostring(entry.rules[i] or "")
+    end
+    rules = table.concat(r, "\n")
+  elseif type(entry.rules) == "string" then
+    rules = entry.rules
+  end
+  local book = ""
+  local page = ""
+  if type(entry.source) == "table" then
+    book = tostring(entry.source.book or "")
+    page = tostring(tonumber(entry.source.page) or "")
+  end
+  local sheetDis = "1"
+  if entry.sheetDisplay == false then
+    sheetDis = "0"
+  end
+  local activeFlag = "1"
+  if entry.active == false then
+    activeFlag = "0"
+  end
+  local blankFlag = entry.blank == true and "1" or "0"
+  return table.concat({
+    name, "\1", focus, "\1", base, "\1", tempStr, "\1", maxStr, "\1", desc, "\1", rules, "\1",
+    book, "\1", page, "\1", sheetDis, "\1", activeFlag, "\1", blankFlag,
+  })
+end
+
+--- @param arr table|nil
+--- @return string
+function M.fingerprintTraitArray(arr)
+  if type(arr) ~= "table" then
+    return ""
+  end
+  local chunks = { tostring(#arr) }
+  for i = 1, #arr do
+    chunks[#chunks + 1] = "\2"
+    chunks[#chunks + 1] = M.fingerprintOneTraitEntry(arr[i])
+  end
+  return table.concat(chunks)
+end
+
+return M

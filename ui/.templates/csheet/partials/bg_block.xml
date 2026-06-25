@@ -12,7 +12,7 @@
 
 <VerticalLayout class="box_text_container">
   <HorizontalLayout class="box_text_title_bar @@TITLE_BAR_DOT_CLASS@@">
-    <Text class="box_text_title_text" text="@@TITLE_TEXT@@" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Text class="box_text_title_text" text="@@TITLE_TEXT@@" />
     <Panel class="box_text_panel_title_dotline">
       ##IF @@DOT_IMG_1@@##
       <Image id="p@@PAGE_NUM@@_bg_@@INDEX@@_dot_1" image="@@DOT_IMG_1@@" class="dot box_text_title_dot dot_1" />
@@ -36,8 +36,8 @@
   </HorizontalLayout>
   ##IF @@HAS_BODY_TEXT@@##
   <VerticalLayout class="box_text_panel_body">
-    <Text class="box_text flavor_text" text="@@FLAVOR_TEXT@@" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
-    <Text class="box_text rules_text" text="@@RULES_TEXT@@" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text class="box_text flavor_text" text="@@FLAVOR_TEXT@@" />
+    <Text class="box_text rules_text" text="@@RULES_TEXT@@"  />
   </VerticalLayout>
   ##ENDIF##
   ##IF @@SOURCE_TEXT@@##

@@ -5,32 +5,27 @@
   Optional per-entry field `sheetDisplay` (JSON boolean): when `false`, that background/merit/flaw is omitted from page 3.
   Omitted or `true` shows the row. Field is preserved via PCS → stats merge / hydrate.
 
-  Layout markup lives in ui/.templates/csheet/ (embedded at build time). This module maps stats → template params
-  and column packing only. TTS does not resolve `<Include>` in UI.setXml strings; defaults come from csheet_defaults_xml.
+  Layout markup lives in ui/.templates/csheet/ (embedded at build time). Trait packing: lib/trait_sheet_xml.ttslua.
 ]]
 
 local M = {}
 
 local CSHEET_DEFAULTS = require("lib.csheet_defaults_xml")
 local TPL = require("lib.ui_xml_template")
+local TRAIT = require("lib.trait_sheet_xml")
 
 local PAGE_NUM = 3
 local TEMPLATE_PAGE = "csheet/page3"
 
-local TEMPLATE_TRAIT_BY_SECTION = {
-  bg = "csheet/partials/bg_block",
-  merit = "csheet/partials/merit_block",
-  flaw = "csheet/partials/flaw_block",
+local CSHEET_TRAIT_OPTS = {
+  pageNum = PAGE_NUM,
+  visibilityMode = "sheetDisplay",
+  templateKeyBySection = {
+    bg = "csheet/partials/bg_block",
+    merit = "csheet/partials/merit_block",
+    flaw = "csheet/partials/flaw_block",
+  },
 }
-
---- Maximum dots supported by csheet_defaults.xml title-bar classes (1_dot ... 6_dots).
-local MAX_TITLE_DOTS = 6
-
---- Heuristic weights for 3-column greedy balancing (tunable).
-local W_TITLE = 10
-local W_DESC_LINE = 3
-local W_RULE_LINE = 2
-local W_SOURCE = 2
 
 --- Page shell column slots are pre-rendered XML fragments (not attribute-escaped).
 local PAGE_RAW_KEYS = {
@@ -44,16 +39,6 @@ local PAGE_RAW_KEYS = {
   FLAWS_COLUMN_2 = true,
   FLAWS_COLUMN_3 = true,
 }
-
---- Trim without `.-` (Lua "pattern too complex" on long PCS blurbs if `^%s*(.-)%s*$` is used).
---- @param s string|nil
---- @return string
-local function trimWhitespace(s)
-  if type(s) ~= "string" or s == "" then
-    return ""
-  end
-  return (s:gsub("^%s+", ""):gsub("%s+$", ""))
-end
 
 --- Map seat color to custom UI image suffix: `divider_flaws_<this>`.
 --- @param colorRaw string|nil e.g. "PURPLE" from object nickname
@@ -70,249 +55,13 @@ local function dividerFlawsImageSuffix(colorRaw)
 end
 
 --- @param entry table
---- @return string
-local function entryTitleUpper(entry)
-  if type(entry) ~= "table" then
-    return ""
-  end
-  local name = entry.name
-  local focus = entry.focus
-  local nameStr = type(name) == "string" and name or ""
-  local focusStr = type(focus) == "string" and trimWhitespace(focus) or ""
-  if focusStr ~= "" then
-    return string.upper(nameStr .. ": " .. focusStr)
-  end
-  return string.upper(nameStr)
-end
-
---- @param n number
---- @return string  "1_dot" or "N_dots"
-local function titleBarDotClass(n)
-  local N = math.floor(tonumber(n) or 1)
-  if N < 1 then
-    N = 1
-  end
-  if N == 1 then
-    return "1_dot"
-  end
-  return tostring(N) .. "_dots"
-end
-
---- @param entry table
---- @return integer slotCount
---- @return integer baseCount
-local function slotAndBase(entry)
-  if type(entry) ~= "table" then
-    return 1, 0
-  end
-  local maxV = entry.max
-  local baseV = entry.base
-  local slot = tonumber(maxV)
-  if slot == nil then
-    slot = tonumber(baseV)
-  end
-  if slot == nil or slot < 1 then
-    slot = 1
-  end
-  slot = math.min(MAX_TITLE_DOTS, math.floor(slot))
-  local base = math.floor(tonumber(baseV) or 0)
-  base = math.max(0, math.min(base, slot))
-  return slot, base
-end
-
---- @param lines any
---- @return string[]
-local function coerceStringLines(lines)
-  if type(lines) == "string" then
-    if trimWhitespace(lines) == "" then
-      return {}
-    end
-    return { lines }
-  end
-  if type(lines) ~= "table" then
-    return {}
-  end
-  local out = {}
-  for _, line in ipairs(lines) do
-    if type(line) == "string" then
-      out[#out + 1] = line
-    end
-  end
-  return out
-end
-
---- Join PCS description/rules into one attribute value with paragraph line breaks.
---- @param lines any
---- @return string|nil nil when no content (caller omits template key)
-local function joinMultilineField(lines)
-  local arr = coerceStringLines(lines)
-  if #arr == 0 then
-    return nil
-  end
-  return table.concat(arr, "\n")
-end
-
---- @param text string|nil
---- @return integer
-local function countDisplayLines(text)
-  if type(text) ~= "string" or text == "" then
-    return 0
-  end
-  local n = 0
-  for _ in string.gmatch(text, "[^\n]+") do
-    n = n + 1
-  end
-  if n == 0 then
-    return 1
-  end
-  return n
-end
-
---- @param entry table|nil
---- @return string|nil
-local function formatSourceLine(entry)
-  if type(entry) ~= "table" then
-    return nil
-  end
-  local src = entry.source
-  if type(src) ~= "table" then
-    return nil
-  end
-  local book = type(src.book) == "string" and src.book or ""
-  local page = tonumber(src.page)
-  if book == "" and (page == nil or page == 0) then
-    return nil
-  end
-  if book == "" then
-    return "p." .. tostring(page or 0)
-  end
-  if page == nil then
-    return book
-  end
-  return book .. ", p." .. tostring(page)
-end
-
---- PCS optional `sheetDisplay`: only strict `false` hides the row on page 3.
---- @param entry table|nil
---- @return boolean
-local function isTraitShownOnSheet(entry)
-  if type(entry) ~= "table" then
-    return false
-  end
-  return entry.sheetDisplay ~= false
-end
-
---- @param entry table
---- @param sectionKey string  "bg" | "merit" | "flaw"
---- @param entryIndex integer 0-based
---- @param isFlaw boolean
---- @return table params for trait partial template
---- @return integer weight for column packing
-local function buildTraitBlockParams(entry, sectionKey, entryIndex, isFlaw)
-  local slotCount, baseCount = slotAndBase(entry)
-  local filledImg = isFlaw and "dot_red" or "dot_yellow"
-  local params = {
-    TITLE_BAR_DOT_CLASS = titleBarDotClass(slotCount),
-    TITLE_TEXT = entryTitleUpper(entry),
-    PAGE_NUM = tostring(PAGE_NUM),
-    INDEX = tostring(entryIndex),
-  }
-  for i = 1, slotCount do
-    local img = "dot_blank"
-    if i > (slotCount - baseCount) then
-      img = filledImg
-    end
-    params["DOT_IMG_" .. tostring(i)] = img
-  end
-
-  local flavor = joinMultilineField(entry.description)
-  local rules = joinMultilineField(entry.rules)
-  if flavor ~= nil then
-    params.FLAVOR_TEXT = flavor
-  end
-  if rules ~= nil then
-    params.RULES_TEXT = rules
-  end
-  local sourceLine = formatSourceLine(entry)
-  if sourceLine ~= nil then
-    params.SOURCE_TEXT = sourceLine
-  end
-
-  local w = W_TITLE + countDisplayLines(flavor) * W_DESC_LINE + countDisplayLines(rules) * W_RULE_LINE
-  if sourceLine ~= nil then
-    w = w + W_SOURCE
-  end
-  return params, w
-end
-
---- @param entry table
 --- @param sectionKey string
 --- @param entryIndex integer
 --- @param isFlaw boolean
 --- @return string XML fragment
 --- @return integer weight
 function M.buildTraitBoxXml(entry, sectionKey, entryIndex, isFlaw)
-  if type(entry) ~= "table" then
-    return "", 0
-  end
-  if entry.sheetDisplay == false then
-    return "", 0
-  end
-  local templateKey = TEMPLATE_TRAIT_BY_SECTION[sectionKey]
-  if templateKey == nil then
-    error("[csheet_page3_xml] Unknown sectionKey: " .. tostring(sectionKey))
-  end
-  local params, w = buildTraitBlockParams(entry, sectionKey, entryIndex, isFlaw)
-  if w <= 0 then
-    return "", 0
-  end
-  local xml = TPL.apply(templateKey, params)
-  return xml, w
-end
-
---- @param entries table
---- @param sectionKey string
---- @param isFlaw boolean
---- @return string col1 concatenated blocks
---- @return string col2
---- @return string col3
-local function buildBalancedColumnContents(entries, sectionKey, isFlaw)
-  if type(entries) ~= "table" or #entries == 0 then
-    return "", "", ""
-  end
-
-  local items = {}
-  local visibleIndex = 0
-  for _, entry in ipairs(entries) do
-    if type(entry) == "table" and isTraitShownOnSheet(entry) then
-      local xml, w = M.buildTraitBoxXml(entry, sectionKey, visibleIndex, isFlaw)
-      visibleIndex = visibleIndex + 1
-      if w > 0 and xml ~= "" then
-        items[#items + 1] = { w = w, xml = xml }
-      end
-    end
-  end
-  if #items == 0 then
-    return "", "", ""
-  end
-
-  table.sort(items, function(a, b)
-    return a.w > b.w
-  end)
-
-  local cols = { { w = 0, chunks = {} }, { w = 0, chunks = {} }, { w = 0, chunks = {} } }
-  for _, it in ipairs(items) do
-    local best = 1
-    for c = 2, 3 do
-      if cols[c].w < cols[best].w then
-        best = c
-      end
-    end
-    cols[best].w = cols[best].w + it.w
-    cols[best].chunks[#cols[best].chunks + 1] = it.xml
-  end
-
-  return table.concat(cols[1].chunks), table.concat(cols[2].chunks), table.concat(cols[3].chunks)
+  return TRAIT.buildTraitBoxXml(entry, sectionKey, entryIndex, isFlaw, CSHEET_TRAIT_OPTS)
 end
 
 --- @param stats table|nil
@@ -324,9 +73,9 @@ function M.buildPage3DocumentXml(stats, seatColorRaw)
   local merits = type(stats.merits) == "table" and stats.merits or {}
   local flaws = type(stats.flaws) == "table" and stats.flaws or {}
 
-  local bg1, bg2, bg3 = buildBalancedColumnContents(bg, "bg", false)
-  local m1, m2, m3 = buildBalancedColumnContents(merits, "merit", false)
-  local f1, f2, f3 = buildBalancedColumnContents(flaws, "flaw", true)
+  local bg1, bg2, bg3 = TRAIT.buildBalancedColumnContents(bg, "bg", false, CSHEET_TRAIT_OPTS)
+  local m1, m2, m3 = TRAIT.buildBalancedColumnContents(merits, "merit", false, CSHEET_TRAIT_OPTS)
+  local f1, f2, f3 = TRAIT.buildBalancedColumnContents(flaws, "flaw", true, CSHEET_TRAIT_OPTS)
 
   local pageParams = {
     COLOR = dividerFlawsImageSuffix(seatColorRaw),
@@ -350,66 +99,6 @@ function M.buildPage3DocumentXml(stats, seatColorRaw)
   }, "\n")
 end
 
---- @param entry table|nil
---- @return string
-local function fingerprintOneTraitEntry(entry)
-  if type(entry) ~= "table" then
-    return ""
-  end
-  local name = tostring(entry.name or "")
-  local focus = tostring(entry.focus or "")
-  local base = tostring(tonumber(entry.base) or 0)
-  local maxStr = ""
-  if entry.max ~= nil then
-    maxStr = tostring(tonumber(entry.max) or 0)
-  end
-  local desc = ""
-  if type(entry.description) == "table" then
-    local d = {}
-    for i = 1, #entry.description do
-      d[#d + 1] = tostring(entry.description[i] or "")
-    end
-    desc = table.concat(d, "\n")
-  elseif type(entry.description) == "string" then
-    desc = entry.description
-  end
-  local rules = ""
-  if type(entry.rules) == "table" then
-    local r = {}
-    for i = 1, #entry.rules do
-      r[#r + 1] = tostring(entry.rules[i] or "")
-    end
-    rules = table.concat(r, "\n")
-  elseif type(entry.rules) == "string" then
-    rules = entry.rules
-  end
-  local book = ""
-  local page = ""
-  if type(entry.source) == "table" then
-    book = tostring(entry.source.book or "")
-    page = tostring(tonumber(entry.source.page) or "")
-  end
-  local sheetDis = "1"
-  if entry.sheetDisplay == false then
-    sheetDis = "0"
-  end
-  return table.concat({ name, "\1", focus, "\1", base, "\1", maxStr, "\1", desc, "\1", rules, "\1", book, "\1", page, "\1", sheetDis }, "")
-end
-
---- @param arr table|nil
---- @return string
-local function fingerprintTraitArray(arr)
-  if type(arr) ~= "table" then
-    return ""
-  end
-  local chunks = { tostring(#arr) }
-  for i = 1, #arr do
-    chunks[#chunks + 1] = "\2"
-    chunks[#chunks + 1] = fingerprintOneTraitEntry(arr[i])
-  end
-  return table.concat(chunks)
-end
-
 --- @param stats table|nil
 --- @return string fingerprint (empty if no stats)
 function M.fingerprintPage3Stats(stats)
@@ -417,11 +106,11 @@ function M.fingerprintPage3Stats(stats)
     return ""
   end
   return table.concat({
-    fingerprintTraitArray(stats.backgrounds),
+    TRAIT.fingerprintTraitArray(stats.backgrounds),
     "\3",
-    fingerprintTraitArray(stats.merits),
+    TRAIT.fingerprintTraitArray(stats.merits),
     "\3",
-    fingerprintTraitArray(stats.flaws),
+    TRAIT.fingerprintTraitArray(stats.flaws),
   })
 end
 

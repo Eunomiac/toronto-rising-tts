@@ -1,0 +1,104 @@
+--[[
+  Post-process coterie JSON: append in-session blank trait slots (not authored in Google Sheet export).
+  Used by lib/coterie_data.ttslua getDecoded and core/coterie.ttslua ensureInState.
+  Build-time mirror: .dev/scripts/lib/coterie_hydrate.js
+]]
+
+local M = {}
+
+--- Trait arrays on gameState.coterieData that receive blank session slots.
+M.TRAIT_ARRAY_KEYS = {
+  "coterieBackgrounds",
+  "coterieMerits",
+  "coterieFlaws",
+  "domainBackgrounds",
+  "domainMerits",
+  "domainFlaws",
+  "havenBackgrounds",
+  "havenMerits",
+  "havenFlaws",
+}
+
+M.BLANK_SLOTS_PER_ARRAY = 3
+
+--- @return table
+function M.makeBlankEntry()
+  return {
+    name = "",
+    focus = "",
+    base = 0,
+    temp = 0,
+    max = 5,
+    description = {},
+    rules = {},
+    active = false,
+    blank = true,
+  }
+end
+
+--- @param arr table|nil
+--- @return table real entries only (sheet + persisted non-blanks)
+local function collectRealEntries(arr)
+  local real = {}
+  if type(arr) ~= "table" then
+    return real
+  end
+  for _, entry in ipairs(arr) do
+    if type(entry) == "table" and entry.blank ~= true then
+      real[#real + 1] = entry
+    end
+  end
+  return real
+end
+
+--- @param arr table|nil
+--- @return table blank entries only (preserves in-session active blanks)
+local function collectBlankEntries(arr)
+  local blanks = {}
+  if type(arr) ~= "table" then
+    return blanks
+  end
+  for _, entry in ipairs(arr) do
+    if type(entry) == "table" and entry.blank == true then
+      blanks[#blanks + 1] = entry
+    end
+  end
+  return blanks
+end
+
+--- Ensure exactly BLANK_SLOTS_PER_ARRAY blank slots after real trait rows.
+--- @param arr table|nil
+--- @return table
+function M.ensureTraitBlankSlots(arr)
+  local real = collectRealEntries(arr)
+  local blanks = collectBlankEntries(arr)
+  while #blanks < M.BLANK_SLOTS_PER_ARRAY do
+    blanks[#blanks + 1] = M.makeBlankEntry()
+  end
+  while #blanks > M.BLANK_SLOTS_PER_ARRAY do
+    table.remove(blanks)
+  end
+  local out = {}
+  for i = 1, #real do
+    out[i] = real[i]
+  end
+  for i = 1, #blanks do
+    out[#real + i] = blanks[i]
+  end
+  return out
+end
+
+--- Append blank trait slots to decoded coterie JSON (mutates `data` in place).
+--- @param data table|nil
+--- @return table
+function M.hydrateCoterieData(data)
+  if type(data) ~= "table" then
+    data = {}
+  end
+  for _, key in ipairs(M.TRAIT_ARRAY_KEYS) do
+    data[key] = M.ensureTraitBlankSlots(data[key])
+  end
+  return data
+end
+
+return M

@@ -236,7 +236,10 @@ function containsToken(xml, token) {
  * @param {string[]} colors From `C.PlayerColors` in constants.
  */
 function generateFromTemplateFile(templatePath, projectRoot, token, colors) {
-  const templateXml = fs.readFileSync(templatePath, "utf8");
+  const fileName = path.basename(templatePath);
+  const buildOverridePath = path.join(projectRoot, "ui", ".templates", ".build", fileName);
+  const readPath = fs.existsSync(buildOverridePath) ? buildOverridePath : templatePath;
+  const templateXml = fs.readFileSync(readPath, "utf8");
   const targetRel = validateAndNormalizeTargetPath(
     parseTargetFromFirstLine(templateXml, templatePath),
     projectRoot

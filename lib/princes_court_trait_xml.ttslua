@@ -1,0 +1,144 @@
+--[[
+  Build Prince's Court reference trait column XML from gameState.coterieData arrays.
+  Consumed at build time by .dev/scripts/princes_court_trait_placeholders.js (ported logic)
+  and available at runtime for fingerprint/helpers.
+
+  Page numbers match logical Prince's Court pages: 2=coterie, 3=domain, 4=haven.
+]]
+
+local M = {}
+
+local TRAIT = require("lib.trait_sheet_xml")
+
+local PRINCES_COURT_TRAIT_OPTS = {
+  visibilityMode = "active",
+  pinBlanksToColumn3 = true,
+  templateKeyBySection = {
+    bg = "princes_court/partials/bg_block",
+    merit = "princes_court/partials/merit_block",
+    flaw = "princes_court/partials/flaw_block",
+  },
+}
+
+--- @type table<string, { pageNum: integer, bgKey: string, meritKey: string, flawKey: string, prefix: string }>
+local SECTIONS = {
+  coterie = {
+    pageNum = 2,
+    bgKey = "coterieBackgrounds",
+    meritKey = "coterieMerits",
+    flawKey = "coterieFlaws",
+    prefix = "COTERIE",
+  },
+  domain = {
+    pageNum = 3,
+    bgKey = "domainBackgrounds",
+    meritKey = "domainMerits",
+    flawKey = "domainFlaws",
+    prefix = "DOMAIN",
+  },
+  haven = {
+    pageNum = 4,
+    bgKey = "havenBackgrounds",
+    meritKey = "havenMerits",
+    flawKey = "havenFlaws",
+    prefix = "HAVEN",
+  },
+}
+
+--- @param coterieData table|nil
+--- @param sectionName string "coterie" | "domain" | "haven"
+--- @param traitKind string "backgrounds" | "merits" | "flaws"
+--- @return string col1
+--- @return string col2
+--- @return string col3
+local function buildSectionColumns(coterieData, sectionName, traitKind)
+  local section = SECTIONS[sectionName]
+  if section == nil then
+    error("[princes_court_trait_xml] Unknown section: " .. tostring(sectionName))
+  end
+  local arrayKey
+  local sectionKey
+  local isFlaw = false
+  if traitKind == "backgrounds" then
+    arrayKey = section.bgKey
+    sectionKey = "bg"
+  elseif traitKind == "merits" then
+    arrayKey = section.meritKey
+    sectionKey = "merit"
+  elseif traitKind == "flaws" then
+    arrayKey = section.flawKey
+    sectionKey = "flaw"
+    isFlaw = true
+  else
+    error("[princes_court_trait_xml] Unknown traitKind: " .. tostring(traitKind))
+  end
+
+  local entries = {}
+  if type(coterieData) == "table" and type(coterieData[arrayKey]) == "table" then
+    entries = coterieData[arrayKey]
+  end
+
+  local opts = {}
+  for k, v in pairs(PRINCES_COURT_TRAIT_OPTS) do
+    opts[k] = v
+  end
+  opts.pageNum = section.pageNum
+  return TRAIT.buildBalancedColumnContents(entries, sectionKey, isFlaw, opts)
+end
+
+--- @param coterieData table|nil
+--- @return table<string, string> placeholder key → column XML (@@_color@@_ tokens preserved)
+function M.buildTraitPlaceholderMap(coterieData)
+  local out = {}
+  for sectionName, section in pairs(SECTIONS) do
+    local prefix = section.prefix
+    local bg1, bg2, bg3 = buildSectionColumns(coterieData, sectionName, "backgrounds")
+    out[prefix .. "_BACKGROUNDS_COLUMN_1"] = bg1
+    out[prefix .. "_BACKGROUNDS_COLUMN_2"] = bg2
+    out[prefix .. "_BACKGROUNDS_COLUMN_3"] = bg3
+    local m1, m2, m3 = buildSectionColumns(coterieData, sectionName, "merits")
+    out[prefix .. "_MERITS_COLUMN_1"] = m1
+    out[prefix .. "_MERITS_COLUMN_2"] = m2
+    out[prefix .. "_MERITS_COLUMN_3"] = m3
+    local f1, f2, f3 = buildSectionColumns(coterieData, sectionName, "flaws")
+    out[prefix .. "_FLAWS_COLUMN_1"] = f1
+    out[prefix .. "_FLAWS_COLUMN_2"] = f2
+    out[prefix .. "_FLAWS_COLUMN_3"] = f3
+  end
+  return out
+end
+
+--- Trait group metadata for runtime blank-slot reconcile (pageNum, sectionKey, arrayKey).
+--- @return table[]
+function M.listTraitGroups()
+  local groups = {}
+  for _, section in pairs(SECTIONS) do
+    groups[#groups + 1] = {
+      pageNum = section.pageNum,
+      arrayKey = section.bgKey,
+      sectionKey = "bg",
+      isFlaw = false,
+    }
+    groups[#groups + 1] = {
+      pageNum = section.pageNum,
+      arrayKey = section.meritKey,
+      sectionKey = "merit",
+      isFlaw = false,
+    }
+    groups[#groups + 1] = {
+      pageNum = section.pageNum,
+      arrayKey = section.flawKey,
+      sectionKey = "flaw",
+      isFlaw = true,
+    }
+  end
+  table.sort(groups, function(a, b)
+    if a.pageNum ~= b.pageNum then
+      return a.pageNum < b.pageNum
+    end
+    return a.sectionKey < b.sectionKey
+  end)
+  return groups
+end
+
+return M

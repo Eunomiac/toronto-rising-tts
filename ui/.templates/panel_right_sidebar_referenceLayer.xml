@@ -51,6 +51,8 @@ UI.setAttributes("playerHud_referenceLayer_Red", {color = "rgba(1, 0, 0, 0.15)"}
       width = "24"
       active = "true" />
 
+    <!-- <Image class="box_text_title_dot" height = "20" width = "20" /> -->
+
     <VerticalLayout class="page"
       width = "710"
       padding = "8 8 50 50" />
@@ -62,6 +64,17 @@ UI.setAttributes("playerHud_referenceLayer_Red", {color = "rgba(1, 0, 0, 0.15)"}
     <VerticalLayout class="page_left"
       rectAlignment = "MiddleLeft"
       offsetXY = "20 0" />
+
+    <Text class="box_text" resizeTextMinSize = "8" resizeTextMaxSize = "14" />
+    <Text class="box_text_title_text" resizeTextMinSize = "8" resizeTextMaxSize = "14" />
+
+    <VerticalLayout class="box_text_container" padding="5 5 0 0" />
+      <HorizontalLayout class="1_dot" padding="0 20 0 0" />
+  <HorizontalLayout class="2_dots" padding="0 40 0 0" />
+  <HorizontalLayout class="3_dots" padding="0 60 0 0" />
+  <HorizontalLayout class="4_dots" padding="0 80 0 0" />
+  <HorizontalLayout class="5_dots" padding="0 100 0 0" />
+  <HorizontalLayout class="6_dots" padding="0 120 0 0" />
 
   </Defaults>
 
