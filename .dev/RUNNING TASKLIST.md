@@ -12,11 +12,13 @@ This file is continuously updated with issues and plans for feature development.
 
 ## Focus
 
-_Stack rank for the current cycle (2026-06-25, post TOR-165 author verify). **Precedence** = Focus stack + Linear **`blockedBy`** (not Linear priority). **TOR-141 (E2E playbooks)** is a living doc (In Progress, not Focus stack). **Back-burner / “Deferred this cycle” is paused** (author 2026-06-21) — open work stays in domain sections; sequence via Linear blockers only._
+_Stack rank for the current cycle (2026-06-25, post TOR-165). **Precedence** = Focus stack + Linear **`blockedBy`** (not Linear priority). **TOR-141 (E2E playbooks)** is a living doc (In Progress, not Focus stack). **Back-burner / “Deferred this cycle” is paused** (author 2026-06-21) — open work stays in domain sections; sequence via Linear blockers only._
 
 | # | Issue | Why now |
 | --- | --- | --- |
-| _empty_ | — | Re-stack on **“what’s next”** / `/tr-inbox` (TOR-165 closed 2026-06-25) |
+| 1 | **TOR-252** — NPC roll broadcast wrong figurine for duplicate fullName | Open dice bug; root cause documented; natural follow-up while testing ST NPC/token rolls |
+| 2 | **TOR-151** → **TOR-152** — default no-scene env, then restore active scene on Play load | Scene load + control-board sync (incl. PC tokens); **TOR-152** `blockedBy` **TOR-151** |
+| 3 | **TOR-237** — Control board Read / Lock / Load toolbar | NPC gameboard Phase B; High priority; stubs today |
 
 **Also in cycle (below top stack):** **TOR-144** (Multiplayer E2E playbook — pre-invite checklist shipped in Preparing doc; multiclient pass via **TOR-249** human gate: friend on second machine). **NPC gameboard Phase B** — **TOR-237** (Read/Lock/Load toolbar), **TOR-238** (hover token → stage figurine spotlight preview; **not** Spotlight game phase TOR-98), **TOR-250** (deactivated seat when NPC on stage + import rules). **TOR-95** (play-as-NPC, `blockedBy` **TOR-247** seat decoupling). **ST dice UX** — **TOR-224** / **TOR-225** / **TOR-226** / **TOR-252** (NPC broadcast figurine for duplicate fullName). **TOR-222** (clock fast-forward). **Scenes inbox promotions** — **TOR-244** (library preview/edit), **TOR-245** (map pin timestamps, `blockedBy` TOR-151), **TOR-247** (rotational seat layout). **TOR-169** umbrella (In Progress; workshop save verification). **Projects (human gates):** **TOR-228**–**TOR-231**; **TOR-232** (`blockedBy` TOR-228–231). Dice E2E (**TOR-141** living doc) baseline shipped.
 
