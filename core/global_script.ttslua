@@ -1814,7 +1814,7 @@ function onLoad(saved_data)
         addHotkey(
             "Spotlight NPC (hold)",
             function(playerColor, hoveredObject, pointerPosition, isKeyUp)
-                if not isStorytellerSteamPlayer(playerColor) then
+                if not U.isStorytellerSteamPlayer(playerColor) then
                     return
                 end
                 local Gameboard = require("core.npc_gameboard")
