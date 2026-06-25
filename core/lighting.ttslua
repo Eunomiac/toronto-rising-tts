@@ -816,6 +816,25 @@ L.LIGHTMODES = {
         intensity = 3.874348,
         color = Color(0.760784, 0.760784, 0.760784)
       }
+    },
+    storytellerSpotlight = {
+      guid = G.GUIDS.STORYTELLER_SPOTLIGHT,
+      isPlayerLight = false,
+      default = "OFF",
+      OFF = {
+        enabled = false,
+        range = 20.337650,
+        angle = 6.008322,
+        intensity = 2.524473,
+        color = Color(1.000000, 1.000000, 1.000000)
+      },
+      STANDARD = {
+        enabled = true,
+        range = 20.337650,
+        angle = 6.008322,
+        intensity = 2.524473,
+        color = Color(1.000000, 1.000000, 1.000000)
+      }
     }
 }
 
@@ -2058,6 +2077,25 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
     end
 
     return activateLight()
+end
+
+--- World-only preview apply: runs `SetLightMode` then immediately restores prior `gameState.lights[lightRef]`.
+--- Transient spotlight / hover previews must not persist into save or reconciler authority.
+--- @param lightRef string
+--- @param mode string|table
+--- @param opts table|nil `{ transitionTime?: number }`
+function L.applyTransientLightMode(lightRef, mode, opts)
+    opts = type(opts) == "table" and opts or {}
+    local saved = S.getStateVal("lights", lightRef)
+    L.SetLightMode(lightRef, mode, nil, opts.transitionTime or 0)
+    if saved ~= nil then
+        S.setStateVal(saved, "lights", lightRef)
+    else
+        local lData = L.LIGHTMODES[lightRef]
+        if type(lData) == "table" and type(lData.default) == "string" then
+            S.setStateVal(lData.default, "lights", lightRef)
+        end
+    end
 end
 
 --- Apply one entry from `gameState.lights` during load (`transitionT` should be 0).

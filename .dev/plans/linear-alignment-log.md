@@ -352,5 +352,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-06-25 | DONE | TOR-237 | Read/Lock/Load toolbar; Focus #1 → TOR-238 (hover spotlight preview) |
 | 2026-06-25 | UPDATE | TOR-237 | Rename Read→Save (board→state; pairs with Load); toolbar font −1 step, strip shifted left |
 | 2026-06-25 | `/tr-inbox` | INBOX | Quick fixes shipped TOR-255/256/257; Active promoted TOR-258–263; Focus re-stacked (TOR-238→250→245→141→259); removed stale `blockedBy` TOR-151 on TOR-245; TOR-258 `blockedBy` TOR-261; TOR-260 `blockedBy` TOR-259 |
+| 2026-06-25 | DONE | TOR-238 | Hold hotkey + sweep hover → transient stage figurine SPOTLIGHT + `storytellerSpotlight` board indicator; `L.applyTransientLightMode`; Event Listener Policy + gameboard doc; Focus #1 → TOR-250; Save & Play smoke pending author |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

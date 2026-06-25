@@ -1810,6 +1810,22 @@ function onLoad(saved_data)
     -- Debug module help (optional - shows available test commands)
     -- DEBUG.help()
 
+    if type(addHotkey) == "function" then
+        addHotkey(
+            "Spotlight NPC (hold)",
+            function(playerColor, hoveredObject, pointerPosition, isKeyUp)
+                if not isStorytellerSteamPlayer(playerColor) then
+                    return
+                end
+                local Gameboard = require("core.npc_gameboard")
+                if type(Gameboard.onControlBoardSpotlightHotkey) == "function" then
+                    Gameboard.onControlBoardSpotlightHotkey(playerColor, hoveredObject, isKeyUp == true)
+                end
+            end,
+            true
+        )
+    end
+
     print(U.loadElapsedPrefix() .. "Module initialization complete.")
 end
 

@@ -250,6 +250,7 @@ G.GUIDS = {
     DICEBAG_OBLIVROUSE_STORYTELLER = "08a5c5",
     DICEBAG_WEREWOLF_STORYTELLER = "934cb1",
     DICEBAG_RAGE_STORYTELLER = "a25b77",
+    STORYTELLER_SPOTLIGHT = "738056"
 }
 
 --- Gets the GUID string for a player's hand zone by color

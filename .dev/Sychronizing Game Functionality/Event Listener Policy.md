@@ -36,6 +36,7 @@ Columns: **Delivery** = fan-out (all clients) vs clicker-only. **Tier** = A UI /
 | `onObjectLeaveContainer` | `global_script` | Fan-out | B | d10 tag | GM Notes | Med | 4 |
 | `onPlayerConnect` | `global_script` | Fan-out | B | Host | seat assign | Med | 4 |
 | `onPlayerChangeColor` | `global_script` | Fan-out | B | Host | state row | Med | 4 |
+| `addHotkey` (`Spotlight NPC (hold)`) | `global_script` | Clicker (per player) | C | ST steam + host in callee | transient spotlights | Low | — |
 
 ### `Global.call` targets (mutating → host guard)
 
@@ -120,6 +121,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `onObjectPickUp` | `core/global_script.ttslua` | High | **Pass** | Steam + host; `npc_control_token` tag |
 | `onObjectRandomize` | `core/global_script.ttslua` | High (rolls) | **Pass** | `hasTag("d10")` before `getTags` / roll FSM |
 | `onObjectLeaveContainer` | `core/global_script.ttslua` | Medium | **Pass** | `hasTag("d10")` before bag-spawn path |
+| `addHotkey` → `Spotlight NPC (hold)` | `core/global_script.ttslua` | Low (ST hold) | **Pass** | `isStorytellerSteamPlayer` before `require`; host world I/O in `Gameboard.onControlBoardSpotlightHotkey` |
 
 ## Module handlers (called from Global)
 
@@ -133,6 +135,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `Gameboard.tryPcControlTokenDroppedOnStorytellerDiceBag` | `core/npc_gameboard.ttslua` | **Pass** | `isPcControlToken` + Host/Black + `dieKindNearStorytellerDiceBag` before restore; Normal/Hunger → returns `rollColor` |
 | `GlobalGameboardTokenDroppedOnDiceBag` / `GlobalGameboardPcTokenDroppedOnDiceBag` | `core/global_script.ttslua` | **Pass** | tag + steam-ST + `requireHostForWorldMutation` before `require("core.npc_gameboard")`; PC wrapper owns `RC.initiateRoll` |
 | `Gameboard.onNpcControlTokenPickUp` | `core/npc_gameboard.ttslua` | **Pass** | `isNpcControlToken` |
+| `Gameboard.onControlBoardSpotlightHotkey` | `core/npc_gameboard.ttslua` | **Pass** | ST steam in Global hotkey callback; `U.requireHostForWorldMutation` on key-down; transient lights via `L.applyTransientLightMode` (no `gameState` spotlight writes) |
 
 ## Object-script handlers
 

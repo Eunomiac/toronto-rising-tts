@@ -16,11 +16,10 @@ _Stack rank for the current cycle (2026-06-25, post TOR-237/254 inbox). **Preced
 
 | # | Issue | Why now |
 | --- | --- | --- |
-| 1 | **TOR-238** — Hover token → stage figurine spotlight preview | NPC gameboard Phase B; toolbar Save/Lock/Load done (TOR-237) |
-| 2 | **TOR-250** — Deactivated seat when NPC on stage + import rules | Same Phase B slice; seat retention on stage move |
-| 3 | **TOR-245** — Map pins last active location + timestamp | TOR-151 gate closed; pin timestamp logic unblocked |
-| 4 | **TOR-141** — Manual E2E playbooks (Dice + Scenes) | Regression harness before large dice/scene refactors |
-| 5 | **TOR-259** — Willpower / Discipline / Humanity / Frenzy roll types | Inbox promotion; blocks TOR-260 roll-type dash wiring |
+| 1 | **TOR-250** — Deactivated seat when NPC on stage + import rules | NPC gameboard Phase B; TOR-238 hold-spotlight preview shipped (Save & Play smoke pending) |
+| 2 | **TOR-245** — Map pins last active location + timestamp | TOR-151 gate closed; pin timestamp logic unblocked |
+| 3 | **TOR-141** — Manual E2E playbooks (Dice + Scenes) | Regression harness before large dice/scene refactors |
+| 4 | **TOR-259** — Willpower / Discipline / Humanity / Frenzy roll types | Inbox promotion; blocks TOR-260 roll-type dash wiring |
 
 **Also in cycle (below top stack):** **TOR-144** (Multiplayer E2E playbook — pre-invite checklist shipped in Preparing doc; multiclient pass via **TOR-249** human gate: friend on second machine). **NPC gameboard Phase B** — **TOR-238** (hover token → stage figurine spotlight preview; **not** Spotlight game phase TOR-98), **TOR-250** (deactivated seat when NPC on stage + import rules). **TOR-95** (play-as-NPC, `blockedBy` **TOR-247** seat decoupling). **ST dice UX** — **TOR-224** / **TOR-225** / **TOR-226** / **TOR-252** (NPC broadcast figurine for duplicate fullName). **TOR-222** (clock fast-forward). **Scenes inbox promotions** — **TOR-244** (library preview/edit), **TOR-245** (map pin timestamps, `blockedBy` TOR-151), **TOR-247** (rotational seat layout). **TOR-169** umbrella (In Progress; workshop save verification). **Projects (human gates):** **TOR-228**–**TOR-231**; **TOR-232** (`blockedBy` TOR-228–231). Dice E2E (**TOR-141** living doc) baseline shipped.
 
@@ -87,7 +86,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [ ] **Storyteller NPC gameboard (Phase A):** `STAGE_BOARD` + `CONTROL_BOARD`, tokens, markers, configurable `CONTROL_BOARD_SNAP` grid (~160 snaps), Apply/Clear wired; `placements` v3 + `Sync.npcs`. Phase B sub-issues: **TOR-237** (Read/Lock/Load), **TOR-238** (hover stage figurine spotlight — not game-phase Spotlight). Phase C panel retirement Done (TOR-181). _(TOR-169)_ — workshop objects + GUIDs in TTS save required; Save & Play to confirm snap geometry/rotation
 - [x] **Control token tag contract:** Handler matrix + `pcToken:<Color>` identity; Apply-time PC seat activate/deactivate from seat-row flip → `seatSlots[color].isPresent`; reconcile pins PC token to column (state authoritative); NPC-only palette/preload via `D.getNpcCharacters()`. Full token-as-sole-authority deferred to **TOR-247**. _(TOR-236)_
 - [x] **Control board Save / Lock / Load:** XmlUI toolbar wired — Save→placements state only (board→state), Lock toggles `layoutLock`, Load mirrors tokens (state→board, bypasses lock). _(TOR-237)_
-- [ ] **Hover token → stage figurine spotlight preview:** Transient stage area spotlight on `npc_control_token` hover (Host); unrelated to Spotlight game phase (TOR-98). _(TOR-238)_
+- [x] **Hover token → stage figurine spotlight preview:** Hold bound Game Key **Spotlight NPC (hold)** and sweep over on-board `npc_control_token` tiles → transient stage figurine SPOTLIGHT + storyteller board indicator at token X/Z; no `gameState` writes (`L.applyTransientLightMode`). Not game-phase Spotlight (TOR-98). _(TOR-238)_ — author Save & Play smoke pending
 - [x] **Control board tokens on load:** Mirror on-stage NPCs from `sessionScene.npcWorld.placements` (exact u,v + Z flip); pull from palette via tag scan; palette onLoad no longer parks all tokens. _(TOR-170)_
 - [x] **Figurine yaw from master origin:** `Gameboard.placementBoardRelYawDeg` uses top-level `CONTROL_BOARD_SNAP.origin`; stage figurines + Apply scan ignore token Y; Z flip only for light mode. _(TOR-171)_
 - [x] **`snapGroups.defaultLightMode`:** Optional per-ring default; apply Z flip only when token drops from palette onto that ring (not ring-to-ring or state sync). _(TOR-172)_
