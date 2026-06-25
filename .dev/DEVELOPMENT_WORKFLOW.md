@@ -107,6 +107,22 @@ Policy: `.cursor/rules/toronto-rising-author-session.mdc` (always-on). Checklist
 
 Canonical reference: [`docs/solutions/lua-local-function-order.md`](../docs/solutions/lua-local-function-order.md). Always-on Cursor rule: `.cursor/rules/toronto-rising-lua-local-function-order.mdc`.
 
+## Multiplayer authority (pre–second-client)
+
+Until **TOR-144 (multiplayer E2E)** passes with two real clients, **solo Host Save & Play does not validate** fan-out handlers, join-client paths, or duplicate world I/O.
+
+| Rule | Detail |
+| --- | --- |
+| **Always-on for agents** | [`.cursor/rules/toronto-rising-multiplayer-authority.mdc`](../.cursor/rules/toronto-rising-multiplayer-authority.mdc) |
+| **Policies P1–P10** | [`.dev/Multiplayer Functionality/Preparing For Multiplayer.md`](Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md) §1 |
+| **Tier C** | Host only — `U.requireHostForWorldMutation` (including Global **chunk load**, not only `onLoad`) |
+| **Fan-out** | Assume `onLoad`, `onObjectDrop`, `Global.call` run on every client; steam gate ≠ host gate |
+| **Object scripts** | Mutations via `Global.call` + bundle gates; no `require("core.*")` on mutating paths |
+| **New handlers** | Update [Event Listener Policy](Sychronizing%20Game%20Functionality/Event%20Listener%20Policy.md) |
+| **Done criteria** | Do not close host-authority issues without TOR-144 multiclient pass (note “solo verified only” in Linear if needed) |
+
+Audit / remediation plan: [`.dev/Multiplayer Functionality/audit-2026-06-25.md`](Multiplayer%20Functionality/audit-2026-06-25.md).
+
 ## Development Best Practices
 
 ### Code Style

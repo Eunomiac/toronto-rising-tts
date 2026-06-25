@@ -2,6 +2,8 @@
 
 This is the current authoritative contract for Toronto Rising synchronization. It describes the code as implemented today, not the older proposal draft. Historical behavior belongs in explicitly labeled historical sections only.
 
+**Agents:** Mutation/reconcile separation (below) is **P1** in [Preparing For Multiplayer §1.1](../Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md). Tier C reconcilers run on **Host only**; join clients get `Sync.ui` / incremental UI from `Sync.full` — see [Bootstrap Authority](Bootstrap%20Authority.md). Until **TOR-144 (multiplayer E2E)** passes, uphold [`.cursor/rules/toronto-rising-multiplayer-authority.mdc`](../../.cursor/rules/toronto-rising-multiplayer-authority.mdc) when adding sync paths.
+
 Related docs:
 
 - [Synchronization Architecture Proposal](Synchronization%20Architecture%20Proposal.md)

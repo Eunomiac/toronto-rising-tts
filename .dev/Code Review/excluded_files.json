@@ -16,7 +16,6 @@
     { "path": "core/scenes.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
     { "path": "core/storyteller_panel_ui.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
     { "path": "core/state.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
-    { "path": "core/zones.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
     { "path": "core/global_script.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
     { "path": "lib/constants.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
     { "path": "lib/custom_ui_upload_manifest.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },

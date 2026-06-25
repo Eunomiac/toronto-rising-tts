@@ -3,32 +3,20 @@
     Tarot Toggle Button (ui/ui_tarot_button.ttslua)
 
     Attached to TAROT_BUTTON_PINK. Clicking toggles Tarot drawer/deck/button
-    between C.ObjectPositions on/off states.
+    between C.ObjectPositions on/off states via GlobalApplyTarotState (host-only).
 ]]
 
-local C = require("lib.constants")
 local CU = require("lib.csheet_util")
-local OP = require("lib.object_positions_object")
-local TarotObjects = require("lib.tarot_objects")
+local TarotToggle = require("lib.tarot_toggle")
 
-local STATE_OFF = "off"
-local STATE_ON = "on"
+local isOn = false
+local desiredOn = false
 
 local BUTTON_WIDTH = 5000
 local BUTTON_HEIGHT = 700
 local TOP_BUTTON_POS = { 0, 0.18, 0 }
 local BOTTOM_BUTTON_POS = { 0, -0.18, 0 }
 local BOTTOM_BUTTON_ROT = { 180, 0, 0 }
-
-local TAROT_KEYS = {
-    "TAROT_DRAWER_PINK",
-    "TAROT_DECK_PINK",
-    "TAROT_BUTTON_PINK",
-}
-
-local isOn = false
-local desiredOn = false
-local currentOpToken = 0
 
 --- @return table|nil
 local function getSeatLayoutCenterPoint()
@@ -75,7 +63,7 @@ local function runWhenSeatLayoutReady(callback, attempt)
             return
         end
         if currentAttempt >= maxAttempts then
-            print("[TarotButton] seatLayout.currentTableKey is not ready after retries; skipping tarot pose application.")
+            print("[TarotButton] seatLayout.currentTableKey is not ready after retries; skipping tarot toggle.")
             return
         end
         local delaySeconds = getBackoffDelaySeconds(currentAttempt)
@@ -85,155 +73,6 @@ local function runWhenSeatLayoutReady(callback, attempt)
     end
 
     retry(startAttempt)
-end
-
---- @param key string
---- @return Object|nil
-local function resolveTarotObject(key)
-    if key == "TAROT_BUTTON_PINK" then
-        return self
-    end
-    return TarotObjects.resolveByGuidsKey(key)
-end
-
---- @return Object|nil
-local function getTarotDrawer()
-    return resolveTarotObject("TAROT_DRAWER_PINK")
-end
-
---- @return Object|nil
-local function getTarotDeck()
-    return resolveTarotObject("TAROT_DECK_PINK")
-end
-
---- Before hiding, sweep tagged loose cards back into the Pink tarot deck.
-local function returnLooseTarotCardsToDeck()
-    local deck = getTarotDeck()
-    if deck == nil then
-        print("[TarotButton] Cannot return cards: tarot deck missing.")
-        return
-    end
-    if deck.putObject == nil then
-        print("[TarotButton] Cannot return cards: deck putObject unavailable.")
-        return
-    end
-    local returned = 0
-    for _, obj in ipairs(TarotObjects.getTaggedObjects()) do
-        if TarotObjects.isLooseCard(obj, deck) then
-            deck.putObject(obj)
-            returned = returned + 1
-        end
-    end
-    if returned > 0 then
-        print("[TarotButton] Returned " .. tostring(returned) .. " loose tarot card(s) to deck before hide.")
-    end
-end
-
---- @param token number
---- @return boolean
-local function isTokenCurrent(token)
-    return token == currentOpToken
-end
-
---- @param key string
---- @param state string
---- @param token number
-local function applyObjectState(key, state, token)
-    if Global ~= nil and type(Global.call) == "function" then
-        if Global.call("GlobalRequireHostForWorldMutation", { context = "tarot.applyObjectState" }) ~= true then
-            return
-        end
-    end
-    local obj = resolveTarotObject(key)
-    if obj == nil then
-        print("[TarotButton] Missing object for key: " .. tostring(key))
-        return
-    end
-    local entry = C.ObjectPositions[key]
-    if type(entry) ~= "table" then
-        print("[TarotButton] Missing C.ObjectPositions entry for key: " .. tostring(key))
-        return
-    end
-    local pose = OP.resolveStatePose(obj, entry, state)
-    if type(pose) ~= "table" then
-        pose = entry[state]
-    end
-    if type(pose) ~= "table" then
-        print("[TarotButton] Missing '" .. tostring(state) .. "' pose for key: " .. tostring(key))
-        return
-    end
-
-    -- Build an effective pose so partial position tables never collapse X/Z to 0.
-    local effectivePose = {}
-    for k, v in pairs(pose) do
-        effectivePose[k] = v
-    end
-    if type(effectivePose.position) == "table" then
-        local hasX = effectivePose.position.x ~= nil
-        local hasY = effectivePose.position.y ~= nil
-        local hasZ = effectivePose.position.z ~= nil
-        if not (hasX and hasY and hasZ) then
-            effectivePose.position = OP.mergePosition(obj, effectivePose.position)
-        end
-    end
-    OP.applyResolvedPose(obj, effectivePose, OP.DEFAULT_TRANSITION_DURATION, 0, {
-        shouldAbort = function()
-            return not isTokenCurrent(token)
-        end
-    })
-end
-
---- @param targetOn boolean
---- @param token number
-local function applyTarotState(targetOn, token)
-    if not isSeatLayoutReady() then
-        runWhenSeatLayoutReady(function()
-            if isTokenCurrent(token) then
-                applyTarotState(targetOn, token)
-            end
-        end)
-        return
-    end
-    if not isTokenCurrent(token) then
-        return
-    end
-    if not targetOn then
-        returnLooseTarotCardsToDeck()
-    end
-    local state = targetOn and STATE_ON or STATE_OFF
-    for i = 1, #TAROT_KEYS do
-        applyObjectState(TAROT_KEYS[i], state, token)
-    end
-    isOn = targetOn
-end
-
---- Infer current state from deck Y (falls back to saved boolean).
---- @return boolean
-local function inferCurrentState()
-    if not isSeatLayoutReady() then
-        return isOn
-    end
-    local deck = getTarotDeck()
-    if deck == nil then
-        return isOn
-    end
-    local entry = C.ObjectPositions.TAROT_DECK_PINK
-    if type(entry) ~= "table" then
-        return isOn
-    end
-    local onPose = OP.resolveStatePose(deck, entry, STATE_ON) or entry.on
-    local offPose = OP.resolveStatePose(deck, entry, STATE_OFF) or entry.off
-    if type(onPose) ~= "table" or type(offPose) ~= "table" then
-        return isOn
-    end
-    local onY = onPose.position and onPose.position.y
-    local offY = offPose.position and offPose.position.y
-    local currentY = deck.getPosition().y
-    if type(onY) == "number" and type(offY) == "number" then
-        local midpoint = (onY + offY) / 2
-        return currentY >= midpoint
-    end
-    return isOn
 end
 
 local function createClickButtons()
@@ -248,7 +87,6 @@ local function createClickButtons()
         hover_color = { 0.7, 0.5, 1, 0.18 },
         press_color = { 0.5, 0.3, 1, 0.28 },
     })
-    -- Mirror button on underside so click works after the tile flips.
     self.createButton({
         click_function = "click_tarotToggle",
         function_owner = self,
@@ -275,7 +113,7 @@ function onLoad(savedData)
     end
     createClickButtons()
     runWhenSeatLayoutReady(function()
-        isOn = inferCurrentState()
+        isOn = TarotToggle.inferCurrentState(self.getGUID(), isOn)
         desiredOn = isOn
     end)
 end
@@ -287,13 +125,21 @@ function click_tarotToggle(_obj, clickColor)
         print("[TarotButton] Only Pink (or GM) can toggle tarot objects.")
         return
     end
-    currentOpToken = currentOpToken + 1
-    local token = currentOpToken
     runWhenSeatLayoutReady(function()
-        if not isTokenCurrent(token) then
-            return
-        end
         desiredOn = not desiredOn
-        applyTarotState(desiredOn, token)
+        local applied = nil
+        if Global ~= nil and type(Global.call) == "function" then
+            applied = Global.call("GlobalApplyTarotState", {
+                targetOn = desiredOn,
+                buttonGuid = self.getGUID(),
+            })
+        end
+        if type(applied) == "boolean" then
+            isOn = applied
+            desiredOn = applied
+        else
+            desiredOn = not desiredOn
+            print("[TarotButton] GlobalApplyTarotState failed; reverted desired state.")
+        end
     end)
 end

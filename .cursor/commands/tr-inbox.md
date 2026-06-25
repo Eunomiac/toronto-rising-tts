@@ -6,6 +6,8 @@ Run the **full Toronto Rising capture → schedule → prioritize** pipeline in 
 
 Follow `.cursor/rules/toronto-rising-linear.mdc` and `.dev/DEVELOPMENT_WORKFLOW.md` § **Inbox capture & triage** and § **Focus & backlog prioritization**.
 
+**Multiplayer authority:** When promoting or prioritizing work that touches events, load/bootstrap, HUD, or world I/O, ensure **`blockedBy`** reflects host-authority prerequisites (e.g. **TOR-221** bootstrap audit, **TOR-144** multiplayer E2E) where appropriate. Agents implementing promoted items must uphold **P1–P10** — [`.cursor/rules/toronto-rising-multiplayer-authority.mdc`](.cursor/rules/toronto-rising-multiplayer-authority.mdc), [Preparing For Multiplayer §1](.dev/Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md).
+
 ## Conventions (always apply in this command)
 
 ### Linear ID context

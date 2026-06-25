@@ -1,7 +1,9 @@
 # Bootstrap & Load Authority (TTS multiplayer)
 
 **Linear:** TOR-221 (Non-Host onLoad Host-only guard audit)
-**Related:** [Event Listener Policy](Event%20Listener%20Policy.md), [Reconciler Contract](Reconciler%20Contract.md), TOR-144 (multiplayer E2E playbook)
+**Related:** [Event Listener Policy](Event%20Listener%20Policy.md), [Reconciler Contract](Reconciler%20Contract.md), [Preparing For Multiplayer](../Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md) §1, TOR-144 (multiplayer E2E playbook)
+
+> **Agents:** Chunk load, `onLoad`, fan-out handlers, and `Global.call` mutators must follow this doc and **P1–P10** in Preparing §1 until TOR-144 passes. Rule: [`.cursor/rules/toronto-rising-multiplayer-authority.mdc`](../../.cursor/rules/toronto-rising-multiplayer-authority.mdc).
 
 Toronto Rising has been developed and tested **solo Host** (Storyteller seated at **Black**). When real clients join, TTS runs **Global `onLoad` and object `onLoad` on every client**. World mutations and reconcilers must run on the **Host client only**; joining clients hydrate `gameState` and refresh **UI**.
 
@@ -60,6 +62,16 @@ Join clients load `gameState` from save on `onLoad` but do not receive runtime L
 - **`gameState`** is loaded from save JSON on every client via `S.InitializeGameState` so HUD, sheets, and overlays can read persisted state on joiners.
 - **UI refresh** (`Sync.ui`, `UpdateUIDisplays`, phase sync) is safe on all clients; it does not move world objects.
 
+## Global chunk load (before `onLoad`)
+
+The Global script chunk runs on **every** client when the save loads. Tier C soundscape bootstrap must be **host-only** here as well as in `onLoad`:
+
+| Step | Host only? | Notes |
+| --- | --- | --- |
+| `trEarlySilenceSoundscapeEmitters` (chunk + deferred) | Host | `U.isHostClient()` at entry; join client logs once and returns |
+| `trScheduleEarlySoundscapeSilenceDeferred("chunk-load")` | Host | No-op on join client (no deferred mute timers) |
+| `SS.bootstrapSilenceStrayEmitterLoops` (chunk, after `require`) | Host | Host `onLoad` repeats when emitters exist |
+
 ## Global `onLoad` inventory
 
 | Step | Host only? | Notes |
@@ -70,7 +82,6 @@ Join clients load `gameState` from save on `onLoad` but do not receive runtime L
 | `DEBUG.clearAllLogs` | Host | Session log reset |
 | Conditions validate / derived / location reconcile | Host | May touch state + derived rows |
 | `SS.bootstrapSilenceStrayEmitterLoops` | Host | World audio |
-| `Z.onLoad` | Host | Zone state default + `DeactivateZones` |
 | `M.onLoad` / `M.setupPlayers` | Host | Promote players, GM table `setInvisibleTo`, table-key inference |
 | `R.SyncTable` (deferred) | Host | Seat layout object moves |
 | `Sync.full` (`onLoad_initial`, startup gate) | Host | Full reconciler fan-out |

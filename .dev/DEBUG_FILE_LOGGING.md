@@ -62,12 +62,11 @@ lua logToFile("ERROR", "Something went wrong")
 lua logToFile("DEBUG", "Debug information")
 ```
 
-### State / Scene / Zone Logging
+### State / Scene Logging
 
 ```lua
 lua logStateToFile()
 lua logSceneToFile()
-lua logZonesToFile()
 ```
 
 ### Test Result Logging
@@ -95,7 +94,6 @@ Typical layout (paths relative to the **folder** you opened in Cursor / VS Code,
             ├── debug_log.txt
             ├── game_state.txt
             ├── scene_info.txt
-            ├── zone_info.txt
             ├── test_results.txt
             └── seat_layout_frame_refs.lua   -- from rotational layout export, if you use that path
 ```

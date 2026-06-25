@@ -40,7 +40,11 @@ function onSave()
 end
 
 function onLoad(saved_data)
-    if saved_data ~= nil and saved_data ~= "" then
+    local isHost = true
+    if Global ~= nil and type(Global.call) == "function" then
+        isHost = Global.call("GlobalRequireHostForWorldMutation", { context = "dice_bag.onLoad" }) == true
+    end
+    if isHost and saved_data ~= nil and saved_data ~= "" then
         local loaded = JSON.decode(saved_data)
         if type(loaded) == "table" then
             for _, guid in ipairs(loaded) do

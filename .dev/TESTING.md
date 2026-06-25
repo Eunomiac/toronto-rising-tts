@@ -120,7 +120,6 @@ See [Dice-E2E-Guide.md](E2E%20Playbooks/Dice-E2E-Guide.md) § Running the playbo
 lua debugHelp()
 lua showState()
 lua showScene()
-lua showZones()
 lua inspectSoundscapeAudio()
 lua DEBUG.dumpConditions("Brown")
 lua DEBUG.dumpRollPolicy("Brown")

@@ -20,7 +20,7 @@
 | --- | --- | --- | --- | --- | --- |
 | P0-1 | ~~Seat absence lighting gated behind undeclared `enforceActiveSeatLighting`.~~ **Fixed:** `computeSeatSpotlightPriorityOverride` uses `not L.isPlayerPresentInActiveSeatLayout(seatKey)` directly (no flag). | `core/lighting.ttslua` | — | — | Player/NPC seat lights; scene presence toggles. |
 | P0-2 | Legacy scene selection can leave stale `sessionScene.lightingPresetKey` authoritative over `currentScene`. | `core/scenes.ttslua:376-377` and `core/scenes.ttslua:402-406` write `currentScene` / `sceneTransition`; `core/scenes.ttslua:300-316` resolves `sessionScene.lightingPresetKey` first and only falls back to `currentScene`. `core/global_script.ttslua:791-793` has the same legacy write-only scene path. | After an admin preset writes `sessionScene.lightingPresetKey`, a later `Scenes.loadScene(...)` / `HUD_changeScene(...)` only changes `currentScene`; reconcile keeps applying the stale lighting preset. | Make `sessionScene.lightingPresetKey` the canonical lighting intent. Legacy scene APIs must either set/clear that key deliberately or be deprecated behind a migration wrapper. `currentScene` should be a legacy label/fallback, not the primary lighting state. | Scene lighting, admin dark/standard/bright, legacy scene buttons/debug calls, UI scene display. |
-| P0-3 | Zone toggle/debug readers use `zones.allZonesLocked`, but the zone module writes `zones.allLocked`. | `core/global_script.ttslua:1332` reads `S.getStateVal("zones", "allZonesLocked")`; `core/debug.ttslua:3660` does the same. `core/zones.ttslua:69` writes `S.setStateVal(false, "zones", "allLocked")`; `core/zones.ttslua:84` writes `true`. | The HUD toggle sees `nil` and takes the wrong branch, so the debug control can repeatedly deactivate instead of toggling. Debug output reports the wrong state. | Replace all `zones.allZonesLocked` reads/docs with `S.getStateVal("zones", "allLocked")`. Add `zones = { allLocked = false }` to defaults. | Debug zone controls, GM troubleshooting, any zone event activation/deactivation workflow. |
+| P0-3 | ~~Zone toggle/debug readers use `zones.allZonesLocked`, but the zone module writes `zones.allLocked`.~~ **Resolved (2026-06):** `core/zones.ttslua`, `HUD_toggleZones`, and `gameState.zones` removed — scripting zones unused in Toronto Rising. | — | — | — | — |
 
 ## P1 - works today by accident / nil coalescing / load-merge fragility
 
@@ -39,7 +39,7 @@
 | P2-1 | `core/state.ttslua` JSDoc examples point hunger at the old top-level path. | `core/state.ttslua:34`, `54`, `1365`, `1381` show `playerData, playerID, "hunger"`. | Hunger lives at `playerData[id].stats.hunger`; the canonical public helper is `S.getPlayerVal(color, "hunger")` / `S.setPlayerVal(color, "hunger", n)`. | Update examples to `stats.hunger` when demonstrating raw nested access, and use `S.getPlayerVal` / `S.setPlayerVal` for public hunger access. | Future agents copying examples into production code. |
 | P2-2 | `.dev/AVAILABLE_FUNCTIONS.md` had `players/Red/hunger` examples. | `.dev/AVAILABLE_FUNCTIONS.md:233-234` previously used `S.getStateVal("players", "Red", "hunger")` / `S.setStateVal(3, "players", "Red", "hunger")`. | `players` is not a state key; `playerData` is Steam-ID keyed; hunger is nested under `stats`. | Updated in this pass to canonical patterns for hunger, stats, conditions, HUD, lighting context, scene lighting, and zones. | Agent onboarding and repeated state-access regressions. |
 | P2-3 | `.dev/EXTRACTABLE_FUNCTIONS_INDEX.md` preserves the same stale `players/Red/hunger` examples. | `.dev/EXTRACTABLE_FUNCTIONS_INDEX.md:318-320`. | Historical reference docs still teach a non-existent path. | Replace with `sessionScene` examples or mark the file historical and point to `.dev/AVAILABLE_FUNCTIONS.md`. | Low, but search results can mislead agents. |
-| P2-4 | HUD docs describe `currentScene` as the authority and document the wrong zone key. | `.dev/HUD_FUNCTIONS.md:43` says `gameState.currentScene` remains lighting authority; `.dev/HUD_FUNCTIONS.md:134` documents `zones.allZonesLocked`. | Current scene reconciliation prefers `sessionScene.lightingPresetKey`; zone lock state is `zones.allLocked`. | Update Scenes tab authority to `sessionScene.lightingPresetKey`; update `HUD_toggleZones` docs to `zones.allLocked`. | Human/agent debugging of scenes and zone controls. |
+| P2-4 | HUD docs describe `currentScene` as the authority. | `.dev/HUD_FUNCTIONS.md:43` says `gameState.currentScene` remains lighting authority. | Current scene reconciliation prefers `sessionScene.lightingPresetKey`. | Update Scenes tab authority to `sessionScene.lightingPresetKey`. | Human/agent debugging of scenes. |
 | P2-5 | Storyteller Scenes XML copy exposes stale state concepts. | `ui/storyteller/panel_scenes.xml:6` says lighting presets drive `currentScene`; `ui/storyteller/panel_scenes.xml:29` references `enforceActiveSeatLighting`. | UI hints teach the same legacy scene and undeclared seat-light flag issues found above. | Change copy to `sessionScene.lightingPresetKey`; remove the `enforceActiveSeatLighting` mention or back it with a real control/schema. | Storyteller-facing help text, QA, agent screenshots. |
 | P2-6 | Dice system docs show `S.setPlayerVal` for non-hunger nested keys. | `.dev/Dice System/Dice System Outline.md:990` mentions `S.setPlayerVal(color, "stains", ...)`; `.dev/Dice System/Dice System Outline.md:1020` mentions `S.setPlayerVal(color, "stats.willpower.superficial", ...)`. | `S.setPlayerVal` only special-cases `"hunger"`; other keys are written as top-level dynamic fields. Nested stats/conditions must use `S.getPlayerID(color)` plus `S.setStateVal(...)`. | Replace with `S.setStateVal(value, "playerData", pid, "stats", "humanity", "stains")` and `S.setStateVal(value, "playerData", pid, "stats", "willpower", "superficial")`. | Roll pipeline docs; future implementation of remorse/willpower code. |
 | P2-7 | Debugging checklist repeats legacy scene/seat-presence state descriptions. | `.dev/SOLVING ISSUES & DEBUGGING.md:42-43` says `gameState.currentScene` is the lighting preset key and pairs seat presence with `seatLayout.enforceActiveSeatLighting`. | This conflicts with `sessionScene.lightingPresetKey` and the current absent-seat priority policy. | Update to `sessionScene.lightingPresetKey` as lighting intent; describe absent-seat behavior as direct derived state, not a separate flag. | Debugging playbooks and future incident response. |
@@ -60,11 +60,6 @@
    - Keep `Scenes.reconcileFromState()` read-only; move any state repair into mutation/normalization.
    - Update admin scene button highlighting to use the same canonical lighting key it writes.
 
-3. **Fix zone lock key mismatch.**
-   - Replace `allZonesLocked` with `allLocked` in `core/global_script.ttslua`, `core/debug.ttslua`, `.dev/HUD_FUNCTIONS.md`.
-   - Add `zones = { allLocked = false }` to `GetDefaultGameState()` or normalize it in `S.validateState()`.
-   - Verify `HUD_toggleZones` alternates activate/deactivate across two clicks.
-
 ### P1 - consistency / schema / load-merge safety
 
 1. **Remove raw state table mutation from player setup.**
@@ -79,7 +74,6 @@
 3. **Classify undeclared runtime state paths.**
    - `seatLayout.virtualHandZoneAnchors`: persist by adding defaults/save support, or move to module-private cache.
    - `npcs.ui.groupExpanded`: persist by adding defaults/save support, or move to module-private cache.
-   - `zones.allLocked`: add a default regardless of the zone toggle fix.
 
 4. **Tighten `S.getGameState` use.**
    - Add docs/comments that `S.getGameState(false)` returns the live table and must not be mutated outside `core/state.ttslua`.
@@ -89,7 +83,7 @@
 
 1. Update `core/state.ttslua` usage examples for `stats.hunger`.
 2. Update `.dev/EXTRACTABLE_FUNCTIONS_INDEX.md` stale state examples or mark them historical.
-3. Update `.dev/HUD_FUNCTIONS.md` scene authority and zone key text.
+3. Update `.dev/HUD_FUNCTIONS.md` scene authority text.
 4. Update `ui/storyteller/panel_scenes.xml` copy for scene lighting and seat presence.
 5. Update `.dev/Dice System/Dice System Outline.md` nested stat examples to `S.getPlayerID` + `S.setStateVal`.
 6. Update `.dev/SOLVING ISSUES & DEBUGGING.md` scene/seat-presence bullets.

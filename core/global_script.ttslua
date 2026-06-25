@@ -6,6 +6,7 @@
     Agent guidance (.dev/ documentation for this project):
     MANDATORY FIRST — docs/solutions/lua-local-function-order.md (top recurring bug: local function BEFORE every caller in THIS file; else nil at runtime),
     .cursor/rules/toronto-rising-lua-local-function-order.mdc,
+    .cursor/rules/toronto-rising-multiplayer-authority.mdc + .dev/Multiplayer Functionality/Preparing For Multiplayer.md §1 (P1–P10 until TOR-144 E2E),
     DEVELOPMENT_WORKFLOW.md, TESTING.md, TTS_BUNDLING_SETUP.md, DEBUG_FILE_LOGGING.md, TTS_MCP.md,
     HUD_FUNCTIONS.md, HUDs & Overlays/Player HUD Overview.md,
     NPC Object Spawning & Spotlighting/NPC Object Overview.md,
@@ -36,6 +37,8 @@ local TR_EARLY_SOUNDSCAPE_EMITTER_GUIDS = {
   "290128",
   "c7a6c5",
 }
+
+local trEarlySilenceNonHostSkipLogged = false
 
 local function trEarlyCollectAudioSources(obj)
     if obj == nil then
@@ -74,6 +77,13 @@ end
 
 --- @param phaseLabel string identifies this pass in the TTS console load timeline
 local function trEarlySilenceSoundscapeEmitters(phaseLabel)
+    if not U.isHostClient() then
+        if trEarlySilenceNonHostSkipLogged ~= true then
+            trEarlySilenceNonHostSkipLogged = true
+            print(U.loadElapsedPrefix() .. "Join client: skipped soundscape emitter silence (host-only).")
+        end
+        return
+    end
     U.ensureLoadClockT0()
     local label = type(phaseLabel) == "string" and phaseLabel or "sync-immediate"
     local getObj = rawget(_G, "getObjectFromGUID")
@@ -107,6 +117,9 @@ local TR_EARLY_SILENCE_DEFERRAL_SECONDS = { 0, 0.05, 0.25, 0.5 }
 --- @param schedulerLabel string origin for console logs (`chunk-load` vs `onLoad`)
 --- @return boolean true if `Wait.time` was available
 local function trScheduleEarlySoundscapeSilenceDeferred(schedulerLabel)
+    if not U.isHostClient() then
+        return false
+    end
     local tag = type(schedulerLabel) == "string" and schedulerLabel or "unknown"
     local W = rawget(_G, "Wait")
     if type(W) ~= "table" or type(W.time) ~= "function" then
@@ -121,7 +134,7 @@ local function trScheduleEarlySoundscapeSilenceDeferred(schedulerLabel)
     return true
 end
 
--- Chunk phase: objects usually are not registered yet (`emitters resolved 0/9`); `Wait` is often nil here too.
+-- Chunk phase: host-only (join clients no-op inside trEarlySilence*); objects often 0/9 until onLoad.
 trEarlySilenceSoundscapeEmitters("chunk-sync-immediate")
 
 -- Load shared utilities and constants
@@ -149,12 +162,11 @@ function GlobalRollSeatCamera(params)
     M.setCamera(params.color, mode)
 end
 
-Z = require("core.zones")
 Scenes = require("core.scenes")
 SS = require("core.soundscape")
 -- Unity resumes AssetBundle audio as soon as objects exist; DEBUG require prints before onLoad.
--- Silence emitters here so stray loops do not play through `DEBUG.loadCustomUiUploadManifest` etc.
-if SS ~= nil and type(SS.bootstrapSilenceStrayEmitterLoops) == "function" then
+-- Host-only: join clients must not duplicate emitter mutes (see onLoad join branch).
+if U.isHostClient() and SS ~= nil and type(SS.bootstrapSilenceStrayEmitterLoops) == "function" then
     SS.bootstrapSilenceStrayEmitterLoops()
 end
 local Sync = require("core.sync")
@@ -306,6 +318,20 @@ function GlobalToggleSignalFireState(params)
         duration = 0.2
     end
     return O.ToggleSignalFireState(color, duration)
+end
+
+--- Pink tarot drawer/deck/button pose toggle (host-only; object script routes via Global.call).
+--- @param params table { targetOn: boolean, buttonGuid?: string }
+--- @return boolean|nil applied on-state, or nil on failure / non-host
+function GlobalApplyTarotState(params)
+    if not U.requireHostForWorldMutation("GlobalApplyTarotState") then
+        return nil
+    end
+    if type(params) ~= "table" or type(params.targetOn) ~= "boolean" then
+        return nil
+    end
+    local TarotToggle = require("lib.tarot_toggle")
+    return TarotToggle.applyState(params.targetOn, params.buttonGuid)
 end
 
 --- NPC gameboard: Apply tokens on CONTROL_BOARD → `sessionScene.npcWorld.placements` → `Sync.npcs`.
@@ -1597,7 +1623,6 @@ function onLoad(saved_data)
     local startupLastAction = "onLoad:start"
     local startupStepsSilent = {
         ["clear-debug-logs"] = true,
-        ["zones-onload"] = true,
     }
 
     --- @param action string
@@ -1651,10 +1676,6 @@ function onLoad(saved_data)
     if SS ~= nil and type(SS.bootstrapSilenceStrayEmitterLoops) == "function" then
         SS.bootstrapSilenceStrayEmitterLoops()
     end
-
-    -- Initialize zones module
-    setStartupAction("zones-onload")
-    Z.onLoad()
 
     -- Initialize main module
     setStartupAction("main-onload")
@@ -1868,22 +1889,6 @@ function onSave()
         return ""
     end
     return encoded
-end
-
---[[
-    Zone Activation/Deactivation Functions
-    These functions are called by the zones module to enable/disable zone event handlers.
-]]
-function ActivateZones()
-    onObjectEnterZone = Z.onObjectEnterZone
-    onObjectLeaveZone = Z.onObjectLeaveZone
-end
-
-function DeactivateZones()
-    ---@diagnostic disable-next-line: assign-type-mismatch
-    onObjectEnterZone = nil  -- TTS allows nil to disable zone handlers
-    ---@diagnostic disable-next-line: assign-type-mismatch
-    onObjectLeaveZone = nil  -- TTS allows nil to disable zone handlers
 end
 
 --- @param playerRef Player|string|nil
@@ -2696,29 +2701,6 @@ function HUD_saveState(player, button, id)
 
     print("HUD: Game state saved by " .. player.color)
     broadcastToColor("Game state saved successfully.", player.color, {0, 1, 0})
-end
-
---- Toggle zones active/inactive
--- Called when the "Toggle Zones" debug button is clicked
--- @param player Player The player who clicked the button
--- @param button string Button value
--- @param id string The UI element ID
-function HUD_toggleZones(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_toggleZones") then
-        return
-    end
-    -- Check current zone state
-    local zonesActive = S.getStateVal("zones", "allZonesLocked")
-
-    if zonesActive == true then
-        Z.activateZones()
-        broadcastToColor("Zones activated.", player.color, {0, 1, 0})
-    else
-        Z.deactivateZones()
-        broadcastToColor("Zones deactivated.", player.color, {1, 0, 0})
-    end
-
-    print("HUD: Zones toggled by " .. player.color)
 end
 
 --- Log current game state to console (debug function)

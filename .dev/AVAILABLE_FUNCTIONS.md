@@ -20,7 +20,7 @@
 
 1. **Check this document first** - Search for existing functions that might already do what you need
 2. **Check the utilities library** (`lib/util.ttslua`) - It contains 75+ functions for common operations
-3. **Check other modules** - State, zones, lighting, main, `U.*` UI utilities, and Storyteller HUD modules may have relevant functions
+3. **Check other modules** - State, lighting, main, `U.*` UI utilities, and Storyteller HUD modules may have relevant functions
 4. **Only create new functions if no existing function meets your needs**
 
 **Common mistakes to avoid:**
@@ -30,7 +30,6 @@
 - ❌ Writing custom type checking when `U.Type()`, `U.isGameObject()`, etc. exist
 - ❌ Writing custom table operations when utilities provide them
 - ❌ Writing custom state access when `S.getStateVal()` / `S.setStateVal()` exist
-- ❌ Writing custom zone queries when `Z.getTaggedZoneObjects()` exists
 
 ---
 
@@ -268,7 +267,6 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 | Player HUD | `S.getStateVal("playerData", pid, "hud", "rollData", "active")` | `S.setStateVal(active, "playerData", pid, "hud", "rollData", "active")` |
 | Player rolling light context | `S.getStateVal("playerData", pid, "lighting", "isRolling")` | `S.setStateVal(isRolling, "playerData", pid, "lighting", "isRolling")` |
 | Scene lighting preset | `S.getStateVal("sessionScene", "lightingPresetKey")` | `S.setStateVal(presetKey, "sessionScene", "lightingPresetKey")` |
-| Zone lock state | `S.getStateVal("zones", "allLocked")` | `S.setStateVal(isLocked, "zones", "allLocked")` |
 
 ### Conditions module (`core/conditions.ttslua`)
 
@@ -294,40 +292,6 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 **Roll controller:** `RC.applyRollPolicyToActive(active)` seeds `rollOptions` from `active.rollPolicy`.
 
 **Debug:** `DEBUG.dumpConditions(seatColor)`, `DEBUG.dumpRollPolicy(seatColor)`
-
----
-
-## 3. ZONES MODULE (`core/zones.ttslua`)
-
-**Require:** `local Z = require("core.zones")`
-
-### Core Functions for Zones
-
-| Function | Description | Usage Example |
-| :--------- | :------------- | :--------------- |
-| `Z.onLoad()` | Initialize zones | Setup function |
-| `Z.activateZones()` | Enable zone event handlers | Turn on triggers |
-| `Z.deactivateZones()` | Disable zone event handlers | Turn off triggers |
-| `Z.hideZones()` | Hide zones (move below table) | Visual cleanup |
-| `Z.showZones()` | Show zones (move above table) | Visual display |
-
-### Object Query Functions
-
-| Function | Description | Usage Example |
-| :--------- | :------------- | :--------------- |
-| `Z.getTaggedZoneObjects(zone, tags, requireAll)` | Get objects in zone with tags | Find all cards |
-| `Z.getCards(zone, tags)` | Get card objects in zone | Get cards |
-| `Z.getCard(zone, tags)` | Get single card (first match) | Get top card |
-| `Z.hasCard(zone)` | Check if zone has cards | Validation |
-| `Z.getSnapPointsInZone(zone, object)` | Get valid snap points within zone | Alignment helper |
-
-### Zone Management Functions
-
-| Function | Description | Usage Example |
-| :--------- | :------------- | :--------------- |
-| `Z.writePosToTaggedObjectsInZone(zone, tags, mode, stateKey, stateSubKey)` | Save object positions to state | Persistence |
-| `Z.onObjectEnterZone(zone, object)` | Handle object entering zone | Event handler |
-| `Z.onObjectLeaveZone(zone, object)` | Handle object leaving zone | Event handler |
 
 ---
 
@@ -540,9 +504,9 @@ TTS also exposes **`UI.setAttributes`** natively; use **`U.setAttributes`** when
 
 → Use `S.getStateVal()` / `S.setStateVal()` for exact schema paths. Use `S.getPlayerID(color)` before nested `playerData` paths. Use `S.getPlayerVal()` / `S.setPlayerVal()` for `hunger` only.
 
-### Need to query objects in zones?
+### Need to query objects in a TTS Hand Zone or bounds?
 
-→ Use `Z.getTaggedZoneObjects()`, `Z.getCards()`, `Z.getCard()`
+→ Use `U.getHandZone(color)`, `U.getZoneBounds()`, `U.isInside()`
 
 ### Need to change lighting?
 
@@ -567,10 +531,6 @@ TTS also exposes **`UI.setAttributes`** natively; use **`U.setAttributes`** when
 ### Need to work with players?
 
 → Use `M.forPlayers()`, `U.getHost()`, `S.getPlayerData()`
-
-### Need to work with zones?
-
-→ Use `Z.getTaggedZoneObjects()`, `U.getZoneBounds()`, `U.isInside()`, `U.getHandZone()`
 
 ### Need to work with tags?
 
@@ -619,7 +579,6 @@ TTS also exposes **`UI.setAttributes`** natively; use **`U.setAttributes`** when
 - `.dev/EXTRACTABLE_FUNCTIONS_INDEX.md` - Historical reference of extractable functions
 - `lib/util.ttslua` - Source code for utilities module
 - `core/state.ttslua` - Source code for state module
-- `core/zones.ttslua` - Source code for zones module
 - `core/lighting.ttslua` - Source code for lighting module
 - `core/main.ttslua` - Source code for main module
 - `core/storyteller_panel_ui.ttslua` - Storyteller toolbar mutually exclusive panels

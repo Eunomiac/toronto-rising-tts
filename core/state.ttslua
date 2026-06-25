@@ -254,7 +254,6 @@ function S.GetDefaultGameState()
         currentPhase = C.Phases.SESSION_START,
         playerData = playerData, -- Keyed by player ID, only dynamic values
         lights = {}, -- Light states will be stored here
-        zones = {},  -- Zone-related data
         scene = {
             name = "",
             description = "",
@@ -623,7 +622,6 @@ function S.validateState()
 
     -- Ensure other required top-level tables exist
     if not gameState.lights then gameState.lights = {} end
-    if not gameState.zones then gameState.zones = {} end
     if not gameState.scene then gameState.scene = {} end
     if not gameState.soundscape or type(gameState.soundscape) ~= "table" then
         gameState.soundscape = {}
@@ -1072,57 +1070,6 @@ local function buildSaveState()
                 end
                 if next(cleanLightData) ~= nil then
                     saveState.lights[lightName] = cleanLightData
-                end
-            end
-        end
-    end
-
-    -- Copy zones data (only serializable fields)
-    if gameState.zones then
-        saveState.zones = {}
-        for zoneKey, zoneData in pairs(gameState.zones) do
-            -- Skip non-serializable keys
-            if type(zoneKey) ~= "string" and type(zoneKey) ~= "number" then
-                -- Skip this key
-            elseif type(zoneData) == "string" or type(zoneData) == "number" or type(zoneData) == "boolean" then
-                saveState.zones[zoneKey] = zoneData
-            elseif type(zoneData) == "table" then
-                -- Recursively copy only serializable fields from zone data
-                local cleanZoneData = {}
-                for k, v in pairs(zoneData) do
-                    local kType = type(k)
-                    local vType = type(v)
-
-                    -- Keys must be serializable
-                    if (kType == "string" or kType == "number") then
-                        -- Handle values
-                        if vType == "string" or vType == "number" or vType == "boolean" or vType == "nil" then
-                            cleanZoneData[k] = v
-                        elseif vType == "table" then
-                            -- Check if it's a Vector-like table (has x, y, z) and convert to plain table
-                            if v.x ~= nil and v.y ~= nil and v.z ~= nil then
-                                cleanZoneData[k] = {x = v.x, y = v.y, z = v.z}
-                            else
-                                -- Plain table - recursively copy (but skip Vector/Color userdata)
-                                local nestedClean = {}
-                                for nk, nv in pairs(v) do
-                                    if (type(nk) == "string" or type(nk) == "number") and
-                                       (type(nv) == "string" or type(nv) == "number" or type(nv) == "boolean" or type(nv) == "nil") then
-                                        nestedClean[nk] = nv
-                                    elseif type(nv) == "table" and nv.x and nv.y and nv.z then
-                                        -- Nested Vector-like table
-                                        nestedClean[nk] = {x = nv.x, y = nv.y, z = nv.z}
-                                    end
-                                end
-                                if next(nestedClean) ~= nil then
-                                    cleanZoneData[k] = nestedClean
-                                end
-                            end
-                        end
-                    end
-                end
-                if next(cleanZoneData) ~= nil then
-                    saveState.zones[zoneKey] = cleanZoneData
                 end
             end
         end

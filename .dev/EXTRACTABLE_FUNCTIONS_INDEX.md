@@ -230,6 +230,8 @@
 
 ## 3. ZONE MODULE (core/zones.ttslua)
 
+**Removed 2026-06:** Toronto Rising does not use TTS scripting zones. Hand zones for seat layout remain in `U.getHandZone` / `lib/rotational-seat-layout.ttslua`. Heritage reference below is historical only.
+
 **Source (example):** `heritage/core/zones.ttslua` (full-featured reference implementation)
 
 ### 3.1 Core Functions

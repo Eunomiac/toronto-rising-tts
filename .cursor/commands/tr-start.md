@@ -20,15 +20,18 @@ You are starting (or re-scoping) work on **Toronto Rising**, a Vampire: The Masq
 
 4. `.dev/Sychronizing Game Functionality/Reconciler Contract.md` — mutation vs reconcile, `Sync.full` order, dual-apply rules.
 5. `.cursor/rules/toronto-rising-synchronization.mdc` — single authority for `gameState` intent; no hidden side effects in setters.
-6. `.dev/Sychronizing Game Functionality/Dual_apply_survey.md` — skim if the task touches scene, soundscape, lighting, or spawns.
+6. **`.cursor/rules/toronto-rising-multiplayer-authority.mdc`** + **`.dev/Multiplayer Functionality/Preparing For Multiplayer.md` §1** — **mandatory before any player/object/load/world-I/O work.** Policies P1–P10; solo Host does not validate fan-out. Update Event Listener Policy for new handlers.
+7. `.dev/Sychronizing Game Functionality/Bootstrap Authority.md` — tiers A/B/C, fan-out vs clicker, chunk load + join `onLoad`.
+8. `.dev/Sychronizing Game Functionality/Event Listener Policy.md` — host inventory + O(1) guards on hot paths.
+9. `.dev/Sychronizing Game Functionality/Dual_apply_survey.md` — skim if the task touches scene, soundscape, lighting, or spawns.
 
 **Coding policies (build gate enforced)**
 
-7. **`docs/solutions/lua-local-function-order.md`** — **READ FIRST among Lua policies.** Top recurring runtime bug: **`local function` before every caller** in the same file (or forward-declare). Causes `attempt to call a nil value` in `Global.*`, `Global.call`, HUD/object handlers; **not caught by `npm run build`**. Always-on: `.cursor/rules/toronto-rising-lua-local-function-order.mdc`.
-8. `docs/solutions/lua-pcall-policy.md` — **no `pcall`** in production paths unless annotated necessity + impact.
-9. `docs/solutions/lua-wait-api-policy.md` — **no raw `Wait.time` / `Wait.condition` / `Wait.stop`** outside `lib/util.ttslua`; use `U.delay`, `U.waitForCondition`, `U.RunSequence`, etc.
-10. `docs/solutions/lua-ui-full-xml-policy.md` — avoid **`UI.setXml` / `setXmlTable`**; prefer `setAttribute`, `setAttributes`, `setValue`, `show`/`hide`. Gate counts are baseline — do not add call sites without review.
-11. `.dev/AVAILABLE_FUNCTIONS.md` + `lib/util.ttslua` — **reuse existing helpers** (`U.map`, `U.filter`, `U.Type`, …) before writing new ones.
+10. **`docs/solutions/lua-local-function-order.md`** — **READ FIRST among Lua policies.** Top recurring runtime bug: **`local function` before every caller** in the same file (or forward-declare). Causes `attempt to call a nil value` in `Global.*`, `Global.call`, HUD/object handlers; **not caught by `npm run build`**. Always-on: `.cursor/rules/toronto-rising-lua-local-function-order.mdc`.
+11. `docs/solutions/lua-pcall-policy.md` — **no `pcall`** in production paths unless annotated necessity + impact.
+12. `docs/solutions/lua-wait-api-policy.md` — **no raw `Wait.time` / `Wait.condition` / `Wait.stop`** outside `lib/util.ttslua`; use `U.delay`, `U.waitForCondition`, `U.RunSequence`, etc.
+13. `docs/solutions/lua-ui-full-xml-policy.md` — avoid **`UI.setXml` / `setXmlTable`**; prefer `setAttribute`, `setAttributes`, `setValue`, `show`/`hide`. Gate counts are baseline — do not add call sites without review.
+14. `.dev/AVAILABLE_FUNCTIONS.md` + `lib/util.ttslua` — **reuse existing helpers** (`U.map`, `U.filter`, `U.Type`, …) before writing new ones.
 
 **When relevant**
 
@@ -42,6 +45,7 @@ You are starting (or re-scoping) work on **Toronto Rising**, a Vampire: The Masq
 | Rule | Detail |
 | --- | --- |
 | **Single authority** | `gameState` holds intent. Mutate via `S.setStateVal` / `S.setPlayerVal` / domain APIs — never direct `S.state.*`. Reconcilers apply world; setters do not hide reconciliation. |
+| **Multiplayer authority** | Until **TOR-144 (multiplayer E2E)** passes: Tier C = Host only (`U.requireHostForWorldMutation`); fan-out vs clicker; steam ≠ host; join-client Tier C via `Global.call`; object scripts bundle-safe. **Solo Host ≠ multiclient proof.** `toronto-rising-multiplayer-authority.mdc` + Preparing §1. |
 | **Sync entry points** | After mutation: `Sync.player(color)`, `Sync.full()`, or the domain `reconcile*` that owns the slice. No dual apply (eager domain setter + reconcile without fingerprint prime). |
 | **Fail loudly** | No silent fallbacks; no unannotated `pcall`. |
 | **Timing** | All delays through `lib/util.ttslua` helpers only. |

@@ -15,7 +15,6 @@ DEBUG = {}
 U = require("lib.util")
 S = require("core.state")
 M = require("core.main")
-Z = require("core.zones")
 Scenes = require("core.scenes")
 Soundscape = require("core.soundscape")
 C = require("lib.constants")
@@ -786,14 +785,6 @@ function DEBUG.exportControlBoardSnapGroupsToFile(filename, config)
             .. " row(s), CSV body)"
     )
     return rows
-end
-
---- Display zone status
-function DEBUG.showZones()
-    printTestHeader("Zone Status")
-    local zonesLocked = S.getStateVal("zones", "allZonesLocked")
-    print("Zones Locked: " .. tostring(zonesLocked))
-    print("Zone Events Active: " .. tostring(not zonesLocked))
 end
 
 --- Toggle all Anchor-tagged objects:
@@ -4135,26 +4126,6 @@ function DEBUG.logSceneToFile(filename)
     print("DEBUG: Scene info logged to " .. WORKSPACE_DEBUG_WRITE_ROOT .. "/" .. LOG_DIR .. "/" .. filename .. "." .. LOG_EXTENSION)
 end
 
---- Logs zone information to a file
--- @param filename string Optional filename (default: "zone_info")
-function DEBUG.logZonesToFile(filename)
-    filename = filename or "zone_info"
-    local zonesState = S.getStateVal("zones")
-    local timestamp = getTimestamp()
-
-    local content = string.format("Zone Information - %s\n", timestamp)
-    if zonesState then
-        content = content .. JSON.encode_pretty(zonesState)
-    else
-        content = content .. "No zone state found\n"
-    end
-    content = content .. "\n"
-
-    -- Zone dumps are overwritten (not appended) - each dump is a complete snapshot
-    writeToFile(filename, content, "auto", false)
-    print("DEBUG: Zone info logged to " .. WORKSPACE_DEBUG_WRITE_ROOT .. "/" .. LOG_DIR .. "/" .. filename .. "." .. LOG_EXTENSION)
-end
-
 --- Logs a test result to a file
 -- @param testName string Name of the test
 -- @param passed boolean Whether the test passed
@@ -4176,12 +4147,11 @@ function DEBUG.logTestToFile(testName, passed, details, filename)
 end
 
 --- Logs all debug information to separate files
--- Creates: game_state, scene_info, zone_info, and a general debug log
+-- Creates: game_state, scene_info, and a general debug log
 function DEBUG.logAllToFiles()
     print("DEBUG: Logging all information to files...")
     DEBUG.logStateToFile("game_state")
     DEBUG.logSceneToFile("scene_info")
-    DEBUG.logZonesToFile("zone_info")
     DEBUG.logToFile("INFO", "Full debug dump completed", "debug_log")
     print("DEBUG: All logs written under " .. WORKSPACE_DEBUG_WRITE_ROOT .. "/" .. LOG_DIR .. "/")
 end
@@ -5235,7 +5205,6 @@ function DEBUG.help()
     print("\nINSPECTION:")
     print("  showState()              - Full gameState JSON")
     print("  showScene()              - sessionScene + sceneLibrary keys")
-    print("  showZones()              - Zone lock state")
     print("  inspectSoundscapeAudio() - Emitter GUID/tag/effect inventory")
     print("  dumpConditions(color)    - Active conditions + resolved effects")
     print("  dumpEffectiveStats(color) - Effective stat getters (tracker max, BP, …)")
@@ -5250,7 +5219,6 @@ function DEBUG.help()
     print("  findObjectsByRole(query, opts?)        - Scan GM Notes role → GUID rows (opts.seatTag, opts.print)")
     print("  guidsByRole(query, opts?)              - Same scan; returns GUID string array only")
     print("  logSceneToFile(filename?)       - Log scene info to file")
-    print("  logZonesToFile(filename?)       - Log zone info to file")
     print("  logTestToFile(name, passed, details?, filename?) - Log test result")
     print("  logAllToFiles()                   - Log all debug info to files")
     print("  clearAllLogs()                    - Clear all log files (starts new session)")
@@ -5353,7 +5321,6 @@ end
 -- Expose inspection functions
 showState = DEBUG.showState
 showScene = DEBUG.showScene
-showZones = DEBUG.showZones
 inspectSoundscapeAudio = DEBUG.inspectSoundscapeAudio
 
 -- Expose quick setters
@@ -5424,7 +5391,6 @@ logToFile = DEBUG.logToFile
 logStateToFile = DEBUG.logStateToFile
 logNpcPlacementIntentToFile = DEBUG.logNpcPlacementIntentToFile
 logSceneToFile = DEBUG.logSceneToFile
-logZonesToFile = DEBUG.logZonesToFile
 logTestToFile = DEBUG.logTestToFile
 logAllToFiles = DEBUG.logAllToFiles
 

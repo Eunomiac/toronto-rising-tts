@@ -1,7 +1,9 @@
 # Event Listener Policy (TTS)
 
 **Linear:** TOR-197 (event listener early-return audit + policy)
-**Related:** [Bootstrap Authority](Bootstrap%20Authority.md) (TOR-221 load/bootstrap guards), [Performance Audit](Performance%20Audit.md), [Reconciler Contract](Reconciler%20Contract.md), TOR-201 (Clear / token-drop lag)
+**Related:** [Bootstrap Authority](Bootstrap%20Authority.md) (TOR-221 load/bootstrap guards), [Preparing For Multiplayer](../Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md) §1 (P1–P10), [Performance Audit](Performance%20Audit.md), [Reconciler Contract](Reconciler%20Contract.md), TOR-201 (Clear / token-drop lag)
+
+> **Agents:** Any new or changed handler listed below (or added to the codebase) must be registered here with **delivery** (fan-out vs clicker) and **tier** (A/B/C). Until **TOR-144 (multiplayer E2E)** passes, apply [`.cursor/rules/toronto-rising-multiplayer-authority.mdc`](../../.cursor/rules/toronto-rising-multiplayer-authority.mdc) on every edit.
 
 TTS invokes Global and object event handlers on **every** matching world event. Handlers that run heavy logic (module `require`, state scans, reconcile, coroutine polls) on unrelated objects cause session lag — especially `onObjectDrop` during NPC control-board editing.
 
@@ -34,7 +36,6 @@ Columns: **Delivery** = fan-out (all clients) vs clicker-only. **Tier** = A UI /
 | `onObjectLeaveContainer` | `global_script` | Fan-out | B | d10 tag | GM Notes | Med | 4 |
 | `onPlayerConnect` | `global_script` | Fan-out | B | Host | seat assign | Med | 4 |
 | `onPlayerChangeColor` | `global_script` | Fan-out | B | Host | state row | Med | 4 |
-| `ActivateZones` / `DeactivateZones` | `global_script` | Global.call | C | Debug | zones | Low | 7 |
 
 ### `Global.call` targets (mutating → host guard)
 
@@ -44,6 +45,7 @@ Columns: **Delivery** = fan-out (all clients) vs clicker-only. **Tier** = A UI /
 | `GlobalGameboardInstallPaletteSnaps` | C | Done | already guarded |
 | `GlobalGameboardSyncSnapsToggleLabel` | A | — | label only |
 | `GlobalToggleSignalFireState` | C | 5 | signal lights |
+| `GlobalApplyTarotState` | C | — | Pink tarot drawer/deck/button poses (TOR-144 W2) |
 | `GlobalDiceBagClick/RightClick/StorytellerDiceBagClick` | B+C | 5 | rolls |
 | `GlobalSpawn*` / `GlobalDestroy*` / `GlobalRelease*` / `GlobalTagDie*` / `GlobalOnBagDie*` | C | 5 | dice |
 | `GlobalInitiateRoll` / `GlobalRollSpawnDieRequest` / `GlobalAdjustStorytellerPoolKind` | B+C | 5 | rolls |
@@ -69,7 +71,7 @@ Columns: **Delivery** = fan-out (all clients) vs clicker-only. **Tier** = A UI /
 | `npc_control_board_palette.ttslua` | onLoad fan-out | Host install | Done |
 | `dice_bag.ttslua` | clicker + bag hooks | Host spawn via Global | 6 |
 | `ui_signal_candle.ttslua` | clicker → Global.call | Host in Global | 5 |
-| `ui_tarot_button.ttslua` | clicker local | Host before setPosition | 6 |
+| `ui_tarot_button.ttslua` | clicker → `GlobalApplyTarotState` | Host in Global | 6 |
 | `ui_csheet_core.ttslua` | clicker → Global.call | Host on mutators | 5 |
 
 ### HUD handlers (summary)
@@ -79,7 +81,7 @@ Columns: **Delivery** = fan-out (all clients) vs clicker-only. **Tier** = A UI /
 | UI-only | `HUD_togglePanel`, `HUD_selectStorytellerPanel`, modal open | A | — |
 | ST state+world | `HUD_changeScene`, soundscape, scenes apply, `HUD_resetGame`, `HUD_syncAll` | B+C | 7 |
 | Roll | `HUD_roll*` | B (+ Global.call for C) | 5+7 |
-| Debug | `HUD_debug*`, `HUD_toggleZones` | C | 7 |
+| Debug | `HUD_debug*` | C | 7 |
 
 Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 
@@ -89,8 +91,6 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | --- | --- | --- | --- | --- |
 | `onObjectDrop` | `core/global_script.ttslua` | **Very high** | **Pass** | Steam + `requireHostForWorldMutation`; tag gates |
 | `onObjectPickUp` | `core/global_script.ttslua` | High | **Pass** | Steam + host; `npc_control_token` tag |
-| `onObjectEnterZone` | `core/zones.ttslua` via Global | Medium | **N/A (disabled)** | Handlers `nil` until manual `ActivateZones()`; unused in Toronto Rising |
-| `onObjectLeaveZone` | `core/zones.ttslua` via Global | Medium | **N/A (disabled)** | Same; `Z.onLoad` calls `DeactivateZones` |
 | `onObjectRandomize` | `core/global_script.ttslua` | High (rolls) | **Pass** | `hasTag("d10")` before `getTags` / roll FSM |
 | `onObjectLeaveContainer` | `core/global_script.ttslua` | Medium | **Pass** | `hasTag("d10")` before bag-spawn path |
 
@@ -105,14 +105,6 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `Gameboard.tryNpcControlTokenDroppedOnStorytellerDiceBag` | `core/npc_gameboard.ttslua` | **Pass** | Host/Black + `dieKindNearStorytellerDiceBag` before restore/roll |
 | `GlobalGameboardTokenDroppedOnDiceBag` | `core/global_script.ttslua` | **Pass** | tag + player color before `require("core.npc_gameboard")` |
 | `Gameboard.onNpcControlTokenPickUp` | `core/npc_gameboard.ttslua` | **Pass** | `isNpcControlToken` |
-
-## Zones (unused — performance)
-
-Scripting zones are **not** used in current play. Performance contract:
-
-- **`Z.onLoad`** — one state default (`allLocked = true`) + `Global.call("DeactivateZones")` so `onObjectEnterZone` / `onObjectLeaveZone` stay **`nil`** (zero per-event cost).
-- **`Z.hideZones` / `Z.showZones`** — scan `getObjects()` only when invoked manually (debug); not part of normal startup.
-- **`HUD_toggleZones`** — only path that can call `Z.activateZones()`; debug-only.
 
 ## Object-script handlers
 
@@ -161,7 +153,7 @@ end
 
 ## Adding a new listener
 
-1. Prefer **object script** or **zone** scope so Global is not invoked for unrelated objects.
+1. Prefer **object script** scope so Global is not invoked for unrelated objects.
 2. Document the handler in this file (table above).
 3. Implement **guard first**, handler body second — PR review checks guard line count ≤ 3 before any `require` / loop / sync.
 4. If the handler mutates world state, follow [Reconciler Contract](Reconciler%20Contract.md): mutate state, then narrow sync — never hide reconcile in a drop handler unless explicitly spec'd (Gameboard pick-up flags are ephemeral runtime context, not `gameState`).
@@ -172,4 +164,3 @@ end
 - [x] Host authority audit — inventory + `U.requireHostForWorldMutation` + fan-out / Global.call / Sync.player split (TOR-144 prep)
 - [ ] `Sync.full` / `Sync.npcs` call-site pass — see TOR-168, Performance Audit rank 1.
 - [ ] Agent review Prompt 2 — dual-apply on drop paths (TOR-102).
-- [ ] If scripting zones are adopted later: zone GUID/type guard before any logic in `Z.onObjectEnterZone` / `Z.onObjectLeaveZone`.

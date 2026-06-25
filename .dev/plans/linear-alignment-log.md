@@ -313,5 +313,11 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-06-23 | CREATE | TOR-248 | Multi-client TTS session workflow (External Todo, human-gate; parent TOR-141; blocks TOR-144) |
 | 2026-06-23 | UPDATE | TOR-144 | `blockedBy` TOR-248; removed from Focus stack |
 | 2026-06-23 | UPDATE | RUNNING TASKLIST **Focus** | #1 TOR-83, #2 TOR-236, #3 TOR-165; TOR-144 → Also in cycle |
+| 2026-06-24 | CANCEL | TOR-248 | Same-PC multi-client not viable; superseded by friend + Steam invite on second machine |
+| 2026-06-24 | CANCEL | TOR-11 | Phase 1 zones integration — scripting zones module removed |
+| 2026-06-24 | UPDATE | TOR-144 | `removeBlockedBy` TOR-248; description = Preparing §1.5–§2; `living-doc` label |
+| 2026-06-24 | CREATE | TOR-249 | Human gate: run initial multiclient session (Phases A–E); sub of TOR-144; External Todo |
+| 2026-06-24 | COMMENT | TOR-7 | Module removed 2026-06; TOR-11 canceled |
+| 2026-06-24 | UPDATE | RUNNING TASKLIST | TOR-144 unblocked; TOR-248/TOR-11 canceled bullets; TOR-249 human gate |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
