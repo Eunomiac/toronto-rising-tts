@@ -2,8 +2,8 @@
 
 ## Quick Fixes
 
-- [Dice Spawning] Dice for both Storyteller and player rolls can end up spawning too close together when there are many dice in the pool, such that when they are unlocked, they are pushed outwards and scattered by Unity physics. The arcs along which Storyteller dice spawn above Storyteller dice drawers should be expanded to allow room for more dice.  Solution: A spawn arc should be allowed to contain at most ten dice. If a pool contains more than 10 of one type of die, the extra dice should spawn along a new arc that is slightly higher on the y-axis, and offset slightly on the xz plane just to prevent dice from landing on top of each other. Player dice currently spawn at y = 8; this elevated spawn arc should be at y = 10.  Similar elevation logic should be applied to Storyteller rolls.
 - [Player Activation & Scene Presence] When a player's seat is deactivated, any location and/or scene Conditions on that player should be disabled -- by deactivating them, they are no longer present at the location or in the scene. Likewise, if a player's seat is _activated_, any scene and/or location conditions should be enabled on that player.
+- [Dice Rolls] When a player makes a roll in which Blood Surge is active, Take Half should be _disabled_.
 
 ## Active
 
@@ -11,7 +11,7 @@
 - [New Roll Types] These new roll types should be added to the PCs panel alongside the other rolls, and registered as unique roll types.
   * Willpower Roll -- Auto-populate the pool with a number of Standard Dice equal to the player's _undamaged_ Willpower boxes. No Hunger Dice, no Blood Surge, and No WP Reroll should be enabled for this roll.
   * Discipline Roll -- Auto-populate the pool with a number of dice equal to the player's discipline bonus (`C.BloodPotency[character's blood potency rating].discBonus`). Auto-hunger is enabled. Take Half is _disabled_.
-  * Humanity Roll -- Auto-populate the pool with the player's Humanity rating worth of Standard Dice. No Hunger dice, no Blood Surge, and no spending Willpower to reroll.
+  * Humanity Roll -- Auto-populate the pool with the player's Humanity rating worth of Standard Dice. No Hunger dice, no Blood Surge, no Take Half, and no spending Willpower to reroll.
   * Frenzy Roll -- (We already have this roll type, but it should be updated to function as follows). Auto-populate the pool with a number of Standard Dice equal to the player's _undamaged_ Willpower PLUS one-third their Humanity rating, rounded down. No Hunger Dice, no Blood Surge, no Take Half, no WP Reroll.
 
 ---
@@ -28,6 +28,7 @@
 
 ## Processed
 
+2026-06-25 TOR-253 — Dice spawn-arc overflow layering (cap 10/arc; elevate + nudge extras) (shipped)
 2026-06-25 TOR-251 — ST normal grid labels shift by hunger offset (shipped; `refreshStNormalStripLabels`)
 2026-06-25 TOR-252 — NPC roll broadcast wrong figurine for duplicate fullName (promoted; display-name lookup root cause documented)
 2026-06-25 TOR-250 — Deactivated seat when NPC on stage + scene import rules (promoted from Active)

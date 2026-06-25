@@ -342,5 +342,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-06-25 | IN PROGRESS | TOR-165 | WP reroll wave: debounce only chosen dice; cap auto-finish; Confirm during ROLLING wave |
 | 2026-06-25 | IN PROGRESS | TOR-165 | Author refinement: no settle timeout below cap (Confirm-only); per-die `previewOnly` display refresh; lock each rerolled die on settle; cap auto-advances |
 | 2026-06-25 | FOLLOW-UP | TOR-236 | PC control token dropped on ST Normal/Hunger dice bag → Standard roll for that PC (PCs-panel parity); any bag returns token to its column home + flip (`tryPcControlTokenDroppedOnStorytellerDiceBag` / `GlobalGameboardPcTokenDroppedOnDiceBag`) |
+| 2026-06-25 | DONE | TOR-253 | Dice spawn-arc overflow layering: cap 10/arc, extras on higher (+2 y) + slightly-larger concentric arcs (`objects/dice_bag.ttslua` `worldArcPoint`); relatedTo TOR-241 |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

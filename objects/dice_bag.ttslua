@@ -27,6 +27,14 @@ HEIGHT   = 1.5
 STAGING_WORLD_Y = 8
 SCALE    = 1.75
 
+-- Spawn-arc overflow layering: a single arc holds at most MAX_DICE_PER_ARC dice. Overflow
+-- stacks onto higher, slightly-larger concentric arcs so dense pools do not pack/overlap and
+-- scatter on unlock. Player base arc is at STAGING_WORLD_Y (8); each layer adds ARC_LAYER_Y_STEP
+-- (→ 10, 12, …) plus a small radial nudge so dice do not land directly atop the layer below.
+MAX_DICE_PER_ARC = 10
+ARC_LAYER_Y_STEP = 2
+ARC_LAYER_RADIUS_STEP = 0.6
+
 spawnedDice = {}
 
 function onSave()
@@ -188,19 +196,31 @@ local function radiusForStagedDie(die, bagKind, bloodSurgeRouse)
 end
 
 --- Local arc offset converted to world position for one staged die.
+-- Dice beyond MAX_DICE_PER_ARC overflow onto higher concentric arcs (layer): each layer is
+-- spread across only its own dice (so partial top layers stay centered), raised by
+-- ARC_LAYER_Y_STEP, and nudged outward by ARC_LAYER_RADIUS_STEP to avoid stacking.
 -- @param bagColor string
 -- @param arcCenter table|nil
--- @param i number  1-based index along this bag's arc
--- @param total number  dice count on this bag's arc
+-- @param i number  1-based index along this bag's arc (across all layers)
+-- @param total number  dice count on this bag's arc (across all layers)
 -- @param radius number
 -- @return table
 local function worldArcPoint(bagColor, arcCenter, i, total, radius)
-    local localPt = getLocalPointOnArc(i, total, radius)
+    local perArc = MAX_DICE_PER_ARC
+    local layer = math.floor((i - 1) / perArc)
+    local layerIndex = (i - 1) % perArc + 1
+    local layerTotal = math.min(perArc, total - layer * perArc)
+    if layerTotal < 1 then
+        layerTotal = 1
+    end
+    local layerRadius = radius + layer * ARC_LAYER_RADIUS_STEP
+    local layerY = layer * ARC_LAYER_Y_STEP
+    local localPt = getLocalPointOnArc(layerIndex, layerTotal, layerRadius)
     -- ST drawer tray passes a fixed world-space arc center (no bag transform).
     if type(arcCenter) == "table" and type(arcCenter.x) == "number" then
         return {
             x = arcCenter.x + localPt.x,
-            y = arcCenter.y + (localPt.y or 0),
+            y = arcCenter.y + (localPt.y or 0) + layerY,
             z = arcCenter.z + localPt.z,
         }
     end
@@ -208,10 +228,10 @@ local function worldArcPoint(bagColor, arcCenter, i, total, radius)
     local normalBag = getPlayerNormalBag(bagColor)
     if normalBag ~= nil then
         local world = normalBag.positionToWorld({ x = localPt.x, y = 0, z = localPt.z })
-        return { x = world.x, y = STAGING_WORLD_Y, z = world.z }
+        return { x = world.x, y = STAGING_WORLD_Y + layerY, z = world.z }
     end
     local world = self.positionToWorld({ x = localPt.x, y = 0, z = localPt.z })
-    return { x = world.x, y = STAGING_WORLD_Y, z = world.z }
+    return { x = world.x, y = STAGING_WORLD_Y + layerY, z = world.z }
 end
 
 local spawnPostRollDie
