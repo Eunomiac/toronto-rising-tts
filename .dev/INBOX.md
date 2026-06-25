@@ -5,6 +5,7 @@
 ## Active
 
 - [Bug] Whenever the control board / stage is updated (via Apply or Clear), seated NPCs with their lights off immedaitely have their lights toggled on, then immediately faded out to off.  Expected behavior:  A seated NPC whose light is off should not have their light turned on unless their seat is activated.
+- [NPC Stage Spotlights] The position of npc lights is changing. Rather than being positioned in front of the figurine and pointing up, NPC lights should be rotated to point directly down (x- and z- rotations of 0), moved 5 units above the TOP of the figurine on the y-axis, then moved about 3 units towards the table origin (i.e. along a line perpendicular to the figurine's orientation) so that the downward cone of light illuminates the front of the figure.
 
 ---
 
