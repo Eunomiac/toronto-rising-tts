@@ -13,6 +13,9 @@
   * Discipline Roll -- Auto-populate the pool with a number of dice equal to the player's discipline bonus (`C.BloodPotency[character's blood potency rating].discBonus`). Auto-hunger is enabled. Take Half is _disabled_.
   * Humanity Roll -- Auto-populate the pool with the player's Humanity rating worth of Standard Dice. No Hunger dice, no Blood Surge, no Take Half, and no spending Willpower to reroll.
   * Frenzy Roll -- (We already have this roll type, but it should be updated to function as follows). Auto-populate the pool with a number of Standard Dice equal to the player's _undamaged_ Willpower PLUS one-third their Humanity rating, rounded down. No Hunger Dice, no Blood Surge, no Take Half, no WP Reroll.
+- [Roll Options Storyteller Dash Modal] 
+    Standard  Discipline  Willpower  Frenzy   Humanity
+    Rouse     Obliv-Rouse  Remorse   Launch  Goal  Simple
 
 ---
 
@@ -28,6 +31,7 @@
 
 ## Processed
 
+2026-06-25 ST dice arcs — Rage dice → Hunger (inner) arc not shared w/ Werewolf; ST arc cap 7/arc (vs player 10) (shipped)
 2026-06-25 TOR-252 — NPC roll broadcast figurine for duplicate fullName (shipped; authoritative `npcCharacterKey`)
 2026-06-25 TOR-253 — Dice spawn-arc overflow layering (cap 10/arc; elevate + nudge extras) (shipped)
 2026-06-25 TOR-251 — ST normal grid labels shift by hunger offset (shipped; `refreshStNormalStripLabels`)

@@ -207,6 +207,8 @@ A "Werewolf Roll" is a roll that contains some combination of Werewolf Dice and/
 
 The Storyteller has full control of the number of Werewolf Dice and Rage Dice present in the pool: They spawn in whichever quantity of each they desire by clicking the respective Storyteller dice bag during dice assembly.
 
+**Spawn geometry (`objects/dice_bag.ttslua`):** Werewolf rolls mirror the vampire arc layout — **Werewolf dice share the Normal (outer) staging arc** and **Rage dice share the Hunger (inner) arc** (`radiusForSpawnKind` maps `KIND_WEREWOLF → SPAWN_RING_NORMAL`, `KIND_RAGE → SPAWN_RING_HUNGER`) so the two kinds do not overlap. Storyteller drawer-tray arcs are tighter than player rings, so each ST arc holds at most `MAX_DICE_PER_ARC_ST` (7) dice before overflowing onto a higher concentric arc; player arcs use `MAX_DICE_PER_ARC` (10).
+
 Werewolf and Rage dice cannot be combined with any other dice type, and vice versa: Attempting to add a different dice type to a Werewolf Roll, or attempting to add Werewolf or Rage dice to a non-Werewolf roll, should be denied with an alert to the Storyteller.
 
 ### Resolving Werewolf Rolls

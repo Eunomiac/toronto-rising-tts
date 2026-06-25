@@ -18,8 +18,6 @@ SPAWN_RING_HUNGER = 1
 SPAWN_RING_NORMAL = 2
 SPAWN_RING_ROUSE = 3
 SPAWN_RING_BLOOD_SURGE_ROUSE = 4
--- Storyteller Rage dice use a tighter arc (legacy).
-HUNGER_RADIUS_SCALE = 0.75
 ARC      = 90
 ROTATION = 180
 HEIGHT   = 1.5
@@ -31,7 +29,9 @@ SCALE    = 1.75
 -- stacks onto higher, slightly-larger concentric arcs so dense pools do not pack/overlap and
 -- scatter on unlock. Player base arc is at STAGING_WORLD_Y (8); each layer adds ARC_LAYER_Y_STEP
 -- (→ 10, 12, …) plus a small radial nudge so dice do not land directly atop the layer below.
+-- Storyteller drawer-tray arcs are tighter than player rings, so they overflow sooner.
 MAX_DICE_PER_ARC = 10
+MAX_DICE_PER_ARC_ST = 7
 ARC_LAYER_Y_STEP = 2
 ARC_LAYER_RADIUS_STEP = 0.6
 
@@ -171,10 +171,12 @@ local function radiusForSpawnKind(dieKind, bloodSurgeRouse)
     if bloodSurgeRouse == true or dieKind == DK.KIND_BLOOD_SURGE_ROUSE then
         return radiusForRing(SPAWN_RING_BLOOD_SURGE_ROUSE)
     end
-    if dieKind == DK.KIND_HUNGER then
+    -- Werewolf rolls mirror the vampire layout: Werewolf dice share the Normal (outer)
+    -- arc and Rage dice share the Hunger (inner) arc so the two kinds do not overlap.
+    if dieKind == DK.KIND_HUNGER or dieKind == DK.KIND_RAGE then
         return radiusForRing(SPAWN_RING_HUNGER)
     end
-    if dieKind == DK.KIND_NORMAL then
+    if dieKind == DK.KIND_NORMAL or dieKind == DK.KIND_WEREWOLF then
         return radiusForRing(SPAWN_RING_NORMAL)
     end
     if dieKind == DK.KIND_ROUSE or dieKind == DK.KIND_OBLIV_ROUSE then
@@ -206,7 +208,7 @@ end
 -- @param radius number
 -- @return table
 local function worldArcPoint(bagColor, arcCenter, i, total, radius)
-    local perArc = MAX_DICE_PER_ARC
+    local perArc = isStorytellerBag() and MAX_DICE_PER_ARC_ST or MAX_DICE_PER_ARC
     local layer = math.floor((i - 1) / perArc)
     local layerIndex = (i - 1) % perArc + 1
     local layerTotal = math.min(perArc, total - layer * perArc)
@@ -610,23 +612,16 @@ function destroyStagedByScriptState(params)
     return removed
 end
 
---- Local offset on a staging arc (caller supplies ring radius for player bags).
+--- Local offset on a staging arc (caller supplies ring radius).
 -- @param i number  1-based slot index
 -- @param points number  dice count on this arc
--- @param radius number|nil  radial distance; ST Rage uses scaled default when omitted
+-- @param radius number|nil  radial distance (falls back to the Normal-ring RADIUS)
 -- @return table
 function getLocalPointOnArc(i, points, radius)
     i = i - 0.5
     local angle  = ARC / points
     local offset = -ARC / 2 + ROTATION
-    local r = radius
-    if type(r) ~= "number" then
-        r = RADIUS
-        local kind = getDieType()
-        if kind == DK.KIND_RAGE then
-            r = r * HUNGER_RADIUS_SCALE
-        end
-    end
+    local r = type(radius) == "number" and radius or RADIUS
     return {
         x = math.sin(math.rad(angle * i + offset)) * r,
         y = HEIGHT,
