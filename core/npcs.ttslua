@@ -2435,18 +2435,29 @@ local function npcReconcileFingerprint()
 end
 
 --- Step Zero: resolve placement intent from authoring inputs (read-only).
+--- True only for characters in the NPC-managed roster (PCs flagged `isPC` and unknown keys excluded).
+--- The reconciler spawns/parks/seats figurines from this intent, so PC keys leaking in (stale
+--- `placements` rows, instance records) caused "Unknown NPC" / "No stable preload slot" on load.
+--- @param name string|nil
+--- @return boolean
+local function isNpcManagedCharacter(name)
+    return U.Type(name) == "string" and name ~= "" and NPCS.characters[name] ~= nil
+end
+
 --- @return table `{ byCharacter, bySeat, tableKey }`
 resolveNpcPlacementIntent = function()
     local byCharacter = {}
     for _, pl in ipairs(collectSessionStagePlacements()) do
-        byCharacter[pl.characterKey] = {
-            target = "stage",
-            u = pl.u,
-            v = pl.v,
-            yaw = pl.yaw,
-            npcLightMode = pl.npcLightMode,
-            groundLevel = pl.groundLevel,
-        }
+        if isNpcManagedCharacter(pl.characterKey) then
+            byCharacter[pl.characterKey] = {
+                target = "stage",
+                u = pl.u,
+                v = pl.v,
+                yaw = pl.yaw,
+                npcLightMode = pl.npcLightMode,
+                groundLevel = pl.groundLevel,
+            }
+        end
     end
 
     local tableKey = S.getStateVal("seatLayout", "currentTableKey")
@@ -2470,7 +2481,8 @@ resolveNpcPlacementIntent = function()
             physicalSeatAllowed = physicalSeatAllowed,
             areaBoundOccupant = areaBound and assignedChar or nil,
         }
-        if assigned and not areaBound and byCharacter[assignedChar] == nil then
+        if assigned and not areaBound and byCharacter[assignedChar] == nil
+            and isNpcManagedCharacter(assignedChar) then
             if tableHasSlot then
                 byCharacter[assignedChar] = { target = "seat", seatKey = seatKey }
             else
@@ -2480,7 +2492,7 @@ resolveNpcPlacementIntent = function()
     end
 
     for name, _ in pairs(getInstances()) do
-        if U.Type(name) == "string" and byCharacter[name] == nil then
+        if isNpcManagedCharacter(name) and byCharacter[name] == nil then
             byCharacter[name] = { target = "preload" }
         end
     end
