@@ -1,5 +1,10 @@
 <!-- TARGET: ui/player/panel_right_sidebar_referenceLayer.xml -->
 <!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md (generator); .dev/HUDs & Overlays/Player HUD Overview.md (reference layers). -->
+
+<!--
+UI.setAttributes("playerHud_referenceLayer_Red", {color = "rgba(1, 0, 0, 0.15)"})
+
+-->
 <Panel id="playerHud_referenceLayer_@@color@@" class="popupImageContainer" visibility="@@color@@">
 
   <Defaults>

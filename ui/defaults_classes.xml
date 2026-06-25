@@ -178,11 +178,8 @@
 
   <!-- Popup Image Styles (hidden fullscreen image popups) -->
   <Image class="popupImage"
-    width="90%"
+    width="1756"
     active="false" />
-
-  <Image class="popupImageNarrow"
-    width="60%" />
 
   <Panel class="popupImageContainer"
     childForceExpandWidth="false"
