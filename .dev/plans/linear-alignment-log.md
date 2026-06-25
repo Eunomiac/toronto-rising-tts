@@ -320,5 +320,8 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-06-24 | COMMENT | TOR-7 | Module removed 2026-06; TOR-11 canceled |
 | 2026-06-24 | UPDATE | RUNNING TASKLIST | TOR-144 unblocked; TOR-248/TOR-11 canceled bullets; TOR-249 human gate |
 | 2026-06-25 | SHIP | Multiplayer audit W3-W5 | HUD_pcPanel/debugLight ST+host; remove GlobalReportBagDiceCount; drawer coroutine + csheet onLoad + GlobalPostRollModifyPool guards; Event Listener Policy HUD appendix |
+| 2026-06-25 | DONE | TOR-105, TOR-183, TOR-216, TOR-217 | Reference-panel External issues closed (author); map panel left open (TOR-245, TOR-89) |
+| 2026-06-25 | REOPEN | TOR-190, TOR-192, TOR-193 | Coterie infographics not part of reference-panel closure; TOR-190 parent of 192/193; detached from TOR-105 |
+| 2026-06-25 | DONE | TOR-229, TOR-230 | Prince's Court reference panel + coterieData schema; `removeBlockedBy` TOR-232 ← TOR-229/230; commit `0b57677` |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

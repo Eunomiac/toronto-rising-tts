@@ -180,12 +180,12 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 _Blocked: author must define data binding approach before substantial implementation._
 
 - [ ] **Page 4:** PC relationships; Blood Bonds. _(Partial: `lib/json/PC_Relationships.json`, `lib/pcs_data.ttslua`.)_ _(TOR-93)_
-- [ ] **Page 5:** Projects; Equipment; Boons. _(TOR-99)_ — implementation umbrella **TOR-232** (`blockedBy` TOR-228–231 design gates)
+- [ ] **Page 5:** Projects; Equipment; Boons. _(TOR-99)_ — implementation umbrella **TOR-232** (`blockedBy` TOR-228, TOR-231 design gates)
 - [ ] **Projects — design ST panel + modal XML:** Author-owned XML partials before agent wiring. _(TOR-228 — External In Progress, human gate)_
-- [ ] **Projects — coterieData state schema:** Coterie backgrounds/merits/flaws in state. _(TOR-229 — External In Progress, human gate)_
-- [ ] **Projects — Coterie sidebar sheet XML:** Court sidebar display. _(TOR-230 — External In Progress, human gate)_
+- [x] **Projects — coterieData state schema:** Coterie backgrounds/merits/flaws in state. _(TOR-229 — Done 2026-06-25)_
+- [x] **Projects — Coterie sidebar sheet XML:** Prince's Court reference panel. _(TOR-230 — Done 2026-06-25)_
 - [ ] **Projects — finish planning doc:** Complete `.dev/Projects/Project System Overview.md`. _(TOR-231 — External In Progress, human gate)_
-- [ ] **Projects system (mission-critical):** Create/approve/launch/lifecycle per overview doc. _(TOR-232 — Backlog; `blockedBy` TOR-228, TOR-229, TOR-230, TOR-231)_
+- [ ] **Projects system (mission-critical):** Create/approve/launch/lifecycle per overview doc. _(TOR-232 — Backlog; `blockedBy` TOR-228, TOR-231)_
 - [ ] **Page 6:** Character history; scrolling XP log. _(TOR-92)_
 - [ ] **Discipline card grimoire:** Drop zone + page navigation near sheet for stored power/ritual/ceremony cards. _(TOR-205)_
 - [x] **Decals:** Sheet object decals update from Blood Potency (state → UI reconcile). _(TOR-70)_
@@ -229,7 +229,8 @@ _Workshop save, external art, or design TBD outside the repo. Each row has an op
 
 | Item | Notes | Linear |
 |------|--------|--------|
-| Reference images | The Court, Social Combat, XP, Physical Combat, Frenzy, Resonance, Recovery | TOR-105 |
+| Reference images | The Court, Social Combat, XP, Physical Combat, Frenzy, Resonance, Recovery | TOR-105 ✓ |
+| Coterie infographics | Colour Blitz, Jarvis Jacks (author workshop) | TOR-190 _(TOR-192, TOR-193)_ |
 | Impairment overlays | Health, Willpower, Humanity | TOR-104 |
 | Face-to-face table | Layout/table variant in save | TOR-107 |
 | Debug sound window | ST debug panel | TOR-106 |
