@@ -30,6 +30,20 @@ local playCatalogEntryGeneration = {}
 local EMITTER_POST_SWAP_ARM_SECONDS = 0.034
 local cachedEmitters = {}
 
+--- When non-nil (seconds >= 0), scene-transition flows use this fade duration for music/location/weather
+--- crossfades instead of the longer catalog defaults (TOR-147). nil = use catalog defaults.
+local transitionFadeSecondsOverride = nil
+
+--- Returns the active transition fade override when set, else `defaultSeconds`.
+--- @param defaultSeconds number
+--- @return number
+local function transitionFade(defaultSeconds)
+    if transitionFadeSecondsOverride ~= nil then
+        return transitionFadeSecondsOverride
+    end
+    return defaultSeconds
+end
+
 --- Last fingerprint successfully applied by `reconcileFromState` deferred apply (incremental sync skips when unchanged).
 local lastSoundscapeReconcileFingerprint = nil
 --- Fingerprint scheduled but not yet applied (prevents duplicate deferred callbacks within the defer window).
@@ -688,6 +702,71 @@ local function weatherLoopChannelMatches(channelKey, track)
     return channelState.effect == track.effect
 end
 
+--- Fades a held weather channel (same track, no restart) from its current emitter volume up/down to
+--- `naturalVolume` (applying ducking) over `seconds`. Used by the transition fade window so the weather
+--- volume restore after a scene switch is a fade rather than an instant jump (TOR-147 same-track policy).
+--- @param channelKey string
+--- @param naturalVolume number
+--- @param seconds number
+--- @return boolean ok
+local function fadeWeatherHoldToNatural(channelKey, naturalVolume, seconds)
+    local obj = resolveEmitter(channelKey)
+    if obj == nil then
+        return false
+    end
+    local state = ensureState()
+    local channelState = state.channels and state.channels[channelKey] or {}
+    local natural = clamp01(naturalVolume)
+    local applied = weatherVolume(natural)
+    local current = tonumber(channelState.volume) or 0
+    local ok
+    if tonumber(seconds) and seconds > 0 then
+        ok = fadeEmitterVolume(obj, current, applied, seconds)
+    else
+        ok = setEmitterVolume(obj, applied)
+    end
+    updateChannelState(channelKey, {
+        naturalVolume = natural,
+        volume = applied,
+        available = true,
+        volumeControl = ok == true,
+    })
+    return ok == true
+end
+
+--- Fades one weather channel out (or ducks to the lower volume) at blindfold-down (TOR-147).
+--- Emitter-only: keeps the loop clip playing so a matching incoming track holds without restart.
+--- @param channelKey string `"weatherRain"` | `"weatherWind"`
+--- @param currentKey string|nil current rain/wind key on `gameState`
+--- @param incomingKey string|nil incoming rain/wind key from the target scene
+--- @param incomingNatural number|nil incoming natural volume (pre-ducking)
+--- @param seconds number fade duration
+--- @param state table soundscape state
+local function fadeOutTransitionWeatherChannel(channelKey, currentKey, incomingKey, incomingNatural, seconds, state)
+    local ch = state.channels and state.channels[channelKey] or nil
+    if type(ch) ~= "table" or type(ch.effect) ~= "string" or ch.effect == Catalog.SILENT_EFFECT then
+        return
+    end
+    local obj = resolveEmitter(channelKey)
+    if obj == nil then
+        return
+    end
+    local curApplied = tonumber(ch.volume) or 0
+    local sameTrack = type(currentKey) == "string"
+        and currentKey == incomingKey
+        and type(incomingKey) == "string"
+        and incomingKey ~= "none"
+    if sameTrack then
+        local incomingApplied = weatherVolume(tonumber(incomingNatural) or 0)
+        local target = math.min(curApplied, incomingApplied)
+        fadeEmitterVolume(obj, curApplied, target, seconds)
+        updateChannelState(channelKey, { volume = target })
+    else
+        fadeEmitterVolume(obj, curApplied, 0, seconds)
+        updateChannelState(channelKey, { volume = 0 })
+    end
+end
+
 local function playSingleEmitterFadeOutIn(channelKey, entry, volume, fadeSeconds)
     singleEmitterTransitionGeneration[channelKey] = (singleEmitterTransitionGeneration[channelKey] or 0) + 1
     local thisTransitionGeneration = singleEmitterTransitionGeneration[channelKey]
@@ -849,7 +928,7 @@ local function playBackgroundPlaylist(kind, key, playlist, forcedTrack)
     local thisGeneration = musicGeneration
     local oldChannel = resolveActiveMusicChannel(state)
     local targetVolume = tonumber(playlist.volume) or tonumber(track.volume) or 0.45
-    local fadeSeconds = tonumber(Catalog.DEFAULTS.fadeSeconds.music) or 0
+    local fadeSeconds = transitionFade(tonumber(Catalog.DEFAULTS.fadeSeconds.music) or 0)
 
     local okPlay, message, newChannel = playPairedEmitterEntry(track, {
         channelA = "musicA",
@@ -883,7 +962,7 @@ local function playLocationEntry(location)
     local state = ensureState()
     local oldChannel = resolveActiveLocationChannel(state)
     local targetVolume = tonumber(location.volume) or 0.55
-    local fadeSeconds = tonumber(Catalog.DEFAULTS.fadeSeconds.location) or 0
+    local fadeSeconds = transitionFade(tonumber(Catalog.DEFAULTS.fadeSeconds.location) or 0)
 
     local okPlay, message, newChannel = playPairedEmitterEntry(location, {
         channelA = "locationA",
@@ -1290,6 +1369,105 @@ function Soundscape.commitEagerSteadyState(ok)
     else
         Soundscape.invalidateReconcileCache()
     end
+end
+
+--- Opens a scene-transition fade window: subsequent music/location/weather applies use `seconds`
+--- (quick ~1s) crossfades instead of the longer catalog defaults, and matching weather holds fade
+--- their volume rather than snapping (TOR-147). Always pair with `endTransitionFadeWindow`.
+--- @param seconds number fade duration (>= 0)
+function Soundscape.beginTransitionFadeWindow(seconds)
+    local s = tonumber(seconds)
+    if s == nil or s < 0 then
+        s = 0
+    end
+    transitionFadeSecondsOverride = s
+end
+
+--- Closes the transition fade window so later applies use catalog fade defaults again.
+function Soundscape.endTransitionFadeWindow()
+    transitionFadeSecondsOverride = nil
+end
+
+--- Resolves the incoming weather rain/wind keys + natural volumes from a merged applyContext-style
+--- table, so the blindfold-down fade-out can compare outgoing vs incoming (TOR-147 weather policy).
+--- Returns `none`/0 for layers the incoming scene does not specify.
+--- @param context table|nil merged soundscape context (e.g. from `contextFromSite` + narrative merge)
+--- @return table `{ rain = string, rainVolume = number, wind = string, windVolume = number }`
+function Soundscape.previewIncomingWeather(context)
+    local out = { rain = "none", rainVolume = 0, wind = "none", windVolume = 0 }
+    if type(context) ~= "table" then
+        return out
+    end
+    local rainKey, windKey
+    local weatherKey = context.weather or context.weatherCondition
+    if type(weatherKey) == "string" then
+        local preset = Catalog.WEATHER_CONDITIONS[weatherKey]
+        if type(preset) == "table" then
+            rainKey = preset.rain or Catalog.DEFAULTS.rain
+            windKey = preset.wind or Catalog.DEFAULTS.wind
+        end
+    end
+    if context.rain ~= nil then
+        rainKey = context.rain
+    end
+    if context.wind ~= nil then
+        windKey = context.wind
+    end
+    local function trackVolume(layer, key)
+        if type(key) ~= "string" or key == "none" then
+            return 0
+        end
+        local track = Catalog.getWeatherTrack(layer, key)
+        return type(track) == "table" and (tonumber(track.volume) or 0) or 0
+    end
+    out.rain = type(rainKey) == "string" and rainKey or "none"
+    out.wind = type(windKey) == "string" and windKey or "none"
+    out.rainVolume = trackVolume("rain", out.rain)
+    out.windVolume = trackVolume("wind", out.wind)
+    return out
+end
+
+--- Quickly fades the transition-affected ambient lanes (background music, location, weather) toward
+--- silence at blindfold-down, emitter-only, without mutating scene intent in `gameState` (TOR-147).
+--- Channel `volume` is set to its faded target so the subsequent crossfade does not burst the old clip
+--- back to full for a frame. Weather follows the outgoing-vs-incoming policy via `opts.incoming`.
+--- @param opts table|nil `{ seconds?: number, incoming?: table }` — `incoming` from `previewIncomingWeather`
+--- @return boolean ok
+function Soundscape.fadeOutTransitionAmbient(opts)
+    opts = type(opts) == "table" and opts or {}
+    local seconds = tonumber(opts.seconds) or 1.0
+    if seconds < 0 then
+        seconds = 0
+    end
+    local incoming = type(opts.incoming) == "table" and opts.incoming or {}
+    local state = ensureState()
+    if not probeVolumeControl() then
+        return false
+    end
+
+    if state.backgroundMusicEnabled == true then
+        local musicCh = resolveActiveMusicChannel(state)
+        local musicObj = resolveEmitter(musicCh)
+        if musicObj ~= nil then
+            local musicState = state.channels and state.channels[musicCh] or {}
+            fadeEmitterVolume(musicObj, tonumber(musicState.volume) or 0, 0, seconds)
+            updateChannelState(musicCh, { volume = 0 })
+        end
+    end
+
+    if state.location ~= Catalog.DEFAULTS.location then
+        local locCh = resolveActiveLocationChannel(state)
+        local locObj = resolveEmitter(locCh)
+        if locObj ~= nil then
+            local locState = state.channels and state.channels[locCh] or {}
+            fadeEmitterVolume(locObj, tonumber(locState.volume) or 0, 0, seconds)
+            updateChannelState(locCh, { volume = 0 })
+        end
+    end
+
+    fadeOutTransitionWeatherChannel("weatherRain", state.rain, incoming.rain, incoming.rainVolume, seconds, state)
+    fadeOutTransitionWeatherChannel("weatherWind", state.wind, incoming.wind, incoming.windVolume, seconds, state)
+    return true
 end
 
 --- Default delay before applying reconcile (emitters must exist; was 1.0s and caused long stray-audio windows).
@@ -1947,7 +2125,13 @@ function Soundscape.setRainLayer(rainKey)
     end
     if weatherLoopChannelMatches("weatherRain", rain) and ensureState().rain == rainKey then
         local natural = tonumber(rain.volume) or 0.5
-        local okVolume, volumeMessage = setChannelImmediateVolume("weatherRain", natural)
+        local okVolume, volumeMessage
+        if transitionFadeSecondsOverride ~= nil then
+            okVolume = fadeWeatherHoldToNatural("weatherRain", natural, transitionFadeSecondsOverride)
+            volumeMessage = "Rain layer held (transition fade): " .. rainKey
+        else
+            okVolume, volumeMessage = setChannelImmediateVolume("weatherRain", natural)
+        end
         if okVolume then
             ensureState().rain = rainKey
         end
@@ -1957,7 +2141,7 @@ function Soundscape.setRainLayer(rainKey)
         "weatherRain",
         rain,
         tonumber(rain.volume) or 0.5,
-        Catalog.DEFAULTS.fadeSeconds.weather
+        transitionFade(Catalog.DEFAULTS.fadeSeconds.weather)
     )
     if okRain then
         ensureState().rain = rainKey
@@ -1987,7 +2171,13 @@ function Soundscape.setWindLayer(windKey)
     end
     if weatherLoopChannelMatches("weatherWind", wind) and ensureState().wind == windKey then
         local natural = tonumber(wind.volume) or 0.5
-        local okVolume, volumeMessage = setChannelImmediateVolume("weatherWind", natural)
+        local okVolume, volumeMessage
+        if transitionFadeSecondsOverride ~= nil then
+            okVolume = fadeWeatherHoldToNatural("weatherWind", natural, transitionFadeSecondsOverride)
+            volumeMessage = "Wind layer held (transition fade): " .. windKey
+        else
+            okVolume, volumeMessage = setChannelImmediateVolume("weatherWind", natural)
+        end
         if okVolume then
             ensureState().wind = windKey
         end
@@ -1997,7 +2187,7 @@ function Soundscape.setWindLayer(windKey)
         "weatherWind",
         wind,
         tonumber(wind.volume) or 0.5,
-        Catalog.DEFAULTS.fadeSeconds.weather
+        transitionFade(Catalog.DEFAULTS.fadeSeconds.weather)
     )
     if okWind then
         ensureState().wind = windKey

@@ -18,6 +18,14 @@ local Main = require("core.main")
 local TRANSITION_SETTLE_DELAY_SEC = 10
 --- Must exceed blindfold slide-in duration (`overlay_anim_slide_top` = 1s) so heavy work does not hitch the animation.
 local TRANSITION_WORK_LEAD_IN_SEC = 2
+--- Staged transition (TOR-147) phase durations. Fade-out runs concurrently with the 1s blindfold slide;
+--- heavy reconcile then runs alone; new audio fades in only after the reconcile settles.
+local TRANSITION_FADE_OUT_SEC = 1.0
+local TRANSITION_WORK_SETTLE_SEC = 0.75
+local TRANSITION_FADE_IN_SEC = 1.0
+--- Exported so soundscape callers can fade ambient out/in over the same windows as the staged transition.
+HUDBF.TRANSITION_FADE_OUT_SEC = TRANSITION_FADE_OUT_SEC
+HUDBF.TRANSITION_FADE_IN_SEC = TRANSITION_FADE_IN_SEC
 local BLINDFOLD_VARIANT_COUNT = 6
 local TRANSITION_CONDITION_KEY = "hudBlindfold"
 
@@ -181,6 +189,58 @@ function HUDBF.runTransition(workFn, opts)
   end
   HUDBF.scheduleEnd(settleDelaySec)
   return true
+end
+
+--- Staged scene transition (TOR-147): blindfold down → fade-out → heavy work → fade-in → settle → lift.
+--- Each phase is isolated in time via `U.RunSequence` so the resource-heavy reconcile never competes with
+--- audio fade scheduling (prevents lag spikes that hitched the old single-burst path).
+--- @param phases table `{ fadeOut?: fun(), work?: fun(): boolean, string|nil, fadeIn?: fun() }`
+---   - `fadeOut` runs as blindfolds drop (quick ambient fade-out)
+---   - `work` returns `ok, errMsg`; on failure the blindfold lifts immediately and `fadeIn` is skipped
+---   - `fadeIn` runs only after `work` succeeds and its settle window elapses
+--- @param opts table|nil `{ fadeOutSec?, workSettleSec?, fadeInSec?, settleDelaySec?, variant? }`
+function HUDBF.runStagedTransition(phases, opts)
+  if type(phases) ~= "table" then
+    error("hud_blindfold.runStagedTransition: phases must be a table")
+  end
+  opts = opts or {}
+  local fadeOutSec = tonumber(opts.fadeOutSec) or TRANSITION_FADE_OUT_SEC
+  local workSettleSec = tonumber(opts.workSettleSec) or TRANSITION_WORK_SETTLE_SEC
+  local fadeInSec = tonumber(opts.fadeInSec) or TRANSITION_FADE_IN_SEC
+  local settleDelaySec = tonumber(opts.settleDelaySec) or TRANSITION_SETTLE_DELAY_SEC
+
+  HUDBF.beginTransition(opts.variant)
+
+  local workFailed = false
+  U.RunSequence({
+    function()
+      if type(phases.fadeOut) == "function" then
+        phases.fadeOut()
+      end
+      return fadeOutSec
+    end,
+    function()
+      if type(phases.work) == "function" then
+        local ok, errMsg = phases.work()
+        if ok ~= true then
+          workFailed = true
+          if type(errMsg) == "string" and errMsg ~= "" then
+            U.AlertGM(errMsg)
+          end
+        end
+      end
+      return workFailed and 0 or workSettleSec
+    end,
+    function()
+      if not workFailed and type(phases.fadeIn) == "function" then
+        phases.fadeIn()
+      end
+      return workFailed and 0 or fadeInSec
+    end,
+    function()
+      HUDBF.scheduleEnd(workFailed and 0 or settleDelaySec)
+    end,
+  })
 end
 
 return HUDBF

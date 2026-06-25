@@ -126,7 +126,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Thunder indoor ducking:** `triggerThunder` uses `weatherVolume()` like rain/wind. _(TOR-150 — 2026-06-15)_
 - [x] **Weather audio burst on scene switch:** Silent stub + zero gain before looping clip swap; one-frame deferred volume arm; rain/wind hold same effect without restart; library Apply defers `markReconciledToCurrentState` after weather apply. Author verified on scene switch. _(TOR-136)_
 - [x] **Soundscape resync after load:** **Silence for save** no longer wipes `gameState.soundscape` via `stopAll`; load reconcile applies preserved scene audio until **TOR-152** adds explicit active-scene vs Main-only load branch. _(TOR-138)_
-- [ ] **Soundscape fade on blindfold down:** During library Apply, fade BGM + location + weather when blindfolds come down; weather: full fade-out on track change, duck to lower volume on same-track volume mismatch (see Linear). _(TOR-147)_
+- [x] **Soundscape fade on blindfold down:** Staged scene transition (`HUDBF.runStagedTransition`, `U.RunSequence`): blindfold-down fades BGM + location + weather out (~1s, `Soundscape.fadeOutTransitionAmbient`), heavy reconcile runs alone, then new audio fades in (~1s transition fade window) before the settle/lift. Weather: full fade-out on track change, duck to lower volume on same-track mismatch (hold preserved). Applies to library **Apply** and **End scene**; location-only Apply keeps its standard ~4s crossfade. _Solo verified pending author Save & Play; multiclient unverified (TOR-144)._ _(TOR-147)_
 
 ## Lighting
 

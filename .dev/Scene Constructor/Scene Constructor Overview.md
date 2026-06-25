@@ -268,7 +268,15 @@ Implementation: [`core/present_day_clock.ttslua`](../../core/present_day_clock.t
 
 ## Switching scenes
 
-Same choreography as table switches: `core.hud_blindfold.runTransitionAfterLeadIn` closes the Scenes panel and shows one random blindfold variant (1..6) immediately, waits **2s** (`U.waitUntil`, longer than the 1s slide-in) then writes **live** state from the chosen library entry’s `sessionScene` → reconcilers / `Sync.full` → at the start of the **10s** settle delay, `M.setCamera(..., "default")` for all seated players → lift blindfolds once.
+Scene **Apply** uses the **staged** transition `core.hud_blindfold.runStagedTransition` (built on `U.RunSequence`) so heavy reconcile never competes with audio fade scheduling (TOR-147). Phases:
+
+1. **Blindfold down** — close Scenes panel, show one random blindfold variant (1..6); slide-in is 1s.
+2. **Fade-out (~1s, concurrent with slide-in)** — `Soundscape.fadeOutTransitionAmbient` fades BGM + location + weather toward silence (emitter-only; no `gameState` intent change). Weather compares **outgoing vs incoming** (preview from the target bundle): different track → full fade-out; same track, different volume → duck to the **lower** volume (hold without restart, TOR-136).
+3. **Heavy work (settle ~0.75s)** — write **live** state from the chosen library entry’s `sessionScene`, switch table, hosted reconcile, `Sync.full({ skipSoundscape = true })`. New soundscape is **not** applied here.
+4. **Fade-in (~1s)** — inside `Soundscape.beginTransitionFadeWindow`, `Scenes.applyActiveSceneSoundscapeFromSession()` crossfades the **new** scene audio in (quick transition fades instead of the 8s/4s/3s catalog defaults).
+5. **Settle/lift** — at the start of the **10s** settle delay, `M.setCamera(..., "default")` for all seated players → lift blindfolds once.
+
+(Standalone table toggles still use `runTransition`; the legacy single-burst `runTransitionAfterLeadIn` remains for callers that apply everything at once.)
 
 ## Import validation (modal UX)
 
@@ -295,7 +303,7 @@ For each key in `sceneLibrary.order`, activate a pre-declared dummy button and s
 - **New Scene** — **fork** the live table into a new library row (see **Forking a scene** below). Does **not** blindfold or apply state: the physical table and `gameState.sessionScene` stay as they are; only `sceneLibrary` changes so future mirrors target the new row while the previous row stays pinned to the fork-time snapshot.
 - **Unlink Scene** — sets `receivesLiveWrites = false` on the **active** library entry only: **stop mirroring** live `sessionScene` into that entry’s stored `sessionScene`. Does **not** snapshot-freeze; the stored bundle simply stops receiving updates until linked again.
 - **Delete Scene** — arm mode → pick scene → confirm → remove from `scenes` and `order`, clear `activeKey` if deleted, then refresh.
-- **End Scene** — narrative end: notify players, **`SceneLibrary.detachLiveTableFromLibraryMirror()`** (stop `receivesLiveWrites`, clear `lastAppliedKey` and `activeKey` so library UI drops live/mirroring/green selection; stored rows are not overwritten), clear `sessionScene.districtKey` / `siteKey`, stop real-time clock (`useRealTime = false` + overlay ticker), fade location audio / unduck weather, then `Sync.full`. Closes the Scenes panel.
+- **End Scene** — narrative end: notify players, **`SceneLibrary.detachLiveTableFromLibraryMirror()`** (stop `receivesLiveWrites`, clear `lastAppliedKey` and `activeKey` so library UI drops live/mirroring/green selection; stored rows are not overwritten), clear `sessionScene.districtKey` / `siteKey`, stop real-time clock (`useRealTime = false` + overlay ticker). Now runs through the **same staged blindfold transition** (TOR-147): fade old ambient out → `Scenes.applyDefaultNoSceneEnvironment({ skipSoundscape = true })` (heavy default reconcile) → fade **Main**-only ambient in (`Scenes.applyNoSceneSoundscape`) → settle/lift. Closes the Scenes panel.
 
 ## Forking a scene (“New Scene”)
 

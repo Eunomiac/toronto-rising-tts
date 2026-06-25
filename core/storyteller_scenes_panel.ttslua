@@ -893,7 +893,27 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player)
 
     closeScenesPanel()
 
-    HUDBF.runTransitionAfterLeadIn(function()
+    local incomingWeather = Scenes.computeIncomingWeatherPreview(ent.sessionScene)
+
+    HUDBF.runStagedTransition({
+        fadeOut = function()
+            if type(SS.fadeOutTransitionAmbient) == "function" then
+                SS.fadeOutTransitionAmbient({
+                    seconds = HUDBF.TRANSITION_FADE_OUT_SEC,
+                    incoming = incomingWeather,
+                })
+            end
+        end,
+        fadeIn = function()
+            if type(SS.beginTransitionFadeWindow) == "function" then
+                SS.beginTransitionFadeWindow(HUDBF.TRANSITION_FADE_IN_SEC)
+            end
+            Scenes.applyActiveSceneSoundscapeFromSession()
+            if type(SS.endTransitionFadeWindow) == "function" then
+                SS.endTransitionFadeWindow()
+            end
+        end,
+        work = function()
         local clockOkPre, clockErrPre = SceneLibrary.validateSessionSceneClock(ent.sessionScene.clock)
         if not clockOkPre then
             return false, "Apply failed: " .. tostring(clockErrPre)
@@ -963,7 +983,6 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player)
         dKey = string.gsub(string.gsub(dKey, "^%s+", ""), "%s+$", "")
         sKey = string.gsub(string.gsub(sKey, "^%s+", ""), "%s+$", "")
 
-        local merged = {}
         if sKey ~= "" then
             local site = C.Sites[sKey]
             if type(site) ~= "table" then
@@ -972,8 +991,6 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player)
                 U.AlertGM("Unknown districtKey in scene bundle: " .. dKey)
             end
         end
-        Scenes.applyActiveSceneSoundscapeFromSession()
-
         reconcileHostedConditions({ skipPresentation = true })
 
         if type(HUDP.armPinRelocationSceneCast) == "function" then
@@ -992,7 +1009,8 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player)
 
         U.AlertGM("Applied library scene `" .. K .. "` (session bundle, lighting, table, location, soundscape).")
         return true
-    end)
+        end,
+    })
 end
 
 --- Broadcasts a table-wide notice, clears live location keys, stops real-time clock, clears location ambience, then `Sync.full`.
@@ -1016,9 +1034,33 @@ function StorytellerScenesPanel.endSceneNarrative(player)
     clockDraft.dirty = false
     StorytellerScenesPanel.syncClockDraftFromState()
 
-    Scenes.applyDefaultNoSceneEnvironment({ reason = "StorytellerScenesPanel.endScene", skipTransitionBlindfold = true })
+    HUDBF.runStagedTransition({
+        fadeOut = function()
+            if type(SS.fadeOutTransitionAmbient) == "function" then
+                -- No-scene default has no weather; incoming weather "none" fades any active weather fully out.
+                SS.fadeOutTransitionAmbient({ seconds = HUDBF.TRANSITION_FADE_OUT_SEC })
+            end
+        end,
+        work = function()
+            Scenes.applyDefaultNoSceneEnvironment({
+                reason = "StorytellerScenesPanel.endScene",
+                skipTransitionBlindfold = true,
+                skipSoundscape = true,
+            })
+            StorytellerScenesPanel.refresh()
+            return true
+        end,
+        fadeIn = function()
+            if type(SS.beginTransitionFadeWindow) == "function" then
+                SS.beginTransitionFadeWindow(HUDBF.TRANSITION_FADE_IN_SEC)
+            end
+            Scenes.applyNoSceneSoundscape()
+            if type(SS.endTransitionFadeWindow) == "function" then
+                SS.endTransitionFadeWindow()
+            end
+        end,
+    })
 
-    StorytellerScenesPanel.refresh()
     U.AlertGM("End scene: default no-scene environment applied.")
 end
 

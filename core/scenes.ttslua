@@ -773,10 +773,16 @@ local function reconcileHostedConditionsSkipPresentation()
 end
 
 --- @param reason string|nil
-local function syncFullForce(reason)
+--- @param opts table|nil `{ skipSoundscape?: boolean }` — set when caller already eager-applied + primed soundscape
+local function syncFullForce(reason, opts)
+    opts = type(opts) == "table" and opts or {}
     local Sync = require("core.sync")
     if type(Sync.full) == "function" then
-        Sync.full({ force = true, reason = reason or "scenes" })
+        Sync.full({
+            force = true,
+            reason = reason or "scenes",
+            skipSoundscape = opts.skipSoundscape == true,
+        })
     end
 end
 
@@ -797,12 +803,12 @@ local function mutateDefaultNoSceneSessionState()
     S.validateState()
 end
 
---- Soundscape for an on-table scene: site + narrative merge + chronicle weather when scheduled (TOR-152).
-function Scenes.applyActiveSceneSoundscapeFromSession()
-    local dKey = trimSceneKey(S.getStateVal("sessionScene", "districtKey"))
-    local sKey = trimSceneKey(S.getStateVal("sessionScene", "siteKey"))
-
+--- Builds the merged soundscape context (site + narrative) for a sessionScene bundle without applying it.
+--- @param sessionScene table|nil
+--- @return table merged applyContext-style table
+function Scenes.buildSoundscapeContextForSession(sessionScene)
     local merged = {}
+    local sKey = trimSceneKey(type(sessionScene) == "table" and sessionScene.siteKey or nil)
     if sKey ~= "" then
         local site = C.Sites[sKey]
         if type(site) == "table" and type(Soundscape.contextFromSite) == "function" then
@@ -810,8 +816,31 @@ function Scenes.applyActiveSceneSoundscapeFromSession()
         end
     end
     if type(Soundscape.mergeSessionSceneNarrativeIntoContext) == "function" then
-        merged = Soundscape.mergeSessionSceneNarrativeIntoContext(S.getStateVal("sessionScene"), merged)
+        merged = Soundscape.mergeSessionSceneNarrativeIntoContext(sessionScene, merged)
     end
+    return merged
+end
+
+--- Incoming rain/wind preview for a sessionScene bundle, for the blindfold-down fade-out comparison (TOR-147).
+--- @param sessionScene table|nil
+--- @return table `{ rain, rainVolume, wind, windVolume }`
+function Scenes.computeIncomingWeatherPreview(sessionScene)
+    local merged = Scenes.buildSoundscapeContextForSession(sessionScene)
+    if type(Soundscape.previewIncomingWeather) == "function" then
+        return Soundscape.previewIncomingWeather(merged)
+    end
+    return { rain = "none", rainVolume = 0, wind = "none", windVolume = 0 }
+end
+
+--- No-scene (End scene) ambient: Main music only, no location/weather. Exposed so the staged transition
+--- can fade it in after the heavy default-environment reconcile completes (TOR-147).
+function Scenes.applyNoSceneSoundscape()
+    applyMainOnlySoundscapeIntent()
+end
+
+--- Soundscape for an on-table scene: site + narrative merge + chronicle weather when scheduled (TOR-152).
+function Scenes.applyActiveSceneSoundscapeFromSession()
+    local merged = Scenes.buildSoundscapeContextForSession(S.getStateVal("sessionScene"))
 
     local primeSoundscapeReconcile = false
     if type(Soundscape.applyContext) == "function" and next(merged) ~= nil then
@@ -831,7 +860,8 @@ end
 
 --- Applies the defined no-scene environment: Table B1, five PCs, empty NPC world, OutdoorDim, Main only.
 --- Does not mutate library rows, PC map pins, or present-day clock.
---- @param opts table|nil `{ reason?: string, skipTransitionBlindfold?: boolean }`
+--- @param opts table|nil `{ reason?: string, skipTransitionBlindfold?: boolean, skipSoundscape?: boolean }`
+---   `skipSoundscape` defers the Main ambient apply to the caller (staged transition fade-in, TOR-147).
 --- @return boolean
 function Scenes.applyDefaultNoSceneEnvironment(opts)
     opts = type(opts) == "table" and opts or {}
@@ -846,7 +876,9 @@ function Scenes.applyDefaultNoSceneEnvironment(opts)
         Soundscape.invalidateReconcileCache()
     end
 
-    applyMainOnlySoundscapeIntent()
+    if opts.skipSoundscape ~= true then
+        applyMainOnlySoundscapeIntent()
+    end
 
     if C.Tables[Scenes.DEFAULT_NO_SCENE_TABLE_KEY] ~= nil then
         RSL.SetTableTo(Scenes.DEFAULT_NO_SCENE_TABLE_KEY, {
@@ -865,7 +897,7 @@ function Scenes.applyDefaultNoSceneEnvironment(opts)
         GameStateOverlay.resetRealTimeCarry()
     end
 
-    syncFullForce(opts.reason or "default_no_scene")
+    syncFullForce(opts.reason or "default_no_scene", { skipSoundscape = true })
 
     if type(GameStateOverlay.reconcileFromState) == "function" then
         GameStateOverlay.reconcileFromState()
@@ -909,7 +941,7 @@ function Scenes.restoreActiveSceneWorld(opts)
         GameStateOverlay.resetRealTimeCarry()
     end
 
-    syncFullForce(opts.reason or "restore_active_scene")
+    syncFullForce(opts.reason or "restore_active_scene", { skipSoundscape = true })
 
     if type(GameStateOverlay.stopTicker) == "function" then
         GameStateOverlay.stopTicker()
