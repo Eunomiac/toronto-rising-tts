@@ -1489,29 +1489,32 @@ local function finishWpRerollWaveFromRolling(color)
 end
 
 --- When reroll cap N is reached and every chosen die has locked after settle, end the wave.
+--- @return boolean true when the wave was ended (→ POST_ROLL)
 local function tryFinishWpRerollWaveWhenCapSatisfied(color)
     local active = getActive(color)
     if active == nil or active.phase ~= C.RollPhase.ROLLING then
-        return
+        return false
     end
     if active.willpower == nil or active.willpower.wpRerollWave ~= true then
-        return
+        return false
     end
     local scope = wpRerollScopeForActive(active)
     local cap = RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_DICE_REROLLED)
+    -- "Reroll all" scopes and uncapped waves have no maximum to auto-finish on; the player
+    -- must click Confirm (TOR-165 requirement 1).
     if scope == "all_optional" or scope == "all_mandatory" then
-        return
+        return false
     end
     if cap <= 0 then
-        return
+        return false
     end
     if countWpRerollChosen(active) < cap then
-        return
+        return false
     end
     if not allChosenWpDiceLocked(color, active) then
-        return
+        return false
     end
-    finishWpRerollWaveFromRolling(color)
+    return finishWpRerollWaveFromRolling(color)
 end
 
 --- True when global onObjectRandomize should schedule the settle debounce for this die.
@@ -1538,16 +1541,22 @@ function RC.isPhysicalDieRandomizeEvent(obj)
 end
 
 --- Triggered by onObjectRandomize (via global_script) when any of a player's dice
--- settle. Resets the debounce timer in both ROLLING and POST_ROLL phases.
+-- settle. Resets the debounce timer that fires RC.onDiceSettled → RC.recalculate.
 --
--- ROLLING:   die settling means the initial roll is in progress.
--- POST_ROLL: die settling means a Willpower reroll or correction is in progress.
--- In both cases the debounce fires RC.onDiceSettled → RC.recalculate.
+-- ROLLING (initial roll): die settling means the initial roll is in progress → debounce
+--   to POST_ROLL.
+-- POST_ROLL: a manual correction is in progress → debounce re-reads the table.
+--
+-- During a **Willpower reroll wave** the debounce is intentionally **not** scheduled:
+-- partial rerolls must not time out to confirmation (TOR-165 requirement 1). Each rerolled
+-- die instead refreshes the display and is locked on settle via the per-die settle callback
+-- in RC.onWpRerollDieRandomized; the wave ends only at the cap or when the player clicks
+-- Confirm.
 --
 -- No die values are captured here; reading happens in RC._getDiceForRoll.
 --
 -- @param color string  Player seat color
--- @param obj Object|nil die that randomized (required during WP reroll wave)
+-- @param obj Object|nil die that randomized
 -- @usage RC.onDieSettledSignal("Red", dieObj)   -- called from global_script.onObjectRandomize
 function RC.onDieSettledSignal(color, obj)
     if U.Type(color) ~= "string" then return end
@@ -1557,14 +1566,9 @@ function RC.onDieSettledSignal(color, obj)
     if active.tookHalf and active.takeHalfAwaitingRouse ~= true then return end
     if active.phase ~= C.RollPhase.ROLLING and active.phase ~= C.RollPhase.POST_ROLL then return end
 
+    -- WP reroll wave: no settle timeout — the per-die settle callback drives display + lock + cap.
     if active.willpower ~= nil and active.willpower.wpRerollWave == true then
-        if not U.isGameObject(obj) then
-            return
-        end
-        local chosen = active.willpower.rerollRandomizedGuids
-        if type(chosen) ~= "table" or chosen[obj.getGUID()] ~= true then
-            return
-        end
+        return
     end
 
     local myHandle = string.format("%d_%d", math.floor(os.time() * 1000), math.random(99999))
@@ -1601,9 +1605,13 @@ end
 --   - Manual corrections (player adjusts dice on the table, clicks Recalculate)
 --
 -- @param color string
+-- @param previewOnly boolean|nil  When true, refresh dice/result display but stay in the
+--        current phase (no ROLLING → POST_ROLL transition, no camera, no auto-broadcast).
+--        Used during a Willpower reroll wave so partial rerolls update the panel without
+--        timing out to confirmation (TOR-165).
 -- @return boolean  true if recalculation ran; false if preconditions not met
 -- @usage RC.recalculate("Red")
-function RC.recalculate(color)
+function RC.recalculate(color, previewOnly)
     U.Val("RC.recalculate()", {color = color}, U.Type(color) == "string", "color must be a string")
 
     local active = getActive(color)
@@ -1693,8 +1701,10 @@ function RC.recalculate(color)
         end
     end
 
-    -- Transition ROLLING → POST_ROLL on first settle; stay in POST_ROLL for recalculates
-    if active.phase == C.RollPhase.ROLLING then
+    -- Transition ROLLING → POST_ROLL on first settle; stay in POST_ROLL for recalculates.
+    -- previewOnly keeps the wave open (display refresh only): camera + auto-broadcast below
+    -- naturally no-op because the phase remains ROLLING.
+    if not previewOnly and active.phase == C.RollPhase.ROLLING then
         active.phase       = C.RollPhase.POST_ROLL
         local wpOffered  = willpowerAllowed(active.rollType)
             and RO.isWillpowerSpendAllowedByOptions(active)
@@ -1818,8 +1828,13 @@ function RC.onWpRerollDieRandomized(color, obj)
             end
 
             _wpDieLockWaitTokens[timerKey] = nil
+            -- Rerolled die settled: lock it (cannot reroll the same die twice — req 3),
+            -- then either auto-finish at the cap (req 2) or refresh the panel display
+            -- without ending the wave (req 1).
             o.setLock(true)
-            tryFinishWpRerollWaveWhenCapSatisfied(color)
+            if not tryFinishWpRerollWaveWhenCapSatisfied(color) then
+                RC.recalculate(color, true)
+            end
         end,
         function()
             return _wpDieLockWaitTokens[timerKey] ~= nonce

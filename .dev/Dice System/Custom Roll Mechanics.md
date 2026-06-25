@@ -31,7 +31,11 @@ Use this bucket for **rules that only change how pool math / result class is com
 - Implemented in `core/roll_controller.ttslua` (phases, `willpower`, locking helpers, `RC.onWpRerollDieRandomized`, etc.) and `core/global_script.ttslua` (`onObjectRandomize`, HUD handlers, `GlobalRollSeatCamera`).
 - **Per-die locks after WP randomize** use **`U.runAfterObjectPhysicsSettled`** (**`Wait.condition`**, same rest semantics as **`U.waitRestingSequence`**) instead of **`U.waitUntil(obj)`** (**`CheckCoroutine`** is brittle from **`onObjectRandomize`** — see **`core/lighting.ttslua`**). Max timeout: **`C.WP_REROLL_DIE_REST_MAX_WAIT_SECONDS`**.
 - **Parameters** for that behavior still belong in `active.rollOptions` (e.g. can reroll hunger, number of rerolls, dice per spend) so new tuning does not require new globals.
-- **WP reroll wave (TOR-165):** settle debounce during `wpRerollWave` only counts dice in `willpower.rerollRandomizedGuids` (unlocked pool dice no longer reset the timer). Cap **N** auto-ends the wave when **N** chosen dice have locked after settle; **Confirm** is available during the ROLLING wave to finish early with fewer than **N** rerolls → POST_ROLL.
+- **WP reroll wave (TOR-165):** during `wpRerollWave` the settle debounce is **not** scheduled (`onDieSettledSignal` returns early) — partial rerolls never time out to confirmation. Each rerolled die, on settle, is driven by the per-die callback in `onWpRerollDieRandomized`:
+  - **Lock on settle** — a rerolled die is `setLock(true)` once resting (cannot reroll the same die twice).
+  - **Display refresh** — `RC.recalculate(color, true)` (`previewOnly`) rebuilds `diceFaces`/`result` and `notifyStateChanged` so the player panel updates **without** leaving the wave (stays ROLLING).
+  - **Cap auto-finish** — when the `numberOfDiceRerolled` cap **N** is reached and all chosen dice are locked, `finishWpRerollWaveFromRolling` → full `recalculate` → POST_ROLL (no Confirm needed).
+  - **Confirm** — for fewer-than-cap (or `wpRerollScope` "all") waves, **Confirm** is the only way forward; `confirmRoll` detects ROLLING + `wpRerollWave` and ends the wave → POST_ROLL.
 
 Use this bucket for **what happens on the table** between phases, independent of success counting.
 
