@@ -3942,6 +3942,81 @@ end
 Gameboard.restoreNpcControlTokenHome = restoreNpcControlTokenHome
 Gameboard.tryNpcControlTokenDroppedOnStorytellerDiceBag = tryNpcControlTokenDroppedOnStorytellerDiceBag
 
+--- Re-pin a `pc_control_token` to its color seat-row column; flip matches current
+--- `seatSlots[color].isPresent` (state authoritative — TOR-236). This is the token's home,
+--- so it doubles as "return to previous position and orientation".
+--- @param token Object
+--- @param color string|nil player seat color (defaults to GM Notes `pcToken:<Color>`)
+--- @return boolean restored
+local function restorePcControlTokenHome(token, color)
+    if not isPcControlToken(token) then
+        return false
+    end
+    color = color or resolvePcTokenSeatColor(token)
+    if type(color) ~= "string" or color == "" then
+        return false
+    end
+    local board = getControlBoard()
+    if not isGameObject(board) then
+        return false
+    end
+    local pcCatalog = seatRowCatalogByPcColor(Gameboard.buildControlBoardSnapCatalog(board, nil))
+    local entry = pcCatalog[color]
+    if type(entry) ~= "table" then
+        return false
+    end
+    local NPCS = require("core.npcs")
+    mirrorSeatRowControlToken(token, board, entry, NPCS.resolvePlayerSeatPresence(color))
+    return true
+end
+
+--- Storyteller drops a `pc_control_token` on a dice bag → always return the token home, and
+--- on the Normal/Hunger bag report the PC color so the caller can initiate a Standard roll
+--- (just like the "Standard" button in the ST PCs panel). Other bags do nothing but still
+--- return the token home (TOR-236 follow-up).
+--- @param token Object
+--- @param playerColor string|nil
+--- @return boolean consumed true when the drop hit an ST bag and was handled
+--- @return string|nil rollColor PC seat color to start a Standard roll for (Normal/Hunger only)
+local function tryPcControlTokenDroppedOnStorytellerDiceBag(token, playerColor)
+    if not isPcControlToken(token) then
+        return false
+    end
+    if playerColor ~= "Black" and playerColor ~= "Host" then
+        return false
+    end
+    if token.getPosition == nil then
+        return false
+    end
+    local board = getControlBoard()
+    if isGameObject(board) and isTokenOnMinimapTokenSurface(board, token) then
+        return false
+    end
+    local palette = getControlBoardPalette()
+    if isGameObject(palette) and Palette.isTokenOnPaletteBoard(palette, token) then
+        return false
+    end
+    local bagKind = dieKindNearStorytellerDiceBag(token.getPosition())
+    if bagKind == nil then
+        return false
+    end
+    local color = resolvePcTokenSeatColor(token)
+    if type(color) ~= "string" or color == "" then
+        return false
+    end
+
+    restorePcControlTokenHome(token, color)
+
+    local rollColor = nil
+    if bagKind == DK.KIND_NORMAL or bagKind == DK.KIND_HUNGER then
+        rollColor = color
+    end
+    return true, rollColor
+end
+
+Gameboard.restorePcControlTokenHome = restorePcControlTokenHome
+Gameboard.tryPcControlTokenDroppedOnStorytellerDiceBag = tryPcControlTokenDroppedOnStorytellerDiceBag
+
 --- Position static table/seat markers for active table.
 --- @param opts table|nil `{ force?: boolean }`
 function Gameboard.reconcileControlBoardFromState(opts)

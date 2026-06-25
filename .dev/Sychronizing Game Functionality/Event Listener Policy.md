@@ -130,7 +130,8 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `NPCS.resolveNpcNameFromFigurine` | `core/npcs.ttslua` | **Pass** | GM Notes, then O(1) `figurineGuidToNpcName` cache (rebuilt on bulk instance replace) |
 | `Gameboard.onNpcControlTokenDropped` | `core/npc_gameboard.ttslua` | **Pass** | `isNpcControlToken` + palette/anchor flags before `waitForCondition` |
 | `Gameboard.tryNpcControlTokenDroppedOnStorytellerDiceBag` | `core/npc_gameboard.ttslua` | **Pass** | Host/Black + `dieKindNearStorytellerDiceBag` before restore/roll |
-| `GlobalGameboardTokenDroppedOnDiceBag` | `core/global_script.ttslua` | **Pass** | tag + player color before `require("core.npc_gameboard")` |
+| `Gameboard.tryPcControlTokenDroppedOnStorytellerDiceBag` | `core/npc_gameboard.ttslua` | **Pass** | `isPcControlToken` + Host/Black + `dieKindNearStorytellerDiceBag` before restore; Normal/Hunger → returns `rollColor` |
+| `GlobalGameboardTokenDroppedOnDiceBag` / `GlobalGameboardPcTokenDroppedOnDiceBag` | `core/global_script.ttslua` | **Pass** | tag + steam-ST + `requireHostForWorldMutation` before `require("core.npc_gameboard")`; PC wrapper owns `RC.initiateRoll` |
 | `Gameboard.onNpcControlTokenPickUp` | `core/npc_gameboard.ttslua` | **Pass** | `isNpcControlToken` |
 
 ## Object-script handlers

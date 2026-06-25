@@ -8,6 +8,11 @@
 ## Active
 
 - [Automatic Table Selection] In `C.Tables`, we currently have a `Table A`, a `Table B`, and then several variants of `Table B` based on the number of available NPC slots at the table -- `Table B1`, `Table B2`, etc. I'd like to change this so that, when a table is called by its letter alone (e.g. "`Table B`"), the script checks to see if their are numbered variants ("`Table B<#>`"). If NOT, then there must be an entry for the table as given ("`Table B`"), and that is the data that should be returned.  If there ARE variants, then there will not be `Table B` data -- instead, the script checks how many NPC seats are occupied, appends that number to the table reference, and loads the data for that table automatically. (This will require changing the current `Table B` entry to `Table B5`, corresponding to the available NPC slots -- even though only four are defined, there are technically enough sides for five, so this is where that particular table model should be registered. With no `Table B` entry, the number of occupied NPC slots must be counted and appended to the key, and that data returned.  If that key cannot be found -- e.g. no `Table B0` when zero NPC slots are occupied -- throw an error.)
+- [New Roll Types] These new roll types should be added to the PCs panel alongside the other rolls, and registered as unique roll types.
+  * Willpower Roll -- Auto-populate the pool with a number of Standard Dice equal to the player's _undamaged_ Willpower boxes. No Hunger Dice, no Blood Surge, and No WP Reroll should be enabled for this roll.
+  * Discipline Roll -- Auto-populate the pool with a number of dice equal to the player's discipline bonus (`C.BloodPotency[character's blood potency rating].discBonus`). Auto-hunger is enabled. Take Half is _disabled_.
+  * Humanity Roll -- Auto-populate the pool with the player's Humanity rating worth of Standard Dice. No Hunger dice, no Blood Surge, and no spending Willpower to reroll.
+  * Frenzy Roll -- (We already have this roll type, but it should be updated to function as follows). Auto-populate the pool with a number of Standard Dice equal to the player's _undamaged_ Willpower PLUS one-third their Humanity rating, rounded down. No Hunger Dice, no Blood Surge, no Take Half, no WP Reroll.
 
 ---
 

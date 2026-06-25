@@ -1943,6 +1943,43 @@ function GlobalGameboardTokenDroppedOnDiceBag(params)
     return Gameboard.tryNpcControlTokenDroppedOnStorytellerDiceBag(token, playerColor) == true
 end
 
+--- PC control token on a Storyteller dice bag → always return the token to its control-board
+--- home (color column + present/absent flip); on the Normal/Hunger bag also initiate a Standard
+--- roll for that PC, as if the "Standard" button were pressed in the ST PCs panel (TOR-236).
+--- @param params table `{ token: Object, playerColor?: string }`
+--- @return boolean true when the drop was consumed
+function GlobalGameboardPcTokenDroppedOnDiceBag(params)
+    if type(params) ~= "table" then
+        return false
+    end
+    local token = params.token
+    local playerColor = params.playerColor
+    if type(playerColor) ~= "string" or not isStorytellerSteamPlayer(playerColor) then
+        return false
+    end
+    if not U.requireHostForWorldMutation("GlobalGameboardPcTokenDroppedOnDiceBag") then
+        return false
+    end
+    if token == nil or token.hasTag == nil or token.hasTag("pc_control_token") ~= true then
+        return false
+    end
+    local Gameboard = require("core.npc_gameboard")
+    if type(Gameboard.tryPcControlTokenDroppedOnStorytellerDiceBag) ~= "function" then
+        return false
+    end
+    local consumed, rollColor = Gameboard.tryPcControlTokenDroppedOnStorytellerDiceBag(token, playerColor)
+    if consumed ~= true then
+        return false
+    end
+    if type(rollColor) == "string" and rollColor ~= "" and RC ~= nil then
+        local ok = RC.initiateRoll(rollColor, { rollType = C.RollType.STANDARD, initiator = "storyteller" })
+        if ok then
+            GlobalSpawnDefaultPoolDiceForActive({ color = rollColor })
+        end
+    end
+    return true
+end
+
 --- When a figurine is dropped after dragging, refresh its paired NPC spotlight.
 function onObjectDrop(playerColor, object)
     if not isStorytellerSteamPlayer(playerColor) then
@@ -1968,6 +2005,13 @@ function onObjectDrop(playerColor, object)
         local Gameboard = require("core.npc_gameboard")
         if Gameboard.onNpcControlTokenDropped then
             Gameboard.onNpcControlTokenDropped(object, playerColor)
+        end
+        return
+    end
+    if object.hasTag("pc_control_token") == true then
+        local pos = object.getPosition ~= nil and object.getPosition() or nil
+        if pos ~= nil and storytellerDiceBagKindNearPosition(pos) ~= nil then
+            GlobalGameboardPcTokenDroppedOnDiceBag({ token = object, playerColor = playerColor })
         end
     end
 end
