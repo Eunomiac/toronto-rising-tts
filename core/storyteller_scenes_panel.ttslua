@@ -1121,7 +1121,7 @@ function StorytellerScenesPanel.onHudClick(player, button, id)
     end
 end
 
---- TTS stacks sibling Panels poorly when only `active` is false — district buckets use `visibility="None"` so they do not occlude the generic list or each other.
+--- Site-modal buckets are flowing `<VerticalLayout>` containers (TOR-83); toggling `active`/`visibility="None"` removes the inactive district buckets from layout so only the matching district bucket and the generic bucket render, stacked without overlap.
 local SITE_MODAL_BUCKET_VISIBILITY_ON = "Black|Host"
 local SITE_MODAL_BUCKET_VISIBILITY_OFF = "None"
 
