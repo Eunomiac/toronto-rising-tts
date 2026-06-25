@@ -24,12 +24,13 @@ Same as [Dice-E2E](Dice-E2E.md): one client, **Black** recommended for Storytell
 | `GB_E2E_TABLE_KEY` | `Table A` | NPC1 seat tests |
 | `GB_E2E_UV_A` | `u=0.18, v=0.72` | Stable on-board snap |
 | `GB_E2E_UV_B` | `u=0.42, v=0.55` | Move / layoutLock tests |
+| `GB_E2E_PC_ABSENT` | `Brown` | Suite D2 / reload PC-token absent probe (Scenes-E2E) |
 
 **Session prereqs (once per Save & Play):**
 
 1. Host, seat **Black**.
 2. **Save & Play** (bundled Lua).
-3. Workshop: `STAGE_BOARD`, `CONTROL_BOARD`, `CONTROL_BOARD_PALETTE`, `npc_control_token` set — `lua DEBUG.spawnNpcControlBoardTokens()` if missing.
+3. Workshop: `STAGE_BOARD`, `CONTROL_BOARD`, `CONTROL_BOARD_PALETTE`, `npc_control_token` set — `lua DEBUG.spawnNpcControlBoardTokens()` if missing; **`pc_control_token`** per PC color with `pcToken:<Color>` GM Notes (TOR-236).
 4. `lua gbE2ePrereqCheck()` → **`[gbConfirm] PASS`**.
 
 ---
@@ -42,6 +43,7 @@ Same as [Dice-E2E](Dice-E2E.md): one client, **Black** recommended for Storytell
 | `gbE2eReset()` | Empty `placements`, fixture NPCs in preload |
 | `gbE2eRunSmoke()` | Automated S0–S7 + **HUMAN GATE** scene Apply |
 | `gbE2eContinue()` | After human gate (`scene_apply` or `reload`) |
+| `gbE2eVerifyPcTokens()` | PC tokens pinned + flip matches `seatSlots[color].isPresent` (TOR-152 / TOR-236) |
 | `gbE2eRunFull()` | Deep F/G/H suites (+ optional reload gate) |
 | `gbE2eRunDeferred()` | **Expected FAIL** until D172 ships (D173 + D174 + D175 + D177b pass when shipped) |
 | `gbConfirm(label, { … })` | Single-step assert |
@@ -104,6 +106,7 @@ When smoke automated passes, the macro prints:
 | Live `placements` match library row keys | No overlapping keys |
 | Figurines on stage at row u/v | Missing figurine |
 | Tokens mirrored on CONTROL_BOARD | Token not on board |
+| PC `pc_control_token` flip matches `seatSlots[color].isPresent` | Wrong column or face-up/down vs state |
 | Intent **stage** per placement key | Intent seat/preload |
 | TOR-177: unoccupied `NPCn` → 0 `SEAT_FIGURE` duplicates | `probeDuplicateSeatFigure > 0` |
 
@@ -136,7 +139,7 @@ If full automated passes:
 2. `lua gbE2ePrereqCheck()`
 3. `lua gbE2eContinue()` → **`gbE2eContinue:reload`**
 
-**Pass if:** Placements from pre-reload snapshot still present.
+**Pass if:** Placements from pre-reload snapshot still present; **`gbE2eVerifyPcTokens`** PASS (reload gate also asserts PC tokens when snapshot includes `seatSlots`).
 
 ---
 

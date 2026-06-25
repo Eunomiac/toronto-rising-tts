@@ -12,7 +12,7 @@ Update these playbooks in the **same PR** when you change behavior they cover:
 | --- | --- |
 | Roll FSM, bags, WP, Take Half, rouse, ST rolls | [Dice-E2E.md](Dice-E2E.md) + [Dice-E2E-Guide.md](Dice-E2E-Guide.md) |
 | Scene library apply, clock, present day, RT ticker, seats, map pins | [Scenes-E2E.md](Scenes-E2E.md) |
-| NPC gameboard Apply/Clear, stage placements, tokens, reconcile | [Gameboard-E2E.md](Gameboard-E2E.md) |
+| NPC gameboard Apply/Clear, stage placements, tokens, reconcile, PC seat-row tokens | [Gameboard-E2E.md](Gameboard-E2E.md) + [Scenes-E2E.md](Scenes-E2E.md) Suite D2 (TOR-152 load mirror) |
 | New/removed `DEBUG.*` console helpers | [TESTING.md](../TESTING.md) + relevant playbook |
 | Purge/replace automated test panels | [TESTING.md](../TESTING.md), [RUNNING TASKLIST.md](../RUNNING%20TASKLIST.md) |
 
@@ -57,7 +57,7 @@ Full rules, layout (100-char banner with spaces around text), and a copy-paste t
 | [Scenes-E2E.md](Scenes-E2E.md) | Scene smoke (A–E) + deep suites: present day clock, RT autoprogression, clock draft, seat/map pins (absent vs present), library flush (F–N) |
 | [Dice-E2E.md](Dice-E2E.md) | Dice E2E — streamlined `U.RunSequence` blocks only (run from Suite 0; see Guide for workflow) |
 | [Dice-E2E-Guide.md](Dice-E2E-Guide.md) | Dice E2E reference: helpers, conventions, prerequisites, sign-off |
-| [Gameboard-E2E.md](Gameboard-E2E.md) | Gameboard smoke (Apply/Clear/mirror/Z flip) + scene library Apply gate + full reconcile suites + deferred TOR-172/173/175/174 probes |
+| [Gameboard-E2E.md](Gameboard-E2E.md) | Gameboard smoke (Apply/Clear/mirror/Z flip) + scene library Apply gate + full reconcile suites + `gbE2eVerifyPcTokens` (TOR-152 / TOR-236) + deferred TOR-172/173/175/174 probes |
 
 ## Related docs
 

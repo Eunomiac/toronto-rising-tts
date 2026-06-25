@@ -6,7 +6,7 @@ Solo dev: one client is enough. Storyteller panels use `visibility="Host"`, not 
 
 Ground truth: [`core/storyteller_scenes_panel.ttslua`](../../core/storyteller_scenes_panel.ttslua), [`core/present_day_clock.ttslua`](../../core/present_day_clock.ttslua), [`core/game_state_overlay.ttslua`](../../core/game_state_overlay.ttslua), [`core/hud_player.ttslua`](../../core/hud_player.ttslua), [`.dev/Scene Constructor/Scene Constructor Overview.md`](../Scene%20Constructor/Scene%20Constructor%20Overview.md), [`.dev/HUD_FUNCTIONS.md`](../HUD_FUNCTIONS.md) § Scenes.
 
-**Deferred in code (document only):** TOR-142 (four clock-aware Apply buttons), TOR-152 (Play load scene restore), TOR-153 (unmappable pin hide rules).
+**Deferred in code (document only):** TOR-142 (four clock-aware Apply buttons), TOR-152 (Play load **full** scene restore — PC token mirror probe ships in Suite D2; full restore path may still gap), TOR-153 (unmappable pin hide rules).
 
 ## Deterministic test conventions
 
@@ -195,7 +195,43 @@ print(JSON.encode_pretty(S.getStateVal("soundscape")))
 
 **Pass if:** Emitters silent after prep; `soundscape` intent **not** wiped; after load, audio eventually matches persisted intent (TOR-138).
 
-**Known gap:** Explicit active-scene vs Main-only load branch is **TOR-152** — do not fail TOR-141 on missing full scene restore until shipped.
+**Known gap:** Explicit active-scene vs Main-only load branch is **TOR-152** — do not fail TOR-141 on missing **full** scene restore until shipped.
+
+#### D2 — PC control tokens after reload (TOR-152 / TOR-236)
+
+**Goal:** After save/reload, CONTROL_BOARD `pc_control_token`s mirror persisted `seatSlots[<color>].isPresent` from scene library / live session — pinned to each PC seat-row column, face-up = present, face-down = absent.
+
+**Setup (before step 3 Save):**
+
+1. Live scene with table layout (Suite A row OK).
+2. Toggle **Brown** absent (`scenes_seat_Brown`) — or another PC color you record.
+3. Leave at least one other PC **present** (e.g. Pink).
+
+```lua
+print("seatSlots Brown", JSON.encode(S.getStateVal("sessionScene", "seatSlots", "Brown")))
+print("seatPresent", JSON.encode(S.getStateVal("sessionScene", "seatPresent")))
+```
+
+**Pass if (pre-save):** `seatSlots.Brown.isPresent == false` (and/or `seatPresent.Brown == false`).
+
+**After reload (step 3):**
+
+```lua
+lua gbE2eVerifyPcTokens()
+```
+
+Optional state check after reload:
+
+```lua
+print("Brown seatSlots", JSON.encode(S.getStateVal("sessionScene", "seatSlots", "Brown")))
+print("Pink seatSlots", JSON.encode(S.getStateVal("sessionScene", "seatSlots", "Pink")))
+```
+
+**Pass if:** `[gbConfirm] PASS — gbE2eVerifyPcTokens` — every workshop `pc_control_token` is on its color column and flip matches `NPCS.resolvePlayerSeatPresence(color)`; absent Brown (or chosen color) is **face-down**.
+
+**Known gap (TOR-152):** If reload does not run `reconcileControlBoardFromState` (partial load / no active-scene restore), tokens may stay wrong while `seatSlots` in state is correct — log as TOR-152, not a false pass. Apply-time mirror alone (TOR-236) is insufficient for this step.
+
+**Also run after library Apply:** Re-apply a library row whose saved `seatSlots` marks a PC absent → same `gbE2eVerifyPcTokens()` after blindfold settle (~12 s).
 
 ---
 
@@ -504,7 +540,8 @@ Re-check lighting, NPCs, pins, soundscape after ~3 s. Not for routine passes.
 | A Apply | ☐ | |
 | B Switch | ☐ | |
 | C End | ☐ | |
-| D Save/reload | ☐ | TOR-152 gap OK |
+| D Save/reload | ☐ | TOR-152 full restore gap OK |
+| D2 PC tokens reload | ☐ | `gbE2eVerifyPcTokens` |
 | E Location (opt) | ☐ | |
 | F Present day bootstrap | ☐ | F1–F3 |
 | G RT autoprogression | ☐ | G1–G4 |

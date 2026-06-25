@@ -31,10 +31,14 @@ E2E_GB.FIXTURE = {
     uvTol = 0.002,
     yawTolDeg = 1,
     worldTol = 2.5,
+    --- PC seat-row token probe for TOR-152 / TOR-236 scene-load + reload checks.
+    pcAbsentColor = "Brown",
 }
 
 local TAG_TOKEN = DATA.TAG_NPC_CONTROL_TOKEN
+local TAG_PC_TOKEN = DATA.TAG_PC_CONTROL_TOKEN or "pc_control_token"
 local TOKEN_GM_PREFIX = DATA.TOKEN_GM_PREFIX
+local PC_TOKEN_GM_PREFIX = DATA.PC_TOKEN_GM_PREFIX or "pcToken:"
 local GM_FIG_PREFIX = "npcInstance:"
 
 local function fixture()
@@ -237,6 +241,129 @@ local function boardYawDeg(board)
     end
     local rot = board.getRotation()
     return (rot and rot.y) or 0
+end
+
+local function eulerAxisFlippedDeg(deg)
+    local norm = ((tonumber(deg) or 0) % 360 + 360) % 360
+    return norm > 90 and norm < 270
+end
+
+--- Custom_Tile flip probe (matches `core/npc_gameboard.ttslua` `tokenRotationIsFaceUp`).
+--- @param token Object|nil
+--- @return boolean
+local function tokenRotationIsFaceUp(token)
+    if not U.isGameObject(token) then
+        return true
+    end
+    if type(token.getTransformUp) == "function" then
+        local up = token.getTransformUp()
+        if up ~= nil then
+            local uy = up.y or up[2]
+            if type(uy) == "number" then
+                return uy >= 0
+            end
+        end
+    end
+    if type(token.getRotation) ~= "function" then
+        return true
+    end
+    local rot = token.getRotation()
+    if rot == nil then
+        return true
+    end
+    if eulerAxisFlippedDeg(rot.z) or eulerAxisFlippedDeg(rot.x) then
+        return false
+    end
+    return true
+end
+
+--- @param color string
+--- @return Object|nil
+local function findPcTokenByColor(color)
+    if type(color) ~= "string" or color == "" then
+        return nil
+    end
+    local lower = string.lower(color)
+    for _, obj in ipairs(getObjectsWithTag(TAG_PC_TOKEN) or {}) do
+        if U.isGameObject(obj) then
+            local notes = obj.getGMNotes and obj.getGMNotes() or ""
+            if type(notes) == "string" then
+                local raw = string.match(notes, "^" .. PC_TOKEN_GM_PREFIX .. "([%w_]+)$")
+                if raw ~= nil and string.lower(raw) == lower then
+                    return obj
+                end
+            end
+        end
+    end
+    return nil
+end
+
+--- @param catalog table[]
+--- @return table<string, table> color -> seat-row catalog entry
+local function seatRowCatalogByPcColor(catalog)
+    local out = {}
+    for _, entry in ipairs(catalog or {}) do
+        if entry.snapKind == "seat" and entry.columnKind == "pc"
+            and U.isIn(entry.seatKey, C.PlayerColors or {}) then
+            out[entry.seatKey] = entry
+        end
+    end
+    return out
+end
+
+--- @return table<string, boolean> canonical color -> narrative present
+local function snapshotPcSeatPresence()
+    local out = {}
+    for _, color in ipairs(C.PlayerColors or {}) do
+        out[color] = NPCS.resolvePlayerSeatPresence(color) == true
+    end
+    return out
+end
+
+--- @param failures table
+--- @param labelPrefix string|nil
+local function assertPcTokensMatchSeatPresence(failures, labelPrefix)
+    local prefix = labelPrefix or "pc_tokens"
+    local board = getControlBoard()
+    if board == nil then
+        failures[#failures + 1] = prefix .. ": CONTROL_BOARD missing"
+        return
+    end
+    local pcCatalog = seatRowCatalogByPcColor(Gameboard.buildControlBoardSnapCatalog(board, nil))
+    local tol = fixture().worldTol * 2
+    for _, color in ipairs(C.PlayerColors or {}) do
+        local token = findPcTokenByColor(color)
+        if token == nil then
+            failures[#failures + 1] = prefix .. ": missing pc_control_token for " .. color
+        else
+            local present = NPCS.resolvePlayerSeatPresence(color) == true
+            local faceUp = tokenRotationIsFaceUp(token)
+            if faceUp ~= present then
+                failures[#failures + 1] = prefix
+                    .. ": "
+                    .. color
+                    .. " token faceUp="
+                    .. tostring(faceUp)
+                    .. " but seat present="
+                    .. tostring(present)
+            end
+            local entry = pcCatalog[color]
+            if entry == nil then
+                failures[#failures + 1] = prefix .. ": no PC seat-row catalog entry for " .. color
+            else
+                local want = Gameboard.worldOnControlBoard(board, entry.u, entry.v)
+                local d = dist3(token.getPosition(), want)
+                if d == nil or d > tol then
+                    failures[#failures + 1] = prefix
+                        .. ": "
+                        .. color
+                        .. " token not pinned to seat-row column (dist="
+                        .. tostring(d)
+                        .. ")"
+                end
+            end
+        end
+    end
 end
 
 local function setTokenRotationFaceUp(token, board, u, v, faceUp)
@@ -476,6 +603,47 @@ function E2E_GB.probeNpcSeatFigurineCount(seatKey)
     return E2E_GB.probeDuplicateSeatFigure(seatKey)
 end
 
+--- Probe one color-bound `pc_control_token` vs `seatSlots[color].isPresent` (TOR-236 / TOR-152).
+--- @param color string
+--- @return table|nil `{ color, faceUp, present, onColumn, columnDist }`
+function E2E_GB.probePcControlToken(color)
+    if type(color) ~= "string" or color == "" then
+        return nil
+    end
+    local board = getControlBoard()
+    local token = findPcTokenByColor(color)
+    if board == nil or token == nil then
+        return nil
+    end
+    local pcCatalog = seatRowCatalogByPcColor(Gameboard.buildControlBoardSnapCatalog(board, nil))
+    local entry = pcCatalog[color]
+    local columnDist = nil
+    local onColumn = false
+    if entry ~= nil then
+        local want = Gameboard.worldOnControlBoard(board, entry.u, entry.v)
+        columnDist = dist3(token.getPosition(), want)
+        onColumn = columnDist ~= nil and columnDist <= fixture().worldTol * 2
+    end
+    local present = NPCS.resolvePlayerSeatPresence(color) == true
+    local faceUp = tokenRotationIsFaceUp(token)
+    return {
+        color = color,
+        faceUp = faceUp,
+        present = present,
+        onColumn = onColumn,
+        columnDist = columnDist,
+        flipMatchesState = faceUp == present,
+    }
+end
+
+--- Assert every workshop `pc_control_token` is pinned to its PC column with flip matching seat presence.
+--- @return boolean
+function E2E_GB.verifyPcTokensFromSeatState()
+    local failures = {}
+    assertPcTokensMatchSeatPresence(failures, "gbE2eVerifyPcTokens")
+    return printGbResult("gbE2eVerifyPcTokens", failures)
+end
+
 --- Single assertion block (state + optional probes).
 --- @param label string
 --- @param expected table
@@ -555,6 +723,11 @@ function E2E_GB.runPrereqCheck()
     local tokens = getObjectsWithTag(TAG_TOKEN) or {}
     if #tokens < 2 then
         failures[#failures + 1] = "npc_control_token count < 2 (run DEBUG.spawnNpcControlBoardTokens)"
+    end
+
+    local pcTokens = getObjectsWithTag(TAG_PC_TOKEN) or {}
+    if #pcTokens < 1 then
+        failures[#failures + 1] = "pc_control_token count < 1 (workshop tokens need pcToken:<Color> GM Notes)"
     end
 
     if findTokenByCharacterKey(fx.npcA) == nil then
@@ -791,6 +964,7 @@ local function runContinueSceneApply(failures)
             end
         end
     end
+    assertPcTokensMatchSeatPresence(failures, "scene_apply")
 end
 
 local function runContinueReload(failures)
@@ -808,6 +982,7 @@ local function runContinueReload(failures)
             end
         end
     end
+    assertPcTokensMatchSeatPresence(failures, "reload")
 end
 
 --- Resume after human gate (`_G.gbE2ePending`).
@@ -973,7 +1148,10 @@ function E2E_GB.runFull()
     runFullSuites(failures)
     local ok = printGbResult("gbE2eRunFull (automated)", failures)
     if ok then
-        _G.gbE2eReloadSnapshot = { placements = U.clone(E2E_GB.probePlacements() or {}) }
+        _G.gbE2eReloadSnapshot = {
+            placements = U.clone(E2E_GB.probePlacements() or {}),
+            seatSlots = snapshotPcSeatPresence(),
+        }
         _G.gbE2ePending = "reload"
         print("\n[gbE2eRunFull] HUMAN GATE — reload (optional)")
         print("  1. Save game, Save & Play reload.")

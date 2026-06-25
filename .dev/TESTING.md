@@ -167,6 +167,7 @@ lua gbE2eReset()
 lua gbE2eRunSmoke()      -- then human scene Apply + gbE2eContinue()
 lua gbE2eRunFull()
 lua gbE2eRunDeferred()   -- expected FAIL until TOR-172/173/175/174
+lua gbE2eVerifyPcTokens() -- PC seat-row tokens vs seatSlots (TOR-152 / TOR-236; Scenes-E2E D2)
 lua gbConfirm("probe", { placementRow = { characterKey = "myleneHamelin", row = { u = 0.18 } } })
 lua DEBUG.dumpNpcPlacements()
 lua GlobalGameboardApply()

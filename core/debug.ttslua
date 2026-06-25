@@ -603,6 +603,12 @@ function DEBUG.gbE2eContinue()
     return E2E_GB.runContinue()
 end
 
+--- Verify each `pc_control_token` is pinned to its PC seat-row column with flip matching `seatSlots[color].isPresent` (TOR-152 / TOR-236).
+--- @return boolean
+function DEBUG.gbE2eVerifyPcTokens()
+    return E2E_GB.verifyPcTokensFromSeatState()
+end
+
 --- Print last gameboard interaction profile (Apply/Clear/token drop).
 --- @param label string|nil optional prefix for console line
 --- @return table|nil
@@ -5255,6 +5261,7 @@ function DEBUG.help()
     print("  gbE2eRunFull()           - Deep reconcile suites (+ optional reload gate)")
     print("  gbE2eRunDeferred()       - Expected FAIL until TOR-172/173/175/174 dedupe")
     print("  gbE2eContinue()          - Resume after HUMAN GATE (scene_apply / reload)")
+    print("  gbE2eVerifyPcTokens()    - PC control tokens pinned + flip matches seat presence")
     print("  gbConfirm(label, expected) - Single assert (placements, intent, probes)")
     print("  dumpNpcPlacements()      - Print sessionScene.npcWorld.placements")
     print("  profileGameboardApply()  - Apply + hitch profile (phaseA_ms, catalog_builds) _(TOR-201)_")
@@ -5383,6 +5390,7 @@ gbE2eRunSmoke = DEBUG.gbE2eRunSmoke
 gbE2eRunFull = DEBUG.gbE2eRunFull
 gbE2eRunDeferred = DEBUG.gbE2eRunDeferred
 gbE2eContinue = DEBUG.gbE2eContinue
+gbE2eVerifyPcTokens = DEBUG.gbE2eVerifyPcTokens
 applyNpcControlTokenHostedImages = DEBUG.applyNpcControlTokenHostedImages
 loadCustomUiUploadManifest = DEBUG.loadCustomUiUploadManifest
 clearCustomUiUploadTokens = DEBUG.clearCustomUiUploadTokens

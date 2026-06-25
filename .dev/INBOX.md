@@ -2,7 +2,8 @@
 
 ## Quick Fixes
 
-- [Storyteller Dice Rolls] Storyteller dice are spawning too close together, such that when they are unlocked, they are pushed outwards and scattered by Unity physics. The arcs along which Storyteller dice spawn above Storyteller dice drawers should be expanded to allow room for more dice.
+- [Dice Spawning] Dice for both Storyteller and player rolls can end up spawning too close together when there are many dice in the pool, such that when they are unlocked, they are pushed outwards and scattered by Unity physics. The arcs along which Storyteller dice spawn above Storyteller dice drawers should be expanded to allow room for more dice.  Solution: A spawn arc should be allowed to contain at most ten dice. If a pool contains more than 10 of one type of die, the extra dice should spawn along a new arc that is slightly higher on the y-axis, and offset slightly on the xz plane just to prevent dice from landing on top of each other. Player dice currently spawn at y = 8; this elevated spawn arc should be at y = 10.  Similar elevation logic should be applied to Storyteller rolls.
+- [Player Activation & Scene Presence] When a player's seat is deactivated, any location and/or scene Conditions on that player should be disabled -- by deactivating them, they are no longer present at the location or in the scene. Likewise, if a player's seat is _activated_, any scene and/or location conditions should be enabled on that player.
 
 ## Active
 
