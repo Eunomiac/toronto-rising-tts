@@ -448,47 +448,6 @@ end
 -- Updates RC.setPool with the latest count for that die type while preserving
 -- the count reported by the other bag type.
 -- @param params table  { color: string, dieType: "normal"|"hunger", count: number }
-function GlobalReportBagDiceCount(params)
-    if type(params) ~= "table" then return end
-    local color   = params.color
-    local dieType = params.dieType
-    local count   = params.count
-    if type(color) ~= "string" or type(dieType) ~= "string" or type(count) ~= "number" then
-        return
-    end
-    if RC == nil then return end
-
-    local pid = S.getPlayerID(color)
-    if pid == nil then return end
-    local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
-    if active == nil then return end
-    local pool = DK.normalizePool(active.pool)
-    local prevTotal = DK.poolTotal(pool)
-
-    -- Rouse bag serves manual + Blood Surge rouse; pool counts come from GlobalOnBagDieSpawned.
-    if dieType == DK.KIND_ROUSE then
-        return
-    end
-
-    local kind = dieType
-    if kind == "normal" or kind == "hunger"
-        or kind == "oblivRouse" or kind == "werewolf" or kind == "rage"
-    then
-        pool[kind] = count
-    end
-
-    if RC.setPoolKindCount(color, kind, count) then
-        if prevTotal == 0 and DK.poolTotal(pool) > 0 then
-            GlobalRollSeatCamera({ color = color, mode = "roll" })
-        end
-    end
-end
-
---- Resolves which logical die type a bag click should spawn (Auto-Hunger redirect, Hunger Dice off).
--- Hunger redirect applies only to normal/hunger requests on vampire pools. Rouse, Obliv-Rouse,
--- Werewolf, and Rage kinds are never rewritten to normal.
--- @param params table  { color: string, requested: string }  DK.KIND_* value
--- @return string|nil
 function GlobalRollSpawnDieRequest(params)
     if type(params) ~= "table" then return DK.KIND_NORMAL end
     local color     = params.color
@@ -1236,6 +1195,9 @@ end
 -- @param params table  { color: string, action: string }
 -- @return boolean
 function GlobalPostRollModifyPool(params)
+    if not U.requireHostForWorldMutation("GlobalPostRollModifyPool") then
+        return false
+    end
     if type(params) ~= "table" or RC == nil then
         return false
     end
@@ -2042,6 +2004,9 @@ end
 
 --- Storyteller PCs panel control buttons (id pattern pcs_<Color>_<action>).
 function HUD_pcPanel(player, button, id)
+    if not requireStorytellerHostForMutation(player, "HUD_pcPanel") then
+        return
+    end
     if PCST and PCST.onHudClick then
         PCST.onHudClick(player, button, id)
     end
@@ -2811,6 +2776,9 @@ end
 -- @param button string|nil
 -- @param id string|nil
 function HUD_debugLightActivate(player, button, id)
+    if not requireStorytellerHostForMutation(player, "HUD_debugLightActivate") then
+        return
+    end
     if LightDebugFocus and LightDebugFocus.activate then
         LightDebugFocus.activate(player)
     else
@@ -2833,6 +2801,9 @@ end
 -- @param value unknown
 -- @param id string|nil
 function HUD_debugLightEnabled(player, value, id)
+    if not requireStorytellerHostForMutation(player, "HUD_debugLightEnabled") then
+        return
+    end
     if LightDebugFocus and LightDebugFocus.onEnabledToggle then
         LightDebugFocus.onEnabledToggle(player, value, id)
     end
@@ -2843,6 +2814,9 @@ end
 -- @param button string|nil
 -- @param id string
 function HUD_debugLightResetRow(player, button, id)
+    if not requireStorytellerHostForMutation(player, "HUD_debugLightResetRow") then
+        return
+    end
     if LightDebugFocus and LightDebugFocus.resetRowFromId then
         LightDebugFocus.resetRowFromId(id)
     end
@@ -2853,6 +2827,9 @@ end
 -- @param value number|string
 -- @param id string
 function HUD_debugLightSlider(player, value, id)
+    if not requireStorytellerHostForMutation(player, "HUD_debugLightSlider") then
+        return
+    end
     if LightDebugFocus and LightDebugFocus.onSlider then
         LightDebugFocus.onSlider(player, value, id)
     end
@@ -4036,6 +4013,9 @@ end
 
 --- Coroutine: wait until dice drawer is raised, then unlock staged dice.
 function GlobalWaitDrawerThenReleaseBagDice()
+    if not U.requireHostForWorldMutation("GlobalWaitDrawerThenReleaseBagDice") then
+        return 1
+    end
     local job = table.remove(drawerReleaseJobQueue, 1)
     if type(job) ~= "table" or type(job.color) ~= "string" then
         return 1

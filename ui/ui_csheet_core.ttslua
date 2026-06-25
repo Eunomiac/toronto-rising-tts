@@ -337,6 +337,11 @@ local function applyCsheetLayoutFromFirstSpread()
   if sheetHasAlignmentDoneTag() then
     return
   end
+  if Global ~= nil and type(Global.call) == "function" then
+    if Global.call("GlobalRequireHostForWorldMutation", { context = "csheet.applyCsheetLayoutFromFirstSpread" }) ~= true then
+      return
+    end
+  end
   if pageNum == nil or seatColor == nil then
     return
   end

@@ -51,7 +51,8 @@ Columns: **Delivery** = fan-out (all clients) vs clicker-only. **Tier** = A UI /
 | `GlobalInitiateRoll` / `GlobalRollSpawnDieRequest` / `GlobalAdjustStorytellerPoolKind` | B+C | 5 | rolls |
 | `GlobalRollSeatCamera` | A | — | per-seat camera |
 | `GlobalIsStorytellerSteamPlayer` / `GlobalRequireHostForWorldMutation` | — | 2 | bundle-safe gates |
-| `GlobalGetRollPhase`, `GlobalResolveSheetPlayerID`, `GlobalGetMergedPlayerData`, `GlobalGetSeatLayoutCenterPoint`, `GlobalIsPlayerDiceBagEnabled`, `GlobalReportBagDiceCount`, `GlobalCollectSheetImageUpdates` | A | — | read-only |
+| `GlobalPostRollModifyPool` / `GlobalPostRollAddDie` / `GlobalPostRollRemoveDie` | B+C | W4 | ST post-roll pool |
+| `GlobalGetRollPhase`, `GlobalResolveSheetPlayerID`, `GlobalGetMergedPlayerData`, `GlobalGetSeatLayoutCenterPoint`, `GlobalIsPlayerDiceBagEnabled`, `GlobalCollectSheetImageUpdates` | A | — | read-only |
 
 ### Sync orchestrator
 
@@ -69,21 +70,47 @@ Columns: **Delivery** = fan-out (all clients) vs clicker-only. **Tier** = A UI /
 | --- | --- | --- | --- |
 | `npc_control_board.ttslua` | clicker → Global.call fan-out | Steam via Global | 6 |
 | `npc_control_board_palette.ttslua` | onLoad fan-out | Host install | Done |
-| `dice_bag.ttslua` | clicker + bag hooks | Host spawn via Global | 6 |
+| `dice_bag.ttslua` | clicker + onLoad fan-out | Host spawn via Global; onLoad destroy host-gated | W2 |
 | `ui_signal_candle.ttslua` | clicker → Global.call | Host in Global | 5 |
-| `ui_tarot_button.ttslua` | clicker → `GlobalApplyTarotState` | Host in Global | 6 |
-| `ui_csheet_core.ttslua` | clicker → Global.call | Host on mutators | 5 |
+| `ui_tarot_button.ttslua` | clicker → `GlobalApplyTarotState` | Host in Global | W2 |
+| `ui_csheet_core.ttslua` | clicker → Global.call; onLoad layout | Host on mutators + alignment onLoad | W4 |
 
 ### HUD handlers (summary)
 
-| Group | Examples | Tier | Phase |
-| --- | --- | --- | --- |
-| UI-only | `HUD_togglePanel`, `HUD_selectStorytellerPanel`, modal open | A | — |
-| ST state+world | `HUD_changeScene`, soundscape, scenes apply, `HUD_resetGame`, `HUD_syncAll` | B+C | 7 |
-| Roll | `HUD_roll*` | B (+ Global.call for C) | 5+7 |
-| Debug | `HUD_debug*` | C | 7 |
+| Group | Examples | Tier | ST+host gate | TOR-144 |
+| --- | --- | --- | --- | --- |
+| UI-only | `HUD_togglePanel`, `HUD_selectStorytellerPanel`, modals, `HUD_show`/`hide`, roll opts open/cancel | A | — | — |
+| ST state+world | `HUD_changeScene`, soundscape, scenes apply, `HUD_resetGame`, `HUD_syncAll`, `HUD_pcPanel` | B+C | Yes | D |
+| Roll | `HUD_roll*` | B (+ `Global.call` for C) | Partial (P6) | C |
+| Debug world | `HUD_debugLightActivate/Enabled/ResetRow/Slider`, `HUD_toggleAllAnchors/Spotlights` | C | Yes | — |
+| Debug read/UI | `HUD_debugLightGuidInput`, `HUD_debugLightDone/Snapshot`, camera capture | A/B | No | — |
+
+**TOR-144 column:** multiclient verification target from [Preparing §2](../Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md) — blank until friend session passes.
 
 Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
+
+### HUD handlers (appendix — mechanical audit 2026-06-25)
+
+| Handler | Tier | ST+host | Notes |
+| --- | --- | --- | --- |
+| `HUD_selectStorytellerPanel` | A | — | panel visibility |
+| `HUD_pcPanel` | B+C | Yes | PCs tracker apply |
+| `HUD_togglePanel` | A | — | XmlUI collapse |
+| `HUD_changeScene` | B+C | Yes | |
+| `HUD_selectAdminLightingScene` | B+C | Yes | |
+| `HUD_soundscape*` (mutators) | B+C | Yes | inspect read-only |
+| `HUD_scenesPanel` / apply / lib / ctor / clock | B+C | Yes | modal opens Tier A |
+| `HUD_advancePhase` | B | Yes | |
+| `HUD_resetGame` / `HUD_syncAll` | B+C | Yes | |
+| `HUD_saveState` / `HUD_logState` / `HUD_printState` | A/B | — | encode/log |
+| `HUD_toggleAllAnchors` / `HUD_toggleAllSpotlights` | C | Yes | |
+| `HUD_debugLightActivate/Enabled/ResetRow/Slider` | C | Yes | |
+| `HUD_debugLightGuidInput/Done/Snapshot` | A | — | |
+| `HUD_debugCamera*` / `HUD_debugCaptureCameraPreset` | A | — | local camera |
+| `HUD_rollInitiate/RollButton/Confirm/Cancel/…` | B (+C via Global) | Partial | P6 intentional |
+| `HUD_postRollCellMouseUp` | B+C | Yes | → `GlobalPostRollModifyPool` |
+| `HUD_debugRollTest/CancelAll` | B+C | Yes | |
+| `HUD_gridStrip*` / `HUD_postRollCellMouseEnter/Exit/Down` | A | — | hover UI |
 
 ## Global handlers (inventory)
 
@@ -112,11 +139,12 @@ Per-object scripts (`objects/*.ttslua`, `ui/ui_*.ttslua`) run in **isolated chun
 
 | Script | Events | Guard pattern |
 | --- | --- | --- |
-| `objects/dice_bag.ttslua` | `click_roll`, spawn | `getDieType()` / `getBagColor()` from tags |
+| `objects/dice_bag.ttslua` | `click_roll`, spawn, onLoad | tags; host gate on spawn + onLoad destroy |
 | `objects/npc_control_board.ttslua` | `click_apply`, `click_clear` | Steam via `GlobalIsStorytellerSteamPlayer`; host via Global mutators |
 | `objects/npc_control_board_palette.ttslua` | onLoad | One-time install |
 | `ui/ui_signal_candle.ttslua` | click | Object GUID / color from name |
-| `ui/ui_tarot_button.ttslua` | click | Pink tarot GUID |
+| `ui/ui_tarot_button.ttslua` | click | Pink/Black → `GlobalApplyTarotState` |
+| `ui/ui_csheet_core.ttslua` | click, onLoad | Global mutators; layout onLoad host-gated |
 
 ## Forbidden patterns
 

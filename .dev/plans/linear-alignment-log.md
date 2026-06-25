@@ -319,5 +319,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-06-24 | CREATE | TOR-249 | Human gate: run initial multiclient session (Phases A–E); sub of TOR-144; External Todo |
 | 2026-06-24 | COMMENT | TOR-7 | Module removed 2026-06; TOR-11 canceled |
 | 2026-06-24 | UPDATE | RUNNING TASKLIST | TOR-144 unblocked; TOR-248/TOR-11 canceled bullets; TOR-249 human gate |
+| 2026-06-25 | SHIP | Multiplayer audit W3-W5 | HUD_pcPanel/debugLight ST+host; remove GlobalReportBagDiceCount; drawer coroutine + csheet onLoad + GlobalPostRollModifyPool guards; Event Listener Policy HUD appendix |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
