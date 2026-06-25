@@ -349,5 +349,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-06-25 | DONE | TOR-151 | Default no-scene environment — `Scenes.applyDefaultNoSceneEnvironment` (Table B1, 5 PCs, empty NPC world, OutdoorDim, Main-only soundscape, random skybox, overlay blank clock/weather); `endSceneNarrative` converged; map pins hidden when no live scene (`SceneLibrary.hasLiveSceneOnTable`) |
 | 2026-06-25 | DONE | TOR-152 | Play load / Start→Play restore — `Scenes.reconcilePlaySessionOnEnter` on startup gate + `M.advancePhase`; `restoreActiveSceneWorld` / `applyActiveSceneSoundscapeFromSession`; solo-verifiable; multiclient unverified |
 | 2026-06-25 | UPDATE | RUNNING TASKLIST | TOR-151/152 `[x]`; Focus #1 TOR-237 |
+| 2026-06-25 | DONE | TOR-237 | Read/Lock/Load toolbar; Focus #1 → TOR-238 (hover spotlight preview) |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

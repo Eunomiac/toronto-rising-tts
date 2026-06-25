@@ -183,10 +183,13 @@ lua DEBUG.installNpcControlBoardSnaps({ config = { ... full CONTROL_BOARD_SNAP t
 
 See [Generating Snap Points For Control Board.md](./Generating%20Snap%20Points%20For%20Control%20Board.md).
 
-## Buttons (Phase A wired)
+## Buttons
 
-- **Apply** / **Clear** — live (3D buttons + XmlUI; Storyteller / Black only)
-- **Read** / **Lock** / **Load** — Phase B (stubs broadcast “not wired yet”)
+- **Apply** / **Clear** — scan board → state → `Sync.npcs` (or clear + palette park); Storyteller / Black only
+- **Snaps** — toggle `controlBoardSnapsEnabled` (polar snap grid on/off)
+- **Read** — scan CONTROL_BOARD token UV layout → `sessionScene.npcWorld.placements` only (no `Sync.npcs` / no figurine moves)
+- **Lock** — toggle `sessionScene.npcWorld.layoutLock`; when true, automatic reconcile skips token mirror (markers still reconcile); XmlUI shows **Locked** / **Unlocked**
+- **Load** — mirror persisted placements (+ seat-row tokens) onto CONTROL_BOARD tokens; bypasses layout lock (explicit restore from state)
 
 Debug: `DEBUG.dumpNpcPlacements()` in TTS console.
 

@@ -397,6 +397,54 @@ function GlobalGameboardSyncSnapsToggleLabel(params)
         board = getObjectFromGUID(params.boardGuid)
     end
     Gameboard.syncControlBoardSnapsToggleLabel(board)
+    Gameboard.syncControlBoardLayoutLockLabel(board)
+end
+
+--- NPC gameboard: scan CONTROL_BOARD → placements state only (no figurine sync).
+--- @param params table|nil
+--- @return boolean
+function GlobalGameboardRead(params)
+    if not U.requireHostForWorldMutation("GlobalGameboardRead") then
+        return false
+    end
+    local Gameboard = require("core.npc_gameboard")
+    local ok = Gameboard.readFromControlBoard()
+    if type(ok) == "boolean" then
+        return ok
+    end
+    return ok == true
+end
+
+--- NPC gameboard: toggle `sessionScene.npcWorld.layoutLock`.
+--- @param params table|nil `{ boardGuid?: string }`
+--- @return boolean locked after toggle
+function GlobalGameboardToggleLayoutLock(params)
+    if not U.requireHostForWorldMutation("GlobalGameboardToggleLayoutLock") then
+        return false
+    end
+    local Gameboard = require("core.npc_gameboard")
+    local board = nil
+    if type(params) == "table" and type(params.boardGuid) == "string" then
+        board = getObjectFromGUID(params.boardGuid)
+    end
+    local locked = Gameboard.toggleLayoutLock()
+    Gameboard.syncControlBoardLayoutLockLabel(board)
+    return locked
+end
+
+--- NPC gameboard: mirror persisted placements onto CONTROL_BOARD tokens (bypasses layout lock).
+--- @param params table|nil
+--- @return boolean
+function GlobalGameboardLoad(params)
+    if not U.requireHostForWorldMutation("GlobalGameboardLoad") then
+        return false
+    end
+    local Gameboard = require("core.npc_gameboard")
+    local ok = Gameboard.loadControlBoardFromState()
+    if type(ok) == "boolean" then
+        return ok
+    end
+    return ok == true
 end
 
 --- NPC gameboard: toggle CONTROL_BOARD snap grid (object XmlUI `click_snaps_toggle`).

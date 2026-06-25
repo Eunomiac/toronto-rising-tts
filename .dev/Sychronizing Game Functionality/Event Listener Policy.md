@@ -41,9 +41,9 @@ Columns: **Delivery** = fan-out (all clients) vs clicker-only. **Tier** = A UI /
 
 | Function | Tier | Phase | Notes |
 | --- | --- | --- | --- |
-| `GlobalGameboardApply/Clear/ClearClick/ToggleControlBoardSnaps/TokenDroppedOnDiceBag/StageLerpOrchestrator` | C | 5 | Gameboard |
+| `GlobalGameboardApply/Clear/ClearClick/Read/Load/ToggleLayoutLock/ToggleControlBoardSnaps/TokenDroppedOnDiceBag/StageLerpOrchestrator` | C | 5 | Gameboard; Read is state-only (B) but host-guarded |
 | `GlobalGameboardInstallPaletteSnaps` | C | Done | already guarded |
-| `GlobalGameboardSyncSnapsToggleLabel` | A | — | label only |
+| `GlobalGameboardSyncSnapsToggleLabel` | A | — | snaps + layout-lock toolbar labels |
 | `GlobalToggleSignalFireState` | C | 5 | signal lights |
 | `GlobalApplyTarotState` | C | — | Pink tarot drawer/deck/button poses (TOR-144 W2) |
 | `GlobalDiceBagClick/RightClick/StorytellerDiceBagClick` | B+C | 5 | rolls |
