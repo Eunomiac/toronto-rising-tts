@@ -4,6 +4,8 @@
 
 ## Active
 
+- [Bug] Whenever the control board / stage is updated (via Apply or Clear), seated NPCs with their lights off immedaitely have their lights toggled on, then immediately faded out to off.  Expected behavior:  A seated NPC whose light is off should not have their light turned on unless their seat is activated.
+
 ---
 
 ## Needs clarification
@@ -18,6 +20,7 @@
 
 ## Processed
 
+2026-06-25 TOR-264 — Double music emitters on load: dual-apply fix (`Sync.full` skipSoundscape; load helpers single soundscape authority) (shipped)
 2026-06-25 TOR-255 — Blood Surge active disables Take Half (shipped)
 2026-06-25 TOR-256 — PC seat deactivate/activate syncs hosted scene+location conditions (shipped)
 2026-06-25 TOR-257 — NPC figurine tooltips sync with player visibility (shipped)

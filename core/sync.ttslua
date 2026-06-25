@@ -378,18 +378,26 @@ function Sync.full(opts)
     end
     local force = opts.force == true
     local reason = type(opts.reason) == "string" and opts.reason or ""
+    -- Callers that already eager-applied + primed the soundscape slice (e.g. scene load helpers)
+    -- pass skipSoundscape so the forced pass does not invalidate the prime and re-crossfade music (dual apply).
+    local skipSoundscape = opts.skipSoundscape == true
 
     local t0 = os.clock()
     local reconcileOpts = force and { force = true } or {}
 
     if force then
         Sync.invalidateAllReconcileCaches()
+        if skipSoundscape then
+            callIfFunction(Soundscape.markReconciledToCurrentState)
+        end
     end
 
     callIfFunction(Scenes.reconcileFromState, reconcileOpts)
     callIfFunction(Scenes.reconcileTopFogFromState, reconcileOpts)
     callIfFunction(Scenes.reconcileSkyboxFromState, reconcileOpts)
-    callIfFunction(Soundscape.reconcileFromState, reconcileOpts)
+    if not skipSoundscape then
+        callIfFunction(Soundscape.reconcileFromState, reconcileOpts)
+    end
 
     local presentationSkippedThisPass = false
     if not didBootstrapFullSync then
