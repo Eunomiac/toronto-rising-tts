@@ -3926,7 +3926,7 @@ local function tryNpcControlTokenDroppedOnStorytellerDiceBag(token, playerColor)
     end
 
     local STR = require("core.storyteller_rolls")
-    local ok = STR.initiateFromBagLabel(label, dieKind)
+    local ok = STR.initiateFromBagLabel(label, dieKind, characterKey)
     if ok ~= true then
         print(
             "[Gameboard] ST dice-bag token drop: roll not started for "

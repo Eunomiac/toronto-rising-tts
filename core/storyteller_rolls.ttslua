@@ -155,8 +155,9 @@ end
 --- Initiates an NPC roll on the Storyteller seat (Black).
 -- @param rawLabel string
 -- @param rollType string|nil  C.RollType value (default STANDARD)
+-- @param npcCharacterKey string|nil  Authoritative NPC key (avoids ambiguous fullName broadcast lookup — TOR-252)
 -- @return boolean
-function STR.initiateNpcRoll(rawLabel, rollType)
+function STR.initiateNpcRoll(rawLabel, rollType, npcCharacterKey)
     if not STR.canInitiate() then
         print("[StorytellerRolls] Cannot initiate: no free drawer or a roll is still live.")
         return false
@@ -178,6 +179,7 @@ function STR.initiateNpcRoll(rawLabel, rollType)
         initiator = "storyteller",
         stDrawerSlot = slot,
         skipSetup = skipSetupForRollType(rt),
+        npcCharacterKey = npcCharacterKey,
     })
     if not ok then
         return false
@@ -208,13 +210,14 @@ end
 --- Initiates from ST bag click after name modal (or direct if roll already live).
 -- @param label string
 -- @param dieKind string
+-- @param npcCharacterKey string|nil  Authoritative NPC key when launched from a control token (TOR-252)
 -- @return boolean
-function STR.initiateFromBagLabel(label, dieKind)
+function STR.initiateFromBagLabel(label, dieKind, npcCharacterKey)
     if hasLiveBlackRoll() then
         return false
     end
     local rt = rollTypeForDieKind(dieKind)
-    return STR.initiateNpcRoll(label, rt)
+    return STR.initiateNpcRoll(label, rt, npcCharacterKey)
 end
 
 --- Syncs slot metadata from the live Black active roll.

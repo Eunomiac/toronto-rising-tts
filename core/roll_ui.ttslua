@@ -518,18 +518,26 @@ end
 --- @param color string
 --- @param pid string|nil
 --- @param label string|nil
+--- @param npcCharacterKey string|nil  Authoritative NPC key when known (token-on-bag rolls)
 --- @return string CustomUIAssets image name (may be empty)
-local function resolveRollFigureAssetKey(color, pid, label)
+local function resolveRollFigureAssetKey(color, pid, label, npcCharacterKey)
     if pid ~= nil then
         local pdata = S.getStateVal("playerData", pid)
         if type(pdata) == "table" and type(pdata.charKey) == "string" and pdata.charKey ~= "" then
             return CHARKEY_TO_FIGURE_ASSET[pdata.charKey] or pdata.charKey
         end
     end
-    if color == "Black" and type(label) == "string" and label ~= "" then
-        local npcKey = NPC_DATA.resolveCharacterKeyByDisplayName(pruneRollLabelDisambiguationSuffix(label))
-        if type(npcKey) == "string" and npcKey ~= "" then
-            return npcKey
+    if color == "Black" then
+        -- Prefer the explicit NPC character key: display-name reverse-lookup is ambiguous when
+        -- human/garou forms share a fullName (e.g. "Rot-in-the-River"). TOR-252.
+        if type(npcCharacterKey) == "string" and npcCharacterKey ~= "" then
+            return CHARKEY_TO_FIGURE_ASSET[npcCharacterKey] or npcCharacterKey
+        end
+        if type(label) == "string" and label ~= "" then
+            local npcKey = NPC_DATA.resolveCharacterKeyByDisplayName(pruneRollLabelDisambiguationSuffix(label))
+            if type(npcKey) == "string" and npcKey ~= "" then
+                return CHARKEY_TO_FIGURE_ASSET[npcKey] or npcKey
+            end
         end
     end
     return ""
@@ -554,8 +562,9 @@ end
 --- @param color string
 --- @param pid string|nil
 --- @param label string|nil
-local function applyBroadcastFigure(color, pid, label)
-    local figureKey = resolveRollFigureAssetKey(color, pid, label)
+--- @param npcCharacterKey string|nil
+local function applyBroadcastFigure(color, pid, label, npcCharacterKey)
+    local figureKey = resolveRollFigureAssetKey(color, pid, label, npcCharacterKey)
     if type(figureKey) == "string" and figureKey ~= "" then
         U.setAttribute(BROADCAST_FIGURE_ID, "image", figureKey)
         uiSetActive(BROADCAST_FIGURE_ID, true)
@@ -1247,6 +1256,7 @@ function RUI.showResultBroadcast(color, result, label)
     local rollTypeKey = ""
     local diceFaces   = nil
     local rouseStrips = nil
+    local npcCharacterKey = nil
     if pid ~= nil then
         local history   = S.getStateVal("playerData", pid, "hud", "rollData", "history") or {}
         local lastEntry = history[#history]
@@ -1254,10 +1264,11 @@ function RUI.showResultBroadcast(color, result, label)
             rollTypeKey = U.Type(lastEntry.rollType) == "string" and lastEntry.rollType or ""
             diceFaces   = U.Type(lastEntry.diceFaces) == "table"  and lastEntry.diceFaces or nil
             rouseStrips = U.Type(lastEntry.rouseOutcomeStrips) == "table" and lastEntry.rouseOutcomeStrips or nil
+            npcCharacterKey = U.Type(lastEntry.npcCharacterKey) == "string" and lastEntry.npcCharacterKey or nil
         end
     end
 
-    applyBroadcastFigure(color, pid, label)
+    applyBroadcastFigure(color, pid, label, npcCharacterKey)
 
     applyRollResLayoutForRollType(rollTypeKey)
 

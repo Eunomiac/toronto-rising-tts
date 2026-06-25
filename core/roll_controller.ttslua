@@ -414,7 +414,7 @@ end
 -- @param rollType string|nil     C.RollType value (e.g. C.RollType.ROUSE)
 -- @param diceFaces table|nil     Sorted face records from Dice.buildDiceFaces(), for image display
 -- @param rouseOutcomeStrips table|nil  Compact rouse strip rows for broadcast
-local function appendHistory(color, result, label, diceDisplay, rollType, diceFaces, rouseOutcomeStrips)
+local function appendHistory(color, result, label, diceDisplay, rollType, diceFaces, rouseOutcomeStrips, npcCharacterKey)
     local pid = S.getPlayerID(color)
     if pid == nil then return end
     local history = S.getStateVal("playerData", pid, "hud", "rollData", "history") or {}
@@ -425,6 +425,7 @@ local function appendHistory(color, result, label, diceDisplay, rollType, diceFa
         rollType    = rollType or "",
         diceFaces   = diceFaces or {},
         rouseOutcomeStrips = rouseOutcomeStrips or {},
+        npcCharacterKey = (type(npcCharacterKey) == "string" and npcCharacterKey ~= "") and npcCharacterKey or nil,
         timestamp   = os.time(),
     }
     while #history > 10 do table.remove(history, 1) end
@@ -876,6 +877,10 @@ function RC.initiateRoll(color, config)
         batonHolder = skipSetup and C.BatonHolder.PLAYER or C.BatonHolder.STORYTELLER,
         initiator   = config.initiator or "player",
         label       = config.label or nil,
+        -- Authoritative NPC key for ST rolls launched from a known character (token-on-bag),
+        -- so broadcast figure resolution does not rely on ambiguous fullName lookup (TOR-252).
+        npcCharacterKey = (type(config.npcCharacterKey) == "string" and config.npcCharacterKey ~= "")
+            and config.npcCharacterKey or nil,
         stDrawerSlot = config.stDrawerSlot,
         pool        = pool,
         meta        = DK.defaultMeta(),
@@ -1990,7 +1995,8 @@ function RC.confirmRoll(color)
         finalDiceDisplay,
         active.rollType,
         finalDiceFaces,
-        finalRouseStrips
+        finalRouseStrips,
+        active.npcCharacterKey
     )
     notifyRollResolved(color, finalResult, finalLabel)
 

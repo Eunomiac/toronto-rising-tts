@@ -891,6 +891,8 @@ Canonical markup: `ui/shared/panel_roll_results.xml` (included from `ui/shared/r
 
 Key element IDs: fullscreen `rollRes_panel`; split header (`rollRes_rollType`, `rollRes_rollIntro`); figure cutout (`rollRes_screen_content_figure`); up to two rouse strip panels; standard die row `rollRes_die_1..15`; successes + optional difficulty; combined headline+margin on `rollRes_resultDisplay` (class tokens `rollRes_result_*`). Use `UI.show`/`UI.hide` for fade animations.
 
+**Figure cutout resolution (`resolveRollFigureAssetKey`):** PC rolls use `playerData[pid].charKey`. ST (Black) NPC rolls prefer the **authoritative `npcCharacterKey`** carried on the active roll → history entry (set by `RC.initiateRoll` from `config.npcCharacterKey`, threaded by `STR.initiateNpcRoll` / `initiateFromBagLabel` and the control-token-on-bag path). This avoids the ambiguous `resolveCharacterKeyByDisplayName` reverse-lookup, which returns the **first** `fullName` match and picked the wrong cutout for human/garou pairs that share a display name (e.g. "Rot-in-the-River" — **TOR-252**). Free-text bag-modal rolls (no key) still fall back to display-name lookup.
+
 ### 10.4 Storyteller roll panel grid strips (`rollPanelST`)
 
 **Live panel:** [`ui/storyteller/panel_storyteller_roll_controls.xml`](../../ui/storyteller/panel_storyteller_roll_controls.xml) (`rollPanelST`, visibility `Black|Host`, hidden until a Black-seat roll is active). **Design mockup:** [`ui/storyteller/db_panel_storyteller_roll_controls.xml`](../../ui/storyteller/db_panel_storyteller_roll_controls.xml) (`db_rollPanelST`, always visible; grid strips are non-interactive). Both included from [`ui/storyteller/hud_storyteller.xml`](../../ui/storyteller/hud_storyteller.xml).
