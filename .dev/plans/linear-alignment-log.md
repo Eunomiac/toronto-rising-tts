@@ -332,5 +332,8 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-06-25 | CREATE | TOR-252 | NPC roll broadcast wrong figurine for duplicate fullName (Todo Medium; parent TOR-31; related TOR-174/TOR-156) |
 | 2026-06-25 | INBOX | `/tr-inbox` complete | 3 Quick Fixes + 1 Active triaged; INBOX cleared |
 | 2026-06-25 | DONE | TOR-83 | Scenes site modal overlap — buckets now flowing `<VerticalLayout>` (not stretched `<Panel>`); Focus #1 closed, re-stacked TOR-236/TOR-165 |
+| 2026-06-25 | DONE | TOR-236 | npc vs pc control-token contract — Apply-time PC seat activate/deactivate, NPC-only palette/preload (`D.getNpcCharacters()`), handler matrix; commits `c975ce1`/`0a5550b`/`7c1ebd5`; Focus #1 closed |
+| 2026-06-25 | UPDATE | TOR-95, TOR-247 | TOR-95 `blockedBy` TOR-247 (was TOR-236); TOR-247 scope note for PC-token sole authority + unblocks play-as-NPC |
+| 2026-06-25 | UPDATE | RUNNING TASKLIST | TOR-236 `[x]`; Focus re-stacked TOR-165 #1; TOR-95 blockedBy TOR-247 |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
