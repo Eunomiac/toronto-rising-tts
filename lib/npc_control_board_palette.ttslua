@@ -505,7 +505,7 @@ function Palette.buildTokenSnapAssignments()
     local byGroup = {}
     local ungrouped = {}
 
-    for characterKey, def in pairs(NPCS_DATA.characters or {}) do
+    for characterKey, def in pairs(NPCS_DATA.getNpcCharacters()) do
         if U.Type(characterKey) == "string" and U.Type(def) == "table" then
             local groupId, slotIndex = Palette.resolvePaletteGroupForCharacter(def)
             if groupId ~= nil then

@@ -398,6 +398,7 @@ Now, let's assume I take the following actions:
 D.characters = {
   lordLucien = {
     name = "lordLucien",
+    isPC = true,
     fullName = "Lord Lucien",
     labelColor = "rgba(1, 0.85, 0, 1)",
     figurine = {
@@ -412,6 +413,7 @@ D.characters = {
   },
   rashid = {
     name = "rashid",
+    isPC = true,
     fullName = "Rashid Abdulrahman",
     labelColor = "rgba(1, 0.85, 0, 0.5)",
     figurine = {
@@ -426,6 +428,7 @@ D.characters = {
   },
   aishe = {
     name = "aishe",
+    isPC = true,
     fullName = "Aishe Tache",
     labelColor = "rgba(1, 0.85, 0, 0.5)",
     figurine = {
@@ -440,6 +443,7 @@ D.characters = {
   },
   fomorach = {
     name = "fomorach",
+    isPC = true,
     fullName = "Fomórach",
     labelColor = "rgba(1, 0.85, 0, 0.5)",
     figurine = {
@@ -454,6 +458,7 @@ D.characters = {
   },
   blackCaesar = {
     name = "blackCaesar",
+    isPC = true,
     fullName = "Black Caesar",
     labelColor = "rgba(1, 0.85, 0, 0.5)",
     figurine = {
@@ -1913,6 +1918,21 @@ D.characters = {
     }
   }
 }
+
+--- NPC-only view of `D.characters` (excludes PCs flagged `isPC = true`).
+--- Stage management — preload pool, control-board palette/token generation, NPC group
+--- enumeration — must use this so PC characters do not generate NPC figurines or palette tokens.
+--- Keyed lookups (`D.characters[key]`) and display-name resolution still use the full table.
+--- @return table<string, table> characterKey -> def (NPCs only)
+function D.getNpcCharacters()
+    local out = {}
+    for key, def in pairs(D.characters or {}) do
+        if type(def) == "table" and def.isPC ~= true then
+            out[key] = def
+        end
+    end
+    return out
+end
 
 --- Case-insensitive display name → D.characters key (CustomUIAssets cutout name).
 -- @param displayName string

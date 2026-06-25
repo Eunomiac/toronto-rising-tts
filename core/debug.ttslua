@@ -4760,9 +4760,10 @@ end
 --- @param pairsByKey table
 --- @return string[] sorted character keys with both sides
 local function sortedCompleteNpcTokenKeys(pairsByKey)
+    local npcChars = require("lib.npcs_data").getNpcCharacters()
     local keys = {}
     for characterKey, row in pairs(pairsByKey) do
-        if U.Type(row) == "table" then
+        if U.Type(row) == "table" and npcChars[characterKey] ~= nil then
             local frontOk = isFileUrl(row.front) or isHostedSteamUrl(row.front)
             local backOk = isFileUrl(row.back) or isHostedSteamUrl(row.back)
             if frontOk and backOk then

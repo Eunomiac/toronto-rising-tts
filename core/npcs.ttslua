@@ -16,7 +16,10 @@ local DATA = require("lib.npcs_data")
 local NLIGHT = require("lib.npcs_light_spawn_defaults")
 local SRI = require("lib.seat-role-identity")
 
-NPCS.characters = DATA.characters or {}
+--- NPC-only roster (PCs flagged `isPC` are excluded). The stage pool, preload grid, palette
+--- tokens, and NPC group enumeration are all keyed off this, so PC characters never generate
+--- NPC figurines or control-board tokens. PC-inclusive lookups use `DATA.characters` directly.
+NPCS.characters = DATA.getNpcCharacters()
 NPCS.lights = DATA.lights or {}
 NPCS.stageLights = DATA.stageLights or {}
 NPCS.areas = DATA.areas or {}
