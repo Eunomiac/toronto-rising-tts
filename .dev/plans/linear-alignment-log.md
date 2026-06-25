@@ -323,5 +323,13 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-06-25 | DONE | TOR-105, TOR-183, TOR-216, TOR-217 | Reference-panel External issues closed (author); map panel left open (TOR-245, TOR-89) |
 | 2026-06-25 | REOPEN | TOR-190, TOR-192, TOR-193 | Coterie infographics not part of reference-panel closure; TOR-190 parent of 192/193; detached from TOR-105 |
 | 2026-06-25 | DONE | TOR-229, TOR-230 | Prince's Court reference panel + coterieData schema; `removeBlockedBy` TOR-232 ← TOR-229/230; commit `0b57677` |
+| 2026-06-25 | INBOX | 2 items | Quick Fix TOR-251 promoted (ST normal grid + hunger offset); Active TOR-250 promoted (deactivated seat + import rules) |
+| 2026-06-25 | CREATE | TOR-250 | Deactivated seat retention when NPC on stage + scene import dual-placement rules (Todo Medium; parent TOR-169; related TOR-178) |
+| 2026-06-25 | CREATE | TOR-251 | ST normal pool grid labels include hunger offset (Todo Medium; parent TOR-31) |
+| 2026-06-25 | UPDATE | RUNNING TASKLIST | TOR-250 NPC bullet; TOR-251 Dice bullet; Focus blurb dated 2026-06-25 |
+| 2026-06-25 | DONE | TOR-251 | ST normal strip labels include hunger offset (`refreshStNormalStripLabels` in roll_ui.ttslua) |
+| 2026-06-25 | SHIP | pc_control_token load invisibility | `TAG_PC_TOKEN` in `applyControlBoardComponentPlayerInvisibility` (npc_gameboard.ttslua) |
+| 2026-06-25 | CREATE | TOR-252 | NPC roll broadcast wrong figurine for duplicate fullName (Todo Medium; parent TOR-31; related TOR-174/TOR-156) |
+| 2026-06-25 | INBOX | `/tr-inbox` complete | 3 Quick Fixes + 1 Active triaged; INBOX cleared |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

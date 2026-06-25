@@ -4,8 +4,6 @@
 
 ## Active
 
-- [NPC Control Board] When an NPC occupies a seat but is moved to an area on the stage, their seat should remain occupied by that NPC -- just deactivated, with their figurine moved to the stage. On a "Clear", that NPC should return to their claimed seat. Importantly, this includes scene library definitions where an NPC is registered as both occupying a seat AND occupying a stage position: This is fine, as long as their seat is flagged "`isPresent = false`" -- the scene should be set up with that seat occupied but inactive, and the NPC properly positioned on the stage. If an NPC is registered as being in two places at once (i.e. in two positions on the stage, or in an _active_ seat and a stage position), the scene JSON import should fail to validate.
-
 ---
 
 ## Needs clarification
@@ -20,6 +18,10 @@
 
 ## Processed
 
+2026-06-25 TOR-251 — ST normal grid labels shift by hunger offset (shipped; `refreshStNormalStripLabels`)
+2026-06-25 TOR-252 — NPC roll broadcast wrong figurine for duplicate fullName (promoted; display-name lookup root cause documented)
+2026-06-25 TOR-250 — Deactivated seat when NPC on stage + scene import rules (promoted from Active)
+2026-06-25 pc_control_token load invisibility — `TAG_PC_TOKEN` added to control-board component sweep (partial; toolbar Host visibility already TOR-176)
 2026-06-23 TOR-240 — No Take Half player panel phase label (shipped)
 2026-06-23 TOR-241 — Player dice spawn arc RING_STEP 1.5 (shipped)
 2026-06-23 TOR-242 — CONTROL_BOARD seat row lower-left u/v (shipped)

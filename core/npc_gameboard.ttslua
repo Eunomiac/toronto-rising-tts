@@ -33,8 +33,9 @@ end
 local Palette = require("lib.npc_control_board_palette")
 
 local TAG_TOKEN = DATA.TAG_NPC_CONTROL_TOKEN
+local TAG_PC_TOKEN = DATA.TAG_PC_CONTROL_TOKEN or "pc_control_token"
 local CONTROL_BOARD_SNAP_TAGS = DATA.CONTROL_BOARD_SNAP_TAGS
-    or { TAG_TOKEN, DATA.TAG_PC_CONTROL_TOKEN or "pc_control_token" }
+    or { TAG_TOKEN, TAG_PC_TOKEN }
 local TAG_PC = DATA.TAG_GAMEBOARD_PC_SEAT
 local TAG_NPC_SEAT = DATA.TAG_GAMEBOARD_NPC_SEAT
 local TAG_TABLE = DATA.TAG_GAMEBOARD_TABLE
@@ -1400,6 +1401,7 @@ local CONTROL_BOARD_COMPONENT_TAGS = {
     TAG_NPC_SEAT,
     TAG_COMPONENT,
     TAG_TOKEN,
+    TAG_PC_TOKEN,
 }
 
 --- Re-apply PC-only invisibility on every control-board marker and token.

@@ -1631,6 +1631,22 @@ local function selectedPoolCountForStrip(stripKind, active)
     return count
 end
 
+--- Normal strip labels show total pool (normal + hunger/rage) for the count that cell sets.
+--- @param active table|nil
+local function refreshStNormalStripLabels(active)
+    local offset = 0
+    if active ~= nil then
+        offset = selectedPoolCountForStrip("hunger", active) or 0
+    end
+    for index = 1, 10 do
+        U.setAttribute(
+            "db_gridStrip_rollPanelST_normal_" .. index .. "_text",
+            "text",
+            tostring(index + offset)
+        )
+    end
+end
+
 --- Refreshes grid-strip visuals on the live Storyteller roll panel (`gridStrip_rollPanelST_*`).
 --- @param active table|nil  Black seat active roll, or nil to clear strips
 function RUI.refreshStRollGridStrips(active)
@@ -1643,6 +1659,7 @@ function RUI.refreshStRollGridStrips(active)
         end
         return selectedPoolCountForStrip(kind, active)
     end)
+    refreshStNormalStripLabels(active)
 end
 
 local function stPoolStripCanInteract(_ctx)
