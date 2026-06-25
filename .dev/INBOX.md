@@ -4,9 +4,6 @@
 
 ## Active
 
-- [Bug] Whenever the control board / stage is updated (via Apply or Clear), seated NPCs with their lights off immedaitely have their lights toggled on, then immediately faded out to off.  Expected behavior:  A seated NPC whose light is off should not have their light turned on unless their seat is activated.
-- [NPC Stage Spotlights] The position of npc lights is changing. Rather than being positioned in front of the figurine and pointing up, NPC lights should be rotated to point directly down (x- and z- rotations of 0), moved 5 units above the TOP of the figurine on the y-axis, then moved about 3 units towards the table origin (i.e. along a line perpendicular to the figurine's orientation) so that the downward cone of light illuminates the front of the figure.
-
 ---
 
 ## Needs clarification
@@ -21,6 +18,8 @@
 
 ## Processed
 
+2026-06-25 TOR-265 — Control-board Apply/Clear flickers off-seat NPC lights on then off (promoted; relatedTo TOR-250/TOR-178)
+2026-06-25 TOR-266 — Reposition NPC figurine lights: point down, +5 above top, +3 toward table origin (promoted; relatedTo TOR-234; commit 36b0259 was doc-only despite message)
 2026-06-25 TOR-264 — Double music emitters on load: dual-apply fix (`Sync.full` skipSoundscape; load helpers single soundscape authority) (shipped)
 2026-06-25 TOR-255 — Blood Surge active disables Take Half (shipped)
 2026-06-25 TOR-256 — PC seat deactivate/activate syncs hosted scene+location conditions (shipped)

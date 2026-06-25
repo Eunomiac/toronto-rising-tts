@@ -12,14 +12,16 @@ This file is continuously updated with issues and plans for feature development.
 
 ## Focus
 
-_Stack rank for the current cycle (2026-06-25, post TOR-237/254 inbox). **Precedence** = Focus stack + Linear **`blockedBy`** (not Linear priority). **TOR-141 (E2E playbooks)** is a living doc (In Progress, not Focus stack). **Back-burner / “Deferred this cycle” is paused** (author 2026-06-21) — open work stays in domain sections; sequence via Linear blockers only._
+_Stack rank for the current cycle (2026-06-25, post TOR-147/264 + lighting inbox pass). **Precedence** = Focus stack + Linear **`blockedBy`** (not Linear priority). **TOR-141 (E2E playbooks)** is a living doc (In Progress, not Focus stack). **Back-burner / “Deferred this cycle” is paused** (author 2026-06-21) — open work stays in domain sections; sequence via Linear blockers only._
 
 | # | Issue | Why now |
 | --- | --- | --- |
 | 1 | **TOR-250** — Deactivated seat when NPC on stage + import rules | NPC gameboard Phase B; TOR-238 hold-spotlight preview shipped (Save & Play smoke pending) |
-| 2 | **TOR-245** — Map pins last active location + timestamp | TOR-151 gate closed; pin timestamp logic unblocked |
-| 3 | **TOR-141** — Manual E2E playbooks (Dice + Scenes) | Regression harness before large dice/scene refactors |
-| 4 | **TOR-259** — Willpower / Discipline / Humanity / Frenzy roll types | Inbox promotion; blocks TOR-260 roll-type dash wiring |
+| 2 | **TOR-265** — Apply/Clear off-seat NPC light flicker | Same Apply/Clear seat-activation path as TOR-250 — author asked to fold in together |
+| 3 | **TOR-266** — Reposition NPC figurine lights (down / above top / toward origin) | Author-spec'd lighting placement; same `core/lighting.ttslua` NPC spotlight code |
+| 4 | **TOR-245** — Map pins last active location + timestamp | TOR-151 gate closed; pin timestamp logic unblocked |
+| 5 | **TOR-141** — Manual E2E playbooks (Dice + Scenes) | Regression harness before large dice/scene refactors |
+| 6 | **TOR-259** — Willpower / Discipline / Humanity / Frenzy roll types | Inbox promotion; blocks TOR-260 roll-type dash wiring |
 
 **Also in cycle (below top stack):** **TOR-144** (Multiplayer E2E playbook — pre-invite checklist shipped in Preparing doc; multiclient pass via **TOR-249** human gate: friend on second machine). **NPC gameboard Phase B** — **TOR-238** (hover token → stage figurine spotlight preview; **not** Spotlight game phase TOR-98), **TOR-250** (deactivated seat when NPC on stage + import rules). **TOR-95** (play-as-NPC, `blockedBy` **TOR-247** seat decoupling). **ST dice UX** — **TOR-224** / **TOR-225** / **TOR-226** / **TOR-252** (NPC broadcast figurine for duplicate fullName). **TOR-222** (clock fast-forward). **Scenes inbox promotions** — **TOR-244** (library preview/edit), **TOR-245** (map pin timestamps, `blockedBy` TOR-151), **TOR-247** (rotational seat layout). **TOR-169** umbrella (In Progress; workshop save verification). **Projects (human gates):** **TOR-228**–**TOR-231**; **TOR-232** (`blockedBy` TOR-228–231). Dice E2E (**TOR-141** living doc) baseline shipped.
 
@@ -116,6 +118,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **NPC spotlight Y on seat→stage:** Seated NPC moved to lit stage placement — spotlight spawns at feet instead of bounds-aligned Y. _(TOR-234 — seat→stage ImageScalar defer; scalar>53 face +24 / position +12 @63)_
 - [ ] **Rotational seat index layout:** Dynamic PC seat positions by presence-sorted index; hand-position reference for color-tagged objects. _(TOR-247)_
 - [ ] **Deactivated seat when NPC on stage:** Retain `occupiedNPCSlots` + `isPresent = false` when figurine moves to stage; Clear re-seats; scene import allows seat+stage when seat inactive; reject dual active seat+stage or duplicate stage placements. _(TOR-250)_
+- [ ] **Apply/Clear off-seat light flicker:** Seated NPCs with lights OFF must not toggle ON-then-fade-OFF on control-board Apply/Clear; only activated seats light up. Same Apply/Clear seat-activation path as TOR-250 — fold in together. _(TOR-265)_
 - [x] **Figurine tooltips sync with player visibility:** Pooled figurines disable tooltips when `setInvisibleTo` hides from PCs. _(TOR-257)_
 
 ## Soundscape
@@ -133,6 +136,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] Reconciler lighting updates lerped (default 2s). _( `core/lighting.ttslua` `L.DEFAULT_RECONCILE_LERP_SECONDS`.)_ _(TOR-59)_
 - [x] Test-bed helpers to apply seat-light settings from Red to all active seats. _( `TestBed_applyPlayerSeatLightsFromRed`.)_ _(TOR-61)_
 - [ ] **Storyteller dice tray lights:** Keep `storytellerDiceLight1`–`3` OFF in steady state; only ON during live ST roll in matching drawer (`LIGHTMODES_REGISTRY_KEYS_ORDERED` currently forces STANDARD). _(TOR-149)_
+- [ ] **NPC figurine light placement:** Point straight down (x/z rot 0); 5u above figurine bounds **top**; ~3u toward table origin (perpendicular to facing) so the cone lights the figure's front. _(TOR-266)_
 - [ ] **Centralize light modes (`C.LightModes`):** Remove legacy keys (`BRIGHT`, `DIM`, `TENSION`, `STANDARD`, `AdminDark`, `AdminStandard`, `AdminBright`, `AdminDebug`); update `DEBUG`/`DARK`; Scenes panel dynamic 5-wide preset grid (all keys; active = green bg / white text). **`L.LIGHTMODES` unchanged.** _(TOR-81)_
 - [x] **Scenes/locations** drive global/seat light mode via state → `Scenes.reconcileFromState` / lighting reconciler (no dual apply). _(TOR-84 — 2026-06-15)_
 - [x] **Site skybox:** `sessionScene.siteKey` → `Scenes.reconcileSkyboxFromState` (`C.Sites[*].skyboxURL` or random `C.GenericSkyboxes` via `Backgrounds.setCustomURL`). _(TOR-58)_
