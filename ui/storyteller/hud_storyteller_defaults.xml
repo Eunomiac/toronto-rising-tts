@@ -116,6 +116,35 @@
   <!-- Admin Panel Classes (left-side button controls)                   -->
   <!-- ================================================================ -->
 
+  <!-- Debug seat-swap row (bottom-right, left of admin twirl-down) -->
+  <Button class="debug_seat_color_button"
+    text=""
+    width="30"
+    height="30"
+    minWidth="30"
+    minHeight="30"
+    preferredWidth="30"
+    preferredHeight="30"
+    flexibleWidth="0"
+    flexibleHeight="0"
+    fontSize="1"
+    textColor="rgba(0,0,0,0)"
+    padding="0 0 0 0"
+    alignment="MiddleCenter"
+    outline="rgba(0,0,0,0)"
+    outlineSize="0 0" />
+
+  <HorizontalLayout class="debug_seat_color_row"
+    rectAlignment="LowerRight"
+    offsetXY="-34 0"
+    width="190"
+    height="30"
+    spacing="2"
+    childAlignment="MiddleRight"
+    childForceExpandWidth="false"
+    childForceExpandHeight="false"
+    ignoreLayout="true" />
+
   <!-- Main button column: left-aligned, half-scale, vertically stacked -->
   <VerticalLayout class="storyteller_buttonControls"
     padding="0 0 0 0"

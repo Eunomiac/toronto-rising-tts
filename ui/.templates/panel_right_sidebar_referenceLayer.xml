@@ -16,6 +16,12 @@ UI.setAttributes("playerHud_referenceLayer_Red", {color = "rgba(1, 0, 0, 0.15)"}
 
     <Image rectAlignment="MiddleLeft" />
 
+    <Image class="box"
+      rectAlignment = "MiddleLeft"
+      preserveAspect = "true"
+      raycastTarget = "false"
+      active = "true" />
+
     <Image class="navButton"
       height = "128"
       width = "50"
@@ -45,15 +51,9 @@ UI.setAttributes("playerHud_referenceLayer_Red", {color = "rgba(1, 0, 0, 0.15)"}
       width = "24"
       active = "true" />
 
-    <Text class="coterie_dots_text" color="#fdf59d"
-      fontSize = "60" fontStyle="Bold"
-      rectAlignment = "LowerLeft"
-      alignment = "MiddleCenter"
-      shadow = "#000000"
-      shadowDistance = "3 -3" />
-
     <VerticalLayout class="page"
-      width = "710" />
+      width = "710"
+      padding = "8 8 50 50" />
 
     <VerticalLayout class="page_right"
       rectAlignment = "MiddleRight"
@@ -574,15 +574,10 @@ UI.setAttributes("playerHud_refPanel_princesCourt_Red", {offsetXY = "-50 0"})
       <Image id="box_on_hunger_5_Brown_@@color@@" image="box_red" class="box box_standard" offsetXY="675.25 32" />
 
       <!--
-UI.setAttributes("coterie_dots_text_Red", {color="#fdf59d", fontSize = "60", fontStyle="Bold", offsetXY = "-375 -435", text = "0", rectAlignment = "LowerLeft", alignment = "MiddleCenter", shadow = "#000000", shadowDistance = "3 -3"})
--->
-      <Text id="coterie_dots_text_@@color@@" class="coterie_dots_text" text="0" offsetXY = "-375 -435" />
-
-<!--
-UI.setAttributes("page_1_right_Red", {padding = "0 0 120 0"})
+UI.setAttributes("page_1_right_Pink", {padding = "8 8 160 20"})
 UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15)", rectAlignment = "MiddleLeft", offsetXY = "20 0"})
 -->
-      <VerticalLayout id="page_1_right_@@color@@" class="page page_right" padding = "0 0 120 0">
+      <VerticalLayout id="page_1_right_@@color@@" class="page page_right" padding = "8 8 160 50">
 
         <!-- Coterie Backgrounds -->
         <HorizontalLayout class="box_column_container">
@@ -591,7 +586,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
           <VerticalLayout class="box_column">@@COTERIE_BACKGROUNDS_COLUMN_3@@</VerticalLayout>
         </HorizontalLayout>
 
+        ##IF @@HAS_COTERIE_MERITS@@##
         <Image id="divider_coterieMerits_@@color@@" image="divider_coterieMerits" class="divider_image" />
+        ##ENDIF##
 
         <!-- Coterie Merits -->
         <HorizontalLayout class="box_column_container">
@@ -600,7 +597,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
           <VerticalLayout class="box_column">@@COTERIE_MERITS_COLUMN_3@@</VerticalLayout>
         </HorizontalLayout>
 
+        ##IF @@HAS_COTERIE_FLAWS@@##
         <Image id="divider_coterieFlaws_@@color@@" image="divider_coterieFlaws" class="divider_image" />
+        ##ENDIF##
 
         <!-- Coterie Flaws -->
         <HorizontalLayout class="box_column_container">
@@ -656,64 +655,79 @@ UI.setAttributes("dot_on_chasse_1_Red", {offsetXY = "35 -96"})
       <Image id="dot_on_haven_4_@@color@@" image="dot_large_yellow" class="dot dot_large" offsetXY="1129 -126" />
       <Image id="dot_on_haven_5_@@color@@" image="dot_large_yellow" class="dot dot_large" offsetXY="1162 -126" />
 <!--
+UI.setAttributes("page_2_left_Pink", {padding = "8 8 80 50"})
 UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15)", rectAlignment = "MiddleRight", offsetXY = "-20 0", padding = "0 0 200 0"})
-UI.setAttributes("page_2_left_Red", {width = "710", color = "rgba(1, 0, 0, 0.15)", rectAlignment = "MiddleLeft", offsetXY = "20 0"})
+
 -->
-      <VerticalLayout id="page_2_left_@@color@@" class="page page_left">
+      <VerticalLayout id="page_2_left_@@color@@" class="page page_left" padding = "8 8 80 50">
 
         <!-- Domain Backgrounds -->
+        ##IF @@HAS_DOMAIN_BACKGROUNDS@@##
+        <Image id="divider_domainBackgrounds_@@color@@" image="divider_domainBackgrounds" class="divider_image" />
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column">@@DOMAIN_BACKGROUNDS_COLUMN_1@@</VerticalLayout>
           <VerticalLayout class="box_column">@@DOMAIN_BACKGROUNDS_COLUMN_2@@</VerticalLayout>
           <VerticalLayout class="box_column">@@DOMAIN_BACKGROUNDS_COLUMN_3@@</VerticalLayout>
         </HorizontalLayout>
+        ##ENDIF##
 
+        <!-- Domain Claims -->
         <Image id="divider_domainClaims_@@color@@" image="divider_domainClaims" class="divider_claims_image" raycastTarget="true" onMouseEnter="HUD_playerPrincesCourt_domainClaimsDivider_hoverOn" onMouseExit="HUD_playerPrincesCourt_domainClaimsDivider_hoverOff" />
 
         <!-- Domain Merits -->
+        ##IF @@HAS_DOMAIN_MERITS@@##
+        <Image id="divider_domainMerits_@@color@@" image="divider_domainMerits" class="divider_image" />
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column">@@DOMAIN_MERITS_COLUMN_1@@</VerticalLayout>
           <VerticalLayout class="box_column">@@DOMAIN_MERITS_COLUMN_2@@</VerticalLayout>
           <VerticalLayout class="box_column">@@DOMAIN_MERITS_COLUMN_3@@</VerticalLayout>
         </HorizontalLayout>
+        ##ENDIF##
 
-        <Image id="divider_domainFlaws_@@color@@" image="divider_domainFlaws" class="divider_image" />
 
         <!-- Domain Flaws -->
+        ##IF @@HAS_DOMAIN_FLAWS@@##
+        <Image id="divider_domainFlaws_@@color@@" image="divider_domainFlaws" class="divider_image" />
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column">@@DOMAIN_FLAWS_COLUMN_1@@</VerticalLayout>
           <VerticalLayout class="box_column">@@DOMAIN_FLAWS_COLUMN_2@@</VerticalLayout>
           <VerticalLayout class="box_column">@@DOMAIN_FLAWS_COLUMN_3@@</VerticalLayout>
         </HorizontalLayout>
+        ##ENDIF##
 
       </VerticalLayout>
 
-      <VerticalLayout id="page_2_right_@@color@@" class="page page_right" padding = "0 0 200 0">
+      <VerticalLayout id="page_2_right_@@color@@" class="page page_right" padding = "8 8 200 50">
 
         <!-- Haven Backgrounds -->
+        ##IF @@HAS_HAVEN_BACKGROUNDS@@##
+        <Image id="divider_havenBackgrounds_@@color@@" image="divider_havenBackgrounds" class="divider_image" />
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column">@@HAVEN_BACKGROUNDS_COLUMN_1@@</VerticalLayout>
           <VerticalLayout class="box_column">@@HAVEN_BACKGROUNDS_COLUMN_2@@</VerticalLayout>
           <VerticalLayout class="box_column">@@HAVEN_BACKGROUNDS_COLUMN_3@@</VerticalLayout>
         </HorizontalLayout>
-
-        <Image id="divider_havenMerits_@@color@@" image="divider_havenMerits" class="divider_image" />
+        ##ENDIF##
 
         <!-- Haven Merits -->
+        ##IF @@HAS_HAVEN_MERITS@@##
+        <Image id="divider_havenMerits_@@color@@" image="divider_havenMerits" class="divider_image" />
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column">@@HAVEN_MERITS_COLUMN_1@@</VerticalLayout>
           <VerticalLayout class="box_column">@@HAVEN_MERITS_COLUMN_2@@</VerticalLayout>
           <VerticalLayout class="box_column">@@HAVEN_MERITS_COLUMN_3@@</VerticalLayout>
         </HorizontalLayout>
-
-        <Image id="divider_havenFlaws_@@color@@" image="divider_havenFlaws" class="divider_image" />
+        ##ENDIF##
 
         <!-- Haven Flaws -->
+        ##IF @@HAS_HAVEN_FLAWS@@##
+        <Image id="divider_havenFlaws_@@color@@" image="divider_havenFlaws" class="divider_image" />
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column">@@HAVEN_FLAWS_COLUMN_1@@</VerticalLayout>
           <VerticalLayout class="box_column">@@HAVEN_FLAWS_COLUMN_2@@</VerticalLayout>
           <VerticalLayout class="box_column">@@HAVEN_FLAWS_COLUMN_3@@</VerticalLayout>
         </HorizontalLayout>
+        ##ENDIF##
 
       </VerticalLayout>
 

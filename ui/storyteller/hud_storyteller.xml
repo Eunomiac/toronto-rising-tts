@@ -5,6 +5,14 @@
 <!-- Also includes sidebar (reference toggles) and camera bar via sub-includes -->
 
 <Panel id="adminControls" visibility="Host">
+  <HorizontalLayout class="debug_seat_color_row">
+    <Button id="debugSeat_Black" class="debug_seat_color_button" colors="#1A1A1A|#2A2A2A|#0F0F0F|#1A1A1A" onClick="HUD_debugSeatColor" />
+    <Button id="debugSeat_Red" class="debug_seat_color_button" colors="#B22222|#C42828|#901818|#B22222" onClick="HUD_debugSeatColor" />
+    <Button id="debugSeat_Orange" class="debug_seat_color_button" colors="#E67300|#F08010|#CC6600|#E67300" onClick="HUD_debugSeatColor" />
+    <Button id="debugSeat_Brown" class="debug_seat_color_button" colors="#6B4423|#7A5030|#5A3820|#6B4423" onClick="HUD_debugSeatColor" />
+    <Button id="debugSeat_Pink" class="debug_seat_color_button" colors="#C71585|#D02090|#B01075|#C71585" onClick="HUD_debugSeatColor" />
+    <Button id="debugSeat_Purple" class="debug_seat_color_button" colors="#5E2A7E|#6E358E|#4E2070|#5E2A7E" onClick="HUD_debugSeatColor" />
+  </HorizontalLayout>
   <Button id="toggleElem_adminControlsBody" class="hud_storyteller_button hud_storyteller_button_icon" onClick="HUD_togglePanel" rectAlignment="LowerRight" width="30" height="30">►</Button>
   <VerticalLayout class="storyteller_buttonControls" visibility="Host" height="30" childForceExpandHeight="false">
   </VerticalLayout>

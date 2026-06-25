@@ -1,0 +1,50 @@
+<!-- Parameters:
+@@TITLE_BAR_DOT_CLASS@@ - "1_dot" .. "6_dots"
+@@TITLE_TEXT@@ - uppercase title
+@@PAGE_NUM@@ - page number (2=coterie, 3=domain, 4=haven)
+@@SECTION@@ - "bg"
+@@INDEX@@ - entry index (0-based)
+@@BLOCK_ACTIVE@@ - "true" | "false" (blank slots start false)
+@@DOT_IMG_1@@ .. @@DOT_IMG_6@@ - dot image id when slot active (omit key when unused)
+@@FLAVOR_TEXT@@ - description (newline-separated in one Text)
+@@RULES_TEXT@@ - rules (newline-separated in one Text)
+@@HAS_BODY_TEXT@@ - set when description and/or rules body should render
+@@SOURCE_TEXT@@ - source line (omit key when absent)
+-->
+
+<VerticalLayout id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_@@color@@" class="box_text_container" active="@@BLOCK_ACTIVE@@">
+  <HorizontalLayout class="box_text_title_bar @@TITLE_BAR_DOT_CLASS@@">
+    <Text id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_title_@@color@@" class="box_text_title_text" text="@@TITLE_TEXT@@" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="14" horizontalOverflow="Overflow" verticalOverflow="Truncate" flexibleWidth="1" />
+    <Panel class="box_text_panel_title_dotline">
+      ##IF @@DOT_IMG_1@@##
+      <Image id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_dot_1_@@color@@" image="@@DOT_IMG_1@@" class="dot box_text_title_dot dot_1" />
+      ##ENDIF##
+      ##IF @@DOT_IMG_2@@##
+      <Image id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_dot_2_@@color@@" image="@@DOT_IMG_2@@" class="dot box_text_title_dot dot_2" />
+      ##ENDIF##
+      ##IF @@DOT_IMG_3@@##
+      <Image id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_dot_3_@@color@@" image="@@DOT_IMG_3@@" class="dot box_text_title_dot dot_3" />
+      ##ENDIF##
+      ##IF @@DOT_IMG_4@@##
+      <Image id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_dot_4_@@color@@" image="@@DOT_IMG_4@@" class="dot box_text_title_dot dot_4" />
+      ##ENDIF##
+      ##IF @@DOT_IMG_5@@##
+      <Image id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_dot_5_@@color@@" image="@@DOT_IMG_5@@" class="dot box_text_title_dot dot_5" />
+      ##ENDIF##
+      ##IF @@DOT_IMG_6@@##
+      <Image id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_dot_6_@@color@@" image="@@DOT_IMG_6@@" class="dot box_text_title_dot dot_6" />
+      ##ENDIF##
+    </Panel>
+  </HorizontalLayout>
+  ##IF @@HAS_BODY_TEXT@@##
+  <VerticalLayout class="box_text_panel_body">
+    <Text id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_flavor_@@color@@" class="box_text flavor_text" text="@@FLAVOR_TEXT@@" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+    <Text id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_rules_@@color@@" class="box_text rules_text" text="@@RULES_TEXT@@" resizeTextForBestFit="true" resizeTextMinSize="10" resizeTextMaxSize="14" horizontalOverflow="Wrap" verticalOverflow="Truncate" />
+  </VerticalLayout>
+  ##ENDIF##
+  ##IF @@SOURCE_TEXT@@##
+  <Panel class="box_text_panel_source">
+    <Text class="box_text_panel_source_text" text="@@SOURCE_TEXT@@" />
+  </Panel>
+  ##ENDIF##
+</VerticalLayout>

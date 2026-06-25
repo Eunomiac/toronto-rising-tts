@@ -5,7 +5,7 @@
       "base": 1,
       "temp": 4,
       "description": [
-        "As the most powerful coterie in the city, you have access to a vast array of resources."
+        "While not personally wealthy, your control over the Bay Street Financial District gives you access to a vast array of resources."
       ],
       "focus": "",
       "max": 5,
@@ -15,7 +15,43 @@
       ]
     }
   ],
-  "coterieMerits": [],
+  "coterieMerits": [
+    {
+      "base": 2,
+      "description": [],
+      "max": 2,
+      "name": "Multi-Level Lorekeeping",
+      "rules": []
+    },
+    {
+      "base": 3,
+      "description": [],
+      "max": 3,
+      "name": "Everything Is Connected",
+      "rules": []
+    },
+    {
+      "base": 2,
+      "description": [],
+      "max": 2,
+      "name": "Contextual Contact",
+      "rules": []
+    },
+    {
+      "base": 1,
+      "description": [],
+      "max": 1,
+      "name": "All Access",
+      "rules": []
+    },
+    {
+      "base": 2,
+      "description": [],
+      "max": 2,
+      "name": "Call to Purpose",
+      "rules": []
+    }
+  ],
   "coterieFlaws": [
     {
       "base": 5,
