@@ -448,6 +448,24 @@ function M.fingerprintOneTraitEntry(entry)
   })
 end
 
+--- Walk trait entries with the same 0-based index as `partitionEntries` / `buildBalancedColumnContents`.
+--- Index counts every included entry (real and blank), not blank-only serial numbers.
+--- @param entries table|nil
+--- @param opts table|nil
+--- @param fn fun(entry: table, index: integer)
+function M.forEachIncludedTraitEntry(entries, opts, fn)
+  if type(entries) ~= "table" or type(fn) ~= "function" then
+    return
+  end
+  local visibleIndex = 0
+  for _, entry in ipairs(entries) do
+    if type(entry) == "table" and isEntryIncluded(entry, opts) then
+      fn(entry, visibleIndex)
+      visibleIndex = visibleIndex + 1
+    end
+  end
+end
+
 --- @param arr table|nil
 --- @return string
 function M.fingerprintTraitArray(arr)

@@ -9,9 +9,12 @@ local PCT = require("lib.princes_court_trait_xml")
 local DOMAIN_DOT_KEYS = { "chasse", "lien", "portillon", "haven" }
 local MAX_DOMAIN_DOTS = 5
 
+--- Must match `lib/princes_court_trait_xml.ttslua` build opts so blank `setAttribute` ids align with baked XML.
+local TRAIT_ACTIVE_OPTS = { visibilityMode = "active" }
+
 --- @param pageNum integer
 --- @param sectionKey string
---- @param index integer 0-based visible index in array
+--- @param index integer 0-based trait index (real + blank entries share one sequence; matches build `INDEX`)
 --- @param hudSeatColor string
 --- @return string rootId
 local function traitBlockRootId(pageNum, sectionKey, index, hudSeatColor)
@@ -60,42 +63,42 @@ function CC.collectPrincesCourtTraitBlankUpdates(coterieData, hudSeatColor)
   for _, group in ipairs(PCT.listTraitGroups()) do
     local arr = coterieData[group.arrayKey]
     if type(arr) == "table" then
-      local visibleIndex = 0
-      for _, entry in ipairs(arr) do
-        if type(entry) == "table" and entry.blank == true then
-          local pageNum = group.pageNum
-          local sectionKey = group.sectionKey
-          local isFlaw = group.isFlaw == true
-          local rootId = traitBlockRootId(pageNum, sectionKey, visibleIndex, hudSeatColor)
-          local titleId = traitElementId(pageNum, sectionKey, visibleIndex, hudSeatColor, "title")
-          local flavorId = traitElementId(pageNum, sectionKey, visibleIndex, hudSeatColor, "flavor")
-          local rulesId = traitElementId(pageNum, sectionKey, visibleIndex, hudSeatColor, "rules")
-
-          if entry.active == true then
-            addUpdate(updates, rootId, { active = "true" })
-            addUpdate(updates, titleId, { text = TRAIT.entryTitleUpper(entry) })
-
-            local flavor = TRAIT.joinMultilineField(entry.description)
-            addUpdate(updates, flavorId, { text = flavor or "" })
-
-            local rules = TRAIT.joinMultilineField(entry.rules)
-            addUpdate(updates, rulesId, { text = rules or "" })
-
-            local slotCount, baseCount, tempCount = TRAIT.slotBaseAndTemp(entry)
-            local filledImg = isFlaw and "dot_red" or "dot_yellow"
-            for slot = 1, slotCount do
-              local img = TRAIT.dotImageForTraitSlot(slot, slotCount, baseCount, tempCount, filledImg)
-              addUpdate(updates, traitDotId(pageNum, sectionKey, visibleIndex, slot, hudSeatColor), {
-                image = img,
-                active = "true",
-              })
-            end
-          else
-            addUpdate(updates, rootId, { active = "false" })
-          end
+      TRAIT.forEachIncludedTraitEntry(arr, TRAIT_ACTIVE_OPTS, function(entry, traitIndex)
+        if entry.blank ~= true then
+          return
         end
-        visibleIndex = visibleIndex + 1
-      end
+
+        local pageNum = group.pageNum
+        local sectionKey = group.sectionKey
+        local isFlaw = group.isFlaw == true
+        local rootId = traitBlockRootId(pageNum, sectionKey, traitIndex, hudSeatColor)
+        local titleId = traitElementId(pageNum, sectionKey, traitIndex, hudSeatColor, "title")
+        local flavorId = traitElementId(pageNum, sectionKey, traitIndex, hudSeatColor, "flavor")
+        local rulesId = traitElementId(pageNum, sectionKey, traitIndex, hudSeatColor, "rules")
+
+        if entry.active == true then
+          addUpdate(updates, rootId, { active = "true" })
+          addUpdate(updates, titleId, { text = TRAIT.entryTitleUpper(entry) })
+
+          local flavor = TRAIT.joinMultilineField(entry.description)
+          addUpdate(updates, flavorId, { text = flavor or "" })
+
+          local rules = TRAIT.joinMultilineField(entry.rules)
+          addUpdate(updates, rulesId, { text = rules or "" })
+
+          local slotCount, baseCount, tempCount = TRAIT.slotBaseAndTemp(entry)
+          local filledImg = isFlaw and "dot_red" or "dot_yellow"
+          for slot = 1, slotCount do
+            local img = TRAIT.dotImageForTraitSlot(slot, slotCount, baseCount, tempCount, filledImg)
+            addUpdate(updates, traitDotId(pageNum, sectionKey, traitIndex, slot, hudSeatColor), {
+              image = img,
+              active = "true",
+            })
+          end
+        else
+          addUpdate(updates, rootId, { active = "false" })
+        end
+      end)
     end
   end
 
