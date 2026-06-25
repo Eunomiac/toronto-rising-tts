@@ -13,7 +13,7 @@ D.XML = [=[
 <Defaults>
   <Button class="gb_toolbar_btn" fontSize="52" preferredHeight="72" minHeight="60" preferredWidth="170" minWidth="140" textColor="#FFFFFF" />
 </Defaults>
-<Panel id="gb_root" visibility="Black" active="true" rectAlignment="LowerLeft" width="1280" height="100" scale="0.1 0.1 0.1" position="1 -100 -22" pivot="0 0">
+<Panel id="gb_root" visibility="Black" active="true" rectAlignment="LowerLeft" width="1280" height="100" scale="0.1 0.1 0.1" position="-25 -100 -22" pivot="0 0">
   <HorizontalLayout spacing="18" padding="8 8 8 8" childAlignment="MiddleCenter" childForceExpandWidth="false" height="100%" width="100%">
     <Button id="gb_apply" class="gb_toolbar_btn" onClick="click_apply"
       colors="#336644|#448855|#55AA66|#333333">Apply</Button>
@@ -21,11 +21,11 @@ D.XML = [=[
       colors="#663333|#884444|#AA5555|#333333">Clear</Button>
     <Button id="gb_snaps" class="gb_toolbar_btn" onClick="click_snaps_toggle"
       colors="#336644|#448855|#55AA66|#333333">Snaps On</Button>
-    <Button id="gb_read" class="gb_toolbar_btn" onClick="click_read" fontSize="46" preferredWidth="150"
-      colors="#336644|#448855|#55AA66|#333333">Read</Button>
-    <Button id="gb_lock" class="gb_toolbar_btn" onClick="click_lock" fontSize="46" preferredWidth="150"
+    <Button id="gb_save" class="gb_toolbar_btn" onClick="click_save" fontSize="40" preferredWidth="150"
+      colors="#336644|#448855|#55AA66|#333333">Save</Button>
+    <Button id="gb_lock" class="gb_toolbar_btn" onClick="click_lock" fontSize="40" preferredWidth="150"
       colors="#336644|#448855|#55AA66|#333333">Unlocked</Button>
-    <Button id="gb_load" class="gb_toolbar_btn" onClick="click_load" fontSize="46" preferredWidth="150"
+    <Button id="gb_load" class="gb_toolbar_btn" onClick="click_load" fontSize="40" preferredWidth="150"
       colors="#336644|#448855|#55AA66|#333333">Load</Button>
   </HorizontalLayout>
 </Panel>

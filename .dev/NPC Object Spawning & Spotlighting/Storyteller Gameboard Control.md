@@ -187,7 +187,7 @@ See [Generating Snap Points For Control Board.md](./Generating%20Snap%20Points%2
 
 - **Apply** / **Clear** — scan board → state → `Sync.npcs` (or clear + palette park); Storyteller / Black only
 - **Snaps** — toggle `controlBoardSnapsEnabled` (polar snap grid on/off)
-- **Read** — scan CONTROL_BOARD token UV layout → `sessionScene.npcWorld.placements` only (no `Sync.npcs` / no figurine moves)
+- **Save** — scan CONTROL_BOARD token UV layout → `sessionScene.npcWorld.placements` only (no `Sync.npcs` / no figurine moves); board → state, paired with **Load**
 - **Lock** — toggle `sessionScene.npcWorld.layoutLock`; when true, automatic reconcile skips token mirror (markers still reconcile); XmlUI shows **Locked** / **Unlocked**
 - **Load** — mirror persisted placements (+ seat-row tokens) onto CONTROL_BOARD tokens; bypasses layout lock (explicit restore from state)
 

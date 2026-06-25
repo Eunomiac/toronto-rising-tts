@@ -1333,9 +1333,10 @@ function Gameboard.applyFromControlBoard()
 end
 
 --- Scan CONTROL_BOARD token UV layout into `sessionScene.npcWorld.placements` only (no `Sync.npcs`).
+--- Save (board → state); paired with Load (state → board).
 --- @return boolean ok, string|nil message
-function Gameboard.readFromControlBoard()
-    beginInteractionProfile("read")
+function Gameboard.saveFromControlBoard()
+    beginInteractionProfile("save")
     local t0 = os.clock()
     local board = getControlBoard()
     if not isGameObject(board) then
@@ -1346,13 +1347,13 @@ function Gameboard.readFromControlBoard()
     local placements = placementsMapFromRows(rows)
     local existing = stateModule().getStateVal("sessionScene", "npcWorld", "placements")
     if placementsMapsEqual(placements, existing) then
-        print("[Gameboard] Read: placements unchanged — no state write")
+        print("[Gameboard] Save: placements unchanged — no state write")
         finishInteractionProfile(t0)
         return true, nil
     end
     stateModule().setStateVal(placements, "sessionScene", "npcWorld", "placements")
     lastControlBoardMirrorFingerprint = nil
-    print("[Gameboard] Read: " .. tostring(#rows) .. " token(s) → state (no figurine sync)")
+    print("[Gameboard] Save: " .. tostring(#rows) .. " token(s) → state (no figurine sync)")
     finishInteractionProfile(t0)
     return true, nil
 end
@@ -3437,15 +3438,15 @@ function click_snaps_toggle(player, value, id)
     end
 end
 
-function click_read(player, value, id)
+function click_save(player, value, id)
     local player_color = resolveControlBoardClickColor(player, value)
     if not isStorytellerSteamClick(player, value) then
         return
     end
-    local ok = Global.call("GlobalGameboardRead", {})
+    local ok = Global.call("GlobalGameboardSave", {})
     if broadcastToColor ~= nil then
-        local msg = ok == true and "Read: board layout saved to state (no figurine sync)."
-            or "Read failed — host only or CONTROL_BOARD missing."
+        local msg = ok == true and "Save: board layout saved to state (no figurine sync)."
+            or "Save failed — host only or CONTROL_BOARD missing."
         broadcastToColor(msg, player_color, ok == true and { 0, 1, 1 } or { 1, 0.35, 0.35 })
     end
 end
@@ -3517,7 +3518,7 @@ function Gameboard.ensureControlBoardObjectCallbacks(board)
     return true
 end
 
---- Install Apply/Clear/Read/Lock/Load 3D buttons when the save has no object script on CONTROL_BOARD yet.
+--- Install Apply/Clear/Save/Lock/Load 3D buttons when the save has no object script on CONTROL_BOARD yet.
 --- @param board Object|nil
 function Gameboard.ensureControlBoardObjectUi(board)
     board = board or getControlBoard()

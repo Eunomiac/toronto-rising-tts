@@ -400,15 +400,15 @@ function GlobalGameboardSyncSnapsToggleLabel(params)
     Gameboard.syncControlBoardLayoutLockLabel(board)
 end
 
---- NPC gameboard: scan CONTROL_BOARD → placements state only (no figurine sync).
+--- NPC gameboard: scan CONTROL_BOARD → placements state only (no figurine sync). Save (board → state).
 --- @param params table|nil
 --- @return boolean
-function GlobalGameboardRead(params)
-    if not U.requireHostForWorldMutation("GlobalGameboardRead") then
+function GlobalGameboardSave(params)
+    if not U.requireHostForWorldMutation("GlobalGameboardSave") then
         return false
     end
     local Gameboard = require("core.npc_gameboard")
-    local ok = Gameboard.readFromControlBoard()
+    local ok = Gameboard.saveFromControlBoard()
     if type(ok) == "boolean" then
         return ok
     end

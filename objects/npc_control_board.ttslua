@@ -76,15 +76,15 @@ function click_snaps_toggle(player, value, id)
     end
 end
 
-function click_read(player, value, id)
+function click_save(player, value, id)
     local player_color = resolveControlBoardClickColor(player, value)
     if not isStorytellerSteamClick(player, value) then
         return
     end
-    local ok = Global.call("GlobalGameboardRead", {})
+    local ok = Global.call("GlobalGameboardSave", {})
     if broadcastToColor ~= nil then
-        local msg = ok == true and "Read: board layout saved to state (no figurine sync)."
-            or "Read failed — host only or CONTROL_BOARD missing."
+        local msg = ok == true and "Save: board layout saved to state (no figurine sync)."
+            or "Save failed — host only or CONTROL_BOARD missing."
         broadcastToColor(msg, player_color, ok == true and { 0, 1, 1 } or { 1, 0.35, 0.35 })
     end
 end
