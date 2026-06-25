@@ -339,8 +339,8 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-06-25 | NOTE | TOR-236 | Author confirmed Apply-time PC seat activate/deactivate works in-game |
 | 2026-06-25 | UPDATE | TOR-152 | Augmented scope: Control Board sync on scene load must also reconcile `pc_control_token` flips to `seatSlots[color].isPresent` (not just NPC tokens); `relatedTo` TOR-236/TOR-237; reconcile pin exists (TOR-236), TOR-152 ensures it runs on load path |
 | 2026-06-25 | DOC | TOR-141 | E2E: Scenes Suite D2 + `gbE2eVerifyPcTokens` harness (reload + scene Apply PC token mirror); Gameboard reload/scene_apply gates extended |
-| 2026-06-25 | IN PROGRESS | TOR-165 | WP reroll wave: debounce only chosen dice; cap auto-finish; Confirm during ROLLING wave |
-| 2026-06-25 | IN PROGRESS | TOR-165 | Author refinement: no settle timeout below cap (Confirm-only); per-die `previewOnly` display refresh; lock each rerolled die on settle; cap auto-advances |
+| 2026-06-25 | DONE | TOR-165 | WP reroll wave partial settle — author verified Save & Play; commits dd6707e + cd6067e |
+| 2026-06-25 | UPDATE | RUNNING TASKLIST | TOR-165 `[x]`; Focus cleared (re-stack on what's next) |
 | 2026-06-25 | FOLLOW-UP | TOR-236 | PC control token dropped on ST Normal/Hunger dice bag → Standard roll for that PC (PCs-panel parity); any bag returns token to its column home + flip (`tryPcControlTokenDroppedOnStorytellerDiceBag` / `GlobalGameboardPcTokenDroppedOnDiceBag`) |
 | 2026-06-25 | DONE | TOR-253 | Dice spawn-arc overflow layering: cap 10/arc, extras on higher (+2 y) + slightly-larger concentric arcs (`objects/dice_bag.ttslua` `worldArcPoint`); relatedTo TOR-241 |
 
