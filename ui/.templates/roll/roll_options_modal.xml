@@ -15,6 +15,7 @@
     <Text id="db_rollOpts_modal_title" class="rollOpts_modal_title" text="Roll Options" />
 
     <!-- Roll Type -->
+    <Text id="db_rollOpts_modal_header_rollType" class="rollOpts_modal_header" text="Roll Type" />
 
     <HorizontalLayout id="db_rollOpts_modal_horiz_toggle_container_rollType_1" class="rollOpts_modal_horiz_toggle_container">
       <Button id="rollOpts_type_standard" class="rollOpts_toggle rollOpts_toggle_on" onClick="HUD_rollOptsToggle" text="Standard" />
