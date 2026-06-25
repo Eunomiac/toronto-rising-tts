@@ -123,7 +123,7 @@ D.CONTROL_BOARD_PALETTE_SNAP = {
 
 --- Horizontal seat-assignment row on CONTROL_BOARD (TOR-180).
 --- NPC columns (`kind = "npc"`) drive `occupiedNPCSlots` + narrative presence on Apply.
---- PC columns are layout-only snaps (no assignment).
+--- PC columns (`kind = "pc"`) pin a color-bound `pc_control_token`; flip drives `seatSlots[color].isPresent` on Apply (TOR-236).
 D.CONTROL_BOARD_SEAT_ROW = {
   v = 0.12,
   uMin = 0.05,
