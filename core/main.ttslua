@@ -234,12 +234,16 @@ function M.advancePhase(newPhase)
   -- Update state
   S.setCurrentPhase(newPhase)
 
-  -- Trigger phase-specific setup
-  -- TODO: Add phase transition logic (lighting changes, UI updates, etc.)
-  -- Example:
-  -- if newPhase == C.Phases.PLAY then
-  --     -- Activate zones, update lighting, etc.
-  -- end
+  -- Play / Downtime: restore on-table scene or apply no-scene default (TOR-152).
+  if newPhase == C.Phases.PLAY or newPhase == C.Phases.DOWNTIME then
+    local Scenes = require("core.scenes")
+    if type(Scenes.reconcilePlaySessionOnEnter) == "function" then
+      Scenes.reconcilePlaySessionOnEnter({
+        reason = "advancePhase",
+        skipTransitionBlindfold = true,
+      })
+    end
+  end
 
   -- Sync UI and features
   M.syncPhase()

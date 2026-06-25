@@ -17,6 +17,7 @@ local GameStateOverlay = {}
 
 local C = require("lib.constants")
 local PresentDayClock = require("core.present_day_clock")
+local SceneLibrary = require("core.scene_library")
 local S = require("core.state")
 local U = require("lib.util")
 local ChronicleWeather = require("lib.chronicle_weather")
@@ -417,6 +418,17 @@ function GameStateOverlay.reconcileFromState()
         pushOverlayText("gameStateOverlay_datetime", "")
         pushOverlayText("gameStateOverlay_time", "")
         clearOverlayTextCache()
+        return
+    end
+
+    -- No live library scene: time is undefined — blank clock, hide weather (TOR-151 / TOR-245).
+    if SceneLibrary.hasLiveSceneOnTable() ~= true then
+        bustTextCacheIfSessionSceneChanged()
+        pushOverlayActive(OVERLAY_TIME_LOCATION_ID, true)
+        reconcileLocationRowFromState()
+        pushOverlayText("gameStateOverlay_datetime", "")
+        pushOverlayText("gameStateOverlay_time", "")
+        pushOverlayActive(OVERLAY_WEATHER_ID, false)
         return
     end
 

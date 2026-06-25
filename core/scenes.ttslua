@@ -22,6 +22,12 @@ local C = require("lib.constants")
 local G = require("lib.guids")
 local L = require("core.lighting")
 local Soundscape = require("core.soundscape")
+local SceneLibrary = require("core.scene_library")
+local RSL = require("lib.rotational-seat-layout")
+local ChronicleWeather = require("lib.chronicle_weather")
+
+--- Default table when no live library scene is on the table (TOR-151).
+Scenes.DEFAULT_NO_SCENE_TABLE_KEY = "Table B1"
 
 --- Last scene+transition fingerprint successfully applied to the live world (incremental sync skips when unchanged).
 local lastSceneReconcileFingerprint = nil
@@ -650,6 +656,283 @@ function Scenes.resetScene(transitionTime)
     else
         return Scenes.loadScene("default")
     end
+end
+
+-- ============================================================================
+-- NO-SCENE DEFAULT + PLAY-SESSION RESTORE (TOR-151 / TOR-152)
+-- ============================================================================
+
+local LIVE_CLOCK_DATETIME_KEYS = { "hour", "minute", "day", "month", "year" }
+
+--- @param s string|nil
+--- @return string
+local function trimSceneKey(s)
+    if type(s) ~= "string" then
+        return ""
+    end
+    return string.gsub(string.gsub(s, "^%s+", ""), "%s+$", "")
+end
+
+--- Overlay-only: stop real-time and clear live datetime fields (library / present-day clock untouched).
+local function clearLiveClockDatetimeForOverlay()
+    local ck = S.getStateVal("sessionScene", "clock")
+    if type(ck) ~= "table" then
+        ck = {}
+    end
+    ck.useRealTime = false
+    for _, k in ipairs(LIVE_CLOCK_DATETIME_KEYS) do
+        ck[k] = nil
+    end
+    S.setStateVal(ck, "sessionScene", "clock")
+end
+
+--- All five PC seats present; preserve per-seat `characterKey` when already authored.
+local function applyDefaultPcSeatPresence()
+    local seatSlots = S.getStateVal("sessionScene", "seatSlots")
+    if type(seatSlots) ~= "table" then
+        seatSlots = {}
+    end
+    local seatPresent = {}
+    for _, color in ipairs(C.PlayerColors or {}) do
+        local row = seatSlots[color]
+        if type(row) ~= "table" then
+            row = {}
+        end
+        row.isPresent = true
+        row.isPlayingNPC = false
+        row.npcCharacterKey = nil
+        seatSlots[color] = row
+        seatPresent[color] = true
+    end
+    local bundle = S.getStateVal("sessionScene") or {}
+    bundle.seatSlots = seatSlots
+    bundle.seatPresent = seatPresent
+    SceneLibrary.syncNpcRoleOverrideFromSeatSlots(bundle)
+    S.setStateVal(bundle, "sessionScene")
+end
+
+local function clearOccupiedNpcSlots()
+    local occupied = {}
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        occupied[seatKey] = false
+    end
+    S.setStateVal(occupied, "seatLayout", "occupiedNPCSlots")
+end
+
+local function clearLiveNpcWorldPlacements()
+    local npcWorld = S.getStateVal("sessionScene", "npcWorld")
+    if type(npcWorld) ~= "table" then
+        npcWorld = {}
+    end
+    npcWorld.placements = {}
+    npcWorld.byArea = {}
+    if npcWorld.controlBoardSnapsEnabled == nil then
+        npcWorld.controlBoardSnapsEnabled = true
+    end
+    S.setStateVal(npcWorld, "sessionScene", "npcWorld")
+end
+
+--- Persisted + eager apply: Main BGM only, no location/weather (TOR-151 / TOR-152 no-scene branch).
+local function applyMainOnlySoundscapeIntent()
+    S.setStateVal("main", "soundscape", "musicMood")
+    S.setStateVal(nil, "soundscape", "lastAppliedSiteKey")
+    Soundscape.setLocationAudio("none")
+    Soundscape.setMusicMood("main")
+    Soundscape.setWeatherCondition("none")
+    if type(Soundscape.markReconciledToCurrentState) == "function" then
+        Soundscape.markReconciledToCurrentState()
+    end
+end
+
+--- Random generic skybox when no narrative site is active (TOR-151).
+--- @return boolean
+local function applyRandomGenericSkybox()
+    local generics = C.GenericSkyboxes
+    if type(generics) ~= "table" or #generics < 1 then
+        return false
+    end
+    local url = generics[math.random(#generics)]
+    if type(url) ~= "string" or trimSceneKey(url) == "" then
+        return false
+    end
+    if Backgrounds == nil or type(Backgrounds.setCustomURL) ~= "function" then
+        return false
+    end
+    local ok = Backgrounds.setCustomURL(url)
+    if ok == true then
+        lastSkyboxReconcileFingerprint = "__no_scene_generic__"
+    end
+    return ok == true
+end
+
+local function reconcileHostedConditionsSkipPresentation()
+    local Conditions = require("core.conditions")
+    if type(Conditions.reconcileHostedForSession) == "function" then
+        Conditions.reconcileHostedForSession({ skipPresentation = true })
+    end
+end
+
+--- @param reason string|nil
+local function syncFullForce(reason)
+    local Sync = require("core.sync")
+    if type(Sync.full) == "function" then
+        Sync.full({ force = true, reason = reason or "scenes" })
+    end
+end
+
+--- Writes live `sessionScene` / `seatLayout` fields for the no-scene steady state (no world I/O).
+local function mutateDefaultNoSceneSessionState()
+    S.setStateVal(Scenes.DEFAULT_NO_SCENE_TABLE_KEY, "sessionScene", "tableKey")
+    S.setStateVal(nil, "sessionScene", "districtKey")
+    S.setStateVal(nil, "sessionScene", "siteKey")
+    S.setStateVal({}, "sessionScene", "conditions")
+    S.setStateVal({}, "sessionScene", "soundscapeNarrative")
+    S.setStateVal(false, "sessionScene", "isTopFogActive")
+    S.setStateVal("OutdoorDim", "sessionScene", "lightingPresetKey")
+    clearLiveNpcWorldPlacements()
+    applyDefaultPcSeatPresence()
+    clearOccupiedNpcSlots()
+    clearLiveClockDatetimeForOverlay()
+    Scenes.syncSessionLightingPresetForLocation()
+    S.validateState()
+end
+
+--- Soundscape for an on-table scene: site + narrative merge + chronicle weather when scheduled (TOR-152).
+function Scenes.applyActiveSceneSoundscapeFromSession()
+    local dKey = trimSceneKey(S.getStateVal("sessionScene", "districtKey"))
+    local sKey = trimSceneKey(S.getStateVal("sessionScene", "siteKey"))
+
+    local merged = {}
+    if sKey ~= "" then
+        local site = C.Sites[sKey]
+        if type(site) == "table" and type(Soundscape.contextFromSite) == "function" then
+            merged = Soundscape.contextFromSite(site, sKey) or {}
+        end
+    end
+    if type(Soundscape.mergeSessionSceneNarrativeIntoContext) == "function" then
+        merged = Soundscape.mergeSessionSceneNarrativeIntoContext(S.getStateVal("sessionScene"), merged)
+    end
+
+    local primeSoundscapeReconcile = false
+    if type(Soundscape.applyContext) == "function" and next(merged) ~= nil then
+        Soundscape.applyContext(merged)
+        primeSoundscapeReconcile = true
+    end
+    if S.getStateVal("sessionScene", "chronicleWeatherManualHold") ~= true then
+        if type(ChronicleWeather.applyScheduledWeather) == "function" then
+            ChronicleWeather.applyScheduledWeather({ force = false })
+            primeSoundscapeReconcile = false
+        end
+    end
+    if primeSoundscapeReconcile and type(Soundscape.markReconciledToCurrentState) == "function" then
+        Soundscape.markReconciledToCurrentState()
+    end
+end
+
+--- Applies the defined no-scene environment: Table B1, five PCs, empty NPC world, OutdoorDim, Main only.
+--- Does not mutate library rows, PC map pins, or present-day clock.
+--- @param opts table|nil `{ reason?: string, skipTransitionBlindfold?: boolean }`
+--- @return boolean
+function Scenes.applyDefaultNoSceneEnvironment(opts)
+    opts = type(opts) == "table" and opts or {}
+    if type(U.isHostClient) == "function" and U.isHostClient() ~= true then
+        return false
+    end
+
+    mutateDefaultNoSceneSessionState()
+
+    Scenes.invalidateReconcileCache()
+    if type(Soundscape.invalidateReconcileCache) == "function" then
+        Soundscape.invalidateReconcileCache()
+    end
+
+    applyMainOnlySoundscapeIntent()
+
+    if C.Tables[Scenes.DEFAULT_NO_SCENE_TABLE_KEY] ~= nil then
+        RSL.SetTableTo(Scenes.DEFAULT_NO_SCENE_TABLE_KEY, {
+            skipTransitionBlindfold = opts.skipTransitionBlindfold == true,
+        })
+    end
+
+    applyRandomGenericSkybox()
+    reconcileHostedConditionsSkipPresentation()
+
+    local GameStateOverlay = require("core.game_state_overlay")
+    if type(GameStateOverlay.stopTicker) == "function" then
+        GameStateOverlay.stopTicker()
+    end
+    if type(GameStateOverlay.resetRealTimeCarry) == "function" then
+        GameStateOverlay.resetRealTimeCarry()
+    end
+
+    syncFullForce(opts.reason or "default_no_scene")
+
+    if type(GameStateOverlay.reconcileFromState) == "function" then
+        GameStateOverlay.reconcileFromState()
+    end
+
+    return true
+end
+
+--- Reconciles the physical world to the persisted on-table `sessionScene` (load / Start→Play).
+--- @param opts table|nil `{ reason?: string, skipTransitionBlindfold?: boolean }`
+--- @return boolean
+function Scenes.restoreActiveSceneWorld(opts)
+    opts = type(opts) == "table" and opts or {}
+    if type(U.isHostClient) == "function" and U.isHostClient() ~= true then
+        return false
+    end
+    if SceneLibrary.hasLiveSceneOnTable() ~= true then
+        return Scenes.applyDefaultNoSceneEnvironment(opts)
+    end
+
+    Scenes.invalidateReconcileCache()
+    if type(Soundscape.invalidateReconcileCache) == "function" then
+        Soundscape.invalidateReconcileCache()
+    end
+
+    local tk = trimSceneKey(S.getStateVal("sessionScene", "tableKey"))
+    if tk ~= "" and C.Tables[tk] ~= nil then
+        RSL.SetTableTo(tk, { skipTransitionBlindfold = opts.skipTransitionBlindfold == true })
+    end
+
+    Scenes.applyActiveSceneSoundscapeFromSession()
+    reconcileHostedConditionsSkipPresentation()
+
+    local HUDP = require("core.hud_player")
+    if type(HUDP.armPinRelocationSceneCast) == "function" then
+        HUDP.armPinRelocationSceneCast()
+    end
+
+    local GameStateOverlay = require("core.game_state_overlay")
+    if type(GameStateOverlay.resetRealTimeCarry) == "function" then
+        GameStateOverlay.resetRealTimeCarry()
+    end
+
+    syncFullForce(opts.reason or "restore_active_scene")
+
+    if type(GameStateOverlay.stopTicker) == "function" then
+        GameStateOverlay.stopTicker()
+    end
+    if type(GameStateOverlay.ensureTicker) == "function" then
+        GameStateOverlay.ensureTicker()
+    end
+
+    return true
+end
+
+--- Play / Downtime entry: restore on-table scene or apply no-scene default (TOR-152).
+--- @param opts table|nil forwarded to restore/default helpers
+--- @return boolean
+function Scenes.reconcilePlaySessionOnEnter(opts)
+    local phase = S.getStateVal("currentPhase")
+    if phase ~= C.Phases.PLAY and phase ~= C.Phases.DOWNTIME then
+        return false
+    end
+    if SceneLibrary.hasLiveSceneOnTable() then
+        return Scenes.restoreActiveSceneWorld(opts)
+    end
+    return Scenes.applyDefaultNoSceneEnvironment(opts)
 end
 
 return Scenes

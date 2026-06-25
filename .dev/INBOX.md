@@ -2,7 +2,7 @@
 
 ## Quick Fixes
 
-- [Player Activation & Scene Presence] When a player's seat is deactivated, any location and/or scene Conditions on that player should be disabled -- by deactivating them, they are no longer present at the location or in the scene. Likewise, if a player's seat is _activated_, any scene and/or location conditions should be enabled on that player.
+- [Player Activation & Scene Presence] When a player's seat is deactivated, any location and/or scene Conditions on that player should be disabled -- by deactivating that player, they are no longer present at the location or in the scene. Likewise, if a player's seat is _activated_, any scene and/or location conditions should be enabled on that player.
 - [Dice Rolls] When a player makes a roll in which Blood Surge is active, Take Half should be _disabled_.
 
 ## Active
@@ -13,9 +13,12 @@
   * Discipline Roll -- Auto-populate the pool with a number of dice equal to the player's discipline bonus (`C.BloodPotency[character's blood potency rating].discBonus`). Auto-hunger is enabled. Take Half is _disabled_.
   * Humanity Roll -- Auto-populate the pool with the player's Humanity rating worth of Standard Dice. No Hunger dice, no Blood Surge, no Take Half, and no spending Willpower to reroll.
   * Frenzy Roll -- (We already have this roll type, but it should be updated to function as follows). Auto-populate the pool with a number of Standard Dice equal to the player's _undamaged_ Willpower PLUS one-third their Humanity rating, rounded down. No Hunger Dice, no Blood Surge, no Take Half, no WP Reroll.
-- [Roll Options Storyteller Dash Modal] 
-    Standard  Discipline  Willpower  Frenzy   Humanity
-    Rouse     Obliv-Rouse  Remorse   Launch  Goal  Simple
+- [Roll Options Storyteller Dash Modal] Above the "Permanent" header, two HorizontalLayout rows of buttons have been added, which need to be wired to up allow the Storyteller to change the roll type.
+  - Only one button can be active at a time; clicking one should turn the others off, using the same method as other buttons on the Roll Options modal (i.e. by setting their class)
+  - When a roll is initiated, the button corresponding to the initial roll type should be toggled on.
+  - The "O-Rouse" button should be hidden for all rolls by players who do not have an Oblivion-Rouse Dice Bag.
+  - When a roll is selected, all conditions enforced by that roll should be automatically applied -- those described above, and those already defined for existing roll type definitions.
+  - When a roll type is changed, the dice pool should be reset -- all dice should be cleared from the pool, and then any auto-populate logic for the new roll type should be applied.
 
 ---
 

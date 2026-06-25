@@ -970,30 +970,11 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player)
                 U.AlertGM("Unknown siteKey in scene bundle: " .. sKey)
             elseif dKey ~= "" and C.Districts[dKey] == nil then
                 U.AlertGM("Unknown districtKey in scene bundle: " .. dKey)
-            elseif SS.contextFromSite ~= nil then
-                merged = SS.contextFromSite(site, sKey) or {}
             end
         end
-        if SS.mergeSessionSceneNarrativeIntoContext ~= nil then
-            merged = SS.mergeSessionSceneNarrativeIntoContext(S.getStateVal("sessionScene"), merged)
-        end
-        local primeSoundscapeReconcile = false
-        if SS.applyContext ~= nil and next(merged) ~= nil then
-            SS.applyContext(merged)
-            primeSoundscapeReconcile = true
-        end
+        Scenes.applyActiveSceneSoundscapeFromSession()
 
         reconcileHostedConditions({ skipPresentation = true })
-
-        if S.getStateVal("sessionScene", "chronicleWeatherManualHold") ~= true then
-            if type(ChronicleWeather.applyScheduledWeather) == "function" then
-                ChronicleWeather.applyScheduledWeather({ force = false })
-                primeSoundscapeReconcile = false
-            end
-        end
-        if primeSoundscapeReconcile and SS.markReconciledToCurrentState ~= nil then
-            SS.markReconciledToCurrentState()
-        end
 
         if type(HUDP.armPinRelocationSceneCast) == "function" then
             HUDP.armPinRelocationSceneCast()
@@ -1035,46 +1016,10 @@ function StorytellerScenesPanel.endSceneNarrative(player)
     clockDraft.dirty = false
     StorytellerScenesPanel.syncClockDraftFromState()
 
-    S.setStateVal(nil, "sessionScene", "districtKey")
-    S.setStateVal(nil, "sessionScene", "siteKey")
-    S.setStateVal(nil, "soundscape", "lastAppliedSiteKey")
-    Scenes.syncSessionLightingPresetForLocation()
-    if type(Scenes.invalidateReconcileCache) == "function" then
-        Scenes.invalidateReconcileCache()
-    end
+    Scenes.applyDefaultNoSceneEnvironment({ reason = "StorytellerScenesPanel.endScene", skipTransitionBlindfold = true })
 
-    local ck = S.getStateVal("sessionScene", "clock")
-    if type(ck) ~= "table" then
-        ck = {}
-    end
-    if ck.useRealTime == true then
-        ck.useRealTime = false
-        S.setStateVal(ck, "sessionScene", "clock")
-        clockDraft.useRealTime = false
-        if GameStateOverlay and type(GameStateOverlay.stopTicker) == "function" then
-            GameStateOverlay.stopTicker()
-        end
-    end
-    S.validateState()
-
-    if SS.setLocationAudio ~= nil then
-        SS.setLocationAudio("none")
-    end
-    if S.getStateVal("currentPhase") ~= C.Phases.SESSION_START and SS.setMusicMood ~= nil then
-        SS.setMusicMood("main")
-    end
-    if SS.reapplyWeatherNaturalVolumes ~= nil then
-        SS.reapplyWeatherNaturalVolumes()
-    end
-    if SS.invalidateReconcileCache ~= nil then
-        SS.invalidateReconcileCache()
-    end
-    reconcileHostedSyncAndPresentSheets("StorytellerScenesPanel.endScene")
-    if Sync and type(Sync.ui) == "function" then
-        Sync.ui({ gameStateOverlay = true })
-    end
     StorytellerScenesPanel.refresh()
-    U.AlertGM("End scene: location cleared, real-time clock stopped, ambience refreshed.")
+    U.AlertGM("End scene: default no-scene environment applied.")
 end
 
 --- @param player Player

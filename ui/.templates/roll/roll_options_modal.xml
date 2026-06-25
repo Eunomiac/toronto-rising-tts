@@ -14,6 +14,25 @@
 
     <Text id="db_rollOpts_modal_title" class="rollOpts_modal_title" text="Roll Options" />
 
+    <!-- Roll Type -->
+
+    <HorizontalLayout id="db_rollOpts_modal_horiz_toggle_container_rollType_1" class="rollOpts_modal_horiz_toggle_container">
+      <Button id="rollOpts_type_standard" class="rollOpts_toggle rollOpts_toggle_on" onClick="HUD_rollOptsToggle" text="Standard" />
+      <Button id="rollOpts_type_discipline" class="rollOpts_toggle rollOpts_toggle_off" onClick="HUD_rollOptsToggle" text="Discipline" />
+      <Button id="rollOpts_type_willpower" class="rollOpts_toggle rollOpts_toggle_off" onClick="HUD_rollOptsToggle" text="Willpower" />
+      <Button id="rollOpts_type_frenzy" class="rollOpts_toggle rollOpts_toggle_off" onClick="HUD_rollOptsToggle" text="Frenzy" />
+      <Button id="rollOpts_type_humanity" class="rollOpts_toggle rollOpts_toggle_off" onClick="HUD_rollOptsToggle" text="Humanity" />
+    </HorizontalLayout>
+
+    <HorizontalLayout id="db_rollOpts_modal_horiz_toggle_container_rollType_2" class="rollOpts_modal_horiz_toggle_container">
+      <Button id="rollOpts_type_rouse" class="rollOpts_toggle rollOpts_toggle_off" onClick="HUD_rollOptsToggle" text="Rouse" />
+      <Button id="rollOpts_type_rouseOblivion" class="rollOpts_toggle rollOpts_toggle_off" onClick="HUD_rollOptsToggle" text="O-Rouse" />
+      <Button id="rollOpts_type_remorse" class="rollOpts_toggle rollOpts_toggle_off" onClick="HUD_rollOptsToggle" text="Remorse" />
+      <Button id="rollOpts_type_launch" class="rollOpts_toggle rollOpts_toggle_off" onClick="HUD_rollOptsToggle" text="Launch" />
+      <Button id="rollOpts_type_goal" class="rollOpts_toggle rollOpts_toggle_off" onClick="HUD_rollOptsToggle" text="Goal" />
+      <Button id="rollOpts_type_simple" class="rollOpts_toggle rollOpts_toggle_off" onClick="HUD_rollOptsToggle" text="Simple" />
+    </HorizontalLayout>
+
     <!-- Permanent -->
     <Text id="db_rollOpts_modal_header_permanent" class="rollOpts_modal_header" text="Permanent" />
 

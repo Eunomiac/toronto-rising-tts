@@ -6,7 +6,7 @@ Solo dev: one client is enough. Storyteller panels use `visibility="Host"`, not 
 
 Ground truth: [`core/storyteller_scenes_panel.ttslua`](../../core/storyteller_scenes_panel.ttslua), [`core/present_day_clock.ttslua`](../../core/present_day_clock.ttslua), [`core/game_state_overlay.ttslua`](../../core/game_state_overlay.ttslua), [`core/hud_player.ttslua`](../../core/hud_player.ttslua), [`.dev/Scene Constructor/Scene Constructor Overview.md`](../Scene%20Constructor/Scene%20Constructor%20Overview.md), [`.dev/HUD_FUNCTIONS.md`](../HUD_FUNCTIONS.md) § Scenes.
 
-**Deferred in code (document only):** TOR-142 (four clock-aware Apply buttons), TOR-152 (Play load **full** scene restore — PC token mirror probe ships in Suite D2; full restore path may still gap), TOR-153 (unmappable pin hide rules).
+**Deferred in code (document only):** TOR-142 (four clock-aware Apply buttons), TOR-153 (unmappable pin hide rules). **TOR-152** baseline shipped (`Scenes.reconcilePlaySessionOnEnter` on load gate + `advancePhase`).
 
 ## Deterministic test conventions
 
@@ -195,7 +195,7 @@ print(JSON.encode_pretty(S.getStateVal("soundscape")))
 
 **Pass if:** Emitters silent after prep; `soundscape` intent **not** wiped; after load, audio eventually matches persisted intent (TOR-138).
 
-**Known gap:** Explicit active-scene vs Main-only load branch is **TOR-152** — do not fail TOR-141 on missing **full** scene restore until shipped.
+**Load branch (TOR-152):** Host startup gate calls `Scenes.reconcilePlaySessionOnEnter` when phase is Play/Downtime — active scene (`lastAppliedKey`) → full resync; no scene → `applyDefaultNoSceneEnvironment` (Main BGM only, map pins hidden).
 
 #### D2 — PC control tokens after reload (TOR-152 / TOR-236)
 
@@ -229,7 +229,7 @@ print("Pink seatSlots", JSON.encode(S.getStateVal("sessionScene", "seatSlots", "
 
 **Pass if:** `[gbConfirm] PASS — gbE2eVerifyPcTokens` — every workshop `pc_control_token` is on its color column and flip matches `NPCS.resolvePlayerSeatPresence(color)`; absent Brown (or chosen color) is **face-down**.
 
-**Known gap (TOR-152):** If reload does not run `reconcileControlBoardFromState` (partial load / no active-scene restore), tokens may stay wrong while `seatSlots` in state is correct — log as TOR-152, not a false pass. Apply-time mirror alone (TOR-236) is insufficient for this step.
+**Reload expectation (TOR-152):** `reconcilePlaySessionOnEnter` on startup gate should run `reconcileControlBoardFromState` via `Sync.full({ force })`. If tokens disagree with `seatSlots`, file a bug — not an expected gap post-TOR-152.
 
 **Also run after library Apply:** Re-apply a library row whose saved `seatSlots` marks a PC absent → same `gbE2eVerifyPcTokens()` after blindfold settle (~12 s).
 
@@ -540,7 +540,7 @@ Re-check lighting, NPCs, pins, soundscape after ~3 s. Not for routine passes.
 | A Apply | ☐ | |
 | B Switch | ☐ | |
 | C End | ☐ | |
-| D Save/reload | ☐ | TOR-152 full restore gap OK |
+| D Save/reload | ☐ | PC tokens + scene restore (TOR-152) |
 | D2 PC tokens reload | ☐ | `gbE2eVerifyPcTokens` |
 | E Location (opt) | ☐ | |
 | F Present day bootstrap | ☐ | F1–F3 |

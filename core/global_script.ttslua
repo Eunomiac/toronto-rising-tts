@@ -1708,7 +1708,17 @@ function onLoad(saved_data)
         end,
         function()
             setStartupAction("startup-ready-final-sync-full")
-            Sync.full({ reason = "onLoad_startup_gate" })
+            local phase = S.getStateVal("currentPhase")
+            if (phase == C.Phases.PLAY or phase == C.Phases.DOWNTIME)
+                and Scenes ~= nil
+                and type(Scenes.reconcilePlaySessionOnEnter) == "function" then
+                Scenes.reconcilePlaySessionOnEnter({
+                    reason = "onLoad_startup_gate",
+                    skipTransitionBlindfold = true,
+                })
+            else
+                Sync.full({ reason = "onLoad_startup_gate" })
+            end
             return 0
         end,
         function()

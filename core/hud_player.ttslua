@@ -23,6 +23,7 @@ local L = require("core.lighting")
 local ES = require("lib.effective_stats")
 local PSC = require("lib.pc_sheet_collect")
 local Coterie = require("core.coterie")
+local SceneLibrary = require("core.scene_library")
 
 local HUDP = {}
 
@@ -1106,6 +1107,7 @@ local function applyMapPanelHud(playerID, seatColor, hud)
             pinOffsetCache[pinId] = nil
         end
     else
+        local liveSceneOnTable = SceneLibrary.hasLiveSceneOnTable() == true
         local useScenePinRules = mapPinRelocationSceneCastArmed == true
 
         --- Who receives the active site `offsetXY` (see `.dev/HUDs & Overlays/District & Site Card Display Changes.md`).
@@ -1142,30 +1144,36 @@ local function applyMapPanelHud(playerID, seatColor, hud)
 
         for _, pinColor in ipairs(MAP_PIN_PLAYER_COLORS) do
             local pinId = "playerHud_playerPin_" .. pinColor .. "_" .. seatColor
-            local shouldMove = pinShouldMoveToSite(pinColor)
-            local cachedOffset = pinOffsetCache[pinId]
 
-            if sessionSiteKey == "" or not offsetStr then
+            if not liveSceneOnTable then
                 applyCachedMapPanelBool(playerID, pinId, false, setMapStackImageVisibility)
                 pinOffsetCache[pinId] = nil
-            elseif not shouldMove then
-                if type(cachedOffset) == "string" and cachedOffset ~= "" then
-                    applyCachedMapPanelBool(playerID, pinId, true, setMapStackImageVisibility)
-                    if pinOffsetCache[pinId] ~= cachedOffset then
-                        U.setAttribute(pinId, "offsetXY", cachedOffset)
-                    end
-                else
-                    applyCachedMapPanelBool(playerID, pinId, false, setMapStackImageVisibility)
-                    pinOffsetCache[pinId] = nil
-                end
-            elseif sessionSiteMappable == false then
+            elseif sessionSiteKey == "" or not offsetStr then
                 applyCachedMapPanelBool(playerID, pinId, false, setMapStackImageVisibility)
                 pinOffsetCache[pinId] = nil
             else
-                applyCachedMapPanelBool(playerID, pinId, true, setMapStackImageVisibility)
-                if pinOffsetCache[pinId] ~= offsetStr then
-                    U.setAttribute(pinId, "offsetXY", offsetStr)
-                    pinOffsetCache[pinId] = offsetStr
+                local shouldMove = pinShouldMoveToSite(pinColor)
+                local cachedOffset = pinOffsetCache[pinId]
+
+                if not shouldMove then
+                    if type(cachedOffset) == "string" and cachedOffset ~= "" then
+                        applyCachedMapPanelBool(playerID, pinId, true, setMapStackImageVisibility)
+                        if pinOffsetCache[pinId] ~= cachedOffset then
+                            U.setAttribute(pinId, "offsetXY", cachedOffset)
+                        end
+                    else
+                        applyCachedMapPanelBool(playerID, pinId, false, setMapStackImageVisibility)
+                        pinOffsetCache[pinId] = nil
+                    end
+                elseif sessionSiteMappable == false then
+                    applyCachedMapPanelBool(playerID, pinId, false, setMapStackImageVisibility)
+                    pinOffsetCache[pinId] = nil
+                else
+                    applyCachedMapPanelBool(playerID, pinId, true, setMapStackImageVisibility)
+                    if pinOffsetCache[pinId] ~= offsetStr then
+                        U.setAttribute(pinId, "offsetXY", offsetStr)
+                        pinOffsetCache[pinId] = offsetStr
+                    end
                 end
             end
         end

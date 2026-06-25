@@ -589,4 +589,16 @@ function SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked()
     S.setStateVal(U.merge({}, live), "sceneLibrary", "scenes", K, "sessionScene")
 end
 
+--- True when a library scene is currently on the table (`lastAppliedKey` + row exists).
+--- Used for Play-session restore vs default no-scene (TOR-151 / TOR-152) and map-pin visibility (TOR-245).
+--- @return boolean
+function SceneLibrary.hasLiveSceneOnTable()
+    local S = require("core.state")
+    local key = S.getStateVal("sceneLibrary", "lastAppliedKey")
+    if type(key) ~= "string" or key == "" then
+        return false
+    end
+    return type(S.getStateVal("sceneLibrary", "scenes", key)) == "table"
+end
+
 return SceneLibrary
