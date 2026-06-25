@@ -335,5 +335,8 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-06-25 | DONE | TOR-236 | npc vs pc control-token contract — Apply-time PC seat activate/deactivate, NPC-only palette/preload (`D.getNpcCharacters()`), handler matrix; commits `c975ce1`/`0a5550b`/`7c1ebd5`; Focus #1 closed |
 | 2026-06-25 | UPDATE | TOR-95, TOR-247 | TOR-95 `blockedBy` TOR-247 (was TOR-236); TOR-247 scope note for PC-token sole authority + unblocks play-as-NPC |
 | 2026-06-25 | UPDATE | RUNNING TASKLIST | TOR-236 `[x]`; Focus re-stacked TOR-165 #1; TOR-95 blockedBy TOR-247 |
+| 2026-06-25 | NOTE | TOR-236 | Author workshop prep resolved (orphan PC npc_tokens deleted; pc_control_token + pcToken GM Notes); TOR-247/TOR-95 remain open for seat rotation + play-as-NPC |
+| 2026-06-25 | NOTE | TOR-236 | Author confirmed Apply-time PC seat activate/deactivate works in-game |
+| 2026-06-25 | UPDATE | TOR-152 | Augmented scope: Control Board sync on scene load must also reconcile `pc_control_token` flips to `seatSlots[color].isPresent` (not just NPC tokens); `relatedTo` TOR-236/TOR-237; reconcile pin exists (TOR-236), TOR-152 ensures it runs on load path |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

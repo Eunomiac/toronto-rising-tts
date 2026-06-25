@@ -2,6 +2,8 @@
 
 ## Quick Fixes
 
+- [Storyteller Dice Rolls] Storyteller dice are spawning too close together, such that when they are unlocked, they are pushed outwards and scattered by Unity physics. The arcs along which Storyteller dice spawn above Storyteller dice drawers should be expanded to allow room for more dice.
+
 ## Active
 
 ---
