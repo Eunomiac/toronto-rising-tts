@@ -2259,46 +2259,17 @@ local function enforceNPCSeatObjectVisibility(sourceObjects, occupiedNPCSlots, t
     end
   end
 
-  local function syncSeatLightMode(seatKey, active)
-    local seatToLightRefs = {
-      NPC1 = { "npcLight2NPC1", "npcLight1NPC1" },
-      NPC2 = { "npcLight2NPC2", "npcLight1NPC2" },
-      NPC3 = { "npcLight2NPC3", "npcLight1NPC3" },
-      NPC4 = { "npcLight2NPC4", "npcLight1NPC4" },
-    }
-    local lightRefs = seatToLightRefs[seatKey]
-    if U.Type(lightRefs) ~= "table" then
-      return
-    end
-    local mode = active and "STANDARD" or "OFF"
-    for _, lightRef in ipairs(lightRefs) do
-      if U.Type(lightRef) == "string" and lightRef ~= "" then
-        -- Persist intent first, then apply through lighting reconciliation (not a raw SetLightMode bypass).
-        S.setStateVal(mode, "lights", lightRef)
-        L_LIGHT.reconcileLightRef(lightRef, 0)
-      end
-    end
-  end
-
   for i = 1, #(C.NPCSeats or {}) do
     local seatKey = C.NPCSeats[i]
     local occupied = occupiedNPCSlots[seatKey] ~= nil and occupiedNPCSlots[seatKey] ~= false
     local targetHasSeat = tableSeatPresence[seatKey] == true
     local currentHasSeat = currentSeatPresence[seatKey] == true
-    local stageBound = occupied
-        and type(NPCS.isNpcSeatOccupantStageBound) == "function"
-        and NPCS.isNpcSeatOccupantStageBound(seatKey)
     if occupied and targetHasSeat then
       setSeatVisible(seatKey, true)
-      if not stageBound then
-        syncSeatLightMode(seatKey, true)
-      end
     elseif occupied and currentHasSeat and (not targetHasSeat) then
       setSeatVisible(seatKey, false)
-      syncSeatLightMode(seatKey, false)
     elseif not occupied then
       setSeatVisible(seatKey, false)
-      syncSeatLightMode(seatKey, false)
     end
   end
 end

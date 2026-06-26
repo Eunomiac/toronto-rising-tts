@@ -35,25 +35,25 @@ Shared fields (same meaning as [`core/lighting.ttslua`](../../core/lighting.ttsl
 
 * `enabled`, `color`, `range`, `angle`, `intensity`
 
-NPC-specific (no fixed `position` / `rotation` in data):
+NPC-specific placement is resolved at runtime in `NPCS.buildResolvedLightModeTable` (TOR-266):
 
-* `lookAtYShift`: Fraction of bounding-box height measured **down from the top** of the figurine bounds to the aim point (face).
-* `positionYShift`: Same vertical reference: used to set the light’s **world Y** as `topOfBounds - positionYShift * bboxHeight`.
-* `distance`: Horizontal offset length in world units along the **outward radial** direction (see below).
+* **`NPC_FIGURINE_LIGHT_ABOVE_TOP_Y`** (default **5**): world units **above** the figurine bounds **top** (`center.y + size.y/2`).
+* **`NPC_FIGURINE_LIGHT_INWARD_XZ`** (default **3**): offset toward table origin from bounds center in XZ (`normalize(-cx, -cz) * inward`).
+
+Legacy data keys (`lookAtYShift`, `positionYShift`, `distance` in `lib/npcs_data.ttslua` `D.lights`) are **not** used for resolved pooled-light placement after TOR-266.
 
 ### Light position and rotation (implementation pipeline)
 
 Do **not** split rotation into manual `rotX` / `rotY` / `rotZ` in data. The script:
 
 1. Reads figurine **axis-aligned bounds** (`getBounds()`).
-2. Computes **face target Y** = `topY - lookAtYShift * height` **+ face scalar ramp** when registry `figurine.scale` > 53 (scalar 63 ref: +24 world Y at ref; author-verified).
-3. Computes **light Y** = `topY - positionYShift * height` **+ position scalar ramp** (scalar 63 ref: +12 world Y; tune `NPC_FIGURINE_LIGHT_CAL_POSITION_DELTA_Y`).
-4. **Horizontal placement:** from the figurine’s **position** `(px, pz)` (table center in XZ), let `dir = normalize(px, pz)` in the XZ plane (direction from table center `(0,0,0)` toward the NPC). Place the light at `(px + dir.x * distance, lightY, pz + dir.z * distance)` so it sits **outward** from the table center relative to the figure (consistent with figures facing the center).
-5. **Rotation:** `U.lookAtRotation(lightPosition, faceTarget)` → full pitch/yaw for the spotlight object.
+2. Sets **light Y** = `topY + NPC_FIGURINE_LIGHT_ABOVE_TOP_Y`.
+3. **Horizontal placement:** from bounds center `(cx, cz)`, offset **inward** toward `(0,0,0)` by `NPC_FIGURINE_LIGHT_INWARD_XZ` (figurines face origin on stage, so inward radial matches “toward table origin along perpendicular to facing”).
+4. **Rotation:** `Vector(0, 0, 0)` — TTS spotlight default faces **downward** (downward cone on the figure front).
 
-Whenever the figurine **moves or rotates**, this pipeline is re-run (UI moves, `onObjectDrop`, and optional future hooks) so the paired light stays aligned.
+Whenever the figurine **moves or rotates**, this pipeline is re-run (UI moves, `onObjectDrop`, stage Apply, and defer align hooks) so the paired light stays aligned.
 
-**Stage placement timing:** `moveNpcToStagePlacement` syncs spotlight state via `applyStageNpcSpotlightNow` (bounds align only when ImageScalar + `getBounds` are ready), then `deferNpcSpotlightAlignedToFigurine` waits for off-seat ImageScalar restore after seat→stage (seat uses scalar 53 until reload) before bounds-based Y. `buildResolvedLightModeTable` uses the figurine’s **live** `ImageScalar` for the large-cutout Y ramp (not registry alone) so ramp matches the mesh that produced `getBounds`.
+**Stage placement timing:** `moveNpcToStagePlacement` syncs spotlight state via `applyStageNpcSpotlightNow` (bounds align only when ImageScalar + `getBounds` are ready), then `deferNpcSpotlightAlignedToFigurine` waits for off-seat ImageScalar restore after seat→stage (seat uses scalar 53 until reload) before bounds-based Y.
 
 ### Spawn source
 

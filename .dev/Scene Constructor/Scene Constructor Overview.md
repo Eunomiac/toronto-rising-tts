@@ -188,6 +188,8 @@ Each key is a **seat id** (`C.PlayerColors` + `C.NPCSeats`). **Import** (`SceneL
 - On **import**, omit an `NPC1…NPC4` key when you want that slot stored as **empty** (the importer adds `{ "slotEmpty": true }`).
 - In **`normalizeLiveSessionSceneSeatSlots`** (`core/state.ttslua`), only an **existing** `seatSlots[NPCn]` object with `slotEmpty == true` or a non-empty `characterKey` updates `seatLayout.occupiedNPCSlots`; a **missing** NPC key does not change `occupiedNPCSlots` in that pass.
 
+**NPC homeland + stage (TOR-250):** The same `characterKey` may appear in both `seatSlots[NPCn].characterKey` and `npcWorld.placements[characterKey]` when the figurine is on stage but retains a homeland seat — set **`isPresent`: `false`** on that NPC seat row (import validation rejects an **active** seat + stage combo). Control-board **Apply** auto-sets `isPresent = false` when a homeland character gains a placement row. **Clear** re-seats the figurine at the homeland when the token returns to the seat row.
+
 ### Soundscape (`sessionScene.soundscapeNarrative`)
 
 Optional keys (all optional; `{}` means “no narrative-driven apply” for apply-time mapping):

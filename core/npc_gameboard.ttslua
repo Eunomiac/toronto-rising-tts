@@ -1272,6 +1272,32 @@ local function applyPcSeatRowFromControlBoard(board)
     return changed
 end
 
+--- Homeland seat assigned but figurine on stage: deactivate narrative presence (TOR-250).
+--- Runs after seat-row scan; stage placement overrides seat-row token flip for that homeland.
+--- @param placements table<string, table> sessionScene.npcWorld.placements map
+--- @return boolean changed
+local function deactivateHomelandSeatsForStagePlacements(placements)
+    if type(placements) ~= "table" then
+        return false
+    end
+    local NPCS = require("core.npcs")
+    local occupied = stateModule().getStateVal("seatLayout", "occupiedNPCSlots")
+    if type(occupied) ~= "table" then
+        return false
+    end
+    local changed = false
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local characterKey = occupied[seatKey]
+        if type(characterKey) == "string" and characterKey ~= "" and type(placements[characterKey]) == "table" then
+            if NPCS.resolveSeatNarrativePresence(seatKey) then
+                NPCS.setNpcSeatNarrativePresence(seatKey, false)
+                changed = true
+            end
+        end
+    end
+    return changed
+end
+
 --- Apply CONTROL_BOARD tokens → state → Sync.npcs.
 --- @return boolean ok, string|nil message
 function Gameboard.applyFromControlBoard()
@@ -1292,6 +1318,9 @@ function Gameboard.applyFromControlBoard()
     local seatChanged, vacatedKeys = applySeatRowFromControlBoard(board, polarOnBoardByCharacter)
     local pcSeatChanged = applyPcSeatRowFromControlBoard(board)
     local placements = placementsMapFromRows(rows)
+    if deactivateHomelandSeatsForStagePlacements(placements) then
+        seatChanged = true
+    end
     if seatChanged and type(vacatedKeys) == "table" then
         for i = 1, #vacatedKeys do
             local ck = vacatedKeys[i]

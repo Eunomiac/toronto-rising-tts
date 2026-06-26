@@ -145,12 +145,12 @@ local NPC_ACTIVE_LIGHT_SCALE = 1
 --- Custom Figurine ImageScalar at table seats (TTS figurine custom-property scale — not Transform `setScale`).
 local NPC_SEAT_FIGURINE_IMAGE_SCALAR = 53
 
---- Baseline registry scalar for bounds-based spotlight Y; larger cutouts need look-at + position tweaks.
---- Lord Lucien (53): head ≈ 41.8 — bounds formula correct with no extra. Ian Rammond (63): head ≈ 57.91 (+ fudge for upper-face aim).
+--- Baseline registry scalar for bounds-based spotlight Y gate (defer until bounds tall enough).
 local NPC_FIGURINE_LIGHT_BASELINE_SCALAR = 53
-local NPC_FIGURINE_LIGHT_CAL_REF_SCALAR = 63
-local NPC_FIGURINE_LIGHT_CAL_FACE_DELTA_Y = 24
-local NPC_FIGURINE_LIGHT_CAL_POSITION_DELTA_Y = 12
+
+--- TOR-266: pooled figurine spotlight placement relative to bounds top (world units).
+local NPC_FIGURINE_LIGHT_ABOVE_TOP_Y = 5
+local NPC_FIGURINE_LIGHT_INWARD_XZ = 3
 
 --- Tolerance when comparing figurine ImageScalar before skipping `reload()`.
 local FIGURINE_IMAGE_SCALAR_EPS = 0.05
@@ -582,14 +582,7 @@ function NPCS.isNpcSeatOccupantStageBound(seatKey)
     return isNpcSeatOccupantStageBound(seatKey)
 end
 
-local NPC_HOMELAND_SEAT_LIGHT_REFS = {
-    NPC1 = { "npcLight2NPC1", "npcLight1NPC1" },
-    NPC2 = { "npcLight2NPC2", "npcLight1NPC2" },
-    NPC3 = { "npcLight2NPC3", "npcLight1NPC3" },
-    NPC4 = { "npcLight2NPC4", "npcLight1NPC4" },
-}
-
---- Fingerprint of stage-bound homeland seats (placements + occupied slots); gates duplicate OFF applies.
+--- Fingerprint of stage-bound homeland seats (placements + occupied slots); gates duplicate homeland light reconcile on skip path.
 --- @return string
 local function homelandStageBoundSpotlightsFingerprint()
     local parts = {}
@@ -604,37 +597,16 @@ end
 
 local lastHomelandStageBoundSpotlightsFingerprint = nil
 
---- Persist OFF and apply homeland seat spotlights for one NPC seat (TOR-178 stage-bound).
---- @param seatKey string
---- @param opts table|nil `{ force?: boolean }`
-local function syncNpcHomelandSeatSpotlightsOff(seatKey, opts)
-    opts = U.Type(opts) == "table" and opts or {}
-    if not isValidNpcSeatKey(seatKey) then
-        return
-    end
-    local lightRefs = NPC_HOMELAND_SEAT_LIGHT_REFS[seatKey]
-    if U.Type(lightRefs) ~= "table" then
-        return
-    end
-    local force = opts.force == true
-    for i = 1, #lightRefs do
-        local lightRef = lightRefs[i]
-        if U.Type(lightRef) == "string" and lightRef ~= "" then
-            S.setStateVal("OFF", "lights", lightRef)
-            L.reconcileLightRef(lightRef, 0, { force = force })
-        end
-    end
-end
-
---- Sole orchestrator pass: homeland seat spotlights OFF for every stage-bound NPC seat.
+--- Reconcile homeland workshop seat lights for every assigned NPC seat (state-derived priority).
+--- Used on orchestrator fingerprint skip and RSL layout tail when orchestrator is inactive.
 local function reconcileNpcHomelandSeatSpotlightsWhenStageBound()
     local fp = homelandStageBoundSpotlightsFingerprint()
     if fp == lastHomelandStageBoundSpotlightsFingerprint then
         return
     end
     for _, seatKey in ipairs(C.NPCSeats or {}) do
-        if isNpcSeatOccupantStageBound(seatKey) then
-            syncNpcHomelandSeatSpotlightsOff(seatKey, { force = false })
+        if resolveAssignedCharacterForSeat(seatKey) ~= nil then
+            L.reconcileForPlayer(seatKey)
         end
     end
     lastHomelandStageBoundSpotlightsFingerprint = fp
@@ -730,37 +702,6 @@ local function expectedFigurineImageScalarForNpcPlacement(npcName)
     return figurineImageScalarForNpc(npcName)
 end
 
---- Linear extra world Y for registry scalars above baseline (0 at scalar 53, full delta at ref scalar).
---- @param scalar number
---- @param refDeltaY number
---- @return number
-local function extraNpcSpotlightScalarRampY(scalar, refDeltaY)
-    local s = tonumber(scalar)
-    local delta = tonumber(refDeltaY)
-    if s == nil or delta == nil or delta == 0 or s <= NPC_FIGURINE_LIGHT_BASELINE_SCALAR then
-        return 0
-    end
-    local span = NPC_FIGURINE_LIGHT_CAL_REF_SCALAR - NPC_FIGURINE_LIGHT_BASELINE_SCALAR
-    if span <= 0 then
-        return 0
-    end
-    return (s - NPC_FIGURINE_LIGHT_BASELINE_SCALAR) * (delta / span)
-end
-
---- Extra look-at (face) world Y for large ImageScalar cutouts (Ian Rammond anchor).
---- @param scalar number
---- @return number
-local function extraNpcSpotlightFaceYForScalar(scalar)
-    return extraNpcSpotlightScalarRampY(scalar, NPC_FIGURINE_LIGHT_CAL_FACE_DELTA_Y)
-end
-
---- Extra spotlight object world Y for large ImageScalar cutouts (modest; aim fix carries most of the lift).
---- @param scalar number
---- @return number
-local function extraNpcSpotlightLightYForScalar(scalar)
-    return extraNpcSpotlightScalarRampY(scalar, NPC_FIGURINE_LIGHT_CAL_POSITION_DELTA_Y)
-end
-
 --- Read current Custom Figurine ImageScalar (custom-property card scale), not Transform scale.
 --- @param fig Object|nil
 --- @return number|nil
@@ -849,18 +790,6 @@ local function applyNpcFigurineImageScalarForPlacement(fig, npcName, areaKey)
         return applyFigurineImageScalarIfNeeded(fig, NPC_SEAT_FIGURINE_IMAGE_SCALAR)
     end
     return applyFigurineImageScalarIfNeeded(fig, figurineImageScalarForNpc(npcName))
-end
-
---- ImageScalar to use for spotlight Y ramp — must match the mesh that produced `getBounds`, not registry alone.
---- @param fig Object|nil
---- @param npcName string
---- @return number
-local function figurineImageScalarForLightAlign(fig, npcName)
-    local scalar = readFigurineImageScalar(fig)
-    if scalar ~= nil then
-        return scalar
-    end
-    return expectedFigurineImageScalarForNpcPlacement(npcName)
 end
 
 --- Figurine custom mesh loaded and bounds tall enough for spotlight Y from `getBounds` (not preload-scale feet).
@@ -1714,12 +1643,7 @@ function NPCS.buildResolvedLightModeTable(npcName, modeKey)
     local cz = b.center.z or b.center[3] or 0
     local sy = b.size.y or b.size[2] or 1
     local topY = cy + sy / 2
-    local lookFrac = tonumber(mode.lookAtYShift) or 0.5
-    local posFrac = tonumber(mode.positionYShift) or 0.3
-    local dist = tonumber(mode.distance) or 15
-    local scalar = figurineImageScalarForLightAlign(fig, npcName)
-    local faceY = topY - lookFrac * sy + extraNpcSpotlightFaceYForScalar(scalar)
-    local lightY = topY - posFrac * sy + extraNpcSpotlightLightYForScalar(scalar)
+    local lightY = topY + NPC_FIGURINE_LIGHT_ABOVE_TOP_Y
     local px, pz = cx, cz
     local len2 = px * px + pz * pz
     local ux, uz
@@ -1727,15 +1651,17 @@ function NPCS.buildResolvedLightModeTable(npcName, modeKey)
         ux, uz = 0, 1
     else
         local inv = 1 / math.sqrt(len2)
-        ux = px * inv
-        uz = pz * inv
+        ux = -px * inv
+        uz = -pz * inv
     end
-    local lightPos = Vector(px + ux * dist, lightY, pz + uz * dist)
-    local facePos = Vector(cx, faceY, cz)
-    local rot = U.lookAtRotation(lightPos, facePos)
+    local lightPos = Vector(
+        px + ux * NPC_FIGURINE_LIGHT_INWARD_XZ,
+        lightY,
+        pz + uz * NPC_FIGURINE_LIGHT_INWARD_XZ
+    )
     local out = U.clone(mode) or {}
     out.position = lightPos
-    out.rotation = rot
+    out.rotation = Vector(0, 0, 0)
     return out
 end
 
@@ -2710,8 +2636,7 @@ local function reconcileStepThreeSeatPlacements(intent)
     return allOk
 end
 
---- Step Four: narrative presence visibility; seat lights for non-stage-bound NPC seats only.
---- Stage-bound homeland spotlights reconcile once at orchestrator end (after Step Five).
+--- Step Four: narrative presence visibility; homeland seat lights via state-derived priority (all assigned NPC seats).
 --- @param intent table
 local function reconcileSeatNarrativePresenceFromIntent(intent)
     local O = require("core.objects")
@@ -2741,9 +2666,7 @@ local function reconcileSeatNarrativePresenceFromIntent(intent)
                     end
                 end
             end
-            if U.Type(info.areaBoundOccupant) ~= "string" or info.areaBoundOccupant == "" then
-                L.reconcileForPlayer(seatKey)
-            end
+            L.reconcileForPlayer(seatKey)
         end
     end
 end
@@ -2893,8 +2816,6 @@ function NPCS.reconcileAllFromState(opts)
             allOk = false
         end
     end
-
-    reconcileNpcHomelandSeatSpotlightsWhenStageBound()
 
     npcReconcileInProgress = false
 

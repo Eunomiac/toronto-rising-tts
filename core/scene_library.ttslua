@@ -211,6 +211,74 @@ local function rejectNpcWorldPreload(npcWorld)
     return true, nil
 end
 
+--- Resolve narrative presence for import validation (matches runtime default: present unless explicitly false).
+--- @param sessionScene table
+--- @param seatKey string
+--- @return boolean
+local function importSeatNarrativePresent(sessionScene, seatKey)
+    local ss = sessionScene.seatSlots
+    if type(ss) == "table" then
+        local row = ss[seatKey]
+        if type(row) == "table" and row.isPresent ~= nil then
+            return row.isPresent ~= false
+        end
+    end
+    local sp = sessionScene.seatPresent
+    if type(sp) == "table" and sp[seatKey] ~= nil then
+        return sp[seatKey] ~= false
+    end
+    return true
+end
+
+--- TOR-250: reject active homeland seat + stage placement; reject duplicate NPC seat assignment.
+--- @param sessionScene table
+--- @return boolean ok
+--- @return string|nil err
+local function validateNpcSeatStageConsistency(sessionScene)
+    if type(sessionScene) ~= "table" then
+        return true, nil
+    end
+    local slots = sessionScene.seatSlots
+    if type(slots) ~= "table" then
+        return true, nil
+    end
+    local placements = type(sessionScene.npcWorld) == "table" and sessionScene.npcWorld.placements or nil
+    if type(placements) ~= "table" then
+        placements = {}
+    end
+
+    local charToSeat = {}
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local row = slots[seatKey]
+        if type(row) ~= "table" or row.slotEmpty == true then
+            -- empty slot
+        elseif type(row.characterKey) == "string" and row.characterKey ~= "" then
+            local ck = row.characterKey
+            local prev = charToSeat[ck]
+            if prev ~= nil then
+                return false,
+                    string.format(
+                        "sessionScene.seatSlots: character %q is assigned to both %s and %s — each NPC may occupy at most one seat.",
+                        ck,
+                        prev,
+                        seatKey
+                    )
+            end
+            charToSeat[ck] = seatKey
+            if type(placements[ck]) == "table" and importSeatNarrativePresent(sessionScene, seatKey) then
+                return false,
+                    string.format(
+                        "sessionScene: %q is in an active seat (%s) and npcWorld.placements — set seatSlots.%s.isPresent to false when the figurine is on stage.",
+                        ck,
+                        seatKey,
+                        seatKey
+                    )
+            end
+        end
+    end
+    return true, nil
+end
+
 local NARRATIVE_CLOCK_DATETIME_KEYS = { "year", "month", "day", "hour", "minute" }
 
 --- Rejects deprecated `sessionScene.rollDefaults` (use `conditions` array instead).
@@ -452,6 +520,10 @@ function SceneLibrary.validateAndNormalizeImportPayload(raw)
     end
 
     local sessNorm = normalizeSeatSlotsForImport(sessionScene)
+    local okNpcSeatStage, errNpcSeatStage = validateNpcSeatStageConsistency(sessNorm)
+    if not okNpcSeatStage then
+        return false, errNpcSeatStage, nil
+    end
     local normalized = {
         sceneKey = sceneKey,
         title = titleTrim,
