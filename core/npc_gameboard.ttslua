@@ -3940,11 +3940,15 @@ local function mirrorControlBoardTokensFromPlacements(board, placements)
     local byChar = buildTokenByCharacterKey()
     local NPCS = require("core.npcs")
     local seatCatalog = seatRowCatalogByNpcSeatKey(Gameboard.buildControlBoardSnapCatalog(board, nil))
+    --- Character keys that should remain on the minimap (seat row or stage); all other NPC tokens
+    --- currently on the board are orphaned (e.g. scene change reduced occupied NPC seats) and are parked.
+    local keepOnBoard = {}
     local occupied = stateModule().getStateVal("seatLayout", "occupiedNPCSlots")
     if type(occupied) == "table" then
         for _, seatKey in ipairs(C.NPCSeats or {}) do
             local ck = occupied[seatKey]
             if type(ck) == "string" and ck ~= "" then
+                keepOnBoard[ck] = true
                 local entry = seatCatalog[seatKey]
                 local token = byChar[ck]
                 if entry ~= nil and isGameObject(token) and isTokenOnMinimapTokenSurface(board, token) then
@@ -3959,11 +3963,31 @@ local function mirrorControlBoardTokensFromPlacements(board, placements)
     end
     for characterKey, row in pairs(placements) do
         if type(row) == "table" and type(row.u) == "number" and type(row.v) == "number" then
+            keepOnBoard[characterKey] = true
             local token = byChar[characterKey]
             if isGameObject(token) and isTokenOnMinimapTokenSurface(board, token) then
                 mirrorControlTokenToPlacementRow(token, board, row)
             end
         end
+    end
+    --- Park NPC tokens still on the minimap that no longer map to an occupied seat or a stage placement.
+    local orphaned = {}
+    for characterKey, token in pairs(byChar) do
+        if keepOnBoard[characterKey] ~= true
+            and isGameObject(token)
+            and isTokenOnMinimapTokenSurface(board, token)
+        then
+            orphaned[#orphaned + 1] = characterKey
+        end
+    end
+    if #orphaned > 0 then
+        for i = 1, #orphaned do
+            local ck = orphaned[i]
+            if not parkNpcTokenOnPalette(byChar[ck], ck) then
+                print("[Gameboard] mirror: could not park orphaned token " .. tostring(ck))
+            end
+        end
+        print("[Gameboard] mirror: parked " .. tostring(#orphaned) .. " orphaned NPC token(s) to palette")
     end
     local pcCatalog = seatRowCatalogByPcColor(Gameboard.buildControlBoardSnapCatalog(board, nil))
     if next(pcCatalog) ~= nil then
