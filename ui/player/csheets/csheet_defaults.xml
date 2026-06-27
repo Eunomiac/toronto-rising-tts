@@ -53,8 +53,8 @@
 
   <!-- Box Container: Body -->
   <Panel class="box_text_panel_body" padding="0 0 0 0" color="#000000" />
-  <VerticalLayout class="box_text_panel_body" padding="0 0 0 0" color="#000000" />
-  <Text class="box_text" resizeTextForBestFit="true" resizeTextMinSize="24" resizeTextMaxSize="24" horizontalOverflow="Wrap" verticalOverflow="Truncate" alignment="UpperLeft" color="#DDDDDD" />
+  <VerticalLayout class="box_text_panel_body" padding="0 0 0 0" spacing="0" childForceExpandHeight="false" color="#000000" />
+  <Text class="box_text" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="24" horizontalOverflow="Wrap" verticalOverflow="Truncate" alignment="UpperLeft" color="#DDDDDD" />
   <Text class="flavor_text" fontStyle="BoldAndItalic" color="#FFFFFF"  />
 
 
