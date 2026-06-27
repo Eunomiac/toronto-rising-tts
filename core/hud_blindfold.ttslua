@@ -23,7 +23,9 @@ local TRANSITION_WORK_LEAD_IN_SEC = 2
 --- heavy reconcile then runs alone; new audio fades in only after the reconcile settles.
 local TRANSITION_FADE_OUT_SEC = 1.0
 local TRANSITION_WORK_SETTLE_SEC = 0.75
-local TRANSITION_FADE_IN_SEC = 1.0
+--- New-location ambient fades in as the blindfold rises (TOR-273), so this runs concurrently with the
+--- blindfold slide-up rather than under the blindfold — ~2s gives an audible reveal alongside the visual.
+local TRANSITION_FADE_IN_SEC = 2.0
 --- Exported so soundscape callers can fade ambient out/in over the same windows as the staged transition.
 HUDBF.TRANSITION_FADE_OUT_SEC = TRANSITION_FADE_OUT_SEC
 HUDBF.TRANSITION_FADE_IN_SEC = TRANSITION_FADE_IN_SEC
@@ -192,13 +194,14 @@ function HUDBF.runTransition(workFn, opts)
   return true
 end
 
---- Staged scene transition (TOR-147): blindfold down → fade-out → heavy work → fade-in → settle → lift.
+--- Staged scene transition (TOR-147): blindfold down → fade-out → heavy work → silent settle → lift + fade-in.
 --- Each phase is isolated in time via `U.RunSequence` so the resource-heavy reconcile never competes with
 --- audio fade scheduling (prevents lag spikes that hitched the old single-burst path).
 --- @param phases table `{ fadeOut?: fun(), work?: fun(): boolean, string|nil, fadeIn?: fun() }`
 ---   - `fadeOut` runs as blindfolds drop (quick ambient fade-out)
 ---   - `work` returns `ok, errMsg`; on failure the blindfold lifts immediately and `fadeIn` is skipped
----   - `fadeIn` runs only after `work` succeeds and its settle window elapses
+---   - `fadeIn` runs as the blindfold **rises** (after the silent settle hold), so the new-location audio
+---     reveal aligns with the visual reveal (TOR-273). Blindfold stays down `settleDelaySec` total.
 --- @param opts table|nil `{ fadeOutSec?, workSettleSec?, fadeInSec?, settleDelaySec?, variant? }`
 function HUDBF.runStagedTransition(phases, opts)
   if type(phases) ~= "table" then
@@ -233,21 +236,20 @@ function HUDBF.runStagedTransition(phases, opts)
       return workFailed and 0 or workSettleSec
     end,
     function()
-      -- Post-work blindfold budget is `settleDelaySec` (default 10s): workSettle + silent hold + fadeIn.
-      -- workSettle already ran in the prior step; reserve fadeIn at the end for new-location ambient.
+      -- Hold the blindfold down in silence through the settle window; reset cameras now. New-location
+      -- audio is NOT applied yet — it fades in as the blindfold rises (next step) so the audio reveal
+      -- aligns with the visual reveal. Budget: workSettle + this hold == settleDelaySec down-time.
       if workFailed then
         return 0
       end
       setDefaultCameraForSeatedPlayers()
-      return math.max(0, settleDelaySec - fadeInSec - workSettleSec)
+      return math.max(0, settleDelaySec - workSettleSec)
     end,
     function()
+      -- Blindfold rises and the new-location ambient fades in simultaneously (fadeInSec, ~2s).
       if not workFailed and type(phases.fadeIn) == "function" then
         phases.fadeIn()
       end
-      return workFailed and 0 or fadeInSec
-    end,
-    function()
       HUDBF.scheduleEnd(0)
     end,
   })

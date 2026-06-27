@@ -272,11 +272,11 @@ Implementation: [`core/present_day_clock.ttslua`](../../core/present_day_clock.t
 
 Scene **Apply** uses the **staged** transition `core.hud_blindfold.runStagedTransition` (built on `U.RunSequence`) so heavy reconcile never competes with audio fade scheduling (TOR-147). Phases:
 
-1. **Blindfold down** — close Scenes panel, show one random blindfold variant (1..6); slide-in is 1s.
+1. **Blindfold down** — close Scenes panel, show one random blindfold variant; slide-in is 1s.
 2. **Fade-out (~1s, concurrent with slide-in)** — `Soundscape.fadeOutTransitionAmbient` fades BGM + location + weather toward silence (emitter-only; no `gameState` intent change). Weather compares **outgoing vs incoming** (preview from the target bundle): different track → full fade-out; same track, different volume → duck to the **lower** volume (hold without restart, TOR-136).
 3. **Heavy work (settle ~0.75s)** — write **live** state from the chosen library entry’s `sessionScene`, switch table, hosted reconcile, `Sync.full({ skipSoundscape = true })`. New soundscape is **not** applied here.
-4. **Fade-in (~1s)** — inside `Soundscape.beginTransitionFadeWindow`, `Scenes.applyActiveSceneSoundscapeFromSession()` crossfades the **new** scene audio in (quick transition fades instead of the 8s/4s/3s catalog defaults).
-5. **Settle/lift** — at the start of the **10s** settle delay, `M.setCamera(..., "default")` for all seated players → lift blindfolds once.
+4. **Silent settle** — `M.setCamera(..., "default")` for all seated players, then hold the blindfold **down in silence** for the rest of the settle window (`settleDelaySec - workSettleSec`, ~9.25s of a 10s budget). New soundscape is still **not** applied.
+5. **Lift + fade-in (~2s, concurrent)** — at the **end** of the settle, `Scenes.applyActiveSceneSoundscapeFromSession()` runs inside `Soundscape.beginTransitionFadeWindow` **as the blindfold rises**, so the new scene audio fades in alongside the visual reveal (TOR-273; ~2s `TRANSITION_FADE_IN_SEC`). Blindfolds lift once via `scheduleEnd(0)`.
 
 (Standalone table toggles still use `runTransition`; the legacy single-burst `runTransitionAfterLeadIn` remains for callers that apply everything at once.)
 
