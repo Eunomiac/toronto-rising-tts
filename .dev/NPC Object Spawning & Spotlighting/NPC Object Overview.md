@@ -35,21 +35,29 @@ Shared fields (same meaning as [`core/lighting.ttslua`](../../core/lighting.ttsl
 
 * `enabled`, `color`, `range`, `angle`, `intensity`
 
-NPC-specific placement is resolved at runtime in `NPCS.buildResolvedLightModeTable` (TOR-266):
+NPC-specific placement is resolved at runtime in `NPCS.buildResolvedLightModeTable` from a per-mode **`positioning`** block. The block's presence means "this mode moves/aims the light"; absence (e.g. `OFF`) leaves the light's position and rotation untouched.
 
-* **`NPC_FIGURINE_LIGHT_ABOVE_TOP_Y`** (default **5**): world units **above** the figurine bounds **top** (`center.y + size.y/2`).
-* **`NPC_FIGURINE_LIGHT_INWARD_XZ`** (default **3**): offset toward table origin from bounds center in XZ (`normalize(-cx, -cz) * inward`).
+**Position** is defined by one of two field pairs:
 
-Legacy data keys (`lookAtYShift`, `positionYShift`, `distance` in `lib/npcs_data.ttslua` `D.lights`) are **not** used for resolved pooled-light placement after TOR-266.
+* **New placement** — `deltaUp` + `deltaInward`: light sits `deltaUp` world units **above** the figurine bounds **top** (`center.y + size.y/2`), offset `deltaInward` units **toward origin** in XZ (`normalize(-cx, -cz) * deltaInward`). Missing values fall back to `NPC_FIGURINE_LIGHT_ABOVE_TOP_Y` (5) / `NPC_FIGURINE_LIGHT_INWARD_XZ` (3).
+* **Legacy placement** — `positionYShift` + `distance`: light Y = `topY - positionYShift * height`; XZ offset radially **outward** by `distance` (`normalize(cx, cz) * distance`, so a **negative** `distance` pulls the light inward toward origin).
+
+**Rotation** is always a **look-at** toward the figurine (in both placement methods):
+
+* Target XZ = bounds center `(cx, cz)`.
+* Target Y = `topY - lookAtYShift * height` when **`lookAtYShift`** is present (fraction of figurine height below the bounds top; e.g. `0.1` aims near the top), else the figurine **bounds center** (`cy`).
+* `rotation = U.lookAtRotation(lightPos, target)` — tilts the cone toward the figure.
+
+`transitionTime` is **not** part of `positioning`; the move/transition duration is owned by the caller (`applyCurrentLightMode`, hover-preview, stage lerp), as with all `L.SetLightMode` callers.
 
 ### Light position and rotation (implementation pipeline)
 
 Do **not** split rotation into manual `rotX` / `rotY` / `rotZ` in data. The script:
 
 1. Reads figurine **axis-aligned bounds** (`getBounds()`).
-2. Sets **light Y** = `topY + NPC_FIGURINE_LIGHT_ABOVE_TOP_Y`.
-3. **Horizontal placement:** from bounds center `(cx, cz)`, offset **inward** toward `(0,0,0)` by `NPC_FIGURINE_LIGHT_INWARD_XZ` (figurines face origin on stage, so inward radial matches “toward table origin along perpendicular to facing”).
-4. **Rotation:** `Vector(0, 0, 0)` — TTS spotlight default faces **downward** (downward cone on the figure front).
+2. If the resolved mode has no `positioning`, returns the merged mode unchanged (no move/aim).
+3. Computes `lightPos` from the `positioning` field pair (new `deltaUp`/`deltaInward` or legacy `positionYShift`/`distance`).
+4. Computes `rotation` as a look-at toward the figurine, shifted by optional `lookAtYShift`.
 
 Whenever the figurine **moves or rotates**, this pipeline is re-run (UI moves, `onObjectDrop`, stage Apply, and defer align hooks) so the paired light stays aligned.
 
@@ -139,17 +147,14 @@ MyleneHamelin = {
   lighting = {
     off = {
       color = Color(1, 0.55, 0),
-      lookAtYShift = 0.7,
     },
     standard = {
       color = Color(1, 0.55, 0),
-      lookAtYShift = 0.2,
-      positionYShift = 0.3,
+      positioning = { deltaUp = 5, deltaInward = 3, lookAtYShift = 0.2 },
     },
     spotlight = {
       color = Color(1, 0.55, 0),
-      lookAtYShift = 0.2,
-      positionYShift = 0.3,
+      positioning = { positionYShift = 0.3, distance = -20, lookAtYShift = 0.2 },
     },
   },
   stats = {
@@ -210,9 +215,7 @@ NPCS.lights = {
     range = 10,
     intensity = 0,
     angle = 0,
-    lookAtYShift = 0.6,
-    positionYShift = 0.2,
-    distance = 20,
+    -- No `positioning`: OFF does not move or re-aim the light.
   },
   standard = {
     enabled = true,
@@ -220,9 +223,8 @@ NPCS.lights = {
     range = 10,
     intensity = 3,
     angle = 40,
-    lookAtYShift = 0.1,
-    positionYShift = 0.4,
-    distance = 15,
+    -- New placement: 5 above bounds top, 3 inward, aim near top.
+    positioning = { deltaUp = 5, deltaInward = 3, lookAtYShift = 0.1 },
   },
   spotlight = {
     enabled = true,
@@ -230,9 +232,8 @@ NPCS.lights = {
     range = 10,
     intensity = 8,
     angle = 35,
-    lookAtYShift = 0.2,
-    positionYShift = 0.3,
-    distance = 15,
+    -- Legacy placement: 0.3 of height below top, 20 units inward (negative distance), aim mid-figure.
+    positioning = { positionYShift = 0.3, distance = -20, lookAtYShift = 0.2 },
   },
 }
 ```

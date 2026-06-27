@@ -8,60 +8,24 @@
 
 local D = {}
 
--- D.lights = {
---   off = {
---     enabled = false,
---     color = Color(1, 1, 1),
---     range = 10,
---     intensity = 0,
---     angle = 0,
---     lookAtYShift = 0.6,
---     positionYShift = 0.2,
---     distance = -20,
---   },
---   standard = {
---     enabled = true,
---     color = Color(1, 1, 1),
---     range = 100,
---     intensity = 1.5,
---     angle = 120,
---     lookAtYShift = 0.3,
---     positionYShift = 0.4,
---     distance = -15,
---   },
---   spotlight = {
---     enabled = true,
---     color = Color(1, 1, 1),
---     range = 100,
---     intensity = 3,
---     angle = 70,
---     lookAtYShift = 0.1,
---     positionYShift = 0.3,
---     distance = -20,
---   },
--- }
-
-
 D.lights = {
   OFF = {
     enabled = false,
     color = Color(1, 1, 1),
     range = 100,
-    intensity = 0,
-    angle = 0,
-    lookAtYShift = 0.3,
-    positionYShift = 0.4,
-    distance = -15,
+    intensity = 0
   },
   STANDARD = {
     enabled = true,
-    color = Color(1, 1, 1),
-    range = 100,
-    intensity = 1.5,
-    angle = 120,
-    lookAtYShift = 0.3,
-    positionYShift = 0.4,
-    distance = -15,
+    color = Color(0.75, 0.75, 0.75),
+    range = 132,
+    intensity = 5,
+    angle = 88,
+    positioning = {
+      deltaUp = 5,
+      deltaInward = 3,
+      lookAtYShift = 0.1
+    }
   },
   SPOTLIGHT = {
     enabled = true,
@@ -69,10 +33,12 @@ D.lights = {
     range = 100,
     intensity = 3,
     angle = 70,
-    lookAtYShift = 0.1,
-    positionYShift = 0.3,
-    distance = -20,
-  },
+    positioning = {
+      positionYShift = 0.3,
+      distance = -20,
+      lookAtYShift = 0.1
+    }
+  }
 }
 
 --- Beam overrides for NPCs on STAGE_BOARD (`__stage_board__` placements). Deep-merged on top of `D.lights` + per-character `lighting` when resolving modes; position/aim fields stay from the base mode unless listed here.
@@ -518,7 +484,7 @@ D.characters = {
     fullName = "Chokes-On-Moonlight",
     labelColor = "rgba(255, 255, 255, 0.5)",
     figurine = {
-      scale = 53,
+      scale = 60,
     },
     groups = {
       friendlyNeighborhoodSpiders = 1
@@ -938,7 +904,7 @@ D.characters = {
     fullName = "Rot-in-the-River",
     labelColor = "rgba(255, 255, 255, 0.5)",
     figurine = {
-      scale = 53,
+      scale = 63,
     },
     groups = {
       friendlyNeighborhoodSpiders = 4
@@ -980,7 +946,7 @@ D.characters = {
     fullName = "Stalks-the-Tangle",
     labelColor = "rgba(255, 255, 255, 0.5)",
     figurine = {
-      scale = 53,
+      scale = 60,
     },
     groups = {
       friendlyNeighborhoodSpiders = 5

@@ -148,7 +148,8 @@ local NPC_SEAT_FIGURINE_IMAGE_SCALAR = 53
 --- Baseline registry scalar for bounds-based spotlight Y gate (defer until bounds tall enough).
 local NPC_FIGURINE_LIGHT_BASELINE_SCALAR = 53
 
---- TOR-266: pooled figurine spotlight placement relative to bounds top (world units).
+--- Fallback pooled figurine spotlight placement (world units) when `positioning.deltaUp` /
+--- `positioning.deltaInward` are omitted from a light mode's `positioning` block (TOR-266).
 local NPC_FIGURINE_LIGHT_ABOVE_TOP_Y = 5
 local NPC_FIGURINE_LIGHT_INWARD_XZ = 3
 
@@ -1643,25 +1644,47 @@ function NPCS.buildResolvedLightModeTable(npcName, modeKey)
     local cz = b.center.z or b.center[3] or 0
     local sy = b.size.y or b.size[2] or 1
     local topY = cy + sy / 2
-    local lightY = topY + NPC_FIGURINE_LIGHT_ABOVE_TOP_Y
+    local out = U.clone(mode) or {}
+    out.positioning = nil
+    -- No `positioning` block => this mode does not move/aim the light (e.g. OFF).
+    local positioning = mode.positioning
+    if U.Type(positioning) ~= "table" then
+        return out
+    end
     local px, pz = cx, cz
     local len2 = px * px + pz * pz
-    local ux, uz
-    if len2 < 1e-6 then
-        ux, uz = 0, 1
-    else
-        local inv = 1 / math.sqrt(len2)
-        ux = -px * inv
-        uz = -pz * inv
+    local inv = (len2 > 1e-6) and (1 / math.sqrt(len2)) or 0
+    local lightPos
+    if positioning.deltaUp ~= nil or positioning.deltaInward ~= nil then
+        -- New placement: `deltaUp` above bounds top, `deltaInward` toward origin in XZ.
+        local deltaUp = tonumber(positioning.deltaUp) or NPC_FIGURINE_LIGHT_ABOVE_TOP_Y
+        local deltaInward = tonumber(positioning.deltaInward) or NPC_FIGURINE_LIGHT_INWARD_XZ
+        lightPos = Vector(
+            px + (-px * inv) * deltaInward,
+            topY + deltaUp,
+            pz + (-pz * inv) * deltaInward
+        )
+    elseif positioning.positionYShift ~= nil or positioning.distance ~= nil then
+        -- Legacy placement: `positionYShift` fraction below bounds top, `distance` radial (negative = inward).
+        local posFrac = tonumber(positioning.positionYShift) or 0.3
+        local dist = tonumber(positioning.distance) or -15
+        lightPos = Vector(
+            px + (px * inv) * dist,
+            topY - posFrac * sy,
+            pz + (pz * inv) * dist
+        )
     end
-    local lightPos = Vector(
-        px + ux * NPC_FIGURINE_LIGHT_INWARD_XZ,
-        lightY,
-        pz + uz * NPC_FIGURINE_LIGHT_INWARD_XZ
-    )
-    local out = U.clone(mode) or {}
+    if lightPos == nil then
+        return out
+    end
+    -- Rotation is always a look-at toward the figurine; `lookAtYShift` (fraction of height
+    -- below bounds top) shifts the aim target, defaulting to bounds center when absent.
+    local faceY = cy
+    if positioning.lookAtYShift ~= nil then
+        faceY = topY - (tonumber(positioning.lookAtYShift) or 0) * sy
+    end
     out.position = lightPos
-    out.rotation = Vector(0, 0, 0)
+    out.rotation = U.lookAtRotation(lightPos, Vector(cx, faceY, cz))
     return out
 end
 
