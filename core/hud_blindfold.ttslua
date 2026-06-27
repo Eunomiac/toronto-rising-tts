@@ -233,13 +233,13 @@ function HUDBF.runStagedTransition(phases, opts)
       return workFailed and 0 or workSettleSec
     end,
     function()
-      -- Hold the blindfold through the settle in silence, reserving `fadeInSec` at the very end for
-      -- the new location's ambient so sound does not arrive long before the blindfold lifts.
+      -- Post-work blindfold budget is `settleDelaySec` (default 10s): workSettle + silent hold + fadeIn.
+      -- workSettle already ran in the prior step; reserve fadeIn at the end for new-location ambient.
       if workFailed then
         return 0
       end
       setDefaultCameraForSeatedPlayers()
-      return math.max(0, settleDelaySec - fadeInSec)
+      return math.max(0, settleDelaySec - fadeInSec - workSettleSec)
     end,
     function()
       if not workFailed and type(phases.fadeIn) == "function" then
