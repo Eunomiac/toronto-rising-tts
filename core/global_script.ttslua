@@ -176,6 +176,7 @@ local StorytellerPanelUI = require("core.storyteller_panel_ui")
 local StorytellerScenesPanel = require("core.storyteller_scenes_panel")
 local GameStateOverlay = require("core.game_state_overlay")
 local HUDP = require("core.hud_player")
+local Coterie = require("core.coterie")
 local HO = require("core.hud_overlays")
 NPCS = require("core.npcs")
 PCST = require("core.pc_storyteller_panel")
@@ -2888,6 +2889,27 @@ function HUD_syncAll(player, button, id)
     Sync.full({ force = true, reason = "HUD_syncAll" })
     broadcastToColor(
         "Full sync (force): scenes, soundscape, seat lights, NPC layout, overlays, and UI refreshed.",
+        player.color,
+        {0, 1, 1}
+    )
+end
+
+--- Overwrite gameState.coterieData with freshly parsed lib/json/Coterie.json defaults (debug tool).
+-- Discards in-game coterie values so authored JSON edits take effect; refreshes Prince's Court HUD.
+-- @param player Player The player who clicked (Host/Black)
+-- @param button string Button value
+-- @param id string The UI element ID
+function HUD_updateCoterieData(player, button, id)
+    if not requireStorytellerHostForMutation(player, "HUD_updateCoterieData") then
+        return
+    end
+    if not Coterie or type(Coterie.overwriteFromDefaults) ~= "function" then
+        broadcastToColor("Update Coterie Data: Coterie.overwriteFromDefaults missing.", player.color, {1, 0.5, 0})
+        return
+    end
+    Coterie.overwriteFromDefaults()
+    broadcastToColor(
+        "Coterie data overwritten from Coterie.json defaults; Prince's Court refreshed.",
         player.color,
         {0, 1, 1}
     )
