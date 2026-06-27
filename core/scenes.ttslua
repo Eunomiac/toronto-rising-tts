@@ -719,6 +719,22 @@ local function clearOccupiedNpcSlots()
     S.setStateVal(occupied, "seatLayout", "occupiedNPCSlots")
 end
 
+--- No-scene baseline: empty every NPC `seatSlots` row so `S.validateState` → `normalizeLiveSessionSceneSeatSlots`
+--- does not re-hydrate `occupiedNPCSlots` from a prior scene's `characterKey` (that undid `clearOccupiedNpcSlots`
+--- and kept Table B resolving to B1+ with seated figurines).
+local function clearNpcSeatSlotsForNoScene()
+    local seatSlots = S.getStateVal("sessionScene", "seatSlots")
+    if type(seatSlots) ~= "table" then
+        seatSlots = {}
+    end
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        seatSlots[seatKey] = { slotEmpty = true, isPresent = true }
+    end
+    local bundle = S.getStateVal("sessionScene") or {}
+    bundle.seatSlots = seatSlots
+    S.setStateVal(bundle, "sessionScene")
+end
+
 local function clearLiveNpcWorldPlacements()
     local npcWorld = S.getStateVal("sessionScene", "npcWorld")
     if type(npcWorld) ~= "table" then
@@ -799,6 +815,7 @@ local function mutateDefaultNoSceneSessionState()
     S.setStateVal(false, "sessionScene", "isTopFogActive")
     S.setStateVal("OutdoorDim", "sessionScene", "lightingPresetKey")
     clearLiveNpcWorldPlacements()
+    clearNpcSeatSlotsForNoScene()
     applyDefaultPcSeatPresence()
     clearOccupiedNpcSlots()
     clearLiveClockDatetimeForOverlay()
