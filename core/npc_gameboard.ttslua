@@ -549,30 +549,6 @@ local function readMarkerKey(obj, prefix)
     return nil
 end
 
---- @param compKey string|nil Raw value after `gameboardComponent:` prefix
---- @return string|nil parentTable, string|nil componentName
-local function parseComponentMarkerKey(compKey)
-    if type(compKey) ~= "string" or compKey == "" then
-        return nil, nil
-    end
-    compKey = string.match(compKey, "^%s*(.-)%s*$") or compKey
-    local pipeAt = compKey:find("|", 1, true)
-    if pipeAt ~= nil then
-        local parentTable = string.match(compKey:sub(1, pipeAt - 1), "^%s*(.-)%s*$")
-        local componentName = string.match(compKey:sub(pipeAt + 1), "^%s*(.-)%s*$")
-        if type(parentTable) == "string" and parentTable ~= ""
-            and type(componentName) == "string" and componentName ~= "" then
-            return parentTable, componentName
-        end
-    end
-    for tk, cfg in pairs(C.Tables or {}) do
-        if type(cfg) == "table" and type(cfg.components) == "table" and cfg.components[compKey] ~= nil then
-            return tk, compKey
-        end
-    end
-    return nil, compKey
-end
-
 --- @param obj Object
 --- @return string|nil characterKey
 local function resolveTokenCharacterKey(obj)
@@ -1630,92 +1606,6 @@ local function tableConfig(tableKey)
     return C.Tables[tableKey]
 end
 
---- True when `seatLayout.occupiedNPCSlots[seatKey]` holds a character key (not false).
---- @param seatKey string
---- @return boolean
-local function npcSeatOccupiedOnTable(seatKey)
-    if type(seatKey) ~= "string" or seatKey == "" then
-        return false
-    end
-    local slots = stateModule().getStateVal("seatLayout", "occupiedNPCSlots")
-    if type(slots) ~= "table" then
-        return false
-    end
-    local assigned = slots[seatKey]
-    return type(assigned) == "string" and assigned ~= ""
-end
-
---- Same activation rule as `lib.rotational-seat-layout` `applyTableComponentsState`.
---- @param parentTable string
---- @param componentName string
---- @return boolean
-local function tableComponentActiveForOccupiedSlots(parentTable, componentName)
-    local cfg = tableConfig(parentTable)
-    if cfg == nil or type(cfg.components) ~= "table" then
-        return false
-    end
-    local comp = cfg.components[componentName]
-    if type(comp) ~= "table" then
-        return false
-    end
-    local usedBy = comp.usedBy
-    if type(usedBy) ~= "string" or usedBy == "" then
-        return true
-    end
-    if not npcSeatOccupiedOnTable(usedBy) then
-        return false
-    end
-    return true
-end
-
---- World XZ for a table seat, from C.Tables layout data.
---- CIRCULAR seats pass a 1-based segment index (ring math here). FACING/RECTANGULAR seats pass a
---- `{ side, index }` table, resolved via `RSL.facingSeatWorldXZ` from the active table's live bounds.
---- @param cfg table
---- @param segment number|table 1-based segment index, or `{ side, index }`
---- @return Vector|nil
-local function worldPositionForTableSegment(cfg, segment)
-    if type(cfg) ~= "table" or cfg.centerPoint == nil then
-        return nil
-    end
-    if type(segment) == "table" then
-        if type(segment.side) ~= "number" or type(segment.index) ~= "number" then
-            return nil
-        end
-        local RSL = require("lib.rotational-seat-layout")
-        if type(RSL.facingSeatWorldXZ) ~= "function" then
-            return nil
-        end
-        return RSL.facingSeatWorldXZ(cfg, segment.side, segment.index)
-    end
-    if type(segment) ~= "number" then
-        return nil
-    end
-    local segmentIndex1Based = segment
-    local cp = Vector(cfg.centerPoint)
-    local numSegments = cfg.numSegments or 10
-    if numSegments < 1 then
-        numSegments = 10
-    end
-    local angleSegmentOne = tonumber(cfg.angleSegmentOne) or 0
-    local thetaDeg = angleSegmentOne + (segmentIndex1Based - 1) * (360 / numSegments)
-    local angleRad = math.rad(thetaDeg)
-    local radius = 12
-    if cfg.referenceHandPosition ~= nil then
-        radius = U.HorizontalDistance(cp, Vector(cfg.referenceHandPosition))
-    elseif cfg.activePosition ~= nil then
-        radius = U.HorizontalDistance(cp, Vector(cfg.activePosition))
-    end
-    if radius < 1 then
-        radius = 12
-    end
-    return Vector(
-        cp.x + math.sin(angleRad) * radius,
-        cp.y,
-        cp.z + math.cos(angleRad) * radius
-    )
-end
-
 --- Playfield world XZ → shared map u,v (via STAGE_BOARD), for CONTROL_BOARD marker placement.
 --- @param tableKey string
 --- @return number|nil u, number|nil v
@@ -1844,20 +1734,6 @@ local function sourceObjectForTable(tableKey)
         return nil
     end
     return objectFromGuid(cfg.guid)
-end
-
---- Playfield seat chair for minimap scale (SEAT_CHAIR_* via G.GetThroneGUID), not arbitrary *Object tags.
---- @param seatKey string PC color or NPC1–NPC4
---- @return Object|nil
-local function sourceObjectForSeat(seatKey)
-    if type(seatKey) ~= "string" or seatKey == "" then
-        return nil
-    end
-    local guid = G.GetThroneGUID(seatKey)
-    if type(guid) == "string" and guid ~= "" then
-        return objectFromGuid(guid)
-    end
-    return nil
 end
 
 --- Deep copy plain tables (nested `snapGroups` entries).
@@ -3700,107 +3576,6 @@ local function stashTableMarker(marker, tableKey)
     lockControlBoardMarker(marker)
 end
 
---- Build diagnostics for a control-board table-component marker.
---- @param marker Object
---- @param activeTable string|nil
---- @return table
-local function describeTableComponentMarker(marker, activeTable)
-    local row = {
-        markerGuid = isGameObject(marker) and marker.getGUID and marker.getGUID() or nil,
-        markerName = isGameObject(marker) and marker.getName and marker.getName() or nil,
-        activeTable = activeTable,
-        show = false,
-        reasons = {},
-    }
-    local compKey = readMarkerKey(marker, DATA.MARKER_COMPONENT_PREFIX)
-    row.compKey = compKey
-    local parentTable, componentName = parseComponentMarkerKey(compKey)
-    row.parentTable = parentTable
-    row.componentName = componentName
-    if type(parentTable) ~= "string" or parentTable == "" then
-        row.reasons[#row.reasons + 1] = "missing_parent_table"
-    end
-    if type(componentName) ~= "string" or componentName == "" then
-        row.reasons[#row.reasons + 1] = "missing_component_name"
-    end
-    local cfg = tableConfig(parentTable)
-    row.tableExists = type(cfg) == "table"
-    if row.tableExists ~= true then
-        row.reasons[#row.reasons + 1] = "table_cfg_missing"
-    end
-    local comp = nil
-    if row.tableExists and type(cfg.components) == "table" then
-        comp = cfg.components[componentName]
-    end
-    row.componentExists = type(comp) == "table"
-    if row.componentExists ~= true then
-        row.reasons[#row.reasons + 1] = "component_cfg_missing"
-    end
-    local usedBy = row.componentExists and comp.usedBy or nil
-    row.usedBy = usedBy
-    local usedByOccupied = nil
-    if type(usedBy) == "string" and usedBy ~= "" then
-        usedByOccupied = npcSeatOccupiedOnTable(usedBy)
-    end
-    row.usedByOccupied = usedByOccupied
-    if usedByOccupied == false then
-        row.reasons[#row.reasons + 1] = "used_by_seat_empty"
-    end
-    local show = parentTable == activeTable
-        and type(componentName) == "string"
-        and componentName ~= ""
-        and tableComponentActiveForOccupiedSlots(parentTable, componentName)
-    row.show = show
-    if parentTable ~= activeTable then
-        row.reasons[#row.reasons + 1] = "inactive_table"
-    end
-    local tableU, tableV = nil, nil
-    if type(parentTable) == "string" then
-        tableU, tableV = mapUvForTableCenter(parentTable)
-    end
-    row.tableU = tableU
-    row.tableV = tableV
-    row.targetU = tableU
-    row.targetV = tableV
-    row.placementMode = "table_transform"
-    if show and (tableU == nil or tableV == nil) then
-        row.reasons[#row.reasons + 1] = "table_uv_mapping_failed"
-    end
-    local tableSource = sourceObjectForTable(parentTable)
-    row.tableSourceExists = isGameObject(tableSource)
-    row.tableSourceGuid = row.tableSourceExists and tableSource.getGUID and tableSource.getGUID() or nil
-    if show and row.tableSourceExists ~= true then
-        row.reasons[#row.reasons + 1] = "table_source_missing"
-    end
-    if isGameObject(marker) and marker.getPosition ~= nil then
-        row.markerPosition = marker.getPosition()
-    end
-    return row
-end
-
---- Print one-line diagnostics for a component marker.
---- @param row table
-local function printTableComponentMarkerRow(row)
-    local reasons = table.concat(row.reasons or {}, ",")
-    if reasons == "" then
-        reasons = "none"
-    end
-    print(
-        "[Gameboard] component marker "
-            .. tostring(row.componentName or row.compKey or "<unknown>")
-            .. " guid=" .. tostring(row.markerGuid or "")
-            .. " table=" .. tostring(row.parentTable or "")
-            .. " activeTable=" .. tostring(row.activeTable or "")
-            .. " show=" .. tostring(row.show == true)
-            .. " usedBy=" .. tostring(row.usedBy or "")
-            .. " occupied=" .. tostring(row.usedByOccupied)
-            .. " uv=(" .. tostring(row.targetU) .. "," .. tostring(row.targetV) .. ")"
-            .. " tableSource=" .. tostring(row.tableSourceGuid or "")
-            .. " mode=" .. tostring(row.placementMode or "")
-            .. " reasons=" .. reasons
-    )
-end
-
 --- @param marker Object
 --- @param board Object
 --- @param u number|nil
@@ -3819,30 +3594,6 @@ local function placeControlBoardMarker(marker, board, u, v, source, options)
     end
     applyMinimapMarkerRotation(marker, board, source)
     lockControlBoardMarker(marker)
-end
-
---- Active table-leaf markers use the parent table's CONTROL_BOARD transform (models are authored table-relative).
---- @param marker Object
---- @param board Object
---- @param parentTable string
---- @return boolean placed
-local function placeActiveTableComponentMarker(marker, board, parentTable)
-    local u, v = mapUvForTableCenter(parentTable)
-    if u == nil or v == nil then
-        return false
-    end
-    local tableSource = sourceObjectForTable(parentTable)
-    placeControlBoardMarker(
-        marker,
-        board,
-        u,
-        v,
-        tableSource,
-        {
-            extraLocalY = tonumber(DATA.MINIMAP_TABLE_EXTRA_LOCAL_Y) or 0.06,
-        }
-    )
-    return true
 end
 
 --- @return table<string, Object>
@@ -4297,73 +4048,14 @@ function Gameboard.reconcileControlBoardFromState(opts)
                     stashTableMarker(obj, tableKey)
                 end
             elseif compKey ~= nil then
-                local markerRow = describeTableComponentMarker(obj, activeTable)
-                local parentTable = markerRow.parentTable
-                local componentName = markerRow.componentName
-                local show = markerRow.show == true
-                setMarkerVisible(obj, show)
-                if opts.debugComponentMarkers == true then
-                    printTableComponentMarkerRow(markerRow)
-                end
-                if show and parentTable ~= nil then
-                    if not placeActiveTableComponentMarker(obj, board, parentTable) then
-                        print(
-                            "[Gameboard] component marker "
-                                .. tostring(componentName)
-                                .. " active on "
-                                .. tostring(parentTable)
-                                .. " but table minimap placement failed"
-                        )
-                        stashTableComponentMarker(obj, componentName)
-                    end
-                else
-                    stashTableComponentMarker(obj, componentName)
-                end
+                setMarkerVisible(obj, false)
+                stashTableComponentMarker(obj, nil)
             elseif pcSeat ~= nil then
-                local show = activeTable ~= nil
-                setMarkerVisible(obj, show)
-                local u, v = nil, nil
-                local seg = nil
-                if show then
-                    local cfg = tableConfig(activeTable)
-                    seg = cfg and cfg.playerToPositionMap and cfg.playerToPositionMap[pcSeat]
-                    if seg ~= nil then
-                        local worldSeat = worldPositionForTableSegment(cfg, seg)
-                        if worldSeat ~= nil then
-                            u, v = normalizedUvFromWorld(worldSeat)
-                            placeControlBoardMarker(
-                                obj,
-                                board,
-                                u,
-                                v,
-                                sourceObjectForSeat(pcSeat)
-                            )
-                        end
-                    end
-                end
+                setMarkerVisible(obj, false)
+                stashNpcSeatMarker(obj, pcSeat)
             elseif npcSeat ~= nil then
                 setMarkerVisible(obj, false)
-                local cfg = tableConfig(activeTable)
-                local seg = cfg and cfg.playerToPositionMap and cfg.playerToPositionMap[npcSeat]
-                local show = activeTable ~= nil
-                    and seg ~= nil
-                    and npcSeatOccupiedOnTable(npcSeat)
-                local u, v = nil, nil
-                if show then
-                    local worldSeat = worldPositionForTableSegment(cfg, seg)
-                    if worldSeat ~= nil then
-                        u, v = normalizedUvFromWorld(worldSeat)
-                        placeControlBoardMarker(
-                            obj,
-                            board,
-                            u,
-                            v,
-                            sourceObjectForSeat(npcSeat)
-                        )
-                    end
-                else
-                    stashNpcSeatMarker(obj, npcSeat)
-                end
+                stashNpcSeatMarker(obj, npcSeat)
             end
         end
     end
@@ -4375,48 +4067,6 @@ function Gameboard.reconcileControlBoardFromState(opts)
 
     applyControlBoardComponentPlayerInvisibility()
     rebuildAnchorDropEligibilityCache(board)
-end
-
---- Inspect control-board table-component markers and print placement decisions.
---- @param options table|nil `{ includeTagless?: boolean }`
---- @return table
-function Gameboard.debugDescribeControlBoardTableComponents(options)
-    options = type(options) == "table" and options or {}
-    local activeTable = stateModule().getStateVal("seatLayout", "currentTableKey")
-    local rows = {}
-    local markers = getObjectsWithTag(TAG_COMPONENT) or {}
-    if options.includeTagless == true then
-        local all = getAllObjects() or {}
-        for _, obj in ipairs(all) do
-            if isGameObject(obj) then
-                local hasTag = obj.hasTag ~= nil and obj.hasTag(TAG_COMPONENT) == true
-                if not hasTag then
-                    local compKey = readMarkerKey(obj, DATA.MARKER_COMPONENT_PREFIX)
-                    if compKey ~= nil then
-                        markers[#markers + 1] = obj
-                    end
-                end
-            end
-        end
-    end
-    print(
-        "[Gameboard] component marker scan: activeTable="
-            .. tostring(activeTable)
-            .. " markerCount="
-            .. tostring(#markers)
-    )
-    for _, marker in ipairs(markers) do
-        if isGameObject(marker) then
-            local row = describeTableComponentMarker(marker, activeTable)
-            rows[#rows + 1] = row
-            printTableComponentMarkerRow(row)
-        end
-    end
-    return {
-        activeTable = activeTable,
-        count = #rows,
-        rows = rows,
-    }
 end
 
 --- Nearest installed snap catalog entry for a token on CONTROL_BOARD (world XZ within fuzziness).

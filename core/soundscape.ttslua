@@ -449,6 +449,16 @@ local function setEmitterVolume(obj, volume)
     return updated > 0, updated
 end
 
+--- Hard-silence emitter gain before clip swap or volume raise (volume-0-before-playback policy).
+--- @param obj Object|nil
+local function armEmitterSilentBeforePlayback(obj)
+    if obj == nil then
+        return
+    end
+    hardSilenceAudioSources(obj)
+    setEmitterVolume(obj, 0)
+end
+
 local function fadeEmitterVolume(obj, fromVolume, toVolume, seconds)
     local duration = tonumber(seconds) or 0
     if duration <= 0 then
@@ -563,24 +573,20 @@ local function playCatalogEntry(channelKey, entry, volume, fadeSeconds, fromVolu
     end
 
     local fadeSec = tonumber(fadeSeconds) or 0
-    -- Always arm zero gain before swapping clips; Unity often plays one loud frame otherwise.
-    hardSilenceAudioSources(obj)
-    setEmitterVolume(obj, 0)
+    armEmitterSilentBeforePlayback(obj)
     -- Looping swaps: drop to the silent stub first so Unity does not crossfade old→new at full gain.
     if effectList == Catalog.EFFECT_LIST.LOOPING and track.effect ~= Catalog.SILENT_EFFECT then
         local silentIndex = resolveEffectIndex(obj, Catalog.SILENT_EFFECT, Catalog.EFFECT_LIST.LOOPING)
         if silentIndex ~= nil then
             obj.AssetBundle.playLoopingEffect(silentIndex)
-            hardSilenceAudioSources(obj)
-            setEmitterVolume(obj, 0)
+            armEmitterSilentBeforePlayback(obj)
         end
     end
     playCatalogEntryGeneration[channelKey] = (playCatalogEntryGeneration[channelKey] or 0) + 1
     local thisPlayGeneration = playCatalogEntryGeneration[channelKey]
 
     obj.AssetBundle[apiName](index)
-    hardSilenceAudioSources(obj)
-    setEmitterVolume(obj, 0)
+    armEmitterSilentBeforePlayback(obj)
 
     local patch = {
         effect = track.effect,
@@ -660,7 +666,7 @@ local function playPairedEmitterEntry(entry, options)
 
     if probeVolumeControl() then
         local incomingStartVolume = incomingFadeSeconds <= 0 and targetVolume or 0
-        setEmitterVolume(resolveEmitter(newChannel), incomingStartVolume)
+        armEmitterSilentBeforePlayback(resolveEmitter(newChannel))
         updateChannelState(newChannel, { volume = incomingStartVolume })
         local okPlay, message = playCatalogEntry(newChannel, entry, targetVolume, incomingFadeSeconds, incomingStartVolume)
         if okPlay then
@@ -723,6 +729,7 @@ local function fadeWeatherHoldToNatural(channelKey, naturalVolume, seconds)
     if tonumber(seconds) and seconds > 0 then
         ok = fadeEmitterVolume(obj, current, applied, seconds)
     else
+        armEmitterSilentBeforePlayback(obj)
         ok = setEmitterVolume(obj, applied)
     end
     updateChannelState(channelKey, {
@@ -788,6 +795,7 @@ local function playSingleEmitterFadeOutIn(channelKey, entry, volume, fadeSeconds
     local state = ensureState()
     local channelState = state.channels and state.channels[channelKey] or {}
     local halfFadeSeconds = fadeSeconds / 2
+    armEmitterSilentBeforePlayback(obj)
     fadeEmitterVolume(obj, tonumber(channelState.volume) or targetVolume, 0, halfFadeSeconds)
     updateChannelState(channelKey, { volume = 0 })
 
@@ -826,14 +834,13 @@ local function forceSilentLoopPhysicalOnly(channelKey)
     if obj == nil or obj.AssetBundle == nil or obj.AssetBundle.playLoopingEffect == nil then
         return false
     end
-    hardSilenceAudioSources(obj)
-    setEmitterVolume(obj, 0)
+    armEmitterSilentBeforePlayback(obj)
     local index = resolveEffectIndex(obj, Catalog.SILENT_EFFECT, Catalog.EFFECT_LIST.LOOPING)
     if index == nil then
         return false
     end
     obj.AssetBundle.playLoopingEffect(index)
-    hardSilenceAudioSources(obj)
+    armEmitterSilentBeforePlayback(obj)
     return true
 end
 
@@ -850,6 +857,14 @@ function Soundscape.bootstrapSilenceStrayEmitterLoops()
     for _, channelKey in ipairs(BOOTSTRAP_LOOP_CHANNELS) do
         forceSilentLoopPhysicalOnly(channelKey)
     end
+end
+
+--- Physical-only: silence the music channel not currently active in `gameState.soundscape`.
+function Soundscape.silenceInactiveMusicChannel()
+    local state = ensureState()
+    local active = state.activeMusicChannel or "musicA"
+    local inactive = active == "musicB" and "musicA" or "musicB"
+    forceSilentLoopPhysicalOnly(inactive)
 end
 
 local function findFeaturedSequence(trackKey)
@@ -1554,6 +1569,7 @@ local function setChannelImmediateVolume(channelKey, volume)
         return false, resolveError or ("Missing soundscape emitter for " .. tostring(resolvedChannel))
     end
     local targetVolume = clamp01(volume)
+    armEmitterSilentBeforePlayback(obj)
     if resolvedChannel == "weatherRain" or resolvedChannel == "weatherWind" then
         local natural = targetVolume
         local applied = weatherVolume(natural)

@@ -1712,7 +1712,7 @@ function onLoad(saved_data)
 
     -- Synchronization orchestration (step 2): consolidate the onLoad fan-out into Sync.full().
     setStartupAction("initial-sync-full")
-    Sync.full({ reason = "onLoad_initial" })
+    Sync.full({ reason = "onLoad_initial", skipSoundscape = true })
     if GameStateOverlay and type(GameStateOverlay.stopTicker) == "function" then
         GameStateOverlay.stopTicker()
     end

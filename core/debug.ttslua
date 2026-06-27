@@ -722,24 +722,6 @@ end
 --- Print control-board table-component marker decisions (table leaves, etc.) and optionally force a debug reconcile pass.
 --- @param options table|nil `{ includeTagless?: boolean, forceReconcile?: boolean }`
 --- @return table|nil
-function DEBUG.dumpControlBoardTableComponents(options)
-    options = type(options) == "table" and options or {}
-    local Gameboard = require("core.npc_gameboard")
-    if options.forceReconcile == true then
-        Gameboard.reconcileControlBoardFromState({
-            force = true,
-            debugComponentMarkers = true,
-        })
-    end
-    local result = Gameboard.debugDescribeControlBoardTableComponents({
-        includeTagless = options.includeTagless == true,
-    })
-    print("[DEBUG] dumpControlBoardTableComponents: scanned " .. tostring(result and result.count or 0) .. " marker(s)")
-    return result
-end
-
---- Print snap count from config without installing (fast tuning).
---- @param config table|nil Defaults to DATA.CONTROL_BOARD_SNAP
 function DEBUG.previewControlBoardSnapCount(config)
     local Gameboard = require("core.npc_gameboard")
     local total, perRing = Gameboard.countControlBoardSnapPoints(config)

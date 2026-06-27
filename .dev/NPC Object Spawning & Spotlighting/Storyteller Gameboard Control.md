@@ -53,13 +53,13 @@ Both boards are **different objects** (position, rotation, scale). Map coordinat
 
 **Do not** call `positionToLocal` on CONTROL_BOARD with a playfield world position (e.g. `C.Tables[].centerPoint` at z≈50). That produced markers in a huge arc off the minimap and placed the table marker at the real table instead of on the control board.
 
-Table/seat markers: compute playfield world XZ (table `centerPoint`; components via `activePosition`; seats via **1-based** segment index from `playerToPositionMap` and `angleSegmentOne` — same azimuth as `rotational-seat-layout` — × radius from `referenceHandPosition`), convert with `uvFromWorld`, place with `worldOnControlBoard`. NPC tokens on the control board use the same `u,v` as stage figurines after Apply.
+Table markers: active table only on minimap (`centerPoint` → `uvFromWorld` → `worldOnControlBoard`). NPC tokens on the control board use the same `u,v` as stage figurines after Apply.
 
 **Table markers (`gameboard_table`):** Exactly one minimap table mesh is on the control tile — the marker whose GM Notes key matches `seatLayout.currentTableKey`. All other table markers are **locked** and parked at world **Y = -200** (`MARKER_STASH_WORLD_Y`, slight X offset per table key). Component and seat markers use the same stash pattern when inactive.
 
-**NPC seat markers:** Shown on the minimap only when `seatLayout.occupiedNPCSlots[npcSeat]` is a character key (not `false`) and the active table defines that seat in `playerToPositionMap`. Empty slots are **locked** and parked at world **Y = -200** (`MARKER_STASH_WORLD_Y`, slight X offset per slot so stashes do not stack).
+**NPC seat markers:** Always stashed at **Y = -200** (not shown on minimap; TOR-268).
 
-**Table leaf / component markers (`gameboard_table_component`):** Same activation rule as playfield leaves in `lib.rotational-seat-layout` — shown when the active table matches and `occupiedNPCSlots[component.usedBy]` is a character key (including stage-bound homelands). Inactive leaves are stashed at **Y = -200**. When active, each leaf marker gets the **same CONTROL_BOARD position, rotation, and scale** as the parent **`gameboard_table`** marker (models are authored table-relative on the playfield). Table A mapping in `C.Tables`: **NPC1 → Table Leaf Near Right**, **NPC2 → Table Leaf Near Left**, **NPC3 → Table Leaf Far Right**, **NPC4 → Table Leaf Far Left**.
+**Table leaf / component markers (`gameboard_table_component`):** Always stashed at **Y = -200** (not shown on minimap; TOR-268). Playfield chair leaves via `applyTableComponentsState` are unchanged.
 
 **Marker scale:** For each minimap marker, read `getScale()` on the playfield object it mimics (`C.Tables` table/leaf GUID, or `G.GetThroneGUID` seat chair for PC/NPC seats), then set marker scale to **source ÷ 40** on all three axes (`DATA.MINIMAP_SCALE_DIVISOR`). Do not use nearest `*Object` tag scan for scale — that often hits a scale-1 helper instead of `SEAT_CHAIR_*`.
 
@@ -71,7 +71,7 @@ Table/seat markers: compute playfield world XZ (table `centerPoint`; components 
 
 **Marker lock:** `gameboard_table`, `gameboard_table_component`, `gameboard_pc_seat`, and `gameboard_npc_seat` objects are `setLock(true)` on reconcile so minimap pieces do not collide and drift. `npc_control_token` tiles stay unlocked for drag-to-snap + Apply.
 
-**Layout lock:** When `sessionScene.npcWorld.layoutLock` is true, **token** positions on CONTROL_BOARD are not overwritten from state; **table/seat/component markers** still reconcile (Table A leaves follow `occupiedNPCSlots` for their `usedBy` seat).
+**Layout lock:** When `sessionScene.npcWorld.layoutLock` is true, **token** positions on CONTROL_BOARD are not overwritten from state; **table markers** still reconcile (active table only on minimap).
 
 **Seat ↔ stage (TOR-178):** Homeland seat (`seatLayout.occupiedNPCSlots`) is retained only while the character's control token is on the **CONTROL_BOARD minimap** (seat-row or polar/stage snap). **Palette and off-board tokens are out of play** — Apply unassigns when the seat snap is empty and the token is not on a polar snap; **Clear** calls `releaseHomelandSeatsForOffBoardTokens` before parking tokens, then unassigned NPCs stay on the palette with chair/lights off. While on-board stage-bound (placement row in state), Apply keeps the homeland seat; Clear empties `placements` and Step Three re-seats the figurine at the table (token returns to the seat-row snap). Figurine `image_scalar` uses `figurine.scale` at stage and table alike. Stage-bound: homeland **chair** and **table leaves** (playfield + minimap) stay visible; both homeland **seat spotlights** (`npcLight1NPC*`, `npcLight2NPC*`) go OFF via `NPCS.reconcileHomelandSeatSpotlightsForStageBound` / `NPCS.isNpcSeatOccupantStageBound`.
 

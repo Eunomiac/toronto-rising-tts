@@ -27,7 +27,7 @@ local RSL = require("lib.rotational-seat-layout")
 local ChronicleWeather = require("lib.chronicle_weather")
 
 --- Default table when no live library scene is on the table (TOR-151).
-Scenes.DEFAULT_NO_SCENE_TABLE_KEY = "Table B1"
+Scenes.DEFAULT_NO_SCENE_TABLE_KEY = "Table B"
 
 --- Last scene+transition fingerprint successfully applied to the live world (incremental sync skips when unchanged).
 local lastSceneReconcileFingerprint = nil
@@ -739,6 +739,9 @@ local function applyMainOnlySoundscapeIntent()
     Soundscape.setLocationAudio("none")
     Soundscape.setMusicMood("main")
     Soundscape.setWeatherCondition("none")
+    if type(Soundscape.silenceInactiveMusicChannel) == "function" then
+        Soundscape.silenceInactiveMusicChannel()
+    end
     if type(Soundscape.markReconciledToCurrentState) == "function" then
         Soundscape.markReconciledToCurrentState()
     end
@@ -856,9 +859,12 @@ function Scenes.applyActiveSceneSoundscapeFromSession()
     if primeSoundscapeReconcile and type(Soundscape.markReconciledToCurrentState) == "function" then
         Soundscape.markReconciledToCurrentState()
     end
+    if type(Soundscape.silenceInactiveMusicChannel) == "function" then
+        Soundscape.silenceInactiveMusicChannel()
+    end
 end
 
---- Applies the defined no-scene environment: Table B1, five PCs, empty NPC world, OutdoorDim, Main only.
+--- Applies the defined no-scene environment: Table B0 (dynamic Table B, zero NPC seats), five PCs, empty NPC world, OutdoorDim, Main only.
 --- Does not mutate library rows, PC map pins, or present-day clock.
 --- @param opts table|nil `{ reason?: string, skipTransitionBlindfold?: boolean, skipSoundscape?: boolean }`
 ---   `skipSoundscape` defers the Main ambient apply to the caller (staged transition fade-in, TOR-147).
@@ -880,8 +886,9 @@ function Scenes.applyDefaultNoSceneEnvironment(opts)
         applyMainOnlySoundscapeIntent()
     end
 
-    if C.Tables[Scenes.DEFAULT_NO_SCENE_TABLE_KEY] ~= nil then
-        RSL.SetTableTo(Scenes.DEFAULT_NO_SCENE_TABLE_KEY, {
+    local tk = Scenes.DEFAULT_NO_SCENE_TABLE_KEY
+    if C.Tables[tk] ~= nil or RSL.isDynamicTableFamilyKey(tk) then
+        RSL.SetTableTo(tk, {
             skipTransitionBlindfold = opts.skipTransitionBlindfold == true,
         })
     end
