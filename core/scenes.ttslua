@@ -924,7 +924,7 @@ function Scenes.restoreActiveSceneWorld(opts)
     end
 
     local tk = trimSceneKey(S.getStateVal("sessionScene", "tableKey"))
-    if tk ~= "" and C.Tables[tk] ~= nil then
+    if tk ~= "" and (C.Tables[tk] ~= nil or RSL.isDynamicTableFamilyKey(tk)) then
         RSL.SetTableTo(tk, { skipTransitionBlindfold = opts.skipTransitionBlindfold == true })
     end
 

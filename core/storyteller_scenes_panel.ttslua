@@ -72,14 +72,18 @@ local function closeScenesPanel()
     end
 end
 
---- Maps XML button ids (no spaces) to `C.Tables` keys.
+--- Maps XML button ids (no spaces) to table keys. `Table B` is a dynamic family key (resolves to
+--- `Table B<occupied NPC count>` via `RSL.resolveTableKey`); the rest are explicit `C.Tables` keys.
 local TABLE_TOGGLE_IDS = {
     scenes_tbl_TableA = "Table A",
     scenes_tbl_TableB = "Table B",
+    scenes_tbl_TableB0 = "Table B0",
     scenes_tbl_TableB1 = "Table B1",
     scenes_tbl_TableB2 = "Table B2",
     scenes_tbl_TableB3 = "Table B3",
     scenes_tbl_TableB4 = "Table B4",
+    scenes_tbl_TableB5 = "Table B5",
+    scenes_tbl_TableC = "Table C",
 }
 
 --- Pre-declared rows in `ui/storyteller/panel_scenes_library.xml` (no dynamic `setXml` lists).
@@ -1073,7 +1077,8 @@ function StorytellerScenesPanel.onHudClick(player, button, id)
 
     if TABLE_TOGGLE_IDS[id] ~= nil then
         local tableKey = TABLE_TOGGLE_IDS[id]
-        if C.Tables[tableKey] == nil then
+        -- Accept explicit `C.Tables` keys and dynamic family keys (e.g. "Table B" → "Table B<N>").
+        if C.Tables[tableKey] == nil and not RSL.isDynamicTableFamilyKey(tableKey) then
             U.AlertGM("Unknown table key: " .. tostring(tableKey))
             return
         end
@@ -1081,6 +1086,7 @@ function StorytellerScenesPanel.onHudClick(player, button, id)
             return
         end
         HUDBF.runTransition(function()
+            -- Store the clicked key as intent (family or explicit); SetTableTo resolves family → concrete.
             S.setStateVal(tableKey, "sessionScene", "tableKey")
             RSL.SetTableTo(tableKey, { skipTransitionBlindfold = true })
             reconcileHostedSyncAndPresentSheets("StorytellerScenesPanel.table")

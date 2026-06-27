@@ -437,11 +437,13 @@ C.BloodPotencyDecalSlots = BPC.BloodPotencyDecalSlots
 -- Every entry must resolve to a non-empty string GUID; a nil hole stops Lua `#` / `ipairs` and skips later entries.
 C.LockedObjects = {
   G.GUIDS.TABLES.TABLE_A,
-  G.GUIDS.TABLES.TABLE_B,
+  G.GUIDS.TABLES.TABLE_B0,
   G.GUIDS.TABLES.TABLE_B1,
   G.GUIDS.TABLES.TABLE_B2,
   G.GUIDS.TABLES.TABLE_B3,
   G.GUIDS.TABLES.TABLE_B4,
+  G.GUIDS.TABLES.TABLE_B5,
+  G.GUIDS.TABLES.TABLE_C,
   G.GUIDS.TABLES.TABLE_A_LEAF_NEAR_LEFT,
   G.GUIDS.TABLES.TABLE_A_LEAF_NEAR_RIGHT,
   G.GUIDS.TABLES.TABLE_A_LEAF_FAR_LEFT,
@@ -1096,15 +1098,22 @@ end
    q. Outer `hud_blindfold` transition clears the chosen blindfold variant after the settle delay.
 
 ]]
+C.TableShapes = {
+  CIRCULAR = "circular", -- Seats should be arranged via the rotational seat layout coordinate generator. Configurations of CIRCULAR tables must include `numSegments` and `angleSegmentOne` fields, with a `playerToPositionMap` field that defines each seat's position on the table as an index value (1..numSegments).
+  RECTANGULAR = "rectangular", -- Does not include `numSegments` and `angleSegmentOne` fields. Instead, seat positons must be defined under `playerToPositionMap` in the table configuration (instead of an index integer). Each seat position's definition includes a "side" field, defined as an angle in multiples of 90 degrees pointing from the origin to the side of the table that the seat is on, following standard conventions (where 0° is the +Z axis, 90° is the +X axis, 180° is the -Z axis, and 270° is the -X axis), and an "index" value indicating the position of that seat along that side, moving clockwise from the origin (e.g. side = 0, index = 1 means the seat is the left-most position on the +Z side of the table).
+  FACING = "facing" -- As with rectangular, except there are only two sides (0 and 180 degrees). Configurations of FACING tables must include a `playerToPositionMap` field that defines each seat's position on the table in the same way as RECTANGULAR tables.
+}
+
 C.Tables = {
   ["Table A"] = {
-    guid = "92ac34",
-    centerPoint = Vector({ 0, 0, 50 }),
-    activePosition = Vector({ 0.00, 0.00, 53.66 }),
-    inactivePosition = Vector({ 0.00, -200, 100 }),
-    numSegments = 20,
-    angleSegmentOne = 0,
-    playerToPositionMap = {
+    guid = G.GUIDS.TABLES.TABLE_A, -- required
+    shape = C.TableShapes.CIRCULAR, -- required
+    centerPoint = Vector({ 0, 0, 50 }), -- required
+    activePosition = Vector({ 0.00, 0.00, 53.66 }), -- required
+    inactivePosition = Vector({ 0.00, -200, 100 }), -- required
+    numSegments = 20, -- required for CIRCULAR tables
+    angleSegmentOne = 0, -- required for CIRCULAR tables
+    playerToPositionMap = { -- required
       NPC1 = 8,
       NPC2 = 14,
       NPC3 = 7,
@@ -1119,25 +1128,25 @@ C.Tables = {
     referenceHandPosition = Vector({ 0.00, 3.22, -76.61 }),
     components = {
       ["Table Leaf Near Left"] = {
-        guid = "6db794",
+        guid = G.GUIDS.TABLES.TABLE_A_LEAF_NEAR_LEFT,
         activePosition = Vector({ 0.00, 0.00, 53.66 }),
         inactivePosition = Vector({ 0.00, -200, 100 }),
         usedBy = "NPC2"
       },
       ["Table Leaf Near Right"] = {
-        guid = "443d5a",
+        guid = G.GUIDS.TABLES.TABLE_A_LEAF_NEAR_RIGHT,
         activePosition = Vector({ 0.00, 0.00, 53.66 }),
         inactivePosition = Vector({ 0.00, -200, 100 }),
         usedBy = "NPC1"
       },
       ["Table Leaf Far Left"] = {
-        guid = "f09667",
+        guid = G.GUIDS.TABLES.TABLE_A_LEAF_FAR_LEFT,
         activePosition = Vector({ 0.00, 0.00, 53.66 }),
         inactivePosition = Vector({ 0.00, -200, 100 }),
         usedBy = "NPC4"
       },
       ["Table Leaf Far Right"] = {
-        guid = "66f42d",
+        guid = G.GUIDS.TABLES.TABLE_A_LEAF_FAR_RIGHT,
         activePosition = Vector({ 0.00, 0.00, 53.66 }),
         inactivePosition = Vector({ 0.00, -200, 100 }),
         usedBy = "NPC3"
@@ -1178,63 +1187,64 @@ C.Tables = {
       }
     }
   },
-  ["Table B"] = {
-    guid = "b086ae",
-    centerPoint = Vector({ 0, 0, -90.26 }),
-    activePosition = Vector({ 0.00, 0, -90.26 }),
-    inactivePosition = Vector({ 0.00, -200, 50 }),
-    numSegments = 10,
+  -- "Table B" is intentionally NOT a C.Tables entry: it is a dynamic family key resolved to
+  -- "Table B<occupied NPC seat count>" (B0-B4) by lib/rotational-seat-layout `resolveTableKey`.
+  -- "Table B5" remains manually selectable but is never auto-selected (NPC count caps at 4).
+  ["Table B0"] = {
+    guid = G.GUIDS.TABLES.TABLE_B0,
+    shape = C.TableShapes.CIRCULAR,
+    centerPoint = Vector({ 0, 0, -41.07 }),
+    activePosition = Vector({ 0.00, 0, -41.07 }),
+    inactivePosition = Vector({ 0.00, -200, 100 }),
+    numSegments = 5,
     angleSegmentOne = 0,
     playerToPositionMap = {
-      NPC1 = 3,
-      NPC2 = 9,
-      NPC3 = 2,
-      NPC4 = 10,
-      Brown = 4,
-      Orange = 5,
-      Red = 6,
-      Pink = 7,
-      Purple = 8
+      Brown = 1,
+      Orange = 2,
+      Red = 3,
+      Pink = 4,
+      Purple = 5
     },
     referencePlayerColor = "Red",
-    referenceHandPosition = Vector({ 0.00, 3.22, -162 }),
+    referenceHandPosition = Vector({ 0.00, 3.22, -106.61 }),
     objectPositions = {
       {
         guid = G.GUIDS.MAIN_LIGHT_LEFT,
-        position = { z = -100 }
+        position = { z = -50 }
       },
       {
         guid = G.GUIDS.MAIN_LIGHT_RIGHT,
-        position = { z = -100 }
+        position = { z = -50 }
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_1,
-        position = { z = -90 }
+        position = { z = 5 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_1,
-        position = { z = -90 }
+        position = { z = 5 }
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_2,
-        position = { z = -80 }
+        position = { z = 5 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_2,
-        position = { z = -80 }
+        position = { z = 5 }
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_3,
-        position = { z = -80 }
+        position = { z = 5 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_3,
-        position = { z = -80 }
+        position = { z = 5 }
       }
     }
   },
   ["Table B1"] = {
-    guid = "c52bcd",
+    guid = G.GUIDS.TABLES.TABLE_B1,
+    shape = C.TableShapes.CIRCULAR,
     centerPoint = Vector({ 0, 0, -41.07 }),
     activePosition = Vector({ 0.00, 0, -41.07 }),
     inactivePosition = Vector({ 0.00, -200, 100 }),
@@ -1286,7 +1296,8 @@ C.Tables = {
     }
   },
   ["Table B2"] = {
-    guid = "f14ede",
+    guid = G.GUIDS.TABLES.TABLE_B2,
+    shape = C.TableShapes.CIRCULAR,
     centerPoint = Vector({ 0, 0, -38.83 }),
     activePosition = Vector({ 0.00, 0, -38.83 }),
     inactivePosition = Vector({ 0.00, -200, 100 }),
@@ -1339,7 +1350,8 @@ C.Tables = {
     }
   },
   ["Table B3"] = {
-    guid = "323c52",
+    guid = G.GUIDS.TABLES.TABLE_B3,
+    shape = C.TableShapes.CIRCULAR,
     centerPoint = Vector({ 0, 0, -37.25 }),
     activePosition = Vector({ 0.00, 0, -37.25 }),
     inactivePosition = Vector({ 0.00, -200, 100 }),
@@ -1393,7 +1405,8 @@ C.Tables = {
     }
   },
   ["Table B4"] = {
-    guid = "ad8530",
+    guid = G.GUIDS.TABLES.TABLE_B4,
+    shape = C.TableShapes.CIRCULAR,
     centerPoint = Vector({ 0, 0, -36.04 }),
     activePosition = Vector({ 0, 0, -36.04 }),
     inactivePosition = Vector({ 0.00, -200, 100 }),
@@ -1444,6 +1457,118 @@ C.Tables = {
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_3,
         position = { z = 5 }
+      }
+    }
+  },
+  ["Table B5"] = {
+    guid = G.GUIDS.TABLES.TABLE_B5,
+    shape = C.TableShapes.CIRCULAR,
+    centerPoint = Vector({ 0, 0, -90.26 }),
+    activePosition = Vector({ 0.00, 0, -90.26 }),
+    inactivePosition = Vector({ 0.00, -200, 50 }),
+    numSegments = 10,
+    angleSegmentOne = 0,
+    playerToPositionMap = {
+      NPC1 = 3,
+      NPC2 = 9,
+      NPC3 = 2,
+      NPC4 = 10,
+      NPC5 = 1,
+      Brown = 4,
+      Orange = 5,
+      Red = 6,
+      Pink = 7,
+      Purple = 8
+    },
+    referencePlayerColor = "Red",
+    referenceHandPosition = Vector({ 0.00, 3.22, -162 }),
+    objectPositions = {
+      {
+        guid = G.GUIDS.MAIN_LIGHT_LEFT,
+        position = { z = -100 }
+      },
+      {
+        guid = G.GUIDS.MAIN_LIGHT_RIGHT,
+        position = { z = -100 }
+      },
+      {
+        guid = G.GUIDS.DICE_DRAWER_STORYTELLER_1,
+        position = { z = -90 }
+      },
+      {
+        guid = G.GUIDS.DICE_LIGHT_STORYTELLER_1,
+        position = { z = -90 }
+      },
+      {
+        guid = G.GUIDS.DICE_DRAWER_STORYTELLER_2,
+        position = { z = -80 }
+      },
+      {
+        guid = G.GUIDS.DICE_LIGHT_STORYTELLER_2,
+        position = { z = -80 }
+      },
+      {
+        guid = G.GUIDS.DICE_DRAWER_STORYTELLER_3,
+        position = { z = -80 }
+      },
+      {
+        guid = G.GUIDS.DICE_LIGHT_STORYTELLER_3,
+        position = { z = -80 }
+      }
+    }
+  },
+  ["Table C"] = {
+    guid = G.GUIDS.TABLES.TABLE_C,
+    shape = C.TableShapes.FACING,
+    centerPoint = Vector({ 0, 0, -90.26 }),
+    activePosition = Vector({ 0.00, 0, -90.26 }),
+    inactivePosition = Vector({ 0.00, -200, 50 }),
+    playerToPositionMap = {
+      NPC1 = {side = 0, index = 3},
+      NPC2 = {side = 0, index = 2},
+      NPC3 = {side = 0, index = 4},
+      NPC4 = {side = 0, index = 1},
+      NPC5 = {side = 0, index = 5},
+      Red = {side = 180, index = 3},
+      Orange = {side = 180, index = 4},
+      Pink = {side = 180, index = 2},
+      Brown = {side = 180, index = 5},
+      Purple = {side = 180, index = 1}
+    },
+    referencePlayerColor = "Red",
+    referenceHandPosition = Vector({ 0.00, 3.22, -162 }),
+    objectPositions = {
+      {
+        guid = G.GUIDS.MAIN_LIGHT_LEFT,
+        position = { z = -100 }
+      },
+      {
+        guid = G.GUIDS.MAIN_LIGHT_RIGHT,
+        position = { z = -100 }
+      },
+      {
+        guid = G.GUIDS.DICE_DRAWER_STORYTELLER_1,
+        position = { z = -90 }
+      },
+      {
+        guid = G.GUIDS.DICE_LIGHT_STORYTELLER_1,
+        position = { z = -90 }
+      },
+      {
+        guid = G.GUIDS.DICE_DRAWER_STORYTELLER_2,
+        position = { z = -80 }
+      },
+      {
+        guid = G.GUIDS.DICE_LIGHT_STORYTELLER_2,
+        position = { z = -80 }
+      },
+      {
+        guid = G.GUIDS.DICE_DRAWER_STORYTELLER_3,
+        position = { z = -80 }
+      },
+      {
+        guid = G.GUIDS.DICE_LIGHT_STORYTELLER_3,
+        position = { z = -80 }
       }
     }
   }

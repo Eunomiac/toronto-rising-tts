@@ -19,10 +19,13 @@
     <HorizontalLayout class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
       <Button id="scenes_tbl_TableA" text="Table A" minWidth="72" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
       <Button id="scenes_tbl_TableB" text="Table B" minWidth="72" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-      <Button id="scenes_tbl_TableB1" text="B1" minWidth="48" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-      <Button id="scenes_tbl_TableB2" text="B2" minWidth="48" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-      <Button id="scenes_tbl_TableB3" text="B3" minWidth="48" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-      <Button id="scenes_tbl_TableB4" text="B4" minWidth="48" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+      <Button id="scenes_tbl_TableB0" text="B0" minWidth="40" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+      <Button id="scenes_tbl_TableB1" text="B1" minWidth="40" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+      <Button id="scenes_tbl_TableB2" text="B2" minWidth="40" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+      <Button id="scenes_tbl_TableB3" text="B3" minWidth="40" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+      <Button id="scenes_tbl_TableB4" text="B4" minWidth="40" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+      <Button id="scenes_tbl_TableB5" text="B5" minWidth="40" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+      <Button id="scenes_tbl_TableC" text="Table C" minWidth="72" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
     </HorizontalLayout>
 
     <Text class="hud_storyteller_label">Seat presence (narrative)</Text>

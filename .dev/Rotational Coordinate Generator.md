@@ -234,6 +234,27 @@ R.resolveSeatObjectsFromTable("Table A")
 --   R.resolveSeatObjectsFromTable("Table A", C.TableSourceObjects, nil)
 ```
 
+### Dynamic table family keys (TOR-258)
+
+A **family key** is a string with **no** exact `C.Tables` entry but with numbered variants present
+(e.g. `"Table B"` → `Table B0`…`Table B5`). `R.resolveTableKey(tableKey, opts)` resolves it:
+
+* **Exact key** (incl. explicit `"Table B4"`, `"Table A"`, `"Table C"`) → returned unchanged; no counting.
+* **Family key** (`"Table B"`) → `tableKey .. countOccupiedNpcSlots()` (override via `opts.occupiedCount`).
+  Occupied = truthy character key in `gameState.seatLayout.occupiedNPCSlots` over `C.NPCSeats` (NPC1–NPC4);
+  narrative presence / enabled state is irrelevant. Missing variant → **error**.
+
+`resolveTableRef` and therefore `SetTableTo` / `SyncTable` resolve family → concrete automatically, so
+callers may pass `"Table B"`. **Intent** (`sessionScene.tableKey`) stores the clicked key (family or explicit);
+**physical** key (`seatLayout.currentTableKey`) is always concrete after a successful apply.
+
+Helpers: `R.resolveTableKey`, `R.isDynamicTableFamilyKey`, `R.countOccupiedNpcSlots`, `R.tableNpcSlotCapacity`.
+
+**Grow-only on control-board Apply:** `Gameboard.applyFromControlBoard` grows the table (via `SetTableTo`)
+**only** when the intent is a family key **and** occupied NPC seats exceed the active variant's capacity.
+Removing NPC seats never shrinks the table (switches are expensive). Because `C.NPCSeats` is NPC1–NPC4,
+auto-resolution caps at `Table B4`; `Table B5` is manually selectable but never auto-selected.
+
 ### Geometry conventions
 
 * **Azimuth** (same as [`U.rotateAroundPoint`](../lib/util.ttslua) / [`U.XYZToCylindrical`](../lib/util.ttslua)): **`x = sin(θ)·r`**, **`z = cos(θ)·r`** relative to `centerPoint` in XZ.

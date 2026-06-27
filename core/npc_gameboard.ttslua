@@ -1298,6 +1298,35 @@ local function deactivateHomelandSeatsForStagePlacements(placements)
     return changed
 end
 
+--- Grow-only dynamic table transition on Apply (TOR-258): when the table intent (`sessionScene.tableKey`)
+--- is a dynamic family key (e.g. "Table B") and occupied NPC seats now exceed the active table's NPC
+--- capacity, switch up to the larger variant. Never shrinks when seats are removed — table switches are
+--- expensive and the author wants them only when strictly required.
+--- @return boolean true when a table transition was triggered
+local function maybeGrowDynamicTableForOccupiedSeats()
+    if type(U.requireHostForWorldMutation) == "function"
+        and not U.requireHostForWorldMutation("gameboard_apply_table_grow") then
+        return false
+    end
+    local RSL = require("lib.rotational-seat-layout")
+    local intent = stateModule().getStateVal("sessionScene", "tableKey")
+    if not RSL.isDynamicTableFamilyKey(intent) then
+        return false
+    end
+    local occupied = RSL.countOccupiedNpcSlots()
+    local currentKey = stateModule().getStateVal("seatLayout", "currentTableKey")
+    local currentCfg = type(currentKey) == "string" and C.Tables[currentKey] or nil
+    if occupied <= RSL.tableNpcSlotCapacity(currentCfg) then
+        return false
+    end
+    local targetKey = RSL.resolveTableKey(intent, { occupiedCount = occupied })
+    if type(targetKey) ~= "string" or targetKey == currentKey then
+        return false
+    end
+    RSL.SetTableTo(targetKey, { skipTransitionBlindfold = true })
+    return true
+end
+
 --- Apply CONTROL_BOARD tokens → state → Sync.npcs.
 --- @return boolean ok, string|nil message
 function Gameboard.applyFromControlBoard()
@@ -1349,6 +1378,9 @@ function Gameboard.applyFromControlBoard()
     if pcSeatChanged then
         local Conditions = require("core.conditions")
         Conditions.reconcileHostedForSession()
+    end
+    if seatChanged then
+        maybeGrowDynamicTableForOccupiedSeats()
     end
     syncNpcsFromControlBoard("gameboard_apply", {
         seatMutation = seatMutated,

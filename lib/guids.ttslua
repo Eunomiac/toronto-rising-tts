@@ -7,30 +7,30 @@
 
 local G = {}
 
--- Placeholder GUIDs (replace with actual GUIDs from your TTS objects)
--- Search for "@@@@@@" to find and replace these placeholders
 G.GUIDS = {
     -- Table & Floor objects
     TABLES = {
-      TABLE_A = "92ac34",
-      TABLE_A_LEAF_NEAR_LEFT = "6db794",
-      TABLE_A_LEAF_NEAR_RIGHT = "443d5a",
-      TABLE_A_LEAF_FAR_LEFT = "f09667",
-      TABLE_A_LEAF_FAR_RIGHT = "66f42d",
-      TABLE_B = "b086ae",
+      TABLE_A = "8d650e",
+      TABLE_A_LEAF_NEAR_LEFT = "cff7c9",
+      TABLE_A_LEAF_NEAR_RIGHT = "fd60dc",
+      TABLE_A_LEAF_FAR_LEFT = "38d9c4",
+      TABLE_A_LEAF_FAR_RIGHT = "674c86",
+      TABLE_B0 = "badff5",
       TABLE_B1 = "c52bcd",
       TABLE_B2 = "f14ede",
       TABLE_B3 = "323c52",
-      TABLE_B4 = "ad8530"
+      TABLE_B4 = "ad8530",
+      TABLE_B5 = "b086ae",
+      TABLE_C = "a6a165"
     },
-    THE_FLOOR = "ef943e", -- "fe1fb7",
+    THE_FLOOR = "ef943e",
     TABLE_PLINTH = "61e5b6",
 
     -- STORYTELLER OBJECTS
-    -- Storyteller Table (raised and behind players so they can't see it)
+    -- Storyteller Table
     GM_TABLE = "e157b5",
 
-    --- Storyteller NPC gameboards (replace with workshop GUIDs after placing objects).
+    --- Storyteller NPC gameboards
     STAGE_BOARD = "3d2aef",
     CONTROL_BOARD = "bea29a",
     CONTROL_BOARD_PALETTE = "ee686e",

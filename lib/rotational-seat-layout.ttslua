@@ -1935,18 +1935,128 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
   end
 end
 
+--- Count occupied NPC seats (truthy character key in `seatLayout.occupiedNPCSlots`).
+--- Counts `C.NPCSeats` only (NPC1..NPC4); narrative presence / enabled state is irrelevant.
+--- @param slots table|nil defaults to `gameState.seatLayout.occupiedNPCSlots`
+--- @return number
+local function countOccupiedNpcSlots(slots)
+  if U.Type(slots) ~= "table" then
+    slots = S.getStateVal("seatLayout", "occupiedNPCSlots")
+  end
+  if U.Type(slots) ~= "table" then
+    return 0
+  end
+  local n = 0
+  for _, seatKey in ipairs(C.NPCSeats or {}) do
+    local occupant = slots[seatKey]
+    if U.Type(occupant) == "string" and occupant ~= "" then
+      n = n + 1
+    end
+  end
+  return n
+end
+
+--- Number of NPC seats (`C.NPCSeats`) the table config defines in `playerToPositionMap`.
+--- @param tableCfg table|nil
+--- @return number
+local function tableNpcSlotCapacity(tableCfg)
+  if U.Type(tableCfg) ~= "table" then
+    return 0
+  end
+  ---@cast tableCfg table
+  local map = tableCfg.playerToPositionMap
+  if U.Type(map) ~= "table" then
+    return 0
+  end
+  local n = 0
+  for _, seatKey in ipairs(C.NPCSeats or {}) do
+    if map[seatKey] ~= nil then
+      n = n + 1
+    end
+  end
+  return n
+end
+
+--- Numbered `C.Tables` variants for a family key, e.g. `"Table B"` → `{ [0]="Table B0", … }`.
+--- @param familyKey string
+--- @return table<number, string>
+local function listNumberedTableVariants(familyKey)
+  local out = {}
+  if U.Type(familyKey) ~= "string" or familyKey == "" then
+    return out
+  end
+  local escaped = familyKey:gsub("(%W)", "%%%1")
+  local pattern = "^" .. escaped .. "(%d+)$"
+  for key in pairs(C.Tables or {}) do
+    if U.Type(key) == "string" then
+      local numStr = string.match(key, pattern)
+      local num = numStr and tonumber(numStr) or nil
+      if num ~= nil then
+        out[num] = key
+      end
+    end
+  end
+  return out
+end
+
+--- True when `key` has no exact `C.Tables` entry but numbered variants exist (dynamic family key).
+--- @param key string|nil
+--- @return boolean
+local function isDynamicTableFamilyKey(key)
+  if U.Type(key) ~= "string" or key == "" then
+    return false
+  end
+  if U.Type(C.Tables) == "table" and U.Type(C.Tables[key]) == "table" then
+    return false
+  end
+  return next(listNumberedTableVariants(key)) ~= nil
+end
+
+--- Resolve a table key to a concrete `C.Tables` key.
+--- Exact keys (incl. explicit `Table B4`) return unchanged. Family keys (no exact entry, but numbered
+--- variants exist) resolve to `familyKey .. occupiedNpcSlotCount` (override via `opts.occupiedCount`).
+--- @param tableKey string
+--- @param opts table|nil `{ occupiedCount = number? }`
+--- @return string concreteKey
+--- @return string|nil familyKey nil for exact keys; the family key when dynamically resolved
+local function resolveTableKey(tableKey, opts)
+  opts = U.Type(opts) == "table" and opts or {}
+  if U.Type(tableKey) ~= "string" or tableKey == "" then
+    error("rotational-seat-layout: resolveTableKey requires a non-empty string key")
+  end
+  if U.Type(C.Tables) == "table" and U.Type(C.Tables[tableKey]) == "table" then
+    return tableKey, nil
+  end
+  local variants = listNumberedTableVariants(tableKey)
+  if next(variants) == nil then
+    error("rotational-seat-layout: unknown table key '" .. tableKey
+      .. "' (no exact C.Tables entry and no numbered variants)")
+  end
+  local count = opts.occupiedCount
+  if U.Type(count) ~= "number" then
+    count = countOccupiedNpcSlots()
+  end
+  local candidate = variants[count]
+  if candidate == nil then
+    error("rotational-seat-layout: no '" .. tableKey .. "' variant for " .. tostring(count)
+      .. " occupied NPC seat(s) (expected '" .. tableKey .. tostring(count) .. "')")
+  end
+  return candidate, tableKey
+end
+
 --- @param tableRef string|table
 --- @return string key
 --- @return table cfg
 local function resolveTableRef(tableRef)
   if U.Type(tableRef) == "string" then
-    local cfg = C.Tables and C.Tables[tableRef] or nil
+    local concreteKey = resolveTableKey(tableRef)
+    local cfg = C.Tables and C.Tables[concreteKey] or nil
     if U.Type(cfg) ~= "table" then
       error("rotational-seat-layout: unknown tableRef key '" .. tostring(tableRef) .. "'")
     end
-    ---@cast tableRef string
+    ---@cast concreteKey string
     ---@cast cfg table
-    return tableRef, cfg
+    return concreteKey, cfg
   end
   if U.Type(tableRef) ~= "table" then
     error("rotational-seat-layout: tableRef must be a table key string or C.Tables table")
@@ -2950,6 +3060,36 @@ function M.SetTableTo(tableKey, opts)
     return true
   end)
   return nil
+end
+
+--- Public: resolve a table key (family or concrete) to a concrete `C.Tables` key.
+--- @param tableKey string
+--- @param opts table|nil `{ occupiedCount = number? }`
+--- @return string concreteKey
+--- @return string|nil familyKey
+function M.resolveTableKey(tableKey, opts)
+  return resolveTableKey(tableKey, opts)
+end
+
+--- Public: true when `key` is a dynamic family key (no exact entry, numbered variants exist).
+--- @param key string|nil
+--- @return boolean
+function M.isDynamicTableFamilyKey(key)
+  return isDynamicTableFamilyKey(key)
+end
+
+--- Public: count occupied NPC seats in `seatLayout.occupiedNPCSlots` (`C.NPCSeats` only).
+--- @param slots table|nil
+--- @return number
+function M.countOccupiedNpcSlots(slots)
+  return countOccupiedNpcSlots(slots)
+end
+
+--- Public: NPC seat capacity (`C.NPCSeats` in `playerToPositionMap`) for a table config.
+--- @param tableCfg table|nil
+--- @return number
+function M.tableNpcSlotCapacity(tableCfg)
+  return tableNpcSlotCapacity(tableCfg)
 end
 
 --- Destruct every object with tag `{seatKey}Object` for each listed seat key, except objects in
