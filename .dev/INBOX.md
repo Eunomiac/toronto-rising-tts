@@ -2,8 +2,6 @@
 
 ## Quick Fixes
 
-- [Bug] When switching scenes, the weather audio does not fade in -- it starts playing at full volume.
-
 
 ## Active
 
@@ -28,6 +26,7 @@ _(Shipped — TOR-279 Storyteller Stats panel — advantage editor)_
 
 ## Processed
 
+2026-06-27 Scene-switch weather fade-in regression — weather started at full volume instead of fading. Two causes: (1) staged scene Apply work-phase `Sync.full` did not pass `skipSoundscape`, letting a work-phase reconcile re-apply weather via the immediate held-volume path outside the fade window; (2) `Soundscape.reapplyWeatherNaturalVolumes` (called by `applyContext` → `setIndoors`) snapped the still-playing weather emitter to full before the layers faded in. Fix: work sync now skips soundscape (fadeIn is sole authority, matching no-scene path); `reapplyWeatherNaturalVolumes` ramps via `fadeEmitterVolume` when a transition fade window is open (TOR-280; relatedTo TOR-147, TOR-270, TOR-136)
 2026-06-27 Map pins on scene change — present PCs show immediately (clock gate `< 0`); absent PCs keep prior pin across scenes (`lastActiveMapPin` moved to top-level gameState, was wiped by sessionScene replace on apply)
 2026-06-27 RT clock acceleration on scene change — epoch guard in game_state_overlay ticker so stale Wait callbacks can't spawn duplicate tick chains
 2026-06-27 Scene transition sound timing — new-location ambient fade-in deferred to end of settle (shortly before blindfold lift) in runStagedTransition

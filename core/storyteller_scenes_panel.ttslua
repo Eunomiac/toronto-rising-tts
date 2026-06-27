@@ -42,9 +42,13 @@ end
 
 --- `Sync.full` then refresh all character sheets (caller already ran hosted reconcile).
 --- @param reason string
-local function syncAfterHostedReconcileAndRefreshSheets(reason)
+--- @param opts table|nil `{ skipSoundscape?: boolean }` — set during staged scene transitions where the
+---   `fadeIn` phase is the sole soundscape authority (TOR-147), so the work-phase sync must not re-apply
+---   weather/ambient outside the transition fade window (immediate held-volume path = no fade-in).
+local function syncAfterHostedReconcileAndRefreshSheets(reason, opts)
+    opts = type(opts) == "table" and opts or {}
     if Sync and type(Sync.full) == "function" then
-        Sync.full({ reason = reason })
+        Sync.full({ reason = reason, skipSoundscape = opts.skipSoundscape == true })
     end
     refreshCharacterSheetsAfterHostedReconcile()
 end
@@ -1006,7 +1010,10 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player)
 
         MapPins.onSceneApplied()
 
-        syncAfterHostedReconcileAndRefreshSheets("StorytellerScenesPanel.sceneLibraryApply")
+        -- Soundscape (incl. weather) is applied authoritatively in the staged `fadeIn` phase with the
+        -- transition fade window open; skip it here so the work-phase reconcile cannot slam weather to
+        -- full volume via the immediate held-volume path (TOR-147 weather fade-in regression).
+        syncAfterHostedReconcileAndRefreshSheets("StorytellerScenesPanel.sceneLibraryApply", { skipSoundscape = true })
 
         StorytellerScenesPanel.refresh()
         if GameStateOverlay and type(GameStateOverlay.stopTicker) == "function" then

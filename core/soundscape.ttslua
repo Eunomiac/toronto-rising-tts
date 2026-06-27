@@ -2307,7 +2307,14 @@ function Soundscape.reapplyWeatherNaturalVolumes()
             local obj = resolveEmitter(channelKey)
             local volOk = false
             if obj ~= nil then
-                volOk = setEmitterVolume(obj, applied) == true
+                -- During a scene-transition fade window, ramp the ducking change instead of snapping:
+                -- an immediate jump here (e.g. from applyContext -> setIndoors) would slam the still-playing
+                -- weather emitter to full before the layers fade in, defeating the transition fade-in (TOR-147).
+                if transitionFadeSecondsOverride ~= nil and transitionFadeSecondsOverride > 0 then
+                    volOk = fadeEmitterVolume(obj, tonumber(ch.volume) or 0, applied, transitionFadeSecondsOverride) == true
+                else
+                    volOk = setEmitterVolume(obj, applied) == true
+                end
             end
             okAll = okAll and volOk
             updateChannelState(channelKey, {
