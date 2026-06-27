@@ -371,6 +371,24 @@ function Palette.applyPaletteParkingRotation(palette, token)
     end, 0.05)
 end
 
+--- Reset a parked token to the default polar token scale. Seat-row assignment enlarges tokens to
+--- `NPC_CONTROL_TOKEN_SCALE_SEAT_ROW` (0.7); without this they stay enlarged after Clear (TOR-199).
+--- @param token Object
+function Palette.applyPaletteParkingScale(token)
+    if not U.isGameObject(token) or token.setScale == nil or token.getScale == nil then
+        return
+    end
+    local d = DATA.NPC_CONTROL_TOKEN_SCALE_POLAR
+    local s = token.getScale()
+    if type(s) == "table"
+        and math.abs((s.x or 0) - d.x) <= 0.02
+        and math.abs((s.y or 0) - d.y) <= 0.02
+        and math.abs((s.z or 0) - d.z) <= 0.02 then
+        return
+    end
+    token.setScale({ x = d.x, y = d.y, z = d.z })
+end
+
 --- Palette parking: face-up (Z=0) so parked tokens show lights-on art.
 --- @param palette Object
 --- @return Vector
@@ -726,6 +744,7 @@ function Palette.recoverStrayTokensToPalette(palette, opts)
                     if U.Type(wantIndex) == "number" and snapWorld[wantIndex] ~= nil then
                         token.setPosition(snapWorld[wantIndex])
                         Palette.applyPaletteParkingRotation(palette, token)
+                        Palette.applyPaletteParkingScale(token)
                         if token.setInvisibleTo ~= nil then
                             token.setInvisibleTo(C.PlayerColors or {})
                         end
@@ -785,6 +804,7 @@ function Palette.syncTokensToPalette(palette, options)
                 token.setPosition(snapWorld[wantIndex])
             end
             Palette.applyPaletteParkingRotation(palette, token)
+            Palette.applyPaletteParkingScale(token)
             if needPos or wasFaceDown then
                 moved = moved + 1
             end
@@ -815,6 +835,7 @@ function Palette.syncTokensToPalette(palette, options)
                         token.setPosition(snapWorld[wantIndex])
                     end
                     Palette.applyPaletteParkingRotation(palette, token)
+                    Palette.applyPaletteParkingScale(token)
                     if token.setInvisibleTo ~= nil then
                         token.setInvisibleTo(C.PlayerColors or {})
                     end
@@ -852,6 +873,7 @@ function Palette.parkTokenAtAssignedSnap(palette, token, characterKey)
     end
     token.setPosition(pos)
     Palette.applyPaletteParkingRotation(palette, token)
+    Palette.applyPaletteParkingScale(token)
     if token.setInvisibleTo ~= nil then
         token.setInvisibleTo(C.PlayerColors or {})
     end
