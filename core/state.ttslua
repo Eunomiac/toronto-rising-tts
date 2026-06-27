@@ -542,6 +542,15 @@ function S.InitializeGameState(saved_data)
     local completePlayerData = S.mergePlayerData(gameState.playerData)
     gameState.playerData = completePlayerData
 
+    -- On load, every player's Prince's Court reference returns to page 1 (do not persist last-viewed page across sessions).
+    for _, playerData in pairs(gameState.playerData) do
+        if type(playerData) == "table"
+            and type(playerData.hud) == "table"
+            and type(playerData.hud.reference) == "table" then
+            playerData.hud.reference.princesCourtPage = 1
+        end
+    end
+
     -- Ensure all required fields exist (validation/sanitization)
     S.validateState()
 
