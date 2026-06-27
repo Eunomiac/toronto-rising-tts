@@ -32,6 +32,12 @@ local tickerEpoch = 0
 --- Fractional narrative minutes accumulated between integer minute updates (see `tickRealTimeClock`).
 local rtMinuteCarry = 0
 
+--- `os.clock()` (real elapsed seconds) of the last applied tick. Advancement is driven by the elapsed
+--- real time between ticks, NOT by assuming one tick per wall second — so if more than one timer ever
+--- fires in the same second (stale chains, re-entrancy), the clock still only advances by the real
+--- time that actually passed. `nil` means "re-baseline on next tick" (no jump after pause/scene change).
+local lastRealTickClock = nil
+
 --- Last pushed UI text values to avoid redundant `UI.setValue` on hot paths (RT tick).
 local overlayTextCache = {}
 
@@ -509,6 +515,19 @@ function GameStateOverlay.tickRealTimeClock()
         return false
     end
 
+    --- Drive by real elapsed time so duplicate/stale timers cannot accelerate the clock: the first
+    --- tick after a (re)start just establishes the baseline; later ticks add `speed * elapsed / 60`.
+    local nowClock = os.clock()
+    if lastRealTickClock == nil then
+        lastRealTickClock = nowClock
+        return false
+    end
+    local elapsedSec = nowClock - lastRealTickClock
+    if elapsedSec <= 0 then
+        return false
+    end
+    lastRealTickClock = nowClock
+
     local prevY = math.floor(tonumber(ck.year) or 2026)
     local prevMo = math.floor(tonumber(ck.month) or 1)
     local prevD = math.floor(tonumber(ck.day) or 1)
@@ -521,7 +540,7 @@ function GameStateOverlay.tickRealTimeClock()
     local h = math.floor(tonumber(ck.hour) or 0)
     local m = math.floor(tonumber(ck.minute) or 0)
 
-    rtMinuteCarry = rtMinuteCarry + (speed / 60)
+    rtMinuteCarry = rtMinuteCarry + (speed * elapsedSec / 60)
     local addMin = math.floor(rtMinuteCarry)
     rtMinuteCarry = rtMinuteCarry - addMin
 
@@ -630,6 +649,7 @@ function GameStateOverlay.ensureTicker()
             return
         end
         tickerEpoch = tickerEpoch + 1
+        lastRealTickClock = nil
         scheduleNextTick(tickerEpoch)
     else
         GameStateOverlay.stopTicker()
@@ -645,11 +665,14 @@ function GameStateOverlay.stopTicker()
         tickerHandle = nil
     end
     rtMinuteCarry = 0
+    lastRealTickClock = nil
 end
 
 --- Clears fractional carry when the narrative clock is set manually (Apply clock) so we do not double-apply drift.
+--- Also re-baselines the real-time anchor so the next tick measures elapsed from now (no catch-up jump).
 function GameStateOverlay.resetRealTimeCarry()
     rtMinuteCarry = 0
+    lastRealTickClock = nil
 end
 
 --- Back-compat alias: all call sites should use `reconcileFromState` via `Sync.ui` / `UpdateUIDisplays`.
