@@ -1,0 +1,680 @@
+<!-- Storyteller Stats panel: PC + Coterie advantage editing -->
+<!-- Agent guidance: .dev/HUD_FUNCTIONS.md -->
+<Panel id="panel_stats" class="stats_panel_root" active="false">
+  <VerticalLayout class="stats_root_vl">
+    <Panel id="stats_landing" class="stats_landing" active="true">
+      <Text class="stats_landing_title" text="Select target" />
+      <HorizontalLayout class="stats_target_row" spacing="6">
+      <Button id="stats_target_Brown" class="stats_target_btn" text="Brown" onClick="HUD_statsTarget" />
+      <Button id="stats_target_Orange" class="stats_target_btn" text="Orange" onClick="HUD_statsTarget" />
+      <Button id="stats_target_Red" class="stats_target_btn" text="Red" onClick="HUD_statsTarget" />
+      <Button id="stats_target_Pink" class="stats_target_btn" text="Pink" onClick="HUD_statsTarget" />
+      <Button id="stats_target_Purple" class="stats_target_btn" text="Purple" onClick="HUD_statsTarget" />
+      <Button id="stats_target_Coterie" class="stats_target_btn" text="Coterie" onClick="HUD_statsTarget" />
+      </HorizontalLayout>
+    </Panel>
+    <Panel id="stats_detail" class="stats_detail" active="false">
+      <HorizontalLayout class="stats_detail_header">
+        <Button id="stats_back" class="stats_back_btn" text="Back" onClick="HUD_statsBack" />
+        <Text id="stats_detail_title" class="stats_detail_title" text="" />
+      </HorizontalLayout>
+      <VerticalLayout id="stats_pc_view" class="stats_detail_body" active="false">
+    <HorizontalLayout class="stats_section_header">
+      <Text class="stats_section_title" text="Backgrounds" />
+      <Button id="stats_add_pc_backgrounds" class="stats_add_btn" text="+" onClick="HUD_statsAdd" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_backgrounds_row_01" class="stats_row" active="false">
+      <Text id="stats_pc_backgrounds_row_01_label" class="stats_row_label" />
+      <Button id="stats_pc_backgrounds_row_01_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_backgrounds_row_02" class="stats_row" active="false">
+      <Text id="stats_pc_backgrounds_row_02_label" class="stats_row_label" />
+      <Button id="stats_pc_backgrounds_row_02_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_backgrounds_row_03" class="stats_row" active="false">
+      <Text id="stats_pc_backgrounds_row_03_label" class="stats_row_label" />
+      <Button id="stats_pc_backgrounds_row_03_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_backgrounds_row_04" class="stats_row" active="false">
+      <Text id="stats_pc_backgrounds_row_04_label" class="stats_row_label" />
+      <Button id="stats_pc_backgrounds_row_04_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_backgrounds_row_05" class="stats_row" active="false">
+      <Text id="stats_pc_backgrounds_row_05_label" class="stats_row_label" />
+      <Button id="stats_pc_backgrounds_row_05_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_backgrounds_row_06" class="stats_row" active="false">
+      <Text id="stats_pc_backgrounds_row_06_label" class="stats_row_label" />
+      <Button id="stats_pc_backgrounds_row_06_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_backgrounds_row_07" class="stats_row" active="false">
+      <Text id="stats_pc_backgrounds_row_07_label" class="stats_row_label" />
+      <Button id="stats_pc_backgrounds_row_07_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_backgrounds_row_08" class="stats_row" active="false">
+      <Text id="stats_pc_backgrounds_row_08_label" class="stats_row_label" />
+      <Button id="stats_pc_backgrounds_row_08_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_backgrounds_row_09" class="stats_row" active="false">
+      <Text id="stats_pc_backgrounds_row_09_label" class="stats_row_label" />
+      <Button id="stats_pc_backgrounds_row_09_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_backgrounds_row_10" class="stats_row" active="false">
+      <Text id="stats_pc_backgrounds_row_10_label" class="stats_row_label" />
+      <Button id="stats_pc_backgrounds_row_10_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_backgrounds_row_11" class="stats_row" active="false">
+      <Text id="stats_pc_backgrounds_row_11_label" class="stats_row_label" />
+      <Button id="stats_pc_backgrounds_row_11_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_backgrounds_row_12" class="stats_row" active="false">
+      <Text id="stats_pc_backgrounds_row_12_label" class="stats_row_label" />
+      <Button id="stats_pc_backgrounds_row_12_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+
+    <HorizontalLayout class="stats_section_header">
+      <Text class="stats_section_title" text="Merits" />
+      <Button id="stats_add_pc_merits" class="stats_add_btn" text="+" onClick="HUD_statsAdd" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_merits_row_01" class="stats_row" active="false">
+      <Text id="stats_pc_merits_row_01_label" class="stats_row_label" />
+      <Button id="stats_pc_merits_row_01_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_merits_row_02" class="stats_row" active="false">
+      <Text id="stats_pc_merits_row_02_label" class="stats_row_label" />
+      <Button id="stats_pc_merits_row_02_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_merits_row_03" class="stats_row" active="false">
+      <Text id="stats_pc_merits_row_03_label" class="stats_row_label" />
+      <Button id="stats_pc_merits_row_03_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_merits_row_04" class="stats_row" active="false">
+      <Text id="stats_pc_merits_row_04_label" class="stats_row_label" />
+      <Button id="stats_pc_merits_row_04_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_merits_row_05" class="stats_row" active="false">
+      <Text id="stats_pc_merits_row_05_label" class="stats_row_label" />
+      <Button id="stats_pc_merits_row_05_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_merits_row_06" class="stats_row" active="false">
+      <Text id="stats_pc_merits_row_06_label" class="stats_row_label" />
+      <Button id="stats_pc_merits_row_06_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_merits_row_07" class="stats_row" active="false">
+      <Text id="stats_pc_merits_row_07_label" class="stats_row_label" />
+      <Button id="stats_pc_merits_row_07_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_merits_row_08" class="stats_row" active="false">
+      <Text id="stats_pc_merits_row_08_label" class="stats_row_label" />
+      <Button id="stats_pc_merits_row_08_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_merits_row_09" class="stats_row" active="false">
+      <Text id="stats_pc_merits_row_09_label" class="stats_row_label" />
+      <Button id="stats_pc_merits_row_09_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_merits_row_10" class="stats_row" active="false">
+      <Text id="stats_pc_merits_row_10_label" class="stats_row_label" />
+      <Button id="stats_pc_merits_row_10_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_merits_row_11" class="stats_row" active="false">
+      <Text id="stats_pc_merits_row_11_label" class="stats_row_label" />
+      <Button id="stats_pc_merits_row_11_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_merits_row_12" class="stats_row" active="false">
+      <Text id="stats_pc_merits_row_12_label" class="stats_row_label" />
+      <Button id="stats_pc_merits_row_12_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+
+    <HorizontalLayout class="stats_section_header">
+      <Text class="stats_section_title" text="Flaws" />
+      <Button id="stats_add_pc_flaws" class="stats_add_btn" text="+" onClick="HUD_statsAdd" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_flaws_row_01" class="stats_row" active="false">
+      <Text id="stats_pc_flaws_row_01_label" class="stats_row_label" />
+      <Button id="stats_pc_flaws_row_01_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_flaws_row_02" class="stats_row" active="false">
+      <Text id="stats_pc_flaws_row_02_label" class="stats_row_label" />
+      <Button id="stats_pc_flaws_row_02_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_flaws_row_03" class="stats_row" active="false">
+      <Text id="stats_pc_flaws_row_03_label" class="stats_row_label" />
+      <Button id="stats_pc_flaws_row_03_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_flaws_row_04" class="stats_row" active="false">
+      <Text id="stats_pc_flaws_row_04_label" class="stats_row_label" />
+      <Button id="stats_pc_flaws_row_04_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_flaws_row_05" class="stats_row" active="false">
+      <Text id="stats_pc_flaws_row_05_label" class="stats_row_label" />
+      <Button id="stats_pc_flaws_row_05_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_flaws_row_06" class="stats_row" active="false">
+      <Text id="stats_pc_flaws_row_06_label" class="stats_row_label" />
+      <Button id="stats_pc_flaws_row_06_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_flaws_row_07" class="stats_row" active="false">
+      <Text id="stats_pc_flaws_row_07_label" class="stats_row_label" />
+      <Button id="stats_pc_flaws_row_07_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_flaws_row_08" class="stats_row" active="false">
+      <Text id="stats_pc_flaws_row_08_label" class="stats_row_label" />
+      <Button id="stats_pc_flaws_row_08_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_flaws_row_09" class="stats_row" active="false">
+      <Text id="stats_pc_flaws_row_09_label" class="stats_row_label" />
+      <Button id="stats_pc_flaws_row_09_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_flaws_row_10" class="stats_row" active="false">
+      <Text id="stats_pc_flaws_row_10_label" class="stats_row_label" />
+      <Button id="stats_pc_flaws_row_10_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_flaws_row_11" class="stats_row" active="false">
+      <Text id="stats_pc_flaws_row_11_label" class="stats_row_label" />
+      <Button id="stats_pc_flaws_row_11_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_pc_flaws_row_12" class="stats_row" active="false">
+      <Text id="stats_pc_flaws_row_12_label" class="stats_row_label" />
+      <Button id="stats_pc_flaws_row_12_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+
+      </VerticalLayout>
+      <VerticalLayout id="stats_coterie_view" class="stats_detail_body" active="false">
+        <Text class="stats_section_title" text="Domain ratings" />
+    <HorizontalLayout class="stats_rating_row">
+      <Text class="stats_section_title" text="Chasse" />
+      <Button id="stats_rating_chasse_edit" class="stats_edit_btn" onClick="HUD_statsEditRating" />
+    </HorizontalLayout>
+    <HorizontalLayout class="stats_rating_row">
+      <Text class="stats_section_title" text="Lien" />
+      <Button id="stats_rating_lien_edit" class="stats_edit_btn" onClick="HUD_statsEditRating" />
+    </HorizontalLayout>
+    <HorizontalLayout class="stats_rating_row">
+      <Text class="stats_section_title" text="Portillon" />
+      <Button id="stats_rating_portillon_edit" class="stats_edit_btn" onClick="HUD_statsEditRating" />
+    </HorizontalLayout>
+    <HorizontalLayout class="stats_rating_row">
+      <Text class="stats_section_title" text="Haven" />
+      <Button id="stats_rating_haven_edit" class="stats_edit_btn" onClick="HUD_statsEditRating" />
+    </HorizontalLayout>
+    <HorizontalLayout class="stats_section_header">
+      <Text class="stats_section_title" text="Coterie Backgrounds" />
+      <Button id="stats_add_coterie_coterieBackgrounds" class="stats_add_btn" text="+" onClick="HUD_statsAdd" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieBackgrounds_row_01" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieBackgrounds_row_01_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieBackgrounds_row_01_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieBackgrounds_row_02" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieBackgrounds_row_02_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieBackgrounds_row_02_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieBackgrounds_row_03" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieBackgrounds_row_03_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieBackgrounds_row_03_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieBackgrounds_row_04" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieBackgrounds_row_04_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieBackgrounds_row_04_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieBackgrounds_row_05" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieBackgrounds_row_05_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieBackgrounds_row_05_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieBackgrounds_row_06" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieBackgrounds_row_06_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieBackgrounds_row_06_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieBackgrounds_row_07" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieBackgrounds_row_07_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieBackgrounds_row_07_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieBackgrounds_row_08" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieBackgrounds_row_08_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieBackgrounds_row_08_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieBackgrounds_row_09" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieBackgrounds_row_09_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieBackgrounds_row_09_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieBackgrounds_row_10" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieBackgrounds_row_10_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieBackgrounds_row_10_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieBackgrounds_row_11" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieBackgrounds_row_11_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieBackgrounds_row_11_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieBackgrounds_row_12" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieBackgrounds_row_12_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieBackgrounds_row_12_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+
+    <HorizontalLayout class="stats_section_header">
+      <Text class="stats_section_title" text="Coterie Merits" />
+      <Button id="stats_add_coterie_coterieMerits" class="stats_add_btn" text="+" onClick="HUD_statsAdd" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieMerits_row_01" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieMerits_row_01_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieMerits_row_01_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieMerits_row_02" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieMerits_row_02_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieMerits_row_02_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieMerits_row_03" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieMerits_row_03_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieMerits_row_03_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieMerits_row_04" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieMerits_row_04_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieMerits_row_04_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieMerits_row_05" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieMerits_row_05_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieMerits_row_05_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieMerits_row_06" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieMerits_row_06_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieMerits_row_06_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieMerits_row_07" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieMerits_row_07_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieMerits_row_07_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieMerits_row_08" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieMerits_row_08_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieMerits_row_08_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieMerits_row_09" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieMerits_row_09_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieMerits_row_09_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieMerits_row_10" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieMerits_row_10_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieMerits_row_10_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieMerits_row_11" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieMerits_row_11_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieMerits_row_11_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieMerits_row_12" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieMerits_row_12_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieMerits_row_12_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+
+    <HorizontalLayout class="stats_section_header">
+      <Text class="stats_section_title" text="Coterie Flaws" />
+      <Button id="stats_add_coterie_coterieFlaws" class="stats_add_btn" text="+" onClick="HUD_statsAdd" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieFlaws_row_01" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieFlaws_row_01_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieFlaws_row_01_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieFlaws_row_02" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieFlaws_row_02_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieFlaws_row_02_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieFlaws_row_03" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieFlaws_row_03_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieFlaws_row_03_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieFlaws_row_04" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieFlaws_row_04_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieFlaws_row_04_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieFlaws_row_05" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieFlaws_row_05_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieFlaws_row_05_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieFlaws_row_06" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieFlaws_row_06_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieFlaws_row_06_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieFlaws_row_07" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieFlaws_row_07_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieFlaws_row_07_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieFlaws_row_08" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieFlaws_row_08_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieFlaws_row_08_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieFlaws_row_09" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieFlaws_row_09_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieFlaws_row_09_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieFlaws_row_10" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieFlaws_row_10_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieFlaws_row_10_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieFlaws_row_11" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieFlaws_row_11_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieFlaws_row_11_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_coterieFlaws_row_12" class="stats_row" active="false">
+      <Text id="stats_coterie_coterieFlaws_row_12_label" class="stats_row_label" />
+      <Button id="stats_coterie_coterieFlaws_row_12_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+
+    <HorizontalLayout class="stats_section_header">
+      <Text class="stats_section_title" text="Domain Backgrounds" />
+      <Button id="stats_add_coterie_domainBackgrounds" class="stats_add_btn" text="+" onClick="HUD_statsAdd" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainBackgrounds_row_01" class="stats_row" active="false">
+      <Text id="stats_coterie_domainBackgrounds_row_01_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainBackgrounds_row_01_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainBackgrounds_row_02" class="stats_row" active="false">
+      <Text id="stats_coterie_domainBackgrounds_row_02_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainBackgrounds_row_02_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainBackgrounds_row_03" class="stats_row" active="false">
+      <Text id="stats_coterie_domainBackgrounds_row_03_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainBackgrounds_row_03_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainBackgrounds_row_04" class="stats_row" active="false">
+      <Text id="stats_coterie_domainBackgrounds_row_04_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainBackgrounds_row_04_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainBackgrounds_row_05" class="stats_row" active="false">
+      <Text id="stats_coterie_domainBackgrounds_row_05_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainBackgrounds_row_05_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainBackgrounds_row_06" class="stats_row" active="false">
+      <Text id="stats_coterie_domainBackgrounds_row_06_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainBackgrounds_row_06_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainBackgrounds_row_07" class="stats_row" active="false">
+      <Text id="stats_coterie_domainBackgrounds_row_07_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainBackgrounds_row_07_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainBackgrounds_row_08" class="stats_row" active="false">
+      <Text id="stats_coterie_domainBackgrounds_row_08_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainBackgrounds_row_08_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainBackgrounds_row_09" class="stats_row" active="false">
+      <Text id="stats_coterie_domainBackgrounds_row_09_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainBackgrounds_row_09_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainBackgrounds_row_10" class="stats_row" active="false">
+      <Text id="stats_coterie_domainBackgrounds_row_10_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainBackgrounds_row_10_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainBackgrounds_row_11" class="stats_row" active="false">
+      <Text id="stats_coterie_domainBackgrounds_row_11_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainBackgrounds_row_11_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainBackgrounds_row_12" class="stats_row" active="false">
+      <Text id="stats_coterie_domainBackgrounds_row_12_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainBackgrounds_row_12_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+
+    <HorizontalLayout class="stats_section_header">
+      <Text class="stats_section_title" text="Domain Merits" />
+      <Button id="stats_add_coterie_domainMerits" class="stats_add_btn" text="+" onClick="HUD_statsAdd" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainMerits_row_01" class="stats_row" active="false">
+      <Text id="stats_coterie_domainMerits_row_01_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainMerits_row_01_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainMerits_row_02" class="stats_row" active="false">
+      <Text id="stats_coterie_domainMerits_row_02_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainMerits_row_02_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainMerits_row_03" class="stats_row" active="false">
+      <Text id="stats_coterie_domainMerits_row_03_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainMerits_row_03_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainMerits_row_04" class="stats_row" active="false">
+      <Text id="stats_coterie_domainMerits_row_04_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainMerits_row_04_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainMerits_row_05" class="stats_row" active="false">
+      <Text id="stats_coterie_domainMerits_row_05_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainMerits_row_05_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainMerits_row_06" class="stats_row" active="false">
+      <Text id="stats_coterie_domainMerits_row_06_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainMerits_row_06_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainMerits_row_07" class="stats_row" active="false">
+      <Text id="stats_coterie_domainMerits_row_07_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainMerits_row_07_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainMerits_row_08" class="stats_row" active="false">
+      <Text id="stats_coterie_domainMerits_row_08_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainMerits_row_08_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainMerits_row_09" class="stats_row" active="false">
+      <Text id="stats_coterie_domainMerits_row_09_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainMerits_row_09_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainMerits_row_10" class="stats_row" active="false">
+      <Text id="stats_coterie_domainMerits_row_10_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainMerits_row_10_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainMerits_row_11" class="stats_row" active="false">
+      <Text id="stats_coterie_domainMerits_row_11_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainMerits_row_11_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainMerits_row_12" class="stats_row" active="false">
+      <Text id="stats_coterie_domainMerits_row_12_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainMerits_row_12_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+
+    <HorizontalLayout class="stats_section_header">
+      <Text class="stats_section_title" text="Domain Flaws" />
+      <Button id="stats_add_coterie_domainFlaws" class="stats_add_btn" text="+" onClick="HUD_statsAdd" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainFlaws_row_01" class="stats_row" active="false">
+      <Text id="stats_coterie_domainFlaws_row_01_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainFlaws_row_01_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainFlaws_row_02" class="stats_row" active="false">
+      <Text id="stats_coterie_domainFlaws_row_02_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainFlaws_row_02_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainFlaws_row_03" class="stats_row" active="false">
+      <Text id="stats_coterie_domainFlaws_row_03_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainFlaws_row_03_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainFlaws_row_04" class="stats_row" active="false">
+      <Text id="stats_coterie_domainFlaws_row_04_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainFlaws_row_04_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainFlaws_row_05" class="stats_row" active="false">
+      <Text id="stats_coterie_domainFlaws_row_05_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainFlaws_row_05_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainFlaws_row_06" class="stats_row" active="false">
+      <Text id="stats_coterie_domainFlaws_row_06_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainFlaws_row_06_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainFlaws_row_07" class="stats_row" active="false">
+      <Text id="stats_coterie_domainFlaws_row_07_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainFlaws_row_07_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainFlaws_row_08" class="stats_row" active="false">
+      <Text id="stats_coterie_domainFlaws_row_08_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainFlaws_row_08_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainFlaws_row_09" class="stats_row" active="false">
+      <Text id="stats_coterie_domainFlaws_row_09_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainFlaws_row_09_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainFlaws_row_10" class="stats_row" active="false">
+      <Text id="stats_coterie_domainFlaws_row_10_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainFlaws_row_10_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainFlaws_row_11" class="stats_row" active="false">
+      <Text id="stats_coterie_domainFlaws_row_11_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainFlaws_row_11_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_domainFlaws_row_12" class="stats_row" active="false">
+      <Text id="stats_coterie_domainFlaws_row_12_label" class="stats_row_label" />
+      <Button id="stats_coterie_domainFlaws_row_12_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+
+    <HorizontalLayout class="stats_section_header">
+      <Text class="stats_section_title" text="Haven Backgrounds" />
+      <Button id="stats_add_coterie_havenBackgrounds" class="stats_add_btn" text="+" onClick="HUD_statsAdd" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenBackgrounds_row_01" class="stats_row" active="false">
+      <Text id="stats_coterie_havenBackgrounds_row_01_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenBackgrounds_row_01_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenBackgrounds_row_02" class="stats_row" active="false">
+      <Text id="stats_coterie_havenBackgrounds_row_02_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenBackgrounds_row_02_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenBackgrounds_row_03" class="stats_row" active="false">
+      <Text id="stats_coterie_havenBackgrounds_row_03_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenBackgrounds_row_03_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenBackgrounds_row_04" class="stats_row" active="false">
+      <Text id="stats_coterie_havenBackgrounds_row_04_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenBackgrounds_row_04_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenBackgrounds_row_05" class="stats_row" active="false">
+      <Text id="stats_coterie_havenBackgrounds_row_05_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenBackgrounds_row_05_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenBackgrounds_row_06" class="stats_row" active="false">
+      <Text id="stats_coterie_havenBackgrounds_row_06_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenBackgrounds_row_06_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenBackgrounds_row_07" class="stats_row" active="false">
+      <Text id="stats_coterie_havenBackgrounds_row_07_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenBackgrounds_row_07_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenBackgrounds_row_08" class="stats_row" active="false">
+      <Text id="stats_coterie_havenBackgrounds_row_08_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenBackgrounds_row_08_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenBackgrounds_row_09" class="stats_row" active="false">
+      <Text id="stats_coterie_havenBackgrounds_row_09_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenBackgrounds_row_09_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenBackgrounds_row_10" class="stats_row" active="false">
+      <Text id="stats_coterie_havenBackgrounds_row_10_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenBackgrounds_row_10_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenBackgrounds_row_11" class="stats_row" active="false">
+      <Text id="stats_coterie_havenBackgrounds_row_11_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenBackgrounds_row_11_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenBackgrounds_row_12" class="stats_row" active="false">
+      <Text id="stats_coterie_havenBackgrounds_row_12_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenBackgrounds_row_12_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+
+    <HorizontalLayout class="stats_section_header">
+      <Text class="stats_section_title" text="Haven Merits" />
+      <Button id="stats_add_coterie_havenMerits" class="stats_add_btn" text="+" onClick="HUD_statsAdd" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenMerits_row_01" class="stats_row" active="false">
+      <Text id="stats_coterie_havenMerits_row_01_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenMerits_row_01_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenMerits_row_02" class="stats_row" active="false">
+      <Text id="stats_coterie_havenMerits_row_02_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenMerits_row_02_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenMerits_row_03" class="stats_row" active="false">
+      <Text id="stats_coterie_havenMerits_row_03_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenMerits_row_03_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenMerits_row_04" class="stats_row" active="false">
+      <Text id="stats_coterie_havenMerits_row_04_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenMerits_row_04_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenMerits_row_05" class="stats_row" active="false">
+      <Text id="stats_coterie_havenMerits_row_05_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenMerits_row_05_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenMerits_row_06" class="stats_row" active="false">
+      <Text id="stats_coterie_havenMerits_row_06_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenMerits_row_06_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenMerits_row_07" class="stats_row" active="false">
+      <Text id="stats_coterie_havenMerits_row_07_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenMerits_row_07_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenMerits_row_08" class="stats_row" active="false">
+      <Text id="stats_coterie_havenMerits_row_08_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenMerits_row_08_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenMerits_row_09" class="stats_row" active="false">
+      <Text id="stats_coterie_havenMerits_row_09_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenMerits_row_09_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenMerits_row_10" class="stats_row" active="false">
+      <Text id="stats_coterie_havenMerits_row_10_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenMerits_row_10_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenMerits_row_11" class="stats_row" active="false">
+      <Text id="stats_coterie_havenMerits_row_11_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenMerits_row_11_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenMerits_row_12" class="stats_row" active="false">
+      <Text id="stats_coterie_havenMerits_row_12_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenMerits_row_12_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+
+    <HorizontalLayout class="stats_section_header">
+      <Text class="stats_section_title" text="Haven Flaws" />
+      <Button id="stats_add_coterie_havenFlaws" class="stats_add_btn" text="+" onClick="HUD_statsAdd" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenFlaws_row_01" class="stats_row" active="false">
+      <Text id="stats_coterie_havenFlaws_row_01_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenFlaws_row_01_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenFlaws_row_02" class="stats_row" active="false">
+      <Text id="stats_coterie_havenFlaws_row_02_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenFlaws_row_02_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenFlaws_row_03" class="stats_row" active="false">
+      <Text id="stats_coterie_havenFlaws_row_03_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenFlaws_row_03_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenFlaws_row_04" class="stats_row" active="false">
+      <Text id="stats_coterie_havenFlaws_row_04_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenFlaws_row_04_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenFlaws_row_05" class="stats_row" active="false">
+      <Text id="stats_coterie_havenFlaws_row_05_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenFlaws_row_05_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenFlaws_row_06" class="stats_row" active="false">
+      <Text id="stats_coterie_havenFlaws_row_06_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenFlaws_row_06_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenFlaws_row_07" class="stats_row" active="false">
+      <Text id="stats_coterie_havenFlaws_row_07_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenFlaws_row_07_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenFlaws_row_08" class="stats_row" active="false">
+      <Text id="stats_coterie_havenFlaws_row_08_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenFlaws_row_08_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenFlaws_row_09" class="stats_row" active="false">
+      <Text id="stats_coterie_havenFlaws_row_09_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenFlaws_row_09_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenFlaws_row_10" class="stats_row" active="false">
+      <Text id="stats_coterie_havenFlaws_row_10_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenFlaws_row_10_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenFlaws_row_11" class="stats_row" active="false">
+      <Text id="stats_coterie_havenFlaws_row_11_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenFlaws_row_11_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+    <HorizontalLayout id="stats_coterie_havenFlaws_row_12" class="stats_row" active="false">
+      <Text id="stats_coterie_havenFlaws_row_12_label" class="stats_row_label" />
+      <Button id="stats_coterie_havenFlaws_row_12_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
+    </HorizontalLayout>
+
+      </VerticalLayout>
+    </Panel>
+  </VerticalLayout>
+</Panel>

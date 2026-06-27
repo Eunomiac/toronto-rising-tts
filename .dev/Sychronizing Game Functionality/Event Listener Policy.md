@@ -101,6 +101,9 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `HUD_selectAdminLightingScene` | B+C | Yes | |
 | `HUD_soundscape*` (mutators) | B+C | Yes | inspect read-only |
 | `HUD_scenesPanel` / apply / lib / ctor / clock | B+C | Yes | modal opens Tier A |
+| `HUD_statsTarget` / `HUD_statsBack` | A | — | Stats panel navigation |
+| `HUD_statsAdd` / `HUD_statsEdit` / `HUD_statsEditRating` / `HUD_statsEditorConfirm` / `HUD_statsEditorDelete` | B+C | Yes | advantage mutations |
+| `HUD_statsEditorField` / `HUD_statsEditorCancel` | A | — | draft stash / close |
 | `HUD_advancePhase` | B | Yes | |
 | `HUD_resetGame` / `HUD_syncAll` | B+C | Yes | |
 | `HUD_saveState` / `HUD_logState` / `HUD_printState` | A/B | — | encode/log |

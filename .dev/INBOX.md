@@ -2,9 +2,19 @@
 
 ## Quick Fixes
 
+- [Bug] When switching scenes, the weather audio does not fade in -- it starts playing at full volume.
+
+
 ## Active
 
----
+- [Stage Control] When an NPC is cleared from a stage position and they occupy a table seat, their seat status should not necessarily default to the status recorded in the scene library, but rather adhere to the following:
+  - Case 1: Their Seat is marked "disabled" and they are cleared from the stage -- If their stage light was set to "Standard" at the time they were cleared, their seat should be activated (i.e. if they were visible on the stage, they should be visible when they return to the table)
+  - Case 2: Their Seat is marked "enabled" and they are cleared from the stage -- Their seat should be enabled when they return to the table, regardless of their staged light mode.
+  Important Note: If they are seated at the table and the Storyteller activates their seat, this should be written to the scene library data so that their seat remains active on refresh/sync. Likewise for deactivating seats.  The scene library data is meant to be updated as the scene progresses and NPCs move in and out of stage/seat slots -- so that, if/when the scene is returned to, the state of the stage is as we left it, not as it was when the scene was first initiated.
+
+### Storyteller Panel for Editing Advantages
+_(Shipped — TOR-279 Storyteller Stats panel — advantage editor)_
+
 
 ## Needs clarification
 

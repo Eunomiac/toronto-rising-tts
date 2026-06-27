@@ -33,7 +33,7 @@ Per the TTS **InputField** note ([Input Elements](https://api.tabletopsimulator.
 
 | Handler | XML Element(s) | Params | Behavior |
 | ------- | ---------------- | ------ | -------- |
-| `HUD_selectStorytellerPanel` | `toggle_scenes`, `toggle_soundscape`, `toggle_pcs`, `toggle_phases` | `(player, button, id)` | Strips `toggle_` prefix from `id`, calls `StorytellerPanelUI.selectStorytellerPanel(panelKey)` to show one storyteller panel and hide all others. Updates toggle button colors to indicate active panel. Deferred refresh for Sound (`syncSoundscapeControls`) and Scenes (`StorytellerScenesPanel.refresh` + lighting preset buttons). |
+| `HUD_selectStorytellerPanel` | `toggle_scenes`, `toggle_soundscape`, `toggle_pcs`, `toggle_phases`, `toggle_stats` | `(player, button, id)` | Strips `toggle_` prefix from `id`, calls `StorytellerPanelUI.selectStorytellerPanel(panelKey)` to show one storyteller panel and hide all others. Updates toggle button colors to indicate active panel. Deferred refresh for Sound (`syncSoundscapeControls`), Scenes (`StorytellerScenesPanel.refresh` + lighting preset buttons), and Stats (`StorytellerStatsPanel.refresh`). |
 | `HUD_togglePanel` | `toggleElem_*` buttons | `(player, button, id)` | Strips `toggleElem_` prefix from `id`, calls `U.toggleXmlElement(elemID, button)` to collapse/expand the target panel. Swaps toggle button text between `►` and `▼`. |
 | `HUD_debugSeatColor` | `debugSeat_Black`, `debugSeat_Red`, `debugSeat_Orange`, `debugSeat_Brown`, `debugSeat_Pink`, `debugSeat_Purple` | `(player, button, id)` | Bottom-right debug row (left of admin twirl-down). **Left-click (`"-1"`):** `player.changeColor(<Color>)`, then `hideStartupLoadingOverlays()`. **Right-click (`"-2"`):** `M.setCamera(player, "default<Color>")` (e.g. `defaultBrown`). Active Host seat button gets a **red** outline (`#FF0000`, 4px) via `syncDebugSeatColorButtons()` (`onPlayerChangeColor`, `UpdateUIDisplays`, after left-click). |
 
@@ -118,6 +118,22 @@ Root `Panel` id `gameStateOverlay_location_<Color>` uses class `playerHud_overla
 | `HUD_soundscapeStopAll` | `Stop All` button | `(player, button, id)` | Calls `SS.stopAll()` to silence loop lanes with `silent` and invalidate scheduled background/featured/thunder callbacks. |
 | `HUD_soundscapePrepareSave` | `Silence for save` | `(player, button, id)` | Calls `SS.prepareEmittersForSave()` — `bootstrapSilenceStrayEmitterLoops` + `invalidateReconcileCache` only (physical silence; does **not** mutate `gameState.soundscape`). Load resync from active scene vs Main-only is **TOR-152**. |
 | `HUD_soundscapeInspect` | `Inspect` button | `(player, button, id)` | Calls `SS.inspectEmitters()`, prints JSON emitter/effect information including GUID/tag validation plus Looping and Trigger Effects, and alerts the GM. |
+
+## Stats tab (`panel_stats.xml` + `advantage_editor_modal.xml`)
+
+Storyteller **Stats** panel: edit PC backgrounds/merits/flaws and coterie advantages. Input fields stash values in `StorytellerStatsPanel` draft on `HUD_statsEditorField` (`onValueChanged` / `onEndEdit`); Confirm reads draft, not `UI.getAttribute`.
+
+| Handler | XML Element(s) | Params | Behavior |
+| ------- | ---------------- | ------ | -------- |
+| `HUD_statsTarget` | `stats_target_Brown` … `stats_target_Coterie` | `(player, button, id)` | Strips `stats_target_` prefix; `StorytellerStatsPanel.selectTarget`. Shows PC or Coterie advantage lists. |
+| `HUD_statsBack` | `stats_back` | `(player, button, id)` | Returns to target picker landing view. |
+| `HUD_statsAdd` | `stats_add_pc_*`, `stats_add_coterie_*` | `(player, button, id)` | Opens Advantage Editor for a new entry (PC append or coterie blank activation on OK). |
+| `HUD_statsEdit` | `stats_pc_*_row_*_edit`, `stats_coterie_*_row_*_edit` | `(player, button, id)` | Opens Advantage Editor populated from state. |
+| `HUD_statsEditRating` | `stats_rating_*_edit` | `(player, button, id)` | Opens dot-only editor for domain rating (`chasse`, `lien`, `portillon`, `haven`). |
+| `HUD_statsEditorField` | `statsEditor_*` InputFields | `(player, value, id)` | Stashes field into editor draft (no host guard — read-only stash). |
+| `HUD_statsEditorConfirm` | `statsEditor_confirm` | `(player, button, id)` | Writes draft to `gameState`; PC path refreshes csheet page 3 via `PCST.refreshCharacterSheetsForColor`; coterie path `Coterie.reconcileAll`. |
+| `HUD_statsEditorCancel` | `statsEditor_cancel` | `(player, button, id)` | Closes modal without writes. |
+| `HUD_statsEditorDelete` | `statsEditor_delete` | `(player, button, id)` | Double-click confirm (5s); removes PC array row or deactivates coterie blank. |
 
 ## Phase Controls (`panel_phases.xml`)
 

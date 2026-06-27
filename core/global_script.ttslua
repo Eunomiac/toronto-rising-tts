@@ -174,6 +174,7 @@ O = require("core.objects")
 U = require("lib.util")
 local StorytellerPanelUI = require("core.storyteller_panel_ui")
 local StorytellerScenesPanel = require("core.storyteller_scenes_panel")
+local StorytellerStatsPanel = require("core.storyteller_stats_panel")
 local GameStateOverlay = require("core.game_state_overlay")
 local HUDP = require("core.hud_player")
 local Coterie = require("core.coterie")
@@ -2119,6 +2120,89 @@ function HUD_selectStorytellerPanel(player, button, id)
             UpdateUIDisplays({ scenesPanel = true, adminLighting = true })
         end, 1)
     end
+    if panelKey == "stats" then
+        Wait.frames(function()
+            UpdateUIDisplays({ statsPanel = true })
+        end, 1)
+    end
+end
+
+--- Stats panel: select PC or Coterie target (`stats_target_Brown`, …).
+function HUD_statsTarget(player, button, id)
+    if not requireStorytellerHostForMutation(player, "HUD_statsTarget") then
+        return
+    end
+    local target = string.gsub(id or "", "^stats_target_", "")
+    if StorytellerStatsPanel and StorytellerStatsPanel.selectTarget then
+        StorytellerStatsPanel.selectTarget(target)
+    end
+end
+
+function HUD_statsBack(player, button, id)
+    if not requireStorytellerHostForMutation(player, "HUD_statsBack") then
+        return
+    end
+    if StorytellerStatsPanel and StorytellerStatsPanel.goBack then
+        StorytellerStatsPanel.goBack()
+    end
+end
+
+function HUD_statsAdd(player, button, id)
+    if not requireStorytellerHostForMutation(player, "HUD_statsAdd") then
+        return
+    end
+    if StorytellerStatsPanel and StorytellerStatsPanel.onAdd then
+        StorytellerStatsPanel.onAdd(id)
+    end
+end
+
+function HUD_statsEdit(player, button, id)
+    if not requireStorytellerHostForMutation(player, "HUD_statsEdit") then
+        return
+    end
+    if StorytellerStatsPanel and StorytellerStatsPanel.onEdit then
+        StorytellerStatsPanel.onEdit(id)
+    end
+end
+
+function HUD_statsEditRating(player, button, id)
+    if not requireStorytellerHostForMutation(player, "HUD_statsEditRating") then
+        return
+    end
+    if StorytellerStatsPanel and StorytellerStatsPanel.onEditRating then
+        StorytellerStatsPanel.onEditRating(id)
+    end
+end
+
+function HUD_statsEditorField(player, value, id)
+    if StorytellerStatsPanel and StorytellerStatsPanel.onEditorField then
+        StorytellerStatsPanel.onEditorField(id, value)
+    end
+end
+
+function HUD_statsEditorConfirm(player, button, id)
+    if not requireStorytellerHostForMutation(player, "HUD_statsEditorConfirm") then
+        return
+    end
+    if StorytellerStatsPanel and StorytellerStatsPanel.onEditorConfirm then
+        StorytellerStatsPanel.onEditorConfirm()
+    end
+end
+
+function HUD_statsEditorCancel(player, button, id)
+    if StorytellerStatsPanel and StorytellerStatsPanel.onEditorCancel then
+        StorytellerStatsPanel.onEditorCancel()
+    end
+end
+
+function HUD_statsEditorDelete(player, button, id)
+    if not requireStorytellerHostForMutation(player, "HUD_statsEditorDelete") then
+        return
+    end
+    local color = player and player.color or "Black"
+    if StorytellerStatsPanel and StorytellerStatsPanel.onEditorDelete then
+        StorytellerStatsPanel.onEditorDelete(color)
+    end
 end
 
 --- Storyteller PCs panel control buttons (id pattern pcs_<Color>_<action>).
@@ -3330,6 +3414,11 @@ function UpdateUIDisplays(delta)
             StorytellerScenesPanel.refresh()
         end
         syncAdminLightSceneButtons()
+    end
+    if wants("statsPanel") then
+        if StorytellerStatsPanel and StorytellerStatsPanel.refresh then
+            StorytellerStatsPanel.refresh()
+        end
     end
     if wants("soundscape") then
         syncSoundscapeControls()

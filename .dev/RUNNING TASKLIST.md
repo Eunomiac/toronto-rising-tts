@@ -172,6 +172,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Scenes Panel:** Chronicle weather and NPC role snapshot removed. _(TOR-63)_
 - [x] **Player game-state overlay:** Center-top phase, date, time (`ui/shared/game_state_overlay.xml`, `core/game_state_overlay.ttslua`). _(TOR-62)_
 - [x] **PCs panel tracker row width:** HP / WP / Hum glyph rows fit 10-wide tracks (`panel_pcs_defaults.xml`). _(TOR-233)_
+- [x] **Storyteller Stats panel — advantage editor:** Stats toolbar tab; PC backgrounds/merits/flaws + coterie 9 categories + domain ratings; Advantage Editor modal; seed-only PCS hydrate. Save & Play pending author. _(TOR-279)_
 - [ ] **Center-top overlay polish:** Scale down overlay; fix background image alignment/scaling. _(TOR-86)_
 - [ ] **Weather on overlay:** Show weather icon/label on center-top overlay (aligned with chronicle/scene clock), not only Scenes panel. _(TOR-87)_
 - [x] **PCs panel deactivate PC:** Canceled — superseded by control-board `pc_control_token` seat row (INBOX Active). _(TOR-88 — canceled 2026-06-15)_

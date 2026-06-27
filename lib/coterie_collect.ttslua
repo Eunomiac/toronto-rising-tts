@@ -91,6 +91,14 @@ function CC.collectPrincesCourtTraitBlankUpdates(coterieData, hudSeatColor)
 
         if entry.blank ~= true then
           addTraitDotUpdates(updates, entry, pageNum, sectionKey, traitIndex, isFlaw, hudSeatColor)
+          local titleId = traitElementId(pageNum, sectionKey, traitIndex, hudSeatColor, "title")
+          local flavorId = traitElementId(pageNum, sectionKey, traitIndex, hudSeatColor, "flavor")
+          local rulesId = traitElementId(pageNum, sectionKey, traitIndex, hudSeatColor, "rules")
+          addUpdate(updates, titleId, { text = TRAIT.entryTitleUpper(entry) })
+          local flavor = TRAIT.joinMultilineField(entry.description)
+          addUpdate(updates, flavorId, { text = flavor or "" })
+          local rules = TRAIT.joinMultilineField(entry.rules)
+          addUpdate(updates, rulesId, { text = rules or "" })
           return
         end
 

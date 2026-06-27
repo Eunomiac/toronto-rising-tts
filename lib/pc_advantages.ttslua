@@ -1,0 +1,183 @@
+--[[
+  PC advantage (backgrounds / merits / flaws) mutation helpers for Storyteller Stats panel.
+]]
+local M = {}
+
+local S = require("core.state")
+local C = require("lib.constants")
+local U = require("lib.util")
+
+M.CATEGORIES = { "backgrounds", "merits", "flaws" }
+
+local CATEGORY_SINGULAR = {
+  backgrounds = "Background",
+  merits = "Merit",
+  flaws = "Flaw",
+}
+
+--- @param text string|nil
+--- @return string[]
+function M.linesToArray(text)
+  if type(text) ~= "string" or text == "" then
+    return {}
+  end
+  local lines = {}
+  for line in text:gmatch("[^\r\n]+") do
+    lines[#lines + 1] = line
+  end
+  return lines
+end
+
+--- @param arr table|nil
+--- @return string
+function M.arrayToLines(arr)
+  if type(arr) ~= "table" then
+    return ""
+  end
+  local parts = {}
+  for i = 1, #arr do
+    if type(arr[i]) == "string" then
+      parts[#parts + 1] = arr[i]
+    end
+  end
+  return table.concat(parts, "\n")
+end
+
+--- @param category string
+--- @param entries table[]
+--- @return string
+function M.uniqueDefaultName(category, entries)
+  local base = "New " .. (CATEGORY_SINGULAR[category] or "Advantage")
+  local used = {}
+  for _, entry in ipairs(entries or {}) do
+    if type(entry) == "table" and type(entry.name) == "string" then
+      used[entry.name] = true
+    end
+  end
+  if not used[base] then
+    return base
+  end
+  local n = 2
+  while used[base .. " (" .. tostring(n) .. ")"] do
+    n = n + 1
+  end
+  return base .. " (" .. tostring(n) .. ")"
+end
+
+--- @param category string
+--- @param name string|nil
+--- @return table
+function M.makeDefaultEntry(category, name)
+  return {
+    name = type(name) == "string" and name or M.uniqueDefaultName(category, {}),
+    focus = "",
+    base = 0,
+    temp = 0,
+    max = 5,
+    disabled = 0,
+    description = {},
+    rules = {},
+  }
+end
+
+--- @param pid string
+--- @param category string
+--- @return table[]
+function M.getEntries(pid, category)
+  if type(pid) ~= "string" or pid == "" then
+    return {}
+  end
+  local arr = S.getStateVal("playerData", pid, "stats", category)
+  if type(arr) ~= "table" then
+    return {}
+  end
+  return arr
+end
+
+--- @param entry table|nil
+--- @return boolean
+function M.isVisibleOnSheet(entry)
+  if type(entry) ~= "table" then
+    return false
+  end
+  if entry.blank == true then
+    return false
+  end
+  return entry.sheetDisplay ~= false
+end
+
+--- @param pid string
+--- @param category string
+--- @return table[] visible entries with `{ entry, index }`
+function M.listVisibleEntries(pid, category)
+  local arr = M.getEntries(pid, category)
+  local out = {}
+  for i = 1, #arr do
+    local entry = arr[i]
+    if M.isVisibleOnSheet(entry) then
+      out[#out + 1] = { entry = entry, index = i }
+    end
+  end
+  return out
+end
+
+--- @param pid string
+--- @param category string
+--- @param index integer
+--- @param entry table
+function M.setEntry(pid, category, index, entry)
+  if type(pid) ~= "string" or type(category) ~= "string" or type(entry) ~= "table" then
+    return false
+  end
+  local idx = math.floor(tonumber(index) or 0)
+  if idx < 1 then
+    return false
+  end
+  S.setStateVal(U.clone(entry, true), "playerData", pid, "stats", category, idx)
+  return true
+end
+
+--- @param pid string
+--- @param category string
+--- @param entry table|nil
+--- @return integer|nil new 1-based index
+function M.addEntry(pid, category, entry)
+  if type(pid) ~= "string" or type(category) ~= "string" then
+    return nil
+  end
+  local arr = M.getEntries(pid, category)
+  entry = type(entry) == "table" and U.clone(entry, true) or M.makeDefaultEntry(category, M.uniqueDefaultName(category, arr))
+  entry.name = M.uniqueDefaultName(category, arr)
+  arr[#arr + 1] = entry
+  S.setStateVal(arr, "playerData", pid, "stats", category)
+  return #arr
+end
+
+--- @param pid string
+--- @param category string
+--- @param index integer
+--- @return boolean
+function M.deleteEntry(pid, category, index)
+  if type(pid) ~= "string" or type(category) ~= "string" then
+    return false
+  end
+  local idx = math.floor(tonumber(index) or 0)
+  if idx < 1 then
+    return false
+  end
+  local arr = M.getEntries(pid, category)
+  if idx > #arr then
+    return false
+  end
+  table.remove(arr, idx)
+  S.setStateVal(arr, "playerData", pid, "stats", category)
+  return true
+end
+
+--- @param color string
+--- @return string|nil
+function M.playerIdForColor(color)
+  return C.GetPlayerID(color)
+end
+
+return M

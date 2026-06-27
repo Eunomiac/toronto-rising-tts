@@ -39,6 +39,170 @@ function Coterie.overwriteFromDefaults()
     Coterie.reconcileAll()
 end
 
+--- @param data table
+--- @param arrayKey string
+--- @return table
+local function traitArrayFromData(data, arrayKey)
+    if type(data) ~= "table" or type(arrayKey) ~= "string" then
+        return {}
+    end
+    local arr = data[arrayKey]
+    if type(arr) ~= "table" then
+        arr = {}
+        data[arrayKey] = arr
+    end
+    return arr
+end
+
+--- @param data table
+local function persistCoterieData(data)
+    CoterieHydrate.hydrateCoterieData(data)
+    S.setStateVal(data, "coterieData")
+    Coterie.invalidateReconcileCache()
+    Coterie.reconcileAll()
+end
+
+--- @param entry table|nil
+--- @return boolean
+local function coterieEntryVisibleInStats(entry)
+    if type(entry) ~= "table" then
+        return false
+    end
+    if entry.blank ~= true then
+        return true
+    end
+    return entry.active == true
+end
+
+--- @param arrayKey string
+--- @return table[] `{ entry, index }`
+function Coterie.listVisibleTraitEntries(arrayKey)
+    local data = S.getStateVal("coterieData")
+    if type(data) ~= "table" then
+        return {}
+    end
+    local arr = traitArrayFromData(data, arrayKey)
+    local out = {}
+    for i = 1, #arr do
+        local entry = arr[i]
+        if coterieEntryVisibleInStats(entry) then
+            out[#out + 1] = { entry = entry, index = i }
+        end
+    end
+    return out
+end
+
+--- @param arrayKey string
+--- @param index integer
+--- @param entry table
+--- @return boolean
+function Coterie.setTraitEntry(arrayKey, index, entry)
+    if type(arrayKey) ~= "string" or type(entry) ~= "table" then
+        return false
+    end
+    local data = S.getStateVal("coterieData")
+    if type(data) ~= "table" then
+        return false
+    end
+    local idx = math.floor(tonumber(index) or 0)
+    if idx < 1 then
+        return false
+    end
+    local arr = traitArrayFromData(data, arrayKey)
+    if idx > #arr then
+        return false
+    end
+    arr[idx] = U.clone(entry, true)
+    persistCoterieData(data)
+    return true
+end
+
+--- @param arrayKey string
+--- @param entry table|nil
+--- @return integer|nil new index
+function Coterie.activateBlankEntry(arrayKey, entry)
+    if type(arrayKey) ~= "string" then
+        return nil
+    end
+    local data = S.getStateVal("coterieData")
+    if type(data) ~= "table" then
+        return nil
+    end
+    local arr = traitArrayFromData(data, arrayKey)
+    for i = 1, #arr do
+        local row = arr[i]
+        if type(row) == "table" and row.blank == true and row.active ~= true then
+            local merged = CoterieHydrate.makeBlankEntry()
+            if type(entry) == "table" then
+                for k, v in pairs(entry) do
+                    merged[k] = v
+                end
+            end
+            merged.active = true
+            merged.blank = true
+            arr[i] = merged
+            persistCoterieData(data)
+            return i
+        end
+    end
+    return nil
+end
+
+--- @param arrayKey string
+--- @param index integer
+--- @return boolean
+function Coterie.deleteTraitEntry(arrayKey, index)
+    if type(arrayKey) ~= "string" then
+        return false
+    end
+    local data = S.getStateVal("coterieData")
+    if type(data) ~= "table" then
+        return false
+    end
+    local idx = math.floor(tonumber(index) or 0)
+    if idx < 1 then
+        return false
+    end
+    local arr = traitArrayFromData(data, arrayKey)
+    if idx > #arr then
+        return false
+    end
+    local row = arr[idx]
+    if type(row) == "table" and row.blank == true then
+        arr[idx] = CoterieHydrate.makeBlankEntry()
+    else
+        table.remove(arr, idx)
+    end
+    persistCoterieData(data)
+    return true
+end
+
+--- @param ratingKey string chasse|lien|portillon|haven
+--- @param rating table
+--- @return boolean
+function Coterie.setDomainRating(ratingKey, rating)
+    if type(ratingKey) ~= "string" or type(rating) ~= "table" then
+        return false
+    end
+    local data = S.getStateVal("coterieData")
+    if type(data) ~= "table" then
+        return false
+    end
+    data[ratingKey] = CoterieHydrate.normalizeDomainRatingValue(rating, 5)
+    persistCoterieData(data)
+    return true
+end
+
+--- @param ratingKey string
+--- @return table
+function Coterie.getDomainRating(ratingKey)
+    local data = S.getStateVal("coterieData")
+    if type(data) ~= "table" then
+        return CoterieHydrate.normalizeDomainRatingValue(nil, 5)
+    end
+    return CoterieHydrate.normalizeDomainRatingValue(data[ratingKey], 5)
+end
+
 function Coterie.invalidateReconcileCache()
     lastUiByHudSeat = {}
 end

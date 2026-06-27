@@ -1,0 +1,32 @@
+<!-- Classes for Storyteller Stats panel (`panel_stats.xml`). -->
+<Defaults>
+  <Panel class="stats_panel_root" padding="8 8 8 8" width="680" color="rgba(0, 0, 0, 0.85)" />
+  <VerticalLayout class="stats_root_vl" spacing="8" childAlignment="UpperLeft" childForceExpandWidth="true" />
+
+  <Panel class="stats_landing" padding="4 4 4 4" />
+  <Text class="stats_landing_title" fontSize="14" fontStyle="Bold" color="#FFFFFF" />
+
+  <HorizontalLayout class="stats_target_row" spacing="6" childForceExpandWidth="false" height="32" />
+  <Button class="stats_target_btn" onClick="HUD_statsTarget" height="28" fontSize="12" minWidth="72" flexibleWidth="0"
+    colors="#333355|#444466|#555577|rgba(0.1,0.1,0.2,0.5)" textColor="#FFFFFF" />
+
+  <Panel class="stats_detail" padding="4 4 4 4" />
+  <HorizontalLayout class="stats_detail_header" spacing="8" height="28" childForceExpandWidth="false" />
+  <Button class="stats_back_btn" onClick="HUD_statsBack" height="26" minWidth="64" fontSize="12" textColor="#FFFFFF"
+    colors="#333333|#444444|#555555|rgba(0.2,0.2,0.2,0.5)" />
+  <Text class="stats_detail_title" fontSize="15" fontStyle="Bold" color="#FFD700" flexibleWidth="1" alignment="MiddleLeft" />
+
+  <VerticalLayout class="stats_detail_body" spacing="2" childAlignment="UpperLeft" childForceExpandWidth="true" />
+
+  <HorizontalLayout class="stats_section_header" spacing="6" height="24" childForceExpandWidth="false" childAlignment="MiddleLeft" />
+  <Text class="stats_section_title" fontSize="12" fontStyle="Bold" color="#CCCCCC" flexibleWidth="1" alignment="MiddleLeft" />
+  <Button class="stats_add_btn" onClick="HUD_statsAdd" text="+" width="24" height="24" fontSize="14" fontStyle="Bold"
+    colors="#225522|#336633|#44AA44|rgba(0.1,0.3,0.1,0.4)" textColor="#FFFFFF" />
+
+  <HorizontalLayout class="stats_row" spacing="6" height="22" childForceExpandWidth="false" childAlignment="MiddleLeft" />
+  <Text class="stats_row_label" fontSize="11" color="#EEEEEE" flexibleWidth="1" alignment="MiddleLeft" />
+  <Button class="stats_edit_btn" onClick="HUD_statsEdit" width="22" height="22" fontSize="10"
+    colors="#444444|#555555|#666666|rgba(0.2,0.2,0.2,0.4)" textColor="#FFFFFF" />
+
+  <HorizontalLayout class="stats_rating_row" spacing="6" height="24" childForceExpandWidth="false" childAlignment="MiddleLeft" />
+</Defaults>

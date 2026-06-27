@@ -1,0 +1,475 @@
+--[[
+  Storyteller Stats panel: PC + Coterie advantage editing.
+  Agent guidance: .dev/HUD_FUNCTIONS.md
+]]
+---@diagnostic disable: undefined-global
+local ST = {}
+
+local C = require("lib.constants")
+local S = require("core.state")
+local U = require("lib.util")
+local PCAdv = require("lib.pc_advantages")
+local PCST = require("core.pc_storyteller_panel")
+local Coterie = require("core.coterie")
+local CoterieHydrate = require("lib.coterie_hydrate")
+local TRAIT = require("lib.trait_sheet_xml")
+
+local ROW_POOL = 12
+
+local selectedTarget = nil
+local editorContext = nil
+local editorDraft = {}
+local deleteArmExpire = nil
+
+local PC_CATEGORY_LABELS = {
+  backgrounds = "Backgrounds",
+  merits = "Merits",
+  flaws = "Flaws",
+}
+
+local COTERIE_CATEGORY_LABELS = {
+  coterieBackgrounds = "Coterie Backgrounds",
+  coterieMerits = "Coterie Merits",
+  coterieFlaws = "Coterie Flaws",
+  domainBackgrounds = "Domain Backgrounds",
+  domainMerits = "Domain Merits",
+  domainFlaws = "Domain Flaws",
+  havenBackgrounds = "Haven Backgrounds",
+  havenMerits = "Haven Merits",
+  havenFlaws = "Haven Flaws",
+}
+
+local RATING_LABELS = {
+  chasse = "Chasse",
+  lien = "Lien",
+  portillon = "Portillon",
+  haven = "Haven",
+}
+
+local setAttr
+local setAttrs
+local refreshPcSection
+local refreshCoterieSection
+local refreshPcDetail
+local refreshCoterieDetail
+local showLanding
+local showDetail
+local entryFromDraft
+local ratingFromDraft
+local tryConfirmDelete
+local openEditorForEntry
+local openRatingEditor
+local closeEditor
+local applyEditorConfirm
+local refreshAfterPcMutation
+local isFlawCategory
+
+setAttr = function(id, attr, val)
+  U.setAttribute(id, attr, tostring(val))
+end
+
+setAttrs = function(id, attrs)
+  U.setAttributes(id, attrs)
+end
+
+isFlawCategory = function(categoryOrKey)
+  if categoryOrKey == "flaws" then
+    return true
+  end
+  return type(categoryOrKey) == "string" and categoryOrKey:match("Flaws$") ~= nil
+end
+
+showLanding = function()
+  setAttr("stats_landing", "active", "true")
+  setAttr("stats_detail", "active", "false")
+  setAttr("stats_pc_view", "active", "false")
+  setAttr("stats_coterie_view", "active", "false")
+end
+
+showDetail = function(title, viewId)
+  setAttr("stats_landing", "active", "false")
+  setAttr("stats_detail", "active", "true")
+  setAttr("stats_detail_title", "text", title or "")
+  setAttr("stats_pc_view", "active", viewId == "stats_pc_view" and "true" or "false")
+  setAttr("stats_coterie_view", "active", viewId == "stats_coterie_view" and "true" or "false")
+end
+
+refreshPcSection = function(prefix, category, pid)
+  local visible = PCAdv.listVisibleEntries(pid, category)
+  for slot = 1, ROW_POOL do
+    local nn = string.format("%02d", slot)
+    local rowId = string.format("stats_%s_%s_row_%s", prefix, category, nn)
+    local row = visible[slot]
+    if row ~= nil then
+      setAttr(rowId, "active", "true")
+      setAttr(rowId .. "_label", "text", TRAIT.entryTitleUpper(row.entry))
+    else
+      setAttr(rowId, "active", "false")
+      setAttr(rowId .. "_label", "text", "")
+    end
+  end
+end
+
+refreshCoterieSection = function(arrayKey)
+  local visible = Coterie.listVisibleTraitEntries(arrayKey)
+  for slot = 1, ROW_POOL do
+    local nn = string.format("%02d", slot)
+    local rowId = string.format("stats_coterie_%s_row_%s", arrayKey, nn)
+    local row = visible[slot]
+    if row ~= nil then
+      setAttr(rowId, "active", "true")
+      setAttr(rowId .. "_label", "text", TRAIT.entryTitleUpper(row.entry))
+    else
+      setAttr(rowId, "active", "false")
+      setAttr(rowId .. "_label", "text", "")
+    end
+  end
+end
+
+refreshPcDetail = function(color)
+  local pid = PCAdv.playerIdForColor(color)
+  if pid == nil then
+    return
+  end
+  for _, category in ipairs(PCAdv.CATEGORIES) do
+    refreshPcSection("pc", category, pid)
+  end
+end
+
+refreshCoterieDetail = function()
+  for _, arrayKey in ipairs(CoterieHydrate.TRAIT_ARRAY_KEYS) do
+    refreshCoterieSection(arrayKey)
+  end
+  for _, ratingKey in ipairs(CoterieHydrate.DOMAIN_RATING_KEYS) do
+    local rating = Coterie.getDomainRating(ratingKey)
+    local label = string.format(
+      "%s: base %d, temp %d, max %d, disabled %d",
+      RATING_LABELS[ratingKey] or ratingKey,
+      rating.base or 0,
+      rating.temp or 0,
+      rating.max or 5,
+      rating.disabled or 0
+    )
+    setAttr("stats_rating_" .. ratingKey .. "_edit", "text", "Edit")
+    -- rating row has no label id; detail title covers context
+  end
+end
+
+refreshAfterPcMutation = function(color)
+  ST.refresh()
+  if type(color) == "string" then
+    PCST.refreshCharacterSheetsForColor(color)
+  end
+end
+
+entryFromDraft = function(ctx)
+  local entry = {
+    name = tostring(editorDraft.name or ""),
+    focus = tostring(editorDraft.focus or ""),
+    base = math.max(0, math.floor(tonumber(editorDraft.base) or 0)),
+    temp = math.max(0, math.floor(tonumber(editorDraft.temp) or 0)),
+    max = math.max(1, math.floor(tonumber(editorDraft.max) or 5)),
+    disabled = math.max(0, math.floor(tonumber(editorDraft.disabled) or 0)),
+    description = PCAdv.linesToArray(editorDraft.description),
+    rules = PCAdv.linesToArray(editorDraft.rules),
+  }
+  local filled = entry.base + entry.temp
+  entry.temp = math.min(entry.temp, math.max(0, entry.max - entry.base))
+  entry.disabled = math.min(entry.disabled, entry.base + entry.temp)
+  if ctx ~= nil and ctx.scope == "coterie" and ctx.wasBlank == true then
+    entry.blank = true
+    entry.active = true
+  end
+  return entry
+end
+
+ratingFromDraft = function()
+  return {
+    base = math.max(0, math.floor(tonumber(editorDraft.base) or 0)),
+    temp = math.max(0, math.floor(tonumber(editorDraft.temp) or 0)),
+    max = math.max(1, math.floor(tonumber(editorDraft.max) or 5)),
+    disabled = math.max(0, math.floor(tonumber(editorDraft.disabled) or 0)),
+  }
+end
+
+tryConfirmDelete = function(playerColor)
+  local color = type(playerColor) == "string" and playerColor or "Black"
+  local now = os.time()
+  if deleteArmExpire == nil or now > deleteArmExpire then
+    deleteArmExpire = now + 5
+    if broadcastToColor ~= nil then
+      broadcastToColor("Click Delete again within 5s to confirm.", color, { 1, 0.35, 0.35 })
+    end
+    return false
+  end
+  deleteArmExpire = nil
+  return true
+end
+
+openEditorForEntry = function(ctx, entry, mode)
+  editorContext = ctx
+  editorDraft = {
+    base = tostring(entry.base or 0),
+    temp = tostring(entry.temp or 0),
+    max = tostring(entry.max or 5),
+    disabled = tostring(entry.disabled or 0),
+    name = tostring(entry.name or ""),
+    focus = tostring(entry.focus or ""),
+    description = PCAdv.arrayToLines(entry.description),
+    rules = PCAdv.arrayToLines(entry.rules),
+  }
+  mode = mode or "full"
+  editorContext.mode = mode
+  setAttrs("statsEditor_base", { text = editorDraft.base })
+  setAttrs("statsEditor_temp", { text = editorDraft.temp })
+  setAttrs("statsEditor_max", { text = editorDraft.max })
+  setAttrs("statsEditor_disabled", { text = editorDraft.disabled })
+  setAttrs("statsEditor_name", { text = editorDraft.name })
+  setAttrs("statsEditor_focus", { text = editorDraft.focus })
+  setAttrs("statsEditor_description", { text = editorDraft.description })
+  setAttrs("statsEditor_rules", { text = editorDraft.rules })
+  setAttr("statsEditor_fullFields", "active", mode == "full" and "true" or "false")
+  local title = mode == "dots_only" and "Domain Rating" or "Advantage Editor"
+  setAttr("statsEditor_title", "text", title)
+  setAttr("statsEditor_delete", "active", ctx.isNew == true and "false" or "true")
+  setAttr("statsEditor_modal", "active", "true")
+end
+
+openRatingEditor = function(ratingKey)
+  local rating = Coterie.getDomainRating(ratingKey)
+  openEditorForEntry({
+    scope = "rating",
+    ratingKey = ratingKey,
+    isNew = false,
+  }, rating, "dots_only")
+end
+
+closeEditor = function()
+  editorContext = nil
+  editorDraft = {}
+  deleteArmExpire = nil
+  setAttr("statsEditor_modal", "active", "false")
+end
+
+applyEditorConfirm = function()
+  local ctx = editorContext
+  if type(ctx) ~= "table" then
+    return false
+  end
+  if ctx.scope == "rating" then
+    Coterie.setDomainRating(ctx.ratingKey, ratingFromDraft())
+    closeEditor()
+    ST.refresh()
+    return true
+  end
+  if ctx.scope == "pc" then
+    local pid = PCAdv.playerIdForColor(ctx.targetColor)
+    if pid == nil then
+      return false
+    end
+    local entry = entryFromDraft(ctx)
+    local arr = PCAdv.getEntries(pid, ctx.category)
+    if ctx.isNew ~= true and type(arr[ctx.index]) == "table" then
+      local existing = arr[ctx.index]
+      if existing.sheetDisplay ~= nil then
+        entry.sheetDisplay = existing.sheetDisplay
+      end
+      if existing.source ~= nil then
+        entry.source = U.clone(existing.source, true)
+      end
+    end
+    if ctx.isNew == true then
+      local idx = PCAdv.addEntry(pid, ctx.category, entry)
+      if idx == nil then
+        return false
+      end
+    else
+      if not PCAdv.setEntry(pid, ctx.category, ctx.index, entry) then
+        return false
+      end
+    end
+    closeEditor()
+    refreshAfterPcMutation(ctx.targetColor)
+    return true
+  end
+  if ctx.scope == "coterie" then
+    local entry = entryFromDraft(ctx)
+    if ctx.isNew == true then
+      local idx = Coterie.activateBlankEntry(ctx.arrayKey, entry)
+      if idx == nil then
+        return false
+      end
+    else
+      if not Coterie.setTraitEntry(ctx.arrayKey, ctx.index, entry) then
+        return false
+      end
+    end
+    closeEditor()
+    ST.refresh()
+    return true
+  end
+  return false
+end
+
+function ST.refresh()
+  if selectedTarget == nil then
+    showLanding()
+    return
+  end
+  if selectedTarget == "Coterie" then
+    showDetail("Coterie", "stats_coterie_view")
+    refreshCoterieDetail()
+    return
+  end
+  showDetail(selectedTarget, "stats_pc_view")
+  refreshPcDetail(selectedTarget)
+end
+
+function ST.selectTarget(target)
+  if type(target) ~= "string" or target == "" then
+    return
+  end
+  selectedTarget = target
+  ST.refresh()
+end
+
+function ST.goBack()
+  selectedTarget = nil
+  showLanding()
+end
+
+--- @param id string e.g. stats_add_pc_backgrounds
+function ST.onAdd(id)
+  if type(id) ~= "string" then
+    return
+  end
+  local pcCat = id:match("^stats_add_pc_(%w+)$")
+  if pcCat ~= nil and selectedTarget ~= nil and selectedTarget ~= "Coterie" then
+    local pid = PCAdv.playerIdForColor(selectedTarget)
+    if pid == nil then
+      return
+    end
+    local defaults = PCAdv.makeDefaultEntry(pcCat, nil)
+    openEditorForEntry({
+      scope = "pc",
+      targetColor = selectedTarget,
+      category = pcCat,
+      isNew = true,
+    }, defaults, "full")
+    return
+  end
+  local coterieKey = id:match("^stats_add_coterie_(%w+)$")
+  if coterieKey ~= nil and selectedTarget == "Coterie" then
+    local defaults = CoterieHydrate.makeBlankEntry()
+    defaults.name = "New Advantage"
+    defaults.active = true
+    openEditorForEntry({
+      scope = "coterie",
+      arrayKey = coterieKey,
+      isNew = true,
+      wasBlank = true,
+    }, defaults, "full")
+  end
+end
+
+--- @param id string e.g. stats_pc_backgrounds_row_03_edit
+function ST.onEdit(id)
+  if type(id) ~= "string" then
+    return
+  end
+  local pcCat, slotStr = id:match("^stats_pc_(%w+)_row_(%d+)_edit$")
+  if pcCat ~= nil and selectedTarget ~= nil and selectedTarget ~= "Coterie" then
+    local pid = PCAdv.playerIdForColor(selectedTarget)
+    if pid == nil then
+      return
+    end
+    local slot = tonumber(slotStr)
+    local visible = PCAdv.listVisibleEntries(pid, pcCat)
+    local row = visible[slot]
+    if row == nil then
+      return
+    end
+    openEditorForEntry({
+      scope = "pc",
+      targetColor = selectedTarget,
+      category = pcCat,
+      index = row.index,
+      isNew = false,
+    }, U.clone(row.entry, true), "full")
+    return
+  end
+  local coterieKey, slotStr2 = id:match("^stats_coterie_(%w+)_row_(%d+)_edit$")
+  if coterieKey ~= nil and selectedTarget == "Coterie" then
+    local slot = tonumber(slotStr2)
+    local visible = Coterie.listVisibleTraitEntries(coterieKey)
+    local row = visible[slot]
+    if row == nil then
+      return
+    end
+    openEditorForEntry({
+      scope = "coterie",
+      arrayKey = coterieKey,
+      index = row.index,
+      isNew = false,
+      wasBlank = row.entry.blank == true,
+    }, U.clone(row.entry, true), "full")
+  end
+end
+
+--- @param id string e.g. stats_rating_chasse_edit
+function ST.onEditRating(id)
+  if type(id) ~= "string" then
+    return
+  end
+  local ratingKey = id:match("^stats_rating_(%w+)_edit$")
+  if ratingKey == nil or selectedTarget ~= "Coterie" then
+    return
+  end
+  openRatingEditor(ratingKey)
+end
+
+--- @param id string field element id
+--- @param value string
+function ST.onEditorField(id, value)
+  if type(id) ~= "string" then
+    return
+  end
+  local field = id:match("^statsEditor_(%w+)$")
+  if field == nil then
+    return
+  end
+  editorDraft[field] = tostring(value or "")
+end
+
+function ST.onEditorConfirm()
+  applyEditorConfirm()
+end
+
+function ST.onEditorCancel()
+  closeEditor()
+end
+
+--- @param playerColor string|nil
+function ST.onEditorDelete(playerColor)
+  if not tryConfirmDelete(playerColor) then
+    return
+  end
+  local ctx = editorContext
+  if type(ctx) ~= "table" or ctx.isNew == true then
+    closeEditor()
+    return
+  end
+  if ctx.scope == "pc" then
+    local pid = PCAdv.playerIdForColor(ctx.targetColor)
+    if pid ~= nil then
+      PCAdv.deleteEntry(pid, ctx.category, ctx.index)
+      refreshAfterPcMutation(ctx.targetColor)
+    end
+  elseif ctx.scope == "coterie" then
+    Coterie.deleteTraitEntry(ctx.arrayKey, ctx.index)
+    ST.refresh()
+  end
+  closeEditor()
+end
+
+return ST
