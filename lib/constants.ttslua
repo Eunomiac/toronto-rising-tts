@@ -70,6 +70,10 @@ C.PlayerColors = {
   "Brown", "Orange", "Red", "Pink", "Purple"
 }
 
+-- Number of random blindfold art variants (overlay_blindfold_1 .. overlay_blindfold_N).
+-- Single authority for the blindfold range used by hud_blindfold, hud_overlays, and condition_effects.
+C.BlindfoldVariantCount = 22
+
 --- When an object is hidden from every PC seat, also hide from spectators (White/Grey). Never use this list to *grant* visibility to White/Grey alone.
 C.HideFromPcSeatsAndSpectators = {
   "Brown", "Orange", "Red", "Pink", "Purple", "White", "Grey",
@@ -1077,7 +1081,7 @@ end
 
 1. The current-active table should be stored in gameState.
 2. A top-level fuction controls switching between tables. As a first step, it should check whether the table being activated is already active and, if so, do nothing. Otherwise, the function should perform the following sequence of actions simultaneously and instantly unless otherwise specified:
-   a. Scene apply and manual table toggles call `core.hud_blindfold.runTransition`: pick one random blindfold variant (1..6) shared by all seated players, run table geometry + reconcilers, then lift blindfolds after a 10s settle delay.
+   a. Scene apply and manual table toggles call `core.hud_blindfold.runTransition`: pick one random blindfold variant (1..C.BlindfoldVariantCount) shared by all seated players, run table geometry + reconcilers, then lift blindfolds after a 10s settle delay.
    b. `RSL.SetTableTo(..., { skipTransitionBlindfold = true })` performs seat geometry only when an outer transition blindfold is already active.
    c. Assemble a (local) collection, `tableSeatObjects`, containing all of the following objects:
       - all `<Color>Object`-tagged objects

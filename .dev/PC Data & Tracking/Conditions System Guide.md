@@ -181,12 +181,27 @@ See §6. Snapshot on `active.rollPolicy` at roll initiate; `RC` reads policy onl
 
 ```lua
 torpor = {
-  canApplyManually = false,
+  canApplyManually = true,
   priority = 100,
   deriveSticky = true,
   derive = function(stats, _activeConditions) ... end,
-  hud = { overlay = "overlay_torpor" },
   lighting = { seatLight2 = "OFF" },
+}
+```
+
+Torpor and impaired-willpower no longer have a HUD overlay (overlay art removed); they keep their stat/lighting effects only.
+
+**Automatic — stained** (`canApplyManually = false`; overlay shows whenever Humanity has ≥ 1 Stain):
+
+```lua
+stained = {
+  canApplyManually = false,
+  priority = 45,
+  derive = function(stats, _activeConditions)
+    local stains = tonumber(stats.humanity and stats.humanity.stains) or 0
+    return stains >= 1
+  end,
+  hud = { overlay = "overlay_stained" },
 }
 ```
 

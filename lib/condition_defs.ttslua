@@ -124,7 +124,6 @@ CD.Defs = {
       return agg >= maxBoxes
     end,
     statChanges = {},
-    hud = { overlay = "overlay_torpor" },
     lighting = { seatLight2 = "OFF" },
   },
   impairedHealth = {
@@ -183,7 +182,6 @@ CD.Defs = {
       wits = -2,
       resolve = -2,
     },
-    hud = { overlay = "overlay_willpower_impaired" },
     lighting = { seatLight2 = "DIM_RED" },
   },
   impairedHumanity = {
@@ -214,6 +212,22 @@ CD.Defs = {
     },
     hud = { overlay = "overlay_humanity_impaired" },
     lighting = { seatLight2 = "DIM_PURPLE" },
+  },
+  stained = {
+    id = "stained",
+    type = "stat",
+    displayName = "Stained",
+    canApplyManually = false,
+    priority = 45,
+    derive = function(stats, _activeConditions, _statChanges)
+      if type(stats.humanity) ~= "table" then
+        return false
+      end
+      local stains = tonumber(stats.humanity.stains) or 0
+      return stains >= 1
+    end,
+    statChanges = {},
+    hud = { overlay = "overlay_stained" },
   },
   hudFrenzy = {
     id = "hudFrenzy",

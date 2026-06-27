@@ -23,8 +23,11 @@ local lastDesiredVisibilityFpBySeat = {}
 --- Tier images overlay_hunger_0 .. overlay_hunger_5 (mutually exclusive).
 local HUNGER_LEVELS = { 0, 1, 2, 3, 4, 5 }
 
---- Blindfold art variants overlay_blindfold_1 .. overlay_blindfold_6 (mutually exclusive).
-local BLINDFOLD_VARIANTS = { 1, 2, 3, 4, 5, 6 }
+--- Blindfold art variants overlay_blindfold_1 .. overlay_blindfold_N (mutually exclusive).
+local BLINDFOLD_VARIANTS = {}
+for v = 1, C.BlindfoldVariantCount do
+  BLINDFOLD_VARIANTS[v] = v
+end
 
 --- @param elementId string
 --- @return boolean
@@ -39,10 +42,9 @@ local function allManagedOverlayIdsForSeat(seatColor)
     return {}
   end
   local ids = {
-    "overlay_willpower_impaired_" .. seatColor,
     "overlay_health_impaired_" .. seatColor,
     "overlay_humanity_impaired_" .. seatColor,
-    "overlay_torpor_" .. seatColor,
+    "overlay_stained_" .. seatColor,
     "overlay_frenzy_" .. seatColor,
   }
   for _, variant in ipairs(BLINDFOLD_VARIANTS) do
@@ -178,7 +180,7 @@ end
 --- @param want table<string, boolean>
 --- @param seatColor string
 --- @param playerID string|nil
---- @return number|nil variant 1..6 when any blindfold overlay is wanted
+--- @return number|nil variant 1..C.BlindfoldVariantCount when any blindfold overlay is wanted
 local function desiredBlindfoldFromWant(want, seatColor, playerID)
   if type(want) ~= "table" or type(seatColor) ~= "string" then
     return nil
@@ -213,10 +215,10 @@ local function desiredBlindfoldFromWant(want, seatColor, playerID)
   return variant
 end
 
---- Six blindfold Image elements are mutually exclusive.
+--- Blindfold Image elements are mutually exclusive.
 --- UI.show/hide only when visibility changes so repeated sync passes do not replay slide animations.
 --- @param seatColor string
---- @param variant number|nil 1..6 = show only that variant
+--- @param variant number|nil 1..C.BlindfoldVariantCount = show only that variant
 local function applyBlindfoldOverlaysExclusive(seatColor, variant)
   if type(seatColor) ~= "string" then
     return
@@ -242,10 +244,10 @@ local function applyBlindfoldOverlaysExclusive(seatColor, variant)
 end
 
 --- Show one blindfold variant for every seated player without a full overlay sync (transition lead-in).
---- @param variant number 1..6
+--- @param variant number 1..C.BlindfoldVariantCount
 function HO.applyBlindfoldVariantForSeatedPlayers(variant)
   local v = tonumber(variant)
-  if v == nil or v < 1 or v > 6 then
+  if v == nil or v < 1 or v > C.BlindfoldVariantCount then
     return
   end
   local seated = Player.getPlayers() or {}

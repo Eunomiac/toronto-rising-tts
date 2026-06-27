@@ -577,9 +577,9 @@ Frenzy types are `hunger`, `fear`, and `fury`. When `playerData.status.frenzy` i
 
 When a player's entire Health track is filled with either "`dot_health_superficial`" or "`dot_health_aggravated`" images, the `overlay_health_impaired` image should be revealed. Otherwise, it should be hidden.
 
-### Status Overlay 5: Torpor
+### Status Overlay 5: Stained
 
-When `playerData.status.torpor = true`, the `overlay_torpor` image should be revealed. If `playerData.status.torpor = false`, the `overlay_torpor` image should be hidden.
+When a player's Humanity track has one or more Stains (`stats.humanity.stains >= 1`), the `overlay_stained` image is revealed via the derived `stained` condition. When stains return to 0, it is hidden. (Torpor and impaired-willpower no longer have HUD overlays.)
 
 ### Status Overlay 6: Spotlight
 
@@ -753,7 +753,7 @@ Assets the HUD expects. Canonical keys: **resonance** — choleric, melancholic,
 | `overlay_frenzy_<frenzyKey>` | Frenzy keys: hunger, fear, fury. | ❌ |
 | `overlay_ridingTheWave` | Riding the Wave (when frenzy overlay visible). | ❌ |
 | `overlay_health_impaired` | Health track full (superficial or aggravated). | ❌ |
-| `overlay_torpor` | Torpor. | ❌ |
+| `overlay_stained` | Humanity track has ≥ 1 Stain (derived `stained` condition). | ❌ |
 | `overlay_spotlight` | Spotlight. | ❌ |
 
 ### Core Panel — Character Sheet

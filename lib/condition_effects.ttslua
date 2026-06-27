@@ -6,6 +6,7 @@
 local Effects = {}
 
 local CD = require("lib.condition_defs")
+local C = require("lib.constants")
 
 --- @param overlayBase string e.g. overlay_health_impaired
 --- @param seatColor string e.g. Brown
@@ -34,8 +35,8 @@ end
 --- @return string
 local function formatBlindfoldOverlayId(variant, seatColor)
   local v = tonumber(variant)
-  if v == nil or v < 1 or v > 6 then
-    error("condition_effects: blindfold variant must be 1..6, got " .. tostring(variant))
+  if v == nil or v < 1 or v > C.BlindfoldVariantCount then
+    error("condition_effects: blindfold variant must be 1.." .. tostring(C.BlindfoldVariantCount) .. ", got " .. tostring(variant))
   end
   return "overlay_blindfold_" .. tostring(math.floor(v)) .. "_" .. seatColor
 end

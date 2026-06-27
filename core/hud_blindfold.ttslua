@@ -1,6 +1,6 @@
 --[[
   Scene/table transition blindfold orchestration.
-  Picks one random blindfold variant (1..6) shared by all seated players,
+  Picks one random blindfold variant (1..C.BlindfoldVariantCount) shared by all seated players,
   runs synchronous work, then lifts blindfolds after a settle delay.
   Startup loading screen (`overlay_loadingScreen_*`) is owned by `onLoad` only — not transitions.
   Agent guidance: .dev/Scene Constructor/Scene Constructor Overview.md; .dev/HUD_FUNCTIONS.md.
@@ -11,6 +11,7 @@ local HUDBF = {}
 
 local S = require("core.state")
 local U = require("lib.util")
+local C = require("lib.constants")
 local Conditions = require("core.conditions")
 local HO = require("core.hud_overlays")
 local Main = require("core.main")
@@ -26,13 +27,13 @@ local TRANSITION_FADE_IN_SEC = 1.0
 --- Exported so soundscape callers can fade ambient out/in over the same windows as the staged transition.
 HUDBF.TRANSITION_FADE_OUT_SEC = TRANSITION_FADE_OUT_SEC
 HUDBF.TRANSITION_FADE_IN_SEC = TRANSITION_FADE_IN_SEC
-local BLINDFOLD_VARIANT_COUNT = 6
+local BLINDFOLD_VARIANT_COUNT = C.BlindfoldVariantCount
 local TRANSITION_CONDITION_KEY = "hudBlindfold"
 
 local activeTransitionVariant = nil
 local pendingEndDelayId = nil
 
---- @return number 1..6
+--- @return number 1..C.BlindfoldVariantCount
 local function pickRandomVariant()
   return math.random(1, BLINDFOLD_VARIANT_COUNT)
 end
@@ -71,7 +72,7 @@ function HUDBF.getActiveTransitionVariant()
 end
 
 --- Apply transition blindfold HUD conditions for all seated players.
---- @param variantOptional number|nil 1..6; random when omitted
+--- @param variantOptional number|nil 1..C.BlindfoldVariantCount; random when omitted
 function HUDBF.beginTransition(variantOptional)
   if pendingEndDelayId ~= nil then
     U.stopDelay(pendingEndDelayId)

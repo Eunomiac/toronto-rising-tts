@@ -8,6 +8,22 @@
   <Image id="overlay_blindfold_4_Brown" image="overlay_blindfold_4" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
   <Image id="overlay_blindfold_5_Brown" image="overlay_blindfold_5" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
   <Image id="overlay_blindfold_6_Brown" image="overlay_blindfold_6" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_7_Brown" image="overlay_blindfold_7" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_8_Brown" image="overlay_blindfold_8" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_9_Brown" image="overlay_blindfold_9" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_10_Brown" image="overlay_blindfold_10" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_11_Brown" image="overlay_blindfold_11" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_12_Brown" image="overlay_blindfold_12" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_13_Brown" image="overlay_blindfold_13" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_14_Brown" image="overlay_blindfold_14" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_15_Brown" image="overlay_blindfold_15" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_16_Brown" image="overlay_blindfold_16" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_17_Brown" image="overlay_blindfold_17" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_18_Brown" image="overlay_blindfold_18" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_19_Brown" image="overlay_blindfold_19" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_20_Brown" image="overlay_blindfold_20" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_21_Brown" image="overlay_blindfold_21" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_22_Brown" image="overlay_blindfold_22" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
   <Image id="overlay_loadingScreen_Brown" image="overlay_loadingScreen" class="player_overlay player_blindfold_overlay overlay_anim_fade" active="true" preserveAspect="true" />
 </Panel>
 
@@ -18,6 +34,22 @@
   <Image id="overlay_blindfold_4_Orange" image="overlay_blindfold_4" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
   <Image id="overlay_blindfold_5_Orange" image="overlay_blindfold_5" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
   <Image id="overlay_blindfold_6_Orange" image="overlay_blindfold_6" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_7_Orange" image="overlay_blindfold_7" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_8_Orange" image="overlay_blindfold_8" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_9_Orange" image="overlay_blindfold_9" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_10_Orange" image="overlay_blindfold_10" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_11_Orange" image="overlay_blindfold_11" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_12_Orange" image="overlay_blindfold_12" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_13_Orange" image="overlay_blindfold_13" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_14_Orange" image="overlay_blindfold_14" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_15_Orange" image="overlay_blindfold_15" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_16_Orange" image="overlay_blindfold_16" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_17_Orange" image="overlay_blindfold_17" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_18_Orange" image="overlay_blindfold_18" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_19_Orange" image="overlay_blindfold_19" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_20_Orange" image="overlay_blindfold_20" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_21_Orange" image="overlay_blindfold_21" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_22_Orange" image="overlay_blindfold_22" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
   <Image id="overlay_loadingScreen_Orange" image="overlay_loadingScreen" class="player_overlay player_blindfold_overlay overlay_anim_fade" active="true" preserveAspect="true" />
 </Panel>
 
@@ -28,6 +60,22 @@
   <Image id="overlay_blindfold_4_Red" image="overlay_blindfold_4" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
   <Image id="overlay_blindfold_5_Red" image="overlay_blindfold_5" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
   <Image id="overlay_blindfold_6_Red" image="overlay_blindfold_6" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_7_Red" image="overlay_blindfold_7" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_8_Red" image="overlay_blindfold_8" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_9_Red" image="overlay_blindfold_9" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_10_Red" image="overlay_blindfold_10" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_11_Red" image="overlay_blindfold_11" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_12_Red" image="overlay_blindfold_12" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_13_Red" image="overlay_blindfold_13" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_14_Red" image="overlay_blindfold_14" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_15_Red" image="overlay_blindfold_15" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_16_Red" image="overlay_blindfold_16" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_17_Red" image="overlay_blindfold_17" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_18_Red" image="overlay_blindfold_18" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_19_Red" image="overlay_blindfold_19" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_20_Red" image="overlay_blindfold_20" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_21_Red" image="overlay_blindfold_21" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_22_Red" image="overlay_blindfold_22" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
   <Image id="overlay_loadingScreen_Red" image="overlay_loadingScreen" class="player_overlay player_blindfold_overlay overlay_anim_fade" active="true" preserveAspect="true" />
 </Panel>
 
@@ -38,6 +86,22 @@
   <Image id="overlay_blindfold_4_Pink" image="overlay_blindfold_4" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
   <Image id="overlay_blindfold_5_Pink" image="overlay_blindfold_5" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
   <Image id="overlay_blindfold_6_Pink" image="overlay_blindfold_6" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_7_Pink" image="overlay_blindfold_7" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_8_Pink" image="overlay_blindfold_8" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_9_Pink" image="overlay_blindfold_9" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_10_Pink" image="overlay_blindfold_10" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_11_Pink" image="overlay_blindfold_11" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_12_Pink" image="overlay_blindfold_12" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_13_Pink" image="overlay_blindfold_13" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_14_Pink" image="overlay_blindfold_14" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_15_Pink" image="overlay_blindfold_15" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_16_Pink" image="overlay_blindfold_16" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_17_Pink" image="overlay_blindfold_17" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_18_Pink" image="overlay_blindfold_18" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_19_Pink" image="overlay_blindfold_19" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_20_Pink" image="overlay_blindfold_20" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_21_Pink" image="overlay_blindfold_21" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_22_Pink" image="overlay_blindfold_22" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
   <Image id="overlay_loadingScreen_Pink" image="overlay_loadingScreen" class="player_overlay player_blindfold_overlay overlay_anim_fade" active="true" preserveAspect="true" />
 </Panel>
 
@@ -48,5 +112,21 @@
   <Image id="overlay_blindfold_4_Purple" image="overlay_blindfold_4" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
   <Image id="overlay_blindfold_5_Purple" image="overlay_blindfold_5" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
   <Image id="overlay_blindfold_6_Purple" image="overlay_blindfold_6" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_7_Purple" image="overlay_blindfold_7" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_8_Purple" image="overlay_blindfold_8" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_9_Purple" image="overlay_blindfold_9" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_10_Purple" image="overlay_blindfold_10" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_11_Purple" image="overlay_blindfold_11" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_12_Purple" image="overlay_blindfold_12" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_13_Purple" image="overlay_blindfold_13" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_14_Purple" image="overlay_blindfold_14" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_15_Purple" image="overlay_blindfold_15" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_16_Purple" image="overlay_blindfold_16" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_17_Purple" image="overlay_blindfold_17" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_18_Purple" image="overlay_blindfold_18" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_19_Purple" image="overlay_blindfold_19" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_20_Purple" image="overlay_blindfold_20" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_21_Purple" image="overlay_blindfold_21" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_22_Purple" image="overlay_blindfold_22" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
   <Image id="overlay_loadingScreen_Purple" image="overlay_loadingScreen" class="player_overlay player_blindfold_overlay overlay_anim_fade" active="true" preserveAspect="true" />
 </Panel>

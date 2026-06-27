@@ -2,6 +2,9 @@
 
 ## Quick Fixes
 
+- [Bug] Map pins do not appear on scene change; it looks like they first appear when the clock updates and an in-game minute has elapsed. Expected behavior:  Map pins should be visible from the in-game minute that the scene begins, not the minute after.
+- [Bug] The clock still moves increasingly quickly as scenes change, likely because multiple timeouts are accumulating and not being cleared.
+
 ## Active
 
 ---
@@ -18,6 +21,7 @@
 
 ## Processed
 
+2026-06-27 Overlay management — blindfold variants 1..22 randomization (BLINDFOLD_VARIANT_COUNT was 6); removed impaired-willpower + torpor HUD overlays; added derived `stained` overlay (Humanity stains ≥ 1)
 2026-06-26 INBOX Quick Fixes — TOR-268 (control-board table-only minimap), TOR-151 amend (no-scene Table B0 baseline), TOR-269 (load soundscape dual-apply), TOR-270 (weather volume-0 before playback)
 2026-06-25 TOR-265 — Control-board Apply/Clear flickers off-seat NPC lights on then off (promoted; relatedTo TOR-250/TOR-178)
 2026-06-25 TOR-266 — Reposition NPC figurine lights: point down, +5 above top, +3 toward table origin (promoted; relatedTo TOR-234; commit 36b0259 was doc-only despite message)
