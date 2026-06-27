@@ -3954,7 +3954,10 @@ local function mirrorControlBoardTokensFromPlacements(board, placements)
                 keepOnBoard[ck] = true
                 local entry = seatCatalog[seatKey]
                 local token = byChar[ck]
-                if entry ~= nil and isGameObject(token) and isTokenOnMinimapTokenSurface(board, token) then
+                --- Place the token onto the seat row even when it is currently parked on the
+                --- palette: scene transitions and Load make the board reflect state, so an
+                --- occupied seat must show its token regardless of where it sits now.
+                if entry ~= nil and isGameObject(token) then
                     local present = true
                     if type(NPCS.resolveSeatNarrativePresence) == "function" then
                         present = NPCS.resolveSeatNarrativePresence(seatKey) == true
@@ -3968,7 +3971,8 @@ local function mirrorControlBoardTokensFromPlacements(board, placements)
         if type(row) == "table" and type(row.u) == "number" and type(row.v) == "number" then
             keepOnBoard[characterKey] = true
             local token = byChar[characterKey]
-            if isGameObject(token) and isTokenOnMinimapTokenSurface(board, token) then
+            --- Pull staged tokens onto the board from the palette too (see seat-row note above).
+            if isGameObject(token) then
                 mirrorControlTokenToPlacementRow(token, board, row)
             end
         end
