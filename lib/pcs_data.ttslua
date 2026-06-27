@@ -2174,7 +2174,7 @@ PCS.RAW_JSON = [==================================================[
           "max": 5,
           "name": "Herd",
           "rules": [
-            "You can feed from a small Herd without a roll.",
+            "You can feed from a small Herd without a roll. Slake up to two Hunger weekly, or more at risk to the Herd.",
             "Slake up to two Hunger weekly, or more at risk to the Herd."
           ],
           "source": {
