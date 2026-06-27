@@ -858,48 +858,26 @@ local function cameraPositionWorldOffsetForActiveTable(tableCfg)
   return Vector(refHand) - Vector(base)
 end
 
---- Same rigid placement as seat objects: yaw about active `centerPoint`, then shift so the hand anchor
---- lands on the nominal ring (see `generateRotationalCoordinates`).
+--- Apply a seat's precomputed **rigid transform** (yaw `deltaDeg` about `centerPoint`, then `shift`) to
+--- a camera frame, so per-seat camera presets land with the seat. The seat's `{ deltaDeg, shift }` comes
+--- from `computed.seatRigidByKey` (populated identically by circular + facing generators), so camera and
+--- seat-object placement always agree.
 --- @param centerPoint Vector
---- @param refAnchorFrame table position Vector|table, rotation Vector|table
---- @param thetaRef number
---- @param angleSegmentOne number
---- @param numSegments number
---- @param useRadius number
---- @param targetSegment1Based number
---- @param worldPos Vector|table
+--- @param deltaDeg number seat yaw delta about centerPoint
+--- @param shift Vector|table seat translation after yaw
+--- @param worldPos Vector|table camera authoring position (reference seat space)
 --- @param pitch number|nil
 --- @param yaw number|nil
 --- @return Vector finalPos
 --- @return Vector finalRot pitch,yaw from rotated frame
-local function cameraPositionAfterSeatLayout(
-  centerPoint,
-  refAnchorFrame,
-  thetaRef,
-  angleSegmentOne,
-  numSegments,
-  useRadius,
-  targetSegment1Based,
-  worldPos,
-  pitch,
-  yaw
-)
+local function cameraFrameFromRigid(centerPoint, deltaDeg, shift, worldPos, pitch, yaw)
   local cp = Vector(centerPoint)
-  local thetaK = segmentNominalAzimuthDeg(angleSegmentOne, numSegments, targetSegment1Based)
-  local deltaDeg = shortestSignedDelta(thetaRef, thetaK)
-  local rotatedAnchor = U.frameAfterRigidYawAboutCenter(cp, refAnchorFrame, deltaDeg)
-  local desiredAnchorPos = Vector({
-    x = cp.x + math.sin(math.rad(thetaK)) * useRadius,
-    y = rotatedAnchor.position.y,
-    z = cp.z + math.cos(math.rad(thetaK)) * useRadius,
-  })
-  local shift = desiredAnchorPos - rotatedAnchor.position
   local camFrame = {
     position = Vector(worldPos),
     rotation = Vector({ pitch or 0, yaw or 0, 0 }),
   }
   local fr = U.frameAfterRigidYawAboutCenter(cp, camFrame, deltaDeg)
-  return Vector(fr.position) + shift, Vector(fr.rotation)
+  return Vector(fr.position) + Vector(shift), Vector(fr.rotation)
 end
 
 --- @param computed table
@@ -912,26 +890,16 @@ local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOff
     worldOff = Vector(positionWorldOffset)
   end
   local referenceColor = computed.referencePlayerColor
-  local map = computed.playerToPositionMap or {}
-  local referenceSegment = map[referenceColor]
-  if U.Type(referenceSegment) ~= "number" then
-    error("rotational-seat-layout: cannot apply cameraModes; missing reference segment")
+  local seatRigidByKey = computed.seatRigidByKey
+  if U.Type(seatRigidByKey) ~= "table" then
+    error("rotational-seat-layout: applyCameraModesForSeats requires computed.seatRigidByKey (from a layout generator)")
+  end
+  local referenceRigid = seatRigidByKey[referenceColor]
+  if U.Type(referenceRigid) ~= "table" or referenceRigid.shift == nil then
+    error("rotational-seat-layout: applyCameraModesForSeats missing rigid transform for reference seat '" ..
+      tostring(referenceColor) .. "'")
   end
   local centerPoint = Vector(computed.centerPoint)
-  local numSegments = computed.numSegments
-  local angleSegmentOne = computed.angleSegmentOne
-  local thetaRef = computed.thetaRef
-  local useRadius = computed.radius
-  local refAnchorFrame = computed.referenceAnchorFrame
-  if U.Type(numSegments) ~= "number" or U.Type(angleSegmentOne) ~= "number" or U.Type(thetaRef) ~= "number" then
-    error("rotational-seat-layout: applyCameraModesForSeats requires computed from generateRotationalCoordinates (numSegments, angleSegmentOne, thetaRef)")
-  end
-  if U.Type(useRadius) ~= "number" or useRadius <= 0 then
-    error("rotational-seat-layout: applyCameraModesForSeats requires computed.radius from generateRotationalCoordinates")
-  end
-  if U.Type(refAnchorFrame) ~= "table" or refAnchorFrame.position == nil then
-    error("rotational-seat-layout: applyCameraModesForSeats requires computed.referenceAnchorFrame from generateRotationalCoordinates")
-  end
 
   --- Wrap yaw into [0, 360), clamp pitch into [0, 90], and avoid exact zero for yaw/pitch/distance.
   --- TTS treats exact zeros for these camera fields as "no change", so bump to 0.1.
@@ -978,14 +946,10 @@ local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOff
           error("rotational-seat-layout: C.UniversalCameraAngles['" .. modeKey .. "'] is missing position")
         end
         local pos = Vector(modeVal.position) + worldOff
-        local shiftedPos, shiftedRot = cameraPositionAfterSeatLayout(
+        local shiftedPos, shiftedRot = cameraFrameFromRigid(
           centerPoint,
-          refAnchorFrame,
-          thetaRef,
-          angleSegmentOne,
-          numSegments,
-          useRadius,
-          referenceSegment,
+          referenceRigid.deltaDeg,
+          referenceRigid.shift,
           pos,
           modeVal.pitch or 0,
           modeVal.yaw or 0
@@ -1026,16 +990,12 @@ local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOff
       basePos = basePos + worldOff
     end
 
-    for seatKey, segment in pairs(map) do
-      if U.Type(seatKey) == "string" and U.Type(segment) == "number" then
-        local shiftedPos, shiftedRot = cameraPositionAfterSeatLayout(
+    for seatKey, rigid in pairs(seatRigidByKey) do
+      if U.Type(seatKey) == "string" and U.Type(rigid) == "table" and rigid.shift ~= nil then
+        local shiftedPos, shiftedRot = cameraFrameFromRigid(
           centerPoint,
-          refAnchorFrame,
-          thetaRef,
-          angleSegmentOne,
-          numSegments,
-          useRadius,
-          segment,
+          rigid.deltaDeg,
+          rigid.shift,
           basePos,
           redMode.pitch or 0,
           redMode.yaw or 0
@@ -1205,6 +1165,126 @@ local function applySeatObjectIdentity(obj, roleKey, seatColor, referenceTag, se
   end
 end
 
+--- Resolve the reference seat's template slots, the hand-zone anchor slot index, and the anchor's
+--- source frame. Shared by circular + facing layout generators.
+--- @param sourceGroups table
+--- @param referencePlayerColor string
+--- @return table referenceSlots
+--- @return number anchorIndex
+--- @return table referenceAnchorFrame `{ position = Vector, rotation = Vector }`
+local function resolveReferenceSeatAnchor(sourceGroups, referencePlayerColor)
+  local referenceEntries = sourceGroupEntriesForSeat(sourceGroups, referencePlayerColor)
+  if #referenceEntries < 1 then
+    error("rotational-seat-layout: active source template list for reference seat is empty")
+  end
+  local referenceSlots = resolveSeatTemplateSlots(referenceEntries, referencePlayerColor)
+  local anchorIndex
+  referenceSlots, anchorIndex = ensureReferenceHandZoneAnchorSlot(referenceSlots, referencePlayerColor)
+  local slotCount = #referenceSlots
+  if U.Type(anchorIndex) ~= "number" or anchorIndex < 1 or anchorIndex > slotCount or math.floor(anchorIndex) ~= anchorIndex then
+    error("rotational-seat-layout: resolved hand-zone anchor index is out of range (got " .. tostring(anchorIndex) .. ")")
+  end
+  local refAnchorSrc = referenceSlots[anchorIndex].sourceFrame
+  local referenceAnchorFrame = {
+    position = Vector(refAnchorSrc.position),
+    rotation = Vector(refAnchorSrc.rotation),
+  }
+  return referenceSlots, anchorIndex, referenceAnchorFrame
+end
+
+--- Resolve one seat's template slots (injecting the reference hand-zone anchor frame when the seat has
+--- no hand-zone role of its own), then place each slot by the seat's **rigid transform**: yaw `deltaDeg`
+--- about `centerPoint`, then translate by `shift`. Shape-agnostic — circular and facing layouts only
+--- differ in how `deltaDeg` / `shift` are computed.
+--- @return table slotsOut
+--- @return table byRoleKey
+local function buildPlacedSeatSlots(sourceGroups, seatKey, referencePlayerColor, referenceSlots, anchorIndex, centerPoint, deltaDeg, shift)
+  local entries = sourceGroupEntriesForSeat(sourceGroups, seatKey)
+  local seatSlots = resolveSeatTemplateSlots(entries, referencePlayerColor)
+  local hasHandZoneRole = false
+  for i = 1, #seatSlots do
+    if isHandZoneRoleKey(seatSlots[i].roleKey) then
+      hasHandZoneRole = true
+      break
+    end
+  end
+  if not hasHandZoneRole then
+    local refAnchorSlot = referenceSlots[anchorIndex]
+    table.insert(seatSlots, {
+      sourceRef = nil,
+      isFrame = true,
+      roleKey = refAnchorSlot.roleKey,
+      displayName = refAnchorSlot.displayName,
+      sourceFrame = {
+        position = Vector(refAnchorSlot.sourceFrame.position),
+        rotation = Vector(refAnchorSlot.sourceFrame.rotation),
+      },
+      sourceObject = nil,
+    })
+  end
+  local slotsOut = {}
+  local byRole = {}
+  for i = 1, #seatSlots do
+    local slot = seatSlots[i]
+    local fr = U.frameAfterRigidYawAboutCenter(centerPoint, slot.sourceFrame, deltaDeg)
+    fr.position = fr.position + shift
+    local rk = slot.roleKey
+    if byRole[rk] ~= nil then
+      error("rotational-seat-layout: duplicate role key '" .. rk .. "' for seat " .. seatKey .. " (check template names)")
+    end
+    byRole[rk] = fr
+    slotsOut[i] = {
+      roleKey = rk,
+      displayName = slot.displayName,
+      isFrame = slot.isFrame,
+      sourceRef = slot.sourceRef,
+      frame = fr,
+    }
+  end
+  return slotsOut, byRole
+end
+
+--- Greatest 1-based seat index defined on a FACING/RECTANGULAR side (the number of equal segments to
+--- divide that side into). Counts the **full** config map so positions stay stable when seats are
+--- filtered out (e.g. `Table C` keeps 5 NPC-side segments even though NPC5 is never occupied).
+--- @param fullMap table<string, table> `playerToPositionMap` with `{ side, index }` entries
+--- @param sideAngleDeg number
+--- @return number
+local function facingMaxIndexForSide(fullMap, sideAngleDeg)
+  local target = sideAngleDeg % 360
+  local maxIndex = 0
+  for _, entry in pairs(fullMap) do
+    if U.Type(entry) == "table" and U.Type(entry.index) == "number"
+        and (tonumber(entry.side) or 0) % 360 == target then
+      if entry.index > maxIndex then
+        maxIndex = entry.index
+      end
+    end
+  end
+  return maxIndex
+end
+
+--- Center-of-segment X for a seat on a FACING side. The side runs along world X; the side is divided
+--- into `nSeats` equal segments across the table's bounding-box X span. Index increases **clockwise**
+--- from above: on the +Z side (0°) index 1 is the -X (left) end → +X; on the -Z side (180°) index 1 is
+--- the +X end → -X.
+--- @param sideAngleDeg number 0 (+Z) or 180 (-Z)
+--- @param index1Based number
+--- @param nSeats number
+--- @param xMin number
+--- @param xMax number
+--- @return number
+local function facingSegmentCenterX(sideAngleDeg, index1Based, nSeats, xMin, xMax)
+  if nSeats < 1 then
+    nSeats = 1
+  end
+  local segWidth = (xMax - xMin) / nSeats
+  if (sideAngleDeg % 360) == 0 then
+    return xMin + (index1Based - 0.5) * segWidth
+  end
+  return xMax - (index1Based - 0.5) * segWidth
+end
+
 --- Validate inputs, compute frames, write frame-ref workspace file. On success returns a table consumed by resolveSeatObjects.
 ---
 --- @param sourceObjects table `{ player = {...}, other = {...}, all = {...} }` where each array entry is an object reference/GUID or a Frame table
@@ -1258,24 +1338,7 @@ function M.generateRotationalCoordinates(
     mapCopy[c] = seg
   end
 
-  local referenceEntries = sourceGroupEntriesForSeat(sourceGroups, referencePlayerColor)
-  if #referenceEntries < 1 then
-    error("rotational-seat-layout: active source template list for reference seat is empty")
-  end
-  local referenceSlots = resolveSeatTemplateSlots(referenceEntries, referencePlayerColor)
-  referenceSlots, _ = ensureReferenceHandZoneAnchorSlot(referenceSlots, referencePlayerColor)
-  local slotCount = #referenceSlots
-  local _, handZoneAnchorIndex = ensureReferenceHandZoneAnchorSlot(referenceSlots, referencePlayerColor)
-  local anchorIndex = handZoneAnchorIndex
-  if U.Type(anchorIndex) ~= "number" or anchorIndex < 1 or anchorIndex > slotCount or math.floor(anchorIndex) ~= anchorIndex then
-    error(
-      "rotational-seat-layout: options.anchorIndex must be an integer 1.."
-      .. tostring(slotCount)
-      .. " (got "
-      .. tostring(anchorIndex)
-      .. ")"
-    )
-  end
+  local referenceSlots, anchorIndex, referenceAnchorFrame = resolveReferenceSeatAnchor(sourceGroups, referencePlayerColor)
 
   local anchorPos = referenceSlots[anchorIndex].sourceFrame.position
   local cyl = U.XYZToCylindrical(anchorPos, centerPoint)
@@ -1322,44 +1385,14 @@ function M.generateRotationalCoordinates(
     useRadius = options.radius
   end
 
-  local refAnchorSrc = referenceSlots[anchorIndex].sourceFrame
-  local referenceAnchorFrame = {
-    position = Vector(refAnchorSrc.position),
-    rotation = Vector(refAnchorSrc.rotation),
-  }
-
   local byColor = {}
   local nestedFrameExport = {}
   local seatTypeByKey = {}
+  local seatRigidByKey = {}
 
   for seatKey, seg in pairs(mapCopy) do
     local thetaK = segmentNominalAzimuthDeg(angleSegmentOne, numSegments, seg)
     local deltaDeg = shortestSignedDelta(thetaRef, thetaK)
-    local entries = sourceGroupEntriesForSeat(sourceGroups, seatKey)
-    local seatSlots = resolveSeatTemplateSlots(entries, referencePlayerColor)
-    local hasHandZoneRole = false
-    for i = 1, #seatSlots do
-      if isHandZoneRoleKey(seatSlots[i].roleKey) then
-        hasHandZoneRole = true
-        break
-      end
-    end
-    if not hasHandZoneRole then
-      local refAnchorSlot = referenceSlots[anchorIndex]
-      table.insert(seatSlots, {
-        sourceRef = nil,
-        isFrame = true,
-        roleKey = refAnchorSlot.roleKey,
-        displayName = refAnchorSlot.displayName,
-        sourceFrame = {
-          position = Vector(refAnchorSlot.sourceFrame.position),
-          rotation = Vector(refAnchorSlot.sourceFrame.rotation),
-        },
-        sourceObject = nil,
-      })
-    end
-    local slotsOut = {}
-    local byRole = {}
     local rotatedAnchor = U.frameAfterRigidYawAboutCenter(centerPoint, referenceSlots[anchorIndex].sourceFrame, deltaDeg)
     local desiredAnchorPos = Vector({
       x = centerPoint.x + math.sin(math.rad(thetaK)) * useRadius,
@@ -1367,35 +1400,15 @@ function M.generateRotationalCoordinates(
       z = centerPoint.z + math.cos(math.rad(thetaK)) * useRadius,
     })
     local shift = desiredAnchorPos - rotatedAnchor.position
-    for i = 1, #seatSlots do
-      local slot = seatSlots[i]
-      local fr = U.frameAfterRigidYawAboutCenter(centerPoint, slot.sourceFrame, deltaDeg)
-      fr.position = fr.position + shift
-      local rk = slot.roleKey
-      if byRole[rk] ~= nil then
-        error(
-          "rotational-seat-layout: duplicate role key '"
-          .. rk
-          .. "' for seat "
-          .. seatKey
-          .. " (check template names)"
-        )
-      end
-      byRole[rk] = fr
-      slotsOut[i] = {
-        roleKey = rk,
-        displayName = slot.displayName,
-        isFrame = slot.isFrame,
-        sourceRef = slot.sourceRef,
-        frame = fr,
-      }
-    end
+    local slotsOut, byRole = buildPlacedSeatSlots(
+      sourceGroups, seatKey, referencePlayerColor, referenceSlots, anchorIndex, centerPoint, deltaDeg, shift)
     byColor[seatKey] = {
       slots = slotsOut,
       byRoleKey = byRole,
     }
     nestedFrameExport[seatKey] = byRole
     seatTypeByKey[seatKey] = isPlayerSeatKey(seatKey) and "player" or "other"
+    seatRigidByKey[seatKey] = { deltaDeg = deltaDeg, shift = shift }
   end
 
   local framePath = options.frameRefsRelativePath or DEFAULT_FRAME_REFS_PATH
@@ -1417,6 +1430,7 @@ function M.generateRotationalCoordinates(
   end
 
   return {
+    shape = C.TableShapes and C.TableShapes.CIRCULAR or "circular",
     referencePlayerColor = referencePlayerColor,
     centerPoint = centerPoint,
     numSegments = numSegments,
@@ -1430,9 +1444,181 @@ function M.generateRotationalCoordinates(
     seatTypeByKey = seatTypeByKey,
     anchorIndex = anchorIndex,
     byColor = byColor,
+    seatRigidByKey = seatRigidByKey,
     frameRefsRelativePath = framePath,
     frameRefsVarName = frameVar,
   }
+end
+
+--- FACING-table layout generator (`C.TableShapes.FACING`). Produces the same `computed` bundle as
+--- `generateRotationalCoordinates` (consumed by `resolveSeatObjects` + `applyCameraModesForSeats`), but
+--- places seats along two opposing sides instead of a ring.
+---
+--- `playerToPositionMap[seat]` is `{ side, index }`: `side` is the side's outward azimuth in degrees
+--- (0 = +Z, 180 = -Z); `index` (1-based) is the seat's slot along that side. Each side is divided into
+--- N equal segments across the **active table's bounding-box X span** (read live — the table must be at
+--- its active position/scale), seat centered in its segment, index increasing clockwise from origin.
+---
+--- Placement is a rigid transform of the reference seat template: yaw `(seatSide - referenceSide)` about
+--- `centerPoint` (0° or 180° — depends only on `side`, never `index`), then a pure X shift to the seat's
+--- segment center. Y/Z come from the rotated reference anchor (symmetric rows about center).
+---
+--- Orientation is **perpendicular to the edge**, NOT a look-at of the center point: because the yaw is a
+--- flat 0°/180° and the index only translates along X, every seat inherits the reference template's
+--- authored facing (e.g. straight +Z for the 180° side), mirrored for the opposite side. Do not replace
+--- this with a per-seat `lookAtRotation` — that would aim seats at the center instead of straight inward.
+---
+--- @param sourceObjects table same nested shape as `generateRotationalCoordinates`
+--- @param tableCfg table the `C.Tables` entry (FACING); provides `guid`, `centerPoint`, full `playerToPositionMap`, `referencePlayerColor`
+--- @param filteredMap table<string, table> seats to actually place (`{ side, index }` values; e.g. occupancy-filtered)
+--- @param options table|nil { currentTableKey?, frameRefsRelativePath?, frameRefsVarName? }
+--- @return table computed bundle for resolveSeatObjects
+function M.generateFacingCoordinates(sourceObjects, tableCfg, filteredMap, options)
+  options = options or {}
+  if U.Type(tableCfg) ~= "table" then
+    error("rotational-seat-layout: generateFacingCoordinates requires a table config")
+  end
+  local referencePlayerColor = tableCfg.referencePlayerColor
+  if U.Type(referencePlayerColor) ~= "string" or referencePlayerColor == "" then
+    error("rotational-seat-layout: FACING table referencePlayerColor must be a non-empty string")
+  end
+  local centerPoint = Vector(tableCfg.centerPoint)
+  local fullMap = tableCfg.playerToPositionMap
+  if U.Type(fullMap) ~= "table" then
+    error("rotational-seat-layout: FACING table playerToPositionMap must be a table")
+  end
+  local refEntry = fullMap[referencePlayerColor]
+  if U.Type(refEntry) ~= "table" or U.Type(refEntry.side) ~= "number" then
+    error("rotational-seat-layout: FACING playerToPositionMap['" .. referencePlayerColor ..
+      "'] must be { side = <deg>, index = <n> }")
+  end
+  local referenceSide = refEntry.side
+
+  -- Bounds must be read AFTER the table is the active table (positioned + scaled); callers run this
+  -- right after applyAllTablesVisualState.
+  if U.Type(tableCfg.guid) ~= "string" or tableCfg.guid == "" then
+    error("rotational-seat-layout: FACING table is missing guid (needed to read active bounds)")
+  end
+  local tableObj = getObjectFromGUID(tableCfg.guid)
+  if tableObj == nil or type(tableObj.getBounds) ~= "function" then
+    error("rotational-seat-layout: FACING table object '" .. tostring(tableCfg.guid) ..
+      "' is not present; cannot read bounds")
+  end
+  local bounds = tableObj.getBounds()
+  if U.Type(bounds) ~= "table" or bounds.center == nil or bounds.size == nil then
+    error("rotational-seat-layout: FACING table getBounds() returned no center/size")
+  end
+  local boundsCenter = Vector(bounds.center)
+  local boundsSize = Vector(bounds.size)
+  local xMin = boundsCenter.x - boundsSize.x / 2
+  local xMax = boundsCenter.x + boundsSize.x / 2
+
+  local sourceGroups = resolveSourceTemplateGroups(sourceObjects)
+  local referenceSlots, anchorIndex, referenceAnchorFrame =
+      resolveReferenceSeatAnchor(sourceGroups, referencePlayerColor)
+
+  local mapCopy = {}
+  local byColor = {}
+  local nestedFrameExport = {}
+  local seatTypeByKey = {}
+  local seatRigidByKey = {}
+
+  for seatKey, entry in pairs(filteredMap) do
+    if U.Type(seatKey) == "string" and U.Type(entry) == "table"
+        and U.Type(entry.side) == "number" and U.Type(entry.index) == "number" then
+      mapCopy[seatKey] = { side = entry.side, index = entry.index }
+      local deltaDeg = shortestSignedDelta(referenceSide, entry.side)
+      local rotatedAnchor = U.frameAfterRigidYawAboutCenter(centerPoint, referenceAnchorFrame, deltaDeg)
+      local nSeats = facingMaxIndexForSide(fullMap, entry.side)
+      local targetX = facingSegmentCenterX(entry.side, entry.index, nSeats, xMin, xMax)
+      local desiredAnchorPos = Vector({
+        x = targetX,
+        y = rotatedAnchor.position.y,
+        z = rotatedAnchor.position.z,
+      })
+      local shift = desiredAnchorPos - rotatedAnchor.position
+      local slotsOut, byRole = buildPlacedSeatSlots(
+        sourceGroups, seatKey, referencePlayerColor, referenceSlots, anchorIndex, centerPoint, deltaDeg, shift)
+      byColor[seatKey] = {
+        slots = slotsOut,
+        byRoleKey = byRole,
+      }
+      nestedFrameExport[seatKey] = byRole
+      seatTypeByKey[seatKey] = isPlayerSeatKey(seatKey) and "player" or "other"
+      seatRigidByKey[seatKey] = { deltaDeg = deltaDeg, shift = shift }
+    end
+  end
+
+  local framePath = options.frameRefsRelativePath or DEFAULT_FRAME_REFS_PATH
+  local frameVar = options.frameRefsVarName or DEFAULT_FRAME_REFS_VAR
+  local tableKey = options.currentTableKey
+  if U.Type(tableKey) ~= "string" or tableKey == "" then
+    tableKey = inferTableKeyFromCenterPoint(centerPoint)
+  end
+  if U.Type(tableKey) == "string" and tableKey ~= "" then
+    S.setStateVal(tableKey, "seatLayout", "currentTableKey")
+  end
+  if WRITE_RESULTS_TO_FILE then
+    assertSendExternalMessage()
+    local frameLua = serializeFrameRefsLua(frameVar, nestedFrameExport)
+    local okWrite = getDebugModule().writeWorkspaceFile(framePath, frameLua, "none", false)
+    if not okWrite then
+      error("rotational-seat-layout: DEBUG.writeWorkspaceFile failed for frame refs at '" .. framePath .. "'")
+    end
+  end
+
+  return {
+    shape = C.TableShapes and C.TableShapes.FACING or "facing",
+    referencePlayerColor = referencePlayerColor,
+    centerPoint = centerPoint,
+    referenceAnchorFrame = referenceAnchorFrame,
+    playerToPositionMap = mapCopy,
+    sourceGroups = sourceGroups,
+    seatTypeByKey = seatTypeByKey,
+    anchorIndex = anchorIndex,
+    byColor = byColor,
+    seatRigidByKey = seatRigidByKey,
+    frameRefsRelativePath = framePath,
+    frameRefsVarName = frameVar,
+  }
+end
+
+--- World XZ (Vector) of a FACING-table seat's segment center, from the active table's **live** bounds.
+--- Mirrors `generateFacingCoordinates` X-segmentation; the row Z is derived from `referenceHandPosition`.
+--- Returns nil if bounds are unavailable (e.g. the table is not the active table). Intended for minimap /
+--- control-board markers; seat-object placement uses the generator's per-template frames, not this.
+--- @param tableCfg table
+--- @param sideAngleDeg number
+--- @param index1Based number
+--- @return Vector|nil
+function M.facingSeatWorldXZ(tableCfg, sideAngleDeg, index1Based)
+  if U.Type(tableCfg) ~= "table" or U.Type(tableCfg.guid) ~= "string" or tableCfg.centerPoint == nil then
+    return nil
+  end
+  if U.Type(sideAngleDeg) ~= "number" or U.Type(index1Based) ~= "number" then
+    return nil
+  end
+  local obj = getObjectFromGUID(tableCfg.guid)
+  if obj == nil or type(obj.getBounds) ~= "function" then
+    return nil
+  end
+  local bounds = obj.getBounds()
+  if U.Type(bounds) ~= "table" or bounds.center == nil or bounds.size == nil then
+    return nil
+  end
+  local cp = Vector(tableCfg.centerPoint)
+  local bc = Vector(bounds.center)
+  local bs = Vector(bounds.size)
+  local xMin = bc.x - bs.x / 2
+  local xMax = bc.x + bs.x / 2
+  local nSeats = facingMaxIndexForSide(tableCfg.playerToPositionMap or {}, sideAngleDeg)
+  local x = facingSegmentCenterX(sideAngleDeg, index1Based, nSeats, xMin, xMax)
+  local rowDist = 0
+  if tableCfg.referenceHandPosition ~= nil then
+    rowDist = U.HorizontalDistance(cp, Vector(tableCfg.referenceHandPosition))
+  end
+  local z = cp.z + math.cos(math.rad(sideAngleDeg)) * rowDist
+  return Vector(x, cp.y, z)
 end
 
 --- Tag templates; for non-template seats, move existing tagged objects that match each template slot
@@ -2205,7 +2391,15 @@ local function computeLayoutSyncFingerprint(tableKey)
   local lines = { "table:" .. key, "map:" }
   for i = 1, #mapKeys do
     local seatKey = mapKeys[i]
-    lines[#lines + 1] = seatKey .. "=" .. tostring(filtered[seatKey])
+    local seg = filtered[seatKey]
+    local segStr
+    if U.Type(seg) == "table" then
+      -- FACING/RECTANGULAR seats: serialize { side, index } stably (raw tostring is an address).
+      segStr = "side=" .. tostring(seg.side) .. ",index=" .. tostring(seg.index)
+    else
+      segStr = tostring(seg)
+    end
+    lines[#lines + 1] = seatKey .. "=" .. segStr
   end
   return table.concat(lines, "\n")
 end
@@ -2919,17 +3113,23 @@ function M.resolveSeatObjectsFromTable(tableRef, sourceObjects, options)
   S.setStateVal(tableKey, "seatLayout", "currentTableKey")
   local occupiedNPCSlots = getOccupiedNPCSlots()
   local filteredMap = buildFilteredSeatMap(tableCfg, occupiedNPCSlots)
+  -- Activate the target table (instant setPosition) BEFORE generating so FACING bounds reads are valid.
   applyAllTablesVisualState(tableKey, occupiedNPCSlots)
 
-  local computed = M.generateRotationalCoordinates(
-    src,
-    tableCfg.centerPoint,
-    tableCfg.numSegments,
-    tableCfg.angleSegmentOne,
-    filteredMap,
-    tableCfg.referencePlayerColor,
-    opts
-  )
+  local computed
+  if tableCfg.shape == (C.TableShapes and C.TableShapes.FACING) then
+    computed = M.generateFacingCoordinates(src, tableCfg, filteredMap, opts)
+  else
+    computed = M.generateRotationalCoordinates(
+      src,
+      tableCfg.centerPoint,
+      tableCfg.numSegments,
+      tableCfg.angleSegmentOne,
+      filteredMap,
+      tableCfg.referencePlayerColor,
+      opts
+    )
+  end
   M.resolveSeatObjects(computed, src, opts)
   applyPostCorrections(src, computed)
   applyTableConfigObjectPositions(tableCfg)

@@ -255,6 +255,33 @@ Helpers: `R.resolveTableKey`, `R.isDynamicTableFamilyKey`, `R.countOccupiedNpcSl
 Removing NPC seats never shrinks the table (switches are expensive). Because `C.NPCSeats` is NPC1–NPC4,
 auto-resolution caps at `Table B4`; `Table B5` is manually selectable but never auto-selected.
 
+### FACING tables (TOR-267)
+
+`C.TableShapes.FACING` tables (e.g. `Table C`) seat players along **two opposing sides** instead of a
+ring. `resolveSeatObjectsFromTable` dispatches on `tableCfg.shape`: FACING → `R.generateFacingCoordinates`,
+everything else → `R.generateRotationalCoordinates`. Both return the **same** `computed` bundle (now always
+including `shape` and a per-seat `seatRigidByKey = { [seat] = { deltaDeg, shift } }`), so `resolveSeatObjects`
+and camera placement are shape-agnostic.
+
+* **`playerToPositionMap[seat] = { side, index }`** — `side` is the side's outward azimuth (`0` = +Z, `180` = −Z);
+  `index` (1-based) is the slot along that side. Each side is divided into **N equal segments** across the
+  **active table's bounding-box X span** (N = greatest index on that side in the **full** config map, so
+  positions stay stable when seats are filtered out — e.g. Table C keeps 5 NPC-side segments though NPC5 is
+  never occupied). Seat sits at its segment center; index increases **clockwise from origin** (on the +Z side
+  index 1 = −X end → +X; on the −Z side index 1 = +X end → −X).
+* **Bounds are read live** from the table object's `getBounds()`, and only **after** `applyAllTablesVisualState`
+  has placed it as the active table (a table is not correctly scaled/positioned until active). `setPosition` is
+  instant, so bounds are valid in the same frame.
+* **Orientation is perpendicular to the edge, not a look-at.** Placement is a rigid yaw `(seatSide − referenceSide)`
+  about `centerPoint` — a flat **0° or 180°** that depends only on `side` — then a pure X shift to the segment
+  center. Every seat inherits the reference template's authored facing (straight +Z for Table C's 180° side),
+  mirrored for the opposite side; the index never tilts rotation. Do **not** convert this to a per-seat
+  `U.lookAtRotation` (that aims seats at the center point instead of straight inward).
+* **Markers:** `R.facingSeatWorldXZ(tableCfg, side, index)` exposes the same X-segmentation for the
+  control-board minimap (row Z derived from `referenceHandPosition`); returns nil if the table isn't active.
+* **Camera:** per-seat presets use `computed.seatRigidByKey` directly (`cameraFrameFromRigid`), so circular and
+  facing tables share one camera path.
+
 ### Geometry conventions
 
 * **Azimuth** (same as [`U.rotateAroundPoint`](../lib/util.ttslua) / [`U.XYZToCylindrical`](../lib/util.ttslua)): **`x = sin(θ)·r`**, **`z = cos(θ)·r`** relative to `centerPoint` in XZ.

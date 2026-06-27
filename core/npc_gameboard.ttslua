@@ -1668,15 +1668,30 @@ local function tableComponentActiveForOccupiedSlots(parentTable, componentName)
     return true
 end
 
---- World XZ around a table segment (seat arc), from C.Tables layout data.
---- Segment indices in `playerToPositionMap` are 1-based (same as rotational-seat-layout).
+--- World XZ for a table seat, from C.Tables layout data.
+--- CIRCULAR seats pass a 1-based segment index (ring math here). FACING/RECTANGULAR seats pass a
+--- `{ side, index }` table, resolved via `RSL.facingSeatWorldXZ` from the active table's live bounds.
 --- @param cfg table
---- @param segmentIndex1Based number
+--- @param segment number|table 1-based segment index, or `{ side, index }`
 --- @return Vector|nil
-local function worldPositionForTableSegment(cfg, segmentIndex1Based)
-    if type(cfg) ~= "table" or type(segmentIndex1Based) ~= "number" or cfg.centerPoint == nil then
+local function worldPositionForTableSegment(cfg, segment)
+    if type(cfg) ~= "table" or cfg.centerPoint == nil then
         return nil
     end
+    if type(segment) == "table" then
+        if type(segment.side) ~= "number" or type(segment.index) ~= "number" then
+            return nil
+        end
+        local RSL = require("lib.rotational-seat-layout")
+        if type(RSL.facingSeatWorldXZ) ~= "function" then
+            return nil
+        end
+        return RSL.facingSeatWorldXZ(cfg, segment.side, segment.index)
+    end
+    if type(segment) ~= "number" then
+        return nil
+    end
+    local segmentIndex1Based = segment
     local cp = Vector(cfg.centerPoint)
     local numSegments = cfg.numSegments or 10
     if numSegments < 1 then
@@ -4312,16 +4327,18 @@ function Gameboard.reconcileControlBoardFromState(opts)
                 if show then
                     local cfg = tableConfig(activeTable)
                     seg = cfg and cfg.playerToPositionMap and cfg.playerToPositionMap[pcSeat]
-                    if type(seg) == "number" then
+                    if seg ~= nil then
                         local worldSeat = worldPositionForTableSegment(cfg, seg)
-                        u, v = normalizedUvFromWorld(worldSeat)
-                        placeControlBoardMarker(
-                            obj,
-                            board,
-                            u,
-                            v,
-                            sourceObjectForSeat(pcSeat)
-                        )
+                        if worldSeat ~= nil then
+                            u, v = normalizedUvFromWorld(worldSeat)
+                            placeControlBoardMarker(
+                                obj,
+                                board,
+                                u,
+                                v,
+                                sourceObjectForSeat(pcSeat)
+                            )
+                        end
                     end
                 end
             elseif npcSeat ~= nil then
@@ -4329,7 +4346,7 @@ function Gameboard.reconcileControlBoardFromState(opts)
                 local cfg = tableConfig(activeTable)
                 local seg = cfg and cfg.playerToPositionMap and cfg.playerToPositionMap[npcSeat]
                 local show = activeTable ~= nil
-                    and type(seg) == "number"
+                    and seg ~= nil
                     and npcSeatOccupiedOnTable(npcSeat)
                 local u, v = nil, nil
                 if show then
