@@ -24,6 +24,11 @@ local ChronicleWeather = require("lib.chronicle_weather")
 
 local tickerHandle = nil
 
+--- Monotonic token bumped on every ticker stop/(re)start. A stale `U.delay` callback whose
+--- `Wait.stop` did not actually cancel checks this and aborts instead of re-arming the loop —
+--- root cause of the RT clock accelerating as scenes change (duplicate tick chains).
+local tickerEpoch = 0
+
 --- Fractional narrative minutes accumulated between integer minute updates (see `tickRealTimeClock`).
 local rtMinuteCarry = 0
 
@@ -594,7 +599,11 @@ function GameStateOverlay.tickRealTimeClock()
     return true
 end
 
-local function scheduleNextTick()
+--- @param epoch number ticker generation this chain belongs to; aborts if superseded by stop/restart
+local function scheduleNextTick(epoch)
+    if epoch ~= tickerEpoch then
+        return
+    end
     if tickerHandle ~= nil then
         U.stopDelay(tickerHandle)
         tickerHandle = nil
@@ -604,9 +613,12 @@ local function scheduleNextTick()
         return
     end
     tickerHandle = U.delay(function()
+        if epoch ~= tickerEpoch then
+            return
+        end
         tickerHandle = nil
         GameStateOverlay.tickRealTimeClock()
-        scheduleNextTick()
+        scheduleNextTick(epoch)
     end, 1)
 end
 
@@ -617,14 +629,17 @@ function GameStateOverlay.ensureTicker()
         if tickerHandle ~= nil then
             return
         end
-        scheduleNextTick()
+        tickerEpoch = tickerEpoch + 1
+        scheduleNextTick(tickerEpoch)
     else
         GameStateOverlay.stopTicker()
     end
 end
 
---- Stops the ticker (e.g. when turning real-time off).
+--- Stops the ticker (e.g. when turning real-time off). Bumping the epoch invalidates any in-flight
+--- callback whose underlying `Wait` did not cancel, preventing duplicate self-perpetuating chains.
 function GameStateOverlay.stopTicker()
+    tickerEpoch = tickerEpoch + 1
     if tickerHandle ~= nil then
         U.stopDelay(tickerHandle)
         tickerHandle = nil

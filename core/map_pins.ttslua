@@ -1,5 +1,7 @@
 --- Map pin last-active location + narrative clock (TOR-245).
---- Mutation writes `sessionScene.lastActiveMapPin`; HUD reconcile reads via `resolvePinDisplay`.
+--- Mutation writes top-level `gameState.lastActiveMapPin`; HUD reconcile reads via `resolvePinDisplay`.
+--- Stored top-level (not in `sessionScene`) so per-PC location history survives scene apply, which
+--- wholesale-replaces `sessionScene` with the library bundle.
 local MapPins = {}
 
 local S = require("core.state")
@@ -24,7 +26,7 @@ end
 
 --- @return table
 local function readLastActiveTable()
-    local lap = S.getStateVal("sessionScene", "lastActiveMapPin")
+    local lap = S.getStateVal("lastActiveMapPin")
     if type(lap) ~= "table" then
         lap = {}
     end
@@ -33,7 +35,7 @@ end
 
 --- @param lap table
 local function writeLastActiveTable(lap)
-    S.setStateVal(lap, "sessionScene", "lastActiveMapPin")
+    S.setStateVal(lap, "lastActiveMapPin")
 end
 
 --- @param color string
@@ -232,7 +234,9 @@ function MapPins.resolvePinDisplay(color)
     if type(activeAt) ~= "table" then
         return { visible = false, offsetXY = nil }
     end
-    if U.compareNarrativeClock(currentClock, activeAt) <= 0 then
+    -- Hide only when current narrative time is strictly before the recorded moment (clock rewind, K4);
+    -- present PCs recorded at the current clock (compare == 0) show immediately on scene apply.
+    if U.compareNarrativeClock(currentClock, activeAt) < 0 then
         return { visible = false, offsetXY = nil }
     end
     local offsetStr = parseSiteOffsetXY(row.siteKey)

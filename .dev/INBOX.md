@@ -2,9 +2,6 @@
 
 ## Quick Fixes
 
-- [Bug] Map pins do not appear on scene change; it looks like they first appear when the clock updates and an in-game minute has elapsed. Expected behavior:  Map pins should be visible from the in-game minute that the scene begins, not the minute after.
-- [Bug] The clock still moves increasingly quickly as scenes change, likely because multiple timeouts are accumulating and not being cleared.
-
 ## Active
 
 ---
@@ -21,6 +18,9 @@
 
 ## Processed
 
+2026-06-27 Map pins on scene change — present PCs show immediately (clock gate `< 0`); absent PCs keep prior pin across scenes (`lastActiveMapPin` moved to top-level gameState, was wiped by sessionScene replace on apply)
+2026-06-27 RT clock acceleration on scene change — epoch guard in game_state_overlay ticker so stale Wait callbacks can't spawn duplicate tick chains
+2026-06-27 Scene transition sound timing — new-location ambient fade-in deferred to end of settle (shortly before blindfold lift) in runStagedTransition
 2026-06-27 Overlay management — blindfold variants 1..22 randomization (BLINDFOLD_VARIANT_COUNT was 6); removed impaired-willpower + torpor HUD overlays; added derived `stained` overlay (Humanity stains ≥ 1)
 2026-06-26 INBOX Quick Fixes — TOR-268 (control-board table-only minimap), TOR-151 amend (no-scene Table B0 baseline), TOR-269 (load soundscape dual-apply), TOR-270 (weather volume-0 before playback)
 2026-06-25 TOR-265 — Control-board Apply/Clear flickers off-seat NPC lights on then off (promoted; relatedTo TOR-250/TOR-178)

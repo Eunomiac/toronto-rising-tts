@@ -76,8 +76,8 @@ local function assertPersistedShape(conditionId, value)
 
   if schema.variant == "number" then
     local v = tonumber(value.variant)
-    if v == nil or v < 1 or v > 6 then
-      error("Conditions: instance.variant must be 1..6 for \"" .. conditionId .. "\"")
+    if v == nil or v < 1 or v > C.BlindfoldVariantCount then
+      error("Conditions: instance.variant must be 1.." .. tostring(C.BlindfoldVariantCount) .. " for \"" .. conditionId .. "\"")
     end
   end
 end
