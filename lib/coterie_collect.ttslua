@@ -5,8 +5,9 @@ local CC = {}
 
 local TRAIT = require("lib.trait_sheet_xml")
 local PCT = require("lib.princes_court_trait_xml")
+local CoterieHydrate = require("lib.coterie_hydrate")
 
-local DOMAIN_DOT_KEYS = { "chasse", "lien", "portillon", "haven" }
+local DOMAIN_DOT_KEYS = CoterieHydrate.DOMAIN_RATING_KEYS
 local MAX_DOMAIN_DOTS = 5
 
 --- Must match `lib/princes_court_trait_xml.ttslua` build opts so blank `setAttribute` ids align with baked XML.
@@ -48,6 +49,26 @@ local function addUpdate(updates, id, attrs)
   updates[#updates + 1] = { id = id, attributes = attrs }
 end
 
+--- Push dot `image` (+ `active`) updates for every included trait row (real + blank).
+--- @param updates table[]
+--- @param entry table
+--- @param pageNum integer
+--- @param sectionKey string
+--- @param traitIndex integer
+--- @param isFlaw boolean
+--- @param hudSeatColor string
+local function addTraitDotUpdates(updates, entry, pageNum, sectionKey, traitIndex, isFlaw, hudSeatColor)
+  local slotCount, baseCount, tempCount, disabledCount = TRAIT.slotBaseTempDisabled(entry)
+  local filledImg = isFlaw and "dot_red" or "dot_yellow"
+  for slot = 1, slotCount do
+    local img = TRAIT.dotImageForTraitSlot(slot, slotCount, baseCount, tempCount, disabledCount, filledImg)
+    addUpdate(updates, traitDotId(pageNum, sectionKey, traitIndex, slot, hudSeatColor), {
+      image = img,
+      active = "true",
+    })
+  end
+end
+
 --- @param coterieData table|nil
 --- @param hudSeatColor string
 --- @return table[] list of { id = string, attributes = table }
@@ -64,13 +85,15 @@ function CC.collectPrincesCourtTraitBlankUpdates(coterieData, hudSeatColor)
     local arr = coterieData[group.arrayKey]
     if type(arr) == "table" then
       TRAIT.forEachIncludedTraitEntry(arr, TRAIT_ACTIVE_OPTS, function(entry, traitIndex)
-        if entry.blank ~= true then
-          return
-        end
-
         local pageNum = group.pageNum
         local sectionKey = group.sectionKey
         local isFlaw = group.isFlaw == true
+
+        if entry.blank ~= true then
+          addTraitDotUpdates(updates, entry, pageNum, sectionKey, traitIndex, isFlaw, hudSeatColor)
+          return
+        end
+
         local rootId = traitBlockRootId(pageNum, sectionKey, traitIndex, hudSeatColor)
         local titleId = traitElementId(pageNum, sectionKey, traitIndex, hudSeatColor, "title")
         local flavorId = traitElementId(pageNum, sectionKey, traitIndex, hudSeatColor, "flavor")
@@ -86,15 +109,7 @@ function CC.collectPrincesCourtTraitBlankUpdates(coterieData, hudSeatColor)
           local rules = TRAIT.joinMultilineField(entry.rules)
           addUpdate(updates, rulesId, { text = rules or "" })
 
-          local slotCount, baseCount, tempCount = TRAIT.slotBaseAndTemp(entry)
-          local filledImg = isFlaw and "dot_red" or "dot_yellow"
-          for slot = 1, slotCount do
-            local img = TRAIT.dotImageForTraitSlot(slot, slotCount, baseCount, tempCount, filledImg)
-            addUpdate(updates, traitDotId(pageNum, sectionKey, traitIndex, slot, hudSeatColor), {
-              image = img,
-              active = "true",
-            })
-          end
+          addTraitDotUpdates(updates, entry, pageNum, sectionKey, traitIndex, isFlaw, hudSeatColor)
         else
           addUpdate(updates, rootId, { active = "false" })
         end
@@ -117,20 +132,25 @@ function CC.collectPrincesCourtHudUpdates(coterieData, hudSeatColor)
     end
 
     for _, key in ipairs(DOMAIN_DOT_KEYS) do
-        local rating = 0
-        if type(coterieData) == "table" then
-            rating = tonumber(coterieData[key]) or 0
-        end
-        if rating < 0 then
-            rating = 0
-        elseif rating > MAX_DOMAIN_DOTS then
-            rating = MAX_DOMAIN_DOTS
-        end
-        rating = math.floor(rating)
+        local rating = CoterieHydrate.normalizeDomainRatingValue(
+            type(coterieData) == "table" and coterieData[key] or nil,
+            MAX_DOMAIN_DOTS
+        )
+        local baseCount = rating.base
+        local tempCount = rating.temp
+        local disabledCount = rating.disabled
         for slot = 1, MAX_DOMAIN_DOTS do
-            addUpdate(updates, "dot_on_" .. key .. "_" .. slot .. "_" .. hudSeatColor, {
-                active = (slot <= rating) and "true" or "false",
-            })
+            local img = TRAIT.dotImageForDomainSlot(slot, baseCount, tempCount, disabledCount, "dot_large_yellow")
+            if img ~= nil then
+                addUpdate(updates, "dot_on_" .. key .. "_" .. slot .. "_" .. hudSeatColor, {
+                    active = "true",
+                    image = img,
+                })
+            else
+                addUpdate(updates, "dot_on_" .. key .. "_" .. slot .. "_" .. hudSeatColor, {
+                    active = "false",
+                })
+            end
         end
     end
 

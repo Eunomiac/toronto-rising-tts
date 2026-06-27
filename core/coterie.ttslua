@@ -30,6 +30,15 @@ function Coterie.ensureInState()
     CoterieHydrate.hydrateCoterieData(data)
 end
 
+--- Overwrite `gameState.coterieData` wholesale with freshly parsed JSON defaults (debug tool).
+--- Unlike `ensureInState`, this discards in-game values so authored `lib/json/Coterie.json` edits take effect.
+function Coterie.overwriteFromDefaults()
+    local defaults = Coterie.getDefaultData()
+    S.setStateVal(U.clone(defaults, true), "coterieData")
+    Coterie.invalidateReconcileCache()
+    Coterie.reconcileAll()
+end
+
 function Coterie.invalidateReconcileCache()
     lastUiByHudSeat = {}
 end

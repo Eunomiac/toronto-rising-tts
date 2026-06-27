@@ -14,7 +14,10 @@ function xmlEscapeAttr(s) {
     return "";
   }
   let t = String(s);
+  t = t.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
   t = t.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, " ");
+  t = t.replace(/\n/g, "&#10;");
+  t = t.replace(/\t/g, "&#9;");
   t = t.replace(/&/g, "&amp;");
   t = t.replace(/</g, "&lt;");
   t = t.replace(/>/g, "&gt;");

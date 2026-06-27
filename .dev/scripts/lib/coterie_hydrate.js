@@ -19,12 +19,47 @@ const TRAIT_ARRAY_KEYS = [
 
 const BLANK_SLOTS_PER_ARRAY = 3;
 
+const DOMAIN_RATING_KEYS = ["chasse", "lien", "portillon", "haven"];
+
+/**
+ * @param {number|object|null|undefined} val
+ * @param {number} [defaultMax]
+ * @returns {{ base: number, temp: number, max: number, disabled: number }}
+ */
+function normalizeDomainRatingValue(val, defaultMax = 5) {
+  const maxSlots = Math.floor(Number(defaultMax) || 5);
+  if (typeof val === "number" && !Number.isNaN(val)) {
+    const n = Math.max(0, Math.floor(val));
+    return { base: n, temp: 0, max: maxSlots, disabled: 0 };
+  }
+  if (!val || typeof val !== "object") {
+    return { base: 0, temp: 0, max: maxSlots, disabled: 0 };
+  }
+  const maxV = Math.floor(Number(val.max) || maxSlots);
+  const base = Math.max(0, Math.floor(Number(val.base) || 0));
+  let temp = Math.max(0, Math.floor(Number(val.temp) || 0));
+  let disabled = Math.max(0, Math.floor(Number(val.disabled) || 0));
+  temp = Math.min(temp, Math.max(0, maxV - base));
+  disabled = Math.min(disabled, base + temp);
+  return { base, temp, max: maxV, disabled };
+}
+
+/**
+ * @param {Record<string, unknown>} data
+ */
+function normalizeDomainRatings(data) {
+  for (const key of DOMAIN_RATING_KEYS) {
+    data[key] = normalizeDomainRatingValue(/** @type {unknown} */ (data[key]), 5);
+  }
+}
+
 function makeBlankEntry() {
   return {
     name: "",
     focus: "",
     base: 0,
     temp: 0,
+    disabled: 0,
     max: 5,
     description: [],
     rules: [],
@@ -109,6 +144,7 @@ function hydrateCoterieData(data) {
   for (const key of TRAIT_ARRAY_KEYS) {
     out[key] = ensureTraitBlankSlots(/** @type {unknown[]} */ (out[key]));
   }
+  normalizeDomainRatings(out);
   return out;
 }
 
@@ -119,6 +155,9 @@ module.exports = {
   makeBlankEntry,
   ensureTraitBlankSlots,
   hydrateCoterieData,
+  normalizeDomainRatings,
+  normalizeDomainRatingValue,
+  DOMAIN_RATING_KEYS,
   buildTraitSectionDividerFlags,
   collectRealEntries,
 };

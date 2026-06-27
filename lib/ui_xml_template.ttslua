@@ -19,10 +19,15 @@ function M.xmlEscapeAttr(s)
     return ""
   end
   local t = tostring(s)
+  t = t:gsub("\r\n", "\n")
+  t = t:gsub("\r", "\n")
   t = t:gsub("%c", function(ch)
     local b = string.byte(ch)
-    if b == 9 or b == 10 or b == 13 then
-      return ch
+    if b == 10 then
+      return "&#10;"
+    end
+    if b == 9 then
+      return "&#9;"
     end
     return " "
   end)

@@ -613,9 +613,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_0_flavor_Brown" class="box_text flavor_text" text="While not personally wealthy, your control over the Bay Street Financial District gives you access to a vast array of resources." />
-    <Text id="pc_p2_bg_0_rules_Brown" class="box_text rules_text" text="You may commit coterie Resources to Projects or other endeavors." />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_bg_0_flavor_Brown" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="While not personally wealthy, your control over the Bay Street Financial District gives you access to a vast array of resources." />
+    <Text id="pc_p2_bg_0_rules_Brown" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="You may commit coterie Resources to Projects or other endeavors." />
   </VerticalLayout>
   
   
@@ -644,9 +644,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_1_flavor_Brown" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_bg_1_rules_Brown" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_bg_1_flavor_Brown" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_bg_1_rules_Brown" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -673,9 +673,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_2_flavor_Brown" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_bg_2_rules_Brown" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_bg_2_flavor_Brown" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_bg_2_rules_Brown" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -702,9 +702,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_3_flavor_Brown" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_bg_3_rules_Brown" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_bg_3_flavor_Brown" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_bg_3_rules_Brown" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -832,9 +832,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_merit_5_flavor_Brown" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_merit_5_rules_Brown" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_merit_5_flavor_Brown" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_merit_5_rules_Brown" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -861,9 +861,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_merit_6_flavor_Brown" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_merit_6_rules_Brown" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_merit_6_flavor_Brown" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_merit_6_rules_Brown" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -890,9 +890,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_merit_7_flavor_Brown" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_merit_7_rules_Brown" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_merit_7_flavor_Brown" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_merit_7_rules_Brown" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -928,10 +928,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_0_flavor_Brown" class="box_text flavor_text" text="You have earned the enmity of a very powerful, very ancient, very mysterious enemy." />
-    <Text id="pc_p2_flaw_0_rules_Brown" class="box_text rules_text" text="Your enemy is a methuselah or a cabal of powerful elders.
-The Storyteller should use them at least once per story." />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_flaw_0_flavor_Brown" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="Your rise to power has earned the enmity of a very powerful, very mysterious enemy who will act towards your destruction at every opportunity." />
+    <Text id="pc_p2_flaw_0_rules_Brown" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="Your enemy is a Difficulty 6 (!) monstrous elder, vengeful methuselah, embittered Justicar, or the equivalent, and their traits are thus free to break usual statistical limitations.&amp;#10;Expect to feel their influence at least once per story." />
   </VerticalLayout>
   
   
@@ -960,9 +959,9 @@ The Storyteller should use them at least once per story." />
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_1_flavor_Brown" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_flaw_1_rules_Brown" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_flaw_1_flavor_Brown" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_flaw_1_rules_Brown" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -989,9 +988,9 @@ The Storyteller should use them at least once per story." />
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_2_flavor_Brown" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_flaw_2_rules_Brown" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_flaw_2_flavor_Brown" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_flaw_2_rules_Brown" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -1018,9 +1017,9 @@ The Storyteller should use them at least once per story." />
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_3_flavor_Brown" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_flaw_3_rules_Brown" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_flaw_3_flavor_Brown" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_flaw_3_rules_Brown" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -1091,31 +1090,27 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
         <Image id="divider_domainMerits_Brown" image="divider_domainMerits" class="divider_image" />
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_merit_0_Brown" class="box_text_container" active="true">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
+  <HorizontalLayout class="box_text_title_bar 3_dots">
     <Text id="pc_p3_merit_0_title_Brown" class="box_text_title_text" text="TRANSPORTATION" />
     <Panel class="box_text_panel_title_dotline">
       
-      <Image id="pc_p3_merit_0_dot_1_Brown" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p3_merit_0_dot_1_Brown" image="dot_grey" class="dot box_text_title_dot dot_1" />
       
       
-      <Image id="pc_p3_merit_0_dot_2_Brown" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p3_merit_0_dot_2_Brown" image="dot_white" class="dot box_text_title_dot dot_2" />
       
       
-      <Image id="pc_p3_merit_0_dot_3_Brown" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p3_merit_0_dot_3_Brown" image="dot_yellow" class="dot box_text_title_dot dot_3" />
       
       
-      <Image id="pc_p3_merit_0_dot_4_Brown" image="dot_yellow" class="dot box_text_title_dot dot_4" />
-      
-      
-      <Image id="pc_p3_merit_0_dot_5_Brown" image="dot_yellow" class="dot box_text_title_dot dot_5" />
       
       
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_0_flavor_Brown" class="box_text flavor_text" text="You have a fleet of vehicles and the staff to drive them." />
-    <Text id="pc_p3_merit_0_rules_Brown" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_merit_0_flavor_Brown" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="You have a small fleet of luxury vehicles and drivers at your disposal." />
+    <Text id="pc_p3_merit_0_rules_Brown" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="You can call upon your drivers (Driving 6) on short notice.&amp;#10;Once per story, you can call upon a rare or expensive vehicle such as a helicopter or bulletproof SUV for a night." />
   </VerticalLayout>
   
   
@@ -1144,9 +1139,9 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_1_flavor_Brown" class="box_text flavor_text" text="" />
-    <Text id="pc_p3_merit_1_rules_Brown" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_merit_1_flavor_Brown" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_merit_1_rules_Brown" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -1173,9 +1168,9 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_2_flavor_Brown" class="box_text flavor_text" text="" />
-    <Text id="pc_p3_merit_2_rules_Brown" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_merit_2_flavor_Brown" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_merit_2_rules_Brown" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -1202,9 +1197,9 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_3_flavor_Brown" class="box_text flavor_text" text="" />
-    <Text id="pc_p3_merit_3_rules_Brown" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_merit_3_flavor_Brown" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_merit_3_rules_Brown" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -1234,10 +1229,9 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_0_flavor_Brown" class="box_text flavor_text" text="Your domain comes with certain responsibilities." />
-    <Text id="pc_p3_flaw_0_rules_Brown" class="box_text rules_text" text="You must secure the main entry points of Union Station and the Billy Bishop Ferry (from Billy Bishop Airport, on Centre Island) against unauthorized entry by Kindred of any sect.
-Failure to do so will result in loss of reputation, trust in your rule, or worse." />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_flaw_0_flavor_Brown" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="Your domain comes with certain inconvenient responsibilities: You must secure the main entry points of Union Station and the Billy Bishop Ferry (from Billy Bishop Airport, on Centre Island) against unauthorized entry by Kindred of any sect." />
+    <Text id="pc_p3_flaw_0_rules_Brown" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="You gain no benefits from fulfilling your obligations, but every failure to do so will cost your coterie a dot of Status until you have made amends." />
   </VerticalLayout>
   
   
@@ -1266,9 +1260,9 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_1_flavor_Brown" class="box_text flavor_text" text="" />
-    <Text id="pc_p3_flaw_1_rules_Brown" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_flaw_1_flavor_Brown" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_flaw_1_rules_Brown" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -1295,9 +1289,9 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_2_flavor_Brown" class="box_text flavor_text" text="" />
-    <Text id="pc_p3_flaw_2_rules_Brown" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_flaw_2_flavor_Brown" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_flaw_2_rules_Brown" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -1324,9 +1318,9 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_3_flavor_Brown" class="box_text flavor_text" text="" />
-    <Text id="pc_p3_flaw_3_rules_Brown" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_flaw_3_flavor_Brown" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_flaw_3_rules_Brown" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -2078,9 +2072,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_0_flavor_Orange" class="box_text flavor_text" text="While not personally wealthy, your control over the Bay Street Financial District gives you access to a vast array of resources." />
-    <Text id="pc_p2_bg_0_rules_Orange" class="box_text rules_text" text="You may commit coterie Resources to Projects or other endeavors." />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_bg_0_flavor_Orange" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="While not personally wealthy, your control over the Bay Street Financial District gives you access to a vast array of resources." />
+    <Text id="pc_p2_bg_0_rules_Orange" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="You may commit coterie Resources to Projects or other endeavors." />
   </VerticalLayout>
   
   
@@ -2109,9 +2103,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_1_flavor_Orange" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_bg_1_rules_Orange" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_bg_1_flavor_Orange" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_bg_1_rules_Orange" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -2138,9 +2132,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_2_flavor_Orange" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_bg_2_rules_Orange" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_bg_2_flavor_Orange" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_bg_2_rules_Orange" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -2167,9 +2161,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_3_flavor_Orange" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_bg_3_rules_Orange" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_bg_3_flavor_Orange" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_bg_3_rules_Orange" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -2297,9 +2291,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_merit_5_flavor_Orange" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_merit_5_rules_Orange" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_merit_5_flavor_Orange" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_merit_5_rules_Orange" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -2326,9 +2320,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_merit_6_flavor_Orange" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_merit_6_rules_Orange" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_merit_6_flavor_Orange" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_merit_6_rules_Orange" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -2355,9 +2349,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_merit_7_flavor_Orange" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_merit_7_rules_Orange" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_merit_7_flavor_Orange" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_merit_7_rules_Orange" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -2393,10 +2387,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_0_flavor_Orange" class="box_text flavor_text" text="You have earned the enmity of a very powerful, very ancient, very mysterious enemy." />
-    <Text id="pc_p2_flaw_0_rules_Orange" class="box_text rules_text" text="Your enemy is a methuselah or a cabal of powerful elders.
-The Storyteller should use them at least once per story." />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_flaw_0_flavor_Orange" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="Your rise to power has earned the enmity of a very powerful, very mysterious enemy who will act towards your destruction at every opportunity." />
+    <Text id="pc_p2_flaw_0_rules_Orange" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="Your enemy is a Difficulty 6 (!) monstrous elder, vengeful methuselah, embittered Justicar, or the equivalent, and their traits are thus free to break usual statistical limitations.&amp;#10;Expect to feel their influence at least once per story." />
   </VerticalLayout>
   
   
@@ -2425,9 +2418,9 @@ The Storyteller should use them at least once per story." />
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_1_flavor_Orange" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_flaw_1_rules_Orange" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_flaw_1_flavor_Orange" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_flaw_1_rules_Orange" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -2454,9 +2447,9 @@ The Storyteller should use them at least once per story." />
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_2_flavor_Orange" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_flaw_2_rules_Orange" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_flaw_2_flavor_Orange" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_flaw_2_rules_Orange" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -2483,9 +2476,9 @@ The Storyteller should use them at least once per story." />
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_3_flavor_Orange" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_flaw_3_rules_Orange" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_flaw_3_flavor_Orange" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_flaw_3_rules_Orange" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -2556,31 +2549,27 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
         <Image id="divider_domainMerits_Orange" image="divider_domainMerits" class="divider_image" />
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_merit_0_Orange" class="box_text_container" active="true">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
+  <HorizontalLayout class="box_text_title_bar 3_dots">
     <Text id="pc_p3_merit_0_title_Orange" class="box_text_title_text" text="TRANSPORTATION" />
     <Panel class="box_text_panel_title_dotline">
       
-      <Image id="pc_p3_merit_0_dot_1_Orange" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p3_merit_0_dot_1_Orange" image="dot_grey" class="dot box_text_title_dot dot_1" />
       
       
-      <Image id="pc_p3_merit_0_dot_2_Orange" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p3_merit_0_dot_2_Orange" image="dot_white" class="dot box_text_title_dot dot_2" />
       
       
-      <Image id="pc_p3_merit_0_dot_3_Orange" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p3_merit_0_dot_3_Orange" image="dot_yellow" class="dot box_text_title_dot dot_3" />
       
       
-      <Image id="pc_p3_merit_0_dot_4_Orange" image="dot_yellow" class="dot box_text_title_dot dot_4" />
-      
-      
-      <Image id="pc_p3_merit_0_dot_5_Orange" image="dot_yellow" class="dot box_text_title_dot dot_5" />
       
       
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_0_flavor_Orange" class="box_text flavor_text" text="You have a fleet of vehicles and the staff to drive them." />
-    <Text id="pc_p3_merit_0_rules_Orange" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_merit_0_flavor_Orange" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="You have a small fleet of luxury vehicles and drivers at your disposal." />
+    <Text id="pc_p3_merit_0_rules_Orange" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="You can call upon your drivers (Driving 6) on short notice.&amp;#10;Once per story, you can call upon a rare or expensive vehicle such as a helicopter or bulletproof SUV for a night." />
   </VerticalLayout>
   
   
@@ -2609,9 +2598,9 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_1_flavor_Orange" class="box_text flavor_text" text="" />
-    <Text id="pc_p3_merit_1_rules_Orange" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_merit_1_flavor_Orange" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_merit_1_rules_Orange" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -2638,9 +2627,9 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_2_flavor_Orange" class="box_text flavor_text" text="" />
-    <Text id="pc_p3_merit_2_rules_Orange" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_merit_2_flavor_Orange" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_merit_2_rules_Orange" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -2667,9 +2656,9 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_3_flavor_Orange" class="box_text flavor_text" text="" />
-    <Text id="pc_p3_merit_3_rules_Orange" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_merit_3_flavor_Orange" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_merit_3_rules_Orange" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -2699,10 +2688,9 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_0_flavor_Orange" class="box_text flavor_text" text="Your domain comes with certain responsibilities." />
-    <Text id="pc_p3_flaw_0_rules_Orange" class="box_text rules_text" text="You must secure the main entry points of Union Station and the Billy Bishop Ferry (from Billy Bishop Airport, on Centre Island) against unauthorized entry by Kindred of any sect.
-Failure to do so will result in loss of reputation, trust in your rule, or worse." />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_flaw_0_flavor_Orange" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="Your domain comes with certain inconvenient responsibilities: You must secure the main entry points of Union Station and the Billy Bishop Ferry (from Billy Bishop Airport, on Centre Island) against unauthorized entry by Kindred of any sect." />
+    <Text id="pc_p3_flaw_0_rules_Orange" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="You gain no benefits from fulfilling your obligations, but every failure to do so will cost your coterie a dot of Status until you have made amends." />
   </VerticalLayout>
   
   
@@ -2731,9 +2719,9 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_1_flavor_Orange" class="box_text flavor_text" text="" />
-    <Text id="pc_p3_flaw_1_rules_Orange" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_flaw_1_flavor_Orange" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_flaw_1_rules_Orange" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -2760,9 +2748,9 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_2_flavor_Orange" class="box_text flavor_text" text="" />
-    <Text id="pc_p3_flaw_2_rules_Orange" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_flaw_2_flavor_Orange" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_flaw_2_rules_Orange" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -2789,9 +2777,9 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_3_flavor_Orange" class="box_text flavor_text" text="" />
-    <Text id="pc_p3_flaw_3_rules_Orange" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_flaw_3_flavor_Orange" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_flaw_3_rules_Orange" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -3543,9 +3531,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_0_flavor_Red" class="box_text flavor_text" text="While not personally wealthy, your control over the Bay Street Financial District gives you access to a vast array of resources." />
-    <Text id="pc_p2_bg_0_rules_Red" class="box_text rules_text" text="You may commit coterie Resources to Projects or other endeavors." />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_bg_0_flavor_Red" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="While not personally wealthy, your control over the Bay Street Financial District gives you access to a vast array of resources." />
+    <Text id="pc_p2_bg_0_rules_Red" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="You may commit coterie Resources to Projects or other endeavors." />
   </VerticalLayout>
   
   
@@ -3574,9 +3562,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_1_flavor_Red" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_bg_1_rules_Red" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_bg_1_flavor_Red" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_bg_1_rules_Red" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -3603,9 +3591,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_2_flavor_Red" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_bg_2_rules_Red" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_bg_2_flavor_Red" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_bg_2_rules_Red" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -3632,9 +3620,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_3_flavor_Red" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_bg_3_rules_Red" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_bg_3_flavor_Red" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_bg_3_rules_Red" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -3762,9 +3750,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_merit_5_flavor_Red" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_merit_5_rules_Red" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_merit_5_flavor_Red" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_merit_5_rules_Red" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -3791,9 +3779,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_merit_6_flavor_Red" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_merit_6_rules_Red" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_merit_6_flavor_Red" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_merit_6_rules_Red" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -3820,9 +3808,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_merit_7_flavor_Red" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_merit_7_rules_Red" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_merit_7_flavor_Red" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_merit_7_rules_Red" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -3858,10 +3846,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_0_flavor_Red" class="box_text flavor_text" text="You have earned the enmity of a very powerful, very ancient, very mysterious enemy." />
-    <Text id="pc_p2_flaw_0_rules_Red" class="box_text rules_text" text="Your enemy is a methuselah or a cabal of powerful elders.
-The Storyteller should use them at least once per story." />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_flaw_0_flavor_Red" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="Your rise to power has earned the enmity of a very powerful, very mysterious enemy who will act towards your destruction at every opportunity." />
+    <Text id="pc_p2_flaw_0_rules_Red" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="Your enemy is a Difficulty 6 (!) monstrous elder, vengeful methuselah, embittered Justicar, or the equivalent, and their traits are thus free to break usual statistical limitations.&amp;#10;Expect to feel their influence at least once per story." />
   </VerticalLayout>
   
   
@@ -3890,9 +3877,9 @@ The Storyteller should use them at least once per story." />
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_1_flavor_Red" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_flaw_1_rules_Red" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_flaw_1_flavor_Red" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_flaw_1_rules_Red" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -3919,9 +3906,9 @@ The Storyteller should use them at least once per story." />
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_2_flavor_Red" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_flaw_2_rules_Red" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_flaw_2_flavor_Red" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_flaw_2_rules_Red" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -3948,9 +3935,9 @@ The Storyteller should use them at least once per story." />
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_3_flavor_Red" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_flaw_3_rules_Red" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_flaw_3_flavor_Red" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_flaw_3_rules_Red" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -4021,31 +4008,27 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
         <Image id="divider_domainMerits_Red" image="divider_domainMerits" class="divider_image" />
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_merit_0_Red" class="box_text_container" active="true">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
+  <HorizontalLayout class="box_text_title_bar 3_dots">
     <Text id="pc_p3_merit_0_title_Red" class="box_text_title_text" text="TRANSPORTATION" />
     <Panel class="box_text_panel_title_dotline">
       
-      <Image id="pc_p3_merit_0_dot_1_Red" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p3_merit_0_dot_1_Red" image="dot_grey" class="dot box_text_title_dot dot_1" />
       
       
-      <Image id="pc_p3_merit_0_dot_2_Red" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p3_merit_0_dot_2_Red" image="dot_white" class="dot box_text_title_dot dot_2" />
       
       
-      <Image id="pc_p3_merit_0_dot_3_Red" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p3_merit_0_dot_3_Red" image="dot_yellow" class="dot box_text_title_dot dot_3" />
       
       
-      <Image id="pc_p3_merit_0_dot_4_Red" image="dot_yellow" class="dot box_text_title_dot dot_4" />
-      
-      
-      <Image id="pc_p3_merit_0_dot_5_Red" image="dot_yellow" class="dot box_text_title_dot dot_5" />
       
       
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_0_flavor_Red" class="box_text flavor_text" text="You have a fleet of vehicles and the staff to drive them." />
-    <Text id="pc_p3_merit_0_rules_Red" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_merit_0_flavor_Red" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="You have a small fleet of luxury vehicles and drivers at your disposal." />
+    <Text id="pc_p3_merit_0_rules_Red" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="You can call upon your drivers (Driving 6) on short notice.&amp;#10;Once per story, you can call upon a rare or expensive vehicle such as a helicopter or bulletproof SUV for a night." />
   </VerticalLayout>
   
   
@@ -4074,9 +4057,9 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_1_flavor_Red" class="box_text flavor_text" text="" />
-    <Text id="pc_p3_merit_1_rules_Red" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_merit_1_flavor_Red" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_merit_1_rules_Red" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -4103,9 +4086,9 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_2_flavor_Red" class="box_text flavor_text" text="" />
-    <Text id="pc_p3_merit_2_rules_Red" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_merit_2_flavor_Red" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_merit_2_rules_Red" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -4132,9 +4115,9 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_3_flavor_Red" class="box_text flavor_text" text="" />
-    <Text id="pc_p3_merit_3_rules_Red" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_merit_3_flavor_Red" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_merit_3_rules_Red" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -4164,10 +4147,9 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_0_flavor_Red" class="box_text flavor_text" text="Your domain comes with certain responsibilities." />
-    <Text id="pc_p3_flaw_0_rules_Red" class="box_text rules_text" text="You must secure the main entry points of Union Station and the Billy Bishop Ferry (from Billy Bishop Airport, on Centre Island) against unauthorized entry by Kindred of any sect.
-Failure to do so will result in loss of reputation, trust in your rule, or worse." />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_flaw_0_flavor_Red" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="Your domain comes with certain inconvenient responsibilities: You must secure the main entry points of Union Station and the Billy Bishop Ferry (from Billy Bishop Airport, on Centre Island) against unauthorized entry by Kindred of any sect." />
+    <Text id="pc_p3_flaw_0_rules_Red" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="You gain no benefits from fulfilling your obligations, but every failure to do so will cost your coterie a dot of Status until you have made amends." />
   </VerticalLayout>
   
   
@@ -4196,9 +4178,9 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_1_flavor_Red" class="box_text flavor_text" text="" />
-    <Text id="pc_p3_flaw_1_rules_Red" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_flaw_1_flavor_Red" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_flaw_1_rules_Red" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -4225,9 +4207,9 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_2_flavor_Red" class="box_text flavor_text" text="" />
-    <Text id="pc_p3_flaw_2_rules_Red" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_flaw_2_flavor_Red" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_flaw_2_rules_Red" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -4254,9 +4236,9 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_3_flavor_Red" class="box_text flavor_text" text="" />
-    <Text id="pc_p3_flaw_3_rules_Red" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_flaw_3_flavor_Red" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_flaw_3_rules_Red" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -5008,9 +4990,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_0_flavor_Pink" class="box_text flavor_text" text="While not personally wealthy, your control over the Bay Street Financial District gives you access to a vast array of resources." />
-    <Text id="pc_p2_bg_0_rules_Pink" class="box_text rules_text" text="You may commit coterie Resources to Projects or other endeavors." />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_bg_0_flavor_Pink" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="While not personally wealthy, your control over the Bay Street Financial District gives you access to a vast array of resources." />
+    <Text id="pc_p2_bg_0_rules_Pink" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="You may commit coterie Resources to Projects or other endeavors." />
   </VerticalLayout>
   
   
@@ -5039,9 +5021,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_1_flavor_Pink" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_bg_1_rules_Pink" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_bg_1_flavor_Pink" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_bg_1_rules_Pink" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -5068,9 +5050,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_2_flavor_Pink" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_bg_2_rules_Pink" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_bg_2_flavor_Pink" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_bg_2_rules_Pink" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -5097,9 +5079,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_3_flavor_Pink" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_bg_3_rules_Pink" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_bg_3_flavor_Pink" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_bg_3_rules_Pink" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -5227,9 +5209,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_merit_5_flavor_Pink" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_merit_5_rules_Pink" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_merit_5_flavor_Pink" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_merit_5_rules_Pink" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -5256,9 +5238,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_merit_6_flavor_Pink" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_merit_6_rules_Pink" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_merit_6_flavor_Pink" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_merit_6_rules_Pink" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -5285,9 +5267,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_merit_7_flavor_Pink" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_merit_7_rules_Pink" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_merit_7_flavor_Pink" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_merit_7_rules_Pink" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -5323,10 +5305,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_0_flavor_Pink" class="box_text flavor_text" text="You have earned the enmity of a very powerful, very ancient, very mysterious enemy." />
-    <Text id="pc_p2_flaw_0_rules_Pink" class="box_text rules_text" text="Your enemy is a methuselah or a cabal of powerful elders.
-The Storyteller should use them at least once per story." />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_flaw_0_flavor_Pink" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="Your rise to power has earned the enmity of a very powerful, very mysterious enemy who will act towards your destruction at every opportunity." />
+    <Text id="pc_p2_flaw_0_rules_Pink" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="Your enemy is a Difficulty 6 (!) monstrous elder, vengeful methuselah, embittered Justicar, or the equivalent, and their traits are thus free to break usual statistical limitations.&amp;#10;Expect to feel their influence at least once per story." />
   </VerticalLayout>
   
   
@@ -5355,9 +5336,9 @@ The Storyteller should use them at least once per story." />
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_1_flavor_Pink" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_flaw_1_rules_Pink" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_flaw_1_flavor_Pink" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_flaw_1_rules_Pink" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -5384,9 +5365,9 @@ The Storyteller should use them at least once per story." />
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_2_flavor_Pink" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_flaw_2_rules_Pink" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_flaw_2_flavor_Pink" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_flaw_2_rules_Pink" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -5413,9 +5394,9 @@ The Storyteller should use them at least once per story." />
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_3_flavor_Pink" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_flaw_3_rules_Pink" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_flaw_3_flavor_Pink" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_flaw_3_rules_Pink" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -5486,31 +5467,27 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
         <Image id="divider_domainMerits_Pink" image="divider_domainMerits" class="divider_image" />
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_merit_0_Pink" class="box_text_container" active="true">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
+  <HorizontalLayout class="box_text_title_bar 3_dots">
     <Text id="pc_p3_merit_0_title_Pink" class="box_text_title_text" text="TRANSPORTATION" />
     <Panel class="box_text_panel_title_dotline">
       
-      <Image id="pc_p3_merit_0_dot_1_Pink" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p3_merit_0_dot_1_Pink" image="dot_grey" class="dot box_text_title_dot dot_1" />
       
       
-      <Image id="pc_p3_merit_0_dot_2_Pink" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p3_merit_0_dot_2_Pink" image="dot_white" class="dot box_text_title_dot dot_2" />
       
       
-      <Image id="pc_p3_merit_0_dot_3_Pink" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p3_merit_0_dot_3_Pink" image="dot_yellow" class="dot box_text_title_dot dot_3" />
       
       
-      <Image id="pc_p3_merit_0_dot_4_Pink" image="dot_yellow" class="dot box_text_title_dot dot_4" />
-      
-      
-      <Image id="pc_p3_merit_0_dot_5_Pink" image="dot_yellow" class="dot box_text_title_dot dot_5" />
       
       
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_0_flavor_Pink" class="box_text flavor_text" text="You have a fleet of vehicles and the staff to drive them." />
-    <Text id="pc_p3_merit_0_rules_Pink" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_merit_0_flavor_Pink" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="You have a small fleet of luxury vehicles and drivers at your disposal." />
+    <Text id="pc_p3_merit_0_rules_Pink" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="You can call upon your drivers (Driving 6) on short notice.&amp;#10;Once per story, you can call upon a rare or expensive vehicle such as a helicopter or bulletproof SUV for a night." />
   </VerticalLayout>
   
   
@@ -5539,9 +5516,9 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_1_flavor_Pink" class="box_text flavor_text" text="" />
-    <Text id="pc_p3_merit_1_rules_Pink" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_merit_1_flavor_Pink" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_merit_1_rules_Pink" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -5568,9 +5545,9 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_2_flavor_Pink" class="box_text flavor_text" text="" />
-    <Text id="pc_p3_merit_2_rules_Pink" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_merit_2_flavor_Pink" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_merit_2_rules_Pink" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -5597,9 +5574,9 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_3_flavor_Pink" class="box_text flavor_text" text="" />
-    <Text id="pc_p3_merit_3_rules_Pink" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_merit_3_flavor_Pink" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_merit_3_rules_Pink" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -5629,10 +5606,9 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_0_flavor_Pink" class="box_text flavor_text" text="Your domain comes with certain responsibilities." />
-    <Text id="pc_p3_flaw_0_rules_Pink" class="box_text rules_text" text="You must secure the main entry points of Union Station and the Billy Bishop Ferry (from Billy Bishop Airport, on Centre Island) against unauthorized entry by Kindred of any sect.
-Failure to do so will result in loss of reputation, trust in your rule, or worse." />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_flaw_0_flavor_Pink" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="Your domain comes with certain inconvenient responsibilities: You must secure the main entry points of Union Station and the Billy Bishop Ferry (from Billy Bishop Airport, on Centre Island) against unauthorized entry by Kindred of any sect." />
+    <Text id="pc_p3_flaw_0_rules_Pink" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="You gain no benefits from fulfilling your obligations, but every failure to do so will cost your coterie a dot of Status until you have made amends." />
   </VerticalLayout>
   
   
@@ -5661,9 +5637,9 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_1_flavor_Pink" class="box_text flavor_text" text="" />
-    <Text id="pc_p3_flaw_1_rules_Pink" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_flaw_1_flavor_Pink" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_flaw_1_rules_Pink" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -5690,9 +5666,9 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_2_flavor_Pink" class="box_text flavor_text" text="" />
-    <Text id="pc_p3_flaw_2_rules_Pink" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_flaw_2_flavor_Pink" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_flaw_2_rules_Pink" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -5719,9 +5695,9 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_3_flavor_Pink" class="box_text flavor_text" text="" />
-    <Text id="pc_p3_flaw_3_rules_Pink" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_flaw_3_flavor_Pink" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_flaw_3_rules_Pink" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -6473,9 +6449,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_0_flavor_Purple" class="box_text flavor_text" text="While not personally wealthy, your control over the Bay Street Financial District gives you access to a vast array of resources." />
-    <Text id="pc_p2_bg_0_rules_Purple" class="box_text rules_text" text="You may commit coterie Resources to Projects or other endeavors." />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_bg_0_flavor_Purple" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="While not personally wealthy, your control over the Bay Street Financial District gives you access to a vast array of resources." />
+    <Text id="pc_p2_bg_0_rules_Purple" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="You may commit coterie Resources to Projects or other endeavors." />
   </VerticalLayout>
   
   
@@ -6504,9 +6480,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_1_flavor_Purple" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_bg_1_rules_Purple" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_bg_1_flavor_Purple" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_bg_1_rules_Purple" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -6533,9 +6509,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_2_flavor_Purple" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_bg_2_rules_Purple" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_bg_2_flavor_Purple" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_bg_2_rules_Purple" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -6562,9 +6538,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_bg_3_flavor_Purple" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_bg_3_rules_Purple" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_bg_3_flavor_Purple" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_bg_3_rules_Purple" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -6692,9 +6668,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_merit_5_flavor_Purple" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_merit_5_rules_Purple" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_merit_5_flavor_Purple" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_merit_5_rules_Purple" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -6721,9 +6697,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_merit_6_flavor_Purple" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_merit_6_rules_Purple" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_merit_6_flavor_Purple" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_merit_6_rules_Purple" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -6750,9 +6726,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_merit_7_flavor_Purple" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_merit_7_rules_Purple" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_merit_7_flavor_Purple" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_merit_7_rules_Purple" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -6788,10 +6764,9 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_0_flavor_Purple" class="box_text flavor_text" text="You have earned the enmity of a very powerful, very ancient, very mysterious enemy." />
-    <Text id="pc_p2_flaw_0_rules_Purple" class="box_text rules_text" text="Your enemy is a methuselah or a cabal of powerful elders.
-The Storyteller should use them at least once per story." />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_flaw_0_flavor_Purple" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="Your rise to power has earned the enmity of a very powerful, very mysterious enemy who will act towards your destruction at every opportunity." />
+    <Text id="pc_p2_flaw_0_rules_Purple" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="Your enemy is a Difficulty 6 (!) monstrous elder, vengeful methuselah, embittered Justicar, or the equivalent, and their traits are thus free to break usual statistical limitations.&amp;#10;Expect to feel their influence at least once per story." />
   </VerticalLayout>
   
   
@@ -6820,9 +6795,9 @@ The Storyteller should use them at least once per story." />
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_1_flavor_Purple" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_flaw_1_rules_Purple" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_flaw_1_flavor_Purple" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_flaw_1_rules_Purple" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -6849,9 +6824,9 @@ The Storyteller should use them at least once per story." />
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_2_flavor_Purple" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_flaw_2_rules_Purple" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_flaw_2_flavor_Purple" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_flaw_2_rules_Purple" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -6878,9 +6853,9 @@ The Storyteller should use them at least once per story." />
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p2_flaw_3_flavor_Purple" class="box_text flavor_text" text="" />
-    <Text id="pc_p2_flaw_3_rules_Purple" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_flaw_3_flavor_Purple" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_flaw_3_rules_Purple" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -6951,31 +6926,27 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
         <Image id="divider_domainMerits_Purple" image="divider_domainMerits" class="divider_image" />
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_merit_0_Purple" class="box_text_container" active="true">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
+  <HorizontalLayout class="box_text_title_bar 3_dots">
     <Text id="pc_p3_merit_0_title_Purple" class="box_text_title_text" text="TRANSPORTATION" />
     <Panel class="box_text_panel_title_dotline">
       
-      <Image id="pc_p3_merit_0_dot_1_Purple" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p3_merit_0_dot_1_Purple" image="dot_grey" class="dot box_text_title_dot dot_1" />
       
       
-      <Image id="pc_p3_merit_0_dot_2_Purple" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p3_merit_0_dot_2_Purple" image="dot_white" class="dot box_text_title_dot dot_2" />
       
       
-      <Image id="pc_p3_merit_0_dot_3_Purple" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p3_merit_0_dot_3_Purple" image="dot_yellow" class="dot box_text_title_dot dot_3" />
       
       
-      <Image id="pc_p3_merit_0_dot_4_Purple" image="dot_yellow" class="dot box_text_title_dot dot_4" />
-      
-      
-      <Image id="pc_p3_merit_0_dot_5_Purple" image="dot_yellow" class="dot box_text_title_dot dot_5" />
       
       
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_0_flavor_Purple" class="box_text flavor_text" text="You have a fleet of vehicles and the staff to drive them." />
-    <Text id="pc_p3_merit_0_rules_Purple" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_merit_0_flavor_Purple" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="You have a small fleet of luxury vehicles and drivers at your disposal." />
+    <Text id="pc_p3_merit_0_rules_Purple" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="You can call upon your drivers (Driving 6) on short notice.&amp;#10;Once per story, you can call upon a rare or expensive vehicle such as a helicopter or bulletproof SUV for a night." />
   </VerticalLayout>
   
   
@@ -7004,9 +6975,9 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_1_flavor_Purple" class="box_text flavor_text" text="" />
-    <Text id="pc_p3_merit_1_rules_Purple" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_merit_1_flavor_Purple" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_merit_1_rules_Purple" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -7033,9 +7004,9 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_2_flavor_Purple" class="box_text flavor_text" text="" />
-    <Text id="pc_p3_merit_2_rules_Purple" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_merit_2_flavor_Purple" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_merit_2_rules_Purple" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -7062,9 +7033,9 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_merit_3_flavor_Purple" class="box_text flavor_text" text="" />
-    <Text id="pc_p3_merit_3_rules_Purple" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_merit_3_flavor_Purple" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_merit_3_rules_Purple" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -7094,10 +7065,9 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_0_flavor_Purple" class="box_text flavor_text" text="Your domain comes with certain responsibilities." />
-    <Text id="pc_p3_flaw_0_rules_Purple" class="box_text rules_text" text="You must secure the main entry points of Union Station and the Billy Bishop Ferry (from Billy Bishop Airport, on Centre Island) against unauthorized entry by Kindred of any sect.
-Failure to do so will result in loss of reputation, trust in your rule, or worse." />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_flaw_0_flavor_Purple" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="Your domain comes with certain inconvenient responsibilities: You must secure the main entry points of Union Station and the Billy Bishop Ferry (from Billy Bishop Airport, on Centre Island) against unauthorized entry by Kindred of any sect." />
+    <Text id="pc_p3_flaw_0_rules_Purple" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="You gain no benefits from fulfilling your obligations, but every failure to do so will cost your coterie a dot of Status until you have made amends." />
   </VerticalLayout>
   
   
@@ -7126,9 +7096,9 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_1_flavor_Purple" class="box_text flavor_text" text="" />
-    <Text id="pc_p3_flaw_1_rules_Purple" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_flaw_1_flavor_Purple" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_flaw_1_rules_Purple" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -7155,9 +7125,9 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_2_flavor_Purple" class="box_text flavor_text" text="" />
-    <Text id="pc_p3_flaw_2_rules_Purple" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_flaw_2_flavor_Purple" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_flaw_2_rules_Purple" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -7184,9 +7154,9 @@ Failure to do so will result in loss of reputation, trust in your rule, or worse
     </Panel>
   </HorizontalLayout>
   
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p3_flaw_3_flavor_Purple" class="box_text flavor_text" text="" />
-    <Text id="pc_p3_flaw_3_rules_Purple" class="box_text rules_text" text="" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_flaw_3_flavor_Purple" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_flaw_3_rules_Purple" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   

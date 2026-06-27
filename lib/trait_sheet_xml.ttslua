@@ -84,38 +84,84 @@ end
 --- @return integer slotCount
 --- @return integer baseCount
 --- @return integer tempCount
-function M.slotBaseAndTemp(entry)
+--- @return integer disabledCount
+function M.slotBaseTempDisabled(entry)
   local slotCount, baseCount = M.slotAndBase(entry)
   local tempCount = 0
+  local disabledCount = 0
   if type(entry) == "table" then
     tempCount = math.floor(tonumber(entry.temp) or 0)
+    disabledCount = math.floor(tonumber(entry.disabled) or 0)
   end
   tempCount = math.max(0, tempCount)
   tempCount = math.min(tempCount, math.max(0, slotCount - baseCount))
+  disabledCount = math.max(0, disabledCount)
+  disabledCount = math.min(disabledCount, baseCount + tempCount)
+  return slotCount, baseCount, tempCount, disabledCount
+end
+
+--- @param entry table
+--- @return integer slotCount
+--- @return integer baseCount
+--- @return integer tempCount
+function M.slotBaseAndTemp(entry)
+  local slotCount, baseCount, tempCount = M.slotBaseTempDisabled(entry)
   return slotCount, baseCount, tempCount
 end
 
---- Title-bar dot image for slot index `i` (1 = left, slotCount = right).
---- Base dots are rightmost (yellow/red); temp extends leftward (white); remainder blank.
+--- Title-bar dot image for slot index `i` (1 = lowest index in XML).
+--- Visually (title-bar mirror): high index = left = base (yellow/red); low index = right = temp (white).
+--- `disabled` greys the visually rightmost filled dots first (lowest filled index).
 --- @param i integer 1-based slot index
 --- @param slotCount integer
 --- @param baseCount integer
 --- @param tempCount integer
+--- @param disabledCount integer|nil
 --- @param filledImg string e.g. dot_yellow or dot_red
 --- @return string image id
-function M.dotImageForTraitSlot(i, slotCount, baseCount, tempCount, filledImg)
-  local totalFilled = baseCount + tempCount
+function M.dotImageForTraitSlot(i, slotCount, baseCount, tempCount, disabledCount, filledImg)
+  disabledCount = math.max(0, math.floor(tonumber(disabledCount) or 0))
+  local temp = tempCount
+  local totalFilled = baseCount + temp
   if totalFilled > slotCount then
-    tempCount = math.max(0, slotCount - baseCount)
-    totalFilled = baseCount + tempCount
+    temp = math.max(0, slotCount - baseCount)
+    totalFilled = baseCount + temp
   end
+  disabledCount = math.min(disabledCount, totalFilled)
   if totalFilled <= 0 or i < (slotCount - totalFilled + 1) then
     return "dot_blank"
+  end
+  local firstFilled = slotCount - totalFilled + 1
+  if disabledCount > 0 and i >= firstFilled and i < firstFilled + disabledCount then
+    return "dot_grey"
   end
   if i <= slotCount - baseCount then
     return "dot_white"
   end
   return filledImg
+end
+
+--- Domain rating dots (Chasse/Lien/Portillon/Haven): slot 1 = left, no title-bar mirror.
+--- @param slot integer 1-based
+--- @param baseCount integer
+--- @param tempCount integer
+--- @param disabledCount integer|nil
+--- @param filledImg string e.g. dot_large_yellow
+--- @return string|nil image id when filled; nil when slot should be hidden
+function M.dotImageForDomainSlot(slot, baseCount, tempCount, disabledCount, filledImg)
+  local totalFilled = baseCount + tempCount
+  if slot < 1 or slot > totalFilled then
+    return nil
+  end
+  disabledCount = math.max(0, math.min(math.floor(tonumber(disabledCount) or 0), totalFilled))
+  local disableFrom = totalFilled - disabledCount + 1
+  if disabledCount > 0 and slot >= disableFrom then
+    return "dot_grey"
+  end
+  if slot <= baseCount then
+    return filledImg
+  end
+  return "dot_white"
 end
 
 --- @param lines any
@@ -228,7 +274,7 @@ end
 function M.buildTraitBlockParams(entry, sectionKey, entryIndex, isFlaw, opts)
   opts = type(opts) == "table" and opts or {}
   local pageNum = opts.pageNum or 3
-  local slotCount, baseCount, tempCount = M.slotBaseAndTemp(entry)
+  local slotCount, baseCount, tempCount, disabledCount = M.slotBaseTempDisabled(entry)
   local filledImg = isFlaw and "dot_red" or "dot_yellow"
   local params = {
     TITLE_BAR_DOT_CLASS = M.titleBarDotClass(slotCount),
@@ -238,7 +284,7 @@ function M.buildTraitBlockParams(entry, sectionKey, entryIndex, isFlaw, opts)
     SECTION = sectionKey,
   }
   for i = 1, slotCount do
-    params["DOT_IMG_" .. tostring(i)] = M.dotImageForTraitSlot(i, slotCount, baseCount, tempCount, filledImg)
+    params["DOT_IMG_" .. tostring(i)] = M.dotImageForTraitSlot(i, slotCount, baseCount, tempCount, disabledCount, filledImg)
   end
 
   local flavor = M.joinMultilineField(entry.description)
@@ -403,6 +449,7 @@ function M.fingerprintOneTraitEntry(entry)
   local focus = tostring(entry.focus or "")
   local base = tostring(tonumber(entry.base) or 0)
   local tempStr = tostring(tonumber(entry.temp) or 0)
+  local disabledStr = tostring(tonumber(entry.disabled) or 0)
   local maxStr = ""
   if entry.max ~= nil then
     maxStr = tostring(tonumber(entry.max) or 0)
@@ -443,7 +490,7 @@ function M.fingerprintOneTraitEntry(entry)
   end
   local blankFlag = entry.blank == true and "1" or "0"
   return table.concat({
-    name, "\1", focus, "\1", base, "\1", tempStr, "\1", maxStr, "\1", desc, "\1", rules, "\1",
+    name, "\1", focus, "\1", base, "\1", tempStr, "\1", disabledStr, "\1", maxStr, "\1", desc, "\1", rules, "\1",
     book, "\1", page, "\1", sheetDis, "\1", activeFlag, "\1", blankFlag,
   })
 end

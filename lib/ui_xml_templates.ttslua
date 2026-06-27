@@ -517,9 +517,9 @@ M._byKey["princes_court/partials/bg_block"] = [=[
     </Panel>
   </HorizontalLayout>
   ##IF @@HAS_BODY_TEXT@@##
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_flavor_@@color@@" class="box_text flavor_text" text="@@FLAVOR_TEXT@@" />
-    <Text id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_rules_@@color@@" class="box_text rules_text" text="@@RULES_TEXT@@" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_flavor_@@color@@" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="@@FLAVOR_TEXT@@" />
+    <Text id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_rules_@@color@@" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="@@RULES_TEXT@@" />
   </VerticalLayout>
   ##ENDIF##
   ##IF @@SOURCE_TEXT@@##
@@ -556,9 +556,9 @@ M._byKey["princes_court/partials/flaw_block"] = [=[
     </Panel>
   </HorizontalLayout>
   ##IF @@HAS_BODY_TEXT@@##
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_flavor_@@color@@" class="box_text flavor_text" text="@@FLAVOR_TEXT@@" />
-    <Text id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_rules_@@color@@" class="box_text rules_text" text="@@RULES_TEXT@@" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_flavor_@@color@@" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="@@FLAVOR_TEXT@@" />
+    <Text id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_rules_@@color@@" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="@@RULES_TEXT@@" />
   </VerticalLayout>
   ##ENDIF##
   ##IF @@SOURCE_TEXT@@##
@@ -595,9 +595,9 @@ M._byKey["princes_court/partials/merit_block"] = [=[
     </Panel>
   </HorizontalLayout>
   ##IF @@HAS_BODY_TEXT@@##
-  <VerticalLayout class="box_text_panel_body">
-    <Text id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_flavor_@@color@@" class="box_text flavor_text" text="@@FLAVOR_TEXT@@" />
-    <Text id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_rules_@@color@@" class="box_text rules_text" text="@@RULES_TEXT@@" />
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_flavor_@@color@@" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="@@FLAVOR_TEXT@@" />
+    <Text id="pc_p@@PAGE_NUM@@_@@SECTION@@_@@INDEX@@_rules_@@color@@" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="@@RULES_TEXT@@" />
   </VerticalLayout>
   ##ENDIF##
   ##IF @@SOURCE_TEXT@@##

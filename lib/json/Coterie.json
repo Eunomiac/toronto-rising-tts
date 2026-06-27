@@ -56,47 +56,64 @@
     {
       "base": 5,
       "description": [
-        "You have earned the enmity of a very powerful, very ancient, very mysterious enemy."
+        "Your rise to power has earned the enmity of a very powerful, very mysterious enemy who will act towards your destruction at every opportunity."
       ],
       "max": 5,
       "focus": "[REDACTED]",
       "name": "Adversary",
       "rules": [
-        "Your enemy is a methuselah or a cabal of powerful elders.",
-        "The Storyteller should use them at least once per story."
+        "Your enemy is a Difficulty 6 (!) monstrous elder, vengeful methuselah, embittered Justicar, or the equivalent, and their traits are thus free to break usual statistical limitations.",
+        "Expect to feel their influence at least once per story."
       ],
       "temp": 0
     }
   ],
-  "chasse": 3,
-  "lien": 1,
-  "portillon": 3,
-  "haven": 4,
+  "chasse": {
+    "base": 3,
+    "temp": 1,
+    "disabled": 2,
+    "max": 5
+  },
+  "lien": {
+    "base": 1,
+    "temp": 0,
+    "max": 5
+  },
+  "portillon": {
+    "base": 3,
+    "temp": 0,
+    "max": 5
+  },
+  "haven": {
+    "base": 4,
+    "temp": 0,
+    "max": 5
+  },
   "domainBackgrounds": [],
   "domainMerits": [
     {
-      "base": 2,
+      "base": 1,
       "description": [
-        "You have a fleet of vehicles and the staff to drive them."
+        "You have a small fleet of luxury vehicles and drivers at your disposal."
       ],
-      "max": 5,
+      "max": 3,
       "name": "Transportation",
-      "rules": [],
-      "temp": 0
+      "rules": ["You can call upon your drivers (Driving 6) on short notice.", "Once per story, you can call upon a rare or expensive vehicle such as a helicopter or bulletproof SUV for a night."],
+      "temp": 2,
+      "disabled": 1
     }
   ],
   "domainFlaws": [
     {
       "base": 2,
       "description": [
-        "Your domain comes with certain responsibilities."
+        "Your domain comes with certain inconvenient responsibilities: You must secure the main entry points of Union Station and the Billy Bishop Ferry (from Billy Bishop Airport, on Centre Island) against unauthorized entry by Kindred of any sect."
       ],
       "max": 2,
       "name": "Custodians",
       "focus": "",
       "rules": [
-        "You must secure the main entry points of Union Station and the Billy Bishop Ferry (from Billy Bishop Airport, on Centre Island) against unauthorized entry by Kindred of any sect.",
-        "Failure to do so will result in loss of reputation, trust in your rule, or worse."
+        "You gain no benefits from fulfilling your obligations, but every failure to do so will cost your coterie a dot of Status until you have made amends."
       ],
       "temp": 0
     }

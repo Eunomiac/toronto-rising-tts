@@ -21,6 +21,37 @@ M.TRAIT_ARRAY_KEYS = {
 
 M.BLANK_SLOTS_PER_ARRAY = 3
 
+M.DOMAIN_RATING_KEYS = { "chasse", "lien", "portillon", "haven" }
+
+--- Coerce legacy integer domain ratings or partial tables to `{ base, temp, max, disabled }`.
+--- @param val number|table|nil
+--- @param defaultMax integer|nil
+--- @return table
+function M.normalizeDomainRatingValue(val, defaultMax)
+  local maxSlots = math.floor(tonumber(defaultMax) or 5)
+  if type(val) == "number" then
+    local n = math.max(0, math.floor(val))
+    return { base = n, temp = 0, max = maxSlots, disabled = 0 }
+  end
+  if type(val) ~= "table" then
+    return { base = 0, temp = 0, max = maxSlots, disabled = 0 }
+  end
+  local maxV = math.floor(tonumber(val.max) or maxSlots)
+  local base = math.max(0, math.floor(tonumber(val.base) or 0))
+  local temp = math.max(0, math.floor(tonumber(val.temp) or 0))
+  local disabled = math.max(0, math.floor(tonumber(val.disabled) or 0))
+  temp = math.min(temp, math.max(0, maxV - base))
+  disabled = math.min(disabled, base + temp)
+  return { base = base, temp = temp, max = maxV, disabled = disabled }
+end
+
+--- @param data table
+function M.normalizeDomainRatings(data)
+  for _, key in ipairs(M.DOMAIN_RATING_KEYS) do
+    data[key] = M.normalizeDomainRatingValue(data[key], 5)
+  end
+end
+
 --- @return table
 function M.makeBlankEntry()
   return {
@@ -28,6 +59,7 @@ function M.makeBlankEntry()
     focus = "",
     base = 0,
     temp = 0,
+    disabled = 0,
     max = 5,
     description = {},
     rules = {},
@@ -98,6 +130,7 @@ function M.hydrateCoterieData(data)
   for _, key in ipairs(M.TRAIT_ARRAY_KEYS) do
     data[key] = M.ensureTraitBlankSlots(data[key])
   end
+  M.normalizeDomainRatings(data)
   return data
 end
 

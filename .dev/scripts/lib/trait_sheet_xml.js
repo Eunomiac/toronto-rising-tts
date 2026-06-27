@@ -77,41 +77,86 @@ function slotAndBase(entry) {
 
 /**
  * @param {object} entry
- * @returns {[number, number, number]}
+ * @returns {[number, number, number, number]}
  */
-function slotBaseAndTemp(entry) {
+function slotBaseTempDisabled(entry) {
   const [slotCount, baseCount] = slotAndBase(entry);
   let tempCount = 0;
+  let disabledCount = 0;
   if (entry && typeof entry === "object") {
     tempCount = Math.floor(Number(entry.temp) || 0);
+    disabledCount = Math.floor(Number(entry.disabled) || 0);
   }
   tempCount = Math.max(0, tempCount);
   tempCount = Math.min(tempCount, Math.max(0, slotCount - baseCount));
+  disabledCount = Math.max(0, disabledCount);
+  disabledCount = Math.min(disabledCount, baseCount + tempCount);
+  return [slotCount, baseCount, tempCount, disabledCount];
+}
+
+/**
+ * @param {object} entry
+ * @returns {[number, number, number]}
+ */
+function slotBaseAndTemp(entry) {
+  const [slotCount, baseCount, tempCount] = slotBaseTempDisabled(entry);
   return [slotCount, baseCount, tempCount];
 }
 
 /**
- * @param {number} i 1-based slot index (left to right)
+ * @param {number} i 1-based slot index in XML
  * @param {number} slotCount
  * @param {number} baseCount
  * @param {number} tempCount
+ * @param {number} disabledCount
  * @param {string} filledImg
  * @returns {string}
  */
-function dotImageForTraitSlot(i, slotCount, baseCount, tempCount, filledImg) {
+function dotImageForTraitSlot(i, slotCount, baseCount, tempCount, disabledCount, filledImg) {
+  let disabled = Math.max(0, Math.floor(Number(disabledCount) || 0));
   let temp = tempCount;
   let totalFilled = baseCount + temp;
   if (totalFilled > slotCount) {
     temp = Math.max(0, slotCount - baseCount);
     totalFilled = baseCount + temp;
   }
+  disabled = Math.min(disabled, totalFilled);
   if (totalFilled <= 0 || i < slotCount - totalFilled + 1) {
     return "dot_blank";
+  }
+  const firstFilled = slotCount - totalFilled + 1;
+  if (disabled > 0 && i >= firstFilled && i < firstFilled + disabled) {
+    return "dot_grey";
   }
   if (i <= slotCount - baseCount) {
     return "dot_white";
   }
   return filledImg;
+}
+
+/**
+ * Domain rating dots: slot 1 = left (no title-bar mirror).
+ * @param {number} slot
+ * @param {number} baseCount
+ * @param {number} tempCount
+ * @param {number} disabledCount
+ * @param {string} filledImg
+ * @returns {string|null}
+ */
+function dotImageForDomainSlot(slot, baseCount, tempCount, disabledCount, filledImg) {
+  const totalFilled = baseCount + tempCount;
+  if (slot < 1 || slot > totalFilled) {
+    return null;
+  }
+  const disabled = Math.max(0, Math.min(Math.floor(Number(disabledCount) || 0), totalFilled));
+  const disableFrom = totalFilled - disabled + 1;
+  if (disabled > 0 && slot >= disableFrom) {
+    return "dot_grey";
+  }
+  if (slot <= baseCount) {
+    return filledImg;
+  }
+  return "dot_white";
 }
 
 /**
@@ -194,7 +239,7 @@ function applyTraitBodyTextParams(params, entry, flavor, rules, opts) {
  */
 function buildTraitBlockParams(entry, sectionKey, entryIndex, isFlaw, opts) {
   const pageNum = opts.pageNum || 3;
-  const [slotCount, baseCount, tempCount] = slotBaseAndTemp(entry);
+  const [slotCount, baseCount, tempCount, disabledCount] = slotBaseTempDisabled(entry);
   const filledImg = isFlaw ? "dot_red" : "dot_yellow";
   /** @type {Record<string, string>} */
   const params = {
@@ -205,7 +250,7 @@ function buildTraitBlockParams(entry, sectionKey, entryIndex, isFlaw, opts) {
     SECTION: sectionKey,
   };
   for (let i = 1; i <= slotCount; i += 1) {
-    params[`DOT_IMG_${i}`] = dotImageForTraitSlot(i, slotCount, baseCount, tempCount, filledImg);
+    params[`DOT_IMG_${i}`] = dotImageForTraitSlot(i, slotCount, baseCount, tempCount, disabledCount, filledImg);
   }
 
   const flavor = joinMultilineField(entry.description);
@@ -411,7 +456,9 @@ module.exports = {
   buildTraitBlockParams,
   slotAndBase,
   slotBaseAndTemp,
+  slotBaseTempDisabled,
   dotImageForTraitSlot,
+  dotImageForDomainSlot,
   entryTitleUpper,
   titleBarDotClass,
   joinMultilineField,
