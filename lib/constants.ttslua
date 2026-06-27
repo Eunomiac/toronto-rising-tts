@@ -1112,6 +1112,10 @@ C.Tables = {
   ["Table A"] = {
     guid = G.GUIDS.TABLES.TABLE_A, -- required
     shape = C.TableShapes.CIRCULAR, -- required
+    -- Minimap (control-board companion) marker mimics the playfield object's euler per axis. The
+    -- playfield Table A model is authored 180° opposite the Table B family on Y, so its companion
+    -- marker faces backward unless we add this offset. Other tables need no offset (default 0).
+    minimapRotationOffsetYDeg = 180,
     centerPoint = Vector({ 0, 0, 50 }), -- required
     activePosition = Vector({ 0.00, 0.00, 53.66 }), -- required
     inactivePosition = Vector({ 0.00, -200, 100 }), -- required

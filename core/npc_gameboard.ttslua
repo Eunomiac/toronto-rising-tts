@@ -1695,11 +1695,14 @@ local function applyMinimapMarkerScale(marker, source)
     })
 end
 
---- Minimap marker rotation = playfield source euler + CONTROL_BOARD euler (per axis).
+--- Minimap marker rotation = playfield source euler + CONTROL_BOARD euler (per axis), plus an
+--- optional per-table Y offset for models whose playfield euler is authored opposite the family
+--- (e.g. Table A is 180° off the Table B family — see `C.Tables[...].minimapRotationOffsetYDeg`).
 --- @param marker Object
 --- @param board Object
 --- @param source Object|nil
-local function applyMinimapMarkerRotation(marker, board, source)
+--- @param rotationOffsetYDeg number|nil
+local function applyMinimapMarkerRotation(marker, board, source, rotationOffsetYDeg)
     if not isGameObject(marker) or marker.setRotation == nil or not isGameObject(board) then
         return
     end
@@ -1723,7 +1726,7 @@ local function applyMinimapMarkerRotation(marker, board, source)
             sz = srcRot.z or 0
         end
     end
-    marker.setRotation(Vector(sx + bx, sy + by, sz + bz))
+    marker.setRotation(Vector(sx + bx, sy + by + (tonumber(rotationOffsetYDeg) or 0), sz + bz))
 end
 
 --- @param tableKey string
@@ -3581,7 +3584,7 @@ end
 --- @param u number|nil
 --- @param v number|nil
 --- @param source Object|nil Playfield object this minimap piece mimics (scale + rotation)
---- @param options table|nil { extraLocalY?: number }
+--- @param options table|nil { extraLocalY?: number, rotationOffsetYDeg?: number }
 local function placeControlBoardMarker(marker, board, u, v, source, options)
     local opts = options or {}
     if u ~= nil and v ~= nil then
@@ -3592,7 +3595,7 @@ local function placeControlBoardMarker(marker, board, u, v, source, options)
     if isGameObject(source) then
         applyMinimapMarkerScale(marker, source)
     end
-    applyMinimapMarkerRotation(marker, board, source)
+    applyMinimapMarkerRotation(marker, board, source, opts.rotationOffsetYDeg)
     lockControlBoardMarker(marker)
 end
 
@@ -4058,6 +4061,7 @@ function Gameboard.reconcileControlBoardFromState(opts)
                 setMarkerVisible(obj, show)
                 if show then
                     local u, v = mapUvForTableCenter(tableKey)
+                    local cfg = tableConfig(tableKey)
                     placeControlBoardMarker(
                         obj,
                         board,
@@ -4066,6 +4070,7 @@ function Gameboard.reconcileControlBoardFromState(opts)
                         sourceObjectForTable(tableKey),
                         {
                             extraLocalY = tonumber(DATA.MINIMAP_TABLE_EXTRA_LOCAL_Y) or 0.06,
+                            rotationOffsetYDeg = cfg and tonumber(cfg.minimapRotationOffsetYDeg) or 0,
                         }
                     )
                 else
