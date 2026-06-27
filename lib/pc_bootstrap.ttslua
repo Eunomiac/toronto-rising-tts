@@ -75,10 +75,16 @@ function BOOT.statsFromPcsChar(pcsChar)
   return stats
 end
 
---- Overwrite page-3 narrative arrays from embedded PCS so saves and stale stats pick up JSON updates.
+--- @param arr table|nil
+--- @return boolean
+local function narrativeTraitArrayEmpty(arr)
+  return type(arr) ~= "table" or #arr == 0
+end
+
+--- Copy page-3 narrative arrays from embedded PCS (explicit reset / debug).
 --- @param stats table
 --- @param charKey string
-function BOOT.hydrateNarrativeTraits(stats, charKey)
+function BOOT.resetNarrativeTraitsFromPcs(stats, charKey)
   if type(stats) ~= "table" or type(charKey) ~= "string" or charKey == "" then
     return
   end
@@ -89,6 +95,28 @@ function BOOT.hydrateNarrativeTraits(stats, charKey)
   stats.backgrounds = deepCloneTable(pcsChar.backgrounds or {})
   stats.merits = deepCloneTable(pcsChar.merits or {})
   stats.flaws = deepCloneTable(pcsChar.flaws or {})
+end
+
+--- Seed page-3 narrative arrays from PCS only when missing or empty (preserves ST edits).
+--- @param stats table
+--- @param charKey string
+function BOOT.hydrateNarrativeTraits(stats, charKey)
+  if type(stats) ~= "table" or type(charKey) ~= "string" or charKey == "" then
+    return
+  end
+  local pcsChar = PCS.getPC(charKey)
+  if type(pcsChar) ~= "table" then
+    return
+  end
+  if narrativeTraitArrayEmpty(stats.backgrounds) then
+    stats.backgrounds = deepCloneTable(pcsChar.backgrounds or {})
+  end
+  if narrativeTraitArrayEmpty(stats.merits) then
+    stats.merits = deepCloneTable(pcsChar.merits or {})
+  end
+  if narrativeTraitArrayEmpty(stats.flaws) then
+    stats.flaws = deepCloneTable(pcsChar.flaws or {})
+  end
 end
 
 --- @param charKey string
