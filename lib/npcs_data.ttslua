@@ -42,111 +42,103 @@ D.lights = {
 }
 
 --- Beam overrides for NPCs on STAGE_BOARD (`__stage_board__` placements). Deep-merged on top of `D.lights` + per-character `lighting` when resolving modes; position/aim fields stay from the base mode unless listed here.
-D.stageLights = {
-  STANDARD = {
-    enabled = true,
-    range = 42.103451,
-    angle = 88.884521,
-    intensity = 5.389008,
-    color = Color(0.76, 0.76, 0.76),
-  },
-}
+D.stageLights = {}
 
 --[[
     Optional per area: spreadBlend (0..1, default 0). Scales how much farther `distance` widens slot spacing:
     spreadBlend 0 = same lateral packing as centerForward; 1 = full similarity (spacing grows with distance).
 ]]
 D.areas = {
-  centerForward = {
-    name = "Center Forward",
-    label = "▼",
-    autoLight = true,
-    rotation = 0,
-    distance = 30,
-    groundLevel = -40,
-    spreadBlend = 0,
-    positions = {
-      { x = 0,   z = 0 },
-      { x = 25,  z = 5 },
-      { x = -25, z = 5 },
-      { x = 50,  z = 10 },
-      { x = -50, z = 10 },
-      { x = 75,  z = 15 },
-      { x = -75, z = 15 },
-    },
-  },
-  nearLeft = {
-    name = "Near Left",
-    label = "◀",
-    autoLight = false,
-    rotation = -35,
-    distance = 175,
-    groundLevel = -15,
-    spreadBlend = 0,
-    positions = {
-      { x = 0,   z = 0 },
-      { x = 25,  z = 5 },
-      { x = -25, z = 5 },
-      { x = 50,  z = 10 },
-      { x = -50, z = 10 },
-      { x = 75,  z = 15 },
-      { x = -75, z = 15 },
-    },
-  },
-  nearRight = {
-    name = "Near Right",
-    label = "▶",
-    autoLight = false,
-    rotation = 35,
-    distance = 175,
-    groundLevel = -15,
-    spreadBlend = 0,
-    positions = {
-      { x = 0,   z = 0 },
-      { x = 25,  z = 5 },
-      { x = -25, z = 5 },
-      { x = 50,  z = 10 },
-      { x = -50, z = 10 },
-      { x = 75,  z = 15 },
-      { x = -75, z = 15 },
-    },
-  },
-  farRight = {
-    name = "Far Right",
-    label = "▶▶",
-    autoLight = false,
-    rotation = 35,
-    distance = 250,
-    groundLevel = 20,
-    spreadBlend = 0,
-    positions = {
-      { x = 0,   z = 0 },
-      { x = 25,  z = 5 },
-      { x = -25, z = 5 },
-      { x = 50,  z = 10 },
-      { x = -50, z = 10 },
-      { x = 75,  z = 15 },
-      { x = -75, z = 15 },
-    },
-  },
-  farLeft = {
-    name = "Far Left",
-    label = "◀◀",
-    autoLight = false,
-    rotation = -35,
-    distance = 250,
-    groundLevel = 20,
-    spreadBlend = 0,
-    positions = {
-      { x = 0,   z = 0 },
-      { x = 25,  z = 5 },
-      { x = -25, z = 5 },
-      { x = 50,  z = 10 },
-      { x = -50, z = 10 },
-      { x = 75,  z = 15 },
-      { x = -75, z = 15 },
-    },
-  },
+--   centerForward = {
+--     name = "Center Forward",
+--     label = "▼",
+--     autoLight = true,
+--     rotation = 0,
+--     distance = 30,
+--     groundLevel = -40,
+--     spreadBlend = 0,
+--     positions = {
+--       { x = 0,   z = 0 },
+--       { x = 25,  z = 5 },
+--       { x = -25, z = 5 },
+--       { x = 50,  z = 10 },
+--       { x = -50, z = 10 },
+--       { x = 75,  z = 15 },
+--       { x = -75, z = 15 },
+--     },
+--   },
+--   nearLeft = {
+--     name = "Near Left",
+--     label = "◀",
+--     autoLight = false,
+--     rotation = -35,
+--     distance = 175,
+--     groundLevel = -15,
+--     spreadBlend = 0,
+--     positions = {
+--       { x = 0,   z = 0 },
+--       { x = 25,  z = 5 },
+--       { x = -25, z = 5 },
+--       { x = 50,  z = 10 },
+--       { x = -50, z = 10 },
+--       { x = 75,  z = 15 },
+--       { x = -75, z = 15 },
+--     },
+--   },
+--   nearRight = {
+--     name = "Near Right",
+--     label = "▶",
+--     autoLight = false,
+--     rotation = 35,
+--     distance = 175,
+--     groundLevel = -15,
+--     spreadBlend = 0,
+--     positions = {
+--       { x = 0,   z = 0 },
+--       { x = 25,  z = 5 },
+--       { x = -25, z = 5 },
+--       { x = 50,  z = 10 },
+--       { x = -50, z = 10 },
+--       { x = 75,  z = 15 },
+--       { x = -75, z = 15 },
+--     },
+--   },
+--   farRight = {
+--     name = "Far Right",
+--     label = "▶▶",
+--     autoLight = false,
+--     rotation = 35,
+--     distance = 250,
+--     groundLevel = 20,
+--     spreadBlend = 0,
+--     positions = {
+--       { x = 0,   z = 0 },
+--       { x = 25,  z = 5 },
+--       { x = -25, z = 5 },
+--       { x = 50,  z = 10 },
+--       { x = -50, z = 10 },
+--       { x = 75,  z = 15 },
+--       { x = -75, z = 15 },
+--     },
+--   },
+--   farLeft = {
+--     name = "Far Left",
+--     label = "◀◀",
+--     autoLight = false,
+--     rotation = -35,
+--     distance = 250,
+--     groundLevel = 20,
+--     spreadBlend = 0,
+--     positions = {
+--       { x = 0,   z = 0 },
+--       { x = 25,  z = 5 },
+--       { x = -25, z = 5 },
+--       { x = 50,  z = 10 },
+--       { x = -50, z = 10 },
+--       { x = 75,  z = 15 },
+--       { x = -75, z = 15 },
+--     },
+--   },
   --- Off-table staging for the global NPC pool (`NPCS.auditPreloadPoolFigurines`, world y = -200). Figurine images are baked on workshop `npc_figurine` objects via the npc-groups inject script. Not listed on the Storyteller NPC panel (`excludeFromNpcPanel`). Slots 1–18: legacy 6×3 grid; slots 19+ match runtime `ensurePreloadLayoutCapacity` (10 columns, spacing 14).
   preload = {
     name = "Preload",
@@ -274,92 +266,7 @@ D.areas = {
 --[[
     `figurine.scale` drives Custom Figurine `ImageScalar` at save inject time and spotlight bounds math at runtime.
     Figurine front/back URLs live on workshop `npc_figurine` objects (not in this registry).
-    Group "demoBand" exists for testing group spawn from the Storyteller NPC panel.
-
-I think I've come up with a new style for this panel.  Instead of having "Individuals" and "Groups" as separate sections, I'd like to group all of the individuals _under_ their assigned group.
-
-When the NPC panel opens, it should display any active Areas rows, and then it should immediately show the "Groups" rows, with two distinct differences:
-
-1. To the left of the label name for that group, a square button should allow twirling the group down to reveal a row for each of the members of that group, sorted by their `groups[groupKey]` integer in npc_data `D.characters` (which will put the boss/leader at the top, since they are always `1`)
-2. The background color of the group rows should be set to the `labelColor` of the topmost member of that group (i.e. where their `groups[groupKey] = 1` and the font color should be set to bold and black.
-3. The twirled-down rows for individuals should be indented slightly from the left, should be smaller (both in font size and in button size).
-4. If an individual is selected from within a group and spawned into a location, they should not be removed from that group's list of entries.  Instead, the button corresponding to the position they've been moved to should be colored a bright green to indicate their location (as well as being present in the Areas section).
-5. A new button should be generated just for the twirled-down individual subrows. It is inactive unless the individual has been spawned to a location, at which point it becomes interactable (but toggled off).  If it is toggled on, that individual should be locked to the location they are currently in: This overrides the rule in Step #4.  If a group is moved via the master group-row controls, any individuals who have been spawned elsewhere AND locked in place should remain where they are.  **Wrinkle:** If the group is spawned to the _same_ location as a locked member, their positions will have to be rearranged to accomodate for the fact that an individual moved into a location will always occupy slot 1.
-
-For example, consider `theFiveKeys` group.  There are five NPCs defined in the data that are members of that group, as follows (with irrelevant data omitted):
-
-```lua
-D.characters = {
-  adrianVarga = {
-      If the master group control buttons are then used to move the whole group to a location, that move should be applied to all individuals in the group (including those that were previously spawned as individuals)
-
-
-```lua
-D.characters = {
-  adrianVarga = {
-    name = "adrianVarga",
-    fullName = "Adrian Varga",
-    labelColor = "#D1B200",
-    groups = {
-      fiveKeys = 2
-    }
-  },
-  jesseSharp = {
-    name = "jesseSharp",
-    fullName = "Jesse Sharp",
-    labelColor = "#D1B200",
-    groups = {
-      fiveKeys = 3,
-      princesCourt = 9
-    }
-  },
-  myleneHamelin = {
-    name = "myleneHamelin",
-    fullName = "Mylene Hamelin",
-    labelColor = "#FFD900",
-    groups = {
-      fiveKeys = 1,
-      princesCourt = 6
-    }
-  },
-  stirlingSiskin = {
-    name = "stirlingSiskin",
-    fullName = "Stirling Siskin",
-    labelColor = "#D1B200",
-    groups = {
-      fiveKeys = 4,
-    },
-  },
-  zuriOluwusi = {
-    name = "zuriOluwusi",
-    fullName = "Zuri Oluwusi",
-    labelColor = "#D1B200",
-    groups = {
-      fiveKeys = 5,
-    },
-  }
-}
-```
-
-(Note: If an individual appears in multiple groups, they should appear under all relevant groups when twirled down, and any changes to their buttons (representing the location they may have been spawned into) should be reflected in all groups.)
-
-From the above data, this is how "the Five Keys" twirledown should be built:
-1. The background color of the row should be set to the labelColor of `myleneHamelin`, because she has `groups.fiveKeys = 1`.
-2. A VerticalLayout group containing all five members of the Five Keys should be created, but inactive by default.
-   2.a) It should be sorted by the `groups.fiveKeys` value of each character, not their name.
-   2.b) Each character's label should be colored in accordance with their `labelColor`.
-   2.c) Any characters who have been spawned into the world should have the corresponding button set to green. (This includes when the entire group is moved: Any time an individual is spawned into the world, their location button should be greenlit.)
-   2.d) A lock button should be added to the immediate left of the location buttons for each individual (not the group as a whole). Initially disabled/grey, when clicked it should turn red, locking that character to their current location.
-
-Now, let's assume I take the following actions:
-1. I spawn `stirlingSiskin` into the `centerForward` area individually. He will be spawned into slot 1 of `centerForward` (assuming the area was initially empty), as is the normal behavior for individual spawning. His centerForward button should be greenlit, and his lock button should be enabled but in the off state (grey).
-2. I spawn `jesseSharp` into the `centerForward` area individually. He will be spawned into slot 2 of `centerForward`, the next available slot, as is the normal behavior for individual spawning. His centerForward button should be greenlit, and his lock button should be enabled but in the off state (grey).
-3. I toggle on the lock button for `stirlingSiskin`, locking him in place, but I leave `jesseSharp` unlocked. `stirlingSiskin`s lock button turns red.
-4. I then spawn the Five Keys as a group into the `nearLeft` area. Assuming `nearLeft` is empty, `myleneHamelin` will be spawned into slot 1 (per her `groups.fiveKeys = 1` value), and similarly for `adrianVarga` and `zuriOluwusi`. `jesseSharp` will be moved into slot 3, per his `groups.fiveKeys = 3` value (just as if he were being spawned along with the rest of them). `stirlingSiskin` will remain in `centerForward as slot 1 -- unmoved, because his lock key was toggled.
-5. Next, I move the Five Keys as a group to the `centerForward` area. By the current behavior, this would be disallowed because we have a hard rule where a group cannot be moved into an area unless the group is completely empty. I'd like to change that to allow an exception for when a all members in the destination location are in the same group as the group being moved (i.e. the groups are being 'merged'). That should be permitted.
-  5.a **Because `stirlingSiskin` is locked in slot 1**, the other four Five Keys members will be pushed into the next available slot: Normally, `myleneHamelin` would move into slot 1 -- but that is occupied by a locked-in-place `stirlingSiskin`. So, she will move into slot 2. `adrianVarga`, normally in slot 2, will then have to move into slot 3. `jesseSharp`, normally in slot 3, will likewise be moved into slot 4, which is `stirlingSiskin`'s normal slot. `zuriOlowusi` is normally in slot 5, and she can be safely moved into slot 5 since it is unoccupied. At the end of this process, all five members of Five Keys will have their "centerForward" buttons greenlit, and `stirlingSiskin` alone will still have his lock button red.
-  5.b **If I unlocked `stirlingSiskin` before I moved the Five Keys:** Because `stirlingSiskin` is not locked in place, he is free to move. Accordingly, all members of Five Keys will move into their proper slots (as there are no locked NPCs there blocking any of them). At the end of this process, all five members of Five Keys will have their "centerForward" buttons greenlit, and all five lock buttons would be grey.
-]]
+    Group "demoBand" exists for testing group spawn from the Storyteller NPC panel. ]]
 
 D.characters = {
   lordLucien = {

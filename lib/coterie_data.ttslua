@@ -80,8 +80,8 @@ CoterieData.RAW_JSON = [==================================================[
   ],
   "chasse": {
     "base": 3,
-    "temp": 1,
-    "disabled": 2,
+    "temp": 0,
+    "disabled": 0,
     "max": 5
   },
   "lien": {
@@ -102,15 +102,15 @@ CoterieData.RAW_JSON = [==================================================[
   "domainBackgrounds": [],
   "domainMerits": [
     {
-      "base": 1,
+      "base": 2,
       "description": [
         "You have a small fleet of luxury vehicles and drivers at your disposal."
       ],
-      "max": 3,
+      "max": 2,
       "name": "Transportation",
       "rules": ["You can call upon your drivers (Driving 6) on short notice.", "Once per story, you can call upon a rare or expensive vehicle such as a helicopter or bulletproof SUV for a night."],
-      "temp": 2,
-      "disabled": 1
+      "temp": 0,
+      "disabled": 0
     }
   ],
   "domainFlaws": [

@@ -83,7 +83,7 @@ C.HideFromPcSeatsAndSpectators = {
 -- Accepts a TTS Player, steam id key, nickname key in C.PlayerIDs, seat color, playerName, charKey, or "Host"/"Storyteller".
 -- @param playerRef Player|string
 -- @return string
-C.GetPlayerID = function(playerRef)
+C.GetPlayerID = function(playerRef) 
   if playerRef == nil then
     error("Invalid player reference: nil")
   end
@@ -1201,11 +1201,11 @@ C.Tables = {
   ["Table B0"] = {
     guid = G.GUIDS.TABLES.TABLE_B0,
     shape = C.TableShapes.CIRCULAR,
-    centerPoint = Vector({ 0, 0, -41.07 }),
-    activePosition = Vector({ 0.00, 0, -41.07 }),
-    inactivePosition = Vector({ 0.00, -200, 100 }),
+    centerPoint = Vector({ 0, 0, 0 }),
+    activePosition = Vector({ 0.00, 0, 0 }),
+    inactivePosition = Vector({ 0.00, -200, 0 }),
     numSegments = 5,
-    angleSegmentOne = 0,
+    angleSegmentOne = 36,
     playerToPositionMap = {
       Brown = 1,
       Orange = 2,
@@ -1214,39 +1214,39 @@ C.Tables = {
       Purple = 5
     },
     referencePlayerColor = "Red",
-    referenceHandPosition = Vector({ 0.00, 3.22, -106.61 }),
+    referenceHandPosition = Vector({ 0.00, 3.22, -65.54 }),
     objectPositions = {
       {
         guid = G.GUIDS.MAIN_LIGHT_LEFT,
-        position = { z = -50 }
+        position = { z = 0 }
       },
       {
         guid = G.GUIDS.MAIN_LIGHT_RIGHT,
-        position = { z = -50 }
+        position = { z = 0 }
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_1,
-        position = { z = 5 }
+        position = { z = -10 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_1,
-        position = { z = 5 }
+        position = { z = -10 }
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_2,
-        position = { z = 5 }
+        position = { z = 10 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_2,
-        position = { z = 5 }
+        position = { z = 10 }
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_3,
-        position = { z = 5 }
+        position = { z = 10 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_3,
-        position = { z = 5 }
+        position = { z = 10 }
       }
     }
   },
@@ -1544,39 +1544,39 @@ C.Tables = {
       Purple = {side = 180, index = 1}
     },
     referencePlayerColor = "Red",
-    referenceHandPosition = Vector({ 0.00, 3.22, -162 }),
+    referenceHandPosition = Vector({ 0.00, 3.22, -135.77 }),
     objectPositions = {
       {
         guid = G.GUIDS.MAIN_LIGHT_LEFT,
-        position = { z = -100 }
+        position = { z = -80 }
       },
       {
         guid = G.GUIDS.MAIN_LIGHT_RIGHT,
-        position = { z = -100 }
+        position = { z = -80 }
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_1,
-        position = { z = -90 }
+        position = { z = -70 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_1,
-        position = { z = -90 }
+        position = { z = -70 }
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_2,
-        position = { z = -80 }
+        position = { z = -70 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_2,
-        position = { z = -80 }
+        position = { z = -70 }
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_3,
-        position = { z = -80 }
+        position = { z = -70 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_3,
-        position = { z = -80 }
+        position = { z = -70 }
       }
     }
   }
