@@ -970,7 +970,9 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player)
             tk = ""
         end
         if tk ~= "" then
-            if C.Tables[tk] ~= nil then
+            -- Accept explicit `C.Tables` keys and dynamic family keys (e.g. "Table B" → "Table B<N>");
+            -- SetTableTo resolves family → concrete by occupied NPC seat count.
+            if C.Tables[tk] ~= nil or RSL.isDynamicTableFamilyKey(tk) then
                 RSL.SetTableTo(tk, { skipTransitionBlindfold = true })
             else
                 U.AlertGM("Scene bundle has unknown tableKey `" .. tk .. "` — seating layout was not switched.")
