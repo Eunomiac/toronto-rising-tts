@@ -12,7 +12,7 @@ This file is continuously updated with issues and plans for feature development.
 
 ## Focus
 
-_Stack rank for the current cycle (2026-06-26, post INBOX Quick Fixes + TOR-169/258/267 closures). **Precedence** = Focus stack + Linear **`blockedBy`** (not Linear priority). **TOR-141 (E2E playbooks)** is a living doc (In Progress, not Focus stack). **Back-burner / “Deferred this cycle” is paused** (author 2026-06-21) — open work stays in domain sections; sequence via Linear blockers only._
+_Stack rank for the current cycle (2026-06-27 `/tr-inbox`, post Stats panel + scene/soundscape fixes; TOR-245/TOR-148 closed, TOR-281 promoted to domain section). **Precedence** = Focus stack + Linear **`blockedBy`** (not Linear priority). **TOR-141 (E2E playbooks)** is a living doc (In Progress, not Focus stack). **Back-burner / “Deferred this cycle” is paused** (author 2026-06-21) — open work stays in domain sections; sequence via Linear blockers only._
 
 | # | Issue | Why now |
 | --- | --- | --- |
@@ -116,6 +116,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [ ] **Rotational seat index layout:** Dynamic PC seat positions by presence-sorted index; hand-position reference for color-tagged objects. _(TOR-247)_
 - [x] **Deactivated seat when NPC on stage:** Apply sets `isPresent = false` when homeland character gains `placements` row; retain `occupiedNPCSlots`; Clear re-seats; import validates active seat+stage (reject) vs inactive dual (allow) + duplicate seat assignment. _(TOR-250)_
 - [x] **Apply/Clear off-seat light flicker:** RSL layout sync no longer eager-writes NPC homeland workshop lights; Step Four `L.reconcileForPlayer` for all assigned NPC seats (state-derived OFF for deactivated/stage-bound). _(TOR-265)_
+- [ ] **Stage Clear seat activation rules + live scene-library persistence:** On Clear from stage, set returning seat by staged light mode (Case 1 disabled→activate if stage light `Standard`; Case 2 enabled stays enabled), not the library default; ST seat activate/deactivate writes back to the active scene library row so progress restores on re-apply. _(TOR-281)_
 - [x] **Figurine tooltips sync with player visibility:** Pooled figurines disable tooltips when `setInvisibleTo` hides from PCs. _(TOR-257)_
 
 ## Soundscape

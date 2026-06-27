@@ -5,14 +5,6 @@
 
 ## Active
 
-- [Stage Control] When an NPC is cleared from a stage position and they occupy a table seat, their seat status should not necessarily default to the status recorded in the scene library, but rather adhere to the following:
-  - Case 1: Their Seat is marked "disabled" and they are cleared from the stage -- If their stage light was set to "Standard" at the time they were cleared, their seat should be activated (i.e. if they were visible on the stage, they should be visible when they return to the table)
-  - Case 2: Their Seat is marked "enabled" and they are cleared from the stage -- Their seat should be enabled when they return to the table, regardless of their staged light mode.
-  Important Note: If they are seated at the table and the Storyteller activates their seat, this should be written to the scene library data so that their seat remains active on refresh/sync. Likewise for deactivating seats.  The scene library data is meant to be updated as the scene progresses and NPCs move in and out of stage/seat slots -- so that, if/when the scene is returned to, the state of the stage is as we left it, not as it was when the scene was first initiated.
-
-### Storyteller Panel for Editing Advantages
-_(Shipped — TOR-279 Storyteller Stats panel — advantage editor)_
-
 
 ## Needs clarification
 
@@ -26,6 +18,8 @@ _(Shipped — TOR-279 Storyteller Stats panel — advantage editor)_
 
 ## Processed
 
+2026-06-27 TOR-281 — Stage Clear seat activation rules + live scene-library seat persistence (promoted; NPC & Spotlight, parent TOR-35; relatedTo TOR-250/TOR-178/TOR-265/TOR-244; Medium)
+2026-06-27 Storyteller advantages panel — shipped TOR-279 (Storyteller Stats panel); removed stale Active marker
 2026-06-27 Scene-switch weather fade-in regression — weather started at full volume instead of fading. Two causes: (1) staged scene Apply work-phase `Sync.full` did not pass `skipSoundscape`, letting a work-phase reconcile re-apply weather via the immediate held-volume path outside the fade window; (2) `Soundscape.reapplyWeatherNaturalVolumes` (called by `applyContext` → `setIndoors`) snapped the still-playing weather emitter to full before the layers faded in. Fix: work sync now skips soundscape (fadeIn is sole authority, matching no-scene path); `reapplyWeatherNaturalVolumes` ramps via `fadeEmitterVolume` when a transition fade window is open (TOR-280; relatedTo TOR-147, TOR-270, TOR-136)
 2026-06-27 Map pins on scene change — present PCs show immediately (clock gate `< 0`); absent PCs keep prior pin across scenes (`lastActiveMapPin` moved to top-level gameState, was wiped by sessionScene replace on apply)
 2026-06-27 RT clock acceleration on scene change — epoch guard in game_state_overlay ticker so stale Wait callbacks can't spawn duplicate tick chains

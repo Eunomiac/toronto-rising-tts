@@ -375,5 +375,10 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-06-26 | DONE | TOR-169 | NPC gameboard umbrella closed — stale workshop GUID gate removed; Phase A/B verified via ongoing Save & Play; tasklist Phase A `[x]` |
 | 2026-06-26 | GATE-CLOSE | TOR-258, TOR-267 | TOR-261 (workshop Table B0 pentagonal model) had `blockedBy` TOR-258 — prerequisite Done; B0 already in save per author testing; review whether TOR-261 can be Canceled or kept as workshop-only art polish |
 | 2026-06-26 | DONE | TOR-261 | Pentagonal Table B0 workshop model — author confirmed in save and working with zero-seat dynamic selection |
+| 2026-06-27 | DONE | TOR-245 | Map pins last active location + timestamp — author confirmed Save & Play; tasklist `[x]` |
+| 2026-06-27 | DONE | TOR-148 | RT clock acceleration — wall-time clock (`01a6b0a`) + ticker epoch guard (`aef9dde`); author confirmed |
+| 2026-06-27 | COMMENT | TOR-273 | Final behavior supersedes `aef9dde` approach: audio fade-in starts as blindfold rises (`9b04061`), settle double-count fix (`34b4bb5`) |
+| 2026-06-27 | `/tr-inbox` | INBOX | Quick Fixes empty; Active promoted TOR-281 (stage Clear seat rules + live scene-library persistence); removed shipped TOR-279 advantages-panel marker; Focus unchanged (#1 TOR-141 E2E, #2 TOR-259 roll types, #3 TOR-224 selective reroll) |
+| 2026-06-27 | CREATE | TOR-281 | Inbox promote — stage Clear seat activation rules (Case 1 disabled→activate if staged light `Standard`; Case 2 enabled stays) + ST seat activate/deactivate writes back to active scene library row; NPC & Spotlight, parent TOR-35, relatedTo TOR-250/TOR-178/TOR-265/TOR-244; Backlog, Medium; no open blockers (TOR-250/TOR-178 Done) |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
