@@ -23,6 +23,7 @@ local L = require("core.lighting")
 local ES = require("lib.effective_stats")
 local PSC = require("lib.pc_sheet_collect")
 local Coterie = require("core.coterie")
+local MapPins = require("core.map_pins")
 local SceneLibrary = require("core.scene_library")
 
 local HUDP = {}
@@ -184,9 +185,6 @@ local MAP_PIN_PLAYER_COLORS = { "Red", "Orange", "Pink", "Brown", "Purple" }
 
 --- Element id -> last applied custom UI `image` ref for dynamic site cards (map + location dock).
 local lastSiteCardImageByElementId = {}
-
---- When true for one `UpdateUIDisplays` playerHud batch, map pins use "library scene cast" relocation rules.
-local mapPinRelocationSceneCastArmed = false
 
 --- @param s string|nil
 --- @return string
@@ -1092,8 +1090,6 @@ local function applyMapPanelHud(playerID, seatColor, hud)
         applyCachedMapPanelBool(playerID, districtHoverId, showDistrictHoverLayer, setTintVisibility)
     end
 
-    local sessionSiteKey = trimHudKey(S.getStateVal("sessionScene", "siteKey"))
-
     local pinOffsetCache = lastMapPinOffsetByPlayerID[playerID]
     if type(pinOffsetCache) ~= "table" then
         pinOffsetCache = {}
@@ -1108,39 +1104,6 @@ local function applyMapPanelHud(playerID, seatColor, hud)
         end
     else
         local liveSceneOnTable = SceneLibrary.hasLiveSceneOnTable() == true
-        local useScenePinRules = mapPinRelocationSceneCastArmed == true
-
-        --- Who receives the active site `offsetXY` (see `.dev/HUDs & Overlays/District & Site Card Display Changes.md`).
-        --- - Library scene apply arms `useScenePinRules` for one `UpdateUIDisplays` pass (`HUDP.armPinRelocationSceneCast` → `afterPlayerHudBatch`).
-        --- - Scene pulse: explicit `sessionScene.seatPresent[color] == false` never moves; `true` moves; `nil` falls back to `L.isPlayerPresentInActiveSeatLayout` (table + sparse narrative).
-        --- - Otherwise (mid-session location / no scene pulse): `L.isPlayerPresentInActiveSeatLayout` only (active / at-table rules).
-        --- @param pinColor string
-        --- @return boolean
-        local function pinShouldMoveToSite(pinColor)
-            local sp = S.getStateVal("sessionScene", "seatPresent")
-            if type(sp) ~= "table" then
-                sp = {}
-            end
-            if sp[pinColor] == false then
-                return false
-            end
-            if useScenePinRules then
-                if sp[pinColor] == true then
-                    return true
-                end
-                return L.isPlayerPresentInActiveSeatLayout(pinColor)
-            end
-            return L.isPlayerPresentInActiveSeatLayout(pinColor)
-        end
-
-        local siteEntry = (sessionSiteKey ~= "") and C.Sites[sessionSiteKey] or nil
-        local sessionSiteMappable = C.isSiteMappable(siteEntry)
-        local offsetRaw = (type(siteEntry) == "table" and type(siteEntry.offsetXY) == "string") and trimHudKey(siteEntry.offsetXY) or ""
-        local ox, oy = offsetRaw:match("^(%S+)%s+(%S+)$")
-        local offsetStr = nil
-        if ox and oy then
-            offsetStr = tostring(ox) .. " " .. tostring(oy)
-        end
 
         for _, pinColor in ipairs(MAP_PIN_PLAYER_COLORS) do
             local pinId = "playerHud_playerPin_" .. pinColor .. "_" .. seatColor
@@ -1148,31 +1111,16 @@ local function applyMapPanelHud(playerID, seatColor, hud)
             if not liveSceneOnTable then
                 applyCachedMapPanelBool(playerID, pinId, false, setMapStackImageVisibility)
                 pinOffsetCache[pinId] = nil
-            elseif sessionSiteKey == "" or not offsetStr then
-                applyCachedMapPanelBool(playerID, pinId, false, setMapStackImageVisibility)
-                pinOffsetCache[pinId] = nil
             else
-                local shouldMove = pinShouldMoveToSite(pinColor)
-                local cachedOffset = pinOffsetCache[pinId]
-
-                if not shouldMove then
-                    if type(cachedOffset) == "string" and cachedOffset ~= "" then
-                        applyCachedMapPanelBool(playerID, pinId, true, setMapStackImageVisibility)
-                        if pinOffsetCache[pinId] ~= cachedOffset then
-                            U.setAttribute(pinId, "offsetXY", cachedOffset)
-                        end
-                    else
-                        applyCachedMapPanelBool(playerID, pinId, false, setMapStackImageVisibility)
-                        pinOffsetCache[pinId] = nil
-                    end
-                elseif sessionSiteMappable == false then
+                local display = MapPins.resolvePinDisplay(pinColor)
+                if display.visible ~= true or type(display.offsetXY) ~= "string" or display.offsetXY == "" then
                     applyCachedMapPanelBool(playerID, pinId, false, setMapStackImageVisibility)
                     pinOffsetCache[pinId] = nil
                 else
                     applyCachedMapPanelBool(playerID, pinId, true, setMapStackImageVisibility)
-                    if pinOffsetCache[pinId] ~= offsetStr then
-                        U.setAttribute(pinId, "offsetXY", offsetStr)
-                        pinOffsetCache[pinId] = offsetStr
+                    if pinOffsetCache[pinId] ~= display.offsetXY then
+                        U.setAttribute(pinId, "offsetXY", display.offsetXY)
+                        pinOffsetCache[pinId] = display.offsetXY
                     end
                 end
             end
@@ -1334,9 +1282,6 @@ function HUDP.updateAllUI()
     Main.forPlayers(function(player, color)
         HUDP.updatePlayerUI(player, color)
     end)
-    if type(HUDP.afterPlayerHudBatch) == "function" then
-        HUDP.afterPlayerHudBatch()
-    end
 end
 
 --- One-shot during first `Sync.full` bootstrap: `panel_overlay_camera.xml` defaults every
@@ -2164,15 +2109,6 @@ function HUD_playerMap_recenter_mouseUp(player, value, id)
 
     requestMapPanToDistrict(playerID, seatColor, districtKey, { duration = 0.22 })
     HUDP.updatePlayerMapPanelUI(player, seatColor)
-end
-
-function HUDP.armPinRelocationSceneCast()
-    mapPinRelocationSceneCastArmed = true
-end
-
---- Clears one-shot pin relocation mode after a full `UpdateUIDisplays` playerHud pass (see `global_script.ttslua`).
-function HUDP.afterPlayerHudBatch()
-    mapPinRelocationSceneCastArmed = false
 end
 
 return HUDP

@@ -1,0 +1,245 @@
+--- Map pin last-active location + narrative clock (TOR-245).
+--- Mutation writes `sessionScene.lastActiveMapPin`; HUD reconcile reads via `resolvePinDisplay`.
+local MapPins = {}
+
+local S = require("core.state")
+local C = require("lib.constants")
+local U = require("lib.util")
+local SceneLibrary = require("core.scene_library")
+
+--- @param s string|nil
+--- @return string
+local function trimKey(s)
+    if type(s) ~= "string" then
+        return ""
+    end
+    return string.gsub(string.gsub(s, "^%s+", ""), "%s+$", "")
+end
+
+--- @param clockTable table|nil
+--- @return table|nil
+local function snapshotClock(clockTable)
+    return U.narrativeClockDatetimeOnly(clockTable)
+end
+
+--- @return table
+local function readLastActiveTable()
+    local lap = S.getStateVal("sessionScene", "lastActiveMapPin")
+    if type(lap) ~= "table" then
+        lap = {}
+    end
+    return lap
+end
+
+--- @param lap table
+local function writeLastActiveTable(lap)
+    S.setStateVal(lap, "sessionScene", "lastActiveMapPin")
+end
+
+--- @param color string
+--- @return boolean
+local function isPcColor(color)
+    return U.isIn(color, C.PlayerColors or {})
+end
+
+--- @param color string
+--- @return boolean
+local function isPcNarrativelyPresent(color)
+    if not isPcColor(color) then
+        return false
+    end
+    local row = S.getStateVal("sessionScene", "seatSlots", color)
+    if type(row) == "table" and row.isPresent ~= nil then
+        return row.isPresent ~= false
+    end
+    local narrative = S.getStateVal("sessionScene", "seatPresent", color)
+    if narrative ~= nil then
+        return narrative ~= false
+    end
+    return true
+end
+
+--- @return string|nil districtKey, string|nil siteKey
+local function currentSessionSiteKeys()
+    local dKey = trimKey(S.getStateVal("sessionScene", "districtKey"))
+    local sKey = trimKey(S.getStateVal("sessionScene", "siteKey"))
+    if sKey == "" then
+        return nil, nil
+    end
+    if dKey == "" then
+        dKey = nil
+    end
+    return dKey, sKey
+end
+
+--- @return table|nil
+local function currentSessionClock()
+    return S.getStateVal("sessionScene", "clock")
+end
+
+--- @param siteKey string|nil
+--- @return string|nil offsetStr "x y"
+local function parseSiteOffsetXY(siteKey)
+    siteKey = trimKey(siteKey)
+    if siteKey == "" then
+        return nil
+    end
+    local site = C.Sites[siteKey]
+    if type(site) ~= "table" or C.isSiteMappable(site) ~= true then
+        return nil
+    end
+    local offsetRaw = type(site.offsetXY) == "string" and trimKey(site.offsetXY) or ""
+    local ox, oy = offsetRaw:match("^(%S+)%s+(%S+)$")
+    if ox and oy then
+        return tostring(ox) .. " " .. tostring(oy)
+    end
+    return nil
+end
+
+--- @param color string
+--- @param siteKey string
+--- @param districtKey string|nil
+--- @param activeAt table|nil narrative clock snapshot
+local function setLastActive(color, siteKey, districtKey, activeAt)
+    if not isPcColor(color) then
+        return
+    end
+    siteKey = trimKey(siteKey)
+    if siteKey == "" then
+        return
+    end
+    local at = snapshotClock(activeAt)
+    if at == nil then
+        return
+    end
+    local lap = U.clone(readLastActiveTable(), true)
+    lap[color] = {
+        siteKey = siteKey,
+        districtKey = districtKey,
+        activeAt = at,
+    }
+    writeLastActiveTable(lap)
+end
+
+--- @param color string
+function MapPins.clearLastActive(color)
+    if not isPcColor(color) then
+        return
+    end
+    local lap = readLastActiveTable()
+    if lap[color] == nil then
+        return
+    end
+    lap = U.clone(lap, true)
+    lap[color] = nil
+    writeLastActiveTable(lap)
+end
+
+--- Present PCs at live scene site + activation clock (library Apply / restore).
+function MapPins.onSceneApplied()
+    local districtKey, siteKey = currentSessionSiteKeys()
+    if siteKey == nil then
+        return
+    end
+    local activeAt = currentSessionClock()
+    for _, color in ipairs(C.PlayerColors or {}) do
+        if isPcNarrativelyPresent(color) then
+            setLastActive(color, siteKey, districtKey, activeAt)
+        end
+    end
+end
+
+--- Present PCs at current site + current clock (mid-session location apply).
+function MapPins.onLocationChanged()
+    local districtKey, siteKey = currentSessionSiteKeys()
+    if siteKey == nil then
+        return
+    end
+    local activeAt = currentSessionClock()
+    for _, color in ipairs(C.PlayerColors or {}) do
+        if isPcNarrativelyPresent(color) then
+            setLastActive(color, siteKey, districtKey, activeAt)
+        end
+    end
+end
+
+--- Clamp `activeAt` down when scene clock rewinds (present PCs with a record).
+function MapPins.onClockChanged()
+    local newClock = currentSessionClock()
+    local newSnap = snapshotClock(newClock)
+    if newSnap == nil then
+        return
+    end
+    local lap = readLastActiveTable()
+    local changed = false
+    local nextLap = U.clone(lap, true)
+    for _, color in ipairs(C.PlayerColors or {}) do
+        if isPcNarrativelyPresent(color) then
+            local row = nextLap[color]
+            if type(row) == "table" and type(row.activeAt) == "table" then
+                if U.compareNarrativeClock(newSnap, row.activeAt) < 0 then
+                    row = U.clone(row, true)
+                    row.activeAt = newSnap
+                    nextLap[color] = row
+                    changed = true
+                end
+            end
+        end
+    end
+    if changed then
+        writeLastActiveTable(nextLap)
+    end
+end
+
+--- PC seat presence transition (explicit activate / deactivate).
+--- @param color string
+--- @param wasPresent boolean
+--- @param isPresent boolean
+function MapPins.onSeatPresenceChanged(color, wasPresent, isPresent)
+    if not isPcColor(color) then
+        return
+    end
+    if wasPresent == isPresent then
+        return
+    end
+    if isPresent ~= true then
+        MapPins.clearLastActive(color)
+        return
+    end
+    local districtKey, siteKey = currentSessionSiteKeys()
+    if siteKey == nil then
+        return
+    end
+    setLastActive(color, siteKey, districtKey, currentSessionClock())
+end
+
+--- @param color string
+--- @return table `{ visible: boolean, offsetXY: string|nil }`
+function MapPins.resolvePinDisplay(color)
+    if not isPcColor(color) then
+        return { visible = false, offsetXY = nil }
+    end
+    if SceneLibrary.hasLiveSceneOnTable() ~= true then
+        return { visible = false, offsetXY = nil }
+    end
+    local lap = readLastActiveTable()
+    local row = lap[color]
+    if type(row) ~= "table" or type(row.siteKey) ~= "string" or row.siteKey == "" then
+        return { visible = false, offsetXY = nil }
+    end
+    local currentClock = currentSessionClock()
+    local activeAt = row.activeAt
+    if type(activeAt) ~= "table" then
+        return { visible = false, offsetXY = nil }
+    end
+    if U.compareNarrativeClock(currentClock, activeAt) <= 0 then
+        return { visible = false, offsetXY = nil }
+    end
+    local offsetStr = parseSiteOffsetXY(row.siteKey)
+    if offsetStr == nil then
+        return { visible = false, offsetXY = nil }
+    end
+    return { visible = true, offsetXY = offsetStr }
+end
+
+return MapPins

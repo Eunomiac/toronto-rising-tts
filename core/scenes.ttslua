@@ -938,10 +938,8 @@ function Scenes.restoreActiveSceneWorld(opts)
     Scenes.applyActiveSceneSoundscapeFromSession()
     reconcileHostedConditionsSkipPresentation()
 
-    local HUDP = require("core.hud_player")
-    if type(HUDP.armPinRelocationSceneCast) == "function" then
-        HUDP.armPinRelocationSceneCast()
-    end
+    local MapPins = require("core.map_pins")
+    MapPins.onSceneApplied()
 
     local GameStateOverlay = require("core.game_state_overlay")
     if type(GameStateOverlay.resetRealTimeCarry) == "function" then

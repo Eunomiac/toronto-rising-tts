@@ -40,14 +40,21 @@ Each player's map panel contains five `id = "playerHud_playerPin_<color>_@@color
 
 When there is no active site, all five pins should be hidden.
 
-When there is an active site, the `offsetXY` value of player pins for characters at that site should be changed to the `offsetXY` value for the site, which can be found for each site in `C.Sites`.
+When there is an active site, each player pin is placed at the **last active location** stored in `sessionScene.lastActiveMapPin[color]` — not live `sessionScene.siteKey` directly.
 
-**However,** not all player pins should be relocated to the new site when the location changes:
+**Persisted state (`sessionScene.lastActiveMapPin`, TOR-245):** per PC color `{ siteKey, districtKey?, activeAt }` where `activeAt` is narrative clock Y/M/D/h/m when that PC was last active at the site.
 
-When the location is changed by activating a new scene, **only those players who are present in the scene** should have their pins moved (on every player's overlay) to the scene's location. (Players who are not present should remain unchanged.)
+**Reconcile (`core/map_pins.ttslua` → `applyMapPanelHud`):** show pin only when a live library scene is on the table, a record exists, `U.compareNarrativeClock(sessionScene.clock, activeAt) > 0`, and `C.isSiteMappable(C.Sites[siteKey])`. Pin `offsetXY` comes from the **recorded** site, not necessarily the current scene site.
 
-When the location is changed during a scene, or outside of a scene (i.e. no scenes are linked and receiving live updates), **only those players who are active/present at the table** should have their pins moved.
+**Mutation rules (present PCs only unless noted):**
 
-When an inactive/not-present player is activated, their pin should be moved immediately to the current site's location. (We haven't implemented the ability to activate players in the Storyteller UI yet, but there may still be a record in state that indicates which players are "present" at the current scene -- if that value changes, their player pins will need to be updated on every player's map overlay.)
+| Event | Effect |
+| --- | --- |
+| Library scene Apply / restore | Set record to scene site + activation clock |
+| Apply location (mid-session) | Set record to new site + current clock |
+| Apply clock | Clamp `activeAt` down if clock rewinds |
+| PC deactivate (`seatSlots.isPresent` false) | Clear record (hide pin) |
+| PC activate | Set record to current scene site + current clock |
+| Scene Apply with PC absent | **Do not** update that PC's record (pin stays at prior site if clock gate passes) |
 
-**Implementation (`core/hud_player.ttslua`, `applyMapPanelHud`):** applying a **library scene** calls `HUDP.armPinRelocationSceneCast()` before `Sync.full`; the next `UpdateUIDisplays` pass treats that as a one-shot “scene cast” for pins (`HUDP.afterPlayerHudBatch` clears the flag). While armed: `sessionScene.seatPresent[color] == false` never moves; `true` moves to the site; `nil` falls back to `L.isPlayerPresentInActiveSeatLayout` (table + narrative, same helper as seat lighting). **Apply location** mid-session (no arm) uses only `L.isPlayerPresentInActiveSeatLayout`. Pins that do not get a new `offsetXY` keep their prior coordinates until a later refresh moves them.
+End scene / no-scene does **not** mutate `lastActiveMapPin`; pins hide via `SceneLibrary.hasLiveSceneOnTable() == false`.

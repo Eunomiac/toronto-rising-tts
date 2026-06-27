@@ -347,7 +347,7 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-06-25 | UPDATE | RUNNING TASKLIST | TOR-252 `[x]`; Focus re-stacked #1 TOR-151→152, #2 TOR-237 |
 | 2026-06-25 | FIX | (ST dice arcs) | Werewolf-roll spawn geometry: Rage dice → Hunger (inner) arc, Werewolf → Normal (outer) arc (`radiusForSpawnKind` maps `KIND_RAGE`/`KIND_WEREWOLF`); ST drawer arcs cap at 7 dice/arc (`MAX_DICE_PER_ARC_ST`) vs player 10; removed dead legacy Rage `HUNGER_RADIUS_SCALE` path. `objects/dice_bag.ttslua`; relatedTo TOR-253 |
 | 2026-06-26 | VERIFY | TOR-268, TOR-269, TOR-270, TOR-151 | Author Save & Play confirmed all INBOX Quick Fixes (commit d011de2) |
-| 2026-06-26 | GATE | TOR-151 → TOR-245 | No-scene Table B0 amend author-verified; removed stale `blockedBy` TOR-151 on map-pins issue |
+| 2026-06-26 | WIP | TOR-245 | Map pins — `sessionScene.lastActiveMapPin`, `core/map_pins.ttslua`, HUD reconcile + mutation hooks; build OK; Save & Play pending |
 | 2026-06-26 | DONE | TOR-268 | Control-board table-only minimap — stash component/PC/NPC seat markers; removed component diagnostics |
 | 2026-06-26 | UPDATE | TOR-151 | No-scene baseline amended: `Table B` → Table B0 (zero NPC seats), dynamic family gate |
 | 2026-06-26 | DONE | TOR-269 | Load soundscape dual-apply — `onLoad_initial` `skipSoundscape`; `silenceInactiveMusicChannel` |

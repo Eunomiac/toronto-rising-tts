@@ -160,7 +160,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Automatic table selection (Phase 1):** `Table B` family key → `Table B<N>` by occupied NPC seat count (B0–B4; B5 manual-only); grow-only on control-board Apply; Scenes panel buttons Table A / Table B / B0–B5 / Table C; removed bare `Table B`. Author confirmed Save & Play 2026-06-26. _(TOR-258)_
 - [x] **FACING table layout (Phase 2):** `Table C` seating geometry from live bbox side segmentation (`side` = angle deg, perpendicular-to-edge orientation via flat 0°/180° rigid yaw — not look-at); shape dispatch in `resolveSeatObjectsFromTable`, shared `seatRigidByKey` camera path, FACING-aware markers + fingerprint. `relatedTo` **TOR-258**. Author confirmed Save & Play 2026-06-26. _(TOR-267)_
 - [ ] **Scene library selection preview + edit-before-apply:** Selecting a library row previews Table/Seats/Location/Time; edits write to selected row unless it matches live scene (then immediate apply). _(TOR-244)_
-- [ ] **Map pins — last active location + timestamp:** Pin syncs to last known location only when current scene time is later; update on scene/time/location change and PC activate/deactivate. _(TOR-245)_
+- [ ] **Map pins — last active location + timestamp:** `sessionScene.lastActiveMapPin` + `core/map_pins.ttslua`; Save & Play Suites K–K4 pending author. _(TOR-245)_
 - [ ] **Resonance after hunting rolls:** Odds function (location + desired resonance + hunt result); presentation + random pick; optional victim deck. _(TOR-206)_
 
 ## UI Panels
@@ -177,7 +177,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **PCs panel deactivate PC:** Canceled — superseded by control-board `pc_control_token` seat row (INBOX Active). _(TOR-88 — canceled 2026-06-15)_
 - [ ] **PCs panel:** Set PC map location via popout modal (writes state, reconciles overlays). _(Open: same as `seatPresent`/district-site or separate map pin?)_ _(TOR-89)_
 - [x] **Map pins — unmappable locations:** `C.isSiteMappable`; hide absent/stale pins; unmappable scene hides active PCs only; absent may keep cached mappable offset. _(TOR-153 — 2026-06-15)_
-- [ ] **Map pins — last active location + timestamp:** See Scenes section _(TOR-245)_.
+- [ ] **Map pins — last active location + timestamp:** See Scenes section; implementation shipped, Save & Play pending. _(TOR-245)_
 - [ ] **Phase system redesign:** Four primary phases (`Start`, `Play`, `Spotlight`, `End`); Play sub-phases (`Scene`, `Downtime`, `Memoriam`); trim PHASES panel copy; **Begin Session** / **End Session** buttons; `sessionNum` in gameState + spaced roman overlay; theme playlist on Start/End; silent Spotlight. _(TOR-143)_ _(Supersedes canceled TOR-90.)_
 - [ ] **Session number + End Session (narrow slice):** Editable session number on Phases panel + roman overlay; End Session in End phase (blindfold + increment; phase stays End). Related **TOR-143**. _(TOR-263)_
 - [ ] **Scrolling viewbox:** Author experimenting in TTS on scroll-container height — no implementation until after tinkering. _(TOR-91)_

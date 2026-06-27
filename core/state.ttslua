@@ -322,6 +322,8 @@ function S.GetDefaultGameState()
             npcRoleOverride = {},
             districtKey = nil,
             siteKey = nil,
+            --- Per-PC last map pin location + narrative clock when last active (TOR-245).
+            lastActiveMapPin = {},
             clock = {
                 hour = 0,
                 minute = 0,

@@ -588,6 +588,9 @@ function GameStateOverlay.tickRealTimeClock()
     end
 
     reconcileOverlayAfterClockTick(prevY, prevMo, prevD, oldHour, y, mo, d, h, m)
+    if type(UpdateUIDisplays) == "function" then
+        UpdateUIDisplays({ playerHud = true })
+    end
     return true
 end
 

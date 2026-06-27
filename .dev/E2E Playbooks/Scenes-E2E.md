@@ -6,7 +6,7 @@ Solo dev: one client is enough. Storyteller panels use `visibility="Host"`, not 
 
 Ground truth: [`core/storyteller_scenes_panel.ttslua`](../../core/storyteller_scenes_panel.ttslua), [`core/present_day_clock.ttslua`](../../core/present_day_clock.ttslua), [`core/game_state_overlay.ttslua`](../../core/game_state_overlay.ttslua), [`core/hud_player.ttslua`](../../core/hud_player.ttslua), [`.dev/Scene Constructor/Scene Constructor Overview.md`](../Scene%20Constructor/Scene%20Constructor%20Overview.md), [`.dev/HUD_FUNCTIONS.md`](../HUD_FUNCTIONS.md) § Scenes.
 
-**Deferred in code (document only):** TOR-142 (four clock-aware Apply buttons), TOR-153 (unmappable pin hide rules). **TOR-152** baseline shipped (`Scenes.reconcilePlaySessionOnEnter` on load gate + `advancePhase`).
+**Deferred in code (document only):** TOR-142 (four clock-aware Apply buttons). **TOR-153** unmappable pin hide shipped in TOR-245 reconcile. **TOR-152** baseline shipped (`Scenes.reconcilePlaySessionOnEnter` on load gate + `advancePhase`).
 
 ## Deterministic test conventions
 
@@ -77,7 +77,7 @@ DEBUG.inspectSoundscapeAudio()
 
 **RT speed:** `realTimeSpeed` adds that many **narrative minutes per 60 real seconds** (1 ⇒ ~1 min per wall minute). `0` = ticker runs but time does not advance.
 
-**Apply scene:** blindfold ~**2 s** lead-in + **10 s** settle → `PresentDayClock.resolveAndApplyActivationClock` → `HUDP.armPinRelocationSceneCast()` (one HUD pass) → `Sync.full`.
+**Apply scene:** blindfold ~**2 s** lead-in + **10 s** settle → `PresentDayClock.resolveAndApplyActivationClock` → `MapPins.onSceneApplied()` → `Sync.full`.
 
 **Dice on table:** Scene Apply and Scenes-panel table toggles are blocked while any loose `d10`-tagged die exists on the table (`RSL.hasLooseDiceOnTable` — containers excluded). Finish or cancel rolls before switching layout.
 
@@ -443,57 +443,70 @@ print(JSON.encode(S.getStateVal("sessionScene", "seatSlots", "Brown")))
 
 ## Suite K — Map pins on library Apply (scene cast)
 
-**Goal:** On **library Apply**, absent PCs do not move pins; present PCs move to site `offsetXY`.
+**Goal:** On **library Apply**, present PCs get `lastActiveMapPin` at the new site; absent PCs keep prior record and stay at the old site offset when the clock gate passes.
 
 **Setup:**
 
-1. Apply scene at **site S1** with known `C.Sites[S1].offsetXY` (note coordinates).
+1. Apply scene at **site S1** with known `C.Sites[S1].offsetXY` (note coordinates). Ensure scene clock is **after** any prior pin timestamps (or use fresh save).
 2. Mark **Brown** **absent** (`scenes_seat_Brown`).
 3. Ensure **Pink** **present** and in table layout.
 4. Open **Map** panel; note pin positions for Brown vs Pink.
 5. Apply scene **S2** (different site **S2**, different `offsetXY`).
 
-**Pass if (current shipped behavior):**
+**Pass if:**
 
 | PC | `seatPresent` | Pin on map after Apply to S2 |
 | --- | --- | --- |
-| Pink (present) | true | Moves to **S2** offset (or first placement at S2) |
-| Brown (absent) | false | **Does not** move to S2 offset — stays at previous offset |
+| Pink (present) | true | At **S2** offset (from `lastActiveMapPin`) |
+| Brown (absent, not deactivated mid-scene) | false | At **S1** offset (record unchanged) |
 
 ```lua
 print("site", S.getStateVal("sessionScene", "siteKey"))
 print("seatPresent", JSON.encode(S.getStateVal("sessionScene", "seatPresent")))
+print("lastActiveMapPin", JSON.encode(S.getStateVal("sessionScene", "lastActiveMapPin")))
 local sk = S.getStateVal("sessionScene", "siteKey")
 if sk and C.Sites[sk] then print("offsetXY", C.Sites[sk].offsetXY) end
 ```
 
-**Known gap (TOR-153 — log, do not treat as pass):** Absent PC pin may remain **visible** at stale coordinates; unmappable sites do not hide pins. Desired: hide unmappable / scene-unmappable active-only rules per tasklist.
+**Unmappable sites:** pin hidden when `C.isSiteMappable` is false for the recorded site (TOR-153 partial).
 
 ### K2 — No site hides pins
 
 **Human:** **End scene** or apply row with no `siteKey`.
 
-**Pass if:** Map pins hidden (no `offsetXY`).
+**Pass if:** Map pins hidden (no live scene on table).
+
+### K3 — Deactivate hides pin
+
+**Human:** With live scene at S2, toggle **Brown** absent via `scenes_seat_Brown` (or gameboard PC token flip).
+
+**Pass if:** Brown pin **hidden** (`lastActiveMapPin.Brown` cleared).
+
+### K4 — Clock rewind hides until time catches up
+
+**Human:** Apply clock **earlier** than Pink's `lastActiveMapPin.Pink.activeAt`, then advance clock forward again.
+
+**Pass if:** Pin hidden while current clock ≤ recorded `activeAt`; reappears when clock is later.
 
 ---
 
-## Suite L — Apply location (mid-session, no scene cast)
+## Suite L — Apply location (mid-session)
 
-**Goal:** **Apply location + soundscape** uses layout presence only — **not** `seatPresent == false` exception.
+**Goal:** **Apply location + soundscape** updates `lastActiveMapPin` for **narratively present** PCs (`seatSlots.isPresent`).
 
 **Setup:**
 
-1. Live scene at **S1**; Brown **absent** in `seatPresent`.
-2. Pink pin at S1 offset; Brown pin at old offset (from K).
+1. Live scene at **S1**; Brown **absent** in `seatPresent` but **not** explicitly deactivated (still has old record from K).
+2. Pink pin at S1 offset.
 3. **Do not** library Apply. Use location picker → **Apply location + soundscape** to **S2**.
 
 **Pass if:**
 
 - `sessionScene.siteKey` → S2.
-- **Pink** pin moves to S2.
-- **Brown** pin behavior follows `L.isPlayerPresentInActiveSeatLayout` only: if Brown still “at table” in layout despite narrative absent, pin **may** move (differs from library Apply).
+- **Pink** (present) pin moves to S2.
+- **Brown** (absent) pin unchanged at prior record site unless deactivated (K3).
 
-**Document:** Scene cast (library Apply) is stricter for `seatPresent == false` than mid-session location apply — [`core/hud_player.ttslua`](../../core/hud_player.ttslua) `pinShouldMoveToSite`.
+**Document:** Mid-session location uses `MapPins.onLocationChanged()` — narrative `seatSlots.isPresent`, not `L.isPlayerPresentInActiveSeatLayout`.
 
 ---
 
@@ -548,7 +561,7 @@ Re-check lighting, NPCs, pins, soundscape after ~3 s. Not for routine passes.
 | H Switch vs present day | ☐ | H1–H3 |
 | I Clock draft pending | ☐ | |
 | J Seat presence | ☐ | |
-| K Map pins scene cast | ☐ | TOR-153 known |
+| K Map pins scene cast | ☐ | TOR-245: K–K4 |
 | L Apply location pins | ☐ | |
 | M Clock validation | ☐ | |
 | N Weather + clock (opt) | ☐ | |

@@ -15,6 +15,7 @@ local L = require("core.lighting")
 local DATA = require("lib.npcs_data")
 local NLIGHT = require("lib.npcs_light_spawn_defaults")
 local SRI = require("lib.seat-role-identity")
+local MapPins = require("core.map_pins")
 
 --- NPC-only roster (PCs flagged `isPC` are excluded). The stage pool, preload grid, palette
 --- tokens, and NPC group enumeration are all keyed off this, so PC characters never generate
@@ -3495,6 +3496,7 @@ end
 --- @param seatKey string
 --- @param present boolean
 local function writeSeatNarrativePresence(seatKey, present)
+    local wasPresent = resolveSeatPresenceForSeat(seatKey)
     local ss = S.getStateVal("sessionScene", "seatSlots")
     if U.Type(ss) ~= "table" then
         ss = {}
@@ -3517,6 +3519,9 @@ local function writeSeatNarrativePresence(seatKey, present)
     sp = U.clone(sp, true)
     sp[seatKey] = present == true
     S.setStateVal(sp, "sessionScene", "seatPresent")
+    if U.isIn(seatKey, C.PlayerColors or {}) then
+        MapPins.onSeatPresenceChanged(seatKey, wasPresent, present == true)
+    end
 end
 
 --- Writes `seatSlots.isPresent` and mirrored `seatPresent` for one NPC seat.

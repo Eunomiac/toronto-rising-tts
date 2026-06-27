@@ -21,6 +21,7 @@ local Scenes = require("core.scenes")
 local StorytellerPanelUI = require("core.storyteller_panel_ui")
 local HUDBF = require("core.hud_blindfold")
 local PCST = require("core.pc_storyteller_panel")
+local MapPins = require("core.map_pins")
 
 --- Reconcile hosted PC conditions (location + scene) after session location, scene bundle, or seat presence changes.
 local function reconcileHostedConditions(opts)
@@ -124,6 +125,7 @@ end
 --- @param seatKey string
 --- @param present boolean
 local function setSeatNarrativePresence(seatKey, present)
+    local wasPresent = resolveSeatNarrativePresence(seatKey)
     local ss = S.getStateVal("sessionScene", "seatSlots")
     if type(ss) ~= "table" then
         ss = {}
@@ -146,6 +148,9 @@ local function setSeatNarrativePresence(seatKey, present)
     sp = U.clone(sp, true)
     sp[seatKey] = present == true
     S.setStateVal(sp, "sessionScene", "seatPresent")
+    if U.isIn(seatKey, C.PlayerColors or {}) then
+        MapPins.onSeatPresenceChanged(seatKey, wasPresent, present == true)
+    end
 end
 
 --- @param raw any
@@ -997,9 +1002,7 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player)
         end
         reconcileHostedConditions({ skipPresentation = true })
 
-        if type(HUDP.armPinRelocationSceneCast) == "function" then
-            HUDP.armPinRelocationSceneCast()
-        end
+        MapPins.onSceneApplied()
 
         syncAfterHostedReconcileAndRefreshSheets("StorytellerScenesPanel.sceneLibraryApply")
 
@@ -1201,6 +1204,7 @@ function StorytellerScenesPanel.applyLocationFromInputs(player)
     if SS.markReconciledToCurrentState ~= nil then
         SS.markReconciledToCurrentState()
     end
+    MapPins.onLocationChanged()
     reconcileHostedSyncAndPresentSheets("StorytellerScenesPanel.location")
     StorytellerScenesPanel.refresh()
     U.AlertGM(result and result.message or "Location applied.")
@@ -1254,6 +1258,7 @@ function StorytellerScenesPanel.applyClockFromInputs(player)
         GameStateOverlay.resetRealTimeCarry()
     end
     S.setStateVal(clock, "sessionScene", "clock")
+    MapPins.onClockChanged()
     if clock.isPresentDay == true then
         PresentDayClock.tryInitFromScene(clock)
     end
