@@ -458,8 +458,54 @@ local function maybeQueueFrenzyOnHungerCap(color, hungerBefore)
     RC.queueRoll(color, {
         rollType = C.RollType.FRENZY,
         label    = "Frenzy Resist (Hunger at maximum)",
-        pool     = { normal = 4, hunger = 0 },
     })
+end
+
+--- Auto-populates pool for stat-derived roll types (Willpower, Discipline, Humanity, Frenzy).
+-- @param color string
+-- @param rollType string  C.RollType value
+-- @return table|nil normalized pool, or nil when roll type has no auto pool
+local function computeAutoPoolForRollType(color, rollType)
+    local pid = S.getPlayerID(color)
+    if pid == nil then
+        return nil
+    end
+    local ctx = ES.forPlayer(pid)
+
+    if rollType == C.RollType.WILLPOWER_ROLL then
+        return DK.normalizePool({
+            normal = P.trackerUndamagedCount(pid, "willpower"),
+            hunger = 0,
+        })
+    end
+
+    if rollType == C.RollType.HUMANITY_ROLL then
+        return DK.normalizePool({
+            normal = math.max(0, ctx.humanityLineLen()),
+            hunger = 0,
+        })
+    end
+
+    if rollType == C.RollType.FRENZY then
+        local undamaged = P.trackerUndamagedCount(pid, "willpower")
+        local humanity = ctx.humanityLineLen()
+        return DK.normalizePool({
+            normal = math.max(0, undamaged) + math.floor(humanity / 3),
+            hunger = 0,
+        })
+    end
+
+    if rollType == C.RollType.DISCIPLINE then
+        local discBonus = math.max(0, math.floor(tonumber(ctx.bloodPotencyDerived().discBonus) or 0))
+        local playerHunger = math.floor(tonumber(S.getPlayerVal(color, "hunger")) or 0)
+        local hungerDice = math.min(playerHunger, discBonus)
+        return DK.normalizePool({
+            normal = discBonus - hungerDice,
+            hunger = hungerDice,
+        })
+    end
+
+    return nil
 end
 
 -- ============================================================================
@@ -863,6 +909,11 @@ function RC.initiateRoll(color, config)
             normal = Dice.remorsePool(humanityBoxes, stains),
             hunger = 0,
         })
+    elseif config.pool == nil then
+        local autoPool = computeAutoPoolForRollType(color, config.rollType)
+        if autoPool ~= nil then
+            pool = autoPool
+        end
     elseif C.RollTypesWithoutHunger[config.rollType] then
         pool.hunger = 0
     end

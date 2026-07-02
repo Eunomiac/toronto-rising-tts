@@ -14,6 +14,9 @@
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"        id="rollBtn_standard_Brown"    text="Std"   />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_simple"   id="rollBtn_simplecheck_Brown" text="Simple" />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_rouse"    id="rollBtn_rouse_Brown"      text="Rouse"  />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_wp"      id="rollBtn_willpowerroll_Brown" text="WP"   />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_disc"    id="rollBtn_discipline_Brown" text="Disc" />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_hum"     id="rollBtn_humanityroll_Brown" text="Hum"  />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_frenzy"   id="rollBtn_frenzy_Brown"     text="Frenzy" />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_remorse"  id="rollBtn_remorse_Brown"    text="Rem"    />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_launch_Brown"     text="Launch" />
@@ -83,6 +86,9 @@
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"        id="rollBtn_standard_Orange"    text="Std"   />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_simple"   id="rollBtn_simplecheck_Orange" text="Simple" />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_rouse"    id="rollBtn_rouse_Orange"      text="Rouse"  />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_wp"      id="rollBtn_willpowerroll_Orange" text="WP"   />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_disc"    id="rollBtn_discipline_Orange" text="Disc" />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_hum"     id="rollBtn_humanityroll_Orange" text="Hum"  />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_frenzy"   id="rollBtn_frenzy_Orange"     text="Frenzy" />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_remorse"  id="rollBtn_remorse_Orange"    text="Rem"    />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_launch_Orange"     text="Launch" />
@@ -152,6 +158,9 @@
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"        id="rollBtn_standard_Red"    text="Std"   />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_simple"   id="rollBtn_simplecheck_Red" text="Simple" />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_rouse"    id="rollBtn_rouse_Red"      text="Rouse"  />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_wp"      id="rollBtn_willpowerroll_Red" text="WP"   />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_disc"    id="rollBtn_discipline_Red" text="Disc" />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_hum"     id="rollBtn_humanityroll_Red" text="Hum"  />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_frenzy"   id="rollBtn_frenzy_Red"     text="Frenzy" />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_remorse"  id="rollBtn_remorse_Red"    text="Rem"    />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_launch_Red"     text="Launch" />
@@ -221,6 +230,9 @@
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"        id="rollBtn_standard_Pink"    text="Std"   />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_simple"   id="rollBtn_simplecheck_Pink" text="Simple" />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_rouse"    id="rollBtn_rouse_Pink"      text="Rouse"  />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_wp"      id="rollBtn_willpowerroll_Pink" text="WP"   />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_disc"    id="rollBtn_discipline_Pink" text="Disc" />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_hum"     id="rollBtn_humanityroll_Pink" text="Hum"  />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_frenzy"   id="rollBtn_frenzy_Pink"     text="Frenzy" />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_remorse"  id="rollBtn_remorse_Pink"    text="Rem"    />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_launch_Pink"     text="Launch" />
@@ -290,6 +302,9 @@
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"        id="rollBtn_standard_Purple"    text="Std"   />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_simple"   id="rollBtn_simplecheck_Purple" text="Simple" />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_rouse"    id="rollBtn_rouse_Purple"      text="Rouse"  />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_wp"      id="rollBtn_willpowerroll_Purple" text="WP"   />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_disc"    id="rollBtn_discipline_Purple" text="Disc" />
+          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_hum"     id="rollBtn_humanityroll_Purple" text="Hum"  />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_frenzy"   id="rollBtn_frenzy_Purple"     text="Frenzy" />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_remorse"  id="rollBtn_remorse_Purple"    text="Rem"    />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_launch_Purple"     text="Launch" />

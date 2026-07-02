@@ -55,6 +55,9 @@
   <Button class="pcs_btn_palette_roll_std"     colors="#1A3A1A|#285028|#3A7A3A|rgba(0.1,0.25,0.1,0.5)"  />
   <Button class="pcs_btn_palette_roll_simple"  colors="#1A1A3A|#282850|#3A3A7A|rgba(0.1,0.1,0.25,0.5)"  />
   <Button class="pcs_btn_palette_roll_rouse"   colors="#3A1A0A|#502810|#7A3A10|rgba(0.25,0.1,0.04,0.5)" />
+  <Button class="pcs_btn_palette_roll_wp"      colors="#1A2A3A|#284050|#3A6080|rgba(0.1,0.15,0.25,0.5)" />
+  <Button class="pcs_btn_palette_roll_disc"   colors="#2A1A3A|#3A2850|#553A70|rgba(0.15,0.1,0.25,0.5)" />
+  <Button class="pcs_btn_palette_roll_hum"    colors="#3A2A1A|#503828|#705040|rgba(0.25,0.18,0.1,0.5)" />
   <Button class="pcs_btn_palette_roll_frenzy"  colors="#3A0A0A|#501010|#7A1010|rgba(0.25,0.04,0.04,0.5)" />
   <Button class="pcs_btn_palette_roll_remorse" colors="#2A1A3A|#3A2050|#553070|rgba(0.15,0.1,0.25,0.5)" />
 </Defaults>

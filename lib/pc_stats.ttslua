@@ -218,6 +218,30 @@ function P.applyHumanityBaseDelta(playerRef, delta)
   Conditions.afterChange(playerID)
 end
 
+--- Undamaged boxes on a health or willpower damage track (max − superficial − aggravated).
+--- @param playerRef any
+--- @param which string health|willpower
+--- @return number
+function P.trackerUndamagedCount(playerRef, which)
+  local playerID = resolvePlayerId(playerRef)
+  if not playerID then
+    return 0
+  end
+  local stats = S.getStateVal("playerData", playerID, "stats")
+  if type(stats) ~= "table" or type(stats[which]) ~= "table" then
+    return 0
+  end
+  local ES = require("lib.effective_stats")
+  local maxB = ES.forPlayer(playerID).trackerMax(which)
+  if maxB < 1 then
+    maxB = 1
+  end
+  local tr = stats[which]
+  local sup = tonumber(tr.superficial) or 0
+  local agg = tonumber(tr.aggravated) or 0
+  return math.max(0, maxB - sup - agg)
+end
+
 --- Storyteller string: configurable undamaged / superficial / aggravated (defaults O / / X)
 --- @param playerRef any
 --- @param which string health|willpower

@@ -1494,6 +1494,7 @@ end
 -- Trigger keys (params.trigger):
 --   "humanity"  → C.RollType.HUMANITY_ROLL normally; C.RollType.REMORSE at end-of-session phase
 --   "willpower" → C.RollType.WILLPOWER_ROLL
+--   "discipline" → C.RollType.DISCIPLINE
 --   "rouse"     → C.RollType.ROUSE
 --   "frenzy"    → C.RollType.FRENZY
 -- (Extend this table as more sheet-interactive rolls are defined.)
@@ -1526,6 +1527,7 @@ function GlobalInitiateRoll(params)
                     or  C.RollType.HUMANITY_ROLL
             end,
             willpower = function() return C.RollType.WILLPOWER_ROLL end,
+            discipline = function() return C.RollType.DISCIPLINE end,
             rouse     = function() return C.RollType.ROUSE           end,
             rouseoblivion = function() return C.RollType.ROUSE_OBLIVION end,
             frenzy    = function() return C.RollType.FRENZY          end,
@@ -4680,6 +4682,7 @@ function HUD_rollInitiate(player, value, id)
         rouse         = C.RollType.ROUSE,
         rouseoblivion = C.RollType.ROUSE_OBLIVION,
         remorse       = C.RollType.REMORSE,
+        discipline    = C.RollType.DISCIPLINE,
         willpowerroll = C.RollType.WILLPOWER_ROLL,
         humanityroll  = C.RollType.HUMANITY_ROLL,
         frenzy        = C.RollType.FRENZY,
