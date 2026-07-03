@@ -14,7 +14,8 @@ local DK = require("lib.dice_kinds")
 
 local LIVE_ELEVATE_DELTA_Y = 5
 
---- Seat color whose tray/dice are currently elevated for the live roll (host runtime cache).
+--- Seat color whose tray/dice are physically elevated for the live roll (host runtime cache).
+--- Hydrated from persisted `rollConcurrency.livePcColor` on load/reconnect.
 --- @type string|nil
 local elevatedColor = nil
 
@@ -115,6 +116,16 @@ function PRTL.setLivePcColor(color)
   S.setStateVal(color, "rollConcurrency", "livePcColor")
 end
 
+--- Sync module cache from persisted live-roll state (no world nudge).
+local function hydrateElevatedColorFromState()
+  local live = PRTL.getLivePcColor()
+  if type(live) == "string" and live ~= "" and live ~= "Black" then
+    elevatedColor = live
+  else
+    elevatedColor = nil
+  end
+end
+
 --- World Y offset applied to staged spawns while this seat's roll is live.
 -- @param color string
 -- @return number
@@ -167,11 +178,18 @@ end
 --- Restores live-seat elevation before tray close/cancel (host-only Tier C).
 -- @param color string
 local function restoreLiveTrayElevation(color)
-  if type(color) ~= "string" or color == "Black" or elevatedColor ~= color then
+  if type(color) ~= "string" or color == "Black" then
+    return
+  end
+  local isTracked = elevatedColor == color
+  local isLiveInState = PRTL.getLivePcColor() == color
+  if not isTracked and not isLiveInState then
     return
   end
   nudgeLiveTrayWorld(color, -LIVE_ELEVATE_DELTA_Y)
-  elevatedColor = nil
+  if elevatedColor == color then
+    elevatedColor = nil
+  end
 end
 
 --- Marks a PC roll live and elevates its tray/dice. State updates on all clients; elevation is host-only.
@@ -192,6 +210,12 @@ function PRTL.onLivePcRollFinished()
     restoreLiveTrayElevation(live)
   end
   PRTL.setLivePcColor(nil)
+  elevatedColor = nil
+end
+
+--- Rehydrate tray-elevation cache after load/reconnect (state-only; no nudge).
+function PRTL.reconcileElevatedColorFromState()
+  hydrateElevatedColorFromState()
 end
 
 return PRTL

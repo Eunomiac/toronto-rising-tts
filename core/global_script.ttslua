@@ -1712,6 +1712,11 @@ function onLoad(saved_data)
     setStartupAction("initialize-game-state")
     S.InitializeGameState(saved_data)
 
+    local PrtlReconcile = require("lib.pc_roll_tray_lower")
+    if type(PrtlReconcile.reconcileElevatedColorFromState) == "function" then
+        PrtlReconcile.reconcileElevatedColorFromState()
+    end
+
     if not U.isHostClient() then
         setStartupAction("join-client-ui-bootstrap")
         M.onLoadJoinClient()

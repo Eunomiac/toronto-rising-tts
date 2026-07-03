@@ -2258,6 +2258,7 @@ function RC.onStSelectiveRerollDieRandomized(color, obj)
             end
             if type(a2.stSelectiveReroll) ~= "table" or a2.stSelectiveReroll.inProgress ~= true then
                 _stRerollDieLockWaitTokens[timerKey] = nil
+                onStSelectiveRerollDieSettled(color)
                 return
             end
             if a2.phase ~= C.RollPhase.POST_ROLL then
