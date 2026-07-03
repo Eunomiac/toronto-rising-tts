@@ -1211,8 +1211,8 @@ C.Tables = {
   ["Table B0"] = {
     guid = G.GUIDS.TABLES.TABLE_B0,
     shape = C.TableShapes.CIRCULAR,
-    centerPoint = Vector({ 0, 0, -50 }),
-    activePosition = Vector({ 0.00, 0, -50 }),
+    centerPoint = Vector({ 0, 0, 0 }),
+    activePosition = Vector({ 0.00, 0, 0 }),
     inactivePosition = Vector({ 0.00, -200, 0 }),
     numSegments = 5,
     angleSegmentOne = 36,
@@ -1224,39 +1224,39 @@ C.Tables = {
       Purple = 5
     },
     referencePlayerColor = "Red",
-    referenceHandPosition = Vector({ 0.00, 3.22, -115.54 }),
+    referenceHandPosition = Vector({ 0.00, 3.22, -65.54 }),
     objectPositions = {
       {
         guid = G.GUIDS.MAIN_LIGHT_LEFT,
-        position = { z = -50 }
+        position = { z = 0 }
       },
       {
         guid = G.GUIDS.MAIN_LIGHT_RIGHT,
-        position = { z = -50 }
+        position = { z = 0 }
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_1,
-        position = { z = -60 }
+        position = { z = -10 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_1,
-        position = { z = -60 }
+        position = { z = -10 }
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_2,
-        position = { z = -40 }
+        position = { z = 10 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_2,
-        position = { z = -40 }
+        position = { z = 10 }
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_3,
-        position = { z = -40 }
+        position = { z = 10 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_3,
-        position = { z = -40 }
+        position = { z = 10 }
       }
     }
   },
@@ -1398,7 +1398,7 @@ C.Tables = {
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_1,
-        osition = { z = -55 }
+        position = { z = -55 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_1,
