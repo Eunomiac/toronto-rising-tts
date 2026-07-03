@@ -4469,13 +4469,13 @@ function GlobalCancelPendingRollCleanup(params)
 end
 
 --- Global.call entry: destroy all bag dice and close the drawer (Take Half without Rouse, cancel, etc.).
--- @param params table  { color: string }
+-- @param params table  { color: string, keepDrawerOpen?: boolean }
 function GlobalDestroyBagDice(params)
     if not U.requireHostForWorldMutation("GlobalDestroyBagDice") then
         return
     end
     if type(params) ~= "table" or type(params.color) ~= "string" then return end
-    destroyBagDice(params.color)
+    destroyBagDice(params.color, params)
 end
 
 --- Global.call entry: destroy table dice tagged with a roll id (player seats).
@@ -4489,15 +4489,19 @@ function GlobalDestroyPlayerTableDiceForRoll(params)
 end
 
 --- Destroys all hovering dice for a player.
--- Called on: cancel, Take Half (no pending Rouse), and post-resolution cleanup.
-function destroyBagDice(color)
+-- Called on: cancel, Take Half (no pending Rouse), pool reset (roll type change), and post-resolution cleanup.
+-- @param color string
+-- @param opts table|nil  { keepDrawerOpen?: boolean } — when true, tray stays raised (ST roll-type switch in PRE_ROLL)
+function destroyBagDice(color, opts)
     cancelPendingRollCleanup(color)
     if color == "Black" then
         local STR = require("core.storyteller_rolls")
         STR.destroyStagedBagDice()
         return
     end
-    DiceDrawer.closeAfterRoll(color)
+    if type(opts) ~= "table" or opts.keepDrawerOpen ~= true then
+        DiceDrawer.closeAfterRoll(color)
+    end
     callBagFunction(color, "destroyDice")
 end
 
