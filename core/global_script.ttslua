@@ -1122,6 +1122,52 @@ local function randomizeReleasedDieForRoll(color, die)
     return true
 end
 
+--- ST roll panel: randomize highlighted dice by GUID (host-only world I/O).
+-- @param params table  { color: string }
+-- @return boolean
+function GlobalStRerollDiceByGuids(params)
+    if not U.requireHostForWorldMutation("GlobalStRerollDiceByGuids") then
+        return false
+    end
+    if type(params) ~= "table" or RC == nil then
+        return false
+    end
+    local color = params.color
+    if type(color) ~= "string" then
+        return false
+    end
+
+    local guids, rollId = RC.beginStSelectiveRerollWave(color)
+    if guids == nil or type(rollId) ~= "string" then
+        return false
+    end
+
+    local randomized = 0
+    for _, guid in ipairs(guids) do
+        local die = getObjectFromGUID(guid)
+        if die ~= nil and DK.gmNotesMatchRoll(die.getGMNotes(), rollId) then
+            local tags = die.getTags()
+            if type(tags) == "table" then
+                local owner = DK.ownerFromTags(tags, C.PlayerColors)
+                if owner == "storyteller" then
+                    owner = "Black"
+                end
+                if owner == color then
+                    randomizeReleasedDieForRoll(color, die)
+                    randomized = randomized + 1
+                end
+            end
+        end
+    end
+
+    if randomized == 0 then
+        RC.clearStSelectiveReroll(color)
+        return false
+    end
+
+    return true
+end
+
 --- Bag GUID for a player pool kind (normal / hunger / rouse / oblivRouse).
 -- @param color string
 -- @param dieKind string
@@ -3720,6 +3766,11 @@ function onObjectRandomize(obj, playerColor)
         RC.onWpRerollDieRandomized(color, obj)
     end
 
+    -- ST selective reroll wave (POST_ROLL rollPanelST).
+    if RC.onStSelectiveRerollDieRandomized ~= nil then
+        RC.onStSelectiveRerollDieRandomized(color, obj)
+    end
+
     -- Delegate debounce reset to roll controller
     RC.onDieSettledSignal(color, obj)
 end
@@ -4343,6 +4394,30 @@ local function beginPcLiveRollRelease(color)
     return true
 end
 
+--- Completes a drawer-release job without unlocking dice (blocked or begin failure).
+-- @param job table
+local function completeDrawerReleaseJobBlocked(job)
+    if job == nil or job.completed == true then
+        return
+    end
+    job.completed = true
+    if job.color ~= "Black" then
+        DiceDrawer.closeAfterRoll(job.color)
+    end
+    if type(job.onComplete) == "function" then
+        job.onComplete()
+    end
+end
+
+--- True when a PC seat should abort waiting for drawer raise (another roll is live).
+-- @param job table
+-- @return boolean
+local function isPcDrawerReleaseBlocked(job)
+    return type(job) == "table"
+        and job.color ~= "Black"
+        and PRTL.isInitiateBlocked(job.color)
+end
+
 --- Coroutine: wait until dice drawer is raised, then unlock staged dice.
 function GlobalWaitDrawerThenReleaseBagDice()
     if not U.requireHostForWorldMutation("GlobalWaitDrawerThenReleaseBagDice") then
@@ -4353,25 +4428,36 @@ function GlobalWaitDrawerThenReleaseBagDice()
         return 1
     end
     U.waitUntil(function()
+        if job.completed == true then
+            return
+        end
+        if isPcDrawerReleaseBlocked(job) then
+            completeDrawerReleaseJobBlocked(job)
+            return
+        end
         if job.color ~= "Black" then
             if beginPcLiveRollRelease(job.color) ~= true then
-                if type(job.onComplete) == "function" then
-                    job.onComplete()
-                end
+                completeDrawerReleaseJobBlocked(job)
                 return
             end
         end
+        job.completed = true
         finishRollRelease(job.color)
         if type(job.onComplete) == "function" then
             job.onComplete()
         end
     end, function()
+        if isPcDrawerReleaseBlocked(job) then
+            return true
+        end
         if job.color == "Black" and type(job.stDrawerSlot) == "number" then
             return STD.isRaisedForRelease(job.stDrawerSlot)
         end
         local y = DiceDrawer.getPositionY(job.color)
         return type(y) == "number" and y > DRAWER_RELEASE_MIN_Y
-    end, false, 10)
+    end, false, 10, nil, function()
+        return isPcDrawerReleaseBlocked(job)
+    end)
     return 1
 end
 
@@ -4741,6 +4827,28 @@ function HUD_rollRecalculate(player, value, id)
     local color = colorFromRollElementId(id)
     if color == nil then return end
     RC.recalculate(color)
+end
+
+--- ST roll panel: toggle die highlight for selective reroll (POST_ROLL).
+-- id format: rollPanelST_die_<n>
+function HUD_rollStDieClick(player, value, id)
+    if player == nil or type(id) ~= "string" then return end
+    if player.color ~= "Black" and player.color ~= "Host" then return end
+    local slotStr = string.match(id, "^rollPanelST_die_(%d+)$")
+    if slotStr == nil then return end
+    local slotIndex = tonumber(slotStr)
+    if slotIndex == nil then return end
+    if RC.toggleStSelectiveDie("Black", slotIndex) then
+        RUI.refreshPlayerRollPanel("Black")
+    end
+end
+
+--- ST roll panel: reroll highlighted dice (host world I/O via Global.call).
+function HUD_rollStRerollSelected(player, value, id)
+    if player == nil then return end
+    if player.color ~= "Black" and player.color ~= "Host" then return end
+    Global.call("GlobalStRerollDiceByGuids", { color = "Black" })
+    RUI.refreshPlayerRollPanel("Black")
 end
 
 --- Left Sidebar roll initiation buttons — one per roll type.

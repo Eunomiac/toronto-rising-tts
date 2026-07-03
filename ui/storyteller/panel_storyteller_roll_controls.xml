@@ -31,6 +31,7 @@
   <Text class="grid_strip_cell_difficulty_text" fontSize="9" fontStyle="Bold" color="#FFFFFF" />
 
   <HorizontalLayout class="rollPanelST_diceRolls_container" spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false" childForceExpandHeight="false" minHeight="48" preferredHeight="48" />
+  <Panel class="rollPanelST_dieSlot" childForceExpandWidth="false" childForceExpandHeight="false" padding="0 0 0 0" />
   <Image class="rollPanelST_die" active="false" preferredWidth="30" preserveAspect="True" />
 
   <HorizontalLayout class="rollPanelST_successes_container" spacing="10" height = "40" rectAlignment = "LowerCenter" childForceExpandHeight = "true" childAlignment="MiddleRight" childForceExpandWidth="false" padding="0 50 0 0" />
@@ -175,21 +176,51 @@ UI.setAttributes("rollPanelST_header_container", {color = "rgba(1, 0, 0, 0.15)",
   </HorizontalLayout>
 
   <HorizontalLayout id="rollPanelST_diceRolls_container" class="rollPanelST_diceRolls_container">
-    <Image id="rollPanelST_die_1" class="rollPanelST_die" image="" />
-    <Image id="rollPanelST_die_2" class="rollPanelST_die" image="" />
-    <Image id="rollPanelST_die_3" class="rollPanelST_die" image="" />
-    <Image id="rollPanelST_die_4" class="rollPanelST_die" image="" />
-    <Image id="rollPanelST_die_5" class="rollPanelST_die" image="" />
-    <Image id="rollPanelST_die_6" class="rollPanelST_die" image="" />
-    <Image id="rollPanelST_die_7" class="rollPanelST_die" image="" />
-    <Image id="rollPanelST_die_8" class="rollPanelST_die" image="" />
-    <Image id="rollPanelST_die_9" class="rollPanelST_die" image="" />
-    <Image id="rollPanelST_die_10" class="rollPanelST_die" image="" />
-    <Image id="rollPanelST_die_11" class="rollPanelST_die" image="" />
-    <Image id="rollPanelST_die_12" class="rollPanelST_die" image="" />
-    <Image id="rollPanelST_die_13" class="rollPanelST_die" image="" />
-    <Image id="rollPanelST_die_14" class="rollPanelST_die" image="" />
-    <Image id="rollPanelST_die_15" class="rollPanelST_die" image="" />
+    <Panel id="rollPanelST_dieSlot_1" class="rollPanelST_dieSlot" preferredWidth="32" preferredHeight="32">
+      <Image id="rollPanelST_die_1" class="rollPanelST_die" raycastTarget="true" onClick="HUD_rollStDieClick" image="" />
+    </Panel>
+    <Panel id="rollPanelST_dieSlot_2" class="rollPanelST_dieSlot" preferredWidth="32" preferredHeight="32">
+      <Image id="rollPanelST_die_2" class="rollPanelST_die" raycastTarget="true" onClick="HUD_rollStDieClick" image="" />
+    </Panel>
+    <Panel id="rollPanelST_dieSlot_3" class="rollPanelST_dieSlot" preferredWidth="32" preferredHeight="32">
+      <Image id="rollPanelST_die_3" class="rollPanelST_die" raycastTarget="true" onClick="HUD_rollStDieClick" image="" />
+    </Panel>
+    <Panel id="rollPanelST_dieSlot_4" class="rollPanelST_dieSlot" preferredWidth="32" preferredHeight="32">
+      <Image id="rollPanelST_die_4" class="rollPanelST_die" raycastTarget="true" onClick="HUD_rollStDieClick" image="" />
+    </Panel>
+    <Panel id="rollPanelST_dieSlot_5" class="rollPanelST_dieSlot" preferredWidth="32" preferredHeight="32">
+      <Image id="rollPanelST_die_5" class="rollPanelST_die" raycastTarget="true" onClick="HUD_rollStDieClick" image="" />
+    </Panel>
+    <Panel id="rollPanelST_dieSlot_6" class="rollPanelST_dieSlot" preferredWidth="32" preferredHeight="32">
+      <Image id="rollPanelST_die_6" class="rollPanelST_die" raycastTarget="true" onClick="HUD_rollStDieClick" image="" />
+    </Panel>
+    <Panel id="rollPanelST_dieSlot_7" class="rollPanelST_dieSlot" preferredWidth="32" preferredHeight="32">
+      <Image id="rollPanelST_die_7" class="rollPanelST_die" raycastTarget="true" onClick="HUD_rollStDieClick" image="" />
+    </Panel>
+    <Panel id="rollPanelST_dieSlot_8" class="rollPanelST_dieSlot" preferredWidth="32" preferredHeight="32">
+      <Image id="rollPanelST_die_8" class="rollPanelST_die" raycastTarget="true" onClick="HUD_rollStDieClick" image="" />
+    </Panel>
+    <Panel id="rollPanelST_dieSlot_9" class="rollPanelST_dieSlot" preferredWidth="32" preferredHeight="32">
+      <Image id="rollPanelST_die_9" class="rollPanelST_die" raycastTarget="true" onClick="HUD_rollStDieClick" image="" />
+    </Panel>
+    <Panel id="rollPanelST_dieSlot_10" class="rollPanelST_dieSlot" preferredWidth="32" preferredHeight="32">
+      <Image id="rollPanelST_die_10" class="rollPanelST_die" raycastTarget="true" onClick="HUD_rollStDieClick" image="" />
+    </Panel>
+    <Panel id="rollPanelST_dieSlot_11" class="rollPanelST_dieSlot" preferredWidth="32" preferredHeight="32">
+      <Image id="rollPanelST_die_11" class="rollPanelST_die" raycastTarget="true" onClick="HUD_rollStDieClick" image="" />
+    </Panel>
+    <Panel id="rollPanelST_dieSlot_12" class="rollPanelST_dieSlot" preferredWidth="32" preferredHeight="32">
+      <Image id="rollPanelST_die_12" class="rollPanelST_die" raycastTarget="true" onClick="HUD_rollStDieClick" image="" />
+    </Panel>
+    <Panel id="rollPanelST_dieSlot_13" class="rollPanelST_dieSlot" preferredWidth="32" preferredHeight="32">
+      <Image id="rollPanelST_die_13" class="rollPanelST_die" raycastTarget="true" onClick="HUD_rollStDieClick" image="" />
+    </Panel>
+    <Panel id="rollPanelST_dieSlot_14" class="rollPanelST_dieSlot" preferredWidth="32" preferredHeight="32">
+      <Image id="rollPanelST_die_14" class="rollPanelST_die" raycastTarget="true" onClick="HUD_rollStDieClick" image="" />
+    </Panel>
+    <Panel id="rollPanelST_dieSlot_15" class="rollPanelST_dieSlot" preferredWidth="32" preferredHeight="32">
+      <Image id="rollPanelST_die_15" class="rollPanelST_die" raycastTarget="true" onClick="HUD_rollStDieClick" image="" />
+    </Panel>
   </HorizontalLayout>
 
   <Text id="rollPanelST_result" class="roll_text rollRes_resultDisplay" text="" offsetXY="50 -75" scale="0.75" />
@@ -203,6 +234,7 @@ UI.setAttributes("rollPanelST_header_container", {color = "rgba(1, 0, 0, 0.15)",
     <Button id="rollPanelST_btnHalf" active="false" fontSize="11" preferredWidth="100" preferredHeight="30" color="rgba(0.2,0.2,0.5,1)" onClick="HUD_rollTakeHalf" text="TAKE HALF" />
     <Button id="rollPanelST_btnWP" active="false" fontSize="11" preferredWidth="140" preferredHeight="30" color="rgba(0.4,0.1,0.1,1)" onClick="HUD_rollSpendWP" text="SPEND WILLPOWER" />
     <Button id="rollPanelST_btnRecalc" active="false" fontSize="11" preferredWidth="110" preferredHeight="30" color="rgba(0.25,0.25,0.35,1)" onClick="HUD_rollRecalculate" text="RECALCULATE" />
+    <Button id="rollPanelST_btnReroll" active="false" fontSize="11" preferredWidth="90" preferredHeight="30" color="rgba(0.35,0.25,0.1,1)" onClick="HUD_rollStRerollSelected" text="REROLL" interactable="false" />
     <Button id="rollPanelST_btnConfirm" active="false" fontSize="13" preferredWidth="90" preferredHeight="30" color="rgba(0.1,0.4,0.1,1)" onClick="HUD_rollConfirm" text="CONFIRM" interactable="false" />
     <Button id="rollPanelST_btnCancel" fontSize="11" preferredWidth="70" preferredHeight="30" color="rgba(0.5,0.1,0.1,1)" onClick="HUD_rollCancel" text="CANCEL" />
     <Button id="rollPanelST_btnOblivHunger" active="false" fontSize="10" preferredWidth="130" preferredHeight="28" color="rgba(0.3,0.2,0.5,1)" onClick="HUD_rollConfirmOblivChoice" text="CONFIRM — HUNGER" />

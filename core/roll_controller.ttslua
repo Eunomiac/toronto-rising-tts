@@ -91,6 +91,12 @@ local _debounceHandles = {}
 -- Value is an opaque nonce; newer randomizes supersede older Wait.condition completions.
 local _wpDieLockWaitTokens = {}
 
+-- ST selective reroll: per-die settle wait tokens keyed by "color:guid:stReroll".
+local _stRerollDieLockWaitTokens = {}
+
+-- Remaining dice in the current ST selective reroll batch (module-local; not persisted).
+local _stRerollBatchPending = {}
+
 -- Re-entrancy guard when auto-broadcast chains into confirmRoll from recalculate.
 local _autoConfirmDepth = 0
 
@@ -179,6 +185,17 @@ local function cancelWpDieLockWaitsForColor(color)
             _wpDieLockWaitTokens[k] = nil
         end
     end
+end
+
+--- Invalidates in-flight ST selective-reroll per-die settle waits for this color.
+local function cancelStRerollDieLockWaitsForColor(color)
+    local prefix = color .. ":"
+    for k in pairs(_stRerollDieLockWaitTokens) do
+        if type(k) == "string" and string.sub(k, 1, #prefix) == prefix then
+            _stRerollDieLockWaitTokens[k] = nil
+        end
+    end
+    _stRerollBatchPending[color] = nil
 end
 
 --- Roll-option keys guarded by rollPolicy.locked (policy schema field names).
@@ -676,6 +693,19 @@ end
 
 --- Ensures pool/meta shape on an active roll record.
 -- @param active table
+--- Ensures `active.stSelectiveReroll` shape (POST_ROLL ST panel selective reroll).
+-- @param active table
+local function ensureStSelectiveRerollShape(active)
+    if type(active) ~= "table" then return end
+    if type(active.stSelectiveReroll) ~= "table" then
+        active.stSelectiveReroll = { selectedGuids = {}, inProgress = false }
+    end
+    if type(active.stSelectiveReroll.selectedGuids) ~= "table" then
+        active.stSelectiveReroll.selectedGuids = {}
+    end
+    active.stSelectiveReroll.inProgress = active.stSelectiveReroll.inProgress == true
+end
+
 local function ensureActiveShape(active)
     if type(active) ~= "table" then return end
     active.pool = DK.normalizePool(active.pool)
@@ -683,6 +713,7 @@ local function ensureActiveShape(active)
     if active.rouseOutcomeStrips == nil then
         active.rouseOutcomeStrips = {}
     end
+    ensureStSelectiveRerollShape(active)
 end
 
 --- Builds classified result + optional Obliv resolution for dedicated Rouse / Obliv checks.
@@ -890,7 +921,7 @@ local function tryClassifyResultInternal(color)
 
     ensureActiveShape(active)
 
-    local valuesByKind = RC._getDicePoolsForRoll(color, active.id)
+    local valuesByKind, objectsByKind = RC._getDicePoolsForRoll(color, active.id)
     local normalDice = valuesByKind[DK.KIND_NORMAL] or {}
     local hungerDice = valuesByKind[DK.KIND_HUNGER] or {}
     local werewolfDice = valuesByKind[DK.KIND_WEREWOLF] or {}
@@ -911,7 +942,7 @@ local function tryClassifyResultInternal(color)
 
     if isWerewolfRoll and hasWerewolfDice then
         active.result = classifyWerewolfRollForActive(werewolfDice, rageDice, active)
-        active.diceFaces = RC.buildDiceFacesForActive(active, valuesByKind)
+        active.diceFaces = RC.buildDiceFacesForActive(active, valuesByKind, objectsByKind)
     elseif isDedicatedRouse and not hasVampireDice then
         local rouseVals = (active.rollType == C.RollType.ROUSE_OBLIVION)
             and (valuesByKind[DK.KIND_OBLIV_ROUSE] or {})
@@ -921,14 +952,14 @@ local function tryClassifyResultInternal(color)
         if oblivRes ~= nil and oblivRes.pendingChoice == true then
             active.pendingResolution = C.PendingResolution.OBLIV_HUNGER_STAIN
         end
-        active.diceFaces = RC.buildDiceFacesForActive(active, valuesByKind)
+        active.diceFaces = RC.buildDiceFacesForActive(active, valuesByKind, objectsByKind)
     elseif hasVampireDice then
         active.result = classifyVampireRollForActive(normalDice, hungerDice, active)
-        active.diceFaces = RC.buildDiceFacesForActive(active, valuesByKind)
+        active.diceFaces = RC.buildDiceFacesForActive(active, valuesByKind, objectsByKind)
     else
         active.result = nil
         if DK.poolTotal(active.pool) > 0 then
-            active.diceFaces = RC.buildDiceFacesForActive(active, valuesByKind)
+            active.diceFaces = RC.buildDiceFacesForActive(active, valuesByKind, objectsByKind)
         else
             active.diceFaces = nil
         end
@@ -1793,6 +1824,11 @@ function RC.onDieSettledSignal(color, obj)
         return
     end
 
+    -- ST selective reroll: per-die settle callback drives preview recalculate + re-lock.
+    if type(active.stSelectiveReroll) == "table" and active.stSelectiveReroll.inProgress == true then
+        return
+    end
+
     local myHandle = string.format("%d_%d", math.floor(os.time() * 1000), math.random(99999))
     _debounceHandles[color] = myHandle
 
@@ -1853,13 +1889,19 @@ function RC.recalculate(color, previewOnly)
     ensureWillpowerShape(active)
     ensureActiveShape(active)
 
+    if not previewOnly then
+        RC.clearStSelectiveReroll(color)
+        active = getActive(color)
+        if active == nil then return false end
+    end
+
     local wasRolling = active.phase == C.RollPhase.ROLLING
     if active.takeHalfAwaitingRouse == true then
         return recalculateTakeHalfAwaitingRouse(color, active, wasRolling)
     end
     local wasWpWave  = active.willpower ~= nil and active.willpower.wpRerollWave == true
 
-    local valuesByKind = RC._getDicePoolsForRoll(color, active.id)
+    local valuesByKind, objectsByKind = RC._getDicePoolsForRoll(color, active.id)
     local normalDice = valuesByKind[DK.KIND_NORMAL] or {}
     local hungerDice = valuesByKind[DK.KIND_HUNGER] or {}
     local werewolfDice = valuesByKind[DK.KIND_WEREWOLF] or {}
@@ -1883,7 +1925,7 @@ function RC.recalculate(color, previewOnly)
 
     if isWerewolfRoll and hasWerewolfDice then
         active.result = classifyWerewolfRollForActive(werewolfDice, rageDice, active)
-        active.diceFaces = RC.buildDiceFacesForActive(active, valuesByKind)
+        active.diceFaces = RC.buildDiceFacesForActive(active, valuesByKind, objectsByKind)
         if RC._countBrutalRageDice(rageDice) >= 2 then
             active.pendingResolution = C.PendingResolution.BRUTAL_FAIL_VIOLENCE
         end
@@ -1901,7 +1943,7 @@ function RC.recalculate(color, previewOnly)
         else
             active.result = nil
         end
-        active.diceFaces = RC.buildDiceFacesForActive(active, valuesByKind)
+        active.diceFaces = RC.buildDiceFacesForActive(active, valuesByKind, objectsByKind)
     elseif hasVampireDice then
         active.result = classifyVampireRollForActive(normalDice, hungerDice, active)
         active.rouseOutcomeStrips = RC._buildRouseStripsForActive(color, active, valuesByKind)
@@ -1913,11 +1955,11 @@ function RC.recalculate(color, previewOnly)
                 end
             end
         end
-        active.diceFaces = RC.buildDiceFacesForActive(active, valuesByKind)
+        active.diceFaces = RC.buildDiceFacesForActive(active, valuesByKind, objectsByKind)
     else
         active.result = nil
         if DK.poolTotal(active.pool) > 0 then
-            active.diceFaces = RC.buildDiceFacesForActive(active, valuesByKind)
+            active.diceFaces = RC.buildDiceFacesForActive(active, valuesByKind, objectsByKind)
         else
             active.diceFaces = nil
         end
@@ -2064,6 +2106,182 @@ function RC.onWpRerollDieRandomized(color, obj)
     )
 end
 
+-- ============================================================================
+-- ST SELECTIVE REROLL (POST_ROLL rollPanelST — TOR-224)
+-- ============================================================================
+
+--- Clears ST selective-reroll selection and in-flight batch state.
+-- @param color string
+function RC.clearStSelectiveReroll(color)
+    if U.Type(color) ~= "string" then return end
+    cancelStRerollDieLockWaitsForColor(color)
+    local active = getActive(color)
+    if active == nil then return end
+    ensureStSelectiveRerollShape(active)
+    active.stSelectiveReroll.selectedGuids = {}
+    active.stSelectiveReroll.inProgress = false
+    setActive(color, active)
+end
+
+--- Toggles highlight selection for one die slot on the ST roll panel.
+-- @param color string
+-- @param slotIndex number  1-based index into active.diceFaces
+-- @return boolean
+function RC.toggleStSelectiveDie(color, slotIndex)
+    if color ~= "Black" then return false end
+    local active = getActive(color)
+    if active == nil or active.phase ~= C.RollPhase.POST_ROLL then return false end
+    if active.pendingResolution ~= nil then return false end
+    ensureStSelectiveRerollShape(active)
+    if active.stSelectiveReroll.inProgress == true then return false end
+
+    local idx = tonumber(slotIndex)
+    local faces = active.diceFaces
+    if idx == nil or type(faces) ~= "table" or idx < 1 or idx > #faces then
+        return false
+    end
+    local face = faces[idx]
+    if type(face) ~= "table" or type(face.guid) ~= "string" or face.guid == "" then
+        return false
+    end
+
+    local guid = face.guid
+    if active.stSelectiveReroll.selectedGuids[guid] == true then
+        active.stSelectiveReroll.selectedGuids[guid] = nil
+    else
+        active.stSelectiveReroll.selectedGuids[guid] = true
+    end
+    setActive(color, active)
+    return true
+end
+
+--- Re-locks pool dice, preview-recalculates, and clears inProgress after the last rerolled die settles.
+local function finishStSelectiveRerollBatch(color)
+    local active = getActive(color)
+    if active == nil then
+        _stRerollBatchPending[color] = nil
+        return
+    end
+    ensureStSelectiveRerollShape(active)
+    active.stSelectiveReroll.inProgress = false
+    setActive(color, active)
+    _stRerollBatchPending[color] = nil
+    lockAllRollDiceObjects(color, active.id)
+    RC.recalculate(color, true)
+    notifyStateChanged(color)
+end
+
+--- Decrements the in-flight ST selective reroll batch counter; finishes when zero.
+local function onStSelectiveRerollDieSettled(color)
+    local pending = _stRerollBatchPending[color]
+    if pending == nil then return end
+    pending = pending - 1
+    if pending <= 0 then
+        finishStSelectiveRerollBatch(color)
+    else
+        _stRerollBatchPending[color] = pending
+    end
+end
+
+--- Host-only entry: validates selection, clears highlights, arms batch counter.
+-- @param color string
+-- @return table|nil guids
+-- @return string|nil rollId
+function RC.beginStSelectiveRerollWave(color)
+    if U.Type(color) ~= "string" then return nil end
+    local active = getActive(color)
+    if active == nil or active.phase ~= C.RollPhase.POST_ROLL then return nil end
+    if active.pendingResolution ~= nil then return nil end
+    ensureStSelectiveRerollShape(active)
+    if active.stSelectiveReroll.inProgress == true then return nil end
+
+    local guids = {}
+    for guid in pairs(active.stSelectiveReroll.selectedGuids) do
+        if type(guid) == "string" and guid ~= "" then
+            local die = getObjectFromGUID(guid)
+            if die ~= nil and DK.gmNotesMatchRoll(die.getGMNotes(), active.id) then
+                guids[#guids + 1] = guid
+            end
+        end
+    end
+    if #guids == 0 then return nil end
+
+    active.stSelectiveReroll.selectedGuids = {}
+    active.stSelectiveReroll.inProgress = true
+    local rollId = active.id
+    setActive(color, active)
+    _stRerollBatchPending[color] = #guids
+    return guids, rollId
+end
+
+--- Called from global_script.onObjectRandomize during an ST selective reroll wave.
+-- @param color string
+-- @param obj Object
+function RC.onStSelectiveRerollDieRandomized(color, obj)
+    if U.Type(color) ~= "string" or obj == nil then return end
+    local active = getActive(color)
+    if active == nil then return end
+    if active.phase ~= C.RollPhase.POST_ROLL then return end
+    if type(active.stSelectiveReroll) ~= "table" or active.stSelectiveReroll.inProgress ~= true then
+        return
+    end
+    if not DK.gmNotesMatchRoll(obj.getGMNotes(), active.id) then return end
+    if _stRerollBatchPending[color] == nil then return end
+
+    local guid = obj.getGUID()
+    local timerKey = color .. ":" .. guid .. ":stReroll"
+    local nonce = string.format("%d_%d", math.floor(os.time()), math.random(999999))
+    _stRerollDieLockWaitTokens[timerKey] = nonce
+
+    local rollIdCaptured = active.id
+    local guidCaptured = guid
+
+    U.runAfterObjectPhysicsSettled(
+        function()
+            return getObjectFromGUID(guidCaptured)
+        end,
+        C.WP_REROLL_DIE_REST_MAX_WAIT_SECONDS,
+        function(o)
+            if _stRerollDieLockWaitTokens[timerKey] ~= nonce then return end
+
+            if o == nil then
+                _stRerollDieLockWaitTokens[timerKey] = nil
+                onStSelectiveRerollDieSettled(color)
+                return
+            end
+
+            local a2 = getActive(color)
+            if a2 == nil or a2.id ~= rollIdCaptured then
+                _stRerollDieLockWaitTokens[timerKey] = nil
+                onStSelectiveRerollDieSettled(color)
+                return
+            end
+            if type(a2.stSelectiveReroll) ~= "table" or a2.stSelectiveReroll.inProgress ~= true then
+                _stRerollDieLockWaitTokens[timerKey] = nil
+                return
+            end
+            if a2.phase ~= C.RollPhase.POST_ROLL then
+                _stRerollDieLockWaitTokens[timerKey] = nil
+                onStSelectiveRerollDieSettled(color)
+                return
+            end
+
+            if o.loading_custom == true or o.resting ~= true then
+                _stRerollDieLockWaitTokens[timerKey] = nil
+                onStSelectiveRerollDieSettled(color)
+                return
+            end
+
+            _stRerollDieLockWaitTokens[timerKey] = nil
+            o.setLock(true)
+            onStSelectiveRerollDieSettled(color)
+        end,
+        function()
+            return _stRerollDieLockWaitTokens[timerKey] ~= nonce
+        end
+    )
+end
+
 --- Player spends 1 Superficial Willpower damage to reroll dice.
 -- Decrements rerollsRemaining, bumps WP wave id, transitions to ROLLING, and applies
 -- tray locks (hunger locked unless Can Reroll Hunger). Per-die locks follow randomize events.
@@ -2130,6 +2348,7 @@ function RC.confirmRoll(color)
     U.Val("RC.confirmRoll()", {color = color}, U.Type(color) == "string", "color must be a string")
 
     cancelWpDieLockWaitsForColor(color)
+    RC.clearStSelectiveReroll(color)
 
     local active = getActive(color)
     if active == nil then
@@ -2280,6 +2499,7 @@ function RC.cancelRoll(color)
 
     cancelDebounce(color)
     cancelWpDieLockWaitsForColor(color)
+    cancelStRerollDieLockWaitsForColor(color)
 
     local active = getActive(color)
     local rollId = type(active) == "table" and type(active.id) == "string" and active.id or nil
@@ -2402,7 +2622,7 @@ end
 -- @param active table
 -- @param valuesByKind table|nil
 -- @return table
-function RC.buildDiceFacesForActive(active, valuesByKind)
+function RC.buildDiceFacesForActive(active, valuesByKind, objectsByKind)
     local faces = {}
     if type(valuesByKind) ~= "table" then
         return faces
@@ -2413,18 +2633,28 @@ function RC.buildDiceFacesForActive(active, valuesByKind)
         DK.KIND_HUNGER, DK.KIND_NORMAL,
     }
     for _, kind in ipairs(order) do
-        for _, val in ipairs(valuesByKind[kind] or {}) do
+        local vals = valuesByKind[kind] or {}
+        local objs = type(objectsByKind) == "table" and (objectsByKind[kind] or {}) or {}
+        for i, val in ipairs(vals) do
+            local guid = nil
+            local obj = objs[i]
+            if obj ~= nil and obj.getGUID ~= nil then
+                guid = obj.getGUID()
+            end
             faces[#faces + 1] = {
                 value = val,
                 kind = kind,
                 isHunger = (kind == DK.KIND_HUNGER),
+                guid = guid,
             }
         end
     end
     table.sort(faces, function(a, b)
         if a.value ~= b.value then return a.value > b.value end
         if a.isHunger ~= b.isHunger then return a.isHunger end
-        return false
+        local ga = type(a.guid) == "string" and a.guid or ""
+        local gb = type(b.guid) == "string" and b.guid or ""
+        return ga < gb
     end)
     return faces
 end

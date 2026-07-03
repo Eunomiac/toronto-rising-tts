@@ -53,6 +53,7 @@ Columns: **Delivery** = fan-out (all clients) vs clicker-only. **Tier** = A UI /
 | `GlobalRollSeatCamera` | A | — | per-seat camera |
 | `GlobalIsStorytellerSteamPlayer` / `GlobalRequireHostForWorldMutation` | — | 2 | bundle-safe gates |
 | `GlobalPostRollModifyPool` / `GlobalPostRollAddDie` / `GlobalPostRollRemoveDie` | B+C | W4 | ST post-roll pool |
+| `GlobalStRerollDiceByGuids` | B+C | W4 | ST roll panel selective dice reroll (TOR-224) |
 | `GlobalGetRollPhase`, `GlobalResolveSheetPlayerID`, `GlobalGetMergedPlayerData`, `GlobalGetSeatLayoutCenterPoint`, `GlobalIsPlayerDiceBagEnabled`, `GlobalCollectSheetImageUpdates` | A | — | read-only |
 
 ### Sync orchestrator
@@ -112,6 +113,8 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `HUD_debugLightGuidInput/Done/Snapshot` | A | — | |
 | `HUD_debugCamera*` / `HUD_debugCaptureCameraPreset` | A | — | local camera |
 | `HUD_rollInitiate/RollButton/Confirm/Cancel/…` | B (+C via Global) | Partial | P6 intentional |
+| `HUD_rollStDieClick` | B | — | ST selective reroll toggle (`RC.toggleStSelectiveDie`) |
+| `HUD_rollStRerollSelected` | B+C | — | → `GlobalStRerollDiceByGuids` (host Tier C) |
 | `HUD_postRollCellMouseUp` | B+C | Yes | → `GlobalPostRollModifyPool` |
 | `HUD_debugRollTest/CancelAll` | B+C | Yes | |
 | `HUD_gridStrip*` / `HUD_postRollCellMouseEnter/Exit/Down` | A | — | hover UI |

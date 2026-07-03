@@ -908,6 +908,8 @@ Key element IDs: fullscreen `rollRes_panel`; split header (`rollRes_rollType`, `
 
 Registry context **`rollPanelST`** (registered in `core/roll_ui.ttslua`): kinds `hunger` (1–5), `normal` (1–10), `difficulty` (0–10). Commits map to `RC.setPoolKindCount` / `RC.setDifficulty` on Black; Werewolf rolls map `hunger`→rage, `normal`→werewolf. Full panel refresh: `refreshStRollPanel(active)` from `RUI.refreshPlayerRollPanel("Black")`; grid strips: `RUI.refreshStRollGridStrips(active)`.
 
+**POST_ROLL selective dice reroll (TOR-224):** Die strip slots `rollPanelST_dieSlot_1..15` wrap clickable images `rollPanelST_die_1..15` (`raycastTarget`, `HUD_rollStDieClick`). Selection maps to physical dice via `guid` on `active.diceFaces` (built in `RC.buildDiceFacesForActive` from `objectsByKind`). State: `active.stSelectiveReroll.selectedGuids` / `inProgress`. Button `rollPanelST_btnReroll` (`HUD_rollStRerollSelected`) → `GlobalStRerollDiceByGuids` (host unlock/randomize/lock). No WP spend, no reroll cap; hunger/rage OK; repeat until Confirm. Settle path: `RC.onStSelectiveRerollDieRandomized` + `RC.recalculate(color, true)` preview refresh. Cleared on Confirm, Cancel, or full Recalculate.
+
 ### 10.5 ST Roll Dashboard difficulty strips (`rollDash<Color>`)
 
 **Template:** [`ui/.templates/roll/partials/dash_row_pc.xml`](../../ui/.templates/roll/partials/dash_row_pc.xml) → generated [`ui/shared/roll_dash_generated.xml`](../../ui/shared/roll_dash_generated.xml).

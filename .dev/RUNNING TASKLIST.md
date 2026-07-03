@@ -65,7 +65,7 @@ _Stack rank for the current cycle (2026-07-03 post **TOR-262** single live PC ro
 - [x] **Oblivion rouse checks:** Finish end-to-end (`C.RollType.ROUSE_OBLIVION` — UI, validation, result handling). _(Shipped in dice pt.2: TOR-51, TOR-131; in-game verification recommended.)_ _(TOR-75)_
 - [x] **Rouse check Roll doubles pool:** Clicking Roll after PRE_ROLL staging spawns duplicate Rouse/Obliv-Rouse dice (pool doubles). _(TOR-198 — `spawnMissingPoolDiceForColor`; author confirmed resolved 2026-06-14.)_
 - [x] **Oblivion Rouse copy:** Prompt `Hunger or Stain?`; post-choice broadcast `Hunger Roused` / `Stained` (not stuck on choose prompt). _(TOR-214)_
-- [ ] **ST roll panel selective reroll:** Clickable dice images on ST dashboard; highlight + Reroll button; map to physical dice; no ST reroll caps (hunger OK, repeat until Confirm). _(TOR-224)_
+- [x] **ST roll panel selective reroll:** Clickable dice images on ST dashboard; highlight + Reroll button; map to physical dice; no ST reroll caps (hunger OK, repeat until Confirm). _(TOR-224)_
 - [ ] **Dice display strip sort order:** Canonical face ordering on player/ST panels + broadcast; brutal Violence → Rage Jaws first in broadcast only. _(TOR-225)_
 - [ ] **Secret Storyteller rolls:** Right-click Roll hides dice from players; right-click Confirm/Take Half suppresses broadcast; manual Broadcast button on dashboard. _(TOR-226)_
 - [x] **Hunger 5 voluntary rouse lockout:** At Hunger 5, Blood Surge + Obliv-Rouse locked; forced standard Rouse allowed; failed rouse → Frenzy Resist D4 queue. _(TOR-203 — 2026-06-15)_

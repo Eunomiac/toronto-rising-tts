@@ -376,6 +376,33 @@ local function refreshDiceImages(idPrefix, diceFaces)
     end
 end
 
+--- Updates ST roll panel die images and slot outline highlights for selective reroll.
+-- @param diceFaces table|nil
+-- @param selectedGuids table|nil  map guid → true
+local function refreshStDieSlots(diceFaces, selectedGuids)
+    local faces = (U.Type(diceFaces) == "table") and diceFaces or {}
+    local selected = (U.Type(selectedGuids) == "table") and selectedGuids or {}
+    for i = 1, MAX_DIE_SLOTS do
+        local dieId = string.format("rollPanelST_die_%d", i)
+        local slotId = string.format("rollPanelST_dieSlot_%d", i)
+        if i <= #faces then
+            local face = faces[i]
+            U.setAttribute(dieId, "image", dieFaceImage(face.value, face))
+            U.setAttribute(dieId, "active", "true")
+            U.setAttribute(slotId, "active", "true")
+            local guid = type(face.guid) == "string" and face.guid or nil
+            if guid ~= nil and selected[guid] == true then
+                U.setAttributes(slotId, { outline = "#C9A84C", outlineSize = "2 2" })
+            else
+                U.setAttributes(slotId, { outline = "", outlineSize = "0 0" })
+            end
+        else
+            U.setAttribute(dieId, "active", "false")
+            U.setAttributes(slotId, { active = "false", outline = "", outlineSize = "0 0" })
+        end
+    end
+end
+
 --- Returns the dice kind from a face record (Dice.buildDiceFaces entry).
 -- @param faceRecord table|boolean
 -- @return string
@@ -1058,7 +1085,10 @@ local function refreshStRollPanel(active)
     local pool = DK.normalizePool(active.pool)
     refreshStPoolDots(pool)
 
-    refreshDiceImages("rollPanelST_die_%d", active.diceFaces)
+    local selectedGuids = type(active.stSelectiveReroll) == "table"
+        and active.stSelectiveReroll.selectedGuids
+        or {}
+    refreshStDieSlots(active.diceFaces, selectedGuids)
 
     local isPreRoll  = active.phase == C.RollPhase.PRE_ROLL
     local isRolling  = active.phase == C.RollPhase.ROLLING
@@ -1117,6 +1147,30 @@ local function refreshStRollPanel(active)
     )
     uiSetActive("rollPanelST_btnWP", wpAvailable)
     uiSetActive("rollPanelST_btnRecalc", canRecalc)
+
+    local facesHaveGuid = false
+    if type(active.diceFaces) == "table" then
+        for _, face in ipairs(active.diceFaces) do
+            if type(face.guid) == "string" and face.guid ~= "" then
+                facesHaveGuid = true
+                break
+            end
+        end
+    end
+    local stRerollInProgress = type(active.stSelectiveReroll) == "table"
+        and active.stSelectiveReroll.inProgress == true
+    local canStSelectiveReroll = isPostRoll and not pendingChoice and facesHaveGuid
+        and not stRerollInProgress
+    local selectedCount = 0
+    if canStSelectiveReroll and type(selectedGuids) == "table" then
+        for _ in pairs(selectedGuids) do
+            selectedCount = selectedCount + 1
+        end
+    end
+    local showStReroll = canStSelectiveReroll and selectedCount > 0
+    uiSetActive("rollPanelST_btnReroll", canStSelectiveReroll)
+    uiSetInteractable("rollPanelST_btnReroll", showStReroll)
+
     local showConfirm = (isPostRoll or isWpWaveRolling) and not pendingChoice
     uiSetActive("rollPanelST_btnConfirm", showConfirm)
     uiSetInteractable("rollPanelST_btnConfirm", showConfirm)
