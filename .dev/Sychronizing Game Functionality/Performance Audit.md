@@ -87,23 +87,22 @@ All recommendations preserve the synchronization contract: `gameState` remains t
 
 ## 2. Startup `Sync.full` plus deferred retry stacks
 
-**Symptom:** Load runs an initial `Sync.full`, schedules two retry stacks, independently schedules table sync, then runs a final startup-gate `Sync.full`. This is safe for late TTS objects, but it layers repeated lighting, overlays, NPC/UI, and soundscape checks into the first seconds of every load.
+**Symptom:** Load runs an initial `Sync.full`, schedules bootstrap light/overlay retries, then runs a startup-gate scene/state pass plus **one** deferred seat-layout flush. This is safe for late TTS objects, but non-layout reconcilers can still layer repeated lighting, overlays, NPC/UI, and soundscape checks into the first seconds of every load.
 
 **Evidence**
 
-- First on-load full sync: `Sync.full({ reason = "onLoad_initial" })`. Final startup-gate sync: `Sync.full({ reason = "onLoad_startup_gate" })`. See `core/global_script.ttslua:542-580`.
+- First on-load full sync: `Sync.full({ reason = "onLoad_initial", deferLayoutCommit = true })`. Startup gate: scene state (no `SetTableTo` geometry), `Sync.full({ deferLayoutCommit })`, then `NPCS.flushDeferredSeatLayoutCommit()`. See `core/global_script.ttslua` onLoad startup sequence.
 - Bootstrap branch calls `NPCS.registerRestoredInstancesFromState`, `L.InitLights`, fingerprint-aware `reconcileSeatPresentationFromState`, then `scheduleBootstrapCoordinator()` (readiness poll, early exit when spotlights resolve). See `core/sync.ttslua`.
-- `requestSeatLayoutSync` and deferred `R.SyncTable` no-op when `RSL.isLayoutSyncCurrent()` — gate still waits for deferred attempt, not full layout work.
-- `global_script` separately schedules `R.SyncTable()` at `0.5`; `R.SyncTable` ends by calling `L.reconcileAllPlayers()` and `HO.syncAll()`. See `core/global_script.ttslua:526-536` and `lib/rotational-seat-layout.ttslua:2876-2888`.
-- **Mitigated (2026-06):** `R.SyncTable` / `resolveSeatObjectsFromTable` short-circuit when stable layout fingerprint (table key + filtered `playerToPositionMap` seats) is unchanged; `opts.force` and `R.invalidateLayoutSyncCache()` bypass (same-table `SetTableTo`, `Sync.full({ force = true })`, `NPCS.commitNpcSeatLayout`). Startup passes 2–3 should collapse to one full layout + skip logs.
+- **Removed (2026-07):** deferred `R.SyncTable()` at 0.5s and startup-gate duplicate `SetTableTo` + `syncFullForce` layout passes — blindfolds stay down until overlay hide; geometry runs once at gate flush.
+- `R.SyncTable` / `resolveSeatObjectsFromTable` still short-circuit when stable layout fingerprint is unchanged; `opts.force` and `R.invalidateLayoutSyncCache()` bypass for runtime repair paths.
 
 **Top call sites**
 
-1. `Global.onLoad` initial sync: `core/global_script.ttslua:542-545`.
-2. `Global.onLoad` startup readiness gate: `core/global_script.ttslua:578-580`.
-3. `Sync.full` bootstrap light retry schedule: `core/sync.ttslua:147-157`.
-4. `Sync.full` bootstrap overlay retry schedule: `core/sync.ttslua:181-196`.
-5. `R.SyncTable` seat reconciliation handoff during scheduled table sync: `lib/rotational-seat-layout.ttslua:2876-2888`.
+1. `Global.onLoad` initial sync: `core/global_script.ttslua` (`deferLayoutCommit`).
+2. `Global.onLoad` startup gate layout flush: `NPCS.flushDeferredSeatLayoutCommit`.
+3. `Sync.full` bootstrap light retry schedule: `core/sync.ttslua`.
+4. `Sync.full` bootstrap overlay retry schedule: `core/sync.ttslua`.
+5. `RSL.SyncTable` seat reconciliation boundary: `lib/rotational-seat-layout.ttslua` (post-geometry `L.reconcileAllPlayers` + `HO.syncAll`).
 
 **Why legal but costly:** Load is the correct place to over-reconcile because object readiness is non-deterministic in TTS. The cost comes from multiple independent startup schedulers not sharing readiness/fingerprint state.
 
@@ -111,7 +110,7 @@ All recommendations preserve the synchronization contract: `gameState` remains t
 
 - **Structural:** Replace the two `U.scheduleAtOffsets` stacks with one bootstrap reconciler coordinator that runs seat lights + overlays together and stops remaining attempts once required seat lights and smoke objects are observed ready.
 - **Quick win:** Add measurement counters and timestamps to bootstrap passes (`reason`, pass index, lights attempted, lights deferred, overlay writes, smoke writes) emitted to `.dev/.debug/` or `TR_AGENT_V1` when running through TTS MCP.
-- **Structural:** Sequence `R.SyncTable` and first `Sync.full` so table geometry settles before the first seat presentation pass when possible; still keep the deferred retries for late objects.
+- **Structural:** Sequence state reconcile before the single startup-gate layout flush so table geometry runs once while blindfolds are still down.
 - **Do not:** Remove load retries blindly. They exist to handle object/component readiness and must be replaced by measured readiness gates, not by skipping reconcilers.
 
 ## 3. Seat lighting all-player reconciliation and 2s lerp churn

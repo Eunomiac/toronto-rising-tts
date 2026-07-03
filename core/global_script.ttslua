@@ -1697,26 +1697,15 @@ function onLoad(saved_data)
 
     -- `C.LockedObjects` / `C.HiddenObjects` are applied at startup readiness gate (after sync + asset load).
     -- Early apply is skipped: asset bundles (THE_FLOOR, etc.) may not exist or accept interactable until load completes.
-
-    -- Ensure table objects/components and seat layout objects are synchronized to current saved table
-    -- state during load. Defer slightly so object GUID lookups (including relative objects) are ready.
-    local startupTableSyncDone = false
-    setStartupAction("schedule-table-sync")
-    if R and type(R.SyncTable) == "function" then
-        U.delay(function()
-            setStartupAction("run-table-sync")
-            R.SyncTable()
-            startupTableSyncDone = true
-            setStartupAction("table-sync-complete")
-        end, 0.5)
-    else
-        startupTableSyncDone = true
-        setStartupAction("table-sync-not-required")
-    end
+    -- Seat geometry is deferred until the startup readiness gate (blindfolds down; single layout pass).
 
     -- Synchronization orchestration (step 2): consolidate the onLoad fan-out into Sync.full().
     setStartupAction("initial-sync-full")
-    Sync.full({ reason = "onLoad_initial", skipSoundscape = true })
+    Sync.full({
+        reason = "onLoad_initial",
+        skipSoundscape = true,
+        deferLayoutCommit = true,
+    })
     if GameStateOverlay and type(GameStateOverlay.stopTicker) == "function" then
         GameStateOverlay.stopTicker()
     end
@@ -1732,20 +1721,15 @@ function onLoad(saved_data)
     end, 1.0)
 
     -- Keep loading overlay visible until startup settles:
-    -- - table sync callback has run
     -- - first sync pass has been issued
     -- - seat lights are resolvable
-    -- Then run one final sync pass, wait wall-clock, and hide loading overlay.
+    -- Then run scene/state reconcile, one deferred seat-layout commit, wait wall-clock, and hide overlay.
     -- Use U.RunSequence (U.waitUntil) instead of U.waitForCondition with nested U.delay:
     -- TTS does not reliably honor U.delay scheduled from inside a condition callback.
     local startupOverlayHideDelaySeconds = 20
     U.RunSequence({
         function()
             return function()
-                if not startupTableSyncDone then
-                    setStartupAction("waiting-for-table-sync")
-                    return false
-                end
                 if not startupInitialSyncDone then
                     setStartupAction("waiting-for-initial-sync")
                     return false
@@ -1767,9 +1751,20 @@ function onLoad(saved_data)
                 Scenes.reconcilePlaySessionOnEnter({
                     reason = "onLoad_startup_gate",
                     skipTransitionBlindfold = true,
+                    deferTableGeometry = true,
+                    skipPostSceneSync = true,
                 })
-            else
-                Sync.full({ reason = "onLoad_startup_gate" })
+            end
+            Sync.full({
+                reason = "onLoad_startup_gate",
+                skipSoundscape = true,
+                deferLayoutCommit = true,
+            })
+            setStartupAction("startup-ready-seat-layout-flush")
+            if NPCS ~= nil and type(NPCS.flushDeferredSeatLayoutCommit) == "function" then
+                NPCS.flushDeferredSeatLayoutCommit()
+            elseif R ~= nil and type(R.SyncTable) == "function" then
+                R.SyncTable(nil, { force = true })
             end
             return 0
         end,

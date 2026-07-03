@@ -95,6 +95,9 @@ local lastNpcLayoutCommit = {
 --- When true, defer async `requestSeatLayoutSync`; orchestrator runs synchronous layout commit.
 local npcReconcileInProgress = false
 
+--- Bootstrap: Step Three ran but `commitNpcSeatLayout` was deferred until overlay gate flush.
+local layoutCommitDeferred = false
+
 --- One-shot layout context for `lib.rotational-seat-layout` during orchestrated reconcile.
 local npcReconcileLayoutContext = nil
 
@@ -2630,8 +2633,10 @@ end
 
 --- Step Three: seat-bound NPCs onto table seats (tags only; layout commit follows).
 --- @param intent table
+--- @param opts table|nil `{ deferLayoutCommit?: boolean }`
 --- @return boolean allOk
-local function reconcileStepThreeSeatPlacements(intent)
+local function reconcileStepThreeSeatPlacements(intent, opts)
+    opts = U.Type(opts) == "table" and opts or {}
     local allOk = true
     for _, seatKey in ipairs(C.NPCSeats or {}) do
         if seatNeedsPlacement(seatKey, intent) then
@@ -2656,7 +2661,11 @@ local function reconcileStepThreeSeatPlacements(intent)
             end
         end
     end
-    commitNpcSeatLayout(intent)
+    if opts.deferLayoutCommit == true then
+        layoutCommitDeferred = true
+    else
+        commitNpcSeatLayout(intent)
+    end
     return allOk
 end
 
@@ -2787,8 +2796,20 @@ local function reconcileStepFivePreloadPopulate(intent)
     return allOk
 end
 
+--- Single forced seat-layout commit after bootstrap deferral (loading overlay still up).
+--- @return boolean true when layout ran
+function NPCS.flushDeferredSeatLayoutCommit()
+    if layoutCommitDeferred ~= true then
+        return false
+    end
+    layoutCommitDeferred = false
+    local intent = resolveNpcPlacementIntent()
+    commitNpcSeatLayout(intent)
+    return true
+end
+
 --- Unified NPC reconcile orchestrator (Steps Zero–Five). See `.dev/NPC Object Spawning & Spotlighting/NPC Reconciler Procedure.md`.
---- @param opts table|nil `{ deferUiRefresh?, force?, onlySteps?, skipPreloadPopulate? }`
+--- @param opts table|nil `{ deferUiRefresh?, force?, onlySteps?, skipPreloadPopulate?, deferLayoutCommit? }`
 function NPCS.reconcileAllFromState(opts)
     opts = U.Type(opts) == "table" and opts or {}
     local deferUiRefresh = opts.deferUiRefresh == true
@@ -2825,7 +2846,7 @@ function NPCS.reconcileAllFromState(opts)
         end
     end
     if reconcileStepEnabled(opts, 3) then
-        if not reconcileStepThreeSeatPlacements(intent) then
+        if not reconcileStepThreeSeatPlacements(intent, opts) then
             allOk = false
         end
     end
