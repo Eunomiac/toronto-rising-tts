@@ -383,7 +383,9 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-03 | SHIPPED | INBOX QF | Tarot deck `interactable=false` when hidden — `lib/tarot_toggle.ttslua` + startup sync `core/global_script.ttslua`; build OK |
 | 2026-07-03 | UPDATE | TOR-204 | Inbox Active — expanded Compulsions pick-and-present spec (master deck, anchors, GM Notes schema); state Todo |
 | 2026-07-03 | UPDATE | TOR-225 | Removed stale `blockedBy` TOR-224 (prerequisite Done); state Quick Fix → Todo |
-| 2026-07-03 | PENDING | TOR-282 | Inbox promote — NPC stage token Description JSON stats + ST roll panel wiring; **Linear create failed (workspace quota)** — tasklist bullet added; author create issue manually |
+| 2026-07-03 | PENDING → CREATE | TOR-282 | NPC stage token Description JSON stats + ST roll panel; created after bulk archive freed quota |
+| 2026-07-03 | CREATE+DONE | TOR-283 | INBOX — ST token-on-bag roll type mapping + Werewolf tag; `STR.rollTypeForStorytellerBagDrop`; parent TOR-174 |
+| 2026-07-03 | ARCHIVE | Linear | Bulk-archived 181 Done/Canceled issues via `.dev/scripts/archive-linear-done-issues.mjs` (kept 35 most recent + living-doc); active count now under 250 cap |
 | 2026-07-03 | `/tr-inbox` | Focus | Re-stacked #1 TOR-225 (dice sort), #2 TOR-226 (secret ST rolls), #3 TOR-281 (Clear seat + library persistence); TOR-224 Done this cycle |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

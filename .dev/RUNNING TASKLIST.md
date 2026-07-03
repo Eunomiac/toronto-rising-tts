@@ -12,13 +12,12 @@ This file is continuously updated with issues and plans for feature development.
 
 ## Focus
 
-_Stack rank for the current cycle (2026-07-03 post **TOR-224** ST selective reroll Done + **TOR-262** / **TOR-259** / **TOR-260** verified). **Precedence** = Focus stack + Linear **`blockedBy`** (not Linear priority). **TOR-141 (E2E playbooks)** is a living doc (In Progress, not Focus stack). **Back-burner / “Deferred this cycle” is paused** (author 2026-06-21) — open work stays in domain sections; sequence via Linear blockers only._
+_Stack rank for the current cycle (2026-07-03 post **TOR-224** ST selective reroll Done + **TOR-225** display strip sort Done + **TOR-262** / **TOR-259** / **TOR-260** verified). **Precedence** = Focus stack + Linear **`blockedBy`** (not Linear priority). **TOR-141 (E2E playbooks)** is a living doc (In Progress, not Focus stack). **Back-burner / “Deferred this cycle” is paused** (author 2026-06-21) — open work stays in domain sections; sequence via Linear blockers only._
 
 | # | Issue | Why now |
 | --- | --- | --- |
-| 1 | **TOR-225** — Display strip canonical dice face sort order | Natural follow-on to TOR-224 Done; broadcast + panel consistency |
-| 2 | **TOR-226** — Secret Storyteller rolls | ST dice UX cluster; completes reroll/sort/secret roll trio |
-| 3 | **TOR-281** — Stage Clear seat activation + library persistence | NPC/scene workflow gap after TOR-250 Done; pairs with TOR-244 library edits |
+| 1 | **TOR-226** — Secret Storyteller rolls | ST dice UX cluster; completes reroll/sort/secret roll trio |
+| 2 | **TOR-281** — Stage Clear seat activation + library persistence | NPC/scene workflow gap after TOR-250 Done; pairs with TOR-244 library edits |
 
 **Also in cycle (below top stack):** **TOR-144** (Multiplayer E2E playbook — pre-invite checklist shipped in Preparing doc; multiclient pass via **TOR-249** human gate: friend on second machine). **TOR-95** (play-as-NPC, `blockedBy` **TOR-247** seat decoupling). **ST dice UX** — **TOR-226** (secret ST rolls) / **TOR-252** (NPC broadcast figurine for duplicate fullName — Done). **TOR-222** (clock fast-forward). **Scenes inbox promotions** — **TOR-244** (library preview/edit), **TOR-247** (rotational seat layout), **TOR-281** (Clear seat activation + library persistence). **Projects (human gates):** **TOR-228**–**TOR-231**; **TOR-232** (`blockedBy` TOR-228–231). Dice E2E (**TOR-141** living doc) baseline shipped.
 
@@ -66,7 +65,7 @@ _Stack rank for the current cycle (2026-07-03 post **TOR-224** ST selective rero
 - [x] **Rouse check Roll doubles pool:** Clicking Roll after PRE_ROLL staging spawns duplicate Rouse/Obliv-Rouse dice (pool doubles). _(TOR-198 — `spawnMissingPoolDiceForColor`; author confirmed resolved 2026-06-14.)_
 - [x] **Oblivion Rouse copy:** Prompt `Hunger or Stain?`; post-choice broadcast `Hunger Roused` / `Stained` (not stuck on choose prompt). _(TOR-214)_
 - [x] **ST roll panel selective reroll:** Clickable dice images on ST dashboard; highlight + Reroll button; map to physical dice; no ST reroll caps (hunger OK, repeat until Confirm). _(TOR-224)_
-- [ ] **Dice display strip sort order:** Canonical face ordering on player/ST panels + broadcast; brutal Violence → Rage Jaws first in broadcast only. _(TOR-225)_
+- [x] **Dice display strip sort order:** Canonical face ordering on player/ST panels + broadcast; werewolf Rage Jaws pairing (floor(n/2)*2 front, odd jaw at end). _(TOR-225)_
 - [ ] **Secret Storyteller rolls:** Right-click Roll hides dice from players; right-click Confirm/Take Half suppresses broadcast; manual Broadcast button on dashboard. _(TOR-226)_
 - [x] **Hunger 5 voluntary rouse lockout:** At Hunger 5, Blood Surge + Obliv-Rouse locked; forced standard Rouse allowed; failed rouse → Frenzy Resist D4 queue. _(TOR-203 — 2026-06-15)_
 
@@ -102,6 +101,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **NPC area cutouts on scene apply:** Mis-nested `npcWorld` at import root (spreadsheet JSON) left `sessionScene.npcWorld.byArea` empty — scene apply/reconcile was fine when data was nested correctly. Fixed spreadsheet; import validator now rejects unexpected root keys (no hoisting). _(TOR-135)_
 - [x] **ST rolls dice for NPCs:** Control-board token on ST dice bag → `STR.initiateFromBagLabel` (TOR-174); ST dashboard roll pipeline; ST roll camera intentionally no-op for Black. _(TOR-79 — 2026-06-15)_
 - [x] **NPC token on ST dice bag:** Drop control token on dice bag → roll for that NPC with bag type; token returns to committed home (placement, homeland seat row, or palette). _(TOR-174 — author confirmed 2026-06-15.)_
+- [x] **ST token-on-bag roll type mapping:** Bag kind → roll type (Hunger→Discipline, Werewolf bag→Willpower, Rage→Frenzy, etc.); `Werewolf`-tagged tokens → Werewolf on any bag. `STR.rollTypeForStorytellerBagDrop`. _(TOR-283)_
 - [x] **Seated snap row token scale:** Seat snaps `{0.7,1,0.7}`; polar/palette/off-board `{0.2,1,0.2}` on pick-up, drop, and mirror. _(TOR-199 — author confirmed 2026-06-15.)_
 - [x] **Seat snap Y-rotation:** Board-local **Y=180°** (`snapYawOffsetDeg`) on nine seat-row snaps offsets CONTROL_BOARD world Y=180°. _(TOR-200 — author confirmed 2026-06-15.)_
 - [x] **Apply seat/table snap doesn't seat NPC:** `commitNpcSeatLayout` → `RSL.SyncTable({ force = true })`; layout fingerprint no longer skips in-area occupants on Apply. _(TOR-210 — author confirmed 2026-06-15.)_
@@ -113,7 +113,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Palette parking snap Z offset:** Nudge token parking snaps toward vMax for group labels beneath (`parkingSnapLocalZOffset` default 0.1). _(TOR-227)_
 - [x] **CONTROL_BOARD seat row lower-left:** Seat-assignment snaps at v=0.12, u=0.05–0.35 (center ≈ 0.2). _(TOR-242)_
 - [x] **NPC spotlight Y on seat→stage:** Seated NPC moved to lit stage placement — spotlight spawns at feet instead of bounds-aligned Y. _(TOR-234 — seat→stage ImageScalar defer; scalar>53 face +24 / position +12 @63)_
-- [ ] **Stage control token Description JSON stats + ST roll panel:** Token Description holds optional JSON (`hunger`, `health`, `willpower`, `commonRolls`); seed from `npcs_data.ttslua`; ST roll panel shows trackers + common-roll buttons with auto-hunger. _(TOR-282 — Linear issue pending quota; create when restored)_
+- [ ] **Stage control token Description JSON stats + ST roll panel:** Token Description holds optional JSON (`hunger`, `health`, `willpower`, `commonRolls`); seed from `npcs_data.ttslua`; ST roll panel shows trackers + common-roll buttons with auto-hunger. _(TOR-282)_
 - [ ] **Rotational seat index layout:** Dynamic PC seat positions by presence-sorted index; hand-position reference for color-tagged objects. _(TOR-247)_
 - [x] **Deactivated seat when NPC on stage:** Apply sets `isPresent = false` when homeland character gains `placements` row; retain `occupiedNPCSlots`; Clear re-seats; import validates active seat+stage (reject) vs inactive dual (allow) + duplicate seat assignment. _(TOR-250)_
 - [x] **Apply/Clear off-seat light flicker:** RSL layout sync no longer eager-writes NPC homeland workshop lights; Step Four `L.reconcileForPlayer` for all assigned NPC seats (state-derived OFF for deactivated/stage-bound). _(TOR-265)_
