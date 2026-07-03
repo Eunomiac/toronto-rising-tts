@@ -2326,9 +2326,10 @@ function RC.spendWillpower(color)
     active.phase       = C.RollPhase.ROLLING
     active.batonHolder = C.BatonHolder.AUTO
     active.result      = nil
-    active.diceDisplay = nil
-    active.diceFaces   = nil
+    -- Keep diceFaces/diceDisplay so roll panels stay populated during the WP wave;
+    -- preview recalculate updates faces as dice settle (TOR-224 ST strip).
     cancelDebounce(color)
+    RC.clearStSelectiveReroll(color)
 
     applyWpRerollWaveStart(color, active)
     RollConditionHandlers.run("onWillpowerSpent", color, active)

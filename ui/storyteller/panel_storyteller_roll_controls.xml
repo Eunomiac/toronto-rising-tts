@@ -31,8 +31,8 @@
   <Text class="grid_strip_cell_difficulty_text" fontSize="9" fontStyle="Bold" color="#FFFFFF" />
 
   <HorizontalLayout class="rollPanelST_diceRolls_container" spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false" childForceExpandHeight="false" minHeight="48" preferredHeight="48" />
-  <Panel class="rollPanelST_dieSlot" childForceExpandWidth="false" childForceExpandHeight="false" padding="0 0 0 0" />
-  <Image class="rollPanelST_die" active="false" preferredWidth="30" preserveAspect="True" />
+  <Panel class="rollPanelST_dieSlot" childForceExpandWidth="false" childForceExpandHeight="false" padding="1 1 1 1" color="rgba(0,0,0,0.01)" outline="rgba(0,0,0,0)" outlineSize="0 0" />
+  <Image class="rollPanelST_die" active="false" preferredWidth="30" preserveAspect="True" outline="rgba(0,0,0,0)" outlineSize="0 0" />
 
   <HorizontalLayout class="rollPanelST_successes_container" spacing="10" height = "40" rectAlignment = "LowerCenter" childForceExpandHeight = "true" childAlignment="MiddleRight" childForceExpandWidth="false" padding="0 50 0 0" />
 

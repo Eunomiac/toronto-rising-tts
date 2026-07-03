@@ -376,6 +376,15 @@ local function refreshDiceImages(idPrefix, diceFaces)
     end
 end
 
+--- ST selective-reroll die highlight (rollPanelST die strip).
+local ST_DIE_OUTLINE_SELECTED = "#C9A84C"
+local ST_DIE_OUTLINE_SIZE_SLOT = "3 3"
+local ST_DIE_OUTLINE_SIZE_IMAGE = "2 -2"
+local ST_DIE_OUTLINE_CLEAR = "rgba(0,0,0,0)"
+local ST_DIE_OUTLINE_SIZE_CLEAR = "0 0"
+local ST_DIE_SLOT_COLOR_SELECTED = "rgba(201, 168, 76, 0.35)"
+local ST_DIE_SLOT_COLOR_CLEAR = "rgba(0, 0, 0, 0.01)"
+
 --- Updates ST roll panel die images and slot outline highlights for selective reroll.
 -- @param diceFaces table|nil
 -- @param selectedGuids table|nil  map guid → true
@@ -392,13 +401,38 @@ local function refreshStDieSlots(diceFaces, selectedGuids)
             U.setAttribute(slotId, "active", "true")
             local guid = type(face.guid) == "string" and face.guid or nil
             if guid ~= nil and selected[guid] == true then
-                U.setAttributes(slotId, { outline = "#C9A84C", outlineSize = "2 2" })
+                U.setAttributes(slotId, {
+                    outline = ST_DIE_OUTLINE_SELECTED,
+                    outlineSize = ST_DIE_OUTLINE_SIZE_SLOT,
+                    color = ST_DIE_SLOT_COLOR_SELECTED,
+                })
+                U.setAttributes(dieId, {
+                    outline = ST_DIE_OUTLINE_SELECTED,
+                    outlineSize = ST_DIE_OUTLINE_SIZE_IMAGE,
+                })
             else
-                U.setAttributes(slotId, { outline = "", outlineSize = "0 0" })
+                U.setAttributes(slotId, {
+                    outline = ST_DIE_OUTLINE_CLEAR,
+                    outlineSize = ST_DIE_OUTLINE_SIZE_CLEAR,
+                    color = ST_DIE_SLOT_COLOR_CLEAR,
+                })
+                U.setAttributes(dieId, {
+                    outline = ST_DIE_OUTLINE_CLEAR,
+                    outlineSize = ST_DIE_OUTLINE_SIZE_CLEAR,
+                })
             end
         else
             U.setAttribute(dieId, "active", "false")
-            U.setAttributes(slotId, { active = "false", outline = "", outlineSize = "0 0" })
+            U.setAttributes(slotId, {
+                active = "false",
+                outline = ST_DIE_OUTLINE_CLEAR,
+                outlineSize = ST_DIE_OUTLINE_SIZE_CLEAR,
+                color = ST_DIE_SLOT_COLOR_CLEAR,
+            })
+            U.setAttributes(dieId, {
+                outline = ST_DIE_OUTLINE_CLEAR,
+                outlineSize = ST_DIE_OUTLINE_SIZE_CLEAR,
+            })
         end
     end
 end
@@ -845,6 +879,13 @@ local function phaseLabel(active, color)
                 return "Choose outcome below"
             end
             if active.result ~= nil then
+                if type(active.diceFaces) == "table" then
+                    for _, face in ipairs(active.diceFaces) do
+                        if type(face.guid) == "string" and face.guid ~= "" then
+                            return "Click dice to reroll, then Confirm"
+                        end
+                    end
+                end
                 return "Confirm result when ready"
             end
             return "Reading dice..."
@@ -1094,6 +1135,21 @@ local function refreshStRollPanel(active)
     local isRolling  = active.phase == C.RollPhase.ROLLING
     local isPostRoll = active.phase == C.RollPhase.POST_ROLL
 
+    local pendingChoice = isPostRoll and (
+        active.pendingResolution == C.PendingResolution.OBLIV_HUNGER_STAIN
+        or active.pendingResolution == C.PendingResolution.BRUTAL_FAIL_VIOLENCE
+    )
+
+    local facesHaveGuid = false
+    if type(active.diceFaces) == "table" then
+        for _, face in ipairs(active.diceFaces) do
+            if type(face.guid) == "string" and face.guid ~= "" then
+                facesHaveGuid = true
+                break
+            end
+        end
+    end
+
     local result = active.result
     local hidesDifficulty = active.rollType == C.RollType.SIMPLE_CHECK
         or active.rollType == C.RollType.ROUSE
@@ -1141,22 +1197,11 @@ local function refreshStRollPanel(active)
     local isWpWaveRolling = isRolling
         and active.willpower ~= nil
         and active.willpower.wpRerollWave == true
-    local pendingChoice = isPostRoll and (
-        active.pendingResolution == C.PendingResolution.OBLIV_HUNGER_STAIN
-        or active.pendingResolution == C.PendingResolution.BRUTAL_FAIL_VIOLENCE
-    )
-    uiSetActive("rollPanelST_btnWP", wpAvailable)
+    -- TOR-224: ST panel selective reroll (click dice + REROLL) replaces WP wave when faces are mapped.
+    local showStWp = wpAvailable and not (facesHaveGuid and not pendingChoice)
+    uiSetActive("rollPanelST_btnWP", showStWp)
     uiSetActive("rollPanelST_btnRecalc", canRecalc)
 
-    local facesHaveGuid = false
-    if type(active.diceFaces) == "table" then
-        for _, face in ipairs(active.diceFaces) do
-            if type(face.guid) == "string" and face.guid ~= "" then
-                facesHaveGuid = true
-                break
-            end
-        end
-    end
     local stRerollInProgress = type(active.stSelectiveReroll) == "table"
         and active.stSelectiveReroll.inProgress == true
     local canStSelectiveReroll = isPostRoll and not pendingChoice and facesHaveGuid
