@@ -266,10 +266,14 @@ Object scripts run in a **separate Lua VM** from Global. They must not pull the 
 **Verify bundle size**
 
 ```powershell
+npm run check:bundle-size-gate          # build gate: luabundle object entries + spike baseline
+npm run check:bundle-size-gate -- --write-baseline   # approve intentional size growth
 npm run tts-save:bundle-csheet-sample   # local luabundle without Save & Play
 npm run tts-save:measure-bundles        # sizes + regression checks
 npm run tts-save:measure-bundles -- --estimate   # require-tree only
 ```
+
+Baseline: `.dev/build-logs/bundle-size-gate.json` (updated on each passing `npm run build`). Fails on hard byte ceilings, `core.*` / `lib.constants` in thin object bundles, or **>20% / >8 KB** growth vs baseline (catches dice-bag-style regressions without Save & Play).
 
 Without `.tts/bundled/` output, the script prints a **require-tree estimate** from `ui.ui_csheet` and flags heavy modules (`core.*`, `lib.pc_stats`, `lib.constants`, …). `lib.blood_potency_constants` is allowed on the CSHEET path. After Save & Play bundles one CSHEET object, it also reports `.tts/bundled/CSHEET_*.lua` sizes and regression checks. NPC Control Board bundles must stay under 10 KB with no `core.*` modules.
 

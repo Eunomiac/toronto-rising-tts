@@ -13,6 +13,10 @@ const OUT_DIR = path.join(REPO_ROOT, ".tts/bundled");
 
 const SAMPLES = [
   {
+    outName: "DICEBAG_NORMAL_BROWN.sample.lua",
+    entry: 'require("objects.dice_bag")\n',
+  },
+  {
     outName: "CSHEET_PAGE_1_BROWN.sample.lua",
     entry: 'require("ui.ui_csheet")\n',
   },

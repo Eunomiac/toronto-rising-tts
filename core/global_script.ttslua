@@ -336,6 +336,17 @@ function GlobalApplyTarotState(params)
     return TarotToggle.applyState(params.targetOn, params.buttonGuid)
 end
 
+--- Read-only tarot on/off inference for object onLoad (keeps ui_tarot_button bundle thin).
+--- @param params table { buttonGuid?: string, fallback?: boolean }
+--- @return boolean
+function GlobalInferTarotState(params)
+    if type(params) ~= "table" then
+        return false
+    end
+    local TarotToggle = require("lib.tarot_toggle")
+    return TarotToggle.inferCurrentState(params.buttonGuid, params.fallback == true)
+end
+
 --- NPC gameboard: Apply tokens on CONTROL_BOARD → `sessionScene.npcWorld.placements` → `Sync.npcs`.
 --- @param params table|nil
 --- @return boolean

@@ -7,7 +7,6 @@
 ]]
 
 local CU = require("lib.csheet_util")
-local TarotToggle = require("lib.tarot_toggle")
 
 local isOn = false
 local desiredOn = false
@@ -113,7 +112,16 @@ function onLoad(savedData)
     end
     createClickButtons()
     runWhenSeatLayoutReady(function()
-        isOn = TarotToggle.inferCurrentState(self.getGUID(), isOn)
+        local inferred = isOn
+        if Global ~= nil and type(Global.call) == "function" then
+            inferred = Global.call("GlobalInferTarotState", {
+                buttonGuid = self.getGUID(),
+                fallback = isOn,
+            })
+        end
+        if type(inferred) == "boolean" then
+            isOn = inferred
+        end
         desiredOn = isOn
     end)
 end

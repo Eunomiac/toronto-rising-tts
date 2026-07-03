@@ -45,7 +45,7 @@ Canonical inventory: [`.dev/TTS_BUNDLING_SETUP.md`](../../.dev/TTS_BUNDLING_SETU
 1. List **every new or changed `require()`** in object entry files you touched.
 2. Walk the dependency graph — grep the required file for `require("core.` and `require("lib.constants")`.
 3. If any heavy module appears, **stop** and switch to Global.call or a thinner object-only module.
-4. Run `npm run tts-save:measure-bundles` when CSHEET/NPC/dice stubs changed; flag any object bundle with `core.*` or `lib.constants` as regression.
+4. Run `npm run check:bundle-size-gate` (also in `npm run build`) when CSHEET/NPC/dice stubs changed; flag any object bundle with `core.*` or `lib.constants` as regression.
 5. After substantive object-script edits, **Save & Play once** — bundle bloat does not show in `npm run build`.
 
 ## Symptom → likely cause

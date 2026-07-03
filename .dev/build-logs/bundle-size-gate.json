@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "updated": "2026-07-03T13:35:10.135Z",
+  "entries": {
+    "objects.dice_bag": {
+      "bytes": 57224,
+      "modules": 4
+    },
+    "ui.ui_csheet": {
+      "bytes": 53009,
+      "modules": 10
+    },
+    "ui.ui_csheet_page3": {
+      "bytes": 112911,
+      "modules": 16
+    },
+    "ui.ui_csheet_page4": {
+      "bytes": 125022,
+      "modules": 16
+    },
+    "ui.ui_csheet_page5": {
+      "bytes": 55061,
+      "modules": 13
+    },
+    "ui.ui_csheet_page6": {
+      "bytes": 55057,
+      "modules": 13
+    },
+    "ui.ui_signal_candle": {
+      "bytes": 4023,
+      "modules": 2
+    },
+    "ui.ui_tarot_button": {
+      "bytes": 7501,
+      "modules": 3
+    },
+    "objects.npc_control_board": {
+      "bytes": 6030,
+      "modules": 2
+    },
+    "objects.npc_control_board_palette": {
+      "bytes": 1808,
+      "modules": 2
+    },
+    "core.soundscape_emitter_object": {
+      "bytes": 34269,
+      "modules": 3
+    }
+  }
+}
