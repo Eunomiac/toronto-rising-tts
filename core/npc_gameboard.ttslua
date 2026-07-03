@@ -3891,13 +3891,13 @@ local function restorePcControlTokenHome(token, color)
 end
 
 --- Storyteller drops a `pc_control_token` on a dice bag → always return the token home, and
---- on the Normal/Hunger bag report the PC color so the caller can initiate a Standard roll
---- (just like the "Standard" button in the ST PCs panel). Other bags do nothing but still
---- return the token home (TOR-236 follow-up).
+--- report the PC color + roll type from `STR.rollTypeForStorytellerBagDrop` (same mapping as NPC
+--- tokens and the bag name modal — TOR-236 / TOR-283).
 --- @param token Object
 --- @param playerColor string|nil
 --- @return boolean consumed true when the drop hit an ST bag and was handled
---- @return string|nil rollColor PC seat color to start a Standard roll for (Normal/Hunger only)
+--- @return string|nil rollColor PC seat color to start a roll for
+--- @return string|nil rollType `C.RollType` for the roll
 local function tryPcControlTokenDroppedOnStorytellerDiceBag(token, playerColor)
     if not isPcControlToken(token) then
         return false
@@ -3927,11 +3927,21 @@ local function tryPcControlTokenDroppedOnStorytellerDiceBag(token, playerColor)
 
     restorePcControlTokenHome(token, color)
 
-    local rollColor = nil
-    if bagKind == DK.KIND_NORMAL or bagKind == DK.KIND_HUNGER then
-        rollColor = color
+    local dieKind = bagKind
+    if dieKind ~= DK.KIND_NORMAL
+        and dieKind ~= DK.KIND_HUNGER
+        and dieKind ~= DK.KIND_ROUSE
+        and dieKind ~= DK.KIND_OBLIV_ROUSE
+        and dieKind ~= DK.KIND_WEREWOLF
+        and dieKind ~= DK.KIND_RAGE then
+        dieKind = DK.KIND_NORMAL
     end
-    return true, rollColor
+
+    local tokenIsWerewolf = token.hasTag ~= nil and token.hasTag("Werewolf") == true
+
+    local STR = require("core.storyteller_rolls")
+    local rollType = STR.rollTypeForStorytellerBagDrop(dieKind, { tokenIsWerewolf = tokenIsWerewolf })
+    return true, color, rollType
 end
 
 Gameboard.restorePcControlTokenHome = restorePcControlTokenHome

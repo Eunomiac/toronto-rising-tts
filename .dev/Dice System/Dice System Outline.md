@@ -893,7 +893,7 @@ Key element IDs: fullscreen `rollRes_panel`; split header (`rollRes_rollType`, `
 
 **Figure cutout resolution (`resolveRollFigureAssetKey`):** PC rolls use `playerData[pid].charKey`. ST (Black) NPC rolls prefer the **authoritative `npcCharacterKey`** carried on the active roll → history entry (set by `RC.initiateRoll` from `config.npcCharacterKey`, threaded by `STR.initiateNpcRoll` / `initiateFromBagLabel` and the control-token-on-bag path). This avoids the ambiguous `resolveCharacterKeyByDisplayName` reverse-lookup, which returns the **first** `fullName` match and picked the wrong cutout for human/garou pairs that share a display name (e.g. "Rot-in-the-River" — **TOR-252**). Free-text bag-modal rolls (no key) still fall back to display-name lookup.
 
-**ST bag → roll type (`STR.rollTypeForStorytellerBagDrop`):** Normal→Standard, Hunger→Discipline, Werewolf bag→Willpower, Rage→Frenzy, Rouse→Rouse, Obliv-Rouse→Remorse at `SessionEnd` else Oblivion-Rouse; `Werewolf`-tagged control tokens → Werewolf on any bag. Used by bag name modal and NPC token-on-bag drop (`tryNpcControlTokenDroppedOnStorytellerDiceBag`).
+**ST bag → roll type (`STR.rollTypeForStorytellerBagDrop`):** Normal→Standard, Hunger→Discipline, Werewolf bag→Willpower, Rage→Frenzy, Rouse→Rouse, Obliv-Rouse→Remorse at `SessionEnd` else Oblivion-Rouse; `Werewolf`-tagged control tokens → Werewolf on any bag. Used by bag name modal, NPC token-on-bag drop (`tryNpcControlTokenDroppedOnStorytellerDiceBag`), and PC token-on-bag drop (`tryPcControlTokenDroppedOnStorytellerDiceBag` → `RC.initiateRoll`).
 
 ### 10.4 Storyteller roll panel grid strips (`rollPanelST`)
 

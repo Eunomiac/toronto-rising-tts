@@ -2111,12 +2111,14 @@ function GlobalGameboardPcTokenDroppedOnDiceBag(params)
     if type(Gameboard.tryPcControlTokenDroppedOnStorytellerDiceBag) ~= "function" then
         return false
     end
-    local consumed, rollColor = Gameboard.tryPcControlTokenDroppedOnStorytellerDiceBag(token, playerColor)
+    local consumed, rollColor, rollType = Gameboard.tryPcControlTokenDroppedOnStorytellerDiceBag(token, playerColor)
     if consumed ~= true then
         return false
     end
-    if type(rollColor) == "string" and rollColor ~= "" and RC ~= nil then
-        local ok = RC.initiateRoll(rollColor, { rollType = C.RollType.STANDARD, initiator = "storyteller" })
+    if type(rollColor) == "string" and rollColor ~= ""
+        and type(rollType) == "string" and rollType ~= ""
+        and RC ~= nil then
+        local ok = RC.initiateRoll(rollColor, { rollType = rollType, initiator = "storyteller" })
         if ok then
             GlobalSpawnDefaultPoolDiceForActive({ color = rollColor })
         end
