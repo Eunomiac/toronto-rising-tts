@@ -2,6 +2,9 @@
 node_modules/
 yarn.lock
 
+# Local secrets (Linear API, etc.)
+.env
+
 # Storyteller dashboard secrets (copy from .env.example in each app folder)
 .dev/storyteller-dashboard/.env
 .dev/storyteller-dashboard-pr9/.env
