@@ -4378,6 +4378,7 @@ local function finishRollRelease(color)
                 RC.onLiveConcurrencyChanged()
             end
         end
+        DiceDrawer.closeAfterRoll(color)
         return false
     end
     unlockStagedBagDice(color)
@@ -4445,8 +4446,11 @@ function GlobalWaitDrawerThenReleaseBagDice()
                 return
             end
         end
+        if finishRollRelease(job.color) ~= true then
+            job.completed = true
+            return
+        end
         job.completed = true
-        finishRollRelease(job.color)
         if type(job.onComplete) == "function" then
             job.onComplete()
         end
@@ -4519,7 +4523,9 @@ local function releaseBagDice(color, onComplete)
         if beginPcLiveRollRelease(color) ~= true then
             return
         end
-        finishRollRelease(color)
+        if finishRollRelease(color) ~= true then
+            return
+        end
         if type(onComplete) == "function" then
             onComplete()
         end
