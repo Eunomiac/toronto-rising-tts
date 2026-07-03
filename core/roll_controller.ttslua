@@ -508,6 +508,67 @@ local function computeAutoPoolForRollType(color, rollType)
     return nil
 end
 
+--- Resolves the initial pool for a roll type (initiate + type change).
+-- @param color string
+-- @param rollType string
+-- @param configPool table|nil  explicit pool from config; nil triggers auto-populate
+-- @return table normalized pool
+local function resolveInitialPoolForRollType(color, rollType, configPool)
+    if rollType == C.RollType.SIMPLE_CHECK then
+        return DK.normalizePool({ normal = 1, hunger = 0 })
+    end
+    if rollType == C.RollType.ROUSE then
+        return DK.normalizePool({ rouse = 1 })
+    end
+    if rollType == C.RollType.ROUSE_OBLIVION then
+        return DK.normalizePool({ oblivRouse = 1 })
+    end
+    if rollType == C.RollType.REMORSE then
+        local pid           = S.getPlayerID(color)
+        local humanityBoxes = 7
+        local stains        = 0
+        if pid ~= nil then
+            local stats = S.getStateVal("playerData", pid, "stats")
+            if U.Type(stats) == "table" and type(stats.humanity) == "table" then
+                local ctx = ES.forPlayer(pid)
+                humanityBoxes = ctx.trackerMax("humanity")
+                stains        = tonumber(stats.humanity.stains) or 0
+            elseif U.Type(stats) == "table" then
+                humanityBoxes = tonumber(stats.humanity) or 7
+                stains        = tonumber(stats.stains) or 0
+            end
+        end
+        return DK.normalizePool({
+            normal = Dice.remorsePool(humanityBoxes, stains),
+            hunger = 0,
+        })
+    end
+
+    local pool = DK.normalizePool(configPool)
+    if configPool == nil then
+        local autoPool = computeAutoPoolForRollType(color, rollType)
+        if autoPool ~= nil then
+            return autoPool
+        end
+    elseif C.RollTypesWithoutHunger[rollType] then
+        pool.hunger = 0
+    end
+    return pool
+end
+
+--- Difficulty auto-set for roll types that hide ST difficulty input.
+-- @param rollType string
+-- @return number|nil
+local function autoDifficultyForRollType(rollType)
+    if rollType == C.RollType.SIMPLE_CHECK
+        or rollType == C.RollType.ROUSE
+        or rollType == C.RollType.ROUSE_OBLIVION
+        or rollType == C.RollType.REMORSE then
+        return 1
+    end
+    return nil
+end
+
 -- ============================================================================
 -- LIVE DICE READING
 -- ============================================================================
@@ -881,42 +942,7 @@ function RC.initiateRoll(color, config)
         return false
     end
 
-    -- Auto-compute pool for special roll types
-    local pool = DK.normalizePool(config.pool)
-
-    if config.rollType == C.RollType.SIMPLE_CHECK then
-        pool = DK.normalizePool({ normal = 1, hunger = 0 })
-    elseif config.rollType == C.RollType.ROUSE then
-        pool = DK.normalizePool({ rouse = 1 })
-    elseif config.rollType == C.RollType.ROUSE_OBLIVION then
-        pool = DK.normalizePool({ oblivRouse = 1 })
-    elseif config.rollType == C.RollType.REMORSE then
-        local pid            = S.getPlayerID(color)
-        local humanityBoxes  = 7
-        local stains         = 0
-        if pid ~= nil then
-            local stats = S.getStateVal("playerData", pid, "stats")
-            if U.Type(stats) == "table" and type(stats.humanity) == "table" then
-                local ctx = ES.forPlayer(pid)
-                humanityBoxes = ctx.trackerMax("humanity")
-                stains        = tonumber(stats.humanity.stains) or 0
-            elseif U.Type(stats) == "table" then
-                humanityBoxes = tonumber(stats.humanity) or 7
-                stains        = tonumber(stats.stains) or 0
-            end
-        end
-        pool = DK.normalizePool({
-            normal = Dice.remorsePool(humanityBoxes, stains),
-            hunger = 0,
-        })
-    elseif config.pool == nil then
-        local autoPool = computeAutoPoolForRollType(color, config.rollType)
-        if autoPool ~= nil then
-            pool = autoPool
-        end
-    elseif C.RollTypesWithoutHunger[config.rollType] then
-        pool.hunger = 0
-    end
+    local pool = resolveInitialPoolForRollType(color, config.rollType, config.pool)
 
     local skipSetup = config.skipSetup == true
         or RO.isRouseFamilyRoll(config.rollType)
@@ -940,11 +966,7 @@ function RC.initiateRoll(color, config)
         -- Simple Check, Rouse, and Remorse auto-set difficulty=1 so the standard
         -- classification path works without requiring the ST to enter a value.
         -- The difficulty is hidden from the player panel for these roll types.
-        difficulty  = config.difficulty
-            or ((config.rollType == C.RollType.SIMPLE_CHECK
-                 or config.rollType == C.RollType.ROUSE
-                 or config.rollType == C.RollType.ROUSE_OBLIVION
-                 or config.rollType == C.RollType.REMORSE) and 1 or nil),
+        difficulty  = config.difficulty or autoDifficultyForRollType(config.rollType),
         tookHalf    = false,
         takeHalfAwaitingRouse = false,
         takeHalfPartial = nil,
@@ -990,6 +1012,89 @@ function RC.initiateRoll(color, config)
                 RC.openRoll(color)
             end
         end, 3)
+    end
+
+    return true
+end
+
+--- Changes the roll type on an active roll (ST Roll Options modal). Clears staged/table
+-- dice, applies auto-populated pool for the new type, and re-seeds roll options/policy.
+-- @param color string
+-- @param rollType string  C.RollType value
+-- @return boolean
+function RC.changeRollType(color, rollType)
+    U.Val("RC.changeRollType()", { color = color, rollType = rollType },
+        U.Type(color) == "string" and U.Type(rollType) == "string",
+        "color and rollType must be strings")
+
+    if not U.requireHostForWorldMutation("RC.changeRollType") then
+        return false
+    end
+
+    local active = getActive(color)
+    if active == nil then
+        print(string.format("[RC] changeRollType: no active roll for %s", color))
+        return false
+    end
+    if active.rollType == rollType then
+        return true
+    end
+    if active.phase ~= C.RollPhase.SETUP and active.phase ~= C.RollPhase.PRE_ROLL then
+        print(string.format(
+            "[RC] changeRollType: %s roll is past PRE_ROLL (phase: %s)", color, active.phase))
+        return false
+    end
+
+    cancelDebounce(color)
+    cancelWpDieLockWaitsForColor(color)
+
+    if active.meta ~= nil and active.meta.bloodSurgeActive == true then
+        RC.deactivateBloodSurge(color)
+        active = getActive(color)
+        if active == nil then
+            return false
+        end
+    end
+
+    local rollId = active.id
+    Global.call("GlobalDestroyBagDice", { color = color })
+    if type(rollId) == "string" then
+        if color == "Black" then
+            local STR = require("core.storyteller_rolls")
+            STR.destroyTableDiceForRollId(rollId)
+        else
+            Global.call("GlobalDestroyPlayerTableDiceForRoll", { color = color, rollId = rollId })
+        end
+    end
+
+    active.rollType = rollType
+    active.pool = resolveInitialPoolForRollType(color, rollType, nil)
+    active.difficulty = autoDifficultyForRollType(rollType)
+    active.tookHalf = false
+    active.takeHalfAwaitingRouse = false
+    active.takeHalfPartial = nil
+    active.result = nil
+    active.diceDisplay = nil
+    active.pendingResolution = nil
+    active.rouseOutcomeStrips = {}
+    active.meta = DK.defaultMeta()
+
+    RO.seedActiveRoll(active)
+    active.rollConditionOverlay = { forceOn = {}, forceOff = {} }
+    local policyPlayerID = S.getPlayerID(color)
+    if policyPlayerID ~= nil then
+        RC.computeEffectiveRollState(color, active)
+        RollConditionHandlers.run("onRollInitiated", color, active)
+    end
+    seedWillpowerBlock(active)
+    ensureActiveShape(active)
+    RO.sanitizeRollOptions(active)
+
+    setActive(color, active)
+    notifyStateChanged(color)
+
+    if active.phase == C.RollPhase.PRE_ROLL and color ~= "Black" and DK.poolTotal(active.pool) > 0 then
+        Global.call("GlobalSpawnActivePoolDiceForActive", { color = color })
     end
 
     return true

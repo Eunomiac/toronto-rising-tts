@@ -54,8 +54,8 @@ _Stack rank for the current cycle (2026-06-27 `/tr-inbox`, post Stats panel + sc
 - [x] **Player dice spawn arc radii:** `RING_STEP` 2 → 1.5 in `objects/dice_bag.ttslua`. _(TOR-241)_
 - [x] **Dice spawn-arc overflow layering:** cap 10 dice/arc; extras stack onto higher (+2 y), slightly-larger concentric arcs so dense pools stop scattering on unlock (player + ST). `objects/dice_bag.ttslua` `worldArcPoint`. _(TOR-253)_
 - [x] **Blood Surge active disables Take Half:** `canHalf` / `phaseLabel` + `RC.takeHalf` guard when `meta.bloodSurgeActive`. _(TOR-255)_
-- [ ] **Willpower, Discipline, Humanity, Frenzy roll types:** PCs panel + auto-populate + roll policy per type. _(TOR-259)_
-- [ ] **ST Roll Options dash — roll-type selector rows:** Wire modal button rows; exclusive active class; pool reset on type change; hide O-Rouse without bag. `blockedBy` **TOR-259**. _(TOR-260)_
+- [x] **Willpower, Discipline, Humanity, Frenzy roll types:** PCs panel + auto-populate + roll policy per type. _(TOR-259)_
+- [x] **ST Roll Options dash — roll-type selector rows:** Wire modal button rows; exclusive active class; pool reset on type change; hide O-Rouse without bag. `blockedBy` **TOR-259**. _(TOR-260)_
 - [ ] **Single live PC roll:** One live roll at a time; lower other pre-live trays 4y; ST cannot open second PC roll while live. _(TOR-262)_
 - [ ] **Extended Tests:** An "extended test" is a series of rolls, with each roll contributing to a Running Total until a Target (defined by the Storyteller) is met, or the Storyteller stops the test early for any reason. There are four types of extended tests -- Standard, Series, Hard and Cascade -- which define what the Running Total and Target count, and how each roll adds to the Running Total. When the process stops, the final result is a Win if the Running Total equals or exceeds the Target, or a Failure otherwise. _(TOR-74)_
   - **Standard:** The Target represents a total number of successes that the player's Running Total must meet. Each roll contributes its successes to the Running Total. Each roll is made against a Difficulty of zero (i.e. each roll contributes all of its successes to the Running Total).

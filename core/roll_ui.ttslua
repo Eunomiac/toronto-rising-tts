@@ -31,6 +31,7 @@ local DK = require("lib.dice_kinds")
 local NPC_DATA = require("lib.npcs_data")
 local GridStrip = require("lib.grid_strip")
 local RC = require("core.roll_controller")
+local G = require("lib.guids")
 -- Note: core.dice is NOT required here; formatted dice strings are cached on
 -- the active record as active.diceDisplay by RC.recalculate().
 
@@ -239,10 +240,70 @@ local PERM_UI_KEYS = {
     rollOpts_perm_autoHunger             = RO.PERM_AUTO_HUNGER,
 }
 
+--- Roll-type selector buttons in ST Roll Options modal (id → C.RollType).
+local ROLL_OPTS_TYPE_UI_TO_C = {
+    rollOpts_type_standard      = C.RollType.STANDARD,
+    rollOpts_type_discipline    = C.RollType.DISCIPLINE,
+    rollOpts_type_willpower     = C.RollType.WILLPOWER_ROLL,
+    rollOpts_type_frenzy        = C.RollType.FRENZY,
+    rollOpts_type_humanity      = C.RollType.HUMANITY_ROLL,
+    rollOpts_type_rouse         = C.RollType.ROUSE,
+    rollOpts_type_rouseOblivion = C.RollType.ROUSE_OBLIVION,
+    rollOpts_type_remorse       = C.RollType.REMORSE,
+    rollOpts_type_launch        = C.RollType.LAUNCH,
+    rollOpts_type_goal          = C.RollType.GOAL,
+    rollOpts_type_simple        = C.RollType.SIMPLE_CHECK,
+}
+
 --- @param elementId string
 --- @param on boolean
 local function rollOptsSetToggleClass(elementId, on)
     UI.setClass(elementId, on and ROLL_OPTS_TOGGLE_CLASS_ON or ROLL_OPTS_TOGGLE_CLASS_OFF)
+end
+
+--- Exclusive highlight for roll-type row (one active class at a time).
+-- @param rollType string  C.RollType value
+local function rollOptsSyncTypeHighlight(rollType)
+    for uiId, rt in pairs(ROLL_OPTS_TYPE_UI_TO_C) do
+        rollOptsSetToggleClass(uiId, rt == rollType)
+    end
+end
+
+--- Hide O-Rouse when the seat has no Oblivion-Rouse dice bag in the save.
+-- @param color string
+local function rollOptsSyncOblivRouseVisibility(color)
+    uiSetActive("rollOpts_type_rouseOblivion", type(G.GetDiceOblivRouseGUID(color)) == "string")
+end
+
+--- Refreshes per-roll structural + condition draft toggles from active roll state.
+-- @param active table
+-- @param color string
+local function rollOptsRefreshStructuralDraftFromActive(active, color)
+    local rt = active.rollType
+    rollOptsDraft.structural = {
+        [RO.ROLL_TAKE_HALF]   = RO.getForActive(active, RO.ROLL_TAKE_HALF),
+        [RO.ROLL_WP_REROLL]   = RO.getForActive(active, RO.ROLL_WP_REROLL),
+        [RO.ROLL_HUNGER_DICE] = RO.getForActive(active, RO.ROLL_HUNGER_DICE),
+        [RO.ROLL_CRITS]       = RO.getForActive(active, RO.ROLL_CRITS),
+    }
+    for structuralKey, uiId in pairs(STRUCTURAL_UI_IDS) do
+        rollOptsSetToggleClass(uiId, rollOptsDraft.structural[structuralKey] == true)
+    end
+
+    local pid = S.getPlayerID(color)
+    rollOptsDraft.conditions = {}
+    if pid ~= nil then
+        for _, conditionId in ipairs(CD.listRollConditionIds()) do
+            local uiId = "rollCondition_" .. conditionId
+            uiSetActive(uiId, true)
+            local on = Conditions.isRollConditionEffective(pid, active, conditionId)
+            rollOptsDraft.conditions[conditionId] = on
+            rollOptsSetToggleClass(uiId, on)
+        end
+    end
+
+    uiSetInteractable("rollOpts_roll_takeHalf",   not RO.isTakeHalfLocked(rt))
+    uiSetInteractable("rollOpts_roll_hungerDice", not RO.isHungerDiceLocked(rt))
 end
 
 --- Sync negating condition toggle when a structural toggle changes.
@@ -1387,35 +1448,16 @@ function RUI.openRollOptionsModal(color)
         rollOptsSetToggleClass(uiId, rollOptsDraft.permanent[permKey] == true)
     end
 
-    rollOptsDraft.structural = {
-        [RO.ROLL_TAKE_HALF]   = RO.getForActive(active, RO.ROLL_TAKE_HALF),
-        [RO.ROLL_WP_REROLL]   = RO.getForActive(active, RO.ROLL_WP_REROLL),
-        [RO.ROLL_HUNGER_DICE] = RO.getForActive(active, RO.ROLL_HUNGER_DICE),
-        [RO.ROLL_CRITS]       = RO.getForActive(active, RO.ROLL_CRITS),
-    }
-    for structuralKey, uiId in pairs(STRUCTURAL_UI_IDS) do
-        rollOptsSetToggleClass(uiId, rollOptsDraft.structural[structuralKey] == true)
-    end
+    rollOptsRefreshStructuralDraftFromActive(active, color)
+    rollOptsSyncTypeHighlight(active.rollType)
+    rollOptsSyncOblivRouseVisibility(color)
 
-    rollOptsDraft.conditions = {}
-    for _, conditionId in ipairs(CD.listRollConditionIds()) do
-        local uiId = "rollCondition_" .. conditionId
-        uiSetActive(uiId, true)
-        local on = Conditions.isRollConditionEffective(pid, active, conditionId)
-        rollOptsDraft.conditions[conditionId] = on
-        rollOptsSetToggleClass(uiId, on)
-    end
-
-    local rt = active.rollType
     local rerollsStr = tostring(RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_REROLLS))
     local diceRerolledStr = tostring(RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_DICE_REROLLED))
     rollOptsDraft.numberOfRerolls = rerollsStr
     rollOptsDraft.numberOfDiceRerolled = diceRerolledStr
     uiSetInputField("rollOpts_roll_numberOfRerolls", rerollsStr)
     uiSetInputField("rollOpts_roll_numberOfDiceRerolled", diceRerolledStr)
-
-    uiSetInteractable("rollOpts_roll_takeHalf",   not RO.isTakeHalfLocked(rt))
-    uiSetInteractable("rollOpts_roll_hungerDice", not RO.isHungerDiceLocked(rt))
 
     uiSetActive("rollOpts_modal", true)
 end
@@ -1424,6 +1466,27 @@ end
 -- @param id string  Button element id
 function RUI.toggleRollOptsButton(id)
     if type(id) ~= "string" or rollOptsTargetColor == nil then
+        return
+    end
+
+    local rollType = ROLL_OPTS_TYPE_UI_TO_C[id]
+    if rollType ~= nil then
+        local color = rollOptsTargetColor
+        local pid = S.getPlayerID(color)
+        local active = pid and S.getStateVal("playerData", pid, "hud", "rollData", "active")
+        if active == nil or active.rollType == rollType then
+            return
+        end
+        if RC.changeRollType(color, rollType) ~= true then
+            return
+        end
+        active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+        if active == nil then
+            return
+        end
+        rollOptsSyncTypeHighlight(rollType)
+        rollOptsRefreshStructuralDraftFromActive(active, color)
+        RUI.refreshAll()
         return
     end
 
