@@ -152,6 +152,9 @@ local function lowerTrayForColor(color)
   if type(color) ~= "string" or color == "Black" or loweredColors[color] == true then
     return
   end
+  if not U.requireHostForWorldMutation("PRTL.lowerTrayForColor") then
+    return
+  end
   local active = getActiveRoll(color)
   local rollId = type(active) == "table" and active.id or nil
   nudgeObjectY(findDiceDrawerObject(color), LOWER_DELTA_Y)
@@ -167,6 +170,9 @@ local function restoreTrayForColor(color)
   if type(color) ~= "string" or color == "Black" or loweredColors[color] ~= true then
     return
   end
+  if not U.requireHostForWorldMutation("PRTL.restoreTrayForColor") then
+    return
+  end
   local active = getActiveRoll(color)
   local rollId = type(active) == "table" and active.id or nil
   nudgeObjectY(findDiceDrawerObject(color), -LOWER_DELTA_Y)
@@ -178,6 +184,7 @@ local function restoreTrayForColor(color)
 end
 
 --- Called when a PC roll advances to ROLLING (Roll button).
+-- State (`livePcColor`) updates on all clients; tray lowering is host-only (Tier C).
 -- @param liveColor string
 function PRTL.onPcRollGoingLive(liveColor)
   if type(liveColor) ~= "string" or liveColor == "Black" then
@@ -192,6 +199,7 @@ function PRTL.onPcRollGoingLive(liveColor)
 end
 
 --- Restores lowered trays after the live roll finishes cleanup.
+-- Clears `livePcColor` on all clients; physical restore is host-only (Tier C).
 function PRTL.onLivePcRollFinished()
   PRTL.setLivePcColor(nil)
   for _, color in ipairs(C.PlayerColors or {}) do
