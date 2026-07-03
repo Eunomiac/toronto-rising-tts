@@ -2,7 +2,32 @@
 
 ## Quick Fixes
 
+- [Tarot Deck] When hidden, the tarot deck should be set interactable = false to prevent players from accidentally drawing cards from it through the table.
+
 ## Active
+
+- [Simple NPC Stats in Descriptions on Stage Control Tokens] The Description section on Stage Control Tokens should become a JSON serializable repository for several simple stats that will later be wired into Storyteller rolls with those NPCs.  The JSON data on any given token should be able to contain a partial schema (i.e. all optional fields) of the following form:
+
+```jsonc
+{
+  "hunger": 2, // integer value for hunger; when set, this value should be displayed on the Storyteller screen, so that appropriate amounts of Hunger dice can be added.
+  "health": { // a table to fully define the NPC's Health tracker
+    "max": 6,
+    "superficial": 2,
+    "aggravated": 2
+  },
+  "willpower": { // a table to fully define the NPC's Willpower tracker
+    "max": 6,
+    "superficial": 2,
+    "aggravated": 2
+  },
+  "commonRolls": { // the Storyteller roll panel will include an Input field, where the Storyteller can give a name to a particular roll. When the ST does so, the roll should be logged in this field, and all common rolls in this field should appear as buttons in the Storyteller roll control panel for future use.
+    ["Wits + Insight"]: 6,
+    ["Resolve + Composure"]: 4,
+    /* ... */
+  }
+}
+```
 
 
 ## Needs clarification
