@@ -2615,11 +2615,21 @@ function RC.classifyOptsFromActive(active)
     return opts
 end
 
---- Builds die-face list for UI (Bestial Null uses paired display when present).
--- @param active table
--- @param normalDice table
--- @param hungerDice table
--- @return table
+--- @param active table|nil
+--- @return string
+local function resolveDiceFaceDisplayMode(active)
+    if type(active) ~= "table" then
+        return Dice.DISPLAY_MODE_STANDARD
+    end
+    if active.rollType == C.RollType.WEREWOLF then
+        return Dice.DISPLAY_MODE_WEREWOLF
+    end
+    if active.rollType == C.RollType.ROUSE or active.rollType == C.RollType.ROUSE_OBLIVION then
+        return Dice.DISPLAY_MODE_ROUSE
+    end
+    return Dice.DISPLAY_MODE_STANDARD
+end
+
 --- Builds sorted die-face records for UI from values-by-kind table.
 -- @param active table
 -- @param valuesByKind table|nil
@@ -2651,13 +2661,32 @@ function RC.buildDiceFacesForActive(active, valuesByKind, objectsByKind)
             }
         end
     end
-    table.sort(faces, function(a, b)
-        if a.value ~= b.value then return a.value > b.value end
-        if a.isHunger ~= b.isHunger then return a.isHunger end
-        local ga = type(a.guid) == "string" and a.guid or ""
-        local gb = type(b.guid) == "string" and b.guid or ""
-        return ga < gb
-    end)
+
+    local poolFaces = {}
+    local rouseFaces = {}
+    for _, face in ipairs(faces) do
+        local k = face.kind
+        if k == DK.KIND_ROUSE or k == DK.KIND_OBLIV_ROUSE or k == DK.KIND_BLOOD_SURGE_ROUSE then
+            rouseFaces[#rouseFaces + 1] = face
+        else
+            poolFaces[#poolFaces + 1] = face
+        end
+    end
+
+    local mode = resolveDiceFaceDisplayMode(active)
+    Dice.sortDiceFaceRecordsCanonical(poolFaces, { mode = mode })
+    Dice.sortDiceFaceRecordsCanonical(rouseFaces, {
+        mode = Dice.DISPLAY_MODE_ROUSE,
+        werewolfJawsPairing = false,
+    })
+
+    faces = {}
+    for _, face in ipairs(poolFaces) do
+        faces[#faces + 1] = face
+    end
+    for _, face in ipairs(rouseFaces) do
+        faces[#faces + 1] = face
+    end
     return faces
 end
 
