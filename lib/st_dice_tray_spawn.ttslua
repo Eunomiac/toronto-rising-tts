@@ -12,7 +12,10 @@ local STS = {}
 --- Unchanged staging hover height above the drawer tray.
 STS.STAGING_BASE_Y = 5
 
---- Inset from drawer `getBounds()` half-extents so dice stay on the tray.
+--- Inset from drawer edges as a fraction of half-extent (15–20% keeps dice on tray).
+STS.TRAY_EDGE_INSET_RATIO = 0.175
+
+--- Legacy fixed padding (superseded by TRAY_EDGE_INSET_RATIO when bounds available).
 STS.TRAY_EDGE_PADDING = 0.45
 
 --- Per-ring die capacity within one Y layer (outer → inner).
@@ -52,8 +55,11 @@ function STS.traySpecFromDrawer(drawer)
     if drawer.getBounds ~= nil then
         local b = drawer.getBounds()
         if type(b) == "table" and type(b.size) == "table" then
-            radiusX = math.max(0.5, (tonumber(b.size.x) or 0) / 2 - STS.TRAY_EDGE_PADDING)
-            radiusZ = math.max(0.5, (tonumber(b.size.z) or 0) / 2 - STS.TRAY_EDGE_PADDING)
+            local halfX = (tonumber(b.size.x) or 0) / 2
+            local halfZ = (tonumber(b.size.z) or 0) / 2
+            local inset = STS.TRAY_EDGE_INSET_RATIO
+            radiusX = math.max(0.5, halfX * (1 - inset))
+            radiusZ = math.max(0.5, halfZ * (1 - inset))
         end
     end
     return {
