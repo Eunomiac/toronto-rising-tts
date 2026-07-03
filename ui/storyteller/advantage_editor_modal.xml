@@ -4,8 +4,10 @@
   active="False"
   rectAlignment="MiddleCenter"
   offsetXY="0 0"
+  preferredWidth="560"
   width="560"
-  padding="16 16 16 16"
+  height="560"
+  preferredHeight = "560"
   color="rgba(0.05,0.05,0.08,0.96)"
   class="statsEditor_modal">
 
@@ -13,48 +15,48 @@
 
     <Text id="statsEditor_title" fontSize="16" fontStyle="Bold" color="#FFD700" text="Advantage Editor" />
 
-    <HorizontalLayout id="statsEditor_dots_row" spacing="8" height="32" childForceExpandWidth="false">
+    <HorizontalLayout id="statsEditor_dots_row" spacing="8" preferredHeight="32" childForceExpandWidth="false">
       <Text fontSize="11" color="#CCCCCC" text="base" preferredWidth="52" />
-      <InputField id="statsEditor_base" contentType="IntegerNumber" text="0" characterLimit="2" width="48" height="28"
+      <InputField id="statsEditor_base" contentType="IntegerNumber" text="0" characterLimit="2" preferredWidth="48" preferredHeight="28"
         onValueChanged="HUD_statsEditorField" onEndEdit="HUD_statsEditorField" />
       <Text fontSize="11" color="#CCCCCC" text="temp" preferredWidth="52" />
-      <InputField id="statsEditor_temp" contentType="IntegerNumber" text="0" characterLimit="2" width="48" height="28"
+      <InputField id="statsEditor_temp" contentType="IntegerNumber" text="0" characterLimit="2" preferredWidth="48" preferredHeight="28"
         onValueChanged="HUD_statsEditorField" onEndEdit="HUD_statsEditorField" />
       <Text fontSize="11" color="#CCCCCC" text="max" preferredWidth="52" />
-      <InputField id="statsEditor_max" contentType="IntegerNumber" text="5" characterLimit="2" width="48" height="28"
+      <InputField id="statsEditor_max" contentType="IntegerNumber" text="5" characterLimit="2" preferredWidth="48" preferredHeight="28"
         onValueChanged="HUD_statsEditorField" onEndEdit="HUD_statsEditorField" />
       <Text fontSize="11" color="#CCCCCC" text="disabled" preferredWidth="52" />
-      <InputField id="statsEditor_disabled" contentType="IntegerNumber" text="0" characterLimit="2" width="48" height="28"
+      <InputField id="statsEditor_disabled" contentType="IntegerNumber" text="0" characterLimit="2" preferredWidth="48" preferredHeight="28"
         onValueChanged="HUD_statsEditorField" onEndEdit="HUD_statsEditorField" />
     </HorizontalLayout>
 
     <VerticalLayout id="statsEditor_fullFields" spacing="4" childForceExpandHeight="false">
-      <HorizontalLayout spacing="6" height="30">
+      <HorizontalLayout spacing="6" preferredHeight="30">
         <Text fontSize="11" color="#CCCCCC" text="Name" preferredWidth="72" alignment="MiddleLeft" />
-        <InputField id="statsEditor_name" text="" width="420" height="28"
+        <InputField id="statsEditor_name" text="" preferredWidth="420" preferredHeight="28"
           onValueChanged="HUD_statsEditorField" onEndEdit="HUD_statsEditorField" />
       </HorizontalLayout>
-      <HorizontalLayout spacing="6" height="30">
+      <HorizontalLayout spacing="6" preferredHeight="30">
         <Text fontSize="11" color="#CCCCCC" text="Focus" preferredWidth="72" alignment="MiddleLeft" />
-        <InputField id="statsEditor_focus" text="" width="420" height="28"
+        <InputField id="statsEditor_focus" text="" preferredWidth="420" preferredHeight="28"
           onValueChanged="HUD_statsEditorField" onEndEdit="HUD_statsEditorField" />
       </HorizontalLayout>
       <Text fontSize="11" color="#CCCCCC" text="Description" />
-      <InputField id="statsEditor_description" lineType="MultiLineNewline" text="" height="100" flexibleHeight="0"
+      <InputField id="statsEditor_description" lineType="MultiLineNewline" text="" preferredHeight="100" flexibleHeight="0"
         onValueChanged="HUD_statsEditorField" onEndEdit="HUD_statsEditorField" />
       <Text fontSize="11" color="#CCCCCC" text="Rules" />
-      <InputField id="statsEditor_rules" lineType="MultiLineNewline" text="" height="100" flexibleHeight="0"
+      <InputField id="statsEditor_rules" lineType="MultiLineNewline" text="" preferredHeight="100" flexibleHeight="0"
         onValueChanged="HUD_statsEditorField" onEndEdit="HUD_statsEditorField" />
     </VerticalLayout>
 
-    <HorizontalLayout spacing="8" height="36" childAlignment="MiddleCenter">
-      <Button id="statsEditor_confirm" text="OK" width="100" height="32" fontSize="12"
+    <HorizontalLayout spacing="8" preferredHeight="36" childAlignment="MiddleCenter">
+      <Button id="statsEditor_confirm" text="OK" preferredWidth="100" preferredHeight="32" fontSize="12"
         colors="#225522|#336633|#44AA44|rgba(0.1,0.3,0.1,0.5)" textColor="#FFFFFF"
         onClick="HUD_statsEditorConfirm" />
-      <Button id="statsEditor_cancel" text="Cancel" width="100" height="32" fontSize="12"
+      <Button id="statsEditor_cancel" text="Cancel" preferredWidth="100" preferredHeight="32" fontSize="12"
         colors="#333333|#444444|#555555|rgba(0.2,0.2,0.2,0.5)" textColor="#FFFFFF"
         onClick="HUD_statsEditorCancel" />
-      <Button id="statsEditor_delete" text="Delete" width="100" height="32" fontSize="12"
+      <Button id="statsEditor_delete" text="Delete" preferredWidth="100" preferredHeight="32" fontSize="12"
         colors="#662222|#883333|#991111|rgba(0.5,0.1,0.1,0.4)" textColor="#FFFFFF"
         onClick="HUD_statsEditorDelete" />
     </HorizontalLayout>
