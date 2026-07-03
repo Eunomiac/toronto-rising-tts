@@ -1301,13 +1301,15 @@ C.Tables = {
         guid = G.GUIDS.TABLES.TABLE_A_LEAF_FAR_LEFT,
         activePosition = Vector({ 0.00, 0.00, 53.66 }),
         inactivePosition = Vector({ 0.00, -200, 100 }),
-        usedBy = "NPC4"
+        usedBy = "NPC4",
+        alsoEnable = "Table Leaf Near Left"
       },
       ["Table Leaf Far Right"] = {
         guid = G.GUIDS.TABLES.TABLE_A_LEAF_FAR_RIGHT,
         activePosition = Vector({ 0.00, 0.00, 53.66 }),
         inactivePosition = Vector({ 0.00, -200, 100 }),
-        usedBy = "NPC3"
+        usedBy = "NPC3",
+        alsoEnable = "Table Leaf Near Left"
       }
     },
     objectPositions = {

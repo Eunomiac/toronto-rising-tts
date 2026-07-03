@@ -1,11 +1,6 @@
 # Inbox
 
 ## Quick Fixes
-- [Results Broadcast] Frenzy Roll results broadcasts need to be revised.
-  - on WIN:  "Fight For Control!"  (no margin report) (style with the same class as a messy critical)
-  - on CRITICAL WIN: "The Leash Holds" (style with the same class as a clean critical)
-  - on FAILURE/TOTAL FAILURE: "FRENZY!" (style with the same class as "Failure", auto-apply Frenzy Overlay)
--
 
 ## Active
 
@@ -22,6 +17,7 @@
 
 ## Processed
 
+2026-07-03 INBOX Quick Fixes — Frenzy/Remorse result broadcast copy + frenzy overlay on fail (`core/roll_ui.ttslua`, `core/roll_controller.ttslua`); Table A leaf `alsoEnable` bridging (`lib/constants.ttslua`, `lib/rotational-seat-layout.ttslua`)
 2026-06-27 TOR-281 — Stage Clear seat activation rules + live scene-library seat persistence (promoted; NPC & Spotlight, parent TOR-35; relatedTo TOR-250/TOR-178/TOR-265/TOR-244; Medium)
 2026-06-27 Storyteller advantages panel — shipped TOR-279 (Storyteller Stats panel); removed stale Active marker
 2026-06-27 Scene-switch weather fade-in regression — weather started at full volume instead of fading. Two causes: (1) staged scene Apply work-phase `Sync.full` did not pass `skipSoundscape`, letting a work-phase reconcile re-apply weather via the immediate held-volume path outside the fade window; (2) `Soundscape.reapplyWeatherNaturalVolumes` (called by `applyContext` → `setIndoors`) snapped the still-playing weather emitter to full before the layers faded in. Fix: work sync now skips soundscape (fadeIn is sole authority, matching no-scene path); `reapplyWeatherNaturalVolumes` ramps via `fadeEmitterVolume` when a transition fade window is open (TOR-280; relatedTo TOR-147, TOR-270, TOR-136)

@@ -2325,6 +2325,13 @@ function RC._applyRollConsequences(color, active)
             P.applyHumanityBaseDelta(color, -1)
         end
         PCST.refreshCharacterSheetsForColor(color)
+    elseif active.rollType == C.RollType.FRENZY then
+        local pid = S.getPlayerID(color)
+        if pid == nil then return end
+        if rc == C.ResultClass.FAILURE or rc == C.ResultClass.TOTAL_FAILURE then
+            Conditions.setManual(pid, "hudFrenzy", true)
+            Sync.player(color)
+        end
     end
 end
 

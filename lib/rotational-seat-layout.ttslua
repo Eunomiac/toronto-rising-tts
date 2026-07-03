@@ -2459,6 +2459,17 @@ end
 --- @param tableCfg table|nil
 --- @param occupiedNPCSlots table<string, string|boolean>
 --- @param isActive boolean
+local function componentUsedByOccupied(componentCfg, occupiedNPCSlots)
+  local usedBy = componentCfg.usedBy
+  if U.Type(usedBy) ~= "string" then
+    return true
+  end
+  return occupiedNPCSlots[usedBy] ~= nil and occupiedNPCSlots[usedBy] ~= false
+end
+
+--- @param tableCfg table|nil
+--- @param occupiedNPCSlots table<string, string|boolean>
+--- @param isActive boolean
 local function applyTableComponentsState(tableCfg, occupiedNPCSlots, isActive)
   if U.Type(tableCfg) ~= "table" then
     return
@@ -2469,16 +2480,22 @@ local function applyTableComponentsState(tableCfg, occupiedNPCSlots, isActive)
     return
   end
   ---@cast components table
-  for _componentName, componentCfg in pairs(components) do
+  local activateByName = {}
+  for componentName, componentCfg in pairs(components) do
+    if U.Type(componentCfg) == "table" and U.Type(componentCfg.guid) == "string" then
+      activateByName[componentName] = isActive and componentUsedByOccupied(componentCfg, occupiedNPCSlots)
+    end
+  end
+  for componentName, componentCfg in pairs(components) do
+    if activateByName[componentName] == true and U.Type(componentCfg.alsoEnable) == "string" then
+      activateByName[componentCfg.alsoEnable] = true
+    end
+  end
+  for componentName, componentCfg in pairs(components) do
     if U.Type(componentCfg) == "table" and U.Type(componentCfg.guid) == "string" then
       local obj = getObjectFromGUID(componentCfg.guid)
       if obj ~= nil then
-        local shouldActivate = isActive
-        local usedBy = componentCfg.usedBy
-        if shouldActivate and U.Type(usedBy) == "string" then
-          shouldActivate = occupiedNPCSlots[usedBy] ~= nil and occupiedNPCSlots[usedBy] ~= false
-        end
-        applyTableObjectState(obj, componentCfg, shouldActivate)
+        applyTableObjectState(obj, componentCfg, activateByName[componentName] == true)
       end
     end
   end

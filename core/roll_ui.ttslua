@@ -557,6 +557,33 @@ local function rollResResultClassString(result)
     return rollControlResultClassString(result):gsub("rollControl_", "rollRes_")
 end
 
+--- Broadcast-only styling overrides for narrative roll types (Frenzy / Remorse).
+-- @param rollType string|nil
+-- @param result table|nil
+-- @return string
+local function broadcastResultClassString(rollType, result)
+    if type(result) ~= "table" then
+        return "roll_text rollRes_resultDisplay"
+    end
+    local rc = result.resultClass
+    if rollType == C.RollType.FRENZY then
+        if rc == C.ResultClass.WIN then
+            return "roll_text rollRes_resultDisplay rollRes_result_messyCritical"
+        elseif rc == C.ResultClass.CRITICAL_WIN then
+            return "roll_text rollRes_resultDisplay rollRes_result_criticalWin"
+        elseif rc == C.ResultClass.FAILURE or rc == C.ResultClass.TOTAL_FAILURE then
+            return "roll_text rollRes_resultDisplay rollRes_result_failure"
+        end
+    elseif rollType == C.RollType.REMORSE then
+        if rc == C.ResultClass.WIN or rc == C.ResultClass.CRITICAL_WIN then
+            return "roll_text rollRes_resultDisplay rollRes_result_win"
+        elseif rc == C.ResultClass.FAILURE or rc == C.ResultClass.TOTAL_FAILURE then
+            return "roll_text rollRes_resultDisplay rollRes_result_failure"
+        end
+    end
+    return rollResResultClassString(result)
+end
+
 --- Map rouse strip narrative to rollRes_rouseText panel label.
 -- @param narrative string|nil
 -- @return string
@@ -878,8 +905,20 @@ local function narrativeLabel(rollType, result)
             return result.rouseNarrative
         end
         return passed and "Success" or "Hunger Roused"
+    elseif rollType == C.RollType.FRENZY then
+        if rc == C.ResultClass.CRITICAL_WIN then
+            return "The Leash Holds"
+        elseif rc == C.ResultClass.WIN then
+            return "Fight For Control!"
+        elseif rc == C.ResultClass.FAILURE or rc == C.ResultClass.TOTAL_FAILURE then
+            return "FRENZY!"
+        end
     elseif rollType == C.RollType.REMORSE then
-        return passed and "Success: Stains Cleared" or "Humanity Degenerates"
+        if rc == C.ResultClass.WIN or rc == C.ResultClass.CRITICAL_WIN then
+            return "Stains Cleared"
+        elseif rc == C.ResultClass.FAILURE or rc == C.ResultClass.TOTAL_FAILURE then
+            return "Degeneration"
+        end
     end
 
     return C.ResultClassLabel[rc] or rc or "?"
@@ -916,6 +955,7 @@ local function panelResultDisplayText(rollType, result, difficulty)
         or rollType == C.RollType.ROUSE
         or rollType == C.RollType.ROUSE_OBLIVION
         or rollType == C.RollType.REMORSE
+        or rollType == C.RollType.FRENZY
     if hidesDifficulty or difficulty == nil or result.margin == nil then
         return headline
     end
@@ -1022,6 +1062,10 @@ local function refreshStRollPanel(active)
 
     local result = active.result
     local hidesDifficulty = active.rollType == C.RollType.SIMPLE_CHECK
+        or active.rollType == C.RollType.ROUSE
+        or active.rollType == C.RollType.ROUSE_OBLIVION
+        or active.rollType == C.RollType.REMORSE
+        or active.rollType == C.RollType.FRENZY
     if result ~= nil and isPostRoll then
         local resultClassStr = rollResResultClassString(result)
         local resultText = panelResultDisplayText(active.rollType, result, active.difficulty)
@@ -1114,6 +1158,7 @@ local function refreshPcRollControlPanel(color, active)
         or active.rollType == C.RollType.ROUSE
         or active.rollType == C.RollType.ROUSE_OBLIVION
         or active.rollType == C.RollType.REMORSE
+        or active.rollType == C.RollType.FRENZY
     local isPostRoll = active.phase == C.RollPhase.POST_ROLL
     local showDifficulty = (not hidesDifficulty) and isPostRoll and active.difficulty ~= nil
 
@@ -1350,6 +1395,7 @@ function RUI.showResultBroadcast(color, result, label)
         or rollTypeKey == C.RollType.ROUSE
         or rollTypeKey == C.RollType.ROUSE_OBLIVION
         or rollTypeKey == C.RollType.REMORSE
+        or rollTypeKey == C.RollType.FRENZY
 
     local difficulty = nil
     if result ~= nil and result.margin ~= nil then
@@ -1370,7 +1416,7 @@ function RUI.showResultBroadcast(color, result, label)
         end
 
         local resultId = "rollRes_resultDisplay"
-        local resultClassStr = rollResResultClassString(result)
+        local resultClassStr = broadcastResultClassString(rollTypeKey, result)
         local resultText = panelResultDisplayText(rollTypeKey, result, difficulty)
         uiSetClass(resultId, resultClassStr)
         if rollControlResultNeedsMiddleCenterAlignment(result) then
