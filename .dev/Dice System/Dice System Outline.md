@@ -895,7 +895,7 @@ Key element IDs: fullscreen `rollRes_panel`; split header (`rollRes_rollType`, `
 
 **ST bag → roll type (`STR.rollTypeForStorytellerBagDrop`):** Normal→Standard, Hunger→Discipline, Werewolf bag→Willpower, Rage→Frenzy, Rouse→Rouse, Obliv-Rouse→Remorse at `SessionEnd` else Oblivion-Rouse; `Werewolf`-tagged control tokens → Werewolf on any bag. Used by bag name modal, NPC token-on-bag drop (`tryNpcControlTokenDroppedOnStorytellerDiceBag`), and PC token-on-bag drop (`tryPcControlTokenDroppedOnStorytellerDiceBag` → `RC.initiateRoll`).
 
-**ST tray dice layout (`lib/st_dice_tray_spawn.ttslua`):** Drawer world X/Z center (no Y rotation) + padded `getBounds()` ellipse; staging Y = 5. All die kinds share one tray index order (bag kind order → spawn order). Full 360° rings: 10 outer, 8 middle, 6 inner per Y layer; overflow stacks at Y+2. `GlobalRepositionStorytellerTrayDice` places every locked staged die across all ST bags.
+**ST tray dice layout (`lib/st_dice_tray_spawn.ttslua`):** Drawer world X/Z center (no Y rotation) + ellipse from `getBounds()` with playable-surface shrink (78%), 20% edge inset, die-footprint inset (scale 1.75), and outer ring at 88% of padded radii. Staging Y = 5. Full 360° rings: 10 outer, 8 middle, 6 inner per Y layer; overflow stacks at Y+2. `GlobalRepositionStorytellerTrayDice` places every locked staged die across all ST bags. Tune `TRAY_PLAYABLE_FRACTION` if mesh bounds exceed the red tray surface.
 
 ### 10.4 Storyteller roll panel grid strips (`rollPanelST`)
 

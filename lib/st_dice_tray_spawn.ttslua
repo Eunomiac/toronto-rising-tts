@@ -12,10 +12,16 @@ local STS = {}
 --- Unchanged staging hover height above the drawer tray.
 STS.STAGING_BASE_Y = 5
 
---- Inset from drawer edges as a fraction of half-extent (15–20% keeps dice on tray).
-STS.TRAY_EDGE_INSET_RATIO = 0.175
+--- Inset from drawer edges as a fraction of playable half-extent (author target 15–20%).
+STS.TRAY_EDGE_INSET_RATIO = 0.20
 
---- Legacy fixed padding (superseded by TRAY_EDGE_INSET_RATIO when bounds available).
+--- Mesh getBounds() often includes frame/rails; shrink before edge inset.
+STS.TRAY_PLAYABLE_FRACTION = 0.78
+
+--- Staged die scale is 1.75 (`objects/dice_bag.ttslua`); keep die *centers* inset so edges stay on tray.
+STS.DIE_FOOTPRINT_RADIUS = 1.05
+
+--- Legacy fixed padding (fallback when getBounds unavailable).
 STS.TRAY_EDGE_PADDING = 0.45
 
 --- Per-ring die capacity within one Y layer (outer → inner).
@@ -24,8 +30,8 @@ STS.RING_CAPACITIES = { 10, 8, 6 }
 STS.DICE_PER_STACK = 24
 STS.Y_LAYER_STEP = 2
 
---- Ring radii as a fraction of the padded drawer ellipse (outer uses full extent).
-STS.RING_RADIUS_SCALE = { 1.0, 0.72, 0.45 }
+--- Ring radii as a fraction of the padded drawer ellipse (outer ring inset from rim).
+STS.RING_RADIUS_SCALE = { 0.88, 0.68, 0.44 }
 
 --- @param idxInStack number 1..24
 --- @return number ring 1..3
@@ -38,6 +44,19 @@ local function ringAndSlotInStack(idxInStack)
         return 2, idxInStack - STS.RING_CAPACITIES[1]
     end
     return 3, idxInStack - STS.RING_CAPACITIES[1] - STS.RING_CAPACITIES[2]
+end
+
+--- @param halfAxis number  getBounds half-extent on one tray axis
+--- @return number  usable center radius after playable shrink, edge inset, and die footprint
+local function effectiveHalfAxis(halfAxis)
+    local half = tonumber(halfAxis) or 0
+    if half <= 0 then
+        return 0.5
+    end
+    local playable = half * STS.TRAY_PLAYABLE_FRACTION
+    local inset = STS.TRAY_EDGE_INSET_RATIO
+    local r = playable * (1 - inset) - STS.DIE_FOOTPRINT_RADIUS
+    return math.max(0.5, r)
 end
 
 --- Tray ellipse spec from a drawer prop (world axes; drawer is not Y-rotated).
@@ -55,11 +74,8 @@ function STS.traySpecFromDrawer(drawer)
     if drawer.getBounds ~= nil then
         local b = drawer.getBounds()
         if type(b) == "table" and type(b.size) == "table" then
-            local halfX = (tonumber(b.size.x) or 0) / 2
-            local halfZ = (tonumber(b.size.z) or 0) / 2
-            local inset = STS.TRAY_EDGE_INSET_RATIO
-            radiusX = math.max(0.5, halfX * (1 - inset))
-            radiusZ = math.max(0.5, halfZ * (1 - inset))
+            radiusX = effectiveHalfAxis((tonumber(b.size.x) or 0) / 2)
+            radiusZ = effectiveHalfAxis((tonumber(b.size.z) or 0) / 2)
         end
     end
     return {
