@@ -99,17 +99,36 @@ local function firstFreeSlot(slots)
     return nil
 end
 
---- @param dieKind string|nil
+--- Maps ST dice-bag kind (+ optional token context) to `C.RollType` for bag modal and token-on-bag drops.
+-- Non-`Werewolf` tokens: Normal→STANDARD, Hunger→DISCIPLINE, Werewolf bag→WILLPOWER_ROLL,
+-- Rage→FRENZY, Rouse→ROUSE, Obliv-Rouse→REMORSE at SessionEnd else ROUSE_OBLIVION.
+-- `Werewolf`-tagged tokens: any bag → WEREWOLF.
+-- @param dieKind string|nil
+-- @param opts table|nil  { tokenIsWerewolf?: boolean }
 -- @return string rollType
-local function rollTypeForDieKind(dieKind)
+function STR.rollTypeForStorytellerBagDrop(dieKind, opts)
+    opts = type(opts) == "table" and opts or {}
+    if opts.tokenIsWerewolf == true then
+        return C.RollType.WEREWOLF
+    end
+    if dieKind == DK.KIND_HUNGER then
+        return C.RollType.DISCIPLINE
+    end
     if dieKind == DK.KIND_ROUSE then
         return C.RollType.ROUSE
     end
     if dieKind == DK.KIND_OBLIV_ROUSE then
+        local phase = S.getStateVal("currentPhase")
+        if phase == C.Phases.SESSION_END then
+            return C.RollType.REMORSE
+        end
         return C.RollType.ROUSE_OBLIVION
     end
-    if dieKind == DK.KIND_WEREWOLF or dieKind == DK.KIND_RAGE then
-        return C.RollType.WEREWOLF
+    if dieKind == DK.KIND_WEREWOLF then
+        return C.RollType.WILLPOWER_ROLL
+    end
+    if dieKind == DK.KIND_RAGE then
+        return C.RollType.FRENZY
     end
     return C.RollType.STANDARD
 end
@@ -211,12 +230,13 @@ end
 -- @param label string
 -- @param dieKind string
 -- @param npcCharacterKey string|nil  Authoritative NPC key when launched from a control token (TOR-252)
+-- @param opts table|nil  forwarded to `rollTypeForStorytellerBagDrop` (e.g. `{ tokenIsWerewolf = true }`)
 -- @return boolean
-function STR.initiateFromBagLabel(label, dieKind, npcCharacterKey)
+function STR.initiateFromBagLabel(label, dieKind, npcCharacterKey, opts)
     if hasLiveBlackRoll() then
         return false
     end
-    local rt = rollTypeForDieKind(dieKind)
+    local rt = STR.rollTypeForStorytellerBagDrop(dieKind, opts)
     return STR.initiateNpcRoll(label, rt, npcCharacterKey)
 end
 

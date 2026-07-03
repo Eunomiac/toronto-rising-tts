@@ -3843,8 +3843,10 @@ local function tryNpcControlTokenDroppedOnStorytellerDiceBag(token, playerColor)
         dieKind = DK.KIND_NORMAL
     end
 
+    local tokenIsWerewolf = token.hasTag ~= nil and token.hasTag("Werewolf") == true
+
     local STR = require("core.storyteller_rolls")
-    local ok = STR.initiateFromBagLabel(label, dieKind, characterKey)
+    local ok = STR.initiateFromBagLabel(label, dieKind, characterKey, { tokenIsWerewolf = tokenIsWerewolf })
     if ok ~= true then
         print(
             "[Gameboard] ST dice-bag token drop: roll not started for "
