@@ -82,12 +82,18 @@ end
 --- Move drawer to the "on" pose (first pool die via GlobalOnBagDieSpawned, leave-container backup,
 --- Roll release, or WP reroll path). Not tied to RC.openRoll.
 --- @param color string Seat color
-function DD.openForRoll(color)
+--- @param opts table|nil  { force?: boolean } — re-animate when logical "open" but tray is still down
+function DD.openForRoll(color, opts)
   if type(color) ~= "string" then
     return
   end
-  if drawerOpenByColor[color] == true then
-    return
+  opts = type(opts) == "table" and opts or {}
+  local minReleaseY = 2.5
+  if drawerOpenByColor[color] == true and opts.force ~= true then
+    local y = DD.getPositionY(color)
+    if type(y) == "number" and y > minReleaseY then
+      return
+    end
   end
   drawerOpenByColor[color] = true
   L.onDiceDrawerStateChanged(color, true)
