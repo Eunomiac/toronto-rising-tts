@@ -1,6 +1,6 @@
 --[[
-  Single live PC roll: lowers other players' pre-live trays/dice while one roll is ROLLING.
-  TOR-262 — live from Roll click until post-broadcast cleanup closes the tray.
+  Single live PC roll: elevates the live player's tray + dice while one roll is ROLLING.
+  TOR-262 — live from Roll / Take Half until confirm (including WP rerolls).
 ]]
 ---@diagnostic disable: undefined-global
 
@@ -12,10 +12,11 @@ local U = require("lib.util")
 local G = require("lib.guids")
 local DK = require("lib.dice_kinds")
 
-local LOWER_DELTA_Y = -4
+local LIVE_ELEVATE_DELTA_Y = 5
 
---- @type table<string, boolean>
-local loweredColors = {}
+--- Seat color whose tray/dice are currently elevated for the live roll (host runtime cache).
+--- @type string|nil
+local elevatedColor = nil
 
 --- @param color string
 --- @return userdata|nil
@@ -104,16 +105,6 @@ local function getActiveRoll(color)
   return S.getStateVal("playerData", pid, "hud", "rollData", "active")
 end
 
---- @param color string
---- @return boolean
-local function isPreLiveActiveRoll(color)
-  local active = getActiveRoll(color)
-  if active == nil then
-    return false
-  end
-  return active.phase == C.RollPhase.SETUP or active.phase == C.RollPhase.PRE_ROLL
-end
-
 --- @return string|nil
 function PRTL.getLivePcColor()
   return S.getStateVal("rollConcurrency", "livePcColor")
@@ -124,21 +115,22 @@ function PRTL.setLivePcColor(color)
   S.setStateVal(color, "rollConcurrency", "livePcColor")
 end
 
---- World Y offset applied to staged spawns while a seat tray is lowered.
+--- World Y offset applied to staged spawns while this seat's roll is live.
 -- @param color string
 -- @return number
 function PRTL.getTrayYOffset(color)
   if type(color) ~= "string" or color == "Black" then
     return 0
   end
-  if loweredColors[color] == true then
-    return LOWER_DELTA_Y
+  if elevatedColor == color or PRTL.getLivePcColor() == color then
+    return LIVE_ELEVATE_DELTA_Y
   end
   return 0
 end
 
---- @param color string
---- @return boolean
+--- True when another PC roll is already live (blocks Roll, Take Half, and new initiate).
+-- @param color string
+-- @return boolean
 function PRTL.isInitiateBlocked(color)
   if type(color) ~= "string" or color == "Black" then
     return false
@@ -148,63 +140,58 @@ function PRTL.isInitiateBlocked(color)
 end
 
 --- @param color string
-local function lowerTrayForColor(color)
-  if type(color) ~= "string" or color == "Black" or loweredColors[color] == true then
-    return
-  end
-  if not U.requireHostForWorldMutation("PRTL.lowerTrayForColor") then
-    return
-  end
-  local active = getActiveRoll(color)
-  local rollId = type(active) == "table" and active.id or nil
-  nudgeObjectY(findDiceDrawerObject(color), LOWER_DELTA_Y)
-  nudgeBagStagedDice(color, LOWER_DELTA_Y)
-  if type(rollId) == "string" then
-    nudgeTableDiceForRoll(color, rollId, LOWER_DELTA_Y)
-  end
-  loweredColors[color] = true
-end
-
---- @param color string
-local function restoreTrayForColor(color)
-  if type(color) ~= "string" or color == "Black" or loweredColors[color] ~= true then
-    return
-  end
-  if not U.requireHostForWorldMutation("PRTL.restoreTrayForColor") then
+--- @param deltaY number
+local function nudgeLiveTrayWorld(color, deltaY)
+  if not U.requireHostForWorldMutation("PRTL.nudgeLiveTrayWorld") then
     return
   end
   local active = getActiveRoll(color)
   local rollId = type(active) == "table" and active.id or nil
-  nudgeObjectY(findDiceDrawerObject(color), -LOWER_DELTA_Y)
-  nudgeBagStagedDice(color, -LOWER_DELTA_Y)
+  nudgeObjectY(findDiceDrawerObject(color), deltaY)
+  nudgeBagStagedDice(color, deltaY)
   if type(rollId) == "string" then
-    nudgeTableDiceForRoll(color, rollId, -LOWER_DELTA_Y)
+    nudgeTableDiceForRoll(color, rollId, deltaY)
   end
-  loweredColors[color] = nil
 end
 
---- Called when a PC roll advances to ROLLING (Roll button).
--- State (`livePcColor`) updates on all clients; tray lowering is host-only (Tier C).
+--- Elevates the live seat tray + staged/table dice (host-only Tier C).
+-- @param color string
+local function elevateLiveTray(color)
+  if type(color) ~= "string" or color == "Black" or elevatedColor == color then
+    return
+  end
+  nudgeLiveTrayWorld(color, LIVE_ELEVATE_DELTA_Y)
+  elevatedColor = color
+end
+
+--- Restores live-seat elevation before tray close/cancel (host-only Tier C).
+-- @param color string
+local function restoreLiveTrayElevation(color)
+  if type(color) ~= "string" or color == "Black" or elevatedColor ~= color then
+    return
+  end
+  nudgeLiveTrayWorld(color, -LIVE_ELEVATE_DELTA_Y)
+  elevatedColor = nil
+end
+
+--- Marks a PC roll live and elevates its tray/dice. State updates on all clients; elevation is host-only.
+-- Call before unlocking bag dice (Roll / Take Half with physical dice).
 -- @param liveColor string
 function PRTL.onPcRollGoingLive(liveColor)
   if type(liveColor) ~= "string" or liveColor == "Black" then
     return
   end
   PRTL.setLivePcColor(liveColor)
-  for _, color in ipairs(C.PlayerColors or {}) do
-    if color ~= liveColor and isPreLiveActiveRoll(color) then
-      lowerTrayForColor(color)
-    end
-  end
+  elevateLiveTray(liveColor)
 end
 
---- Restores lowered trays after the live roll finishes cleanup.
--- Clears `livePcColor` on all clients; physical restore is host-only (Tier C).
+--- Clears live lock and restores elevation. Call on confirm, cancel, or safety cleanup.
 function PRTL.onLivePcRollFinished()
-  PRTL.setLivePcColor(nil)
-  for _, color in ipairs(C.PlayerColors or {}) do
-    restoreTrayForColor(color)
+  local live = PRTL.getLivePcColor()
+  if type(live) == "string" and live ~= "" then
+    restoreLiveTrayElevation(live)
   end
+  PRTL.setLivePcColor(nil)
 end
 
 return PRTL

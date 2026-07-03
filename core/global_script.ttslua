@@ -3570,6 +3570,14 @@ RC.onRollStateChanged = function(color)
     end
 end
 
+RC.onLiveConcurrencyChanged = function()
+    for _, pcColor in ipairs(C.PlayerColors) do
+        if pcColor ~= "Black" then
+            RUI.refreshPlayerRollPanel(pcColor)
+        end
+    end
+end
+
 RC.onRollCamera = function(color, modeName)
     if type(color) == "string" and type(modeName) == "string" then
         GlobalRollSeatCamera({ color = color, mode = modeName })
@@ -4284,6 +4292,7 @@ end
 
 --- Advances to ROLLING and unlocks staged dice (drawer must already be raised when applicable).
 -- Black legacy/debug path: startRolling → 1s hover → unlock + simultaneous randomize.
+-- PC path: live tray elevation + startRolling must complete before unlock (TOR-262).
 -- @param color string
 -- @return boolean
 local function finishRollRelease(color)
@@ -4307,8 +4316,31 @@ local function finishRollRelease(color)
         end, 1)
         return true
     end
+    if RC.startRolling(color) ~= true then
+        if PRTL.getLivePcColor() == color then
+            PRTL.onLivePcRollFinished()
+            if RC.onLiveConcurrencyChanged then
+                RC.onLiveConcurrencyChanged()
+            end
+        end
+        return false
+    end
     unlockStagedBagDice(color)
-    return RC.startRolling(color) == true
+    return true
+end
+
+--- Elevates live tray and marks concurrency before dice release (PC Roll button path).
+-- @param color string
+-- @return boolean
+local function beginPcLiveRollRelease(color)
+    if PRTL.isInitiateBlocked(color) then
+        return false
+    end
+    PRTL.onPcRollGoingLive(color)
+    if RC.onLiveConcurrencyChanged then
+        RC.onLiveConcurrencyChanged()
+    end
+    return true
 end
 
 --- Coroutine: wait until dice drawer is raised, then unlock staged dice.
@@ -4321,6 +4353,14 @@ function GlobalWaitDrawerThenReleaseBagDice()
         return 1
     end
     U.waitUntil(function()
+        if job.color ~= "Black" then
+            if beginPcLiveRollRelease(job.color) ~= true then
+                if type(job.onComplete) == "function" then
+                    job.onComplete()
+                end
+                return
+            end
+        end
         finishRollRelease(job.color)
         if type(job.onComplete) == "function" then
             job.onComplete()
@@ -4340,6 +4380,9 @@ end
 -- @param onComplete function|nil  optional callback after dice are released
 local function releaseBagDice(color, onComplete)
     if not U.requireHostForWorldMutation("releaseBagDice") then
+        return
+    end
+    if color ~= "Black" and PRTL.isInitiateBlocked(color) then
         return
     end
     if color == "Black" then
@@ -4383,6 +4426,9 @@ local function releaseBagDice(color, onComplete)
     end
     y = DiceDrawer.getPositionY(color)
     if type(y) == "number" and y > DRAWER_RELEASE_MIN_Y then
+        if beginPcLiveRollRelease(color) ~= true then
+            return
+        end
         finishRollRelease(color)
         if type(onComplete) == "function" then
             onComplete()
@@ -4400,6 +4446,9 @@ function GlobalReleaseBagDice(params)
         return false
     end
     if type(params) ~= "table" or type(params.color) ~= "string" then
+        return false
+    end
+    if params.color ~= "Black" and PRTL.isInitiateBlocked(params.color) then
         return false
     end
     releaseBagDice(params.color)

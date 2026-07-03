@@ -28,6 +28,7 @@ local RO = require("lib.roll_options")
 local CD = require("lib.condition_defs")
 local Conditions = require("core.conditions")
 local DK = require("lib.dice_kinds")
+local PRTL = require("lib.pc_roll_tray_lower")
 local NPC_DATA = require("lib.npcs_data")
 local GridStrip = require("lib.grid_strip")
 local RC = require("core.roll_controller")
@@ -67,6 +68,9 @@ end
 --- Roll-control ROLL button colors (defaults.xml green when enabled).
 local ROLL_CONTROL_BTN_ROLL_COLOR_ENABLED = "#00FF00"
 local ROLL_CONTROL_BTN_ROLL_COLOR_DISABLED = "#555555"
+local ROLL_CONTROL_BTN_HALF_COLOR_ENABLED = "#FFDD00"
+local ROLL_CONTROL_BTN_HALF_COLOR_DISABLED = "#555555"
+local WAIT_FOR_LIVE_ROLL_MESSAGE = "Wait for another roll to complete."
 
 --- Sets a Button color attribute (interactable=false does not grey in TTS).
 -- @param elementId string
@@ -1146,9 +1150,12 @@ local function refreshPcRollControlPanel(color, active)
     uiSetActive(panelId, true)
 
     local rollTypeLabel = C.RollTypeLabel[active.rollType] or active.rollType or ""
+    local blockedByLiveRoll = active.phase == C.RollPhase.PRE_ROLL and PRTL.isInitiateBlocked(color)
+    local instructionText = blockedByLiveRoll
+        and WAIT_FOR_LIVE_ROLL_MESSAGE
+        or titleCaseInstructions(phaseLabel(active, color))
     uiSetValue(string.format("rollControl_rollType_%s", color), rollTypeLabel)
-    uiSetValue(string.format("rollControl_rollInstructions_%s", color),
-        titleCaseInstructions(phaseLabel(active, color)))
+    uiSetValue(string.format("rollControl_rollInstructions_%s", color), instructionText)
 
     local pool = DK.normalizePool(active.pool)
     refreshPoolDotsForControlPanel(color, pool)
@@ -1195,19 +1202,23 @@ local function refreshPcRollControlPanel(color, active)
     local isRolling = active.phase == C.RollPhase.ROLLING
     local hasPool = DK.poolTotal(pool) > 0
     local surgeActive = active.meta ~= nil and active.meta.bloodSurgeActive == true
-    local canHalf = isPreRoll
+    local halfEligible = isPreRoll
         and hasPool
         and not surgeActive
         and C.RollTypesNoTakeHalf[active.rollType] ~= true
         and RO.getForActive(active, RO.ROLL_TAKE_HALF)
+    local canHalf = halfEligible and not blockedByLiveRoll
     -- Take Half only after ST opens (PRE_ROLL); pool assembly in SETUP is roll-button gated only.
 
     local rollBtnId = string.format("rollControl_btnRoll_%s", color)
-    local rollEnabled = isPreRoll and hasPool
+    local halfBtnId = string.format("rollControl_btnHalf_%s", color)
+    local rollEnabled = isPreRoll and hasPool and not blockedByLiveRoll
     uiSetActive(rollBtnId, isPreRoll or isSetup)
     uiSetInteractable(rollBtnId, rollEnabled)
     uiSetButtonColor(rollBtnId, rollEnabled and ROLL_CONTROL_BTN_ROLL_COLOR_ENABLED or ROLL_CONTROL_BTN_ROLL_COLOR_DISABLED)
-    uiSetActive(string.format("rollControl_btnHalf_%s", color), canHalf)
+    uiSetActive(halfBtnId, halfEligible)
+    uiSetInteractable(halfBtnId, canHalf)
+    uiSetButtonColor(halfBtnId, canHalf and ROLL_CONTROL_BTN_HALF_COLOR_ENABLED or ROLL_CONTROL_BTN_HALF_COLOR_DISABLED)
 
     local wpAvailable = isPostRoll
         and active.willpower ~= nil

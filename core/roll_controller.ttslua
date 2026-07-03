@@ -74,6 +74,9 @@ RC.onRollResolved = nil
 -- @type function(color: string, modeName: string)|nil
 RC.onRollCamera = nil
 
+--- Called when rollConcurrency.livePcColor changes (refresh peer PRE_ROLL panels).
+-- @type function()|nil
+RC.onLiveConcurrencyChanged = nil
 
 -- ============================================================================
 -- INTERNAL STATE (transient; NOT persisted to gameState)
@@ -101,6 +104,12 @@ local _autoConfirmDepth = 0
 local function notifyStateChanged(color)
     if RC.onRollStateChanged and U.Type(RC.onRollStateChanged) == "function" then
         RC.onRollStateChanged(color)
+    end
+end
+
+local function notifyLiveConcurrencyChanged()
+    if RC.onLiveConcurrencyChanged and U.Type(RC.onLiveConcurrencyChanged) == "function" then
+        RC.onLiveConcurrencyChanged()
     end
 end
 
@@ -1536,6 +1545,13 @@ end
 function RC.takeHalf(color)
     U.Val("RC.takeHalf()", {color = color}, U.Type(color) == "string", "color must be a string")
 
+    if PRTL.isInitiateBlocked(color) then
+        print(string.format(
+            "[RC] takeHalf blocked: %s roll is live for %s",
+            color, tostring(PRTL.getLivePcColor())))
+        return false
+    end
+
     local active = getActive(color)
     if active == nil then
         print(string.format("[RC] takeHalf: no active roll for %s", color))
@@ -1565,6 +1581,11 @@ function RC.takeHalf(color)
     local hasRouse = DK.poolHasRouseKind(pool)
 
     active.tookHalf = true
+
+    if color ~= "Black" then
+        PRTL.onPcRollGoingLive(color)
+        notifyLiveConcurrencyChanged()
+    end
 
     if hasRouse then
         active.takeHalfAwaitingRouse = true
@@ -1613,6 +1634,13 @@ end
 function RC.startRolling(color)
     U.Val("RC.startRolling()", {color = color}, U.Type(color) == "string", "color must be a string")
 
+    if color ~= "Black" and PRTL.isInitiateBlocked(color) then
+        print(string.format(
+            "[RC] startRolling blocked: %s roll is live for %s",
+            color, tostring(PRTL.getLivePcColor())))
+        return false
+    end
+
     local active = getActive(color)
     if active == nil then
         print(string.format("[RC] startRolling: no active roll for %s", color))
@@ -1634,9 +1662,6 @@ function RC.startRolling(color)
     setActive(color, active)
     cancelDebounce(color)
     notifyStateChanged(color)
-    if color ~= "Black" then
-        PRTL.onPcRollGoingLive(color)
-    end
     return true
 end
 
@@ -2192,6 +2217,11 @@ function RC.confirmRoll(color)
     )
     notifyRollResolved(color, finalResult, finalLabel)
 
+    if color ~= "Black" and PRTL.getLivePcColor() == color then
+        PRTL.onLivePcRollFinished()
+        notifyLiveConcurrencyChanged()
+    end
+
     setActive(color, nil)
     notifyStateChanged(color)
     processQueue(color)
@@ -2266,6 +2296,7 @@ function RC.cancelRoll(color)
     Global.call("GlobalCancelPendingRollCleanup", { color = color })
     if PRTL.getLivePcColor() == color then
         PRTL.onLivePcRollFinished()
+        notifyLiveConcurrencyChanged()
     end
     if type(rollId) == "string" then
         if color == "Black" then
