@@ -583,7 +583,70 @@ local function storytellerArcCenterForActive()
     local STD = require("lib.st_dice_drawer")
     local center = STD.arcCenterForSlot(active.stDrawerSlot)
     if center == nil then return nil end
-    return { x = center.x, y = center.y, z = center.z }
+    return {
+        x = center.x,
+        y = center.y,
+        z = center.z,
+        radiusX = center.radiusX,
+        radiusZ = center.radiusZ,
+    }
+end
+
+local ST_BAG_KIND_ORDER = { "normal", "hunger", "rouse", "oblivRouse", "werewolf", "rage" }
+
+--- Repositions all locked ST staged dice on the active drawer tray (full ellipse rings).
+-- @param params table|nil  { arcCenter?: table }
+function GlobalRepositionStorytellerTrayDice(params)
+    if not U.requireHostForWorldMutation("GlobalRepositionStorytellerTrayDice") then
+        return
+    end
+    params = type(params) == "table" and params or {}
+    local arcCenter = params.arcCenter
+    if type(arcCenter) ~= "table" then
+        arcCenter = storytellerArcCenterForActive()
+    elseif type(arcCenter.radiusX) ~= "number" or type(arcCenter.radiusZ) ~= "number" then
+        local full = storytellerArcCenterForActive()
+        if type(full) == "table" then
+            arcCenter = full
+        end
+    end
+    if type(arcCenter) ~= "table" or type(arcCenter.x) ~= "number" then
+        return
+    end
+
+    local STS = require("lib.st_dice_tray_spawn")
+    local ordered = {}
+    for _, kind in ipairs(ST_BAG_KIND_ORDER) do
+        local guid = G.GetDiceStorytellerBagGUID(kind)
+        if type(guid) == "string" then
+            local bag = getObjectFromGUID(guid)
+            if bag ~= nil and bag.call ~= nil then
+                local guids = bag.call("getStagedDiceGuids")
+                if type(guids) == "table" then
+                    for _, dieGuid in ipairs(guids) do
+                        if type(dieGuid) == "string" then
+                            local die = getObjectFromGUID(dieGuid)
+                            if die ~= nil then
+                                ordered[#ordered + 1] = die
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    local total = #ordered
+    if total < 1 then
+        return
+    end
+
+    for i, die in ipairs(ordered) do
+        local pos = STS.worldPositionForTrayDie(arcCenter, i, total)
+        if type(pos) == "table" then
+            die.setPosition(pos)
+        end
+    end
 end
 
 --- Removes the last staged die from the bag for a logical die kind.
@@ -4203,18 +4266,9 @@ local function ensureBlackStagedRollTags()
     end
 end
 
---- Instant snap of locked ST staged dice to the drawer tray arc (setPosition, not smooth).
+--- Instant snap of locked ST staged dice to the drawer tray ellipse (setPosition, not smooth).
 local function instantRepositionBlackStagedDice()
-    local arcCenter = storytellerArcCenterForActive()
-    local bags = G.GetAllStorytellerDiceBagGUIDs()
-    for _, guid in pairs(bags) do
-        if type(guid) == "string" then
-            local bag = getObjectFromGUID(guid)
-            if bag ~= nil then
-                bag.call("repositionStagedDice", { arcCenter = arcCenter })
-            end
-        end
-    end
+    GlobalRepositionStorytellerTrayDice({})
 end
 
 --- Spawns missing ST pool dice locked at the bag (tray placement deferred to a later step).

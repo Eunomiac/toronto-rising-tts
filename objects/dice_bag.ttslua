@@ -155,6 +155,22 @@ end
 local isBloodSurgeRouseDie
 local countManualRouseDice
 local repositionStagedDiceOnRingArc
+local repositionStorytellerTrayAll
+
+--- @param arcCenter table|nil
+repositionStorytellerTrayAll = function(arcCenter)
+    if Global ~= nil and type(Global.call) == "function" then
+        Global.call("GlobalRepositionStorytellerTrayDice", { arcCenter = arcCenter })
+    end
+end
+
+--- @param arcCenter table|nil
+--- @return boolean
+local function isStorytellerTraySpawn(arcCenter)
+    return isStorytellerBag()
+        and type(arcCenter) == "table"
+        and type(arcCenter.x) == "number"
+end
 
 --- Radial distance for one staging ring (Normal ring = RADIUS).
 -- @param ring number  SPAWN_RING_* constant
@@ -282,6 +298,46 @@ function spawnDie(bagColor, dieType, opts)
     local arcCenter = opts.arcCenter
     local bagKind = getDieType()
     local spawnRadius = radiusForSpawnKind(dieType, bloodSurgeRouse)
+
+    if isStorytellerTraySpawn(arcCenter) then
+        repositionStorytellerTrayAll(arcCenter)
+
+        local die = self.takeObject({
+            position = { x = arcCenter.x, y = arcCenter.y, z = arcCenter.z },
+            rotation = randomRotation(),
+        })
+        if die == nil then
+            print("[DiceBag] spawnDie: takeObject returned nil (bag GUID " .. tostring(self.getGUID()) .. ")")
+            return
+        end
+
+        die.setScale({ SCALE, SCALE, SCALE })
+        die.setLock(true)
+        die.script_state = " "
+        if bloodSurgePool == true then
+            die.script_state = DK.SCRIPT_STATE_BLOOD_SURGE_POOL
+        elseif bloodSurgeRouse == true then
+            die.script_state = DK.SCRIPT_STATE_BLOOD_SURGE_ROUSE
+        end
+
+        table.insert(spawnedDice, die)
+
+        Global.call("GlobalTagDieForActiveRoll", {
+            color = bagColor,
+            dieGuid = die.getGUID(),
+            bloodSurgeRouse = bloodSurgeRouse,
+        })
+        Global.call("GlobalOnBagDieSpawned", {
+            color = bagColor,
+            dieType = dieType,
+            bloodSurgePool = bloodSurgePool,
+            bloodSurgeRouse = bloodSurgeRouse,
+            stagedCount = #spawnedDice,
+            manualRouseCount = bagKind == DK.KIND_ROUSE and countManualRouseDice() or nil,
+        })
+        repositionStorytellerTrayAll(arcCenter)
+        return
+    end
 
     -- Per-ring arc slots (Rouse bag may hold manual rouse + Blood Surge rouse at different radii).
     -- ST tray: instant setPosition so dice are in place before Roll randomize; players keep smooth staging.
@@ -427,6 +483,10 @@ function repositionStagedDice(params)
     if bagColor == nil and isStorytellerBag() then
         bagColor = "Black"
     end
+    if isStorytellerBag() then
+        repositionStorytellerTrayAll(arcCenter)
+        return
+    end
     local bagKind = getDieType()
     repositionStagedDiceOnRingArc(bagColor, arcCenter, bagKind, spawnedDice, false)
 end
@@ -541,7 +601,11 @@ function removeLastSpawnedDie(params)
     end
     local bagKind = getDieType()
     local useSmoothStaging = not isStorytellerBag()
-    repositionStagedDiceOnRingArc(bagColor, arcCenter, bagKind, spawnedDice, useSmoothStaging)
+    if isStorytellerBag() then
+        repositionStorytellerTrayAll(arcCenter)
+    else
+        repositionStagedDiceOnRingArc(bagColor, arcCenter, bagKind, spawnedDice, useSmoothStaging)
+    end
 
     local reportColor = bagColor
     if reportColor == nil and isStorytellerBag() then

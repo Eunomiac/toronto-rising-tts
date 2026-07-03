@@ -16,6 +16,7 @@
 
 ## Processed
 
+2026-07-03 INBOX Active — ST dice tray ellipse spawn (drawer center + bounds rings 10/8/6, Y layers +2) → `lib/st_dice_tray_spawn.ttslua`, `GlobalRepositionStorytellerTrayDice`
 2026-07-03 INBOX Active — ST token-on-bag roll type mapping + `Werewolf` tag override → **TOR-283** Done
 2026-07-03 INBOX Quick Fixes — Tarot deck `interactable=false` when hidden (`lib/tarot_toggle.ttslua`, startup sync in `core/global_script.ttslua`)
 2026-07-03 INBOX Active — NPC stage token Description JSON stats → **TOR-282** (created after archival freed quota)

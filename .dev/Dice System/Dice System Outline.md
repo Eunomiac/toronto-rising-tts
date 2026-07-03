@@ -895,6 +895,8 @@ Key element IDs: fullscreen `rollRes_panel`; split header (`rollRes_rollType`, `
 
 **ST bag → roll type (`STR.rollTypeForStorytellerBagDrop`):** Normal→Standard, Hunger→Discipline, Werewolf bag→Willpower, Rage→Frenzy, Rouse→Rouse, Obliv-Rouse→Remorse at `SessionEnd` else Oblivion-Rouse; `Werewolf`-tagged control tokens → Werewolf on any bag. Used by bag name modal, NPC token-on-bag drop (`tryNpcControlTokenDroppedOnStorytellerDiceBag`), and PC token-on-bag drop (`tryPcControlTokenDroppedOnStorytellerDiceBag` → `RC.initiateRoll`).
 
+**ST tray dice layout (`lib/st_dice_tray_spawn.ttslua`):** Drawer world X/Z center (no Y rotation) + padded `getBounds()` ellipse; staging Y = 5. All die kinds share one tray index order (bag kind order → spawn order). Full 360° rings: 10 outer, 8 middle, 6 inner per Y layer; overflow stacks at Y+2. `GlobalRepositionStorytellerTrayDice` places every locked staged die across all ST bags.
+
 ### 10.4 Storyteller roll panel grid strips (`rollPanelST`)
 
 **Live panel:** [`ui/storyteller/panel_storyteller_roll_controls.xml`](../../ui/storyteller/panel_storyteller_roll_controls.xml) (`rollPanelST`, visibility `Black|Host`, hidden until a Black-seat roll is active). **Design mockup:** [`ui/storyteller/db_panel_storyteller_roll_controls.xml`](../../ui/storyteller/db_panel_storyteller_roll_controls.xml) (`db_rollPanelST`, always visible; grid strips are non-interactive). Both included from [`ui/storyteller/hud_storyteller.xml`](../../ui/storyteller/hud_storyteller.xml).

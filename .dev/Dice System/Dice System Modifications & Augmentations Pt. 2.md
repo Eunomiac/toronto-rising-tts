@@ -195,7 +195,7 @@ There are three dice drawer objects, one for each of the three simultaneous Stor
 
 The first time the Storyteller adds a die to the "live" roll, its dice drawer and dice drawer light should be activated. GUIDs for the dice drawers and lights are provided in `G.GUIDS`, the active and inactive positions for each dice drawer are given in `C.ObjectPositions`, and the "OFF" (inactive) and "STANDARD" (active) modes for each drawer light are given in `L.LIGHTMODES`.
 
-Importantly, unlike with player dice bags, the Storyteller dice bags are not located near the dice drawer. When spawning dice into a Storyteller roll, the arc center is `STD.arcCenterForSlot`: drawer X, Y = `5`, Z = drawer Z **+ 6** (world-space offset along +Z from the drawer center).
+Importantly, unlike with player dice bags, the Storyteller dice bags are not located near the dice drawer. When spawning dice into a Storyteller roll, layout uses `lib/st_dice_tray_spawn.ttslua`: drawer **X/Z center** as origin (drawers are not Y-rotated), padded `getBounds()` half-extents as the outer ellipse radii, staging **Y = 5** unchanged. Dice fill **full 360°** rings (10 + 8 + 6 per Y layer, then +2 Y and repeat). `GlobalRepositionStorytellerTrayDice` orders dice across all ST bags before placing.
 
 ### Rolling Storyteller Rolls
 

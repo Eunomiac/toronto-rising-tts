@@ -1,0 +1,139 @@
+--[[
+    Storyteller dice tray spawn layout (lib/st_dice_tray_spawn.ttslua)
+
+    Full-ellipse rings around each ST dice drawer center (world X/Z, no Y rotation).
+    Outer ring fills to capacity, then middle, then inner; Y layers stack by +2.
+]]
+
+---@diagnostic disable: undefined-global
+
+local STS = {}
+
+--- Unchanged staging hover height above the drawer tray.
+STS.STAGING_BASE_Y = 5
+
+--- Inset from drawer `getBounds()` half-extents so dice stay on the tray.
+STS.TRAY_EDGE_PADDING = 0.45
+
+--- Per-ring die capacity within one Y layer (outer → inner).
+STS.RING_CAPACITIES = { 10, 8, 6 }
+
+STS.DICE_PER_STACK = 24
+STS.Y_LAYER_STEP = 2
+
+--- Ring radii as a fraction of the padded drawer ellipse (outer uses full extent).
+STS.RING_RADIUS_SCALE = { 1.0, 0.72, 0.45 }
+
+--- @param idxInStack number 1..24
+--- @return number ring 1..3
+--- @return number slotInRing 1-based within that ring's capacity band
+local function ringAndSlotInStack(idxInStack)
+    if idxInStack <= STS.RING_CAPACITIES[1] then
+        return 1, idxInStack
+    end
+    if idxInStack <= STS.RING_CAPACITIES[1] + STS.RING_CAPACITIES[2] then
+        return 2, idxInStack - STS.RING_CAPACITIES[1]
+    end
+    return 3, idxInStack - STS.RING_CAPACITIES[1] - STS.RING_CAPACITIES[2]
+end
+
+--- Tray ellipse spec from a drawer prop (world axes; drawer is not Y-rotated).
+-- @param drawer Object|nil
+-- @return table|nil  { centerX, centerZ, baseY, radiusX, radiusZ }
+function STS.traySpecFromDrawer(drawer)
+    if drawer == nil or drawer.getPosition == nil then
+        return nil
+    end
+    local pos = drawer.getPosition()
+    if type(pos) ~= "table" then
+        return nil
+    end
+    local radiusX, radiusZ = 3, 3
+    if drawer.getBounds ~= nil then
+        local b = drawer.getBounds()
+        if type(b) == "table" and type(b.size) == "table" then
+            radiusX = math.max(0.5, (tonumber(b.size.x) or 0) / 2 - STS.TRAY_EDGE_PADDING)
+            radiusZ = math.max(0.5, (tonumber(b.size.z) or 0) / 2 - STS.TRAY_EDGE_PADDING)
+        end
+    end
+    return {
+        centerX = pos.x,
+        centerZ = pos.z,
+        baseY = STS.STAGING_BASE_Y,
+        radiusX = radiusX,
+        radiusZ = radiusZ,
+    }
+end
+
+--- Merge drawer spec into the arc-center table passed to dice bags.
+-- @param traySpec table|nil
+-- @return table|nil  { x, y, z, radiusX, radiusZ }
+function STS.arcCenterFromTraySpec(traySpec)
+    if type(traySpec) ~= "table" then
+        return nil
+    end
+    return {
+        x = traySpec.centerX,
+        y = traySpec.baseY,
+        z = traySpec.centerZ,
+        radiusX = traySpec.radiusX,
+        radiusZ = traySpec.radiusZ,
+    }
+end
+
+--- World position for one staged die on the ST tray.
+-- @param arcCenter table  { x, y, z, radiusX, radiusZ }
+-- @param globalIndex number  1-based across all ST bags on this tray
+-- @param total number
+-- @return table|nil  { x, y, z }
+function STS.worldPositionForTrayDie(arcCenter, globalIndex, total)
+    if type(arcCenter) ~= "table"
+        or type(arcCenter.x) ~= "number"
+        or type(arcCenter.z) ~= "number"
+        or type(arcCenter.y) ~= "number"
+        or type(globalIndex) ~= "number"
+        or type(total) ~= "number"
+        or total < 1
+        or globalIndex < 1
+        or globalIndex > total then
+        return nil
+    end
+
+    local radiusX = tonumber(arcCenter.radiusX) or 3
+    local radiusZ = tonumber(arcCenter.radiusZ) or 3
+
+    local layer = math.floor((globalIndex - 1) / STS.DICE_PER_STACK)
+    local idxInStack = ((globalIndex - 1) % STS.DICE_PER_STACK) + 1
+    local ring = select(1, ringAndSlotInStack(idxInStack))
+
+    local ringCount = 0
+    local slotAmongRing = 1
+    for i = 1, total do
+        local otherLayer = math.floor((i - 1) / STS.DICE_PER_STACK)
+        local otherIdx = ((i - 1) % STS.DICE_PER_STACK) + 1
+        local otherRing = select(1, ringAndSlotInStack(otherIdx))
+        if otherLayer == layer and otherRing == ring then
+            ringCount = ringCount + 1
+            if i == globalIndex then
+                slotAmongRing = ringCount
+            end
+        end
+    end
+    if ringCount < 1 then
+        ringCount = 1
+    end
+
+    local scale = STS.RING_RADIUS_SCALE[ring] or 1
+    local rx = radiusX * scale
+    local rz = radiusZ * scale
+    local angle = (slotAmongRing - 0.5) / ringCount * (2 * math.pi)
+    local y = arcCenter.y + layer * STS.Y_LAYER_STEP
+
+    return {
+        x = arcCenter.x + math.cos(angle) * rx,
+        y = y,
+        z = arcCenter.z + math.sin(angle) * rz,
+    }
+end
+
+return STS
