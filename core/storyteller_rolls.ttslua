@@ -117,8 +117,8 @@ end
 --- @param rollType string
 -- @return boolean
 local function skipSetupForRollType(rollType)
-    return rollType == C.RollType.ROUSE
-        or rollType == C.RollType.ROUSE_OBLIVION
+    local RC = require("core.roll_controller")
+    return RC.shouldSkipSetupForRollType(rollType)
 end
 
 --- @return boolean true when Black has an in-progress roll

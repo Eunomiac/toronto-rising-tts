@@ -569,6 +569,19 @@ local function autoDifficultyForRollType(rollType)
     return nil
 end
 
+--- True when SETUP can be skipped: pool and difficulty are fully determined at initiate.
+-- @param rollType string
+-- @return boolean
+function RC.shouldSkipSetupForRollType(rollType)
+    if type(rollType) ~= "string" then
+        return false
+    end
+    if RO.isRouseFamilyRoll(rollType) then
+        return true
+    end
+    return autoDifficultyForRollType(rollType) ~= nil
+end
+
 -- ============================================================================
 -- LIVE DICE READING
 -- ============================================================================
@@ -945,7 +958,7 @@ function RC.initiateRoll(color, config)
     local pool = resolveInitialPoolForRollType(color, config.rollType, config.pool)
 
     local skipSetup = config.skipSetup == true
-        or RO.isRouseFamilyRoll(config.rollType)
+        or RC.shouldSkipSetupForRollType(config.rollType)
 
     local active = {
         id          = newRollId(),
@@ -963,7 +976,7 @@ function RC.initiateRoll(color, config)
         meta        = DK.defaultMeta(),
         pendingResolution = nil,
         rouseOutcomeStrips = {},
-        -- Simple Check, Rouse, and Remorse auto-set difficulty=1 so the standard
+        -- Simple Check, Rouse-family, and Remorse auto-set difficulty=1 so the standard
         -- classification path works without requiring the ST to enter a value.
         -- The difficulty is hidden from the player panel for these roll types.
         difficulty  = config.difficulty or autoDifficultyForRollType(config.rollType),
@@ -1071,6 +1084,10 @@ function RC.changeRollType(color, rollType)
     active.rollType = rollType
     active.pool = resolveInitialPoolForRollType(color, rollType, nil)
     active.difficulty = autoDifficultyForRollType(rollType)
+    if active.phase == C.RollPhase.SETUP and RC.shouldSkipSetupForRollType(rollType) then
+        active.phase = C.RollPhase.PRE_ROLL
+        active.batonHolder = C.BatonHolder.PLAYER
+    end
     active.tookHalf = false
     active.takeHalfAwaitingRouse = false
     active.takeHalfPartial = nil
