@@ -119,16 +119,18 @@ const TRAIT_SECTION_DIVIDER_FLAGS = {
 };
 
 /**
- * Params for ##IF @@HAS_*@@## around trait sections (divider + columns).
- * Always emit all sections so ST can add first entry to empty categories at runtime.
- * @param {Record<string, unknown>|null|undefined} _data
+ * Params for ##IF @@HAS_*@@## around trait sections (divider + columns; real entries only, not blanks).
+ * @param {Record<string, unknown>|null|undefined} data
  * @returns {Record<string, string>}
  */
-function buildTraitSectionDividerFlags(_data) {
+function buildTraitSectionDividerFlags(data) {
+  const src = data && typeof data === "object" ? data : {};
   /** @type {Record<string, string>} */
   const flags = {};
-  for (const flag of Object.keys(TRAIT_SECTION_DIVIDER_FLAGS)) {
-    flags[flag] = "1";
+  for (const [flag, arrayKey] of Object.entries(TRAIT_SECTION_DIVIDER_FLAGS)) {
+    if (collectRealEntries(/** @type {unknown[]} */ (src[arrayKey])).length > 0) {
+      flags[flag] = "1";
+    }
   }
   return flags;
 }
