@@ -889,7 +889,147 @@ C.ObjectPositions = {
       position = { y = -200 },
       isHidden = true,
     }
-  }
+  },
+  COMPULSION_CARD_1_RED = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_1_ANCHOR_RED,
+      height = 10,
+      duration = 0
+    },
+  },
+  COMPULSION_CARD_2_RED = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_2_ANCHOR_RED,
+      height = 10,
+      duration = 0
+    },
+  },
+  COMPULSION_CARD_3_RED = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_3_ANCHOR_RED,
+      height = 10,
+      duration = 0
+    },
+  },
+  COMPULSION_CARD_4_RED = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_4_ANCHOR_RED,
+      height = 10,
+      duration = 0
+    },
+  },
+  COMPULSION_CARD_1_ORANGE = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_1_ANCHOR_ORANGE,
+      height = 10,
+      duration = 0
+    },
+  },
+  COMPULSION_CARD_2_ORANGE = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_2_ANCHOR_ORANGE,
+      height = 10,
+      duration = 0
+    },
+  },
+  COMPULSION_CARD_3_ORANGE = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_3_ANCHOR_ORANGE,
+      height = 10,
+      duration = 0
+    },
+  },
+  COMPULSION_CARD_4_ORANGE = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_4_ANCHOR_ORANGE,
+      height = 10,
+      duration = 0
+    },
+  },
+  COMPULSION_CARD_1_BROWN = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_1_ANCHOR_BROWN,
+      height = 10,
+      duration = 0
+    },
+  },
+  COMPULSION_CARD_2_BROWN = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_2_ANCHOR_BROWN,
+      height = 10,
+      duration = 0
+    },
+  },
+  COMPULSION_CARD_3_BROWN = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_3_ANCHOR_BROWN,
+      height = 10,
+      duration = 0
+    },
+  },
+  COMPULSION_CARD_4_BROWN = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_4_ANCHOR_BROWN,
+      height = 10,
+      duration = 0
+    },
+  },
+  COMPULSION_CARD_1_PINK = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_1_ANCHOR_PINK,
+      height = 10,
+      duration = 0
+    },
+  },
+  COMPULSION_CARD_2_PINK = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_2_ANCHOR_PINK,
+      height = 10,
+      duration = 0
+    },
+  },
+  COMPULSION_CARD_3_PINK = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_3_ANCHOR_PINK,
+      height = 10,
+      duration = 0
+    },
+  },
+  COMPULSION_CARD_4_PINK = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_4_ANCHOR_PINK,
+      height = 10,
+      duration = 0
+    },
+  },
+  COMPULSION_CARD_1_PURPLE = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_1_ANCHOR_PURPLE,
+      height = 10,
+      duration = 0
+    },
+  },
+  COMPULSION_CARD_2_PURPLE = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_2_ANCHOR_PURPLE,
+      height = 10,
+      duration = 0
+    },
+  },
+  COMPULSION_CARD_3_PURPLE = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_3_ANCHOR_PURPLE,
+      height = 10,
+      duration = 0
+    },
+  },
+  COMPULSION_CARD_4_PURPLE = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_4_ANCHOR_PURPLE,
+      height = 10,
+      duration = 0
+    },
+  },
 }
 
 -- #endregion
@@ -1211,8 +1351,8 @@ C.Tables = {
   ["Table B0"] = {
     guid = G.GUIDS.TABLES.TABLE_B0,
     shape = C.TableShapes.CIRCULAR,
-    centerPoint = Vector({ 0, 0, 0 }),
-    activePosition = Vector({ 0.00, 0, 0 }),
+    centerPoint = Vector({ 0, 0, -50 }),
+    activePosition = Vector({ 0.00, 0, -50 }),
     inactivePosition = Vector({ 0.00, -200, 0 }),
     numSegments = 5,
     angleSegmentOne = 36,
@@ -1224,39 +1364,39 @@ C.Tables = {
       Purple = 5
     },
     referencePlayerColor = "Red",
-    referenceHandPosition = Vector({ 0.00, 3.22, -65.54 }),
+    referenceHandPosition = Vector({ 0.00, 3.22, -115.54 }),
     objectPositions = {
       {
         guid = G.GUIDS.MAIN_LIGHT_LEFT,
-        position = { z = 0 }
+        position = { z = -50 }
       },
       {
         guid = G.GUIDS.MAIN_LIGHT_RIGHT,
-        position = { z = 0 }
+        position = { z = -50 }
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_1,
-        position = { z = -10 }
+        position = { z = -60 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_1,
-        position = { z = -10 }
+        position = { z = -60 }
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_2,
-        position = { z = 10 }
+        position = { z = -40 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_2,
-        position = { z = 10 }
+        position = { z = -40 }
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_3,
-        position = { z = 10 }
+        position = { z = -40 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_3,
-        position = { z = 10 }
+        position = { z = -40 }
       }
     }
   },
@@ -1548,10 +1688,10 @@ C.Tables = {
       NPC4 = {side = 0, index = 1},
       NPC5 = {side = 0, index = 5},
       Red = {side = 180, index = 3},
-      Orange = {side = 180, index = 4},
-      Pink = {side = 180, index = 2},
-      Brown = {side = 180, index = 5},
-      Purple = {side = 180, index = 1}
+      Orange = {side = 180, index = 2},
+      Pink = {side = 180, index = 4},
+      Brown = {side = 180, index = 1},
+      Purple = {side = 180, index = 5}
     },
     referencePlayerColor = "Red",
     referenceHandPosition = Vector({ 0.00, 3.22, -135.77 }),
@@ -1607,6 +1747,10 @@ C.TableSourceObjects = {
     "CSHEET_DICE_DRAWER",
     "CSHEET_DICE_DRAWER_ANCHOR_ON",
     "CSHEET_DICE_DRAWER_ANCHOR_OFF",
+    "COMPULSION_CARD_1_ANCHOR",
+    "COMPULSION_CARD_2_ANCHOR",
+    "COMPULSION_CARD_3_ANCHOR",
+    "COMPULSION_CARD_4_ANCHOR",
     "CSHEET_PAGE_1",
     "CSHEET_PAGE_2",
     "CSHEET_PAGE_3",
@@ -1624,7 +1768,9 @@ C.TableSourceObjects = {
     "SEAT_LIGHT_3",
     "FAMULUS_LIGHT_1",
     "FAMULUS_LIGHT_2",
-    "FAMULUS_FIGURINE"
+    "FAMULUS_FIGURINE",
+    "COMPULSION_DECK",
+    "STORAGE_TOME"
   },
   all = {
     "SEAT_CHAIR",

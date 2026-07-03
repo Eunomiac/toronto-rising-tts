@@ -1,7 +1,11 @@
 # Inbox
 
 ## Quick Fixes
-
+- [Results Broadcast] Frenzy Roll results broadcasts need to be revised.
+  - on WIN:  "Fight For Control!"  (no margin report) (style with the same class as a messy critical)
+  - on CRITICAL WIN: "The Leash Holds" (style with the same class as a clean critical)
+  - on FAILURE/TOTAL FAILURE: "FRENZY!" (style with the same class as "Failure", auto-apply Frenzy Overlay)
+-
 
 ## Active
 
