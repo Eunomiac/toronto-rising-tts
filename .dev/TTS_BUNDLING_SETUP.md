@@ -234,7 +234,7 @@ require("ui.ui_csheet")
 | --- | --- | --- |
 | `CONTROL_BOARD.*` | `require("objects.npc_control_board")` | `<Include src="ui/objects/npc_control_board.xml" />` |
 | `CONTROL_BOARD_PALETTE.*` | `require("objects.npc_control_board_palette")` | `<Panel />` |
-| `DICEBAG_*` | `require("objects.dice_bag")` | **none** (invisible `createButton` roll target — no Custom UI file) |
+| `DICEBAG_*` | `require("objects.dice_bag")` | **none** (invisible `createButton` roll target — no Custom UI file). **Thin bundle only** (~3 modules / ~54 KB): `lib.dice_kinds`, `lib.guids`. Tray Y offset during live rolls: `Global.call("GlobalGetPcRollTrayYOffset")` — **never** `require("lib.pc_roll_tray_lower")` (pulls `core.state` → ~2.6 MB × 22 bags; broke Save & Play 2026-07-03). |
 | `SIGNAL_CANDLE_*` | `require("ui.ui_signal_candle")` | **none** |
 | `SOUNDSCAPE_*` / `TAROT_BUTTON_*` | matching `require(...)` in fix script | **none** |
 
@@ -253,7 +253,7 @@ require("ui.ui_csheet_page6")   -- history / XP log (placeholder)
 
 Each entry loads `ui/ui_csheet_pageN_local.ttslua` (registers `lib/csheet_pageN_xml` on `_G`) then `ui/ui_csheet_core.ttslua`. Default pages (1–2, 7–8) must **not** pull another page’s template chain. Page 3 adds ~+30 KB vs the default entry; pages 4–6 placeholders add only a few KB until real templates land.
 
-Object scripts run in a **separate Lua VM** from Global. They must not pull the full game stack (`lib.pc_stats` → `core.sync`, etc.). Thin modules and `Global.call` keep each CSHEET bundle small (~tens of KB vs ~1.4 MB before slimming). **Signal candles** use `GlobalToggleSignalFireState`; **NPC CONTROL_BOARD / PALETTE** use `GlobalGameboardApply`, `GlobalGameboardToggleControlBoardSnaps`, `GlobalGameboardInstallPaletteSnaps` (no `require("core.npc_gameboard")` on objects); **tarot** uses `lib/object_positions_object.ttslua` (not `lib/object_positions.ttslua`).
+Object scripts run in a **separate Lua VM** from Global. They must not pull the full game stack (`lib.pc_stats` → `core.sync`, etc.). **Agents:** treat every object-script `require()` as high risk — import **piecemeal** (thin object-only modules) or **`Global.call`**; never entire libraries or anything that transitively requires `core.*`. Each object is bundled separately, so cost multiplies by object count (22 dice bags, ~37 CSHEET pages). See [`.cursor/rules/toronto-rising-object-script-bundling.mdc`](../.cursor/rules/toronto-rising-object-script-bundling.mdc). Thin modules and `Global.call` keep each CSHEET bundle small (~tens of KB vs ~1.4 MB before slimming). **Signal candles** use `GlobalToggleSignalFireState`; **NPC CONTROL_BOARD / PALETTE** use `GlobalGameboardApply`, `GlobalGameboardToggleControlBoardSnaps`, `GlobalGameboardInstallPaletteSnaps` (no `require("core.npc_gameboard")` on objects); **tarot** uses `lib/object_positions_object.ttslua` (not `lib/object_positions.ttslua`); **dice bags** use `GlobalGetPcRollTrayYOffset` (not `lib.pc_roll_tray_lower`).
 
 | Layer | Module | Role |
 | ----- | ------ | ---- |

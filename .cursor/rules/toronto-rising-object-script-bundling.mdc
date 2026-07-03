@@ -1,0 +1,57 @@
+---
+description: Toronto Rising TTS — object script require() / bundling (Save & Play payload)
+alwaysApply: true
+---
+
+# Toronto Rising — object-hosted script bundling (mandatory)
+
+**Object scripts are bundled per object and sent on every Save & Play.** A single careless `require()` on an object entry (dice bag, CSHEET page, signal candle, NPC board, tarot button, soundscape emitter, …) duplicates that module tree **once per object** — often tens of copies. This can **break Save & Play** (huge payload, TTS reload abort, extension `Unexpected end of JSON input` on port 39998) even when Global-only changes are small.
+
+Agents must treat object-script `require()` as **high risk** — on par with Lua local function order.
+
+## Scope — what counts as “object-hosted”
+
+Scripts attached to table objects (stubs under `.tts/objects/` → `objects/*.ttslua`, `ui/ui_csheet*.ttslua`, `ui/ui_signal_candle.ttslua`, `ui/ui_tarot_button.ttslua`, `core/soundscape_emitter_object.ttslua`, etc.). Each runs in a **separate Lua VM** from Global; luabundle inlines the full `require()` graph into **that object's** bundled script.
+
+Global / HUD paths (`core/global_script.ttslua`, storyteller XmlUI) are different — one bundle, acceptable to pull the game stack.
+
+## The rule
+
+1. **Never** `require("core.*")` from object scripts (state, sync, roll_controller, npcs, …).
+2. **Never** `require` “kitchen sink” libs from objects: `lib.constants`, `lib.util`, `lib.pcs_data`, `lib.pc_stats`, `lib.object_positions` (use **`lib.object_positions_object`**), or any module whose dependency graph reaches `core.*`.
+3. **Import piecemeal only** — object-purpose modules designed to stay thin (`lib.dice_kinds`, `lib.guids`, `lib.csheet_util`, `lib.blood_potency_constants`, …). If you need game state or orchestration, add a **`Global.call("Global…")`** entry in `core/global_script.ttslua` and keep the object stub dumb.
+4. **Do not** `require` a Global module “just for one helper” if that module pulls `core.state` or similar — route through Global instead (see TOR-262 dice bag incident below).
+5. **Lazy `require` inside functions** may still be bundled on some paths; prefer **top-level** requires only of whitelisted thin modules, or Global.call.
+6. Before finishing any object-script change: mentally multiply bundle size by **number of objects** with that stub (e.g. **22** dice bags, **~37** CSHEET pages).
+
+## Approved patterns
+
+| Need | Object script | Global |
+| --- | --- | --- |
+| Tier C world mutation | `Global.call("GlobalRequireHostForWorldMutation", …)` | Host-guarded `Global*` callee |
+| Roll / tray / game state | `Global.call("GlobalGetPcRollTrayYOffset", …)` etc. | `require` domain modules |
+| NPC gameboard Apply | `Global.call("GlobalGameboardApply", …)` | `core.npc_gameboard` |
+| Tarot toggle | `lib.tarot_toggle` + **`lib.object_positions_object`** only | full `lib.object_positions` |
+| CSHEET UI | `ui.ui_csheet` / `ui.ui_csheet_pageN` thin chain | sheet collect, sync |
+
+Canonical inventory: [`.dev/TTS_BUNDLING_SETUP.md`](../../.dev/TTS_BUNDLING_SETUP.md) § Character sheet pages / NPC gameboard objects.
+
+## Incident — TOR-262 dice bags (2026-07-03)
+
+`objects/dice_bag.ttslua` gained `require("lib.pc_roll_tray_lower")`, which pulls `core.state` → **~84 modules, ~2.6 MB per bag** × 22 bags ≈ **+56 MB** Save & Play payload. Fix: `GlobalGetPcRollTrayYOffset` via `Global.call`; bags back to **~54 KB** (3 modules).
+
+## Agent checklist (before marking object-script work done)
+
+1. List **every new or changed `require()`** in object entry files you touched.
+2. Walk the dependency graph — grep the required file for `require("core.` and `require("lib.constants")`.
+3. If any heavy module appears, **stop** and switch to Global.call or a thinner object-only module.
+4. Run `npm run tts-save:measure-bundles` when CSHEET/NPC/dice stubs changed; flag any object bundle with `core.*` or `lib.constants` as regression.
+5. After substantive object-script edits, **Save & Play once** — bundle bloat does not show in `npm run build`.
+
+## Symptom → likely cause
+
+| Symptom | Likely cause |
+| --- | --- |
+| Save & Play hangs on “Sending Scripts”; Extension Host `Unexpected end of JSON input` on 39998 | Payload too large or TTS reload aborted; check object bundles for `core.*` |
+| `Tried to require "core.foo", but no such module has been registered` in object VM | Object script required Global-only module at runtime |
+| One object type fine, many copies break send | Same `require()` duplicated per object (dice bags, CSHEET pages) |

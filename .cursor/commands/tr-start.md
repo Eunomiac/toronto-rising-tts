@@ -54,6 +54,7 @@ You are starting (or re-scoping) work on **Toronto Rising**, a Vampire: The Masq
 | **Global script** | Real logic: `core/global_script.ttslua`; `global/global_script.ttslua` is a require shim only. |
 | **Require order** | `lib/constants` → `lib/guids` → `lib/util` → `core/state` → other modules. |
 | **Lua local order** | **#1 nil-call bug:** `local function` **above** every caller in the same chunk (or forward-declare). Pre-flight: grep helper vs caller line numbers. Not caught by build. See `lua-local-function-order.md` + `toronto-rising-lua-local-function-order.mdc`. |
+| **Object script `require()`** | **#1 Save & Play break:** object-hosted scripts bundle **per object**. **Piecemeal** thin modules only — **never** `core.*`, `lib.constants`, or wide libs; use **`Global.call`**. See `toronto-rising-object-script-bundling.mdc` + `.dev/TTS_BUNDLING_SETUP.md`. |
 | **Player identity** | Per-player state keyed by **steam_id**; Storyteller = `Black`; PC colors per `C.PlayerColors`. |
 | **Minimal diff** | Remove dead code and obsolete shims; update `.dev/` docs in the same change when behavior or public APIs move. |
 | **Linear sync** | Part of **done**: In Progress when starting, Done + comment + tasklist `[x]` when finishing; on gate-close (**Focus** / **Deferred** / **`blockedBy` prerequisite**), run **deferred resurfacing** (unblock dependents, propose 1–3 labeled resurfacing candidates in comment or chat). Never leave Focus/tasklist/Linear diverged. |
