@@ -42,11 +42,11 @@
           onValueChanged="HUD_statsEditorField" onEndEdit="HUD_statsEditorField" />
       </HorizontalLayout>
       <Text fontSize="11" color="#CCCCCC" text="Description" />
-      <InputField id="statsEditor_description" lineType="MultiLineNewline" text="" preferredHeight="100" flexibleHeight="0"
+      <InputField id="statsEditor_description" lineType="MultiLineNewline" text="" preferredHeight="100" flexibleHeight="0" preferredWidth = "420"
         onValueChanged="HUD_statsEditorField" onEndEdit="HUD_statsEditorField" />
       <Text fontSize="11" color="#CCCCCC" text="Rules" />
       <InputField id="statsEditor_rules" lineType="MultiLineNewline" text="" preferredHeight="100" flexibleHeight="0"
-        onValueChanged="HUD_statsEditorField" onEndEdit="HUD_statsEditorField" />
+        onValueChanged="HUD_statsEditorField" onEndEdit="HUD_statsEditorField" preferredWidth = "420" />
     </VerticalLayout>
 
     <HorizontalLayout spacing="8" preferredHeight="36" childAlignment="MiddleCenter">
