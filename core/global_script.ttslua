@@ -3488,6 +3488,7 @@ CameraDebugFocus = require("core.camera_debug_focus")
 -- ============================================================================
 RC  = require("core.roll_controller")
 RUI = require("core.roll_ui")
+local PRTL = require("lib.pc_roll_tray_lower")
 local pendingRollCleanup = {}
 local pendingRollCleanupTimerIds = {}
 
@@ -3520,6 +3521,9 @@ local function finishPostBroadcastRollCleanup(color, rollId)
         destroyPlayerTableDiceForRoll(color, rollId)
     end
     destroyBagDice(color)
+    if color ~= "Black" and PRTL.getLivePcColor() == color then
+        PRTL.onLivePcRollFinished()
+    end
 end
 
 --- Stops a scheduled post-broadcast dice cleanup for a seat (if any).
@@ -4481,6 +4485,16 @@ function GlobalDestroyBagDice(params)
     end
     if type(params) ~= "table" or type(params.color) ~= "string" then return end
     destroyBagDice(params.color, params)
+end
+
+--- Global.call entry: tray Y offset for staged spawns while another PC roll is live (TOR-262).
+-- @param params table  { color: string }
+-- @return number
+function GlobalGetPcRollTrayYOffset(params)
+    if type(params) ~= "table" or type(params.color) ~= "string" then
+        return 0
+    end
+    return PRTL.getTrayYOffset(params.color)
 end
 
 --- Global.call entry: destroy table dice tagged with a roll id (player seats).

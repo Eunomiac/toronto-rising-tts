@@ -302,6 +302,10 @@ function S.GetDefaultGameState()
             },
             universalCameraAngles = {}
         },
+        --- Single live PC roll (TOR-262): seat color in ROLLING until post-broadcast cleanup.
+        rollConcurrency = {
+            livePcColor = nil,
+        },
         npcs = {
             instances = {},
         },

@@ -1,0 +1,202 @@
+--[[
+  Single live PC roll: lowers other players' pre-live trays/dice while one roll is ROLLING.
+  TOR-262 — live from Roll click until post-broadcast cleanup closes the tray.
+]]
+---@diagnostic disable: undefined-global
+
+local PRTL = {}
+
+local C = require("lib.constants")
+local S = require("core.state")
+local U = require("lib.util")
+local G = require("lib.guids")
+local DK = require("lib.dice_kinds")
+
+local LOWER_DELTA_Y = -4
+
+--- @type table<string, boolean>
+local loweredColors = {}
+
+--- @param color string
+--- @return userdata|nil
+local function findDiceDrawerObject(color)
+  if type(color) ~= "string" then
+    return nil
+  end
+  local colorTag = color .. "Object"
+  local objs = getObjectsWithTag("DiceDrawer")
+  if type(objs) ~= "table" then
+    return nil
+  end
+  for _, obj in ipairs(objs) do
+    if obj ~= nil then
+      local tags = obj.getTags()
+      if type(tags) == "table" then
+        for _, t in ipairs(tags) do
+          if t == colorTag then
+            return obj
+          end
+        end
+      end
+    end
+  end
+  return nil
+end
+
+--- @param obj userdata|nil
+--- @param deltaY number
+local function nudgeObjectY(obj, deltaY)
+  if not U.isGameObject(obj) or type(deltaY) ~= "number" or deltaY == 0 then
+    return
+  end
+  local pos = obj.getPosition()
+  if type(pos) ~= "table" then
+    return
+  end
+  obj.setPosition({ x = pos.x, y = pos.y + deltaY, z = pos.z })
+end
+
+--- @param color string
+--- @param deltaY number
+local function nudgeBagStagedDice(color, deltaY)
+  if type(color) ~= "string" or type(deltaY) ~= "number" or deltaY == 0 then
+    return
+  end
+  local bags = G.GetAllPlayerDiceBagGUIDs(color)
+  for _, guid in pairs(bags) do
+    if type(guid) == "string" then
+      local bag = getObjectFromGUID(guid)
+      if bag ~= nil then
+        bag.call("offsetStagedDiceY", { deltaY = deltaY })
+      end
+    end
+  end
+end
+
+--- @param color string
+--- @param rollId string|nil
+--- @param deltaY number
+local function nudgeTableDiceForRoll(color, rollId, deltaY)
+  if type(color) ~= "string" or type(rollId) ~= "string" or type(deltaY) ~= "number" or deltaY == 0 then
+    return
+  end
+  local ownerTag = color .. "Object"
+  for _, kind in ipairs(DK.ALL_KINDS) do
+    local dieTag = DK.kindToTag(kind)
+    if dieTag ~= nil then
+      local candidates = getObjectsWithAllTags({ dieTag, "d10", ownerTag })
+      for _, obj in ipairs(candidates) do
+        if DK.gmNotesMatchRoll(obj.getGMNotes(), rollId) then
+          nudgeObjectY(obj, deltaY)
+        end
+      end
+    end
+  end
+end
+
+--- @param color string
+--- @return table|nil
+local function getActiveRoll(color)
+  local pid = S.getPlayerID(color)
+  if pid == nil then
+    return nil
+  end
+  return S.getStateVal("playerData", pid, "hud", "rollData", "active")
+end
+
+--- @param color string
+--- @return boolean
+local function isPreLiveActiveRoll(color)
+  local active = getActiveRoll(color)
+  if active == nil then
+    return false
+  end
+  return active.phase == C.RollPhase.SETUP or active.phase == C.RollPhase.PRE_ROLL
+end
+
+--- @return string|nil
+function PRTL.getLivePcColor()
+  return S.getStateVal("rollConcurrency", "livePcColor")
+end
+
+--- @param color string|nil
+function PRTL.setLivePcColor(color)
+  S.setStateVal(color, "rollConcurrency", "livePcColor")
+end
+
+--- World Y offset applied to staged spawns while a seat tray is lowered.
+-- @param color string
+-- @return number
+function PRTL.getTrayYOffset(color)
+  if type(color) ~= "string" or color == "Black" then
+    return 0
+  end
+  if loweredColors[color] == true then
+    return LOWER_DELTA_Y
+  end
+  return 0
+end
+
+--- @param color string
+--- @return boolean
+function PRTL.isInitiateBlocked(color)
+  if type(color) ~= "string" or color == "Black" then
+    return false
+  end
+  local live = PRTL.getLivePcColor()
+  return type(live) == "string" and live ~= "" and live ~= color
+end
+
+--- @param color string
+local function lowerTrayForColor(color)
+  if type(color) ~= "string" or color == "Black" or loweredColors[color] == true then
+    return
+  end
+  local active = getActiveRoll(color)
+  local rollId = type(active) == "table" and active.id or nil
+  nudgeObjectY(findDiceDrawerObject(color), LOWER_DELTA_Y)
+  nudgeBagStagedDice(color, LOWER_DELTA_Y)
+  if type(rollId) == "string" then
+    nudgeTableDiceForRoll(color, rollId, LOWER_DELTA_Y)
+  end
+  loweredColors[color] = true
+end
+
+--- @param color string
+local function restoreTrayForColor(color)
+  if type(color) ~= "string" or color == "Black" or loweredColors[color] ~= true then
+    return
+  end
+  local active = getActiveRoll(color)
+  local rollId = type(active) == "table" and active.id or nil
+  nudgeObjectY(findDiceDrawerObject(color), -LOWER_DELTA_Y)
+  nudgeBagStagedDice(color, -LOWER_DELTA_Y)
+  if type(rollId) == "string" then
+    nudgeTableDiceForRoll(color, rollId, -LOWER_DELTA_Y)
+  end
+  loweredColors[color] = nil
+end
+
+--- Called when a PC roll advances to ROLLING (Roll button).
+-- @param liveColor string
+function PRTL.onPcRollGoingLive(liveColor)
+  if type(liveColor) ~= "string" or liveColor == "Black" then
+    return
+  end
+  PRTL.setLivePcColor(liveColor)
+  for _, color in ipairs(C.PlayerColors or {}) do
+    if color ~= liveColor and isPreLiveActiveRoll(color) then
+      lowerTrayForColor(color)
+    end
+  end
+end
+
+--- Restores lowered trays after the live roll finishes cleanup.
+function PRTL.onLivePcRollFinished()
+  PRTL.setLivePcColor(nil)
+  for _, color in ipairs(C.PlayerColors or {}) do
+    restoreTrayForColor(color)
+  end
+end
+
+return PRTL

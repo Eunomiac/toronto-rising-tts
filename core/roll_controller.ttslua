@@ -53,6 +53,7 @@ local Conditions = require("core.conditions")
 local RollConditionHandlers = require("core.roll_condition_handlers")
 local CD = require("lib.condition_defs")
 local PCST = require("core.pc_storyteller_panel")
+local PRTL = require("lib.pc_roll_tray_lower")
 local Sync = require("core.sync")
 
 -- ============================================================================
@@ -954,6 +955,12 @@ function RC.initiateRoll(color, config)
         print(string.format("[RC] initiateRoll blocked: %s already has an active roll", color))
         return false
     end
+    if PRTL.isInitiateBlocked(color) then
+        print(string.format(
+            "[RC] initiateRoll blocked: %s roll is live for %s",
+            color, tostring(PRTL.getLivePcColor())))
+        return false
+    end
 
     local pool = resolveInitialPoolForRollType(color, config.rollType, config.pool)
 
@@ -1627,6 +1634,9 @@ function RC.startRolling(color)
     setActive(color, active)
     cancelDebounce(color)
     notifyStateChanged(color)
+    if color ~= "Black" then
+        PRTL.onPcRollGoingLive(color)
+    end
     return true
 end
 
@@ -2254,6 +2264,9 @@ function RC.cancelRoll(color)
     end
 
     Global.call("GlobalCancelPendingRollCleanup", { color = color })
+    if PRTL.getLivePcColor() == color then
+        PRTL.onLivePcRollFinished()
+    end
     if type(rollId) == "string" then
         if color == "Black" then
             local STR = require("core.storyteller_rolls")

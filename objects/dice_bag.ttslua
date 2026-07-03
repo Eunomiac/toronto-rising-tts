@@ -197,6 +197,21 @@ local function radiusForStagedDie(die, bagKind, bloodSurgeRouse)
     return radiusForSpawnKind(bagKind or getDieType(), false)
 end
 
+--- @param bagColor string
+--- @return number
+local function pcTrayYOffset(bagColor)
+    if type(bagColor) ~= "string" or bagColor == "Black" then
+        return 0
+    end
+    local ok, result = pcall(function()
+        return Global.call("GlobalGetPcRollTrayYOffset", { color = bagColor })
+    end)
+    if ok and type(result) == "number" then
+        return result
+    end
+    return 0
+end
+
 --- Local arc offset converted to world position for one staged die.
 -- Dice beyond MAX_DICE_PER_ARC overflow onto higher concentric arcs (layer): each layer is
 -- spread across only its own dice (so partial top layers stay centered), raised by
@@ -218,11 +233,12 @@ local function worldArcPoint(bagColor, arcCenter, i, total, radius)
     local layerRadius = radius + layer * ARC_LAYER_RADIUS_STEP
     local layerY = layer * ARC_LAYER_Y_STEP
     local localPt = getLocalPointOnArc(layerIndex, layerTotal, layerRadius)
+    local trayYOffset = pcTrayYOffset(bagColor)
     -- ST drawer tray passes a fixed world-space arc center (no bag transform).
     if type(arcCenter) == "table" and type(arcCenter.x) == "number" then
         return {
             x = arcCenter.x + localPt.x,
-            y = arcCenter.y + (localPt.y or 0) + layerY,
+            y = arcCenter.y + (localPt.y or 0) + layerY + trayYOffset,
             z = arcCenter.z + localPt.z,
         }
     end
@@ -230,10 +246,10 @@ local function worldArcPoint(bagColor, arcCenter, i, total, radius)
     local normalBag = getPlayerNormalBag(bagColor)
     if normalBag ~= nil then
         local world = normalBag.positionToWorld({ x = localPt.x, y = 0, z = localPt.z })
-        return { x = world.x, y = STAGING_WORLD_Y + layerY, z = world.z }
+        return { x = world.x, y = STAGING_WORLD_Y + layerY + trayYOffset, z = world.z }
     end
     local world = self.positionToWorld({ x = localPt.x, y = 0, z = localPt.z })
-    return { x = world.x, y = STAGING_WORLD_Y + layerY, z = world.z }
+    return { x = world.x, y = STAGING_WORLD_Y + layerY + trayYOffset, z = world.z }
 end
 
 local spawnPostRollDie
@@ -562,6 +578,21 @@ function autoSpawn(params)
     local arcCenter = params.arcCenter
     for _ = 1, count do
         spawnDie(bagColor, dieType, { arcCenter = arcCenter })
+    end
+end
+
+function offsetStagedDiceY(params)
+    local deltaY = type(params) == "table" and tonumber(params.deltaY) or 0
+    if deltaY == 0 then
+        return
+    end
+    for _, die in ipairs(spawnedDice) do
+        if die ~= nil then
+            local pos = die.getPosition()
+            if type(pos) == "table" then
+                die.setPosition({ x = pos.x, y = pos.y + deltaY, z = pos.z })
+            end
+        end
     end
 end
 
