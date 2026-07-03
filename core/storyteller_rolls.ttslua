@@ -271,6 +271,46 @@ function STR.syncSlotsFromActive()
     saveRoot(root)
 end
 
+--- Marks a resolved slot as awaiting manual result broadcast (secret confirm).
+-- @param slotIndex number
+-- @param rollId string|nil
+function STR.markSlotPendingBroadcast(slotIndex, rollId)
+    if type(slotIndex) ~= "number" then
+        return
+    end
+    local root = getRoot()
+    local slot = root.slots[slotIndex]
+    if type(slot) ~= "table" or slot.cleared == true then
+        return
+    end
+    slot.pendingBroadcast = true
+    if type(rollId) == "string" and rollId ~= "" then
+        slot.rollId = rollId
+    end
+    root.slots[slotIndex] = slot
+    saveRoot(root)
+    local RUI = require("core.roll_ui")
+    if RUI.refreshSTSlotRows ~= nil then
+        RUI.refreshSTSlotRows()
+    end
+end
+
+--- Clears manual-broadcast pending state on a slot.
+-- @param slotIndex number
+function STR.clearSlotPendingBroadcast(slotIndex)
+    if type(slotIndex) ~= "number" then
+        return
+    end
+    local root = getRoot()
+    local slot = root.slots[slotIndex]
+    if type(slot) ~= "table" then
+        return
+    end
+    slot.pendingBroadcast = false
+    root.slots[slotIndex] = slot
+    saveRoot(root)
+end
+
 --- Marks a drawer slot cleared (after ST cancel); closes drawer/light.
 -- @param slotIndex number
 function STR.clearSlot(slotIndex)
@@ -283,6 +323,7 @@ function STR.clearSlot(slotIndex)
         slot.cleared = true
         slot.phase = nil
         slot.drawerActive = false
+        slot.pendingBroadcast = false
     end
     if root.liveSlotIndex == slotIndex then
         root.liveSlotIndex = nil
@@ -326,6 +367,10 @@ end
 
 --- Full cleanup for cancel: table dice, bag dice, optional drawer close via clearSlot.
 function STR.cleanupLiveRoll()
+    local active = getBlackActive()
+    if active ~= nil and type(active.id) == "string" then
+        Global.call("GlobalRestoreSecretRollDiceVisibility", { rollId = active.id })
+    end
     STR.destroyTableDiceForActive()
     STR.destroyStagedBagDice()
 end
@@ -533,8 +578,10 @@ function STR.cancelSlot(slotIndex)
         RC.cancelRoll(ST_COLOR)
         STR.cleanupLiveRoll()
     elseif type(slot.rollId) == "string" then
+        Global.call("GlobalRestoreSecretRollDiceVisibility", { rollId = slot.rollId })
         STR.destroyTableDiceForRollId(slot.rollId)
     end
+    STR.clearSlotPendingBroadcast(slotIndex)
     STR.clearSlot(slotIndex)
     local RUI = require("core.roll_ui")
     if RUI.refreshSTSlotRows ~= nil then

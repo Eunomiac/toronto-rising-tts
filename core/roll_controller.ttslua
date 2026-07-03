@@ -69,6 +69,7 @@ RC.onRollStateChanged = nil
 -- Set in global_script to trigger broadcast display and chat output.
 -- @type function(color: string, result: table|nil, label: string|nil)|nil
 RC.onRollResolved = nil
+RC.onBlackSecretDiceSettled = nil
 
 --- Optional seat camera preset (e.g. "roll", "diceTray", "default"). Set in global_script.
 -- @type function(color: string, modeName: string)|nil
@@ -441,7 +442,9 @@ end
 -- @param rollType string|nil     C.RollType value (e.g. C.RollType.ROUSE)
 -- @param diceFaces table|nil     Sorted face records from Dice.buildDiceFaces(), for image display
 -- @param rouseOutcomeStrips table|nil  Compact rouse strip rows for broadcast
-local function appendHistory(color, result, label, diceDisplay, rollType, diceFaces, rouseOutcomeStrips, npcCharacterKey)
+-- @param npcCharacterKey string|nil
+-- @param rollId string|nil  Active roll id for manual broadcast lookup
+local function appendHistory(color, result, label, diceDisplay, rollType, diceFaces, rouseOutcomeStrips, npcCharacterKey, rollId)
     local pid = S.getPlayerID(color)
     if pid == nil then return end
     local history = S.getStateVal("playerData", pid, "hud", "rollData", "history") or {}
@@ -453,6 +456,7 @@ local function appendHistory(color, result, label, diceDisplay, rollType, diceFa
         diceFaces   = diceFaces or {},
         rouseOutcomeStrips = rouseOutcomeStrips or {},
         npcCharacterKey = (type(npcCharacterKey) == "string" and npcCharacterKey ~= "") and npcCharacterKey or nil,
+        rollId      = (type(rollId) == "string" and rollId ~= "") and rollId or nil,
         timestamp   = os.time(),
     }
     while #history > 10 do table.remove(history, 1) end
@@ -1994,6 +1998,15 @@ function RC.recalculate(color, previewOnly)
     setActive(color, active)
     notifyStateChanged(color)
 
+    if wasRolling and active.phase == C.RollPhase.POST_ROLL
+        and color == "Black"
+        and type(active.meta) == "table"
+        and active.meta.secretDice == true
+        and RC.onBlackSecretDiceSettled
+        and U.Type(RC.onBlackSecretDiceSettled) == "function" then
+        RC.onBlackSecretDiceSettled(color, active.id)
+    end
+
     if active.phase == C.RollPhase.POST_ROLL then
         rollCamera(color, "roll")
     end
@@ -2425,6 +2438,10 @@ function RC.confirmRoll(color)
     local finalDiceDisplay    = active.diceDisplay
     local finalDiceFaces      = active.diceFaces
     local finalRouseStrips    = active.rouseOutcomeStrips
+    local finalRollId         = active.id
+    local suppressBroadcast   = color == "Black"
+        and type(active.meta) == "table"
+        and active.meta.suppressBroadcast == true
 
     appendHistory(
         color,
@@ -2434,9 +2451,18 @@ function RC.confirmRoll(color)
         active.rollType,
         finalDiceFaces,
         finalRouseStrips,
-        active.npcCharacterKey
+        active.npcCharacterKey,
+        finalRollId
     )
-    notifyRollResolved(color, finalResult, finalLabel)
+
+    if suppressBroadcast then
+        local STR = require("core.storyteller_rolls")
+        if type(active.stDrawerSlot) == "number" then
+            STR.markSlotPendingBroadcast(active.stDrawerSlot, finalRollId)
+        end
+    else
+        notifyRollResolved(color, finalResult, finalLabel)
+    end
 
     if color ~= "Black" and PRTL.getLivePcColor() == color then
         PRTL.onLivePcRollFinished()
@@ -3301,6 +3327,55 @@ function RC.setRollOptions(color, opts)
     setActive(color, active)
     tryClassifyResultInternal(color)
     notifyStateChanged(color)
+    return true
+end
+
+--- Manually broadcasts a held ST roll result from dashboard slot **B**.
+-- @param slotIndex number  1..3
+-- @return boolean
+function RC.broadcastHeldResult(slotIndex)
+    if type(slotIndex) ~= "number" then
+        return false
+    end
+    local STR = require("core.storyteller_rolls")
+    local root = S.getStateVal("storytellerRolls") or {}
+    local slots = type(root.slots) == "table" and root.slots or {}
+    local slot = slots[slotIndex]
+    if type(slot) ~= "table" or slot.pendingBroadcast ~= true then
+        return false
+    end
+    local rollId = slot.rollId
+    if type(rollId) ~= "string" or rollId == "" then
+        return false
+    end
+
+    local pid = S.getPlayerID("Black")
+    if pid == nil then
+        return false
+    end
+    local history = S.getStateVal("playerData", pid, "hud", "rollData", "history") or {}
+    local entry = nil
+    for i = #history, 1, -1 do
+        local h = history[i]
+        if type(h) == "table" and h.rollId == rollId then
+            entry = h
+            break
+        end
+    end
+    if entry == nil then
+        return false
+    end
+
+    if RC.onRollCamera and U.Type(RC.onRollCamera) == "function" then
+        RC.onRollCamera("Black", "default")
+    end
+
+    local RUI = require("core.roll_ui")
+    RUI.showResultBroadcastFromEntry("Black", entry)
+    STR.clearSlotPendingBroadcast(slotIndex)
+    if RUI.refreshSTSlotRows ~= nil then
+        RUI.refreshSTSlotRows()
+    end
     return true
 end
 

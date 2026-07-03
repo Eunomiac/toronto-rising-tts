@@ -229,6 +229,15 @@ UI.setAttributes("rollPanelST_header_container", {color = "rgba(1, 0, 0, 0.15)",
     <Text id="rollPanelST_successes" class="rollPanelST_successes" text="" />
   </HorizontalLayout>
 
+  <Text id="rollPanelST_clickHint"
+    rectAlignment="LowerCenter"
+    offsetXY="0 28"
+    fontSize="8"
+    color="#888888"
+    alignment="MiddleCenter"
+    horizontalOverflow="Wrap"
+    text="Left-click: normal  ·  Right-click Roll: hide dice from players  ·  Right-click Confirm / Take Half: resolve without broadcast" />
+
   <HorizontalLayout id="rollPanelST_buttons_container" spacing="8" childAlignment="MiddleCenter" rectAlignment="LowerCenter" height = "20">
     <Button id="rollPanelST_btnRoll" fontSize="13" preferredWidth="90" preferredHeight="30" color="rgba(0.1,0.4,0.1,1)" onClick="HUD_rollRollButton" text="ROLL" interactable="false" />
     <Button id="rollPanelST_btnHalf" active="false" fontSize="11" preferredWidth="100" preferredHeight="30" color="rgba(0.2,0.2,0.5,1)" onClick="HUD_rollTakeHalf" text="TAKE HALF" />

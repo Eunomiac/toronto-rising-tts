@@ -1241,9 +1241,9 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
     text="" />
 
   <Button id="rollDash_stBroadcast_1"
-
+    active="False"
     rectAlignment="MiddleRight"
-    offsetXY="-10 0"
+    offsetXY="-40 0"
     width="24"
     height="24"
     fontSize="14"
@@ -1319,9 +1319,9 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
     text="" />
 
   <Button id="rollDash_stBroadcast_2"
-
+    active="False"
     rectAlignment="MiddleRight"
-    offsetXY="-10 0"
+    offsetXY="-40 0"
     width="24"
     height="24"
     fontSize="14"
@@ -1397,9 +1397,9 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
     text="" />
 
   <Button id="rollDash_stBroadcast_3"
-
+    active="False"
     rectAlignment="MiddleRight"
-    offsetXY="-10 0"
+    offsetXY="-40 0"
     width="24"
     height="24"
     fontSize="14"

@@ -48,9 +48,9 @@
     text="" />
 
   <Button id="rollDash_stBroadcast_@@SLOT_INDEX@@"
-
+    active="False"
     rectAlignment="MiddleRight"
-    offsetXY="-10 0"
+    offsetXY="-40 0"
     width="24"
     height="24"
     fontSize="14"

@@ -18,8 +18,9 @@ STS.TRAY_EDGE_INSET_RATIO = 0.20
 --- Mesh getBounds() often includes frame/rails; shrink before edge inset.
 STS.TRAY_PLAYABLE_FRACTION = 0.78
 
---- Staged die scale is 1.75 (`objects/dice_bag.ttslua`); keep die *centers* inset so edges stay on tray.
-STS.DIE_FOOTPRINT_RADIUS = 1.05
+--- Fraction of post-inset playable half-axis reserved for die footprint (scale 1.75).
+--- Calibrated: ~1.05 world units at reference bounds half-axis 4.0 → 1.05 / (4 × 0.78 × 0.8).
+STS.DIE_FOOTPRINT_RATIO = 0.4207
 
 --- Legacy fixed padding (fallback when getBounds unavailable).
 STS.TRAY_EDGE_PADDING = 0.45
@@ -53,9 +54,8 @@ local function effectiveHalfAxis(halfAxis)
     if half <= 0 then
         return 0.5
     end
-    local playable = half * STS.TRAY_PLAYABLE_FRACTION
-    local inset = STS.TRAY_EDGE_INSET_RATIO
-    local r = playable * (1 - inset) - STS.DIE_FOOTPRINT_RADIUS
+    local padded = half * STS.TRAY_PLAYABLE_FRACTION * (1 - STS.TRAY_EDGE_INSET_RATIO)
+    local r = padded * (1 - STS.DIE_FOOTPRINT_RATIO)
     return math.max(0.5, r)
 end
 

@@ -389,5 +389,7 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-03 | `/tr-inbox` | Focus | Re-stacked #1 TOR-225 (dice sort), #2 TOR-226 (secret ST rolls), #3 TOR-281 (Clear seat + library persistence); TOR-224 Done this cycle |
 | 2026-07-03 | DONE | TOR-225 | Display strip canonical sort + ST tray ellipse spawn; author Save & Play verified; commits through `4502f83` |
 | 2026-07-03 | Focus | Stack | #1 TOR-226 (secret ST rolls), #2 TOR-281 (Clear seat + library persistence); TOR-225 closed this cycle |
+| 2026-07-03 | DONE | TOR-226 | Secret ST rolls (right-click hide + suppress broadcast + manual B); author Save & Play verified |
+| 2026-07-03 | Focus | Stack | #1 TOR-281 (Clear seat + library persistence), #2 TOR-244 (library preview/edit); ST dice UX cluster closed |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

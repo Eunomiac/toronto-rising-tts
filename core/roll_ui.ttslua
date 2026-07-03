@@ -1398,8 +1398,11 @@ function RUI.refreshSTSlotRows()
             uiSetValue(string.format("rollDash_stPhase_%d", i), phase)
             local isLive = root.liveSlotIndex == i
             uiSetValue(string.format("rollDash_stLive_%d", i), isLive and "LIVE" or "")
+            local showBroadcast = slot.pendingBroadcast == true
+            uiSetActive(string.format("rollDash_stBroadcast_%d", i), showBroadcast)
         else
             uiSetActive(rowId, false)
+            uiSetActive(string.format("rollDash_stBroadcast_%d", i), false)
         end
     end
     uiSetActive("rollDash_stSlotsHeader", hasAny)
@@ -1462,8 +1465,9 @@ end
 -- @param color string      Roller's seat color
 -- @param result table|nil  Resolved result record (may be nil for Take Half with no difficulty)
 -- @param label string|nil  Optional roll label
+-- @param historyEntryOverride table|nil  Specific history row (manual ST broadcast)
 -- @usage RUI.showResultBroadcast("Red", result, "Stealth vs Guard")
-function RUI.showResultBroadcast(color, result, label)
+function RUI.showResultBroadcast(color, result, label, historyEntryOverride)
     U.Val("RUI.showResultBroadcast()", {color = color},
         U.Type(color) == "string", "color must be a string")
 
@@ -1480,15 +1484,16 @@ function RUI.showResultBroadcast(color, result, label)
     local diceFaces   = nil
     local rouseStrips = nil
     local npcCharacterKey = nil
-    if pid ~= nil then
+    local lastEntry = historyEntryOverride
+    if lastEntry == nil and pid ~= nil then
         local history   = S.getStateVal("playerData", pid, "hud", "rollData", "history") or {}
-        local lastEntry = history[#history]
-        if lastEntry ~= nil then
-            rollTypeKey = U.Type(lastEntry.rollType) == "string" and lastEntry.rollType or ""
-            diceFaces   = U.Type(lastEntry.diceFaces) == "table"  and lastEntry.diceFaces or nil
-            rouseStrips = U.Type(lastEntry.rouseOutcomeStrips) == "table" and lastEntry.rouseOutcomeStrips or nil
-            npcCharacterKey = U.Type(lastEntry.npcCharacterKey) == "string" and lastEntry.npcCharacterKey or nil
-        end
+        lastEntry = history[#history]
+    end
+    if lastEntry ~= nil then
+        rollTypeKey = U.Type(lastEntry.rollType) == "string" and lastEntry.rollType or ""
+        diceFaces   = U.Type(lastEntry.diceFaces) == "table"  and lastEntry.diceFaces or nil
+        rouseStrips = U.Type(lastEntry.rouseOutcomeStrips) == "table" and lastEntry.rouseOutcomeStrips or nil
+        npcCharacterKey = U.Type(lastEntry.npcCharacterKey) == "string" and lastEntry.npcCharacterKey or nil
     end
 
     applyBroadcastFigure(color, pid, label, npcCharacterKey)
@@ -1546,6 +1551,16 @@ function RUI.showResultBroadcast(color, result, label)
         UI.hide("rollRes_panel")
         scheduleBroadcastPanelCleanupAfterHide()
     end, C.ROLL_RESULT_BROADCAST_SECONDS)
+end
+
+--- Shows the broadcast panel from a specific history entry (manual ST broadcast by rollId).
+-- @param color string
+-- @param entry table  History row from appendHistory
+function RUI.showResultBroadcastFromEntry(color, entry)
+    if type(entry) ~= "table" then
+        return
+    end
+    RUI.showResultBroadcast(color, entry.result, entry.label, entry)
 end
 
 --- Immediately hides the Roll Result Broadcast Panel.

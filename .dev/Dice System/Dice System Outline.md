@@ -856,6 +856,8 @@ function HUD_rollInitiate(player, value, id) end
 
 Generated body (`roll_dash_generated.xml`) contains: ACTIVE ROLLS header, five PC rows (`rollDash_row_<Color>`), STORYTELLER SLOTS header + three slot rows (`rollDash_stRow_<n>`). ST live-roll controls live in `panel_storyteller_roll_controls.xml`, not the dashboard. Edit layouts in `ui/.templates/roll/partials/`; `RUI.refreshSTDashboard()` drives labels and visibility.
 
+**Secret ST rolls (TOR-226):** Right-click **Roll** on `rollPanelST` sets `active.meta.secretDice` → host applies `setInvisibleTo` ~0.5s after randomize. Right-click **Confirm** / **Take Half** sets `suppressBroadcast` → confirm skips auto `rollRes_panel`; slot row **B** appears until ST manually broadcasts via `HUD_rollBroadcast` → `RC.broadcastHeldResult`. Static click hint on `rollPanelST_clickHint`.
+
 ### 10.2 Player Roll Panels (PC colors — generated template)
 
 PC seats use `rollControl_*` element ids (see template). Legacy example below is **superseded** for Brown–Purple; only `rollPanel_Black` remains in `roll_panels.xml`.
@@ -895,7 +897,7 @@ Key element IDs: fullscreen `rollRes_panel`; split header (`rollRes_rollType`, `
 
 **ST bag → roll type (`STR.rollTypeForStorytellerBagDrop`):** Normal→Standard, Hunger→Discipline, Werewolf bag→Willpower, Rage→Frenzy, Rouse→Rouse, Obliv-Rouse→Remorse at `SessionEnd` else Oblivion-Rouse; `Werewolf`-tagged control tokens → Werewolf on any bag. Used by bag name modal, NPC token-on-bag drop (`tryNpcControlTokenDroppedOnStorytellerDiceBag`), and PC token-on-bag drop (`tryPcControlTokenDroppedOnStorytellerDiceBag` → `RC.initiateRoll`).
 
-**ST tray dice layout (`lib/st_dice_tray_spawn.ttslua`):** Drawer world X/Z center (no Y rotation) + ellipse from `getBounds()` with playable-surface shrink (78%), 20% edge inset, die-footprint inset (scale 1.75), and outer ring at 88% of padded radii. Staging Y = 5. Full 360° rings: 10 outer, 8 middle, 6 inner per Y layer; overflow stacks at Y+2. `GlobalRepositionStorytellerTrayDice` places every locked staged die across all ST bags. Tune `TRAY_PLAYABLE_FRACTION` if mesh bounds exceed the red tray surface.
+**ST tray dice layout (`lib/st_dice_tray_spawn.ttslua`):** Drawer world X/Z center (no Y rotation) + ellipse from `getBounds()` with playable-surface shrink (78%), 20% edge inset, proportional die-footprint inset (~42% of post-inset half-axis; calibrated for scale-1.75 dice), and outer ring at 88% of padded radii. Staging Y = 5. Full 360° rings: 10 outer, 8 middle, 6 inner per Y layer; overflow stacks at Y+2. `GlobalRepositionStorytellerTrayDice` places every locked staged die across all ST bags. Tune `TRAY_PLAYABLE_FRACTION` if mesh bounds exceed the red tray surface.
 
 ### 10.4 Storyteller roll panel grid strips (`rollPanelST`)
 

@@ -1185,6 +1185,75 @@ local function randomizeReleasedDieForRoll(color, die)
     return true
 end
 
+--- Host-only: hide Black roll dice from PC seats (secret roll).
+-- @param params table  { rollId: string }
+-- @return boolean
+function GlobalApplySecretRollDiceInvisibility(params)
+    if not U.requireHostForWorldMutation("GlobalApplySecretRollDiceInvisibility") then
+        return false
+    end
+    if type(params) ~= "table" or RC == nil then
+        return false
+    end
+    local rollId = params.rollId
+    if type(rollId) ~= "string" or rollId == "" then
+        return false
+    end
+    local _, objectsByKind = RC._getDicePoolsForRoll("Black", rollId)
+    for _, kind in ipairs(DK.ALL_KINDS) do
+        for _, die in ipairs(objectsByKind[kind] or {}) do
+            if die ~= nil and die.setInvisibleTo ~= nil then
+                die.setInvisibleTo(C.HideFromPcSeatsAndSpectators)
+            end
+        end
+    end
+    return true
+end
+
+--- Host-only: restore visibility on Black roll dice (slot clear / cancel).
+-- @param params table  { rollId: string }
+-- @return boolean
+function GlobalRestoreSecretRollDiceVisibility(params)
+    if not U.requireHostForWorldMutation("GlobalRestoreSecretRollDiceVisibility") then
+        return false
+    end
+    if type(params) ~= "table" or RC == nil then
+        return false
+    end
+    local rollId = params.rollId
+    if type(rollId) ~= "string" or rollId == "" then
+        return false
+    end
+    local _, objectsByKind = RC._getDicePoolsForRoll("Black", rollId)
+    for _, kind in ipairs(DK.ALL_KINDS) do
+        for _, die in ipairs(objectsByKind[kind] or {}) do
+            if die ~= nil and die.setInvisibleTo ~= nil then
+                die.setInvisibleTo({})
+            end
+        end
+    end
+    return true
+end
+
+--- Schedules secret-roll dice invisibility when `active.meta.secretDice` is set.
+-- @param rollId string
+local function scheduleSecretRollDiceInvisibility(rollId)
+    if type(rollId) ~= "string" or rollId == "" then
+        return
+    end
+    local pid = S.getPlayerID("Black")
+    if pid == nil then
+        return
+    end
+    local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+    if type(active) ~= "table" or type(active.meta) ~= "table" or active.meta.secretDice ~= true then
+        return
+    end
+    U.delay(function()
+        GlobalApplySecretRollDiceInvisibility({ rollId = rollId })
+    end, 0.5)
+end
+
 --- ST roll panel: randomize highlighted dice by GUID (host-only world I/O).
 -- @param params table  { color: string }
 -- @return boolean
@@ -1226,6 +1295,10 @@ function GlobalStRerollDiceByGuids(params)
     if randomized == 0 then
         RC.clearStSelectiveReroll(color)
         return false
+    end
+
+    if color == "Black" and type(rollId) == "string" then
+        scheduleSecretRollDiceInvisibility(rollId)
     end
 
     return true
@@ -3733,6 +3806,12 @@ RC.onRollResolved = function(color, result, label)
     end, C.ROLL_RESULT_BROADCAST_SECONDS)
 end
 
+RC.onBlackSecretDiceSettled = function(color, rollId)
+    if color == "Black" and type(rollId) == "string" then
+        scheduleSecretRollDiceInvisibility(rollId)
+    end
+end
+
 --- Handles dice-bag clicks during post-resolution broadcast cleanup delay.
 -- If a cleanup is pending, consume it and close the drawer immediately.
 -- @param params table  { color: string }
@@ -4313,6 +4392,7 @@ local function randomizeBlackTrayDiceSimultaneous(rollId)
             end
         end
     end
+    scheduleSecretRollDiceInvisibility(rollId)
 end
 
 --- Unlocks staged bag dice for one seat (drawer must already be opening or open).
@@ -4772,6 +4852,29 @@ local function colorFromRollElementId(id)
     return nil
 end
 
+--- Sets a Black-roll meta flag when the ST right-clicks a roll-panel button (value `-2`).
+-- @param color string
+-- @param value string|nil  XmlUI click value (`"-2"` = right-click)
+-- @param flagName string  `secretDice` or `suppressBroadcast`
+local function applyBlackRollMetaFlag(color, value, flagName)
+    if color ~= "Black" or value ~= "-2" or type(flagName) ~= "string" then
+        return
+    end
+    local pid = S.getPlayerID("Black")
+    if pid == nil then
+        return
+    end
+    local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+    if active == nil then
+        return
+    end
+    if type(active.meta) ~= "table" then
+        active.meta = {}
+    end
+    active.meta[flagName] = true
+    S.setStateVal(active, "playerData", pid, "hud", "rollData", "active")
+end
+
 --- Player clicks "ROLL" button — advances PRE_ROLL → ROLLING and releases locked dice.
 -- id format: "rollControl_btnRoll_<Color>" (PC) or "rollPanel_btnRoll_Black" (ST)
 function HUD_rollRollButton(player, value, id)
@@ -4781,6 +4884,7 @@ function HUD_rollRollButton(player, value, id)
     GlobalRollSeatCamera({ color = color, mode = "diceTray" })
 
     if color == "Black" then
+        applyBlackRollMetaFlag(color, value, "secretDice")
         runBlackRollSequence()
         return
     end
@@ -4808,6 +4912,7 @@ end
 function HUD_rollTakeHalf(player, value, id)
     local color = colorFromRollElementId(id)
     if color == nil then return end
+    applyBlackRollMetaFlag(color, value, "suppressBroadcast")
     RC.takeHalf(color)
 end
 
@@ -4826,6 +4931,7 @@ end
 function HUD_rollConfirm(player, value, id)
     local color = colorFromRollElementId(id)
     if color == nil then return end
+    applyBlackRollMetaFlag(color, value, "suppressBroadcast")
     RC.confirmRoll(color)
 end
 
@@ -4887,6 +4993,17 @@ function HUD_rollCancel(player, value, id)
     end
 
     RC.cancelRoll(color)
+end
+
+--- ST dashboard slot **B** — manually broadcast a held secret roll result.
+-- id format: `rollDash_stBroadcast_<1-3>`
+function HUD_rollBroadcast(player, value, id)
+    if type(id) ~= "string" then return end
+    local slotStr = string.match(id, "^rollDash_stBroadcast_(%d)$")
+    if slotStr == nil then return end
+    local slotIndex = tonumber(slotStr)
+    if slotIndex == nil then return end
+    RC.broadcastHeldResult(slotIndex)
 end
 
 --- Player (or ST) clicks "RECALCULATE" — re-reads all physical dice on the table
