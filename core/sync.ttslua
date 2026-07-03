@@ -369,7 +369,7 @@ function Sync.ui(delta)
 end
 
 --- Full orchestration pass.
---- @param opts table|nil `{ force = boolean?, reason = string?, skipSoundscape = boolean?, deferLayoutCommit = boolean? }` — `force` bypasses scene/soundscape fingerprints and runs full `UpdateUIDisplays`; `deferLayoutCommit` skips NPC seat geometry until `NPCS.flushDeferredSeatLayoutCommit`.
+--- @param opts table|nil `{ force = boolean?, reason = string? }` — `force` bypasses scene/soundscape fingerprints and runs full `UpdateUIDisplays`.
 function Sync.full(opts)
     opts = type(opts) == "table" and opts or {}
     if not U.isHostClient() then
@@ -409,14 +409,10 @@ function Sync.full(opts)
         presentationSkippedThisPass = reconcileSeatPresentationFromState(reconcileOpts) == false
     end
 
-    local npcReconcileOpts = {
+    callIfFunction(NPCS.reconcileAllFromState, {
         deferUiRefresh = true,
         force = force,
-    }
-    if opts.deferLayoutCommit == true then
-        npcReconcileOpts.deferLayoutCommit = true
-    end
-    callIfFunction(NPCS.reconcileAllFromState, npcReconcileOpts)
+    })
 
     if not didBootstrapFullSync then
         callIfFunction(HUDP.reconcileCameraOverlaySelfMatchRowsFromXmlDefaults)

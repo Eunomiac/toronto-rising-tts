@@ -3177,13 +3177,6 @@ function M.resolveSeatObjectsFromTable(tableRef, sourceObjects, options)
   return computed
 end
 
---- Persist `seatLayout.currentTableKey` without moving seat-bound objects (bootstrap deferral).
---- @param tableRef string|table key in C.Tables or table entry itself
-function M.persistActiveTableKey(tableRef)
-  local tableKey, _ = resolveTableRef(tableRef)
-  S.setStateVal(tableKey, "seatLayout", "currentTableKey")
-end
-
 --- Re-apply table state based on current `gameState.seatLayout.currentTableKey`.
 --- Useful after load or when recovering from drift between state and live objects.
 --- @param tableKey string|nil optional explicit table key to sync

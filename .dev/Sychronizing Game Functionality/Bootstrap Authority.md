@@ -83,7 +83,7 @@ The Global script chunk runs on **every** client when the save loads. Tier C sou
 | Conditions validate / derived / location reconcile | Host | May touch state + derived rows |
 | `SS.bootstrapSilenceStrayEmitterLoops` | Host | World audio |
 | `M.onLoad` / `M.setupPlayers` | Host | Promote players, GM table `setInvisibleTo`, table-key inference |
-| `NPCS.flushDeferredSeatLayoutCommit` (startup gate) | Host | Single seat layout object moves after bootstrap |
+| `R.SyncTable` (deferred) | Host | Seat layout object moves |
 | `Sync.full` (`onLoad_initial`, startup gate) | Host | Full reconciler fan-out |
 | Locked/hidden objects at startup gate | Host | `O.ApplyLockedAndHidden*` |
 | Loading overlay hide sequence | Host | Host drives readiness gate |

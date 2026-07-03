@@ -801,29 +801,8 @@ local function syncFullForce(reason, opts)
             force = true,
             reason = reason or "scenes",
             skipSoundscape = opts.skipSoundscape == true,
-            deferLayoutCommit = opts.deferLayoutCommit == true,
         })
     end
-end
-
---- Apply session table key: full geometry (`SetTableTo`) or state-only persist during bootstrap.
---- @param tableKey string
---- @param opts table|nil `{ deferTableGeometry?: boolean, skipTransitionBlindfold?: boolean }`
-local function applySessionTableKey(tableKey, opts)
-    opts = type(opts) == "table" and opts or {}
-    if type(tableKey) ~= "string" or tableKey == "" then
-        return
-    end
-    if C.Tables[tableKey] == nil and not RSL.isDynamicTableFamilyKey(tableKey) then
-        return
-    end
-    if opts.deferTableGeometry == true then
-        RSL.persistActiveTableKey(tableKey)
-        return
-    end
-    RSL.SetTableTo(tableKey, {
-        skipTransitionBlindfold = opts.skipTransitionBlindfold == true,
-    })
 end
 
 --- Writes live `sessionScene` / `seatLayout` fields for the no-scene steady state (no world I/O).
@@ -904,7 +883,7 @@ end
 
 --- Applies the defined no-scene environment: Table B0 (dynamic Table B, zero NPC seats), five PCs, empty NPC world, OutdoorDim, Main only.
 --- Does not mutate library rows, PC map pins, or present-day clock.
---- @param opts table|nil `{ reason?: string, skipTransitionBlindfold?: boolean, skipSoundscape?: boolean, deferTableGeometry?: boolean, skipPostSceneSync?: boolean }`
+--- @param opts table|nil `{ reason?: string, skipTransitionBlindfold?: boolean, skipSoundscape?: boolean }`
 ---   `skipSoundscape` defers the Main ambient apply to the caller (staged transition fade-in, TOR-147).
 --- @return boolean
 function Scenes.applyDefaultNoSceneEnvironment(opts)
@@ -925,7 +904,11 @@ function Scenes.applyDefaultNoSceneEnvironment(opts)
     end
 
     local tk = Scenes.DEFAULT_NO_SCENE_TABLE_KEY
-    applySessionTableKey(tk, opts)
+    if C.Tables[tk] ~= nil or RSL.isDynamicTableFamilyKey(tk) then
+        RSL.SetTableTo(tk, {
+            skipTransitionBlindfold = opts.skipTransitionBlindfold == true,
+        })
+    end
 
     applyRandomGenericSkybox()
     reconcileHostedConditionsSkipPresentation()
@@ -938,9 +921,7 @@ function Scenes.applyDefaultNoSceneEnvironment(opts)
         GameStateOverlay.resetRealTimeCarry()
     end
 
-    if opts.skipPostSceneSync ~= true then
-        syncFullForce(opts.reason or "default_no_scene", { skipSoundscape = true })
-    end
+    syncFullForce(opts.reason or "default_no_scene", { skipSoundscape = true })
 
     if type(GameStateOverlay.reconcileFromState) == "function" then
         GameStateOverlay.reconcileFromState()
@@ -950,7 +931,7 @@ function Scenes.applyDefaultNoSceneEnvironment(opts)
 end
 
 --- Reconciles the physical world to the persisted on-table `sessionScene` (load / Start→Play).
---- @param opts table|nil `{ reason?: string, skipTransitionBlindfold?: boolean, deferTableGeometry?: boolean, skipPostSceneSync?: boolean }`
+--- @param opts table|nil `{ reason?: string, skipTransitionBlindfold?: boolean }`
 --- @return boolean
 function Scenes.restoreActiveSceneWorld(opts)
     opts = type(opts) == "table" and opts or {}
@@ -967,7 +948,9 @@ function Scenes.restoreActiveSceneWorld(opts)
     end
 
     local tk = trimSceneKey(S.getStateVal("sessionScene", "tableKey"))
-    applySessionTableKey(tk, opts)
+    if tk ~= "" and (C.Tables[tk] ~= nil or RSL.isDynamicTableFamilyKey(tk)) then
+        RSL.SetTableTo(tk, { skipTransitionBlindfold = opts.skipTransitionBlindfold == true })
+    end
 
     Scenes.applyActiveSceneSoundscapeFromSession()
     reconcileHostedConditionsSkipPresentation()
@@ -980,9 +963,7 @@ function Scenes.restoreActiveSceneWorld(opts)
         GameStateOverlay.resetRealTimeCarry()
     end
 
-    if opts.skipPostSceneSync ~= true then
-        syncFullForce(opts.reason or "restore_active_scene", { skipSoundscape = true })
-    end
+    syncFullForce(opts.reason or "restore_active_scene", { skipSoundscape = true })
 
     if type(GameStateOverlay.stopTicker) == "function" then
         GameStateOverlay.stopTicker()
