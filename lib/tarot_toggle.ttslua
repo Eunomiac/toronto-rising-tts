@@ -57,6 +57,16 @@ local function getTarotDeck(buttonGuid)
     return resolveTarotObject("TAROT_DECK_PINK", buttonGuid)
 end
 
+--- Hidden deck at y=-10 remains reachable through the table unless interactable is cleared.
+--- @param targetOn boolean
+--- @param buttonGuid string|nil
+local function setDeckInteractable(targetOn, buttonGuid)
+    local deck = getTarotDeck(buttonGuid)
+    if deck ~= nil then
+        deck.interactable = targetOn == true
+    end
+end
+
 --- @param buttonGuid string|nil
 local function returnLooseTarotCardsToDeck(buttonGuid)
     local deck = getTarotDeck(buttonGuid)
@@ -143,7 +153,15 @@ local function applyTarotStateNow(targetOn, token, buttonGuid)
     for i = 1, #TAROT_KEYS do
         applyObjectState(TAROT_KEYS[i], state, token, buttonGuid)
     end
+    setDeckInteractable(targetOn, buttonGuid)
     return targetOn
+end
+
+--- Host startup: align deck interactable with inferred on/off (pose may already be correct from save).
+--- @param buttonGuid string|nil
+--- @param fallback boolean
+function TarotToggle.syncDeckInteractableFromInfer(buttonGuid, fallback)
+    setDeckInteractable(TarotToggle.inferCurrentState(buttonGuid, fallback == true), buttonGuid)
 end
 
 --- Apply tarot on/off poses (host-only — guard at Global entry).

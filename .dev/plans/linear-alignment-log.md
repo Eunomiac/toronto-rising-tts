@@ -380,5 +380,10 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-06-27 | COMMENT | TOR-273 | Final behavior supersedes `aef9dde` approach: audio fade-in starts as blindfold rises (`9b04061`), settle double-count fix (`34b4bb5`) |
 | 2026-06-27 | `/tr-inbox` | INBOX | Quick Fixes empty; Active promoted TOR-281 (stage Clear seat rules + live scene-library persistence); removed shipped TOR-279 advantages-panel marker; Focus unchanged (#1 TOR-141 E2E, #2 TOR-259 roll types, #3 TOR-224 selective reroll) |
 | 2026-06-27 | CREATE | TOR-281 | Inbox promote — stage Clear seat activation rules (Case 1 disabled→activate if staged light `Standard`; Case 2 enabled stays) + ST seat activate/deactivate writes back to active scene library row; NPC & Spotlight, parent TOR-35, relatedTo TOR-250/TOR-178/TOR-265/TOR-244; Backlog, Medium; no open blockers (TOR-250/TOR-178 Done) |
+| 2026-07-03 | SHIPPED | INBOX QF | Tarot deck `interactable=false` when hidden — `lib/tarot_toggle.ttslua` + startup sync `core/global_script.ttslua`; build OK |
+| 2026-07-03 | UPDATE | TOR-204 | Inbox Active — expanded Compulsions pick-and-present spec (master deck, anchors, GM Notes schema); state Todo |
+| 2026-07-03 | UPDATE | TOR-225 | Removed stale `blockedBy` TOR-224 (prerequisite Done); state Quick Fix → Todo |
+| 2026-07-03 | PENDING | TOR-282 | Inbox promote — NPC stage token Description JSON stats + ST roll panel wiring; **Linear create failed (workspace quota)** — tasklist bullet added; author create issue manually |
+| 2026-07-03 | `/tr-inbox` | Focus | Re-stacked #1 TOR-225 (dice sort), #2 TOR-226 (secret ST rolls), #3 TOR-281 (Clear seat + library persistence); TOR-224 Done this cycle |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

@@ -1860,6 +1860,10 @@ function onLoad(saved_data)
             if O ~= nil and type(O.ApplyLockedObjectsFromConstants) == "function" then
                 O.ApplyLockedObjectsFromConstants()
             end
+            local TarotToggle = require("lib.tarot_toggle")
+            if TarotToggle ~= nil and type(TarotToggle.syncDeckInteractableFromInfer) == "function" then
+                TarotToggle.syncDeckInteractableFromInfer(G.GUIDS.TAROT_BUTTON_PINK, false)
+            end
             setStartupAction("startup-ready-hide-loading-overlays")
             hideStartupLoadingOverlays()
             setStartupAction("startup-ready-complete")
