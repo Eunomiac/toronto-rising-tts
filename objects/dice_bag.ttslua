@@ -10,7 +10,6 @@
 
 local DK = require("lib.dice_kinds")
 local G = require("lib.guids")
-local PRTL = require("lib.pc_roll_tray_lower")
 
 RADIUS   = 8
 -- Player staging rings (concentric arcs around the Normal bag). Normal ring uses RADIUS.
@@ -204,7 +203,13 @@ local function pcTrayYOffset(bagColor)
     if type(bagColor) ~= "string" or bagColor == "Black" then
         return 0
     end
-    return PRTL.getTrayYOffset(bagColor)
+    if Global ~= nil and type(Global.call) == "function" then
+        local y = Global.call("GlobalGetPcRollTrayYOffset", { color = bagColor })
+        if type(y) == "number" then
+            return y
+        end
+    end
+    return 0
 end
 
 --- Local arc offset converted to world position for one staged die.
