@@ -1,10 +1,10 @@
 # Execution Model Correction — Remediation Instructions
 
 **For:** An agent executing this remediation. Follow the steps **in order**. Do not skip preflight or documentation/agent-instruction rewrites — half-corrected docs are worse than freeze banners.
-**Status:** **Complete 2026-07-04** (TOR-284). Step 1 done; Steps 0–6 executed. Author Save & Play hotseat §4.2 + multiclient TOR-144 remain author verification.
+**Status:** **Code + docs complete 2026-07-04** (TOR-284, commit `77cac3f` + doc sync). **Not closed** until §4.1–4.2 author Save & Play + hotseat battery pass. Multiclient TOR-144/TOR-249 remains separate.
 **Goal:** Remove the host-**execution**-gating layer built on an inverted premise, while **keeping** actor-identity gating and per-client UI targeting; **rewrite** all docs and agent rules that still teach the wrong model; **reconcile Linear** so superseded host-guard work is not treated as “Done as designed.” When done, the external multiplayer audit can resume against the corrected model.
 
-**Linear anchor:** **TOR-284** — *Correct inverted TTS execution model — remove host-execution gating* (Done 2026-07-04).
+**Linear anchor:** **TOR-284** — *Correct inverted TTS execution model — remove host-execution gating* (**In Progress** until §4.1–4.2 author verification; code shipped `77cac3f`).
 
 ---
 
@@ -278,7 +278,7 @@ Remove freeze banners and rewrite bodies to §2 / §2.1. **Grep each file after 
 - [x] Finding confirmed (solo hotseat battery, 2026-07-04 — §1.4). *(2-client console test deferred, non-blocking.)*
 - [x] Superseded-premise banners on source docs + two always-applied rules (Step 1).
 - [x] Preflight git clean (Step 0).
-- [x] Linear issue **TOR-284** — **Done** with completion comment.
+- [x] Linear issue **TOR-284** filed; agent work **Done** slice (Steps 0–3, 5–6, commit `77cac3f`). Issue stays **In Progress** until §4.1–4.2 author verification.
 - [x] Call-site inventory at [`execution-model-call-site-inventory.md`](execution-model-call-site-inventory.md) complete and classified (Step 2).
 - [x] Step 3 substages 3.1–3.6 complete (commit **`77cac3f`** — 13 Lua paths under `core/`, `lib/`, `objects/`, `ui/`; see [`execution-model-call-site-inventory.md`](execution-model-call-site-inventory.md)).
 - [x] Execution-gating primitives removed; grep returns **0** for removed symbols in `core/`, `lib/`, `objects/`, `ui/`.
