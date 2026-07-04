@@ -391,5 +391,10 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-03 | Focus | Stack | #1 TOR-226 (secret ST rolls), #2 TOR-281 (Clear seat + library persistence); TOR-225 closed this cycle |
 | 2026-07-03 | DONE | TOR-226 | Secret ST rolls (right-click hide + suppress broadcast + manual B); author Save & Play verified |
 | 2026-07-03 | Focus | Stack | #1 TOR-281 (Clear seat + library persistence), #2 TOR-244 (library preview/edit); ST dice UX cluster closed |
+| 2026-07-04 | `/tr-inbox` | INBOX | Quick Fixes empty; Active promoted TOR-285 (connect UI), TOR-286 (visibility helper), TOR-287 (dice preload), TOR-288 (companion toggles); Focus #3 TOR-285 |
+| 2026-07-04 | CREATE | TOR-285 | Connect-time player HUD missing until reload (White/unseated); UI & HUD Bug, High; parent TOR-37; relatedTo TOR-144 |
+| 2026-07-04 | CREATE | TOR-286 | Centralize `setInvisibleTo` helper + Text tool visibility audit; Table Objects Improvement, Medium; relatedTo TOR-257, TOR-226 |
+| 2026-07-04 | CREATE | TOR-287 | Dice preload pool for instant spawn; Dice & Rolls Improvement, Medium; parent TOR-31 |
+| 2026-07-04 | CREATE | TOR-288 | Player companion toggle tiles (flip, reconcile, dual-face UI); Table Objects Feature, Medium |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

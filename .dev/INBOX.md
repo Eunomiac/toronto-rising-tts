@@ -4,8 +4,6 @@
 
 ## Active
 
-- [Strange Behavior] Recently, I've noticed that upon connecting, the UIs do not generate on first load. At the time, I'm connected as the White player (because I've yet to choose a seat). To see the UI for any player, I must reload the game.  I'm not sure if this is just a "feature" of TTS, or if this is the result of something we've done in the codebase that can be remedied.
-
 ## Needs clarification
 
 ### Unclear Bugs
@@ -18,6 +16,10 @@
 
 ## Processed
 
+2026-07-04 INBOX Active — connect-time UI missing until reload (White/unseated) → **TOR-285** (UI & HUD Bug, High; relatedTo TOR-144 multiplayer E2E)
+2026-07-04 INBOX Active — centralize `setInvisibleTo` helper + Text tool visibility audit → **TOR-286** (Table Objects Improvement, Medium)
+2026-07-04 INBOX Active — dice preload pool for instant spawn → **TOR-287** (Dice & Rolls Improvement, Medium)
+2026-07-04 INBOX Active — player companion toggle tiles (flip, reconcile, dual-face UI) → **TOR-288** (Table Objects Feature, Medium)
 2026-07-03 INBOX Active — ST dice tray ellipse spawn (drawer center + bounds rings 10/8/6, Y layers +2) → `lib/st_dice_tray_spawn.ttslua`, `GlobalRepositionStorytellerTrayDice`
 2026-07-03 INBOX Active — ST token-on-bag roll type mapping + `Werewolf` tag override → **TOR-283** Done
 2026-07-03 INBOX Quick Fixes — Tarot deck `interactable=false` when hidden (`lib/tarot_toggle.ttslua`, startup sync in `core/global_script.ttslua`)
