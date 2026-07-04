@@ -336,7 +336,7 @@ function STR.destroyStagedBagDice()
     local bags = G.GetAllStorytellerDiceBagGUIDs()
     for _, guid in pairs(bags) do
         if type(guid) == "string" then
-            local bag = getObjectFromGUID(guid)
+            local bag = G.getObject(guid)
             if bag ~= nil then
                 bag.call("destroyDice")
             end
@@ -388,7 +388,7 @@ local function resolveStagedDieObjects(dieGuids)
     local list = {}
     for _, guid in ipairs(dieGuids) do
         if type(guid) == "string" then
-            local obj = getObjectFromGUID(guid)
+            local obj = G.getObject(guid)
             if obj ~= nil then
                 list[#list + 1] = obj
             end

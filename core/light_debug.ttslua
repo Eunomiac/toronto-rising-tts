@@ -13,6 +13,7 @@
 ]]
 
 local LightDebug = {}
+local G = require("lib.guids")
 local L = require("core.lighting")
 
 -- ============================================================================
@@ -113,7 +114,7 @@ end
 -- @param intensityStr string Intensity value
 -- @return boolean Success
 function LightDebug.applyLightUpdate(guid, colorStr, rangeStr, angleStr, intensityStr)
-    local obj = getObjectFromGUID(guid)
+    local obj = G.getObject(guid)
     if obj == nil then
         print("LightDebug: Object not found for GUID " .. tostring(guid))
         return false

@@ -53,7 +53,7 @@ function M.setupPlayers()
   -- Objects on / above the Storyteller table: GM table + GM light use `C.HiddenObjects` via O.ApplyLockedAndHiddenFromConstants() in Global.onLoad.
   U.forEach(
     U.findAboveObject(
-      getObjectFromGUID(G.GUIDS.GM_TABLE), nil, { box = true, far = true }
+      G.getObject(G.GUIDS.GM_TABLE), nil, { box = true, far = true }
     ),
     function(v)
       v.setInvisibleTo(C.HideFromPcSeatsAndSpectators)

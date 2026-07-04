@@ -29,6 +29,7 @@
 ]]
 
 local DiceUtil = {}
+local G = require("lib.guids")
 
 --[[
     Initialize the dice roller
@@ -127,7 +128,7 @@ function DiceUtil.initDiceRoller(rollerSelf, config)
             local loaded_data = JSON.decode(saved_data)
             print("[DEBUG] onLoad: Cleaning up " .. tostring(#loaded_data) .. " old dice")
             for _, dieGUID in ipairs(loaded_data) do
-                local die = getObjectFromGUID(dieGUID)
+                local die = G.getObject(dieGUID)
                 if die ~= nil then
                     destroyObject(die)
                 end

@@ -36,7 +36,7 @@ local function findDrawerObject(slot)
     if type(guid) ~= "string" then
         return nil
     end
-    return getObjectFromGUID(guid)
+    return G.getObject(guid)
 end
 
 --- Current world Y of an ST dice drawer prop (nil when missing).

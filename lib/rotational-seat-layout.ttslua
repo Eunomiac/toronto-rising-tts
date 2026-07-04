@@ -33,6 +33,7 @@ local L_LIGHT = require("core.lighting")
 local NPCS = require("core.npcs")
 local SRI = require("lib.seat-role-identity")
 local TarotObjects = require("lib.tarot_objects")
+local G = require("lib.guids")
 
 --- Lazy load: core.debug is large; only needed for workspace file export helpers.
 --- @return table
@@ -1499,7 +1500,7 @@ function M.generateFacingCoordinates(sourceObjects, tableCfg, filteredMap, optio
   if U.Type(tableCfg.guid) ~= "string" or tableCfg.guid == "" then
     error("rotational-seat-layout: FACING table is missing guid (needed to read active bounds)")
   end
-  local tableObj = getObjectFromGUID(tableCfg.guid)
+  local tableObj = G.getObject(tableCfg.guid)
   if tableObj == nil or type(tableObj.getBounds) ~= "function" then
     error("rotational-seat-layout: FACING table object '" .. tostring(tableCfg.guid) ..
       "' is not present; cannot read bounds")
@@ -1598,7 +1599,7 @@ function M.facingSeatWorldXZ(tableCfg, sideAngleDeg, index1Based)
   if U.Type(sideAngleDeg) ~= "number" or U.Type(index1Based) ~= "number" then
     return nil
   end
-  local obj = getObjectFromGUID(tableCfg.guid)
+  local obj = G.getObject(tableCfg.guid)
   if obj == nil or type(obj.getBounds) ~= "function" then
     return nil
   end
@@ -2493,7 +2494,7 @@ local function applyTableComponentsState(tableCfg, occupiedNPCSlots, isActive)
   end
   for componentName, componentCfg in pairs(components) do
     if U.Type(componentCfg) == "table" and U.Type(componentCfg.guid) == "string" then
-      local obj = getObjectFromGUID(componentCfg.guid)
+      local obj = G.getObject(componentCfg.guid)
       if obj ~= nil then
         applyTableObjectState(obj, componentCfg, activateByName[componentName] == true)
       end
@@ -2510,7 +2511,7 @@ local function applyAllTablesVisualState(activeTableKey, occupiedNPCSlots)
     if U.Type(tableKey) == "string" and U.Type(tableCfg) == "table" then
       local isActiveTable = tableKey == activeTableKey
       if U.Type(tableCfg.guid) == "string" then
-        local obj = getObjectFromGUID(tableCfg.guid)
+        local obj = G.getObject(tableCfg.guid)
         applyTableObjectState(obj, tableCfg, isActiveTable)
       end
       applyTableComponentsState(tableCfg, occupiedNPCSlots, isActiveTable)
@@ -2665,7 +2666,7 @@ end
 --- @return Vector|nil
 local function resolvePostCorrectionAnchorRotation(correction, targetObj, computed)
   if U.Type(correction.anchor) == "string" and correction.anchor ~= "" then
-    local anchorObj = getObjectFromGUID(correction.anchor)
+    local anchorObj = G.getObject(correction.anchor)
     if anchorObj == nil or anchorObj.getRotation == nil then
       return nil
     end
@@ -2750,7 +2751,7 @@ local function applyPostCorrections(sourceObjects, computed)
       )
     end
 
-    local obj = getObjectFromGUID(guid)
+    local obj = G.getObject(guid)
     if obj == nil then
       print(
         "[rotational-seat-layout] postCorrection skipped: target object missing for guid '"
@@ -3082,7 +3083,7 @@ local function applyTableConfigObjectPositions(tableCfg)
   for i = 1, #entries do
     local e = entries[i]
     if type(e) == "table" and type(e.guid) == "string" and e.guid ~= "" then
-      local obj = getObjectFromGUID(e.guid)
+      local obj = G.getObject(e.guid)
       if obj ~= nil then
         if type(e.position) == "table" then
           local merged = OP.mergePosition(obj, e.position)

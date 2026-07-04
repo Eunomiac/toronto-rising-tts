@@ -15,6 +15,7 @@ local L = require("core.lighting")
 local DATA = require("lib.npcs_data")
 local NLIGHT = require("lib.npcs_light_spawn_defaults")
 local SRI = require("lib.seat-role-identity")
+local G = require("lib.guids")
 local MapPins = require("core.map_pins")
 
 --- NPC-only roster (PCs flagged `isPC` are excluded). The stage pool, preload grid, palette
@@ -101,7 +102,7 @@ local npcReconcileLayoutContext = nil
 --- While true, instance uses spotlight mode until mouse up (not persisted).
 local spotlightHeld = {}
 
---- Spawn callback only: `buildResolvedLightModeTable` prefers this object over `getObjectFromGUID` (GUID index can lag the live `fig`).
+--- Spawn callback only: `buildResolvedLightModeTable` prefers this object over `G.getObject` (GUID index can lag the live `fig`).
 local lightAlignFigOverride = {}
 --- Bumped when a new deferred stage light-align sequence starts; stale sequences no-op on completion.
 local deferredLightAlignGeneration = {}
@@ -114,7 +115,7 @@ local function npcSpotlightReadyForApply(lightGuid, reg)
     if U.Type(lightGuid) ~= "string" or lightGuid == "" or U.Type(reg) ~= "string" or reg == "" then
         return false
     end
-    local litObj = getObjectFromGUID(lightGuid)
+    local litObj = G.getObject(lightGuid)
     if litObj == nil then
         return false
     end
@@ -1202,8 +1203,8 @@ local function clearNpcSeatPhysical(seatKey, opts)
         local name = toPark[i]
         local r = getInstances()[name]
         if U.Type(r) == "table" then
-            local fig = getObjectFromGUID(r.figurineGuid or "")
-            local lit = getObjectFromGUID(r.lightGuid or "")
+            local fig = G.getObject(r.figurineGuid or "")
+            local lit = G.getObject(r.lightGuid or "")
             if fig ~= nil then
                 clearNpcFigurineSeatIdentity(fig, lit)
             end
@@ -1243,7 +1244,7 @@ local function seatNeedsPlacement(seatKey, intent)
     if U.Type(rec) ~= "table" then
         return true
     end
-    local fig = getObjectFromGUID(rec.figurineGuid or "")
+    local fig = G.getObject(rec.figurineGuid or "")
     if fig == nil then
         return true
     end
@@ -1328,8 +1329,8 @@ local function assignNpcToSeat(npcName, seatKey, opts)
         end
     end
     if U.Type(rec.seatedSeatKey) == "string" and rec.seatedSeatKey ~= seatKey then
-        local prevFig = getObjectFromGUID(rec.figurineGuid or "")
-        local prevLit = getObjectFromGUID(rec.lightGuid or "")
+        local prevFig = G.getObject(rec.figurineGuid or "")
+        local prevLit = G.getObject(rec.lightGuid or "")
         if prevFig ~= nil then
             clearNpcFigurineSeatIdentity(prevFig, prevLit)
         end
@@ -1345,8 +1346,8 @@ local function assignNpcToSeat(npcName, seatKey, opts)
     for _, key in ipairs(C.NPCSeats or {}) do
         if occupied[key] == npcName then
             occupied[key] = false
-            local otherFig = getObjectFromGUID(rec.figurineGuid or "")
-            local otherLit = getObjectFromGUID(rec.lightGuid or "")
+            local otherFig = G.getObject(rec.figurineGuid or "")
+            local otherLit = G.getObject(rec.lightGuid or "")
             if otherFig ~= nil then
                 clearNpcFigurineSeatIdentity(otherFig, otherLit)
             end
@@ -1358,8 +1359,8 @@ local function assignNpcToSeat(npcName, seatKey, opts)
     if rec == nil then
         return false, "NPC instance lost."
     end
-    local fig = getObjectFromGUID(rec.figurineGuid or "")
-    local lit = getObjectFromGUID(rec.lightGuid or "")
+    local fig = G.getObject(rec.figurineGuid or "")
+    local lit = G.getObject(rec.lightGuid or "")
     if fig == nil then
         setInstanceRecord(npcName, nil)
         return false, "Figurine missing for seated NPC."
@@ -1630,7 +1631,7 @@ function NPCS.buildResolvedLightModeTable(npcName, modeKey)
     end
     local fig = lightAlignFigOverride[npcName]
     if fig == nil or not U.isGameObject(fig) then
-        fig = getObjectFromGUID(rec.figurineGuid or "")
+        fig = G.getObject(rec.figurineGuid or "")
     end
     if fig == nil then
         return nil
@@ -1983,7 +1984,7 @@ local function findExistingPooledSpotlightForNpcName(npcName)
     local rec = getInstances()[npcName]
     local stalePreferredGuid = nil
     if U.Type(rec) == "table" and U.Type(rec.lightGuid) == "string" and rec.lightGuid ~= "" then
-        local fromRec = getObjectFromGUID(rec.lightGuid)
+        local fromRec = G.getObject(rec.lightGuid)
         if fromRec ~= nil then
             return fromRec
         end
@@ -2036,7 +2037,7 @@ local function chooseKeeperPooledSpotlightGuid(npcName, guidList)
     local rec = getInstances()[npcName]
     local stateGuid = U.Type(rec) == "table" and U.Type(rec.lightGuid) == "string" and rec.lightGuid or ""
 
-    if stateGuid ~= "" and getObjectFromGUID(stateGuid) ~= nil then
+    if stateGuid ~= "" and G.getObject(stateGuid) ~= nil then
         for i = 1, #candidates do
             if candidates[i] == stateGuid then
                 return stateGuid
@@ -2046,7 +2047,7 @@ local function chooseKeeperPooledSpotlightGuid(npcName, guidList)
 
     for i = 1, #candidates do
         local g = candidates[i]
-        if getObjectFromGUID(g) ~= nil and not pooledSpotlightGuidClaimedByOtherInstance(npcName, g) then
+        if G.getObject(g) ~= nil and not pooledSpotlightGuidClaimedByOtherInstance(npcName, g) then
             return g
         end
     end
@@ -2075,7 +2076,7 @@ local function destroyPooledSpotlightByGuid(lightGuid)
     if U.Type(lightGuid) ~= "string" or lightGuid == "" then
         return false
     end
-    local lit = getObjectFromGUID(lightGuid)
+    local lit = G.getObject(lightGuid)
     if lit ~= nil then
         if lit.getLock ~= nil and lit.getLock() and lit.setLock ~= nil then
             lit.setLock(false)
@@ -2107,8 +2108,9 @@ local function syncInstanceLightGuidAfterDedupe(npcName, keeperGuid)
     end
     rec.lightGuid = keeperGuid
     setInstanceRecord(npcName, rec)
-    if getObjectFromGUID(keeperGuid) ~= nil then
-        ensureSpotlightTag(getObjectFromGUID(keeperGuid))
+    local keeper = G.getObject(keeperGuid)
+    if keeper ~= nil then
+        ensureSpotlightTag(keeper)
         L.registerNpcSpotlightModes(npcName, keeperGuid)
     end
 end
@@ -2292,7 +2294,7 @@ function NPCS.ensureNpcInPreloadZone(npcName, opts)
     end
     local rec = getInstances()[npcName]
     if rec ~= nil then
-        local fig = getObjectFromGUID(rec.figurineGuid or "")
+        local fig = G.getObject(rec.figurineGuid or "")
         if fig == nil then
             return false, missingPooledFigurineErr(npcName)
         end
@@ -2304,7 +2306,7 @@ function NPCS.ensureNpcInPreloadZone(npcName, opts)
         local seated = U.Type(rec.seatedSeatKey) == "string" and isValidNpcSeatKey(rec.seatedSeatKey)
         if ak == PRELOAD_AREA_KEY and U.Type(rec.slotIndex) == "number" and rec.slotIndex == resolvedSlot
             and not seated and figurinePhysicallyAtPreloadSlot(fig, resolvedSlot) then
-            local lit = getObjectFromGUID(rec.lightGuid or "")
+            local lit = G.getObject(rec.lightGuid or "")
             if lit == nil then
                 local litErr
                 lit, litErr = ensurePooledSpotlightForNpc(npcName, resolvedSlot)
@@ -2510,7 +2512,7 @@ local function reconcileStepOneAreaRemovals(intent)
                     end
                 end
             elseif U.Type(ci) == "table" and ci.target == "preload" and rec.areaKey == PRELOAD_AREA_KEY then
-                local fig = getObjectFromGUID(rec.figurineGuid or "")
+                local fig = G.getObject(rec.figurineGuid or "")
                 local slot = resolvePreloadSlotForMove(name, stablePreloadSlotIndex(name))
                 if fig ~= nil and U.Type(slot) == "number" and not figurinePhysicallyAtPreloadSlot(fig, slot) then
                     local ok, err = NPCS.retreatNpcInstanceToPreloadPool(name, {
@@ -2921,8 +2923,8 @@ function NPCS.moveNpcToArea(npcName, areaKey, opts)
     end
     if U.Type(rec.seatedSeatKey) == "string" and isValidNpcSeatKey(rec.seatedSeatKey) then
         local sk = rec.seatedSeatKey
-        local seatFig = getObjectFromGUID(rec.figurineGuid or "")
-        local seatLit = getObjectFromGUID(rec.lightGuid or "")
+        local seatFig = G.getObject(rec.figurineGuid or "")
+        local seatLit = G.getObject(rec.lightGuid or "")
         if seatFig ~= nil then
             clearNpcFigurineSeatIdentity(seatFig, seatLit)
         end
@@ -2975,8 +2977,8 @@ function NPCS.moveNpcToArea(npcName, areaKey, opts)
             return false, "No free slot in area."
         end
     end
-    local fig = getObjectFromGUID(rec.figurineGuid or "")
-    local lit = getObjectFromGUID(rec.lightGuid or "")
+    local fig = G.getObject(rec.figurineGuid or "")
+    local lit = G.getObject(rec.lightGuid or "")
     if fig == nil then
         setInstanceRecord(npcName, nil)
         unregisterDynamicLightModes(rec.lightGuid)
@@ -3031,8 +3033,8 @@ function NPCS.finalizeStageLerpWorld(npcName, transitionTime)
     if U.Type(rec) ~= "table" then
         return
     end
-    local fig = getObjectFromGUID(rec.figurineGuid or "")
-    local lit = getObjectFromGUID(rec.lightGuid or "")
+    local fig = G.getObject(rec.figurineGuid or "")
+    local lit = G.getObject(rec.lightGuid or "")
     if not U.isGameObject(fig) then
         return
     end
@@ -3094,8 +3096,8 @@ function NPCS.moveNpcToStagePlacement(npcName, placement, opts)
     end
     local didUnseat = false
     if U.Type(rec.seatedSeatKey) == "string" and isValidNpcSeatKey(rec.seatedSeatKey) then
-        local seatFig = getObjectFromGUID(rec.figurineGuid or "")
-        local seatLit = getObjectFromGUID(rec.lightGuid or "")
+        local seatFig = G.getObject(rec.figurineGuid or "")
+        local seatLit = G.getObject(rec.lightGuid or "")
         if seatFig ~= nil then
             clearNpcFigurineSeatIdentity(seatFig, seatLit)
         end
@@ -3103,16 +3105,16 @@ function NPCS.moveNpcToStagePlacement(npcName, placement, opts)
         setInstanceRecord(npcName, rec)
         didUnseat = true
         rec = getInstances()[npcName]
-    elseif figurineHasAnySeatTag(getObjectFromGUID(rec.figurineGuid or "")) then
-        local seatFig = getObjectFromGUID(rec.figurineGuid or "")
-        local seatLit = getObjectFromGUID(rec.lightGuid or "")
+    elseif figurineHasAnySeatTag(G.getObject(rec.figurineGuid or "")) then
+        local seatFig = G.getObject(rec.figurineGuid or "")
+        local seatLit = G.getObject(rec.lightGuid or "")
         if seatFig ~= nil then
             clearNpcFigurineSeatIdentity(seatFig, seatLit)
         end
         didUnseat = true
     end
-    local fig = getObjectFromGUID(rec.figurineGuid or "")
-    local lit = getObjectFromGUID(rec.lightGuid or "")
+    local fig = G.getObject(rec.figurineGuid or "")
+    local lit = G.getObject(rec.lightGuid or "")
     if fig == nil then
         setInstanceRecord(npcName, nil)
         unregisterDynamicLightModes(rec.lightGuid)
@@ -3300,8 +3302,8 @@ function NPCS.retreatNpcInstanceToPreloadPool(npcName, opts)
     local rec = getInstances()[npcName]
     if U.Type(rec) == "table" and U.Type(rec.seatedSeatKey) == "string" and isValidNpcSeatKey(rec.seatedSeatKey) then
         local sk = rec.seatedSeatKey
-        local seatFig = getObjectFromGUID(rec.figurineGuid or "")
-        local seatLit = getObjectFromGUID(rec.lightGuid or "")
+        local seatFig = G.getObject(rec.figurineGuid or "")
+        local seatLit = G.getObject(rec.lightGuid or "")
         if seatFig ~= nil then
             clearNpcFigurineSeatIdentity(seatFig, seatLit)
         end
@@ -3343,8 +3345,8 @@ function NPCS.removeNpc(npcName, opts)
         print("[NPCS] removeNpc park failed for " .. tostring(npcName) .. ": " .. tostring(errPark))
         return
     end
-    local fig = rec.figurineGuid and getObjectFromGUID(rec.figurineGuid)
-    local lit = rec.lightGuid and getObjectFromGUID(rec.lightGuid)
+    local fig = rec.figurineGuid and G.getObject(rec.figurineGuid)
+    local lit = rec.lightGuid and G.getObject(rec.lightGuid)
     if fig ~= nil and fig.destruct then
         fig.destruct()
     end
@@ -3359,8 +3361,8 @@ function NPCS.removeNpc(npcName, opts)
     setInstanceRecord(npcName, nil)
     local seatKey = findSeatByNpcKey(npcName)
     if seatKey ~= nil then
-        local fig = rec.figurineGuid and getObjectFromGUID(rec.figurineGuid)
-        local lit = rec.lightGuid and getObjectFromGUID(rec.lightGuid)
+        local fig = rec.figurineGuid and G.getObject(rec.figurineGuid)
+        local lit = rec.lightGuid and G.getObject(rec.lightGuid)
         if fig ~= nil then
             clearNpcFigurineSeatIdentity(fig, lit)
         end
@@ -3597,7 +3599,7 @@ end
 
 --- Sanitize `npcs.instances`, register spotlights, and repair seated NPC rows from saved state (no preload spawns).
 --- Call after `S.InitializeGameState`, before `L.InitLights`. Orphan `gameState.lights` keys are pruned by `L.cleanupLightsState`.
---- IMPORTANT: Never drop instance rows when `getObjectFromGUID` is nil on the first onLoad frame — objects can
+--- IMPORTANT: Never drop instance rows when `G.getObject` is nil on the first onLoad frame — objects can
 --- appear slightly later; dropping them removed all NPC state and made Storyteller buttons no-ops.
 function NPCS.registerRestoredInstancesFromState()
     local inst = getInstances()
@@ -3611,8 +3613,8 @@ function NPCS.registerRestoredInstancesFromState()
                 rec.locked = false
             end
             cleaned[name] = rec
-            local fig = getObjectFromGUID(rec.figurineGuid)
-            local lit = getObjectFromGUID(rec.lightGuid)
+            local fig = G.getObject(rec.figurineGuid)
+            local lit = G.getObject(rec.lightGuid)
             if fig ~= nil and lit ~= nil then
                 ensureNpcFigurinePhysicsLocked(fig)
                 ensureSpotlightTag(lit)
@@ -3630,8 +3632,8 @@ function NPCS.registerRestoredInstancesFromState()
             if U.Type(seatRec) == "table" then
                 seatRec.seatedSeatKey = seatKey
                 setInstanceRecord(occupant, seatRec)
-                local fig = getObjectFromGUID(seatRec.figurineGuid or "")
-                local lit = getObjectFromGUID(seatRec.lightGuid or "")
+                local fig = G.getObject(seatRec.figurineGuid or "")
+                local lit = G.getObject(seatRec.lightGuid or "")
                 if fig ~= nil then
                     local pOk, pErr = prepareNpcFigurineForSeat(fig, lit, occupant, seatKey)
                     if not pOk then

@@ -35,7 +35,7 @@ function LightTest.testCloneLight(templateGUID)
         return nil
     end
 
-    local template = getObjectFromGUID(templateGUID)
+    local template = G.getObject(templateGUID)
     if not template then
         print("❌ Template light not found: " .. templateGUID)
         return nil
@@ -102,7 +102,7 @@ function LightTest.testInspectLight(lightGUID)
         return nil
     end
 
-    local light = getObjectFromGUID(lightGUID)
+    local light = G.getObject(lightGUID)
     if not light then
         print("❌ Light not found: " .. lightGUID)
         return nil
@@ -204,7 +204,7 @@ function LightTest.testSpawnLight(templateGUID, position, rotation, config)
         return nil
     end
 
-    local template = getObjectFromGUID(templateGUID)
+    local template = G.getObject(templateGUID)
     if not template then
         print("❌ Template not found: " .. templateGUID)
         return nil
@@ -292,7 +292,7 @@ function LightTest.testCompareStructures(currentLightGUID)
         return nil
     end
 
-    local light = getObjectFromGUID(currentLightGUID)
+    local light = G.getObject(currentLightGUID)
     if not light then
         print("❌ Light not found: " .. currentLightGUID)
         return nil

@@ -72,7 +72,7 @@ function O.areLockedObjectsReadyForInteractableLock()
     end
     for _, guid in pairs(locked) do
         if U.Type(guid) == "string" and guid ~= "" then
-            local obj = getObjectFromGUID(guid)
+            local obj = G.getObject(guid)
             if obj == nil then
                 return false
             end
@@ -95,7 +95,7 @@ local function applyLockedObjectsFromConstants(options)
     if U.Type(locked) == "table" then
         for _, guid in pairs(locked) do
             if U.Type(guid) == "string" and guid ~= "" then
-                local obj = getObjectFromGUID(guid)
+                local obj = G.getObject(guid)
                 if obj ~= nil then
                     obj.interactable = false
                     applied = applied + 1
@@ -141,7 +141,7 @@ local function applyHiddenObjectsFromConstants(options)
     if U.Type(hidden) == "table" then
         for guid, colors in pairs(hidden) do
             if U.Type(guid) == "string" and guid ~= "" and U.Type(colors) == "table" then
-                local obj = getObjectFromGUID(guid)
+                local obj = G.getObject(guid)
                 if obj ~= nil and type(obj.setInvisibleTo) == "function" then
                     obj.setInvisibleTo(colors)
                     applied = applied + 1
@@ -275,7 +275,7 @@ function O.applyPcSeatHiddenObjectPresence(seatColor, present)
         if U.Type(guid) == "string" and guid ~= "" and U.Type(defaultColors) == "table" then
             if #defaultColors == 1 and defaultColors[1] == seatColor then
                 appliedGuids[guid] = true
-                applyObject(getObjectFromGUID(guid), defaultColors)
+                applyObject(G.getObject(guid), defaultColors)
             end
         end
     end
@@ -323,7 +323,7 @@ local function getSignalFireObject(color)
         return nil
     end
 
-    local fire = getObjectFromGUID(guid)
+    local fire = G.getObject(guid)
     if fire == nil then
         U.AlertGM(string.format("O.getSignalFireObject: Signal fire not found for color: %s", color))
         return nil
@@ -418,7 +418,7 @@ function O.SetHungerSmokeState(color, state, duration)
         return false
     end
 
-    local smoke = getObjectFromGUID(guid)
+    local smoke = G.getObject(guid)
     if not smoke then
         U.AlertGM("O.SetHungerSmokeState: Hunger smoke not found for color: " .. tostring(color))
         return false

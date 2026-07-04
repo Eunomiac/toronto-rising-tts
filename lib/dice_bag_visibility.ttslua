@@ -23,7 +23,7 @@ local function bagObject(guid)
     if type(guid) ~= "string" then
         return nil
     end
-    return getObjectFromGUID(guid)
+    return G.getObject(guid)
 end
 
 local function cacheRestY(guid, bag)

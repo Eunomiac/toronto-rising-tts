@@ -124,10 +124,7 @@ end
 --- @param guid string|nil
 --- @return Object|nil
 local function objectFromGuid(guid)
-    if type(guid) ~= "string" or guid == "" then
-        return nil
-    end
-    return getObjectFromGUID(guid)
+    return G.getObject(guid)
 end
 
 --- @return Object|nil
@@ -3726,7 +3723,7 @@ local function dieKindNearStorytellerDiceBag(pos)
     local bestKind = nil
     local bestDist = ST_DICE_BAG_TOKEN_DROP_RADIUS
     for _, entry in ipairs(storytellerDiceBagDropEntriesList()) do
-        local bag = getObjectFromGUID(entry.guid)
+        local bag = G.getObject(entry.guid)
         if U.isGameObject(bag) and bag.getPosition ~= nil then
             local dist = U.HorizontalDistance(pos, bag.getPosition())
             if dist < bestDist then
@@ -4952,7 +4949,7 @@ local function applyControlBoardSpotlightPreviewForToken(token)
         end
     end
 
-    local lit = getObjectFromGUID(rec.lightGuid)
+    local lit = G.getObject(rec.lightGuid)
     if U.isGameObject(lit) and lit.setInvisibleTo ~= nil then
         lit.setInvisibleTo({})
     end

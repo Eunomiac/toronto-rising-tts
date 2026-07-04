@@ -1185,7 +1185,7 @@ end
 --
 -- **`callback(o)`** receives **`getObject()`** at completion (**`nil`** if missing). The completion handler may still run **on timeout** (third **`Wait.condition`** argument): call sites mutating physics-sensitive state **must verify** **`o ~= nil`**, not **`loading_custom`**, and **`resting == true`** before acting unless intentionally no-oping.
 --
--- @param getObject fun():Object|nil Called each evaluation; typical pattern **`function() return getObjectFromGUID(guid) end`**.
+-- @param getObject fun():Object|nil Called each evaluation; typical pattern **`function() return G.getObject(guid) end`**.
 -- @param timeoutSeconds number|nil Passed to **`Wait.condition`** (**`nil`** uses engine defaults).
 -- @param callback fun(o: Object|nil)
 -- @param completeEarlyIf fun():boolean|nil If set and returns **`true`**, the wait succeeds immediately (caller still receives current **`getObject()`** — use **`completeEarlyIf`** for cancel tokens, not as a substitute for resting checks inside **`callback`**).
@@ -1554,9 +1554,9 @@ function U.findIndex(tb, func)
 	return nil
 end
 
---- Resolves a GameObject from an object reference or GUID string
--- Returns the object if already a GameObject, or looks it up by GUID.
--- @param ref Object|string Reference object or GUID string
+--- Resolves a GameObject from an object reference, plain GUID string, or state-keyed GUID table.
+-- State-keyed tables (`{ [1] = "guid1", [2] = "guid2" }`) try each GUID in order until one resolves.
+-- @param ref Object|string|table Reference object, GUID string, or state GUID map
 -- @param isSilent boolean If true, returns nil on failure instead of throwing
 -- @return Object|nil Resolved GameObject or nil
 -- @overload fun(ref:Object|string|table, isSilent:true): Object|nil
@@ -1566,16 +1566,17 @@ end
 -- @usage local obj = U.getObject(someObj)
 function U.getObject(ref, isSilent)
 	if U.isGameObject(ref) then return ref end
-	if U.Type(ref) == "string" then
-		local obj = getObjectFromGUID(ref)
+	local G = require("lib.guids")
+	if G.isGuidRef(ref) then
+		local obj = G.getObject(ref)
 		if obj then return obj end
 		if not isSilent then
-			U.error("U.getObject", "No object found for GUID", ref)
+			U.error("U.getObject", "No object found for GUID ref", ref)
 		end
 		return nil
 	end
 	if U.Type(ref) == "table" and ref.guid ~= nil then
-		local obj = getObjectFromGUID(ref.guid)
+		local obj = require("lib.guids").getObject(ref.guid)
 		if obj then return obj end
 	end
 	if not isSilent then

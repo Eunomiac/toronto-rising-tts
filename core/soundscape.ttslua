@@ -318,22 +318,18 @@ local function resolveEmitter(channelKey)
         cachedEmitters[channelKey] = nil
     end
 
-    local guid = getGuidForChannel(channelDef)
-    if type(guid) ~= "string" or guid == "" then
+    local guidRef = getGuidForChannel(channelDef)
+    if not G.isGuidRef(guidRef) then
         return nil, "Missing GUID constant G." .. tostring(channelDef.guidKey) .. " for channel " .. tostring(channelKey)
     end
 
-    local getObjectFromGUIDFn = _G and rawget(_G, "getObjectFromGUID") or nil
-    if getObjectFromGUIDFn == nil then
-        return nil, "TTS getObjectFromGUID is unavailable for channel " .. tostring(channelKey)
-    end
-
-    local obj = getObjectFromGUIDFn(guid)
+    local obj = G.getObject(guidRef)
     if obj ~= nil then
         cachedEmitters[channelKey] = obj
         return obj, nil
     end
-    return nil, "No object found for G." .. tostring(channelDef.guidKey) .. " GUID " .. tostring(guid)
+    local activeGuid = G.getActiveGuid(guidRef)
+    return nil, "No object found for G." .. tostring(channelDef.guidKey) .. " GUID " .. tostring(activeGuid or guidRef)
 end
 
 local function queryEffects(obj, effectList)

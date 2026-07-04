@@ -6,6 +6,7 @@
 local NPCStageLerp = {}
 
 local U = require("lib.util")
+local G = require("lib.guids")
 local DATA = require("lib.npc_gameboard_data")
 
 local lerpEpoch = 0
@@ -360,8 +361,8 @@ local function buildAnimForCandidate(candidate, startDelayFrames, frames, durati
     if type(rec) ~= "table" then
         return nil
     end
-    local fig = getObjectFromGUID(rec.figurineGuid or "")
-    local lit = getObjectFromGUID(rec.lightGuid or "")
+    local fig = G.getObject(rec.figurineGuid or "")
+    local lit = G.getObject(rec.lightGuid or "")
     if not U.isGameObject(fig) then
         return nil
     end

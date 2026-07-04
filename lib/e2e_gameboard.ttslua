@@ -165,15 +165,15 @@ local function printGbResult(label, failures)
 end
 
 local function getControlBoard()
-    return getObjectFromGUID(G.GUIDS.CONTROL_BOARD)
+    return G.getObject(G.GUIDS.CONTROL_BOARD)
 end
 
 local function getStageBoard()
-    return getObjectFromGUID(G.GUIDS.STAGE_BOARD)
+    return G.getObject(G.GUIDS.STAGE_BOARD)
 end
 
 local function getPaletteBoard()
-    return getObjectFromGUID(G.GUIDS.CONTROL_BOARD_PALETTE)
+    return G.getObject(G.GUIDS.CONTROL_BOARD_PALETTE)
 end
 
 local function resolveTokenCharacterKey(token)
@@ -1064,7 +1064,7 @@ local function runFullSuites(failures)
     assignSeatSlot("NPC1", fx.npcA, false)
     Sync.npcs({ force = true, reason = "e2e_f4" })
     local chairGuid = G.GUIDS.SEAT_CHAIR_NPC1
-    local chair = chairGuid ~= nil and getObjectFromGUID(chairGuid) or nil
+    local chair = chairGuid ~= nil and G.getObject(chairGuid) or nil
     if U.isGameObject(chair) and chair.getInvisibleTo ~= nil then
         local inv = chair.getInvisibleTo()
         if type(inv) ~= "table" or #inv < 1 then

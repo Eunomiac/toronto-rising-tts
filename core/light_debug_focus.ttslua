@@ -10,6 +10,7 @@
 local LightDebugFocus = {}
 
 local U = require("lib.util")
+local G = require("lib.guids")
 local L = require("core.lighting")
 local LightDebug = require("core.light_debug")
 
@@ -206,7 +207,7 @@ local function applyLive()
     if activeGuid == nil or originPos == nil then
         return
     end
-    local obj = getObjectFromGUID(activeGuid)
+    local obj = G.getObject(activeGuid)
     if obj == nil then
         return
     end
@@ -288,7 +289,7 @@ local function parseAndValidateGuid(guidRaw)
     if g == "" then
         return nil, "Enter a GUID in the field next to Debug Light."
     end
-    local obj = getObjectFromGUID(g)
+    local obj = G.getObject(g)
     if obj == nil then
         return nil, "No object for GUID: " .. g
     end
@@ -490,7 +491,7 @@ function LightDebugFocus.snapshot(player)
         end
         return
     end
-    local obj = getObjectFromGUID(activeGuid)
+    local obj = G.getObject(activeGuid)
     if obj == nil then
         if player ~= nil and player.color ~= nil then
             broadcastToColor("Debug Light: object gone.", player.color, { 1, 0.35, 0 })

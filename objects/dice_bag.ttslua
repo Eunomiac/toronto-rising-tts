@@ -52,7 +52,7 @@ function onLoad(saved_data)
         local loaded = JSON.decode(saved_data)
         if type(loaded) == "table" then
             for _, guid in ipairs(loaded) do
-                local die = getObjectFromGUID(guid)
+                local die = G.getObject(guid)
                 if die ~= nil then destroyObject(die) end
             end
         end
@@ -145,7 +145,7 @@ local function getPlayerNormalBag(bagColor)
     if type(normalGuid) ~= "string" then
         return nil
     end
-    return getObjectFromGUID(normalGuid)
+    return G.getObject(normalGuid)
 end
 
 local isBloodSurgeRouseDie

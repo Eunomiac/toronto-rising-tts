@@ -41,12 +41,12 @@ local function resolveAnchorObject(obj, anchorRef)
     return anchorRef
   end
   if type(anchorRef) == "string" and anchorRef ~= "" then
-    local anchor = getObjectFromGUID(anchorRef)
+    local anchor = G.getObject(anchorRef)
     if anchor ~= nil then
       return anchor
     end
-    if G ~= nil and type(G.GUIDS) == "table" and type(G.GUIDS[anchorRef]) == "string" then
-      return getObjectFromGUID(G.GUIDS[anchorRef])
+    if G ~= nil and type(G.GUIDS) == "table" and G.GUIDS[anchorRef] ~= nil then
+      return G.getObject(G.GUIDS[anchorRef])
     end
   end
   return nil
@@ -130,7 +130,7 @@ function OP.resolveStatePose(obj, entry, state)
   local hasAnchor = type(anchorGUID) == "string" and anchorGUID ~= ""
   local anchor = nil
   if hasAnchor then
-    anchor = getObjectFromGUID(anchorGUID)
+    anchor = G.getObject(anchorGUID)
     if anchor == nil then
       print("[ObjectPositionsObject] Relative pose anchor not found for GUID: " .. tostring(anchorGUID))
       return resolved

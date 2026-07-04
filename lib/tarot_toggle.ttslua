@@ -6,6 +6,7 @@
 ]]
 
 local C = require("lib.constants")
+local G = require("lib.guids")
 local OP = require("lib.object_positions_object")
 local TarotObjects = require("lib.tarot_objects")
 
@@ -44,7 +45,7 @@ end
 local function resolveTarotObject(key, buttonGuid)
     if key == "TAROT_BUTTON_PINK" then
         if type(buttonGuid) == "string" and buttonGuid ~= "" then
-            return getObjectFromGUID(buttonGuid)
+            return G.getObject(buttonGuid)
         end
         return TarotObjects.resolveByGuidsKey(key)
     end

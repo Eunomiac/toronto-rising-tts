@@ -1717,7 +1717,7 @@ local function allChosenWpDiceLocked(color, active)
     local hasChosen = false
     for guid, _ in pairs(chosen) do
         hasChosen = true
-        local o = getObjectFromGUID(guid)
+        local o = G.getObject(guid)
         if not U.isGameObject(o) or o.getLock() ~= true then
             return false
         end
@@ -2070,7 +2070,7 @@ function RC.onWpRerollDieRandomized(color, obj)
 
     U.runAfterObjectPhysicsSettled(
         function()
-            return getObjectFromGUID(guidCaptured)
+            return G.getObject(guidCaptured)
         end,
         C.WP_REROLL_DIE_REST_MAX_WAIT_SECONDS,
         function(o)
@@ -2207,7 +2207,7 @@ function RC.beginStSelectiveRerollWave(color)
     local guids = {}
     for guid in pairs(active.stSelectiveReroll.selectedGuids) do
         if type(guid) == "string" and guid ~= "" then
-            local die = getObjectFromGUID(guid)
+            local die = G.getObject(guid)
             if die ~= nil and DK.gmNotesMatchRoll(die.getGMNotes(), active.id) then
                 guids[#guids + 1] = guid
             end
@@ -2247,7 +2247,7 @@ function RC.onStSelectiveRerollDieRandomized(color, obj)
 
     U.runAfterObjectPhysicsSettled(
         function()
-            return getObjectFromGUID(guidCaptured)
+            return G.getObject(guidCaptured)
         end,
         C.WP_REROLL_DIE_REST_MAX_WAIT_SECONDS,
         function(o)
@@ -3069,7 +3069,7 @@ function RC.removeOneBloodSurgeRouse(color)
     local removed = false
     local rouseGuid = G.GetDiceRouseGUID(color)
     if type(rouseGuid) == "string" then
-        local bag = getObjectFromGUID(rouseGuid)
+        local bag = G.getObject(rouseGuid)
         if bag ~= nil then
             removed = bag.call("removeLastSpawnedDie", { bloodSurgeRouseOnly = true }) == true
         end

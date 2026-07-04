@@ -370,7 +370,7 @@ function GlobalGameboardSyncSnapsToggleLabel(params)
     local Gameboard = require("core.npc_gameboard")
     local board = nil
     if type(params) == "table" and type(params.boardGuid) == "string" then
-        board = getObjectFromGUID(params.boardGuid)
+        board = G.getObject(params.boardGuid)
     end
     Gameboard.syncControlBoardSnapsToggleLabel(board)
     Gameboard.syncControlBoardLayoutLockLabel(board)
@@ -395,7 +395,7 @@ function GlobalGameboardToggleLayoutLock(params)
     local Gameboard = require("core.npc_gameboard")
     local board = nil
     if type(params) == "table" and type(params.boardGuid) == "string" then
-        board = getObjectFromGUID(params.boardGuid)
+        board = G.getObject(params.boardGuid)
     end
     local locked = Gameboard.toggleLayoutLock()
     Gameboard.syncControlBoardLayoutLockLabel(board)
@@ -421,7 +421,7 @@ function GlobalGameboardToggleControlBoardSnaps(params)
     local Gameboard = require("core.npc_gameboard")
     local board = nil
     if type(params) == "table" and type(params.boardGuid) == "string" then
-        board = getObjectFromGUID(params.boardGuid)
+        board = G.getObject(params.boardGuid)
     end
     local enabled = Gameboard.toggleControlBoardSnaps({ board = board })
     Gameboard.syncControlBoardSnapsToggleLabel(board)
@@ -564,13 +564,13 @@ function GlobalRepositionStorytellerTrayDice(params)
     for _, kind in ipairs(ST_BAG_KIND_ORDER) do
         local guid = G.GetDiceStorytellerBagGUID(kind)
         if type(guid) == "string" then
-            local bag = getObjectFromGUID(guid)
+            local bag = G.getObject(guid)
             if bag ~= nil and bag.call ~= nil then
                 local guids = bag.call("getStagedDiceGuids")
                 if type(guids) == "table" then
                     for _, dieGuid in ipairs(guids) do
                         if type(dieGuid) == "string" then
-                            local die = getObjectFromGUID(dieGuid)
+                            local die = G.getObject(dieGuid)
                             if die ~= nil then
                                 ordered[#ordered + 1] = die
                             end
@@ -617,7 +617,7 @@ local function removeDieFromBag(color, dieKind)
     if type(guid) ~= "string" then
         return false
     end
-    local bag = getObjectFromGUID(guid)
+    local bag = G.getObject(guid)
     if bag == nil then
         return false
     end
@@ -900,7 +900,7 @@ function GlobalSpawnDieFromStorytellerBag(params)
     if type(dieKind) ~= "string" then return end
     local guid = G.GetDiceStorytellerBagGUID(dieKind)
     if type(guid) ~= "string" then return end
-    local bag = getObjectFromGUID(guid)
+    local bag = G.getObject(guid)
     if bag == nil then return end
 
     local arcCenter = nil
@@ -950,7 +950,7 @@ function GlobalTagDieForActiveRoll(params)
     if type(color) ~= "string" or type(dieGuid) ~= "string" then
         return
     end
-    local die = getObjectFromGUID(dieGuid)
+    local die = G.getObject(dieGuid)
     if die == nil then
         return
     end
@@ -1191,7 +1191,7 @@ function GlobalStRerollDiceByGuids(params)
 
     local randomized = 0
     for _, guid in ipairs(guids) do
-        local die = getObjectFromGUID(guid)
+        local die = G.getObject(guid)
         if die ~= nil and DK.gmNotesMatchRoll(die.getGMNotes(), rollId) then
             local tags = die.getTags()
             if type(tags) == "table" then
@@ -1313,7 +1313,7 @@ function GlobalPostRollAddDie(params)
     if type(guid) ~= "string" then
         return false
     end
-    local bag = getObjectFromGUID(guid)
+    local bag = G.getObject(guid)
     if bag == nil then
         return false
     end
@@ -1334,7 +1334,7 @@ function GlobalPostRollAddDie(params)
     active.meta.stPostRollModifyLock = true
     S.setStateVal(active, "playerData", pid, "hud", "rollData", "active")
     U.delay(function()
-        local die = getObjectFromGUID(dieGuid)
+        local die = G.getObject(dieGuid)
         if die == nil then
             return
         end
@@ -1399,7 +1399,7 @@ function GlobalSpawnDieFromBag(colorOrParams, dieKind, opts)
     if type(guid) ~= "string" then
         return
     end
-    local bag = getObjectFromGUID(guid)
+    local bag = G.getObject(guid)
     if bag == nil then
         return
     end
@@ -1439,7 +1439,7 @@ function GlobalDestroyAllPlayerBagDice(params)
     if type(params) ~= "table" or type(params.color) ~= "string" then return end
     local bags = G.GetAllPlayerDiceBagGUIDs(params.color)
     for _, guid in pairs(bags) do
-        local bag = getObjectFromGUID(guid)
+        local bag = G.getObject(guid)
         if bag ~= nil then bag.call("destroyDice") end
     end
 end
@@ -1455,7 +1455,7 @@ function GlobalSpawnBloodSurgeDice(params)
 
     local rouseGuid = G.GetDiceRouseGUID(color)
     if type(rouseGuid) == "string" then
-        local bag = getObjectFromGUID(rouseGuid)
+        local bag = G.getObject(rouseGuid)
         if bag ~= nil then
             bag.call("spawnDieRedirect", {
                 bagColor = color,
@@ -1534,7 +1534,7 @@ function GlobalDestroyBloodSurgeDice(params)
     }
     for _, spec in ipairs(bagSpecs) do
         if type(spec.guid) == "string" then
-            local bag = getObjectFromGUID(spec.guid)
+            local bag = G.getObject(spec.guid)
             if bag ~= nil then
                 bag.call("destroyStagedByScriptState", { scriptState = spec.scriptState })
             end
@@ -2033,7 +2033,7 @@ local function storytellerDiceBagKindNearPosition(pos)
     local bags = G.GetAllStorytellerDiceBagGUIDs()
     for kind, guid in pairs(bags) do
         if type(kind) == "string" and type(guid) == "string" and guid ~= "" then
-            local bag = getObjectFromGUID(guid)
+            local bag = G.getObject(guid)
             if bag ~= nil and bag.getPosition ~= nil then
                 local dist = U.HorizontalDistance(pos, bag.getPosition())
                 if dist < bestDist then
@@ -3900,7 +3900,7 @@ local PLAYER_BAG_KIND_TO_DK = {
 -- @param bagKind string  key from GetAllPlayerDiceBagGUIDs
 -- @param guid string
 local function destroyBagStagedDiceAtGuid(color, bagKind, guid)
-    local bag = getObjectFromGUID(guid)
+    local bag = G.getObject(guid)
     if bag == nil then
         return
     end
@@ -3936,7 +3936,7 @@ function callBagFunction(color, funcName)
     local bags = G.GetAllPlayerDiceBagGUIDs(color)
     for _, guid in pairs(bags) do
         if type(guid) == "string" then
-            local bag = getObjectFromGUID(guid)
+            local bag = G.getObject(guid)
             if bag ~= nil then
                 bag.call(funcName)
             end
@@ -3969,7 +3969,7 @@ local function getBagSpawnedCount(color, dieTypeName)
         end
         return 0
     end
-    local bag = getObjectFromGUID(guid)
+    local bag = G.getObject(guid)
     if bag == nil then
         print(string.format(
             "[Roll] getBagSpawnedCount: bag object missing for %s %s (GUID %s)",
@@ -3997,7 +3997,7 @@ local function getBagSpawnedCountStoryteller(dieTypeName)
     if type(guid) ~= "string" then
         return 0
     end
-    local bag = getObjectFromGUID(guid)
+    local bag = G.getObject(guid)
     if bag == nil then
         return 0
     end
@@ -4034,7 +4034,7 @@ local function autoSpawnBlackPool(pool, opts)
         if needed > 0 then
             local guid = G.GetDiceStorytellerBagGUID(kind)
             if type(guid) == "string" then
-                local bag = getObjectFromGUID(guid)
+                local bag = G.getObject(guid)
                 if bag ~= nil then
                     bag.call("autoSpawn", { count = needed, arcCenter = arcCenter })
                     didAutoSpawn = true
@@ -4098,7 +4098,7 @@ local function spawnMissingPoolDiceForColor(color)
         if needed > 0 then
             local guid = playerBagGuidForPoolKind(color, kindName)
             if type(guid) == "string" then
-                local bag = getObjectFromGUID(guid)
+                local bag = G.getObject(guid)
                 if bag ~= nil then
                     bag.call("autoSpawn", { count = needed })
                     bag.call("repositionStagedDice")
@@ -4180,7 +4180,7 @@ local function ensureBlackStagedRollTags()
     local bags = G.GetAllStorytellerDiceBagGUIDs()
     for _, guid in pairs(bags) do
         if type(guid) == "string" then
-            local bag = getObjectFromGUID(guid)
+            local bag = G.getObject(guid)
             if bag ~= nil then
                 bag.call("ensureRollTagsOnStagedDice")
             end
@@ -4246,7 +4246,7 @@ local function unlockStagedBagDice(color)
         local bags = G.GetAllStorytellerDiceBagGUIDs()
         for _, guid in pairs(bags) do
             if type(guid) == "string" then
-                local bag = getObjectFromGUID(guid)
+                local bag = G.getObject(guid)
                 if bag ~= nil then
                     bag.call("releaseDice")
                 end
@@ -4538,7 +4538,7 @@ function GlobalDestroyNonRouseDiceForRoll(params)
     for _, kind in ipairs({ "normal", "hunger" }) do
         local guid = bags[kind]
         if type(guid) == "string" then
-            local bag = getObjectFromGUID(guid)
+            local bag = G.getObject(guid)
             if bag ~= nil then bag.call("destroyDice") end
         end
     end
@@ -4571,7 +4571,7 @@ function GlobalReleaseRouseDiceForActiveRoll(params)
     for _, kind in ipairs({ "rouse", "oblivRouse" }) do
         local guid = bags[kind]
         if type(guid) == "string" then
-            local bag = getObjectFromGUID(guid)
+            local bag = G.getObject(guid)
             if bag ~= nil then bag.call("releaseDice") end
         end
     end

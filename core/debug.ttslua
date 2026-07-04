@@ -1053,7 +1053,7 @@ local function e2eBagStagedCount(color, dieTypeName)
     if type(guid) ~= "string" then
         return 0
     end
-    local bag = getObjectFromGUID(guid)
+    local bag = G.getObject(guid)
     if bag == nil then
         return 0
     end
@@ -4860,7 +4860,7 @@ local function getControlBoardObject()
     if U.Type(guid) ~= "string" or guid == "" then
         return nil
     end
-    local board = getObjectFromGUID(guid)
+    local board = G.getObject(guid)
     if board == nil then
         return nil
     end
@@ -4922,7 +4922,7 @@ function DEBUG.spawnNpcControlBoardTokens(options)
         DEBUG.clearNpcControlBoardTokens()
     end
 
-    local palette = getObjectFromGUID(G.GUIDS.CONTROL_BOARD_PALETTE)
+    local palette = G.getObject(G.GUIDS.CONTROL_BOARD_PALETTE)
     if palette == nil then
         print(
             "DEBUG.spawnNpcControlBoardTokens: CONTROL_BOARD_PALETTE missing (GUID "

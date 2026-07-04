@@ -981,7 +981,7 @@ local function getLight(lightName, isSilent)
         end
     end
 
-    local light = getObjectFromGUID(lData.guid)
+    local light = G.getObject(lData.guid)
     if light == nil then
         if isSilent then
             return nil
@@ -1162,9 +1162,9 @@ function L.GetLight(lightRef, silent)
         obj = getLight(lightRef, silent)
     elseif string.sub(lightRef, 1, 9) == "npcLight_" then
         local g = string.sub(lightRef, 10)
-        obj = getObjectFromGUID(g)
+        obj = G.getObject(g)
     elseif isProbablyObjectGuid(lightRef) then
-        obj = getObjectFromGUID(lightRef)
+        obj = G.getObject(lightRef)
     else
         if silent then
             return nil
@@ -1343,7 +1343,7 @@ end
 --
 -- This is the main function for controlling lights. It:
 --   1. Resolves `lightRef` (registered name, raw object GUID, or nested array of those)
---   2. Finds the light object (via L.LIGHTMODES[ref].guid or getObjectFromGUID(ref))
+--   2. Finds the light object (via L.LIGHTMODES[ref].guid or G.getObject(ref))
 --   3. Persists to `gameState.lights` after mode resolves (registered: mode key string; raw GUID: sanitized inline table)
 --   4. Smoothly transitions using U.Lerp; overlapping calls for the same `lightRef` invalidate prior epochs (last wins)
 --
@@ -1864,7 +1864,7 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
             S.setStateVal(modeData, "lights", lightRef)
         end
     else
-        light = getObjectFromGUID(lightRef)
+        light = G.getObject(lightRef)
         U.Val("SetLightMode", lightRef, U.isGameObject(light),
             "lightRef not in L.LIGHTMODES and not a valid object GUID: " .. U.ToString(lightRef))
 

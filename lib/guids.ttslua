@@ -3,9 +3,122 @@
 -- Centralized repository for all hard-coded GUID references.
 -- Separated from constants to keep GUID management isolated.
 --
+-- State-keyed entries: some workshop objects expose a different Object ID per visual
+-- state; only the active state's GUID resolves via getObjectFromGUID. Register them as
+-- `{ [1] = "guidState1", [2] = "guidState2", ... }` and resolve with `G.getObject(ref)`.
+--
 -- Agent guidance: .dev/DEVELOPMENT_WORKFLOW.md (GUID troubleshooting); .dev/NPC Object Spawning & Spotlighting/NPC Object Overview.md (e.g. NPC_LIGHT_CLONE_TEMPLATE).
 
 local G = {}
+
+--- True when `ref` is a numeric-key state GUID map (not a namespace table like `TABLES`).
+--- @param ref any
+--- @return boolean
+function G.isStateGuidTable(ref)
+    if type(ref) ~= "table" then
+        return false
+    end
+    local hasGuid = false
+    for k, v in pairs(ref) do
+        if type(k) == "string" then
+            return false
+        end
+        if type(v) ~= "string" or v == "" then
+            return false
+        end
+        hasGuid = true
+    end
+    return hasGuid
+end
+
+--- @param ref any
+--- @return boolean
+function G.isGuidRef(ref)
+    if type(ref) == "string" and ref ~= "" then
+        return true
+    end
+    return G.isStateGuidTable(ref)
+end
+
+--- Collect GUID strings from a plain string or state table, in lookup order.
+--- Numeric keys are iterated 1..maxKey; otherwise arbitrary pair order.
+--- @param ref string|table
+--- @return string[]
+function G.collectGuidStrings(ref)
+    if type(ref) == "string" then
+        if ref ~= "" then
+            return { ref }
+        end
+        return {}
+    end
+    if not G.isStateGuidTable(ref) then
+        return {}
+    end
+    local out = {}
+    local maxKey = 0
+    for k, _ in pairs(ref) do
+        if type(k) == "number" and k > maxKey then
+            maxKey = k
+        end
+    end
+    if maxKey > 0 then
+        for i = 1, maxKey do
+            local g = ref[i]
+            if type(g) == "string" and g ~= "" then
+                out[#out + 1] = g
+            end
+        end
+    else
+        for _, g in pairs(ref) do
+            if type(g) == "string" and g ~= "" then
+                out[#out + 1] = g
+            end
+        end
+    end
+    return out
+end
+
+--- Returns the GUID string for the currently visible state, or nil.
+--- @param ref string|table
+--- @return string|nil
+function G.getActiveGuid(ref)
+    for _, guid in ipairs(G.collectGuidStrings(ref)) do
+        if getObjectFromGUID(guid) ~= nil then
+            return guid
+        end
+    end
+    return nil
+end
+
+--- Resolves an Object from a plain GUID string or state-keyed GUID table.
+--- Only the active state's object is visible; earlier entries in check order win.
+--- @param ref string|table
+--- @return Object|nil
+function G.getObject(ref)
+    for _, guid in ipairs(G.collectGuidStrings(ref)) do
+        local obj = getObjectFromGUID(guid)
+        if obj ~= nil then
+            return obj
+        end
+    end
+    return nil
+end
+
+--- True when `guid` matches a plain or state-keyed registry ref.
+--- @param ref string|table
+--- @param guid string
+--- @return boolean
+function G.guidRefMatches(ref, guid)
+    if type(guid) ~= "string" or guid == "" then
+        return false
+    end
+    for _, g in ipairs(G.collectGuidStrings(ref)) do
+        if g == guid then
+            return true
+        end
+    end
+    return false
+end
 
 G.GUIDS = {
     -- Table & Floor objects
@@ -72,8 +185,8 @@ G.GUIDS = {
     FAMULUS_LIGHT_1_BROWN = "645352",
     FAMULUS_LIGHT_2_RED = "dd1763",
     FAMULUS_LIGHT_2_BROWN = "c78daf",
-    FAMULUS_FIGURINE_RED = "2975dc",
-    FAMULUS_FIGURINE_BROWN = "c334ae",
+    FAMULUS_FIGURINE_RED = { [1] = "a98541", [2] = "2975dc" },
+    FAMULUS_FIGURINE_BROWN = { [1] = "db12c8", [2] = "c334ae" },
 
     -- Soundscape AssetBundle Objects
 
@@ -224,6 +337,11 @@ G.GUIDS = {
     TAROT_DRAWER_ANCHOR_ON_PINK = "936758",
     TAROT_DRAWER_ANCHOR_OFF_PINK = "c1f530",
     TAROT_DECK_ANCHOR_PINK = "764db1",
+    COMPANION_TOGGLE_TOKEN_A_PURPLE = "7b1ac2",
+    COMPANION_TOGGLE_TOKEN_B_PURPLE = "a61620",
+    COMPANION_TOGGLE_TOKEN_C_PURPLE = "12606b",
+    COMPANION_TOGGLE_TOKEN_A_RED = "84f7d4",
+    COMPANION_TOGGLE_TOKEN_A_BROWN = "b1f52e",
 
     -- Anchors (for animations)
     CSHEET_DICE_DRAWER_ANCHOR_ON_BROWN = "2f15c3",
@@ -281,7 +399,7 @@ G.GUIDS = {
 -- @param color string Player color (e.g., "Red", "Brown", "Orange", "Pink", or "Black" for Storyteller)
 -- @return string|nil GUID string if found, or nil if not found
 -- @usage local handGUID = G.GetHandZoneGUID("Red")
--- @usage local handObj = getObjectFromGUID(G.GetHandZoneGUID("Red"))
+-- @usage local handObj = G.getObject(G.GetHandZoneGUID("Red"))
 function G.GetHandZoneGUID(color)
     if color == nil then
         return nil
@@ -306,7 +424,7 @@ end
 -- @param color string Player color (e.g., "Red", "Brown", "Orange", "Pink", or "Black" for Storyteller)
 -- @return string|nil GUID string if found, or nil if not found
 -- @usage local signalFireGUID = G.GetSignalFireGUID("Red")
--- @usage local signalFireObj = getObjectFromGUID(G.GetSignalFireGUID("Red"))
+-- @usage local signalFireObj = G.getObject(G.GetSignalFireGUID("Red"))
 function G.GetSignalFireGUID(color)
   if color == nil then
       return nil
@@ -331,7 +449,7 @@ end
 -- @param color string Player color (e.g., "Red", "Brown", "Orange", "Pink", or "Black" for Storyteller)
 -- @return string|nil GUID string if found, or nil if not found
 -- @usage local hungerSmokeGUID = G.GetHungerSmokeGUID("Red")
--- @usage local hungerSmokeObj = getObjectFromGUID(G.GetHungerSmokeGUID("Red"))
+-- @usage local hungerSmokeObj = G.getObject(G.GetHungerSmokeGUID("Red"))
 function G.GetHungerSmokeGUID(color)
   if color == nil then
       return nil
@@ -356,7 +474,7 @@ end
 -- @param color string Player color (e.g., "Red", "Brown", "Orange", "Pink", or "Black" for Storyteller)
 -- @return string|nil GUID string if found, or nil if not found
 -- @usage local throneGUID = G.GetThroneGUID("Red")
--- @usage local throneObj = getObjectFromGUID(G.GetThroneGUID("Red"))
+-- @usage local throneObj = G.getObject(G.GetThroneGUID("Red"))
 function G.GetThroneGUID(color)
   if color == nil then
       return nil
@@ -381,7 +499,7 @@ end
 -- @param color string Player color (e.g., "Red", "Brown", "Orange", "Pink", or "Black" for Storyteller)
 -- @return string|nil GUID string if found, or nil if not found
 -- @usage local playerLightGUID = G.GetPlayerLightGUID("Red")
--- @usage local playerLightObj = getObjectFromGUID(G.GetPlayerLightGUID("Red"))
+-- @usage local playerLightObj = G.getObject(G.GetPlayerLightGUID("Red"))
 function G.GetPlayerLightGUID(color)
   if color == nil then
       return nil
@@ -517,7 +635,7 @@ function G.GetDiceOwner(guid)
     for _, color in ipairs(playerColors) do
         local upperColor = string.upper(color)
         for _, bk in ipairs(bagKinds) do
-            if G.GUIDS[bk[2] .. upperColor] == guid then
+            if G.guidRefMatches(G.GUIDS[bk[2] .. upperColor], guid) then
                 return color, bk[1]
             end
         end
@@ -531,7 +649,7 @@ function G.GetDiceOwner(guid)
         { "rage", G.GUIDS.DICEBAG_RAGE_STORYTELLER },
     }
     for _, entry in ipairs(stBags) do
-        if entry[2] == guid then
+        if G.guidRefMatches(entry[2], guid) then
             return "storyteller", entry[1]
         end
     end
