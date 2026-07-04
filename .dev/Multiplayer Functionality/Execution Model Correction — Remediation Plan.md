@@ -114,6 +114,8 @@ For each hit classify:
 - **(B) actor-identity gate** (checks who clicked / dropped, ST vs PC) → keep; ensure it uses `isStorytellerSteamPlayer` on the event's player param.
 - **(C) mixed** (`requireStorytellerHostForMutation` = steam AND host) → reduce to the steam/actor check; drop the host half.
 
+> **`C.StorytellerID` is a contrast grep, not a removal target.** Grepping `C.StorytellerID` surfaces the layer to **keep**, not the gating to remove. Its ~40 hits are almost all either **data-keying** (`gameState.playerData` is keyed by steam ID; the Storyteller has no player-character row, so `pc_stats`, `conditions`, `hud_overlays`, `ui_csheet_core`, `pc_storyteller_panel`, `effective_stats` skip it), **identity normalization** (`constants.ttslua`/`state.ttslua` `resolvePlayerRef`/`getStorageID`), or **actor-identity gates** (`global_script.ttslua` "activating player is Storyteller"). None of these are execution gating; all stay. Use the grep to *confirm* a hit is category (B), so the execution-gate removal (A/C) doesn't accidentally strip identity or data-keying logic. The actual removal targets are the `isHostClient` / `requireHostForWorldMutation` / `requireStorytellerHostForMutation` hits.
+
 ### Step 3 — Remove the execution-gating layer (staged, one domain at a time)
 
 Order chosen to keep each stage independently Save-&-Play testable:
