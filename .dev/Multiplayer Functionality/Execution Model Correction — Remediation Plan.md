@@ -95,6 +95,49 @@ If that is what you observe, §1.2 is confirmed and Steps 1–4 are safe. If you
 
 > Optional stronger probe: set a module-level counter incremented in `onLoad`, and a Global function `GlobalEcho` that `print`s the counter; have the friend trigger it via a button. It should reflect the host's single execution, not a per-client count.
 
+### Step 0-solo — Validations when a second client is unavailable
+
+A single account **cannot** directly observe a join client's console (the definitive proof), but it **can** do three things that together give high confidence: confirm the authority, reproduce the over-gating failure live, and prove removal is regression-safe. Do all three.
+
+**Honest limit:** none of these prove "clients never run Lua" by direct observation — only a real 2-client join can do that. But (V1) grounds the claim in the vendor's own words, (V2) shows the current gating is already broken the moment >1 player exists, and (V3) shows removal changes nothing solo. Convergent, not deferred-blocking. Keep the 2-client console check (original Step 0) as a **deferred confirmation** for whenever any second device/account is available — it should not block remediation.
+
+#### V1 — Confirm the authority yourself (5 min, read)
+
+Read the primary sources directly rather than trusting this doc:
+- Berserk Games dev statement: [tabletopsimulator.nolt.io/2769](https://tabletopsimulator.nolt.io/2769) — "run on the server," "only the server has that capability."
+- API host-only signals: [`print`/`log`](https://api.tabletopsimulator.com/base/), [`WebRequest` "host's computer only"](https://api.tabletopsimulator.com/webrequest/manager/), [one Global script](https://api.tabletopsimulator.com/intro/).
+
+#### V2 — Reproduce the over-gating failure solo via hotseat (the decisive solo test)
+
+`U.isHostClient()` returns `false` whenever **two or more players are seated and none is the "sole" human** — regardless of Steam identity. You can force that condition on one account with **hotseat**, which seats multiple colors on your single machine (the host).
+
+1. Add a temporary probe to `core/global_script.ttslua` (global functions are callable from the `~` console; the module-local `U` is not, so wrap it):
+
+```lua
+function GlobalProbeHost()
+    local n = #Player.getPlayers()
+    print("seatedPlayers=" .. n .. " isHostClient=" .. tostring(U.isHostClient()))
+end
+```
+
+2. Save & Play **solo** (only Black seated). Console: `GlobalProbeHost()` → expect `seatedPlayers=1 isHostClient=true`.
+3. Start a **hotseat** game (Menu → Create → Hotseat, or enable hotseat on the current table) and **seat a second color** (e.g. Black + Red) so two players are seated on your one machine.
+4. Console: `GlobalProbeHost()` → **expect `seatedPlayers=2 isHostClient=false`**. This is the bug: the host machine now believes it is not the host.
+5. With two seats still active, trigger a host-gated action (Gameboard **Apply**/**Clear**, a scene change, a soundscape mood change). **Expected:** it does nothing or partially fails, because `requireHostForWorldMutation` is now blocking the only machine that runs Lua.
+
+If V2 behaves as described, you have demonstrated — on one account — that the execution-gating layer is not a safety net but a live liability that activates as soon as a real second player is seated. (Hotseat shares one `steam_id` across seats, so it does **not** represent real per-account play or the identity layer — it is used here only to force `#getPlayers() >= 2` and expose the `isHostClient` heuristic.)
+
+> Complementary probe: temporarily set `U.isHostClient` to `return false` at its top, Save & Play solo, and watch world actions go dead; revert. This shows exactly what a non-host machine would experience *if* it ran Lua — i.e. the suppression the gates perform.
+
+#### V3 — Prove removal is regression-safe solo
+
+On a throwaway branch, perform the Step 3 removals for **one domain at a time**, Save & Play solo, and confirm behavior is byte-for-behavior identical to before:
+- Gameboard Apply/Clear ([Gameboard-E2E](../E2E%20Playbooks/Gameboard-E2E.md))
+- One dice roll path ([Dice-E2E](../E2E%20Playbooks/Dice-E2E.md))
+- One scene apply ([Scenes-E2E](../E2E%20Playbooks/Scenes-E2E.md))
+
+Because the gates can only alter behavior on a *non-host Lua VM* (which the sources say does not exist), **solo-identical behavior after removal ⇒ removal is safe.** Also re-run V2's hotseat action *after* removal: the previously-dead Apply/Clear should now work with two seats.
+
 ### Step 1 — Freeze the misleading docs (do first, cheap)
 
 So no further work is built on the inverted premise while remediation is in progress:
@@ -148,7 +191,7 @@ After the execution layer is gone, confirm the concerns that actually matter und
 
 ## 5. Definition of done (before resuming the audit)
 
-- [ ] Step 0 empirical test observed and recorded (host-only execution confirmed, or finding revised).
+- [ ] Step 0 confirmed — either the 2-client console test (preferred) **or** the solo battery (V1 read + V2 hotseat `isHostClient=false` reproduction + V3 regression-safe removal). Record results. Leave the 2-client console check as a deferred confirmation; it does not block remediation.
 - [ ] Superseded-premise banners added to the four docs + two rules (Step 1).
 - [ ] Execution-gating primitives removed; `isStorytellerSteamPlayer` retained; grep for `isHostClient` / `requireHostForWorldMutation` returns **0** in `core/`, `lib/`, `objects/`, `ui/`.
 - [ ] Solo Save & Play smoke green (Gameboard Apply/Clear, one roll, one scene apply).
