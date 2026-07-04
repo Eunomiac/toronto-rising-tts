@@ -111,19 +111,23 @@ Read the primary sources directly rather than trusting this doc:
 
 `U.isHostClient()` returns `false` whenever **two or more players are seated and none is the "sole" human** — regardless of Steam identity. You can force that condition on one account with **hotseat**, which seats multiple colors on your single machine (the host).
 
-1. Add a temporary probe to `core/global_script.ttslua` (global functions are callable from the `~` console; the module-local `U` is not, so wrap it):
+**Probe (no code edit — preferred):** In `core/global_script.ttslua` the modules are bound as **globals** (`U = require("lib.util")`, also `C`, `S`, `NPCS` — no `local`), so the extension's **Execute Code** command can call them directly. Select and Execute this snippet (do **not** `require()` inside it — the bundle's `require` isn't in the executed chunk's scope; and note `Sync` **is** `local`, so it is *not* reachable this way — wrap it in a Global function if needed):
 
 ```lua
-function GlobalProbeHost()
-    local n = #Player.getPlayers()
-    print("seatedPlayers=" .. n .. " isHostClient=" .. tostring(U.isHostClient()))
+local ps = Player.getPlayers()
+print("=== HOST PROBE ===  seatedPlayers=" .. #ps .. "  isHostClient=" .. tostring(U.isHostClient()))
+for _, p in ipairs(ps) do
+  print("  seat=" .. tostring(p.color) ..
+        " steam_id=" .. tostring(p.steam_id) ..
+        " host=" .. tostring(p.host) ..
+        " admin=" .. tostring(p.admin))
 end
 ```
 
-2. Save & Play **solo** (only Black seated). Console: `GlobalProbeHost()` → expect `seatedPlayers=1 isHostClient=true`.
-3. Start a **hotseat** game (Menu → Create → Hotseat, or enable hotseat on the current table) and **seat a second color** (e.g. Black + Red) so two players are seated on your one machine.
-4. Console: `GlobalProbeHost()` → **expect `seatedPlayers=2 isHostClient=false`**. This is the bug: the host machine now believes it is not the host.
-5. With two seats still active, trigger a host-gated action (Gameboard **Apply**/**Clear**, a scene change, a soundscape mood change). **Expected:** it does nothing or partially fails, because `requireHostForWorldMutation` is now blocking the only machine that runs Lua.
+1. Save & Play **solo** (only Black seated). Execute the snippet → expect `seatedPlayers=1 isHostClient=true`.
+2. Start a **hotseat** game (Menu → Create → Hotseat, or enable hotseat on the current table) and **seat a second color** (e.g. Black + Red) so two players are seated on your one machine.
+3. Execute the snippet again → **expect `seatedPlayers=2 isHostClient=false`** (the bug: the host machine now believes it is not the host). The per-seat `steam_id` dump resolves the one hotseat unknown: if the second seat shares your `steam_id` or has a distinct non-empty one, `solePlayerRefOrNil()` returns `nil` and `isHostClient()` flips to `false` (bug reproduced); if the extra seat has an **empty** `steam_id` it is filtered and the value may stay `true`. The dump shows which case occurred, so the result is interpretable. (`p.host` is TTS's authoritative host field — the API-blessed host check if it ever mattered — versus the seated-count heuristic.)
+4. With two seats still active, trigger a host-gated action (Gameboard **Apply**/**Clear**, a scene change, a soundscape mood change). **Expected (when step 3 showed `false`):** it does nothing or partially fails, because `requireHostForWorldMutation` is now blocking the only machine that runs Lua.
 
 If V2 behaves as described, you have demonstrated — on one account — that the execution-gating layer is not a safety net but a live liability that activates as soon as a real second player is seated. (Hotseat shares one `steam_id` across seats, so it does **not** represent real per-account play or the identity layer — it is used here only to force `#getPlayers() >= 2` and expose the `isHostClient` heuristic.)
 
