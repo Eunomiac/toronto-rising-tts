@@ -1,50 +1,49 @@
 # Bootstrap & Load Authority (TTS multiplayer)
 
-> **⚠ SUPERSEDED PREMISE (2026-07-04):** This document's central claim — "TTS runs **Global `onLoad` and object `onLoad` on every client**" — is contradicted by the authoritative TTS model: **mod Lua runs on the host only; connected clients do not run the Global script or object scripts.** The host-**execution** authority model below (Tier C → `U.requireHostForWorldMutation`, join-client `onLoad` branch) is under active correction — see [`Execution Model Correction — Remediation Plan`](../Multiplayer%20Functionality/Execution%20Model%20Correction%20%E2%80%94%20Remediation%20Plan.md). **Do not add new host-execution guards; do not ad-hoc remove existing ones (staged in the plan).** The **actor-identity** axis (`U.isStorytellerSteamPlayer`) and per-client UI visibility remain correct.
+**Linear:** TOR-221 (Non-Host onLoad guard audit — **superseded** by execution model correction, 2026-07)
+**Related:** [Event Listener Policy](Event%20Listener%20Policy.md), [Reconciler Contract](Reconciler%20Contract.md), [Preparing For Multiplayer](../Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md) §1, [Execution Model Correction — Remediation Plan](../Multiplayer%20Functionality/Execution%20Model%20Correction%20%E2%80%94%20Remediation%20Plan.md), TOR-144 (multiplayer E2E playbook)
 
-**Linear:** TOR-221 (Non-Host onLoad Host-only guard audit)
-**Related:** [Event Listener Policy](Event%20Listener%20Policy.md), [Reconciler Contract](Reconciler%20Contract.md), [Preparing For Multiplayer](../Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md) §1, TOR-144 (multiplayer E2E playbook)
+> **Agents:** Chunk load, `onLoad`, event handlers, and `Global.call` mutators must follow this doc and **P1–P10** in Preparing §1 until TOR-144 passes. Rule: [`.cursor/rules/toronto-rising-multiplayer-authority.mdc`](../../.cursor/rules/toronto-rising-multiplayer-authority.mdc).
 
-> **Agents:** Chunk load, `onLoad`, fan-out handlers, and `Global.call` mutators must follow this doc and **P1–P10** in Preparing §1 until TOR-144 passes. Rule: [`.cursor/rules/toronto-rising-multiplayer-authority.mdc`](../../.cursor/rules/toronto-rising-multiplayer-authority.mdc).
+Toronto Rising has been developed and tested **solo Host** (Storyteller seated at **Black**). **All mod Lua runs on the host only** — connected clients do not run the Global script or object scripts. Clients transmit interactions to the host; the host's Lua executes once; the engine replicates resulting world/object state to every client.
 
-Toronto Rising has been developed and tested **solo Host** (Storyteller seated at **Black**). When real clients join, TTS runs **Global `onLoad` and object `onLoad` on every client**. World mutations and reconcilers must run on the **Host client only**; joining clients hydrate `gameState` and refresh **UI**.
+## Authority model: one Lua brain + identity + outcome tiers
 
-## Authority model: identity axes + outcome tiers
+### Actor identity (who triggered this?)
 
-### Identity axes (who / which machine)
+| Check | Use for |
+| --- | --- |
+| `U.isStorytellerSteamPlayer(playerRef)` | ST-only **interaction** — pass the event's player param (`Player` instance preferred, or seat color string) |
+| `U.isStorytellerPlayerColor(color)` | Legacy XmlUI alias: `Black` / `Host`. Prefer steam when `Player` is available |
+| XmlUI `visibility` = `Black`/`Admin`/`<Color>` | Per-client UI rendering — engine-level, not Lua gating |
 
-| Axis | Check | Use for |
-| --- | --- | --- |
-| **Storyteller identity (interaction)** | `U.isStorytellerSteamPlayer(playerRef)` | Who triggered an ST-only action — any seat |
-| **Storyteller seat alias (XmlUI)** | `U.isStorytellerPlayerColor(color)` — `Black` / `Host` | Legacy object XmlUI; prefer steam when Player is available |
-| **Storyteller machine (execution)** | `U.isHostClient()` or `U.requireHostForWorldMutation(context)` | Which client runs bootstrap, reconcile, and world I/O |
-
-**Do not conflate them.** Steam gate alone is **not** enough on fan-out events: when the Storyteller drops a token, `onObjectDrop` runs on **every** client and steam checks pass on all of them.
+**Do not conflate actor identity with execution location.** There is only one Lua brain (the host). Steam gate answers "*who* triggered this ST-only action?"
 
 ### Outcome tiers (what the handler does)
 
 | Tier | Examples | Rule |
 | --- | --- | --- |
-| **A — UI only** | `Sync.ui`, `UpdateUIDisplays`, panel toggles, modal open | Any client |
-| **B — State mutation** | `S.setStateVal`, roll FSM (`RC.*`) | Host for ST panel + `Global.call` fan-out; clicker-only PC HUD may mirror state until live broadcast exists (see roll split) |
-| **C — World / reconcile** | `Sync.full`, `Sync.npcs`, `setPosition`, `L.SetLightMode`, spawns | **Host only** — `U.requireHostForWorldMutation` |
+| **A — UI only** | `Sync.ui`, `UpdateUIDisplays`, panel toggles, modal open | Safe in any handler |
+| **B — State mutation** | `S.setStateVal`, roll FSM (`RC.*`) | Mutate `gameState`; then narrow sync |
+| **C — World / reconcile** | `Sync.full`, `Sync.npcs`, `setPosition`, `L.SetLightMode`, spawns | Runs on host because TTS runs mod Lua on host only |
 
 ### Event delivery (TTS)
 
-| Delivery | Handlers | Host guard |
+Clients send interactions to the host; the host's Lua handlers execute once.
+
+| Delivery | Handlers | Notes |
 | --- | --- | --- |
-| **Fan-out (all clients)** | `onObjectDrop`, `onObjectRandomize`, `Global.call`, `onPlayerConnect`, `onLoad` | Required before Tier C; steam first when ST-only |
-| **Clicker-only** | Global XmlUI `HUD_*`, object `click_*` | Host before Tier C; ST steam for panel mutations |
+| **Host-executed events** | `onObjectDrop`, `onObjectRandomize`, `Global.call`, `onPlayerConnect`, `onLoad` | All run on host; tag/GUID guard first; steam when ST-only |
+| **Clicker-only** | Global XmlUI `HUD_*`, object `click_*` | Routed to host Lua; ST steam for panel mutations |
 
-### Roll / fan-out state split
+### Roll path
 
-- **Tier C on fan-out** (e.g. `onObjectRandomize` → eventual `Sync.player` lights): host only (`Sync.player` runs `L.reconcileForPlayer` on host; UI/overlays on all clients).
-- **Tier B on fan-out** (roll debounce FSM): may run on all clients when inputs are engine-synced; do **not** host-guard the entire `onObjectRandomize` body if that breaks local roll UI on join clients.
-- **PC roll clicks**: route spawns/releases through **`Global.call`** so the Host executes Tier C even when a join client clicked.
+- **`onObjectRandomize`:** Tier B roll FSM + Tier C lights via `Sync.player` — all in one Lua brain on host.
+- **PC roll clicks:** route spawns/releases through **`Global.call`** (bundle-size routing from object scripts, not execution location).
 
 ### Live `gameState` broadcast (follow-up)
 
-Join clients load `gameState` from save on `onLoad` but do not receive runtime Lua table updates from the Host between saves. Full multiplayer state parity may need a future bridge; this audit focuses on **duplicate world I/O**.
+Join clients load `gameState` from save on connect but do not receive runtime Lua table updates from the Host between saves. Full multiplayer state parity may need a future sync bridge (P10); do not address with execution gates.
 
 ## Callback `playerRef` shapes (TTS)
 
@@ -59,58 +58,55 @@ Join clients load `gameState` from save on `onLoad` but do not receive runtime L
 
 ## TTS behavior (summary)
 
-- **Global script** and **bundled object scripts** load on **each client** when that client finishes loading the save.
-- **World writes** (`setPosition`, `spawnObject`, `SetLightMode`, AssetBundle audio, NPC figurine reconcile, table layout sync) must originate from the **Host client** once per intent; the engine replicates results to peers.
-- **`gameState`** is loaded from save JSON on every client via `S.InitializeGameState` so HUD, sheets, and overlays can read persisted state on joiners.
-- **UI refresh** (`Sync.ui`, `UpdateUIDisplays`, phase sync) is safe on all clients; it does not move world objects.
+- **Global script** and **bundled object scripts** run on the **host only**. Clients transmit interactions; host Lua executes once.
+- **World writes** (`setPosition`, `spawnObject`, `SetLightMode`, AssetBundle audio, NPC figurine reconcile, table layout sync) originate from host mod Lua; the engine replicates results to peers.
+- **`gameState`** is loaded from save JSON via `S.InitializeGameState` on host load.
+- **UI refresh** (`Sync.ui`, `UpdateUIDisplays`, phase sync) reads state and updates XmlUI.
 
 ## Global chunk load (before `onLoad`)
 
-The Global script chunk runs on **every** client when the save loads. Tier C soundscape bootstrap must be **host-only** here as well as in `onLoad`:
+The Global script chunk runs on the host when the save loads:
 
-| Step | Host only? | Notes |
-| --- | --- | --- |
-| `trEarlySilenceSoundscapeEmitters` (chunk + deferred) | Host | `U.isHostClient()` at entry; join client logs once and returns |
-| `trScheduleEarlySoundscapeSilenceDeferred("chunk-load")` | Host | No-op on join client (no deferred mute timers) |
-| `SS.bootstrapSilenceStrayEmitterLoops` (chunk, after `require`) | Host | Host `onLoad` repeats when emitters exist |
+| Step | Notes |
+| --- | --- |
+| `trEarlySilenceSoundscapeEmitters` (chunk + deferred) | Mutes stray emitter AudioSources |
+| `trScheduleEarlySoundscapeSilenceDeferred("chunk-load")` | Deferred mute timers |
+| `SS.bootstrapSilenceStrayEmitterLoops` (chunk, after `require`) | Repeated in `onLoad` when emitters exist |
 
 ## Global `onLoad` inventory
 
-| Step | Host only? | Notes |
-| --- | --- | --- |
-| `S.InitializeGameState(saved_data)` | All clients | Read persisted state for UI |
-| Join branch (`M.onLoadJoinClient`, `Sync.full` UI-only) | Non-Host | Early return before world bootstrap |
-| Soundscape early silence (`trEarlySilence*`) | Host | Mutes emitter AudioSources |
-| `DEBUG.clearAllLogs` | Host | Session log reset |
-| Conditions validate / derived / location reconcile | Host | May touch state + derived rows |
-| `SS.bootstrapSilenceStrayEmitterLoops` | Host | World audio |
-| `M.onLoad` / `M.setupPlayers` | Host | Promote players, GM table `setInvisibleTo`, table-key inference |
-| `R.SyncTable` (deferred) | Host | Seat layout object moves |
-| `Sync.full` (`onLoad_initial`, startup gate) | Host | Full reconciler fan-out |
-| Locked/hidden objects at startup gate | Host | `O.ApplyLockedAndHidden*` |
-| Loading overlay hide sequence | Host | Host drives readiness gate |
-
-## `Sync.*` guards (non-Host)
-
-| API | Non-Host behavior |
+| Step | Notes |
 | --- | --- |
-| `Sync.full` | `Sync.ui` incremental delta only; returns `false` |
-| `Sync.npcs` | No-op |
-| `Sync.lighting` | No-op |
-| `Sync.soundscape` / `Sync.lightRef` / `Sync.npcCutouts` | No-op |
-| `Sync.ui` | Allowed (all clients) |
-| `Sync.player` | `L.reconcileForPlayer` host-only; HUD/overlays/`UpdateUIDisplays` on all clients |
+| `S.InitializeGameState(saved_data)` | Read persisted state |
+| Soundscape early silence (`trEarlySilence*`) | Mutes emitter AudioSources |
+| `DEBUG.clearAllLogs` | Session log reset |
+| Conditions validate / derived / location reconcile | May touch state + derived rows |
+| `SS.bootstrapSilenceStrayEmitterLoops` | World audio |
+| `M.onLoad` / `M.setupPlayers` | Promote players, GM table `setInvisibleTo`, table-key inference |
+| `R.SyncTable` (deferred) | Seat layout object moves |
+| `Sync.full` (`onLoad_initial`, startup gate) | Full reconciler fan-out |
+| Locked/hidden objects at startup gate | `O.ApplyLockedAndHidden*` |
+| Loading overlay hide sequence | Drives readiness gate |
 
-Host remains the **sole mutator** for bootstrap reconcilers; joiners must not leave the world out of sync with `gameState` by running duplicate reconcile passes.
+## `Sync.*` orchestrator
+
+| API | Behavior |
+| --- | --- |
+| `Sync.full` | Full reconcile (state → world) |
+| `Sync.npcs` | NPC figurine reconcile |
+| `Sync.lighting` | Light mode reconcile |
+| `Sync.soundscape` / `Sync.lightRef` / `Sync.npcCutouts` | Domain reconcilers |
+| `Sync.ui` | UI-only refresh |
+| `Sync.player` | Per-player: `L.reconcileForPlayer` + HUD/overlays/`UpdateUIDisplays` |
 
 ## Object `onLoad` scripts
 
-| Script | Host guard | Notes |
-| --- | --- | --- |
-| `objects/npc_control_board_palette.ttslua` | Via `GlobalGameboardInstallPaletteSnaps` → `U.isHostClient()` | Sparse snap install |
-| `objects/npc_control_board.ttslua` | Label sync only | XmlUI toolbar is Black-only in XML |
-| `core/soundscape_emitter_object.ttslua` | None (local AudioSource mute) | Per-emitter; low risk |
-| `objects/dice_bag.ttslua` | Click handlers use seat color | Roll spawn uses Host-side flow |
+| Script | Notes |
+| --- | --- |
+| `objects/npc_control_board_palette.ttslua` | Via `GlobalGameboardInstallPaletteSnaps` — sparse snap install |
+| `objects/npc_control_board.ttslua` | Label sync only; XmlUI toolbar is Black-only in XML |
+| `core/soundscape_emitter_object.ttslua` | Local AudioSource mute; per-emitter; low risk |
+| `objects/dice_bag.ttslua` | Click handlers use seat color; roll spawn via Global.call |
 
 ## Storyteller interaction pattern (steam identity)
 
@@ -121,10 +117,7 @@ function onObjectDrop(playerColor, object)
     if not U.isStorytellerSteamPlayer(playerColor) then
         return
     end
-    if not U.requireHostForWorldMutation("onObjectDrop") then
-        return
-    end
-    -- ...
+    -- tag/GUID guards, then handler body
 end
 
 function onPlayerAction(player, action, targets)
@@ -139,7 +132,7 @@ Object XmlUI handlers (control board): **`player.color == "Black"`** before `Glo
 
 ## Adding bootstrap or load hooks
 
-1. Decide **Storyteller machine** (`U.isHostClient`) vs **Storyteller steam** (`U.isStorytellerSteamPlayer`) vs **all clients**.
+1. Decide **Storyteller steam** (`U.isStorytellerSteamPlayer`) vs **all players** vs **per-client UI visibility**.
 2. Prefer **early return** at the entry point — do not hide reconcile inside state setters (see workspace synchronization conventions).
 3. Document new handlers in this file and [Event Listener Policy](Event%20Listener%20Policy.md) when they are event-driven.
 4. Multiplayer verification belongs in **TOR-144** after this audit ships.

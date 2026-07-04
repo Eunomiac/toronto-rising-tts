@@ -38,8 +38,6 @@ local TR_EARLY_SOUNDSCAPE_EMITTER_GUIDS = {
   "c7a6c5",
 }
 
-local trEarlySilenceNonHostSkipLogged = false
-
 local function trEarlyCollectAudioSources(obj)
     if obj == nil then
         return {}
@@ -77,13 +75,6 @@ end
 
 --- @param phaseLabel string identifies this pass in the TTS console load timeline
 local function trEarlySilenceSoundscapeEmitters(phaseLabel)
-    if not U.isHostClient() then
-        if trEarlySilenceNonHostSkipLogged ~= true then
-            trEarlySilenceNonHostSkipLogged = true
-            print(U.loadElapsedPrefix() .. "Join client: skipped soundscape emitter silence (host-only).")
-        end
-        return
-    end
     U.ensureLoadClockT0()
     local label = type(phaseLabel) == "string" and phaseLabel or "sync-immediate"
     local getObj = rawget(_G, "getObjectFromGUID")
@@ -117,9 +108,6 @@ local TR_EARLY_SILENCE_DEFERRAL_SECONDS = { 0, 0.05, 0.25, 0.5 }
 --- @param schedulerLabel string origin for console logs (`chunk-load` vs `onLoad`)
 --- @return boolean true if `Wait.time` was available
 local function trScheduleEarlySoundscapeSilenceDeferred(schedulerLabel)
-    if not U.isHostClient() then
-        return false
-    end
     local tag = type(schedulerLabel) == "string" and schedulerLabel or "unknown"
     local W = rawget(_G, "Wait")
     if type(W) ~= "table" or type(W.time) ~= "function" then
@@ -134,7 +122,7 @@ local function trScheduleEarlySoundscapeSilenceDeferred(schedulerLabel)
     return true
 end
 
--- Chunk phase: host-only (join clients no-op inside trEarlySilence*); objects often 0/9 until onLoad.
+-- Chunk phase: objects often 0/9 until onLoad.
 trEarlySilenceSoundscapeEmitters("chunk-sync-immediate")
 
 -- Load shared utilities and constants
@@ -165,8 +153,8 @@ end
 Scenes = require("core.scenes")
 SS = require("core.soundscape")
 -- Unity resumes AssetBundle audio as soon as objects exist; DEBUG require prints before onLoad.
--- Host-only: join clients must not duplicate emitter mutes (see onLoad join branch).
-if U.isHostClient() and SS ~= nil and type(SS.bootstrapSilenceStrayEmitterLoops) == "function" then
+-- Host runs all mod Lua; silence stray emitter loops at chunk load.
+if SS ~= nil and type(SS.bootstrapSilenceStrayEmitterLoops) == "function" then
     SS.bootstrapSilenceStrayEmitterLoops()
 end
 local Sync = require("core.sync")
@@ -293,21 +281,11 @@ function GlobalIsStorytellerSteamPlayer(params)
     return U.isStorytellerSteamPlayer(color) == true
 end
 
---- Bundle-safe host gate for object scripts (`Global.call`).
---- @param params table|nil `{ context?: string }`
---- @return boolean
-function GlobalRequireHostForWorldMutation(params)
-    local ctx = type(params) == "table" and params.context or nil
-    return U.requireHostForWorldMutation(ctx) == true
-end
 
 --- Toggles a player's signal fire from object scripts (signal candle click target).
 --- @param params table { color: string, duration: number|nil }
 --- @return string|nil "on" or "off", or nil on failure
 function GlobalToggleSignalFireState(params)
-    if not U.requireHostForWorldMutation("GlobalToggleSignalFireState") then
-        return nil
-    end
     if type(params) ~= "table" then
         return nil
     end
@@ -326,9 +304,6 @@ end
 --- @param params table { targetOn: boolean, buttonGuid?: string }
 --- @return boolean|nil applied on-state, or nil on failure / non-host
 function GlobalApplyTarotState(params)
-    if not U.requireHostForWorldMutation("GlobalApplyTarotState") then
-        return nil
-    end
     if type(params) ~= "table" or type(params.targetOn) ~= "boolean" then
         return nil
     end
@@ -351,9 +326,6 @@ end
 --- @param params table|nil
 --- @return boolean
 function GlobalGameboardApply(params)
-    if not U.requireHostForWorldMutation("GlobalGameboardApply") then
-        return false
-    end
     local Gameboard = require("core.npc_gameboard")
     local ok = Gameboard.applyFromControlBoard()
     if type(ok) == "boolean" then
@@ -364,9 +336,6 @@ end
 
 --- TOR-173: single orchestrator coroutine for stage placement lerp batches on Apply.
 function GlobalStageLerpOrchestrator()
-    if not U.requireHostForWorldMutation("GlobalStageLerpOrchestrator") then
-        return
-    end
     local NPCStageLerp = require("core.npc_stage_lerp")
     return NPCStageLerp.runOrchestratorCoroutine()
 end
@@ -375,9 +344,6 @@ end
 --- @param params table|nil `{ player_color?: string }`
 --- @return boolean
 function GlobalGameboardClearClick(params)
-    if not U.requireHostForWorldMutation("GlobalGameboardClearClick") then
-        return false
-    end
     local color = type(params) == "table" and params.player_color or "Black"
     local Gameboard = require("core.npc_gameboard")
     if not Gameboard.tryConfirmClear(color) then
@@ -390,9 +356,6 @@ end
 --- @param params table|nil
 --- @return boolean
 function GlobalGameboardClear(params)
-    if not U.requireHostForWorldMutation("GlobalGameboardClear") then
-        return false
-    end
     local Gameboard = require("core.npc_gameboard")
     local ok = Gameboard.clearControlBoard()
     if type(ok) == "boolean" then
@@ -417,9 +380,6 @@ end
 --- @param params table|nil
 --- @return boolean
 function GlobalGameboardSave(params)
-    if not U.requireHostForWorldMutation("GlobalGameboardSave") then
-        return false
-    end
     local Gameboard = require("core.npc_gameboard")
     local ok = Gameboard.saveFromControlBoard()
     if type(ok) == "boolean" then
@@ -432,9 +392,6 @@ end
 --- @param params table|nil `{ boardGuid?: string }`
 --- @return boolean locked after toggle
 function GlobalGameboardToggleLayoutLock(params)
-    if not U.requireHostForWorldMutation("GlobalGameboardToggleLayoutLock") then
-        return false
-    end
     local Gameboard = require("core.npc_gameboard")
     local board = nil
     if type(params) == "table" and type(params.boardGuid) == "string" then
@@ -449,9 +406,6 @@ end
 --- @param params table|nil
 --- @return boolean
 function GlobalGameboardLoad(params)
-    if not U.requireHostForWorldMutation("GlobalGameboardLoad") then
-        return false
-    end
     local Gameboard = require("core.npc_gameboard")
     local ok = Gameboard.loadControlBoardFromState()
     if type(ok) == "boolean" then
@@ -464,9 +418,6 @@ end
 --- @param params table|nil `{ boardGuid?: string }`
 --- @return boolean enabled after toggle
 function GlobalGameboardToggleControlBoardSnaps(params)
-    if not U.requireHostForWorldMutation("GlobalGameboardToggleControlBoardSnaps") then
-        return false
-    end
     local Gameboard = require("core.npc_gameboard")
     local board = nil
     if type(params) == "table" and type(params.boardGuid) == "string" then
@@ -481,9 +432,6 @@ end
 --- @param params table|nil `{ force?: boolean }`
 --- @return boolean
 function GlobalGameboardInstallPaletteSnaps(params)
-    if not U.isHostClient() then
-        return false
-    end
     local Gameboard = require("core.npc_gameboard")
     local force = type(params) == "table" and params.force == true
     return Gameboard.installPaletteSnaps(nil, { force = force })
@@ -597,9 +545,6 @@ local ST_BAG_KIND_ORDER = { "normal", "hunger", "rouse", "oblivRouse", "werewolf
 --- Repositions all locked ST staged dice on the active drawer tray (full ellipse rings).
 -- @param params table|nil  { arcCenter?: table }
 function GlobalRepositionStorytellerTrayDice(params)
-    if not U.requireHostForWorldMutation("GlobalRepositionStorytellerTrayDice") then
-        return
-    end
     params = type(params) == "table" and params or {}
     local arcCenter = params.arcCenter
     if type(arcCenter) ~= "table" then
@@ -750,9 +695,6 @@ end
 --- Player dice bag right-click: opposite of left-click (usually remove one die).
 -- @param params table  { color, dieKind, phase }
 function GlobalDiceBagRightClick(params)
-    if not U.requireHostForWorldMutation("GlobalDiceBagRightClick") then
-        return
-    end
     if type(params) ~= "table" or RC == nil then return end
     local RO = require("lib.roll_options")
     local color = params.color
@@ -839,9 +781,6 @@ end
 --- Player dice bag click routing (objects/dice_bag.ttslua).
 -- @param params table  { color, dieKind, phase, alt_click?: boolean }
 function GlobalDiceBagClick(params)
-    if not U.requireHostForWorldMutation("GlobalDiceBagClick") then
-        return
-    end
     if type(params) ~= "table" or RC == nil then return end
     if params.alt_click == true then
         GlobalDiceBagRightClick(params)
@@ -953,9 +892,6 @@ end
 -- Black rolls defer physical spawn until Roll (`fromRollClick`); bag clicks adjust pool state only.
 -- @param params table  { dieKind: string, fromRollClick?: boolean }
 function GlobalSpawnDieFromStorytellerBag(params)
-    if not U.requireHostForWorldMutation("GlobalSpawnDieFromStorytellerBag") then
-        return
-    end
     if type(params) ~= "table" then return end
     if params.fromRollClick ~= true then
         return
@@ -987,9 +923,6 @@ end
 --- Adjusts Black active-roll pool counts from ST bag clicks (no physical spawn until Roll).
 -- @param params table  { dieKind: string, delta: number }
 function GlobalAdjustStorytellerPoolKind(params)
-    if not U.requireHostForWorldMutation("GlobalAdjustStorytellerPoolKind") then
-        return
-    end
     if type(params) ~= "table" then return end
     local dieKind = params.dieKind
     local delta = tonumber(params.delta)
@@ -1009,9 +942,6 @@ end
 --- Writes active roll id to a spawned die's GM Notes (leave-container backup for programmatic takeObject).
 -- @param params table  { color: string, dieGuid: string, bloodSurgeRouse?: boolean }
 function GlobalTagDieForActiveRoll(params)
-    if not U.requireHostForWorldMutation("GlobalTagDieForActiveRoll") then
-        return
-    end
     if type(params) ~= "table" then
         return
     end
@@ -1079,9 +1009,6 @@ end
 --- Bag spawn hook: delta pool counts (rouse vs bloodSurgeRouse) or staged count for other kinds.
 -- @param params table
 function GlobalOnBagDieSpawned(params)
-    if not U.requireHostForWorldMutation("GlobalOnBagDieSpawned") then
-        return
-    end
     if type(params) ~= "table" or RC == nil then return end
     local color = params.color
     local dieType = params.dieType
@@ -1140,9 +1067,6 @@ end
 --- Bag remove hook: sync pool counts after a staged die is destroyed.
 -- @param params table  { color, poolKind, stagedCount?, manualRouseCount? }
 function GlobalOnBagDieRemoved(params)
-    if not U.requireHostForWorldMutation("GlobalOnBagDieRemoved") then
-        return
-    end
     if type(params) ~= "table" or RC == nil then return end
     local color = params.color
     local poolKind = params.poolKind
@@ -1189,9 +1113,6 @@ end
 -- @param params table  { rollId: string }
 -- @return boolean
 function GlobalApplySecretRollDiceInvisibility(params)
-    if not U.requireHostForWorldMutation("GlobalApplySecretRollDiceInvisibility") then
-        return false
-    end
     if type(params) ~= "table" or RC == nil then
         return false
     end
@@ -1214,9 +1135,6 @@ end
 -- @param params table  { rollId: string }
 -- @return boolean
 function GlobalRestoreSecretRollDiceVisibility(params)
-    if not U.requireHostForWorldMutation("GlobalRestoreSecretRollDiceVisibility") then
-        return false
-    end
     if type(params) ~= "table" or RC == nil then
         return false
     end
@@ -1258,9 +1176,6 @@ end
 -- @param params table  { color: string }
 -- @return boolean
 function GlobalStRerollDiceByGuids(params)
-    if not U.requireHostForWorldMutation("GlobalStRerollDiceByGuids") then
-        return false
-    end
     if type(params) ~= "table" or RC == nil then
         return false
     end
@@ -1345,9 +1260,6 @@ end
 -- @param params table  { color: string, dieKind: string }
 -- @return boolean
 function GlobalPostRollRemoveDie(params)
-    if not U.requireHostForWorldMutation("GlobalPostRollRemoveDie") then
-        return false
-    end
     if type(params) ~= "table" or RC == nil then
         return false
     end
@@ -1381,9 +1293,6 @@ end
 -- @param params table  { color: string, dieKind: string }
 -- @return boolean
 function GlobalPostRollAddDie(params)
-    if not U.requireHostForWorldMutation("GlobalPostRollAddDie") then
-        return false
-    end
     if type(params) ~= "table" or RC == nil then
         return false
     end
@@ -1438,9 +1347,6 @@ end
 -- @param params table  { color: string, action: string }
 -- @return boolean
 function GlobalPostRollModifyPool(params)
-    if not U.requireHostForWorldMutation("GlobalPostRollModifyPool") then
-        return false
-    end
     if type(params) ~= "table" or RC == nil then
         return false
     end
@@ -1472,9 +1378,6 @@ end
 -- @param dieKind string|nil  DK.KIND_* value when first arg is color
 -- @param opts table|nil
 function GlobalSpawnDieFromBag(colorOrParams, dieKind, opts)
-    if not U.requireHostForWorldMutation("GlobalSpawnDieFromBag") then
-        return
-    end
     local color = colorOrParams
     if type(colorOrParams) == "table" then
         color = colorOrParams.color
@@ -1524,9 +1427,6 @@ end
 --- Global.call entry: spawn default staged dice for active PRE_ROLL check pools.
 -- @param params table  { color: string }
 function GlobalSpawnDefaultPoolDiceForActive(params)
-    if not U.requireHostForWorldMutation("GlobalSpawnDefaultPoolDiceForActive") then
-        return
-    end
     if type(params) ~= "table" then return end
     local color = params.color
     if type(color) ~= "string" then return end
@@ -1536,9 +1436,6 @@ end
 --- Destroys hovering dice on every player bag for a seat.
 -- @param params table  { color }
 function GlobalDestroyAllPlayerBagDice(params)
-    if not U.requireHostForWorldMutation("GlobalDestroyAllPlayerBagDice") then
-        return
-    end
     if type(params) ~= "table" or type(params.color) ~= "string" then return end
     local bags = G.GetAllPlayerDiceBagGUIDs(params.color)
     for _, guid in pairs(bags) do
@@ -1550,9 +1447,6 @@ end
 --- Spawns blood surge rouse die + surge pool dice.
 -- @param params table  { color, rollId, surgeCount }
 function GlobalSpawnBloodSurgeDice(params)
-    if not U.requireHostForWorldMutation("GlobalSpawnBloodSurgeDice") then
-        return
-    end
     if type(params) ~= "table" then return end
     local color = params.color
     local rollId = params.rollId
@@ -1582,9 +1476,6 @@ end
 --- Removes one staged die and cancels the roll if the pool becomes empty.
 -- @param params table  { color: string, dieKind: string }
 function GlobalRemoveDieFromBag(params)
-    if not U.requireHostForWorldMutation("GlobalRemoveDieFromBag") then
-        return
-    end
     if type(params) ~= "table" then return end
     local color = params.color
     local dieKind = params.dieKind
@@ -1597,9 +1488,6 @@ end
 --- Storyteller dice bag click (delegates to core/storyteller_rolls.ttslua).
 -- @param params table  { dieKind, clickedBy?, alt_click?: boolean }
 function GlobalStorytellerDiceBagClick(params)
-    if not U.requireHostForWorldMutation("GlobalStorytellerDiceBagClick") then
-        return
-    end
     local STR = require("core.storyteller_rolls")
     if type(params) == "table" and params.alt_click == true then
         STR.onDiceBagRightClick(params)
@@ -1611,9 +1499,6 @@ end
 --- Removes Blood Surge dice for a roll: tagged rouse + surge-spawned normal/hunger only.
 -- @param params table  { color, rollId }
 function GlobalDestroyBloodSurgeDice(params)
-    if not U.requireHostForWorldMutation("GlobalDestroyBloodSurgeDice") then
-        return
-    end
     if type(params) ~= "table" then return end
     local color = params.color
     local rollId = params.rollId
@@ -1661,9 +1546,6 @@ end
 -- @param params table  { color, rollId }
 -- @return boolean
 function GlobalDestroyOneTableBloodSurgeRouse(params)
-    if not U.requireHostForWorldMutation("GlobalDestroyOneTableBloodSurgeRouse") then
-        return false
-    end
     if type(params) ~= "table" then return false end
     local color = params.color
     local rollId = params.rollId
@@ -1695,9 +1577,6 @@ end
 -- @param params table  { color: string, rollType?: string, trigger?: string, label?: string }
 -- @return boolean  true if the roll was initiated; false if blocked or invalid
 function GlobalInitiateRoll(params)
-    if not U.requireHostForWorldMutation("GlobalInitiateRoll") then
-        return false
-    end
     if type(params) ~= "table" then return false end
     if RC == nil then return false end
 
@@ -1853,19 +1732,7 @@ function onLoad(saved_data)
         PrtlReconcile.reconcileElevatedColorFromState()
     end
 
-    if not U.isHostClient() then
-        setStartupAction("join-client-ui-bootstrap")
-        M.onLoadJoinClient()
-        if GameStateOverlay and type(GameStateOverlay.ensureTicker) == "function" then
-            GameStateOverlay.ensureTicker()
-        end
-        Sync.full({ reason = "onLoad_join_client" })
-        setStartupAction("join-client-bootstrap-complete")
-        print(U.loadElapsedPrefix() .. "Joining client: skipped Host world bootstrap.")
-        return
-    end
-
-    -- Host client only below: emitters, reconcilers, object moves, setup.
+    -- Mod Lua runs on host only; full bootstrap below.
     trEarlySilenceSoundscapeEmitters("onLoad-sync-immediate")
     trScheduleEarlySoundscapeSilenceDeferred("onLoad")
 
@@ -2040,9 +1907,6 @@ end
     @return JSON string containing game state to save
 ]]
 function onSave()
-    if not U.isHostClient() then
-        return ""
-    end
     if L ~= nil then
         if L.sanitizeLightsStateForSave ~= nil then
             L.sanitizeLightsStateForSave()
@@ -2145,15 +2009,15 @@ local function isStorytellerPlayerColor(color)
     return U.isStorytellerPlayerColor(color)
 end
 
---- Storyteller XmlUI: steam identity + host machine before state/world mutation.
+--- Storyteller XmlUI: steam identity before ST-only state/world mutation.
 --- @param player Player|nil
---- @param context string
+--- @param context string|nil unused; kept for call-site labels
 --- @return boolean
-local function requireStorytellerHostForMutation(player, context)
+local function requireStorytellerForMutation(player, context)
     if player ~= nil and not isStorytellerSteamPlayer(player) then
         return false
     end
-    return U.requireHostForWorldMutation(context)
+    return true
 end
 
 --- TOR-174: O(1) world-XZ proximity to Storyteller dice bags (global pre-gate before `require("core.npc_gameboard")`).
@@ -2187,9 +2051,6 @@ function onObjectPickUp(player_color, object)
     if not isStorytellerSteamPlayer(player_color) then
         return
     end
-    if not U.requireHostForWorldMutation("onObjectPickUp") then
-        return
-    end
     if object ~= nil and object.hasTag ~= nil and object.hasTag("npc_control_token") == true then
         local Gameboard = require("core.npc_gameboard")
         if type(Gameboard.onNpcControlTokenPickUp) == "function" then
@@ -2208,9 +2069,6 @@ function GlobalGameboardTokenDroppedOnDiceBag(params)
     local token = params.token
     local playerColor = params.playerColor
     if type(playerColor) ~= "string" or not isStorytellerSteamPlayer(playerColor) then
-        return false
-    end
-    if not U.requireHostForWorldMutation("GlobalGameboardTokenDroppedOnDiceBag") then
         return false
     end
     if token == nil or token.hasTag == nil or token.hasTag("npc_control_token") ~= true then
@@ -2235,9 +2093,6 @@ function GlobalGameboardPcTokenDroppedOnDiceBag(params)
     local token = params.token
     local playerColor = params.playerColor
     if type(playerColor) ~= "string" or not isStorytellerSteamPlayer(playerColor) then
-        return false
-    end
-    if not U.requireHostForWorldMutation("GlobalGameboardPcTokenDroppedOnDiceBag") then
         return false
     end
     if token == nil or token.hasTag == nil or token.hasTag("pc_control_token") ~= true then
@@ -2265,9 +2120,6 @@ end
 --- When a figurine is dropped after dragging, refresh its paired NPC spotlight.
 function onObjectDrop(playerColor, object)
     if not isStorytellerSteamPlayer(playerColor) then
-        return
-    end
-    if not U.requireHostForWorldMutation("onObjectDrop") then
         return
     end
     if object == nil or object.hasTag == nil then
@@ -2335,7 +2187,7 @@ end
 
 --- Stats panel: select PC or Coterie target (`stats_target_Brown`, …).
 function HUD_statsTarget(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_statsTarget") then
+    if not requireStorytellerForMutation(player, "HUD_statsTarget") then
         return
     end
     local target = string.gsub(id or "", "^stats_target_", "")
@@ -2345,7 +2197,7 @@ function HUD_statsTarget(player, button, id)
 end
 
 function HUD_statsBack(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_statsBack") then
+    if not requireStorytellerForMutation(player, "HUD_statsBack") then
         return
     end
     if StorytellerStatsPanel and StorytellerStatsPanel.goBack then
@@ -2354,7 +2206,7 @@ function HUD_statsBack(player, button, id)
 end
 
 function HUD_statsAdd(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_statsAdd") then
+    if not requireStorytellerForMutation(player, "HUD_statsAdd") then
         return
     end
     if StorytellerStatsPanel and StorytellerStatsPanel.onAdd then
@@ -2363,7 +2215,7 @@ function HUD_statsAdd(player, button, id)
 end
 
 function HUD_statsEdit(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_statsEdit") then
+    if not requireStorytellerForMutation(player, "HUD_statsEdit") then
         return
     end
     if StorytellerStatsPanel and StorytellerStatsPanel.onEdit then
@@ -2372,7 +2224,7 @@ function HUD_statsEdit(player, button, id)
 end
 
 function HUD_statsEditRating(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_statsEditRating") then
+    if not requireStorytellerForMutation(player, "HUD_statsEditRating") then
         return
     end
     if StorytellerStatsPanel and StorytellerStatsPanel.onEditRating then
@@ -2387,7 +2239,7 @@ function HUD_statsEditorField(player, value, id)
 end
 
 function HUD_statsEditorConfirm(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_statsEditorConfirm") then
+    if not requireStorytellerForMutation(player, "HUD_statsEditorConfirm") then
         return
     end
     if StorytellerStatsPanel and StorytellerStatsPanel.onEditorConfirm then
@@ -2402,7 +2254,7 @@ function HUD_statsEditorCancel(player, button, id)
 end
 
 function HUD_statsEditorDelete(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_statsEditorDelete") then
+    if not requireStorytellerForMutation(player, "HUD_statsEditorDelete") then
         return
     end
     local color = player and player.color or "Black"
@@ -2413,7 +2265,7 @@ end
 
 --- Storyteller PCs panel control buttons (id pattern pcs_<Color>_<action>).
 function HUD_pcPanel(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_pcPanel") then
+    if not requireStorytellerForMutation(player, "HUD_pcPanel") then
         return
     end
     if PCST and PCST.onHudClick then
@@ -2438,7 +2290,7 @@ end
 -- @param button string Button value
 -- @param id string The UI element ID (e.g., "scene_elysium")
 function HUD_changeScene(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_changeScene") then
+    if not requireStorytellerForMutation(player, "HUD_changeScene") then
         return
     end
     -- Extract scene name from ID (remove "scene_" prefix)
@@ -2641,7 +2493,7 @@ end
 
 --- Storyteller admin: select one of the lighting scenes (dark/standard/bright).
 function HUD_selectAdminLightingScene(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_selectAdminLightingScene") then
+    if not requireStorytellerForMutation(player, "HUD_selectAdminLightingScene") then
         return
     end
     local sceneName = string.gsub(id or "", "^adminScene_", "")
@@ -2719,7 +2571,7 @@ end
 -- @param button string
 -- @param id string Button id in the form `soundscapeMood_<moodKey>`
 function HUD_soundscapeSetMusicMood(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_soundscapeSetMusicMood") then
+    if not requireStorytellerForMutation(player, "HUD_soundscapeSetMusicMood") then
         return
     end
     local moodKey = string.gsub(id or "", "^soundscapeMood_", "")
@@ -2737,7 +2589,7 @@ end
 
 --- Storyteller soundscape panel: stop all layers through the silent loop.
 function HUD_soundscapeStopAll(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_soundscapeStopAll") then
+    if not requireStorytellerForMutation(player, "HUD_soundscapeStopAll") then
         return
     end
     local ok, message = SS.stopAll()
@@ -2754,7 +2606,7 @@ end
 
 --- End-of-session: physically silence emitters before save (does not mutate gameState.soundscape).
 function HUD_soundscapePrepareSave(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_soundscapePrepareSave") then
+    if not requireStorytellerForMutation(player, "HUD_soundscapePrepareSave") then
         return
     end
     if SS == nil or type(SS.prepareEmittersForSave) ~= "function" then
@@ -2780,7 +2632,7 @@ end
 
 --- Storyteller Sound: switch background music to the active site's catalog playlist (`C.Sites[*].soundscape.backgroundMusic`).
 function HUD_soundscapeSetBackgroundLocation(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_soundscapeSetBackgroundLocation") then
+    if not requireStorytellerForMutation(player, "HUD_soundscapeSetBackgroundLocation") then
         return
     end
     local state = SS.getState()
@@ -2813,7 +2665,7 @@ end
 
 --- Storyteller Sound: featured catalog track (`soundscapeFeatured_<key>` ids).
 function HUD_soundscapePlayFeatured(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_soundscapePlayFeatured") then
+    if not requireStorytellerForMutation(player, "HUD_soundscapePlayFeatured") then
         return
     end
     local trackKey = string.gsub(id or "", "^soundscapeFeatured_", "")
@@ -2827,7 +2679,7 @@ function HUD_soundscapePlayFeatured(player, button, id)
 end
 
 function HUD_soundscapeStopFeatured(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_soundscapeStopFeatured") then
+    if not requireStorytellerForMutation(player, "HUD_soundscapeStopFeatured") then
         return
     end
     local ok, message = SS.stopFeaturedMusic()
@@ -2841,7 +2693,7 @@ end
 
 --- Storyteller Sound: volume sliders (`soundscapeSlider_<lane>` lane = music|location|featured|rain|wind).
 function HUD_soundscapeLaneSlider(player, value, id)
-    if not requireStorytellerHostForMutation(player, "HUD_soundscapeLaneSlider") then
+    if not requireStorytellerForMutation(player, "HUD_soundscapeLaneSlider") then
         return
     end
     local lane = string.gsub(id or "", "^soundscapeSlider_", "")
@@ -2858,7 +2710,7 @@ end
 
 --- Storyteller Scenes panel clicks (`scenes_tbl_*`, `scenes_seat_*`).
 function HUD_scenesPanel(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_scenesPanel") then
+    if not requireStorytellerForMutation(player, "HUD_scenesPanel") then
         return
     end
     StorytellerScenesPanel.onHudClick(player, button, id)
@@ -2874,7 +2726,7 @@ function HUD_scenesPanelInput(player, value, id)
 end
 
 function HUD_scenesApplyLocation(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_scenesApplyLocation") then
+    if not requireStorytellerForMutation(player, "HUD_scenesApplyLocation") then
         return
     end
     StorytellerScenesPanel.applyLocationFromInputs(player)
@@ -2882,7 +2734,7 @@ function HUD_scenesApplyLocation(player, button, id)
 end
 
 function HUD_scenesApplyClock(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_scenesApplyClock") then
+    if not requireStorytellerForMutation(player, "HUD_scenesApplyClock") then
         return
     end
     StorytellerScenesPanel.applyClockFromInputs(player)
@@ -2891,7 +2743,7 @@ end
 
 --- Overwrites `gameState.presentDayClock` from stashed clock field values (month + day/year/time inputs).
 function HUD_scenesSetPresentDayClock(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_scenesSetPresentDayClock") then
+    if not requireStorytellerForMutation(player, "HUD_scenesSetPresentDayClock") then
         return
     end
     StorytellerScenesPanel.setPresentDayClockFromInputs(player)
@@ -2918,7 +2770,7 @@ end
 
 --- Writes picked district key into `gameState.sessionScene.districtKey`; Apply location still required.
 function HUD_scenesPickDistrict(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_scenesPickDistrict") then
+    if not requireStorytellerForMutation(player, "HUD_scenesPickDistrict") then
         return
     end
     local key = string.match(id or "", "^scenes_pick_district_(.+)$")
@@ -2936,7 +2788,7 @@ end
 
 --- Writes picked site key into `gameState.sessionScene.siteKey`; Apply location still required.
 function HUD_scenesPickSite(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_scenesPickSite") then
+    if not requireStorytellerForMutation(player, "HUD_scenesPickSite") then
         return
     end
     local key = string.match(id or "", "^scenes_pick_site_(.+)$")
@@ -2972,7 +2824,7 @@ end
 
 --- Toggle real-time narrative clock progression.
 function HUD_scenesToggleRealTimeClock(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_scenesToggleRealTimeClock") then
+    if not requireStorytellerForMutation(player, "HUD_scenesToggleRealTimeClock") then
         return
     end
     StorytellerScenesPanel.toggleRealTimeClock()
@@ -2988,7 +2840,7 @@ function HUD_scenesCtorImportCancel(player, button, id)
 end
 
 function HUD_scenesCtorImportConfirm(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_scenesCtorImportConfirm") then
+    if not requireStorytellerForMutation(player, "HUD_scenesCtorImportConfirm") then
         return
     end
     StorytellerScenesPanel.confirmImportConstructorModal(player)
@@ -3008,7 +2860,7 @@ function HUD_scenesCtorForkCancel(player, button, id)
 end
 
 function HUD_scenesCtorForkConfirm(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_scenesCtorForkConfirm") then
+    if not requireStorytellerForMutation(player, "HUD_scenesCtorForkConfirm") then
         return
     end
     StorytellerScenesPanel.confirmForkConstructorModal(player)
@@ -3024,28 +2876,28 @@ function HUD_scenesLibSlot(player, button, id)
 end
 
 function HUD_scenesLibUnlink(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_scenesLibUnlink") then
+    if not requireStorytellerForMutation(player, "HUD_scenesLibUnlink") then
         return
     end
     StorytellerScenesPanel.unlinkActiveMirror(player)
 end
 
 function HUD_scenesLibDelete(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_scenesLibDelete") then
+    if not requireStorytellerForMutation(player, "HUD_scenesLibDelete") then
         return
     end
     StorytellerScenesPanel.deleteActiveSceneArmed(player)
 end
 
 function HUD_scenesLibApply(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_scenesLibApply") then
+    if not requireStorytellerForMutation(player, "HUD_scenesLibApply") then
         return
     end
     StorytellerScenesPanel.applyActiveLibraryScene(player)
 end
 
 function HUD_scenesLibEnd(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_scenesLibEnd") then
+    if not requireStorytellerForMutation(player, "HUD_scenesLibEnd") then
         return
     end
     StorytellerScenesPanel.endSceneNarrative(player)
@@ -3057,7 +2909,7 @@ end
 -- @param button string Button value
 -- @param id string The UI element ID (e.g., "phase_play")
 function HUD_advancePhase(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_advancePhase") then
+    if not requireStorytellerForMutation(player, "HUD_advancePhase") then
         return
     end
     local tail = string.gsub(id or "", "^phase_", "")
@@ -3097,7 +2949,7 @@ end
 -- @param button string Button value
 -- @param id string The UI element ID
 function HUD_resetGame(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_resetGame") then
+    if not requireStorytellerForMutation(player, "HUD_resetGame") then
         return
     end
     if NPCS and NPCS.destroyAllWorldAndState then
@@ -3169,7 +3021,7 @@ end
 -- @param button string Button value
 -- @param id string The UI element ID
 function HUD_syncAll(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_syncAll") then
+    if not requireStorytellerForMutation(player, "HUD_syncAll") then
         return
     end
     if not Sync or type(Sync.full) ~= "function" then
@@ -3190,7 +3042,7 @@ end
 -- @param button string Button value
 -- @param id string The UI element ID
 function HUD_updateCoterieData(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_updateCoterieData") then
+    if not requireStorytellerForMutation(player, "HUD_updateCoterieData") then
         return
     end
     if not Coterie or type(Coterie.overwriteFromDefaults) ~= "function" then
@@ -3220,7 +3072,7 @@ end
 -- @param button string
 -- @param id string
 function HUD_toggleAllAnchors(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_toggleAllAnchors") then
+    if not requireStorytellerForMutation(player, "HUD_toggleAllAnchors") then
         return
     end
     if not DEBUG or type(DEBUG.toggleAllAnchorObjects) ~= "function" then
@@ -3240,7 +3092,7 @@ end
 -- @param button string
 -- @param id string
 function HUD_toggleAllSpotlights(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_toggleAllSpotlights") then
+    if not requireStorytellerForMutation(player, "HUD_toggleAllSpotlights") then
         return
     end
     if not DEBUG or type(DEBUG.toggleAllSpotlightArrows) ~= "function" then
@@ -3260,7 +3112,7 @@ end
 -- @param button string|nil
 -- @param id string|nil
 function HUD_debugLightActivate(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_debugLightActivate") then
+    if not requireStorytellerForMutation(player, "HUD_debugLightActivate") then
         return
     end
     if LightDebugFocus and LightDebugFocus.activate then
@@ -3285,7 +3137,7 @@ end
 -- @param value unknown
 -- @param id string|nil
 function HUD_debugLightEnabled(player, value, id)
-    if not requireStorytellerHostForMutation(player, "HUD_debugLightEnabled") then
+    if not requireStorytellerForMutation(player, "HUD_debugLightEnabled") then
         return
     end
     if LightDebugFocus and LightDebugFocus.onEnabledToggle then
@@ -3298,7 +3150,7 @@ end
 -- @param button string|nil
 -- @param id string
 function HUD_debugLightResetRow(player, button, id)
-    if not requireStorytellerHostForMutation(player, "HUD_debugLightResetRow") then
+    if not requireStorytellerForMutation(player, "HUD_debugLightResetRow") then
         return
     end
     if LightDebugFocus and LightDebugFocus.resetRowFromId then
@@ -3311,7 +3163,7 @@ end
 -- @param value number|string
 -- @param id string
 function HUD_debugLightSlider(player, value, id)
-    if not requireStorytellerHostForMutation(player, "HUD_debugLightSlider") then
+    if not requireStorytellerForMutation(player, "HUD_debugLightSlider") then
         return
     end
     if LightDebugFocus and LightDebugFocus.onSlider then
@@ -3817,9 +3669,6 @@ end
 -- @param params table  { color: string }
 -- @return boolean  true if pending cleanup was consumed
 function GlobalConsumePendingRollCleanup(params)
-    if not U.requireHostForWorldMutation("GlobalConsumePendingRollCleanup") then
-        return false
-    end
     if type(params) ~= "table" then return false end
     local color = params.color
     if type(color) ~= "string" then return false end
@@ -3964,9 +3813,6 @@ function onObjectLeaveContainer(container, obj)
     -- The roll ID is fixed from initiation, so writing it early is always correct.
     -- Skip only if the roll is already RESOLVED (die is unrelated to any active roll).
     if active.phase == C.RollPhase.RESOLVED then return end
-    if not U.requireHostForWorldMutation("onObjectLeaveContainer") then
-        return
-    end
     local isSurgeRouse = obj.script_state == DK.SCRIPT_STATE_BLOOD_SURGE_ROUSE
     obj.setGMNotes(DK.encodeGmNotes(active.id, isSurgeRouse))
 
@@ -4274,9 +4120,6 @@ end
 -- @return boolean true if any dice were auto-spawned
 local function spawnActivePoolDiceForActive(color, opts)
     opts = type(opts) == "table" and opts or {}
-    if not U.requireHostForWorldMutation("spawnActivePoolDiceForActive") then
-        return false
-    end
     if type(color) ~= "string" then
         return false
     end
@@ -4566,9 +4409,6 @@ end
 
 --- Coroutine: wait until dice drawer is raised, then unlock staged dice.
 function GlobalWaitDrawerThenReleaseBagDice()
-    if not U.requireHostForWorldMutation("GlobalWaitDrawerThenReleaseBagDice") then
-        return 1
-    end
     local job = table.remove(drawerReleaseJobQueue, 1)
     if type(job) ~= "table" or type(job.color) ~= "string" then
         return 1
@@ -4614,9 +4454,6 @@ end
 -- @param color string
 -- @param onComplete function|nil  optional callback after dice are released
 local function releaseBagDice(color, onComplete)
-    if not U.requireHostForWorldMutation("releaseBagDice") then
-        return
-    end
     if color ~= "Black" and PRTL.isInitiateBlocked(color) then
         return
     end
@@ -4679,9 +4516,6 @@ end
 --- Global.call entry: unlock staged bag dice (PRE_ROLL → ROLLING), same as panel Roll.
 -- @param params table  { color: string }
 function GlobalReleaseBagDice(params)
-    if not U.requireHostForWorldMutation("GlobalReleaseBagDice") then
-        return false
-    end
     if type(params) ~= "table" or type(params.color) ~= "string" then
         return false
     end
@@ -4695,9 +4529,6 @@ end
 --- Destroys normal/hunger staged bag dice and table dice for a roll (keeps Rouse kinds).
 -- @param params table  { color: string, rollId: string }
 function GlobalDestroyNonRouseDiceForRoll(params)
-    if not U.requireHostForWorldMutation("GlobalDestroyNonRouseDiceForRoll") then
-        return
-    end
     if type(params) ~= "table" then return end
     local color = params.color
     local rollId = params.rollId
@@ -4729,9 +4560,6 @@ end
 --- Unlocks and releases Rouse/Oblivion-Rouse bag dice for the active roll (Take Half pending).
 -- @param params table  { color: string }
 function GlobalReleaseRouseDiceForActiveRoll(params)
-    if not U.requireHostForWorldMutation("GlobalReleaseRouseDiceForActiveRoll") then
-        return
-    end
     if type(params) ~= "table" or type(params.color) ~= "string" then return end
     local color = params.color
     local pid = S.getPlayerID(color)
@@ -4767,9 +4595,6 @@ end
 --- Global.call entry: stop a pending post-result dice cleanup timer for a seat.
 -- @param params table  { color: string }
 function GlobalCancelPendingRollCleanup(params)
-    if not U.requireHostForWorldMutation("GlobalCancelPendingRollCleanup") then
-        return
-    end
     if type(params) ~= "table" or type(params.color) ~= "string" then return end
     cancelPendingRollCleanup(params.color)
 end
@@ -4777,9 +4602,6 @@ end
 --- Global.call entry: destroy all bag dice and close the drawer (Take Half without Rouse, cancel, etc.).
 -- @param params table  { color: string, keepDrawerOpen?: boolean }
 function GlobalDestroyBagDice(params)
-    if not U.requireHostForWorldMutation("GlobalDestroyBagDice") then
-        return
-    end
     if type(params) ~= "table" or type(params.color) ~= "string" then return end
     destroyBagDice(params.color, params)
 end
@@ -4797,9 +4619,6 @@ end
 --- Global.call entry: destroy table dice tagged with a roll id (player seats).
 -- @param params table  { color: string, rollId: string }
 function GlobalDestroyPlayerTableDiceForRoll(params)
-    if not U.requireHostForWorldMutation("GlobalDestroyPlayerTableDiceForRoll") then
-        return
-    end
     if type(params) ~= "table" then return end
     destroyPlayerTableDiceForRoll(params.color, params.rollId)
 end
@@ -5145,7 +4964,7 @@ function HUD_postRollCellMouseDown(player, value, id)
 end
 
 function HUD_postRollCellMouseUp(player, value, id)
-    if not requireStorytellerHostForMutation(player, "HUD_postRollCellMouseUp") then
+    if not requireStorytellerForMutation(player, "HUD_postRollCellMouseUp") then
         return
     end
     local color, action = nil, nil
@@ -5202,7 +5021,7 @@ end
 -- Calls DEBUG.rollTest so it can be re-pressed between runs without cleanup.
 -- id format: "debugRoll_<Color>"  (e.g. "debugRoll_Brown")
 function HUD_debugRollTest(player, value, id)
-    if not requireStorytellerHostForMutation(player, "HUD_debugRollTest") then
+    if not requireStorytellerForMutation(player, "HUD_debugRollTest") then
         return
     end
     local color = colorFromRollElementId(id)
@@ -5216,7 +5035,7 @@ end
 
 --- Admin panel: cancel all active rolls across every player color.
 function HUD_debugRollCancelAll(player, value, id)
-    if not requireStorytellerHostForMutation(player, "HUD_debugRollCancelAll") then
+    if not requireStorytellerForMutation(player, "HUD_debugRollCancelAll") then
         return
     end
     if DEBUG == nil then return end
@@ -5319,18 +5138,13 @@ function onPlayerChangeColor(color)
         end
     end
     if M ~= nil and type(M.onPlayerChangeColor) == "function" then
-        if U.requireHostForWorldMutation("onPlayerChangeColor") then
-            M.onPlayerChangeColor(color)
-        end
+        M.onPlayerChangeColor(color)
     end
     syncDebugSeatColorButtons()
 end
 
 --- TTS: player connected (assign chronicle seat when mapped in C.PlayerData).
 function onPlayerConnect(player_color)
-    if not U.requireHostForWorldMutation("onPlayerConnect") then
-        return
-    end
     if M ~= nil and type(M.tryAutoAssignSeatFromChronicle) == "function" then
         M.tryAutoAssignSeatFromChronicle(player_color)
     end

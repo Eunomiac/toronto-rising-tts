@@ -888,9 +888,6 @@ end
 --- @return boolean
 function Scenes.applyDefaultNoSceneEnvironment(opts)
     opts = type(opts) == "table" and opts or {}
-    if type(U.isHostClient) == "function" and U.isHostClient() ~= true then
-        return false
-    end
 
     mutateDefaultNoSceneSessionState()
 
@@ -935,9 +932,6 @@ end
 --- @return boolean
 function Scenes.restoreActiveSceneWorld(opts)
     opts = type(opts) == "table" and opts or {}
-    if type(U.isHostClient) == "function" and U.isHostClient() ~= true then
-        return false
-    end
     if SceneLibrary.hasLiveSceneOnTable() ~= true then
         return Scenes.applyDefaultNoSceneEnvironment(opts)
     end

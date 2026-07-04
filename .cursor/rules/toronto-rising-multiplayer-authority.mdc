@@ -1,42 +1,43 @@
 ---
-description: Toronto Rising — host authority and fan-out rules until multiclient E2E (TOR-144) passes
+description: Toronto Rising — multiplayer sync rules until multiclient E2E (TOR-144) passes
 alwaysApply: true
 ---
 
 # Toronto Rising — multiplayer authority (pre–second-client)
 
-> **⚠ PREMISE UNDER ACTIVE CORRECTION (2026-07-04) — READ FIRST.** The premise that "TTS runs `onLoad` / event handlers on **every client**" (which the host-**execution** rules below depend on) is contradicted by the authoritative TTS model: **mod Lua runs on the host only; connected clients do not run the Global script or object scripts.** See [`Execution Model Correction — Remediation Plan`](../../.dev/Multiplayer%20Functionality/Execution%20Model%20Correction%20%E2%80%94%20Remediation%20Plan.md). **Until that plan completes, for any new or modified code:**
-> - **Do NOT add** new `U.isHostClient()`, `U.requireHostForWorldMutation()`, `GlobalRequireHostForWorldMutation`, or `requireStorytellerHostForMutation` **execution** guards. The P1–P2 / P5–P8 host-*execution* mandates below are **suspended for new code**.
-> - **Do NOT ad-hoc remove** existing guards either — removal is **staged** in the remediation plan (Step 3), not free-for-all.
-> - **STILL CORRECT (keep applying):** actor-identity gating via `U.isStorytellerSteamPlayer(playerRef)` ("*who* triggered this ST-only action") and per-client XmlUI `visibility` targeting (`Black`/`Admin`/`<Color>`). These are unaffected by the correction.
+**Execution model:** TTS runs **all mod Lua on the host only**. Connected clients do not run the Global script or object scripts. Clients transmit interactions; host Lua executes once; the engine replicates world/object state.
 
-**Until TOR-144 (multiplayer E2E) passes with two real clients**, treat solo Host Save & Play as **insufficient** proof for fan-out / join-client behavior. **`U.isHostClient()` is always true when developing alone** — do not treat that as multiplayer validation.
+**Until TOR-144 (multiplayer E2E) passes with two real clients**, treat solo Host Save & Play as **insufficient** proof for join-client behavior (P10 live `gameState` broadcast gap, per-client UI visibility, replication timing).
 
 Canonical policies **P1–P10**, pre-flight checklist, and first-session script: [`.dev/Multiplayer Functionality/Preparing For Multiplayer.md`](../../.dev/Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md) §1.
 
 Audit playbook for agents: [`.dev/Multiplayer Functionality/Multiplayer Performance Audit.md`](../../.dev/Multiplayer%20Functionality/Multiplayer%20Performance%20Audit.md).
 
+**Rule of thumb:** *One Lua brain (the host). Stop asking "which machine am I." Only ask "which player did this?" and "who should see this UI?"*
+
 ## Mandatory on every feature touching players, objects, load, or world I/O
 
-1. **Classify delivery:** fan-out (`onLoad`, `onObjectDrop`, `Global.call`, …) vs clicker-only (`HUD_*`, object `click_*`).
+1. **Classify delivery:** host-executed event (`onLoad`, `onObjectDrop`, `Global.call`, …) vs clicker-only (`HUD_*`, object `click_*`).
 2. **Classify tier:** A UI / B state / C world — [Bootstrap Authority](../../.dev/Sychronizing%20Game%20Functionality/Bootstrap%20Authority.md).
-3. **Tier C → Host only:** `U.requireHostForWorldMutation(context)` before spawns, moves, lights, audio, `Sync.npcs`, reconciler world apply. **Chunk load and `onLoad` included** (not only `onObjectDrop`).
-4. **ST interaction vs Host machine:** `U.isStorytellerSteamPlayer(playerRef)` for who acted; **never** steam-only on fan-out (every client sees ST steam when ST drops a token).
-5. **Join-client Tier C from PC UI/objects:** route through **`Global.call`** to a Global entry that host-guards internally (`GlobalIsStorytellerSteamPlayer`, `GlobalRequireHostForWorldMutation` for object scripts).
-6. **Do not** host-guard an entire fan-out handler when only Tier C is host-only (rolls: Tier B FSM may run on all clients; lights via `Sync.player` on host only).
-7. **Object scripts:** no `require("core.*")` for mutations — pattern: `objects/npc_control_board.ttslua`, `objects/dice_bag.ttslua`.
-8. **New handlers:** add a row to [Event Listener Policy](../../.dev/Sychronizing%20Game%20Functionality/Event%20Listener%20Policy.md) (delivery + tier).
-9. **Do not** remove host guards to fix join-client HUD staleness — live `gameState` broadcast is a known gap (P10); world authority stays on Host.
+3. **Tier C runs on host** because TTS runs mod Lua on the host only — do not skip reconciler work behind dead execution gates.
+4. **Actor identity:** ST-only interaction → `U.isStorytellerSteamPlayer(playerRef)` on the event's player param.
+5. **Object-script mutations → `Global.call`** to Global entries (bundle-safe); Global may steam-gate ST-only actions. **`GlobalIsStorytellerSteamPlayer` only** from object scripts.
+6. **O(1) tag/GUID guard** before heavy work in hot handlers (TOR-197).
+7. **No dual apply** — one physical channel per intent; fingerprint or invalidate when needed.
+8. **Object scripts:** no `require("core.*")` for mutations — pattern: `objects/npc_control_board.ttslua`, `objects/dice_bag.ttslua`.
+9. **New handlers:** add a row to [Event Listener Policy](../../.dev/Sychronizing%20Game%20Functionality/Event%20Listener%20Policy.md) (delivery + tier).
+10. **P10 live `gameState` broadcast gap** — fix via sync bridge, not execution gates.
 
 ## Agent completion checklist (Lua / sync changes)
 
 Before marking work done:
 
-- [ ] Tier C paths host-guarded; ST XmlUI uses `requireStorytellerHostForMutation` or equivalent (steam + host).
-- [ ] Fan-out hot paths: O(1) tag/GUID guard before `require` / `Sync.*` (TOR-197).
+- [ ] ST-only paths use `isStorytellerSteamPlayer` on the event's player param; per-client UI uses XmlUI `visibility`.
+- [ ] Hot paths: O(1) tag/GUID guard before `require` / `Sync.*` (TOR-197).
 - [ ] Mutation → narrow `Sync.*`; no dual apply without fingerprint ([Dual-apply survey](../../.dev/Sychronizing%20Game%20Functionality/Dual_apply_survey.md)).
+- [ ] Object scripts route mutations via `Global.call`; no `require("core.*")`.
 - [ ] Event Listener Policy inventory updated if handlers added/changed.
-- [ ] Solo smoke if touching gameboard or rolls (Apply/Clear, one roll path); note **multiclient unverified** in Linear comment unless TOR-144 exercised.
+- [ ] Solo smoke if touching gameboard or rolls (Apply/Clear, one roll path); hotseat smoke if execution-model related; note **multiclient unverified** in Linear comment unless TOR-144 exercised.
 
 ## High-risk surfaces (grep when touching)
 
@@ -44,4 +45,4 @@ Load/bootstrap, gameboard Apply/Clear, token drop/pick-up, scenes/soundscape HUD
 
 ## Linear
 
-Host-authority mechanical work is **not Done** until **TOR-144 (multiplayer E2E)** passes. Comment on related issues when adding fan-out or Global mutators.
+Multiplayer sync work is **not Done** until **TOR-144 (multiplayer E2E)** passes. Comment on related issues when adding event handlers or Global mutators.

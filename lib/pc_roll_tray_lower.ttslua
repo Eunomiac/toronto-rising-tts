@@ -153,9 +153,6 @@ end
 --- @param color string
 --- @param deltaY number
 local function nudgeLiveTrayWorld(color, deltaY)
-  if not U.requireHostForWorldMutation("PRTL.nudgeLiveTrayWorld") then
-    return
-  end
   local active = getActiveRoll(color)
   local rollId = type(active) == "table" and active.id or nil
   nudgeObjectY(findDiceDrawerObject(color), deltaY)

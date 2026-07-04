@@ -20,9 +20,9 @@ You are starting (or re-scoping) work on **Toronto Rising**, a Vampire: The Masq
 
 4. `.dev/Sychronizing Game Functionality/Reconciler Contract.md` — mutation vs reconcile, `Sync.full` order, dual-apply rules.
 5. `.cursor/rules/toronto-rising-synchronization.mdc` — single authority for `gameState` intent; no hidden side effects in setters.
-6. **`.cursor/rules/toronto-rising-multiplayer-authority.mdc`** + **`.dev/Multiplayer Functionality/Preparing For Multiplayer.md` §1** — **mandatory before any player/object/load/world-I/O work.** Policies P1–P10; solo Host does not validate fan-out. Update Event Listener Policy for new handlers.
-7. `.dev/Sychronizing Game Functionality/Bootstrap Authority.md` — tiers A/B/C, fan-out vs clicker, chunk load + join `onLoad`.
-8. `.dev/Sychronizing Game Functionality/Event Listener Policy.md` — host inventory + O(1) guards on hot paths.
+6. **`.cursor/rules/toronto-rising-multiplayer-authority.mdc`** + **`.dev/Multiplayer Functionality/Preparing For Multiplayer.md` §1** — **mandatory before any player/object/load/world-I/O work.** Policies P1–P10; one Lua brain (host only); actor identity + `Global.call` bundle routing. Update Event Listener Policy for new handlers.
+7. `.dev/Sychronizing Game Functionality/Bootstrap Authority.md` — tiers A/B/C, host-executed events vs clicker, chunk load + `onLoad`.
+8. `.dev/Sychronizing Game Functionality/Event Listener Policy.md` — handler inventory + O(1) guards on hot paths.
 9. `.dev/Sychronizing Game Functionality/Dual_apply_survey.md` — skim if the task touches scene, soundscape, lighting, or spawns.
 
 **Coding policies (build gate enforced)**
@@ -45,7 +45,7 @@ You are starting (or re-scoping) work on **Toronto Rising**, a Vampire: The Masq
 | Rule | Detail |
 | --- | --- |
 | **Single authority** | `gameState` holds intent. Mutate via `S.setStateVal` / `S.setPlayerVal` / domain APIs — never direct `S.state.*`. Reconcilers apply world; setters do not hide reconciliation. |
-| **Multiplayer authority** | Until **TOR-144 (multiplayer E2E)** passes: Tier C = Host only (`U.requireHostForWorldMutation`); fan-out vs clicker; steam ≠ host; join-client Tier C via `Global.call`; object scripts bundle-safe. **Solo Host ≠ multiclient proof.** `toronto-rising-multiplayer-authority.mdc` + Preparing §1. |
+| **Multiplayer authority** | Until **TOR-144 (multiplayer E2E)** passes: one Lua brain (host only); actor identity (`isStorytellerSteamPlayer`); per-client XmlUI visibility; object-script mutations via `Global.call` (bundle-safe). **Solo Host ≠ multiclient proof.** `toronto-rising-multiplayer-authority.mdc` + Preparing §1. |
 | **Sync entry points** | After mutation: `Sync.player(color)`, `Sync.full()`, or the domain `reconcile*` that owns the slice. No dual apply (eager domain setter + reconcile without fingerprint prime). |
 | **Fail loudly** | No silent fallbacks; no unannotated `pcall`. |
 | **Timing** | All delays through `lib/util.ttslua` helpers only. |

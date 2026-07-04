@@ -48,11 +48,7 @@ function onSave()
 end
 
 function onLoad(saved_data)
-    local isHost = true
-    if Global ~= nil and type(Global.call) == "function" then
-        isHost = Global.call("GlobalRequireHostForWorldMutation", { context = "dice_bag.onLoad" }) == true
-    end
-    if isHost and saved_data ~= nil and saved_data ~= "" then
+    if saved_data ~= nil and saved_data ~= "" then
         local loaded = JSON.decode(saved_data)
         if type(loaded) == "table" then
             for _, guid in ipairs(loaded) do
@@ -287,11 +283,6 @@ end
 --- @param opts table|nil  { bloodSurgePool?, bloodSurgeRouse?, arcCenter? }
 --- @param arcCenter Vector|table|nil  World-space arc center (ST drawer tray); nil uses Normal bag for players
 function spawnDie(bagColor, dieType, opts)
-    if Global ~= nil and type(Global.call) == "function" then
-        if Global.call("GlobalRequireHostForWorldMutation", { context = "dice_bag.spawnDie" }) ~= true then
-            return
-        end
-    end
     opts = type(opts) == "table" and opts or {}
     local bloodSurgePool = opts.bloodSurgePool == true
     local bloodSurgeRouse = opts.bloodSurgeRouse == true
@@ -395,11 +386,6 @@ spawnPostRollDie = function(params)
     params = type(params) == "table" and params or {}
     local bagColor = params.bagColor
     local dieType = params.dieType
-    if Global ~= nil and type(Global.call) == "function" then
-        if Global.call("GlobalRequireHostForWorldMutation", { context = "dice_bag.spawnPostRollDie" }) ~= true then
-            return nil
-        end
-    end
     if type(bagColor) ~= "string" or type(dieType) ~= "string" then
         return nil
     end

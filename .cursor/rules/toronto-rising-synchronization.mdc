@@ -21,7 +21,7 @@ alwaysApply: true
 When a mutation path **already** applied emitters/lights to match persisted state, either:
 
 - route that slice **only** through the domain reconciler (preferred for new code), or
-- call the domain’s **fingerprint prime** after eager apply (e.g. `Soundscape.markReconciledToCurrentState`) so incremental `reconcileFromState` does not stack a second fade, or
+- call the domain's **fingerprint prime** after eager apply (e.g. `Soundscape.markReconciledToCurrentState`) so incremental `reconcileFromState` does not stack a second fade, or
 - call **`invalidateReconcileCache`** only when the world may be **out of sync** with state and the next `Sync.full` must re-apply.
 
 Survey notes: [`.dev/Sychronizing Game Functionality/Dual_apply_survey.md`](.dev/Sychronizing%20Game%20Functionality/Dual_apply_survey.md).
@@ -44,16 +44,14 @@ Survey notes: [`.dev/Sychronizing Game Functionality/Dual_apply_survey.md`](.dev
 - Collapse seat-layout absence to `OFF`. Scene darkness is explicit in `C.LightModes.*.spotlights`, not inferred from preset key suffix.
 - Do not reintroduce `modeRestore`-style push/pop state.
 
-## Multiplayer host authority (until TOR-144 E2E passes)
+## Multiplayer (until TOR-144 E2E passes)
 
-> **⚠ PREMISE UNDER ACTIVE CORRECTION (2026-07-04):** This section's host-**execution** mandates assume TTS runs handlers on every client. That premise is contradicted by the authoritative TTS model (**Lua runs on the host only**). See [`Execution Model Correction — Remediation Plan`](../../.dev/Multiplayer%20Functionality/Execution%20Model%20Correction%20%E2%80%94%20Remediation%20Plan.md). **For new code: do NOT add `U.requireHostForWorldMutation` / `U.isHostClient()` execution guards; do NOT ad-hoc remove existing ones (staged in the plan).** The **`U.isStorytellerSteamPlayer` actor-identity** guidance below remains correct.
+TTS runs **all mod Lua on the host only**. Apply on **every** new handler, chunk-load hook, object script, and `Global.*` mutator:
 
-Solo Host development **does not** validate fan-out or join-client paths. Apply on **every** new handler, chunk-load hook, object script, and `Global.*` mutator:
-
-- **Tier C (world I/O)** — Host client only: `U.requireHostForWorldMutation(context)` (also at **Global chunk load**, not only `onLoad` / `onObjectDrop`).
-- **Who acted vs who executes** — `U.isStorytellerSteamPlayer` ≠ host-only; steam gate alone fails on fan-out when the Storyteller drops objects.
-- **Join-client PC Tier C** — `Global.call` → host-guarded Global callee; object scripts use bundle-safe gates, not `require("core.*")` for mutations.
-- **Rolls** — do not host-guard entire `onObjectRandomize`; split Tier B (all clients) vs Tier C (`Sync.player` / lights on host).
+- **Actor identity** — ST-only interaction → `U.isStorytellerSteamPlayer(playerRef)` on the event's player param.
+- **Per-client UI** — XmlUI `visibility` targeting (`Black`/`Admin`/`<Color>`), not Lua execution gating.
+- **Object-script mutations** — `Global.call` → Global callee (bundle-size routing); `GlobalIsStorytellerSteamPlayer` for actor-identity from object scripts.
+- **P10 live `gameState` broadcast gap** — join-client HUD may read stale in-memory state; fix via sync bridge, not execution gates.
 
 Full policies P1–P10, pre-flight checklist, agent audit: [`.dev/Multiplayer Functionality/Preparing For Multiplayer.md`](../../.dev/Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md). Always-on rule: [`.cursor/rules/toronto-rising-multiplayer-authority.mdc`](../../.cursor/rules/toronto-rising-multiplayer-authority.mdc). Authority model: [Bootstrap Authority](../../.dev/Sychronizing%20Game%20Functionality/Bootstrap%20Authority.md).
 

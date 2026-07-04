@@ -1,16 +1,14 @@
 # Multiplayer Performance Audit — Agent Instructions
 
-> **⚠ SUPERSEDED PREMISE (2026-07-04):** The host-**execution** model this audit enforces (P1–P10, `U.requireHostForWorldMutation`, "runs on every client") is contradicted by the authoritative TTS model (**Lua runs on the host only**). See [`Execution Model Correction — Remediation Plan`](Execution%20Model%20Correction%20%E2%80%94%20Remediation%20Plan.md). Do not apply new host-execution gating; keep actor-identity (`U.isStorytellerSteamPlayer`) guidance.
-
 **Audience:** AI agent performing a repository-wide audit and producing an implementation plan.
 
-**Ongoing development:** Agents implementing **new features** (not only audits) must uphold **§1 policies P1–P10** in [Preparing For Multiplayer](Preparing%20For%20Multiplayer.md) until **TOR-144 (multiplayer E2E)** passes. Always-on rule: [`.cursor/rules/toronto-rising-multiplayer-authority.mdc`](../../.cursor/rules/toronto-rising-multiplayer-authority.mdc).
+**Execution model (2026-07-04, TOR-284):** Mod Lua runs on the **host only**. Audits target **actor identity** (`U.isStorytellerSteamPlayer`), **per-client XmlUI visibility**, **mutation/reconcile discipline** (P1, P7), **object-script bundling** (P8), and **replication/timing** — not host-execution gates (`isHostClient`, `requireHostForWorldMutation`), which were removed. See [Preparing For Multiplayer](Preparing%20For%20Multiplayer.md) §1 and [Execution Model Correction — Remediation Plan](Execution%20Model%20Correction%20%E2%80%94%20Remediation%20Plan.md).
 
-**Goal:** Bring the codebase into full compliance with **Section 1** of [Preparing For Multiplayer](Preparing%20For%20Multiplayer.md) (policies **P1–P10**, helper contracts, high-risk paths, pre-flight checklist). This audit covers **multiplayer authority, fan-out safety, and join-client performance guards** — not general frame-time optimization (see [Performance Audit](../Sychronizing%20Game%20Functionality/Performance%20Audit.md) for latency hotspots).
+**Ongoing development:** Agents must uphold corrected **P1–P10** in Preparing §1 until **TOR-144 (multiplayer E2E)** passes. Rule: [`.cursor/rules/toronto-rising-multiplayer-authority.mdc`](../../.cursor/rules/toronto-rising-multiplayer-authority.mdc).
 
-**Do not implement fixes in the audit pass** unless the author explicitly asks in the same session. **Deliver:** (1) findings report, (2) prioritized implementation plan.
+**Goal:** Audit compliance with actor identity, sync/reconcile contracts, join-client **replication and HUD state** gaps, and performance guards (P4). Not general frame-time optimization ([Performance Audit](../Sychronizing%20Game%20Functionality/Performance%20Audit.md)).
 
-**Linear:** Anchor findings to **TOR-144** (multiplayer E2E), **TOR-221** (bootstrap/host guards), **TOR-197** (event listener policy). Create new `TOR-*` issues for material gaps; do not mark host-authority work **Done** until [Multiplayer-E2E](../E2E%20Playbooks/Multiplayer-E2E.md) passes with two clients.
+**Linear:** Anchor to **TOR-144**, **TOR-284** (execution model remediation), **TOR-197**. Do not mark multiclient validation **Done** until [Multiplayer-E2E](../E2E%20Playbooks/Multiplayer-E2E.md) passes with two clients.
 
 ---
 
@@ -32,15 +30,15 @@ Read fully before scanning code:
 | ID | One-line test |
 | --- | --- |
 | **P1** | World writes only after state mutation via public APIs; no reconcile hidden in setters |
-| **P2** | Tier C guarded with `U.requireHostForWorldMutation(context)` on Host execution path |
-| **P3** | ST interaction uses `U.isStorytellerSteamPlayer`; not conflated with host-only |
+| **P2** | Tier C world I/O runs in host mod Lua (TTS model); no execution gates |
+| **P3** | ST interaction uses `U.isStorytellerSteamPlayer` on event player param |
 | **P4** | Hot handlers: O(1) tag/GUID/color guard before `require` / loops / `Sync.*` |
-| **P5** | Join-client Tier C from PC UI/objects → `Global.call` → host-guarded Global callee |
-| **P6** | Fan-out handlers not fully host-gated when Tier B must run on all clients (rolls) |
+| **P5** | Object-script mutations → `Global.call`; steam-gate ST-only actions |
+| **P6** | No dead code paths that skip reconcilers behind removed execution gates |
 | **P7** | No stacked physical apply (eager + reconcile) without fingerprint / invalidate |
-| **P8** | Object scripts: no `require("core.*")` on mutating paths; `Global.call` + bundle gates |
+| **P8** | Object scripts: no `require("core.*")` on mutating paths; `Global.call` + `GlobalIsStorytellerSteamPlayer` |
 | **P9** | Event Listener Policy inventory matches code |
-| **P10** | No “fix” that removes host guards to paper over live `gameState` broadcast gap |
+| **P10** | Live `gameState` broadcast gap documented; fix via sync bridge, not execution gates |
 
 ---
 

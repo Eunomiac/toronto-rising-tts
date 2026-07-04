@@ -1,29 +1,29 @@
 {
   "version": 1,
-  "updated": "2026-07-03T19:14:07.341Z",
+  "updated": "2026-07-04T21:06:41.127Z",
   "entries": {
     "objects.dice_bag": {
-      "bytes": 59416,
+      "bytes": 58760,
       "modules": 4
     },
     "ui.ui_csheet": {
-      "bytes": 53009,
+      "bytes": 52796,
       "modules": 10
     },
     "ui.ui_csheet_page3": {
-      "bytes": 112911,
+      "bytes": 112698,
       "modules": 16
     },
     "ui.ui_csheet_page4": {
-      "bytes": 125022,
+      "bytes": 124809,
       "modules": 16
     },
     "ui.ui_csheet_page5": {
-      "bytes": 55061,
+      "bytes": 54848,
       "modules": 13
     },
     "ui.ui_csheet_page6": {
-      "bytes": 55057,
+      "bytes": 54844,
       "modules": 13
     },
     "ui.ui_signal_candle": {

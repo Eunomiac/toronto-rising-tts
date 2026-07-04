@@ -28,7 +28,7 @@ Global / HUD paths (`core/global_script.ttslua`, storyteller XmlUI) are differen
 
 | Need | Object script | Global |
 | --- | --- | --- |
-| Tier C world mutation | `Global.call("GlobalRequireHostForWorldMutation", …)` | Host-guarded `Global*` callee |
+| Tier C world mutation | `Global.call("Global…", …)` mutator; steam gate via `GlobalIsStorytellerSteamPlayer` if ST-only | `Global*` callee with domain logic |
 | Roll / tray / game state | `Global.call("GlobalGetPcRollTrayYOffset", …)` etc. | `require` domain modules |
 | NPC gameboard Apply | `Global.call("GlobalGameboardApply", …)` | `core.npc_gameboard` |
 | Tarot toggle | `lib.tarot_toggle` + **`lib.object_positions_object`** only | full `lib.object_positions` |

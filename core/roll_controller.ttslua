@@ -1091,10 +1091,6 @@ function RC.changeRollType(color, rollType)
         U.Type(color) == "string" and U.Type(rollType) == "string",
         "color and rollType must be strings")
 
-    if not U.requireHostForWorldMutation("RC.changeRollType") then
-        return false
-    end
-
     local active = getActive(color)
     if active == nil then
         print(string.format("[RC] changeRollType: no active roll for %s", color))
