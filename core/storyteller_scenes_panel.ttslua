@@ -22,6 +22,7 @@ local StorytellerPanelUI = require("core.storyteller_panel_ui")
 local HUDBF = require("core.hud_blindfold")
 local PCST = require("core.pc_storyteller_panel")
 local MapPins = require("core.map_pins")
+local NPCS = require("core.npcs")
 
 --- Reconcile hosted PC conditions (location + scene) after session location, scene bundle, or seat presence changes.
 local function reconcileHostedConditions(opts)
@@ -125,35 +126,13 @@ local function resolveSeatNarrativePresence(seatKey)
     return true
 end
 
---- Writes authoritative `seatSlots.isPresent` and mirrored `seatPresent` (panel toggles must update both).
 --- @param seatKey string
 --- @param present boolean
 local function setSeatNarrativePresence(seatKey, present)
-    local wasPresent = resolveSeatNarrativePresence(seatKey)
-    local ss = S.getStateVal("sessionScene", "seatSlots")
-    if type(ss) ~= "table" then
-        ss = {}
-    end
-    local row = ss[seatKey]
-    if type(row) ~= "table" then
-        row = {}
-    else
-        row = U.clone(row, true)
-    end
-    row.isPresent = present == true
-    ss = U.clone(ss, true)
-    ss[seatKey] = row
-    S.setStateVal(ss, "sessionScene", "seatSlots")
-
-    local sp = S.getStateVal("sessionScene", "seatPresent")
-    if type(sp) ~= "table" then
-        sp = {}
-    end
-    sp = U.clone(sp, true)
-    sp[seatKey] = present == true
-    S.setStateVal(sp, "sessionScene", "seatPresent")
     if U.isIn(seatKey, C.PlayerColors or {}) then
-        MapPins.onSeatPresenceChanged(seatKey, wasPresent, present == true)
+        NPCS.setPlayerSeatPresence(seatKey, present)
+    elseif U.isIn(seatKey, C.NPCSeats or {}) then
+        NPCS.setNpcSeatNarrativePresence(seatKey, present)
     end
 end
 

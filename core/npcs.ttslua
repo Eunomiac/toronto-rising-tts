@@ -3522,6 +3522,10 @@ local function writeSeatNarrativePresence(seatKey, present)
     if U.isIn(seatKey, C.PlayerColors or {}) then
         MapPins.onSeatPresenceChanged(seatKey, wasPresent, present == true)
     end
+    local SceneLibrary = require("core.scene_library")
+    if type(SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked) == "function" then
+        SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked()
+    end
 end
 
 --- Writes `seatSlots.isPresent` and mirrored `seatPresent` for one NPC seat.

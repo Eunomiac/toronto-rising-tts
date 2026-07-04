@@ -1274,6 +1274,36 @@ local function deactivateHomelandSeatsForStagePlacements(placements)
     return changed
 end
 
+--- After Clear from stage: restore homeland seat narrative presence from staged light mode (TOR-281).
+--- Case 1 — seat disabled: activate when stage `npcLightMode` was visible (not `OFF`); stay off when dark.
+--- Case 2 — seat enabled: unchanged regardless of stage light.
+--- @param placements table<string, table> sessionScene.npcWorld.placements map (pre-clear snapshot)
+--- @return boolean changed
+local function applyHomelandSeatPresenceAfterStageClear(placements)
+    if type(placements) ~= "table" then
+        return false
+    end
+    local NPCS = require("core.npcs")
+    local occupied = stateModule().getStateVal("seatLayout", "occupiedNPCSlots")
+    if type(occupied) ~= "table" then
+        return false
+    end
+    local changed = false
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local characterKey = occupied[seatKey]
+        if type(characterKey) == "string" and characterKey ~= "" and type(placements[characterKey]) == "table" then
+            if not NPCS.resolveSeatNarrativePresence(seatKey) then
+                local mode = placements[characterKey].npcLightMode or "STANDARD"
+                if mode ~= "OFF" then
+                    NPCS.setNpcSeatNarrativePresence(seatKey, true)
+                    changed = true
+                end
+            end
+        end
+    end
+    return changed
+end
+
 --- Grow-only dynamic table transition on Apply (TOR-258): when the table intent (`sessionScene.tableKey`)
 --- is a dynamic family key (e.g. "Table B") and occupied NPC seats now exceed the active table's NPC
 --- capacity, switch up to the larger variant. Never shrinks when seats are removed — table switches are
@@ -1436,8 +1466,11 @@ end
 function Gameboard.clearControlBoard()
     beginInteractionProfile("clear")
     local t0 = os.clock()
-    local hadPlacements = placementsCount(stateModule().getStateVal("sessionScene", "npcWorld", "placements")) > 0
+    local existingPlacements = stateModule().getStateVal("sessionScene", "npcWorld", "placements")
+    local hadPlacements = placementsCount(existingPlacements) > 0
+    local seatPresenceChanged = false
     if hadPlacements then
+        seatPresenceChanged = applyHomelandSeatPresenceAfterStageClear(existingPlacements)
         stateModule().setStateVal({}, "sessionScene", "npcWorld", "placements")
     end
     local board = getControlBoard()
@@ -1490,13 +1523,13 @@ function Gameboard.clearControlBoard()
             print("[Gameboard] Clear: placements already empty (CONTROL_BOARD_PALETTE missing — tokens not parked)")
         end
     end
-    if not hadPlacements and moved == 0 and not seatReleased then
+    if not hadPlacements and moved == 0 and not seatReleased and not seatPresenceChanged then
         print("[Gameboard] Clear: no state/token changes — skipped figurine sync")
         Gameboard.reconcileControlBoardFromState({ force = true })
         finishInteractionProfile(t0)
         return true, nil
     end
-    syncNpcsFromControlBoard("gameboard_clear")
+    syncNpcsFromControlBoard("gameboard_clear", { seatMutation = seatPresenceChanged })
     finishInteractionProfile(t0)
     return true, nil
 end
