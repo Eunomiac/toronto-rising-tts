@@ -1030,6 +1030,54 @@ C.ObjectPositions = {
       duration = 0
     },
   },
+  FAMULUS_FIGURINE_RED = {
+    on = {
+      position = { y = 6.01}
+    },
+    off = {
+      position = { y = -200 }
+    }
+  },
+  FAMULUS_FIGURINE_BROWN = {
+    on = {
+      position = { y = 6.01}
+    },
+    off = {
+      position = { y = -200 }
+    }
+  },
+  COMPANION_A_FIGURINE_PURPLE = {
+    on = {
+      position = { y = 6.01}
+    },
+    off = {
+      position = { y = -200 }
+    }
+  },
+  COMPANION_B_FIGURINE_PURPLE = {
+    on = {
+      position = { y = 6.01}
+    },
+    off = {
+      position = { y = -200 }
+    }
+  },
+  COMPANION_C_FIGURINE_PURPLE = {
+    on = {
+      position = { y = 6.01}
+    },
+    off = {
+      position = { y = -200 }
+    }
+  }
+}
+
+C.CompanionToggleToFigurineMap = {
+  [G.GUIDS.COMPANION_TOGGLE_TOKEN_A_RED] = G.GUIDS.FAMULUS_FIGURINE_RED,
+  [G.GUIDS.COMPANION_TOGGLE_TOKEN_A_BROWN] = G.GUIDS.FAMULUS_FIGURINE_BROWN,
+  [G.GUIDS.COMPANION_TOGGLE_TOKEN_A_PURPLE] = G.GUIDS.COMPANION_A_FIGURINE_PURPLE,
+  [G.GUIDS.COMPANION_TOGGLE_TOKEN_B_PURPLE] = G.GUIDS.COMPANION_B_FIGURINE_PURPLE,
+  [G.GUIDS.COMPANION_TOGGLE_TOKEN_C_PURPLE] = G.GUIDS.COMPANION_C_FIGURINE_PURPLE,
 }
 
 -- #endregion
