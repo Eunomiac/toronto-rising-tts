@@ -4,6 +4,8 @@
 
 ## Active
 
+- [Strange Behavior] Recently, I've noticed that upon connecting, the UIs do not generate on first load. At the time, I'm connected as the White player (because I've yet to choose a seat). To see the UI for any player, I must reload the game.  I'm not sure if this is just a "feature" of TTS, or if this is the result of something we've done in the codebase that can be remedied.
+
 ## Needs clarification
 
 ### Unclear Bugs
