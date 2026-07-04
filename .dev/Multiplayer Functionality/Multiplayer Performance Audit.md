@@ -1,5 +1,7 @@
 # Multiplayer Performance Audit — Agent Instructions
 
+> **⚠ SUPERSEDED PREMISE (2026-07-04):** The host-**execution** model this audit enforces (P1–P10, `U.requireHostForWorldMutation`, "runs on every client") is contradicted by the authoritative TTS model (**Lua runs on the host only**). See [`Execution Model Correction — Remediation Plan`](Execution%20Model%20Correction%20%E2%80%94%20Remediation%20Plan.md). Do not apply new host-execution gating; keep actor-identity (`U.isStorytellerSteamPlayer`) guidance.
+
 **Audience:** AI agent performing a repository-wide audit and producing an implementation plan.
 
 **Ongoing development:** Agents implementing **new features** (not only audits) must uphold **§1 policies P1–P10** in [Preparing For Multiplayer](Preparing%20For%20Multiplayer.md) until **TOR-144 (multiplayer E2E)** passes. Always-on rule: [`.cursor/rules/toronto-rising-multiplayer-authority.mdc`](../../.cursor/rules/toronto-rising-multiplayer-authority.mdc).

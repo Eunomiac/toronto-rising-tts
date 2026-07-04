@@ -138,12 +138,15 @@ On a throwaway branch, perform the Step 3 removals for **one domain at a time**,
 
 Because the gates can only alter behavior on a *non-host Lua VM* (which the sources say does not exist), **solo-identical behavior after removal ⇒ removal is safe.** Also re-run V2's hotseat action *after* removal: the previously-dead Apply/Clear should now work with two seats.
 
-### Step 1 — Freeze the misleading docs (do first, cheap)
+### Step 1 — Freeze the misleading docs and always-applied rules — **DONE 2026-07-04**
 
-So no further work is built on the inverted premise while remediation is in progress:
+Done immediately (ahead of Step 0 validation) because a freeze banner only stops *new* inverted-model gating and is safe regardless of the validation outcome. This was **required now**, not deferrable: the always-applied rules (`alwaysApply: true`) auto-override this plan for every agent, so leaving them unbannered meant agents would keep adding `U.requireHostForWorldMutation` / `U.isHostClient()` guards while remediation was "planned."
 
-- Add a bold banner to the top of [`Bootstrap Authority.md`](../Sychronizing%20Game%20Functionality/Bootstrap%20Authority.md), [`Preparing For Multiplayer.md`](Preparing%20For%20Multiplayer.md), and [`audit-2026-06-25.md`](audit-2026-06-25.md): *"SUPERSEDED PREMISE — see Execution Model Correction. TTS runs Lua on host only; the 'runs on every client' assumption below is incorrect. Do not add new host-execution guards."*
-- Add the same warning to the two always-on rules: `.cursor/rules/toronto-rising-multiplayer-authority.mdc` and the relevant part of `.cursor/rules/toronto-rising-synchronization.mdc`. (Leave `isStorytellerSteamPlayer` guidance intact — that part is correct.)
+Freeze banners added to:
+- **Always-applied Cursor rules** (highest priority — these override docs): `.cursor/rules/toronto-rising-multiplayer-authority.mdc`, `.cursor/rules/toronto-rising-synchronization.mdc` (§ Multiplayer host authority).
+- **Source docs:** [`Bootstrap Authority.md`](../Sychronizing%20Game%20Functionality/Bootstrap%20Authority.md), [`Preparing For Multiplayer.md`](Preparing%20For%20Multiplayer.md), [`Multiplayer Performance Audit.md`](Multiplayer%20Performance%20Audit.md), [`audit-2026-06-25.md`](audit-2026-06-25.md).
+
+Banner contract (consistent across all): **for new code, do NOT add** `U.isHostClient` / `U.requireHostForWorldMutation` / `GlobalRequireHostForWorldMutation` / `requireStorytellerHostForMutation` execution guards; **do NOT ad-hoc remove** existing ones (removal is staged in Step 3); **keep** `U.isStorytellerSteamPlayer` actor-identity gating and per-client XmlUI `visibility` targeting — those are unaffected by the correction.
 
 ### Step 2 — Inventory the call sites (agent-assistable)
 
@@ -192,7 +195,7 @@ After the execution layer is gone, confirm the concerns that actually matter und
 ## 5. Definition of done (before resuming the audit)
 
 - [ ] Step 0 confirmed — either the 2-client console test (preferred) **or** the solo battery (V1 read + V2 hotseat `isHostClient=false` reproduction + V3 regression-safe removal). Record results. Leave the 2-client console check as a deferred confirmation; it does not block remediation.
-- [ ] Superseded-premise banners added to the four docs + two rules (Step 1).
+- [x] Superseded-premise banners added to the source docs + two always-applied rules (Step 1 — done 2026-07-04).
 - [ ] Execution-gating primitives removed; `isStorytellerSteamPlayer` retained; grep for `isHostClient` / `requireHostForWorldMutation` returns **0** in `core/`, `lib/`, `objects/`, `ui/`.
 - [ ] Solo Save & Play smoke green (Gameboard Apply/Clear, one roll, one scene apply).
 - [ ] `npm run build` green (esp. `check:bundle-size-gate` if object stubs touched).

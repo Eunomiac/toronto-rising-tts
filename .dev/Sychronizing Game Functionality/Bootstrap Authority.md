@@ -1,5 +1,7 @@
 # Bootstrap & Load Authority (TTS multiplayer)
 
+> **⚠ SUPERSEDED PREMISE (2026-07-04):** This document's central claim — "TTS runs **Global `onLoad` and object `onLoad` on every client**" — is contradicted by the authoritative TTS model: **mod Lua runs on the host only; connected clients do not run the Global script or object scripts.** The host-**execution** authority model below (Tier C → `U.requireHostForWorldMutation`, join-client `onLoad` branch) is under active correction — see [`Execution Model Correction — Remediation Plan`](../Multiplayer%20Functionality/Execution%20Model%20Correction%20%E2%80%94%20Remediation%20Plan.md). **Do not add new host-execution guards; do not ad-hoc remove existing ones (staged in the plan).** The **actor-identity** axis (`U.isStorytellerSteamPlayer`) and per-client UI visibility remain correct.
+
 **Linear:** TOR-221 (Non-Host onLoad Host-only guard audit)
 **Related:** [Event Listener Policy](Event%20Listener%20Policy.md), [Reconciler Contract](Reconciler%20Contract.md), [Preparing For Multiplayer](../Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md) §1, TOR-144 (multiplayer E2E playbook)
 
