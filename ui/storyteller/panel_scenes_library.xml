@@ -1,11 +1,11 @@
 <!-- Scene library column: fixed slot buttons + constructor actions (see `core/storyteller_scenes_panel.ttslua`). -->
 <Panel id="panel_scenes_library" active="true" width="596" minWidth="596" flexibleWidth="0">
-  <VerticalLayout class="storyteller_panel_surface" spacing="6" padding="6 6 6 6" childForceExpandWidth="true" minWidth="596" preferredWidth="596" flexibleWidth="0">
-    <Text class="hud_storyteller_header">Scene library</Text>
-    <Text fontSize="9" color="#AAAAAA">Rows follow `gameState.sceneLibrary.order` (up to 20). Click a row to set `activeKey`. Unlink / Delete / Apply / End — see Scene Constructor Overview.</Text>
+  <VerticalLayout id="db_panel_scenes_library_content" class="storyteller_panel_surface" spacing="6" padding="6 6 6 6" childForceExpandWidth="true" minWidth="596" preferredWidth="596" flexibleWidth="0">
+    <Text id="db_panel_scenes_library_header" class="hud_storyteller_header">Scene library</Text>
+    <Text id="db_panel_scenes_library_description" fontSize="9" color="#AAAAAA">Rows follow `gameState.sceneLibrary.order` (up to 20). Click a row to set `activeKey`. Unlink / Delete / Apply / End — see Scene Constructor Overview.</Text>
 
-    <VerticalScrollView preferredHeight="380" minHeight="120" flexibleHeight="1" movementType="Clamped" vertical="true" horizontal="false" childForceExpandWidth="true">
-      <VerticalLayout spacing="4" childForceExpandWidth="true">
+    <VerticalScrollView id="db_panel_scenes_library_scrollview" preferredHeight="380" minHeight="120" flexibleHeight="1" movementType="Clamped" vertical="true" horizontal="false" childForceExpandWidth="true">
+      <VerticalLayout id="db_panel_scenes_library_scrollview_content" spacing="4" childForceExpandWidth="true">
         <Button id="scenes_lib_slot_01" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
         <Button id="scenes_lib_slot_02" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
         <Button id="scenes_lib_slot_03" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
@@ -29,7 +29,7 @@
       </VerticalLayout>
     </VerticalScrollView>
 
-    <Text class="hud_storyteller_label">Scene controls</Text>
+    <Text id="db_panel_scenes_library_controls_header" class="hud_storyteller_label">Scene controls</Text>
     <Button id="scenes_lib_btn_unlink" class="hud_storyteller_button" text="Unlink scene (stop mirroring)" onClick="HUD_scenesLibUnlink" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
     <Button id="scenes_lib_btn_delete" class="hud_storyteller_button" text="Delete active scene…" onClick="HUD_scenesLibDelete" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
     <Button id="scenes_lib_btn_apply" class="hud_storyteller_button" text="Apply active scene (switch)" onClick="HUD_scenesLibApply" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
