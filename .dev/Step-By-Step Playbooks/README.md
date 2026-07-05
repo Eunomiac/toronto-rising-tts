@@ -46,10 +46,24 @@ Use these before writing custom assert helpers. Do **not** copy illustration dum
 
 ## Execution defaults
 
-- **Host** (solo OK). Assign seat in Lua — do not ask the author to pick a seat.
+- **Host** (solo OK). Assign seat, table, tokens, and test data in **Code Block 0** — do not ask the author to pick a seat or pre-configure the save.
 - **Save & Play** only when repo Lua changed since last load.
 - **IDE Execute Lua Code** — no `lua` prefix, no `require` (globals only).
 - **Camera:** `M.setCamera("ALL", "roll<Color>")` in the same sequence step as the HUMAN print when bags/tray/roll panel are involved.
+
+## Automate prerequisites (mandatory)
+
+Human-facing **Prerequisites** in each playbook: **2–4 bullets** (Save & Play + Host connected). **Code Block 0** performs session setup then verify.
+
+| Need | Prefer |
+| --- | --- |
+| Black / ST seat | `rollE2eSeatPrep("Black")` |
+| Table layout | `DEBUG.syncTableSimplified(tableKey)` |
+| NPC tokens | `DEBUG.spawnNpcControlBoardTokens()` |
+| Gameboard baseline | `gbE2eReset()`, `gbE2ePrereqCheck()` |
+| Scene library row | Inline `S.setStateVal` stub — do not require pre-authored slot content |
+
+See [step-by-step-guidance SKILL](../../.cursor/skills/step-by-step-guidance/SKILL.md) § Automate prerequisites.
 
 ## Related
 

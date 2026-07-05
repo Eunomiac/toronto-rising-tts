@@ -11,8 +11,12 @@ Use this skill whenever the author must **confirm something works in TTS** — a
 
 1. Copy [`.dev/Step-By-Step Playbooks/.Step-By-Step Template.md`](../../.dev/Step-By-Step%20Playbooks/.Step-By-Step%20Template.md) to a configured playbook file, e.g. `.dev/Step-By-Step Playbooks/TOR-281-clear-seat-verify.md` (or a descriptive name when no Linear id yet).
 2. Fill in title, goal, prerequisites, Run order, and Code Blocks for **this** fix — valid Lua, repo helpers, asserts for everything Lua can check.
-3. **Link the configured file** in chat (markdown path). The author runs it top-to-bottom from that doc — not from a wall of inline steps.
-4. Chat message stays short: what was fixed, link to the playbook, Step 1 reminder (**Save & Play** if repo Lua changed).
+3. Write in a concise but conversational tone, avoiding too much abbreviation or shorthand.
+  **BAD:** "Verify **TOR-281 (Stage Clear seat activation + live scene-library seat persistence)**: Clear-from-stage homeland seat rules (disabled + visible stage light → activate; enabled seat unchanged) and `seatSlots.isPresent` write-back into the linked scene library row."
+  **GOOD:** "Verify TOR-281: Clearing NPC figurines from the stage when those NPCs occupy table seats should return them to their chair; the seat should activate if the NPC was lit on stage. Seat toggles during play should persist in the scene library when you re-apply that scene."
+4. **Prerequisites prose: 2–4 bullets max.** Only what the author must do before pasting Code Block 0 (usually **Save & Play** + Host connected). **Automate everything else in Code Block 0** — seat, table, tokens, dummy library rows, harness baseline. Do not list workshop setup the script can perform (see **Automate prerequisites** below).
+5. **Link the configured file** in chat (markdown path). The author runs it top-to-bottom from that doc — not from a wall of inline steps.
+6. Chat message stays short: what was fixed, link to the playbook, Step 1 reminder (**Save & Play** if repo Lua changed).
 
 Use chat-only numbered steps (no file) only for trivial one-paste smoke checks. When verification spans setup, asserts, and any TTS clicks, write the playbook file.
 
@@ -63,10 +67,33 @@ Goal: the author can execute top-to-bottom with minimal interpretation — paste
 
 ## Prerequisites
 
-- **Save & Play:** Required **only when repo Lua changed** since the last load (bundled scripts must match disk). Do **not** require Save & Play for doc/skill/template-only edits — the process is time-consuming on a large repo.
-- The user will always be the **Host** (solo is fine).
-- Do not request the user assign themselves to a specific seat — automate in the first `U.RunSequence` (e.g. seat change helpers, `rollTest` for dice).
-- **Change seat** for dice bag/camera steps per [`.dev/TESTING.md`](../../.dev/TESTING.md).
+**Two layers — do not duplicate.**
+
+| Layer | Where | Content |
+| --- | --- | --- |
+| **Human prerequisites** | Markdown (2–4 bullets) | Save & Play when needed; Host connected; anything that truly cannot run in Lua (almost never: seat color, table, tokens, library rows) |
+| **Session setup** | **Code Block 0** | Assign Black, switch table, spawn/move tokens, seed dummy `gameState`, domain harness reset — then **verify** with asserts |
+
+**Rule:** If you wrote a prerequisite the author could satisfy by pasting Lua, it belongs in Code Block 0 instead.
+
+- **Save & Play:** Required **only when repo Lua changed** since the last load. Do **not** require Save & Play for doc/skill/template-only edits.
+- **Host connected** (solo is fine) — the only standing human requirement besides Save & Play.
+- **Never** ask the author to pick a seat, switch tables manually, place tokens, or pre-populate library rows — automate in Code Block 0.
+
+## Automate prerequisites (mandatory in Code Block 0)
+
+Before the test body runs, Code Block 0 should **prepare** then **verify**. Prefer existing globals; add inline `S.setStateVal` only for test-specific dummy data.
+
+| Need | Prefer | Notes |
+| --- | --- | --- |
+| Storyteller seat (Black) | `rollE2eSeatPrep("Black")` | Also hides startup overlay + camera spoof ([TESTING.md](../../.dev/TESTING.md)) |
+| Active table | `DEBUG.syncTableSimplified("Table A")` | Layout + `currentTableKey`; use `skipTransitionBlindfold` table paths only when the test requires blindfold UX |
+| NPC control tokens | `DEBUG.spawnNpcControlBoardTokens()` | Idempotent when tokens already exist; pair with `gbE2eReset()` / harness placement for board UV |
+| Gameboard baseline | `gbE2eReset()`, `gbE2ePrereqCheck()` | Empty placements + fixture preload; use when the playbook targets gameboard/NPC stage |
+| Scene library slot | Inline `S.setStateVal` on `sceneLibrary.order` + `sceneLibrary.scenes[key]` | Minimal `sessionScene` stub for the test — do not require a pre-authored workshop row |
+| Dice / roll context | `rollTest(color, …)` | Includes seat prep automatically |
+
+**Agent checklist:** List human prerequisites (≤4 bullets) → implement every other default in Code Block 0 → end Code Block 0 with verify asserts, not “fail if the world wasn't already perfect.”
 
 ## Default: paste Lua from the IDE (not the TTS console)
 
@@ -91,6 +118,7 @@ Do **not** copy illustration dummies from the template into production runbooks.
 | Dice setup / assert | `rollTest`, `rollConfirm`, `rollCancelAll`, `rollE2eExpectBroadcast` | TESTING.md § Dice debug |
 | File evidence | `DEBUG.logStateToFile`, `DEBUG.logToFile`, `DEBUG.writeWorkspaceFile` | [`.dev/DEBUG_FILE_LOGGING.md`](../../.dev/DEBUG_FILE_LOGGING.md) |
 | Domain DEBUG | `DEBUG.syncTableSimplified`, `DEBUG.compareLayoutPaths`, … | `debugHelp()` / TESTING.md |
+| Session setup | `rollE2eSeatPrep`, `DEBUG.spawnNpcControlBoardTokens`, `gbE2eReset`, inline `S.setStateVal` | **Automate prerequisites** above |
 | Console banners | `printHeader(text, level)` | TESTING.md § E2E console output (levels 1–2 for phases; not for HUMAN in Step-By-Step playbooks) |
 
 ## Long procedures (multi-step verification)
