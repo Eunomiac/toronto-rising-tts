@@ -1,13 +1,22 @@
 ---
 name: step-by-step-guidance
-description: TTS hybrid verification runbooks — numbered paste/click Steps, U.RunSequence blocks, ▶▶▶ HUMAN ▶▶▶ cues, repo helpers first; template at .dev/Step-By-Step Playbooks/.Step-By-Step Template.md
+description: Guide the author through in-TTS verification after a fix or feature change — produce a configured step-by-step playbook from the template and link it in chat.
 ---
 
 # Step-by-step guidance (Tabletop Simulator)
 
-When the user must act or verify in TTS (testing, E2E, bug repro, author Save & Play checks), emit a **concrete runbook** the author can follow by rote — not a menu of options or a conversation.
+Use this skill whenever the author must **confirm something works in TTS** — after a bugfix, feature slice, refactor, or Save & Play sign-off. Do not improvise verification in chat prose alone.
 
-**Authoritative template:** [`.dev/Step-By-Step Playbooks/.Step-By-Step Template.md`](../../.dev/Step-By-Step%20Playbooks/.Step-By-Step%20Template.md) · **Index:** [`.dev/Step-By-Step Playbooks/README.md`](../../.dev/Step-By-Step%20Playbooks/README.md)
+## Default deliverable
+
+1. Copy [`.dev/Step-By-Step Playbooks/.Step-By-Step Template.md`](../../.dev/Step-By-Step%20Playbooks/.Step-By-Step%20Template.md) to a configured playbook file, e.g. `.dev/Step-By-Step Playbooks/TOR-281-clear-seat-verify.md` (or a descriptive name when no Linear id yet).
+2. Fill in title, goal, prerequisites, Run order, and Code Blocks for **this** fix — valid Lua, repo helpers, asserts for everything Lua can check.
+3. **Link the configured file** in chat (markdown path). The author runs it top-to-bottom from that doc — not from a wall of inline steps.
+4. Chat message stays short: what was fixed, link to the playbook, Step 1 reminder (**Save & Play** if repo Lua changed).
+
+Use chat-only numbered steps (no file) only for trivial one-paste smoke checks. When verification spans setup, asserts, and any TTS clicks, write the playbook file.
+
+**Blank template:** [`.Step-By-Step Template.md`](../../.dev/Step-By-Step%20Playbooks/.Step-By-Step%20Template.md) · **Index:** [README.md](../../.dev/Step-By-Step%20Playbooks/README.md)
 
 Legacy E2E playbooks ([Dice-E2E](../../.dev/E2E%20Playbooks/Dice-E2E.md), etc.) still use `printHeader("[HUMAN] …", 3)` until **TOR-141** migration. **New** runbooks follow this skill + template (triangle HUMAN format).
 

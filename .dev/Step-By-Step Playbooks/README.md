@@ -19,7 +19,9 @@ Do not conflate **Steps** (author paste/click order), **Code Blocks** (one `U.Ru
 
 **Migration target:** All E2E playbooks eventually adopt this format plus retained `RunTest` wiring (**TOR-141**). Legacy files keep `printHeader("[HUMAN] …", 3)` until converted.
 
-**Persist vs chat-only:** Save a new markdown file here when the procedure will be re-run (regression anchor, author sign-off). Emit chat-only when one-off debugging suffices.
+**Default after a fix:** Agents copy the template into a configured playbook here, fill it in for that change, and **link the file in chat** — the author verifies from the doc, not from inline chat steps.
+
+**Persist vs chat-only:** Always write a file when verification spans setup + asserts + any TTS clicks, or when the procedure may be re-run. Chat-only numbered steps are for trivial one-paste smoke checks only.
 
 ## Helper registry
 
