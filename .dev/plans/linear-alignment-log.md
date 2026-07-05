@@ -414,5 +414,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-05 | CREATE | TOR-299 | CSHEET Clan Compulsions — Influence line only; Workshop, Medium; parent TOR-38 |
 | 2026-07-05 | CREATE | TOR-300 | GM reference — review sheets for in-play Advantages; Workshop, Medium; relatedTo TOR-38, TOR-279 |
 | 2026-07-05 | UPDATE | TOR-204 | Master Compulsions deck: `CompulsionsMasterDeck` tag resolution; removed `G.GUIDS.COMPULSIONS_MASTER_DECK` from spec |
+| 2026-07-05 | SHIPPED | Table seat layout Phase 3 | `applySimplifiedSeatLayout` + `propagateSeatRolesFromReference`; `DEBUG.syncTableSimplified`; `useSimplifiedLayout` opt-in |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

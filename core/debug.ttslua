@@ -141,6 +141,27 @@ function DEBUG.refreshSeatRigsFromReference(opts)
   return R.refreshSeatRigsFromReferenceSegment(opts)
 end
 
+--- Layout sync with simplified NPC path (`opts.useSimplifiedLayout = true` on resolve). Uses global `R`.
+--- @param tableKey string|nil defaults to `gameState.seatLayout.currentTableKey`
+--- @param opts table|nil `{ force? }` merged into resolve options
+--- @return table|nil computed
+function DEBUG.syncTableSimplified(tableKey, opts)
+  if type(R) ~= "table" or type(R.resolveSeatObjectsFromTable) ~= "function" then
+    error("DEBUG.syncTableSimplified: global R.resolveSeatObjectsFromTable missing — re-bundle Global and Save & Play")
+  end
+  local key = tableKey
+  if U.Type(key) ~= "string" or key == "" then
+    key = S.getStateVal("seatLayout", "currentTableKey")
+  end
+  if U.Type(key) ~= "string" or key == "" then
+    error("DEBUG.syncTableSimplified: pass a table key (e.g. 'Table A') or set gameState.seatLayout.currentTableKey")
+  end
+  local resolveOpts = U.Type(opts) == "table" and U.clone(opts, true) or {}
+  resolveOpts.force = resolveOpts.force ~= false
+  resolveOpts.useSimplifiedLayout = true
+  return R.resolveSeatObjectsFromTable(key, nil, resolveOpts)
+end
+
 --- Writes content via sendExternalMessage type "write". File appears as **workspace/.dev/.debug/<relativePath>** when the bridge listens on 39998.
 --- Does not use log append cache; each call overwrites that file path.
 --- @param relativePath string Path suffix under .dev/.debug, e.g. "debug_logs/npcs_panel.txt"
@@ -5338,6 +5359,7 @@ end
 
 compareHandFrames = DEBUG.compareHandFrames
 refreshSeatRigsFromReference = DEBUG.refreshSeatRigsFromReference
+syncTableSimplified = DEBUG.syncTableSimplified
 
 -- Expose inspection functions
 showState = DEBUG.showState

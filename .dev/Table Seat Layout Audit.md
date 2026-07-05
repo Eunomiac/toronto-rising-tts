@@ -652,7 +652,7 @@ See [`.dev/plans/table-seat-layout-hand-delta-phased.md`](plans/table-seat-layou
 | **0** | Schema: `referenceHand`, `referenceSeatSegment`, `seatToPositionMap` (+ legacy aliases) | Yes |
 | **1** | `computeHandFrames` + debug frame comparison vs current generator | Yes |
 | **2** | `refreshSeatRigsFromReferenceSegment` + skipped-object report (§15.7) | Yes |
-| **3** | NPC automatic path: reference role copy + `postCorrections`; flag `useSimplifiedLayout` | Partial |
+| **3** | NPC automatic path: reference role copy + `postCorrections`; flag `useSimplifiedLayout` | Yes (debug: `syncTableSimplified`) |
 | **4** | PC automatic path: hand-delta + tag follow behind same flag | Partial |
 | **5** | Default flag on; Save & Play matrix; remove legacy PC template propagation | No |
 | **6** | Rename/remove legacy config fields; doc sync | No |

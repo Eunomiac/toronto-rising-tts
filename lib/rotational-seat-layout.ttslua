@@ -567,6 +567,12 @@ local function isPlayerSeatKey(seatKey)
   return PLAYER_COLOR_SET[string.upper(seatKey)] == true
 end
 
+--- @param seatKey string
+--- @return boolean
+local function isNpcSeatKey(seatKey)
+  return U.isIn(seatKey, C.NPCSeats or {})
+end
+
 --- @param sourceObjects table
 --- @return table
 local function resolveSourceTemplateGroups(sourceObjects)
@@ -1775,6 +1781,11 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
 
   for color, pack in pairs(computed.byColor) do
     if color ~= referencePlayerColor then
+      if options.skipNpcSeatLayout == true and isNpcSeatKey(color) then
+        cloneGuidByColorRole[color] = {}
+        seatObjByColorRole[color] = {}
+        handZoneMoveBySeat[color] = nil
+      else
       local slots = pack.slots
       if U.Type(slots) ~= "table" or #slots < 1 then
         error("rotational-seat-layout: internal error: slot set missing for seat '" .. color .. "'")
@@ -1948,6 +1959,7 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
           .. " Unmatched: "
           .. table.concat(orphanDetails, ", ")
         )
+      end
       end
     end
   end
@@ -3180,7 +3192,16 @@ function M.resolveSeatObjectsFromTable(tableRef, sourceObjects, options)
       opts
     )
   end
-  M.resolveSeatObjects(computed, src, opts)
+  local useSimplifiedLayout = opts.useSimplifiedLayout == true
+  local resolveOpts = opts
+  if useSimplifiedLayout then
+    resolveOpts = U.clone(opts, true)
+    resolveOpts.skipNpcSeatLayout = true
+  end
+  M.resolveSeatObjects(computed, src, resolveOpts)
+  if useSimplifiedLayout then
+    M.applySimplifiedSeatLayout(tableCfg, filteredMap, opts)
+  end
   applyPostCorrections(src, computed)
   applyTableConfigObjectPositions(tableCfg)
   enforceNPCSeatObjectVisibility(src, occupiedNPCSlots, tableCfg, previousTableCfg)
@@ -4220,6 +4241,155 @@ local function frameAfterSeatRigid(centerPoint, refFrame, rigid)
   return fr
 end
 
+--- Copy role-family object poses from the reference segment seat to a target seat.
+--- @param referenceSeatKey string
+--- @param targetSeatKey string
+--- @param centerPoint Vector
+--- @param referenceFramesByRole table
+--- @param rigid table `{ deltaDeg, shift }`
+--- @param opts table|nil `{ dryRun?, skipped? }`
+--- @return number movedCount
+local function propagateSeatRolesFromReference(
+  referenceSeatKey,
+  targetSeatKey,
+  centerPoint,
+  referenceFramesByRole,
+  rigid,
+  opts
+)
+  opts = U.Type(opts) == "table" and opts or {}
+  local dryRun = opts.dryRun == true
+  local skipped = opts.skipped
+  local movedCount = 0
+  local seenRoleAtSeat = {}
+  local tag = objectTagForPlayerColor(targetSeatKey)
+  local tagged = getObjectsWithTag(tag) or {}
+  for _, obj in ipairs(tagged) do
+    if obj ~= nil and U.isGameObject(obj) and not isHandZoneObject(obj) then
+      local disp = SRI.readRoleColorIdentity(obj)
+      if disp == nil then
+        if skipped ~= nil then
+          skipped[#skipped + 1] = buildSkippedRecord(obj, targetSeatKey, nil, "no_role_identity")
+        end
+      else
+        local roleKey, _ = SRI.parseRoleAndSuffix(disp)
+        if seenRoleAtSeat[roleKey] == true then
+          if skipped ~= nil then
+            skipped[#skipped + 1] = buildSkippedRecord(obj, targetSeatKey, roleKey, "duplicate_role_at_seat")
+          end
+        else
+          seenRoleAtSeat[roleKey] = true
+          local refFrame = referenceFramesByRole[roleKey]
+          if refFrame == nil then
+            if skipped ~= nil then
+              skipped[#skipped + 1] = buildSkippedRecord(obj, targetSeatKey, roleKey, "no_reference_role")
+            end
+          else
+            local placed = frameAfterSeatRigid(centerPoint, refFrame, rigid)
+            if not dryRun then
+              placeObjectExact(obj, placed.position, placed.rotation)
+            end
+            movedCount = movedCount + 1
+          end
+        end
+      end
+    end
+  end
+  return movedCount
+end
+
+--- Automatic simplified layout for NPC seats: reference role copy + virtual hand anchors.
+--- PC seats remain on legacy `resolveSeatObjects` (Phase 3). Not the default path until Phase 5.
+--- @param tableCfg table
+--- @param filteredMap table
+--- @param opts table|nil
+--- @return table summary `{ ok, referenceSeatKey, movedCount, skippedCount, skipped, npcSeatsProcessed }`
+function M.applySimplifiedSeatLayout(tableCfg, filteredMap, opts)
+  opts = U.Type(opts) == "table" and opts or {}
+  if U.Type(tableCfg) ~= "table" then
+    error("rotational-seat-layout: applySimplifiedSeatLayout requires tableCfg")
+  end
+  if U.Type(filteredMap) ~= "table" then
+    error("rotational-seat-layout: applySimplifiedSeatLayout requires filteredMap")
+  end
+
+  local referenceSeatKey, refErr = resolveReferenceSeatKeyFromCfg(tableCfg)
+  if referenceSeatKey == nil then
+    error("rotational-seat-layout: applySimplifiedSeatLayout: " .. tostring(refErr))
+  end
+
+  local handBundle = M.computeHandFrames(tableCfg, filteredMap, opts)
+  if U.Type(handBundle) ~= "table" then
+    error(
+      "rotational-seat-layout: applySimplifiedSeatLayout computeHandFrames returned "
+      .. tostring(handBundle)
+    )
+  end
+  local handFrames = handBundle.handFrames or {}
+  local seatRigidByKey = handBundle.seatRigidByKey or {}
+  local centerPoint = Vector(tableCfg.centerPoint)
+  local referenceFramesByRole = indexLiveSeatFramesByRole(referenceSeatKey)
+
+  local rawAnchors = S.getStateVal("seatLayout", "virtualHandZoneAnchors")
+  local nextVirtualAnchors = {}
+  if U.Type(rawAnchors) == "table" then
+    nextVirtualAnchors = U.clone(rawAnchors, true)
+  end
+
+  local movedCount = 0
+  local skipped = {}
+  local npcSeatsProcessed = 0
+  local targetSeatKeys = sortedStringKeys(filteredMap)
+  for i = 1, #targetSeatKeys do
+    local seatKey = targetSeatKeys[i]
+    if isNpcSeatKey(seatKey) and seatKey ~= referenceSeatKey then
+      local rigid = seatRigidByKey[seatKey]
+      local handFrame = handFrames[seatKey]
+      if U.Type(rigid) ~= "table" or U.Type(handFrame) ~= "table" then
+        error(
+          "rotational-seat-layout: applySimplifiedSeatLayout missing hand frame for NPC seat '"
+          .. tostring(seatKey)
+          .. "'"
+        )
+      end
+      if handFrame.position == nil or handFrame.rotation == nil then
+        error(
+          "rotational-seat-layout: applySimplifiedSeatLayout hand frame for seat '"
+          .. tostring(seatKey)
+          .. "' missing position/rotation"
+        )
+      end
+
+      nextVirtualAnchors[seatKey] = {
+        position = Vector(handFrame.position),
+        rotation = Vector(handFrame.rotation),
+      }
+      movedCount = movedCount + 1
+      npcSeatsProcessed = npcSeatsProcessed + 1
+
+      movedCount = movedCount + propagateSeatRolesFromReference(
+        referenceSeatKey,
+        seatKey,
+        centerPoint,
+        referenceFramesByRole,
+        rigid,
+        { skipped = skipped }
+      )
+    end
+  end
+
+  S.setStateVal(nextVirtualAnchors, "seatLayout", "virtualHandZoneAnchors")
+
+  return {
+    ok = true,
+    referenceSeatKey = referenceSeatKey,
+    movedCount = movedCount,
+    skippedCount = #skipped,
+    skipped = skipped,
+    npcSeatsProcessed = npcSeatsProcessed,
+  }
+end
+
 --- @param skipped table[]
 local function printRefreshSkippedReport(skipped)
   print("--- skipped (left unmoved) ---")
@@ -4377,34 +4547,14 @@ function M.refreshSeatRigsFromReferenceSegment(opts)
         end
       end
 
-      local seenRoleAtSeat = {}
-      local tag = objectTagForPlayerColor(seatKey)
-      local tagged = getObjectsWithTag(tag) or {}
-      for _, obj in ipairs(tagged) do
-        if obj ~= nil and U.isGameObject(obj) and not isHandZoneObject(obj) then
-          local disp = SRI.readRoleColorIdentity(obj)
-          if disp == nil then
-            skipped[#skipped + 1] = buildSkippedRecord(obj, seatKey, nil, "no_role_identity")
-          else
-            local roleKey, _ = SRI.parseRoleAndSuffix(disp)
-            if seenRoleAtSeat[roleKey] == true then
-              skipped[#skipped + 1] = buildSkippedRecord(obj, seatKey, roleKey, "duplicate_role_at_seat")
-            else
-              seenRoleAtSeat[roleKey] = true
-              local refFrame = referenceFramesByRole[roleKey]
-              if refFrame == nil then
-                skipped[#skipped + 1] = buildSkippedRecord(obj, seatKey, roleKey, "no_reference_role")
-              else
-                local placed = frameAfterSeatRigid(centerPoint, refFrame, rigid)
-                if not dryRun then
-                  placeObjectExact(obj, placed.position, placed.rotation)
-                end
-                movedCount = movedCount + 1
-              end
-            end
-          end
-        end
-      end
+      movedCount = movedCount + propagateSeatRolesFromReference(
+        referenceSeatKey,
+        seatKey,
+        centerPoint,
+        referenceFramesByRole,
+        rigid,
+        { dryRun = dryRun, skipped = skipped }
+      )
     end
   end
 

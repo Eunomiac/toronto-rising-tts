@@ -107,6 +107,8 @@
 
 ## Phase 3 — Simplified automatic path: NPC branch
 
+**Status:** Implemented (2026-07-05). Opt-in via `opts.useSimplifiedLayout = true` or `DEBUG.syncTableSimplified(tableKey)`.
+
 **Goal:** Behind `useSimplifiedLayout`, NPC seats use reference copy + postCorrections.
 
 ### Implement `applySimplifiedSeatLayout(tableCfg, filteredMap, opts)`
