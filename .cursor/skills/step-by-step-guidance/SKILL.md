@@ -117,7 +117,7 @@ Do **not** copy illustration dummies from the template into production runbooks.
 | Dice setup / assert | `rollTest`, `rollConfirm`, `rollCancelAll`, `rollE2eExpectBroadcast` | TESTING.md § Dice debug |
 | File evidence | `DEBUG.logStateToFile`, `DEBUG.logToFile`, `DEBUG.writeWorkspaceFile` | [`.dev/DEBUG_FILE_LOGGING.md`](../../.dev/DEBUG_FILE_LOGGING.md) |
 | Domain DEBUG | `DEBUG.syncTableSimplified`, `DEBUG.compareLayoutPaths`, … | `debugHelp()` / TESTING.md |
-| Session setup | `rollE2eSeatPrep`, `DEBUG.spawnNpcControlBoardTokens`, `gbE2eReset`, `ensureSceneLibraryStub` | **Automate prerequisites** above |
+| Session setup | `rollE2eSeatPrep`, `DEBUG.spawnNpcControlBoardTokens`, `gbE2eReset`, `ensureSceneLibraryStub`, `DEBUG.syncNpcs` | **Automate prerequisites** above; **`Sync` is not global** in Execute Lua — use `DEBUG.syncNpcs(opts)` |
 | Console banners | `printHeader(text, level)` | TESTING.md § E2E console output (levels 1–2 for phases; not for HUMAN in Step-By-Step playbooks) |
 
 ## Long procedures (multi-step verification)
@@ -182,7 +182,7 @@ function()
 end,
 ```
 
-**Gate (2) timing:** return a **number** (seconds) when a fixed delay is enough; return a **poll function** when Lua can observe readiness (e.g. blindfold flag, phase change). Use a subjective HUMAN + separate Code Block only when neither is reliable.
+**Gate (2) timing:** return a **number** (seconds) when a fixed delay is enough; return a **poll function** when Lua can observe readiness (e.g. blindfold flag, phase change). Use a subjective HUMAN + separate Code Block only when neither is reliable. Poll only for the human action’s effect — assert feature behavior in the following step(s). Coroutine faults print as `[coroutine] …` via `U.logCoroutineIssue` when a wait or step throws.
 
 **`U.RunSequenceWithOptions`** (when needed): `maxWait` / `frequency` per inter-step wait (default max **60s** — increase for slow human actions, e.g. `U.RunSequence(funcs, 120)`), `onComplete(ok, detail)`, `stepNames`, `sequenceTimeoutSeconds`, `cancelRegistry` for external abort. See inline option comments in `util.ttslua`.
 

@@ -1895,6 +1895,32 @@ function U.Alert(message, color)
 	broadcastToAll(message, color)
 end
 
+--- Log coroutine wait / RunSequence faults to the TTS console (always `print`; optional External Editor `log`).
+--- Use in `U.waitUntil` and `U.RunSequenceWithOptions` error paths so failures are visible when `log` is missing.
+--- @param tag string short context label (e.g. `waitUntil:check`, `RunSequence:step`)
+--- @param err any pcall error value
+--- @param detail table|nil optional structured fields (stepIndex, etc.)
+function U.logCoroutineIssue(tag, err, detail)
+	local tb = debug.traceback("", 2)
+	print("[coroutine] " .. tostring(tag) .. ": " .. tostring(err))
+	if detail ~= nil and U.Type(detail) == "table" then
+		local okEnc, encoded = pcall(function()
+			return JSON.encode(detail)
+		end)
+		if okEnc and type(encoded) == "string" then
+			print("[coroutine] detail: " .. encoded)
+		end
+	end
+	print(tb)
+	---@diagnostic disable-next-line: undefined-global
+	if type(log) == "function" then
+		---@diagnostic disable-next-line: undefined-global
+		pcall(function()
+			log({ coroutineTag = tag, err = tostring(err), detail = detail, traceback = tb })
+		end)
+	end
+end
+
 -- ============================================================================
 -- TAG UTILITIES
 -- ============================================================================
@@ -3331,7 +3357,7 @@ function U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency, abor
 			local success, checkResult = pcall(function() return pCheckFunc() end)
 			if not success then
 				-- Log error but don't crash - just break the loop
-				log({waitUntilError = checkResult, traceback = debug.traceback()})
+				U.logCoroutineIssue("waitUntil:check", checkResult)
 				break
 			end
 
@@ -3357,7 +3383,7 @@ function U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency, abor
 
 			-- Check timeout (maxWait is now in seconds)
 			if elapsedTime > maxWait and not hasWaited then
-				log(debug.traceback())
+				U.logCoroutineIssue("waitUntil:timeout", "maxWait exceeded (" .. tostring(maxWait) .. "s)")
 				hasWaited = true
 				if isForcing then
 					U.AlertGM("Coroutine Timeout: Forcing ResultFunc")
@@ -3381,8 +3407,7 @@ function U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency, abor
 			if success then
 				afterReturnVal = result
 			else
-				-- Log error but don't crash
-				log({waitUntilAfterFuncError = result, traceback = debug.traceback()})
+				U.logCoroutineIssue("waitUntil:afterFunc", result)
 			end
 		end
 
@@ -3400,7 +3425,7 @@ function U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency, abor
 		startLuaCoroutine(coTarget, "CheckCoroutine")
 	end)
 	if not _okCo then
-		log({ waitUntilCoroutineStartFailed = tostring(_coErr) })
+		U.logCoroutineIssue("waitUntil:startFailed", _coErr)
 	end
 
 	return function() return afterReturnVal ~= nil end
@@ -3450,7 +3475,7 @@ function U.RunSequenceWithOptions(funcs, opts)
 				onComplete(ok, detail)
 			end)
 			if not cok then
-				log({ RunSequenceWithOptions_onComplete_error = cerr, traceback = debug.traceback() })
+				U.logCoroutineIssue("RunSequence:onComplete", cerr)
 			end
 		end
 	end
@@ -3489,7 +3514,7 @@ function U.RunSequenceWithOptions(funcs, opts)
 			end)
 		end
 		if not ok then
-			log({ RunSequenceWithOptions_step_error = result, stepIndex = index, traceback = debug.traceback() })
+			U.logCoroutineIssue("RunSequence:step", result, { stepIndex = index, stepName = name })
 			return nil, false
 		end
 		return result, true

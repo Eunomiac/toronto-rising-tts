@@ -9,7 +9,7 @@ Verify TOR-281: when you clear NPC figurines from the stage and those NPCs still
 ## What this playbook checks
 
 1. **Automated Clear rules** — Lua simulates Clear with different seat and stage-light combinations and checks the seat ends up active or inactive as expected.
-2. **Real Clear button** — you click Clear on the control board twice (with the five-second confirm); Lua polls until placements clear and the seat activates.
+2. **Real Clear button** — you click Clear on the control board twice (with the five-second confirm); Lua polls until placements clear, then asserts the seat activated.
 3. **Scene library persistence** — you toggle an NPC seat off in the Scenes panel, then re-apply the scene; the seat should still be off, not revert to how the scene was originally authored.
 
 ## Prerequisites (human — keep short)
@@ -237,7 +237,7 @@ U.RunSequence({
     S.setStateVal({
       [F.npcA] = { u = F.u, v = F.v, npcLightMode = "STANDARD" },
     }, "sessionScene", "npcWorld", "placements")
-    Sync.npcs({ force = true, reason = "tor281_manual_clear_setup" })
+    DEBUG.syncNpcs({ force = true, reason = "tor281_manual_clear_setup" })
     if NPCS.resolveSeatNarrativePresence(F.seat) ~= false then
       error("[B.1 FAIL] setup — NPC1 should be disabled before manual Clear")
     end
@@ -287,7 +287,7 @@ U.RunSequence({
     S.setStateVal(seatSlots, "sessionScene", "seatSlots")
     S.setStateVal(F.npcA, "seatLayout", "occupiedNPCSlots", F.seat)
     S.setStateVal({}, "sessionScene", "npcWorld", "placements")
-    Sync.npcs({ force = true, reason = "tor281_library_setup" })
+    DEBUG.syncNpcs({ force = true, reason = "tor281_library_setup" })
     print("PASS — linked scene " .. sceneKey .. " with NPC1 active at table")
   end,
   function()

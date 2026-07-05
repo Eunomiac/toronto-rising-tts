@@ -178,6 +178,12 @@ function DEBUG.syncTableSimplified(tableKey, opts)
   return R.resolveSeatObjectsFromTable(key, nil, resolveOpts)
 end
 
+--- NPC reconciliation from `gameState` (Execute Lua / playbooks — `Sync` is not a global).
+--- @param opts table|nil forwarded to `Sync.npcs` (e.g. `{ force = true, reason = "..." }`)
+function DEBUG.syncNpcs(opts)
+    Sync.npcs(type(opts) == "table" and opts or {})
+end
+
 --- Writes content via sendExternalMessage type "write". File appears as **workspace/.dev/.debug/<relativePath>** when the bridge listens on 39998.
 --- Does not use log append cache; each call overwrites that file path.
 --- @param relativePath string Path suffix under .dev/.debug, e.g. "debug_logs/npcs_panel.txt"
@@ -607,6 +613,15 @@ function DEBUG.ensureSceneLibraryStub(slotIndex, sceneKey, opts)
                     placements = type(opts.placements) == "table" and opts.placements or {},
                 },
             }
+        end
+        if type(sessionScene.clock) ~= "table" then
+            sessionScene.clock = {
+                useRealTime = false,
+                realTimeSpeed = 1,
+                isPresentDay = true,
+            }
+        elseif sessionScene.clock.isPresentDay == nil then
+            sessionScene.clock.isPresentDay = true
         end
 
         local row = type(existing) == "table" and existing or {}
@@ -5336,6 +5351,7 @@ function DEBUG.help()
     print("  showState()              - Full gameState JSON")
     print("  showScene()              - sessionScene + sceneLibrary keys")
     print("  ensureSceneLibraryStub(slotIndex, sceneKey?, opts?) - E2E scene library row stub (no Apply)")
+    print("  syncNpcs(opts?)            - Sync.npcs from Execute Lua (Sync is not global)")
     print("  inspectSoundscapeAudio() - Emitter GUID/tag/effect inventory")
     print("  dumpConditions(color)    - Active conditions + resolved effects")
     print("  dumpEffectiveStats(color) - Effective stat getters (tracker max, BP, …)")
@@ -5454,6 +5470,7 @@ compareHandFrames = DEBUG.compareHandFrames
 compareLayoutPaths = DEBUG.compareLayoutPaths
 refreshSeatRigsFromReference = DEBUG.refreshSeatRigsFromReference
 syncTableSimplified = DEBUG.syncTableSimplified
+syncNpcs = DEBUG.syncNpcs
 
 -- Expose inspection functions
 showState = DEBUG.showState
