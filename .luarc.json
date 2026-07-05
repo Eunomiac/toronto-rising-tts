@@ -19,6 +19,7 @@
     "MusicPlayer",
     "Print",
     "log",
+    "Sync",
     "broadcastToAll",
     "startLuaCoroutine",
     "getObjects",

@@ -237,7 +237,7 @@ U.RunSequence({
     S.setStateVal({
       [F.npcA] = { u = F.u, v = F.v, npcLightMode = "STANDARD" },
     }, "sessionScene", "npcWorld", "placements")
-    DEBUG.syncNpcs({ force = true, reason = "tor281_manual_clear_setup" })
+    Sync.npcs({ force = true, reason = "tor281_manual_clear_setup" })
     if NPCS.resolveSeatNarrativePresence(F.seat) ~= false then
       error("[B.1 FAIL] setup — NPC1 should be disabled before manual Clear")
     end
@@ -287,7 +287,7 @@ U.RunSequence({
     S.setStateVal(seatSlots, "sessionScene", "seatSlots")
     S.setStateVal(F.npcA, "seatLayout", "occupiedNPCSlots", F.seat)
     S.setStateVal({}, "sessionScene", "npcWorld", "placements")
-    DEBUG.syncNpcs({ force = true, reason = "tor281_library_setup" })
+    Sync.npcs({ force = true, reason = "tor281_library_setup" })
     print("PASS — linked scene " .. sceneKey .. " with NPC1 active at table")
   end,
   function()

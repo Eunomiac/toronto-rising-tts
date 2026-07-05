@@ -157,7 +157,7 @@ SS = require("core.soundscape")
 if SS ~= nil and type(SS.bootstrapSilenceStrayEmitterLoops) == "function" then
     SS.bootstrapSilenceStrayEmitterLoops()
 end
-local Sync = require("core.sync")
+Sync = require("core.sync")
 O = require("core.objects")
 U = require("lib.util")
 local StorytellerPanelUI = require("core.storyteller_panel_ui")

@@ -100,7 +100,7 @@ The user can **Execute Lua Code** from the IDE — no `lua` prefix, no in-game c
 
 **IMPORTANT CAVEATS:**
 
-- The "Execute Lua Code" command cannot include `require` statements; it must run independently in the global scope. Most libraries are exposed globally and can be used without `require`.
+- The "Execute Lua Code" command cannot include `require` statements; it must run independently in the global scope. Most libraries are exposed globally (`S`, `NPCS`, `Sync`, `DEBUG`, …) and can be used without `require`.
 
 **Default to Lua first** means setup, seeding, **assertions**, and file capture — not simulating every in-world gesture. Reserve **bold manual steps** for UI clicks, drops, rolls, visuals, or timing the engine cannot drive **reasonably**.
 
@@ -117,7 +117,7 @@ Do **not** copy illustration dummies from the template into production runbooks.
 | Dice setup / assert | `rollTest`, `rollConfirm`, `rollCancelAll`, `rollE2eExpectBroadcast` | TESTING.md § Dice debug |
 | File evidence | `DEBUG.logStateToFile`, `DEBUG.logToFile`, `DEBUG.writeWorkspaceFile` | [`.dev/DEBUG_FILE_LOGGING.md`](../../.dev/DEBUG_FILE_LOGGING.md) |
 | Domain DEBUG | `DEBUG.syncTableSimplified`, `DEBUG.compareLayoutPaths`, … | `debugHelp()` / TESTING.md |
-| Session setup | `rollE2eSeatPrep`, `DEBUG.spawnNpcControlBoardTokens`, `gbE2eReset`, `ensureSceneLibraryStub`, `DEBUG.syncNpcs` | **Automate prerequisites** above; **`Sync` is not global** in Execute Lua — use `DEBUG.syncNpcs(opts)` |
+| Session setup | `rollE2eSeatPrep`, `DEBUG.spawnNpcControlBoardTokens`, `gbE2eReset`, `ensureSceneLibraryStub`, `Sync.npcs` | **Automate prerequisites** above |
 | Console banners | `printHeader(text, level)` | TESTING.md § E2E console output (levels 1–2 for phases; not for HUMAN in Step-By-Step playbooks) |
 
 ## Long procedures (multi-step verification)
