@@ -416,6 +416,8 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-05 | UPDATE | TOR-204 | Master Compulsions deck: `CompulsionsMasterDeck` tag resolution; removed `G.GUIDS.COMPULSIONS_MASTER_DECK` from spec |
 | 2026-07-05 | SHIPPED | Table seat layout Phase 3 | `applySimplifiedSeatLayout` + `propagateSeatRolesFromReference`; `DEBUG.syncTableSimplified`; `useSimplifiedLayout` opt-in |
 | 2026-07-05 | SHIPPED | Table seat layout Phases 0–6 + lean pass | Config cleanup (`seatToPositionMap`, `referenceHand`, `ReferenceCameraAngles`); production path simplified-only (`buildLayoutComputedContext`); removed `useLegacyLayout` flags |
+| 2026-07-05 | SHIPPED | INBOX quick fixes | Scenes panel closes on manual Table button; floor/plinth XZ sync on table switch |
+| 2026-07-05 | CREATE | TOR-302 | Seated NPC ST roll drawer/spawn/light reposition; Dice & Rolls Feature, Medium; parent TOR-31; relatedTo TOR-79, TOR-174 |
 | 2026-07-05 | CREATE | TOR-301 | Prune legacy rotational seat layout generator (Future; Synchronization & State; relatedTo TOR-66) |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

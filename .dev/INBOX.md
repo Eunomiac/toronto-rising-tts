@@ -2,16 +2,7 @@
 
 ## Quick Fixes
 
-- [Storyteller Scenes Panel] When the Storyteller clicks one of the "Table" buttons to manually change a table, the Scenes panel should be immediately closed (just as it is when the Storyteller clicks "Apply active scene")
-- [Table Transitions] Whenever a Table is changed, the x and z coordinates of both the `G.GUIDS.TABLE_PLINTH` and `G.GUIDS.THE_FLOOR` should be set to match the new table's x- and z- origin coordinates.
-
 ## Active
-
-- [Storyteller/NPC Rolls & Storyteller Dice Drawers] When the Storyteller initiates a roll made by an NPC seated at an _active_ table seat, the dice drawer, dice spawning circle, and the dice tray light should all be moved so that they sit in front of the NPC making the roll.  This is done very similarly to how player dice trays operate, through the use of anchor objects.
-  - **Dice Drawer:** The dice drawer should be the same one that would be used for any other Storyteller roll -- i.e. one of the three available dice tray objects already defined. However, for a seated NPC, instead of moving the drawer to `C.ObjectPositions.DICE_DRAWER_STORYTELLER_<#>.on`, the same object should instead be moved according to `C.ObjectPositions.DICE_DRAWER_STORYTELLER_NPC<#>` (i.e. ending with their seat suffix) following standard position-by-anchor methods. It should be instantly teleported to the `off` position, and then smoothly lerped to the `on` position as with player dice drawers. **NOTE:** The `target` fields in these entries does not contain a GUID like the other entries, because the specific drawer object that will be moved will depend on which of the three storyteller dice drawers remain available.
-  - **Dice Light:** The dice light that corresponds to the chosen dice drawer should simply be moved to the same x/z coordinates, leaving its y-value and rotation unchanged
-  As soon as the Storyteller clears a roll that has been positioned in this fashion, the storyteller dice drawer and light should immediately move back to their default positions as defined in `C.ObjectPositions.DICE_DRAWER_STORYTELLER_<#>.off`.
-  There is no need to tag these as seat objects, since they will not move with the seat (most attempts to change seating arrangements while rolls are live are gated to fail anyways)
 
 ## External Work (Set STATUS to "External To Do")
 
@@ -27,6 +18,9 @@
 
 ## Processed
 
+2026-07-05 INBOX Quick Fixes — Scenes panel closes on manual Table button (`closeScenesPanel` in `StorytellerScenesPanel.onHudClick`)
+2026-07-05 INBOX Quick Fixes — floor/plinth XZ follow active table origin on table switch (`syncSharedFloorAndPlinthToTableOrigin` in `lib/rotational-seat-layout.ttslua`)
+2026-07-05 INBOX Active — seated NPC ST roll drawer/spawn/light reposition → **TOR-302** (Dice & Rolls Feature, Medium; parent **TOR-31**)
 2026-07-05 INBOX External — Clan Compulsions Influence line only on CSHEET → **TOR-299** (Workshop, Medium; parent **TOR-38** Character Sheets)
 2026-07-05 INBOX External — GM review sheets for in-play Advantages → **TOR-300** (Workshop, Medium; relatedTo **TOR-38**, **TOR-279** Stats panel)
 2026-07-05 INBOX Quick Fixes — Color Blitz + Jarvis Jacks coterie ref grid (`inCoterieRef`, XML grid/popups); relatedTo **TOR-190** (coterie infographics)

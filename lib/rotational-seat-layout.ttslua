@@ -3195,6 +3195,26 @@ local function applyReferenceHandPositionDelta(fromTableKey, toTableKey)
   )
 end
 
+--- Shared floor/plinth asset bundles follow the active table's cylindrical origin (XZ only).
+--- @param tableCfg table|nil
+local function syncSharedFloorAndPlinthToTableOrigin(tableCfg)
+  if type(tableCfg) ~= "table" or tableCfg.centerPoint == nil then
+    return
+  end
+  local origin = Vector(tableCfg.centerPoint)
+  local guids = {
+    G.GUIDS.THE_FLOOR,
+    G.GUIDS.TABLE_PLINTH,
+  }
+  for i = 1, #guids do
+    local obj = G.getObject(guids[i])
+    if obj ~= nil and type(obj.getPosition) == "function" and type(obj.setPosition) == "function" then
+      local pos = obj.getPosition()
+      obj.setPosition({ x = origin.x, y = pos.y, z = origin.z })
+    end
+  end
+end
+
 --- Apply `C.Tables[*].objectPositions`: per-table partial position/rotation overrides by object GUID.
 --- Only axes present in each partial table are written; others keep the object's current values.
 --- @param tableCfg table|nil
@@ -3282,6 +3302,7 @@ function M.resolveSeatObjectsFromTable(tableRef, sourceObjects, options)
   local filteredMap = buildFilteredSeatMap(tableCfg, occupiedNPCSlots)
   -- Activate the target table (instant setPosition) BEFORE layout so FACING bounds reads are valid.
   applyAllTablesVisualState(tableKey, occupiedNPCSlots)
+  syncSharedFloorAndPlinthToTableOrigin(tableCfg)
 
   local referenceSeatKey, refKeyErr = M.resolveReferenceSeatKey(tableCfg)
   if referenceSeatKey == nil then

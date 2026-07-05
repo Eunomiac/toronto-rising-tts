@@ -1076,6 +1076,7 @@ function StorytellerScenesPanel.onHudClick(player, button, id)
         if RSL.alertAndBlockIfDiceOnTable("switch table layout") then
             return
         end
+        closeScenesPanel()
         HUDBF.runTransition(function()
             -- Store the clicked key as intent (family or explicit); SetTableTo resolves family → concrete.
             S.setStateVal(tableKey, "sessionScene", "tableKey")
