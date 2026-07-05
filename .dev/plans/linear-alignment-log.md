@@ -403,10 +403,11 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-05 | CREATE | TOR-291 | Gitignore bundle-size-gate.json (INBOX stays tracked); Foundation & Tooling, Low |
 | 2026-07-05 | CREATE | TOR-292 | ST roll dash broadcast persistence for all rolls; Dice & Rolls, parent TOR-31, Medium |
 | 2026-07-05 | CREATE | TOR-293 | Absent player connect/disconnect presence override; Players & Connection Feature, High; `blockedBy` TOR-144 |
-| 2026-07-05 | `/tr-inbox` | INBOX | Quick fixes shipped (coterie ref, seat gate, ST hint font, secret reveal); promotions TOR-294–298; `blockedBy` TOR-296→TOR-141 |
+| 2026-07-05 | `/tr-inbox` | INBOX | Quick fixes shipped (coterie ref, seat gate, ST hint font, secret reveal); promotions TOR-294–298 |
 | 2026-07-05 | CREATE | TOR-294 | Rouse-only roll broadcast — dice in main image row; Dice & Rolls Bug, Medium |
 | 2026-07-05 | CREATE | TOR-295 | Reference overlay typo fixes + Compulsion XP; Workshop, Medium; relatedTo TOR-105 |
-| 2026-07-05 | CREATE | TOR-296 | Roll broadcast message audit; Dice & Rolls Improvement, Medium; `blockedBy` TOR-141 |
+| 2026-07-05 | CREATE | TOR-296 | Roll broadcast message audit; Dice & Rolls Improvement, Medium |
+| 2026-07-05 | UPDATE | TOR-296 | Removed incorrect `blockedBy` TOR-141 (E2E playbooks) — audit is independent reference work |
 | 2026-07-05 | CREATE | TOR-297 | Famulus sheets Disciplines; Workshop, Medium; relatedTo TOR-110 |
 | 2026-07-05 | CREATE | TOR-298 | Black Caesar companions cutouts/sheets; Workshop, Medium |
 | 2026-07-05 | SHIPPED | INBOX QF | Color Blitz + Jarvis Jacks coterie ref; seat-color dice bag/signal candle gate; ST click-hint font; secret roll reveal on broadcast |
