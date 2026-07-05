@@ -43,7 +43,8 @@ Goal: the author can execute top-to-bottom with minimal interpretation — paste
 
 The user can **Execute Lua Code** from the IDE — no `lua` prefix, no in-game console typing.
 
-**IMPORTANT:** This code cannot `require` external libraries; it must run independently in the global scope.  Most libraries have been exposed globally, however, and can be used without `require`.
+**IMPORTANT CAVEATS:**
+* The "Execute Lua Code" command cannot include `require` statements; it must run independently in the global scope.  Most libraries have been exposed globally, however, and can be used without `require`.
 
 **Default to Lua first:** setup, seeding, assertions, and file capture. Reserve **bold manual steps** only for UI clicks, visuals, or timing the engine cannot drive.
 
