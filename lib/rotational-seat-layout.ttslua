@@ -605,6 +605,46 @@ local function resolveSourceTemplateGroups(sourceObjects)
   return groups
 end
 
+--- GUIDs of every object listed in `sourceObjects.relative` (all seats). Role propagation skips these;
+--- they move only via `applyRelativeFollowersForHandMove` (same contract as legacy `resolveSeatObjects`).
+--- @param sourceObjects table|nil
+--- @return table<string, boolean>
+local function buildRelativeGuidSet(sourceObjects)
+  local set = {}
+  if U.Type(sourceObjects) ~= "table" then
+    return set
+  end
+  local sourceGroups = resolveSourceTemplateGroups(sourceObjects)
+  for i = 1, #sourceGroups.relative do
+    local relRef = sourceGroups.relative[i]
+    local obj = U.getObject(relRef, true)
+    if obj == nil and U.Type(relRef) == "string" then
+      obj = TarotObjects.resolveByGuid(relRef)
+      if obj == nil and TarotObjects.isGuidsKey(relRef) then
+        obj = TarotObjects.resolveByGuidsKey(relRef)
+      end
+    end
+    if obj ~= nil and obj.getGUID ~= nil then
+      local g = obj.getGUID()
+      if U.Type(g) == "string" and g ~= "" then
+        set[g] = true
+      end
+    end
+  end
+  return set
+end
+
+--- @param obj Object|nil
+--- @param relativeGuidSet table<string, boolean>|nil
+--- @return boolean
+local function objectInRelativeGuidSet(obj, relativeGuidSet)
+  if U.Type(relativeGuidSet) ~= "table" or not U.isGameObject(obj) or obj.getGUID == nil then
+    return false
+  end
+  local g = obj.getGUID()
+  return U.Type(g) == "string" and g ~= "" and relativeGuidSet[g] == true
+end
+
 --- @param sourceGroups table
 --- @return table[]
 local function collectTemplateGroups(sourceGroups)
@@ -851,7 +891,7 @@ local function ensureReferenceHandZoneAnchorSlot(referenceSlots, referencePlayer
   return referenceSlots, #referenceSlots
 end
 
---- `activeTable.referenceHandPosition - C.CameraAuthoringReferenceHandPosition`. Applied to camera **position**
+--- `activeTable.referenceHand.position - C.CameraAuthoringReferenceHandPosition`. Applied to camera **position**
 --- only for presets with `isRelativeToReferenceHandPosition == true`.
 --- @param tableCfg table|nil
 --- @return Vector
@@ -860,15 +900,15 @@ local function cameraPositionWorldOffsetForActiveTable(tableCfg)
     return Vector(0, 0, 0)
   end
   ---@cast tableCfg table
-  local refHand = tableCfg.referenceHandPosition
-  if refHand == nil then
+  local refHand = M.getReferenceHand(tableCfg)
+  if refHand == nil or refHand.position == nil then
     return Vector(0, 0, 0)
   end
   local base = C.CameraAuthoringReferenceHandPosition
   if base == nil then
     return Vector(0, 0, 0)
   end
-  return Vector(refHand) - Vector(base)
+  return Vector(refHand.position) - Vector(base)
 end
 
 --- Apply a seat's precomputed **rigid transform** (yaw `deltaDeg` about `centerPoint`, then `shift`) to
@@ -902,7 +942,7 @@ local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOff
   if positionWorldOffset ~= nil then
     worldOff = Vector(positionWorldOffset)
   end
-  local referenceColor = computed.referencePlayerColor
+  local referenceColor = computed.referenceSeatKey or computed.referencePlayerColor
   local seatRigidByKey = computed.seatRigidByKey
   if U.Type(seatRigidByKey) ~= "table" then
     error("rotational-seat-layout: applyCameraModesForSeats requires computed.seatRigidByKey (from a layout generator)")
@@ -985,17 +1025,17 @@ local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOff
 
   for i = 1, #bySeatModeKeys do
     local modeKey = bySeatModeKeys[i]
-    local redMode = C.RedCameraAngles and C.RedCameraAngles[modeKey] or nil
+    local redMode = C.ReferenceCameraAngles and C.ReferenceCameraAngles[modeKey] or nil
     if U.Type(redMode) ~= "table" then
       error(
         "rotational-seat-layout: sourceObjects.cameraModes.bySeat includes '"
         .. modeKey
-        .. "' but C.RedCameraAngles has no entry for it"
+        .. "' but C.ReferenceCameraAngles has no entry for it"
       )
     end
     ---@cast redMode TtsCameraAnglePreset
     if redMode.position == nil then
-      error("rotational-seat-layout: C.RedCameraAngles['" .. modeKey .. "'] is missing position")
+      error("rotational-seat-layout: C.ReferenceCameraAngles['" .. modeKey .. "'] is missing position")
     end
 
     local basePos = Vector(redMode.position)
@@ -1484,7 +1524,7 @@ end
 --- this with a per-seat `lookAtRotation` — that would aim seats at the center instead of straight inward.
 ---
 --- @param sourceObjects table same nested shape as `generateRotationalCoordinates`
---- @param tableCfg table the `C.Tables` entry (FACING); provides `guid`, `centerPoint`, full `playerToPositionMap`, `referencePlayerColor`
+--- @param tableCfg table the `C.Tables` entry (FACING); provides `guid`, `centerPoint`, full `seatToPositionMap`, `referenceSeatSegment`
 --- @param filteredMap table<string, table> seats to actually place (`{ side, index }` values; e.g. occupancy-filtered)
 --- @param options table|nil { currentTableKey?, frameRefsRelativePath?, frameRefsVarName? }
 --- @return table computed bundle for resolveSeatObjects
@@ -1493,18 +1533,18 @@ function M.generateFacingCoordinates(sourceObjects, tableCfg, filteredMap, optio
   if U.Type(tableCfg) ~= "table" then
     error("rotational-seat-layout: generateFacingCoordinates requires a table config")
   end
-  local referencePlayerColor = tableCfg.referencePlayerColor
+  local referencePlayerColor, refKeyErr = M.resolveReferenceSeatKey(tableCfg)
   if U.Type(referencePlayerColor) ~= "string" or referencePlayerColor == "" then
-    error("rotational-seat-layout: FACING table referencePlayerColor must be a non-empty string")
+    error("rotational-seat-layout: FACING table missing reference seat key: " .. tostring(refKeyErr))
   end
   local centerPoint = Vector(tableCfg.centerPoint)
-  local fullMap = tableCfg.playerToPositionMap
+  local fullMap = M.getSeatToPositionMap(tableCfg)
   if U.Type(fullMap) ~= "table" then
-    error("rotational-seat-layout: FACING table playerToPositionMap must be a table")
+    error("rotational-seat-layout: FACING table seatToPositionMap must be a table")
   end
   local refEntry = fullMap[referencePlayerColor]
   if U.Type(refEntry) ~= "table" or U.Type(refEntry.side) ~= "number" then
-    error("rotational-seat-layout: FACING playerToPositionMap['" .. referencePlayerColor ..
+    error("rotational-seat-layout: FACING seatToPositionMap['" .. referencePlayerColor ..
       "'] must be { side = <deg>, index = <n> }")
   end
   local referenceSide = refEntry.side
@@ -1601,7 +1641,7 @@ function M.generateFacingCoordinates(sourceObjects, tableCfg, filteredMap, optio
 end
 
 --- World XZ (Vector) of a FACING-table seat's segment center, from the active table's **live** bounds.
---- Mirrors `generateFacingCoordinates` X-segmentation; the row Z is derived from `referenceHandPosition`.
+--- Mirrors `generateFacingCoordinates` X-segmentation; the row Z is derived from `referenceHand.position`.
 --- Returns nil if bounds are unavailable (e.g. the table is not the active table). Intended for minimap /
 --- control-board markers; seat-object placement uses the generator's per-template frames, not this.
 --- @param tableCfg table
@@ -1628,11 +1668,12 @@ function M.facingSeatWorldXZ(tableCfg, sideAngleDeg, index1Based)
   local bs = Vector(bounds.size)
   local xMin = bc.x - bs.x / 2
   local xMax = bc.x + bs.x / 2
-  local nSeats = facingMaxIndexForSide(tableCfg.playerToPositionMap or {}, sideAngleDeg)
+  local nSeats = facingMaxIndexForSide(M.getSeatToPositionMap(tableCfg), sideAngleDeg)
   local x = facingSegmentCenterX(sideAngleDeg, index1Based, nSeats, xMin, xMax)
   local rowDist = 0
-  if tableCfg.referenceHandPosition ~= nil then
-    rowDist = U.HorizontalDistance(cp, Vector(tableCfg.referenceHandPosition))
+  local refHand = M.getReferenceHand(tableCfg)
+  if refHand ~= nil and refHand.position ~= nil then
+    rowDist = U.HorizontalDistance(cp, Vector(refHand.position))
   end
   local z = cp.z + math.cos(math.rad(sideAngleDeg)) * rowDist
   return Vector(x, cp.y, z)
@@ -1781,7 +1822,9 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
 
   for color, pack in pairs(computed.byColor) do
     if color ~= referencePlayerColor then
-      if options.skipNpcSeatLayout == true and isNpcSeatKey(color) then
+      local skipSeatLayout = options.skipNonReferenceSeatLayout == true
+          or (options.skipNpcSeatLayout == true and isNpcSeatKey(color))
+      if skipSeatLayout then
         cloneGuidByColorRole[color] = {}
         seatObjByColorRole[color] = {}
         handZoneMoveBySeat[color] = nil
@@ -2173,7 +2216,7 @@ local function tableNpcSlotCapacity(tableCfg)
     return 0
   end
   ---@cast tableCfg table
-  local map = tableCfg.playerToPositionMap
+  local map = M.getSeatToPositionMap(tableCfg)
   if U.Type(map) ~= "table" then
     return 0
   end
@@ -2332,7 +2375,7 @@ local function collectSeatPresenceMap(tableCfg)
   local map = nil
   if U.Type(tableCfg) == "table" then
     ---@cast tableCfg table
-    map = tableCfg.playerToPositionMap
+    map = M.getSeatToPositionMap(tableCfg)
   end
   if U.Type(map) == "table" then
     ---@cast map table
@@ -2347,6 +2390,29 @@ end
 
 --- Fingerprint of last successful `resolveSeatObjectsFromTable` (stable inputs only).
 local lastLayoutSyncFingerprint = nil
+
+--- True when an NPC instance is assigned to a seat slot but its figurine is not at the table rig yet
+--- (preload / stage / stash). Seated-at-table instances (`areaKey == "seat"`) stay in the layout filter.
+--- @param rec table|nil
+--- @return boolean
+local function npcOccupantExcludedFromTableLayout(rec)
+  if U.Type(rec) ~= "table" then
+    return false
+  end
+  local ak = rec.areaKey
+  if U.Type(ak) ~= "string" or ak == "" then
+    return false
+  end
+  if ak == "seat" then
+    return false
+  end
+  if U.Type(NPCS) == "table" then
+    if ak == NPCS.PRELOAD_AREA_KEY or ak == NPCS.STASH_AREA_KEY or ak == NPCS.STAGE_BOARD_AREA_KEY then
+      return true
+    end
+  end
+  return true
+end
 
 --- @return table<string, string|boolean>
 local function getOccupiedNPCSlots(opts)
@@ -2366,7 +2432,7 @@ local function getOccupiedNPCSlots(opts)
   if U.Type(npcInstances) == "table" then
     local inArea = {}
     for npcName, rec in pairs(npcInstances) do
-      if U.Type(npcName) == "string" and U.Type(rec) == "table" and U.Type(rec.areaKey) == "string" then
+      if U.Type(npcName) == "string" and npcOccupantExcludedFromTableLayout(rec) then
         inArea[npcName] = true
       end
     end
@@ -2391,7 +2457,7 @@ local function buildFilteredSeatMap(tableCfg, occupiedNPCSlots, opts)
     return out
   end
   ---@cast tableCfg table
-  local map = tableCfg.playerToPositionMap or {}
+  local map = M.getSeatToPositionMap(tableCfg)
   local layoutCtx = nil
   if opts.forFingerprint ~= true then
     layoutCtx = NPCS.getReconcileLayoutContext and NPCS.getReconcileLayoutContext()
@@ -2571,7 +2637,11 @@ local function enforceNPCSeatObjectVisibility(sourceObjects, occupiedNPCSlots, t
   local currentSeatPresence = collectSeatPresenceMap(currentTableCfg)
   local allLayerColors = getAllLayerColors()
   local hiddenSeatY = -200
-  local referenceColor = (targetTableCfg and targetTableCfg.referencePlayerColor) or "Red"
+  local referenceColor, refKeyErr = M.resolveReferenceSeatKey(targetTableCfg)
+  if U.Type(referenceColor) ~= "string" or referenceColor == "" then
+    error("rotational-seat-layout: enforceNPCSeatObjectVisibility missing reference seat key: "
+      .. tostring(refKeyErr))
+  end
   local templateGuidSet = {}
   for _, group in ipairs(allSourceRefs) do
     for i = 1, #group do
@@ -2666,10 +2736,13 @@ local function seatIncludedInLayoutPass(seatKey, computed)
   if U.Type(seatKey) ~= "string" or seatKey == "" or U.Type(computed) ~= "table" then
     return false
   end
-  if U.Type(computed.byColor) == "table" and computed.byColor[seatKey] ~= nil then
+  if U.Type(computed.seatToPositionMap) == "table" and computed.seatToPositionMap[seatKey] ~= nil then
     return true
   end
   if U.Type(computed.playerToPositionMap) == "table" and computed.playerToPositionMap[seatKey] ~= nil then
+    return true
+  end
+  if U.Type(computed.byColor) == "table" and computed.byColor[seatKey] ~= nil then
     return true
   end
   return false
@@ -2753,7 +2826,10 @@ end
 --- Corrections run only for seats in the filtered layout pass (`computed.byColor` / `playerToPositionMap`).
 --- @param sourceObjects table
 --- @param computed table|nil
-local function applyPostCorrections(sourceObjects, computed)
+--- @param opts table|nil `{ skipPcPostCorrections?: boolean }` — when true, skip PC seat rows (Phase 4 simplified path)
+local function applyPostCorrections(sourceObjects, computed, opts)
+  opts = U.Type(opts) == "table" and opts or {}
+  local skipPcPostCorrections = opts.skipPcPostCorrections == true
   if U.Type(sourceObjects) ~= "table" then
     return
   end
@@ -2808,6 +2884,9 @@ local function applyPostCorrections(sourceObjects, computed)
       local applyCorrection = false
       if U.Type(applySeatKey) == "string" and applySeatKey ~= "" then
         applyCorrection = seatIncludedInLayoutPass(applySeatKey, computed)
+        if applyCorrection and skipPcPostCorrections and isPlayerSeatKey(applySeatKey) then
+          applyCorrection = false
+        end
       end
       if applyCorrection then
 
@@ -2928,7 +3007,10 @@ local function applyPostCorrections(sourceObjects, computed)
   local bySeatRole = sourceObjects.postCorrectionsBySeatRole
   if U.Type(bySeatRole) == "table" and U.Type(computed) == "table" and U.Type(computed.byColor) == "table" then
     for seatKey, roleMap in pairs(bySeatRole) do
-      if U.Type(seatKey) == "string" and U.Type(roleMap) == "table" and seatIncludedInLayoutPass(seatKey, computed) then
+      if U.Type(seatKey) == "string"
+          and U.Type(roleMap) == "table"
+          and seatIncludedInLayoutPass(seatKey, computed)
+          and not (skipPcPostCorrections and isPlayerSeatKey(seatKey)) then
         for roleKey, correction in pairs(roleMap) do
           if U.Type(roleKey) == "string" and U.Type(correction) == "table" then
             local obj = findObjectForSeatRoleCorrection(seatKey, roleKey)
@@ -3040,18 +3122,21 @@ local function applyReferenceHandPositionDelta(fromTableKey, toTableKey)
   if U.Type(toCfg) ~= "table" then
     return
   end
-  if toCfg.referenceHandPosition == nil then
+  if toCfg.referenceHand == nil or toCfg.referenceHand.position == nil then
     return
   end
 
-  local refColor = toCfg.referencePlayerColor or "Red"
+  local refColor, refKeyErr = M.resolveReferenceSeatKey(toCfg)
+  if U.Type(refColor) ~= "string" or refColor == "" then
+    return
+  end
   local handZone = U.getHandZone(refColor)
   if handZone == nil or handZone.getPosition == nil then
     return
   end
 
   local liveRef = Vector(handZone.getPosition())
-  local toRef = Vector(toCfg.referenceHandPosition)
+  local toRef = Vector(toCfg.referenceHand.position)
   local delta = toRef - liveRef
   local tolerance = 0.01
   if delta:sqrMagnitude() <= (tolerance * tolerance) then
@@ -3095,7 +3180,7 @@ local function applyReferenceHandPositionDelta(fromTableKey, toTableKey)
   end
 
   print(
-    "[rotational-seat-layout] referenceHandPosition delta applied from '"
+    "[rotational-seat-layout] referenceHand delta applied from '"
     .. tostring(toTableKey)
     .. "' refColor="
     .. tostring(refColor)
@@ -3139,7 +3224,28 @@ local function applyTableConfigObjectPositions(tableCfg)
   end
 end
 
---- Convenience wrapper around generateRotationalCoordinates + resolveSeatObjects.
+--- Minimal layout metadata for cameras and postCorrections after simplified placement (no legacy generator).
+--- @param tableCfg table
+--- @param filteredMap table
+--- @param handBundle table|nil
+--- @param referenceSeatKey string
+--- @return table computed
+local function buildLayoutComputedContext(tableCfg, filteredMap, handBundle, referenceSeatKey)
+  local seatRigidByKey = {}
+  if U.Type(handBundle) == "table" and U.Type(handBundle.seatRigidByKey) == "table" then
+    seatRigidByKey = handBundle.seatRigidByKey
+  end
+  return {
+    shape = tableCfg.shape,
+    centerPoint = tableCfg.centerPoint,
+    referenceSeatKey = referenceSeatKey,
+    referencePlayerColor = referenceSeatKey,
+    seatRigidByKey = seatRigidByKey,
+    seatToPositionMap = filteredMap,
+  }
+end
+
+--- Convenience wrapper around simplified seat layout + cameras/postCorrections.
 --- @param tableRef string|table key in C.Tables or table entry itself
 --- @param sourceObjects table|nil defaults to C.TableSourceObjects
 --- @param options table|nil forwarded options; `currentTableKey` defaults from tableRef; `force` bypasses fingerprint short-circuit
@@ -3167,42 +3273,30 @@ function M.resolveSeatObjectsFromTable(tableRef, sourceObjects, options)
   if U.Type(previousTableKey) == "string" and U.Type(C.Tables and C.Tables[previousTableKey]) == "table" then
     previousTableCfg = C.Tables[previousTableKey]
   end
-  -- Snap reference hand + RedObject rig to destination `referenceHandPosition` before generating
-  -- from live template poses (same pre-step as `SetTableTo`; required for `SyncTable` table switches).
+  -- Snap reference hand + RedObject rig to destination referenceHand before simplified layout.
   applyReferenceHandPositionDelta(previousTableKey, tableKey)
   -- Persist target table before any step that reads `gameState.seatLayout.currentTableKey`
   -- (lighting seat-presence, HUD consumers, etc.) so mid-resolve code sees the destination layout.
   S.setStateVal(tableKey, "seatLayout", "currentTableKey")
   local occupiedNPCSlots = getOccupiedNPCSlots()
   local filteredMap = buildFilteredSeatMap(tableCfg, occupiedNPCSlots)
-  -- Activate the target table (instant setPosition) BEFORE generating so FACING bounds reads are valid.
+  -- Activate the target table (instant setPosition) BEFORE layout so FACING bounds reads are valid.
   applyAllTablesVisualState(tableKey, occupiedNPCSlots)
 
-  local computed
-  if tableCfg.shape == (C.TableShapes and C.TableShapes.FACING) then
-    computed = M.generateFacingCoordinates(src, tableCfg, filteredMap, opts)
-  else
-    computed = M.generateRotationalCoordinates(
-      src,
-      tableCfg.centerPoint,
-      tableCfg.numSegments,
-      tableCfg.angleSegmentOne,
-      filteredMap,
-      tableCfg.referencePlayerColor,
-      opts
-    )
+  local referenceSeatKey, refKeyErr = M.resolveReferenceSeatKey(tableCfg)
+  if referenceSeatKey == nil then
+    error("rotational-seat-layout: table missing reference seat key: " .. tostring(refKeyErr))
   end
-  local useSimplifiedLayout = opts.useSimplifiedLayout == true
-  local resolveOpts = opts
-  if useSimplifiedLayout then
-    resolveOpts = U.clone(opts, true)
-    resolveOpts.skipNpcSeatLayout = true
-  end
-  M.resolveSeatObjects(computed, src, resolveOpts)
-  if useSimplifiedLayout then
-    M.applySimplifiedSeatLayout(tableCfg, filteredMap, opts)
-  end
-  applyPostCorrections(src, computed)
+
+  local handBundle = M.computeHandFrames(tableCfg, filteredMap, opts)
+  local computed = buildLayoutComputedContext(tableCfg, filteredMap, handBundle, referenceSeatKey)
+
+  local layoutOpts = U.clone(opts, true)
+  layoutOpts.handBundle = handBundle
+  layoutOpts.sourceObjects = src
+  M.applySimplifiedSeatLayout(tableCfg, filteredMap, layoutOpts)
+
+  applyPostCorrections(src, computed, { skipPcPostCorrections = true })
   applyTableConfigObjectPositions(tableCfg)
   enforceNPCSeatObjectVisibility(src, occupiedNPCSlots, tableCfg, previousTableCfg)
   local npcInstances = S.getStateVal("npcs", "instances")
@@ -3380,7 +3474,10 @@ function M.clearGeneratedSeatObjects(sourceObjects, seatKeys, blacklist)
   local refColor = C.PlayerColors and C.PlayerColors[1] or "Red"
   local tableKey = S.getStateVal("seatLayout", "currentTableKey")
   if U.Type(tableKey) == "string" and U.Type(C.Tables and C.Tables[tableKey]) == "table" then
-    refColor = C.Tables[tableKey].referencePlayerColor or refColor
+    local resolvedRef, _ = M.resolveReferenceSeatKey(C.Tables[tableKey])
+    if U.Type(resolvedRef) == "string" and resolvedRef ~= "" then
+      refColor = resolvedRef
+    end
   end
 
   local templateGuidSet = {}
@@ -3597,7 +3694,7 @@ local function seatSegmentDescriptorsEqual(a, b)
   return false
 end
 
---- Active seat map: `seatToPositionMap` with fallback to legacy `playerToPositionMap`.
+--- Active seat map from `seatToPositionMap`.
 --- @param tableCfg table|nil
 --- @return table
 local function getSeatToPositionMapFromCfg(tableCfg)
@@ -3605,9 +3702,6 @@ local function getSeatToPositionMapFromCfg(tableCfg)
     return {}
   end
   local map = tableCfg.seatToPositionMap
-  if U.Type(map) ~= "table" then
-    map = tableCfg.playerToPositionMap
-  end
   if U.Type(map) ~= "table" then
     return {}
   end
@@ -3621,15 +3715,7 @@ local function getReferenceSeatSegmentFromCfg(tableCfg)
   if U.Type(tableCfg) ~= "table" then
     return nil
   end
-  if tableCfg.referenceSeatSegment ~= nil then
-    return tableCfg.referenceSeatSegment
-  end
-  local map = getSeatToPositionMapFromCfg(tableCfg)
-  local refColor = tableCfg.referencePlayerColor
-  if U.Type(refColor) == "string" and refColor ~= "" and map[refColor] ~= nil then
-    return map[refColor]
-  end
-  return nil
+  return tableCfg.referenceSeatSegment
 end
 
 --- Authored hand frame at `referenceSeatSegment` (`rotation` defaults to zero).
@@ -3639,21 +3725,15 @@ local function getReferenceHandFromCfg(tableCfg)
   if U.Type(tableCfg) ~= "table" then
     return nil
   end
-  if U.Type(tableCfg.referenceHand) == "table" and tableCfg.referenceHand.position ~= nil then
-    local rh = tableCfg.referenceHand
-    local rot = rh.rotation ~= nil and Vector(rh.rotation) or Vector(0, 0, 0)
-    return {
-      position = Vector(rh.position),
-      rotation = rot,
-    }
+  if U.Type(tableCfg.referenceHand) ~= "table" or tableCfg.referenceHand.position == nil then
+    return nil
   end
-  if tableCfg.referenceHandPosition ~= nil then
-    return {
-      position = Vector(tableCfg.referenceHandPosition),
-      rotation = Vector(0, 0, 0),
-    }
-  end
-  return nil
+  local rh = tableCfg.referenceHand
+  local rot = rh.rotation ~= nil and Vector(rh.rotation) or Vector(0, 0, 0)
+  return {
+    position = Vector(rh.position),
+    rotation = rot,
+  }
 end
 
 --- Inverse lookup: seat key whose map entry equals `referenceSeatSegment`.
@@ -3974,6 +4054,10 @@ function M.compareHandFrames(tableRef, opts)
     error("rotational-seat-layout: compareHandFrames requires C.TableSourceObjects")
   end
   local genOpts = { currentTableKey = tableKey, skipStateWrite = true }
+  local referenceSeatKey, refKeyErr = M.resolveReferenceSeatKey(tableCfg)
+  if referenceSeatKey == nil then
+    error("rotational-seat-layout: compareHandFrames missing reference seat key: " .. tostring(refKeyErr))
+  end
   local legacy
   if tableCfg.shape == facingShape then
     legacy = M.generateFacingCoordinates(src, tableCfg, filteredMap, genOpts)
@@ -3984,7 +4068,7 @@ function M.compareHandFrames(tableRef, opts)
       tableCfg.numSegments,
       tableCfg.angleSegmentOne,
       filteredMap,
-      tableCfg.referencePlayerColor,
+      referenceSeatKey,
       genOpts
     )
   end
@@ -4090,6 +4174,73 @@ function M.compareHandFrames(tableRef, opts)
     simplified = simplified,
     legacy = legacy,
   }
+end
+
+--- PC-only hand-frame compare for simplified vs legacy paths (read-only; delegates to `compareHandFrames`).
+--- Object positions may differ until workshop poses are verified — this reports hand-slot deltas only.
+--- @param tableRef string|table|nil
+--- @param opts table|nil forwarded to `compareHandFrames`
+--- @return table summary
+function M.compareLayoutPaths(tableRef, opts)
+  local summary = M.compareHandFrames(tableRef, opts)
+  if U.Type(summary) ~= "table" or U.Type(summary.rows) ~= "table" then
+    return summary
+  end
+  local pcRows = {}
+  local pcFail = 0
+  local pcMaxPos = 0
+  local pcMaxRot = 0
+  for i = 1, #summary.rows do
+    local r = summary.rows[i]
+    if U.Type(r.seatKey) == "string" and isPlayerSeatKey(r.seatKey) then
+      pcRows[#pcRows + 1] = r
+      if r.pass ~= true then
+        pcFail = pcFail + 1
+      end
+      if U.Type(r.posErr) == "number" and r.posErr > pcMaxPos then
+        pcMaxPos = r.posErr
+      end
+      if U.Type(r.rotErr) == "number" and r.rotErr > pcMaxRot then
+        pcMaxRot = r.rotErr
+      end
+    end
+  end
+  local pcOk = pcFail == 0
+  print(
+    string.format(
+      "[rotational-seat-layout] compareLayoutPaths (PC hand frames only) table=%s pcSeats=%d fail=%d maxPosErr=%.4f maxRotErr=%.2f° %s",
+      tostring(summary.tableKey),
+      #pcRows,
+      pcFail,
+      pcMaxPos,
+      pcMaxRot,
+      pcOk and "PASS" or "FAIL"
+    )
+  )
+  for i = 1, #pcRows do
+    local r = pcRows[i]
+    if r.posErr ~= nil then
+      print(
+        string.format(
+          "  %s posErr=%.4f rotErr=%.2f° %s%s",
+          r.seatKey,
+          r.posErr,
+          r.rotErr,
+          r.pass and "PASS" or "FAIL",
+          r.note and (" (" .. r.note .. ")") or ""
+        )
+      )
+    end
+  end
+  summary.pcOnly = {
+    ok = pcOk,
+    seatCount = #pcRows,
+    failCount = pcFail,
+    maxPosErr = pcMaxPos,
+    maxRotErr = pcMaxRot,
+    rows = pcRows,
+  }
+  return summary
 end
 
 --- Call a TTS object method when `U.isIn` confirms it exists (raw `obj.getFoo` probes can throw on userdata).
@@ -4241,13 +4392,126 @@ local function frameAfterSeatRigid(centerPoint, refFrame, rigid)
   return fr
 end
 
+--- Rigid-follow `sourceObjects.relative` entries whose `<SeatKey>Object` tag matches `seatKey`.
+--- @param seatKey string
+--- @param hzBefore table `{ position, rotation }`
+--- @param targetPos Vector
+--- @param targetRot Vector
+--- @param sourceObjects table|nil defaults to `C.TableSourceObjects`
+--- @param referencePlayerColor string|nil defaults to `"Red"`
+--- @return number movedCount
+local function applyRelativeFollowersForHandMove(
+  seatKey,
+  hzBefore,
+  targetPos,
+  targetRot,
+  sourceObjects,
+  referencePlayerColor
+)
+  local src = sourceObjects
+  if U.Type(src) ~= "table" then
+    src = C.TableSourceObjects
+  end
+  if U.Type(src) ~= "table" then
+    return 0
+  end
+  local refColor = U.Type(referencePlayerColor) == "string" and referencePlayerColor or "Red"
+  local sourceGroups = resolveSourceTemplateGroups(src)
+  if #sourceGroups.relative < 1 then
+    return 0
+  end
+  local beforePos = Vector(hzBefore.position)
+  local beforeRot = Vector(hzBefore.rotation)
+  local deltaYaw = shortestSignedDelta(beforeRot.y, targetRot.y)
+  local movedCount = 0
+  for i = 1, #sourceGroups.relative do
+    local relRef = sourceGroups.relative[i]
+    local relObj = resolveObjectRefWithRoleSupport(
+      relRef,
+      refColor,
+      "sourceObjects.relative[" .. tostring(i) .. "]"
+    )
+    if relObj == nil then
+      error("rotational-seat-layout: could not resolve sourceObjects.relative[" .. tostring(i) .. "]")
+    end
+    local relSeatKey = deriveSeatKeyFromObjectTag(relObj)
+    if relSeatKey == seatKey then
+      local oldFrame = {
+        position = relObj.getPosition(),
+        rotation = relObj.getRotation(),
+      }
+      local newFrame = rigidTransformBetweenCenters(beforePos, targetPos, oldFrame, deltaYaw)
+      placeObjectExact(relObj, newFrame.position, newFrame.rotation)
+      movedCount = movedCount + 1
+    end
+  end
+  return movedCount
+end
+
+--- Move a PC hand zone to the target frame and rigid-follow every `{seatKey}Object` tag (hand-delta).
+--- Used for the reference segment seat to establish live role frames. Non-reference PC seats use
+--- `propagateSeatRolesFromReference` plus `applyRelativeFollowersForHandMove` instead.
+--- @param seatKey string
+--- @param handFrame table `{ position = Vector, rotation = Vector }`
+--- @param sourceObjects table|nil
+--- @param referencePlayerColor string|nil
+--- @param relativeGuidSet table<string, boolean>|nil
+--- @return number movedCount
+local function applyPcReferenceSeatHandDeltaFollow(seatKey, handFrame, sourceObjects, referencePlayerColor, relativeGuidSet)
+  if not isPlayerSeatKey(seatKey) then
+    return 0
+  end
+  local hz = U.getHandZone(seatKey)
+  if hz == nil then
+    error(
+      "rotational-seat-layout: applyPcReferenceSeatHandDeltaFollow: no hand zone for seat '"
+      .. tostring(seatKey)
+      .. "'"
+    )
+  end
+  local targetPos = Vector(handFrame.position)
+  local targetRot = Vector(handFrame.rotation)
+  local hzBefore = moveHandZoneAndContainedCards(hz, targetPos, targetRot)
+  maybeSetHandZoneSeatColor(hz, "HAND_ZONE_ANCHOR", seatKey)
+
+  local beforePos = Vector(hzBefore.position)
+  local afterPos = targetPos
+  local beforeRot = Vector(hzBefore.rotation)
+  local deltaYaw = shortestSignedDelta(beforeRot.y, targetRot.y)
+
+  local movedCount = 1
+  local tag = objectTagForPlayerColor(seatKey)
+  local tagged = getObjectsWithTag(tag) or {}
+  for _, obj in ipairs(tagged) do
+    if obj ~= nil and U.isGameObject(obj) and not isHandZoneObject(obj)
+        and not objectInRelativeGuidSet(obj, relativeGuidSet) then
+      local oldFrame = {
+        position = obj.getPosition(),
+        rotation = obj.getRotation(),
+      }
+      local newFrame = rigidTransformBetweenCenters(beforePos, afterPos, oldFrame, deltaYaw)
+      placeObjectExact(obj, newFrame.position, newFrame.rotation)
+      movedCount = movedCount + 1
+    end
+  end
+  movedCount = movedCount + applyRelativeFollowersForHandMove(
+    seatKey,
+    hzBefore,
+    afterPos,
+    targetRot,
+    sourceObjects,
+    referencePlayerColor
+  )
+  return movedCount
+end
+
 --- Copy role-family object poses from the reference segment seat to a target seat.
 --- @param referenceSeatKey string
 --- @param targetSeatKey string
 --- @param centerPoint Vector
 --- @param referenceFramesByRole table
 --- @param rigid table `{ deltaDeg, shift }`
---- @param opts table|nil `{ dryRun?, skipped? }`
+--- @param opts table|nil `{ dryRun?, skipped?, relativeGuidSet? }`
 --- @return number movedCount
 local function propagateSeatRolesFromReference(
   referenceSeatKey,
@@ -4260,12 +4524,16 @@ local function propagateSeatRolesFromReference(
   opts = U.Type(opts) == "table" and opts or {}
   local dryRun = opts.dryRun == true
   local skipped = opts.skipped
+  local relativeGuidSet = opts.relativeGuidSet
   local movedCount = 0
   local seenRoleAtSeat = {}
   local tag = objectTagForPlayerColor(targetSeatKey)
   local tagged = getObjectsWithTag(tag) or {}
   for _, obj in ipairs(tagged) do
     if obj ~= nil and U.isGameObject(obj) and not isHandZoneObject(obj) then
+      if objectInRelativeGuidSet(obj, relativeGuidSet) then
+        -- Hand-relative followers; see applyRelativeFollowersForHandMove.
+      else
       local disp = SRI.readRoleColorIdentity(obj)
       if disp == nil then
         if skipped ~= nil then
@@ -4293,17 +4561,81 @@ local function propagateSeatRolesFromReference(
           end
         end
       end
+      end
     end
   end
   return movedCount
 end
 
---- Automatic simplified layout for NPC seats: reference role copy + virtual hand anchors.
---- PC seats remain on legacy `resolveSeatObjects` (Phase 3). Not the default path until Phase 5.
+--- Move a PC hand zone to its target frame, copy role-family objects from the reference seat, then
+--- rigid-follow `sourceObjects.relative` entries for this seat (anchors, tarot props, etc.).
+--- @param seatKey string
+--- @param handFrame table `{ position = Vector, rotation = Vector }`
+--- @param referenceSeatKey string
+--- @param centerPoint Vector
+--- @param referenceFramesByRole table
+--- @param rigid table `{ deltaDeg, shift }`
+--- @param sourceObjects table|nil
+--- @param referencePlayerColor string|nil
+--- @param opts table|nil `{ skipped?, relativeGuidSet? }`
+--- @return number movedCount
+local function applyPcSeatRolePropagationAndRelativeFollow(
+  seatKey,
+  handFrame,
+  referenceSeatKey,
+  centerPoint,
+  referenceFramesByRole,
+  rigid,
+  sourceObjects,
+  referencePlayerColor,
+  opts
+)
+  if not isPlayerSeatKey(seatKey) then
+    return 0
+  end
+  local hz = U.getHandZone(seatKey)
+  if hz == nil then
+    error(
+      "rotational-seat-layout: applyPcSeatRolePropagationAndRelativeFollow: no hand zone for seat '"
+      .. tostring(seatKey)
+      .. "'"
+    )
+  end
+  local targetPos = Vector(handFrame.position)
+  local targetRot = Vector(handFrame.rotation)
+  local hzBefore = {
+    position = Vector(hz.getPosition()),
+    rotation = Vector(hz.getRotation()),
+  }
+  moveHandZoneAndContainedCards(hz, targetPos, targetRot)
+  maybeSetHandZoneSeatColor(hz, "HAND_ZONE_ANCHOR", seatKey)
+
+  local movedCount = 1
+  movedCount = movedCount + propagateSeatRolesFromReference(
+    referenceSeatKey,
+    seatKey,
+    centerPoint,
+    referenceFramesByRole,
+    rigid,
+    opts
+  )
+  movedCount = movedCount + applyRelativeFollowersForHandMove(
+    seatKey,
+    hzBefore,
+    targetPos,
+    targetRot,
+    sourceObjects,
+    referencePlayerColor
+  )
+  return movedCount
+end
+
+--- Automatic simplified layout: NPC seats use reference role copy + virtual hand anchors;
+--- PC reference seat uses hand-delta; other PC seats use reference role copy + relative hand follow.
 --- @param tableCfg table
 --- @param filteredMap table
---- @param opts table|nil
---- @return table summary `{ ok, referenceSeatKey, movedCount, skippedCount, skipped, npcSeatsProcessed }`
+--- @param opts table|nil `{ handBundle?, sourceObjects?, referencePlayerColor? }`
+--- @return table summary `{ ok, referenceSeatKey, movedCount, skippedCount, skipped, npcSeatsProcessed, pcSeatsProcessed }`
 function M.applySimplifiedSeatLayout(tableCfg, filteredMap, opts)
   opts = U.Type(opts) == "table" and opts or {}
   if U.Type(tableCfg) ~= "table" then
@@ -4317,8 +4649,14 @@ function M.applySimplifiedSeatLayout(tableCfg, filteredMap, opts)
   if referenceSeatKey == nil then
     error("rotational-seat-layout: applySimplifiedSeatLayout: " .. tostring(refErr))
   end
+  local referencePlayerColor = referenceSeatKey
+  local sourceObjects = opts.sourceObjects or C.TableSourceObjects
+  local relativeGuidSet = buildRelativeGuidSet(sourceObjects)
 
-  local handBundle = M.computeHandFrames(tableCfg, filteredMap, opts)
+  local handBundle = opts.handBundle
+  if U.Type(handBundle) ~= "table" then
+    handBundle = M.computeHandFrames(tableCfg, filteredMap, opts)
+  end
   if U.Type(handBundle) ~= "table" then
     error(
       "rotational-seat-layout: applySimplifiedSeatLayout computeHandFrames returned "
@@ -4328,7 +4666,6 @@ function M.applySimplifiedSeatLayout(tableCfg, filteredMap, opts)
   local handFrames = handBundle.handFrames or {}
   local seatRigidByKey = handBundle.seatRigidByKey or {}
   local centerPoint = Vector(tableCfg.centerPoint)
-  local referenceFramesByRole = indexLiveSeatFramesByRole(referenceSeatKey)
 
   local rawAnchors = S.getStateVal("seatLayout", "virtualHandZoneAnchors")
   local nextVirtualAnchors = {}
@@ -4338,43 +4675,108 @@ function M.applySimplifiedSeatLayout(tableCfg, filteredMap, opts)
 
   local movedCount = 0
   local skipped = {}
+  local propagateOpts = { skipped = skipped, relativeGuidSet = relativeGuidSet }
   local npcSeatsProcessed = 0
-  local targetSeatKeys = sortedStringKeys(filteredMap)
-  for i = 1, #targetSeatKeys do
-    local seatKey = targetSeatKeys[i]
-    if isNpcSeatKey(seatKey) and seatKey ~= referenceSeatKey then
-      local rigid = seatRigidByKey[seatKey]
-      local handFrame = handFrames[seatKey]
-      if U.Type(rigid) ~= "table" or U.Type(handFrame) ~= "table" then
-        error(
-          "rotational-seat-layout: applySimplifiedSeatLayout missing hand frame for NPC seat '"
-          .. tostring(seatKey)
-          .. "'"
-        )
-      end
-      if handFrame.position == nil or handFrame.rotation == nil then
-        error(
-          "rotational-seat-layout: applySimplifiedSeatLayout hand frame for seat '"
-          .. tostring(seatKey)
-          .. "' missing position/rotation"
-        )
-      end
+  local pcSeatsProcessed = 0
 
-      nextVirtualAnchors[seatKey] = {
-        position = Vector(handFrame.position),
-        rotation = Vector(handFrame.rotation),
+  -- Position reference segment seat before indexing role frames for propagation.
+  if filteredMap[referenceSeatKey] ~= nil then
+    local refHandFrame = handFrames[referenceSeatKey]
+    if U.Type(refHandFrame) ~= "table" or refHandFrame.position == nil or refHandFrame.rotation == nil then
+      error(
+        "rotational-seat-layout: applySimplifiedSeatLayout missing hand frame for reference seat '"
+        .. tostring(referenceSeatKey)
+        .. "'"
+      )
+    end
+    if isPlayerSeatKey(referenceSeatKey) then
+      movedCount = movedCount + applyPcReferenceSeatHandDeltaFollow(
+        referenceSeatKey,
+        refHandFrame,
+        sourceObjects,
+        referencePlayerColor,
+        relativeGuidSet
+      )
+      pcSeatsProcessed = pcSeatsProcessed + 1
+    elseif isNpcSeatKey(referenceSeatKey) then
+      nextVirtualAnchors[referenceSeatKey] = {
+        position = Vector(refHandFrame.position),
+        rotation = Vector(refHandFrame.rotation),
       }
       movedCount = movedCount + 1
       npcSeatsProcessed = npcSeatsProcessed + 1
+    end
+  end
 
-      movedCount = movedCount + propagateSeatRolesFromReference(
-        referenceSeatKey,
-        seatKey,
-        centerPoint,
-        referenceFramesByRole,
-        rigid,
-        { skipped = skipped }
-      )
+  local referenceFramesByRole = indexLiveSeatFramesByRole(referenceSeatKey)
+
+  local targetSeatKeys = sortedStringKeys(filteredMap)
+  for i = 1, #targetSeatKeys do
+    local seatKey = targetSeatKeys[i]
+    if seatKey ~= referenceSeatKey then
+      if isNpcSeatKey(seatKey) then
+        local rigid = seatRigidByKey[seatKey]
+        local handFrame = handFrames[seatKey]
+        if U.Type(rigid) ~= "table" or U.Type(handFrame) ~= "table" then
+          error(
+            "rotational-seat-layout: applySimplifiedSeatLayout missing hand frame for NPC seat '"
+            .. tostring(seatKey)
+            .. "'"
+          )
+        end
+        if handFrame.position == nil or handFrame.rotation == nil then
+          error(
+            "rotational-seat-layout: applySimplifiedSeatLayout hand frame for seat '"
+            .. tostring(seatKey)
+            .. "' missing position/rotation"
+          )
+        end
+
+        nextVirtualAnchors[seatKey] = {
+          position = Vector(handFrame.position),
+          rotation = Vector(handFrame.rotation),
+        }
+        movedCount = movedCount + 1
+        npcSeatsProcessed = npcSeatsProcessed + 1
+
+        movedCount = movedCount + propagateSeatRolesFromReference(
+          referenceSeatKey,
+          seatKey,
+          centerPoint,
+          referenceFramesByRole,
+          rigid,
+          propagateOpts
+        )
+      elseif isPlayerSeatKey(seatKey) then
+        local handFrame = handFrames[seatKey]
+        if U.Type(handFrame) ~= "table" or handFrame.position == nil or handFrame.rotation == nil then
+          error(
+            "rotational-seat-layout: applySimplifiedSeatLayout missing hand frame for PC seat '"
+            .. tostring(seatKey)
+            .. "'"
+          )
+        end
+        local rigid = seatRigidByKey[seatKey]
+        if U.Type(rigid) ~= "table" then
+          error(
+            "rotational-seat-layout: applySimplifiedSeatLayout missing rigid transform for PC seat '"
+            .. tostring(seatKey)
+            .. "'"
+          )
+        end
+        movedCount = movedCount + applyPcSeatRolePropagationAndRelativeFollow(
+          seatKey,
+          handFrame,
+          referenceSeatKey,
+          centerPoint,
+          referenceFramesByRole,
+          rigid,
+          sourceObjects,
+          referencePlayerColor,
+          propagateOpts
+        )
+        pcSeatsProcessed = pcSeatsProcessed + 1
+      end
     end
   end
 
@@ -4387,6 +4789,7 @@ function M.applySimplifiedSeatLayout(tableCfg, filteredMap, opts)
     skippedCount = #skipped,
     skipped = skipped,
     npcSeatsProcessed = npcSeatsProcessed,
+    pcSeatsProcessed = pcSeatsProcessed,
   }
 end
 
@@ -4472,6 +4875,7 @@ function M.refreshSeatRigsFromReferenceSegment(opts)
   local handFrames = handBundle.handFrames or {}
   local seatRigidByKey = handBundle.seatRigidByKey or {}
   local centerPoint = Vector(tableCfg.centerPoint)
+  local relativeGuidSet = buildRelativeGuidSet(C.TableSourceObjects)
   local referenceFramesByRole = indexLiveSeatFramesByRole(referenceSeatKey)
 
   local seatFilter = nil
@@ -4553,7 +4957,7 @@ function M.refreshSeatRigsFromReferenceSegment(opts)
         centerPoint,
         referenceFramesByRole,
         rigid,
-        { dryRun = dryRun, skipped = skipped }
+        { dryRun = dryRun, skipped = skipped, relativeGuidSet = relativeGuidSet }
       )
     end
   end

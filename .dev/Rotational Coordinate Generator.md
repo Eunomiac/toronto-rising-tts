@@ -60,7 +60,7 @@ local sourceObjects = {
     --   - "other": source objects for non-player seats (e.g. NPC1..NPC4)
     --   - "all": source objects for both player + non-player seats
     --   - "relative": objects that rigidly follow their derived seat hand-zone anchor
-    --   - "cameraModes.bySeat": keys in C.RedCameraAngles; layout writes playerData.cameraAngles and universalCameraAngles[<mode><seatKey>] (all seats in the map, including NPC slots) from the same derived angles
+    --   - "cameraModes.bySeat": keys in C.ReferenceCameraAngles; layout writes playerData.cameraAngles and universalCameraAngles[<mode><seatKey>] (all seats in the map, including NPC slots) from the same derived angles
 
     -- entries used to move/spawn objects into player seats only
     player = {
@@ -95,8 +95,8 @@ local computed = R.generateRotationalCoordinates(
     centerPoint,         -- table or Vector: axis of rotation + cylindrical origin for layout math
     numSegments,         -- integer ≥ 1: seats (polygon vertices) around the table
     angleSegmentOne,     -- number (degrees): azimuth of segment 1; 0° = +Z (see util conventions)
-    playerToPositionMap, -- keys = arbitrary non-empty strings (PC colors or non-player seat ids); values = segment 1..numSegments
-    referencePlayerColor,-- string: templates’ suffix must be _ .. string.upper(this) (uppercase alphanumeric suffix)
+    seatToPositionMap,   -- keys = arbitrary non-empty strings (PC colors or non-player seat ids); values = segment 1..numSegments (or { side, index } on FACING tables)
+    referenceSeatKey,    -- string: seat key at referenceSeatSegment; template suffix must be _ .. string.upper(this seat key)
     options              -- optional table; omit entirely to use defaults (see below)
 )
 

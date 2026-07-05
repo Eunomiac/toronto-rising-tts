@@ -1471,7 +1471,7 @@ function L.isPlayerPresentInActiveSeatLayout(seatKey)
         return true
     end
     ---@diagnostic disable-next-line: undefined-field
-    local map = tableCfg.playerToPositionMap
+    local map = tableCfg.seatToPositionMap
     if U.Type(map) ~= "table" then
         return true
     end
@@ -1768,7 +1768,7 @@ local function isNpcSeatLightActive(lightRef)
     local currentTableKey = S.getStateVal("seatLayout", "currentTableKey")
     local tableCfg = U.Type(currentTableKey) == "string" and C.Tables[currentTableKey] or nil
     ---@diagnostic disable-next-line: undefined-field
-    local tableMap = U.Type(tableCfg) == "table" and tableCfg.playerToPositionMap or nil
+    local tableMap = U.Type(tableCfg) == "table" and tableCfg.seatToPositionMap or nil
     if U.Type(tableMap) ~= "table" or tableMap[seatKey] == nil then
         return false
     end

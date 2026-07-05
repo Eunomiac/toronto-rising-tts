@@ -1,6 +1,6 @@
 # Table seat layout — phased implementation plan
 
-**Status:** Ready to implement
+**Status:** Phases 0–6 complete (2026-07-05). Production path is simplified-only (`applySimplifiedSeatLayout`); legacy generator retained for debug compare + TEST BED only (see follow-up Linear issue).
 **Audit:** [`.dev/Table Seat Layout Audit.md`](../Table%20Seat%20Layout%20Audit.md)
 **Date:** 2026-07-03
 
@@ -22,8 +22,7 @@
 
 ## Safety principles
 
-- **No big-bang swap** — legacy `resolveSeatObjects` stays default until Phase 5.
-- **Flag:** `opts.useSimplifiedLayout = true` on `resolveSeatObjectsFromTable` / debug entry points.
+- **Simplified layout only** on `resolveSeatObjectsFromTable` — legacy generator/compare tools remain for diagnostics until pruned.
 - **`npm run build` does not validate poses** — each phase ends with author Save & Play on Phase E matrix (audit §7).
 - **Host-only / dice guard** unchanged (**TOR-243**, Tier C).
 
@@ -139,6 +138,8 @@ For each **NPC** seat in filtered map:
 
 ## Phase 4 — Simplified automatic path: PC branch
 
+**Status:** Implemented (2026-07-05). Opt-in via `opts.useSimplifiedLayout = true` or `DEBUG.syncTableSimplified(tableKey)`.
+
 **Goal:** PC seats use hand-delta + tag follow.
 
 ### Implement for **PC** seats in `applySimplifiedSeatLayout`
@@ -149,8 +150,8 @@ For each **NPC** seat in filtered map:
 
 ### Wire
 
-- `useSimplifiedLayout = true` runs full simplified path (NPC + PC).
-- `DEBUG.compareLayoutPaths(tableKey?)` — optional: run legacy vs simplified, log hand-frame-only deltas (PC positions may differ until workshop verified).
+- `useSimplifiedLayout = true` runs full simplified path (NPC + PC); legacy `resolveSeatObjects` skips all non-reference seats.
+- `DEBUG.compareLayoutPaths(tableKey?)` — PC hand-frame deltas vs legacy generator.
 
 **Gate (Save & Play):**
 
@@ -163,22 +164,32 @@ For each **NPC** seat in filtered map:
 
 ## Phase 5 — Default on, remove legacy propagation
 
+**Status:** Implemented (2026-07-05). Simplified layout is default; PC non-reference seats use reference role copy + relative hand follow (not hand-delta on all tags). Opt out with `opts.useLegacyLayout = true`.
+
 **Goal:** `useSimplifiedLayout` default `true`; delete Red-template placement from automatic path.
+
+### Changes
+
+- Default path: `applySimplifiedSeatLayout` only (no `resolveSeatObjects`).
+- Reference hand + RedObject pre-snap via `applyReferenceHandPositionDelta` still runs before `generateRotationalCoordinates` azimuth validation (not legacy template propagation).
+- Reference seat positioned via hand-delta first; role frames indexed after reference move.
+- `sourceObjects.relative` followers move with PC hand-delta (`applyRelativeFollowersForHandMove`).
+- `computed.seatRigidByKey` from `computeHandFrames` for cameras / postCorrections metadata.
+- Legacy path retained behind `useLegacyLayout = true` (or `useSimplifiedLayout = false`).
 
 ### Remove (automatic path only)
 
-- `buildPlacedSeatSlots` / `resolveReferenceSeatAnchor` from `resolveSeatObjects` hot path.
-- `applyReferenceHandPositionDelta`.
-- `C.TableSourceObjects` `player`/`all`/`other`/`relative` for layout (keep `cameraModes`).
-- PC `postCorrections` if Save & Play clean.
+- `buildPlacedSeatSlots` / `resolveReferenceSeatAnchor` from `resolveSeatObjects` hot path — legacy opt-in only.
+- PC `postCorrections` off by default (`applyPcPostCorrections` to opt in).
 
 ### Keep
 
 - `applyPostCorrections` for **NPC**.
 - `propagateSeatRolesFromReference` (shared: NPC auto + manual refresh).
 - `enforceNPCSeatObjectVisibility`, fingerprint, dice guard, cameras.
+- `C.TableSourceObjects` for cameras, NPC visibility, relative followers, manual refresh.
 
-**Gate:** Full Phase E matrix on default path.
+**Gate (Save & Play):** Re-run Phase 3 + Phase 4 matrix on default path (`SyncTable` / `syncTableSimplified` without flags).
 
 **Commit:** `refactor(layout): default simplified layout; remove legacy template propagation`
 
@@ -186,10 +197,14 @@ For each **NPC** seat in filtered map:
 
 ## Phase 6 — Config cleanup and docs
 
+**Status:** Implemented (2026-07-05). Legacy `playerToPositionMap`, `referencePlayerColor`, and `referenceHandPosition` removed from `C.Tables`; `C.RedCameraAngles` renamed to `C.ReferenceCameraAngles`.
+
 - Remove `referencePlayerColor`, `referenceHandPosition`, `playerToPositionMap` from `C.Tables` (grep + docs).
 - Rename `C.RedCameraAngles` → `C.ReferenceCameraAngles` (optional, same offsets from `referenceHand.position`).
 - Update `.dev/Rotational Coordinate Generator.md`, Reconciler Contract, Event Listener Policy if handlers added.
 - `types/tts_api.lua` cleanup.
+
+**Gate (Save & Play):** Re-run Phase 3 + Phase 4 matrix (author verified 2026-07-05).
 
 **Commit:** `chore(tables): remove legacy seat layout config fields; doc sync`
 
@@ -205,7 +220,9 @@ propagateSeatRolesFromReference(referenceSeatKey, targetSeatKey, handFrames, opt
 Used by:
 
 - `refreshSeatRigsFromReferenceSegment` (all seats, manual)
-- `applySimplifiedSeatLayout` (NPC seats only, automatic)
+- `applySimplifiedSeatLayout` (NPC seats, automatic — reference role copy)
+- `applyPcReferenceSeatHandDeltaFollow` (reference PC seat — hand-delta tag follow to index role frames)
+- `applyPcSeatRolePropagationAndRelativeFollow` (other PC seats — reference role copy + relative anchor hand follow)
 
 ---
 

@@ -475,6 +475,10 @@ C.LockedObjects = {
   G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_PINK,
   G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_PURPLE,
   G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_RED,
+  G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_NPC1,
+  G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_NPC2,
+  G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_NPC3,
+  G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_NPC4,
   G.GUIDS.CSHEET_DICE_DRAWER_BROWN,
   G.GUIDS.CSHEET_DICE_DRAWER_ORANGE,
   G.GUIDS.CSHEET_DICE_DRAWER_PINK,
@@ -889,6 +893,58 @@ C.ObjectPositions = {
       isHidden = true,
     }
   },
+  DICE_DRAWER_STORYTELLER_NPC1 = {
+    target = "DICE_DRAWER_STORYTELLER",
+    on = {
+      anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_NPC1,
+      height = { y = 2.97 },
+      scale = Vector({ 23.57, 3.92, 7.68 })
+    },
+    off = {
+      anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_OFF_NPC1,
+      height = { y = -30 },
+      scale = Vector({ 23.57, 0.1, 7.68 })
+    }
+  },
+  DICE_DRAWER_STORYTELLER_NPC2 = {
+    target = "DICE_DRAWER_STORYTELLER",
+    on = {
+      anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_NPC2,
+      height = { y = 2.97 },
+      scale = Vector({ 23.57, 3.92, 7.68 })
+    },
+    off = {
+      anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_OFF_NPC2,
+      height = { y = -30 },
+      scale = Vector({ 23.57, 0.1, 7.68 })
+    }
+  },
+  DICE_DRAWER_STORYTELLER_NPC3 = {
+    target = "DICE_DRAWER_STORYTELLER",
+    on = {
+      anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_NPC3,
+      height = { y = 2.97 },
+      scale = Vector({ 23.57, 3.92, 7.68 })
+    },
+    off = {
+      anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_OFF_NPC3,
+      height = { y = -30 },
+      scale = Vector({ 23.57, 0.1, 7.68 })
+    }
+  },
+  DICE_DRAWER_STORYTELLER_NPC4 = {
+    target = "DICE_DRAWER_STORYTELLER",
+    on = {
+      anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_NPC4,
+      height = { y = 2.97 },
+      scale = Vector({ 23.57, 3.92, 7.68 })
+    },
+    off = {
+      anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_OFF_NPC4,
+      height = { y = -30 },
+      scale = Vector({ 23.57, 0.1, 7.68 })
+    }
+  },
   COMPULSION_CARD_1_RED = {
     on = {
       anchor = G.GUIDS.COMPULSION_CARD_1_ANCHOR_RED,
@@ -1107,15 +1163,15 @@ C.CameraModes = {
 --    - "gameState.playerData[playerID].cameraAngles[cameraMode]": each camera angle should be written to each player's playerData leaving the mode name unchanged (e.g. "default", "facing", "sheet", etc.)
 --    - "gameState.seatLayout.universalCameraAngles[cameraMode + seatKey]": each camera angle should also be made available to all players, by writing it to the seatLayout.universalCameraAngles object, with the seat key appended to the mode name (e.g. "facing" -> "facingBrown", "facingRed", "facingNPC1", etc.)  Note that, even though the NPC slots do not have player data (and thus won't have their own "facing", etc. entries), they will still need universal "facingNPC1", "sheetNPC2", etc. angles calculated for this step.
 
---[[ To be clear, after R.resolveSeatObjectsFromTable() is called, the "universal" camera modes will include one of every entry in C.UniversalCameraAngles, plus the following: "facingRed", "facingBrown", "facingOrange", "facingPink" and "facingPurple", as well as some number of "facingNPC1", "facingNPC2", "facingNPC3" and "facingNPC4" depending on which slots are open in the playerToPositionMap of the new table configuration -- and then the same for "sheetRed", "sheetBrown", ... and "diceTrayRed", "diceTrayBrown", ... etc. ]]
+--[[ To be clear, after R.resolveSeatObjectsFromTable() is called, the "universal" camera modes will include one of every entry in C.UniversalCameraAngles, plus the following: "facingRed", "facingBrown", "facingOrange", "facingPink" and "facingPurple", as well as some number of "facingNPC1", "facingNPC2", "facingNPC3" and "facingNPC4" depending on which slots are open in the seatToPositionMap of the new table configuration -- and then the same for "sheetRed", "sheetBrown", ... and "diceTrayRed", "diceTrayBrown", ... etc. ]]
 
---- World-space position of the reference player's hand zone when `C.RedCameraAngles` was authored.
---- `lib.rotational-seat-layout` adds `(activeTable.referenceHandPosition - this)` to **position** only for
---- presets with `isRelativeToReferenceHandPosition == true` (Red-derived and selected `C.UniversalCameraAngles`).
---- Keep in sync with the canonical layout table (currently `Table A` `referenceHandPosition`).
+--- World-space position of the reference seat hand zone when `C.ReferenceCameraAngles` was authored.
+--- `lib.rotational-seat-layout` adds `(activeTable.referenceHand.position - this)` to **position** only for
+--- presets with `isRelativeToReferenceHandPosition == true` (reference-seat-derived and selected `C.UniversalCameraAngles`).
+--- Keep in sync with the canonical layout table (currently `Table A` `referenceHand.position`).
 C.CameraAuthoringReferenceHandPosition = Vector({ 0.00, 3.22, -76.61 })
 
-C.RedCameraAngles = {
+C.ReferenceCameraAngles = {
   default = {
     cameraMode = "FirstPerson",
     position = Vector({ 0, 28.5760, -54.5664 }),
@@ -1236,7 +1292,7 @@ C.UniversalCameraAngles = {
   }
 }
 
---- Derive `sourceObjects.cameraModes.bySeat` from `C.RedCameraAngles`.
+--- Derive `sourceObjects.cameraModes.bySeat` from `C.ReferenceCameraAngles`.
 --- Per-seat `playerData.cameraAngles` and `seatLayout.universalCameraAngles[<mode><seatKey>]` are both computed
 --- from these keys in `lib.rotational-seat-layout` (no separate `forUniversal` list).
 --- Relative entries in `C.UniversalCameraAngles` are merged in layout when `isRelativeToReferenceHandPosition` is true.
@@ -1245,7 +1301,7 @@ local function deriveTableSourceCameraModes()
   local bySeat = {}
   local seenBySeat = {}
 
-  for modeKey, modeVal in pairs(C.RedCameraAngles or {}) do
+  for modeKey, modeVal in pairs(C.ReferenceCameraAngles or {}) do
     if type(modeKey) == "string" and type(modeVal) == "table" and not seenBySeat[modeKey] then
       seenBySeat[modeKey] = true
       table.insert(bySeat, modeKey)
@@ -1284,8 +1340,8 @@ end
       - all `<Color>Object`-tagged objects
       - all `<NPC1|NPC2|NPC3|NPC4>Object`-tagged objects for which gameState.seatLayout.occupiedNPCSlots is truthy
    d. Assemble a (local) collection, `unlockedTableSeatObjects`, containing the subset of `tableSeatObjects` that are (a) `<Color>Object`-tagged and (b) presently unlocked (NPC-tagged objects will always be locked).
-   e. Assemble a (local) collection, `invalidActiveNPCObjects`, containing the subset of `tableSeatObjects` with "NPC<#>Object" tags that (a) refer to truthy NPC slots in gameState.seatLayout.occupiedNPCSlots, (b) have an NPC slot in the current table's playerToPositionMap, and (c) do not have an NPC slot in the new table's playerToPositionMap (e.g. if switching from "Table A" to "Table B1", then this collection should include all objects tagged "NPC2Object", "NPC3Object", and "NPC4Object", assuming all three of those slots are occupied by NPCS (i.e. gameState.seatLayout.occupiedNPCSlots is truthy for all three of those NPCs)).
-   f. Assemble a (local) collection, `validInactiveNPCObjects`, containing the subset of `tableSeatObjects` with "NPC<#>Object" tags that (a) refer to truthy NPC slots in gameState.seatLayout.occupiedNPCSlots, (b) have an NPC slot in the new table's playerToPositionMap, and (c) do not have an NPC slot in the current table's playerToPositionMap (e.g. if switching from "Table B2" to "Table B1", then this collection should include all objects tagged "NPC2Object", assuming gameState.seatLayout.occupiedNPCSlots.NPC2 is truthy).
+   e. Assemble a (local) collection, `invalidActiveNPCObjects`, containing the subset of `tableSeatObjects` with "NPC<#>Object" tags that (a) refer to truthy NPC slots in gameState.seatLayout.occupiedNPCSlots, (b) have an NPC slot in the current table's seatToPositionMap, and (c) do not have an NPC slot in the new table's seatToPositionMap (e.g. if switching from "Table A" to "Table B1", then this collection should include all objects tagged "NPC2Object", "NPC3Object", and "NPC4Object", assuming all three of those slots are occupied by NPCS (i.e. gameState.seatLayout.occupiedNPCSlots is truthy for all three of those NPCs)).
+   f. Assemble a (local) collection, `validInactiveNPCObjects`, containing the subset of `tableSeatObjects` with "NPC<#>Object" tags that (a) refer to truthy NPC slots in gameState.seatLayout.occupiedNPCSlots, (b) have an NPC slot in the new table's seatToPositionMap, and (c) do not have an NPC slot in the current table's seatToPositionMap (e.g. if switching from "Table B2" to "Table B1", then this collection should include all objects tagged "NPC2Object", assuming gameState.seatLayout.occupiedNPCSlots.NPC2 is truthy).
    g. Assemble a (local) collection, `playerHandZones`, containing the five player hand zones (one for each player color).
    h. Toggle lock on for all objects in `unlockedTableSeatObjects`.
    i. Deactivate (as described below) all objects in `invalidActiveNPCObjects`.
@@ -1294,15 +1350,15 @@ end
    l. Move the new table object to its activePosition, and set its visibility active to all player colors.
    m. If the data for the new table contains a components field, filter out those components whose 'usedBy' field is false in gameState.seatLayout.occupiedNPCSlots (i.e. they are used by NPCs who are not sitting at the table), then move the remaining components to their activePosition, and set their visibility active to all player colors.
    n. Update gameState.seatLayout.currentTableKey to the key of the new table. (Do not change gameState.seatLayout.occupiedNPCSlots; when returning to a table with more slots, NPCs that couldn't sit at the table before can now sit at the new, larger table. NPC active/inactive status is controlled elsewhere.)
-   o. Call R.resolveSeatObjects(newTableRef) (using the defaults for sourceObjects and options) to spawn/move objects into the new table's seats, based on the new table's data.
+   o. Call R.resolveSeatObjectsFromTable(newTableRef) (using the defaults for sourceObjects and options) to spawn/move objects into the new table's seats, based on the new table's data.
    p. When the outer `hud_blindfold` settle delay before blindfold lift begins, set all seated players' cameras to (the newly calculated) "default" mode via `M.setCamera`.
    q. Outer `hud_blindfold` transition clears the chosen blindfold variant after the settle delay.
 
 ]]
 C.TableShapes = {
-  CIRCULAR = "circular", -- Seats should be arranged via the rotational seat layout coordinate generator. Configurations of CIRCULAR tables must include `numSegments` and `angleSegmentOne` fields, with a `playerToPositionMap` field that defines each seat's position on the table as an index value (1..numSegments).
-  RECTANGULAR = "rectangular", -- Does not include `numSegments` and `angleSegmentOne` fields. Instead, seat positons must be defined under `playerToPositionMap` in the table configuration (instead of an index integer). Each seat position's definition includes a "side" field, defined as an angle in multiples of 90 degrees pointing from the origin to the side of the table that the seat is on, following standard conventions (where 0° is the +Z axis, 90° is the +X axis, 180° is the -Z axis, and 270° is the -X axis), and an "index" value indicating the position of that seat along that side, moving clockwise from the origin (e.g. side = 0, index = 1 means the seat is the left-most position on the +Z side of the table).
-  FACING = "facing" -- As with rectangular, except there are only two sides (0 and 180 degrees). Configurations of FACING tables must include a `playerToPositionMap` field that defines each seat's position on the table in the same way as RECTANGULAR tables.
+  CIRCULAR = "circular", -- Seats should be arranged via the rotational seat layout coordinate generator. Configurations of CIRCULAR tables must include `numSegments` and `angleSegmentOne` fields, with a `seatToPositionMap` field that defines each seat's position on the table as an index value (1..numSegments).
+  RECTANGULAR = "rectangular", -- Does not include `numSegments` and `angleSegmentOne` fields. Instead, seat positons must be defined under `seatToPositionMap` in the table configuration (instead of an index integer). Each seat position's definition includes a "side" field, defined as an angle in multiples of 90 degrees pointing from the origin to the side of the table that the seat is on, following standard conventions (where 0° is the +Z axis, 90° is the +X axis, 180° is the -Z axis, and 270° is the -X axis), and an "index" value indicating the position of that seat along that side, moving clockwise from the origin (e.g. side = 0, index = 1 means the seat is the left-most position on the +Z side of the table).
+  FACING = "facing" -- As with rectangular, except there are only two sides (0 and 180 degrees). Configurations of FACING tables must include a `seatToPositionMap` field that defines each seat's position on the table in the same way as RECTANGULAR tables.
 }
 
 C.Tables = {
@@ -1318,7 +1374,7 @@ C.Tables = {
     inactivePosition = Vector({ 0.00, -200, 100 }), -- required
     numSegments = 20, -- required for CIRCULAR tables
     angleSegmentOne = 0, -- required for CIRCULAR tables
-    playerToPositionMap = { -- required
+    seatToPositionMap = {
       NPC1 = 8,
       NPC2 = 14,
       NPC3 = 7,
@@ -1329,8 +1385,11 @@ C.Tables = {
       Pink = 12,
       Purple = 13
     },
-    referencePlayerColor = "Red",
-    referenceHandPosition = Vector({ 0.00, 3.22, -76.61 }),
+    referenceSeatSegment = 11,
+    referenceHand = {
+      position = Vector({ 0.00, 3.22, -76.61 }),
+      rotation = Vector(0, 0, 0),
+    },
     components = {
       ["Table Leaf Near Left"] = {
         guid = G.GUIDS.TABLES.TABLE_A_LEAF_NEAR_LEFT,
@@ -1405,15 +1464,18 @@ C.Tables = {
     inactivePosition = Vector({ 0.00, -200, 0 }),
     numSegments = 5,
     angleSegmentOne = 36,
-    playerToPositionMap = {
+    seatToPositionMap = {
       Brown = 1,
       Orange = 2,
       Red = 3,
       Pink = 4,
       Purple = 5
     },
-    referencePlayerColor = "Red",
-    referenceHandPosition = Vector({ 0.00, 3.22, -115.54 }),
+    referenceSeatSegment = 3,
+    referenceHand = {
+      position = Vector({ 0.00, 3.22, -115.54 }),
+      rotation = Vector(0, 0, 0),
+    },
     objectPositions = {
       {
         guid = G.GUIDS.MAIN_LIGHT_LEFT,
@@ -1457,7 +1519,7 @@ C.Tables = {
     inactivePosition = Vector({ 0.00, -200, 100 }),
     numSegments = 6,
     angleSegmentOne = 0,
-    playerToPositionMap = {
+    seatToPositionMap = {
       NPC1 = 1,
       Brown = 2,
       Orange = 3,
@@ -1465,8 +1527,11 @@ C.Tables = {
       Pink = 5,
       Purple = 6,
     },
-    referencePlayerColor = "Red",
-    referenceHandPosition = Vector({ 0.00, 3.22, -146.61 }),
+    referenceSeatSegment = 4,
+    referenceHand = {
+      position = Vector({ 0.00, 3.22, -146.61 }),
+      rotation = Vector(0, 0, 0),
+    },
     objectPositions = {
       {
         guid = G.GUIDS.MAIN_LIGHT_LEFT,
@@ -1510,7 +1575,7 @@ C.Tables = {
     inactivePosition = Vector({ 0.00, -200, 100 }),
     numSegments = 7,
     angleSegmentOne = 25.7,
-    playerToPositionMap = {
+    seatToPositionMap = {
       NPC1 = 1,
       NPC2 = 7,
       Brown = 2,
@@ -1519,8 +1584,11 @@ C.Tables = {
       Pink = 5,
       Purple = 6,
     },
-    referencePlayerColor = "Red",
-    referenceHandPosition = Vector({ 0.00, 3.22, -146.61 }),
+    referenceSeatSegment = 4,
+    referenceHand = {
+      position = Vector({ 0.00, 3.22, -146.61 }),
+      rotation = Vector(0, 0, 0),
+    },
     objectPositions = {
       {
         guid = G.GUIDS.MAIN_LIGHT_LEFT,
@@ -1564,7 +1632,7 @@ C.Tables = {
     inactivePosition = Vector({ 0.00, -200, 100 }),
     numSegments = 8,
     angleSegmentOne = 0,
-    playerToPositionMap = {
+    seatToPositionMap = {
       NPC1 = 2,
       NPC2 = 8,
       NPC3 = 1,
@@ -1574,8 +1642,11 @@ C.Tables = {
       Pink = 6,
       Purple = 7,
     },
-    referencePlayerColor = "Red",
-    referenceHandPosition = Vector({ 0.00, 3.22, -166.61 }),
+    referenceSeatSegment = 5,
+    referenceHand = {
+      position = Vector({ 0.00, 3.22, -166.61 }),
+      rotation = Vector(0, 0, 0),
+    },
     objectPositions = {
       {
         guid = G.GUIDS.MAIN_LIGHT_LEFT,
@@ -1619,7 +1690,7 @@ C.Tables = {
     inactivePosition = Vector({ 0.00, -200, 100 }),
     numSegments = 9,
     angleSegmentOne = 20,
-    playerToPositionMap = {
+    seatToPositionMap = {
       NPC1 = 2,
       NPC2 = 8,
       NPC3 = 1,
@@ -1630,8 +1701,11 @@ C.Tables = {
       Pink = 6,
       Purple = 7,
     },
-    referencePlayerColor = "Red",
-    referenceHandPosition = Vector({ 0.00, 3.22, -156.61 }),
+    referenceSeatSegment = 5,
+    referenceHand = {
+      position = Vector({ 0.00, 3.22, -156.61 }),
+      rotation = Vector(0, 0, 0),
+    },
     objectPositions = {
       {
         guid = G.GUIDS.MAIN_LIGHT_LEFT,
@@ -1675,7 +1749,7 @@ C.Tables = {
     inactivePosition = Vector({ 0.00, -200, 50 }),
     numSegments = 10,
     angleSegmentOne = 0,
-    playerToPositionMap = {
+    seatToPositionMap = {
       NPC1 = 3,
       NPC2 = 9,
       NPC3 = 2,
@@ -1687,8 +1761,11 @@ C.Tables = {
       Pink = 7,
       Purple = 8
     },
-    referencePlayerColor = "Red",
-    referenceHandPosition = Vector({ 0.00, 3.22, -162 }),
+    referenceSeatSegment = 6,
+    referenceHand = {
+      position = Vector({ 0.00, 3.22, -162 }),
+      rotation = Vector(0, 0, 0),
+    },
     objectPositions = {
       {
         guid = G.GUIDS.MAIN_LIGHT_LEFT,
@@ -1730,7 +1807,7 @@ C.Tables = {
     centerPoint = Vector({ 0, 0, -90.26 }),
     activePosition = Vector({ 0.00, 0, -90.26 }),
     inactivePosition = Vector({ 0.00, -200, 50 }),
-    playerToPositionMap = {
+    seatToPositionMap = {
       NPC1 = {side = 0, index = 3},
       NPC2 = {side = 0, index = 2},
       NPC3 = {side = 0, index = 4},
@@ -1742,8 +1819,11 @@ C.Tables = {
       Brown = {side = 180, index = 1},
       Purple = {side = 180, index = 5}
     },
-    referencePlayerColor = "Red",
-    referenceHandPosition = Vector({ 0.00, 3.22, -135.77 }),
+    referenceSeatSegment = { side = 180, index = 3 },
+    referenceHand = {
+      position = Vector({ 0.00, 3.22, -135.77 }),
+      rotation = Vector(0, 0, 0),
+    },
     objectPositions = {
       {
         guid = G.GUIDS.MAIN_LIGHT_LEFT,
@@ -1781,56 +1861,6 @@ C.Tables = {
   }
 }
 
---- Copy `playerToPositionMap` for `seatToPositionMap` (FACING entries get a shallow side/index clone).
---- @param map table|nil
---- @return table
-local function copySeatToPositionMap(map)
-  local out = {}
-  if type(map) ~= "table" then
-    return out
-  end
-  for seatKey, seg in pairs(map) do
-    if type(seg) == "table" and type(seg.side) == "number" and type(seg.index) == "number" then
-      out[seatKey] = { side = seg.side, index = seg.index }
-    else
-      out[seatKey] = seg
-    end
-  end
-  return out
-end
-
---- Copy a segment descriptor (`number` or `{ side, index }`).
---- @param seg any
---- @return any
-local function copySeatSegmentDescriptor(seg)
-  if type(seg) == "table" and type(seg.side) == "number" and type(seg.index) == "number" then
-    return { side = seg.side, index = seg.index }
-  end
-  return seg
-end
-
---- Populate phased layout schema on each `C.Tables` entry when absent (Phase 0; legacy fields kept).
-for _tableKey, tableCfg in pairs(C.Tables) do
-  if type(tableCfg) == "table" then
-    local map = tableCfg.playerToPositionMap
-    if tableCfg.seatToPositionMap == nil and type(map) == "table" then
-      tableCfg.seatToPositionMap = copySeatToPositionMap(map)
-    end
-    if tableCfg.referenceSeatSegment == nil and type(map) == "table" then
-      local refColor = tableCfg.referencePlayerColor
-      if type(refColor) == "string" and refColor ~= "" and map[refColor] ~= nil then
-        tableCfg.referenceSeatSegment = copySeatSegmentDescriptor(map[refColor])
-      end
-    end
-    if tableCfg.referenceHand == nil and tableCfg.referenceHandPosition ~= nil then
-      tableCfg.referenceHand = {
-        position = Vector(tableCfg.referenceHandPosition),
-        rotation = Vector(0, 0, 0),
-      }
-    end
-  end
-end
-
 -- Default Table Source Objects
 -- During a table transition, if a sourceObjects table is not provided, the default table source objects will be used.
 -- See .dev/Rotational Coordinate Generator.md for more information on the sourceObjects table, and how its values are expanded and parsed into objects.
@@ -1838,14 +1868,12 @@ end
 --   - "player": a table of objects associated with player seats
 --   - "all": a table of objects associated with all seats (player seats and NPC seats)
 --   - "relative": a table of objects that are relative to the hand zone anchor of the matching table slot, and should be moved to rigidly follow the corresponding hand zone anchor when the seat layout is applied
---   - "cameraModes.bySeat": keys in C.RedCameraAngles; layout writes each player’s playerData.cameraAngles and universalCameraAngles[<mode><seatKey>] from the same derived angles (including NPC seats in the map).
+--   - "cameraModes.bySeat": keys in C.ReferenceCameraAngles; layout writes each player’s playerData.cameraAngles and universalCameraAngles[<mode><seatKey>] from the same derived angles (including NPC seats in the map).
 C.TableSourceObjects = {
   player = {
     "CSHEET_BASE",
     "CSHEET_BASE_BACK",
     "CSHEET_DICE_DRAWER",
-    "CSHEET_DICE_DRAWER_ANCHOR_ON",
-    "CSHEET_DICE_DRAWER_ANCHOR_OFF",
     "COMPULSION_CARD_1_ANCHOR",
     "COMPULSION_CARD_2_ANCHOR",
     "COMPULSION_CARD_3_ANCHOR",
@@ -1875,7 +1903,9 @@ C.TableSourceObjects = {
     "SEAT_CHAIR",
     "SEAT_FIGURE",
     "SEAT_LIGHT_1",
-    "SEAT_LIGHT_2"
+    "SEAT_LIGHT_2",
+    "CSHEET_DICE_DRAWER_ANCHOR_ON",
+    "CSHEET_DICE_DRAWER_ANCHOR_OFF"
   },
   relative = {
     G.GUIDS.PRINCE_SIGNET_BORDER_RED,
@@ -1970,7 +2000,7 @@ C.TableSourceObjects = {
       },
     },
   },
-  -- Derived from C.RedCameraAngles (and aligned with C.UniversalCameraAngles runtime merge behavior).
+  -- Derived from C.ReferenceCameraAngles (and aligned with C.UniversalCameraAngles runtime merge behavior).
   -- This avoids duplicating mode-key lists in multiple places.
   cameraModes = deriveTableSourceCameraModes()
 }

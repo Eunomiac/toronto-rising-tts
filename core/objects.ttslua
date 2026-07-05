@@ -220,7 +220,7 @@ local function isPcSeatInActiveTableLayout(seatColor)
         return true
     end
     ---@diagnostic disable-next-line: undefined-field
-    local map = tableCfg.playerToPositionMap
+    local map = tableCfg.seatToPositionMap
     if U.Type(map) ~= "table" then
         return true
     end

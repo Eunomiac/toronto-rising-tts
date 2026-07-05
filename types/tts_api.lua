@@ -59,7 +59,7 @@ local Camera = {}
 ---@class AudioListener: Component
 local AudioListener = {}
 
---- Preset tables under `C.UniversalCameraAngles` / `C.RedCameraAngles` (camera authoring).
+--- Preset tables under `C.UniversalCameraAngles` / `C.ReferenceCameraAngles` (camera authoring).
 ---@class TtsCameraAnglePreset
 ---@field position Vector|table|nil
 ---@field isRelativeToReferenceHandPosition boolean|nil
@@ -183,7 +183,7 @@ Player = {
 }
 
 ---@class HandsAPI
----@field playerToPositionMap table<string, any>
+---@field seatToPositionMap table<string, any>
 local HandsAPI = {}
 ---@return table
 function HandsAPI.getHands(...) end

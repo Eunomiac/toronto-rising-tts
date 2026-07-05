@@ -2414,7 +2414,7 @@ resolveNpcPlacementIntent = function()
 
     local tableKey = S.getStateVal("seatLayout", "currentTableKey")
     local tableCfg = U.Type(tableKey) == "string" and C.Tables[tableKey] or nil
-    local map = U.Type(tableCfg) == "table" and tableCfg.playerToPositionMap or {}
+    local map = U.Type(tableCfg) == "table" and tableCfg.seatToPositionMap or {}
     local bySeat = {}
 
     for _, seatKey in ipairs(C.NPCSeats or {}) do
