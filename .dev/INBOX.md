@@ -16,6 +16,12 @@
 
 ## Processed
 
+2026-07-05 **TOR-285** (connect-time HUD visibility) — Done; author verified Save & Play; hotseat minor wrinkles likely hotseat-only; multiclient deferred TOR-144
+2026-07-05 INBOX Quick Fixes — REMORSE roll pool lock + phase label → **TOR-289** (Dice & Rolls Improvement, Medium)
+2026-07-05 INBOX Quick Fixes — ST roll dash broadcast persistence for all rolls → **TOR-292** (Dice & Rolls Improvement, Medium)
+2026-07-05 INBOX Quick Fixes — stage control board Unlocked button font → **TOR-290** (NPC & Spotlight Improvement, Medium)
+2026-07-05 INBOX Quick Fixes — gitignore `bundle-size-gate.json` (INBOX.md stays tracked) → **TOR-291** (Foundation & Tooling Improvement, Low)
+2026-07-05 INBOX Active — absent player connect/disconnect presence override → **TOR-293** (Players & Connection Feature, High; `blockedBy` TOR-144)
 2026-07-04 INBOX Active — connect-time UI missing until reload (White/unseated) → **TOR-285** (UI & HUD Bug, High; relatedTo TOR-144 multiplayer E2E)
 2026-07-04 INBOX Active — centralize `setInvisibleTo` helper + Text tool visibility audit → **TOR-286** (Table Objects Improvement, Medium)
 2026-07-04 INBOX Active — dice preload pool for instant spawn → **TOR-287** (Dice & Rolls Improvement, Medium)

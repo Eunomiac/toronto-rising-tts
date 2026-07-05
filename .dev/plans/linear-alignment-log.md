@@ -396,5 +396,12 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-04 | CREATE | TOR-286 | Centralize `setInvisibleTo` helper + Text tool visibility audit; Table Objects Improvement, Medium; relatedTo TOR-257, TOR-226 |
 | 2026-07-04 | CREATE | TOR-287 | Dice preload pool for instant spawn; Dice & Rolls Improvement, Medium; parent TOR-31 |
 | 2026-07-04 | CREATE | TOR-288 | Player companion toggle tiles (flip, reconcile, dual-face UI); Table Objects Feature, Medium |
+| 2026-07-05 | DONE | TOR-285 | Connect-time / hotseat HUD visibility — global loading overlay + seat-assignment `UI.setXml` refresh (`64c1a3d`); author verified; hotseat wrinkles likely hotseat-only; multiclient deferred TOR-144 |
+| 2026-07-05 | `/tr-inbox` | INBOX | Quick Fixes → TOR-289 (REMORSE lock), TOR-292 (ST dash broadcast), TOR-290 (Unlock font), TOR-291 (gitignore gate); Active → TOR-293 (absent player presence); Focus #3 TOR-289 |
+| 2026-07-05 | CREATE | TOR-289 | REMORSE roll pool lock + Roll When Ready label; Dice & Rolls, parent TOR-31, Medium |
+| 2026-07-05 | CREATE | TOR-290 | Stage control board Unlocked button font; NPC & Spotlight, Medium |
+| 2026-07-05 | CREATE | TOR-291 | Gitignore bundle-size-gate.json (INBOX stays tracked); Foundation & Tooling, Low |
+| 2026-07-05 | CREATE | TOR-292 | ST roll dash broadcast persistence for all rolls; Dice & Rolls, parent TOR-31, Medium |
+| 2026-07-05 | CREATE | TOR-293 | Absent player connect/disconnect presence override; Players & Connection Feature, High; `blockedBy` TOR-144 |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
