@@ -39,7 +39,7 @@ Use these before writing custom assert helpers. Do **not** copy illustration dum
 | State inspection | `showState()`, `showScene()` | TESTING.md |
 | Dice setup / assert | `rollTest`, `rollConfirm`, `rollCancelAll`, `rollE2eExpectBroadcast` | [TESTING.md § Dice debug](../TESTING.md#dice-debug-solo-host--no-second-client) |
 | File evidence | `DEBUG.logStateToFile`, `DEBUG.logToFile`, `DEBUG.writeWorkspaceFile` | [DEBUG_FILE_LOGGING.md](../DEBUG_FILE_LOGGING.md) |
-| Domain DEBUG | `DEBUG.syncTableSimplified`, `DEBUG.compareLayoutPaths`, … | `debugHelp()` / TESTING.md |
+| Domain DEBUG | `DEBUG.syncTableSimplified`, `ensureSceneLibraryStub`, `DEBUG.compareLayoutPaths`, … | `debugHelp()` / TESTING.md |
 | Console phase banners | `printHeader(text, 1\|2)` | [TESTING.md § E2E console output](../TESTING.md#e2e-console-output-conventions) |
 
 **Human gates** in Step-by-step playbooks use `print("   ▶▶▶ HUMAN ▶▶▶ …")` — not `printHeader("[HUMAN]", 3)`.
@@ -61,7 +61,7 @@ Human-facing **Prerequisites** in each playbook: **2–4 bullets** (Save & Play 
 | Table layout | `DEBUG.syncTableSimplified(tableKey)` |
 | NPC tokens | `DEBUG.spawnNpcControlBoardTokens()` |
 | Gameboard baseline | `gbE2eReset()`, `gbE2ePrereqCheck()` |
-| Scene library row | Inline `S.setStateVal` stub — do not require pre-authored slot content |
+| Scene library row | `ensureSceneLibraryStub(slotIndex, sceneKey?, opts?)` |
 
 See [step-by-step-guidance SKILL](../../.cursor/skills/step-by-step-guidance/SKILL.md) § Automate prerequisites.
 

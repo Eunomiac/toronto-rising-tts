@@ -575,6 +575,64 @@ function DEBUG.showScene()
     end
 end
 
+--- Ensure `sceneLibrary.order[slotIndex]` points at `sceneKey` and a minimal library row exists.
+--- Does not Apply the scene to live `sessionScene` — use for E2E / step-by-step playbook setup.
+--- @param slotIndex number 1-based index into `sceneLibrary.order` (matches `scenes_lib_slot_NN`)
+--- @param sceneKey string|nil defaults to `e2e_stub_slot_<slotIndex>`
+--- @param opts table|nil `{ title?, tableKey?, receivesLiveWrites?, overwrite?, placements?, seatSlots?, sessionScene? }`
+--- @return string sceneKey
+function DEBUG.ensureSceneLibraryStub(slotIndex, sceneKey, opts)
+    slotIndex = tonumber(slotIndex)
+    if slotIndex == nil or slotIndex < 1 then
+        error("ensureSceneLibraryStub: slotIndex must be a positive integer")
+    end
+    opts = type(opts) == "table" and opts or {}
+    sceneKey = (type(sceneKey) == "string" and sceneKey ~= "") and sceneKey
+        or ("e2e_stub_slot_" .. tostring(slotIndex))
+
+    local order = S.getStateVal("sceneLibrary", "order") or {}
+    while #order < slotIndex do
+        order[#order + 1] = ""
+    end
+    order[slotIndex] = sceneKey
+    S.setStateVal(order, "sceneLibrary", "order")
+
+    local existing = S.getStateVal("sceneLibrary", "scenes", sceneKey)
+    local overwrite = opts.overwrite == true
+    if type(existing) == "table" and not overwrite then
+        S.validateState()
+        print("ensureSceneLibraryStub: slot " .. slotIndex .. " → " .. sceneKey .. " (existing row kept)")
+        return sceneKey
+    end
+
+    local tableKey = type(opts.tableKey) == "string" and opts.tableKey ~= "" and opts.tableKey or "Table A"
+    local sessionScene = opts.sessionScene
+    if type(sessionScene) ~= "table" then
+        sessionScene = {
+            tableKey = tableKey,
+            seatSlots = type(opts.seatSlots) == "table" and opts.seatSlots or {},
+            npcWorld = {
+                placements = type(opts.placements) == "table" and opts.placements or {},
+            },
+        }
+    end
+
+    local row = type(existing) == "table" and existing or {}
+    row.title = type(opts.title) == "string" and opts.title ~= "" and opts.title
+        or row.title
+        or ("E2E stub slot " .. tostring(slotIndex))
+    if opts.receivesLiveWrites ~= nil then
+        row.receivesLiveWrites = opts.receivesLiveWrites == true
+    elseif row.receivesLiveWrites == nil then
+        row.receivesLiveWrites = false
+    end
+    row.sessionScene = sessionScene
+    S.setStateVal(row, "sceneLibrary", "scenes", sceneKey)
+    S.validateState()
+    print("ensureSceneLibraryStub: slot " .. slotIndex .. " → " .. sceneKey)
+    return sceneKey
+end
+
 --- Scan `npc_light` for duplicate pooled spotlights per roster key (same as load audit).
 --- @param opts table|nil forwarded to `NPCS.auditDuplicatePooledSpotlights` (e.g. `{ alert = true, destroyDuplicates = true }`)
 --- @return table audit result
@@ -5259,6 +5317,7 @@ function DEBUG.help()
     print("\nINSPECTION:")
     print("  showState()              - Full gameState JSON")
     print("  showScene()              - sessionScene + sceneLibrary keys")
+    print("  ensureSceneLibraryStub(slotIndex, sceneKey?, opts?) - E2E scene library row stub (no Apply)")
     print("  inspectSoundscapeAudio() - Emitter GUID/tag/effect inventory")
     print("  dumpConditions(color)    - Active conditions + resolved effects")
     print("  dumpEffectiveStats(color) - Effective stat getters (tracker max, BP, …)")
@@ -5381,6 +5440,7 @@ syncTableSimplified = DEBUG.syncTableSimplified
 -- Expose inspection functions
 showState = DEBUG.showState
 showScene = DEBUG.showScene
+ensureSceneLibraryStub = DEBUG.ensureSceneLibraryStub
 inspectSoundscapeAudio = DEBUG.inspectSoundscapeAudio
 
 -- Expose quick setters

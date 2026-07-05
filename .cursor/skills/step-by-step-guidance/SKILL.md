@@ -90,7 +90,7 @@ Before the test body runs, Code Block 0 should **prepare** then **verify**. Pref
 | Active table | `DEBUG.syncTableSimplified("Table A")` | Layout + `currentTableKey`; use `skipTransitionBlindfold` table paths only when the test requires blindfold UX |
 | NPC control tokens | `DEBUG.spawnNpcControlBoardTokens()` | Idempotent when tokens already exist; pair with `gbE2eReset()` / harness placement for board UV |
 | Gameboard baseline | `gbE2eReset()`, `gbE2ePrereqCheck()` | Empty placements + fixture preload; use when the playbook targets gameboard/NPC stage |
-| Scene library slot | Inline `S.setStateVal` on `sceneLibrary.order` + `sceneLibrary.scenes[key]` | Minimal `sessionScene` stub for the test — do not require a pre-authored workshop row |
+| Scene library slot | `ensureSceneLibraryStub(slotIndex, sceneKey?, opts?)` | Minimal `sessionScene` stub for the test — do not require a pre-authored workshop row |
 | Dice / roll context | `rollTest(color, …)` | Includes seat prep automatically |
 
 **Agent checklist:** List human prerequisites (≤4 bullets) → implement every other default in Code Block 0 → end Code Block 0 with verify asserts, not “fail if the world wasn't already perfect.”
@@ -118,7 +118,7 @@ Do **not** copy illustration dummies from the template into production runbooks.
 | Dice setup / assert | `rollTest`, `rollConfirm`, `rollCancelAll`, `rollE2eExpectBroadcast` | TESTING.md § Dice debug |
 | File evidence | `DEBUG.logStateToFile`, `DEBUG.logToFile`, `DEBUG.writeWorkspaceFile` | [`.dev/DEBUG_FILE_LOGGING.md`](../../.dev/DEBUG_FILE_LOGGING.md) |
 | Domain DEBUG | `DEBUG.syncTableSimplified`, `DEBUG.compareLayoutPaths`, … | `debugHelp()` / TESTING.md |
-| Session setup | `rollE2eSeatPrep`, `DEBUG.spawnNpcControlBoardTokens`, `gbE2eReset`, inline `S.setStateVal` | **Automate prerequisites** above |
+| Session setup | `rollE2eSeatPrep`, `DEBUG.spawnNpcControlBoardTokens`, `gbE2eReset`, `ensureSceneLibraryStub` | **Automate prerequisites** above |
 | Console banners | `printHeader(text, level)` | TESTING.md § E2E console output (levels 1–2 for phases; not for HUMAN in Step-By-Step playbooks) |
 
 ## Long procedures (multi-step verification)
