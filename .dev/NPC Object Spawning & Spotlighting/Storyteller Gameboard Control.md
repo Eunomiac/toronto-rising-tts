@@ -59,7 +59,7 @@ Table markers: active table only on minimap (`centerPoint` → `uvFromWorld` →
 
 **NPC seat markers:** Always stashed at **Y = -200** (not shown on minimap; TOR-268).
 
-**Table leaf / component markers (`gameboard_table_component`):** Always stashed at **Y = -200** (not shown on minimap; TOR-268). Playfield chair leaves via `applyTableComponentsState` are unchanged.
+**Table leaf / component markers (`gameboard_table_component`):** Shown on the minimap when the parent table is active and the leaf is active on the playfield (same `usedBy` / `alsoEnable` rules as `applyTableComponentsState` in `lib.rotational-seat-layout.ttslua`). Inactive leaves and components for other tables are **locked** and parked at world **Y = -200** (`MARKER_STASH_WORLD_Y`). Leaf markers use the parent table's CONTROL_BOARD transform (models are authored table-relative).
 
 **Marker scale:** For each minimap marker, read `getScale()` on the playfield object it mimics (`C.Tables` table/leaf GUID, or `G.GetThroneGUID` seat chair for PC/NPC seats), then set marker scale to **source ÷ 40** on all three axes (`DATA.MINIMAP_SCALE_DIVISOR`). Do not use nearest `*Object` tag scan for scale — that often hits a scale-1 helper instead of `SEAT_CHAIR_*`.
 
