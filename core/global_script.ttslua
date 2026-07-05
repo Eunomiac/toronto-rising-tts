@@ -320,6 +320,8 @@ local function refreshGlobalUiAfterSeatAssignment(seatColor)
         needsSetXml = false
     end
 
+    local shouldMarkSeatRefreshDone = false
+
     local function applyPostSeatUiRefresh()
         local delta = {
             overlays = true,
@@ -339,6 +341,10 @@ local function refreshGlobalUiAfterSeatAssignment(seatColor)
         end
         if type(UpdateUIDisplays) == "function" then
             UpdateUIDisplays(delta)
+        end
+        if shouldMarkSeatRefreshDone and U.isPlayer(seated) then
+            markSeatXmlRefreshDone(seated, seatColor)
+            shouldMarkSeatRefreshDone = false
         end
         hideStartupLoadingOverlays()
     end
@@ -368,7 +374,7 @@ local function refreshGlobalUiAfterSeatAssignment(seatColor)
     end
 
     if U.isPlayer(seated) then
-        markSeatXmlRefreshDone(seated, seatColor)
+        shouldMarkSeatRefreshDone = true
     end
     UI.setXml(xml)
     schedulePostSeatUiRefresh()
