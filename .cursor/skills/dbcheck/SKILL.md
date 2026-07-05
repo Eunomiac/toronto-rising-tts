@@ -1,10 +1,9 @@
 ---
-description: "Post compact debugging checklist"
+name: dbcheck
+description: A compact debugging checklist to review whenever investigating or trying to solve an issue.
 ---
 
-Return the following checklist exactly, preserving markdown and checkboxes.
-
-Use this checklist as the active debugging protocol for this thread. Apply it immediately, and do not continue with workaround-layering until these checks are addressed.
+Use this checklist as the active debugging protocol. Apply it immediately, and do not continue with workaround-layering until these checks are addressed.
 
 ## Debug Checklist (Quick)
 

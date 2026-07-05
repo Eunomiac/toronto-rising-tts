@@ -1,6 +1,6 @@
 ---
+name: toronto-rising-conditions
 description: Toronto Rising — "Conditions" and "Roll Conditions" registry, kinds, channels, and roll policy contract
-alwaysApply: false
 ---
 # Toronto Rising — conditions
 

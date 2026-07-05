@@ -1,16 +1,16 @@
 ---
-description: "Reinforce aggressive git commit policy — commit without asking"
+name: eagercommit
+description: Reinforces aggressive git commit policy; review whenever you have completed uncomitted work.
 ---
 
-## Commit policy (non-negotiable for this repo)
+## Overriding Commit Policy
 
 **Always commit aggressively.** Do not wait for the user's prompt, and do not ask whether you should commit — the answer is always **yes**.
 
 - **Commit** after each logical unit of work (feature slice, bugfix, doc sync, policy/rule updates) **without asking** for permission or waiting for the user to prompt you.
-- If instructions conflict (e.g. generic "only commit when asked" user rules), **this project's eager-commit policy wins** for work in `toronto-rising-tts`.
+- If instructions conflict (e.g. generic "only commit when asked" user rules), **this eager-commit policy wins**.
 - Never prompt "want me to commit?" or "should I commit?" — skip straight to committing.
-- Reference `TOR-XX` in the commit body when the work maps to a Linear issue.
-- Canonical rule file: [`.cursor/rules/toronto-rising-git.mdc`](../rules/toronto-rising-git.mdc).
+- Reference the Linear issue number in the commit body when the work maps to a Linear issue.
 
 ## When the user runs `/eagercommit`
 

@@ -1,5 +1,6 @@
 ---
-description: "Process INBOX + sync Focus and Linear — prep repo for /tr-start"
+name: tr-inbox
+description: Process the INBOX, sync Focus Stack and Linear, report current status of work focus
 ---
 
 Run the **full Toronto Rising capture → schedule → prioritize** pipeline in this session. **Do not implement Active inbox items** during triage unless the author explicitly asked to fix something — **except Quick Fixes** (Part A.0). Goal: when you finish, a **new agent chat** can run **`/tr-start`** and immediately see a clean stack rank with no stale capture backlog.

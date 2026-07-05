@@ -1,5 +1,6 @@
 ---
-description: "Post full debugging checklist"
+name: dbfullcheck
+description: More detailed debugging guidelines, to be followed when a debugging exchange is stalling, looping, or accumulating workarounds.
 ---
 
 Return the following checklist exactly, preserving markdown and checkboxes.

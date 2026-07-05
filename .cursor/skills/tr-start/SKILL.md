@@ -1,4 +1,10 @@
 ---
+name: tr-start
+description: Bootstrap a Toronto Rising agent session — Focus, Linear, architecture policies
+disable-model-invocation: true
+---
+
+---
 description: "Bootstrap a Toronto Rising agent session — Focus, Linear, architecture policies"
 ---
 

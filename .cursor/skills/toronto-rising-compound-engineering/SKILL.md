@@ -1,6 +1,6 @@
 ---
+name: toronto-rising-compound-engineering
 description: Using Compound Engineering workflows (sessions, plan, review, ship) when they help; do not wait for slash-command syntax.
-alwaysApply: false
 ---
 
 # Toronto Rising — Compound Engineering (proactive use)
