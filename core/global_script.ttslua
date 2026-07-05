@@ -250,10 +250,76 @@ local function startupSeatLightsReadyForReveal()
     return L.seatSpotlightsResolvable() == true
 end
 
+local STARTUP_LOADING_OVERLAY_ID = "overlay_loadingScreen_startup"
+
 local function hideStartupLoadingOverlays()
-    for _, color in ipairs(C.PlayerColors or {}) do
-        UI.hide("overlay_loadingScreen_" .. tostring(color))
+    UI.hide(STARTUP_LOADING_OVERLAY_ID)
+end
+
+--- Re-evaluate XmlUI visibility after seat assignment (TTS engine snapshotted-at-load quirk; TOR-285).
+--- @param seatColor string
+local function refreshGlobalUiAfterSeatAssignment(seatColor)
+    if type(seatColor) ~= "string" or seatColor == "" or seatColor == "Grey" then
+        return
     end
+
+    local isPcSeat = U.isIn(seatColor, C.PlayerColors)
+    local isStorytellerSeat = seatColor == "Black"
+    if not isPcSeat and not isStorytellerSeat then
+        return
+    end
+
+    if type(UI.getXml) ~= "function" or type(UI.setXml) ~= "function" then
+        return
+    end
+
+    local xml = UI.getXml()
+    if type(xml) ~= "string" or xml == "" then
+        return
+    end
+
+    UI.setXml(xml)
+
+    local function applyPostSeatUiRefresh()
+        local delta = {
+            overlays = true,
+            gameStateOverlay = true,
+            debugSeatColors = true,
+        }
+        if isPcSeat then
+            delta.playerHud = true
+            delta.colors = { seatColor }
+        end
+        if isStorytellerSeat then
+            delta.scenesPanel = true
+            delta.statsPanel = true
+            delta.adminLighting = true
+            delta.soundscape = true
+            delta.phase = true
+        end
+        if type(UpdateUIDisplays) == "function" then
+            UpdateUIDisplays(delta)
+        end
+        hideStartupLoadingOverlays()
+    end
+
+    if UI.loading == true then
+        U.waitUntil(applyPostSeatUiRefresh, function()
+            return UI.loading ~= true
+        end, false, 10, 0.05)
+    else
+        U.delay(applyPostSeatUiRefresh, 0)
+    end
+end
+
+--- Bundle-safe seat-assignment UI refresh (`Global.call` from `core/main.ttslua` auto-assign early return).
+--- @param params table|string `{ color: string }` or seat color string
+function GlobalRefreshUiAfterSeatAssignment(params)
+    local seatColor = params
+    if type(params) == "table" then
+        seatColor = params.color or params.seatColor or params.player_color
+    end
+    refreshGlobalUiAfterSeatAssignment(seatColor)
 end
 
 --- Returns seat layout center point from global state for object scripts.
@@ -3057,14 +3123,14 @@ function HUD_updateCoterieData(player, button, id)
     )
 end
 
---- Force-hide startup loading overlays for all player colors.
+--- Force-hide the global startup loading overlay.
 -- Debug escape hatch when startup readiness gating appears stalled.
 -- @param player Player The player who clicked (Host/Black)
 -- @param button string Button value
 -- @param id string The UI element ID
 function HUD_clearLoadingOverlay(player, button, id)
     hideStartupLoadingOverlays()
-    broadcastToColor("Loading overlays manually hidden for all player seats.", player.color, {1, 0.85, 0.2})
+    broadcastToColor("Startup loading overlay manually hidden.", player.color, {1, 0.85, 0.2})
 end
 
 --- Toggle all Anchor-tagged objects (admin debug utility).
@@ -5140,6 +5206,7 @@ function onPlayerChangeColor(color)
     if M ~= nil and type(M.onPlayerChangeColor) == "function" then
         M.onPlayerChangeColor(color)
     end
+    refreshGlobalUiAfterSeatAssignment(color)
     syncDebugSeatColorButtons()
 end
 

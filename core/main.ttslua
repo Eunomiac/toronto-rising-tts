@@ -508,6 +508,9 @@ function M.tryAutoAssignSeatFromChronicle(color)
 
     if color == targetColor then
         M.onPlayerChangeColor(color)
+        if Global ~= nil and type(Global.call) == "function" then
+            Global.call("GlobalRefreshUiAfterSeatAssignment", { color = targetColor })
+        end
         return
     end
 

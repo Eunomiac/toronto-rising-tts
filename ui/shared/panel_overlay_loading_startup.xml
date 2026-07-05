@@ -1,0 +1,16 @@
+<!-- Startup loading screen — no visibility filter (all clients at load). Hidden by onLoad readiness gate. -->
+<!-- Lua: hideStartupLoadingOverlays() / GlobalRefreshUiAfterSeatAssignment (TOR-285). -->
+<!-- Placed last in ui/Global.xml so it draws above other HUD layers. -->
+
+<Image id="overlay_loadingScreen_startup"
+  image="overlay_loadingScreen"
+  active="true"
+  width="1920"
+  height="1200"
+  preserveAspect="true"
+  raycastTarget="true"
+  rectAlignment="MiddleCenter"
+  showAnimation="FadeIn"
+  hideAnimation="FadeOut"
+  animationDuration="0.3"
+/>

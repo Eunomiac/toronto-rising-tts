@@ -70,3 +70,6 @@
 <!-- Storyteller Scenes: district/site pickers from `node .dev/scripts/generate_scenes_location_modals_xml.js` -->
 <Include src="storyteller/panel_scenes_location_modals.xml" />
 <Include src="storyteller/advantage_editor_modal.xml" />
+
+<!-- 6. Startup loading screen (last — draws above all HUD; no visibility filter) -->
+<Include src="shared/panel_overlay_loading_startup.xml" />
