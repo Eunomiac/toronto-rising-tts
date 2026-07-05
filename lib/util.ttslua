@@ -1895,30 +1895,18 @@ function U.Alert(message, color)
 	broadcastToAll(message, color)
 end
 
---- Log coroutine wait / RunSequence faults to the TTS console (always `print`; optional External Editor `log`).
---- Use in `U.waitUntil` and `U.RunSequenceWithOptions` error paths so failures are visible when `log` is missing.
+--- Log coroutine wait / RunSequence faults to the TTS console via `print`.
+--- Use in `U.waitUntil` and `U.RunSequenceWithOptions` error paths (replaces extension `log()` in those paths).
 --- @param tag string short context label (e.g. `waitUntil:check`, `RunSequence:step`)
---- @param err any pcall error value
+--- @param err any error message from the failed step or wait callback
 --- @param detail table|nil optional structured fields (stepIndex, etc.)
 function U.logCoroutineIssue(tag, err, detail)
 	local tb = debug.traceback("", 2)
 	print("[coroutine] " .. tostring(tag) .. ": " .. tostring(err))
 	if detail ~= nil and U.Type(detail) == "table" then
-		local okEnc, encoded = pcall(function()
-			return JSON.encode(detail)
-		end)
-		if okEnc and type(encoded) == "string" then
-			print("[coroutine] detail: " .. encoded)
-		end
+		print("[coroutine] detail: " .. JSON.encode(detail))
 	end
 	print(tb)
-	---@diagnostic disable-next-line: undefined-global
-	if type(log) == "function" then
-		---@diagnostic disable-next-line: undefined-global
-		pcall(function()
-			log({ coroutineTag = tag, err = tostring(err), detail = detail, traceback = tb })
-		end)
-	end
 end
 
 -- ============================================================================
