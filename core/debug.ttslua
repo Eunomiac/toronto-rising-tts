@@ -577,6 +577,9 @@ end
 
 --- Ensure `sceneLibrary.order[slotIndex]` points at `sceneKey` and a minimal library row exists.
 --- Does not Apply the scene to live `sessionScene` — use for E2E / step-by-step playbook setup.
+--- When the row already exists and `opts.overwrite` is not true, returns without changing order
+--- (avoids moving a key between slots or duplicating it in order). When creating or overwriting,
+--- assigns `order[slotIndex]` and clears the key from any other order index first.
 --- @param slotIndex number 1-based index into `sceneLibrary.order` (matches `scenes_lib_slot_NN`)
 --- @param sceneKey string|nil defaults to `e2e_stub_slot_<slotIndex>`
 --- @param opts table|nil `{ title?, tableKey?, receivesLiveWrites?, overwrite?, placements?, seatSlots?, sessionScene? }`
@@ -593,34 +596,47 @@ function DEBUG.ensureSceneLibraryStub(slotIndex, sceneKey, opts)
     local existing = S.getStateVal("sceneLibrary", "scenes", sceneKey)
     local overwrite = opts.overwrite == true
 
-    if type(existing) ~= "table" or overwrite then
-        local tableKey = type(opts.tableKey) == "string" and opts.tableKey ~= "" and opts.tableKey or "Table A"
-        local sessionScene = opts.sessionScene
-        if type(sessionScene) ~= "table" then
-            sessionScene = {
-                tableKey = tableKey,
-                seatSlots = type(opts.seatSlots) == "table" and opts.seatSlots or {},
-                npcWorld = {
-                    placements = type(opts.placements) == "table" and opts.placements or {},
-                },
-            }
-        end
-
-        local row = type(existing) == "table" and existing or {}
-        row.title = type(opts.title) == "string" and opts.title ~= "" and opts.title
-            or row.title
-            or ("E2E stub slot " .. tostring(slotIndex))
-        if opts.receivesLiveWrites ~= nil then
-            row.receivesLiveWrites = opts.receivesLiveWrites == true
-        elseif row.receivesLiveWrites == nil then
-            row.receivesLiveWrites = false
-        end
-        row.sessionScene = sessionScene
-        S.setStateVal(row, "sceneLibrary", "scenes", sceneKey)
+    if type(existing) == "table" and not overwrite then
+        print(
+            "ensureSceneLibraryStub: "
+                .. sceneKey
+                .. " (existing row kept; order unchanged)"
+        )
+        return sceneKey
     end
 
+    local tableKey = type(opts.tableKey) == "string" and opts.tableKey ~= "" and opts.tableKey or "Table A"
+    local sessionScene = opts.sessionScene
+    if type(sessionScene) ~= "table" then
+        sessionScene = {
+            tableKey = tableKey,
+            seatSlots = type(opts.seatSlots) == "table" and opts.seatSlots or {},
+            npcWorld = {
+                placements = type(opts.placements) == "table" and opts.placements or {},
+            },
+        }
+    end
+
+    local row = type(existing) == "table" and existing or {}
+    row.title = type(opts.title) == "string" and opts.title ~= "" and opts.title
+        or row.title
+        or ("E2E stub slot " .. tostring(slotIndex))
+    if opts.receivesLiveWrites ~= nil then
+        row.receivesLiveWrites = opts.receivesLiveWrites == true
+    elseif row.receivesLiveWrites == nil then
+        row.receivesLiveWrites = false
+    end
+    row.sessionScene = sessionScene
+    S.setStateVal(row, "sceneLibrary", "scenes", sceneKey)
+
     -- Order slot after scene row exists (validateState drops keys with no matching scene).
+    -- Remove sceneKey from other indices first so it is not listed twice.
     local order = S.getStateVal("sceneLibrary", "order") or {}
+    for i = 1, #order do
+        if order[i] == sceneKey then
+            order[i] = ""
+        end
+    end
     while #order < slotIndex do
         order[#order + 1] = ""
     end
