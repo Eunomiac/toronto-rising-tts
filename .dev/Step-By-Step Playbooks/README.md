@@ -27,7 +27,7 @@ Do not conflate **Steps** (author paste/click order), **Code Blocks** (one `U.Ru
 
 | Playbook | Issue | Purpose |
 | --- | --- | --- |
-| [TOR-281-clear-seat-verify.md](TOR-281-clear-seat-verify.md) | **TOR-281** Stage Clear seat activation + library persistence | Sign-off for Clear seat rules + live library mirror |
+| [TOR-281-clear-seat-verify.md](TOR-281-clear-seat-verify.md) | **TOR-281** Clear stage → return NPC to seat + library persistence | Sign-off when clearing stage returns seated NPCs correctly and seat toggles survive re-Apply |
 
 ## Helper registry
 

@@ -1,51 +1,57 @@
-# Stage Clear seat activation + library persistence _(TOR-281)_
+# Clear stage → return NPC to seat _(TOR-281)_
 
-Verify **TOR-281 (Stage Clear seat activation + live scene-library seat persistence)**: Clear-from-stage homeland seat rules (disabled + visible stage light → activate; enabled seat unchanged) and `seatSlots.isPresent` write-back into the linked scene library row.
+Verify TOR-281: when you clear NPC figurines from the stage and those NPCs still occupy table seats, they should return to their chair at the table. If the NPC was lit on stage, their seat should become active again; if they were dark on stage, the seat should stay inactive. If the seat was already active before Clear, it should stay active. Seat on/off changes you make during play should also be saved into the scene library so they survive when you re-apply that scene later.
 
-**Linear:** [TOR-281](https://linear.app/eunomiac-dev/issue/TOR-281/npc-stage-clear-seat-activation-rules-live-scene-library-seat)  
-**Domain docs:** [Storyteller Gameboard Control](../NPC%20Object%20Spawning%20%26%20Spotlighting/Storyteller%20Gameboard%20Control.md) · [Scene Constructor Overview](../Scene%20Constructor/Scene%20Constructor%20Overview.md) (TOR-250 / TOR-281 homeland rules)  
-**Harness reference:** [Gameboard-E2E.md](../E2E%20Playbooks/Gameboard-E2E.md) (H281 probes in `gbE2eRunFull`)
+**Linear:** [TOR-281 — Stage Clear seat activation + library persistence](https://linear.app/eunomiac-dev/issue/TOR-281/npc-stage-clear-seat-activation-rules-live-scene-library-seat)  
+**Background:** [Storyteller Gameboard Control](../NPC%20Object%20Spawning%20%26%20Spotlighting/Storyteller%20Gameboard%20Control.md) · [Scene Constructor Overview](../Scene%20Constructor/Scene%20Constructor%20Overview.md)  
+**Automated harness (optional deep pass):** [Gameboard-E2E.md](../E2E%20Playbooks/Gameboard-E2E.md)
+
+## What this playbook checks
+
+1. **Automated Clear rules** — Lua simulates Clear with different seat and stage-light combinations and checks the seat ends up active or inactive as expected.
+2. **Real Clear button** — you click Clear on the control board twice (with the five-second confirm) and Lua checks the seat activated correctly.
+3. **Scene library persistence** — you toggle an NPC seat off in the Scenes panel, then re-apply the scene; the seat should still be off, not revert to how the scene was originally authored.
 
 ## Prerequisites (defaults)
 
-- **Host** (solo OK), seated **Black** (Storyteller).
-- Active table **Table A**.
-- Workshop: `CONTROL_BOARD`, `CONTROL_BOARD_PALETTE`, `STAGE_BOARD`, ≥2 `npc_control_token` with fixture GM Notes (`myleneHamelin`, `adrianVarga`).
-- Scene library row **`scenes_lib_slot_03`** populated (index 3 in `sceneLibrary.order`).
-- **Save & Play** required — repo Lua changed (`5b2a3c7`, `3d49296`).
+You are the **Host** (solo is fine), seated as **Black** (Storyteller), with **Table A** active.
 
-Constants used below (match `E2E_GB.FIXTURE`):
+The table needs the stage control board, its palette, the stage board, and at least two NPC control tokens set up for test characters **myleneHamelin** and **adrianVarga** (same fixtures as the gameboard E2E harness). Scene library slot **`scenes_lib_slot_03`** must exist and have content.
 
-| Key | Value |
+**Save & Play** is required if you have not loaded since the TOR-281 code landed (commits `5b2a3c7`, `3d49296`).
+
+Test constants (same as the gameboard harness):
+
+| What | Value |
 | --- | --- |
-| `NPC_A` | `myleneHamelin` |
-| `SEAT` | `NPC1` |
-| `UV_A` | `u=0.18`, `v=0.72` |
-| `SCENE_SLOT_INDEX` | `3` (`scenes_lib_slot_03`) |
+| Test NPC | `myleneHamelin` |
+| Test seat | `NPC1` |
+| Stage placement on board | `u=0.18`, `v=0.72` |
+| Scene library slot | `scenes_lib_slot_03` (index 3 in the library list) |
 
 ## Run order
 
-**Step 1.** **Save & Play** — bundled scripts must include TOR-281 Clear logic + H281 harness.
+**Step 1.** **Save & Play** — only if you have not loaded since the TOR-281 code changed.
 
-**Step 2.** Execute Lua Code — Code Block 0 (prerequisites).
+**Step 2.** Execute Lua Code — Code Block 0 (check Host, table, and gameboard fixtures).
 
-**Step 3.** Execute Lua Code — Code Block A.1 (automated H281 state tests + library mirror).
+**Step 3.** Execute Lua Code — Code Block A.1 (automated Clear seat rules + library write test).
 
-**Step 4.** Execute Lua Code — Code Block B.1 (seed manual Clear scenario: disabled seat, visible stage).
+**Step 4.** Execute Lua Code — Code Block B.1 (set up an NPC on stage with their table seat turned off but lit on stage).
 
-**Step 5.** **On the CONTROL_BOARD toolbar, click Clear once, wait five seconds, click Clear again.**
+**Step 5.** **On the control board toolbar, click Clear once, wait five seconds, then click Clear again to confirm.**
 
-**Step 6.** Execute Lua Code — Code Block B.2 (post–manual Clear asserts).
+**Step 6.** Execute Lua Code — Code Block B.2 (check the seat activated and stage placements cleared).
 
-**Step 7.** Execute Lua Code — Code Block C.1 (seed scene library link for seat toggle).
+**Step 7.** Execute Lua Code — Code Block C.1 (link the live table to a scene library row for persistence testing).
 
-**Step 8.** **Open Storyteller Scenes panel → deactivate the NPC1 seat row (toggle off) → close panel.**
+**Step 8.** **Open the Storyteller Scenes panel, turn off the NPC1 seat row, and close the panel.**
 
-**Step 9.** Execute Lua Code — Code Block C.2 (assert live + library mirror after toggle).
+**Step 9.** Execute Lua Code — Code Block C.2 (check the live game and library row both show the seat as off).
 
-**Step 10.** **Open Storyteller Scenes panel → Apply library row `scenes_lib_slot_03` → wait 12 seconds for blindfold/settle.**
+**Step 10.** **Open the Storyteller Scenes panel, Apply scene library row `scenes_lib_slot_03`, and wait about 12 seconds for the blindfold and settle.**
 
-**Step 11.** Execute Lua Code — Code Block C.3 (assert deactivated seat restored after re-Apply).
+**Step 11.** Execute Lua Code — Code Block C.3 (check the seat is still off after re-Apply).
 
 ---
 
@@ -89,7 +95,7 @@ U.RunSequence({
 
 ---
 
-## Code Block A.1 — Automated H281 (state-only Clear rules + library mirror)
+## Code Block A.1 — Automated Clear seat rules and library write
 
 ```lua
 local TOR281 = {
@@ -157,7 +163,7 @@ U.RunSequence({
     gbE2eReset()
   end,
   function()
-    printHeader("PHASE 1.2 — H281a disabled + STANDARD → active on Clear", 1)
+    printHeader("PHASE 1.2 — Disabled seat, lit on stage: should activate on Clear", 1)
   end,
   function()
     tor281ClearPlacementsAndSeats()
@@ -167,7 +173,7 @@ U.RunSequence({
     tor281AssertPresence(true, "H281a disabled+STANDARD clears to active")
   end,
   function()
-    printHeader("PHASE 1.3 — H281b disabled + OFF → stay inactive", 1)
+    printHeader("PHASE 1.3 — Disabled seat, dark on stage: should stay inactive on Clear", 1)
   end,
   function()
     tor281ClearPlacementsAndSeats()
@@ -177,7 +183,7 @@ U.RunSequence({
     tor281AssertPresence(false, "H281b disabled+OFF clears to inactive")
   end,
   function()
-    printHeader("PHASE 1.4 — H281c enabled + OFF → stay active", 1)
+    printHeader("PHASE 1.4 — Already-active seat: should stay active on Clear", 1)
   end,
   function()
     tor281ClearPlacementsAndSeats()
@@ -187,7 +193,7 @@ U.RunSequence({
     tor281AssertPresence(true, "H281c enabled+OFF clears to still active")
   end,
   function()
-    printHeader("PHASE 1.5 — H281d library seatSlots mirror on presence write", 1)
+    printHeader("PHASE 1.5 — Seat toggle should copy into scene library row", 1)
   end,
   function()
     local sceneKey = tor281ResolveSceneKey()
@@ -211,12 +217,12 @@ U.RunSequence({
 
 ---
 
-## Code Block B.1 — Manual Clear setup (disabled seat, visible stage)
+## Code Block B.1 — Set up for real Clear button test
 
 ```lua
 U.RunSequence({
   function()
-    printHeader("PHASE 2.1 — Seed stage-bound NPC with disabled homeland", 1)
+    printHeader("PHASE 2.1 — NPC on stage, table seat off, stage light on", 1)
   end,
   function()
     gbE2eReset()
@@ -243,12 +249,12 @@ U.RunSequence({
 
 ---
 
-## Code Block B.2 — Post–manual Clear asserts
+## Code Block B.2 — After you clicked Clear
 
 ```lua
 U.RunSequence({
   function()
-    printHeader("PHASE 2.2 — Post–manual Clear asserts", 1)
+    printHeader("PHASE 2.2 — Check seat activated after Clear", 1)
   end,
   function()
     local seat = "NPC1"
@@ -276,12 +282,12 @@ U.RunSequence({
 
 ---
 
-## Code Block C.1 — Scene library link for seat-toggle persistence
+## Code Block C.1 — Prepare scene library persistence test
 
 ```lua
 U.RunSequence({
   function()
-    printHeader("PHASE 3.1 — Link live table to library row", 1)
+    printHeader("PHASE 3.1 — Connect live table to scene library row", 1)
   end,
   function()
     local order = S.getStateVal("sceneLibrary", "order") or {}
@@ -311,12 +317,12 @@ U.RunSequence({
 
 ---
 
-## Code Block C.2 — Assert mirror after Scenes panel toggle
+## Code Block C.2 — After you toggled the seat off in Scenes panel
 
 ```lua
 U.RunSequence({
   function()
-    printHeader("PHASE 3.2 — Live + library mirror after seat deactivate", 1)
+    printHeader("PHASE 3.2 — Check live game and library both show seat off", 1)
   end,
   function()
     local sceneKey = _G.tor281SceneKey
@@ -341,12 +347,12 @@ U.RunSequence({
 
 ---
 
-## Code Block C.3 — Assert persistence after re-Apply
+## Code Block C.3 — After you re-applied the scene
 
 ```lua
 U.RunSequence({
   function()
-    printHeader("PHASE 3.3 — Seat presence restored after scene re-Apply", 1)
+    printHeader("PHASE 3.3 — Check seat still off after re-Apply", 1)
   end,
   function()
     if NPCS.resolveSeatNarrativePresence("NPC1") ~= false then
