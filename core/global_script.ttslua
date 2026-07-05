@@ -755,6 +755,15 @@ function GlobalIsPlayerDiceBagEnabled(params)
     local color = params.color
     local dieKind = params.dieKind
     if type(color) ~= "string" or type(dieKind) ~= "string" then return false end
+    if color ~= "Black" then
+        local pid = S.getPlayerID(color)
+        if pid ~= nil then
+            local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+            if type(active) == "table" and active.rollType == C.RollType.REMORSE then
+                return false
+            end
+        end
+    end
     return DBV.isBagEnabled(color, dieKind)
 end
 
@@ -770,6 +779,18 @@ function GlobalDiceBagRightClick(params)
 
     if GlobalIsPlayerDiceBagEnabled({ color = color, dieKind = dieKind }) ~= true then
         return
+    end
+
+    if phase == nil
+        or phase == C.RollPhase.PRE_ROLL
+        or phase == C.RollPhase.SETUP then
+        local pid = S.getPlayerID(color)
+        if pid ~= nil then
+            local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+            if type(active) == "table" and active.rollType == C.RollType.REMORSE then
+                return
+            end
+        end
     end
 
     if phase == nil
@@ -861,6 +882,18 @@ function GlobalDiceBagClick(params)
 
     if GlobalIsPlayerDiceBagEnabled({ color = color, dieKind = dieKind }) ~= true then
         return
+    end
+
+    if phase == nil
+        or phase == C.RollPhase.PRE_ROLL
+        or phase == C.RollPhase.SETUP then
+        local pid = S.getPlayerID(color)
+        if pid ~= nil then
+            local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+            if type(active) == "table" and active.rollType == C.RollType.REMORSE then
+                return
+            end
+        end
     end
 
     if phase == nil then
@@ -4881,9 +4914,14 @@ function HUD_rollCancel(player, value, id)
 end
 
 --- ST dashboard slot **B** — manually broadcast a held secret roll result.
--- id format: `rollDash_stBroadcast_<1-3>`
+-- id format: `rollDash_stBroadcast_<1-3>` or `rollDash_pcBroadcast_<Color>`
 function HUD_rollBroadcast(player, value, id)
     if type(id) ~= "string" then return end
+    local pcColor = string.match(id, "^rollDash_pcBroadcast_(%a+)$")
+    if pcColor ~= nil then
+        RC.broadcastPcDashResult(pcColor)
+        return
+    end
     local slotStr = string.match(id, "^rollDash_stBroadcast_(%d)$")
     if slotStr == nil then return end
     local slotIndex = tonumber(slotStr)

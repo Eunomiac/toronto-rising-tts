@@ -43,6 +43,68 @@ local function saveRoot(root)
     S.setStateVal(root, "storytellerRolls")
 end
 
+--- Finds a history row by roll id for a seat color.
+-- @param color string
+-- @param rollId string
+-- @return table|nil
+function STR.findHistoryEntry(color, rollId)
+    if type(color) ~= "string" or type(rollId) ~= "string" or rollId == "" then
+        return nil
+    end
+    local pid = S.getPlayerID(color)
+    if pid == nil then
+        return nil
+    end
+    local history = S.getStateVal("playerData", pid, "hud", "rollData", "history") or {}
+    for i = #history, 1, -1 do
+        local h = history[i]
+        if type(h) == "table" and h.rollId == rollId then
+            return h
+        end
+    end
+    return nil
+end
+
+--- Persists the last completed PC roll on the ST dashboard until replaced.
+-- @param color string
+-- @param active table  Active roll at confirm time
+function STR.savePcDashSnapshot(color, active)
+    if type(color) ~= "string" or color == "Black" or type(active) ~= "table" then
+        return
+    end
+    local root = getRoot()
+    if type(root.pcDash) ~= "table" then
+        root.pcDash = {}
+    end
+    root.pcDash[color] = {
+        rollId = active.id,
+        label = active.label,
+        rollType = active.rollType,
+        phase = C.RollPhase.RESOLVED,
+        pool = U.clone(active.pool),
+        rollOptions = U.clone(active.rollOptions),
+        rollConditionOverlay = U.clone(active.rollConditionOverlay),
+        effectiveRollConditions = U.clone(active.effectiveRollConditions),
+    }
+    saveRoot(root)
+end
+
+--- Clears the ST dashboard snapshot for a PC seat (new roll or manual dismiss).
+-- @param color string
+-- @return boolean  true when a snapshot was removed
+function STR.clearPcDashSnapshot(color)
+    if type(color) ~= "string" or color == "Black" then
+        return false
+    end
+    local root = getRoot()
+    if type(root.pcDash) ~= "table" or root.pcDash[color] == nil then
+        return false
+    end
+    root.pcDash[color] = nil
+    saveRoot(root)
+    return true
+end
+
 --- @return table|nil active roll on Black
 local function getBlackActive()
     local pid = S.getPlayerID(ST_COLOR)

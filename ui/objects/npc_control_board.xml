@@ -13,7 +13,7 @@
       colors="#336644|#448855|#55AA66|#333333">Snaps On</Button>
     <Button id="gb_save" class="gb_toolbar_btn" onClick="click_save" fontSize="40" preferredWidth="150"
       colors="#336644|#448855|#55AA66|#333333">Save</Button>
-    <Button id="gb_lock" class="gb_toolbar_btn" onClick="click_lock" fontSize="40" preferredWidth="150"
+    <Button id="gb_lock" class="gb_toolbar_btn" onClick="click_lock" fontSize="32" preferredWidth="180"
       colors="#336644|#448855|#55AA66|#333333">Unlocked</Button>
     <Button id="gb_load" class="gb_toolbar_btn" onClick="click_load" fontSize="40" preferredWidth="150"
       colors="#336644|#448855|#55AA66|#333333">Load</Button>

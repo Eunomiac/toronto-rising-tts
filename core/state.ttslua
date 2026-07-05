@@ -380,6 +380,7 @@ function S.GetDefaultGameState()
         storytellerRolls = {
             slots = {},
             liveSlotIndex = nil,
+            pcDash = {},
         },
     }
 end
@@ -778,6 +779,9 @@ function S.validateState()
     end
     if type(gameState.storytellerRolls.slots) ~= "table" then
         gameState.storytellerRolls.slots = {}
+    end
+    if type(gameState.storytellerRolls.pcDash) ~= "table" then
+        gameState.storytellerRolls.pcDash = {}
     end
 
     --- Normalize player dynamic shape: hunger under stats, stats/conditions from PCS when needed, strip ST-only fields.

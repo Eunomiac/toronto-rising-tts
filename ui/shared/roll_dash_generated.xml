@@ -220,7 +220,7 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
   
   <Button id="rollDash_opts_Brown"
     rectAlignment="MiddleRight"
-    offsetXY="-40 0"
+    offsetXY="-70 0"
     width="24"
     height="24"
     fontSize="14"
@@ -230,6 +230,21 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
     outlineSize = "2 -2"
     text="O" />
   
+
+  <Button id="rollDash_pcBroadcast_Brown"
+    active="False"
+    rectAlignment="MiddleRight"
+    offsetXY="-40 0"
+    width="24"
+    height="24"
+    fontSize="14"
+    color="#00ffd5"
+    outline="#FFFFFF"
+    outlineSize = "2 -2"
+    fontStyle = "Bold"
+    textColor = "#FFFFFF"
+    text="B"
+    onClick="HUD_rollBroadcast" />
 
   <!--
   UI.setAttributes("rollDash_cancel_Brown", {offsetXY = "-10 0", height="24", outline="#FFFFFF", outlineSize = "2 -2", fontStyle = "Bold", textColor = "#FFFFFF", fontSize = "14"})
@@ -452,7 +467,7 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
   
   <Button id="rollDash_opts_Orange"
     rectAlignment="MiddleRight"
-    offsetXY="-40 0"
+    offsetXY="-70 0"
     width="24"
     height="24"
     fontSize="14"
@@ -462,6 +477,21 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
     outlineSize = "2 -2"
     text="O" />
   
+
+  <Button id="rollDash_pcBroadcast_Orange"
+    active="False"
+    rectAlignment="MiddleRight"
+    offsetXY="-40 0"
+    width="24"
+    height="24"
+    fontSize="14"
+    color="#00ffd5"
+    outline="#FFFFFF"
+    outlineSize = "2 -2"
+    fontStyle = "Bold"
+    textColor = "#FFFFFF"
+    text="B"
+    onClick="HUD_rollBroadcast" />
 
   <!--
   UI.setAttributes("rollDash_cancel_Brown", {offsetXY = "-10 0", height="24", outline="#FFFFFF", outlineSize = "2 -2", fontStyle = "Bold", textColor = "#FFFFFF", fontSize = "14"})
@@ -684,7 +714,7 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
   
   <Button id="rollDash_opts_Red"
     rectAlignment="MiddleRight"
-    offsetXY="-40 0"
+    offsetXY="-70 0"
     width="24"
     height="24"
     fontSize="14"
@@ -694,6 +724,21 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
     outlineSize = "2 -2"
     text="O" />
   
+
+  <Button id="rollDash_pcBroadcast_Red"
+    active="False"
+    rectAlignment="MiddleRight"
+    offsetXY="-40 0"
+    width="24"
+    height="24"
+    fontSize="14"
+    color="#00ffd5"
+    outline="#FFFFFF"
+    outlineSize = "2 -2"
+    fontStyle = "Bold"
+    textColor = "#FFFFFF"
+    text="B"
+    onClick="HUD_rollBroadcast" />
 
   <!--
   UI.setAttributes("rollDash_cancel_Brown", {offsetXY = "-10 0", height="24", outline="#FFFFFF", outlineSize = "2 -2", fontStyle = "Bold", textColor = "#FFFFFF", fontSize = "14"})
@@ -916,7 +961,7 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
   
   <Button id="rollDash_opts_Pink"
     rectAlignment="MiddleRight"
-    offsetXY="-40 0"
+    offsetXY="-70 0"
     width="24"
     height="24"
     fontSize="14"
@@ -926,6 +971,21 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
     outlineSize = "2 -2"
     text="O" />
   
+
+  <Button id="rollDash_pcBroadcast_Pink"
+    active="False"
+    rectAlignment="MiddleRight"
+    offsetXY="-40 0"
+    width="24"
+    height="24"
+    fontSize="14"
+    color="#00ffd5"
+    outline="#FFFFFF"
+    outlineSize = "2 -2"
+    fontStyle = "Bold"
+    textColor = "#FFFFFF"
+    text="B"
+    onClick="HUD_rollBroadcast" />
 
   <!--
   UI.setAttributes("rollDash_cancel_Brown", {offsetXY = "-10 0", height="24", outline="#FFFFFF", outlineSize = "2 -2", fontStyle = "Bold", textColor = "#FFFFFF", fontSize = "14"})
@@ -1148,7 +1208,7 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
   
   <Button id="rollDash_opts_Purple"
     rectAlignment="MiddleRight"
-    offsetXY="-40 0"
+    offsetXY="-70 0"
     width="24"
     height="24"
     fontSize="14"
@@ -1158,6 +1218,21 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
     outlineSize = "2 -2"
     text="O" />
   
+
+  <Button id="rollDash_pcBroadcast_Purple"
+    active="False"
+    rectAlignment="MiddleRight"
+    offsetXY="-40 0"
+    width="24"
+    height="24"
+    fontSize="14"
+    color="#00ffd5"
+    outline="#FFFFFF"
+    outlineSize = "2 -2"
+    fontStyle = "Bold"
+    textColor = "#FFFFFF"
+    text="B"
+    onClick="HUD_rollBroadcast" />
 
   <!--
   UI.setAttributes("rollDash_cancel_Brown", {offsetXY = "-10 0", height="24", outline="#FFFFFF", outlineSize = "2 -2", fontStyle = "Bold", textColor = "#FFFFFF", fontSize = "14"})

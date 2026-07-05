@@ -18,7 +18,7 @@ _Stack rank for the current cycle (2026-07-05 post **TOR-285** Done + inbox prom
 | --- | --- | --- |
 | 1 | **TOR-281** — Stage Clear seat activation + library persistence | In Progress; NPC/scene workflow gap after TOR-250 Done; pairs with TOR-244 library edits |
 | 2 | **TOR-244** — Scenes library preview/edit before Apply | Scene library UX; complements TOR-281 live seat persistence |
-| 3 | **TOR-289** — REMORSE roll pool lock + phase label | Small dice UX quick fix from inbox; low risk before larger refactors |
+| 3 | **TOR-290** — Stage board Unlock font | Shipped this session; next dice/NPC polish is TOR-287 preload |
 
 **Also in cycle (below top stack):** **TOR-144** (Multiplayer E2E playbook — multiclient pass via **TOR-249** human gate). **TOR-284** (execution model remediation — code Done `77cac3f`; **In Progress** until author hotseat §4.2 sign-off). **TOR-292** (ST roll dash broadcast persistence), **TOR-290** (stage board Unlock font), **TOR-291** (gitignore bundle-size-gate). **TOR-293** (absent player connect/disconnect presence; **blockedBy** TOR-144 multiclient E2E). **TOR-286**–**TOR-288** (visibility helper, dice preload, companion toggles). **TOR-95** (play-as-NPC, **blockedBy** TOR-247).
 
@@ -69,8 +69,8 @@ _Stack rank for the current cycle (2026-07-05 post **TOR-285** Done + inbox prom
 - [x] **ST dice tray ellipse spawn:** Drawer center X/Z + playable-surface ellipse (bounds shrink, edge + die-footprint inset, 10/8/6 rings); author Save & Play verified 2026-07-03. `lib/st_dice_tray_spawn.ttslua`, `GlobalRepositionStorytellerTrayDice`.
 - [x] **Dice display strip sort order:** Canonical face ordering on player/ST panels + broadcast; werewolf Rage Jaws pairing (floor(n/2)*2 front, odd jaw at end). Author verified 2026-07-03. _(TOR-225)_
 - [x] **Secret Storyteller rolls:** Right-click Roll hides dice from players (~0.5s after randomize); right-click Confirm/Take Half suppresses auto broadcast; dashboard slot **B** manual broadcast; click hint on `rollPanelST`. Author Save & Play verified 2026-07-03. _(TOR-226)_
-- [ ] **REMORSE roll pool lock + phase label:** Lock pool assembly (bag clicks no-op); player phase copy **Roll When Ready** (not Continue Assembling). _(TOR-289)_
-- [ ] **ST roll dash — broadcast button persistence:** Show broadcast for all ST rolls while on dashboard; retain player rolls until replaced by new roll; broadcast on player rolls too. _(TOR-292)_
+- [x] **REMORSE roll pool lock + phase label:** Bag clicks no-op; player phase copy **Roll When Ready**. _(TOR-289)_
+- [x] **ST roll dash — broadcast button persistence:** B on all confirmed ST slots + PC snapshot rows until replaced; re-broadcast supported. _(TOR-292)_
 - [ ] **Preload parked dice pool:** Off-table invisible pool per die type; recycle on roll spawn to avoid placeholder flash while meshes load. _(TOR-287)_
 - [x] **Hunger 5 voluntary rouse lockout:** At Hunger 5, Blood Surge + Obliv-Rouse locked; forced standard Rouse allowed; failed rouse → Frenzy Resist D4 queue. _(TOR-203 — 2026-06-15)_
 
@@ -119,7 +119,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **CONTROL_BOARD seat row lower-left:** Seat-assignment snaps at v=0.12, u=0.05–0.35 (center ≈ 0.2). _(TOR-242)_
 - [x] **NPC spotlight Y on seat→stage:** Seated NPC moved to lit stage placement — spotlight spawns at feet instead of bounds-aligned Y. _(TOR-234 — seat→stage ImageScalar defer; scalar>53 face +24 / position +12 @63)_
 - [ ] **Stage control token Description JSON stats + ST roll panel:** Token Description holds optional JSON (`hunger`, `health`, `willpower`, `commonRolls`); seed from `npcs_data.ttslua`; ST roll panel shows trackers + common-roll buttons with auto-hunger. _(TOR-282)_
-- [ ] **Stage control board Unlocked button font:** Reduce font size so label reads **Unlocked** (not truncated **Unlock**). _(TOR-290)_
+- [x] **Stage control board Unlocked button font:** `fontSize="32"` / `preferredWidth="180"` on `gb_lock`. _(TOR-290)_
 - [ ] **Rotational seat index layout:** Dynamic PC seat positions by presence-sorted index; hand-position reference for color-tagged objects. _(TOR-247)_
 - [x] **Deactivated seat when NPC on stage:** Apply sets `isPresent = false` when homeland character gains `placements` row; retain `occupiedNPCSlots`; Clear re-seats; import validates active seat+stage (reject) vs inactive dual (allow) + duplicate seat assignment. _(TOR-250)_
 - [x] **Apply/Clear off-seat light flicker:** RSL layout sync no longer eager-writes NPC homeland workshop lights; Step Four `L.reconcileForPlayer` for all assigned NPC seats (state-derived OFF for deactivated/stage-bound). _(TOR-265)_
@@ -251,7 +251,7 @@ _Blocked: author must define data binding approach before substantial implementa
 - [x] Agent prompt: **performance** hotspots (`Sync.full`, spawn pools, lighting lerps, UI refresh). → [Performance Audit](Sychronizing%20Game%20Functionality/Performance%20Audit.md); Prompt 4 in [Agent Reviews/AGENT_REVIEW_PROMPTS.md](Agent%20Reviews/AGENT_REVIEW_PROMPTS.md) _(TOR-50)_
 - [ ] **Sync.full call-site audit:** Inventory every `Sync.full(` in production Lua; classify Keep full vs narrow (`Sync.player`, `Sync.soundscape`, `NPCS.reconcileAllFromState`, planned `Sync.npcs`); update Performance Audit with findings. _(TOR-168)_
 - [x] **Event listener early-return audit + policy:** O(1) guards on all active physical Global listeners; `.dev/Sychronizing Game Functionality/Event Listener Policy.md`. _(TOR-197)_
-- [ ] **Gitignore bundle-size-gate artifact:** Add `.dev/build-logs/bundle-size-gate.json` to `.gitignore` and stop tracking (INBOX.md stays tracked per workflow). _(TOR-291)_
+- [x] **Gitignore bundle-size-gate artifact:** `.dev/build-logs/bundle-size-gate.json` gitignored and untracked. _(TOR-291)_
 
 ## Out of Scope for Cursor
 

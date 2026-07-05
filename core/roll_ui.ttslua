@@ -902,6 +902,9 @@ local function phaseLabel(active, color)
         end
         return "Continue assembling — awaiting Storyteller"
     elseif phase == C.RollPhase.PRE_ROLL then
+        if active.rollType == C.RollType.REMORSE then
+            return "Roll When Ready"
+        end
         -- Pool assembly guidance only. Do not reveal whether the ST has set difficulty yet;
         -- difficulty stays hidden from this panel until POST_ROLL (see rollPanel_diff_*).
         local pool       = active.pool or {}
@@ -1398,7 +1401,9 @@ function RUI.refreshSTSlotRows()
             uiSetValue(string.format("rollDash_stPhase_%d", i), phase)
             local isLive = root.liveSlotIndex == i
             uiSetValue(string.format("rollDash_stLive_%d", i), isLive and "LIVE" or "")
-            local showBroadcast = slot.pendingBroadcast == true
+            local showBroadcast = slot.confirmed == true
+                and type(slot.rollId) == "string"
+                and slot.rollId ~= ""
             uiSetActive(string.format("rollDash_stBroadcast_%d", i), showBroadcast)
         else
             uiSetActive(rowId, false)
@@ -1411,6 +1416,8 @@ end
 
 function RUI.refreshSTDashboard()
     local hasAnyActive = RUI.refreshSTSlotRows()
+    local dashRoot = S.getStateVal("storytellerRolls") or {}
+    local pcDash = type(dashRoot.pcDash) == "table" and dashRoot.pcDash or {}
 
     for _, color in ipairs(C.PlayerColors) do
         local pid    = S.getPlayerID(color)
@@ -1418,10 +1425,18 @@ function RUI.refreshSTDashboard()
         if pid ~= nil then
             active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
         end
+        local snapshot = pcDash[color]
+        local display = active
+        local isSnapshot = false
+        if display == nil and type(snapshot) == "table" then
+            display = snapshot
+            isSnapshot = true
+        end
 
         local rowId = string.format("rollDash_row_%s", color)
-        if active == nil then
+        if display == nil then
             uiSetActive(rowId, false)
+            uiSetActive(string.format("rollDash_pcBroadcast_%s", color), false)
             RUI.refreshDashDifficultyStrip(color, nil)
             RUI.refreshDashPostRollStrips(color, nil)
         else
@@ -1433,19 +1448,34 @@ function RUI.refreshSTDashboard()
 
             -- Roll type
             uiSetValue(string.format("rollDash_type_%s",  color),
-                C.RollTypeLabel[active.rollType] or active.rollType or "")
+                C.RollTypeLabel[display.rollType] or display.rollType or "")
 
             -- Phase
-            uiSetValue(string.format("rollDash_phase_%s", color), active.phase or "")
+            local phaseText = display.phase or ""
+            if isSnapshot and phaseText == C.RollPhase.RESOLVED then
+                phaseText = "Complete"
+            end
+            uiSetValue(string.format("rollDash_phase_%s", color), phaseText)
 
             -- Pool
-            uiSetValue(string.format("rollDash_pool_%s",  color), formatPoolCompact(active.pool))
+            uiSetValue(string.format("rollDash_pool_%s",  color), formatPoolCompact(display.pool))
 
             uiSetValue(string.format("rollDash_conds_%s", color),
-                RUI.formatEffectiveRollConditionLabels(pid, active))
+                RUI.formatEffectiveRollConditionLabels(pid, display))
 
-            RUI.refreshDashDifficultyStrip(color, active)
-            RUI.refreshDashPostRollStrips(color, active)
+            local showPcBroadcast = isSnapshot
+                and type(display.rollId) == "string"
+                and display.rollId ~= ""
+            uiSetActive(string.format("rollDash_pcBroadcast_%s", color), showPcBroadcast)
+
+            if isSnapshot then
+                RUI.refreshDashDifficultyStrip(color, nil)
+                RUI.refreshDashPostRollStrips(color, nil)
+            else
+                uiSetActive(string.format("rollDash_pcBroadcast_%s", color), false)
+                RUI.refreshDashDifficultyStrip(color, active)
+                RUI.refreshDashPostRollStrips(color, active)
+            end
         end
     end
 
