@@ -246,12 +246,7 @@ U.RunSequence({
   function()
     print("   ▶▶▶ HUMAN ▶▶▶ On CONTROL_BOARD toolbar: click Clear once, wait five seconds, click Clear again to confirm.")
     return function()
-      local F = tor281Fixture()
-      local placements = S.getStateVal("sessionScene", "npcWorld", "placements") or {}
-      if next(placements) ~= nil then
-        return false
-      end
-      return NPCS.resolveSeatNarrativePresence(F.seat) == true
+      return next(S.getStateVal("sessionScene", "npcWorld", "placements") or {}) == nil
     end
   end,
   function()
