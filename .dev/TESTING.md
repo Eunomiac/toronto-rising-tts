@@ -9,6 +9,18 @@ Manual verification lives in **[E2E Playbooks](E2E%20Playbooks/README.md)** (TOR
 3. `lua debugHelp()` — list current commands.
 4. Run a playbook: [Scenes-E2E](E2E%20Playbooks/Scenes-E2E.md), [Dice-E2E](E2E%20Playbooks/Dice-E2E.md) (+ [Dice-E2E-Guide](E2E%20Playbooks/Dice-E2E-Guide.md) for conventions), or [Gameboard-E2E](E2E%20Playbooks/Gameboard-E2E.md). Dice steps are **deterministic** (exact click counts and `rollConfirm` literals — see Dice-E2E-Guide § Deterministic test conventions).
 
+## Step-by-step playbooks (preferred for new verification)
+
+For **new** bug repro, feature sign-off, and agent-generated runbooks, use the Step-by-step methodology:
+
+- **Index:** [Step-By-Step Playbooks/README.md](Step-By-Step%20Playbooks/README.md)
+- **Template:** [Step-By-Step Playbooks/.Step-By-Step Template.md](Step-By-Step%20Playbooks/.Step-By-Step%20Template.md)
+- **Agent skill:** [`.cursor/skills/step-by-step-guidance/SKILL.md`](../.cursor/skills/step-by-step-guidance/SKILL.md)
+
+Human gates use `print("   ▶▶▶ HUMAN ▶▶▶ …")`. **Save & Play** is required only when repo Lua changed — not for doc-only edits.
+
+Legacy E2E playbooks below still use `printHeader("[HUMAN] …", 3)` and `RunTest("Dice")` until **TOR-141** migration.
+
 ## E2E playbooks (primary)
 
 | Playbook | When to run |
