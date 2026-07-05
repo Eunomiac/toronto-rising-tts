@@ -1419,7 +1419,9 @@ function M.generateRotationalCoordinates(
     tableKey = inferTableKeyFromCenterPoint(centerPoint)
   end
   if U.Type(tableKey) == "string" and tableKey ~= "" then
-    S.setStateVal(tableKey, "seatLayout", "currentTableKey")
+    if options.skipStateWrite ~= true then
+      S.setStateVal(tableKey, "seatLayout", "currentTableKey")
+    end
   end
   if WRITE_RESULTS_TO_FILE then
     assertSendExternalMessage()
@@ -1557,7 +1559,9 @@ function M.generateFacingCoordinates(sourceObjects, tableCfg, filteredMap, optio
     tableKey = inferTableKeyFromCenterPoint(centerPoint)
   end
   if U.Type(tableKey) == "string" and tableKey ~= "" then
-    S.setStateVal(tableKey, "seatLayout", "currentTableKey")
+    if options.skipStateWrite ~= true then
+      S.setStateVal(tableKey, "seatLayout", "currentTableKey")
+    end
   end
   if WRITE_RESULTS_TO_FILE then
     assertSendExternalMessage()
@@ -2199,6 +2203,24 @@ local function isDynamicTableFamilyKey(key)
   return next(listNumberedTableVariants(key)) ~= nil
 end
 
+--- @param tableKey string
+--- @param opts table|nil `{ occupiedCount = number? }`
+--- @return string concreteKey
+--- @return string|nil familyKey nil for exact keys; the family key when dynamically resolved
+local function normalizeTableKeyInput(tableKey)
+  if U.Type(tableKey) ~= "string" or tableKey == "" then
+    return tableKey
+  end
+  if U.Type(C.Tables) == "table" and U.Type(C.Tables[tableKey]) == "table" then
+    return tableKey
+  end
+  local withTablePrefix = "Table " .. tableKey
+  if U.Type(C.Tables) == "table" and U.Type(C.Tables[withTablePrefix]) == "table" then
+    return withTablePrefix
+  end
+  return tableKey
+end
+
 --- Resolve a table key to a concrete `C.Tables` key.
 --- Exact keys (incl. explicit `Table B4`) return unchanged. Family keys (no exact entry, but numbered
 --- variants exist) resolve to `familyKey .. occupiedNpcSlotCount` (override via `opts.occupiedCount`).
@@ -2208,6 +2230,7 @@ end
 --- @return string|nil familyKey nil for exact keys; the family key when dynamically resolved
 local function resolveTableKey(tableKey, opts)
   opts = U.Type(opts) == "table" and opts or {}
+  tableKey = normalizeTableKeyInput(tableKey)
   if U.Type(tableKey) ~= "string" or tableKey == "" then
     error("rotational-seat-layout: resolveTableKey requires a non-empty string key")
   end
@@ -3126,6 +3149,9 @@ function M.resolveSeatObjectsFromTable(tableRef, sourceObjects, options)
   if U.Type(previousTableKey) == "string" and U.Type(C.Tables and C.Tables[previousTableKey]) == "table" then
     previousTableCfg = C.Tables[previousTableKey]
   end
+  -- Snap reference hand + RedObject rig to destination `referenceHandPosition` before generating
+  -- from live template poses (same pre-step as `SetTableTo`; required for `SyncTable` table switches).
+  applyReferenceHandPositionDelta(previousTableKey, tableKey)
   -- Persist target table before any step that reads `gameState.seatLayout.currentTableKey`
   -- (lighting seat-presence, HUD consumers, etc.) so mid-resolve code sees the destination layout.
   S.setStateVal(tableKey, "seatLayout", "currentTableKey")
@@ -3263,7 +3289,6 @@ function M.SetTableTo(tableKey, opts)
   end
 
   local function doSwitch()
-    applyReferenceHandPositionDelta(currentTableKey, resolvedKey)
     M.resolveSeatObjectsFromTable(resolvedKey, nil, { force = true })
   end
 
@@ -3525,6 +3550,800 @@ function M.migrateRoleIdentityToGmNotes(sourceObjects, options)
     )
   )
   return summary
+end
+
+--- @param a any
+--- @param b any
+--- @return boolean
+local function seatSegmentDescriptorsEqual(a, b)
+  if a == b then
+    return true
+  end
+  if U.Type(a) == "number" and U.Type(b) == "number" then
+    return a == b
+  end
+  if U.Type(a) == "table" and U.Type(b) == "table"
+      and U.Type(a.side) == "number" and U.Type(b.side) == "number"
+      and U.Type(a.index) == "number" and U.Type(b.index) == "number" then
+    return (a.side % 360) == (b.side % 360) and a.index == b.index
+  end
+  return false
+end
+
+--- Active seat map: `seatToPositionMap` with fallback to legacy `playerToPositionMap`.
+--- @param tableCfg table|nil
+--- @return table
+local function getSeatToPositionMapFromCfg(tableCfg)
+  if U.Type(tableCfg) ~= "table" then
+    return {}
+  end
+  local map = tableCfg.seatToPositionMap
+  if U.Type(map) ~= "table" then
+    map = tableCfg.playerToPositionMap
+  end
+  if U.Type(map) ~= "table" then
+    return {}
+  end
+  return map
+end
+
+--- Reference segment descriptor for layout math (`number` or `{ side, index }`).
+--- @param tableCfg table|nil
+--- @return any|nil
+local function getReferenceSeatSegmentFromCfg(tableCfg)
+  if U.Type(tableCfg) ~= "table" then
+    return nil
+  end
+  if tableCfg.referenceSeatSegment ~= nil then
+    return tableCfg.referenceSeatSegment
+  end
+  local map = getSeatToPositionMapFromCfg(tableCfg)
+  local refColor = tableCfg.referencePlayerColor
+  if U.Type(refColor) == "string" and refColor ~= "" and map[refColor] ~= nil then
+    return map[refColor]
+  end
+  return nil
+end
+
+--- Authored hand frame at `referenceSeatSegment` (`rotation` defaults to zero).
+--- @param tableCfg table|nil
+--- @return table|nil `{ position = Vector, rotation = Vector }`
+local function getReferenceHandFromCfg(tableCfg)
+  if U.Type(tableCfg) ~= "table" then
+    return nil
+  end
+  if U.Type(tableCfg.referenceHand) == "table" and tableCfg.referenceHand.position ~= nil then
+    local rh = tableCfg.referenceHand
+    local rot = rh.rotation ~= nil and Vector(rh.rotation) or Vector(0, 0, 0)
+    return {
+      position = Vector(rh.position),
+      rotation = rot,
+    }
+  end
+  if tableCfg.referenceHandPosition ~= nil then
+    return {
+      position = Vector(tableCfg.referenceHandPosition),
+      rotation = Vector(0, 0, 0),
+    }
+  end
+  return nil
+end
+
+--- Inverse lookup: seat key whose map entry equals `referenceSeatSegment`.
+--- @param tableCfg table|nil
+--- @return string|nil referenceSeatKey
+--- @return string|nil errorMessage when ambiguous
+local function resolveReferenceSeatKeyFromCfg(tableCfg)
+  if U.Type(tableCfg) ~= "table" then
+    return nil, "tableCfg must be a table"
+  end
+  local refSeg = getReferenceSeatSegmentFromCfg(tableCfg)
+  if refSeg == nil then
+    return nil, "referenceSeatSegment is missing"
+  end
+  local map = getSeatToPositionMapFromCfg(tableCfg)
+  local foundKey = nil
+  for seatKey, seg in pairs(map) do
+    if U.Type(seatKey) == "string" and seatSegmentDescriptorsEqual(seg, refSeg) then
+      if foundKey ~= nil then
+        return nil, "ambiguous referenceSeatSegment (matches '" .. foundKey .. "' and '" .. seatKey .. "')"
+      end
+      foundKey = seatKey
+    end
+  end
+  if foundKey == nil then
+    return nil, "no seatToPositionMap entry matches referenceSeatSegment"
+  end
+  return foundKey, nil
+end
+
+--- Public: seat map for layout (`seatToPositionMap` preferred).
+--- @param tableCfg table|nil
+--- @return table
+function M.getSeatToPositionMap(tableCfg)
+  return getSeatToPositionMapFromCfg(tableCfg)
+end
+
+--- Public: reference segment descriptor from table config.
+--- @param tableCfg table|nil
+--- @return any|nil
+function M.getReferenceSeatSegment(tableCfg)
+  return getReferenceSeatSegmentFromCfg(tableCfg)
+end
+
+--- Public: authored reference hand frame (`position` + `rotation`, default rot zero).
+--- @param tableCfg table|nil
+--- @return table|nil
+function M.getReferenceHand(tableCfg)
+  return getReferenceHandFromCfg(tableCfg)
+end
+
+--- Public: seat key at `referenceSeatSegment` (runtime inverse of map).
+--- @param tableCfg table|nil
+--- @return string|nil seatKey
+--- @return string|nil err
+function M.resolveReferenceSeatKey(tableCfg)
+  return resolveReferenceSeatKeyFromCfg(tableCfg)
+end
+
+local HAND_FRAME_COMPARE_POS_TOL = 0.15
+local HAND_FRAME_COMPARE_ROT_TOL = 2.0
+
+--- @param rotA Vector
+--- @param rotB Vector
+--- @return number maxAbsComponentDeltaDeg
+local function maxRotationComponentDeltaDeg(rotA, rotB)
+  local a = Vector(rotA)
+  local b = Vector(rotB)
+  return math.max(
+    math.abs(shortestSignedDelta(a.x, b.x)),
+    math.abs(shortestSignedDelta(a.y, b.y)),
+    math.abs(shortestSignedDelta(a.z, b.z))
+  )
+end
+
+--- @param seatKey string
+--- @param computed table|nil
+--- @return table|nil `{ position = Vector, rotation = Vector }`
+local function extractHandZoneFrameFromComputed(seatKey, computed)
+  if U.Type(computed) ~= "table" or U.Type(computed.byColor) ~= "table" then
+    return nil
+  end
+  local pack = computed.byColor[seatKey]
+  if U.Type(pack) ~= "table" or U.Type(pack.slots) ~= "table" then
+    return nil
+  end
+  for i = 1, #pack.slots do
+    local slot = pack.slots[i]
+    if isHandZoneRoleKey(slot.roleKey)
+        and U.Type(slot.frame) == "table"
+        and slot.frame.position ~= nil
+        and slot.frame.rotation ~= nil then
+      return {
+        position = Vector(slot.frame.position),
+        rotation = Vector(slot.frame.rotation),
+      }
+    end
+  end
+  if U.Type(pack.byRoleKey) == "table" then
+    for roleKey, fr in pairs(pack.byRoleKey) do
+      if isHandZoneRoleKey(roleKey)
+          and U.Type(fr) == "table"
+          and fr.position ~= nil
+          and fr.rotation ~= nil then
+        return {
+          position = Vector(fr.position),
+          rotation = Vector(fr.rotation),
+        }
+      end
+    end
+  end
+  return nil
+end
+
+--- @param tableCfg table
+--- @return Vector boundsCenter
+--- @return number xMin
+--- @return number xMax
+local function readFacingTableBounds(tableCfg)
+  if U.Type(tableCfg.guid) ~= "string" or tableCfg.guid == "" then
+    error("rotational-seat-layout: FACING table is missing guid (needed to read active bounds)")
+  end
+  local tableObj = G.getObject(tableCfg.guid)
+  if tableObj == nil or type(tableObj.getBounds) ~= "function" then
+    error("rotational-seat-layout: FACING table object '" .. tostring(tableCfg.guid) ..
+      "' is not present; cannot read bounds")
+  end
+  local bounds = tableObj.getBounds()
+  if U.Type(bounds) ~= "table" or bounds.center == nil or bounds.size == nil then
+    error("rotational-seat-layout: FACING table getBounds() returned no center/size")
+  end
+  local boundsCenter = Vector(bounds.center)
+  local boundsSize = Vector(bounds.size)
+  local xMin = boundsCenter.x - boundsSize.x / 2
+  local xMax = boundsCenter.x + boundsSize.x / 2
+  return boundsCenter, xMin, xMax
+end
+
+--- @param centerPoint Vector
+--- @param numSegments number
+--- @param angleSegmentOne number
+--- @param refSeg number
+--- @param seatSeg number
+--- @param referenceAnchorFrame table
+--- @param useRadius number
+--- @return table handFrame
+--- @return table seatRigid `{ deltaDeg, shift }`
+local function computeCircularHandFrameForSeat(
+    centerPoint,
+    numSegments,
+    angleSegmentOne,
+    refSeg,
+    seatSeg,
+    referenceAnchorFrame,
+    useRadius
+)
+  local thetaRef = segmentNominalAzimuthDeg(angleSegmentOne, numSegments, refSeg)
+  local thetaK = segmentNominalAzimuthDeg(angleSegmentOne, numSegments, seatSeg)
+  local deltaDeg = shortestSignedDelta(thetaRef, thetaK)
+  local rotatedAnchor = U.frameAfterRigidYawAboutCenter(centerPoint, referenceAnchorFrame, deltaDeg)
+  local desiredAnchorPos = Vector({
+    x = centerPoint.x + math.sin(math.rad(thetaK)) * useRadius,
+    y = rotatedAnchor.position.y,
+    z = centerPoint.z + math.cos(math.rad(thetaK)) * useRadius,
+  })
+  local shift = desiredAnchorPos - rotatedAnchor.position
+  local handFrame = U.frameAfterRigidYawAboutCenter(centerPoint, referenceAnchorFrame, deltaDeg)
+  handFrame.position = handFrame.position + shift
+  return handFrame, { deltaDeg = deltaDeg, shift = shift }
+end
+
+--- @param centerPoint Vector
+--- @param fullMap table
+--- @param refSide number
+--- @param entry table `{ side, index }`
+--- @param referenceAnchorFrame table
+--- @param xMin number
+--- @param xMax number
+--- @return table handFrame
+--- @return table seatRigid
+local function computeFacingHandFrameForSeat(centerPoint, fullMap, refSide, entry, referenceAnchorFrame, xMin, xMax)
+  local deltaDeg = shortestSignedDelta(refSide, entry.side)
+  local rotatedAnchor = U.frameAfterRigidYawAboutCenter(centerPoint, referenceAnchorFrame, deltaDeg)
+  local nSeats = facingMaxIndexForSide(fullMap, entry.side)
+  local targetX = facingSegmentCenterX(entry.side, entry.index, nSeats, xMin, xMax)
+  local desiredAnchorPos = Vector({
+    x = targetX,
+    y = rotatedAnchor.position.y,
+    z = rotatedAnchor.position.z,
+  })
+  local shift = desiredAnchorPos - rotatedAnchor.position
+  local handFrame = U.frameAfterRigidYawAboutCenter(centerPoint, referenceAnchorFrame, deltaDeg)
+  handFrame.position = handFrame.position + shift
+  return handFrame, { deltaDeg = deltaDeg, shift = shift }
+end
+
+--- Config-only hand frames from `referenceHand` + `referenceSeatSegment` (no template objects).
+--- @param tableCfg table
+--- @param filteredMap table|nil defaults to full `seatToPositionMap`
+--- @param options table|nil `{ radius?: number }`
+--- @return table `{ handFrames, seatRigidByKey, referenceHand, referenceSeatSegment, ... }`
+function M.computeHandFrames(tableCfg, filteredMap, options)
+  options = options or {}
+  if U.Type(tableCfg) ~= "table" then
+    error("rotational-seat-layout: computeHandFrames requires tableCfg")
+  end
+  local map = filteredMap
+  if U.Type(map) ~= "table" then
+    map = getSeatToPositionMapFromCfg(tableCfg)
+  end
+  local refHand = getReferenceHandFromCfg(tableCfg)
+  if refHand == nil then
+    error("rotational-seat-layout: computeHandFrames missing referenceHand")
+  end
+  local refSeg = getReferenceSeatSegmentFromCfg(tableCfg)
+  if refSeg == nil then
+    error("rotational-seat-layout: computeHandFrames missing referenceSeatSegment")
+  end
+  local referenceAnchorFrame = {
+    position = Vector(refHand.position),
+    rotation = Vector(refHand.rotation),
+  }
+  local centerPoint = Vector(tableCfg.centerPoint)
+  local handFrames = {}
+  local seatRigidByKey = {}
+  local shape = tableCfg.shape
+  local facingShape = C.TableShapes and C.TableShapes.FACING
+
+  if shape == facingShape then
+    if U.Type(refSeg) ~= "table" or U.Type(refSeg.side) ~= "number" then
+      error("rotational-seat-layout: FACING referenceSeatSegment must be { side, index }")
+    end
+    local fullMap = getSeatToPositionMapFromCfg(tableCfg)
+    local _, xMin, xMax = readFacingTableBounds(tableCfg)
+    local refSide = refSeg.side
+    for seatKey, entry in pairs(map) do
+      if U.Type(seatKey) == "string"
+          and U.Type(entry) == "table"
+          and U.Type(entry.side) == "number"
+          and U.Type(entry.index) == "number" then
+        local hf, rigid = computeFacingHandFrameForSeat(
+          centerPoint, fullMap, refSide, entry, referenceAnchorFrame, xMin, xMax)
+        handFrames[seatKey] = hf
+        seatRigidByKey[seatKey] = rigid
+      end
+    end
+  else
+    if U.Type(refSeg) ~= "number" then
+      error("rotational-seat-layout: circular referenceSeatSegment must be a number")
+    end
+    local numSegments = tableCfg.numSegments
+    local angleSegmentOne = tableCfg.angleSegmentOne
+    if U.Type(numSegments) ~= "number" or numSegments < 1 then
+      error("rotational-seat-layout: computeHandFrames requires numSegments")
+    end
+    if U.Type(angleSegmentOne) ~= "number" then
+      error("rotational-seat-layout: computeHandFrames requires angleSegmentOne")
+    end
+    local useRadius = U.HorizontalDistance(referenceAnchorFrame.position, centerPoint)
+    if useRadius < 1e-4 then
+      error("rotational-seat-layout: referenceHand is too close to centerPoint in XZ")
+    end
+    if options.radius ~= nil then
+      if U.Type(options.radius) ~= "number" or options.radius <= 0 then
+        error("rotational-seat-layout: options.radius must be positive when provided")
+      end
+      useRadius = options.radius
+    end
+    for seatKey, seg in pairs(map) do
+      if U.Type(seatKey) == "string" and U.Type(seg) == "number" then
+        if seg < 1 or seg > numSegments or math.floor(seg) ~= seg then
+          error(
+            "rotational-seat-layout: segment for '"
+            .. seatKey
+            .. "' must be integer 1.."
+            .. tostring(numSegments)
+          )
+        end
+        local hf, rigid = computeCircularHandFrameForSeat(
+          centerPoint, numSegments, angleSegmentOne, refSeg, seg, referenceAnchorFrame, useRadius)
+        handFrames[seatKey] = hf
+        seatRigidByKey[seatKey] = rigid
+      end
+    end
+  end
+
+  local refSeatKey = resolveReferenceSeatKeyFromCfg(tableCfg)
+  return {
+    shape = shape,
+    referenceSeatKey = refSeatKey,
+    referenceSeatSegment = refSeg,
+    referenceHand = refHand,
+    referenceAnchorFrame = referenceAnchorFrame,
+    handFrames = handFrames,
+    seatRigidByKey = seatRigidByKey,
+    seatToPositionMap = map,
+  }
+end
+
+--- Compare config-only hand frames vs legacy generator hand slots (read-only; may write frame-ref debug file).
+--- @param tableRef string|table|nil table key or cfg; defaults to `gameState.seatLayout.currentTableKey`
+--- @param opts table|nil `{ positionTolerance?, rotationTolerance?, applyTableVisualState? }`
+--- @return table summary
+function M.compareHandFrames(tableRef, opts)
+  opts = U.Type(opts) == "table" and opts or {}
+  local posTol = U.Type(opts.positionTolerance) == "number" and opts.positionTolerance or HAND_FRAME_COMPARE_POS_TOL
+  local rotTol = U.Type(opts.rotationTolerance) == "number" and opts.rotationTolerance or HAND_FRAME_COMPARE_ROT_TOL
+  local tableKey, tableCfg = resolveTableRef(tableRef)
+  local occupied = getOccupiedNPCSlots({ forFingerprint = true })
+  local filteredMap = buildFilteredSeatMap(tableCfg, occupied, { forFingerprint = true })
+  local facingShape = C.TableShapes and C.TableShapes.FACING
+  if opts.applyTableVisualState ~= false and tableCfg.shape == facingShape then
+    applyAllTablesVisualState(tableKey, occupied)
+  end
+  local simplified = M.computeHandFrames(tableCfg, filteredMap, opts)
+  local src = C.TableSourceObjects
+  if U.Type(src) ~= "table" then
+    error("rotational-seat-layout: compareHandFrames requires C.TableSourceObjects")
+  end
+  local genOpts = { currentTableKey = tableKey, skipStateWrite = true }
+  local legacy
+  if tableCfg.shape == facingShape then
+    legacy = M.generateFacingCoordinates(src, tableCfg, filteredMap, genOpts)
+  else
+    legacy = M.generateRotationalCoordinates(
+      src,
+      tableCfg.centerPoint,
+      tableCfg.numSegments,
+      tableCfg.angleSegmentOne,
+      filteredMap,
+      tableCfg.referencePlayerColor,
+      genOpts
+    )
+  end
+  if U.Type(legacy) ~= "table" or U.Type(legacy.byColor) ~= "table" then
+    error("rotational-seat-layout: compareHandFrames legacy generator returned no byColor bundle")
+  end
+  if U.Type(simplified) ~= "table" or U.Type(simplified.handFrames) ~= "table" then
+    error("rotational-seat-layout: compareHandFrames computeHandFrames returned no handFrames")
+  end
+  local refSeatKey = simplified.referenceSeatKey
+  local rows = {}
+  local failCount = 0
+  local maxPosErr = 0
+  local maxRotErr = 0
+  for seatKey, newFrame in pairs(simplified.handFrames) do
+    if U.Type(newFrame) ~= "table" or newFrame.position == nil or newFrame.rotation == nil then
+      rows[#rows + 1] = {
+        seatKey = seatKey,
+        posErr = nil,
+        rotErr = nil,
+        pass = false,
+        note = "simplified hand frame missing position/rotation",
+      }
+      failCount = failCount + 1
+    else
+    local legacyFrame = extractHandZoneFrameFromComputed(seatKey, legacy)
+    local row = {
+      seatKey = seatKey,
+      posErr = nil,
+      rotErr = nil,
+      pass = false,
+      note = nil,
+    }
+    if legacyFrame == nil then
+      row.note = "legacy hand slot missing"
+      failCount = failCount + 1
+    else
+      local posErr = U.Distance(newFrame.position, legacyFrame.position)
+      local rotErr = maxRotationComponentDeltaDeg(newFrame.rotation, legacyFrame.rotation)
+      row.posErr = posErr
+      row.rotErr = rotErr
+      if posErr > maxPosErr then
+        maxPosErr = posErr
+      end
+      if rotErr > maxRotErr then
+        maxRotErr = rotErr
+      end
+      if seatKey == refSeatKey then
+        row.note = "reference seat (config rot may differ from live template)"
+        row.pass = posErr <= posTol
+      else
+        row.pass = posErr <= posTol and rotErr <= rotTol
+      end
+      if not row.pass then
+        failCount = failCount + 1
+      end
+    end
+    rows[#rows + 1] = row
+    end
+  end
+  table.sort(rows, function(a, b)
+    return tostring(a.seatKey) < tostring(b.seatKey)
+  end)
+  local ok = failCount == 0
+  print(
+    string.format(
+      "[rotational-seat-layout] compareHandFrames table=%s seats=%d fail=%d maxPosErr=%.4f maxRotErr=%.2f° %s",
+      tostring(tableKey),
+      #rows,
+      failCount,
+      maxPosErr,
+      maxRotErr,
+      ok and "PASS" or "FAIL"
+    )
+  )
+  for i = 1, #rows do
+    local r = rows[i]
+    if r.posErr ~= nil then
+      print(
+        string.format(
+          "  %s posErr=%.4f rotErr=%.2f° %s%s",
+          r.seatKey,
+          r.posErr,
+          r.rotErr,
+          r.pass and "PASS" or "FAIL",
+          r.note and (" (" .. r.note .. ")") or ""
+        )
+      )
+    else
+      print("  " .. r.seatKey .. " FAIL (" .. tostring(r.note) .. ")")
+    end
+  end
+  return {
+    ok = ok,
+    tableKey = tableKey,
+    seatCount = #rows,
+    failCount = failCount,
+    maxPosErr = maxPosErr,
+    maxRotErr = maxRotErr,
+    positionTolerance = posTol,
+    rotationTolerance = rotTol,
+    rows = rows,
+    simplified = simplified,
+    legacy = legacy,
+  }
+end
+
+--- @param obj Object
+--- @return string
+local function tagsToReportString(obj)
+  if obj == nil or obj.getTags == nil then
+    return ""
+  end
+  local tags = obj.getTags()
+  if U.Type(tags) ~= "table" then
+    return ""
+  end
+  local parts = {}
+  for _, t in ipairs(tags) do
+    if U.Type(t) == "string" then
+      parts[#parts + 1] = t
+    end
+  end
+  table.sort(parts)
+  return table.concat(parts, ", ")
+end
+
+--- @param obj Object
+--- @param seatKey string
+--- @param roleKey string|nil
+--- @param reason string
+--- @return table
+local function buildSkippedRecord(obj, seatKey, roleKey, reason)
+  return {
+    guid = obj.getGUID and obj.getGUID() or "",
+    name = obj.getName and obj.getName() or "",
+    nickname = obj.getNickname and obj.getNickname() or "",
+    tags = tagsToReportString(obj),
+    gmNotes = obj.getGMNotes and tostring(obj.getGMNotes() or "") or "",
+    seatKey = seatKey,
+    roleKey = roleKey,
+    reason = reason,
+  }
+end
+
+--- Live `{ position, rotation }` frames indexed by layout role family at one seat.
+--- Includes PC hand zone under its parsed or default HAND_ZONE role key.
+--- @param seatKey string
+--- @return table<string, table>
+local function indexLiveSeatFramesByRole(seatKey)
+  local byRole = {}
+  local tag = objectTagForPlayerColor(seatKey)
+  local tagged = getObjectsWithTag(tag) or {}
+  for _, obj in ipairs(tagged) do
+    if obj ~= nil and U.isGameObject(obj) and not isHandZoneObject(obj) then
+      local disp = SRI.readRoleColorIdentity(obj)
+      if disp ~= nil then
+        local roleKey, _ = SRI.parseRoleAndSuffix(disp)
+        if U.Type(roleKey) == "string" and roleKey ~= "" and byRole[roleKey] == nil then
+          byRole[roleKey] = {
+            position = Vector(obj.getPosition()),
+            rotation = Vector(obj.getRotation()),
+          }
+        end
+      end
+    end
+  end
+  if isPlayerSeatKey(seatKey) then
+    local hz = U.getHandZone(seatKey)
+    if hz ~= nil then
+      local handRoleKey = "HAND_ZONE_ANCHOR"
+      local disp = SRI.readRoleColorIdentity(hz)
+      if disp ~= nil then
+        local rk, _ = SRI.parseRoleAndSuffix(disp)
+        if isHandZoneRoleKey(rk) then
+          handRoleKey = rk
+        end
+      end
+      byRole[handRoleKey] = {
+        position = Vector(hz.getPosition()),
+        rotation = Vector(hz.getRotation()),
+      }
+    end
+  end
+  return byRole
+end
+
+--- @param centerPoint Vector
+--- @param refFrame table
+--- @param rigid table `{ deltaDeg, shift }`
+--- @return table
+local function frameAfterSeatRigid(centerPoint, refFrame, rigid)
+  local fr = U.frameAfterRigidYawAboutCenter(centerPoint, refFrame, rigid.deltaDeg)
+  fr.position = fr.position + rigid.shift
+  return fr
+end
+
+--- @param skipped table[]
+local function printRefreshSkippedReport(skipped)
+  print("--- skipped (left unmoved) ---")
+  if U.Type(skipped) ~= "table" or #skipped < 1 then
+    print("  (none)")
+    return
+  end
+  for i = 1, #skipped do
+    local s = skipped[i]
+    local roleLabel = s.roleKey ~= nil and tostring(s.roleKey) or "(none)"
+    print(
+      string.format(
+        "  [%d] guid=%s name=%s seatKey=%s reason=%s roleKey=%s",
+        i,
+        tostring(s.guid),
+        tostring(s.name),
+        tostring(s.seatKey),
+        tostring(s.reason),
+        roleLabel
+      )
+    )
+    print(
+      string.format(
+        "      nickname=%s tags=%s gmNotes=%s",
+        tostring(s.nickname),
+        tostring(s.tags),
+        tostring(s.gmNotes)
+      )
+    )
+  end
+end
+
+--- Manual repair: copy role-family poses from the reference segment seat to all other filtered seats.
+--- Does not run postCorrections or rewrite tags/GM Notes. Not called from SetTableTo / SyncTable.
+--- @param opts table|nil `{ tableKey?, seatKeys?, dryRun?, skipHandZones? }`
+--- @return table summary `{ ok, tableKey, referenceSeatKey, movedCount, skippedCount, skipped }`
+function M.refreshSeatRigsFromReferenceSegment(opts)
+  opts = U.Type(opts) == "table" and opts or {}
+  if M.alertAndBlockIfDiceOnTable("refresh seat rigs from reference segment") then
+    return { ok = false, reason = "dice_on_table" }
+  end
+
+  local tableKey = opts.tableKey
+  if U.Type(tableKey) ~= "string" or tableKey == "" then
+    tableKey = S.getStateVal("seatLayout", "currentTableKey")
+  end
+  if U.Type(tableKey) ~= "string" or tableKey == "" then
+    error("rotational-seat-layout: refreshSeatRigsFromReferenceSegment requires tableKey or gameState.seatLayout.currentTableKey")
+  end
+
+  local _, tableCfg = resolveTableRef(tableKey)
+  local referenceSeatKey, refErr = resolveReferenceSeatKeyFromCfg(tableCfg)
+  if referenceSeatKey == nil then
+    error("rotational-seat-layout: refreshSeatRigsFromReferenceSegment: " .. tostring(refErr))
+  end
+
+  applyReferenceHandPositionDelta(nil, tableKey)
+
+  local occupied = getOccupiedNPCSlots()
+  local filteredMap = buildFilteredSeatMap(tableCfg, occupied, { forFingerprint = true })
+  local facingShape = C.TableShapes and C.TableShapes.FACING
+  if tableCfg.shape == facingShape then
+    applyAllTablesVisualState(tableKey, occupied)
+  end
+
+  local handBundle = M.computeHandFrames(tableCfg, filteredMap, opts)
+  local handFrames = handBundle.handFrames or {}
+  local seatRigidByKey = handBundle.seatRigidByKey or {}
+  local centerPoint = Vector(tableCfg.centerPoint)
+  local referenceFramesByRole = indexLiveSeatFramesByRole(referenceSeatKey)
+
+  local seatFilter = nil
+  if U.Type(opts.seatKeys) == "table" then
+    seatFilter = {}
+    for _, sk in ipairs(opts.seatKeys) do
+      if U.Type(sk) == "string" and sk ~= "" then
+        seatFilter[sk] = true
+      end
+    end
+  end
+
+  local dryRun = opts.dryRun == true
+  local skipHandZones = opts.skipHandZones == true
+  local movedCount = 0
+  local skipped = {}
+  local nextVirtualAnchors = U.clone(S.getStateVal("seatLayout", "virtualHandZoneAnchors") or {}, true)
+
+  local targetSeatKeys = sortedStringKeys(filteredMap)
+  for i = 1, #targetSeatKeys do
+    local seatKey = targetSeatKeys[i]
+    if seatKey == referenceSeatKey then
+      -- default: do not re-rig reference seat from itself
+    elseif seatFilter ~= nil and seatFilter[seatKey] ~= true then
+      local tag = objectTagForPlayerColor(seatKey)
+      local tagged = getObjectsWithTag(tag) or {}
+      for _, obj in ipairs(tagged) do
+        if obj ~= nil and U.isGameObject(obj) then
+          skipped[#skipped + 1] = buildSkippedRecord(obj, seatKey, nil, "excluded_by_opts")
+        end
+      end
+    else
+      local rigid = seatRigidByKey[seatKey]
+      local handFrame = handFrames[seatKey]
+      if U.Type(rigid) ~= "table" or U.Type(handFrame) ~= "table" then
+        error(
+          "rotational-seat-layout: refreshSeatRigsFromReferenceSegment missing hand frame for seat '"
+          .. tostring(seatKey)
+          .. "'"
+        )
+      end
+
+      if not skipHandZones then
+        if isPlayerSeatKey(seatKey) then
+          local hz = U.getHandZone(seatKey)
+          if hz ~= nil then
+            if not dryRun then
+              moveHandZoneAndContainedCards(hz, Vector(handFrame.position), Vector(handFrame.rotation))
+              maybeSetHandZoneSeatColor(hz, "HAND_ZONE_ANCHOR", seatKey)
+            end
+            movedCount = movedCount + 1
+          end
+        else
+          nextVirtualAnchors[seatKey] = {
+            position = Vector(handFrame.position),
+            rotation = Vector(handFrame.rotation),
+          }
+          if not dryRun then
+            movedCount = movedCount + 1
+          end
+        end
+      end
+
+      local seenRoleAtSeat = {}
+      local tag = objectTagForPlayerColor(seatKey)
+      local tagged = getObjectsWithTag(tag) or {}
+      for _, obj in ipairs(tagged) do
+        if obj ~= nil and U.isGameObject(obj) and not isHandZoneObject(obj) then
+          local disp = SRI.readRoleColorIdentity(obj)
+          if disp == nil then
+            skipped[#skipped + 1] = buildSkippedRecord(obj, seatKey, nil, "no_role_identity")
+          else
+            local roleKey, _ = SRI.parseRoleAndSuffix(disp)
+            if seenRoleAtSeat[roleKey] == true then
+              skipped[#skipped + 1] = buildSkippedRecord(obj, seatKey, roleKey, "duplicate_role_at_seat")
+            else
+              seenRoleAtSeat[roleKey] = true
+              local refFrame = referenceFramesByRole[roleKey]
+              if refFrame == nil then
+                skipped[#skipped + 1] = buildSkippedRecord(obj, seatKey, roleKey, "no_reference_role")
+              else
+                local placed = frameAfterSeatRigid(centerPoint, refFrame, rigid)
+                if not dryRun then
+                  placeObjectExact(obj, placed.position, placed.rotation)
+                end
+                movedCount = movedCount + 1
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+
+  if not dryRun and not skipHandZones then
+    S.setStateVal(nextVirtualAnchors, "seatLayout", "virtualHandZoneAnchors")
+  end
+
+  local skippedCount = #skipped
+  print(
+    string.format(
+      "[refreshSeatRigsFromReference] referenceSeatKey=%s table=%s%s",
+      tostring(referenceSeatKey),
+      tostring(tableKey),
+      dryRun and " (dry-run)" or ""
+    )
+  )
+  print("  moved: " .. tostring(movedCount))
+  print("  skipped (unmatched): " .. tostring(skippedCount))
+  printRefreshSkippedReport(skipped)
+
+  return {
+    ok = true,
+    tableKey = tableKey,
+    referenceSeatKey = referenceSeatKey,
+    movedCount = movedCount,
+    skippedCount = skippedCount,
+    skipped = skipped,
+    dryRun = dryRun,
+  }
 end
 
 return M

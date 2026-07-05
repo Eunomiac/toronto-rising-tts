@@ -113,6 +113,34 @@ local function writeToFile(filename, content, format, append)
     end
 end
 
+--- Compare config-only hand frames vs legacy generator (see `R.compareHandFrames`).
+--- Uses global `R` (Execute Code cannot require modules).
+--- @param tableKey string|nil defaults to active table from gameState (`Table A`, not `A`)
+--- @return table summary `{ ok, failCount, maxPosErr, maxRotErr, ... }`
+function DEBUG.compareHandFrames(tableKey)
+  if type(R) ~= "table" or type(R.compareHandFrames) ~= "function" then
+    error("DEBUG.compareHandFrames: global R.compareHandFrames missing — re-bundle Global and Save & Play")
+  end
+  local key = tableKey
+  if U.Type(key) ~= "string" or key == "" then
+    key = S.getStateVal("seatLayout", "currentTableKey")
+  end
+  if U.Type(key) ~= "string" or key == "" then
+    error("DEBUG.compareHandFrames: pass a table key (e.g. 'Table A') or set gameState.seatLayout.currentTableKey")
+  end
+  return R.compareHandFrames(key)
+end
+
+--- Manual reference-segment rig refresh (see `R.refreshSeatRigsFromReferenceSegment`). Uses global `R`.
+--- @param opts table|nil `{ tableKey?, seatKeys?, dryRun?, skipHandZones? }`
+--- @return table summary
+function DEBUG.refreshSeatRigsFromReference(opts)
+  if type(R) ~= "table" or type(R.refreshSeatRigsFromReferenceSegment) ~= "function" then
+    error("DEBUG.refreshSeatRigsFromReference: global R.refreshSeatRigsFromReferenceSegment missing — re-bundle Global and Save & Play")
+  end
+  return R.refreshSeatRigsFromReferenceSegment(opts)
+end
+
 --- Writes content via sendExternalMessage type "write". File appears as **workspace/.dev/.debug/<relativePath>** when the bridge listens on 39998.
 --- Does not use log append cache; each call overwrites that file path.
 --- @param relativePath string Path suffix under .dev/.debug, e.g. "debug_logs/npcs_panel.txt"
@@ -5307,6 +5335,9 @@ end
     NOTE: In TTS Lua, assigning without 'local' makes variables global.
     No need for _G syntax - just assign directly.
 ]]
+
+compareHandFrames = DEBUG.compareHandFrames
+refreshSeatRigsFromReference = DEBUG.refreshSeatRigsFromReference
 
 -- Expose inspection functions
 showState = DEBUG.showState

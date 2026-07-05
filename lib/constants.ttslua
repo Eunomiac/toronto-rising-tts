@@ -1782,6 +1782,56 @@ C.Tables = {
   }
 }
 
+--- Copy `playerToPositionMap` for `seatToPositionMap` (FACING entries get a shallow side/index clone).
+--- @param map table|nil
+--- @return table
+local function copySeatToPositionMap(map)
+  local out = {}
+  if type(map) ~= "table" then
+    return out
+  end
+  for seatKey, seg in pairs(map) do
+    if type(seg) == "table" and type(seg.side) == "number" and type(seg.index) == "number" then
+      out[seatKey] = { side = seg.side, index = seg.index }
+    else
+      out[seatKey] = seg
+    end
+  end
+  return out
+end
+
+--- Copy a segment descriptor (`number` or `{ side, index }`).
+--- @param seg any
+--- @return any
+local function copySeatSegmentDescriptor(seg)
+  if type(seg) == "table" and type(seg.side) == "number" and type(seg.index) == "number" then
+    return { side = seg.side, index = seg.index }
+  end
+  return seg
+end
+
+--- Populate phased layout schema on each `C.Tables` entry when absent (Phase 0; legacy fields kept).
+for _tableKey, tableCfg in pairs(C.Tables) do
+  if type(tableCfg) == "table" then
+    local map = tableCfg.playerToPositionMap
+    if tableCfg.seatToPositionMap == nil and type(map) == "table" then
+      tableCfg.seatToPositionMap = copySeatToPositionMap(map)
+    end
+    if tableCfg.referenceSeatSegment == nil and type(map) == "table" then
+      local refColor = tableCfg.referencePlayerColor
+      if type(refColor) == "string" and refColor ~= "" and map[refColor] ~= nil then
+        tableCfg.referenceSeatSegment = copySeatSegmentDescriptor(map[refColor])
+      end
+    end
+    if tableCfg.referenceHand == nil and tableCfg.referenceHandPosition ~= nil then
+      tableCfg.referenceHand = {
+        position = Vector(tableCfg.referenceHandPosition),
+        rotation = Vector(0, 0, 0),
+      }
+    end
+  end
+end
+
 -- Default Table Source Objects
 -- During a table transition, if a sourceObjects table is not provided, the default table source objects will be used.
 -- See .dev/Rotational Coordinate Generator.md for more information on the sourceObjects table, and how its values are expanded and parsed into objects.
