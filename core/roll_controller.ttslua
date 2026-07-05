@@ -3351,7 +3351,7 @@ function RC.broadcastHeldResult(slotIndex)
     local root = S.getStateVal("storytellerRolls") or {}
     local slots = type(root.slots) == "table" and root.slots or {}
     local slot = slots[slotIndex]
-    if type(slot) ~= "table" or slot.cleared == true then
+    if type(slot) ~= "table" or slot.cleared == true or slot.confirmed ~= true then
         return false
     end
     local rollId = slot.rollId
