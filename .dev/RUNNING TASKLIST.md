@@ -268,6 +268,8 @@ _Workshop save, external art, or design TBD outside the repo. Each row has an op
 | Reference overlay copy fixes | Physical Combat / Resonance typos; Compulsion XP on Experience overlay | TOR-295 _(relatedTo TOR-105)_ |
 | Famulus sheet Disciplines | Revise famulus sheets | TOR-297 _(relatedTo TOR-110)_ |
 | Black Caesar ghoul companions | Cutouts + sheets (crise de lwa? TBD) | TOR-298 |
+| CSHEET Clan Compulsions trim | Influence line only on character sheets | TOR-299 _(parent TOR-38)_ |
+| GM sheet reference review | Advantages + in-play essentials across all sheets | TOR-300 _(relatedTo TOR-38, TOR-279)_ |
 | Impairment overlays | Health, Willpower, Humanity | TOR-104 |
 | Face-to-face table | Layout/table variant in save | TOR-107 |
 | Debug sound window | ST debug panel | TOR-106 |

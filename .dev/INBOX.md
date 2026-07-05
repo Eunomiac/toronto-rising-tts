@@ -5,8 +5,6 @@
 ## Active
 
 ## External Work (Categorize Under "External To Do")
-- [Character Sheets] Update Clan Compulsions on Character Sheets to just include the Influence line
-- [GM Reference] Review all sheets for Advantages and other things that you need to know about during play.
 
 ## Needs clarification
 
@@ -20,6 +18,8 @@
 
 ## Processed
 
+2026-07-05 INBOX External — Clan Compulsions Influence line only on CSHEET → **TOR-299** (Workshop, Medium; parent **TOR-38** Character Sheets)
+2026-07-05 INBOX External — GM review sheets for in-play Advantages → **TOR-300** (Workshop, Medium; relatedTo **TOR-38**, **TOR-279** Stats panel)
 2026-07-05 INBOX Quick Fixes — Color Blitz + Jarvis Jacks coterie ref grid (`inCoterieRef`, XML grid/popups); relatedTo **TOR-190** (coterie infographics)
 2026-07-05 INBOX Quick Fixes — seat-color gate player dice bags + signal candles (`objects/dice_bag.ttslua`, `ui/ui_signal_candle.ttslua`)
 2026-07-05 INBOX Quick Fixes — ST roll panel click hint font 8→12 (`panel_storyteller_roll_controls.xml`)
