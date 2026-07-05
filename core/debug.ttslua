@@ -590,6 +590,36 @@ function DEBUG.ensureSceneLibraryStub(slotIndex, sceneKey, opts)
     sceneKey = (type(sceneKey) == "string" and sceneKey ~= "") and sceneKey
         or ("e2e_stub_slot_" .. tostring(slotIndex))
 
+    local existing = S.getStateVal("sceneLibrary", "scenes", sceneKey)
+    local overwrite = opts.overwrite == true
+
+    if type(existing) ~= "table" or overwrite then
+        local tableKey = type(opts.tableKey) == "string" and opts.tableKey ~= "" and opts.tableKey or "Table A"
+        local sessionScene = opts.sessionScene
+        if type(sessionScene) ~= "table" then
+            sessionScene = {
+                tableKey = tableKey,
+                seatSlots = type(opts.seatSlots) == "table" and opts.seatSlots or {},
+                npcWorld = {
+                    placements = type(opts.placements) == "table" and opts.placements or {},
+                },
+            }
+        end
+
+        local row = type(existing) == "table" and existing or {}
+        row.title = type(opts.title) == "string" and opts.title ~= "" and opts.title
+            or row.title
+            or ("E2E stub slot " .. tostring(slotIndex))
+        if opts.receivesLiveWrites ~= nil then
+            row.receivesLiveWrites = opts.receivesLiveWrites == true
+        elseif row.receivesLiveWrites == nil then
+            row.receivesLiveWrites = false
+        end
+        row.sessionScene = sessionScene
+        S.setStateVal(row, "sceneLibrary", "scenes", sceneKey)
+    end
+
+    -- Order slot after scene row exists (validateState drops keys with no matching scene).
     local order = S.getStateVal("sceneLibrary", "order") or {}
     while #order < slotIndex do
         order[#order + 1] = ""
@@ -597,37 +627,6 @@ function DEBUG.ensureSceneLibraryStub(slotIndex, sceneKey, opts)
     order[slotIndex] = sceneKey
     S.setStateVal(order, "sceneLibrary", "order")
 
-    local existing = S.getStateVal("sceneLibrary", "scenes", sceneKey)
-    local overwrite = opts.overwrite == true
-    if type(existing) == "table" and not overwrite then
-        S.validateState()
-        print("ensureSceneLibraryStub: slot " .. slotIndex .. " → " .. sceneKey .. " (existing row kept)")
-        return sceneKey
-    end
-
-    local tableKey = type(opts.tableKey) == "string" and opts.tableKey ~= "" and opts.tableKey or "Table A"
-    local sessionScene = opts.sessionScene
-    if type(sessionScene) ~= "table" then
-        sessionScene = {
-            tableKey = tableKey,
-            seatSlots = type(opts.seatSlots) == "table" and opts.seatSlots or {},
-            npcWorld = {
-                placements = type(opts.placements) == "table" and opts.placements or {},
-            },
-        }
-    end
-
-    local row = type(existing) == "table" and existing or {}
-    row.title = type(opts.title) == "string" and opts.title ~= "" and opts.title
-        or row.title
-        or ("E2E stub slot " .. tostring(slotIndex))
-    if opts.receivesLiveWrites ~= nil then
-        row.receivesLiveWrites = opts.receivesLiveWrites == true
-    elseif row.receivesLiveWrites == nil then
-        row.receivesLiveWrites = false
-    end
-    row.sessionScene = sessionScene
-    S.setStateVal(row, "sceneLibrary", "scenes", sceneKey)
     S.validateState()
     print("ensureSceneLibraryStub: slot " .. slotIndex .. " → " .. sceneKey)
     return sceneKey

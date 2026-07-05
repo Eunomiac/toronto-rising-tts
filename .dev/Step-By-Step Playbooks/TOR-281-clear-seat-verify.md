@@ -58,20 +58,22 @@ Test constants (shared across blocks via `_G.TOR281`):
 ## Code Block 0 — Session setup + verify
 
 ```lua
-_G.TOR281 = {
-  tableKey = "Table A",
-  sceneSlotIndex = 3,
-  sceneKey = "tor281_verify",
-  sceneSlotUi = "scenes_lib_slot_03",
-  npcA = "myleneHamelin",
-  seat = "NPC1",
-  u = 0.18,
-  v = 0.72,
-}
-
 U.RunSequence({
   function()
     printHeader("TOR-281: Session setup", 1)
+  end,
+  function()
+    _G.TOR281 = {
+      tableKey = "Table A",
+      sceneSlotIndex = 3,
+      sceneKey = "tor281_verify",
+      sceneSlotUi = "scenes_lib_slot_03",
+      npcA = "myleneHamelin",
+      seat = "NPC1",
+      u = 0.18,
+      v = 0.72,
+    }
+    print("PASS — TOR281 fixture registered")
   end,
   function()
     if #(Player.getPlayers() or {}) < 1 then
@@ -79,30 +81,45 @@ U.RunSequence({
     end
     rollE2eSeatPrep("Black")
     DEBUG.syncTableSimplified(_G.TOR281.tableKey)
-    DEBUG.spawnNpcControlBoardTokens()
-    _G.TOR281.sceneKey = ensureSceneLibraryStub(_G.TOR281.sceneSlotIndex, _G.TOR281.sceneKey, {
+    print("PASS — seat + table")
+  end,
+  function()
+    local F = _G.TOR281
+    if type(F) ~= "table" then
+      error("[Setup FAIL] _G.TOR281 missing — paste the full Code Block 0 from the playbook")
+    end
+    local stubFn = type(DEBUG) == "table" and DEBUG.ensureSceneLibraryStub or ensureSceneLibraryStub
+    if type(stubFn) ~= "function" then
+      error("[Setup FAIL] DEBUG.ensureSceneLibraryStub missing — Save & Play after pulling latest repo Lua")
+    end
+    F.sceneKey = stubFn(F.sceneSlotIndex, F.sceneKey, {
       title = "TOR-281 verify",
-      tableKey = _G.TOR281.tableKey,
+      tableKey = F.tableKey,
+      overwrite = true,
       placements = {
-        [_G.TOR281.npcA] = {
-          u = _G.TOR281.u,
-          v = _G.TOR281.v,
-          npcLightMode = "STANDARD",
-        },
+        [F.npcA] = { u = F.u, v = F.v, npcLightMode = "STANDARD" },
       },
     })
+    print("PASS — scene library stub")
+  end,
+  function()
+    DEBUG.spawnNpcControlBoardTokens({ destroyExisting = false })
     gbE2eReset()
-    print("PASS — session prepared (seat, table, tokens, library stub, gameboard reset)")
+    print("PASS — tokens + gameboard reset")
   end,
   function()
     printHeader("TOR-281: Verify ready", 1)
   end,
   function()
+    local F = _G.TOR281
+    if type(F) ~= "table" then
+      error("[Verify FAIL] _G.TOR281 missing — re-run Code Block 0 from the top")
+    end
     if not U.isStorytellerSteamPlayer("Black") then
       error("[Verify FAIL] Host not on Black after rollE2eSeatPrep")
     end
-    if S.getStateVal("seatLayout", "currentTableKey") ~= _G.TOR281.tableKey then
-      error("[Verify FAIL] table key not " .. _G.TOR281.tableKey)
+    if S.getStateVal("seatLayout", "currentTableKey") ~= F.tableKey then
+      error("[Verify FAIL] table key not " .. F.tableKey)
     end
     if not gbE2ePrereqCheck() then
       error("[Verify FAIL] gbE2ePrereqCheck — see console [gbConfirm] FAIL lines")
