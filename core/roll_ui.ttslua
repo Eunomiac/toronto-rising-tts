@@ -813,13 +813,64 @@ local function refreshBroadcastRousePanels(rouseStrips)
     end
 end
 
---- Standard pool dice only (rouse kinds use rollRes_rousePanel_*).
+--- Standard pool dice only (rouse kinds use rollRes_rousePanel_* unless rouse-only broadcast).
 -- @param diceFaces table|nil
 local function refreshBroadcastStandardDice(diceFaces)
     local standardFaces = filterFacesByKinds(diceFaces, {
         DK.KIND_NORMAL, DK.KIND_HUNGER, DK.KIND_WEREWOLF, DK.KIND_RAGE,
     })
     refreshDieImageStrip("rollRes_die_%d", standardFaces, MAX_DIE_SLOTS)
+end
+
+--- Build face records from compact rouseOutcomeStrips when diceFaces omitted.
+-- @param rouseStrips table|nil
+-- @return table
+local function rouseFacesFromStrips(rouseStrips)
+    local out = {}
+    if type(rouseStrips) ~= "table" then
+        return out
+    end
+    for _, strip in ipairs(rouseStrips) do
+        if type(strip) == "table" and type(strip.values) == "table" then
+            local kind = type(strip.kind) == "string" and strip.kind or DK.KIND_ROUSE
+            for _, value in ipairs(strip.values) do
+                if value ~= nil then
+                    out[#out + 1] = { value = value, kind = kind }
+                end
+            end
+        end
+    end
+    return out
+end
+
+--- Pure Rouse / Obliv-Rouse checks show dice in the main row, not the corner rouse panel (TOR-294).
+-- @param rollTypeKey string|nil
+-- @param diceFaces table|nil
+-- @return boolean
+local function isRouseOnlyBroadcast(rollTypeKey, diceFaces)
+    if rollTypeKey ~= C.RollType.ROUSE and rollTypeKey ~= C.RollType.ROUSE_OBLIVION then
+        return false
+    end
+    local nonRouse = filterFacesByKinds(diceFaces, {
+        DK.KIND_NORMAL, DK.KIND_HUNGER, DK.KIND_WEREWOLF, DK.KIND_RAGE, DK.KIND_BLOOD_SURGE_ROUSE,
+    })
+    return #nonRouse == 0
+end
+
+--- Main die row for broadcast: standard pool or rouse-only faces in rollRes_die_*.
+-- @param rollTypeKey string|nil
+-- @param diceFaces table|nil
+-- @param rouseStrips table|nil
+local function refreshBroadcastMainDiceRow(rollTypeKey, diceFaces, rouseStrips)
+    if isRouseOnlyBroadcast(rollTypeKey, diceFaces) then
+        local rouseFaces = filterFacesByKinds(diceFaces, { DK.KIND_ROUSE, DK.KIND_OBLIV_ROUSE })
+        if #rouseFaces == 0 then
+            rouseFaces = rouseFacesFromStrips(rouseStrips)
+        end
+        refreshDieImageStrip("rollRes_die_%d", rouseFaces, MAX_DIE_SLOTS)
+        return
+    end
+    refreshBroadcastStandardDice(diceFaces)
 end
 
 --- Partitioned die images for rollControl_* PC panels (rouse / blood surge / standard strips).
@@ -1533,8 +1584,12 @@ function RUI.showResultBroadcast(color, result, label, historyEntryOverride)
     uiSetValue("rollRes_rollType", C.RollTypeLabel[rollTypeKey] or "")
     uiSetValue("rollRes_rollIntro", rollerName .. " rolls …")
 
-    refreshBroadcastRousePanels(rouseStrips)
-    refreshBroadcastStandardDice(diceFaces)
+    if isRouseOnlyBroadcast(rollTypeKey, diceFaces) then
+        refreshBroadcastRousePanels({})
+    else
+        refreshBroadcastRousePanels(rouseStrips)
+    end
+    refreshBroadcastMainDiceRow(rollTypeKey, diceFaces, rouseStrips)
 
     local hidesDifficulty = rollTypeKey == C.RollType.SIMPLE_CHECK
         or rollTypeKey == C.RollType.ROUSE

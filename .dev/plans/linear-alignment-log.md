@@ -420,7 +420,8 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-05 | CREATE | TOR-302 | Seated NPC ST roll drawer/spawn/light reposition; Dice & Rolls Feature, Medium; parent TOR-31; relatedTo TOR-79, TOR-174 |
 | 2026-07-05 | CREATE | TOR-301 | Prune legacy rotational seat layout generator (Future; Synchronization & State; relatedTo TOR-66) |
 | 2026-07-05 | DONE | TOR-281 | Stage Clear seat rules + live scene-library persistence — step-by-step playbook author verified; supporting fixes (ensureSceneLibraryStub, global Sync, logCoroutineIssue); commits `1291042`–`704273b`; solo Host only |
-| 2026-07-05 | GATE-CLOSE | TOR-281 | No Linear `blockedBy` dependents; Focus re-stacked #1 TOR-244, #2 TOR-294, #3 TOR-302 |
-| 2026-07-05 | Focus | Stack | #1 TOR-244 (library preview/edit), #2 TOR-294 (rouse-only broadcast), #3 TOR-302 (seated NPC ST roll drawer); TOR-281 closed this cycle |
+| 2026-07-05 | DONE | TOR-294 | Rouse-only broadcast dice in main `rollRes_die_*` row; `core/roll_ui.ttslua` |
+| 2026-07-05 | DONE | TOR-302 | Seated NPC ST drawer/light reposition via NPC anchors; `lib/st_dice_drawer.ttslua`, `core/storyteller_rolls.ttslua` |
+| 2026-07-05 | Focus | Stack | #1 TOR-244, #2 TOR-287, #3 TOR-296; TOR-294/TOR-302 closed this cycle |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

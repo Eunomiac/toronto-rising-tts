@@ -3,6 +3,7 @@
 
     Three NPC roll slots map to DICE_DRAWER_STORYTELLER_1..3 and storytellerDiceLight1..3.
     Drawer poses: C.ObjectPositions DICE_DRAWER_STORYTELLER_* ; lights: L.LIGHTMODES.
+    Seated-NPC rolls reposition drawer + tray light via DICE_DRAWER_STORYTELLER_NPC* (TOR-302).
 ]]
 
 ---@diagnostic disable: undefined-global
@@ -26,6 +27,21 @@ local SLOT_LIGHT_REFS = {
     [3] = "storytellerDiceLight3",
 }
 
+local NPC_SEAT_DRAWER_KEYS = {
+    NPC1 = "DICE_DRAWER_STORYTELLER_NPC1",
+    NPC2 = "DICE_DRAWER_STORYTELLER_NPC2",
+    NPC3 = "DICE_DRAWER_STORYTELLER_NPC3",
+    NPC4 = "DICE_DRAWER_STORYTELLER_NPC4",
+}
+
+--- NPC seat key when slot drawer was repositioned in front of a homeland seat (TOR-302).
+--- @type table<number, string|nil>
+local npcSeatBySlot = {}
+
+--- Default tray-light world position per slot (captured once for restore after NPC reposition).
+--- @type table<number, table|nil>
+local defaultTrayLightPosBySlot = {}
+
 --- Off pose is y = -200 (hidden); on pose is ~ -0.64. Gate release when above this.
 STD.DRAWER_RELEASE_MIN_Y = -50
 
@@ -37,6 +53,99 @@ local function findDrawerObject(slot)
         return nil
     end
     return G.getObject(guid)
+end
+
+--- @param slot number 1..3
+-- @return Object|nil
+local function findTrayLightObject(slot)
+    local lightRef = SLOT_LIGHT_REFS[slot]
+    if type(lightRef) ~= "string" then
+        return nil
+    end
+    local lData = L.LIGHTMODES[lightRef]
+    if type(lData) ~= "table" or type(lData.guid) ~= "string" then
+        return nil
+    end
+    return G.getObject(lData.guid)
+end
+
+--- @param slot number 1..3
+local function ensureDefaultTrayLightPosCached(slot)
+    if defaultTrayLightPosBySlot[slot] ~= nil then
+        return
+    end
+    local light = findTrayLightObject(slot)
+    if light == nil then
+        return
+    end
+    local pos = light.getPosition()
+    if type(pos) ~= "table" then
+        return
+    end
+    defaultTrayLightPosBySlot[slot] = { x = pos.x, y = pos.y, z = pos.z }
+end
+
+--- @param slot number 1..3
+local function restoreTrayLightPosition(slot)
+    ensureDefaultTrayLightPosCached(slot)
+    local home = defaultTrayLightPosBySlot[slot]
+    local light = findTrayLightObject(slot)
+    if home == nil or light == nil then
+        return
+    end
+    light.setPosition({ x = home.x, y = home.y, z = home.z })
+end
+
+--- Match tray light X/Z to drawer; keep light Y and rotation (TOR-302).
+-- @param slot number 1..3
+local function syncTrayLightToDrawer(slot)
+    local drawer = findDrawerObject(slot)
+    local light = findTrayLightObject(slot)
+    if drawer == nil or light == nil then
+        return
+    end
+    ensureDefaultTrayLightPosCached(slot)
+    local drawerPos = drawer.getPosition()
+    local lightPos = light.getPosition()
+    if type(drawerPos) ~= "table" or type(lightPos) ~= "table" then
+        return
+    end
+    light.setPosition({ x = drawerPos.x, y = lightPos.y, z = drawerPos.z })
+end
+
+--- @param slot number 1..3
+--- @param npcSeatKey string NPC1..NPC4
+--- @param state string "on"|"off"
+--- @param duration number
+local function applyNpcSeatDrawerPose(slot, npcSeatKey, state, duration)
+    local poseKey = NPC_SEAT_DRAWER_KEYS[npcSeatKey]
+    if poseKey == nil then
+        return
+    end
+    local entry = C.ObjectPositions[poseKey]
+    local obj = findDrawerObject(slot)
+    if obj == nil or type(entry) ~= "table" then
+        return
+    end
+    local resolvedPose = OP.resolveStatePose(obj, entry, state) or entry[state]
+    if type(resolvedPose) ~= "table" then
+        return
+    end
+    OP.applyResolvedPose(obj, resolvedPose, duration, 0, { useSmoothSetters = true })
+end
+
+--- Opens drawer at homeland NPC seat anchors (off teleport, on lerp) + tray light follow.
+-- @param slot number 1..3
+-- @param npcSeatKey string NPC1..NPC4
+local function openForSlotAtNpcSeat(slot, npcSeatKey)
+    npcSeatBySlot[slot] = npcSeatKey
+    applyNpcSeatDrawerPose(slot, npcSeatKey, "off", 0)
+    applyNpcSeatDrawerPose(slot, npcSeatKey, "on", OP.DEFAULT_TRANSITION_DURATION)
+    syncTrayLightToDrawer(slot)
+    local lightRef = SLOT_LIGHT_REFS[slot]
+    if type(lightRef) == "string" then
+        L.SetLightMode(lightRef, "STANDARD", nil, 0.25)
+    end
 end
 
 --- Current world Y of an ST dice drawer prop (nil when missing).
@@ -76,10 +185,19 @@ end
 
 --- Opens drawer pose and STANDARD tray light for a slot.
 -- @param slot number 1..3
-function STD.openForSlot(slot)
+-- @param opts table|nil  { npcSeatKey?: string } homeland seat when rolling for seated NPC (TOR-302)
+function STD.openForSlot(slot, opts)
     if type(slot) ~= "number" then
         return
     end
+    opts = type(opts) == "table" and opts or {}
+    local npcSeatKey = opts.npcSeatKey
+    if type(npcSeatKey) == "string" and NPC_SEAT_DRAWER_KEYS[npcSeatKey] ~= nil then
+        openForSlotAtNpcSeat(slot, npcSeatKey)
+        return
+    end
+
+    npcSeatBySlot[slot] = nil
     local key = SLOT_DRAWER_KEYS[slot]
     if key == nil then
         return
@@ -90,6 +208,7 @@ function STD.openForSlot(slot)
         local resolvedPose = OP.resolveStatePose(obj, entry, "on") or entry.on
         OP.applyResolvedPose(obj, resolvedPose, OP.DEFAULT_TRANSITION_DURATION, 0, { useSmoothSetters = true })
     end
+    restoreTrayLightPosition(slot)
     local lightRef = SLOT_LIGHT_REFS[slot]
     if type(lightRef) == "string" then
         L.SetLightMode(lightRef, "STANDARD", nil, 0.25)
@@ -102,6 +221,9 @@ function STD.closeForSlot(slot)
     if type(slot) ~= "number" then
         return
     end
+    local wasNpcSeat = npcSeatBySlot[slot]
+    npcSeatBySlot[slot] = nil
+
     local key = SLOT_DRAWER_KEYS[slot]
     if key == nil then
         return
@@ -110,7 +232,10 @@ function STD.closeForSlot(slot)
     local obj = findDrawerObject(slot)
     if obj ~= nil and type(entry) == "table" and type(entry.off) == "table" then
         local resolvedPose = OP.resolveStatePose(obj, entry, "off") or entry.off
-        OP.applyResolvedPose(obj, resolvedPose, OP.DEFAULT_TRANSITION_DURATION, 0, { useSmoothSetters = true })
+        OP.applyResolvedPose(obj, resolvedPose, 0, 0, { useSmoothSetters = true })
+    end
+    if wasNpcSeat ~= nil then
+        restoreTrayLightPosition(slot)
     end
     local lightRef = SLOT_LIGHT_REFS[slot]
     if type(lightRef) == "string" then

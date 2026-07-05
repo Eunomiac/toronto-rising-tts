@@ -213,6 +213,28 @@ function STR.canInitiate()
     return firstFreeSlot(root.slots) ~= nil and not hasLiveBlackRoll()
 end
 
+--- Homeland NPC seat key when character is seated and narratively present at the table.
+-- @param characterKey string|nil
+-- @return string|nil  NPC1..NPC4
+local function resolveActiveNpcSeatForCharacter(characterKey)
+    if type(characterKey) ~= "string" or characterKey == "" then
+        return nil
+    end
+    local occupied = S.getStateVal("seatLayout", "occupiedNPCSlots")
+    if type(occupied) ~= "table" then
+        return nil
+    end
+    local NPCS = require("core.npcs")
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        if occupied[seatKey] == characterKey then
+            if NPCS.resolveSeatNarrativePresence(seatKey) == true then
+                return seatKey
+            end
+        end
+    end
+    return nil
+end
+
 --- Activates drawer + light on first die spawn for the live slot.
 -- @param slotIndex number
 function STR.activateDrawerForSlot(slotIndex)
@@ -230,7 +252,13 @@ function STR.activateDrawerForSlot(slotIndex)
     slot.drawerActive = true
     root.slots[slotIndex] = slot
     saveRoot(root)
-    STD.openForSlot(slotIndex)
+
+    local npcSeatKey = nil
+    local active = getBlackActive()
+    if type(active) == "table" and type(active.npcCharacterKey) == "string" then
+        npcSeatKey = resolveActiveNpcSeatForCharacter(active.npcCharacterKey)
+    end
+    STD.openForSlot(slotIndex, { npcSeatKey = npcSeatKey })
 end
 
 --- Initiates an NPC roll on the Storyteller seat (Black).
