@@ -23,6 +23,12 @@ Do not conflate **Steps** (author paste/click order), **Code Blocks** (one `U.Ru
 
 **Persist vs chat-only:** Always write a file when verification spans setup + asserts + any TTS clicks, or when the procedure may be re-run. Chat-only numbered steps are for trivial one-paste smoke checks only.
 
+## Configured playbooks
+
+| Playbook | Issue | Purpose |
+| --- | --- | --- |
+| [TOR-281-clear-seat-verify.md](TOR-281-clear-seat-verify.md) | **TOR-281** Stage Clear seat activation + library persistence | Sign-off for Clear seat rules + live library mirror |
+
 ## Helper registry
 
 Use these before writing custom assert helpers. Do **not** copy illustration dummies from the template.
