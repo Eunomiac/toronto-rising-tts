@@ -17,7 +17,8 @@ Per-color loading overlays inside `visibility="<Color>"` parents never show for 
 2. **Seat-assignment UI refresh** — `refreshGlobalUiAfterSeatAssignment` in `core/global_script.ttslua`:
    - `onPlayerChangeColor` (after `M.onPlayerChangeColor`)
    - `GlobalRefreshUiAfterSeatAssignment` from `core/main.ttslua` when auto-assign skips `changeColor` (already on target seat)
-   - `UI.setXml(UI.getXml())`, wait for `UI.loading`, then targeted `UpdateUIDisplays`
+   - **First visit only (per player, per seat, since connect):** `UI.setXml(UI.getXml())` to re-evaluate `visibility`; cache cleared on `onPlayerConnect`. Repeat hotseat swaps to the same seat skip `setXml` but still run targeted `UpdateUIDisplays` (HUD, overlays, loading hide).
+   - Wait for `UI.loading` after `setXml` when used.
 
 Scene-transition blindfolds remain per-color in `panel_overlay_blindfold.xml`.
 

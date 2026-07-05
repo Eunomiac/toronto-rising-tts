@@ -252,11 +252,56 @@ end
 
 local STARTUP_LOADING_OVERLAY_ID = "overlay_loadingScreen_startup"
 
+--- Per connected player: seat colors that already received `UI.setXml` this session (TOR-285 hotseat lag).
+local seatXmlRefreshDoneByPlayer = {}
+
 local function hideStartupLoadingOverlays()
     UI.hide(STARTUP_LOADING_OVERLAY_ID)
 end
 
+local function seatAssignmentPlayerKey(player)
+    if player == nil or not U.isPlayer(player) then
+        return nil
+    end
+    local steam = player.steam_id
+    if type(steam) == "string" and steam ~= "" then
+        return steam
+    end
+    if type(player.color) == "string" and player.color ~= "" then
+        return "color:" .. player.color
+    end
+    return nil
+end
+
+local function clearSeatXmlRefreshForPlayer(player)
+    local key = seatAssignmentPlayerKey(player)
+    if key ~= nil then
+        seatXmlRefreshDoneByPlayer[key] = {}
+    end
+end
+
+local function hasSeatXmlRefreshDone(player, seatColor)
+    local key = seatAssignmentPlayerKey(player)
+    if key == nil then
+        return false
+    end
+    local perPlayer = seatXmlRefreshDoneByPlayer[key]
+    return type(perPlayer) == "table" and perPlayer[seatColor] == true
+end
+
+local function markSeatXmlRefreshDone(player, seatColor)
+    local key = seatAssignmentPlayerKey(player)
+    if key == nil then
+        return
+    end
+    if type(seatXmlRefreshDoneByPlayer[key]) ~= "table" then
+        seatXmlRefreshDoneByPlayer[key] = {}
+    end
+    seatXmlRefreshDoneByPlayer[key][seatColor] = true
+end
+
 --- Re-evaluate XmlUI visibility after seat assignment (TTS engine snapshotted-at-load quirk; TOR-285).
+--- Full `UI.setXml` runs once per player per seat color after connect; later hotseat swaps skip it.
 --- @param seatColor string
 local function refreshGlobalUiAfterSeatAssignment(seatColor)
     if type(seatColor) ~= "string" or seatColor == "" or seatColor == "Grey" then
@@ -269,16 +314,11 @@ local function refreshGlobalUiAfterSeatAssignment(seatColor)
         return
     end
 
-    if type(UI.getXml) ~= "function" or type(UI.setXml) ~= "function" then
-        return
+    local seated = Player[seatColor]
+    local needsSetXml = true
+    if U.isPlayer(seated) and hasSeatXmlRefreshDone(seated, seatColor) then
+        needsSetXml = false
     end
-
-    local xml = UI.getXml()
-    if type(xml) ~= "string" or xml == "" then
-        return
-    end
-
-    UI.setXml(xml)
 
     local function applyPostSeatUiRefresh()
         local delta = {
@@ -303,13 +343,35 @@ local function refreshGlobalUiAfterSeatAssignment(seatColor)
         hideStartupLoadingOverlays()
     end
 
-    if UI.loading == true then
-        U.waitUntil(applyPostSeatUiRefresh, function()
-            return UI.loading ~= true
-        end, false, 10, 0.05)
-    else
-        U.delay(applyPostSeatUiRefresh, 0)
+    local function schedulePostSeatUiRefresh()
+        if UI.loading == true then
+            U.waitUntil(applyPostSeatUiRefresh, function()
+                return UI.loading ~= true
+            end, false, 10, 0.05)
+        else
+            U.delay(applyPostSeatUiRefresh, 0)
+        end
     end
+
+    if not needsSetXml then
+        schedulePostSeatUiRefresh()
+        return
+    end
+
+    if type(UI.getXml) ~= "function" or type(UI.setXml) ~= "function" then
+        return
+    end
+
+    local xml = UI.getXml()
+    if type(xml) ~= "string" or xml == "" then
+        return
+    end
+
+    if U.isPlayer(seated) then
+        markSeatXmlRefreshDone(seated, seatColor)
+    end
+    UI.setXml(xml)
+    schedulePostSeatUiRefresh()
 end
 
 --- Bundle-safe seat-assignment UI refresh (`Global.call` from `core/main.ttslua` auto-assign early return).
@@ -5250,6 +5312,12 @@ end
 
 --- TTS: player connected (assign chronicle seat when mapped in C.PlayerData).
 function onPlayerConnect(player_color)
+    if type(player_color) == "string" then
+        local connected = Player[player_color]
+        if U.isPlayer(connected) then
+            clearSeatXmlRefreshForPlayer(connected)
+        end
+    end
     if M ~= nil and type(M.tryAutoAssignSeatFromChronicle) == "function" then
         M.tryAutoAssignSeatFromChronicle(player_color)
     end
