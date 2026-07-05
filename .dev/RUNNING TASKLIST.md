@@ -18,7 +18,7 @@ _Stack rank for the current cycle (2026-07-05 post **TOR-285** Done + inbox prom
 | --- | --- | --- |
 | 1 | **TOR-281** — Stage Clear seat activation + library persistence | In Progress; NPC/scene workflow gap after TOR-250 Done; pairs with TOR-244 library edits |
 | 2 | **TOR-244** — Scenes library preview/edit before Apply | Scene library UX; complements TOR-281 live seat persistence |
-| 3 | **TOR-290** — Stage board Unlock font | Shipped this session; next dice/NPC polish is TOR-287 preload |
+| 3 | **TOR-287** — Dice preload pool | Next dice improvement after quick-fix cluster shipped |
 
 **Also in cycle (below top stack):** **TOR-144** (Multiplayer E2E playbook — multiclient pass via **TOR-249** human gate). **TOR-284** (execution model remediation — code Done `77cac3f`; **In Progress** until author hotseat §4.2 sign-off). **TOR-292** (ST roll dash broadcast persistence), **TOR-290** (stage board Unlock font), **TOR-291** (gitignore bundle-size-gate). **TOR-293** (absent player connect/disconnect presence; **blockedBy** TOR-144 multiclient E2E). **TOR-286**–**TOR-288** (visibility helper, dice preload, companion toggles). **TOR-95** (play-as-NPC, **blockedBy** TOR-247).
 
