@@ -2053,7 +2053,20 @@ function U.parsePosition(obj)
 end
 
 function U.getHandZone(color)
-	return U.find(Hands.getHands(), function(hZone) return hZone.getData().FogColor == color end)
+	local hands = Hands.getHands()
+	if U.Type(hands) ~= "table" then
+		return nil
+	end
+	return U.find(hands, function(hZone)
+		if hZone == nil or hZone.getData == nil then
+			return false
+		end
+		local data = hZone.getData()
+		if data == nil then
+			return false
+		end
+		return data.FogColor == color
+	end)
 end
 
 --- Rounds a number to a specified number of significant digits

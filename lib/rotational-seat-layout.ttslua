@@ -4150,6 +4150,12 @@ end
 --- @param rigid table `{ deltaDeg, shift }`
 --- @return table
 local function frameAfterSeatRigid(centerPoint, refFrame, rigid)
+  if U.Type(rigid) ~= "table" or U.Type(rigid.deltaDeg) ~= "number" then
+    error("rotational-seat-layout: frameAfterSeatRigid requires rigid { deltaDeg, shift }")
+  end
+  if rigid.shift == nil then
+    error("rotational-seat-layout: frameAfterSeatRigid missing rigid.shift")
+  end
   local fr = U.frameAfterRigidYawAboutCenter(centerPoint, refFrame, rigid.deltaDeg)
   fr.position = fr.position + rigid.shift
   return fr
@@ -4164,6 +4170,9 @@ local function printRefreshSkippedReport(skipped)
   end
   for i = 1, #skipped do
     local s = skipped[i]
+    if U.Type(s) ~= "table" then
+      print("  [" .. tostring(i) .. "] (invalid skipped entry)")
+    else
     local roleLabel = s.roleKey ~= nil and tostring(s.roleKey) or "(none)"
     print(
       string.format(
@@ -4184,6 +4193,7 @@ local function printRefreshSkippedReport(skipped)
         tostring(s.gmNotes)
       )
     )
+    end
   end
 end
 
@@ -4193,6 +4203,7 @@ end
 --- @return table summary `{ ok, tableKey, referenceSeatKey, movedCount, skippedCount, skipped }`
 function M.refreshSeatRigsFromReferenceSegment(opts)
   opts = U.Type(opts) == "table" and opts or {}
+  local dryRun = opts.dryRun == true
   if M.alertAndBlockIfDiceOnTable("refresh seat rigs from reference segment") then
     return { ok = false, reason = "dice_on_table" }
   end
@@ -4211,7 +4222,9 @@ function M.refreshSeatRigsFromReferenceSegment(opts)
     error("rotational-seat-layout: refreshSeatRigsFromReferenceSegment: " .. tostring(refErr))
   end
 
-  applyReferenceHandPositionDelta(nil, tableKey)
+  if not dryRun then
+    applyReferenceHandPositionDelta(nil, tableKey)
+  end
 
   local occupied = getOccupiedNPCSlots()
   local filteredMap = buildFilteredSeatMap(tableCfg, occupied, { forFingerprint = true })
@@ -4236,11 +4249,14 @@ function M.refreshSeatRigsFromReferenceSegment(opts)
     end
   end
 
-  local dryRun = opts.dryRun == true
   local skipHandZones = opts.skipHandZones == true
   local movedCount = 0
   local skipped = {}
-  local nextVirtualAnchors = U.clone(S.getStateVal("seatLayout", "virtualHandZoneAnchors") or {}, true)
+  local rawAnchors = S.getStateVal("seatLayout", "virtualHandZoneAnchors")
+  local nextVirtualAnchors = {}
+  if U.Type(rawAnchors) == "table" then
+    nextVirtualAnchors = U.clone(rawAnchors, true)
+  end
 
   local targetSeatKeys = sortedStringKeys(filteredMap)
   for i = 1, #targetSeatKeys do
