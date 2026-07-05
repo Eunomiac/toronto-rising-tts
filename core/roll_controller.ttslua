@@ -3368,6 +3368,10 @@ function RC.broadcastHeldResult(slotIndex)
         RC.onRollCamera("Black", "default")
     end
 
+    if Global ~= nil and type(Global.call) == "function" then
+        Global.call("GlobalRestoreSecretRollDiceVisibility", { rollId = rollId })
+    end
+
     local RUI = require("core.roll_ui")
     RUI.showResultBroadcastFromEntry("Black", entry)
     if RUI.refreshSTSlotRows ~= nil then

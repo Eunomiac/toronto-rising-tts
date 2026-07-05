@@ -1411,10 +1411,20 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
       </HorizontalLayout>
 
       <!-- Anarch Group -->
-      <HorizontalLayout class="coterie-grid-row">
+      <HorizontalLayout class="coterie-grid-row" preferredWidth="1500">
+        <Panel id="playerHud_coterieGridBtnWrap_colorBlitz_Brown">
+          <Image id="playerHud_coterieGridBtn_colorBlitz_Brown" image="toggle_colorBlitz_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+          <Image id="playerHud_coterieGridBtn_colorBlitz_Brown_hover" image="toggle_colorBlitz_hover" active="false" />
+        </Panel>
+
         <Panel id="playerHud_coterieGridBtnWrap_goodDoctors_Brown">
           <Image id="playerHud_coterieGridBtn_goodDoctors_Brown" image="toggle_goodDoctors_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
           <Image id="playerHud_coterieGridBtn_goodDoctors_Brown_hover" image="toggle_goodDoctors_hover" active="false" />
+        </Panel>
+
+        <Panel id="playerHud_coterieGridBtnWrap_jarvisJacks_Brown">
+          <Image id="playerHud_coterieGridBtn_jarvisJacks_Brown" image="toggle_jarvisJacks_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+          <Image id="playerHud_coterieGridBtn_jarvisJacks_Brown_hover" image="toggle_jarvisJacks_hover" active="false" />
         </Panel>
 
         <Panel id="playerHud_coterieGridBtnWrap_theLine_Brown">
@@ -1452,7 +1462,9 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Image id="playerHud_coteriePopup_moonClub_Brown" active="false" class="popupImage" image="refPanel_Coteries_moonClub" />
     <Image id="playerHud_coteriePopup_regencyUniversityChantry_Brown" active="false" class="popupImage" image="refPanel_Coteries_regencyUniversityChantry" />
     <Image id="playerHud_coteriePopup_scarlettAndTheBoys_Brown" active="false" class="popupImage" image="refPanel_Coteries_scarlettAndTheBoys" />
+    <Image id="playerHud_coteriePopup_colorBlitz_Brown" active="false" class="popupImage" image="refPanel_Coteries_colorBlitz" />
     <Image id="playerHud_coteriePopup_goodDoctors_Brown" active="false" class="popupImage" image="refPanel_Coteries_goodDoctors" />
+    <Image id="playerHud_coteriePopup_jarvisJacks_Brown" active="false" class="popupImage" image="refPanel_Coteries_jarvisJacks" />
     <Image id="playerHud_coteriePopup_theLine_Brown" active="false" class="popupImage" image="refPanel_Coteries_theLine" />
     <Image id="playerHud_coteriePopup_redeemers_Brown" active="false" class="popupImage" image="refPanel_Coteries_redeemers" />
     <Image id="playerHud_coteriePopup_redFlag_Brown" active="false" class="popupImage" image="refPanel_Coteries_redFlag" />
@@ -2870,10 +2882,20 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
       </HorizontalLayout>
 
       <!-- Anarch Group -->
-      <HorizontalLayout class="coterie-grid-row">
+      <HorizontalLayout class="coterie-grid-row" preferredWidth="1500">
+        <Panel id="playerHud_coterieGridBtnWrap_colorBlitz_Orange">
+          <Image id="playerHud_coterieGridBtn_colorBlitz_Orange" image="toggle_colorBlitz_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+          <Image id="playerHud_coterieGridBtn_colorBlitz_Orange_hover" image="toggle_colorBlitz_hover" active="false" />
+        </Panel>
+
         <Panel id="playerHud_coterieGridBtnWrap_goodDoctors_Orange">
           <Image id="playerHud_coterieGridBtn_goodDoctors_Orange" image="toggle_goodDoctors_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
           <Image id="playerHud_coterieGridBtn_goodDoctors_Orange_hover" image="toggle_goodDoctors_hover" active="false" />
+        </Panel>
+
+        <Panel id="playerHud_coterieGridBtnWrap_jarvisJacks_Orange">
+          <Image id="playerHud_coterieGridBtn_jarvisJacks_Orange" image="toggle_jarvisJacks_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+          <Image id="playerHud_coterieGridBtn_jarvisJacks_Orange_hover" image="toggle_jarvisJacks_hover" active="false" />
         </Panel>
 
         <Panel id="playerHud_coterieGridBtnWrap_theLine_Orange">
@@ -2911,7 +2933,9 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Image id="playerHud_coteriePopup_moonClub_Orange" active="false" class="popupImage" image="refPanel_Coteries_moonClub" />
     <Image id="playerHud_coteriePopup_regencyUniversityChantry_Orange" active="false" class="popupImage" image="refPanel_Coteries_regencyUniversityChantry" />
     <Image id="playerHud_coteriePopup_scarlettAndTheBoys_Orange" active="false" class="popupImage" image="refPanel_Coteries_scarlettAndTheBoys" />
+    <Image id="playerHud_coteriePopup_colorBlitz_Orange" active="false" class="popupImage" image="refPanel_Coteries_colorBlitz" />
     <Image id="playerHud_coteriePopup_goodDoctors_Orange" active="false" class="popupImage" image="refPanel_Coteries_goodDoctors" />
+    <Image id="playerHud_coteriePopup_jarvisJacks_Orange" active="false" class="popupImage" image="refPanel_Coteries_jarvisJacks" />
     <Image id="playerHud_coteriePopup_theLine_Orange" active="false" class="popupImage" image="refPanel_Coteries_theLine" />
     <Image id="playerHud_coteriePopup_redeemers_Orange" active="false" class="popupImage" image="refPanel_Coteries_redeemers" />
     <Image id="playerHud_coteriePopup_redFlag_Orange" active="false" class="popupImage" image="refPanel_Coteries_redFlag" />
@@ -4329,10 +4353,20 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
       </HorizontalLayout>
 
       <!-- Anarch Group -->
-      <HorizontalLayout class="coterie-grid-row">
+      <HorizontalLayout class="coterie-grid-row" preferredWidth="1500">
+        <Panel id="playerHud_coterieGridBtnWrap_colorBlitz_Red">
+          <Image id="playerHud_coterieGridBtn_colorBlitz_Red" image="toggle_colorBlitz_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+          <Image id="playerHud_coterieGridBtn_colorBlitz_Red_hover" image="toggle_colorBlitz_hover" active="false" />
+        </Panel>
+
         <Panel id="playerHud_coterieGridBtnWrap_goodDoctors_Red">
           <Image id="playerHud_coterieGridBtn_goodDoctors_Red" image="toggle_goodDoctors_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
           <Image id="playerHud_coterieGridBtn_goodDoctors_Red_hover" image="toggle_goodDoctors_hover" active="false" />
+        </Panel>
+
+        <Panel id="playerHud_coterieGridBtnWrap_jarvisJacks_Red">
+          <Image id="playerHud_coterieGridBtn_jarvisJacks_Red" image="toggle_jarvisJacks_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+          <Image id="playerHud_coterieGridBtn_jarvisJacks_Red_hover" image="toggle_jarvisJacks_hover" active="false" />
         </Panel>
 
         <Panel id="playerHud_coterieGridBtnWrap_theLine_Red">
@@ -4370,7 +4404,9 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Image id="playerHud_coteriePopup_moonClub_Red" active="false" class="popupImage" image="refPanel_Coteries_moonClub" />
     <Image id="playerHud_coteriePopup_regencyUniversityChantry_Red" active="false" class="popupImage" image="refPanel_Coteries_regencyUniversityChantry" />
     <Image id="playerHud_coteriePopup_scarlettAndTheBoys_Red" active="false" class="popupImage" image="refPanel_Coteries_scarlettAndTheBoys" />
+    <Image id="playerHud_coteriePopup_colorBlitz_Red" active="false" class="popupImage" image="refPanel_Coteries_colorBlitz" />
     <Image id="playerHud_coteriePopup_goodDoctors_Red" active="false" class="popupImage" image="refPanel_Coteries_goodDoctors" />
+    <Image id="playerHud_coteriePopup_jarvisJacks_Red" active="false" class="popupImage" image="refPanel_Coteries_jarvisJacks" />
     <Image id="playerHud_coteriePopup_theLine_Red" active="false" class="popupImage" image="refPanel_Coteries_theLine" />
     <Image id="playerHud_coteriePopup_redeemers_Red" active="false" class="popupImage" image="refPanel_Coteries_redeemers" />
     <Image id="playerHud_coteriePopup_redFlag_Red" active="false" class="popupImage" image="refPanel_Coteries_redFlag" />
@@ -5788,10 +5824,20 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
       </HorizontalLayout>
 
       <!-- Anarch Group -->
-      <HorizontalLayout class="coterie-grid-row">
+      <HorizontalLayout class="coterie-grid-row" preferredWidth="1500">
+        <Panel id="playerHud_coterieGridBtnWrap_colorBlitz_Pink">
+          <Image id="playerHud_coterieGridBtn_colorBlitz_Pink" image="toggle_colorBlitz_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+          <Image id="playerHud_coterieGridBtn_colorBlitz_Pink_hover" image="toggle_colorBlitz_hover" active="false" />
+        </Panel>
+
         <Panel id="playerHud_coterieGridBtnWrap_goodDoctors_Pink">
           <Image id="playerHud_coterieGridBtn_goodDoctors_Pink" image="toggle_goodDoctors_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
           <Image id="playerHud_coterieGridBtn_goodDoctors_Pink_hover" image="toggle_goodDoctors_hover" active="false" />
+        </Panel>
+
+        <Panel id="playerHud_coterieGridBtnWrap_jarvisJacks_Pink">
+          <Image id="playerHud_coterieGridBtn_jarvisJacks_Pink" image="toggle_jarvisJacks_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+          <Image id="playerHud_coterieGridBtn_jarvisJacks_Pink_hover" image="toggle_jarvisJacks_hover" active="false" />
         </Panel>
 
         <Panel id="playerHud_coterieGridBtnWrap_theLine_Pink">
@@ -5829,7 +5875,9 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Image id="playerHud_coteriePopup_moonClub_Pink" active="false" class="popupImage" image="refPanel_Coteries_moonClub" />
     <Image id="playerHud_coteriePopup_regencyUniversityChantry_Pink" active="false" class="popupImage" image="refPanel_Coteries_regencyUniversityChantry" />
     <Image id="playerHud_coteriePopup_scarlettAndTheBoys_Pink" active="false" class="popupImage" image="refPanel_Coteries_scarlettAndTheBoys" />
+    <Image id="playerHud_coteriePopup_colorBlitz_Pink" active="false" class="popupImage" image="refPanel_Coteries_colorBlitz" />
     <Image id="playerHud_coteriePopup_goodDoctors_Pink" active="false" class="popupImage" image="refPanel_Coteries_goodDoctors" />
+    <Image id="playerHud_coteriePopup_jarvisJacks_Pink" active="false" class="popupImage" image="refPanel_Coteries_jarvisJacks" />
     <Image id="playerHud_coteriePopup_theLine_Pink" active="false" class="popupImage" image="refPanel_Coteries_theLine" />
     <Image id="playerHud_coteriePopup_redeemers_Pink" active="false" class="popupImage" image="refPanel_Coteries_redeemers" />
     <Image id="playerHud_coteriePopup_redFlag_Pink" active="false" class="popupImage" image="refPanel_Coteries_redFlag" />
@@ -7247,10 +7295,20 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
       </HorizontalLayout>
 
       <!-- Anarch Group -->
-      <HorizontalLayout class="coterie-grid-row">
+      <HorizontalLayout class="coterie-grid-row" preferredWidth="1500">
+        <Panel id="playerHud_coterieGridBtnWrap_colorBlitz_Purple">
+          <Image id="playerHud_coterieGridBtn_colorBlitz_Purple" image="toggle_colorBlitz_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+          <Image id="playerHud_coterieGridBtn_colorBlitz_Purple_hover" image="toggle_colorBlitz_hover" active="false" />
+        </Panel>
+
         <Panel id="playerHud_coterieGridBtnWrap_goodDoctors_Purple">
           <Image id="playerHud_coterieGridBtn_goodDoctors_Purple" image="toggle_goodDoctors_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
           <Image id="playerHud_coterieGridBtn_goodDoctors_Purple_hover" image="toggle_goodDoctors_hover" active="false" />
+        </Panel>
+
+        <Panel id="playerHud_coterieGridBtnWrap_jarvisJacks_Purple">
+          <Image id="playerHud_coterieGridBtn_jarvisJacks_Purple" image="toggle_jarvisJacks_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+          <Image id="playerHud_coterieGridBtn_jarvisJacks_Purple_hover" image="toggle_jarvisJacks_hover" active="false" />
         </Panel>
 
         <Panel id="playerHud_coterieGridBtnWrap_theLine_Purple">
@@ -7288,7 +7346,9 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
     <Image id="playerHud_coteriePopup_moonClub_Purple" active="false" class="popupImage" image="refPanel_Coteries_moonClub" />
     <Image id="playerHud_coteriePopup_regencyUniversityChantry_Purple" active="false" class="popupImage" image="refPanel_Coteries_regencyUniversityChantry" />
     <Image id="playerHud_coteriePopup_scarlettAndTheBoys_Purple" active="false" class="popupImage" image="refPanel_Coteries_scarlettAndTheBoys" />
+    <Image id="playerHud_coteriePopup_colorBlitz_Purple" active="false" class="popupImage" image="refPanel_Coteries_colorBlitz" />
     <Image id="playerHud_coteriePopup_goodDoctors_Purple" active="false" class="popupImage" image="refPanel_Coteries_goodDoctors" />
+    <Image id="playerHud_coteriePopup_jarvisJacks_Purple" active="false" class="popupImage" image="refPanel_Coteries_jarvisJacks" />
     <Image id="playerHud_coteriePopup_theLine_Purple" active="false" class="popupImage" image="refPanel_Coteries_theLine" />
     <Image id="playerHud_coteriePopup_redeemers_Purple" active="false" class="popupImage" image="refPanel_Coteries_redeemers" />
     <Image id="playerHud_coteriePopup_redFlag_Purple" active="false" class="popupImage" image="refPanel_Coteries_redFlag" />

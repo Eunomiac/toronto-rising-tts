@@ -308,7 +308,7 @@ C.CHRONICLE_DATA = {
     colorBlitz = {
       name = "Color Blitz",
       affiliation = "Anarch",
-      inCoterieRef = false
+      inCoterieRef = true
     },
     deepSix = {
       name = "Deep Six",
@@ -353,7 +353,7 @@ C.CHRONICLE_DATA = {
     jarvisJacks = {
       name = "the Jarvis Jacks",
       affiliation = "Anarch",
-      inCoterieRef = false
+      inCoterieRef = true
     },
     theLine = {
       name = "the Line",

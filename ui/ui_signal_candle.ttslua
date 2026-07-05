@@ -61,6 +61,10 @@ function click_signalCandle(_buttonId, clickColor)
         return
     end
 
+    if clickColor ~= playerColor then
+        return
+    end
+
     local nextState = nil
     if Global ~= nil and type(Global.call) == "function" then
         nextState = Global.call("GlobalToggleSignalFireState", {

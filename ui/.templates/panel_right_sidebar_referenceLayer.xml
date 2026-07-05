@@ -812,10 +812,20 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
       </HorizontalLayout>
 
       <!-- Anarch Group -->
-      <HorizontalLayout class="coterie-grid-row">
+      <HorizontalLayout class="coterie-grid-row" preferredWidth="1500">
+        <Panel id="playerHud_coterieGridBtnWrap_colorBlitz_@@color@@">
+          <Image id="playerHud_coterieGridBtn_colorBlitz_@@color@@" image="toggle_colorBlitz_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+          <Image id="playerHud_coterieGridBtn_colorBlitz_@@color@@_hover" image="toggle_colorBlitz_hover" active="false" />
+        </Panel>
+
         <Panel id="playerHud_coterieGridBtnWrap_goodDoctors_@@color@@">
           <Image id="playerHud_coterieGridBtn_goodDoctors_@@color@@" image="toggle_goodDoctors_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
           <Image id="playerHud_coterieGridBtn_goodDoctors_@@color@@_hover" image="toggle_goodDoctors_hover" active="false" />
+        </Panel>
+
+        <Panel id="playerHud_coterieGridBtnWrap_jarvisJacks_@@color@@">
+          <Image id="playerHud_coterieGridBtn_jarvisJacks_@@color@@" image="toggle_jarvisJacks_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+          <Image id="playerHud_coterieGridBtn_jarvisJacks_@@color@@_hover" image="toggle_jarvisJacks_hover" active="false" />
         </Panel>
 
         <Panel id="playerHud_coterieGridBtnWrap_theLine_@@color@@">
@@ -853,7 +863,9 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     <Image id="playerHud_coteriePopup_moonClub_@@color@@" active="false" class="popupImage" image="refPanel_Coteries_moonClub" />
     <Image id="playerHud_coteriePopup_regencyUniversityChantry_@@color@@" active="false" class="popupImage" image="refPanel_Coteries_regencyUniversityChantry" />
     <Image id="playerHud_coteriePopup_scarlettAndTheBoys_@@color@@" active="false" class="popupImage" image="refPanel_Coteries_scarlettAndTheBoys" />
+    <Image id="playerHud_coteriePopup_colorBlitz_@@color@@" active="false" class="popupImage" image="refPanel_Coteries_colorBlitz" />
     <Image id="playerHud_coteriePopup_goodDoctors_@@color@@" active="false" class="popupImage" image="refPanel_Coteries_goodDoctors" />
+    <Image id="playerHud_coteriePopup_jarvisJacks_@@color@@" active="false" class="popupImage" image="refPanel_Coteries_jarvisJacks" />
     <Image id="playerHud_coteriePopup_theLine_@@color@@" active="false" class="popupImage" image="refPanel_Coteries_theLine" />
     <Image id="playerHud_coteriePopup_redeemers_@@color@@" active="false" class="popupImage" image="refPanel_Coteries_redeemers" />
     <Image id="playerHud_coteriePopup_redFlag_@@color@@" active="false" class="popupImage" image="refPanel_Coteries_redFlag" />

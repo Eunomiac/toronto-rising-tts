@@ -4,6 +4,10 @@
 
 ## Active
 
+## External Work (Categorize Under "External To Do")
+- [Character Sheets] Update Clan Compulsions on Character Sheets to just include the Influence line
+- [GM Reference] Review all sheets for Advantages and other things that you need to know about during play.
+
 ## Needs clarification
 
 ### Unclear Bugs
@@ -16,6 +20,15 @@
 
 ## Processed
 
+2026-07-05 INBOX Quick Fixes — Color Blitz + Jarvis Jacks coterie ref grid (`inCoterieRef`, XML grid/popups); relatedTo **TOR-190** (coterie infographics)
+2026-07-05 INBOX Quick Fixes — seat-color gate player dice bags + signal candles (`objects/dice_bag.ttslua`, `ui/ui_signal_candle.ttslua`)
+2026-07-05 INBOX Quick Fixes — ST roll panel click hint font 8→12 (`panel_storyteller_roll_controls.xml`)
+2026-07-05 INBOX Quick Fixes — secret ST roll reveal tray dice on **B** broadcast (`core/roll_controller.ttslua`; extends **TOR-226**)
+2026-07-05 INBOX Quick Fixes — roll broadcast message audit → **TOR-296** (Dice & Rolls Improvement, Medium; `blockedBy` **TOR-141** E2E playbooks)
+2026-07-05 INBOX Active — rouse-only broadcast dice in main row → **TOR-294** (Dice & Rolls Bug, Medium)
+2026-07-05 INBOX External — reference overlay typos + Compulsion XP → **TOR-295** (Workshop, Medium; relatedTo **TOR-105**)
+2026-07-05 INBOX External — famulus Disciplines sheets → **TOR-297** (Workshop, Medium; relatedTo **TOR-110**)
+2026-07-05 INBOX External — Black Caesar ghoul cutouts/sheets → **TOR-298** (Workshop, Medium)
 2026-07-05 **TOR-285** (connect-time HUD visibility) — Done; author verified Save & Play; hotseat minor wrinkles likely hotseat-only; multiclient deferred TOR-144
 2026-07-05 INBOX Quick Fixes — REMORSE roll pool lock + phase label → **TOR-289** (Dice & Rolls Improvement, Medium)
 2026-07-05 INBOX Quick Fixes — ST roll dash broadcast persistence for all rolls → **TOR-292** (Dice & Rolls Improvement, Medium)
