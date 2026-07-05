@@ -7,7 +7,9 @@ Iterative **AI/human hybrid** verification: bug repro, feature sign-off, ad-hoc 
 
 ## Three layers
 
-Do not conflate **Steps** (author paste/click order), **Code Blocks** (one `U.RunSequence` per paste; split only at human gates), and **Phases** (console `printHeader` labels inside a block — never drive markdown structure). Multiple phases (1.1 → 2.1) stay in one Code Block until the tester must interact in TTS.
+Do not conflate **Steps** (author paste/click order), **Code Blocks** (IDE paste units; split only at [human gates](../../.cursor/skills/step-by-step-guidance/SKILL.md#human-gates-when-to-stop-automation)), and **Phases** (console `printHeader` labels inside a block). Merge Lua-only phases in one block until a human gate applies.
+
+**Principle:** As little human interaction as possible — automate and assert in Lua; HUMAN cues only for gates **(1)–(4)** in the skill.
 
 ## When to use
 
@@ -42,7 +44,7 @@ Use these before writing custom assert helpers. Do **not** copy illustration dum
 | Domain DEBUG | `DEBUG.syncTableSimplified`, `ensureSceneLibraryStub`, `DEBUG.compareLayoutPaths`, … | `debugHelp()` / TESTING.md |
 | Console phase banners | `printHeader(text, 1\|2)` | [TESTING.md § E2E console output](../TESTING.md#e2e-console-output-conventions) |
 
-**Human gates** in Step-by-step playbooks use `print("   ▶▶▶ HUMAN ▶▶▶ …")` — not `printHeader("[HUMAN]", 3)`.
+**Human gates** in Step-by-step playbooks use `print("   ▶▶▶ HUMAN ▶▶▶ …")` only when the skill’s gates **(1)–(4)** apply — not for Lua-only handoffs between blocks.
 
 ## Execution defaults
 
