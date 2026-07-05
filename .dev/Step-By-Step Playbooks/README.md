@@ -9,7 +9,7 @@ Iterative **AI/human hybrid** verification: bug repro, feature sign-off, ad-hoc 
 
 Do not conflate **Steps** (author paste/click order), **Code Blocks** (IDE paste units; split only at [human gates](../../.cursor/skills/step-by-step-guidance/SKILL.md#human-gates-when-to-stop-automation)), and **Phases** (console `printHeader` labels inside a block). Merge Lua-only phases in one block until a human gate applies.
 
-**Principle:** As little human interaction as possible — automate and assert in Lua; HUMAN cues only for gates **(1)–(4)** in the skill.
+**Principle:** Automate what is **reasonable in Lua** (state, setup, asserts); ask the author for **simple, faithful** TTS actions (drop, click, roll) instead of hacky simulators. HUMAN cues for gates **(1)–(4)** only — not Lua-only handoffs.
 
 ## When to use
 

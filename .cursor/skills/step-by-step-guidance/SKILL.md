@@ -55,7 +55,7 @@ Legacy E2E playbooks ([Dice-E2E](../../.dev/E2E%20Playbooks/Dice-E2E.md), etc.) 
 - **Fail loud in the runbook** — expected console output (`PASS`, `FAIL`, `▶▶▶ HUMAN ▶▶▶`, dump path) so the author knows the step succeeded without guessing.
 - **Subjective HUMAN only as last resort** — lighting intensity, timing, layout eyeball when Lua assert would be prohibitively complex (human gate **(2)** or **(3)**).
 
-Goal: **as little human interaction as possible** — one paste, read `PASS`/`FAIL`, act in TTS only when a human gate applies.
+Goal: **automate what is reasonable in Lua**; **ask the author** for simple faithful TTS actions (drop, click, roll) rather than building simulators to avoid them.
 
 ## Numbered Steps (author run order)
 
@@ -102,7 +102,7 @@ The user can **Execute Lua Code** from the IDE — no `lua` prefix, no in-game c
 
 - The "Execute Lua Code" command cannot include `require` statements; it must run independently in the global scope. Most libraries are exposed globally and can be used without `require`.
 
-**Default to Lua first:** setup, seeding, assertions, and file capture. Reserve **bold manual steps** only for UI clicks, visuals, or timing the engine cannot drive.
+**Default to Lua first** means setup, seeding, **assertions**, and file capture — not simulating every in-world gesture. Reserve **bold manual steps** for UI clicks, drops, rolls, visuals, or timing the engine cannot drive **reasonably**.
 
 Do not use MCP/`tts_execute_lua` unless the user explicitly asks — IDE execute is the default.
 
@@ -126,16 +126,27 @@ Do **not** copy illustration dummies from the template into production runbooks.
 
 ### Human gates (when to stop automation)
 
+**Balance:** Automate everything **reasonable and practical** in Lua (state, harness helpers, asserts). The author **is available** and **does not mind** simple TTS actions — drops, bag clicks, dice rolls, panel toggles. Do **not** invent elaborate automation to avoid those.
+
 End a `U.RunSequence` / start a new Code Block / emit `▶▶▶ HUMAN ▶▶▶` **only** when one of these applies:
 
-| # | Gate | Examples |
-| --- | --- | --- |
-| **1** | **Human interaction required to proceed** | Toolbar Clear (5s confirm), Scenes panel toggle, bag click, drop object, Apply scene (blindfold settle) |
-| **2** | **Human senses required** | Visual timing/fade, layout eyeball, “wait ~12s for blindfold” when Lua cannot reliably schedule the next assert |
-| **3** | **Automation impractical** | Many object alignments, fragile click simulation, hacky bag/drop workarounds — human does it faster and more faithfully |
-| **4** | **Verification complete** | `Verification complete. No further action.` |
+| # | Gate | When to use | Examples |
+| --- | --- | --- | --- |
+| **1** | **Human interaction required** | Normal UI / table action is the **straightforward** path | Toolbar Clear (5s confirm), Scenes panel toggle, **drop token on snap**, **click dice bag**, Apply scene |
+| **2** | **Human senses required** | Lua cannot reliably observe or schedule the check | Visual fade/timing, layout eyeball, “wait ~12s for blindfold” when `U.waitUntil` is not trustworthy |
+| **3** | **Automation unreasonable** | Automating would be **fragile, clunky, or disproportionate** — not merely “human could do it” | Many manual alignments at once, simulating drag/drop/physics, fake bag clicks, spawning objects to mimic a roll **when the author can just roll** |
+| **4** | **Verification complete** | Playbook finished | `Verification complete. No further action.` |
 
-**Not a human gate:** “Run Code Block X” handoffs between Lua-only sections, phase number changes, or checkpoint pastes when the author does nothing in TTS. **Merge** those into the same `U.RunSequence` and prefer **one Code Block** until gate **(1)–(3)** or **(4)**.
+**Gate (3) — read carefully:** This is **not** “avoid human interaction at all costs.” If the faithful test path is “drop token, then assert,” use gate **(1)** and ask for the drop. Gate **(3)** applies when an agent would otherwise write **hacky simulators** (synthetic drops, scripted pick-up cycles, click spoofing, physics-style placement) that are **more complex and less trustworthy** than the author doing the obvious TTS action once.
+
+| Prefer gate **(1)** — author action | Do **not** over-automate |
+| --- | --- |
+| Drop NPC token on board snap | `spawnObject` + scripted pick/place to “simulate” drop |
+| Click Normal bag N times | Loop of `clickObject` / coordinate hacks |
+| Roll dice on table | Force faces via debug **only when** harness already provides that path (`rollSetFaces`, `rollTest`); do not build a one-off roller |
+| Clear toolbar (5s confirm) | `GlobalGameboardClear` alone when the test is **about** the real Clear UX |
+
+**Not a human gate:** “Run Code Block X” handoffs between Lua-only sections, phase number changes, or checkpoint pastes when the author does nothing in TTS. **Merge** those into the same `U.RunSequence` and prefer **one Code Block** until gate **(1)–(4)**.
 
 `U.RunSequence` does not wait for the author — so gate **(1)–(3)** must end the sequence **before** post-action asserts. Gate **(2)** timing: either Lua `U.waitUntil` + assert when reliable, or HUMAN “wait N seconds, then run …” when not.
 
@@ -161,4 +172,4 @@ end
 - **Primary:** [`.dev/Step-By-Step Playbooks/.Step-By-Step Template.md`](../../.dev/Step-By-Step%20Playbooks/.Step-By-Step%20Template.md)
 - **Legacy (until TOR-141 migration):** [Dice-E2E.md](../../.dev/E2E%20Playbooks/Dice-E2E.md), [Dice-E2E-Guide.md](../../.dev/E2E%20Playbooks/Dice-E2E-Guide.md), [TESTING.md](../../.dev/TESTING.md)
 
-**Important:** Minimize human gates. Merge all Lua-automatable phases in one `U.RunSequence` until gate **(1)**, **(2)**, **(3)**, or **(4)**. Split markdown Code Blocks at the same boundaries — not for handoffs, phase labels, or “nice checkpoints.”
+**Important:** Minimize **unnecessary** gates (no handoff splits, no phase splits). **Do** use gate **(1)** for ordinary TTS actions the author can perform in seconds. **Do not** substitute gate **(3)**-grade simulation scripts to avoid a simple drop, click, or roll.
