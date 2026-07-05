@@ -1,15 +1,35 @@
 ---
 name: step-by-step-guidance
-description: Guide the author through TTS verification — bold step directives, pasteable Execute-Lua blocks, U.RunSequence batching, DEBUG file capture; minimize manual gates.
+description: Guide the author through TTS verification — rote numbered steps, bold directives, pasteable Execute-Lua blocks, U.RunSequence batching, DEBUG file capture; no hedging or branchy prose.
 ---
 
 # Step-by-step guidance (Tabletop Simulator)
 
-When the user must act or verify in TTS (testing, E2E, bug repro, author Save & Play checks):
+When the user must act or verify in TTS (testing, E2E, bug repro, author Save & Play checks), emit a **concrete runbook** the author can follow by rote — not a menu of options or a conversation.
 
-- Describe each step concisely in plain English. The **action directive should be bold**.
-- Add brief context only when necessary, immediately after the directive.
+- **Numbered steps** in fixed order: Step 1, Step 2, … One action per step.
+- The **action directive should be bold**. Brief context only when necessary, immediately after the directive.
 - Do not ask the user to paraphrase state you can assert in Lua (`rollConfirm`, harness helpers, `DEBUG.*` file dumps).
+
+## Rote guide discipline (no hedging, no branches)
+
+**Write one path.** The guide should read like a checklist or playbook block, not advice.
+
+**Do not:**
+
+- Branch in prose: “if X, do A; otherwise B”, “depending on…”, “you might see…”
+- Offer alternatives: “you could either…”, “optionally…”, “or try…”
+- Hedge: “just to be safe…”, “you might want to check…”, “it’s worth verifying…”, “if that doesn’t work…”
+- Leave steps open-ended: “confirm things look right”, “make sure the state is correct”
+
+**Do instead:**
+
+- **Pick defaults** from Prerequisites (seat, camera, Save & Play) and state them once up front — not as repeated conditionals.
+- **Replace “check if” with Lua** — assert in the paste block; on failure the log says why. Split setup/assert blocks; don’t ask the human to eyeball state Lua can read.
+- **Resolve uncertainty before the guide** — if seat, scene, or repro path is genuinely unknown, ask **one** blocking question, then emit a single linear sequence. Do not embed “maybe do X” inside the steps.
+- **Fail loud in the runbook** — expected console/file output (`PASS`, `[HUMAN]`, dump path) so the author knows the step succeeded without guessing.
+
+Goal: the author can execute top-to-bottom with minimal interpretation — paste, click, paste, click.
 
 ## Prerequisites
 
