@@ -832,7 +832,6 @@ C.ObjectPositions = {
     }
   },
   TAROT_DECK_PINK = {
-    target = G.GUIDS.TAROT_DECK_PINK,
     on = {
       position = { y = 12 },
       duration = 0,
@@ -1883,7 +1882,7 @@ C.TableSourceObjects = {
     G.GUIDS.PRINCE_SIGNET_RED,
     G.GUIDS.PRINCE_CURTAIN_RED,
     G.GUIDS.COMPANION_TOGGLE_TOKEN_A_RED,
-    G.GUIDS.TAROT_DECK_PINK,
+    "TAROT_DECK_PINK", -- not in G.GUIDS; resolved by Tarot tag via lib.tarot_objects
     G.GUIDS.TAROT_DRAWER_PINK,
     G.GUIDS.TAROT_BUTTON_PINK,
     G.GUIDS.TAROT_BUTTON_ANCHOR_ON_PINK,

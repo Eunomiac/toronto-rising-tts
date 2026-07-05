@@ -17,7 +17,7 @@ local STATE_ON = "on"
 
 local TAROT_KEYS = {
     "TAROT_DRAWER_PINK",
-    "TAROT_DECK_PINK",
+    TarotObjects.GUIDS_KEY_DECK_PINK,
     "TAROT_BUTTON_PINK",
 }
 
@@ -55,7 +55,7 @@ end
 --- @param buttonGuid string|nil
 --- @return Object|nil
 local function getTarotDeck(buttonGuid)
-    return resolveTarotObject("TAROT_DECK_PINK", buttonGuid)
+    return resolveTarotObject(TarotObjects.GUIDS_KEY_DECK_PINK, buttonGuid)
 end
 
 --- Hidden deck at y=-10 remains reachable through the table unless interactable is cleared.

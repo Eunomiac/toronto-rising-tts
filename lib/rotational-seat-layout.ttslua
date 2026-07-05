@@ -623,6 +623,12 @@ local function resolveObjectRefWithRoleSupport(ref, referencePlayerColor, label)
     if obj ~= nil then
       return obj
     end
+    if TarotObjects.isGuidsKey(ref) then
+      obj = TarotObjects.resolveByGuidsKey(ref)
+      if obj ~= nil then
+        return obj
+      end
+    end
   end
   if U.Type(ref) ~= "string" then
     return nil
@@ -4065,10 +4071,42 @@ function M.compareHandFrames(tableRef, opts)
   }
 end
 
+--- Call a TTS object method when `U.isIn` confirms it exists (raw `obj.getFoo` probes can throw on userdata).
+--- @param obj Object|nil
+--- @param methodName string
+--- @return any|nil
+local function callObjectMethodIfPresent(obj, methodName)
+  if obj == nil or U.Type(methodName) ~= "string" or methodName == "" then
+    return nil
+  end
+  if not U.isIn(methodName, obj) then
+    return nil
+  end
+  return obj[methodName]()
+end
+
+--- Save JSON nickname via `getData().Nickname` (not a TTS Object API method).
+--- @param obj Object|nil
+--- @return string
+local function objectNicknameForReport(obj)
+  if obj == nil or not U.isIn("getData", obj) then
+    return ""
+  end
+  local data = obj.getData()
+  if U.Type(data) ~= "table" then
+    return ""
+  end
+  local nick = data.Nickname
+  if U.Type(nick) == "string" then
+    return nick
+  end
+  return ""
+end
+
 --- @param obj Object
 --- @return string
 local function tagsToReportString(obj)
-  if obj == nil or obj.getTags == nil then
+  if obj == nil or not U.isIn("getTags", obj) then
     return ""
   end
   local tags = obj.getTags()
@@ -4092,14 +4130,32 @@ end
 --- @return table
 local function buildSkippedRecord(obj, seatKey, roleKey, reason)
   return {
-    guid = obj.getGUID and obj.getGUID() or "",
-    name = obj.getName and obj.getName() or "",
-    nickname = obj.getNickname and obj.getNickname() or "",
+    guid = tostring(callObjectMethodIfPresent(obj, "getGUID") or ""),
+    name = tostring(callObjectMethodIfPresent(obj, "getName") or ""),
+    nickname = objectNicknameForReport(obj),
     tags = tagsToReportString(obj),
-    gmNotes = obj.getGMNotes and tostring(obj.getGMNotes() or "") or "",
+    gmNotes = tostring(callObjectMethodIfPresent(obj, "getGMNotes") or ""),
     seatKey = seatKey,
     roleKey = roleKey,
     reason = reason,
+  }
+end
+
+local function readObjectFrameSafe(obj)
+  if obj == nil or not U.isGameObject(obj) then
+    return nil
+  end
+  if not U.isIn("getPosition", obj) or not U.isIn("getRotation", obj) then
+    return nil
+  end
+  local pos = obj.getPosition()
+  local rot = obj.getRotation()
+  if pos == nil or rot == nil then
+    return nil
+  end
+  return {
+    position = Vector(pos),
+    rotation = Vector(rot),
   }
 end
 
@@ -4117,10 +4173,10 @@ local function indexLiveSeatFramesByRole(seatKey)
       if disp ~= nil then
         local roleKey, _ = SRI.parseRoleAndSuffix(disp)
         if U.Type(roleKey) == "string" and roleKey ~= "" and byRole[roleKey] == nil then
-          byRole[roleKey] = {
-            position = Vector(obj.getPosition()),
-            rotation = Vector(obj.getRotation()),
-          }
+          local frame = readObjectFrameSafe(obj)
+          if frame ~= nil then
+            byRole[roleKey] = frame
+          end
         end
       end
     end
@@ -4136,10 +4192,10 @@ local function indexLiveSeatFramesByRole(seatKey)
           handRoleKey = rk
         end
       end
-      byRole[handRoleKey] = {
-        position = Vector(hz.getPosition()),
-        rotation = Vector(hz.getRotation()),
-      }
+      local handFrame = readObjectFrameSafe(hz)
+      if handFrame ~= nil then
+        byRole[handRoleKey] = handFrame
+      end
     end
   end
   return byRole
@@ -4150,6 +4206,9 @@ end
 --- @param rigid table `{ deltaDeg, shift }`
 --- @return table
 local function frameAfterSeatRigid(centerPoint, refFrame, rigid)
+  if U.Type(refFrame) ~= "table" or refFrame.position == nil then
+    error("rotational-seat-layout: frameAfterSeatRigid requires refFrame.position")
+  end
   if U.Type(rigid) ~= "table" or U.Type(rigid.deltaDeg) ~= "number" then
     error("rotational-seat-layout: frameAfterSeatRigid requires rigid { deltaDeg, shift }")
   end
@@ -4234,6 +4293,12 @@ function M.refreshSeatRigsFromReferenceSegment(opts)
   end
 
   local handBundle = M.computeHandFrames(tableCfg, filteredMap, opts)
+  if U.Type(handBundle) ~= "table" then
+    error(
+      "rotational-seat-layout: refreshSeatRigsFromReferenceSegment computeHandFrames returned "
+      .. tostring(handBundle)
+    )
+  end
   local handFrames = handBundle.handFrames or {}
   local seatRigidByKey = handBundle.seatRigidByKey or {}
   local centerPoint = Vector(tableCfg.centerPoint)
@@ -4281,6 +4346,13 @@ function M.refreshSeatRigsFromReferenceSegment(opts)
           .. "'"
         )
       end
+      if handFrame.position == nil or handFrame.rotation == nil then
+        error(
+          "rotational-seat-layout: refreshSeatRigsFromReferenceSegment hand frame for seat '"
+          .. tostring(seatKey)
+          .. "' missing position/rotation"
+        )
+      end
 
       if not skipHandZones then
         if isPlayerSeatKey(seatKey) then
@@ -4293,11 +4365,13 @@ function M.refreshSeatRigsFromReferenceSegment(opts)
             movedCount = movedCount + 1
           end
         else
-          nextVirtualAnchors[seatKey] = {
-            position = Vector(handFrame.position),
-            rotation = Vector(handFrame.rotation),
-          }
           if not dryRun then
+            nextVirtualAnchors[seatKey] = {
+              position = Vector(handFrame.position),
+              rotation = Vector(handFrame.rotation),
+            }
+            movedCount = movedCount + 1
+          else
             movedCount = movedCount + 1
           end
         end

@@ -81,7 +81,7 @@ local sourceObjects = {
 
     -- entries used for relative objects; each element always refers to one object
     relative = {
-        G.GUIDS.TAROT_DECK_PINK,
+        "TAROT_DECK_PINK", -- logical key; not in G.GUIDS — resolved by Tarot tag
     },
 
     -- camera presets to rotate when applying this table layout
@@ -159,7 +159,7 @@ local sourceObjects = {
         getObjectFromGUID("c81772"), -- SIGNAL_CANDLE_RED (all seats)
     },
     relative = {
-      G.GUIDS.TAROT_DECK_PINK, -- The single object named TAROT_DECK_PINK with the table slot tag "PinkObject", which should rigidly follow Pink's hand-zone anchor.
+      "TAROT_DECK_PINK", -- logical key (not in G.GUIDS); PinkObject slot, follows Pink hand-zone anchor via Tarot tag
     },
     cameraModes = {
       bySeat = { "sheet", "diceTray", "facing" },

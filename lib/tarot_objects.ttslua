@@ -2,8 +2,9 @@
     Tarot object resolution (lib/tarot_objects.ttslua)
 
     Pink tarot deck/drawer/button can lose their workshop GUID when the deck is spread
-    or reassembled. Prefer G.GUIDS lookup, then `Tarot` tag (legacy `TarotDeck` fallback),
-    then stable object nicknames for anchors.
+    or reassembled. The deck is not in `G.GUIDS` — resolve `GUIDS_KEY_DECK_PINK` by
+    `Tarot` / `TarotDeck` tag. Other tarot pieces use `G.GUIDS` when present, then tag
+    heuristics or stable object names for anchors.
 ]]
 
 local G = require("lib.guids")
@@ -14,6 +15,9 @@ local TAROT_TAG = "Tarot"
 local TAROT_LEGACY_TAG = "TarotDeck"
 local TAROT_GUID_PREFIX = "TAROT_"
 
+--- Logical resolver key for Pink tarot deck (not a `G.GUIDS` entry).
+TarotObjects.GUIDS_KEY_DECK_PINK = "TAROT_DECK_PINK"
+
 --- @type table<string, string> guid -> G.GUIDS key for tarot family
 local guidToTarotKey = {}
 
@@ -23,6 +27,23 @@ for key, guid in pairs(G.GUIDS or {}) do
     then
         guidToTarotKey[guid] = key
     end
+end
+
+--- @param ref any
+--- @return boolean
+function TarotObjects.isGuidsKey(ref)
+    return type(ref) == "string" and ref ~= ""
+        and string.sub(ref, 1, #TAROT_GUID_PREFIX) == TAROT_GUID_PREFIX
+end
+
+--- @return Object|nil
+local function findTarotDeck()
+    for _, obj in ipairs(TarotObjects.getTaggedObjects()) do
+        if obj.type == "Deck" then
+            return obj
+        end
+    end
+    return nil
 end
 
 --- @return Object[]
@@ -60,27 +81,23 @@ local function findByNickname(nickname)
     return nil
 end
 
---- @param guidsKey string e.g. TAROT_DECK_PINK
+--- @param guidsKey string e.g. `TarotObjects.GUIDS_KEY_DECK_PINK`
 --- @return Object|nil
 function TarotObjects.resolveByGuidsKey(guidsKey)
     if type(guidsKey) ~= "string" or guidsKey == "" then
         return nil
     end
+
+    if guidsKey == TarotObjects.GUIDS_KEY_DECK_PINK then
+        return findTarotDeck()
+    end
+
     local guid = G.GUIDS[guidsKey]
     if type(guid) == "string" and guid ~= "" then
         local obj = G.getObject(guid)
         if obj ~= nil then
             return obj
         end
-    end
-
-    if guidsKey == "TAROT_DECK_PINK" then
-        for _, obj in ipairs(TarotObjects.getTaggedObjects()) do
-            if obj.type == "Deck" then
-                return obj
-            end
-        end
-        return nil
     end
 
     if guidsKey == "TAROT_DRAWER_PINK" then

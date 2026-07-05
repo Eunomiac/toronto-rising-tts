@@ -34,7 +34,9 @@ Goal: the author can execute top-to-bottom with minimal interpretation — paste
 ## Prerequisites
 
 - Repo Lua runs in TTS only after **Save & Play** (bundled scripts match disk).
-- Table **Host** (solo is fine). **Black** for ST/scenes/debug; **change seat** for dice bag/camera steps per `.dev/TESTING.md`.
+- The user will always be the **Host**.
+- Do not request the user assign themselves to a specific seat: This can be done in the code block, as a preliminary call in the `U.RunSequence` procedure.
+- **Change seat** for dice bag/camera steps per `.dev/TESTING.md`.
 - Before bag/tray/roll-panel clicks, include **`M.setCamera("ALL", "roll<Color>")`** in the same sequence step as the human cue.
 
 ## Default: paste Lua from the IDE (not the TTS console)
@@ -66,3 +68,5 @@ Do not use MCP/`tts_execute_lua` unless the user explicitly asks — IDE execute
 - Block shape: `.dev/E2E Playbooks/Dice-E2E.md`
 - How to run, pass criteria, deterministic rules: `.dev/E2E Playbooks/Dice-E2E-Guide.md`
 - `printHeader` levels, split rules, templates: `.dev/TESTING.md`
+
+**Important:** Do NOT interrupt a `U.RunSequence` call for any reason other than needing human interaction to proceed.  All `U.RunSequence` calls should, accordingly, end with a `[HUMAN]` cue explaining what the user should do before running the next sequence.
