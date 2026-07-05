@@ -539,6 +539,15 @@ function E2E_GB.probePlacements()
     return placements
 end
 
+--- @param seatKey string NPC seat or PC color
+--- @return boolean narrative presence (`seatSlots.isPresent` / `seatPresent`)
+function E2E_GB.probeSeatNarrativePresence(seatKey)
+    if U.isIn(seatKey, C.PlayerColors or {}) then
+        return NPCS.resolvePlayerSeatPresence(seatKey)
+    end
+    return NPCS.resolveSeatNarrativePresence(seatKey)
+end
+
 --- @return number|nil distance world units; nil if token missing
 function E2E_GB.probeTokenMirror(characterKey, u, v, tol)
     tol = tonumber(tol) or fixture().worldTol
@@ -1016,6 +1025,58 @@ function E2E_GB.runSmoke()
     return ok
 end
 
+--- TOR-281: Clear-from-stage homeland seat rules + live library mirror on presence writes.
+--- @param failures string[]
+local function runTor281ClearSeatTests(failures)
+    local fx = fixture()
+    local SceneLibrary = require("core.scene_library")
+
+    local function assertPresence(seatKey, want, label)
+        if E2E_GB.probeSeatNarrativePresence(seatKey) ~= want then
+            failures[#failures + 1] = label
+                .. ": expected isPresent="
+                .. tostring(want)
+                .. " got "
+                .. tostring(E2E_GB.probeSeatNarrativePresence(seatKey))
+        end
+    end
+
+    clearNpcSeatsAndPlacements()
+    assignSeatSlot("NPC1", fx.npcA, false)
+    setPlacementRow(fx.npcA, fx.uvA.u, fx.uvA.v, "STANDARD")
+    Gameboard.clearControlBoard()
+    assertPresence("NPC1", true, "H281a disabled+STANDARD clears to active")
+
+    clearNpcSeatsAndPlacements()
+    assignSeatSlot("NPC1", fx.npcA, false)
+    setPlacementRow(fx.npcA, fx.uvA.u, fx.uvA.v, "OFF")
+    Gameboard.clearControlBoard()
+    assertPresence("NPC1", false, "H281b disabled+OFF clears to inactive")
+
+    clearNpcSeatsAndPlacements()
+    assignSeatSlot("NPC1", fx.npcA, true)
+    setPlacementRow(fx.npcA, fx.uvA.u, fx.uvA.v, "OFF")
+    Gameboard.clearControlBoard()
+    assertPresence("NPC1", true, "H281c enabled+OFF clears to still active")
+
+    local sceneKey, err = resolveSceneKeyFromFixtureSlot()
+    if sceneKey == nil then
+        failures[#failures + 1] = "H281d library mirror: " .. tostring(err)
+    else
+        clearNpcSeatsAndPlacements()
+        assignSeatSlot("NPC1", fx.npcA, true)
+        SceneLibrary.setExclusiveLiveMirror(sceneKey)
+        NPCS.setNpcSeatNarrativePresence("NPC1", false)
+        local libRow = S.getStateVal("sceneLibrary", "scenes", sceneKey, "sessionScene", "seatSlots", "NPC1")
+        if type(libRow) ~= "table" or libRow.isPresent ~= false then
+            failures[#failures + 1] = "H281d library seatSlots.NPC1.isPresent should mirror false"
+        end
+        SceneLibrary.setExclusiveLiveMirror(nil)
+    end
+
+    clearNpcSeatsAndPlacements()
+end
+
 local function runFullSuites(failures)
     local fx = fixture()
 
@@ -1071,6 +1132,8 @@ local function runFullSuites(failures)
             failures[#failures + 1] = "F4: NPC1 chair should be hidden from PCs when isPresent=false"
         end
     end
+
+    runTor281ClearSeatTests(failures)
 
     clearNpcSeatsAndPlacements()
     retreatAllFixtureNpcs()

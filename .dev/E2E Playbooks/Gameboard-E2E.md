@@ -126,6 +126,7 @@ lua gbE2eRunFull()
 | F2 | Seat only → intent **seat** | Figurine at stage UV |
 | F3 | NPC2 on **Table B1** (no NPC2 slot) | Intent not preload; slot map wrong |
 | F4 | `isPresent=false` hides NPC1 chair | Chair visible to PCs |
+| H281 | TOR-281 Clear seat rules + library mirror | Disabled+STANDARD not active after Clear; enabled seat flipped; library `seatSlots` stale |
 | G1 | Reconcile pulls token from palette (TOR-170) | Token stays on palette |
 | G2 | `syncTokensToPalette` skips on-stage keys | On-stage token parked |
 | H1 | `layoutLock` blocks token UV overwrite | Token moved on reconcile |
