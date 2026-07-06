@@ -1,830 +1,9 @@
+<!-- AUTO-GENERATED — do not edit by hand -->
+<!-- Regenerate: VS Code task "Export PC reference markdown" or node .dev/scripts/export_pc_reference_markdown.js -->
+
 # Player Character Reference
 
-# Lord Lucien St. Clair
-
-## Overview
-**Clan:** Toreador
-**Generation:** Tenth
-**Titles:** Prince
-**Predator type:** Tithe Collector
-**Born:** Lucerne, Switzerland (1864)
-**Embraced:** Paris, France (1889)
-**Languages:** German, French, English, Spanish, Greek
-**XP:** 0
-
-## Clan Bane
-**The Curse of Rapture** — Fixation: Stories
-
-## Lineage
-### Sire
-**Oliver Gagnon**
-### Childer
-**Damien Abanda** (Embraced 1915)
-
-## Attributes
-Strength 1 · Dexterity 3 · Stamina 2 · Charisma 4 · Manipulation 3 · Composure 3 · Intelligence 2 · Wits 2 · Resolve 2
-
-## Skills
-**Physical:** Athletics 2 · Craft 1 · Firearms 2 · Larceny 1 · Stealth 1
-
-**Social:** Etiquette 3 · Insight 2 · Intimidation 1 · Leadership 3 · Performance 1 · Persuasion 3 · Streetwise 1 · Subterfuge 2
-
-**Mental:** Academics 1 · Awareness 2 · Investigation 1 · Occult 1 · Politics 1 · Technology 1
-
-## Specialties
-- Athletics — Molotov Cocktails [archaic (1940)]
-- Craft — Art Nouveau [archaic (1890)]
-- Etiquette — Camarilla [standard]
-- Leadership — Kindred [standard]
-- Performance — Swing Dancing [archaic (1920)]
-- Academics — Theosophy [archaic (1890)]
-- Investigation — Investigative Journalism [archaic (1970)]
-
-## Tracks
-**Health:** 5
-**Willpower:** 5
-**Humanity:** 7
-**Blood Potency:** 2
-
-## Disciplines
-### Animalism 1
-- **Bond Famulus** L1 — Sylvain (Owl)
-
-### Auspex 2
-- **Heightened Senses** L1
-- **Premonition** L2
-- **Serendipitous Speech** L2 — Amalgam: Presence 2
-
-### Celerity 1
-- **Rapid Reflexes** L1
-
-### Presence 3
-- **Awe** L1
-- **Chimerstry** L2
-- **Passion Leech** L3 — Amalgam: Auspex 2
-- **Fata Morgana** L3
-
-## Convictions
-### Drama Over Caution
-
-**Touchstone:**
-**Miriam Ravenscroft**
-Curator, Royal Ontario Museum; Adjunct Professor, University of Toronto
-- Excitable and animated in the topics of her passions, to the point of lacking tact and social graces.
-- Specifically the curator for Manuscripts and Rare Texts, technically subordinate to the ROM's head Co-Chief Curator, Arts and Culture, Chen Shen.
-- Notoriously clumsy in any circumstance outside an archive.
-- Secretly publishes raunchy historical fiction under a nomme de plume, and is simultaneously proud and ashamed of the quality of her work.
-- There are rumors floating she has recently acquired an authentic fragment of important kindred lore/mystical significance for study.
-
-### Results Sanctify the Method
-
-### You Must Take Care of Your Friends First
-
-## Backgrounds
-**Status** 5 / 5 (Camarilla)
-- As Prince, you are Toronto's formal source of Camarilla legitimacy, office, judgment, and domain.
-- _Rule:_ You rule the domain as Prince.
-- _Rule:_ Add this Status to suitable courtly or status-conscious Social pools.
-_Source: VTM p. 194_
-
-**Status** 2 / 5 (Clan Toreador)
-- Among Toreador, your Praxis makes you important, but your clan prestige remains modest beside your throne.
-- _Rule:_ Your clan sees you as an average ancilla, not a foremost figure.
-- _Rule:_ Add this Status in Toreador or status-conscious scenes.
-_Source: VTM p. 194_
-
-**Mawla** 2 / 5 (Damien Abanda)
-- Damien Abanda is your childe and century-old survivor-bond, now a polished bridge to Red Flag and Anarch politics.
-- _Rule:_ Damien can advise, warn, introduce, or speak for you when appropriate.
-- _Rule:_ He expects reciprocity; the Storyteller decides his exact help.
-_Source: VTM p. 192_
-
-**Mawla** 2 / 5 (Evanescent Blue)
-- Evanescent Blue is a Ravnos survivor you saved near Kingston, now an Anarch source of diaspora news, warnings, and perspective.
-- _Rule:_ Blue can advise, warn, introduce, or speak for you when appropriate.
-- _Rule:_ She expects reciprocity; the Storyteller decides her exact help.
-_Source: VTM p. 192_
-
-**Mawla** 1 / 5 (Merrick Singh)
-- Merrick Singh is a saved Ravnos survivor now passing as Toreador with Scarlett & the Boys, useful in Camarilla nightlife.
-- _Rule:_ Merrick can provide occasional help, introductions, or information.
-- _Rule:_ His support is narrow, and he expects reciprocity.
-_Source: VTM p. 192_
-
-## Merits & Flaws
-### Merits
-**Luck of the Devil** 4
-- Your life seems charmed, from poverty to wealth to rescue from torpor, though karma always balances the scales.
-- _Rule:_ Once per session, redirect a misfortune aimed at you to someone close to you.
-- _Rule:_ The Storyteller decides what qualifies.
-_Source: Player's Guide p. 119_
-
-**Beautiful** 2 / 4
-- Oliver shaped you into a Toreador ideal; even after torpor and Praxis, your beauty remains unmistakable.
-- _Rule:_ Gain one die to appropriate Social pools when appearance matters.
-_Source: VTM p. 179_
-
-**Linguistics** 1 / 5
-- Salons, courts, unstable domains, and bloodline legacy make you sound at home almost anywhere.
-- _Rule:_ Fluently speak, read, and write one additional language.
-_Source: VTM p. 179_
-
-**Ingénue** 1
-- Your polish and apparent sincerity make others want to believe in your innocence before reason intrudes.
-- _Rule:_ Add two dice to rolls avoiding suspicion or deflecting blame, at Storyteller discretion.
-_Source: Player's Guide p. 118_
-### Flaws
-**The Curse of Rapture** 1
-- A novel, impressive story can arrest your attention, turning cultivated appreciation into dangerous fixation.
-- _Rule:_ Replaces the default Toreador bane.
-- _Rule:_ When you encounter a novel example of your fixation, roll Resolve + Composure vs. Difficulty 2 + Bane Severity or fixate for the scene.
-- _Rule:_ While fixated, spend Willpower to pull away; unrelated rolls suffer Bane Severity penalty.
-_Source: House Rules_
-
-## Bloodline
-**Descendant of the Count of St. Germain**
-The Count of Saint Germain was the Enlightenment's most enduring enigma: a man who appeared in the courts of Louis XV and Peter the Great with the same youthful face and effortless grace. He was the ultimate polyglot, capable of shifting between a dozen languages with such flawless inflection that even natives claimed him as their own. His true power, however, lay in his casual intimacy with the past. To hear him speak was to be transported; he described the marriage at Cana or the councils of Nero not as a scholar, but as an eyewitness, weaving himself into the tapestry of history with a charm that made the impossible seem mundane.
-
-Those who carry his blood are the Scheherazades of Elysium, inheriting his uncanny ability to belong everywhere and to weave tales that transcend trivialities like “truth” or “falsehood”. A descendant of the Count never sounds like a foreigner, no matter how far they travel, and their voices carry the weight of an era long since buried. They are masters of weaving tales that resonate with the soul, using their rhetorical talents to persuade and spellbind. In a world of neon and noise, they remain the captivating voice at the campfire, awing their peers with forgotten secrets and the effortless poise of a soul that has seen the rise and fall of a thousand kings and queens.
-
-- ✓ **Cosmopolitan Communicator** (1) — _When you purchase this Merit, gain a free Language. The Linguistics Merit provides two languages per dot, instead of one. When you speak to someone in a language that is their native tongue but not the regional default, gain a +2 bonus on Etiquette rolls._
-- ○ **Courtly Ties** (2) — _Gain up to four dots, limited by your Sect Status, to spread among Mawla Backgrounds. You cannot purchase a Mawla Background greater than two with this Merit._
-- ✓ **Storyteller's Gift** (3) — _They must be present to hear your story and, for each person you wish to include, either you or they must Rouse the Blood. During the Memoriam, these guests may participate in the story and contribute to challenges as if they were actually there. This does not actually rewrite history, however: It is a result of your flair for storytelling, nothing more. The results of the Memoriam should be reframed after the fact to explain whatever happened in terms of the reality of that historical event (e.g., tasks performed by targets of this ability were actually achieved by you, by others who were really there, or by happenstance)._
-- ✓ **Painting the Mind's Eye** (4) — _You may purchase Chimerstry as a Presence 2 power, then Fata Morgana as a Presence 3 power, without amalgam requirements, and you may purchase these even if you have already purchased those levels of Presence._
-- ○ **Rousing Rhetoric** (5) — _When your dice pool involves Performance, Persuasion or Leadership, you can set any single die to a 10 after rolling._
-
-## Loresheet
-**The Week of Nightmares**
-Kindred debate when exactly the Week of Nightmares fell, with some claiming it landed just prior to the turn of the millennium, while others conflate it with the supposed commencement of Gehenna. In truth, the “Week” of Nightmares sprawled across years, sweeping up several thousand vampires in its wave. During the Week, an impossibly ancient vampire arose and purged its own clan: the Ravnos. Thin-blooded vampires emerged with omens and portents as the Red Star, Anthelios, blazed in the night sky.
-
-You witnessed the mania of the Week of Nightmares and survived it, manipulated the chaos to your own advantage, or you studied the actions of those who did. Now you watch for signs of dooms to come.
-
-- ✓ **Oral History** (1) — _Add three dice to Performance dice pools to tests to tell the story._
-- ✓ **Ravnos Remains** (2) — _You have three dots of Mawla representing this group of contacts. They carry news and warnings to you, and can perhaps be convinced to cast mighty illusions once per chronicle, but association with them is frowned upon, if discovered._
-- ○ **I Was There** (3) — _Once per story, you can use this Status to earn a minor boon from one of those groups or from a prominent courtier in the domain with a sudden interest._
-- ○ **The Red Star** (4) — _Once per story, you can either reduce your Hunger to a rating of two or gain a die to the pools of one Discipline for a night by staring at the star for 10 minutes._
-- ○ **Blood of Zapathasura** (5) — _You own a small vial containing the Blood of the Ravnos Antediluvian. What you do with this vitae is up to you, and what it does to anyone who imbibes it is up to the Storyteller._
-
-## Timeline
-### Pre-Embrace (1864–1889 · Lucerne, Switzerland, Paris, France)
-
-Grew up poor, picked out of a crowd by pure chance (very open to Memoriam interpretation)
-
-### A Time of Lineage (1889–1915 · camarilla · Paris, France)
-
-The Gilded Cage
-Under the meticulous tutelage of Oliver Gagnon, Lucien is taught the grandeur of his lineage and home, and forged into an ideal pupil. He moved through the salons of the Heartland, a living model of his sire's impeccable tastes, internalizing the rigid protocols of the Camarilla until the weight of the "Great Game" (the geopolitical mishmash that led to World War I) dawned. In 1915, at the close of this era, Lucien Embraced Damien Abanda as his childe before their westward flight to Mexico.
-
-### A Time of Adversity (1915–1945 · anarch · Celaya, Mexico, Los Angeles, America)
-
-Three decades of consecutive adversity began when Lucien reached Revolutionary Mexico with no support network, no Camarilla safety net, and his newly Embraced childe Damien at his side. As they moved north through unstable domains, Lucien embraced Anarch nights during the Revolt, finding both freedom and disorder, while his mentorship of Damien was increasingly undercut by the same excesses Lucien himself could not resist. By the end of this era, Lucien was believed destroyed and was left torpid beneath the Mojave sands. The exact cause of that fall remains deliberately ambiguous.
-
-### A Time of Torpor (1945–1958 · Mojave Desert, USA)
-
-Buried in the Mojave and unable to find blood enough to rise, Lucien remained in prolonged torpor while history moved on without him. In his absence, he came to believe a Gangrel Anarch pack connected to Damien had betrayed him, and that Damien's failures of judgment helped make both the torpor and the long abandonment possible. Damien never found him; the guilt of that failure, and the realization that Lucien had been left rather than avenged, became one of the catalysts that hardened Damien and pushed him toward Red Flag. Lucien was eventually unearthed by Fomórach and carried to Toronto.
-
-### A Time of Reinvention (1967–1999 · camarilla · Toronto, Canada, Montreal, Canada)
-
-After his recovery, Lucien shed the entitled "golden child" posture of his early unlife and recast himself as a man of ideals, conviction, and discipline. Having seen Anarch disorganization firsthand, and recognizing the Camarilla as the only organized resistance to the Sabbat in that period, he chose Montreal as a proving ground to demonstrate his loyalty to the Ivory Tower and prove his Anarch era was not his final identity. He was also, true to form, drawn to where the story was most dangerous and consequential. Montreal scarred him: nightmares, terror, and direct confrontation with the Sabbat left lasting trauma. But he emerged tempered and galvanized, no longer polished courtly potential but a leader who could plausibly claim a prince's burden.
-
-### A Time of Legacy (1999–2004 · camarilla · Toronto, Canada)
-
-Lucien left Montreal for Toronto as the Week of Nightmares began (June 28 to July 4, 1999). Near Kingston, violence involving Gangrel and Ravnos drew him into the chaos tied to the destruction of the Ravnos Antediluvian; he survived and came away with Evanescent Blue and Merrick in tow (full incident details remain for Memoriam play). On returning to Toronto, Lucien placed Merrick under Oliver's care, judging Oliver's freer temperament better suited to shelter him. This era marks Lucien's transition from survivor-storyteller to domain architect, with personal legend and political legacy becoming inseparable.
-
-## Relationships
-### Touchstone
-### Miriam Ravenscroft — Touchstone
-**Role:** ROM Curator & Adjunct Professor
-**Motto:** "Drama Over Caution"
-
-Miriam is a passionate and animated curator at the Royal Ontario Museum, also teaching at the University of Toronto. Clumsy outside archives, she secretly writes raunchy historical fiction, and rumors say she holds a fragment of mystical Kindred lore.
-
-### Sire
-### Oliver Gagnon — Sire
-**Detail:** Seventh Generation Ancilla of Clan Toreador
-**Affiliation:** Camarilla
-
-Oliver Gagnon did not merely Embrace you. He curated you. Under his eye, your earliest nights became a gilded education in Toreador refinement, Camarilla etiquette, lineage, salons, beauty, and power. He taught you to understand immortality as performance, status as architecture, and culture as a weapon best wielded with a smile.
-
-### Childer
-### Damien Abanda — Childe
-**Role:** Embraced 1915
-**Detail:** Ninth Generation Ancilla of Clan Toreador
-**Affiliation:** Anarch
-
-Damien Abanda was your attempt to pass the flame onward, and perhaps your first great failure as a sire. Embraced before your flight westward, he survived your tutelage, your indulgences, and your disappearance. Tonight he stands among the Anarchs as a polished diplomat of Red Flag, close enough to your court to wound you and distant enough to deny your authority.
-
-### Blood Bonds
-### Sylvain — Thrall
-**Detail:** Famulus
-**Bond:** 6/6
-
-Sylvain perches where she pleases, regarding your court with the exhausted wisdom of an old aunt minding children. She answers affection with sarcasm, danger with dry amusement, and atrocity with some banal proverb she insists is profound. She adores you, but would rather molt in public than say so plainly.
-
-### Other Relationships
-### Evanescent Blue — Mawla
-**Role:** Mawla
-**Detail:** Ninth Generation Ancilla of Clan Ravnos
-**Affiliation:** Anarch
-
-Evanescent Blue is a Ravnos survivor you saved near Kingston, now an Anarch source of diaspora news, warnings, and perspective.
-
-### Merrick Singh — Mawla
-**Role:** Mawla
-**Detail:** Eleventh Generation Neonate of Clan Ravnos
-**Affiliation:** Camarilla
-
-A Ravnos survivor you saved near Kingston, Merrick now masquerades as a Toreador under the supervision of your sire, Oliver Gagnon.
-
-He blends charm, musical oddity, and misdirection—easy to overlook, and therefore easily underestimated and dangerous in a city that values secrets.
-
----
-
-# Rashid Abdulrahman
-
-## Overview
-**Clan:** Banu Haqim
-**Generation:** Eighth
-**Titles:** Vizier Caste, Seneschal
-**Predator type:** Scene Queen
-**Born:** Diriyah, Ottoman Empire (1774)
-**Embraced:** Diriyah, Ottoman Empire (1811)
-**Languages:** Arabic, English
-**XP:** 6
-
-## Clan Bane
-**The Curse of Insatiable Thirst** — _(Player's Guide p. 18)_
-
-**The Curse of Growing Darkness** — _(House Rules)_
-
-**The Curse of Obsession** — Obsession: Peacemaking — _(House Rules)_
-
-## Lineage
-### Sire
-**Laleh bint Saif (The Piece-Taker)**
-
-- Ultimately became the Piece-Taker of Toronto legend.
-### Childer
-_None._
-
-## Attributes
-Strength 1 · Dexterity 2 · Stamina 2 · Charisma 3 · Manipulation 2 · Composure 3 · Intelligence 4 · Wits 2 · Resolve 3
-
-## Skills
-**Physical:** Larceny 1 · Melee 1 · Stealth 2
-
-**Social:** Etiquette 2 · Insight 2 · Intimidation 1 · Leadership 3 · Persuasion 3 · Subterfuge 1
-
-**Mental:** Awareness 2 · Finance 1 · Investigation 1 · Occult 3 · Politics 2
-
-## Specialties
-- Etiquette — Muslims [standard]
-- Persuasion — Camarilla [standard]
-- Politics — Camarilla [standard]
-- Persuasion — Negotiation [standard]
-- Leadership — Inspiration [standard]
-- Investigation — Geneologies [archaic (1910)]
-
-## Tracks
-**Health:** 5
-**Willpower:** 6
-**Humanity:** 6
-**Blood Potency:** 2
-
-## Disciplines
-### Blood Sorcery 4
-- **Corrosive Vitae** L1
-- **Scour Secrets** L2
-- **Ripples of the Heart** L3
-- **Fulminating Vitae** L4
-- **Compel Aapilu** L4 — Amalgam: Dominate 2
-
-### Celerity 1
-- **Fluent Swiftness** L1
-
-### Dominate 2
-- **Compel** L1
-- **Mesmerize** L2
-
-### Obfuscate 3
-- **Silence of Death** L1
-- **Unseen Passage** L2
-- **Ghost in the Machine** L3
-
-### Presence 1
-- **Awe** L1
-
-## Convictions
-### The City Must Not Burn
-
-### Diplomacy Over Coercion
-
-### The Court Must Be Protected
-
-## Backgrounds
-**Status** 4 / 5 (Camarilla)
-- As Seneschal, you stand inside Toronto's ruling machinery, trusted to keep Praxis functioning and speak with the Prince's authority.
-- _Rule:_ You sit at the sect's table of power.
-- _Rule:_ Add this Status to suitable courtly or status-conscious Social pools.
-_Source: VTM p. 194_
-
-**Status** 3 / 5 (Banu Haqim)
-- Among the Banu Haqim, you are highly respected and influential, though older figures still overshadow true supremacy in Toronto.
-- _Rule:_ You are a respected ancilla and important clan representative.
-- _Rule:_ Add this Status in Banu Haqim or status-conscious Social scenes.
-_Source: VTM p. 194_
-
-**Fame** 1 / 5 (Muslim Community)
-- Parts of Toronto's Muslim community know and admire you as a familiar, dignified figure built on faith, belonging, and trust.
-- _Rule:_ A select subculture knows and admires you.
-- _Rule:_ May aid Social pools, reduce Difficulty with fans, or support hunting when appropriate.
-_Source: VTM p. 187_
-
-**Contact** 1 / 3 (???)
-- ???
-- _Rule:_ You know a mortal who can provide cheap or common help.
-- _Rule:_ Mainly provides minor information or favors, often for payment or reciprocity.
-_Source: VTM p. 186_
-
-**Influence** 3 / 5 (Finance)
-- You have real pull in Toronto finance; bankers, brokers, and money-people hesitate before crossing you.
-- _Rule:_ You are entrenched in finance.
-- _Rule:_ May replace or support Traits in that sphere, mainly within Toronto.
-_Source: VTM p. 187_
-
-## Merits & Flaws
-### Merits
-**Object of Power** 1 / 3 (Ur-Shulgi's Promise)
-- Ur-Shulgi's Promise is fused to your flesh: a ring of prophecy, doom, lineage, and sorcerous destiny.
-- _Rule:_ Once per story, after a Blood Sorcery power or Ritual roll, set one Hunger die to 10.
-_Source: In Memoriam p. 21_
-### Flaws
-**Arcane Curse** 2 / 5 (Magic Sparks Fires)
-- When your sorcery slips, Ur-Shulgi's Promise erupts in sparks, embers, and dangerous heat.
-- _Rule:_ On any failed Ritual or Blood Sorcery roll, sparks and embers risk exposure and fire.
-_Source: House Rules_
-
-**Rat in a Cage** 2
-- Confinement strips away your poise; being pinned, bound, or trapped provokes humiliating panic.
-- _Rule:_ While penned in or physically restrained, increase the Difficulty of your rolls by 2.
-_Source: House Rules_
-
-**Dark Secret** 2 (The Doom of Diriyah)
-- Your creed of restraint was born from Diriyah, where one impulsive assassination helped doom a city.
-- If exposed, it would undermine the moral life you rebuilt afterward.
-- _Rule:_ You hide a grave deed or history.
-- _Rule:_ If exposed, the Storyteller may treat it as Infamy or impose major consequences.
-_Source: VTM p. 187_
-
-**Knowledge Hungry** 1 (Iron Praxis)
-- You hunger to understand the Iron Praxis as a manual for making Toronto durable, orderly, and worth preserving.
-- _Rule:_ You compulsively study the Iron Praxis.
-- _Rule:_ When tempted by such knowledge, pass a Difficulty 3 Willpower test or pursue it.
-_Source: Player's Guide p. 120_
-
-**Burn Scars** 1 / 3 (Ring Forearm)
-- Ur-Shulgi's Promise left blackened scars up your forearm, disfiguring and unsettling to Kindred.
-- _Rule:_ Visible burn scars penalize Social rolls with Kindred who perceive them, equal to this Flaw's dots.
-- _Rule:_ At one dot, clothing can usually hide them.
-_Source: House Rules_
-
-**Crisis of Identity** 1
-- Losing control feels like becoming unworthy of the faith and duty that define you.
-- _Rule:_ Whenever your actions cause a bestial failure, also suffer 1 Superficial Willpower damage.
-_Source: Forbidden Religions p. 86_
-
-**Vein-Tapper** 1
-- Feeding feels right only when intimate, hidden, and controlled, never as public spectacle.
-- _Rule:_ You cannot feed from mortals while observed.
-- _Rule:_ You usually feed from the unaware, drugged, or unconscious.
-_Source: Player's Guide p. 119_
-
-**Resonance Sensitivity** 1 (Phlegmatic)
-- Phlegmatic blood catches your need for restraint and order, twisting it into compulsion.
-- _Rule:_ Feeding from Intense+ Phlegmatic blood gives a related Compulsion.
-- _Rule:_ If still active at story's end, it erupts messily at Storyteller discretion.
-_Source: Succubus Club p. 25_
-
-**Prey Exclusion** 1 / 2 (Non-Muslims)
-- Faith constrains your hunger: despite undeath's compromises, you refuse to prey on non-Muslims.
-- _Rule:_ You refuse to hunt non-Muslims.
-- _Rule:_ Doing so, or allowing it without interference, may cause Stains.
-_Source: VTM p. 181_
-
-**Cursed Object** 1 (Ur-Shulgi's Promise)
-- Ur-Shulgi's Promise is both gift and intrusion: fused to your hand, blackening flesh and whispering alien thoughts.
-- _Rule:_ Once per session, at Storyteller timing, reroll one successful test and risk failure.
-_Source: In Memoriam p. 21_
-
-**Curse of Obsession** 1
-- You are obsessed with a utopian vision where everyone can be brought onto the same side.
-- _Rule:_ Defying this obsession, such as attacking before diplomacy is exhausted, causes one Stain.
-_Source: House Rules_
-
-**Curse of Growing Darkness** 0
-- Your Banu Haqim skin darkens with age; for now it is subtle, but hints at future Blood-deep antiquity.
-- _Rule:_ Your skin darkens with age instead of paling.
-- _Rule:_ At present this has no significant mechanical effect or Flaw dots.
-_Source: House Rules_
-
-## Bloodline
-**Descendant of Ur-Shulgi**
-Ur-Shulgi is spoken of as something worse than an elder: an ancient Assamite horror from the oldest wars, entombed beneath Alamut for centuries before rising as the Black Shepherd. When he woke, he judged his clan, culled the unworthy, and shattered the Tremere's centuries-old blood curse with sheer will. Those who carry his lineage inherit heat that does not fear flame, patience for plans measured in centuries, and the certainty that obedience is taken, not requested.
-
-- ✓ **The Silent King** (1) — _Once per session, when you attempt to command deference from a vampire whose applicable Status is lower than yours, you may re-roll one die._
-- ○ **Veins Ablaze** (2) — _Reduce the Difficulty of rolls to resist frenzy triggered by fire by 2 (minimum Difficulty 1)._
-- ✓ **Architect of Eternity** (3) — _Once per story, when you Launch a Project during a Memoriam, the Launch Roll automatically succeeds. In the present, when spending Goal dots to reduce that Project Die, you may treat your Goal dots as doubled for that purpose._
-- ○ **Herald of Destruction** (4) — _Once per session, after rolling, you may set one Hunger die to 10 if doing so would produce a Messy Critical._
-- ○ **Breaker of Chains** (5) — _Gain the Unbondable Merit. Additionally, if you feed a thrall a full Rouse Check's worth of vitae, it immediately breaks their regnant's Blood Bond. You cannot create Blood Bonds of your own._
-
-## Loresheet
-**Nephilim**
-The Nephilim are a modern cult fixated on the Dream of Constantinople: a vampire “utopia” once upheld by a Trinity of philosophers (Michael, the Dracon, and Antonius) before crusade-era catastrophe and corruption tore it apart. Nephilim seek perfection as a path to rebuilding that idealized city, either as true believers preparing a new Trinity or as wary observers watching a dangerous movement gather momentum.
-
-- ✓ **To Build the Dream** (1) — _Gain the Persuasion (Camarilla) and Politics (Camarilla) Specialties._
-- ✓ **The Architect's Wisdom** (2) — _Add 2 dice to Politics pools involving domain governance. Once per story, you may decisively mediate a court dispute, defusing escalation and quashing imminent violence through action or authority._
-- ○ **The Angel's Grace** (3) — _Add 1 die to Insight rolls to gauge another's Beast. Once per story, spend 1 Willpower to let another vampire re-roll up to 3 dice when resisting frenzy._
-- ○ **The Dragon's Disciple** (4) — _The Dracon functions as a 5-dot Mawla, aiding you with mediation, compromise, and the work of forging a “new Constantinople.”_
-- ○ **The Trinity Reborn** (5) — _Once per story, before making a Remorse test, you may remove up to 5 Stains earned in pursuit of bringing about the new Trinity._
-
-## Timeline
-### Pre-Embrace (1774–1811 · Diriyah, Ottoman Empire)
-
-In life, a former Sufi involved in the rise of Wahabism and the ensuing Ottoman-Wahabi war.
-
-### A Time of Violence (1811–1839 · independent · Diriyah, Ottoman Empire, Alamut, Afghanistan)
-
-Embraced directly into the Web of Knives as a Warrior Caste spy.
-
-Through total luck, he impulsively seized opportunity to assassinate a powerful Kindred enemy: the Ventrue Prince of Diriyah, Ibrahim Kethüda.
-
-Unintended consequences abounded: the Prince's many agreements and negotiations keeping Diriyah's enemies at bay died with the Prince, and the city burned within a fortnight.
-
-In this, Rashid was forced to face the scope of the suffering he could wreak with a single careless act, and began to question his role in his clan and the responsibility of power.
-
-Rashid still keeps the ring he lifted out of the ashes that remained after he staked the Prince and left him to face the Sun, as a reminder of a mistake he will never make again.
-
-His sire, who would become the Piece-Taker, was equally devastated; it was here that she took her famous vow of silence and began her path towards becoming the militantly isolationist autarkis of Toronto.
-
-(Dark Secret: if this ever gets out, it would invalidate his entire professed worldview.)
-
-### A Time of Faith (1839–1893 · independent · Alamut, Afghanistan, Constantinople, Ottoman Empire)
-
-After spending twenty years at Alamut trying to reconcile his clan's teachings with the disaster of Diriyah, Rashid became so disillusioned with Clan Assamite that he abandoned Alamut in search of a better path forward.
-
-Having learned about the Dream of Constantinople in the great library at Alamut, and hearing of the Tanzimat Reforms currently underway in Constantinople, the city of Michael's Dream became his next destination in his quest to find a way to exist without being an avatar of destruction.
-
-Rashid's interest in the Dream did not go unnoticed, and he was approached by Sofia Mavridì, a Nephilim of Clan Toreador and a descendant of Michael the Archangel himself.
-
-First, she was an asset in Rashid's investigations into Constantinople's history, but the more time they spent together, the more convinced Rashid became that the Nephilim was the very path forward he was looking for: a path of creation, not destruction; a promise to build instead of to ruin.
-
-Sofia was more than happy to induct him into the followers of Michael's Dream.
-
-### A Time of Sorcery (1893–1922 · independent · Alamut, Afghanistan, Constantinople, Ottoman Empire)
-
-Devoted to pursuing Michael's Dream as a member of the Nephilim, when Rashid discovered that Sofia was a descendant of Michael himself, he recalled writings in the library at Alamut relating to travelling through ancestral blood memories.
-
-Returning to Alamut, he suffered the presence of his despised clan to study the sorcerous teachings he needed to help Sofia unlock the memories in her blood.
-
-Returning to Constantinople, armed with new magic, he was successful, more than successful; in a Blood Sorcery ritual, he and Sofia encountered a memory, or reflection of Michael.
-
-The Archangel revealed the monstrous truth of Rashid's ancestor, Ur-Shulgi, but delivered a prophecy: for everything that Ur-Shulgi would destroy upon his awakening, Rashid would rebuild.
-
-When he awoke from the ritual trance, the ring from Diriyah glowed a deep red, and Michael had given it its name: "Ur-Shulgi's Promise". With this realization, it seared his flesh and blackened his finger, binding permanently to his hand.
-
-### A Time of Lineage (1922–1998 · independent · Various Locations, Europe, Toronto, Canada)
-
-Having discovered the truth of his lineage, and armed with the prophecy of the Archangel, Rashid had been searching for his sire for three decades.
-
-But Laleh bint Saif had not been seen for over a century, and the trail had long gone cold.
-
-Finally, Rashid learned of a mysterious autarkis in Toronto, Canada, the Piece-Taker, whose description and activities were very familiar to him.
-
-Wielding the same ritual that he used with Sofia, Rashid was able to confirm that this was indeed his sire, and so, he finally set sail across the Atlantic.
-
-His sire took him in and sheltered him within her protected domain, where he found many of the answers he was looking for.
-
-### A Time of Dominion (1998–2025 · camarilla · Toronto, Canada, Odense, Denmark)
-
-Rashid felt it immediately when Ur-Shulgi rose: the ring spasmed, blazed with light, and from then on he could hear the whispers of the blood god always in the back of his mind.
-
-Knowing that this was the time that Michael's prophecy spoke of, he left the shelter of his sire's domain and quietly began planning how he could become the force for order that Michael said would balance every act of Ur-Shulgi's chaos.
-
-After cultivating contacts and informants, he learned of the now-Banu Haqim's plan to join the Camarilla, and travelled to Denmark to assist in the forging of the Odense Pact.
-
-Rashid returned to Toronto with a singular purpose: to finally realize Michael's Dream in the city he had claimed as his own.
-
-## Relationships
-### Touchstone
-### Abbas Faruk — Touchstone
-**Role:** Imam, Madina Masjid
-**Motto:** "The City Must Not Burn"
-
-### Sire
-### Laleh bint Saif, the Piece-Taker — Sire
-**Detail:** Seventh Generation Elder of the Banu Haqim
-**Affiliation:** Autarkis
-
-Laleh bint Saif did not leave behind easy answers. She was the mystery at the center of your Blood, the missing piece of your lineage, and eventually the terror Toronto knew as the Piece-Taker. When you found her, she was no courtly sire waiting with comfort, but an Autarkis wrapped in solitude, violence, and old purpose. She sheltered you, taught you, and taught you the harsh lesson that lineage does not always bring peace.
-
----
-
-# Aishe Tache
-
-## Overview
-**Clan:** Malkavian
-**Generation:** Eighth
-**Titles:** Malkavian Primogen
-**Predator type:** Siren
-**Born:** Brasov, Romania (1799)
-**Embraced:** Louisiana, USA (1834)
-**Languages:** German, English
-**XP:** 5
-
-## Clan Bane
-**The Curse of the Moon** — Derangement: Persistent Delusion — The Cards Are Always Right — _(House Rules)_
-
-## Lineage
-### Sire
-**Lady Aveline Dubois**
-
-- 7th Generation Malkavian
-- Embraced shortly before the French Revolution
-- Anarch loyalist
-- High Humanity
-- Wanderer by nature
-- Derangement: Bipolar Disorder
-- More focused on signs or omens
-### Childer
-_None._
-
-## Attributes
-Strength 1 · Dexterity 2 · Stamina 2 · Charisma 3 · Manipulation 4 · Composure 3 · Intelligence 2 · Wits 2 · Resolve 3
-
-## Skills
-**Physical:** Athletics 1 · Brawl 1
-
-**Social:** Etiquette 3 · Insight 3 · Intimidation 2 · Leadership 2 · Performance 1 · Persuasion 3 · Subterfuge 4
-
-**Mental:** Awareness 1 · Occult 2 · Politics 2
-
-## Specialties
-- Insight — Omens [standard]
-- Leadership — Malkavian [standard]
-- Performance — Disco [archaic (1970)]
-- Performance — Fortune-Telling [archaic (1810)]
-- Persuasion — Seduction [standard]
-- Occult — Mediumship [archaic (1880)]
-
-## Tracks
-**Health:** 5
-**Willpower:** 6
-**Humanity:** 7
-**Blood Potency:** 2
-
-## Disciplines
-### Auspex 3
-- **Heightened Senses** L1
-- **Premonition** L2
-- **Scry the Soul** L3
-- **Doomsaying** L3 — Amalgam: Dominate 3
-
-### Dominate 3
-- **Cloud Memory** L1
-- **Dementation** L2 — Amalgam: Obfuscate 2
-- **The Forgetful Mind** L3
-
-### Fortitude 1
-- **Unswayable Mind** L1
-
-### Obfuscate 2
-- **Cloak of Shadows** L1
-- **Unseen Passage** L2
-
-## Convictions
-### You Must Take Care Of Yourself First
-- Ultimately, no one has your best interest at heart except for you.
-- While everyone is ultimately in it for themselves and maybe for their loved ones.
-- But no one will prioritize you, but you.
-
-**Touchstone:**
-**Kade Phillips**
-Hair Stylist
-- Big Hearted Man who cares deeply for his family and friends.
-- Connects easily with others and commands love and respect, even in his less than manly profession.
-- He's the kind of Man Aishe raised her sons to be like.
-- There is a deep anger within him; he often spends time with people who stoke it.
-
-### Keep Every Door Open
-- With so many oceans of time allies may turn to foes and vice versa
-- Keeping a door open is useful, even if unsatisfying at the time
-
-**Touchstone:**
-**Camille Bouschar**
-- Recent Divorcee
-- Survived an Unhappy Marriage for 30+ years
-- Stroke up a friendship with Aishe a few years before her divorce
-- Her Daughter, Marie, blames Aishe for her Parent's divorce
-- Camille Reminds Aishe of who she could have been had she not met her Sire
-
-### Keep Everyone Guessing
-- Keep your enemies and allies guessing.
-
-**Touchstone:**
-**Katrine Cousteau**
-- Daughter of owner of an Occult Shop -- The Threefold Exchange, in Chinatown
-- While the owner is (somewhat) legit, Katrine takes advantage -- of her mother, of her customers, of everyone
-- Actually a full time swindler selling people "magical" solutions to their mundane problems
-- Katrine stokes Aishe's duplicitous nature
-
-## Backgrounds
-**Status** 4 / 5 (Camarilla)
-- As Malkavian Primogen and inner-circle courtier, you are an established Camarilla power with real deference and obligations.
-- _Rule:_ You sit at the sect's table of power.
-- _Rule:_ Add this Status to suitable courtly or status-conscious Social pools.
-_Source: VTM p. 194_
-
-**Status** 4 / 5 (Clan Malkavian)
-- Within Clan Malkavian, you are one of Toronto's defining local powers, carrying authority and responsibility.
-- _Rule:_ You are a leading local clan representative.
-- _Rule:_ Add or substitute this Status in status-driven Malkavian scenes.
-_Source: VTM p. 194_
-
-## Merits & Flaws
-### Merits
-**Stunning** 4
-- Your beauty is disarming, turning poise, seduction, and occult mystery into social control.
-- _Rule:_ Gain two dice to appropriate Social pools when appearance matters.
-_Source: VTM p. 179_
-
-**Bloodhound** 1
-- You read blood resonance as an extension of omen-sense and predatory intuition.
-- _Rule:_ You can smell human blood Resonance without tasting it.
-- _Rule:_ Within olfactory range, roll Resolve + Awareness at Difficulty 3, adjusted by circumstances.
-_Source: VTM p. 182_
-### Flaws
-**The Curse of the Moon** 3
-- Your curse is a permanent certainty: the Tarot always tells the truth, even when you force yourself to act against it.
-- _Rule:_ Replaces the default Malkavian bane.
-- _Rule:_ Your Persistent Delusion is always active: every Tarot card reveals absolute truth.
-- _Rule:_ For one scene, spend Rouse Checks and Willpower equal to Bane Severity to act against it without ceasing to believe.
-_Source: House Rules_
-
-**Prey Exclusion** 1 / 2 (The Addled)
-- You will not feed on the addled, unstable, or mentally unsound; here, your cruelty stops.
-- _Rule:_ You refuse to hunt the addled.
-- _Rule:_ Doing so, or allowing it without interference, may cause Stains.
-_Source: VTM p. 181_
-
-**Enemy** 1 / 2 (Marie Bouschard)
-- Marie Bouschard blames you for her parents' divorce and is investigating Mara, making her truth-seeking a growing threat.
-- _Rule:_ You have a Gifted Mortal enemy who acts against you when able.
-- _Rule:_ The Storyteller should use her at least once per story.
-_Source: VTM p. 185_
-
-## Bloodline
-**Descendant of the Pythia**
-There are few things mortals fear more than the future, for it is the ultimate unknown. And as long as that fear has existed, people have sought ways to pierce the veil of tomorrow, to embrace their destined paths or halt them entirely. Most who claim such insight are liars or charlatans.
-
-One was not.
-
-The Pythia, Oracle of Delphi, truly saw what was to come. She gazed upon futures both radiant and terrible, and unlike others, she learned not to fight them. She accepted them.
-
-Chosen of Apollo, God of the Sun, the Pythia advised kings, generals, and nobles. Through dreams sent by her divine patron, the future was unveiled to her with merciless clarity.
-
-Yet even foresight offers no sanctuary.
-
-She vanished for thirteen nights.
-
-When the Pythia returned to her temple, she was transformed. Her skin deathly pale, her teeth stained red. Apollo's light no longer answered her prayers. That very night, in an act of sacrilege that shattered the sanctity of Delphi, she Embraced her fellow priestesses. From this desecration was born a new lineage of vampires who see what must come, and who must endure the curse of foreknowledge.
-
-- ✓ **Seeing the Omens** (1) — _Gain one dot of Insight and the Insight (Omens) Specialty._
-- ✓ **The Dark Between the Stars** (2) — _At the end of each session, you may ask the Storyteller one question related to your Ambition or current Desire. The Storyteller will provide the answer in the form of a clue or omen before the start of the next session._
-- ○ **Portent** (3) — _At the end of each session, roll a Hunger die and set it aside. Until the end of the next session, you may replace any rolled Hunger die (whether yours or not) with the die you set aside. If doing so changes the result of the roll into a Messy Critical or a Bestial Failure, you also recover one point of Superficial Willpower damage._
-- ○ **Follower of Motes** (4) — _At the end of each session, you may assign two dots among new Contacts, Allies, and/or Influence Backgrounds, representing strangers who do not know you, but whom your insights into the future have granted you leverage or the precise words to say to get what you want. You must choose the focus of these Backgrounds when you assign them. They persist until the end of the next session._
-- ○ **The Deck of Wandering Stars** (5) — _Appearing as a slightly worn set of Tarot cards, the Deck contains only the Major Arcana. Once per scene, you may perform a reading with the Deck, focusing on a specific use of Auspex that you must define at the time, and use in the same scene or in the next. If you do, gain a bonus equal to your Blood Surge bonus on any roll required for that power, and automatically succeed at any Rouse Checks required. Additionally, only fate itself can separate you from the Deck of Wandering Stars: if you lose it, or it is stolen, circumstances will conspire to return it to your hands within three days and three nights._
-
-## Loresheet
-**The Cobweb**
-You're never truly alone. Not anymore. Not even if you want to be. Not even if you try to be.
-
-The Cobweb catches so many thoughts in its sticky strands, sends them skittering further inside, or reverberating out to the far edges. You're not always sure the thoughts you're hearing are from now. Some feel like they've been stuck for years and have just shaken loose. Others taste like tomorrow.
-
-The Cobweb, also known as the Madness Network, is a psychic network to which all Malkavians are linked. No two clan members describe it exactly the same way. For some, it's a constant low murmuring in their Blood. Others describe it as a kind of hivemind operating alongside their own cognition. Many, even most, Malkavians are only reminded of its presence a few times a year, like a sudden burst of static on a forgotten radio.
-
-No one knows the Cobweb's ultimate purpose, though it's been used to summon a gathering of Oracles together with a subconscious imperative dubbed The Call. Some suspect Malkav himself uses the Network to view the world through his descendants' eyes and ears, or that he simply is the Network.
-
-- ○ **A Break in the Static** (1) — _You catch sporadic snatches of conversation, often just a few distinct words or images. It's enough to piece together an order or a call for aid, though you're unable to respond._
-- ○ **Step into My Parlor** (2) — _These discussions are heavily abstract, limited to short phrases, simple images, and strong emotions._
-- ○ **Across the Web** (3) — _You can hold more involved conversations with Malkavians in your city. Once per story you may initiate the Call, sending impressions of the time and gathering place to all who can hear. This does not guarantee obedience._
-- ○ **Pluck the Strands** (4) — _Once per story, you may use the cobweb to piggyback on your sire's or one of your childer's senses. You are only an observer, and cannot control their responses or their movements._
-- ○ **Malkav's Will** (5) — _Malkav, or a consciousness pretending to be him, speaks to you directly via the Network. Once per story, you may ask the Storyteller to divulge a secret about another Malkavian or reveal what orders the mind in the Cobweb wants you to follow._
-
-## Timeline
-### Pre-Embrace (1799–1834 · Brasov, Romania, Louisiana, USA)
-
-I was born in Brașov to a father with money but no standing. He treated everything as an asset, including me. When a minor noble named Nicolae Strandza needed his useless son married off to settle debts, my father saw an opportunity. The bargain was simple: legitimacy for him, solvency for Strandza, and Andrei for me.
-
-My husband was twice my age and half my worth. A fool made respectable by a ring is still a fool. He drank, embarrassed himself, and disappointed his father as thoroughly after marriage as before it. What he did give me were three children, Elena, Vlad, and Gheorghiu, and they became the center of my life. I managed the household, shielded his reputation, dragged him to bed at night, and learned not to look when his eyes lingered on younger women.
-
-When our youngest left for university, Andrei decided we should travel to New Orleans, claiming culture but seeking only new vices in a more exotic setting. With my children gone, I followed him out of duty and habit.
-
-There, with little left to occupy me, I found the occult. Through it I met Lady Aveline Dubois. She offered me something I had never truly known, companionship, understanding, and the awakening of parts of myself long neglected. I wondered what it might be like to kiss her; I did not remain wondering for long.
-
-The night before our return voyage, she invited me to her parlor. I remember little of what followed.
-
-I died in New Orleans.
-
-### A Time of Lineage (1834–1865 · anarch · Louisiana, USA)
-
-I awoke in the lodgings Andrei and I shared, reborn into hunger and clarity. He lay nearby, drunk on wine and opium, reeking of another woman’s perfume. Before he could fully see me, I tore out his throat. His blood was sweet, and my feeding was savage, my Beast taking vengeance for years of quiet humiliation. He did not deserve it, but that knowledge came later.
-
-Lady Aveline was there when I returned to myself. The massacre proved convenient; abandoned dresses and mangled remains led the authorities to assume animals had killed us both. Even now, I refuse to feed on the addled, it reminds me too much of my mortal sorrow.
-
-For many nights after, I remained at Aveline’s side. I learned her madness and loved her through it, through her manic brilliance and her crushing despair. From her I learned the truths of blood, and of our blood in particular. I learned divination, and soon mastered it. The cards see everything, even what we wish they would not.
-
-Shamefully, those nights were the happiest of my unlife.
-
-Then she was gone. I woke alone, with only a message left behind: “The Line in Blood shall meet twice. Then no more.” I did not understand then.
-
-But I was alone now, and I had to learn how to survive.
-
-### A Time of Intrigue (1882–1912 · camarilla · Louisiana, USA)
-
-I never truly belonged among my sire’s sect. The Anarchs could smell my upbringing on me, as if death had done nothing to strip away class, habit, or belief. Even in undeath, we carry our mortal selves longer than we ever carried our lives.
-
-Hiding one night in the cellar of an abandoned farmstead, I fed on an escaped criminal and found a plain deck of Tarot cards. I read them, and they told me to return to New Orleans and seek the Emperor.
-
-So I presented myself to Camarilla court. Even Anarchs must bow to Tradition. That was when I saw Prince Doran, young in manner if not in years, full of hope and possessed of a vision. In that moment, I knew my future lay with the Camarilla.
-
-But the Ivory Tower demands its price. What I did to earn my place there is not something I will ever repeat. It hollowed me. My admission was written in blood, the ink mixed with the ashes of countless Kindred.
-
-Now, I find myself wondering if it was ever worth the cost.
-
-### A Time of Dominion (1912–1955 · camarilla · Louisiana, USA)
-
-Prince Doran’s vision was vast, but New Orleans was a nest of violence and schemes. I had joined the Ivory Tower as little more than a neonate, a whisper amid the roar of Camarilla politics, and I had no one to guide me.
-
-There was one advantage to my bloodline. Malkavians are feared for their madness, but valued for their insight. Those who knew my lineage sought my services, and I spent those years currying favor with local tyrants, rising carefully through ambition, insight, and deceit in equal measure.
-
-It was then I crafted my persona, a carefully constructed madness that served me better than honesty ever could. I gave the powerful colorful names, riddles dressed as jokes, and let rivals exhaust themselves searching for meanings that may or may not have existed.
-
-My visions served my goals, and my prince’s. I averted disasters, turned Garou aside, and unraveled the designs of the Magi through quiet manipulation. In the end, it mattered little. Doran met his final death in 1955, and his dream died with him.
-
-In the aftermath, I found myself reflecting on the fragments of humanity I had left behind.
-
-### A Time of Remorse (1955–1984 · camarilla · Louisiana, USA)
-
-Marcel Guilbeau succeeded Doran as prince, though he ruled only in name, a puppet for his brother. Whatever New Orleans might have become died with Doran, and my own ambition dimmed for a time. I continued to play my role at court, but without conviction. Doran dreamed of a Carthage reborn, Kine and Kindred existing openly together. I see now how foolish that was. We are predators, and they are prey.
-
-And yet, we were all Kine once.
-
-In those years, I opened a small shop, harmless, respectable, where bored, upper-middle-class women came for palm readings and questions about love. They were vapid, lost, and sad, and they reminded me painfully of my mortal self. Unlike the usual charlatans, I gave them truths they could actually use. Some were grateful. Some were not.
-
-I cannot say exactly what I learned during those long nights of quiet charity, but they filled a hollow I had not realized was there.
-
-### A Time of Dominion (1999–2025 · camarilla · Toronto, Canada)
-
-These nights mark the second time I met my sire. I found her lingering outside my little shop, and when we spoke for the first time in over a century, it felt, briefly, as though we had never parted. But I had changed. I had learned to guard my heart, and she saw it immediately.
-
-We argued. Time had driven a wedge between us deeper than the night she abandoned me. I had forgiven her for that, but she would never forgive me for joining the Ivory Tower, for becoming the prince’s oracle. She said our Gift was never meant to serve them, that I had betrayed her.
-
-She was older, wiser, and far freer than I had ever been, living openly, surviving on insight, charm, and truth. She still carried the same spark that once drew me in. I loved and hated her for it. She did not change. I did.
-
-And the cruelest truth was that she was right. I am the Ivory Tower. I serve myself by serving the status quo.
-
-When she rushed me, I thought my unlife was ending. I was never a fighter. Instead, she embraced me, not with blood, but with arms, and my heart thundered in my chest. Afterward, a postcard arrived, sent to the wrong address, bearing the image of the CN Tower. One reading was enough to understand it.
-
-Toronto was where true dominion waited. Where I might build something lasting. I relocated quietly, my history in New Orleans earning me a place. I kept my head down.
-
-Until now. Now, it is do or die.
-
-## Relationships
-### Touchstone
-### Kade Phillips — Touchstone
-**Role:** Hair Stylist
-**Motto:** "You Must Take Care Of Yourself First"
-
-Kade is big-hearted, deeply caring toward family and friends, and socially magnetic despite being in a profession many frame as "less than manly." He reminds you of the sort of man you wanted your sons to become.
-
-There is also a darker edge: he carries deep anger, and he spends time with people who stoke it.
-
-### Sire
-### Lady Aveline Dubois — Sire
-**Detail:** Seventh Generation Ancilla of Clan Malkavian
-**Affiliation:** Anarch
-
-Lady Aveline Dubois found you through the occult, through omens, and through the lonely hunger of a woman already half in love with mystery. She gave you the Blood, but also wonder: divination, prophecy, madness, freedom, and the terrible comfort of being understood. Then, as prophets and wanderers often do, she vanished, leaving you with riddles where certainty should have been.
-
-### Other Relationships
-### Marie Bouschard — Enemy
-**Role:** Enemy
-**Detail:** Journalism Student
-
-Marie is a 22 year-old journalism student at the University of Toronto. You befriended her mother, Camille Bouschard, shortly before Camille divorced her husband. Marie blames you for her parent's divorce (she's right).
-
----
-
+_Generated from `lib/json/PCS.json` and `lib/json/PC_Relationships.json`._
 # Fomórach
 
 ## Overview
@@ -1139,6 +318,831 @@ Descendant of Lord Cavendish who, in 1845, leapt on your former family in Irelan
 **Affiliation:** Real Name: Siobhan Kelleher
 
 A hacker/internet security professional who is legitimately employed, genuinely professional. Legitimate employment gives her access to limited spytech and surveillance equipment. She has monitoring tripwires set in various parts of the city, to warn of suspicious electronic activity. She is a massive fan of I.Q.'s VTube channel.
+
+---
+
+# Rashid Abdulrahman
+
+## Overview
+**Clan:** Banu Haqim
+**Generation:** Eighth
+**Titles:** Vizier Caste, Seneschal
+**Predator type:** Scene Queen
+**Born:** Diriyah, Ottoman Empire (1774)
+**Embraced:** Diriyah, Ottoman Empire (1811)
+**Languages:** Arabic, English
+**XP:** 6
+
+## Clan Bane
+**The Curse of Insatiable Thirst** — _(Player's Guide p. 18)_
+
+**The Curse of Growing Darkness** — _(House Rules)_
+
+**The Curse of Obsession** — Obsession: Peacemaking — _(House Rules)_
+
+## Lineage
+### Sire
+**Laleh bint Saif (The Piece-Taker)**
+
+- Ultimately became the Piece-Taker of Toronto legend.
+### Childer
+_None._
+
+## Attributes
+Strength 1 · Dexterity 2 · Stamina 2 · Charisma 3 · Manipulation 2 · Composure 3 · Intelligence 4 · Wits 2 · Resolve 3
+
+## Skills
+**Physical:** Larceny 1 · Melee 1 · Stealth 2
+
+**Social:** Etiquette 2 · Insight 2 · Intimidation 1 · Leadership 3 · Persuasion 3 · Subterfuge 1
+
+**Mental:** Awareness 2 · Finance 1 · Investigation 1 · Occult 3 · Politics 2
+
+## Specialties
+- Etiquette — Muslims [standard]
+- Persuasion — Camarilla [standard]
+- Politics — Camarilla [standard]
+- Persuasion — Negotiation [standard]
+- Leadership — Inspiration [standard]
+- Investigation — Geneologies [archaic (1910)]
+
+## Tracks
+**Health:** 5
+**Willpower:** 6
+**Humanity:** 6
+**Blood Potency:** 2
+
+## Disciplines
+### Blood Sorcery 4
+- **Corrosive Vitae** L1
+- **Scour Secrets** L2
+- **Ripples of the Heart** L3
+- **Fulminating Vitae** L4
+- **Compel Aapilu** L4 — Amalgam: Dominate 2
+
+### Celerity 1
+- **Fluent Swiftness** L1
+
+### Dominate 2
+- **Compel** L1
+- **Mesmerize** L2
+
+### Obfuscate 3
+- **Silence of Death** L1
+- **Unseen Passage** L2
+- **Ghost in the Machine** L3
+
+### Presence 1
+- **Awe** L1
+
+## Convictions
+### The City Must Not Burn
+
+### Diplomacy Over Coercion
+
+### The Court Must Be Protected
+
+## Backgrounds
+**Status** 4 / 5 (Camarilla)
+- As Seneschal, you stand inside Toronto's ruling machinery, trusted to keep Praxis functioning and speak with the Prince's authority.
+- _Rule:_ You sit at the sect's table of power.
+- _Rule:_ Add this Status to suitable courtly or status-conscious Social pools.
+_Source: VTM p. 194_
+
+**Status** 3 / 5 (Banu Haqim)
+- Among the Banu Haqim, you are highly respected and influential, though older figures still overshadow true supremacy in Toronto.
+- _Rule:_ You are a respected ancilla and important clan representative.
+- _Rule:_ Add this Status in Banu Haqim or status-conscious Social scenes.
+_Source: VTM p. 194_
+
+**Fame** 1 / 5 (Muslim Community)
+- Parts of Toronto's Muslim community know and admire you as a familiar, dignified figure built on faith, belonging, and trust.
+- _Rule:_ A select subculture knows and admires you.
+- _Rule:_ May aid Social pools, reduce Difficulty with fans, or support hunting when appropriate.
+_Source: VTM p. 187_
+
+**Contact** 1 / 3 (???)
+- ???
+- _Rule:_ You know a mortal who can provide cheap or common help.
+- _Rule:_ Mainly provides minor information or favors, often for payment or reciprocity.
+_Source: VTM p. 186_
+
+**Influence** 3 / 5 (Finance)
+- You have real pull in Toronto finance; bankers, brokers, and money-people hesitate before crossing you.
+- _Rule:_ You are entrenched in finance.
+- _Rule:_ May replace or support Traits in that sphere, mainly within Toronto.
+_Source: VTM p. 187_
+
+## Merits & Flaws
+### Merits
+**Object of Power** 1 / 3 (Ur-Shulgi's Promise)
+- Ur-Shulgi's Promise is fused to your flesh: a ring of prophecy, doom, lineage, and sorcerous destiny.
+- _Rule:_ Once per story, after a Blood Sorcery power or Ritual roll, set one Hunger die to 10.
+_Source: In Memoriam p. 21_
+### Flaws
+**Arcane Curse** 2 / 5 (Magic Sparks Fires)
+- When your sorcery slips, Ur-Shulgi's Promise erupts in sparks, embers, and dangerous heat.
+- _Rule:_ On any failed Ritual or Blood Sorcery roll, sparks and embers risk exposure and fire.
+_Source: House Rules_
+
+**Rat in a Cage** 2
+- Confinement strips away your poise; being pinned, bound, or trapped provokes humiliating panic.
+- _Rule:_ While penned in or physically restrained, increase the Difficulty of your rolls by 2.
+_Source: House Rules_
+
+**Dark Secret** 2 (The Doom of Diriyah)
+- Your creed of restraint was born from Diriyah, where one impulsive assassination helped doom a city.
+- If exposed, it would undermine the moral life you rebuilt afterward.
+- _Rule:_ You hide a grave deed or history.
+- _Rule:_ If exposed, the Storyteller may treat it as Infamy or impose major consequences.
+_Source: VTM p. 187_
+
+**Knowledge Hungry** 1 (Iron Praxis)
+- You hunger to understand the Iron Praxis as a manual for making Toronto durable, orderly, and worth preserving.
+- _Rule:_ You compulsively study the Iron Praxis.
+- _Rule:_ When tempted by such knowledge, pass a Difficulty 3 Willpower test or pursue it.
+_Source: Player's Guide p. 120_
+
+**Burn Scars** 1 / 3 (Ring Forearm)
+- Ur-Shulgi's Promise left blackened scars up your forearm, disfiguring and unsettling to Kindred.
+- _Rule:_ Visible burn scars penalize Social rolls with Kindred who perceive them, equal to this Flaw's dots.
+- _Rule:_ At one dot, clothing can usually hide them.
+_Source: House Rules_
+
+**Crisis of Identity** 1
+- Losing control feels like becoming unworthy of the faith and duty that define you.
+- _Rule:_ Whenever your actions cause a bestial failure, also suffer 1 Superficial Willpower damage.
+_Source: Forbidden Religions p. 86_
+
+**Vein-Tapper** 1
+- Feeding feels right only when intimate, hidden, and controlled, never as public spectacle.
+- _Rule:_ You cannot feed from mortals while observed.
+- _Rule:_ You usually feed from the unaware, drugged, or unconscious.
+_Source: Player's Guide p. 119_
+
+**Resonance Sensitivity** 1 (Phlegmatic)
+- Phlegmatic blood catches your need for restraint and order, twisting it into compulsion.
+- _Rule:_ Feeding from Intense+ Phlegmatic blood gives a related Compulsion.
+- _Rule:_ If still active at story's end, it erupts messily at Storyteller discretion.
+_Source: Succubus Club p. 25_
+
+**Prey Exclusion** 1 / 2 (Non-Muslims)
+- Faith constrains your hunger: despite undeath's compromises, you refuse to prey on non-Muslims.
+- _Rule:_ You refuse to hunt non-Muslims.
+- _Rule:_ Doing so, or allowing it without interference, may cause Stains.
+_Source: VTM p. 181_
+
+**Cursed Object** 1 (Ur-Shulgi's Promise)
+- Ur-Shulgi's Promise is both gift and intrusion: fused to your hand, blackening flesh and whispering alien thoughts.
+- _Rule:_ Once per session, at Storyteller timing, reroll one successful test and risk failure.
+_Source: In Memoriam p. 21_
+
+**Curse of Obsession** 1
+- You are obsessed with a utopian vision where everyone can be brought onto the same side.
+- _Rule:_ Defying this obsession, such as attacking before diplomacy is exhausted, causes one Stain.
+_Source: House Rules_
+
+**Curse of Growing Darkness** 0
+- Your Banu Haqim skin darkens with age; for now it is subtle, but hints at future Blood-deep antiquity.
+- _Rule:_ Your skin darkens with age instead of paling.
+- _Rule:_ At present this has no significant mechanical effect or Flaw dots.
+_Source: House Rules_
+
+## Bloodline
+**Descendant of Ur-Shulgi**
+Ur-Shulgi is spoken of as something worse than an elder: an ancient Assamite horror from the oldest wars, entombed beneath Alamut for centuries before rising as the Black Shepherd. When he woke, he judged his clan, culled the unworthy, and shattered the Tremere's centuries-old blood curse with sheer will. Those who carry his lineage inherit heat that does not fear flame, patience for plans measured in centuries, and the certainty that obedience is taken, not requested.
+
+- ✓ **The Silent King** (1) — _Once per session, when you attempt to command deference from a vampire whose applicable Status is lower than yours, you may re-roll one die._
+- ○ **Veins Ablaze** (2) — _Reduce the Difficulty of rolls to resist frenzy triggered by fire by 2 (minimum Difficulty 1)._
+- ✓ **Architect of Eternity** (3) — _Once per story, when you Launch a Project during a Memoriam, the Launch Roll automatically succeeds. In the present, when spending Goal dots to reduce that Project Die, you may treat your Goal dots as doubled for that purpose._
+- ○ **Herald of Destruction** (4) — _Once per session, after rolling, you may set one Hunger die to 10 if doing so would produce a Messy Critical._
+- ○ **Breaker of Chains** (5) — _Gain the Unbondable Merit. Additionally, if you feed a thrall a full Rouse Check's worth of vitae, it immediately breaks their regnant's Blood Bond. You cannot create Blood Bonds of your own._
+
+## Loresheet
+**Nephilim**
+The Nephilim are a modern cult fixated on the Dream of Constantinople: a vampire “utopia” once upheld by a Trinity of philosophers (Michael, the Dracon, and Antonius) before crusade-era catastrophe and corruption tore it apart. Nephilim seek perfection as a path to rebuilding that idealized city, either as true believers preparing a new Trinity or as wary observers watching a dangerous movement gather momentum.
+
+- ✓ **To Build the Dream** (1) — _Gain the Persuasion (Camarilla) and Politics (Camarilla) Specialties._
+- ✓ **The Architect's Wisdom** (2) — _Add 2 dice to Politics pools involving domain governance. Once per story, you may decisively mediate a court dispute, defusing escalation and quashing imminent violence through action or authority._
+- ○ **The Angel's Grace** (3) — _Add 1 die to Insight rolls to gauge another's Beast. Once per story, spend 1 Willpower to let another vampire re-roll up to 3 dice when resisting frenzy._
+- ○ **The Dragon's Disciple** (4) — _The Dracon functions as a 5-dot Mawla, aiding you with mediation, compromise, and the work of forging a “new Constantinople.”_
+- ○ **The Trinity Reborn** (5) — _Once per story, before making a Remorse test, you may remove up to 5 Stains earned in pursuit of bringing about the new Trinity._
+
+## Timeline
+### Pre-Embrace (1774–1811 · Diriyah, Ottoman Empire)
+
+In life, a former Sufi involved in the rise of Wahabism and the ensuing Ottoman-Wahabi war.
+
+### A Time of Violence (1811–1839 · independent · Diriyah, Ottoman Empire, Alamut, Afghanistan)
+
+Embraced directly into the Web of Knives as a Warrior Caste spy.
+
+Through total luck, he impulsively seized opportunity to assassinate a powerful Kindred enemy: the Ventrue Prince of Diriyah, Ibrahim Kethüda.
+
+Unintended consequences abounded: the Prince's many agreements and negotiations keeping Diriyah's enemies at bay died with the Prince, and the city burned within a fortnight.
+
+In this, Rashid was forced to face the scope of the suffering he could wreak with a single careless act, and began to question his role in his clan and the responsibility of power.
+
+Rashid still keeps the ring he lifted out of the ashes that remained after he staked the Prince and left him to face the Sun, as a reminder of a mistake he will never make again.
+
+His sire, who would become the Piece-Taker, was equally devastated; it was here that she took her famous vow of silence and began her path towards becoming the militantly isolationist autarkis of Toronto.
+
+(Dark Secret: if this ever gets out, it would invalidate his entire professed worldview.)
+
+### A Time of Faith (1839–1893 · independent · Alamut, Afghanistan, Constantinople, Ottoman Empire)
+
+After spending twenty years at Alamut trying to reconcile his clan's teachings with the disaster of Diriyah, Rashid became so disillusioned with Clan Assamite that he abandoned Alamut in search of a better path forward.
+
+Having learned about the Dream of Constantinople in the great library at Alamut, and hearing of the Tanzimat Reforms currently underway in Constantinople, the city of Michael's Dream became his next destination in his quest to find a way to exist without being an avatar of destruction.
+
+Rashid's interest in the Dream did not go unnoticed, and he was approached by Sofia Mavridì, a Nephilim of Clan Toreador and a descendant of Michael the Archangel himself.
+
+First, she was an asset in Rashid's investigations into Constantinople's history, but the more time they spent together, the more convinced Rashid became that the Nephilim was the very path forward he was looking for: a path of creation, not destruction; a promise to build instead of to ruin.
+
+Sofia was more than happy to induct him into the followers of Michael's Dream.
+
+### A Time of Sorcery (1893–1922 · independent · Alamut, Afghanistan, Constantinople, Ottoman Empire)
+
+Devoted to pursuing Michael's Dream as a member of the Nephilim, when Rashid discovered that Sofia was a descendant of Michael himself, he recalled writings in the library at Alamut relating to travelling through ancestral blood memories.
+
+Returning to Alamut, he suffered the presence of his despised clan to study the sorcerous teachings he needed to help Sofia unlock the memories in her blood.
+
+Returning to Constantinople, armed with new magic, he was successful, more than successful; in a Blood Sorcery ritual, he and Sofia encountered a memory, or reflection of Michael.
+
+The Archangel revealed the monstrous truth of Rashid's ancestor, Ur-Shulgi, but delivered a prophecy: for everything that Ur-Shulgi would destroy upon his awakening, Rashid would rebuild.
+
+When he awoke from the ritual trance, the ring from Diriyah glowed a deep red, and Michael had given it its name: "Ur-Shulgi's Promise". With this realization, it seared his flesh and blackened his finger, binding permanently to his hand.
+
+### A Time of Lineage (1922–1998 · independent · Various Locations, Europe, Toronto, Canada)
+
+Having discovered the truth of his lineage, and armed with the prophecy of the Archangel, Rashid had been searching for his sire for three decades.
+
+But Laleh bint Saif had not been seen for over a century, and the trail had long gone cold.
+
+Finally, Rashid learned of a mysterious autarkis in Toronto, Canada, the Piece-Taker, whose description and activities were very familiar to him.
+
+Wielding the same ritual that he used with Sofia, Rashid was able to confirm that this was indeed his sire, and so, he finally set sail across the Atlantic.
+
+His sire took him in and sheltered him within her protected domain, where he found many of the answers he was looking for.
+
+### A Time of Dominion (1998–2025 · camarilla · Toronto, Canada, Odense, Denmark)
+
+Rashid felt it immediately when Ur-Shulgi rose: the ring spasmed, blazed with light, and from then on he could hear the whispers of the blood god always in the back of his mind.
+
+Knowing that this was the time that Michael's prophecy spoke of, he left the shelter of his sire's domain and quietly began planning how he could become the force for order that Michael said would balance every act of Ur-Shulgi's chaos.
+
+After cultivating contacts and informants, he learned of the now-Banu Haqim's plan to join the Camarilla, and travelled to Denmark to assist in the forging of the Odense Pact.
+
+Rashid returned to Toronto with a singular purpose: to finally realize Michael's Dream in the city he had claimed as his own.
+
+## Relationships
+### Touchstone
+### Abbas Faruk — Touchstone
+**Role:** Imam, Madina Masjid
+**Motto:** "The City Must Not Burn"
+
+### Sire
+### Laleh bint Saif, the Piece-Taker — Sire
+**Detail:** Seventh Generation Elder of the Banu Haqim
+**Affiliation:** Autarkis
+
+Laleh bint Saif did not leave behind easy answers. She was the mystery at the center of your Blood, the missing piece of your lineage, and eventually the terror Toronto knew as the Piece-Taker. When you found her, she was no courtly sire waiting with comfort, but an Autarkis wrapped in solitude, violence, and old purpose. She sheltered you, taught you, and taught you the harsh lesson that lineage does not always bring peace.
+
+---
+
+# Lord Lucien St. Clair
+
+## Overview
+**Clan:** Toreador
+**Generation:** Tenth
+**Titles:** Prince
+**Predator type:** Tithe Collector
+**Born:** Lucerne, Switzerland (1864)
+**Embraced:** Paris, France (1889)
+**Languages:** German, French, English, Spanish, Greek
+**XP:** 0
+
+## Clan Bane
+**The Curse of Rapture** — Fixation: Stories
+
+## Lineage
+### Sire
+**Oliver Gagnon**
+### Childer
+**Damien Abanda** (Embraced 1915)
+
+## Attributes
+Strength 1 · Dexterity 3 · Stamina 2 · Charisma 4 · Manipulation 3 · Composure 3 · Intelligence 2 · Wits 2 · Resolve 2
+
+## Skills
+**Physical:** Athletics 2 · Craft 1 · Firearms 2 · Larceny 1 · Stealth 1
+
+**Social:** Etiquette 3 · Insight 2 · Intimidation 1 · Leadership 3 · Performance 1 · Persuasion 3 · Streetwise 1 · Subterfuge 2
+
+**Mental:** Academics 1 · Awareness 2 · Investigation 1 · Occult 1 · Politics 1 · Technology 1
+
+## Specialties
+- Athletics — Molotov Cocktails [archaic (1940)]
+- Craft — Art Nouveau [archaic (1890)]
+- Etiquette — Camarilla [standard]
+- Leadership — Kindred [standard]
+- Performance — Swing Dancing [archaic (1920)]
+- Academics — Theosophy [archaic (1890)]
+- Investigation — Investigative Journalism [archaic (1970)]
+
+## Tracks
+**Health:** 5
+**Willpower:** 5
+**Humanity:** 7
+**Blood Potency:** 2
+
+## Disciplines
+### Animalism 1
+- **Bond Famulus** L1 — Sylvain (Owl)
+
+### Auspex 2
+- **Heightened Senses** L1
+- **Premonition** L2
+- **Serendipitous Speech** L2 — Amalgam: Presence 2
+
+### Celerity 1
+- **Rapid Reflexes** L1
+
+### Presence 3
+- **Awe** L1
+- **Chimerstry** L2
+- **Passion Leech** L3 — Amalgam: Auspex 2
+- **Fata Morgana** L3
+
+## Convictions
+### Drama Over Caution
+
+**Touchstone:**
+**Miriam Ravenscroft**
+Curator, Royal Ontario Museum; Adjunct Professor, University of Toronto
+- Excitable and animated in the topics of her passions, to the point of lacking tact and social graces.
+- Specifically the curator for Manuscripts and Rare Texts, technically subordinate to the ROM's head Co-Chief Curator, Arts and Culture, Chen Shen.
+- Notoriously clumsy in any circumstance outside an archive.
+- Secretly publishes raunchy historical fiction under a nomme de plume, and is simultaneously proud and ashamed of the quality of her work.
+- There are rumors floating she has recently acquired an authentic fragment of important kindred lore/mystical significance for study.
+
+### Results Sanctify the Method
+
+### You Must Take Care of Your Friends First
+
+## Backgrounds
+**Status** 5 / 5 (Camarilla)
+- As Prince, you are Toronto's formal source of Camarilla legitimacy, office, judgment, and domain.
+- _Rule:_ You rule the domain as Prince.
+- _Rule:_ Add this Status to suitable courtly or status-conscious Social pools.
+_Source: VTM p. 194_
+
+**Status** 2 / 5 (Clan Toreador)
+- Among Toreador, your Praxis makes you important, but your clan prestige remains modest beside your throne.
+- _Rule:_ Your clan sees you as an average ancilla, not a foremost figure.
+- _Rule:_ Add this Status in Toreador or status-conscious scenes.
+_Source: VTM p. 194_
+
+**Mawla** 2 / 5 (Damien Abanda)
+- Damien Abanda is your childe and century-old survivor-bond, now a polished bridge to Red Flag and Anarch politics.
+- _Rule:_ Damien can advise, warn, introduce, or speak for you when appropriate.
+- _Rule:_ He expects reciprocity; the Storyteller decides his exact help.
+_Source: VTM p. 192_
+
+**Mawla** 2 / 5 (Evanescent Blue)
+- Evanescent Blue is a Ravnos survivor you saved near Kingston, now an Anarch source of diaspora news, warnings, and perspective.
+- _Rule:_ Blue can advise, warn, introduce, or speak for you when appropriate.
+- _Rule:_ She expects reciprocity; the Storyteller decides her exact help.
+_Source: VTM p. 192_
+
+**Mawla** 1 / 5 (Merrick Singh)
+- Merrick Singh is a saved Ravnos survivor now passing as Toreador with Scarlett & the Boys, useful in Camarilla nightlife.
+- _Rule:_ Merrick can provide occasional help, introductions, or information.
+- _Rule:_ His support is narrow, and he expects reciprocity.
+_Source: VTM p. 192_
+
+## Merits & Flaws
+### Merits
+**Luck of the Devil** 4
+- Your life seems charmed, from poverty to wealth to rescue from torpor, though karma always balances the scales.
+- _Rule:_ Once per session, redirect a misfortune aimed at you to someone close to you.
+- _Rule:_ The Storyteller decides what qualifies.
+_Source: Player's Guide p. 119_
+
+**Beautiful** 2 / 4
+- Oliver shaped you into a Toreador ideal; even after torpor and Praxis, your beauty remains unmistakable.
+- _Rule:_ Gain one die to appropriate Social pools when appearance matters.
+_Source: VTM p. 179_
+
+**Linguistics** 1 / 5
+- Salons, courts, unstable domains, and bloodline legacy make you sound at home almost anywhere.
+- _Rule:_ Fluently speak, read, and write one additional language.
+_Source: VTM p. 179_
+
+**Ingénue** 1
+- Your polish and apparent sincerity make others want to believe in your innocence before reason intrudes.
+- _Rule:_ Add two dice to rolls avoiding suspicion or deflecting blame, at Storyteller discretion.
+_Source: Player's Guide p. 118_
+### Flaws
+**The Curse of Rapture** 1
+- A novel, impressive story can arrest your attention, turning cultivated appreciation into dangerous fixation.
+- _Rule:_ Replaces the default Toreador bane.
+- _Rule:_ When you encounter a novel example of your fixation, roll Resolve + Composure vs. Difficulty 2 + Bane Severity or fixate for the scene.
+- _Rule:_ While fixated, spend Willpower to pull away; unrelated rolls suffer Bane Severity penalty.
+_Source: House Rules_
+
+## Bloodline
+**Descendant of the Count of St. Germain**
+The Count of Saint Germain was the Enlightenment's most enduring enigma: a man who appeared in the courts of Louis XV and Peter the Great with the same youthful face and effortless grace. He was the ultimate polyglot, capable of shifting between a dozen languages with such flawless inflection that even natives claimed him as their own. His true power, however, lay in his casual intimacy with the past. To hear him speak was to be transported; he described the marriage at Cana or the councils of Nero not as a scholar, but as an eyewitness, weaving himself into the tapestry of history with a charm that made the impossible seem mundane.
+
+Those who carry his blood are the Scheherazades of Elysium, inheriting his uncanny ability to belong everywhere and to weave tales that transcend trivialities like “truth” or “falsehood”. A descendant of the Count never sounds like a foreigner, no matter how far they travel, and their voices carry the weight of an era long since buried. They are masters of weaving tales that resonate with the soul, using their rhetorical talents to persuade and spellbind. In a world of neon and noise, they remain the captivating voice at the campfire, awing their peers with forgotten secrets and the effortless poise of a soul that has seen the rise and fall of a thousand kings and queens.
+
+- ✓ **Cosmopolitan Communicator** (1) — _When you purchase this Merit, gain a free Language. The Linguistics Merit provides two languages per dot, instead of one. When you speak to someone in a language that is their native tongue but not the regional default, gain a +2 bonus on Etiquette rolls._
+- ○ **Courtly Ties** (2) — _Gain up to four dots, limited by your Sect Status, to spread among Mawla Backgrounds. You cannot purchase a Mawla Background greater than two with this Merit._
+- ✓ **Storyteller's Gift** (3) — _They must be present to hear your story and, for each person you wish to include, either you or they must Rouse the Blood. During the Memoriam, these guests may participate in the story and contribute to challenges as if they were actually there. This does not actually rewrite history, however: It is a result of your flair for storytelling, nothing more. The results of the Memoriam should be reframed after the fact to explain whatever happened in terms of the reality of that historical event (e.g., tasks performed by targets of this ability were actually achieved by you, by others who were really there, or by happenstance)._
+- ✓ **Painting the Mind's Eye** (4) — _You may purchase Chimerstry as a Presence 2 power, then Fata Morgana as a Presence 3 power, without amalgam requirements, and you may purchase these even if you have already purchased those levels of Presence._
+- ○ **Rousing Rhetoric** (5) — _When your dice pool involves Performance, Persuasion or Leadership, you can set any single die to a 10 after rolling._
+
+## Loresheet
+**The Week of Nightmares**
+Kindred debate when exactly the Week of Nightmares fell, with some claiming it landed just prior to the turn of the millennium, while others conflate it with the supposed commencement of Gehenna. In truth, the “Week” of Nightmares sprawled across years, sweeping up several thousand vampires in its wave. During the Week, an impossibly ancient vampire arose and purged its own clan: the Ravnos. Thin-blooded vampires emerged with omens and portents as the Red Star, Anthelios, blazed in the night sky.
+
+You witnessed the mania of the Week of Nightmares and survived it, manipulated the chaos to your own advantage, or you studied the actions of those who did. Now you watch for signs of dooms to come.
+
+- ✓ **Oral History** (1) — _Add three dice to Performance dice pools to tests to tell the story._
+- ✓ **Ravnos Remains** (2) — _You have three dots of Mawla representing this group of contacts. They carry news and warnings to you, and can perhaps be convinced to cast mighty illusions once per chronicle, but association with them is frowned upon, if discovered._
+- ○ **I Was There** (3) — _Once per story, you can use this Status to earn a minor boon from one of those groups or from a prominent courtier in the domain with a sudden interest._
+- ○ **The Red Star** (4) — _Once per story, you can either reduce your Hunger to a rating of two or gain a die to the pools of one Discipline for a night by staring at the star for 10 minutes._
+- ○ **Blood of Zapathasura** (5) — _You own a small vial containing the Blood of the Ravnos Antediluvian. What you do with this vitae is up to you, and what it does to anyone who imbibes it is up to the Storyteller._
+
+## Timeline
+### Pre-Embrace (1864–1889 · Lucerne, Switzerland, Paris, France)
+
+Grew up poor, picked out of a crowd by pure chance (very open to Memoriam interpretation)
+
+### A Time of Lineage (1889–1915 · camarilla · Paris, France)
+
+The Gilded Cage
+Under the meticulous tutelage of Oliver Gagnon, Lucien is taught the grandeur of his lineage and home, and forged into an ideal pupil. He moved through the salons of the Heartland, a living model of his sire's impeccable tastes, internalizing the rigid protocols of the Camarilla until the weight of the "Great Game" (the geopolitical mishmash that led to World War I) dawned. In 1915, at the close of this era, Lucien Embraced Damien Abanda as his childe before their westward flight to Mexico.
+
+### A Time of Adversity (1915–1945 · anarch · Celaya, Mexico, Los Angeles, America)
+
+Three decades of consecutive adversity began when Lucien reached Revolutionary Mexico with no support network, no Camarilla safety net, and his newly Embraced childe Damien at his side. As they moved north through unstable domains, Lucien embraced Anarch nights during the Revolt, finding both freedom and disorder, while his mentorship of Damien was increasingly undercut by the same excesses Lucien himself could not resist. By the end of this era, Lucien was believed destroyed and was left torpid beneath the Mojave sands. The exact cause of that fall remains deliberately ambiguous.
+
+### A Time of Torpor (1945–1958 · Mojave Desert, USA)
+
+Buried in the Mojave and unable to find blood enough to rise, Lucien remained in prolonged torpor while history moved on without him. In his absence, he came to believe a Gangrel Anarch pack connected to Damien had betrayed him, and that Damien's failures of judgment helped make both the torpor and the long abandonment possible. Damien never found him; the guilt of that failure, and the realization that Lucien had been left rather than avenged, became one of the catalysts that hardened Damien and pushed him toward Red Flag. Lucien was eventually unearthed by Fomórach and carried to Toronto.
+
+### A Time of Reinvention (1967–1999 · camarilla · Toronto, Canada, Montreal, Canada)
+
+After his recovery, Lucien shed the entitled "golden child" posture of his early unlife and recast himself as a man of ideals, conviction, and discipline. Having seen Anarch disorganization firsthand, and recognizing the Camarilla as the only organized resistance to the Sabbat in that period, he chose Montreal as a proving ground to demonstrate his loyalty to the Ivory Tower and prove his Anarch era was not his final identity. He was also, true to form, drawn to where the story was most dangerous and consequential. Montreal scarred him: nightmares, terror, and direct confrontation with the Sabbat left lasting trauma. But he emerged tempered and galvanized, no longer polished courtly potential but a leader who could plausibly claim a prince's burden.
+
+### A Time of Legacy (1999–2004 · camarilla · Toronto, Canada)
+
+Lucien left Montreal for Toronto as the Week of Nightmares began (June 28 to July 4, 1999). Near Kingston, violence involving Gangrel and Ravnos drew him into the chaos tied to the destruction of the Ravnos Antediluvian; he survived and came away with Evanescent Blue and Merrick in tow (full incident details remain for Memoriam play). On returning to Toronto, Lucien placed Merrick under Oliver's care, judging Oliver's freer temperament better suited to shelter him. This era marks Lucien's transition from survivor-storyteller to domain architect, with personal legend and political legacy becoming inseparable.
+
+## Relationships
+### Touchstone
+### Miriam Ravenscroft — Touchstone
+**Role:** ROM Curator & Adjunct Professor
+**Motto:** "Drama Over Caution"
+
+Miriam is a passionate and animated curator at the Royal Ontario Museum, also teaching at the University of Toronto. Clumsy outside archives, she secretly writes raunchy historical fiction, and rumors say she holds a fragment of mystical Kindred lore.
+
+### Sire
+### Oliver Gagnon — Sire
+**Detail:** Seventh Generation Ancilla of Clan Toreador
+**Affiliation:** Camarilla
+
+Oliver Gagnon did not merely Embrace you. He curated you. Under his eye, your earliest nights became a gilded education in Toreador refinement, Camarilla etiquette, lineage, salons, beauty, and power. He taught you to understand immortality as performance, status as architecture, and culture as a weapon best wielded with a smile.
+
+### Childer
+### Damien Abanda — Childe
+**Role:** Embraced 1915
+**Detail:** Ninth Generation Ancilla of Clan Toreador
+**Affiliation:** Anarch
+
+Damien Abanda was your attempt to pass the flame onward, and perhaps your first great failure as a sire. Embraced before your flight westward, he survived your tutelage, your indulgences, and your disappearance. Tonight he stands among the Anarchs as a polished diplomat of Red Flag, close enough to your court to wound you and distant enough to deny your authority.
+
+### Blood Bonds
+### Sylvain — Thrall
+**Detail:** Famulus
+**Bond:** 6/6
+
+Sylvain perches where she pleases, regarding your court with the exhausted wisdom of an old aunt minding children. She answers affection with sarcasm, danger with dry amusement, and atrocity with some banal proverb she insists is profound. She adores you, but would rather molt in public than say so plainly.
+
+### Other Relationships
+### Evanescent Blue — Mawla
+**Role:** Mawla
+**Detail:** Ninth Generation Ancilla of Clan Ravnos
+**Affiliation:** Anarch
+
+Evanescent Blue is a Ravnos survivor you saved near Kingston, now an Anarch source of diaspora news, warnings, and perspective.
+
+### Merrick Singh — Mawla
+**Role:** Mawla
+**Detail:** Eleventh Generation Neonate of Clan Ravnos
+**Affiliation:** Camarilla
+
+A Ravnos survivor you saved near Kingston, Merrick now masquerades as a Toreador under the supervision of your sire, Oliver Gagnon.
+
+He blends charm, musical oddity, and misdirection—easy to overlook, and therefore easily underestimated and dangerous in a city that values secrets.
+
+---
+
+# Aishe Tache
+
+## Overview
+**Clan:** Malkavian
+**Generation:** Eighth
+**Titles:** Malkavian Primogen
+**Predator type:** Siren
+**Born:** Brasov, Romania (1799)
+**Embraced:** Louisiana, USA (1834)
+**Languages:** German, English
+**XP:** 5
+
+## Clan Bane
+**The Curse of the Moon** — Derangement: Persistent Delusion — The Cards Are Always Right — _(House Rules)_
+
+## Lineage
+### Sire
+**Lady Aveline Dubois**
+
+- 7th Generation Malkavian
+- Embraced shortly before the French Revolution
+- Anarch loyalist
+- High Humanity
+- Wanderer by nature
+- Derangement: Bipolar Disorder
+- More focused on signs or omens
+### Childer
+_None._
+
+## Attributes
+Strength 1 · Dexterity 2 · Stamina 2 · Charisma 3 · Manipulation 4 · Composure 3 · Intelligence 2 · Wits 2 · Resolve 3
+
+## Skills
+**Physical:** Athletics 1 · Brawl 1
+
+**Social:** Etiquette 3 · Insight 3 · Intimidation 2 · Leadership 2 · Performance 1 · Persuasion 3 · Subterfuge 4
+
+**Mental:** Awareness 1 · Occult 2 · Politics 2
+
+## Specialties
+- Insight — Omens [standard]
+- Leadership — Malkavian [standard]
+- Performance — Disco [archaic (1970)]
+- Performance — Fortune-Telling [archaic (1810)]
+- Persuasion — Seduction [standard]
+- Occult — Mediumship [archaic (1880)]
+
+## Tracks
+**Health:** 5
+**Willpower:** 6
+**Humanity:** 7
+**Blood Potency:** 2
+
+## Disciplines
+### Auspex 3
+- **Heightened Senses** L1
+- **Premonition** L2
+- **Scry the Soul** L3
+- **Doomsaying** L3 — Amalgam: Dominate 3
+
+### Dominate 3
+- **Cloud Memory** L1
+- **Dementation** L2 — Amalgam: Obfuscate 2
+- **The Forgetful Mind** L3
+
+### Fortitude 1
+- **Unswayable Mind** L1
+
+### Obfuscate 2
+- **Cloak of Shadows** L1
+- **Unseen Passage** L2
+
+## Convictions
+### You Must Take Care Of Yourself First
+- Ultimately, no one has your best interest at heart except for you.
+- While everyone is ultimately in it for themselves and maybe for their loved ones.
+- But no one will prioritize you, but you.
+
+**Touchstone:**
+**Kade Phillips**
+Hair Stylist
+- Big Hearted Man who cares deeply for his family and friends.
+- Connects easily with others and commands love and respect, even in his less than manly profession.
+- He's the kind of Man Aishe raised her sons to be like.
+- There is a deep anger within him; he often spends time with people who stoke it.
+
+### Keep Every Door Open
+- With so many oceans of time allies may turn to foes and vice versa
+- Keeping a door open is useful, even if unsatisfying at the time
+
+**Touchstone:**
+**Camille Bouschar**
+- Recent Divorcee
+- Survived an Unhappy Marriage for 30+ years
+- Stroke up a friendship with Aishe a few years before her divorce
+- Her Daughter, Marie, blames Aishe for her Parent's divorce
+- Camille Reminds Aishe of who she could have been had she not met her Sire
+
+### Keep Everyone Guessing
+- Keep your enemies and allies guessing.
+
+**Touchstone:**
+**Katrine Cousteau**
+- Daughter of owner of an Occult Shop -- The Threefold Exchange, in Chinatown
+- While the owner is (somewhat) legit, Katrine takes advantage -- of her mother, of her customers, of everyone
+- Actually a full time swindler selling people "magical" solutions to their mundane problems
+- Katrine stokes Aishe's duplicitous nature
+
+## Backgrounds
+**Status** 4 / 5 (Camarilla)
+- As Malkavian Primogen and inner-circle courtier, you are an established Camarilla power with real deference and obligations.
+- _Rule:_ You sit at the sect's table of power.
+- _Rule:_ Add this Status to suitable courtly or status-conscious Social pools.
+_Source: VTM p. 194_
+
+**Status** 4 / 5 (Clan Malkavian)
+- Within Clan Malkavian, you are one of Toronto's defining local powers, carrying authority and responsibility.
+- _Rule:_ You are a leading local clan representative.
+- _Rule:_ Add or substitute this Status in status-driven Malkavian scenes.
+_Source: VTM p. 194_
+
+## Merits & Flaws
+### Merits
+**Stunning** 4
+- Your beauty is disarming, turning poise, seduction, and occult mystery into social control.
+- _Rule:_ Gain two dice to appropriate Social pools when appearance matters.
+_Source: VTM p. 179_
+
+**Bloodhound** 1
+- You read blood resonance as an extension of omen-sense and predatory intuition.
+- _Rule:_ You can smell human blood Resonance without tasting it.
+- _Rule:_ Within olfactory range, roll Resolve + Awareness at Difficulty 3, adjusted by circumstances.
+_Source: VTM p. 182_
+### Flaws
+**The Curse of the Moon** 3
+- Your curse is a permanent certainty: the Tarot always tells the truth, even when you force yourself to act against it.
+- _Rule:_ Replaces the default Malkavian bane.
+- _Rule:_ Your Persistent Delusion is always active: every Tarot card reveals absolute truth.
+- _Rule:_ For one scene, spend Rouse Checks and Willpower equal to Bane Severity to act against it without ceasing to believe.
+_Source: House Rules_
+
+**Prey Exclusion** 1 / 2 (The Addled)
+- You will not feed on the addled, unstable, or mentally unsound; here, your cruelty stops.
+- _Rule:_ You refuse to hunt the addled.
+- _Rule:_ Doing so, or allowing it without interference, may cause Stains.
+_Source: VTM p. 181_
+
+**Enemy** 1 / 2 (Marie Bouschard)
+- Marie Bouschard blames you for her parents' divorce and is investigating Mara, making her truth-seeking a growing threat.
+- _Rule:_ You have a Gifted Mortal enemy who acts against you when able.
+- _Rule:_ The Storyteller should use her at least once per story.
+_Source: VTM p. 185_
+
+## Bloodline
+**Descendant of the Pythia**
+There are few things mortals fear more than the future, for it is the ultimate unknown. And as long as that fear has existed, people have sought ways to pierce the veil of tomorrow, to embrace their destined paths or halt them entirely. Most who claim such insight are liars or charlatans.
+
+One was not.
+
+The Pythia, Oracle of Delphi, truly saw what was to come. She gazed upon futures both radiant and terrible, and unlike others, she learned not to fight them. She accepted them.
+
+Chosen of Apollo, God of the Sun, the Pythia advised kings, generals, and nobles. Through dreams sent by her divine patron, the future was unveiled to her with merciless clarity.
+
+Yet even foresight offers no sanctuary.
+
+She vanished for thirteen nights.
+
+When the Pythia returned to her temple, she was transformed. Her skin deathly pale, her teeth stained red. Apollo's light no longer answered her prayers. That very night, in an act of sacrilege that shattered the sanctity of Delphi, she Embraced her fellow priestesses. From this desecration was born a new lineage of vampires who see what must come, and who must endure the curse of foreknowledge.
+
+- ✓ **Seeing the Omens** (1) — _Gain one dot of Insight and the Insight (Omens) Specialty._
+- ✓ **The Dark Between the Stars** (2) — _At the end of each session, you may ask the Storyteller one question related to your Ambition or current Desire. The Storyteller will provide the answer in the form of a clue or omen before the start of the next session._
+- ○ **Portent** (3) — _At the end of each session, roll a Hunger die and set it aside. Until the end of the next session, you may replace any rolled Hunger die (whether yours or not) with the die you set aside. If doing so changes the result of the roll into a Messy Critical or a Bestial Failure, you also recover one point of Superficial Willpower damage._
+- ○ **Follower of Motes** (4) — _At the end of each session, you may assign two dots among new Contacts, Allies, and/or Influence Backgrounds, representing strangers who do not know you, but whom your insights into the future have granted you leverage or the precise words to say to get what you want. You must choose the focus of these Backgrounds when you assign them. They persist until the end of the next session._
+- ○ **The Deck of Wandering Stars** (5) — _Appearing as a slightly worn set of Tarot cards, the Deck contains only the Major Arcana. Once per scene, you may perform a reading with the Deck, focusing on a specific use of Auspex that you must define at the time, and use in the same scene or in the next. If you do, gain a bonus equal to your Blood Surge bonus on any roll required for that power, and automatically succeed at any Rouse Checks required. Additionally, only fate itself can separate you from the Deck of Wandering Stars: if you lose it, or it is stolen, circumstances will conspire to return it to your hands within three days and three nights._
+
+## Loresheet
+**The Cobweb**
+You're never truly alone. Not anymore. Not even if you want to be. Not even if you try to be.
+
+The Cobweb catches so many thoughts in its sticky strands, sends them skittering further inside, or reverberating out to the far edges. You're not always sure the thoughts you're hearing are from now. Some feel like they've been stuck for years and have just shaken loose. Others taste like tomorrow.
+
+The Cobweb, also known as the Madness Network, is a psychic network to which all Malkavians are linked. No two clan members describe it exactly the same way. For some, it's a constant low murmuring in their Blood. Others describe it as a kind of hivemind operating alongside their own cognition. Many, even most, Malkavians are only reminded of its presence a few times a year, like a sudden burst of static on a forgotten radio.
+
+No one knows the Cobweb's ultimate purpose, though it's been used to summon a gathering of Oracles together with a subconscious imperative dubbed The Call. Some suspect Malkav himself uses the Network to view the world through his descendants' eyes and ears, or that he simply is the Network.
+
+- ○ **A Break in the Static** (1) — _You catch sporadic snatches of conversation, often just a few distinct words or images. It's enough to piece together an order or a call for aid, though you're unable to respond._
+- ○ **Step into My Parlor** (2) — _These discussions are heavily abstract, limited to short phrases, simple images, and strong emotions._
+- ○ **Across the Web** (3) — _You can hold more involved conversations with Malkavians in your city. Once per story you may initiate the Call, sending impressions of the time and gathering place to all who can hear. This does not guarantee obedience._
+- ○ **Pluck the Strands** (4) — _Once per story, you may use the cobweb to piggyback on your sire's or one of your childer's senses. You are only an observer, and cannot control their responses or their movements._
+- ○ **Malkav's Will** (5) — _Malkav, or a consciousness pretending to be him, speaks to you directly via the Network. Once per story, you may ask the Storyteller to divulge a secret about another Malkavian or reveal what orders the mind in the Cobweb wants you to follow._
+
+## Timeline
+### Pre-Embrace (1799–1834 · Brasov, Romania, Louisiana, USA)
+
+I was born in Brașov to a father with money but no standing. He treated everything as an asset, including me. When a minor noble named Nicolae Strandza needed his useless son married off to settle debts, my father saw an opportunity. The bargain was simple: legitimacy for him, solvency for Strandza, and Andrei for me.
+
+My husband was twice my age and half my worth. A fool made respectable by a ring is still a fool. He drank, embarrassed himself, and disappointed his father as thoroughly after marriage as before it. What he did give me were three children, Elena, Vlad, and Gheorghiu, and they became the center of my life. I managed the household, shielded his reputation, dragged him to bed at night, and learned not to look when his eyes lingered on younger women.
+
+When our youngest left for university, Andrei decided we should travel to New Orleans, claiming culture but seeking only new vices in a more exotic setting. With my children gone, I followed him out of duty and habit.
+
+There, with little left to occupy me, I found the occult. Through it I met Lady Aveline Dubois. She offered me something I had never truly known, companionship, understanding, and the awakening of parts of myself long neglected. I wondered what it might be like to kiss her; I did not remain wondering for long.
+
+The night before our return voyage, she invited me to her parlor. I remember little of what followed.
+
+I died in New Orleans.
+
+### A Time of Lineage (1834–1865 · anarch · Louisiana, USA)
+
+I awoke in the lodgings Andrei and I shared, reborn into hunger and clarity. He lay nearby, drunk on wine and opium, reeking of another woman’s perfume. Before he could fully see me, I tore out his throat. His blood was sweet, and my feeding was savage, my Beast taking vengeance for years of quiet humiliation. He did not deserve it, but that knowledge came later.
+
+Lady Aveline was there when I returned to myself. The massacre proved convenient; abandoned dresses and mangled remains led the authorities to assume animals had killed us both. Even now, I refuse to feed on the addled, it reminds me too much of my mortal sorrow.
+
+For many nights after, I remained at Aveline’s side. I learned her madness and loved her through it, through her manic brilliance and her crushing despair. From her I learned the truths of blood, and of our blood in particular. I learned divination, and soon mastered it. The cards see everything, even what we wish they would not.
+
+Shamefully, those nights were the happiest of my unlife.
+
+Then she was gone. I woke alone, with only a message left behind: “The Line in Blood shall meet twice. Then no more.” I did not understand then.
+
+But I was alone now, and I had to learn how to survive.
+
+### A Time of Intrigue (1882–1912 · camarilla · Louisiana, USA)
+
+I never truly belonged among my sire’s sect. The Anarchs could smell my upbringing on me, as if death had done nothing to strip away class, habit, or belief. Even in undeath, we carry our mortal selves longer than we ever carried our lives.
+
+Hiding one night in the cellar of an abandoned farmstead, I fed on an escaped criminal and found a plain deck of Tarot cards. I read them, and they told me to return to New Orleans and seek the Emperor.
+
+So I presented myself to Camarilla court. Even Anarchs must bow to Tradition. That was when I saw Prince Doran, young in manner if not in years, full of hope and possessed of a vision. In that moment, I knew my future lay with the Camarilla.
+
+But the Ivory Tower demands its price. What I did to earn my place there is not something I will ever repeat. It hollowed me. My admission was written in blood, the ink mixed with the ashes of countless Kindred.
+
+Now, I find myself wondering if it was ever worth the cost.
+
+### A Time of Dominion (1912–1955 · camarilla · Louisiana, USA)
+
+Prince Doran’s vision was vast, but New Orleans was a nest of violence and schemes. I had joined the Ivory Tower as little more than a neonate, a whisper amid the roar of Camarilla politics, and I had no one to guide me.
+
+There was one advantage to my bloodline. Malkavians are feared for their madness, but valued for their insight. Those who knew my lineage sought my services, and I spent those years currying favor with local tyrants, rising carefully through ambition, insight, and deceit in equal measure.
+
+It was then I crafted my persona, a carefully constructed madness that served me better than honesty ever could. I gave the powerful colorful names, riddles dressed as jokes, and let rivals exhaust themselves searching for meanings that may or may not have existed.
+
+My visions served my goals, and my prince’s. I averted disasters, turned Garou aside, and unraveled the designs of the Magi through quiet manipulation. In the end, it mattered little. Doran met his final death in 1955, and his dream died with him.
+
+In the aftermath, I found myself reflecting on the fragments of humanity I had left behind.
+
+### A Time of Remorse (1955–1984 · camarilla · Louisiana, USA)
+
+Marcel Guilbeau succeeded Doran as prince, though he ruled only in name, a puppet for his brother. Whatever New Orleans might have become died with Doran, and my own ambition dimmed for a time. I continued to play my role at court, but without conviction. Doran dreamed of a Carthage reborn, Kine and Kindred existing openly together. I see now how foolish that was. We are predators, and they are prey.
+
+And yet, we were all Kine once.
+
+In those years, I opened a small shop, harmless, respectable, where bored, upper-middle-class women came for palm readings and questions about love. They were vapid, lost, and sad, and they reminded me painfully of my mortal self. Unlike the usual charlatans, I gave them truths they could actually use. Some were grateful. Some were not.
+
+I cannot say exactly what I learned during those long nights of quiet charity, but they filled a hollow I had not realized was there.
+
+### A Time of Dominion (1999–2025 · camarilla · Toronto, Canada)
+
+These nights mark the second time I met my sire. I found her lingering outside my little shop, and when we spoke for the first time in over a century, it felt, briefly, as though we had never parted. But I had changed. I had learned to guard my heart, and she saw it immediately.
+
+We argued. Time had driven a wedge between us deeper than the night she abandoned me. I had forgiven her for that, but she would never forgive me for joining the Ivory Tower, for becoming the prince’s oracle. She said our Gift was never meant to serve them, that I had betrayed her.
+
+She was older, wiser, and far freer than I had ever been, living openly, surviving on insight, charm, and truth. She still carried the same spark that once drew me in. I loved and hated her for it. She did not change. I did.
+
+And the cruelest truth was that she was right. I am the Ivory Tower. I serve myself by serving the status quo.
+
+When she rushed me, I thought my unlife was ending. I was never a fighter. Instead, she embraced me, not with blood, but with arms, and my heart thundered in my chest. Afterward, a postcard arrived, sent to the wrong address, bearing the image of the CN Tower. One reading was enough to understand it.
+
+Toronto was where true dominion waited. Where I might build something lasting. I relocated quietly, my history in New Orleans earning me a place. I kept my head down.
+
+Until now. Now, it is do or die.
+
+## Relationships
+### Touchstone
+### Kade Phillips — Touchstone
+**Role:** Hair Stylist
+**Motto:** "You Must Take Care Of Yourself First"
+
+Kade is big-hearted, deeply caring toward family and friends, and socially magnetic despite being in a profession many frame as "less than manly." He reminds you of the sort of man you wanted your sons to become.
+
+There is also a darker edge: he carries deep anger, and he spends time with people who stoke it.
+
+### Sire
+### Lady Aveline Dubois — Sire
+**Detail:** Seventh Generation Ancilla of Clan Malkavian
+**Affiliation:** Anarch
+
+Lady Aveline Dubois found you through the occult, through omens, and through the lonely hunger of a woman already half in love with mystery. She gave you the Blood, but also wonder: divination, prophecy, madness, freedom, and the terrible comfort of being understood. Then, as prophets and wanderers often do, she vanished, leaving you with riddles where certainty should have been.
+
+### Other Relationships
+### Marie Bouschard — Enemy
+**Role:** Enemy
+**Detail:** Journalism Student
+
+Marie is a 22 year-old journalism student at the University of Toronto. You befriended her mother, Camille Bouschard, shortly before Camille divorced her husband. Marie blames you for her parent's divorce (she's right).
 
 ---
 

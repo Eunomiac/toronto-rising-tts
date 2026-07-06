@@ -2,8 +2,7 @@
   Build character sheet page 4 UI XML from lib/json/PC_Relationships.json (embedded in lib/pc_relationships_data).
   Consumed via require("ui.ui_csheet_page4") → self.UI.setXml in the object script VM.
 
-  pcLinks keys (aishe, rashid, fomorach, lordLucien, blackCaesar, …) select which PC sheet shows each block.
-  C.PlayerData charKey "lucien" maps to pcLink key "lordLucien".
+  pcLinks keys (aishe, rashid, fomorach, lordLucien, blackCaesar, …) match C.PlayerData charKey.
 
   Layout: ui/.templates/csheet/page4.xml + partials (embedded at build time).
 ]]
@@ -47,11 +46,6 @@ local TEMPLATE_INDEXED = {
   other = "csheet/partials/otherRelation_block",
 }
 
---- charKey from C.PlayerData → pcLinks key in PC_Relationships.json
-local CHARKEY_TO_PCLINK = {
-  lucien = "lordLucien",
-}
-
 --- @param s string|nil
 --- @return string
 local function trimWhitespace(s)
@@ -71,7 +65,7 @@ local function resolvePcLinkKey(pd)
   if type(ck) ~= "string" or ck == "" then
     return nil
   end
-  return CHARKEY_TO_PCLINK[ck] or ck
+  return ck
 end
 
 --- @param lines any

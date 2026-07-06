@@ -10,8 +10,8 @@ Project data should be stored in the `playerData` of the player who made the Lau
 ```lua
 {
   id = "string", -- An 8-character alphanumeric ID, randomly determined at creation.
-  principal = "lucien", -- Character key of primary character (i.e. the character making the Launch roll)
-  participants = { "lucien", "myleneHamelin" }, -- Character keys of participating characters; can include NPC keys as well as PC keys; does include principal
+  principal = "lordLucien", -- Character key of primary character (i.e. the character making the Launch roll)
+  participants = { "lordLucien", "myleneHamelin" }, -- Character keys of participating characters; can include NPC keys as well as PC keys; does include principal
   scope = 3, -- An integer value defined by user.
   interval = "day", -- One of "day", "week", "month", "year", "decade", "century". Defined by user.
   goal = "To persuade the University Chantry to resume warding Camarilla properties.", -- A one-sentence string defined by user.
@@ -24,7 +24,7 @@ Project data should be stored in the `playerData` of the player who made the Lau
         qty = 3
       }
     },
-    lucien = {
+    lordLucien = {
       {
         name = "Status",
         focus = "Clan Toreador",

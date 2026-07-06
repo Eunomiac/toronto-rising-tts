@@ -1936,7 +1936,7 @@ Below you will find a JSON-formatted code block containing full details of the f
         }
       ]
     },
-    "lucien": {
+    "lordLucien": {
       "name": "Lord Lucien St. Clair",
       "clan": "Toreador",
       "clanBanes": [

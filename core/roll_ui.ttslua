@@ -610,11 +610,6 @@ local function rollControlResultNeedsMiddleCenterAlignment(result)
     return ROLL_CONTROL_RESULT_NEEDS_MIDDLE_CENTER[result.resultClass] == true
 end
 
---- PC charKey → CustomUIAssets cutout name when they differ.
-local CHARKEY_TO_FIGURE_ASSET = {
-    lucien = "lordLucien",
-}
-
 --- Full `rollRes_resultDisplay` class string for a classified result.
 -- @param result table|nil
 -- @return string
@@ -677,19 +672,19 @@ local function resolveRollFigureAssetKey(color, pid, label, npcCharacterKey)
     if pid ~= nil then
         local pdata = S.getStateVal("playerData", pid)
         if type(pdata) == "table" and type(pdata.charKey) == "string" and pdata.charKey ~= "" then
-            return CHARKEY_TO_FIGURE_ASSET[pdata.charKey] or pdata.charKey
+            return pdata.charKey
         end
     end
     if color == "Black" then
         -- Prefer the explicit NPC character key: display-name reverse-lookup is ambiguous when
         -- human/garou forms share a fullName (e.g. "Rot-in-the-River"). TOR-252.
         if type(npcCharacterKey) == "string" and npcCharacterKey ~= "" then
-            return CHARKEY_TO_FIGURE_ASSET[npcCharacterKey] or npcCharacterKey
+            return npcCharacterKey
         end
         if type(label) == "string" and label ~= "" then
             local npcKey = NPC_DATA.resolveCharacterKeyByDisplayName(pruneRollLabelDisambiguationSuffix(label))
             if type(npcKey) == "string" and npcKey ~= "" then
-                return CHARKEY_TO_FIGURE_ASSET[npcKey] or npcKey
+                return npcKey
             end
         end
     end

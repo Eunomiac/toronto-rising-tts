@@ -48,7 +48,7 @@ C.PlayerData = {
   [C.PlayerIDs.PixelPuzzler] = {
     color = "Red",
     playerName = "PixelPuzzler",
-    charKey = "lucien",
+    charKey = "lordLucien",
     charName = "Lord Lucien"
   },
   [C.PlayerIDs.JRook] = {

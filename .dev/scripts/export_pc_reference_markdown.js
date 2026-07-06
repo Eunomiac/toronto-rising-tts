@@ -10,20 +10,13 @@ const defaultOut = path.join(root, ".dev", "PC Data & Tracking", "PC Reference.m
 const pcsPath = path.join(root, "lib", "json", "PCS.json");
 const relPath = path.join(root, "lib", "json", "PC_Relationships.json");
 
-/** PCS charKey → pcLinks key in PC_Relationships.json (mirror lib/csheet_page4_xml.ttslua) */
-const CHARKEY_TO_PCLINK = {
-  lucien: "lordLucien",
-};
-
 /** Seat order from C.PlayerColors / C.PlayerData */
-const PC_ORDER = ["fomorach", "rashid", "lucien", "aishe", "blackCaesar"];
+const PC_ORDER = ["fomorach", "rashid", "lordLucien", "aishe", "blackCaesar"];
 
-const KNOWN_PCLINK_KEYS = new Set(
-  PC_ORDER.map((ck) => CHARKEY_TO_PCLINK[ck] || ck)
-);
+const KNOWN_PCLINK_KEYS = new Set(PC_ORDER);
 
 const PCLINK_TO_CHARKEY = Object.fromEntries(
-  PC_ORDER.map((ck) => [CHARKEY_TO_PCLINK[ck] || ck, ck])
+  PC_ORDER.map((ck) => [ck, ck])
 );
 
 const PHYSICAL_SKILLS = [
@@ -85,7 +78,7 @@ function loadJson(filePath) {
  * @returns {string}
  */
 function resolvePcLinkKey(charKey) {
-  return CHARKEY_TO_PCLINK[charKey] || charKey;
+  return charKey;
 }
 
 /**

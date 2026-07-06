@@ -56,7 +56,7 @@ Below is one **complete** wrapper object valid for the Import modal: all five **
         "isPresent": true
       },
   "Red": {
-        "characterKey": "lucien",
+        "characterKey": "lordLucien",
         "isPlayingNPC": true,
         "npcCharacterKey": "myleneHamelin",
         "isPresent": true
@@ -161,7 +161,7 @@ Each key is a **seat id** (`C.PlayerColors` + `C.NPCSeats`). **Import** (`SceneL
 
 ```jsonc
 "Red": {
-  "characterKey": "lucien",
+  "characterKey": "lordLucien",
   "isPlayingNPC": true,
   "npcCharacterKey": "myleneHamelin",
   "isPresent": true
