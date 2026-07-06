@@ -2,11 +2,13 @@
 
 ## Quick Fixes
 - [Bug] If a Stage Control Board update is aborted because dice are on the table, the tokens remain on the Stage Control Board, and a subsequent attempt to Apply to changes (after clearing the dice) results in a "placements and seat row unchanged - skipped reconcile".  Expected Behavior: If a Stage Control Board "Apply" is interrupted, it shouldn't be fingerprinted and should be allowed to run again.
+- [Player Dice Trays] Player dice trays should be activated when they initiate a roll -- not when they first add a die to their pool (which is the current behavior).  The drawer should present itself as an invitation or cue to indicate to the player that the game is waiting for them to add dice.
 
 ## Active
 
 ## External Work (Set STATUS to "External To Do")
 
+- Review roll broadcast message phrasing — `.dev/Dice System/Roll Broadcast Messages.md`; comment desired copy changes on Linear → **TOR-303** (External Todo)
 ## Needs clarification
 
 ### Unclear Bugs

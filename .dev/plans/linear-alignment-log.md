@@ -425,5 +425,7 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-06 | DONE | TOR-287 | Dice preload pool — `core/dice_preload_pool.ttslua`, Global claim/return, dice_bag recycle; warmed at startup gate |
 | 2026-07-06 | DONE | TOR-296 | Roll broadcast message audit — `.dev/Dice System/Roll Broadcast Messages.md` + `DEBUG.rollBroadcastMessageAudit()` |
 | 2026-07-06 | Focus | Stack | #1 TOR-244, #2 INBOX gameboard Apply fingerprint, #3 TOR-290; TOR-287/TOR-296 closed |
+| 2026-07-06 | CREATE | TOR-303 | Author review roll broadcast phrasing — External Todo, human-gate; parent TOR-31; relatedTo TOR-296 |
+| 2026-07-06 | DONE | TOR-287, TOR-296 | Author confirmed complete 2026-07-06 |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
