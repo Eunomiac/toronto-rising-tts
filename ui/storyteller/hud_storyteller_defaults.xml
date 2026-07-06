@@ -12,7 +12,7 @@
   <Text class="hud_storyteller_label"	fontSize="11" color="#FFD700"  />
 
   <Row class="hud_storyteller_button_row" preferredHeight="20" minHeight="20" spacing="0" childForceExpandWidth="false" childForceExpandHeight="false" />
-  <HorizontalLayout class="hud_storyteller_button_row" preferredHeight="30" minHeight="30" spacing="0" childForceExpandWidth="true" childForceExpandHeight="true" />
+  <HorizontalLayout class="hud_storyteller_button_row" childAlignment="MiddleCenter" preferredHeight="30" minHeight="30" spacing="0" childForceExpandWidth="true" childForceExpandHeight="true" />
 
 
   <!-- <Button class="hud_storyteller_button"
@@ -105,12 +105,6 @@
   <Row class="hud_storyteller_header" height="30" preferredHeight="30" flexibleHeight="0" childForceExpandHeight="false" childForceExpandWidth="true" />
   <Cell class="hud_storyteller_wide" columnSpan="6" childForceExpandWidth="true" />
   <Cell class="hud_storyteller_label" childForceExpandWidth="true" />
-
-  <!-- Storyteller modal panels (Scenes, Sound, Phases, …): shared semi-opaque backdrop -->
-  <VerticalLayout class="storyteller_panel_surface"
-    color="rgba(0, 0, 0, 0.8)"
-    childForceExpandWidth="true"
-  />
 
   <!-- ================================================================ -->
   <!-- Admin Panel Classes (left-side button controls)                   -->

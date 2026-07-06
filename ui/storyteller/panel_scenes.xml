@@ -1,42 +1,12 @@
-<Defaults>
 
-  <Panel class="panel_wide_column"
-    width = "596" />
-
-
-
-</Defaults>
-
-<!--
-UI.setAttributes("panel_scenes", {
-  active = true,
-  width = "596",
-  minWidth = "596",
-  flexibleWidth = 0,
-  color = "rgba(1,0,0,0.12)",
-})
-
--->
 
 
 <!-- Storyteller Scenes: lighting presets, table, seat narrative presence, location keys, clock (see core/storyteller_scenes_panel.ttslua). -->
 <!-- `active` stays true while parent `panel_scenes_host` controls tab visibility. Width 596 pairs with library column inside 1200px host. -->
-<Panel id="panel_scenes" active="true" width="596" minWidth="596" flexibleWidth="0">
-  <VerticalLayout id="db_panel_scenes_content" class="storyteller_panel_surface" spacing="6" padding="6 6 6 6" childForceExpandWidth="true" minWidth="596" preferredWidth="596" flexibleWidth="0">
+<VerticalLayout id="panel_scenes" class="storyteller_panel_column">
     <Text id="db_panel_scenes_header" class="hud_storyteller_header">Scenes</Text>
-    <Text id="db_panel_scenes_description" fontSize="9" color="#AAAAAA">Lighting presets drive `currentScene` / `Scenes.reconcileFromState`. Narrative fields live in `gameState.sessionScene`.</Text>
 
-    <Text id="db_panel_scenes_lighting_presets_header" class="hud_storyteller_label">Lighting presets</Text>
-    <HorizontalLayout id="db_panel_scenes_lighting_presets_buttons" class="hud_storyteller_button_row" spacing="4">
-      <Button id="adminScene_dark" class="hud_storyteller_button" text="DARK" onClick="HUD_selectAdminLightingScene"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-      <Button id="adminScene_standard" class="hud_storyteller_button" text="STANDARD" onClick="HUD_selectAdminLightingScene"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-      <Button id="adminScene_bright" class="hud_storyteller_button" text="BRIGHT" onClick="HUD_selectAdminLightingScene"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-    </HorizontalLayout>
-
-    <Text id="db_panel_scenes_table_header" class="hud_storyteller_label">Table</Text>
+    <Text id="db_panel_scenes_table_header" class="hud_storyteller_label">Table Selection</Text>
     <HorizontalLayout id="db_panel_scenes_table_buttons" class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
       <Button id="scenes_tbl_TableA" text="Table A" minWidth="72" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
       <Button id="scenes_tbl_TableB" text="Table B" minWidth="72" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
@@ -48,9 +18,10 @@ UI.setAttributes("panel_scenes", {
       <Button id="scenes_tbl_TableB5" text="B5" minWidth="40" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
       <Button id="scenes_tbl_TableC" text="Table C" minWidth="72" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
     </HorizontalLayout>
-
-    <Text id="db_panel_scenes_seat_presence_header" class="hud_storyteller_label">Seat presence (narrative)</Text>
-    <Text id="db_panel_scenes_seat_presence_description" fontSize="9" color="#AAAAAA">Absent seats (grey) turn seat spotlights off. Neutral leaves layout-only presence rules.</Text>
+<!--
+UI.setAttributes("db_panel_scenes_seat_presence_buttons", {color = "rgba(1, 0, 0, 0.15)", childAlignment = "MiddleCenter"})
+-->
+    <Text id="db_panel_scenes_seat_presence_header" class="hud_storyteller_label">Seat Activation</Text>
     <HorizontalLayout id="db_panel_scenes_seat_presence_buttons" class="hud_storyteller_button_row" spacing="3" childForceExpandWidth="false">
       <Button id="scenes_seat_Brown" text="Brown" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
       <Button id="scenes_seat_Orange" text="Orange" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
@@ -65,15 +36,25 @@ UI.setAttributes("panel_scenes", {
       <Button id="scenes_seat_NPC4" text="NPC4" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
     </HorizontalLayout>
 
-    <Text id="db_panel_scenes_location_header" class="hud_storyteller_label">Scene location</Text>
-    <Text id="db_panel_scenes_location_description" fontSize="9" color="#AAAAAA">District and site are chosen with the browse modals, then applied to soundscape with the button below.</Text>
+    <Text id="db_panel_scenes_location_header" class="hud_storyteller_label">Scene Location</Text>
     <HorizontalLayout id="db_panel_scenes_location_buttons" spacing="6" childForceExpandWidth="false" childAlignment="UpperLeft">
-      <VerticalLayout id="db_panel_scenes_location_district_container" spacing="2" minWidth="288" preferredWidth="288" flexibleWidth="0">
-        <Text id="db_panel_scenes_location_district_header" fontSize="9" color="#CCCCCC">District</Text>
+    <!--
+    UI.setAttributes("db_panel_scenes_location_district_container", {color = "rgba(1, 0, 0, 0.15)", minWidth = "0", flexibleWidth = "1", preferredWidth = "250"})
+    UI.setAttributes("db_panel_scenes_location_site_container", {color = "rgba(1, 1, 0, 0.15)", minWidth = "0", flexibleWidth = "1", preferredWidth = "250"})
+    -->
+
+      <VerticalLayout id="db_panel_scenes_location_district_container" class="hud_storyteller_inner_column">
+      <!--
+      UI.setAttributes("db_panel_scenes_location_district_header", {alignment = "MiddleCenter", fontStyle = "Bold", fontSize = "14", preferredWidth = "200", flexibleWidth = "1"})
+      -->
+        <Text id="db_panel_scenes_location_district_header" class="small_header_text">District</Text>
         <Text id="scenes_districtNameDisplay" fontSize="12" color="#FFFFFF" preferredHeight="30" minHeight="30" minWidth="280" preferredWidth="280" flexibleWidth="0" text="—" />
       </VerticalLayout>
-      <VerticalLayout id="db_panel_scenes_location_site_container" spacing="2" minWidth="288" preferredWidth="288" flexibleWidth="0">
-        <Text id="db_panel_scenes_location_site_header" fontSize="9" color="#CCCCCC">Site</Text>
+      <VerticalLayout id="db_panel_scenes_location_site_container" class="hud_storyteller_inner_column">
+      <!--
+      UI.setAttributes("db_panel_scenes_location_site_header", {alignment = "MiddleCenter", fontStyle = "Bold", fontSize = "14", preferredWidth = "200", flexibleWidth = "1"})
+      -->
+        <Text id="db_panel_scenes_location_site_header" class="small_header_text">Site</Text>
         <Text id="scenes_siteNameDisplay" fontSize="12" color="#FFFFFF" preferredHeight="30" minHeight="30" minWidth="280" preferredWidth="280" flexibleWidth="0" text="—" />
       </VerticalLayout>
     </HorizontalLayout>
@@ -83,8 +64,7 @@ UI.setAttributes("panel_scenes", {
     </HorizontalLayout>
     <Button id="scenes_apply_location_soundscape" class="hud_storyteller_button" text="Apply location + soundscape" onClick="HUD_scenesApplyLocation" />
 
-    <Text id="db_panel_scenes_time_header" class="hud_storyteller_label">Scene time</Text>
-    <Text id="db_panel_scenes_time_description" fontSize="9" color="#AAAAAA">Pick month, enter calendar day and year, time as 12-hour (e.g. 9:05 PM). Set (present day) writes gameState.presentDayClock from the stashed inputs; Apply clock updates the live scene clock. Real-time ON advances the narrative clock each wall second; Speed is a multiplier (1 = one narrative minute per 60 real seconds). Chronicle weather follows the narrative hour when you Apply.</Text>
+    <Text id="db_panel_scenes_time_header" class="hud_storyteller_label">Scene Time</Text>
     <HorizontalLayout id="db_panel_scenes_time_buttons" spacing="3" childForceExpandWidth="false" childAlignment="UpperLeft">
       <Button id="scenes_month_1" class="hud_storyteller_button" text="Jan" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
       <Button id="scenes_month_2" class="hud_storyteller_button" text="Feb" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
@@ -127,39 +107,4 @@ UI.setAttributes("panel_scenes", {
     </HorizontalLayout>
     <Button id="scenes_clock_apply" class="hud_storyteller_button" text="Apply clock" onClick="HUD_scenesApplyClock" />
 
-    <Text id="db_panel_scenes_library_constructor_header" class="hud_storyteller_label">Scene library (constructor)</Text>
-    <Text id="db_panel_scenes_library_constructor_description" fontSize="9" color="#AAAAAA">Import JSON bundles into `gameState.sceneLibrary` (not activated). Fork snapshots the live `sessionScene` into a new library row and switches the mirror target.</Text>
-    <HorizontalLayout id="db_panel_scenes_library_constructor_buttons" class="hud_storyteller_button_row" spacing="6" childForceExpandWidth="false">
-      <Button id="scenes_ctor_btn_import" class="hud_storyteller_button" text="Import scene…" minWidth="120" onClick="HUD_scenesCtorImportOpen" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="scenes_ctor_btn_fork" class="hud_storyteller_button" text="New scene (fork)…" minWidth="150" onClick="HUD_scenesCtorForkOpen" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    </HorizontalLayout>
-
-    <Panel id="scenes_ctor_import_modal" active="false" offsetXY="0 0" width="580" minHeight="280" color="rgba(0.05,0.05,0.08,0.95)">
-      <VerticalLayout id="db_panel_scenes_library_constructor_import_modal_content" padding="10 10 10 10" spacing="6" childForceExpandWidth="true" childForceExpandHeight="true">
-        <Text id="db_panel_scenes_library_constructor_import_modal_header" class="hud_storyteller_label">Import scene (JSON)</Text>
-        <Text id="db_panel_scenes_library_constructor_import_modal_description" fontSize="9" color="#AAAAAA">Wrapper: sceneKey, title, sessionScene. Validates here; entry is saved with receivesLiveWrites false (not activated).</Text>
-        <InputField id="scenes_ctor_import_json" minHeight="140" preferredHeight="160" flexibleHeight="1" flexibleWidth="1" fontSize="11" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="MultiLineSubmit" characterValidation="None" text="" onValueChanged="HUD_scenesCtorImportJsonChanged" onEndEdit="HUD_scenesCtorImportJsonChanged" />
-        <Text id="scenes_ctor_import_err" fontSize="10" color="#AAAAAA" minHeight="40" text="" />
-        <HorizontalLayout id="db_panel_scenes_library_constructor_import_modal_buttons" spacing="8" childForceExpandWidth="false" childAlignment="MiddleLeft">
-          <Button id="scenes_ctor_import_confirm" class="hud_storyteller_button" text="Import" minWidth="96" onClick="HUD_scenesCtorImportConfirm" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-          <Button id="scenes_ctor_import_cancel" class="hud_storyteller_button" text="Cancel" minWidth="96" onClick="HUD_scenesCtorImportCancel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        </HorizontalLayout>
-      </VerticalLayout>
-    </Panel>
-
-    <Panel id="scenes_ctor_fork_modal" active="false" offsetXY="0 0" width="520" minHeight="200" color="rgba(0.05,0.05,0.08,0.95)">
-      <VerticalLayout id="db_panel_scenes_library_constructor_fork_modal_content" padding="10 10 10 10" spacing="6" childForceExpandWidth="true">
-        <Text id="db_panel_scenes_library_constructor_fork_modal_header" class="hud_storyteller_label">Fork scene</Text>
-        <Text id="db_panel_scenes_library_constructor_fork_modal_description" fontSize="9" color="#AAAAAA">Titles are captured from the fields as you type (TTS InputField contract). Confirm pins the prior active row and starts mirroring the new row.</Text>
-        <Text id="db_panel_scenes_library_constructor_fork_modal_new_title_header" fontSize="9" color="#CCCCCC">New scene title</Text>
-        <InputField id="scenes_ctor_fork_title_new" class="hud_storyteller_input" minHeight="28" fontSize="12" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" text="" onValueChanged="HUD_scenesCtorForkTitleChanged" onEndEdit="HUD_scenesCtorForkTitleChanged" />
-        <Text id="db_panel_scenes_library_constructor_fork_modal_original_title_header" fontSize="9" color="#CCCCCC">Original scene title (frozen row)</Text>
-        <InputField id="scenes_ctor_fork_title_old" class="hud_storyteller_input" minHeight="28" fontSize="12" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" text="" onValueChanged="HUD_scenesCtorForkTitleChanged" onEndEdit="HUD_scenesCtorForkTitleChanged" />
-        <HorizontalLayout id="db_panel_scenes_library_constructor_fork_modal_buttons" spacing="8" childForceExpandWidth="false" childAlignment="MiddleLeft">
-          <Button id="scenes_ctor_fork_confirm" class="hud_storyteller_button" text="Fork" minWidth="96" onClick="HUD_scenesCtorForkConfirm" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-          <Button id="scenes_ctor_fork_cancel" class="hud_storyteller_button" text="Cancel" minWidth="96" onClick="HUD_scenesCtorForkCancel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        </HorizontalLayout>
-      </VerticalLayout>
-    </Panel>
   </VerticalLayout>
-</Panel>

@@ -1,6 +1,7 @@
 # Inbox
 
 ## Quick Fixes
+- [Bug] If a Stage Control Board update is aborted because dice are on the table, the tokens remain on the Stage Control Board, and a subsequent attempt to Apply to changes (after clearing the dice) results in a "placements and seat row unchanged - skipped reconcile".  Expected Behavior: If a Stage Control Board "Apply" is interrupted, it shouldn't be fingerprinted and should be allowed to run again.
 
 ## Active
 

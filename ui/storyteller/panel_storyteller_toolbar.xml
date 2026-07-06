@@ -6,51 +6,122 @@
   <Panel class="storyteller_panel_root"
     visibility = "Host"
     rectAlignment = "UpperLeft"
-    offsetXY = "50 -50"
+    offsetXY = "50 0"
     width = "1500"
     height = "900"
     padding = "0 0 0 0"
     childAlignment = "UpperLeft" />
 
+  <Button class="hud_storyteller_twirldown_button"
+    ignoreLayout = "true"
+    height = "30"
+    width = "30"
+    rectAlignment = "UpperLeft" />
+
+  <VerticalLayout class="storyteller_control_container"
+    spacing="4"
+    childAlignment="UpperLeft"
+    childForceExpandWidth = "true"
+    childForceExpandHeight = "false" />
+
+  <HorizontalLayout class="storyteller_button_bar"
+    padding = "30 800 0 0"
+    flexibleHeight = "0"
+    spacing= "3" />
+
+  <Button class="storyteller_panel_button"
+    colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
+    onClick="HUD_selectStorytellerPanel"
+    textColor="#FFFFFF" />
+
+  <Panel class="storyteller_control_content"
+    padding="0 0 0 0"
+    childForceExpandHeight = "true"
+    flexibleHeight = "1"
+    childForceExpandWidth = "true" />
+
+  <HorizontalLayout class="storyteller_three_panel_container"
+    spacing="8"
+    padding="0 0 0 0"
+    color = "rgba(0, 0, 0, 0.85)"
+    childAlignment="UpperLeft"
+    childForceExpandHeight="true"
+    childForceExpandWidth="true" />
+
+  <!-- Storyteller modal panels (Scenes, Sound, Phases, …): shared semi-opaque backdrop -->
+  <VerticalLayout class="storyteller_panel_column"
+    color="rgba(0, 0, 0, 0.8)"
+    spacing="6"
+    padding="6 6 6 6"
+    childForceExpandWidth="true"
+    flexibleWidth = "1"
+    minWidth = "0"
+    preferredWidth = "0"
+  />
+
+  <Text class="body_text"
+    fontSize="12"
+    color="#AAAAAA"
+  />
+
+  <Text class="small_header_text"
+   alignment = "MiddleCenter"
+   fontStyle = "Bold"
+   fontSize = "14"
+   preferredWidth = "200"
+   flexibleWidth = "1"
+  />
+
+  <VerticalLayout class="hud_storyteller_inner_column"
+    spacing="6"
+    childForceExpandWidth="true"
+    childAlignment="UpperMiddle"
+    minWidth = "0"
+    flexibleWidth = "1"
+    preferredWidth = "250" />
+
+
 </Defaults>
 
-<!--
+<!-- Master root container -->
+<Panel id="storytellerToolbarRoot" class="storyteller_panel_root">
 
-UI.setAttributes("storytellerToolbarRoot", {rectAlignment = "UpperLeft", offsetXY = "50 -30", width = "1500", height = "900", padding = "0 0 0 0", childAlignment = "UpperLeft", color="rgba(0, 1, 1, 0.12)"})
+  <!-- Twirl-down Collapsible Button Toggle -->
+  <Button id="toggleElem_storytellerToolbarBody" class="hud_storyteller_twirldown_button" onClick="HUD_togglePanel">►</Button>
 
-UI.setAttributes("toggleElem_storytellerToolbarBody", {ignoreLayout = "true", width = "30", height = "30"})
--->
+  <!-- Toggleable full content container -->
+  <VerticalLayout id="storytellerToolbarBody" class="storyteller_control_container" active="false" >
 
+    <!-- Top navigation buttons -->
+    <HorizontalLayout class="storyteller_button_bar" >
+      <Button id="toggle_scenes" text="Scenes" class="storyteller_panel_button"  />
+      <Button id="toggle_soundscape" text="Sound" class="storyteller_panel_button" />
+      <Button id="toggle_pcs" text="PCs" class="storyteller_panel_button" />
+      <Button id="toggle_phases" text="Phases" class="storyteller_panel_button" />
+      <Button id="toggle_stats" text="Stats" class="storyteller_panel_button" />
+    </HorizontalLayout>
 
-<Panel id="storytellerToolbarRoot" visibility="Host" rectAlignment="UpperLeft" offsetXY="50 00" width="1280" height="800">
-  <Button id="toggleElem_storytellerToolbarBody" class="hud_storyteller_button hud_storyteller_button_icon" rectAlignment="UpperLeft" width="30" height="30" onClick="HUD_togglePanel">►</Button>
-  <VerticalLayout id="db_storytellerToolbarBody" spacing="4" childAlignment="UpperLeft" rectAlignment="UpperLeft" offsetXY="35 -30">
-    <Panel id="storytellerToolbarBody" active="false">
-      <VerticalLayout id="db_storytellerToolbarBody_content" spacing="4" childAlignment="UpperLeft" height="20">
-        <HorizontalLayout id="db_storytellerToolbarBody_content_buttons" rectAlignment="UpperLeft" ignoreLayout="true" spacing="3" childAlignment="UpperLeft" width="500" height="30" offsetXY="0 0">
-          <Button id="toggle_scenes" text="Scenes" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_selectStorytellerPanel" textColor="#FFFFFF" />
-          <Button id="toggle_soundscape" text="Sound" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_selectStorytellerPanel" textColor="#FFFFFF" />
-          <Button id="toggle_pcs" text="PCs" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_selectStorytellerPanel" textColor="#FFFFFF" />
-          <Button id="toggle_phases" text="Phases" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_selectStorytellerPanel" textColor="#FFFFFF" />
-          <Button id="toggle_stats" text="Stats" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_selectStorytellerPanel" textColor="#FFFFFF" />
-        </HorizontalLayout>
+    <!-- Main content panels -->
+    <Panel id="storytellerContentArea" class="storyteller_control_content" active="false">
 
-        <!--
-    UI.setAttributes("storytellerContentArea", {height = "900", width = "1500", color = "rgba(0, 1, 0, 0.12)", offsetXY = "120 20", ignoreLayout = "true", rectAlignment = "UpperLeft", childAlignment = "UpperLeft", padding = "0 0 0 0"})
-    -->
+      <!-- Scenes Panel -->
+      <HorizontalLayout id="panel_scenes_host" class="storyteller_three_panel_container">
+      <!--
+      UI.setAttributes("panel_scenes", {})
+      UI.setAttributes("panel_scenes_library", {})
+      UI.setAttributes("db_third_column", {})
+      -->
+        <Include src="panel_scenes.xml" />
+        <Include src="panel_scenes_library.xml" />
+        <Panel id="db_third_column" class="storyteller_panel_column" />
+      </HorizontalLayout>
 
-        <!-- padding: Panel acts as layout group (TTS Layout/Grouping). Inner VL uses flexibleHeight so children get real vertical space. -->
-        <!-- Inner VL width must match `storytellerContentArea` or TTS squeezes multi-column Scenes (`panel_scenes_host`) to a hairline. -->
-        <Panel id="storytellerContentArea" active="false" minWidth="1200" minHeight="700" flexibleHeight="0" padding="0 0 0 0">
-          <VerticalLayout id="db_storytellerContentArea_content" padding="0" spacing="4" flexibleHeight="1" childForceExpandHeight="true" minWidth="1200" preferredWidth="1200" childForceExpandWidth="true">
-            <Include src="panel_scenes_host.xml" />
-            <Include src="panel_soundscape.xml" />
-            <Include src="panel_pcs.xml" />
-            <Include src="panel_phases.xml" />
-            <Include src="panel_stats.xml" />
-          </VerticalLayout>
-        </Panel>
-      </VerticalLayout>
+      <Include src="panel_soundscape.xml" />
+      <Include src="panel_pcs.xml" />
+      <Include src="panel_phases.xml" />
+      <Include src="panel_stats.xml" />
     </Panel>
+
   </VerticalLayout>
+
 </Panel>
