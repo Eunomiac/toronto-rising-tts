@@ -79,7 +79,7 @@ DEBUG.inspectSoundscapeAudio()
 
 **Apply scene:** blindfold ~**2 s** lead-in + **10 s** settle → `PresentDayClock.resolveAndApplyActivationClock` → `MapPins.onSceneApplied()` → `Sync.full`.
 
-**Dice on table:** Scene Apply and Scenes-panel table toggles are blocked while any loose `d10`-tagged die exists on the table (`RSL.hasLooseDiceOnTable` — containers excluded). Finish or cancel rolls before switching layout.
+**Dice on table:** Scene Apply and Scenes-panel table toggles are blocked while any loose `d10`-tagged die exists on the table (`RSL.hasLooseDiceOnTable` — containers excluded; preload-pool dice at `d10Preload` / under-table park are ignored). Finish or cancel rolls before switching layout.
 
 ---
 

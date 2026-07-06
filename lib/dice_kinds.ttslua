@@ -251,32 +251,78 @@ function DK.isDieObjectTags(tags)
     return false
 end
 
+--- Y below this is off-table preload stash (belt-and-suspenders for layout guard).
+DK.PRELOAD_PARK_Y_THRESHOLD = -50
+
+--- Swap one d10-family tag for another via setTags (removeTag/addTag is unreliable on spawned dice).
+-- @param die Object|nil
+-- @param fromTag string
+-- @param toTag string
+local function swapDieD10FamilyTag(die, fromTag, toTag)
+    if die == nil or die.getTags == nil or die.setTags == nil then
+        return
+    end
+    local tags = die.getTags()
+    if type(tags) ~= "table" then
+        tags = {}
+    end
+    local out = {}
+    local hasTo = false
+    for _, t in ipairs(tags) do
+        if t == fromTag then
+            -- omit
+        elseif t == toTag then
+            hasTo = true
+            out[#out + 1] = t
+        else
+            out[#out + 1] = t
+        end
+    end
+    if not hasTo then
+        out[#out + 1] = toTag
+    end
+    die.setTags(out)
+end
+
+--- True when die is parked in the preload pool (excluded from `hasLooseDiceOnTable`).
+-- @param die Object|nil
+-- @return boolean
+function DK.isPreloadParkedDie(die)
+    if die == nil then
+        return false
+    end
+    if die.script_state == DK.SCRIPT_STATE_PRELOAD_POOL then
+        return true
+    end
+    if die.getTags ~= nil then
+        local tags = die.getTags()
+        if type(tags) == "table" then
+            for _, t in ipairs(tags) do
+                if t == DK.TAG_D10_PRELOAD then
+                    return true
+                end
+            end
+        end
+    end
+    if die.getPosition ~= nil then
+        local p = die.getPosition()
+        if type(p) == "table" and type(p.y) == "number" and p.y < DK.PRELOAD_PARK_Y_THRESHOLD then
+            return true
+        end
+    end
+    return false
+end
+
 --- Parked preload dice: `d10` → `d10Preload` so layout guards ignore them.
 -- @param die Object|nil
 function DK.setDieTagsForPreloadPool(die)
-    if die == nil then
-        return
-    end
-    if die.removeTag ~= nil and die.hasTag ~= nil and die.hasTag(DK.TAG_D10) then
-        die.removeTag(DK.TAG_D10)
-    end
-    if die.addTag ~= nil and (die.hasTag == nil or not die.hasTag(DK.TAG_D10_PRELOAD)) then
-        die.addTag(DK.TAG_D10_PRELOAD)
-    end
+    swapDieD10FamilyTag(die, DK.TAG_D10, DK.TAG_D10_PRELOAD)
 end
 
 --- Staged/table dice: restore `d10` from preload pool tag.
 -- @param die Object|nil
 function DK.setDieTagsForActivePlay(die)
-    if die == nil then
-        return
-    end
-    if die.removeTag ~= nil and die.hasTag ~= nil and die.hasTag(DK.TAG_D10_PRELOAD) then
-        die.removeTag(DK.TAG_D10_PRELOAD)
-    end
-    if die.addTag ~= nil and (die.hasTag == nil or not die.hasTag(DK.TAG_D10)) then
-        die.addTag(DK.TAG_D10)
-    end
+    swapDieD10FamilyTag(die, DK.TAG_D10_PRELOAD, DK.TAG_D10)
 end
 
 --- Owner from tags: seat color or "storyteller".

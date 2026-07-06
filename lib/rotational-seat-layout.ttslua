@@ -34,6 +34,7 @@ local NPCS = require("core.npcs")
 local SRI = require("lib.seat-role-identity")
 local TarotObjects = require("lib.tarot_objects")
 local G = require("lib.guids")
+local DK = require("lib.dice_kinds")
 
 --- Lazy load: core.debug is large; only needed for workspace file export helpers.
 --- @return table
@@ -3393,11 +3394,19 @@ function M.SyncTable(tableKey, opts)
 end
 
 --- True when any module die is loose on the table (`getObjectsWithTag` excludes container contents).
---- Parked preload pool dice use `d10Preload`, not `d10` (TOR-287).
+--- Parked preload pool dice use `d10Preload` / `preloadPool` script_state (TOR-287).
 --- @return boolean
 function M.hasLooseDiceOnTable()
   local tagged = getObjectsWithTag("d10")
-  return U.Type(tagged) == "table" and #tagged > 0
+  if U.Type(tagged) ~= "table" then
+    return false
+  end
+  for i = 1, #tagged do
+    if DK.isPreloadParkedDie(tagged[i]) ~= true then
+      return true
+    end
+  end
+  return false
 end
 
 --- Alerts the GM and returns true when table/scene layout changes must wait for rolls to finish.

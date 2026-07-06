@@ -146,6 +146,19 @@ function DPP.warmBag(bagGuid)
     return spawned
 end
 
+--- Re-apply preload tags on every pooled die (belt-and-suspenders after warm).
+function DPP.retagAllParked()
+    for _, stack in pairs(availableByBag) do
+        if type(stack) == "table" then
+            for _, die in ipairs(stack) do
+                if die ~= nil then
+                    DK.setDieTagsForPreloadPool(die)
+                end
+            end
+        end
+    end
+end
+
 --- Warm every registered player + storyteller dice bag.
 -- @return number bagsWarmed
 function DPP.warmAll()
@@ -156,6 +169,7 @@ function DPP.warmAll()
             count = count + 1
         end
     end
+    DPP.retagAllParked()
     return count
 end
 
