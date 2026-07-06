@@ -1,0 +1,243 @@
+--[[
+    Dice preload pool (TOR-287).
+
+    Pre-spawns dice off-table (y = -200) per bag so roll staging reuses warmed meshes
+    instead of fresh takeObject placeholder frames. Global orchestrates; dice bags claim
+    via Global.call and return on destroy/remove.
+]]
+
+---@diagnostic disable: undefined-global
+
+local DPP = {}
+
+local G = require("lib.guids")
+local DK = require("lib.dice_kinds")
+
+--- Dice per bag — matches player MAX_DICE_PER_ARC headroom.
+local POOL_SIZE = 12
+local PARK_Y = -200
+local PARK_ORIGIN = { x = -120, y = PARK_Y, z = -90 }
+local PARK_COL_SPACING = 10
+local PARK_ROW_SPACING = 10
+local PARK_SLOT_X_STEP = 0.75
+local PARK_SLOT_Z_STEP = 0.75
+local PARK_SLOTS_PER_ROW = 4
+
+--- @type table<string, table[]>  bagGuid → stack of parked Object
+local availableByBag = {}
+
+--- @type table<string, string>  dieGuid → bagGuid
+local bagByDieGuid = {}
+
+--- @type table<string, number>  bagGuid → stable grid index
+local bagGridIndex = {}
+
+--- @type table<string, boolean>
+local warmedBags = {}
+
+local nextBagGridIndex = 0
+
+--- @return string[]
+local function enumerateAllDiceBagGuids()
+    local out = {}
+    local seen = {}
+    local colors = { "Brown", "Orange", "Red", "Pink", "Purple" }
+    for _, color in ipairs(colors) do
+        local bags = G.GetAllPlayerDiceBagGUIDs(color)
+        if type(bags) == "table" then
+            for _, guid in pairs(bags) do
+                if type(guid) == "string" and seen[guid] ~= true then
+                    seen[guid] = true
+                    out[#out + 1] = guid
+                end
+            end
+        end
+    end
+    local stBags = G.GetAllStorytellerDiceBagGUIDs()
+    if type(stBags) == "table" then
+        for _, guid in pairs(stBags) do
+            if type(guid) == "string" and seen[guid] ~= true then
+                seen[guid] = true
+                out[#out + 1] = guid
+            end
+        end
+    end
+    return out
+end
+
+--- @param bagGuid string
+-- @return number
+local function gridIndexForBag(bagGuid)
+    local idx = bagGridIndex[bagGuid]
+    if type(idx) == "number" then
+        return idx
+    end
+    nextBagGridIndex = nextBagGridIndex + 1
+    bagGridIndex[bagGuid] = nextBagGridIndex
+    return nextBagGridIndex
+end
+
+--- @param bagIndex number
+-- @param slotIndex number 1..POOL_SIZE
+-- @return table
+local function parkPositionFor(bagIndex, slotIndex)
+    local col = (bagIndex - 1) % 6
+    local row = math.floor((bagIndex - 1) / 6)
+    local slot = slotIndex - 1
+    return {
+        x = PARK_ORIGIN.x + col * PARK_COL_SPACING + (slot % PARK_SLOTS_PER_ROW) * PARK_SLOT_X_STEP,
+        y = PARK_Y,
+        z = PARK_ORIGIN.z + row * PARK_ROW_SPACING + math.floor(slot / PARK_SLOTS_PER_ROW) * PARK_SLOT_Z_STEP,
+    }
+end
+
+--- @param die Object
+-- @param bagGuid string
+-- @param slotIndex number
+local function parkDie(die, bagGuid, slotIndex)
+    if die == nil then
+        return
+    end
+    local bagIndex = gridIndexForBag(bagGuid)
+    local pos = parkPositionFor(bagIndex, slotIndex)
+    die.setLock(true)
+    die.script_state = DK.SCRIPT_STATE_PRELOAD_POOL
+    die.setPosition(pos)
+    die.setRotation({ x = 0, y = 180, z = 0 })
+end
+
+--- @param bagGuid string
+local function ensureAvailableStack(bagGuid)
+    if availableByBag[bagGuid] == nil then
+        availableByBag[bagGuid] = {}
+    end
+    return availableByBag[bagGuid]
+end
+
+--- @param die Object
+-- @param bagGuid string
+local function trackDie(die, bagGuid)
+    if die == nil or type(bagGuid) ~= "string" then
+        return
+    end
+    bagByDieGuid[die.getGUID()] = bagGuid
+end
+
+--- Pre-spawn POOL_SIZE dice per bag at the under-table grid (one-time mesh warm).
+-- @param bagGuid string
+-- @return number spawned
+function DPP.warmBag(bagGuid)
+    if type(bagGuid) ~= "string" or warmedBags[bagGuid] == true then
+        return 0
+    end
+    local bag = G.getObject(bagGuid)
+    if bag == nil or bag.takeObject == nil then
+        return 0
+    end
+    warmedBags[bagGuid] = true
+    local stack = ensureAvailableStack(bagGuid)
+    local bagIndex = gridIndexForBag(bagGuid)
+    local spawned = 0
+    for slot = 1, POOL_SIZE do
+        local pos = parkPositionFor(bagIndex, slot)
+        local die = bag.takeObject({
+            position = pos,
+            rotation = { x = 0, y = 180, z = 0 },
+        })
+        if die ~= nil then
+            trackDie(die, bagGuid)
+            parkDie(die, bagGuid, slot)
+            stack[#stack + 1] = die
+            spawned = spawned + 1
+        end
+    end
+    return spawned
+end
+
+--- Warm every registered player + storyteller dice bag.
+-- @return number bagsWarmed
+function DPP.warmAll()
+    local guids = enumerateAllDiceBagGuids()
+    local count = 0
+    for _, bagGuid in ipairs(guids) do
+        if DPP.warmBag(bagGuid) > 0 then
+            count = count + 1
+        end
+    end
+    return count
+end
+
+--- Pop a pre-warmed die onto the staging pose; nil when pool empty (caller uses takeObject).
+-- @param bagGuid string
+-- @param position table
+-- @param rotation table
+-- @param scale number|nil
+-- @return Object|nil
+function DPP.claim(bagGuid, position, rotation, scale)
+    if type(bagGuid) ~= "string" then
+        return nil
+    end
+    DPP.warmBag(bagGuid)
+    local stack = availableByBag[bagGuid]
+    if type(stack) ~= "table" or #stack == 0 then
+        return nil
+    end
+    local die = stack[#stack]
+    stack[#stack] = nil
+    if die == nil then
+        return nil
+    end
+    trackDie(die, bagGuid)
+    die.script_state = " "
+    if type(scale) == "number" then
+        die.setScale({ scale, scale, scale })
+    end
+    if type(position) == "table" then
+        die.setPosition(position)
+    end
+    if type(rotation) == "table" then
+        die.setRotation(rotation)
+    end
+    die.setLock(true)
+    return die
+end
+
+--- Track a fresh takeObject die so a later release can park it instead of destroying.
+-- @param dieGuid string
+-- @param bagGuid string
+function DPP.register(dieGuid, bagGuid)
+    if type(dieGuid) == "string" and type(bagGuid) == "string" then
+        bagByDieGuid[dieGuid] = bagGuid
+    end
+end
+
+--- Park a die back under-table for reuse; false when die is unknown (caller may destroy).
+-- @param dieGuid string
+-- @param bagGuid string|nil  optional hint when die was never registered
+-- @return boolean
+function DPP.release(dieGuid, bagGuid)
+    if type(dieGuid) ~= "string" then
+        return false
+    end
+    local ownerBag = bagByDieGuid[dieGuid] or bagGuid
+    if type(ownerBag) ~= "string" then
+        return false
+    end
+    local die = G.getObject(dieGuid)
+    if die == nil then
+        bagByDieGuid[dieGuid] = nil
+        return false
+    end
+    DPP.warmBag(ownerBag)
+    local stack = ensureAvailableStack(ownerBag)
+    local slotIndex = #stack + 1
+    if slotIndex > POOL_SIZE then
+        slotIndex = POOL_SIZE
+    end
+    parkDie(die, ownerBag, slotIndex)
+    stack[#stack + 1] = die
+    bagByDieGuid[dieGuid] = ownerBag
+    return true
+end
+
+return DPP

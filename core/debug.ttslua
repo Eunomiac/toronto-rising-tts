@@ -5630,4 +5630,58 @@ function DEBUG.dumpRollPolicy(seatColor)
   end
 end
 
+--- Print roll broadcast headline matrix from constants (TOR-296 smoke check).
+-- @usage lua DEBUG.rollBroadcastMessageAudit()
+function DEBUG.rollBroadcastMessageAudit()
+    local rollTypes = {
+        { C.RollType.STANDARD, "Standard" },
+        { C.RollType.DISCIPLINE, "Discipline" },
+        { C.RollType.SIMPLE_CHECK, "Simple Check" },
+        { C.RollType.ROUSE, "Rouse" },
+        { C.RollType.ROUSE_OBLIVION, "Rouse Oblivion" },
+        { C.RollType.REMORSE, "Remorse" },
+        { C.RollType.FRENZY, "Frenzy" },
+        { C.RollType.WILLPOWER_ROLL, "Willpower" },
+        { C.RollType.HUMANITY_ROLL, "Humanity" },
+        { C.RollType.WEREWOLF, "Werewolf" },
+        { C.RollType.LAUNCH, "Launch" },
+        { C.RollType.GOAL, "Goal" },
+    }
+    local classes = {
+        C.ResultClass.MESSY_CRITICAL,
+        C.ResultClass.CRITICAL_WIN,
+        C.ResultClass.WIN,
+        C.ResultClass.FAILURE,
+        C.ResultClass.BESTIAL_FAILURE,
+        C.ResultClass.TOTAL_FAILURE,
+        C.ResultClass.TOTAL_BESTIAL_FAILURE,
+    }
+    print("[TOR-296] Roll broadcast audit — see .dev/Dice System/Roll Broadcast Messages.md")
+    for _, rt in ipairs(rollTypes) do
+        print(string.format("--- %s (%s) ---", rt[2], rt[1]))
+        for _, rc in ipairs(classes) do
+            local label = C.ResultClassLabel[rc] or rc
+            if rt[1] == C.RollType.ROUSE or rt[1] == C.RollType.ROUSE_OBLIVION then
+                if rc == C.ResultClass.WIN or rc == C.ResultClass.CRITICAL_WIN then
+                    label = "Success (narrative override)"
+                elseif rc == C.ResultClass.FAILURE or rc == C.ResultClass.TOTAL_FAILURE then
+                    label = "Hunger Roused (narrative override)"
+                end
+            elseif rt[1] == C.RollType.FRENZY then
+                if rc == C.ResultClass.CRITICAL_WIN then label = "The Leash Holds"
+                elseif rc == C.ResultClass.WIN then label = "Fight For Control!"
+                elseif rc == C.ResultClass.FAILURE or rc == C.ResultClass.TOTAL_FAILURE then label = "FRENZY!"
+                end
+            elseif rt[1] == C.RollType.REMORSE then
+                if rc == C.ResultClass.WIN or rc == C.ResultClass.CRITICAL_WIN then label = "Stains Cleared"
+                elseif rc == C.ResultClass.FAILURE or rc == C.ResultClass.TOTAL_FAILURE then label = "Degeneration"
+                end
+            end
+            print(string.format("  %s → %s", rc, label))
+        end
+    end
+    print("[TOR-296] Brutal narratives: Brutal Failure | Brutal Outcome")
+    print("[TOR-296] No-difficulty broadcast types: simpleCheck, rouse, rouseOblivion, remorse, frenzy")
+end
+
 return DEBUG

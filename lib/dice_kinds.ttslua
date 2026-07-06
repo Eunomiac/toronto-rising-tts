@@ -76,6 +76,8 @@ local KIND_TO_TAG = {
 DK.GM_NOTE_BLOOD_SURGE_SUFFIX = "|bloodSurge"
 
 --- script_state on Normal/Hunger dice spawned by Blood Surge (undo targeting).
+DK.SCRIPT_STATE_PRELOAD_POOL = "preloadPool"
+
 DK.SCRIPT_STATE_BLOOD_SURGE_POOL = "bloodSurgePool"
 
 --- script_state on Rouse dice spawned for Blood Surge (separate rouse check).

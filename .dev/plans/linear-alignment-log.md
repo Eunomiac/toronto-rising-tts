@@ -422,6 +422,8 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-05 | DONE | TOR-281 | Stage Clear seat rules + live scene-library persistence — step-by-step playbook author verified; supporting fixes (ensureSceneLibraryStub, global Sync, logCoroutineIssue); commits `1291042`–`704273b`; solo Host only |
 | 2026-07-05 | DONE | TOR-294 | Author verified — rouse-only broadcast main die row |
 | 2026-07-05 | DONE | TOR-302 | Author verified — anchor-based ST tray light + spawn circles (`d4ce663`) |
-| 2026-07-05 | Focus | Stack | #1 TOR-244, #2 TOR-287, #3 TOR-296; TOR-294/TOR-302 author-verified closed |
+| 2026-07-06 | DONE | TOR-287 | Dice preload pool — `core/dice_preload_pool.ttslua`, Global claim/return, dice_bag recycle; warmed at startup gate |
+| 2026-07-06 | DONE | TOR-296 | Roll broadcast message audit — `.dev/Dice System/Roll Broadcast Messages.md` + `DEBUG.rollBroadcastMessageAudit()` |
+| 2026-07-06 | Focus | Stack | #1 TOR-244, #2 INBOX gameboard Apply fingerprint, #3 TOR-290; TOR-287/TOR-296 closed |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

@@ -51,9 +51,16 @@ function onLoad(saved_data)
     if saved_data ~= nil and saved_data ~= "" then
         local loaded = JSON.decode(saved_data)
         if type(loaded) == "table" then
+            local bagGuid = self.getGUID()
             for _, guid in ipairs(loaded) do
-                local die = G.getObject(guid)
-                if die ~= nil then destroyObject(die) end
+                local returned = Global.call("GlobalReturnDiceToPreloadPool", {
+                    dieGuid = guid,
+                    bagGuid = bagGuid,
+                })
+                if returned ~= true then
+                    local die = G.getObject(guid)
+                    if die ~= nil then destroyObject(die) end
+                end
             end
         end
     end
@@ -268,6 +275,49 @@ local function worldArcPoint(bagColor, arcCenter, i, total, radius)
     return { x = world.x, y = STAGING_WORLD_Y + layerY + trayYOffset, z = world.z }
 end
 
+--- Return staged die to preload pool (Global) or destroy when pool unavailable.
+-- @param die Object|nil
+local function releaseDieToPreloadOrDestroy(die)
+    if die == nil then
+        return
+    end
+    local returned = Global.call("GlobalReturnDiceToPreloadPool", {
+        dieGuid = die.getGUID(),
+        bagGuid = self.getGUID(),
+    })
+    if returned ~= true then
+        destroyObject(die)
+    end
+end
+
+--- Claim pre-warmed die from pool, or fall back to bag takeObject (TOR-287).
+-- @param position table
+-- @param rotation table|nil
+-- @return Object|nil
+local function acquireDie(position, rotation)
+    local rot = type(rotation) == "table" and rotation or randomRotation()
+    local die = Global.call("GlobalClaimDiceFromPreloadPool", {
+        bagGuid = self.getGUID(),
+        position = position,
+        rotation = rot,
+        scale = SCALE,
+    })
+    if die == nil then
+        die = self.takeObject({
+            position = position,
+            rotation = rot,
+        })
+        if die ~= nil then
+            die.setScale({ SCALE, SCALE, SCALE })
+            Global.call("GlobalRegisterDiceForPreloadPool", {
+                dieGuid = die.getGUID(),
+                bagGuid = self.getGUID(),
+            })
+        end
+    end
+    return die
+end
+
 local spawnPostRollDie
 
 function spawnDieRedirect(params)
@@ -294,18 +344,11 @@ function spawnDie(bagColor, dieType, opts)
     local bagKind = getDieType()
     local spawnRadius = radiusForSpawnKind(dieType, bloodSurgeRouse)
 
-    if isStorytellerTraySpawn(arcCenter) then
-        repositionStorytellerTrayAll(arcCenter)
-
-        local die = self.takeObject({
-            position = { x = arcCenter.x, y = arcCenter.y, z = arcCenter.z },
-            rotation = randomRotation(),
-        })
+    local function finishSpawnedDie(die)
         if die == nil then
             print("[DiceBag] spawnDie: takeObject returned nil (bag GUID " .. tostring(self.getGUID()) .. ")")
             return
         end
-
         die.setScale({ SCALE, SCALE, SCALE })
         die.setLock(true)
         die.script_state = " "
@@ -314,9 +357,7 @@ function spawnDie(bagColor, dieType, opts)
         elseif bloodSurgeRouse == true then
             die.script_state = DK.SCRIPT_STATE_BLOOD_SURGE_ROUSE
         end
-
         table.insert(spawnedDice, die)
-
         Global.call("GlobalTagDieForActiveRoll", {
             color = bagColor,
             dieGuid = die.getGUID(),
@@ -330,6 +371,14 @@ function spawnDie(bagColor, dieType, opts)
             stagedCount = #spawnedDice,
             manualRouseCount = bagKind == DK.KIND_ROUSE and countManualRouseDice() or nil,
         })
+    end
+
+    if isStorytellerTraySpawn(arcCenter) then
+        repositionStorytellerTrayAll(arcCenter)
+        local die = acquireDie({
+            x = arcCenter.x, y = arcCenter.y, z = arcCenter.z,
+        }, randomRotation())
+        finishSpawnedDie(die)
         repositionStorytellerTrayAll(arcCenter)
         return
     end
@@ -348,39 +397,11 @@ function spawnDie(bagColor, dieType, opts)
     local ringSlot = ringCount + 1
     local ringTotal = ringCount + 1
 
-    local die = self.takeObject({
-        position = worldArcPoint(bagColor, arcCenter, ringSlot, ringTotal, spawnRadius),
-        rotation = randomRotation(),
-    })
-    if die == nil then
-        print("[DiceBag] spawnDie: takeObject returned nil (bag GUID " .. tostring(self.getGUID()) .. ")")
-        return
-    end
-
-    die.setScale({ SCALE, SCALE, SCALE })
-    die.setLock(true)
-    die.script_state = " "
-    if bloodSurgePool == true then
-        die.script_state = DK.SCRIPT_STATE_BLOOD_SURGE_POOL
-    elseif bloodSurgeRouse == true then
-        die.script_state = DK.SCRIPT_STATE_BLOOD_SURGE_ROUSE
-    end
-
-    table.insert(spawnedDice, die)
-
-    Global.call("GlobalTagDieForActiveRoll", {
-        color = bagColor,
-        dieGuid = die.getGUID(),
-        bloodSurgeRouse = bloodSurgeRouse,
-    })
-    Global.call("GlobalOnBagDieSpawned", {
-        color = bagColor,
-        dieType = dieType,
-        bloodSurgePool = bloodSurgePool,
-        bloodSurgeRouse = bloodSurgeRouse,
-        stagedCount = #spawnedDice,
-        manualRouseCount = bagKind == DK.KIND_ROUSE and countManualRouseDice() or nil,
-    })
+    local die = acquireDie(
+        worldArcPoint(bagColor, arcCenter, ringSlot, ringTotal, spawnRadius),
+        randomRotation()
+    )
+    finishSpawnedDie(die)
 end
 
 --- POST_ROLL ST correction: one die on a random arc slot (no reposition of existing pool dice).
@@ -397,10 +418,7 @@ spawnPostRollDie = function(params)
     local arcSlots = 8
     local ringSlot = math.random(1, arcSlots)
     local spawnPos = worldArcPoint(bagColor, nil, ringSlot, arcSlots, spawnRadius)
-    local die = self.takeObject({
-        position = spawnPos,
-        rotation = randomRotation(),
-    })
+    local die = acquireDie(spawnPos, randomRotation())
     if die == nil then
         print("[DiceBag] spawnPostRollDie: takeObject returned nil (bag GUID " .. tostring(self.getGUID()) .. ")")
         return nil
@@ -580,7 +598,7 @@ function removeLastSpawnedDie(params)
     end
     table.remove(spawnedDice, dieIndex)
     if die ~= nil then
-        destroyObject(die)
+        releaseDieToPreloadOrDestroy(die)
     end
 
     local newCount = #spawnedDice
@@ -672,7 +690,7 @@ end
 
 function destroyDice()
     for _, die in ipairs(spawnedDice) do
-        if die ~= nil then destroyObject(die) end
+        releaseDieToPreloadOrDestroy(die)
     end
     spawnedDice = {}
 end
@@ -689,7 +707,7 @@ function destroyStagedByScriptState(params)
     for i = #spawnedDice, 1, -1 do
         local die = spawnedDice[i]
         if die ~= nil and die.script_state == target then
-            destroyObject(die)
+            releaseDieToPreloadOrDestroy(die)
             table.remove(spawnedDice, i)
             removed = removed + 1
         end

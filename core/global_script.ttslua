@@ -2039,6 +2039,15 @@ function onLoad(saved_data)
             if TarotToggle ~= nil and type(TarotToggle.syncDeckInteractableFromInfer) == "function" then
                 TarotToggle.syncDeckInteractableFromInfer(G.GUIDS.TAROT_BUTTON_PINK, false)
             end
+            setStartupAction("dice-preload-pool-warm")
+            local DPP = require("core.dice_preload_pool")
+            local warmed = DPP.warmAll()
+            print(
+                U.loadElapsedPrefix()
+                    .. "Dice preload pool warmed "
+                    .. tostring(warmed)
+                    .. " bag(s)."
+            )
             setStartupAction("startup-ready-hide-loading-overlays")
             hideStartupLoadingOverlays()
             setStartupAction("startup-ready-complete")
@@ -4781,6 +4790,45 @@ function GlobalGetPcRollTrayYOffset(params)
         return 0
     end
     return PRTL.getTrayYOffset(params.color)
+end
+
+--- Warm under-table dice preload pool for all bags (TOR-287).
+-- @return number bagsWarmed
+function GlobalWarmDicePreloadPool()
+    local DPP = require("core.dice_preload_pool")
+    return DPP.warmAll()
+end
+
+--- Claim a pre-warmed die for staging; nil when pool empty (dice bag falls back to takeObject).
+-- @param params table  { bagGuid: string, position: table, rotation: table, scale?: number }
+-- @return Object|nil
+function GlobalClaimDiceFromPreloadPool(params)
+    if type(params) ~= "table" or type(params.bagGuid) ~= "string" then
+        return nil
+    end
+    local DPP = require("core.dice_preload_pool")
+    return DPP.claim(params.bagGuid, params.position, params.rotation, params.scale)
+end
+
+--- Park a die back in the preload pool instead of destroying it (TOR-287).
+-- @param params table  { dieGuid: string, bagGuid?: string }
+-- @return boolean
+function GlobalReturnDiceToPreloadPool(params)
+    if type(params) ~= "table" or type(params.dieGuid) ~= "string" then
+        return false
+    end
+    local DPP = require("core.dice_preload_pool")
+    return DPP.release(params.dieGuid, params.bagGuid)
+end
+
+--- Track a fresh takeObject die for later pool release (TOR-287).
+-- @param params table  { dieGuid: string, bagGuid: string }
+function GlobalRegisterDiceForPreloadPool(params)
+    if type(params) ~= "table" then
+        return
+    end
+    local DPP = require("core.dice_preload_pool")
+    DPP.register(params.dieGuid, params.bagGuid)
 end
 
 --- Global.call entry: destroy table dice tagged with a roll id (player seats).
