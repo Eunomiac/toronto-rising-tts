@@ -201,14 +201,6 @@ function BPD.buildSetDecalsPayload(existing, stats, pageNum, objectLabel, resolv
       ))
     end
     local slot = decal.name
-    local newUrl = urlBySlot[slot]
-    if newUrl == nil then
-      error(string.format(
-        "blood_potency_decals.buildSetDecalsPayload: unexpected decal %q on %s (workshop AttachedDecal.name must be static slot key)",
-        slot,
-        tostring(objectLabel)
-      ))
-    end
     if seenSlot[slot] then
       error(string.format(
         "blood_potency_decals.buildSetDecalsPayload: duplicate decal slot %q on %s",
@@ -218,13 +210,33 @@ function BPD.buildSetDecalsPayload(existing, stats, pageNum, objectLabel, resolv
     end
     seenSlot[slot] = true
     local ctx = string.format("%s decal[%s]", tostring(objectLabel), tostring(index))
-    nextDecals[#nextDecals + 1] = {
-      name = slot,
-      url = newUrl,
-      position = vec3ToTable(decal.position, ctx .. " position"),
-      rotation = vec3ToTable(decal.rotation, ctx .. " rotation"),
-      scale = normalizeScale(decal.scale, ctx .. " scale"),
-    }
+    local newUrl = urlBySlot[slot]
+    if newUrl == nil then
+      -- Workshop manual/decorative decal — preserve url and transforms; script does not drive it.
+      local existingUrl = decal.url
+      if type(existingUrl) ~= "string" or existingUrl == "" then
+        error(string.format(
+          "blood_potency_decals.buildSetDecalsPayload: manual decal %q on %s has no url",
+          slot,
+          tostring(objectLabel)
+        ))
+      end
+      nextDecals[#nextDecals + 1] = {
+        name = slot,
+        url = existingUrl,
+        position = vec3ToTable(decal.position, ctx .. " position"),
+        rotation = vec3ToTable(decal.rotation, ctx .. " rotation"),
+        scale = normalizeScale(decal.scale, ctx .. " scale"),
+      }
+    else
+      nextDecals[#nextDecals + 1] = {
+        name = slot,
+        url = newUrl,
+        position = vec3ToTable(decal.position, ctx .. " position"),
+        rotation = vec3ToTable(decal.rotation, ctx .. " rotation"),
+        scale = normalizeScale(decal.scale, ctx .. " scale"),
+      }
+    end
   end
 
   for slot, _ in pairs(urlBySlot) do
