@@ -314,7 +314,6 @@ function STD.closeForSlot(slot)
     if type(slot) ~= "number" then
         return
     end
-    local wasNpcSeat = npcSeatBySlot[slot]
     npcSeatBySlot[slot] = nil
 
     local key = SLOT_DRAWER_KEYS[slot]
@@ -327,9 +326,7 @@ function STD.closeForSlot(slot)
         local resolvedPose = OP.resolveStatePose(obj, entry, "off") or entry.off
         OP.applyResolvedPose(obj, resolvedPose, 0, 0, { useSmoothSetters = true })
     end
-    if wasNpcSeat ~= nil then
-        restoreTrayLightPosition(slot)
-    end
+    restoreTrayLightPosition(slot)
     local lightRef = SLOT_LIGHT_REFS[slot]
     if type(lightRef) == "string" then
         L.SetLightMode(lightRef, "OFF", nil, 0.25)
