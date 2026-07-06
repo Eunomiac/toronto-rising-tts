@@ -1,14 +1,11 @@
 # Inbox
 
 ## Quick Fixes
-- [Bug] If a Stage Control Board update is aborted because dice are on the table, the tokens remain on the Stage Control Board, and a subsequent attempt to Apply to changes (after clearing the dice) results in a "placements and seat row unchanged - skipped reconcile".  Expected Behavior: If a Stage Control Board "Apply" is interrupted, it shouldn't be fingerprinted and should be allowed to run again.
-- [Player Dice Trays] Player dice trays should be activated when they initiate a roll -- not when they first add a die to their pool (which is the current behavior).  The drawer should present itself as an invitation or cue to indicate to the player that the game is waiting for them to add dice.
 
 ## Active
 
 ## External Work (Set STATUS to "External To Do")
 
-- Review roll broadcast message phrasing — `.dev/Dice System/Roll Broadcast Messages.md`; comment desired copy changes on Linear → **TOR-303** (External Todo)
 ## Needs clarification
 
 ### Unclear Bugs
@@ -21,6 +18,10 @@
 
 ## Processed
 
+2026-07-06 INBOX Quick Fix — control board Apply dice-guard retry skipped → **TOR-304** (NPC & Spotlight Bug, High; parent **TOR-169**; relatedTo **TOR-243**)
+2026-07-06 INBOX Quick Fix — player dice tray open on roll initiate → **TOR-305** (Dice & Rolls Improvement, Medium; parent **TOR-31**)
+2026-07-06 INBOX Quick Fix — Take Half auto-broadcast / single-button proceed → **TOR-306** (Dice & Rolls Improvement, Medium; parent **TOR-31**; relatedTo **TOR-73**, **TOR-226**)
+2026-07-06 INBOX External — roll broadcast phrasing author review → **TOR-303** (External Todo; parent **TOR-31**; relatedTo **TOR-296**)
 2026-07-05 INBOX Quick Fixes — Scenes panel closes on manual Table button (`closeScenesPanel` in `StorytellerScenesPanel.onHudClick`)
 2026-07-05 INBOX Quick Fixes — floor/plinth XZ follow active table origin on table switch (`syncSharedFloorAndPlinthToTableOrigin` in `lib/rotational-seat-layout.ttslua`)
 2026-07-05 INBOX Active — seated NPC ST roll drawer/spawn/light reposition → **TOR-302** (Dice & Rolls Feature, Medium; parent **TOR-31**)

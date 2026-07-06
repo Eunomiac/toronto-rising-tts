@@ -427,5 +427,9 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-06 | Focus | Stack | #1 TOR-244, #2 INBOX gameboard Apply fingerprint, #3 TOR-290; TOR-287/TOR-296 closed |
 | 2026-07-06 | CREATE | TOR-303 | Author review roll broadcast phrasing — External Todo, human-gate; parent TOR-31; relatedTo TOR-296 |
 | 2026-07-06 | DONE | TOR-287, TOR-296 | Author confirmed complete 2026-07-06 |
+| 2026-07-06 | CREATE | TOR-304 | Control board Apply dice-guard retry skip; NPC Bug High; parent TOR-169; relatedTo TOR-243 |
+| 2026-07-06 | CREATE | TOR-305 | Player dice tray open on roll initiate; Dice Improvement Medium; parent TOR-31 |
+| 2026-07-06 | CREATE | TOR-306 | Take Half auto-broadcast + single-button proceed; Dice Improvement Medium; parent TOR-31 |
+| 2026-07-06 | Focus | Stack | #1 TOR-244, #2 TOR-304, #3 TOR-306; TOR-305 also in cycle; TOR-290 removed (Done) |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
