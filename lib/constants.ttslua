@@ -900,7 +900,7 @@ C.ObjectPositions = {
   DICE_DRAWER_STORYTELLER_NPC1 = {
     target = "DICE_DRAWER_STORYTELLER",
     on = {
-      anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_NPC1,
+      anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_OFF_NPC1,
       height = { y = 2.97 },
       scale = Vector({ 23.57, 3.92, 7.68 })
     },
@@ -913,7 +913,7 @@ C.ObjectPositions = {
   DICE_DRAWER_STORYTELLER_NPC2 = {
     target = "DICE_DRAWER_STORYTELLER",
     on = {
-      anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_NPC2,
+      anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_OFF_NPC2,
       height = { y = 2.97 },
       scale = Vector({ 23.57, 3.92, 7.68 })
     },
@@ -926,7 +926,7 @@ C.ObjectPositions = {
   DICE_DRAWER_STORYTELLER_NPC3 = {
     target = "DICE_DRAWER_STORYTELLER",
     on = {
-      anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_NPC3,
+      anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_OFF_NPC3,
       height = { y = 2.97 },
       scale = Vector({ 23.57, 3.92, 7.68 })
     },
@@ -939,7 +939,7 @@ C.ObjectPositions = {
   DICE_DRAWER_STORYTELLER_NPC4 = {
     target = "DICE_DRAWER_STORYTELLER",
     on = {
-      anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_NPC4,
+      anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_OFF_NPC4,
       height = { y = 2.97 },
       scale = Vector({ 23.57, 3.92, 7.68 })
     },

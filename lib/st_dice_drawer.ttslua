@@ -85,6 +85,82 @@ local function ensureDefaultTrayLightPosCached(slot)
     defaultTrayLightPosBySlot[slot] = { x = pos.x, y = pos.y, z = pos.z }
 end
 
+--- @param npcSeatKey string NPC1..NPC4
+-- @return Object|nil  Homeland seat off anchor (fixed X/Z for tray light + dice spawn)
+local function resolveNpcOffAnchorObject(npcSeatKey)
+    local poseKey = NPC_SEAT_DRAWER_KEYS[npcSeatKey]
+    if poseKey == nil then
+        return nil
+    end
+    local entry = C.ObjectPositions[poseKey]
+    if type(entry) ~= "table" then
+        return nil
+    end
+    local pose = entry.off or entry.on
+    if type(pose) ~= "table" then
+        return nil
+    end
+    local anchorRef = pose.anchor
+    if anchorRef == nil then
+        return nil
+    end
+    if type(anchorRef) == "userdata" then
+        return anchorRef
+    end
+    if type(anchorRef) == "string" and anchorRef ~= "" then
+        local anchor = G.getObject(anchorRef)
+        if anchor ~= nil then
+            return anchor
+        end
+        if G.GUIDS ~= nil and G.GUIDS[anchorRef] ~= nil then
+            return G.getObject(G.GUIDS[anchorRef])
+        end
+    end
+    return nil
+end
+
+--- @param characterKey string|nil
+-- @return string|nil NPC1..NPC4 when seated and narratively present
+local function resolveActiveNpcSeatForCharacter(characterKey)
+    if type(characterKey) ~= "string" or characterKey == "" then
+        return nil
+    end
+    local S = require("core.state")
+    local occupied = S.getStateVal("seatLayout", "occupiedNPCSlots")
+    if type(occupied) ~= "table" then
+        return nil
+    end
+    local NPCS = require("core.npcs")
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        if occupied[seatKey] == characterKey then
+            if NPCS.resolveSeatNarrativePresence(seatKey) == true then
+                return seatKey
+            end
+        end
+    end
+    return nil
+end
+
+--- Homeland seat key for tray arc/light when slot drawer is at an NPC anchor.
+-- @param slot number 1..3
+-- @return string|nil
+local function npcSeatKeyForSlot(slot)
+    local cached = npcSeatBySlot[slot]
+    if type(cached) == "string" then
+        return cached
+    end
+    local S = require("core.state")
+    local pid = S.getPlayerID("Black")
+    if pid == nil then
+        return nil
+    end
+    local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+    if type(active) ~= "table" or active.stDrawerSlot ~= slot then
+        return nil
+    end
+    return resolveActiveNpcSeatForCharacter(active.npcCharacterKey)
+end
+
 --- @param slot number 1..3
 local function restoreTrayLightPosition(slot)
     ensureDefaultTrayLightPosCached(slot)
@@ -96,21 +172,22 @@ local function restoreTrayLightPosition(slot)
     light.setPosition({ x = home.x, y = home.y, z = home.z })
 end
 
---- Match tray light X/Z to drawer; keep light Y and rotation (TOR-302).
+--- Match tray light X/Z to homeland seat off anchor; keep light Y and rotation (TOR-302).
 -- @param slot number 1..3
-local function syncTrayLightToDrawer(slot)
-    local drawer = findDrawerObject(slot)
+-- @param npcSeatKey string NPC1..NPC4
+local function syncTrayLightToNpcAnchor(slot, npcSeatKey)
+    local anchor = resolveNpcOffAnchorObject(npcSeatKey)
     local light = findTrayLightObject(slot)
-    if drawer == nil or light == nil then
+    if anchor == nil or light == nil then
         return
     end
     ensureDefaultTrayLightPosCached(slot)
-    local drawerPos = drawer.getPosition()
+    local anchorPos = anchor.getPosition()
     local lightPos = light.getPosition()
-    if type(drawerPos) ~= "table" or type(lightPos) ~= "table" then
+    if type(anchorPos) ~= "table" or type(lightPos) ~= "table" then
         return
     end
-    light.setPosition({ x = drawerPos.x, y = lightPos.y, z = drawerPos.z })
+    light.setPosition({ x = anchorPos.x, y = lightPos.y, z = anchorPos.z })
 end
 
 --- @param slot number 1..3
@@ -139,9 +216,9 @@ end
 -- @param npcSeatKey string NPC1..NPC4
 local function openForSlotAtNpcSeat(slot, npcSeatKey)
     npcSeatBySlot[slot] = npcSeatKey
+    syncTrayLightToNpcAnchor(slot, npcSeatKey)
     applyNpcSeatDrawerPose(slot, npcSeatKey, "off", 0)
     applyNpcSeatDrawerPose(slot, npcSeatKey, "on", OP.DEFAULT_TRANSITION_DURATION)
-    syncTrayLightToDrawer(slot)
     local lightRef = SLOT_LIGHT_REFS[slot]
     if type(lightRef) == "string" then
         L.SetLightMode(lightRef, "STANDARD", nil, 0.25)
@@ -172,7 +249,8 @@ function STD.isRaisedForRelease(slot)
 end
 
 --- World-space tray origin for spawning dice into an ST roll tray.
--- Center = drawer X/Z (no Y-axis rotation). `radiusX` / `radiusZ` come from padded bounds.
+-- Center X/Z = drawer (default) or fixed homeland off anchor when repositioned (TOR-302).
+-- Ellipse radii still derive from drawer bounds.
 -- @param slot number 1..3
 -- @return table|nil  { x, y, z, radiusX, radiusZ }
 function STD.arcCenterForSlot(slot)
@@ -180,7 +258,22 @@ function STD.arcCenterForSlot(slot)
     if obj == nil then
         return nil
     end
-    return STS.arcCenterFromTraySpec(STS.traySpecFromDrawer(obj))
+    local traySpec = STS.traySpecFromDrawer(obj)
+    if traySpec == nil then
+        return nil
+    end
+    local npcSeatKey = npcSeatKeyForSlot(slot)
+    if type(npcSeatKey) == "string" then
+        local anchor = resolveNpcOffAnchorObject(npcSeatKey)
+        if anchor ~= nil then
+            local anchorPos = anchor.getPosition()
+            if type(anchorPos) == "table" then
+                traySpec.centerX = anchorPos.x
+                traySpec.centerZ = anchorPos.z
+            end
+        end
+    end
+    return STS.arcCenterFromTraySpec(traySpec)
 end
 
 --- Opens drawer pose and STANDARD tray light for a slot.
