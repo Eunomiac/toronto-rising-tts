@@ -191,7 +191,7 @@ function BPD.buildSetDecalsPayload(existing, stats, pageNum, objectLabel, resolv
     urlBySlot[entry.slot] = entry.url
   end
 
-  local seenSlot = {}
+  local seenBpSlot = {}
   local nextDecals = {}
   for index, decal in ipairs(existing) do
     if type(decal) ~= "table" or type(decal.name) ~= "string" then
@@ -201,18 +201,11 @@ function BPD.buildSetDecalsPayload(existing, stats, pageNum, objectLabel, resolv
       ))
     end
     local slot = decal.name
-    if seenSlot[slot] then
-      error(string.format(
-        "blood_potency_decals.buildSetDecalsPayload: duplicate decal slot %q on %s",
-        slot,
-        tostring(objectLabel)
-      ))
-    end
-    seenSlot[slot] = true
     local ctx = string.format("%s decal[%s]", tostring(objectLabel), tostring(index))
     local newUrl = urlBySlot[slot]
     if newUrl == nil then
       -- Workshop manual/decorative decal — preserve url and transforms; script does not drive it.
+      -- Duplicate names are allowed (e.g. two plus2 at different positions).
       local existingUrl = decal.url
       if type(existingUrl) ~= "string" or existingUrl == "" then
         error(string.format(
@@ -229,6 +222,14 @@ function BPD.buildSetDecalsPayload(existing, stats, pageNum, objectLabel, resolv
         scale = normalizeScale(decal.scale, ctx .. " scale"),
       }
     else
+      if seenBpSlot[slot] then
+        error(string.format(
+          "blood_potency_decals.buildSetDecalsPayload: duplicate BP decal slot %q on %s",
+          slot,
+          tostring(objectLabel)
+        ))
+      end
+      seenBpSlot[slot] = true
       nextDecals[#nextDecals + 1] = {
         name = slot,
         url = newUrl,
@@ -240,7 +241,7 @@ function BPD.buildSetDecalsPayload(existing, stats, pageNum, objectLabel, resolv
   end
 
   for slot, _ in pairs(urlBySlot) do
-    if not seenSlot[slot] then
+    if not seenBpSlot[slot] then
       error(string.format(
         "blood_potency_decals.buildSetDecalsPayload: missing decal slot %q on %s (workshop AttachedDecal.name must match)",
         slot,

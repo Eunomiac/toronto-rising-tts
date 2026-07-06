@@ -23,7 +23,7 @@ Each derived stat is one **AttachedDecal** on the listed page. The decal **`name
 
 Slot lists: `C.BloodPotencyDecalSlots.page1` / `.page2`.
 
-**Manual/decorative decals** on the same page may use any other static `AttachedDecal.name` (e.g. `plus2`). Reconcile preserves their workshop **url** and transforms; only BP slot names get URL swaps from derived stats. Do not reuse BP slot keys for manual art.
+**Manual/decorative decals** on the same page may use any other static `AttachedDecal.name` (e.g. `plus2`). Reconcile preserves their workshop **url** and transforms; only BP slot names get URL swaps from derived stats. The same manual name may appear on multiple decals (different positions). Do not reuse BP slot keys for manual art.
 
 ### Image variants (URL catalog)
 
