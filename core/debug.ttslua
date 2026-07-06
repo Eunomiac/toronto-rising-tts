@@ -5682,6 +5682,9 @@ function DEBUG.rollBroadcastMessageAudit()
     end
     print("[TOR-296] Brutal narratives: Brutal Failure | Brutal Outcome")
     print("[TOR-296] No-difficulty broadcast types: simpleCheck, rouse, rouseOblivion, remorse, frenzy")
+    print("[TOR-296] Nil-result broadcast headline: ROLL COMPLETE")
+    print("[TOR-296] Common trigger: Discipline/Willpower/Humanity/Launch/Goal confirmed without ST difficulty")
+    print("[TOR-296] Panel-only (not broadcast): Roll complete. | Roll complete — clear slot on dashboard")
 end
 
 return DEBUG

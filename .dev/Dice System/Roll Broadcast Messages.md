@@ -13,9 +13,49 @@ Reference catalog for the **Roll Result Broadcast Panel** (`rollRes_panel`) and 
 | `rollRes_successes` / `rollRes_difficultyDisplay` | Hidden for no-difficulty roll types (see below) |
 | `rollRes_resultDisplay` | Headline ± signed margin | ALL CAPS headline from `panelResultHeadline` |
 
-**No result object:** When `result` is nil at broadcast time, panel shows `ROLL COMPLETE` (successes row hidden). Rare; most confirms supply a classified result.
+**Timeout:** Panel auto-hides after `C.ROLL_RESULT_BROADCAST_SECONDS` (6s).
 
-**Timeout:** Panel auto-hides after `C.ROLL_RESULT_BROADCAST_SECONDS`.
+## Fixed / auxiliary broadcast strings
+
+These appear on `rollRes_panel` in addition to the classified headline:
+
+| String | Element | When |
+| --- | --- | --- |
+| `{rollerName} rolls …` | `rollRes_rollIntro` | Every broadcast; NPC/ST may substitute history `label` for roller name |
+| `{n} Success` / `{n} Successes` | `rollRes_successes` + `rollRes_successesPhrase` | When successes row visible (not a no-difficulty roll type) |
+| `vs.` | `rollRes_difficultyVS` (XML default) | When difficulty number is shown (`result.margin` set → difficulty inferred) |
+| `{difficulty}` | `rollRes_difficulty` | Same as above |
+| `ROUSED` / `STAINED` / `ROUSED & STAINED` | `rollRes_rouseText_*` | Rouse outcome strip corner labels (not the main headline) |
+| `?` | `rollRes_resultDisplay` | Unknown `resultClass` fallback (`narrativeLabel` only; rare) |
+
+**Headline casing:** `panelResultHeadline` uppercases narrative text for broadcast — e.g. Rouse **SUCCESS**, Brutal **BRUTAL FAILURE**, Frenzy **FIGHT FOR CONTROL!**
+
+## `ROLL COMPLETE` (nil result broadcast)
+
+When `showResultBroadcast` receives **`result == nil`**, the main headline is the literal **`ROLL COMPLETE`** (all caps). Successes and difficulty rows are hidden. Roll type, intro line, and die images still populate from history when available.
+
+This is **not** the same as the roll-panel phase string **`Roll complete.`** (sentence case) — see [Related panel copy](#related-panel-copy-not-broadcast) below.
+
+### When `result` is nil at confirm
+
+Classification requires an effective difficulty (`resolveClassificationDifficulty` in `core/roll_controller.ttslua`):
+
+| Roll type | Classifies without ST difficulty? |
+| --- | --- |
+| **Standard**, **Werewolf** | Yes — implicit difficulty **1**, margin hidden (TOR-163) |
+| **Simple Check**, dedicated **Rouse** / **Remorse** / **Frenzy** | Yes — dedicated classifiers |
+| **Discipline**, **Willpower**, **Humanity**, **Launch**, **Goal** | **No** — if ST never sets difficulty, `active.result` stays nil |
+
+**Practical trigger:** Confirm a **Discipline** (or Willpower/Humanity/Launch/Goal) roll in POST_ROLL when the ST has **not** set difficulty → auto-broadcast / confirm shows **`ROLL COMPLETE`** with dice images but no WIN/FAILURE headline.
+
+Take Half always builds a synthetic `result` before confirm (no `ROLL COMPLETE` on that path).
+
+### Broadcast blocked (no panel text)
+
+Auto-broadcast does **not** run while:
+
+- `pendingResolution` is set (Oblivion **Hunger or Stain?**, Werewolf **Brutal Fail / Violence** choice buttons)
+- Black roll has `meta.suppressBroadcast` (secret confirm — TOR-226); ST may broadcast later via dashboard **B**
 
 ## Difficulty visibility
 
@@ -27,9 +67,9 @@ These roll types **hide** the successes/difficulty row on broadcast (`hidesDiffi
 - Remorse Roll
 - Frenzy Roll
 
-All other roll types show successes count and difficulty when `result.margin` is set (difficulty inferred as `successes - margin`).
+All other roll types show successes count when the successes row is visible. The **`vs.` + difficulty number** row appears only when `result.margin` is set (ST-set difficulty). **Standard/Werewolf** rolls without ST difficulty still classify (implicit diff 1) but **omit margin and difficulty display** (TOR-163).
 
-**Margin on headline:** When difficulty is shown and `result.margin` is set, headline appends signed margin: `WIN +2`, `FAILURE −1` (Unicode minus). When margin is hidden, headline alone: `WIN`, `FAILURE`, etc.
+**Margin on headline:** When `result.margin` is set, headline appends signed margin: `WIN +2`, `FAILURE −1` (Unicode minus). When margin is hidden, headline alone: `WIN`, `FAILURE`, etc.
 
 ## Headline resolution order (`narrativeLabel`)
 
@@ -104,6 +144,8 @@ No difficulty row. Narrative overrides:
 | `win`, `criticalWin` | Stains Cleared |
 | `failure`, `totalFailure` | Degeneration |
 
+**Uncovered classes** (`messyCritical`, `bestialFailure`, `totalBestialFailure`): no narrative override — fall back to default **`C.ResultClassLabel`** (e.g. **MESSY CRITICAL**).
+
 Broadcast CSS maps remorse win → `rollRes_result_win`, fail → `rollRes_result_failure`.
 
 ### Frenzy Roll
@@ -116,6 +158,8 @@ No difficulty row. Narrative overrides:
 | `win` | Fight For Control! | styled as `rollRes_result_messyCritical` |
 | `failure`, `totalFailure` | FRENZY! | `rollRes_result_failure` |
 
+**Uncovered classes** (`messyCritical`, `bestialFailure`, `totalBestialFailure`): fall back to default **`C.ResultClassLabel`**.
+
 ### Take Half
 
 Synthetic main-pool result uses standard class labels (WIN / FAILURE / TOTAL FAILURE). Margin shown when ST difficulty is set. Broadcast die images: half pool as success faces, remainder blank; rouse-family dice appended when present.
@@ -123,6 +167,24 @@ Synthetic main-pool result uses standard class labels (WIN / FAILURE / TOTAL FAI
 ## Manual Storyteller broadcast
 
 ST dashboard **B** button re-broadcasts from history via `RUI.showResultBroadcastFromEntry` — same rules as auto-broadcast on confirm. Secret rolls (TOR-226) suppress auto-broadcast; manual **B** still uses this panel.
+
+## Related panel copy (not broadcast)
+
+These strings appear on **roll control panels** or the **ST dashboard**, not on `rollRes_panel`. Easy to confuse with broadcast copy:
+
+| String | Surface | Phase / context |
+| --- | --- | --- |
+| `Roll complete.` | PC `rollControl_rollInstructions_*` | `RESOLVED` |
+| `Roll complete — clear slot on dashboard` | ST `rollPanelST_phase` | Black `RESOLVED` |
+| `Complete` | ST dashboard `rollDash_phase_*` | PC snapshot when `RESOLVED` |
+| `Result ready — confirm when done` | PC roll instructions | POST_ROLL with result |
+| `Dice read — awaiting classification...` | PC roll instructions | POST_ROLL, no result, no difficulty |
+| `Dice read — awaiting difficulty...` | PC roll instructions | POST_ROLL, no result (typical when ST has not set difficulty on Discipline-class rolls) |
+| `Roll Your Dice!` | PC roll instructions | `ROLLING` |
+| `Hunger or Stain?` | POST_ROLL choice buttons (Oblivion) | Blocks broadcast until resolved |
+| Brutal Fail / Violence button labels | POST_ROLL (Werewolf) | Blocks broadcast until resolved |
+
+History / internal `diceDisplay` may also include `(took half: {successes} of {poolSize})` — not shown on the broadcast headline.
 
 ## Code map
 
