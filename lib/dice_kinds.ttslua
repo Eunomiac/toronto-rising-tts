@@ -87,6 +87,10 @@ DK.SCRIPT_STATE_BLOOD_SURGE_ROUSE = "bloodSurgeRouse"
 DK.PENDING_OBLIV_HUNGER_STAIN   = "oblivHungerStain"
 DK.PENDING_BRUTAL_FAIL_VIOLENCE = "brutalFailViolence"
 
+--- Loose-die scan tag (table layout guard) vs parked preload pool (TOR-287).
+DK.TAG_D10         = "d10"
+DK.TAG_D10_PRELOAD = "d10Preload"
+
 --- Returns empty pool table with all keys at zero.
 -- @return table
 function DK.emptyPool()
@@ -232,7 +236,7 @@ function DK.kindToTag(kind)
     return KIND_TO_TAG[kind]
 end
 
---- True if object tags include any registered die kind or d10.
+--- True if object tags include any registered die kind or active/preload d10 tag.
 -- @param tags table
 -- @return boolean
 function DK.isDieObjectTags(tags)
@@ -240,11 +244,39 @@ function DK.isDieObjectTags(tags)
         return false
     end
     for _, tag in ipairs(tags) do
-        if tag == "d10" or TAG_TO_KIND[tag] ~= nil then
+        if tag == DK.TAG_D10 or tag == DK.TAG_D10_PRELOAD or TAG_TO_KIND[tag] ~= nil then
             return true
         end
     end
     return false
+end
+
+--- Parked preload dice: `d10` → `d10Preload` so layout guards ignore them.
+-- @param die Object|nil
+function DK.setDieTagsForPreloadPool(die)
+    if die == nil then
+        return
+    end
+    if die.removeTag ~= nil and die.hasTag ~= nil and die.hasTag(DK.TAG_D10) then
+        die.removeTag(DK.TAG_D10)
+    end
+    if die.addTag ~= nil and (die.hasTag == nil or not die.hasTag(DK.TAG_D10_PRELOAD)) then
+        die.addTag(DK.TAG_D10_PRELOAD)
+    end
+end
+
+--- Staged/table dice: restore `d10` from preload pool tag.
+-- @param die Object|nil
+function DK.setDieTagsForActivePlay(die)
+    if die == nil then
+        return
+    end
+    if die.removeTag ~= nil and die.hasTag ~= nil and die.hasTag(DK.TAG_D10_PRELOAD) then
+        die.removeTag(DK.TAG_D10_PRELOAD)
+    end
+    if die.addTag ~= nil and (die.hasTag == nil or not die.hasTag(DK.TAG_D10)) then
+        die.addTag(DK.TAG_D10)
+    end
 end
 
 --- Owner from tags: seat color or "storyteller".

@@ -4,6 +4,9 @@
     Pre-spawns dice off-table (y = -200) per bag so roll staging reuses warmed meshes
     instead of fresh takeObject placeholder frames. Global orchestrates; dice bags claim
     via Global.call and return on destroy/remove.
+
+    Parked dice use tag `d10Preload` (not `d10`) so `hasLooseDiceOnTable` ignores them.
+    Pool grid anchors to each bag's world X/Z and follows table layout sync.
 ]]
 
 ---@diagnostic disable: undefined-global
@@ -16,9 +19,8 @@ local DK = require("lib.dice_kinds")
 --- Dice per bag — matches player MAX_DICE_PER_ARC headroom.
 local POOL_SIZE = 12
 local PARK_Y = -200
-local PARK_ORIGIN = { x = -120, y = PARK_Y, z = -90 }
-local PARK_COL_SPACING = 10
-local PARK_ROW_SPACING = 10
+local PARK_FALLBACK_ORIGIN = { x = -120, y = PARK_Y, z = -90 }
+local PARK_BEHIND_Z = -4
 local PARK_SLOT_X_STEP = 0.75
 local PARK_SLOT_Z_STEP = 0.75
 local PARK_SLOTS_PER_ROW = 4
@@ -29,13 +31,8 @@ local availableByBag = {}
 --- @type table<string, string>  dieGuid → bagGuid
 local bagByDieGuid = {}
 
---- @type table<string, number>  bagGuid → stable grid index
-local bagGridIndex = {}
-
 --- @type table<string, boolean>
 local warmedBags = {}
-
-local nextBagGridIndex = 0
 
 --- @return string[]
 local function enumerateAllDiceBagGuids()
@@ -66,28 +63,24 @@ local function enumerateAllDiceBagGuids()
 end
 
 --- @param bagGuid string
--- @return number
-local function gridIndexForBag(bagGuid)
-    local idx = bagGridIndex[bagGuid]
-    if type(idx) == "number" then
-        return idx
-    end
-    nextBagGridIndex = nextBagGridIndex + 1
-    bagGridIndex[bagGuid] = nextBagGridIndex
-    return nextBagGridIndex
-end
-
---- @param bagIndex number
 -- @param slotIndex number 1..POOL_SIZE
 -- @return table
-local function parkPositionFor(bagIndex, slotIndex)
-    local col = (bagIndex - 1) % 6
-    local row = math.floor((bagIndex - 1) / 6)
-    local slot = slotIndex - 1
+local function parkPositionForBag(bagGuid, slotIndex)
+    local bx = PARK_FALLBACK_ORIGIN.x
+    local bz = PARK_FALLBACK_ORIGIN.z
+    local bag = G.getObject(bagGuid)
+    if bag ~= nil and bag.getPosition ~= nil then
+        local p = bag.getPosition()
+        if type(p) == "table" and type(p.x) == "number" and type(p.z) == "number" then
+            bx = p.x
+            bz = p.z
+        end
+    end
+    local slot = (tonumber(slotIndex) or 1) - 1
     return {
-        x = PARK_ORIGIN.x + col * PARK_COL_SPACING + (slot % PARK_SLOTS_PER_ROW) * PARK_SLOT_X_STEP,
+        x = bx + (slot % PARK_SLOTS_PER_ROW) * PARK_SLOT_X_STEP,
         y = PARK_Y,
-        z = PARK_ORIGIN.z + row * PARK_ROW_SPACING + math.floor(slot / PARK_SLOTS_PER_ROW) * PARK_SLOT_Z_STEP,
+        z = bz + PARK_BEHIND_Z + math.floor(slot / PARK_SLOTS_PER_ROW) * PARK_SLOT_Z_STEP,
     }
 end
 
@@ -98,10 +91,10 @@ local function parkDie(die, bagGuid, slotIndex)
     if die == nil then
         return
     end
-    local bagIndex = gridIndexForBag(bagGuid)
-    local pos = parkPositionFor(bagIndex, slotIndex)
+    local pos = parkPositionForBag(bagGuid, slotIndex)
     die.setLock(true)
     die.script_state = DK.SCRIPT_STATE_PRELOAD_POOL
+    DK.setDieTagsForPreloadPool(die)
     die.setPosition(pos)
     die.setRotation({ x = 0, y = 180, z = 0 })
 end
@@ -136,10 +129,9 @@ function DPP.warmBag(bagGuid)
     end
     warmedBags[bagGuid] = true
     local stack = ensureAvailableStack(bagGuid)
-    local bagIndex = gridIndexForBag(bagGuid)
     local spawned = 0
     for slot = 1, POOL_SIZE do
-        local pos = parkPositionFor(bagIndex, slot)
+        local pos = parkPositionForBag(bagGuid, slot)
         local die = bag.takeObject({
             position = pos,
             rotation = { x = 0, y = 180, z = 0 },
@@ -167,6 +159,24 @@ function DPP.warmAll()
     return count
 end
 
+--- Repark every pooled die near its bag (after table layout moves bags).
+function DPP.repositionAllAfterLayout()
+    for bagGuid, stack in pairs(availableByBag) do
+        if type(stack) == "table" then
+            for slotIndex, die in ipairs(stack) do
+                if die ~= nil then
+                    local pos = parkPositionForBag(bagGuid, slotIndex)
+                    die.setLock(true)
+                    die.script_state = DK.SCRIPT_STATE_PRELOAD_POOL
+                    DK.setDieTagsForPreloadPool(die)
+                    die.setPosition(pos)
+                    die.setRotation({ x = 0, y = 180, z = 0 })
+                end
+            end
+        end
+    end
+end
+
 --- Pop a pre-warmed die onto the staging pose; nil when pool empty (caller uses takeObject).
 -- @param bagGuid string
 -- @param position table
@@ -189,6 +199,7 @@ function DPP.claim(bagGuid, position, rotation, scale)
     end
     trackDie(die, bagGuid)
     die.script_state = " "
+    DK.setDieTagsForActivePlay(die)
     if type(scale) == "number" then
         die.setScale({ scale, scale, scale })
     end

@@ -3360,6 +3360,10 @@ function M.resolveSeatObjectsFromTable(tableRef, sourceObjects, options)
     end
   end
   lastLayoutSyncFingerprint = computeLayoutSyncFingerprint(tableKey)
+  local DPP = require("core.dice_preload_pool")
+  if type(DPP.repositionAllAfterLayout) == "function" then
+    DPP.repositionAllAfterLayout()
+  end
   return computed
 end
 
@@ -3389,6 +3393,7 @@ function M.SyncTable(tableKey, opts)
 end
 
 --- True when any module die is loose on the table (`getObjectsWithTag` excludes container contents).
+--- Parked preload pool dice use `d10Preload`, not `d10` (TOR-287).
 --- @return boolean
 function M.hasLooseDiceOnTable()
   local tagged = getObjectsWithTag("d10")

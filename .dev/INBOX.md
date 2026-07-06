@@ -2,6 +2,10 @@
 
 ## Quick Fixes
 
+- [Bug] Any dice objects on the table during the loading sequence should be destroyed (and dice trays stowed) before table sync, to prevent blocking the table setup.
+- [Dice Spawning] Dice should be moved from the preload pool via smooth movement (not lerping, just not instant teleportation) so they appear a bit more dynamic during play.
+- [Bug] When a roll is opened by the Storyteller with a
+
 ## Active
 
 ## External Work (Set STATUS to "External To Do")
@@ -18,6 +22,7 @@
 
 ## Processed
 
+2026-07-06 INBOX Quick Fix — preload pool `d10` blocked table layout → shipped (`d10Preload` tag + bag-anchored reposition on `SyncTable`; TOR-287)
 2026-07-06 INBOX Quick Fix — control board Apply dice-guard retry skipped → **TOR-304** (NPC & Spotlight Bug, High; parent **TOR-169**; relatedTo **TOR-243**)
 2026-07-06 INBOX Quick Fix — player dice tray open on roll initiate → **TOR-305** (Dice & Rolls Improvement, Medium; parent **TOR-31**)
 2026-07-06 INBOX Quick Fix — Take Half auto-broadcast / single-button proceed → **TOR-306** (Dice & Rolls Improvement, Medium; parent **TOR-31**; relatedTo **TOR-73**, **TOR-226**)
