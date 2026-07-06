@@ -241,6 +241,18 @@ bumpBloodPotency = {
 }
 ```
 
+**Manual major claim — skill temp bonus** (persists until `Conditions.clear`; dot keys are flat skill names):
+
+```lua
+majorClaim_DupontByTheCastle = {
+  canApplyManually = true,
+  priority = 10,
+  statChanges = { etiquette = 2 },
+}
+```
+
+Apply: `Conditions.setManual(playerID, "majorClaim_DupontByTheCastle", true)` — merges +2 into effective skill temp via `EffectiveStats` / sheet dots without writing `stats.skills.etiquette.temp` directly.
+
 ---
 
 ## 6. Roll policy layer

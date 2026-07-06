@@ -255,7 +255,9 @@ type ConditionId =
   | "hudFrenzy"
   | "hudBlindfold"
   | "hudTransitionBlindfold"
-  | "bumpBloodPotency";
+  | "bumpBloodPotency"
+  | "majorClaim_WestQueenWest"
+  | "majorClaim_DupontByTheCastle";
 
 /** true when no instance fields; otherwise a small table (e.g. blindfold variant). */
 type PersistedCondition = true | { variant?: number };

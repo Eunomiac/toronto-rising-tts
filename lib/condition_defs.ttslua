@@ -259,6 +259,22 @@ CD.Defs = {
     end,
     statChanges = { bloodPotency = 1 },
   },
+  majorClaim_WestQueenWest = {
+    id = "majorClaim_WestQueenWest",
+    type = "stat",
+    displayName = "Major Claim: West Queen West",
+    canApplyManually = true,
+    priority = 10,
+    statChanges = { politics = 2 },
+  },
+  majorClaim_DupontByTheCastle = {
+    id = "majorClaim_DupontByTheCastle",
+    type = "stat",
+    displayName = "Major Claim: Dupont by the Castle",
+    canApplyManually = true,
+    priority = 10,
+    statChanges = { etiquette = 2 },
+  },
   bonusWpReroll = {
     id = "bonusWpReroll",
     type = "roll",
