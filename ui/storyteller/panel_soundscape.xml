@@ -2,7 +2,7 @@
 <!-- Agent guidance: .dev/SOUNDSCAPE_UNITY_SETUP.md; .dev/HUD_FUNCTIONS.md. -->
 
 <Panel id="panel_soundscape" active="false">
-  <VerticalLayout class="storyteller_panel_surface" spacing="5" padding="6 6 6 6" childForceExpandWidth="true" minWidth="520" childForceExpandHeight="false">
+  <VerticalLayout class="storyteller_panel_column" spacing="5" padding="6 6 6 6" childForceExpandWidth="true" minWidth="520" childForceExpandHeight="false">
     <Text class="hud_storyteller_header">Sound</Text>
     <Text id="soundscapeSummary" fontSize="10" color="#DDDDDD">Music: mood/main | Featured: none | Location: none | Weather: none | Rain: none | Wind: none | Thunder: false | Indoors: false</Text>
 

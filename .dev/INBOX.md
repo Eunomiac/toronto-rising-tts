@@ -2,11 +2,22 @@
 
 ## Quick Fixes
 
-- [Bug] Any dice objects on the table during the loading sequence should be destroyed (and dice trays stowed) before table sync, to prevent blocking the table setup.
-- [Dice Spawning] Dice should be moved from the preload pool via smooth movement (not lerping, just not instant teleportation) so they appear a bit more dynamic during play.
-- [Bug] When a roll is opened by the Storyteller with a
+- [Bug] Any dice objects on the table during the loading sequence should be destroyed (and dice trays stowed) before table sync, to prevent blocking the table setup. (Be sure not to destroy dice in the preload pool, of course)
+- [Dice Spawning] Dice should be moved from the preload pool via smooth movement (not lerping, just not instant teleportation) so they appear a bit more dynamic during play.  Additionally, the spawn locations of dice for storyteller rolls should be raised to y = 8 before they are unlocked and randomized.
+- [Bug] Dice are not being returned to the preload pool after being used, but are instead being destroyed. Expected behavior: 12 dice per dice bag (for a total of 264 preload dice) should be maintained at all times.  Only excess dice that had to be spawned in because the preload pool ran out should be destroyed on roll resolution, maintaining the same number of preload dice at all times.
 
 ## Active
+
+- [Bug] Upon disabling the "NPC3" seat via the Scenes panel, _all_ seated NPCs were _completely_ cleared from the table and the Stage Control Board, and returned to the preload area. Expected Behavior: Only the NPC seated at the NPC3 slot should be affected at all, and even then, their seat should merely be disabled -- they should not be unassigned from the seat entirely.
+- [Results Display] A roll opened with no Difficulty should be treated exactly the same as a roll opened with a Difficulty of 0 (the latter is really just the Storyteller's way of confirming they intended no Difficulty be set).  When broadcasting the results of these Difficulty-0 rolls, the results broadcast should not display the Difficulty number, nor should it display a margin. The results display should present as follows:
+  - 0 successes -- "Failure" (styled as a normal, non-Total, Failure)
+  - 0 successes AND a Hunger die showing 1 -- "Bestial Failure" (styled as a Bestial Failure)
+  - 1 or more successes, but not a critical -- "[X] Successes" (styled as a Win)
+  - 1 or more successes, clean critical -- "[X] Crit Successes" (styled as a Critical Win)
+  - 1 or more successes, messy critical -- "[X] Messy Successes" (styled as a Messy Critical)
+  **Important:** This should be the behavior for all roll types except Rouse Checks, Oblivion Rouse Checks, and Simple Checks: Without a Difficulty of at least 1, the focus is on the number of successes rolled (as this is how we will be handling opposed rolls and extended contests).
+  **Important:** This is how the roll results for Difficulty-0 rolls should be displayed both in the results broadcast, and on the roll control panels shown to the players / Storyteller
+- [Results Display Broadcast] The total number of successes rolled should always be displayed, except for Rouse Checks, Oblivion Rouse Checks, and Simple Rouse Checks.  Currently, Frenzy rolls (as one example) only display the result message and the dice images, but not the number of successes rolled nor the Difficulty of the Frenzy roll.
 
 ## External Work (Set STATUS to "External To Do")
 
