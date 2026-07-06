@@ -34,7 +34,6 @@ local NPCS = require("core.npcs")
 local SRI = require("lib.seat-role-identity")
 local TarotObjects = require("lib.tarot_objects")
 local G = require("lib.guids")
-local DK = require("lib.dice_kinds")
 
 --- Lazy load: core.debug is large; only needed for workspace file export helpers.
 --- @return table
@@ -3393,8 +3392,11 @@ function M.SyncTable(tableKey, opts)
   return M.resolveSeatObjectsFromTable(tostring(key), nil, opts)
 end
 
+--- Y at or above this counts as on-table for layout guards (preload pool parks at y = -200).
+local LOOSE_DIE_Y_MIN = -50
+
 --- True when any module die is loose on the table (`getObjectsWithTag` excludes container contents).
---- Parked preload pool dice use `d10Preload` / `preloadPool` script_state (TOR-287).
+--- Preload-pool dice parked under the table (y < LOOSE_DIE_Y_MIN) are ignored (TOR-287).
 --- @return boolean
 function M.hasLooseDiceOnTable()
   local tagged = getObjectsWithTag("d10")
@@ -3402,8 +3404,12 @@ function M.hasLooseDiceOnTable()
     return false
   end
   for i = 1, #tagged do
-    if DK.isPreloadParkedDie(tagged[i]) ~= true then
-      return true
+    local die = tagged[i]
+    if die ~= nil and die.getPosition ~= nil then
+      local p = die.getPosition()
+      if type(p) == "table" and type(p.y) == "number" and p.y >= LOOSE_DIE_Y_MIN then
+        return true
+      end
     end
   end
   return false

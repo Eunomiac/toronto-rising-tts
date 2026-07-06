@@ -5,7 +5,7 @@
     instead of fresh takeObject placeholder frames. Global orchestrates; dice bags claim
     via Global.call and return on destroy/remove.
 
-    Parked dice use tag `d10Preload` (not `d10`) so `hasLooseDiceOnTable` ignores them.
+    Parked dice use tag `d10Preload` (not `d10`) for roll hot-path scans; layout guard ignores under-table y.
     Pool grid anchors to each bag's world X/Z and follows table layout sync.
 ]]
 
