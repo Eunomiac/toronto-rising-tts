@@ -236,7 +236,7 @@ function DPP.register(dieGuid, bagGuid)
     end
 end
 
---- Park a die back under-table for reuse; false when die is unknown (caller may destroy).
+--- Park a die back under-table for reuse; false when die is unknown or pool is full (caller may destroy).
 -- @param dieGuid string
 -- @param bagGuid string|nil  optional hint when die was never registered
 -- @return boolean
@@ -255,10 +255,10 @@ function DPP.release(dieGuid, bagGuid)
     end
     DPP.warmBag(ownerBag)
     local stack = ensureAvailableStack(ownerBag)
-    local slotIndex = #stack + 1
-    if slotIndex > POOL_SIZE then
-        slotIndex = POOL_SIZE
+    if #stack >= POOL_SIZE then
+        return false
     end
+    local slotIndex = #stack + 1
     parkDie(die, ownerBag, slotIndex)
     stack[#stack + 1] = die
     bagByDieGuid[dieGuid] = ownerBag
