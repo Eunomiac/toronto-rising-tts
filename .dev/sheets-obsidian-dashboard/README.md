@@ -1,5 +1,21 @@
 # Sheets → Obsidian Dashboard
 
+## Agent Routing
+
+Read this when:
+- running or modifying the standalone Sheets-backed Obsidian markdown dashboard
+- debugging OAuth, preset state, search/replace patterns, fixture tests, or markdown output folders for this app
+
+Source of truth:
+- this app folder
+- this app's `.env.example`
+- generated output/log folders under this app, which are local artifacts
+
+Verification:
+- `npm run dev` from this folder
+- local app at `http://localhost:8787`
+- Testing panel fixture workflow
+
 A self-contained local web app for Google Sheets batch editing and Sheets-backed Obsidian Markdown generation. It intentionally uses only built-in Node.js APIs so it stays isolated from the main repository tooling and does not need an install step.
 
 ## Setup

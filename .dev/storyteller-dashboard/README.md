@@ -1,5 +1,21 @@
 # Toronto Rising Storyteller Dashboard
 
+## Agent Routing
+
+Read this when:
+- running or modifying the standalone Storyteller second-monitor dashboard
+- debugging OpenAI-backed NPC generation, image generation, local server behavior, or vector-store chronicle retrieval
+
+Source of truth:
+- this app folder
+- this app's `.env.example`
+- `data/chronicle/README.md` for chronicle-source routing
+
+Verification:
+- `npm run typecheck`
+- `npm run build`
+- local app at `http://127.0.0.1:8788`
+
 A standalone second-monitor web dashboard for live Vampire: the Masquerade 5th Edition play. This MVP is intentionally independent from Tabletop Simulator and focuses on fast AI-assisted NPC generation.
 
 Runs on **port 8788** by default.

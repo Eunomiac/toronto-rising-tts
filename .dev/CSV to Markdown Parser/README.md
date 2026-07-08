@@ -1,5 +1,21 @@
 # CSV to Markdown Parser
 
+## Agent Routing
+
+Read this when:
+- running or modifying the local CSV/Google Sheets to JSON/Markdown converter
+- debugging Google auth, range targeting, field cache, or TypeScript markdown generation for this app
+
+Source of truth:
+- this folder's local app files
+- package scripts in the repository root
+- `.env.example` in this folder
+
+Verification:
+- `npm run csv-to-markdown:start`
+- local app at `http://localhost:3100`
+- `npm run csv-to-markdown:ts:run` for custom TypeScript generation
+
 A local one-page dashboard for converting Google Sheet ranges into JSON and converting JSON into Markdown.
 
 ## Setup

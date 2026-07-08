@@ -1,5 +1,22 @@
 # Clear stage → return NPC to seat _(TOR-281)_
 
+## Agent Routing
+
+Read this when:
+- re-running or updating the TOR-281 Clear-stage seat-return verification
+- checking stage Clear behavior against NPC seat activation and scene-library persistence
+
+Source of truth:
+- `core/npc_gameboard.ttslua`
+- `core/npcs.ttslua`
+- `core/storyteller_scenes_panel.ttslua`
+- `.dev/NPC Object Spawning & Spotlighting/Storyteller Gameboard Control.md`
+- `.dev/Scene Constructor/Scene Constructor Overview.md`
+
+Verification:
+- TTS Code Block 1 in this file
+- `.dev/E2E Playbooks/Gameboard-E2E.md` for deeper automated coverage
+
 Verify TOR-281: when you clear NPC figurines from the stage and those NPCs still occupy table seats, they should return to their chair at the table. If the NPC was lit on stage, their seat should become active again; if they were dark on stage, the seat should stay inactive. If the seat was already active before Clear, it should stay active. Seat on/off changes you make during play should also be saved into the scene library so they survive when you re-apply that scene later.
 
 **Linear:** [TOR-281 — Stage Clear seat activation + library persistence](https://linear.app/eunomiac-dev/issue/TOR-281/npc-stage-clear-seat-activation-rules-live-scene-library-seat)

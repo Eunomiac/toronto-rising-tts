@@ -1,5 +1,20 @@
 # TTS objects by seat color tag
 
+## Agent Routing
+
+Read this when:
+- checking live Tabletop Simulator object GUIDs grouped by player color tag
+- auditing seat-colored objects before changing GUID registries, seat setup, dice bags, character sheets, lights, or signal objects
+
+Source of truth:
+- live TTS save state
+- `lib/guids.ttslua`
+- object tags in the TTS save
+
+Verification:
+- regenerate from live TTS state via External Editor `getObjectsWithTag`
+- compare changed GUIDs against `lib/guids.ttslua`
+
 Generated from live Tabletop Simulator state via External Editor (`getObjectsWithTag`).
 
 Tags: `BrownObject`, `OrangeObject`, `RedObject`, `PinkObject`, `PurpleObject`.
