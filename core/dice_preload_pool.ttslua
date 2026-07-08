@@ -34,6 +34,9 @@ local bagByDieGuid = {}
 --- @type table<string, boolean>
 local warmedBags = {}
 
+--- True after one-world scan adopts/culls saved `d10Preload` dice (per Save & Play).
+local worldParkedReconciled = false
+
 --- @return string[]
 local function enumerateAllDiceBagGuids()
     local out = {}
@@ -116,11 +119,93 @@ local function trackDie(die, bagGuid)
     bagByDieGuid[die.getGUID()] = bagGuid
 end
 
+--- True when die is already parked in this bag's available stack (idempotent release).
+-- @param stack table
+-- @param die Object
+-- @return boolean
+local function stackContainsDie(stack, die)
+    if type(stack) ~= "table" or die == nil then
+        return false
+    end
+    for i = 1, #stack do
+        if stack[i] == die then
+            return true
+        end
+    end
+    return false
+end
+
+--- Adopt saved `d10Preload` dice into per-bag stacks; cull overflow and orphans (TOR-287 / load dup fix).
+--- Without this, each Save & Play spawns another POOL_SIZE per bag while prior parked dice persist in the save.
+-- @return number adopted, number culled
+local function reconcileAllParkedFromWorld()
+    if worldParkedReconciled == true then
+        return 0, 0
+    end
+    worldParkedReconciled = true
+
+    local preloadDice = getObjectsWithTag(DK.TAG_D10_PRELOAD) or {}
+    local perBag = {}
+    local orphans = 0
+
+    for _, die in ipairs(preloadDice) do
+        if die ~= nil then
+            local bagGuid = DPP.resolveBagGuidForDie(die)
+            if type(bagGuid) ~= "string" then
+                destroyObject(die)
+                orphans = orphans + 1
+            else
+                local list = perBag[bagGuid]
+                if list == nil then
+                    list = {}
+                    perBag[bagGuid] = list
+                end
+                list[#list + 1] = die
+            end
+        end
+    end
+
+    local adopted = 0
+    local culled = 0
+    for bagGuid, diceList in pairs(perBag) do
+        local stack = ensureAvailableStack(bagGuid)
+        for _, die in ipairs(diceList) do
+            if stackContainsDie(stack, die) then
+                -- already tracked for this bag
+            elseif #stack >= POOL_SIZE then
+                destroyObject(die)
+                culled = culled + 1
+            else
+                local slotIndex = #stack + 1
+                parkDie(die, bagGuid, slotIndex)
+                stack[#stack + 1] = die
+                trackDie(die, bagGuid)
+                adopted = adopted + 1
+            end
+        end
+    end
+
+    if adopted > 0 or culled > 0 or orphans > 0 then
+        print(string.format(
+            "[DPP] reconcile parked dice: adopted=%d culled=%d orphans=%d (scan=%d)",
+            adopted,
+            culled,
+            orphans,
+            #preloadDice
+        ))
+    end
+    return adopted, culled + orphans
+end
+
 --- Pre-spawn POOL_SIZE dice per bag at the under-table grid (one-time mesh warm).
 -- @param bagGuid string
 -- @return number spawned
 function DPP.warmBag(bagGuid)
-    if type(bagGuid) ~= "string" or warmedBags[bagGuid] == true then
+    if type(bagGuid) ~= "string" then
+        return 0
+    end
+    reconcileAllParkedFromWorld()
+    if warmedBags[bagGuid] == true then
         return 0
     end
     local bag = G.getObject(bagGuid)
@@ -130,7 +215,7 @@ function DPP.warmBag(bagGuid)
     warmedBags[bagGuid] = true
     local stack = ensureAvailableStack(bagGuid)
     local spawned = 0
-    for slot = 1, POOL_SIZE do
+    for slot = #stack + 1, POOL_SIZE do
         local pos = parkPositionForBag(bagGuid, slot)
         local die = bag.takeObject({
             position = pos,
@@ -277,22 +362,6 @@ function DPP.resolveBagGuidForDie(die)
     end
     local bags = G.GetAllPlayerDiceBagGUIDs(owner)
     return type(bags) == "table" and bags[kind] or nil
-end
-
---- True when die is already parked in this bag's available stack (idempotent release).
--- @param stack table
--- @param die Object
--- @return boolean
-local function stackContainsDie(stack, die)
-    if type(stack) ~= "table" or die == nil then
-        return false
-    end
-    for i = 1, #stack do
-        if stack[i] == die then
-            return true
-        end
-    end
-    return false
 end
 
 --- Park a die back under-table for reuse; false when die is unknown or pool is full (caller may destroy).
