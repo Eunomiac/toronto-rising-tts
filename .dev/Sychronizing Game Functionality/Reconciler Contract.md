@@ -1,5 +1,24 @@
 # Reconciler Contract
 
+## Agent Routing
+
+Read this when:
+- changing state mutation APIs, reconcilers, or `Sync.*`
+- adding live-world writes after state changes
+- debugging world/state drift
+
+Source of truth:
+- `core/sync.ttslua`
+- `core/state.ttslua`
+- domain reconcilers in `core/`
+- `.cursor/rules/toronto-rising-synchronization.mdc`
+
+Verification:
+- `npm run build`
+- relevant E2E or step-by-step playbook from `.dev/TESTING.md`
+
+Status: current synchronization contract; verify exceptions against code before copying patterns.
+
 This is the current authoritative contract for Toronto Rising synchronization. It describes the code as implemented today, not the older proposal draft. Historical behavior belongs in explicitly labeled historical sections only.
 
 **Agents:** Mutation/reconcile separation (below) is **P1** in [Preparing For Multiplayer §1.1](../Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md). Tier C reconcilers run on **Host only**; join clients get `Sync.ui` / incremental UI from `Sync.full` — see [Bootstrap Authority](Bootstrap%20Authority.md). Until **TOR-144 (multiplayer E2E)** passes, uphold [`.cursor/rules/toronto-rising-multiplayer-authority.mdc`](../../.cursor/rules/toronto-rising-multiplayer-authority.mdc) when adding sync paths.

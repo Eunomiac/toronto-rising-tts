@@ -1,5 +1,23 @@
 # Debug File Logging
 
+## Agent Routing
+
+Read this when:
+- adding runtime file logging from Lua
+- debugging `.dev/.debug/` output
+- changing `.tools/tts-bridge/` write handling
+
+Source of truth:
+- `core/debug.ttslua`
+- `lib/workspace_ndjson_log.ttslua`
+- `.tools/tts-bridge/`
+
+Verification:
+- `npm run tts-mcp:build`
+- manual bridge/TTS run when changing listener behavior
+
+Status: current logging workflow; `.dev/.debug/` output is ignored local runtime data.
+
 The debug module uses TTS **`sendExternalMessage`** with **`type: "write"`** so the game asks the **External Editor** bridge to create or overwrite a file under your opened workspace.
 
 **Where files land:** The repo **[`.tools/tts-bridge`](../.tools/tts-bridge)** listens on **localhost `39998`** (same inbound port as the [External Editor API](tts-api/Getting%20Started/External%20Editor%20API.md)) and writes payloads to:

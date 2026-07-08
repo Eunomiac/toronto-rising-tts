@@ -1,5 +1,24 @@
 # Development Workflow
 
+## Agent Routing
+
+Read this when:
+- syncing Linear, Focus, or INBOX state
+- changing task workflow docs or agent instructions
+- finishing a work segment that affects planned work
+
+Source of truth:
+- `.cursor/rules/toronto-rising-linear.mdc`
+- `.dev/RUNNING TASKLIST.md`
+- `.dev/INBOX.md`
+- Linear project state
+
+Verification:
+- RUNNING TASKLIST and Linear agree for touched issues
+- inbox triage follows `.cursor/skills/tr-inbox/SKILL.md`
+
+Status: current agent workflow guide; task history tables are audit records, not implementation truth.
+
 This document outlines the development workflow and best practices for this project.
 
 ## Linear synchronization (primary responsibility)
