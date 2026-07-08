@@ -10,11 +10,11 @@ Complete **[RunSequence, waitUntil, and MCP-safe orchestration (Phase 1)](2026-0
 
 ## Scope (what Phase 2 adds)
 
-1. **`debugObject` tag + structured GM Notes** — Generic helpers in [`lib/util.ttslua`](../lib/util.ttslua) to resolve / ensure debug-spawned objects (parseable GM Notes, duplicate policy, `ensure` factory). No per-test tag proliferation.
-2. **`U.mcpEmitResult` / `U.emitForAgent`** — Already in [`lib/util.ttslua`](../lib/util.ttslua): lines prefixed with **`TR_AGENT_V1`** + JSON envelope (`kind`, `seq`, `data`). Use from tests and **`U.RunSequenceWithOptions` `onComplete`**; see [`.dev/TTS_MCP.md`](../TTS_MCP.md) (*Machine-readable agent lines*).
-3. **MCP bridge** — Lenient default **`idleTimeoutMs`** in [`.tools/tts-mcp/src/index.ts`](../.tools/tts-mcp/src/index.ts); agents opt into shorter timeouts via tool args.
+1. **`debugObject` tag + structured GM Notes** — Generic helpers in [`lib/util.ttslua`](../../lib/util.ttslua) to resolve / ensure debug-spawned objects (parseable GM Notes, duplicate policy, `ensure` factory). No per-test tag proliferation.
+2. **`U.mcpEmitResult` / `U.emitForAgent`** — Already in [`lib/util.ttslua`](../../lib/util.ttslua): lines prefixed with **`TR_AGENT_V1`** + JSON envelope (`kind`, `seq`, `data`). Use from tests and **`U.RunSequenceWithOptions` `onComplete`**; see [`.dev/TTS_MCP.md`](../TTS_MCP.md) (*Machine-readable agent lines*).
+3. **MCP bridge** — Lenient default **`idleTimeoutMs`** in [`.tools/tts-mcp/src/index.ts`](../../.tools/tts-mcp/src/index.ts); agents opt into shorter timeouts via tool args.
 4. **Easing rig + tests** — `DEBUG.ensureEasingTestRig()`, refactor **`DEBUG.testEasing`**: `interactive` flag, pause audit (remove vs condition-wait), use Phase 1 sequence completion + `mcpEmitResult` / return per documented contract; **`testLookAt`** aligned; thin **`testEasingForMcp`** (or equivalent).
-5. **Documentation** — Expand [`.dev/TTS_MCP.md`](../.dev/TTS_MCP.md) as the agent playbook (debug objects, MCP results, timeouts, easing example).
+5. **Documentation** — Expand [`.dev/TTS_MCP.md`](../TTS_MCP.md) as the agent playbook (debug objects, MCP results, timeouts, easing example).
 
 ---
 
@@ -22,7 +22,7 @@ Complete **[RunSequence, waitUntil, and MCP-safe orchestration (Phase 1)](2026-0
 
 ### Resolvable world objects
 
-Hardcoded GUIDs in easing / `testLookAt` rot when objects are deleted. **Solution:** `debugObject` + GM Notes helpers + `ensureEasingTestRig` (spotlight via [`lib/npcs_light_spawn_defaults.ttslua`](../lib/npcs_light_spawn_defaults.ttslua), blocks for markers).
+Hardcoded GUIDs in easing / `testLookAt` rot when objects are deleted. **Solution:** `debugObject` + GM Notes helpers + `ensureEasingTestRig` (spotlight via [`lib/npcs_light_spawn_defaults.ttslua`](../../lib/npcs_light_spawn_defaults.ttslua), blocks for markers).
 
 ### Interactive pauses
 
@@ -38,10 +38,10 @@ Bridge uses return + idle + `maxWait`. **Solution:** `mcpEmitResult`, lenient id
 
 | File | Role |
 |------|------|
-| [`lib/util.ttslua`](../lib/util.ttslua) | `debugObject` + GM Notes helpers; (`emitForAgent` / `mcpEmitResult` done) |
-| [`core/debug.ttslua`](../core/debug.ttslua) | Easing rig; `testEasing` / `testLookAt`; MCP entry |
-| [`.tools/tts-mcp/src/index.ts`](../.tools/tts-mcp/src/index.ts) | Default timeouts |
-| [`.dev/TTS_MCP.md`](../.dev/TTS_MCP.md) | Agent playbook |
+| [`lib/util.ttslua`](../../lib/util.ttslua) | `debugObject` + GM Notes helpers; (`emitForAgent` / `mcpEmitResult` done) |
+| [`core/debug.ttslua`](../../core/debug.ttslua) | Easing rig; `testEasing` / `testLookAt`; MCP entry |
+| [`.tools/tts-mcp/src/index.ts`](../../.tools/tts-mcp/src/index.ts) | Default timeouts |
+| [`.dev/TTS_MCP.md`](../TTS_MCP.md) | Agent playbook |
 
 ---
 

@@ -2,12 +2,12 @@
 
 ## Purpose
 
-Deliver a **single, well-tested orchestration layer** in [`lib/util.ttslua`](../lib/util.ttslua) so multi-step TTS flows (debug tests, scenes, lighting, NPCs, future agent scripts) share:
+Deliver a **single, well-tested orchestration layer** in [`lib/util.ttslua`](../../lib/util.ttslua) so multi-step TTS flows (debug tests, scenes, lighting, NPCs, future agent scripts) share:
 
 - A clear **completion contract** (success, timeout, cancel, errors).
 - **Predictable timeouts** (per-step and optional whole-sequence).
 - **Observability** (step identity for logs and MCP reports).
-- **Documented interaction** with the External Editor / [`tts_execute_lua`](../.tools/tts-mcp/src/index.ts) execution model (return vs deferred work vs sentinel prints).
+- **Documented interaction** with the External Editor / [`tts_execute_lua`](../../.tools/tts-mcp/src/index.ts) execution model (return vs deferred work vs sentinel prints).
 
 This plan is **Phase 1**. After it is done, continue with **[MCP utilities and easing consumer (Phase 2)](2026-04-15-mcp-phase2-debug-objects-easing.md)**.
 
@@ -34,9 +34,9 @@ This plan is **Phase 1**. After it is done, continue with **[MCP utilities and e
 
 | Location | Usage |
 |----------|--------|
-| [`core/debug.ttslua`](../core/debug.ttslua) | Multiple sequences (tests, easing animations, etc.) |
-| [`core/scenes.ttslua`](../core/scenes.ttslua) | Scene lerp sequence |
-| [`core/lighting.ttslua`](../core/lighting.ttslua) | Lighting sequence |
+| [`core/debug.ttslua`](../../core/debug.ttslua) | Multiple sequences (tests, easing animations, etc.) |
+| [`core/scenes.ttslua`](../../core/scenes.ttslua) | Scene lerp sequence |
+| [`core/lighting.ttslua`](../../core/lighting.ttslua) | Lighting sequence |
 
 Any signature or semantics change must remain **backward compatible** unless a call site is intentionally migrated.
 
@@ -93,7 +93,7 @@ Preserve `U.RunSequence` as a thin wrapper.
 2. If non-blocking: document that **completion** for agents must use **sentinel print** (`TR_MCP_RESULT` — implemented in Phase 2) and/or **long `maxWaitMs` / `idleTimeoutMs`** on `tts_execute_lua`, or a **second** MCP call that polls `isDone()`.
 3. If blocking: document that **`return JSON.encode(...)`** after sequence completion is valid for one-shot agent runs.
 
-Record findings in **JSDoc-style Lua header** on `U.RunSequence` and in [`.dev/TTS_MCP.md`](../.dev/TTS_MCP.md) (minimal cross-link in Phase 1; Phase 2 expands the playbook).
+Record findings in **JSDoc-style Lua header** on `U.RunSequence` and in [`.dev/TTS_MCP.md`](../TTS_MCP.md) (minimal cross-link in Phase 1; Phase 2 expands the playbook).
 
 ---
 
