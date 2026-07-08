@@ -307,20 +307,20 @@ Canonical technical docs should remain in Git. Notion pages should summarize, in
 | Agent rule and skill alignment | Bring automatic agent instructions into the new routing model | `.cursor/rules/*`, `.cursor/skills/*` | Route live instructions through `AGENTS.md`, `.dev/DOCS_INDEX.md`, and active Cursor skills | docs, agent-instruction, path-sensitive, codex-ok | yes | yes |
 | Reference audit for `.dev` paths | Identify move blockers | `package.json`, `.tools`, docs, UI/code comments | Path-sensitive refs and owners listed | docs, path-sensitive, codex-ok | yes | yes |
 | Canonical docs verification | Mark current/stale docs | sync, state, NPC, HUD, soundscape, testing | Each canonical doc has status, source files, and verification commands | docs, needs-human-review | partial | yes |
-| Generated artifact policy | Define generated/ignored locations | build logs, debug, manifests, saves | Policy doc and `.gitignore` recommendations only | generated-artifact, docs | yes | yes |
+| Generated artifact policy | Keep generated outputs ignored | build logs, debug, manifests, saves, editor exports | `.gitignore` and routing docs stay aligned with generated-output locations | generated-artifact, docs | yes | yes |
 | Tooling relocation plan | Prepare script/app moves | `.dev/scripts`, dashboards, parser | No moves yet; package/script migration map | tooling, path-sensitive | yes | yes |
-| Archive historical docs | Move stale plans later | plans, PR9 dashboard, one-off patches | Archive candidates listed and approved | archive-candidate | partial | yes |
+| Archive historical docs | Remove or consolidate stale plans later | plans and one-off patches | Candidates listed and approved before relocation or deletion | archive-candidate | partial | yes |
 | Notion dashboard setup | Create index/tracker | dashboard, cleanup tracker, decision log | Links to repo docs and Linear issues | notion | partial | yes |
 | Delete-candidate review | Explicit final cleanup | ignored logs/artifacts only | Human-approved delete list | needs-human-review | no | yes |
 
 ## Phase Plan
 
-1. Phase 0: audit only.
-2. Phase 1: add agent-first orientation/index docs only: root `AGENTS.md`, `.dev/README.md`, `.dev/DOCS_INDEX.md`; explicitly route existing `.cursor/rules` and `.cursor/skills` without moving them.
+1. Phase 0: audit and classify `.dev`.
+2. Phase 1: add agent-first orientation/index docs: root `AGENTS.md`, `.dev/README.md`, `.dev/DOCS_INDEX.md`; route existing `.cursor/rules` and `.cursor/skills`.
 3. Phase 2: verify and consolidate canonical docs against current code.
-4. Phase 3: relocate generated artifacts only after reference checks and script/default updates.
-5. Phase 4: archive stale plans, historical docs, PR9 dashboard, and one-off patch debris.
-6. Phase 5: populate Notion dashboard/index/tracker from Git sources.
-7. Phase 6: delete candidates only after explicit human confirmation.
+4. Phase 3: keep generated artifacts ignored and untracked; update script/default paths only when relocation is actually needed.
+5. Phase 4: remove or consolidate stale plans, historical docs, and one-off patch debris after reference checks.
+6. Phase 5: populate Notion dashboard/index/tracker from Git sources if useful.
+7. Phase 6: review any remaining local-only delete candidates.
 
 Recommended first Phase 1 PR: non-destructive agent orientation docs.
