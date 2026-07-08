@@ -46,10 +46,7 @@ logs/
 
 # Local dev artifacts — machine/session-specific; not versioned
 .dev/TS_Save_230.json
-.dev/build-logs/effective-stats-gate.txt
-.dev/build-logs/pcall-gate.txt
-.dev/build-logs/bundle-size-gate.json
-.dev/build-logs/tts-object-stub-guids-gate.txt
+.dev/build-logs/
 .dev/testbed/TEST BED.ttslua
 # lib/e2e_playbook_dice.ttslua
 
