@@ -4,7 +4,7 @@
 
 > **Agents (mandatory):** Until **TOR-144 (multiplayer E2E)** passes with two real clients, **every** change that adds or modifies event handlers, load/bootstrap hooks, `HUD_*` / object clicks, `Global.*` mutators, or world I/O must comply with **§1.1 policies P1–P10** and the **§1.4 pre-flight checklist**. Always-on Cursor rule: [`.cursor/rules/toronto-rising-multiplayer-authority.mdc`](../../.cursor/rules/toronto-rising-multiplayer-authority.mdc). Do not mark multiplayer sync work **Done** without multiclient verification.
 
-**Related:** [Bootstrap Authority](../Sychronizing%20Game%20Functionality/Bootstrap%20Authority.md), [Event Listener Policy](../Sychronizing%20Game%20Functionality/Event%20Listener%20Policy.md), [Reconciler Contract](../Sychronizing%20Game%20Functionality/Reconciler%20Contract.md), [Dual-apply survey](../Sychronizing%20Game%20Functionality/Dual_apply_survey.md), [Multiplayer-E2E](../E2E%20Playbooks/Multiplayer-E2E.md) (TOR-144), [Multiplayer Performance Audit](Multiplayer%20Performance%20Audit.md), [Execution Model Correction — Remediation Plan](Execution%20Model%20Correction%20%E2%80%94%20Remediation%20Plan.md), [lua-local-function-order](../../docs/solutions/lua-local-function-order.md).
+**Related:** [Event Listener Policy](../Sychronizing%20Game%20Functionality/Event%20Listener%20Policy.md), [Reconciler Contract](../Sychronizing%20Game%20Functionality/Reconciler%20Contract.md), [Dual-apply survey](../Sychronizing%20Game%20Functionality/Dual_apply_survey.md), [Multiplayer-E2E](../E2E%20Playbooks/Multiplayer-E2E.md) (TOR-144), [Multiplayer Performance Audit](Multiplayer%20Performance%20Audit.md), [Execution Model Correction — Remediation Plan](Execution%20Model%20Correction%20%E2%80%94%20Remediation%20Plan.md), [lua-local-function-order](../../docs/solutions/lua-local-function-order.md).
 
 **Linear:** TOR-144 (multiplayer E2E playbook) — mechanical sync is not closed until this pass runs with two real clients.
 
@@ -68,7 +68,7 @@ When touching these areas, verify P1–P10 and run solo smoke (Apply/Clear, one 
 Before merging Lua that reacts to players or objects:
 
 1. **Classify delivery:** host-executed event (`onObjectDrop`, `Global.call`, `onLoad`) vs clicker-only (`HUD_*`, `click_*`).
-2. **Classify tier:** A UI / B state / C world ([Bootstrap Authority](../Sychronizing%20Game%20Functionality/Bootstrap%20Authority.md)).
+2. **Classify tier:** A UI / B state / C world.
 3. **Guard order:** nil/object check → tag/GUID → `isStorytellerSteamPlayer` (if ST-only).
 4. **Mutation shape:** write `gameState` → call narrowest `Sync.*` (not both eager world + full reconcile unless fingerprinted).
 5. **Object script?** Route mutations via `Global.call`; expose actor-identity via `GlobalIsStorytellerSteamPlayer`.
@@ -225,7 +225,7 @@ Do these in order. Friend **watches** for double motion, stacked audio, or jitte
 ### Scope discipline for the first pass
 
 - Do **not** expand into hotseat, Remote Play, or ST panel on friend's machine in v1.
-- Do **not** treat HUD `gameState` count mismatches (D2) as release blockers if the **world** matches — track as broadcast follow-up ([Bootstrap Authority § Live gameState broadcast](../Sychronizing%20Game%20Functionality/Bootstrap%20Authority.md)).
+- Do **not** treat HUD `gameState` count mismatches (D2) as release blockers if the **world** matches — track as broadcast follow-up under P10 live `gameState` broadcast policy.
 - After first pass, promote full [Multiplayer-E2E](../E2E%20Playbooks/Multiplayer-E2E.md) matrix and domain playbooks (Gameboard, Dice, Scenes) with friend time budgeted.
 
 ### When to re-run this pass

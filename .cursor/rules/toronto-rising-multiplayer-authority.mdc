@@ -18,7 +18,7 @@ Audit playbook for agents: [`.dev/Multiplayer Functionality/Multiplayer Performa
 ## Mandatory on every feature touching players, objects, load, or world I/O
 
 1. **Classify delivery:** host-executed event (`onLoad`, `onObjectDrop`, `Global.call`, …) vs clicker-only (`HUD_*`, object `click_*`).
-2. **Classify tier:** A UI / B state / C world — [Bootstrap Authority](../../.dev/Sychronizing%20Game%20Functionality/Bootstrap%20Authority.md).
+2. **Classify tier:** A UI / B state / C world — [Preparing For Multiplayer](../../.dev/Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md).
 3. **Tier C runs on host** because TTS runs mod Lua on the host only — do not skip reconciler work behind dead execution gates.
 4. **Actor identity:** ST-only interaction → `U.isStorytellerSteamPlayer(playerRef)` on the event's player param.
 5. **Object-script mutations → `Global.call`** to Global entries (bundle-safe); Global may steam-gate ST-only actions. **`GlobalIsStorytellerSteamPlayer` only** from object scripts.

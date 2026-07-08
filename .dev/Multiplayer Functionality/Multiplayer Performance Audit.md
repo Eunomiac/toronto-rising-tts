@@ -19,7 +19,7 @@ Read fully before scanning code:
 | Doc | Use |
 | --- | --- |
 | [Preparing For Multiplayer §1](Preparing%20For%20Multiplayer.md) | Policies P1–P10, helper table, high-risk paths, grep commands |
-| [Bootstrap Authority](../Sychronizing%20Game%20Functionality/Bootstrap%20Authority.md) | Tiers A/B/C, fan-out vs clicker, roll split, join `onLoad` |
+| [Preparing For Multiplayer §1](Preparing%20For%20Multiplayer.md) | P1–P10, tiers A/B/C, fan-out vs clicker, roll split |
 | [Event Listener Policy](../Sychronizing%20Game%20Functionality/Event%20Listener%20Policy.md) | Host Authority Inventory — compare code to tables |
 | [Reconciler Contract](../Sychronizing%20Game%20Functionality/Reconciler%20Contract.md) | Mutation → sync shape; reconciler exceptions |
 | [Dual-apply survey](../Sychronizing%20Game%20Functionality/Dual_apply_survey.md) | P7 dual-apply matrix |
@@ -191,7 +191,7 @@ rg "Sync\.full" core/ --glob "*.ttslua"
 
 | Symbol | Audit |
 | --- | --- |
-| `U.isStorytellerSteamPlayer` | Used with correct `playerRef` shape (Player vs color) per Bootstrap Authority callback table |
+| `U.isStorytellerSteamPlayer` | Used with correct `playerRef` shape (Player vs color) per Preparing For Multiplayer |
 | `U.isHostClient` | Solo fallback documented; not used alone where steam+host both needed on fan-out |
 | `U.requireHostForWorldMutation` | Context strings unique enough for DEBUG; every Tier C path uses it |
 | `GlobalIsStorytellerSteamPlayer` | Object scripts use this, not raw `Black` check alone |
@@ -325,7 +325,7 @@ When drafting the plan from findings:
 - **Policies satisfied**
 - **Over-gating risk** — what join-client behavior to retest (TOR-144 phase)
 - **Lua local function order** — if adding/moving helpers
-- **Doc updates** — Event Listener Policy row, Bootstrap Authority if new handler
+- **Doc updates** — Event Listener Policy row and Preparing For Multiplayer if the authority policy changes
 - **Solo regression** — Gameboard Apply/Clear, one dice path, `npm run build` if UI
 
 ### 5.4 Suggested waves (default grouping)
@@ -375,7 +375,7 @@ Agent has **not** closed the audit until the plan includes this mapping.
 | Multi-client E2E execution | TOR-144, [Multiplayer-E2E](../E2E%20Playbooks/Multiplayer-E2E.md) |
 | `Sync.full` / `Sync.npcs` call-site pass | TOR-168 |
 | Dual-apply agent review | TOR-102 |
-| Live `gameState` broadcast | Bootstrap Authority § follow-up; P10 |
+| Live `gameState` broadcast | Preparing For Multiplayer P10 |
 | Event listener lag (P4 only) | TOR-197, Performance Audit |
 
 ---

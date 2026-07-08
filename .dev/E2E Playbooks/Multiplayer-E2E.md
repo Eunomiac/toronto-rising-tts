@@ -1,6 +1,6 @@
 # Multiplayer E2E checklist (TOR-144)
 
-**Prerequisites:** Solo Host suites pass ([Dice-E2E](Dice-E2E.md), [Gameboard-E2E](Gameboard-E2E.md), [Scenes-E2E](Scenes-E2E.md)). Actor-identity gates and sync contracts per [Bootstrap Authority](../Sychronizing%20Game%20Functionality/Bootstrap%20Authority.md), [Event Listener Policy](../Sychronizing%20Game%20Functionality/Event%20Listener%20Policy.md). Host-execution gating removed per **TOR-284** (2026-07-04).
+**Prerequisites:** Solo Host suites pass ([Dice-E2E](Dice-E2E.md), [Gameboard-E2E](Gameboard-E2E.md), [Scenes-E2E](Scenes-E2E.md)). Actor-identity gates and sync contracts per [Preparing For Multiplayer](../Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md), [Event Listener Policy](../Sychronizing%20Game%20Functionality/Event%20Listener%20Policy.md). Host-execution gating removed per **TOR-284** (2026-07-04).
 
 **Setup:** Two real TTS clients — **Host** (Storyteller machine) + **Join client** (PC). Save & Play from repo on Host; join from invite.
 
@@ -53,6 +53,6 @@ Re-run Gameboard smoke Apply/Clear and one Dice suite step after multiplayer-rel
 
 ## Related
 
-- [Bootstrap Authority](../Sychronizing%20Game%20Functionality/Bootstrap%20Authority.md) — tiers A/B/C, actor identity
+- [Preparing For Multiplayer](../Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md) — P1–P10, tiers A/B/C, actor identity
 - [Event Listener Policy](../Sychronizing%20Game%20Functionality/Event%20Listener%20Policy.md) — handler inventory
 - [Execution Model Correction — Remediation Plan](../Multiplayer%20Functionality/Execution%20Model%20Correction%20%E2%80%94%20Remediation%20Plan.md) — TOR-284

@@ -1,7 +1,7 @@
 # Event Listener Policy (TTS)
 
 **Linear:** TOR-197 (event listener early-return audit + policy)
-**Related:** [Bootstrap Authority](Bootstrap%20Authority.md) (TOR-221 load/bootstrap — superseded by execution model correction), [Preparing For Multiplayer](../Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md) §1 (P1–P10), [Execution Model Correction — Remediation Plan](../Multiplayer%20Functionality/Execution%20Model%20Correction%20%E2%80%94%20Remediation%20Plan.md), [Performance Audit](Performance%20Audit.md), [Reconciler Contract](Reconciler%20Contract.md), TOR-201 (Clear / token-drop lag)
+**Related:** [Preparing For Multiplayer](../Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md) §1 (P1–P10), [Execution Model Correction — Remediation Plan](../Multiplayer%20Functionality/Execution%20Model%20Correction%20%E2%80%94%20Remediation%20Plan.md), [Performance Audit](Performance%20Audit.md), [Reconciler Contract](Reconciler%20Contract.md), TOR-201 (Clear / token-drop lag)
 
 > **Agents:** Any new or changed handler listed below (or added to the codebase) must be registered here with **delivery** (host-executed event vs clicker) and **tier** (A/B/C). Until **TOR-144 (multiplayer E2E)** passes, apply [`.cursor/rules/toronto-rising-multiplayer-authority.mdc`](../../.cursor/rules/toronto-rising-multiplayer-authority.mdc) on every edit.
 
@@ -18,7 +18,7 @@ Every high-frequency handler must be able to **reject unrelated events in one O(
 
 If the guard fails, **return immediately** — no logging in the hot path unless `DEBUG` gated.
 
-**Actor identity:** Storyteller **interaction** gates use **`U.isStorytellerSteamPlayer(playerRef)`** on the event's player param. See [Bootstrap Authority](Bootstrap%20Authority.md) for tiers A/B/C and delivery types.
+**Actor identity:** Storyteller **interaction** gates use **`U.isStorytellerSteamPlayer(playerRef)`** on the event's player param. See [Preparing For Multiplayer](../Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md) for tiers A/B/C and delivery types.
 
 ## Host Authority Inventory (TOR-144 audit)
 
@@ -200,7 +200,6 @@ end
 
 ## Follow-ups (outside TOR-197 scope)
 
-- [x] TOR-221 — Bootstrap Authority doc (superseded by execution model correction, 2026-07)
 - [x] Sync audit — inventory + actor-identity gates + Global.call routing (TOR-144 prep)
 - [ ] `Sync.full` / `Sync.npcs` call-site pass — see TOR-168, Performance Audit rank 1.
 - [ ] Agent review Prompt 2 — dual-apply on drop paths (TOR-102).

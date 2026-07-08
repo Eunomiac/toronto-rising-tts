@@ -94,7 +94,7 @@ Join clients may still lack **live in-memory `gameState` Lua table updates** bet
 
 ### Step 1 — Freeze the misleading docs and rules — **DONE 2026-07-04**
 
-Freeze banners added to the always-applied rules (`.cursor/rules/toronto-rising-multiplayer-authority.mdc`, `toronto-rising-synchronization.mdc`) and source docs (`Bootstrap Authority.md`, `Preparing For Multiplayer.md`, `Multiplayer Performance Audit.md`). Contract during remediation: do **not** add execution guards; do **not** ad-hoc remove existing ones outside Step 3 staging; **keep** `isStorytellerSteamPlayer` + per-client `visibility`.
+Freeze banners added to the always-applied rules (`.cursor/rules/toronto-rising-multiplayer-authority.mdc`, `toronto-rising-synchronization.mdc`) and source docs (`Preparing For Multiplayer.md`, `Multiplayer Performance Audit.md`). Contract during remediation: do **not** add execution guards; do **not** ad-hoc remove existing ones outside Step 3 staging; **keep** `isStorytellerSteamPlayer` + per-client `visibility`.
 
 **Step 6 removes these banners** and replaces body text with §2.1 corrected policies.
 
@@ -253,7 +253,6 @@ Remove freeze banners and rewrite bodies to §2 / §2.1. **Grep each file after 
 | Surface | Required changes |
 | --- | --- |
 | [`.dev/Multiplayer Functionality/Preparing For Multiplayer.md`](Preparing%20For%20Multiplayer.md) | Remove banner; rewrite §1.1 P1–P10 to §2.1; delete join-bootstrap / `Sync.full` non-host table rows; update §1.2 helper table (drop host helpers; keep steam + `Global.call`); fix §1.3 high-risk checklist; update §1.4 pre-flight (drop host guard order); fix solo-dev myth ("`isHostClient()` always true when alone") |
-| [`.dev/Sychronizing Game Functionality/Bootstrap Authority.md`](../../.dev/Sychronizing%20Game%20Functionality/Bootstrap%20Authority.md) | Remove banner; rewrite authority model — **one Lua brain**; drop "Storyteller machine (execution)" axis and join-client bootstrap table; keep actor-identity axis + tiers A/B/C; fix event delivery table (handlers run on host; clients send events) |
 | [`.dev/Sychronizing Game Functionality/Event Listener Policy.md`](../../.dev/Sychronizing%20Game%20Functionality/Event%20Listener%20Policy.md) | Remove "GM vs Host client" execution paragraph; update Global.call inventory (drop host-guard column/requirement); fix handler rows that say `requireHostForWorldMutation`; add remediation note under TOR-221 / host audit checklist |
 | [`.dev/Multiplayer Functionality/Multiplayer Performance Audit.md`](Multiplayer%20Performance%20Audit.md) | Remove banner; reorient audit checklist to actor identity + UI visibility + replication timing; remove `GlobalRequireHostForWorldMutation` / host-guard pass criteria |
 | [`.cursor/rules/toronto-rising-multiplayer-authority.mdc`](../../.cursor/rules/toronto-rising-multiplayer-authority.mdc) | Remove banner; replace body with corrected P1–P10; agent checklist = actor identity + Sync discipline + Event Listener Policy + hotseat smoke note; drop host-execution mandates |

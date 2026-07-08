@@ -53,7 +53,7 @@ TTS runs **all mod Lua on the host only**. Apply on **every** new handler, chunk
 - **Object-script mutations** — `Global.call` → Global callee (bundle-size routing); `GlobalIsStorytellerSteamPlayer` for actor-identity from object scripts.
 - **P10 live `gameState` broadcast gap** — join-client HUD may read stale in-memory state; fix via sync bridge, not execution gates.
 
-Full policies P1–P10, pre-flight checklist, agent audit: [`.dev/Multiplayer Functionality/Preparing For Multiplayer.md`](../../.dev/Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md). Always-on rule: [`.cursor/rules/toronto-rising-multiplayer-authority.mdc`](../../.cursor/rules/toronto-rising-multiplayer-authority.mdc). Authority model: [Bootstrap Authority](../../.dev/Sychronizing%20Game%20Functionality/Bootstrap%20Authority.md).
+Full policies P1–P10, authority model, pre-flight checklist, and agent audit: [`.dev/Multiplayer Functionality/Preparing For Multiplayer.md`](../../.dev/Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md). Always-on rule: [`.cursor/rules/toronto-rising-multiplayer-authority.mdc`](../../.cursor/rules/toronto-rising-multiplayer-authority.mdc).
 
 ## Cleanup expectations
 

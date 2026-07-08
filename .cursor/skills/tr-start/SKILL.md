@@ -32,7 +32,7 @@ You are starting (or re-scoping) work on **Toronto Rising**, a Vampire: The Masq
 4. `.dev/Sychronizing Game Functionality/Reconciler Contract.md` — mutation vs reconcile, `Sync.full` order, dual-apply rules.
 5. `.cursor/rules/toronto-rising-synchronization.mdc` — single authority for `gameState` intent; no hidden side effects in setters.
 6. **`.cursor/rules/toronto-rising-multiplayer-authority.mdc`** + **`.dev/Multiplayer Functionality/Preparing For Multiplayer.md` §1** — **mandatory before any player/object/load/world-I/O work.** Policies P1–P10; one Lua brain (host only); actor identity + `Global.call` bundle routing. Update Event Listener Policy for new handlers.
-7. `.dev/Sychronizing Game Functionality/Bootstrap Authority.md` — tiers A/B/C, host-executed events vs clicker, chunk load + `onLoad`.
+7. `.dev/Multiplayer Functionality/Preparing For Multiplayer.md` — P1–P10 authority policy, tiers A/B/C, host-executed events vs clicker.
 8. `.dev/Sychronizing Game Functionality/Event Listener Policy.md` — handler inventory + O(1) guards on hot paths.
 9. `.dev/Sychronizing Game Functionality/Dual_apply_survey.md` — skim if the task touches scene, soundscape, lighting, or spawns.
 
