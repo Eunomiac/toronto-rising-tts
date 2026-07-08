@@ -189,7 +189,7 @@ end,
 **When to split into a new Code Block anyway:**
 
 - Gate **(2)** or **(3)** with no trustworthy poll (subjective visual, manual alignment report).
-- Legacy **`RunTest`** harness — still expects a paste boundary at `[HUMAN]` ([TESTING.md § U.RunSequence](../../../.dev/TESTING.md#usequence-ordering-rules)).
+- Current **`RunTest`** harness — still expects a paste boundary at `[HUMAN]` ([TESTING.md § U.RunSequence](../../../.dev/TESTING.md#usequence-ordering-rules)).
 - Optional **recovery** — author re-pastes only the assert half while debugging (not required if poll + assert share one sequence).
 
 **Do not split** gate **(1)** into “setup block → human paste → assert block” when a return testRef can bridge the action and the asserts in one `U.RunSequence`.
@@ -201,11 +201,11 @@ end,
 - **One `▶▶▶ HUMAN ▶▶▶` cue per human gate** — the step that prints it must **`return` the inter-step wait** before the next step runs; never two HUMAN prints back-to-back in adjacent steps with no wait between.
 - **Between automated steps:** use `print("PASS — …")` breadcrumbs; do **not** insert handoff HUMAN lines.
 - Each `printHeader` / `print` in its **own** `function() … end` step inside the sequence (preserves console order).
-- Playbook-scale runs with legacy harness: **`RunTest("Dice")`** then **`RunTest()`** after each human gate ([TESTING.md § Streamlined block workflow](../../../.dev/TESTING.md#streamlined-block-workflow)). Target: migrate E2E to Step-By-Step format + retain `RunTest`.
+- Playbook-scale runs with the `RunTest` harness: **`RunTest("Dice")`** then **`RunTest()`** after each human gate ([TESTING.md § Streamlined block workflow](../../../.dev/TESTING.md#streamlined-block-workflow)). Target: migrate E2E to Step-By-Step format + retain `RunTest`.
 
 **Canonical examples:**
 
 - **Primary:** [`.dev/Step-By-Step Playbooks/.Step-By-Step Template.md`](../../../.dev/Step-By-Step%20Playbooks/.Step-By-Step%20Template.md)
-- **Legacy (until TOR-141 migration):** [Dice-E2E.md](../../../.dev/E2E%20Playbooks/Dice-E2E.md), [Dice-E2E-Guide.md](../../../.dev/E2E%20Playbooks/Dice-E2E-Guide.md), [TESTING.md](../../../.dev/TESTING.md)
+- **Current E2E regression refs:** [Dice-E2E.md](../../../.dev/E2E%20Playbooks/Dice-E2E.md), [Dice-E2E-Guide.md](../../../.dev/E2E%20Playbooks/Dice-E2E-Guide.md), [TESTING.md](../../../.dev/TESTING.md)
 
 **Important:** Minimize **unnecessary** gates (no handoff splits, no phase splits). **Do** use gate **(1)** for ordinary TTS actions the author can perform in seconds. **Do not** substitute gate **(3)**-grade simulation scripts to avoid a simple drop, click, or roll.
