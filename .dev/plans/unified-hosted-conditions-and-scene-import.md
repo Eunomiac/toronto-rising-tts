@@ -1,6 +1,6 @@
 # Unified hosted conditions and scene import `conditions`
 
-Shipped implementation plan for deprecating `sessionScene.rollDefaults` and replacing it with `sessionScene.conditions` (registry id array). Parent brief: [scene_conditions_unification plan](../../.cursor/plans/scene_conditions_unification_2b08d8d4.plan.md).
+Shipped implementation plan for deprecating `sessionScene.rollDefaults` and replacing it with `sessionScene.conditions` (registry id array).
 
 ---
 

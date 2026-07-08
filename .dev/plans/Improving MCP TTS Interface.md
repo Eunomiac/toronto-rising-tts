@@ -2,7 +2,7 @@
 
 ## Initiative framing
 
-This work is the **first slice** of a broader goal: make Tabletop Simulator workflows **agent- and MCP-friendly** by improving **shared primitives** in `[lib/util.ttslua](lib/util.ttslua)` (and tightly related patterns), not by adding easing-only workarounds in `[core/debug.ttslua](core/debug.ttslua)`.
+This work is the **first slice** of a broader goal: make Tabletop Simulator workflows **agent- and MCP-friendly** by improving **shared primitives** in `[lib/util.ttslua](../../lib/util.ttslua)` (and tightly related patterns), not by adding easing-only workarounds in `[core/debug.ttslua](../../core/debug.ttslua)`.
 
 The easing test becomes a **reference consumer** that proves the utilities and documents one end-to-end MCP flow.
 
@@ -10,7 +10,7 @@ The easing test becomes a **reference consumer** that proves the utilities and d
 
 ### 1. Resolvable world objects vs hardcoded GUIDs
 
-**What goes wrong:** `[DEBUG.testEasing](core/debug.ttslua)` (and helpers like `testLookAt`) bind visual demos to fixed six-character GUIDs. In TTS, GUIDs are assigned by the engine; deleting or re-spawning objects invalidates those strings, so `getObjectFromGUID` returns nil and the test skips or degrades while still running earlier validation steps.
+**What goes wrong:** `[DEBUG.testEasing](../../core/debug.ttslua)` (and helpers like `testLookAt`) bind visual demos to fixed six-character GUIDs. In TTS, GUIDs are assigned by the engine; deleting or re-spawning objects invalidates those strings, so `getObjectFromGUID` returns nil and the test skips or degrades while still running earlier validation steps.
 
 **Why it matters for agents:** An MCP-driven run cannot assume a particular save still contains those objects; setup must be **discoverable** (find by tag or similar) or **creatable** (spawn rig) without editing source each time.
 
@@ -32,7 +32,7 @@ The easing test becomes a **reference consumer** that proves the utilities and d
 
 ### 3. `U.RunSequence` is asynchronous; post-sequence work is duplicated ad hoc
 
-**What goes wrong:** `[U.RunSequence](lib/util.ttslua)` starts stepping through functions via `U.waitUntil` and immediately returns a **done predicate** `function() return isDone end`. It does **not** wait for the sequence to finish. Any caller that needs to print a summary, chain another test, or `return` a value “when animations are done” must reinvent timing: poll `isDone()`, use `Wait.time`, or rely on incidental print idle.
+**What goes wrong:** `[U.RunSequence](../../lib/util.ttslua)` starts stepping through functions via `U.waitUntil` and immediately returns a **done predicate** `function() return isDone end`. It does **not** wait for the sequence to finish. Any caller that needs to print a summary, chain another test, or `return` a value “when animations are done” must reinvent timing: poll `isDone()`, use `Wait.time`, or rely on incidental print idle.
 
 **Why it matters for agents:** Every future multi-step scenario (scenes, lighting, NPC intro) hits the same pattern; centralizing it avoids subtle bugs and inconsistent timeouts.
 
@@ -42,7 +42,7 @@ The easing test becomes a **reference consumer** that proves the utilities and d
 
 ### 4. MCP completion semantics need a consistent “async Lua finished” contract
 
-**What goes wrong:** `[tts_execute_lua](.tools/tts-mcp/src/index.ts)` treats a session as finished when the snippet **returns** a JSON-serializable value (fast), or when **print idle** / **maxWaitMs** elapses. Async work scheduled with `**Wait.time`** can let the main chunk **return early**, so the bridge may close before follow-up runs unless the implementation is aligned with how TTS **External Editor execute** actually behaves (blocking vs deferred).
+**What goes wrong:** `[tts_execute_lua](../../.tools/tts-mcp/src/index.ts)` treats a session as finished when the snippet **returns** a JSON-serializable value (fast), or when **print idle** / **maxWaitMs** elapses. Async work scheduled with `**Wait.time`** can let the main chunk **return early**, so the bridge may close before follow-up runs unless the implementation is aligned with how TTS **External Editor execute** actually behaves (blocking vs deferred).
 
 **Why it matters for agents:** Without a single contract, one test “works” because it printed enough to trigger idle, while another silently truncates; parsers cannot rely on a stable last line or return payload.
 
@@ -88,7 +88,7 @@ Utility stays generic; individual tests choose keys (`test = "easing"`, `steps =
 
 ## Layer 2 — Easing rig and test (consumer)
 
-- `**DEBUG.ensureEasingTestRig()`:** Uses util tag resolution + spawn: spotlight from `[lib/npcs_light_spawn_defaults.ttslua](lib/npcs_light_spawn_defaults.ttslua)` / `spawnObjectData` (same pattern as `[core/npcs.ttslua](core/npcs.ttslua)`); simple blocks for center/target/block. Fixed layout near table origin.
+- `**DEBUG.ensureEasingTestRig()`:** Uses util tag resolution + spawn: spotlight from `[lib/npcs_light_spawn_defaults.ttslua](../../lib/npcs_light_spawn_defaults.ttslua)` / `spawnObjectData` (same pattern as `[core/npcs.ttslua](../../core/npcs.ttslua)`); simple blocks for center/target/block. Fixed layout near table origin.
 - `**DEBUG.testEasing(opts)`:** `interactive` default true; false disables `continueTest` waits and `pauseStep` behavior. Builds `**easingRunReport`** during validation and visual phases.
 - **Sequence:** Uses **Layer 1 sequence completion** to run follow-up summary / `mcpEmitResult` / return — whichever the verified execute model supports.
 - **Thin MCP entry:** e.g. `DEBUG.testEasingForMcp()` + global alias — only orchestrates `ensureEasingTestRig`, `testEasing({ interactive = false })`, and result emission; **no** custom wait implementation.
@@ -96,7 +96,7 @@ Utility stays generic; individual tests choose keys (`test = "easing"`, `steps =
 
 ## Layer 3 — Documentation
 
-Update `[.dev/TTS_MCP.md](.dev/TTS_MCP.md)` as an **agent playbook**:
+Update `[.dev/TTS_MCP.md](../TTS_MCP.md)` as an **agent playbook**:
 
 - Prerequisites and ports (existing).
 - **Shared utilities:** sequence completion, tag resolution, result emission — with **copy-paste Lua snippets** for unrelated tasks.
@@ -131,9 +131,9 @@ flowchart LR
 
 | File                                     | Role                                                                       |
 | ---------------------------------------- | -------------------------------------------------------------------------- |
-| `[lib/util.ttslua](lib/util.ttslua)`     | Sequence completion API; tag helpers; optional MCP print helper            |
-| `[core/debug.ttslua](core/debug.ttslua)` | Easing rig; refactor `testEasing` / `testLookAt`; MCP entry uses util only |
-| `[.dev/TTS_MCP.md](.dev/TTS_MCP.md)`     | Agent playbook + easing example                                            |
+| `[lib/util.ttslua](../../lib/util.ttslua)`     | Sequence completion API; tag helpers; optional MCP print helper            |
+| `[core/debug.ttslua](../../core/debug.ttslua)` | Easing rig; refactor `testEasing` / `testLookAt`; MCP entry uses util only |
+| `[.dev/TTS_MCP.md](../TTS_MCP.md)`             | Agent playbook + easing example                                            |
 
 
 **Regression:** Grep for `U.RunSequence(` call sites; ensure backward compatibility if signature changes.
@@ -144,4 +144,3 @@ flowchart LR
 - New unit or bridge tests if util logic is pure enough to test off-TTS; otherwise document manual TTS checks.
 - Easing: manual `testEasing()` still interactive; `testEasingForMcp()` (or equivalent) unattended with rig spawn/reuse.
 - MCP: one `tts_execute_lua` receives structured outcome per documented contract.
-

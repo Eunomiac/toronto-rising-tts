@@ -10,7 +10,7 @@
 
 ## Project tracking (Linear)
 
-**Linear is primary project tracking.** Before starting feature work, check [RUNNING TASKLIST](../RUNNING%20TASKLIST.md) and related `TOR-*` issues. When adding or completing functions tied to planned work, update Linear and the tasklist per [`.cursor/rules/toronto-rising-linear.mdc`](../../.cursor/rules/toronto-rising-linear.mdc).
+**Linear is primary project tracking.** Before starting feature work, check [RUNNING TASKLIST](RUNNING%20TASKLIST.md) and related `TOR-*` issues. When adding or completing functions tied to planned work, update Linear and the tasklist per [`.cursor/rules/toronto-rising-linear.mdc`](../.cursor/rules/toronto-rising-linear.mdc).
 
 ---
 
