@@ -1,5 +1,5 @@
 <!-- Storyteller Soundscape Controls -->
-<!-- Agent guidance: .dev/SOUNDSCAPE_UNITY_SETUP.md; .dev/HUD_FUNCTIONS.md. -->
+<!-- Agent guidance: .dev/Soundscape & Audio/SOUNDSCAPE_UNITY_SETUP.md; .dev/HUD_FUNCTIONS.md. -->
 
 <Panel id="panel_soundscape" active="false">
   <VerticalLayout class="storyteller_panel_column" spacing="5" padding="6 6 6 6" childForceExpandWidth="true" minWidth="520" childForceExpandHeight="false">

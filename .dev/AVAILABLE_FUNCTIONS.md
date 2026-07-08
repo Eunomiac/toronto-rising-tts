@@ -556,7 +556,7 @@ TTS also exposes **`UI.setAttributes`** natively; use **`U.setAttributes`** when
 
 ## Maintenance
 
-**MANDATORY (see `.cursorrules` → Documentation Updates):** Keep this file aligned with the codebase **in the same change** — do not wait for a separate doc request.
+**MANDATORY (see `AGENTS.md` and `.cursor/rules/toronto-rising-development.mdc`):** Keep this file aligned with the codebase **in the same change** — do not wait for a separate doc request.
 
 **This document must be updated when:**
 

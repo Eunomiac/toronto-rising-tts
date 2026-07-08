@@ -265,13 +265,13 @@ type PersistedCondition = true | { variant?: number };
 type PlayerConditions = Partial<Record<ConditionId, PersistedCondition>>;
 ```
 
-**Registry (definitions, not persisted):** [`lib/condition_defs.ttslua`](../lib/condition_defs.ttslua) — per-condition `derive(stats, activeConditions, statChanges?)` functions, stat/HUD/light effects, merge priority. Shared math: `PSC.trackerMaxFromStats`, `CD.humanityHasImpairedSlot`.
+**Registry (definitions, not persisted):** [`lib/condition_defs.ttslua`](../../lib/condition_defs.ttslua) — per-condition `derive(stats, activeConditions, statChanges?)` functions, stat/HUD/light effects, merge priority. Shared math: `PSC.trackerMaxFromStats`, `CD.humanityHasImpairedSlot`.
 
-**Effective stats (read-time):** [`lib/effective_stats.ttslua`](../lib/effective_stats.ttslua) — `EffectiveStats.forPlayer` / `forSeat` for condition-aware tracker max, dot ratings, BP derived row. See [Conditions System Guide §9](Conditions%20System%20Guide.md#9-effective-stats-read-time).
+**Effective stats (read-time):** [`lib/effective_stats.ttslua`](../../lib/effective_stats.ttslua) — `EffectiveStats.forPlayer` / `forSeat` for condition-aware tracker max, dot ratings, BP derived row. See [Conditions System Guide §9](Conditions%20System%20Guide.md#9-effective-stats-read-time).
 
-**Derive orchestration:** [`lib/condition_derive.ttslua`](../lib/condition_derive.ttslua) — generic only (`suppressedBy` wrapper); no condition-specific rule catalog.
+**Derive orchestration:** [`lib/condition_derive.ttslua`](../../lib/condition_derive.ttslua) — generic only (`suppressedBy` wrapper); no condition-specific rule catalog.
 
-**Orchestration (Global):** [`core/conditions.ttslua`](../core/conditions.ttslua)
+**Orchestration (Global):** [`core/conditions.ttslua`](../../core/conditions.ttslua)
 
 | API | Role |
 | --- | --- |
@@ -310,11 +310,11 @@ type PlayerConditions = Partial<Record<ConditionId, PersistedCondition>>;
 
 **Load policy:** Unknown ids or legacy inline payloads (`statChanges`, `hudChanges`, `lightingModeChanges`, …) → **`error(...)`** (no migrator). One-time fix: clear `conditions = {}` or restore a pre-migration save.
 
-**Presentation:** HUD ([`core/hud_overlays.ttslua`](../core/hud_overlays.ttslua)), lighting ([`core/lighting.ttslua`](../core/lighting.ttslua)), and sheets read **resolved effects** only — not raw persisted blobs.
+**Presentation:** HUD ([`core/hud_overlays.ttslua`](../../core/hud_overlays.ttslua)), lighting ([`core/lighting.ttslua`](../../core/lighting.ttslua)), and sheets read **resolved effects** only — not raw persisted blobs.
 
 **Torpor sticky rule:** Derived `torpor` auto-adds when aggravated health fills the track; it is **not** auto-removed by derive (Storyteller **`Conditions.clear`** / PCs panel **Torpor** button). Reconcile re-adds torpor if the track is still full after a clear.
 
-**Adding a condition:** See [Conditions System Guide](Conditions%20System%20Guide.md) (Agent quick guide §0). Pattern digest: [`docs/solutions/conditions-registry-pattern.md`](../docs/solutions/conditions-registry-pattern.md).
+**Adding a condition:** See [Conditions System Guide](Conditions%20System%20Guide.md) (Agent quick guide §0). Pattern digest: [`docs/solutions/conditions-registry-pattern.md`](../../docs/solutions/conditions-registry-pattern.md).
 
 ## Dynamic HUD Updates
 

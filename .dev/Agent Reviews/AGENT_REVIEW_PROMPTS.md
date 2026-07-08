@@ -7,7 +7,7 @@ Cloud-agent prompts for the four **Agent Reviews** items in [`.dev/RUNNING TASKL
 | Resource | Why |
 |----------|-----|
 | [`AGENTS.md`](../../AGENTS.md) | Module layout, state access rules, sync contract, player ID vs color |
-| [`.cursorrules`](../../.cursorrules) | Error visibility, documentation-in-same-change, no `pcall` in production |
+| [`AGENTS.md`](../../AGENTS.md) and [`.cursor/rules/`](../../.cursor/rules/) | Agent entrypoint, repo-local rules, error visibility, documentation-in-same-change, no `pcall` in production |
 | [`.cursor/rules/toronto-rising-synchronization.mdc`](../../.cursor/rules/toronto-rising-synchronization.mdc) | Mutation vs reconciliation, dual-apply rules, lighting priority |
 | [`.dev/Sychronizing Game Functionality/Synchronization Architecture Proposal.md`](../Sychronizing%20Game%20Functionality/Synchronization%20Architecture%20Proposal.md) | Orchestrator design, reconciler contract draft (§3.3) |
 | [`.dev/Sychronizing Game Functionality/Dual_apply_survey.md`](../Sychronizing%20Game%20Functionality/Dual_apply_survey.md) | Existing dual-apply inventory and mitigation patterns |
@@ -255,5 +255,5 @@ Identify **expensive or repeatedly-triggered** sync/world/UI paths and recommend
 ## After completing any prompt
 
 1. Update [`.dev/RUNNING TASKLIST.md`](../RUNNING%20TASKLIST.md) — check off the matching Agent Review item with a link to the deliverable.
-2. If behavior or public sync APIs change during a fix pass, update docs in the **same change** (`.cursorrules` requirement).
-3. Do not commit unless the user asks; deliver the markdown artifact and a short summary of findings.
+2. If behavior or public sync APIs change during a fix pass, update docs in the **same change**.
+3. Commit according to the active session policy; deliver the markdown artifact and a short summary of findings.

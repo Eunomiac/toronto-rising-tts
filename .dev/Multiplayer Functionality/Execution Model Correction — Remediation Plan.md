@@ -264,7 +264,7 @@ Remove freeze banners and rewrite bodies to §2 / §2.1. **Grep each file after 
 | [`.cursor/rules/toronto-rising-synchronization.mdc`](../../.cursor/rules/toronto-rising-synchronization.mdc) | Remove banner; delete "Multiplayer host authority" execution subsection; keep mutation/reconcile separation + dual-apply + `isStorytellerSteamPlayer` where relevant |
 | [`.cursor/rules/toronto-rising-object-script-bundling.mdc`](../../.cursor/rules/toronto-rising-object-script-bundling.mdc) | Approved patterns table: Tier C row → `Global.call("Global…")` mutator with **steam gate if ST-only**, not `GlobalRequireHostForWorldMutation` |
 | [`.cursor/rules/toronto-rising-development.mdc`](../../.cursor/rules/toronto-rising-development.mdc) | Update multiplayer bullet if it still cites host-execution guards — point to corrected Preparing §1 |
-| [`.cursor/commands/tr-start.md`](../../.cursor/commands/tr-start.md) | Multiplayer authority row → corrected model (actor identity + `Global.call` bundle pattern) |
+| [`.cursor/skills/tr-start/SKILL.md`](../../.cursor/skills/tr-start/SKILL.md) | Multiplayer authority row → corrected model (actor identity + `Global.call` bundle pattern) |
 | [`.dev/E2E Playbooks/Multiplayer-E2E.md`](../E2E%20Playbooks/Multiplayer-E2E.md) | Remove/adjust steps that assert join-client Lua execution or host-guard pass/fail |
 | [`.dev/DEVELOPMENT_WORKFLOW.md`](../DEVELOPMENT%20WORKFLOW.md) | If host-guard workflow mentioned — one-line pointer to corrected Preparing |
 | **This plan** | Check Definition of done §4; set Status to **Complete** with date |

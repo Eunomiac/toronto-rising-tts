@@ -302,7 +302,7 @@ This is a nested reference panel controlled by buttons in the Right Sidebar. It 
 
 #### Coterie Grid Buttons
 
-The coterie grid should display a button for each coterie in `C.CHRONICLE_DATA.coteries` **where `inCoterieRef = true`**. The buttons should be displayed in a grid, centered on the screen, and separated vertically into groups by the `affiliation` field of the coterie. Currently, 14 coteries are set to be in the coterie reference, divided between three groups. Each button is a 250x150 px image. See the [Coterie Grid Layout Mockup](./Coterie%20Grid%20Layout%20Mockup.png) for a depiction of the layout.
+The coterie grid should display a button for each coterie in `C.CHRONICLE_DATA.coteries` **where `inCoterieRef = true`**. The buttons should be displayed in a grid, centered on the screen, and separated vertically into groups by the `affiliation` field of the coterie. Currently, 14 coteries are set to be in the coterie reference, divided between three groups. Each button is a 250x150 px image.
 
 Note that, since there are odd numbers of coteries in some groups, a `GridLayout` element will not be able to display them all in a single row. Instead, you will need to use `HorizontalLayout` elements to display each row, centered within a parent `VerticalLayout` element.
 

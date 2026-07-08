@@ -476,8 +476,6 @@ end
 
     These functions test the feasibility of creating custom point-source lights
     programmatically instead of using third-party configurable lights.
-
-    See .dev/LIGHT_CREATION_FEASIBILITY.md for detailed investigation.
 ]]
 
 --- Test if "Light" is a spawnable built-in type

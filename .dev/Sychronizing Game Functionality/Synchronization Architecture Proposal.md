@@ -116,7 +116,7 @@ What's worth doing:
 
 - Keep [`lib/util.ttslua → U.Val`](../../lib/util.ttslua) assertions on the established setters so the library entry points stay strict.
 - Add `grep`-able naming conventions (`L.<verb>` for state-modifying, `L.<noun>` for read-only) so reviewers can spot bypasses.
-- Document a "no direct `lightComp.set()` calls outside `core/lighting.ttslua`" rule in `.cursorrules`.
+- Keep the "no direct `lightComp.set()` calls outside `core/lighting.ttslua`" rule in `.cursor/rules/toronto-rising-synchronization.mdc`.
 
 Do **not** spend effort fighting Lua's lack of private members.
 
@@ -287,7 +287,7 @@ Every `<Module>.reconcile<Scope>(...)` function obeys these rules:
 2. **Idempotent.** Calling it twice in a row produces zero observable difference on the second call.
 3. **Diffs at the boundary.** Compares desired state to applied/cached state; only emits world calls (UI, light component, sound emitter) on diff.
 4. **Pure derivation, then apply.** Internally split into `compute<Scope>Desired(...)` (pure) and `apply<Scope>Desired(desired)` (effects). This makes them testable from the console without touching the world.
-5. **Fails loudly.** Per `.cursorrules`, no `pcall` masking; missing GUIDs → explicit error.
+5. **Fails loudly.** Per `docs/solutions/lua-pcall-policy.md`, no `pcall` masking; missing GUIDs → explicit error.
 6. **Knows nothing about other domains.** `L.reconcileForPlayer` does not call `HO.syncAll`. The orchestrator is the only thing that fans out across domains.
 
 Existing functions that already fit (sometimes need renaming for consistency):
