@@ -44,7 +44,7 @@ The highest-risk finding is path sensitivity. `package.json` directly invokes `.
 
 The second major finding is documentation trust ambiguity. Several docs are important, heavily linked, and confident, but may not match current code. Later phases should add agent-facing routing/index docs before moving or consolidating anything.
 
-The third major finding is that `.dev/` cannot be cleaned up in isolation. Repo-local agent instructions under `.cursor/rules/` and `.cursor/skills/` are active routing surfaces for agents and contain many hard-coded `.dev` paths. Those files should be included in Phase 1 alignment and in every later move/reference pass.
+The third major finding is that `.dev/` cannot be cleaned up in isolation. Repo-local agent instructions under `.cursor/rules/` and `.cursor/skills/` are active routing surfaces for agents and contain many hard-coded `.dev` paths. Those files should stay aligned in every move/reference pass.
 
 ## Agent-Centric Documentation Principle
 
@@ -109,7 +109,7 @@ Confirmed adjacent agent-instruction surfaces:
 - `.cursor/rules/toronto-rising-author-session.mdc` records the author-session fact policy.
 - `.cursor/skills/tr-start/SKILL.md` functions as the current agent read-order index and should consume `.dev/DOCS_INDEX.md` as the routing model stabilizes.
 
-Phase 1 should add orientation docs without changing behavior, but it should explicitly document this intended chain:
+Orientation docs should preserve this intended chain:
 
 ```text
 root AGENTS.md
@@ -303,7 +303,7 @@ Canonical technical docs should remain in Git. Notion pages should summarize, in
 
 | Title | Goal | Scope | Acceptance Criteria | Labels | Codex Safe? | Human Review? |
 |---|---|---|---|---|---|---|
-| Phase 1 agent orientation docs | Add non-destructive agent entrypoints | root `AGENTS.md`, `.dev/README.md`, `.dev/DOCS_INDEX.md`; cross-reference `.cursor/rules` and `.cursor/skills` | No moves; current-path links; trust model; agent routing; explicit rule/skill alignment note | docs, codex-ok | yes | yes |
+| Agent orientation docs | Maintain non-destructive agent entrypoints | root `AGENTS.md`, `.dev/README.md`, `.dev/DOCS_INDEX.md`; cross-reference `.cursor/rules` and `.cursor/skills` | Current-path links; trust model; agent routing; explicit rule/skill alignment note | docs, codex-ok | yes | yes |
 | Agent rule and skill alignment | Bring automatic agent instructions into the new routing model | `.cursor/rules/*`, `.cursor/skills/*` | Route live instructions through `AGENTS.md`, `.dev/DOCS_INDEX.md`, and active Cursor skills | docs, agent-instruction, path-sensitive, codex-ok | yes | yes |
 | Reference audit for `.dev` paths | Identify move blockers | `package.json`, `.tools`, docs, UI/code comments | Path-sensitive refs and owners listed | docs, path-sensitive, codex-ok | yes | yes |
 | Canonical docs verification | Mark current/stale docs | sync, state, NPC, HUD, soundscape, testing | Each canonical doc has status, source files, and verification commands | docs, needs-human-review | partial | yes |
@@ -316,11 +316,11 @@ Canonical technical docs should remain in Git. Notion pages should summarize, in
 ## Phase Plan
 
 1. Phase 0: audit and classify `.dev`.
-2. Phase 1: add agent-first orientation/index docs: root `AGENTS.md`, `.dev/README.md`, `.dev/DOCS_INDEX.md`; route existing `.cursor/rules` and `.cursor/skills`.
+2. Agent orientation: keep root `AGENTS.md`, `.dev/README.md`, `.dev/DOCS_INDEX.md`, and `.cursor` rules/skills aligned.
 3. Phase 2: verify and consolidate canonical docs against current code.
 4. Phase 3: keep generated artifacts ignored and untracked; update script/default paths only when relocation is actually needed.
 5. Phase 4: remove or consolidate stale plans, historical docs, and one-off patch debris after reference checks.
 6. Phase 5: populate Notion dashboard/index/tracker from Git sources if useful.
 7. Phase 6: review any remaining local-only delete candidates.
 
-Recommended first Phase 1 PR: non-destructive agent orientation docs.
+Recommended next cleanup: verify and consolidate canonical docs against current code.

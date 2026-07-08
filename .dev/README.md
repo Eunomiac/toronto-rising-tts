@@ -41,7 +41,7 @@ Human/player documentation should stay minimal and isolated when needed.
 - Current Cursor start workflow: [`../.cursor/skills/tr-start/SKILL.md`](../.cursor/skills/tr-start/SKILL.md)
 - Current Cursor inbox workflow: [`../.cursor/skills/tr-inbox/SKILL.md`](../.cursor/skills/tr-inbox/SKILL.md)
 
-`/tr-start` and `/tr-inbox` are current operational workflows, not permanent architecture. Preserve them during Phase 1 so existing work remains reachable, then evaluate whether cleaner agent-first workflows should replace them.
+`/tr-start` and `/tr-inbox` are current operational workflows, not permanent architecture. Preserve them until a cleaner agent-first workflow is deliberately introduced.
 
 ## Current Categories
 
@@ -60,5 +60,5 @@ Human/player documentation should stay minimal and isolated when needed.
 
 1. Phase 0: audit only. Complete; see [`../.codex/audits/dev-folder/phase-0-dev-documentation-artifact-audit.md`](../.codex/audits/dev-folder/phase-0-dev-documentation-artifact-audit.md).
 2. Phase 0.5: agent instruction stack audit. Complete; see [`../.codex/audits/agent-instructions/phase-0.5-agent-instruction-stack-audit.md`](../.codex/audits/agent-instructions/phase-0.5-agent-instruction-stack-audit.md).
-3. Phase 1: add orientation/index docs only. This file and [`DOCS_INDEX.md`](DOCS_INDEX.md) are part of that phase.
+3. Agent orientation docs are established. Keep this file, [`DOCS_INDEX.md`](DOCS_INDEX.md), `AGENTS.md`, and `.cursor` rules/skills aligned.
 4. Later phases: verify canonical docs, relocate generated artifacts, archive historical material, then delete only with explicit confirmation.

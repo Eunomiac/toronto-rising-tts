@@ -62,4 +62,4 @@ Always verify important claims against code before changing behavior.
 Moving these paths requires a dedicated reference update.
 
 - `.dev/Sychronizing Game Functionality/` is misspelled but path-sensitive.
-- `/tr-start` and `/tr-inbox` are current workflows to preserve during Phase 1, not permanent commitments.
+- `/tr-start` and `/tr-inbox` are current workflows, not permanent commitments.

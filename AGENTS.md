@@ -18,7 +18,7 @@ For any agent working in this repo:
 
 `/tr-inbox` is the current capture-processing command. It turns markdown notes in `.dev/INBOX.md` into Linear issues, tasklist updates, and Focus stack changes.
 
-These workflows are not permanent architecture. Preserve their current behavior during Phase 1, then reassess whether they should be simplified, replaced, or retired once the agent-first routing structure is clearer.
+These workflows are not permanent architecture. Preserve their current behavior until a cleaner agent-first workflow is deliberately introduced.
 
 For Codex/API sessions where slash commands are not available, mirror the same behavior manually: inspect `.dev/RUNNING TASKLIST.md`, `.dev/INBOX.md` when relevant, Linear context if available, and the task-specific routing in `.dev/DOCS_INDEX.md`.
 
@@ -32,7 +32,7 @@ Use this order when sources disagree:
 4. `.cursor/rules/*` and `.cursor/skills/*` for repo-local agent workflows.
 5. `.dev/DOCS_INDEX.md` for task routing.
 6. Current `.dev` canonical docs, after checking them against code.
-7. Historical plans, generated reports, stale tasklists, and archived notes.
+7. Historical plans and generated reports, after verifying they still apply.
 8. Global editor/extension instructions.
 
 Notion is an index/planning layer, not the source of truth for code-adjacent docs.
