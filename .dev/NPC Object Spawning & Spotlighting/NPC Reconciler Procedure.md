@@ -1,5 +1,22 @@
 # NPC Reconciler Procedure
 
+## Agent Routing
+
+Read this when:
+- changing `NPCS.reconcileAllFromState`, NPC stage/table/preload movement, or seat assignment reconciliation
+- debugging conflicts between `sessionScene.npcWorld.placements`, `sessionScene.seatSlots`, and `seatLayout.occupiedNPCSlots`
+
+Source of truth:
+- `core/npcs.ttslua`
+- `core/npc_gameboard.ttslua`
+- `core/state.ttslua`
+- `lib/rotational-seat-layout.ttslua`
+
+Verification:
+- `npm run build`
+- `.dev/E2E Playbooks/Gameboard-E2E.md`
+- relevant NPC/control-board step-by-step playbooks in `.dev/Step-By-Step Playbooks/`
+
 This document defines the **control flow** for reconciling NPC figurines in two locations: **NPC areas** in front of the table, and **NPC seats** around the table. It describes intended outcomes (where each NPC should end up, and what state should record), not the low-level mechanism for hiding objects or applying light modes — those may continue to use existing helpers as long as the outcomes match.
 
 Related: [`Reconciler Contract.md`](../Sychronizing%20Game%20Functionality/Reconciler%20Contract.md), [`NPC Object Overview.md`](NPC%20Object%20Overview.md), [`Scene Constructor Overview.md`](../Scene%20Constructor/Scene%20Constructor%20Overview.md).

@@ -2,6 +2,26 @@
 
 # Storyteller Gameboard Control
 
+## Agent Routing
+
+Read this when:
+- changing CONTROL_BOARD/STAGE_BOARD token workflows, Apply/Clear behavior, token palette behavior, or NPC/PC control-token contracts
+- debugging minimap marker mirroring, stage placement lerps, homeland seat retention, or Storyteller token-to-dice-bag rolls
+
+Source of truth:
+- `core/npc_gameboard.ttslua`
+- `lib/npc_gameboard_data.ttslua`
+- `objects/npc_control_board.ttslua`
+- `objects/npc_control_board_ui.ttslua`
+- `ui/objects/npc_control_board.xml`
+- `core/npcs.ttslua`
+- `core/storyteller_rolls.ttslua`
+
+Verification:
+- `npm run build`
+- `npm run npc-control-board-ui:generate`
+- `.dev/E2E Playbooks/Gameboard-E2E.md`
+
 Physical **STAGE_BOARD** (hidden world floor) + **CONTROL_BOARD** (GM table minimap) replace XML area placement for NPC staging. Code: `core/npc_gameboard.ttslua`, `lib/npc_gameboard_data.ttslua`, `objects/npc_control_board.ttslua`.
 
 ## Contract

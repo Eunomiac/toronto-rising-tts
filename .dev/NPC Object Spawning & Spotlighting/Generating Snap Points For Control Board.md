@@ -1,5 +1,20 @@
 # Generating Snap Points for Control Board
 
+## Agent Routing
+
+Read this when:
+- changing CONTROL_BOARD polar snap geometry, ring families, token yaw, or stage placement ground levels
+- tuning anchor-family spread or validating minimap/stage coordinate conversion for snaps
+
+Source of truth:
+- `lib/npc_gameboard_data.ttslua`
+- `core/npc_gameboard.ttslua`
+
+Verification:
+- `npm run build`
+- `.dev/E2E Playbooks/Gameboard-E2E.md`
+- `DEBUG.previewControlBoardSnapCount()`
+
 Configurable elliptical polar snap grid on the CONTROL_BOARD minimap. Implementation: `lib/npc_gameboard_data.ttslua` (`D.CONTROL_BOARD_SNAP`), `Gameboard.buildControlBoardSnapPoints` / `Gameboard.installPolarSnaps` in `core/npc_gameboard.ttslua`.
 
 ## General Considerations
