@@ -1,6 +1,6 @@
 # Dice System Pt. 2 — Implementation Plan
 
-**Source spec:** `.dev/Dice System/Dice System Modifications & Augmentations Pt. 2.md`
+**Source spec:** `.dev/Dice System/Dice System Extensions Pt. 2.md`
 **Status:** Implementation complete (May 2026) — ready for full in-game test pass
 **Architecture:** Single roll FSM in `core/roll_controller.ttslua` with player vs storyteller context; mutation on confirm → `Sync.player(color)` for PC stats only.
 

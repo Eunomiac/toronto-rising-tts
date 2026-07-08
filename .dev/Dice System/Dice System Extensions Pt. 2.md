@@ -1,4 +1,4 @@
-# Dice System Modifications & Augmentations, Part 2
+# Dice System Extensions, Part 2
 
 Several new types of dice and their corresponding dice bags have been added to the game. They follow the naming and tagging conventions of the existing dice and dice bags, namely:
 
