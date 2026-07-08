@@ -142,9 +142,9 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-05-25 | CREATE | TOR-135 – TOR-141 | First inbox triage batch |
 | 2026-05-25 | CREATE | TOR-142 | Apply active scene four clock buttons (inbox clarification pass) |
 | 2026-05-25 | UPDATE | TOR-81, workflow docs | Light modes scope + inline `Answer:` clarification loop |
-| 2026-05-25 | UPDATE | `.cursor/rules/toronto-rising-linear.mdc`, `.cursorrules`, `AGENTS.md` | INBOX paths and triage for agents |
+| 2026-05-25 | UPDATE | agent routing docs | INBOX paths and triage for agents |
 | 2026-05-25 | UPDATE | RUNNING TASKLIST **Focus**, workflow docs | Stack rank: bugs → TOR-141 → TOR-137 → TOR-81; Linear priorities synced |
-| 2026-05-25 | CREATE | `.cursor/commands/tr-inbox.md` | `/tr-inbox`: inbox triage + Focus/Linear sync for `/tr-start` handoff |
+| 2026-05-25 | CREATE | `/tr-inbox` workflow | Inbox triage + Focus/Linear sync for `/tr-start` handoff |
 | 2026-05-25 | CREATE | TOR-143 | Phase system redesign (inbox batch 2) |
 | 2026-05-25 | CANCELED | TOR-90 | Superseded by TOR-143 |
 | 2026-05-25 | UPDATE | TOR-98, TOR-101 | Partial design absorbed into TOR-143 |

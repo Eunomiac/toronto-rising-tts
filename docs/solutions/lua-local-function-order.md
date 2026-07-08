@@ -115,7 +115,7 @@ See also [`.dev/SOLVING ISSUES & DEBUGGING.md`](../../.dev/SOLVING%20ISSUES%20&%
 ## Related docs
 
 - [`core/global_script.ttslua`](../../core/global_script.ttslua) — file header points here first
-- [`.cursorrules`](../../.cursorrules) § Lua local function order
-- [`.cursor/commands/tr-start.md`](../../.cursor/commands/tr-start.md) — mandatory read before game logic
+- [`.cursor/rules/toronto-rising-lua-local-function-order.mdc`](../../.cursor/rules/toronto-rising-lua-local-function-order.mdc) — always-on agent rule
+- [`.cursor/skills/tr-start/SKILL.md`](../../.cursor/skills/tr-start/SKILL.md) — current start workflow before game logic
 - [`.dev/DEVELOPMENT_WORKFLOW.md`](../../.dev/DEVELOPMENT_WORKFLOW.md) § Lua local function order
 - [`.dev/TTS_BUNDLING_SETUP.md`](../../.dev/TTS_BUNDLING_SETUP.md) § Global script source of truth

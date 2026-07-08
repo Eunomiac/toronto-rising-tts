@@ -7,7 +7,7 @@ Run the **full Toronto Rising capture → schedule → prioritize** pipeline in 
 
 Follow `.cursor/rules/toronto-rising-linear.mdc` and `.dev/DEVELOPMENT_WORKFLOW.md` § **Inbox capture & triage** and § **Focus & backlog prioritization**.
 
-**Multiplayer authority:** When promoting or prioritizing work that touches events, load/bootstrap, HUD, or world I/O, ensure **`blockedBy`** reflects host-authority prerequisites (e.g. **TOR-221** bootstrap audit, **TOR-144** multiplayer E2E) where appropriate. Agents implementing promoted items must uphold **P1–P10** — [`.cursor/rules/toronto-rising-multiplayer-authority.mdc`](.cursor/rules/toronto-rising-multiplayer-authority.mdc), [Preparing For Multiplayer §1](.dev/Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md).
+**Multiplayer authority:** When promoting or prioritizing work that touches events, load/bootstrap, HUD, or world I/O, ensure **`blockedBy`** reflects host-authority prerequisites (e.g. **TOR-221** bootstrap audit, **TOR-144** multiplayer E2E) where appropriate. Agents implementing promoted items must uphold **P1–P10** — [`.cursor/rules/toronto-rising-multiplayer-authority.mdc`](../../../.cursor/rules/toronto-rising-multiplayer-authority.mdc), [Preparing For Multiplayer §1](../../../.dev/Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md).
 
 ## Conventions (always apply in this command)
 
@@ -63,13 +63,13 @@ After handling each capture item, **remove its bullet lines** from **Quick Fixes
 
 **Do not** insert filler where bullets were removed — no `_(empty)_`, `(empty)`, “none”, or similar placeholder lines under empty sections.
 
-Move handled items to **Processed** (`YYYY-MM-DD TOR-XXX — summary` or `shipped` / `duplicate` / `dismissed`). Also log promotions in [`.dev/plans/linear-alignment-log.md`](.dev/plans/linear-alignment-log.md).
+Move handled items to **Processed** (`YYYY-MM-DD TOR-XXX — summary` or `shipped` / `duplicate` / `dismissed`). Also log promotions in [`.dev/plans/linear-alignment-log.md`](../../../.dev/plans/linear-alignment-log.md).
 
 **Exception:** Items **parked** in **Needs clarification** with open **`?`** stay until answered and re-triaged.
 
 ## Part A — Inbox triage
 
-Read [`.dev/INBOX.md`](.dev/INBOX.md) (**Quick Fixes**, **Active**, **Needs clarification**).
+Read [`.dev/INBOX.md`](../../../.dev/INBOX.md) (**Quick Fixes**, **Active**, **Needs clarification**).
 
 ### Part A.0 — Quick Fixes (run first)
 
@@ -79,7 +79,7 @@ For each bullet under **Quick Fixes**:
 2. **Implement now** when the fix is clearly small (typically one file, a few lines, no design fork):
    - Patch the repo; run `npm run build` when Lua/XML/build inputs change.
    - **Commit** without asking (Quick Fixes grants commit permission during `/tr-inbox`).
-   - If a matching open Linear issue exists → mark **Done** with a short comment; else log in [`.dev/plans/linear-alignment-log.md`](.dev/plans/linear-alignment-log.md) as shipped (create a **Bug** issue only when you want a bug anchor).
+   - If a matching open Linear issue exists → mark **Done** with a short comment; else log in [`.dev/plans/linear-alignment-log.md`](../../../.dev/plans/linear-alignment-log.md) as shipped (create a **Bug** issue only when you want a bug anchor).
    - Do **not** add a Focus row for work already shipped here unless the author should verify in TTS.
 3. **Promote** when not a quick fix → same as Active (Linear + RUNNING TASKLIST + alignment log).
 
@@ -101,7 +101,7 @@ For every ready item (clear Active lines + fully answered Needs clarification):
 
 1. Dedupe against Linear `TOR-*`.
 2. Promote per workflow table (Linear + RUNNING TASKLIST for scoped work; Backlog-only for vague ideas; dismiss/duplicate → alignment log only).
-3. Move handled lines to **Processed** (`YYYY-MM-DD TOR-XXX — summary`) and record in [`.dev/plans/linear-alignment-log.md`](.dev/plans/linear-alignment-log.md).
+3. Move handled lines to **Processed** (`YYYY-MM-DD TOR-XXX — summary`) and record in [`.dev/plans/linear-alignment-log.md`](../../../.dev/plans/linear-alignment-log.md).
 4. Never leave a scheduled promotion without **both** Linear issue (when applicable) and tasklist `_(TOR-XX)_` bullet.
 
 ### End of Part A — Clean up INBOX
@@ -112,7 +112,7 @@ After Quick Fixes + Phase 1/2, apply **INBOX cleanup** (Conventions above): remo
 
 Even if capture sections were empty, refresh the stack so **`/tr-start`** readers get current truth:
 
-1. Read **`## Focus`** in [`.dev/RUNNING TASKLIST.md`](.dev/RUNNING%20TASKLIST.md).
+1. Read **`## Focus`** in [`.dev/RUNNING TASKLIST.md`](../../../.dev/RUNNING%20TASKLIST.md).
 2. List open Linear **Bug** issues and non-epic **In Progress** work (ignore epic-only noise unless actively blocking).
 3. **Re-stack Focus** (update the table + dated blurb) using this default policy unless the user overrode in chat:
    - **Session-blocking bugs** and audible/regression failures first.

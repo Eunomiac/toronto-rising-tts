@@ -4,7 +4,7 @@ description: Toronto Rising — "Conditions" and "Roll Conditions" registry, kin
 ---
 # Toronto Rising — conditions
 
-Before adding or changing any condition, read the **Agent quick guide** in [`.dev/PC Data & Tracking/Conditions System Guide.md`](../../.dev/PC%20Data%20&%20Tracking/Conditions%20System%20Guide.md).
+Before adding or changing any condition, read the **Agent quick guide** in [`.dev/PC Data & Tracking/Conditions System Guide.md`](../../../.dev/PC%20Data%20&%20Tracking/Conditions%20System%20Guide.md).
 
 ## Contract
 
@@ -36,6 +36,6 @@ Before adding or changing any condition, read the **Agent quick guide** in [`.de
 
 ## Related
 
-- [PC Tracking & State Behavior](../../.dev/PC%20Data%20&%20Tracking/PC%20Tracking%20&%20State%20Behavior.md) — persisted shape
-- [conditions-registry-pattern.md](../../docs/solutions/conditions-registry-pattern.md) — solutions digest
-- [Custom Roll Mechanics §D](../../.dev/Dice%20System/Custom%20Roll%20Mechanics.md) — roll policy hooks
+- [PC Tracking & State Behavior](../../../.dev/PC%20Data%20&%20Tracking/PC%20Tracking%20&%20State%20Behavior.md) — persisted shape
+- [conditions-registry-pattern.md](../../../docs/solutions/conditions-registry-pattern.md) — solutions digest
+- [Custom Roll Mechanics §D](../../../.dev/Dice%20System/Custom%20Roll%20Mechanics.md) — roll policy hooks

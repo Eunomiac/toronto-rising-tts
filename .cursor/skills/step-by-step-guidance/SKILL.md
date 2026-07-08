@@ -9,7 +9,7 @@ Use this skill whenever the author must **confirm something works in TTS** — a
 
 ## Default deliverable
 
-1. Copy [`.dev/Step-By-Step Playbooks/.Step-By-Step Template.md`](../../.dev/Step-By-Step%20Playbooks/.Step-By-Step%20Template.md) to a configured playbook file, e.g. `.dev/Step-By-Step Playbooks/TOR-281-clear-seat-verify.md` (or a descriptive name when no Linear id yet).
+1. Copy [`.dev/Step-By-Step Playbooks/.Step-By-Step Template.md`](../../../.dev/Step-By-Step%20Playbooks/.Step-By-Step%20Template.md) to a configured playbook file, e.g. `.dev/Step-By-Step Playbooks/TOR-281-clear-seat-verify.md` (or a descriptive name when no Linear id yet).
 2. Fill in title, goal, prerequisites, Run order, and Code Blocks for **this** fix — valid Lua, repo helpers, asserts for everything Lua can check.
 3. Write in a concise but conversational tone, avoiding too much abbreviation or shorthand.
   **BAD:** "Verify **TOR-281 (Stage Clear seat activation + live scene-library seat persistence)**: Clear-from-stage homeland seat rules (disabled + visible stage light → activate; enabled seat unchanged) and `seatSlots.isPresent` write-back into the linked scene library row."
@@ -20,9 +20,9 @@ Use this skill whenever the author must **confirm something works in TTS** — a
 
 Use chat-only numbered steps (no file) only for trivial one-paste smoke checks. When verification spans setup, asserts, and any TTS clicks, write the playbook file.
 
-**Blank template:** [`.Step-By-Step Template.md`](../../.dev/Step-By-Step%20Playbooks/.Step-By-Step%20Template.md) · **Index:** [README.md](../../.dev/Step-By-Step%20Playbooks/README.md)
+**Blank template:** [`.Step-By-Step Template.md`](../../../.dev/Step-By-Step%20Playbooks/.Step-By-Step%20Template.md) · **Index:** [README.md](../../../.dev/Step-By-Step%20Playbooks/README.md)
 
-Legacy E2E playbooks ([Dice-E2E](../../.dev/E2E%20Playbooks/Dice-E2E.md), etc.) still use `printHeader("[HUMAN] …", 3)` until **TOR-141** migration. **New** runbooks follow this skill + template (triangle HUMAN format).
+Legacy E2E playbooks ([Dice-E2E](../../../.dev/E2E%20Playbooks/Dice-E2E.md), etc.) still use `printHeader("[HUMAN] …", 3)` until **TOR-141** migration. **New** runbooks follow this skill + template (triangle HUMAN format).
 
 ## Three layers (do not conflate)
 
@@ -85,7 +85,7 @@ Before the test body runs, Code Block 0 should **prepare** then **verify**. Pref
 
 | Need | Prefer | Notes |
 | --- | --- | --- |
-| Storyteller seat (Black) | `rollE2eSeatPrep("Black")` | Also hides startup overlay + camera spoof ([TESTING.md](../../.dev/TESTING.md)) |
+| Storyteller seat (Black) | `rollE2eSeatPrep("Black")` | Also hides startup overlay + camera spoof ([TESTING.md](../../../.dev/TESTING.md)) |
 | Active table | `DEBUG.syncTableSimplified("Table A")` | Layout + `currentTableKey`; use `skipTransitionBlindfold` table paths only when the test requires blindfold UX |
 | NPC control tokens | `DEBUG.spawnNpcControlBoardTokens()` | Idempotent when tokens already exist; pair with `gbE2eReset()` / harness placement for board UV |
 | Gameboard baseline | `gbE2eReset()`, `gbE2ePrereqCheck()` | Empty placements + fixture preload; use when the playbook targets gameboard/NPC stage |
@@ -112,10 +112,10 @@ Do **not** copy illustration dummies from the template into production runbooks.
 
 | Need | Helpers | Reference |
 | --- | --- | --- |
-| Command index | `debugHelp()` | [`.dev/TESTING.md`](../../.dev/TESTING.md) |
+| Command index | `debugHelp()` | [`.dev/TESTING.md`](../../../.dev/TESTING.md) |
 | State inspection | `showState()`, `showScene()` | TESTING.md § Console helpers |
 | Dice setup / assert | `rollTest`, `rollConfirm`, `rollCancelAll`, `rollE2eExpectBroadcast` | TESTING.md § Dice debug |
-| File evidence | `DEBUG.logStateToFile`, `DEBUG.logToFile`, `DEBUG.writeWorkspaceFile` | [`.dev/DEBUG_FILE_LOGGING.md`](../../.dev/DEBUG_FILE_LOGGING.md) |
+| File evidence | `DEBUG.logStateToFile`, `DEBUG.logToFile`, `DEBUG.writeWorkspaceFile` | [`.dev/DEBUG_FILE_LOGGING.md`](../../../.dev/DEBUG_FILE_LOGGING.md) |
 | Domain DEBUG | `DEBUG.syncTableSimplified`, `DEBUG.compareLayoutPaths`, … | `debugHelp()` / TESTING.md |
 | Session setup | `rollE2eSeatPrep`, `DEBUG.spawnNpcControlBoardTokens`, `gbE2eReset`, `ensureSceneLibraryStub`, `Sync.npcs` | **Automate prerequisites** above |
 | Console banners | `printHeader(text, level)` | TESTING.md § E2E console output (levels 1–2 for phases; not for HUMAN in Step-By-Step playbooks) |
@@ -150,7 +150,7 @@ End a `U.RunSequence` / start a new Code Block / emit `▶▶▶ HUMAN ▶▶▶
 
 ### `U.RunSequence` — inter-step waits (read before splitting blocks)
 
-Implementation and comments: [`lib/util.ttslua`](../../lib/util.ttslua) (`U.RunSequence`, `U.RunSequenceWithOptions`, `U.waitUntil`).
+Implementation and comments: [`lib/util.ttslua`](../../../lib/util.ttslua) (`U.RunSequence`, `U.RunSequenceWithOptions`, `U.waitUntil`).
 
 Each step is a `function() … end`. After a step runs, its **return value** becomes the `U.waitUntil` **testRef** that controls when the **next** step runs:
 
@@ -189,7 +189,7 @@ end,
 **When to split into a new Code Block anyway:**
 
 - Gate **(2)** or **(3)** with no trustworthy poll (subjective visual, manual alignment report).
-- Legacy **`RunTest`** harness — still expects a paste boundary at `[HUMAN]` ([TESTING.md § U.RunSequence](../../.dev/TESTING.md#usequence-ordering-rules)).
+- Legacy **`RunTest`** harness — still expects a paste boundary at `[HUMAN]` ([TESTING.md § U.RunSequence](../../../.dev/TESTING.md#usequence-ordering-rules)).
 - Optional **recovery** — author re-pastes only the assert half while debugging (not required if poll + assert share one sequence).
 
 **Do not split** gate **(1)** into “setup block → human paste → assert block” when a return testRef can bridge the action and the asserts in one `U.RunSequence`.
@@ -201,11 +201,11 @@ end,
 - **One `▶▶▶ HUMAN ▶▶▶` cue per human gate** — the step that prints it must **`return` the inter-step wait** before the next step runs; never two HUMAN prints back-to-back in adjacent steps with no wait between.
 - **Between automated steps:** use `print("PASS — …")` breadcrumbs; do **not** insert handoff HUMAN lines.
 - Each `printHeader` / `print` in its **own** `function() … end` step inside the sequence (preserves console order).
-- Playbook-scale runs with legacy harness: **`RunTest("Dice")`** then **`RunTest()`** after each human gate ([TESTING.md § Streamlined block workflow](../../.dev/TESTING.md#streamlined-block-workflow)). Target: migrate E2E to Step-By-Step format + retain `RunTest`.
+- Playbook-scale runs with legacy harness: **`RunTest("Dice")`** then **`RunTest()`** after each human gate ([TESTING.md § Streamlined block workflow](../../../.dev/TESTING.md#streamlined-block-workflow)). Target: migrate E2E to Step-By-Step format + retain `RunTest`.
 
 **Canonical examples:**
 
-- **Primary:** [`.dev/Step-By-Step Playbooks/.Step-By-Step Template.md`](../../.dev/Step-By-Step%20Playbooks/.Step-By-Step%20Template.md)
-- **Legacy (until TOR-141 migration):** [Dice-E2E.md](../../.dev/E2E%20Playbooks/Dice-E2E.md), [Dice-E2E-Guide.md](../../.dev/E2E%20Playbooks/Dice-E2E-Guide.md), [TESTING.md](../../.dev/TESTING.md)
+- **Primary:** [`.dev/Step-By-Step Playbooks/.Step-By-Step Template.md`](../../../.dev/Step-By-Step%20Playbooks/.Step-By-Step%20Template.md)
+- **Legacy (until TOR-141 migration):** [Dice-E2E.md](../../../.dev/E2E%20Playbooks/Dice-E2E.md), [Dice-E2E-Guide.md](../../../.dev/E2E%20Playbooks/Dice-E2E-Guide.md), [TESTING.md](../../../.dev/TESTING.md)
 
 **Important:** Minimize **unnecessary** gates (no handoff splits, no phase splits). **Do** use gate **(1)** for ordinary TTS actions the author can perform in seconds. **Do not** substitute gate **(3)**-grade simulation scripts to avoid a simple drop, click, or roll.
