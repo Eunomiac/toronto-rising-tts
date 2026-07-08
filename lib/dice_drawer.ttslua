@@ -111,16 +111,9 @@ function DD.openForRoll(color, opts)
   OP.applyResolvedPose(obj, resolvedPose, OP.DEFAULT_TRANSITION_DURATION, 0, { useSmoothSetters = true })
 end
 
---- Move drawer to the "off" pose when staged dice are destroyed (cancel / take half /
---- or after result broadcast + cleanup). Not on resolve alone — keep open until then.
+--- Apply the drawer "off" pose and clear logical open state.
 --- @param color string Seat color
-function DD.closeAfterRoll(color)
-  if type(color) ~= "string" then
-    return
-  end
-  if drawerOpenByColor[color] ~= true then
-    return
-  end
+local function applyClosePose(color)
   drawerOpenByColor[color] = false
   L.onDiceDrawerStateChanged(color, false)
   local pose = getPoseEntry(color, false)
@@ -135,6 +128,28 @@ function DD.closeAfterRoll(color)
   local entry = key ~= nil and C.ObjectPositions[key] or nil
   local resolvedPose = OP.resolveStatePose(obj, entry or {}, "off") or pose
   OP.applyResolvedPose(obj, resolvedPose, OP.DEFAULT_TRANSITION_DURATION, 0, { useSmoothSetters = true })
+end
+
+--- Move drawer to the "off" pose when staged dice are destroyed (cancel / take half /
+--- or after result broadcast + cleanup). Not on resolve alone — keep open until then.
+--- @param color string Seat color
+function DD.closeAfterRoll(color)
+  if type(color) ~= "string" then
+    return
+  end
+  if drawerOpenByColor[color] ~= true then
+    return
+  end
+  applyClosePose(color)
+end
+
+--- Always move drawer off (startup / saved pose may disagree with in-memory open flag).
+--- @param color string Seat color
+function DD.forceClose(color)
+  if type(color) ~= "string" then
+    return
+  end
+  applyClosePose(color)
 end
 
 return DD

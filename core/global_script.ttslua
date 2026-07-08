@@ -4903,7 +4903,7 @@ function destroyBagDice(color, opts)
         return
     end
     if type(opts) ~= "table" or opts.keepDrawerOpen ~= true then
-        DiceDrawer.closeAfterRoll(color)
+        DiceDrawer.forceClose(color)
     end
     callBagFunction(color, "destroyDice")
 end

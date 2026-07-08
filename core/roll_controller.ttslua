@@ -1060,11 +1060,13 @@ function RC.initiateRoll(color, config)
     setActive(color, active)
     notifyStateChanged(color)
 
+    -- Player-initiated rolls: tray opens immediately (TOR-305). ST SETUP defers until openRoll.
+    if color ~= "Black" and active.initiator == "player" then
+        Global.call("GlobalOpenPlayerDiceTrayForRoll", { color = color })
+    end
+
     if skipSetup then
         rollCamera(color, "roll")
-        if color ~= "Black" then
-            Global.call("GlobalOpenPlayerDiceTrayForRoll", { color = color })
-        end
         if color ~= "Black" and DK.poolTotal(pool) > 0 then
             Wait.frames(function()
                 Global.call("GlobalSpawnActivePoolDiceForActive", { color = color })
