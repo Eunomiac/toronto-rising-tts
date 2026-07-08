@@ -880,32 +880,7 @@ Generated body (`roll_dash_generated.xml`) contains: ACTIVE ROLLS header, five P
 
 ### 10.2 Player Roll Panels (PC colors — generated template)
 
-PC seats use `rollControl_*` element ids (see template). Legacy example below is **superseded** for Brown–Purple; only `rollPanel_Black` remains in `roll_panels.xml`.
-
-```xml
-<!-- Superseded PC example (now rollControl_root_Brown in panel_roll_controls.xml) -->
-<Panel id="rollPanel_Brown"
-  visibility="Brown"
-  active="False"
-  rectAlignment="LowerCenter"
-  ... >
-  <VerticalLayout>
-    <Text id="rollPanel_phase_Brown">Awaiting Storyteller...</Text>
-    <Text id="rollPanel_pool_Brown">Pool: —</Text>
-    <Text id="rollPanel_diff_Brown">Difficulty: —</Text>
-    <Text id="rollPanel_dice_Brown"></Text>
-    <Text id="rollPanel_result_Brown"></Text>
-    <HorizontalLayout>
-      <Button id="rollPanel_btnRoll_Brown"    active="False" onClick="HUD_rollRollButton">ROLL</Button>
-      <Button id="rollPanel_btnHalf_Brown"    active="False" onClick="HUD_rollTakeHalf">TAKE HALF</Button>
-      <Button id="rollPanel_btnWP_Brown"      active="False" onClick="HUD_rollSpendWP">SPEND WILLPOWER</Button>
-      <Button id="rollPanel_btnConfirm_Brown" active="False" onClick="HUD_rollConfirm">CONFIRM</Button>
-      <Button id="rollPanel_btnCancel_Brown"  active="True"  onClick="HUD_rollCancel">CANCEL</Button>
-    </HorizontalLayout>
-  </VerticalLayout>
-</Panel>
-<!-- Repeat for Orange, Red, Pink, Purple -->
-```
+PC seats use `rollControl_*` element ids from [`ui/player/panel_roll_controls.xml`](../../ui/player/panel_roll_controls.xml). Edit [`ui/.templates/panel_roll_controls.xml`](../../ui/.templates/panel_roll_controls.xml), then regenerate with `node .dev/scripts/xml_color_template_generator.js --templateDir ui/.templates` or `npm run build`.
 
 ### 10.3 Result Broadcast Panel (shared, all players)
 
