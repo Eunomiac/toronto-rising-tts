@@ -73,7 +73,9 @@
       <VerticalLayout spacing="10" padding="4" childForceExpandWidth="true">
     <VerticalLayout id="scenes_site_group_dist_Bennington" active="False" visibility="None" spacing="4" padding="0 0 10 0" childForceExpandWidth="true">
       <Text fontSize="11" fontStyle="Bold" color="#C9A84C" alignment="UpperCenter" text="Bennington Heights — district sites" />
-      <Text fontSize="10" color="#888888" alignment="UpperCenter" text="No catalog sites are tied to this district." />
+      <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
+        <Button id="scenes_pick_site_Keyhouse" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Keyhouse" onClick="HUD_scenesPickSite" />
+      </HorizontalLayout>
     </VerticalLayout>
 
     <VerticalLayout id="scenes_site_group_dist_Cabbagetown" active="False" visibility="None" spacing="4" padding="0 0 10 0" childForceExpandWidth="true">
@@ -160,6 +162,7 @@
     <VerticalLayout id="scenes_site_group_dist_LittleItaly" active="False" visibility="None" spacing="4" padding="0 0 10 0" childForceExpandWidth="true">
       <Text fontSize="11" fontStyle="Bold" color="#C9A84C" alignment="UpperCenter" text="Little Italy — district sites" />
       <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
+        <Button id="scenes_pick_site_FireSaleChantry" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Fire Sale Chantry" onClick="HUD_scenesPickSite" />
         <Button id="scenes_pick_site_ModClub" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Mod Club" onClick="HUD_scenesPickSite" />
         <Button id="scenes_pick_site_RemembranceHouse" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Remembrance House" onClick="HUD_scenesPickSite" />
       </HorizontalLayout>
@@ -195,7 +198,9 @@
 
     <VerticalLayout id="scenes_site_group_dist_Rosedale" active="False" visibility="None" spacing="4" padding="0 0 10 0" childForceExpandWidth="true">
       <Text fontSize="11" fontStyle="Bold" color="#C9A84C" alignment="UpperCenter" text="Rosedale — district sites" />
-      <Text fontSize="10" color="#888888" alignment="UpperCenter" text="No catalog sites are tied to this district." />
+      <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
+        <Button id="scenes_pick_site_CoachHouseEmbassy" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Coach House Embassy" onClick="HUD_scenesPickSite" />
+      </HorizontalLayout>
     </VerticalLayout>
 
     <VerticalLayout id="scenes_site_group_dist_StJamesTown" active="False" visibility="None" spacing="4" padding="0 0 10 0" childForceExpandWidth="true">
@@ -257,6 +262,7 @@
     <VerticalLayout id="scenes_site_group_dist_DistilleryDist" active="False" visibility="None" spacing="4" padding="0 0 10 0" childForceExpandWidth="true">
       <Text fontSize="11" fontStyle="Bold" color="#C9A84C" alignment="UpperCenter" text="The Distillery District — district sites" />
       <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
+        <Button id="scenes_pick_site_REMState" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="REM/State Institute for Sleep Science" onClick="HUD_scenesPickSite" />
         <Button id="scenes_pick_site_Docks" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Docks" onClick="HUD_scenesPickSite" />
         <Button id="scenes_pick_site_Distillery" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Historic Distillery" onClick="HUD_scenesPickSite" />
       </HorizontalLayout>
@@ -269,6 +275,7 @@
         <Button id="scenes_pick_site_BrickWorks" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Evergreen Brick Works" onClick="HUD_scenesPickSite" />
         <Button id="scenes_pick_site_LowerParklands" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Lower Don Parklands" onClick="HUD_scenesPickSite" />
         <Button id="scenes_pick_site_ParkDriveReservation" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Park Drive Reservation Lands" onClick="HUD_scenesPickSite" />
+        <Button id="scenes_pick_site_WeepingCairn" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Weeping Cairn" onClick="HUD_scenesPickSite" />
       </HorizontalLayout>
     </VerticalLayout>
 
@@ -328,6 +335,7 @@
     <VerticalLayout id="scenes_site_group_dist_YongeDundasHospital" active="False" visibility="None" spacing="4" padding="0 0 10 0" childForceExpandWidth="true">
       <Text fontSize="11" fontStyle="Bold" color="#C9A84C" alignment="UpperCenter" text="The Yonge &amp; Dundas Hospital District — district sites" />
       <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
+        <Button id="scenes_pick_site_HemovoreResearch" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Douglas Netchurch Facility for Hemovore Research" onClick="HUD_scenesPickSite" />
         <Button id="scenes_pick_site_SickKids" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Hospital for Sick Children" onClick="HUD_scenesPickSite" />
         <Button id="scenes_pick_site_MountSinai" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Mount Sinai Hospital" onClick="HUD_scenesPickSite" />
         <Button id="scenes_pick_site_PMHospital" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Princess Margaret Hospital" onClick="HUD_scenesPickSite" />
@@ -357,6 +365,9 @@
         <Button id="scenes_pick_site_GraffitiAlley" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Graffiti Alley" onClick="HUD_scenesPickSite" />
         <Button id="scenes_pick_site_OCAD" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="OCAD University" onClick="HUD_scenesPickSite" />
         <Button id="scenes_pick_site_OldOsgoodeHall" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Old Osgoode Hall" onClick="HUD_scenesPickSite" />
+        <Button id="scenes_pick_site_Ravenwing" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Ravenwing" onClick="HUD_scenesPickSite" />
+      </HorizontalLayout>
+      <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
         <Button id="scenes_pick_site_TIFFLightbox" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="TIFF Bell Lightbox" onClick="HUD_scenesPickSite" />
       </HorizontalLayout>
     </VerticalLayout>
@@ -465,14 +476,13 @@
         <Button id="scenes_pick_site_SubwayTunnels" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Subway Tunnels" onClick="HUD_scenesPickSite" />
         <Button id="scenes_pick_site_SUV" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="SUV" onClick="HUD_scenesPickSite" />
         <Button id="scenes_pick_site_Taxi" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Taxi" onClick="HUD_scenesPickSite" />
-        <Button id="scenes_pick_site_UndergroundMedClinic" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Underground Medical Clinic" onClick="HUD_scenesPickSite" />
         <Button id="scenes_pick_site_UndergroundMedOffice" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Underground Medical Office" onClick="HUD_scenesPickSite" />
         <Button id="scenes_pick_site_UndergroundParking" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Underground Parking Garage" onClick="HUD_scenesPickSite" />
         <Button id="scenes_pick_site_VacantLot" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Vacant Lot" onClick="HUD_scenesPickSite" />
         <Button id="scenes_pick_site_BackseatSedan" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Vehicle" onClick="HUD_scenesPickSite" />
+        <Button id="scenes_pick_site_WalkingPath" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Walking Path" onClick="HUD_scenesPickSite" />
       </HorizontalLayout>
       <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
-        <Button id="scenes_pick_site_WalkingPath" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Walking Path" onClick="HUD_scenesPickSite" />
         <Button id="scenes_pick_site_WealthyEstate1" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Wealthy Estate" onClick="HUD_scenesPickSite" />
         <Button id="scenes_pick_site_WealthyEstate2" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Wealthy Estate 2" onClick="HUD_scenesPickSite" />
         <Button id="scenes_pick_site_WealthyEstate3" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Wealthy Estate 3" onClick="HUD_scenesPickSite" />

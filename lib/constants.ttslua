@@ -2637,6 +2637,7 @@ C.Skyboxes = {
 -- Optional `skyboxURL` (string): custom table background applied via `Scenes.reconcileSkyboxFromState` when this site is live (`sessionScene.siteKey`) and `sessionScene.skyboxOverride` is unset. When omitted, a random entry from `C.GenericSkyboxes` is used.
 
 -- Optional `isSilent = true`: full ambient mute (background, location ambience, weather); featured music may still be played via Storyteller action. Merge with `Soundscape.applyContext(Soundscape.contextFromSite(site))`.
+-- Optional `soundscape.backgroundMusic.playlist = "none"`: silence background music only (location ambience and weather still apply). Omit `backgroundMusic` to use catalog default mood (`main`).
 -- Optional `isTopFogActive` (boolean): when set, `SceneLibrary.applySiteTopFogToSessionScene` writes `sessionScene.isTopFogActive` on location apply; when omitted, indoor sites default fog off and outdoor on.
 -- `weatherDucking` (number 0..1): per-site weather volume multiplier via `Soundscape.applyContext` (`state.siteWeatherDucking`); when omitted, indoor/outdoor catalog defaults apply.
 -- Optional `mappable` (boolean, default true): when false, active PCs' map pins hide at this scene site; absent PCs may keep a cached mappable offset.
@@ -2714,6 +2715,8 @@ function C.isSiteMappable(site)
   end
   return true
 end
+
+
 
 C.Sites = {
   CLGrounds = {
@@ -3123,6 +3126,7 @@ C.Sites = {
     weatherDucking = 0.1,
     lightMode = "IndoorDim",
     topFog = false,
+    offsetXY = "155.04 −84.57"
   },
   StRegisBlackCaesar = {
     key = "StRegisBlackCaesar",
@@ -3138,6 +3142,7 @@ C.Sites = {
     weatherDucking = 0,
     lightMode = "IndoorDim",
     topFog = true,
+    offsetXY = "155.04 −84.57"
   },
   StRegisCouncilChamber = {
     key = "StRegisCouncilChamber",
@@ -3152,7 +3157,7 @@ C.Sites = {
     weatherDucking = 0,
     lightMode = "IndoorDim",
     topFog = false,
-    offsetXY = "155.04 -84.57"
+    offsetXY = "155.04 −84.57"
   },
   StRegisFomorach = {
     key = "StRegisFomorach",
@@ -3167,6 +3172,7 @@ C.Sites = {
     weatherDucking = 0.1,
     lightMode = "IndoorDim",
     topFog = false,
+    offsetXY = "155.04 −84.57"
   },
   StRegisFoyer = {
     key = "StRegisFoyer",
@@ -3181,7 +3187,7 @@ C.Sites = {
     weatherDucking = 0.25,
     lightMode = "IndoorBright",
     topFog = false,
-    offsetXY = "155.04 -84.57"
+    offsetXY = "155.04 −84.57"
   },
   StRegisGrandSalon = {
     key = "StRegisGrandSalon",
@@ -3196,7 +3202,7 @@ C.Sites = {
     weatherDucking = 0.1,
     lightMode = "IndoorDim",
     topFog = false,
-    offsetXY = "155.04 -84.57"
+    offsetXY = "155.04 −84.57"
   },
   StRegisLucien = {
     key = "StRegisLucien",
@@ -3211,6 +3217,7 @@ C.Sites = {
     weatherDucking = 0.1,
     lightMode = "IndoorDim",
     topFog = false,
+    offsetXY = "155.04 −84.57"
   },
   StRegisRashid = {
     key = "StRegisRashid",
@@ -3225,6 +3232,7 @@ C.Sites = {
     weatherDucking = 0.1,
     lightMode = "IndoorDim",
     topFog = false,
+    offsetXY = "155.04 −84.57"
   },
   StRegisRoom101 = {
     key = "StRegisRoom101",
@@ -3239,7 +3247,7 @@ C.Sites = {
     weatherDucking = 0,
     lightMode = "IndoorDim",
     topFog = false,
-    offsetXY = "155.04 -84.57"
+    offsetXY = "155.04 −84.57"
   },
   UnionConcourse = {
     key = "UnionConcourse",
@@ -3254,7 +3262,7 @@ C.Sites = {
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
     topFog = false,
-    offsetXY = "203.55 -211.79"
+    offsetXY = "203.55 −211.79"
   },
   UnionGrandClock = {
     key = "UnionGrandClock",
@@ -3269,7 +3277,7 @@ C.Sites = {
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
     topFog = false,
-    offsetXY = "203.55 -211.79"
+    offsetXY = "203.55 −211.79"
   },
   UnionLine1 = {
     key = "UnionLine1",
@@ -3284,7 +3292,7 @@ C.Sites = {
     weatherDucking = 0,
     lightMode = "IndoorBright",
     topFog = false,
-    offsetXY = "203.55 -211.79"
+    offsetXY = "203.55 −211.79"
   },
   UnionSecOffice = {
     key = "UnionSecOffice",
@@ -3299,7 +3307,7 @@ C.Sites = {
     weatherDucking = 0,
     lightMode = "IndoorDim",
     topFog = false,
-    offsetXY = "203.55 -211.79"
+    offsetXY = "203.55 −211.79"
   },
   UnionServiceCorridor = {
     key = "UnionServiceCorridor",
@@ -3314,7 +3322,7 @@ C.Sites = {
     weatherDucking = 0,
     lightMode = "IndoorDim",
     topFog = true,
-    offsetXY = "203.55 -211.79"
+    offsetXY = "203.55 −211.79"
   },
   UnionUPExpress = {
     key = "UnionUPExpress",
@@ -3329,7 +3337,7 @@ C.Sites = {
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
     topFog = false,
-    offsetXY = "203.55 -211.79"
+    offsetXY = "203.55 −211.79"
   },
   ChantryLibrary = {
     key = "ChantryLibrary",
@@ -3387,10 +3395,10 @@ C.Sites = {
     topFog = false,
     offsetXY = "-33.9 212.64"
   },
-  CityHall = {
-    key = "CityHall",
-    name = "City Hall",
-    image = "siteCard_CityHall",
+  ArtGallery = {
+    key = "ArtGallery",
+    name = "Art Gallery of Ontario",
+    image = "siteCard_ArtGallery",
     district = C.Districts.WestQueenWest,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
@@ -3399,239 +3407,7 @@ C.Sites = {
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
     topFog = false,
-    offsetXY = "82.13 -3.26"
-  },
-  Kensington = {
-    key = "Kensington",
-    name = "Kensington Market",
-    image = "siteCard_Kensington",
-    district = C.Districts.HarbordVillage,
-    soundscape = {
-      location = {playlist = "location", track = "cityWalking"}
-    },
-    isIndoors = false,
-    weatherDucking = 1,
-    lightMode = "OutdoorBright",
-    topFog = false,
-    offsetXY = "-131.21 16.29"
-  },
-  LowerParklands = {
-    key = "LowerParklands",
-    name = "Lower Don Parklands",
-    image = "siteCard_LowerParklands",
-    district = C.Districts.DonRavine,
-    soundscape = {
-      location = {playlist = "location", track = "eerieForest"}
-    },
-    isIndoors = false,
-    weatherDucking = 1,
-    lightMode = "OutdoorDim",
-    topFog = true,
-    offsetXY = "398.31 740.07"
-  },
-  ReconciliationHouse = {
-    key = "ReconciliationHouse",
-    name = "Reconciliation House",
-    image = "siteCard_ReconciliationHouse",
-    district = C.Districts.Chinatown,
-    soundscape = {
-      location = {playlist = "location", track = "softIndoor"}
-    },
-    isIndoors = true,
-    weatherDucking = 0,
-    lightMode = "IndoorDim",
-    topFog = false,
-    offsetXY = "-341.43 -213.78"
-  },
-  RedemptionHouse = {
-    key = "RedemptionHouse",
-    name = "Redemption House",
-    image = "siteCard_RedemptionHouse",
-    district = C.Districts.Danforth,
-    soundscape = {
-      location = {playlist = "location", track = "softIndoor"}
-    },
-    isIndoors = true,
-    weatherDucking = 0,
-    lightMode = "IndoorDim",
-    topFog = false,
-    offsetXY = "465.97 437.89"
-  },
-  RemembranceHouse = {
-    key = "RemembranceHouse",
-    name = "Remembrance House",
-    image = "siteCard_RemembranceHouse",
-    district = C.Districts.LittleItaly,
-    soundscape = {
-      location = {playlist = "location", track = "church"}
-    },
-    isIndoors = true,
-    weatherDucking = 0,
-    lightMode = "IndoorDim",
-    topFog = false,
-    offsetXY = "-257.74 97.33"
-  },
-  RevelationHouse = {
-    key = "RevelationHouse",
-    name = "Revelation House",
-    image = "siteCard_RevelationHouse",
-    district = C.Districts.GayVillage,
-    soundscape = {
-      location = {playlist = "location", track = "nightclub"}
-    },
-    isIndoors = true,
-    weatherDucking = 0,
-    lightMode = "IndoorDim",
-    topFog = false,
-    offsetXY = "124.12 279.23"
-  },
-  StMichaelsCathedral = {
-    key = "StMichaelsCathedral",
-    name = "St. Michael's Cathedral Basilica",
-    image = "siteCard_StMichaelsCathedral",
-    district = C.Districts.Cabbagetown,
-    soundscape = {
-      location = {playlist = "location", track = "church"}
-    },
-    isIndoors = true,
-    weatherDucking = 0.1,
-    lightMode = "IndoorDim",
-    topFog = true,
-    offsetXY = "168.94 44.06"
-  },
-  ThreefoldExchange = {
-    key = "ThreefoldExchange",
-    name = "The Threefold Exchange",
-    image = "siteCard_ThreefoldExchange",
-    district = C.Districts.Chinatown,
-    soundscape = {
-      location = {playlist = "location", track = "apothecary"}
-    },
-    isIndoors = true,
-    weatherDucking = 0.25,
-    lightMode = "IndoorDim",
-    topFog = true,
-    offsetXY = "-385.26 -208.82"
-  },
-  SewerTunnel1 = {
-    key = "SewerTunnel1",
-    name = "Sewer Tunnel",
-    image = "siteCard_SewerTunnel1",
-    soundscape = {
-      location = {playlist = "location", track = "sewers"}
-    },
-    isIndoors = true,
-    weatherDucking = 0,
-    lightMode = "UndergroundDim",
-    topFog = true,
-  },
-  SewerTunnel2 = {
-    key = "SewerTunnel2",
-    name = "Sewer Tunnel",
-    image = "siteCard_SewerTunnel2",
-    soundscape = {
-      location = {playlist = "location", track = "sewers"}
-    },
-    isIndoors = true,
-    weatherDucking = 0,
-    lightMode = "UndergroundDim",
-    topFog = true,
-  },
-  Sidewalk1 = {
-    key = "Sidewalk1",
-    name = "Sidewalk",
-    image = "siteCard_Sidewalk1",
-    soundscape = {
-      location = {playlist = "location", track = "quietCity"}
-    },
-    isIndoors = false,
-    weatherDucking = 1,
-    lightMode = "OutdoorBright",
-    topFog = true,
-  },
-  Sidewalk2 = {
-    key = "Sidewalk2",
-    name = "Sidewalk",
-    image = "siteCard_Sidewalk2",
-    soundscape = {
-      location = {playlist = "location", track = "quietCity"}
-    },
-    isIndoors = false,
-    weatherDucking = 1,
-    lightMode = "OutdoorBright",
-    topFog = true,
-  },
-  Sidewalk3 = {
-    key = "Sidewalk3",
-    name = "Sidewalk",
-    image = "siteCard_Sidewalk3",
-    soundscape = {
-      location = {playlist = "location", track = "quietCity"}
-    },
-    isIndoors = false,
-    weatherDucking = 1,
-    lightMode = "OutdoorBright",
-    topFog = true,
-  },
-  StreetCorner1 = {
-    key = "StreetCorner1",
-    name = "Street Corner",
-    image = "siteCard_StreetCorner1",
-    soundscape = {
-      location = {playlist = "location", track = "quietCity"}
-    },
-    isIndoors = false,
-    weatherDucking = 1,
-    lightMode = "OutdoorBright",
-    topFog = true,
-  },
-  StreetCorner2 = {
-    key = "StreetCorner2",
-    name = "Street Corner",
-    image = "siteCard_StreetCorner2",
-    soundscape = {
-      location = {playlist = "location", track = "quietCity"}
-    },
-    isIndoors = false,
-    weatherDucking = 1,
-    lightMode = "OutdoorBright",
-    topFog = true,
-  },
-  StreetCorner3 = {
-    key = "StreetCorner3",
-    name = "Street Corner",
-    image = "siteCard_StreetCorner3",
-    soundscape = {
-      location = {playlist = "location", track = "quietCity"}
-    },
-    isIndoors = false,
-    weatherDucking = 1,
-    lightMode = "OutdoorBright",
-    topFog = true,
-  },
-  SubwayStation = {
-    key = "SubwayStation",
-    name = "Subway Station",
-    image = "siteCard_SubwayStation",
-    soundscape = {
-      location = {playlist = "location", track = "subway"}
-    },
-    isIndoors = true,
-    weatherDucking = 0,
-    lightMode = "IndoorBright",
-    topFog = false,
-  },
-  SubwayTunnels = {
-    key = "SubwayTunnels",
-    name = "Subway Tunnels",
-    image = "siteCard_SubwayTunnels",
-    soundscape = {
-      location = {playlist = "location", track = "sewers"}
-    },
-    isIndoors = true,
-    weatherDucking = 0,
-    lightMode = "UndergroundDim",
-    topFog = true,
+    offsetXY = "-50.78 −9.35"
   },
   BayTower = {
     key = "BayTower",
@@ -3645,487 +3421,7 @@ C.Sites = {
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
     topFog = false,
-    offsetXY = "153.91 -119.43"
-  },
-  Docks = {
-    key = "Docks",
-    name = "The Docks",
-    image = "siteCard_Docks",
-    district = C.Districts.DistilleryDist,
-    soundscape = {
-      location = {playlist = "location", track = "waterside"}
-    },
-    isIndoors = false,
-    weatherDucking = 1,
-    lightMode = "OutdoorDim",
-    topFog = true,
-    offsetXY = "497.46 -221.99"
-  },
-  EatonCentre = {
-    key = "EatonCentre",
-    name = "Eaton Centre",
-    image = "siteCard_EatonCentre",
-    district = C.Districts.WestQueenWest,
-    soundscape = {
-      location = {playlist = "location", track = "indoorMarket"}
-    },
-    isIndoors = true,
-    weatherDucking = 0.1,
-    lightMode = "IndoorBright",
-    topFog = false,
-    offsetXY = "117.02 19.41"
-  },
-  GraffitiAlley = {
-    key = "GraffitiAlley",
-    name = "Graffiti Alley",
-    image = "siteCard_GraffitiAlley",
-    district = C.Districts.WestQueenWest,
-    soundscape = {
-      location = {playlist = "location", track = "cityTraffic"}
-    },
-    isIndoors = false,
-    weatherDucking = 1,
-    lightMode = "OutdoorBright",
-    topFog = true,
-    offsetXY = "-143.83 -96.33"
-  },
-  MadinaMasjid = {
-    key = "MadinaMasjid",
-    name = "Madina Masjid",
-    image = "siteCard_MadinaMasjid",
-    district = C.Districts.Danforth,
-    soundscape = {
-      location = {playlist = "location", track = "church"}
-    },
-    isIndoors = true,
-    weatherDucking = 0.1,
-    lightMode = "IndoorDim",
-    topFog = false,
-    offsetXY = "533.35 523.6"
-  },
-  StudentVillage = {
-    key = "StudentVillage",
-    name = "Student Village",
-    image = "siteCard_StudentVillage",
-    district = C.Districts.Discovery,
-    soundscape = {
-      location = {playlist = "location", track = "cityRevelers"}
-    },
-    isIndoors = false,
-    weatherDucking = 1,
-    lightMode = "OutdoorBright",
-    topFog = false,
-    offsetXY = "-128.51 170.28"
-  },
-  BackAlley1 = {
-    key = "BackAlley1",
-    name = "Back Alley",
-    image = "siteCard_BackAlley1",
-    soundscape = {
-      location = {playlist = "location", track = "cityTraffic"}
-    },
-    isIndoors = false,
-    weatherDucking = 1,
-    lightMode = "OutdoorDim",
-    topFog = true,
-  },
-  BackAlley2 = {
-    key = "BackAlley2",
-    name = "Back Alley",
-    image = "siteCard_BackAlley2",
-    soundscape = {
-      location = {playlist = "location", track = "cityTraffic"}
-    },
-    isIndoors = false,
-    weatherDucking = 1,
-    lightMode = "OutdoorDim",
-    topFog = true,
-  },
-  BackAlley3 = {
-    key = "BackAlley3",
-    name = "Back Alley",
-    image = "siteCard_BackAlley3",
-    soundscape = {
-      location = {playlist = "location", track = "cityTraffic"}
-    },
-    isIndoors = false,
-    weatherDucking = 1,
-    lightMode = "OutdoorDim",
-    topFog = true,
-  },
-  Cemetery = {
-    key = "Cemetery",
-    name = "Cemetery",
-    image = "siteCard_Cemetery",
-    soundscape = {
-      location = {playlist = "location", track = "eerieForest"}
-    },
-    isIndoors = false,
-    weatherDucking = 1,
-    lightMode = "OutdoorDim",
-    topFog = true,
-  },
-  CityApt1 = {
-    key = "CityApt1",
-    name = "City Apartment",
-    image = "siteCard_CityApt1",
-    soundscape = {
-      location = {playlist = "location", track = "silent"}
-    },
-    isIndoors = true,
-    weatherDucking = 0.25,
-    lightMode = "IndoorBright",
-    topFog = false,
-  },
-  CityApt2 = {
-    key = "CityApt2",
-    name = "City Apartment",
-    image = "siteCard_CityApt2",
-    soundscape = {
-      location = {playlist = "location", track = "silent"}
-    },
-    isIndoors = true,
-    weatherDucking = 0.25,
-    lightMode = "IndoorBright",
-    topFog = false,
-  },
-  CityApt3 = {
-    key = "CityApt3",
-    name = "City Apartment",
-    image = "siteCard_CityApt3",
-    soundscape = {
-      location = {playlist = "location", track = "silent"}
-    },
-    isIndoors = true,
-    weatherDucking = 0.25,
-    lightMode = "IndoorBright",
-    topFog = false,
-  },
-  CityPark = {
-    key = "CityPark",
-    name = "City Park",
-    image = "siteCard_CityPark",
-    soundscape = {
-      location = {playlist = "location", track = "cityPark"}
-    },
-    isIndoors = false,
-    weatherDucking = 1,
-    lightMode = "OutdoorBright",
-    topFog = true,
-  },
-  LuxuryDriving = {
-    key = "LuxuryDriving",
-    name = "Driving",
-    image = "siteCard_LuxuryDriving",
-    soundscape = {
-      location = {playlist = "location", track = "cityTraffic"}
-    },
-    isIndoors = false,
-    weatherDucking = 1,
-    lightMode = "IndoorDim",
-    topFog = false,
-  },
-  GayClub = {
-    key = "GayClub",
-    name = "Gay Nightclub",
-    image = "siteCard_GayClub",
-    soundscape = {
-      location = {playlist = "location", track = "nightclub"}
-    },
-    isIndoors = true,
-    weatherDucking = 0,
-    lightMode = "IndoorDim",
-    topFog = false,
-  },
-  Library = {
-    key = "Library",
-    name = "Library",
-    image = "siteCard_Library",
-    soundscape = {
-      location = {playlist = "location", track = "library"}
-    },
-    isIndoors = true,
-    weatherDucking = 0,
-    lightMode = "IndoorBright",
-    topFog = false,
-  },
-  Limousine = {
-    key = "Limousine",
-    name = "Limousine",
-    image = "siteCard_Limousine",
-    soundscape = {
-      location = {playlist = "location", track = "cityTraffic"}
-    },
-    isIndoors = false,
-    weatherDucking = 1,
-    lightMode = "IndoorDim",
-    topFog = false,
-  },
-  Nightclub1 = {
-    key = "Nightclub1",
-    name = "Nightclub",
-    image = "siteCard_Nightclub1",
-    soundscape = {
-      location = {playlist = "location", track = "nightclub"}
-    },
-    isIndoors = true,
-    weatherDucking = 0,
-    lightMode = "IndoorDim",
-    topFog = false,
-  },
-  Nightclub2 = {
-    key = "Nightclub2",
-    name = "Nightclub",
-    image = "siteCard_Nightclub2",
-    soundscape = {
-      location = {playlist = "location", track = "nightclub"}
-    },
-    isIndoors = true,
-    weatherDucking = 0,
-    lightMode = "IndoorDim",
-    topFog = false,
-  },
-  Nightclub3 = {
-    key = "Nightclub3",
-    name = "Nightclub",
-    image = "siteCard_Nightclub3",
-    soundscape = {
-      location = {playlist = "location", track = "nightclub"}
-    },
-    isIndoors = true,
-    weatherDucking = 0,
-    lightMode = "IndoorDim",
-    topFog = false,
-  },
-  Office = {
-    key = "Office",
-    name = "Office",
-    image = "siteCard_Office",
-    soundscape = {
-      location = {playlist = "location", track = "softHum"}
-    },
-    isIndoors = true,
-    weatherDucking = 0.1,
-    lightMode = "IndoorBright",
-    topFog = false,
-  },
-  ParkingLot = {
-    key = "ParkingLot",
-    name = "Parking Lot",
-    image = "siteCard_ParkingLot",
-    soundscape = {
-      location = {playlist = "location", track = "quietCity"}
-    },
-    isIndoors = false,
-    weatherDucking = 1,
-    lightMode = "OutdoorBright",
-    topFog = true,
-  },
-  PenthouseApt1 = {
-    key = "PenthouseApt1",
-    name = "Penthouse Apartment",
-    image = "siteCard_PenthouseApt1",
-    soundscape = {
-      location = {playlist = "location", track = "silent"}
-    },
-    isIndoors = true,
-    weatherDucking = 0.25,
-    lightMode = "IndoorBright",
-    topFog = false,
-  },
-  PenthouseApt2 = {
-    key = "PenthouseApt2",
-    name = "Penthouse Apartment",
-    image = "siteCard_PenthouseApt2",
-    soundscape = {
-      location = {playlist = "location", track = "silent"}
-    },
-    isIndoors = true,
-    weatherDucking = 0.25,
-    lightMode = "IndoorBright",
-    topFog = false,
-  },
-  PenthouseApt3 = {
-    key = "PenthouseApt3",
-    name = "Penthouse Apartment",
-    image = "siteCard_PenthouseApt3",
-    soundscape = {
-      location = {playlist = "location", track = "silent"}
-    },
-    isIndoors = true,
-    weatherDucking = 0.25,
-    lightMode = "IndoorBright",
-    topFog = false,
-  },
-  Rooftop = {
-    key = "Rooftop",
-    name = "Rooftop",
-    image = "siteCard_Rooftop",
-    soundscape = {
-      location = {playlist = "location", track = "rooftop"}
-    },
-    isIndoors = false,
-    weatherDucking = 1,
-    lightMode = "OutdoorBright",
-    topFog = true,
-  },
-  RunDownApt1 = {
-    key = "RunDownApt1",
-    name = "Run-Down Apartment",
-    image = "siteCard_RunDownApt1",
-    soundscape = {
-      location = {playlist = "location", track = "silent"}
-    },
-    isIndoors = true,
-    weatherDucking = 0.25,
-    lightMode = "IndoorDim",
-    topFog = false,
-  },
-  RunDownApt2 = {
-    key = "RunDownApt2",
-    name = "Run-Down Apartment",
-    image = "siteCard_RunDownApt2",
-    soundscape = {
-      location = {playlist = "location", track = "silent"}
-    },
-    isIndoors = true,
-    weatherDucking = 0.25,
-    lightMode = "IndoorDim",
-    topFog = false,
-  },
-  RunDownApt3 = {
-    key = "RunDownApt3",
-    name = "Run-Down Apartment",
-    image = "siteCard_RunDownApt3",
-    soundscape = {
-      location = {playlist = "location", track = "silent"}
-    },
-    isIndoors = true,
-    weatherDucking = 0.25,
-    lightMode = "IndoorDim",
-    topFog = false,
-  },
-  SecludedDeadEnd = {
-    key = "SecludedDeadEnd",
-    name = "Secluded Dead End",
-    image = "siteCard_SecludedDeadEnd",
-    soundscape = {
-      location = {playlist = "location", track = "cityPark"}
-    },
-    isIndoors = false,
-    weatherDucking = 1,
-    lightMode = "OutdoorDim",
-    topFog = true,
-  },
-  StripClub = {
-    key = "StripClub",
-    name = "Strip Club",
-    image = "siteCard_StripClub",
-    soundscape = {
-      location = {playlist = "location", track = "nightclub"}
-    },
-    isIndoors = true,
-    weatherDucking = 0,
-    lightMode = "IndoorDim",
-    topFog = false,
-  },
-  SUV = {
-    key = "SUV",
-    name = "SUV",
-    image = "siteCard_SUV",
-    soundscape = {
-      location = {playlist = "location", track = "cityTraffic"}
-    },
-    isIndoors = false,
-    weatherDucking = 1,
-    lightMode = "IndoorDim",
-    topFog = false,
-  },
-  Taxi = {
-    key = "Taxi",
-    name = "Taxi",
-    image = "siteCard_Taxi",
-    soundscape = {
-      location = {playlist = "location", track = "cityTraffic"}
-    },
-    isIndoors = false,
-    weatherDucking = 1,
-    lightMode = "IndoorDim",
-    topFog = false,
-  },
-  UndergroundParking = {
-    key = "UndergroundParking",
-    name = "Underground Parking Garage",
-    image = "siteCard_UndergroundParking",
-    soundscape = {
-      location = {playlist = "location", track = "urbanDark"}
-    },
-    isIndoors = true,
-    weatherDucking = 0.1,
-    lightMode = "IndoorDim",
-    topFog = false,
-  },
-  BackseatSedan = {
-    key = "BackseatSedan",
-    name = "Vehicle",
-    image = "siteCard_BackseatSedan",
-    soundscape = {
-      location = {playlist = "location", track = "cityTraffic"}
-    },
-    isIndoors = false,
-    weatherDucking = 1,
-    lightMode = "IndoorDim",
-    topFog = false,
-  },
-  WealthyEstate1 = {
-    key = "WealthyEstate1",
-    name = "Wealthy Estate",
-    image = "siteCard_WealthyEstate1",
-    soundscape = {
-      location = {playlist = "location", track = "silent"}
-    },
-    isIndoors = true,
-    weatherDucking = 0.25,
-    lightMode = "IndoorBright",
-    topFog = false,
-  },
-  WealthyEstate2 = {
-    key = "WealthyEstate2",
-    name = "Wealthy Estate",
-    image = "siteCard_WealthyEstate2",
-    soundscape = {
-      location = {playlist = "location", track = "silent"}
-    },
-    isIndoors = true,
-    weatherDucking = 0.25,
-    lightMode = "IndoorBright",
-    topFog = false,
-  },
-  WealthyEstate3 = {
-    key = "WealthyEstate3",
-    name = "Wealthy Estate",
-    image = "siteCard_WealthyEstate3",
-    soundscape = {
-      location = {playlist = "location", track = "silent"}
-    },
-    isIndoors = true,
-    weatherDucking = 0.25,
-    lightMode = "IndoorBright",
-    topFog = false,
-  },
-  ArtGallery = {
-    key = "ArtGallery",
-    name = "Art Gallery of Ontario",
-    image = "siteCard_ArtGallery",
-    district = C.Districts.WestQueenWest,
-    soundscape = {
-      location = {playlist = "location", track = "softIndoor"}
-    },
-    isIndoors = true,
-    weatherDucking = 0.1,
-    lightMode = "IndoorBright",
-    topFog = false,
-    offsetXY = "-50.78 -9.35"
+    offsetXY = "153.91 −119.43"
   },
   BierMarkt = {
     key = "BierMarkt",
@@ -4139,7 +3435,7 @@ C.Sites = {
     weatherDucking = 0.25,
     lightMode = "IndoorDim",
     topFog = false,
-    offsetXY = "-134.47 -133.17"
+    offsetXY = "-134.47 −133.17"
   },
   BillyBishopAirport = {
     key = "BillyBishopAirport",
@@ -4153,7 +3449,7 @@ C.Sites = {
     weatherDucking = 0.25,
     lightMode = "IndoorBright",
     topFog = false,
-    offsetXY = "-105.82 -442.28"
+    offsetXY = "-105.82 −442.28"
   },
   BillyBishopFerry = {
     key = "BillyBishopFerry",
@@ -4167,7 +3463,7 @@ C.Sites = {
     weatherDucking = 0.4,
     lightMode = "IndoorDim",
     topFog = true,
-    offsetXY = "-99.58 -362.38"
+    offsetXY = "-99.58 −362.38"
   },
   CabbagetownPenthouse = {
     key = "CabbagetownPenthouse",
@@ -4195,7 +3491,7 @@ C.Sites = {
     weatherDucking = 1,
     lightMode = "OutdoorBright",
     topFog = true,
-    offsetXY = "-307.53 -332.07"
+    offsetXY = "-307.53 −332.07"
   },
   CAMH = {
     key = "CAMH",
@@ -4223,7 +3519,7 @@ C.Sites = {
     weatherDucking = 1,
     lightMode = "OutdoorDim",
     topFog = true,
-    offsetXY = "213.91 -598.68"
+    offsetXY = "213.91 −598.68"
   },
   ChristiePitsPark = {
     key = "ChristiePitsPark",
@@ -4239,6 +3535,20 @@ C.Sites = {
     topFog = true,
     offsetXY = "-405.69 204.57"
   },
+  CityHall = {
+    key = "CityHall",
+    name = "City Hall",
+    image = "siteCard_CityHall",
+    district = C.Districts.WestQueenWest,
+    soundscape = {
+      location = {playlist = "location", track = "softIndoor"}
+    },
+    isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
+    topFog = false,
+    offsetXY = "82.13 −3.26"
+  },
   CNTower = {
     key = "CNTower",
     name = "CN Tower",
@@ -4251,7 +3561,21 @@ C.Sites = {
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
     topFog = false,
-    offsetXY = "54.04 -226.24"
+    offsetXY = "54.04 −226.24"
+  },
+  CoachHouseEmbassy = {
+    key = "CoachHouseEmbassy",
+    name = "The Coach House Embassy",
+    image = "siteCard_CoachHouseEmbassy",
+    district = C.Districts.Rosedale,
+    soundscape = {
+      location = {playlist = "location", track = "softHum"}
+    },
+    isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorDim",
+    topFog = false,
+    offsetXY = "158.16 617.24"
   },
   CorktownCommon = {
     key = "CorktownCommon",
@@ -4273,6 +3597,7 @@ C.Sites = {
     image = "siteCard_DanforthHall",
     district = C.Districts.Danforth,
     soundscape = {
+      backgroundMusic = {playlist = "none"},
       location = {playlist = "location", track = "nightclub"}
     },
     isIndoors = true,
@@ -4280,6 +3605,34 @@ C.Sites = {
     lightMode = "IndoorDim",
     topFog = false,
     offsetXY = "426.68 411.68"
+  },
+  Docks = {
+    key = "Docks",
+    name = "The Docks",
+    image = "siteCard_Docks",
+    district = C.Districts.DistilleryDist,
+    soundscape = {
+      location = {playlist = "location", track = "waterside"}
+    },
+    isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorDim",
+    topFog = true,
+    offsetXY = "497.46 −221.99"
+  },
+  HemovoreResearch = {
+    key = "HemovoreResearch",
+    name = "Douglas Netchurch Facility for Hemovore Research",
+    image = "siteCard_HemovoreResearch",
+    district = C.Districts.YongeDundasHospital,
+    soundscape = {
+      location = {playlist = "location", track = "hospital"}
+    },
+    isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "IndoorDim",
+    topFog = false,
+    offsetXY = "23.97 99.59"
   },
   Drake = {
     key = "Drake",
@@ -4293,7 +3646,21 @@ C.Sites = {
     weatherDucking = 0.25,
     lightMode = "IndoorBright",
     topFog = false,
-    offsetXY = "-454.91 -172.69"
+    offsetXY = "-454.91 −172.69"
+  },
+  EatonCentre = {
+    key = "EatonCentre",
+    name = "Eaton Centre",
+    image = "siteCard_EatonCentre",
+    district = C.Districts.WestQueenWest,
+    soundscape = {
+      location = {playlist = "location", track = "indoorMarket"}
+    },
+    isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
+    topFog = false,
+    offsetXY = "117.02 19.41"
   },
   BrickWorks = {
     key = "BrickWorks",
@@ -4335,7 +3702,22 @@ C.Sites = {
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
     topFog = false,
-    offsetXY = "113.19 -122.68"
+    offsetXY = "113.19 −122.68"
+  },
+  FireSaleChantry = {
+    key = "FireSaleChantry",
+    name = "Fire Sale Chantry",
+    image = "siteCard_FireSaleChantry",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/13308582823730150246/0B858B10381311EA7A56642ECE50A9A7AF947458/",
+    district = C.Districts.LittleItaly,
+    soundscape = {
+      location = {playlist = "location", track = "ritualRoom"}
+    },
+    isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorDim",
+    topFog = false,
+    offsetXY = "-333.77 −39.24"
   },
   FortYork = {
     key = "FortYork",
@@ -4349,7 +3731,7 @@ C.Sites = {
     weatherDucking = 0.4,
     lightMode = "IndoorBright",
     topFog = true,
-    offsetXY = "-216.46 -279.93"
+    offsetXY = "-216.46 −279.93"
   },
   CeramicsMuseum = {
     key = "CeramicsMuseum",
@@ -4379,6 +3761,20 @@ C.Sites = {
     topFog = false,
     offsetXY = "-247.38 409.7"
   },
+  GraffitiAlley = {
+    key = "GraffitiAlley",
+    name = "Graffiti Alley",
+    image = "siteCard_GraffitiAlley",
+    district = C.Districts.WestQueenWest,
+    soundscape = {
+      location = {playlist = "location", track = "cityTraffic"}
+    },
+    isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorBright",
+    topFog = true,
+    offsetXY = "-143.83 −96.33"
+  },
   HarbourfrontCentre = {
     key = "HarbourfrontCentre",
     name = "Harbourfront Centre",
@@ -4391,7 +3787,7 @@ C.Sites = {
     weatherDucking = 0.25,
     lightMode = "IndoorBright",
     topFog = false,
-    offsetXY = "102.41 -275.97"
+    offsetXY = "102.41 −275.97"
   },
   Distillery = {
     key = "Distillery",
@@ -4405,7 +3801,7 @@ C.Sites = {
     weatherDucking = 0.4,
     lightMode = "IndoorDark",
     topFog = true,
-    offsetXY = "448.95 -52.84"
+    offsetXY = "448.95 −52.84"
   },
   HockeyHallOfFame = {
     key = "HockeyHallOfFame",
@@ -4448,19 +3844,77 @@ C.Sites = {
     topFog = false,
     offsetXY = "-124.83 200.6"
   },
+  Kensington = {
+    key = "Kensington",
+    name = "Kensington Market",
+    image = "siteCard_Kensington",
+    district = C.Districts.HarbordVillage,
+    soundscape = {
+      location = {playlist = "location", track = "cityWalking"}
+    },
+    isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorBright",
+    topFog = false,
+    offsetXY = "-131.21 16.29"
+  },
+  Keyhouse = {
+    key = "Keyhouse",
+    name = "Keyhouse",
+    image = "siteCard_Keyhouse",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14843441517643253825/8C6D7841EA174DA93041FF4BCEF6EA213E631805/",
+    district = C.Districts.Bennington,
+    soundscape = {
+      location = {playlist = "location", track = "softHum"}
+    },
+    isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
+    topFog = false,
+    offsetXY = "306.25 686.09"
+  },
+  LowerParklands = {
+    key = "LowerParklands",
+    name = "Lower Don Parklands",
+    image = "siteCard_LowerParklands",
+    district = C.Districts.DonRavine,
+    soundscape = {
+      location = {playlist = "location", track = "eerieForest"}
+    },
+    isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorDim",
+    topFog = true,
+    offsetXY = "398.31 740.07"
+  },
+  MadinaMasjid = {
+    key = "MadinaMasjid",
+    name = "Madina Masjid",
+    image = "siteCard_MadinaMasjid",
+    district = C.Districts.Danforth,
+    soundscape = {
+      location = {playlist = "location", track = "church"}
+    },
+    isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorDim",
+    topFog = false,
+    offsetXY = "533.35 523.6"
+  },
   MasseyHall = {
     key = "MasseyHall",
     name = "Massey Hall",
     image = "siteCard_MasseyHall",
     district = C.Districts.YongeStreet,
     soundscape = {
+      backgroundMusic = {playlist = "none"},
       location = {playlist = "location", track = "nightclub"}
     },
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorBright",
     topFog = false,
-    offsetXY = "170.22 -100.02"
+    offsetXY = "170.22 −100.02"
   },
   ModClub = {
     key = "ModClub",
@@ -4468,6 +3922,7 @@ C.Sites = {
     image = "siteCard_ModClub",
     district = C.Districts.LittleItaly,
     soundscape = {
+      backgroundMusic = {playlist = "none"},
       location = {playlist = "location", track = "nightclub"}
     },
     isIndoors = true,
@@ -4502,7 +3957,7 @@ C.Sites = {
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
     topFog = false,
-    offsetXY = "-24.4 -28.05"
+    offsetXY = "-24.4 −28.05"
   },
   OldOsgoodeHall = {
     key = "OldOsgoodeHall",
@@ -4516,7 +3971,7 @@ C.Sites = {
     weatherDucking = 0.1,
     lightMode = "IndoorDim",
     topFog = false,
-    offsetXY = "22.41 -11.33"
+    offsetXY = "22.41 −11.33"
   },
   OntarioPlaceMarina = {
     key = "OntarioPlaceMarina",
@@ -4530,7 +3985,7 @@ C.Sites = {
     weatherDucking = 1,
     lightMode = "OutdoorBright",
     topFog = true,
-    offsetXY = "-379.3 -473.73"
+    offsetXY = "-379.3 −473.73"
   },
   ParkDriveReservation = {
     key = "ParkDriveReservation",
@@ -4552,6 +4007,7 @@ C.Sites = {
     image = "siteCard_PhoenixTheatre",
     district = C.Districts.Riverdale,
     soundscape = {
+      backgroundMusic = {playlist = "none"},
       location = {playlist = "location", track = "nightclub"}
     },
     isIndoors = true,
@@ -4574,6 +4030,95 @@ C.Sites = {
     topFog = false,
     offsetXY = "-11.63 86.13"
   },
+  Ravenwing = {
+    key = "Ravenwing",
+    name = "Ravenwing",
+    image = "siteCard_Ravenwing",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/16515690108275274607/789562DC3F455554CF95E19281978983B2B28CF1/",
+    district = C.Districts.WestQueenWest,
+    soundscape = {
+      backgroundMusic = {playlist = "none"},
+      location = {playlist = "location", track = "nightclub"}
+    },
+    isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "IndoorDark",
+    topFog = true,
+    offsetXY = "-81 −57.09"
+  },
+  ReconciliationHouse = {
+    key = "ReconciliationHouse",
+    name = "Reconciliation House",
+    image = "siteCard_ReconciliationHouse",
+    district = C.Districts.Chinatown,
+    soundscape = {
+      location = {playlist = "location", track = "softIndoor"}
+    },
+    isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "IndoorDim",
+    topFog = false,
+    offsetXY = "-341.43 −213.78"
+  },
+  RedemptionHouse = {
+    key = "RedemptionHouse",
+    name = "Redemption House",
+    image = "siteCard_RedemptionHouse",
+    district = C.Districts.Danforth,
+    soundscape = {
+      location = {playlist = "location", track = "softIndoor"}
+    },
+    isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "IndoorDim",
+    topFog = false,
+    offsetXY = "465.97 437.89"
+  },
+  REMState = {
+    key = "REMState",
+    name = "REM/State Institute for Sleep Science",
+    image = "siteCard_REMState",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/18408343188806175215/E357A20E10C64E76650C46413879512E44AB9369/",
+    district = C.Districts.DistilleryDist,
+    soundscape = {
+      backgroundMusic = {playlist = "none"},
+      location = {playlist = "location", track = "silent"}
+    },
+    isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "OutdoorBright",
+    topFog = false,
+    offsetXY = "492.07 −33.86"
+  },
+  RemembranceHouse = {
+    key = "RemembranceHouse",
+    name = "Remembrance House",
+    image = "siteCard_RemembranceHouse",
+    district = C.Districts.LittleItaly,
+    soundscape = {
+      location = {playlist = "location", track = "church"}
+    },
+    isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "IndoorDim",
+    topFog = false,
+    offsetXY = "-257.74 97.33"
+  },
+  RevelationHouse = {
+    key = "RevelationHouse",
+    name = "Revelation House",
+    image = "siteCard_RevelationHouse",
+    district = C.Districts.GayVillage,
+    soundscape = {
+      backgroundMusic = {playlist = "none"},
+      location = {playlist = "location", track = "nightclub"}
+    },
+    isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "IndoorDim",
+    topFog = false,
+    offsetXY = "124.12 279.23"
+  },
   RogersCentre = {
     key = "RogersCentre",
     name = "Rogers Centre",
@@ -4586,7 +4131,7 @@ C.Sites = {
     weatherDucking = 1,
     lightMode = "OutdoorBright",
     topFog = false,
-    offsetXY = "8.37 -205.28"
+    offsetXY = "8.37 −205.28"
   },
   Ryerson = {
     key = "Ryerson",
@@ -4608,13 +4153,14 @@ C.Sites = {
     image = "siteCard_ScotiabankTheatre",
     district = C.Districts.Waterfront,
     soundscape = {
+      backgroundMusic = {playlist = "none"},
       location = {playlist = "location", track = "nightclub"}
     },
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorBright",
     topFog = false,
-    offsetXY = "145.82 -180.48"
+    offsetXY = "145.82 −180.48"
   },
   SheratonCentre = {
     key = "SheratonCentre",
@@ -4622,13 +4168,14 @@ C.Sites = {
     image = "siteCard_SheratonCentre",
     district = C.Districts.BayStFinancial,
     soundscape = {
+      backgroundMusic = {playlist = "none"},
       location = {playlist = "location", track = "nightclub"}
     },
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
     topFog = false,
-    offsetXY = "71.49 -51"
+    offsetXY = "71.49 −51"
   },
   SnakesLattes = {
     key = "SnakesLattes",
@@ -4670,7 +4217,21 @@ C.Sites = {
     weatherDucking = 0.25,
     lightMode = "IndoorBright",
     topFog = false,
-    offsetXY = "262.99 -156.12"
+    offsetXY = "262.99 −156.12"
+  },
+  StMichaelsCathedral = {
+    key = "StMichaelsCathedral",
+    name = "St. Michael's Cathedral Basilica",
+    image = "siteCard_StMichaelsCathedral",
+    district = C.Districts.Cabbagetown,
+    soundscape = {
+      location = {playlist = "location", track = "church"}
+    },
+    isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorDim",
+    topFog = true,
+    offsetXY = "168.94 44.06"
   },
   StMichaelsHospital = {
     key = "StMichaelsHospital",
@@ -4686,6 +4247,34 @@ C.Sites = {
     topFog = false,
     offsetXY = "202.28 8.5"
   },
+  StudentVillage = {
+    key = "StudentVillage",
+    name = "Student Village",
+    image = "siteCard_StudentVillage",
+    district = C.Districts.Discovery,
+    soundscape = {
+      location = {playlist = "location", track = "cityRevelers"}
+    },
+    isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorBright",
+    topFog = false,
+    offsetXY = "-128.51 170.28"
+  },
+  ThreefoldExchange = {
+    key = "ThreefoldExchange",
+    name = "The Threefold Exchange",
+    image = "siteCard_ThreefoldExchange",
+    district = C.Districts.Chinatown,
+    soundscape = {
+      location = {playlist = "location", track = "apothecary"}
+    },
+    isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorDim",
+    topFog = true,
+    offsetXY = "-385.26 −208.82"
+  },
   TIFFLightbox = {
     key = "TIFFLightbox",
     name = "TIFF Bell Lightbox",
@@ -4698,7 +4287,7 @@ C.Sites = {
     weatherDucking = 0,
     lightMode = "IndoorBright",
     topFog = false,
-    offsetXY = "-7.66 -119.57"
+    offsetXY = "-7.66 −119.57"
   },
   TorontoGeneral = {
     key = "TorontoGeneral",
@@ -4727,6 +4316,20 @@ C.Sites = {
     lightMode = "IndoorBright",
     topFog = false,
     offsetXY = "-185.54 742.33"
+  },
+  WeepingCairn = {
+    key = "WeepingCairn",
+    name = "The Weeping Cairn",
+    image = "siteCard_WeepingCairn",
+    district = C.Districts.DonRavine,
+    soundscape = {
+      location = {playlist = "location", track = "eerieForest"}
+    },
+    isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorDark",
+    topFog = true,
+    offsetXY = "351.64 586.93"
   },
   YongeDundasSquare = {
     key = "YongeDundasSquare",
@@ -4816,6 +4419,105 @@ C.Sites = {
     lightMode = "IndoorBright",
     topFog = false,
   },
+  BackAlley1 = {
+    key = "BackAlley1",
+    name = "Back Alley",
+    image = "siteCard_BackAlley1",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/12930388377252487409/1A5BCA2C1176B7A125C0138407E0BFEDE84AE1C9/",
+    soundscape = {
+      location = {playlist = "location", track = "cityTraffic"}
+    },
+    isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorDim",
+    topFog = true,
+  },
+  BackAlley2 = {
+    key = "BackAlley2",
+    name = "Back Alley",
+    image = "siteCard_BackAlley2",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/12930388377252487409/1A5BCA2C1176B7A125C0138407E0BFEDE84AE1C9/",
+    soundscape = {
+      location = {playlist = "location", track = "cityTraffic"}
+    },
+    isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorDim",
+    topFog = true,
+  },
+  BackAlley3 = {
+    key = "BackAlley3",
+    name = "Back Alley",
+    image = "siteCard_BackAlley3",
+    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/12930388377252487409/1A5BCA2C1176B7A125C0138407E0BFEDE84AE1C9/",
+    soundscape = {
+      location = {playlist = "location", track = "cityTraffic"}
+    },
+    isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorDim",
+    topFog = true,
+  },
+  Cemetery = {
+    key = "Cemetery",
+    name = "Cemetery",
+    image = "siteCard_Cemetery",
+    soundscape = {
+      location = {playlist = "location", track = "eerieForest"}
+    },
+    isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorDim",
+    topFog = true,
+  },
+  CityApt1 = {
+    key = "CityApt1",
+    name = "City Apartment",
+    image = "siteCard_CityApt1",
+    soundscape = {
+      location = {playlist = "location", track = "silent"}
+    },
+    isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorBright",
+    topFog = false,
+  },
+  CityApt2 = {
+    key = "CityApt2",
+    name = "City Apartment",
+    image = "siteCard_CityApt2",
+    soundscape = {
+      location = {playlist = "location", track = "silent"}
+    },
+    isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorBright",
+    topFog = false,
+  },
+  CityApt3 = {
+    key = "CityApt3",
+    name = "City Apartment",
+    image = "siteCard_CityApt3",
+    soundscape = {
+      location = {playlist = "location", track = "silent"}
+    },
+    isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorBright",
+    topFog = false,
+  },
+  CityPark = {
+    key = "CityPark",
+    name = "City Park",
+    image = "siteCard_CityPark",
+    soundscape = {
+      location = {playlist = "location", track = "cityPark"}
+    },
+    isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorBright",
+    topFog = true,
+  },
   DerelictWarehouse = {
     key = "DerelictWarehouse",
     name = "Derelict Warehouse",
@@ -4839,6 +4541,18 @@ C.Sites = {
     weatherDucking = 1,
     lightMode = "OutdoorBright",
     topFog = true,
+  },
+  LuxuryDriving = {
+    key = "LuxuryDriving",
+    name = "Driving",
+    image = "siteCard_LuxuryDriving",
+    soundscape = {
+      location = {playlist = "location", track = "cityTraffic"}
+    },
+    isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "IndoorDim",
+    topFog = false,
   },
   Elevator = {
     key = "Elevator",
@@ -4873,6 +4587,19 @@ C.Sites = {
     },
     isIndoors = true,
     weatherDucking = 0.25,
+    lightMode = "IndoorDim",
+    topFog = false,
+  },
+  GayClub = {
+    key = "GayClub",
+    name = "Gay Nightclub",
+    image = "siteCard_GayClub",
+    soundscape = {
+      backgroundMusic = {playlist = "none"},
+      location = {playlist = "location", track = "nightclub"}
+    },
+    isIndoors = true,
+    weatherDucking = 0,
     lightMode = "IndoorDim",
     topFog = false,
   },
@@ -4924,6 +4651,30 @@ C.Sites = {
     lightMode = "IndoorBright",
     topFog = false,
   },
+  Library = {
+    key = "Library",
+    name = "Library",
+    image = "siteCard_Library",
+    soundscape = {
+      location = {playlist = "location", track = "library"}
+    },
+    isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "IndoorBright",
+    topFog = false,
+  },
+  Limousine = {
+    key = "Limousine",
+    name = "Limousine",
+    image = "siteCard_Limousine",
+    soundscape = {
+      location = {playlist = "location", track = "cityTraffic"}
+    },
+    isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "IndoorDim",
+    topFog = false,
+  },
   Yacht = {
     key = "Yacht",
     name = "Luxury Yacht",
@@ -4948,6 +4699,105 @@ C.Sites = {
     lightMode = "OutdoorBright",
     topFog = false,
   },
+  Nightclub1 = {
+    key = "Nightclub1",
+    name = "Nightclub",
+    image = "siteCard_Nightclub1",
+    soundscape = {
+      backgroundMusic = {playlist = "none"},
+      location = {playlist = "location", track = "nightclub"}
+    },
+    isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "IndoorDim",
+    topFog = false,
+  },
+  Nightclub2 = {
+    key = "Nightclub2",
+    name = "Nightclub",
+    image = "siteCard_Nightclub2",
+    soundscape = {
+      backgroundMusic = {playlist = "none"},
+      location = {playlist = "location", track = "nightclub"}
+    },
+    isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "IndoorDim",
+    topFog = false,
+  },
+  Nightclub3 = {
+    key = "Nightclub3",
+    name = "Nightclub",
+    image = "siteCard_Nightclub3",
+    soundscape = {
+      backgroundMusic = {playlist = "none"},
+      location = {playlist = "location", track = "nightclub"}
+    },
+    isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "IndoorDim",
+    topFog = false,
+  },
+  Office = {
+    key = "Office",
+    name = "Office",
+    image = "siteCard_Office",
+    soundscape = {
+      location = {playlist = "location", track = "softHum"}
+    },
+    isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorBright",
+    topFog = false,
+  },
+  ParkingLot = {
+    key = "ParkingLot",
+    name = "Parking Lot",
+    image = "siteCard_ParkingLot",
+    soundscape = {
+      location = {playlist = "location", track = "quietCity"}
+    },
+    isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorBright",
+    topFog = true,
+  },
+  PenthouseApt1 = {
+    key = "PenthouseApt1",
+    name = "Penthouse Apartment",
+    image = "siteCard_PenthouseApt1",
+    soundscape = {
+      location = {playlist = "location", track = "silent"}
+    },
+    isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorBright",
+    topFog = false,
+  },
+  PenthouseApt2 = {
+    key = "PenthouseApt2",
+    name = "Penthouse Apartment",
+    image = "siteCard_PenthouseApt2",
+    soundscape = {
+      location = {playlist = "location", track = "silent"}
+    },
+    isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorBright",
+    topFog = false,
+  },
+  PenthouseApt3 = {
+    key = "PenthouseApt3",
+    name = "Penthouse Apartment",
+    image = "siteCard_PenthouseApt3",
+    soundscape = {
+      location = {playlist = "location", track = "silent"}
+    },
+    isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorBright",
+    topFog = false,
+  },
   ProfOffice = {
     key = "ProfOffice",
     name = "Professor's Office",
@@ -4960,6 +4810,126 @@ C.Sites = {
     lightMode = "IndoorBright",
     topFog = false,
   },
+  Rooftop = {
+    key = "Rooftop",
+    name = "Rooftop",
+    image = "siteCard_Rooftop",
+    soundscape = {
+      location = {playlist = "location", track = "rooftop"}
+    },
+    isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorBright",
+    topFog = true,
+  },
+  RunDownApt1 = {
+    key = "RunDownApt1",
+    name = "Run-Down Apartment",
+    image = "siteCard_RunDownApt1",
+    soundscape = {
+      location = {playlist = "location", track = "silent"}
+    },
+    isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorDim",
+    topFog = false,
+  },
+  RunDownApt2 = {
+    key = "RunDownApt2",
+    name = "Run-Down Apartment",
+    image = "siteCard_RunDownApt2",
+    soundscape = {
+      location = {playlist = "location", track = "silent"}
+    },
+    isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorDim",
+    topFog = false,
+  },
+  RunDownApt3 = {
+    key = "RunDownApt3",
+    name = "Run-Down Apartment",
+    image = "siteCard_RunDownApt3",
+    soundscape = {
+      location = {playlist = "location", track = "silent"}
+    },
+    isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorDim",
+    topFog = false,
+  },
+  SecludedDeadEnd = {
+    key = "SecludedDeadEnd",
+    name = "Secluded Dead End",
+    image = "siteCard_SecludedDeadEnd",
+    soundscape = {
+      location = {playlist = "location", track = "cityPark"}
+    },
+    isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorDim",
+    topFog = true,
+  },
+  SewerTunnel1 = {
+    key = "SewerTunnel1",
+    name = "Sewer Tunnel",
+    image = "siteCard_SewerTunnel1",
+    soundscape = {
+      location = {playlist = "location", track = "sewers"}
+    },
+    isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "UndergroundDim",
+    topFog = true,
+  },
+  SewerTunnel2 = {
+    key = "SewerTunnel2",
+    name = "Sewer Tunnel",
+    image = "siteCard_SewerTunnel2",
+    soundscape = {
+      location = {playlist = "location", track = "sewers"}
+    },
+    isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "UndergroundDim",
+    topFog = true,
+  },
+  Sidewalk1 = {
+    key = "Sidewalk1",
+    name = "Sidewalk",
+    image = "siteCard_Sidewalk1",
+    soundscape = {
+      location = {playlist = "location", track = "quietCity"}
+    },
+    isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorBright",
+    topFog = true,
+  },
+  Sidewalk2 = {
+    key = "Sidewalk2",
+    name = "Sidewalk",
+    image = "siteCard_Sidewalk2",
+    soundscape = {
+      location = {playlist = "location", track = "quietCity"}
+    },
+    isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorBright",
+    topFog = true,
+  },
+  Sidewalk3 = {
+    key = "Sidewalk3",
+    name = "Sidewalk",
+    image = "siteCard_Sidewalk3",
+    soundscape = {
+      location = {playlist = "location", track = "quietCity"}
+    },
+    isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorBright",
+    topFog = true,
+  },
   Stairwell = {
     key = "Stairwell",
     name = "Stairwell",
@@ -4970,6 +4940,54 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorBright",
+    topFog = false,
+  },
+  StreetCorner1 = {
+    key = "StreetCorner1",
+    name = "Street Corner",
+    image = "siteCard_StreetCorner1",
+    soundscape = {
+      location = {playlist = "location", track = "quietCity"}
+    },
+    isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorBright",
+    topFog = true,
+  },
+  StreetCorner2 = {
+    key = "StreetCorner2",
+    name = "Street Corner",
+    image = "siteCard_StreetCorner2",
+    soundscape = {
+      location = {playlist = "location", track = "quietCity"}
+    },
+    isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorBright",
+    topFog = true,
+  },
+  StreetCorner3 = {
+    key = "StreetCorner3",
+    name = "Street Corner",
+    image = "siteCard_StreetCorner3",
+    soundscape = {
+      location = {playlist = "location", track = "quietCity"}
+    },
+    isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "OutdoorBright",
+    topFog = true,
+  },
+  StripClub = {
+    key = "StripClub",
+    name = "Strip Club",
+    image = "siteCard_StripClub",
+    soundscape = {
+      location = {playlist = "location", track = "nightclub"}
+    },
+    isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "IndoorDim",
     topFog = false,
   },
   SuburbanHouse1 = {
@@ -5008,15 +5026,51 @@ C.Sites = {
     lightMode = "IndoorBright",
     topFog = false,
   },
-  UndergroundMedClinic = {
-    key = "UndergroundMedClinic",
-    name = "Underground Medical Clinic",
-    image = "siteCard_UndergroundMedClinic",
+  SubwayStation = {
+    key = "SubwayStation",
+    name = "Subway Station",
+    image = "siteCard_SubwayStation",
     soundscape = {
-      location = {playlist = "location", track = "hospital"}
+      location = {playlist = "location", track = "subway"}
     },
     isIndoors = true,
     weatherDucking = 0,
+    lightMode = "IndoorBright",
+    topFog = false,
+  },
+  SubwayTunnels = {
+    key = "SubwayTunnels",
+    name = "Subway Tunnels",
+    image = "siteCard_SubwayTunnels",
+    soundscape = {
+      location = {playlist = "location", track = "sewers"}
+    },
+    isIndoors = true,
+    weatherDucking = 0,
+    lightMode = "UndergroundDim",
+    topFog = true,
+  },
+  SUV = {
+    key = "SUV",
+    name = "SUV",
+    image = "siteCard_SUV",
+    soundscape = {
+      location = {playlist = "location", track = "cityTraffic"}
+    },
+    isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "IndoorDim",
+    topFog = false,
+  },
+  Taxi = {
+    key = "Taxi",
+    name = "Taxi",
+    image = "siteCard_Taxi",
+    soundscape = {
+      location = {playlist = "location", track = "cityTraffic"}
+    },
+    isIndoors = false,
+    weatherDucking = 1,
     lightMode = "IndoorDim",
     topFog = false,
   },
@@ -5032,6 +5086,18 @@ C.Sites = {
     lightMode = "IndoorDim",
     topFog = false,
   },
+  UndergroundParking = {
+    key = "UndergroundParking",
+    name = "Underground Parking Garage",
+    image = "siteCard_UndergroundParking",
+    soundscape = {
+      location = {playlist = "location", track = "urbanDark"}
+    },
+    isIndoors = true,
+    weatherDucking = 0.1,
+    lightMode = "IndoorDim",
+    topFog = false,
+  },
   VacantLot = {
     key = "VacantLot",
     name = "Vacant Lot",
@@ -5044,6 +5110,18 @@ C.Sites = {
     lightMode = "OutdoorDim",
     topFog = true,
   },
+  BackseatSedan = {
+    key = "BackseatSedan",
+    name = "Vehicle",
+    image = "siteCard_BackseatSedan",
+    soundscape = {
+      location = {playlist = "location", track = "cityTraffic"}
+    },
+    isIndoors = false,
+    weatherDucking = 1,
+    lightMode = "IndoorDim",
+    topFog = false,
+  },
   WalkingPath = {
     key = "WalkingPath",
     name = "Walking Path",
@@ -5055,6 +5133,42 @@ C.Sites = {
     weatherDucking = 1,
     lightMode = "OutdoorDim",
     topFog = true,
+  },
+  WealthyEstate1 = {
+    key = "WealthyEstate1",
+    name = "Wealthy Estate",
+    image = "siteCard_WealthyEstate1",
+    soundscape = {
+      location = {playlist = "location", track = "silent"}
+    },
+    isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorBright",
+    topFog = false,
+  },
+  WealthyEstate2 = {
+    key = "WealthyEstate2",
+    name = "Wealthy Estate",
+    image = "siteCard_WealthyEstate2",
+    soundscape = {
+      location = {playlist = "location", track = "silent"}
+    },
+    isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorBright",
+    topFog = false,
+  },
+  WealthyEstate3 = {
+    key = "WealthyEstate3",
+    name = "Wealthy Estate",
+    image = "siteCard_WealthyEstate3",
+    soundscape = {
+      location = {playlist = "location", track = "silent"}
+    },
+    isIndoors = true,
+    weatherDucking = 0.25,
+    lightMode = "IndoorBright",
+    topFog = false,
   },
   WychwoodPub = {
     key = "WychwoodPub",
@@ -5081,6 +5195,10 @@ C.Sites = {
     topFog = false,
   },
 }
+
+
+
+
 
 -- #endregion
 
