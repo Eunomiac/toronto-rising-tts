@@ -19,7 +19,12 @@ Verification:
 
 ## Quick Fixes
 
+- [Scenes Panel] In the "Browse Districts" and "Browse Sites" popup modals, sort both sets of buttons alphabetically _not_ counting an initial "the".  E.g. "The Discovery District" should be sorted as "Discovery District, the".
+- [Scenes Panel] When a District is selected in the "Browse Districts" popup, the "Browse Sites" popup should immediately open for site selection.
+
 ## Active
+
+- [Bug] When a seated NPC is moved to the stage, their scale is restored to the imageScalar value in npcs_data.ttslua. However, it appears that their light position is being calculated before the scale is applied, resulting in a mis-positioned light for any NPCs with variable imageScalar values.  Expected Behavior:  Calculation of the position of the npc light should be deferred until after the figurine has been rescaled -- only then will the bounds calculation be accurate.
 
 ## External Work (Set STATUS to "External To Do")
 
