@@ -50,7 +50,7 @@ Human/player documentation should stay minimal and isolated when needed.
 | Canonical or likely canonical docs | `TTS_BUNDLING_SETUP.md`, `HUD_FUNCTIONS.md`, `TESTING.md`, system folders | Edit carefully; verify against code |
 | Agent instructions | `Agent Reviews/`, `Code Review/`, `.cursor/rules`, `.cursor/skills` | Keep aligned with routing docs |
 | Active scripts/tools | `scripts/`, `CSV to Markdown Parser/`, dashboards | Path-sensitive; update package/tool refs with any move |
-| Generated artifacts | `build-logs/`, `custom-ui-assets/*.json`, `Problems/` | Do not hand-edit unless policy/output is the task |
+| Generated artifacts | `build-logs/`, generated `custom-ui-assets/*.json`/`*.lua`, `Problems/` | Do not hand-edit unless policy/output is the task; custom UI workflow source is `custom-ui-assets/README.md` plus `prune-custom-ui-assets.txt` |
 | Save snapshots | `TS_Save_230*.json` | Do not hand-edit casually; tooling depends on current paths |
 | Chronicle data | `Chronicle Data/` | Treat as campaign source material; human review preferred |
 | Historical plans | `plans/`, stale design docs | Preserve until archive phase |

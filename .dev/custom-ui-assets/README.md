@@ -1,6 +1,6 @@
 # Custom UI assets (TTS upload / merge)
 
-Generated outputs in this folder (`manifest.json`, `manifest.lua`, `generated-assets.json`) are produced by scripts under `.tools/custom-ui-assets/`.
+This folder tracks workflow guidance and the manual prune list only. Generated manifests, merge outputs, hosted-URL extracts, and reports are produced by scripts under `.tools/custom-ui-assets/` and are ignored by git.
 
 ## Save inventory (prune planning)
 

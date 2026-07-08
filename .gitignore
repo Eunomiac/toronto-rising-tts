@@ -47,6 +47,13 @@ logs/
 # Local dev artifacts — machine/session-specific; not versioned
 .dev/TS_Save_230.json
 .dev/build-logs/
+.dev/custom-ui-assets/*.json
+.dev/custom-ui-assets/*.lua
+.dev/custom-ui-assets/*-report.*
+.dev/custom-ui-assets/generated-assets.*
+.dev/custom-ui-assets/manifest.*
+!.dev/custom-ui-assets/README.md
+!.dev/custom-ui-assets/prune-custom-ui-assets.txt
 .dev/testbed/TEST BED.ttslua
 # lib/e2e_playbook_dice.ttslua
 

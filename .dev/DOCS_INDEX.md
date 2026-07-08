@@ -43,7 +43,7 @@ Always verify important claims against code before changing behavior.
 | Area | Read first | Notes |
 |---|---|---|
 | Build/generator scripts | `package.json`, [`scripts/`](scripts/) | Path-sensitive; many package scripts call `.dev/scripts/*` |
-| Custom UI assets | [`custom-ui-assets/README.md`](custom-ui-assets/README.md) | Generated manifests and reports live beside workflow docs for now |
+| Custom UI assets | [`custom-ui-assets/README.md`](custom-ui-assets/README.md) | Workflow docs are versioned; generated manifests/reports are ignored |
 | TTS save inventory | [`TTS_BUNDLING_SETUP.md`](TTS_BUNDLING_SETUP.md), [`custom-ui-assets/README.md`](custom-ui-assets/README.md) | `.dev/TS_Save_230.json` and backups are path-sensitive save snapshots |
 | CSV to Markdown parser | [`CSV to Markdown Parser/README.md`](CSV%20to%20Markdown%20Parser/README.md) | Local app; package scripts use this path |
 | Storyteller dashboard | [`storyteller-dashboard/README.md`](storyteller-dashboard/README.md) | Current dashboard app |
