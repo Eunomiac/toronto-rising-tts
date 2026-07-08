@@ -1,5 +1,25 @@
 # Multiplayer Performance Audit — Agent Instructions
 
+## Agent Routing
+
+Read this when:
+- reviewing multiplayer-sensitive performance, event fan-out, or handler cost
+- changing high-frequency callbacks or actor-identity gates
+- preparing TOR-144 multiplayer verification
+
+Source of truth:
+- `.dev/Multiplayer Functionality/Preparing For Multiplayer.md`
+- `.dev/Sychronizing Game Functionality/Event Listener Policy.md`
+- `core/global_script.ttslua`
+- `objects/`
+- `ui/`
+
+Verification:
+- `.dev/E2E Playbooks/Multiplayer-E2E.md`
+- relevant solo smoke from `.dev/TESTING.md`
+
+Status: current multiplayer performance audit; verify individual findings against code before acting.
+
 **Audience:** AI agent performing a repository-wide audit and producing an implementation plan.
 
 **Execution model (2026-07-04, TOR-284):** Mod Lua runs on the **host only**. Audits target **actor identity** (`U.isStorytellerSteamPlayer`), **per-client XmlUI visibility**, **mutation/reconcile discipline** (P1, P7), **object-script bundling** (P8), and **replication/timing** — not host-execution gates (`isHostClient`, `requireHostForWorldMutation`), which were removed. See [Preparing For Multiplayer](Preparing%20For%20Multiplayer.md) §1 and [Execution Model Correction — Remediation Plan](Execution%20Model%20Correction%20%E2%80%94%20Remediation%20Plan.md).

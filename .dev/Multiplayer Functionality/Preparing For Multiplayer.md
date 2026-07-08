@@ -1,5 +1,24 @@
 # Preparing For Multiplayer
 
+## Agent Routing
+
+Read this when:
+- touching multiplayer-sensitive load, event, HUD, object, sync, or world-I/O paths
+- deciding whether solo Host verification is enough
+- preparing or interpreting TOR-144 multiplayer E2E work
+
+Source of truth:
+- `.cursor/rules/toronto-rising-multiplayer-authority.mdc`
+- `core/global_script.ttslua`
+- `core/sync.ttslua`
+- object scripts under `objects/`
+
+Verification:
+- `.dev/E2E Playbooks/Multiplayer-E2E.md`
+- relevant solo playbooks from `.dev/TESTING.md` before multiclient verification
+
+Status: current multiplayer authority policy until TOR-144 passes with two real clients.
+
 **Purpose:** Solo Host development cannot validate multiplayer behavior. This document lists what to do **before** a second client is available, and a **minimal first session script** to run with a friend when one is.
 
 > **Agents (mandatory):** Until **TOR-144 (multiplayer E2E)** passes with two real clients, **every** change that adds or modifies event handlers, load/bootstrap hooks, `HUD_*` / object clicks, `Global.*` mutators, or world I/O must comply with **§1.1 policies P1–P10** and the **§1.4 pre-flight checklist**. Always-on Cursor rule: [`.cursor/rules/toronto-rising-multiplayer-authority.mdc`](../../.cursor/rules/toronto-rising-multiplayer-authority.mdc). Do not mark multiplayer sync work **Done** without multiclient verification.

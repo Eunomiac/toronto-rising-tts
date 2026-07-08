@@ -1,5 +1,25 @@
 # Performance Audit — Sync / World / UI Paths
 
+## Agent Routing
+
+Read this when:
+- investigating sync, world, UI, NPC, soundscape, or startup performance
+- changing broad reconciliation fan-out
+- deciding whether to add profiling/debug counters
+
+Source of truth:
+- `core/sync.ttslua`
+- `core/global_script.ttslua`
+- `core/npcs.ttslua`
+- `core/hud_overlays.ttslua`
+- `core/soundscape.ttslua`
+
+Verification:
+- targeted DEBUG profiling helpers named in the relevant section
+- `npm run build` for code/UI changes
+
+Status: current performance audit; entries may be done, partial, or deferred as marked.
+
 ## Implementation status (2026-06-12)
 
 | Rank | Topic | Status |

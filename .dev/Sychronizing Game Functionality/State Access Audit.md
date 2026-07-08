@@ -1,5 +1,24 @@
 # State Access Audit
 
+## Agent Routing
+
+Read this when:
+- changing `gameState` or `playerData` reads/writes
+- debugging state/schema drift
+- deciding whether a state path should be canonical, derived, or deleted
+
+Source of truth:
+- `core/state.ttslua`
+- `core/sync.ttslua`
+- domain mutation APIs in `core/`
+- `.dev/Sychronizing Game Functionality/Reconciler Contract.md`
+
+Verification:
+- `npm run build`
+- subsystem playbook or targeted debug dump for changed state paths
+
+Status: audit document; verify each finding against current code before implementing.
+
 **Date:** 2026-05-19
 
 **Scope:** `core/`, `lib/`, `ui/`, `.dev/`

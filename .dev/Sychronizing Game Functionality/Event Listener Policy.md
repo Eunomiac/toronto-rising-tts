@@ -1,5 +1,23 @@
 # Event Listener Policy (TTS)
 
+## Agent Routing
+
+Read this when:
+- adding or changing a TTS event handler, `HUD_*` handler, object click, or `Global.call` mutator
+- reviewing hot-path guards for drops, randomize events, or object callbacks
+
+Source of truth:
+- `core/global_script.ttslua`
+- `objects/`
+- `ui/ui_*.ttslua`
+- `.dev/Multiplayer Functionality/Preparing For Multiplayer.md`
+
+Verification:
+- `npm run build`
+- relevant TTS smoke or multiplayer playbook when event behavior changes
+
+Status: current event-handler inventory and policy; update when handlers are added or changed.
+
 **Linear:** TOR-197 (event listener early-return audit + policy)
 **Related:** [Preparing For Multiplayer](../Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md) §1 (P1–P10), [Execution Model Correction — Remediation Plan](../Multiplayer%20Functionality/Execution%20Model%20Correction%20%E2%80%94%20Remediation%20Plan.md), [Performance Audit](Performance%20Audit.md), [Reconciler Contract](Reconciler%20Contract.md), TOR-201 (Clear / token-drop lag)
 

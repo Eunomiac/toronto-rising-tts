@@ -1,5 +1,23 @@
 # Dual-apply survey: state authority vs world I/O
 
+## Agent Routing
+
+Read this when:
+- a mutation path appears to apply a live-world effect twice
+- changing eager apply plus reconcile/fingerprint behavior
+- debugging duplicate fades, moves, spawns, or UI refreshes
+
+Source of truth:
+- `core/sync.ttslua`
+- domain reconcilers in `core/`
+- `.dev/Sychronizing Game Functionality/Reconciler Contract.md`
+
+Verification:
+- targeted TTS repro for the physical channel being changed
+- `npm run build`
+
+Status: audit/survey; verify rows against current code before acting.
+
 **Purpose:** Find places where persisted `gameState` is correct but **two code paths** drive the same **physical** channel (emitters, lights, spawns, `Wait.time` fades) in one user flow—usually **eager apply** plus **`Sync.full` → `reconcileFromState`**.
 
 **Method:** Inventory [`core/sync.ttslua`](../../core/sync.ttslua), bounded ripgrep for `applyContext`, `Soundscape.*` + `Sync.full`, `L.SetLightMode` / `reconcileAllPlayers`, spawn APIs, `U.applyLightingPreset`, `UpdateUIDisplays` / `HO.syncAll`, and read hot handlers in [`core/global_script.ttslua`](../../core/global_script.ttslua), [`core/storyteller_scenes_panel.ttslua`](../../core/storyteller_scenes_panel.ttslua), [`lib/chronicle_weather.ttslua`](../../lib/chronicle_weather.ttslua), [`core/scenes.ttslua`](../../core/scenes.ttslua), [`core/lighting.ttslua`](../../core/lighting.ttslua), and [`core/npcs.ttslua`](../../core/npcs.ttslua).
