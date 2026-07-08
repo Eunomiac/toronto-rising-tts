@@ -456,5 +456,8 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-08 | Focus | Stack | #1 TOR-311, #2 TOR-308, #3 TOR-304; also TOR-307, TOR-306, TOR-305, TOR-309, TOR-312, TOR-244 |
 | 2026-07-08 | CREATE | TOR-313 | Optional `sessionScene.skyboxOverride` on import/library; Scenes Feature Medium; parent TOR-33; relatedTo TOR-58 |
 | 2026-07-08 | DONE | TOR-313 | Import + state + `Scenes.reconcileSkyboxFromState` prefer override URL; Scene Constructor docs/templates |
+| 2026-07-08 | SHIP | TOR-314 | INBOX Quick Fixes: scenes location modals HUD until Apply, sort ignoring "The", district→site flow, site/district guard |
+| 2026-07-08 | CREATE | TOR-315 | NPC stage light before imageScalar rescale; NPC Bug High; parent TOR-35; relatedTo TOR-266, TOR-234 |
+| 2026-07-08 | Focus | Stack | #1 TOR-307 verify, #2 TOR-315, #3 TOR-310, #4 TOR-309 |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

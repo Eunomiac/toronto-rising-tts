@@ -3017,12 +3017,12 @@ function HUD_scenesPickDistrict(player, button, id)
         U.AlertGM("Scenes: could not parse district picker control.")
         return
     end
-    HUD_scenesCloseLocationModals(player, button, id)
+    U.setAttribute("scenes_modal_districts_root", "active", "false")
     S.setStateVal(key, "sessionScene", "districtKey")
     StorytellerScenesPanel.applySiteModalDistrictVisibility()
     StorytellerScenesPanel.refresh()
-    Sync.ui({ gameStateOverlay = true })
-    U.AlertGM("District set: " .. key .. " — click Apply location + soundscape when ready.")
+    U.setAttribute("scenes_modal_sites_root", "active", "true")
+    U.AlertGM("District set: " .. key .. " — pick a site, then Apply location + soundscape when ready.")
 end
 
 --- Writes picked site key into `gameState.sessionScene.siteKey`; Apply location still required.
@@ -3044,10 +3044,11 @@ function HUD_scenesPickSite(player, button, id)
             dKey = derivedDistrict
         end
     end
-    S.setStateVal(dKey, "sessionScene", "districtKey")
+    if dKey ~= nil then
+        S.setStateVal(dKey, "sessionScene", "districtKey")
+    end
     S.setStateVal(key, "sessionScene", "siteKey")
     StorytellerScenesPanel.refresh()
-    Sync.ui({ gameStateOverlay = true })
     U.AlertGM("Site set: " .. key .. " — click Apply location + soundscape when ready.")
 end
 

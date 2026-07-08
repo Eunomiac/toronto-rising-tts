@@ -1171,12 +1171,17 @@ function StorytellerScenesPanel.applyLocationFromInputs(player)
         dKey = derivedDistrict
     end
 
-    if dKey ~= "" and C.Districts[dKey] == nil then
+    if dKey == "" then
+        U.AlertGM("A district is required when a site is set. Pick a district from Browse districts, then Apply.")
+        return
+    end
+
+    if C.Districts[dKey] == nil then
         U.AlertGM("Unknown district key: " .. tostring(dKey))
         return
     end
 
-    S.setStateVal(dKey ~= "" and dKey or nil, "sessionScene", "districtKey")
+    S.setStateVal(dKey, "sessionScene", "districtKey")
     S.setStateVal(sKey, "sessionScene", "siteKey")
 
     if SceneLibrary and type(SceneLibrary.applySiteTopFogToSessionScene) == "function" then

@@ -280,19 +280,58 @@ local function splitSiteNameForOverlay(fullSiteName)
     return true, parent, child
 end
 
+--- Overlay location/weather use last **applied** site until Apply location + soundscape runs.
+--- @return string siteKey trimmed, or "" when none applied yet
+local function resolveAppliedSiteKeyForOverlay()
+    local applied = S.getStateVal("soundscape", "lastAppliedSiteKey")
+    if type(applied) == "string" then
+        applied = trimString(applied)
+        if applied ~= "" then
+            return applied
+        end
+    end
+    local sKey = S.getStateVal("sessionScene", "siteKey")
+    if type(sKey) ~= "string" then
+        return ""
+    end
+    return trimString(sKey)
+end
+
 --- @return string districtLabel
 --- @return string siteFullName
 local function resolveLocationLabelsFromState()
-    local dKey = S.getStateVal("sessionScene", "districtKey")
-    local sKey = S.getStateVal("sessionScene", "siteKey")
-    if type(dKey) ~= "string" then
-        dKey = ""
+    local appliedSkRaw = S.getStateVal("soundscape", "lastAppliedSiteKey")
+    local usingAppliedSite = type(appliedSkRaw) == "string" and trimString(appliedSkRaw) ~= ""
+
+    local sKey = resolveAppliedSiteKeyForOverlay()
+    local dKey = ""
+    if sKey ~= "" then
+        local site = C.Sites[sKey]
+        if type(site) == "table" then
+            local derived = C.resolveDistrictKeyForDistrictTable(site.district)
+            if type(derived) == "string" then
+                dKey = trimString(derived)
+            end
+        end
     end
-    if type(sKey) ~= "string" then
-        sKey = ""
+    if dKey == "" and usingAppliedSite then
+        local appliedD = S.getStateVal("soundscape", "lastAppliedDistrictKey")
+        if type(appliedD) == "string" then
+            dKey = trimString(appliedD)
+        end
     end
-    dKey = trimString(dKey)
-    sKey = trimString(sKey)
+    if dKey == "" and not usingAppliedSite then
+        local rawD = S.getStateVal("sessionScene", "districtKey")
+        if type(rawD) == "string" then
+            dKey = trimString(rawD)
+        end
+    end
+    if sKey == "" and not usingAppliedSite then
+        local rawS = S.getStateVal("sessionScene", "siteKey")
+        if type(rawS) == "string" then
+            sKey = trimString(rawS)
+        end
+    end
 
     local districtLabel = "—"
     if dKey ~= "" then
@@ -320,11 +359,7 @@ end
 --- Indoor sites with `C.Sites[siteKey].weatherDucking == 0` suppress the weather HUD (fully ducked / inaudible outdoors).
 --- @return boolean
 local function shouldHideWeatherHudForCurrentSite()
-    local sKey = S.getStateVal("sessionScene", "siteKey")
-    if type(sKey) ~= "string" then
-        return false
-    end
-    sKey = trimString(sKey)
+    local sKey = resolveAppliedSiteKeyForOverlay()
     if sKey == "" then
         return false
     end

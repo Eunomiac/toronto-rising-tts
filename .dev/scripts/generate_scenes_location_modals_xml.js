@@ -250,9 +250,19 @@ const siteEntries = parseTopLevelEntries(siteBlock).map((entry) => {
   return { key: entry.key, label, districtKey: parseSiteDistrictKey(entry.body) };
 });
 
+/** Sort key: ignore a leading "The " (e.g. "The Discovery District" → "discovery district, the"). */
+const sortKeyIgnoringLeadingThe = (label) => {
+  const trimmed = String(label || "").trim();
+  const rest = trimmed.replace(/^the\s+/i, "");
+  if (rest !== trimmed) {
+    return `${rest}, the`.toLowerCase();
+  }
+  return trimmed.toLowerCase();
+};
+
 const sortByLabel = (a, b) => {
-  const la = a.label.toLowerCase();
-  const lb = b.label.toLowerCase();
+  const la = sortKeyIgnoringLeadingThe(a.label);
+  const lb = sortKeyIgnoringLeadingThe(b.label);
   if (la !== lb) {
     return la < lb ? -1 : 1;
   }

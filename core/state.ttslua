@@ -272,6 +272,7 @@ function S.GetDefaultGameState()
             featuredCompletionExpected = false,
             backgroundPausedForFeatured = false,
             lastAppliedSiteKey = nil,
+            lastAppliedDistrictKey = nil,
             weather = "none",
             rain = "none",
             wind = "none",

@@ -432,6 +432,22 @@ local function validateSessionSceneV2(sessionScene)
         return false, errClock
     end
 
+    local sKey = sessionScene.siteKey
+    if type(sKey) == "string" then
+        sKey = string.gsub(string.gsub(sKey, "^%s+", ""), "%s+$", "")
+    else
+        sKey = ""
+    end
+    local dKey = sessionScene.districtKey
+    if type(dKey) == "string" then
+        dKey = string.gsub(string.gsub(dKey, "^%s+", ""), "%s+$", "")
+    else
+        dKey = ""
+    end
+    if sKey ~= "" and dKey == "" then
+        return false, "sessionScene.districtKey: required non-empty string when sessionScene.siteKey is set."
+    end
+
     local okPreload, errPreload = rejectNpcWorldPreload(sessionScene.npcWorld)
     if not okPreload then
         return false, errPreload

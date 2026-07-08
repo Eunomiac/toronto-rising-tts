@@ -779,6 +779,7 @@ end
 local function applyMainOnlySoundscapeIntent()
     S.setStateVal("main", "soundscape", "musicMood")
     S.setStateVal(nil, "soundscape", "lastAppliedSiteKey")
+    S.setStateVal(nil, "soundscape", "lastAppliedDistrictKey")
     Soundscape.setLocationAudio("none")
     Soundscape.setMusicMood("main")
     Soundscape.setWeatherCondition("none")

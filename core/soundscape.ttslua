@@ -212,6 +212,7 @@ local function defaultState()
         backgroundMusicSuppressed = false,
         --- Last site key passed through `applyContext` / UI (for Storyteller Sound panel Location enable fallback).
         lastAppliedSiteKey = nil,
+        lastAppliedDistrictKey = nil,
     }
 end
 
@@ -1842,6 +1843,10 @@ function Soundscape.applyContext(context)
 
     if type(context.appliedSiteKey) == "string" and context.appliedSiteKey ~= "" then
         ensureState().lastAppliedSiteKey = context.appliedSiteKey
+        local dKey = S.getStateVal("sessionScene", "districtKey")
+        if type(dKey) == "string" and string.gsub(string.gsub(dKey, "^%s+", ""), "%s+$", "") ~= "" then
+            ensureState().lastAppliedDistrictKey = dKey
+        end
     end
 
     local results = {}

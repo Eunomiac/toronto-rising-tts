@@ -19,14 +19,7 @@ Verification:
 
 ## Quick Fixes
 
-- [Bug] When a District and/or Site are selected from the "Browse Districts"/"Browse Sites" popup modals in the Storyteller scenes panel, the time and weather top HUD of the general overlay is immediately updated with the chosen values. Expected behavior:  The UI should only update once the "Apply location + soundscape" button is clicked, applying the chosen location.
-- [Scenes Panel] In the "Browse Districts" and "Browse Sites" popup modals, sort both sets of buttons alphabetically _not_ counting an initial "the".  E.g. "The Discovery District" should be sorted as "Discovery District, the".
-- [Scenes Panel] When a District is selected in the "Browse Districts" popup, the "Browse Sites" popup should immediately open for site selection.
-- [Bug] When selecting a generic site from the "Browse Sites" Scenes Panel popup, the district value is cleared. Expected Behavior: In addition to solving the bug regarding the District value being cleared, it should also be impossible to apply a location (or import / apply a scene) that has a site but does not have a district.
-
 ## Active
-
-- [Bug] When a seated NPC is moved to the stage, their scale is restored to the imageScalar value in npcs_data.ttslua. However, it appears that their light position is being calculated before the scale is applied, resulting in a mis-positioned light for any NPCs with variable imageScalar values.  Expected Behavior:  Calculation of the position of the npc light should be deferred until after the figurine has been rescaled -- only then will the bounds calculation be accurate.
 
 ## External Work (Set STATUS to "External To Do")
 
@@ -42,7 +35,8 @@ Verification:
 
 ## Processed
 
-2026-07-08 INBOX Quick Fix — startup loose dice + stow trays before table sync → **TOR-307** (Dice & Rolls Bug, High; parent **TOR-31**; relatedTo **TOR-243**, **TOR-287**)
+2026-07-08 INBOX Quick Fixes — scenes location modals (HUD until Apply, modal sort, district→site flow, site/district guard) → **TOR-314** (Scenes & Chronicle Bug, High; parent **TOR-33**; relatedTo **TOR-244**, **TOR-82**; shipped)
+2026-07-08 INBOX Active — NPC stage light before imageScalar rescale → **TOR-315** (NPC & Spotlight Bug, High; parent **TOR-35**; relatedTo **TOR-266**, **TOR-234**, **TOR-178**)
 2026-07-08 INBOX Quick Fix — preload pool dice destroyed instead of returned → **TOR-308** (Dice & Rolls Bug, High; parent **TOR-31**; relatedTo **TOR-287**)
 2026-07-08 INBOX Quick Fix — smooth preload spawn + ST Y=8 before unlock → **TOR-310** (Dice & Rolls Improvement, Medium; parent **TOR-31**; `blockedBy` **TOR-308**)
 2026-07-08 INBOX Active — Scenes panel NPC seat disable clears all seated NPCs → **TOR-311** (Scenes & Chronicle Bug, High; parent **TOR-33**; relatedTo **TOR-250**, **TOR-281**)
