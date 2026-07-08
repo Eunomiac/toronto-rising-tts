@@ -19,6 +19,7 @@ Verification:
 
 ## Quick Fixes
 
+- [Bug] When a District and/or Site are selected from the "Browse Districts"/"Browse Sites" popup modals in the Storyteller scenes panel, the time and weather top HUD of the general overlay is immediately updated with the chosen values. Expected behavior:  The UI should only update once the "Apply location + soundscape" button is clicked, applying the chosen location.
 - [Scenes Panel] In the "Browse Districts" and "Browse Sites" popup modals, sort both sets of buttons alphabetically _not_ counting an initial "the".  E.g. "The Discovery District" should be sorted as "Discovery District, the".
 - [Scenes Panel] When a District is selected in the "Browse Districts" popup, the "Browse Sites" popup should immediately open for site selection.
 
