@@ -448,21 +448,22 @@ function STR.destroyTableDiceForActive()
             local candidates = getObjectsWithAllTags({ dieTag, "d10", ownerTag })
             for _, obj in ipairs(candidates) do
                 if obj ~= nil and DK.gmNotesMatchRoll(obj.getGMNotes(), rollId) then
-                    destroyObject(obj)
+                    local DPP = require("core.dice_preload_pool")
+                    DPP.releaseOrDestroy(obj)
                 end
             end
         end
     end
 end
 
---- Full cleanup for cancel: table dice, bag dice, optional drawer close via clearSlot.
+--- Full cleanup for cancel: bag staged dice first (pool return), then tray sweep, optional drawer close via clearSlot.
 function STR.cleanupLiveRoll()
     local active = getBlackActive()
     if active ~= nil and type(active.id) == "string" then
         Global.call("GlobalRestoreSecretRollDiceVisibility", { rollId = active.id })
     end
-    STR.destroyTableDiceForActive()
     STR.destroyStagedBagDice()
+    STR.destroyTableDiceForActive()
 end
 
 --- Delay between ST programmatic die rolls (seconds). Stagger helps avoid pile-ups.
@@ -693,7 +694,8 @@ function STR.destroyTableDiceForRollId(rollId)
             local candidates = getObjectsWithAllTags({ dieTag, "d10", ownerTag })
             for _, obj in ipairs(candidates) do
                 if obj ~= nil and DK.gmNotesMatchRoll(obj.getGMNotes(), rollId) then
-                    destroyObject(obj)
+                    local DPP = require("core.dice_preload_pool")
+                    DPP.releaseOrDestroy(obj)
                 end
             end
         end

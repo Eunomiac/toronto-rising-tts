@@ -236,6 +236,65 @@ function DPP.register(dieGuid, bagGuid)
     end
 end
 
+--- Resolve owning bag GUID from in-memory map or die tags (Save & Play / unregistered overflow).
+-- @param die Object|nil
+-- @return string|nil
+function DPP.resolveBagGuidForDie(die)
+    if die == nil or die.getGUID == nil then
+        return nil
+    end
+    local dieGuid = die.getGUID()
+    if type(dieGuid) == "string" and type(bagByDieGuid[dieGuid]) == "string" then
+        return bagByDieGuid[dieGuid]
+    end
+    if die.getTags == nil then
+        return nil
+    end
+    local tags = die.getTags()
+    local owner = DK.ownerFromTags(tags, { "Brown", "Orange", "Red", "Pink", "Purple" })
+    if owner == nil then
+        return nil
+    end
+    local kind = nil
+    if type(tags) == "table" then
+        for _, tag in ipairs(tags) do
+            local k = DK.tagToKind(tag)
+            if k ~= nil then
+                kind = k
+                break
+            end
+        end
+    end
+    if type(kind) ~= "string" then
+        return nil
+    end
+    -- Blood-surge rouse dice share the rouse bag.
+    if kind == DK.KIND_BLOOD_SURGE_ROUSE then
+        kind = DK.KIND_ROUSE
+    end
+    if owner == "storyteller" then
+        return G.GetDiceStorytellerBagGUID(kind)
+    end
+    local bags = G.GetAllPlayerDiceBagGUIDs(owner)
+    return type(bags) == "table" and bags[kind] or nil
+end
+
+--- True when die is already parked in this bag's available stack (idempotent release).
+-- @param stack table
+-- @param die Object
+-- @return boolean
+local function stackContainsDie(stack, die)
+    if type(stack) ~= "table" or die == nil then
+        return false
+    end
+    for i = 1, #stack do
+        if stack[i] == die then
+            return true
+        end
+    end
+    return false
+end
+
 --- Park a die back under-table for reuse; false when die is unknown or pool is full (caller may destroy).
 -- @param dieGuid string
 -- @param bagGuid string|nil  optional hint when die was never registered
@@ -255,6 +314,10 @@ function DPP.release(dieGuid, bagGuid)
     end
     DPP.warmBag(ownerBag)
     local stack = ensureAvailableStack(ownerBag)
+    if stackContainsDie(stack, die) then
+        bagByDieGuid[dieGuid] = ownerBag
+        return true
+    end
     if #stack >= POOL_SIZE then
         return false
     end
@@ -263,6 +326,31 @@ function DPP.release(dieGuid, bagGuid)
     stack[#stack + 1] = die
     bagByDieGuid[dieGuid] = ownerBag
     return true
+end
+
+--- Prefer parking a die back into the preload pool; destroy only when the pool cannot take it (TOR-308).
+-- @param die Object|nil
+-- @param bagGuidHint string|nil
+-- @return boolean true when parked (false when destroyed or die was nil)
+function DPP.releaseOrDestroy(die, bagGuidHint)
+    if die == nil then
+        return false
+    end
+    local dieGuid = die.getGUID and die.getGUID() or nil
+    if type(dieGuid) ~= "string" then
+        destroyObject(die)
+        return false
+    end
+    local ownerBag = bagGuidHint
+    if type(ownerBag) ~= "string" then
+        ownerBag = DPP.resolveBagGuidForDie(die)
+    end
+    if DPP.release(dieGuid, ownerBag) == true then
+        return true
+    end
+    destroyObject(die)
+    bagByDieGuid[dieGuid] = nil
+    return false
 end
 
 return DPP

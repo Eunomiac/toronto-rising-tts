@@ -173,6 +173,15 @@ local DiceDrawer = require("lib.dice_drawer")
 local STD = require("lib.st_dice_drawer")
 local DBV = require("lib.dice_bag_visibility")
 
+--- Park a roll die into the preload pool, or destroy overflow / unknown dice (TOR-308).
+-- Must stay above every Global / local destroy path that formerly used bare destroyObject on dice.
+-- @param die Object|nil
+-- @return boolean true when parked
+local function releaseDieToPreloadOrDestroy(die)
+    local DPP = require("core.dice_preload_pool")
+    return DPP.releaseOrDestroy(die)
+end
+
 -- Load debug module (only in development). Must be global so TTS console `lua DEBUG.foo()` works.
 DEBUG = require("core.debug")
 
@@ -1447,7 +1456,7 @@ function GlobalPostRollRemoveDie(params)
     if obj == nil then
         return false
     end
-    destroyObject(obj)
+    releaseDieToPreloadOrDestroy(obj)
     if RC.adjustPostRollPoolKind(color, dieKind, -1) ~= true then
         return false
     end
@@ -1689,7 +1698,7 @@ function GlobalDestroyBloodSurgeDice(params)
                     destroyIt = obj.script_state == DK.SCRIPT_STATE_BLOOD_SURGE_POOL
                 end
                 if destroyIt then
-                    destroyObject(obj)
+                    releaseDieToPreloadOrDestroy(obj)
                 end
             end
         end
@@ -1722,7 +1731,7 @@ function GlobalDestroyOneTableBloodSurgeRouse(params)
     for _, obj in ipairs(candidates) do
         local rid, isSurge = DK.decodeGmNotes(obj.getGMNotes())
         if rid == rollId and (isSurge == true or obj.script_state == DK.SCRIPT_STATE_BLOOD_SURGE_ROUSE) then
-            destroyObject(obj)
+            releaseDieToPreloadOrDestroy(obj)
             return true
         end
     end
@@ -3724,7 +3733,7 @@ local PRTL = require("lib.pc_roll_tray_lower")
 local pendingRollCleanup = {}
 local pendingRollCleanupTimerIds = {}
 
---- Destroys on-table dice tagged with a roll id (player seats). Used by cancel and post-broadcast cleanup.
+--- Return on-table dice tagged with a roll id to the preload pool (player seats). Used by cancel and post-broadcast cleanup.
 -- @param color string
 -- @param rollId string
 local function destroyPlayerTableDiceForRoll(color, rollId)
@@ -3738,7 +3747,7 @@ local function destroyPlayerTableDiceForRoll(color, rollId)
             local candidates = getObjectsWithAllTags({ dieTag, "d10", ownerTag })
             for _, obj in ipairs(candidates) do
                 if DK.gmNotesMatchRoll(obj.getGMNotes(), rollId) then
-                    destroyObject(obj)
+                    releaseDieToPreloadOrDestroy(obj)
                 end
             end
         end
@@ -3746,13 +3755,14 @@ local function destroyPlayerTableDiceForRoll(color, rollId)
 end
 
 --- Bag destroy + table sweep after result broadcast (or early bag click during delay).
+-- Bags first so staged tracking can park dice; table sweep recovers released tray dice (TOR-308).
 -- @param color string
 -- @param rollId string|nil
 local function finishPostBroadcastRollCleanup(color, rollId)
+    destroyBagDice(color)
     if type(rollId) == "string" then
         destroyPlayerTableDiceForRoll(color, rollId)
     end
-    destroyBagDice(color)
     if color ~= "Black" and PRTL.getLivePcColor() == color then
         PRTL.onLivePcRollFinished()
     end
@@ -4042,7 +4052,7 @@ local function destroyStagedHoverDiceForKind(color, dieKind)
     local destroyed = 0
     for _, obj in ipairs(getObjectsWithAllTags({ dieTag, "d10", ownerTag })) do
         if isStagedHoverDie(obj) then
-            destroyObject(obj)
+            releaseDieToPreloadOrDestroy(obj)
             destroyed = destroyed + 1
         end
     end
@@ -4726,7 +4736,7 @@ function GlobalDestroyNonRouseDiceForRoll(params)
             local candidates = getObjectsWithAllTags({ dieTag, "d10", ownerTag })
             for _, obj in ipairs(candidates) do
                 if DK.gmNotesMatchRoll(obj.getGMNotes(), rollId) then
-                    destroyObject(obj)
+                    releaseDieToPreloadOrDestroy(obj)
                 end
             end
         end
