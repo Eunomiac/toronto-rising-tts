@@ -11,7 +11,7 @@ alwaysApply: true
 
 Canonical policies **P1–P10**, pre-flight checklist, and first-session script: [`.dev/Multiplayer Functionality/Preparing For Multiplayer.md`](../../.dev/Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md) §1.
 
-Audit playbook for agents: [`.dev/Multiplayer Functionality/Multiplayer Performance Audit.md`](../../.dev/Multiplayer%20Functionality/Multiplayer%20Performance%20Audit.md).
+Verification playbook: [`.dev/E2E Playbooks/Multiplayer-E2E.md`](../../.dev/E2E%20Playbooks/Multiplayer-E2E.md).
 
 **Rule of thumb:** *One Lua brain (the host). Stop asking "which machine am I." Only ask "which player did this?" and "who should see this UI?"*
 

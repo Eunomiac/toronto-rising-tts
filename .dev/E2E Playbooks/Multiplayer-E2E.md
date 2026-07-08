@@ -55,4 +55,4 @@ Re-run Gameboard smoke Apply/Clear and one Dice suite step after multiplayer-rel
 
 - [Preparing For Multiplayer](../Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md) — P1–P10, tiers A/B/C, actor identity
 - [Event Listener Policy](../Sychronizing%20Game%20Functionality/Event%20Listener%20Policy.md) — handler inventory
-- [Execution Model Correction — Remediation Plan](../Multiplayer%20Functionality/Execution%20Model%20Correction%20%E2%80%94%20Remediation%20Plan.md) — TOR-284
+- TOR-284 execution-model remediation is represented by this playbook's hotseat console probe and the corrected policies in Preparing For Multiplayer.

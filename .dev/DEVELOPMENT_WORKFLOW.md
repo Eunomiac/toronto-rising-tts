@@ -127,19 +127,18 @@ Canonical reference: [`docs/solutions/lua-local-function-order.md`](../docs/solu
 
 ## Multiplayer authority (pre–second-client)
 
-Until **TOR-144 (multiplayer E2E)** passes with two real clients, **solo Host Save & Play does not validate** fan-out handlers, join-client paths, or duplicate world I/O.
+Until **TOR-144 (multiplayer E2E)** passes with two real clients, **solo Host Save & Play does not validate** replication timing, join-client HUD state, or multiclient interaction delivery. TTS mod Lua runs on the host only; do not reintroduce host-execution gates.
 
 | Rule | Detail |
 | --- | --- |
 | **Always-on for agents** | [`.cursor/rules/toronto-rising-multiplayer-authority.mdc`](../.cursor/rules/toronto-rising-multiplayer-authority.mdc) |
 | **Policies P1–P10** | [`.dev/Multiplayer Functionality/Preparing For Multiplayer.md`](Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md) §1 |
-| **Tier C** | Host only — `U.requireHostForWorldMutation` (including Global **chunk load**, not only `onLoad`) |
-| **Fan-out** | Assume `onLoad`, `onObjectDrop`, `Global.call` run on every client; steam gate ≠ host gate |
-| **Object scripts** | Mutations via `Global.call` + bundle gates; no `require("core.*")` on mutating paths |
+| **Execution model** | One Lua brain: the host. Ask who triggered the action and who should see UI, not which machine is executing. |
+| **Tier C** | World I/O runs through host mod Lua because TTS does that by design; keep intent in state and apply via reconcilers. |
+| **Actor identity** | ST-only interactions gate with `U.isStorytellerSteamPlayer(playerRef)` on the event/player parameter. |
+| **Object scripts** | Mutations via `Global.call` for bundle isolation; no `require("core.*")` on mutating paths |
 | **New handlers** | Update [Event Listener Policy](Sychronizing%20Game%20Functionality/Event%20Listener%20Policy.md) |
-| **Done criteria** | Do not close host-authority issues without TOR-144 multiclient pass (note “solo verified only” in Linear if needed) |
-
-Remediation plan: [`.dev/Multiplayer Functionality/Execution Model Correction — Remediation Plan.md`](Multiplayer%20Functionality/Execution%20Model%20Correction%20%E2%80%94%20Remediation%20Plan.md).
+| **Done criteria** | Do not close multiplayer-sensitive issues without the required solo, hotseat, or multiclient verification named in [Multiplayer-E2E](E2E%20Playbooks/Multiplayer-E2E.md). Note “solo verified only” in Linear when TOR-144 has not run. |
 
 ## Development Best Practices
 

@@ -19,7 +19,7 @@ Verification:
 Status: current event-handler inventory and policy; update when handlers are added or changed.
 
 **Linear:** TOR-197 (event listener early-return audit + policy)
-**Related:** [Preparing For Multiplayer](../Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md) §1 (P1–P10), [Execution Model Correction — Remediation Plan](../Multiplayer%20Functionality/Execution%20Model%20Correction%20%E2%80%94%20Remediation%20Plan.md), [Performance Audit](Performance%20Audit.md), [Reconciler Contract](Reconciler%20Contract.md), TOR-201 (Clear / token-drop lag)
+**Related:** [Preparing For Multiplayer](../Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md) §1 (P1–P10), [Multiplayer-E2E](../E2E%20Playbooks/Multiplayer-E2E.md) (TOR-144 / TOR-284), [Performance Audit](Performance%20Audit.md), [Reconciler Contract](Reconciler%20Contract.md), TOR-201 (Clear / token-drop lag)
 
 > **Agents:** Any new or changed handler listed below (or added to the codebase) must be registered here with **delivery** (host-executed event vs clicker) and **tier** (A/B/C). Until **TOR-144 (multiplayer E2E)** passes, apply [`.cursor/rules/toronto-rising-multiplayer-authority.mdc`](../../.cursor/rules/toronto-rising-multiplayer-authority.mdc) on every edit.
 
