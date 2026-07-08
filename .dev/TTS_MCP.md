@@ -146,6 +146,17 @@ For automation and MCP, prefer **structured lines** over many unrelated `print` 
 
 Defined in [`lib/util.ttslua`](../lib/util.ttslua) (`U.AGENT_EMIT_LINE_PREFIX`, `U.emitForAgent`, `U.mcpEmitResult`).
 
+## Debug objects (`debugObject` + `TR_DEBUG:v1`)
+
+For MCP or debug flows that need stable table objects, use the shared debug-object utilities in [`lib/util.ttslua`](../lib/util.ttslua):
+
+- Tag debug rig objects with `U.DEBUG_OBJECT_TAG` (`"debugObject"`).
+- Put `TR_DEBUG:v1 test=<testId> role=<role>` on the first GM Notes line.
+- Resolve existing objects with `U.getDebugObjectSingle(testId, role, opts)`.
+- Create missing objects with `U.ensureDebugObject(testId, role, factory, opts)`, which tags the created object and writes the GM Notes header.
+
+When a flow creates objects from MCP, prefer `spawnObjectData` over `spawnObject`; see the host-crash warning above.
+
 ### Sync performance metrics (`kind` = `sync_metrics`)
 
 When profiling sync cost, enable metrics before exercising the game:
@@ -169,8 +180,6 @@ Multi-step table logic in this project often uses [`U.RunSequence`](../lib/util.
 2. **Completion hooks:** Use **`U.RunSequenceWithOptions(funcs, { onComplete = ... })`** for a single callback when the sequence finishes (`ok` plus optional `detail`: `step_error`, `sequence_timeout`, `cancelled`). You still get the returned **`isDone`** predicate: `local done = U.RunSequenceWithOptions(...);` later `done()`.
 3. **Cancel / sequence timeout:** Pass **`cancelRegistry`** (`{ cancelled = false, reason = nil }`) and/or **`sequenceTimeoutSeconds`**. Waits use an **`abortCheck`** on `U.waitUntil` so timeouts and cancellation can end a step without waiting for the original condition.
 4. **MCP observation:** Prefer **`onComplete`** plus **`U.mcpEmitResult`** / **`U.emitForAgent`**, and generous **`maxWaitMs` / `idleTimeoutMs`** on `tts_execute_lua`, over assuming a **`return`** from the snippet finalizes after long sequences.
-
-Design notes: [`.dev/plans/2026-04-15-run-sequence-waituntil-orchestration.md`](plans/2026-04-15-run-sequence-waituntil-orchestration.md).
 
 ## Scripts (local)
 
