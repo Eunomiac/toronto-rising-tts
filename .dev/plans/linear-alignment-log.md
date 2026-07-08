@@ -1,5 +1,21 @@
 # Linear alignment log
 
+## Agent Routing
+
+Read this when:
+- auditing why Linear projects, labels, epics, or migrated tasklist issues have their current structure
+- appending a dated Linear/tasklist alignment action
+
+Source of truth:
+- Linear for current issue/project state
+- `.cursor/rules/toronto-rising-linear.mdc`
+- `.dev/RUNNING TASKLIST.md`
+- `.dev/INBOX.md`
+
+Verification:
+- append new rows only for actual Linear/tasklist alignment actions
+- do not infer current issue status from older rows without checking Linear
+
 Audit trail for the 2026-05-22 Linear alignment pass.
 
 **Ongoing agent responsibility:** Keep Linear, [RUNNING TASKLIST](../RUNNING%20TASKLIST.md), [INBOX](../INBOX.md) triage, and code aligned per [`.cursor/rules/toronto-rising-linear.mdc`](../../.cursor/rules/toronto-rising-linear.mdc).

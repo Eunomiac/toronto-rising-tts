@@ -1,5 +1,24 @@
 # Running Tasklist for Toronto Rising Development
 
+## Agent Routing
+
+Read this when:
+- deciding what work to start next via `/tr-start` or "what's next"
+- keeping Linear, focus order, and active domain work aligned
+- closing or moving tasklist items after implementation
+
+Source of truth:
+- Linear for issue status, blockers, and priority metadata
+- `.cursor/skills/tr-start/SKILL.md`
+- `.cursor/skills/tr-inbox/SKILL.md`
+- `.cursor/rules/toronto-rising-linear.mdc`
+- `.dev/INBOX.md` for raw capture before triage
+
+Verification:
+- every active bullet has a matching `TOR-*` Linear issue
+- Focus order matches current Linear blocker/priority intent
+- completed work is reflected in Linear and relevant docs
+
 This file is continuously updated with issues and plans for feature development.
 
 **Linear is primary project tracking.** Every bullet must have a matching Linear issue and `_(TOR-XX)_` id. Agents: follow [`.cursor/rules/toronto-rising-linear.mdc`](../.cursor/rules/toronto-rising-linear.mdc) — create/update Linear issues when adding or completing items; never leave this file and Linear out of sync. Audit trail: [`.dev/plans/linear-alignment-log.md`](plans/linear-alignment-log.md).

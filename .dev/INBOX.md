@@ -1,5 +1,22 @@
 # Inbox
 
+## Agent Routing
+
+Read this when:
+- processing quick-capture bugs, ideas, and external-work notes into Linear issues
+- running or updating the `/tr-inbox` workflow
+
+Source of truth:
+- this file for raw unshaped capture
+- `.cursor/skills/tr-inbox/SKILL.md`
+- `.cursor/rules/toronto-rising-linear.mdc`
+- `.dev/RUNNING TASKLIST.md`
+
+Verification:
+- promoted items have matching Linear issues
+- processed items move out of active capture sections
+- `.dev/RUNNING TASKLIST.md` and Linear stay aligned
+
 ## Quick Fixes
 
 - [Bug] Any dice objects on the table during the loading sequence should be destroyed (and dice trays stowed) before table sync, to prevent blocking the table setup. (Be sure not to destroy dice in the preload pool, of course)
