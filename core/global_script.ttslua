@@ -1881,7 +1881,13 @@ function GlobalSetSheetCamera(params)
 end
 
 function onLoad(saved_data)
-    print(U.loadElapsedPrefix() .. "--- VTM5E Module Loaded ---")
+    U.clearHostConsole()
+    print(
+        U.loadElapsedPrefix()
+            .. "--- VTM5E Module Loaded at "
+            .. U.formatLocalWallClock12()
+            .. " ---"
+    )
     local startupLastAction = "onLoad:start"
     local startupStepsSilent = {
         ["clear-debug-logs"] = true,

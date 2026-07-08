@@ -73,6 +73,35 @@ function U.loadElapsedPrefix()
     return string.format("[load+%.3fs] ", os.clock() - TR_LOAD_MONO_CLOCK_T0)
 end
 
+--- Scroll prior host `print()` output out of view. TTS has no native console-clear API.
+function U.clearHostConsole()
+    print(string.rep("\n", 64))
+end
+
+--- Local wall-clock time for load banners, e.g. `11:49:34 PM`.
+--- @return string
+function U.formatLocalWallClock12()
+    if os == nil or type(os.date) ~= "function" then
+        return "?:??:?? ??"
+    end
+    local hour24 = tonumber(os.date("%H")) or 0
+    local minute = tonumber(os.date("%M")) or 0
+    local second = tonumber(os.date("%S")) or 0
+    local h = hour24 % 24
+    local suffix = "AM"
+    local h12 = h
+    if h >= 12 then
+        suffix = "PM"
+        if h > 12 then
+            h12 = h - 12
+        end
+    end
+    if h12 == 0 then
+        h12 = 12
+    end
+    return string.format("%d:%02d:%02d %s", h12, minute, second, suffix)
+end
+
 -- ============================================================================
 -- MATH & NUMERIC UTILITIES
 -- ============================================================================
