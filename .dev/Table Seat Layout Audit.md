@@ -151,7 +151,7 @@ These exist because **the current pipeline propagates Red template frames to eve
 | `referencePlayerColor` | ~88 | ~8 | `rotational-seat-layout` (80), `constants` (8) |
 | `referenceHandPosition` | ~18 | ~1 | `constants` (10), `rotational-seat-layout` (8) |
 
-Rename to `seatToPositionMap`, `referenceSeatSegment`, `referenceHand` touches **~150 references** (code + docs + stale JSON backups in `.dev/Problems/`).
+Rename to `seatToPositionMap`, `referenceSeatSegment`, `referenceHand` touches **~150 references** across code and docs.
 
 ---
 

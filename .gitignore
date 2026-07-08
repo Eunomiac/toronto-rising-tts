@@ -47,6 +47,7 @@ logs/
 # Local dev artifacts — machine/session-specific; not versioned
 .dev/TS_Save_230.json
 .dev/build-logs/
+.dev/Problems/
 .dev/custom-ui-assets/*.json
 .dev/custom-ui-assets/*.lua
 .dev/custom-ui-assets/*-report.*
