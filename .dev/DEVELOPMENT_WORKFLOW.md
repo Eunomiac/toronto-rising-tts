@@ -47,7 +47,6 @@ Implement GUID-based player lighting system
 Update documentation for lighting system changes
 
 - Updated DEBUG_FILE_LOGGING.md with logging improvements
-- Updated EXTRACTABLE_FUNCTIONS_INDEX.md to reflect current codebase state
 ```
 
 ### When to Commit

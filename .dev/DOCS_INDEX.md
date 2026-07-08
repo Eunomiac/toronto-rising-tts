@@ -13,7 +13,7 @@ Always verify important claims against code before changing behavior.
 | Debugging a runtime issue | [`SOLVING ISSUES & DEBUGGING.md`](SOLVING%20ISSUES%20%26%20DEBUGGING.md), [`DEBUG_FILE_LOGGING.md`](DEBUG_FILE_LOGGING.md) | `core/debug.ttslua`, relevant system docs |
 | Running or writing tests/playbooks | [`TESTING.md`](TESTING.md), [`E2E Playbooks/README.md`](E2E%20Playbooks/README.md), [`Step-By-Step Playbooks/README.md`](Step-By-Step%20Playbooks/README.md) | [`../.cursor/skills/step-by-step-guidance/SKILL.md`](../.cursor/skills/step-by-step-guidance/SKILL.md) |
 | Bundling, Save & Play, or TTS extension issues | [`TTS_BUNDLING_SETUP.md`](TTS_BUNDLING_SETUP.md), [`TTS_MCP.md`](TTS_MCP.md) | `package.json`, `.tools/tts-save/`, `.tts/` |
-| Reusing helpers or avoiding duplicate utilities | [`AVAILABLE_FUNCTIONS.md`](AVAILABLE_FUNCTIONS.md), [`EXTRACTABLE_FUNCTIONS_INDEX.md`](EXTRACTABLE_FUNCTIONS_INDEX.md) | `lib/util.ttslua`, relevant modules |
+| Reusing helpers or avoiding duplicate utilities | [`AVAILABLE_FUNCTIONS.md`](AVAILABLE_FUNCTIONS.md) | `lib/util.ttslua`, relevant modules |
 
 ## Core Architecture
 
