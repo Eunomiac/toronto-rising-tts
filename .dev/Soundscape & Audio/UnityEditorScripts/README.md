@@ -1,5 +1,20 @@
 # Unity Editor scripts (Toronto Rising)
 
+## Agent Routing
+
+Read this when:
+- generating or debugging local Unity editor reports for soundscape audio imports
+- comparing Unity import settings against `.dev/Soundscape & Audio/Audio Tracks.md`
+
+Source of truth:
+- `SoundscapeAudioImportReport.cs`
+- external Unity project asset import settings
+- `.dev/Soundscape & Audio/Audio Tracks.md`
+
+Verification:
+- Unity menu `Tools -> Toronto Rising -> Soundscape Audio Import Report`
+- generated `Soundscape_Audio_Import_Report.csv`
+
 Copy `.cs` files into your **TTS modding Unity project** under an **`Editor/`** folder (for example `Assets/Editor/TorontoRising/`) so Unity compiles them with `UnityEditor`.
 
 ## `SoundscapeAudioImportReport.cs`

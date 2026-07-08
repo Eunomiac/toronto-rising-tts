@@ -1,5 +1,23 @@
 # Soundscape AssetBundle — quiet initialization (Unity)
 
+## Agent Routing
+
+Read this when:
+- debugging audio that plays before Lua can mute or reconcile the soundscape
+- changing Unity prefab defaults, `silent` loop setup, import loudness, or the optional Unity boot component
+
+Source of truth:
+- Unity prefab and AssetBundle settings for `TR_Soundscape_Bundle`
+- `.dev/Soundscape & Audio/TTSAssetBundle Unity Scripts/TorontoRisingSoundscapeEmitterBoot.cs`
+- `core/global_script.ttslua`
+- `core/soundscape.ttslua`
+- `core/soundscape_emitter_object.ttslua`
+
+Verification:
+- Unity Play Mode should start silent
+- TTS Save & Play should remain silent until Lua intentionally starts playback
+- inspect `[SoundscapeEarly]` logs for Lua timing
+
 Tabletop Simulator restores workshop objects from the save **before** Global Lua can mute emitters. Anything “hot” in the prefab (Play On Awake, loud default volume, autoplay in `Start`) can produce **full-volume audio for a frame or longer**. This note complements Lua-side bootstrapping (`core/global_script.ttslua`, `core/soundscape_emitter_object.ttslua`): fix the **prefab defaults** so Unity never starts loud.
 
 Use the same Unity version as `SOUNDSCAPE_UNITY_SETUP.md` (currently Unity `6000.0.62f1` per that doc).

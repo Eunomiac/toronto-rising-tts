@@ -1,5 +1,20 @@
 # TTS Asset Bundle Unity Scripts (reference copy)
 
+## Agent Routing
+
+Read this when:
+- updating the optional Unity-side soundscape boot component or comparing Berserk `TTSAssetBundleEffects` schema fields
+- deciding which C# files need to be copied into the external Unity project
+
+Source of truth:
+- files in this folder for reference copies and the Toronto Rising boot helper
+- `.dev/Soundscape & Audio/SOUNDSCAPE_ASSETBUNDLE_AUDIO_INIT.md`
+- external Unity project for the actual built AssetBundle
+
+Verification:
+- Unity project compiles after copying the selected scripts
+- rebuilt AssetBundle starts silent before Lua playback
+
 Files here are **reference copies** for Toronto Rising documentation and optional **Unity-side** helpers.
 
 - **`TTSAssetBundleEffects.cs`** / **`TTSAssetBundleSounds.cs`** — Match the Berserk Games [Tabletop-Simulator-Modding](https://github.com/Berserk-Games/Tabletop-Simulator-Modding) **Inspector schema** (`LoopingEffects`, `TriggerEffects`, etc.). They define **data only**; **no playback code**. Tabletop Simulator’s **closed-source** runtime reads this data when the bundle loads and drives `AudioSource` / effects APIs.

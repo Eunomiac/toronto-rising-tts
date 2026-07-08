@@ -1,5 +1,22 @@
 # Unity (C#) vs Tabletop Simulator (Lua) — who controls audio, and when?
 
+## Agent Routing
+
+Read this when:
+- reasoning about startup races between Unity C# bootstrap code, TTS object scripts, and Global Lua
+- debugging soundscape hot-starts, emitter GUID availability, or early mute timing
+
+Source of truth:
+- `core/global_script.ttslua`
+- `core/soundscape.ttslua`
+- `core/soundscape_emitter_object.ttslua`
+- `.dev/Soundscape & Audio/TTSAssetBundle Unity Scripts/TorontoRisingSoundscapeEmitterBoot.cs`
+- Unity prefab behavior in the TTS AssetBundle project
+
+Verification:
+- TTS Save & Play with `[SoundscapeEarly]` logs enabled
+- Unity Play Mode startup check for silence
+
 This describes **two runtimes** touching the **same Unity objects** (`AudioSource`, `AssetBundle` behavior) inside a workshop **Custom AssetBundle** object. Order matters for “hot start” and for fades.
 
 ---

@@ -1,5 +1,21 @@
 # Imported Audio Files by Category
 
+## Agent Routing
+
+Read this when:
+- adding, renaming, or removing soundscape effect names in Unity or Lua
+- checking track category, loop/trigger classification, import settings, or exact effect-name casing
+
+Source of truth:
+- this inventory for authored effect names and import guidance
+- `lib/soundscape_catalog.ttslua` for runtime catalog keys and categories
+- `.dev/Soundscape & Audio/SOUNDSCAPE_UNITY_SETUP.md` for AssetBundle authoring workflow
+
+Verification:
+- `npm run build`
+- keep Unity effect names exactly aligned with `lib/soundscape_catalog.ttslua`
+- rebuild the AssetBundle after Unity catalog changes
+
 ## Unity Import Recommendation Notes
 
 - For looped `.mp3` files, preconversion is recommended only because MP3 encoder delay can create tiny loop gaps. Convert from the best available source to `WAV 44.1kHz/16-bit PCM`, and trim the loop seam if needed before importing into Unity.
