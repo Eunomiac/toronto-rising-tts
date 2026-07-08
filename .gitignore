@@ -10,7 +10,6 @@ yarn.lock
 
 # Storyteller dashboard secrets (copy from .env.example in each app folder)
 .dev/storyteller-dashboard/.env
-.dev/storyteller-dashboard-pr9/.env
 
 # IDE — track shared VS Code / Cursor tasks + TTS Lua workspace defaults; keep other settings local
 # .vscode/*

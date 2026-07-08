@@ -1,8 +1,8 @@
-# Toronto Rising Storyteller Dashboard (PR #10)
+# Toronto Rising Storyteller Dashboard
 
 A standalone second-monitor web dashboard for live Vampire: the Masquerade 5th Edition play. This MVP is intentionally independent from Tabletop Simulator and focuses on fast AI-assisted NPC generation.
 
-Runs on **port 8788** by default so it can run alongside the PR #9 dashboard on **8787**.
+Runs on **port 8788** by default.
 
 ## What is included
 
@@ -14,7 +14,7 @@ Runs on **port 8788** by default so it can run alongside the PR #9 dashboard on 
 
 ## Repository placement
 
-This app lives under `.dev/storyteller-dashboard/`. The PR #9 variant is archived at `.dev/storyteller-dashboard-pr9/`.
+This app lives under `.dev/storyteller-dashboard/`.
 
 ## Setup
 
@@ -30,8 +30,6 @@ OPENAI_API_KEY=sk-...
 OPENAI_VECTOR_STORE_ID=vs_...
 ```
 
-Use the **same** `OPENAI_VECTOR_STORE_ID` as PR #9 when both dashboards should share chronicle retrieval.
-
 Optional model overrides:
 
 ```text
@@ -42,7 +40,7 @@ PORT=8788
 
 ## Run locally
 
-**From Cursor / VS Code:** Run Task → **Storyteller Dashboard (PR10): Dev (server + browser)**. Builds, starts the server on `http://127.0.0.1:8788`, and opens Chrome.
+**From Cursor / VS Code:** Run Task → **Storyteller Dashboard: Dev (server + browser)**. Builds, starts the server on `http://127.0.0.1:8788`, and opens Chrome.
 
 **From a terminal:**
 
@@ -54,12 +52,10 @@ npm run start
 
 Open <http://127.0.0.1:8788> in a browser. `npm run dev` aliases the same build-and-start flow.
 
-To run **both** dashboards: also start PR #9 via **Storyteller Dashboard (PR9): Dev (server + browser)** (`http://127.0.0.1:8787`).
-
 ## Chronicle vector store
 
 1. Create an OpenAI vector store and upload chronicle files (`.md`, `.json`, etc.).
-2. Set `OPENAI_VECTOR_STORE_ID=vs_...` in `.env` (same ID works for PR #9 and PR #10).
+2. Set `OPENAI_VECTOR_STORE_ID=vs_...` in `.env`.
 3. Restart the server. Status line and `GET /api/health` report `chronicleMode`, `hasVectorStore`, and `chronicleStatus`.
 
 No local `data/chronicle/` folder is required.
