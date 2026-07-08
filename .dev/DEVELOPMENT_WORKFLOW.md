@@ -121,7 +121,7 @@ Until **TOR-144 (multiplayer E2E)** passes with two real clients, **solo Host Sa
 | **New handlers** | Update [Event Listener Policy](Sychronizing%20Game%20Functionality/Event%20Listener%20Policy.md) |
 | **Done criteria** | Do not close host-authority issues without TOR-144 multiclient pass (note “solo verified only” in Linear if needed) |
 
-Audit / remediation plan: [`.dev/Multiplayer Functionality/audit-2026-06-25.md`](Multiplayer%20Functionality/audit-2026-06-25.md).
+Remediation plan: [`.dev/Multiplayer Functionality/Execution Model Correction — Remediation Plan.md`](Multiplayer%20Functionality/Execution%20Model%20Correction%20%E2%80%94%20Remediation%20Plan.md).
 
 ## Development Best Practices
 

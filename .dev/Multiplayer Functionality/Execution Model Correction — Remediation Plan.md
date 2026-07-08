@@ -94,7 +94,7 @@ Join clients may still lack **live in-memory `gameState` Lua table updates** bet
 
 ### Step 1 — Freeze the misleading docs and rules — **DONE 2026-07-04**
 
-Freeze banners added to the always-applied rules (`.cursor/rules/toronto-rising-multiplayer-authority.mdc`, `toronto-rising-synchronization.mdc`) and source docs (`Bootstrap Authority.md`, `Preparing For Multiplayer.md`, `Multiplayer Performance Audit.md`, `audit-2026-06-25.md`). Contract during remediation: do **not** add execution guards; do **not** ad-hoc remove existing ones outside Step 3 staging; **keep** `isStorytellerSteamPlayer` + per-client `visibility`.
+Freeze banners added to the always-applied rules (`.cursor/rules/toronto-rising-multiplayer-authority.mdc`, `toronto-rising-synchronization.mdc`) and source docs (`Bootstrap Authority.md`, `Preparing For Multiplayer.md`, `Multiplayer Performance Audit.md`). Contract during remediation: do **not** add execution guards; do **not** ad-hoc remove existing ones outside Step 3 staging; **keep** `isStorytellerSteamPlayer` + per-client `visibility`.
 
 **Step 6 removes these banners** and replaces body text with §2.1 corrected policies.
 
@@ -242,7 +242,6 @@ Reproduce §1.4 **in reverse** — this is the bug that confirmed the finding:
 | --- | --- |
 | **Remediation issue `TOR-???`** | **Done** with comment: inventory path, substages completed, hotseat §4.2 result, `npm run build`, multiclient deferred |
 | **TOR-221** (Non-Host onLoad guard audit) | Add **Done comment** — premise superseded; guards removed per remediation plan; do **not** reopen as Todo. Optionally label `superseded` in comment. Tasklist `[x]` bullet gets footnote: *superseded 2026-07 — execution model correction* |
-| **audit-2026-06-25 Waves 1–5** | Comment on **TOR-144** or remediation issue: mechanical host-guard waves **superseded, not validated design** |
 | **TOR-144** (multiplayer E2E) | `relatedTo` remediation issue; audit can resume on corrected model |
 | **TOR-197** (event listener policy) | Inventory rows updated in Step 6 — note in comment |
 | **`RUNNING TASKLIST.md`** | Mark remediation `[x]`; adjust **Focus** if this was stack-ranked; gate-close survey if anything was `blockedBy` this work |
@@ -259,7 +258,6 @@ Remove freeze banners and rewrite bodies to §2 / §2.1. **Grep each file after 
 | [`.dev/Sychronizing Game Functionality/Bootstrap Authority.md`](../../.dev/Sychronizing%20Game%20Functionality/Bootstrap%20Authority.md) | Remove banner; rewrite authority model — **one Lua brain**; drop "Storyteller machine (execution)" axis and join-client bootstrap table; keep actor-identity axis + tiers A/B/C; fix event delivery table (handlers run on host; clients send events) |
 | [`.dev/Sychronizing Game Functionality/Event Listener Policy.md`](../../.dev/Sychronizing%20Game%20Functionality/Event%20Listener%20Policy.md) | Remove "GM vs Host client" execution paragraph; update Global.call inventory (drop host-guard column/requirement); fix handler rows that say `requireHostForWorldMutation`; add remediation note under TOR-221 / host audit checklist |
 | [`.dev/Multiplayer Functionality/Multiplayer Performance Audit.md`](Multiplayer%20Performance%20Audit.md) | Remove banner; reorient audit checklist to actor identity + UI visibility + replication timing; remove `GlobalRequireHostForWorldMutation` / host-guard pass criteria |
-| [`.dev/Multiplayer Functionality/audit-2026-06-25.md`](audit-2026-06-25.md) | Keep superseded banner **or** replace with short "Historical — superseded" stub pointing to remediation Done; do not leave Wave PASS tables implying valid host-guard design without disclaimer |
 | [`.cursor/rules/toronto-rising-multiplayer-authority.mdc`](../../.cursor/rules/toronto-rising-multiplayer-authority.mdc) | Remove banner; replace body with corrected P1–P10; agent checklist = actor identity + Sync discipline + Event Listener Policy + hotseat smoke note; drop host-execution mandates |
 | [`.cursor/rules/toronto-rising-synchronization.mdc`](../../.cursor/rules/toronto-rising-synchronization.mdc) | Remove banner; delete "Multiplayer host authority" execution subsection; keep mutation/reconcile separation + dual-apply + `isStorytellerSteamPlayer` where relevant |
 | [`.cursor/rules/toronto-rising-object-script-bundling.mdc`](../../.cursor/rules/toronto-rising-object-script-bundling.mdc) | Approved patterns table: Tier C row → `Global.call("Global…")` mutator with **steam gate if ST-only**, not `GlobalRequireHostForWorldMutation` |
