@@ -185,7 +185,7 @@ These documents should be preserved or consolidated, then verified against code 
 
 | Area | Likely Canonical Inputs | Currentness Assessment |
 |---|---|---|
-| Synchronization/state | `.dev/Sychronizing Game Functionality/Synchronization Architecture Proposal.md`, `Reconciler Contract.md`, `Event Listener Policy.md`, `State Access Audit.md` | Important and partly current; folder typo needs careful reference handling |
+| Synchronization/state | `.dev/Sychronizing Game Functionality/Reconciler Contract.md`, `Event Listener Policy.md`, `State Access Audit.md` | Important; folder typo needs careful reference handling |
 | State model | `.dev/Game State Data.jsonc`, `.dev/HUDs & Overlays/Player HUD Overview.md`, `.dev/PC Data & Tracking/PC Tracking & State Behavior.md` | Important; verify runtime shape against `core/state.ttslua` |
 | NPC systems | `.dev/NPC Object Spawning & Spotlighting/NPC Object Overview.md`, `NPC Reconciler Procedure.md`, `Storyteller Gameboard Control.md` | Appears current and code-referenced |
 | Lighting/table layout | `.dev/Rotational Coordinate Generator.md`, `.dev/Table Seat Layout Audit.md`, NPC light docs | Important; verify against `core/lighting.ttslua` and `lib/rotational-seat-layout.ttslua` |

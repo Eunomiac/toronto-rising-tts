@@ -9,7 +9,7 @@ Cloud-agent prompts for the four **Agent Reviews** items in [`.dev/RUNNING TASKL
 | [`AGENTS.md`](../../AGENTS.md) | Module layout, state access rules, sync contract, player ID vs color |
 | [`AGENTS.md`](../../AGENTS.md) and [`.cursor/rules/`](../../.cursor/rules/) | Agent entrypoint, repo-local rules, error visibility, documentation-in-same-change, no `pcall` in production |
 | [`.cursor/rules/toronto-rising-synchronization.mdc`](../../.cursor/rules/toronto-rising-synchronization.mdc) | Mutation vs reconciliation, dual-apply rules, lighting priority |
-| [`.dev/Sychronizing Game Functionality/Synchronization Architecture Proposal.md`](../Sychronizing%20Game%20Functionality/Synchronization%20Architecture%20Proposal.md) | Orchestrator design, reconciler contract draft (§3.3) |
+| [`.dev/Sychronizing Game Functionality/Reconciler Contract.md`](../Sychronizing%20Game%20Functionality/Reconciler%20Contract.md) | Current synchronization/reconciler contract |
 | [`.dev/Sychronizing Game Functionality/Dual_apply_survey.md`](../Sychronizing%20Game%20Functionality/Dual_apply_survey.md) | Existing dual-apply inventory and mitigation patterns |
 | [`core/sync.ttslua`](../../core/sync.ttslua) | **Current** orchestration order and entry points |
 | [`.dev/SOLVING ISSUES & DEBUGGING.md`](../SOLVING%20ISSUES%20&%20DEBUGGING.md) | Sync incremental vs force, pipeline integrity checklist |
