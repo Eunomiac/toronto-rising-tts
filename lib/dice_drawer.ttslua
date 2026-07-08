@@ -38,6 +38,56 @@ local function getPoseEntry(color, wantOn)
   return wantOn and entry.on or entry.off
 end
 
+--- @param obj Object
+--- @return string|nil seat color e.g. "Brown"
+local function resolveDrawerColorFromObject(obj)
+  if obj == nil or obj.getTags == nil then
+    return nil
+  end
+  local tags = obj.getTags()
+  if type(tags) == "table" then
+    for _, color in ipairs(C.PlayerColors) do
+      local want = color .. "Object"
+      for _, tag in ipairs(tags) do
+        if tag == want then
+          return color
+        end
+      end
+    end
+  end
+  if obj.getGUID == nil then
+    return nil
+  end
+  local guid = obj.getGUID()
+  if type(guid) ~= "string" then
+    return nil
+  end
+  for _, color in ipairs(C.PlayerColors) do
+    local key = objectPositionsKey(color)
+    local entry = key ~= nil and C.ObjectPositions[key] or nil
+    if type(entry) == "table" and entry.target == guid then
+      return color
+    end
+  end
+  return nil
+end
+
+--- Raised tray uses scale.y ≈ 3.92; off pose flattens to ≈ 0.1.
+local DRAWER_OFF_SCALE_Y_MAX = 0.5
+
+--- @param obj Object
+--- @return boolean
+local function isDrawerPhysicallyOff(obj)
+  if obj == nil or obj.getScale == nil then
+    return true
+  end
+  local scale = obj.getScale()
+  if type(scale) ~= "userdata" or type(scale.y) ~= "number" then
+    return false
+  end
+  return scale.y <= DRAWER_OFF_SCALE_Y_MAX
+end
+
 --- @param color string
 --- @return userdata|nil
 local function findDiceDrawerObject(color)
@@ -113,21 +163,28 @@ end
 
 --- Apply the drawer "off" pose and clear logical open state.
 --- @param color string Seat color
-local function applyClosePose(color)
+--- @param opts table|nil  { obj?: Object, instant?: boolean }
+local function applyClosePose(color, opts)
+  opts = type(opts) == "table" and opts or {}
   drawerOpenByColor[color] = false
   L.onDiceDrawerStateChanged(color, false)
   local pose = getPoseEntry(color, false)
   if pose == nil then
     return
   end
-  local obj = findDiceDrawerObject(color)
+  local obj = opts.obj
+  if obj == nil then
+    obj = findDiceDrawerObject(color)
+  end
   if obj == nil then
     return
   end
   local key = objectPositionsKey(color)
   local entry = key ~= nil and C.ObjectPositions[key] or nil
   local resolvedPose = OP.resolveStatePose(obj, entry or {}, "off") or pose
-  OP.applyResolvedPose(obj, resolvedPose, OP.DEFAULT_TRANSITION_DURATION, 0, { useSmoothSetters = true })
+  local instant = opts.instant == true
+  local duration = instant and 0 or OP.DEFAULT_TRANSITION_DURATION
+  OP.applyResolvedPose(obj, resolvedPose, duration, 0, { useSmoothSetters = not instant })
 end
 
 --- Move drawer to the "off" pose when staged dice are destroyed (cancel / take half /
@@ -145,11 +202,35 @@ end
 
 --- Always move drawer off (startup / saved pose may disagree with in-memory open flag).
 --- @param color string Seat color
-function DD.forceClose(color)
+--- @param opts table|nil  { instant?: boolean }
+function DD.forceClose(color, opts)
   if type(color) ~= "string" then
     return
   end
-  applyClosePose(color)
+  applyClosePose(color, opts)
+end
+
+--- Scan every `DiceDrawer` prop; snap any raised tray to its off pose (TOR-307 startup).
+--- @param opts table|nil  { instant?: boolean }
+--- @return number closed count
+function DD.reconcileAllToOff(opts)
+  opts = type(opts) == "table" and opts or {}
+  local closed = 0
+  local drawers = getObjectsWithTag("DiceDrawer") or {}
+  for _, obj in ipairs(drawers) do
+    if obj ~= nil then
+      local color = resolveDrawerColorFromObject(obj)
+      if type(color) == "string" then
+        if isDrawerPhysicallyOff(obj) then
+          drawerOpenByColor[color] = false
+        else
+          applyClosePose(color, { instant = opts.instant, obj = obj })
+          closed = closed + 1
+        end
+      end
+    end
+  end
+  return closed
 end
 
 return DD

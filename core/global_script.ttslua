@@ -187,6 +187,8 @@ local LOOSE_DICE_ON_TABLE_Y_MIN = -50
 
 --- Stow trays and clear loose on-table d10 before startup SyncTable (TOR-307). Skips d10Preload (y < threshold).
 local function cleanupLooseDiceBeforeTableSync()
+    local pcTraysLowered = DiceDrawer.reconcileAllToOff({ instant = true })
+    local stTraysRestored = STD.reconcileAllToWorkshopHome({ instant = true })
     local stowed = 0
     for _, color in ipairs(C.PlayerColors) do
         destroyBagDice(color)
@@ -205,10 +207,11 @@ local function cleanupLooseDiceBeforeTableSync()
             end
         end
     end
-    if stowed > 0 or swept > 0 then
+    if pcTraysLowered > 0 or stTraysRestored > 0 or swept > 0 then
         print(string.format(
-            U.loadElapsedPrefix() .. "[Startup] loose-dice cleanup: stowed %d seat tray(s), swept %d on-table d10",
-            stowed + 1,
+            U.loadElapsedPrefix() .. "[Startup] loose-dice cleanup: lowered %d PC tray(s), restored %d ST drawer(s), swept %d on-table d10",
+            pcTraysLowered,
+            stTraysRestored,
             swept
         ))
     end

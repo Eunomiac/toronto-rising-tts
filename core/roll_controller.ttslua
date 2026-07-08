@@ -1172,8 +1172,12 @@ function RC.changeRollType(color, rollType)
     setActive(color, active)
     notifyStateChanged(color)
 
-    if active.phase == C.RollPhase.PRE_ROLL and color ~= "Black" and DK.poolTotal(active.pool) > 0 then
-        Global.call("GlobalSpawnActivePoolDiceForActive", { color = color })
+    if active.phase == C.RollPhase.PRE_ROLL and color ~= "Black" then
+        rollCamera(color, "roll")
+        Global.call("GlobalOpenPlayerDiceTrayForRoll", { color = color })
+        if DK.poolTotal(active.pool) > 0 then
+            Global.call("GlobalSpawnActivePoolDiceForActive", { color = color })
+        end
     end
 
     return true

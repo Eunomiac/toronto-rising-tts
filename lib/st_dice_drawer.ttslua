@@ -13,6 +13,7 @@ local C = require("lib.constants")
 local G = require("lib.guids")
 local OP = require("lib.object_positions")
 local L = require("core.lighting")
+local S = require("core.state")
 local STS = require("lib.st_dice_tray_spawn")
 
 local SLOT_DRAWER_KEYS = {
@@ -42,12 +43,221 @@ local npcSeatBySlot = {}
 --- @type table<number, table|nil>
 local defaultTrayLightPosBySlot = {}
 
+local findDrawerObject
+local findTrayLightObject
+local restoreTrayLightPosition
+
 --- Off pose is y = -200 (hidden); on pose is ~ -0.64. Gate release when above this.
 STD.DRAWER_RELEASE_MIN_Y = -50
 
+local WORKSHOP_HOME_OFF_Y = -200
+local WORKSHOP_HOME_EPSILON = 0.25
+
+--- @param slot number
+-- @return string
+local function workshopHomeStateKey(slot)
+    return "slot" .. tostring(slot)
+end
+
+--- @param obj Object|nil
+-- @return table|nil
+local function captureTransformRow(obj)
+    if obj == nil then
+        return nil
+    end
+    local pos = obj.getPosition()
+    local scale = obj.getScale()
+    local rot = obj.getRotation()
+    if type(pos) ~= "userdata" or type(scale) ~= "userdata" or type(rot) ~= "userdata" then
+        return nil
+    end
+    return {
+        x = pos.x,
+        y = pos.y,
+        z = pos.z,
+        rotX = rot.x,
+        rotY = rot.y,
+        rotZ = rot.z,
+        scaleX = scale.x,
+        scaleY = scale.y,
+        scaleZ = scale.z,
+    }
+end
+
+--- @param slot number
+--- @param subKey string  "drawer" | "trayLight"
+-- @return table|nil
+local function getPersistedWorkshopTransform(slot, subKey)
+    return S.getStateVal("runtime", "stDrawerWorkshopHome", workshopHomeStateKey(slot), subKey)
+end
+
+--- Persist workshop drawer/light pose before first NPC-seat reposition (survives Save & Play).
+-- @param slot number
+--- @param obj Object|nil
+--- @param subKey string
+local function persistWorkshopTransformIfMissing(slot, obj, subKey)
+    if getPersistedWorkshopTransform(slot, subKey) ~= nil then
+        return
+    end
+    local row = captureTransformRow(obj)
+    if row == nil then
+        return
+    end
+    S.setStateVal(row, "runtime", "stDrawerWorkshopHome", workshopHomeStateKey(slot), subKey)
+end
+
+--- @param slot number
+local function persistWorkshopHomesBeforeNpcMove(slot)
+    persistWorkshopTransformIfMissing(slot, findDrawerObject(slot), "drawer")
+    persistWorkshopTransformIfMissing(slot, findTrayLightObject(slot), "trayLight")
+end
+
+--- @param tableCfg table|nil
+--- @param guid string
+-- @return table|nil partial position from active table layout
+local function tableLayoutPartialPosition(tableCfg, guid)
+    if type(tableCfg) ~= "table" or type(guid) ~= "string" then
+        return nil
+    end
+    local entries = tableCfg.objectPositions
+    if type(entries) ~= "table" then
+        return nil
+    end
+    for i = 1, #entries do
+        local e = entries[i]
+        if type(e) == "table" and e.guid == guid then
+            return e.position
+        end
+    end
+    return nil
+end
+
+--- Infer workshop X/Z from a sibling drawer still parked under-table when home was never persisted.
+-- @param slot number
+-- @return number|nil x, number|nil z
+local function inferWorkshopXZFromSiblingDrawer(slot)
+    for s = 1, 3 do
+        if s ~= slot then
+            local sibling = findDrawerObject(s)
+            if sibling ~= nil then
+                local pos = sibling.getPosition()
+                if type(pos) == "userdata" and type(pos.y) == "number" and pos.y < STD.DRAWER_RELEASE_MIN_Y then
+                    return pos.x, pos.z
+                end
+            end
+        end
+    end
+    return nil, nil
+end
+
+--- @param slot number
+-- @return table|nil home row with x,y,z + optional rot/scale
+local function resolveWorkshopHomeForSlot(slot)
+    local home = getPersistedWorkshopTransform(slot, "drawer")
+    if type(home) == "table" and type(home.x) == "number" and type(home.z) == "number" then
+        return home
+    end
+    local guid = G.GetStorytellerDiceDrawerGUID(slot)
+    if type(guid) ~= "string" then
+        return nil
+    end
+    local tableKey = S.getStateVal("seatLayout", "currentTableKey")
+    if type(tableKey) ~= "string" or C.Tables[tableKey] == nil then
+        tableKey = "Table A"
+    end
+    local partial = tableLayoutPartialPosition(C.Tables[tableKey], guid)
+    local siblingX, siblingZ = inferWorkshopXZFromSiblingDrawer(slot)
+    local obj = findDrawerObject(slot)
+    local pos = obj ~= nil and obj.getPosition() or nil
+    local x = siblingX
+    local z = siblingZ
+    if type(partial) == "table" and type(partial.z) == "number" then
+        z = partial.z
+    end
+    if type(x) ~= "number" and type(pos) == "userdata" then
+        x = pos.x
+    end
+    if type(z) ~= "number" and type(pos) == "userdata" then
+        z = pos.z
+    end
+    if type(x) ~= "number" or type(z) ~= "number" then
+        return nil
+    end
+    return { x = x, y = WORKSHOP_HOME_OFF_Y, z = z }
+end
+
+--- @param slot number
+-- @return boolean
+local function isSlotDisplacedFromWorkshop(slot)
+    local obj = findDrawerObject(slot)
+    if obj == nil then
+        return false
+    end
+    if STD.isRaisedForRelease(slot) then
+        return true
+    end
+    local home = resolveWorkshopHomeForSlot(slot)
+    if type(home) ~= "table" then
+        return false
+    end
+    local pos = obj.getPosition()
+    if type(pos) ~= "userdata" then
+        return false
+    end
+    return math.abs(pos.x - home.x) > WORKSHOP_HOME_EPSILON
+        or math.abs(pos.z - home.z) > WORKSHOP_HOME_EPSILON
+end
+
+--- Snap drawer to hidden workshop home (full X/Y/Z, not Y-only merge).
+-- @param slot number
+--- @param opts table|nil  { instant?: boolean }
+-- @return boolean
+local function applyWorkshopHomeOff(slot, opts)
+    opts = type(opts) == "table" and opts or {}
+    local obj = findDrawerObject(slot)
+    if obj == nil then
+        return false
+    end
+    local home = resolveWorkshopHomeForSlot(slot)
+    if type(home) == "table" and type(home.x) == "number" and type(home.z) == "number" then
+        obj.setPosition({ x = home.x, y = WORKSHOP_HOME_OFF_Y, z = home.z })
+        if type(home.rotX) == "number" then
+            obj.setRotation({ x = home.rotX, y = home.rotY, z = home.rotZ })
+        end
+        if type(home.scaleX) == "number" then
+            obj.setScale({ x = home.scaleX, y = home.scaleY, z = home.scaleZ })
+        else
+            obj.setScale({ x = 1, y = 1, z = 1 })
+        end
+        obj.setInvisibleTo({ "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey", "Black" })
+        return true
+    end
+    local key = SLOT_DRAWER_KEYS[slot]
+    local entry = key ~= nil and C.ObjectPositions[key] or nil
+    if type(entry) ~= "table" or type(entry.off) ~= "table" then
+        return false
+    end
+    local resolvedPose = OP.resolveStatePose(obj, entry, "off") or entry.off
+    local duration = opts.instant == true and 0 or OP.DEFAULT_TRANSITION_DURATION
+    OP.applyResolvedPose(obj, resolvedPose, duration, 0, { useSmoothSetters = opts.instant ~= true })
+    return true
+end
+
+--- @param slot number
+local function restoreTrayLightWorkshopHome(slot)
+    local home = getPersistedWorkshopTransform(slot, "trayLight")
+    local light = findTrayLightObject(slot)
+    if type(home) == "table" and light ~= nil and type(home.x) == "number" then
+        light.setPosition({ x = home.x, y = home.y, z = home.z })
+        defaultTrayLightPosBySlot[slot] = { x = home.x, y = home.y, z = home.z }
+        return
+    end
+    restoreTrayLightPosition(slot)
+end
+
 --- @param slot number 1..3
 -- @return Object|nil
-local function findDrawerObject(slot)
+findDrawerObject = function(slot)
     local guid = G.GetStorytellerDiceDrawerGUID(slot)
     if type(guid) ~= "string" then
         return nil
@@ -57,7 +267,7 @@ end
 
 --- @param slot number 1..3
 -- @return Object|nil
-local function findTrayLightObject(slot)
+findTrayLightObject = function(slot)
     local lightRef = SLOT_LIGHT_REFS[slot]
     if type(lightRef) ~= "string" then
         return nil
@@ -162,7 +372,7 @@ local function npcSeatKeyForSlot(slot)
 end
 
 --- @param slot number 1..3
-local function restoreTrayLightPosition(slot)
+restoreTrayLightPosition = function(slot)
     ensureDefaultTrayLightPosCached(slot)
     local home = defaultTrayLightPosBySlot[slot]
     local light = findTrayLightObject(slot)
@@ -215,6 +425,7 @@ end
 -- @param slot number 1..3
 -- @param npcSeatKey string NPC1..NPC4
 local function openForSlotAtNpcSeat(slot, npcSeatKey)
+    persistWorkshopHomesBeforeNpcMove(slot)
     npcSeatBySlot[slot] = npcSeatKey
     syncTrayLightToNpcAnchor(slot, npcSeatKey)
     applyNpcSeatDrawerPose(slot, npcSeatKey, "off", 0)
@@ -291,6 +502,7 @@ function STD.openForSlot(slot, opts)
     end
 
     npcSeatBySlot[slot] = nil
+    persistWorkshopHomesBeforeNpcMove(slot)
     local key = SLOT_DRAWER_KEYS[slot]
     if key == nil then
         return
@@ -314,26 +526,35 @@ function STD.closeForSlot(slot)
     if type(slot) ~= "number" then
         return
     end
-    local wasNpcSeat = npcSeatBySlot[slot]
     npcSeatBySlot[slot] = nil
 
-    local key = SLOT_DRAWER_KEYS[slot]
-    if key == nil then
-        return
-    end
-    local entry = C.ObjectPositions[key]
-    local obj = findDrawerObject(slot)
-    if obj ~= nil and type(entry) == "table" and type(entry.off) == "table" then
-        local resolvedPose = OP.resolveStatePose(obj, entry, "off") or entry.off
-        OP.applyResolvedPose(obj, resolvedPose, 0, 0, { useSmoothSetters = true })
-    end
-    if wasNpcSeat ~= nil then
-        restoreTrayLightPosition(slot)
-    end
+    applyWorkshopHomeOff(slot, { instant = true })
+    restoreTrayLightWorkshopHome(slot)
     local lightRef = SLOT_LIGHT_REFS[slot]
     if type(lightRef) == "string" then
         L.SetLightMode(lightRef, "OFF", nil, 0.25)
     end
+end
+
+--- Return ST drawer slots to workshop hidden home (startup / after NPC-seat rolls). TOR-307.
+--- @param opts table|nil  { instant?: boolean }
+--- @return number restored count
+function STD.reconcileAllToWorkshopHome(opts)
+    opts = type(opts) == "table" and opts or {}
+    local restored = 0
+    for slot = 1, 3 do
+        npcSeatBySlot[slot] = nil
+        if isSlotDisplacedFromWorkshop(slot) then
+            applyWorkshopHomeOff(slot, opts)
+            restoreTrayLightWorkshopHome(slot)
+            local lightRef = SLOT_LIGHT_REFS[slot]
+            if type(lightRef) == "string" then
+                L.SetLightMode(lightRef, "OFF", nil, 0)
+            end
+            restored = restored + 1
+        end
+    end
+    return restored
 end
 
 return STD
