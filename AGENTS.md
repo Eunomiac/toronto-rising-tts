@@ -32,7 +32,7 @@ Use this order when sources disagree:
 4. `.cursor/rules/*` and `.cursor/skills/*` for repo-local agent workflows.
 5. `.dev/DOCS_INDEX.md` for task routing.
 6. Current `.dev` canonical docs, after checking them against code.
-7. Historical plans and generated reports, after verifying they still apply.
+7. Generated reports or task notes only when current code and active task state confirm they still apply.
 8. Global editor/extension instructions.
 
 Notion is an index/planning layer, not the source of truth for code-adjacent docs.
@@ -56,12 +56,12 @@ Verification:
 - `<command-or-playbook>`
 
 Status:
-- current | needs verification | historical | generated
+- current | needs verification | generated | delete candidate
 ```
 
 ## `.dev` Cleanup Safety
 
-Do not move or delete `.dev` files until path references have been checked. Current paths are used by:
+Move or delete `.dev` files only after path references have been checked. Current paths are used by:
 
 - `package.json`
 - `.tools/`
@@ -71,7 +71,7 @@ Do not move or delete `.dev` files until path references have been checked. Curr
 - documentation links
 - TTS save/custom UI tooling
 
-Generated files, save snapshots, local tool apps, chronicle data, and canonical engineering docs are currently mixed together. Classify first, move later.
+Generated files, save snapshots, local tool apps, chronicle data, active task notes, and canonical engineering docs are currently mixed together. Classify first; delete stale files instead of keeping redirect notes or legacy archives.
 
 ## Coding Guardrails
 

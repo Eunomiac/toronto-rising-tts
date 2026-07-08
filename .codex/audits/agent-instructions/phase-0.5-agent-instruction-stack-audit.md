@@ -139,7 +139,7 @@ Source: `.external-agent-config/cursor-user/globalStorage/`
 
 Findings:
 
-- `storage.json` mainly maps historical workspaces to profiles and contains telemetry/workspace state.
+- `storage.json` mainly maps former workspaces to profiles and contains telemetry/workspace state.
 - `anysphere.cursor-commits` contains checkpoint metadata and diffs for past Cursor agent commits.
 - `anysphere.cursor-mcp` contains OAuth/MCP state.
 - Extension logs and history are noisy and not stable instructions.

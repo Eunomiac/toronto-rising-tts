@@ -37,7 +37,7 @@ No build or test runs were needed for this inventory pass.
 - ignored generated manifests, reports, gate logs, and runtime debug output
 - ignored local TTS save snapshots
 - chronicle/campaign source material
-- stale plans, migration notes, and one-off patch scripts
+- stale plans, migration notes, and one-off patch scripts that should be deleted or consolidated after reference checks
 - vendored/reference Tabletop Simulator API documentation
 
 The highest-risk finding is path sensitivity. `package.json` directly invokes `.dev/scripts/*`, reads and writes `.dev/custom-ui-assets/*`, and many tools assume `.dev/TS_Save_230.json`. Code and UI comments also route agents to many `.dev` docs. Moves should wait until references, generated-file headers, VS Code tasks, and tool defaults have been checked.
@@ -52,7 +52,7 @@ For this repo, documentation should be designed as an agent operating layer:
 
 - optimize for "what should an agent read before touching this area?"
 - avoid broad prose that looks canonical but is not tied to code
-- mark generated artifacts and historical plans loudly
+- mark generated artifacts clearly and remove stale planning material instead of preserving legacy notes
 - keep user/player docs light and isolated
 - prefer task routing and verification commands over narrative explanations
 - keep canonical technical docs in Git, with Notion acting only as an index/dashboard
@@ -136,10 +136,10 @@ Later relocation phases must update `.cursor/rules/*` and `.cursor/skills/*` in 
 | `.dev/Dice System/` | authoritative-doc, active-working-doc | Dice architecture/specs | high | yes | yes | `.dev/docs/systems/dice/` |
 | `.dev/E2E Playbooks/` | authoritative-doc, active-working-doc | Manual E2E playbooks | high | yes | yes | `.dev/docs/testing/e2e/` |
 | `.dev/HUDs & Overlays/` | authoritative-doc | Player HUD/UI specs | high | yes | yes | `.dev/docs/systems/hud/` |
-| `.dev/Multiplayer Functionality/` | active-working-doc, historical-plan | Multiplayer audits/plans | medium | yes | yes | `.dev/docs/architecture/multiplayer/` |
+| `.dev/Multiplayer Functionality/` | active-working-doc, cleanup-candidate | Multiplayer audits/plans | medium | yes | yes | `.dev/docs/architecture/multiplayer/` |
 | `.dev/NPC Object Spawning & Spotlighting/` | authoritative-doc, generated-artifact | NPC spawning/lighting docs and PNGs | high | docs yes; images cautious | yes | `.dev/docs/systems/npc/` |
 | `.dev/PC Data & Tracking/` | authoritative-doc, generated-artifact | PC, condition, state docs and generated PC ref | high | docs yes; generated ref no | yes | `.dev/docs/systems/pc-state/` |
-| `.dev/plans/` | historical-plan, active-working-doc | Plans and CSV/Lua exports | medium | yes | yes | `.dev/plans/{active,parked,completed}/` |
+| `.dev/plans/` | active-working-doc, cleanup-candidate | Plans and CSV/Lua exports | medium | yes | yes | `.dev/plans/active/` plus deletion/consolidation for stale entries |
 | `.dev/Problems/` | generated-artifact | Ignored Problems panel JSON captures | high | no hand edits | yes | local ignored output |
 | `.dev/Projects/` | authoritative-doc | Coterie/project system doc | medium | yes | yes | `.dev/docs/systems/projects/` |
 | `.dev/Scene Constructor/` | authoritative-doc, fixture | Scene import schema/templates | high | yes | yes | `.dev/docs/systems/scenes/` plus `.dev/fixtures/scenes/` |
@@ -148,11 +148,11 @@ Later relocation phases must update `.cursor/rules/*` and `.cursor/skills/*` in 
 | `.dev/Soundscape & Audio/` | authoritative-doc, active-tool-source | Soundscape docs and Unity scripts | high | yes | yes | `.dev/docs/systems/soundscape/` plus `tools/unity/` |
 | `.dev/Step-By-Step Playbooks/` | authoritative-doc, active-working-doc | Manual verification templates | high | yes | yes | `.dev/docs/testing/step-by-step/` |
 | `.dev/storyteller-dashboard/` | active-tool-source | Current local dashboard app | high | yes | yes | `.dev/tools/storyteller-dashboard/` or `tools/` |
-| `.dev/Sychronizing Game Functionality/` | authoritative-doc, historical-plan | Sync architecture docs; typo path | high | yes | yes | `.dev/docs/architecture/synchronization/` |
+| `.dev/Sychronizing Game Functionality/` | authoritative-doc, cleanup-candidate | Sync architecture docs; typo path | high | yes | yes | `.dev/docs/architecture/synchronization/` |
 | `.dev/testbed/` | active-tool-source, generated-artifact | Ignored TTS test harness | high | cautious | yes | `.dev/fixtures/testbed/` or keep ignored |
-| `.dev/tts-api/` | authoritative-doc, archive-candidate | Vendored TTS API reference | high | no unless refreshing | yes | `.dev/docs/reference/tts-api/` |
+| `.dev/tts-api/` | reference-vendor | Vendored TTS API reference | high | no unless refreshing | yes | `.dev/docs/reference/tts-api/` |
 | `.dev/User Guides/` | authoritative-doc | TTS positioning guide | high | yes | yes | `.dev/docs/workflows/` |
-| `.dev/utility-functions/` | authoritative-doc, historical-plan | Utility implementation plans | medium | yes | yes | `.dev/docs/systems/utilities/` |
+| `.dev/utility-functions/` | authoritative-doc, cleanup-candidate | Utility implementation plans | medium | yes | yes | `.dev/docs/systems/utilities/` |
 
 ## Top-Level File Classification
 
@@ -174,10 +174,10 @@ Later relocation phases must update `.cursor/rules/*` and `.cursor/skills/*` in 
 | `.dev/TTS Edtior.log` | generated-artifact | Ignored typo-named log | high | no | no | keep ignored or generated/logs |
 | `.dev/TTS_BUNDLING_SETUP.md` | authoritative-doc | Bundling/save pipeline | high | yes | yes | `.dev/docs/workflows/tts-bundling.md` |
 | `.dev/TTS_MCP.md` | authoritative-doc | TTS MCP/bridge setup | high | yes | yes | `.dev/docs/workflows/tts-mcp.md` |
-| `.dev/TTS-Scripting-Guide.htm` | archive-candidate | Offline TTS guide | medium | no | yes | `.dev/docs/reference/tts-api/` |
+| `.dev/TTS-Scripting-Guide.htm` | reference-vendor | Offline TTS guide | medium | no | yes | `.dev/docs/reference/tts-api/` |
 | `.dev/tts-color-object-tags-by-seat.md` | authoritative-doc | Seat tag reference | high | yes | yes | `.dev/docs/reference/` |
-| `.dev/Utility Function - RotateToFrom.md` | authoritative-doc, historical-plan | Utility guide | medium | yes | yes | `.dev/docs/systems/utilities/` |
-| `.dev/_*.py`, `.dev/_gen_*.js` | one-off-patch | Patch/generation debris | medium | only after verification | yes | `.dev/archive/patches/` |
+| `.dev/Utility Function - RotateToFrom.md` | authoritative-doc, cleanup-candidate | Utility guide | medium | yes | yes | `.dev/docs/systems/utilities/` |
+| `.dev/_*.py`, `.dev/_gen_*.js` | one-off-patch | Patch/generation debris | medium | delete after verification | yes | delete or move into active tooling only if still referenced |
 
 ## Likely Canonical Docs
 
@@ -209,7 +209,7 @@ Current generated-output policy:
 - `.dev/PC Data & Tracking/PC Reference.md`: explicitly generated; keep but mark generated.
 - `.dev/CSV to Markdown Parser/node_modules/`, `md/`, output-like files: local app artifacts; add/verify ignores before moving.
 - `.dev/TTS Edtior.log`: ignored by `*.log`; keep ignored.
-- `.dev/TTS-Scripting-Guide.htm` and `.dev/tts-api/`: reference/vendor material; archive/reference, not source docs.
+- `.dev/TTS-Scripting-Guide.htm` and `.dev/tts-api/`: reference/vendor material, not source docs.
 
 ## Active Tooling Inside `.dev`
 
@@ -306,10 +306,10 @@ Canonical technical docs should remain in Git. Notion pages should summarize, in
 | Agent orientation docs | Maintain non-destructive agent entrypoints | root `AGENTS.md`, `.dev/README.md`, `.dev/DOCS_INDEX.md`; cross-reference `.cursor/rules` and `.cursor/skills` | Current-path links; trust model; agent routing; explicit rule/skill alignment note | docs, codex-ok | yes | yes |
 | Agent rule and skill alignment | Bring automatic agent instructions into the new routing model | `.cursor/rules/*`, `.cursor/skills/*` | Route live instructions through `AGENTS.md`, `.dev/DOCS_INDEX.md`, and active Cursor skills | docs, agent-instruction, path-sensitive, codex-ok | yes | yes |
 | Reference audit for `.dev` paths | Identify move blockers | `package.json`, `.tools`, docs, UI/code comments | Path-sensitive refs and owners listed | docs, path-sensitive, codex-ok | yes | yes |
-| Canonical docs verification | Mark current/stale docs | sync, state, NPC, HUD, soundscape, testing | Each canonical doc has status, source files, and verification commands | docs, needs-human-review | partial | yes |
+| Canonical docs verification | Mark current docs and delete stale docs | sync, state, NPC, HUD, soundscape, testing | Each canonical doc has status, source files, and verification commands | docs, needs-human-review | partial | yes |
 | Generated artifact policy | Keep generated outputs ignored | build logs, debug, manifests, saves, editor exports | `.gitignore` and routing docs stay aligned with generated-output locations | generated-artifact, docs | yes | yes |
 | Tooling relocation plan | Prepare script/app moves | `.dev/scripts`, dashboards, parser | No moves yet; package/script migration map | tooling, path-sensitive | yes | yes |
-| Archive historical docs | Remove or consolidate stale plans later | plans and one-off patches | Candidates listed and approved before relocation or deletion | archive-candidate | partial | yes |
+| Stale doc cleanup | Remove or consolidate stale plans after reference checks | plans and one-off patches | Stale files are deleted, or useful content is merged into current docs with old references removed | cleanup-candidate | partial | yes |
 | Notion dashboard setup | Create index/tracker | dashboard, cleanup tracker, decision log | Links to repo docs and Linear issues | notion | partial | yes |
 | Delete-candidate review | Explicit final cleanup | ignored logs/artifacts only | Human-approved delete list | needs-human-review | no | yes |
 
@@ -319,8 +319,8 @@ Canonical technical docs should remain in Git. Notion pages should summarize, in
 2. Agent orientation: keep root `AGENTS.md`, `.dev/README.md`, `.dev/DOCS_INDEX.md`, and `.cursor` rules/skills aligned.
 3. Phase 2: verify and consolidate canonical docs against current code.
 4. Phase 3: keep generated artifacts ignored and untracked; update script/default paths only when relocation is actually needed.
-5. Phase 4: remove or consolidate stale plans, historical docs, and one-off patch debris after reference checks.
+5. Phase 4: remove or consolidate stale plans and one-off patch debris after reference checks.
 6. Phase 5: populate Notion dashboard/index/tracker from Git sources if useful.
-7. Phase 6: review any remaining local-only delete candidates.
+7. Phase 6: review any remaining local-only generated outputs and delete candidates.
 
 Recommended next cleanup: verify and consolidate canonical docs against current code.

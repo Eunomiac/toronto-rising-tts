@@ -22,5 +22,5 @@ Verification:
 - `<command-or-manual-playbook>`
 
 Status:
-- current | needs verification | historical | generated
+- current | needs verification | generated | delete candidate
 ```
