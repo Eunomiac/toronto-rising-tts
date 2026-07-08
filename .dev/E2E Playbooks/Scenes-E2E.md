@@ -591,5 +591,5 @@ Re-check lighting, NPCs, pins, soundscape after ~3 s. Not for routine passes.
 ## Related
 
 - [Dice-E2E](Dice-E2E.md) — roll FSM (separate from scenes)
-- [District & Site Card Display Changes](../HUDs%20&%20Overlays/District%20&%20Site%20Card%20Display%20Changes.md) — pin rules
+- [Player HUD Overview](../HUDs%20&%20Overlays/Player%20HUD%20Overview.md) — map pins and location overlay rules
 - [TESTING.md](../TESTING.md) — `showScene`, soundscape helpers

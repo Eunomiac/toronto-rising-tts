@@ -19,7 +19,7 @@ Verification:
 
 Status: normative machine spec for code-review artifacts and invariants.
 
-This document is the **normative** specification for the retro-collaborative, agent-driven code review workflow. Human prose and examples live in [Rough Code Review Plan.md](Rough%20Code%20Review%20Plan.md); tooling and agents must follow **this** file for formats and invariants.
+This document is the **normative** specification for the retro-collaborative, agent-driven code review workflow. Tooling and agents must follow this file for formats and invariants.
 
 ## Scope: production `.ttslua`
 
