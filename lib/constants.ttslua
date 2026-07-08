@@ -1091,7 +1091,7 @@ C.ObjectPositions = {
   },
   FAMULUS_FIGURINE_RED = {
     on = {
-      position = { y = 6.01}
+      position = { y = -1.03}
     },
     off = {
       position = { y = -200 }
@@ -1099,7 +1099,7 @@ C.ObjectPositions = {
   },
   FAMULUS_FIGURINE_BROWN = {
     on = {
-      position = { y = 6.01}
+      position = { y = 0.14}
     },
     off = {
       position = { y = -200 }
@@ -1107,7 +1107,7 @@ C.ObjectPositions = {
   },
   COMPANION_A_FIGURINE_PURPLE = {
     on = {
-      position = { y = 6.01}
+      position = { y = -1.03}
     },
     off = {
       position = { y = -200 }
@@ -1115,7 +1115,7 @@ C.ObjectPositions = {
   },
   COMPANION_B_FIGURINE_PURPLE = {
     on = {
-      position = { y = 6.01}
+      position = { y = -1.03}
     },
     off = {
       position = { y = -200 }
@@ -1123,7 +1123,7 @@ C.ObjectPositions = {
   },
   COMPANION_C_FIGURINE_PURPLE = {
     on = {
-      position = { y = 6.01}
+      position = { y = -1.03}
     },
     off = {
       position = { y = -200 }

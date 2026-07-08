@@ -185,7 +185,7 @@ G.GUIDS = {
     FAMULUS_LIGHT_1_BROWN = "645352",
     FAMULUS_LIGHT_2_RED = "dd1763",
     FAMULUS_LIGHT_2_BROWN = "c78daf",
-    FAMULUS_FIGURINE_RED = { [1] = "a98541", [2] = "2975dc" },
+    FAMULUS_FIGURINE_RED = { [1] = "2c2301", [2] = "745688" },
     FAMULUS_FIGURINE_BROWN = { [1] = "db12c8", [2] = "c334ae" },
 
     -- Soundscape AssetBundle Objects
