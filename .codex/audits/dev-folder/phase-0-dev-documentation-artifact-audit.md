@@ -1,10 +1,10 @@
 # Phase 0: `.dev` Documentation & Artifact Audit
 
-Status: audit complete
-Date: 2026-07-07
-Scope: `.dev/` inventory and classification only
+Status: audit complete; cleanup status updated through 2026-07-08
+Date: 2026-07-07; updated 2026-07-08
+Scope: `.dev/` inventory, classification, and current cleanup routing
 Audience: future Codex/agent runs and project cleanup planning
-Change policy: this report records findings only; Phase 0 made no `.dev` edits, moves, deletes, commits, or PRs
+Change policy: this report began as a read-only Phase 0 audit; later cleanup commits keep this document aligned with current repo state
 
 ## Purpose
 
@@ -34,8 +34,8 @@ No build or test runs were needed for this inventory pass.
 - agent prompts and review workflows
 - active build and generator scripts used by `package.json`
 - local tool apps and dashboards
-- generated manifests, reports, gate logs, and runtime debug output
-- ignored TTS save files and save backups
+- ignored generated manifests, reports, gate logs, and runtime debug output
+- ignored local TTS save snapshots
 - chronicle/campaign source material
 - stale plans, migration notes, and one-off patch scripts
 - vendored/reference Tabletop Simulator API documentation
@@ -128,11 +128,11 @@ Later relocation phases must update `.cursor/rules/*` and `.cursor/skills/*` in 
 | `.dev/.debug/` | generated-artifact, build-output | Runtime bridge/debug writes | high | no hand edits | yes | `.dev/generated/debug/` or ignored runtime dir |
 | `.dev/Agent Reviews/` | agent-instruction | Agent review prompts | high | yes | yes | `.dev/agents/reviews/` |
 | `.dev/Animations/` | active-working-doc | Animation design notes | medium | yes | yes | `.dev/docs/systems/animation/` |
-| `.dev/build-logs/` | generated-artifact, build-output | Tool, gate, and save reports | high | generated policy only | yes | `.dev/generated/build-logs/` |
+| `.dev/build-logs/` | generated-artifact, build-output | Ignored tool, gate, and save reports | high | generated policy only | yes | local ignored output |
 | `.dev/Chronicle Data/` | chronicle-data | Campaign/NPC/weather lore data | high | cautious; human review | yes | `.dev/chronicle/` |
 | `.dev/Code Review/` | agent-instruction, active-tool-source | Code-review pipeline spec and artifacts | high | yes, carefully | yes | `.dev/agents/reviews/code-review/` plus tool artifacts |
 | `.dev/CSV to Markdown Parser/` | active-tool-source | Local Google Sheets to Markdown app | high | yes | yes | `.dev/tools/csv-to-markdown/` or `tools/` |
-| `.dev/custom-ui-assets/` | generated-artifact, active-tool-source | Asset upload manifests and reports | high | README yes; generated outputs no | yes | `.dev/generated/custom-ui-assets/` plus docs/workflow |
+| `.dev/custom-ui-assets/` | active-tool-source, generated-output-dir | Workflow README and prune list are tracked; generated manifests/reports are ignored | high | README/prune list yes; generated outputs no | yes | keep stable until script defaults change |
 | `.dev/Dice System/` | authoritative-doc, active-working-doc | Dice architecture/specs | high | yes | yes | `.dev/docs/systems/dice/` |
 | `.dev/E2E Playbooks/` | authoritative-doc, active-working-doc | Manual E2E playbooks | high | yes | yes | `.dev/docs/testing/e2e/` |
 | `.dev/HUDs & Overlays/` | authoritative-doc | Player HUD/UI specs | high | yes | yes | `.dev/docs/systems/hud/` |
@@ -140,7 +140,7 @@ Later relocation phases must update `.cursor/rules/*` and `.cursor/skills/*` in 
 | `.dev/NPC Object Spawning & Spotlighting/` | authoritative-doc, generated-artifact | NPC spawning/lighting docs and PNGs | high | docs yes; images cautious | yes | `.dev/docs/systems/npc/` |
 | `.dev/PC Data & Tracking/` | authoritative-doc, generated-artifact | PC, condition, state docs and generated PC ref | high | docs yes; generated ref no | yes | `.dev/docs/systems/pc-state/` |
 | `.dev/plans/` | historical-plan, active-working-doc | Plans and CSV/Lua exports | medium | yes | yes | `.dev/plans/{active,parked,completed}/` |
-| `.dev/Problems/` | generated-artifact | Problems panel JSON captures | high | no hand edits | yes | `.dev/generated/problems/` |
+| `.dev/Problems/` | generated-artifact | Ignored Problems panel JSON captures | high | no hand edits | yes | local ignored output |
 | `.dev/Projects/` | authoritative-doc | Coterie/project system doc | medium | yes | yes | `.dev/docs/systems/projects/` |
 | `.dev/Scene Constructor/` | authoritative-doc, fixture | Scene import schema/templates | high | yes | yes | `.dev/docs/systems/scenes/` plus `.dev/fixtures/scenes/` |
 | `.dev/scripts/` | script-source, active-tool-source | Build/generator/migration scripts | high | yes, with tests | yes | `.dev/tools/scripts/` or `tools/` after script updates |
@@ -148,7 +148,6 @@ Later relocation phases must update `.cursor/rules/*` and `.cursor/skills/*` in 
 | `.dev/Soundscape & Audio/` | authoritative-doc, active-tool-source | Soundscape docs and Unity scripts | high | yes | yes | `.dev/docs/systems/soundscape/` plus `tools/unity/` |
 | `.dev/Step-By-Step Playbooks/` | authoritative-doc, active-working-doc | Manual verification templates | high | yes | yes | `.dev/docs/testing/step-by-step/` |
 | `.dev/storyteller-dashboard/` | active-tool-source | Current local dashboard app | high | yes | yes | `.dev/tools/storyteller-dashboard/` or `tools/` |
-| `.dev/storyteller-dashboard-pr9/` | archive-candidate, active-tool-source | Archived PR9 dashboard | high | cautious | yes | `.dev/archive/storyteller-dashboard-pr9/` |
 | `.dev/Sychronizing Game Functionality/` | authoritative-doc, historical-plan | Sync architecture docs; typo path | high | yes | yes | `.dev/docs/architecture/synchronization/` |
 | `.dev/testbed/` | active-tool-source, generated-artifact | Ignored TTS test harness | high | cautious | yes | `.dev/fixtures/testbed/` or keep ignored |
 | `.dev/tts-api/` | authoritative-doc, archive-candidate | Vendored TTS API reference | high | no unless refreshing | yes | `.dev/docs/reference/tts-api/` |
@@ -163,8 +162,6 @@ Later relocation phases must update `.cursor/rules/*` and `.cursor/skills/*` in 
 | `.dev/AVAILABLE_FUNCTIONS.md` | authoritative-doc | Utility/function reference | high | yes after code verification | yes | `.dev/docs/reference/` |
 | `.dev/DEBUG_FILE_LOGGING.md` | authoritative-doc | Debug bridge/logging guide | high | yes | yes | `.dev/docs/troubleshooting/` |
 | `.dev/DEVELOPMENT_WORKFLOW.md` | agent-instruction, authoritative-doc | Workflow rules | medium | yes; needs reconciliation | yes | `.dev/agents/` or `.dev/docs/workflows/` |
-| `.dev/Draft Tasklist.md` | historical-plan, archive-candidate | Small stale draft | high | yes | yes | `.dev/archive/` |
-| `.dev/EXTRACTABLE_FUNCTIONS_INDEX.md` | generated-artifact, authoritative-doc | Function index | medium | regenerate/verify | yes | `.dev/generated/indexes/` or `.dev/docs/reference/` |
 | `.dev/Game State Data.jsonc` | authoritative-doc, fixture | State snapshot/example | medium | cautious | yes | `.dev/fixtures/state/` |
 | `.dev/HUD_FUNCTIONS.md` | authoritative-doc | HUD handler reference | high | yes | yes | `.dev/docs/reference/` |
 | `.dev/INBOX.md` | active-working-doc | Capture inbox | high | yes | yes | `.dev/plans/active/` or `.dev/inbox.md` |
@@ -173,7 +170,7 @@ Later relocation phases must update `.cursor/rules/*` and `.cursor/skills/*` in 
 | `.dev/SOLVING ISSUES & DEBUGGING.md` | authoritative-doc | Debugging playbook | high | yes | yes | `.dev/docs/troubleshooting/` |
 | `.dev/Table Seat Layout Audit.md` | generated-artifact, active-working-doc | Seat layout audit | medium | cautious | yes | `.dev/docs/systems/table-layout/` or generated |
 | `.dev/TESTING.md` | authoritative-doc | Testing index | high | yes | yes | `.dev/docs/testing/README.md` |
-| `.dev/TS_Save_230*.json` | save-snapshot | Current save and backups | high | no hand edits | yes | `.dev/fixtures/saves/` after package refs |
+| `.dev/TS_Save_230*.json` | save-snapshot | Ignored local save snapshots used by save-analysis scripts | high | no hand edits | yes | local ignored working files |
 | `.dev/TTS Edtior.log` | generated-artifact | Ignored typo-named log | high | no | no | keep ignored or generated/logs |
 | `.dev/TTS_BUNDLING_SETUP.md` | authoritative-doc | Bundling/save pipeline | high | yes | yes | `.dev/docs/workflows/tts-bundling.md` |
 | `.dev/TTS_MCP.md` | authoritative-doc | TTS MCP/bridge setup | high | yes | yes | `.dev/docs/workflows/tts-mcp.md` |
@@ -202,13 +199,13 @@ Important update: agent instruction cleanup should include `.cursor/skills/*` as
 
 ## Generated Artifacts And Large Misplaced Files
 
-Do not delete these yet.
+Current generated-output policy:
 
-- `.dev/TS_Save_230.json` and backups: save snapshots; keep in place for now because package scripts read them.
+- `.dev/TS_Save_230*.json`: ignored local save snapshots; package scripts use `.dev/TS_Save_230.json` when present.
 - `.dev/.debug/`: ignored runtime output; move later only if `core/debug.ttslua` and bridge paths change.
-- `.dev/build-logs/*`: generated reports and gate baselines; move later after `.tools/*`, docs, and gate scripts are updated.
-- `.dev/custom-ui-assets/*.json`, `*.lua`, reports: generated manifests and upload outputs; path-sensitive via `package.json` and `.tools/custom-ui-assets`.
-- `.dev/Problems/*.json`: generated IDE/problem captures; candidate for `.dev/generated/problems/`.
+- `.dev/build-logs/*`: ignored generated reports, gate baselines, and save inventories.
+- `.dev/custom-ui-assets/*.json`, `*.lua`, reports: ignored generated manifests and upload outputs; tracked source in that folder is `README.md` and `prune-custom-ui-assets.txt`.
+- `.dev/Problems/*.json`: ignored IDE/problem captures.
 - `.dev/PC Data & Tracking/PC Reference.md`: explicitly generated; keep but mark generated.
 - `.dev/CSV to Markdown Parser/node_modules/`, `md/`, output-like files: local app artifacts; add/verify ignores before moving.
 - `.dev/TTS Edtior.log`: ignored by `*.log`; keep ignored.
@@ -221,22 +218,15 @@ Path-sensitive active tooling:
 - `.dev/scripts/`: used by `package.json` scripts and generated-file headers. Move only with package/docs/header updates.
 - `.dev/CSV to Markdown Parser/`: invoked by `csv-to-markdown:*` scripts. Candidate for `.dev/tools/csv-to-markdown/` or `tools/csv-to-markdown/`.
 - `.dev/storyteller-dashboard/`: local OpenAI dashboard app. Candidate for `.dev/tools/storyteller-dashboard/`; check VS Code tasks first.
-- `.dev/storyteller-dashboard-pr9/`: archived app. Candidate for `.dev/archive/`.
 - `.dev/sheets-obsidian-dashboard/`: standalone local app. Candidate for `.dev/tools/`.
 - `.dev/Soundscape & Audio/TTSAssetBundle Unity Scripts/` and `UnityEditorScripts/`: active Unity helper code. Candidate for `tools/unity/soundscape/`.
 - `.dev/testbed/TEST BED.ttslua`: ignored but test-referenced. Keep until harness policy is clarified.
-- `.dev/custom-ui-assets/`: generated outputs consumed by `.tools/custom-ui-assets`. Keep stable until script defaults change.
+- `.dev/custom-ui-assets/`: workflow README, prune list, and ignored generated outputs consumed by `.tools/custom-ui-assets`. Keep path stable until script defaults change.
 
 ## Broken Or Suspicious References
 
-Confirmed suspicious repo documentation paths:
+Confirmed suspicious repo documentation paths still worth tracking:
 
-- `.dev/SOUNDSCAPE_UNITY_SETUP.md` is referenced by `ui/storyteller/panel_soundscape.xml`; actual file is `.dev/Soundscape & Audio/SOUNDSCAPE_UNITY_SETUP.md`.
-- `.dev/LIGHT_CREATION_FEASIBILITY.md` is referenced by `core/debug.ttslua`; file is missing.
-- `.dev/KD_HUD_REFERENCE.md` is referenced by `ui/UI_CLASSES.md`; file is missing.
-- Several `.dev/plans/*` links use paths like `../lib/...` from inside `.dev/plans`, resolving to `.dev/lib/...` instead of repo-root `lib/...`.
-- `.dev/PC Data & Tracking/PC Tracking & State Behavior.md` has similar likely-bad `../lib`, `../core`, and `../docs` links.
-- `.dev/HUDs & Overlays/Player HUD Overview.md` references `Coterie Grid Layout Mockup.png`, which was not found.
 - The misspelled folder `.dev/Sychronizing Game Functionality/` is widely referenced. Fixing it requires a deliberate compatibility/reference pass.
 - `.cursor/rules/*` and `.cursor/skills/*` contain many direct `.dev` paths and should be included in the same reference checks as package scripts and code comments.
 
