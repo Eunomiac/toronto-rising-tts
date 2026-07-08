@@ -1,5 +1,26 @@
 # HUD Function Reference
 
+## Agent Routing
+
+Read this when:
+- changing Storyteller or player HUD XML callbacks
+- tracing `HUD_*` handlers from XML into Lua
+- debugging TTS `InputField` value handling
+
+Source of truth:
+- `ui/storyteller/`
+- `ui/player/`
+- `core/global_script.ttslua`
+- `core/hud_player.ttslua`
+- storyteller panel modules under `core/`
+
+Verification:
+- `rg -n "HUD_[A-Za-z0-9_]+" ui core objects`
+- `npm run build`
+- Save & Play before in-TTS UI verification
+
+Status: current HUD callback reference; verify touched handlers against XML and Lua.
+
 Reference for `HUD_*` onClick handlers wired from Storyteller and shared UI XML.
 
 ## Global UI `InputField` — reading typed text

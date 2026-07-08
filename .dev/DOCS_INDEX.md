@@ -1,5 +1,24 @@
 # `.dev` Agent Docs Index
 
+## Agent Routing
+
+Read this when:
+- choosing which repository docs to read for a task
+- updating `.dev` documentation links or routing
+- aligning `.cursor/rules` or `.cursor/skills` with current docs
+
+Source of truth:
+- `AGENTS.md`
+- `.dev/README.md`
+- `.cursor/rules/`
+- `.cursor/skills/`
+
+Verification:
+- check linked paths after edits
+- verify task-specific claims against current code before implementation
+
+Status: current routing index; linked docs may still need code verification.
+
 Use this file to decide what to read before touching a system. It is a routing index, not proof that the linked docs are current.
 
 Always verify important claims against code before changing behavior.
@@ -33,7 +52,7 @@ Always verify important claims against code before changing behavior.
 | PC data/state | [`PC Data & Tracking/PC Tracking & State Behavior.md`](PC%20Data%20%26%20Tracking/PC%20Tracking%20%26%20State%20Behavior.md), [`PC Data & Tracking/Character Sheet Modifications.md`](PC%20Data%20%26%20Tracking/Character%20Sheet%20Modifications.md) | `lib/json/PCS.json`, `lib/pcs_data.ttslua`, `core/state.ttslua`, csheet UI modules |
 | Player HUD/overlays | [`HUDs & Overlays/Player HUD Overview.md`](HUDs%20%26%20Overlays/Player%20HUD%20Overview.md), [`HUD_FUNCTIONS.md`](HUD_FUNCTIONS.md) | `core/hud_player.ttslua`, `core/hud_overlays.ttslua`, `ui/player/`, `ui/storyteller/` |
 | NPC spawning/spotlighting | [`NPC Object Spawning & Spotlighting/NPC Object Overview.md`](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%20Object%20Overview.md), [`NPC Object Spawning & Spotlighting/NPC Reconciler Procedure.md`](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%20Reconciler%20Procedure.md), [`NPC Object Spawning & Spotlighting/Storyteller Gameboard Control.md`](NPC%20Object%20Spawning%20%26%20Spotlighting/Storyteller%20Gameboard%20Control.md) | `core/npcs.ttslua`, `core/npc_gameboard.ttslua`, `lib/npcs_data.ttslua` |
-| Lighting/table layout | [`Rotational Coordinate Generator.md`](Rotational%20Coordinate%20Generator.md), [`Table Seat Layout Audit.md`](Table%20Seat%20Layout%20Audit.md), [`NPC Object Spawning & Spotlighting/NPC Light Object Data.jsonc`](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%20Light%20Object%20Data.jsonc) | `core/lighting.ttslua`, `lib/rotational-seat-layout.ttslua`, `lib/constants.ttslua` |
+| Lighting/table layout | [`Rotational Coordinate Generator.md`](Rotational%20Coordinate%20Generator.md), [`NPC Object Spawning & Spotlighting/NPC Light Object Data.jsonc`](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%20Light%20Object%20Data.jsonc) | `core/lighting.ttslua`, `lib/rotational-seat-layout.ttslua`, `lib/constants.ttslua` |
 | Soundscape/audio | [`Soundscape & Audio/SOUNDSCAPE_LUA_IMPLEMENTATION.md`](Soundscape%20%26%20Audio/SOUNDSCAPE_LUA_IMPLEMENTATION.md), [`Soundscape & Audio/SOUNDSCAPE_UNITY_SETUP.md`](Soundscape%20%26%20Audio/SOUNDSCAPE_UNITY_SETUP.md), [`Soundscape & Audio/UNITY_VS_TTS_AUDIO_LIFECYCLE.md`](Soundscape%20%26%20Audio/UNITY_VS_TTS_AUDIO_LIFECYCLE.md) | `core/soundscape.ttslua`, `lib/soundscape_catalog.ttslua`, `lib/guids.ttslua` |
 | Scenes/scene constructor | [`Scene Constructor/Scene Constructor Overview.md`](Scene%20Constructor/Scene%20Constructor%20Overview.md), [`Scene Constructor/SchemaV2.jsonc`](Scene%20Constructor/SchemaV2.jsonc), [`Scene Constructor/import-template-full.jsonc`](Scene%20Constructor/import-template-full.jsonc) | `core/scenes.ttslua`, `core/scene_library.ttslua`, `core/storyteller_scenes_panel.ttslua` |
 | Projects/coteries | [`Projects/Project System Overview.md`](Projects/Project%20System%20Overview.md) | `lib/json/Coterie.json`, `lib/coterie_data.ttslua`, `core/coterie.ttslua` |

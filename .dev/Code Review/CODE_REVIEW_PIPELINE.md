@@ -1,5 +1,24 @@
 # Code review pipeline (machine spec)
 
+## Agent Routing
+
+Read this when:
+- running or modifying the repo's structured code-review pipeline
+- editing review artifacts under `.dev/Code Review/`
+- adding region markers or findings to production `.ttslua` files
+
+Source of truth:
+- `.tools/code-review/`
+- `.dev/Code Review/excluded_files.json`
+- `.dev/Code Review/region_registry.json`
+- `.dev/Code Review/findings.jsonl`
+
+Verification:
+- `npm run code-review:validate`
+- `npm run code-review:build`
+
+Status: normative machine spec for code-review artifacts and invariants.
+
 This document is the **normative** specification for the retro-collaborative, agent-driven code review workflow. Human prose and examples live in [Rough Code Review Plan.md](Rough%20Code%20Review%20Plan.md); tooling and agents must follow **this** file for formats and invariants.
 
 ## Scope: production `.ttslua`

@@ -1,6 +1,46 @@
 # Rotational Coordinate Generator
 
+## Agent Routing
+
+Read this when:
+- changing table seat layout, hand-zone anchors, or rotational seat math
+- editing `C.Tables` layout fields or `sourceObjects`
+- debugging `RSL.SetTableTo`, table family resolution, or seat rig movement
+
+Source of truth:
+- `lib/rotational-seat-layout.ttslua`
+- `lib/constants.ttslua` (`C.Tables`)
+- `core/debug.ttslua` layout/debug helpers
+
+Verification:
+- `rg -n "SetTableTo|generateRotationalCoordinates|resolveTableKey|sourceObjects|seatToPositionMap|referenceSeatSegment" lib core`
+- relevant Scenes/Gameboard E2E or step-by-step table-layout verification
+
+Status: current layout reference; verify implementation details against `lib/rotational-seat-layout.ttslua`.
+
 This document describes layout math for player object groups around a table center, and the **implemented** API in [`lib/rotational-seat-layout.ttslua`](../lib/rotational-seat-layout.ttslua).
+
+## Current production path
+
+Use the table-driven entrypoints for production layout:
+
+- `R.SetTableTo(tableKey)`
+- `R.SyncTable(tableKey?)`
+- `R.resolveSeatObjectsFromTable(tableRef, sourceObjects?, options?)`
+
+`resolveSeatObjectsFromTable` is the production wrapper. It uses table config fields from `C.Tables`:
+
+- `referenceHand`
+- `referenceSeatSegment`
+- `seatToPositionMap`
+
+Current placement behavior:
+
+- PC seats use hand-delta placement: move the hand zone, then rigid-follow `{seatKey}Object` tagged objects.
+- NPC seats use reference-role copy from the authored reference segment, then `postCorrections` / `postCorrectionsBySeatRole`.
+- Manual drift repair uses `R.refreshSeatRigsFromReferenceSegment(opts)` or `DEBUG.refreshSeatRigsFromReference(opts)`.
+
+Low-level helpers such as `generateRotationalCoordinates` and `resolveSeatObjects` still exist for debug/geometry workflows, but new production code should use the table-driven wrapper unless the task explicitly concerns those low-level helpers.
 
 ## Type Definitions
 

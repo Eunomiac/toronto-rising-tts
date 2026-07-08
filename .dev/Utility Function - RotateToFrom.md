@@ -1,5 +1,22 @@
 # `U.RotateToFrom(transformRefs, toAngle, [fromAngle], [origin])`
 
+## Agent Routing
+
+Read this when:
+- using or changing `U.RotateToFrom`
+- rotating one or more objects as a rigid group around a table origin
+- updating coordinate helper documentation linked from `lib/util.ttslua`
+
+Source of truth:
+- `lib/util.ttslua`
+- `.dev/User Guides/TTS-3D-Positioning-Coordinate-Utilities.md`
+
+Verification:
+- `rg -n "RotateToFrom|rotateAroundPoint|angleAroundPoint" lib/util.ttslua .dev/test_rotatetofrom.ttslua`
+- run `.dev/test_rotatetofrom.ttslua` manually in TTS if changing behavior
+
+Status: current reference for `U.RotateToFrom`; verify exact implementation in `lib/util.ttslua`.
+
 This versatile function facilitates determining and applying positions and orientations in cylindrical coordinates.
 
 ## Type Definitions

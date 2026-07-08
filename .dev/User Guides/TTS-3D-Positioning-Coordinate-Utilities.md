@@ -1,5 +1,23 @@
 # TTS 3D Positioning Coordinate Utilities
 
+## Agent Routing
+
+Read this when:
+- using 3D position, cylindrical/spherical coordinate, look-at, or eased path helpers
+- changing animation math in `lib/util.ttslua`
+- writing debug/admin setup commands that position table objects
+
+Source of truth:
+- `lib/util.ttslua`
+- `core/debug.ttslua`
+- `.dev/utility-functions/More Robust Lerping with Eases.md`
+
+Verification:
+- `rg -n "XYZToCylindrical|XYZToSpherical|resolvePositionData|GetEasedPath|LerpPath|LerpDeferred|lookAtRotation" lib/util.ttslua core/debug.ttslua`
+- run relevant in-TTS positioning/debug checks after code changes
+
+Status: current coordinate utility guide; user-readable but maintained for agent implementation support.
+
 This guide summarizes the existing 3D positioning helpers in `lib/util.ttslua`, with a focus on cylindrical and spherical coordinates for smooth motion/orbits in Tabletop Simulator (TTS).
 
 ## Quick start

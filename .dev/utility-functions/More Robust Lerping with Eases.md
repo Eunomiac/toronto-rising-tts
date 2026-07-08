@@ -1,3 +1,22 @@
+# More Robust Lerping With Eases
+
+## Agent Routing
+
+Read this when:
+- using or modifying eased path, lerp, cylindrical, or spherical animation helpers
+- deciding between `U.GetEasedPath`, `U.LerpPath`, `U.LerpDeferred`, and `U.Lerp`
+- debugging object-reference resolution during animation
+
+Source of truth:
+- `lib/util.ttslua`
+- `.dev/User Guides/TTS-3D-Positioning-Coordinate-Utilities.md`
+
+Verification:
+- `rg -n "GetEasedPath|LerpPath|LerpDeferred|function U\\.Lerp" lib/util.ttslua`
+- run the relevant in-TTS debug/playbook check after animation changes
+
+Status: current utility reference; verify exact signatures and defaults against `lib/util.ttslua`.
+
 ## U.GetEasedPath
 
 A function that pre-computes a complete eased path from start to end, returning a table of sequential values. This eliminates dynamic calculation during animation by "baking in" the path at initialization.

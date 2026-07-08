@@ -1,5 +1,23 @@
 # Code review pass order
 
+## Agent Routing
+
+Read this when:
+- deciding which code-review pass to run next
+- coordinating Architect, Summarizer, Organizer, Specialist, or Fixer work
+- updating pass playbooks in this folder
+
+Source of truth:
+- `.dev/Code Review/CODE_REVIEW_PIPELINE.md`
+- `.dev/Code Review/PLAYBOOK_*.md`
+- `.tools/code-review/`
+
+Verification:
+- `npm run code-review:validate` after each mutating pass
+- `npm run code-review:build` when CLI artifacts change
+
+Status: current pass-order index; pipeline invariants live in `CODE_REVIEW_PIPELINE.md`.
+
 Run passes in this order. After **each** pass that mutates artifacts or source, run:
 
 ```bash

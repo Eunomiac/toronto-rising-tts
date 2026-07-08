@@ -168,7 +168,6 @@ Later relocation phases must update `.cursor/rules/*` and `.cursor/skills/*` in 
 | `.dev/Rotational Coordinate Generator.md` | authoritative-doc | Seat/table coordinate workflow | high | yes | yes | `.dev/docs/systems/table-layout/` |
 | `.dev/RUNNING TASKLIST.md` | active-working-doc | Linear/task authoring surface | high | yes | yes | `.dev/plans/active/` |
 | `.dev/SOLVING ISSUES & DEBUGGING.md` | authoritative-doc | Debugging playbook | high | yes | yes | `.dev/docs/troubleshooting/` |
-| `.dev/Table Seat Layout Audit.md` | generated-artifact, active-working-doc | Seat layout audit | medium | cautious | yes | `.dev/docs/systems/table-layout/` or generated |
 | `.dev/TESTING.md` | authoritative-doc | Testing index | high | yes | yes | `.dev/docs/testing/README.md` |
 | `.dev/TS_Save_230*.json` | save-snapshot | Ignored local save snapshots used by save-analysis scripts | high | no hand edits | yes | local ignored working files |
 | `.dev/TTS Edtior.log` | generated-artifact | Ignored typo-named log | high | no | no | keep ignored or generated/logs |
@@ -187,7 +186,7 @@ These documents should be preserved or consolidated, then verified against code 
 | Synchronization/state | `.dev/Sychronizing Game Functionality/Reconciler Contract.md`, `Event Listener Policy.md`, `State Access Audit.md` | Important; folder typo needs careful reference handling |
 | State model | `.dev/Game State Data.jsonc`, `.dev/HUDs & Overlays/Player HUD Overview.md`, `.dev/PC Data & Tracking/PC Tracking & State Behavior.md` | Important; verify runtime shape against `core/state.ttslua` |
 | NPC systems | `.dev/NPC Object Spawning & Spotlighting/NPC Object Overview.md`, `NPC Reconciler Procedure.md`, `Storyteller Gameboard Control.md` | Appears current and code-referenced |
-| Lighting/table layout | `.dev/Rotational Coordinate Generator.md`, `.dev/Table Seat Layout Audit.md`, NPC light docs | Important; verify against `core/lighting.ttslua` and `lib/rotational-seat-layout.ttslua` |
+| Lighting/table layout | `.dev/Rotational Coordinate Generator.md`, NPC light docs | Important; verify against `core/lighting.ttslua` and `lib/rotational-seat-layout.ttslua` |
 | Soundscape | `.dev/Soundscape & Audio/SOUNDSCAPE_LUA_IMPLEMENTATION.md`, `SOUNDSCAPE_UNITY_SETUP.md`, `UNITY_VS_TTS_AUDIO_LIFECYCLE.md` | Important and test-referenced |
 | HUD/overlays | `.dev/HUD_FUNCTIONS.md`, `.dev/HUDs & Overlays/Player HUD Overview.md` | Heavily referenced by UI/code |
 | TTS save/custom UI pipeline | `.dev/TTS_BUNDLING_SETUP.md`, `.dev/custom-ui-assets/README.md` | Active and path-sensitive |

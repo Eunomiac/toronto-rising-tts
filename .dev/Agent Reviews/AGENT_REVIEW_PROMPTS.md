@@ -1,5 +1,24 @@
 # Agent Review Prompts
 
+## Agent Routing
+
+Read this when:
+- launching or updating the repo's cloud-agent review prompts
+- auditing synchronization, ownership, performance, or architectural review tasks
+- updating Agent Reviews items in `RUNNING TASKLIST.md`
+
+Source of truth:
+- `AGENTS.md`
+- `.cursor/rules/`
+- `.dev/DOCS_INDEX.md`
+- current source under `core/`, `lib/`, and `ui/`
+
+Verification:
+- verify every cited function/path against current code before using a prompt
+- update task state in `.dev/RUNNING TASKLIST.md` and Linear when review deliverables land
+
+Status: current prompt bundle for agent-review tasks; prompts are instructions, not proof that cited code is unchanged.
+
 Cloud-agent prompts for the four **Agent Reviews** items in [`.dev/RUNNING TASKLIST.md`](../RUNNING%20TASKLIST.md). Each prompt is self-contained: read the cited docs first, deliver the specified artifact, and follow Toronto Rising synchronization policy throughout.
 
 **Repo context (read before any task):**

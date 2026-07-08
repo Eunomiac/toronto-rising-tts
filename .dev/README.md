@@ -1,5 +1,23 @@
 # `.dev` Agent Orientation
 
+## Agent Routing
+
+Read this when:
+- orienting to `.dev` structure, trust levels, or cleanup rules
+- moving, deleting, or reclassifying `.dev` files
+- deciding whether a `.dev` artifact is canonical, generated, task-state, or cleanup debris
+
+Source of truth:
+- `AGENTS.md`
+- `.dev/DOCS_INDEX.md`
+- `.codex/audits/dev-folder/phase-0-dev-documentation-artifact-audit.md`
+
+Verification:
+- reference-check paths before moves/deletes
+- keep `.cursor/rules` and `.cursor/skills` aligned with routing changes
+
+Status: current `.dev` orientation; treat individual docs as untrusted until verified against code.
+
 `.dev/` is currently a mixed development workspace, not a clean documentation tree. It contains canonical docs, active scripts, generated artifacts, save snapshots, local tools, chronicle data, agent prompts, active task notes, and migration debris.
 
 Treat every document here as untrusted until checked against current code.

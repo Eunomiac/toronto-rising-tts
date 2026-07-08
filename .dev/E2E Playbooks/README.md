@@ -1,5 +1,24 @@
 # Manual E2E playbooks (Toronto Rising)
 
+## Agent Routing
+
+Read this when:
+- running or updating manual regression playbooks
+- changing roll, scene, gameboard, or multiplayer behavior covered by E2E steps
+- updating the `RunTest` harness or generated E2E Lua modules
+
+Source of truth:
+- `.dev/TESTING.md`
+- `core/debug.ttslua`
+- `lib/e2e_playbook_dice.ttslua` generated from `Dice-E2E.md`
+
+Verification:
+- `npm run e2e-playbook:generate:test`
+- `npm run e2e-playbook:generate`
+- Save & Play, then run the relevant manual suite in TTS
+
+Status: current manual regression index; TOR-141 is a living-doc anchor.
+
 Ordered, in-table verification scripts for critical systems. Run as the table **Host** (the only connected client in solo dev).
 
 **Linear:** **TOR-141** (Manual E2E playbooks — living doc, stays open). Multiplayer follow-up: **TOR-144** (multiplayer E2E checklist).

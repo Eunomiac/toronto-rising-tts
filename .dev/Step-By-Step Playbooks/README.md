@@ -1,5 +1,23 @@
 # Step-by-step playbooks (Toronto Rising)
 
+## Agent Routing
+
+Read this when:
+- creating a targeted bug repro, feature sign-off, or ad-hoc verification playbook
+- deciding where human TTS actions must interrupt Lua automation
+- updating the step-by-step playbook template or guidance skill
+
+Source of truth:
+- `.dev/Step-By-Step Playbooks/.Step-By-Step Template.md`
+- `.cursor/skills/step-by-step-guidance/SKILL.md`
+- `.dev/TESTING.md`
+
+Verification:
+- validate generated Lua snippets against `core/debug.ttslua` helpers
+- Save & Play before running TTS verification when repo Lua changed
+
+Status: current preferred format for new targeted verification.
+
 Iterative **AI/human hybrid** verification: bug repro, feature sign-off, ad-hoc Save & Play checks. The author pastes Lua from the IDE, acts in TTS only when automation cannot, and reads `PASS` / `FAIL` / `▶▶▶ HUMAN ▶▶▶` in the console.
 
 **Authoritative template:** [`.Step-By-Step Template.md`](.Step-By-Step%20Template.md)  

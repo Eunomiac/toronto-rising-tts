@@ -1,10 +1,24 @@
 # Available Functions Reference
 
-**Purpose:** Living reference document listing all available utility functions and reusable code patterns in the VTM5E module. **ALWAYS check this document before writing new code** to avoid duplicating existing functionality.
+## Agent Routing
 
-**Status:** This document should be updated whenever new functions are added to any module.
+Read this when:
+- looking for an existing helper before adding new Lua code
+- updating shared utility/function references
+- reviewing duplicate helper implementations
 
-**Last Updated:** 2026-05-22
+Source of truth:
+- `lib/util.ttslua`
+- `core/*.ttslua`
+- `lib/*.ttslua`
+
+Verification:
+- `rg -n "function [A-Za-z0-9_]+\\.|function U\\.|^[A-Za-z0-9_]+\\.[A-Za-z0-9_]+\\s*=\\s*function" core lib objects`
+- verify any referenced function in source before relying on this document
+
+Status: living function reference; useful for discovery, not a substitute for source reads.
+
+**Purpose:** Living reference document listing available utility functions and reusable code patterns in the VTM5E module. **ALWAYS check this document before writing new code** to avoid duplicating existing functionality.
 
 ---
 

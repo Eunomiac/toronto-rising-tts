@@ -1,5 +1,29 @@
 # Custom UI assets (TTS upload / merge)
 
+## Agent Routing
+
+Read this when:
+- extracting, pruning, uploading, or merging TTS Custom UI assets
+- changing `.tools/custom-ui-assets/` scripts or manifest outputs
+- updating site-card image names or hosted URL manifests
+
+Source of truth:
+- `.tools/custom-ui-assets/`
+- `.dev/custom-ui-assets/prune-custom-ui-assets.txt`
+- `lib/constants.ttslua` (`C.Sites`)
+- generated manifest stubs in `lib/custom_ui_upload_manifest.ttslua`, `lib/npc_token_upload_manifest.ttslua`, `lib/npc_group_upload_manifest.ttslua`, `lib/npc_token_hosted_urls.ttslua`
+
+Generated/dependent files:
+- `.dev/build-logs/save-assets-latest.*`
+- ignored `.dev/custom-ui-assets/*.json`, `*.lua`, and reports
+
+Verification:
+- `npm run tts-save:extract-assets`
+- `npm run custom-ui-assets:manifest-sites`
+- `npm run build`
+
+Status: current workflow guide; generated manifests are ignored unless a task explicitly updates them.
+
 This folder tracks workflow guidance and the manual prune list only. Generated manifests, merge outputs, hosted-URL extracts, and reports are produced by scripts under `.tools/custom-ui-assets/` and are ignored by git.
 
 ## Save inventory (prune planning)
