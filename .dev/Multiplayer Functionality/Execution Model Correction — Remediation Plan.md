@@ -100,9 +100,7 @@ Freeze banners added to the always-applied rules (`.cursor/rules/toronto-rising-
 
 ### Step 2 — Inventory the call sites
 
-Produce an auditable table **before** deleting anything.
-
-**Deliverable:** [`.dev/Multiplayer Functionality/execution-model-call-site-inventory.md`](execution-model-call-site-inventory.md) with columns:
+Produce an auditable table **before** deleting anything. The Step 2 inventory classified each symbol before Step 3 edits.
 
 | Column | Content |
 | --- | --- |
@@ -277,8 +275,8 @@ Remove freeze banners and rewrite bodies to §2 / §2.1. **Grep each file after 
 - [x] Superseded-premise banners on source docs + two always-applied rules (Step 1).
 - [x] Preflight git clean (Step 0).
 - [x] Linear issue **TOR-284** filed; agent work **Done** slice (Steps 0–3, 5–6, commit `77cac3f`). Issue stays **In Progress** until §4.1–4.2 author verification.
-- [x] Call-site inventory at [`execution-model-call-site-inventory.md`](execution-model-call-site-inventory.md) complete and classified (Step 2).
-- [x] Step 3 substages 3.1–3.6 complete (commit **`77cac3f`** — 13 Lua paths under `core/`, `lib/`, `objects/`, `ui/`; see [`execution-model-call-site-inventory.md`](execution-model-call-site-inventory.md)).
+- [x] Call-site inventory complete and classified (Step 2).
+- [x] Step 3 substages 3.1–3.6 complete (commit **`77cac3f`** — 13 Lua paths under `core/`, `lib/`, `objects/`, `ui/`).
 - [x] Execution-gating primitives removed; grep returns **0** for removed symbols in `core/`, `lib/`, `objects/`, `ui/`.
 - [x] **`npm run check:bundle-size-gate`** green. *(Full `npm run build` blocked by pre-existing tts-object-stub-guids gate.)*
 - [ ] **§4.1–4.2** Save & Play + hotseat battery — **author verification required**.
