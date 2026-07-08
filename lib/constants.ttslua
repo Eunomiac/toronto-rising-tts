@@ -2621,10 +2621,21 @@ C.Districts = {
 
 -- #endregion
 
+-- #region Skyboxes
+-- Additional skyboxes that aren't associated with a specific site are registered here.
+C.Skyboxes = {
+  Memoriam = {
+    lordLucien = {
+      [1] = "https://steamusercontent-a.akamaihd.net/ugc/10207205942730426287/208F09B99D2B2462A838A0A649DD98B8F8D00E03/"
+    }
+  }
+}
+
 -- #region Sites
 
 -- Sites
--- Optional `skyboxURL` (string): custom table background applied via `Scenes.reconcileSkyboxFromState` when this site is live (`sessionScene.siteKey`). When omitted, a random entry from `C.GenericSkyboxes` is used.
+-- Optional `skyboxURL` (string): custom table background applied via `Scenes.reconcileSkyboxFromState` when this site is live (`sessionScene.siteKey`) and `sessionScene.skyboxOverride` is unset. When omitted, a random entry from `C.GenericSkyboxes` is used.
+
 -- Optional `isSilent = true`: full ambient mute (background, location ambience, weather); featured music may still be played via Storyteller action. Merge with `Soundscape.applyContext(Soundscape.contextFromSite(site))`.
 -- Optional `isTopFogActive` (boolean): when set, `SceneLibrary.applySiteTopFogToSessionScene` writes `sessionScene.isTopFogActive` on location apply; when omitted, indoor sites default fog off and outdoor on.
 -- `weatherDucking` (number 0..1): per-site weather volume multiplier via `Soundscape.applyContext` (`state.siteWeatherDucking`); when omitted, indoor/outdoor catalog defaults apply.
@@ -2637,6 +2648,7 @@ C.GenericSkyboxes = {
 
 --- Resolves the TTS background (`Backgrounds.setCustomURL`) for a site key.
 --- Uses `C.Sites[siteKey].skyboxURL` when present; otherwise picks randomly from `C.GenericSkyboxes`.
+--- Scene-level override is handled separately via `sessionScene.skyboxOverride` in `Scenes.reconcileSkyboxFromState`.
 --- @param siteKey string|nil
 --- @return string|nil url
 function C.resolveSkyboxURLForSite(siteKey)

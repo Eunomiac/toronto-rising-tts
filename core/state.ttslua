@@ -329,6 +329,8 @@ function S.GetDefaultGameState()
             npcRoleOverride = {},
             districtKey = nil,
             siteKey = nil,
+            --- Optional custom table background URL. When set, overrides site/`C.GenericSkyboxes` in `Scenes.reconcileSkyboxFromState`.
+            skyboxOverride = nil,
             clock = {
                 hour = 0,
                 minute = 0,
@@ -613,12 +615,22 @@ local function normalizeLiveSessionSceneSeatSlots()
     end
     for _, npcSeat in ipairs(C.NPCSeats or {}) do
         local row = ss[npcSeat]
-        if type(row) == "table" then
-            if row.slotEmpty == true then
-                layout.occupiedNPCSlots[npcSeat] = false
-            elseif type(row.characterKey) == "string" and row.characterKey ~= "" then
-                layout.occupiedNPCSlots[npcSeat] = row.characterKey
+        local occupiedChar = layout.occupiedNPCSlots[npcSeat]
+        local hasLiveAssignment = type(occupiedChar) == "string" and occupiedChar ~= ""
+        if type(row) ~= "table" then
+            if hasLiveAssignment then
+                ss[npcSeat] = { characterKey = occupiedChar, isPresent = true }
             end
+        elseif row.slotEmpty == true then
+            if hasLiveAssignment then
+                -- Gameboard Apply can seat NPCs without clearing library `slotEmpty` rows (TOR-311).
+                row.slotEmpty = nil
+                row.characterKey = occupiedChar
+            else
+                layout.occupiedNPCSlots[npcSeat] = false
+            end
+        elseif type(row.characterKey) == "string" and row.characterKey ~= "" then
+            layout.occupiedNPCSlots[npcSeat] = row.characterKey
         end
     end
 end
@@ -660,6 +672,20 @@ function S.validateState()
     if lpKey ~= nil and type(lpKey) == "string" and lpKey ~= "" and not C.isValidLightModeKey(lpKey) then
         print("[state] sessionScene.lightingPresetKey invalid: " .. tostring(lpKey) .. " — clearing.")
         gameState.sessionScene.lightingPresetKey = nil
+    end
+    local skyOverride = gameState.sessionScene.skyboxOverride
+    if skyOverride ~= nil then
+        if type(skyOverride) ~= "string" then
+            print("[state] sessionScene.skyboxOverride invalid type — clearing.")
+            gameState.sessionScene.skyboxOverride = nil
+        else
+            local trimmedSky = string.gsub(string.gsub(skyOverride, "^%s+", ""), "%s+$", "")
+            if trimmedSky == "" then
+                gameState.sessionScene.skyboxOverride = nil
+            else
+                gameState.sessionScene.skyboxOverride = trimmedSky
+            end
+        end
     end
     if gameState.presentDayClock ~= nil and type(gameState.presentDayClock) ~= "table" then
         gameState.presentDayClock = nil

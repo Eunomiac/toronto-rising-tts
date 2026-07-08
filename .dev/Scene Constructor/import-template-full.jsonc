@@ -72,6 +72,9 @@
     "districtKey": "BayStFinancial",
     "siteKey": "StRegisCouncilChamber",
 
+    // Optional: custom skybox image URL. When set, overrides site skyboxURL / generic skyboxes.
+    // "skyboxOverride": "https://steamusercontent-a.akamaihd.net/ugc/.../skybox.jpg",
+
     // v2 REQUIRED object. isPresentDay REQUIRED boolean.
     "clock": {
       // All five datetime fields together, OR all omitted (present-day flags-only).

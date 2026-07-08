@@ -509,7 +509,8 @@ function Scenes.reconcileTopFogFromState(opts)
     return true
 end
 
---- Reconciles TTS table background (skybox) from `sessionScene.siteKey` via `C.resolveSkyboxURLForSite`.
+--- Reconciles TTS table background (skybox) from `sessionScene.skyboxOverride` (when set)
+--- or `sessionScene.siteKey` via `C.resolveSkyboxURLForSite`.
 --- Sites with `skyboxURL` use that URL; others get a random `C.GenericSkyboxes` entry per site change.
 --- @param opts table|nil `{ force = boolean }`
 --- @return boolean
@@ -517,23 +518,45 @@ function Scenes.reconcileSkyboxFromState(opts)
     opts = type(opts) == "table" and opts or {}
     local force = opts.force == true
 
+    local override = S.getStateVal("sessionScene", "skyboxOverride")
+    if type(override) == "string" then
+        override = string.gsub(string.gsub(override, "^%s+", ""), "%s+$", "")
+        if override == "" then
+            override = nil
+        end
+    else
+        override = nil
+    end
+
     local siteKey = S.getStateVal("sessionScene", "siteKey")
     if type(siteKey) ~= "string" then
         siteKey = ""
     end
     siteKey = string.gsub(string.gsub(siteKey, "^%s+", ""), "%s+$", "")
-    if siteKey == "" then
+
+    local url = nil
+    local fingerprint = nil
+    if type(override) == "string" then
+        url = override
+        fingerprint = "override:" .. override
+    elseif siteKey ~= "" then
+        url = C.resolveSkyboxURLForSite(siteKey)
+        fingerprint = siteKey
+    else
         lastSkyboxReconcileFingerprint = nil
         return true
     end
 
-    if not force and lastSkyboxReconcileFingerprint == siteKey then
+    if not force and lastSkyboxReconcileFingerprint == fingerprint then
         return true
     end
 
-    local url = C.resolveSkyboxURLForSite(siteKey)
     if type(url) ~= "string" or url == "" then
-        print("[Scenes] reconcileSkyboxFromState: no skybox URL for site `" .. siteKey .. "`.")
+        if siteKey ~= "" then
+            print("[Scenes] reconcileSkyboxFromState: no skybox URL for site `" .. siteKey .. "`.")
+        else
+            print("[Scenes] reconcileSkyboxFromState: skyboxOverride is empty.")
+        end
         return false
     end
 
@@ -544,11 +567,15 @@ function Scenes.reconcileSkyboxFromState(opts)
 
     local ok = Backgrounds.setCustomURL(url)
     if ok ~= true then
-        print("[Scenes] reconcileSkyboxFromState: Backgrounds.setCustomURL failed for site `" .. siteKey .. "`.")
+        if type(override) == "string" then
+            print("[Scenes] reconcileSkyboxFromState: Backgrounds.setCustomURL failed for skyboxOverride.")
+        else
+            print("[Scenes] reconcileSkyboxFromState: Backgrounds.setCustomURL failed for site `" .. siteKey .. "`.")
+        end
         return false
     end
 
-    lastSkyboxReconcileFingerprint = siteKey
+    lastSkyboxReconcileFingerprint = fingerprint
     return true
 end
 
@@ -810,6 +837,7 @@ local function mutateDefaultNoSceneSessionState()
     S.setStateVal(Scenes.DEFAULT_NO_SCENE_TABLE_KEY, "sessionScene", "tableKey")
     S.setStateVal(nil, "sessionScene", "districtKey")
     S.setStateVal(nil, "sessionScene", "siteKey")
+    S.setStateVal(nil, "sessionScene", "skyboxOverride")
     S.setStateVal({}, "sessionScene", "conditions")
     S.setStateVal({}, "sessionScene", "soundscapeNarrative")
     S.setStateVal(false, "sessionScene", "isTopFogActive")

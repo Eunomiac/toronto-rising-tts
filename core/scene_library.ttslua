@@ -32,6 +32,7 @@ local IMPORT_MISNESTED_SESSION_KEYS = {
     seatSlots = "Move seatSlots inside sessionScene.",
     districtKey = "Move districtKey inside sessionScene.",
     siteKey = "Move siteKey inside sessionScene.",
+    skyboxOverride = "Move skyboxOverride inside sessionScene.",
     clock = "Move clock inside sessionScene.",
     lightingPresetKey = "Move lightingPresetKey inside sessionScene.",
     isTopFogActive = "Move isTopFogActive inside sessionScene.",
@@ -157,6 +158,30 @@ function SceneLibrary.syncNpcRoleOverrideFromSeatSlots(sessionScene)
         end
     end
     sessionScene.npcRoleOverride = o
+end
+
+--- Optional `sessionScene.skyboxOverride`: omit / null / blank → nil; otherwise non-empty URL string.
+--- @param sessionScene table|nil
+--- @return boolean ok
+--- @return string|nil err
+local function validateAndNormalizeSkyboxOverrideForImport(sessionScene)
+    if type(sessionScene) ~= "table" then
+        return true, nil
+    end
+    local raw = sessionScene.skyboxOverride
+    if raw == nil then
+        return true, nil
+    end
+    if type(raw) ~= "string" then
+        return false, "sessionScene.skyboxOverride: must be a URL string when present (or omit / null)."
+    end
+    local trimmed = string.gsub(string.gsub(raw, "^%s+", ""), "%s+$", "")
+    if trimmed == "" then
+        sessionScene.skyboxOverride = nil
+        return true, nil
+    end
+    sessionScene.skyboxOverride = trimmed
+    return true, nil
 end
 
 --- Deep-clone import payload, pad missing NPC seat slots with `{ slotEmpty = true }`, and sync `npcRoleOverride`.
@@ -495,6 +520,11 @@ function SceneLibrary.validateAndNormalizeImportPayload(raw)
     local okWeather, errWeather = validateSoundscapeWeatherTrioForImport(sessionScene)
     if not okWeather then
         return false, errWeather or "sessionScene.soundscapeNarrative: weather trio validation failed.", nil
+    end
+
+    local okSkybox, errSkybox = validateAndNormalizeSkyboxOverrideForImport(sessionScene)
+    if not okSkybox then
+        return false, errSkybox, nil
     end
 
     local okRejectRollDefaults, errRejectRollDefaults = rejectRollDefaultsForImport(sessionScene)

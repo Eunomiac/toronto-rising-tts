@@ -170,6 +170,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [ ] **Centralize light modes (`C.LightModes`):** Remove legacy keys (`BRIGHT`, `DIM`, `TENSION`, `STANDARD`, `AdminDark`, `AdminStandard`, `AdminBright`, `AdminDebug`); update `DEBUG`/`DARK`; Scenes panel dynamic 5-wide preset grid (all keys; active = green bg / white text). **`L.LIGHTMODES` unchanged.** _(TOR-81)_
 - [x] **Scenes/locations** drive global/seat light mode via state → `Scenes.reconcileFromState` / lighting reconciler (no dual apply). _(TOR-84 — 2026-06-15)_
 - [x] **Site skybox:** `sessionScene.siteKey` → `Scenes.reconcileSkyboxFromState` (`C.Sites[*].skyboxURL` or random `C.GenericSkyboxes` via `Backgrounds.setCustomURL`). _(TOR-58)_
+- [x] **Scene skybox override:** Optional `sessionScene.skyboxOverride` (URL) on Scene Constructor import + library/live state; reconciler prefers override over site/generic. _(TOR-313)_
 
 ## Scenes Panel & Scene State
 

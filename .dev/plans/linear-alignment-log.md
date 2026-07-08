@@ -446,5 +446,15 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-06 | CREATE | TOR-305 | Player dice tray open on roll initiate; Dice Improvement Medium; parent TOR-31 |
 | 2026-07-06 | CREATE | TOR-306 | Take Half auto-broadcast + single-button proceed; Dice Improvement Medium; parent TOR-31 |
 | 2026-07-06 | Focus | Stack | #1 TOR-244, #2 TOR-304, #3 TOR-306; TOR-305 also in cycle; TOR-290 removed (Done) |
+| 2026-07-08 | `/tr-inbox` | INBOX | Quick Fixes → TOR-307 (startup dice cleanup), TOR-308 (pool return regression), TOR-310 (smooth spawn; `blockedBy` TOR-308); Active → TOR-311 (NPC seat disable), TOR-309 (difficulty-0 display), TOR-312 (narrative broadcast successes) |
+| 2026-07-08 | CREATE | TOR-307 | Startup destroy loose table dice + stow trays before table sync; Dice Bug High; parent TOR-31 |
+| 2026-07-08 | CREATE | TOR-308 | Preload pool dice destroyed instead of returned; Dice Bug High; parent TOR-31; relatedTo TOR-287 |
+| 2026-07-08 | CREATE | TOR-309 | Difficulty-0 roll results display; Dice Improvement Medium; parent TOR-31; relatedTo TOR-163, TOR-296 |
+| 2026-07-08 | CREATE | TOR-310 | Smooth preload spawn + ST Y=8; Dice Improvement Medium; parent TOR-31; `blockedBy` TOR-308 |
+| 2026-07-08 | CREATE | TOR-311 | Scenes panel NPC seat disable clears all seated NPCs; Scenes Bug High; parent TOR-33; relatedTo TOR-250, TOR-281 |
+| 2026-07-08 | CREATE | TOR-312 | Roll broadcast show successes for narrative roll types; Dice Bug Medium; parent TOR-31; relatedTo TOR-296, TOR-309 |
+| 2026-07-08 | Focus | Stack | #1 TOR-311, #2 TOR-308, #3 TOR-304; also TOR-307, TOR-306, TOR-305, TOR-309, TOR-312, TOR-244 |
+| 2026-07-08 | CREATE | TOR-313 | Optional `sessionScene.skyboxOverride` on import/library; Scenes Feature Medium; parent TOR-33; relatedTo TOR-58 |
+| 2026-07-08 | DONE | TOR-313 | Import + state + `Scenes.reconcileSkyboxFromState` prefer override URL; Scene Constructor docs/templates |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

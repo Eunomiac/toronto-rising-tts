@@ -162,7 +162,8 @@ Use **flat** keys that already exist on live `sessionScene` (do not nest a separ
 | `seatSlots` | object | Per-seat rows (keys: `Brown`, `Orange`, `Red`, `Pink`, `Purple`, `NPC1`…`NPC4`). See **Seat slots** below. |
 | `npcRoleOverride` | object | **Sparse** map: keys are **`C.PlayerColors`** only; value is an **NPC** `characterKey` string when that PC is playing as that NPC. Absent keys = no override. **Not authored in import JSON** — rebuilt from PC `seatSlots` by `SceneLibrary.syncNpcRoleOverrideFromSeatSlots` (import + `S.validateState`). |
 | `districtKey` | string \| null | Chronicle district. |
-| `siteKey` | string \| null | Site within district. Live location drives skybox via `Scenes.reconcileSkyboxFromState` (`C.Sites[siteKey].skyboxURL` or random `C.GenericSkyboxes`). |
+| `siteKey` | string \| null | Site within district. Live location drives skybox via `Scenes.reconcileSkyboxFromState` (`C.Sites[siteKey].skyboxURL` or random `C.GenericSkyboxes`) unless `skyboxOverride` is set. |
+| `skyboxOverride` | string \| null | Optional. URL for a custom table background / skybox image. When set (non-empty after trim), `Scenes.reconcileSkyboxFromState` uses this URL instead of the site or generic skybox. Omit / `null` / blank → no override. |
 | `clock` | object | `hour`, `minute`, `day`, `month`, `year`, `useRealTime`, `realTimeSpeed`, **`isPresentDay`** (v2). Datetime fields may be omitted when `isPresentDay` is true (see **Present day clock**). **`realTimeSpeed`**: narrative-time multiplier when `useRealTime` is true — `1` ⇒ one in-fiction minute every 60 real seconds (not wall-calendar sync). |
 | `chronicleWeatherFollowSchedule` | boolean | When `true`, clock-driven chronicle weather may feed soundscape. **Scene Constructor import:** set only by the importer from `soundscapeNarrative` — if **`wind`**, **`rain`**, and **`thunderstorm`** are all non-`null`, becomes **`false`** (weather locked to narrative); if none of those three are set, becomes **`true`**. Pasted values for these two flags are **overwritten** on import. |
 | `chronicleWeatherManualHold` | boolean | When `true`, chronicle weather is not auto-applied on clock updates. **Import:** **`true`** when all three narrative weather fields are set; **`false`** when none are. |
@@ -207,9 +208,9 @@ Each key is a **seat id** (`C.PlayerColors` + `C.NPCSeats`). **Import** (`SceneL
 ```
 
 - `characterKey` — non-empty string occupies the slot (`gameState.seatLayout.occupiedNPCSlots` updated on validate when this row is present).
-- `slotEmpty` — `true` forces the slot empty (`occupiedNPCSlots` → `false`) regardless of other fields.
+- `slotEmpty` — `true` marks the slot empty in **imported** / authored JSON (`occupiedNPCSlots` → `false` on validate when no live gameboard assignment exists).
 - On **import**, omit an `NPC1…NPC4` key when you want that slot stored as **empty** (the importer adds `{ "slotEmpty": true }`).
-- In **`normalizeLiveSessionSceneSeatSlots`** (`core/state.ttslua`), only an **existing** `seatSlots[NPCn]` object with `slotEmpty == true` or a non-empty `characterKey` updates `seatLayout.occupiedNPCSlots`; a **missing** NPC key does not change `occupiedNPCSlots` in that pass.
+- In **`normalizeLiveSessionSceneSeatSlots`** (`core/state.ttslua`), an existing `seatSlots[NPCn]` row with `slotEmpty == true` clears `occupiedNPCSlots` only when that seat has **no** live string assignment; gameboard **Apply** backfills `characterKey` from `occupiedNPCSlots` when the two drift (TOR-311). A non-empty `characterKey` always wins. A **missing** NPC key does not change `occupiedNPCSlots` in that pass.
 
 **NPC homeland + stage (TOR-250 / TOR-281):** The same `characterKey` may appear in both `seatSlots[NPCn].characterKey` and `npcWorld.placements[characterKey]` when the figurine is on stage but retains a homeland seat — set **`isPresent`: `false`** on that NPC seat row (import validation rejects an **active** seat + stage combo). Control-board **Apply** auto-sets `isPresent = false` when a homeland character gains a placement row. **Clear** re-seats the figurine at the homeland when the token returns to the seat row; when the homeland seat was **disabled** before Clear, it **activates** only if the staged `npcLightMode` was visible (not `OFF`); an already-enabled seat stays enabled. ST seat activate/deactivate (Scenes panel or gameboard seat row) writes `seatSlots.isPresent` back into the linked library row via `writeSeatNarrativePresence` → `SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked`.
 
@@ -423,6 +424,7 @@ This gives you “always current” for the **active** saved scene with **one** 
     },
     "districtKey": "BayStFinancial",
     "siteKey": "StRegisCouncilChamber",
+    "skyboxOverride": null,
     "clock": {
       "hour": 22,
       "minute": 15,
