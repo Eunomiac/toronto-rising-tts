@@ -182,6 +182,51 @@ local function releaseDieToPreloadOrDestroy(die)
     return DPP.releaseOrDestroy(die)
 end
 
+--- Y at or above this counts as on-table for startup cleanup (matches RSL.hasLooseDiceOnTable / TOR-243).
+local LOOSE_DICE_ON_TABLE_Y_MIN = -50
+
+--- Stow trays and clear loose on-table d10 before startup SyncTable (TOR-307). Skips d10Preload (y < threshold).
+local function cleanupLooseDiceBeforeTableSync()
+    local stowed = 0
+    for _, color in ipairs(C.PlayerColors) do
+        destroyBagDice(color)
+        stowed = stowed + 1
+    end
+    destroyBagDice("Black")
+
+    local swept = 0
+    local tagged = getObjectsWithTag("d10") or {}
+    for _, die in ipairs(tagged) do
+        if die ~= nil and die.getPosition ~= nil then
+            local p = die.getPosition()
+            if type(p) == "table" and type(p.y) == "number" and p.y >= LOOSE_DICE_ON_TABLE_Y_MIN then
+                releaseDieToPreloadOrDestroy(die)
+                swept = swept + 1
+            end
+        end
+    end
+    if stowed > 0 or swept > 0 then
+        print(string.format(
+            U.loadElapsedPrefix() .. "[Startup] loose-dice cleanup: stowed %d seat tray(s), swept %d on-table d10",
+            stowed + 1,
+            swept
+        ))
+    end
+end
+
+--- Opens the player dice tray when a roll enters PRE_ROLL (TOR-305). Storyteller uses Roll-click spawn path.
+-- @param color string
+function GlobalOpenPlayerDiceTrayForRoll(params)
+    if type(params) ~= "table" or type(params.color) ~= "string" then
+        return
+    end
+    local color = params.color
+    if color == "Black" then
+        return
+    end
+    DiceDrawer.openForRoll(color)
+end
+
 -- Load debug module (only in development). Must be global so TTS console `lua DEBUG.foo()` works.
 DEBUG = require("core.debug")
 
@@ -1153,7 +1198,7 @@ end
 local blackRollPhysicalSpawnActive = false
 
 --- Opens the seat dice tray when the active pool has staged dice (SETUP / PRE_ROLL / ROLLING).
--- Authoritative for auto-spawn (pre-filled Remorse pool, ST Open) and Auto-Hunger bag spawns.
+-- Player seats: tray opens on PRE_ROLL entry via GlobalOpenPlayerDiceTrayForRoll (TOR-305), not first bag spawn.
 -- Black: only during Roll-click spawn (`blackRollPhysicalSpawnActive`); Roll handler opens drawer after spawn.
 -- @param color string
 -- @param active table  active roll after pool mutation
@@ -1177,8 +1222,6 @@ local function openDiceTrayOnFirstPoolDie(color, active)
             local STR = require("core.storyteller_rolls")
             STR.onFirstDieSpawned()
         end
-    elseif color ~= "Black" then
-        DiceDrawer.openForRoll(color)
     end
 end
 
@@ -1949,8 +1992,10 @@ function onLoad(saved_data)
     -- state during load. Defer slightly so object GUID lookups (including relative objects) are ready.
     local startupTableSyncDone = false
     setStartupAction("schedule-table-sync")
-    if R and type(R.SyncTable) == "function" then
+    if U.Type(R) == "table" and type(R.SyncTable) == "function" then
         U.delay(function()
+            setStartupAction("startup-loose-dice-cleanup")
+            cleanupLooseDiceBeforeTableSync()
             setStartupAction("run-table-sync")
             R.SyncTable()
             startupTableSyncDone = true
@@ -4008,15 +4053,11 @@ function onObjectLeaveContainer(container, obj)
     local isSurgeRouse = obj.script_state == DK.SCRIPT_STATE_BLOOD_SURGE_ROUSE
     obj.setGMNotes(DK.encodeGmNotes(active.id, isSurgeRouse))
 
-    -- Open drawer on first bag spawn (PRE_ROLL) or auto-spawn after Roll (ROLLING).
+    -- Black drawer opens on Roll-click spawn path only (TOR-305: PC tray opens at PRE_ROLL entry).
     if active.phase == C.RollPhase.PRE_ROLL or active.phase == C.RollPhase.ROLLING then
-        if color == "Black" then
-            if blackRollPhysicalSpawnActive and type(active.stDrawerSlot) == "number" then
-                local STR = require("core.storyteller_rolls")
-                STR.onFirstDieSpawned()
-            end
-        else
-            DiceDrawer.openForRoll(color)
+        if color == "Black" and blackRollPhysicalSpawnActive and type(active.stDrawerSlot) == "number" then
+            local STR = require("core.storyteller_rolls")
+            STR.onFirstDieSpawned()
         end
     end
 end
@@ -4346,10 +4387,6 @@ local function spawnActivePoolDiceForActive(color, opts)
     end
     -- Re-read after autoSpawn: bag hooks sync pool via GlobalOnBagDieSpawned (stagedCount).
     active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
-    if active ~= nil and color ~= "Black"
-        and (didSpawn or DK.poolTotal(DK.normalizePool(active.pool)) > 0) then
-        openDiceTrayOnFirstPoolDie(color, active)
-    end
     return didSpawn
 end
 

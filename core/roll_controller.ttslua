@@ -1062,6 +1062,9 @@ function RC.initiateRoll(color, config)
 
     if skipSetup then
         rollCamera(color, "roll")
+        if color ~= "Black" then
+            Global.call("GlobalOpenPlayerDiceTrayForRoll", { color = color })
+        end
         if color ~= "Black" and DK.poolTotal(pool) > 0 then
             Wait.frames(function()
                 Global.call("GlobalSpawnActivePoolDiceForActive", { color = color })
@@ -1442,6 +1445,7 @@ function RC.openRoll(color)
     notifyStateChanged(color)
     rollCamera(color, "roll")
     if color ~= "Black" then
+        Global.call("GlobalOpenPlayerDiceTrayForRoll", { color = color })
         Global.call("GlobalSpawnActivePoolDiceForActive", { color = color })
     end
     return true
@@ -1657,6 +1661,12 @@ function RC.takeHalf(color)
     setActive(color, active)
     notifyStateChanged(color)
     Global.call("GlobalDestroyBagDice", { color = color })
+    local suppressBroadcast = color == "Black"
+        and type(active.meta) == "table"
+        and active.meta.suppressBroadcast == true
+    if not suppressBroadcast then
+        RC.confirmRoll(color)
+    end
     return true
 end
 

@@ -79,8 +79,8 @@ function DD.getPositionY(color)
   return pos.y
 end
 
---- Move drawer to the "on" pose (first pool die via GlobalOnBagDieSpawned, leave-container backup,
---- Roll release, or WP reroll path). Not tied to RC.openRoll.
+--- Move drawer to the "on" pose when a player roll enters PRE_ROLL (TOR-305) or on ST Roll-click spawn.
+--- Not tied to first bag die spawn for player seats.
 --- @param color string Seat color
 --- @param opts table|nil  { force?: boolean } — re-animate when logical "open" but tray is still down
 function DD.openForRoll(color, opts)
