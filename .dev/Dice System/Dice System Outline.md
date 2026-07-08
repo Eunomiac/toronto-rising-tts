@@ -156,7 +156,7 @@ core/global_script
 
 `core/dice` has **zero** TTS dependencies and can be unit-tested in isolation via the TTS console or external test harness.
 
-### 2.3 Obsolete Code
+### 2.3 Inactive Prior Paths
 
 The following are retired by this system. Their physical dice bag objects in TTS are preserved as props but their Lua scripts are no longer called:
 

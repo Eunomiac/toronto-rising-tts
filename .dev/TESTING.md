@@ -235,13 +235,9 @@ Storyteller **== DEBUG ==** column (no automated test suites):
 - Print State, Sync All (force)
 - **Debug Camera**, **Debug Light** (+ GUID field)
 
-Legacy **Testing Suites** (Run All Tests, Lighting & Signals, Easing) were removed in TOR-141.
+Automated test-suite buttons are not part of the current DEBUG panel.
 
 ## MCP / agents
 
 - [TTS_MCP.md](TTS_MCP.md) — `tts_execute_lua`, `TR_AGENT_V1` lines, timeouts
 - Prefer `U.mcpEmitResult` / `U.emitForAgent` for structured execute output
-
-## Removed (do not document)
-
-Automated suites (`testState`, `testScenes`, `runTests`, `testEasing`, `changeScene`, `testSoundscape`, etc.) were removed as obsolete. Use E2E playbooks instead.

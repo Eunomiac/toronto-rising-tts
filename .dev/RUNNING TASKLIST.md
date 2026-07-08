@@ -47,7 +47,7 @@ _Stack rank for the current cycle (2026-07-06 post `/tr-inbox`: **TOR-304**–**
 
 **Resurfaced this cycle:** _(none — TOR-96 gate closed 2026-06-15)_
 
-**Deferred this cycle:** _Paused (author 2026-06-21 — no back-burner surfacing mechanism yet). Open bullets stay in domain sections below; use **Focus** + Linear **`blockedBy`** for work order. Historical deferral note (2026-06-06 batch) retained for context only — not an active exclusion list: TOR-203, TOR-204, TOR-205, TOR-206, TOR-162+209 batch, TOR-139, TOR-140, TOR-142, TOR-143, TOR-146, TOR-147, TOR-148, TOR-149, TOR-150, TOR-151, TOR-152, TOR-73, TOR-153, TOR-157, TOR-165, TOR-137, TOR-81. **Workshop-only:** TOR-207, TOR-208. **Canceled:** TOR-215, TOR-166, TOR-167.
+**Deferred this cycle:** _Paused (author 2026-06-21 — no back-burner surfacing mechanism yet). Open bullets stay in domain sections below; use **Focus** + Linear **`blockedBy`** for work order._
 
 **How blocked work unblocks:** Linear **`blockedBy`** on the waiting issue; when a prerequisite is **Done** or **Canceled**, agents remove stale blockers and may re-stack **Focus** (`/tr-inbox`, **“what’s next”**, **`/tr-start`**). Gate-close resurfacing survey still applies when Focus prerequisites finish.
 

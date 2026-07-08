@@ -59,7 +59,7 @@ Snippets are diagnostic only. Do **not** call `Sync.full({ force = true })` duri
 
 ### Migration note (Step-by-step target format)
 
-**TOR-141** long-term target: migrate playbooks to [Step-by-step template](../Step-By-Step%20Playbooks/.Step-By-Step%20Template.md) (`▶▶▶ HUMAN ▶▶▶` cues, merged phases per Code Block) while retaining **`RunTest`** harness wiring. Current Dice/Scenes/Gameboard files remain canonical for regression until converted. New ad-hoc verification should use [Step-By-Step Playbooks](../Step-By-Step%20Playbooks/README.md) instead of extending legacy format.
+**TOR-141** long-term target: migrate playbooks to [Step-by-step template](../Step-By-Step%20Playbooks/.Step-By-Step%20Template.md) (`▶▶▶ HUMAN ▶▶▶` cues, merged phases per Code Block) while retaining **`RunTest`** harness wiring. Current Dice/Scenes/Gameboard files remain canonical for regression until converted. New ad-hoc verification should use [Step-By-Step Playbooks](../Step-By-Step%20Playbooks/README.md).
 
 ### Console output (`printHeader` + `U.RunSequence`)
 
