@@ -362,8 +362,6 @@ compulsionFullReroll = {
 - Mid-roll live policy refresh when conditions change
 - Post-resolution consequence registry (keep `RC._applyRollConsequences` as-is)
 
-Implementation checklist: [`.dev/plans/roll-conditions-policy-layer.md`](../plans/roll-conditions-policy-layer.md).
-
 ---
 
 ## 7. Walkthrough — add a derived stat penalty
@@ -447,4 +445,3 @@ New game-logic consumers needing condition-aware values **must** use `EffectiveS
 - [PC Tracking & State Behavior](PC%20Tracking%20&%20State%20Behavior.md) — persisted shape, sheet math, API table
 - [conditions-registry-pattern.md](../../docs/solutions/conditions-registry-pattern.md) — solutions digest
 - [Custom Roll Mechanics](../Dice%20System/Custom%20Roll%20Mechanics.md) — roll FSM buckets A/B/C + §D roll policies
-- [conditions-system-implementation.md](../plans/conditions-system-implementation.md) — module layout status
