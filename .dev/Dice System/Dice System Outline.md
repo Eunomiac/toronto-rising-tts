@@ -1,5 +1,25 @@
 # Dice System — Full Design Plan
 
+## Agent Routing
+
+Read this when:
+- changing dice/roll mechanics, result classification, roll state, or roll UI
+- adding new roll kinds or modifying physical dice integration
+
+Source of truth:
+- `core/roll_controller.ttslua`
+- `core/dice.ttslua`
+- `core/roll_ui.ttslua`
+- `lib/dice_kinds.ttslua`
+- `objects/dice_bag.ttslua`
+
+Verification:
+- `npm run build`
+- `.dev/E2E Playbooks/Dice-E2E.md`
+- `.dev/Dice System/Custom Roll Mechanics.md` for newer roll policy details
+
+Status: broad dice design reference; verify implementation details against code and newer dice docs.
+
 > **Status:** Implementation-ready design. This document fully replaces the preliminary outline.
 > **Scope:** All layers — VTM5E mechanics, Lua architecture, state model, control flow, UI panels, physical dice integration, and phased implementation roadmap.
 

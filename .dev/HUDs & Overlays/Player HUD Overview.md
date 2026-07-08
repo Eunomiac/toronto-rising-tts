@@ -1,5 +1,24 @@
 # Player HUD — Overview & Action Plan
 
+## Agent Routing
+
+Read this when:
+- changing player HUD layout, overlays, map/location UI, or player-facing state
+- modifying `playerData` HUD shape or overlay reconciliation
+
+Source of truth:
+- `core/hud_player.ttslua`
+- `core/hud_overlays.ttslua`
+- `ui/player/`
+- `ui/shared/`
+- `core/state.ttslua`
+
+Verification:
+- `npm run build`
+- HUD-specific TTS smoke or step-by-step playbook from `.dev/TESTING.md`
+
+Status: HUD design/spec reference; verify current XML ids and state paths against source.
+
 This document defines the player-facing HUD layout, behaviour, and state for Toronto Rising (TTS). It serves as the implementation spec for UI behaviour and the `playerData` shape used by the HUD.
 
 **State layout:** Saved/loaded state has two top-level branches: `state.gameState` (global game data, e.g. current phase) and `state.playerData` (per-player data, keyed by player ID). The tree view in this doc describes one player's entry — i.e. the shape of `state.playerData[playerID]`.

@@ -1,5 +1,25 @@
 # NPC Object Overview: Spawning, Positioning & Spotlighting
 
+## Agent Routing
+
+Read this when:
+- changing NPC spawning, pooling, placement, spotlighting, or gameboard control behavior
+- editing NPC registry shape or custom UI asset injection for NPC images
+
+Source of truth:
+- `core/npcs.ttslua`
+- `core/npc_gameboard.ttslua`
+- `lib/npcs_data.ttslua`
+- `lib/npcs_light_spawn_defaults.ttslua`
+- `.dev/custom-ui-assets/README.md`
+
+Verification:
+- `npm run build`
+- `.dev/E2E Playbooks/Gameboard-E2E.md`
+- NPC-specific step-by-step verification from `.dev/TESTING.md`
+
+Status: current NPC system reference; verify registry fields and placement paths against code.
+
 ## NPC Data Structure: `NPCS.characters`
 
 Data for all NPCs is contained in `NPCS.characters` (loaded from [`lib/npcs_data.ttslua`](../../lib/npcs_data.ttslua) into the runtime module). Each entry is an `npcData` table keyed by `name`: `NPCS.characters[name]`.

@@ -1,5 +1,25 @@
 # Conditions System Guide
 
+## Agent Routing
+
+Read this when:
+- adding or changing a condition
+- changing condition persistence, hosted conditions, or roll policies
+- debugging condition-driven HUD, stat, lighting, or roll behavior
+
+Source of truth:
+- `lib/condition_defs.ttslua`
+- `core/conditions.ttslua`
+- `lib/condition_effects.ttslua`
+- `lib/condition_roll_policies.ttslua`
+- `lib/effective_stats.ttslua`
+
+Verification:
+- `npm run build`
+- condition-specific TTS/step-by-step verification from `.dev/TESTING.md`
+
+Status: current condition workflow guide; verify exact API names against source before editing.
+
 Canonical reference for creating or changing **any** condition in Toronto Rising. Persisted runtime shape and sheet math live in [PC Tracking & State Behavior](PC%20Tracking%20&%20State%20Behavior.md); this guide covers registry design, mutation triggers, effect channels, and roll policies.
 
 ---
