@@ -1,5 +1,20 @@
 # Multiplayer E2E checklist (TOR-144)
 
+## Agent Routing
+
+Read this when:
+- validating host/join-client behavior, authority boundaries, replication, or multiplayer-sensitive workflows
+- touching `Sync.*`, event listener dispatch, player identity gates, or Storyteller-only controls
+
+Source of truth:
+- `.dev/Multiplayer Functionality/Preparing For Multiplayer.md`
+- `.dev/Sychronizing Game Functionality/Event Listener Policy.md`
+- relevant Dice/Gameboard/Scenes E2E playbooks for domain-specific flows
+
+Verification:
+- two real TTS clients: Host plus at least one join client
+- solo Host regression only after the multiclient matrix is not required for the touched behavior
+
 **Prerequisites:** Solo Host suites pass ([Dice-E2E](Dice-E2E.md), [Gameboard-E2E](Gameboard-E2E.md), [Scenes-E2E](Scenes-E2E.md)). Actor-identity gates and sync contracts per [Preparing For Multiplayer](../Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md), [Event Listener Policy](../Sychronizing%20Game%20Functionality/Event%20Listener%20Policy.md). Host-execution gating removed per **TOR-284** (2026-07-04).
 
 **Setup:** Two real TTS clients — **Host** (Storyteller machine) + **Join client** (PC). Save & Play from repo on Host; join from invite.

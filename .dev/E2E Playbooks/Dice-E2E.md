@@ -1,5 +1,21 @@
 # Dice — manual E2E playbook
 
+## Agent Routing
+
+Read this when:
+- executing or editing the canonical Dice E2E `U.RunSequence` blocks
+- regenerating the embedded Dice `RunTest` harness
+
+Source of truth:
+- this file for ordered Dice E2E blocks
+- `.dev/E2E Playbooks/Dice-E2E-Guide.md` for runner workflow and interpretation
+- `lib/e2e_playbook_dice.ttslua` after generation
+
+Verification:
+- `npm run e2e-playbook:generate`
+- `npm run build`
+- TTS `RunTest("Dice")`
+
 This has been wired into RunTest. Initialize with `RunTest("Dice")` or `RunTest("Dice", 8)` to start at step 8, then `RunTest()` after each step.
 
 > NOTE: The following lines are present for convenient execution from the IDE and can be ignored.

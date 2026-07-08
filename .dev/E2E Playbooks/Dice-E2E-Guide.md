@@ -1,5 +1,24 @@
 # Dice E2E — Guide
 
+## Agent Routing
+
+Read this when:
+- running, regenerating, or modifying the Dice E2E playbook or `RunTest("Dice")` flow
+- interpreting Dice E2E failures before changing roll code or roll docs
+
+Source of truth:
+- `.dev/E2E Playbooks/Dice-E2E.md`
+- `lib/e2e_playbook_dice.ttslua`
+- `core/roll_controller.ttslua`
+- `core/dice.ttslua`
+- `lib/dice_kinds.ttslua`
+- `lib/rouse_outcomes.ttslua`
+
+Verification:
+- `npm run e2e-playbook:generate`
+- `npm run build`
+- TTS `RunTest("Dice")`
+
 Reference for the lean test playbook `Dice-E2E.md`. Run tests in order from Suite 0.
 
 **Run log reviews:** [`Dice-E2E-Run-1-Findings.md`](Dice-E2E-Run-1-Findings.md) (Run 1), [`Dice-E2E-Run-2-Findings.md`](Dice-E2E-Run-2-Findings.md) (Run 2, annotated).

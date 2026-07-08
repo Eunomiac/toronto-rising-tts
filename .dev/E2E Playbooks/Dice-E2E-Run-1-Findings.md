@@ -1,5 +1,20 @@
 # Dice E2E Run 1 — failure review
 
+## Agent Routing
+
+Read this when:
+- investigating regressions that resemble the original Dice E2E Run 1 failures
+- comparing older failure evidence against current `Dice-E2E.md` and roll code
+
+Source of truth:
+- `.dev/E2E Playbooks/Dice-E2E.md`
+- `.dev/E2E Playbooks/Dice-E2E-Guide.md`
+- current roll code and generated harness
+
+Verification:
+- reproduce against current Save & Play before filing or fixing a bug
+- prefer Run 2 findings when the same failure appears in both documents
+
 Source log: [`Dice E2E Run 1.txt`](Dice%20E2E%20Run%201.txt) (Suite J step 14/54 onward).
 
 **Test/playbook fixes applied in the same pass:** J2 face map + success math, M1 result class, O2a margin, `e2ePoolStagedMismatchLines` rouse-bag staging (K2h).

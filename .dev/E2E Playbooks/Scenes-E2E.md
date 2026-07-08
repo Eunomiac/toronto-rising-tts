@@ -1,5 +1,25 @@
 # Scenes — manual E2E playbook
 
+## Agent Routing
+
+Read this when:
+- validating scene library Apply/End, clock behavior, map pins, seat presence, or soundscape-on-scene workflows
+- changing Storyteller Scenes panel code, present-day clock logic, player HUD map/location UI, or scene constructor state shape
+
+Source of truth:
+- `core/storyteller_scenes_panel.ttslua`
+- `core/present_day_clock.ttslua`
+- `core/game_state_overlay.ttslua`
+- `core/hud_player.ttslua`
+- `.dev/Scene Constructor/Scene Constructor Overview.md`
+- `.dev/HUD_FUNCTIONS.md`
+
+Verification:
+- `npm run build`
+- TTS manual suites in this file
+- `DEBUG.showScene()`
+- `DEBUG.inspectSoundscapeAudio()`
+
 **TOR-141** · Author: table **Host** (seat **Black** recommended) · Est. time: **~35 min smoke** (Suites 0, A–E) · **~100 min full** (F–M clocks, seats, map pins).
 
 Solo dev: one client is enough. Storyteller panels use `visibility="Host"`, not a second player.

@@ -1,5 +1,20 @@
 # Dice E2E Run 2 — failure review
 
+## Agent Routing
+
+Read this when:
+- investigating regressions that resemble the original Dice E2E Run 2 failures
+- deciding which Dice E2E fixes were already folded into the playbook or harness
+
+Source of truth:
+- `.dev/E2E Playbooks/Dice-E2E.md`
+- `.dev/E2E Playbooks/Dice-E2E-Guide.md`
+- current roll code and generated harness
+
+Verification:
+- reproduce against current Save & Play before filing or fixing a bug
+- treat listed fixes as context, not as current implementation instructions
+
 Source log: [`Dice E2E Run 2.txt`](Dice%20E2E%20Run%202.txt) (author annotated with interaction notes).
 
 Prior pass: [`Dice-E2E-Run-1-Findings.md`](Dice-E2E-Run-1-Findings.md).

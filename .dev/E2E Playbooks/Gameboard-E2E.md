@@ -1,5 +1,23 @@
 # Gameboard & Stage — manual E2E playbook
 
+## Agent Routing
+
+Read this when:
+- validating Storyteller gameboard, stage placement, control-token, NPC seating, or palette behavior
+- changing `core/npc_gameboard.ttslua`, `core/npcs.ttslua`, or control-board object/UI scripts
+
+Source of truth:
+- `lib/e2e_gameboard.ttslua`
+- `core/npc_gameboard.ttslua`
+- `core/npcs.ttslua`
+- `.dev/NPC Object Spawning & Spotlighting/Storyteller Gameboard Control.md`
+- `.dev/NPC Object Spawning & Spotlighting/NPC Reconciler Procedure.md`
+
+Verification:
+- `npm run build`
+- TTS `gbE2ePrereqCheck()`
+- TTS `gbE2eRunSmoke()` / `gbE2eRunFull()`
+
 **TOR-141** (living E2E playbooks) · **TOR-169** (Storyteller NPC gameboard) · Author: table **Host** (solo OK) · Est. **~20–30 min smoke** · **~45–60 min full**.
 
 Ground truth: [`core/npc_gameboard.ttslua`](../../core/npc_gameboard.ttslua), [`core/npcs.ttslua`](../../core/npcs.ttslua), [NPC Reconciler Procedure](../NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%20Reconciler%20Procedure.md), [Storyteller Gameboard Control](../NPC%20Object%20Spawning%20%26%20Spotlighting/Storyteller%20Gameboard%20Control.md).
