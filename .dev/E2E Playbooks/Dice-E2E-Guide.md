@@ -200,7 +200,7 @@ Every step is **mandatory**. Do not improvise pool sizes, click counts, or asser
 
 ## Step 0 harness check
 
-After **Save & Play**, `lua debugHelp()` must list `rollConfirm(color, expected)`. If Step 0 prints `confirm failed — is the roll in POST_ROLL?`, the table is still on legacy one-argument `rollConfirm` — save bundled Lua again and retry.
+After **Save & Play**, `lua debugHelp()` must list `rollConfirm(color, expected)`. If Step 0 prints `confirm failed — is the roll in POST_ROLL?`, the table is running an older bundled `rollConfirm`; save bundled Lua again and retry.
 
 ## Prerequisites
 
@@ -270,15 +270,6 @@ RC.setRollOptions("Brown", { wpReroll = true, numberOfDiceRerolled = 3, canRerol
 
 User edits marked with 😀: integrate then delete the comment.
 Passed tests: ✅ beneath Pass if. Partial: ✅ + ⚠️. Failed: ❌ + notes.
-
-## Known failures (historical)
-
-Record new failures in Linear; keep brief notes here when a step blocks the suite.
-
-- **H2 / H2b:** Take Half + rouse merge required all rouse dice **locked** before POST_ROLL (fixed in `recalculateTakeHalfAwaitingRouse` — use readable on-table faces after settle debounce). Manual rouse throws also need `onObjectRandomize` to accept Custom Dice via `getRotationValue` (`RC.isPhysicalDieRandomizeEvent`); allow ~3s debounce after the die rests. **`rollE2eAddPoolKindSpawn` double-count:** presetting `pool.rouse` then spawning fired `GlobalOnBagDieSpawned` (+1) → UI showed 2R with 1 die; merge waited forever for a second die (fixed — rouse spawn uses bag increment path only; reduce uses `GlobalRemoveDieFromBag`, not `setPoolKindCount`).
-- **Tray timing:** Automated spawn → release must include `rollE2eWaitForDiceTray` between staging and `rollE2eSettlePresetCheck({ skipSpawn = true })` (or Take Half + rouse release). Matches panel Roll’s drawer animation (~0.5s smooth + buffer).
-- **`destroyDice` console error on cancel:** If a bag object’s bundled script drifted (e.g. `DICEBAG_ROUSE_PURPLE` / `70c7cf` missing `function destroyDice`), `rollCancelAll` logged a Lua error but tests continued. Global now falls back to destroying locked hover dice by tag. Often caused by **`.tts/objects` GUID mismatch** (stub on wrong filename) — `npm run build` runs `check:tts-object-stub-guids`; fix with **Get Lua Scripts** → `npm run tts-objects:fix-stubs` → Save & Play.
-- **I1 (TOR-165):** during the WP wave each rerolled die locks on settle and refreshes the panel display, but the wave does **not** auto-advance below the cap — finish with **Confirm**. Rerolling all **N** permitted dice auto-advances to POST_ROLL on settle (no Confirm).
 
 ## Sign-off
 
