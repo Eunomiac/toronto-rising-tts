@@ -1,0 +1,19 @@
+---
+alwaysApply: true
+---
+
+# Toronto Rising — author session facts
+
+Agents must not speculate about facts only the author or live Tabletop Simulator session can confirm.
+
+Ask direct confirmation questions instead of guessing about:
+
+- whether the author used Save & Play after a repo change
+- whether a repro came from manual clicks, a harness, or a scripted helper
+- which GUID/object is live in the saved game
+- whether debug buttons, test panels, or `RunTest` were re-armed
+- what the author saw in-game when logs/code do not prove it
+
+State what code, logs, saved files, or Linear/tasklist records prove. For anything outside those sources, ask.
+
+Use [`.dev/SOLVING ISSUES & DEBUGGING.md`](../../.dev/SOLVING%20ISSUES%20%26%20DEBUGGING.md) for the full debugging checklist.

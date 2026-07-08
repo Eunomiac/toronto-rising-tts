@@ -5,6 +5,9 @@ yarn.lock
 # Local secrets (Linear API, etc.)
 .env
 
+# Local symlinks to global agent/editor config; audit-only and may expose secrets/caches.
+.external-agent-config/
+
 # Storyteller dashboard secrets (copy from .env.example in each app folder)
 .dev/storyteller-dashboard/.env
 .dev/storyteller-dashboard-pr9/.env

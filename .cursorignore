@@ -1,1 +1,4 @@
 # TTS full save exports — symlinked under .dev/ for agent reference (see .dev/TTS_BUNDLING_SETUP.md)
+
+# External agent/global config symlinks for audit only; contains auth/session/cache data.
+.external-agent-config/

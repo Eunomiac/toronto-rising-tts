@@ -5,7 +5,7 @@ alwaysApply: true
 
 - check `TOR-*` issues before starting work; set **In Progress** when starting; mark **Done** with a comment when finishing; when closing a **Focus** gate or **`blockedBy` prerequisite**, run the **gate-close survey** (unblock dependents, propose labeled Focus candidates — do not auto-promote without author direction); keep `.dev/RUNNING TASKLIST.md` checkboxes and `_(TOR-XX)_` ids aligned with Linear. Never treat Linear sync as optional or defer it. In chat and summaries, never cite a bare `TOR-XXX` without a few words of context (tasklist/Linear title).
 - **Precedence vs priority:** Use **Focus** + Linear **`blockedBy`** for work order; use Linear **Priority** for intrinsic importance. Not in Focus ≠ Low. Use **`blockedBy` liberally** for sequencing with **anti-gridlock** rules (star pattern, ~1–6 direct blockers, no peer meshes).
-- **No back-burner deferral:** On **`/tr-inbox`**, do **not** use **Deferred this cycle** or back-burner proposals — apply **`blockedBy`** directly for sequencing. See `.cursor/commands/tr-inbox.md` § No back-burner deferral.
+- **No back-burner deferral:** On **`/tr-inbox`**, do **not** use **Deferred this cycle** or back-burner proposals — apply **`blockedBy`** directly for sequencing. See [`.cursor/skills/tr-inbox/SKILL.md`](../skills/tr-inbox/SKILL.md) § No back-burner deferral.
 
 **Linear is a primary source of truth for project state**, alongside the codebase. Agents must treat Linear synchronization as part of completing work — not an optional follow-up.
 
@@ -80,7 +80,7 @@ On **`/tr-inbox`**:
 
 **Never** set Linear **Low** because work is not Focus #1 — that is sequencing, not low importance.
 
-See `.cursor/commands/tr-inbox.md` § No back-burner deferral.
+See [`.cursor/skills/tr-inbox/SKILL.md`](../skills/tr-inbox/SKILL.md) § No back-burner deferral.
 
 ## Capture vs scheduled work
 
@@ -90,7 +90,7 @@ See `.cursor/commands/tr-inbox.md` § No back-burner deferral.
 ## Agent workflow (every task)
 
 1. **Before starting** — Search Linear for related `TOR-*` issues; read matching tasklist bullet if present; skim INBOX Active if overlap is likely.
-2. **When starting** — Set issue **In Progress**; confirm tasklist bullet has the correct `_(TOR-XX)_`. Prompt the author once to rename the Cursor chat to **`TOR-XX — short title`** (agents cannot rename chats programmatically — see `.cursor/commands/tr-start.md` § Agent chat title).
+2. **When starting** — Set issue **In Progress**; confirm tasklist bullet has the correct `_(TOR-XX)_`. Prompt the author once to rename the Cursor chat to **`TOR-XX — short title`** (agents cannot rename chats programmatically — see [`.cursor/skills/tr-start/SKILL.md`](../skills/tr-start/SKILL.md) § Agent chat title).
 3. **When finishing** — Mark **Done** (or **Canceled** if descoped) with a comment: what changed, key files, verification, commit refs. Update tasklist `[ ]` → `[x]` if applicable. Reference `TOR-XX` in commit body when committing. **`living-doc` issues:** baseline may be `[x]` on tasklist but issue stays **In Progress** — see § Living documentation.
 
    **Host-authority / fan-out work (until TOR-144 multiplayer E2E passes):** Do not mark **Done** on issues that claim multiclient validation unless TOR-144 was exercised. Linear comment should note **solo verified only** when applicable. Uphold P1–P10 per [`.cursor/rules/toronto-rising-multiplayer-authority.mdc`](../../.cursor/rules/toronto-rising-multiplayer-authority.mdc).
@@ -99,12 +99,12 @@ See `.cursor/commands/tr-inbox.md` § No back-burner deferral.
    - Remove stale **`blockedBy`** on Linear dependents whose prerequisites are now **Done** or **Canceled**.
    - List open dependents that **`blockedBy`** the closed id.
    - In the **Done** comment or session chat, **propose** (do not auto-apply) Focus or priority changes — a short labeled list (`TOR-XXX (title)`), typically 1–3 items.
-4. **Commits during work** — After each logical unit, commit **without asking**; never prompt “want me to commit?” (always yes). See `.cursorrules` § Git Commits.
+4. **Commits during work** — In Cursor sessions, after each logical unit, commit **without asking** unless the author explicitly says not to; never prompt “want me to commit?” (always yes). See [`.cursor/rules/toronto-rising-git.mdc`](toronto-rising-git.mdc).
 5. **When discovering new work** — INBOX one-liner if capture-only; otherwise create Linear issue in the correct **domain project**, add `source:tasklist` if from tasklist, append `_(TOR-XX)_` to tasklist, set **In Progress** if starting immediately.
 6. **When finding bugs on shipped features** — Create a **Bug** issue; `relatedTo` the original **Done** feature issue. Do not reopen unrelated Done issues.
 7. **Inbox triage** — On “process the inbox”: Phase 1 park + `?` in INBOX (author replies **`Answer:`** inline); Phase 2 promote when answered.
 8. **What’s next** — On “what’s next” / “prioritize the backlog”: read **Focus** in RUNNING TASKLIST, cross-check Linear Bugs + In Progress, recommend one item; update Focus; set Linear **priority** on intrinsic importance; add **`blockedBy`** for sequencing — do not downgrade unrelated priorities because bugs exist.
-9. **Inbox + prioritize** — On **`/tr-inbox`**: triage + refresh **Focus** + Linear **priority** and **`blockedBy`** per `.cursor/commands/tr-inbox.md`.
+9. **Inbox + prioritize** — On **`/tr-inbox`**: triage + refresh **Focus** + Linear **priority** and **`blockedBy`** per [`.cursor/skills/tr-inbox/SKILL.md`](../skills/tr-inbox/SKILL.md).
 
 ## Domain projects
 
