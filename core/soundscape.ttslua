@@ -1329,15 +1329,13 @@ local function applySoundscapeReconcileFromStateSnapshot(state)
         applySilentSiteAmbient()
         return
     end
-    if state.backgroundMusicEnabled == true then
+    if state.backgroundMusicSuppressed == true then
+        suppressBackgroundMusic()
+    elseif state.backgroundMusicEnabled == true then
         if state.backgroundMusicMode == BACKGROUND_KIND_LOCATION and type(state.locationMusic) == "string" then
             Soundscape.setLocationMusic(state.locationMusic)
         elseif type(state.musicMood) == "string" then
             Soundscape.setMusicMood(state.musicMood)
-        end
-    elseif state.backgroundMusicSuppressed == true then
-        if state.backgroundMusicEnabled == true then
-            suppressBackgroundMusic()
         end
     elseif backgroundMusicPolicyRequiresMain() then
         -- Load / Sync.full path when state still has BGM disabled; applyContext uses withDefaultBackgroundMusic + setMusicMood only.

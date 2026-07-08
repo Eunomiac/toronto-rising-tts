@@ -33,6 +33,24 @@ test("soundscape site none playlist suppresses background music without defaulti
     false,
     "clearNoneBackgroundMusicKeys should be removed; explicit none must not fall through to main",
   );
+
+  const reconcileStart = source.indexOf("local function applySoundscapeReconcileFromStateSnapshot");
+  assert.ok(reconcileStart >= 0, "missing applySoundscapeReconcileFromStateSnapshot");
+  const reconcileEnd = source.indexOf("\nlocal function ", reconcileStart + 1);
+  const reconcileBody =
+    reconcileEnd >= 0 ? source.slice(reconcileStart, reconcileEnd) : source.slice(reconcileStart);
+  const suppressedIdx = reconcileBody.indexOf("state.backgroundMusicSuppressed == true");
+  const enabledIdx = reconcileBody.indexOf("state.backgroundMusicEnabled == true");
+  assert.ok(suppressedIdx >= 0 && enabledIdx >= 0, "reconcile should branch on suppressed and enabled");
+  assert.ok(
+    suppressedIdx < enabledIdx,
+    "backgroundMusicSuppressed must be checked before backgroundMusicEnabled in reconcile",
+  );
+  assert.equal(
+    reconcileBody.includes("backgroundMusicSuppressed == true then\n        if state.backgroundMusicEnabled == true"),
+    false,
+    "reconcile must not nest enabled check inside suppressed branch",
+  );
 });
 
 test("soundscape reconcileFromState guards duplicate deferred apply", () => {
