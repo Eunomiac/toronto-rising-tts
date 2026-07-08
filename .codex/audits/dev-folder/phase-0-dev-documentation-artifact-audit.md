@@ -1,6 +1,6 @@
 # Phase 0: `.dev` Documentation & Artifact Audit
 
-Status: audit complete; cleanup status updated through 2026-07-08
+Status: audit complete; cleanup status updated through 2026-07-08 routing pass
 Date: 2026-07-07; updated 2026-07-08
 Scope: `.dev/` inventory, classification, and current cleanup routing
 Audience: future Codex/agent runs and project cleanup planning
@@ -21,10 +21,11 @@ The audit used:
 - `git ls-files .dev`
 - `.gitignore`
 - `package.json`
-- targeted `rg` scans for `.dev` paths and stale references
+- targeted `rg` scans for `.dev` paths, stale references, and deleted filenames
 - representative reads of high-signal docs and tool READMEs
+- markdown link validation after cleanup segments
 
-No build or test runs were needed for this inventory pass.
+Runtime build/test validation was outside the original inventory scope. During cleanup, markdown link validation stayed clean. One existing runtime test gap was observed outside the docs changes: `node .dev/scripts/soundscape_contract.test.js` currently reports two failures around soundscape emitter GUID resolution and thunder immediate-play expectations.
 
 ## Executive Summary
 
@@ -42,7 +43,7 @@ No build or test runs were needed for this inventory pass.
 
 The highest-risk finding is path sensitivity. `package.json` directly invokes `.dev/scripts/*`, reads and writes `.dev/custom-ui-assets/*`, and many tools assume `.dev/TS_Save_230.json`. Code and UI comments also route agents to many `.dev` docs. Moves should wait until references, generated-file headers, VS Code tasks, and tool defaults have been checked.
 
-The second major finding is documentation trust ambiguity. Several docs are important, heavily linked, and confident, but may not match current code. Later phases should add agent-facing routing/index docs before moving or consolidating anything.
+The second major finding is documentation trust ambiguity. Several docs are important, heavily linked, and confident, but may not match current code. The 2026-07-08 cleanup added `## Agent Routing` blocks to the main engineering, workflow, E2E, local-tool, and task-system docs so future agents can route before reading deeply. Currentness still has to be verified against code during canonical-doc verification.
 
 The third major finding is that `.dev/` cannot be cleaned up in isolation. Repo-local agent instructions under `.cursor/rules/` and `.cursor/skills/` are active routing surfaces for agents and contain many hard-coded `.dev` paths. Those files should stay aligned in every move/reference pass.
 
@@ -227,6 +228,27 @@ Confirmed suspicious repo documentation paths still worth tracking:
 
 - The misspelled folder `.dev/Sychronizing Game Functionality/` is widely referenced. Fixing it requires a deliberate compatibility/reference pass.
 - `.cursor/rules/*` and `.cursor/skills/*` contain many direct `.dev` paths and should be included in the same reference checks as package scripts and code comments.
+
+## Cleanup Status: 2026-07-08
+
+Completed cleanup actions:
+
+- Added agent-routing blocks to primary `.dev` engineering docs, E2E playbooks, code-review playbooks, NPC/gameboard references, soundscape references, local tool READMEs, step-by-step playbooks, and task workflow files.
+- Deleted stale tracked planning/request notes after reference checks, including old dice, multiplayer, table-layout, patch-script, animation, HUD site-card, NPC modification, soundscape issue, and rough code-review notes.
+- Removed references to deleted docs rather than leaving redirect notes.
+- Consolidated useful current facts from deleted docs into active references where needed.
+- Confirmed no remaining `Augment` references in the scanned repo documentation set.
+- Confirmed markdown links resolve after each cleanup segment.
+
+Intentional remaining exception:
+
+- `.dev/PC Data & Tracking/lucien_backstory.md` has no `## Agent Routing` block because it is campaign prose/reference material rather than an engineering or workflow routing surface.
+
+Remaining cleanup priorities:
+
+- Verify canonical docs against current code, especially areas already flagged by audits or tests.
+- Reassess `.cursor/skills/tr-start` and `.cursor/skills/tr-inbox` after the routing model settles; they remain current workflows but are not assumed permanent.
+- Decide later whether to physically relocate `.dev` folders. No major moves should happen until package scripts, `.cursor` rules/skills, generated-file headers, and code comments are migrated in the same pass.
 
 ## Proposed Agent-First Target Structure
 
