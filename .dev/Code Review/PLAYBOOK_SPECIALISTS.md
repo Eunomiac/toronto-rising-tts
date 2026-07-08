@@ -1,5 +1,20 @@
 # Playbook: Specialists
 
+## Agent Routing
+
+Read this when:
+- running a focused code-review pass for one issue category
+- appending review findings without changing production Lua
+
+Source of truth:
+- `.dev/Code Review/CODE_REVIEW_PIPELINE.md`
+- `.dev/Code Review/region_registry.json`
+- `.dev/Code Review/findings.jsonl`
+- `.tools/code-review/`
+
+Verification:
+- `npm run code-review:validate`
+
 ## Goal
 
 Run **narrow** passes that each look for **one** class of issue. Specialists **append findings only** (no Lua edits) using the CLI, unless you are explicitly running a Fixer phase.

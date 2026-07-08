@@ -1,5 +1,20 @@
 # Playbook: Summarizer
 
+## Agent Routing
+
+Read this when:
+- filling or correcting region classifications, descriptions, or notes after an Architect pass
+- preparing code-review context for Specialists or Organizer
+
+Source of truth:
+- `.dev/Code Review/CODE_REVIEW_PIPELINE.md`
+- `.dev/Code Review/region_registry.json`
+- production `.ttslua` files in the selected batch
+- `.tools/code-review/`
+
+Verification:
+- `npm run code-review:validate`
+
 ## Goal
 
 Ground later passes by filling `classification`, `description`, and (when needed) `notes` for every region in `region_registry.json` for the files in scope.

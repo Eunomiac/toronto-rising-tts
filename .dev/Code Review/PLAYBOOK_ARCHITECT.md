@@ -1,5 +1,21 @@
 # Playbook: Architect
 
+## Agent Routing
+
+Read this when:
+- partitioning a production `.ttslua` file into code-review regions
+- updating `region_registry.json` and `excluded_files.json` for a newly covered file
+
+Source of truth:
+- `.dev/Code Review/CODE_REVIEW_PIPELINE.md`
+- `.tools/code-review/`
+- `.dev/Code Review/region_registry.json`
+- `.dev/Code Review/excluded_files.json`
+
+Verification:
+- `npm run code-review:validate`
+- `npm run code-review:build` when tooling changed
+
 ## Goal
 
 Partition one production `.ttslua` file (see globs in [CODE_REVIEW_PIPELINE.md](CODE_REVIEW_PIPELINE.md)) with nested `#region` markers and registry rows—**no** code-quality judgments.

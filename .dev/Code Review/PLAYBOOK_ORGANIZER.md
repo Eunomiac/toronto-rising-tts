@@ -1,5 +1,21 @@
 # Playbook: Organizer
 
+## Agent Routing
+
+Read this when:
+- converting code-review region structure, summaries, or findings into a concrete refactor plan
+- preparing an implementation pass that will move/split/merge regions
+
+Source of truth:
+- `.dev/Code Review/CODE_REVIEW_PIPELINE.md`
+- `.dev/Code Review/region_registry.json`
+- `.dev/Code Review/findings.jsonl`
+- `.tools/code-review/`
+
+Verification:
+- `npm run code-review:validate`
+- `npm run build` after any later implementation pass changes production code
+
 ## Goal
 
 Turn structural signals (nested “suspected misplacement” regions, Summarizer `notes`, obvious duplicate section titles) into a **reviewed plan** for refactors—without applying those refactors until approved.
@@ -20,4 +36,4 @@ Turn structural signals (nested “suspected misplacement” regions, Summarizer
 ## Non-goals
 
 - Do not silently edit production `.ttslua` in this pass unless explicitly designated as implementation.
-- Do not delete historical findings; add new ones if the Organizer discovers issues specialists should track.
+- Do not remove existing findings unless the corresponding code issue has been resolved or invalidated by current source.
