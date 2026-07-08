@@ -1,5 +1,22 @@
 # Roll Broadcast Messages (TOR-296)
 
+## Agent Routing
+
+Read this when:
+- changing roll broadcast panel copy, roll result headlines, difficulty visibility, or broadcast suppression/auto-broadcast behavior
+- debugging mismatches between player/ST roll panel result text and the final broadcast panel
+
+Source of truth:
+- `core/roll_ui.ttslua`
+- `core/roll_controller.ttslua`
+- `ui/shared/roll_panels.xml`
+- `lib/constants.ttslua`
+
+Verification:
+- `npm run build`
+- `.dev/E2E Playbooks/Dice-E2E.md`
+- `DEBUG.rollBroadcastMessageAudit()`
+
 Reference catalog for the **Roll Result Broadcast Panel** (`rollRes_panel`) and the shared result headline logic used on player/ST roll panels. Source of truth: `core/roll_ui.ttslua` (`narrativeLabel`, `panelResultHeadline`, `panelResultDisplayText`, `showResultBroadcast`, `broadcastResultClassString`).
 
 ## Panel fields

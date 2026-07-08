@@ -1,4 +1,4 @@
-# Dice System — Full Design Plan
+# Dice System Reference
 
 ## Agent Routing
 
@@ -16,12 +16,9 @@ Source of truth:
 Verification:
 - `npm run build`
 - `.dev/E2E Playbooks/Dice-E2E.md`
-- `.dev/Dice System/Custom Roll Mechanics.md` for newer roll policy details
+- `.dev/Dice System/Custom Roll Mechanics.md` for roll policy and extension details
 
-Status: broad dice design reference; verify implementation details against code and newer dice docs.
-
-> **Status:** Implementation-ready design. This document fully replaces the preliminary outline.
-> **Scope:** All layers — VTM5E mechanics, Lua architecture, state model, control flow, UI panels, physical dice integration, and phased implementation roadmap.
+Status: broad dice architecture reference. Verify implementation details against code and the focused dice docs linked above.
 
 ---
 

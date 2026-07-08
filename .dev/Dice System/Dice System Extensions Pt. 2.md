@@ -1,6 +1,30 @@
 # Dice System Extensions, Part 2
 
-Several new types of dice and their corresponding dice bags have been added to the game. They follow the naming and tagging conventions of the existing dice and dice bags, namely:
+## Agent Routing
+
+Read this when:
+- changing Rouse, Oblivion-Rouse, Storyteller, Werewolf, Rage, or Blood Surge dice behavior
+- updating dice-bag naming/tagging, die-kind metadata, rouse outcome strips, ST drawer behavior, or Brutal Outcome handling
+
+Source of truth:
+- `lib/dice_kinds.ttslua`
+- `lib/rouse_outcomes.ttslua`
+- `objects/dice_bag.ttslua`
+- `core/global_script.ttslua`
+- `core/roll_controller.ttslua`
+- `core/storyteller_rolls.ttslua`
+- `core/roll_ui.ttslua`
+
+Verification:
+- `npm run build`
+- `.dev/E2E Playbooks/Dice-E2E.md`
+- `lib/e2e_playbook_dice.ttslua`
+
+This document maps the current extended dice behavior and object conventions. Code is the source of truth for exact dispatch and state shape.
+
+## Dice Bag and Tag Conventions
+
+Extended dice and their corresponding dice bags follow the naming and tagging conventions of the existing dice and dice bags:
 
 * all dice bags are named `DICEBAG_<DICETYPE>_<COLOR>`
 * all dice objects are tagged `d10`, `<Color>Object`, and `<DiceType>Die`
@@ -12,7 +36,7 @@ An exception to the above has to be made with the introduction of Storyteller di
 * all dice objects are tagged `d10`, `StorytellerObject`, and `<DiceType>Die`
 * all dice bags are tagged `StorytellerObject` and `<DiceType>Die`.
 
-All of the new dice bags, including the Storyteller dice bags, require the same object script as the existing dice bags: `objects/dice_bag.ttslua`. (This script will need to be updated to account for the new dice types and the different procedure for handling Storyteller dice clicks, as well as to implement several of the changes outlined below to the current flow of control during a roll.)
+All extended dice bags, including Storyteller dice bags, use the shared object script `objects/dice_bag.ttslua`. Die-kind metadata and display mapping live in `lib/dice_kinds.ttslua`; roll and outcome behavior is dispatched through the controller and Storyteller modules listed in Agent Routing.
 
 ## Die Types
 
@@ -90,9 +114,9 @@ This Storyteller-only dice bag is the partner to Werewolf Dice -- basically, thi
 | 9 | dieFace_rage_scratch |
 | 10 | dieFace_rage_crit |
 
-## Dice System Modifications - Player Rolls
+## Player Roll Behavior
 
-### Current Behavior
+### Baseline Bag Behavior
 
 | Action | Triggered Event |
 | :--: | :-- |
@@ -102,9 +126,9 @@ This Storyteller-only dice bag is the partner to Werewolf Dice -- basically, thi
 | Player Clicks `DICEBAG_HUNGER` with no active roll | A player-initiated Rouse Check is triggered and sent to the Storyteller for approval to open the roll. |
 | Player Clicks `DICEBAG_HUNGER` while assembling a dice pool for a standard roll or a Rouse Check | A Hunger die is added to the pool, regardless of the player's Hunger rating. |
 
-### New Behavior
+### Extended Bag Behavior
 
-Under the new system, the addition of a third dice bag (`DICEBAG_ROUSE`) allows for additions and changes to the above process to streamline the rolling process (changes to the current system are tagged with a ⭐):
+Current behavior adds the Rouse and Oblivion-Rouse dice bags to streamline roll assembly:
 
 | Action | Triggered Event |
 | :--: | :-- |
@@ -172,7 +196,7 @@ The broadcast results should include the results and dice faces for each of the 
 
 Rouse Dice and Oblivion Rouse dice cannot be rerolled by spending Willpower, and should be locked during a Willpower reroll sequence.
 
-## Dice System Modifications - Storyteller Rolls
+## Storyteller Roll Behavior
 
 In general, the same rules described above for player rolls apply to Storyteller rolls, with a few key differences:
 
@@ -201,7 +225,7 @@ Importantly, unlike with player dice bags, the Storyteller dice bags are not loc
 
 Unlike with player rolls, when the Storyteller clicks "Roll", the dice should be randomized automatically -- no waiting for the Storyteller to manually roll the dice.
 
-## Dice System Modifications - Werewolf Rolls
+## Werewolf Roll Behavior
 
 A "Werewolf Roll" is a roll that contains some combination of Werewolf Dice and/or Rage Dice. Only the Storyteller can initiate Werewolf Rolls, and they count as Storyteller rolls, so the mechanics described in the preceding section apply to these rolls as well.
 

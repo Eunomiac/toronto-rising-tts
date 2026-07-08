@@ -2,6 +2,25 @@
 
 This document describes how chronicle-specific and optional mechanics are wired today, and how to add new ones without duplicating the core roll pipeline.
 
+## Agent Routing
+
+Read this when:
+- adding or changing roll options, condition roll policy, Willpower reroll behavior, or custom result classification
+- deciding whether a new mechanic belongs in roll options, pure dice math, table/session flow, or post-confirm consequences
+
+Source of truth:
+- `lib/roll_options.ttslua`
+- `lib/condition_roll_policies.ttslua`
+- `core/roll_controller.ttslua`
+- `core/dice.ttslua`
+- `core/roll_condition_handlers.ttslua`
+- `ui/shared/roll_options_modal.xml`
+
+Verification:
+- `npm run build`
+- `.dev/E2E Playbooks/Dice-E2E.md`
+- focused condition-roll checks in `lib/e2e_playbook_dice.ttslua`
+
 ---
 
 ## Three buckets (what kind of change is it?)
@@ -102,5 +121,4 @@ Roll FSM must **not** scan `playerData.conditions` — only `active.rollPolicy`.
 ## Related documents
 
 - [Conditions System Guide](../PC%20Data%20&%20Tracking/Conditions%20System%20Guide.md) — roll policy §6 + condition authoring
-- [Dice System Outline](Dice%20System%20Outline.md) — full design and control flow.
-- [Dice System Modifications](Dice%20System%20Modifications.md) — recent chronicle-specific requirements log.
+- [Dice System Outline](Dice%20System%20Outline.md) — broad dice architecture and control flow.
