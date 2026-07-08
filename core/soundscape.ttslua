@@ -208,6 +208,8 @@ local function defaultState()
         debugPlayingTracks = {},
         --- When true, ambient playlists (background/location/weather) stay off until cleared by explicit Storyteller soundscape changes or `isSilent = false` in applyContext. Featured lane is unaffected.
         siteSilent = false,
+        --- When true, background music stays off (site `backgroundMusic.playlist = "none"` or `setLocationMusic("none")`); location/weather lanes are unaffected.
+        backgroundMusicSuppressed = false,
         --- Last site key passed through `applyContext` / UI (for Storyteller Sound panel Location enable fallback).
         lastAppliedSiteKey = nil,
     }
@@ -954,6 +956,7 @@ local function playBackgroundPlaylist(kind, key, playlist, forcedTrack)
     })
 
     if okPlay then
+        state.backgroundMusicSuppressed = false
         state.backgroundMusicMode = kind
         state.backgroundMusicEnabled = true
         state.activeMusicChannel = newChannel
@@ -1280,20 +1283,20 @@ local function backgroundMusicPolicyRequiresMain()
     return phase ~= nil and phase ~= C.Phases.SESSION_START
 end
 
---- Treat explicit `"none"` playlist keys as absent so Main default can apply.
---- @param context table
---- @return table
-local function clearNoneBackgroundMusicKeys(context)
-    if type(context) ~= "table" then
-        return {}
-    end
-    if context.locationMusic == "none" then
-        context.locationMusic = nil
-    end
-    if context.musicMood == "none" then
-        context.musicMood = nil
-    end
-    return context
+--- Stops background music and records explicit no-BGM intent (`backgroundMusic.playlist = "none"`).
+--- @return boolean
+--- @return string
+local function suppressBackgroundMusic()
+    clearSiteSilentLatch()
+    musicGeneration = musicGeneration + 1
+    local state = ensureState()
+    state.backgroundMusicSuppressed = true
+    state.locationMusic = Catalog.DEFAULTS.locationMusic
+    state.backgroundMusicEnabled = false
+    state.backgroundTrackKey = nil
+    silenceLoopChannel("musicA")
+    silenceLoopChannel("musicB")
+    return true, "Background music stopped"
 end
 
 local function soundscapeReconcileFingerprint(state)
@@ -1302,6 +1305,7 @@ local function soundscapeReconcileFingerprint(state)
     end
     local parts = {
         state.siteSilent == true and "1" or "0",
+        state.backgroundMusicSuppressed == true and "1" or "0",
         state.backgroundMusicEnabled == true and "1" or "0",
         tostring(state.backgroundMusicMode or ""),
         tostring(state.locationMusic or ""),
@@ -1330,6 +1334,10 @@ local function applySoundscapeReconcileFromStateSnapshot(state)
             Soundscape.setLocationMusic(state.locationMusic)
         elseif type(state.musicMood) == "string" then
             Soundscape.setMusicMood(state.musicMood)
+        end
+    elseif state.backgroundMusicSuppressed == true then
+        if state.backgroundMusicEnabled == true then
+            suppressBackgroundMusic()
         end
     elseif backgroundMusicPolicyRequiresMain() then
         -- Load / Sync.full path when state still has BGM disabled; applyContext uses withDefaultBackgroundMusic + setMusicMood only.
@@ -1928,10 +1936,12 @@ function Soundscape.mergeSessionSceneNarrativeIntoContext(sessionScene, base)
     if type(sn) ~= "table" then
         return out
     end
-    if type(sn.backgroundMusic) == "string"
-        and string.match(sn.backgroundMusic, "%S")
-        and sn.backgroundMusic ~= "none" then
-        out.musicMood = sn.backgroundMusic
+    if type(sn.backgroundMusic) == "string" and string.match(sn.backgroundMusic, "%S") then
+        if sn.backgroundMusic == "none" then
+            out.locationMusic = "none"
+        else
+            out.musicMood = sn.backgroundMusic
+        end
     end
     if type(sn.location) == "string" and string.match(sn.location, "%S") then
         out.location = sn.location
@@ -1946,12 +1956,18 @@ function Soundscape.mergeSessionSceneNarrativeIntoContext(sessionScene, base)
 end
 
 --- When a scene/site bundle does not specify background music, apply the catalog default mood (`main`).
---- Skips silent sites and any context that already sets mood or location playlist.
+--- Skips silent sites, explicit `locationMusic = "none"`, and any context that already sets mood or location playlist.
 --- @param context table|nil
 --- @return table
 function Soundscape.withDefaultBackgroundMusic(context)
-    local out = clearNoneBackgroundMusicKeys(type(context) == "table" and context or {})
+    local out = type(context) == "table" and context or {}
     if out.isSilent == true then
+        return out
+    end
+    if out.locationMusic == "none" or out.musicMood == "none" then
+        if out.musicMood == "none" then
+            out.musicMood = nil
+        end
         return out
     end
     if out.musicMood == nil and out.locationMusic == nil and backgroundMusicPolicyRequiresMain() then
@@ -2005,10 +2021,7 @@ function Soundscape.contextFromSite(site, siteKey)
     local sc = site.soundscape
     if type(sc) == "table" then
         local bg = sc.backgroundMusic
-        if type(bg) == "table"
-            and type(bg.playlist) == "string"
-            and bg.playlist ~= ""
-            and bg.playlist ~= "none" then
+        if type(bg) == "table" and type(bg.playlist) == "string" and bg.playlist ~= "" then
             ctx.locationMusic = bg.playlist
         end
         local loc = sc.location
@@ -2037,20 +2050,10 @@ end
 -- @return boolean
 -- @return string
 function Soundscape.setLocationMusic(playlistKey)
-    clearSiteSilentLatch()
     if playlistKey == "none" then
-        if backgroundMusicPolicyRequiresMain() then
-            return Soundscape.setMusicMood(Catalog.DEFAULTS.musicMood)
-        end
-        musicGeneration = musicGeneration + 1
-        local state = ensureState()
-        state.locationMusic = Catalog.DEFAULTS.locationMusic
-        state.backgroundMusicEnabled = false
-        state.backgroundTrackKey = nil
-        silenceLoopChannel("musicA")
-        silenceLoopChannel("musicB")
-        return true, "Location music stopped"
+        return suppressBackgroundMusic()
     end
+    clearSiteSilentLatch()
     local playlist = Catalog.getBackgroundPlaylist(playlistKey)
     if playlist == nil then
         return false, "Unknown background music playlist: " .. tostring(playlistKey)
@@ -2087,6 +2090,10 @@ function Soundscape.resumeBackgroundMusic()
     if state.siteSilent == true then
         state.backgroundPausedForFeatured = false
         return true, "Silent site: background remains off"
+    end
+    if state.backgroundMusicSuppressed == true then
+        state.backgroundPausedForFeatured = false
+        return true, "Background music suppressed for this site"
     end
     if state.backgroundMusicMode == BACKGROUND_KIND_LOCATION and state.locationMusic ~= Catalog.DEFAULTS.locationMusic then
         return Soundscape.setLocationMusic(state.locationMusic)
@@ -2381,6 +2388,7 @@ function Soundscape.stopAll()
     state.thunderEnabled = Catalog.DEFAULTS.thunderEnabled
     state.location = Catalog.DEFAULTS.location
     state.siteSilent = false
+    state.backgroundMusicSuppressed = false
     return ok, table.concat(messages, " | ")
 end
 

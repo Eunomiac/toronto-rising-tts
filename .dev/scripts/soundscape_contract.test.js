@@ -12,6 +12,29 @@ function readRepoFile(relativePath) {
   return fs.readFileSync(path.join(repoRoot, relativePath), "utf8");
 }
 
+test("soundscape site none playlist suppresses background music without defaulting to main", () => {
+  const source = readRepoFile("core/soundscape.ttslua");
+
+  [
+    "backgroundMusicSuppressed",
+    "local function suppressBackgroundMusic()",
+    'if out.locationMusic == "none" or out.musicMood == "none" then',
+    "ctx.locationMusic = bg.playlist",
+    'if sn.backgroundMusic == "none" then',
+    "out.locationMusic = \"none\"",
+    "state.backgroundMusicSuppressed == true",
+    "Background music suppressed for this site",
+  ].forEach((needle) => {
+    assert.ok(source.includes(needle), `missing site none BGM support: ${needle}`);
+  });
+
+  assert.equal(
+    source.includes("clearNoneBackgroundMusicKeys"),
+    false,
+    "clearNoneBackgroundMusicKeys should be removed; explicit none must not fall through to main",
+  );
+});
+
 test("soundscape reconcileFromState guards duplicate deferred apply", () => {
   const source = readRepoFile("core/soundscape.ttslua");
 

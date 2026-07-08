@@ -73,6 +73,10 @@ Do not call `AssetBundle.playLoopingEffect` or trigger effect APIs outside
 
 `C.Sites` entries may set `isSilent = true`. Apply with `Soundscape.applyContext(Soundscape.contextFromSite(site))` (or pass `isSilent` directly in a context table). That sets persisted `soundscape.siteSilent`, stops background music, location ambience, and weather (including thunder scheduling), and **does not** stop the featured lane. Storyteller actions that start ambient audio (`setMusicMood`, weather/location setters, etc.) clear `siteSilent`. While `siteSilent` is true, `resumeBackgroundMusic` does not restart background tracks after featured music ends. Indoor ducking is irrelevant while silent (weather is off); `applyContext` skips `isIndoors` when `isSilent = true`.
 
+### No background music (`backgroundMusic.playlist = "none"`)
+
+Per-site `soundscape.backgroundMusic.playlist = "none"` silences **background music only** (location ambience and weather still apply). Omit `backgroundMusic` entirely to get the catalog default mood (`main`) during play. Persisted `soundscape.backgroundMusicSuppressed` keeps BGM off across reconcile until a mood or site playlist is applied. Do not use `isSilent` when you only want BGM off.
+
 ## Verification Checklist
 
 Static verification:

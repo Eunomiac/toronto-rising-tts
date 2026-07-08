@@ -279,6 +279,7 @@ function S.GetDefaultGameState()
             location = "none",
             isIndoors = false,
             siteSilent = false,
+            backgroundMusicSuppressed = false,
             channels = {
                 musicA = { effect = "silent", effectList = "looping", volume = 0, available = false },
                 musicB = { effect = "silent", effectList = "looping", volume = 0, available = false },
