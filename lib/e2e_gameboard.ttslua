@@ -502,6 +502,14 @@ local function assignSeatSlot(seatKey, characterKey, isPresent)
     S.validateState()
 end
 
+--- Gameboard Apply can populate `occupiedNPCSlots` while library rows stay `{ slotEmpty = true }` (TOR-311 repro).
+local function assignDesyncedNpcSeat(seatKey, characterKey)
+    local seatSlots = S.getStateVal("sessionScene", "seatSlots") or {}
+    seatSlots[seatKey] = { slotEmpty = true, isPresent = true }
+    S.setStateVal(seatSlots, "sessionScene", "seatSlots")
+    S.setStateVal(characterKey, "seatLayout", "occupiedNPCSlots", seatKey)
+end
+
 local function tokenOnPalette(characterKey)
     local token = findTokenByCharacterKey(characterKey)
     local palette = getPaletteBoard()
@@ -1077,6 +1085,26 @@ local function runTor281ClearSeatTests(failures)
     clearNpcSeatsAndPlacements()
 end
 
+--- TOR-311: Scenes panel NPC seat disable must not vacate other seated NPCs when seatSlots lag gameboard occupancy.
+local function runTor311SeatDisableTests(failures)
+    local fx = fixture()
+    clearNpcSeatsAndPlacements()
+    assignDesyncedNpcSeat("NPC1", fx.npcA)
+    assignDesyncedNpcSeat("NPC2", fx.npcB)
+    NPCS.setNpcSeatNarrativePresence("NPC1", false)
+    S.validateState()
+    if S.getStateVal("seatLayout", "occupiedNPCSlots", "NPC2") ~= fx.npcB then
+        failures[#failures + 1] = "TOR-311: NPC2 occupiedNPCSlots should remain after NPC1 seat disable"
+    end
+    if S.getStateVal("seatLayout", "occupiedNPCSlots", "NPC1") ~= fx.npcA then
+        failures[#failures + 1] = "TOR-311: NPC1 assignment should remain when only isPresent toggles off"
+    end
+    if E2E_GB.probeSeatNarrativePresence("NPC1") ~= false then
+        failures[#failures + 1] = "TOR-311: NPC1 isPresent should be false after disable"
+    end
+    clearNpcSeatsAndPlacements()
+end
+
 local function runFullSuites(failures)
     local fx = fixture()
 
@@ -1134,6 +1162,7 @@ local function runFullSuites(failures)
     end
 
     runTor281ClearSeatTests(failures)
+    runTor311SeatDisableTests(failures)
 
     clearNpcSeatsAndPlacements()
     retreatAllFixtureNpcs()

@@ -323,6 +323,35 @@ local function isValidNpcSeatKey(seatKey)
     return U.Type(seatKey) == "string" and U.isIn(seatKey, C.NPCSeats or {})
 end
 
+--- Keep `sessionScene.seatSlots` aligned when gameboard seating mutates `occupiedNPCSlots`.
+--- @param seatKey string
+--- @param npcName string|nil character key when assigned; nil clears the row to `slotEmpty`
+local function syncSeatSlotAuthoringForNpcSeat(seatKey, npcName)
+    if not isValidNpcSeatKey(seatKey) then
+        return
+    end
+    local ss = S.getStateVal("sessionScene", "seatSlots")
+    if U.Type(ss) ~= "table" then
+        ss = {}
+    else
+        ss = U.clone(ss, true)
+    end
+    if U.Type(npcName) ~= "string" or npcName == "" then
+        ss[seatKey] = { slotEmpty = true }
+    else
+        local row = ss[seatKey]
+        if U.Type(row) ~= "table" then
+            row = {}
+        else
+            row = U.clone(row, true)
+        end
+        row.characterKey = npcName
+        row.slotEmpty = nil
+        ss[seatKey] = row
+    end
+    S.setStateVal(ss, "sessionScene", "seatSlots")
+end
+
 --- @param rec table|nil
 --- @return boolean
 local function isNpcSeatedAtTable(rec)
@@ -1192,12 +1221,7 @@ local function clearNpcSeatPhysical(seatKey, opts)
         local occupied = U.clone(getOccupiedNpcSeatMap())
         occupied[seatKey] = false
         setOccupiedNpcSeatMap(occupied)
-        local ss = S.getStateVal("sessionScene", "seatSlots")
-        if U.Type(ss) ~= "table" then
-            ss = {}
-        end
-        ss[seatKey] = { slotEmpty = true }
-        S.setStateVal(ss, "sessionScene", "seatSlots")
+        syncSeatSlotAuthoringForNpcSeat(seatKey, nil)
     end
     for i = 1, #toPark do
         local name = toPark[i]
@@ -1355,6 +1379,7 @@ local function assignNpcToSeat(npcName, seatKey, opts)
     end
     occupied[seatKey] = npcName
     setOccupiedNpcSeatMap(occupied)
+    syncSeatSlotAuthoringForNpcSeat(seatKey, npcName)
     rec = getInstances()[npcName]
     if rec == nil then
         return false, "NPC instance lost."
