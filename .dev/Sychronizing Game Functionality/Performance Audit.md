@@ -4,7 +4,7 @@
 
 | Rank | Topic | Status |
 | --- | --- | --- |
-| 0 | **Interaction points (gameboard Apply/Clear/drop)** | **In progress (TOR-201)** — snap catalog cache keyed by `controlBoardSnapFingerprintFor`; orchestrator `force=false` on control-board path; `DEBUG.profileGameboardApply/Clear/TokenDrop`; see [Plan Review](Control%20Board%20Frame%20Hitch%20%E2%80%94%20Plan%20Review.md) |
+| 0 | **Interaction points (gameboard Apply/Clear/drop)** | **In progress (TOR-201)** — snap catalog cache keyed by `controlBoardSnapFingerprintFor`; orchestrator `force=false` on control-board path; `DEBUG.profileGameboardApply/Clear/TokenDrop` |
 | 1 | `Sync.player` duplicate overlay/HUD | **Done** — `HO.reconcileForSeat` / `HUP.reconcileForSeat`; scoped `UpdateUIDisplays`; no duplicate `overlays` / all-player `playerHud` |
 | 2 | Startup bootstrap stacks | **Done** — readiness-gated `scheduleBootstrapCoordinator()` (poll `0.35s`, max `10s`) replaces blind `BOOTSTRAP_RETRY_OFFSETS_SEC`; `L.seatSpotlightsResolvable()` + pending init-light probe; bootstrap metrics (`earlyExit`, `ticksRun`, `lightsDeferredRemaining`) |
 | 3 | Seat lighting redundant lerps | **Partial** — `lastReconciledModeByRef` + `L.invalidateReconcileCache()`; bootstrap ticks use `opts.bootstrap` → `transitionTime = 0`; seat-presentation orchestrator fingerprint skips full `reconcileAllPlayers` when PC light + overlay inputs unchanged |
@@ -56,7 +56,7 @@ All recommendations preserve the synchronization contract: `gameState` remains t
 - Orchestrator `force = false` on control-board Sync.npcs path.
 - `DEBUG.profileGameboardApply()` / `Clear()` / `TokenDrop()` — `phaseA_ms`, `catalog_builds`, `tag_scans`.
 
-**Measure before Tier 2:** If hitch remains after Tier 1, document spans before Phase A/B or registry work. See [Control Board Frame Hitch — Plan Review.md](Control%20Board%20Frame%20Hitch%20%E2%80%94%20Plan%20Review.md).
+**Measure before Tier 2:** If hitch remains after Tier 1, document spans before Phase A/B or registry work.
 
 ## 1. `Sync.player(color)` double all-seat overlay/HUD fan-out
 
