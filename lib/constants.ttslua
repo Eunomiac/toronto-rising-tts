@@ -1099,7 +1099,7 @@ C.ObjectPositions = {
   },
   FAMULUS_FIGURINE_BROWN = {
     on = {
-      position = { y = 0.14}
+      position = { y = -1.03}
     },
     off = {
       position = { y = -200 }
