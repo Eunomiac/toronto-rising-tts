@@ -77,7 +77,7 @@ Audit trail for the 2026-05-22 Linear alignment pass.
 
 **Repo:** `DEVELOPMENT_WORKFLOW.md` § Human-gated work; `.cursor/rules/toronto-rising-linear.mdc` § Human-gated vs Canceled; RUNNING TASKLIST §Out of Scope wording.
 
-**Linear MCP:** `save_issue` with `state: "Backlog"` (or state id `43add8cd-3f26-49b5-958c-a33fadd7bbf5`) did not transition canceled issues in-agent (2026-06-04) — **author:** bulk-select in Linear → set status **Backlog**, priority **Medium**, paste human-gate block from `.dev/plans/workshop-linear-reopen.md` if needed.
+**Linear MCP:** `save_issue` with `state: "Backlog"` (or state id `43add8cd-3f26-49b5-958c-a33fadd7bbf5`) did not transition canceled issues in-agent (2026-06-04). Author-side bulk edit: set status **Backlog**, priority **Medium**, and apply the human-gate description pattern from [`DEVELOPMENT_WORKFLOW.md`](../DEVELOPMENT_WORKFLOW.md#human-gated-work-author-owned-not-agent-owned).
 
 ## 2026-05-22 — Repo docs
 
