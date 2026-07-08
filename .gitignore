@@ -13,13 +13,13 @@ yarn.lock
 .dev/storyteller-dashboard-pr9/.env
 
 # IDE — track shared VS Code / Cursor tasks + TTS Lua workspace defaults; keep other settings local
-.vscode/*
+# .vscode/*
 !.vscode/tasks.json
 !.vscode/settings.json
-.idea/
-*.swp
-*.swo
-*~
+# .idea/
+# *.swp
+# *.swo
+# *~
 
 # OS
 .DS_Store
@@ -31,16 +31,16 @@ desktop.ini
 logs/
 
 # TTS specific
-*.json.bak
-*.lua.bak
-ui/.templates/.build/
+# *.json.bak
+# *.lua.bak
+# ui/.templates/.build/
 
 # TTS extension generated files (bundled output)
 .tts/bundled/
 
 # Optional: if an extension still materializes .tts/output/, keep noise out of git
-.tts/output/**/*.txt
-.tts/output/**/*.log
+# .tts/output/**/*.txt
+# .tts/output/**/*.log
 
 # Bridge / extension debug writes — runtime output only (see .dev/DEBUG_FILE_LOGGING.md).
 .dev/.debug/
@@ -52,7 +52,7 @@ ui/.templates/.build/
 .dev/build-logs/bundle-size-gate.json
 .dev/build-logs/tts-object-stub-guids-gate.txt
 .dev/testbed/TEST BED.ttslua
-lib/e2e_playbook_dice.ttslua
+# lib/e2e_playbook_dice.ttslua
 
 # Compiled CSS (source SCSS is tracked)
 UI/styles.css

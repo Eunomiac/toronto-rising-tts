@@ -1,0 +1,1477 @@
+<!-- TARGET: ui/player/panel_right_sidebar_referenceLayer.xml -->
+<!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md (generator); .dev/HUDs & Overlays/Player HUD Overview.md (reference layers). -->
+
+<!--
+UI.setAttributes("playerHud_referenceLayer_Red", {color = "rgba(1, 0, 0, 0.15)"})
+
+-->
+<Panel id="playerHud_referenceLayer_@@color@@" class="popupImageContainer" visibility="@@color@@">
+
+  <Defaults>
+
+    <Panel class="princesCourt-reference"
+      width = "1500"
+      height = "975"
+      offsetXY = "-50 0" />
+
+    <Image rectAlignment="MiddleLeft" />
+
+    <Image class="box"
+      rectAlignment = "MiddleLeft"
+      preserveAspect = "true"
+      raycastTarget = "false"
+      active = "true" />
+
+    <Image class="navButton"
+      height = "128"
+      width = "50"
+      color = "rgba(1, 1, 1, 0.25)"
+      preserveAspect = "true" />
+
+    <Image class="navButton_left"
+      rectAlignment = "MiddleLeft"
+      offsetXY = "-40 0" />
+
+    <Image class="navButton_right"
+      rectAlignment = "MiddleRight"
+      offsetXY = "40 0" />
+
+    <Image class="princeCourt_page"
+      height = "100%"
+      preserveAspect = "true" />
+
+    <Image class="dot_large"
+      rectAlignment = "UpperLeft"
+      height = "60"
+      width = "60"
+      active = "true" />
+
+    <Image class="box_standard"
+      height = "24"
+      width = "24"
+      active = "true" />
+
+    <!-- <Image class="box_text_title_dot" height = "20" width = "20" /> -->
+
+    <VerticalLayout class="page"
+      width = "710"
+      padding = "8 8 50 50" />
+
+    <VerticalLayout class="page_right"
+      rectAlignment = "MiddleRight"
+      offsetXY = "-20 0" />
+
+    <VerticalLayout class="page_left"
+      rectAlignment = "MiddleLeft"
+      offsetXY = "20 0" />
+
+    <Text class="box_text" resizeTextMinSize = "8" resizeTextMaxSize = "14" />
+    <Text class="box_text_title_text" resizeTextMinSize = "8" resizeTextMaxSize = "14" />
+
+    <VerticalLayout class="box_text_container" padding="5 5 0 0" />
+      <HorizontalLayout class="1_dot" padding="0 20 0 0" />
+  <HorizontalLayout class="2_dots" padding="0 40 0 0" />
+  <HorizontalLayout class="3_dots" padding="0 60 0 0" />
+  <HorizontalLayout class="4_dots" padding="0 80 0 0" />
+  <HorizontalLayout class="5_dots" padding="0 100 0 0" />
+  <HorizontalLayout class="6_dots" padding="0 120 0 0" />
+
+  </Defaults>
+
+  <Image id="playerHud_refPanel_chronicleTenets_@@color@@" active="false" class="popupImage" image="refPanel_ChronicleTenets" />
+  <Image id="playerHud_refPanel_rolls_@@color@@" active="false" class="popupImage" image="refPanel_Rolls" />
+  <Image id="playerHud_refPanel_physicalCombat_@@color@@" active="false" class="popupImage" image="refPanel_PhysicalCombat" />
+  <Image id="playerHud_refPanel_socialCombat_@@color@@" active="false" class="popupImage" image="refPanel_SocialCombat" />
+  <Image id="playerHud_refPanel_threats_@@color@@" active="false" class="popupImage" image="refPanel_Threats" />
+  <Image id="playerHud_refPanel_frenzy_@@color@@" active="false" class="popupImage" image="refPanel_Frenzy" />
+  <Image id="playerHud_refPanel_recovery_@@color@@" active="false" class="popupImage" image="refPanel_Recovery" />
+  <Image id="playerHud_refPanel_resonance_@@color@@" active="false" class="popupImage" image="refPanel_Resonance" />
+  <Image id="playerHud_refPanel_experience_@@color@@" active="false" class="popupImage" image="refPanel_Experience" />
+  <Image id="playerHud_refPanel_advantages_@@color@@" active="false" class="popupImage" image="refPanel_Advantages" />
+  <Image id="playerHud_refPanel_projects_@@color@@" active="false" class="popupImage" image="refPanel_Projects" />
+  <Image id="playerHud_refPanel_memoriam_@@color@@" active="false" class="popupImage" image="refPanel_Memoriam" />
+
+
+  <!--
+UI.setAttributes("playerHud_refPanel_princesCourt_Red", {offsetXY = "-50 0"})
+  -->
+  <Panel id="playerHud_refPanel_princesCourt_@@color@@" class="princesCourt-reference" active="false">
+    <!--
+  UI.hide("playerHud_refPanel_PrincesCourt_page1_Red")
+  -->
+    <Panel id="playerHud_refPanel_PrincesCourt_page1_@@color@@" class="princesCourt-page">
+      <Image id="refPanel_PrincesCourt_page1_@@color@@" class="princeCourt_page" image="refPanel_PrincesCourt_page1" raycastTarget="false" />
+      <!-- PURPLE panel trackers -->
+      <Image id="box_on_health_1_Purple_@@color@@" image="box_white" class="box box_standard" offsetXY="22 107" />
+      <Image id="box_agg_health_1_Purple_@@color@@" image="box_red_x" class="box box_standard" offsetXY="22 107" />
+      <Image id="box_sup_health_1_Purple_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="22 107" />
+      <Image id="box_on_health_2_Purple_@@color@@" image="box_white" class="box box_standard" offsetXY="34.5 107" />
+      <Image id="box_agg_health_2_Purple_@@color@@" image="box_red_x" class="box box_standard" offsetXY="34.5 107" />
+      <Image id="box_sup_health_2_Purple_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="34.5 107" />
+      <Image id="box_on_health_3_Purple_@@color@@" image="box_white" class="box box_standard" offsetXY="47 107" />
+      <Image id="box_agg_health_3_Purple_@@color@@" image="box_red_x" class="box box_standard" offsetXY="47 107" />
+      <Image id="box_sup_health_3_Purple_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="47 107" />
+      <Image id="box_on_health_4_Purple_@@color@@" image="box_white" class="box box_standard" offsetXY="59.5 107" />
+      <Image id="box_agg_health_4_Purple_@@color@@" image="box_red_x" class="box box_standard" offsetXY="59.5 107" />
+      <Image id="box_sup_health_4_Purple_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="59.5 107" />
+      <Image id="box_on_health_5_Purple_@@color@@" image="box_white" class="box box_standard" offsetXY="72 107" />
+      <Image id="box_agg_health_5_Purple_@@color@@" image="box_red_x" class="box box_standard" offsetXY="72 107" />
+      <Image id="box_sup_health_5_Purple_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="72 107" />
+      <Image id="box_on_health_6_Purple_@@color@@" image="box_white" class="box box_standard" offsetXY="84.5 107" />
+      <Image id="box_agg_health_6_Purple_@@color@@" image="box_red_x" class="box box_standard" offsetXY="84.5 107" />
+      <Image id="box_sup_health_6_Purple_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="84.5 107" />
+      <Image id="box_on_health_7_Purple_@@color@@" image="box_white" class="box box_standard" offsetXY="97 107" />
+      <Image id="box_agg_health_7_Purple_@@color@@" image="box_red_x" class="box box_standard" offsetXY="97 107" />
+      <Image id="box_sup_health_7_Purple_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="97 107" />
+      <Image id="box_on_health_8_Purple_@@color@@" image="box_white" class="box box_standard" offsetXY="109.5 107" />
+      <Image id="box_agg_health_8_Purple_@@color@@" image="box_red_x" class="box box_standard" offsetXY="109.5 107" />
+      <Image id="box_sup_health_8_Purple_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="109.5 107" />
+      <Image id="box_on_health_9_Purple_@@color@@" image="box_white" class="box box_standard" offsetXY="122 107" />
+      <Image id="box_agg_health_9_Purple_@@color@@" image="box_red_x" class="box box_standard" offsetXY="122 107" />
+      <Image id="box_sup_health_9_Purple_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="122 107" />
+      <Image id="box_on_health_10_Purple_@@color@@" image="box_white" class="box box_standard" offsetXY="134.5 107" />
+      <Image id="box_agg_health_10_Purple_@@color@@" image="box_red_x" class="box box_standard" offsetXY="134.5 107" />
+      <Image id="box_sup_health_10_Purple_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="134.5 107" />
+      <Image id="box_on_willpower_1_Purple_@@color@@" image="box_white" class="box box_standard" offsetXY="22 82" />
+      <Image id="box_agg_willpower_1_Purple_@@color@@" image="box_red_x" class="box box_standard" offsetXY="22 82" />
+      <Image id="box_sup_willpower_1_Purple_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="22 82" />
+      <Image id="box_on_willpower_2_Purple_@@color@@" image="box_white" class="box box_standard" offsetXY="34.5 82" />
+      <Image id="box_agg_willpower_2_Purple_@@color@@" image="box_red_x" class="box box_standard" offsetXY="34.5 82" />
+      <Image id="box_sup_willpower_2_Purple_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="34.5 82" />
+      <Image id="box_on_willpower_3_Purple_@@color@@" image="box_white" class="box box_standard" offsetXY="47 82" />
+      <Image id="box_agg_willpower_3_Purple_@@color@@" image="box_red_x" class="box box_standard" offsetXY="47 82" />
+      <Image id="box_sup_willpower_3_Purple_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="47 82" />
+      <Image id="box_on_willpower_4_Purple_@@color@@" image="box_white" class="box box_standard" offsetXY="59.5 82" />
+      <Image id="box_agg_willpower_4_Purple_@@color@@" image="box_red_x" class="box box_standard" offsetXY="59.5 82" />
+      <Image id="box_sup_willpower_4_Purple_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="59.5 82" />
+      <Image id="box_on_willpower_5_Purple_@@color@@" image="box_white" class="box box_standard" offsetXY="72 82" />
+      <Image id="box_agg_willpower_5_Purple_@@color@@" image="box_red_x" class="box box_standard" offsetXY="72 82" />
+      <Image id="box_sup_willpower_5_Purple_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="72 82" />
+      <Image id="box_on_willpower_6_Purple_@@color@@" image="box_white" class="box box_standard" offsetXY="84.5 82" />
+      <Image id="box_agg_willpower_6_Purple_@@color@@" image="box_red_x" class="box box_standard" offsetXY="84.5 82" />
+      <Image id="box_sup_willpower_6_Purple_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="84.5 82" />
+      <Image id="box_on_willpower_7_Purple_@@color@@" image="box_white" class="box box_standard" offsetXY="97 82" />
+      <Image id="box_agg_willpower_7_Purple_@@color@@" image="box_red_x" class="box box_standard" offsetXY="97 82" />
+      <Image id="box_sup_willpower_7_Purple_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="97 82" />
+      <Image id="box_on_willpower_8_Purple_@@color@@" image="box_white" class="box box_standard" offsetXY="109.5 82" />
+      <Image id="box_agg_willpower_8_Purple_@@color@@" image="box_red_x" class="box box_standard" offsetXY="109.5 82" />
+      <Image id="box_sup_willpower_8_Purple_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="109.5 82" />
+      <Image id="box_on_willpower_9_Purple_@@color@@" image="box_white" class="box box_standard" offsetXY="122 82" />
+      <Image id="box_agg_willpower_9_Purple_@@color@@" image="box_red_x" class="box box_standard" offsetXY="122 82" />
+      <Image id="box_sup_willpower_9_Purple_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="122 82" />
+      <Image id="box_on_willpower_10_Purple_@@color@@" image="box_white" class="box box_standard" offsetXY="134.5 82" />
+      <Image id="box_agg_willpower_10_Purple_@@color@@" image="box_red_x" class="box box_standard" offsetXY="134.5 82" />
+      <Image id="box_sup_willpower_10_Purple_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="134.5 82" />
+      <Image id="box_on_humanity_1_Purple_@@color@@" image="box_white" class="box box_standard" offsetXY="22 57" />
+      <Image id="box_impaired_humanity_1_Purple_@@color@@" image="box_red" class="box box_standard" offsetXY="22 57" />
+      <Image id="box_stain_humanity_1_Purple_@@color@@" image="box_black" class="box box_standard" offsetXY="22 57" />
+      <Image id="box_on_humanity_2_Purple_@@color@@" image="box_white" class="box box_standard" offsetXY="34.5 57" />
+      <Image id="box_impaired_humanity_2_Purple_@@color@@" image="box_red" class="box box_standard" offsetXY="34.5 57" />
+      <Image id="box_stain_humanity_2_Purple_@@color@@" image="box_black" class="box box_standard" offsetXY="34.5 57" />
+      <Image id="box_on_humanity_3_Purple_@@color@@" image="box_white" class="box box_standard" offsetXY="47 57" />
+      <Image id="box_impaired_humanity_3_Purple_@@color@@" image="box_red" class="box box_standard" offsetXY="47 57" />
+      <Image id="box_stain_humanity_3_Purple_@@color@@" image="box_black" class="box box_standard" offsetXY="47 57" />
+      <Image id="box_on_humanity_4_Purple_@@color@@" image="box_white" class="box box_standard" offsetXY="59.5 57" />
+      <Image id="box_impaired_humanity_4_Purple_@@color@@" image="box_red" class="box box_standard" offsetXY="59.5 57" />
+      <Image id="box_stain_humanity_4_Purple_@@color@@" image="box_black" class="box box_standard" offsetXY="59.5 57" />
+      <Image id="box_on_humanity_5_Purple_@@color@@" image="box_white" class="box box_standard" offsetXY="72 57" />
+      <Image id="box_impaired_humanity_5_Purple_@@color@@" image="box_red" class="box box_standard" offsetXY="72 57" />
+      <Image id="box_stain_humanity_5_Purple_@@color@@" image="box_black" class="box box_standard" offsetXY="72 57" />
+      <Image id="box_on_humanity_6_Purple_@@color@@" image="box_white" class="box box_standard" offsetXY="84.5 57" />
+      <Image id="box_impaired_humanity_6_Purple_@@color@@" image="box_red" class="box box_standard" offsetXY="84.5 57" />
+      <Image id="box_stain_humanity_6_Purple_@@color@@" image="box_black" class="box box_standard" offsetXY="84.5 57" />
+      <Image id="box_on_humanity_7_Purple_@@color@@" image="box_white" class="box box_standard" offsetXY="97 57" />
+      <Image id="box_impaired_humanity_7_Purple_@@color@@" image="box_red" class="box box_standard" offsetXY="97 57" />
+      <Image id="box_stain_humanity_7_Purple_@@color@@" image="box_black" class="box box_standard" offsetXY="97 57" />
+      <Image id="box_on_humanity_8_Purple_@@color@@" image="box_white" class="box box_standard" offsetXY="109.5 57" />
+      <Image id="box_impaired_humanity_8_Purple_@@color@@" image="box_red" class="box box_standard" offsetXY="109.5 57" />
+      <Image id="box_stain_humanity_8_Purple_@@color@@" image="box_black" class="box box_standard" offsetXY="109.5 57" />
+      <Image id="box_on_humanity_9_Purple_@@color@@" image="box_white" class="box box_standard" offsetXY="122 57" />
+      <Image id="box_impaired_humanity_9_Purple_@@color@@" image="box_red" class="box box_standard" offsetXY="122 57" />
+      <Image id="box_stain_humanity_9_Purple_@@color@@" image="box_black" class="box box_standard" offsetXY="122 57" />
+      <Image id="box_on_humanity_10_Purple_@@color@@" image="box_white" class="box box_standard" offsetXY="134.5 57" />
+      <Image id="box_impaired_humanity_10_Purple_@@color@@" image="box_red" class="box box_standard" offsetXY="134.5 57" />
+      <Image id="box_stain_humanity_10_Purple_@@color@@" image="box_black" class="box box_standard" offsetXY="134.5 57" />
+      <Image id="box_on_hunger_1_Purple_@@color@@" image="box_red" class="box box_standard" offsetXY="53.25 32" />
+      <Image id="box_on_hunger_2_Purple_@@color@@" image="box_red" class="box box_standard" offsetXY="65.75 32" />
+      <Image id="box_on_hunger_3_Purple_@@color@@" image="box_red" class="box box_standard" offsetXY="78.25 32" />
+      <Image id="box_on_hunger_4_Purple_@@color@@" image="box_red" class="box box_standard" offsetXY="90.75 32" />
+      <Image id="box_on_hunger_5_Purple_@@color@@" image="box_red" class="box box_standard" offsetXY="103.25 32" />
+
+      <!-- PINK panel trackers -->
+      <Image id="box_on_health_1_Pink_@@color@@" image="box_white" class="box box_standard" offsetXY="165 107" />
+      <Image id="box_agg_health_1_Pink_@@color@@" image="box_red_x" class="box box_standard" offsetXY="165 107" />
+      <Image id="box_sup_health_1_Pink_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="165 107" />
+      <Image id="box_on_health_2_Pink_@@color@@" image="box_white" class="box box_standard" offsetXY="177.5 107" />
+      <Image id="box_agg_health_2_Pink_@@color@@" image="box_red_x" class="box box_standard" offsetXY="177.5 107" />
+      <Image id="box_sup_health_2_Pink_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="177.5 107" />
+      <Image id="box_on_health_3_Pink_@@color@@" image="box_white" class="box box_standard" offsetXY="190 107" />
+      <Image id="box_agg_health_3_Pink_@@color@@" image="box_red_x" class="box box_standard" offsetXY="190 107" />
+      <Image id="box_sup_health_3_Pink_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="190 107" />
+      <Image id="box_on_health_4_Pink_@@color@@" image="box_white" class="box box_standard" offsetXY="202.5 107" />
+      <Image id="box_agg_health_4_Pink_@@color@@" image="box_red_x" class="box box_standard" offsetXY="202.5 107" />
+      <Image id="box_sup_health_4_Pink_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="202.5 107" />
+      <Image id="box_on_health_5_Pink_@@color@@" image="box_white" class="box box_standard" offsetXY="215 107" />
+      <Image id="box_agg_health_5_Pink_@@color@@" image="box_red_x" class="box box_standard" offsetXY="215 107" />
+      <Image id="box_sup_health_5_Pink_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="215 107" />
+      <Image id="box_on_health_6_Pink_@@color@@" image="box_white" class="box box_standard" offsetXY="227.5 107" />
+      <Image id="box_agg_health_6_Pink_@@color@@" image="box_red_x" class="box box_standard" offsetXY="227.5 107" />
+      <Image id="box_sup_health_6_Pink_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="227.5 107" />
+      <Image id="box_on_health_7_Pink_@@color@@" image="box_white" class="box box_standard" offsetXY="240 107" />
+      <Image id="box_agg_health_7_Pink_@@color@@" image="box_red_x" class="box box_standard" offsetXY="240 107" />
+      <Image id="box_sup_health_7_Pink_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="240 107" />
+      <Image id="box_on_health_8_Pink_@@color@@" image="box_white" class="box box_standard" offsetXY="252.5 107" />
+      <Image id="box_agg_health_8_Pink_@@color@@" image="box_red_x" class="box box_standard" offsetXY="252.5 107" />
+      <Image id="box_sup_health_8_Pink_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="252.5 107" />
+      <Image id="box_on_health_9_Pink_@@color@@" image="box_white" class="box box_standard" offsetXY="265 107" />
+      <Image id="box_agg_health_9_Pink_@@color@@" image="box_red_x" class="box box_standard" offsetXY="265 107" />
+      <Image id="box_sup_health_9_Pink_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="265 107" />
+      <Image id="box_on_health_10_Pink_@@color@@" image="box_white" class="box box_standard" offsetXY="277.5 107" />
+      <Image id="box_agg_health_10_Pink_@@color@@" image="box_red_x" class="box box_standard" offsetXY="277.5 107" />
+      <Image id="box_sup_health_10_Pink_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="277.5 107" />
+      <Image id="box_on_willpower_1_Pink_@@color@@" image="box_white" class="box box_standard" offsetXY="165 82" />
+      <Image id="box_agg_willpower_1_Pink_@@color@@" image="box_red_x" class="box box_standard" offsetXY="165 82" />
+      <Image id="box_sup_willpower_1_Pink_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="165 82" />
+      <Image id="box_on_willpower_2_Pink_@@color@@" image="box_white" class="box box_standard" offsetXY="177.5 82" />
+      <Image id="box_agg_willpower_2_Pink_@@color@@" image="box_red_x" class="box box_standard" offsetXY="177.5 82" />
+      <Image id="box_sup_willpower_2_Pink_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="177.5 82" />
+      <Image id="box_on_willpower_3_Pink_@@color@@" image="box_white" class="box box_standard" offsetXY="190 82" />
+      <Image id="box_agg_willpower_3_Pink_@@color@@" image="box_red_x" class="box box_standard" offsetXY="190 82" />
+      <Image id="box_sup_willpower_3_Pink_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="190 82" />
+      <Image id="box_on_willpower_4_Pink_@@color@@" image="box_white" class="box box_standard" offsetXY="202.5 82" />
+      <Image id="box_agg_willpower_4_Pink_@@color@@" image="box_red_x" class="box box_standard" offsetXY="202.5 82" />
+      <Image id="box_sup_willpower_4_Pink_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="202.5 82" />
+      <Image id="box_on_willpower_5_Pink_@@color@@" image="box_white" class="box box_standard" offsetXY="215 82" />
+      <Image id="box_agg_willpower_5_Pink_@@color@@" image="box_red_x" class="box box_standard" offsetXY="215 82" />
+      <Image id="box_sup_willpower_5_Pink_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="215 82" />
+      <Image id="box_on_willpower_6_Pink_@@color@@" image="box_white" class="box box_standard" offsetXY="227.5 82" />
+      <Image id="box_agg_willpower_6_Pink_@@color@@" image="box_red_x" class="box box_standard" offsetXY="227.5 82" />
+      <Image id="box_sup_willpower_6_Pink_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="227.5 82" />
+      <Image id="box_on_willpower_7_Pink_@@color@@" image="box_white" class="box box_standard" offsetXY="240 82" />
+      <Image id="box_agg_willpower_7_Pink_@@color@@" image="box_red_x" class="box box_standard" offsetXY="240 82" />
+      <Image id="box_sup_willpower_7_Pink_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="240 82" />
+      <Image id="box_on_willpower_8_Pink_@@color@@" image="box_white" class="box box_standard" offsetXY="252.5 82" />
+      <Image id="box_agg_willpower_8_Pink_@@color@@" image="box_red_x" class="box box_standard" offsetXY="252.5 82" />
+      <Image id="box_sup_willpower_8_Pink_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="252.5 82" />
+      <Image id="box_on_willpower_9_Pink_@@color@@" image="box_white" class="box box_standard" offsetXY="265 82" />
+      <Image id="box_agg_willpower_9_Pink_@@color@@" image="box_red_x" class="box box_standard" offsetXY="265 82" />
+      <Image id="box_sup_willpower_9_Pink_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="265 82" />
+      <Image id="box_on_willpower_10_Pink_@@color@@" image="box_white" class="box box_standard" offsetXY="277.5 82" />
+      <Image id="box_agg_willpower_10_Pink_@@color@@" image="box_red_x" class="box box_standard" offsetXY="277.5 82" />
+      <Image id="box_sup_willpower_10_Pink_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="277.5 82" />
+      <Image id="box_on_humanity_1_Pink_@@color@@" image="box_white" class="box box_standard" offsetXY="165 57" />
+      <Image id="box_impaired_humanity_1_Pink_@@color@@" image="box_red" class="box box_standard" offsetXY="165 57" />
+      <Image id="box_stain_humanity_1_Pink_@@color@@" image="box_black" class="box box_standard" offsetXY="165 57" />
+      <Image id="box_on_humanity_2_Pink_@@color@@" image="box_white" class="box box_standard" offsetXY="177.5 57" />
+      <Image id="box_impaired_humanity_2_Pink_@@color@@" image="box_red" class="box box_standard" offsetXY="177.5 57" />
+      <Image id="box_stain_humanity_2_Pink_@@color@@" image="box_black" class="box box_standard" offsetXY="177.5 57" />
+      <Image id="box_on_humanity_3_Pink_@@color@@" image="box_white" class="box box_standard" offsetXY="190 57" />
+      <Image id="box_impaired_humanity_3_Pink_@@color@@" image="box_red" class="box box_standard" offsetXY="190 57" />
+      <Image id="box_stain_humanity_3_Pink_@@color@@" image="box_black" class="box box_standard" offsetXY="190 57" />
+      <Image id="box_on_humanity_4_Pink_@@color@@" image="box_white" class="box box_standard" offsetXY="202.5 57" />
+      <Image id="box_impaired_humanity_4_Pink_@@color@@" image="box_red" class="box box_standard" offsetXY="202.5 57" />
+      <Image id="box_stain_humanity_4_Pink_@@color@@" image="box_black" class="box box_standard" offsetXY="202.5 57" />
+      <Image id="box_on_humanity_5_Pink_@@color@@" image="box_white" class="box box_standard" offsetXY="215 57" />
+      <Image id="box_impaired_humanity_5_Pink_@@color@@" image="box_red" class="box box_standard" offsetXY="215 57" />
+      <Image id="box_stain_humanity_5_Pink_@@color@@" image="box_black" class="box box_standard" offsetXY="215 57" />
+      <Image id="box_on_humanity_6_Pink_@@color@@" image="box_white" class="box box_standard" offsetXY="227.5 57" />
+      <Image id="box_impaired_humanity_6_Pink_@@color@@" image="box_red" class="box box_standard" offsetXY="227.5 57" />
+      <Image id="box_stain_humanity_6_Pink_@@color@@" image="box_black" class="box box_standard" offsetXY="227.5 57" />
+      <Image id="box_on_humanity_7_Pink_@@color@@" image="box_white" class="box box_standard" offsetXY="240 57" />
+      <Image id="box_impaired_humanity_7_Pink_@@color@@" image="box_red" class="box box_standard" offsetXY="240 57" />
+      <Image id="box_stain_humanity_7_Pink_@@color@@" image="box_black" class="box box_standard" offsetXY="240 57" />
+      <Image id="box_on_humanity_8_Pink_@@color@@" image="box_white" class="box box_standard" offsetXY="252.5 57" />
+      <Image id="box_impaired_humanity_8_Pink_@@color@@" image="box_red" class="box box_standard" offsetXY="252.5 57" />
+      <Image id="box_stain_humanity_8_Pink_@@color@@" image="box_black" class="box box_standard" offsetXY="252.5 57" />
+      <Image id="box_on_humanity_9_Pink_@@color@@" image="box_white" class="box box_standard" offsetXY="265 57" />
+      <Image id="box_impaired_humanity_9_Pink_@@color@@" image="box_red" class="box box_standard" offsetXY="265 57" />
+      <Image id="box_stain_humanity_9_Pink_@@color@@" image="box_black" class="box box_standard" offsetXY="265 57" />
+      <Image id="box_on_humanity_10_Pink_@@color@@" image="box_white" class="box box_standard" offsetXY="277.5 57" />
+      <Image id="box_impaired_humanity_10_Pink_@@color@@" image="box_red" class="box box_standard" offsetXY="277.5 57" />
+      <Image id="box_stain_humanity_10_Pink_@@color@@" image="box_black" class="box box_standard" offsetXY="277.5 57" />
+      <Image id="box_on_hunger_1_Pink_@@color@@" image="box_red" class="box box_standard" offsetXY="196.25 32" />
+      <Image id="box_on_hunger_2_Pink_@@color@@" image="box_red" class="box box_standard" offsetXY="208.75 32" />
+      <Image id="box_on_hunger_3_Pink_@@color@@" image="box_red" class="box box_standard" offsetXY="221.25 32" />
+      <Image id="box_on_hunger_4_Pink_@@color@@" image="box_red" class="box box_standard" offsetXY="233.75 32" />
+      <Image id="box_on_hunger_5_Pink_@@color@@" image="box_red" class="box box_standard" offsetXY="246.25 32" />
+
+      <!-- RED panel trackers -->
+      <Image id="box_on_health_1_Red_@@color@@" image="box_white" class="box box_standard" offsetXY="308 107" />
+      <Image id="box_agg_health_1_Red_@@color@@" image="box_red_x" class="box box_standard" offsetXY="308 107" />
+      <Image id="box_sup_health_1_Red_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="308 107" />
+      <Image id="box_on_health_2_Red_@@color@@" image="box_white" class="box box_standard" offsetXY="320.5 107" />
+      <Image id="box_agg_health_2_Red_@@color@@" image="box_red_x" class="box box_standard" offsetXY="320.5 107" />
+      <Image id="box_sup_health_2_Red_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="320.5 107" />
+      <Image id="box_on_health_3_Red_@@color@@" image="box_white" class="box box_standard" offsetXY="333 107" />
+      <Image id="box_agg_health_3_Red_@@color@@" image="box_red_x" class="box box_standard" offsetXY="333 107" />
+      <Image id="box_sup_health_3_Red_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="333 107" />
+      <Image id="box_on_health_4_Red_@@color@@" image="box_white" class="box box_standard" offsetXY="345.5 107" />
+      <Image id="box_agg_health_4_Red_@@color@@" image="box_red_x" class="box box_standard" offsetXY="345.5 107" />
+      <Image id="box_sup_health_4_Red_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="345.5 107" />
+      <Image id="box_on_health_5_Red_@@color@@" image="box_white" class="box box_standard" offsetXY="358 107" />
+      <Image id="box_agg_health_5_Red_@@color@@" image="box_red_x" class="box box_standard" offsetXY="358 107" />
+      <Image id="box_sup_health_5_Red_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="358 107" />
+      <Image id="box_on_health_6_Red_@@color@@" image="box_white" class="box box_standard" offsetXY="370.5 107" />
+      <Image id="box_agg_health_6_Red_@@color@@" image="box_red_x" class="box box_standard" offsetXY="370.5 107" />
+      <Image id="box_sup_health_6_Red_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="370.5 107" />
+      <Image id="box_on_health_7_Red_@@color@@" image="box_white" class="box box_standard" offsetXY="383 107" />
+      <Image id="box_agg_health_7_Red_@@color@@" image="box_red_x" class="box box_standard" offsetXY="383 107" />
+      <Image id="box_sup_health_7_Red_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="383 107" />
+      <Image id="box_on_health_8_Red_@@color@@" image="box_white" class="box box_standard" offsetXY="395.5 107" />
+      <Image id="box_agg_health_8_Red_@@color@@" image="box_red_x" class="box box_standard" offsetXY="395.5 107" />
+      <Image id="box_sup_health_8_Red_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="395.5 107" />
+      <Image id="box_on_health_9_Red_@@color@@" image="box_white" class="box box_standard" offsetXY="408 107" />
+      <Image id="box_agg_health_9_Red_@@color@@" image="box_red_x" class="box box_standard" offsetXY="408 107" />
+      <Image id="box_sup_health_9_Red_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="408 107" />
+      <Image id="box_on_health_10_Red_@@color@@" image="box_white" class="box box_standard" offsetXY="420.5 107" />
+      <Image id="box_agg_health_10_Red_@@color@@" image="box_red_x" class="box box_standard" offsetXY="420.5 107" />
+      <Image id="box_sup_health_10_Red_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="420.5 107" />
+      <Image id="box_on_willpower_1_Red_@@color@@" image="box_white" class="box box_standard" offsetXY="308 82" />
+      <Image id="box_agg_willpower_1_Red_@@color@@" image="box_red_x" class="box box_standard" offsetXY="308 82" />
+      <Image id="box_sup_willpower_1_Red_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="308 82" />
+      <Image id="box_on_willpower_2_Red_@@color@@" image="box_white" class="box box_standard" offsetXY="320.5 82" />
+      <Image id="box_agg_willpower_2_Red_@@color@@" image="box_red_x" class="box box_standard" offsetXY="320.5 82" />
+      <Image id="box_sup_willpower_2_Red_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="320.5 82" />
+      <Image id="box_on_willpower_3_Red_@@color@@" image="box_white" class="box box_standard" offsetXY="333 82" />
+      <Image id="box_agg_willpower_3_Red_@@color@@" image="box_red_x" class="box box_standard" offsetXY="333 82" />
+      <Image id="box_sup_willpower_3_Red_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="333 82" />
+      <Image id="box_on_willpower_4_Red_@@color@@" image="box_white" class="box box_standard" offsetXY="345.5 82" />
+      <Image id="box_agg_willpower_4_Red_@@color@@" image="box_red_x" class="box box_standard" offsetXY="345.5 82" />
+      <Image id="box_sup_willpower_4_Red_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="345.5 82" />
+      <Image id="box_on_willpower_5_Red_@@color@@" image="box_white" class="box box_standard" offsetXY="358 82" />
+      <Image id="box_agg_willpower_5_Red_@@color@@" image="box_red_x" class="box box_standard" offsetXY="358 82" />
+      <Image id="box_sup_willpower_5_Red_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="358 82" />
+      <Image id="box_on_willpower_6_Red_@@color@@" image="box_white" class="box box_standard" offsetXY="370.5 82" />
+      <Image id="box_agg_willpower_6_Red_@@color@@" image="box_red_x" class="box box_standard" offsetXY="370.5 82" />
+      <Image id="box_sup_willpower_6_Red_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="370.5 82" />
+      <Image id="box_on_willpower_7_Red_@@color@@" image="box_white" class="box box_standard" offsetXY="383 82" />
+      <Image id="box_agg_willpower_7_Red_@@color@@" image="box_red_x" class="box box_standard" offsetXY="383 82" />
+      <Image id="box_sup_willpower_7_Red_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="383 82" />
+      <Image id="box_on_willpower_8_Red_@@color@@" image="box_white" class="box box_standard" offsetXY="395.5 82" />
+      <Image id="box_agg_willpower_8_Red_@@color@@" image="box_red_x" class="box box_standard" offsetXY="395.5 82" />
+      <Image id="box_sup_willpower_8_Red_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="395.5 82" />
+      <Image id="box_on_willpower_9_Red_@@color@@" image="box_white" class="box box_standard" offsetXY="408 82" />
+      <Image id="box_agg_willpower_9_Red_@@color@@" image="box_red_x" class="box box_standard" offsetXY="408 82" />
+      <Image id="box_sup_willpower_9_Red_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="408 82" />
+      <Image id="box_on_willpower_10_Red_@@color@@" image="box_white" class="box box_standard" offsetXY="420.5 82" />
+      <Image id="box_agg_willpower_10_Red_@@color@@" image="box_red_x" class="box box_standard" offsetXY="420.5 82" />
+      <Image id="box_sup_willpower_10_Red_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="420.5 82" />
+      <Image id="box_on_humanity_1_Red_@@color@@" image="box_white" class="box box_standard" offsetXY="308 57" />
+      <Image id="box_impaired_humanity_1_Red_@@color@@" image="box_red" class="box box_standard" offsetXY="308 57" />
+      <Image id="box_stain_humanity_1_Red_@@color@@" image="box_black" class="box box_standard" offsetXY="308 57" />
+      <Image id="box_on_humanity_2_Red_@@color@@" image="box_white" class="box box_standard" offsetXY="320.5 57" />
+      <Image id="box_impaired_humanity_2_Red_@@color@@" image="box_red" class="box box_standard" offsetXY="320.5 57" />
+      <Image id="box_stain_humanity_2_Red_@@color@@" image="box_black" class="box box_standard" offsetXY="320.5 57" />
+      <Image id="box_on_humanity_3_Red_@@color@@" image="box_white" class="box box_standard" offsetXY="333 57" />
+      <Image id="box_impaired_humanity_3_Red_@@color@@" image="box_red" class="box box_standard" offsetXY="333 57" />
+      <Image id="box_stain_humanity_3_Red_@@color@@" image="box_black" class="box box_standard" offsetXY="333 57" />
+      <Image id="box_on_humanity_4_Red_@@color@@" image="box_white" class="box box_standard" offsetXY="345.5 57" />
+      <Image id="box_impaired_humanity_4_Red_@@color@@" image="box_red" class="box box_standard" offsetXY="345.5 57" />
+      <Image id="box_stain_humanity_4_Red_@@color@@" image="box_black" class="box box_standard" offsetXY="345.5 57" />
+      <Image id="box_on_humanity_5_Red_@@color@@" image="box_white" class="box box_standard" offsetXY="358 57" />
+      <Image id="box_impaired_humanity_5_Red_@@color@@" image="box_red" class="box box_standard" offsetXY="358 57" />
+      <Image id="box_stain_humanity_5_Red_@@color@@" image="box_black" class="box box_standard" offsetXY="358 57" />
+      <Image id="box_on_humanity_6_Red_@@color@@" image="box_white" class="box box_standard" offsetXY="370.5 57" />
+      <Image id="box_impaired_humanity_6_Red_@@color@@" image="box_red" class="box box_standard" offsetXY="370.5 57" />
+      <Image id="box_stain_humanity_6_Red_@@color@@" image="box_black" class="box box_standard" offsetXY="370.5 57" />
+      <Image id="box_on_humanity_7_Red_@@color@@" image="box_white" class="box box_standard" offsetXY="383 57" />
+      <Image id="box_impaired_humanity_7_Red_@@color@@" image="box_red" class="box box_standard" offsetXY="383 57" />
+      <Image id="box_stain_humanity_7_Red_@@color@@" image="box_black" class="box box_standard" offsetXY="383 57" />
+      <Image id="box_on_humanity_8_Red_@@color@@" image="box_white" class="box box_standard" offsetXY="395.5 57" />
+      <Image id="box_impaired_humanity_8_Red_@@color@@" image="box_red" class="box box_standard" offsetXY="395.5 57" />
+      <Image id="box_stain_humanity_8_Red_@@color@@" image="box_black" class="box box_standard" offsetXY="395.5 57" />
+      <Image id="box_on_humanity_9_Red_@@color@@" image="box_white" class="box box_standard" offsetXY="408 57" />
+      <Image id="box_impaired_humanity_9_Red_@@color@@" image="box_red" class="box box_standard" offsetXY="408 57" />
+      <Image id="box_stain_humanity_9_Red_@@color@@" image="box_black" class="box box_standard" offsetXY="408 57" />
+      <Image id="box_on_humanity_10_Red_@@color@@" image="box_white" class="box box_standard" offsetXY="420.5 57" />
+      <Image id="box_impaired_humanity_10_Red_@@color@@" image="box_red" class="box box_standard" offsetXY="420.5 57" />
+      <Image id="box_stain_humanity_10_Red_@@color@@" image="box_black" class="box box_standard" offsetXY="420.5 57" />
+      <Image id="box_on_hunger_1_Red_@@color@@" image="box_red" class="box box_standard" offsetXY="339.25 32" />
+      <Image id="box_on_hunger_2_Red_@@color@@" image="box_red" class="box box_standard" offsetXY="351.75 32" />
+      <Image id="box_on_hunger_3_Red_@@color@@" image="box_red" class="box box_standard" offsetXY="364.25 32" />
+      <Image id="box_on_hunger_4_Red_@@color@@" image="box_red" class="box box_standard" offsetXY="376.75 32" />
+      <Image id="box_on_hunger_5_Red_@@color@@" image="box_red" class="box box_standard" offsetXY="389.25 32" />
+
+      <!-- ORANGE panel trackers -->
+      <Image id="box_on_health_1_Orange_@@color@@" image="box_white" class="box box_standard" offsetXY="451 107" />
+      <Image id="box_agg_health_1_Orange_@@color@@" image="box_red_x" class="box box_standard" offsetXY="451 107" />
+      <Image id="box_sup_health_1_Orange_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="451 107" />
+      <Image id="box_on_health_2_Orange_@@color@@" image="box_white" class="box box_standard" offsetXY="463.5 107" />
+      <Image id="box_agg_health_2_Orange_@@color@@" image="box_red_x" class="box box_standard" offsetXY="463.5 107" />
+      <Image id="box_sup_health_2_Orange_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="463.5 107" />
+      <Image id="box_on_health_3_Orange_@@color@@" image="box_white" class="box box_standard" offsetXY="476 107" />
+      <Image id="box_agg_health_3_Orange_@@color@@" image="box_red_x" class="box box_standard" offsetXY="476 107" />
+      <Image id="box_sup_health_3_Orange_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="476 107" />
+      <Image id="box_on_health_4_Orange_@@color@@" image="box_white" class="box box_standard" offsetXY="488.5 107" />
+      <Image id="box_agg_health_4_Orange_@@color@@" image="box_red_x" class="box box_standard" offsetXY="488.5 107" />
+      <Image id="box_sup_health_4_Orange_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="488.5 107" />
+      <Image id="box_on_health_5_Orange_@@color@@" image="box_white" class="box box_standard" offsetXY="501 107" />
+      <Image id="box_agg_health_5_Orange_@@color@@" image="box_red_x" class="box box_standard" offsetXY="501 107" />
+      <Image id="box_sup_health_5_Orange_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="501 107" />
+      <Image id="box_on_health_6_Orange_@@color@@" image="box_white" class="box box_standard" offsetXY="513.5 107" />
+      <Image id="box_agg_health_6_Orange_@@color@@" image="box_red_x" class="box box_standard" offsetXY="513.5 107" />
+      <Image id="box_sup_health_6_Orange_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="513.5 107" />
+      <Image id="box_on_health_7_Orange_@@color@@" image="box_white" class="box box_standard" offsetXY="526 107" />
+      <Image id="box_agg_health_7_Orange_@@color@@" image="box_red_x" class="box box_standard" offsetXY="526 107" />
+      <Image id="box_sup_health_7_Orange_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="526 107" />
+      <Image id="box_on_health_8_Orange_@@color@@" image="box_white" class="box box_standard" offsetXY="538.5 107" />
+      <Image id="box_agg_health_8_Orange_@@color@@" image="box_red_x" class="box box_standard" offsetXY="538.5 107" />
+      <Image id="box_sup_health_8_Orange_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="538.5 107" />
+      <Image id="box_on_health_9_Orange_@@color@@" image="box_white" class="box box_standard" offsetXY="551 107" />
+      <Image id="box_agg_health_9_Orange_@@color@@" image="box_red_x" class="box box_standard" offsetXY="551 107" />
+      <Image id="box_sup_health_9_Orange_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="551 107" />
+      <Image id="box_on_health_10_Orange_@@color@@" image="box_white" class="box box_standard" offsetXY="563.5 107" />
+      <Image id="box_agg_health_10_Orange_@@color@@" image="box_red_x" class="box box_standard" offsetXY="563.5 107" />
+      <Image id="box_sup_health_10_Orange_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="563.5 107" />
+      <Image id="box_on_willpower_1_Orange_@@color@@" image="box_white" class="box box_standard" offsetXY="451 82" />
+      <Image id="box_agg_willpower_1_Orange_@@color@@" image="box_red_x" class="box box_standard" offsetXY="451 82" />
+      <Image id="box_sup_willpower_1_Orange_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="451 82" />
+      <Image id="box_on_willpower_2_Orange_@@color@@" image="box_white" class="box box_standard" offsetXY="463.5 82" />
+      <Image id="box_agg_willpower_2_Orange_@@color@@" image="box_red_x" class="box box_standard" offsetXY="463.5 82" />
+      <Image id="box_sup_willpower_2_Orange_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="463.5 82" />
+      <Image id="box_on_willpower_3_Orange_@@color@@" image="box_white" class="box box_standard" offsetXY="476 82" />
+      <Image id="box_agg_willpower_3_Orange_@@color@@" image="box_red_x" class="box box_standard" offsetXY="476 82" />
+      <Image id="box_sup_willpower_3_Orange_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="476 82" />
+      <Image id="box_on_willpower_4_Orange_@@color@@" image="box_white" class="box box_standard" offsetXY="488.5 82" />
+      <Image id="box_agg_willpower_4_Orange_@@color@@" image="box_red_x" class="box box_standard" offsetXY="488.5 82" />
+      <Image id="box_sup_willpower_4_Orange_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="488.5 82" />
+      <Image id="box_on_willpower_5_Orange_@@color@@" image="box_white" class="box box_standard" offsetXY="501 82" />
+      <Image id="box_agg_willpower_5_Orange_@@color@@" image="box_red_x" class="box box_standard" offsetXY="501 82" />
+      <Image id="box_sup_willpower_5_Orange_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="501 82" />
+      <Image id="box_on_willpower_6_Orange_@@color@@" image="box_white" class="box box_standard" offsetXY="513.5 82" />
+      <Image id="box_agg_willpower_6_Orange_@@color@@" image="box_red_x" class="box box_standard" offsetXY="513.5 82" />
+      <Image id="box_sup_willpower_6_Orange_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="513.5 82" />
+      <Image id="box_on_willpower_7_Orange_@@color@@" image="box_white" class="box box_standard" offsetXY="526 82" />
+      <Image id="box_agg_willpower_7_Orange_@@color@@" image="box_red_x" class="box box_standard" offsetXY="526 82" />
+      <Image id="box_sup_willpower_7_Orange_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="526 82" />
+      <Image id="box_on_willpower_8_Orange_@@color@@" image="box_white" class="box box_standard" offsetXY="538.5 82" />
+      <Image id="box_agg_willpower_8_Orange_@@color@@" image="box_red_x" class="box box_standard" offsetXY="538.5 82" />
+      <Image id="box_sup_willpower_8_Orange_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="538.5 82" />
+      <Image id="box_on_willpower_9_Orange_@@color@@" image="box_white" class="box box_standard" offsetXY="551 82" />
+      <Image id="box_agg_willpower_9_Orange_@@color@@" image="box_red_x" class="box box_standard" offsetXY="551 82" />
+      <Image id="box_sup_willpower_9_Orange_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="551 82" />
+      <Image id="box_on_willpower_10_Orange_@@color@@" image="box_white" class="box box_standard" offsetXY="563.5 82" />
+      <Image id="box_agg_willpower_10_Orange_@@color@@" image="box_red_x" class="box box_standard" offsetXY="563.5 82" />
+      <Image id="box_sup_willpower_10_Orange_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="563.5 82" />
+      <Image id="box_on_humanity_1_Orange_@@color@@" image="box_white" class="box box_standard" offsetXY="451 57" />
+      <Image id="box_impaired_humanity_1_Orange_@@color@@" image="box_red" class="box box_standard" offsetXY="451 57" />
+      <Image id="box_stain_humanity_1_Orange_@@color@@" image="box_black" class="box box_standard" offsetXY="451 57" />
+      <Image id="box_on_humanity_2_Orange_@@color@@" image="box_white" class="box box_standard" offsetXY="463.5 57" />
+      <Image id="box_impaired_humanity_2_Orange_@@color@@" image="box_red" class="box box_standard" offsetXY="463.5 57" />
+      <Image id="box_stain_humanity_2_Orange_@@color@@" image="box_black" class="box box_standard" offsetXY="463.5 57" />
+      <Image id="box_on_humanity_3_Orange_@@color@@" image="box_white" class="box box_standard" offsetXY="476 57" />
+      <Image id="box_impaired_humanity_3_Orange_@@color@@" image="box_red" class="box box_standard" offsetXY="476 57" />
+      <Image id="box_stain_humanity_3_Orange_@@color@@" image="box_black" class="box box_standard" offsetXY="476 57" />
+      <Image id="box_on_humanity_4_Orange_@@color@@" image="box_white" class="box box_standard" offsetXY="488.5 57" />
+      <Image id="box_impaired_humanity_4_Orange_@@color@@" image="box_red" class="box box_standard" offsetXY="488.5 57" />
+      <Image id="box_stain_humanity_4_Orange_@@color@@" image="box_black" class="box box_standard" offsetXY="488.5 57" />
+      <Image id="box_on_humanity_5_Orange_@@color@@" image="box_white" class="box box_standard" offsetXY="501 57" />
+      <Image id="box_impaired_humanity_5_Orange_@@color@@" image="box_red" class="box box_standard" offsetXY="501 57" />
+      <Image id="box_stain_humanity_5_Orange_@@color@@" image="box_black" class="box box_standard" offsetXY="501 57" />
+      <Image id="box_on_humanity_6_Orange_@@color@@" image="box_white" class="box box_standard" offsetXY="513.5 57" />
+      <Image id="box_impaired_humanity_6_Orange_@@color@@" image="box_red" class="box box_standard" offsetXY="513.5 57" />
+      <Image id="box_stain_humanity_6_Orange_@@color@@" image="box_black" class="box box_standard" offsetXY="513.5 57" />
+      <Image id="box_on_humanity_7_Orange_@@color@@" image="box_white" class="box box_standard" offsetXY="526 57" />
+      <Image id="box_impaired_humanity_7_Orange_@@color@@" image="box_red" class="box box_standard" offsetXY="526 57" />
+      <Image id="box_stain_humanity_7_Orange_@@color@@" image="box_black" class="box box_standard" offsetXY="526 57" />
+      <Image id="box_on_humanity_8_Orange_@@color@@" image="box_white" class="box box_standard" offsetXY="538.5 57" />
+      <Image id="box_impaired_humanity_8_Orange_@@color@@" image="box_red" class="box box_standard" offsetXY="538.5 57" />
+      <Image id="box_stain_humanity_8_Orange_@@color@@" image="box_black" class="box box_standard" offsetXY="538.5 57" />
+      <Image id="box_on_humanity_9_Orange_@@color@@" image="box_white" class="box box_standard" offsetXY="551 57" />
+      <Image id="box_impaired_humanity_9_Orange_@@color@@" image="box_red" class="box box_standard" offsetXY="551 57" />
+      <Image id="box_stain_humanity_9_Orange_@@color@@" image="box_black" class="box box_standard" offsetXY="551 57" />
+      <Image id="box_on_humanity_10_Orange_@@color@@" image="box_white" class="box box_standard" offsetXY="563.5 57" />
+      <Image id="box_impaired_humanity_10_Orange_@@color@@" image="box_red" class="box box_standard" offsetXY="563.5 57" />
+      <Image id="box_stain_humanity_10_Orange_@@color@@" image="box_black" class="box box_standard" offsetXY="563.5 57" />
+      <Image id="box_on_hunger_1_Orange_@@color@@" image="box_red" class="box box_standard" offsetXY="482.25 32" />
+      <Image id="box_on_hunger_2_Orange_@@color@@" image="box_red" class="box box_standard" offsetXY="494.75 32" />
+      <Image id="box_on_hunger_3_Orange_@@color@@" image="box_red" class="box box_standard" offsetXY="507.25 32" />
+      <Image id="box_on_hunger_4_Orange_@@color@@" image="box_red" class="box box_standard" offsetXY="519.75 32" />
+      <Image id="box_on_hunger_5_Orange_@@color@@" image="box_red" class="box box_standard" offsetXY="532.25 32" />
+
+      <!-- BROWN panel trackers -->
+      <Image id="box_on_health_1_Brown_@@color@@" image="box_white" class="box box_standard" offsetXY="594 107" />
+      <Image id="box_agg_health_1_Brown_@@color@@" image="box_red_x" class="box box_standard" offsetXY="594 107" />
+      <Image id="box_sup_health_1_Brown_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="594 107" />
+      <Image id="box_on_health_2_Brown_@@color@@" image="box_white" class="box box_standard" offsetXY="606.5 107" />
+      <Image id="box_agg_health_2_Brown_@@color@@" image="box_red_x" class="box box_standard" offsetXY="606.5 107" />
+      <Image id="box_sup_health_2_Brown_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="606.5 107" />
+      <Image id="box_on_health_3_Brown_@@color@@" image="box_white" class="box box_standard" offsetXY="619 107" />
+      <Image id="box_agg_health_3_Brown_@@color@@" image="box_red_x" class="box box_standard" offsetXY="619 107" />
+      <Image id="box_sup_health_3_Brown_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="619 107" />
+      <Image id="box_on_health_4_Brown_@@color@@" image="box_white" class="box box_standard" offsetXY="631.5 107" />
+      <Image id="box_agg_health_4_Brown_@@color@@" image="box_red_x" class="box box_standard" offsetXY="631.5 107" />
+      <Image id="box_sup_health_4_Brown_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="631.5 107" />
+      <Image id="box_on_health_5_Brown_@@color@@" image="box_white" class="box box_standard" offsetXY="644 107" />
+      <Image id="box_agg_health_5_Brown_@@color@@" image="box_red_x" class="box box_standard" offsetXY="644 107" />
+      <Image id="box_sup_health_5_Brown_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="644 107" />
+      <Image id="box_on_health_6_Brown_@@color@@" image="box_white" class="box box_standard" offsetXY="656.5 107" />
+      <Image id="box_agg_health_6_Brown_@@color@@" image="box_red_x" class="box box_standard" offsetXY="656.5 107" />
+      <Image id="box_sup_health_6_Brown_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="656.5 107" />
+      <Image id="box_on_health_7_Brown_@@color@@" image="box_white" class="box box_standard" offsetXY="669 107" />
+      <Image id="box_agg_health_7_Brown_@@color@@" image="box_red_x" class="box box_standard" offsetXY="669 107" />
+      <Image id="box_sup_health_7_Brown_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="669 107" />
+      <Image id="box_on_health_8_Brown_@@color@@" image="box_white" class="box box_standard" offsetXY="681.5 107" />
+      <Image id="box_agg_health_8_Brown_@@color@@" image="box_red_x" class="box box_standard" offsetXY="681.5 107" />
+      <Image id="box_sup_health_8_Brown_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="681.5 107" />
+      <Image id="box_on_health_9_Brown_@@color@@" image="box_white" class="box box_standard" offsetXY="694 107" />
+      <Image id="box_agg_health_9_Brown_@@color@@" image="box_red_x" class="box box_standard" offsetXY="694 107" />
+      <Image id="box_sup_health_9_Brown_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="694 107" />
+      <Image id="box_on_health_10_Brown_@@color@@" image="box_white" class="box box_standard" offsetXY="706.5 107" />
+      <Image id="box_agg_health_10_Brown_@@color@@" image="box_red_x" class="box box_standard" offsetXY="706.5 107" />
+      <Image id="box_sup_health_10_Brown_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="706.5 107" />
+      <Image id="box_on_willpower_1_Brown_@@color@@" image="box_white" class="box box_standard" offsetXY="594 82" />
+      <Image id="box_agg_willpower_1_Brown_@@color@@" image="box_red_x" class="box box_standard" offsetXY="594 82" />
+      <Image id="box_sup_willpower_1_Brown_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="594 82" />
+      <Image id="box_on_willpower_2_Brown_@@color@@" image="box_white" class="box box_standard" offsetXY="606.5 82" />
+      <Image id="box_agg_willpower_2_Brown_@@color@@" image="box_red_x" class="box box_standard" offsetXY="606.5 82" />
+      <Image id="box_sup_willpower_2_Brown_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="606.5 82" />
+      <Image id="box_on_willpower_3_Brown_@@color@@" image="box_white" class="box box_standard" offsetXY="619 82" />
+      <Image id="box_agg_willpower_3_Brown_@@color@@" image="box_red_x" class="box box_standard" offsetXY="619 82" />
+      <Image id="box_sup_willpower_3_Brown_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="619 82" />
+      <Image id="box_on_willpower_4_Brown_@@color@@" image="box_white" class="box box_standard" offsetXY="631.5 82" />
+      <Image id="box_agg_willpower_4_Brown_@@color@@" image="box_red_x" class="box box_standard" offsetXY="631.5 82" />
+      <Image id="box_sup_willpower_4_Brown_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="631.5 82" />
+      <Image id="box_on_willpower_5_Brown_@@color@@" image="box_white" class="box box_standard" offsetXY="644 82" />
+      <Image id="box_agg_willpower_5_Brown_@@color@@" image="box_red_x" class="box box_standard" offsetXY="644 82" />
+      <Image id="box_sup_willpower_5_Brown_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="644 82" />
+      <Image id="box_on_willpower_6_Brown_@@color@@" image="box_white" class="box box_standard" offsetXY="656.5 82" />
+      <Image id="box_agg_willpower_6_Brown_@@color@@" image="box_red_x" class="box box_standard" offsetXY="656.5 82" />
+      <Image id="box_sup_willpower_6_Brown_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="656.5 82" />
+      <Image id="box_on_willpower_7_Brown_@@color@@" image="box_white" class="box box_standard" offsetXY="669 82" />
+      <Image id="box_agg_willpower_7_Brown_@@color@@" image="box_red_x" class="box box_standard" offsetXY="669 82" />
+      <Image id="box_sup_willpower_7_Brown_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="669 82" />
+      <Image id="box_on_willpower_8_Brown_@@color@@" image="box_white" class="box box_standard" offsetXY="681.5 82" />
+      <Image id="box_agg_willpower_8_Brown_@@color@@" image="box_red_x" class="box box_standard" offsetXY="681.5 82" />
+      <Image id="box_sup_willpower_8_Brown_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="681.5 82" />
+      <Image id="box_on_willpower_9_Brown_@@color@@" image="box_white" class="box box_standard" offsetXY="694 82" />
+      <Image id="box_agg_willpower_9_Brown_@@color@@" image="box_red_x" class="box box_standard" offsetXY="694 82" />
+      <Image id="box_sup_willpower_9_Brown_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="694 82" />
+      <Image id="box_on_willpower_10_Brown_@@color@@" image="box_white" class="box box_standard" offsetXY="706.5 82" />
+      <Image id="box_agg_willpower_10_Brown_@@color@@" image="box_red_x" class="box box_standard" offsetXY="706.5 82" />
+      <Image id="box_sup_willpower_10_Brown_@@color@@" image="box_grey_slash" class="box box_standard" offsetXY="706.5 82" />
+      <Image id="box_on_humanity_1_Brown_@@color@@" image="box_white" class="box box_standard" offsetXY="594 57" />
+      <Image id="box_impaired_humanity_1_Brown_@@color@@" image="box_red" class="box box_standard" offsetXY="594 57" />
+      <Image id="box_stain_humanity_1_Brown_@@color@@" image="box_black" class="box box_standard" offsetXY="594 57" />
+      <Image id="box_on_humanity_2_Brown_@@color@@" image="box_white" class="box box_standard" offsetXY="606.5 57" />
+      <Image id="box_impaired_humanity_2_Brown_@@color@@" image="box_red" class="box box_standard" offsetXY="606.5 57" />
+      <Image id="box_stain_humanity_2_Brown_@@color@@" image="box_black" class="box box_standard" offsetXY="606.5 57" />
+      <Image id="box_on_humanity_3_Brown_@@color@@" image="box_white" class="box box_standard" offsetXY="619 57" />
+      <Image id="box_impaired_humanity_3_Brown_@@color@@" image="box_red" class="box box_standard" offsetXY="619 57" />
+      <Image id="box_stain_humanity_3_Brown_@@color@@" image="box_black" class="box box_standard" offsetXY="619 57" />
+      <Image id="box_on_humanity_4_Brown_@@color@@" image="box_white" class="box box_standard" offsetXY="631.5 57" />
+      <Image id="box_impaired_humanity_4_Brown_@@color@@" image="box_red" class="box box_standard" offsetXY="631.5 57" />
+      <Image id="box_stain_humanity_4_Brown_@@color@@" image="box_black" class="box box_standard" offsetXY="631.5 57" />
+      <Image id="box_on_humanity_5_Brown_@@color@@" image="box_white" class="box box_standard" offsetXY="644 57" />
+      <Image id="box_impaired_humanity_5_Brown_@@color@@" image="box_red" class="box box_standard" offsetXY="644 57" />
+      <Image id="box_stain_humanity_5_Brown_@@color@@" image="box_black" class="box box_standard" offsetXY="644 57" />
+      <Image id="box_on_humanity_6_Brown_@@color@@" image="box_white" class="box box_standard" offsetXY="656.5 57" />
+      <Image id="box_impaired_humanity_6_Brown_@@color@@" image="box_red" class="box box_standard" offsetXY="656.5 57" />
+      <Image id="box_stain_humanity_6_Brown_@@color@@" image="box_black" class="box box_standard" offsetXY="656.5 57" />
+      <Image id="box_on_humanity_7_Brown_@@color@@" image="box_white" class="box box_standard" offsetXY="669 57" />
+      <Image id="box_impaired_humanity_7_Brown_@@color@@" image="box_red" class="box box_standard" offsetXY="669 57" />
+      <Image id="box_stain_humanity_7_Brown_@@color@@" image="box_black" class="box box_standard" offsetXY="669 57" />
+      <Image id="box_on_humanity_8_Brown_@@color@@" image="box_white" class="box box_standard" offsetXY="681.5 57" />
+      <Image id="box_impaired_humanity_8_Brown_@@color@@" image="box_red" class="box box_standard" offsetXY="681.5 57" />
+      <Image id="box_stain_humanity_8_Brown_@@color@@" image="box_black" class="box box_standard" offsetXY="681.5 57" />
+      <Image id="box_on_humanity_9_Brown_@@color@@" image="box_white" class="box box_standard" offsetXY="694 57" />
+      <Image id="box_impaired_humanity_9_Brown_@@color@@" image="box_red" class="box box_standard" offsetXY="694 57" />
+      <Image id="box_stain_humanity_9_Brown_@@color@@" image="box_black" class="box box_standard" offsetXY="694 57" />
+      <Image id="box_on_humanity_10_Brown_@@color@@" image="box_white" class="box box_standard" offsetXY="706.5 57" />
+      <Image id="box_impaired_humanity_10_Brown_@@color@@" image="box_red" class="box box_standard" offsetXY="706.5 57" />
+      <Image id="box_stain_humanity_10_Brown_@@color@@" image="box_black" class="box box_standard" offsetXY="706.5 57" />
+      <Image id="box_on_hunger_1_Brown_@@color@@" image="box_red" class="box box_standard" offsetXY="625.25 32" />
+      <Image id="box_on_hunger_2_Brown_@@color@@" image="box_red" class="box box_standard" offsetXY="637.75 32" />
+      <Image id="box_on_hunger_3_Brown_@@color@@" image="box_red" class="box box_standard" offsetXY="650.25 32" />
+      <Image id="box_on_hunger_4_Brown_@@color@@" image="box_red" class="box box_standard" offsetXY="662.75 32" />
+      <Image id="box_on_hunger_5_Brown_@@color@@" image="box_red" class="box box_standard" offsetXY="675.25 32" />
+
+      <!--
+UI.setAttributes("page_1_right_Pink", {padding = "8 8 160 20"})
+UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15)", rectAlignment = "MiddleLeft", offsetXY = "20 0"})
+-->
+      <VerticalLayout id="page_1_right_@@color@@" class="page page_right" padding = "8 8 160 50">
+
+        <!-- Coterie Backgrounds -->
+        <HorizontalLayout class="box_column_container">
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_bg_0_@@color@@" class="box_text_container" active="true">
+  <HorizontalLayout id="db_p2_bg_0_title_bar_@@color@@" class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_bg_0_title_@@color@@" class="box_text_title_text" text="RESOURCES" />
+    <Panel id="db_p2_bg_0_panel_title_dotline_@@color@@" class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_bg_0_dot_1_@@color@@" image="dot_white" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_bg_0_dot_2_@@color@@" image="dot_white" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p2_bg_0_dot_3_@@color@@" image="dot_white" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p2_bg_0_dot_4_@@color@@" image="dot_white" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p2_bg_0_dot_5_@@color@@" image="dot_yellow" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_bg_0_flavor_@@color@@" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="While not personally wealthy, your control over the Bay Street Financial District gives you access to a vast array of resources." />
+    <Text id="pc_p2_bg_0_rules_@@color@@" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="You may commit coterie Resources to Projects or other endeavors." />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
+          <VerticalLayout class="box_column"></VerticalLayout>
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_bg_1_@@color@@" class="box_text_container" active="false">
+  <HorizontalLayout id="db_p2_bg_1_title_bar_@@color@@" class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_bg_1_title_@@color@@" class="box_text_title_text" text="" />
+    <Panel id="db_p2_bg_1_panel_title_dotline_@@color@@" class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_bg_1_dot_1_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_bg_1_dot_2_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p2_bg_1_dot_3_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p2_bg_1_dot_4_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p2_bg_1_dot_5_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_bg_1_flavor_@@color@@" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_bg_1_rules_@@color@@" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout><VerticalLayout id="pc_p2_bg_2_@@color@@" class="box_text_container" active="false">
+  <HorizontalLayout id="db_p2_bg_2_title_bar_@@color@@" class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_bg_2_title_@@color@@" class="box_text_title_text" text="" />
+    <Panel id="db_p2_bg_2_panel_title_dotline_@@color@@" class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_bg_2_dot_1_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_bg_2_dot_2_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p2_bg_2_dot_3_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p2_bg_2_dot_4_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p2_bg_2_dot_5_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_bg_2_flavor_@@color@@" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_bg_2_rules_@@color@@" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout><VerticalLayout id="pc_p2_bg_3_@@color@@" class="box_text_container" active="false">
+  <HorizontalLayout id="db_p2_bg_3_title_bar_@@color@@" class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_bg_3_title_@@color@@" class="box_text_title_text" text="" />
+    <Panel id="db_p2_bg_3_panel_title_dotline_@@color@@" class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_bg_3_dot_1_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_bg_3_dot_2_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p2_bg_3_dot_3_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p2_bg_3_dot_4_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p2_bg_3_dot_5_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_bg_3_flavor_@@color@@" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_bg_3_rules_@@color@@" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
+        </HorizontalLayout>
+
+        
+        <Image id="divider_coterieMerits_@@color@@" image="divider_coterieMerits" class="divider_image" />
+        
+
+        <!-- Coterie Merits -->
+        <HorizontalLayout class="box_column_container">
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_merit_0_@@color@@" class="box_text_container" active="true">
+  <HorizontalLayout class="box_text_title_bar 2_dots">
+    <Text id="pc_p2_merit_0_title_@@color@@" class="box_text_title_text" text="MULTI-LEVEL LOREKEEPING" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_merit_0_dot_1_@@color@@" image="dot_yellow" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_merit_0_dot_2_@@color@@" image="dot_yellow" class="dot box_text_title_dot dot_2" />
+      
+      
+      
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  
+</VerticalLayout><VerticalLayout id="pc_p2_merit_3_@@color@@" class="box_text_container" active="true">
+  <HorizontalLayout class="box_text_title_bar 1_dot">
+    <Text id="pc_p2_merit_3_title_@@color@@" class="box_text_title_text" text="ALL ACCESS" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_merit_3_dot_1_@@color@@" image="dot_yellow" class="dot box_text_title_dot dot_1" />
+      
+      
+      
+      
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_merit_1_@@color@@" class="box_text_container" active="true">
+  <HorizontalLayout class="box_text_title_bar 3_dots">
+    <Text id="pc_p2_merit_1_title_@@color@@" class="box_text_title_text" text="EVERYTHING IS CONNECTED" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_merit_1_dot_1_@@color@@" image="dot_yellow" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_merit_1_dot_2_@@color@@" image="dot_yellow" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p2_merit_1_dot_3_@@color@@" image="dot_yellow" class="dot box_text_title_dot dot_3" />
+      
+      
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  
+</VerticalLayout><VerticalLayout id="pc_p2_merit_4_@@color@@" class="box_text_container" active="true">
+  <HorizontalLayout class="box_text_title_bar 2_dots">
+    <Text id="pc_p2_merit_4_title_@@color@@" class="box_text_title_text" text="CALL TO PURPOSE" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_merit_4_dot_1_@@color@@" image="dot_yellow" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_merit_4_dot_2_@@color@@" image="dot_yellow" class="dot box_text_title_dot dot_2" />
+      
+      
+      
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_merit_2_@@color@@" class="box_text_container" active="true">
+  <HorizontalLayout class="box_text_title_bar 2_dots">
+    <Text id="pc_p2_merit_2_title_@@color@@" class="box_text_title_text" text="CONTEXTUAL CONTACT" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_merit_2_dot_1_@@color@@" image="dot_yellow" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_merit_2_dot_2_@@color@@" image="dot_yellow" class="dot box_text_title_dot dot_2" />
+      
+      
+      
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  
+</VerticalLayout><VerticalLayout id="pc_p2_merit_5_@@color@@" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_merit_5_title_@@color@@" class="box_text_title_text" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_merit_5_dot_1_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_merit_5_dot_2_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p2_merit_5_dot_3_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p2_merit_5_dot_4_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p2_merit_5_dot_5_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_merit_5_flavor_@@color@@" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_merit_5_rules_@@color@@" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout><VerticalLayout id="pc_p2_merit_6_@@color@@" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_merit_6_title_@@color@@" class="box_text_title_text" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_merit_6_dot_1_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_merit_6_dot_2_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p2_merit_6_dot_3_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p2_merit_6_dot_4_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p2_merit_6_dot_5_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_merit_6_flavor_@@color@@" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_merit_6_rules_@@color@@" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout><VerticalLayout id="pc_p2_merit_7_@@color@@" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_merit_7_title_@@color@@" class="box_text_title_text" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_merit_7_dot_1_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_merit_7_dot_2_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p2_merit_7_dot_3_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p2_merit_7_dot_4_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p2_merit_7_dot_5_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_merit_7_flavor_@@color@@" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_merit_7_rules_@@color@@" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
+        </HorizontalLayout>
+
+        
+        <Image id="divider_coterieFlaws_@@color@@" image="divider_coterieFlaws" class="divider_image" />
+        
+
+        <!-- Coterie Flaws -->
+        <HorizontalLayout class="box_column_container">
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_flaw_0_@@color@@" class="box_text_container" active="true">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_flaw_0_title_@@color@@" class="box_text_title_text flaw_title" text="ADVERSARY: [REDACTED]" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_flaw_0_dot_1_@@color@@" image="dot_red" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_flaw_0_dot_2_@@color@@" image="dot_red" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p2_flaw_0_dot_3_@@color@@" image="dot_red" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p2_flaw_0_dot_4_@@color@@" image="dot_red" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p2_flaw_0_dot_5_@@color@@" image="dot_red" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_flaw_0_flavor_@@color@@" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="Your rise to power has earned the enmity of a very powerful, very mysterious enemy who will act towards your destruction at every opportunity." />
+    <Text id="pc_p2_flaw_0_rules_@@color@@" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="Your enemy is a Difficulty 6 (!) monstrous elder, vengeful methuselah, embittered Justicar, or the equivalent, and their traits are thus free to break usual statistical limitations.
+Expect to feel their influence at least once per story." />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
+          <VerticalLayout class="box_column"></VerticalLayout>
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_flaw_1_@@color@@" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_flaw_1_title_@@color@@" class="box_text_title_text flaw_title" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_flaw_1_dot_1_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_flaw_1_dot_2_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p2_flaw_1_dot_3_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p2_flaw_1_dot_4_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p2_flaw_1_dot_5_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_flaw_1_flavor_@@color@@" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_flaw_1_rules_@@color@@" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout><VerticalLayout id="pc_p2_flaw_2_@@color@@" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_flaw_2_title_@@color@@" class="box_text_title_text flaw_title" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_flaw_2_dot_1_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_flaw_2_dot_2_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p2_flaw_2_dot_3_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p2_flaw_2_dot_4_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p2_flaw_2_dot_5_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_flaw_2_flavor_@@color@@" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_flaw_2_rules_@@color@@" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout><VerticalLayout id="pc_p2_flaw_3_@@color@@" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_flaw_3_title_@@color@@" class="box_text_title_text flaw_title" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_flaw_3_dot_1_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_flaw_3_dot_2_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p2_flaw_3_dot_3_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p2_flaw_3_dot_4_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p2_flaw_3_dot_5_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_flaw_3_flavor_@@color@@" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_flaw_3_rules_@@color@@" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
+        </HorizontalLayout>
+
+      </VerticalLayout>
+      <!--
+UI.setAttributes("playerHud_navigate_page1_next_Red", {offsetXY = "40 0"})
+UI.setAttributes("playerHud_navigate_page2_prev_Red", {offsetXY = "-40 0"})
+UI.setAttributes("playerHud_navigate_page2_next_Red", {offsetXY = "40 0"})
+-->
+      <Image id="playerHud_navigate_page1_next_@@color@@" class="navButton navButton_right" image="navigate_right" raycastTarget="true" onMouseEnter="HUD_playerPrincesCourt_nav_hoverOn" onMouseExit="HUD_playerPrincesCourt_nav_hoverOff" onClick="HUD_playerPrincesCourt_navigate" />
+    </Panel>
+
+    <!--
+  UI.hide("playerHud_refPanel_PrincesCourt_page1_Red")
+  UI.show("playerHud_refPanel_PrincesCourt_page2_Red")
+
+  UI.show("playerHud_refPanel_PrincesCourt_page1_Red")
+  UI.hide("playerHud_refPanel_PrincesCourt_page2_Red")
+  -->
+    <Panel id="playerHud_refPanel_PrincesCourt_page2_@@color@@" class="princesCourt-page" active="false">
+      <Image class="princeCourt_page" image="refPanel_PrincesCourt_page2" raycastTarget="false" />
+
+<!--
+UI.setAttributes("dot_on_chasse_1_Red", {offsetXY = "35 -96"})
+
+-->
+      <Image id="dot_on_chasse_1_@@color@@" image="dot_large_yellow" class="dot dot_large" offsetXY="35 -96" />
+      <Image id="dot_on_chasse_2_@@color@@" image="dot_large_yellow" class="dot dot_large" offsetXY="68 -96" />
+      <Image id="dot_on_chasse_3_@@color@@" image="dot_large_yellow" class="dot dot_large" offsetXY="101 -96" />
+      <Image id="dot_on_chasse_4_@@color@@" image="dot_large_yellow" class="dot dot_large" offsetXY="134 -96" />
+      <Image id="dot_on_chasse_5_@@color@@" image="dot_large_yellow" class="dot dot_large" offsetXY="167 -96" />
+
+      <Image id="dot_on_lien_1_@@color@@" image="dot_large_yellow" class="dot dot_large" offsetXY="280 -96" />
+      <Image id="dot_on_lien_2_@@color@@" image="dot_large_yellow" class="dot dot_large" offsetXY="313 -96" />
+      <Image id="dot_on_lien_3_@@color@@" image="dot_large_yellow" class="dot dot_large" offsetXY="346 -96" />
+      <Image id="dot_on_lien_4_@@color@@" image="dot_large_yellow" class="dot dot_large" offsetXY="379 -96" />
+      <Image id="dot_on_lien_5_@@color@@" image="dot_large_yellow" class="dot dot_large" offsetXY="412 -96" />
+
+      <Image id="dot_on_portillon_1_@@color@@" image="dot_large_yellow" class="dot dot_large" offsetXY="518 -96" />
+      <Image id="dot_on_portillon_2_@@color@@" image="dot_large_yellow" class="dot dot_large" offsetXY="551 -96" />
+      <Image id="dot_on_portillon_3_@@color@@" image="dot_large_yellow" class="dot dot_large" offsetXY="584 -96" />
+      <Image id="dot_on_portillon_4_@@color@@" image="dot_large_yellow" class="dot dot_large" offsetXY="617 -96" />
+      <Image id="dot_on_portillon_5_@@color@@" image="dot_large_yellow" class="dot dot_large" offsetXY="650 -96" />
+
+      <Image id="dot_on_haven_1_@@color@@" image="dot_large_yellow" class="dot dot_large" offsetXY="1030 -126" />
+      <Image id="dot_on_haven_2_@@color@@" image="dot_large_yellow" class="dot dot_large" offsetXY="1063 -126" />
+      <Image id="dot_on_haven_3_@@color@@" image="dot_large_yellow" class="dot dot_large" offsetXY="1096 -126" />
+      <Image id="dot_on_haven_4_@@color@@" image="dot_large_yellow" class="dot dot_large" offsetXY="1129 -126" />
+      <Image id="dot_on_haven_5_@@color@@" image="dot_large_yellow" class="dot dot_large" offsetXY="1162 -126" />
+<!--
+UI.setAttributes("page_2_left_Brown", {padding = "8 8 150 50"})
+UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15)", rectAlignment = "MiddleRight", offsetXY = "-20 0", padding = "0 0 200 0"})
+
+-->
+      <VerticalLayout id="page_2_left_@@color@@" class="page page_left" padding = "8 8 150 50">
+
+        <!-- Domain Backgrounds -->
+        
+
+        <!-- Domain Claims -->
+        <Image id="divider_domainClaims_@@color@@" image="divider_domainClaims" class="divider_claims_image" raycastTarget="true" onMouseEnter="HUD_playerPrincesCourt_domainClaimsDivider_hoverOn" onMouseExit="HUD_playerPrincesCourt_domainClaimsDivider_hoverOff" />
+
+        <!-- Domain Merits -->
+        
+        <Image id="divider_domainMerits_@@color@@" image="divider_domainMerits" class="divider_image" />
+        <HorizontalLayout class="box_column_container">
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_merit_0_@@color@@" class="box_text_container" active="true">
+  <HorizontalLayout class="box_text_title_bar 2_dots">
+    <Text id="pc_p3_merit_0_title_@@color@@" class="box_text_title_text" text="TRANSPORTATION" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p3_merit_0_dot_1_@@color@@" image="dot_yellow" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p3_merit_0_dot_2_@@color@@" image="dot_yellow" class="dot box_text_title_dot dot_2" />
+      
+      
+      
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_merit_0_flavor_@@color@@" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="You have a small fleet of luxury vehicles and drivers at your disposal." />
+    <Text id="pc_p3_merit_0_rules_@@color@@" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="You can call upon your drivers (Driving 6) on short notice.
+Once per story, you can call upon a rare or expensive vehicle such as a helicopter or bulletproof SUV for a night." />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
+          <VerticalLayout class="box_column"></VerticalLayout>
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_merit_1_@@color@@" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p3_merit_1_title_@@color@@" class="box_text_title_text" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p3_merit_1_dot_1_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p3_merit_1_dot_2_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p3_merit_1_dot_3_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p3_merit_1_dot_4_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p3_merit_1_dot_5_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_merit_1_flavor_@@color@@" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_merit_1_rules_@@color@@" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout><VerticalLayout id="pc_p3_merit_2_@@color@@" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p3_merit_2_title_@@color@@" class="box_text_title_text" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p3_merit_2_dot_1_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p3_merit_2_dot_2_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p3_merit_2_dot_3_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p3_merit_2_dot_4_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p3_merit_2_dot_5_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_merit_2_flavor_@@color@@" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_merit_2_rules_@@color@@" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout><VerticalLayout id="pc_p3_merit_3_@@color@@" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p3_merit_3_title_@@color@@" class="box_text_title_text" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p3_merit_3_dot_1_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p3_merit_3_dot_2_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p3_merit_3_dot_3_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p3_merit_3_dot_4_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p3_merit_3_dot_5_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_merit_3_flavor_@@color@@" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_merit_3_rules_@@color@@" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
+        </HorizontalLayout>
+        
+
+
+        <!-- Domain Flaws -->
+        
+        <Image id="divider_domainFlaws_@@color@@" image="divider_domainFlaws" class="divider_image" />
+        <HorizontalLayout class="box_column_container">
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_flaw_0_@@color@@" class="box_text_container" active="true">
+  <HorizontalLayout class="box_text_title_bar 2_dots">
+    <Text id="pc_p3_flaw_0_title_@@color@@" class="box_text_title_text flaw_title" text="CUSTODIANS" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p3_flaw_0_dot_1_@@color@@" image="dot_red" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p3_flaw_0_dot_2_@@color@@" image="dot_red" class="dot box_text_title_dot dot_2" />
+      
+      
+      
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_flaw_0_flavor_@@color@@" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="Your domain comes with certain inconvenient responsibilities: You must secure the main entry points of Union Station and the Billy Bishop Ferry (from Billy Bishop Airport, on Centre Island) against unauthorized entry by Kindred of any sect." />
+    <Text id="pc_p3_flaw_0_rules_@@color@@" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="You gain no benefits from fulfilling your obligations, but every failure to do so will cost your coterie a dot of Status until you have made amends." />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
+          <VerticalLayout class="box_column"></VerticalLayout>
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_flaw_1_@@color@@" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p3_flaw_1_title_@@color@@" class="box_text_title_text flaw_title" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p3_flaw_1_dot_1_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p3_flaw_1_dot_2_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p3_flaw_1_dot_3_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p3_flaw_1_dot_4_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p3_flaw_1_dot_5_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_flaw_1_flavor_@@color@@" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_flaw_1_rules_@@color@@" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout><VerticalLayout id="pc_p3_flaw_2_@@color@@" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p3_flaw_2_title_@@color@@" class="box_text_title_text flaw_title" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p3_flaw_2_dot_1_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p3_flaw_2_dot_2_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p3_flaw_2_dot_3_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p3_flaw_2_dot_4_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p3_flaw_2_dot_5_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_flaw_2_flavor_@@color@@" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_flaw_2_rules_@@color@@" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout><VerticalLayout id="pc_p3_flaw_3_@@color@@" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p3_flaw_3_title_@@color@@" class="box_text_title_text flaw_title" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p3_flaw_3_dot_1_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p3_flaw_3_dot_2_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p3_flaw_3_dot_3_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p3_flaw_3_dot_4_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p3_flaw_3_dot_5_@@color@@" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_flaw_3_flavor_@@color@@" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_flaw_3_rules_@@color@@" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
+        </HorizontalLayout>
+        
+
+      </VerticalLayout>
+
+      <VerticalLayout id="page_2_right_@@color@@" class="page page_right" padding = "8 8 200 50">
+
+        <!-- Haven Backgrounds -->
+        
+
+        <!-- Haven Merits -->
+        
+
+        <!-- Haven Flaws -->
+        
+
+      </VerticalLayout>
+
+      <Image id="playerHud_navigate_page2_prev_@@color@@" class="navButton navButton_left" image="navigate_left" raycastTarget="true" onMouseEnter="HUD_playerPrincesCourt_nav_hoverOn" onMouseExit="HUD_playerPrincesCourt_nav_hoverOff" onClick="HUD_playerPrincesCourt_navigate" />
+      <Image id="playerHud_navigate_page2_next_@@color@@" class="navButton navButton_right" image="navigate_right" raycastTarget="true" onMouseEnter="HUD_playerPrincesCourt_nav_hoverOn" onMouseExit="HUD_playerPrincesCourt_nav_hoverOff" onClick="HUD_playerPrincesCourt_navigate" />
+    </Panel>
+
+
+    <Panel id="playerHud_refPanel_PrincesCourt_page3_@@color@@" class="princesCourt-page" active="false">
+      <Image class="princeCourt_page" image="refPanel_PrincesCourt_page3" raycastTarget="false" />
+      <Image id="playerHud_navigate_page3_prev_@@color@@" class="navButton navButton_left" image="navigate_left" raycastTarget="true" onMouseEnter="HUD_playerPrincesCourt_nav_hoverOn" onMouseExit="HUD_playerPrincesCourt_nav_hoverOff" onClick="HUD_playerPrincesCourt_navigate" />
+    </Panel>
+  </Panel>
+
+  <Panel id="playerHud_refPanel_coteries_@@color@@" class="coterie-reference" active="false">
+    <VerticalLayout class="coterie-grid">
+      <!-- Spacer Row -->
+      <HorizontalLayout class="coterie-grid-row">
+      </HorizontalLayout>
+
+      <!-- Camarilla Group -->
+      <HorizontalLayout class="coterie-grid-row" preferredWidth="1250">
+        <Panel id="playerHud_coterieGridBtnWrap_beesHive_@@color@@">
+          <Image id="playerHud_coterieGridBtn_beesHive_@@color@@" image="toggle_beesHive_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+          <Image id="playerHud_coterieGridBtn_beesHive_@@color@@_hover" image="toggle_beesHive_hover" active="false" />
+        </Panel>
+
+        <Panel id="playerHud_coterieGridBtnWrap_fiveKeys_@@color@@">
+          <Image id="playerHud_coterieGridBtn_fiveKeys_@@color@@" image="toggle_fiveKeys_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+          <Image id="playerHud_coterieGridBtn_fiveKeys_@@color@@_hover" image="toggle_fiveKeys_hover" active="false" />
+        </Panel>
+
+        <Panel id="playerHud_coterieGridBtnWrap_freeChantry_@@color@@">
+          <Image id="playerHud_coterieGridBtn_freeChantry_@@color@@" image="toggle_freeChantry_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+          <Image id="playerHud_coterieGridBtn_freeChantry_@@color@@_hover" image="toggle_freeChantry_hover" active="false" />
+        </Panel>
+
+        <Panel id="playerHud_coterieGridBtnWrap_harpies_@@color@@">
+          <Image id="playerHud_coterieGridBtn_harpies_@@color@@" image="toggle_harpies_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+          <Image id="playerHud_coterieGridBtn_harpies_@@color@@_hover" image="toggle_harpies_hover" active="false" />
+        </Panel>
+
+        <Panel id="playerHud_coterieGridBtnWrap_ironGuard_@@color@@">
+          <Image id="playerHud_coterieGridBtn_ironGuard_@@color@@" image="toggle_ironGuard_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+          <Image id="playerHud_coterieGridBtn_ironGuard_@@color@@_hover" image="toggle_ironGuard_hover" active="false" />
+        </Panel>
+      </HorizontalLayout>
+
+      <HorizontalLayout class="coterie-grid-row">
+        <Panel id="playerHud_coterieGridBtnWrap_midnightMass_@@color@@">
+          <Image id="playerHud_coterieGridBtn_midnightMass_@@color@@" image="toggle_midnightMass_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+          <Image id="playerHud_coterieGridBtn_midnightMass_@@color@@_hover" image="toggle_midnightMass_hover" active="false" />
+        </Panel>
+
+        <Panel id="playerHud_coterieGridBtnWrap_moonClub_@@color@@">
+          <Image id="playerHud_coterieGridBtn_moonClub_@@color@@" image="toggle_moonClub_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+          <Image id="playerHud_coterieGridBtn_moonClub_@@color@@_hover" image="toggle_moonClub_hover" active="false" />
+        </Panel>
+
+        <Panel id="playerHud_coterieGridBtnWrap_regencyUniversityChantry_@@color@@">
+          <Image id="playerHud_coterieGridBtn_regencyUniversityChantry_@@color@@" image="toggle_regencyUniversityChantry_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+          <Image id="playerHud_coterieGridBtn_regencyUniversityChantry_@@color@@_hover" image="toggle_regencyUniversityChantry_hover" active="false" />
+        </Panel>
+
+        <Panel id="playerHud_coterieGridBtnWrap_scarlettAndTheBoys_@@color@@">
+          <Image id="playerHud_coterieGridBtn_scarlettAndTheBoys_@@color@@" image="toggle_scarlettAndTheBoys_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+          <Image id="playerHud_coterieGridBtn_scarlettAndTheBoys_@@color@@_hover" image="toggle_scarlettAndTheBoys_hover" active="false" />
+        </Panel>
+      </HorizontalLayout>
+
+      <!-- Anarch Group -->
+      <HorizontalLayout class="coterie-grid-row" preferredWidth="1500">
+        <Panel id="playerHud_coterieGridBtnWrap_colorBlitz_@@color@@">
+          <Image id="playerHud_coterieGridBtn_colorBlitz_@@color@@" image="toggle_colorBlitz_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+          <Image id="playerHud_coterieGridBtn_colorBlitz_@@color@@_hover" image="toggle_colorBlitz_hover" active="false" />
+        </Panel>
+
+        <Panel id="playerHud_coterieGridBtnWrap_goodDoctors_@@color@@">
+          <Image id="playerHud_coterieGridBtn_goodDoctors_@@color@@" image="toggle_goodDoctors_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+          <Image id="playerHud_coterieGridBtn_goodDoctors_@@color@@_hover" image="toggle_goodDoctors_hover" active="false" />
+        </Panel>
+
+        <Panel id="playerHud_coterieGridBtnWrap_jarvisJacks_@@color@@">
+          <Image id="playerHud_coterieGridBtn_jarvisJacks_@@color@@" image="toggle_jarvisJacks_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+          <Image id="playerHud_coterieGridBtn_jarvisJacks_@@color@@_hover" image="toggle_jarvisJacks_hover" active="false" />
+        </Panel>
+
+        <Panel id="playerHud_coterieGridBtnWrap_theLine_@@color@@">
+          <Image id="playerHud_coterieGridBtn_theLine_@@color@@" image="toggle_theLine_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+          <Image id="playerHud_coterieGridBtn_theLine_@@color@@_hover" image="toggle_theLine_hover" active="false" />
+        </Panel>
+
+        <Panel id="playerHud_coterieGridBtnWrap_redeemers_@@color@@">
+          <Image id="playerHud_coterieGridBtn_redeemers_@@color@@" image="toggle_redeemers_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+          <Image id="playerHud_coterieGridBtn_redeemers_@@color@@_hover" image="toggle_redeemers_hover" active="false" />
+        </Panel>
+
+        <Panel id="playerHud_coterieGridBtnWrap_redFlag_@@color@@">
+          <Image id="playerHud_coterieGridBtn_redFlag_@@color@@" image="toggle_redFlag_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+          <Image id="playerHud_coterieGridBtn_redFlag_@@color@@_hover" image="toggle_redFlag_hover" active="false" />
+        </Panel>
+      </HorizontalLayout>
+
+      <!-- Independent Group -->
+      <HorizontalLayout class="coterie-grid-row" preferredWidth="250">
+        <Panel id="playerHud_coterieGridBtnWrap_wychwoodHecata_@@color@@">
+          <Image id="playerHud_coterieGridBtn_wychwoodHecata_@@color@@" image="toggle_wychwoodHecata_inactive" raycastTarget="true" onMouseDown="HUD_playerCoteriesGrid_mouseDown" onMouseUp="HUD_playerCoteriesGrid_mouseUp" onMouseEnter="HUD_playerCoteriesGrid_hoverOn" onMouseExit="HUD_playerCoteriesGrid_hoverOff" />
+          <Image id="playerHud_coterieGridBtn_wychwoodHecata_@@color@@_hover" image="toggle_wychwoodHecata_hover" active="false" />
+        </Panel>
+      </HorizontalLayout>
+    </VerticalLayout>
+
+    <!-- Coterie popup overlay images (shown while holding coterie button) -->
+    <Image id="playerHud_coteriePopup_beesHive_@@color@@" active="false" class="popupImage" image="refPanel_Coteries_beesHive" />
+    <Image id="playerHud_coteriePopup_fiveKeys_@@color@@" active="false" class="popupImage" image="refPanel_Coteries_fiveKeys" />
+    <Image id="playerHud_coteriePopup_freeChantry_@@color@@" active="false" class="popupImage" image="refPanel_Coteries_freeChantry" />
+    <Image id="playerHud_coteriePopup_harpies_@@color@@" active="false" class="popupImage" image="refPanel_Coteries_harpies" />
+    <Image id="playerHud_coteriePopup_ironGuard_@@color@@" active="false" class="popupImage" image="refPanel_Coteries_ironGuard" />
+    <Image id="playerHud_coteriePopup_midnightMass_@@color@@" active="false" class="popupImage" image="refPanel_Coteries_midnightMass" />
+    <Image id="playerHud_coteriePopup_moonClub_@@color@@" active="false" class="popupImage" image="refPanel_Coteries_moonClub" />
+    <Image id="playerHud_coteriePopup_regencyUniversityChantry_@@color@@" active="false" class="popupImage" image="refPanel_Coteries_regencyUniversityChantry" />
+    <Image id="playerHud_coteriePopup_scarlettAndTheBoys_@@color@@" active="false" class="popupImage" image="refPanel_Coteries_scarlettAndTheBoys" />
+    <Image id="playerHud_coteriePopup_colorBlitz_@@color@@" active="false" class="popupImage" image="refPanel_Coteries_colorBlitz" />
+    <Image id="playerHud_coteriePopup_goodDoctors_@@color@@" active="false" class="popupImage" image="refPanel_Coteries_goodDoctors" />
+    <Image id="playerHud_coteriePopup_jarvisJacks_@@color@@" active="false" class="popupImage" image="refPanel_Coteries_jarvisJacks" />
+    <Image id="playerHud_coteriePopup_theLine_@@color@@" active="false" class="popupImage" image="refPanel_Coteries_theLine" />
+    <Image id="playerHud_coteriePopup_redeemers_@@color@@" active="false" class="popupImage" image="refPanel_Coteries_redeemers" />
+    <Image id="playerHud_coteriePopup_redFlag_@@color@@" active="false" class="popupImage" image="refPanel_Coteries_redFlag" />
+    <Image id="playerHud_coteriePopup_wychwoodHecata_@@color@@" active="false" class="popupImage" image="refPanel_Coteries_wychwoodHecata" />
+  </Panel>
+</Panel>
