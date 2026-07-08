@@ -139,7 +139,7 @@ Later relocation phases must update `.cursor/rules/*` and `.cursor/skills/*` in 
 | `.dev/Multiplayer Functionality/` | active-working-doc, cleanup-candidate | Multiplayer audits/plans | medium | yes | yes | `.dev/docs/architecture/multiplayer/` |
 | `.dev/NPC Object Spawning & Spotlighting/` | authoritative-doc, generated-artifact | NPC spawning/lighting docs and PNGs | high | docs yes; images cautious | yes | `.dev/docs/systems/npc/` |
 | `.dev/PC Data & Tracking/` | authoritative-doc, generated-artifact | PC, condition, state docs and generated PC ref | high | docs yes; generated ref no | yes | `.dev/docs/systems/pc-state/` |
-| `.dev/plans/` | active-working-doc, cleanup-candidate | Plans and CSV/Lua exports | medium | yes | yes | `.dev/plans/active/` plus deletion/consolidation for stale entries |
+| `.dev/plans/` | active-working-doc, generated-output | Linear alignment log and generated control-board snap CSV/Lua exports; stale implementation plans removed through 2026-07-08 | medium | yes | yes | keep stable unless script/default output paths are migrated |
 | `.dev/Problems/` | generated-artifact | Ignored Problems panel JSON captures | high | no hand edits | yes | local ignored output |
 | `.dev/Projects/` | authoritative-doc | Coterie/project system doc | medium | yes | yes | `.dev/docs/systems/projects/` |
 | `.dev/Scene Constructor/` | authoritative-doc, fixture | Scene import schema/templates | high | yes | yes | `.dev/docs/systems/scenes/` plus `.dev/fixtures/scenes/` |
@@ -177,7 +177,6 @@ Later relocation phases must update `.cursor/rules/*` and `.cursor/skills/*` in 
 | `.dev/TTS-Scripting-Guide.htm` | reference-vendor | Offline TTS guide | medium | no | yes | `.dev/docs/reference/tts-api/` |
 | `.dev/tts-color-object-tags-by-seat.md` | authoritative-doc | Seat tag reference | high | yes | yes | `.dev/docs/reference/` |
 | `.dev/Utility Function - RotateToFrom.md` | authoritative-doc, cleanup-candidate | Utility guide | medium | yes | yes | `.dev/docs/systems/utilities/` |
-| `.dev/_*.py`, `.dev/_gen_*.js` | one-off-patch | Patch/generation debris | medium | delete after verification | yes | delete or move into active tooling only if still referenced |
 
 ## Likely Canonical Docs
 
@@ -309,7 +308,7 @@ Canonical technical docs should remain in Git. Notion pages should summarize, in
 | Canonical docs verification | Mark current docs and delete stale docs | sync, state, NPC, HUD, soundscape, testing | Each canonical doc has status, source files, and verification commands | docs, needs-human-review | partial | yes |
 | Generated artifact policy | Keep generated outputs ignored | build logs, debug, manifests, saves, editor exports | `.gitignore` and routing docs stay aligned with generated-output locations | generated-artifact, docs | yes | yes |
 | Tooling relocation plan | Prepare script/app moves | `.dev/scripts`, dashboards, parser | No moves yet; package/script migration map | tooling, path-sensitive | yes | yes |
-| Stale doc cleanup | Remove or consolidate stale plans after reference checks | plans and one-off patches | Stale files are deleted, or useful content is merged into current docs with old references removed | cleanup-candidate | partial | yes |
+| Stale doc cleanup | Remove or consolidate stale plans after reference checks | plans and one-off patches | Stale files are deleted, or useful content is merged into current docs with old references removed | cleanup-candidate | mostly complete for tracked one-off plans/scripts | yes |
 | Notion dashboard setup | Create index/tracker | dashboard, cleanup tracker, decision log | Links to repo docs and Linear issues | notion | partial | yes |
 | Delete-candidate review | Explicit final cleanup | ignored logs/artifacts only | Human-approved delete list | needs-human-review | no | yes |
 
@@ -319,7 +318,7 @@ Canonical technical docs should remain in Git. Notion pages should summarize, in
 2. Agent orientation: keep root `AGENTS.md`, `.dev/README.md`, `.dev/DOCS_INDEX.md`, and `.cursor` rules/skills aligned.
 3. Phase 2: verify and consolidate canonical docs against current code.
 4. Phase 3: keep generated artifacts ignored and untracked; update script/default paths only when relocation is actually needed.
-5. Phase 4: remove or consolidate stale plans and one-off patch debris after reference checks.
+5. Phase 4: remove or consolidate stale plans and one-off patch debris after reference checks. Current pass is mostly complete for tracked one-off plans/scripts.
 6. Phase 5: populate Notion dashboard/index/tracker from Git sources if useful.
 7. Phase 6: review any remaining local-only generated outputs and delete candidates.
 
