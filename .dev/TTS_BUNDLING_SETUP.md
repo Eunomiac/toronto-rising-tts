@@ -1,5 +1,26 @@
 # TTS Tools Extension - Bundling Setup Guide
 
+## Agent Routing
+
+Read this when:
+- changing Save & Play, bundling, object-script, or custom UI asset workflows
+- debugging TTS extension path/module resolution
+- editing scripts that read or write `.dev/TS_Save_230.json`
+
+Source of truth:
+- `package.json`
+- `.tools/`
+- `.vscode/settings.json`
+- `.tts/objects/Global.lua` stub behavior
+- `core/global_script.ttslua`
+
+Verification:
+- `npm run build`
+- `npm run check:bundle-size-gate`
+- Save & Play in TTS for runtime bundling behavior
+
+Status: current workflow guide; generated outputs and save snapshots are local/ignored unless a script writes committed stubs.
+
 ## Overview
 
 Based on the [TTS Tools documentation](https://sebaestschjin.github.io/tts-tools/editor/latest/bundling.html), here's how bundling works and how to troubleshoot issues.

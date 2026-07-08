@@ -1,5 +1,23 @@
 # Toronto Rising — testing guide
 
+## Agent Routing
+
+Read this when:
+- running or writing TTS verification
+- changing DEBUG console helpers, E2E playbooks, or `RunTest`
+
+Source of truth:
+- `core/debug.ttslua`
+- `.dev/E2E Playbooks/`
+- `.dev/Step-By-Step Playbooks/`
+
+Verification:
+- `npm run e2e-playbook:generate:test`
+- `npm run e2e-playbook:generate`
+- Save & Play before in-TTS verification
+
+Status: current workflow index; verify specific playbook claims against code.
+
 Manual verification lives in **[E2E Playbooks](E2E%20Playbooks/README.md)** (TOR-141). This file indexes **remaining** console helpers in [`core/debug.ttslua`](../core/debug.ttslua).
 
 ## Quick start

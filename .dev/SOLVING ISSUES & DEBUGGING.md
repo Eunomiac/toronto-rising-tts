@@ -1,5 +1,24 @@
 # SOLVING ISSUES & DEBUGGING CHECKLIST
 
+## Agent Routing
+
+Read this when:
+- debugging a runtime issue
+- a previous fix attempt is looping or adding workarounds
+- deciding what evidence to collect before changing code
+
+Source of truth:
+- current symptom artifacts from the user/TTS/logs
+- `.cursor/rules/toronto-rising-author-session.mdc`
+- `docs/solutions/lua-local-function-order.md`
+- affected subsystem code
+
+Verification:
+- reproduce the symptom or cite the blocking missing artifact
+- run the relevant test/playbook from `.dev/TESTING.md`
+
+Status: current debugging process checklist; system-specific entries must still be checked against code.
+
 Use this checklist when a debugging exchange is stalling, looping, or accumulating workarounds.
 
 Quick chat commands: `/dbcheck` (compact) and `/dbfullcheck` (full).

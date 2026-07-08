@@ -1,5 +1,24 @@
 # Tabletop Simulator MCP (manual only)
 
+## Agent Routing
+
+Read this when:
+- the user explicitly asks to use the TTS MCP bridge
+- changing `.tools/tts-mcp/` or `.tools/tts-bridge/`
+- debugging External Editor message flow or `.dev/.debug/` writes
+
+Source of truth:
+- `.tools/tts-mcp/`
+- `.tools/tts-bridge/`
+- `.dev/tts-api/Getting Started/External Editor API.md`
+- `lib/util.ttslua` agent-output helpers
+
+Verification:
+- `npm run tts-mcp:build`
+- manual TTS session with External Editor enabled and port `39998` free
+
+Status: current manual-only MCP guide; do not enable/call MCP unless the user explicitly asks.
+
 This repo includes an optional **Model Context Protocol** server that runs **Tabletop Simulator** Lua via the [External Editor API](tts-api/Getting%20Started/External%20Editor%20API.md) (localhost **39999** → TTS, **39998** ← TTS).
 
 **Default workflow:** use the **TTS Tools extension** (Save & Play) and in-game `lua DEBUG.*`. MCP is **off** unless you start it manually — it **conflicts** with the extension on port **39998**.
@@ -49,7 +68,7 @@ Only when you want MCP in Cursor **and** the extension is disabled. Point at the
 }
 ```
 
-Agents are instructed **not** to enable or call MCP unless you explicitly request it (`.cursor/rules/toronto-rising-tts-mcp.mdc`).
+Agents should not enable or call MCP unless the user explicitly requests it.
 
 ## Tools exposed
 
