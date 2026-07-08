@@ -1,6 +1,6 @@
 # Linear alignment log
 
-Audit trail for the 2026-05-22 Linear alignment pass. Inventory: [linear-alignment-inventory.md](linear-alignment-inventory.md).
+Audit trail for the 2026-05-22 Linear alignment pass.
 
 **Ongoing agent responsibility:** Keep Linear, [RUNNING TASKLIST](../RUNNING%20TASKLIST.md), [INBOX](../INBOX.md) triage, and code aligned per [`.cursor/rules/toronto-rising-linear.mdc`](../../.cursor/rules/toronto-rising-linear.mdc).
 
@@ -84,7 +84,6 @@ Audit trail for the 2026-05-22 Linear alignment pass. Inventory: [linear-alignme
 | Date | Action | File | Notes |
 |------|--------|------|-------|
 | 2026-05-22 | UPDATE | `.dev/RUNNING TASKLIST.md` | TOR ids on all bullets and out-of-scope table |
-| 2026-05-22 | CREATE | `.dev/plans/linear-alignment-inventory.md` | Stage A inventory + matrix |
 | 2026-05-22 | UPDATE | `.dev/DEVELOPMENT_WORKFLOW.md` | Linear sync section |
 
 ## Key shipped features now tracked (selected)
