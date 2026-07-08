@@ -166,13 +166,13 @@ Dry-run: `npm run custom-ui-assets:apply-npc-hosted-world:dry-run`
 
 **Runtime:** Lua no longer spawns figurines or calls `setCustomObject`/`reload()` on placement — images are workshop-baked only.
 
-**Legacy:** `merge-npc-figurines` copied figurine URLs into `CustomUIAssets` for HUD; still available for one-off harvesting but not required for the preload pool.
+**Fallback:** `merge-npc-figurines` copies figurine URLs into `CustomUIAssets` for one-off harvesting; the preload pool does not require it.
 
 VS Code task **Custom UI Assets: Build Manifest from Image Files** → mode **`npc-groups`**.
 
-## NPC gameboard tokens (`tokenFront_*` / `tokenBack_*`) — legacy split folder
+## NPC gameboard tokens (`tokenFront_*` / `tokenBack_*`) — split-folder fallback
 
-**Legacy:** token-only manifest from split folder. Prefer **NPC unified groups** above (`assets/images/NPCs/`).
+Use this token-only manifest path when working from a split token folder. Prefer **NPC unified groups** above (`assets/images/NPCs/`) for normal NPC uploads.
 
 For **TOR-169** control-board tokens only, paired WEBPs may still live in:
 
@@ -199,7 +199,7 @@ Batched upload (default **20 characters** = 40 upload tokens per manifest):
 npm run custom-ui-assets:manifest-npc-tokens:batch -- --batchStart myleneHamelin
 ```
 
-**TTS — control-board tokens (legacy manual spawn):** Prefer `npm run custom-ui-assets:apply-npc-hosted-world` after upload merge (pipeline runs this automatically for **npc-groups**). Fallback: Save & Play → `lua DEBUG.spawnNpcControlBoardTokens()` — round flip tiles on **CONTROL_BOARD_PALETTE** (`npc_control_token`, `npcToken:<key>`).
+**TTS — control-board tokens:** Prefer `npm run custom-ui-assets:apply-npc-hosted-world` after upload merge (pipeline runs this automatically for **npc-groups**). Manual fallback: Save & Play → `lua DEBUG.spawnNpcControlBoardTokens()` — round flip tiles on **CONTROL_BOARD_PALETTE** (`npc_control_token`, `npcToken:<key>`).
 
 **TTS — Cloud upload (122 single-face temps):** Save & Play → `lua DEBUG.spawnNpcTokenUploadBatch({ columns = 12, gap = 2, startY = 3 })` → Cloud Manager **Upload All Loaded Files** → save game.
 
@@ -217,7 +217,7 @@ If your save file is not `.dev/TS_Save_230.json`, pass `--save` on the underlyin
 npm run custom-ui-assets:extract-npc-token-urls
 ```
 
-After extract (legacy token-only folder workflow): `npm run custom-ui-assets:apply-npc-hosted-world` or Save & Play → `lua DEBUG.applyNpcControlTokenHostedImages()`.
+After extract: `npm run custom-ui-assets:apply-npc-hosted-world` or Save & Play → `lua DEBUG.applyNpcControlTokenHostedImages()`.
 
 **Patch save file** (persists hosted URLs on existing `npc_control_token` objects in `ObjectStates` — use when tokens still have `file:///…/NPC Tokens/` after upload):
 
@@ -235,9 +235,9 @@ Outputs:
 
 VS Code task **Custom UI Assets: Build Manifest from Image Files** → mode **`npc-tokens`**.
 
-## NPC figurine cutouts (`npc_figurine` → character key) — legacy
+## NPC figurine cutouts (`npc_figurine` → character key) — fallback
 
-**Legacy:** figurine-object merge from save. Prefer **NPC unified groups** (upload figurine front/back via `npm run custom-ui-assets:manifest-npc-groups`).
+Use this figurine-object merge from save when harvesting existing uploaded figurine fronts. Prefer **NPC unified groups** for normal uploads (figurine front/back via `npm run custom-ui-assets:manifest-npc-groups`).
 
 For pooled NPC figurines already in the save (`npc_figurine` tag, `Figurine_Custom`, Nickname = `D.characters.fullName`), copy each figurine’s **front** `CustomImage.ImageURL` into the save root **`CustomUIAssets`** with **`Name`** = the character key from `lib/npcs_data.ttslua` (e.g. `rashid`, `lordLucien`).
 
@@ -258,7 +258,7 @@ Override paths: `--save <path>`, `--saveName <id>`, `--npcsData lib/npcs_data.tt
 
 Writes `.dev/custom-ui-assets/npc-figurine-generated-assets.json` (merged entries only). Reload the save in TTS after merging.
 
-## Folder mode (legacy)
+## Folder mode fallback
 
 Scans a directory of images (PNG→WEBP conversion, then manifest from filenames):
 
