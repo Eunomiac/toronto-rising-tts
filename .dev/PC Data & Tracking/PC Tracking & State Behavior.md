@@ -1,5 +1,31 @@
 # Setting, Saving, and Loading PC State Data, and Refreshing XML Elements
 
+## Agent Routing
+
+Read this when:
+- changing `playerData`, PC stats, trackers, conditions, or sheet refresh behavior
+- editing PCS source data or generated PC data modules
+- debugging state save/load for player characters
+
+Source of truth:
+- `core/state.ttslua`
+- `lib/json/PCS.json`
+- `lib/pcs_data.ttslua`
+- `core/pc_storyteller_panel.ttslua`
+- `ui/ui_csheet*.ttslua`
+- `.dev/PC Data & Tracking/Conditions System Guide.md`
+
+Generated/dependent files:
+- `lib/pcs_data.ttslua`
+- `.dev/PC Data & Tracking/PC Reference.md`
+
+Verification:
+- `node .dev/scripts/generate_pcs_data_lua.js`
+- `node .dev/scripts/export_pc_reference_markdown.js`
+- `npm run build`
+
+Status: current PC state reference; verify runtime state paths against `core/state.ttslua`.
+
 ## Context Regarding the PCs' Character Sheets
 
 To reduce the need for numerous dynamic XML elements to be present in the Character Sheet XML (so they can be toggled on/off as needed to display proper stat values), the majority of each PCs stats have been embedded into the image files that will be used for each page of the PCs' character sheets. Thus, it is unnecessary to dynamically activate each PC's entire range of stats; only when something *changes* will one of the `active="false"` elements in the Character Sheet XML need to be toggled to `active="true"`.

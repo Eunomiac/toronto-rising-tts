@@ -1,5 +1,26 @@
+# Project System Overview
 
-- [Mission-Critical Feature] **Projects System:** This is a feature that allows the creation of Projects by players or the Storyteller, approval of Projects by the Storyteller, setting and logging of staked Advantages, setting and synchronizing the Increment and Project Die with the in-game clock, displaying each project on the player's character sheets, etc.
+## Agent Routing
+
+Read this when:
+- the user explicitly asks to plan or implement the Projects system
+- changing coterie data that overlaps future project stakes
+- triaging TOR-231
+
+Source of truth:
+- `.dev/RUNNING TASKLIST.md` TOR-231
+- `core/coterie.ttslua`
+- `lib/coterie_data.ttslua`
+- `lib/json/Coterie.json`
+- `core/state.ttslua`
+
+Verification:
+- no implementation verification yet; this is a human-gated planning document
+- before implementation, verify desired scope with the user and current Linear state
+
+Status: human-gated planning reference; not current runtime behavior.
+
+The **Projects System** is planned to allow project creation by players or the Storyteller, Storyteller approval, staked Advantage logging, Project Die synchronization with in-game time, and project display on character sheets.
 
 ### Projects System
 

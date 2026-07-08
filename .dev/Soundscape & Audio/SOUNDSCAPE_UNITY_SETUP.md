@@ -1,5 +1,26 @@
 # Soundscape Unity Setup
 
+## Agent Routing
+
+Read this when:
+- authoring or updating the Unity Soundscape AssetBundle
+- changing soundscape emitter prefab structure or effect names
+- debugging TTS AssetBundle audio defaults
+
+Source of truth:
+- `.dev/Soundscape & Audio/SOUNDSCAPE_LUA_IMPLEMENTATION.md`
+- `.dev/Soundscape & Audio/Audio Tracks.md`
+- `.dev/Soundscape & Audio/SOUNDSCAPE_ASSETBUNDLE_AUDIO_INIT.md`
+- `core/soundscape.ttslua`
+- `lib/soundscape_catalog.ttslua`
+
+Verification:
+- Unity AssetBundle build with Unity `6000.0.62f1`
+- `node .dev/scripts/soundscape_contract.test.js`
+- in-TTS soundscape smoke after Save & Play
+
+Status: current Unity authoring guide; keep effect names aligned with Lua catalog.
+
 This guide creates the Unity `Custom_Assetbundle` used by `core/soundscape.ttslua`.
 The Lua side is already written to tolerate missing emitters, so you can bundle the
 code first and add the Unity asset later.
@@ -25,10 +46,10 @@ The goal in Unity is to create one prefab that contains all named soundscape cli
 as TTS effects. Looping ambience, music, rain, and wind clips should be **Looping
 Effects**. One-shot clips such as thunder hits should be **Trigger Effects**.
 
-The current Lua runtime uses four emitters: two music emitters, one weather emitter,
-and one location emitter. The expanded audio catalog in `Audio Tracks.md` will need
-additional Lua work before every planned layer is controllable, but you can still
-author the Unity AssetBundle now with the full future catalog.
+The current Lua runtime uses nine emitters: `musicA`, `musicB`, `featuredA`,
+`featuredB`, `locationA`, `locationB`, `weatherRain`, `weatherWind`, and
+`weatherThunder`. Author the Unity AssetBundle with effect names that match
+`Audio Tracks.md` and `lib/soundscape_catalog.ttslua`.
 
 ### 1. Open the TTS Modding Project
 
@@ -234,10 +255,10 @@ the prefab has `TTS Asset Bundle Effects` with Looping Effects configured.
 
 ### 13. Create Runtime Emitters
 
-The current Lua system expects four separate TTS objects using the same AssetBundle.
+The current Lua system expects nine separate TTS objects using the same AssetBundle.
 
 1. In TTS, select the imported soundscape object.
-2. Copy/paste or clone it three times so there are four total.
+2. Copy/paste or clone it until there are nine total.
 3. For each object:
    - Right-click the object.
    - Choose **Name** or edit the name field if available.
@@ -246,21 +267,14 @@ The current Lua system expects four separate TTS objects using the same AssetBun
    - Lock it.
    - Disable tooltip if convenient.
    - Move it somewhere out of the normal play area.
-4. Save the mod after all four emitters are placed and tagged.
+4. Save the mod after all nine emitters are placed and tagged.
 
 The object names are for human debugging. The Lua code finds objects by tag.
 
-For the expanded weather design in `Audio Tracks.md`, plan on adding separate
-runtime emitters later for:
-
-- rain loops
-- wind loops
-- thunder trigger hits
-
-That future layout will let rain and wind loop simultaneously while thunder plays
-random one-shots over them, with indoor/outdoor ducking applied to all weather
-layers. Do not delete the current four emitters; treat the expanded weather emitters
-as additional runtime objects once the Lua runtime has corresponding channels.
+The runtime emitter roles are `musicA`, `musicB`, `featuredA`, `featuredB`,
+`locationA`, `locationB`, `weatherRain`, `weatherWind`, and `weatherThunder`.
+Rain and wind loop simultaneously while thunder plays random one-shots over them,
+with indoor/outdoor ducking applied to weather layers.
 
 ## Effect Names
 

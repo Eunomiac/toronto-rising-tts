@@ -1,5 +1,28 @@
 # Scene Constructor Overview
 
+## Agent Routing
+
+Read this when:
+- changing scene import, scene library, present-day clock, or saved scene activation behavior
+- editing `gameState.sessionScene` or `gameState.sceneLibrary` shape
+- updating the Storyteller Scenes UI import/fork/apply flows
+
+Source of truth:
+- `core/scene_library.ttslua`
+- `core/storyteller_scenes_panel.ttslua`
+- `core/scenes.ttslua`
+- `core/present_day_clock.ttslua`
+- `core/state.ttslua`
+- `.dev/Scene Constructor/SchemaV2.jsonc`
+- `.dev/Scene Constructor/import-template-full.jsonc`
+
+Verification:
+- `npm run build`
+- `.dev/E2E Playbooks/Scenes-E2E.md`
+- relevant scene-library step-by-step verification after Save & Play
+
+Status: current scene import/library reference; verify state defaults and UI handlers against source.
+
 The Scene Constructor lets the Host paste JSON (typically generated from a Google Sheet) to define a **saved scene**: a bundle that uses the **same shape as `gameState.sessionScene`**, plus library metadata. Saved scenes appear as activation buttons in the Storyteller Scenes UI so the Host can switch between beats without re-entering every field by hand.
 
 ## State model (single live authority)

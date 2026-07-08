@@ -1,5 +1,27 @@
 # Character Sheet Modifications
 
+## Agent Routing
+
+Read this when:
+- changing character sheet object scripts, page XML, decals, or page-turn behavior
+- updating Blood Potency decal handling or relationship pages
+- debugging sheet refresh after stats or condition changes
+
+Source of truth:
+- `objects/`
+- `ui/ui_csheet*.ttslua`
+- `ui/.templates/csheet/`
+- `lib/blood_potency_decals.ttslua`
+- `core/pc_storyteller_panel.ttslua`
+- `.tools/custom-ui-assets/`
+
+Verification:
+- `npm run build`
+- `npm run tts-objects:fix-stubs`
+- relevant character-sheet TTS smoke after Save & Play
+
+Status: current sheet implementation reference; verify object-script and XML ids against source.
+
 ## General/Quick Changes
 
 * Each page has a full-height transparent **inner-edge** button (`id="pageInner"`), similar to outer page-turn buttons. Odd pages use `page_inner_right` (spine on the right); even pages use `page_inner_left`.
