@@ -9,8 +9,8 @@
 
 local STS = {}
 
---- Unchanged staging hover height above the drawer tray.
-STS.STAGING_BASE_Y = 5
+--- Unchanged staging hover height above the drawer tray (matches player STAGING_WORLD_Y; TOR-310).
+STS.STAGING_BASE_Y = 8
 
 --- Inset from drawer edges as a fraction of playable half-extent (author target 15–20%).
 STS.TRAY_EDGE_INSET_RATIO = 0.20

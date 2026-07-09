@@ -384,7 +384,7 @@ function spawnDie(bagColor, dieType, opts)
     end
 
     -- Per-ring arc slots (Rouse bag may hold manual rouse + Blood Surge rouse at different radii).
-    -- ST tray: instant setPosition so dice are in place before Roll randomize; players keep smooth staging.
+    -- Pool claims use setPositionSmooth (TOR-310); ST tray ring layout stays instant before Roll randomize.
     local useSmoothStaging = not isStorytellerBag()
     repositionStagedDiceOnRingArc(bagColor, arcCenter, bagKind, spawnedDice, useSmoothStaging)
 

@@ -37,7 +37,7 @@ _Stack rank for the current cycle (2026-07-09 post `/tr-inbox`: **TOR-323** Clea
 | --- | --- | --- |
 | 1 | ~~**TOR-316** — Reverse live-roll tray motion~~ | Shipped 2026-07-09 — peers lower, roller stays |
 | 2 | ~~**TOR-315** — NPC stage light before imageScalar rescale~~ | Shipped 2026-07-09 — defer align until bounds match scalar |
-| 3 | **TOR-310** — Smooth preload spawn + ST Y=8 | Dice polish; unlocks **TOR-318** bag→arc choreography |
+| 3 | ~~**TOR-310** — Smooth preload spawn + ST Y=8~~ | Shipped 2026-07-09 — smooth pool claim, ST tray y=8 |
 | 4 | **TOR-317** — Right-click ROLL auto-rolls | Small player UX win after tray/spawn stack |
 | 5 | **TOR-309** — Difficulty-0 roll results display | Roll broadcast copy refinement |
 | 6 | **TOR-312** — Narrative roll broadcast successes | Frenzy/etc. success count in broadcast |
@@ -99,7 +99,7 @@ _Stack rank for the current cycle (2026-07-09 post `/tr-inbox`: **TOR-323** Clea
 - [x] **Preload parked dice pool:** Off-table invisible pool per die type; recycle on roll spawn to avoid placeholder flash while meshes load. `core/dice_preload_pool.ttslua` + Global claim/return; dice bags use pool before takeObject. _(TOR-287)_
 - [x] **Startup loose-dice cleanup:** Destroy loose d10 on table + stow trays before startup table sync; preserve d10Preload pool. PC trays: scale-based detect; ST drawers: `STD.reconcileAllToWorkshopHome` restores workshop X/Y/Z + tray light. Author verified 2026-07-09. _(TOR-307)_
 - [x] **Preload pool return regression:** Used dice must return to pool (12/bag); only overflow spawns destroyed on resolution. Table/tray sweeps use `DPP.releaseOrDestroy`; bag cleanup before tag sweep. Adopt-on-load `reconcileAllParkedFromWorld` prevents Save & Play pool duplication. Author verified 2026-07-08. _(TOR-308)_ _(TOR-287 amend `dc7b50e`)_
-- [ ] **Smooth preload-pool spawn + ST Y=8:** Non-teleport claim from pool; ST spawn raised to y=8 before unlock. _(TOR-310)_
+- [x] **Smooth preload-pool spawn + ST Y=8:** Non-teleport claim from pool; ST spawn raised to y=8 before unlock. _(TOR-310)_
 - [x] **Reverse live-roll tray motion:** Keep rolling player's tray in place; lower other players' trays while a roll is live (amends **TOR-262** elevate-live behavior). _(TOR-316)_
 - [ ] **Right-click ROLL auto-rolls:** Player roll panel right-click ROLL immediately rolls the staged pool. _(TOR-317)_
 - [ ] **Spawn above bag then smooth-move into arc:** Dice appear above bag first, then smooth-move into staging arc. `blockedBy` **TOR-310**. _(TOR-318)_

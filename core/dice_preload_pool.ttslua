@@ -303,7 +303,11 @@ function DPP.claim(bagGuid, position, rotation, scale)
         die.setScale({ scale, scale, scale })
     end
     if type(position) == "table" then
-        die.setPosition(position)
+        if die.setPositionSmooth ~= nil then
+            die.setPositionSmooth(position)
+        else
+            die.setPosition(position)
+        end
     end
     if type(rotation) == "table" then
         die.setRotation(rotation)
