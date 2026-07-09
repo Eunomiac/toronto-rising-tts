@@ -470,5 +470,8 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-09 | DONE | TOR-307 | Author verified startup loose-dice + ST tray restore |
 | 2026-07-09 | DONE | TOR-284 | Author verified hotseat/solo execution-model regression; multiclient remains TOR-144 |
 | 2026-07-09 | Focus | Stack | #1 TOR-316, #2 TOR-315, #3 TOR-310, #4 TOR-317, #5 TOR-309, #6 TOR-312 |
+| 2026-07-09 | SHIP | TOR-323 | Clear Loading Overlay — hide + active=false; relatedTo TOR-285 |
+| 2026-07-09 | SHIP | TOR-322 | Toggle Lights ambient 0↔2 debug button on ST bar |
+| 2026-07-09 | Focus | Stack | unchanged after Quick Fixes (TOR-323/322 shipped, not Focus) |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

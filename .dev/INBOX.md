@@ -35,6 +35,8 @@ Verification:
 
 ## Processed
 
+2026-07-09 INBOX Quick Fix — Clear Loading Overlay resurrect after seat refresh → **TOR-323** (UI & HUD Bug, High; parent **TOR-37**; relatedTo **TOR-285**; shipped)
+2026-07-09 INBOX Quick Fix — Toggle Lights ambient 0↔2 debug button → **TOR-322** (UI & HUD Improvement, Low; parent **TOR-37**; shipped)
 2026-07-09 INBOX Active — reverse live-roll tray motion (lower peers, keep roller) → **TOR-316** (Dice & Rolls Bug, High; parent **TOR-31**; relatedTo **TOR-262**)
 2026-07-09 INBOX Active — right-click ROLL auto-rolls for players → **TOR-317** (Dice & Rolls Feature, Medium; parent **TOR-31**; relatedTo **TOR-226**)
 2026-07-09 INBOX Active — spawn above bag then smooth-move into arc → **TOR-318** (Dice & Rolls Improvement, Medium; parent **TOR-31**; `blockedBy` **TOR-310**; relatedTo **TOR-287**)

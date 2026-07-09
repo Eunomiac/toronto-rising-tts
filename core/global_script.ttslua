@@ -312,8 +312,16 @@ local STARTUP_LOADING_OVERLAY_ID = "overlay_loadingScreen_startup"
 --- Per connected player: seat colors that already received `UI.setXml` this session (TOR-285 hotseat lag).
 local seatXmlRefreshDoneByPlayer = {}
 
+--- Force-hide global startup loading screen for all clients.
+--- `UI.hide` alone can leave `active="true"` in the XmlUI tree; a later full-XML seat refresh
+--- (TOR-285) then resurrects the overlay. Always clear `active` as well.
 local function hideStartupLoadingOverlays()
     UI.hide(STARTUP_LOADING_OVERLAY_ID)
+    if type(U.setAttribute) == "function" then
+        U.setAttribute(STARTUP_LOADING_OVERLAY_ID, "active", "false")
+    elseif type(UI.setAttribute) == "function" then
+        UI.setAttribute(STARTUP_LOADING_OVERLAY_ID, "active", "false")
+    end
 end
 
 local function seatAssignmentPlayerKey(player)
@@ -3303,8 +3311,32 @@ end
 -- @param button string Button value
 -- @param id string The UI element ID
 function HUD_clearLoadingOverlay(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_clearLoadingOverlay") then
+        return
+    end
     hideStartupLoadingOverlays()
     broadcastToColor("Startup loading overlay manually hidden.", player.color, {1, 0.85, 0.2})
+end
+
+--- Debug ambient toggle: 0 (dark) ↔ 2 (bright) for scene inspection. Not persisted.
+local debugAmbientBright = false
+
+--- Toggle ambient intensity between 0 and 2 (Storyteller debug bar).
+-- @param player Player
+-- @param button string
+-- @param id string
+function HUD_toggleDebugAmbient(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_toggleDebugAmbient") then
+        return
+    end
+    debugAmbientBright = not debugAmbientBright
+    local intensity = debugAmbientBright and 2 or 0
+    U.changeLighting({ ambient_intensity = intensity })
+    broadcastToColor(
+        string.format("Debug ambient: %s (intensity=%s).", debugAmbientBright and "bright" or "dark", tostring(intensity)),
+        player.color,
+        {0, 1, 1}
+    )
 end
 
 --- Toggle all Anchor-tagged objects (admin debug utility).
