@@ -792,6 +792,14 @@ local function resolveClassificationDifficulty(active)
         return nil, false
     end
     if active.difficulty ~= nil then
+        if active.difficulty == 0 then
+            local rt = active.rollType
+            if rt ~= C.RollType.SIMPLE_CHECK
+                and rt ~= C.RollType.ROUSE
+                and rt ~= C.RollType.ROUSE_OBLIVION then
+                return IMPLICIT_CLASSIFICATION_DIFFICULTY, false
+            end
+        end
         return active.difficulty, true
     end
     if active.rollType == C.RollType.STANDARD

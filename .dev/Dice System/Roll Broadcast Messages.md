@@ -76,6 +76,8 @@ Auto-broadcast does **not** run while:
 
 ## Difficulty visibility
 
+**Success-count contests (TOR-309):** Rolls with **no** ST difficulty or **difficulty = 0** (except Simple Check, Rouse, Oblivion Rouse) hide the difficulty row and margin. Headline shows success count: `3 Successes`, `2 Crit Successes`, `4 Messy Successes`, or `Failure` / `Bestial Failure`.
+
 These roll types **hide** the successes/difficulty row on broadcast (`hidesDifficulty`):
 
 - Simple Check
