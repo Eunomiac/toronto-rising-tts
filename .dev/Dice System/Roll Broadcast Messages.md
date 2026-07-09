@@ -84,11 +84,13 @@ These roll types **hide** the successes/difficulty row on broadcast (`rollTypeHi
 - Rouse Check
 - Rouse Check (Oblivion)
 
-**Narrative roll types (TOR-312):** Frenzy, Remorse, Willpower, Discipline, Humanity, etc. show **success count** and **difficulty when ST-set** on broadcast and roll panels. Headline stays narrative (no signed margin suffix) via `rollTypeHidesMarginInHeadline`.
+**Successes row always (TOR-312):** Frenzy, Remorse, Willpower, Discipline, Humanity, Standard (when difficulty set), etc. show the successes row + difficulty when ST-set. Only Simple Check / Rouse / Oblivion Rouse (and success-count contests) hide the successes row via `rollTypeHidesSuccessesRow`.
+
+**Headline margin omit (`rollTypeHidesMarginInHeadline`):** Simple Check, Rouse, Oblivion Rouse, **Remorse**, and **Frenzy** only — custom narrative headlines must not append `+2` / `−1`. Willpower / Discipline / Humanity use default class labels and **do** append signed margin when difficulty is set (same as Standard).
 
 All other roll types show successes count when the successes row is visible. The **`vs.` + difficulty number** row appears only when `result.margin` is set (ST-set difficulty). **Standard/Werewolf** rolls without ST difficulty still classify (implicit diff 1) but **omit margin and difficulty display** (TOR-163).
 
-**Margin on headline:** When `result.margin` is set, headline appends signed margin: `WIN +2`, `FAILURE −1` (Unicode minus). Narrative types and success-count contests omit margin on the headline.
+**Margin on headline:** When `result.margin` is set and the roll type is not in `rollTypeHidesMarginInHeadline`, headline appends signed margin: `WIN +2`, `FAILURE −1` (Unicode minus). Success-count contests omit margin (headline is the success count).
 
 ## Headline resolution order (`narrativeLabel`)
 
