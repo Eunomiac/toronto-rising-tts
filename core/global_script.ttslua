@@ -313,15 +313,13 @@ local STARTUP_LOADING_OVERLAY_ID = "overlay_loadingScreen_startup"
 local seatXmlRefreshDoneByPlayer = {}
 
 --- Force-hide global startup loading screen for all clients.
---- Hide first so FadeOut can play; then clear `active` after the animation so a later
---- full-XML seat refresh (TOR-285) cannot resurrect the overlay with `active` still true.
-local STARTUP_LOADING_OVERLAY_FADE_SEC = 0.35
-
+--- `U.RunSequence`: hide (FadeOut) → wait 1s → clear `active` so a later full-XML seat
+--- refresh (TOR-285) cannot resurrect the overlay with `active` still true.
 local function hideStartupLoadingOverlays()
-    UI.hide(STARTUP_LOADING_OVERLAY_ID)
     U.RunSequence({
         function()
-            return STARTUP_LOADING_OVERLAY_FADE_SEC
+            UI.hide(STARTUP_LOADING_OVERLAY_ID)
+            return 1
         end,
         function()
             if type(U.setAttribute) == "function" then
