@@ -204,7 +204,9 @@ local function isSlotDisplacedFromWorkshop(slot)
         return true
     end
     local home = resolveWorkshopHomeForSlot(slot)
-    if type(home) ~= "table" then
+    if type(home) ~= "table"
+        or type(pos.x) ~= "number" or type(pos.z) ~= "number"
+        or type(home.x) ~= "number" or type(home.z) ~= "number" then
         return false
     end
     return math.abs(pos.x - home.x) > WORKSHOP_HOME_EPSILON
@@ -295,7 +297,7 @@ local function ensureDefaultTrayLightPosCached(slot)
     if type(pos) ~= "userdata" and type(pos) ~= "table" then
         return
     end
-    if type(pos.x) ~= "number" then
+    if type(pos.x) ~= "number" or type(pos.y) ~= "number" or type(pos.z) ~= "number" then
         return
     end
     defaultTrayLightPosBySlot[slot] = { x = pos.x, y = pos.y, z = pos.z }
