@@ -23,6 +23,8 @@ ROTATION = 180
 HEIGHT   = 1.5
 --- Fixed world Y for player-seat staged dice (bag pivot is near table height; arc faces via Y rotation).
 STAGING_WORLD_Y = 8
+--- World Y for bag-anchored spawn hover before smooth move into arc (TOR-318).
+SPAWN_HOVER_WORLD_Y = 8
 SCALE    = 1.75
 
 -- Spawn-arc overflow layering: a single arc holds at most MAX_DICE_PER_ARC dice. Overflow
@@ -290,6 +292,37 @@ local function releaseDieToPreloadOrDestroy(die)
     end
 end
 
+--- @param bagColor string|nil
+--- @return table|nil
+local function spawnHoverWorldPoint(bagColor)
+    local bag = getPlayerNormalBag(bagColor)
+    if bag == nil and self ~= nil and self.getPosition ~= nil then
+        bag = self
+    end
+    if bag == nil or bag.getPosition == nil then
+        return nil
+    end
+    local pos = bag.getPosition()
+    if type(pos) ~= "table" or type(pos.x) ~= "number" or type(pos.z) ~= "number" then
+        return nil
+    end
+    return { x = pos.x, y = SPAWN_HOVER_WORLD_Y, z = pos.z }
+end
+
+--- Smooth-move a locked staged die to its arc slot (player bags only).
+-- @param die Object|nil
+-- @param arcPos table|nil
+local function smoothStageDieToArc(die, arcPos)
+    if die == nil or type(arcPos) ~= "table" then
+        return
+    end
+    if die.setPositionSmooth ~= nil then
+        die.setPositionSmooth(arcPos)
+    else
+        die.setPosition(arcPos)
+    end
+end
+
 --- Claim pre-warmed die from pool, or fall back to bag takeObject (TOR-287).
 -- @param position table
 -- @param rotation table|nil
@@ -396,6 +429,17 @@ function spawnDie(bagColor, dieType, opts)
     end
     local ringSlot = ringCount + 1
     local ringTotal = ringCount + 1
+
+    if not isStorytellerBag() then
+        local hoverPos = spawnHoverWorldPoint(bagColor)
+        local arcPos = worldArcPoint(bagColor, arcCenter, ringSlot, ringTotal, spawnRadius)
+        local die = acquireDie(hoverPos or arcPos, randomRotation())
+        finishSpawnedDie(die)
+        if die ~= nil and hoverPos ~= nil and arcPos ~= nil then
+            smoothStageDieToArc(die, arcPos)
+        end
+        return
+    end
 
     local die = acquireDie(
         worldArcPoint(bagColor, arcCenter, ringSlot, ringTotal, spawnRadius),
