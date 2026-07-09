@@ -21,7 +21,11 @@ Verification:
 
 ## Active
 
+- [Blocked by "Determine stat deltas..." task below] Implement a shapeshift toggle that Fomorach can use to assume animal form.
+
 ## External Work (Set STATUS to "External To Do")
+
+- Determine stat deltas that apply when Fomorach uses his Shapeshift power
 
 ## Needs clarification
 
