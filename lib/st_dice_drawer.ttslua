@@ -49,6 +49,8 @@ local restoreTrayLightPosition
 
 --- Off pose is y = -200 (hidden); on pose is ~ -0.64. Gate release when above this.
 STD.DRAWER_RELEASE_MIN_Y = -50
+--- Author rule (TOR-307): any ST drawer with world Y above this is physically "on" and must be stowed.
+STD.DRAWER_PHYSICALLY_ON_MIN_Y = -10
 
 local WORKSHOP_HOME_OFF_Y = -200
 local WORKSHOP_HOME_EPSILON = 0.25
@@ -193,15 +195,16 @@ local function isSlotDisplacedFromWorkshop(slot)
     if obj == nil then
         return false
     end
-    if STD.isRaisedForRelease(slot) then
+    local pos = obj.getPosition()
+    if type(pos) ~= "userdata" and type(pos) ~= "table" then
+        return false
+    end
+    -- Workshop / NPC "on" poses only raise Y (~-0.64 / ~2.97); XZ can still match workshop home.
+    if type(pos.y) == "number" and pos.y > STD.DRAWER_PHYSICALLY_ON_MIN_Y then
         return true
     end
     local home = resolveWorkshopHomeForSlot(slot)
     if type(home) ~= "table" then
-        return false
-    end
-    local pos = obj.getPosition()
-    if type(pos) ~= "userdata" then
         return false
     end
     return math.abs(pos.x - home.x) > WORKSHOP_HOME_EPSILON
@@ -289,7 +292,10 @@ local function ensureDefaultTrayLightPosCached(slot)
         return
     end
     local pos = light.getPosition()
-    if type(pos) ~= "table" then
+    if type(pos) ~= "userdata" and type(pos) ~= "table" then
+        return
+    end
+    if type(pos.x) ~= "number" then
         return
     end
     defaultTrayLightPosBySlot[slot] = { x = pos.x, y = pos.y, z = pos.z }
@@ -445,7 +451,11 @@ function STD.getPositionY(slot)
         return nil
     end
     local pos = obj.getPosition()
-    if type(pos) ~= "table" then
+    -- TTS Vector is userdata; some paths may still yield a table.
+    if type(pos) ~= "userdata" and type(pos) ~= "table" then
+        return nil
+    end
+    if type(pos.y) ~= "number" then
         return nil
     end
     return pos.y
