@@ -3040,7 +3040,7 @@ function HUD_scenesCloseLocationModals(player, button, id)
     U.setAttribute("scenes_modal_sites_root", "active", "false")
 end
 
---- Writes picked district key into `gameState.sessionScene.districtKey`; Apply location still required.
+--- Writes district into pending library row or live sessionScene; Apply location still required when live.
 function HUD_scenesPickDistrict(player, button, id)
     if not requireStorytellerForMutation(player, "HUD_scenesPickDistrict") then
         return
@@ -3051,14 +3051,13 @@ function HUD_scenesPickDistrict(player, button, id)
         return
     end
     U.setAttribute("scenes_modal_districts_root", "active", "false")
-    S.setStateVal(key, "sessionScene", "districtKey")
+    StorytellerScenesPanel.setLocationKeyFromPicker("district", key)
     StorytellerScenesPanel.applySiteModalDistrictVisibility()
-    StorytellerScenesPanel.refresh()
     U.setAttribute("scenes_modal_sites_root", "active", "true")
     U.AlertGM("District set: " .. key .. " — pick a site, then Apply location + soundscape when ready.")
 end
 
---- Writes picked site key into `gameState.sessionScene.siteKey`; Apply location still required.
+--- Writes site into pending library row or live sessionScene; Apply location still required when live.
 function HUD_scenesPickSite(player, button, id)
     if not requireStorytellerForMutation(player, "HUD_scenesPickSite") then
         return
@@ -3069,19 +3068,7 @@ function HUD_scenesPickSite(player, button, id)
         return
     end
     HUD_scenesCloseLocationModals(player, button, id)
-    local site = C.Sites[key]
-    local dKey = nil
-    if type(site) == "table" then
-        local derivedDistrict = C.resolveDistrictKeyForDistrictTable(site.district)
-        if type(derivedDistrict) == "string" and derivedDistrict ~= "" then
-            dKey = derivedDistrict
-        end
-    end
-    if dKey ~= nil then
-        S.setStateVal(dKey, "sessionScene", "districtKey")
-    end
-    S.setStateVal(key, "sessionScene", "siteKey")
-    StorytellerScenesPanel.refresh()
+    StorytellerScenesPanel.setLocationKeyFromPicker("site", key)
     U.AlertGM("Site set: " .. key .. " — click Apply location + soundscape when ready.")
 end
 

@@ -62,6 +62,8 @@ local function reconcileHostedSyncAndPresentSheets(reason)
 end
 
 local GREEN = "#228B22|#32CD32|#006400|#228B22"
+--- Pending library-row edit mode (activeKey ≠ lastAppliedKey): "on" highlights use blue (TOR-244).
+local BLUE = "#1E5AA8|#2E7AD1|#154080|#1E5AA8"
 local GREY = "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
 
 --- Sets Global UI InputField display text (`UI.setAttribute` — reliable when inactive).
@@ -111,19 +113,30 @@ local function effectiveTableKey()
     return nil
 end
 
+--- Narrative presence from a sessionScene-shaped bundle (`seatSlots.isPresent` wins over `seatPresent`).
+--- @param bundle table|nil
+--- @param seatKey string
+--- @return boolean
+local function resolveSeatPresenceFromBundle(bundle, seatKey)
+    if type(bundle) ~= "table" then
+        return true
+    end
+    local slots = bundle.seatSlots
+    if type(slots) == "table" and type(slots[seatKey]) == "table" and slots[seatKey].isPresent ~= nil then
+        return slots[seatKey].isPresent ~= false
+    end
+    local sp = bundle.seatPresent
+    if type(sp) == "table" and sp[seatKey] ~= nil then
+        return sp[seatKey] ~= false
+    end
+    return true
+end
+
 --- Narrative presence for panel + reconcilers (`seatSlots.isPresent` wins over `seatPresent`).
 --- @param seatKey string
 --- @return boolean
 local function resolveSeatNarrativePresence(seatKey)
-    local row = S.getStateVal("sessionScene", "seatSlots", seatKey)
-    if type(row) == "table" and row.isPresent ~= nil then
-        return row.isPresent ~= false
-    end
-    local narrative = S.getStateVal("sessionScene", "seatPresent", seatKey)
-    if narrative ~= nil then
-        return narrative ~= false
-    end
-    return true
+    return resolveSeatPresenceFromBundle(S.getStateVal("sessionScene"), seatKey)
 end
 
 --- @param seatKey string
@@ -255,6 +268,152 @@ local function isPendingSceneActivation(activeKey)
     end
     local lastApplied = S.getStateVal("sceneLibrary", "lastAppliedKey")
     return activeKey ~= lastApplied
+end
+
+--- Green = live table / selected = applied; blue = edits target selected library row (TOR-244).
+--- @param pending boolean
+--- @return string
+local function panelOnColors(pending)
+    if pending then
+        return BLUE
+    end
+    return GREEN
+end
+
+--- @param sceneKey string
+--- @return table|nil library row `sessionScene`
+local function getLibraryRowSessionScene(sceneKey)
+    if type(sceneKey) ~= "string" or sceneKey == "" then
+        return nil
+    end
+    local ent = S.getStateVal("sceneLibrary", "scenes", sceneKey)
+    if type(ent) ~= "table" or type(ent.sessionScene) ~= "table" then
+        return nil
+    end
+    return ent.sessionScene
+end
+
+--- Panel display source for Table / Seats / Location: pending library row bundle, else live sessionScene.
+--- @return table|nil bundle
+--- @return boolean pending
+--- @return string|nil sceneKey
+local function resolvePanelDisplayBundle()
+    local activeKey = getActiveLibraryKey()
+    if type(activeKey) == "string" and isPendingSceneActivation(activeKey) then
+        local libSs = getLibraryRowSessionScene(activeKey)
+        if type(libSs) == "table" then
+            return libSs, true, activeKey
+        end
+        return {}, true, activeKey
+    end
+    local live = S.getStateVal("sessionScene")
+    if type(live) == "table" then
+        return live, false, activeKey
+    end
+    return {}, false, activeKey
+end
+
+--- Table key shown on the panel (pending library row, else live effective table).
+--- @param bundle table|nil
+--- @param pending boolean
+--- @return string|nil
+local function displayTableKeyFromBundle(bundle, pending)
+    if pending and type(bundle) == "table" then
+        local tk = bundle.tableKey
+        if type(tk) == "string" and tk ~= "" then
+            return tk
+        end
+        return nil
+    end
+    return effectiveTableKey()
+end
+
+--- Writes a field on the selected pending library row's sessionScene (no live mutation, no mirror).
+--- @param value any
+--- @param ... string path under sessionScene
+--- @return boolean ok
+local function writePendingLibrarySessionSceneField(value, ...)
+    local activeKey = getActiveLibraryKey()
+    if type(activeKey) ~= "string" or not isPendingSceneActivation(activeKey) then
+        return false
+    end
+    local path = { ... }
+    if #path == 0 then
+        return false
+    end
+    S.setStateVal(value, "sceneLibrary", "scenes", activeKey, "sessionScene", unpack(path))
+    S.validateState()
+    return true
+end
+
+--- Seat presence on pending library row only (`seatSlots` + `seatPresent`); no world reconcile / mirror.
+--- @param seatKey string
+--- @param present boolean
+--- @return boolean ok
+local function setPendingLibrarySeatPresence(seatKey, present)
+    local activeKey = getActiveLibraryKey()
+    if type(activeKey) ~= "string" or not isPendingSceneActivation(activeKey) then
+        return false
+    end
+    if not (U.isIn(seatKey, C.PlayerColors or {}) or U.isIn(seatKey, C.NPCSeats or {})) then
+        return false
+    end
+    local ss = S.getStateVal("sceneLibrary", "scenes", activeKey, "sessionScene", "seatSlots")
+    if U.Type(ss) ~= "table" then
+        ss = {}
+    end
+    local row = ss[seatKey]
+    if U.Type(row) ~= "table" then
+        row = {}
+    else
+        row = U.clone(row, true)
+    end
+    row.isPresent = present == true
+    ss = U.clone(ss, true)
+    ss[seatKey] = row
+    S.setStateVal(ss, "sceneLibrary", "scenes", activeKey, "sessionScene", "seatSlots")
+
+    local sp = S.getStateVal("sceneLibrary", "scenes", activeKey, "sessionScene", "seatPresent")
+    if U.Type(sp) ~= "table" then
+        sp = {}
+    end
+    sp = U.clone(sp, true)
+    sp[seatKey] = present == true
+    S.setStateVal(sp, "sceneLibrary", "scenes", activeKey, "sessionScene", "seatPresent")
+    S.validateState()
+    return true
+end
+
+--- Top-fog flag for a site onto the selected pending library row (no live write).
+--- @param siteKey string
+local function applySiteTopFogToPendingLibraryRow(siteKey)
+    local activeKey = getActiveLibraryKey()
+    if type(activeKey) ~= "string" or not isPendingSceneActivation(activeKey) then
+        return
+    end
+    if type(siteKey) ~= "string" then
+        return
+    end
+    siteKey = string.gsub(string.gsub(siteKey, "^%s+", ""), "%s+$", "")
+    if siteKey == "" then
+        return
+    end
+    local site = C.Sites[siteKey]
+    if type(site) ~= "table" then
+        return
+    end
+    local fogActive = nil
+    if site.isTopFogActive == true or site.isTopFogActive == false then
+        fogActive = site.isTopFogActive
+    elseif site.isIndoors == true then
+        fogActive = false
+    elseif site.isIndoors == false then
+        fogActive = true
+    end
+    if fogActive == nil then
+        return
+    end
+    writePendingLibrarySessionSceneField(fogActive, "isTopFogActive")
 end
 
 --- @param sceneKey string
@@ -580,31 +739,33 @@ function StorytellerScenesPanel.onClockInputChanged(player, value, id)
     end
 end
 
---- Push storyteller panel visuals from `gameState.sessionScene` + layout.
+--- Push storyteller panel visuals from selected library preview (pending) or live `sessionScene`.
 function StorytellerScenesPanel.refresh()
     if UI == nil or UI.setAttribute == nil or UI.getAttributes == nil or UI.setAttributes == nil then
         return
     end
 
-    local curTable = effectiveTableKey()
+    local displayBundle, pending = resolvePanelDisplayBundle()
+    local onColors = panelOnColors(pending)
+    local curTable = displayTableKeyFromBundle(displayBundle, pending)
     for bid, tableKey in pairs(TABLE_TOGGLE_IDS) do
         local isActive = curTable == tableKey
         U.setAttributes(bid, {
-            colors = isActive and GREEN or GREY,
+            colors = isActive and onColors or GREY,
             fontStyle = "Bold",
             textColor = isActive and "#FFFFFF" or "#FFFFFF",
         })
     end
 
     local function syncSeatButton(seatKey, bid)
-        local present = resolveSeatNarrativePresence(seatKey)
+        local present = resolveSeatPresenceFromBundle(displayBundle, seatKey)
         local absent = not present
         local label = seatKey
         if absent then
             label = seatKey .. " (absent)"
         end
         U.setAttributes(bid, {
-            colors = absent and GREY or GREEN,
+            colors = absent and GREY or onColors,
             text = label,
             fontStyle = "Bold",
             textColor = "#FFFFFF",
@@ -618,8 +779,8 @@ function StorytellerScenesPanel.refresh()
         syncSeatButton(seatKey, "scenes_seat_" .. seatKey)
     end
 
-    local dk = S.getStateVal("sessionScene", "districtKey")
-    local sk = S.getStateVal("sessionScene", "siteKey")
+    local dk = type(displayBundle) == "table" and displayBundle.districtKey or nil
+    local sk = type(displayBundle) == "table" and displayBundle.siteKey or nil
     if UI.setValue ~= nil then
         local dLabel = "—"
         if type(dk) == "string" and dk ~= "" and C.Districts[dk] ~= nil and type(C.Districts[dk].name) == "string" then
@@ -654,7 +815,7 @@ function StorytellerScenesPanel.refresh()
             local mo = math.floor(tonumber(ck.month) or 1)
             for m = 1, 12 do
                 U.setAttributes("scenes_month_" .. tostring(m), {
-                    colors = (m == mo) and GREEN or GREY,
+                    colors = (m == mo) and onColors or GREY,
                     fontStyle = "Bold",
                     textColor = "#FFFFFF",
                 })
@@ -670,7 +831,7 @@ function StorytellerScenesPanel.refresh()
             local rt = ck.useRealTime == true
             U.setAttributes("scenes_clock_rtToggle", {
                 text = rt and "ON" or "OFF",
-                colors = rt and GREEN or GREY,
+                colors = rt and onColors or GREY,
                 fontStyle = "Bold",
                 textColor = "#FFFFFF",
             })
@@ -681,7 +842,8 @@ function StorytellerScenesPanel.refresh()
 end
 
 --- Pushes `sceneLibrary.order` into fixed `scenes_lib_slot_*` buttons.
---- Green = selected (`activeKey`); dimmer + ` · unlinked` = not mirroring; ` · live` = on-table scene when another row is selected; ` · mirroring` only while a scene is on the table (`lastAppliedKey` set).
+--- Selected = green when live, blue when pending library preview (TOR-244); dimmer + ` · unlinked` = not mirroring;
+--- ` · live` = on-table scene when another row is selected; ` · mirroring` only while a scene is on the table.
 function StorytellerScenesPanel.refreshSceneLibraryRows()
     if UI == nil or UI.setAttribute == nil then
         return
@@ -694,6 +856,8 @@ function StorytellerScenesPanel.refreshSceneLibraryRows()
     local lastAppliedKey = type(lib) == "table" and lib.lastAppliedKey or nil
     local onTableKey = type(lastAppliedKey) == "string" and lastAppliedKey ~= "" and lastAppliedKey or nil
     local mirrorKey = onTableKey ~= nil and SceneLibrary.resolveMirrorSceneKey() or nil
+    local pendingSelection = isPendingSceneActivation(activeKey)
+    local selectedOnColors = panelOnColors(pendingSelection)
     if type(order) ~= "table" then
         order = {}
     end
@@ -717,7 +881,7 @@ function StorytellerScenesPanel.refreshSceneLibraryRows()
             local isMirroring = mirrorKey == key
             local colors = GREY
             if isSelected then
-                colors = GREEN
+                colors = selectedOnColors
             elseif not isLinked then
                 colors = "#333333|#444444|#555555|rgba(0.25,0.25,0.25,0.5)"
             end
@@ -1073,6 +1237,13 @@ function StorytellerScenesPanel.onHudClick(player, button, id)
             U.AlertGM("Unknown table key: " .. tostring(tableKey))
             return
         end
+        local activeKey = getActiveLibraryKey()
+        if type(activeKey) == "string" and isPendingSceneActivation(activeKey) then
+            writePendingLibrarySessionSceneField(tableKey, "tableKey")
+            StorytellerScenesPanel.refresh()
+            U.AlertGM("Table `" .. tableKey .. "` saved on `" .. activeKey .. "` (applies when you Activate that scene).")
+            return
+        end
         if RSL.alertAndBlockIfDiceOnTable("switch table layout") then
             return
         end
@@ -1090,6 +1261,15 @@ function StorytellerScenesPanel.onHudClick(player, button, id)
 
     local seatKey = string.match(id, "^scenes_seat_(.+)$")
     if seatKey ~= nil then
+        local activeKey = getActiveLibraryKey()
+        if type(activeKey) == "string" and isPendingSceneActivation(activeKey) then
+            local displayBundle = getLibraryRowSessionScene(activeKey)
+            local nextPresent = not resolveSeatPresenceFromBundle(displayBundle, seatKey)
+            setPendingLibrarySeatPresence(seatKey, nextPresent)
+            StorytellerScenesPanel.refresh()
+            U.AlertGM("Seat `" .. seatKey .. "` presence saved on `" .. activeKey .. "` (applies on Activate).")
+            return
+        end
         local nextPresent = not resolveSeatNarrativePresence(seatKey)
         setSeatNarrativePresence(seatKey, nextPresent)
         S.validateState()
@@ -1110,12 +1290,13 @@ end
 local SITE_MODAL_BUCKET_VISIBILITY_ON = "Black|Host"
 local SITE_MODAL_BUCKET_VISIBILITY_OFF = "None"
 
---- Shows exactly one `scenes_site_group_dist_*` panel matching `sessionScene.districtKey`.
+--- Shows exactly one `scenes_site_group_dist_*` panel matching the panel display district (pending or live).
 function StorytellerScenesPanel.applySiteModalDistrictVisibility()
     if UI == nil or UI.setAttribute == nil then
         return
     end
-    local dk = S.getStateVal("sessionScene", "districtKey")
+    local displayBundle = resolvePanelDisplayBundle()
+    local dk = type(displayBundle) == "table" and displayBundle.districtKey or nil
     local raw = type(dk) == "string" and dk or ""
     raw = string.gsub(string.gsub(raw, "^%s+", ""), "%s+$", "")
     local districts = C.Districts
@@ -1135,15 +1316,52 @@ function StorytellerScenesPanel.applySiteModalDistrictVisibility()
     U.setAttribute("scenes_site_group_generic", "visibility", SITE_MODAL_BUCKET_VISIBILITY_ON)
 end
 
+--- District / site pickers: pending → selected library row; live → sessionScene (TOR-244 / TOR-314).
+--- @param kind "district"|"site"
+--- @param key string
+--- @return boolean ok
+function StorytellerScenesPanel.setLocationKeyFromPicker(kind, key)
+    if type(key) ~= "string" or key == "" then
+        return false
+    end
+    if kind ~= "district" and kind ~= "site" then
+        return false
+    end
+    local field = kind == "district" and "districtKey" or "siteKey"
+    local activeKey = getActiveLibraryKey()
+    if type(activeKey) == "string" and isPendingSceneActivation(activeKey) then
+        if kind == "site" then
+            local site = C.Sites[key]
+            if type(site) == "table" then
+                local derivedDistrict = C.resolveDistrictKeyForDistrictTable(site.district)
+                if type(derivedDistrict) == "string" and derivedDistrict ~= "" then
+                    writePendingLibrarySessionSceneField(derivedDistrict, "districtKey")
+                end
+            end
+        end
+        writePendingLibrarySessionSceneField(key, field)
+        StorytellerScenesPanel.refresh()
+        return true
+    end
+    if kind == "site" then
+        local site = C.Sites[key]
+        if type(site) == "table" then
+            local derivedDistrict = C.resolveDistrictKeyForDistrictTable(site.district)
+            if type(derivedDistrict) == "string" and derivedDistrict ~= "" then
+                S.setStateVal(derivedDistrict, "sessionScene", "districtKey")
+            end
+        end
+    end
+    S.setStateVal(key, "sessionScene", field)
+    StorytellerScenesPanel.refresh()
+    return true
+end
+
 --- @param player Player
 function StorytellerScenesPanel.applyLocationFromInputs(player)
-    if SS.applyContext == nil or SS.contextFromSite == nil then
-        U.AlertGM("Soundscape module unavailable.")
-        return
-    end
-
-    local dKey = S.getStateVal("sessionScene", "districtKey")
-    local sKey = S.getStateVal("sessionScene", "siteKey")
+    local displayBundle, pending, activeKey = resolvePanelDisplayBundle()
+    local dKey = type(displayBundle) == "table" and displayBundle.districtKey or nil
+    local sKey = type(displayBundle) == "table" and displayBundle.siteKey or nil
     if type(dKey) ~= "string" then
         dKey = ""
     end
@@ -1178,6 +1396,20 @@ function StorytellerScenesPanel.applyLocationFromInputs(player)
 
     if C.Districts[dKey] == nil then
         U.AlertGM("Unknown district key: " .. tostring(dKey))
+        return
+    end
+
+    if pending and type(activeKey) == "string" then
+        writePendingLibrarySessionSceneField(dKey, "districtKey")
+        writePendingLibrarySessionSceneField(sKey, "siteKey")
+        applySiteTopFogToPendingLibraryRow(sKey)
+        StorytellerScenesPanel.refresh()
+        U.AlertGM("Location saved on `" .. activeKey .. "` (soundscape applies when you Activate that scene).")
+        return
+    end
+
+    if SS.applyContext == nil or SS.contextFromSite == nil then
+        U.AlertGM("Soundscape module unavailable.")
         return
     end
 

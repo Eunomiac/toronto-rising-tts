@@ -434,6 +434,43 @@ print("live", JSON.encode(S.getStateVal("sessionScene", "clock")))
 
 ---
 
+## Suite I2 — Pending-row Table / Seats / Location preview (TOR-244)
+
+**Goal:** Selecting a non-live library row previews and edits that row only; world stays on **A** until library Apply. Panel “on” colors are **blue** while pending.
+
+1. Scene **A** on table (`lastAppliedKey == A`) with a known table (e.g. Table A) and present Brown.
+2. Select row **B** only (`activeKey == B`, not applied) — row must already have a different `tableKey` and/or seats/location if available.
+
+**Pass if:** Left panel Table/Seats/Location match **B**’s library bundle (not live **A**); selected slot + “on” toggles are **blue** (not green).
+
+3. Toggle a table button (e.g. Table C) while **B** is selected.
+
+```lua
+print("liveTable", S.getStateVal("sessionScene", "tableKey"), S.getStateVal("seatLayout", "currentTableKey"))
+print("libB", JSON.encode(S.getStateVal("sceneLibrary", "scenes", "B", "sessionScene", "tableKey")))
+```
+
+**Pass if:** Live table layout unchanged; `sceneLibrary.scenes.B.sessionScene.tableKey` updated; no blindfold transition.
+
+4. Toggle **Brown** seat on panel.
+
+```lua
+print("liveBrown", JSON.encode(S.getStateVal("sessionScene", "seatSlots", "Brown")))
+print("libBBrown", JSON.encode(S.getStateVal("sceneLibrary", "scenes", "B", "sessionScene", "seatSlots", "Brown")))
+```
+
+**Pass if:** Live Brown presence unchanged; library row **B** seat presence flipped.
+
+5. Pick a site via Browse (or change district/site) → **Apply location** while **B** pending.
+
+**Pass if:** Live soundscape/overlay stay on **A**’s applied site; **B**’s `districtKey`/`siteKey` updated; GM alert that location applies on Activate.
+
+6. **Apply** scene **B** → wait staged blindfold.
+
+**Pass if:** Live table/seats/location/clock match **B**; panel “on” colors return to **green** with **B** selected and live.
+
+---
+
 ## Suite J — Seat presence toggles (Scenes panel)
 
 **Goal:** `scenes_seat_*` drives `seatPresent` / `seatSlots.isPresent` and lighting/HUD.

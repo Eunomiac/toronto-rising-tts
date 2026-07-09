@@ -286,6 +286,13 @@ In-fiction chronicle time — **not** real-world date/time.
 4. **Historical scenes:** `isPresentDay == false` requires full datetime on import.
 5. **Return to scene:** Apply uses the **library row’s saved clock** (may be behind present day). Real-time ticks advance present day only after scene time catches up. **`presentDayClock` never rewinds on activation** — returning to an earlier saved scene time does not move chronicle “now” backward; `PresentDayClock.tryAdvance` only runs forward. Storyteller **Set** (Scenes panel) may overwrite present day backward via `PresentDayClock.setPresentDay`.
 
+**Scenes panel preview / edit-before-apply (TOR-244):** Selecting a library row whose key differs from `lastAppliedKey` (**pending**) previews that row’s **Table**, **Seat Presence**, **Location**, and **Scene Time** on the left panel. Panel “on” highlights use **blue** while pending (vs **green** when the selected row is the live on-table scene). Edits while pending:
+
+- **Table / seats / location** write immediately into `sceneLibrary.scenes[activeKey].sessionScene` (no `SetTableTo` / soundscape / world reconcile). Location **Apply** validates and stores keys (+ top fog) on the row only.
+- **Clock** still uses the in-memory `clockDraft` until **Activate scene** (same present-day rules as below).
+
+When `activeKey == lastAppliedKey` (or no selection), the panel stays live-bound: table transitions, seat world reconcile + TOR-281 mirror, and Apply location + soundscape behave as before.
+
 **Scenes panel clock row:** Selecting a library row previews the clock that **activation** would use. Rows with a **saved datetime** (including present-day scenes left at a specific time) preview that saved time, not current `presentDayClock`. Present-day rows **without** datetime preview current `presentDayClock`. **Set** (beside day/year/time) overwrites `presentDayClock` from the stashed inputs without changing live `sessionScene.clock`. Edits while a **different** row is selected are stored in a pending draft and apply on **Activate scene**. Clearing **any** of day / year / time on a pending **present-day** row ignores the saved row datetime and uses `presentDayClock` on activation instead. Future times on activation advance `presentDayClock` via `PresentDayClock.tryAdvance`.
 
 **Clock “not set”:** `clock` may exist with only flags — all five datetime fields absent. Datetime fields are **never** defaulted during import validation or `S.validateState`; historical scenes without a full datetime fail validation.
@@ -323,7 +330,7 @@ Messages should name the **JSON path** and the **fix** (e.g. `sessionScene.seatS
 
 Storyteller **Scenes** tab shows two columns (`ui/storyteller/panel_scenes_host.xml`): narrative controls + import/fork modals on the left; **Scene library** (`panel_scenes_library.xml`) on the right with fixed slot buttons and constructor actions.
 
-For each key in `sceneLibrary.order`, activate a pre-declared dummy button and set label from `scenes[k].title` (do **not** use `setXML` / `setXMLTable` for dynamic lists). Active scene: green; inactive: default; unlink grey (see below).
+For each key in `sceneLibrary.order`, activate a pre-declared dummy button and set label from `scenes[k].title` (do **not** use `setXML` / `setXMLTable` for dynamic lists). Selected row: **green** when it is the live on-table scene, **blue** when pending (preview/edit library only); inactive: default; unlink grey (see below).
 
 - **Import Scene** — opens modal with large text field + confirm; validation as above.
 - **New Scene** — **fork** the live table into a new library row (see **Forking a scene** below). Does **not** blindfold or apply state: the physical table and `gameState.sessionScene` stay as they are; only `sceneLibrary` changes so future mirrors target the new row while the previous row stays pinned to the fork-time snapshot.
