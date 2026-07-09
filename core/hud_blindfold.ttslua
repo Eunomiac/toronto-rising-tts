@@ -34,6 +34,9 @@ local TRANSITION_CONDITION_KEY = "hudBlindfold"
 
 local activeTransitionVariant = nil
 local pendingEndDelayId = nil
+--- playerIDs that received `hudBlindfold` in the current (or last) beginTransition.
+--- Cleared on end even if those players left their seats mid-settle (hotseat orphan fix).
+local transitionBlindfoldPlayerIds = {}
 
 --- @return number 1..C.BlindfoldVariantCount
 local function pickRandomVariant()
@@ -49,8 +52,58 @@ local function forEachSeatedPlayer(fn)
   for _, player in ipairs(seated) do
     local color = player and player.color or nil
     local playerID = U.Type(color) == "string" and S.getPlayerID(color) or nil
-    if U.Type(playerID) == "string" then
+    if U.Type(playerID) == "string" and playerID ~= C.StorytellerID then
       fn(playerID)
+    end
+  end
+end
+
+--- Clear transition `hudBlindfold` for every playerID recorded at begin (not only currently seated).
+local function clearTrackedTransitionBlindfolds()
+  for playerID, _ in pairs(transitionBlindfoldPlayerIds) do
+    if type(playerID) == "string" and playerID ~= C.StorytellerID then
+      Conditions.clear(playerID, TRANSITION_CONDITION_KEY)
+    end
+  end
+  transitionBlindfoldPlayerIds = {}
+end
+
+--- @return table<string, boolean> seatColor -> true when a Player occupies that color
+local function occupiedSeatColors()
+  local occupied = {}
+  local seated = Player.getPlayers() or {}
+  for _, player in ipairs(seated) do
+    local color = player and player.color or nil
+    if type(color) == "string" then
+      occupied[color] = true
+    end
+  end
+  return occupied
+end
+
+--- Drop `hudBlindfold` on PC rows whose seat is empty.
+--- Recovers orphans left when a host left a PC seat before transition end; safe while a
+--- transition is inactive (manual blindfolds on empty seats are not visible anyway).
+function HUDBF.clearBlindfoldsForUnoccupiedPcSeats()
+  if activeTransitionVariant ~= nil then
+    return
+  end
+  local occupied = occupiedSeatColors()
+  local pd = S.getStateVal("playerData")
+  if type(pd) ~= "table" then
+    return
+  end
+  for playerID, row in pairs(pd) do
+    if type(playerID) == "string"
+      and playerID ~= C.StorytellerID
+      and type(row) == "table"
+      and type(row.conditions) == "table"
+      and row.conditions[TRANSITION_CONDITION_KEY] ~= nil
+    then
+      local seatColor = row.color
+      if type(seatColor) == "string" and occupied[seatColor] ~= true then
+        Conditions.clear(playerID, TRANSITION_CONDITION_KEY)
+      end
     end
   end
 end
@@ -80,6 +133,8 @@ function HUDBF.beginTransition(variantOptional)
     U.stopDelay(pendingEndDelayId)
     pendingEndDelayId = nil
   end
+  -- Drop any prior transition recipients before recording a new set (mid-settle restart).
+  clearTrackedTransitionBlindfolds()
 
   local variant = tonumber(variantOptional)
   if variant == nil or variant < 1 or variant > BLINDFOLD_VARIANT_COUNT then
@@ -88,6 +143,7 @@ function HUDBF.beginTransition(variantOptional)
   activeTransitionVariant = variant
 
   forEachSeatedPlayer(function(playerID)
+    transitionBlindfoldPlayerIds[playerID] = true
     Conditions.setEvent(playerID, TRANSITION_CONDITION_KEY, { variant = variant })
   end)
   if type(HO.applyBlindfoldVariantForSeatedPlayers) == "function" then
@@ -105,9 +161,8 @@ function HUDBF.endTransition()
   end
   activeTransitionVariant = nil
 
-  forEachSeatedPlayer(function(playerID)
-    Conditions.clear(playerID, TRANSITION_CONDITION_KEY)
-  end)
+  clearTrackedTransitionBlindfolds()
+  HUDBF.clearBlindfoldsForUnoccupiedPcSeats()
   HO.syncAll()
 
   local PCST = require("core.pc_storyteller_panel")

@@ -473,5 +473,7 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-09 | SHIP | TOR-323 | Clear Loading Overlay — hide + active=false; relatedTo TOR-285 |
 | 2026-07-09 | SHIP | TOR-322 | Toggle Lights ambient 0↔2 debug button on ST bar |
 | 2026-07-09 | Focus | Stack | unchanged after Quick Fixes (TOR-323/322 shipped, not Focus) |
+| 2026-07-09 | CREATE | TOR-324 | Hotseat Red blindfold stuck after mid-transition seat leave; relatedTo TOR-285, TOR-272 |
+| 2026-07-09 | SHIP | TOR-324 | Track beginTransition playerIDs; clear unoccupied + invalidate overlay cache on seat refresh |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

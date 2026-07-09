@@ -395,6 +395,24 @@ local function refreshGlobalUiAfterSeatAssignment(seatColor)
     local shouldMarkSeatRefreshDone = false
 
     local function applyPostSeatUiRefresh()
+        -- Drop orphaned transition blindfolds on empty PC seats (host left mid-settle).
+        local HUDBF = require("core.hud_blindfold")
+        if type(HUDBF.clearBlindfoldsForUnoccupiedPcSeats) == "function" then
+            HUDBF.clearBlindfoldsForUnoccupiedPcSeats()
+        end
+        -- UI.setXml rebuilds XmlUI from source defaults (overlays active=false). Clear
+        -- HO lastVisible / fingerprint caches so the next overlay sync re-issues show/hide
+        -- instead of assuming pre-setXml visibility still matches the live UI.
+        if type(HO.invalidateOverlayInputCache) == "function" then
+            HO.invalidateOverlayInputCache()
+        end
+        if isPcSeat and type(HO.invalidateSeatCache) == "function" then
+            HO.invalidateSeatCache(seatColor)
+        elseif type(HO.invalidateSeatCache) == "function" then
+            for _, pcColor in ipairs(C.PlayerColors or {}) do
+                HO.invalidateSeatCache(pcColor)
+            end
+        end
         local delta = {
             overlays = true,
             gameStateOverlay = true,

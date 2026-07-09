@@ -190,15 +190,10 @@ local function desiredBlindfoldFromWant(want, seatColor, playerID)
   if type(playerID) == "string" and playerID ~= "" and playerID ~= C.StorytellerID then
     local conditions = S.getStateVal("playerData", playerID, "conditions")
     if type(conditions) == "table" then
-      local transition = conditions.hudBlindfold
-      if type(transition) == "table" then
-        variant = tonumber(transition.blindfoldVariant)
-      end
-      if variant == nil then
-        local manual = conditions.hudBlindfold
-        if type(manual) == "table" then
-          variant = tonumber(manual.blindfoldVariant)
-        end
+      local blindfold = conditions.hudBlindfold
+      if type(blindfold) == "table" then
+        -- Persisted instance schema uses `variant` (see lib/condition_defs.ttslua).
+        variant = tonumber(blindfold.variant)
       end
     end
   end
