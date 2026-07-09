@@ -41,7 +41,7 @@ _Stack rank for the current cycle (2026-07-09 post `/tr-inbox`: **TOR-323** Clea
 | 4 | ~~**TOR-318** — Spawn above bag → arc~~ | Shipped 2026-07-09 — hover above bag, smooth to arc |
 | 5 | ~~**TOR-317** — Right-click ROLL auto-rolls~~ | Shipped 2026-07-09 — right-click programmatic roll |
 | 6 | ~~**TOR-309** — Difficulty-0 roll results display~~ | Shipped 2026-07-09 — success-count contest copy |
-| 7 | **TOR-312** — Narrative roll broadcast successes | Frenzy/etc. success count in broadcast |
+| 7 | ~~**TOR-312** — Narrative roll broadcast successes~~ | Shipped 2026-07-09 — Frenzy/Remorse show successes + difficulty |
 
 **Also in cycle (below top stack):** **TOR-244** (scenes library preview/edit). **TOR-303** (author review roll broadcast phrasing — External Todo). **TOR-144** (Multiplayer E2E playbook — multiclient pass via **TOR-249** human gate). **TOR-293** (absent player connect/disconnect presence; **blockedBy** **TOR-144**). **TOR-286**–**TOR-288** (visibility helper, companion toggles). **TOR-95** (play-as-NPC, **blockedBy** **TOR-247**).
 
@@ -105,7 +105,7 @@ _Stack rank for the current cycle (2026-07-09 post `/tr-inbox`: **TOR-323** Clea
 - [x] **Right-click ROLL auto-rolls:** Player roll panel right-click ROLL immediately rolls the staged pool. _(TOR-317)_
 - [x] **Spawn above bag then smooth-move into arc:** Dice appear above bag first, then smooth-move into staging arc. _(TOR-318)_
 - [x] **Difficulty-0 roll results display:** No difficulty/margin; successes-focused copy for opposed/extended contests (refines **TOR-163**). _(TOR-309)_
-- [ ] **Narrative roll broadcast successes:** Frenzy/Willpower/etc. show success count + difficulty; split from hidesDifficulty margin strip. _(TOR-312)_
+- [x] **Narrative roll broadcast successes:** Frenzy/Willpower/etc. show success count + difficulty; split from hidesDifficulty margin strip. _(TOR-312)_
 - [x] **Open player dice tray on roll initiate:** Tray on player bag click + ST `openRoll`; ST SETUP defers bags/tray; `changeRollType`→PRE_ROLL opens tray. Author verified 2026-07-08. _(TOR-305)_
 - [x] **Take Half auto-broadcast:** Pure Take Half confirms/broadcasts without extra Confirm; tray force-closes on cleanup. Author verified 2026-07-08. _(TOR-306)_
 - [x] **Hunger 5 voluntary rouse lockout:** At Hunger 5, Blood Surge + Obliv-Rouse locked; forced standard Rouse allowed; failed rouse → Frenzy Resist D4 queue. _(TOR-203 — 2026-06-15)_

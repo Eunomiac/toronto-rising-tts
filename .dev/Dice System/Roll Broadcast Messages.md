@@ -78,17 +78,17 @@ Auto-broadcast does **not** run while:
 
 **Success-count contests (TOR-309):** Rolls with **no** ST difficulty or **difficulty = 0** (except Simple Check, Rouse, Oblivion Rouse) hide the difficulty row and margin. Headline shows success count: `3 Successes`, `2 Crit Successes`, `4 Messy Successes`, or `Failure` / `Bestial Failure`.
 
-These roll types **hide** the successes/difficulty row on broadcast (`hidesDifficulty`):
+These roll types **hide** the successes/difficulty row on broadcast (`rollTypeHidesSuccessesRow`):
 
 - Simple Check
 - Rouse Check
 - Rouse Check (Oblivion)
-- Remorse Roll
-- Frenzy Roll
+
+**Narrative roll types (TOR-312):** Frenzy, Remorse, Willpower, Discipline, Humanity, etc. show **success count** and **difficulty when ST-set** on broadcast and roll panels. Headline stays narrative (no signed margin suffix) via `rollTypeHidesMarginInHeadline`.
 
 All other roll types show successes count when the successes row is visible. The **`vs.` + difficulty number** row appears only when `result.margin` is set (ST-set difficulty). **Standard/Werewolf** rolls without ST difficulty still classify (implicit diff 1) but **omit margin and difficulty display** (TOR-163).
 
-**Margin on headline:** When `result.margin` is set, headline appends signed margin: `WIN +2`, `FAILURE −1` (Unicode minus). When margin is hidden, headline alone: `WIN`, `FAILURE`, etc.
+**Margin on headline:** When `result.margin` is set, headline appends signed margin: `WIN +2`, `FAILURE −1` (Unicode minus). Narrative types and success-count contests omit margin on the headline.
 
 ## Headline resolution order (`narrativeLabel`)
 
@@ -156,7 +156,7 @@ No difficulty row. Headline from `result.rouseNarrative` when set, else:
 
 ### Remorse Roll
 
-No difficulty row. Narrative overrides:
+Narrative headline (no signed margin). **Shows successes row + difficulty when ST-set** (TOR-312). Overrides:
 
 | Result class | Headline |
 | --- | --- |
@@ -169,7 +169,7 @@ Broadcast CSS maps remorse win → `rollRes_result_win`, fail → `rollRes_resul
 
 ### Frenzy Roll
 
-No difficulty row. Narrative overrides:
+Narrative headline (no signed margin). **Shows successes row + difficulty when ST-set** (TOR-312). Overrides:
 
 | Result class | Headline | Broadcast CSS |
 | --- | --- | --- |

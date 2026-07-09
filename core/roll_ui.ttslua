@@ -1024,6 +1024,29 @@ local function isSuccessCountContest(rollType, difficulty)
     return false
 end
 
+--- Roll types that hide successes + difficulty rows (broadcast and roll panels).
+-- Narrative types (Frenzy, Remorse, Willpower, …) are excluded — TOR-312.
+-- @param rollType string|nil
+-- @param difficulty number|nil
+-- @return boolean
+local function rollTypeHidesSuccessesRow(rollType, difficulty)
+    return rollType == C.RollType.SIMPLE_CHECK
+        or rollType == C.RollType.ROUSE
+        or rollType == C.RollType.ROUSE_OBLIVION
+        or isSuccessCountContest(rollType, difficulty)
+end
+
+--- Roll types whose headline omits signed margin (narrative copy only).
+-- @param rollType string|nil
+-- @return boolean
+local function rollTypeHidesMarginInHeadline(rollType)
+    return rollType == C.RollType.SIMPLE_CHECK
+        or rollType == C.RollType.ROUSE
+        or rollType == C.RollType.ROUSE_OBLIVION
+        or rollType == C.RollType.REMORSE
+        or rollType == C.RollType.FRENZY
+end
+
 --- Headline for success-count contests (difficulty 0 / unset STANDARD–Werewolf).
 -- @param result table|nil
 -- @return string
@@ -1118,12 +1141,7 @@ local function panelResultDisplayText(rollType, result, difficulty)
         return string.upper(successCountContestHeadline(result))
     end
     local headline = panelResultHeadline(rollType, result)
-    local hidesDifficulty = rollType == C.RollType.SIMPLE_CHECK
-        or rollType == C.RollType.ROUSE
-        or rollType == C.RollType.ROUSE_OBLIVION
-        or rollType == C.RollType.REMORSE
-        or rollType == C.RollType.FRENZY
-    if hidesDifficulty or difficulty == nil or result.margin == nil then
+    if rollTypeHidesMarginInHeadline(rollType) or difficulty == nil or result.margin == nil then
         return headline
     end
     local signed = formatSignedMargin(result.margin)
@@ -1246,12 +1264,6 @@ local function refreshStRollPanel(active)
     end
 
     local result = active.result
-    local hidesDifficulty = active.rollType == C.RollType.SIMPLE_CHECK
-        or active.rollType == C.RollType.ROUSE
-        or active.rollType == C.RollType.ROUSE_OBLIVION
-        or active.rollType == C.RollType.REMORSE
-        or active.rollType == C.RollType.FRENZY
-        or isSuccessCountContest(active.rollType, active.difficulty)
     if result ~= nil and isPostRoll then
         local resultClassStr = rollResResultClassString(result)
         local resultText = panelResultDisplayText(active.rollType, result, active.difficulty)
@@ -1266,8 +1278,8 @@ local function refreshStRollPanel(active)
         uiSetValue("rollPanelST_result", "")
     end
 
-    local showSuccessesRow = isPostRoll and result ~= nil and not hidesDifficulty
-        and not isSuccessCountContest(active.rollType, active.difficulty)
+    local showSuccessesRow = isPostRoll and result ~= nil
+        and not rollTypeHidesSuccessesRow(active.rollType, active.difficulty)
     uiSetActive("rollPanelST_successes_container", showSuccessesRow)
     if showSuccessesRow then
         uiSetValue("rollPanelST_successes", string.format("%d success%s",
@@ -1357,22 +1369,16 @@ local function refreshPcRollControlPanel(color, active)
     refreshPoolDotsForControlPanel(color, pool)
     refreshPlayerControlDiceImages(color, active.diceFaces, pool)
 
-    local hidesDifficulty = active.rollType == C.RollType.SIMPLE_CHECK
-        or active.rollType == C.RollType.ROUSE
-        or active.rollType == C.RollType.ROUSE_OBLIVION
-        or active.rollType == C.RollType.REMORSE
-        or active.rollType == C.RollType.FRENZY
-        or isSuccessCountContest(active.rollType, active.difficulty)
     local isPostRoll = active.phase == C.RollPhase.POST_ROLL
-    local showDifficulty = (not hidesDifficulty) and isPostRoll and active.difficulty ~= nil
+    local hidesSuccessesRow = rollTypeHidesSuccessesRow(active.rollType, active.difficulty)
+    local showDifficulty = not hidesSuccessesRow and isPostRoll and active.difficulty ~= nil
 
     uiSetActive(string.format("rollControl_difficultyDisplay_%s", color), showDifficulty)
     uiSetValue(string.format("rollControl_difficulty_%s", color),
         showDifficulty and difficultyStr(active.difficulty) or "")
 
     local result = active.result
-    local showSuccessesRow = isPostRoll and result ~= nil and not hidesDifficulty
-        and not isSuccessCountContest(active.rollType, active.difficulty)
+    local showSuccessesRow = isPostRoll and result ~= nil and not hidesSuccessesRow
     uiSetActive(string.format("rollControl_successesContainer_%s", color), showSuccessesRow)
     if showSuccessesRow then
         uiSetValue(string.format("rollControl_successes_%s", color), tostring(result.successes))
@@ -1641,16 +1647,8 @@ function RUI.showResultBroadcast(color, result, label, historyEntryOverride)
         difficulty = result.successes - result.margin
     end
 
-    local hidesDifficulty = rollTypeKey == C.RollType.SIMPLE_CHECK
-        or rollTypeKey == C.RollType.ROUSE
-        or rollTypeKey == C.RollType.ROUSE_OBLIVION
-        or rollTypeKey == C.RollType.REMORSE
-        or rollTypeKey == C.RollType.FRENZY
-        or isSuccessCountContest(rollTypeKey, difficulty)
-
     if result ~= nil then
-        local showSuccessesRow = not hidesDifficulty
-            and not isSuccessCountContest(rollTypeKey, difficulty)
+        local showSuccessesRow = not rollTypeHidesSuccessesRow(rollTypeKey, difficulty)
         uiSetActive("rollRes_successesContainer", showSuccessesRow)
         if showSuccessesRow then
             uiSetValue("rollRes_successes", tostring(result.successes))
