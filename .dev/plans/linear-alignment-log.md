@@ -459,5 +459,13 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-08 | SHIP | TOR-314 | INBOX Quick Fixes: scenes location modals HUD until Apply, sort ignoring "The", district→site flow, site/district guard |
 | 2026-07-08 | CREATE | TOR-315 | NPC stage light before imageScalar rescale; NPC Bug High; parent TOR-35; relatedTo TOR-266, TOR-234 |
 | 2026-07-08 | Focus | Stack | #1 TOR-307 verify, #2 TOR-315, #3 TOR-310, #4 TOR-309 |
+| 2026-07-09 | `/tr-inbox` | INBOX | Active → TOR-316 (tray reverse), TOR-317 (right-click ROLL), TOR-318 (bag→arc spawn; `blockedBy` TOR-310), TOR-319 (Intermission; `blockedBy` TOR-143), TOR-320 (color-tone lights; `blockedBy` TOR-81), TOR-321 (LUTs; `blockedBy` TOR-81) |
+| 2026-07-09 | CREATE | TOR-316 | Reverse live-roll tray motion; Dice Bug High; parent TOR-31; relatedTo TOR-262 |
+| 2026-07-09 | CREATE | TOR-317 | Right-click ROLL auto-rolls; Dice Feature Medium; parent TOR-31; relatedTo TOR-226 |
+| 2026-07-09 | CREATE | TOR-318 | Spawn above bag then smooth-move into arc; Dice Improvement Medium; parent TOR-31; `blockedBy` TOR-310 |
+| 2026-07-09 | CREATE | TOR-319 | Intermission phase; UI Feature Medium; parent TOR-143; `blockedBy` TOR-143 |
+| 2026-07-09 | CREATE | TOR-320 | Scene light modes as color tones; Lighting Feature Medium; parent TOR-34; `blockedBy` TOR-81 |
+| 2026-07-09 | CREATE | TOR-321 | Subtle scene LUTs (Memoriam sepia); Lighting Feature Medium; parent TOR-34; `blockedBy` TOR-81 |
+| 2026-07-09 | Focus | Stack | #1 TOR-316, #2 TOR-315, #3 TOR-307, #4 TOR-310, #5 TOR-317, #6 TOR-309 |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

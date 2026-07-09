@@ -35,6 +35,12 @@ Verification:
 
 ## Processed
 
+2026-07-09 INBOX Active — reverse live-roll tray motion (lower peers, keep roller) → **TOR-316** (Dice & Rolls Bug, High; parent **TOR-31**; relatedTo **TOR-262**)
+2026-07-09 INBOX Active — right-click ROLL auto-rolls for players → **TOR-317** (Dice & Rolls Feature, Medium; parent **TOR-31**; relatedTo **TOR-226**)
+2026-07-09 INBOX Active — spawn above bag then smooth-move into arc → **TOR-318** (Dice & Rolls Improvement, Medium; parent **TOR-31**; `blockedBy` **TOR-310**; relatedTo **TOR-287**)
+2026-07-09 INBOX Active — Intermission phase (dark lights, connect blindfold, advance to Start) → **TOR-319** (UI & HUD Feature, Medium; parent **TOR-143**; `blockedBy` **TOR-143**; relatedTo **TOR-263**, **TOR-293**)
+2026-07-09 INBOX Active — scene light modes as color tones → **TOR-320** (Lighting & Camera Feature, Medium; parent **TOR-34**; `blockedBy` **TOR-81**; relatedTo **TOR-24**)
+2026-07-09 INBOX Active — subtle scene LUTs (Memoriam sepia first) → **TOR-321** (Lighting & Camera Feature, Medium; parent **TOR-34**; `blockedBy` **TOR-81**; relatedTo **TOR-101**, **TOR-143**, **TOR-320**)
 2026-07-08 INBOX Quick Fixes — scenes location modals (HUD until Apply, modal sort, district→site flow, site/district guard) → **TOR-314** (Scenes & Chronicle Bug, High; parent **TOR-33**; relatedTo **TOR-244**, **TOR-82**; shipped)
 2026-07-08 INBOX Active — NPC stage light before imageScalar rescale → **TOR-315** (NPC & Spotlight Bug, High; parent **TOR-35**; relatedTo **TOR-266**, **TOR-234**, **TOR-178**)
 2026-07-08 INBOX Quick Fix — preload pool dice destroyed instead of returned → **TOR-308** (Dice & Rolls Bug, High; parent **TOR-31**; relatedTo **TOR-287**)
