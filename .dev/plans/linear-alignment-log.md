@@ -467,5 +467,8 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-09 | CREATE | TOR-320 | Scene light modes as color tones; Lighting Feature Medium; parent TOR-34; `blockedBy` TOR-81 |
 | 2026-07-09 | CREATE | TOR-321 | Subtle scene LUTs (Memoriam sepia); Lighting Feature Medium; parent TOR-34; `blockedBy` TOR-81 |
 | 2026-07-09 | Focus | Stack | #1 TOR-316, #2 TOR-315, #3 TOR-307, #4 TOR-310, #5 TOR-317, #6 TOR-309 |
+| 2026-07-09 | DONE | TOR-307 | Author verified startup loose-dice + ST tray restore |
+| 2026-07-09 | DONE | TOR-284 | Author verified hotseat/solo execution-model regression; multiclient remains TOR-144 |
+| 2026-07-09 | Focus | Stack | #1 TOR-316, #2 TOR-315, #3 TOR-310, #4 TOR-317, #5 TOR-309, #6 TOR-312 |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
