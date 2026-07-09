@@ -4505,27 +4505,28 @@ local function moveBlackStagedDiceToTray()
     ensureBlackStagedRollTags()
 end
 
+--- Randomize every die in the active roll at once (Global context; fires onObjectRandomize).
+-- @param color string
+-- @param rollId string
+local function randomizeAllRollDiceForColor(color, rollId)
+    if type(color) ~= "string" or type(rollId) ~= "string" then
+        return
+    end
+    local _, objectsByKind = RC._getDicePoolsForRoll(color, rollId)
+    for _, kind in ipairs(DK.ALL_KINDS) do
+        for _, die in ipairs(objectsByKind[kind] or {}) do
+            randomizeReleasedDieForRoll(color, die)
+        end
+    end
+    if color == "Black" then
+        scheduleSecretRollDiceInvisibility(rollId)
+    end
+end
+
 --- Randomize every die in the active Black roll at once (Global context; fires onObjectRandomize).
 -- @param rollId string
 local function randomizeBlackTrayDiceSimultaneous(rollId)
-    if type(rollId) ~= "string" then
-        return
-    end
-    local _, objectsByKind = RC._getDicePoolsForRoll("Black", rollId)
-    for _, kind in ipairs(DK.ALL_KINDS) do
-        for _, die in ipairs(objectsByKind[kind] or {}) do
-            if die ~= nil and die.randomize ~= nil then
-                if die.getLock ~= nil and die.getLock() == true then
-                    die.setLock(false)
-                end
-                local ok = die.randomize("Black")
-                if ok ~= true then
-                    die.randomize()
-                end
-            end
-        end
-    end
-    scheduleSecretRollDiceInvisibility(rollId)
+    randomizeAllRollDiceForColor("Black", rollId)
 end
 
 --- Unlocks staged bag dice for one seat (drawer must already be opening or open).
@@ -4656,6 +4657,24 @@ local function finishRollRelease(color)
         return false
     end
     unlockStagedBagDice(color)
+    if color ~= "Black" then
+        local pid = S.getPlayerID(color)
+        if pid ~= nil then
+            local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+            if type(active) == "table"
+                and type(active.meta) == "table"
+                and active.meta.autoRollOnRelease == true
+                and type(active.id) == "string"
+            then
+                active.meta.autoRollOnRelease = nil
+                S.setStateVal(active, "playerData", pid, "hud", "rollData", "active")
+                local rollId = active.id
+                U.delay(function()
+                    randomizeAllRollDiceForColor(color, rollId)
+                end, 0.15)
+            end
+        end
+    end
     return true
 end
 
@@ -5035,6 +5054,20 @@ function HUD_rollRollButton(player, value, id)
         applyBlackRollMetaFlag(color, value, "secretDice")
         runBlackRollSequence()
         return
+    end
+
+    if value == "-2" then
+        local pid = S.getPlayerID(color)
+        if pid ~= nil then
+            local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+            if type(active) == "table" then
+                if type(active.meta) ~= "table" then
+                    active.meta = {}
+                end
+                active.meta.autoRollOnRelease = true
+                S.setStateVal(active, "playerData", pid, "hud", "rollData", "active")
+            end
+        end
     end
 
     local didAutoSpawn = Global.call("GlobalSpawnActivePoolDiceForActive", {
