@@ -1,6 +1,6 @@
 --[[
-  Single live PC roll: elevates the live player's tray + dice while one roll is ROLLING.
-  TOR-262 — live from Roll / Take Half until confirm (including WP rerolls).
+  Single live PC roll: lowers non-rolling players' trays + dice while one roll is ROLLING.
+  TOR-316 amends TOR-262 — live roller stays at normal height; peers lower.
 ]]
 ---@diagnostic disable: undefined-global
 
@@ -12,12 +12,12 @@ local U = require("lib.util")
 local G = require("lib.guids")
 local DK = require("lib.dice_kinds")
 
-local LIVE_ELEVATE_DELTA_Y = 5
+local PEER_LOWER_DELTA_Y = -5
 
---- Seat color whose tray/dice are physically elevated for the live roll (host runtime cache).
---- Hydrated from persisted `rollConcurrency.livePcColor` on load/reconnect.
---- @type string|nil
-local elevatedColor = nil
+--- Peer seat colors whose tray/dice are physically lowered during another PC's live roll.
+--- Hydrated from persisted `rollConcurrency.livePcColor` on load/reconnect (offset only).
+--- @type table<string, boolean>
+local loweredPeers = {}
 
 --- @param color string
 --- @return userdata|nil
@@ -106,6 +106,24 @@ local function getActiveRoll(color)
   return S.getStateVal("playerData", pid, "hud", "rollData", "active")
 end
 
+--- @param color string
+--- @return boolean
+local function isPeerLowered(color)
+  return type(color) == "string" and loweredPeers[color] == true
+end
+
+--- @param liveColor string|nil
+--- @return boolean
+local function isPeerDuringLiveRoll(color, liveColor)
+  if type(color) ~= "string" or color == "Black" then
+    return false
+  end
+  if type(liveColor) ~= "string" or liveColor == "" or liveColor == "Black" then
+    return false
+  end
+  return color ~= liveColor
+end
+
 --- @return string|nil
 function PRTL.getLivePcColor()
   return S.getStateVal("rollConcurrency", "livePcColor")
@@ -117,24 +135,29 @@ function PRTL.setLivePcColor(color)
 end
 
 --- Sync module cache from persisted live-roll state (no world nudge).
-local function hydrateElevatedColorFromState()
+local function hydrateLoweredPeersFromState()
+  loweredPeers = {}
   local live = PRTL.getLivePcColor()
-  if type(live) == "string" and live ~= "" and live ~= "Black" then
-    elevatedColor = live
-  else
-    elevatedColor = nil
+  if type(live) ~= "string" or live == "" or live == "Black" then
+    return
+  end
+  for _, color in ipairs(C.PlayerColors) do
+    if color ~= live then
+      loweredPeers[color] = true
+    end
   end
 end
 
---- World Y offset applied to staged spawns while this seat's roll is live.
+--- World Y offset applied to staged spawns while another seat's roll is live.
 -- @param color string
 -- @return number
 function PRTL.getTrayYOffset(color)
   if type(color) ~= "string" or color == "Black" then
     return 0
   end
-  if elevatedColor == color or PRTL.getLivePcColor() == color then
-    return LIVE_ELEVATE_DELTA_Y
+  local live = PRTL.getLivePcColor()
+  if isPeerDuringLiveRoll(color, live) or isPeerLowered(color) then
+    return PEER_LOWER_DELTA_Y
   end
   return 0
 end
@@ -152,7 +175,7 @@ end
 
 --- @param color string
 --- @param deltaY number
-local function nudgeLiveTrayWorld(color, deltaY)
+local function nudgeTrayWorld(color, deltaY)
   local active = getActiveRoll(color)
   local rollId = type(active) == "table" and active.id or nil
   nudgeObjectY(findDiceDrawerObject(color), deltaY)
@@ -162,34 +185,31 @@ local function nudgeLiveTrayWorld(color, deltaY)
   end
 end
 
---- Elevates the live seat tray + staged/table dice (host-only Tier C).
--- @param color string
-local function elevateLiveTray(color)
-  if type(color) ~= "string" or color == "Black" or elevatedColor == color then
+--- Lowers every non-rolling PC tray + staged/table dice (host-only Tier C).
+-- @param liveColor string
+local function lowerPeerTrays(liveColor)
+  if type(liveColor) ~= "string" or liveColor == "Black" then
     return
   end
-  nudgeLiveTrayWorld(color, LIVE_ELEVATE_DELTA_Y)
-  elevatedColor = color
-end
-
---- Restores live-seat elevation before tray close/cancel (host-only Tier C).
--- @param color string
-local function restoreLiveTrayElevation(color)
-  if type(color) ~= "string" or color == "Black" then
-    return
-  end
-  local isTracked = elevatedColor == color
-  local isLiveInState = PRTL.getLivePcColor() == color
-  if not isTracked and not isLiveInState then
-    return
-  end
-  nudgeLiveTrayWorld(color, -LIVE_ELEVATE_DELTA_Y)
-  if elevatedColor == color then
-    elevatedColor = nil
+  for _, color in ipairs(C.PlayerColors) do
+    if color ~= liveColor and not isPeerLowered(color) then
+      nudgeTrayWorld(color, PEER_LOWER_DELTA_Y)
+      loweredPeers[color] = true
+    end
   end
 end
 
---- Marks a PC roll live and elevates its tray/dice. State updates on all clients; elevation is host-only.
+--- Restores peer trays lowered for a live roll (host-only Tier C).
+local function restoreLoweredPeerTrays()
+  for _, color in ipairs(C.PlayerColors) do
+    if isPeerLowered(color) then
+      nudgeTrayWorld(color, -PEER_LOWER_DELTA_Y)
+      loweredPeers[color] = nil
+    end
+  end
+end
+
+--- Marks a PC roll live and lowers peer trays/dice. State updates on all clients; motion is host-only.
 -- Call before unlocking bag dice (Roll / Take Half with physical dice).
 -- @param liveColor string
 function PRTL.onPcRollGoingLive(liveColor)
@@ -197,22 +217,19 @@ function PRTL.onPcRollGoingLive(liveColor)
     return
   end
   PRTL.setLivePcColor(liveColor)
-  elevateLiveTray(liveColor)
+  lowerPeerTrays(liveColor)
 end
 
---- Clears live lock and restores elevation. Call on confirm, cancel, or safety cleanup.
+--- Clears live lock and restores peer tray positions. Call on confirm, cancel, or safety cleanup.
 function PRTL.onLivePcRollFinished()
-  local live = PRTL.getLivePcColor()
-  if type(live) == "string" and live ~= "" then
-    restoreLiveTrayElevation(live)
-  end
+  restoreLoweredPeerTrays()
   PRTL.setLivePcColor(nil)
-  elevatedColor = nil
+  loweredPeers = {}
 end
 
---- Rehydrate tray-elevation cache after load/reconnect (state-only; no nudge).
+--- Rehydrate peer-lower cache after load/reconnect (state-only; no nudge).
 function PRTL.reconcileElevatedColorFromState()
-  hydrateElevatedColorFromState()
+  hydrateLoweredPeersFromState()
 end
 
 return PRTL

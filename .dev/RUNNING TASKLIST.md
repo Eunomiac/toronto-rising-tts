@@ -35,7 +35,7 @@ _Stack rank for the current cycle (2026-07-09 post `/tr-inbox`: **TOR-323** Clea
 
 | # | Issue | Why now |
 | --- | --- | --- |
-| 1 | **TOR-316** — Reverse live-roll tray motion | Author-facing tray UX wrong vs intent; amends **TOR-262** |
+| 1 | ~~**TOR-316** — Reverse live-roll tray motion~~ | Shipped 2026-07-09 — peers lower, roller stays |
 | 2 | **TOR-315** — NPC stage light before imageScalar rescale | Visible spotlight misplacement on seat→stage for variable-scale NPCs |
 | 3 | **TOR-310** — Smooth preload spawn + ST Y=8 | Dice polish; unlocks **TOR-318** bag→arc choreography |
 | 4 | **TOR-317** — Right-click ROLL auto-rolls | Small player UX win after tray/spawn stack |
@@ -100,7 +100,7 @@ _Stack rank for the current cycle (2026-07-09 post `/tr-inbox`: **TOR-323** Clea
 - [x] **Startup loose-dice cleanup:** Destroy loose d10 on table + stow trays before startup table sync; preserve d10Preload pool. PC trays: scale-based detect; ST drawers: `STD.reconcileAllToWorkshopHome` restores workshop X/Y/Z + tray light. Author verified 2026-07-09. _(TOR-307)_
 - [x] **Preload pool return regression:** Used dice must return to pool (12/bag); only overflow spawns destroyed on resolution. Table/tray sweeps use `DPP.releaseOrDestroy`; bag cleanup before tag sweep. Adopt-on-load `reconcileAllParkedFromWorld` prevents Save & Play pool duplication. Author verified 2026-07-08. _(TOR-308)_ _(TOR-287 amend `dc7b50e`)_
 - [ ] **Smooth preload-pool spawn + ST Y=8:** Non-teleport claim from pool; ST spawn raised to y=8 before unlock. _(TOR-310)_
-- [ ] **Reverse live-roll tray motion:** Keep rolling player's tray in place; lower other players' trays while a roll is live (amends **TOR-262** elevate-live behavior). _(TOR-316)_
+- [x] **Reverse live-roll tray motion:** Keep rolling player's tray in place; lower other players' trays while a roll is live (amends **TOR-262** elevate-live behavior). _(TOR-316)_
 - [ ] **Right-click ROLL auto-rolls:** Player roll panel right-click ROLL immediately rolls the staged pool. _(TOR-317)_
 - [ ] **Spawn above bag then smooth-move into arc:** Dice appear above bag first, then smooth-move into staging arc. `blockedBy` **TOR-310**. _(TOR-318)_
 - [ ] **Difficulty-0 roll results display:** No difficulty/margin; successes-focused copy for opposed/extended contests (refines **TOR-163**). _(TOR-309)_
