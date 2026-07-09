@@ -313,15 +313,24 @@ local STARTUP_LOADING_OVERLAY_ID = "overlay_loadingScreen_startup"
 local seatXmlRefreshDoneByPlayer = {}
 
 --- Force-hide global startup loading screen for all clients.
---- `UI.hide` alone can leave `active="true"` in the XmlUI tree; a later full-XML seat refresh
---- (TOR-285) then resurrects the overlay. Always clear `active` as well.
+--- Hide first so FadeOut can play; then clear `active` after the animation so a later
+--- full-XML seat refresh (TOR-285) cannot resurrect the overlay with `active` still true.
+local STARTUP_LOADING_OVERLAY_FADE_SEC = 0.35
+
 local function hideStartupLoadingOverlays()
     UI.hide(STARTUP_LOADING_OVERLAY_ID)
-    if type(U.setAttribute) == "function" then
-        U.setAttribute(STARTUP_LOADING_OVERLAY_ID, "active", "false")
-    elseif type(UI.setAttribute) == "function" then
-        UI.setAttribute(STARTUP_LOADING_OVERLAY_ID, "active", "false")
-    end
+    U.RunSequence({
+        function()
+            return STARTUP_LOADING_OVERLAY_FADE_SEC
+        end,
+        function()
+            if type(U.setAttribute) == "function" then
+                U.setAttribute(STARTUP_LOADING_OVERLAY_ID, "active", "false")
+            elseif type(UI.setAttribute) == "function" then
+                UI.setAttribute(STARTUP_LOADING_OVERLAY_ID, "active", "false")
+            end
+        end,
+    })
 end
 
 local function seatAssignmentPlayerKey(player)
