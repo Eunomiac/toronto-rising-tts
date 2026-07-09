@@ -36,7 +36,7 @@ _Stack rank for the current cycle (2026-07-09 post `/tr-inbox`: **TOR-323** Clea
 | # | Issue | Why now |
 | --- | --- | --- |
 | 1 | ~~**TOR-316** — Reverse live-roll tray motion~~ | Shipped 2026-07-09 — peers lower, roller stays |
-| 2 | **TOR-315** — NPC stage light before imageScalar rescale | Visible spotlight misplacement on seat→stage for variable-scale NPCs |
+| 2 | ~~**TOR-315** — NPC stage light before imageScalar rescale~~ | Shipped 2026-07-09 — defer align until bounds match scalar |
 | 3 | **TOR-310** — Smooth preload spawn + ST Y=8 | Dice polish; unlocks **TOR-318** bag→arc choreography |
 | 4 | **TOR-317** — Right-click ROLL auto-rolls | Small player UX win after tray/spawn stack |
 | 5 | **TOR-309** — Difficulty-0 roll results display | Roll broadcast copy refinement |
@@ -160,7 +160,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Apply/Clear off-seat light flicker:** RSL layout sync no longer eager-writes NPC homeland workshop lights; Step Four `L.reconcileForPlayer` for all assigned NPC seats (state-derived OFF for deactivated/stage-bound). _(TOR-265)_
 - [x] **Stage Clear seat activation rules + live scene-library persistence:** On Clear from stage, set returning seat by staged light mode (Case 1 disabled→activate if stage light `Standard`; Case 2 enabled stays enabled), not the library default; ST seat activate/deactivate writes back to the active scene library row so progress restores on re-apply. Author verified via step-by-step playbook 2026-07-05. _(TOR-281)_
 - [x] **Control board Apply dice-guard retry:** Aborted Apply (dice on table) must not fingerprint-skip retry after dice cleared. Preflight grow+dice before seat/placement commits. _(TOR-304)_
-- [ ] **NPC stage light before imageScalar rescale:** Seat→stage spotlight bounds calculated before figurine ImageScalar restore — defer light placement until after rescale. _(TOR-315)_
+- [x] **NPC stage light before imageScalar rescale:** Seat→stage spotlight bounds calculated before figurine ImageScalar restore — defer light placement until after rescale. _(TOR-315)_
 - [x] **Figurine tooltips sync with player visibility:** Pooled figurines disable tooltips when `setInvisibleTo` hides from PCs. _(TOR-257)_
 
 ## Soundscape

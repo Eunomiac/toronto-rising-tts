@@ -131,6 +131,8 @@ local NPC_LIGHT_SPAWN_OFFSET = { x = 3, y = 8, z = 3 }
 local NPC_LIGHT_POST_READY_DELAY_SEC = 1.5
 --- Minimum figurine `getBounds().size.y` before bounds-based spotlight Y (guards `image_scalar` + `reload()` race).
 local NPC_FIGURINE_LIGHT_ALIGN_MIN_BOUNDS_Y = 10
+--- Upper bound on bounds height vs expected ImageScalar — stale seat-scale mesh can pass min-only gate (TOR-315).
+local NPC_FIGURINE_LIGHT_ALIGN_MAX_BOUNDS_SCALAR = 1.35
 --- After figurine bounds pass, brief settle before `buildResolvedLightModeTable` (stage reposition; shorter than spawn).
 local NPC_STAGE_LIGHT_POST_BOUNDS_DELAY_SEC = 0.25
 
@@ -855,7 +857,8 @@ local function npcFigurineReadyForLightAlign(fig, npcName)
         NPC_FIGURINE_LIGHT_ALIGN_MIN_BOUNDS_Y,
         alignScalar * 0.75
     )
-    return sy >= minSy
+    local maxSy = alignScalar * NPC_FIGURINE_LIGHT_ALIGN_MAX_BOUNDS_SCALAR
+    return sy >= minSy and sy <= maxSy
 end
 
 --- Figurine Transform scale + tooltip and paired spotlight scale (preload = small, tooltips off; active areas/seats = full, tooltips on).
@@ -864,6 +867,7 @@ end
 --- @param lit Object|nil
 --- @param areaKey string
 --- @param npcName string|nil
+--- @return boolean true when ImageScalar `reload()` was triggered
 local function applyNpcPairPhysicalPresentation(fig, lit, areaKey, npcName)
     local isPreload = (areaKey == PRELOAD_AREA_KEY)
     local fs = isPreload and NPC_PRELOAD_FIGURE_SCALE or NPC_ACTIVE_FIGURE_SCALE
@@ -878,7 +882,7 @@ local function applyNpcPairPhysicalPresentation(fig, lit, areaKey, npcName)
         lit.setScale(Vector(ls, ls, ls))
     end
     ensureNpcFigurinePhysicsLocked(fig)
-    applyNpcFigurineImageScalarForPlacement(fig, npcName, areaKey)
+    return applyNpcFigurineImageScalarForPlacement(fig, npcName, areaKey) == true
 end
 
 --- Swap pooled figurine tags for table-seat layout (`SEAT_FIGURE` role); hide paired area spotlight.
@@ -1021,7 +1025,9 @@ end
 --- @param fig Object|nil
 --- @param lit Object|nil
 --- @param transitionTime number|nil
-local function applyStageNpcSpotlightNow(npcName, fig, lit, transitionTime)
+--- @param opts table|nil `{ skipBoundsAlign?: boolean }`
+local function applyStageNpcSpotlightNow(npcName, fig, lit, transitionTime, opts)
+    opts = U.Type(opts) == "table" and opts or {}
     if U.Type(npcName) ~= "string" or npcName == "" or not U.isGameObject(fig) then
         return
     end
@@ -1033,7 +1039,7 @@ local function applyStageNpcSpotlightNow(npcName, fig, lit, transitionTime)
     if U.Type(rec) == "table" then
         syncStageNpcLightState(npcName, rec.npcLightMode or "STANDARD")
     end
-    if npcFigurineReadyForLightAlign(fig, npcName) then
+    if opts.skipBoundsAlign ~= true and npcFigurineReadyForLightAlign(fig, npcName) then
         applyNpcSpotlightAlignedToFigurine(npcName, fig, transitionTime or 0)
     end
 end
@@ -3063,8 +3069,10 @@ function NPCS.finalizeStageLerpWorld(npcName, transitionTime)
     if not U.isGameObject(fig) then
         return
     end
-    applyNpcPairPhysicalPresentation(fig, lit, STAGE_BOARD_AREA_KEY, npcName)
-    applyStageNpcSpotlightNow(npcName, fig, lit, transitionTime)
+    local imageScalarReloaded = applyNpcPairPhysicalPresentation(fig, lit, STAGE_BOARD_AREA_KEY, npcName)
+    applyStageNpcSpotlightNow(npcName, fig, lit, transitionTime, {
+        skipBoundsAlign = imageScalarReloaded,
+    })
     deferNpcSpotlightAlignedToFigurine(npcName, fig, lit, transitionTime or 0)
 end
 
@@ -3178,8 +3186,10 @@ function NPCS.moveNpcToStagePlacement(npcName, placement, opts)
     }
     rec.npcLightMode = desiredMode
     setInstanceRecord(npcName, rec)
-    applyNpcPairPhysicalPresentation(fig, lit, STAGE_BOARD_AREA_KEY, npcName)
-    applyStageNpcSpotlightNow(npcName, fig, lit, 0)
+    local imageScalarReloaded = applyNpcPairPhysicalPresentation(fig, lit, STAGE_BOARD_AREA_KEY, npcName)
+    applyStageNpcSpotlightNow(npcName, fig, lit, 0, {
+        skipBoundsAlign = imageScalarReloaded,
+    })
     deferNpcSpotlightAlignedToFigurine(npcName, fig, lit, 0)
     if not skipSeatSync then
         requestSeatLayoutSync()
