@@ -81,7 +81,7 @@ Do **not** split rotation into manual `rotX` / `rotY` / `rotZ` in data. The scri
 
 Whenever the figurine **moves or rotates**, this pipeline is re-run (UI moves, `onObjectDrop`, stage Apply, and defer align hooks) so the paired light stays aligned.
 
-**Stage placement timing:** `moveNpcToStagePlacement` syncs spotlight state via `applyStageNpcSpotlightNow` once figurine ImageScalar and spotlight component are ready (beam on after seated park / preload OFF); `deferNpcSpotlightAlignedToFigurine` refines bounds-based Y when mesh height settles. Reconcile fingerprint for the pooled ref is cleared on each force apply so a premature STANDARD stamp cannot block wake after seated park.
+**Stage placement timing (palette parity):** Step Two **skips preload park** when a homeland seat is stage-bound (figurine stays at the chair until Step Five). Step Five always runs **`ensureNpcInPreloadZone`** before `moveNpcToStagePlacement` — same preload presentation path as palette→stage adopt. When `ImageScalar` already reads registry scale but `getBounds` still reflects seat scalar **53**, `buildResolvedLightModeTable` projects bounds height from the seat→registry ratio so spotlight Y is correct without waiting on mesh reload. `deferNpcSpotlightAlignedToFigurine` still polls and refines when reload is in flight. Stage wake uses inline `SetLightMode` (pose-aware fingerprint). **`RSL.SyncTable`** skips pooled-light reconcile for `__stage_board__` NPCs and during the NPC orchestrator.
 
 ### Spawn source
 

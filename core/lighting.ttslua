@@ -1716,6 +1716,10 @@ function L.reconcileLightRef(lightRef, transitionTime, opts)
         return true
     end
 
+    if force then
+        L.invalidateReconcileCacheForRef(lightRef)
+    end
+
     L.SetLightMode(lightRef, desiredMode, nil, transitionTime or 0.25)
     return true
 end

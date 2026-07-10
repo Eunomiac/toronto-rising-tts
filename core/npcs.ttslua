@@ -106,6 +106,8 @@ local spotlightHeld = {}
 local lightAlignFigOverride = {}
 --- Bumped when a new deferred stage light-align sequence starts; stale sequences no-op on completion.
 local deferredLightAlignGeneration = {}
+--- Seat→stage `reload()` snapshot: bounds must grow before spotlight Y align (ImageScalar leads mesh).
+local pendingStageImageScalarReload = {}
 
 --- Custom_Assetbundle spotlights: `L.GetLight` can be true while `loading_custom` is still true; component `set` calls are then ignored (matches `U.waitUntil` object-resting checks in `lib.util`).
 --- @param lightGuid string
@@ -127,10 +129,12 @@ end
 
 --- World offset from figurine root position to NPC spotlight spawn (matches prior clone placement).
 local NPC_LIGHT_SPAWN_OFFSET = { x = 3, y = 8, z = 3 }
---- After `npcSpotlightReadyForApply`, extra wall-clock delay before `SetLightMode` so the spotlight beam reliably applies on spawn.
+--- After figurine `reload()` from seat ImageScalar → registry scalar: wall-clock settle before bounds-based spotlight Y (TTS mesh lags scalar).
 local NPC_LIGHT_POST_READY_DELAY_SEC = 1.5
 --- Minimum figurine `getBounds().size.y` before bounds-based spotlight Y (guards `image_scalar` + `reload()` race).
 local NPC_FIGURINE_LIGHT_ALIGN_MIN_BOUNDS_Y = 10
+--- Min `bounds.size.y / alignScalar` for off-seat placement (seat mesh at scalar 53 can pass a 0.75× gate while scalar already reads 60).
+local NPC_FIGURINE_LIGHT_ALIGN_MIN_BOUNDS_SCALAR_RATIO = 0.88
 --- Upper bound on bounds height vs expected ImageScalar — only for sub-seat scalars (TOR-315).
 local NPC_FIGURINE_LIGHT_ALIGN_MAX_BOUNDS_SCALAR = 1.35
 --- Apply max-bounds gate only when stage ImageScalar is well below seat scalar (53).
@@ -696,6 +700,7 @@ local function parkPooledSpotlightForSeatedNpc(npcName, lit)
         lit.setScale(Vector(NPC_PRELOAD_LIGHT_SCALE, NPC_PRELOAD_LIGHT_SCALE, NPC_PRELOAD_LIGHT_SCALE))
     end
     setPooledSpotlightHidden(lit, true)
+    pendingStageImageScalarReload[npcName] = nil
     local rec = getInstances()[npcName]
     if U.Type(rec) == "table" then
         rec.npcLightMode = "OFF"
@@ -825,9 +830,26 @@ local function applyNpcFigurineImageScalarForPlacement(fig, npcName, areaKey)
         return false
     end
     if areaKey == SEAT_PLACEMENT_KEY then
+        pendingStageImageScalarReload[npcName] = nil
         return applyFigurineImageScalarIfNeeded(fig, NPC_SEAT_FIGURINE_IMAGE_SCALAR)
     end
-    return applyFigurineImageScalarIfNeeded(fig, figurineImageScalarForNpc(npcName))
+    local priorSy = nil
+    if fig.getBounds ~= nil then
+        local b = fig.getBounds()
+        if b ~= nil and b.size ~= nil then
+            priorSy = b.size.y or b.size[2]
+        end
+    end
+    local targetScalar = figurineImageScalarForNpc(npcName)
+    local reloaded = applyFigurineImageScalarIfNeeded(fig, targetScalar)
+    if reloaded and U.Type(priorSy) == "number" and priorSy > 0 then
+        pendingStageImageScalarReload[npcName] = {
+            priorSy = priorSy,
+            targetScalar = targetScalar,
+            reloadAt = os.clock(),
+        }
+    end
+    return reloaded
 end
 
 --- Custom mesh loaded and ImageScalar matches placement (not preload-scale / mid-reload).
@@ -847,6 +869,32 @@ local function npcFigurineScalarReady(fig, npcName)
     )
 end
 
+--- When ImageScalar already reads registry target but `getBounds` still reflects seat scalar 53 mesh.
+--- @param fig Object|nil
+--- @param npcName string
+--- @param cy number
+--- @param sy number
+--- @return number cyOut, number syOut
+local function correctFigurineBoundsForRegistryScalar(fig, npcName, cy, sy)
+    if not U.isGameObject(fig) or U.Type(npcName) ~= "string" or npcName == "" then
+        return cy, sy
+    end
+    local alignScalar = figurineImageScalarForNpc(npcName)
+    if alignScalar <= NPC_SEAT_FIGURINE_IMAGE_SCALAR then
+        return cy, sy
+    end
+    if not figurineImageScalarMatches(readFigurineImageScalar(fig), alignScalar) then
+        return cy, sy
+    end
+    local minExpectedSy = alignScalar * NPC_FIGURINE_LIGHT_ALIGN_MIN_BOUNDS_SCALAR_RATIO
+    if sy >= minExpectedSy * 1.01 then
+        return cy, sy
+    end
+    local scale = alignScalar / NPC_SEAT_FIGURINE_IMAGE_SCALAR
+    local correctedSy = sy * scale
+    return cy + (correctedSy - sy) / 2, correctedSy
+end
+
 --- Bounds tall enough for spotlight Y from `getBounds` (not preload-scale feet).
 --- @param fig Object|nil
 --- @param npcName string
@@ -859,11 +907,16 @@ local function npcFigurineBoundsHeightReady(fig, npcName)
     if b == nil or b.size == nil then
         return false
     end
+    local cy = b.center.y or b.center[2] or 0
     local sy = b.size.y or b.size[2] or 0
+    cy, sy = correctFigurineBoundsForRegistryScalar(fig, npcName, cy, sy)
     local alignScalar = expectedFigurineImageScalarForNpcPlacement(npcName)
+    local minRatio = alignScalar > NPC_SEAT_FIGURINE_IMAGE_SCALAR
+        and NPC_FIGURINE_LIGHT_ALIGN_MIN_BOUNDS_SCALAR_RATIO
+        or 0.75
     local minSy = math.max(
         NPC_FIGURINE_LIGHT_ALIGN_MIN_BOUNDS_Y,
-        alignScalar * 0.75
+        alignScalar * minRatio
     )
     if sy < minSy then
         return false
@@ -1022,6 +1075,7 @@ end
 function NPCS.cancelDeferredSpotlightAlign(npcName)
     if U.Type(npcName) == "string" and npcName ~= "" then
         deferredLightAlignGeneration[npcName] = (deferredLightAlignGeneration[npcName] or 0) + 1
+        pendingStageImageScalarReload[npcName] = nil
     end
 end
 
@@ -1034,12 +1088,26 @@ local function applyNpcSpotlightAlignedToFigurine(npcName, fig, transitionTime)
         return
     end
     local rec = getInstances()[npcName]
-    if U.Type(rec) == "table" and U.Type(rec.lightGuid) == "string" and rec.lightGuid ~= "" then
-        L.invalidateReconcileCacheForRef(NPCS.lightRegistryName(rec.lightGuid))
+    if U.Type(rec) ~= "table" or U.Type(rec.lightGuid) ~= "string" or rec.lightGuid == "" then
+        return
     end
+    local reg = NPCS.lightRegistryName(rec.lightGuid)
+    if L.LIGHTMODES[reg] == nil then
+        L.registerNpcSpotlightModes(npcName, rec.lightGuid)
+    end
+    L.invalidateReconcileCacheForRef(reg)
     lightAlignFigOverride[npcName] = fig
-    NPCS.applyCurrentLightMode(npcName, transitionTime, { force = true })
+    local modeKey = spotlightHeld[npcName] and "SPOTLIGHT" or (rec.npcLightMode or "STANDARD")
+    S.setStateVal(modeKey, "lights", reg)
+    local modeTable = NPCS.buildResolvedLightModeTable(npcName, modeKey)
     lightAlignFigOverride[npcName] = nil
+    -- Inline mode table (not named-mode reconcile): fingerprint includes pose so a stale
+    -- "n:STANDARD" stamp cannot skip wake after seated park / preload OFF (TOR-315).
+    if U.Type(modeTable) == "table" then
+        L.SetLightMode(reg, modeTable, nil, transitionTime or 0)
+    else
+        NPCS.applyCurrentLightMode(npcName, transitionTime, { force = true })
+    end
 end
 
 --- @param fig Object|nil
@@ -1056,6 +1124,47 @@ local function npcPooledSpotlightReadyForApply(fig, lit, npcName)
     local lg = lit.getGUID and lit.getGUID() or ""
     local reg = NPCS.lightRegistryName(lg)
     return npcSpotlightReadyForApply(lg, reg)
+end
+
+--- @param npcName string
+--- @return boolean
+local function npcStageImageScalarReloadPending(npcName)
+    return U.Type(pendingStageImageScalarReload[npcName]) == "table"
+end
+
+--- @param npcName string
+--- @return boolean
+local function npcStageImageScalarReloadSettled(npcName)
+    local pending = pendingStageImageScalarReload[npcName]
+    if U.Type(pending) ~= "table" then
+        return true
+    end
+    local reloadAt = tonumber(pending.reloadAt)
+    if reloadAt == nil then
+        return true
+    end
+    return (os.clock() - reloadAt) >= NPC_LIGHT_POST_READY_DELAY_SEC
+end
+
+--- Stage spotlight: scalar + mesh bounds + pooled light component (no scalar-only early Y).
+--- @param fig Object|nil
+--- @param lit Object|nil
+--- @param npcName string
+--- @return boolean
+local function npcStageSpotlightAlignReady(fig, lit, npcName)
+    if not npcPooledSpotlightReadyForApply(fig, lit, npcName) then
+        return false
+    end
+    if npcStageImageScalarReloadPending(npcName) and not npcStageImageScalarReloadSettled(npcName) then
+        return false
+    end
+    if not npcFigurineBoundsHeightReady(fig, npcName) then
+        return false
+    end
+    if npcStageImageScalarReloadPending(npcName) then
+        pendingStageImageScalarReload[npcName] = nil
+    end
+    return true
 end
 
 --- Apply current stage light mode to state + visibility; reconcile when scalar + spotlight component are ready.
@@ -1075,7 +1184,7 @@ local function applyStageNpcSpotlightNow(npcName, fig, lit, transitionTime)
     if U.Type(rec) == "table" then
         syncStageNpcLightState(npcName, rec.npcLightMode or "STANDARD")
     end
-    if npcPooledSpotlightReadyForApply(fig, lit, npcName) then
+    if npcStageSpotlightAlignReady(fig, lit, npcName) then
         applyNpcSpotlightAlignedToFigurine(npcName, fig, transitionTime or 0)
     end
 end
@@ -1104,7 +1213,7 @@ local function deferNpcSpotlightAlignedToFigurine(npcName, fig, lit, transitionT
                 if deferredLightAlignGeneration[deferName] ~= gen then
                     return true
                 end
-                return npcPooledSpotlightReadyForApply(deferFig, deferLit, deferName)
+                return npcStageSpotlightAlignReady(deferFig, deferLit, deferName)
             end
         end,
         function()
@@ -1112,6 +1221,9 @@ local function deferNpcSpotlightAlignedToFigurine(npcName, fig, lit, transitionT
                 applyNpcSpotlightAlignedToFigurine(deferName, deferFig, deferTrans)
             end
             return 0
+        end,
+        function()
+            return NPC_STAGE_LIGHT_POST_BOUNDS_DELAY_SEC
         end,
         function()
             return function()
@@ -1122,13 +1234,9 @@ local function deferNpcSpotlightAlignedToFigurine(npcName, fig, lit, transitionT
             end
         end,
         function()
-            return NPC_STAGE_LIGHT_POST_BOUNDS_DELAY_SEC
-        end,
-        function()
-            if deferredLightAlignGeneration[deferName] ~= gen then
-                return 0
+            if deferredLightAlignGeneration[deferName] == gen then
+                applyNpcSpotlightAlignedToFigurine(deferName, deferFig, deferTrans)
             end
-            applyNpcSpotlightAlignedToFigurine(deferName, deferFig, deferTrans)
             return 0
         end,
     }, {
@@ -1238,7 +1346,7 @@ end
 
 --- Physical teardown for one NPC seat; optional state retention (Step Two case 3).
 --- @param seatKey string
---- @param opts table|nil `{ retainAssignment?: boolean, skipLayoutSync?: boolean }`
+--- @param opts table|nil `{ retainAssignment?: boolean, skipLayoutSync?: boolean, skipPreloadRetreat?: boolean }`
 --- @return boolean, string|nil
 local function clearNpcSeatPhysical(seatKey, opts)
     opts = U.Type(opts) == "table" and opts or {}
@@ -1288,7 +1396,9 @@ local function clearNpcSeatPhysical(seatKey, opts)
             r.seatedSeatKey = nil
             setInstanceRecord(name, r)
         end
-        NPCS.retreatNpcInstanceToPreloadPool(name, { skipUiRefresh = true, skipSeatSync = true })
+        if opts.skipPreloadRetreat ~= true then
+            NPCS.retreatNpcInstanceToPreloadPool(name, { skipUiRefresh = true, skipSeatSync = true })
+        end
     end
     if opts.skipLayoutSync ~= true then
         requestSeatLayoutSync()
@@ -1723,6 +1833,7 @@ function NPCS.buildResolvedLightModeTable(npcName, modeKey)
     local cy = b.center.y or b.center[2] or 0
     local cz = b.center.z or b.center[3] or 0
     local sy = b.size.y or b.size[2] or 1
+    cy, sy = correctFigurineBoundsForRegistryScalar(fig, npcName, cy, sy)
     local topY = cy + sy / 2
     local out = U.clone(mode) or {}
     out.positioning = nil
@@ -1807,6 +1918,9 @@ function NPCS.applyCurrentLightMode(npcName, transitionTime, opts)
     end
     if transitionTime == nil then
         transitionTime = 0.35
+    end
+    if opts.force == true then
+        L.invalidateReconcileCacheForRef(reg)
     end
     -- State-first mutation; lighting module reconcile owns live-world writes.
     S.setStateVal(modeKey, "lights", reg)
@@ -2667,9 +2781,12 @@ local function reconcileStepTwoSeatRemovals(intent)
                             retain = true
                         end
                     end
+                    local skipPreloadRetreat = U.Type(info.areaBoundOccupant) == "string"
+                        and info.areaBoundOccupant ~= ""
                     local ok, err = clearNpcSeatPhysical(seatKey, {
                         retainAssignment = retain,
                         skipLayoutSync = true,
+                        skipPreloadRetreat = skipPreloadRetreat,
                     })
                     if not ok then
                         allOk = false
@@ -2783,11 +2900,11 @@ local function reconcileStepFiveStagePlacements(intent, opts)
     opts = U.Type(opts) == "table" and opts or {}
     local allOk = true
     for name, ci in pairs(intent.byCharacter) do
-        if U.Type(ci) == "table" and ci.target == "stage" and getInstances()[name] == nil then
+        if U.Type(ci) == "table" and ci.target == "stage" then
             local ok, err = NPCS.ensureNpcInPreloadZone(name, { deferUiRefresh = true, skipSeatSync = true })
             if not ok then
                 allOk = false
-                print("[NPCS] step5 stage adopt preload " .. tostring(name) .. ": " .. tostring(err))
+                print("[NPCS] step5 stage preload prep " .. tostring(name) .. ": " .. tostring(err))
             end
         end
     end

@@ -3320,12 +3320,15 @@ function M.resolveSeatObjectsFromTable(tableRef, sourceObjects, options)
   applyPostCorrections(src, computed, { skipPcPostCorrections = true })
   applyTableConfigObjectPositions(tableCfg)
   enforceNPCSeatObjectVisibility(src, occupiedNPCSlots, tableCfg, previousTableCfg)
+  local orchestratorActive = type(NPCS.isReconcileOrchestratorInProgress) == "function"
+      and NPCS.isReconcileOrchestratorInProgress()
   local npcInstances = S.getStateVal("npcs", "instances")
-  if U.Type(npcInstances) == "table" then
+  if U.Type(npcInstances) == "table" and not orchestratorActive then
     for npcName, rec in pairs(npcInstances) do
       if U.Type(npcName) == "string" and U.Type(rec) == "table" then
         local seated = U.Type(rec.seatedSeatKey) == "string" and U.isIn(rec.seatedSeatKey, C.NPCSeats or {})
-        if not seated then
+        local onStageBoard = rec.areaKey == NPCS.STAGE_BOARD_AREA_KEY
+        if not seated and not onStageBoard then
           NPCS.applyCurrentLightMode(npcName, 0)
         end
       end
