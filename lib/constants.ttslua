@@ -563,8 +563,8 @@ C.MAX_HUNGER = 5 -- Maximum hunger value (0-5 scale)
 --- Roll types. Governs pool construction rules and option availability.
 -- STANDARD:      Normal pool with Hunger dice substituted per hunger level.
 -- SIMPLE_CHECK:  Single Normal die, difficulty 1, auto-set — no player input required.
--- ROUSE / ROUSE_OBLIVION: Single RouseDie or OblivRouseDie; difficulty 1; skip SETUP; auto-broadcast.
--- REMORSE:       No Hunger dice; pool = max(1, empty Humanity boxes), difficulty 1, auto-set.
+-- ROUSE / ROUSE_OBLIVION: Single RouseDie or OblivRouseDie; difficulty 1 auto-set; SETUP until ST opens (or player prep at SETUP).
+-- REMORSE:       No Hunger dice; pool = max(1, empty Humanity boxes), difficulty 0 (implicit 1), auto-set; skips SETUP (locked).
 -- STANDARD / DISCIPLINE: Normal pool with Hunger dice (Discipline auto-populates discBonus + hunger).
 -- ROUSE / ROUSE_OBLIVION: Single Normal die, no Hunger dice.
 -- REMORSE: No Hunger dice; pool = empty Humanity boxes (min 1).

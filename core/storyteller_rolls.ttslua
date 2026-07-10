@@ -287,7 +287,6 @@ function STR.initiateNpcRoll(rawLabel, rollType, npcCharacterKey)
         label = label,
         initiator = "storyteller",
         stDrawerSlot = slot,
-        skipSetup = skipSetupForRollType(rt),
         npcCharacterKey = npcCharacterKey,
     })
     if not ok then

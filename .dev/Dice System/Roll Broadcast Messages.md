@@ -84,7 +84,9 @@ These roll types **hide** the successes/difficulty row on broadcast (`rollTypeHi
 - Rouse Check
 - Rouse Check (Oblivion)
 
-**Successes row always (TOR-312):** Frenzy, Remorse, Willpower, Discipline, Humanity, Standard (when difficulty set), etc. show the successes row + difficulty when ST-set. Only Simple Check / Rouse / Oblivion Rouse (and success-count contests) hide the successes row via `rollTypeHidesSuccessesRow`.
+**Successes row always (TOR-312):** Frenzy, Remorse, Willpower, Discipline, Humanity, Standard (when difficulty set), etc. show the successes row + difficulty when ST-set (> 0). Only Simple Check / Rouse / Oblivion Rouse (and success-count contests) hide the successes row via `rollTypeHidesSuccessesRow`.
+
+**Remorse (no-difficulty):** Auto-initiates with `active.difficulty = 0`; ST dashboard strip selects cell **0**; classification uses implicit difficulty **1** (any success preserves Humanity); margin omitted on broadcast/panels.
 
 **Headline margin omit (`rollTypeHidesMarginInHeadline`):** Simple Check, Rouse, Oblivion Rouse, **Remorse**, and **Frenzy** only — custom narrative headlines must not append `+2` / `−1`. Willpower / Discipline / Humanity use default class labels and **do** append signed margin when difficulty is set (same as Standard).
 
@@ -158,7 +160,7 @@ No difficulty row. Headline from `result.rouseNarrative` when set, else:
 
 ### Remorse Roll
 
-Narrative headline (no signed margin). **Shows successes row + difficulty when ST-set** (TOR-312). Overrides:
+Narrative headline (no signed margin). **Shows successes row**; difficulty row omitted when auto-set to **0** (implicit 1 for pass/fail). Overrides:
 
 | Result class | Headline |
 | --- | --- |

@@ -1011,7 +1011,9 @@ end
 local function isSuccessCountContest(rollType, difficulty)
     if rollType == C.RollType.SIMPLE_CHECK
         or rollType == C.RollType.ROUSE
-        or rollType == C.RollType.ROUSE_OBLIVION then
+        or rollType == C.RollType.ROUSE_OBLIVION
+        or rollType == C.RollType.REMORSE
+        or rollType == C.RollType.FRENZY then
         return false
     end
     if difficulty == 0 then
@@ -1371,7 +1373,8 @@ local function refreshPcRollControlPanel(color, active)
 
     local isPostRoll = active.phase == C.RollPhase.POST_ROLL
     local hidesSuccessesRow = rollTypeHidesSuccessesRow(active.rollType, active.difficulty)
-    local showDifficulty = not hidesSuccessesRow and isPostRoll and active.difficulty ~= nil
+    local showDifficulty = not hidesSuccessesRow and isPostRoll
+        and active.difficulty ~= nil and active.difficulty > 0
 
     uiSetActive(string.format("rollControl_difficultyDisplay_%s", color), showDifficulty)
     uiSetValue(string.format("rollControl_difficulty_%s", color),
@@ -2260,6 +2263,7 @@ local function registerRollDashGridStripContext(color)
                 minValue = 0,
                 maxValue = 10,
                 baseAlpha = 0.15,
+                leadingZeroTransparent = true,
                 canInteract = function(ctx)
                     return dashDifficultyStripCanInteract(color, ctx.player)
                 end,
@@ -2339,6 +2343,7 @@ GridStrip.registerContext("rollPanelST", {
             minValue = 0,
             maxValue = 10,
             baseAlpha = 0.15,
+            leadingZeroTransparent = true,
             canInteract = stDifficultyStripCanInteract,
             getSelectedValue = function(_ctx)
                 local active = getBlackActiveRoll()

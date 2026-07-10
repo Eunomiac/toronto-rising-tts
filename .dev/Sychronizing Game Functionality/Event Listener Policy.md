@@ -68,6 +68,7 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | `GlobalDiceBagClick/RightClick/StorytellerDiceBagClick` | B+C | 5 | rolls |
 | `GlobalSpawn*` / `GlobalDestroy*` / `GlobalRelease*` / `GlobalTagDie*` / `GlobalOnBagDie*` | C | 5 | dice |
 | `GlobalInitiateRoll` / `GlobalRollSpawnDieRequest` / `GlobalAdjustStorytellerPoolKind` | B+C | 5 | rolls |
+| `GlobalResolveRollPhysicalPrep` | C | 5 | rolls — coupled drawer + DBV + auto-spawn |
 | `GlobalRollSeatCamera` | A | — | per-seat camera |
 | `GlobalIsStorytellerSteamPlayer` | — | 2 | bundle-safe actor-identity gate |
 | `GlobalPostRollModifyPool` / `GlobalPostRollAddDie` / `GlobalPostRollRemoveDie` | B+C | W4 | ST post-roll pool |

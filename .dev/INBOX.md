@@ -22,10 +22,16 @@ Verification:
 ## Active
 
 - [Blocked by "Determine stat deltas..." task below] Implement a shapeshift toggle that Fomorach can use to assume animal form.
+- [Dice Rolls] (possible duplicate) Whenever a player's roll control panel supplies only a single option, it should be skipped (i.e. the option automatically chosen). For example, you can't spend Willpower to reroll a Willpower roll, so after rolling dice, the player's roll control panel merely reports the results with a single input, the "Confirm" button. Because there is no choice for the player to make here, this whole sequence should be skipped: once the player rolls the dice, the results should be immediately broadcast.
+- [Performance] Heavy-Workload Function Audit: There are a discrete number of functions in the TTS API that risk creating lag spikes because of the amount of work they do (e.g. `getObjectsWithTag`). We should look through the API documents, list all of the functions, iteratively filter out those that aren't likely to be major offenders, and then grep our workspace for the functions that are left to see where they are being called (e.g. we just discovered that `isTokenOnControlBoardSurface` was calling `getObjectsWithTag` on every single call, when it could have simply performed a bounds check.)
 
 ## External Work (Set STATUS to "External To Do")
 
 - Determine stat deltas that apply when Fomorach uses his Shapeshift power
+- [Performance] The interaction between PC/NPC tokens, the Stage Control board, and the Storyteller dice bags is quite prone to lag spikes. We need to audit exactly what is happening during the following sequence of steps, locate the sources of the lag spikes, and implement a resolution:
+    1. Black player picks up a PC token off of the Stage Control board (resulting in the instant rescaling down to its default size)
+    2. Black player moves the token away from the Stage Control Board, over to the dice bags, which happens to also move them over the palette. *(There is a consistent lag spike either at the moment the token leaves the x/z bounds of the Stage Control Board, or as it passes over the x/z bounds of the palette.)*
+    3. Black player drops the token onto a dice bag to trigger a roll. *(Another consistent lag spike at the moment the token is released, clearly due to the drop event firing. We need to either reduce the work being done here, or defer some work to later frames -- the token being returned to the Stage Control Board, for example.)*
 
 ## Needs clarification
 

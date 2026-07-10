@@ -183,12 +183,30 @@ local function cellIdForIndex(stripId, index)
 end
 
 --- @param tag table
---- @param stripId string
 --- @param index number
 --- @param selectedValue number|nil
 --- @param hoverIndex number|nil
 --- @param mouseDownIndex number|nil
+--- @return number
+--- Leading difficulty-0 cell: transparent when left of the selected value (not when 0 is selected).
+local function isLeadingZeroTransparentCell(tag, index, selectedValue, hoverIndex, mouseDownIndex)
+    if tag.leadingZeroTransparent ~= true then
+        return false
+    end
+    local minV = tag.minValue or 0
+    if index ~= minV or selectedValue == nil or selectedValue <= minV then
+        return false
+    end
+    if hoverIndex == index or mouseDownIndex == index then
+        return false
+    end
+    return true
+end
+
 local function alphaForCell(tag, index, selectedValue, hoverIndex, mouseDownIndex)
+    if isLeadingZeroTransparentCell(tag, index, selectedValue, hoverIndex, mouseDownIndex) then
+        return 0
+    end
     if mouseDownIndex ~= nil and index == mouseDownIndex then
         return ALPHA.PRESSED
     end
@@ -197,6 +215,9 @@ local function alphaForCell(tag, index, selectedValue, hoverIndex, mouseDownInde
             return ALPHA.HOVER_CELL
         end
         if index < hoverIndex then
+            if isLeadingZeroTransparentCell(tag, index, selectedValue, nil, nil) then
+                return 0
+            end
             return ALPHA.HOVER_LEFT
         end
         return ALPHA.HOVER_RIGHT

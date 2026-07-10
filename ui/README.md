@@ -182,7 +182,7 @@ Reusable hover/select strips for pool counts, difficulty, etc. **Live consumers:
 | Strip | `gridStrip`, `context`, `kind` | `db_gridStrip_rollPanelST_hunger` |
 | Cell | above + numeric `index` | `db_gridStrip_rollPanelST_hunger_3` |
 
-**Register a new panel:** `GridStrip.registerContext("myContext", { buildStripId = function(kind) return "db_gridStrip_myContext_" .. kind end, kinds = { ... } })` with per-kind `minValue`, `maxValue`, `baseAlpha`, `canInteract(ctx)`, `getSelectedValue(ctx)`, `onCommit(ctx, value)`. Refresh via `GridStrip.refreshContext("myContext", function(kind) return selected end)`.
+**Register a new panel:** `GridStrip.registerContext("myContext", { buildStripId = function(kind) return "db_gridStrip_myContext_" .. kind end, kinds = { ... } })` with per-kind `minValue`, `maxValue`, `baseAlpha`, optional `leadingZeroTransparent` (difficulty strips: cell **0** stays transparent when left of the selected value; full green when **0** is selected), `canInteract(ctx)`, `getSelectedValue(ctx)`, `onCommit(ctx, value)`. Refresh via `GridStrip.refreshContext("myContext", function(kind) return selected end)`.
 
 See [Dice System Outline §10.4–10.5](../.dev/Dice%20System/Dice%20System%20Outline.md) for ST roll panel and dashboard wiring.
 

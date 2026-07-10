@@ -34,6 +34,7 @@ local Palette = require("lib.npc_control_board_palette")
 
 local TAG_TOKEN = DATA.TAG_NPC_CONTROL_TOKEN
 local TAG_PC_TOKEN = DATA.TAG_PC_CONTROL_TOKEN or "pc_control_token"
+local TAG_BOARD_SNAP = DATA.TAG_CONTROL_BOARD_SNAP or "control_board_snap"
 local CONTROL_BOARD_SNAP_TAGS = DATA.CONTROL_BOARD_SNAP_TAGS
     or { TAG_TOKEN, TAG_PC_TOKEN }
 local TAG_PC = DATA.TAG_GAMEBOARD_PC_SEAT
@@ -56,6 +57,7 @@ local tokenPickedUpFromPaletteGuid = {}
 --- Default-config snap catalog cache: key = boardGuid:fingerprint → catalog entries.
 --- @type table<string, table[]>
 local defaultSnapCatalogCache = {}
+local seatRowCatalogCache = {}
 --- @type table|nil Last completed interaction profile snapshot (Apply/Clear/drop).
 local lastInteractionProfile = nil
 --- @type table|nil In-flight profile counters for the current interaction.
@@ -346,6 +348,7 @@ end
 
 --- Token on CONTROL_BOARD minimap (not palette): loose XZ (2.5× tile) — drop handlers, snap settle, scans.
 --- Does not require surface Y (tokens mid-snap or seat scale still count as on-board).
+--- O(1) bounds check — do not scan all tagged tokens (was a major pick-up/drag/drop lag source).
 --- @param board Object
 --- @param token Object
 --- @return boolean
@@ -357,12 +360,16 @@ local function isTokenOnControlBoardSurface(board, token)
     if isGameObject(palette) and Palette.isTokenOnPaletteBoard(palette, token) then
         return false
     end
-    for _, obj in ipairs(objectsOnControlBoard(board, TAG_TOKEN)) do
-        if obj == token then
-            return true
-        end
+    local localPos = boardWorldToLocal(board, token.getPosition())
+    if localPos == nil then
+        return false
     end
-    return false
+    local halfX, halfZ = boardLocalSurfaceHalfExtents(board)
+    local margin = 2.5
+    if math.abs(localPos.x or 0) > halfX * margin or math.abs(localPos.z or 0) > halfZ * margin then
+        return false
+    end
+    return true
 end
 
 --- Same XZ band as `isTokenOnControlBoardSurface` plus surface Y — Clear parking / stray recovery only.
@@ -762,6 +769,20 @@ local function setNpcControlTokenScale(token, sx, sy, sz)
     end
 end
 
+--- @param token Object|nil
+local function enableControlBoardSnapTag(token)
+    if isGameObject(token) and token.addTag ~= nil and type(TAG_BOARD_SNAP) == "string" and TAG_BOARD_SNAP ~= "" then
+        token.addTag(TAG_BOARD_SNAP)
+    end
+end
+
+--- @param token Object|nil
+local function disableControlBoardSnapTag(token)
+    if isGameObject(token) and token.removeTag ~= nil and type(TAG_BOARD_SNAP) == "string" and TAG_BOARD_SNAP ~= "" then
+        token.removeTag(TAG_BOARD_SNAP)
+    end
+end
+
 --- Revert enlarged seat-row token scale when leaving seat snaps (TOR-199).
 --- @param token Object
 --- @return boolean true when scale was changed
@@ -817,6 +838,7 @@ local function mirrorSeatRowControlToken(token, board, entry, faceUp)
     local boardYaw = objectYawDeg(board)
     token.setRotation(rotationForNpcControlToken(boardYaw, entry.yawDeg, faceUp))
     Gameboard.setHiddenFromPlayerColors(token)
+    enableControlBoardSnapTag(token)
 end
 
 --- @param token Object
@@ -1158,6 +1180,7 @@ end
 local function invalidateDefaultSnapCatalogCache(board)
     if not isGameObject(board) then
         defaultSnapCatalogCache = {}
+        seatRowCatalogCache = {}
         return
     end
     local guidPrefix = tostring(board.getGUID()) .. ":"
@@ -1168,6 +1191,13 @@ local function invalidateDefaultSnapCatalogCache(board)
         end
     end
     defaultSnapCatalogCache = nextCache
+    local nextSeatCache = {}
+    for key, maps in pairs(seatRowCatalogCache) do
+        if type(key) ~= "string" or string.sub(key, 1, #guidPrefix) ~= guidPrefix then
+            nextSeatCache[key] = maps
+        end
+    end
+    seatRowCatalogCache = nextSeatCache
 end
 
 --- True when an empty NPC seat snap should clear `occupiedNPCSlots` on Apply.
@@ -2508,6 +2538,28 @@ local function seatRowCatalogByPcColor(catalog)
     return out
 end
 
+--- Cached seat-row catalog slices (npc seatKey + PC color columns).
+--- @param board Object
+--- @return table { npc: table<string, table>, pc: table<string, table> }
+local function getSeatRowCatalogMaps(board)
+    if not isGameObject(board) then
+        return { npc = {}, pc = {} }
+    end
+    local fp = controlBoardSnapFingerprintFor(board, nil)
+    local cacheKey = tostring(board.getGUID()) .. ":" .. fp
+    local cached = seatRowCatalogCache[cacheKey]
+    if type(cached) == "table" then
+        return cached
+    end
+    local catalog = Gameboard.buildControlBoardSnapCatalog(board, nil)
+    cached = {
+        npc = seatRowCatalogByNpcSeatKey(catalog),
+        pc = seatRowCatalogByPcColor(catalog),
+    }
+    seatRowCatalogCache[cacheKey] = cached
+    return cached
+end
+
 --- Rich snap catalog entry (install order matches TTS getSnapPoints indices).
 --- @param board Object
 --- @param cfg table validated CONTROL_BOARD_SNAP config
@@ -2842,7 +2894,7 @@ controlBoardSnapFingerprintFor = function(board, config)
                 .. tostring(group.defaultLightMode or "")
         end
     end
-    parts[#parts + 1] = "snapTag:" .. TAG_TOKEN
+    parts[#parts + 1] = "snapTag:" .. TAG_BOARD_SNAP
     parts[#parts + 1] = "yawOff:" .. tostring(tonumber(cfg.snapYawOffsetDeg) or 0)
     local seatCfg = resolveControlBoardSeatRowConfig()
     if seatCfg ~= nil then
@@ -3055,6 +3107,7 @@ local function parkNpcTokenOnPalette(token, characterKey)
     token.setPosition(wp)
     ensureDefaultNpcControlTokenScale(token)
     Palette.applyPaletteParkingRotation(palette, token)
+    Palette.applyPaletteParkingScale(token)
     if token.setInvisibleTo ~= nil then
         token.setInvisibleTo(C.PlayerColors or {})
     end
@@ -3968,6 +4021,7 @@ local function mirrorControlTokenToPlacementRow(token, board, row)
     ensureDefaultNpcControlTokenScale(token)
     token.setRotation(rotationForNpcControlToken(boardYaw, relYaw, faceUp))
     Gameboard.setHiddenFromPlayerColors(token)
+    enableControlBoardSnapTag(token)
 end
 
 --- Horizontal hit radius for NPC control token dropped on a Storyteller dice bag (TOR-174).
@@ -4078,7 +4132,7 @@ local function restoreNpcControlTokenHome(token, characterKey)
     if type(seatKey) == "string" and seatKey ~= "" then
         local board = getControlBoard()
         if isGameObject(board) then
-            local seatCatalog = seatRowCatalogByNpcSeatKey(Gameboard.buildControlBoardSnapCatalog(board, nil))
+            local seatCatalog = getSeatRowCatalogMaps(board).npc
             local entry = seatCatalog[seatKey]
             if type(entry) == "table" then
                 local NPCS = require("core.npcs")
@@ -4103,8 +4157,10 @@ end
 --- Storyteller drops NPC control token on a dice bag → restore home from state + initiate NPC roll (TOR-174).
 --- @param token Object
 --- @param playerColor string|nil
+--- @param opts table|nil `{ skipRestore?: boolean }`
 --- @return boolean true when drop was consumed (hit an ST bag)
-local function tryNpcControlTokenDroppedOnStorytellerDiceBag(token, playerColor)
+local function tryNpcControlTokenDroppedOnStorytellerDiceBag(token, playerColor, opts)
+    opts = type(opts) == "table" and opts or {}
     if not isNpcControlToken(token) then
         return false
     end
@@ -4135,7 +4191,9 @@ local function tryNpcControlTokenDroppedOnStorytellerDiceBag(token, playerColor)
         return false
     end
 
-    restoreNpcControlTokenHome(token, characterKey)
+    if opts.skipRestore ~= true then
+        restoreNpcControlTokenHome(token, characterKey)
+    end
 
     local dieKind = bagKind
     if dieKind ~= DK.KIND_NORMAL
@@ -4184,7 +4242,7 @@ local function restorePcControlTokenHome(token, color)
     if not isGameObject(board) then
         return false
     end
-    local pcCatalog = seatRowCatalogByPcColor(Gameboard.buildControlBoardSnapCatalog(board, nil))
+    local pcCatalog = getSeatRowCatalogMaps(board).pc
     local entry = pcCatalog[color]
     if type(entry) ~= "table" then
         return false
@@ -4199,10 +4257,12 @@ end
 --- tokens and the bag name modal — TOR-236 / TOR-283).
 --- @param token Object
 --- @param playerColor string|nil
+--- @param opts table|nil `{ skipRestore?: boolean }` when true, only validates and returns roll metadata
 --- @return boolean consumed true when the drop hit an ST bag and was handled
 --- @return string|nil rollColor PC seat color to start a roll for
 --- @return string|nil rollType `C.RollType` for the roll
-local function tryPcControlTokenDroppedOnStorytellerDiceBag(token, playerColor)
+local function tryPcControlTokenDroppedOnStorytellerDiceBag(token, playerColor, opts)
+    opts = type(opts) == "table" and opts or {}
     if not isPcControlToken(token) then
         return false
     end
@@ -4229,7 +4289,9 @@ local function tryPcControlTokenDroppedOnStorytellerDiceBag(token, playerColor)
         return false
     end
 
-    restorePcControlTokenHome(token, color)
+    if opts.skipRestore ~= true then
+        restorePcControlTokenHome(token, color)
+    end
 
     local dieKind = bagKind
     if dieKind ~= DK.KIND_NORMAL
@@ -4312,7 +4374,7 @@ local function mirrorControlBoardTokensFromPlacements(board, placements)
         end
         print("[Gameboard] mirror: parked " .. tostring(#orphaned) .. " orphaned NPC token(s) to palette")
     end
-    local pcCatalog = seatRowCatalogByPcColor(Gameboard.buildControlBoardSnapCatalog(board, nil))
+    local pcCatalog = getSeatRowCatalogMaps(board).pc
     if next(pcCatalog) ~= nil then
         for _, obj in ipairs(getObjectsWithTag(TAG_PC_TOKEN) or {}) do
             if isGameObject(obj) then
@@ -4982,13 +5044,22 @@ function Gameboard.formatControlBoardSnapGroupsCsv(rows)
     return table.concat(lines, "\n") .. "\n"
 end
 
---- Record palette origin on pick-up; revert seat-row scale when leaving the board (TOR-199).
+--- Record palette origin on pick-up; revert seat-row scale; drop snap tag so TTS skips snap preview while dragging.
 --- @param token Object|nil
 function Gameboard.onNpcControlTokenPickUp(token)
+    Gameboard.onControlTokenPickUp(token)
+end
+
+--- @param token Object|nil
+function Gameboard.onControlTokenPickUp(token)
+    if not isNpcControlToken(token) and not isPcControlToken(token) then
+        return
+    end
+    disableControlBoardSnapTag(token)
+    ensureDefaultNpcControlTokenScale(token)
     if not isNpcControlToken(token) then
         return
     end
-    ensureDefaultNpcControlTokenScale(token)
     local palette = getControlBoardPalette()
     if not isGameObject(palette) then
         return

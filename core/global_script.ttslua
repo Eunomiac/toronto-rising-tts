@@ -230,6 +230,35 @@ function GlobalOpenPlayerDiceTrayForRoll(params)
     DiceDrawer.openForRoll(color)
 end
 
+--- Coupled roll physical prep for a PC seat: bag visibility, drawer, auto-spawn (staggered one frame).
+-- Timing: player initiator at SETUP; storyteller initiator at PRE_ROLL (openRoll); locked Remorse at initiate.
+-- @param params table  { color: string }
+function GlobalResolveRollPhysicalPrep(params)
+    if type(params) ~= "table" or type(params.color) ~= "string" then
+        return
+    end
+    local color = params.color
+    if color == "Black" then
+        return
+    end
+    local pid = S.getPlayerID(color)
+    if pid == nil then
+        return
+    end
+    local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+    if active == nil then
+        return
+    end
+    DBV.reconcileForPlayer(color, active)
+    GlobalOpenPlayerDiceTrayForRoll({ color = color })
+    local pool = DK.normalizePool(active.pool)
+    if DK.poolTotal(pool) > 0 then
+        Wait.frames(function()
+            GlobalSpawnActivePoolDiceForActive({ color = color })
+        end, 1)
+    end
+end
+
 -- Load debug module (only in development). Must be global so TTS console `lua DEBUG.foo()` works.
 DEBUG = require("core.debug")
 
@@ -1058,26 +1087,20 @@ function GlobalDiceBagClick(params)
         if dieKind == DK.KIND_HUNGER then
             return
         elseif dieKind == DK.KIND_ROUSE then
-            if RC.initiateRoll(color, {
+            RC.initiateRoll(color, {
                 rollType = C.RollType.ROUSE,
                 label = "",
                 initiator = "player",
-                skipSetup = true,
-            }) then
-                GlobalSpawnDefaultPoolDiceForActive({ color = color })
-            end
+            })
         elseif dieKind == DK.KIND_OBLIV_ROUSE then
             if math.floor(tonumber(S.getPlayerVal(color, "hunger")) or 0) >= C.MAX_HUNGER then
                 return
             end
-            if RC.initiateRoll(color, {
+            RC.initiateRoll(color, {
                 rollType = C.RollType.ROUSE_OBLIVION,
                 label = "",
                 initiator = "player",
-                skipSetup = true,
-            }) then
-                GlobalSpawnDefaultPoolDiceForActive({ color = color })
-            end
+            })
         else
             RC.initiateRoll(color, {
                 rollType = C.RollType.STANDARD,
@@ -1234,7 +1257,7 @@ end
 local blackRollPhysicalSpawnActive = false
 
 --- Opens the seat dice tray when the active pool has staged dice (SETUP / PRE_ROLL / ROLLING).
--- Player seats: tray opens on PRE_ROLL entry via GlobalOpenPlayerDiceTrayForRoll (TOR-305), not first bag spawn.
+-- Player seats: tray opens via GlobalResolveRollPhysicalPrep (coupled with bags + auto-spawn).
 -- Black: only during Roll-click spawn (`blackRollPhysicalSpawnActive`); Roll handler opens drawer after spawn.
 -- @param color string
 -- @param active table  active roll after pool mutation
@@ -1881,11 +1904,9 @@ function GlobalInitiateRoll(params)
         rollType  = rollType,
         label     = params.label or "",
         initiator = params.initiator or "player",
-        skipSetup = params.skipSetup,
     })
     if ok and color ~= "Black" then
         GlobalRollSeatCamera({ color = color, mode = "roll" })
-        GlobalSpawnDefaultPoolDiceForActive({ color = color })
     elseif ok then
         GlobalRollSeatCamera({ color = color, mode = "roll" })
     end
@@ -2323,9 +2344,14 @@ function onObjectPickUp(player_color, object)
     if not isStorytellerSteamPlayer(player_color) then
         return
     end
-    if object ~= nil and object.hasTag ~= nil and object.hasTag("npc_control_token") == true then
+    if object == nil or object.hasTag == nil then
+        return
+    end
+    if object.hasTag("npc_control_token") == true or object.hasTag("pc_control_token") == true then
         local Gameboard = require("core.npc_gameboard")
-        if type(Gameboard.onNpcControlTokenPickUp) == "function" then
+        if type(Gameboard.onControlTokenPickUp) == "function" then
+            Gameboard.onControlTokenPickUp(object)
+        elseif type(Gameboard.onNpcControlTokenPickUp) == "function" then
             Gameboard.onNpcControlTokenPickUp(object)
         end
     end
@@ -2350,7 +2376,20 @@ function GlobalGameboardTokenDroppedOnDiceBag(params)
     if type(Gameboard.tryNpcControlTokenDroppedOnStorytellerDiceBag) ~= "function" then
         return false
     end
-    return Gameboard.tryNpcControlTokenDroppedOnStorytellerDiceBag(token, playerColor) == true
+    local ok = Gameboard.tryNpcControlTokenDroppedOnStorytellerDiceBag(token, playerColor, { skipRestore = true })
+    if ok ~= true then
+        return false
+    end
+    local tokenGuid = tostring(token.getGUID() or "")
+    if tokenGuid ~= "" and type(Gameboard.restoreNpcControlTokenHome) == "function" then
+        Wait.frames(function()
+            local tok = getObjectFromGUID(tokenGuid)
+            if tok ~= nil then
+                Gameboard.restoreNpcControlTokenHome(tok, nil)
+            end
+        end, 1)
+    end
+    return true
 end
 
 --- PC control token on a Storyteller dice bag → always return the token to its control-board
@@ -2374,7 +2413,11 @@ function GlobalGameboardPcTokenDroppedOnDiceBag(params)
     if type(Gameboard.tryPcControlTokenDroppedOnStorytellerDiceBag) ~= "function" then
         return false
     end
-    local consumed, rollColor, rollType = Gameboard.tryPcControlTokenDroppedOnStorytellerDiceBag(token, playerColor)
+    local consumed, rollColor, rollType = Gameboard.tryPcControlTokenDroppedOnStorytellerDiceBag(
+        token,
+        playerColor,
+        { skipRestore = true }
+    )
     if consumed ~= true then
         return false
     end
@@ -2383,8 +2426,17 @@ function GlobalGameboardPcTokenDroppedOnDiceBag(params)
         and RC ~= nil then
         local ok = RC.initiateRoll(rollColor, { rollType = rollType, initiator = "storyteller" })
         if ok then
-            GlobalSpawnDefaultPoolDiceForActive({ color = rollColor })
+            GlobalRollSeatCamera({ color = rollColor, mode = "roll" })
         end
+    end
+    local tokenGuid = tostring(token.getGUID() or "")
+    if tokenGuid ~= "" and type(Gameboard.restorePcControlTokenHome) == "function" then
+        Wait.frames(function()
+            local tok = getObjectFromGUID(tokenGuid)
+            if tok ~= nil then
+                Gameboard.restorePcControlTokenHome(tok, rollColor)
+            end
+        end, 1)
     end
     return true
 end
@@ -2404,9 +2456,20 @@ function onObjectDrop(playerColor, object)
     if object.hasTag("npc_control_token") == true then
         local pos = object.getPosition ~= nil and object.getPosition() or nil
         if pos ~= nil and storytellerDiceBagKindNearPosition(pos) ~= nil then
-            if GlobalGameboardTokenDroppedOnDiceBag({ token = object, playerColor = playerColor }) then
-                return
-            end
+            local tokenGuid = tostring(object.getGUID() or "")
+            Wait.frames(function()
+                if type(tokenGuid) ~= "string" or tokenGuid == "" then
+                    return
+                end
+                local tok = getObjectFromGUID(tokenGuid)
+                if tok == nil then
+                    return
+                end
+                if GlobalGameboardTokenDroppedOnDiceBag({ token = tok, playerColor = playerColor }) then
+                    return
+                end
+            end, 1)
+            return
         end
         local Gameboard = require("core.npc_gameboard")
         if Gameboard.onNpcControlTokenDropped then
@@ -2417,7 +2480,17 @@ function onObjectDrop(playerColor, object)
     if object.hasTag("pc_control_token") == true then
         local pos = object.getPosition ~= nil and object.getPosition() or nil
         if pos ~= nil and storytellerDiceBagKindNearPosition(pos) ~= nil then
-            GlobalGameboardPcTokenDroppedOnDiceBag({ token = object, playerColor = playerColor })
+            local tokenGuid = tostring(object.getGUID() or "")
+            Wait.frames(function()
+                if type(tokenGuid) ~= "string" or tokenGuid == "" then
+                    return
+                end
+                local tok = getObjectFromGUID(tokenGuid)
+                if tok == nil then
+                    return
+                end
+                GlobalGameboardPcTokenDroppedOnDiceBag({ token = tok, playerColor = playerColor })
+            end, 1)
         end
     end
 end
@@ -5251,11 +5324,7 @@ function HUD_rollInitiate(player, value, id)
 
     -- ST panel buttons always mark the roll as storyteller-initiated so the player
     -- panel stays hidden until the ST clicks OPEN (PRE_ROLL).
-    -- Rouse / Obliv checks skip SETUP and need the default staged die + drawer (first spawn).
-    local ok = RC.initiateRoll(color, { rollType = rollType, initiator = "storyteller" })
-    if ok and color ~= "Black" then
-        GlobalSpawnDefaultPoolDiceForActive({ color = color })
-    end
+    RC.initiateRoll(color, { rollType = rollType, initiator = "storyteller" })
 end
 
 --- ST sets difficulty from the dashboard input field.

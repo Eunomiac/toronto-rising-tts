@@ -587,30 +587,51 @@ local function resolveInitialPoolForRollType(color, rollType, configPool)
     return pool
 end
 
---- Difficulty auto-set for roll types that hide ST difficulty input.
+--- Difficulty auto-set for roll types that skip ST difficulty input.
+-- Remorse uses 0 on the dashboard (implicit 1 for classification via resolveClassificationDifficulty).
 -- @param rollType string
 -- @return number|nil
 local function autoDifficultyForRollType(rollType)
+    if rollType == C.RollType.REMORSE then
+        return 0
+    end
     if rollType == C.RollType.SIMPLE_CHECK
         or rollType == C.RollType.ROUSE
-        or rollType == C.RollType.ROUSE_OBLIVION
-        or rollType == C.RollType.REMORSE then
+        or rollType == C.RollType.ROUSE_OBLIVION then
         return 1
     end
     return nil
 end
 
---- True when SETUP can be skipped: pool and difficulty are fully determined at initiate.
+--- True when SETUP can be skipped: auto pool + auto difficulty, both locked at initiate (Remorse only today).
 -- @param rollType string
 -- @return boolean
 function RC.shouldSkipSetupForRollType(rollType)
-    if type(rollType) ~= "string" then
+    return rollType == C.RollType.REMORSE
+end
+
+--- True when drawer / auto-spawn / bag visibility should run at roll initiation (not deferred to openRoll).
+-- Player-initiated rolls: SETUP entry. Locked rolls (Remorse): instant PRE_ROLL regardless of initiator.
+-- @param active table|nil
+-- @return boolean
+function RC.shouldResolvePhysicalPrepAtInitiate(active)
+    if type(active) ~= "table" then
         return false
     end
-    if RO.isRouseFamilyRoll(rollType) then
+    if RC.shouldSkipSetupForRollType(active.rollType) then
         return true
     end
-    return autoDifficultyForRollType(rollType) ~= nil
+    return active.phase == C.RollPhase.SETUP and active.initiator == "player"
+end
+
+--- Coupled drawer + bag reconcile + auto-spawn (Global VM).
+-- @param color string
+-- @param active table|nil
+local function resolvePhysicalPrep(color, active)
+    if type(color) ~= "string" or color == "Black" then
+        return
+    end
+    Global.call("GlobalResolveRollPhysicalPrep", { color = color })
 end
 
 -- ============================================================================
@@ -1020,8 +1041,7 @@ function RC.initiateRoll(color, config)
 
     local pool = resolveInitialPoolForRollType(color, config.rollType, config.pool)
 
-    local skipSetup = config.skipSetup == true
-        or RC.shouldSkipSetupForRollType(config.rollType)
+    local skipSetup = RC.shouldSkipSetupForRollType(config.rollType)
 
     local active = {
         id          = newRollId(),
@@ -1039,9 +1059,8 @@ function RC.initiateRoll(color, config)
         meta        = DK.defaultMeta(),
         pendingResolution = nil,
         rouseOutcomeStrips = {},
-        -- Simple Check, Rouse-family, and Remorse auto-set difficulty=1 so the standard
-        -- classification path works without requiring the ST to enter a value.
-        -- The difficulty is hidden from the player panel for these roll types.
+        -- Simple Check / Rouse-family auto-set difficulty=1; Remorse auto-set difficulty=0
+        -- (implicit 1 for classification). Player panel hides difficulty for auto-set types.
         difficulty  = config.difficulty or autoDifficultyForRollType(config.rollType),
         tookHalf    = false,
         takeHalfAwaitingRouse = false,
@@ -1068,18 +1087,11 @@ function RC.initiateRoll(color, config)
     setActive(color, active)
     notifyStateChanged(color)
 
-    -- Player-initiated rolls: tray opens immediately (TOR-305). ST SETUP defers until openRoll.
-    if color ~= "Black" and active.initiator == "player" then
-        Global.call("GlobalOpenPlayerDiceTrayForRoll", { color = color })
-    end
-
     if skipSetup then
         rollCamera(color, "roll")
-        if color ~= "Black" and DK.poolTotal(pool) > 0 then
-            Wait.frames(function()
-                Global.call("GlobalSpawnActivePoolDiceForActive", { color = color })
-            end, 2)
-        end
+    end
+    if RC.shouldResolvePhysicalPrepAtInitiate(active) then
+        resolvePhysicalPrep(color, active)
     end
 
     -- Dev/debug: when Auto-ST mode is on, automatically open the roll after a
@@ -1180,12 +1192,11 @@ function RC.changeRollType(color, rollType)
     setActive(color, active)
     notifyStateChanged(color)
 
-    if active.phase == C.RollPhase.PRE_ROLL and color ~= "Black" then
-        rollCamera(color, "roll")
-        Global.call("GlobalOpenPlayerDiceTrayForRoll", { color = color })
-        if DK.poolTotal(active.pool) > 0 then
-            Global.call("GlobalSpawnActivePoolDiceForActive", { color = color })
+    if RC.shouldResolvePhysicalPrepAtInitiate(active) then
+        if newSkipsSetup then
+            rollCamera(color, "roll")
         end
+        resolvePhysicalPrep(color, active)
     end
 
     return true
@@ -1458,10 +1469,7 @@ function RC.openRoll(color)
     setActive(color, active)
     notifyStateChanged(color)
     rollCamera(color, "roll")
-    if color ~= "Black" then
-        Global.call("GlobalOpenPlayerDiceTrayForRoll", { color = color })
-        Global.call("GlobalSpawnActivePoolDiceForActive", { color = color })
-    end
+    resolvePhysicalPrep(color, active)
     return true
 end
 

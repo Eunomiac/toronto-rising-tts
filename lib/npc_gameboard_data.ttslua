@@ -13,8 +13,11 @@ local D = {}
 D.TAG_NPC_CONTROL_BOARD = "npc_control_board"
 D.TAG_NPC_CONTROL_TOKEN = "npc_control_token"
 D.TAG_PC_CONTROL_TOKEN = "pc_control_token"
---- Every CONTROL_BOARD minimap snap (polar rings + seat row) accepts NPC and PC control tokens.
-D.CONTROL_BOARD_SNAP_TAGS = { D.TAG_NPC_CONTROL_TOKEN, D.TAG_PC_CONTROL_TOKEN }
+--- Snap-only tag: installed on board/palette snaps and on parked tokens. Removed on pick-up so TTS
+--- does not evaluate ~100+ snap points while dragging (identity tags stay for Lua handlers).
+D.TAG_CONTROL_BOARD_SNAP = "control_board_snap"
+--- Every CONTROL_BOARD minimap snap (polar rings + seat row) and palette parking snap.
+D.CONTROL_BOARD_SNAP_TAGS = { D.TAG_CONTROL_BOARD_SNAP }
 D.TAG_GAMEBOARD_PC_SEAT = "gameboard_pc_seat"
 D.TAG_GAMEBOARD_NPC_SEAT = "gameboard_npc_seat"
 D.TAG_GAMEBOARD_TABLE = "gameboard_table"

@@ -392,8 +392,28 @@ active = {
 
 - **Pre-roll difficulty:** ST sets `difficulty` during `SETUP` or `PRE_ROLL`; player rolls knowing the target; margin shown when set.
 - **Post-roll difficulty:** ST sets `difficulty` after dice settle, during `POST_ROLL` (opposed rolls, hidden difficulty, corrections).
-- **No ST difficulty:** For **Standard** and **Werewolf** rolls, classification uses implicit difficulty **1** once dice are read; `active.result` is populated and confirm/broadcast proceed; **margin is omitted** (`result.margin = nil`). Dedicated Rouse/Oblivion/Remorse/Simple Check auto-set `difficulty = 1` at initiate.
+- **No ST difficulty:** For **Standard** and **Werewolf** rolls, classification uses implicit difficulty **1** once dice are read; `active.result` is populated and confirm/broadcast proceed; **margin is omitted** (`result.margin = nil`). **Simple Check / Rouse / Oblivion Rouse** auto-set `difficulty = 1` at initiate. **Remorse** auto-sets `difficulty = 0` (dashboard; implicit **1** for classification).
 - `RC.recalculate` / classification helpers apply effective difficulty without writing implicit `1` into `active.difficulty`.
+
+### 4.4 Roll physical prep (drawer + bags + auto-spawn)
+
+`GlobalResolveRollPhysicalPrep({ color })` runs these together (spawn deferred one frame):
+
+1. `DBV.reconcileForPlayer` — hunger/rouse/obliv bag visibility
+2. `DiceDrawer.openForRoll` — PC dice tray
+3. `GlobalSpawnActivePoolDiceForActive` — staged dice to match `active.pool`
+
+**When it runs:**
+
+| Initiator | SETUP skipped? | Prep at |
+| --- | --- | --- |
+| Player | No | `initiateRoll` (SETUP entry) |
+| Storyteller | No | `openRoll` (PRE_ROLL entry) |
+| Either | Yes (Remorse only — locked pool + difficulty) | `initiateRoll` |
+
+`RC.shouldSkipSetupForRollType` is **Remorse only**. Rouse, Simple Check, and Frenzy keep SETUP so pool/difficulty can still be adjusted before ST opens the roll.
+
+Entry points: `RC.initiateRoll` (`shouldResolvePhysicalPrepAtInitiate`), `RC.openRoll`, `RC.changeRollType` (when prep due).
 
 ---
 
@@ -1006,8 +1026,9 @@ Oblivion variant: same, but on TOTAL_FAILURE also S.setPlayerVal(color, "stains"
 1. Triggered by: Humanity dot click in End Phase, or HUD_rollInitiate with REMORSE type
 2. RC.initiateRoll(color, {rollType=REMORSE}):
    → Pool auto-computed: max(1, 10 - currentHumanity - stains) Normal dice, 0 Hunger
-   → difficulty auto-set to 1 (any success = preserve Humanity)
-   → phase=SETUP → immediately advances to PRE_ROLL (no ST input required for standard Remorse)
+   → difficulty auto-set to 0 on dashboard (implicit 1 for classification; any success = preserve Humanity)
+   → phase=PRE_ROLL at initiate (only roll type that skips SETUP — locked pool + difficulty)
+   → GlobalResolveRollPhysicalPrep: drawer + bag visibility + auto-spawn (immediate for any initiator)
 
 3. Player rolls their dice
 4. RC.onDiceSettled(color):
