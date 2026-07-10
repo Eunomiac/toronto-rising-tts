@@ -233,7 +233,7 @@ function DBV.reconcileForPlayer(color, active)
 
     local hungerOn, rouseOn, oblivOn
     if bagsOn then
-        hungerOn = rollType == C.RollType.STANDARD
+        hungerOn = C.RollTypesBloodSurge[rollType] == true
         rouseOn = pool.oblivRouse == 0
         oblivOn = pool.rouse == 0
         if isAtMaxHunger(color) then
