@@ -19,10 +19,9 @@ Verification:
 
 ## Quick Fixes
 
-## Active
+## Priority Fixes - Move to Top of Focus Stack
 
-- [Dice Roller] If a player is at Hunger 4, they should not be allowed to combine a Blood Surge (with its Blood Surge Rouse Check) and another Rouse Check into one roll, since if one of them fails, their Hunger will be 5 and they are not allowed to voluntarily Rouse the Blood at Hunger 5.  Relatedly, if a player is at Hunger 5, they should not be allowed to Blood Surge. (They should still be able to Rouse Check as normal, since they may be forced to Rouse the Blood.)
-- [Dice Roller] Rolls initiated by the Storyteller should not be cancellable by players -- the "Cancel" button should be hidden if the roll is Storyteller-initiated. (Note: This relates to the issue regarding automatically confirming when there is only one option for the player -- if removing the "Cancel" button reduces the number of options to one, that policy will apply and the roll should proceed automatically.)
+## Active
 
 ## External Work (Set STATUS to "External To Do")
 
@@ -38,6 +37,13 @@ Verification:
 
 ## Processed
 
+2026-07-10 INBOX Priority Fixes — Focus re-stacked: #1 **TOR-331**, #2 **TOR-332**, #3 **TOR-333**, #4 **TOR-334**, #5 **TOR-335** (replaces TOR-149 → TOR-328 → TOR-141 → TOR-329 → TOR-286)
+2026-07-10 INBOX Priority Fixes — Hunger 4/5 Blood Surge + Rouse combo rules → **TOR-331** (Dice & Rolls Bug, High; parent **TOR-31**; relatedTo **TOR-203**)
+2026-07-10 INBOX Priority Fixes — hide player Cancel on ST-initiated rolls → **TOR-332** (Dice & Rolls Improvement, Medium; parent **TOR-31**; relatedTo **TOR-328**, **TOR-306**)
+2026-07-10 INBOX Priority Fixes — NPC seat buttons + control-board token sync → **TOR-333** (Scenes & Chronicle Bug, High; parent **TOR-33**; relatedTo **TOR-244**, **TOR-250**, **TOR-311**)
+2026-07-10 INBOX Priority Fixes — Table B by highest occupied NPC slot → **TOR-334** (Scenes & Chronicle Bug, High; parent **TOR-33**; relatedTo **TOR-258**)
+2026-07-10 INBOX Priority Fixes — ST roll dash baked-in conditions sync → **TOR-335** (Dice & Rolls Bug, High; parent **TOR-31**; relatedTo **TOR-259**, **TOR-260**, **TOR-209**)
+2026-07-10 **TOR-315** (NPC stage spotlight Y) — Done; author verified NPC lights 2026-07-10
 2026-07-09 INBOX Quick Fix — Blood Surge Hunger bag on Discipline rolls → **TOR-325** (Dice & Rolls Bug, High; parent **TOR-31**; shipped)
 2026-07-09 INBOX Quick Fix — peer tray lower delta Y=4.77 → **TOR-326** (Dice & Rolls Bug, Medium; parent **TOR-31**; relatedTo **TOR-316**; shipped)
 2026-07-09 INBOX Active — POST_ROLL confirm-only auto-broadcast → **TOR-328** (Dice & Rolls Improvement, Medium; parent **TOR-31**; relatedTo **TOR-306**)

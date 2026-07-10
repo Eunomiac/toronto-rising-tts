@@ -482,5 +482,15 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-09 | CREATE | TOR-327 | Workshop Fomorach Shapeshift stat deltas; External Todo |
 | 2026-07-09 | CREATE | TOR-330 | Fomorach animal-form shapeshift toggle; blockedBy TOR-327 |
 | 2026-07-09 | Focus | Stack | TOR-149 → TOR-328 → TOR-141 → TOR-329 → TOR-286 (prior cycle items shipped) |
+| 2026-07-10 | DONE | TOR-315 | Author verified NPC stage spotlight Y (palette→stage + seat→stage); solo Host only |
+| 2026-07-10 | `/tr-inbox` | INBOX | Priority Fixes → TOR-331 (Hunger 4/5 Blood Surge), TOR-332 (ST cancel hide), TOR-333 (NPC seat sync), TOR-334 (Table B highest slot), TOR-335 (ST roll dash conditions) |
+| 2026-07-10 | CREATE | TOR-331 | Hunger 4 block Blood Surge+manual Rouse; Hunger 5 block Blood Surge; Dice Bug High; parent TOR-31; relatedTo TOR-203 |
+| 2026-07-10 | CREATE | TOR-332 | Hide player Cancel on ST-initiated rolls; Dice Improvement Medium; parent TOR-31; relatedTo TOR-328, TOR-306 |
+| 2026-07-10 | CREATE | TOR-333 | NPC seat buttons disabled when empty + control-board sync; Scenes Bug High; parent TOR-33; relatedTo TOR-244, TOR-250, TOR-311 |
+| 2026-07-10 | CREATE | TOR-334 | Table B variant by highest occupied NPC slot; Scenes Bug High; parent TOR-33; relatedTo TOR-258 |
+| 2026-07-10 | CREATE | TOR-335 | ST roll dash sync baked-in roll conditions; Dice Bug High; parent TOR-31; relatedTo TOR-259, TOR-260, TOR-209 |
+| 2026-07-10 | Focus | Stack | **Replaced prior stack.** #1 TOR-331, #2 TOR-332, #3 TOR-333, #4 TOR-334, #5 TOR-335 (INBOX Priority Fixes). Demoted to Also in cycle: TOR-149, TOR-328, TOR-141, TOR-329, TOR-286 |
+| 2026-07-10 | UPDATE | Linear | TOR-331–335 Backlog → Todo (scheduled from Focus) |
+| 2026-07-10 | DONE | TOR-244 | Author final verify: scene library preview working perfectly (solo Host) |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
