@@ -894,6 +894,9 @@ local function maybeCancelRollIfPoolEmpty(color)
     if pid == nil then return end
     local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
     if active == nil then return end
+    if active.initiator == "storyteller" then
+        return
+    end
     local pool = DK.normalizePool(active.pool)
     if DK.poolTotal(pool) > 0 then
         return
@@ -1789,6 +1792,7 @@ function GlobalStorytellerDiceBagClick(params)
 end
 
 --- Removes Blood Surge dice for a roll: tagged rouse + surge-spawned normal/hunger only.
+-- Bags first (while surge script_state is intact), then table-scan orphans.
 -- @param params table  { color, rollId }
 function GlobalDestroyBloodSurgeDice(params)
     if type(params) ~= "table" then return end
@@ -1796,6 +1800,19 @@ function GlobalDestroyBloodSurgeDice(params)
     local rollId = params.rollId
     if type(color) ~= "string" or type(rollId) ~= "string" then return end
     local ownerTag = color .. "Object"
+    local bagSpecs = {
+        { guid = G.GetDiceRouseGUID(color), scriptState = DK.SCRIPT_STATE_BLOOD_SURGE_ROUSE },
+        { guid = G.GetDiceNormalGUID(color), scriptState = DK.SCRIPT_STATE_BLOOD_SURGE_POOL },
+        { guid = G.GetDiceHungerGUID(color), scriptState = DK.SCRIPT_STATE_BLOOD_SURGE_POOL },
+    }
+    for _, spec in ipairs(bagSpecs) do
+        if type(spec.guid) == "string" then
+            local bag = G.getObject(spec.guid)
+            if bag ~= nil then
+                bag.call("destroyStagedByScriptState", { scriptState = spec.scriptState })
+            end
+        end
+    end
     local kinds = {
         { tag = DK.TAG_ROUSE, surgeRouseOnly = true },
         { tag = DK.TAG_NORMAL, surgePoolOnly = true },
@@ -1816,19 +1833,6 @@ function GlobalDestroyBloodSurgeDice(params)
                 if destroyIt then
                     releaseDieToPreloadOrDestroy(obj)
                 end
-            end
-        end
-    end
-    local bagSpecs = {
-        { guid = G.GetDiceRouseGUID(color), scriptState = DK.SCRIPT_STATE_BLOOD_SURGE_ROUSE },
-        { guid = G.GetDiceNormalGUID(color), scriptState = DK.SCRIPT_STATE_BLOOD_SURGE_POOL },
-        { guid = G.GetDiceHungerGUID(color), scriptState = DK.SCRIPT_STATE_BLOOD_SURGE_POOL },
-    }
-    for _, spec in ipairs(bagSpecs) do
-        if type(spec.guid) == "string" then
-            local bag = G.getObject(spec.guid)
-            if bag ~= nil then
-                bag.call("destroyStagedByScriptState", { scriptState = spec.scriptState })
             end
         end
     end
