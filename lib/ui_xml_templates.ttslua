@@ -169,6 +169,89 @@ getObjectFromGUID("edf063").UI.setAttributes("divider_bloodBonds", {minHeight="5
 </Panel>
 ]=]
 
+M._byKey["csheet/page5"] = [=[
+<Include src="csheet_defaults.xml" />
+
+<Panel id="paper_root" class="page_root">
+
+  <Button id="pageBack" class="page_navigation page_back" />
+  <Button id="pageInner" class="page_navigation page_inner_right" />
+  <!-- === ATTRIBUTES === -->
+
+  <VerticalLayout class="vertical_project_container"  >
+
+    <Panel id="project_@@INDEX@@" class="project_container" >
+      <HorizontalLayout class="project_header_container"  >
+          <GridLayout class="project_header_dotline">
+            <Image id="project_@@INDEX@@_scope_dot_1" class="project_scope_dot"  />
+            <Image id="project_@@INDEX@@_scope_dot_2" class="project_scope_dot"  />
+            <Image id="project_@@INDEX@@_scope_dot_3" class="project_scope_dot"  />
+            <Image id="project_@@INDEX@@_scope_dot_4" class="project_scope_dot" active="false" />
+            <Image id="project_@@INDEX@@_scope_dot_5" class="project_scope_dot" active="false" />
+            <Image id="project_@@INDEX@@_scope_dot_6" class="project_scope_dot" active="false" />
+            <Image id="project_@@INDEX@@_scope_dot_7" class="project_scope_dot"  active="false" />
+            <Image id="project_@@INDEX@@_scope_dot_8" class="project_scope_dot"  active="false" />
+            <Image id="project_@@INDEX@@_scope_dot_9" class="project_scope_dot"  active="false" />
+            <Image id="project_@@INDEX@@_scope_dot_10" class="project_scope_dot"  active="false" />
+            <Image id="project_@@INDEX@@_scope_dot_11" class="project_scope_dot" active="false" />
+            <Image id="project_@@INDEX@@_scope_dot_12" class="project_scope_dot"  active="false" />
+            <Image id="project_@@INDEX@@_scope_dot_13" class="project_scope_dot"  active="false" />
+            <Image id="project_@@INDEX@@_scope_dot_14" class="project_scope_dot"  active="false" />
+            <Image id="project_@@INDEX@@_scope_dot_15" class="project_scope_dot"  active="false" />
+          </GridLayout>
+        <Text id="project_@@INDEX@@_goal" class="project_goal_text" text="Learn the location of the Deck of Wandering Stars"  />
+      </HorizontalLayout>
+
+      <Panel class="project_result_container" >
+        <Image id="project_@@INDEX@@_result_image" class="project_result_image" image="project_crit" />
+        <Text id="project_@@INDEX@@_result_margin" class="project_result_margin" text="+4" active="false" />
+      </Panel>
+
+      <Image id="project_@@INDEX@@_project_die" class="project_die" image="project_die_7"  />
+
+      <HorizontalLayout class="project_date_container" >
+        <Text id="project_@@INDEX@@_date_start" class="project_date_text project_date_start_text" text="Sept. 24, 2027"  />
+        <Text class="project_date_text  project_date_start_text" text="—" preferredWidth="0" minWidth = "20"  />
+        <Text id="project_@@INDEX@@_date_end" class="project_date_text" text="Dec. 24, 2027"  />
+        <Text id="project_@@INDEX@@_date_increment" class="project_increment_text" text="(Increments Weekly)"  />
+      </HorizontalLayout>
+
+
+    </Panel>
+
+    <Panel class="vertical_spacer" flexibleHeight="1" />
+
+
+  </VerticalLayout>
+
+  <VerticalLayout class="vertical_section_container" active = "false">
+    <HorizontalLayout class="box_column_container">
+      <VerticalLayout class="box_column">
+        <VerticalLayout class="box_text_container">
+          <HorizontalLayout class="box_header_container">
+            <Text id="page4_otherRelation_0_title_text" class="box_text_title_text" text="Marie Bouschard" />
+            <Text id="page4_otherRelation_0_title_text_right" class="box_text_title_text title_text_right" text="Enemy" />
+          </HorizontalLayout>
+          <HorizontalLayout class="box_content_container">
+            <Image id="page4_otherRelation_0_image" class="box_image" image="marieBouschardPortrait" />
+            <VerticalLayout class="box_body_container">
+              <HorizontalLayout class="box_subheader_container">
+                <Text id="page4_otherRelation_0_subheader_text" class="box_text_subheader_text" text="Journalism Student" />
+                <Text id="page4_otherRelation_0_subheader_text_right" class="box_text_subheader_text box_text_subheader_text_right" text="" />
+              </HorizontalLayout>
+              <Panel class="box_text_panel_body">
+                <Text id="page4_otherRelation_0_body_text" class="box_text" text="Marie is a 22 year-old journalism student at the University of Toronto. You befriended her mother, Camille Bouschard, shortly before Camille divorced her husband. Marie blames you for her parent's divorce (she's right)." />
+              </Panel>
+            </VerticalLayout>
+          </HorizontalLayout>
+        </VerticalLayout>
+      </VerticalLayout>
+      <VerticalLayout class="box_column" />
+    </HorizontalLayout>
+  </VerticalLayout>
+</Panel>
+]=]
+
 M._byKey["csheet/partials/bg_block"] = [=[
 <VerticalLayout class="box_text_container">
   <HorizontalLayout class="box_text_title_bar @@TITLE_BAR_DOT_CLASS@@">
@@ -326,6 +409,113 @@ M._byKey["csheet/partials/otherRelation_block"] = [=[
     </VerticalLayout>
   </HorizontalLayout>
 </VerticalLayout>
+]=]
+
+M._byKey["csheet/partials/project_block"] = [=[
+<Panel class="project_container" >
+  <HorizontalLayout class="project_header_container"  >
+      <GridLayout class="project_header_dotline">
+        <Image id="project_@@INDEX@@_scope_dot_1" class="project_scope_dot"  /> <!-- Dots are 'active=false' by default; activate a number of dots equal to the project's scope. -->
+        <Image id="project_@@INDEX@@_scope_dot_2" class="project_scope_dot"  />
+        <Image id="project_@@INDEX@@_scope_dot_3" class="project_scope_dot"  />
+        <Image id="project_@@INDEX@@_scope_dot_4" class="project_scope_dot"  />
+        <Image id="project_@@INDEX@@_scope_dot_5" class="project_scope_dot"  />
+        <Image id="project_@@INDEX@@_scope_dot_6" class="project_scope_dot"  />
+        <Image id="project_@@INDEX@@_scope_dot_7" class="project_scope_dot"   />
+        <Image id="project_@@INDEX@@_scope_dot_8" class="project_scope_dot"   />
+        <Image id="project_@@INDEX@@_scope_dot_9" class="project_scope_dot"   />
+        <Image id="project_@@INDEX@@_scope_dot_10" class="project_scope_dot"   />
+        <Image id="project_@@INDEX@@_scope_dot_11" class="project_scope_dot"  />
+        <Image id="project_@@INDEX@@_scope_dot_12" class="project_scope_dot"   />
+        <Image id="project_@@INDEX@@_scope_dot_13" class="project_scope_dot"   />
+        <Image id="project_@@INDEX@@_scope_dot_14" class="project_scope_dot"   />
+        <Image id="project_@@INDEX@@_scope_dot_15" class="project_scope_dot"   />
+      </GridLayout>
+    <Text id="project_@@INDEX@@_goal" class="project_goal_text" text=""  /> <!-- A text description of the goal of the project, e.g. "Wrest control of the Distillery District from the Jarvis Jacks" -->
+  </HorizontalLayout>
+
+  <Panel class="project_result_container" >
+    <Image id="project_@@INDEX@@_result_image" class="project_result_image" image="" /> <!-- Either "project_win" or "project_crit", depending on result of launch roll -->
+    <Text id="project_@@INDEX@@_result_margin" class="project_result_margin" text="+4" /> <!-- The margin on the launch roll, e.g. "+4", but only on a Win; if a Critical Win, set to active=false -->
+  </Panel>
+
+  <Text id="project_@@INDEX@@_stakes_label" class="project_stakes_label" text="STAKE:" /> <!-- Set INACTIVE if launch roll result was a Critical Win -->
+
+  <GridLayout id="project_@@INDEX@@_stakes" class="project_stake_container" > <!-- Set INACTIVE if launch roll result was a Critical Win -->
+
+    <HorizontalLayout id="project_@@INDEX@@_stake_1" class="project_stake_container"  > <!-- Each of these six HorizontalLayouts areInactive by default; set active="true" for each staked Advantage -->
+        <Text id="project_@@INDEX@@_stake_1_label" class="project_stake_label project_stake_label_@@PROJECT_STAKE_1_CLASS@@" text="" /> <!-- The name of the Advantage staked, e.g. "Influence (Nightlife)"-->
+        <GridLayout class="project_stake_dotline">
+          <Image id="project_@@INDEX@@_stake_1_dot_1" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_1_CLASS@@"  /> <!-- Dots are 'active=false' by default; activate however many dots of this advantage are staked. -->
+          <Image id="project_@@INDEX@@_stake_1_dot_2" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_1_CLASS@@"  />
+          <Image id="project_@@INDEX@@_stake_1_dot_3" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_1_CLASS@@"  />
+          <Image id="project_@@INDEX@@_stake_1_dot_4" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_1_CLASS@@" />
+          <Image id="project_@@INDEX@@_stake_1_dot_5" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_1_CLASS@@"  />
+        </GridLayout>
+    </HorizontalLayout>
+    <HorizontalLayout id="project_@@INDEX@@_stake_2" class="project_stake_container"     >
+        <Text id="project_@@INDEX@@_stake_2_label" class="project_stake_label project_stake_label_@@PROJECT_STAKE_2_CLASS@@" text="" />
+        <GridLayout class="project_stake_dotline">
+          <Image id="project_@@INDEX@@_stake_2_dot_1" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_2_CLASS@@ "  />
+          <Image id="project_@@INDEX@@_stake_2_dot_2" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_2_CLASS@@"  />
+          <Image id="project_@@INDEX@@_stake_2_dot_3" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_2_CLASS@@"  />
+          <Image id="project_@@INDEX@@_stake_2_dot_4" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_2_CLASS@@" />
+          <Image id="project_@@INDEX@@_stake_2_dot_5" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_2_CLASS@@"  />
+        </GridLayout>
+    </HorizontalLayout>
+    <HorizontalLayout id="project_@@INDEX@@_stake_3" class="project_stake_container"     >
+        <Text id="project_@@INDEX@@_stake_3_label" class="project_stake_label project_stake_label_@@PROJECT_STAKE_3_CLASS@@" text="" />
+        <GridLayout class="project_stake_dotline">
+          <Image id="project_@@INDEX@@_stake_3_dot_1" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_3_CLASS@@"  />
+          <Image id="project_@@INDEX@@_stake_3_dot_2" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_3_CLASS@@"  />
+          <Image id="project_@@INDEX@@_stake_3_dot_3" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_3_CLASS@@"  />
+          <Image id="project_@@INDEX@@_stake_3_dot_4" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_3_CLASS@@"  />
+          <Image id="project_@@INDEX@@_stake_3_dot_5" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_3_CLASS@@"   />
+        </GridLayout>
+    </HorizontalLayout>
+    <HorizontalLayout id="project_@@INDEX@@_stake_4" class="project_stake_container"     >
+        <Text id="project_@@INDEX@@_stake_4_label" class="project_stake_label project_stake_label_@@PROJECT_STAKE_4_CLASS@@" text="" />
+        <GridLayout class="project_stake_dotline">
+          <Image id="project_@@INDEX@@_stake_4_dot_1" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_4_CLASS@@"  />
+          <Image id="project_@@INDEX@@_stake_4_dot_2" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_4_CLASS@@"  />
+          <Image id="project_@@INDEX@@_stake_4_dot_3" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_4_CLASS@@"  />
+          <Image id="project_@@INDEX@@_stake_4_dot_4" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_4_CLASS@@" />
+          <Image id="project_@@INDEX@@_stake_4_dot_5" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_4_CLASS@@"  />
+        </GridLayout>
+    </HorizontalLayout>
+    <HorizontalLayout id="project_@@INDEX@@_stake_5" class="project_stake_container" >
+        <Text id="project_@@INDEX@@_stake_5_label" class="project_stake_label project_stake_label_@@PROJECT_STAKE_5_CLASS@@" text="" />
+        <GridLayout class="project_stake_dotline">
+          <Image id="project_@@INDEX@@_stake_5_dot_1" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_5_CLASS@@"  />
+          <Image id="project_@@INDEX@@_stake_5_dot_2" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_5_CLASS@@"  />
+          <Image id="project_@@INDEX@@_stake_5_dot_3" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_5_CLASS@@"  />
+          <Image id="project_@@INDEX@@_stake_5_dot_4" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_5_CLASS@@"  />
+          <Image id="project_@@INDEX@@_stake_5_dot_5" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_5_CLASS@@"  />
+        </GridLayout>    </HorizontalLayout>
+    <HorizontalLayout id="project_@@INDEX@@_stake_6" class="project_stake_container"  >
+        <Text id="project_@@INDEX@@_stake_6_label" class="project_stake_label project_stake_label_@@PROJECT_STAKE_6_CLASS@@" text="" />
+        <GridLayout class="project_stake_dotline">
+          <Image id="project_@@INDEX@@_stake_6_dot_1" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_6_CLASS@@"  />
+          <Image id="project_@@INDEX@@_stake_6_dot_2" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_6_CLASS@@"  />
+          <Image id="project_@@INDEX@@_stake_6_dot_3" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_6_CLASS@@"  />
+          <Image id="project_@@INDEX@@_stake_6_dot_4" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_6_CLASS@@"  />
+          <Image id="project_@@INDEX@@_stake_6_dot_5" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_6_CLASS@@"  />
+        </GridLayout>
+    </HorizontalLayout>
+  </GridLayout>
+
+  <Image id="project_@@INDEX@@_project_die" class="project_die" image=""  /> <!-- Image corresponding to the current value of the project die, e.g. "project_die_3". Determine this value by comparing the start date and the increment to the current clock time: A project with a weekly increment that started four weeks ago should have a project die value of (10 - 4 = 6). This value should be dynamically updated any time the clock time changes, but must be bounded between 1 and 10. -->
+
+
+  <HorizontalLayout class="project_date_container" >
+    <Text id="project_@@INDEX@@_date_start" class="project_date_text project_date_start_text" text=""  /> <!-- The start date of the project, e.g. "June 3, 2027" -->
+    <Text class="project_date_text  project_date_start_text" text="—" preferredWidth="0" minWidth = "20"  />
+    <Text id="project_@@INDEX@@_date_end" class="project_date_text" text=""  /> <!-- The end date of the project, e.g. "Oct. 3, 2027", calculated by adding ten increments to the start date. -->
+    <Text id="project_@@INDEX@@_date_increment" class="project_increment_text" text="(Increments Weekly)"  /> <!-- The increment of the project, in parentheses, e.g. "(Increments Weekly)" -->
+  </HorizontalLayout>
+
+
+</Panel>
 ]=]
 
 M._byKey["csheet/partials/regnant_block"] = [=[

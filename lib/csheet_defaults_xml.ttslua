@@ -88,6 +88,79 @@ D.XML = [=[
   <Button class="page_inner_left" rectAlignment="UpperLeft" onClick="onPageInnerClick" color="clear"/>
 
   <Button class="page_inner_right" rectAlignment="UpperRight" onClick="onPageInnerClick" color="clear"/>
+
+  <VerticalLayout class="vertical_project_container"
+    width = "75%"
+    spacing = "15"
+    rectAlignment = "UpperLeft"
+    childAlignment = "UpperLeft"
+    childForceExpandHeight = "false"
+    padding = "0 50 130 150" />
+
+  <Panel class="project_container" minHeight="150" preferredHeight="150" flexibleHeight="0" color="rgba(0, 0, 0, 1)" outline="#cb995c" outlineSize = "2 -2" scale="0.9" />
+
+  <HorizontalLayout class="project_header_container"
+    height="30" width="100%" outline="#cb995c" outlineSize = "2 -2" color="rgba(0, 0, 0, 1)" rectAlignment = "UpperLeft" childAlignment = "UpperLeft" childForceExpandWidth = "false" padding="10 10 0 0" spacing = "10" />
+
+  <GridLayout class="project_header_dotline"
+     cellSize = "20 20" spacing = "2" startCorner = "UpperLeft" startAxis = "Horizontal" constraint = "FixedRowCount" constraintCount = "1" childAlignment = "MiddleLeft" childForceExpandWidth = "false" childForceExpandHeight = "false" />
+
+  <Image class="project_scope_dot"
+    image="dot_yellow" minHeight="120" minWidth="120" flexibleWidth="0" flexibleHeight="0" scale="2 2" />
+
+  <Text class="project_goal_text"
+    color="#FFFFFF" fontStyle="Bold" fontSize="20" alignment="MiddleLeft" offsetXY = "10 0" preferredWidth="1000" />
+
+  <Panel class="project_result_container" ignoreLayout="true" height="50" width="100" rectAlignment="UpperRight" offsetXY = "10 10" color="rgba(0.2, 0.2, 0.2, 1)" outline="#cb995c" outlineSize = "2 -2" />
+
+  <Image class="project_result_image" rectAlignment="MiddleCenter" width="90" scale="2 2" preserveAspect="true" />
+
+  <Text class="project_result_margin"
+    color="#FFFFFF" fontStyle="Bold" fontSize="40" alignment="MiddleRight" horizontalOverflow = "wrap" width = "100"/>
+
+  <GridLayout class="project_stake_container" color="rgba(1, 0, 0, 0)"
+   rectAlignment="LowerLeft" cellSize = "275 25" height="100"  width="557" spacing = "2" startCorner = "UpperLeft" startAxis="Horizontal" childAlignment = "UpperLeft" padding="0 20 0 0" constraint="FixedColumnCount" constraintCount = "2" offsetXY = "20 -10"/>
+
+  <HorizontalLayout class="project_stake_container" spacing = "0" color="rgba(1, 0, 1, 0)" childForceExpandWidth = "false" childForceExpandHeight = "true" padding="5 0 0 0" childAlignment="MiddleLeft" />
+
+  <Text class="project_stakes_label" color="#FFFFFF" fontStyle="Bold" fontSize="24" alignment="UpperLeft" offsetXY = "5 -35" flexibleWidth="0" horizontalOverflow = "overflow" />
+
+  <GridLayout class="project_stake_dotline" color="rgba(0, 1, 0, 0)"
+     cellSize = "20 20" spacing = "2" startCorner = "UpperLeft" startAxis = "Horizontal" constraint = "FixedRowCount" constraintCount = "1" childAlignment = "MiddleLeft" childForceExpandWidth = "false" childForceExpandHeight = "false" scale="0.75" preferredWidth="0" flexibleWidth="1" minWidth = "0" padding="0 0 0 0" />
+
+  <Image class="project_stake_dot"
+    image="dot_white" minHeight="120" minWidth="12" flexibleWidth="0" flexibleHeight="0" scale="2 2" />
+
+  <Image class="project_stake_dot_other"
+    image="dot_grey" />
+  <Image class="project_stake_dot_coterie"
+    image="dot_yellow" />
+
+  <Text class="project_stake_label"
+    color="#FFFFFF" fontStyle="Bold" fontSize="14" alignment="MiddleLeft" flexibleWidth="0" horizontalOverflow = "overflow" />
+
+  <Text class="project_stake_label_other"
+    color="#AAAAAA" fontStyle="Italic"  />
+  <Text class="project_stake_label_coterie"
+    color="#FFDD00"  />
+
+
+  <Image class="project_die" ignoreLayout="true" rectAlignment="MiddleRight" width="500" preserveAspect="true" offsetXY = "0 -10" />
+  <HorizontalLayout class="project_date_container" ignoreLayout="true" height="30" width = "475" rectAlignment="LowerRight" offsetXY = "10 -10" color="rgba(0, 0, 0, 1)" outline="#cb995c" outlineSize = "2 -2" spacing = "0" />
+
+  <Text class="project_date_text"
+    color="#FFFFFF" fontStyle="Bold" fontSize="20" alignment="MiddleCenter" preferredWidth="1000" />
+  <Text class="project_increment_text"
+    fontStyle="Italic" fontSize="14" color="#999999" alignment="MiddleCenter" preferredWidth="1000" />
+
+  <Text class="project_date_start_text"
+    fontStyle="Italic"
+    color="#999999" />
+
+
+  <HorizontalLayout class="project_stake_container" active="false" />
+  <Image class="project_stake_dot" active="false" />
+  <Image class="project_scope_dot" active="false" />
 </Defaults>
 ]=]
 
