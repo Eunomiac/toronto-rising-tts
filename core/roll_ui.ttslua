@@ -303,9 +303,6 @@ local function rollOptsRefreshStructuralDraftFromActive(active, color)
         [RO.ROLL_HUNGER_DICE] = RO.getForActive(active, RO.ROLL_HUNGER_DICE),
         [RO.ROLL_CRITS]       = RO.getForActive(active, RO.ROLL_CRITS),
     }
-    for structuralKey, uiId in pairs(STRUCTURAL_UI_IDS) do
-        rollOptsSetToggleClass(uiId, rollOptsDraft.structural[structuralKey] == true)
-    end
 
     local pid = S.getPlayerID(color)
     rollOptsDraft.conditions = {}
@@ -317,6 +314,15 @@ local function rollOptsRefreshStructuralDraftFromActive(active, color)
             rollOptsDraft.conditions[conditionId] = on
             rollOptsSetToggleClass(uiId, on)
         end
+    end
+
+    for structuralKey, negatingId in pairs(CD.STRUCTURAL_NEGATING) do
+        if type(negatingId) == "string" and rollOptsDraft.conditions[negatingId] ~= nil then
+            rollOptsDraft.structural[structuralKey] = not rollOptsDraft.conditions[negatingId]
+        end
+    end
+    for structuralKey, uiId in pairs(STRUCTURAL_UI_IDS) do
+        rollOptsSetToggleClass(uiId, rollOptsDraft.structural[structuralKey] == true)
     end
 
     uiSetInteractable("rollOpts_roll_takeHalf",   not RO.isTakeHalfLocked(rt))
@@ -1742,6 +1748,7 @@ function RUI.openRollOptionsModal(color)
 
     rollOptsTargetColor = color
     RC.computeEffectiveRollState(color, active)
+    RO.syncStructuralOverlayFromActive(active)
 
     rollOptsDraft.permanent = {
         [RO.PERM_AUTO_APPLY_ROUSE_OUTCOMES] = RO.getPermanent(RO.PERM_AUTO_APPLY_ROUSE_OUTCOMES),

@@ -48,10 +48,10 @@
     <Text id="db_rollOpts_modal_header_this_roll" class="rollOpts_modal_header" text="This Roll" />
 
     <HorizontalLayout id="db_rollOpts_modal_horiz_toggle_container_this_roll" class="rollOpts_modal_horiz_toggle_container">
-      <Button id="rollOpts_roll_takeHalf" class="rollOpts_toggle rollOpts_toggle_on" onClick="HUD_rollOptsToggle" text="Take Half" />
-      <Button id="rollOpts_roll_wpReroll" class="rollOpts_toggle rollOpts_toggle_on" onClick="HUD_rollOptsToggle" text="WP Reroll" />
-      <Button id="rollOpts_roll_hungerDice" class="rollOpts_toggle rollOpts_toggle_on" onClick="HUD_rollOptsToggle" text="Hunger Dice" />
-      <Button id="rollOpts_roll_crits" class="rollOpts_toggle rollOpts_toggle_on" onClick="HUD_rollOptsToggle" text="Criticals" />
+      <Button id="rollOpts_roll_takeHalf" class="rollOpts_toggle rollOpts_toggle_off" onClick="HUD_rollOptsToggle" text="Take Half" />
+      <Button id="rollOpts_roll_wpReroll" class="rollOpts_toggle rollOpts_toggle_off" onClick="HUD_rollOptsToggle" text="WP Reroll" />
+      <Button id="rollOpts_roll_hungerDice" class="rollOpts_toggle rollOpts_toggle_off" onClick="HUD_rollOptsToggle" text="Hunger Dice" />
+      <Button id="rollOpts_roll_crits" class="rollOpts_toggle rollOpts_toggle_off" onClick="HUD_rollOptsToggle" text="Criticals" />
     </HorizontalLayout>
 
     <HorizontalLayout id="db_rollOpts_modal_horiz_input_container_this_roll" class="rollOpts_modal_horiz_input_container">
