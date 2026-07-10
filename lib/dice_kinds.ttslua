@@ -7,7 +7,8 @@
 
 local DK = {}
 
-local C = require("lib.constants")
+--- Mirrors `C.MAX_HUNGER` without requiring `lib.constants` (object-script safe; TOR-262).
+DK.MAX_HUNGER = 5
 
 --- Logical pool keys (counts on active.pool).
 DK.KIND_NORMAL      = "normal"
@@ -252,24 +253,24 @@ function DK.isHungerRouseComboBlocked(hunger, pool, action, meta)
     hunger = math.floor(tonumber(hunger) or 0)
 
     if action == "activateBloodSurge" then
-        if hunger >= C.MAX_HUNGER then
+        if hunger >= DK.MAX_HUNGER then
             return true
         end
-        if hunger == C.MAX_HUNGER - 1 and pool.rouse > 0 then
+        if hunger == DK.MAX_HUNGER - 1 and pool.rouse > 0 then
             return true
         end
         return false
     end
 
     if action == "addBloodSurgeRouse" or action == DK.KIND_BLOOD_SURGE_ROUSE then
-        return hunger >= C.MAX_HUNGER
+        return hunger >= DK.MAX_HUNGER
     end
 
     if action == DK.KIND_ROUSE or action == DK.KIND_OBLIV_ROUSE then
-        if hunger >= C.MAX_HUNGER then
+        if hunger >= DK.MAX_HUNGER then
             return true
         end
-        if hunger == C.MAX_HUNGER - 1
+        if hunger == DK.MAX_HUNGER - 1
             and (meta.bloodSurgeActive == true or pool.bloodSurgeRouse > 0) then
             return true
         end
@@ -288,7 +289,7 @@ function DK.isCompoundRousePoolInvalid(hunger, pool, meta)
     pool = DK.normalizePool(pool)
     meta = type(meta) == "table" and meta or {}
     hunger = math.floor(tonumber(hunger) or 0)
-    if hunger < C.MAX_HUNGER - 1 then
+    if hunger < DK.MAX_HUNGER - 1 then
         return false
     end
     if pool.rouse <= 0 then
