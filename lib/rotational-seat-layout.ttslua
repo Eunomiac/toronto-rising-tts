@@ -2208,6 +2208,31 @@ local function countOccupiedNpcSlots(slots)
   return n
 end
 
+--- Highest occupied NPC slot index (1..4) from `seatLayout.occupiedNPCSlots`; 0 when none.
+--- Used for dynamic family resolution (TOR-334): only NPC2 occupied → index 2 → `Table B2`.
+--- @param slots table|nil defaults to `gameState.seatLayout.occupiedNPCSlots`
+--- @return number
+local function highestOccupiedNpcSlotIndex(slots)
+  if U.Type(slots) ~= "table" then
+    slots = S.getStateVal("seatLayout", "occupiedNPCSlots")
+  end
+  if U.Type(slots) ~= "table" then
+    return 0
+  end
+  local maxIdx = 0
+  for _, seatKey in ipairs(C.NPCSeats or {}) do
+    local occupant = slots[seatKey]
+    if U.Type(occupant) == "string" and occupant ~= "" then
+      local numStr = string.match(seatKey, "^NPC(%d+)$")
+      local idx = numStr and tonumber(numStr) or nil
+      if type(idx) == "number" and idx > maxIdx then
+        maxIdx = idx
+      end
+    end
+  end
+  return maxIdx
+end
+
 --- Number of NPC seats (`C.NPCSeats`) the table config defines in `playerToPositionMap`.
 --- @param tableCfg table|nil
 --- @return number
@@ -2284,9 +2309,10 @@ end
 
 --- Resolve a table key to a concrete `C.Tables` key.
 --- Exact keys (incl. explicit `Table B4`) return unchanged. Family keys (no exact entry, but numbered
---- variants exist) resolve to `familyKey .. occupiedNpcSlotCount` (override via `opts.occupiedCount`).
+--- variants exist) resolve to `familyKey .. highestOccupiedNpcSlotIndex` (override via
+--- `opts.occupiedCount` or `opts.occupiedSlotIndex`).
 --- @param tableKey string
---- @param opts table|nil `{ occupiedCount = number? }`
+--- @param opts table|nil `{ occupiedCount = number?, occupiedSlotIndex = number? }`
 --- @return string concreteKey
 --- @return string|nil familyKey nil for exact keys; the family key when dynamically resolved
 local function resolveTableKey(tableKey, opts)
@@ -2303,14 +2329,17 @@ local function resolveTableKey(tableKey, opts)
     error("rotational-seat-layout: unknown table key '" .. tableKey
       .. "' (no exact C.Tables entry and no numbered variants)")
   end
-  local count = opts.occupiedCount
-  if U.Type(count) ~= "number" then
-    count = countOccupiedNpcSlots()
+  local slotIndex = opts.occupiedSlotIndex
+  if U.Type(slotIndex) ~= "number" then
+    slotIndex = opts.occupiedCount
   end
-  local candidate = variants[count]
+  if U.Type(slotIndex) ~= "number" then
+    slotIndex = highestOccupiedNpcSlotIndex()
+  end
+  local candidate = variants[slotIndex]
   if candidate == nil then
-    error("rotational-seat-layout: no '" .. tableKey .. "' variant for " .. tostring(count)
-      .. " occupied NPC seat(s) (expected '" .. tableKey .. tostring(count) .. "')")
+    error("rotational-seat-layout: no '" .. tableKey .. "' variant for highest occupied NPC slot "
+      .. tostring(slotIndex) .. " (expected '" .. tableKey .. tostring(slotIndex) .. "')")
   end
   return candidate, tableKey
 end
@@ -3491,6 +3520,13 @@ end
 --- @return number
 function M.countOccupiedNpcSlots(slots)
   return countOccupiedNpcSlots(slots)
+end
+
+--- Public: highest occupied NPC slot index (0 when none). Dynamic family resolution (TOR-334).
+--- @param slots table|nil
+--- @return number
+function M.highestOccupiedNpcSlotIndex(slots)
+  return highestOccupiedNpcSlotIndex(slots)
 end
 
 --- Public: NPC seat capacity (`C.NPCSeats` in `playerToPositionMap`) for a table config.

@@ -81,7 +81,7 @@ local function closeScenesPanel()
 end
 
 --- Maps XML button ids (no spaces) to table keys. `Table B` is a dynamic family key (resolves to
---- `Table B<occupied NPC count>` via `RSL.resolveTableKey`); the rest are explicit `C.Tables` keys.
+--- `Table B<highest occupied NPC slot index>` via `RSL.resolveTableKey`); the rest are explicit `C.Tables` keys.
 local TABLE_TOGGLE_IDS = {
     scenes_tbl_TableA = "Table A",
     scenes_tbl_TableB = "Table B",

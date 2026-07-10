@@ -1347,13 +1347,13 @@ local function applyWouldRequireDynamicTableGrow(occupiedSlots)
     if not RSL.isDynamicTableFamilyKey(intent) then
         return false
     end
-    local occupied = RSL.countOccupiedNpcSlots(occupiedSlots)
+    local slotIndex = RSL.highestOccupiedNpcSlotIndex(occupiedSlots)
     local currentKey = stateModule().getStateVal("seatLayout", "currentTableKey")
     local currentCfg = type(currentKey) == "string" and C.Tables[currentKey] or nil
-    if occupied <= RSL.tableNpcSlotCapacity(currentCfg) then
+    if slotIndex <= RSL.tableNpcSlotCapacity(currentCfg) then
         return false
     end
-    local targetKey = RSL.resolveTableKey(intent, { occupiedCount = occupied })
+    local targetKey = RSL.resolveTableKey(intent, { occupiedSlotIndex = slotIndex })
     return type(targetKey) == "string" and targetKey ~= currentKey
 end
 
@@ -1401,13 +1401,13 @@ local function maybeGrowDynamicTableForOccupiedSeats()
     if not RSL.isDynamicTableFamilyKey(intent) then
         return false
     end
-    local occupied = RSL.countOccupiedNpcSlots()
+    local slotIndex = RSL.highestOccupiedNpcSlotIndex()
     local currentKey = stateModule().getStateVal("seatLayout", "currentTableKey")
     local currentCfg = type(currentKey) == "string" and C.Tables[currentKey] or nil
-    if occupied <= RSL.tableNpcSlotCapacity(currentCfg) then
+    if slotIndex <= RSL.tableNpcSlotCapacity(currentCfg) then
         return false
     end
-    local targetKey = RSL.resolveTableKey(intent, { occupiedCount = occupied })
+    local targetKey = RSL.resolveTableKey(intent, { occupiedSlotIndex = slotIndex })
     if type(targetKey) ~= "string" or targetKey == currentKey then
         return false
     end

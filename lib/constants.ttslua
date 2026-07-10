@@ -1464,7 +1464,7 @@ C.Tables = {
     }
   },
   -- "Table B" is intentionally NOT a C.Tables entry: it is a dynamic family key resolved to
-  -- "Table B<occupied NPC seat count>" (B0-B4) by lib/rotational-seat-layout `resolveTableKey`.
+  -- "Table B<highest occupied NPC slot index>" (B0-B4) by lib/rotational-seat-layout `resolveTableKey`.
   -- "Table B5" remains manually selectable but is never auto-selected (NPC count caps at 4).
   ["Table B0"] = {
     guid = G.GUIDS.TABLES.TABLE_B0,

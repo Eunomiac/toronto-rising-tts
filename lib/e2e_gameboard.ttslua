@@ -1105,6 +1105,34 @@ local function runTor311SeatDisableTests(failures)
     clearNpcSeatsAndPlacements()
 end
 
+--- TOR-334: dynamic Table B family resolves by highest occupied NPC slot index, not seat count.
+local function runTor334TableFamilyTests(failures)
+    local RSL = require("lib.rotational-seat-layout")
+    local onlyNpc2 = { NPC2 = "e2eNpcB" }
+    local idx2 = RSL.highestOccupiedNpcSlotIndex(onlyNpc2)
+    if idx2 ~= 2 then
+        failures[#failures + 1] = "TOR-334: highest index for NPC2 only should be 2, got " .. tostring(idx2)
+    end
+    local resolved = RSL.resolveTableKey("Table B", { occupiedSlotIndex = idx2 })
+    if resolved ~= "Table B2" then
+        failures[#failures + 1] = "TOR-334: only NPC2 occupied should resolve Table B2, got "
+            .. tostring(resolved)
+    end
+    local npc1and4 = { NPC1 = "e2eNpcA", NPC4 = "e2eNpcD" }
+    local idx4 = RSL.highestOccupiedNpcSlotIndex(npc1and4)
+    if idx4 ~= 4 then
+        failures[#failures + 1] = "TOR-334: highest index for NPC1+NPC4 should be 4, got " .. tostring(idx4)
+    end
+    if RSL.countOccupiedNpcSlots(npc1and4) ~= 2 then
+        failures[#failures + 1] = "TOR-334: seat count for NPC1+NPC4 should still be 2 (sanity)"
+    end
+    resolved = RSL.resolveTableKey("Table B", { occupiedSlotIndex = idx4 })
+    if resolved ~= "Table B4" then
+        failures[#failures + 1] = "TOR-334: NPC1+NPC4 should resolve Table B4 (not B2 by count), got "
+            .. tostring(resolved)
+    end
+end
+
 local function runFullSuites(failures)
     local fx = fixture()
 
@@ -1163,6 +1191,7 @@ local function runFullSuites(failures)
 
     runTor281ClearSeatTests(failures)
     runTor311SeatDisableTests(failures)
+    runTor334TableFamilyTests(failures)
 
     clearNpcSeatsAndPlacements()
     retreatAllFixtureNpcs()
