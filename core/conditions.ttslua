@@ -167,6 +167,23 @@ end
 function Conditions.buildEffectiveConditionsForRoll(playerID, active)
   local effective = {}
   if playerID == C.StorytellerID then
+    local overlay = type(active) == "table" and active.rollConditionOverlay or nil
+    if type(overlay) == "table" then
+      if type(overlay.forceOn) == "table" then
+        for id, on in pairs(overlay.forceOn) do
+          if on == true then
+            effective[id] = true
+          end
+        end
+      end
+      if type(overlay.forceOff) == "table" then
+        for id, on in pairs(overlay.forceOff) do
+          if on == true then
+            effective[id] = nil
+          end
+        end
+      end
+    end
     return effective
   end
   local base = S.getStateVal("playerData", playerID, "conditions")

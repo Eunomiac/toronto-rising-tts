@@ -279,6 +279,19 @@ local function rollOptsSyncOblivRouseVisibility(color)
     uiSetActive("rollOpts_type_rouseOblivion", type(G.GetDiceOblivRouseGUID(color)) == "string")
 end
 
+--- Sync negating condition toggle when a structural toggle changes.
+-- @param structuralKey string
+-- @param structuralOn boolean
+local function rollOptsSyncNegatingFromStructural(structuralKey, structuralOn)
+    local negatingId = CD.STRUCTURAL_NEGATING[structuralKey]
+    if type(negatingId) ~= "string" then
+        return
+    end
+    local conditionOn = not structuralOn
+    rollOptsDraft.conditions[negatingId] = conditionOn
+    rollOptsSetToggleClass("rollCondition_" .. negatingId, conditionOn)
+end
+
 --- Refreshes per-roll structural + condition draft toggles from active roll state.
 -- @param active table
 -- @param color string
@@ -308,19 +321,6 @@ local function rollOptsRefreshStructuralDraftFromActive(active, color)
 
     uiSetInteractable("rollOpts_roll_takeHalf",   not RO.isTakeHalfLocked(rt))
     uiSetInteractable("rollOpts_roll_hungerDice", not RO.isHungerDiceLocked(rt))
-end
-
---- Sync negating condition toggle when a structural toggle changes.
--- @param structuralKey string
--- @param structuralOn boolean
-local function rollOptsSyncNegatingFromStructural(structuralKey, structuralOn)
-    local negatingId = CD.STRUCTURAL_NEGATING[structuralKey]
-    if type(negatingId) ~= "string" then
-        return
-    end
-    local conditionOn = not structuralOn
-    rollOptsDraft.conditions[negatingId] = conditionOn
-    rollOptsSetToggleClass("rollCondition_" .. negatingId, conditionOn)
 end
 
 --- Sync structural toggle when a negating condition toggle changes.

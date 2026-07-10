@@ -132,6 +132,38 @@ function RO.seedActiveRoll(active)
     RO.sanitizeRollOptions(active)
 end
 
+--- Mirrors structural rollOptions into per-roll negating condition overlay.
+-- Keeps Roll Conditions UI and ST dash aligned with type-baked This Roll toggles.
+-- @param active table|nil
+function RO.syncStructuralOverlayFromActive(active)
+    if type(active) ~= "table" then
+        return
+    end
+    local CD = require("lib.condition_defs")
+    if type(active.rollConditionOverlay) ~= "table" then
+        active.rollConditionOverlay = { forceOn = {}, forceOff = {} }
+    end
+    local overlay = active.rollConditionOverlay
+    if type(overlay.forceOn) ~= "table" then
+        overlay.forceOn = {}
+    end
+    if type(overlay.forceOff) ~= "table" then
+        overlay.forceOff = {}
+    end
+    for structuralKey, negatingId in pairs(CD.STRUCTURAL_NEGATING) do
+        if type(negatingId) == "string" then
+            local structuralOn = RO.getForActive(active, structuralKey) == true
+            if structuralOn then
+                overlay.forceOn[negatingId] = nil
+                overlay.forceOff[negatingId] = true
+            else
+                overlay.forceOff[negatingId] = nil
+                overlay.forceOn[negatingId] = true
+            end
+        end
+    end
+end
+
 --- Reads a permanent setting with default fallback.
 -- @param id string
 -- @return boolean
