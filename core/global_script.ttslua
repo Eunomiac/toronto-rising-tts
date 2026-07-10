@@ -2493,7 +2493,13 @@ function onObjectDrop(playerColor, object)
                 end
                 GlobalGameboardPcTokenDroppedOnDiceBag({ token = tok, playerColor = playerColor })
             end, 1)
+            return
         end
+        local Gameboard = require("core.npc_gameboard")
+        if type(Gameboard.onPcControlTokenDropped) == "function" then
+            Gameboard.onPcControlTokenDropped(object, playerColor)
+        end
+        return
     end
 end
 
@@ -5588,21 +5594,22 @@ end
 
 --- TTS: player joined or changed seat color.
 function onPlayerChangeColor(color)
-    if type(color) == "string" and color ~= "Grey" then
-        local seated = Player[color]
-        if seated ~= nil and U.isPlayer(seated) then
-            local playerID = S.getStorageID(seated)
-            if playerID == C.StorytellerID and CameraDebugFocus ~= nil
-                and type(CameraDebugFocus.syncStorytellerCameraForSeatColor) == "function"
-            then
-                CameraDebugFocus.syncStorytellerCameraForSeatColor(color)
-            end
+    if type(color) ~= "string" or color == "" or color == "Grey" then
+        return
+    end
+
+    local seated = Player[color]
+    if U.isPlayer(seated) then
+        local playerID = S.getStorageID(seated)
+        if playerID == C.StorytellerID and CameraDebugFocus ~= nil
+            and type(CameraDebugFocus.syncStorytellerCameraForSeatColor) == "function"
+        then
+            CameraDebugFocus.syncStorytellerCameraForSeatColor(color)
         end
     end
     if M ~= nil and type(M.onPlayerChangeColor) == "function" then
         M.onPlayerChangeColor(color)
     end
-    local seated = Player[color]
     local playerKey = seatAssignmentPlayerKey(seated)
     local pendingConnectRefresh = playerKey ~= nil and pendingConnectSeatRefreshByPlayer[playerKey] == true
     if pendingConnectRefresh then
