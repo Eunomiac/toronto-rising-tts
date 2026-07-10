@@ -747,6 +747,11 @@ function GlobalRollSpawnDieRequest(params)
         if DK.rouseKindBlockedByPool(pool, requested) then
             return nil
         end
+        local hunger = math.floor(tonumber(S.getPlayerVal(color, "hunger")) or 0)
+        DK.ensureMeta(active)
+        if DK.isHungerRouseComboBlocked(hunger, pool, requested, active.meta) then
+            return nil
+        end
         return requested
     end
 
@@ -1149,18 +1154,25 @@ function GlobalDiceBagClick(params)
             -- Normal-bag auto-hunger redirect only, not from the Hunger bag.
             local meta = type(active.meta) == "table" and active.meta or {}
             local hunger = math.floor(tonumber(S.getPlayerVal(color, "hunger")) or 0)
-            if hunger >= C.MAX_HUNGER then
-                return
-            end
+            local pool = DK.normalizePool(active.pool)
             if meta.bloodSurgeActive == true then
+                if DK.isHungerRouseComboBlocked(hunger, pool, "addBloodSurgeRouse", meta) then
+                    return
+                end
                 RC.addBloodSurgeRouse(color)
             else
+                if DK.isHungerRouseComboBlocked(hunger, pool, "activateBloodSurge", meta) then
+                    return
+                end
                 RC.activateBloodSurge(color)
             end
             return
         end
         if dieKind == DK.KIND_ROUSE or dieKind == DK.KIND_OBLIV_ROUSE then
-            if math.floor(tonumber(S.getPlayerVal(color, "hunger")) or 0) >= C.MAX_HUNGER then
+            local hunger = math.floor(tonumber(S.getPlayerVal(color, "hunger")) or 0)
+            local pool = DK.normalizePool(active.pool)
+            DK.ensureMeta(active)
+            if DK.isHungerRouseComboBlocked(hunger, pool, dieKind, active.meta) then
                 return
             end
             spawnRequestedDie(color, dieKind)

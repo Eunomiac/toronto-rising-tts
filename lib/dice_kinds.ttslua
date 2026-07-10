@@ -7,6 +7,8 @@
 
 local DK = {}
 
+local C = require("lib.constants")
+
 --- Logical pool keys (counts on active.pool).
 DK.KIND_NORMAL      = "normal"
 DK.KIND_HUNGER      = "hunger"
@@ -235,6 +237,64 @@ function DK.rouseKindBlockedByPool(pool, kind)
         return true
     end
     return false
+end
+
+--- True when hunger/rouse policy blocks a bag action on a compound roll (TOR-331 / TOR-203).
+--- `action` is a die kind (`DK.KIND_*`) or `"activateBloodSurge"` / `"addBloodSurgeRouse"`.
+--- @param hunger number
+--- @param pool table
+--- @param action string
+--- @param meta table|nil
+--- @return boolean
+function DK.isHungerRouseComboBlocked(hunger, pool, action, meta)
+    pool = DK.normalizePool(pool)
+    meta = type(meta) == "table" and meta or {}
+    hunger = math.floor(tonumber(hunger) or 0)
+
+    if action == "activateBloodSurge" then
+        if hunger >= C.MAX_HUNGER then
+            return true
+        end
+        if hunger == C.MAX_HUNGER - 1 and pool.rouse > 0 then
+            return true
+        end
+        return false
+    end
+
+    if action == "addBloodSurgeRouse" or action == DK.KIND_BLOOD_SURGE_ROUSE then
+        return hunger >= C.MAX_HUNGER
+    end
+
+    if action == DK.KIND_ROUSE or action == DK.KIND_OBLIV_ROUSE then
+        if hunger >= C.MAX_HUNGER then
+            return true
+        end
+        if hunger == C.MAX_HUNGER - 1
+            and (meta.bloodSurgeActive == true or pool.bloodSurgeRouse > 0) then
+            return true
+        end
+        return false
+    end
+
+    return false
+end
+
+--- True when an active pool violates Hunger 4 compound-rouse mutual exclusion.
+--- @param hunger number
+--- @param pool table
+--- @param meta table|nil
+--- @return boolean
+function DK.isCompoundRousePoolInvalid(hunger, pool, meta)
+    pool = DK.normalizePool(pool)
+    meta = type(meta) == "table" and meta or {}
+    hunger = math.floor(tonumber(hunger) or 0)
+    if hunger < C.MAX_HUNGER - 1 then
+        return false
+    end
+    if pool.rouse <= 0 then
+        return false
+    end
+    return meta.bloodSurgeActive == true or pool.bloodSurgeRouse > 0
 end
 
 --- Resolve logical kind from a TTS tag string.

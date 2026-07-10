@@ -1719,6 +1719,15 @@ function RC.startRolling(color)
         return false
     end
 
+    local hunger = math.floor(tonumber(S.getPlayerVal(color, "hunger")) or 0)
+    ensureActiveShape(active)
+    if DK.isCompoundRousePoolInvalid(hunger, active.pool, active.meta) then
+        print(string.format(
+            "[RC] startRolling blocked: Blood Surge and manual Rouse cannot combine at Hunger %d",
+            hunger))
+        return false
+    end
+
     active.phase       = C.RollPhase.ROLLING
     active.batonHolder = C.BatonHolder.AUTO
     active.result      = nil
@@ -3023,17 +3032,18 @@ end
 function RC.activateBloodSurge(color)
     local active = getActive(color)
     if active == nil then return false end
-    if active.rollType ~= C.RollType.STANDARD then return false end
+    if C.RollTypesBloodSurge[active.rollType] ~= true then return false end
     if active.phase ~= C.RollPhase.SETUP and active.phase ~= C.RollPhase.PRE_ROLL then
         return false
     end
 
     local hunger = math.floor(tonumber(S.getPlayerVal(color, "hunger")) or 0)
-    if hunger >= C.MAX_HUNGER then
+    ensureActiveShape(active)
+    local pool = DK.normalizePool(active.pool)
+    if DK.isHungerRouseComboBlocked(hunger, pool, "activateBloodSurge", active.meta) then
         return false
     end
 
-    ensureActiveShape(active)
     if active.meta.bloodSurgeActive then
         return false
     end
@@ -3079,12 +3089,17 @@ end
 function RC.addBloodSurgeRouse(color)
     local active = getActive(color)
     if active == nil then return false end
-    if active.rollType ~= C.RollType.STANDARD then return false end
+    if C.RollTypesBloodSurge[active.rollType] ~= true then return false end
     if active.phase ~= C.RollPhase.SETUP and active.phase ~= C.RollPhase.PRE_ROLL then
         return false
     end
     ensureActiveShape(active)
     if active.meta.bloodSurgeActive ~= true then
+        return false
+    end
+    local hunger = math.floor(tonumber(S.getPlayerVal(color, "hunger")) or 0)
+    local pool = DK.normalizePool(active.pool)
+    if DK.isHungerRouseComboBlocked(hunger, pool, "addBloodSurgeRouse", active.meta) then
         return false
     end
     Global.call("GlobalSpawnDieFromBag", {
@@ -3101,7 +3116,7 @@ end
 function RC.removeOneBloodSurgeRouse(color)
     local active = getActive(color)
     if active == nil then return false end
-    if active.rollType ~= C.RollType.STANDARD then return false end
+    if C.RollTypesBloodSurge[active.rollType] ~= true then return false end
     if active.phase ~= C.RollPhase.SETUP and active.phase ~= C.RollPhase.PRE_ROLL then
         return false
     end
@@ -3172,7 +3187,7 @@ end
 function RC.deactivateBloodSurge(color)
     local active = getActive(color)
     if active == nil then return false end
-    if active.rollType ~= C.RollType.STANDARD then return false end
+    if C.RollTypesBloodSurge[active.rollType] ~= true then return false end
     if active.phase ~= C.RollPhase.SETUP and active.phase ~= C.RollPhase.PRE_ROLL then
         return false
     end
