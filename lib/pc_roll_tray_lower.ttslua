@@ -9,7 +9,6 @@ local PRTL = {}
 local C = require("lib.constants")
 local S = require("core.state")
 local U = require("lib.util")
-local G = require("lib.guids")
 local DK = require("lib.dice_kinds")
 
 local PEER_LOWER_DELTA_Y = -4.77
@@ -56,23 +55,6 @@ local function nudgeObjectY(obj, deltaY)
     return
   end
   obj.setPosition({ x = pos.x, y = pos.y + deltaY, z = pos.z })
-end
-
---- @param color string
---- @param deltaY number
-local function nudgeBagStagedDice(color, deltaY)
-  if type(color) ~= "string" or type(deltaY) ~= "number" or deltaY == 0 then
-    return
-  end
-  local bags = G.GetAllPlayerDiceBagGUIDs(color)
-  for _, guid in pairs(bags) do
-    if type(guid) == "string" then
-      local bag = G.getObject(guid)
-      if bag ~= nil then
-        bag.call("offsetStagedDiceY", { deltaY = deltaY })
-      end
-    end
-  end
 end
 
 --- @param color string
@@ -179,7 +161,8 @@ local function nudgeTrayWorld(color, deltaY)
   local active = getActiveRoll(color)
   local rollId = type(active) == "table" and active.id or nil
   nudgeObjectY(findDiceDrawerObject(color), deltaY)
-  nudgeBagStagedDice(color, deltaY)
+  -- Staged bag dice share the active roll's GM Notes; nudgeTableDiceForRoll covers them.
+  -- Do not also bag.call offsetStagedDiceY — that doubled the peer lower delta (TOR-316).
   if type(rollId) == "string" then
     nudgeTableDiceForRoll(color, rollId, deltaY)
   end

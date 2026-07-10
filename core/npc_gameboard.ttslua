@@ -34,9 +34,6 @@ local Palette = require("lib.npc_control_board_palette")
 
 local TAG_TOKEN = DATA.TAG_NPC_CONTROL_TOKEN
 local TAG_PC_TOKEN = DATA.TAG_PC_CONTROL_TOKEN or "pc_control_token"
-local TAG_BOARD_SNAP = DATA.TAG_CONTROL_BOARD_SNAP or "control_board_snap"
-local CONTROL_BOARD_SNAP_TAGS = DATA.CONTROL_BOARD_SNAP_TAGS
-    or { TAG_TOKEN, TAG_PC_TOKEN }
 local TAG_PC = DATA.TAG_GAMEBOARD_PC_SEAT
 local TAG_NPC_SEAT = DATA.TAG_GAMEBOARD_NPC_SEAT
 local TAG_TABLE = DATA.TAG_GAMEBOARD_TABLE
@@ -769,20 +766,6 @@ local function setNpcControlTokenScale(token, sx, sy, sz)
     end
 end
 
---- @param token Object|nil
-local function enableControlBoardSnapTag(token)
-    if isGameObject(token) and token.addTag ~= nil and type(TAG_BOARD_SNAP) == "string" and TAG_BOARD_SNAP ~= "" then
-        token.addTag(TAG_BOARD_SNAP)
-    end
-end
-
---- @param token Object|nil
-local function disableControlBoardSnapTag(token)
-    if isGameObject(token) and token.removeTag ~= nil and type(TAG_BOARD_SNAP) == "string" and TAG_BOARD_SNAP ~= "" then
-        token.removeTag(TAG_BOARD_SNAP)
-    end
-end
-
 --- Revert enlarged seat-row token scale when leaving seat snaps (TOR-199).
 --- @param token Object
 --- @return boolean true when scale was changed
@@ -838,7 +821,6 @@ local function mirrorSeatRowControlToken(token, board, entry, faceUp)
     local boardYaw = objectYawDeg(board)
     token.setRotation(rotationForNpcControlToken(boardYaw, entry.yawDeg, faceUp))
     Gameboard.setHiddenFromPlayerColors(token)
-    enableControlBoardSnapTag(token)
 end
 
 --- @param token Object
@@ -2843,7 +2825,6 @@ function Gameboard.buildControlBoardSnapPoints(board, config)
             position = { entry.localPos.x, entry.localPos.y, entry.localPos.z },
             rotation = { 0, entry.yawDeg, snapZ },
             rotation_snap = true,
-            tags = CONTROL_BOARD_SNAP_TAGS,
         }
     end
     return points
@@ -2894,7 +2875,7 @@ controlBoardSnapFingerprintFor = function(board, config)
                 .. tostring(group.defaultLightMode or "")
         end
     end
-    parts[#parts + 1] = "snapTag:" .. TAG_BOARD_SNAP
+    parts[#parts + 1] = "snapTag:none"
     parts[#parts + 1] = "yawOff:" .. tostring(tonumber(cfg.snapYawOffsetDeg) or 0)
     local seatCfg = resolveControlBoardSeatRowConfig()
     if seatCfg ~= nil then
@@ -4021,7 +4002,6 @@ local function mirrorControlTokenToPlacementRow(token, board, row)
     ensureDefaultNpcControlTokenScale(token)
     token.setRotation(rotationForNpcControlToken(boardYaw, relYaw, faceUp))
     Gameboard.setHiddenFromPlayerColors(token)
-    enableControlBoardSnapTag(token)
 end
 
 --- Horizontal hit radius for NPC control token dropped on a Storyteller dice bag (TOR-174).
@@ -5044,7 +5024,7 @@ function Gameboard.formatControlBoardSnapGroupsCsv(rows)
     return table.concat(lines, "\n") .. "\n"
 end
 
---- Record palette origin on pick-up; revert seat-row scale; drop snap tag so TTS skips snap preview while dragging.
+--- Record palette origin on pick-up; revert seat-row scale when leaving the board (TOR-199).
 --- @param token Object|nil
 function Gameboard.onNpcControlTokenPickUp(token)
     Gameboard.onControlTokenPickUp(token)
@@ -5055,7 +5035,6 @@ function Gameboard.onControlTokenPickUp(token)
     if not isNpcControlToken(token) and not isPcControlToken(token) then
         return
     end
-    disableControlBoardSnapTag(token)
     ensureDefaultNpcControlTokenScale(token)
     if not isNpcControlToken(token) then
         return

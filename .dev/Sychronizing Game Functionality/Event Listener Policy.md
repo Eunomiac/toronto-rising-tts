@@ -53,7 +53,7 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | `onObjectRandomize` | `global_script` | Host | B+C | d10 tag | roll FSM + lights | High | 4 |
 | `onObjectLeaveContainer` | `global_script` | Host | B | d10 tag | GM Notes | Med | 4 |
 | `onPlayerConnect` | `global_script` | Host | B | — | seat assign | Med | 4 |
-| `onPlayerChangeColor` | `global_script` | Host | B | UI refresh (`UI.setXml` + `UpdateUIDisplays`) on PC/Black seat | state row | Med | 4 |
+| `onPlayerChangeColor` | `global_script` | Host | B | UI refresh on join-client / first-connect seat; Host hotseat swaps manual via `HUD_refreshUi` | state row | Med | 4 |
 | `addHotkey` (`Spotlight NPC (hold)`) | `global_script` | Clicker (per player) | C | ST steam in callee | transient spotlights | Low | — |
 
 ### `Global.call` targets (mutating)

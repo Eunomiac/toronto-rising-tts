@@ -387,10 +387,6 @@ function Palette.applyPaletteParkingScale(token)
         return
     end
     token.setScale({ x = d.x, y = d.y, z = d.z })
-    local snapTag = DATA.TAG_CONTROL_BOARD_SNAP
-    if type(snapTag) == "string" and snapTag ~= "" and token.addTag ~= nil then
-        token.addTag(snapTag)
-    end
 end
 
 --- Palette parking: face-up (Z=0) so parked tokens show lights-on art.
@@ -487,7 +483,6 @@ local function snapPointForGridIndex(board, snapIndex, usedRowCount)
         --- Match `rotationForPaletteParking` (board-local Y offset; Z=0 = face-up / lights-on art).
         rotation = { 0, yawDeg, 0 },
         rotation_snap = true,
-        tags = { DATA.TAG_CONTROL_BOARD_SNAP },
     }
 end
 

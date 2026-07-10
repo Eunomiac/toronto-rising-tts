@@ -21,6 +21,9 @@ Verification:
 
 ## Active
 
+- [Dice Roller] If a player is at Hunger 4, they should not be allowed to combine a Blood Surge (with its Blood Surge Rouse Check) and another Rouse Check into one roll, since if one of them fails, their Hunger will be 5 and they are not allowed to voluntarily Rouse the Blood at Hunger 5.  Relatedly, if a player is at Hunger 5, they should not be allowed to Blood Surge. (They should still be able to Rouse Check as normal, since they may be forced to Rouse the Blood.)
+- [Dice Roller] Rolls initiated by the Storyteller should not be cancellable by players -- the "Cancel" button should be hidden if the roll is Storyteller-initiated. (Note: This relates to the issue regarding automatically confirming when there is only one option for the player -- if removing the "Cancel" button reduces the number of options to one, that policy will apply and the roll should proceed automatically.)
+
 ## External Work (Set STATUS to "External To Do")
 
 ## Needs clarification

@@ -540,7 +540,8 @@ function repositionStagedDice(params)
         return
     end
     local bagKind = getDieType()
-    repositionStagedDiceOnRingArc(bagColor, arcCenter, bagKind, spawnedDice, false)
+    -- Player bags: smooth (TOR-310/318). ST tray layout before Roll stays instant.
+    repositionStagedDiceOnRingArc(bagColor, arcCenter, bagKind, spawnedDice, not isStorytellerBag())
 end
 
 isBloodSurgeRouseDie = function(die)
@@ -694,21 +695,6 @@ function autoSpawn(params)
     local arcCenter = params.arcCenter
     for _ = 1, count do
         spawnDie(bagColor, dieType, { arcCenter = arcCenter })
-    end
-end
-
-function offsetStagedDiceY(params)
-    local deltaY = type(params) == "table" and tonumber(params.deltaY) or 0
-    if deltaY == 0 then
-        return
-    end
-    for _, die in ipairs(spawnedDice) do
-        if die ~= nil then
-            local pos = die.getPosition()
-            if type(pos) == "table" then
-                die.setPosition({ x = pos.x, y = pos.y + deltaY, z = pos.z })
-            end
-        end
     end
 end
 

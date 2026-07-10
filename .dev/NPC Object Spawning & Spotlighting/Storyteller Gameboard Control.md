@@ -37,7 +37,7 @@ Legacy **`byArea` in import JSON** is converted to **`placements` on import** (`
 
 ## Token contract — `npc_control_token` vs `pc_control_token` (TOR-236)
 
-Two distinct control-token tags share the CONTROL_BOARD minimap. The snap catalog (`D.CONTROL_BOARD_SNAP_TAGS`) accepts **both** tags on every snap, but the two token kinds drive **different** state and are handled by **disjoint** code paths. A `pc_control_token` must carry **only** `pc_control_token` (never also `npc_control_token`), so the NPC handlers — all gated on `isNpcControlToken` (tag `npc_control_token`) — skip it automatically.
+Two distinct control-token tags share the CONTROL_BOARD minimap. Minimap snaps are **untagged** (any object can snap); only NPC/PC control tokens are expected near the board. The two token kinds drive **different** state and are handled by **disjoint** code paths. A `pc_control_token` must carry **only** `pc_control_token` (never also `npc_control_token`), so the NPC handlers — all gated on `isNpcControlToken` (tag `npc_control_token`) — skip it automatically.
 
 | Identity | `npc_control_token` | `pc_control_token` |
 | --- | --- | --- |

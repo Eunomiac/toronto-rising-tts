@@ -15,7 +15,7 @@ Per-color loading overlays inside `visibility="<Color>"` parents never show for 
 
 1. **Global startup loading overlay** — `ui/shared/panel_overlay_loading_startup.xml`, included **last** in `ui/Global.xml` (`overlay_loadingScreen_startup`, no `visibility`). Hidden once via `hideStartupLoadingOverlays()` after startup gate.
 2. **Seat-assignment UI refresh** — `refreshGlobalUiAfterSeatAssignment` in `core/global_script.ttslua`:
-   - `onPlayerChangeColor` (after `M.onPlayerChangeColor`)
+   - `onPlayerChangeColor` (after `M.onPlayerChangeColor`) for **join clients** and **first seat change after connect** (`pendingConnectSeatRefreshByPlayer`). **Host hotseat swaps** skip auto-refresh — use debug panel **Refresh UI** (`HUD_refreshUi`).
    - `GlobalRefreshUiAfterSeatAssignment` from `core/main.ttslua` when auto-assign skips `changeColor` (already on target seat)
    - **First visit only (per player, per seat, since connect):** `UI.setXml(UI.getXml())` to re-evaluate `visibility`; cache cleared on `onPlayerConnect`. Seat marked refreshed only after `UI.setXml` completes (`UI.loading` clear + post-refresh). Repeat hotseat swaps to the same seat skip `setXml` but still run targeted `UpdateUIDisplays` (HUD, overlays, loading hide).
    - Wait for `UI.loading` after `setXml` when used.
@@ -24,7 +24,7 @@ Scene-transition blindfolds remain per-color in `panel_overlay_blindfold.xml`.
 
 ## Verification
 
-- Save & Play seated at Black → ST HUD visible; switch hotseat to Red → PC HUD visible without reload.
+- Save & Play seated at Black → ST HUD visible; switch hotseat to Red → click **Refresh UI** in debug panel → PC HUD visible without reload.
 - Connect as White → auto-assign to chronicle color → PC HUD visible without reload.
 - Startup loading screen visible for all clients during load gate, then hidden globally.
 

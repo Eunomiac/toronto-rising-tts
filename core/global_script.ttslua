@@ -341,6 +341,9 @@ local STARTUP_LOADING_OVERLAY_ID = "overlay_loadingScreen_startup"
 --- Per connected player: seat colors that already received `UI.setXml` this session (TOR-285 hotseat lag).
 local seatXmlRefreshDoneByPlayer = {}
 
+--- First `onPlayerChangeColor` after `onPlayerConnect` still auto-refreshes UI (including Host connect).
+local pendingConnectSeatRefreshByPlayer = {}
+
 --- Force-hide global startup loading screen for all clients.
 --- `U.RunSequence`: hide (FadeOut) → wait 1s → clear `active` so a later full-XML seat
 --- refresh (TOR-285) cannot resurrect the overlay with `active` still true.
@@ -1687,7 +1690,6 @@ function GlobalSpawnDieFromBag(colorOrParams, dieKind, opts)
         bloodSurgePool = bloodSurgePool,
         bloodSurgeRouse = bloodSurgeRouse,
     })
-    bag.call("repositionStagedDice")
     if bloodSurgePool and (dieKind == DK.KIND_NORMAL or dieKind == DK.KIND_HUNGER) then
         RC.recordBloodSurgePoolAdd(color, dieKind, 1)
     end
@@ -4455,7 +4457,6 @@ local function spawnMissingPoolDiceForColor(color)
                 local bag = G.getObject(guid)
                 if bag ~= nil then
                     bag.call("autoSpawn", { count = needed })
-                    bag.call("repositionStagedDice")
                     bag.call("ensureRollTagsOnStagedDice")
                     didAutoSpawn = true
                 end
@@ -5440,6 +5441,23 @@ function HUD_debugSeatColor(player, button, id)
     syncDebugSeatColorButtons()
 end
 
+--- Debug panel: manual seat-assignment UI refresh (Host hotseat swaps skip auto-refresh).
+function HUD_refreshUi(player, value, id)
+    local seatColor = hostCurrentSeatColor()
+    if type(seatColor) ~= "string" or seatColor == "" or seatColor == "Grey" then
+        if player ~= nil and type(player.color) == "string" and player.color ~= "Grey" then
+            seatColor = player.color
+        end
+    end
+    if type(seatColor) ~= "string" or seatColor == "" or seatColor == "Grey" then
+        if player ~= nil and type(broadcastToColor) == "function" then
+            broadcastToColor("Refresh UI: no seated color.", player.color, { 1, 0.5, 0 })
+        end
+        return
+    end
+    refreshGlobalUiAfterSeatAssignment(seatColor)
+end
+
 --- Admin panel: arm a quick test roll for a player color (difficulty 2, Standard).
 -- Calls DEBUG.rollTest so it can be re-pressed between runs without cleanup.
 -- id format: "debugRoll_<Color>"  (e.g. "debugRoll_Brown")
@@ -5547,6 +5565,27 @@ function HUD_rollSTAction(player, value, id)
     -- For PRE_ROLL / ROLLING: ST can only set difficulty or cancel; no action button action
 end
 
+--- @param seated Player|nil
+--- @return boolean
+local function isHostPlayer(seated)
+    if not U.isPlayer(seated) then
+        return false
+    end
+    local host = U.getHost()
+    if not U.isPlayer(host) then
+        return false
+    end
+    local seatedSteam = seated.steam_id
+    local hostSteam = host.steam_id
+    if type(seatedSteam) == "string" and seatedSteam ~= ""
+        and type(hostSteam) == "string" and hostSteam ~= ""
+        and seatedSteam == hostSteam
+    then
+        return true
+    end
+    return seated == host
+end
+
 --- TTS: player joined or changed seat color.
 function onPlayerChangeColor(color)
     if type(color) == "string" and color ~= "Grey" then
@@ -5563,7 +5602,15 @@ function onPlayerChangeColor(color)
     if M ~= nil and type(M.onPlayerChangeColor) == "function" then
         M.onPlayerChangeColor(color)
     end
-    refreshGlobalUiAfterSeatAssignment(color)
+    local seated = Player[color]
+    local playerKey = seatAssignmentPlayerKey(seated)
+    local pendingConnectRefresh = playerKey ~= nil and pendingConnectSeatRefreshByPlayer[playerKey] == true
+    if pendingConnectRefresh then
+        pendingConnectSeatRefreshByPlayer[playerKey] = nil
+        refreshGlobalUiAfterSeatAssignment(color)
+    elseif not isHostPlayer(seated) then
+        refreshGlobalUiAfterSeatAssignment(color)
+    end
     syncDebugSeatColorButtons()
 end
 
@@ -5573,6 +5620,10 @@ function onPlayerConnect(player_color)
         local connected = Player[player_color]
         if U.isPlayer(connected) then
             clearSeatXmlRefreshForPlayer(connected)
+            local playerKey = seatAssignmentPlayerKey(connected)
+            if playerKey ~= nil then
+                pendingConnectSeatRefreshByPlayer[playerKey] = true
+            end
         end
     end
     if M ~= nil and type(M.tryAutoAssignSeatFromChronicle) == "function" then
