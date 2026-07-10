@@ -475,5 +475,12 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-09 | Focus | Stack | unchanged after Quick Fixes (TOR-323/322 shipped, not Focus) |
 | 2026-07-09 | CREATE | TOR-324 | Hotseat Red blindfold stuck after mid-transition seat leave; relatedTo TOR-285, TOR-272 |
 | 2026-07-09 | SHIP | TOR-324 | Track beginTransition playerIDs; clear unoccupied + invalidate overlay cache on seat refresh |
+| 2026-07-09 | SHIP | TOR-325 | Blood Surge Hunger bag on Discipline — `C.RollTypesBloodSurge`; global_script bag paths |
+| 2026-07-09 | SHIP | TOR-326 | Peer tray lower PEER_LOWER_DELTA_Y -4.77 (amends TOR-316) |
+| 2026-07-09 | CREATE | TOR-328 | POST_ROLL confirm-only auto-broadcast; relatedTo TOR-306 |
+| 2026-07-09 | CREATE | TOR-329 | TTS API heavy-workload function audit; parent TOR-39 |
+| 2026-07-09 | CREATE | TOR-327 | Workshop Fomorach Shapeshift stat deltas; External Todo |
+| 2026-07-09 | CREATE | TOR-330 | Fomorach animal-form shapeshift toggle; blockedBy TOR-327 |
+| 2026-07-09 | Focus | Stack | TOR-149 → TOR-328 → TOR-141 → TOR-329 → TOR-286 (prior cycle items shipped) |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

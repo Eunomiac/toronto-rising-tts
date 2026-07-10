@@ -994,7 +994,7 @@ function GlobalDiceBagRightClick(params)
     local surgeActive = meta.bloodSurgeActive == true
     local pool = DK.normalizePool(active.pool)
 
-    if active.rollType == C.RollType.STANDARD then
+    if C.RollTypesBloodSurge[active.rollType] then
         if dieKind == DK.KIND_NORMAL then
             if removeMainPoolDie(color) then
                 maybeCancelRollIfPoolEmpty(color)
@@ -1140,7 +1140,7 @@ function GlobalDiceBagClick(params)
         return
     end
 
-    if active.rollType == C.RollType.STANDARD then
+    if C.RollTypesBloodSurge[active.rollType] then
         if dieKind == DK.KIND_HUNGER then
             -- Hunger bag toggles Blood Surge (SETUP and PRE_ROLL). Pool hunger dice come from
             -- Normal-bag auto-hunger redirect only, not from the Hunger bag.

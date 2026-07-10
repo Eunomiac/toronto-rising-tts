@@ -21,17 +21,7 @@ Verification:
 
 ## Active
 
-- [Blocked by "Determine stat deltas..." task below] Implement a shapeshift toggle that Fomorach can use to assume animal form.
-- [Dice Rolls] (possible duplicate) Whenever a player's roll control panel supplies only a single option, it should be skipped (i.e. the option automatically chosen). For example, you can't spend Willpower to reroll a Willpower roll, so after rolling dice, the player's roll control panel merely reports the results with a single input, the "Confirm" button. Because there is no choice for the player to make here, this whole sequence should be skipped: once the player rolls the dice, the results should be immediately broadcast.
-- [Performance] Heavy-Workload Function Audit: There are a discrete number of functions in the TTS API that risk creating lag spikes because of the amount of work they do (e.g. `getObjectsWithTag`). We should look through the API documents, list all of the functions, iteratively filter out those that aren't likely to be major offenders, and then grep our workspace for the functions that are left to see where they are being called (e.g. we just discovered that `isTokenOnControlBoardSurface` was calling `getObjectsWithTag` on every single call, when it could have simply performed a bounds check.)
-
 ## External Work (Set STATUS to "External To Do")
-
-- Determine stat deltas that apply when Fomorach uses his Shapeshift power
-- [Performance] The interaction between PC/NPC tokens, the Stage Control board, and the Storyteller dice bags is quite prone to lag spikes. We need to audit exactly what is happening during the following sequence of steps, locate the sources of the lag spikes, and implement a resolution:
-    1. Black player picks up a PC token off of the Stage Control board (resulting in the instant rescaling down to its default size)
-    2. Black player moves the token away from the Stage Control Board, over to the dice bags, which happens to also move them over the palette. *(There is a consistent lag spike either at the moment the token leaves the x/z bounds of the Stage Control Board, or as it passes over the x/z bounds of the palette.)*
-    3. Black player drops the token onto a dice bag to trigger a roll. *(Another consistent lag spike at the moment the token is released, clearly due to the drop event firing. We need to either reduce the work being done here, or defer some work to later frames -- the token being returned to the Stage Control Board, for example.)*
 
 ## Needs clarification
 
@@ -45,6 +35,12 @@ Verification:
 
 ## Processed
 
+2026-07-09 INBOX Quick Fix — Blood Surge Hunger bag on Discipline rolls → **TOR-325** (Dice & Rolls Bug, High; parent **TOR-31**; shipped)
+2026-07-09 INBOX Quick Fix — peer tray lower delta Y=4.77 → **TOR-326** (Dice & Rolls Bug, Medium; parent **TOR-31**; relatedTo **TOR-316**; shipped)
+2026-07-09 INBOX Active — POST_ROLL confirm-only auto-broadcast → **TOR-328** (Dice & Rolls Improvement, Medium; parent **TOR-31**; relatedTo **TOR-306**)
+2026-07-09 INBOX Active — TTS API heavy-workload function audit → **TOR-329** (Agent Reviews Improvement, Medium; parent **TOR-39**; relatedTo **TOR-50**, **TOR-197**)
+2026-07-09 INBOX Active — Fomorach animal-form shapeshift toggle → **TOR-330** (Character Sheets Feature, Medium; parent **TOR-38**; `blockedBy` **TOR-327**)
+2026-07-09 INBOX External — Fomorach Shapeshift stat deltas → **TOR-327** (Workshop External Todo; parent **TOR-38**)
 2026-07-09 INBOX Quick Fix — Clear Loading Overlay resurrect after seat refresh → **TOR-323** (UI & HUD Bug, High; parent **TOR-37**; relatedTo **TOR-285**; shipped)
 2026-07-09 INBOX Quick Fix — Toggle Lights ambient 0↔2 debug button → **TOR-322** (UI & HUD Improvement, Low; parent **TOR-37**; shipped)
 2026-07-09 INBOX Active — reverse live-roll tray motion (lower peers, keep roller) → **TOR-316** (Dice & Rolls Bug, High; parent **TOR-31**; relatedTo **TOR-262**)

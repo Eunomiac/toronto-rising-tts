@@ -654,6 +654,12 @@ C.PendingResolution = {
   BRUTAL_FAIL_VIOLENCE = "brutalFailViolence",
 }
 
+--- Roll types where the Hunger bag toggles Blood Surge (not manual pool hunger dice).
+C.RollTypesBloodSurge = {
+  [C.RollType.STANDARD]   = true,
+  [C.RollType.DISCIPLINE] = true,
+}
+
 --- Roll types that do not substitute Hunger dice into the pool.
 C.RollTypesWithoutHunger = {
   [C.RollType.SIMPLE_CHECK]   = true,

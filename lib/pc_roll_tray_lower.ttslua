@@ -12,7 +12,7 @@ local U = require("lib.util")
 local G = require("lib.guids")
 local DK = require("lib.dice_kinds")
 
-local PEER_LOWER_DELTA_Y = -5
+local PEER_LOWER_DELTA_Y = -4.77
 
 --- Peer seat colors whose tray/dice are physically lowered during another PC's live roll.
 --- Hydrated from persisted `rollConcurrency.livePcColor` on load/reconnect (offset only).
