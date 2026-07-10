@@ -1445,6 +1445,7 @@ local function refreshPcRollControlPanel(color, active)
     uiSetInteractable(string.format("rollControl_btnConfirm_%s", color), canConfirm)
     refreshPendingResolutionButtons(color, active, true)
     local showCancel = active.takeHalfAwaitingRouse ~= true
+        and active.initiator == "player"
         and (active.phase == C.RollPhase.PRE_ROLL
             or (active.phase == C.RollPhase.SETUP and active.initiator == "player"))
     uiSetActive(string.format("rollControl_btnCancel_%s", color), showCancel)

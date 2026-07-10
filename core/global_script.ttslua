@@ -5240,6 +5240,16 @@ function HUD_rollCancel(player, value, id)
     local color = colorFromRollElementId(id)
     if color == nil then return end
 
+    if string.match(id or "", "^rollControl_btnCancel_") then
+        local pid = S.getPlayerID(color)
+        if pid ~= nil then
+            local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+            if type(active) == "table" and active.initiator == "storyteller" then
+                return
+            end
+        end
+    end
+
     if color == "Black" then
         local pid = S.getPlayerID(color)
         if pid ~= nil then
