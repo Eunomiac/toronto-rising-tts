@@ -236,8 +236,9 @@ local function formatTime12h(hour24, minute)
     return string.format("%d:%02d %s", h12, m, suffix)
 end
 
---- Pending activation clock: edits apply when the selected library scene is activated, not on "Apply clock".
---- When the selected row is the live on-table scene, "Apply clock" still mutates live state immediately.
+--- Pending activation clock: while a library row is pending (`activeKey` ≠ `lastAppliedKey`), clock edits
+--- persist into that row's `sessionScene.clock` as you edit (and flush before selecting another row).
+--- When the selected row is the live on-table scene, clock controls mutate live `sessionScene.clock`.
 local clockDraft = {
     day = nil,
     year = nil,
@@ -718,6 +719,55 @@ local function mergeActivationClockDraftIntoBundle(bundle, sceneKey)
     return SceneLibrary.validateSessionSceneClock(built)
 end
 
+--- Persists `clockDraft` into a pending library row's `sessionScene.clock` (TOR-244).
+--- @param sceneKey string|nil defaults to `sceneLibrary.activeKey`
+--- @return boolean ok
+--- @return string|nil err
+local function persistPendingLibraryClockFromDraft(sceneKey)
+    sceneKey = sceneKey or getActiveLibraryKey()
+    if type(sceneKey) ~= "string" or not isPendingSceneActivation(sceneKey) then
+        return false, "Not in pending library preview."
+    end
+    if clockDraft.sceneKey ~= sceneKey or clockDraft.dirty ~= true then
+        return true, nil
+    end
+    local base = getLibraryRowClock(sceneKey) or {}
+    local clock, err
+    if draftHasClearedDatetimeFields() then
+        clock, err = buildFlagsOnlyClockFromDraft(base)
+    else
+        clock, err = buildClockFromDraft(base)
+    end
+    if clock == nil then
+        return false, err
+    end
+    local okClock, errClock = SceneLibrary.validateSessionSceneClock(clock)
+    if not okClock then
+        return false, errClock
+    end
+    S.setStateVal(clock, "sceneLibrary", "scenes", sceneKey, "sessionScene", "clock")
+    S.validateState()
+    clockDraft.dirty = false
+    StorytellerScenesPanel.syncClockDraftFromClock(clock)
+    return true, nil
+end
+
+--- @param sceneKey string
+--- @return boolean ok
+--- @return string|nil err
+local function flushPendingLibraryClockDraftIfDirty(sceneKey)
+    if type(sceneKey) ~= "string" or sceneKey == "" then
+        return true, nil
+    end
+    if not isPendingSceneActivation(sceneKey) then
+        return true, nil
+    end
+    if clockDraft.sceneKey ~= sceneKey or clockDraft.dirty ~= true then
+        return true, nil
+    end
+    return persistPendingLibraryClockFromDraft(sceneKey)
+end
+
 --- @param player Player
 --- @param value string|nil
 --- @param id string|nil
@@ -736,6 +786,9 @@ function StorytellerScenesPanel.onClockInputChanged(player, value, id)
     if activeKey ~= nil then
         clockDraft.sceneKey = activeKey
         clockDraft.dirty = true
+        if isPendingSceneActivation(activeKey) then
+            persistPendingLibraryClockFromDraft(activeKey)
+        end
     end
 end
 
@@ -942,11 +995,58 @@ function StorytellerScenesPanel.onLibrarySlotClick(player, button, id)
         U.AlertGM("Library row missing for key: " .. key)
         return
     end
+    if tostring(button) == "-2" then
+        local activeKey = getActiveLibraryKey()
+        if type(activeKey) == "string" and activeKey == key and isPendingSceneActivation(activeKey) then
+            StorytellerScenesPanel.clearLibraryPreviewSelection(player)
+        end
+        return
+    end
+    local priorKey = getActiveLibraryKey()
+    if type(priorKey) == "string" and priorKey ~= key then
+        local flushOk, flushErr = flushPendingLibraryClockDraftIfDirty(priorKey)
+        if not flushOk then
+            U.AlertGM("Clock not saved on `" .. priorKey .. "`: " .. tostring(flushErr))
+            return
+        end
+    end
     S.setStateVal(key, "sceneLibrary", "activeKey")
     S.validateState()
     resetClockDraftForLibrarySelection(key)
     StorytellerScenesPanel.refresh()
     U.AlertGM("Active library scene: `" .. key .. "`. Use Apply to switch the live table to this bundle.")
+end
+
+--- Right-click on the pending selected library row: exit preview and restore live / no-scene panel controls.
+--- @param player Player
+function StorytellerScenesPanel.clearLibraryPreviewSelection(player)
+    if player == nil or player.host ~= true then
+        U.AlertGM("Only the host can clear scene preview.")
+        return
+    end
+    local activeKey = getActiveLibraryKey()
+    if type(activeKey) ~= "string" or not isPendingSceneActivation(activeKey) then
+        U.AlertGM("No pending scene preview to clear.")
+        return
+    end
+    local flushOk, flushErr = flushPendingLibraryClockDraftIfDirty(activeKey)
+    if not flushOk then
+        U.AlertGM("Clock not saved on `" .. activeKey .. "`: " .. tostring(flushErr))
+        return
+    end
+    local lastApplied = S.getStateVal("sceneLibrary", "lastAppliedKey")
+    if type(lastApplied) == "string" and lastApplied ~= "" then
+        S.setStateVal(lastApplied, "sceneLibrary", "activeKey")
+        resetClockDraftForLibrarySelection(lastApplied)
+    else
+        S.setStateVal(nil, "sceneLibrary", "activeKey")
+        clockDraft.sceneKey = nil
+        clockDraft.dirty = false
+        StorytellerScenesPanel.syncClockDraftFromState()
+    end
+    S.validateState()
+    StorytellerScenesPanel.refresh()
+    U.AlertGM("Scene preview cleared — panel shows live table controls.")
 end
 
 --- Sets `receivesLiveWrites = false` on the row currently mirroring (see Scene Constructor Overview).
@@ -1452,8 +1552,13 @@ function StorytellerScenesPanel.applyClockFromInputs(player)
         end
         clockDraft.sceneKey = activeKey
         clockDraft.dirty = true
+        local ok, err = persistPendingLibraryClockFromDraft()
+        if not ok then
+            U.AlertGM(err or "Could not save clock on library row.")
+            return
+        end
         StorytellerScenesPanel.refresh()
-        U.AlertGM("Clock saved: `" .. activeKey .. "` will use present-day time on activation.")
+        U.AlertGM("Clock saved on `" .. activeKey .. "` (present-day time on activation).")
         return
     end
 
@@ -1472,8 +1577,13 @@ function StorytellerScenesPanel.applyClockFromInputs(player)
     if type(activeKey) == "string" and isPendingSceneActivation(activeKey) then
         clockDraft.sceneKey = activeKey
         clockDraft.dirty = true
+        local ok, err = persistPendingLibraryClockFromDraft()
+        if not ok then
+            U.AlertGM(err or "Could not save clock on library row.")
+            return
+        end
         StorytellerScenesPanel.refresh()
-        U.AlertGM("Clock saved for scene activation (will apply when you activate `" .. activeKey .. "`).")
+        U.AlertGM("Clock saved on `" .. activeKey .. "` (applies when you Activate that scene).")
         return
     end
 
@@ -1556,6 +1666,11 @@ function StorytellerScenesPanel.setPendingMonth(month)
         clockDraft.sceneKey = activeKey
         clockDraft.month = m
         clockDraft.dirty = true
+        local ok, err = persistPendingLibraryClockFromDraft()
+        if not ok then
+            U.AlertGM(err or "Could not save month on library row.")
+            return
+        end
         StorytellerScenesPanel.refresh()
         return
     end
@@ -1791,9 +1906,14 @@ function StorytellerScenesPanel.toggleRealTimeClock()
         clockDraft.sceneKey = activeKey
         clockDraft.useRealTime = not current
         clockDraft.dirty = true
+        local ok, err = persistPendingLibraryClockFromDraft()
+        if not ok then
+            U.AlertGM(err or "Could not save real-time clock on library row.")
+            return
+        end
         StorytellerScenesPanel.refresh()
-        U.AlertGM(clockDraft.useRealTime and "Real-time narrative clock: ON (applies on scene activation)."
-            or "Real-time narrative clock: OFF (applies on scene activation).")
+        U.AlertGM(clockDraft.useRealTime and "Real-time narrative clock: ON (saved on library row)."
+            or "Real-time narrative clock: OFF (saved on library row).")
         return
     end
 
