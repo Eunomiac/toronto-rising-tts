@@ -1600,6 +1600,14 @@ function L.invalidateReconcileCache()
     lastReconciledModeByRef = {}
 end
 
+--- Clears one light ref from the reconcile fingerprint cache (e.g. wake pooled NPC spotlight after seated park).
+--- @param lightRef string
+function L.invalidateReconcileCacheForRef(lightRef)
+    if U.Type(lightRef) == "string" and lightRef ~= "" then
+        lastReconciledModeByRef[lightRef] = nil
+    end
+end
+
 --- Reconcile one seat's lights against current state-derived priorities.
 --- For player seats, this includes rolling/conditions/hunger rules.
 --- For NPC seats, this applies scene/presence/default-derived modes.

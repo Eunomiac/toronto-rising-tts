@@ -81,7 +81,7 @@ Do **not** split rotation into manual `rotX` / `rotY` / `rotZ` in data. The scri
 
 Whenever the figurine **moves or rotates**, this pipeline is re-run (UI moves, `onObjectDrop`, stage Apply, and defer align hooks) so the paired light stays aligned.
 
-**Stage placement timing:** `moveNpcToStagePlacement` syncs spotlight state via `applyStageNpcSpotlightNow` — reconciles as soon as ImageScalar matches (beam on); `deferNpcSpotlightAlignedToFigurine` refines bounds-based Y when mesh height is ready (seat→stage reload path). Max-bounds stale-mesh gate applies only when registry scalar is below seat scalar (~45); registry scalars 50–70 are not capped at 1.35×.
+**Stage placement timing:** `moveNpcToStagePlacement` syncs spotlight state via `applyStageNpcSpotlightNow` once figurine ImageScalar and spotlight component are ready (beam on after seated park / preload OFF); `deferNpcSpotlightAlignedToFigurine` refines bounds-based Y when mesh height settles. Reconcile fingerprint for the pooled ref is cleared on each force apply so a premature STANDARD stamp cannot block wake after seated park.
 
 ### Spawn source
 

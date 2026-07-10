@@ -879,16 +879,6 @@ local function npcFigurineBoundsHeightReady(fig, npcName)
     return true
 end
 
---- Scalar + bounds ready for bounds-based spotlight Y align.
---- Script-locked stage placements may keep `resting == false` after `setPosition`; do not gate on resting.
---- @param fig Object|nil
---- @param npcName string
---- @return boolean
-local function npcFigurineReadyForLightAlign(fig, npcName)
-    return npcFigurineScalarReady(fig, npcName)
-        and npcFigurineBoundsHeightReady(fig, npcName)
-end
-
 --- Figurine Transform scale + tooltip and paired spotlight scale (preload = small, tooltips off; active areas/seats = full, tooltips on).
 --- ImageScalar (figurine custom-property scale) applied separately when placement changes — see `applyNpcFigurineImageScalarForPlacement`.
 --- @param fig Object|nil
@@ -1043,19 +1033,37 @@ local function applyNpcSpotlightAlignedToFigurine(npcName, fig, transitionTime)
     if not U.isGameObject(fig) then
         return
     end
+    local rec = getInstances()[npcName]
+    if U.Type(rec) == "table" and U.Type(rec.lightGuid) == "string" and rec.lightGuid ~= "" then
+        L.invalidateReconcileCacheForRef(NPCS.lightRegistryName(rec.lightGuid))
+    end
     lightAlignFigOverride[npcName] = fig
     NPCS.applyCurrentLightMode(npcName, transitionTime, { force = true })
     lightAlignFigOverride[npcName] = nil
 end
 
---- Apply current stage light mode to state + visibility; bounds align only when ImageScalar and mesh are ready.
+--- @param fig Object|nil
+--- @param lit Object|nil
+--- @param npcName string
+--- @return boolean
+local function npcPooledSpotlightReadyForApply(fig, lit, npcName)
+    if not npcFigurineScalarReady(fig, npcName) then
+        return false
+    end
+    if not U.isGameObject(lit) then
+        return true
+    end
+    local lg = lit.getGUID and lit.getGUID() or ""
+    local reg = NPCS.lightRegistryName(lg)
+    return npcSpotlightReadyForApply(lg, reg)
+end
+
+--- Apply current stage light mode to state + visibility; reconcile when scalar + spotlight component are ready.
 --- @param npcName string
 --- @param fig Object|nil
 --- @param lit Object|nil
 --- @param transitionTime number|nil
---- @param opts table|nil `{ skipBoundsAlign?: boolean }`
-local function applyStageNpcSpotlightNow(npcName, fig, lit, transitionTime, opts)
-    opts = U.Type(opts) == "table" and opts or {}
+local function applyStageNpcSpotlightNow(npcName, fig, lit, transitionTime)
     if U.Type(npcName) ~= "string" or npcName == "" or not U.isGameObject(fig) then
         return
     end
@@ -1067,7 +1075,7 @@ local function applyStageNpcSpotlightNow(npcName, fig, lit, transitionTime, opts
     if U.Type(rec) == "table" then
         syncStageNpcLightState(npcName, rec.npcLightMode or "STANDARD")
     end
-    if opts.skipBoundsAlign ~= true and npcFigurineScalarReady(fig, npcName) then
+    if npcPooledSpotlightReadyForApply(fig, lit, npcName) then
         applyNpcSpotlightAlignedToFigurine(npcName, fig, transitionTime or 0)
     end
 end
@@ -1096,21 +1104,22 @@ local function deferNpcSpotlightAlignedToFigurine(npcName, fig, lit, transitionT
                 if deferredLightAlignGeneration[deferName] ~= gen then
                     return true
                 end
-                return npcFigurineReadyForLightAlign(deferFig, deferName)
+                return npcPooledSpotlightReadyForApply(deferFig, deferLit, deferName)
             end
         end,
         function()
-            if U.isGameObject(deferLit) then
-                local lg = deferLit.getGUID and deferLit.getGUID() or ""
-                local reg = NPCS.lightRegistryName(lg)
-                return function()
-                    if deferredLightAlignGeneration[deferName] ~= gen then
-                        return true
-                    end
-                    return npcSpotlightReadyForApply(lg, reg)
-                end
+            if deferredLightAlignGeneration[deferName] == gen then
+                applyNpcSpotlightAlignedToFigurine(deferName, deferFig, deferTrans)
             end
-            return NPC_STAGE_LIGHT_POST_BOUNDS_DELAY_SEC
+            return 0
+        end,
+        function()
+            return function()
+                if deferredLightAlignGeneration[deferName] ~= gen then
+                    return true
+                end
+                return npcFigurineBoundsHeightReady(deferFig, deferName)
+            end
         end,
         function()
             return NPC_STAGE_LIGHT_POST_BOUNDS_DELAY_SEC
@@ -3107,10 +3116,8 @@ function NPCS.finalizeStageLerpWorld(npcName, transitionTime)
     if not U.isGameObject(fig) then
         return
     end
-    local imageScalarReloaded = applyNpcPairPhysicalPresentation(fig, lit, STAGE_BOARD_AREA_KEY, npcName)
-    applyStageNpcSpotlightNow(npcName, fig, lit, transitionTime, {
-        skipBoundsAlign = imageScalarReloaded,
-    })
+    applyNpcPairPhysicalPresentation(fig, lit, STAGE_BOARD_AREA_KEY, npcName)
+    applyStageNpcSpotlightNow(npcName, fig, lit, transitionTime)
     deferNpcSpotlightAlignedToFigurine(npcName, fig, lit, transitionTime or 0)
 end
 
@@ -3224,10 +3231,8 @@ function NPCS.moveNpcToStagePlacement(npcName, placement, opts)
     }
     rec.npcLightMode = desiredMode
     setInstanceRecord(npcName, rec)
-    local imageScalarReloaded = applyNpcPairPhysicalPresentation(fig, lit, STAGE_BOARD_AREA_KEY, npcName)
-    applyStageNpcSpotlightNow(npcName, fig, lit, 0, {
-        skipBoundsAlign = imageScalarReloaded,
-    })
+    applyNpcPairPhysicalPresentation(fig, lit, STAGE_BOARD_AREA_KEY, npcName)
+    applyStageNpcSpotlightNow(npcName, fig, lit, 0)
     deferNpcSpotlightAlignedToFigurine(npcName, fig, lit, 0)
     if not skipSeatSync then
         requestSeatLayoutSync()
