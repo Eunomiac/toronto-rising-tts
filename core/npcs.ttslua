@@ -131,8 +131,12 @@ local NPC_LIGHT_SPAWN_OFFSET = { x = 3, y = 8, z = 3 }
 local NPC_LIGHT_POST_READY_DELAY_SEC = 1.5
 --- Minimum figurine `getBounds().size.y` before bounds-based spotlight Y (guards `image_scalar` + `reload()` race).
 local NPC_FIGURINE_LIGHT_ALIGN_MIN_BOUNDS_Y = 10
---- Upper bound on bounds height vs expected ImageScalar — stale seat-scale mesh can pass min-only gate (TOR-315).
+--- Upper bound on bounds height vs expected ImageScalar — only for sub-seat scalars (TOR-315).
 local NPC_FIGURINE_LIGHT_ALIGN_MAX_BOUNDS_SCALAR = 1.35
+--- Apply max-bounds gate only when stage ImageScalar is well below seat scalar (53).
+local NPC_FIGURINE_LIGHT_ALIGN_MAX_SCALAR_BELOW_SEAT = 45
+--- Defer sequence wall-clock cap; fallback apply so spotlights cannot stay OFF forever.
+local NPC_STAGE_LIGHT_DEFER_TIMEOUT_SEC = 20
 --- After figurine bounds pass, brief settle before `buildResolvedLightModeTable` (stage reposition; shorter than spawn).
 local NPC_STAGE_LIGHT_POST_BOUNDS_DELAY_SEC = 0.25
 
@@ -826,25 +830,29 @@ local function applyNpcFigurineImageScalarForPlacement(fig, npcName, areaKey)
     return applyFigurineImageScalarIfNeeded(fig, figurineImageScalarForNpc(npcName))
 end
 
---- Figurine custom mesh loaded and bounds tall enough for spotlight Y from `getBounds` (not preload-scale feet).
---- Script-locked stage placements may keep `resting == false` after `setPosition`; do not gate on resting.
+--- Custom mesh loaded and ImageScalar matches placement (not preload-scale / mid-reload).
 --- @param fig Object|nil
 --- @param npcName string
 --- @return boolean
-local function npcFigurineReadyForLightAlign(fig, npcName)
+local function npcFigurineScalarReady(fig, npcName)
     if not U.isGameObject(fig) then
         return false
     end
     if fig.loading_custom == true then
         return false
     end
-    if not figurineImageScalarMatches(
+    return figurineImageScalarMatches(
         readFigurineImageScalar(fig),
         expectedFigurineImageScalarForNpcPlacement(npcName)
-    ) then
-        return false
-    end
-    if fig.getBounds == nil then
+    )
+end
+
+--- Bounds tall enough for spotlight Y from `getBounds` (not preload-scale feet).
+--- @param fig Object|nil
+--- @param npcName string
+--- @return boolean
+local function npcFigurineBoundsHeightReady(fig, npcName)
+    if not U.isGameObject(fig) or fig.getBounds == nil then
         return false
     end
     local b = fig.getBounds()
@@ -857,8 +865,28 @@ local function npcFigurineReadyForLightAlign(fig, npcName)
         NPC_FIGURINE_LIGHT_ALIGN_MIN_BOUNDS_Y,
         alignScalar * 0.75
     )
-    local maxSy = alignScalar * NPC_FIGURINE_LIGHT_ALIGN_MAX_BOUNDS_SCALAR
-    return sy >= minSy and sy <= maxSy
+    if sy < minSy then
+        return false
+    end
+    -- TOR-315: reject stale seat-height mesh only when target scalar is below seat (53).
+    -- Registry scalars (50–70) legitimately exceed 1.35×alignScalar; global max blocked all lights.
+    if alignScalar < NPC_FIGURINE_LIGHT_ALIGN_MAX_SCALAR_BELOW_SEAT then
+        local maxSy = alignScalar * NPC_FIGURINE_LIGHT_ALIGN_MAX_BOUNDS_SCALAR
+        if sy > maxSy then
+            return false
+        end
+    end
+    return true
+end
+
+--- Scalar + bounds ready for bounds-based spotlight Y align.
+--- Script-locked stage placements may keep `resting == false` after `setPosition`; do not gate on resting.
+--- @param fig Object|nil
+--- @param npcName string
+--- @return boolean
+local function npcFigurineReadyForLightAlign(fig, npcName)
+    return npcFigurineScalarReady(fig, npcName)
+        and npcFigurineBoundsHeightReady(fig, npcName)
 end
 
 --- Figurine Transform scale + tooltip and paired spotlight scale (preload = small, tooltips off; active areas/seats = full, tooltips on).
@@ -1039,7 +1067,7 @@ local function applyStageNpcSpotlightNow(npcName, fig, lit, transitionTime, opts
     if U.Type(rec) == "table" then
         syncStageNpcLightState(npcName, rec.npcLightMode or "STANDARD")
     end
-    if opts.skipBoundsAlign ~= true and npcFigurineReadyForLightAlign(fig, npcName) then
+    if opts.skipBoundsAlign ~= true and npcFigurineScalarReady(fig, npcName) then
         applyNpcSpotlightAlignedToFigurine(npcName, fig, transitionTime or 0)
     end
 end
@@ -1059,7 +1087,7 @@ local function deferNpcSpotlightAlignedToFigurine(npcName, fig, lit, transitionT
     local deferLit = lit
     local deferTrans = transitionTime
     local deferName = npcName
-    U.RunSequence({
+    U.RunSequenceWithOptions({
         function()
             return 0
         end,
@@ -1093,6 +1121,16 @@ local function deferNpcSpotlightAlignedToFigurine(npcName, fig, lit, transitionT
             end
             applyNpcSpotlightAlignedToFigurine(deferName, deferFig, deferTrans)
             return 0
+        end,
+    }, {
+        sequenceTimeoutSeconds = NPC_STAGE_LIGHT_DEFER_TIMEOUT_SEC,
+        onComplete = function(_ok, detail)
+            if deferredLightAlignGeneration[deferName] ~= gen then
+                return
+            end
+            if detail == "sequence_timeout" then
+                applyNpcSpotlightAlignedToFigurine(deferName, deferFig, deferTrans)
+            end
         end,
     })
 end
