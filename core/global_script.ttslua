@@ -5478,8 +5478,10 @@ function HUD_refreshUi(player, value, id)
         end
     end
     if type(seatColor) ~= "string" or seatColor == "" or seatColor == "Grey" then
-        if player ~= nil and type(broadcastToColor) == "function" then
+        if player ~= nil and type(player.color) == "string" then
             broadcastToColor("Refresh UI: no seated color.", player.color, { 1, 0.5, 0 })
+        else
+            print("[HUD_refreshUi] Refresh UI: no seated color.")
         end
         return
     end
