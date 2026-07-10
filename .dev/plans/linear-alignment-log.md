@@ -494,5 +494,7 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-10 | DONE | TOR-244 | Author final verify: scene library preview working perfectly (solo Host) |
 | 2026-07-10 | DONE | TOR-335 | ST roll conditions overlay sync on initiate/type change; ST effective conditions + dash labels |
 | 2026-07-10 | DONE | TOR-333 | NPC empty-seat panel gating + seat-row drop assign/presence sync; E2E canToggleNpcSeat |
+| 2026-07-10 | CREATE + DONE | TOR-336 | Stale Hunger overlay + cross-seat smoke fingerprint skip; force sync after layout |
+| 2026-07-10 | UPDATE | TOR-331–335 | Author regression follow-ups: bag vis, surge ghosts, ST empty pool, seat drop presence-only, WP Take Half + modal coupling |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
