@@ -322,6 +322,7 @@ function HO.invalidateSeatCache(seatColor)
   for _, eid in ipairs(allManagedOverlayIdsForSeat(seatColor)) do
     lastVisible[eid] = nil
   end
+  lastDesiredVisibilityFpBySeat[seatColor] = nil
 end
 
 --- Reconcile condition/hunger overlays and hunger smoke for one seat (no hunger pulse animation).
@@ -333,11 +334,18 @@ function HO.reconcileForSeat(seatColor, opts)
   end
   opts = type(opts) == "table" and opts or {}
   local fp = overlayInputFingerprintForSeat(seatColor)
-  if opts.force ~= true and lastDesiredVisibilityFpBySeat[seatColor] == fp then
-    return
-  end
   local playerID = S.getPlayerID(seatColor)
   local want = computeDesiredVisibility(playerID, seatColor)
+  local hungerLevel = desiredHungerLevelFromWant(want, seatColor)
+
+  -- Fingerprint skip must not leave world smoke / XmlUI hunger tiers stale after layout
+  -- repositions smoke or TTS hide fails (BUG 7 / BUG 8).
+  if opts.force ~= true and lastDesiredVisibilityFpBySeat[seatColor] == fp then
+    applyHungerOverlaysExclusive(seatColor, hungerLevel)
+    syncHungerSmokeForSeat(seatColor, hungerLevel)
+    return
+  end
+
   local ids = allManagedOverlayIdsForSeat(seatColor)
   for _, eid in ipairs(ids) do
     if not string.match(eid, "^overlay_hunger_%d+_") and not isExclusiveBlindfoldElementId(eid) then
@@ -355,7 +363,6 @@ function HO.reconcileForSeat(seatColor, opts)
   end
   local blindfoldVariant = desiredBlindfoldFromWant(want, seatColor, playerID)
   applyBlindfoldOverlaysExclusive(seatColor, blindfoldVariant)
-  local hungerLevel = desiredHungerLevelFromWant(want, seatColor)
   applyHungerOverlaysExclusive(seatColor, hungerLevel)
   syncHungerSmokeForSeat(seatColor, hungerLevel)
   lastDesiredVisibilityFpBySeat[seatColor] = fp

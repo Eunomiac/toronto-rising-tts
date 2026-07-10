@@ -3388,7 +3388,7 @@ function M.resolveSeatObjectsFromTable(tableRef, sourceObjects, options)
     end
     local HO = require("core.hud_overlays")
     if HO ~= nil and type(HO.syncAll) == "function" then
-      HO.syncAll()
+      HO.syncAll({ force = true })
     end
   end
   lastLayoutSyncFingerprint = computeLayoutSyncFingerprint(tableKey)

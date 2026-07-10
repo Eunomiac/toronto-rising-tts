@@ -65,7 +65,7 @@ function P.refreshHudOverlaysForSeat(seatColor)
   if type(HO.invalidateSeatCache) == "function" then
     HO.invalidateSeatCache(seatColor)
   end
-  HO.syncAll()
+  HO.reconcileForSeat(seatColor, { force = true })
 end
 
 --- @param msg string
