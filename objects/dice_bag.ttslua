@@ -412,16 +412,18 @@ function spawnDie(bagColor, dieType, opts)
     -- Per-ring arc slots (Rouse bag may hold manual rouse + Blood Surge rouse at different radii).
     -- Pool claims use setPositionSmooth (TOR-310); ST tray ring layout stays instant before Roll randomize.
     local useSmoothStaging = not isStorytellerBag()
-    repositionStagedDiceOnRingArc(bagColor, arcCenter, bagKind, spawnedDice, useSmoothStaging)
-
     local ringCount = 0
     for _, staged in ipairs(spawnedDice) do
         if staged ~= nil and radiusForStagedDie(staged, bagKind, false) == spawnRadius then
             ringCount = ringCount + 1
         end
     end
-    local ringSlot = ringCount + 1
     local ringTotal = ringCount + 1
+    local ringSlot = ringTotal
+    -- Spread existing dice for the final arc width (N+1), not the old N-wide layout.
+    repositionStagedDiceOnRingArc(bagColor, arcCenter, bagKind, spawnedDice, useSmoothStaging, {
+        [spawnRadius] = ringTotal,
+    })
 
     if not isStorytellerBag() then
         local hoverPos = spawnHoverWorldPoint(bagColor)
@@ -575,25 +577,28 @@ end
 -- @param bagKind string|nil
 -- @param dieList table
 -- @param useSmooth boolean|nil
-repositionStagedDiceOnRingArc = function(bagColor, arcCenter, bagKind, dieList, useSmooth)
+-- @param ringTotalOverrides table|nil  radius → layout total when a new die is about to join that ring
+repositionStagedDiceOnRingArc = function(bagColor, arcCenter, bagKind, dieList, useSmooth, ringTotalOverrides)
     if type(dieList) ~= "table" then
         return
     end
+    ringTotalOverrides = type(ringTotalOverrides) == "table" and ringTotalOverrides or {}
     for _, die in ipairs(dieList) do
         if die ~= nil and die.getLock() == true then
             local targetR = radiusForStagedDie(die, bagKind, false)
             local slot = 0
-            local ringTotal = 0
+            local ringCount = 0
             for _, other in ipairs(dieList) do
                 if other ~= nil and radiusForStagedDie(other, bagKind, false) == targetR then
-                    ringTotal = ringTotal + 1
+                    ringCount = ringCount + 1
                     if other == die then
-                        slot = ringTotal
+                        slot = ringCount
                     end
                 end
             end
-            if slot > 0 and ringTotal > 0 then
-                local pos = worldArcPoint(bagColor, arcCenter, slot, ringTotal, targetR)
+            local layoutTotal = ringTotalOverrides[targetR] or ringCount
+            if slot > 0 and layoutTotal > 0 then
+                local pos = worldArcPoint(bagColor, arcCenter, slot, layoutTotal, targetR)
                 if useSmooth == true then
                     DK.smoothMoveDieToPosition(die, pos)
                 else
