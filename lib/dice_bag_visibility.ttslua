@@ -233,14 +233,20 @@ function DBV.reconcileForPlayer(color, active)
 
     local hungerOn, rouseOn, oblivOn
     if bagsOn then
-        hungerOn = C.RollTypesBloodSurge[rollType] == true and not isAtMaxHunger(color)
+        local hunger = math.floor(tonumber(S.getPlayerVal(color, "hunger")) or 0)
+        local meta = nil
+        if type(active) == "table" then
+            DK.ensureMeta(active)
+            meta = active.meta
+        end
+        hungerOn = C.RollTypesBloodSurge[rollType] == true
+            and not DK.isHungerRouseComboBlocked(hunger, pool, "activateBloodSurge", meta)
         rouseOn = pool.oblivRouse == 0
         oblivOn = pool.rouse == 0
         if isAtMaxHunger(color) then
             oblivOn = false
         end
         if type(active) == "table" then
-            DK.ensureMeta(active)
             if active.meta.bloodSurgeActive == true or pool.bloodSurgeRouse > 0 then
                 rouseOn = false
             end
