@@ -1055,11 +1055,11 @@ Playbook.steps = {
             rollCancel("Brown")
           end,
           function() printHeader("", 2) end,
-          function() printHeader("K2h - Hunger 4: Blood Surge + manual rouse blocked (TOR-331)", 2) end,
-          function() rollTest("Brown", 4, C.RollType.STANDARD, "E2E K2h H4 compound rouse block", { hunger = 4, skipOpen = true }) end,
+          function() printHeader("K2h - Blood Surge rouse + manual rouse coexist", 2) end,
+          function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2h compound rouse", { hunger = 0, skipOpen = true }) end,
           function()
             M.setCamera("ALL", "rollBrown")
-            printHeader("[HUMAN] Activate Blood Surge (Hunger bag), then try Rouse bag — second click should no-op", 3)
+            printHeader("[HUMAN] Left-click Hunger bag 1 time (activate surge), then left-click Rouse bag 1 time", 3)
           end
         },
     -- step 27
@@ -1067,7 +1067,7 @@ Playbook.steps = {
           function()
             rollConfirm("Brown", {
               meta = { bloodSurgeActive = true },
-              pool = { bloodSurgeRouse = 1, normal = 2 },
+              pool = { bloodSurgeRouse = 1, rouse = 1, normal = 2 },
             })
             rollCancel("Brown")
           end,

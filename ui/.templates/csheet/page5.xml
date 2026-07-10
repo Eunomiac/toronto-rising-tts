@@ -1,5 +1,8 @@
 <!-- Parameters:
 @@PROJECT_BLOCKS@@ - Concatenated project_block renders
+@@GEAR_BLOCKS@@ - Concatenated gear_block renders
+@@HAS_BOONS@@ - set true when there exist any boons to render
+@@BOONS_COLUMN_1@@ .. @@BOONS_COLUMN_3@@ - concatenated boon_block renders
 -->
 
 <Include src="csheet_defaults.xml" />
@@ -12,73 +15,25 @@
 
   <VerticalLayout class="vertical_project_container"  >
 
-    <Panel id="project_@@INDEX@@" class="project_container" >
-      <HorizontalLayout class="project_header_container"  >
-          <GridLayout class="project_header_dotline">
-            <Image id="project_@@INDEX@@_scope_dot_1" class="project_scope_dot"  />
-            <Image id="project_@@INDEX@@_scope_dot_2" class="project_scope_dot"  />
-            <Image id="project_@@INDEX@@_scope_dot_3" class="project_scope_dot"  />
-            <Image id="project_@@INDEX@@_scope_dot_4" class="project_scope_dot" active="false" />
-            <Image id="project_@@INDEX@@_scope_dot_5" class="project_scope_dot" active="false" />
-            <Image id="project_@@INDEX@@_scope_dot_6" class="project_scope_dot" active="false" />
-            <Image id="project_@@INDEX@@_scope_dot_7" class="project_scope_dot"  active="false" />
-            <Image id="project_@@INDEX@@_scope_dot_8" class="project_scope_dot"  active="false" />
-            <Image id="project_@@INDEX@@_scope_dot_9" class="project_scope_dot"  active="false" />
-            <Image id="project_@@INDEX@@_scope_dot_10" class="project_scope_dot"  active="false" />
-            <Image id="project_@@INDEX@@_scope_dot_11" class="project_scope_dot" active="false" />
-            <Image id="project_@@INDEX@@_scope_dot_12" class="project_scope_dot"  active="false" />
-            <Image id="project_@@INDEX@@_scope_dot_13" class="project_scope_dot"  active="false" />
-            <Image id="project_@@INDEX@@_scope_dot_14" class="project_scope_dot"  active="false" />
-            <Image id="project_@@INDEX@@_scope_dot_15" class="project_scope_dot"  active="false" />
-          </GridLayout>
-        <Text id="project_@@INDEX@@_goal" class="project_goal_text" text="Learn the location of the Deck of Wandering Stars"  />
-      </HorizontalLayout>
-
-      <Panel class="project_result_container" >
-        <Image id="project_@@INDEX@@_result_image" class="project_result_image" image="project_crit" />
-        <Text id="project_@@INDEX@@_result_margin" class="project_result_margin" text="+4" active="false" />
-      </Panel>
-
-      <Image id="project_@@INDEX@@_project_die" class="project_die" image="project_die_7"  />
-
-      <HorizontalLayout class="project_date_container" >
-        <Text id="project_@@INDEX@@_date_start" class="project_date_text project_date_start_text" text="Sept. 24, 2027"  />
-        <Text class="project_date_text  project_date_start_text" text="—" preferredWidth="0" minWidth = "20"  />
-        <Text id="project_@@INDEX@@_date_end" class="project_date_text" text="Dec. 24, 2027"  />
-        <Text id="project_@@INDEX@@_date_increment" class="project_increment_text" text="(Increments Weekly)"  />
-      </HorizontalLayout>
-
-
-    </Panel>
-
-    <Panel class="vertical_spacer" flexibleHeight="1" />
-
+    @@PROJECT_BLOCKS@@
 
   </VerticalLayout>
 
-  <VerticalLayout class="vertical_section_container" active = "false">
-    <HorizontalLayout class="box_column_container">
-      <VerticalLayout class="box_column">
-        <VerticalLayout class="box_text_container">
-          <HorizontalLayout class="box_header_container">
-            <Text id="page4_otherRelation_0_title_text" class="box_text_title_text" text="Marie Bouschard" />
-            <Text id="page4_otherRelation_0_title_text_right" class="box_text_title_text title_text_right" text="Enemy" />
-          </HorizontalLayout>
-          <HorizontalLayout class="box_content_container">
-            <Image id="page4_otherRelation_0_image" class="box_image" image="marieBouschardPortrait" />
-            <VerticalLayout class="box_body_container">
-              <HorizontalLayout class="box_subheader_container">
-                <Text id="page4_otherRelation_0_subheader_text" class="box_text_subheader_text" text="Journalism Student" />
-                <Text id="page4_otherRelation_0_subheader_text_right" class="box_text_subheader_text box_text_subheader_text_right" text="" />
-              </HorizontalLayout>
-              <Panel class="box_text_panel_body">
-                <Text id="page4_otherRelation_0_body_text" class="box_text" text="Marie is a 22 year-old journalism student at the University of Toronto. You befriended her mother, Camille Bouschard, shortly before Camille divorced her husband. Marie blames you for her parent's divorce (she's right)." />
-              </Panel>
-            </VerticalLayout>
-          </HorizontalLayout>
-        </VerticalLayout>
-      </VerticalLayout>
-      <VerticalLayout class="box_column" />
-    </HorizontalLayout>
+  <VerticalLayout class="vertical_gear_container" >
+
+    @@GEAR_BLOCKS@@
+
   </VerticalLayout>
+
+  ##IF @@HAS_BOONS@@##
+  <Image id="divider_boonsFavors" image="divider_boonsFavors" class="divider_image" />
+
+  <HorizontalLayout class="box_column_container">
+    <VerticalLayout class="box_column">@@BOONS_COLUMN_1@@</VerticalLayout>
+    <VerticalLayout class="box_column">@@BOONS_COLUMN_2@@</VerticalLayout>
+    <VerticalLayout class="box_column">@@BOONS_COLUMN_3@@</VerticalLayout>
+  </HorizontalLayout>
+
+  ##ENDIF##
+
 </Panel>

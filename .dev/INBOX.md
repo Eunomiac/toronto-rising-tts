@@ -23,6 +23,8 @@ Verification:
 
 ## Active
 
+- We need to implement absolute x/z positions for storyteller dice drawers per table, so that they can be restored to those positions after they've been moved in front of an NPC for a seated NPC roll.
+
 ## External Work (Set STATUS to "External To Do")
 
 ## Needs clarification
@@ -35,7 +37,7 @@ Verification:
 
 ---
 
-## Processed
+## Processedf
 
 2026-07-10 INBOX Priority Fixes — Focus re-stacked: #1 **TOR-331**, #2 **TOR-332**, #3 **TOR-333**, #4 **TOR-334**, #5 **TOR-335** (replaces TOR-149 → TOR-328 → TOR-141 → TOR-329 → TOR-286)
 2026-07-10 INBOX Priority Fixes — Hunger 4/5 Blood Surge + Rouse combo rules → **TOR-331** (Dice & Rolls Bug, High; parent **TOR-31**; relatedTo **TOR-203**)
