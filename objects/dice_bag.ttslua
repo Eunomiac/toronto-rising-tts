@@ -724,7 +724,8 @@ function destroyDice()
 end
 
 --- Removes staged dice whose script_state matches (Blood Surge undo).
--- @param params table  { scriptState: string }
+-- Also prunes nil / parked preload ghosts so `#spawnedDice` stays truthful.
+-- @param params table  { scriptState: string, arcCenter?: table }
 -- @return number removed
 function destroyStagedByScriptState(params)
     if type(params) ~= "table" or type(params.scriptState) ~= "string" then
@@ -734,11 +735,39 @@ function destroyStagedByScriptState(params)
     local removed = 0
     for i = #spawnedDice, 1, -1 do
         local die = spawnedDice[i]
-        if die ~= nil and die.script_state == target then
-            releaseDieToPreloadOrDestroy(die)
-            table.remove(spawnedDice, i)
-            removed = removed + 1
+        local drop = false
+        local release = false
+        if die == nil then
+            drop = true
+        elseif die.script_state == DK.SCRIPT_STATE_PRELOAD_POOL then
+            drop = true
+        elseif type(die.hasTag) == "function" and die.hasTag(DK.TAG_D10_PRELOAD) then
+            drop = true
+        elseif die.script_state == target then
+            drop = true
+            release = true
         end
+        if drop then
+            if release then
+                releaseDieToPreloadOrDestroy(die)
+                removed = removed + 1
+            end
+            table.remove(spawnedDice, i)
+        end
+    end
+
+    local arcCenter = params.arcCenter
+    local bagColor = getBagColor()
+    if bagColor == nil and isStorytellerBag() then
+        bagColor = "Black"
+    end
+    local bagKind = getDieType()
+    if isStorytellerBag() then
+        if type(repositionStorytellerTrayAll) == "function" then
+            repositionStorytellerTrayAll(arcCenter)
+        end
+    elseif type(bagColor) == "string" then
+        repositionStagedDiceOnRingArc(bagColor, arcCenter, bagKind, spawnedDice, true)
     end
     return removed
 end
