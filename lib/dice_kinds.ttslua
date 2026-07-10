@@ -91,6 +91,24 @@ DK.PENDING_BRUTAL_FAIL_VIOLENCE = "brutalFailViolence"
 DK.TAG_D10         = "d10"
 DK.TAG_D10_PRELOAD = "d10Preload"
 
+--- Pool claim + arc staging: TTS `setPositionSmooth(..., collide, fast)` (TOR-310/318).
+DK.SPAWN_SMOOTH_COLLIDE = false
+DK.SPAWN_SMOOTH_FAST = true
+
+--- Smooth-move a die to world position for roll staging (preload hover, bag→arc).
+-- @param die Object|nil
+-- @param position table|nil
+function DK.smoothMoveDieToPosition(die, position)
+    if die == nil or type(position) ~= "table" then
+        return
+    end
+    if die.setPositionSmooth ~= nil then
+        die.setPositionSmooth(position, DK.SPAWN_SMOOTH_COLLIDE, DK.SPAWN_SMOOTH_FAST)
+    else
+        die.setPosition(position)
+    end
+end
+
 --- Returns empty pool table with all keys at zero.
 -- @return table
 function DK.emptyPool()

@@ -313,14 +313,7 @@ end
 -- @param die Object|nil
 -- @param arcPos table|nil
 local function smoothStageDieToArc(die, arcPos)
-    if die == nil or type(arcPos) ~= "table" then
-        return
-    end
-    if die.setPositionSmooth ~= nil then
-        die.setPositionSmooth(arcPos)
-    else
-        die.setPosition(arcPos)
-    end
+    DK.smoothMoveDieToPosition(die, arcPos)
 end
 
 --- Claim pre-warmed die from pool, or fall back to bag takeObject (TOR-287).
@@ -602,7 +595,7 @@ repositionStagedDiceOnRingArc = function(bagColor, arcCenter, bagKind, dieList, 
             if slot > 0 and ringTotal > 0 then
                 local pos = worldArcPoint(bagColor, arcCenter, slot, ringTotal, targetR)
                 if useSmooth == true then
-                    die.setPositionSmooth(pos)
+                    DK.smoothMoveDieToPosition(die, pos)
                 else
                     die.setPosition(pos)
                 end
