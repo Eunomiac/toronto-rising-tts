@@ -5116,6 +5116,49 @@ function Gameboard.onPcControlTokenDropped(token, playerColor)
     applyControlTokenDropScaleByBoardPosition(token, board)
 end
 
+--- Live seat-row assign/presence from a dropped NPC control token (TOR-333).
+--- @param token Object
+--- @param board Object
+--- @param fuzziness number
+--- @return boolean changed
+local function applyNpcSeatRowFromDroppedToken(token, board, fuzziness)
+    if not isGameObject(token) or not isGameObject(board) then
+        return false
+    end
+    if not isTokenOnControlBoardSurface(board, token) then
+        return false
+    end
+    local entry = resolveTokenSnapCatalogEntry(board, token, fuzziness, nil)
+    if type(entry) ~= "table"
+        or entry.snapKind ~= SNAP_KIND_SEAT
+        or not isNpcSeatRowColumn({ seatKey = entry.seatKey, kind = "npc" }) then
+        return false
+    end
+    local characterKey = resolveTokenCharacterKey(token)
+    if type(characterKey) ~= "string" or characterKey == "" then
+        return false
+    end
+    local faceUp = tokenRotationIsFaceUp(token)
+    local NPCS = require("core.npcs")
+    local occupied = stateModule().getStateVal("seatLayout", "occupiedNPCSlots")
+    local current = type(occupied) == "table" and occupied[entry.seatKey] or nil
+    if type(current) ~= "string" or current == "" or current ~= characterKey then
+        local ok, err = NPCS.assignNpcToSeat(characterKey, entry.seatKey, { deferLayoutSync = true })
+        if not ok then
+            print("[Gameboard] seat drop assign " .. tostring(characterKey) .. " → " .. entry.seatKey .. ": " .. tostring(err))
+            return false
+        end
+    end
+    NPCS.setNpcSeatNarrativePresence(entry.seatKey, faceUp)
+    local Sync = require("core.sync")
+    Sync.full({ reason = "Gameboard.npcSeatRowDrop" })
+    local SSP = require("core.storyteller_scenes_panel")
+    if type(SSP.refresh) == "function" then
+        SSP.refresh()
+    end
+    return true
+end
+
 --- Global onObjectDrop hook: seat-row scale, palette defaultLightMode, anchor-family spread.
 --- @param token Object
 --- @param playerColor string|nil
@@ -5142,12 +5185,37 @@ function Gameboard.onNpcControlTokenDropped(token, playerColor)
     -- Seat-row scale only; rotation comes from snap points. Skip waitForCondition when palette/anchor
     -- flags are false — b16f26b entered wait with wantSeatRow alone and timed out up to 1s.
     applyControlTokenDropScaleByBoardPosition(token, board)
+
+    local fuzziness = snapMatchFuzzinessForBoard(board)
+    U.waitForCondition(
+        function()
+            applyNpcSeatRowFromDroppedToken(token, board, fuzziness)
+        end,
+        function()
+            if not isGameObject(token) then
+                return true
+            end
+            if not isTokenOnControlBoardSurface(board, token) then
+                return true
+            end
+            local entry = resolveTokenSnapCatalogEntry(board, token, fuzziness, nil)
+            if entry == nil then
+                return false
+            end
+            if entry.snapKind == SNAP_KIND_SEAT
+                and isNpcSeatRowColumn({ seatKey = entry.seatKey, kind = "npc" }) then
+                return true
+            end
+            return true
+        end,
+        1.0
+    )
+
     if not wantPaletteLight and not wantAnchorSpread then
         finishInteractionProfile(t0)
         return
     end
 
-    local fuzziness = snapMatchFuzzinessForBoard(board)
     U.waitForCondition(
         function()
             if wantPaletteLight then

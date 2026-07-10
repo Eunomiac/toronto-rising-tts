@@ -1133,6 +1133,45 @@ local function runTor334TableFamilyTests(failures)
     end
 end
 
+--- TOR-333: Scenes panel disables NPC seat toggles when slot is unassigned (live + library preview).
+local function runTor333SeatOccupancyTests(failures)
+    local SSP = require("core.storyteller_scenes_panel")
+    local fx = fixture()
+    clearNpcSeatsAndPlacements()
+    if SSP.canToggleNpcSeat("NPC2") ~= false then
+        failures[#failures + 1] = "TOR-333: empty NPC2 should not be toggleable (live)"
+    end
+    assignSeatSlot("NPC2", fx.npcB, true)
+    if SSP.canToggleNpcSeat("NPC2") ~= true then
+        failures[#failures + 1] = "TOR-333: occupied NPC2 should be toggleable (live)"
+    end
+
+    local sceneKey, err = resolveSceneKeyFromFixtureSlot()
+    if sceneKey == nil then
+        failures[#failures + 1] = "TOR-333 preview: " .. tostring(err)
+    else
+        local prevActive = S.getStateVal("sceneLibrary", "activeKey")
+        local prevLast = S.getStateVal("sceneLibrary", "lastAppliedKey")
+        S.setStateVal(sceneKey, "sceneLibrary", "activeKey")
+        S.setStateVal(sceneKey .. "_tor333_applied", "sceneLibrary", "lastAppliedKey")
+        S.setStateVal({
+            seatSlots = {
+                NPC1 = { slotEmpty = true },
+                NPC2 = { characterKey = fx.npcB, isPresent = true },
+            },
+        }, "sceneLibrary", "scenes", sceneKey, "sessionScene")
+        if SSP.canToggleNpcSeat("NPC1") ~= false then
+            failures[#failures + 1] = "TOR-333 preview: library empty NPC1 should not toggle"
+        end
+        if SSP.canToggleNpcSeat("NPC2") ~= true then
+            failures[#failures + 1] = "TOR-333 preview: library occupied NPC2 should toggle"
+        end
+        S.setStateVal(prevActive, "sceneLibrary", "activeKey")
+        S.setStateVal(prevLast, "sceneLibrary", "lastAppliedKey")
+    end
+    clearNpcSeatsAndPlacements()
+end
+
 local function runFullSuites(failures)
     local fx = fixture()
 
@@ -1192,6 +1231,7 @@ local function runFullSuites(failures)
     runTor281ClearSeatTests(failures)
     runTor311SeatDisableTests(failures)
     runTor334TableFamilyTests(failures)
+    runTor333SeatOccupancyTests(failures)
 
     clearNpcSeatsAndPlacements()
     retreatAllFixtureNpcs()

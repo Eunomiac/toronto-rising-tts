@@ -110,9 +110,9 @@ _Stack rank for the current cycle (2026-07-10 post `/tr-inbox`: **INBOX Priority
 - [x] **Open player dice tray on roll initiate:** Tray on player bag click + ST `openRoll`; ST SETUP defers bags/tray; `changeRollType`→PRE_ROLL opens tray. Author verified 2026-07-08. _(TOR-305)_
 - [x] **Take Half auto-broadcast:** Pure Take Half confirms/broadcasts without extra Confirm; tray force-closes on cleanup. Author verified 2026-07-08. _(TOR-306)_
 - [x] **Hunger 5 voluntary rouse lockout:** At Hunger 5, Blood Surge + Obliv-Rouse locked; forced standard Rouse allowed; failed rouse → Frenzy Resist D4 queue. _(TOR-203 — 2026-06-15)_
-- [ ] **Hunger 4 — block Blood Surge + manual Rouse combo; Hunger 5 — block Blood Surge:** At Hunger 4, disallow Blood Surge + separate manual Rouse in one roll; at Hunger 5, block Blood Surge (forced Rouse OK). Extends **TOR-203**. _(TOR-331)_
-- [ ] **Hide player Cancel on Storyteller-initiated rolls:** Player roll panel hides Cancel when roll is ST-initiated; single-button auto-proceed when only one action remains (**TOR-328** / **TOR-306**). _(TOR-332)_
-- [ ] **ST roll dash — sync baked-in roll conditions on initiate:** Baked-in roll-type conditions green on Roll Conditions; dash summary complete; This Roll ↔ Roll Conditions linked; resync on type change. _(TOR-335)_
+- [x] **Hunger 4 — block Blood Surge + manual Rouse combo; Hunger 5 — block Blood Surge:** At Hunger 4, disallow Blood Surge + separate manual Rouse in one roll; at Hunger 5, block Blood Surge (forced Rouse OK). Extends **TOR-203**. _(TOR-331)_
+- [x] **Hide player Cancel on Storyteller-initiated rolls:** Player roll panel hides Cancel when roll is ST-initiated; single-button auto-proceed when only one action remains (**TOR-328** / **TOR-306**). _(TOR-332)_
+- [x] **ST roll dash — sync baked-in roll conditions on initiate:** Baked-in roll-type conditions green on Roll Conditions; dash summary complete; This Roll ↔ Roll Conditions linked; resync on type change. _(TOR-335)_
 
 ## Camera
 
@@ -215,8 +215,8 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Scenes panel NPC seat disable clears all seated NPCs:** Toggling one NPC seat off must only disable that slot — not vacate every seated NPC / control board. _(TOR-311)_
 - [x] **Scenes location modals — HUD until Apply, sort, district→site, site/district guard:** Overlay uses `lastAppliedSiteKey`/`lastAppliedDistrictKey`; modal sort ignores leading "The"; district pick opens site modal; generic site no longer clears district; Apply + import require district when site set. _(TOR-314)_
 - [x] **Scene library selection preview + edit-before-apply:** Selecting a library row previews Table/Seats/Location/Time (blue “on” while pending); edits persist to selected library row; clock auto-save + right-click clear preview. Author verified working perfectly 2026-07-10. _(TOR-244)_
-- [ ] **NPC seat buttons disabled when empty + control-board token sync:** Disable Scenes panel seat buttons when slot empty; face-up token auto-activates seat; bidirectional panel ↔ control-board face sync; preview mode disables empty slots. _(TOR-333)_
-- [ ] **Table B variant by highest occupied NPC slot:** Dynamic Table B family picks variant by max occupied NPC slot index, not seat count (amends **TOR-258**). _(TOR-334)_
+- [x] **NPC seat buttons disabled when empty + control-board token sync:** Disable Scenes panel seat buttons when slot empty; face-up token auto-activates seat; bidirectional panel ↔ control-board face sync; preview mode disables empty slots. _(TOR-333)_
+- [x] **Table B variant by highest occupied NPC slot:** Dynamic Table B family picks variant by max occupied NPC slot index, not seat count (amends **TOR-258**). _(TOR-334)_
 - [x] **Map pins — last active location + timestamp:** `sessionScene.lastActiveMapPin` + `core/map_pins.ttslua`; Save & Play Suites K–K4 confirmed by author. _(TOR-245 — 2026-06-27)_
 - [ ] **Resonance after hunting rolls:** Odds function (location + desired resonance + hunt result); presentation + random pick; optional victim deck. _(TOR-206)_
 

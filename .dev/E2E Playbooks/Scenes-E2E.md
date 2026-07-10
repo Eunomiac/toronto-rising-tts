@@ -166,6 +166,14 @@ DEBUG.inspectSoundscapeAudio()
 
 **Gameboard regression:** For a library row with **2+** `npcWorld.placements` keys, use that row as `GB_E2E_SCENE_ROW` in [Gameboard-E2E](Gameboard-E2E.md) (default `scenes_lib_slot_03`) and run `gbE2eRunSmoke()` → scene Apply gate → `gbE2eContinue()`.
 
+### TOR-333 — NPC seat toggles + control-board sync
+
+**Harness:** `runTor333SeatOccupancyTests` in `lib/e2e_gameboard.ttslua` (`StorytellerScenesPanel.canToggleNpcSeat` for empty vs occupied live + library preview `slotEmpty`).
+
+**Human:** Empty NPC slot → `scenes_seat_NPC*` grey, `interactable=false`, click no-op (live + library preview). Face-up NPC control token on seat snap assigns/activates seat without Apply; face-down on occupied snap greys panel. **TOR-311 regression:** disabling NPC1 must not vacate NPC2.
+
+---
+
 ---
 
 ### Suite B — Switch to a second scene

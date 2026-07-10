@@ -139,6 +139,62 @@ local function resolveSeatNarrativePresence(seatKey)
     return resolveSeatPresenceFromBundle(S.getStateVal("sessionScene"), seatKey)
 end
 
+--- Live NPC seat assignment from `seatLayout.occupiedNPCSlots`.
+--- @param seatKey string
+--- @return boolean
+local function isNpcSeatOccupiedLive(seatKey)
+    if not U.isIn(seatKey, C.NPCSeats or {}) then
+        return true
+    end
+    local occupied = S.getStateVal("seatLayout", "occupiedNPCSlots")
+    if type(occupied) ~= "table" then
+        return false
+    end
+    local ck = occupied[seatKey]
+    return type(ck) == "string" and ck ~= ""
+end
+
+--- NPC seat occupied for Scenes panel (live occupancy or pending library `seatSlots`).
+--- @param displayBundle table|nil
+--- @param seatKey string
+--- @param pending boolean
+--- @return boolean
+local function isNpcSeatOccupiedForDisplay(displayBundle, seatKey, pending)
+    if not U.isIn(seatKey, C.NPCSeats or {}) then
+        return true
+    end
+    if pending == true then
+        local slots = type(displayBundle) == "table" and displayBundle.seatSlots or nil
+        if type(slots) ~= "table" then
+            return false
+        end
+        local row = slots[seatKey]
+        if type(row) ~= "table" then
+            return false
+        end
+        if row.slotEmpty == true then
+            return false
+        end
+        if type(row.characterKey) == "string" and row.characterKey ~= "" then
+            return true
+        end
+        return false
+    end
+    return isNpcSeatOccupiedLive(seatKey)
+end
+
+--- Whether the Scenes panel seat toggle is enabled for this seat key.
+--- @param displayBundle table|nil
+--- @param seatKey string
+--- @param pending boolean
+--- @return boolean
+local function canToggleNpcSeatForDisplay(displayBundle, seatKey, pending)
+    if not U.isIn(seatKey, C.NPCSeats or {}) then
+        return true
+    end
+    return isNpcSeatOccupiedForDisplay(displayBundle, seatKey, pending)
+end
+
 --- @param seatKey string
 --- @param present boolean
 local function setSeatNarrativePresence(seatKey, present)
@@ -811,17 +867,22 @@ function StorytellerScenesPanel.refresh()
     end
 
     local function syncSeatButton(seatKey, bid)
-        local present = resolveSeatPresenceFromBundle(displayBundle, seatKey)
-        local absent = not present
+        local isNpcSeat = U.isIn(seatKey, C.NPCSeats or {})
+        local occupied = not isNpcSeat or isNpcSeatOccupiedForDisplay(displayBundle, seatKey, pending)
+        local present = occupied and resolveSeatPresenceFromBundle(displayBundle, seatKey) or false
+        local canToggle = canToggleNpcSeatForDisplay(displayBundle, seatKey, pending)
         local label = seatKey
-        if absent then
+        if isNpcSeat and not occupied then
+            label = seatKey .. " (empty)"
+        elseif not present then
             label = seatKey .. " (absent)"
         end
         U.setAttributes(bid, {
-            colors = absent and GREY or onColors,
+            colors = (not occupied or not present) and GREY or onColors,
             text = label,
             fontStyle = "Bold",
             textColor = "#FFFFFF",
+            interactable = canToggle and "true" or "false",
         })
     end
 
@@ -1361,9 +1422,13 @@ function StorytellerScenesPanel.onHudClick(player, button, id)
 
     local seatKey = string.match(id, "^scenes_seat_(.+)$")
     if seatKey ~= nil then
+        local displayBundle, pending = resolvePanelDisplayBundle()
+        if not canToggleNpcSeatForDisplay(displayBundle, seatKey, pending) then
+            return
+        end
         local activeKey = getActiveLibraryKey()
         if type(activeKey) == "string" and isPendingSceneActivation(activeKey) then
-            local displayBundle = getLibraryRowSessionScene(activeKey)
+            displayBundle = getLibraryRowSessionScene(activeKey)
             local nextPresent = not resolveSeatPresenceFromBundle(displayBundle, seatKey)
             setPendingLibrarySeatPresence(seatKey, nextPresent)
             StorytellerScenesPanel.refresh()
@@ -1941,6 +2006,14 @@ function StorytellerScenesPanel.toggleRealTimeClock()
         Sync.ui({ gameStateOverlay = true })
     end
     U.AlertGM(ck.useRealTime and "Real-time narrative clock: ON." or "Real-time narrative clock: OFF.")
+end
+
+--- E2E / harness: whether Scenes panel would enable an NPC seat toggle.
+--- @param seatKey string
+--- @return boolean
+function StorytellerScenesPanel.canToggleNpcSeat(seatKey)
+    local displayBundle, pending = resolvePanelDisplayBundle()
+    return canToggleNpcSeatForDisplay(displayBundle, seatKey, pending)
 end
 
 return StorytellerScenesPanel

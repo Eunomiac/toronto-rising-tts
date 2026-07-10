@@ -492,5 +492,7 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-10 | Focus | Stack | **Replaced prior stack.** #1 TOR-331, #2 TOR-332, #3 TOR-333, #4 TOR-334, #5 TOR-335 (INBOX Priority Fixes). Demoted to Also in cycle: TOR-149, TOR-328, TOR-141, TOR-329, TOR-286 |
 | 2026-07-10 | UPDATE | Linear | TOR-331–335 Backlog → Todo (scheduled from Focus) |
 | 2026-07-10 | DONE | TOR-244 | Author final verify: scene library preview working perfectly (solo Host) |
+| 2026-07-10 | DONE | TOR-335 | ST roll conditions overlay sync on initiate/type change; ST effective conditions + dash labels |
+| 2026-07-10 | DONE | TOR-333 | NPC empty-seat panel gating + seat-row drop assign/presence sync; E2E canToggleNpcSeat |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
