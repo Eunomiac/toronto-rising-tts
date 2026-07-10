@@ -170,7 +170,7 @@ DEBUG.inspectSoundscapeAudio()
 
 **Harness:** `runTor333SeatOccupancyTests` in `lib/e2e_gameboard.ttslua` (`StorytellerScenesPanel.canToggleNpcSeat` for empty vs occupied live + library preview `slotEmpty`).
 
-**Human:** Empty NPC slot → `scenes_seat_NPC*` grey, `interactable=false`, click no-op (live + library preview). Face-up NPC control token on seat snap assigns/activates seat without Apply; face-down on occupied snap greys panel. **TOR-311 regression:** disabling NPC1 must not vacate NPC2.
+**Human:** Empty NPC slot → `scenes_seat_NPC*` grey, `interactable=false`, click no-op (live + library preview). Face flip on an **already occupied** seat snap syncs panel presence only; new assignment + figurine spawn still require **Apply**. **TOR-311 regression:** disabling NPC1 must not vacate NPC2.
 
 ---
 

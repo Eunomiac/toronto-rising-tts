@@ -5116,7 +5116,8 @@ function Gameboard.onPcControlTokenDropped(token, playerColor)
     applyControlTokenDropScaleByBoardPosition(token, board)
 end
 
---- Live seat-row assign/presence from a dropped NPC control token (TOR-333).
+--- Live seat-row presence from a dropped NPC control token (TOR-333).
+--- Assignment / figurine spawn still require Apply (`applySeatRowFromControlBoard`).
 --- @param token Object
 --- @param board Object
 --- @param fuzziness number
@@ -5138,20 +5139,19 @@ local function applyNpcSeatRowFromDroppedToken(token, board, fuzziness)
     if type(characterKey) ~= "string" or characterKey == "" then
         return false
     end
-    local faceUp = tokenRotationIsFaceUp(token)
-    local NPCS = require("core.npcs")
     local occupied = stateModule().getStateVal("seatLayout", "occupiedNPCSlots")
     local current = type(occupied) == "table" and occupied[entry.seatKey] or nil
     if type(current) ~= "string" or current == "" or current ~= characterKey then
-        local ok, err = NPCS.assignNpcToSeat(characterKey, entry.seatKey, { deferLayoutSync = true })
-        if not ok then
-            print("[Gameboard] seat drop assign " .. tostring(characterKey) .. " → " .. entry.seatKey .. ": " .. tostring(err))
-            return false
-        end
+        return false
+    end
+    local faceUp = tokenRotationIsFaceUp(token)
+    local NPCS = require("core.npcs")
+    if NPCS.resolveSeatNarrativePresence(entry.seatKey) == faceUp then
+        return false
     end
     NPCS.setNpcSeatNarrativePresence(entry.seatKey, faceUp)
     local Sync = require("core.sync")
-    Sync.full({ reason = "Gameboard.npcSeatRowDrop" })
+    Sync.npcs({ onlySteps = { 4 }, reason = "Gameboard.npcSeatRowDropPresence" })
     local SSP = require("core.storyteller_scenes_panel")
     if type(SSP.refresh) == "function" then
         SSP.refresh()
