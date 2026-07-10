@@ -162,7 +162,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Apply/Clear off-seat light flicker:** RSL layout sync no longer eager-writes NPC homeland workshop lights; Step Four `L.reconcileForPlayer` for all assigned NPC seats (state-derived OFF for deactivated/stage-bound). _(TOR-265)_
 - [x] **Stage Clear seat activation rules + live scene-library persistence:** On Clear from stage, set returning seat by staged light mode (Case 1 disabled→activate if stage light `Standard`; Case 2 enabled stays enabled), not the library default; ST seat activate/deactivate writes back to the active scene library row so progress restores on re-apply. Author verified via step-by-step playbook 2026-07-05. _(TOR-281)_
 - [x] **Control board Apply dice-guard retry:** Aborted Apply (dice on table) must not fingerprint-skip retry after dice cleared. Preflight grow+dice before seat/placement commits. _(TOR-304)_
-- [x] **NPC stage light before imageScalar rescale:** Seat→stage spotlight bounds calculated before figurine ImageScalar restore — defer light placement until after rescale. _(TOR-315)_
+- [x] **NPC stage light before imageScalar rescale:** Seat→stage spotlight bounds calculated before figurine ImageScalar restore — defer light placement until after rescale. Regression fix 2026-07-10: max-bounds gate no longer blocks registry scalars 50–70. _(TOR-315)_
 - [x] **Figurine tooltips sync with player visibility:** Pooled figurines disable tooltips when `setInvisibleTo` hides from PCs. _(TOR-257)_
 
 ## Soundscape
