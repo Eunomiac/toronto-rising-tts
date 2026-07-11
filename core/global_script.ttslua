@@ -1845,7 +1845,11 @@ function GlobalDestroyBloodSurgeDice(params)
         if type(spec.guid) == "string" then
             local bag = G.getObject(spec.guid)
             if bag ~= nil then
-                bag.call("destroyStagedByScriptState", { scriptState = spec.scriptState })
+                local destroyParams = { scriptState = spec.scriptState }
+                if color == "Black" then
+                    destroyParams.arcCenter = storytellerArcCenterForActive()
+                end
+                bag.call("destroyStagedByScriptState", destroyParams)
             end
         end
     end
