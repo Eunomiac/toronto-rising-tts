@@ -251,7 +251,6 @@ C.RollTypesNoTakeHalf = {
     [C.RollType.ROUSE_OBLIVION] = true,
     [C.RollType.REMORSE]        = true,
     [C.RollType.FRENZY]         = true,
-    [C.RollType.HUMANITY_ROLL]  = true,
 }
 
 --- Roll types for which Willpower reroll is not available.

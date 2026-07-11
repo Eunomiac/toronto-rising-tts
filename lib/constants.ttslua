@@ -682,7 +682,6 @@ C.RollTypesNoTakeHalf = {
   [C.RollType.ROUSE_OBLIVION] = true,
   [C.RollType.REMORSE]        = true,
   [C.RollType.FRENZY]         = true,
-  [C.RollType.HUMANITY_ROLL]  = true,
   [C.RollType.WEREWOLF]       = true,
   [C.RollType.LAUNCH]         = true,
   [C.RollType.GOAL]           = true

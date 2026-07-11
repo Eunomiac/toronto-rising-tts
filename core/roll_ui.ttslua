@@ -321,12 +321,12 @@ local function rollOptsRefreshStructuralDraftFromActive(active, color)
             rollOptsDraft.structural[structuralKey] = not rollOptsDraft.conditions[negatingId]
         end
     end
+    -- Interactable before setClass: TTS can reset button class/color when interactable changes.
+    uiSetInteractable("rollOpts_roll_takeHalf",   not RO.isTakeHalfLocked(rt))
+    uiSetInteractable("rollOpts_roll_hungerDice", not RO.isHungerDiceLocked(rt))
     for structuralKey, uiId in pairs(STRUCTURAL_UI_IDS) do
         rollOptsSetToggleClass(uiId, rollOptsDraft.structural[structuralKey] == true)
     end
-
-    uiSetInteractable("rollOpts_roll_takeHalf",   not RO.isTakeHalfLocked(rt))
-    uiSetInteractable("rollOpts_roll_hungerDice", not RO.isHungerDiceLocked(rt))
 end
 
 --- Sync structural toggle when a negating condition toggle changes.
