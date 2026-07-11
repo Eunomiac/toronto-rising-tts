@@ -1,14 +1,3 @@
-<!-- Agent guidance: .dev/HUDs & Overlays/Player HUD Overview.md; lib/json/PCS.json (PC fields). -->
-<!-- XML Exact height is 200; 8.5x11 aspect ratio means the width is 154.5 -->
-
-<Include src="csheet_defaults.xml" />
-
-<Panel id="paper_root" class="page_root">  <!-- width="1545" height="2000" -->
-  <Button id="pageBack" class="page_navigation page_back" />
-  <Button id="pageInner" class="page_navigation page_inner_right" />
-
-
-  <!-- Storyteller Advantage Editor modal (Stats panel). -->
 
   <Defaults>
     <Panel class="projectEditor_modal" visibility="Black|Host" active="false" rectAlignment="MiddleCenter" offsetXY="0 0" preferredWidth="760" width="760" height="500" preferredHeight="500" color="rgba(0.05,0.05,0.08,0.96)" padding="10 10 10 10" />
@@ -48,6 +37,9 @@
     <Button class="projectEditor_cancel_button" preferredWidth="100" preferredHeight="32" fontSize="12" colors="#333333|#444444|#555555|rgba(0.2,0.2,0.2,0.5)" textColor="#FFFFFF" onClick="HUD_projectEditorCancel" text="Cancel" />
 
     <Button class="projectEditor_delete_button" preferredWidth="100" preferredHeight="32" fontSize="12" colors="#662222|#883333|#991111|rgba(0.5,0.1,0.1,0.4)" textColor="#FFFFFF" onClick="HUD_projectEditorDelete" text="Delete" />
+
+    <Button class="projectEditor_begin_button" preferredWidth="120" preferredHeight="32" fontSize="12" colors="#224466|#336699|#4488BB|rgba(0.1,0.2,0.4,0.5)" textColor="#FFFFFF" onClick="HUD_projectEditorBegin" text="Lock & Begin" />
+
     <Button class="projectEditor_complete_button" preferredWidth="100" preferredHeight="32" fontSize="12" colors="#226666|#33AAAA|#119999|rgba(0.1,0.5,0.5,0.4)" textColor="#FFFFFF" onClick="HUD_projectEditorComplete" text="Complete" />
   </Defaults>
 
@@ -66,7 +58,6 @@
             <Option>aishe</Option>
             <Option>fomorach</Option>
             <Option>blackCaesar</Option>
-            <Option>Coterie</Option>
         </Dropdown>
 
       </HorizontalLayout>
@@ -94,7 +85,7 @@
             <Panel class="spacer" />
           </VerticalLayout>
           <InputField id="projectEditor_difficulty" class="projectEditor_integer_field" text="" />
-          <Button id="projectEditor_launchRoll_trigger" class="projectEditor_button_small" text="R"  />
+          <Button id="projectEditor_launchRoll_trigger" class="projectEditor_button_small" text="R" />
         </HorizontalLayout>
       </HorizontalLayout>
 
@@ -132,8 +123,8 @@
       <HorizontalLayout class="projectEditor_fullFields_row" childAlignment="MiddleLeft">
         <Text class="projectEditor_text_label" text="Project Die:"  preferredWidth="200" flexibleWidth="0"/>
         <Text id="projectEditor_projectDie" class="projectEditor_text_label" text="4" alignment="MiddleLeft" fontSize="32" color="#FFFFFF" />
-        <Text class="projectEditor_text_label" text="Advance Project Die:"  preferredWidth="300" flexibleWidth="0"/>
-        <InputField id="projectEditor_advanceProjectDie" class="projectEditor_integer_field" text="0" />
+        <Text class="projectEditor_text_label" text="Project Die Mod:"  preferredWidth="300" flexibleWidth="0"/>
+        <InputField id="projectEditor_projectDieMod" class="projectEditor_integer_field" text="0" />
         <Text class="projectEditor_text_label" text="End Date:"  preferredWidth="100" flexibleWidth="0"/>
         <Text id="projectEditor_endDate" class="projectEditor_text_label" preferredWidth="600" alignment="MiddleLeft" text="Sept. 14, 2027" fontSize="32" color="#FFFFFF" />
       </HorizontalLayout>
@@ -149,11 +140,11 @@
         </HorizontalLayout>
 
         <InputField id="projectEditor_stake" class="projectEditor_multiline_field" text="" />
-
         <Text id="projectEditor_stakeValidation" class="projectEditor_text_wide" text="Stake Validation Message" alignment="MiddleLeft" fontSize="12" color="#FF0000" flexibleWidth="0" preferredWidth="1000" minHeight="25" fontStyle="Italic"  />
       </VerticalLayout>
 
       <HorizontalLayout class="projectEditor_button_bar">
+        <Button id="projectEditor_begin" class="projectEditor_begin_button" />
         <Button id="projectEditor_confirm" class="projectEditor_confirm_button" />
         <Button id="projectEditor_cancel" class="projectEditor_cancel_button" />
         <Button id="projectEditor_delete" class="projectEditor_delete_button" />
@@ -162,7 +153,3 @@
 
     </VerticalLayout>
   </Panel>
-
-
-
-</Panel>

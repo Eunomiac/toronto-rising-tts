@@ -17,6 +17,29 @@ Verification:
 - processed items move out of active capture sections
 - `.dev/RUNNING TASKLIST.md` and Linear stay aligned
 
+## Temporary Debug Session Section
+
+### Resolved Issues
+These issues are confirmed resolved:
+- ✅ [Bug 3] Removing all dice from a roll no longer cancels it if it was Storyteller initiated.
+- ✅ [Bug 4] Seat drops no longer spawn figurines before "Apply"
+- ✅ [Bug 5] Take Half is now correctly presented as an option for Willpower Rolls, but see the Willpower Roll entry in [Bug 6], below.
+- ✅ [Bug 8] Seats no longer activate all hunger smoke simultaneously.
+
+### Unresolved Issues
+- [Bug 1] (Or perhaps _related_ to Bug 1?) Upon activating Blood Surge, players' Rouse Bags disappear in all cases, not only when their Hunger is too high. Adding a Blood Surge Rouse Check to a roll should only disable the Rouse Bag if the player's Hunger is >=4.
+- [Bug 2] Still having issues with Blood Surge Rouse Dice and standard Rouse Dice not being properly tracked and resulting in desyncs/orphans if a lot of them are added/removed in succession
+- [Bug 6] Synchronization of the Roll Options modal and the conditions summary strip is still broken. Here is what is being displayed for a variety of roll types that I tested:
+  * **Standard Roll:** [1] "This Roll - Take Half" greyed out (it should be green, as Taking Half is allowed for Standard Rolls _unless_ the player triggers Blood Surge). The "No Take Half" condition and dash row summary were desynced from this incorrect This Roll setting, displaying the correct status of Take Half.
+  * **Discipline Roll:** ✅ Completely Correct. ("No Take Half" / "This Roll - Take Half" toggled & synced).
+  * **Willpower Roll:** [1] (Same 'Take Half' error as with Standard Rolls). [2] "No Hunger Dice" was correctly green and displayed in the roll dash summary, but "This Roll - Hunger Dice" was also green (desynced).
+  * **Frenzy Roll:** [2] (Same 'Hunger Dice' desync as a Willpower Roll).
+  * **Humanity Roll:** [2] (Same 'Hunger Dice' desync as a Willpower Roll). [3] "No Take Half" incorrectly toggled on; Taking Half is allowed for Humanity Rolls.
+  * **Remorse Roll:** [2] (Same 'Hunger Dice' desync as a Willpower Roll).
+  * **Launch Roll:** ✅ Completely Correct. ("No Take Half" and "No WP Reroll" correctly toggled on).
+  * **Goal Roll:** ✅ Completely Correct. ("No Take Half", "No Criticals", and "No WP Reroll" correctly toggled on).
+- [Bug 7] Hunger Overlays are still being inconsistently applied/refreshed when I am not currently seated at and currently viewing the player's overlay that I am manipulating. At first, I thought this might be an issue with manipulating overlays while no connected client was occupying that color, but they _do_ update when I _increase_ Hunger, for some reason; reducing Hunger does not _disable_ the overlays -- I need to be seated at the color for that to sync.
+
 ## Quick Fixes
 
 ## Priority Fixes - Move to Top of Focus Stack

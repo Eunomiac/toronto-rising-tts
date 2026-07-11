@@ -3082,6 +3082,34 @@ function RC.activateBloodSurge(color)
     end
 
     active.meta.bloodSurgeActive = true
+    -- #region agent log
+    do
+        local payload = {
+            sessionId = "2dc0cf",
+            runId = "bug1-pre",
+            hypothesisId = "H1-H4",
+            location = "roll_controller.ttslua:activateBloodSurge",
+            message = "blood surge activated; notifyStateChanged will reconcile bags",
+            data = {
+                color = color,
+                hunger = hunger,
+                rollType = tostring(active.rollType),
+                poolRouse = pool.rouse,
+                poolBloodSurgeRouse = pool.bloodSurgeRouse,
+                comboBlockRouse = DK.isHungerRouseComboBlocked(hunger, pool, DK.KIND_ROUSE, active.meta),
+            },
+            timestamp = (os.time() or 0) * 1000,
+        }
+        print("[DBG-2dc0cf] " .. JSON.encode(payload))
+        if type(io) == "table" and type(io.open) == "function" then
+            local f = io.open("d:/Projects/.CODING/toronto-rising-tts/debug-2dc0cf.log", "a")
+            if f ~= nil then
+                f:write(JSON.encode(payload) .. "\n")
+                f:close()
+            end
+        end
+    end
+    -- #endregion
     setActive(color, active)
     notifyStateChanged(color)
 

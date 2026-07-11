@@ -12,6 +12,29 @@ local G = require("lib.guids")
 local C = require("lib.constants")
 local S = require("core.state")
 
+-- #region agent log
+local function dbgBagVis(hypothesisId, location, message, data)
+    local payload = {
+        sessionId = "2dc0cf",
+        runId = "bug1-pre",
+        hypothesisId = hypothesisId,
+        location = location,
+        message = message,
+        data = data or {},
+        timestamp = (os.time() or 0) * 1000,
+    }
+    local line = JSON.encode(payload)
+    print("[DBG-2dc0cf] " .. line)
+    if type(io) == "table" and type(io.open) == "function" then
+        local f = io.open("d:/Projects/.CODING/toronto-rising-tts/debug-2dc0cf.log", "a")
+        if f ~= nil then
+            f:write(line .. "\n")
+            f:close()
+        end
+    end
+end
+-- #endregion
+
 DBV.DISABLED_Y = -200
 --- World Y above this threshold means the bag is already active (visible at rest).
 DBV.ACTIVE_Y_THRESHOLD = -100
@@ -246,11 +269,32 @@ function DBV.reconcileForPlayer(color, active)
         if isAtMaxHunger(color) then
             oblivOn = false
         end
+        local surgeForcedRouseOff = false
         if type(active) == "table" then
             if active.meta.bloodSurgeActive == true or pool.bloodSurgeRouse > 0 then
+                surgeForcedRouseOff = true
                 rouseOn = false
             end
         end
+        -- #region agent log
+        local comboBlockRouse = DK.isHungerRouseComboBlocked(hunger, pool, DK.KIND_ROUSE, meta)
+        dbgBagVis("H1-H5", "dice_bag_visibility.ttslua:reconcileForPlayer", "bag visibility reconcile", {
+            color = color,
+            hunger = hunger,
+            rollType = tostring(rollType),
+            phase = tostring(phase),
+            bloodSurgeActive = type(meta) == "table" and meta.bloodSurgeActive == true,
+            poolRouse = pool.rouse,
+            poolBloodSurgeRouse = pool.bloodSurgeRouse,
+            poolOblivRouse = pool.oblivRouse,
+            surgeForcedRouseOff = surgeForcedRouseOff,
+            comboBlockRouse = comboBlockRouse,
+            hungerOn = hungerOn,
+            rouseOn = rouseOn,
+            oblivOn = oblivOn,
+            wouldRouseOnIfPolicyOnly = (pool.oblivRouse == 0) and not comboBlockRouse,
+        })
+        -- #endregion
     else
         hungerOn = false
         rouseOn = true

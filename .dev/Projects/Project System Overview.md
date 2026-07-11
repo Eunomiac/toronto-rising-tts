@@ -5,232 +5,263 @@
 Read this when:
 - the user explicitly asks to plan or implement the Projects system
 - changing coterie data that overlaps future project stakes
-- triaging TOR-231
+- triaging TOR-231 / implementing TOR-232
 
-Source of truth:
-- `.dev/RUNNING TASKLIST.md` TOR-231
-- `core/coterie.ttslua`
-- `lib/coterie_data.ttslua`
-- `lib/json/Coterie.json`
-- `core/state.ttslua`
+Source of truth (planned):
+- this document (authoritative contract)
+- `ui/storyteller/project_editor_modal.xml` (ST editor chrome; stake-row pool is agent-owned under TOR-228)
+- `core/coterie.ttslua`, `lib/coterie_data.ttslua`, `lib/json/Coterie.json` (coterie advantages)
+- `core/state.ttslua`, `core/present_day_clock.ttslua`
+- existing roll path: `C.RollType.LAUNCH` / Storyteller PC Launch
 
 Verification:
-- no implementation verification yet; this is a human-gated planning document
-- before implementation, verify desired scope with the user and current Linear state
+- no implementation verification yet; human-gated planning document
+- before implementation, confirm Linear TOR-232 scope against this contract
 
 Status: human-gated planning reference; not current runtime behavior.
 
-The **Projects System** is planned to allow project creation by players or the Storyteller, Storyteller approval, staked Advantage logging, Project Die synchronization with in-game time, and project display on character sheets.
+---
 
-### Projects System
+## Purpose (v1)
 
-#### Data Storage Schema
+Storyteller-only system to create and manage chronicle **Projects**: launch setup, launch roll (via existing Launch roll type), staked advantages, project die derived from present-day clock while in progress, display on PC / coterie sheets, and manual completion.
 
-Project data should be stored in the `playerData` of the player who made the Launch roll, as well as any players who participated via Teamwork. Each project will be stored in a table by a randomized alphanumeric ID:
+Deferred (not in v1): player-created proposals, ST approval workflow, automated Goal-roll application.
+
+---
+
+## ST surface
+
+### Projects panel
+
+Added to the Storyteller Control Panel after **Stats**. Same navigation pattern as Stats: pick a PC or **coterie**, list projects registered to that source, **Edit** per row, **+** to create.
+
+**Listed for a source** = projects whose `displayFor` contains that source key (PC key or `"coterie"`).
+
+### Project Editor Modal
+
+XML: `ui/storyteller/project_editor_modal.xml`.
+
+- Opens for create or edit; create generates an 8-character alphanumeric `id` immediately and inserts a live project record into `gameState`.
+- Owner dropdown defaults to the PC selected in the Projects panel (PC keys only — never coterie).
+- Field writes persist on `onEndEdit` / dropdown change (live state, not a disposable draft stash).
+- Phases `setup` → `preLaunch` → `postLaunch` auto-advance when field gates pass (checked after those events). **`inProgress` and `complete` are manual buttons** (Lock & Begin / Complete).
+- Hardcoded layout-test values in XML (except Contributors default `1`) are not contracts; modal should start inactive.
+
+---
+
+## Editor lifecycle (OK / Cancel / Delete / Lock & Begin / Complete)
+
+| Action | Behavior |
+| --- | --- |
+| **Open (new)** | Create project in `gameState` at `phase = "setup"` with new `id`; owner prefilled. |
+| **Open (edit)** | Load existing project into modal. |
+| **OK** | Close modal only (state already persisted). |
+| **Cancel** | If phase is still before `inProgress` (`setup` / `preLaunch` / `postLaunch`): delete project from state and release any stakes. If phase is `inProgress` or `complete`: close modal only (use Delete to destroy). |
+| **Delete** | Always destroy project and release stakes; close modal. |
+| **Lock & Begin** | Enabled only in `postLaunch` when Begin eligibility is met (see phase machine). Sets `phase = "inProgress"`, locks Result/Margin, starts project-die derivation. |
+| **Complete** | Enabled only for `inProgress`. Sets `phase = "complete"` and releases stakes. Allowed regardless of current project die. |
+
+---
+
+## Canonical storage
+
+Projects live in one map keyed by id (e.g. `gameState.projects[id]`). Sheets and the Projects panel resolve membership via `displayFor`.
+
+### Persisted fields
 
 ```lua
 {
-  id = "string", -- An 8-character alphanumeric ID, randomly determined at creation.
-  principal = "lordLucien", -- Character key of primary character (i.e. the character making the Launch roll)
-  participants = { "lordLucien", "myleneHamelin" }, -- Character keys of participating characters; can include NPC keys as well as PC keys; does include principal
-  scope = 3, -- An integer value defined by user.
-  interval = "day", -- One of "day", "week", "month", "year", "decade", "century". Defined by user.
-  goal = "To persuade the University Chantry to resume warding Camarilla properties.", -- A one-sentence string defined by user.
-  notes = {}, -- Array of strings of extra data added by Storyteller or players.
-  gmNotes = {}, -- As above, but only accessible by the Storyteller.
-  stakedAdvantages = { -- Defined by Storyteller. To accurately locate an advantage within pc or coterie data, focus must sometimes be defined in addition to name. NPC advantages are defined in the same way, but are not linked to any data (and are defined arbitrarily by Storyteller)
-    coterie = { -- Coterie data is stored in state under `coterieData`, and will include tables for `backgrounds`, `merits` and `flaws`, just like playerData does currently.
-      {
-        name = "Resources",
-        qty = 3
-      }
-    },
-    lordLucien = {
-      {
-        name = "Status",
-        focus = "Clan Toreador",
-        qty = 1
-      },
-      {
-        name = "Resources",
-        qty = 3
-      }
-    },
-    myleneHamelin = {
-      {
-        name = "Mawla",
-        focus = "Stirling Siskin",
-        qty = 2
-      }
-    }
+  id = "a1b2c3d4",                    -- 8-char alphanumeric; created on open
+  owner = "lordLucien",               -- PC key only; Launch roller
+  displayFor = { "lordLucien" },      -- derived; see Stake rows
+  phase = "setup",                    -- setup | preLaunch | postLaunch | inProgress | complete
+  goal = "",                          -- one sentence
+  scope = nil,                        -- integer
+  startDate = {                       -- narrative clock table (same shape as presentDayClock)
+    year = 2027, month = 9, day = 14, hour = 0, minute = 0
   },
-  isValid = true, -- Initially false, set to `true` when all above schema data has been provided.
-  isApproved = true, -- Initially false, until Storyteller approves the Project.
-  launchRollFailures = 0, -- Initially zero, incremented each time a Launch roll results in a failure.
-  launchRollResult = "criticalWin", -- User data provided by Storyteller after the player makes their Launch roll.
-  launchRollMargin = 5, -- User data provided by Storyteller after the player makes their Launch roll.
-  -- Note: If supplied launchRollResult is a failure, the below data is not required -- the project is 'finished' without really having been started. The record should still be kept in state.
-  committedAdvantages = {}, -- Blank in this case (on a Critical Win Launch roll, players do not have to commit any of their staked Advantages), but on a normal Win, this will be a list of committed Advantages in the same format as the stakedAdvantages table, above.
-  startTime = 1790041690, -- A timestamp representing the in-narrative time the Project was launched; provided by Storyteller after Launch roll.
-  steps = {
-    [10] = 1790041690,
-    [9] = 1790128090,
-    [8] = 1790214490,
-    [7] = 1790300890,
-    [6] = 1790387290,
-    [5] = 1790473690,
-    [4] = 1790560090,
-    [3] = 1790646490,
-    [2] = 1790732890,
-    [1] = 1790819290,
-    [0] = 1790905690,
-  }, -- Helper function (see below) run when `startTime` and `interval` are available to get ten steps of Project die and the completion date at Project Die = 0.
-  goalRollSuccesses = null, -- If the players attempt to rush the project with a goal roll, the number of successes rolled by the players should be written here.
-  projectDieRollSuccesses = null, -- If the players attempt to rush the project with a goal roll, the number of successes rolled by the Storyteller's opposing Project Die roll should be written here.
-  isResolved = false, -- Set to 'true' when project is completed
+  -- UI shows/edits a plain-English date string; parse into this table on end edit.
+  -- Suggested accept pattern (UI only): /^([A-Za-z]{3}).*?(\d{1,2}),?\s(\d{4})$/
+  -- Default when opening a new project: current present-day (or shown) clock datetime.
+  increment = "daily",                -- daily|weekly|biweekly|monthly|quarterly|yearly|byDecade|byCentury
+  projectDieMod = 0,                  -- ST-edited; usually ≤ 0; "increments added to the standard 10"
+  launchRollSkill = "Politics",       -- modal left field
+  launchRollAdvantage = "Influence: Finance", -- modal right field
+  -- display string for roll panel = skill .. " + " .. advantage (when both set)
+  launchRollDifficulty = 5,           -- initially Scope+2; ST may override (see Difficulty)
+  numContributors = 1,                -- ST integer; retained for stake floor + debug; default 1
+  launchRollResult = nil,             -- C.RollResult.WIN | C.RollResult.CRITICAL_WIN | nil
+  launchRollMargin = nil,             -- required when result is WIN; ignored for CRITICAL_WIN
+  stakeRows = {                       -- ordered UI rows; see Stake rows
+    -- { source = "coterie", name = nil, focus = nil, qty = nil }, -- display-only (displayFor only)
+    -- { source = "fomorach", name = "Contact", focus = "UwU_byte_me", qty = 2 },
+  },
 }
-
--- getStepTimestamps(startTime, interval)
--- Gets timestamp values for the ten steps of a project, starting from the startTime and incrementing by the interval.
--- startTime: A timestamp logged from the current _displayed_ value on the clock (not necessarily live time) when the project was created.
--- interval: One of "day", "week", "month", "year", "decade", "century". Defined by user at creation.
--- returns: A table of (approximate) timestamps in the form of projectDie/timestamp key/value pairs.
-function getStepTimestamps(startTime, interval)
-  local projectDie = 10
-  local steps = {}
-
-  local function getIntervalSeconds(intervalRef)
-    local intervals = {
-      day = 24 * 60 * 60,
-      week = 7 * 24 * 60 * 60,
-      month = 30 * 24 * 60 * 60,      -- Approximate!
-      year = 365 * 24 * 60 * 60,      -- Non-leap, approximate
-      decade = 10 * 365 * 24 * 60 * 60,
-      century = 100 * 365 * 24 * 60 * 60,
-    }
-    return intervals[intervalRef]
-  end
-
-  local intervalSeconds = getIntervalSeconds(interval)
-  while projectDie > -1 do
-    local stepTime = startTime + (10 - projectDie) * intervalSeconds
-    steps[projectDie] = stepTime
-    projectDie = projectDie - 1
-  end
-  return steps
-end
 ```
 
-Note that it will be possible to "create" incomplete Projects with missing schema fields -- players may want to work on projects iteratively before submitting completed versions for Storyteller approval. (A Project cannot be started until all data has been logged.)
+### Derived (do not treat as independent authority)
 
-#### Project Creation
-
-Creating a project requires getting the necessary user data to complete the data schema, then storing the project in state.
-
-- if the project's `principal` is a PC, the project data should be stored in a `projects` array under their `playerData` entry.
-- if the project's `principal` is an NPC, the project data should be stored in an `npcProjects` array in state (perhaps under the main `npcs` element, if there is one)
-
-The creation pipeline works slightly differently for players vs. the Storyteller
-
-##### Project Creation by Storyteller
-
-Project creation by the Storyteller will be handled by a new Storyteller panel called "Projects" (alongside "Scenes", "PCs", "Phases", and "Sound"). This panel will be dynamically generated via piecemeal templates, much as the Storyteller roll dashboard is currently done. The XML partials will be designed by myself first, and in there I will define in more detail how user data is provided. The pipeline will operate as follows:
-
-[ Storyteller Clicks "Add Project" ] -> [ Modal Popup for Entry of Schema Elements ] -> [ Storyteller Submits, Data Validated; Modal only Closes on Validation Success, Data Logged to state ]
-
-Note that the Validation process run at this step should allow incomplete/missing data -- only on bad data should it hold the modal open. This modal can be opened by the Storyteller at a later point via an "EDIT" button next to the project displayed in the "Projects" panel. The modal should be populated with all existing data, and allow the storyteller to add/change data.
-
-Each time the modal is submitted, the Project should be checked for completeness. If all data has been validated, an "APPROVE" button on the "Projects" panel should be enabled (initially it should be greyed/inactive). Clicking this sets `isApproved` to `true`, resulting in display of the project on the sheets of all PC `participants` and completing the Project Creation process.
-
-##### Project Creation by Players
-
-Players will be able to create a project by clicking on the "Projects" header on page 5 of their CSHEETS.  They will be shown the same modal that the Storyteller gets, and will be able to enter any amount of Project data.
-
-After submitting the modal (following same "bad data" validation as the Storyteller), the Project will be displayed on their sheet. If data is missing, it will be displayed in the style of a working draft; only when all data is present and valid will a "Submit" button allow submitting the Project to the Storyteller for approval. This will add it to the Storyteller's "Projects" panel at the top, visually emphasized, and give it the same "EDIT" / "APPROVE" buttons to change or approve the project, completing the Project Creation process.
-
-#### Launching a Project
-
-Once created, the project must be launched with a Launch roll. A "LAUNCH" button should appear in the "Projects" panel next to any project that has been "APPROVED". This initiates a Launch roll for the `principal` player (if a PC) OR a Storyteller Launch roll if the `principal` is an NPC.
-
-The Launch roll is assembled just like a Standard Roll is, with the following modifications (most, if not all, of which are already configured, I believe):
-
-- Willpower cannot be spent to reroll dice
-- Blood Surge is not available
-- Take Half is not available
-
-The Difficulty of the Launch Roll is always the `scope` + `2` + `launchRollFailures`.  The Launch roll will need to be tied to the Project it is launching (by the project's ID) so that, upon the Storyteller Confirming the roll, the result and margin can be written to the project data (or `launchRollFailures` can be incremented by one, if the roll failed).
-
-On a FAILURE, TOTAL FAILURE, BESTIAL FAILURE, or TOTAL BESTIAL FAILURE, `launchRollFailures` is increased by one, so that the player can try again but the Difficulty will be increased by 1.
-On a CRITICAL WIN or MESSY CRITICAL, `committedAdvantages` is set to an empty table (`{}`), and the launch config modal is opened for the Storyteller to confirm final details and launch the project.
-On a WIN, the launch config modal is opened for the Storyteller to enter in `committedAdvantages` as well as other final details before launching the project.
-
-The launch config modal will include a confirmation of the start time. Once launched, `steps` should be calculated and written to state, and the clock events log should be updated with all ten steps (see "#### Clock Management", below).
-
-After the Launch roll has been resolved, if any `committedAdvantages` come from player sheets, the display of those advantage dots should be changed from
-
-#### Project Lifecycle
-
-A Project's lifecycle is largely driven by the clock -- the "Project Die" is a countdown from 10 to 0.  The Project Die should always display the number associated with the earliest timeStamp that is later than the current clock. For example, if the current clock time is `1790493256`, which is between `[5] = 1790473690` and `[4] = 1790560090` in the example steps in the schema above, the Project Die should display `5`. If the current clock is at an earlier time than `[10] = 1790041690`, the Project should not be displayed at all (it hasn't been launched yet). If the current clock is at a later time than `[0] = 1790905690`, the project should be flagged for completion in both the player-facing display and the storyteller's "Projects" panel.
-
-A Project can be completed at any time by the Storyteller, regardless of the value of the Project Die, via a "COMPLETE" button next to the Project in the "Projects" panel, which should only be interactable once the Project has been launched.
-
-##### Rushing a Project: The Goal Roll
-
-Once a Project has been Launched AND the Project Die is between 10 and 1, a "RUSH" button should be available on both the player UI and the storyteller UI.  Clicking this button initiates a Goal roll (which must be confirmed by the Storyteller as with any other roll) for the `principal` (player or NPC), AS WELL AS open a Storyteller roll named "Project Die". _(This may result in two Storyteller rolls being initiated simultaneously. In this case, the `principal`'s roll should be done first, i.e. made the live roll. If an NPC wants to rush a project, however, this will require two live SToryteller rolls -- the attempt should be rejected if there are not at least two available storyteller drawers, one for each roll)_
-
-* The **Goal Roll** -- The Goal Roll is assembled by the player as if it were a Standard Roll, with the following changes:
-
-- Willpower cannot be spent to reroll dice
-- Blood Surge is not available
-- Take Half is not available
-- Pairs of 10s do NOT form criticals: A pair of 10s is worth 2 successes, just like any other pair of successes, and results of CRITICAL WIN or MESSY CRITICAL are not possible.
-- The Difficulty is 0. The number of successes rolled should be written to the `goalRollSuccesses` field of the project data.
-
-* The **Project Die Roll** -- This is always a Storyteller roll named "Project Die" with a dice pool equal to the current value of the Project Die:  If the Project Die is a 6, then the Project Die Roll is a roll of 6 Standard Dice.
-
-- Criticals work as normal for the Storyteller's Project Die Roll
-- The Difficulty is 0. The number of successes rolled should be written to the `projectDieRollSuccesses` field of the project data.
-
-When both `goalRollSuccesses` and `projectDieRollSuccesses` have been written, the final result of the goal roll can be determined and broadcast: The `projectDieRollSuccesses` define the Difficulty of the Goal Roll. The `goalRollSuccesses` should be compared to this Difficulty, and a result and a margin determined as with any other roll.
-
-On a WIN, the Project Die is immediately decremented by an amount equal to the MARGIN on the successful Goal Roll. The `steps` table should be modified by reducing the value of every key by that amount, and removing any entries where this reduces the key to a negative number. As described in "Project Lifecycle", above, if this results in the current clock being later than the `steps.[0]` timestamp, the project should be flagged for completion.
-
-On a FAILURE, BESTIAL FAILURE, TOTAL FAILURE, or TOTAL BESTIAL FAILURE, the following steps should be performed:
-
-1. If the Launch Roll result was a Critical Win, nothing happens. `goalRollSuccesses` and `projectDieRollSuccesses` should be cleared.
-2. Otherwise, compare the margin of failure to the total value of `committedAdvantages`.
-  IF the absolute value of the margin is greater than the total value of `committedAdvantages`,
-
-
-#### Project Display
-
-Projects will be displayed in the form of boxed XML elements derived from partials that I will create myself. In those files I will more-accurately define how projects should be displayed. Projects will be displayed on:
-
-1. All PC participants CSHEETS, on page 5
-2. The "Projects" Storyteller panel
-3. The "Court" sidebar reference panel (Prince's Court reference — trait columns on pages 1–2)
-
-#### `gameState.coterieData` (Prince's Court reference)
-
-Authoritative JSON: `lib/json/Coterie.json` → `lib/coterie_data.ttslua` (regenerate: `node .dev/scripts/generate_coterie_data_lua.js`).
-
-Trait entries use the same PCS-shaped fields as character sheet backgrounds/merits/flaws: `name`, `focus`, `base`, `temp`, `max`, `description[]`, `rules[]`, optional `source`. Nine arrays:
-
-| Array | Prince's Court region |
+| Field | Rule |
 | --- | --- |
-| `coterieBackgrounds`, `coterieMerits`, `coterieFlaws` | Page 1 right (`page_1_right`) |
-| `domainBackgrounds`, `domainMerits`, `domainFlaws` | Page 2 left (`page_2_left`) |
-| `havenBackgrounds`, `havenMerits`, `havenFlaws` | Page 2 right (`page_2_right`) |
+| `launchRoll` (display) | `launchRollSkill .. " + " .. launchRollAdvantage` |
+| `requiredStake` | If `CRITICAL_WIN` → `0`. If `WIN` → `max(scope + 1 - launchRollMargin, numContributors)`. Else `nil`. |
+| `stakedAdvantages` | Projection of stake rows that have `source` + advantage identity + `qty >= 1`. |
+| `displayFor` | Unique list: always `owner`, plus every row `source` (including display-only rows). |
+| `projectDie` / `endDate` | Pure functions of `startDate`, `increment`, `projectDieMod`, and present-day clock — **only while `phase == "inProgress"`**. In other phases, UI may show `—` or hide die/end (die does not tick). |
+| Effective advantage disabled | See Stakes and sheets. |
 
-Each trait array receives **three blank slots** appended by `lib/coterie_hydrate.ttslua` after JSON decode (not authored in the Google Sheet export). Blanks use `blank: true`, `active: false`. Set `active: true` and fill fields in state; `Coterie.reconcileForHudSeat` updates pre-baked UI ids. Rebuild from JSON between sessions to reset sheet-backed traits; blank slot structure is re-hydrated on load via `Coterie.ensureInState`.
+Dropdown labels in XML are display-only; Lua maps `selectedIndex` → canonical keys/enums.
 
-Also: `dots`, `chasse`, `lien`, `portillon`, `haven` (domain rating integers) — runtime `setAttribute` only.
+---
 
-####
+## Phase machine
 
+`setup` → `preLaunch` → `postLaunch` auto-advance when field gates pass (after `onEndEdit` / dropdown change). **`inProgress` only via Lock & Begin**; **`complete` only via Complete**. No intentional “go back a phase” control. Result and Margin stay editable in `postLaunch` until Lock & Begin; then locked.
 
+### `setup`
 
+Any of these unset: Owner, Goal, Scope, Increment, Start Date, Launch Roll skill, Launch Roll advantage, Difficulty.
 
-#### Clock Management
+### `preLaunch`
 
-Since the clock can advance rapidly (during a lerp'd fast forward, for example), we can't have it checking every logged project for step times on every tick. Thus, an ordered table of timestamps representing "events" on the game timeline (i.e. linked to the clock) should be maintained in state. All ten steps of every project created should be added to this ordered table, as should anything else added by future features that create similar events linked to the clock. This way the clock only has one source of data to monitor while advancing.
+All setup fields set. **R** (Launch) enabled.
+
+**R button:** initiates a `C.RollType.LAUNCH` roll for `owner` with `launchRollDifficulty` preset and roll-panel message like `Roll Politics + Influence: Finance` (same family as ST PC panel Launch). Roll resolution does **not** auto-write project Result — ST enters Result/Margin manually.
+
+**Launch failure (manual):** ST bumps Difficulty by +1 and presses R again, or Cancel/Delete the project. No Fail result value in the project schema.
+
+### `postLaunch`
+
+Entered when Result is set, and if Result is `WIN`, Margin is also set.
+
+- Result and Margin remain editable until **Lock & Begin**.
+- **Lock & Begin** is disabled until Begin eligibility is met; helper / `projectEditor_stakeValidation` can explain what’s missing (e.g. “Stake 2 more dots” / “Ready — press Lock & Begin”).
+
+#### Begin eligibility (enables Lock & Begin)
+
+All of:
+
+1. Phase is `postLaunch`.
+2. Result is `WIN` (Margin set) or `CRITICAL_WIN`.
+3. Stake side:
+   - If `requiredStake == 0` (Critical Win): no stakes required (display-only rows optional for extra `displayFor` sources).
+   - If `requiredStake > 0`: `sum(qty)` over stake rows with real stakes `>= requiredStake`, and every committing row validates (source exists, advantage selected, qty ≥ 1, source has enough free dots after other projects’ stakes + manual disabled).
+4. Invalid stake rows keep Lock & Begin disabled and set validation message text.
+
+Accidental Critical Win is harmless: ST can change Result back to Win (or clear it) until they press Lock & Begin.
+
+### `inProgress`
+
+Entered **only** by **Lock & Begin**. Locks Result/Margin. Project die derives from the clock (policy **A**).
+
+### `complete`
+
+Only via **Complete** button from `inProgress`. Releases stakes. Not automatic when die hits 0 (ST may Complete early or late).
+
+---
+
+## Difficulty vs Scope
+
+When Scope is set/changed:
+
+- If Difficulty is empty, **or** Difficulty still equals the previous auto value (`oldScope + 2`), set Difficulty to `Scope + 2`.
+- Otherwise leave the ST override alone (supports fail → +1 Difficulty → R again without Scope edits wiping it).
+
+---
+
+## Project die (pure derive, inProgress only)
+
+Narrative clock tables: `{ year, month, day, hour, minute }` — same family as `presentDayClock` / `U.compareNarrativeClock`. Not Unix epoch.
+
+**Only while `phase == "inProgress"`:**
+
+```text
+duration   = max(0, 10 + projectDieMod)          -- mod usually ≤ 0
+elapsed    = floor( number of increment steps from startDate → presentDay )
+projectDie = clamp(duration - elapsed, 0, duration)
+endDate    = startDate advanced by `duration` increments
+```
+
+- Present day before `startDate` → die displays as `duration` (typically 10 if mod is 0).
+- Present day after `endDate` / huge Memoriam jumps → die clamps to `0` (and duration upper bound as above).
+- ST never edits `projectDie` directly; Goal-roll outcomes are applied by editing `projectDieMod`.
+- No per-project timeline event table in v1. On present-day settle / jump, recompute derived die/end for in-progress projects (N is small).
+
+**Increment step meaning** (implementation must define calendar arithmetic explicitly): daily = +1 day; weekly = +7 days; biweekly = +14 days; monthly / quarterly / yearly / byDecade / byCentury = calendar-aware steps on the narrative Y/M/D (document exact rules in code comments when implementing).
+
+---
+
+## Stake rows (UI + data)
+
+Replace the multiline DSL. Modal shows structured rows.
+
+### Row shapes
+
+1. **Display-only:** `source` set; advantage and qty empty. Adds `source` to `displayFor` only (e.g. show on coterie sheet without staking). Not used as a phase-confirm gesture — that is **Lock & Begin**.
+2. **Stake:** `source` + advantage (from dropdown of that source’s backgrounds/merits) + `qty >= 1`. Adds to `displayFor` and to `stakedAdvantages`.
+
+### Row activation (XML pool)
+
+- Prefab a fixed pool of row elements with most `active=false`.
+- Always show **one blank row** while Begin’s stake requirement is **not** yet met (`requiredStake > 0` and `sum(qty) < requiredStake`).
+- When a blank row becomes **defined**, activate the next pooled blank row (if any remain).
+- **Defined** means: source selected for a display-only row, **or** source + advantage + qty for a stake row.
+- Once Begin’s stake side is satisfied (`requiredStake == 0`, or `sum(qty) >= requiredStake`), **do not** activate further blank rows.
+- Over-staking is allowed on rows already visible (`sum(qty)` may exceed `requiredStake`).
+
+### Validation
+
+On row change, recompute Begin eligibility:
+
+- Unknown / empty required fields on committing rows → message on `projectEditor_stakeValidation`; Lock & Begin stays disabled.
+- Insufficient free dots on that advantage (after other active projects’ stakes + manual disabled) → same.
+
+---
+
+## Stakes and sheets (no blind `disabled +=`)
+
+`advantage.disabled` in Stats remains **manual-only** authority.
+
+Effective disabled for sheet/XML rendering:
+
+```text
+effectiveDisabled = manualDisabled
+  + sum(qty for this advantage across all projects still holding stakes)
+```
+
+Projects hold stakes while phase is `postLaunch` (once rows commit dots) and `inProgress`. Release on Complete, Delete, or Cancel-while-pre-inProgress wipe.
+
+Do not permanently mutate `disabled` as the stake ledger. Optionally cache nothing; derive at reconcile/sheet build from `gameState.projects`.
+
+---
+
+## Sheet display (Page 5 / coterie)
+
+For a given sheet source S, show projects where `displayFor` contains S.
+
+Sort:
+
+1. Projects owned by the sheet’s PC first (when S is a PC); then others.
+2. Then by derived `endDate` ascending (soonest completion first). Completed projects: define a stable secondary rule at implement time (e.g. after active, or separate section).
+
+---
+
+## Deferred
+
+- Player-created projects and ST approval.
+- Automated Goal roll → `projectDieMod`.
+- Generic chronicle timeline event bus for non-project features.
+
+---
+
+## Implementation checklist (TOR-232)
+
+1. `gameState.projects` map + mutation/reconcile split (Sync after mutations; sheet/disabled derive on reconcile).
+2. ST Projects panel (Stats-like target list).
+3. Wire modal fields, phase gates, R → Launch roll, Lock & Begin / Complete / Delete / Cancel / OK.
+4. Stake row XML pool + advantage dropdowns per source.
+5. Pure die derive on present-day settle for `inProgress` projects.
+6. Page 5 / coterie project list from `displayFor`.
+7. Update Event Listener Policy for new HUD handlers.
+8. Solo smoke: create → preLaunch → R → enter Win+Margin → stake rows → Lock & Begin → clock advance → Complete; also Critical Win → Lock & Begin with zero stakes.
