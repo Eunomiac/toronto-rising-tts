@@ -222,14 +222,14 @@ end
 
 --- Result dropdown: 0 blank, 1 Win, 2 Critical Win
 --- @param selectedIndex number|string
---- @return string|nil C.RollResult value
+--- @return string|nil C.ResultClass value
 function M.resultFromSelectedIndex(selectedIndex)
   local zero = math.floor(tonumber(selectedIndex) or -1)
   if zero == 1 then
-    return C.RollResult.WIN
+    return C.ResultClass.WIN
   end
   if zero == 2 then
-    return C.RollResult.CRITICAL_WIN
+    return C.ResultClass.CRITICAL_WIN
   end
   return nil
 end
@@ -237,10 +237,10 @@ end
 --- @param result string|nil
 --- @return integer 0-based
 function M.selectedIndexFromResult(result)
-  if result == C.RollResult.WIN then
+  if result == C.ResultClass.WIN then
     return 1
   end
-  if result == C.RollResult.CRITICAL_WIN then
+  if result == C.ResultClass.CRITICAL_WIN then
     return 2
   end
   return 0
@@ -367,10 +367,10 @@ end
 --- @return integer|nil
 function M.computeRequiredStake(project)
   local result = project.launchRollResult
-  if result == C.RollResult.CRITICAL_WIN then
+  if result == C.ResultClass.CRITICAL_WIN then
     return 0
   end
-  if result ~= C.RollResult.WIN then
+  if result ~= C.ResultClass.WIN then
     return nil
   end
   local scope = math.floor(tonumber(project.scope) or 0)
@@ -765,10 +765,10 @@ function M.computeAutoPhase(project)
     return M.PHASE.SETUP
   end
   local result = project.launchRollResult
-  if result == C.RollResult.CRITICAL_WIN then
+  if result == C.ResultClass.CRITICAL_WIN then
     return M.PHASE.POST_LAUNCH
   end
-  if result == C.RollResult.WIN and tonumber(project.launchRollMargin) ~= nil then
+  if result == C.ResultClass.WIN and tonumber(project.launchRollMargin) ~= nil then
     return M.PHASE.POST_LAUNCH
   end
   return M.PHASE.PRE_LAUNCH
@@ -1088,10 +1088,10 @@ function M.buildPage5DocumentXml(seatColorRaw)
       local incLabel = (type(project.increment) == "string" and M.INCREMENT_LABELS[project.increment]) or ""
       setText("project_" .. tostring(index0) .. "_date_increment", incLabel ~= "" and ("(Increments " .. incLabel .. ")") or "")
       local resultImg, marginText, marginActive, stakesActive = "", "", "false", "true"
-      if project.launchRollResult == C.RollResult.CRITICAL_WIN then
+      if project.launchRollResult == C.ResultClass.CRITICAL_WIN then
         resultImg = "project_crit"
         stakesActive = "false"
-      elseif project.launchRollResult == C.RollResult.WIN then
+      elseif project.launchRollResult == C.ResultClass.WIN then
         resultImg = "project_win"
         marginText = "+" .. tostring(math.floor(tonumber(project.launchRollMargin) or 0))
         marginActive = "true"

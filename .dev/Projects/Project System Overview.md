@@ -91,7 +91,7 @@ Projects live in one map keyed by id (e.g. `gameState.projects[id]`). Sheets and
   -- display string for roll panel = skill .. " + " .. advantage (when both set)
   launchRollDifficulty = 5,           -- initially Scope+2; ST may override (see Difficulty)
   numContributors = 1,                -- ST integer; retained for stake floor + debug; default 1
-  launchRollResult = nil,             -- C.RollResult.WIN | C.RollResult.CRITICAL_WIN | nil
+  launchRollResult = nil,             -- C.ResultClass.WIN | C.ResultClass.CRITICAL_WIN | nil
   launchRollMargin = nil,             -- required when result is WIN; ignored for CRITICAL_WIN
   stakeRows = {                       -- ordered UI rows; see Stake rows
     -- { source = "coterie", name = nil, focus = nil, qty = nil }, -- display-only (displayFor only)
