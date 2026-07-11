@@ -17,25 +17,11 @@ Verification:
 - processed items move out of active capture sections
 - `.dev/RUNNING TASKLIST.md` and Linear stay aligned
 
-## Temporary Debug Session Section
-
-### Resolved Issues
-These issues are confirmed resolved:
-- ✅ [Bug 1] Rouse bag no longer hides on every Blood Surge (only Hunger ≥4 mutual exclusion).
-- ✅ [Bug 2] Hunger bag right-click undoes Blood Surge preferring Normal dice (Hunger floor stays).
-- ✅ [Bug 3] Removing all dice from a roll no longer cancels it if it was Storyteller initiated.
-- ✅ [Bug 4] Seat drops no longer spawn figurines before "Apply"
-- ✅ [Bug 5] Take Half is now correctly presented as an option for Willpower Rolls, but see the Willpower Roll entry in [Bug 6], below.
-- ✅ [Bug 6] Roll Options This Roll toggles sync with conditions/dash (interactable-before-setClass; Humanity allows Take Half).
-- ✅ [Bug 7] Hunger overlays hide correctly when reducing Hunger off-seat (active=false after UI.hide).
-- ✅ [Bug 8] Seats no longer activate all hunger smoke simultaneously.
-
-### Unresolved Issues
-_(none from this regression pass)_
-
 ## Quick Fixes
 
 ## Priority Fixes - Move to Top of Focus Stack
+- [Bug] Something is causing character sheet pages to deactivate, possibly on scene change though I am not sure -- ocasionally all eight pages of a player's character sheet will be hidden, leaving no character sheet visible to them at all. At least two of a player's character sheet pages should always be visible.
+- [Bug] On scene change, location display, weather and possibly other elements are not updated until the Scenes panel is opened.
 
 ## Active
 
