@@ -34,6 +34,10 @@ require("lib.workspace_ndjson_log")
 local function setHungerAndSync(color, value)
     S.setPlayerVal(color, "hunger", value)
     Sync.player(color)
+    local P = require("lib.pc_stats")
+    if type(P.refreshHudOverlaysForSeat) == "function" then
+        P.refreshHudOverlaysForSeat(color)
+    end
 end
 
 --[[

@@ -57,6 +57,8 @@ local ACTIONS_SKIP_OVERLAY_REFRESH = {
   xpDown = true,
   hungerUp = true,
   hungerDown = true,
+  -- hungerApply uses P.refreshHudOverlaysForSeat after Sync.player (TOR-340).
+  hungerApply = true,
 }
 
 --- Scan character sheets for a seat color (GM Notes `CSHEET_PAGE_*_<COLOR>`) and refresh embedded UI.
@@ -267,6 +269,8 @@ function PCST.onHudClick(player, _button, id)
       local nx = math.max(0, math.min(C.MAX_HUNGER or 5, cur + b.hunger))
       S.setPlayerVal(color, "hunger", nx)
       Sync.player(color)
+      -- Invalidate + force re-apply so off-seat UI.hide/active clears stick (TOR-340).
+      P.refreshHudOverlaysForSeat(color)
     end
     b.hunger = 0
     PCST.refreshCharacterSheetsForColor(color)

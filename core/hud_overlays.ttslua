@@ -1,9 +1,9 @@
 --[[
   Full-screen player HUD overlay Images (conditions + hunger).
   Visibility: UI.show / UI.hide (triggers XML showAnimation / hideAnimation per TTS API).
-  Do not mix U.setAttribute("active"/"color") with show/hide on the same elements — that can
-  desync TTS’s animation state. Broken XML (two classes each setting showAnimation; FadeOut as
-  showAnimation) prevented hides; see panel_overlays_defaults.xml overlay_anim_* classes.
+  Hunger tiers also clear/set `active` after hide/show (TOR-340): UI.hide alone can fail to
+  stick for `visibility="<Color>"` panels when that seat is empty. Other overlays still avoid
+  mixing active with show/hide unless a similar off-seat hide bug appears.
 ]]
 ---@diagnostic disable: undefined-global
 
@@ -131,9 +131,10 @@ function HO.invalidateOverlayInputCache()
 end
 
 --- Hunger uses six mutually exclusive Image elements (overlay_hunger_0 .. overlay_hunger_5).
---- The incremental path can skip UI.hide when lastVisible matches desired state but TTS is still
---- showing a layer (animation/cache desync), so two levels can overlap. This path always issues
---- UI.hide/show for all six ids — no cache short-circuit.
+--- Always issues UI.hide/show for all six ids — no lastVisible short-circuit.
+--- After hide, also clear `active` (TOR-323 / TOR-340): TTS FadeOut via UI.hide often does not
+--- stick for elements under `visibility="<Color>"` when no one is seated at that color, so
+--- reducing hunger off-seat left higher tiers visible until that seat was occupied.
 --- @param seatColor string
 --- @param level number 0..5 = show only that tier
 local function applyHungerOverlaysExclusive(seatColor, level)
@@ -155,8 +156,10 @@ local function applyHungerOverlaysExclusive(seatColor, level)
     local shouldShow = n == lv
     if shouldShow then
       UI.show(eid)
+      U.setAttribute(eid, "active", "true")
     else
       UI.hide(eid)
+      U.setAttribute(eid, "active", "false")
     end
     lastVisible[eid] = shouldShow
   end
@@ -337,10 +340,11 @@ function HO.reconcileForSeat(seatColor, opts)
   local playerID = S.getPlayerID(seatColor)
   local want = computeDesiredVisibility(playerID, seatColor)
   local hungerLevel = desiredHungerLevelFromWant(want, seatColor)
+  local fpSkip = opts.force ~= true and lastDesiredVisibilityFpBySeat[seatColor] == fp
 
   -- Fingerprint skip must not leave world smoke / XmlUI hunger tiers stale after layout
   -- repositions smoke or TTS hide fails (BUG 7 / BUG 8).
-  if opts.force ~= true and lastDesiredVisibilityFpBySeat[seatColor] == fp then
+  if fpSkip then
     applyHungerOverlaysExclusive(seatColor, hungerLevel)
     syncHungerSmokeForSeat(seatColor, hungerLevel)
     return

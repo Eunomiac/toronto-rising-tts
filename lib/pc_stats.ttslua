@@ -57,6 +57,7 @@ end
 
 --- Like refreshHudOverlays, but clears overlay visibility cache for one seat first so hunger/condition
 --- layers cannot get stuck when lastVisible matches desired state but TTS UI is out of sync.
+--- Also used after ST hungerApply so off-seat UI.hide + active clears stick (TOR-340).
 --- @param seatColor string e.g. "Red"
 function P.refreshHudOverlaysForSeat(seatColor)
   if type(seatColor) ~= "string" then
