@@ -19,6 +19,8 @@ Verification:
 
 ## Quick Fixes
 
+- Add a build script that searches `constants.ttslua` for minus sign characters and replace them with hyphens.
+
 ## Priority Fixes - Move to Top of Focus Stack
 - [Bug] Something is causing character sheet pages to deactivate, possibly on scene change though I am not sure -- ocasionally all eight pages of a player's character sheet will be hidden, leaving no character sheet visible to them at all. At least two of a player's character sheet pages should always be visible.
 - [Bug] On scene change, location display, weather and possibly other elements are not updated until the Scenes panel is opened.
