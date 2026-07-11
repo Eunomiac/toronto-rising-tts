@@ -300,6 +300,7 @@ _Blocked: author must define data binding approach before substantial implementa
 - [ ] Agent prompt: find **invalid `getStateVal` / `getPlayerVal`** paths; draft fix plan. → Prompt 3 in [Agent Reviews/AGENT_REVIEW_PROMPTS.md](Agent%20Reviews/AGENT_REVIEW_PROMPTS.md) _(TOR-103)_
 - [x] **Manual E2E test playbooks (Dice + Scenes) — baseline:** [`.dev/E2E Playbooks/`](E2E%20Playbooks/README.md) shipped; legacy Testing Suites removed from DEBUG panel. _(TOR-141)_ — **ongoing:** update playbooks when related APIs change (`living-doc`; issue stays open).
 - [x] **Dice-E2E playbook + rollTest harness:** Solo-host doc (no View); `rollE2eSeatPrep`, `rollSetFaces`, hunger 5th param, Suite F conditions helpers; `rollCancel` clears ST slots. _(TOR-164)_ — sub-issue of TOR-141; re-verify in TTS after Save & Play
+- [x] **`rollE2eSettlePresetCheck` after release:** Accept ROLLING/POST_ROLL when `GlobalReleaseBagDice` already called `startRolling` (Suite C1 false fail). _(TOR-341)_
 - [ ] **Multiplayer E2E playbook:** Pre-invite solo checklist + multiclient test plan (Preparing §1–§2; sub-issue of TOR-141). Initial pass when friend available — _(TOR-144)_; execution _(TOR-249 — External Todo, human gate)_
 - [x] ~~Multi-client TTS session workflow (same PC)~~ — **Canceled:** not viable; use Steam invite + second machine. _(TOR-248)_
 - [x] **Phase 1 zones integration test** — **Canceled:** scripting zones module removed; Toronto Rising uses hand zones only. _(TOR-11)_

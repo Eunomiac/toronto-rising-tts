@@ -2139,7 +2139,9 @@ function DEBUG.rollE2eSpawnActivePool(color)
     return true
 end
 
---- Internal: release (if needed), startRolling, preset faces, settle.
+--- Internal: release (if needed), ensure ROLLING, preset faces, settle.
+-- `GlobalReleaseBagDice` already advances PC rolls to ROLLING; only call `RC.startRolling`
+-- when still PRE_ROLL (e.g. skipRelease before drawer coroutine finished).
 -- @param color string
 -- @param facesByKind table
 -- @param opts table
@@ -2164,17 +2166,27 @@ local function rollE2eFinishSettlePresetCheck(color, facesByKind, opts)
         if opts.skipRelease ~= true then
             DEBUG.rollE2ePrepareRollRelease(color)
             if Global ~= nil and type(Global.call) == "function" then
+                -- PC release already calls RC.startRolling (TOR-262 panel Roll path).
                 Global.call("GlobalReleaseBagDice", { color = color })
             end
         end
         active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
-        if active == nil or active.phase ~= C.RollPhase.PRE_ROLL then
-            print("[rollE2eSettlePresetCheck] FAIL: roll left PRE_ROLL before startRolling for " .. color)
+        if active == nil then
+            print("[rollE2eSettlePresetCheck] FAIL: no active roll for " .. color
+                .. " after release")
             return false
         end
-        if RC.startRolling(color) ~= true then
-            print("[rollE2eSettlePresetCheck] FAIL: RC.startRolling failed (phase="
-                .. tostring(active.phase) .. ")")
+        -- Release may have already advanced PRE_ROLL → ROLLING; only startRolling if still PRE_ROLL
+        -- (skipRelease / drawer coroutine not finished yet).
+        if active.phase == C.RollPhase.PRE_ROLL then
+            if RC.startRolling(color) ~= true then
+                print("[rollE2eSettlePresetCheck] FAIL: RC.startRolling failed (phase="
+                    .. tostring(active.phase) .. ")")
+                return false
+            end
+        elseif active.phase ~= C.RollPhase.ROLLING and active.phase ~= C.RollPhase.POST_ROLL then
+            print("[rollE2eSettlePresetCheck] FAIL: phase " .. tostring(active.phase)
+                .. " after release (expected rolling or postRoll)")
             return false
         end
     elseif active.phase ~= C.RollPhase.ROLLING and active.phase ~= C.RollPhase.POST_ROLL then
