@@ -1076,13 +1076,12 @@ function RC.initiateRoll(color, config)
 
     RO.seedActiveRoll(active)
     active.rollConditionOverlay = { forceOn = {}, forceOff = {} }
-    RO.syncStructuralOverlayFromActive(active)
     local policyPlayerID = S.getPlayerID(color)
     if policyPlayerID ~= nil then
         RC.computeEffectiveRollState(color, active)
-        RO.syncStructuralOverlayFromActive(active)
         RollConditionHandlers.run("onRollInitiated", color, active)
     end
+    RO.syncStructuralOverlayFromActive(active)
     seedWillpowerBlock(active)
     ensureActiveShape(active)
 
@@ -1185,13 +1184,12 @@ function RC.changeRollType(color, rollType)
 
     RO.seedActiveRoll(active)
     active.rollConditionOverlay = { forceOn = {}, forceOff = {} }
-    RO.syncStructuralOverlayFromActive(active)
     local policyPlayerID = S.getPlayerID(color)
     if policyPlayerID ~= nil then
         RC.computeEffectiveRollState(color, active)
-        RO.syncStructuralOverlayFromActive(active)
         RollConditionHandlers.run("onRollInitiated", color, active)
     end
+    RO.syncStructuralOverlayFromActive(active)
     seedWillpowerBlock(active)
     ensureActiveShape(active)
     RO.sanitizeRollOptions(active)
@@ -3027,7 +3025,6 @@ function RC.promoteDedicatedRouseToStandard(color)
     active.difficulty = nil
     RO.seedActiveRoll(active)
     active.rollConditionOverlay = { forceOn = {}, forceOff = {} }
-    RO.syncStructuralOverlayFromActive(active)
     RC.computeEffectiveRollState(color, active)
     RO.syncStructuralOverlayFromActive(active)
     seedWillpowerBlock(active)

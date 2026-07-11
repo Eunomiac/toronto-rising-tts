@@ -113,6 +113,7 @@ _Stack rank for the current cycle (2026-07-10 post `/tr-inbox`: **INBOX Priority
 - [x] **Hunger 4 — block Blood Surge + manual Rouse combo; Hunger 5 — block Blood Surge:** At Hunger 4, disallow Blood Surge + separate manual Rouse in one roll; at Hunger 5, block Blood Surge (forced Rouse OK). Extends **TOR-203**. _(TOR-331)_
 - [x] **Hide player Cancel on Storyteller-initiated rolls:** Player roll panel hides Cancel when roll is ST-initiated; single-button auto-proceed when only one action remains (**TOR-328** / **TOR-306**). _(TOR-332)_
 - [x] **ST roll dash — sync baked-in roll conditions on initiate:** Baked-in roll-type conditions green on Roll Conditions; dash summary complete; This Roll ↔ Roll Conditions linked; resync on type change. _(TOR-335)_
+- [x] **Structural overlay sync once after effective state:** Drop redundant pre-compute `syncStructuralOverlayFromActive` in initiate / change type / promote-rouse. _(TOR-337)_
 
 ## Camera
 
