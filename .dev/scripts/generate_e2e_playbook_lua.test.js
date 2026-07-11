@@ -2,12 +2,16 @@
 
 const assert = require("assert");
 const {
+  CAMPAIGNS,
   extractLuaBlocks,
   extractRunSequenceTable,
   blockEndsWithHumanGate,
   extractTopLevelSuiteSteps,
   buildLuaModule,
 } = require("./generate_e2e_playbook_lua.js");
+
+assert.ok(CAMPAIGNS.Dice);
+assert.ok(CAMPAIGNS.Scenes);
 
 const sampleBlock = `U.RunSequence({
   function()
@@ -34,6 +38,16 @@ assert.strictEqual(blocks.length, 2);
 const moduleText = buildLuaModule("Dice", ".dev/E2E Playbooks/Dice-E2E.md", [tableText], [false], { H: 12 }, ["H"]);
 assert.ok(moduleText.includes('Playbook.suiteSteps = {'));
 assert.ok(moduleText.includes('["H"] = 12'));
+
+const suiteBlock = `U.RunSequence({
+  function()
+    printHeader("Scenes E2E: SUITE A - Apply library scene", 1)
+  end
+})`;
+const suiteMd = "# Test\n\n```lua\n" + suiteBlock + "\n```\n";
+const sceneSuiteBlocks = extractLuaBlocks(suiteMd);
+const sceneSuites = extractTopLevelSuiteSteps(sceneSuiteBlocks);
+assert.strictEqual(sceneSuites.suiteSteps.A, 1);
 
 const sampleMd = "# Test\n\n```lua\n" + sampleBlock + "\n```\n";
 const suiteBlocks = extractLuaBlocks(sampleMd);

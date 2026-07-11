@@ -10,7 +10,7 @@
     "csheet-defaults:generate": "node .dev/scripts/generate_csheet_defaults_lua.js",
     "npc-control-board-ui:generate": "node .dev/scripts/generate_npc_control_board_ui_lua.js",
     "npc-placements:migrate-byarea": "node .dev/scripts/migrate_npc_byarea_to_placements.mjs",
-    "e2e-playbook:generate": "node .dev/scripts/generate_e2e_playbook_lua.js --campaign Dice",
+    "e2e-playbook:generate": "node .dev/scripts/generate_e2e_playbook_lua.js --campaign all",
     "e2e-playbook:generate:test": "node .dev/scripts/generate_e2e_playbook_lua.test.js",
     "ui-xml-templates:embed": "node .dev/scripts/embed_ui_xml_templates.js",
     "roll-dashboard:generate": "node .dev/scripts/generate_roll_dashboard_xml.js",

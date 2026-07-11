@@ -6,6 +6,7 @@
  *
  * Usage (repo root):
  *   node .dev/scripts/generate_e2e_playbook_lua.js --campaign Dice
+ *   node .dev/scripts/generate_e2e_playbook_lua.js --campaign all
  */
 const fs = require("fs");
 const path = require("path");
@@ -18,6 +19,10 @@ const CAMPAIGNS = {
   Dice: {
     markdownRel: path.join(".dev", "E2E Playbooks", "Dice-E2E.md"),
     moduleRel: path.join("lib", "e2e_playbook_dice.ttslua"),
+  },
+  Scenes: {
+    markdownRel: path.join(".dev", "E2E Playbooks", "Scenes-E2E.md"),
+    moduleRel: path.join("lib", "e2e_playbook_scenes.ttslua"),
   },
 };
 
@@ -134,7 +139,7 @@ function blockEndsWithHumanGate(blockText) {
 
 /** Level-1 suite open banners only (not step substeps like H1). */
 const SUITE_L1_HEADER_RE =
-  /printHeader\("Dice E2E: SUITE (0|E2|[A-Z])\s*[-:][^"]*"\s*,\s*1\)/g;
+  /printHeader\("[^"]*E2E: SUITE (0|E2|[A-Z])\s*[-:][^"]*"\s*,\s*1\)/g;
 
 /**
  * Maps top-level suite id → first RunSequence step index (1-based).
@@ -274,7 +279,16 @@ function generateCampaign(repoRoot, campaign) {
 function main() {
   const repoRoot = path.resolve(__dirname, "..", "..");
   const campaignArg = getArgValue("--campaign") || "Dice";
-  const campaignKey = campaignArg.charAt(0).toUpperCase() + campaignArg.slice(1).toLowerCase();
+  const campaignKey = campaignArg.toLowerCase() === "all"
+    ? "All"
+    : campaignArg.charAt(0).toUpperCase() + campaignArg.slice(1).toLowerCase();
+
+  if (campaignKey === "All") {
+    Object.keys(CAMPAIGNS).forEach((campaign) => {
+      generateCampaign(repoRoot, campaign);
+    });
+    return;
+  }
 
   if (!CAMPAIGNS[campaignKey]) {
     console.error(
