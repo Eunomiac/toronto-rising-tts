@@ -386,6 +386,8 @@ M._byKey["csheet/partials/project_block"] = [=[
     <Text id="project_@@INDEX@@_goal" class="project_goal_text" text=""  /> <!-- A text description of the goal of the project, e.g. "Wrest control of the Distillery District from the Jarvis Jacks" -->
   </HorizontalLayout>
 
+  <Image id="project_@@INDEX@@_project_die" class="project_die" image=""  /> <!-- Image corresponding to the current value of the project die, e.g. "project_die_3". Determine this value by comparing the start date and the increment to the current clock time: A project with a weekly increment that started four weeks ago should have a project die value of (10 - 4 = 6). This value should be dynamically updated any time the clock time changes, but must be bounded between 1 and 10. -->
+
   <Panel class="project_result_container" >
     <Image id="project_@@INDEX@@_result_image" class="project_result_image" image="" /> <!-- Either "project_win" or "project_crit", depending on result of launch roll -->
     <Text id="project_@@INDEX@@_result_margin" class="project_result_margin" text="+4" /> <!-- The margin on the launch roll, e.g. "+4", but only on a Win; if a Critical Win, set to active=false -->
@@ -455,8 +457,6 @@ M._byKey["csheet/partials/project_block"] = [=[
         </GridLayout>
     </HorizontalLayout>
   </GridLayout>
-
-  <Image id="project_@@INDEX@@_project_die" class="project_die" image=""  /> <!-- Image corresponding to the current value of the project die, e.g. "project_die_3". Determine this value by comparing the start date and the increment to the current clock time: A project with a weekly increment that started four weeks ago should have a project die value of (10 - 4 = 6). This value should be dynamically updated any time the clock time changes, but must be bounded between 1 and 10. -->
 
 
   <HorizontalLayout class="project_date_container" >

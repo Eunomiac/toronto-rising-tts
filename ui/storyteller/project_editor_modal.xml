@@ -20,7 +20,7 @@
 
     <HorizontalLayout class="projectEditor_fullFields_row" spacing="6" preferredHeight="30" flexibleHeight="0" />
 
-    <InputField class="projectEditor_text_field" preferredWidth="1000" preferredHeight="28" onValueChanged="HUD_projectEditorField" onEndEdit="HUD_projectEditorField" flexibleHeight="0" />
+    <InputField class="projectEditor_text_field" preferredWidth="1000" preferredHeight="30" fontSize="12" onValueChanged="HUD_projectEditorField" onEndEdit="HUD_projectEditorField" flexibleHeight="0" />
 
     <Dropdown class="projectEditor_dropdown" onValueChanged="HUD_projectDropdown(selectedIndex)" flexibleWidth="1" preferredWidth="140" />
 
