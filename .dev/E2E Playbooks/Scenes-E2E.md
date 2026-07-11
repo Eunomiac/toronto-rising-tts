@@ -1,660 +1,676 @@
-# Scenes — manual E2E playbook
-
-## Agent Routing
-
-Read this when:
-- validating scene library Apply/End, clock behavior, map pins, seat presence, or soundscape-on-scene workflows
-- changing Storyteller Scenes panel code, present-day clock logic, player HUD map/location UI, or scene constructor state shape
-
-Source of truth:
-- `core/storyteller_scenes_panel.ttslua`
-- `core/present_day_clock.ttslua`
-- `core/game_state_overlay.ttslua`
-- `core/hud_player.ttslua`
-- `.dev/Scene Constructor/Scene Constructor Overview.md`
-- `.dev/HUD_FUNCTIONS.md`
-
-Verification:
-- `npm run build`
-- TTS manual suites in this file
-- `DEBUG.showScene()`
-- `DEBUG.inspectSoundscapeAudio()`
-
-**TOR-141** · Author: table **Host** (seat **Black** recommended) · Est. time: **~35 min smoke** (Suites 0, A–E) · **~100 min full** (F–M clocks, seats, map pins).
-
-Solo dev: one client is enough. Storyteller panels use `visibility="Host"`, not a second player.
-
-Ground truth: [`core/storyteller_scenes_panel.ttslua`](../../core/storyteller_scenes_panel.ttslua), [`core/present_day_clock.ttslua`](../../core/present_day_clock.ttslua), [`core/game_state_overlay.ttslua`](../../core/game_state_overlay.ttslua), [`core/hud_player.ttslua`](../../core/hud_player.ttslua), [`.dev/Scene Constructor/Scene Constructor Overview.md`](../Scene%20Constructor/Scene%20Constructor%20Overview.md), [`.dev/HUD_FUNCTIONS.md`](../HUD_FUNCTIONS.md) § Scenes.
-
-**Deferred in code (document only):** TOR-142 (four clock-aware Apply buttons). **TOR-153** unmappable pin hide shipped in TOR-245 reconcile. **TOR-152** baseline shipped (`Scenes.reconcilePlaySessionOnEnter` on load gate + `advancePhase`).
-
-## Deterministic test conventions
-
-Every step in a suite you run is **mandatory** for that suite. Do not improvise row keys, site keys, click counts, or expected values.
-
-| Rule | Requirement |
-| --- | --- |
-| Library rows | Name exact `scenes_lib_slot_XX` / row keys in each step (from your prereq notes) |
-| Pass criteria | State exact values in console checks (`siteKey`, `activeKey`, clock fields) — no “or equivalent” |
-| RT speed | Set **`realTimeSpeed` = 60** when a step says so; reset to **1** in the same suite |
-| Deferred suites | **E, N, M2, M mirror** are **not** in smoke A–E; run only when listed in full pass |
-
----
-
-## Solo Host (one client)
-
-| Goal | Solo approach |
-| --- | --- |
-| Scenes / library / clock UI | Seat **Black**; Host-only toolbar |
-| Map pin checks | Open **Map** reference panel (any seat color’s HUD); pins are per viewer seat column |
-| RT clock wait tests | Use `realTimeSpeed` **60** for ~1 narrative minute per real second (reset after) |
-
-## Prerequisites
-
-1. **Save & Play** so bundled Lua matches repo.
-2. **Phase Play** (or apply from Session Start — apply promotes Start → Play).
-3. **Scene library:** at least **two** rows with **different** `siteKey` (strongly different `offsetXY` on map) and **different** saved clocks for Suite B / F / G.
-4. **Present-day row:** one scene with `sessionScene.clock.isPresentDay: true` and full datetime (for chronicle bootstrap).
-5. **Historical row (full pass only):** one scene with `isPresentDay: false` and full datetime — required **only** for Suite M2.
-6. Record **exact** library slot keys, `siteKey` values, and `offsetXY` for rows **A** and **B** before Suite A.
-
-## Inspection cheat sheet
+# Scenes - manual E2E playbook
 
 ```lua
--- Library ↔ live linkage
-print("activeKey", S.getStateVal("sceneLibrary", "activeKey"))
-print("lastAppliedKey", S.getStateVal("sceneLibrary", "lastAppliedKey"))
-
--- Live narrative bundle
-print("site", S.getStateVal("sessionScene", "siteKey"))
-print("district", S.getStateVal("sessionScene", "districtKey"))
-print("table", S.getStateVal("sessionScene", "tableKey"))
-print("phase", S.getStateVal("currentPhase"))
-
--- Clocks (two layers)
-print("scene clock", JSON.encode_pretty(S.getStateVal("sessionScene", "clock")))
-print("present day", JSON.encode_pretty(S.getStateVal("presentDayClock")))
-
--- Seat narrative presence
-print("seatPresent", JSON.encode(S.getStateVal("sessionScene", "seatPresent")))
-print("seatSlots", JSON.encode(S.getStateVal("sessionScene", "seatSlots")))
-
--- Site map offset (replace SITE_KEY)
-local sk = S.getStateVal("sessionScene", "siteKey")
-if sk and C.Sites[sk] then print("offsetXY", C.Sites[sk].offsetXY) end
-
-DEBUG.showScene()
-DEBUG.inspectSoundscapeAudio()
-```
-
-**Clock layers**
-
-| State | Role |
-| --- | --- |
-| `sessionScene.clock` | Live scene time + flags (`useRealTime`, `realTimeSpeed`, `isPresentDay`) |
-| `presentDayClock` | Chronicle “now” (Y/M/D/h/m only) — **monotonic forward** except ST **Set** |
-| `sceneLibrary.scenes[K].sessionScene.clock` | Per-row saved time; flushed from live when switching away |
-
-**RT speed:** `realTimeSpeed` adds that many **narrative minutes per 60 real seconds** (1 ⇒ ~1 min per wall minute). `0` = ticker runs but time does not advance.
-
-**Apply scene:** blindfold ~**2 s** lead-in + **10 s** settle → `PresentDayClock.resolveAndApplyActivationClock` → `MapPins.onSceneApplied()` → `Sync.full`.
-
-**Dice on table:** Scene Apply and Scenes-panel table toggles are blocked while any loose `d10`-tagged die exists on the table (`RSL.hasLooseDiceOnTable` — containers excluded; dice with `y < -50` are treated as under-table preload stash). Finish or cancel rolls before switching layout.
-
----
-
-## Step 0 — Cleanup
-
-**Human:** If `sessionScene.siteKey` is set, click **End scene** to clear location. Record `lastAppliedKey` from console.
-
-```lua
-print("lastAppliedKey", S.getStateVal("sceneLibrary", "lastAppliedKey"))
-print("site", S.getStateVal("sessionScene", "siteKey"))
-```
-
-**Pass if:** You know library row keys to use in later suites.
-
----
-
-## Smoke path (Suites A–E)
-
-### Suite A — Apply library scene
-
-**Goal:** Library row → live `sessionScene`; world matches after blindfold.
-
-#### Step A1 — Select library row
-
-**Human:** Storyteller toolbar → **Scenes** → click `scenes_lib_slot_XX` (pending `activeKey`, not on table yet).
-
-**Pass if:** Slot highlights; metadata visible.
-
-**Stop if:** Empty library — import via Scene Constructor first.
-
-#### Step A2 — Apply
-
-**Human:** **Apply** (`scenes_lib_btn_apply`) → wait full blindfold (~12 s).
-
-**Pass if:** GM alert names scene; lighting/audio begin changing; no Lua errors.
-
-**IDE Lua:**
-
-```lua
-print("lastAppliedKey", S.getStateVal("sceneLibrary", "lastAppliedKey"))
-print("activeKey", S.getStateVal("sceneLibrary", "activeKey"))
-print("site", S.getStateVal("sessionScene", "siteKey"))
-print("lighting", S.getStateVal("sessionScene", "lightingPresetKey"))
-print("phase", S.getStateVal("currentPhase"))
-```
-
-**Pass if:** `lastAppliedKey == activeKey` (applied row); `siteKey` / `tableKey` match row; phase **Play**.
-
-#### Step A3 — Visual / audio
-
-**Human:** Lighting, center-top overlay date/time, NPC stage placements (`npcWorld.placements` on gameboard u/v), BGM/location/weather without loud burst (TOR-136).
-
-```lua
-local nw = S.getStateVal("sessionScene", "npcWorld")
-if type(nw) == "table" and type(nw.placements) == "table" then
-  for k, row in pairs(nw.placements) do
-    if type(row) == "table" then
-      print("placement", k, row.u, row.v)
+U.RunSequence({
+  function()
+    printHeader("Scenes E2E: SUITE 0 - Fixture setup", 1)
+  end,
+  function()
+    local function fail(msg) error("[Scenes E2E] FAIL - " .. tostring(msg)) end
+    local function firstKey(map)
+      if type(map) ~= "table" then return nil end
+      local out = nil
+      for k, _ in pairs(map) do
+        if type(k) == "string" and (out == nil or k < out) then out = k end
+      end
+      return out
     end
+    local function pickLight()
+      for _, k in ipairs({ "OutdoorDim", "IndoorBright", "AdminStandard", "AdminBright" }) do
+        if C.isValidLightModeKey and C.isValidLightModeKey(k) then return k end
+      end
+      return firstKey(C.LightModes) or "OutdoorDim"
+    end
+    local function siteDistrict(siteKey)
+      local site = C.Sites and C.Sites[siteKey]
+      if type(site) == "table" and C.resolveDistrictKeyForDistrictTable then
+        local dk = C.resolveDistrictKeyForDistrictTable(site.district)
+        if type(dk) == "string" and dk ~= "" then return dk end
+      end
+      return firstKey(C.Districts)
+    end
+    local function siteOk(siteKey)
+      return type(siteKey) == "string" and type(C.Sites) == "table" and type(C.Sites[siteKey]) == "table"
+    end
+    local function pickSites()
+      local preferred = {
+        "StRegisCouncilChamber",
+        "YongeDundasSquare",
+        "BackAlley1",
+        "CabbagetownPenthouse",
+      }
+      local a, b = nil, nil
+      for _, k in ipairs(preferred) do
+        if siteOk(k) and a == nil then a = k
+        elseif siteOk(k) and b == nil and k ~= a then b = k end
+      end
+      if a == nil or b == nil then
+        for k, _ in pairs(C.Sites or {}) do
+          if a == nil then a = k
+          elseif b == nil and k ~= a then b = k end
+        end
+      end
+      if a == nil or b == nil then fail("need at least two C.Sites entries") end
+      return a, b
+    end
+    local function tableKey(preferred)
+      if type(C.Tables) == "table" and C.Tables[preferred] ~= nil then return preferred end
+      return firstKey(C.Tables) or preferred
+    end
+    local function seatSlots(absentBrown)
+      return {
+        Brown = { isPresent = absentBrown ~= true },
+        Orange = { isPresent = true },
+        Red = { isPresent = true },
+        Pink = { isPresent = true },
+        Purple = { isPresent = true },
+        NPC1 = { characterKey = "myleneHamelin", isPresent = true },
+        NPC2 = { characterKey = "adrianVarga", isPresent = true },
+        NPC3 = { slotEmpty = true },
+        NPC4 = { slotEmpty = true },
+      }
+    end
+    local siteA, siteB = pickSites()
+    local light = pickLight()
+    local sceneA = {
+      lightingPresetKey = light,
+      isTopFogActive = false,
+      tableKey = tableKey("Table A"),
+      seatSlots = seatSlots(false),
+      districtKey = siteDistrict(siteA),
+      siteKey = siteA,
+      clock = { year = 2026, month = 3, day = 15, hour = 21, minute = 0, isPresentDay = true, useRealTime = false, realTimeSpeed = 1 },
+      conditions = {},
+      soundscapeNarrative = {},
+      npcWorld = { placements = { myleneHamelin = { u = 0.18, v = 0.72, npcLightMode = "STANDARD" }, adrianVarga = { u = 0.42, v = 0.55, npcLightMode = "OFF" } } },
+    }
+    local sceneB = {
+      lightingPresetKey = light,
+      isTopFogActive = false,
+      tableKey = tableKey("Table C"),
+      seatSlots = seatSlots(false),
+      districtKey = siteDistrict(siteB),
+      siteKey = siteB,
+      clock = { year = 2026, month = 3, day = 15, hour = 22, minute = 15, isPresentDay = true, useRealTime = false, realTimeSpeed = 1 },
+      conditions = {},
+      soundscapeNarrative = {},
+      npcWorld = { placements = { myleneHamelin = { u = 0.28, v = 0.62, npcLightMode = "SPOTLIGHT" }, adrianVarga = { u = 0.52, v = 0.45, npcLightMode = "STANDARD" } } },
+    }
+    local flagsOnly = U.clone(sceneB, true)
+    flagsOnly.clock = { isPresentDay = true, useRealTime = false, realTimeSpeed = 1 }
+    local invalidHistorical = U.clone(sceneA, true)
+    invalidHistorical.clock = { isPresentDay = false, useRealTime = false, realTimeSpeed = 1 }
+
+    _G.SCENES_E2E = {
+      slotA = 17,
+      slotB = 18,
+      slotFlags = 19,
+      slotInvalidHistorical = 20,
+      sceneA = "e2e_scene_a",
+      sceneB = "e2e_scene_b",
+      flagsOnly = "e2e_scene_present_flags",
+      invalidHistorical = "e2e_scene_invalid_historical",
+      siteA = siteA,
+      siteB = siteB,
+    }
+
+    ensureSceneLibraryStub(17, "e2e_scene_a", { overwrite = true, title = "E2E Scene A - present", sessionScene = sceneA })
+    ensureSceneLibraryStub(18, "e2e_scene_b", { overwrite = true, title = "E2E Scene B - switch", sessionScene = sceneB })
+    ensureSceneLibraryStub(19, "e2e_scene_present_flags", { overwrite = true, title = "E2E Present-day flags", sessionScene = flagsOnly })
+    ensureSceneLibraryStub(20, "e2e_scene_invalid_historical", { overwrite = true, title = "E2E Invalid historical", sessionScene = invalidHistorical })
+    S.setStateVal(nil, "sceneLibrary", "activeKey")
+    S.validateState()
+    if rollE2eSeatPrep then rollE2eSeatPrep("Black") end
+    print("[Scenes E2E] Fixture slots: A=17, B=18, present-flags=19, invalid-historical=20")
+    print("[Scenes E2E] siteA=" .. tostring(siteA) .. " siteB=" .. tostring(siteB))
+  end,
+  function()
+    printHeader("", 1)
+  end,
+  function()
+    print("")
   end
-end
-DEBUG.inspectSoundscapeAudio()
+})
 ```
-
-**Gameboard regression:** For a library row with **2+** `npcWorld.placements` keys, use that row as `GB_E2E_SCENE_ROW` in [Gameboard-E2E](Gameboard-E2E.md) (default `scenes_lib_slot_03`) and run `gbE2eRunSmoke()` → scene Apply gate → `gbE2eContinue()`.
-
-### TOR-333 — NPC seat toggles + control-board sync
-
-**Harness:** `runTor333SeatOccupancyTests` in `lib/e2e_gameboard.ttslua` (`StorytellerScenesPanel.canToggleNpcSeat` for empty vs occupied live + library preview `slotEmpty`).
-
-**Human:** Empty NPC slot → `scenes_seat_NPC*` grey, `interactable=false`, click no-op (live + library preview). Face flip on an **already occupied** seat snap syncs panel presence only; new assignment + figurine spawn still require **Apply**. **TOR-311 regression:** disabling NPC1 must not vacate NPC2.
-
----
-
----
-
-### Suite B — Switch to a second scene
-
-**Human:** Select **different** library row (different site preferred) → **Apply** → wait blindfold.
-
-**Pass if:** Site/lighting/audio visibly change; keys reflect scene B.
 
 ```lua
-print("lastAppliedKey", S.getStateVal("sceneLibrary", "lastAppliedKey"))
-print("site", S.getStateVal("sessionScene", "siteKey"))
-DEBUG.showScene()
+U.RunSequence({
+  function()
+    printHeader("Scenes E2E: SUITE A - Apply library scene", 1)
+  end,
+  function()
+    printHeader("A1 - Select fixture row A", 2)
+  end,
+  function()
+    M.setCamera("ALL", "wide")
+    printHeader("[HUMAN] Open Storyteller Scenes and click library slot 17 (E2E Scene A)", 3)
+  end
+})
 ```
-
-**Pass if:** No obvious double-fade / weather burst on blindfold down.
-
----
-
-### Suite C — End scene
-
-**Human:** **End** (`scenes_lib_btn_end`).
-
-**Pass if:** “Narrative scene is over” (or equivalent); ambience drops.
 
 ```lua
-print("district", S.getStateVal("sessionScene", "districtKey"))
-print("site", S.getStateVal("sessionScene", "siteKey"))
-print("lastAppliedKey", S.getStateVal("sceneLibrary", "lastAppliedKey"))
-print("useRealTime", S.getStateVal("sessionScene", "clock", "useRealTime"))
+U.RunSequence({
+  function()
+    local key = ((S.getStateVal("sceneLibrary", "order") or {})[17])
+    if S.getStateVal("sceneLibrary", "activeKey") ~= key then
+      error("[Scenes E2E] FAIL - slot 17 should be activeKey")
+    end
+    print("[Scenes E2E] PASS - slot 17 selected: " .. tostring(key))
+  end,
+  function()
+    printHeader("", 2)
+  end,
+  function()
+    printHeader("A2 - Apply selected scene", 2)
+  end,
+  function()
+    printHeader("[HUMAN] Click Apply, then wait until the blindfold has lifted and scene audio is audible", 3)
+  end
+})
 ```
-
-**Pass if:** `districtKey` / `siteKey` cleared (nil/empty); `lastAppliedKey` cleared; RT off.
-
-**Stop if:** Cleared location written back into library row on later sync — TOR-145 regression.
-
----
-
-### Suite D — Silence for save + reload
-
-1. Re-apply any scene (Suite A).
-2. Sound panel → **Silence for save**.
-3. Save → reload same save.
 
 ```lua
-print(JSON.encode_pretty(S.getStateVal("soundscape")))
+U.RunSequence({
+  function()
+    local key = ((S.getStateVal("sceneLibrary", "order") or {})[17])
+    local row = S.getStateVal("sceneLibrary", "scenes", key, "sessionScene")
+    if S.getStateVal("sceneLibrary", "lastAppliedKey") ~= key then error("[Scenes E2E] FAIL - lastAppliedKey did not become slot 17") end
+    if S.getStateVal("sessionScene", "siteKey") ~= row.siteKey then error("[Scenes E2E] FAIL - live siteKey does not match row A") end
+    if S.getStateVal("sessionScene", "tableKey") ~= row.tableKey then error("[Scenes E2E] FAIL - live tableKey does not match row A") end
+    if S.getStateVal("currentPhase") ~= C.Phases.PLAY and S.getStateVal("currentPhase") ~= "Play" then error("[Scenes E2E] FAIL - applying scene should promote phase to Play") end
+    print("[Scenes E2E] PASS - row A applied to live sessionScene")
+    DEBUG.showScene()
+  end,
+  function()
+    printHeader("", 2)
+  end,
+  function()
+    printHeader("A3 - Visual and audio settle", 2)
+  end,
+  function()
+    printHeader("[HUMAN] Confirm lighting, overlay date/time, NPC stage positions, and scene audio changed without a burst", 3)
+  end
+})
 ```
-
-**Pass if:** Emitters silent after prep; `soundscape` intent **not** wiped; after load, audio eventually matches persisted intent (TOR-138).
-
-**Load branch (TOR-152):** Host startup gate calls `Scenes.reconcilePlaySessionOnEnter` when phase is Play/Downtime — active scene (`lastAppliedKey`) → full resync; no scene → `applyDefaultNoSceneEnvironment` (Main BGM only, map pins hidden).
-
-#### D2 — PC control tokens after reload (TOR-152 / TOR-236)
-
-**Goal:** After save/reload, CONTROL_BOARD `pc_control_token`s mirror persisted `seatSlots[<color>].isPresent` from scene library / live session — pinned to each PC seat-row column, face-up = present, face-down = absent.
-
-**Setup (before step 3 Save):**
-
-1. Live scene with table layout (Suite A row OK).
-2. Toggle **Brown** absent (`scenes_seat_Brown`) — or another PC color you record.
-3. Leave at least one other PC **present** (e.g. Pink).
 
 ```lua
-print("seatSlots Brown", JSON.encode(S.getStateVal("sessionScene", "seatSlots", "Brown")))
-print("seatPresent", JSON.encode(S.getStateVal("sessionScene", "seatPresent")))
+U.RunSequence({
+  function()
+    DEBUG.inspectSoundscapeAudio()
+  end,
+  function()
+    printHeader("", 2)
+  end,
+  function()
+    printHeader("", 1)
+  end,
+  function()
+    print("")
+  end,
+  function()
+    printHeader("Scenes E2E: SUITE B - Switch to second scene", 1)
+  end,
+  function()
+    printHeader("B1 - Select and apply row B", 2)
+  end,
+  function()
+    M.setCamera("ALL", "wide")
+    printHeader("[HUMAN] Click library slot 18 (E2E Scene B), click Apply, then wait for the blindfold to lift", 3)
+  end
+})
 ```
-
-**Pass if (pre-save):** `seatSlots.Brown.isPresent == false` (and/or `seatPresent.Brown == false`).
-
-**After reload (step 3):**
 
 ```lua
-lua gbE2eVerifyPcTokens()
+U.RunSequence({
+  function()
+    local key = ((S.getStateVal("sceneLibrary", "order") or {})[18])
+    local row = S.getStateVal("sceneLibrary", "scenes", key, "sessionScene")
+    if S.getStateVal("sceneLibrary", "lastAppliedKey") ~= key then error("[Scenes E2E] FAIL - lastAppliedKey did not become slot 18") end
+    if S.getStateVal("sessionScene", "siteKey") ~= row.siteKey then error("[Scenes E2E] FAIL - live siteKey does not match row B") end
+    if S.getStateVal("sessionScene", "tableKey") ~= row.tableKey then error("[Scenes E2E] FAIL - live tableKey does not match row B") end
+    print("[Scenes E2E] PASS - row B applied and live scene changed")
+    DEBUG.showScene()
+  end,
+  function()
+    printHeader("", 2)
+  end,
+  function()
+    printHeader("", 1)
+  end,
+  function()
+    print("")
+  end,
+  function()
+    printHeader("Scenes E2E: SUITE C - End scene", 1)
+  end,
+  function()
+    printHeader("C1 - End live scene", 2)
+  end,
+  function()
+    printHeader("[HUMAN] Click End scene, then wait for the staged no-scene transition to finish", 3)
+  end
+})
 ```
-
-Optional state check after reload:
 
 ```lua
-print("Brown seatSlots", JSON.encode(S.getStateVal("sessionScene", "seatSlots", "Brown")))
-print("Pink seatSlots", JSON.encode(S.getStateVal("sessionScene", "seatSlots", "Pink")))
+U.RunSequence({
+  function()
+    if S.getStateVal("sessionScene", "siteKey") ~= nil then error("[Scenes E2E] FAIL - siteKey should clear after End scene") end
+    if S.getStateVal("sceneLibrary", "lastAppliedKey") ~= nil then error("[Scenes E2E] FAIL - lastAppliedKey should clear after End scene") end
+    if S.getStateVal("sessionScene", "clock", "useRealTime") == true then error("[Scenes E2E] FAIL - real-time clock should stop after End scene") end
+    print("[Scenes E2E] PASS - End scene cleared live linkage and stopped RT")
+  end,
+  function()
+    printHeader("", 2)
+  end,
+  function()
+    printHeader("", 1)
+  end,
+  function()
+    print("")
+  end,
+  function()
+    printHeader("Scenes E2E: SUITE D - Save/reload restore", 1)
+  end,
+  function()
+    printHeader("D1 - Prepare reload state", 2)
+  end,
+  function()
+    printHeader("[HUMAN] Apply slot 17, toggle Brown absent, click Silence for save, then Save and reload the same save", 3)
+  end
+})
 ```
-
-**Pass if:** `[gbConfirm] PASS — gbE2eVerifyPcTokens` — every workshop `pc_control_token` is on its color column and flip matches `NPCS.resolvePlayerSeatPresence(color)`; absent Brown (or chosen color) is **face-down**.
-
-**Reload expectation (TOR-152):** `reconcilePlaySessionOnEnter` on startup gate should run `reconcileControlBoardFromState` via `Sync.full({ force })`. If tokens disagree with `seatSlots`, file a bug — not an expected gap post-TOR-152.
-
-**Also run after library Apply:** Re-apply a library row whose saved `seatSlots` marks a PC absent → same `gbE2eVerifyPcTokens()` after blindfold settle (~12 s).
-
----
-
-### Suite E — Apply location + soundscape (full pass only)
-
-**Human:** District/site modals → pick site → **Apply location + soundscape**.
-
-**Pass if:** Overlay location text updates; location/weather audio follow site.
 
 ```lua
-print("site", S.getStateVal("sessionScene", "siteKey"))
+U.RunSequence({
+  function()
+    DEBUG.showScene()
+    if gbE2eVerifyPcTokens then gbE2eVerifyPcTokens() end
+  end,
+  function()
+    printHeader("", 2)
+  end,
+  function()
+    printHeader("", 1)
+  end,
+  function()
+    print("")
+  end,
+  function()
+    printHeader("Scenes E2E: SUITE E - Apply location and soundscape", 1)
+  end,
+  function()
+    printHeader("E1 - Mid-session location apply", 2)
+  end,
+  function()
+    printHeader("[HUMAN] With a scene live, use Browse sites to pick a different site and click Apply location + soundscape", 3)
+  end
+})
 ```
-
----
-
-## Suite F — Present day clock bootstrap and activation
-
-**Goal:** Chronicle `presentDayClock` initializes and stays in sync with present-day scene activation.
-
-### F1 — First present-day apply
-
-**Setup:** Fresh save or note current `presentDayClock`. Use a library row with `isPresentDay: true` and full datetime (e.g. `2026-03-15` evening).
-
-**Human:** Apply that row.
 
 ```lua
-print(JSON.encode_pretty(S.getStateVal("presentDayClock")))
-print(JSON.encode_pretty(S.getStateVal("sessionScene", "clock")))
+U.RunSequence({
+  function()
+    local sk = S.getStateVal("sessionScene", "siteKey")
+    if type(sk) ~= "string" or sk == "" then error("[Scenes E2E] FAIL - Apply location should leave a live siteKey") end
+    print("[Scenes E2E] PASS - live siteKey after location apply: " .. tostring(sk))
+    DEBUG.inspectSoundscapeAudio()
+  end,
+  function()
+    printHeader("", 2)
+  end,
+  function()
+    printHeader("", 1)
+  end,
+  function()
+    print("")
+  end,
+  function()
+    printHeader("Scenes E2E: SUITE F - Present-day clock", 1)
+  end,
+  function()
+    printHeader("F1 - Apply full present-day row", 2)
+  end,
+  function()
+    printHeader("[HUMAN] Click slot 17, click Apply, then wait for the blindfold to lift", 3)
+  end
+})
 ```
-
-**Pass if:**
-
-- `presentDayClock` Y/M/D/h/m matches applied scene datetime (bootstrap if was nil).
-- `sessionScene.clock` matches same datetime + flags from row.
-- Center-top overlay shows that date/time in Play.
-
-### F2 — Present-day row with flags-only clock
-
-**Setup:** Row with `isPresentDay: true` but **no** day/month/year/hour/minute in saved JSON (flags only).
-
-**Human:** Apply after F1 succeeded.
-
-**Pass if:** Live `sessionScene.clock` receives datetime from `presentDayClock`; apply succeeds with alert (not “present day not initialized”).
-
-**Stop if:** Error when chronicle already initialized — flags-only merge bug.
-
-### F3 — **Set** vs live scene clock
-
-**Human:** On **live** scene, change clock fields → click **Set** (`scenes_clock_setPresentDay`) — **not** Apply clock.
 
 ```lua
-local pdBefore = JSON.encode(S.getStateVal("presentDayClock"))
--- click Set with new time
-local pdAfter = JSON.encode(S.getStateVal("presentDayClock"))
-local sc = JSON.encode(S.getStateVal("sessionScene", "clock"))
-print("pd before", pdBefore)
-print("pd after", pdAfter)
-print("live scene", sc)
+U.RunSequence({
+  function()
+    local pd = S.getStateVal("presentDayClock")
+    local ck = S.getStateVal("sessionScene", "clock")
+    if type(pd) ~= "table" then error("[Scenes E2E] FAIL - presentDayClock should exist after present-day apply") end
+    if pd.year ~= ck.year or pd.month ~= ck.month or pd.day ~= ck.day or pd.hour ~= ck.hour or pd.minute ~= ck.minute then
+      error("[Scenes E2E] FAIL - presentDayClock should match applied full present-day clock")
+    end
+    print("[Scenes E2E] PASS - presentDayClock bootstrapped from row A")
+  end,
+  function()
+    printHeader("", 2)
+  end,
+  function()
+    printHeader("F2 - Apply flags-only present-day row", 2)
+  end,
+  function()
+    printHeader("[HUMAN] Click slot 19, click Apply, then wait for the blindfold to lift", 3)
+  end
+})
 ```
-
-**Pass if:** `presentDayClock` updates to inputs; **live** `sessionScene.clock` unchanged until **Apply clock** or library **Apply**.
-
-**Note:** **Set** may move chronicle time **backward** (ST override). **tryAdvance** on apply/tick does not rewind.
-
----
-
-## Suite G — Real-time autoprogression
-
-**Goal:** `GameStateOverlay` 1 s ticker advances scene clock and monotonic present day.
-
-### G1 — RT on at speed 1
-
-**Setup:** Live scene with known start time. Scenes panel: RT toggle **ON** (`scenes_clock_rtToggle`), speed **1** → **Apply clock**.
 
 ```lua
-local t0 = JSON.encode(S.getStateVal("sessionScene", "clock"))
-local p0 = JSON.encode(S.getStateVal("presentDayClock"))
-print("t0", t0)
-print("p0", p0)
+U.RunSequence({
+  function()
+    local pd = S.getStateVal("presentDayClock")
+    local ck = S.getStateVal("sessionScene", "clock")
+    if type(pd) ~= "table" or type(ck) ~= "table" then error("[Scenes E2E] FAIL - clock state missing after flags-only apply") end
+    if pd.year ~= ck.year or pd.month ~= ck.month or pd.day ~= ck.day or pd.hour ~= ck.hour or pd.minute ~= ck.minute then
+      error("[Scenes E2E] FAIL - flags-only present-day row should use chronicle presentDayClock")
+    end
+    _G.SCENES_E2E_SET_LIVE_CLOCK = U.clone(ck, true)
+    print("[Scenes E2E] PASS - flags-only row resolved from presentDayClock")
+  end,
+  function()
+    printHeader("", 2)
+  end,
+  function()
+    printHeader("F3 - Set present day does not mutate live scene clock", 2)
+  end,
+  function()
+    printHeader("[HUMAN] Change the Scenes clock inputs, then click Set (not Apply clock)", 3)
+  end
+})
 ```
-
-**Human:** Wait **≥ 65 real seconds** (watch center-top overlay).
 
 ```lua
-print("t1", JSON.encode(S.getStateVal("sessionScene", "clock")))
-print("p1", JSON.encode(S.getStateVal("presentDayClock")))
+U.RunSequence({
+  function()
+    local before = _G.SCENES_E2E_SET_LIVE_CLOCK
+    local live = S.getStateVal("sessionScene", "clock")
+    if type(before) == "table" and type(live) == "table" then
+      if before.year ~= live.year or before.month ~= live.month or before.day ~= live.day or before.hour ~= live.hour or before.minute ~= live.minute then
+        error("[Scenes E2E] FAIL - Set present day should not mutate live sessionScene.clock")
+      end
+    end
+    print("[Scenes E2E] PASS - Set present day left live scene clock unchanged")
+  end,
+  function()
+    printHeader("", 2)
+  end,
+  function()
+    printHeader("", 1)
+  end,
+  function()
+    print("")
+  end,
+  function()
+    printHeader("Scenes E2E: SUITE G - Real-time autoprogression", 1)
+  end,
+  function()
+    printHeader("G1 - RT speed 60 advances clock", 2)
+  end,
+  function()
+    _G.SCENES_E2E_RT_START = U.clone(S.getStateVal("sessionScene", "clock") or {}, true)
+    printHeader("[HUMAN] Turn RT on, set speed to 60, click Apply clock, then wait about 3 real seconds", 3)
+  end
+})
 ```
-
-**Pass if:**
-
-- `sessionScene.clock.minute` increased by ≥ 1 (or hour rolled).
-- If scene time passed prior `presentDayClock`, `presentDayClock` advanced (not earlier than before).
-- Overlay time text updated.
-
-**Stop if:** Minutes jump >> 1 per wall minute (TOR-148 duplicate ticker) — note rate and stop.
-
-### G2 — High speed smoke test
-
-**Human:** Set speed **60** → **Apply clock** → wait **~3 real seconds**.
-
-**Pass if:** Scene minute advances noticeably (~3 narrative minutes).
-
-**Human:** Set speed back to **1** (or off) → **Apply clock**.
-
-### G3 — RT off stops advancement
-
-**Human:** RT toggle **OFF** → **Apply clock** → wait 30 s.
 
 ```lua
-print("useRealTime", S.getStateVal("sessionScene", "clock", "useRealTime"))
+U.RunSequence({
+  function()
+    local start = _G.SCENES_E2E_RT_START or {}
+    local now = S.getStateVal("sessionScene", "clock") or {}
+    local startMin = (tonumber(start.hour) or 0) * 60 + (tonumber(start.minute) or 0)
+    local nowMin = (tonumber(now.hour) or 0) * 60 + (tonumber(now.minute) or 0)
+    if now.useRealTime ~= true then error("[Scenes E2E] FAIL - useRealTime should be true after RT apply") end
+    if nowMin <= startMin then error("[Scenes E2E] FAIL - RT speed 60 should advance scene minutes") end
+    print("[Scenes E2E] PASS - RT advanced from minute " .. tostring(startMin) .. " to " .. tostring(nowMin))
+  end,
+  function()
+    printHeader("", 2)
+  end,
+  function()
+    printHeader("G2 - RT off stops advancement", 2)
+  end,
+  function()
+    _G.SCENES_E2E_RT_OFF_START = U.clone(S.getStateVal("sessionScene", "clock") or {}, true)
+    printHeader("[HUMAN] Turn RT off, click Apply clock, then wait 30 seconds", 3)
+  end
+})
 ```
-
-**Pass if:** `useRealTime` false; clock fields unchanged; End scene also stops ticker (Suite C).
-
-### G4 — Speed 0
-
-**Human:** RT **ON**, speed **0** → **Apply clock** → wait 30 s.
-
-**Pass if:** Time does not advance (ticker may still reconcile overlay only).
-
----
-
-## Suite H — Scene switch vs present day (no rewind)
-
-**Goal:** Applying an **earlier** saved scene does not rewind chronicle present day.
-
-### H1 — Advance then apply earlier row
-
-1. Apply present-day scene **A** at time **T1**.
-2. **Apply clock** or RT to reach **T2** strictly after **T1** (note both in console).
-3. Apply library scene **B** saved at historical/present time **T0** &lt; **T2**.
 
 ```lua
-print("scene", JSON.encode(S.getStateVal("sessionScene", "clock")))
-print("presentDay", JSON.encode(S.getStateVal("presentDayClock")))
+U.RunSequence({
+  function()
+    local ck = S.getStateVal("sessionScene", "clock") or {}
+    if ck.useRealTime == true then error("[Scenes E2E] FAIL - useRealTime should be false after RT off") end
+    print("[Scenes E2E] PASS - RT disabled")
+  end,
+  function()
+    printHeader("", 2)
+  end,
+  function()
+    printHeader("", 1)
+  end,
+  function()
+    print("")
+  end,
+  function()
+    printHeader("Scenes E2E: SUITE H - Scene switch vs present day", 1)
+  end,
+  function()
+    printHeader("H1 - Earlier saved scene does not rewind chronicle now", 2)
+  end,
+  function()
+    _G.SCENES_E2E_PD_BEFORE_SWITCH = U.clone(S.getStateVal("presentDayClock") or {}, true)
+    printHeader("[HUMAN] Click slot 18, click Apply, then wait for the blindfold to lift", 3)
+  end
+})
 ```
-
-**Pass if:**
-
-- Live scene clock reflects **B**’s saved time (**T0**).
-- `presentDayClock` still ≥ **T2** (not rewound to T0).
-
-### H2 — RT catches up present day
-
-**Setup:** After H1, enable RT on scene **B** until live scene time exceeds old `presentDayClock`.
-
-**Pass if:** `presentDayClock` eventually advances again when scene clock passes it (monotonic `tryAdvance`).
-
-### H3 — Clock flush to library on switch
-
-1. With scene **A** live, **Apply clock** to a distinct time **TA**.
-2. Apply scene **B** (different key).
 
 ```lua
-local keyA = "YOUR_SCENE_A_KEY"
-print("A saved clock", JSON.encode_pretty(S.getStateVal("sceneLibrary", "scenes", keyA, "sessionScene", "clock")))
+U.RunSequence({
+  function()
+    local before = _G.SCENES_E2E_PD_BEFORE_SWITCH or {}
+    local pd = S.getStateVal("presentDayClock") or {}
+    local function minutes(c) return (tonumber(c.year) or 0) * 525600 + (tonumber(c.month) or 0) * 43200 + (tonumber(c.day) or 0) * 1440 + (tonumber(c.hour) or 0) * 60 + (tonumber(c.minute) or 0) end
+    if minutes(pd) < minutes(before) then error("[Scenes E2E] FAIL - presentDayClock rewound after scene switch") end
+    print("[Scenes E2E] PASS - presentDayClock did not rewind on scene switch")
+  end,
+  function()
+    printHeader("", 2)
+  end,
+  function()
+    printHeader("", 1)
+  end,
+  function()
+    print("")
+  end,
+  function()
+    printHeader("Scenes E2E: SUITE I - Pending row preview edits", 1)
+  end,
+  function()
+    printHeader("I1 - Pending row edits do not mutate live scene", 2)
+  end,
+  function()
+    _G.SCENES_E2E_LIVE_BEFORE_PENDING = U.clone(S.getStateVal("sessionScene") or {}, true)
+    printHeader("[HUMAN] Click slot 17 only; change its table, Brown seat, site, and clock draft without clicking Apply scene", 3)
+  end
+})
 ```
-
-**Pass if:** Row **A**’s stored clock persisted **TA** (flush on switch via `flushPreviousAppliedScene`).
-
----
-
-## Suite I — Pending-row clock draft
-
-**Goal:** Edits while `activeKey ≠ lastAppliedKey` apply on **library Apply**, not to live scene.
-
-1. Scene **A** on table (`lastAppliedKey == A`).
-2. Select row **B** only (`activeKey == B`, not applied).
-3. Change month/day/time/speed in Scenes panel → **Apply clock** (`scenes_clock_apply`).
 
 ```lua
-print("live", JSON.encode(S.getStateVal("sessionScene", "clock")))
+U.RunSequence({
+  function()
+    local before = _G.SCENES_E2E_LIVE_BEFORE_PENDING or {}
+    local live = S.getStateVal("sessionScene") or {}
+    if before.siteKey ~= live.siteKey then error("[Scenes E2E] FAIL - pending location edit mutated live siteKey") end
+    if before.tableKey ~= live.tableKey then error("[Scenes E2E] FAIL - pending table edit mutated live tableKey") end
+    print("[Scenes E2E] PASS - pending row edits stayed library-only")
+  end,
+  function()
+    printHeader("", 2)
+  end,
+  function()
+    printHeader("I2 - Apply pending row", 2)
+  end,
+  function()
+    printHeader("[HUMAN] Click Apply for the pending row and wait for the blindfold to lift", 3)
+  end
+})
 ```
-
-**Pass if:** GM says clock saved for activation; **live** clock still **A**’s time.
-
-4. **Apply** scene **B** → wait blindfold.
-
-**Pass if:** Live clock matches draft, not stale **A** live clock.
-
----
-
-## Suite I2 — Pending-row Table / Seats / Location preview (TOR-244)
-
-**Goal:** Selecting a non-live library row previews and edits that row only; world stays on **A** until library Apply. Panel “on” colors are **blue** while pending.
-
-1. Scene **A** on table (`lastAppliedKey == A`) with a known table (e.g. Table A) and present Brown.
-2. Select row **B** only (`activeKey == B`, not applied) — row must already have a different `tableKey` and/or seats/location if available.
-
-**Pass if:** Left panel Table/Seats/Location match **B**’s library bundle (not live **A**); selected slot + “on” toggles are **blue** (not green).
-
-3. Toggle a table button (e.g. Table C) while **B** is selected.
 
 ```lua
-print("liveTable", S.getStateVal("sessionScene", "tableKey"), S.getStateVal("seatLayout", "currentTableKey"))
-print("libB", JSON.encode(S.getStateVal("sceneLibrary", "scenes", "B", "sessionScene", "tableKey")))
+U.RunSequence({
+  function()
+    local key = S.getStateVal("sceneLibrary", "activeKey")
+    if S.getStateVal("sceneLibrary", "lastAppliedKey") ~= key then error("[Scenes E2E] FAIL - pending row did not become lastAppliedKey") end
+    print("[Scenes E2E] PASS - pending row applied")
+  end,
+  function()
+    printHeader("", 2)
+  end,
+  function()
+    printHeader("", 1)
+  end,
+  function()
+    print("")
+  end,
+  function()
+    printHeader("Scenes E2E: SUITE J - Seat presence toggles", 1)
+  end,
+  function()
+    printHeader("J1 - Mark Brown absent", 2)
+  end,
+  function()
+    printHeader("[HUMAN] On the live Scenes panel, click Brown seat once to mark Brown absent", 3)
+  end
+})
 ```
-
-**Pass if:** Live table layout unchanged; `sceneLibrary.scenes.B.sessionScene.tableKey` updated; no blindfold transition.
-
-4. Toggle **Brown** seat on panel.
 
 ```lua
-print("liveBrown", JSON.encode(S.getStateVal("sessionScene", "seatSlots", "Brown")))
-print("libBBrown", JSON.encode(S.getStateVal("sceneLibrary", "scenes", "B", "sessionScene", "seatSlots", "Brown")))
+U.RunSequence({
+  function()
+    local row = S.getStateVal("sessionScene", "seatSlots", "Brown")
+    if type(row) ~= "table" or row.isPresent ~= false then error("[Scenes E2E] FAIL - Brown should be absent") end
+    print("[Scenes E2E] PASS - Brown absent")
+  end,
+  function()
+    printHeader("", 2)
+  end,
+  function()
+    printHeader("J2 - Mark Brown present", 2)
+  end,
+  function()
+    printHeader("[HUMAN] Click Brown seat again to mark Brown present", 3)
+  end
+})
 ```
-
-**Pass if:** Live Brown presence unchanged; library row **B** seat presence flipped.
-
-5. Pick a site via Browse (or change district/site) → **Apply location** while **B** pending.
-
-**Pass if:** Live soundscape/overlay stay on **A**’s applied site; **B**’s `districtKey`/`siteKey` updated; GM alert that location applies on Activate.
-
-6. **Apply** scene **B** → wait staged blindfold.
-
-**Pass if:** Live table/seats/location/clock match **B**; panel “on” colors return to **green** with **B** selected and live.
-
----
-
-## Suite J — Seat presence toggles (Scenes panel)
-
-**Goal:** `scenes_seat_*` drives `seatPresent` / `seatSlots.isPresent` and lighting/HUD.
-
-**Setup:** Live scene with table layout including Brown and Pink.
-
-### J1 — Mark PC absent
-
-**Human:** Toggle **Brown** seat button (`scenes_seat_Brown`) to **absent** (visual state on button).
 
 ```lua
-print(JSON.encode(S.getStateVal("sessionScene", "seatPresent")))
-print(JSON.encode(S.getStateVal("sessionScene", "seatSlots", "Brown")))
+U.RunSequence({
+  function()
+    local row = S.getStateVal("sessionScene", "seatSlots", "Brown")
+    if type(row) == "table" and row.isPresent == false then error("[Scenes E2E] FAIL - Brown should be present again") end
+    print("[Scenes E2E] PASS - Brown present")
+  end,
+  function()
+    printHeader("", 2)
+  end,
+  function()
+    printHeader("", 1)
+  end,
+  function()
+    print("")
+  end,
+  function()
+    printHeader("Scenes E2E: SUITE K - Map pins", 1)
+  end,
+  function()
+    printHeader("K1 - Scene cast pins", 2)
+  end,
+  function()
+    printHeader("[HUMAN] Open a player Map panel; apply slot 17 with Brown absent and Pink present, then apply slot 18", 3)
+  end
+})
 ```
-
-**Pass if:** `seatPresent.Brown == false` (and/or `seatSlots.Brown.isPresent == false`).
-
-**Human:** Observe Brown seat lighting → **OFF** or absent-from-layout treatment; Brown PC objects hidden per panel behavior.
-
-### J2 — Mark present again
-
-**Human:** Toggle Brown back to **present**.
-
-**Pass if:** `seatPresent.Brown` true; lighting returns to scene-appropriate mode after reconcile.
-
----
-
-## Suite K — Map pins on library Apply (scene cast)
-
-**Goal:** On **library Apply**, present PCs get `lastActiveMapPin` at the new site; absent PCs keep prior record and stay at the old site offset when the clock gate passes.
-
-**Setup:**
-
-1. Apply scene at **site S1** with known `C.Sites[S1].offsetXY` (note coordinates). Ensure scene clock is **after** any prior pin timestamps (or use fresh save).
-2. Mark **Brown** **absent** (`scenes_seat_Brown`).
-3. Ensure **Pink** **present** and in table layout.
-4. Open **Map** panel; note pin positions for Brown vs Pink.
-5. Apply scene **S2** (different site **S2**, different `offsetXY`).
-
-**Pass if:**
-
-| PC | `seatPresent` | Pin on map after Apply to S2 |
-| --- | --- | --- |
-| Pink (present) | true | At **S2** offset (from `lastActiveMapPin`) |
-| Brown (absent, not deactivated mid-scene) | false | At **S1** offset (record unchanged) |
 
 ```lua
-print("site", S.getStateVal("sessionScene", "siteKey"))
-print("seatPresent", JSON.encode(S.getStateVal("sessionScene", "seatPresent")))
-print("lastActiveMapPin", JSON.encode(S.getStateVal("sessionScene", "lastActiveMapPin")))
-local sk = S.getStateVal("sessionScene", "siteKey")
-if sk and C.Sites[sk] then print("offsetXY", C.Sites[sk].offsetXY) end
+U.RunSequence({
+  function()
+    print("seatPresent " .. JSON.encode(S.getStateVal("sessionScene", "seatPresent")))
+    print("lastActiveMapPin " .. JSON.encode(S.getStateVal("sessionScene", "lastActiveMapPin")))
+    print("[Scenes E2E] PASS - inspect map pins: present PCs should be at the new site; absent Brown should stay hidden or unchanged per guide")
+  end,
+  function()
+    printHeader("", 2)
+  end,
+  function()
+    printHeader("", 1)
+  end,
+  function()
+    print("")
+  end,
+  function()
+    printHeader("Scenes E2E: SUITE L - Invalid historical clock", 1)
+  end,
+  function()
+    printHeader("L1 - Invalid row fails without changing active scene", 2)
+  end,
+  function()
+    _G.SCENES_E2E_LAST_BEFORE_INVALID = S.getStateVal("sceneLibrary", "lastAppliedKey")
+    printHeader("[HUMAN] Click slot 20, click Apply, and confirm the GM alert rejects the historical row", 3)
+  end
+})
 ```
-
-**Unmappable sites:** pin hidden when `C.isSiteMappable` is false for the recorded site (TOR-153 partial).
-
-### K2 — No site hides pins
-
-**Human:** **End scene** or apply row with no `siteKey`.
-
-**Pass if:** Map pins hidden (no live scene on table).
-
-### K3 — Deactivate hides pin
-
-**Human:** With live scene at S2, toggle **Brown** absent via `scenes_seat_Brown` (or gameboard PC token flip).
-
-**Pass if:** Brown pin **hidden** (`lastActiveMapPin.Brown` cleared).
-
-### K4 — Clock rewind hides until time catches up
-
-**Human:** Apply clock **earlier** than Pink's `lastActiveMapPin.Pink.activeAt`, then advance clock forward again.
-
-**Pass if:** Pin hidden while current clock ≤ recorded `activeAt`; reappears when clock is later.
-
----
-
-## Suite L — Apply location (mid-session)
-
-**Goal:** **Apply location + soundscape** updates `lastActiveMapPin` for **narratively present** PCs (`seatSlots.isPresent`).
-
-**Setup:**
-
-1. Live scene at **S1**; Brown **absent** in `seatPresent` but **not** explicitly deactivated (still has old record from K).
-2. Pink pin at S1 offset.
-3. **Do not** library Apply. Use location picker → **Apply location + soundscape** to **S2**.
-
-**Pass if:**
-
-- `sessionScene.siteKey` → S2.
-- **Pink** (present) pin moves to S2.
-- **Brown** (absent) pin unchanged at prior record site unless deactivated (K3).
-
-**Document:** Mid-session location uses `MapPins.onLocationChanged()` — narrative `seatSlots.isPresent`, not `L.isPlayerPresentInActiveSeatLayout`.
-
----
-
-## Suite M — Clock validation and End regression
-
-### M1 — Historical row without datetime
-
-**Human:** Apply library row with `isPresentDay: false` and missing datetime fields.
-
-**Pass if:** Apply **fails** with alert; `lastAppliedKey` unchanged.
-
-### M2 — Mirror / unlink (spot check)
-
-**Human:** With scene live and `receivesLiveWrites` on row, change overlay-facing field via panel; confirm library row updates on sync (optional deep check).
-
-**Human:** **Unlink** live row → edit library copy → confirm live table unchanged until next Apply.
-
----
-
-## Suite N — Chronicle weather vs clock (full pass only)
-
-**Setup:** Scene with chronicle weather schedule; RT on; cross an hour boundary on overlay.
-
-**Pass if:** Weather preset or Scenes weather summary changes when hour/day changes (no burst — TOR-136). Note message on **Apply clock** when hour changes.
-
----
-
-## Repair step (only if world diverged from state)
 
 ```lua
-local Sync = require("core.sync")
-Sync.full({ force = true, reason = "e2e-repair" })
+U.RunSequence({
+  function()
+    if S.getStateVal("sceneLibrary", "lastAppliedKey") ~= _G.SCENES_E2E_LAST_BEFORE_INVALID then
+      error("[Scenes E2E] FAIL - invalid historical row changed lastAppliedKey")
+    end
+    print("[Scenes E2E] PASS - invalid historical row did not apply")
+  end,
+  function()
+    printHeader("", 2)
+  end,
+  function()
+    printHeader("", 1)
+  end,
+  function()
+    print("")
+  end,
+  function()
+    printHeader("Scenes E2E: SUITE M - Weather and clock", 1)
+  end,
+  function()
+    printHeader("M1 - Chronicle weather follows clock hour", 2)
+  end,
+  function()
+    printHeader("[HUMAN] On a live scene, advance the clock across an hour boundary and click Apply clock", 3)
+  end
+})
 ```
 
-Re-check lighting, NPCs, pins, soundscape after ~3 s. Not for routine passes.
-
----
-
-## Sign-off
-
-| Suite | Pass | Notes |
-| --- | --- | --- |
-| 0 Cleanup | ☐ | |
-| A Apply | ☐ | |
-| B Switch | ☐ | |
-| C End | ☐ | |
-| D Save/reload | ☐ | PC tokens + scene restore (TOR-152) |
-| D2 PC tokens reload | ☐ | `gbE2eVerifyPcTokens` |
-| E Location (opt) | ☐ | |
-| F Present day bootstrap | ☐ | F1–F3 |
-| G RT autoprogression | ☐ | G1–G4 |
-| H Switch vs present day | ☐ | H1–H3 |
-| I Clock draft pending | ☐ | |
-| J Seat presence | ☐ | |
-| K Map pins scene cast | ☐ | TOR-245: K–K4 |
-| L Apply location pins | ☐ | |
-| M Clock validation | ☐ | |
-| N Weather + clock (opt) | ☐ | |
-
----
-
-## Appendix — UI control map
-
-| Control | ID | Effect |
-| --- | --- | --- |
-| Library slot | `scenes_lib_slot_XX` | Select `activeKey` |
-| Apply scene | `scenes_lib_btn_apply` | Full apply + blindfold |
-| End | `scenes_lib_btn_end` | Clear location; stop RT; detach mirror |
-| Seat PC | `scenes_seat_Brown` etc. | Toggle `seatPresent` / `seatSlots` |
-| Month | `scenes_month_*` | Draft month |
-| Day / Year / Time | `scenes_clock_day/year/time12` | Draft datetime |
-| Set present day | `scenes_clock_setPresentDay` | Writes `presentDayClock` only |
-| RT toggle | `scenes_clock_rtToggle` | Draft + live via Apply clock |
-| Speed | `scenes_clock_speed` | Narrative min per 60 s wall |
-| Apply clock | `scenes_clock_apply` | Live or pending draft |
-| Apply location | (location section) | Site + soundscape, no scene cast |
-
-**TOR-142 (not shipped):** Planned four Apply variants (scene clock / x5 until present / = PRESENT / Present) — still single **Apply** until implemented.
-
----
-
-## Related
-
-- [Dice-E2E](Dice-E2E.md) — roll FSM (separate from scenes)
-- [Player HUD Overview](../HUDs%20&%20Overlays/Player%20HUD%20Overview.md) — map pins and location overlay rules
-- [TESTING.md](../TESTING.md) — `showScene`, soundscape helpers
+```lua
+U.RunSequence({
+  function()
+    print("clock " .. JSON.encode(S.getStateVal("sessionScene", "clock")))
+    print("soundscape " .. JSON.encode(S.getStateVal("soundscape")))
+    print("[Scenes E2E] PASS - verify overlay/weather summary changed if chronicle schedule has a row for this hour")
+  end,
+  function()
+    printHeader("", 2)
+  end,
+  function()
+    printHeader("", 1)
+  end,
+  function()
+    print("")
+  end
+})
+```

@@ -25,7 +25,7 @@ Manual verification lives in **[E2E Playbooks](E2E%20Playbooks/README.md)** (TOR
 1. Load mod → **Save & Play** (bundled Lua must match repo). If you see **`attempt to call a nil value`** right after Lua changes, check [`docs/solutions/lua-local-function-order.md`](../docs/solutions/lua-local-function-order.md) first (local defined below caller).
 2. You are table **Host** (solo is fine — only one client). Seat **Black** for Scenes/DEBUG/ST; for Dice, use `rollTest` and change seat to the target color when bag/camera steps require it (no TTS View command).
 3. `lua debugHelp()` — list current commands.
-4. Run a playbook: [Scenes-E2E](E2E%20Playbooks/Scenes-E2E.md), [Dice-E2E](E2E%20Playbooks/Dice-E2E.md) (+ [Dice-E2E-Guide](E2E%20Playbooks/Dice-E2E-Guide.md) for conventions), or [Gameboard-E2E](E2E%20Playbooks/Gameboard-E2E.md). Dice steps are **deterministic** (exact click counts and `rollConfirm` literals — see Dice-E2E-Guide § Deterministic test conventions).
+4. Run a playbook: [Scenes-E2E](E2E%20Playbooks/Scenes-E2E.md) (+ [Scenes-E2E-Guide](E2E%20Playbooks/Scenes-E2E-Guide.md)), [Dice-E2E](E2E%20Playbooks/Dice-E2E.md) (+ [Dice-E2E-Guide](E2E%20Playbooks/Dice-E2E-Guide.md)), or [Gameboard-E2E](E2E%20Playbooks/Gameboard-E2E.md). Dice and Scenes steps are deterministic; their guides carry prerequisites and sign-off.
 
 ## Step-by-step playbooks (preferred for new verification)
 
@@ -37,13 +37,13 @@ For **new** bug repro, feature sign-off, and agent-generated runbooks, use the S
 
 Human gates use `print("   ▶▶▶ HUMAN ▶▶▶ …")`. **Save & Play** is required only when repo Lua changed — not for doc-only edits.
 
-Legacy E2E playbooks below still use `printHeader("[HUMAN] …", 3)` and `RunTest("Dice")` until **TOR-141** migration.
+E2E playbooks still use `printHeader("[HUMAN] …", 3)` for `RunTest` compatibility until the full **TOR-141** migration to Step-by-step `▶▶▶ HUMAN ▶▶▶` cues.
 
 ## E2E playbooks (primary)
 
 | Playbook | When to run |
 | --- | --- |
-| [Scenes-E2E](E2E%20Playbooks/Scenes-E2E.md) | After scene/library/clock/map changes — smoke ~35 min (A–E), full ~100 min (present day, RT ticker, seat absence + map pins F–N) |
+| [Scenes-E2E](E2E%20Playbooks/Scenes-E2E.md) + [Guide](E2E%20Playbooks/Scenes-E2E-Guide.md) | After scene/library/clock/map changes — smoke ~35 min (0–D), full ~100 min (location, present day, RT ticker, pending rows, seats, map pins E–M) |
 | [Dice-E2E](E2E%20Playbooks/Dice-E2E.md) | After roll pipeline changes — smoke ~30 min (A–E), full ~90 min (G–P: Take Half, WP, compound rouse, bags, baton, Blood Surge, Werewolf, Oblivion corners) |
 | [Gameboard-E2E](E2E%20Playbooks/Gameboard-E2E.md) | After gameboard Apply/Clear, token mirror, or NPC stage reconcile — smoke ~25 min + scene Apply gate; full ~60 min |
 
@@ -62,20 +62,20 @@ Keep reference tables and long prose out of the lean test file. Suite and step n
 
 ### Streamlined block workflow
 
-**Dice-E2E.md** is the reference for the collapsed format. Steps are also available as a generated module (`lib/e2e_playbook_dice.ttslua`, built from the markdown) and runnable via **`RunTest`** in the TTS console:
+**Dice-E2E.md** and **Scenes-E2E.md** are references for the collapsed format. Steps are also available as generated modules (`lib/e2e_playbook_dice.ttslua`, `lib/e2e_playbook_scenes.ttslua`, built from markdown) and runnable via **`RunTest`** in the TTS console:
 
 ```lua
 lua RunTest("Dice")        -- [RunTest] Initialized 'Dice' (next RunTest runs step 1)
 lua RunTest("Dice", 8)     -- arm at step 8/56; RunTest("Dice", "H") at suite H
-lua RunTest()              -- [RunTest] Dice step N/total, then U.RunSequence (repeat after each [HUMAN] gate)
-lua RunTest("Scenes")      -- not yet prepared
+lua RunTest("Scenes")      -- arm Scenes E2E; RunTest("Scenes", "F") jumps to suite F
+lua RunTest()              -- [RunTest] <Campaign> step N/total, then U.RunSequence (repeat after each [HUMAN] gate)
 ```
 
-Re-arming with `RunTest("Dice")` resets index and cancels any in-flight step. Step index is 1-based; suite second arg uses top-level ids (`0`, `A`–`P`, `E2`). **Save & Play** after updating harness code so playbook step tables are fresh.
+Re-arming with `RunTest("<Campaign>")` resets index and cancels any in-flight step. Step index is 1-based; suite second arg uses top-level ids (`0`, `A`–`P`, `E2` when present). **Save & Play** after updating harness code so playbook step tables are fresh.
 
-**Stop rule:** After a step prints a **level-1** `printHeader` (suite banner: line begins with ten `*`), `RunTest` arms FAIL-abort for that step only. While armed, any console line containing the case-sensitive substring `FAIL` (e.g. `[rollConfirm] FAIL`) cancels the in-flight `U.RunSequence` and prints `[RunTest] Stopped at step N/total: FAIL detected in output`. Lines before the suite banner (or mid-playbook `RunTest("Dice", N)` jumps without a fresh suite header) do **not** abort — prerequisite checks may FAIL without stopping the harness. Re-arm at the same step after fixing.
+**Stop rule:** After a step prints a **level-1** `printHeader` (suite banner: line begins with ten `*`), `RunTest` arms FAIL-abort for that step only. While armed, any console line containing the case-sensitive substring `FAIL` (e.g. `[rollConfirm] FAIL`) cancels the in-flight `U.RunSequence` and prints `[RunTest] Stopped at step N/total: FAIL detected in output`. Lines before the suite banner (or mid-playbook `RunTest("<Campaign>", N)` jumps without a fresh suite header) do **not** abort — prerequisite checks may FAIL without stopping the harness. Re-arm at the same step after fixing.
 
-Regenerate after editing `Dice-E2E.md`: `npm run e2e-playbook:generate` (included in `npm run build`), then **Save & Play**.
+Regenerate after editing `Dice-E2E.md` or `Scenes-E2E.md`: `npm run e2e-playbook:generate` (included in `npm run build`), then **Save & Play**.
 
 Manual paste workflow (same blocks):
 

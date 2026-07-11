@@ -11,6 +11,7 @@ Source of truth:
 - `.dev/TESTING.md`
 - `core/debug.ttslua`
 - `lib/e2e_playbook_dice.ttslua` generated from `Dice-E2E.md`
+- `lib/e2e_playbook_scenes.ttslua` generated from `Scenes-E2E.md`
 
 Verification:
 - `npm run e2e-playbook:generate:test`
@@ -30,8 +31,8 @@ Update these playbooks in the **same PR** when you change behavior they cover:
 | Trigger | Update |
 | --- | --- |
 | Roll FSM, bags, WP, Take Half, rouse, ST rolls | [Dice-E2E.md](Dice-E2E.md) + [Dice-E2E-Guide.md](Dice-E2E-Guide.md) |
-| Scene library apply, clock, present day, RT ticker, seats, map pins | [Scenes-E2E.md](Scenes-E2E.md) |
-| NPC gameboard Apply/Clear, stage placements, tokens, reconcile, PC seat-row tokens | [Gameboard-E2E.md](Gameboard-E2E.md) + [Scenes-E2E.md](Scenes-E2E.md) Suite D2 (TOR-152 load mirror) |
+| Scene library apply, clock, present day, RT ticker, seats, map pins | [Scenes-E2E.md](Scenes-E2E.md) + [Scenes-E2E-Guide.md](Scenes-E2E-Guide.md) |
+| NPC gameboard Apply/Clear, stage placements, tokens, reconcile, PC seat-row tokens | [Gameboard-E2E.md](Gameboard-E2E.md) + [Scenes-E2E.md](Scenes-E2E.md) Suite D (TOR-152 load mirror) |
 | New/removed `DEBUG.*` console helpers | [TESTING.md](../TESTING.md) + relevant playbook |
 | Purge/replace automated test panels | [TESTING.md](../TESTING.md), [RUNNING TASKLIST.md](../RUNNING%20TASKLIST.md) |
 
@@ -44,7 +45,7 @@ Agents: if shipped code diverges from a playbook step, fix the doc or file a **B
 3. **Seat choice:**
    - **Scenes + DEBUG + Storyteller toolbar:** Recommended seat **Black** (Storyteller). UI uses `visibility="Host"`; Black matches ST/dice-tray layout.
    - **Dice (physical bags / roll panel):** `rollTest` / `rollStTest` move Host to the roll seat, hide loading overlay, and spoof camera automatically. `rollCancel` returns Host to **Black** when testing a PC color.
-4. Scene library has **two distinct scenes** prepared for Suite B (different `siteKey`, lighting preset, and `npcWorld.placements` if possible).
+4. Scenes Suite 0 creates deterministic E2E fixture rows in Scene Library slots 17-20.
 5. TTS console (`~`) or **External Editor** execute on Global (`guid` `-1`) for Lua snippets below.
 
 ## Conventions
@@ -59,14 +60,14 @@ Snippets are diagnostic only. Do **not** call `Sync.full({ force = true })` duri
 
 ### Migration note (Step-by-step target format)
 
-**TOR-141** long-term target: migrate playbooks to [Step-by-step template](../Step-By-Step%20Playbooks/.Step-By-Step%20Template.md) (`▶▶▶ HUMAN ▶▶▶` cues, merged phases per Code Block) while retaining **`RunTest`** harness wiring. Current Dice/Scenes/Gameboard files remain canonical for regression until converted. New ad-hoc verification should use [Step-By-Step Playbooks](../Step-By-Step%20Playbooks/README.md).
+**TOR-141** long-term target: migrate playbooks to [Step-by-step template](../Step-By-Step%20Playbooks/.Step-By-Step%20Template.md) (`▶▶▶ HUMAN ▶▶▶` cues, merged phases per Code Block) while retaining **`RunTest`** harness wiring. Dice and Scenes now use the two-document lean playbook + guide format; Gameboard remains canonical legacy E2E until converted. New ad-hoc verification should use [Step-By-Step Playbooks](../Step-By-Step%20Playbooks/README.md).
 
 ### Console output (`printHeader` + `U.RunSequence`)
 
 All manual playbooks should structure Lua steps like **[Dice-E2E.md](Dice-E2E.md)** so the TTS log is ordered and readable:
 
 - **Lean playbook file** — title + fenced `lua` blocks only; suite/step names in `printHeader`, not markdown headings. Split blocks **only** on human TTS interaction ([TESTING.md § Streamlined block workflow](../TESTING.md#streamlined-block-workflow)).
-- **`RunTest` driver** — `npm run e2e-playbook:generate` embeds Dice blocks into `lib/e2e_playbook_dice.ttslua`; in TTS: `RunTest("Dice")` then `RunTest()` per step. Scenes/Gameboard return not-yet-prepared until their markdown is processed the same way.
+- **`RunTest` driver** — `npm run e2e-playbook:generate` embeds Dice and Scenes blocks into `lib/e2e_playbook_*.ttslua`; in TTS: `RunTest("Dice")` or `RunTest("Scenes")`, then `RunTest()` per step. Gameboard is not yet generated.
 - **`U.RunSequence`** — one paste per block; `printHeader` / `print` each in its own `function()` step.
 - **`printHeader(text, level)`** — level 1 `*` (suite), 2 `=` (step), 3 `-` (`[HUMAN]` instructions; never closed). Close suites/steps with `printHeader("", level)`; add `print("")` after each suite.
 - **`M.setCamera("ALL", "roll<Color>")`** — before human bag/dice/panel steps.
@@ -77,7 +78,8 @@ Full rules, layout (100-char banner with spaces around text), and a copy-paste t
 
 | Doc | Scope |
 | --- | --- |
-| [Scenes-E2E.md](Scenes-E2E.md) | Scene smoke (A–E) + deep suites: present day clock, RT autoprogression, clock draft, seat/map pins (absent vs present), library flush (F–N) |
+| [Scenes-E2E.md](Scenes-E2E.md) | Scenes E2E — streamlined `U.RunSequence` blocks only (run from Suite 0; see Guide for workflow) |
+| [Scenes-E2E-Guide.md](Scenes-E2E-Guide.md) | Scenes E2E reference: fixture slots, conventions, prerequisites, sign-off |
 | [Dice-E2E.md](Dice-E2E.md) | Dice E2E — streamlined `U.RunSequence` blocks only (run from Suite 0; see Guide for workflow) |
 | [Dice-E2E-Guide.md](Dice-E2E-Guide.md) | Dice E2E reference: helpers, conventions, prerequisites, sign-off |
 | [Gameboard-E2E.md](Gameboard-E2E.md) | Gameboard smoke (Apply/Clear/mirror/Z flip) + scene library Apply gate + full reconcile suites + `gbE2eVerifyPcTokens` (TOR-152 / TOR-236) + deferred TOR-172/173/175/174 probes |

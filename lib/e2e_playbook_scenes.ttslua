@@ -1,0 +1,671 @@
+--[[
+    E2E playbook steps for campaign "Scenes"
+    Source: .dev\E2E Playbooks\Scenes-E2E.md
+    DO NOT EDIT BY HAND — regenerate: node .dev/scripts/generate_e2e_playbook_lua.js --campaign Scenes
+]]
+
+-- Module export is Playbook, not M — steps call M.setCamera (core.main) as a global.
+local Playbook = {}
+
+Playbook.campaign = "Scenes"
+Playbook.sourceMarkdown = ".dev/E2E Playbooks/Scenes-E2E.md"
+Playbook.stepCount = 22
+
+-- true when the markdown block ends with a [HUMAN] printHeader cue
+Playbook.humanGateAfterStep = { false, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, false }
+
+-- Top-level suite id → first step index (RunTest campaign + suite jump)
+Playbook.suiteSteps = {
+    ["0"] = 1,
+    ["A"] = 2,
+    ["B"] = 5,
+    ["C"] = 6,
+    ["D"] = 7,
+    ["E"] = 8,
+    ["F"] = 9,
+    ["G"] = 12,
+    ["H"] = 14,
+    ["I"] = 15,
+    ["J"] = 17,
+    ["K"] = 19,
+    ["L"] = 20,
+    ["M"] = 21,
+}
+
+Playbook.suiteIds = { "0", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M" }
+
+Playbook.steps = {
+    -- step 1
+        {
+          function()
+            printHeader("Scenes E2E: SUITE 0 - Fixture setup", 1)
+          end,
+          function()
+            local function fail(msg) error("[Scenes E2E] FAIL - " .. tostring(msg)) end
+            local function firstKey(map)
+              if type(map) ~= "table" then return nil end
+              local out = nil
+              for k, _ in pairs(map) do
+                if type(k) == "string" and (out == nil or k < out) then out = k end
+              end
+              return out
+            end
+            local function pickLight()
+              for _, k in ipairs({ "OutdoorDim", "IndoorBright", "AdminStandard", "AdminBright" }) do
+                if C.isValidLightModeKey and C.isValidLightModeKey(k) then return k end
+              end
+              return firstKey(C.LightModes) or "OutdoorDim"
+            end
+            local function siteDistrict(siteKey)
+              local site = C.Sites and C.Sites[siteKey]
+              if type(site) == "table" and C.resolveDistrictKeyForDistrictTable then
+                local dk = C.resolveDistrictKeyForDistrictTable(site.district)
+                if type(dk) == "string" and dk ~= "" then return dk end
+              end
+              return firstKey(C.Districts)
+            end
+            local function siteOk(siteKey)
+              return type(siteKey) == "string" and type(C.Sites) == "table" and type(C.Sites[siteKey]) == "table"
+            end
+            local function pickSites()
+              local preferred = {
+                "StRegisCouncilChamber",
+                "YongeDundasSquare",
+                "BackAlley1",
+                "CabbagetownPenthouse",
+              }
+              local a, b = nil, nil
+              for _, k in ipairs(preferred) do
+                if siteOk(k) and a == nil then a = k
+                elseif siteOk(k) and b == nil and k ~= a then b = k end
+              end
+              if a == nil or b == nil then
+                for k, _ in pairs(C.Sites or {}) do
+                  if a == nil then a = k
+                  elseif b == nil and k ~= a then b = k end
+                end
+              end
+              if a == nil or b == nil then fail("need at least two C.Sites entries") end
+              return a, b
+            end
+            local function tableKey(preferred)
+              if type(C.Tables) == "table" and C.Tables[preferred] ~= nil then return preferred end
+              return firstKey(C.Tables) or preferred
+            end
+            local function seatSlots(absentBrown)
+              return {
+                Brown = { isPresent = absentBrown ~= true },
+                Orange = { isPresent = true },
+                Red = { isPresent = true },
+                Pink = { isPresent = true },
+                Purple = { isPresent = true },
+                NPC1 = { characterKey = "myleneHamelin", isPresent = true },
+                NPC2 = { characterKey = "adrianVarga", isPresent = true },
+                NPC3 = { slotEmpty = true },
+                NPC4 = { slotEmpty = true },
+              }
+            end
+            local siteA, siteB = pickSites()
+            local light = pickLight()
+            local sceneA = {
+              lightingPresetKey = light,
+              isTopFogActive = false,
+              tableKey = tableKey("Table A"),
+              seatSlots = seatSlots(false),
+              districtKey = siteDistrict(siteA),
+              siteKey = siteA,
+              clock = { year = 2026, month = 3, day = 15, hour = 21, minute = 0, isPresentDay = true, useRealTime = false, realTimeSpeed = 1 },
+              conditions = {},
+              soundscapeNarrative = {},
+              npcWorld = { placements = { myleneHamelin = { u = 0.18, v = 0.72, npcLightMode = "STANDARD" }, adrianVarga = { u = 0.42, v = 0.55, npcLightMode = "OFF" } } },
+            }
+            local sceneB = {
+              lightingPresetKey = light,
+              isTopFogActive = false,
+              tableKey = tableKey("Table C"),
+              seatSlots = seatSlots(false),
+              districtKey = siteDistrict(siteB),
+              siteKey = siteB,
+              clock = { year = 2026, month = 3, day = 15, hour = 22, minute = 15, isPresentDay = true, useRealTime = false, realTimeSpeed = 1 },
+              conditions = {},
+              soundscapeNarrative = {},
+              npcWorld = { placements = { myleneHamelin = { u = 0.28, v = 0.62, npcLightMode = "SPOTLIGHT" }, adrianVarga = { u = 0.52, v = 0.45, npcLightMode = "STANDARD" } } },
+            }
+            local flagsOnly = U.clone(sceneB, true)
+            flagsOnly.clock = { isPresentDay = true, useRealTime = false, realTimeSpeed = 1 }
+            local invalidHistorical = U.clone(sceneA, true)
+            invalidHistorical.clock = { isPresentDay = false, useRealTime = false, realTimeSpeed = 1 }
+        
+            _G.SCENES_E2E = {
+              slotA = 17,
+              slotB = 18,
+              slotFlags = 19,
+              slotInvalidHistorical = 20,
+              sceneA = "e2e_scene_a",
+              sceneB = "e2e_scene_b",
+              flagsOnly = "e2e_scene_present_flags",
+              invalidHistorical = "e2e_scene_invalid_historical",
+              siteA = siteA,
+              siteB = siteB,
+            }
+        
+            ensureSceneLibraryStub(17, "e2e_scene_a", { overwrite = true, title = "E2E Scene A - present", sessionScene = sceneA })
+            ensureSceneLibraryStub(18, "e2e_scene_b", { overwrite = true, title = "E2E Scene B - switch", sessionScene = sceneB })
+            ensureSceneLibraryStub(19, "e2e_scene_present_flags", { overwrite = true, title = "E2E Present-day flags", sessionScene = flagsOnly })
+            ensureSceneLibraryStub(20, "e2e_scene_invalid_historical", { overwrite = true, title = "E2E Invalid historical", sessionScene = invalidHistorical })
+            S.setStateVal(nil, "sceneLibrary", "activeKey")
+            S.validateState()
+            if rollE2eSeatPrep then rollE2eSeatPrep("Black") end
+            print("[Scenes E2E] Fixture slots: A=17, B=18, present-flags=19, invalid-historical=20")
+            print("[Scenes E2E] siteA=" .. tostring(siteA) .. " siteB=" .. tostring(siteB))
+          end,
+          function()
+            printHeader("", 1)
+          end,
+          function()
+            print("")
+          end
+        },
+    -- step 2
+        {
+          function()
+            printHeader("Scenes E2E: SUITE A - Apply library scene", 1)
+          end,
+          function()
+            printHeader("A1 - Select fixture row A", 2)
+          end,
+          function()
+            M.setCamera("ALL", "wide")
+            printHeader("[HUMAN] Open Storyteller Scenes and click library slot 17 (E2E Scene A)", 3)
+          end
+        },
+    -- step 3
+        {
+          function()
+            local key = ((S.getStateVal("sceneLibrary", "order") or {})[17])
+            if S.getStateVal("sceneLibrary", "activeKey") ~= key then
+              error("[Scenes E2E] FAIL - slot 17 should be activeKey")
+            end
+            print("[Scenes E2E] PASS - slot 17 selected: " .. tostring(key))
+          end,
+          function()
+            printHeader("", 2)
+          end,
+          function()
+            printHeader("A2 - Apply selected scene", 2)
+          end,
+          function()
+            printHeader("[HUMAN] Click Apply, then wait until the blindfold has lifted and scene audio is audible", 3)
+          end
+        },
+    -- step 4
+        {
+          function()
+            local key = ((S.getStateVal("sceneLibrary", "order") or {})[17])
+            local row = S.getStateVal("sceneLibrary", "scenes", key, "sessionScene")
+            if S.getStateVal("sceneLibrary", "lastAppliedKey") ~= key then error("[Scenes E2E] FAIL - lastAppliedKey did not become slot 17") end
+            if S.getStateVal("sessionScene", "siteKey") ~= row.siteKey then error("[Scenes E2E] FAIL - live siteKey does not match row A") end
+            if S.getStateVal("sessionScene", "tableKey") ~= row.tableKey then error("[Scenes E2E] FAIL - live tableKey does not match row A") end
+            if S.getStateVal("currentPhase") ~= C.Phases.PLAY and S.getStateVal("currentPhase") ~= "Play" then error("[Scenes E2E] FAIL - applying scene should promote phase to Play") end
+            print("[Scenes E2E] PASS - row A applied to live sessionScene")
+            DEBUG.showScene()
+          end,
+          function()
+            printHeader("", 2)
+          end,
+          function()
+            printHeader("A3 - Visual and audio settle", 2)
+          end,
+          function()
+            printHeader("[HUMAN] Confirm lighting, overlay date/time, NPC stage positions, and scene audio changed without a burst", 3)
+          end
+        },
+    -- step 5
+        {
+          function()
+            DEBUG.inspectSoundscapeAudio()
+          end,
+          function()
+            printHeader("", 2)
+          end,
+          function()
+            printHeader("", 1)
+          end,
+          function()
+            print("")
+          end,
+          function()
+            printHeader("Scenes E2E: SUITE B - Switch to second scene", 1)
+          end,
+          function()
+            printHeader("B1 - Select and apply row B", 2)
+          end,
+          function()
+            M.setCamera("ALL", "wide")
+            printHeader("[HUMAN] Click library slot 18 (E2E Scene B), click Apply, then wait for the blindfold to lift", 3)
+          end
+        },
+    -- step 6
+        {
+          function()
+            local key = ((S.getStateVal("sceneLibrary", "order") or {})[18])
+            local row = S.getStateVal("sceneLibrary", "scenes", key, "sessionScene")
+            if S.getStateVal("sceneLibrary", "lastAppliedKey") ~= key then error("[Scenes E2E] FAIL - lastAppliedKey did not become slot 18") end
+            if S.getStateVal("sessionScene", "siteKey") ~= row.siteKey then error("[Scenes E2E] FAIL - live siteKey does not match row B") end
+            if S.getStateVal("sessionScene", "tableKey") ~= row.tableKey then error("[Scenes E2E] FAIL - live tableKey does not match row B") end
+            print("[Scenes E2E] PASS - row B applied and live scene changed")
+            DEBUG.showScene()
+          end,
+          function()
+            printHeader("", 2)
+          end,
+          function()
+            printHeader("", 1)
+          end,
+          function()
+            print("")
+          end,
+          function()
+            printHeader("Scenes E2E: SUITE C - End scene", 1)
+          end,
+          function()
+            printHeader("C1 - End live scene", 2)
+          end,
+          function()
+            printHeader("[HUMAN] Click End scene, then wait for the staged no-scene transition to finish", 3)
+          end
+        },
+    -- step 7
+        {
+          function()
+            if S.getStateVal("sessionScene", "siteKey") ~= nil then error("[Scenes E2E] FAIL - siteKey should clear after End scene") end
+            if S.getStateVal("sceneLibrary", "lastAppliedKey") ~= nil then error("[Scenes E2E] FAIL - lastAppliedKey should clear after End scene") end
+            if S.getStateVal("sessionScene", "clock", "useRealTime") == true then error("[Scenes E2E] FAIL - real-time clock should stop after End scene") end
+            print("[Scenes E2E] PASS - End scene cleared live linkage and stopped RT")
+          end,
+          function()
+            printHeader("", 2)
+          end,
+          function()
+            printHeader("", 1)
+          end,
+          function()
+            print("")
+          end,
+          function()
+            printHeader("Scenes E2E: SUITE D - Save/reload restore", 1)
+          end,
+          function()
+            printHeader("D1 - Prepare reload state", 2)
+          end,
+          function()
+            printHeader("[HUMAN] Apply slot 17, toggle Brown absent, click Silence for save, then Save and reload the same save", 3)
+          end
+        },
+    -- step 8
+        {
+          function()
+            DEBUG.showScene()
+            if gbE2eVerifyPcTokens then gbE2eVerifyPcTokens() end
+          end,
+          function()
+            printHeader("", 2)
+          end,
+          function()
+            printHeader("", 1)
+          end,
+          function()
+            print("")
+          end,
+          function()
+            printHeader("Scenes E2E: SUITE E - Apply location and soundscape", 1)
+          end,
+          function()
+            printHeader("E1 - Mid-session location apply", 2)
+          end,
+          function()
+            printHeader("[HUMAN] With a scene live, use Browse sites to pick a different site and click Apply location + soundscape", 3)
+          end
+        },
+    -- step 9
+        {
+          function()
+            local sk = S.getStateVal("sessionScene", "siteKey")
+            if type(sk) ~= "string" or sk == "" then error("[Scenes E2E] FAIL - Apply location should leave a live siteKey") end
+            print("[Scenes E2E] PASS - live siteKey after location apply: " .. tostring(sk))
+            DEBUG.inspectSoundscapeAudio()
+          end,
+          function()
+            printHeader("", 2)
+          end,
+          function()
+            printHeader("", 1)
+          end,
+          function()
+            print("")
+          end,
+          function()
+            printHeader("Scenes E2E: SUITE F - Present-day clock", 1)
+          end,
+          function()
+            printHeader("F1 - Apply full present-day row", 2)
+          end,
+          function()
+            printHeader("[HUMAN] Click slot 17, click Apply, then wait for the blindfold to lift", 3)
+          end
+        },
+    -- step 10
+        {
+          function()
+            local pd = S.getStateVal("presentDayClock")
+            local ck = S.getStateVal("sessionScene", "clock")
+            if type(pd) ~= "table" then error("[Scenes E2E] FAIL - presentDayClock should exist after present-day apply") end
+            if pd.year ~= ck.year or pd.month ~= ck.month or pd.day ~= ck.day or pd.hour ~= ck.hour or pd.minute ~= ck.minute then
+              error("[Scenes E2E] FAIL - presentDayClock should match applied full present-day clock")
+            end
+            print("[Scenes E2E] PASS - presentDayClock bootstrapped from row A")
+          end,
+          function()
+            printHeader("", 2)
+          end,
+          function()
+            printHeader("F2 - Apply flags-only present-day row", 2)
+          end,
+          function()
+            printHeader("[HUMAN] Click slot 19, click Apply, then wait for the blindfold to lift", 3)
+          end
+        },
+    -- step 11
+        {
+          function()
+            local pd = S.getStateVal("presentDayClock")
+            local ck = S.getStateVal("sessionScene", "clock")
+            if type(pd) ~= "table" or type(ck) ~= "table" then error("[Scenes E2E] FAIL - clock state missing after flags-only apply") end
+            if pd.year ~= ck.year or pd.month ~= ck.month or pd.day ~= ck.day or pd.hour ~= ck.hour or pd.minute ~= ck.minute then
+              error("[Scenes E2E] FAIL - flags-only present-day row should use chronicle presentDayClock")
+            end
+            _G.SCENES_E2E_SET_LIVE_CLOCK = U.clone(ck, true)
+            print("[Scenes E2E] PASS - flags-only row resolved from presentDayClock")
+          end,
+          function()
+            printHeader("", 2)
+          end,
+          function()
+            printHeader("F3 - Set present day does not mutate live scene clock", 2)
+          end,
+          function()
+            printHeader("[HUMAN] Change the Scenes clock inputs, then click Set (not Apply clock)", 3)
+          end
+        },
+    -- step 12
+        {
+          function()
+            local before = _G.SCENES_E2E_SET_LIVE_CLOCK
+            local live = S.getStateVal("sessionScene", "clock")
+            if type(before) == "table" and type(live) == "table" then
+              if before.year ~= live.year or before.month ~= live.month or before.day ~= live.day or before.hour ~= live.hour or before.minute ~= live.minute then
+                error("[Scenes E2E] FAIL - Set present day should not mutate live sessionScene.clock")
+              end
+            end
+            print("[Scenes E2E] PASS - Set present day left live scene clock unchanged")
+          end,
+          function()
+            printHeader("", 2)
+          end,
+          function()
+            printHeader("", 1)
+          end,
+          function()
+            print("")
+          end,
+          function()
+            printHeader("Scenes E2E: SUITE G - Real-time autoprogression", 1)
+          end,
+          function()
+            printHeader("G1 - RT speed 60 advances clock", 2)
+          end,
+          function()
+            _G.SCENES_E2E_RT_START = U.clone(S.getStateVal("sessionScene", "clock") or {}, true)
+            printHeader("[HUMAN] Turn RT on, set speed to 60, click Apply clock, then wait about 3 real seconds", 3)
+          end
+        },
+    -- step 13
+        {
+          function()
+            local start = _G.SCENES_E2E_RT_START or {}
+            local now = S.getStateVal("sessionScene", "clock") or {}
+            local startMin = (tonumber(start.hour) or 0) * 60 + (tonumber(start.minute) or 0)
+            local nowMin = (tonumber(now.hour) or 0) * 60 + (tonumber(now.minute) or 0)
+            if now.useRealTime ~= true then error("[Scenes E2E] FAIL - useRealTime should be true after RT apply") end
+            if nowMin <= startMin then error("[Scenes E2E] FAIL - RT speed 60 should advance scene minutes") end
+            print("[Scenes E2E] PASS - RT advanced from minute " .. tostring(startMin) .. " to " .. tostring(nowMin))
+          end,
+          function()
+            printHeader("", 2)
+          end,
+          function()
+            printHeader("G2 - RT off stops advancement", 2)
+          end,
+          function()
+            _G.SCENES_E2E_RT_OFF_START = U.clone(S.getStateVal("sessionScene", "clock") or {}, true)
+            printHeader("[HUMAN] Turn RT off, click Apply clock, then wait 30 seconds", 3)
+          end
+        },
+    -- step 14
+        {
+          function()
+            local ck = S.getStateVal("sessionScene", "clock") or {}
+            if ck.useRealTime == true then error("[Scenes E2E] FAIL - useRealTime should be false after RT off") end
+            print("[Scenes E2E] PASS - RT disabled")
+          end,
+          function()
+            printHeader("", 2)
+          end,
+          function()
+            printHeader("", 1)
+          end,
+          function()
+            print("")
+          end,
+          function()
+            printHeader("Scenes E2E: SUITE H - Scene switch vs present day", 1)
+          end,
+          function()
+            printHeader("H1 - Earlier saved scene does not rewind chronicle now", 2)
+          end,
+          function()
+            _G.SCENES_E2E_PD_BEFORE_SWITCH = U.clone(S.getStateVal("presentDayClock") or {}, true)
+            printHeader("[HUMAN] Click slot 18, click Apply, then wait for the blindfold to lift", 3)
+          end
+        },
+    -- step 15
+        {
+          function()
+            local before = _G.SCENES_E2E_PD_BEFORE_SWITCH or {}
+            local pd = S.getStateVal("presentDayClock") or {}
+            local function minutes(c) return (tonumber(c.year) or 0) * 525600 + (tonumber(c.month) or 0) * 43200 + (tonumber(c.day) or 0) * 1440 + (tonumber(c.hour) or 0) * 60 + (tonumber(c.minute) or 0) end
+            if minutes(pd) < minutes(before) then error("[Scenes E2E] FAIL - presentDayClock rewound after scene switch") end
+            print("[Scenes E2E] PASS - presentDayClock did not rewind on scene switch")
+          end,
+          function()
+            printHeader("", 2)
+          end,
+          function()
+            printHeader("", 1)
+          end,
+          function()
+            print("")
+          end,
+          function()
+            printHeader("Scenes E2E: SUITE I - Pending row preview edits", 1)
+          end,
+          function()
+            printHeader("I1 - Pending row edits do not mutate live scene", 2)
+          end,
+          function()
+            _G.SCENES_E2E_LIVE_BEFORE_PENDING = U.clone(S.getStateVal("sessionScene") or {}, true)
+            printHeader("[HUMAN] Click slot 17 only; change its table, Brown seat, site, and clock draft without clicking Apply scene", 3)
+          end
+        },
+    -- step 16
+        {
+          function()
+            local before = _G.SCENES_E2E_LIVE_BEFORE_PENDING or {}
+            local live = S.getStateVal("sessionScene") or {}
+            if before.siteKey ~= live.siteKey then error("[Scenes E2E] FAIL - pending location edit mutated live siteKey") end
+            if before.tableKey ~= live.tableKey then error("[Scenes E2E] FAIL - pending table edit mutated live tableKey") end
+            print("[Scenes E2E] PASS - pending row edits stayed library-only")
+          end,
+          function()
+            printHeader("", 2)
+          end,
+          function()
+            printHeader("I2 - Apply pending row", 2)
+          end,
+          function()
+            printHeader("[HUMAN] Click Apply for the pending row and wait for the blindfold to lift", 3)
+          end
+        },
+    -- step 17
+        {
+          function()
+            local key = S.getStateVal("sceneLibrary", "activeKey")
+            if S.getStateVal("sceneLibrary", "lastAppliedKey") ~= key then error("[Scenes E2E] FAIL - pending row did not become lastAppliedKey") end
+            print("[Scenes E2E] PASS - pending row applied")
+          end,
+          function()
+            printHeader("", 2)
+          end,
+          function()
+            printHeader("", 1)
+          end,
+          function()
+            print("")
+          end,
+          function()
+            printHeader("Scenes E2E: SUITE J - Seat presence toggles", 1)
+          end,
+          function()
+            printHeader("J1 - Mark Brown absent", 2)
+          end,
+          function()
+            printHeader("[HUMAN] On the live Scenes panel, click Brown seat once to mark Brown absent", 3)
+          end
+        },
+    -- step 18
+        {
+          function()
+            local row = S.getStateVal("sessionScene", "seatSlots", "Brown")
+            if type(row) ~= "table" or row.isPresent ~= false then error("[Scenes E2E] FAIL - Brown should be absent") end
+            print("[Scenes E2E] PASS - Brown absent")
+          end,
+          function()
+            printHeader("", 2)
+          end,
+          function()
+            printHeader("J2 - Mark Brown present", 2)
+          end,
+          function()
+            printHeader("[HUMAN] Click Brown seat again to mark Brown present", 3)
+          end
+        },
+    -- step 19
+        {
+          function()
+            local row = S.getStateVal("sessionScene", "seatSlots", "Brown")
+            if type(row) == "table" and row.isPresent == false then error("[Scenes E2E] FAIL - Brown should be present again") end
+            print("[Scenes E2E] PASS - Brown present")
+          end,
+          function()
+            printHeader("", 2)
+          end,
+          function()
+            printHeader("", 1)
+          end,
+          function()
+            print("")
+          end,
+          function()
+            printHeader("Scenes E2E: SUITE K - Map pins", 1)
+          end,
+          function()
+            printHeader("K1 - Scene cast pins", 2)
+          end,
+          function()
+            printHeader("[HUMAN] Open a player Map panel; apply slot 17 with Brown absent and Pink present, then apply slot 18", 3)
+          end
+        },
+    -- step 20
+        {
+          function()
+            print("seatPresent " .. JSON.encode(S.getStateVal("sessionScene", "seatPresent")))
+            print("lastActiveMapPin " .. JSON.encode(S.getStateVal("sessionScene", "lastActiveMapPin")))
+            print("[Scenes E2E] PASS - inspect map pins: present PCs should be at the new site; absent Brown should stay hidden or unchanged per guide")
+          end,
+          function()
+            printHeader("", 2)
+          end,
+          function()
+            printHeader("", 1)
+          end,
+          function()
+            print("")
+          end,
+          function()
+            printHeader("Scenes E2E: SUITE L - Invalid historical clock", 1)
+          end,
+          function()
+            printHeader("L1 - Invalid row fails without changing active scene", 2)
+          end,
+          function()
+            _G.SCENES_E2E_LAST_BEFORE_INVALID = S.getStateVal("sceneLibrary", "lastAppliedKey")
+            printHeader("[HUMAN] Click slot 20, click Apply, and confirm the GM alert rejects the historical row", 3)
+          end
+        },
+    -- step 21
+        {
+          function()
+            if S.getStateVal("sceneLibrary", "lastAppliedKey") ~= _G.SCENES_E2E_LAST_BEFORE_INVALID then
+              error("[Scenes E2E] FAIL - invalid historical row changed lastAppliedKey")
+            end
+            print("[Scenes E2E] PASS - invalid historical row did not apply")
+          end,
+          function()
+            printHeader("", 2)
+          end,
+          function()
+            printHeader("", 1)
+          end,
+          function()
+            print("")
+          end,
+          function()
+            printHeader("Scenes E2E: SUITE M - Weather and clock", 1)
+          end,
+          function()
+            printHeader("M1 - Chronicle weather follows clock hour", 2)
+          end,
+          function()
+            printHeader("[HUMAN] On a live scene, advance the clock across an hour boundary and click Apply clock", 3)
+          end
+        },
+    -- step 22
+        {
+          function()
+            print("clock " .. JSON.encode(S.getStateVal("sessionScene", "clock")))
+            print("soundscape " .. JSON.encode(S.getStateVal("soundscape")))
+            print("[Scenes E2E] PASS - verify overlay/weather summary changed if chronicle schedule has a row for this hour")
+          end,
+          function()
+            printHeader("", 2)
+          end,
+          function()
+            printHeader("", 1)
+          end,
+          function()
+            print("")
+          end
+        }
+}
+
+return Playbook
