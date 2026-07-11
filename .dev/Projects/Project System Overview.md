@@ -245,6 +245,14 @@ Sort:
 1. Projects owned by the sheet’s PC first (when S is a PC); then others.
 2. Then by derived `endDate` ascending (soonest completion first). Completed projects: define a stable secondary rule at implement time (e.g. after active, or separate section).
 
+Stake row styling on the sheet (relative to S):
+
+| Stake `source` | Class suffix | Look |
+| --- | --- | --- |
+| Same as S | `self` | white dots / bold label |
+| `coterie` | `coterie` | yellow dots / yellow label |
+| Any other PC | `other` | grey dots / grey italic label |
+
 ---
 
 ## Deferred

@@ -155,11 +155,9 @@ refillAdvantageOptions = function(row, sourceKey)
     local nn = string.format("%02d", opt)
     local optId = "projectEditor_stake_" .. tostring(row) .. "_advOpt_" .. nn
     local entry = advList[opt]
-    if entry ~= nil then
-      setAttr(optId, "text", entry.label)
-    else
-      setAttr(optId, "text", "—")
-    end
+    -- Option labels are element content (`<Option>…</Option>`), not a text attribute.
+    local label = (entry ~= nil and type(entry.label) == "string" and entry.label ~= "") and entry.label or "—"
+    UI.setValue(optId, label)
   end
 end
 

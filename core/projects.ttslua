@@ -1063,9 +1063,30 @@ function M.buildPage5DocumentXml(seatColorRaw)
     for i = 1, #list do
       local project = list[i]
       local index0 = i - 1
+      local stakeEntries = {}
+      local rows = project.stakeRows
+      if type(rows) == "table" then
+        for ri = 1, #rows do
+          local row = rows[ri]
+          if type(row) == "table" and type(row.source) == "string" and type(row.name) == "string"
+            and row.name ~= "" and math.floor(tonumber(row.qty) or 0) >= 1
+          then
+            stakeEntries[#stakeEntries + 1] = row
+          end
+        end
+      end
       local params = { INDEX = tostring(index0) }
       for s = 1, 6 do
-        params["PROJECT_STAKE_" .. tostring(s) .. "_CLASS"] = "self"
+        local stake = stakeEntries[s]
+        local stakeClass = "self"
+        if stake ~= nil then
+          if stake.source == "coterie" then
+            stakeClass = "coterie"
+          elseif stake.source ~= charKey then
+            stakeClass = "other"
+          end
+        end
+        params["PROJECT_STAKE_" .. tostring(s) .. "_CLASS"] = stakeClass
       end
       local xml = TPL.apply("csheet/partials/project_block", params, { rawKeys = {} })
       local function setText(id, text)
@@ -1112,18 +1133,6 @@ function M.buildPage5DocumentXml(seatColorRaw)
       local scope = math.floor(tonumber(project.scope) or 0)
       for d = 1, 15 do
         setActive("project_" .. tostring(index0) .. "_scope_dot_" .. tostring(d), d <= scope and "true" or "false")
-      end
-      local stakeEntries = {}
-      local rows = project.stakeRows
-      if type(rows) == "table" then
-        for ri = 1, #rows do
-          local row = rows[ri]
-          if type(row) == "table" and type(row.source) == "string" and type(row.name) == "string"
-            and row.name ~= "" and math.floor(tonumber(row.qty) or 0) >= 1
-          then
-            stakeEntries[#stakeEntries + 1] = row
-          end
-        end
       end
       for s = 1, 6 do
         local stake = stakeEntries[s]
