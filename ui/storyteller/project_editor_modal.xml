@@ -38,7 +38,7 @@
 
     <Button class="projectEditor_delete_button" preferredWidth="100" preferredHeight="32" fontSize="12" colors="#662222|#883333|#991111|rgba(0.5,0.1,0.1,0.4)" textColor="#FFFFFF" onClick="HUD_projectEditorDelete" text="Delete" />
 
-    <Button class="projectEditor_begin_button" preferredWidth="120" preferredHeight="32" fontSize="12" colors="#224466|#336699|#4488BB|rgba(0.1,0.2,0.4,0.5)" textColor="#FFFFFF" onClick="HUD_projectEditorBegin" text="Lock & Begin" />
+    <Button class="projectEditor_begin_button" preferredWidth="120" preferredHeight="32" fontSize="12" colors="#224466|#336699|#4488BB|rgba(0.1,0.2,0.4,0.5)" textColor="#FFFFFF" onClick="HUD_projectEditorBegin" text="Lock &amp; Begin" />
 
     <Button class="projectEditor_complete_button" preferredWidth="100" preferredHeight="32" fontSize="12" colors="#226666|#33AAAA|#119999|rgba(0.1,0.5,0.5,0.4)" textColor="#FFFFFF" onClick="HUD_projectEditorComplete" text="Complete" />
   </Defaults>
