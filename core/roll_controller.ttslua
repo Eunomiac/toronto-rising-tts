@@ -3079,34 +3079,6 @@ function RC.activateBloodSurge(color)
     end
 
     active.meta.bloodSurgeActive = true
-    -- #region agent log
-    do
-        local payload = {
-            sessionId = "2dc0cf",
-            runId = "bug1-pre",
-            hypothesisId = "H1-H4",
-            location = "roll_controller.ttslua:activateBloodSurge",
-            message = "blood surge activated; notifyStateChanged will reconcile bags",
-            data = {
-                color = color,
-                hunger = hunger,
-                rollType = tostring(active.rollType),
-                poolRouse = pool.rouse,
-                poolBloodSurgeRouse = pool.bloodSurgeRouse,
-                comboBlockRouse = DK.isHungerRouseComboBlocked(hunger, pool, DK.KIND_ROUSE, active.meta),
-            },
-            timestamp = (os.time() or 0) * 1000,
-        }
-        print("[DBG-2dc0cf] " .. JSON.encode(payload))
-        if type(io) == "table" and type(io.open) == "function" then
-            local f = io.open("d:/Projects/.CODING/toronto-rising-tts/debug-2dc0cf.log", "a")
-            if f ~= nil then
-                f:write(JSON.encode(payload) .. "\n")
-                f:close()
-            end
-        end
-    end
-    -- #endregion
     setActive(color, active)
     notifyStateChanged(color)
 
@@ -3145,7 +3117,8 @@ function RC.addBloodSurgeRouse(color)
     return true
 end
 
---- Removes one Blood Surge rouse die; full surge undo when none remain (Hunger bag right-click).
+--- Removes one Blood Surge rouse die (Hunger bag right-click while surge is active).
+-- When the last BS Rouse is removed, full surge undo runs via deactivateBloodSurge.
 -- @param color string
 -- @return boolean
 function RC.removeOneBloodSurgeRouse(color)
@@ -3217,6 +3190,8 @@ function RC.recordBloodSurgePoolAdd(color, kind, count)
 end
 
 --- Reverses Blood Surge (Hunger bag right-click while surge is active).
+-- Removes surge-count main-pool dice preferring Normal first (keep Hunger floor),
+-- then clears BS Rouse and surge tags — not strictly the Auto-Hunger-tagged surge dice.
 -- @param color string
 -- @return boolean
 function RC.deactivateBloodSurge(color)
@@ -3232,12 +3207,20 @@ function RC.deactivateBloodSurge(color)
         return false
     end
 
-    Global.call("GlobalDestroyBloodSurgeDice", { color = color, rollId = active.id })
     local added = active.meta.bloodSurgeAddedToPool or { normal = 0, hunger = 0 }
     local pool = DK.normalizePool(active.pool)
+    local removeCount = (tonumber(added.normal) or 0) + (tonumber(added.hunger) or 0)
+    local remNormal = math.min(pool.normal or 0, removeCount)
+    local remHunger = math.min(pool.hunger or 0, removeCount - remNormal)
+    Global.call("GlobalDestroyBloodSurgeDice", {
+        color = color,
+        rollId = active.id,
+        removeNormal = remNormal,
+        removeHunger = remHunger,
+    })
     pool.bloodSurgeRouse = 0
-    pool.normal = math.max(0, pool.normal - (tonumber(added.normal) or 0))
-    pool.hunger = math.max(0, pool.hunger - (tonumber(added.hunger) or 0))
+    pool.normal = math.max(0, (pool.normal or 0) - remNormal)
+    pool.hunger = math.max(0, (pool.hunger or 0) - remHunger)
     active.pool = pool
     active.meta.bloodSurgeActive = false
     active.meta.bloodSurgeAddedToPool = { normal = 0, hunger = 0 }

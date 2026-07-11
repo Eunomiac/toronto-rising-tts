@@ -1830,29 +1830,94 @@ end
 --- Removes Blood Surge dice for a roll: tagged rouse + surge-spawned normal/hunger only.
 -- Bags first (while surge script_state is intact), then table-scan orphans.
 -- @param params table  { color, rollId }
+--- Destroys Blood Surge dice for undo: BS Rouse + prefer-Normal main-pool count.
+-- When removeNormal/removeHunger are set, removes that many staged dice (Normal first
+-- via caller plan) instead of destroying every bloodSurgePool-tagged die.
+-- Clears remaining bloodSurgePool tags so leftover Hunger dice stay as normal Hunger.
+-- @param params table  { color, rollId, removeNormal?: number, removeHunger?: number }
 function GlobalDestroyBloodSurgeDice(params)
     if type(params) ~= "table" then return end
     local color = params.color
     local rollId = params.rollId
     if type(color) ~= "string" or type(rollId) ~= "string" then return end
+    local remNormal = math.max(0, math.floor(tonumber(params.removeNormal) or 0))
+    local remHunger = math.max(0, math.floor(tonumber(params.removeHunger) or 0))
+    local preferCounts = params.removeNormal ~= nil or params.removeHunger ~= nil
     local ownerTag = color .. "Object"
-    local bagSpecs = {
-        { guid = G.GetDiceRouseGUID(color), scriptState = DK.SCRIPT_STATE_BLOOD_SURGE_ROUSE },
-        { guid = G.GetDiceNormalGUID(color), scriptState = DK.SCRIPT_STATE_BLOOD_SURGE_POOL },
-        { guid = G.GetDiceHungerGUID(color), scriptState = DK.SCRIPT_STATE_BLOOD_SURGE_POOL },
-    }
-    for _, spec in ipairs(bagSpecs) do
-        if type(spec.guid) == "string" then
-            local bag = G.getObject(spec.guid)
+    local arcCenter = (color == "Black") and storytellerArcCenterForActive() or nil
+
+    local function bagDestroyParams(scriptState)
+        local destroyParams = { scriptState = scriptState }
+        if arcCenter ~= nil then
+            destroyParams.arcCenter = arcCenter
+        end
+        return destroyParams
+    end
+
+    -- Always remove Blood Surge rouse dice.
+    local rouseGuid = G.GetDiceRouseGUID(color)
+    if type(rouseGuid) == "string" then
+        local bag = G.getObject(rouseGuid)
+        if bag ~= nil then
+            bag.call(
+                "destroyStagedByScriptState",
+                bagDestroyParams(DK.SCRIPT_STATE_BLOOD_SURGE_ROUSE)
+            )
+        end
+    end
+
+    if preferCounts then
+        local normalGuid = G.GetDiceNormalGUID(color)
+        if type(normalGuid) == "string" and remNormal > 0 then
+            local bag = G.getObject(normalGuid)
             if bag ~= nil then
-                local destroyParams = { scriptState = spec.scriptState }
-                if color == "Black" then
-                    destroyParams.arcCenter = storytellerArcCenterForActive()
+                bag.call("destroyLastStagedDice", {
+                    count = remNormal,
+                    arcCenter = arcCenter,
+                })
+            end
+        end
+        local hungerGuid = G.GetDiceHungerGUID(color)
+        if type(hungerGuid) == "string" and remHunger > 0 then
+            local bag = G.getObject(hungerGuid)
+            if bag ~= nil then
+                bag.call("destroyLastStagedDice", {
+                    count = remHunger,
+                    preferScriptState = DK.SCRIPT_STATE_BLOOD_SURGE_POOL,
+                    arcCenter = arcCenter,
+                })
+            end
+        end
+        -- Clear surge tags on any remaining staged pool dice (kept Hunger floor).
+        for _, guidFn in ipairs({ G.GetDiceNormalGUID, G.GetDiceHungerGUID }) do
+            local guid = guidFn(color)
+            if type(guid) == "string" then
+                local bag = G.getObject(guid)
+                if bag ~= nil then
+                    bag.call("clearStagedScriptState", {
+                        scriptState = DK.SCRIPT_STATE_BLOOD_SURGE_POOL,
+                    })
                 end
-                bag.call("destroyStagedByScriptState", destroyParams)
+            end
+        end
+    else
+        -- Legacy: destroy every surge-tagged pool die.
+        for _, guidFn in ipairs({ G.GetDiceNormalGUID, G.GetDiceHungerGUID }) do
+            local guid = guidFn(color)
+            if type(guid) == "string" then
+                local bag = G.getObject(guid)
+                if bag ~= nil then
+                    bag.call(
+                        "destroyStagedByScriptState",
+                        bagDestroyParams(DK.SCRIPT_STATE_BLOOD_SURGE_POOL)
+                    )
+                end
             end
         end
     end
+
+    -- Table-released dice: BS Rouse always; surge-tagged pool only in legacy mode
+    -- or when prefer-counts still need table cleanup for released surge dice.
     local kinds = {
         { tag = DK.TAG_ROUSE, surgeRouseOnly = true },
         { tag = DK.TAG_NORMAL, surgePoolOnly = true },
@@ -1867,8 +1932,14 @@ function GlobalDestroyBloodSurgeDice(params)
                     local _, isSurge = DK.decodeGmNotes(obj.getGMNotes())
                     destroyIt = isSurge == true
                         or obj.script_state == DK.SCRIPT_STATE_BLOOD_SURGE_ROUSE
-                elseif spec.surgePoolOnly == true then
+                elseif spec.surgePoolOnly == true and not preferCounts then
                     destroyIt = obj.script_state == DK.SCRIPT_STATE_BLOOD_SURGE_POOL
+                elseif spec.surgePoolOnly == true and preferCounts then
+                    -- Prefer-count path already removed staged dice; clear tags on
+                    -- any leftover released surge-tagged dice instead of destroying.
+                    if obj.script_state == DK.SCRIPT_STATE_BLOOD_SURGE_POOL then
+                        obj.script_state = ""
+                    end
                 end
                 if destroyIt then
                     releaseDieToPreloadOrDestroy(obj)

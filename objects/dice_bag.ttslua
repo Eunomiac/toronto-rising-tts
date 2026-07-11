@@ -772,6 +772,82 @@ function destroyStagedByScriptState(params)
     return removed
 end
 
+--- Destroys up to `count` staged dice from the end of the bag (no pool callback).
+-- Optionally prefers dice matching preferScriptState before falling back to any.
+-- @param params table  { count: number, preferScriptState?: string, arcCenter?: table }
+-- @return number removed
+function destroyLastStagedDice(params)
+    if type(params) ~= "table" then
+        return 0
+    end
+    local count = math.max(0, math.floor(tonumber(params.count) or 0))
+    if count < 1 or #spawnedDice == 0 then
+        return 0
+    end
+    local prefer = params.preferScriptState
+    local removed = 0
+
+    local function takeAt(i)
+        local die = spawnedDice[i]
+        table.remove(spawnedDice, i)
+        if die ~= nil then
+            releaseDieToPreloadOrDestroy(die)
+        end
+        removed = removed + 1
+    end
+
+    if type(prefer) == "string" then
+        for i = #spawnedDice, 1, -1 do
+            if removed >= count then
+                break
+            end
+            local die = spawnedDice[i]
+            if die ~= nil and die.script_state == prefer then
+                takeAt(i)
+            end
+        end
+    end
+    for i = #spawnedDice, 1, -1 do
+        if removed >= count then
+            break
+        end
+        takeAt(i)
+    end
+
+    local arcCenter = params.arcCenter
+    local bagColor = getBagColor()
+    if bagColor == nil and isStorytellerBag() then
+        bagColor = "Black"
+    end
+    local bagKind = getDieType()
+    if isStorytellerBag() then
+        if type(repositionStorytellerTrayAll) == "function" then
+            repositionStorytellerTrayAll(arcCenter)
+        end
+    elseif type(bagColor) == "string" then
+        repositionStagedDiceOnRingArc(bagColor, arcCenter, bagKind, spawnedDice, true)
+    end
+    return removed
+end
+
+--- Clears matching script_state on staged dice without destroying them.
+-- @param params table  { scriptState: string }
+-- @return number cleared
+function clearStagedScriptState(params)
+    if type(params) ~= "table" or type(params.scriptState) ~= "string" then
+        return 0
+    end
+    local target = params.scriptState
+    local cleared = 0
+    for _, die in ipairs(spawnedDice) do
+        if die ~= nil and die.script_state == target then
+            die.script_state = ""
+            cleared = cleared + 1
+        end
+    end
+    return cleared
+end
+
 --- Local offset on a staging arc (caller supplies ring radius).
 -- @param i number  1-based slot index
 -- @param points number  dice count on this arc
