@@ -1,0 +1,563 @@
+--[[
+  Storyteller Projects panel: PC + Coterie project tracking.
+  Agent guidance: .dev/HUD_FUNCTIONS.md
+]]
+---@diagnostic disable: undefined-global
+local PJP = {}
+
+local C = require("lib.constants")
+local U = require("lib.util")
+local Projects = require("core.projects")
+local PCST = require("core.pc_storyteller_panel")
+local RC = require("core.roll_controller")
+
+local ROW_POOL = 12
+
+local selectedTarget = nil
+local editingId = nil
+local editorDraft = {}
+local stakeAdvMaps = {}
+
+local setAttr
+local setAttrs
+local showLanding
+local showDetail
+local refreshDetail
+local openEditor
+local closeEditor
+local syncEditorToProject
+local syncEditorFromProject
+local projectFromDraft
+local refreshStakeRow
+local refreshStakeValidation
+local refreshDerivedFields
+local refillAdvantageOptions
+local activateStakeRows
+local refreshAfterMutation
+
+setAttr = function(id, attr, val)
+  U.setAttribute(id, attr, tostring(val))
+end
+
+setAttrs = function(id, attrs)
+  U.setAttributes(id, attrs)
+end
+
+showLanding = function()
+  setAttr("projects_landing", "active", "true")
+  setAttr("projects_detail", "active", "false")
+end
+
+showDetail = function(title)
+  setAttr("projects_landing", "active", "false")
+  setAttr("projects_detail", "active", "true")
+  setAttr("projects_detail_title", "text", title or "")
+end
+
+refreshDetail = function()
+  if selectedTarget == nil then
+    return
+  end
+  local sourceKey = selectedTarget
+  if sourceKey == "Coterie" then
+    sourceKey = "coterie"
+  else
+    sourceKey = Projects.charKeyForColor(sourceKey)
+  end
+  if sourceKey == nil then
+    return
+  end
+  local projects = Projects.listForDisplaySource(sourceKey)
+  for slot = 1, ROW_POOL do
+    local nn = string.format("%02d", slot)
+    local rowId = "projects_row_" .. nn
+    local project = projects[slot]
+    if project ~= nil then
+      local label = tostring(project.goal or "Untitled") .. " (" .. tostring(project.phase or "setup") .. ")"
+      setAttr(rowId, "active", "true")
+      setAttr(rowId .. "_label", "text", label)
+    else
+      setAttr(rowId, "active", "false")
+      setAttr(rowId .. "_label", "text", "")
+    end
+  end
+end
+
+projectFromDraft = function()
+  local project = Projects.getProject(editingId)
+  if project == nil then
+    return nil
+  end
+  project.goal = tostring(editorDraft.goal or "")
+  project.scope = tonumber(editorDraft.scope)
+  project.launchRollSkill = tostring(editorDraft.skill or "")
+  project.launchRollAdvantage = tostring(editorDraft.advantage or "")
+  project.launchRollDifficulty = tonumber(editorDraft.difficulty)
+  project.increment = Projects.incrementFromSelectedIndex(editorDraft.increment or 0)
+  project.launchRollResult = Projects.resultFromSelectedIndex(editorDraft.result or 0)
+  project.launchRollMargin = tonumber(editorDraft.margin)
+  project.startDate = Projects.parseStartDateString(editorDraft.startDate)
+  project.projectDieMod = math.floor(tonumber(editorDraft.projectDieMod) or 0)
+  project.numContributors = math.max(1, math.floor(tonumber(editorDraft.numContributors) or 1))
+  local stakeRows = {}
+  for row = 1, Projects.STAKE_ROW_POOL do
+    local rowData = editorDraft.stakeRows[row]
+    if type(rowData) == "table" then
+      local sourceKey = Projects.sourceKeyFromSelectedIndex(rowData.source or 0)
+      if type(sourceKey) == "string" then
+        local advList = stakeAdvMaps[row]
+        local advIdx = math.floor(tonumber(rowData.advantage) or 0)
+        if type(advList) == "table" and advIdx > 0 and advList[advIdx] ~= nil then
+          local entry = advList[advIdx]
+          stakeRows[#stakeRows + 1] = {
+            source = sourceKey,
+            name = entry.name,
+            focus = entry.focus,
+            qty = math.floor(tonumber(rowData.qty) or 0),
+          }
+        else
+          stakeRows[#stakeRows + 1] = {
+            source = sourceKey,
+            name = nil,
+            focus = nil,
+            qty = 0,
+          }
+        end
+      end
+    end
+  end
+  project.stakeRows = stakeRows
+  return project
+end
+
+refreshStakeRow = function(row)
+  local rowId = "projectEditor_stakeRow_" .. tostring(row)
+  local sourceId = "projectEditor_stake_" .. tostring(row) .. "_source"
+  local advId = "projectEditor_stake_" .. tostring(row) .. "_advantage"
+  local qtyId = "projectEditor_stake_" .. tostring(row) .. "_qty"
+  local rowData = editorDraft.stakeRows[row]
+  if type(rowData) ~= "table" then
+    return
+  end
+  local sourceIdx = math.floor(tonumber(rowData.source) or 0)
+  local advIdx = math.floor(tonumber(rowData.advantage) or 0)
+  local qty = math.floor(tonumber(rowData.qty) or 0)
+  setAttr(sourceId, "value", tostring(sourceIdx))
+  setAttr(advId, "value", tostring(advIdx))
+  setAttr(qtyId, "text", qty > 0 and tostring(qty) or "")
+end
+
+refillAdvantageOptions = function(row, sourceKey)
+  local advList = Projects.listAdvantagesForSource(sourceKey)
+  stakeAdvMaps[row] = advList
+  for opt = 1, Projects.ADV_OPTION_POOL do
+    local nn = string.format("%02d", opt)
+    local optId = "projectEditor_stake_" .. tostring(row) .. "_advOpt_" .. nn
+    local entry = advList[opt]
+    if entry ~= nil then
+      setAttr(optId, "text", entry.label)
+    else
+      setAttr(optId, "text", "—")
+    end
+  end
+end
+
+activateStakeRows = function()
+  local project = projectFromDraft()
+  if project == nil then
+    return
+  end
+  Projects.recomputeDerived(project)
+  local required = Projects.computeRequiredStake(project)
+  if required == nil or required == 0 then
+    setAttr("projectEditor_stakeRow_1", "active", "true")
+    for row = 2, Projects.STAKE_ROW_POOL do
+      setAttr("projectEditor_stakeRow_" .. tostring(row), "active", "false")
+    end
+    return
+  end
+  local sum = Projects.sumStakeQty(project)
+  local nextBlank = 0
+  for row = 1, Projects.STAKE_ROW_POOL do
+    local rowData = editorDraft.stakeRows[row]
+    local sourceKey = Projects.sourceKeyFromSelectedIndex((rowData and rowData.source) or 0)
+    if type(sourceKey) == "string" and sourceKey ~= "" then
+      setAttr("projectEditor_stakeRow_" .. tostring(row), "active", "true")
+      nextBlank = row + 1
+    else
+      break
+    end
+  end
+  if sum < required and nextBlank > 0 and nextBlank <= Projects.STAKE_ROW_POOL then
+    setAttr("projectEditor_stakeRow_" .. tostring(nextBlank), "active", "true")
+  end
+end
+
+refreshStakeValidation = function()
+  local project = projectFromDraft()
+  if project == nil then
+    setAttr("projectEditor_stakeValidation", "text", "")
+    return
+  end
+  Projects.recomputeDerived(project)
+  local ok, msg = Projects.validateStakesForBegin(project)
+  setAttr("projectEditor_stakeValidation", "text", msg or "")
+end
+
+refreshDerivedFields = function()
+  local project = projectFromDraft()
+  if project == nil then
+    return
+  end
+  Projects.recomputeDerived(project)
+  local die, endDate = Projects.deriveDieAndEnd(project)
+  if die ~= nil then
+    setAttr("projectEditor_projectDie", "text", tostring(die))
+  else
+    setAttr("projectEditor_projectDie", "text", "—")
+  end
+  if endDate ~= nil then
+    setAttr("projectEditor_endDate", "text", Projects.formatStartDate(endDate))
+  else
+    setAttr("projectEditor_endDate", "text", "")
+  end
+  local required = Projects.computeRequiredStake(project)
+  if required ~= nil then
+    setAttr("projectEditor_stakeRequired", "text", tostring(required))
+  else
+    setAttr("projectEditor_stakeRequired", "text", "—")
+  end
+  local phase = project.phase
+  local isInProgressOrComplete = phase == Projects.PHASE.IN_PROGRESS or phase == Projects.PHASE.COMPLETE
+  local resultInteract = isInProgressOrComplete and "false" or "true"
+  setAttr("projectEditor_result", "interactable", resultInteract)
+  setAttr("projectEditor_margin", "interactable", resultInteract)
+  local beginEligible = Projects.isBeginEligible(project)
+  setAttr("projectEditor_begin", "interactable", beginEligible and "true" or "false")
+  local completeEligible = phase == Projects.PHASE.IN_PROGRESS
+  setAttr("projectEditor_complete", "interactable", completeEligible and "true" or "false")
+  local launchREligible = Projects.computeAutoPhase(project) == Projects.PHASE.PRE_LAUNCH
+  setAttr("projectEditor_launchRoll_trigger", "interactable", launchREligible and "true" or "false")
+  activateStakeRows()
+  refreshStakeValidation()
+end
+
+syncEditorFromProject = function(project)
+  editorDraft.goal = tostring(project.goal or "")
+  editorDraft.scope = tonumber(project.scope)
+  editorDraft.skill = tostring(project.launchRollSkill or "")
+  editorDraft.advantage = tostring(project.launchRollAdvantage or "")
+  editorDraft.difficulty = tonumber(project.launchRollDifficulty)
+  editorDraft.increment = Projects.selectedIndexFromIncrement(project.increment)
+  editorDraft.result = Projects.selectedIndexFromResult(project.launchRollResult)
+  editorDraft.margin = tonumber(project.launchRollMargin)
+  editorDraft.startDate = Projects.formatStartDate(project.startDate)
+  editorDraft.projectDieMod = math.floor(tonumber(project.projectDieMod) or 0)
+  editorDraft.numContributors = math.max(1, math.floor(tonumber(project.numContributors) or 1))
+  editorDraft.stakeRows = {}
+  local stakeRows = project.stakeRows
+  if type(stakeRows) ~= "table" then
+    stakeRows = {}
+  end
+  for row = 1, Projects.STAKE_ROW_POOL do
+    local stakeRow = stakeRows[row]
+    if type(stakeRow) == "table" then
+      local sourceIdx = Projects.selectedIndexFromSourceKey(stakeRow.source)
+      local sourceKey = Projects.sourceKeyFromSelectedIndex(sourceIdx)
+      local advIdx = 0
+      if type(sourceKey) == "string" and type(stakeRow.name) == "string" then
+        local advList = Projects.listAdvantagesForSource(sourceKey)
+        stakeAdvMaps[row] = advList
+        for i, entry in ipairs(advList) do
+          if entry.name == stakeRow.name and entry.focus == (stakeRow.focus or "") then
+            advIdx = i
+            break
+          end
+        end
+      end
+      editorDraft.stakeRows[row] = {
+        source = sourceIdx,
+        advantage = advIdx,
+        qty = math.floor(tonumber(stakeRow.qty) or 0),
+      }
+    else
+      editorDraft.stakeRows[row] = {
+        source = 0,
+        advantage = 0,
+        qty = 0,
+      }
+      stakeAdvMaps[row] = {}
+    end
+  end
+  local ownerIdx = Projects.selectedIndexFromOwner(project.owner)
+  setAttr("projectEditor_owner", "value", tostring(ownerIdx))
+  setAttr("projectEditor_goal", "text", editorDraft.goal)
+  setAttr("projectEditor_scope", "text", editorDraft.scope ~= nil and tostring(editorDraft.scope) or "")
+  setAttr("projectEditor_skill", "text", editorDraft.skill)
+  setAttr("projectEditor_advantage", "text", editorDraft.advantage)
+  setAttr("projectEditor_difficulty", "text", editorDraft.difficulty ~= nil and tostring(editorDraft.difficulty) or "")
+  setAttr("projectEditor_increment", "value", tostring(editorDraft.increment))
+  setAttr("projectEditor_result", "value", tostring(editorDraft.result))
+  setAttr("projectEditor_margin", "text", editorDraft.margin ~= nil and tostring(editorDraft.margin) or "")
+  setAttr("projectEditor_startDate", "text", editorDraft.startDate)
+  setAttr("projectEditor_projectDieMod", "text", tostring(editorDraft.projectDieMod))
+  setAttr("projectEditor_numContributors", "text", tostring(editorDraft.numContributors))
+  for row = 1, Projects.STAKE_ROW_POOL do
+    local sourceKey = Projects.sourceKeyFromSelectedIndex(editorDraft.stakeRows[row].source or 0)
+    if type(sourceKey) == "string" then
+      refillAdvantageOptions(row, sourceKey)
+    end
+    refreshStakeRow(row)
+  end
+  refreshDerivedFields()
+end
+
+syncEditorToProject = function()
+  local project = projectFromDraft()
+  if project == nil then
+    return
+  end
+  Projects.recomputeDerived(project)
+  Projects.saveProject(project)
+end
+
+openEditor = function(projectId)
+  editingId = projectId
+  local project = Projects.getProject(projectId)
+  if project == nil then
+    return
+  end
+  editorDraft = {}
+  stakeAdvMaps = {}
+  syncEditorFromProject(project)
+  setAttr("projectEditor_modal", "active", "true")
+end
+
+closeEditor = function()
+  editingId = nil
+  editorDraft = {}
+  stakeAdvMaps = {}
+  setAttr("projectEditor_modal", "active", "false")
+end
+
+refreshAfterMutation = function()
+  PJP.refresh()
+  if selectedTarget ~= nil and selectedTarget ~= "Coterie" then
+    PCST.refreshCharacterSheetsForColor(selectedTarget)
+  end
+end
+
+function PJP.refresh()
+  if selectedTarget == nil then
+    showLanding()
+    return
+  end
+  showDetail(selectedTarget)
+  refreshDetail()
+end
+
+function PJP.selectTarget(target)
+  if type(target) ~= "string" or target == "" then
+    return
+  end
+  selectedTarget = target
+  PJP.refresh()
+end
+
+function PJP.goBack()
+  selectedTarget = nil
+  showLanding()
+end
+
+function PJP.onAdd()
+  if selectedTarget == nil then
+    return
+  end
+  local ownerKey = nil
+  if selectedTarget ~= "Coterie" then
+    ownerKey = Projects.charKeyForColor(selectedTarget)
+  end
+  local project = Projects.createProject(ownerKey)
+  if project ~= nil then
+    openEditor(project.id)
+  end
+end
+
+--- @param id string e.g. projects_row_03_edit
+function PJP.onEdit(id)
+  if type(id) ~= "string" or selectedTarget == nil then
+    return
+  end
+  local slotStr = id:match("^projects_row_(%d+)_edit$")
+  if slotStr == nil then
+    return
+  end
+  local slot = tonumber(slotStr)
+  local sourceKey = selectedTarget
+  if sourceKey == "Coterie" then
+    sourceKey = "coterie"
+  else
+    sourceKey = Projects.charKeyForColor(sourceKey)
+  end
+  if sourceKey == nil then
+    return
+  end
+  local projects = Projects.listForDisplaySource(sourceKey)
+  local project = projects[slot]
+  if project ~= nil then
+    openEditor(project.id)
+  end
+end
+
+--- @param id string field element id
+--- @param value string
+function PJP.onEditorField(id, value)
+  if type(id) ~= "string" then
+    return
+  end
+  local field = id:match("^projectEditor_(%w+)$")
+  if field ~= nil then
+    editorDraft[field] = tostring(value or "")
+    if field == "scope" then
+      local project = projectFromDraft()
+      if project ~= nil then
+        Projects.applyScopeDifficulty(project, tonumber(value))
+        editorDraft.difficulty = project.launchRollDifficulty
+        setAttr("projectEditor_difficulty", "text", editorDraft.difficulty ~= nil and tostring(editorDraft.difficulty) or "")
+      end
+    end
+    refreshDerivedFields()
+    return
+  end
+  local row, stakeField = id:match("^projectEditor_stake_(%d+)_(%w+)$")
+  if row ~= nil and stakeField ~= nil then
+    local rowNum = tonumber(row)
+    if editorDraft.stakeRows[rowNum] == nil then
+      editorDraft.stakeRows[rowNum] = { source = 0, advantage = 0, qty = 0 }
+    end
+    if stakeField == "qty" then
+      editorDraft.stakeRows[rowNum].qty = math.floor(tonumber(value) or 0)
+    end
+    refreshDerivedFields()
+  end
+end
+
+--- @param id string dropdown element id
+--- @param selectedIndex number 0-based
+function PJP.onDropdown(id, selectedIndex)
+  if type(id) ~= "string" then
+    return
+  end
+  local field = id:match("^projectEditor_(%w+)$")
+  if field ~= nil then
+    editorDraft[field] = math.floor(tonumber(selectedIndex) or 0)
+    if field == "owner" then
+      local owner = Projects.ownerFromSelectedIndex(selectedIndex)
+      local project = Projects.getProject(editingId)
+      if project ~= nil then
+        project.owner = owner
+        Projects.saveProject(project)
+        refreshAfterMutation()
+      end
+    end
+    refreshDerivedFields()
+  end
+end
+
+--- @param id string stake dropdown element id
+--- @param selectedIndex number 0-based
+function PJP.onStakeDropdown(id, selectedIndex)
+  if type(id) ~= "string" then
+    return
+  end
+  local row, field = id:match("^projectEditor_stake_(%d+)_(%w+)$")
+  if row == nil or field == nil then
+    return
+  end
+  local rowNum = tonumber(row)
+  if editorDraft.stakeRows[rowNum] == nil then
+    editorDraft.stakeRows[rowNum] = { source = 0, advantage = 0, qty = 0 }
+  end
+  editorDraft.stakeRows[rowNum][field] = math.floor(tonumber(selectedIndex) or 0)
+  if field == "source" then
+    local sourceKey = Projects.sourceKeyFromSelectedIndex(selectedIndex)
+    if type(sourceKey) == "string" then
+      refillAdvantageOptions(rowNum, sourceKey)
+    end
+    editorDraft.stakeRows[rowNum].advantage = 0
+    refreshStakeRow(rowNum)
+  end
+  refreshDerivedFields()
+end
+
+function PJP.onConfirm()
+  syncEditorToProject()
+  closeEditor()
+  refreshAfterMutation()
+end
+
+function PJP.onCancel()
+  closeEditor()
+end
+
+function PJP.onDelete()
+  if editingId ~= nil then
+    Projects.deleteProject(editingId)
+    closeEditor()
+    refreshAfterMutation()
+  end
+end
+
+function PJP.onBegin()
+  local project = projectFromDraft()
+  if project == nil or not Projects.isBeginEligible(project) then
+    return
+  end
+  project.phase = Projects.PHASE.IN_PROGRESS
+  Projects.recomputeDerived(project)
+  Projects.saveProject(project)
+  syncEditorFromProject(project)
+  refreshAfterMutation()
+end
+
+function PJP.onComplete()
+  local project = projectFromDraft()
+  if project == nil or project.phase ~= Projects.PHASE.IN_PROGRESS then
+    return
+  end
+  project.phase = Projects.PHASE.COMPLETE
+  Projects.recomputeDerived(project)
+  Projects.saveProject(project)
+  syncEditorFromProject(project)
+  refreshAfterMutation()
+end
+
+function PJP.onLaunchR()
+  local project = projectFromDraft()
+  if project == nil then
+    return
+  end
+  Projects.recomputeDerived(project)
+  if Projects.computeAutoPhase(project) ~= Projects.PHASE.PRE_LAUNCH then
+    return
+  end
+  local color = Projects.colorForCharKey(project.owner)
+  if color == nil then
+    return
+  end
+  local difficulty = math.floor(tonumber(project.launchRollDifficulty) or 0)
+  local label = Projects.launchRollDisplay(project)
+  if label == "" then
+    label = "Launch Roll"
+  else
+    label = "Roll " .. label
+  end
+  RC.initiateRoll(color, {
+    rollType = C.RollType.LAUNCH,
+    initiator = "storyteller",
+    difficulty = difficulty,
+    label = label,
+  })
+end
+
+return PJP

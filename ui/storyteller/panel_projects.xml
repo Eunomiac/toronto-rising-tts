@@ -1,0 +1,77 @@
+<!-- Storyteller Projects panel: PC + Coterie project tracking -->
+<!-- Agent guidance: .dev/HUD_FUNCTIONS.md -->
+<Panel id="panel_projects" class="projects_panel_root" active="false">
+  <VerticalLayout class="projects_root_vl">
+    <Panel id="projects_landing" class="projects_landing" active="true">
+      <Text class="projects_landing_title" text="Select target" />
+      <HorizontalLayout class="projects_target_row" spacing="6">
+        <Button id="projects_target_Brown" class="projects_target_btn" text="Brown" onClick="HUD_projectsTarget" />
+        <Button id="projects_target_Orange" class="projects_target_btn" text="Orange" onClick="HUD_projectsTarget" />
+        <Button id="projects_target_Red" class="projects_target_btn" text="Red" onClick="HUD_projectsTarget" />
+        <Button id="projects_target_Pink" class="projects_target_btn" text="Pink" onClick="HUD_projectsTarget" />
+        <Button id="projects_target_Purple" class="projects_target_btn" text="Purple" onClick="HUD_projectsTarget" />
+        <Button id="projects_target_Coterie" class="projects_target_btn" text="Coterie" onClick="HUD_projectsTarget" />
+      </HorizontalLayout>
+    </Panel>
+    <Panel id="projects_detail" class="projects_detail" active="false">
+      <HorizontalLayout class="projects_detail_header">
+        <Button id="projects_back" class="projects_back_btn" text="Back" onClick="HUD_projectsBack" />
+        <Text id="projects_detail_title" class="projects_detail_title" text="" />
+      </HorizontalLayout>
+      <VerticalLayout class="projects_detail_body">
+        <HorizontalLayout class="projects_section_header">
+          <Text class="projects_section_title" text="Projects" />
+          <Button id="projects_add" class="projects_add_btn" text="+" onClick="HUD_projectsAdd" />
+        </HorizontalLayout>
+        <HorizontalLayout id="projects_row_01" class="projects_row" active="false">
+          <Text id="projects_row_01_label" class="projects_row_label" />
+          <Button id="projects_row_01_edit" class="projects_edit_btn" onClick="HUD_projectsEdit" />
+        </HorizontalLayout>
+        <HorizontalLayout id="projects_row_02" class="projects_row" active="false">
+          <Text id="projects_row_02_label" class="projects_row_label" />
+          <Button id="projects_row_02_edit" class="projects_edit_btn" onClick="HUD_projectsEdit" />
+        </HorizontalLayout>
+        <HorizontalLayout id="projects_row_03" class="projects_row" active="false">
+          <Text id="projects_row_03_label" class="projects_row_label" />
+          <Button id="projects_row_03_edit" class="projects_edit_btn" onClick="HUD_projectsEdit" />
+        </HorizontalLayout>
+        <HorizontalLayout id="projects_row_04" class="projects_row" active="false">
+          <Text id="projects_row_04_label" class="projects_row_label" />
+          <Button id="projects_row_04_edit" class="projects_edit_btn" onClick="HUD_projectsEdit" />
+        </HorizontalLayout>
+        <HorizontalLayout id="projects_row_05" class="projects_row" active="false">
+          <Text id="projects_row_05_label" class="projects_row_label" />
+          <Button id="projects_row_05_edit" class="projects_edit_btn" onClick="HUD_projectsEdit" />
+        </HorizontalLayout>
+        <HorizontalLayout id="projects_row_06" class="projects_row" active="false">
+          <Text id="projects_row_06_label" class="projects_row_label" />
+          <Button id="projects_row_06_edit" class="projects_edit_btn" onClick="HUD_projectsEdit" />
+        </HorizontalLayout>
+        <HorizontalLayout id="projects_row_07" class="projects_row" active="false">
+          <Text id="projects_row_07_label" class="projects_row_label" />
+          <Button id="projects_row_07_edit" class="projects_edit_btn" onClick="HUD_projectsEdit" />
+        </HorizontalLayout>
+        <HorizontalLayout id="projects_row_08" class="projects_row" active="false">
+          <Text id="projects_row_08_label" class="projects_row_label" />
+          <Button id="projects_row_08_edit" class="projects_edit_btn" onClick="HUD_projectsEdit" />
+        </HorizontalLayout>
+        <HorizontalLayout id="projects_row_09" class="projects_row" active="false">
+          <Text id="projects_row_09_label" class="projects_row_label" />
+          <Button id="projects_row_09_edit" class="projects_edit_btn" onClick="HUD_projectsEdit" />
+        </HorizontalLayout>
+        <HorizontalLayout id="projects_row_10" class="projects_row" active="false">
+          <Text id="projects_row_10_label" class="projects_row_label" />
+          <Button id="projects_row_10_edit" class="projects_edit_btn" onClick="HUD_projectsEdit" />
+        </HorizontalLayout>
+        <HorizontalLayout id="projects_row_11" class="projects_row" active="false">
+          <Text id="projects_row_11_label" class="projects_row_label" />
+          <Button id="projects_row_11_edit" class="projects_edit_btn" onClick="HUD_projectsEdit" />
+        </HorizontalLayout>
+        <HorizontalLayout id="projects_row_12" class="projects_row" active="false">
+          <Text id="projects_row_12_label" class="projects_row_label" />
+          <Button id="projects_row_12_edit" class="projects_edit_btn" onClick="HUD_projectsEdit" />
+        </HorizontalLayout>
+      </VerticalLayout>
+    </Panel>
+  </VerticalLayout>
+</Panel>

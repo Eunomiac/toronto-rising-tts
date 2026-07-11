@@ -1,0 +1,30 @@
+<!-- Classes for Storyteller Projects panel (`panel_projects.xml`). -->
+<Defaults>
+  <Panel class="projects_panel_root" padding="8 8 8 8" width="680" color="rgba(0, 0, 0, 0.85)" />
+  <VerticalLayout class="projects_root_vl" spacing="8" childAlignment="UpperLeft" childForceExpandWidth="true" />
+
+  <Panel class="projects_landing" padding="4 4 4 4" />
+  <Text class="projects_landing_title" fontSize="14" fontStyle="Bold" color="#FFFFFF" />
+
+  <HorizontalLayout class="projects_target_row" spacing="6" childForceExpandWidth="false" height="32" />
+  <Button class="projects_target_btn" onClick="HUD_projectsTarget" preferredHeight="28" fontSize="12" preferredWidth="72" minWidth="72" flexibleWidth="0"
+    colors="#333355|#444466|#555577|rgba(0.1,0.1,0.2,0.5)" textColor="#FFFFFF" />
+
+  <Panel class="projects_detail" padding="4 4 4 4" />
+  <HorizontalLayout class="projects_detail_header" spacing="8" height="28" childForceExpandWidth="false" />
+  <Button class="projects_back_btn" onClick="HUD_projectsBack" preferredHeight="26" preferredWidth="64" flexibleWidth="0" minWidth="64" fontSize="12" textColor="#FFFFFF"
+    colors="#333333|#444444|#555555|rgba(0.2,0.2,0.2,0.5)" />
+  <Text class="projects_detail_title" fontSize="15" fontStyle="Bold" color="#FFD700" flexibleWidth="1" alignment="MiddleLeft" />
+
+  <VerticalLayout class="projects_detail_body" spacing="2" childAlignment="UpperLeft" childForceExpandWidth="true" />
+
+  <HorizontalLayout class="projects_section_header" spacing="6" height="24" childForceExpandWidth="false" childAlignment="MiddleLeft" />
+  <Text class="projects_section_title" fontSize="12" fontStyle="Bold" color="#CCCCCC" flexibleWidth="1" alignment="MiddleLeft" />
+  <Button class="projects_add_btn" onClick="HUD_projectsAdd" text="+" preferredWidth="24" preferredHeight="24" flexibleWidth="0" minWidth="24" flexibleHeight="0" minHeight="24" fontSize="14" fontStyle="Bold"
+    colors="#225522|#336633|#44AA44|rgba(0.1,0.3,0.1,0.4)" textColor="#FFFFFF" />
+
+  <HorizontalLayout class="projects_row" spacing="6" height="22" childForceExpandWidth="false" childAlignment="MiddleLeft" />
+  <Text class="projects_row_label" fontSize="11" color="#EEEEEE" flexibleWidth="1" alignment="MiddleLeft" />
+  <Button class="projects_edit_btn" onClick="HUD_projectsEdit" preferredWidth="22" preferredHeight="22" flexibleWidth="0" minWidth="22" flexibleHeight="0" minHeight="22" fontSize="10"
+    colors="#444444|#555555|#666666|rgba(0.2,0.2,0.2,0.4)" textColor="#FFFFFF" />
+</Defaults>

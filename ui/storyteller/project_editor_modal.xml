@@ -24,7 +24,7 @@
 
     <Dropdown class="projectEditor_dropdown" onValueChanged="HUD_projectDropdown(selectedIndex)" flexibleWidth="1" preferredWidth="140" />
 
-    <InputField class="projectEditor_multiline_field" lineType="MultiLineNewline" preferredHeight="100" flexibleHeight="0" preferredWidth="420" onValueChanged="HUD_projectEditorField" onEndEdit="HUD_projectEditorField" />
+    <HorizontalLayout class="projectEditor_stake_row" spacing="6" preferredHeight="36" />
 
     <Panel class="spacer" flexibleHeight="1" flexibleWidth="1" />
 
@@ -44,7 +44,7 @@
   </Defaults>
 
 
-  <Panel id="projectEditor_modal" class="projectEditor_modal" active="true">
+  <Panel id="projectEditor_modal" class="projectEditor_modal" active="false">
     <VerticalLayout id="projectEditor_content" class="projectEditor_content">
 
       <Text id="projectEditor_title" class="projectEditor_title" text="Project Editor" />
@@ -53,11 +53,11 @@
         <Text class="projectEditor_text_label" text="Owner:" alignment="MiddleLeft" />
         <Dropdown id="projectEditor_owner" class="projectEditor_dropdown" onValueChanged="HUD_projectDropdown(selectedIndex)">
             <Option selected="true"> </Option>
-            <Option>lordLucien</Option>
-            <Option>rashid</Option>
-            <Option>aishe</Option>
-            <Option>fomorach</Option>
-            <Option>blackCaesar</Option>
+            <Option>Lord Lucien</Option>
+            <Option>Rashid</Option>
+            <Option>Aishe</Option>
+            <Option>Fomorach</Option>
+            <Option>Black Caesar</Option>
         </Dropdown>
 
       </HorizontalLayout>
@@ -85,7 +85,7 @@
             <Panel class="spacer" />
           </VerticalLayout>
           <InputField id="projectEditor_difficulty" class="projectEditor_integer_field" text="" />
-          <Button id="projectEditor_launchRoll_trigger" class="projectEditor_button_small" text="R" />
+          <Button id="projectEditor_launchRoll_trigger" class="projectEditor_button_small" text="R" onClick="HUD_projectEditorLaunchR" />
         </HorizontalLayout>
       </HorizontalLayout>
 
@@ -122,25 +122,304 @@
 
       <HorizontalLayout class="projectEditor_fullFields_row" childAlignment="MiddleLeft">
         <Text class="projectEditor_text_label" text="Project Die:"  preferredWidth="200" flexibleWidth="0"/>
-        <Text id="projectEditor_projectDie" class="projectEditor_text_label" text="4" alignment="MiddleLeft" fontSize="32" color="#FFFFFF" />
+        <Text id="projectEditor_projectDie" class="projectEditor_text_label" text="—" alignment="MiddleLeft" fontSize="32" color="#FFFFFF" />
         <Text class="projectEditor_text_label" text="Project Die Mod:"  preferredWidth="300" flexibleWidth="0"/>
         <InputField id="projectEditor_projectDieMod" class="projectEditor_integer_field" text="0" />
         <Text class="projectEditor_text_label" text="End Date:"  preferredWidth="100" flexibleWidth="0"/>
-        <Text id="projectEditor_endDate" class="projectEditor_text_label" preferredWidth="600" alignment="MiddleLeft" text="Sept. 14, 2027" fontSize="32" color="#FFFFFF" />
+        <Text id="projectEditor_endDate" class="projectEditor_text_label" preferredWidth="600" alignment="MiddleLeft" text="" fontSize="32" color="#FFFFFF" />
       </HorizontalLayout>
 
       <VerticalLayout class="projectEditor_fullFields">
         <HorizontalLayout childForceExpandWidth="false" spacing="10">
           <Text class="projectEditor_text_label" text="Stake Required:" alignment="MiddleLeft" flexibleWidth="0" preferredWidth="120" />
-          <Text id="projectEditor_stakeRequired" class="projectEditor_text_label" text="5" alignment="MiddleLeft" fontSize="32" color="#FFFFFF" flexibleWidth="0" preferredWidth="50" />
+          <Text id="projectEditor_stakeRequired" class="projectEditor_text_label" text="—" alignment="MiddleLeft" fontSize="32" color="#FFFFFF" flexibleWidth="0" preferredWidth="50" />
         <Text class="projectEditor_text_label" text="Contributors:"  preferredWidth="200" flexibleWidth="0"/>
 
           <InputField id="projectEditor_numContributors" class="projectEditor_integer_field" text="1" />
           <Panel class="spacer" preferredWidth="100" />
         </HorizontalLayout>
 
-        <InputField id="projectEditor_stake" class="projectEditor_multiline_field" text="" />
-        <Text id="projectEditor_stakeValidation" class="projectEditor_text_wide" text="Stake Validation Message" alignment="MiddleLeft" fontSize="12" color="#FF0000" flexibleWidth="0" preferredWidth="1000" minHeight="25" fontStyle="Italic"  />
+        <HorizontalLayout id="projectEditor_stakeRow_1" class="projectEditor_stake_row" active="true">
+          <Dropdown id="projectEditor_stake_1_source" class="projectEditor_dropdown" preferredWidth="120" onValueChanged="HUD_projectStakeDropdown(selectedIndex)">
+            <Option selected="true"> </Option>
+            <Option>Lord Lucien</Option>
+            <Option>Rashid</Option>
+            <Option>Aishe</Option>
+            <Option>Fomorach</Option>
+            <Option>Black Caesar</Option>
+            <Option>Coterie</Option>
+          </Dropdown>
+          <Dropdown id="projectEditor_stake_1_advantage" class="projectEditor_dropdown" preferredWidth="280" onValueChanged="HUD_projectStakeDropdown(selectedIndex)">
+            <Option selected="true"> </Option>
+            <Option id="projectEditor_stake_1_advOpt_01">—</Option>
+            <Option id="projectEditor_stake_1_advOpt_02">—</Option>
+            <Option id="projectEditor_stake_1_advOpt_03">—</Option>
+            <Option id="projectEditor_stake_1_advOpt_04">—</Option>
+            <Option id="projectEditor_stake_1_advOpt_05">—</Option>
+            <Option id="projectEditor_stake_1_advOpt_06">—</Option>
+            <Option id="projectEditor_stake_1_advOpt_07">—</Option>
+            <Option id="projectEditor_stake_1_advOpt_08">—</Option>
+            <Option id="projectEditor_stake_1_advOpt_09">—</Option>
+            <Option id="projectEditor_stake_1_advOpt_10">—</Option>
+            <Option id="projectEditor_stake_1_advOpt_11">—</Option>
+            <Option id="projectEditor_stake_1_advOpt_12">—</Option>
+            <Option id="projectEditor_stake_1_advOpt_13">—</Option>
+            <Option id="projectEditor_stake_1_advOpt_14">—</Option>
+            <Option id="projectEditor_stake_1_advOpt_15">—</Option>
+            <Option id="projectEditor_stake_1_advOpt_16">—</Option>
+            <Option id="projectEditor_stake_1_advOpt_17">—</Option>
+            <Option id="projectEditor_stake_1_advOpt_18">—</Option>
+            <Option id="projectEditor_stake_1_advOpt_19">—</Option>
+            <Option id="projectEditor_stake_1_advOpt_20">—</Option>
+          </Dropdown>
+          <InputField id="projectEditor_stake_1_qty" class="projectEditor_integer_field" text="" />
+        </HorizontalLayout>
+        <HorizontalLayout id="projectEditor_stakeRow_2" class="projectEditor_stake_row" active="false">
+          <Dropdown id="projectEditor_stake_2_source" class="projectEditor_dropdown" preferredWidth="120" onValueChanged="HUD_projectStakeDropdown(selectedIndex)">
+            <Option selected="true"> </Option>
+            <Option>Lord Lucien</Option>
+            <Option>Rashid</Option>
+            <Option>Aishe</Option>
+            <Option>Fomorach</Option>
+            <Option>Black Caesar</Option>
+            <Option>Coterie</Option>
+          </Dropdown>
+          <Dropdown id="projectEditor_stake_2_advantage" class="projectEditor_dropdown" preferredWidth="280" onValueChanged="HUD_projectStakeDropdown(selectedIndex)">
+            <Option selected="true"> </Option>
+            <Option id="projectEditor_stake_2_advOpt_01">—</Option>
+            <Option id="projectEditor_stake_2_advOpt_02">—</Option>
+            <Option id="projectEditor_stake_2_advOpt_03">—</Option>
+            <Option id="projectEditor_stake_2_advOpt_04">—</Option>
+            <Option id="projectEditor_stake_2_advOpt_05">—</Option>
+            <Option id="projectEditor_stake_2_advOpt_06">—</Option>
+            <Option id="projectEditor_stake_2_advOpt_07">—</Option>
+            <Option id="projectEditor_stake_2_advOpt_08">—</Option>
+            <Option id="projectEditor_stake_2_advOpt_09">—</Option>
+            <Option id="projectEditor_stake_2_advOpt_10">—</Option>
+            <Option id="projectEditor_stake_2_advOpt_11">—</Option>
+            <Option id="projectEditor_stake_2_advOpt_12">—</Option>
+            <Option id="projectEditor_stake_2_advOpt_13">—</Option>
+            <Option id="projectEditor_stake_2_advOpt_14">—</Option>
+            <Option id="projectEditor_stake_2_advOpt_15">—</Option>
+            <Option id="projectEditor_stake_2_advOpt_16">—</Option>
+            <Option id="projectEditor_stake_2_advOpt_17">—</Option>
+            <Option id="projectEditor_stake_2_advOpt_18">—</Option>
+            <Option id="projectEditor_stake_2_advOpt_19">—</Option>
+            <Option id="projectEditor_stake_2_advOpt_20">—</Option>
+          </Dropdown>
+          <InputField id="projectEditor_stake_2_qty" class="projectEditor_integer_field" text="" />
+        </HorizontalLayout>
+        <HorizontalLayout id="projectEditor_stakeRow_3" class="projectEditor_stake_row" active="false">
+          <Dropdown id="projectEditor_stake_3_source" class="projectEditor_dropdown" preferredWidth="120" onValueChanged="HUD_projectStakeDropdown(selectedIndex)">
+            <Option selected="true"> </Option>
+            <Option>Lord Lucien</Option>
+            <Option>Rashid</Option>
+            <Option>Aishe</Option>
+            <Option>Fomorach</Option>
+            <Option>Black Caesar</Option>
+            <Option>Coterie</Option>
+          </Dropdown>
+          <Dropdown id="projectEditor_stake_3_advantage" class="projectEditor_dropdown" preferredWidth="280" onValueChanged="HUD_projectStakeDropdown(selectedIndex)">
+            <Option selected="true"> </Option>
+            <Option id="projectEditor_stake_3_advOpt_01">—</Option>
+            <Option id="projectEditor_stake_3_advOpt_02">—</Option>
+            <Option id="projectEditor_stake_3_advOpt_03">—</Option>
+            <Option id="projectEditor_stake_3_advOpt_04">—</Option>
+            <Option id="projectEditor_stake_3_advOpt_05">—</Option>
+            <Option id="projectEditor_stake_3_advOpt_06">—</Option>
+            <Option id="projectEditor_stake_3_advOpt_07">—</Option>
+            <Option id="projectEditor_stake_3_advOpt_08">—</Option>
+            <Option id="projectEditor_stake_3_advOpt_09">—</Option>
+            <Option id="projectEditor_stake_3_advOpt_10">—</Option>
+            <Option id="projectEditor_stake_3_advOpt_11">—</Option>
+            <Option id="projectEditor_stake_3_advOpt_12">—</Option>
+            <Option id="projectEditor_stake_3_advOpt_13">—</Option>
+            <Option id="projectEditor_stake_3_advOpt_14">—</Option>
+            <Option id="projectEditor_stake_3_advOpt_15">—</Option>
+            <Option id="projectEditor_stake_3_advOpt_16">—</Option>
+            <Option id="projectEditor_stake_3_advOpt_17">—</Option>
+            <Option id="projectEditor_stake_3_advOpt_18">—</Option>
+            <Option id="projectEditor_stake_3_advOpt_19">—</Option>
+            <Option id="projectEditor_stake_3_advOpt_20">—</Option>
+          </Dropdown>
+          <InputField id="projectEditor_stake_3_qty" class="projectEditor_integer_field" text="" />
+        </HorizontalLayout>
+        <HorizontalLayout id="projectEditor_stakeRow_4" class="projectEditor_stake_row" active="false">
+          <Dropdown id="projectEditor_stake_4_source" class="projectEditor_dropdown" preferredWidth="120" onValueChanged="HUD_projectStakeDropdown(selectedIndex)">
+            <Option selected="true"> </Option>
+            <Option>Lord Lucien</Option>
+            <Option>Rashid</Option>
+            <Option>Aishe</Option>
+            <Option>Fomorach</Option>
+            <Option>Black Caesar</Option>
+            <Option>Coterie</Option>
+          </Dropdown>
+          <Dropdown id="projectEditor_stake_4_advantage" class="projectEditor_dropdown" preferredWidth="280" onValueChanged="HUD_projectStakeDropdown(selectedIndex)">
+            <Option selected="true"> </Option>
+            <Option id="projectEditor_stake_4_advOpt_01">—</Option>
+            <Option id="projectEditor_stake_4_advOpt_02">—</Option>
+            <Option id="projectEditor_stake_4_advOpt_03">—</Option>
+            <Option id="projectEditor_stake_4_advOpt_04">—</Option>
+            <Option id="projectEditor_stake_4_advOpt_05">—</Option>
+            <Option id="projectEditor_stake_4_advOpt_06">—</Option>
+            <Option id="projectEditor_stake_4_advOpt_07">—</Option>
+            <Option id="projectEditor_stake_4_advOpt_08">—</Option>
+            <Option id="projectEditor_stake_4_advOpt_09">—</Option>
+            <Option id="projectEditor_stake_4_advOpt_10">—</Option>
+            <Option id="projectEditor_stake_4_advOpt_11">—</Option>
+            <Option id="projectEditor_stake_4_advOpt_12">—</Option>
+            <Option id="projectEditor_stake_4_advOpt_13">—</Option>
+            <Option id="projectEditor_stake_4_advOpt_14">—</Option>
+            <Option id="projectEditor_stake_4_advOpt_15">—</Option>
+            <Option id="projectEditor_stake_4_advOpt_16">—</Option>
+            <Option id="projectEditor_stake_4_advOpt_17">—</Option>
+            <Option id="projectEditor_stake_4_advOpt_18">—</Option>
+            <Option id="projectEditor_stake_4_advOpt_19">—</Option>
+            <Option id="projectEditor_stake_4_advOpt_20">—</Option>
+          </Dropdown>
+          <InputField id="projectEditor_stake_4_qty" class="projectEditor_integer_field" text="" />
+        </HorizontalLayout>
+        <HorizontalLayout id="projectEditor_stakeRow_5" class="projectEditor_stake_row" active="false">
+          <Dropdown id="projectEditor_stake_5_source" class="projectEditor_dropdown" preferredWidth="120" onValueChanged="HUD_projectStakeDropdown(selectedIndex)">
+            <Option selected="true"> </Option>
+            <Option>Lord Lucien</Option>
+            <Option>Rashid</Option>
+            <Option>Aishe</Option>
+            <Option>Fomorach</Option>
+            <Option>Black Caesar</Option>
+            <Option>Coterie</Option>
+          </Dropdown>
+          <Dropdown id="projectEditor_stake_5_advantage" class="projectEditor_dropdown" preferredWidth="280" onValueChanged="HUD_projectStakeDropdown(selectedIndex)">
+            <Option selected="true"> </Option>
+            <Option id="projectEditor_stake_5_advOpt_01">—</Option>
+            <Option id="projectEditor_stake_5_advOpt_02">—</Option>
+            <Option id="projectEditor_stake_5_advOpt_03">—</Option>
+            <Option id="projectEditor_stake_5_advOpt_04">—</Option>
+            <Option id="projectEditor_stake_5_advOpt_05">—</Option>
+            <Option id="projectEditor_stake_5_advOpt_06">—</Option>
+            <Option id="projectEditor_stake_5_advOpt_07">—</Option>
+            <Option id="projectEditor_stake_5_advOpt_08">—</Option>
+            <Option id="projectEditor_stake_5_advOpt_09">—</Option>
+            <Option id="projectEditor_stake_5_advOpt_10">—</Option>
+            <Option id="projectEditor_stake_5_advOpt_11">—</Option>
+            <Option id="projectEditor_stake_5_advOpt_12">—</Option>
+            <Option id="projectEditor_stake_5_advOpt_13">—</Option>
+            <Option id="projectEditor_stake_5_advOpt_14">—</Option>
+            <Option id="projectEditor_stake_5_advOpt_15">—</Option>
+            <Option id="projectEditor_stake_5_advOpt_16">—</Option>
+            <Option id="projectEditor_stake_5_advOpt_17">—</Option>
+            <Option id="projectEditor_stake_5_advOpt_18">—</Option>
+            <Option id="projectEditor_stake_5_advOpt_19">—</Option>
+            <Option id="projectEditor_stake_5_advOpt_20">—</Option>
+          </Dropdown>
+          <InputField id="projectEditor_stake_5_qty" class="projectEditor_integer_field" text="" />
+        </HorizontalLayout>
+        <HorizontalLayout id="projectEditor_stakeRow_6" class="projectEditor_stake_row" active="false">
+          <Dropdown id="projectEditor_stake_6_source" class="projectEditor_dropdown" preferredWidth="120" onValueChanged="HUD_projectStakeDropdown(selectedIndex)">
+            <Option selected="true"> </Option>
+            <Option>Lord Lucien</Option>
+            <Option>Rashid</Option>
+            <Option>Aishe</Option>
+            <Option>Fomorach</Option>
+            <Option>Black Caesar</Option>
+            <Option>Coterie</Option>
+          </Dropdown>
+          <Dropdown id="projectEditor_stake_6_advantage" class="projectEditor_dropdown" preferredWidth="280" onValueChanged="HUD_projectStakeDropdown(selectedIndex)">
+            <Option selected="true"> </Option>
+            <Option id="projectEditor_stake_6_advOpt_01">—</Option>
+            <Option id="projectEditor_stake_6_advOpt_02">—</Option>
+            <Option id="projectEditor_stake_6_advOpt_03">—</Option>
+            <Option id="projectEditor_stake_6_advOpt_04">—</Option>
+            <Option id="projectEditor_stake_6_advOpt_05">—</Option>
+            <Option id="projectEditor_stake_6_advOpt_06">—</Option>
+            <Option id="projectEditor_stake_6_advOpt_07">—</Option>
+            <Option id="projectEditor_stake_6_advOpt_08">—</Option>
+            <Option id="projectEditor_stake_6_advOpt_09">—</Option>
+            <Option id="projectEditor_stake_6_advOpt_10">—</Option>
+            <Option id="projectEditor_stake_6_advOpt_11">—</Option>
+            <Option id="projectEditor_stake_6_advOpt_12">—</Option>
+            <Option id="projectEditor_stake_6_advOpt_13">—</Option>
+            <Option id="projectEditor_stake_6_advOpt_14">—</Option>
+            <Option id="projectEditor_stake_6_advOpt_15">—</Option>
+            <Option id="projectEditor_stake_6_advOpt_16">—</Option>
+            <Option id="projectEditor_stake_6_advOpt_17">—</Option>
+            <Option id="projectEditor_stake_6_advOpt_18">—</Option>
+            <Option id="projectEditor_stake_6_advOpt_19">—</Option>
+            <Option id="projectEditor_stake_6_advOpt_20">—</Option>
+          </Dropdown>
+          <InputField id="projectEditor_stake_6_qty" class="projectEditor_integer_field" text="" />
+        </HorizontalLayout>
+        <HorizontalLayout id="projectEditor_stakeRow_7" class="projectEditor_stake_row" active="false">
+          <Dropdown id="projectEditor_stake_7_source" class="projectEditor_dropdown" preferredWidth="120" onValueChanged="HUD_projectStakeDropdown(selectedIndex)">
+            <Option selected="true"> </Option>
+            <Option>Lord Lucien</Option>
+            <Option>Rashid</Option>
+            <Option>Aishe</Option>
+            <Option>Fomorach</Option>
+            <Option>Black Caesar</Option>
+            <Option>Coterie</Option>
+          </Dropdown>
+          <Dropdown id="projectEditor_stake_7_advantage" class="projectEditor_dropdown" preferredWidth="280" onValueChanged="HUD_projectStakeDropdown(selectedIndex)">
+            <Option selected="true"> </Option>
+            <Option id="projectEditor_stake_7_advOpt_01">—</Option>
+            <Option id="projectEditor_stake_7_advOpt_02">—</Option>
+            <Option id="projectEditor_stake_7_advOpt_03">—</Option>
+            <Option id="projectEditor_stake_7_advOpt_04">—</Option>
+            <Option id="projectEditor_stake_7_advOpt_05">—</Option>
+            <Option id="projectEditor_stake_7_advOpt_06">—</Option>
+            <Option id="projectEditor_stake_7_advOpt_07">—</Option>
+            <Option id="projectEditor_stake_7_advOpt_08">—</Option>
+            <Option id="projectEditor_stake_7_advOpt_09">—</Option>
+            <Option id="projectEditor_stake_7_advOpt_10">—</Option>
+            <Option id="projectEditor_stake_7_advOpt_11">—</Option>
+            <Option id="projectEditor_stake_7_advOpt_12">—</Option>
+            <Option id="projectEditor_stake_7_advOpt_13">—</Option>
+            <Option id="projectEditor_stake_7_advOpt_14">—</Option>
+            <Option id="projectEditor_stake_7_advOpt_15">—</Option>
+            <Option id="projectEditor_stake_7_advOpt_16">—</Option>
+            <Option id="projectEditor_stake_7_advOpt_17">—</Option>
+            <Option id="projectEditor_stake_7_advOpt_18">—</Option>
+            <Option id="projectEditor_stake_7_advOpt_19">—</Option>
+            <Option id="projectEditor_stake_7_advOpt_20">—</Option>
+          </Dropdown>
+          <InputField id="projectEditor_stake_7_qty" class="projectEditor_integer_field" text="" />
+        </HorizontalLayout>
+        <HorizontalLayout id="projectEditor_stakeRow_8" class="projectEditor_stake_row" active="false">
+          <Dropdown id="projectEditor_stake_8_source" class="projectEditor_dropdown" preferredWidth="120" onValueChanged="HUD_projectStakeDropdown(selectedIndex)">
+            <Option selected="true"> </Option>
+            <Option>Lord Lucien</Option>
+            <Option>Rashid</Option>
+            <Option>Aishe</Option>
+            <Option>Fomorach</Option>
+            <Option>Black Caesar</Option>
+            <Option>Coterie</Option>
+          </Dropdown>
+          <Dropdown id="projectEditor_stake_8_advantage" class="projectEditor_dropdown" preferredWidth="280" onValueChanged="HUD_projectStakeDropdown(selectedIndex)">
+            <Option selected="true"> </Option>
+            <Option id="projectEditor_stake_8_advOpt_01">—</Option>
+            <Option id="projectEditor_stake_8_advOpt_02">—</Option>
+            <Option id="projectEditor_stake_8_advOpt_03">—</Option>
+            <Option id="projectEditor_stake_8_advOpt_04">—</Option>
+            <Option id="projectEditor_stake_8_advOpt_05">—</Option>
+            <Option id="projectEditor_stake_8_advOpt_06">—</Option>
+            <Option id="projectEditor_stake_8_advOpt_07">—</Option>
+            <Option id="projectEditor_stake_8_advOpt_08">—</Option>
+            <Option id="projectEditor_stake_8_advOpt_09">—</Option>
+            <Option id="projectEditor_stake_8_advOpt_10">—</Option>
+            <Option id="projectEditor_stake_8_advOpt_11">—</Option>
+            <Option id="projectEditor_stake_8_advOpt_12">—</Option>
+            <Option id="projectEditor_stake_8_advOpt_13">—</Option>
+            <Option id="projectEditor_stake_8_advOpt_14">—</Option>
+            <Option id="projectEditor_stake_8_advOpt_15">—</Option>
+            <Option id="projectEditor_stake_8_advOpt_16">—</Option>
+            <Option id="projectEditor_stake_8_advOpt_17">—</Option>
+            <Option id="projectEditor_stake_8_advOpt_18">—</Option>
+            <Option id="projectEditor_stake_8_advOpt_19">—</Option>
+            <Option id="projectEditor_stake_8_advOpt_20">—</Option>
+          </Dropdown>
+          <InputField id="projectEditor_stake_8_qty" class="projectEditor_integer_field" text="" />
+        </HorizontalLayout>
+        <Text id="projectEditor_stakeValidation" class="projectEditor_text_wide" text="" alignment="MiddleLeft" fontSize="12" color="#FF0000" flexibleWidth="0" preferredWidth="1000" minHeight="25" fontStyle="Italic"  />
       </VerticalLayout>
 
       <HorizontalLayout class="projectEditor_button_bar">
