@@ -126,6 +126,9 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `HUD_statsTarget` / `HUD_statsBack` | A | — | Stats panel navigation |
 | `HUD_statsAdd` / `HUD_statsEdit` / `HUD_statsEditRating` / `HUD_statsEditorConfirm` / `HUD_statsEditorDelete` | B+C | Yes | advantage mutations |
 | `HUD_statsEditorField` / `HUD_statsEditorCancel` | A | — | draft stash / close |
+| `HUD_projectsTarget` / `HUD_projectsBack` | A | — | Projects panel navigation |
+| `HUD_projectsAdd` / `HUD_projectsEdit` / `HUD_projectEditorConfirm` / `HUD_projectEditorDelete` / `HUD_projectEditorBegin` / `HUD_projectEditorComplete` / `HUD_projectEditorLaunchR` | B+C | Yes | project mutations / Launch roll |
+| `HUD_projectEditorField` / `HUD_projectDropdown` / `HUD_projectStakeDropdown` / `HUD_projectEditorCancel` | A/B | Yes (field persist) | live project editor writes; Cancel may delete pre-inProgress |
 | `HUD_advancePhase` | B | Yes | |
 | `HUD_resetGame` / `HUD_syncAll` | B+C | Yes | |
 | `HUD_saveState` / `HUD_logState` / `HUD_printState` | A/B | — | encode/log |

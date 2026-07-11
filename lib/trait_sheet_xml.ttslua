@@ -81,11 +81,13 @@ function M.slotAndBase(entry)
 end
 
 --- @param entry table
+--- @param entry table|nil
+--- @param extraDisabled integer|nil additional disabled dots (e.g. project stakes)
 --- @return integer slotCount
 --- @return integer baseCount
 --- @return integer tempCount
 --- @return integer disabledCount
-function M.slotBaseTempDisabled(entry)
+function M.slotBaseTempDisabled(entry, extraDisabled)
   local slotCount, baseCount = M.slotAndBase(entry)
   local tempCount = 0
   local disabledCount = 0
@@ -95,6 +97,7 @@ function M.slotBaseTempDisabled(entry)
   end
   tempCount = math.max(0, tempCount)
   tempCount = math.min(tempCount, math.max(0, slotCount - baseCount))
+  disabledCount = disabledCount + math.max(0, math.floor(tonumber(extraDisabled) or 0))
   disabledCount = math.max(0, disabledCount)
   disabledCount = math.min(disabledCount, baseCount + tempCount)
   return slotCount, baseCount, tempCount, disabledCount
@@ -274,7 +277,20 @@ end
 function M.buildTraitBlockParams(entry, sectionKey, entryIndex, isFlaw, opts)
   opts = type(opts) == "table" and opts or {}
   local pageNum = opts.pageNum or 3
-  local slotCount, baseCount, tempCount, disabledCount = M.slotBaseTempDisabled(entry)
+  local extraDisabled = math.max(0, math.floor(tonumber(opts.extraDisabled) or 0))
+  if extraDisabled == 0
+    and type(opts.projectStakeSourceKey) == "string" and opts.projectStakeSourceKey ~= ""
+    and type(entry) == "table" and type(entry.name) == "string"
+    and Global ~= nil and type(Global.call) == "function"
+  then
+    local qty = Global.call("GlobalProjectStakeQty", {
+      sourceKey = opts.projectStakeSourceKey,
+      name = entry.name,
+      focus = entry.focus,
+    })
+    extraDisabled = math.max(0, math.floor(tonumber(qty) or 0))
+  end
+  local slotCount, baseCount, tempCount, disabledCount = M.slotBaseTempDisabled(entry, extraDisabled)
   local filledImg = isFlaw and "dot_red" or "dot_yellow"
   local params = {
     TITLE_BAR_DOT_CLASS = M.titleBarDotClass(slotCount),

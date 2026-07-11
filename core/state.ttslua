@@ -313,6 +313,8 @@ function S.GetDefaultGameState()
         },
         --- Chronicle in-fiction "now" (Y/M/D/h/m only). Set on first present-day scene with datetime; advances monotonically.
         presentDayClock = nil,
+        --- Projects by id (TOR-232). See `.dev/Projects/Project System Overview.md`.
+        projects = {},
         --- Per-PC last map pin location + narrative clock when last active (TOR-245). Top-level (not in
         --- sessionScene) so cross-scene history survives scene apply. `[color] = { siteKey, districtKey?, activeAt }`.
         lastActiveMapPin = {},
@@ -655,6 +657,7 @@ function S.validateState()
     if not gameState.lights then gameState.lights = {} end
     if not gameState.scene then gameState.scene = {} end
     if type(gameState.lastActiveMapPin) ~= "table" then gameState.lastActiveMapPin = {} end
+    if type(gameState.projects) ~= "table" then gameState.projects = {} end
     if not gameState.soundscape or type(gameState.soundscape) ~= "table" then
         gameState.soundscape = {}
     end
@@ -1212,6 +1215,14 @@ local function buildSaveState()
             saveState.coterieData = U.clone(gameState.coterieData, true)
         else
             print("[WARNING] buildSaveState: coterieData omitted — failed isValueSafeForState")
+        end
+    end
+
+    if type(gameState.projects) == "table" then
+        if isValueSafeForState(gameState.projects, "projects") then
+            saveState.projects = U.clone(gameState.projects, true)
+        else
+            print("[WARNING] buildSaveState: projects omitted — failed isValueSafeForState")
         end
     end
 

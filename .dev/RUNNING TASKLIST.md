@@ -261,12 +261,12 @@ _Blocked: author must define data binding approach before substantial implementa
 
 - [ ] **Page 4:** PC relationships; Blood Bonds. _(Partial: `lib/json/PC_Relationships.json`, `lib/pcs_data.ttslua`.)_ _(TOR-93)_
 - [ ] **Fomorach animal-form shapeshift toggle:** Sheet toggle applying author-defined stat deltas. `blockedBy` **TOR-327** (workshop stat deltas). _(TOR-330)_
-- [ ] **Page 5:** Projects; Equipment; Boons. _(TOR-99)_ — implementation umbrella **TOR-232** (`blockedBy` TOR-228 XML + wiring)
-- [ ] **Projects — ST panel + modal XML:** Agent-owned panel + editor modal including structured stake-row pool (human gate removed 2026-07-10). _(TOR-228)_
+- [ ] **Page 5:** Projects; Equipment; Boons. _(TOR-99)_ — implementation umbrella **TOR-232**
+- [x] **Projects — ST panel + modal XML:** Agent-owned panel + editor modal including structured stake-row pool. _(TOR-228 — Done 2026-07-10)_
 - [x] **Projects — coterieData state schema:** Coterie backgrounds/merits/flaws in state. _(TOR-229 — Done 2026-06-25)_
 - [x] **Projects — Coterie sidebar sheet XML:** Prince's Court reference panel. _(TOR-230 — Done 2026-06-25)_
 - [x] **Projects — finish planning doc:** Authoritative contract in `.dev/Projects/Project System Overview.md` (Lock & Begin, die policy A, structured stakes). _(TOR-231 — Done 2026-07-10)_
-- [ ] **Projects system (mission-critical):** Create/launch/lifecycle per overview doc. _(TOR-232 — Backlog; `blockedBy` TOR-228)_
+- [x] **Projects system (mission-critical):** Create/launch/lifecycle per overview doc (solo Host wiring; multiclient unverified). _(TOR-232 — Done 2026-07-10)_
 - [ ] **Page 6:** Character history; scrolling XP log. _(TOR-92)_
 - [ ] **Discipline card grimoire:** Drop zone + page navigation near sheet for stored power/ritual/ceremony cards. _(TOR-205)_
 - [x] **Decals:** Sheet object decals update from Blood Potency (state → UI reconcile). _(TOR-70)_

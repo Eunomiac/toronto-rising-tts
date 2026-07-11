@@ -99,6 +99,7 @@ projectFromDraft = function()
   project.startDate = Projects.parseStartDateString(editorDraft.startDate)
   project.projectDieMod = math.floor(tonumber(editorDraft.projectDieMod) or 0)
   project.numContributors = math.max(1, math.floor(tonumber(editorDraft.numContributors) or 1))
+  project.owner = Projects.ownerFromSelectedIndex(editorDraft.owner or 0)
   local stakeRows = {}
   for row = 1, Projects.STAKE_ROW_POOL do
     local rowData = editorDraft.stakeRows[row]
@@ -290,6 +291,7 @@ syncEditorFromProject = function(project)
     end
   end
   local ownerIdx = Projects.selectedIndexFromOwner(project.owner)
+  editorDraft.owner = ownerIdx
   setAttr("projectEditor_owner", "value", tostring(ownerIdx))
   setAttr("projectEditor_goal", "text", editorDraft.goal)
   setAttr("projectEditor_scope", "text", editorDraft.scope ~= nil and tostring(editorDraft.scope) or "")
@@ -342,8 +344,12 @@ end
 
 refreshAfterMutation = function()
   PJP.refresh()
-  if selectedTarget ~= nil and selectedTarget ~= "Coterie" then
-    PCST.refreshCharacterSheetsForColor(selectedTarget)
+  for _, color in ipairs(C.PlayerColors) do
+    PCST.refreshCharacterSheetsForColor(color)
+  end
+  local Coterie = require("core.coterie")
+  if Coterie.reconcileAll then
+    Coterie.reconcileAll()
   end
 end
 
@@ -426,6 +432,7 @@ function PJP.onEditorField(id, value)
         setAttr("projectEditor_difficulty", "text", editorDraft.difficulty ~= nil and tostring(editorDraft.difficulty) or "")
       end
     end
+    syncEditorToProject()
     refreshDerivedFields()
     return
   end
@@ -438,6 +445,7 @@ function PJP.onEditorField(id, value)
     if stakeField == "qty" then
       editorDraft.stakeRows[rowNum].qty = math.floor(tonumber(value) or 0)
     end
+    syncEditorToProject()
     refreshDerivedFields()
   end
 end
@@ -451,15 +459,7 @@ function PJP.onDropdown(id, selectedIndex)
   local field = id:match("^projectEditor_(%w+)$")
   if field ~= nil then
     editorDraft[field] = math.floor(tonumber(selectedIndex) or 0)
-    if field == "owner" then
-      local owner = Projects.ownerFromSelectedIndex(selectedIndex)
-      local project = Projects.getProject(editingId)
-      if project ~= nil then
-        project.owner = owner
-        Projects.saveProject(project)
-        refreshAfterMutation()
-      end
-    end
+    syncEditorToProject()
     refreshDerivedFields()
   end
 end
@@ -487,6 +487,7 @@ function PJP.onStakeDropdown(id, selectedIndex)
     editorDraft.stakeRows[rowNum].advantage = 0
     refreshStakeRow(rowNum)
   end
+  syncEditorToProject()
   refreshDerivedFields()
 end
 
@@ -497,7 +498,14 @@ function PJP.onConfirm()
 end
 
 function PJP.onCancel()
+  local id = editingId
+  local project = id ~= nil and Projects.getProject(id) or nil
+  local phase = project and project.phase or nil
   closeEditor()
+  if id ~= nil and phase ~= Projects.PHASE.IN_PROGRESS and phase ~= Projects.PHASE.COMPLETE then
+    Projects.deleteProject(id)
+  end
+  refreshAfterMutation()
 end
 
 function PJP.onDelete()
@@ -558,6 +566,16 @@ function PJP.onLaunchR()
     difficulty = difficulty,
     label = label,
   })
+end
+
+--- Present-day clock moved: refresh open editor die + all PC sheets (page 5).
+function PJP.onPresentDayChanged()
+  if editingId ~= nil then
+    refreshDerivedFields()
+  end
+  for _, color in ipairs(C.PlayerColors) do
+    PCST.refreshCharacterSheetsForColor(color)
+  end
 end
 
 return PJP

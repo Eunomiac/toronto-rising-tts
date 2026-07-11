@@ -14,6 +14,7 @@ local STORYTELLER_PANELS = {
     pcs = { panel = "panel_pcs", toggle = "toggle_pcs" },
     phases = { panel = "panel_phases", toggle = "toggle_phases" },
     stats = { panel = "panel_stats", toggle = "toggle_stats" },
+    projects = { panel = "panel_projects", toggle = "toggle_projects" },
 }
 
 --- Wrapper for the pop-out content (all panels). Hidden when none selected.
@@ -53,7 +54,7 @@ end
 --- Clicking the same top button again hides the content area (all toggles inactive).
 --- When `forceOpen` is true, the same-tab collapse is skipped (e.g. after `UI.setXml` when a panel was already open).
 ---
---- @param panelKey string One of: "scenes", "soundscape", "pcs", "phases", "stats"
+--- @param panelKey string One of: "scenes", "soundscape", "pcs", "phases", "stats", "projects"
 --- @param forceOpen boolean|nil If true, always apply the open-panel branch (no toggle-close).
 function StorytellerPanelUI.selectStorytellerPanel(panelKey, forceOpen)
     if type(panelKey) ~= "string" then

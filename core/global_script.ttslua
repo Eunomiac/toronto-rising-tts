@@ -163,6 +163,7 @@ U = require("lib.util")
 local StorytellerPanelUI = require("core.storyteller_panel_ui")
 local StorytellerScenesPanel = require("core.storyteller_scenes_panel")
 local StorytellerStatsPanel = require("core.storyteller_stats_panel")
+local StorytellerProjectsPanel = require("core.storyteller_projects_panel")
 local GameStateOverlay = require("core.game_state_overlay")
 local HUDP = require("core.hud_player")
 local Coterie = require("core.coterie")
@@ -314,6 +315,40 @@ function GlobalGetMergedPlayerData(playerID)
     return S.getPlayerData(playerID)
 end
 
+--- @param color string seat color
+--- @return string|nil charKey
+function GlobalCharKeyForSeatColor(color)
+    local Projects = require("core.projects")
+    return Projects.charKeyForColor(color)
+end
+
+--- Project stake qty for sheet effective-disabled (object scripts via Global.call).
+--- @param params table { sourceKey, name, focus }
+--- @return integer
+function GlobalProjectStakeQty(params)
+    local Projects = require("core.projects")
+    if type(params) ~= "table" then
+        return 0
+    end
+    return Projects.stakeQtyForAdvantage(params.sourceKey, params.name, params.focus, nil)
+end
+
+--- @param params table { seatColor }
+--- @return string
+function GlobalBuildPage5DocumentXml(params)
+    local Projects = require("core.projects")
+    local seat = type(params) == "table" and params.seatColor or nil
+    return Projects.buildPage5DocumentXml(seat)
+end
+
+--- @param params table { seatColor }
+--- @return string
+function GlobalFingerprintPage5(params)
+    local Projects = require("core.projects")
+    local seat = type(params) == "table" and params.seatColor or nil
+    return Projects.fingerprintPage5(seat)
+end
+
 --- Resolved condition statChanges for one PC (sheet dots, BP decals). Object scripts have no `core.conditions`.
 --- @param playerID string
 --- @return table statChanges map (may be empty)
@@ -457,6 +492,7 @@ local function refreshGlobalUiAfterSeatAssignment(seatColor)
         if isStorytellerSeat then
             delta.scenesPanel = true
             delta.statsPanel = true
+            delta.projectsPanel = true
             delta.adminLighting = true
             delta.soundscape = true
             delta.phase = true
@@ -2552,6 +2588,11 @@ function HUD_selectStorytellerPanel(player, button, id)
             UpdateUIDisplays({ statsPanel = true })
         end, 1)
     end
+    if panelKey == "projects" then
+        Wait.frames(function()
+            UpdateUIDisplays({ projectsPanel = true })
+        end, 1)
+    end
 end
 
 --- Stats panel: select PC or Coterie target (`stats_target_Brown`, …).
@@ -2629,6 +2670,113 @@ function HUD_statsEditorDelete(player, button, id)
     local color = player and player.color or "Black"
     if StorytellerStatsPanel and StorytellerStatsPanel.onEditorDelete then
         StorytellerStatsPanel.onEditorDelete(color)
+    end
+end
+
+--- Projects panel: select PC or Coterie target.
+function HUD_projectsTarget(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_projectsTarget") then
+        return
+    end
+    local target = string.gsub(id or "", "^projects_target_", "")
+    if StorytellerProjectsPanel and StorytellerProjectsPanel.selectTarget then
+        StorytellerProjectsPanel.selectTarget(target)
+    end
+end
+
+function HUD_projectsBack(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_projectsBack") then
+        return
+    end
+    if StorytellerProjectsPanel and StorytellerProjectsPanel.goBack then
+        StorytellerProjectsPanel.goBack()
+    end
+end
+
+function HUD_projectsAdd(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_projectsAdd") then
+        return
+    end
+    if StorytellerProjectsPanel and StorytellerProjectsPanel.onAdd then
+        StorytellerProjectsPanel.onAdd()
+    end
+end
+
+function HUD_projectsEdit(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_projectsEdit") then
+        return
+    end
+    if StorytellerProjectsPanel and StorytellerProjectsPanel.onEdit then
+        StorytellerProjectsPanel.onEdit(id)
+    end
+end
+
+function HUD_projectEditorField(player, value, id)
+    if StorytellerProjectsPanel and StorytellerProjectsPanel.onEditorField then
+        StorytellerProjectsPanel.onEditorField(id, value)
+    end
+end
+
+function HUD_projectDropdown(player, value, id)
+    if StorytellerProjectsPanel and StorytellerProjectsPanel.onDropdown then
+        StorytellerProjectsPanel.onDropdown(id, value)
+    end
+end
+
+function HUD_projectStakeDropdown(player, value, id)
+    if StorytellerProjectsPanel and StorytellerProjectsPanel.onStakeDropdown then
+        StorytellerProjectsPanel.onStakeDropdown(id, value)
+    end
+end
+
+function HUD_projectEditorConfirm(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_projectEditorConfirm") then
+        return
+    end
+    if StorytellerProjectsPanel and StorytellerProjectsPanel.onConfirm then
+        StorytellerProjectsPanel.onConfirm()
+    end
+end
+
+function HUD_projectEditorCancel(player, button, id)
+    if StorytellerProjectsPanel and StorytellerProjectsPanel.onCancel then
+        StorytellerProjectsPanel.onCancel()
+    end
+end
+
+function HUD_projectEditorDelete(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_projectEditorDelete") then
+        return
+    end
+    if StorytellerProjectsPanel and StorytellerProjectsPanel.onDelete then
+        StorytellerProjectsPanel.onDelete()
+    end
+end
+
+function HUD_projectEditorBegin(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_projectEditorBegin") then
+        return
+    end
+    if StorytellerProjectsPanel and StorytellerProjectsPanel.onBegin then
+        StorytellerProjectsPanel.onBegin()
+    end
+end
+
+function HUD_projectEditorComplete(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_projectEditorComplete") then
+        return
+    end
+    if StorytellerProjectsPanel and StorytellerProjectsPanel.onComplete then
+        StorytellerProjectsPanel.onComplete()
+    end
+end
+
+function HUD_projectEditorLaunchR(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_projectEditorLaunchR") then
+        return
+    end
+    if StorytellerProjectsPanel and StorytellerProjectsPanel.onLaunchR then
+        StorytellerProjectsPanel.onLaunchR()
     end
 end
 
@@ -3857,6 +4005,11 @@ function UpdateUIDisplays(delta)
     if wants("statsPanel") then
         if StorytellerStatsPanel and StorytellerStatsPanel.refresh then
             StorytellerStatsPanel.refresh()
+        end
+    end
+    if wants("projectsPanel") then
+        if StorytellerProjectsPanel and StorytellerProjectsPanel.refresh then
+            StorytellerProjectsPanel.refresh()
         end
     end
     if wants("soundscape") then

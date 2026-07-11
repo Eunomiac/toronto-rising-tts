@@ -66,6 +66,10 @@ function PresentDayClock.tryAdvance(newClock)
     end
     if U.compareNarrativeClock(incoming, pd) > 0 then
         S.setStateVal(incoming, "presentDayClock")
+        local PJP = require("core.storyteller_projects_panel")
+        if PJP.onPresentDayChanged then
+            PJP.onPresentDayChanged()
+        end
     end
 end
 
@@ -80,6 +84,10 @@ function PresentDayClock.setPresentDay(clock)
         return false, "Present day clock requires hour, minute, day, month, and year."
     end
     S.setStateVal(dt, "presentDayClock")
+    local PJP = require("core.storyteller_projects_panel")
+    if PJP.onPresentDayChanged then
+        PJP.onPresentDayChanged()
+    end
     return true, nil
 end
 

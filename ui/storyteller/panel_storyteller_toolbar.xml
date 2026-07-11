@@ -99,6 +99,7 @@
       <Button id="toggle_pcs" text="PCs" class="storyteller_panel_button" />
       <Button id="toggle_phases" text="Phases" class="storyteller_panel_button" />
       <Button id="toggle_stats" text="Stats" class="storyteller_panel_button" />
+      <Button id="toggle_projects" text="Projects" class="storyteller_panel_button" />
     </HorizontalLayout>
 
     <!-- Main content panels -->
@@ -120,6 +121,7 @@
       <Include src="panel_pcs.xml" />
       <Include src="panel_phases.xml" />
       <Include src="panel_stats.xml" />
+      <Include src="panel_projects.xml" />
     </Panel>
 
   </VerticalLayout>

@@ -1,0 +1,1189 @@
+--[[
+  Projects domain — gameState.projects[id] mutation + pure derives.
+  Contract: .dev/Projects/Project System Overview.md
+]]
+
+local M = {}
+
+local S = require("core.state")
+local C = require("lib.constants")
+local U = require("lib.util")
+local PresentDayClock = require("core.present_day_clock")
+
+M.PHASE = {
+  SETUP = "setup",
+  PRE_LAUNCH = "preLaunch",
+  POST_LAUNCH = "postLaunch",
+  IN_PROGRESS = "inProgress",
+  COMPLETE = "complete",
+}
+
+M.INCREMENT = {
+  "daily",
+  "weekly",
+  "biweekly",
+  "monthly",
+  "quarterly",
+  "yearly",
+  "byDecade",
+  "byCentury",
+}
+
+M.INCREMENT_LABELS = {
+  daily = "Daily",
+  weekly = "Weekly",
+  biweekly = "Bi-Weekly",
+  monthly = "Monthly",
+  quarterly = "Quarterly",
+  yearly = "Yearly",
+  byDecade = "By Decade",
+  byCentury = "By Century",
+}
+
+--- Dropdown index 1 = blank; 2.. = INCREMENT[i-1]
+M.STAKE_ROW_POOL = 8
+M.ADV_OPTION_POOL = 20
+
+local MONTH_ABBR = {
+  jan = 1, feb = 2, mar = 3, apr = 4, may = 5, jun = 6,
+  jul = 7, aug = 8, sep = 9, oct = 10, nov = 11, dec = 12,
+}
+
+local MONTH_SHORT = {
+  "Jan.", "Feb.", "Mar.", "Apr.", "May", "Jun.",
+  "Jul.", "Aug.", "Sept.", "Oct.", "Nov.", "Dec.",
+}
+
+local CHAR_KEYS = { "lordLucien", "rashid", "aishe", "fomorach", "blackCaesar" }
+
+--- Owner / stake source dropdown: 1 blank, 2..6 PCs, 7 coterie
+local SOURCE_BY_INDEX = {
+  [2] = "lordLucien",
+  [3] = "rashid",
+  [4] = "aishe",
+  [5] = "fomorach",
+  [6] = "blackCaesar",
+  [7] = "coterie",
+}
+
+local SOURCE_TO_INDEX = {}
+for i, k in pairs(SOURCE_BY_INDEX) do
+  SOURCE_TO_INDEX[k] = i
+end
+
+local function clone(t)
+  return U.clone(t, true)
+end
+
+--- @return table
+function M.ensureProjectsTable()
+  local projects = S.getStateVal("projects")
+  if type(projects) ~= "table" then
+    projects = {}
+    S.setStateVal(projects, "projects")
+  end
+  return projects
+end
+
+--- @param id string
+--- @return table|nil
+function M.getProject(id)
+  if type(id) ~= "string" or id == "" then
+    return nil
+  end
+  local projects = M.ensureProjectsTable()
+  local p = projects[id]
+  if type(p) ~= "table" then
+    return nil
+  end
+  return p
+end
+
+--- @param project table
+function M.saveProject(project)
+  if type(project) ~= "table" or type(project.id) ~= "string" then
+    error("Projects.saveProject: project.id required", 2)
+  end
+  M.ensureProjectsTable()
+  S.setStateVal(clone(project), "projects", project.id)
+end
+
+--- @param id string
+function M.deleteProject(id)
+  if type(id) ~= "string" or id == "" then
+    return
+  end
+  local projects = M.ensureProjectsTable()
+  if projects[id] == nil then
+    return
+  end
+  local nextMap = {}
+  for k, v in pairs(projects) do
+    if k ~= id then
+      nextMap[k] = v
+    end
+  end
+  S.setStateVal(nextMap, "projects")
+end
+
+local function randomId()
+  local chars = "abcdefghijklmnopqrstuvwxyz0123456789"
+  local out = {}
+  for i = 1, 8 do
+    local idx = math.random(1, #chars)
+    out[i] = chars:sub(idx, idx)
+  end
+  return table.concat(out)
+end
+
+--- @return string unique id
+function M.generateId()
+  M.ensureProjectsTable()
+  for _ = 1, 32 do
+    local id = randomId()
+    if M.getProject(id) == nil then
+      return id
+    end
+  end
+  error("Projects.generateId: exhausted unique id attempts", 2)
+end
+
+--- @param color string
+--- @return string|nil charKey
+function M.charKeyForColor(color)
+  local pid = C.GetPlayerIDOrNil(color)
+  if pid == nil then
+    return nil
+  end
+  local row = C.PlayerData[pid]
+  if type(row) ~= "table" then
+    return nil
+  end
+  return row.charKey
+end
+
+--- @param charKey string
+--- @return string|nil seat color
+function M.colorForCharKey(charKey)
+  if type(charKey) ~= "string" then
+    return nil
+  end
+  for _, color in ipairs(C.PlayerColors) do
+    if M.charKeyForColor(color) == charKey then
+      return color
+    end
+  end
+  return nil
+end
+
+--- Prefer explicit 0-based index from TTS.
+--- @param selectedIndex number|string
+--- @return string|nil
+function M.sourceKeyFromSelectedIndex(selectedIndex)
+  local zero = math.floor(tonumber(selectedIndex) or -1)
+  return SOURCE_BY_INDEX[zero + 1]
+end
+--- @param sourceKey string|nil
+--- @return integer 0-based selectedIndex
+function M.selectedIndexFromSourceKey(sourceKey)
+  if type(sourceKey) ~= "string" or sourceKey == "" then
+    return 0
+  end
+  local oneBased = SOURCE_TO_INDEX[sourceKey]
+  if oneBased == nil then
+    return 0
+  end
+  return oneBased - 1
+end
+
+--- @param selectedIndex number|string 0-based; 0 = blank
+--- @return string|nil increment key
+function M.incrementFromSelectedIndex(selectedIndex)
+  local zero = math.floor(tonumber(selectedIndex) or -1)
+  if zero < 1 then
+    return nil
+  end
+  return M.INCREMENT[zero]
+end
+
+--- @param increment string|nil
+--- @return integer 0-based
+function M.selectedIndexFromIncrement(increment)
+  if type(increment) ~= "string" then
+    return 0
+  end
+  for i, key in ipairs(M.INCREMENT) do
+    if key == increment then
+      return i -- 1-based enum index → dropdown has blank at 0, so selectedIndex = i
+    end
+  end
+  return 0
+end
+
+--- Result dropdown: 0 blank, 1 Win, 2 Critical Win
+--- @param selectedIndex number|string
+--- @return string|nil C.RollResult value
+function M.resultFromSelectedIndex(selectedIndex)
+  local zero = math.floor(tonumber(selectedIndex) or -1)
+  if zero == 1 then
+    return C.RollResult.WIN
+  end
+  if zero == 2 then
+    return C.RollResult.CRITICAL_WIN
+  end
+  return nil
+end
+
+--- @param result string|nil
+--- @return integer 0-based
+function M.selectedIndexFromResult(result)
+  if result == C.RollResult.WIN then
+    return 1
+  end
+  if result == C.RollResult.CRITICAL_WIN then
+    return 2
+  end
+  return 0
+end
+
+--- Owner dropdown: 0 blank, 1..5 PCs (no coterie)
+--- @param selectedIndex number|string
+--- @return string|nil
+function M.ownerFromSelectedIndex(selectedIndex)
+  local zero = math.floor(tonumber(selectedIndex) or -1)
+  if zero < 1 or zero > #CHAR_KEYS then
+    return nil
+  end
+  return CHAR_KEYS[zero]
+end
+
+--- @param owner string|nil
+--- @return integer 0-based
+function M.selectedIndexFromOwner(owner)
+  if type(owner) ~= "string" then
+    return 0
+  end
+  for i, key in ipairs(CHAR_KEYS) do
+    if key == owner then
+      return i
+    end
+  end
+  return 0
+end
+
+--- @param text string|nil
+--- @return table|nil narrative clock datetime
+function M.parseStartDateString(text)
+  if type(text) ~= "string" then
+    return nil
+  end
+  local trimmed = text:match("^%s*(.-)%s*$") or ""
+  if trimmed == "" then
+    return nil
+  end
+  local mon, day, year = trimmed:match("^([A-Za-z][A-Za-z][A-Za-z]).-(%d%d?),?%s+(%d%d%d%d)$")
+  if mon == nil then
+    return nil
+  end
+  local mi = MONTH_ABBR[mon:lower()]
+  local di = math.floor(tonumber(day) or 0)
+  local yi = math.floor(tonumber(year) or 0)
+  if mi == nil or di < 1 or di > 31 or yi < 1 then
+    return nil
+  end
+  return { year = yi, month = mi, day = di, hour = 0, minute = 0 }
+end
+
+--- @param clock table|nil
+--- @return string
+function M.formatStartDate(clock)
+  if type(clock) ~= "table" then
+    return ""
+  end
+  local mi = math.floor(tonumber(clock.month) or 0)
+  local di = math.floor(tonumber(clock.day) or 0)
+  local yi = math.floor(tonumber(clock.year) or 0)
+  if mi < 1 or mi > 12 or di < 1 or yi < 1 then
+    return ""
+  end
+  return string.format("%s %d, %d", MONTH_SHORT[mi], di, yi)
+end
+
+--- @param ownerCharKey string|nil
+--- @return table new project
+function M.createProject(ownerCharKey)
+  local id = M.generateId()
+  local startDate = PresentDayClock.getPresentDay()
+  if startDate == nil then
+    local live = S.getStateVal("sessionScene", "clock")
+    if type(live) == "table" and U.narrativeClockHasDatetime(live) then
+      startDate = U.narrativeClockDatetimeOnly(live)
+    end
+  end
+  local project = {
+    id = id,
+    owner = type(ownerCharKey) == "string" and ownerCharKey or nil,
+    displayFor = {},
+    phase = M.PHASE.SETUP,
+    goal = "",
+    scope = nil,
+    startDate = startDate,
+    increment = nil,
+    projectDieMod = 0,
+    launchRollSkill = "",
+    launchRollAdvantage = "",
+    launchRollDifficulty = nil,
+    numContributors = 1,
+    launchRollResult = nil,
+    launchRollMargin = nil,
+    stakeRows = {},
+    _lastAutoDifficultyScope = nil,
+  }
+  project.displayFor = M.computeDisplayFor(project)
+  M.saveProject(project)
+  return M.getProject(id)
+end
+
+--- @param project table
+--- @return string display launch roll
+function M.launchRollDisplay(project)
+  local skill = type(project.launchRollSkill) == "string" and project.launchRollSkill or ""
+  local adv = type(project.launchRollAdvantage) == "string" and project.launchRollAdvantage or ""
+  skill = skill:match("^%s*(.-)%s*$") or ""
+  adv = adv:match("^%s*(.-)%s*$") or ""
+  if skill == "" and adv == "" then
+    return ""
+  end
+  if skill == "" then
+    return adv
+  end
+  if adv == "" then
+    return skill
+  end
+  return skill .. " + " .. adv
+end
+
+--- @param project table
+--- @return integer|nil
+function M.computeRequiredStake(project)
+  local result = project.launchRollResult
+  if result == C.RollResult.CRITICAL_WIN then
+    return 0
+  end
+  if result ~= C.RollResult.WIN then
+    return nil
+  end
+  local scope = math.floor(tonumber(project.scope) or 0)
+  local margin = math.floor(tonumber(project.launchRollMargin) or 0)
+  local contributors = math.floor(tonumber(project.numContributors) or 1)
+  if contributors < 1 then
+    contributors = 1
+  end
+  local raw = scope + 1 - margin
+  if raw < contributors then
+    return contributors
+  end
+  return raw
+end
+
+--- @param row table
+--- @return boolean
+local function rowIsDefined(row)
+  if type(row) ~= "table" then
+    return false
+  end
+  if type(row.source) ~= "string" or row.source == "" then
+    return false
+  end
+  local qty = tonumber(row.qty)
+  local hasAdv = type(row.name) == "string" and row.name ~= ""
+  if hasAdv and qty ~= nil and qty >= 1 then
+    return true
+  end
+  -- display-only
+  if not hasAdv and (qty == nil or qty == 0) then
+    return true
+  end
+  return false
+end
+
+--- @param row table
+--- @return boolean commits dots
+local function rowCommitsStake(row)
+  if type(row) ~= "table" then
+    return false
+  end
+  if type(row.source) ~= "string" or row.source == "" then
+    return false
+  end
+  if type(row.name) ~= "string" or row.name == "" then
+    return false
+  end
+  local qty = math.floor(tonumber(row.qty) or 0)
+  return qty >= 1
+end
+
+--- @param project table
+--- @return integer
+function M.sumStakeQty(project)
+  local sum = 0
+  local rows = project.stakeRows
+  if type(rows) ~= "table" then
+    return 0
+  end
+  for i = 1, #rows do
+    if rowCommitsStake(rows[i]) then
+      sum = sum + math.floor(tonumber(rows[i].qty) or 0)
+    end
+  end
+  return sum
+end
+
+--- @param project table
+--- @return string[]
+function M.computeDisplayFor(project)
+  local seen = {}
+  local out = {}
+  local function add(key)
+    if type(key) ~= "string" or key == "" or seen[key] then
+      return
+    end
+    seen[key] = true
+    out[#out + 1] = key
+  end
+  add(project.owner)
+  local rows = project.stakeRows
+  if type(rows) == "table" then
+    for i = 1, #rows do
+      local row = rows[i]
+      if type(row) == "table" and type(row.source) == "string" then
+        add(row.source)
+      end
+    end
+  end
+  return out
+end
+
+--- Phases that still hold stakes on sheets.
+--- @param phase string|nil
+--- @return boolean
+function M.phaseHoldsStakes(phase)
+  return phase == M.PHASE.POST_LAUNCH or phase == M.PHASE.IN_PROGRESS
+end
+
+--- @param sourceKey string
+--- @param name string
+--- @param focus string|nil
+--- @param excludeProjectId string|nil
+--- @return integer
+function M.stakeQtyForAdvantage(sourceKey, name, focus, excludeProjectId)
+  if type(sourceKey) ~= "string" or type(name) ~= "string" then
+    return 0
+  end
+  focus = type(focus) == "string" and focus or ""
+  local total = 0
+  local projects = M.ensureProjectsTable()
+  for id, project in pairs(projects) do
+    if type(project) == "table" and id ~= excludeProjectId and M.phaseHoldsStakes(project.phase) then
+      local rows = project.stakeRows
+      if type(rows) == "table" then
+        for i = 1, #rows do
+          local row = rows[i]
+          if rowCommitsStake(row)
+            and row.source == sourceKey
+            and row.name == name
+            and (type(row.focus) == "string" and row.focus or "") == focus
+          then
+            total = total + math.floor(tonumber(row.qty) or 0)
+          end
+        end
+      end
+    end
+  end
+  return total
+end
+
+--- @param manualDisabled number|nil
+--- @param sourceKey string
+--- @param name string
+--- @param focus string|nil
+--- @return integer
+function M.effectiveDisabled(manualDisabled, sourceKey, name, focus)
+  local manual = math.max(0, math.floor(tonumber(manualDisabled) or 0))
+  return manual + M.stakeQtyForAdvantage(sourceKey, name, focus, nil)
+end
+
+local function daysInMonth(year, month)
+  local lengths = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
+  if month == 2 then
+    local y = year
+    if (y % 4 == 0 and y % 100 ~= 0) or (y % 400 == 0) then
+      return 29
+    end
+  end
+  return lengths[month] or 30
+end
+
+--- Advance a narrative date by one calendar day (hour/minute preserved).
+--- @param clock table
+--- @return table
+local function addOneDay(clock)
+  local y = math.floor(tonumber(clock.year) or 1)
+  local m = math.floor(tonumber(clock.month) or 1)
+  local d = math.floor(tonumber(clock.day) or 1)
+  local h = math.floor(tonumber(clock.hour) or 0)
+  local mi = math.floor(tonumber(clock.minute) or 0)
+  d = d + 1
+  local dim = daysInMonth(y, m)
+  if d > dim then
+    d = 1
+    m = m + 1
+    if m > 12 then
+      m = 1
+      y = y + 1
+    end
+  end
+  return { year = y, month = m, day = d, hour = h, minute = mi }
+end
+
+--- @param clock table
+--- @param days integer
+--- @return table
+local function addDays(clock, days)
+  local cur = {
+    year = clock.year,
+    month = clock.month,
+    day = clock.day,
+    hour = clock.hour or 0,
+    minute = clock.minute or 0,
+  }
+  local n = math.floor(tonumber(days) or 0)
+  if n < 0 then
+    -- walk backward day by day (rare; used only if needed)
+    for _ = 1, -n do
+      local y = math.floor(tonumber(cur.year) or 1)
+      local m = math.floor(tonumber(cur.month) or 1)
+      local d = math.floor(tonumber(cur.day) or 1)
+      d = d - 1
+      if d < 1 then
+        m = m - 1
+        if m < 1 then
+          m = 12
+          y = y - 1
+        end
+        d = daysInMonth(y, m)
+      end
+      cur.year, cur.month, cur.day = y, m, d
+    end
+    return cur
+  end
+  for _ = 1, n do
+    cur = addOneDay(cur)
+  end
+  return cur
+end
+
+--- @param clock table
+--- @param months integer
+--- @return table
+local function addMonths(clock, months)
+  local y = math.floor(tonumber(clock.year) or 1)
+  local m = math.floor(tonumber(clock.month) or 1)
+  local d = math.floor(tonumber(clock.day) or 1)
+  local h = math.floor(tonumber(clock.hour) or 0)
+  local mi = math.floor(tonumber(clock.minute) or 0)
+  local add = math.floor(tonumber(months) or 0)
+  m = m + add
+  while m > 12 do
+    m = m - 12
+    y = y + 1
+  end
+  while m < 1 do
+    m = m + 12
+    y = y - 1
+  end
+  local dim = daysInMonth(y, m)
+  if d > dim then
+    d = dim
+  end
+  return { year = y, month = m, day = d, hour = h, minute = mi }
+end
+
+--- Advance by one increment step.
+--- @param clock table
+--- @param increment string
+--- @return table
+function M.advanceOneIncrement(clock, increment)
+  if increment == "daily" then
+    return addDays(clock, 1)
+  end
+  if increment == "weekly" then
+    return addDays(clock, 7)
+  end
+  if increment == "biweekly" then
+    return addDays(clock, 14)
+  end
+  if increment == "monthly" then
+    return addMonths(clock, 1)
+  end
+  if increment == "quarterly" then
+    return addMonths(clock, 3)
+  end
+  if increment == "yearly" then
+    return addMonths(clock, 12)
+  end
+  if increment == "byDecade" then
+    return addMonths(clock, 120)
+  end
+  if increment == "byCentury" then
+    return addMonths(clock, 1200)
+  end
+  return addDays(clock, 1)
+end
+
+--- @param startDate table
+--- @param increment string
+--- @param steps integer
+--- @return table
+function M.advanceIncrements(startDate, increment, steps)
+  local cur = {
+    year = startDate.year,
+    month = startDate.month,
+    day = startDate.day,
+    hour = startDate.hour or 0,
+    minute = startDate.minute or 0,
+  }
+  local n = math.max(0, math.floor(tonumber(steps) or 0))
+  for _ = 1, n do
+    cur = M.advanceOneIncrement(cur, increment)
+  end
+  return cur
+end
+
+--- Count whole increments from start → present (floor). 0 if present <= start.
+--- @param startDate table
+--- @param present table
+--- @param increment string
+--- @return integer
+function M.countElapsedIncrements(startDate, present, increment)
+  if U.compareNarrativeClock(present, startDate) <= 0 then
+    return 0
+  end
+  local elapsed = 0
+  local cursor = {
+    year = startDate.year,
+    month = startDate.month,
+    day = startDate.day,
+    hour = startDate.hour or 0,
+    minute = startDate.minute or 0,
+  }
+  -- Cap iterations to avoid runaway on bad data
+  for _ = 1, 5000 do
+    local nextClock = M.advanceOneIncrement(cursor, increment)
+    if U.compareNarrativeClock(nextClock, present) > 0 then
+      break
+    end
+    elapsed = elapsed + 1
+    cursor = nextClock
+  end
+  return elapsed
+end
+
+--- @param project table
+--- @return integer|nil die, table|nil endDate
+function M.deriveDieAndEnd(project)
+  if type(project) ~= "table" or project.phase ~= M.PHASE.IN_PROGRESS then
+    return nil, nil
+  end
+  if type(project.startDate) ~= "table" or not U.narrativeClockHasDatetime(project.startDate) then
+    return nil, nil
+  end
+  if type(project.increment) ~= "string" or project.increment == "" then
+    return nil, nil
+  end
+  local duration = math.max(0, 10 + math.floor(tonumber(project.projectDieMod) or 0))
+  local endDate = M.advanceIncrements(project.startDate, project.increment, duration)
+  local present = PresentDayClock.getPresentDay()
+  if present == nil then
+    local live = S.getStateVal("sessionScene", "clock")
+    if type(live) == "table" and U.narrativeClockHasDatetime(live) then
+      present = U.narrativeClockDatetimeOnly(live)
+    end
+  end
+  if present == nil then
+    return duration, endDate
+  end
+  local elapsed = M.countElapsedIncrements(project.startDate, present, project.increment)
+  local die = duration - elapsed
+  if die < 0 then
+    die = 0
+  end
+  if die > duration then
+    die = duration
+  end
+  return die, endDate
+end
+
+--- @param project table
+--- @return boolean
+local function setupFieldsComplete(project)
+  if type(project.owner) ~= "string" or project.owner == "" then
+    return false
+  end
+  if type(project.goal) ~= "string" or project.goal:match("^%s*(.-)%s*$") == "" then
+    return false
+  end
+  if tonumber(project.scope) == nil then
+    return false
+  end
+  if type(project.increment) ~= "string" or project.increment == "" then
+    return false
+  end
+  if type(project.startDate) ~= "table" or not U.narrativeClockHasDatetime(project.startDate) then
+    return false
+  end
+  local skill = type(project.launchRollSkill) == "string" and project.launchRollSkill:match("^%s*(.-)%s*$") or ""
+  local adv = type(project.launchRollAdvantage) == "string" and project.launchRollAdvantage:match("^%s*(.-)%s*$") or ""
+  if skill == "" or adv == "" then
+    return false
+  end
+  if tonumber(project.launchRollDifficulty) == nil then
+    return false
+  end
+  return true
+end
+
+--- Auto phase for setup/preLaunch/postLaunch only (never forces inProgress/complete).
+--- @param project table
+--- @return string
+function M.computeAutoPhase(project)
+  local phase = project.phase
+  if phase == M.PHASE.IN_PROGRESS or phase == M.PHASE.COMPLETE then
+    return phase
+  end
+  if not setupFieldsComplete(project) then
+    return M.PHASE.SETUP
+  end
+  local result = project.launchRollResult
+  if result == C.RollResult.CRITICAL_WIN then
+    return M.PHASE.POST_LAUNCH
+  end
+  if result == C.RollResult.WIN and tonumber(project.launchRollMargin) ~= nil then
+    return M.PHASE.POST_LAUNCH
+  end
+  return M.PHASE.PRE_LAUNCH
+end
+
+--- List advantages for a source (backgrounds + merits).
+--- @param sourceKey string
+--- @return table[] { name, focus, label, category, index }
+function M.listAdvantagesForSource(sourceKey)
+  local out = {}
+  if sourceKey == "coterie" then
+    local data = S.getStateVal("coterieData")
+    if type(data) ~= "table" then
+      return out
+    end
+    local keys = { "coterieBackgrounds", "coterieMerits", "domainBackgrounds", "domainMerits", "havenBackgrounds", "havenMerits" }
+    for _, arrayKey in ipairs(keys) do
+      local arr = data[arrayKey]
+      if type(arr) == "table" then
+        for i = 1, #arr do
+          local entry = arr[i]
+          if type(entry) == "table" and entry.blank ~= true and type(entry.name) == "string" and entry.name ~= "" then
+            local focus = type(entry.focus) == "string" and entry.focus or ""
+            local label = focus ~= "" and (entry.name .. " (" .. focus .. ")") or entry.name
+            out[#out + 1] = {
+              name = entry.name,
+              focus = focus,
+              label = label,
+              arrayKey = arrayKey,
+              index = i,
+            }
+          end
+        end
+      end
+    end
+    return out
+  end
+  local color = M.colorForCharKey(sourceKey)
+  if color == nil then
+    return out
+  end
+  local pid = C.GetPlayerIDOrNil(color)
+  if pid == nil then
+    return out
+  end
+  local PCAdv = require("lib.pc_advantages")
+  for _, category in ipairs({ "backgrounds", "merits" }) do
+    local arr = PCAdv.getEntries(pid, category)
+    for i = 1, #arr do
+      local entry = arr[i]
+      if PCAdv.isVisibleOnSheet(entry) and type(entry.name) == "string" and entry.name ~= "" then
+        local focus = type(entry.focus) == "string" and entry.focus or ""
+        local label = focus ~= "" and (entry.name .. " (" .. focus .. ")") or entry.name
+        out[#out + 1] = {
+          name = entry.name,
+          focus = focus,
+          label = label,
+          category = category,
+          index = i,
+        }
+      end
+    end
+  end
+  return out
+end
+
+--- Free dots available to stake (filled - manual disabled - other projects' stakes).
+--- @param sourceKey string
+--- @param name string
+--- @param focus string|nil
+--- @param excludeProjectId string|nil
+--- @return integer
+function M.freeDotsForAdvantage(sourceKey, name, focus, excludeProjectId)
+  focus = type(focus) == "string" and focus or ""
+  local entry = nil
+  if sourceKey == "coterie" then
+    local data = S.getStateVal("coterieData")
+    if type(data) == "table" then
+      local keys = { "coterieBackgrounds", "coterieMerits", "domainBackgrounds", "domainMerits", "havenBackgrounds", "havenMerits" }
+      for _, arrayKey in ipairs(keys) do
+        local arr = data[arrayKey]
+        if type(arr) == "table" then
+          for i = 1, #arr do
+            local e = arr[i]
+            if type(e) == "table" and e.name == name and (type(e.focus) == "string" and e.focus or "") == focus then
+              entry = e
+              break
+            end
+          end
+        end
+        if entry ~= nil then
+          break
+        end
+      end
+    end
+  else
+    local color = M.colorForCharKey(sourceKey)
+    local pid = color and C.GetPlayerIDOrNil(color)
+    if pid ~= nil then
+      local PCAdv = require("lib.pc_advantages")
+      for _, category in ipairs({ "backgrounds", "merits" }) do
+        local arr = PCAdv.getEntries(pid, category)
+        for i = 1, #arr do
+          local e = arr[i]
+          if type(e) == "table" and e.name == name and (type(e.focus) == "string" and e.focus or "") == focus then
+            entry = e
+            break
+          end
+        end
+        if entry ~= nil then
+          break
+        end
+      end
+    end
+  end
+  if entry == nil then
+    return 0
+  end
+  local base = math.floor(tonumber(entry.base) or 0)
+  local temp = math.floor(tonumber(entry.temp) or 0)
+  local manual = math.floor(tonumber(entry.disabled) or 0)
+  local other = M.stakeQtyForAdvantage(sourceKey, name, focus, excludeProjectId)
+  local free = base + temp - manual - other
+  if free < 0 then
+    return 0
+  end
+  return free
+end
+
+--- @param project table
+--- @return boolean ok, string message
+function M.validateStakesForBegin(project)
+  local required = M.computeRequiredStake(project)
+  if required == nil then
+    return false, "Set launch Result (and Margin for Win) first."
+  end
+  local rows = project.stakeRows
+  if type(rows) ~= "table" then
+    rows = {}
+  end
+  for i = 1, #rows do
+    local row = rows[i]
+    if type(row) == "table" and type(row.source) == "string" and row.source ~= "" then
+      local hasName = type(row.name) == "string" and row.name ~= ""
+      local qty = tonumber(row.qty)
+      if hasName and (qty == nil or qty < 1) then
+        return false, "Stake row " .. tostring(i) .. ": quantity required when advantage is set."
+      end
+      if not hasName and qty ~= nil and qty > 0 then
+        return false, "Stake row " .. tostring(i) .. ": pick an advantage for quantity."
+      end
+      if rowCommitsStake(row) then
+        local free = M.freeDotsForAdvantage(row.source, row.name, row.focus, project.id)
+        local need = math.floor(tonumber(row.qty) or 0)
+        -- freeDots excludes this project's other rows? excludeProjectId excludes whole project —
+        -- so free includes dots this project already lists. Subtract sibling rows in this project.
+        local siblings = 0
+        for j = 1, #rows do
+          if j ~= i and rowCommitsStake(rows[j])
+            and rows[j].source == row.source
+            and rows[j].name == row.name
+            and (type(rows[j].focus) == "string" and rows[j].focus or "") == (type(row.focus) == "string" and row.focus or "")
+          then
+            siblings = siblings + math.floor(tonumber(rows[j].qty) or 0)
+          end
+        end
+        if need + siblings > free then
+          return false, "Stake row " .. tostring(i) .. ": not enough free dots on " .. tostring(row.name) .. "."
+        end
+      end
+    end
+  end
+  if required > 0 then
+    local sum = M.sumStakeQty(project)
+    if sum < required then
+      return false, "Stake " .. tostring(required - sum) .. " more dot(s) (need " .. tostring(required) .. ")."
+    end
+  end
+  return true, "Ready — press Lock & Begin."
+end
+
+--- @param project table
+--- @return boolean
+function M.isBeginEligible(project)
+  if type(project) ~= "table" then
+    return false
+  end
+  if M.computeAutoPhase(project) ~= M.PHASE.POST_LAUNCH then
+    return false
+  end
+  local ok = M.validateStakesForBegin(project)
+  return ok == true
+end
+
+--- @param sourceKey string PC charKey or "coterie"
+--- @return table[] projects
+function M.listForDisplaySource(sourceKey)
+  local out = {}
+  if type(sourceKey) ~= "string" then
+    return out
+  end
+  local projects = M.ensureProjectsTable()
+  for _, project in pairs(projects) do
+    if type(project) == "table" then
+      local displayFor = project.displayFor
+      if type(displayFor) ~= "table" then
+        displayFor = M.computeDisplayFor(project)
+      end
+      for i = 1, #displayFor do
+        if displayFor[i] == sourceKey then
+          out[#out + 1] = project
+          break
+        end
+      end
+    end
+  end
+  table.sort(out, function(a, b)
+    local aOwner = (a.owner == sourceKey) and 0 or 1
+    local bOwner = (b.owner == sourceKey) and 0 or 1
+    if aOwner ~= bOwner then
+      return aOwner < bOwner
+    end
+    local _, aEnd = M.deriveDieAndEnd(a)
+    local _, bEnd = M.deriveDieAndEnd(b)
+    if a.phase == M.PHASE.COMPLETE and b.phase ~= M.PHASE.COMPLETE then
+      return false
+    end
+    if b.phase == M.PHASE.COMPLETE and a.phase ~= M.PHASE.COMPLETE then
+      return true
+    end
+    if type(aEnd) == "table" and type(bEnd) == "table" then
+      return U.compareNarrativeClock(aEnd, bEnd) < 0
+    end
+    if type(aEnd) == "table" then
+      return true
+    end
+    if type(bEnd) == "table" then
+      return false
+    end
+    return tostring(a.id) < tostring(b.id)
+  end)
+  return out
+end
+
+--- Apply soft Scope→Difficulty fill; mutates project in place.
+--- @param project table
+--- @param newScope number|nil
+function M.applyScopeDifficulty(project, newScope)
+  local scope = math.floor(tonumber(newScope) or 0)
+  if tonumber(newScope) == nil then
+    project.scope = nil
+    return
+  end
+  project.scope = scope
+  local auto = scope + 2
+  local cur = tonumber(project.launchRollDifficulty)
+  local lastAutoScope = tonumber(project._lastAutoDifficultyScope)
+  local lastAuto = lastAutoScope ~= nil and (lastAutoScope + 2) or nil
+  if cur == nil or (lastAuto ~= nil and cur == lastAuto) then
+    project.launchRollDifficulty = auto
+  end
+  project._lastAutoDifficultyScope = scope
+end
+
+--- Recompute derived fields that are cached for convenience (displayFor, phase auto).
+--- Does not enter inProgress/complete.
+--- @param project table
+--- @return table
+function M.recomputeDerived(project)
+  project.displayFor = M.computeDisplayFor(project)
+  if project.phase ~= M.PHASE.IN_PROGRESS and project.phase ~= M.PHASE.COMPLETE then
+    project.phase = M.computeAutoPhase(project)
+  end
+  return project
+end
+
+--- Page 5 XML (Global-only; object scripts call via GlobalBuildPage5DocumentXml).
+--- @param seatColorRaw string|nil
+--- @return string
+function M.buildPage5DocumentXml(seatColorRaw)
+  local CSHEET_DEFAULTS = require("lib.csheet_defaults_xml")
+  local TPL = require("lib.ui_xml_template")
+  local color = type(seatColorRaw) == "string" and seatColorRaw or ""
+  if color ~= "" then
+    local c = color:lower()
+    color = c:sub(1, 1):upper() .. c:sub(2)
+  end
+  local charKey = M.charKeyForColor(color)
+  local blocks = {}
+  if type(charKey) == "string" then
+    local list = M.listForDisplaySource(charKey)
+    for i = 1, #list do
+      local project = list[i]
+      local index0 = i - 1
+      local params = { INDEX = tostring(index0) }
+      for s = 1, 6 do
+        params["PROJECT_STAKE_" .. tostring(s) .. "_CLASS"] = "self"
+      end
+      local xml = TPL.apply("csheet/partials/project_block", params, { rawKeys = {} })
+      local function setText(id, text)
+        xml = xml:gsub('(id="' .. id .. '"[^>]*text=")[^"]*"', '%1' .. TPL.xmlEscapeAttr(text) .. '"')
+      end
+      local function setImage(id, image)
+        xml = xml:gsub('(id="' .. id .. '"[^>]*image=")[^"]*"', '%1' .. TPL.xmlEscapeAttr(image) .. '"')
+      end
+      local function setActive(id, active)
+        if xml:find('id="' .. id .. '"[^>]*active=') then
+          xml = xml:gsub('(id="' .. id .. '"[^>]*active=")[^"]*"', '%1' .. active .. '"')
+        else
+          xml = xml:gsub('id="' .. id .. '"', 'id="' .. id .. '" active="' .. active .. '"')
+        end
+      end
+      local die, endDate = M.deriveDieAndEnd(project)
+      setText("project_" .. tostring(index0) .. "_goal", tostring(project.goal or ""))
+      setText("project_" .. tostring(index0) .. "_date_start", M.formatStartDate(project.startDate))
+      setText("project_" .. tostring(index0) .. "_date_end", endDate and M.formatStartDate(endDate) or "")
+      local incLabel = (type(project.increment) == "string" and M.INCREMENT_LABELS[project.increment]) or ""
+      setText("project_" .. tostring(index0) .. "_date_increment", incLabel ~= "" and ("(Increments " .. incLabel .. ")") or "")
+      local resultImg, marginText, marginActive, stakesActive = "", "", "false", "true"
+      if project.launchRollResult == C.RollResult.CRITICAL_WIN then
+        resultImg = "project_crit"
+        stakesActive = "false"
+      elseif project.launchRollResult == C.RollResult.WIN then
+        resultImg = "project_win"
+        marginText = "+" .. tostring(math.floor(tonumber(project.launchRollMargin) or 0))
+        marginActive = "true"
+      end
+      setImage("project_" .. tostring(index0) .. "_result_image", resultImg)
+      setText("project_" .. tostring(index0) .. "_result_margin", marginText)
+      setActive("project_" .. tostring(index0) .. "_result_margin", marginActive)
+      local dieImg = ""
+      if die ~= nil then
+        local d = math.max(0, math.min(10, die))
+        if d >= 1 then
+          dieImg = "project_die_" .. tostring(d)
+        end
+      end
+      setImage("project_" .. tostring(index0) .. "_project_die", dieImg)
+      setActive("project_" .. tostring(index0) .. "_stakes_label", stakesActive)
+      setActive("project_" .. tostring(index0) .. "_stakes", stakesActive)
+      local scope = math.floor(tonumber(project.scope) or 0)
+      for d = 1, 15 do
+        setActive("project_" .. tostring(index0) .. "_scope_dot_" .. tostring(d), d <= scope and "true" or "false")
+      end
+      local stakeEntries = {}
+      local rows = project.stakeRows
+      if type(rows) == "table" then
+        for ri = 1, #rows do
+          local row = rows[ri]
+          if type(row) == "table" and type(row.source) == "string" and type(row.name) == "string"
+            and row.name ~= "" and math.floor(tonumber(row.qty) or 0) >= 1
+          then
+            stakeEntries[#stakeEntries + 1] = row
+          end
+        end
+      end
+      for s = 1, 6 do
+        local stake = stakeEntries[s]
+        local stakeId = "project_" .. tostring(index0) .. "_stake_" .. tostring(s)
+        if stake ~= nil then
+          setActive(stakeId, "true")
+          local focus = type(stake.focus) == "string" and stake.focus or ""
+          local label = focus ~= "" and (stake.name .. " (" .. focus .. ")") or stake.name
+          setText(stakeId .. "_label", label)
+          local qty = math.min(5, math.floor(tonumber(stake.qty) or 0))
+          for d = 1, 5 do
+            setActive(stakeId .. "_dot_" .. tostring(d), d <= qty and "true" or "false")
+          end
+        else
+          setActive(stakeId, "false")
+        end
+      end
+      blocks[#blocks + 1] = xml
+    end
+  end
+  local pageXml = TPL.apply("csheet/page5", {
+    PROJECT_BLOCKS = table.concat(blocks, "\n"),
+    GEAR_BLOCKS = "",
+  }, {
+    rawKeys = {
+      PROJECT_BLOCKS = true,
+      GEAR_BLOCKS = true,
+      BOONS_COLUMN_1 = true,
+      BOONS_COLUMN_2 = true,
+      BOONS_COLUMN_3 = true,
+    },
+  })
+  pageXml = pageXml:gsub('<Include%s+src="csheet_defaults%.xml"%s*/>%s*', "")
+  return table.concat({ CSHEET_DEFAULTS.getXml(), "", pageXml, "" }, "\n")
+end
+
+--- @param seatColorRaw string|nil
+--- @return string
+function M.fingerprintPage5(seatColorRaw)
+  local color = type(seatColorRaw) == "string" and seatColorRaw or ""
+  if color ~= "" then
+    local c = color:lower()
+    color = c:sub(1, 1):upper() .. c:sub(2)
+  end
+  local charKey = M.charKeyForColor(color)
+  if type(charKey) ~= "string" then
+    return ""
+  end
+  local list = M.listForDisplaySource(charKey)
+  local parts = { charKey }
+  for i = 1, #list do
+    local p = list[i]
+    local die = M.deriveDieAndEnd(p)
+    parts[#parts + 1] = tostring(p.id)
+    parts[#parts + 1] = tostring(p.phase)
+    parts[#parts + 1] = tostring(p.goal)
+    parts[#parts + 1] = tostring(die)
+    parts[#parts + 1] = tostring(p.projectDieMod)
+  end
+  return table.concat(parts, "\1")
+end
+
+return M

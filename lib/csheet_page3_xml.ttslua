@@ -73,12 +73,24 @@ function M.buildPage3DocumentXml(stats, seatColorRaw)
   local merits = type(stats.merits) == "table" and stats.merits or {}
   local flaws = type(stats.flaws) == "table" and stats.flaws or {}
 
-  local bg1, bg2, bg3 = TRAIT.buildBalancedColumnContents(bg, "bg", false, CSHEET_TRAIT_OPTS)
-  local m1, m2, m3 = TRAIT.buildBalancedColumnContents(merits, "merit", false, CSHEET_TRAIT_OPTS)
-  local f1, f2, f3 = TRAIT.buildBalancedColumnContents(flaws, "flaw", true, CSHEET_TRAIT_OPTS)
+  local opts = {}
+  for k, v in pairs(CSHEET_TRAIT_OPTS) do
+    opts[k] = v
+  end
+  local color = dividerFlawsImageSuffix(seatColorRaw)
+  if Global ~= nil and type(Global.call) == "function" then
+    local charKey = Global.call("GlobalCharKeyForSeatColor", color)
+    if type(charKey) == "string" and charKey ~= "" then
+      opts.projectStakeSourceKey = charKey
+    end
+  end
+
+  local bg1, bg2, bg3 = TRAIT.buildBalancedColumnContents(bg, "bg", false, opts)
+  local m1, m2, m3 = TRAIT.buildBalancedColumnContents(merits, "merit", false, opts)
+  local f1, f2, f3 = TRAIT.buildBalancedColumnContents(flaws, "flaw", true, opts)
 
   local pageParams = {
-    COLOR = dividerFlawsImageSuffix(seatColorRaw),
+    COLOR = color,
     BACKGROUNDS_COLUMN_1 = bg1,
     BACKGROUNDS_COLUMN_2 = bg2,
     BACKGROUNDS_COLUMN_3 = bg3,

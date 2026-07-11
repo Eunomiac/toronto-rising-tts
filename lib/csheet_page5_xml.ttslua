@@ -1,7 +1,36 @@
 --[[
-  Character sheet page 5 dynamic XML (projects / equipment).
-  Replace placeholder with template embed + builder when page 5 layout ships.
-  Loaded only from require("ui.ui_csheet_page5") on CSHEET_PAGE_5_* objects.
+  Character sheet page 5 dynamic XML (projects list).
+  Object-script safe: builds via Global.call (no core.* require).
 ]]
 
-return require("lib.csheet_page_xml_placeholder").makePlaceholder(5)
+local M = {}
+
+--- @param stats table|nil
+--- @param seatColorRaw string|nil
+--- @return string full UI XML document
+function M.buildPage5DocumentXml(stats, seatColorRaw)
+  if Global == nil or type(Global.call) ~= "function" then
+    return ""
+  end
+  local xml = Global.call("GlobalBuildPage5DocumentXml", { seatColor = seatColorRaw })
+  if type(xml) ~= "string" then
+    return ""
+  end
+  return xml
+end
+
+--- @param stats table|nil
+--- @param seatColorRaw string|nil
+--- @return string
+function M.fingerprintPage5Stats(stats, seatColorRaw)
+  if Global == nil or type(Global.call) ~= "function" then
+    return ""
+  end
+  local fp = Global.call("GlobalFingerprintPage5", { seatColor = seatColorRaw })
+  if type(fp) ~= "string" then
+    return ""
+  end
+  return fp
+end
+
+return M
