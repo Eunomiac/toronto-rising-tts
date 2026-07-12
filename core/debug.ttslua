@@ -3472,6 +3472,39 @@ function DEBUG.RunTest(campaignName, startAt)
     return true
 end
 
+--- Cancel in-flight RunTest step and clear the armed campaign (HUD Stop / re-arm).
+-- @return boolean always true
+-- @usage lua StopRunTest()
+function DEBUG.StopRunTest()
+    e2eCancelActiveRunTestSequence()
+    local hadCampaign = e2eRunTestState.campaign ~= nil
+    e2eRunTestState.campaign = nil
+    e2eRunTestState.playbook = nil
+    e2eRunTestState.index = 0
+    if hadCampaign then
+        print("[RunTest] Stopped")
+    end
+    return true
+end
+
+--- Snapshot of the armed RunTest campaign for HUD step labels.
+-- @return table|nil { campaign, stepCount, lastStep, nextStep, finished }
+function DEBUG.GetRunTestStatus()
+    local playbook = e2eRunTestState.playbook
+    if playbook == nil then
+        return nil
+    end
+    local nextStep = e2eRunTestState.index + 1
+    local finished = nextStep > playbook.stepCount
+    return {
+        campaign = e2eRunTestState.campaign,
+        stepCount = playbook.stepCount,
+        lastStep = e2eRunTestState.index,
+        nextStep = finished and nil or nextStep,
+        finished = finished,
+    }
+end
+
 --- Cancels all active rolls across every player color. Quick full reset between tests.
 -- @usage lua rollCancelAll()
 function DEBUG.rollCancelAll()
@@ -5518,6 +5551,7 @@ rollState     = DEBUG.rollState
 rollCancel    = DEBUG.rollCancel
 rollCancelAll = DEBUG.rollCancelAll
 RunTest       = DEBUG.RunTest
+StopRunTest   = DEBUG.StopRunTest
 printHeader   = DEBUG.printHeader
 rollConfirm       = DEBUG.rollConfirm
 rollConfirmTracker = DEBUG.rollConfirmTracker

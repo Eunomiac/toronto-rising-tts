@@ -3671,6 +3671,114 @@ function HUD_toggleDebugAmbient(player, button, id)
     )
 end
 
+-- TOR-347: RunTest on-screen controls (panel_runtest.xml). Stash InputField text — do not UI.getValue.
+local runtestStepDraft = "1"
+
+local function runtestShowStartUi()
+    U.setAttribute("panel_runtest_start", "active", "true")
+    U.setAttribute("panel_runtest_live", "active", "false")
+end
+
+local function runtestShowLiveUi(nextStep)
+    U.setAttribute("panel_runtest_start", "active", "false")
+    U.setAttribute("panel_runtest_live", "active", "true")
+    local step = tonumber(nextStep) or 1
+    U.setAttribute("text_runtest_step", "text", string.format("Step %d", step))
+end
+
+local function runtestRefreshLiveStepLabel()
+    if type(DEBUG) ~= "table" or type(DEBUG.GetRunTestStatus) ~= "function" then
+        return
+    end
+    local status = DEBUG.GetRunTestStatus()
+    if status == nil or status.finished or status.nextStep == nil then
+        runtestShowStartUi()
+        return
+    end
+    runtestShowLiveUi(status.nextStep)
+end
+
+--- Toggle Host RunTest control strip (DEBUG panel).
+-- @param player Player
+-- @param button string|nil
+-- @param id string|nil
+function HUD_toggleRunTestPanel(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_toggleRunTestPanel") then
+        return
+    end
+    U.toggleXmlElement("panel_runtest", button)
+end
+
+--- Stash step InputField text for campaign arm (`input_runtest_step`).
+-- @param player Player
+-- @param value string|nil
+-- @param id string|nil
+function HUD_runtest_step(player, value, id)
+    if value == nil then
+        runtestStepDraft = "1"
+        return
+    end
+    runtestStepDraft = tostring(value)
+end
+
+--- RunTest panel buttons: arm campaign, Continue, or Stop.
+-- @param player Player
+-- @param button string|nil
+-- @param id string button_runtest_Dice|Scenes|Gameboard|Next|Stop
+function HUD_runtest(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_runtest") then
+        return
+    end
+    if type(id) ~= "string" then
+        return
+    end
+    if type(RunTest) ~= "function" then
+        broadcastToColor("RunTest: console helper missing (Save & Play?).", player.color, {1, 0.5, 0})
+        return
+    end
+
+    if id == "button_runtest_Stop" then
+        if type(StopRunTest) == "function" then
+            StopRunTest()
+        elseif type(DEBUG) == "table" and type(DEBUG.StopRunTest) == "function" then
+            DEBUG.StopRunTest()
+        end
+        runtestShowStartUi()
+        return
+    end
+
+    if id == "button_runtest_Next" then
+        local ok = RunTest()
+        if not ok then
+            -- Finished, not armed, or empty step — return to start when no campaign remains.
+            runtestRefreshLiveStepLabel()
+            return
+        end
+        runtestRefreshLiveStepLabel()
+        return
+    end
+
+    local campaign = string.match(id, "^button_runtest_(.+)$")
+    if campaign ~= "Dice" and campaign ~= "Scenes" and campaign ~= "Gameboard" then
+        return
+    end
+
+    local stepRaw = runtestStepDraft
+    if stepRaw == nil or stepRaw == "" then
+        stepRaw = "1"
+    end
+    local ok = RunTest(campaign, stepRaw)
+    if not ok then
+        broadcastToColor(
+            string.format("RunTest: failed to arm '%s' (see console).", tostring(campaign)),
+            player.color,
+            {1, 0.5, 0}
+        )
+        return
+    end
+    runtestRefreshLiveStepLabel()
+end
+
 --- Toggle all Anchor-tagged objects (admin debug utility).
 -- @param player Player
 -- @param button string

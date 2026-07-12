@@ -1,0 +1,55 @@
+<Defaults>
+  <Panel class="panel_runtest"
+    rectAlignment="LowerLeft"
+    offsetXY="0 0"
+    width="520"
+    height="60"
+    color="rgba(0,0,0,0)"
+    raycastTarget="true" />
+  <HorizontalLayout class="runtest_button_row"
+    spacing="8"
+    childAlignment="MiddleLeft"
+    childForceExpandWidth="false"
+    childForceExpandHeight="false" />
+  <Button class="runtest_button"
+    fontSize="18"
+    fontStyle="Bold"
+    preferredWidth="110"
+    preferredHeight="40"
+    minWidth="90"
+    minHeight="40"
+    flexibleWidth="0"
+    flexibleHeight="0"
+    colors="#2A4A6A|#3A5A7A|#1A3A5A|#2A4A6A"
+    textColor="#FFFFFF" />
+  <Text class="runtest_text"
+    fontSize="22"
+    fontStyle="Bold"
+    color="#FFFFFF"
+    alignment="MiddleLeft"
+    preferredWidth="120"
+    preferredHeight="40"
+    flexibleWidth="0"
+    flexibleHeight="0" />
+  <InputField class="runtest_input" contentType="IntegerNumber" characterLimit="2" alignment="MiddleCenter" preferredWidth="0" preferredHeight="28" minHeight="45" minWidth="45" fontSize="28" fontStyle="Bold" flexibleHeight="0" flexibleWidth="0" placeholder=" " />
+</Defaults>
+
+<Panel id="panel_runtest" class="panel_runtest" visibility="Host" active="false"> <!-- Initially inactive. Is toggled on by a button that should be added to the Storyteller's DEBUG panel. -->
+
+  <!-- Active by default. Contains the buttons to start the test and the input field to set the step number, defaulting to 1 (the first step). -->
+  <HorizontalLayout id="panel_runtest_start" class="runtest_button_row" rectAlignment="LowerLeft" offsetXY = "20 20" width="500" height="40">
+    <Button id="button_runtest_Dice" class="runtest_button" onClick="HUD_runtest">Dice</Button>
+    <Button id="button_runtest_Scenes" class="runtest_button" onClick="HUD_runtest">Scenes</Button>
+    <Button id="button_runtest_Gameboard" class="runtest_button" onClick="HUD_runtest">Gameboard</Button>
+
+    <InputField id="input_runtest_step" class="runtest_input" onValueChanged="HUD_runtest_step" onEndEdit="HUD_runtest_step" text="1" />
+  </HorizontalLayout>
+
+  <!-- Once a test has started, the start HorizontalLayout is hidden and the live HorizontalLayout is revealed. "Continue" runs `RunTest()`, while "Stop" stops the test sequence. The step number is displayed in the text field. -->
+  <HorizontalLayout id="panel_runtest_live" class="runtest_button_row" rectAlignment="LowerLeft" offsetXY = "20 20" width="500" height="40" active="false">
+    <Button id="button_runtest_Next" class="runtest_button" onClick="HUD_runtest">Continue</Button>
+    <Button id="button_runtest_Stop" class="runtest_button" onClick="HUD_runtest">Stop</Button>
+    <Text id="text_runtest_step" class="runtest_text" text="Step 1" />
+
+  </HorizontalLayout>
+</Panel>

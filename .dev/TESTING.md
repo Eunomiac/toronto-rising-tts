@@ -62,14 +62,17 @@ Keep reference tables and long prose out of the lean test file. Suite and step n
 
 ### Streamlined block workflow
 
-**Dice-E2E.md** and **Scenes-E2E.md** are references for the collapsed format. Steps are also available as generated modules (`lib/e2e_playbook_dice.ttslua`, `lib/e2e_playbook_scenes.ttslua`, built from markdown) and runnable via **`RunTest`** in the TTS console:
+**Dice-E2E.md** and **Scenes-E2E.md** are references for the collapsed format. Steps are also available as generated modules (`lib/e2e_playbook_dice.ttslua`, `lib/e2e_playbook_scenes.ttslua`, built from markdown) and runnable via **`RunTest`** in the TTS console, or from the Host **DEBUG → RunTest** on-screen strip (`panel_runtest.xml`, TOR-347):
 
 ```lua
 lua RunTest("Dice")        -- [RunTest] Initialized 'Dice' (next RunTest runs step 1)
 lua RunTest("Dice", 8)     -- arm at step 8/56; RunTest("Dice", "H") at suite H
 lua RunTest("Scenes")      -- arm Scenes E2E; RunTest("Scenes", "F") jumps to suite F
 lua RunTest()              -- [RunTest] <Campaign> step N/total, then U.RunSequence (repeat after each [HUMAN] gate)
+lua StopRunTest()          -- cancel in-flight step and clear armed campaign (HUD Stop)
 ```
+
+**HUD strip:** DEBUG **RunTest** toggles the panel → campaign button + step field arms → **Continue** / **Stop** match `RunTest()` / `StopRunTest()`.
 
 Re-arming with `RunTest("<Campaign>")` resets index and cancels any in-flight step. Step index is 1-based; suite second arg uses top-level ids (`0`, `A`–`P`, `E2` when present). **Save & Play** after updating harness code so playbook step tables are fresh.
 
