@@ -6181,6 +6181,7 @@ end
 
 --- TTS: player connected (assign chronicle seat when mapped in C.PlayerData; else White).
 --- TTS API passes a Player; tolerate a seat color string for older call sites.
+--- Join clients usually arrive as Grey — auto-assign must still run (TOR-372).
 function onPlayerConnect(playerOrColor)
     local connected = nil
     if U.isPlayer(playerOrColor) then
@@ -6190,11 +6191,19 @@ function onPlayerConnect(playerOrColor)
     end
 
     if U.isPlayer(connected) then
+        print(string.format(
+            "onPlayerConnect: %s steam=%s color=%s",
+            tostring(connected.steam_name),
+            tostring(connected.steam_id),
+            tostring(connected.color)
+        ))
         clearSeatXmlRefreshForPlayer(connected)
         local playerKey = seatAssignmentPlayerKey(connected)
         if playerKey ~= nil then
             pendingConnectSeatRefreshByPlayer[playerKey] = true
         end
+    else
+        print("onPlayerConnect: unresolved playerOrColor=" .. tostring(playerOrColor))
     end
     if M ~= nil and type(M.tryAutoAssignSeatFromChronicle) == "function" then
         if U.isPlayer(connected) then

@@ -556,6 +556,7 @@ end
 --[[
     Try chronicle seat assignment (Steam ID → C.PlayerData.color; Storyteller → Black).
     Unregistered Steam IDs default to White (TOR-345).
+    Join clients typically connect as Grey — Grey is a valid *current* seat to leave, never a target (TOR-372).
     @param colorOrPlayer string|Player Current seat color or connected Player (TTS onPlayerConnect passes Player).
     @param opts table|nil Optional: refreshIfAlreadySeated (default true) — UI refresh when already on target.
 ]]
@@ -567,12 +568,14 @@ function M.tryAutoAssignSeatFromChronicle(colorOrPlayer, opts)
     end
 
     local player, color = resolvePlayerAndSeatColor(colorOrPlayer)
-    if player == nil or color == nil or color == "Grey" then
+    if player == nil or color == nil then
+        print("Main: tryAutoAssign - could not resolve player/color from " .. tostring(colorOrPlayer))
         return
     end
 
     local playerID = S.getStorageID(player)
     if playerID == nil then
+        print("Main: tryAutoAssign - no storage id for seat " .. tostring(color))
         return
     end
 
@@ -594,8 +597,8 @@ function M.tryAutoAssignSeatFromChronicle(colorOrPlayer, opts)
         local occupantId = S.getStorageID(occupant)
         if type(occupantId) == "string" and occupantId ~= playerID then
             print(string.format(
-                "Main: tryAutoAssign - seat %s occupied by %s; cannot assign %s",
-                targetColor, occupantId, playerID
+                "Main: tryAutoAssign - seat %s occupied by %s; cannot assign %s (from %s)",
+                targetColor, occupantId, playerID, color
             ))
             return
         end
@@ -606,12 +609,40 @@ function M.tryAutoAssignSeatFromChronicle(colorOrPlayer, opts)
         return
     end
 
+    print(string.format(
+        "Main: tryAutoAssign %s (%s) %s → %s",
+        tostring(player.steam_name), playerID, color, targetColor
+    ))
     local changed = player.changeColor(targetColor)
     if changed == false then
         print(string.format(
-            "Main: tryAutoAssign - changeColor(%s) failed for %s (from %s)",
+            "Main: tryAutoAssign - changeColor(%s) failed for %s (from %s); retrying once",
             targetColor, playerID, color
         ))
+        -- Same-frame Grey→seat can fail on join; one deferred retry (not a poll loop).
+        U.delay(function()
+            local again = nil
+            for _, p in ipairs(Player.getPlayers()) do
+                if U.isPlayer(p) and S.getStorageID(p) == playerID then
+                    again = p
+                    break
+                end
+            end
+            if again == nil or type(again.changeColor) ~= "function" then
+                print("Main: tryAutoAssign retry - player gone: " .. tostring(playerID))
+                return
+            end
+            if again.color == targetColor then
+                return
+            end
+            local retryOk = again.changeColor(targetColor)
+            if retryOk == false then
+                print(string.format(
+                    "Main: tryAutoAssign retry - changeColor(%s) failed for %s (still %s)",
+                    targetColor, playerID, tostring(again.color)
+                ))
+            end
+        end, 0.5)
     end
 end
 

@@ -282,6 +282,7 @@ _Blocked: author must define data binding approach before substantial implementa
 
 - [x] **Auto seat/color on connect** from Steam ID (`onPlayerConnect` + `C.PlayerData` chronicle mapping). _(TOR-94 — 2026-06-15)_ — superseded for multiclient/load by **TOR-345**
 - [x] **Auto-assign seat colors by Steam ID on connect + load (multiclient gate):** Including Storyteller → Black; unregistered → White; load-time assign for already-connected players. Blocks **TOR-249**. relatedTo **TOR-94**. _(TOR-345)_
+- [x] **Auto-seat from Grey on join connect:** Join clients arrive Grey; assign must not early-return on Grey (host load path was fine). _(TOR-372)_
 - [ ] **Absent player presence override:** Disconnected chronicle seats inactive; connect restores scene presence + auto-seat + camera then blindfold; disconnect disables present seats; DEBUG toggle skips for dev. `blockedBy` **TOR-144** (multiclient E2E). _(TOR-293)_
 - [ ] **Play as NPC:** Control-board `pc_control_token` seat activate/deactivate (baseline shipped TOR-236); play-as-NPC swaps sheet by tag; `sessionScene.npcRoleOverride` / `seatSlots`; lighting exception per Scene Constructor spec ([Scene Constructor Overview](Scene%20Constructor/Scene%20Constructor%20Overview.md)). `blockedBy` **TOR-247** (rotational seat decoupling + full PC-token authority). _(TOR-95)_
 
