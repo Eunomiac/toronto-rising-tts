@@ -13,7 +13,7 @@ Per-color loading overlays inside `visibility="<Color>"` parents never show for 
 
 ## Fix (TOR-285)
 
-1. **Global startup loading overlay** — `ui/shared/panel_overlay_loading_startup.xml`, included **last** in `ui/Global.xml` (`overlay_loadingScreen_startup`, no `visibility`). Hidden once via `hideStartupLoadingOverlays()` after startup gate.
+1. **Global session blindfold** — `ui/shared/panel_overlay_global_blindfold.xml`, included **last** in `ui/Global.xml` (`overlay_globalBlindfold`, no `visibility`). Visibility is **phase-owned** (shown in Intermission; hidden on Play enter / connect outside Intermission). No timed onLoad auto-hide.
 2. **Seat-assignment UI refresh** — `refreshGlobalUiAfterSeatAssignment` in `core/global_script.ttslua`:
    - `onPlayerChangeColor` (after `M.onPlayerChangeColor`) for **join clients** and **first seat change after connect** (`pendingConnectSeatRefreshByPlayer`). **Host hotseat swaps** skip auto-refresh — use debug panel **Refresh UI** (`HUD_refreshUi`).
    - `GlobalRefreshUiAfterSeatAssignment` from `core/main.ttslua` when auto-assign skips `changeColor` (already on target seat)

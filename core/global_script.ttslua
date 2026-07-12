@@ -410,6 +410,16 @@ local function showStartupLoadingOverlays()
     end
 end
 
+--- Global blindfold follows phase: visible in Intermission; hidden otherwise (TOR-143 / TOR-319).
+local function applyGlobalBlindfoldFromPhase()
+    local phase = S.getStateVal("currentPhase")
+    if phase == nil or phase == C.Phases.INTERMISSION then
+        showStartupLoadingOverlays()
+    else
+        hideStartupLoadingOverlays()
+    end
+end
+
 --- Exposed for core.phases — Global-script top-level only; never assign onto TTS `Global` userdata.
 function hideStartupLoadingOverlaysForPhases()
     hideStartupLoadingOverlays()
@@ -525,7 +535,8 @@ local function refreshGlobalUiAfterSeatAssignment(seatColor)
             markSeatXmlRefreshDone(seated, seatColor)
             shouldMarkSeatRefreshDone = false
         end
-        hideStartupLoadingOverlays()
+        -- Do not force-hide: seat XML refresh must not override Intermission global blindfold.
+        applyGlobalBlindfoldFromPhase()
     end
 
     local function schedulePostSeatUiRefresh()
@@ -2230,14 +2241,13 @@ function onLoad(saved_data)
         DBV.disableHungerBagsForAllPlayers()
     end, 1.0)
 
-    -- Keep loading overlay visible until startup settles:
+    -- Startup readiness gate (no timed overlay hide — global blindfold is phase-owned):
     -- - table sync callback has run
     -- - first sync pass has been issued
     -- - seat lights are resolvable
-    -- Then run one final sync pass, wait wall-clock, and hide loading overlay.
+    -- Then final sync, locked-objects, dice warm, then apply global blindfold from currentPhase.
     -- Use U.RunSequence (U.waitUntil) instead of U.waitForCondition with nested U.delay:
     -- TTS does not reliably honor U.delay scheduled from inside a condition callback.
-    local startupOverlayHideDelaySeconds = 20
     U.RunSequence({
         function()
             return function()
@@ -2288,14 +2298,7 @@ function onLoad(saved_data)
             elseif O ~= nil and type(O.ApplyLockedAndHiddenFromConstants) == "function" then
                 O.ApplyLockedAndHiddenFromConstants({ warnMissing = true, logSummary = true })
             end
-            setStartupAction("startup-ready-delay-before-overlay-hide")
-            print(
-                U.loadElapsedPrefix()
-                    .. "Startup readiness gate complete: waiting "
-                    .. tostring(startupOverlayHideDelaySeconds)
-                    .. "s before hiding loading overlay."
-            )
-            return startupOverlayHideDelaySeconds
+            return true
         end,
         function()
             setStartupAction("startup-ready-final-locked-objects-pass")
@@ -2315,10 +2318,15 @@ function onLoad(saved_data)
                     .. tostring(warmed)
                     .. " bag(s)."
             )
-            setStartupAction("startup-ready-hide-loading-overlays")
-            hideStartupLoadingOverlays()
+            setStartupAction("startup-ready-apply-global-blindfold-from-phase")
+            applyGlobalBlindfoldFromPhase()
             setStartupAction("startup-ready-complete")
-            print(U.loadElapsedPrefix() .. "Startup readiness gate complete: loading overlay hidden.")
+            print(
+                U.loadElapsedPrefix()
+                    .. "Startup readiness gate complete (global blindfold follows phase="
+                    .. tostring(S.getStateVal("currentPhase"))
+                    .. ")."
+            )
             return 0
         end,
     }, 180)
@@ -3683,8 +3691,8 @@ function HUD_updateCoterieData(player, button, id)
     )
 end
 
---- Force-hide the global startup loading overlay.
--- Debug escape hatch when startup readiness gating appears stalled.
+--- Manual hide for global blindfold (`overlay_globalBlindfold`).
+-- Escape hatch when phase sync appears stuck; normal path is phase-owned (Intermission show / Play hide).
 -- @param player Player The player who clicked (Host/Black)
 -- @param button string Button value
 -- @param id string The UI element ID
@@ -3693,7 +3701,7 @@ function HUD_clearLoadingOverlay(player, button, id)
         return
     end
     hideStartupLoadingOverlays()
-    broadcastToColor("Startup loading overlay manually hidden.", player.color, {1, 0.85, 0.2})
+    broadcastToColor("Global blindfold manually hidden.", player.color, {1, 0.85, 0.2})
 end
 
 --- Debug ambient toggle: 0 (dark) ↔ 2 (bright) for scene inspection. Not persisted.
