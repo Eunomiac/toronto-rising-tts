@@ -1,0 +1,30 @@
+<!-- TOR-374 / seat-UI experiment: hotseat visibility probe (temporary). -->
+<!-- Defaults: active=false, no visibility attr. Manipulate via console / debug: -->
+<!--   UI.setAttribute("visProbe_Orange", "visibility", "Orange") -->
+<!--   UI.setAttribute("visProbe_Orange", "active", "true") -->
+<!--   -- or -- UI.show("visProbe_Orange") -->
+<!-- Then hotseat between colors. If a panel stays invisible after setAttribute(visibility) -->
+<!-- + show/active when you are that color (having loaded on another seat), C1-style -->
+<!-- rebind likely fails without setXml. Join-client still required for full confirm. -->
+<!-- Agent: remove when seat-HUD reveal experiment concludes. -->
+
+<GridLayout
+  id="visProbe_root"
+  rectAlignment="MiddleCenter"
+  offsetXY="0 0"
+  width="420"
+  height="280"
+  cellSize="120 120"
+  spacing="12 12"
+  constraint="FixedColumnCount"
+  constraintCount="3"
+  childAlignment="MiddleCenter"
+  raycastTarget="false"
+>
+  <Panel id="visProbe_Black" active="false" width="120" height="120" color="#1A1A1A" raycastTarget="false" />
+  <Panel id="visProbe_Red" active="false" width="120" height="120" color="#B22222" raycastTarget="false" />
+  <Panel id="visProbe_Orange" active="false" width="120" height="120" color="#E67300" raycastTarget="false" />
+  <Panel id="visProbe_Brown" active="false" width="120" height="120" color="#6B4423" raycastTarget="false" />
+  <Panel id="visProbe_Purple" active="false" width="120" height="120" color="#5E2A7E" raycastTarget="false" />
+  <Panel id="visProbe_Pink" active="false" width="120" height="120" color="#C71585" raycastTarget="false" />
+</GridLayout>

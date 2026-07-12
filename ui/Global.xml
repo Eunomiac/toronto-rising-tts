@@ -74,3 +74,6 @@
 <Include src="storyteller/panel_scenes_location_modals.xml" />
 <Include src="storyteller/advantage_editor_modal.xml" />
 <Include src="storyteller/project_editor_modal.xml" />
+
+<!-- Temp: hotseat visibility probe (TOR-374 / seat-UI without setXml). Remove after experiment. -->
+<Include src="shared/panel_visibility_probe.xml" />
