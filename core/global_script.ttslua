@@ -5996,6 +5996,26 @@ local function isHostPlayer(seated)
     return seated == host
 end
 
+--- Mark the next seat change for this player as a post-connect UI refresh (TOR-285 / TOR-345 load assign).
+--- @param playerOrParams Player|table Player, or `{ player = Player }` / `{ color = string }`
+function GlobalMarkPendingConnectSeatRefresh(playerOrParams)
+    local player = playerOrParams
+    if type(playerOrParams) == "table" then
+        if U.isPlayer(playerOrParams.player) then
+            player = playerOrParams.player
+        elseif type(playerOrParams.color) == "string" then
+            player = Player[playerOrParams.color]
+        end
+    end
+    if not U.isPlayer(player) then
+        return
+    end
+    local playerKey = seatAssignmentPlayerKey(player)
+    if playerKey ~= nil then
+        pendingConnectSeatRefreshByPlayer[playerKey] = true
+    end
+end
+
 --- TTS: player joined or changed seat color.
 function onPlayerChangeColor(color)
     if type(color) ~= "string" or color == "" or color == "Grey" then
@@ -6025,19 +6045,28 @@ function onPlayerChangeColor(color)
     syncDebugSeatColorButtons()
 end
 
---- TTS: player connected (assign chronicle seat when mapped in C.PlayerData).
-function onPlayerConnect(player_color)
-    if type(player_color) == "string" then
-        local connected = Player[player_color]
-        if U.isPlayer(connected) then
-            clearSeatXmlRefreshForPlayer(connected)
-            local playerKey = seatAssignmentPlayerKey(connected)
-            if playerKey ~= nil then
-                pendingConnectSeatRefreshByPlayer[playerKey] = true
-            end
+--- TTS: player connected (assign chronicle seat when mapped in C.PlayerData; else White).
+--- TTS API passes a Player; tolerate a seat color string for older call sites.
+function onPlayerConnect(playerOrColor)
+    local connected = nil
+    if U.isPlayer(playerOrColor) then
+        connected = playerOrColor
+    elseif type(playerOrColor) == "string" and playerOrColor ~= "" then
+        connected = Player[playerOrColor]
+    end
+
+    if U.isPlayer(connected) then
+        clearSeatXmlRefreshForPlayer(connected)
+        local playerKey = seatAssignmentPlayerKey(connected)
+        if playerKey ~= nil then
+            pendingConnectSeatRefreshByPlayer[playerKey] = true
         end
     end
     if M ~= nil and type(M.tryAutoAssignSeatFromChronicle) == "function" then
-        M.tryAutoAssignSeatFromChronicle(player_color)
+        if U.isPlayer(connected) then
+            M.tryAutoAssignSeatFromChronicle(connected)
+        elseif type(playerOrColor) == "string" then
+            M.tryAutoAssignSeatFromChronicle(playerOrColor)
+        end
     end
 end

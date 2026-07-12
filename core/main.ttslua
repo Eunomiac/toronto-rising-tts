@@ -50,6 +50,10 @@ function M.setupPlayers()
     player.promoted = true
   end
 
+  -- TOR-345: Steam ID → chronicle seat (incl. Storyteller); unregistered → White.
+  -- onPlayerConnect does not re-fire for players already present after Save & Play.
+  M.assignAllConnectedSeatsFromChronicle()
+
   -- Objects on / above the Storyteller table: GM table + GM light use `C.HiddenObjects` via O.ApplyLockedAndHiddenFromConstants() in Global.onLoad.
   U.forEach(
     U.findAboveObject(
@@ -490,17 +494,106 @@ function M.onPlayerAction(playerColor, action, clickState)
   -- end
 end
 
+--- Seat colors auto-assign may target (PC seats, Storyteller Black, spectator White).
+-- @param color string
+-- @return boolean
+local function isAssignableSeatColor(color)
+    if type(color) ~= "string" or color == "" or color == "Grey" then
+        return false
+    end
+    if color == C.StorytellerColor or color == "White" then
+        return true
+    end
+    return U.isIn(color, C.PlayerColors)
+end
+
+--- Resolve a TTS Player + current seat color from `onPlayerConnect` (Player) or a color string.
+-- @param colorOrPlayer Player|string
+-- @return Player|nil, string|nil
+local function resolvePlayerAndSeatColor(colorOrPlayer)
+    if U.isPlayer(colorOrPlayer) then
+        local color = colorOrPlayer.color
+        if type(color) ~= "string" or color == "" then
+            return nil, nil
+        end
+        return colorOrPlayer, color
+    end
+    if type(colorOrPlayer) == "string" and colorOrPlayer ~= "" then
+        local player = Player[colorOrPlayer]
+        if U.isPlayer(player) then
+            return player, colorOrPlayer
+        end
+    end
+    return nil, nil
+end
+
+--- Chronicle seat for a storage/Steam id, or White when unregistered (TOR-345).
+-- @param playerID string
+-- @return string|nil assignable seat color, or nil if chronicle color is invalid
+local function chronicleSeatColorForPlayerID(playerID)
+    if type(playerID) ~= "string" or playerID == "" then
+        return nil
+    end
+    local chronicle = C.PlayerData[playerID]
+    if type(chronicle) ~= "table" or type(chronicle.color) ~= "string" then
+        return "White"
+    end
+    if not isAssignableSeatColor(chronicle.color) then
+        print(string.format(
+            "Main: tryAutoAssign - invalid chronicle color %q for player %s",
+            tostring(chronicle.color), playerID
+        ))
+        return nil
+    end
+    return chronicle.color
+end
+
+--- Connected players ordered for load-time assign: Storyteller, then registered PCs, then others.
+-- Frees hotseated ST from PC seats before PC assign attempts (TOR-345).
+-- @return Player[]
+local function connectedPlayersForSeatAssign()
+    local list = {}
+    for _, player in ipairs(Player.getPlayers()) do
+        if U.isPlayer(player) then
+            table.insert(list, player)
+        end
+    end
+    local function rank(playerID)
+        if playerID == C.StorytellerID then
+            return 0
+        end
+        if type(playerID) == "string" and type(C.PlayerData[playerID]) == "table" then
+            return 1
+        end
+        return 2
+    end
+    table.sort(list, function(a, b)
+        local idA = S.getStorageID(a) or ""
+        local idB = S.getStorageID(b) or ""
+        local ra, rb = rank(idA), rank(idB)
+        if ra ~= rb then
+            return ra < rb
+        end
+        return idA < idB
+    end)
+    return list
+end
+
 --[[
-    Try chronicle seat assignment when a player connects (Steam ID → C.PlayerData.color).
-    @param color string Current TTS seat color (often White before assignment).
+    Try chronicle seat assignment (Steam ID → C.PlayerData.color; Storyteller → Black).
+    Unregistered Steam IDs default to White (TOR-345).
+    @param colorOrPlayer string|Player Current seat color or connected Player (TTS onPlayerConnect passes Player).
+    @param opts table|nil Optional: refreshIfAlreadySeated (default true) — UI refresh when already on target.
 ]]
-function M.tryAutoAssignSeatFromChronicle(color)
-    if color == "Grey" then
-        return
+function M.tryAutoAssignSeatFromChronicle(colorOrPlayer, opts)
+    opts = opts or {}
+    local refreshIfAlreadySeated = opts.refreshIfAlreadySeated
+    if refreshIfAlreadySeated == nil then
+        refreshIfAlreadySeated = true
     end
 
-    local player = Player[color]
-    if player == nil or not U.isPlayer(player) then
+    local player, color = resolvePlayerAndSeatColor(colorOrPlayer)
+    if player == nil or color == nil or color == "Grey" then
         return
     end
 
@@ -509,19 +602,14 @@ function M.tryAutoAssignSeatFromChronicle(color)
         return
     end
 
-    local chronicle = C.PlayerData[playerID]
-    if type(chronicle) ~= "table" or type(chronicle.color) ~= "string" then
-        return
-    end
-
-    local targetColor = chronicle.color
-    if not U.isIn(targetColor, C.PlayerColors) then
+    local targetColor = chronicleSeatColorForPlayerID(playerID)
+    if targetColor == nil then
         return
     end
 
     if color == targetColor then
         M.onPlayerChangeColor(color)
-        if Global ~= nil and type(Global.call) == "function" then
+        if refreshIfAlreadySeated and Global ~= nil and type(Global.call) == "function" then
             Global.call("GlobalRefreshUiAfterSeatAssignment", { color = targetColor })
         end
         return
@@ -531,11 +619,45 @@ function M.tryAutoAssignSeatFromChronicle(color)
     if occupant ~= nil and U.isPlayer(occupant) then
         local occupantId = S.getStorageID(occupant)
         if type(occupantId) == "string" and occupantId ~= playerID then
+            print(string.format(
+                "Main: tryAutoAssign - seat %s occupied by %s; cannot assign %s",
+                targetColor, occupantId, playerID
+            ))
             return
         end
     end
 
-    player.changeColor(targetColor)
+    if type(player.changeColor) ~= "function" then
+        print("Main: tryAutoAssign - changeColor unavailable for " .. tostring(playerID))
+        return
+    end
+
+    local changed = player.changeColor(targetColor)
+    if changed == false then
+        print(string.format(
+            "Main: tryAutoAssign - changeColor(%s) failed for %s (from %s)",
+            targetColor, playerID, color
+        ))
+    end
+end
+
+--[[
+    Assign every connected player from chronicle Steam IDs (load-time; TOR-345).
+    Two passes so Storyteller leaving a PC seat frees it for the registered PC.
+]]
+function M.assignAllConnectedSeatsFromChronicle()
+    local players = connectedPlayersForSeatAssign()
+    for pass = 1, 2 do
+        for _, player in ipairs(players) do
+            if Global ~= nil and type(Global.call) == "function" and type(player.color) == "string" then
+                Global.call("GlobalMarkPendingConnectSeatRefresh", { color = player.color })
+            end
+            M.tryAutoAssignSeatFromChronicle(player, { refreshIfAlreadySeated = false })
+        end
+        if pass == 1 then
+            players = connectedPlayersForSeatAssign()
+        end
+    end
 end
 
 --[[

@@ -80,7 +80,7 @@ When touching these areas, verify P1–P10 and run solo smoke (Apply/Clear, one 
 | **Signal candle / tarot** | `ui/ui_signal_candle.ttslua` → `GlobalToggleSignalFireState`, `ui/ui_tarot_button.ttslua` → `GlobalApplyTarotState` | Global callee steam-gates ST-only actions |
 | **Character sheet** | `ui/ui_csheet_core.ttslua` → `Global.call` mutators; onLoad layout | Steam gate on ST-only mutators |
 | **ST PCs / debug lights** | `HUD_pcPanel`, `HUD_debugLightActivate/Enabled/ResetRow/Slider` | ST steam gate |
-| **Player connect / seat** | `onPlayerConnect`, `onPlayerChangeColor` | State rows before world reconcile |
+| **Player connect / seat** | `onPlayerConnect`, `onPlayerChangeColor`, `M.tryAutoAssignSeatFromChronicle`, `M.assignAllConnectedSeatsFromChronicle` (load) | Steam ID → chronicle color (incl. ST Black); unregistered → White; state rows before world reconcile |
 
 ### 1.4 Pre-flight checklist for every new handler
 

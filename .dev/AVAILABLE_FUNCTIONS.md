@@ -415,7 +415,9 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
 | `M.onLoad()` | Main initialization | Setup sequence |
-| `M.setupPlayers()` | Configure players | Promote, assign roles |
+| `M.setupPlayers()` | Promote players + load-time Steam seat assign (TOR-345) | Bootstrap |
+| `M.tryAutoAssignSeatFromChronicle(colorOrPlayer, opts?)` | Steam ID → chronicle color (ST → Black; else White) | Connect / seat assign |
+| `M.assignAllConnectedSeatsFromChronicle()` | Assign all connected players from chronicle (two-pass) | Load-time seat assign |
 | `M.forPlayers(func)` | Iterate over all players | DRY pattern |
 | `M.advancePhase(newPhase)` | Change game phase | Manual phase control |
 | `M.syncPhase()` | Sync phase with state | Phase synchronization |

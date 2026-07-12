@@ -27,6 +27,7 @@ C.PlayerIDs = {
 -- Static Player Data
 -- Keyed by player ID (steam_id). Storyteller uses C.StorytellerID. Other players are added by the GM when they set up character details (after a player joins and selects a seat).
 -- When a new player selects a seat, their steam_id is extracted and a minimal dynamic entry is created in gameState.playerData. The GM is notified to add full character data here.
+-- TOR-345: on connect and on load, host auto-assigns each connected player to C.PlayerData[steam].color (Storyteller → Black). Unregistered Steam IDs → White.
 C.PlayerData = {
   [C.StorytellerID] = {
     color = "Black",
