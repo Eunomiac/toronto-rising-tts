@@ -129,16 +129,13 @@ local function resolveWorkshopHomeForSlot(slot)
         return nil
     end
     local row = { x = partial.x, y = WORKSHOP_HOME_OFF_Y, z = partial.z }
-    if type(partialRot) == "table" then
-        if type(partialRot.x) == "number" then
-            row.rotX = partialRot.x
-        end
-        if type(partialRot.y) == "number" then
-            row.rotY = partialRot.y
-        end
-        if type(partialRot.z) == "number" then
-            row.rotZ = partialRot.z
-        end
+    if type(partialRot) == "table"
+        and type(partialRot.x) == "number"
+        and type(partialRot.y) == "number"
+        and type(partialRot.z) == "number" then
+        row.rotX = partialRot.x
+        row.rotY = partialRot.y
+        row.rotZ = partialRot.z
     end
     return row
 end
@@ -181,10 +178,14 @@ local function applyWorkshopHomeOff(slot, opts)
     local home = resolveWorkshopHomeForSlot(slot)
     if type(home) == "table" and type(home.x) == "number" and type(home.z) == "number" then
         obj.setPosition({ x = home.x, y = WORKSHOP_HOME_OFF_Y, z = home.z })
-        if type(home.rotX) == "number" then
+        if type(home.rotX) == "number"
+            and type(home.rotY) == "number"
+            and type(home.rotZ) == "number" then
             obj.setRotation({ x = home.rotX, y = home.rotY, z = home.rotZ })
         end
-        if type(home.scaleX) == "number" then
+        if type(home.scaleX) == "number"
+            and type(home.scaleY) == "number"
+            and type(home.scaleZ) == "number" then
             obj.setScale({ x = home.scaleX, y = home.scaleY, z = home.scaleZ })
         else
             obj.setScale({ x = 1, y = 1, z = 1 })
