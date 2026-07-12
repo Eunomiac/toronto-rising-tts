@@ -310,6 +310,7 @@ _Blocked: author must define data binding approach before substantial implementa
 - [x] **`rollE2eSettlePresetCheck` after release:** Accept ROLLING/POST_ROLL when `GlobalReleaseBagDice` already called `startRolling` (Suite C1 false fail). _(TOR-341)_
 - [x] **Dice E2E G7/M1 bestialNull assert:** Expect `rollPolicy.bestialNull` (not stale `rollOptions`) after `RC.setRollOptions`. _(TOR-349)_
 - [x] **Dice E2E H1–H1c Take Half:** Assert `noActive` + broadcast after pure Take Half auto-confirm (TOR-306). _(TOR-350)_
+- [x] **Dice tray across Take Half → H2 rouse:** Guard post-broadcast cleanup; keepDrawerOpen on pure Take Half; force-open on rouse release. _(TOR-351)_
 - [ ] **Multiplayer E2E playbook:** Pre-invite solo checklist + multiclient test plan (Preparing §1–§2; sub-issue of TOR-141). Initial pass when friend available — _(TOR-144)_; execution _(TOR-249 — External Todo, human gate)_
 - [x] ~~Multi-client TTS session workflow (same PC)~~ — **Canceled:** not viable; use Steam invite + second machine. _(TOR-248)_
 - [x] **Phase 1 zones integration test** — **Canceled:** scripting zones module removed; Toronto Rising uses hand zones only. _(TOR-11)_

@@ -575,6 +575,7 @@ U.RunSequence({
     })
   end,
   function()
+    rollE2ePrepareRollRelease("Brown")
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] Throw Rouse dice (or preset + settle)", 3)
   end
@@ -630,6 +631,7 @@ U.RunSequence({
   end,
   rollE2eWaitForDiceTray,
   function()
+    rollE2ePrepareRollRelease("Brown")
     rollSetFaces("Brown", { rouse = { 4 } })
     RC.onDiceSettled("Brown")
     rollConfirm("Brown", {

@@ -1028,6 +1028,8 @@ function RC.initiateRoll(color, config)
         print(string.format("[RC] initiateRoll blocked: %s already has an active roll", color))
         return false
     end
+    -- Drop post-broadcast cleanup from a prior resolved roll so it cannot close the tray mid-rearm.
+    Global.call("GlobalCancelPendingRollCleanup", { color = color })
     if color ~= "Black" then
         local STR = require("core.storyteller_rolls")
         STR.clearPcDashSnapshot(color)
@@ -1687,7 +1689,8 @@ function RC.takeHalf(color)
     active.willpower.available = false
     setActive(color, active)
     notifyStateChanged(color)
-    Global.call("GlobalDestroyBagDice", { color = color })
+    -- Destroy staged non-result dice but keep tray raised until post-broadcast cleanup (TOR-306).
+    Global.call("GlobalDestroyBagDice", { color = color, keepDrawerOpen = true })
     local suppressBroadcast = color == "Black"
         and type(active.meta) == "table"
         and active.meta.suppressBroadcast == true

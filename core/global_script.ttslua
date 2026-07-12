@@ -4328,9 +4328,21 @@ end
 
 --- Bag destroy + table sweep after result broadcast (or early bag click during delay).
 -- Bags first so staged tracking can park dice; table sweep recovers released tray dice (TOR-308).
+-- Skips tray close / bag wipe when a new active roll already owns the seat (E2E / fast re-arm).
 -- @param color string
 -- @param rollId string|nil
 local function finishPostBroadcastRollCleanup(color, rollId)
+    local pid = S.getPlayerID(color)
+    local active = pid ~= nil
+        and S.getStateVal("playerData", pid, "hud", "rollData", "active")
+        or nil
+    if type(active) == "table" then
+        -- New roll started before broadcast cleanup fired; only sweep the resolved roll's table dice.
+        if type(rollId) == "string" then
+            destroyPlayerTableDiceForRoll(color, rollId)
+        end
+        return
+    end
     destroyBagDice(color)
     if type(rollId) == "string" then
         destroyPlayerTableDiceForRoll(color, rollId)
@@ -5357,7 +5369,8 @@ function GlobalReleaseRouseDiceForActiveRoll(params)
             end
         end
     end
-    DiceDrawer.openForRoll(color)
+    -- Force re-raise: prior pure Take Half / broadcast cleanup may have left the tray mid-close.
+    DiceDrawer.openForRoll(color, { force = true })
 end
 
 --- Global.call entry: stop a pending post-result dice cleanup timer for a seat.
