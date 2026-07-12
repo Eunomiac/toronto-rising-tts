@@ -535,33 +535,34 @@ end
 --- @param placement table target placement
 --- @param opts table|nil `{ reason?, animateStageMoves? }`
 --- @return table|nil candidate `{ npcName, placement }`
+--- @return string|nil skipReason when candidate is nil (TOR-367 diagnostics)
 function NPCStageLerp.evaluateCandidate(npcName, rec, placement, opts)
     opts = type(opts) == "table" and opts or {}
     if opts.reason ~= "gameboard_apply" or opts.animateStageMoves ~= true then
-        return nil
+        return nil, "not_apply_animate"
     end
     if type(rec) ~= "table" or type(placement) ~= "table" then
-        return nil
+        return nil, "bad_rec_or_placement"
     end
     local NPCS = npcsModule()
     if rec.areaKey ~= NPCS.STAGE_BOARD_AREA_KEY then
-        return nil
+        return nil, "not_already_on_stage"
     end
     local HUDBF = hudBlindfoldModule()
     if type(HUDBF.getActiveTransitionVariant) == "function" and HUDBF.getActiveTransitionVariant() ~= nil then
-        return nil
+        return nil, "blindfold_transition"
     end
     local startMode = effectiveLitMode(npcName, rec.npcLightMode)
     local endMode = effectiveLitMode(npcName, normalizedStageLightMode(placement))
     local involvesStandard = startMode == "STANDARD" or endMode == "STANDARD"
         or startMode == "SPOTLIGHT" or endMode == "SPOTLIGHT"
     if not involvesStandard then
-        return nil
+        return nil, "mode_not_standard_or_spotlight"
     end
     local posChange = placementPositionChanged(rec, placement)
     local modeChange = startMode ~= endMode
     if not posChange and not modeChange then
-        return nil
+        return nil, "no_pos_or_mode_change"
     end
     local startPlacement = nil
     local stored = rec.stagePlacement
@@ -579,7 +580,7 @@ function NPCStageLerp.evaluateCandidate(npcName, rec, placement, opts)
         startPlacement = startPlacement,
         modeOnly = not posChange,
         startNpcLightMode = rec.npcLightMode,
-    }
+    }, nil
 end
 
 --- Commit stage placement + light mode to state without moving world objects.
@@ -628,6 +629,11 @@ function NPCStageLerp.runQueued(candidates)
     for i = 1, #candidates do
         inFlightNpcs[candidates[i].npcName] = true
     end
+    local cfg = DATA.STAGE_PLACEMENT_LERP or {}
+    local dur = tonumber(cfg.positionDurationSec) or 1.2
+    print("[NPCStageLerp] animating " .. tostring(#candidates)
+        .. " stage move(s); positionDurationSec≈" .. tostring(dur)
+        .. " (watch during/after Apply hitch)")
     orchestratorRunning = true
     startLuaCoroutine(Global, "GlobalStageLerpOrchestrator")
 end

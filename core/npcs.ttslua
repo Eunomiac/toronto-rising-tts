@@ -2909,9 +2909,12 @@ local function reconcileStepFiveStagePlacements(intent, opts)
         end
     end
     local lerpCandidates = {}
+    local skipCounts = {}
+    local stageTargetCount = 0
     local NPCStageLerp = require("core.npc_stage_lerp")
     for name, ci in pairs(intent.byCharacter) do
         if U.Type(ci) == "table" and ci.target == "stage" then
+            stageTargetCount = stageTargetCount + 1
             local placement = {
                 u = ci.u,
                 v = ci.v,
@@ -2924,10 +2927,13 @@ local function reconcileStepFiveStagePlacements(intent, opts)
                 skipSeatSync = true,
             }
             local rec = getInstances()[name]
-            local lerpCandidate = NPCStageLerp.evaluateCandidate(name, rec, placement, opts)
+            local lerpCandidate, skipReason = NPCStageLerp.evaluateCandidate(name, rec, placement, opts)
             if lerpCandidate ~= nil then
                 lerpCandidates[#lerpCandidates + 1] = lerpCandidate
             else
+                if type(skipReason) == "string" and skipReason ~= "" then
+                    skipCounts[skipReason] = (skipCounts[skipReason] or 0) + 1
+                end
                 local ok, err = NPCS.moveNpcToStagePlacement(name, placement, modeOpt)
                 if not ok then
                     local repairOk, repairErr = NPCS.ensureNpcInPreloadZone(name, {
@@ -2950,6 +2956,15 @@ local function reconcileStepFiveStagePlacements(intent, opts)
     end
     if #lerpCandidates > 0 then
         NPCStageLerp.runQueued(lerpCandidates)
+    elseif stageTargetCount > 0 then
+        local parts = {}
+        for reason, count in pairs(skipCounts) do
+            parts[#parts + 1] = tostring(reason) .. "=" .. tostring(count)
+        end
+        table.sort(parts)
+        print("[NPCStageLerp] no animations for " .. tostring(stageTargetCount)
+            .. " stage target(s); snaps used. skips: "
+            .. (#parts > 0 and table.concat(parts, ", ") or "none"))
     end
     return allOk
 end
