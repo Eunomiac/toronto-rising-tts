@@ -377,6 +377,10 @@ Phases.onEnter[C.Phases.INTERMISSION] = function(ctx)
         function()
             return Phases.startIntermissionThemePlaylistLoop(ctx)
         end,
+        function()
+            -- Reveal table after End exit raised blindfolds; connect-during-Intermission still keeps overlay up (TOR-319).
+            return Phases.lowerPlayerBlindfolds(ctx)
+        end,
     }
 end
 

@@ -82,6 +82,7 @@ Ending events of the previous phase run before starting events of the new phase 
 
 * All lights dark (`AdminDark` phase override).
 * Fade out all emitters, then start Intermission theme playlist (`C.IntermissionThemeFeaturedKey` = `TR_Intro` → Loop).
+* Player blindfolds / startup loading overlay come down (reveal table). Connect-during-Intermission still keeps the overlay up for late joiners (TOR-319).
 * Countdown timer: deferred (optional TBD on **TOR-319**).
 
 ### Connect policy (TOR-319)
