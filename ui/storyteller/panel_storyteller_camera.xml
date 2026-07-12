@@ -1,8 +1,8 @@
 <Defaults>
   <Panel class="panel_STcamera"
-    rectAlignment="LowerLeft"
-    offsetXY="0 100"
-    width="40"
+    rectAlignment="LowerRight"
+    offsetXY="0 50"
+    width="80"
     height="400"
     color="rgba(0,0,0,0)"
     raycastTarget="false" />

@@ -3,14 +3,14 @@
   <Panel class="rollControl_root"
     width = "1100"
     height = "500"
-    offsetXY = "0 0"
+    offsetXY = "50 -50"
     color = "#090909"
     outline = "#000000"
     outlineSize = "30 10"
     padding = "25 25 0 0" childForceExpandWidth="true"
     scale = "0.5"
-    rectAlignment = "LowerCenter"
-    pivot = "0.5 -0.5" />
+    rectAlignment = "UpperLeft"
+    pivot = "0 1" />
 
   <VerticalLayout class="rollControl_container" childAlignment="UpperCenter" childForceExpandHeight="false" childForceExpandWidth="true"
     spacing = "-10" />
