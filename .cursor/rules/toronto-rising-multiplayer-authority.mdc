@@ -41,7 +41,7 @@ Before marking work done:
 
 ## High-risk surfaces (grep when touching)
 
-Load/bootstrap, gameboard Apply/Clear, token drop/pick-up, scenes/soundscape HUD, dice/rolls, signal candle, character sheet mutators, player connect/seat — see Preparing §1.3.
+Load/bootstrap, gameboard Apply/Clear, token drop/pick-up, scenes/soundscape HUD, dice/rolls, signal candle, character sheet mutators, player connect/seat (**TOR-345** auto-assign), phase Advance/connect blindfold (**TOR-143** / **TOR-319**) — see Preparing §1.3.
 
 ## Linear
 

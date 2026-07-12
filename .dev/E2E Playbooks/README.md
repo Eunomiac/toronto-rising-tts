@@ -95,6 +95,8 @@ Full rules, layout (100-char banner with spaces around text), and a copy-paste t
 
 ## TOR-144 (multiplayer E2E)
 
-**Prerequisite:** **TOR-248** (Establish multi-client TTS session workflow — External Todo, author human gate). Execution of the multiplayer playbook is blocked until you have a repeatable Host + join-client setup.
+**Human gate:** **TOR-249** (run initial multiclient session with a friend on a **second machine** via Steam invite). Same-PC multi-client (**TOR-248**) was **Canceled** — not viable.
 
-After solo suites pass and **TOR-248** is satisfied, run **[Multiplayer-E2E.md](Multiplayer-E2E.md)** with a second real client — Host authority guards must prevent duplicate world I/O.
+**Shipped prerequisites (solo):** **TOR-284** (execution model), **TOR-345** (Steam auto seat on connect + load), **TOR-143** / **TOR-319** (phase sequence + Intermission connect blindfold). Complete Preparing §1.5–§1.6 and keep Dice/Gameboard/Scenes smokes green before inviting.
+
+After solo suites pass, run **[Multiplayer-E2E.md](Multiplayer-E2E.md)** (matrix) using the step script in [Preparing For Multiplayer §2](../Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md) — Host + join client; verify auto-seat, phase connect blindfold, no duplicate world I/O.
