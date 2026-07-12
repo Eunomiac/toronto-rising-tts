@@ -3732,11 +3732,8 @@ function HUD_runtest(player, button, id)
     if type(id) ~= "string" then
         return
     end
-    if type(RunTest) ~= "function" then
-        broadcastToColor("RunTest: console helper missing (Save & Play?).", player.color, {1, 0.5, 0})
-        return
-    end
 
+    -- Stop only needs StopRunTest; do not gate on RunTest (may be missing while DEBUG still exposes Stop).
     if id == "button_runtest_Stop" then
         if type(StopRunTest) == "function" then
             StopRunTest()
@@ -3744,6 +3741,11 @@ function HUD_runtest(player, button, id)
             DEBUG.StopRunTest()
         end
         runtestShowStartUi()
+        return
+    end
+
+    if type(RunTest) ~= "function" then
+        broadcastToColor("RunTest: console helper missing (Save & Play?).", player.color, {1, 0.5, 0})
         return
     end
 
