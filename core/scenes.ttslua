@@ -346,9 +346,14 @@ function Scenes.syncSessionLightingPresetForLocation()
     return true
 end
 
---- Resolves ambient preset for reconciliation: no-location default → `sessionScene.lightingPresetKey` → legacy `Scenes.SCENES`.
+--- Resolves ambient preset for reconciliation: Intermission dark → no-location default → lightingPresetKey → legacy.
 --- @return table preset, string key, string source
 function Scenes.resolveLightingPresetFromState()
+    local phase = S.getStateVal("currentPhase")
+    if phase == C.Phases.INTERMISSION and C.LightModes.AdminDark ~= nil then
+        return C.LightModes.AdminDark, "AdminDark", "intermissionPhase"
+    end
+
     local defaultKey = resolveNoLocationLightingPresetKey()
 
     if not Scenes.hasActiveSessionLocation() then
@@ -998,12 +1003,12 @@ function Scenes.restoreActiveSceneWorld(opts)
     return true
 end
 
---- Play / Downtime entry: restore on-table scene or apply no-scene default (TOR-152).
+--- Play entry: restore on-table scene or apply no-scene default (TOR-152 / TOR-143).
 --- @param opts table|nil forwarded to restore/default helpers
 --- @return boolean
 function Scenes.reconcilePlaySessionOnEnter(opts)
     local phase = S.getStateVal("currentPhase")
-    if phase ~= C.Phases.PLAY and phase ~= C.Phases.DOWNTIME then
+    if phase ~= C.Phases.PLAY then
         return false
     end
     if SceneLibrary.hasLiveSceneOnTable() then

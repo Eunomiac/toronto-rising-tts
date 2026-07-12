@@ -52,7 +52,7 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | `onObjectDrop` | `global_script` | Host | C | Steam + tag | Gameboard/NPCS | High | 4 |
 | `onObjectRandomize` | `global_script` | Host | B+C | d10 tag | roll FSM + lights | High | 4 |
 | `onObjectLeaveContainer` | `global_script` | Host | B | d10 tag | GM Notes | Med | 4 |
-| `onPlayerConnect` | `global_script` | Host | B | — | Steam ID → `C.PlayerData.color` (incl. Black); unregistered → White; also `M.assignAllConnectedSeatsFromChronicle` on load (TOR-345) | Med | 4 |
+| `onPlayerConnect` | `global_script` | Host | B | — | Steam ID → `C.PlayerData.color` (incl. Black); unregistered → White; also `M.assignAllConnectedSeatsFromChronicle` on load (TOR-345). TOR-319: Intermission keeps blindfold; other phases `Phases.lowerBlindfoldForConnectingPlayer`. | Med | 4 |
 | `onPlayerChangeColor` | `global_script` | Host | B | UI refresh on join-client / first-connect seat; Host hotseat swaps manual via `HUD_refreshUi` | state row | Med | 4 |
 | `addHotkey` (`Spotlight NPC (hold)`) | `global_script` | Clicker (per player) | C | ST steam in callee | transient spotlights | Low | — |
 
@@ -129,7 +129,8 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `HUD_projectsTarget` / `HUD_projectsBack` | A | — | Projects panel navigation |
 | `HUD_projectsAdd` / `HUD_projectsEdit` / `HUD_projectEditorConfirm` / `HUD_projectEditorDelete` / `HUD_projectEditorBegin` / `HUD_projectEditorComplete` / `HUD_projectEditorLaunchR` | B+C | Yes | project mutations / Launch roll |
 | `HUD_projectEditorField` / `HUD_projectDropdown` / `HUD_projectStakeDropdown` / `HUD_projectEditorCancel` | A/B | Yes (field persist) | live project editor writes; Cancel may delete pre-inProgress |
-| `HUD_advancePhase` | B | Yes | |
+| `HUD_phaseAdvance` / `HUD_setPlaySubPhase` / `HUD_sessionNumInput` | B | Yes | TOR-143 phase Advance + Play subphases + sessionNum |
+| `HUD_advancePhase` | B | Yes | legacy alias → `HUD_phaseAdvance` |
 | `HUD_resetGame` / `HUD_syncAll` | B+C | Yes | |
 | `HUD_saveState` / `HUD_logState` / `HUD_printState` | A/B | — | encode/log |
 | `HUD_toggleAllAnchors` / `HUD_toggleAllSpotlights` | C | Yes | |

@@ -165,46 +165,26 @@ function M.forPlayers(func)
 end
 
 --[[
-    Sync UI and features based on current game phase
-    Updates visibility, enables/disables features, and refreshes displays.
+    Sync UI/features based on current phase (TOR-143).
     Called on load and when phase changes.
-
     Keeps UI and features aligned with `currentPhase`.
 ]]
 function M.syncPhase()
   local currentPhase = S.getStateVal("currentPhase")
   if currentPhase == nil then
-    print("Main: Warning - Current phase is nil, using SESSION_START")
-    currentPhase = C.Phases.SESSION_START
+    print("Main: Warning - Current phase is nil, using INTERMISSION")
+    currentPhase = C.Phases.INTERMISSION
     S.setCurrentPhase(currentPhase)
   end
 
-  print(U.loadElapsedPrefix() .. "Main: Syncing phase - " .. currentPhase)
-
-  -- TODO: Phase-specific logic
-  -- - Update UI visibility based on phase
-  -- - Enable/disable zone event handlers
-  -- - Update lighting for scene
-  -- - Show/hide phase-specific UI elements
-
-  -- Example: Hide/show zones based on phase
-  -- if currentPhase == C.Phases.SETUP then
-  --     -- Show setup zones
-  -- else
-  --     -- Hide setup zones
-  -- end
+  print(U.loadElapsedPrefix() .. "Main: Syncing phase - " .. currentPhase
+    .. " sub=" .. tostring(S.getStateVal("playSubPhase")))
 end
 
 --[[
-    Manually advance to a new game phase
-    Updates game state, triggers phase-specific setup, and syncs UI.
-    This is the manual control pattern (Storyteller-driven, not automated).
-
+    Manually advance to a new game phase (TOR-143 lifecycle via core.phases).
     @param newPhase string The new phase to transition to (e.g., C.Phases.PLAY)
-
     @usage M.advancePhase(C.Phases.PLAY)
-
-    Validates the phase, updates state, then re-runs phase sync.
 ]]
 function M.advancePhase(newPhase)
   if type(newPhase) ~= "string" then
@@ -212,41 +192,18 @@ function M.advancePhase(newPhase)
     return
   end
 
-  -- Validate phase against constants
-  local isValidPhase = false
-  for _, phase in pairs(C.Phases) do
-    if phase == newPhase then
-      isValidPhase = true
-      break
-    end
-  end
+  local Phases = require("core.phases")
+  Phases.advanceTo(newPhase)
+end
 
-  if not isValidPhase then
-    U.AlertGM("M.advancePhase: Invalid phase '" .. tostring(newPhase) .. "'")
-    return
-  end
+function M.advancePhaseNext()
+  local Phases = require("core.phases")
+  return Phases.advanceNext()
+end
 
-  local oldPhase = S.getStateVal("currentPhase")
-  print("Main: Advancing phase from " .. tostring(oldPhase) .. " to " .. newPhase)
-
-  -- Update state
-  S.setCurrentPhase(newPhase)
-
-  -- Play / Downtime: restore on-table scene or apply no-scene default (TOR-152).
-  if newPhase == C.Phases.PLAY or newPhase == C.Phases.DOWNTIME then
-    local Scenes = require("core.scenes")
-    if type(Scenes.reconcilePlaySessionOnEnter) == "function" then
-      Scenes.reconcilePlaySessionOnEnter({
-        reason = "advancePhase",
-        skipTransitionBlindfold = true,
-      })
-    end
-  end
-
-  -- Sync UI and features
-  M.syncPhase()
-
-  print("Main: Phase advancement complete.")
+function M.setPlaySubPhase(subPhase)
+  local Phases = require("core.phases")
+  return Phases.setPlaySubPhase(subPhase)
 end
 
 --[[

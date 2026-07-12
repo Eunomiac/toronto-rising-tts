@@ -1266,10 +1266,10 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player)
         clockDraft.dirty = false
         StorytellerScenesPanel.syncClockDraftFromClock(S.getStateVal("sessionScene", "clock"))
 
-        -- Applying a library scene starts in-world play at that bundle; overlay is Play/Downtime-only.
-        if S.getStateVal("currentPhase") == C.Phases.SESSION_START then
-            S.setCurrentPhase(C.Phases.PLAY)
-        end
+        -- Applying a library scene starts in-world play; silent promote so Play enter
+        -- (no-scene default) does not wipe the just-applied bundle (TOR-143).
+        local Phases = require("core.phases")
+        Phases.ensurePlayPhaseForSceneApply()
 
         local tk = S.getStateVal("sessionScene", "tableKey")
         if type(tk) == "string" then

@@ -253,7 +253,9 @@ function S.GetDefaultGameState()
     }
 
     return {
-        currentPhase = C.Phases.SESSION_START,
+        currentPhase = C.Phases.INTERMISSION,
+        playSubPhase = C.PlaySubPhases.MAIN,
+        sessionNum = 1,
         playerData = playerData, -- Keyed by player ID, only dynamic values
         lights = {}, -- Light states will be stored here
         scene = {
@@ -644,10 +646,47 @@ end
 --- Validates and sanitizes game state
 -- Ensures all required fields exist and have valid values.
 -- Called automatically after initialization and reset.
+--- Migrate legacy flat phase enum (pre–TOR-143) into top-level + playSubPhase.
+--- @param phase any
+--- @param playSub any
+--- @return string phase, string playSub
+local function migrateLegacyPhaseFields(phase, playSub)
+    local p = phase
+    local sub = playSub
+    if p == "SessionStart" then
+        p = C.Phases.INTERMISSION
+    elseif p == "SessionEnd" then
+        p = C.Phases.END
+    elseif p == "Downtime" then
+        p = C.Phases.PLAY
+        if type(sub) ~= "string" or sub == "" then
+            sub = C.PlaySubPhases.DOWNTIME
+        end
+    elseif p == "Memoriam" then
+        p = C.Phases.PLAY
+        if type(sub) ~= "string" or sub == "" then
+            sub = C.PlaySubPhases.MEMORIAM
+        end
+    end
+    if type(p) ~= "string" or not U.isIn(p, C.Phases) then
+        p = C.Phases.INTERMISSION
+    end
+    if type(sub) ~= "string" or not U.isIn(sub, C.PlaySubPhases) then
+        sub = C.PlaySubPhases.MAIN
+    end
+    return p, sub
+end
+
 function S.validateState()
-    -- Ensure currentPhase exists and is valid
-    if not gameState.currentPhase or not U.isIn(gameState.currentPhase, C.Phases) then
-        gameState.currentPhase = C.Phases.SESSION_START
+    -- Ensure currentPhase / playSubPhase / sessionNum (TOR-143 migration + defaults)
+    local migratedPhase, migratedSub = migrateLegacyPhaseFields(gameState.currentPhase, gameState.playSubPhase)
+    gameState.currentPhase = migratedPhase
+    gameState.playSubPhase = migratedSub
+    local sessionNum = tonumber(gameState.sessionNum)
+    if sessionNum == nil or sessionNum < 1 then
+        gameState.sessionNum = 1
+    else
+        gameState.sessionNum = math.floor(sessionNum)
     end
 
     -- Ensure playerData table exists and has correct structure
@@ -1048,6 +1087,12 @@ local function buildSaveState()
     -- Copy only the fields we want to save (whitelist approach)
     if gameState.currentPhase then
         saveState.currentPhase = gameState.currentPhase
+    end
+    if gameState.playSubPhase then
+        saveState.playSubPhase = gameState.playSubPhase
+    end
+    if gameState.sessionNum ~= nil then
+        saveState.sessionNum = gameState.sessionNum
     end
 
     if gameState.currentScene then
@@ -1517,7 +1562,7 @@ end
 --- Sets the current game phase
 -- Validates that the phase exists in C.Phases before setting.
 -- @param phase string The phase to set (should match a value in C.Phases)
--- @usage S.setCurrentPhase(C.Phases.SCENE)
+-- @usage S.setCurrentPhase(C.Phases.PLAY)
 function S.setCurrentPhase(phase)
     -- Validate phase exists
     local isValid = false
@@ -1536,10 +1581,37 @@ function S.setCurrentPhase(phase)
     end
 end
 
+--- Sets Play subphase (Main / Downtime / Memoriam).
+-- @param subPhase string
+function S.setPlaySubPhase(subPhase)
+    local isValid = false
+    for _, valid in pairs(C.PlaySubPhases) do
+        if subPhase == valid then
+            isValid = true
+            break
+        end
+    end
+    if isValid then
+        S.setStateVal(subPhase, "playSubPhase")
+        print("State: Play subphase set to " .. subPhase)
+    else
+        U.AlertGM("Warning: Attempted to set invalid playSubPhase: " .. U.ToString(subPhase))
+    end
+end
+
+--- @param n number
+function S.setSessionNum(n)
+    local v = math.floor(tonumber(n) or 0)
+    if v < 1 then
+        v = 1
+    end
+    S.setStateVal(v, "sessionNum")
+end
+
 --- Checks if the game is currently in a specific phase
 -- @param phase string The phase to check
 -- @return boolean True if current phase matches
--- @usage if S.isInPhase(C.Phases.COMBAT) then ... end
+-- @usage if S.isInPhase(C.Phases.PLAY) then ... end
 function S.isInPhase(phase)
     return S.getStateVal("currentPhase") == phase
 end

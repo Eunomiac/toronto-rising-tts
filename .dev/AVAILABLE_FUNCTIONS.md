@@ -419,8 +419,10 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 | `M.tryAutoAssignSeatFromChronicle(colorOrPlayer, opts?)` | Steam ID → chronicle color (ST → Black; else White) | Connect / seat assign |
 | `M.assignAllConnectedSeatsFromChronicle()` | Assign all connected players from chronicle (two-pass) | Load-time seat assign |
 | `M.forPlayers(func)` | Iterate over all players | DRY pattern |
-| `M.advancePhase(newPhase)` | Change game phase | Manual phase control |
-| `M.syncPhase()` | Sync phase with state | Phase synchronization |
+| `M.advancePhase(newPhase)` | Lifecycle transition via `core.phases` (enter/exit registries) | `M.advancePhase(C.Phases.PLAY)` |
+| `M.advancePhaseNext()` | Advance one step in `C.PhaseSequence` | Storyteller Advance button |
+| `M.setPlaySubPhase(sub)` | Free switch Main/Downtime/Memoriam during Play | Phases panel sub buttons |
+| `M.syncPhase()` | Log/align UI with `currentPhase` + `playSubPhase` | Load / after advance |
 | `M.setCamera(player, cameraMode, lookAtPos)` | Set camera angle (nudge → lookAt → setCameraMode → 1s wait → repeat lookAt to snap) | Cinematic control |
 | `M.onObjectDrop(playerColor, droppedObject, zone)` | Handle object drops | Event delegation |
 | `M.onPlayerAction(playerColor, action, clickState)` | Handle player actions | Custom hotkeys |
@@ -494,7 +496,7 @@ TTS also exposes **`UI.setAttributes`** natively; use **`U.setAttributes`** when
 - `C.PlayerData` - Static player character data (merged with state on load)
 - `C.Clans` - VTM5E clan names
 - `C.Disciplines` - VTM5E discipline names
-- `C.Phases` - Game phase constants (SESSION_START, SCENE, DOWNTIME, COMBAT, MEMORIAM, SESSION_END)
+- `C.Phases` - Top-level phase constants (INTERMISSION, PLAY, SPOTLIGHT, END); see also `C.PlaySubPhases` / `C.PhaseSequence` (TOR-143)
 - `C.UI_IDS` - UI element ID constants
 - `C.MAX_HUNGER` - Maximum hunger value (5, VTM5E scale is 0-5)
 - `C.DICE_SUCCESS_THRESHOLD` - Dice success threshold (6)

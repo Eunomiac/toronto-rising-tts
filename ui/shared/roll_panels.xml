@@ -117,6 +117,13 @@
 <!-- ============================================================================ -->
 <Include src="panel_roll_results.xml" />
 
+<!-- ============================================================================ -->
+<!-- 4. SESSION START HEAL BROADCAST PANEL (session_start_heal_broadcast.xml)     -->
+<!-- Visible to ALL players (no visibility filter). Shown briefly when a session   -->
+<!-- starts and at least one player has Willpower damage to heal.                  -->
+<!-- ============================================================================ -->
+<Include src="session_start_heal_broadcast.xml" />
+
 <!-- Storyteller roll name modal (bag click without live roll) -->
 <Panel id="rollStName_modal" active="False" visibility="Black|Host"
   rectAlignment="MiddleCenter" width="400" padding="16 16 16 16" color="#1a1a1a">

@@ -181,7 +181,7 @@ function STR.rollTypeForStorytellerBagDrop(dieKind, opts)
     end
     if dieKind == DK.KIND_OBLIV_ROUSE then
         local phase = S.getStateVal("currentPhase")
-        if phase == C.Phases.SESSION_END then
+        if phase == C.Phases.END then
             return C.RollType.REMORSE
         end
         return C.RollType.ROUSE_OBLIVION

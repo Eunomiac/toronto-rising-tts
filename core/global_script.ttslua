@@ -398,6 +398,12 @@ local function hideStartupLoadingOverlays()
     })
 end
 
+--- Exposed for core.phases Play-enter / connect policy (TOR-143 / TOR-319).
+function hideStartupLoadingOverlaysForPhases()
+    hideStartupLoadingOverlays()
+end
+Global.hideStartupLoadingOverlaysForPhases = hideStartupLoadingOverlaysForPhases
+
 local function seatAssignmentPlayerKey(player)
     if player == nil or not U.isPlayer(player) then
         return nil
@@ -2001,7 +2007,7 @@ function GlobalInitiateRoll(params)
             simplecheck = function() return C.RollType.SIMPLE_CHECK end,
             humanity    = function()
                 -- Remorse at end-of-session; Humanity Roll otherwise
-                return (currentPhase == C.Phases.SESSION_END)
+                return (currentPhase == C.Phases.END)
                     and C.RollType.REMORSE
                     or  C.RollType.HUMANITY_ROLL
             end,
@@ -2239,7 +2245,7 @@ function onLoad(saved_data)
         function()
             setStartupAction("startup-ready-final-sync-full")
             local phase = S.getStateVal("currentPhase")
-            if (phase == C.Phases.PLAY or phase == C.Phases.DOWNTIME)
+            if phase == C.Phases.PLAY
                 and Scenes ~= nil
                 and type(Scenes.reconcilePlaySessionOnEnter) == "function" then
                 Scenes.reconcilePlaySessionOnEnter({
@@ -2931,11 +2937,12 @@ local SOUNDSCAPE_MOOD_BUTTONS = {
 }
 
 local PHASE_BUTTON_EXPECTATIONS = {
-    phase_SessionStart = C.Phases.SESSION_START,
-    phase_Play = C.Phases.PLAY,
-    phase_Downtime = C.Phases.DOWNTIME,
-    phase_Memoriam = C.Phases.MEMORIAM,
-    phase_SessionEnd = C.Phases.SESSION_END,
+    phase_Advance = true,
+}
+local PHASE_SUB_BUTTONS = {
+    phase_sub_Main = C.PlaySubPhases.MAIN,
+    phase_sub_Downtime = C.PlaySubPhases.DOWNTIME,
+    phase_sub_Memoriam = C.PlaySubPhases.MEMORIAM,
 }
 
 local SOUNDSCAPE_FEATURED_BUTTONS = {
@@ -3038,16 +3045,32 @@ local function syncDebugSeatColorButtons()
     end
 end
 
---- Highlights active storyteller phase button (`gameState.currentPhase` matches `C.Phases` values).
+--- Highlights phase panel (current label + Play subphase buttons). TOR-143.
 local function syncStorytellerPhaseButtons()
-    local phase = S.getStateVal("currentPhase")
-    for buttonId, expected in pairs(PHASE_BUTTON_EXPECTATIONS) do
-        local match = phase == expected
+    local phase = S.getStateVal("currentPhase") or ""
+    local sub = S.getStateVal("playSubPhase") or ""
+    if UI ~= nil and UI.setValue ~= nil then
+        local label = tostring(phase)
+        if phase == C.Phases.PLAY and sub ~= "" then
+            label = label .. " / " .. tostring(sub)
+        end
+        UI.setValue("phase_currentLabel", label)
+    end
+    local inPlay = phase == C.Phases.PLAY
+    if UI ~= nil and UI.setAttribute ~= nil then
+        UI.setAttribute("phase_subphaseRow", "active", inPlay and "true" or "false")
+    end
+    for buttonId, expected in pairs(PHASE_SUB_BUTTONS) do
+        local match = inPlay and sub == expected
         U.setAttributes(buttonId, {
             colors = match and STORYTELLER_SOUND_GREEN or STORYTELLER_SOUND_GREY,
             textColor = "#FFFFFF",
             fontStyle = "Bold",
         })
+    end
+    local sessionNum = tonumber(S.getStateVal("sessionNum")) or 1
+    if UI ~= nil and UI.setValue ~= nil then
+        UI.setValue("input_sessionNum", tostring(sessionNum))
     end
 end
 
@@ -3483,44 +3506,52 @@ function HUD_scenesLibEnd(player, button, id)
     StorytellerScenesPanel.endSceneNarrative(player)
 end
 
---- Advance game phase
--- Called when a phase button is clicked (e.g., "phase_play")
--- @param player Player The player who clicked the button
--- @param button string Button value
--- @param id string The UI element ID (e.g., "phase_play")
+--- Advance top-level phase in sequence (TOR-143).
+function HUD_phaseAdvance(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_phaseAdvance") then
+        return
+    end
+    local Phases = require("core.phases")
+    Phases.advanceNext()
+end
+
+--- Legacy alias: free-jump removed; Advance only.
 function HUD_advancePhase(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_advancePhase") then
+    HUD_phaseAdvance(player, button, id)
+end
+
+--- Play subphase free switch (TOR-143).
+function HUD_setPlaySubPhase(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_setPlaySubPhase") then
         return
     end
-    local tail = string.gsub(id or "", "^phase_", "")
-    local phaseMap = {
-        SessionStart = C.Phases.SESSION_START,
-        Play = C.Phases.PLAY,
-        Downtime = C.Phases.DOWNTIME,
-        Memoriam = C.Phases.MEMORIAM,
-        SessionEnd = C.Phases.SESSION_END,
-        -- Legacy lowercase ids (if any XML still emits them)
-        sessionstart = C.Phases.SESSION_START,
-        play = C.Phases.PLAY,
-        downtime = C.Phases.DOWNTIME,
-        memoriam = C.Phases.MEMORIAM,
-        sessionend = C.Phases.SESSION_END,
+    local tail = string.gsub(id or "", "^phase_sub_", "")
+    local map = {
+        Main = C.PlaySubPhases.MAIN,
+        Downtime = C.PlaySubPhases.DOWNTIME,
+        Memoriam = C.PlaySubPhases.MEMORIAM,
     }
-
-    local targetPhase = phaseMap[tail]
-    if targetPhase == nil then
-        targetPhase = phaseMap[string.lower(tail)]
-    end
-    if targetPhase == nil then
-        U.AlertGM("HUD_advancePhase: Invalid phase: " .. tostring(tail))
+    local target = map[tail]
+    if target == nil then
+        U.AlertGM("HUD_setPlaySubPhase: Invalid subphase: " .. tostring(tail))
         return
     end
+    local Phases = require("core.phases")
+    Phases.setPlaySubPhase(target)
+end
 
-    M.advancePhase(targetPhase)
-    UpdateUIDisplays({ phase = true })
+--- Session number InputField (TOR-263 / TOR-143).
+function HUD_sessionNumInput(player, value, id)
+    if not requireStorytellerForMutation(player, "HUD_sessionNumInput") then
+        return
+    end
+    local n = math.floor(tonumber(value) or 0)
+    if n < 1 then
+        n = 1
+    end
+    S.setSessionNum(n)
+    UpdateUIDisplays({ phase = true, gameStateOverlay = true })
     syncStorytellerPhaseButtons()
-
-    print("HUD: Phase set to " .. tostring(targetPhase) .. " by " .. tostring(player and player.color))
 end
 
 --- Reset game state
@@ -6087,5 +6118,12 @@ function onPlayerConnect(playerOrColor)
         elseif type(playerOrColor) == "string" then
             M.tryAutoAssignSeatFromChronicle(playerOrColor)
         end
+    end
+
+    -- TOR-319: Intermission keeps loading/session blindfold up; other phases lower it.
+    local phase = S.getStateVal("currentPhase")
+    if phase ~= C.Phases.INTERMISSION and U.isPlayer(connected) then
+        local Phases = require("core.phases")
+        Phases.lowerBlindfoldForConnectingPlayer(connected)
     end
 end

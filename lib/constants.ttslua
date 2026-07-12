@@ -247,16 +247,37 @@ C.NPCSeats = {
   "NPC1", "NPC2", "NPC3", "NPC4"
 }
 
--- Game Phases (VTM5E / Toronto Rising)
--- Stored in state as currentPhase; validated via U.isIn(phase, C.Phases).
--- Player HUD: "main" = majority of gameplay (Humanity stain/heal); "end" = end-of-session (e.g. Remorse).
+-- Game Phases (VTM5E / Toronto Rising) — TOR-143
+-- Top-level sequence: Intermission → Play → Spotlight → End → Intermission.
+-- Play subphases (free switch): Main / Downtime / Memoriam — see C.PlaySubPhases.
+-- Stored in state as currentPhase / playSubPhase; validated via U.isIn.
 C.Phases = {
-  SESSION_START = "SessionStart",
+  INTERMISSION = "Intermission",
   PLAY = "Play",
+  SPOTLIGHT = "Spotlight",
+  END = "End",
+}
+
+--- Ordered top-level advance loop (Storyteller Advance button).
+C.PhaseSequence = {
+  C.Phases.INTERMISSION,
+  C.Phases.PLAY,
+  C.Phases.SPOTLIGHT,
+  C.Phases.END,
+}
+
+--- Subphases of Play only (default on enter Play = MAIN).
+C.PlaySubPhases = {
+  MAIN = "Main",
   DOWNTIME = "Downtime",
   MEMORIAM = "Memoriam",
-  SESSION_END = "SessionEnd"
 }
+
+--- Featured track that starts the Intermission theme playlist (Intro → Loop).
+C.IntermissionThemeFeaturedKey = "TR_Intro"
+
+--- Hardcoded Spotlight scene library key (author fills row later; soft-fail if missing).
+C.SpotlightSceneLibraryKey = "spotlight_session"
 
 -- PC name/color/keys: C.PlayerData + charKey; full stat blocks: lib/pcs_data.ttslua (from lib/json/PCS.json).
 C.CHRONICLE_DATA = {

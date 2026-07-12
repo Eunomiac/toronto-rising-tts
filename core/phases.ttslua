@@ -1,0 +1,547 @@
+--[[
+    Game phase lifecycle (TOR-143).
+
+    Top-level: Intermission → Play → Spotlight → End → Intermission.
+    Play subphases (free switch): Main / Downtime / Memoriam.
+
+    Enter/exit events are registry step builders consumed by U.RunSequence
+    (exit of old phase, then state mutate, then enter of new). Append steps
+    to Phases.onEnter / Phases.onExit / onEnterSub / onExitSub without
+    changing advanceTo control flow.
+]]
+
+local Phases = {}
+
+local C = require("lib.constants")
+local U = require("lib.util")
+local S = require("core.state")
+
+local SESSION_START_HEAL_PANEL = "sessionStartHeal_panel"
+local HEAL_BROADCAST_HOLD_SEC = 6
+local INTERMISSION_THEME_FADE_SEC = 2
+
+--- Single in-flight top-level transition token.
+local advancing = false
+
+--- @type table<string, fun(ctx: table): table>
+Phases.onExit = {}
+--- @type table<string, fun(ctx: table): table>
+Phases.onEnter = {}
+--- @type table<string, fun(ctx: table): table>
+Phases.onExitSub = {}
+--- @type table<string, fun(ctx: table): table>
+Phases.onEnterSub = {}
+
+local function emptySteps(_ctx)
+    return {}
+end
+
+local function appendSteps(dest, src)
+    if type(src) ~= "table" then
+        return
+    end
+    for i = 1, #src do
+        dest[#dest + 1] = src[i]
+    end
+end
+
+local function buildSteps(registry, phase, ctx)
+    local builder = registry[phase]
+    if type(builder) ~= "function" then
+        return {}
+    end
+    local steps = builder(ctx)
+    if type(steps) ~= "table" then
+        return {}
+    end
+    return steps
+end
+
+local function nextPhaseInSequence(current)
+    local seq = C.PhaseSequence
+    if type(seq) ~= "table" or #seq < 1 then
+        return C.Phases.INTERMISSION
+    end
+    local idx = nil
+    for i = 1, #seq do
+        if seq[i] == current then
+            idx = i
+            break
+        end
+    end
+    if idx == nil then
+        return seq[1]
+    end
+    local nextIdx = idx + 1
+    if nextIdx > #seq then
+        nextIdx = 1
+    end
+    return seq[nextIdx]
+end
+
+--- Spaced unicode roman numerals for session overlay (TOR-263 / TOR-143).
+--- @param n number
+--- @return string
+function Phases.romanize(n)
+    local v = math.floor(tonumber(n) or 0)
+    if v < 1 then
+        return ""
+    end
+    if v > 3999 then
+        v = 3999
+    end
+    local map = {
+        { 1000, "M" },
+        { 900, "CM" },
+        { 500, "D" },
+        { 400, "CD" },
+        { 100, "C" },
+        { 90, "XC" },
+        { 50, "L" },
+        { 40, "XL" },
+        { 10, "X" },
+        { 9, "IX" },
+        { 5, "V" },
+        { 4, "IV" },
+        { 1, "I" },
+    }
+    local parts = {}
+    for i = 1, #map do
+        local value = map[i][1]
+        local numeral = map[i][2]
+        while v >= value do
+            parts[#parts + 1] = numeral
+            v = v - value
+        end
+    end
+    return table.concat(parts, " ")
+end
+
+function Phases.incrementSessionNum()
+    local n = tonumber(S.getStateVal("sessionNum")) or 1
+    S.setSessionNum(n + 1)
+end
+
+--- Raise transition blindfolds (cover view) for seated PCs.
+function Phases.raisePlayerBlindfolds(_ctx)
+    local HUDBF = require("core.hud_blindfold")
+    HUDBF.beginTransition()
+    return true
+end
+
+--- Lower transition blindfolds + hide startup loading overlay.
+function Phases.lowerPlayerBlindfolds(_ctx)
+    local HUDBF = require("core.hud_blindfold")
+    HUDBF.endTransition()
+    if type(Global) == "table" and type(Global.hideStartupLoadingOverlaysForPhases) == "function" then
+        Global.hideStartupLoadingOverlaysForPhases()
+    elseif type(_G.hideStartupLoadingOverlaysForPhases) == "function" then
+        _G.hideStartupLoadingOverlaysForPhases()
+    end
+    return true
+end
+
+--- Clear loading/session blindfold for one connecting player (non-Intermission).
+--- @param player Player|nil
+function Phases.lowerBlindfoldForConnectingPlayer(player)
+    if player == nil or not U.isPlayer(player) then
+        return
+    end
+    local steam = player.steam_id
+    local color = player.color
+    local Conditions = require("core.conditions")
+    local HO = require("core.hud_overlays")
+    local pd = S.getStateVal("playerData")
+    if type(pd) == "table" then
+        for playerID, row in pairs(pd) do
+            if type(playerID) == "string" and type(row) == "table" then
+                local match = false
+                if type(steam) == "string" and steam ~= "" and playerID == steam then
+                    match = true
+                elseif type(color) == "string" and row.color == color then
+                    match = true
+                end
+                if match then
+                    Conditions.clear(playerID, "hudBlindfold")
+                end
+            end
+        end
+    end
+    if type(HO.syncAll) == "function" then
+        HO.syncAll()
+    end
+    if type(Global) == "table" and type(Global.hideStartupLoadingOverlaysForPhases) == "function" then
+        Global.hideStartupLoadingOverlaysForPhases()
+    elseif type(_G.hideStartupLoadingOverlaysForPhases) == "function" then
+        _G.hideStartupLoadingOverlaysForPhases()
+    end
+end
+
+function Phases.applyAllLightsDark(_ctx)
+    S.setStateVal("dark", "currentScene")
+    S.setStateVal("AdminDark", "sessionScene", "lightingPresetKey")
+    S.setStateVal(nil, "sceneTransition")
+    local Scenes = require("core.scenes")
+    if type(Scenes.invalidateReconcileCache) == "function" then
+        Scenes.invalidateReconcileCache()
+    end
+    local Sync = require("core.sync")
+    Sync.full({ reason = "phase_intermission_dark", skipSoundscape = true })
+    return true
+end
+
+function Phases.fadeOutAllEmitters(_ctx)
+    local Soundscape = require("core.soundscape")
+    if type(Soundscape.fadeOutTransitionAmbient) == "function" then
+        Soundscape.fadeOutTransitionAmbient({ seconds = INTERMISSION_THEME_FADE_SEC })
+        return INTERMISSION_THEME_FADE_SEC
+    end
+    if type(Soundscape.stopAll) == "function" then
+        Soundscape.stopAll()
+        Soundscape.commitEagerSteadyState(true)
+    end
+    return true
+end
+
+function Phases.startIntermissionThemePlaylistLoop(_ctx)
+    local Soundscape = require("core.soundscape")
+    if type(Soundscape.stopAll) == "function" then
+        Soundscape.stopAll()
+    end
+    local key = C.IntermissionThemeFeaturedKey or "TR_Intro"
+    local ok, msg = Soundscape.playFeaturedMusic(key)
+    if ok ~= true then
+        U.AlertGM("Intermission theme: " .. tostring(msg or "playFeaturedMusic failed"))
+    end
+    if type(Soundscape.commitEagerSteadyState) == "function" then
+        Soundscape.commitEagerSteadyState(ok == true)
+    elseif type(Soundscape.markReconciledToCurrentState) == "function" then
+        Soundscape.markReconciledToCurrentState()
+    end
+    return true
+end
+
+function Phases.silenceAllSoundEmitters(_ctx)
+    local Soundscape = require("core.soundscape")
+    if type(Soundscape.stopAll) == "function" then
+        Soundscape.stopAll()
+        Soundscape.commitEagerSteadyState(true)
+    end
+    return true
+end
+
+function Phases.applySpotlightSceneOrBroadcast(_ctx)
+    local key = C.SpotlightSceneLibraryKey
+    local SceneLibrary = require("core.scene_library")
+    local row = nil
+    if type(key) == "string" and key ~= "" and type(SceneLibrary.getRow) == "function" then
+        row = SceneLibrary.getRow(key)
+    elseif type(key) == "string" and key ~= "" and type(SceneLibrary.get) == "function" then
+        row = SceneLibrary.get(key)
+    end
+    if type(row) ~= "table" then
+        local lib = S.getStateVal("sceneLibrary")
+        if type(lib) == "table" and type(lib.rows) == "table" then
+            row = lib.rows[key]
+        end
+    end
+    if type(row) ~= "table" then
+        broadcastToAll(
+            "Spotlight scene `" .. tostring(key) .. "` is not defined yet — phase advanced without scene apply.",
+            { r = 1, g = 0.85, b = 0.4 }
+        )
+        U.AlertGM("Spotlight scene library key missing: " .. tostring(key))
+        return true
+    end
+    -- Soft apply path reserved for when the hardcoded row exists (author workshop).
+    U.AlertGM("Spotlight scene `" .. tostring(key) .. "` found — full Apply wiring TBD; clock freeze still runs.")
+    return true
+end
+
+function Phases.freezeClock(_ctx)
+    S.setStateVal(false, "sessionScene", "clock", "useRealTime")
+    S.setStateVal(0, "sessionScene", "clock", "speed")
+    local GameStateOverlay = require("core.game_state_overlay")
+    if type(GameStateOverlay.stopTicker) == "function" then
+        GameStateOverlay.stopTicker()
+    end
+    if type(GameStateOverlay.reconcileFromState) == "function" then
+        GameStateOverlay.reconcileFromState()
+    end
+    return true
+end
+
+function Phases.applyNoSceneDefault(_ctx)
+    local Scenes = require("core.scenes")
+    Scenes.applyDefaultNoSceneEnvironment({
+        reason = "phase_play_enter",
+        skipTransitionBlindfold = true,
+    })
+    return true
+end
+
+local function healAmountForPlayer(playerID)
+    local ES = require("lib.effective_stats")
+    local ctx = ES.forPlayer(playerID)
+    local resolve = tonumber(ctx.dotRating("resolve")) or 0
+    local composure = tonumber(ctx.dotRating("composure")) or 0
+    local amt = resolve
+    if composure > amt then
+        amt = composure
+    end
+    if amt < 0 then
+        amt = 0
+    end
+    return math.floor(amt)
+end
+
+function Phases.runSessionStartWillpowerHeal(_ctx)
+    local P = require("lib.pc_stats")
+    local anyHealed = false
+    local colors = C.PlayerColors or { "Brown", "Orange", "Pink", "Purple", "Red" }
+    for i = 1, #colors do
+        local color = colors[i]
+        local containerId = "sessionStartHeal_playerContainer_" .. color
+        local amountId = "sessionStartHeal_amount_" .. color
+        if type(UI.setAttribute) == "function" then
+            UI.setAttribute(containerId, "active", "false")
+        end
+        local playerID = S.getPlayerID(color)
+        if type(playerID) == "string" and playerID ~= C.StorytellerID then
+            local stats = S.getStateVal("playerData", playerID, "stats")
+            local superficial = 0
+            if type(stats) == "table" and type(stats.willpower) == "table" then
+                superficial = tonumber(stats.willpower.superficial) or 0
+            end
+            local amount = healAmountForPlayer(playerID)
+            if superficial > 0 and amount > 0 then
+                local heal = amount
+                if heal > superficial then
+                    heal = superficial
+                end
+                P.applyDamageOrHeal(color, "willpower", -heal, 0)
+                anyHealed = true
+                if type(UI.setAttribute) == "function" then
+                    UI.setAttribute(containerId, "active", "true")
+                end
+                if type(UI.setValue) == "function" then
+                    UI.setValue(amountId, tostring(heal))
+                end
+                local Sync = require("core.sync")
+                if type(Sync.player) == "function" then
+                    Sync.player(color)
+                end
+            end
+        end
+    end
+    if not anyHealed then
+        return true
+    end
+    if type(UI.setAttribute) == "function" then
+        UI.setAttribute(SESSION_START_HEAL_PANEL, "active", "true")
+    end
+    if type(UI.show) == "function" then
+        UI.show(SESSION_START_HEAL_PANEL)
+    end
+    return HEAL_BROADCAST_HOLD_SEC
+end
+
+local function hideSessionStartHealPanel()
+    if type(UI.hide) == "function" then
+        UI.hide(SESSION_START_HEAL_PANEL)
+    end
+    if type(UI.setAttribute) == "function" then
+        UI.setAttribute(SESSION_START_HEAL_PANEL, "active", "false")
+    end
+    return true
+end
+
+-- Registry: empty by default; overwrite with real builders below.
+for _, phase in pairs(C.Phases) do
+    Phases.onExit[phase] = emptySteps
+    Phases.onEnter[phase] = emptySteps
+end
+for _, sub in pairs(C.PlaySubPhases) do
+    Phases.onExitSub[sub] = emptySteps
+    Phases.onEnterSub[sub] = emptySteps
+end
+
+Phases.onEnter[C.Phases.INTERMISSION] = function(ctx)
+    return {
+        function()
+            return Phases.applyAllLightsDark(ctx)
+        end,
+        function()
+            return Phases.fadeOutAllEmitters(ctx)
+        end,
+        function()
+            return Phases.startIntermissionThemePlaylistLoop(ctx)
+        end,
+    }
+end
+
+Phases.onEnter[C.Phases.PLAY] = function(ctx)
+    return {
+        function()
+            return Phases.applyNoSceneDefault(ctx)
+        end,
+        function()
+            return Phases.lowerPlayerBlindfolds(ctx)
+        end,
+        function()
+            return Phases.runSessionStartWillpowerHeal(ctx)
+        end,
+        function()
+            return hideSessionStartHealPanel()
+        end,
+    }
+end
+
+Phases.onEnter[C.Phases.SPOTLIGHT] = function(ctx)
+    return {
+        function()
+            return Phases.silenceAllSoundEmitters(ctx)
+        end,
+        function()
+            return Phases.applySpotlightSceneOrBroadcast(ctx)
+        end,
+        function()
+            return Phases.freezeClock(ctx)
+        end,
+    }
+end
+
+Phases.onExit[C.Phases.SPOTLIGHT] = function(ctx)
+    return {
+        function()
+            return Phases.applyNoSceneDefault(ctx)
+        end,
+    }
+end
+
+Phases.onExit[C.Phases.END] = function(ctx)
+    return {
+        function()
+            Phases.incrementSessionNum()
+            return true
+        end,
+        function()
+            return Phases.raisePlayerBlindfolds(ctx)
+        end,
+    }
+end
+
+local function syncPhaseUi()
+    local M = require("core.main")
+    if type(M.syncPhase) == "function" then
+        M.syncPhase()
+    end
+    if type(UpdateUIDisplays) == "function" then
+        UpdateUIDisplays({ phase = true, gameStateOverlay = true })
+    end
+    if type(syncStorytellerPhaseButtons) == "function" then
+        syncStorytellerPhaseButtons()
+    end
+end
+
+--- Promote to Play without enter/exit events (scene Apply already owns the world).
+function Phases.ensurePlayPhaseForSceneApply()
+    local phase = S.getStateVal("currentPhase")
+    if phase == C.Phases.PLAY then
+        return
+    end
+    S.setCurrentPhase(C.Phases.PLAY)
+    S.setPlaySubPhase(C.PlaySubPhases.MAIN)
+    syncPhaseUi()
+end
+
+--- @param newPhase string
+--- @param opts table|nil unused reserved
+--- @return boolean
+function Phases.advanceTo(newPhase, opts)
+    opts = type(opts) == "table" and opts or {}
+    if type(newPhase) ~= "string" or not U.isIn(newPhase, C.Phases) then
+        U.AlertGM("Phases.advanceTo: Invalid phase '" .. tostring(newPhase) .. "'")
+        return false
+    end
+    if advancing then
+        U.AlertGM("Phases.advanceTo: transition already in progress")
+        return false
+    end
+
+    local oldPhase = S.getStateVal("currentPhase")
+    if oldPhase == newPhase then
+        print("Phases: already in " .. tostring(newPhase))
+        return true
+    end
+
+    advancing = true
+    local ctx = {
+        from = oldPhase,
+        to = newPhase,
+        opts = opts,
+    }
+
+    local steps = {}
+    appendSteps(steps, buildSteps(Phases.onExit, oldPhase, ctx))
+    steps[#steps + 1] = function()
+        S.setCurrentPhase(newPhase)
+        if newPhase == C.Phases.PLAY then
+            S.setPlaySubPhase(C.PlaySubPhases.MAIN)
+        end
+        return true
+    end
+    appendSteps(steps, buildSteps(Phases.onEnter, newPhase, ctx))
+    steps[#steps + 1] = function()
+        advancing = false
+        syncPhaseUi()
+        print("Phases: Advanced " .. tostring(oldPhase) .. " → " .. tostring(newPhase))
+        return true
+    end
+
+    U.RunSequence(steps)
+    return true
+end
+
+function Phases.advanceNext()
+    local current = S.getStateVal("currentPhase")
+    return Phases.advanceTo(nextPhaseInSequence(current))
+end
+
+--- Free switch among Play subphases (no top-level enter/exit).
+--- @param subPhase string
+--- @return boolean
+function Phases.setPlaySubPhase(subPhase)
+    if S.getStateVal("currentPhase") ~= C.Phases.PLAY then
+        U.AlertGM("Phases.setPlaySubPhase: only valid during Play")
+        return false
+    end
+    if type(subPhase) ~= "string" or not U.isIn(subPhase, C.PlaySubPhases) then
+        U.AlertGM("Phases.setPlaySubPhase: Invalid subphase '" .. tostring(subPhase) .. "'")
+        return false
+    end
+    local oldSub = S.getStateVal("playSubPhase")
+    if oldSub == subPhase then
+        return true
+    end
+    local ctx = { from = oldSub, to = subPhase }
+    local steps = {}
+    appendSteps(steps, buildSteps(Phases.onExitSub, oldSub, ctx))
+    steps[#steps + 1] = function()
+        S.setPlaySubPhase(subPhase)
+        return true
+    end
+    appendSteps(steps, buildSteps(Phases.onEnterSub, subPhase, ctx))
+    steps[#steps + 1] = function()
+        syncPhaseUi()
+        return true
+    end
+    U.RunSequence(steps)
+    return true
+end
+
+function Phases.isAdvancing()
+    return advancing == true
+end
+
+return Phases

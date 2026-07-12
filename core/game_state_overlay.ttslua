@@ -1,6 +1,6 @@
 --[[
     Center-top overlay: district / site (split on first ":" when present) and in-game date + 12-hour clock
-    during **Play** and **Downtime** only.
+    during **Play** only (any Play subphase). TOR-143.
 
     Single writer: `GameStateOverlay.reconcileFromState()` — driven from `UpdateUIDisplays` / `Sync.ui`
     (see `core/sync.ttslua` incremental delta `gameStateOverlay`) so nothing else fights the overlay.
@@ -156,7 +156,7 @@ end
 --- @return boolean
 local function shouldShowNarrativeClockOnOverlay()
     local phase = S.getStateVal("currentPhase")
-    return phase == C.Phases.PLAY or phase == C.Phases.DOWNTIME
+    return phase == C.Phases.PLAY
 end
 
 --- @param hour24 number
@@ -433,8 +433,20 @@ function GameStateOverlay.reconcileWeatherFromState()
     pushOverlayText("gameStateOverlay_temperatureF", string.format("(%d°F)", resolved.tempF or 0))
 end
 
+--- Session roman numeral row (id keeps historical typo `sesionNumber`). TOR-263 / TOR-143.
+local function reconcileSessionNumberFromState()
+    local Phases = require("core.phases")
+    local n = tonumber(S.getStateVal("sessionNum")) or 1
+    local roman = Phases.romanize(n)
+    if roman == "" then
+        roman = "I"
+    end
+    pushOverlayText("gameStateOverlay_sesionNumber", "− " .. roman .. " −")
+end
+
 --- Push district / site row (parent site + separator only when the site name contains a ":" split).
 local function reconcileLocationRowFromState()
+    reconcileSessionNumberFromState()
     local districtLabel, siteFull = resolveLocationLabelsFromState()
     pushOverlayText("gameStateOverlay_district", districtLabel)
 

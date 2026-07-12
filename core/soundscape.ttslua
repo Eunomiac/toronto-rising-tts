@@ -1281,7 +1281,7 @@ end
 --- @return boolean
 local function backgroundMusicPolicyRequiresMain()
     local phase = S.getStateVal("currentPhase")
-    return phase ~= nil and phase ~= C.Phases.SESSION_START
+    return phase ~= nil and phase ~= C.Phases.INTERMISSION
 end
 
 --- Stops background music and records explicit no-BGM intent (`backgroundMusic.playlist = "none"`).
