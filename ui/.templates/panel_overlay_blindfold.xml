@@ -1,4 +1,6 @@
 <!-- TARGET: ui/player/panel_overlay_blindfold.xml -->
+<!-- Per-player scene/table transition blindfolds only (hudBlindfold). active=false by default. -->
+<!-- Phases must not drive these — use ui/shared/panel_overlay_global_blindfold.xml instead. -->
 <!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md (generator); .dev/HUDs & Overlays/Player HUD Overview.md (map panels). -->
 <!-- Visibility: TTS `UI.show` / `UI.hide` play showAnimation/hideAnimation (tts-api UI API/Attributes.md). -->
 <Panel id="playerHud_overlay_blindfold_@@color@@" class="playerHud_overlaysLayer" visibility="@@color@@">
@@ -24,4 +26,14 @@
   <Image id="overlay_blindfold_20_@@color@@" image="overlay_blindfold_20" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
   <Image id="overlay_blindfold_21_@@color@@" image="overlay_blindfold_21" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
   <Image id="overlay_blindfold_22_@@color@@" image="overlay_blindfold_22" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_23_@@color@@" image="overlay_blindfold_23" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_24_@@color@@" image="overlay_blindfold_24" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_25_@@color@@" image="overlay_blindfold_25" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_26_@@color@@" image="overlay_blindfold_26" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_27_@@color@@" image="overlay_blindfold_27" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_28_@@color@@" image="overlay_blindfold_28" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_29_@@color@@" image="overlay_blindfold_29" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_30_@@color@@" image="overlay_blindfold_30" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_31_@@color@@" image="overlay_blindfold_31" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+  <Image id="overlay_blindfold_32_@@color@@" image="overlay_blindfold_32" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
 </Panel>
