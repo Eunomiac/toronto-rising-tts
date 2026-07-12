@@ -1755,12 +1755,14 @@ U.RunSequence({
     setHunger("Purple", 1)
     setHumanityStains("Purple", 2)
     rollConfirmTracker("Purple", { hunger = 1, stains = 2 })
-    -- PRE_ROLL so HUMAN can Roll (skipOpen would leave SETUP with Roll greyed) (TOR-357).
-    rollTest("Purple", 2, C.RollType.STANDARD, "E2E P-F compound", { hunger = 0 })
+    -- Default open → PRE_ROLL (Roll needs open; do not skipOpen) (TOR-357 / TOR-358).
+    rollTest("Purple", 2, C.RollType.STANDARD, "E2E P-F compound", 0)
+    rollConfirm("Purple", { phase = "preRoll" })
   end,
   function()
+    rollE2eSeatPrep("Purple")
     M.setCamera("ALL", "rollPurple")
-    printHeader("[HUMAN] Left-click Normal bag 2 times, Oblivion-Rouse bag 2 times; Roll and wait for settle", 3)
+    printHeader("[HUMAN] PRE_ROLL: Left-click Normal bag 2 times, Oblivion-Rouse bag 2 times; Roll and wait for settle", 3)
   end
 })
 ```
