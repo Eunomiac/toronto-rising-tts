@@ -130,7 +130,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `HUD_statsEditorField` / `HUD_statsEditorCancel` | A | — | draft stash / close |
 | `HUD_projectsTarget` / `HUD_projectsBack` | A | — | Projects panel navigation |
 | `HUD_projectsAdd` / `HUD_projectsEdit` / `HUD_projectEditorConfirm` / `HUD_projectEditorDelete` / `HUD_projectEditorBegin` / `HUD_projectEditorComplete` / `HUD_projectEditorLaunchR` | B+C | Yes | project mutations / Launch roll |
-| `HUD_projectEditorField` / `HUD_projectDropdown` / `HUD_projectStakeDropdown` / `HUD_projectEditorCancel` | A/B | Yes (field persist) | live project editor writes; Cancel may delete pre-inProgress |
+| `HUD_projectEditorField` / `HUD_projectDropdown` / `HUD_projectStakeDropdown` / `HUD_projectStakeAdvOpen` / `HUD_projectAdvPick` / `HUD_projectAdvPickCancel` / `HUD_projectEditorCancel` | A/B | Yes (field persist) | live project editor writes; advantage picker uses Buttons (TTS Dropdown Options do not refresh labels); Cancel may delete pre-inProgress |
 | `HUD_phaseAdvance` / `HUD_setPlaySubPhase` / `HUD_sessionNumInput` | B | Yes | TOR-143 phase Advance + Play subphases + sessionNum |
 | `HUD_advancePhase` | B | Yes | legacy alias → `HUD_phaseAdvance` |
 | `HUD_resetGame` / `HUD_syncAll` | B+C | Yes | |

@@ -75,6 +75,22 @@ local function clone(t)
   return U.clone(t, true)
 end
 
+--- Trim ASCII whitespace without non-greedy `%s*(.-)%s*` (Lua 5.1 "pattern too complex" on long goals).
+--- @param s string|nil
+--- @return string
+local function trimAscii(s)
+  if type(s) ~= "string" then
+    return ""
+  end
+  return (s:gsub("^%s+", ""):gsub("%s+$", ""))
+end
+
+--- @param s string|nil
+--- @return boolean
+local function hasNonWhitespace(s)
+  return type(s) == "string" and s:find("%S") ~= nil
+end
+
 --- @return table
 function M.ensureProjectsTable()
   local projects = S.getStateVal("projects")
@@ -277,11 +293,11 @@ function M.parseStartDateString(text)
   if type(text) ~= "string" then
     return nil
   end
-  local trimmed = text:match("^%s*(.-)%s*$") or ""
+  local trimmed = trimAscii(text)
   if trimmed == "" then
     return nil
   end
-  local mon, day, year = trimmed:match("^([A-Za-z][A-Za-z][A-Za-z]).-(%d%d?),?%s+(%d%d%d%d)$")
+  local mon, day, year = trimmed:match("^([A-Za-z][A-Za-z][A-Za-z])%s*(%d%d?),?%s+(%d%d%d%d)$")
   if mon == nil then
     return nil
   end
@@ -349,8 +365,8 @@ end
 function M.launchRollDisplay(project)
   local skill = type(project.launchRollSkill) == "string" and project.launchRollSkill or ""
   local adv = type(project.launchRollAdvantage) == "string" and project.launchRollAdvantage or ""
-  skill = skill:match("^%s*(.-)%s*$") or ""
-  adv = adv:match("^%s*(.-)%s*$") or ""
+  skill = trimAscii(skill)
+  adv = trimAscii(adv)
   if skill == "" and adv == "" then
     return ""
   end
@@ -730,7 +746,7 @@ local function setupFieldsComplete(project)
   if type(project.owner) ~= "string" or project.owner == "" then
     return false
   end
-  if type(project.goal) ~= "string" or project.goal:match("^%s*(.-)%s*$") == "" then
+  if not hasNonWhitespace(project.goal) then
     return false
   end
   if tonumber(project.scope) == nil then
@@ -742,8 +758,8 @@ local function setupFieldsComplete(project)
   if type(project.startDate) ~= "table" or not U.narrativeClockHasDatetime(project.startDate) then
     return false
   end
-  local skill = type(project.launchRollSkill) == "string" and project.launchRollSkill:match("^%s*(.-)%s*$") or ""
-  local adv = type(project.launchRollAdvantage) == "string" and project.launchRollAdvantage:match("^%s*(.-)%s*$") or ""
+  local skill = trimAscii(project.launchRollSkill)
+  local adv = trimAscii(project.launchRollAdvantage)
   if skill == "" or adv == "" then
     return false
   end

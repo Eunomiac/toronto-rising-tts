@@ -240,12 +240,24 @@ Do not permanently mutate `disabled` as the stake ledger. Optionally cache nothi
 
 For a given sheet source S, show projects where `displayFor` contains S.
 
-Sort:
+**`displayFor` derivation (working):** always includes `owner`, plus every stake-row `source` (including display-only rows with source set and no qty). Selecting **Coterie** as a stake source adds `"coterie"`.
+
+**Where it renders today:**
+
+| Surface | Wired? |
+| --- | --- |
+| PC character sheet page 5 | Yes — `Projects.buildPage5DocumentXml` |
+| ST Projects panel list for Coterie target | Yes — `listForDisplaySource("coterie")` |
+| Prince’s Court HUD (page 3 left / coterie sheet art) | **Not wired** — page 3 is a static image only; no project-block XML or reconciler |
+
+So a project owned by `lordLucien` with Coterie stakes correctly gets `"coterie"` in `displayFor`, appears under ST Projects → Coterie, and on Lucien’s page 5, but will **not** appear on Prince’s Court until Court project blocks are implemented.
+
+Sort (when listing for a source):
 
 1. Projects owned by the sheet’s PC first (when S is a PC); then others.
 2. Then by derived `endDate` ascending (soonest completion first). Completed projects: define a stable secondary rule at implement time (e.g. after active, or separate section).
 
-Stake row styling on the sheet (relative to S):
+Stake row styling on the PC sheet (relative to S):
 
 | Stake `source` | Class suffix | Look |
 | --- | --- | --- |

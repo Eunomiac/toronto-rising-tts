@@ -2870,6 +2870,30 @@ function HUD_projectStakeDropdown(player, value, id)
     end
 end
 
+function HUD_projectStakeAdvOpen(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_projectStakeAdvOpen") then
+        return
+    end
+    if StorytellerProjectsPanel and StorytellerProjectsPanel.onStakeAdvOpen then
+        StorytellerProjectsPanel.onStakeAdvOpen(id)
+    end
+end
+
+function HUD_projectAdvPick(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_projectAdvPick") then
+        return
+    end
+    if StorytellerProjectsPanel and StorytellerProjectsPanel.onAdvPick then
+        StorytellerProjectsPanel.onAdvPick(id)
+    end
+end
+
+function HUD_projectAdvPickCancel(player, button, id)
+    if StorytellerProjectsPanel and StorytellerProjectsPanel.onAdvPickCancel then
+        StorytellerProjectsPanel.onAdvPickCancel()
+    end
+end
+
 function HUD_projectEditorConfirm(player, button, id)
     if not requireStorytellerForMutation(player, "HUD_projectEditorConfirm") then
         return

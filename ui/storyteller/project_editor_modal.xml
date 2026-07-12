@@ -26,6 +26,14 @@
 
     <HorizontalLayout class="projectEditor_stake_row" spacing="6" preferredHeight="36" />
 
+    <Button class="projectEditor_adv_button" preferredWidth="280" preferredHeight="32" fontSize="12" colors="#222222|#333333|#444444|#111111" textColor="#FFFFFF" textAlignment="MiddleLeft" />
+
+    <Panel class="projectEditor_adv_picker" rectAlignment="MiddleCenter" width="420" height="420" color="rgba(0.02,0.02,0.05,0.98)" padding="8 8 8 8" />
+
+    <VerticalLayout class="projectEditor_adv_picker_list" spacing="2" childForceExpandHeight="false" />
+
+    <Button class="projectEditor_adv_pick_button" preferredHeight="28" fontSize="11" colors="#1a1a22|#2a2a33|#3a3a44|#111111" textColor="#FFFFFF" textAlignment="MiddleLeft" />
+
     <Panel class="spacer" flexibleHeight="1" flexibleWidth="1" />
 
     <Button class="projectEditor_button_small" preferredWidth="45" preferredHeight="45" minWidth="45" minHeight="45" fontSize="32" fontStyle="Bold" color="#FFFF00" />
@@ -149,29 +157,7 @@
             <Option>Black Caesar</Option>
             <Option>Coterie</Option>
           </Dropdown>
-          <Dropdown id="projectEditor_stake_1_advantage" class="projectEditor_dropdown" preferredWidth="280" onValueChanged="HUD_projectStakeDropdown(selectedIndex)">
-            <Option selected="true"> </Option>
-            <Option id="projectEditor_stake_1_advOpt_01">—</Option>
-            <Option id="projectEditor_stake_1_advOpt_02">—</Option>
-            <Option id="projectEditor_stake_1_advOpt_03">—</Option>
-            <Option id="projectEditor_stake_1_advOpt_04">—</Option>
-            <Option id="projectEditor_stake_1_advOpt_05">—</Option>
-            <Option id="projectEditor_stake_1_advOpt_06">—</Option>
-            <Option id="projectEditor_stake_1_advOpt_07">—</Option>
-            <Option id="projectEditor_stake_1_advOpt_08">—</Option>
-            <Option id="projectEditor_stake_1_advOpt_09">—</Option>
-            <Option id="projectEditor_stake_1_advOpt_10">—</Option>
-            <Option id="projectEditor_stake_1_advOpt_11">—</Option>
-            <Option id="projectEditor_stake_1_advOpt_12">—</Option>
-            <Option id="projectEditor_stake_1_advOpt_13">—</Option>
-            <Option id="projectEditor_stake_1_advOpt_14">—</Option>
-            <Option id="projectEditor_stake_1_advOpt_15">—</Option>
-            <Option id="projectEditor_stake_1_advOpt_16">—</Option>
-            <Option id="projectEditor_stake_1_advOpt_17">—</Option>
-            <Option id="projectEditor_stake_1_advOpt_18">—</Option>
-            <Option id="projectEditor_stake_1_advOpt_19">—</Option>
-            <Option id="projectEditor_stake_1_advOpt_20">—</Option>
-          </Dropdown>
+          <Button id="projectEditor_stake_1_advantage" class="projectEditor_adv_button" text="—" onClick="HUD_projectStakeAdvOpen" />
           <InputField id="projectEditor_stake_1_qty" class="projectEditor_integer_field" text="" />
         </HorizontalLayout>
         <HorizontalLayout id="projectEditor_stakeRow_2" class="projectEditor_stake_row" active="false">
@@ -184,29 +170,7 @@
             <Option>Black Caesar</Option>
             <Option>Coterie</Option>
           </Dropdown>
-          <Dropdown id="projectEditor_stake_2_advantage" class="projectEditor_dropdown" preferredWidth="280" onValueChanged="HUD_projectStakeDropdown(selectedIndex)">
-            <Option selected="true"> </Option>
-            <Option id="projectEditor_stake_2_advOpt_01">—</Option>
-            <Option id="projectEditor_stake_2_advOpt_02">—</Option>
-            <Option id="projectEditor_stake_2_advOpt_03">—</Option>
-            <Option id="projectEditor_stake_2_advOpt_04">—</Option>
-            <Option id="projectEditor_stake_2_advOpt_05">—</Option>
-            <Option id="projectEditor_stake_2_advOpt_06">—</Option>
-            <Option id="projectEditor_stake_2_advOpt_07">—</Option>
-            <Option id="projectEditor_stake_2_advOpt_08">—</Option>
-            <Option id="projectEditor_stake_2_advOpt_09">—</Option>
-            <Option id="projectEditor_stake_2_advOpt_10">—</Option>
-            <Option id="projectEditor_stake_2_advOpt_11">—</Option>
-            <Option id="projectEditor_stake_2_advOpt_12">—</Option>
-            <Option id="projectEditor_stake_2_advOpt_13">—</Option>
-            <Option id="projectEditor_stake_2_advOpt_14">—</Option>
-            <Option id="projectEditor_stake_2_advOpt_15">—</Option>
-            <Option id="projectEditor_stake_2_advOpt_16">—</Option>
-            <Option id="projectEditor_stake_2_advOpt_17">—</Option>
-            <Option id="projectEditor_stake_2_advOpt_18">—</Option>
-            <Option id="projectEditor_stake_2_advOpt_19">—</Option>
-            <Option id="projectEditor_stake_2_advOpt_20">—</Option>
-          </Dropdown>
+          <Button id="projectEditor_stake_2_advantage" class="projectEditor_adv_button" text="—" onClick="HUD_projectStakeAdvOpen" />
           <InputField id="projectEditor_stake_2_qty" class="projectEditor_integer_field" text="" />
         </HorizontalLayout>
         <HorizontalLayout id="projectEditor_stakeRow_3" class="projectEditor_stake_row" active="false">
@@ -219,29 +183,7 @@
             <Option>Black Caesar</Option>
             <Option>Coterie</Option>
           </Dropdown>
-          <Dropdown id="projectEditor_stake_3_advantage" class="projectEditor_dropdown" preferredWidth="280" onValueChanged="HUD_projectStakeDropdown(selectedIndex)">
-            <Option selected="true"> </Option>
-            <Option id="projectEditor_stake_3_advOpt_01">—</Option>
-            <Option id="projectEditor_stake_3_advOpt_02">—</Option>
-            <Option id="projectEditor_stake_3_advOpt_03">—</Option>
-            <Option id="projectEditor_stake_3_advOpt_04">—</Option>
-            <Option id="projectEditor_stake_3_advOpt_05">—</Option>
-            <Option id="projectEditor_stake_3_advOpt_06">—</Option>
-            <Option id="projectEditor_stake_3_advOpt_07">—</Option>
-            <Option id="projectEditor_stake_3_advOpt_08">—</Option>
-            <Option id="projectEditor_stake_3_advOpt_09">—</Option>
-            <Option id="projectEditor_stake_3_advOpt_10">—</Option>
-            <Option id="projectEditor_stake_3_advOpt_11">—</Option>
-            <Option id="projectEditor_stake_3_advOpt_12">—</Option>
-            <Option id="projectEditor_stake_3_advOpt_13">—</Option>
-            <Option id="projectEditor_stake_3_advOpt_14">—</Option>
-            <Option id="projectEditor_stake_3_advOpt_15">—</Option>
-            <Option id="projectEditor_stake_3_advOpt_16">—</Option>
-            <Option id="projectEditor_stake_3_advOpt_17">—</Option>
-            <Option id="projectEditor_stake_3_advOpt_18">—</Option>
-            <Option id="projectEditor_stake_3_advOpt_19">—</Option>
-            <Option id="projectEditor_stake_3_advOpt_20">—</Option>
-          </Dropdown>
+          <Button id="projectEditor_stake_3_advantage" class="projectEditor_adv_button" text="—" onClick="HUD_projectStakeAdvOpen" />
           <InputField id="projectEditor_stake_3_qty" class="projectEditor_integer_field" text="" />
         </HorizontalLayout>
         <HorizontalLayout id="projectEditor_stakeRow_4" class="projectEditor_stake_row" active="false">
@@ -254,29 +196,7 @@
             <Option>Black Caesar</Option>
             <Option>Coterie</Option>
           </Dropdown>
-          <Dropdown id="projectEditor_stake_4_advantage" class="projectEditor_dropdown" preferredWidth="280" onValueChanged="HUD_projectStakeDropdown(selectedIndex)">
-            <Option selected="true"> </Option>
-            <Option id="projectEditor_stake_4_advOpt_01">—</Option>
-            <Option id="projectEditor_stake_4_advOpt_02">—</Option>
-            <Option id="projectEditor_stake_4_advOpt_03">—</Option>
-            <Option id="projectEditor_stake_4_advOpt_04">—</Option>
-            <Option id="projectEditor_stake_4_advOpt_05">—</Option>
-            <Option id="projectEditor_stake_4_advOpt_06">—</Option>
-            <Option id="projectEditor_stake_4_advOpt_07">—</Option>
-            <Option id="projectEditor_stake_4_advOpt_08">—</Option>
-            <Option id="projectEditor_stake_4_advOpt_09">—</Option>
-            <Option id="projectEditor_stake_4_advOpt_10">—</Option>
-            <Option id="projectEditor_stake_4_advOpt_11">—</Option>
-            <Option id="projectEditor_stake_4_advOpt_12">—</Option>
-            <Option id="projectEditor_stake_4_advOpt_13">—</Option>
-            <Option id="projectEditor_stake_4_advOpt_14">—</Option>
-            <Option id="projectEditor_stake_4_advOpt_15">—</Option>
-            <Option id="projectEditor_stake_4_advOpt_16">—</Option>
-            <Option id="projectEditor_stake_4_advOpt_17">—</Option>
-            <Option id="projectEditor_stake_4_advOpt_18">—</Option>
-            <Option id="projectEditor_stake_4_advOpt_19">—</Option>
-            <Option id="projectEditor_stake_4_advOpt_20">—</Option>
-          </Dropdown>
+          <Button id="projectEditor_stake_4_advantage" class="projectEditor_adv_button" text="—" onClick="HUD_projectStakeAdvOpen" />
           <InputField id="projectEditor_stake_4_qty" class="projectEditor_integer_field" text="" />
         </HorizontalLayout>
         <HorizontalLayout id="projectEditor_stakeRow_5" class="projectEditor_stake_row" active="false">
@@ -289,29 +209,7 @@
             <Option>Black Caesar</Option>
             <Option>Coterie</Option>
           </Dropdown>
-          <Dropdown id="projectEditor_stake_5_advantage" class="projectEditor_dropdown" preferredWidth="280" onValueChanged="HUD_projectStakeDropdown(selectedIndex)">
-            <Option selected="true"> </Option>
-            <Option id="projectEditor_stake_5_advOpt_01">—</Option>
-            <Option id="projectEditor_stake_5_advOpt_02">—</Option>
-            <Option id="projectEditor_stake_5_advOpt_03">—</Option>
-            <Option id="projectEditor_stake_5_advOpt_04">—</Option>
-            <Option id="projectEditor_stake_5_advOpt_05">—</Option>
-            <Option id="projectEditor_stake_5_advOpt_06">—</Option>
-            <Option id="projectEditor_stake_5_advOpt_07">—</Option>
-            <Option id="projectEditor_stake_5_advOpt_08">—</Option>
-            <Option id="projectEditor_stake_5_advOpt_09">—</Option>
-            <Option id="projectEditor_stake_5_advOpt_10">—</Option>
-            <Option id="projectEditor_stake_5_advOpt_11">—</Option>
-            <Option id="projectEditor_stake_5_advOpt_12">—</Option>
-            <Option id="projectEditor_stake_5_advOpt_13">—</Option>
-            <Option id="projectEditor_stake_5_advOpt_14">—</Option>
-            <Option id="projectEditor_stake_5_advOpt_15">—</Option>
-            <Option id="projectEditor_stake_5_advOpt_16">—</Option>
-            <Option id="projectEditor_stake_5_advOpt_17">—</Option>
-            <Option id="projectEditor_stake_5_advOpt_18">—</Option>
-            <Option id="projectEditor_stake_5_advOpt_19">—</Option>
-            <Option id="projectEditor_stake_5_advOpt_20">—</Option>
-          </Dropdown>
+          <Button id="projectEditor_stake_5_advantage" class="projectEditor_adv_button" text="—" onClick="HUD_projectStakeAdvOpen" />
           <InputField id="projectEditor_stake_5_qty" class="projectEditor_integer_field" text="" />
         </HorizontalLayout>
         <HorizontalLayout id="projectEditor_stakeRow_6" class="projectEditor_stake_row" active="false">
@@ -324,29 +222,7 @@
             <Option>Black Caesar</Option>
             <Option>Coterie</Option>
           </Dropdown>
-          <Dropdown id="projectEditor_stake_6_advantage" class="projectEditor_dropdown" preferredWidth="280" onValueChanged="HUD_projectStakeDropdown(selectedIndex)">
-            <Option selected="true"> </Option>
-            <Option id="projectEditor_stake_6_advOpt_01">—</Option>
-            <Option id="projectEditor_stake_6_advOpt_02">—</Option>
-            <Option id="projectEditor_stake_6_advOpt_03">—</Option>
-            <Option id="projectEditor_stake_6_advOpt_04">—</Option>
-            <Option id="projectEditor_stake_6_advOpt_05">—</Option>
-            <Option id="projectEditor_stake_6_advOpt_06">—</Option>
-            <Option id="projectEditor_stake_6_advOpt_07">—</Option>
-            <Option id="projectEditor_stake_6_advOpt_08">—</Option>
-            <Option id="projectEditor_stake_6_advOpt_09">—</Option>
-            <Option id="projectEditor_stake_6_advOpt_10">—</Option>
-            <Option id="projectEditor_stake_6_advOpt_11">—</Option>
-            <Option id="projectEditor_stake_6_advOpt_12">—</Option>
-            <Option id="projectEditor_stake_6_advOpt_13">—</Option>
-            <Option id="projectEditor_stake_6_advOpt_14">—</Option>
-            <Option id="projectEditor_stake_6_advOpt_15">—</Option>
-            <Option id="projectEditor_stake_6_advOpt_16">—</Option>
-            <Option id="projectEditor_stake_6_advOpt_17">—</Option>
-            <Option id="projectEditor_stake_6_advOpt_18">—</Option>
-            <Option id="projectEditor_stake_6_advOpt_19">—</Option>
-            <Option id="projectEditor_stake_6_advOpt_20">—</Option>
-          </Dropdown>
+          <Button id="projectEditor_stake_6_advantage" class="projectEditor_adv_button" text="—" onClick="HUD_projectStakeAdvOpen" />
           <InputField id="projectEditor_stake_6_qty" class="projectEditor_integer_field" text="" />
         </HorizontalLayout>
         <HorizontalLayout id="projectEditor_stakeRow_7" class="projectEditor_stake_row" active="false">
@@ -359,29 +235,7 @@
             <Option>Black Caesar</Option>
             <Option>Coterie</Option>
           </Dropdown>
-          <Dropdown id="projectEditor_stake_7_advantage" class="projectEditor_dropdown" preferredWidth="280" onValueChanged="HUD_projectStakeDropdown(selectedIndex)">
-            <Option selected="true"> </Option>
-            <Option id="projectEditor_stake_7_advOpt_01">—</Option>
-            <Option id="projectEditor_stake_7_advOpt_02">—</Option>
-            <Option id="projectEditor_stake_7_advOpt_03">—</Option>
-            <Option id="projectEditor_stake_7_advOpt_04">—</Option>
-            <Option id="projectEditor_stake_7_advOpt_05">—</Option>
-            <Option id="projectEditor_stake_7_advOpt_06">—</Option>
-            <Option id="projectEditor_stake_7_advOpt_07">—</Option>
-            <Option id="projectEditor_stake_7_advOpt_08">—</Option>
-            <Option id="projectEditor_stake_7_advOpt_09">—</Option>
-            <Option id="projectEditor_stake_7_advOpt_10">—</Option>
-            <Option id="projectEditor_stake_7_advOpt_11">—</Option>
-            <Option id="projectEditor_stake_7_advOpt_12">—</Option>
-            <Option id="projectEditor_stake_7_advOpt_13">—</Option>
-            <Option id="projectEditor_stake_7_advOpt_14">—</Option>
-            <Option id="projectEditor_stake_7_advOpt_15">—</Option>
-            <Option id="projectEditor_stake_7_advOpt_16">—</Option>
-            <Option id="projectEditor_stake_7_advOpt_17">—</Option>
-            <Option id="projectEditor_stake_7_advOpt_18">—</Option>
-            <Option id="projectEditor_stake_7_advOpt_19">—</Option>
-            <Option id="projectEditor_stake_7_advOpt_20">—</Option>
-          </Dropdown>
+          <Button id="projectEditor_stake_7_advantage" class="projectEditor_adv_button" text="—" onClick="HUD_projectStakeAdvOpen" />
           <InputField id="projectEditor_stake_7_qty" class="projectEditor_integer_field" text="" />
         </HorizontalLayout>
         <HorizontalLayout id="projectEditor_stakeRow_8" class="projectEditor_stake_row" active="false">
@@ -394,31 +248,35 @@
             <Option>Black Caesar</Option>
             <Option>Coterie</Option>
           </Dropdown>
-          <Dropdown id="projectEditor_stake_8_advantage" class="projectEditor_dropdown" preferredWidth="280" onValueChanged="HUD_projectStakeDropdown(selectedIndex)">
-            <Option selected="true"> </Option>
-            <Option id="projectEditor_stake_8_advOpt_01">—</Option>
-            <Option id="projectEditor_stake_8_advOpt_02">—</Option>
-            <Option id="projectEditor_stake_8_advOpt_03">—</Option>
-            <Option id="projectEditor_stake_8_advOpt_04">—</Option>
-            <Option id="projectEditor_stake_8_advOpt_05">—</Option>
-            <Option id="projectEditor_stake_8_advOpt_06">—</Option>
-            <Option id="projectEditor_stake_8_advOpt_07">—</Option>
-            <Option id="projectEditor_stake_8_advOpt_08">—</Option>
-            <Option id="projectEditor_stake_8_advOpt_09">—</Option>
-            <Option id="projectEditor_stake_8_advOpt_10">—</Option>
-            <Option id="projectEditor_stake_8_advOpt_11">—</Option>
-            <Option id="projectEditor_stake_8_advOpt_12">—</Option>
-            <Option id="projectEditor_stake_8_advOpt_13">—</Option>
-            <Option id="projectEditor_stake_8_advOpt_14">—</Option>
-            <Option id="projectEditor_stake_8_advOpt_15">—</Option>
-            <Option id="projectEditor_stake_8_advOpt_16">—</Option>
-            <Option id="projectEditor_stake_8_advOpt_17">—</Option>
-            <Option id="projectEditor_stake_8_advOpt_18">—</Option>
-            <Option id="projectEditor_stake_8_advOpt_19">—</Option>
-            <Option id="projectEditor_stake_8_advOpt_20">—</Option>
-          </Dropdown>
+          <Button id="projectEditor_stake_8_advantage" class="projectEditor_adv_button" text="—" onClick="HUD_projectStakeAdvOpen" />
           <InputField id="projectEditor_stake_8_qty" class="projectEditor_integer_field" text="" />
         </HorizontalLayout>
+        <Panel id="projectEditor_advPicker" class="projectEditor_adv_picker" active="false">
+          <VerticalLayout class="projectEditor_adv_picker_list" spacing="2">
+            <Text id="projectEditor_advPicker_title" class="projectEditor_text_wide" text="Select advantage" fontSize="12" color="#FFD700" />
+          <Button id="projectEditor_advPick_01" class="projectEditor_adv_pick_button" text="—" onClick="HUD_projectAdvPick" />
+          <Button id="projectEditor_advPick_02" class="projectEditor_adv_pick_button" text="—" onClick="HUD_projectAdvPick" />
+          <Button id="projectEditor_advPick_03" class="projectEditor_adv_pick_button" text="—" onClick="HUD_projectAdvPick" />
+          <Button id="projectEditor_advPick_04" class="projectEditor_adv_pick_button" text="—" onClick="HUD_projectAdvPick" />
+          <Button id="projectEditor_advPick_05" class="projectEditor_adv_pick_button" text="—" onClick="HUD_projectAdvPick" />
+          <Button id="projectEditor_advPick_06" class="projectEditor_adv_pick_button" text="—" onClick="HUD_projectAdvPick" />
+          <Button id="projectEditor_advPick_07" class="projectEditor_adv_pick_button" text="—" onClick="HUD_projectAdvPick" />
+          <Button id="projectEditor_advPick_08" class="projectEditor_adv_pick_button" text="—" onClick="HUD_projectAdvPick" />
+          <Button id="projectEditor_advPick_09" class="projectEditor_adv_pick_button" text="—" onClick="HUD_projectAdvPick" />
+          <Button id="projectEditor_advPick_10" class="projectEditor_adv_pick_button" text="—" onClick="HUD_projectAdvPick" />
+          <Button id="projectEditor_advPick_11" class="projectEditor_adv_pick_button" text="—" onClick="HUD_projectAdvPick" />
+          <Button id="projectEditor_advPick_12" class="projectEditor_adv_pick_button" text="—" onClick="HUD_projectAdvPick" />
+          <Button id="projectEditor_advPick_13" class="projectEditor_adv_pick_button" text="—" onClick="HUD_projectAdvPick" />
+          <Button id="projectEditor_advPick_14" class="projectEditor_adv_pick_button" text="—" onClick="HUD_projectAdvPick" />
+          <Button id="projectEditor_advPick_15" class="projectEditor_adv_pick_button" text="—" onClick="HUD_projectAdvPick" />
+          <Button id="projectEditor_advPick_16" class="projectEditor_adv_pick_button" text="—" onClick="HUD_projectAdvPick" />
+          <Button id="projectEditor_advPick_17" class="projectEditor_adv_pick_button" text="—" onClick="HUD_projectAdvPick" />
+          <Button id="projectEditor_advPick_18" class="projectEditor_adv_pick_button" text="—" onClick="HUD_projectAdvPick" />
+          <Button id="projectEditor_advPick_19" class="projectEditor_adv_pick_button" text="—" onClick="HUD_projectAdvPick" />
+          <Button id="projectEditor_advPick_20" class="projectEditor_adv_pick_button" text="—" onClick="HUD_projectAdvPick" />
+            <Button id="projectEditor_advPick_cancel" class="projectEditor_cancel_button" preferredWidth="120" text="Close" onClick="HUD_projectAdvPickCancel" />
+          </VerticalLayout>
+        </Panel>
         <Text id="projectEditor_stakeValidation" class="projectEditor_text_wide" text="" alignment="MiddleLeft" fontSize="12" color="#FF0000" flexibleWidth="0" preferredWidth="1000" minHeight="25" fontStyle="Italic"  />
       </VerticalLayout>
 

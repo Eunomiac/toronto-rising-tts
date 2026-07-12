@@ -17,6 +17,7 @@ local selectedTarget = nil
 local editingId = nil
 local editorDraft = {}
 local stakeAdvMaps = {}
+local advPickerRow = nil
 
 local setAttr
 local setAttrs
@@ -34,6 +35,9 @@ local refreshDerivedFields
 local refillAdvantageOptions
 local activateStakeRows
 local refreshAfterMutation
+local advantageButtonLabel
+local showAdvPicker
+local hideAdvPicker
 
 setAttr = function(id, attr, val)
   U.setAttribute(id, attr, tostring(val))
@@ -132,7 +136,6 @@ projectFromDraft = function()
 end
 
 refreshStakeRow = function(row)
-  local rowId = "projectEditor_stakeRow_" .. tostring(row)
   local sourceId = "projectEditor_stake_" .. tostring(row) .. "_source"
   local advId = "projectEditor_stake_" .. tostring(row) .. "_advantage"
   local qtyId = "projectEditor_stake_" .. tostring(row) .. "_qty"
@@ -144,21 +147,65 @@ refreshStakeRow = function(row)
   local advIdx = math.floor(tonumber(rowData.advantage) or 0)
   local qty = math.floor(tonumber(rowData.qty) or 0)
   setAttr(sourceId, "value", tostring(sourceIdx))
-  setAttr(advId, "value", tostring(advIdx))
+  setAttr(advId, "text", advantageButtonLabel(row, advIdx))
   setAttr(qtyId, "text", qty > 0 and tostring(qty) or "")
+end
+
+--- Button label for the selected stake advantage (Dropdown Option text cannot be refreshed in TTS).
+advantageButtonLabel = function(row, advIdx)
+  local advList = stakeAdvMaps[row]
+  local idx = math.floor(tonumber(advIdx) or 0)
+  if type(advList) == "table" and idx > 0 and advList[idx] ~= nil then
+    local label = advList[idx].label
+    if type(label) == "string" and label ~= "" then
+      return label
+    end
+  end
+  return "—"
+end
+
+hideAdvPicker = function()
+  advPickerRow = nil
+  setAttr("projectEditor_advPicker", "active", "false")
+end
+
+showAdvPicker = function(row)
+  advPickerRow = row
+  local advList = stakeAdvMaps[row]
+  if type(advList) ~= "table" then
+    advList = {}
+    stakeAdvMaps[row] = advList
+  end
+  local sourceKey = Projects.sourceKeyFromSelectedIndex((editorDraft.stakeRows[row] and editorDraft.stakeRows[row].source) or 0)
+  local title = "Select advantage"
+  if type(sourceKey) == "string" then
+    title = "Select advantage (" .. sourceKey .. ")"
+  end
+  setAttr("projectEditor_advPicker_title", "text", title)
+  for opt = 1, Projects.ADV_OPTION_POOL do
+    local nn = string.format("%02d", opt)
+    local btnId = "projectEditor_advPick_" .. nn
+    local entry = advList[opt]
+    if entry ~= nil and type(entry.label) == "string" and entry.label ~= "" then
+      setAttr(btnId, "text", entry.label)
+      setAttr(btnId, "active", "true")
+    else
+      setAttr(btnId, "text", "—")
+      setAttr(btnId, "active", "false")
+    end
+  end
+  setAttr("projectEditor_advPicker", "active", "true")
 end
 
 refillAdvantageOptions = function(row, sourceKey)
   local advList = Projects.listAdvantagesForSource(sourceKey)
   stakeAdvMaps[row] = advList
-  for opt = 1, Projects.ADV_OPTION_POOL do
-    local nn = string.format("%02d", opt)
-    local optId = "projectEditor_stake_" .. tostring(row) .. "_advOpt_" .. nn
-    local entry = advList[opt]
-    -- Option labels are element content (`<Option>…</Option>`), not a text attribute.
-    local label = (entry ~= nil and type(entry.label) == "string" and entry.label ~= "") and entry.label or "—"
-    UI.setValue(optId, label)
+  if advPickerRow == row then
+    showAdvPicker(row)
   end
+  local rowData = editorDraft.stakeRows[row]
+  local advIdx = type(rowData) == "table" and rowData.advantage or 0
+  setAttr("projectEditor_stake_" .. tostring(row) .. "_advantage", "text", advantageButtonLabel(row, advIdx))
 end
 
 activateStakeRows = function()
@@ -329,6 +376,7 @@ openEditor = function(projectId)
   end
   editorDraft = {}
   stakeAdvMaps = {}
+  hideAdvPicker()
   syncEditorFromProject(project)
   setAttr("projectEditor_modal", "active", "true")
 end
@@ -337,6 +385,7 @@ closeEditor = function()
   editingId = nil
   editorDraft = {}
   stakeAdvMaps = {}
+  hideAdvPicker()
   setAttr("projectEditor_modal", "active", "false")
 end
 
@@ -469,24 +518,74 @@ function PJP.onStakeDropdown(id, selectedIndex)
     return
   end
   local row, field = id:match("^projectEditor_stake_(%d+)_(%w+)$")
-  if row == nil or field == nil then
+  if row == nil or field == nil or field ~= "source" then
     return
   end
   local rowNum = tonumber(row)
   if editorDraft.stakeRows[rowNum] == nil then
     editorDraft.stakeRows[rowNum] = { source = 0, advantage = 0, qty = 0 }
   end
-  editorDraft.stakeRows[rowNum][field] = math.floor(tonumber(selectedIndex) or 0)
-  if field == "source" then
-    local sourceKey = Projects.sourceKeyFromSelectedIndex(selectedIndex)
-    if type(sourceKey) == "string" then
-      refillAdvantageOptions(rowNum, sourceKey)
-    end
-    editorDraft.stakeRows[rowNum].advantage = 0
-    refreshStakeRow(rowNum)
+  editorDraft.stakeRows[rowNum].source = math.floor(tonumber(selectedIndex) or 0)
+  editorDraft.stakeRows[rowNum].advantage = 0
+  local sourceKey = Projects.sourceKeyFromSelectedIndex(selectedIndex)
+  if type(sourceKey) == "string" then
+    refillAdvantageOptions(rowNum, sourceKey)
+  else
+    stakeAdvMaps[rowNum] = {}
+    setAttr("projectEditor_stake_" .. tostring(rowNum) .. "_advantage", "text", "—")
   end
+  refreshStakeRow(rowNum)
   syncEditorToProject()
   refreshDerivedFields()
+end
+
+--- @param id string projectEditor_stake_N_advantage
+function PJP.onStakeAdvOpen(id)
+  if type(id) ~= "string" then
+    return
+  end
+  local row = id:match("^projectEditor_stake_(%d+)_advantage$")
+  if row == nil then
+    return
+  end
+  local rowNum = tonumber(row)
+  if editorDraft.stakeRows[rowNum] == nil then
+    editorDraft.stakeRows[rowNum] = { source = 0, advantage = 0, qty = 0 }
+  end
+  local sourceKey = Projects.sourceKeyFromSelectedIndex(editorDraft.stakeRows[rowNum].source or 0)
+  if type(sourceKey) ~= "string" then
+    setAttr("projectEditor_stakeValidation", "text", "Select a source before choosing an advantage.")
+    return
+  end
+  if type(stakeAdvMaps[rowNum]) ~= "table" or #stakeAdvMaps[rowNum] == 0 then
+    refillAdvantageOptions(rowNum, sourceKey)
+  end
+  showAdvPicker(rowNum)
+end
+
+--- @param id string projectEditor_advPick_NN
+function PJP.onAdvPick(id)
+  if type(id) ~= "string" or advPickerRow == nil then
+    return
+  end
+  local nn = id:match("^projectEditor_advPick_(%d+)$")
+  if nn == nil then
+    return
+  end
+  local advIdx = tonumber(nn)
+  local rowNum = advPickerRow
+  if editorDraft.stakeRows[rowNum] == nil then
+    editorDraft.stakeRows[rowNum] = { source = 0, advantage = 0, qty = 0 }
+  end
+  editorDraft.stakeRows[rowNum].advantage = advIdx
+  hideAdvPicker()
+  refreshStakeRow(rowNum)
+  syncEditorToProject()
+  refreshDerivedFields()
+end
+
+function PJP.onAdvPickCancel()
+  hideAdvPicker()
 end
 
 function PJP.onConfirm()
