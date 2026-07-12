@@ -225,6 +225,18 @@ end
 3. Implement **guard first**, handler body second — PR review checks guard line count ≤ 3 before any `require` / loop / sync.
 4. If the handler mutates world state, follow [Reconciler Contract](Reconciler%20Contract.md): mutate state, then narrow sync — never hide reconcile in a drop handler unless explicitly spec'd (Gameboard pick-up flags are ephemeral runtime context, not `gameState`).
 
+## Blindfold raise — default camera (TOR-368)
+
+Before any blindfold comes **up**, call `M.setDefaultCameraBeforeBlindfold` (or equivalent `M.setCamera(..., "default")`):
+
+| Raise path | File | When |
+| --- | --- | --- |
+| Global overlay show | `global_script.showStartupLoadingOverlays` | before `UI.show(overlay_globalBlindfold)` |
+| Per-player transition | `HUDBF.beginTransition` | before `Conditions.setEvent(hudBlindfold)` |
+| PCs panel Blind toggle on | `PCST` `blindfoldToggle` | before `Conditions.setManual(hudBlindfold)` |
+
+Lift paths may still reset cameras again (existing settle behavior).
+
 ## Follow-ups (outside TOR-197 scope)
 
 - [x] Sync audit — inventory + actor-identity gates + Global.call routing (TOR-144 prep)

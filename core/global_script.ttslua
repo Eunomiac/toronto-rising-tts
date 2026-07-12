@@ -400,6 +400,11 @@ end
 
 --- Restore global blindfold for all clients (Intermission enter / connect policy).
 local function showStartupLoadingOverlays()
+    -- TOR-368: default cameras before the overlay comes up.
+    local Main = require("core.main")
+    if type(Main.setDefaultCameraBeforeBlindfold) == "function" then
+        Main.setDefaultCameraBeforeBlindfold("ALL")
+    end
     if type(U.setAttribute) == "function" then
         U.setAttribute(STARTUP_LOADING_OVERLAY_ID, "active", "true")
     elseif type(UI.setAttribute) == "function" then

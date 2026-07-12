@@ -400,6 +400,16 @@ function M.setCamera(player, cameraMode, lookAtPos)
   end
 end
 
+--- TOR-368: reset cameras to default before any blindfold raise (global or per-player).
+--- @param colorOrPlayer string|Player|nil  nil/"ALL" → every seated player; else that seat only
+function M.setDefaultCameraBeforeBlindfold(colorOrPlayer)
+  if colorOrPlayer == nil or colorOrPlayer == "ALL" then
+    M.setCamera("ALL", "default")
+    return
+  end
+  M.setCamera(colorOrPlayer, "default")
+end
+
 --[[
     Handle object drop events
     Delegates to appropriate modules based on object type and context.
