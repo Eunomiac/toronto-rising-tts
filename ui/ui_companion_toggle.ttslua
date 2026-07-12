@@ -35,7 +35,12 @@ end
 --- @param clickColor string
 --- @param altClick boolean|string|nil  true / "-2" / right-click
 function click_companionToggle(_obj, clickColor, altClick)
-    local isAlt = altClick == true or altClick == "-2" or altClick == -2
+    -- TTS createButton: alt_click true for non-left; some hosts pass string/number forms.
+    local isAlt = altClick == true
+        or altClick == "-2"
+        or altClick == -2
+        or tostring(altClick) == "true"
+        or tostring(altClick) == "True"
     if Global == nil or type(Global.call) ~= "function" then
         print("[CompanionToggle] Global.call unavailable")
         return

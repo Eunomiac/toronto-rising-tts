@@ -2,6 +2,7 @@
     Companion toggle tiles — Red/Brown famulus (lib/companion_toggle.ttslua)
 
     Host-only world I/O. Object scripts route via GlobalApplyCompanionToggleClick (TOR-288).
+    Famulus figurines are multi-state objects (one live GUID); use setState to cycle looks.
     Purple tiles deferred (figurines not in save yet).
 ]]
 
@@ -40,14 +41,14 @@ function CompanionToggle.ownerColorForToggleGuid(toggleGuid)
 end
 
 --- @param ownerColor string
---- @return table|nil  { [1]=guid, [2]=guid }
+--- @return table|nil  state-keyed GUID map `{ [1]=guid, [2]=guid }`
 local function figurineGuidMap(ownerColor)
     local key = GUIDS_KEY_BY_OWNER[ownerColor]
     if type(key) ~= "string" then
         return nil
     end
     local map = G.GUIDS[key]
-    if type(map) ~= "table" then
+    if type(map) ~= "table" or not G.isStateGuidTable(map) then
         return nil
     end
     return map
@@ -71,13 +72,15 @@ local function poseYs(ownerColor)
     return onY, offY
 end
 
---- @param guid string
+--- Live multi-state figurine (only the active state GUID resolves).
+--- @param ownerColor string
 --- @return Object|nil
-local function getObj(guid)
-    if type(guid) ~= "string" or guid == "" then
+local function getFigurineObject(ownerColor)
+    local map = figurineGuidMap(ownerColor)
+    if map == nil then
         return nil
     end
-    return G.getObject(guid)
+    return G.getObject(map)
 end
 
 --- @param obj Object|nil
@@ -109,35 +112,46 @@ end
 --- @param ownerColor string
 --- @return boolean
 local function isFigurineActive(ownerColor)
-    local map = figurineGuidMap(ownerColor)
-    if map == nil then
-        return false
+    local y = objY(getFigurineObject(ownerColor))
+    return type(y) == "number" and y > ACTIVE_Y_MIN
+end
+
+--- @param map table
+--- @param activeGuid string|nil
+--- @return number 1|2
+local function stateIndexForGuid(map, activeGuid)
+    if type(activeGuid) ~= "string" then
+        return 1
     end
     for state = 1, 2 do
-        local y = objY(getObj(map[state]))
-        if type(y) == "number" and y > ACTIVE_Y_MIN then
-            return true
+        if map[state] == activeGuid then
+            return state
         end
     end
-    return false
+    return 1
 end
 
 --- @param ownerColor string
 --- @return number 1|2
 local function resolveActiveState(ownerColor)
+    local map = figurineGuidMap(ownerColor)
+    local fig = getFigurineObject(ownerColor)
+    if fig ~= nil and type(fig.getStateId) == "function" then
+        local sid = fig.getStateId()
+        if sid == 1 or sid == 2 then
+            return sid
+        end
+    end
+    if map ~= nil then
+        local activeGuid = G.getActiveGuid(map)
+        local fromGuid = stateIndexForGuid(map, activeGuid)
+        if activeGuid ~= nil then
+            return fromGuid
+        end
+    end
     local persisted = S.getStateVal("runtime", "companionFigurineState", ownerColor)
     if persisted == 1 or persisted == 2 then
         return persisted
-    end
-    local map = figurineGuidMap(ownerColor)
-    if map == nil then
-        return 1
-    end
-    for state = 1, 2 do
-        local y = objY(getObj(map[state]))
-        if type(y) == "number" and y > ACTIVE_Y_MIN then
-            return state
-        end
     end
     return 1
 end
@@ -151,48 +165,69 @@ local function persistActiveState(ownerColor, state)
     S.setStateVal(state, "runtime", "companionFigurineState", ownerColor)
 end
 
---- @param ownerColor string
---- @param active boolean
---- @param state number|nil
-local function applyFigurineVisibility(ownerColor, active, state)
-    local map = figurineGuidMap(ownerColor)
-    if map == nil then
-        print("[CompanionToggle] Missing figurine GUID map for " .. tostring(ownerColor))
-        return
-    end
-    local onY, offY = poseYs(ownerColor)
-    local wantState = state or resolveActiveState(ownerColor)
-    if wantState ~= 1 and wantState ~= 2 then
-        wantState = 1
-    end
-    for s = 1, 2 do
-        local obj = getObj(map[s])
-        if active == true and s == wantState then
-            setObjY(obj, onY)
-        else
-            setObjY(obj, offY)
-        end
-    end
-    persistActiveState(ownerColor, wantState)
-end
-
+--- Face-up (enabled) = rotX 0; face-down (disabled) = rotX 180. Preserve Y/Z.
 --- @param toggleObj Object|nil
-local function flipToggleToken(toggleObj)
+--- @param enabled boolean
+local function setToggleTokenFace(toggleObj, enabled)
     if toggleObj == nil then
-        return
-    end
-    if type(toggleObj.flip) == "function" then
-        toggleObj.flip()
         return
     end
     local rot = toggleObj.getRotation()
     if type(rot) ~= "userdata" and type(rot) ~= "table" then
         return
     end
-    toggleObj.setRotation({ x = (rot.x or 0) + 180, y = rot.y or 0, z = rot.z or 0 })
+    local wantX = enabled and 0 or 180
+    toggleObj.setRotation({
+        x = wantX,
+        y = rot.y or 0,
+        z = rot.z or 0,
+    })
 end
 
---- Left: toggle on/off + flip token. Right: cycle state 1↔2 if on.
+--- Raise/park the live figurine; optionally switch multi-state look via setState.
+--- @param ownerColor string
+--- @param active boolean
+--- @param state number|nil 1|2
+--- @return Object|nil live figurine after apply
+local function applyFigurineVisibility(ownerColor, active, state)
+    local map = figurineGuidMap(ownerColor)
+    if map == nil then
+        print("[CompanionToggle] Missing figurine GUID map for " .. tostring(ownerColor))
+        return nil
+    end
+    local onY, offY = poseYs(ownerColor)
+    local wantState = state or resolveActiveState(ownerColor)
+    if wantState ~= 1 and wantState ~= 2 then
+        wantState = 1
+    end
+
+    local fig = G.getObject(map)
+    if fig == nil then
+        print("[CompanionToggle] No live figurine for " .. tostring(ownerColor)
+            .. " (check FAMULUS_FIGURINE_* state GUIDs)")
+        return nil
+    end
+
+    if active == true then
+        local curId = type(fig.getStateId) == "function" and fig.getStateId() or nil
+        if curId ~= wantState and type(fig.setState) == "function" then
+            local switched = fig.setState(wantState)
+            if switched ~= nil then
+                fig = switched
+            else
+                fig = G.getObject(map) or fig
+            end
+        end
+        setObjY(fig, onY)
+    else
+        setObjY(fig, offY)
+    end
+
+    persistActiveState(ownerColor, wantState)
+    return fig
+end
+
+--- Left: toggle on/off + face token. Right: cycle state 1↔2 if on.
 --- @param params table { toggleGuid: string, playerColor: string, altClick?: boolean }
 --- @return boolean|nil
 function CompanionToggle.handleClick(params)
@@ -212,7 +247,7 @@ function CompanionToggle.handleClick(params)
         return false
     end
 
-    local toggleObj = getObj(toggleGuid)
+    local toggleObj = G.getObject(toggleGuid)
     local active = isFigurineActive(owner)
     local state = resolveActiveState(owner)
 
@@ -222,12 +257,13 @@ function CompanionToggle.handleClick(params)
         end
         local nextState = state == 1 and 2 or 1
         applyFigurineVisibility(owner, true, nextState)
+        setToggleTokenFace(toggleObj, true)
         return true
     end
 
     local nextActive = not active
     applyFigurineVisibility(owner, nextActive, state)
-    flipToggleToken(toggleObj)
+    setToggleTokenFace(toggleObj, nextActive)
     return nextActive
 end
 

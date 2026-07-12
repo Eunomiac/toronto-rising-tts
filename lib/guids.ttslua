@@ -185,8 +185,10 @@ G.GUIDS = {
     FAMULUS_LIGHT_1_BROWN = "645352",
     FAMULUS_LIGHT_2_RED = "dd1763",
     FAMULUS_LIGHT_2_BROWN = "c78daf",
+    -- Multi-state: only the active state's GUID is live (TS_Save_230). State 2 is current when
+    -- the object root GUID is listed under [2] and States["1"] holds the other look.
     FAMULUS_FIGURINE_RED = { [1] = "2c2301", [2] = "745688" },
-    FAMULUS_FIGURINE_BROWN = { [1] = "923797", [2] = "7aabf7" },
+    FAMULUS_FIGURINE_BROWN = { [1] = "923797", [2] = "41bdb9" },
 
     -- Soundscape AssetBundle Objects
 
