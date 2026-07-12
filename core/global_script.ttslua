@@ -483,8 +483,14 @@ local function markSeatXmlRefreshDone(player, seatColor)
     seatXmlRefreshDoneByPlayer[key][seatColor] = true
 end
 
+--- Seconds to wait before TOR-285 full XmlUI rebuild on seat assign.
+--- Immediate setXml during join sync correlated with client connection timeouts
+--- (Grey→PC seat change after partial join: music + blindfold visible, then timeout).
+local SEAT_ASSIGN_SET_XML_DEFER_SEC = 4
+
 --- Re-evaluate XmlUI visibility after seat assignment (TTS engine snapshotted-at-load quirk; TOR-285).
 --- Full `UI.setXml` runs once per player per seat color after connect; later hotseat swaps skip it.
+--- Deferred briefly so join-client state sync can finish before the Global UI rebuild (TOR-374).
 --- @param seatColor string
 local function refreshGlobalUiAfterSeatAssignment(seatColor)
     if type(seatColor) ~= "string" or seatColor == "" or seatColor == "Grey" then
@@ -579,8 +585,29 @@ local function refreshGlobalUiAfterSeatAssignment(seatColor)
     if U.isPlayer(seated) then
         shouldMarkSeatRefreshDone = true
     end
-    UI.setXml(xml)
-    schedulePostSeatUiRefresh()
+
+    -- TOR-374: defer full rebuild so join sync can complete; TOR-285 still needs setXml eventually.
+    print(string.format(
+        "[SeatUI] Deferring UI.setXml for %s by %.1fs (join-timeout mitigation)",
+        tostring(seatColor),
+        SEAT_ASSIGN_SET_XML_DEFER_SEC
+    ))
+    U.delay(function()
+        if type(UI.setXml) ~= "function" then
+            return
+        end
+        -- Prefer live XML if still available (other UI mutations may have landed during defer).
+        local liveXml = nil
+        if type(UI.getXml) == "function" then
+            liveXml = UI.getXml()
+        end
+        if type(liveXml) == "string" and liveXml ~= "" then
+            UI.setXml(liveXml)
+        else
+            UI.setXml(xml)
+        end
+        schedulePostSeatUiRefresh()
+    end, SEAT_ASSIGN_SET_XML_DEFER_SEC)
 end
 
 --- Bundle-safe seat-assignment UI refresh (`Global.call` from `core/main.ttslua` auto-assign early return).

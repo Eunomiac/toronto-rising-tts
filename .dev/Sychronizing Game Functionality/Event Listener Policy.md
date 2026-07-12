@@ -53,7 +53,7 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | `onObjectRandomize` | `global_script` | Host | B+C | d10 tag | roll FSM + lights | High | 4 |
 | `onObjectLeaveContainer` | `global_script` | Host | B | d10 tag | GM Notes | Med | 4 |
 | `onPlayerConnect` | `global_script` | Host | B | — | Steam ID → `C.PlayerData.color` (incl. Black); unregistered → White; **Grey join is valid current seat** (TOR-372 amend of TOR-345); load: `M.assignAllConnectedSeatsFromChronicle`. TOR-319: Intermission keeps blindfold; else `Phases.lowerBlindfoldForConnectingPlayer`. | Med | 4 |
-| `onPlayerChangeColor` | `global_script` | Host | B | UI refresh on join-client / first-connect seat; Host hotseat swaps manual via `HUD_refreshUi` | state row | Med | 4 |
+| `onPlayerChangeColor` | `global_script` | Host | B | UI refresh on join-client / first-connect seat; Host hotseat swaps manual via `HUD_refreshUi`; TOR-374 defers first-visit `UI.setXml` ~4s | state row | Med | 4 |
 | `addHotkey` (`Spotlight NPC (hold)`) | `global_script` | Clicker (per player) | C | ST steam in callee | transient spotlights | Low | — |
 
 ### `Global.call` targets (mutating)

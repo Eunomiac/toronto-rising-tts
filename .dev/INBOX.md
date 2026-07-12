@@ -17,16 +17,22 @@ Verification:
 - processed items move out of active capture sections
 - `.dev/RUNNING TASKLIST.md` and Linear stay aligned
 
-## Quick Fixes
-
-
-
-## Priority Fixes - Move to Top of Focus Stack for Immediate Work
-
-
 ## Active
 
 
+## Initial/Priority Issues: Implement Plan for Immediate Resolution
+- [Scene Apply] On scene transition, every signal light turned on when one player's was left on. Investigate why (i.e. don't just harden signal lights against activation, there should be a reason why this happened)
+- [Prince's Court Coterie Sheet XML Updates] Client reported flashing trackers on front page left of court coterie sheet (i.e. players' Health/Willpower/Humanity/Hunger bars). Suggests multiple unnecessary repeat calculations/operations?
+- [Table Seat Models] Orange throne is backwards; requires 180 degree corrective rotation around the y-axis in the post corrections (and/or confirmation that post corrections are properly being applied).
+- [Map Panel XML] Add a buffer space to the top of map so that player pins at locations in the far north of the city aren't cut off by top of screen
+
+
+## Performance Issues: Explore & Explain
+- ~~[Multiplayer] [Connection] timeouts on join~~ → **TOR-374** (deferred `UI.setXml` on Grey→PC seat assign; author: timeout after Host seated them Orange; partial join had music + blindfold). See investigation report.
+- ~~[Performance] Erratic Hunger 5 overlay pulse~~ → **TOR-373** (pulse layer removed; static `overlay_hunger_5` only).
+
+## Log to Linear
+- [Future] Implement player-initiated note creation, editing and persistent display on final page right of coterie sheet: Display notes compactly by title, sorted by date, their details revealed on click or as hover-over tooltip.
 
 ## External Work (Set STATUS to "External To Do")
 
