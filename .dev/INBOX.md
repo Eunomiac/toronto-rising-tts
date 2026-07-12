@@ -21,8 +21,7 @@ Verification:
 
 
 
-## Priority Fixes - Move to Top of Focus Stack
-
+## Priority Fixes - Move to Top of Focus Stack for Immediate Work
 
 
 ## Active
@@ -49,7 +48,19 @@ Verification:
 
 ## Processed
 
+2026-07-12 INBOX Priority Fixes — END library wipe (capture only) → **TOR-365** (Scenes Bug, High; relatedTo **TOR-145**; not in implement batch)
 
+2026-07-12 INBOX Priority Fixes — Focus re-stack: #1 **TOR-149**, #2 **TOR-344**, #3 **TOR-369**, #4 **TOR-366**, #5 **TOR-368**, #6 **TOR-288**, #7 **TOR-367** (also created **TOR-365** capture-only)
+
+2026-07-12 INBOX Priority Fixes — stage figurine lerp confirm → **TOR-367** (NPC Improvement, High; parent **TOR-169**)
+
+2026-07-12 INBOX Priority Fixes — Intermission theme fade-in → **TOR-366** (Soundscape Bug, High; relatedTo **TOR-360**)
+
+2026-07-12 INBOX Priority Fixes — camera before blindfold raise → **TOR-368** (Lighting Bug, High; parent **TOR-34**)
+
+2026-07-12 INBOX Priority Fixes — stage spotlight long-way rotation → **TOR-369** (NPC Bug, High; parent **TOR-169**)
+
+2026-07-12 INBOX Priority Fixes — promote **TOR-149** (ST tray lights) + **TOR-344** (ST drawer X/Z) + scoped **TOR-288** (Red/Brown famulus)
 
 2026-07-11 INBOX Quick Fix — constants unicode-minus normalize in npm build → **TOR-342** (Foundation Improvement, Low; parent **TOR-30**; relatedTo **TOR-137**; shipped)
 

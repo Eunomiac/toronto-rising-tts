@@ -505,5 +505,12 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-11 | UPDATE | TOR-319 | Align Intermission slice — advance to Play (not Start) |
 | 2026-07-11 | UPDATE | TOR-249 | blockedBy TOR-345 + TOR-143 |
 | 2026-07-11 | Focus | Stack | #1 TOR-343, #2 TOR-346, #3 TOR-345, #4 TOR-149, #5 TOR-328, #6 TOR-143 (TOR-331–335 Done) |
+| 2026-07-12 | CREATE | TOR-365 | End scene library wipe (capture only); Scenes Bug High; relatedTo TOR-145 |
+| 2026-07-12 | CREATE | TOR-366 | Intermission theme fade-in; Soundscape Bug High; relatedTo TOR-360 |
+| 2026-07-12 | CREATE | TOR-367 | Confirm stage figurine lerp; NPC Improvement High; parent TOR-169 |
+| 2026-07-12 | CREATE | TOR-368 | Camera before blindfold raise; Lighting Bug High; parent TOR-34 |
+| 2026-07-12 | CREATE | TOR-369 | Stage spotlight long-way rotation; NPC Bug High; parent TOR-169 |
+| 2026-07-12 | UPDATE | TOR-149/344/288 | Elevated High; TOR-288 scoped Red/Brown famulus for this batch |
+| 2026-07-12 | Focus | Stack | #1 TOR-149, #2 TOR-344, #3 TOR-369, #4 TOR-366, #5 TOR-368, #6 TOR-288, #7 TOR-367 |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
