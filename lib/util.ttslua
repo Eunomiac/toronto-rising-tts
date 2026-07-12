@@ -2803,13 +2803,11 @@ end
 -- @return Vector Interpolated rotation
 local function lerpRotation(start, finish, t)
 	local function parseAngleLerp(startAngle, finishAngle)
-		if math.abs(finishAngle - startAngle) > math.abs(finishAngle + 360 - startAngle) then
-			finishAngle = finishAngle + 360
-		end
-		if math.abs(finishAngle - startAngle) > math.abs(finishAngle - 360 - startAngle) then
-			finishAngle = finishAngle - 360
-		end
-		return finishAngle
+		-- Shortest signed delta in (-180, 180], then absolute finish on that arc.
+		local a = tonumber(startAngle) or 0
+		local b = tonumber(finishAngle) or 0
+		local delta = ((b - a + 180) % 360) - 180
+		return a + delta
 	end
 
 	local adjustedFinish = Vector(
@@ -2819,6 +2817,15 @@ local function lerpRotation(start, finish, t)
 	)
 
 	return start:lerp(adjustedFinish, t)
+end
+
+--- Shortest-path Euler rotation lerp (TOR-369). Public for baked paths (e.g. stage spotlight).
+--- @param start Vector|table
+--- @param finish Vector|table
+--- @param t number 0..1
+--- @return Vector
+function U.lerpRotationShortest(start, finish, t)
+	return lerpRotation(start, finish, t)
 end
 
 --- Generates a pre-computed eased path for simple types (number, Color)
@@ -3785,15 +3792,12 @@ function U.Lerp(setFunc, paramStart, paramEnd, duration, isRotationLerp, easing,
 	end
 
 	if isRotationLerp then
-		local function parseAngleLerp(start, finish)
-			-- 350 -> 10,  -10 -> 350
-			if math.abs(finish - start) > math.abs(finish + 360 - start) then
-				finish = finish + 360
-			end
-			if math.abs(finish - start) > math.abs(finish - 360 - start) then
-				finish = finish - 360
-			end
-			return finish
+		local function parseAngleLerp(startAngle, finishAngle)
+			-- Shortest signed delta in (-180, 180], then absolute finish on that arc (TOR-369).
+			local a = tonumber(startAngle) or 0
+			local b = tonumber(finishAngle) or 0
+			local delta = ((b - a + 180) % 360) - 180
+			return a + delta
 		end
 		paramEnd = Vector(
 			parseAngleLerp(paramStart.x, paramEnd.x),

@@ -404,7 +404,8 @@ local function buildAnimForCandidate(candidate, startDelayFrames, frames, durati
             lightRotPath = {}
             for i = 0, frames do
                 local t = applyConfiguredEase(i / frames)
-                lightRotPath[i] = startLightRot:lerp(endLightRot, t)
+                -- TOR-369: shortest-path Euler lerp (raw Vector:lerp swings the long way).
+                lightRotPath[i] = U.lerpRotationShortest(startLightRot, endLightRot, t)
             end
         end
     end
