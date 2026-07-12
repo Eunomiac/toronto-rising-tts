@@ -2320,11 +2320,17 @@ function onLoad(saved_data)
             )
             setStartupAction("startup-ready-apply-global-blindfold-from-phase")
             applyGlobalBlindfoldFromPhase()
+            local phase = S.getStateVal("currentPhase")
+            if phase == C.Phases.INTERMISSION then
+                setStartupAction("startup-ready-intermission-theme")
+                local Phases = require("core.phases")
+                Phases.reconcileIntermissionAmbientOnLoad()
+            end
             setStartupAction("startup-ready-complete")
             print(
                 U.loadElapsedPrefix()
                     .. "Startup readiness gate complete (global blindfold follows phase="
-                    .. tostring(S.getStateVal("currentPhase"))
+                    .. tostring(phase)
                     .. ")."
             )
             return 0

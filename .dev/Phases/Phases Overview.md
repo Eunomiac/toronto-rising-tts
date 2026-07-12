@@ -91,7 +91,8 @@ Ending events of the previous phase run before starting events of the new phase 
 * Global blindfold shown / restored (`overlay_globalBlindfold`).
 * Countdown timer: deferred (optional TBD on **TOR-319**).
 
-### Connect policy (TOR-319)
+### Connect / load policy (TOR-319 / TOR-143)
 
 * Connect during **Intermission**: leave global blindfold up.
 * Connect during any other phase: hide global blindfold (`Phases.lowerBlindfoldForConnectingPlayer` → `hideGlobalBlindfold`). Shared overlay — not per-seat.
+* **Load** while phase is Intermission: after startup readiness, `Phases.reconcileIntermissionAmbientOnLoad()` applies AdminDark + the same featured theme playlist as Intermission enter (`C.IntermissionThemeFeaturedKey`). No timed overlay hide.

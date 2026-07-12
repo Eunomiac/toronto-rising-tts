@@ -197,6 +197,15 @@ function Phases.startIntermissionThemePlaylistLoop(_ctx)
     return true
 end
 
+--- Load-time Intermission ambient: same featured theme path as phase enter (no enter fade).
+function Phases.reconcileIntermissionAmbientOnLoad()
+    if S.getStateVal("currentPhase") ~= C.Phases.INTERMISSION then
+        return false
+    end
+    Phases.applyAllLightsDark(nil)
+    return Phases.startIntermissionThemePlaylistLoop(nil)
+end
+
 function Phases.silenceAllSoundEmitters(_ctx)
     local Soundscape = require("core.soundscape")
     if type(Soundscape.stopAll) == "function" then
