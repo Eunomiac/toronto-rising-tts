@@ -3709,7 +3709,8 @@ function HUD_toggleRunTestPanel(player, button, id)
     U.toggleXmlElement("panel_runtest", button)
 end
 
---- Stash step InputField text for campaign arm (`input_runtest_step`).
+--- Stash step/suite InputField text for campaign arm (`input_runtest_step`).
+-- Accepts step index (`1`..`N`) or suite id (`0`, `A`–`P`, `E2`) — same as `RunTest(campaign, startAt)`.
 -- @param player Player
 -- @param value string|nil
 -- @param id string|nil
@@ -3721,7 +3722,12 @@ function HUD_runtest_step(player, value, id)
         runtestStepDraft = "1"
         return
     end
-    runtestStepDraft = tostring(value)
+    local trimmed = tostring(value):gsub("^%s+", ""):gsub("%s+$", "")
+    if trimmed == "" then
+        runtestStepDraft = "1"
+        return
+    end
+    runtestStepDraft = trimmed
 end
 
 --- RunTest panel buttons: arm campaign, Continue, or Stop.
