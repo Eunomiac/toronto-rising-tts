@@ -2899,12 +2899,18 @@ end
 local function reconcileStepFiveStagePlacements(intent, opts)
     opts = U.Type(opts) == "table" and opts or {}
     local allOk = true
+    -- Preload prep is for seat/preload → stage only. Stage→stage must keep areaKey == STAGE_BOARD
+    -- so TOR-173 / TOR-367 lerp eligibility (`not_already_on_stage`) can pass.
     for name, ci in pairs(intent.byCharacter) do
         if U.Type(ci) == "table" and ci.target == "stage" then
-            local ok, err = NPCS.ensureNpcInPreloadZone(name, { deferUiRefresh = true, skipSeatSync = true })
-            if not ok then
-                allOk = false
-                print("[NPCS] step5 stage preload prep " .. tostring(name) .. ": " .. tostring(err))
+            local rec = getInstances()[name]
+            local alreadyOnStage = U.Type(rec) == "table" and rec.areaKey == STAGE_BOARD_AREA_KEY
+            if not alreadyOnStage then
+                local ok, err = NPCS.ensureNpcInPreloadZone(name, { deferUiRefresh = true, skipSeatSync = true })
+                if not ok then
+                    allOk = false
+                    print("[NPCS] step5 stage preload prep " .. tostring(name) .. ": " .. tostring(err))
+                end
             end
         end
     end
