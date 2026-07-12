@@ -257,7 +257,8 @@ function CompanionToggle.handleClick(params)
 
     if altClick then
         if active ~= true then
-            return true
+            -- Right-click only cycles looks while active; no-op must not report success.
+            return false
         end
         local nextState = state == 1 and 2 or 1
         applyFigurineVisibility(owner, true, nextState)
