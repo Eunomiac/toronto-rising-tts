@@ -280,7 +280,9 @@ local function splitSiteNameForOverlay(fullSiteName)
     return true, parent, child
 end
 
---- Overlay location/weather use last **applied** site until Apply location + soundscape runs.
+--- Overlay location/weather use last **applied** site until Apply location + soundscape runs (TOR-314).
+--- Staged Apply/End defer soundscape to fadeIn — callers must Sync.ui(gameStateOverlay) after
+--- `Scenes.applyActiveSceneSoundscapeFromSession` / no-scene soundscape so HUD is not stale (TOR-346).
 --- @return string siteKey trimmed, or "" when none applied yet
 local function resolveAppliedSiteKeyForOverlay()
     local applied = S.getStateVal("soundscape", "lastAppliedSiteKey")

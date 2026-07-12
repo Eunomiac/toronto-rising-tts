@@ -794,6 +794,11 @@ local function applyMainOnlySoundscapeIntent()
     if type(Soundscape.markReconciledToCurrentState) == "function" then
         Soundscape.markReconciledToCurrentState()
     end
+    -- TOR-346: overlay reads lastApplied*; refresh after those keys clear (staged fadeIn path).
+    local Sync = require("core.sync")
+    if type(Sync.ui) == "function" then
+        Sync.ui({ gameStateOverlay = true })
+    end
 end
 
 --- Public wrapper for staged Play enter (fade window already open) or callers that deferred soundscape.
@@ -917,6 +922,12 @@ function Scenes.applyActiveSceneSoundscapeFromSession()
     end
     if type(Soundscape.silenceInactiveMusicChannel) == "function" then
         Soundscape.silenceInactiveMusicChannel()
+    end
+    -- TOR-346: Sync.full(skipSoundscape) may have painted overlay from stale lastApplied*;
+    -- re-reconcile after applyContext writes the new site keys (staged fadeIn).
+    local Sync = require("core.sync")
+    if type(Sync.ui) == "function" then
+        Sync.ui({ gameStateOverlay = true })
     end
 end
 
