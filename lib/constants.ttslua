@@ -2115,12 +2115,23 @@ local LIGHTMODES_REGISTRY_KEYS_ORDERED = {
   "storytellerDiceLight3"
 }
 
+--- ST tray lights are owned by live ST roll drawer state (TOR-149), not scene presets.
+local STORYTELLER_DICE_LIGHT_REFS = {
+  storytellerDiceLight1 = true,
+  storytellerDiceLight2 = true,
+  storytellerDiceLight3 = true,
+}
+
 --- @param modeStr string
 --- @return table
 local function spotlightMapUniform(modeStr)
   local t = {}
   for _, k in ipairs(LIGHTMODES_REGISTRY_KEYS_ORDERED) do
-    t[k] = modeStr
+    if STORYTELLER_DICE_LIGHT_REFS[k] then
+      t[k] = "OFF"
+    else
+      t[k] = modeStr
+    end
   end
   return t
 end

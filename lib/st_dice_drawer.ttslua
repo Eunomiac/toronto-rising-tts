@@ -532,6 +532,24 @@ function STD.openForSlot(slot, opts)
     end
 end
 
+--- Reconcile tray lights from storyteller roll drawerActive flags (TOR-149).
+--- Call after lighting presets so scene maps cannot leave inactive drawers STANDARD.
+--- @param opts table|nil { transitionTime?: number }
+function STD.reconcileTrayLightsFromRollState(opts)
+    opts = type(opts) == "table" and opts or {}
+    local transitionTime = tonumber(opts.transitionTime) or 0
+    local root = S.getStateVal("storytellerRolls")
+    local slots = type(root) == "table" and root.slots or nil
+    for slot = 1, 3 do
+        local lightRef = SLOT_LIGHT_REFS[slot]
+        if type(lightRef) == "string" then
+            local slotState = type(slots) == "table" and slots[slot] or nil
+            local active = type(slotState) == "table" and slotState.drawerActive == true
+            L.SetLightMode(lightRef, active and "STANDARD" or "OFF", nil, transitionTime)
+        end
+    end
+end
+
 --- Closes drawer pose and OFF tray light for a slot.
 -- @param slot number 1..3
 function STD.closeForSlot(slot)
