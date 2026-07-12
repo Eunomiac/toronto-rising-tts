@@ -24,6 +24,10 @@ const CAMPAIGNS = {
     markdownRel: path.join(".dev", "E2E Playbooks", "Scenes-E2E.md"),
     moduleRel: path.join("lib", "e2e_playbook_scenes.ttslua"),
   },
+  Gameboard: {
+    markdownRel: path.join(".dev", "E2E Playbooks", "Gameboard-E2E.md"),
+    moduleRel: path.join("lib", "e2e_playbook_gameboard.ttslua"),
+  },
 };
 
 /**

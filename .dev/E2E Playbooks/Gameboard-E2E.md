@@ -1,188 +1,124 @@
-# Gameboard & Stage — manual E2E playbook
-
-## Agent Routing
-
-Read this when:
-- validating Storyteller gameboard, stage placement, control-token, NPC seating, or palette behavior
-- changing `core/npc_gameboard.ttslua`, `core/npcs.ttslua`, or control-board object/UI scripts
-
-Source of truth:
-- `lib/e2e_gameboard.ttslua`
-- `core/npc_gameboard.ttslua`
-- `core/npcs.ttslua`
-- `.dev/NPC Object Spawning & Spotlighting/Storyteller Gameboard Control.md`
-- `.dev/NPC Object Spawning & Spotlighting/NPC Reconciler Procedure.md`
-
-Verification:
-- `npm run build`
-- TTS `gbE2ePrereqCheck()`
-- TTS `gbE2eRunSmoke()` / `gbE2eRunFull()`
-
-**TOR-141** (living E2E playbooks) · **TOR-169** (Storyteller NPC gameboard) · Author: table **Host** (solo OK) · Est. **~20–30 min smoke** · **~45–60 min full**.
-
-Ground truth: [`core/npc_gameboard.ttslua`](../../core/npc_gameboard.ttslua), [`core/npcs.ttslua`](../../core/npcs.ttslua), [NPC Reconciler Procedure](../NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%20Reconciler%20Procedure.md), [Storyteller Gameboard Control](../NPC%20Object%20Spawning%20%26%20Spotlighting/Storyteller%20Gameboard%20Control.md).
-
-Harness: [`lib/e2e_gameboard.ttslua`](../../lib/e2e_gameboard.ttslua) (loaded via [`core/debug.ttslua`](../../core/debug.ttslua) only).
-
----
-
-## Solo Host
-
-Same as [Dice-E2E](Dice-E2E.md): one client, **Black** recommended for Storyteller Scenes panel (`visibility="Host"`). **Save & Play** before any macro.
-
----
-
-## Prereq constants (record once per campaign; edit harness + this doc together)
-
-| Constant | Default | Used for |
-| --- | --- | --- |
-| `GB_E2E_SCENE_ROW` | `scenes_lib_slot_03` | Scene Apply gate — library row with **non-empty** `sessionScene.npcWorld.placements` (≥1 character) |
-| `GB_E2E_NPC_A` | `myleneHamelin` | Primary token / figurine |
-| `GB_E2E_NPC_B` | `adrianVarga` | Second placement / seat conflict |
-| `GB_E2E_TABLE_KEY` | `Table A` | NPC1 seat tests |
-| `GB_E2E_UV_A` | `u=0.18, v=0.72` | Stable on-board snap |
-| `GB_E2E_UV_B` | `u=0.42, v=0.55` | Move / layoutLock tests |
-| `GB_E2E_PC_ABSENT` | `Brown` | Suite D2 / reload PC-token absent probe (Scenes-E2E) |
-
-**Session prereqs (once per Save & Play):**
-
-1. Host, seat **Black**.
-2. **Save & Play** (bundled Lua).
-3. Workshop: `STAGE_BOARD`, `CONTROL_BOARD`, `CONTROL_BOARD_PALETTE`, `npc_control_token` set — `lua DEBUG.spawnNpcControlBoardTokens()` if missing; **`pc_control_token`** per PC color with `pcToken:<Color>` GM Notes (TOR-236).
-4. `lua gbE2ePrereqCheck()` → **`[gbConfirm] PASS`**.
-
----
-
-## Macro helpers (console)
-
-| Macro | Purpose |
-| --- | --- |
-| `gbE2ePrereqCheck()` | Hard stop before suites |
-| `gbE2eReset()` | Empty `placements`, fixture NPCs in preload |
-| `gbE2eRunSmoke()` | Automated S0–S7 + **HUMAN GATE** scene Apply |
-| `gbE2eContinue()` | After human gate (`scene_apply` or `reload`) |
-| `gbE2eVerifyPcTokens()` | PC tokens pinned + flip matches `seatSlots[color].isPresent` (TOR-152 / TOR-236) |
-| `gbE2eRunFull()` | Deep F/G/H suites (+ optional reload gate) |
-| `gbE2eRunDeferred()` | **Expected FAIL** until D172 ships (D173 + D174 + D175 + D177b pass when shipped) |
-| `gbConfirm(label, { … })` | Single-step assert |
-
-Every macro ends with **`[gbConfirm] PASS`** or **`[gbConfirm] FAIL`** + line list.
-
-**Inspection (between macros):**
-
-- `lua DEBUG.dumpNpcPlacements()`
-- `lua DEBUG.logNpcPlacementIntentToFile()`
-- `lua DEBUG.exportNpcSeatFigurinesToFile()`
-
-**Stop rule:** Any unexpected **FAIL** in smoke or full → do not run later macros until fixed.
-
----
-
-## Step 0 — Prereq
+# Gameboard E2E
 
 ```lua
-lua gbE2ePrereqCheck()
+U.RunSequence({
+  function()
+    printHeader("Gameboard E2E: SUITE 0 - Prereq and reset", 1)
+  end,
+  function()
+    printHeader("0.1 - Harness prerequisites", 2)
+  end,
+  function()
+    if rollE2eSeatPrep then rollE2eSeatPrep("Black") end
+    gbE2ePrereqCheck()
+  end,
+  function()
+    printHeader("", 2)
+  end,
+  function()
+    printHeader("0.2 - Reset baseline", 2)
+  end,
+  function()
+    gbE2eReset()
+  end,
+  function()
+    printHeader("", 2)
+  end,
+  function()
+    printHeader("", 1)
+  end,
+  function()
+    print("")
+  end
+})
 ```
-
-**Pass if:** `[gbConfirm] PASS — gbE2ePrereqCheck`
-**Stop if:** FAIL (missing board, tokens, scene row, or fixture NPCs).
-
----
-
-## Smoke — `gbE2eRunSmoke()`
 
 ```lua
-lua gbE2eRunSmoke()
+U.RunSequence({
+  function()
+    printHeader("Gameboard E2E: SUITE A - Smoke apply and scene gate", 1)
+  end,
+  function()
+    printHeader("A1 - Automated control-board smoke", 2)
+  end,
+  function()
+    gbE2eRunSmoke()
+  end,
+  function()
+    printHeader("", 2)
+  end,
+  function()
+    printHeader("A2 - Scene Apply gate", 2)
+  end,
+  function()
+    M.setCamera("ALL", "wide")
+    printHeader("[HUMAN] Open Storyteller Scenes, apply the Gameboard fixture row, then wait 12 seconds", 3)
+  end
+})
 ```
-
-**Pass if:** `[gbConfirm] PASS — gbE2eRunSmoke (automated)` then follow the printed **HUMAN GATE**.
-
-| Block | Proves | Fail if |
-| --- | --- | --- |
-| S0 | `gbE2eReset` baseline | Placements nonempty; fixture not in preload |
-| S1 | Polar snaps on CONTROL_BOARD | Snap count below threshold |
-| S2 | Token at `GB_E2E_UV_A` | Token missing / wrong tag |
-| S3 | `GlobalGameboardApply()` | State u/v/yaw drift |
-| S4 | `Sync.npcs({ force = true })` | Figurine not at stage UV; duplicate figurines |
-| S5 | Token mirror on board | Token only on palette |
-| S6 | `GlobalGameboardClear()` | Placements or stage intent remain |
-| S7 | Z flip → `npcLightMode` OFF vs STANDARD | Mode not derived from flip |
-
-### HUMAN GATE — scene Apply (mandatory)
-
-When smoke automated passes, the macro prints:
-
-1. Open Storyteller **Scenes** panel.
-2. Apply library row **`GB_E2E_SCENE_ROW`** (exact button id).
-3. Wait **12 seconds** (blindfold + settle — same as [Scenes-E2E](Scenes-E2E.md)).
-4. `lua gbE2eContinue()`
-
-**Pass if:** `[gbConfirm] PASS — gbE2eContinue:scene_apply`
-
-| Check | Fail if |
-| --- | --- |
-| Live `placements` match library row keys | No overlapping keys |
-| Figurines on stage at row u/v | Missing figurine |
-| Tokens mirrored on CONTROL_BOARD | Token not on board |
-| PC `pc_control_token` flip matches `seatSlots[color].isPresent` | Wrong column or face-up/down vs state |
-| Intent **stage** per placement key | Intent seat/preload |
-| TOR-177: unoccupied `NPCn` → 0 `SEAT_FIGURE` duplicates | `probeDuplicateSeatFigure > 0` |
-
----
-
-## Full — `gbE2eRunFull()`
-
-Run after smoke + scene gate **PASS** in the same session (or accept full’s internal smoke prereq only).
 
 ```lua
-lua gbE2eRunFull()
+U.RunSequence({
+  function()
+    printHeader("A3 - Verify scene Apply gate", 2)
+  end,
+  function()
+    gbE2eContinue()
+  end,
+  function()
+    printHeader("", 2)
+  end,
+  function()
+    printHeader("", 1)
+  end,
+  function()
+    print("")
+  end
+})
 ```
-
-| ID | Proves | Fail if |
-| --- | --- | --- |
-| F1 | Placement + `seatSlots.NPC1` → intent **stage** | Figurine at NPC1 seat |
-| F2 | Seat only → intent **seat** | Figurine at stage UV |
-| F3 | NPC2 on **Table B1** (no NPC2 slot) | Intent not preload; slot map wrong |
-| F4 | `isPresent=false` hides NPC1 chair | Chair visible to PCs |
-| H281 | TOR-281 Clear seat rules + library mirror | Disabled+STANDARD not active after Clear; enabled seat flipped; library `seatSlots` stale |
-| G1 | Reconcile pulls token from palette (TOR-170) | Token stays on palette |
-| G2 | `syncTokensToPalette` skips on-stage keys | On-stage token parked |
-| H1 | `layoutLock` blocks token UV overwrite | Token moved on reconcile |
-| H2 | `layoutLock` still updates seat markers | All markers stashed |
-
-### HUMAN GATE — reload (optional)
-
-If full automated passes:
-
-1. Save, **Save & Play** reload.
-2. `lua gbE2ePrereqCheck()`
-3. `lua gbE2eContinue()` → **`gbE2eContinue:reload`**
-
-**Pass if:** Placements from pre-reload snapshot still present; **`gbE2eVerifyPcTokens`** PASS (reload gate also asserts PC tokens when snapshot includes `seatSlots`).
-
----
-
-## Deferred — `gbE2eRunDeferred()`
 
 ```lua
-lua gbE2eRunDeferred()
+U.RunSequence({
+  function()
+    printHeader("Gameboard E2E: SUITE B - Full reconcile suites", 1)
+  end,
+  function()
+    printHeader("B1 - Automated full gameboard checks", 2)
+  end,
+  function()
+    gbE2eRunFull()
+  end,
+  function()
+    printHeader("", 2)
+  end,
+  function()
+    printHeader("", 1)
+  end,
+  function()
+    print("")
+  end
+})
 ```
 
-**Interpret:** Macro prints **FAIL** on named lines — that is **correct** until the linked issue ships.
-
-| ID | Linear | Fails today because |
-| --- | --- | --- |
-| D172 | TOR-172 | Palette-drop `defaultLightMode` handler + ring-1 STANDARD in data |
-| D173 | TOR-173 | *(shipped — stage lerp API + author playtest confirmed)* |
-| D175 | TOR-175 | *(shipped — `assertD175AnchorSpreadOrdering` in smoke)* |
-| D174 | TOR-174 | *(shipped — API guards in smoke; manual ST bag drop confirmed)* |
-| D177b | TOR-179 | *(shipped — author confirmed; duplicate audit clean)* |
-
-When a feature lands, move its probe from deferred into `gbE2eRunFull` and expect **PASS**.
-
----
-
-## Related
-
-- [Scenes-E2E](Scenes-E2E.md) — scene library apply timing; use a row with rich `npcWorld.placements` for `GB_E2E_SCENE_ROW`.
-- [TESTING.md](../TESTING.md) — console index.
+```lua
+U.RunSequence({
+  function()
+    printHeader("Gameboard E2E: SUITE C - PC control tokens", 1)
+  end,
+  function()
+    printHeader("C1 - Seat-row token mirror", 2)
+  end,
+  function()
+    gbE2eVerifyPcTokens()
+  end,
+  function()
+    printHeader("", 2)
+  end,
+  function()
+    printHeader("", 1)
+  end,
+  function()
+    print("")
+  end
+})
+```

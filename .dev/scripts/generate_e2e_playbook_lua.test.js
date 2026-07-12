@@ -12,6 +12,7 @@ const {
 
 assert.ok(CAMPAIGNS.Dice);
 assert.ok(CAMPAIGNS.Scenes);
+assert.ok(CAMPAIGNS.Gameboard);
 
 const sampleBlock = `U.RunSequence({
   function()
