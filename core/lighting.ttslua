@@ -1023,6 +1023,12 @@ end
 --- JSON-safe shallow copy of a mode table for persistence (raw-GUID / inline modes).
 --- @param mt table|nil
 --- @return table|nil
+--- Runtime-only mode fields (must not land in `gameState.lights`).
+local EPHEMERAL_MODE_KEYS = {
+    lookAtTarget = true,
+    positioning = true,
+}
+
 local function sanitizeModeForPersistence(mt)
     if U.Type(mt) ~= "table" then
         return nil
@@ -1030,6 +1036,8 @@ local function sanitizeModeForPersistence(mt)
     local out = {}
     for k, val in pairs(mt or {}) do
         if U.Type(k) ~= "string" then
+        elseif EPHEMERAL_MODE_KEYS[k] == true then
+            -- skip
         elseif U.isInstance(val, Vector) then
             out[k] = { x = val.x, y = val.y, z = val.z }
         elseif U.isInstance(val, Color) then
@@ -2037,24 +2045,46 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
                 end
 
                 -- Transform lerps use inline U.Lerp (not U.setPositionSlow) so epoch guards apply every tick.
-                if modeDef.rotation ~= nil then
-                    local rotEnd = OP.mergeRotation(light, modeDef.rotation)
-                    table.insert(lerpFuncs, U.Lerp(function(rot)
-                        if transitionEpoch[lightRef] ~= myEpoch then
-                            return
-                        end
-                        light.setRotation(rot)
-                    end, light.getRotation(), rotEnd, transitionTime, true))
-                end
+                -- When `lookAtTarget` is present (NPC pooled spotlights), drive rotation from the
+                -- interpolated position so STANDARD↔SPOTLIGHT cannot Euler-spin the long way (TOR-369).
+                local lookAtTarget = modeDef.lookAtTarget
+                local useLookAtCoupled = modeDef.position ~= nil and lookAtTarget ~= nil
+                    and (type(lookAtTarget) == "table" or U.isInstance(lookAtTarget, Vector))
 
-                if modeDef.position ~= nil then
+                if useLookAtCoupled then
                     local posEnd = OP.mergePosition(light, modeDef.position)
+                    local aim = Vector(
+                        tonumber(lookAtTarget.x or lookAtTarget[1]) or 0,
+                        tonumber(lookAtTarget.y or lookAtTarget[2]) or 0,
+                        tonumber(lookAtTarget.z or lookAtTarget[3]) or 0
+                    )
                     table.insert(lerpFuncs, U.Lerp(function(pos)
                         if transitionEpoch[lightRef] ~= myEpoch then
                             return
                         end
                         light.setPosition(pos)
+                        light.setRotation(U.lookAtRotation(pos, aim))
                     end, light.getPosition(), posEnd, transitionTime, false))
+                else
+                    if modeDef.rotation ~= nil then
+                        local rotEnd = OP.mergeRotation(light, modeDef.rotation)
+                        table.insert(lerpFuncs, U.Lerp(function(rot)
+                            if transitionEpoch[lightRef] ~= myEpoch then
+                                return
+                            end
+                            light.setRotation(rot)
+                        end, light.getRotation(), rotEnd, transitionTime, true))
+                    end
+
+                    if modeDef.position ~= nil then
+                        local posEnd = OP.mergePosition(light, modeDef.position)
+                        table.insert(lerpFuncs, U.Lerp(function(pos)
+                            if transitionEpoch[lightRef] ~= myEpoch then
+                                return
+                            end
+                            light.setPosition(pos)
+                        end, light.getPosition(), posEnd, transitionTime, false))
+                    end
                 end
 
                 return lerpFuncs

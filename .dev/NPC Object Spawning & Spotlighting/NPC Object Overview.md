@@ -67,8 +67,9 @@ NPC-specific placement is resolved at runtime in `NPCS.buildResolvedLightModeTab
 * Target XZ = bounds center `(cx, cz)`.
 * Target Y = `topY - lookAtYShift * height` when **`lookAtYShift`** is present (fraction of figurine height below the bounds top; e.g. `0.1` aims near the top), else the figurine **bounds center** (`cy`).
 * `rotation = U.lookAtRotation(lightPos, target)` — tilts the cone toward the figure.
+* Ephemeral **`lookAtTarget`** is also returned so `L.SetLightMode` can couple position→look-at during transitions (avoids long-way Euler Y spins between STANDARD and SPOTLIGHT; TOR-369). Not persisted into `gameState.lights`.
 
-`transitionTime` is **not** part of `positioning`; the move/transition duration is owned by the caller (`applyCurrentLightMode`, hover-preview, stage lerp), as with all `L.SetLightMode` callers.
+`transitionTime` is **not** part of `positioning`; the move/transition duration is owned by the caller (`applyCurrentLightMode`, hover-preview, stage lerp), as with all `L.SetLightMode` callers. Mode-only stage lerps bake a light pos path and per-frame look-at rotations (figurine stays put).
 
 ### Light position and rotation (implementation pipeline)
 

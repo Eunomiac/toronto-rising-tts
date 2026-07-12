@@ -2796,27 +2796,67 @@ local function resolveOrientation(data, currentPos)
 	end
 end
 
--- Helper: Interpolate rotation with shortest path wrapping
+-- Helper: Interpolate rotation with shortest path wrapping (fold + component shortest).
 -- @param start Vector Starting rotation
 -- @param finish Vector Ending rotation
 -- @param t number Interpolation factor (0 to 1)
 -- @return Vector Interpolated rotation
-local function lerpRotation(start, finish, t)
-	local function parseAngleLerp(startAngle, finishAngle)
-		-- Shortest signed delta in (-180, 180], then absolute finish on that arc.
-		local a = tonumber(startAngle) or 0
-		local b = tonumber(finishAngle) or 0
-		local delta = ((b - a + 180) % 360) - 180
-		return a + delta
+--- Shortest signed delta in (-180, 180]; while-loop avoids `%` sign quirks across Lua hosts.
+--- @param startAngle number
+--- @param finishAngle number
+--- @return number absolute finish on the short arc from start
+local function shortestAngleFinish(startAngle, finishAngle)
+	local a = tonumber(startAngle) or 0
+	local b = tonumber(finishAngle) or 0
+	local delta = b - a
+	while delta > 180 do
+		delta = delta - 360
 	end
+	while delta < -180 do
+		delta = delta + 360
+	end
+	return a + delta
+end
 
+--- Fold TTS/Unity Euler remaps (often z≈±180) toward lookAt-style z≈0 before component lerp (TOR-369).
+--- @param rot Vector|table|nil
+--- @return Vector
+local function foldEulerForLookAtLerp(rot)
+	if rot == nil then
+		return Vector(0, 0, 0)
+	end
+	local x = tonumber(rot.x or rot[1]) or 0
+	local y = tonumber(rot.y or rot[2]) or 0
+	local z = tonumber(rot.z or rot[3]) or 0
+	local zN = z
+	while zN > 180 do
+		zN = zN - 360
+	end
+	while zN < -180 do
+		zN = zN + 360
+	end
+	if math.abs(zN) > 90 then
+		-- (x, y, ±180) ≈ (-x, y+180, 0) for spotlight aim continuity.
+		x = -x
+		y = y + 180
+		if zN > 0 then
+			zN = zN - 180
+		else
+			zN = zN + 180
+		end
+	end
+	return Vector(x, y, zN)
+end
+
+local function lerpRotation(start, finish, t)
+	local s = foldEulerForLookAtLerp(start)
+	local f = foldEulerForLookAtLerp(finish)
 	local adjustedFinish = Vector(
-		parseAngleLerp(start.x, finish.x),
-		parseAngleLerp(start.y, finish.y),
-		parseAngleLerp(start.z, finish.z)
+		shortestAngleFinish(s.x, f.x),
+		shortestAngleFinish(s.y, f.y),
+		shortestAngleFinish(s.z, f.z)
 	)
-
-	return start:lerp(adjustedFinish, t)
+	return s:lerp(adjustedFinish, t)
 end
 
 --- Shortest-path Euler rotation lerp (TOR-369). Public for baked paths (e.g. stage spotlight).
@@ -3792,17 +3832,13 @@ function U.Lerp(setFunc, paramStart, paramEnd, duration, isRotationLerp, easing,
 	end
 
 	if isRotationLerp then
-		local function parseAngleLerp(startAngle, finishAngle)
-			-- Shortest signed delta in (-180, 180], then absolute finish on that arc (TOR-369).
-			local a = tonumber(startAngle) or 0
-			local b = tonumber(finishAngle) or 0
-			local delta = ((b - a + 180) % 360) - 180
-			return a + delta
-		end
+		-- Fold + shortest-arc finish (TOR-369); same helpers as U.lerpRotationShortest.
+		paramStart = foldEulerForLookAtLerp(paramStart)
+		paramEnd = foldEulerForLookAtLerp(paramEnd)
 		paramEnd = Vector(
-			parseAngleLerp(paramStart.x, paramEnd.x),
-			parseAngleLerp(paramStart.y, paramEnd.y),
-			parseAngleLerp(paramStart.z, paramEnd.z)
+			shortestAngleFinish(paramStart.x, paramEnd.x),
+			shortestAngleFinish(paramStart.y, paramEnd.y),
+			shortestAngleFinish(paramStart.z, paramEnd.z)
 		)
 	end
 

@@ -152,7 +152,7 @@ end
 local function bakeLightPose(npcName, fig, modeKey)
     local NPCS = npcsModule()
     if type(NPCS.buildResolvedLightModeTable) ~= "function" then
-        return nil, nil
+        return nil, nil, nil
     end
     if type(NPCS.setLightAlignFigOverride) == "function" then
         NPCS.setLightAlignFigOverride(npcName, fig)
@@ -162,9 +162,9 @@ local function bakeLightPose(npcName, fig, modeKey)
         NPCS.setLightAlignFigOverride(npcName, nil)
     end
     if type(modeTable) ~= "table" then
-        return nil, nil
+        return nil, nil, nil
     end
-    return modeTable.position, modeTable.rotation
+    return modeTable.position, modeTable.rotation, modeTable.lookAtTarget
 end
 
 local function snapNpcToCommittedState(npcName)
@@ -378,18 +378,24 @@ local function buildAnimForCandidate(candidate, startDelayFrames, frames, durati
     local startLightRot = nil
     local endLightPos = nil
     local endLightRot = nil
+    local lookAtTarget = nil
     if U.isGameObject(lit) then
         startLightPos = lit.getPosition()
         startLightRot = lit.getRotation()
+        -- Mode-only STANDARD↔SPOTLIGHT must still move/aim the light (TOR-369 follow-up).
+        -- Freezing start pose left the transition to SetLightMode Euler lerp, which spun Y long-way.
+        local savedPos = fig.getPosition()
+        local savedRot = fig.getRotation()
         if not modeOnly then
-            local savedPos = fig.getPosition()
-            local savedRot = fig.getRotation()
             fig.setPosition(endPos)
             fig.setRotation(Vector(0, endYaw, 0))
-            endLightPos, endLightRot = bakeLightPose(npcName, fig, endModeKey)
+        end
+        endLightPos, endLightRot, lookAtTarget = bakeLightPose(npcName, fig, endModeKey)
+        if not modeOnly then
             fig.setPosition(savedPos)
             fig.setRotation(savedRot)
-        else
+        end
+        if endLightPos == nil then
             endLightPos = startLightPos
             endLightRot = startLightRot
         end
@@ -398,13 +404,17 @@ local function buildAnimForCandidate(candidate, startDelayFrames, frames, durati
     local yawPath = modeOnly and nil or bakeYawPath(startYaw, endYaw, frames)
     local lightPath = nil
     local lightRotPath = nil
-    if not modeOnly and startLightPos ~= nil and endLightPos ~= nil then
+    if startLightPos ~= nil and endLightPos ~= nil then
         lightPath = bakeVectorPath(startLightPos, endLightPos, frames)
-        if startLightRot ~= nil and endLightRot ~= nil then
-            lightRotPath = {}
-            for i = 0, frames do
-                local t = applyConfiguredEase(i / frames)
-                -- TOR-369: shortest-path Euler lerp (raw Vector:lerp swings the long way).
+        lightRotPath = {}
+        local aim = lookAtTarget
+        for i = 0, frames do
+            local t = applyConfiguredEase(i / frames)
+            local pos = lightPath[i]
+            if aim ~= nil and pos ~= nil then
+                -- Continuous look-at along the path (shortest visual arc for aim).
+                lightRotPath[i] = U.lookAtRotation(pos, aim)
+            elseif startLightRot ~= nil and endLightRot ~= nil then
                 lightRotPath[i] = U.lerpRotationShortest(startLightRot, endLightRot, t)
             end
         end
@@ -435,15 +445,14 @@ local function buildAnimForCandidate(candidate, startDelayFrames, frames, durati
 end
 
 local function applyAnimFrame(anim, localFrame)
-    if anim.modeOnly then
-        return
-    end
     local idx = math.min(math.max(localFrame, 0), anim.frames)
-    if anim.figPath and anim.figPath[idx] then
-        anim.fig.setPosition(anim.figPath[idx])
-    end
-    if anim.yawPath and anim.yawPath[idx] then
-        anim.fig.setRotation(Vector(0, anim.yawPath[idx], 0))
+    if not anim.modeOnly then
+        if anim.figPath and anim.figPath[idx] then
+            anim.fig.setPosition(anim.figPath[idx])
+        end
+        if anim.yawPath and anim.yawPath[idx] then
+            anim.fig.setRotation(Vector(0, anim.yawPath[idx], 0))
+        end
     end
     if U.isGameObject(anim.lit) then
         if anim.lightPath and anim.lightPath[idx] then

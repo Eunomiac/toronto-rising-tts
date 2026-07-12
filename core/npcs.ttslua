@@ -1874,8 +1874,11 @@ function NPCS.buildResolvedLightModeTable(npcName, modeKey)
     if positioning.lookAtYShift ~= nil then
         faceY = topY - (tonumber(positioning.lookAtYShift) or 0) * sy
     end
+    local lookAtTarget = Vector(cx, faceY, cz)
     out.position = lightPos
-    out.rotation = U.lookAtRotation(lightPos, Vector(cx, faceY, cz))
+    out.rotation = U.lookAtRotation(lightPos, lookAtTarget)
+    -- Ephemeral: SetLightMode couples pos→lookAt during transitions (TOR-369); not persisted.
+    out.lookAtTarget = lookAtTarget
     return out
 end
 
