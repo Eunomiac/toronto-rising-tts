@@ -1615,10 +1615,9 @@ U.RunSequence({
     setHumanityStains("Purple", 2)
     rollConfirmTracker("Purple", { hunger = 1, stains = 2 })
     rollTest("Purple", 1, C.RollType.ROUSE_OBLIVION, "E2E P-A")
-  end,
-  function()
-    M.setCamera("ALL", "rollPurple")
-    printHeader("[HUMAN] Left-click Oblivion-Rouse bag 2 times", 3)
+    -- rollTest auto-spawns 1; grow to exactly 2 for two-face presets (TOR-359).
+    rollE2eAddPoolKindSpawn("Purple", "oblivRouse", 2)
+    rollConfirm("Purple", { phase = "preRoll", pool = { oblivRouse = 2 } })
   end
 })
 ```
@@ -1643,10 +1642,8 @@ U.RunSequence({
     setHumanityStains("Purple", 2)
     rollConfirmTracker("Purple", { hunger = 1, stains = 2 })
     rollTest("Purple", 1, C.RollType.ROUSE_OBLIVION, "E2E P-B")
-  end,
-  function()
-    M.setCamera("ALL", "rollPurple")
-    printHeader("[HUMAN] Left-click Oblivion-Rouse bag 2 times", 3)
+    rollE2eAddPoolKindSpawn("Purple", "oblivRouse", 2)
+    rollConfirm("Purple", { phase = "preRoll", pool = { oblivRouse = 2 } })
   end
 })
 ```
@@ -1670,10 +1667,8 @@ U.RunSequence({
     setHunger("Purple", 1)
     setHumanityStains("Purple", 2)
     rollTest("Purple", 1, C.RollType.ROUSE_OBLIVION, "E2E P-C")
-  end,
-  function()
-    M.setCamera("ALL", "rollPurple")
-    printHeader("[HUMAN] Left-click Oblivion-Rouse bag 2 times", 3)
+    rollE2eAddPoolKindSpawn("Purple", "oblivRouse", 2)
+    rollConfirm("Purple", { phase = "preRoll", pool = { oblivRouse = 2 } })
   end
 })
 ```
@@ -1700,10 +1695,8 @@ U.RunSequence({
     setHumanityStains("Purple", 2)
     rollConfirmTracker("Purple", { hunger = 1, stains = 2 })
     rollTest("Purple", 1, C.RollType.ROUSE_OBLIVION, "E2E P-D")
-  end,
-  function()
-    M.setCamera("ALL", "rollPurple")
-    printHeader("[HUMAN] Left-click Oblivion-Rouse bag 2 times", 3)
+    rollE2eAddPoolKindSpawn("Purple", "oblivRouse", 2)
+    rollConfirm("Purple", { phase = "preRoll", pool = { oblivRouse = 2 } })
   end
 })
 ```
@@ -1728,10 +1721,8 @@ U.RunSequence({
     setHumanityStains("Purple", 2)
     rollConfirmTracker("Purple", { hunger = 1, stains = 2 })
     rollTest("Purple", 1, C.RollType.ROUSE_OBLIVION, "E2E P-E")
-  end,
-  function()
-    M.setCamera("ALL", "rollPurple")
-    printHeader("[HUMAN] Left-click Oblivion-Rouse bag 2 times", 3)
+    rollE2eAddPoolKindSpawn("Purple", "oblivRouse", 2)
+    rollConfirm("Purple", { phase = "preRoll", pool = { oblivRouse = 2 } })
   end
 })
 ```
@@ -1755,21 +1746,29 @@ U.RunSequence({
     setHunger("Purple", 1)
     setHumanityStains("Purple", 2)
     rollConfirmTracker("Purple", { hunger = 1, stains = 2 })
-    -- Default open → PRE_ROLL (Roll needs open; do not skipOpen) (TOR-357 / TOR-358).
-    rollTest("Purple", 2, C.RollType.STANDARD, "E2E P-F compound", 0)
-    rollConfirm("Purple", { phase = "preRoll" })
-  end,
-  function()
-    rollE2eSeatPrep("Purple")
-    M.setCamera("ALL", "rollPurple")
-    printHeader("[HUMAN] PRE_ROLL: Left-click Normal bag 2 times, Oblivion-Rouse bag 2 times; Roll and wait for settle", 3)
+    -- PRE_ROLL; hunger stays 1 (do not pass hunger=0). Spawn pool without Normal-bag auto-hunger.
+    rollTest("Purple", 2, C.RollType.STANDARD, "E2E P-F compound")
+    rollE2eSetPoolAndSpawn("Purple", 2, 0)
+    rollE2eAddPoolKindSpawn("Purple", "oblivRouse", 2)
+    rollConfirm("Purple", {
+      phase = "preRoll",
+      pool = { normal = 2, hunger = 0, oblivRouse = 2 },
+    })
   end
 })
 ```
 
 ```lua
 U.RunSequence({
+  rollE2eWaitForDiceTray,
   function()
+    return rollE2eSettlePresetCheck("Purple", {
+      normal = { 7, 7 },
+      oblivRouse = { 6, 6 },
+    }, { skipSpawn = true })
+  end,
+  function()
+    rollE2eSettlePresetCheckResume("Purple")
     rollConfirm("Purple", {
       phase = "postRoll",
       active = { result = { present = true } },
@@ -1777,8 +1776,13 @@ U.RunSequence({
   end,
   function()
     M.setCamera("ALL", "rollPurple")
-    printHeader("[HUMAN] Resolve Oblivion choice if prompted; click Confirm on Purple roll panel", 3)
-  end,
+    printHeader("[HUMAN] Confirm on Purple roll panel (Oblivion success — no choice)", 3)
+  end
+})
+```
+
+```lua
+U.RunSequence({
   function()
     rollConfirm("Purple", { noActive = true })
     rollConfirmTracker("Purple", { hunger = 1, stains = 2 })

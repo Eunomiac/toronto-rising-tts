@@ -273,7 +273,7 @@ RC.setRollOptions("Brown", { wpReroll = true, numberOfDiceRerolled = 3, canRerol
 - Suite M: Bestial Null via roll option.
 - Suite N: Blood Surge.
 - Suite O: ST slots, Werewolf, brutal outcome.
-- Suite P: Oblivion-Rouse multi-die (Purple). P-F arms PRE_ROLL (default `rollTest` open) and asserts phase before HUMAN Roll.
+- Suite P: Oblivion-Rouse multi-die (Purple). P-A–P-E arm exactly **2** obliv dice via `rollE2eAddPoolKindSpawn` (not bag×2 after auto-spawn 1 — that made 3 dice vs 2-face presets). P-F automates STANDARD compound pool + settle; HUMAN Confirm only.
 
 ### Suite G pool parameters
 
