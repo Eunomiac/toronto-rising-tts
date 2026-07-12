@@ -777,7 +777,7 @@ U.RunSequence({
   end,
   function()
     M.setCamera("ALL", "rollBrown")
-    printHeader("[HUMAN] Spend WP; hover hunger die and press R once; wait for settle", 3)
+    printHeader("[HUMAN] Spend WP; hover hunger die and press R once; wait for settle; Confirm (under-cap WP needs Confirm)", 3)
   end
 })
 ```
@@ -820,7 +820,7 @@ U.RunSequence({
   end,
   function()
     M.setCamera("ALL", "rollBrown")
-    printHeader("[HUMAN] Spend WP; rouse die must stay locked; reroll each normal die once", 3)
+    printHeader("[HUMAN] Spend WP; rouse die must stay locked; reroll each normal die once; wait for settle; Confirm (cap 3, only 2 normals)", 3)
   end
 })
 ```
