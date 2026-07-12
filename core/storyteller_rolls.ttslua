@@ -247,6 +247,8 @@ function STR.activateDrawerForSlot(slotIndex)
         return
     end
     if slot.drawerActive == true then
+        -- Drawer already raised: still force tray light ON (Sync/InitLights may have stomped it).
+        STD.applyTrayLightForSlot(slotIndex, true, 0)
         return
     end
     slot.drawerActive = true
@@ -400,15 +402,14 @@ function STR.clearSlotPendingBroadcast(slotIndex)
     saveRoot(root)
 end
 
---- Marks a drawer slot cleared (after ST cancel); closes drawer/light.
+--- Marks a drawer slot cleared (after ST cancel); always parks drawer and turns tray light OFF.
 -- @param slotIndex number
 function STR.clearSlot(slotIndex)
     local root = getRoot()
     local slot = root.slots[slotIndex]
+    -- Always couple park ↔ light OFF (do not gate on drawerActive — state can lag the world).
+    STD.closeForSlot(slotIndex)
     if type(slot) == "table" then
-        if slot.drawerActive == true then
-            STD.closeForSlot(slotIndex)
-        end
         slot.cleared = true
         slot.phase = nil
         slot.drawerActive = false

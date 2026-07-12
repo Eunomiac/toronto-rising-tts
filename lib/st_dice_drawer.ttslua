@@ -380,6 +380,24 @@ local function applyNpcSeatDrawerPose(slot, npcSeatKey, state, duration)
     OP.applyResolvedPose(obj, resolvedPose, duration, 0, { useSmoothSetters = true })
 end
 
+--- Tray light mode for a slot: STANDARD only while the matching drawer is active (TOR-149).
+--- @param slot number 1..3
+--- @param active boolean
+--- @param transitionTime number|nil
+local function applyTrayLightForSlot(slot, active, transitionTime)
+    local lightRef = SLOT_LIGHT_REFS[slot]
+    if type(lightRef) ~= "string" then
+        return
+    end
+    local t = tonumber(transitionTime)
+    if t == nil then
+        t = 0.25
+    end
+    -- Force: world may still be lit while gameState/fingerprint already say OFF (or the reverse).
+    L.invalidateReconcileCacheForRef(lightRef)
+    L.SetLightMode(lightRef, active and "STANDARD" or "OFF", nil, t)
+end
+
 --- Opens drawer at homeland NPC seat anchors (off teleport, on lerp) + tray light follow.
 -- @param slot number 1..3
 -- @param npcSeatKey string NPC1..NPC4
@@ -388,10 +406,7 @@ local function openForSlotAtNpcSeat(slot, npcSeatKey)
     syncTrayLightToNpcAnchor(slot, npcSeatKey)
     applyNpcSeatDrawerPose(slot, npcSeatKey, "off", 0)
     applyNpcSeatDrawerPose(slot, npcSeatKey, "on", OP.DEFAULT_TRANSITION_DURATION)
-    local lightRef = SLOT_LIGHT_REFS[slot]
-    if type(lightRef) == "string" then
-        L.SetLightMode(lightRef, "STANDARD", nil, 0.25)
-    end
+    applyTrayLightForSlot(slot, true, 0.25)
 end
 
 --- Current world Y of an ST dice drawer prop (nil when missing).
@@ -476,14 +491,46 @@ function STD.openForSlot(slot, opts)
         OP.applyResolvedPose(obj, resolvedPose, OP.DEFAULT_TRANSITION_DURATION, 0, { useSmoothSetters = true })
     end
     restoreTrayLightPosition(slot)
-    local lightRef = SLOT_LIGHT_REFS[slot]
-    if type(lightRef) == "string" then
-        L.SetLightMode(lightRef, "STANDARD", nil, 0.25)
+    applyTrayLightForSlot(slot, true, 0.25)
+end
+
+--- Desired tray light mode for a registry ref from live `drawerActive` (not `gameState.lights`).
+--- @param lightRef string
+--- @return string|nil "STANDARD"|"OFF"
+function STD.desiredTrayLightModeForRef(lightRef)
+    for slot = 1, 3 do
+        if SLOT_LIGHT_REFS[slot] == lightRef then
+            local root = S.getStateVal("storytellerRolls")
+            local slots = type(root) == "table" and root.slots or nil
+            local slotState = type(slots) == "table" and slots[slot] or nil
+            if type(slotState) == "table" and slotState.drawerActive == true then
+                return "STANDARD"
+            end
+            return "OFF"
+        end
     end
+    return nil
+end
+
+--- Re-assert tray light for one slot from `drawerActive` (or explicit active flag).
+--- @param slot number 1..3
+--- @param active boolean|nil when nil, read `drawerActive`
+--- @param transitionTime number|nil
+function STD.applyTrayLightForSlot(slot, active, transitionTime)
+    if type(slot) ~= "number" then
+        return
+    end
+    if active == nil then
+        local root = S.getStateVal("storytellerRolls")
+        local slots = type(root) == "table" and root.slots or nil
+        local slotState = type(slots) == "table" and slots[slot] or nil
+        active = type(slotState) == "table" and slotState.drawerActive == true
+    end
+    applyTrayLightForSlot(slot, active == true, transitionTime)
 end
 
 --- Reconcile tray lights from storyteller roll drawerActive flags (TOR-149).
---- Call after lighting presets so scene maps cannot leave inactive drawers STANDARD.
+--- Call after lighting presets / InitLights so scene maps and stale STANDARD saves cannot leave parked drawers lit.
 --- @param opts table|nil { transitionTime?: number }
 function STD.reconcileTrayLightsFromRollState(opts)
     opts = type(opts) == "table" and opts or {}
@@ -491,12 +538,9 @@ function STD.reconcileTrayLightsFromRollState(opts)
     local root = S.getStateVal("storytellerRolls")
     local slots = type(root) == "table" and root.slots or nil
     for slot = 1, 3 do
-        local lightRef = SLOT_LIGHT_REFS[slot]
-        if type(lightRef) == "string" then
-            local slotState = type(slots) == "table" and slots[slot] or nil
-            local active = type(slotState) == "table" and slotState.drawerActive == true
-            L.SetLightMode(lightRef, active and "STANDARD" or "OFF", nil, transitionTime)
-        end
+        local slotState = type(slots) == "table" and slots[slot] or nil
+        local active = type(slotState) == "table" and slotState.drawerActive == true
+        applyTrayLightForSlot(slot, active, transitionTime)
     end
 end
 
@@ -534,10 +578,7 @@ function STD.closeForSlot(slot)
 
     applyWorkshopHomeOff(slot, { instant = true })
     restoreTrayLightWorkshopHome(slot)
-    local lightRef = SLOT_LIGHT_REFS[slot]
-    if type(lightRef) == "string" then
-        L.SetLightMode(lightRef, "OFF", nil, 0.25)
-    end
+    applyTrayLightForSlot(slot, false, 0.25)
 end
 
 --- Snap every ST drawer + tray light to current-table absolute homes and deactivate (Y=-200, lights OFF).
@@ -554,10 +595,7 @@ function STD.reconcileAllToWorkshopHome(opts)
         clearPersistedWorkshopHomes(slot)
         local applied = applyWorkshopHomeOff(slot, opts)
         restoreTrayLightWorkshopHome(slot)
-        local lightRef = SLOT_LIGHT_REFS[slot]
-        if type(lightRef) == "string" then
-            L.SetLightMode(lightRef, "OFF", nil, 0)
-        end
+        applyTrayLightForSlot(slot, false, 0)
         if applied then
             restored = restored + 1
         end

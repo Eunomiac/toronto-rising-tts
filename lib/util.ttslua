@@ -2207,6 +2207,15 @@ function U.lightRefIsSeatSpotlight(lightRef)
     return U.lightRefIsPlayerSeat(lightRef) or U.lightRefIsNpcSeat(lightRef)
 end
 
+--- ST dice tray lights — owned by `storytellerRolls.slots[*].drawerActive` (TOR-149), not scene/`gameState.lights` snapshots.
+--- @param lightRef string
+--- @return boolean
+function U.lightRefIsStorytellerDiceLight(lightRef)
+    return lightRef == "storytellerDiceLight1"
+        or lightRef == "storytellerDiceLight2"
+        or lightRef == "storytellerDiceLight3"
+end
+
 --- Changes global lighting with a delay
 -- Applies lighting changes and calls Lighting.apply after a delay.
 -- Parameters starting with "set" are treated as function calls (e.g., setLightColor).
@@ -2399,7 +2408,7 @@ function U.applyLightingPreset(preset, opts)
 			-- ignore invalid keys
 		elseif modes[ref] == nil then
 			print("[applyLightingPreset] Unknown light registry key in spotlights: " .. tostring(ref))
-		elseif ref == "storytellerDiceLight1" or ref == "storytellerDiceLight2" or ref == "storytellerDiceLight3" then
+		elseif U.lightRefIsStorytellerDiceLight(ref) then
 			-- TOR-149: owned by STD.reconcileTrayLightsFromRollState after preset apply
 		elseif U.lightRefIsSeatSpotlight(ref) then
 			if U.Type(patch) == "string" and patch ~= "" then

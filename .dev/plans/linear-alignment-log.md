@@ -512,7 +512,7 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-12 | CREATE | TOR-369 | Stage spotlight long-way rotation; NPC Bug High; parent TOR-169 |
 | 2026-07-12 | UPDATE | TOR-149/344/288 | Elevated High; TOR-288 scoped Red/Brown famulus for this batch |
 | 2026-07-12 | Focus | Stack | #1 TOR-149, #2 TOR-344, #3 TOR-369, #4 TOR-366, #5 TOR-368, #6 TOR-288, #7 TOR-367 |
-| 2026-07-12 | DONE | TOR-149 | ST tray lights OFF unless drawerActive; spotlightMapUniform + reconcile |
+| 2026-07-12 | FOLLOW-UP | TOR-149 | drawerActive authority for ST tray lights; InitLights skip stale STANDARD; clearSlot always parks+OFF |
 | 2026-07-12 | DONE | TOR-344 | Dummy absolute ST drawer/light x/z/rotation per C.Tables |
 | 2026-07-12 | FOLLOW-UP | TOR-369 | Look-at–coupled SetLightMode + mode-only stage light bake (STANDARD↔SPOTLIGHT Y spin) |
 | 2026-07-12 | DONE | TOR-366 | Intermission TR_Loop incomingFadeSeconds fade-in |

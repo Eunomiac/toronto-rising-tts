@@ -766,6 +766,7 @@ L.LIGHTMODES = {
     storytellerDiceLight1 = {
       guid = G.GUIDS.DICE_LIGHT_STORYTELLER_1,
       isPlayerLight = false,
+      -- Steady default OFF; STANDARD only while matching ST drawer is active (TOR-149).
       default = "OFF",
       OFF = {
         enabled = false,
@@ -784,6 +785,7 @@ L.LIGHTMODES = {
     storytellerDiceLight2 = {
       guid = G.GUIDS.DICE_LIGHT_STORYTELLER_2,
       isPlayerLight = false,
+      -- Steady default OFF; STANDARD only while matching ST drawer is active (TOR-149).
       default = "OFF",
       OFF = {
         enabled = false,
@@ -802,6 +804,7 @@ L.LIGHTMODES = {
     storytellerDiceLight3 = {
       guid = G.GUIDS.DICE_LIGHT_STORYTELLER_3,
       isPlayerLight = false,
+      -- Steady default OFF; STANDARD only while matching ST drawer is active (TOR-149).
       default = "OFF",
       OFF = {
         enabled = false,
@@ -1698,6 +1701,17 @@ function L.reconcileLightRef(lightRef, transitionTime, opts)
         return false
     end
 
+    -- ST tray lights: drawerActive is authority (TOR-149). Ignore stale gameState STANDARD.
+    if U.lightRefIsStorytellerDiceLight(lightRef) then
+        local STD = require("lib.st_dice_drawer")
+        local desired = STD.desiredTrayLightModeForRef(lightRef) or "OFF"
+        if force then
+            L.invalidateReconcileCacheForRef(lightRef)
+        end
+        L.SetLightMode(lightRef, desired, nil, transitionTime or 0.25)
+        return true
+    end
+
     local desiredMode = S.getStateVal("lights", lightRef)
     if desiredMode == nil then
         if lData.OFF ~= nil then
@@ -2158,6 +2172,11 @@ local function tryApplySavedLight(lightName, mData, transitionT)
         return true
     end
 
+    -- ST tray lights follow `drawerActive` (TOR-149); never restore stale STANDARD from saves.
+    if U.lightRefIsStorytellerDiceLight(lightName) then
+        return true
+    end
+
     if string.sub(lightName, 1, 9) == "npcLight_" and L.LIGHTMODES[lightName] == nil then
         return false
     end
@@ -2276,10 +2295,12 @@ function L.InitLights()
 
     -- Reconcile all registered non-seat lights through state records.
     -- Missing saved modes default to OFF (or are force-disabled with a GM warning).
+    -- ST tray lights are skipped here and applied from drawerActive below (TOR-149).
     for lightRef, lData in pairs(L.LIGHTMODES or {}) do
         if U.Type(lightRef) == "string"
             and U.Type(lData) == "table"
             and not U.lightRefIsSeatSpotlight(lightRef)
+            and not U.lightRefIsStorytellerDiceLight(lightRef)
         then
             if not L.reconcileLightRef(lightRef, 0) then
                 initLightsRetryKeys[lightRef] = true
@@ -2293,6 +2314,10 @@ function L.InitLights()
             initLightsRetryKeys[lightName] = true
         end
     end)
+
+    local STD = require("lib.st_dice_drawer")
+    STD.reconcileTrayLightsFromRollState({ transitionTime = 0 })
+
     L.reconcileAllPlayers()
 end
 
@@ -2303,7 +2328,9 @@ function L.InitLightsDeferred()
     local remaining = {}
     for lightName, _ in pairs(initLightsRetryKeys) do
         if L.LIGHTMODES[lightName] ~= nil then
-            if not L.reconcileLightRef(lightName, 0) then
+            if U.lightRefIsStorytellerDiceLight(lightName) then
+                -- handled in batch reconcile below
+            elseif not L.reconcileLightRef(lightName, 0) then
                 remaining[lightName] = true
             end
         else
@@ -2314,6 +2341,10 @@ function L.InitLightsDeferred()
         end
     end
     initLightsRetryKeys = remaining
+
+    local STD = require("lib.st_dice_drawer")
+    STD.reconcileTrayLightsFromRollState({ transitionTime = 0 })
+
     L.reconcileAllPlayers()
 end
 

@@ -184,7 +184,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] Reconciler lighting updates lerped (default 2s). _( `core/lighting.ttslua` `L.DEFAULT_RECONCILE_LERP_SECONDS`.)_ _(TOR-59)_
 - [x] Test-bed helpers to apply seat-light settings from Red to all active seats. _( `TestBed_applyPlayerSeatLightsFromRed`.)_ _(TOR-61)_
 - [x] **Storyteller camera strip + Black presets:** Host `panel_storyteller_camera` → `HUD_STcamera`; `M.setCamera` / spoof / seat sync use `C.StorytellerCameraAngles` for Black (fixes E2E `rollE2eSeatPrep("Black")`). _(TOR-348)_
-- [x] **Storyteller dice tray lights:** Keep `storytellerDiceLight1`–`3` OFF in steady state; only ON during live ST roll in matching drawer (`spotlightMapUniform` forces OFF; `STD.reconcileTrayLightsFromRollState` after preset apply). _(TOR-149)_
+- [x] **Storyteller dice tray lights:** Keep `storytellerDiceLight1`–`3` OFF in steady state; only ON while matching drawer is active (`drawerActive` authority; InitLights/presets cannot restore stale STANDARD). _(TOR-149)_
 - [x] **NPC figurine light placement:** Point straight down (`rotation 0,0,0`); +5u above bounds top; +3u inward toward table origin in `buildResolvedLightModeTable`. _(TOR-266)_
 - [ ] **Centralize light modes (`C.LightModes`):** Remove legacy keys (`BRIGHT`, `DIM`, `TENSION`, `STANDARD`, `AdminDark`, `AdminStandard`, `AdminBright`, `AdminDebug`); update `DEBUG`/`DARK`; Scenes panel dynamic 5-wide preset grid (all keys; active = green bg / white text). **`L.LIGHTMODES` unchanged.** _(TOR-81)_
 - [ ] **Scene light modes as color tones:** Rename/reshape scene presets to tone keys (`AmberBright`, `AmberDim`, `AmberDark`, `BlueBright`, `GreenBright`, `WhiteBright`, …). `blockedBy` **TOR-81**. _(TOR-320)_
