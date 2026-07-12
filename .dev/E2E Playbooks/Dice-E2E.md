@@ -495,13 +495,16 @@ U.RunSequence({
     rollTest("Brown", 4, C.RollType.STANDARD, "E2E Take Half", 0)
     rollE2eSetPoolAndSpawn("Brown", 4, 0)
     RC.takeHalf("Brown")
-    rollConfirm("Brown", {
-      phase = "postRoll",
-      active = {
-        tookHalf = true,
-        result = { resultClass = "failure", successes = 2, margin = -2 },
-        batonHolder = "player",
-      },
+    -- TOR-306: pure Take Half auto-confirms/broadcasts (no POST_ROLL Confirm click).
+    rollConfirm("Brown", { noActive = true })
+  end,
+  function()
+    rollE2eExpectBroadcast({
+      color = "Brown",
+      visible = true,
+      resultClass = "Failure",
+      successes = 2,
+      margin = -2,
     })
   end,
   function() M.setCamera("ALL", "rollBrown") end,
@@ -512,14 +515,7 @@ U.RunSequence({
     rollTestNoDiff("Brown", C.RollType.STANDARD, "E2E H1b no diff", 0)
     rollE2eSetPoolAndSpawn("Brown", 4, 0)
     RC.takeHalf("Brown")
-    rollConfirm("Brown", {
-      phase = "postRoll",
-      active = {
-        tookHalf = true,
-        result = { resultClass = "win", successes = 2, marginAbsent = true },
-      },
-    })
-    rollForceConfirm("Brown")
+    rollConfirm("Brown", { noActive = true })
   end,
   function()
     rollE2eExpectBroadcast({
@@ -545,12 +541,15 @@ U.RunSequence({
     rollTestNoDiff("Brown", C.RollType.STANDARD, "E2E H1c zero half", 0)
     rollE2eSetPoolAndSpawn("Brown", 1, 0)
     RC.takeHalf("Brown")
-    rollConfirm("Brown", {
-      phase = "postRoll",
-      active = {
-        tookHalf = true,
-        result = { resultClass = "totalFailure", successes = 0, marginAbsent = true },
-      },
+    rollConfirm("Brown", { noActive = true })
+  end,
+  function()
+    rollE2eExpectBroadcast({
+      color = "Brown",
+      visible = true,
+      resultClass = "Total Failure",
+      successes = 0,
+      marginAbsent = true,
     })
   end,
   function() printHeader("", 2) end,
