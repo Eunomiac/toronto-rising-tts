@@ -2,7 +2,6 @@
   "version": 1,
   "entries": [
     { "path": "core/debug.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
-    { "path": "core/hud_hunger_pulse.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
     { "path": "core/hud_overlays.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
     { "path": "core/hud_player.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
     { "path": "core/light_debug.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },

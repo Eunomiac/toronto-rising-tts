@@ -19,7 +19,6 @@ local SceneLibrary = require("core.scene_library")
 local HUDP = require("core.hud_player")
 local Coterie = require("core.coterie")
 local HO = require("core.hud_overlays")
-local HUP = require("core.hud_hunger_pulse")
 local RSL = require("lib.rotational-seat-layout")
 
 local didBootstrapFullSync = false
@@ -259,7 +258,7 @@ local function scheduleBootstrapCoordinator()
     }, BOOTSTRAP_MAX_WAIT_SEC, BOOTSTRAP_POLL_INTERVAL_SEC)
 end
 
---- Reconcile one player scope (per-seat lights, HUD, overlays, hunger pulse, storyteller stat row).
+--- Reconcile one player scope (per-seat lights, HUD, overlays, storyteller stat row).
 --- @param color string Seat color (e.g., "Red")
 function Sync.player(color)
     if type(color) ~= "string" or color == "" then
@@ -276,7 +275,6 @@ function Sync.player(color)
     end
 
     callIfFunction(HO.reconcileForSeat, color)
-    callIfFunction(HUP.reconcileForSeat, color)
 
     -- Keep orchestrator presentation fingerprint aligned after per-seat mutation.
     lastSeatPresentationFingerprint = computeSeatPresentationFingerprint()

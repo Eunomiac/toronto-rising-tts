@@ -14,5 +14,4 @@
   <Image id="overlay_hunger_3_@@color@@" image="overlay_hunger_3" class="player_overlay squeeze_overlay overlay_anim_fade" />
   <Image id="overlay_hunger_2_@@color@@" image="overlay_hunger_2" class="player_overlay squeeze_overlay overlay_anim_fade" />
   <Image id="overlay_hunger_1_@@color@@" image="overlay_hunger_1" class="player_overlay squeeze_overlay overlay_anim_fade" />
-  <Image id="overlay_hungerPulse_5_@@color@@" class="player_overlay_hunger_5_pulse squeeze_overlay" />
 </Panel>

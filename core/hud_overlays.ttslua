@@ -303,7 +303,7 @@ local function applyOverlayVisibility(elementId, shouldShow)
 end
 
 --- Resolve the hunger tier overlay that should be visible for one seat (0..5).
---- Shared by overlay reconcile and hunger pulse so both read the same runtime hunger.
+--- Shared hunger resolver for overlay reconcile (same runtime hunger as other HUD paths).
 --- @param seatColor string e.g. "Red"
 --- @return number
 function HO.resolveHungerLevelForSeat(seatColor)
@@ -328,7 +328,7 @@ function HO.invalidateSeatCache(seatColor)
   lastDesiredVisibilityFpBySeat[seatColor] = nil
 end
 
---- Reconcile condition/hunger overlays and hunger smoke for one seat (no hunger pulse animation).
+--- Reconcile condition/hunger overlays and hunger smoke for one seat.
 --- @param seatColor string e.g. "Red"
 --- @param opts table|nil `{ force = boolean? }`
 function HO.reconcileForSeat(seatColor, opts)
@@ -379,9 +379,6 @@ function HO.syncAll(opts)
   for _, seatColor in ipairs(C.PlayerColors) do
     HO.reconcileForSeat(seatColor, opts)
   end
-
-  local HUP = require("core.hud_hunger_pulse")
-  HUP.syncHungerPulseAll()
 end
 
 return HO

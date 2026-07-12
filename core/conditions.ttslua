@@ -344,11 +344,6 @@ function Conditions.afterChange(playerID)
     HO.reconcileForSeat(col)
   end
 
-  local HUP = require("core.hud_hunger_pulse")
-  if type(HUP.reconcileForSeat) == "function" then
-    HUP.reconcileForSeat(col)
-  end
-
   if type(UpdateUIDisplays) == "function" then
     UpdateUIDisplays({
       playerStats = true,

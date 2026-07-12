@@ -25,7 +25,7 @@ Status: current performance audit; entries may be done, partial, or deferred as 
 | Rank | Topic | Status |
 | --- | --- | --- |
 | 0 | **Interaction points (gameboard Apply/Clear/drop)** | **In progress (TOR-201)** — snap catalog cache keyed by `controlBoardSnapFingerprintFor`; orchestrator `force=false` on control-board path; `DEBUG.profileGameboardApply/Clear/TokenDrop` |
-| 1 | `Sync.player` duplicate overlay/HUD | **Done** — `HO.reconcileForSeat` / `HUP.reconcileForSeat`; scoped `UpdateUIDisplays`; no duplicate `overlays` / all-player `playerHud` |
+| 1 | `Sync.player` duplicate overlay/HUD | **Done** — `HO.reconcileForSeat`; scoped `UpdateUIDisplays`; no duplicate `overlays` / all-player `playerHud` (hunger pulse removed TOR-373) |
 | 2 | Startup bootstrap stacks | **Done** — readiness-gated `scheduleBootstrapCoordinator()` (poll `0.35s`, max `10s`) replaces blind `BOOTSTRAP_RETRY_OFFSETS_SEC`; `L.seatSpotlightsResolvable()` + pending init-light probe; bootstrap metrics (`earlyExit`, `ticksRun`, `lightsDeferredRemaining`) |
 | 3 | Seat lighting redundant lerps | **Partial** — `lastReconciledModeByRef` + `L.invalidateReconcileCache()`; bootstrap ticks use `opts.bootstrap` → `transitionTime = 0`; seat-presentation orchestrator fingerprint skips full `reconcileAllPlayers` when PC light + overlay inputs unchanged |
 | 4 | Soundscape deferred duplicates | **Done** — `pendingSoundscapeReconcileFingerprint` + `soundscapeReconcileGeneration`; fade-step metrics |
@@ -80,13 +80,13 @@ All recommendations preserve the synchronization contract: `gameState` remains t
 
 ## 1. `Sync.player(color)` double all-seat overlay/HUD fan-out
 
-**Symptom:** A single player-scoped mutation can trigger one seat light pass, one direct player HUD refresh, **two** all-seat overlay passes, **two** all-seat hunger pulse resets, and an all-player HUD loop.
+**Symptom:** A single player-scoped mutation can trigger one seat light pass, one direct player HUD refresh, **two** all-seat overlay passes, and an all-player HUD loop.
 
 **Evidence**
 
 - `Sync.player(color)` calls `L.reconcileForPlayer(color)`, `HUDP.updatePlayerUI(player, color)`, `HO.syncAll()`, then `UpdateUIDisplays({ playerStats = true, playerHud = true, overlays = true })`. `UpdateUIDisplays` loops `M.forPlayers` when `playerStats` or `playerHud` is requested, then calls `HO.syncAll()` again for `overlays`. See `core/sync.ttslua:62-88` and `core/global_script.ttslua:1942-1978`.
-- `HO.syncAll()` loops every `C.PlayerColors` row, computes all managed overlay ids, always drives six hunger layers via `UI.show` / `UI.hide`, updates hunger smoke, then calls `HUP.syncHungerPulseAll()`. See `core/hud_overlays.ttslua:188-217`.
-- `HUP.syncHungerPulseAll()` loops every player color, increments each pulse generation, clears the pulse overlay, and starts heartbeat timers for hunger 5. See `core/hud_hunger_pulse.ttslua:209-225`.
+- `HO.syncAll()` loops every `C.PlayerColors` row, computes all managed overlay ids, always drives six hunger layers via `UI.show` / `UI.hide`, updates hunger smoke. See `core/hud_overlays.ttslua`. Hunger 5 is static only (pulse module removed, TOR-373).
+- ~~`HUP.syncHungerPulseAll()`~~ removed with `core/hud_hunger_pulse.ttslua` (TOR-373).
 
 **Top call sites**
 
@@ -102,7 +102,7 @@ All recommendations preserve the synchronization contract: `gameState` remains t
 
 - **Quick win:** Remove `overlays = true` from the `UpdateUIDisplays` call inside `Sync.player`; `HO.syncAll()` already ran. This preserves reconciler ownership and eliminates the immediate duplicate overlay/pulse pass.
 - **Quick win:** In `Sync.player`, avoid `playerHud = true` until `UpdateUIDisplays` can target one color; `HUDP.updatePlayerUI(player, color)` already refreshes that seat.
-- **Structural:** Add `HO.reconcileForSeat(seatColor)` and `HUP.reconcileForSeat(seatColor)`; keep `HO.syncAll()` as the full/load repair path. Then `Sync.player(color)` can remain the sole orchestrator while becoming truly player-scoped.
+- **Structural:** Add `HO.reconcileForSeat(seatColor)`; keep `HO.syncAll()` as the full/load repair path. Then `Sync.player(color)` can remain the sole orchestrator while becoming truly player-scoped.
 - **Structural:** Extend `UpdateUIDisplays(delta)` with an optional scoped color list, for example `{ playerStats = true, colors = { color } }`, so the Storyteller stat row can refresh without looping every seated player.
 
 ## 2. Startup `Sync.full` plus deferred retry stacks
@@ -306,6 +306,6 @@ All recommendations preserve the synchronization contract: `gameState` remains t
 1. **Measure:** Add sync counters around full/player/bootstrap/soundscape/NPC paths before tuning durations or changing force semantics.
 2. **Quick win:** Remove duplicate overlays from `Sync.player` and avoid all-player HUD refresh from that path only after confirming the scoped path still refreshes required cross-seat UI.
 3. **Quick win:** Add pending fingerprint/generation guard to `Soundscape.reconcileFromState` deferred apply.
-4. **Structural:** Add `HO.reconcileForSeat` / `HUP.reconcileForSeat`, then wire `Sync.player` to those.
+4. **Structural:** Add `HO.reconcileForSeat`, then wire `Sync.player` to it.
 5. **Structural:** Add lighting applied-fingerprint cache with explicit invalidation/force semantics.
 6. **Structural:** Batch NPC preload spawns and split load restoration from missing-pool creation.

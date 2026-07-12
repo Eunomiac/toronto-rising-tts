@@ -51,7 +51,7 @@ New code must follow this shape:
 
 1. Mutate state through `S.setStateVal`, `S.setPlayerVal`, or a domain mutation API.
 2. Call the narrowest sync entry point that covers the affected world:
-   - `Sync.player(color)` for one PC seat's lights, HUD, overlays, and hunger pulse.
+   - `Sync.player(color)` for one PC seat's lights, HUD, and overlays.
    - `Sync.full(opts)` for scene, soundscape, seat presentation, NPC scene layout, global UI, and scene-library mirrors.
    - Domain reconciler APIs only when the domain is the whole affected scope.
 3. Do not hide live-world writes inside setters.
@@ -113,8 +113,7 @@ Order:
 2. `L.reconcileForPlayer(color)`.
 3. `HUDP.updatePlayerUI(Player[color], color)` only when `Player[color]` exists.
 4. `HO.reconcileForSeat(color)`.
-5. `HUP.reconcileForSeat(color)`.
-6. `UpdateUIDisplays({ playerStats = true, colors = { color } })` when the global exists (no `overlays` or all-player `playerHud` — those are covered by steps 3–5).
+5. `UpdateUIDisplays({ playerStats = true, colors = { color } })` when the global exists (no `overlays` or all-player `playerHud` — those are covered by steps 3–4).
 
 It skips scene ambient lighting, top fog, soundscape, NPC scene layout, scene-library mirroring, bootstrap light initialization, deferred retries, and full Storyteller panel refresh. Those domains do not depend on a single PC hunger/roll/HUD mutation.
 
@@ -139,10 +138,8 @@ When `Sync.full({ force = true })`, `Sync.invalidateAllReconcileCaches()` runs b
 | `NPCS.restoreAfterStateLoad()` | First `Sync.full` bootstrap; `Sync.npcCutouts` direct API | `gameState.npcs.instances`, occupied NPC seat map, `C.NPCSeats` | Figurine physics lock, spotlight tag registration, NPC spotlight mode registration, preload pool ensure, seat-layout sync request | Sanitizes and rewrites `gameState.npcs.instances`; may update seated records | Bootstrap-only in `Sync.full`; no fingerprint |
 | `HUDP.reconcileCameraOverlaySelfMatchRowsFromXmlDefaults()` | First `Sync.full` bootstrap before UI refresh | `C.PlayerColors`; XML defaults | `UI.setAttribute("cameraControls_otherControls<Seat>_<Seat>", "active", "false")` | Confirmed no state writes | One-shot via `didBootstrapFullSync` |
 | `HUDP.updatePlayerUI(player, color)` | `Sync.player`, `UpdateUIDisplays({ playerHud = true })`, HUD panel handlers | `gameState.playerData[id].hud`, `gameState.sessionScene.districtKey`, `gameState.sessionScene.siteKey`, other seats via player ID lookup, `C.Sites`, `C.Districts` | Player HUD `active`, sidebar hover/active colors, reference panels, coterie popup images, map pins, location dock cards, camera overlay rows | Confirmed no state writes in `updatePlayerUI`; HUD click handlers mutate state before calling it | Local UI caches including `lastLocationDockUiCache`; delegates local `reconcileLocationDockCardsFromState` |
-| `HO.reconcileForSeat(seatColor, opts?)` | `Sync.player`, `HO.syncAll`, `P.refreshHudOverlaysForSeat` | Same as `HO.syncAll` for one seat | Condition/hunger overlays + hunger smoke for that seat; hunger tiers use `UI.show`/`UI.hide` plus `active` clear/set (TOR-340 off-seat hide) | Confirmed no state writes | `lastDesiredVisibilityFpBySeat` skips when hunger/condition inputs unchanged; `opts.force` bypasses; fingerprint skip still re-applies hunger tiers + smoke; does not run hunger pulse animation |
-| `HO.syncAll(opts?)` | `Sync.full`, `UpdateUIDisplays({ overlays = true })` | `gameState.playerData[id].conditions[*].hudChanges`, `gameState.playerData[id].stats.hunger`, `C.PlayerColors` | Loops `HO.reconcileForSeat`, then `HUP.syncHungerPulseAll()` | Confirmed no state writes | `lastVisible` write-skip; `HO.computeOverlayInputFingerprint()`; `HO.invalidateOverlayInputCache()` |
-| `HUP.reconcileForSeat(seatColor)` | `Sync.player` | Hunger per seat from player data / player value helpers | Pulse overlay alpha + heartbeat for hunger 5 on that seat | Confirmed no state writes | `pulseGenByColor` invalidates stale delayed callbacks |
-| `HUP.syncHungerPulseAll()` | End of `HO.syncAll()` | All `C.PlayerColors` | Loops `HUP.reconcileForSeat` | Confirmed no state writes | Full-seat pulse repair path |
+| `HO.reconcileForSeat(seatColor, opts?)` | `Sync.player`, `HO.syncAll`, `P.refreshHudOverlaysForSeat` | Same as `HO.syncAll` for one seat | Condition/hunger overlays + hunger smoke for that seat; hunger tiers use `UI.show`/`UI.hide` plus `active` clear/set (TOR-340 off-seat hide). Hunger 5 is static only (pulse layer removed, TOR-373). | Confirmed no state writes | `lastDesiredVisibilityFpBySeat` skips when hunger/condition inputs unchanged; `opts.force` bypasses; fingerprint skip still re-applies hunger tiers + smoke |
+| `HO.syncAll(opts?)` | `Sync.full`, `UpdateUIDisplays({ overlays = true })` | `gameState.playerData[id].conditions[*].hudChanges`, `gameState.playerData[id].stats.hunger`, `C.PlayerColors` | Loops `HO.reconcileForSeat` | Confirmed no state writes | `lastVisible` write-skip; `HO.computeOverlayInputFingerprint()`; `HO.invalidateOverlayInputCache()` |
 | `GameStateOverlay.reconcileFromState()` | `UpdateUIDisplays` when full, `gameStateOverlay`, `phase`, or `scenesPanel`; clock tick at zero speed | `gameState.currentPhase`, `gameState.sessionScene.districtKey`, `gameState.sessionScene.siteKey`, `gameState.sessionScene.clock`, `C.Sites`, `C.Districts` | Center-top overlay `UI.setValue` and `UI.setAttribute` | Confirmed no state writes | `overlayTextCache`, `overlayActiveCache`; hides/clears outside phases that show narrative clock |
 | `UpdateUIDisplays(delta)` | `Sync.ui`, direct legacy HUD refresh paths | `gameState.currentPhase`, `currentScene`, player stats/HUD, soundscape summary, panel state, `delta` flags | Global and player UI via cached `UI.setValue`, `HUDP.updatePlayerUI`, `HO.syncAll`, `StorytellerScenesPanel.refresh`, `GameStateOverlay.reconcileFromState`, NPC/PCST refresh helpers | Confirmed no direct state writes | `UI_DISPLAY_CACHE`; nil `delta` means full refresh |
 | `SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked()` | End of every `Sync.full` (before UI refresh) | `SceneLibrary.resolveMirrorSceneKey()` → linked `activeKey` or linked `lastAppliedKey`, live `gameState.sessionScene` | No world I/O | Writes `gameState.sceneLibrary.scenes[K].sessionScene` | No-op unless a linked row resolves; post-reconcile mirror, not a reconciler |
@@ -160,7 +157,7 @@ When `Sync.full({ force = true })`, `Sync.invalidateAllReconcileCaches()` runs b
 
 | User action / feature | Required mutation | Required sync sequence | Notes |
 |---|---|---|---|
-| Hunger change from PC/ST panel or rouse | `S.setPlayerVal(color, "hunger", nextValue)` | `Sync.player(color)`; ST `hungerApply` also `P.refreshHudOverlaysForSeat(color)` (TOR-340) | Covers seat light priority, player HUD, overlays, hunger smoke, and hunger pulse. Existing examples: `core/pc_storyteller_panel.ttslua`, `core/roll_controller.ttslua`, `core/debug.ttslua`. |
+| Hunger change from PC/ST panel or rouse | `S.setPlayerVal(color, "hunger", nextValue)` | `Sync.player(color)`; ST `hungerApply` also `P.refreshHudOverlaysForSeat(color)` (TOR-340) | Covers seat light priority, player HUD, overlays, and hunger smoke. Existing examples: `core/pc_storyteller_panel.ttslua`, `core/roll_controller.ttslua`, `core/debug.ttslua`. |
 | Condition changes with HUD or lighting effects | Write condition data under `gameState.playerData[id].conditions` through the owning condition/stat API | `Sync.player(color)` | Lighting reads `lightingModeChanges`; overlays read `hudChanges`. |
 | Admin light scene change | `S.setStateVal(sceneName, "currentScene")`, `S.setStateVal(presetKey, "sessionScene", "lightingPresetKey")`, clear `sceneTransition` | `Sync.full({ reason = "..." })` | Do not call `Lighting.set` directly from the handler. |
 | Storyteller scene library Apply | Replace `gameState.sessionScene` / linked scene state through the scene-library panel path | Close panel + `HUDBF.beginTransition` immediately; `HUDBF.runTransitionAfterLeadIn` defers heavy work 2s via `U.waitUntil`, then state write, `RSL.SetTableTo(..., { skipTransitionBlindfold = true })`, soundscape, `Sync.full`; at settle-delay start, `M.setCamera(..., "default")` for seated players; 10s settle before single blindfold lift | Blindfold UI.show runs once (cache-aware); camera reset is not during table geometry. |
@@ -196,7 +193,7 @@ See [Dual_apply_survey.md](Dual_apply_survey.md) for the source inventory.
 | Scenes presets | Mitigated by `Scenes.reconcileFromState` fingerprint and seat presets flowing through lighting reconciliation. | Keep seat physical apply in `L.reconcileForPlayer`. |
 | Lighting seats | Open minor redundancy: `Sync.full` and some scoped handlers may reconcile seats in adjacent calls, but `L.reconcileForPlayer` is state-derived and transition-epoch guarded. | Avoid adding direct `L.SetLightMode` calls in panel handlers. |
 | NPC session layout | Mitigated by `NPCS.reconcileAllFromState` unified fingerprint and Step Zero–Five ordering. | Keep authored layout through the orchestrator; do not call legacy split reconcilers from new code. |
-| Overlays / HUD | Open minor redundancy: UI-only double refresh is usually no-op, but it can restart hunger pulse via `HO.syncAll`. | Prefer narrow deltas and avoid `HO.syncAll` next to `Sync.full`. |
+| Overlays / HUD | Open minor redundancy: UI-only double refresh is usually no-op. | Prefer narrow deltas and avoid `HO.syncAll` next to `Sync.full`. |
 | End scene narrative | Intentional force re-sync after manual ambience clears. | Keep `invalidateReconcileCache` only because live world was deliberately driven outside the normal snapshot. |
 | Table layout | Documented exception. `RSL.SetTableTo` owns physical table movement; `Sync.full` reasserts state-derived lighting/overlay presentation afterward. | Do not add a second table movement path in `Sync.full`. |
 
