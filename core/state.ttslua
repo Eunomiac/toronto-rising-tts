@@ -247,7 +247,9 @@ function S.GetDefaultGameState()
     playerData[C.StorytellerID] = {
         color = "Black",
         hud = getDefaultPlayerHUD(),
-        cameraAngles = getDefaultPlayerCameraAngles()
+        cameraAngles = (type(C.StorytellerCameraAngles) == "table"
+            and U.merge({}, C.StorytellerCameraAngles))
+            or getDefaultPlayerCameraAngles()
     }
 
     return {

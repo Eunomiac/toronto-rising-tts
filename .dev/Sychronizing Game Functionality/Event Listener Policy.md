@@ -106,7 +106,7 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | ST state+world | `HUD_changeScene`, soundscape, scenes apply, `HUD_resetGame`, `HUD_syncAll`, `HUD_pcPanel` | B+C | Yes | D |
 | Roll | `HUD_roll*` | B (+ `Global.call` for C) | Partial | C |
 | Debug world | `HUD_debugLightActivate/Enabled/ResetRow/Slider`, `HUD_toggleAllAnchors/Spotlights` | C | Yes | — |
-| Debug read/UI | `HUD_debugLightGuidInput`, `HUD_debugLightDone/Snapshot`, camera capture, `HUD_toggleRunTestPanel`, `HUD_runtest`, `HUD_runtest_step` | A | Yes (RunTest) | — |
+| Debug read/UI | `HUD_debugLightGuidInput`, `HUD_debugLightDone/Snapshot`, camera capture, `HUD_toggleRunTestPanel`, `HUD_runtest`, `HUD_runtest_step`, `HUD_STcamera` | A | Yes (RunTest / ST camera) | — |
 
 **TOR-144 column:** multiclient verification target from [Preparing §2](../Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md) — blank until friend session passes.
 
@@ -136,6 +136,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `HUD_clearLoadingOverlay` | A | Yes | hide + `active=false` on startup loading screen |
 | `HUD_toggleDebugAmbient` | C | Yes | ambient intensity 0↔2 (debug, not persisted) |
 | `HUD_toggleRunTestPanel` / `HUD_runtest` / `HUD_runtest_step` | A | Yes | Host RunTest strip; arms/continues/stops `DEBUG.RunTest` (TOR-347) |
+| `HUD_STcamera` | A | Yes | Host ST camera strip → `M.setCamera(Black, mode)` from `C.StorytellerCameraAngles` (TOR-348) |
 | `HUD_debugLightActivate/Enabled/ResetRow/Slider` | C | Yes | |
 | `HUD_debugLightGuidInput/Done/Snapshot` | A | — | |
 | `HUD_debugCamera*` / `HUD_debugCaptureCameraPreset` | A | — | local camera |

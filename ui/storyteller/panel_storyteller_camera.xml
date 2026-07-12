@@ -1,0 +1,31 @@
+<Defaults>
+  <Panel class="panel_STcamera"
+    rectAlignment="LowerLeft"
+    offsetXY="0 100"
+    width="40"
+    height="400"
+    color="rgba(0,0,0,0)"
+    raycastTarget="false" />
+  <VerticalLayout class="STcamera_button_column"
+    spacing="8"
+    childAlignment="LowerLeft"
+    childForceExpandWidth="true"
+    childForceExpandHeight="false" />
+  <Button class="STcamera_button"
+    fontSize="14"
+    preferredHeight="30"
+    colors="#2A4A6A|#3A5A7A|#1A3A5A|#2A4A6A"
+    textColor="#FFFFFF" />
+</Defaults>
+
+<Panel id="panel_STcamera" class="panel_STcamera" visibility="Host" active="true">
+
+  <VerticalLayout class="STcamera_button_column">
+    <Button id="button_STcamera_default" class="STcamera_button" onClick="HUD_STcamera"></Button>
+    <Button id="button_STcamera_mid" class="STcamera_button" onClick="HUD_STcamera">Mid</Button>
+    <Button id="button_STcamera_stage_control" class="STcamera_button" onClick="HUD_STcamera">Stage</Button>
+    <Button id="button_STcamera_palette" class="STcamera_button" onClick="HUD_STcamera">Palette</Button>
+    <Button id="button_STcamera_rolls" class="STcamera_button" onClick="HUD_STcamera">Rolls</Button>
+  </VerticalLayout>
+
+</Panel>

@@ -4041,6 +4041,41 @@ function HUD_debugCameraSpoof(player, button, id)
     broadcastToColor(tostring(message), player.color, {0, 1, 1})
 end
 
+--- Host Storyteller camera strip (`panel_storyteller_camera.xml`): apply `C.StorytellerCameraAngles` to Black.
+-- @param player Player
+-- @param button string|nil
+-- @param id string button_STcamera_<mode>
+function HUD_STcamera(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_STcamera") then
+        return
+    end
+    if type(id) ~= "string" then
+        return
+    end
+    local mode = string.match(id, "^button_STcamera_(.+)$")
+    if mode == nil or mode == "" then
+        return
+    end
+    if type(C.StorytellerCameraAngles) ~= "table" or type(C.StorytellerCameraAngles[mode]) ~= "table" then
+        broadcastToColor(
+            string.format("ST camera: unknown mode '%s'.", tostring(mode)),
+            player.color,
+            {1, 0.5, 0}
+        )
+        return
+    end
+    if M == nil or type(M.setCamera) ~= "function" then
+        broadcastToColor("ST camera: M.setCamera missing.", player.color, {1, 0.5, 0})
+        return
+    end
+    -- Prefer the Black seat object so the Storyteller view moves even if Host hotseat color differs.
+    local target = Player.Black
+    if target == nil or not U.isPlayer(target) then
+        target = player
+    end
+    M.setCamera(target, mode)
+end
+
 --- Camera Angles shortcut: apply preset mode for the active debug target player.
 -- @param player Player
 -- @param button string|nil

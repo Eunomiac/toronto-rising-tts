@@ -50,7 +50,7 @@
 
 </Panel>
 
-
+<Include src="panel_storyteller_camera.xml" />
 <Include src="panel_storyteller_roll_controls.xml" />
 <Include src="panel_storyteller_toolbar.xml" />
 <Include src="panel_runtest.xml" />

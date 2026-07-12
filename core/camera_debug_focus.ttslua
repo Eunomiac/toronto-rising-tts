@@ -373,7 +373,7 @@ function CameraDebugFocus.modeNameFromPresetButtonId(id)
     return string.sub(id, #prefix + 1)
 end
 
---- Auto-run when Storyteller changes seat: copy PC `cameraAngles` or clear for Black/White/Grey.
+--- Auto-run when Storyteller changes seat: copy PC `cameraAngles` or restore ST presets for Black.
 -- @param color string New TTS seat color
 -- @return boolean ok
 -- @return string message
@@ -387,11 +387,21 @@ function CameraDebugFocus.syncStorytellerCameraForSeatColor(color)
     if C == nil or C.StorytellerID == nil then
         return false, "Constants unavailable."
     end
-    if color == "Black" or color == "White" then
+    if color == "White" then
         activeSpoofColor = nil
         refreshSpoofButtons()
         S.setStateVal(nil, "playerData", C.StorytellerID, "cameraAngles")
         return true, "Storyteller cameraAngles cleared (" .. color .. ")."
+    end
+    if color == "Black" then
+        activeSpoofColor = nil
+        refreshSpoofButtons()
+        if type(C.StorytellerCameraAngles) ~= "table" then
+            S.setStateVal(nil, "playerData", C.StorytellerID, "cameraAngles")
+            return false, "C.StorytellerCameraAngles is missing."
+        end
+        S.setStateVal(U.merge({}, C.StorytellerCameraAngles), "playerData", C.StorytellerID, "cameraAngles")
+        return true, "Storyteller cameraAngles restored from C.StorytellerCameraAngles."
     end
     if type(C.PlayerColors) == "table" and U.isIn(color, C.PlayerColors) then
         local pdata = S.getPlayerData(color)
@@ -407,6 +417,7 @@ function CameraDebugFocus.syncStorytellerCameraForSeatColor(color)
 end
 
 --- Admin Spoofing: copy seat `cameraAngles` into Storyteller state, or clear selection when toggling active color off.
+-- Black restores `C.StorytellerCameraAngles` (TOR-348) — Black has no PC seat profile.
 -- @param player Player
 -- @param color string Seat color (e.g. Brown)
 -- @return boolean ok
@@ -426,6 +437,22 @@ function CameraDebugFocus.onSpoofColor(player, color)
     if C == nil or C.StorytellerID == nil then
         return false, "Constants unavailable."
     end
+
+    if color == "Black" then
+        if type(C.StorytellerCameraAngles) ~= "table" then
+            local msg = "C.StorytellerCameraAngles is missing."
+            U.AlertGM("CameraDebugFocus.onSpoofColor: " .. msg)
+            if player and player.color then
+                broadcastToColor("Debug Camera: " .. msg, player.color, { 1, 0.35, 0 })
+            end
+            return false, msg
+        end
+        activeSpoofColor = nil
+        refreshSpoofButtons()
+        S.setStateVal(U.merge({}, C.StorytellerCameraAngles), "playerData", C.StorytellerID, "cameraAngles")
+        return true, "Storyteller cameraAngles restored from C.StorytellerCameraAngles."
+    end
+
     local pdata = S.getPlayerData(color)
     if type(pdata) ~= "table" or type(pdata.cameraAngles) ~= "table" then
         local msg = "No cameraAngles for seat '" .. color .. "'."

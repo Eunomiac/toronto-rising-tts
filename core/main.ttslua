@@ -307,6 +307,12 @@ function M.setCamera(player, cameraMode, lookAtPos)
     end
     if mergedUniversal[cameraMode] ~= nil or C.CameraModes[cameraMode] == "universal" then
       cameraPreset = U.clone(mergedUniversal[cameraMode])
+    elseif player.color == "Black"
+        and type(C.StorytellerCameraAngles) == "table"
+        and type(C.StorytellerCameraAngles[cameraMode]) == "table"
+    then
+      -- Black / Storyteller seat: authored presets in C.StorytellerCameraAngles (TOR-348).
+      cameraPreset = U.clone(C.StorytellerCameraAngles[cameraMode])
     else
       -- Otherwise, use per-player camera data from state (and seat-suffixed universal keys for the live seat).
       local playerData = S.getPlayerData(player)
@@ -334,6 +340,13 @@ function M.setCamera(player, cameraMode, lookAtPos)
       end
       if type(cameraPreset) ~= "table" and suffixedMode ~= nil then
         cameraPreset = U.clone(mergedUniversal[suffixedMode])
+      end
+      -- ST-only modes (mid / stage_control / palette / rolls) when Host is hotseated off Black.
+      if type(cameraPreset) ~= "table"
+          and type(C.StorytellerCameraAngles) == "table"
+          and type(C.StorytellerCameraAngles[cameraMode]) == "table"
+      then
+        cameraPreset = U.clone(C.StorytellerCameraAngles[cameraMode])
       end
       if type(cameraPreset) ~= "table" then
         U.AlertGM("M.setCamera: No camera angle data found for player '" .. tostring(player.color) .. "' and camera mode '" .. tostring(cameraMode) .. "'")

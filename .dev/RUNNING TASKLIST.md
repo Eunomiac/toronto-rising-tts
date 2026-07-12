@@ -185,6 +185,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 
 - [x] Reconciler lighting updates lerped (default 2s). _( `core/lighting.ttslua` `L.DEFAULT_RECONCILE_LERP_SECONDS`.)_ _(TOR-59)_
 - [x] Test-bed helpers to apply seat-light settings from Red to all active seats. _( `TestBed_applyPlayerSeatLightsFromRed`.)_ _(TOR-61)_
+- [x] **Storyteller camera strip + Black presets:** Host `panel_storyteller_camera` → `HUD_STcamera`; `M.setCamera` / spoof / seat sync use `C.StorytellerCameraAngles` for Black (fixes E2E `rollE2eSeatPrep("Black")`). _(TOR-348)_
 - [ ] **Storyteller dice tray lights:** Keep `storytellerDiceLight1`–`3` OFF in steady state; only ON during live ST roll in matching drawer (`LIGHTMODES_REGISTRY_KEYS_ORDERED` currently forces STANDARD). _(TOR-149)_
 - [x] **NPC figurine light placement:** Point straight down (`rotation 0,0,0`); +5u above bounds top; +3u inward toward table origin in `buildResolvedLightModeTable`. _(TOR-266)_
 - [ ] **Centralize light modes (`C.LightModes`):** Remove legacy keys (`BRIGHT`, `DIM`, `TENSION`, `STANDARD`, `AdminDark`, `AdminStandard`, `AdminBright`, `AdminDebug`); update `DEBUG`/`DARK`; Scenes panel dynamic 5-wide preset grid (all keys; active = green bg / white text). **`L.LIGHTMODES` unchanged.** _(TOR-81)_

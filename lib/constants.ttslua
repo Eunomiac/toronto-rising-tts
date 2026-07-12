@@ -1300,6 +1300,46 @@ C.UniversalCameraAngles = {
   }
 }
 
+-- Storyteller Camera Angles
+-- These modes should be added to Black's camera angles, as Black is the Storyteller.
+C.StorytellerCameraAngles = {
+  -- Storyteller Default
+  default = {
+    position = {x=0,y=105,z=120},
+    pitch    = 45,
+    yaw      = 180,
+    distance = 30,
+  },
+  -- Storyteller Mid
+  mid = {
+    position = {x=0,y=65,z=80},
+    pitch    = 35,
+    yaw      = 180,
+    distance = 30,
+  },
+  -- Storyteller Mid
+  stage_control = {
+    position = {x=0,y=105,z=125},
+    pitch    = 90,
+    yaw      = 180,
+    distance = 15,
+  },
+  -- Storyteller Palette
+  palette = {
+    position = {x=12,y=105,z=130},
+    pitch    = 50,
+    yaw      = 180,
+    distance = 17,
+  },
+  -- Storyteller Rolls
+  rolls = {
+    position = {x=0,y=105,z=130},
+    pitch    = 50,
+    yaw      = 180,
+    distance = 25,
+  }
+}
+
 --- Derive `sourceObjects.cameraModes.bySeat` from `C.ReferenceCameraAngles`.
 --- Per-seat `playerData.cameraAngles` and `seatLayout.universalCameraAngles[<mode><seatKey>]` are both computed
 --- from these keys in `lib.rotational-seat-layout` (no separate `forUniversal` list).
