@@ -155,13 +155,7 @@ local function applyWorkshopHomeOff(slot, opts)
             and type(home.rotZ) == "number" then
             obj.setRotation({ x = home.rotX, y = home.rotY, z = home.rotZ })
         end
-        if type(home.scaleX) == "number"
-            and type(home.scaleY) == "number"
-            and type(home.scaleZ) == "number" then
-            obj.setScale({ x = home.scaleX, y = home.scaleY, z = home.scaleZ })
-        else
-            obj.setScale({ x = 1, y = 1, z = 1 })
-        end
+        -- Scale is workshop-authored; never reset here.
         obj.setInvisibleTo({ "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey", "Black" })
         return true
     end
