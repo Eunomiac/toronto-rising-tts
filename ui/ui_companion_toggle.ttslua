@@ -2,9 +2,11 @@
 --[[
     Companion Toggle Token (ui/ui_companion_toggle.ttslua)
 
-    Attached to COMPANION_TOGGLE_TOKEN_A_RED / _A_BROWN.
-    LEFT: toggle famulus on/off + flip token. RIGHT: cycle figurine state 1↔2 if on.
-    Routes via GlobalApplyCompanionToggleClick (bundle-safe; TOR-288).
+    Object stub: require("ui.ui_companion_toggle") on tiles with GMNotes
+    COMPANION_TOGGLE_A_RED / _A_BROWN / Purple siblings (same pattern as objects.dice_bag).
+
+    Uses TTS createButton (not XmlUI). LEFT: toggle famulus on/off + flip token.
+    RIGHT: cycle figurine state 1↔2 if on. Routes via GlobalApplyCompanionToggleClick (TOR-288).
 ]]
 
 local BUTTON_WIDTH = 900

@@ -517,7 +517,7 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-12 | FOLLOW-UP | TOR-369 | Look-at–coupled SetLightMode + mode-only stage light bake (STANDARD↔SPOTLIGHT Y spin) |
 | 2026-07-12 | DONE | TOR-366 | Intermission TR_Loop incomingFadeSeconds fade-in |
 | 2026-07-12 | DONE | TOR-368 | Default camera before blindfold raise paths |
-| 2026-07-12 | DONE | TOR-288 | Red/Brown famulus companion clicks (Purple deferred) |
+| 2026-07-12 | FOLLOW-UP | TOR-288 | Attach `.tts/objects` Lua stubs for companion toggles (createButton; was never on save objects) |
 | 2026-07-12 | DONE | TOR-367 | Stage lerp diagnostics; path confirmed wired |
 | 2026-07-12 | Focus | Stack | #1 TOR-343, #2 TOR-346, #3 TOR-365, #4 TOR-328 (Priority Fixes batch Done) |
 | 2026-07-12 | UPDATE | TOR-344 | Restore always uses C.Tables absolutes; remove snapshot-first path |

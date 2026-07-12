@@ -19,6 +19,7 @@ const MANAGED_KEY_PREFIXES = [
   "SIGNAL_CANDLE_",
   "SOUNDSCAPE_",
   "TAROT_BUTTON_",
+  "COMPANION_TOGGLE_",
 ];
 
 const STUB_FILE_RE = /^(.+)\.([0-9a-fA-F]{6})\.(lua|ttslua|xml|data\.json)$/i;
