@@ -166,6 +166,7 @@ local function persistActiveState(ownerColor, state)
 end
 
 --- Face-up (enabled) = rotX 0; face-down (disabled) = rotX 180. Preserve Y/Z.
+--- Repositions the object createButton so the hit target stays above the visible face.
 --- @param toggleObj Object|nil
 --- @param enabled boolean
 local function setToggleTokenFace(toggleObj, enabled)
@@ -182,6 +183,9 @@ local function setToggleTokenFace(toggleObj, enabled)
         y = rot.y or 0,
         z = rot.z or 0,
     })
+    if type(toggleObj.call) == "function" then
+        toggleObj.call("refreshCompanionClickButton", { faceUp = enabled == true })
+    end
 end
 
 --- Raise/park the live figurine; optionally switch multi-state look via setState.
