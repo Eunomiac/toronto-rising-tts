@@ -687,7 +687,8 @@ Playbook.steps = {
               active = {
                 result = { resultClass = "totalFailure" },
                 willpower = { available = true },
-                rollOptions = { numberOfDiceRerolled = 3, canRerollHunger = false },
+                rollOptions = { numberOfDiceRerolled = 3 },
+                rollPolicy = { wpCanRerollHunger = false },
               },
             })
           end,
@@ -764,7 +765,8 @@ Playbook.steps = {
             rollE2eSettlePresetCheckResume("Brown")
             rollConfirm("Brown", {
               phase = "postRoll",
-              active = { rollOptions = { canRerollHunger = true } },
+              active = { rollPolicy = { wpCanRerollHunger = true } },
+              contributingIncludes = { "canRerollHunger" },
             })
           end,
           function()
@@ -779,8 +781,9 @@ Playbook.steps = {
               phase = "postRoll",
               active = {
                 willpower = { wpRerollWave = false },
-                rollOptions = { canRerollHunger = true },
+                rollPolicy = { wpCanRerollHunger = true },
               },
+              contributingIncludes = { "canRerollHunger" },
               wpRerollChosenCount = 1,
             })
           end,

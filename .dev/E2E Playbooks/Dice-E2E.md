@@ -689,7 +689,8 @@ U.RunSequence({
       active = {
         result = { resultClass = "totalFailure" },
         willpower = { available = true },
-        rollOptions = { numberOfDiceRerolled = 3, canRerollHunger = false },
+        rollOptions = { numberOfDiceRerolled = 3 },
+        rollPolicy = { wpCanRerollHunger = false },
       },
     })
   end,
@@ -770,7 +771,8 @@ U.RunSequence({
     rollE2eSettlePresetCheckResume("Brown")
     rollConfirm("Brown", {
       phase = "postRoll",
-      active = { rollOptions = { canRerollHunger = true } },
+      active = { rollPolicy = { wpCanRerollHunger = true } },
+      contributingIncludes = { "canRerollHunger" },
     })
   end,
   function()
@@ -787,8 +789,9 @@ U.RunSequence({
       phase = "postRoll",
       active = {
         willpower = { wpRerollWave = false },
-        rollOptions = { canRerollHunger = true },
+        rollPolicy = { wpCanRerollHunger = true },
       },
+      contributingIncludes = { "canRerollHunger" },
       wpRerollChosenCount = 1,
     })
   end,
