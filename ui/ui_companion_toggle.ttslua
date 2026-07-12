@@ -8,15 +8,17 @@
     Uses TTS createButton (not XmlUI). LEFT: toggle famulus on/off + flip token.
     RIGHT: cycle figurine state 1↔2 if on. Routes via GlobalApplyCompanionToggleClick (TOR-288).
 
-    Button Y is local-space: +offset above the top face when face-up, -offset above the
-    bottom face when face-down (rotX 180) so the hit target stays reachable.
+    Button Y is local-space: +offset above the top face when face-up. When face-down
+    (rotX 180), local −Y is world-up from the underside — but the offset must also clear
+    tile thickness past the object center, so it is intentionally larger than face-up.
 ]]
 
 local BUTTON_WIDTH = 900
 local BUTTON_HEIGHT = 900
---- Local +Y sits above the tile when rotX≈0; invert when face-down.
+--- Local +Y sits above the tile when rotX≈0.
 local BUTTON_Y_FACE_UP = 0.2
-local BUTTON_Y_FACE_DOWN = -0.2
+--- CustomTile.Thickness on companion tokens is 0.1; face-down needs face-up clearance + thickness.
+local BUTTON_Y_FACE_DOWN = -0.45
 
 --- @param x number|nil
 --- @return number degrees in (-180, 180]
