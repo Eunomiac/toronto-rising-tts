@@ -13,10 +13,17 @@ Source of truth:
 
 Verification:
 - Save & Play → Host Phases panel → **Advance →** through Intermission → Play → Spotlight → End → Intermission
-- Confirm Intermission dark lights + theme; Play heal broadcast when applicable; End raises blindfolds + increments sessionNum
+- Confirm Intermission dark lights + theme + **global blindfold shown**; Play clears global blindfold + heal broadcast when applicable
 - Solo Host verified only until **TOR-144** (multiplayer E2E) — multiclient connect blindfold + Advance replication: [Multiclient Session Script](../E2E%20Playbooks/Multiplayer-Session.md) (A4, B0, D1)
 
 Status: current (TOR-143)
+
+## Blindfolds (do not conflate)
+
+| Kind | XML | Phase system |
+| --- | --- | --- |
+| **Global blindfold** | `ui/shared/panel_overlay_global_blindfold.xml` (`overlay_globalBlindfold`, `active=true` by default) | **Yes** — hide on Play enter; show on Intermission enter; connect during Intermission leaves it up |
+| **Per-player transition blindfolds** | `ui/.templates/panel_overlay_blindfold.xml` → `hudBlindfold` via `core/hud_blindfold.ttslua` | **No** — scene/table transitions only |
 
 ## General Phase Structure
 
@@ -24,10 +31,10 @@ Status: current (TOR-143)
 
 There are four top-level phases, advanced by the Storyteller **Advance** button in a loop:
 
-1. `INTERMISSION` — Between sessions: dark lights, theme playlist, connect keeps loading/session blindfold up (TOR-319).
-2. `PLAY` — Session start: no-scene default, lower blindfolds, Superficial WP heal + optional broadcast. Contains most gameplay.
+1. `INTERMISSION` — Between sessions: dark lights, theme playlist, **global blindfold shown**; connect keeps global blindfold up (TOR-319).
+2. `PLAY` — Session start: no-scene default, **hide global blindfold**, Superficial WP heal + optional broadcast. Contains most gameplay.
 3. `SPOTLIGHT` — End-of-session player vignettes: silence emitters, apply Spotlight scene (soft-fail if missing), freeze clock.
-4. `END` — Remorse / session-end bookkeeping phase. Leaving End increments `sessionNum` and raises blindfolds.
+4. `END` — Remorse / session-end bookkeeping phase. Leaving End increments `sessionNum` (global blindfold restored on next Intermission enter).
 
 Advancing from `END` returns to `INTERMISSION`.
 
@@ -52,7 +59,7 @@ Ending events of the previous phase run before starting events of the new phase 
 ### Starting Events: `PLAY`
 
 * Game state set to the "no scene" default.
-* Player blindfolds come down (startup loading overlay cleared).
+* Global blindfold hidden (`overlay_globalBlindfold`).
 * All players heal Superficial Willpower equal to max(Resolve, Composure) (temp dots included); if anyone healed, show `session_start_heal_broadcast.xml` briefly.
 
 ### Ending Events: `PLAY`
@@ -76,16 +83,15 @@ Ending events of the previous phase run before starting events of the new phase 
 ### Ending Events: `END`
 
 * Increment `sessionNum` by one (roman overlay via `gameStateOverlay_sesionNumber`).
-* Raise player blindfolds.
 
 ### Starting Events: `INTERMISSION`
 
 * All lights dark (`AdminDark` phase override).
 * Fade out all emitters, then start Intermission theme playlist (`C.IntermissionThemeFeaturedKey` = `TR_Intro` → Loop).
-* Player blindfolds / startup loading overlay come down (reveal table). Connect-during-Intermission still keeps the overlay up for late joiners (TOR-319).
+* Global blindfold shown / restored (`overlay_globalBlindfold`).
 * Countdown timer: deferred (optional TBD on **TOR-319**).
 
 ### Connect policy (TOR-319)
 
-* Connect during **Intermission**: leave startup/session blindfold up.
-* Connect during any other phase: lower blindfold for that player (`Phases.lowerBlindfoldForConnectingPlayer`).
+* Connect during **Intermission**: leave global blindfold up.
+* Connect during any other phase: hide global blindfold (`Phases.lowerBlindfoldForConnectingPlayer` → `hideGlobalBlindfold`). Shared overlay — not per-seat.

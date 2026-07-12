@@ -2,7 +2,8 @@
   Scene/table transition blindfold orchestration.
   Picks one random blindfold variant (1..C.BlindfoldVariantCount) shared by all seated players,
   runs synchronous work, then lifts blindfolds after a settle delay.
-  Startup loading screen (`overlay_loadingScreen_startup` in Global.xml) is owned by `onLoad` only — not transitions.
+  Global session blindfold (`overlay_globalBlindfold` in Global.xml) is owned by onLoad +
+  phase Intermission/Play (`core.phases`) — never by this module.
   Agent guidance: .dev/Scene Constructor/Scene Constructor Overview.md; .dev/HUD_FUNCTIONS.md.
 ]]
 ---@diagnostic disable: undefined-global

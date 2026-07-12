@@ -1,0 +1,17 @@
+<!-- Global session blindfold — no visibility filter (all clients). active=true by default / on connect. -->
+<!-- Lua: hideStartupLoadingOverlays() / showStartupLoadingOverlaysForPhases (Play hide / Intermission show). -->
+<!-- Per-player transition blinds: ui/.templates/panel_overlay_blindfold.xml — not used by phases. -->
+<!-- Placed last in ui/Global.xml so it draws above other HUD layers. -->
+
+<Image id="overlay_globalBlindfold"
+  image="global_blindfold_session_1"
+  active="true"
+  width="1920"
+  height="1200"
+  preserveAspect="true"
+  raycastTarget="true"
+  rectAlignment="MiddleCenter"
+  showAnimation="FadeIn"
+  hideAnimation="FadeOut"
+  animationDuration="0.3"
+/>

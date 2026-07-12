@@ -122,59 +122,35 @@ function Phases.incrementSessionNum()
     S.setSessionNum(n + 1)
 end
 
---- Raise transition blindfolds (cover view) for seated PCs.
-function Phases.raisePlayerBlindfolds(_ctx)
-    local HUDBF = require("core.hud_blindfold")
-    HUDBF.beginTransition()
-    return true
-end
-
-local function hideStartupOverlaysFromPhases()
-    -- Global-script top-level only (`_G`); never index TTS `Global` userdata.
-    local fn = rawget(_G, "hideStartupLoadingOverlaysForPhases")
+--- Call Global-script helpers for `overlay_globalBlindfold` only.
+--- Never touch per-player transition blindfolds (`hudBlindfold` / panel_overlay_blindfold).
+local function callGlobalBlindfoldHelper(name)
+    local fn = rawget(_G, name)
     if type(fn) == "function" then
         fn()
+        return true
     end
-end
-
---- Lower transition blindfolds + hide startup loading overlay.
-function Phases.lowerPlayerBlindfolds(_ctx)
-    local HUDBF = require("core.hud_blindfold")
-    HUDBF.endTransition()
-    hideStartupOverlaysFromPhases()
+    U.AlertGM("Phases: missing Global helper `" .. tostring(name) .. "`")
     return true
 end
 
---- Clear loading/session blindfold for one connecting player (non-Intermission).
---- @param player Player|nil
+--- Hide global blindfold (Play enter / connect outside Intermission).
+function Phases.hideGlobalBlindfold(_ctx)
+    return callGlobalBlindfoldHelper("hideStartupLoadingOverlaysForPhases")
+end
+
+--- Show global blindfold (Intermission enter).
+function Phases.showGlobalBlindfold(_ctx)
+    return callGlobalBlindfoldHelper("showStartupLoadingOverlaysForPhases")
+end
+
+--- Connect outside Intermission: hide global blindfold (shared overlay — not per-seat).
+--- @param player Player|nil unused; kept for call-site clarity
 function Phases.lowerBlindfoldForConnectingPlayer(player)
     if player == nil or not U.isPlayer(player) then
         return
     end
-    local steam = player.steam_id
-    local color = player.color
-    local Conditions = require("core.conditions")
-    local HO = require("core.hud_overlays")
-    local pd = S.getStateVal("playerData")
-    if type(pd) == "table" then
-        for playerID, row in pairs(pd) do
-            if type(playerID) == "string" and type(row) == "table" then
-                local match = false
-                if type(steam) == "string" and steam ~= "" and playerID == steam then
-                    match = true
-                elseif type(color) == "string" and row.color == color then
-                    match = true
-                end
-                if match then
-                    Conditions.clear(playerID, "hudBlindfold")
-                end
-            end
-        end
-    end
-    if type(HO.syncAll) == "function" then
-        HO.syncAll()
-    end
-    hideStartupOverlaysFromPhases()
+    Phases.hideGlobalBlindfold(nil)
 end
 
 function Phases.applyAllLightsDark(_ctx)
@@ -378,8 +354,8 @@ Phases.onEnter[C.Phases.INTERMISSION] = function(ctx)
             return Phases.startIntermissionThemePlaylistLoop(ctx)
         end,
         function()
-            -- Reveal table after End exit raised blindfolds; connect-during-Intermission still keeps overlay up (TOR-319).
-            return Phases.lowerPlayerBlindfolds(ctx)
+            -- Global blindfold only (`overlay_globalBlindfold`); not per-player transition overlays.
+            return Phases.showGlobalBlindfold(ctx)
         end,
     }
 end
@@ -390,7 +366,7 @@ Phases.onEnter[C.Phases.PLAY] = function(ctx)
             return Phases.applyNoSceneDefault(ctx)
         end,
         function()
-            return Phases.lowerPlayerBlindfolds(ctx)
+            return Phases.hideGlobalBlindfold(ctx)
         end,
         function()
             return Phases.runSessionStartWillpowerHeal(ctx)
@@ -429,9 +405,7 @@ Phases.onExit[C.Phases.END] = function(ctx)
             Phases.incrementSessionNum()
             return true
         end,
-        function()
-            return Phases.raisePlayerBlindfolds(ctx)
-        end,
+        -- Global blindfold is restored on Intermission enter (not per-player transition blinds).
     }
 end
 

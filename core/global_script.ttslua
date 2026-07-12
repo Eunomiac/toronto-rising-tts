@@ -371,7 +371,7 @@ local function startupSeatLightsReadyForReveal()
     return L.seatSpotlightsResolvable() == true
 end
 
-local STARTUP_LOADING_OVERLAY_ID = "overlay_loadingScreen_startup"
+local STARTUP_LOADING_OVERLAY_ID = "overlay_globalBlindfold"
 
 --- Per connected player: seat colors that already received `UI.setXml` this session (TOR-285 hotseat lag).
 local seatXmlRefreshDoneByPlayer = {}
@@ -379,7 +379,7 @@ local seatXmlRefreshDoneByPlayer = {}
 --- First `onPlayerChangeColor` after `onPlayerConnect` still auto-refreshes UI (including Host connect).
 local pendingConnectSeatRefreshByPlayer = {}
 
---- Force-hide global startup loading screen for all clients.
+--- Force-hide global blindfold (`overlay_globalBlindfold`) for all clients.
 --- `U.RunSequence`: hide (FadeOut) → wait 1s → clear `active` so a later full-XML seat
 --- refresh (TOR-285) cannot resurrect the overlay with `active` still true.
 local function hideStartupLoadingOverlays()
@@ -398,10 +398,25 @@ local function hideStartupLoadingOverlays()
     })
 end
 
---- Exposed for core.phases Play-enter / connect policy (TOR-143 / TOR-319).
---- Top-level Global-script function only — do not assign onto TTS `Global` userdata.
+--- Restore global blindfold for all clients (Intermission enter / connect policy).
+local function showStartupLoadingOverlays()
+    if type(U.setAttribute) == "function" then
+        U.setAttribute(STARTUP_LOADING_OVERLAY_ID, "active", "true")
+    elseif type(UI.setAttribute) == "function" then
+        UI.setAttribute(STARTUP_LOADING_OVERLAY_ID, "active", "true")
+    end
+    if type(UI.show) == "function" then
+        UI.show(STARTUP_LOADING_OVERLAY_ID)
+    end
+end
+
+--- Exposed for core.phases — Global-script top-level only; never assign onto TTS `Global` userdata.
 function hideStartupLoadingOverlaysForPhases()
     hideStartupLoadingOverlays()
+end
+
+function showStartupLoadingOverlaysForPhases()
+    showStartupLoadingOverlays()
 end
 
 local function seatAssignmentPlayerKey(player)
@@ -6120,7 +6135,7 @@ function onPlayerConnect(playerOrColor)
         end
     end
 
-    -- TOR-319: Intermission keeps loading/session blindfold up; other phases lower it.
+    -- TOR-319: Intermission keeps global blindfold up; other phases hide it.
     local phase = S.getStateVal("currentPhase")
     if phase ~= C.Phases.INTERMISSION and U.isPlayer(connected) then
         local Phases = require("core.phases")
