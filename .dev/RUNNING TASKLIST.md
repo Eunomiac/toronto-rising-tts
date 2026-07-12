@@ -295,7 +295,7 @@ _Blocked: author must define data binding approach before substantial implementa
 - [x] **Tarot hide:** `G.GUIDS.TAROT_BUTTON_PINK` / [`ui/ui_tarot_button.ttslua`](../ui/ui_tarot_button.ttslua) — when hiding the deck, return all drawn tarot cards to the deck first, then hide (no orphans on table). _(TOR-96)_
 - [ ] **Compulsions deck — pick-and-present flow:** Per-player generic deck draw → master deck match (up to 4) → anchor placement + lock → player Draw one → selected card lerp/lock; unselected return to master deck. GM Notes `Compulsion:<Type>-<playerKey>:…`; anchors in `C.ObjectPositions.COMPULSION_CARD_*`. _(TOR-204)_
 - [ ] **Centralize object visibility:** Helper for reveal/hide-all-players vs Host-only (incl. Grey/White); migrate `setInvisibleTo` call sites; audit Text-tool object visibility. _(TOR-286)_
-- [ ] **Player companion toggle tiles:** Red/Brown famulus A — owner-gated left (on/off + flip) / right (state 1↔2); Purple deferred (figurines not in save). Full five-tile Tarot-style reconcile later. _(TOR-288)_
+- [x] **Player companion toggle tiles:** Red/Brown famulus A — owner-gated left (on/off + flip) / right (state 1↔2); Purple deferred (figurines not in save). Full five-tile Tarot-style reconcile later. _(TOR-288)_
 - [ ] **Confirm stage figurine position lerp on Apply:** Diagnostics + eligibility audit (`NPCStageLerp`). _(TOR-367)_
 - [x] **Stage spotlight shortest-angle rotation during lerp:** Fix util + `npc_stage_lerp` light rot bake. _(TOR-369)_
 

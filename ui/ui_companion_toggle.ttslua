@@ -1,0 +1,46 @@
+---@diagnostic disable: lowercase-global
+--[[
+    Companion Toggle Token (ui/ui_companion_toggle.ttslua)
+
+    Attached to COMPANION_TOGGLE_TOKEN_A_RED / _A_BROWN.
+    LEFT: toggle famulus on/off + flip token. RIGHT: cycle figurine state 1↔2 if on.
+    Routes via GlobalApplyCompanionToggleClick (bundle-safe; TOR-288).
+]]
+
+local BUTTON_WIDTH = 900
+local BUTTON_HEIGHT = 900
+
+local function createClickButtons()
+    self.clearButtons()
+    self.createButton({
+        click_function = "click_companionToggle",
+        function_owner = self,
+        label = "",
+        position = { 0, 0.2, 0 },
+        height = BUTTON_HEIGHT,
+        width = BUTTON_WIDTH,
+        color = { 1, 1, 1, 0 },
+        hover_color = { 0.9, 0.7, 0.5, 0.2 },
+        press_color = { 0.8, 0.5, 0.3, 0.3 },
+    })
+end
+
+function onLoad(_savedData)
+    createClickButtons()
+end
+
+--- @param _obj Object
+--- @param clickColor string
+--- @param altClick boolean|string|nil  true / "-2" / right-click
+function click_companionToggle(_obj, clickColor, altClick)
+    local isAlt = altClick == true or altClick == "-2" or altClick == -2
+    if Global == nil or type(Global.call) ~= "function" then
+        print("[CompanionToggle] Global.call unavailable")
+        return
+    end
+    Global.call("GlobalApplyCompanionToggleClick", {
+        toggleGuid = self.getGUID(),
+        playerColor = clickColor,
+        altClick = isAlt,
+    })
+end

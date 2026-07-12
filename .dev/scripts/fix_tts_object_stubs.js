@@ -42,6 +42,7 @@ const LUA_ONLY_NO_XML_PREFIXES = [
   "SIGNAL_CANDLE",
   "SOUNDSCAPE",
   "TAROT_BUTTON",
+  "COMPANION_TOGGLE",
 ];
 
 const LUA_STUB_RULES = [
@@ -50,6 +51,7 @@ const LUA_STUB_RULES = [
   { prefix: "SIGNAL_CANDLE", line: `require("ui.ui_signal_candle")` },
   { prefix: "SOUNDSCAPE", line: `require("core.soundscape_emitter_object")` },
   { prefix: "TAROT_BUTTON", line: `require("ui.ui_tarot_button")` },
+  { prefix: "COMPANION_TOGGLE", line: `require("ui.ui_companion_toggle")` },
   { prefix: "DICEBAG", line: `require("objects.dice_bag")` },
   { prefix: "CSHEET_PAGE_3", line: `require("ui.ui_csheet_page3")` },
   { prefix: "CSHEET_PAGE_4", line: `require("ui.ui_csheet_page4")` },

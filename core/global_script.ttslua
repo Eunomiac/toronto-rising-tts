@@ -646,6 +646,17 @@ function GlobalApplyTarotState(params)
     return TarotToggle.applyState(params.targetOn, params.buttonGuid)
 end
 
+--- Red/Brown famulus companion token click (host-only; object script via Global.call). TOR-288.
+--- @param params table { toggleGuid: string, playerColor: string, altClick?: boolean }
+--- @return boolean|nil
+function GlobalApplyCompanionToggleClick(params)
+    if type(params) ~= "table" then
+        return nil
+    end
+    local CompanionToggle = require("lib.companion_toggle")
+    return CompanionToggle.handleClick(params)
+end
+
 --- Read-only tarot on/off inference for object onLoad (keeps ui_tarot_button bundle thin).
 --- @param params table { buttonGuid?: string, fallback?: boolean }
 --- @return boolean

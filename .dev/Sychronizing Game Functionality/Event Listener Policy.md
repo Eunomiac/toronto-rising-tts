@@ -65,6 +65,7 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | `GlobalGameboardSyncSnapsToggleLabel` | A | — | snaps + layout-lock toolbar labels |
 | `GlobalToggleSignalFireState` | C | 5 | signal lights |
 | `GlobalApplyTarotState` | C | — | Pink tarot drawer/deck/button poses (TOR-144 W2) |
+| `GlobalApplyCompanionToggleClick` | C | — | Red/Brown famulus companion left/right click (TOR-288) |
 | `GlobalDiceBagClick/RightClick/StorytellerDiceBagClick` | B+C | 5 | rolls |
 | `GlobalSpawn*` / `GlobalDestroy*` / `GlobalRelease*` / `GlobalTagDie*` / `GlobalOnBagDie*` | C | 5 | dice |
 | `GlobalInitiateRoll` / `GlobalRollSpawnDieRequest` / `GlobalAdjustStorytellerPoolKind` | B+C | 5 | rolls |
@@ -96,6 +97,7 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | `dice_bag.ttslua` | clicker + onLoad | Spawn via Global.call | W2 |
 | `ui_signal_candle.ttslua` | clicker → Global.call | Global callee | 5 |
 | `ui_tarot_button.ttslua` | clicker → `GlobalApplyTarotState` | Global callee | W2 |
+| `ui_companion_toggle.ttslua` | clicker → `GlobalApplyCompanionToggleClick` | Global callee | TOR-288 |
 | `ui_csheet_core.ttslua` | clicker → Global.call; onLoad layout | Global mutators | W4 |
 
 ### HUD handlers (summary)

@@ -98,6 +98,13 @@ const GATE_ENTRIES = [
     forbidConstants: true,
   },
   {
+    id: "ui.ui_companion_toggle",
+    entry: 'require("ui.ui_companion_toggle")\n',
+    maxBytes: 20 * 1024,
+    forbidCore: true,
+    forbidConstants: true,
+  },
+  {
     id: "objects.npc_control_board",
     entry: 'require("objects.npc_control_board")\n',
     maxBytes: 10 * 1024,
