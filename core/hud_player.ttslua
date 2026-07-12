@@ -1432,6 +1432,7 @@ function HUD_popoutCameraControl_click(player, value, id)
 end
 
 --- Apply a camera preset for the clicking player and collapse the picker.
+--- MAIN (`cameraControl_default_*`): left → `default`; right → `wideFacing`.
 function HUD_cameraControl_click(player, value, id)
     if type(id) ~= "string" then
         return
@@ -1445,6 +1446,10 @@ function HUD_cameraControl_click(player, value, id)
         print(("[HUD Player] HUD_cameraControl_click: unrecognized control id %q for seat %s"):format(id, seatColor))
         setCameraControlsPanelExpanded(seatColor, false)
         return
+    end
+    -- XmlUI onClick value: "-1" left, "-2" right (TTS UI Attributes).
+    if mode == "default" and (value == "-2" or value == -2) then
+        mode = "wideFacing"
     end
     Main.setCamera(player, mode)
     setCameraControlsPanelExpanded(seatColor, false)

@@ -140,6 +140,8 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `HUD_toggleDebugAmbient` | C | Yes | ambient intensity 0↔2 (debug, not persisted) |
 | `HUD_toggleRunTestPanel` / `HUD_runtest` / `HUD_runtest_step` | A | Yes | Host RunTest strip; arms/continues/stops `DEBUG.RunTest` (TOR-347) |
 | `HUD_STcamera` | A | Yes | Host ST camera strip → `M.setCamera(Black, mode)` from `C.StorytellerCameraAngles` (TOR-348) |
+| `HUD_cameraControl_click` | A | — | Player camera overlay; MAIN left=`default`, right=`wideFacing` |
+| `HUD_popoutCameraControl_click` / `HUD_alphaControl_hover*` | A | — | Camera picker expand + idle tint |
 | `HUD_debugLightActivate/Enabled/ResetRow/Slider` | C | Yes | |
 | `HUD_debugLightGuidInput/Done/Snapshot` | A | — | |
 | `HUD_debugCamera*` / `HUD_debugCaptureCameraPreset` | A | — | local camera |

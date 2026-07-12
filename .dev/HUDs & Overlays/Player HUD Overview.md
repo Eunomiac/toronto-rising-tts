@@ -498,9 +498,11 @@ As above, but for the third set of reference panel toggle buttons:
 
 ## BOTTOM BAR - Camera Controls
 
-A `HorizontalLayout` row of image-buttons on the bottom edge of the screen.
+Per-seat overlay picker (`ui/.templates/panel_overlay_camera.xml` → `HUD_cameraControl_click`):
 
-- each corresponds to a camera position defined in `constants.ttslua` and, when clicked, immediately moves the player's camera to the respective position
+- **MAIN** (`cameraControl_default_*`): left-click → `default`; right-click → `wideFacing` (universal preset in `C.UniversalCameraAngles`).
+- Other controls map to `diceTray` / `sheet` (self or other-seat suffixes) via `parseCameraControlIdToMode`.
+- Each click calls `Main.setCamera` and collapses the picker.
 
 ## LEFT SIDEBAR
 
