@@ -1499,27 +1499,39 @@ C.Tables = {
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_1,
-        position = { z = -15 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 0.0, z = -15 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_1,
-        position = { z = -15 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 0.0, z = -15 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_2,
-        position = { z = -5 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 8.0, z = -5 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_2,
-        position = { z = -5 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 8.0, z = -5 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_3,
-        position = { z = -5 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 16.0, z = -5 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_3,
-        position = { z = -5 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 16.0, z = -5 },
+        rotation = { x = 0, y = 0, z = 0 }
       }
     }
   },
@@ -1557,27 +1569,39 @@ C.Tables = {
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_1,
-        position = { z = -60 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 0.0, z = -60 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_1,
-        position = { z = -60 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 0.0, z = -60 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_2,
-        position = { z = -40 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 8.0, z = -40 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_2,
-        position = { z = -40 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 8.0, z = -40 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_3,
-        position = { z = -40 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 16.0, z = -40 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_3,
-        position = { z = -40 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 16.0, z = -40 },
+        rotation = { x = 0, y = 0, z = 0 }
       }
     }
   },
@@ -1613,27 +1637,39 @@ C.Tables = {
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_1,
-        position = { z = -35 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 0.0, z = -35 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_1,
-        position = { z = -35 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 0.0, z = -35 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_2,
-        position = { z = -35 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 8.0, z = -35 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_2,
-        position = { z = -35 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 8.0, z = -35 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_3,
-        position = { z = -35 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 16.0, z = -35 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_3,
-        position = { z = -35 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 16.0, z = -35 },
+        rotation = { x = 0, y = 0, z = 0 }
       }
     }
   },
@@ -1670,27 +1706,39 @@ C.Tables = {
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_1,
-        position = { z = -35 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 0.0, z = -35 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_1,
-        position = { z = -35 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 0.0, z = -35 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_2,
-        position = { z = -35 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 8.0, z = -35 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_2,
-        position = { z = -35 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 8.0, z = -35 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_3,
-        position = { z = -35 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 16.0, z = -35 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_3,
-        position = { z = -35 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 16.0, z = -35 },
+        rotation = { x = 0, y = 0, z = 0 }
       }
     }
   },
@@ -1728,27 +1776,39 @@ C.Tables = {
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_1,
-        position = { z = -55 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 0.0, z = -55 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_1,
-        position = { z = -55 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 0.0, z = -55 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_2,
-        position = { z = -55 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 8.0, z = -55 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_2,
-        position = { z = -55 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 8.0, z = -55 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_3,
-        position = { z = -55 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 16.0, z = -55 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_3,
-        position = { z = -55 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 16.0, z = -55 },
+        rotation = { x = 0, y = 0, z = 0 }
       }
     }
   },
@@ -1787,27 +1847,39 @@ C.Tables = {
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_1,
-        position = { z = -45 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 0.0, z = -45 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_1,
-        position = { z = -45 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 0.0, z = -45 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_2,
-        position = { z = -45 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 8.0, z = -45 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_2,
-        position = { z = -45 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 8.0, z = -45 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_3,
-        position = { z = -45 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 16.0, z = -45 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_3,
-        position = { z = -45 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 16.0, z = -45 },
+        rotation = { x = 0, y = 0, z = 0 }
       }
     }
   },
@@ -1847,27 +1919,39 @@ C.Tables = {
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_1,
-        position = { z = -90 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 0.0, z = -90 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_1,
-        position = { z = -90 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 0.0, z = -90 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_2,
-        position = { z = -80 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 8.0, z = -80 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_2,
-        position = { z = -80 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 8.0, z = -80 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_3,
-        position = { z = -80 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 16.0, z = -80 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_3,
-        position = { z = -80 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 16.0, z = -80 },
+        rotation = { x = 0, y = 0, z = 0 }
       }
     }
   },
@@ -1905,27 +1989,39 @@ C.Tables = {
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_1,
-        position = { z = -70 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 0.0, z = -70 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_1,
-        position = { z = -70 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 0.0, z = -70 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_2,
-        position = { z = -70 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 8.0, z = -70 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_2,
-        position = { z = -70 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 8.0, z = -70 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_DRAWER_STORYTELLER_3,
-        position = { z = -70 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 16.0, z = -70 },
+        rotation = { x = 0, y = 0, z = 0 }
       },
       {
         guid = G.GUIDS.DICE_LIGHT_STORYTELLER_3,
-        position = { z = -70 }
+        -- TOR-344 dummy absolute home (author will tune x/z/rotation)
+        position = { x = 16.0, z = -70 },
+        rotation = { x = 0, y = 0, z = 0 }
       }
     }
   }

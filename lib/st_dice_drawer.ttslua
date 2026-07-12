@@ -116,8 +116,8 @@ end
 
 --- @param tableCfg table|nil
 --- @param guid string
--- @return table|nil partial position from active table layout
-local function tableLayoutPartialPosition(tableCfg, guid)
+-- @return table|nil objectPositions entry for GUID
+local function tableLayoutEntryForGuid(tableCfg, guid)
     if type(tableCfg) ~= "table" or type(guid) ~= "string" then
         return nil
     end
@@ -128,10 +128,26 @@ local function tableLayoutPartialPosition(tableCfg, guid)
     for i = 1, #entries do
         local e = entries[i]
         if type(e) == "table" and e.guid == guid then
-            return e.position
+            return e
         end
     end
     return nil
+end
+
+--- @param tableCfg table|nil
+--- @param guid string
+-- @return table|nil partial position from active table layout
+local function tableLayoutPartialPosition(tableCfg, guid)
+    local e = tableLayoutEntryForGuid(tableCfg, guid)
+    return type(e) == "table" and e.position or nil
+end
+
+--- @param tableCfg table|nil
+--- @param guid string
+-- @return table|nil partial rotation from active table layout
+local function tableLayoutPartialRotation(tableCfg, guid)
+    local e = tableLayoutEntryForGuid(tableCfg, guid)
+    return type(e) == "table" and e.rotation or nil
 end
 
 --- Infer workshop X/Z from a sibling drawer still parked under-table when home was never persisted.
@@ -167,14 +183,22 @@ local function resolveWorkshopHomeForSlot(slot)
     if type(tableKey) ~= "string" or C.Tables[tableKey] == nil then
         tableKey = "Table A"
     end
-    local partial = tableLayoutPartialPosition(C.Tables[tableKey], guid)
+    local tableCfg = C.Tables[tableKey]
+    local partial = tableLayoutPartialPosition(tableCfg, guid)
+    local partialRot = tableLayoutPartialRotation(tableCfg, guid)
     local siblingX, siblingZ = inferWorkshopXZFromSiblingDrawer(slot)
     local obj = findDrawerObject(slot)
     local pos = obj ~= nil and obj.getPosition() or nil
     local x = siblingX
     local z = siblingZ
-    if type(partial) == "table" and type(partial.z) == "number" then
-        z = partial.z
+    -- TOR-344: prefer authored absolute x/z on the active table when present.
+    if type(partial) == "table" then
+        if type(partial.x) == "number" then
+            x = partial.x
+        end
+        if type(partial.z) == "number" then
+            z = partial.z
+        end
     end
     if type(x) ~= "number" and type(pos) == "userdata" then
         x = pos.x
@@ -185,7 +209,19 @@ local function resolveWorkshopHomeForSlot(slot)
     if type(x) ~= "number" or type(z) ~= "number" then
         return nil
     end
-    return { x = x, y = WORKSHOP_HOME_OFF_Y, z = z }
+    local row = { x = x, y = WORKSHOP_HOME_OFF_Y, z = z }
+    if type(partialRot) == "table" then
+        if type(partialRot.x) == "number" then
+            row.rotX = partialRot.x
+        end
+        if type(partialRot.y) == "number" then
+            row.rotY = partialRot.y
+        end
+        if type(partialRot.z) == "number" then
+            row.rotZ = partialRot.z
+        end
+    end
+    return row
 end
 
 --- @param slot number
@@ -254,8 +290,39 @@ local function restoreTrayLightWorkshopHome(slot)
     local light = findTrayLightObject(slot)
     if type(home) == "table" and light ~= nil and type(home.x) == "number" then
         light.setPosition({ x = home.x, y = home.y, z = home.z })
+        if type(home.rotX) == "number" then
+            light.setRotation({ x = home.rotX, y = home.rotY, z = home.rotZ })
+        end
         defaultTrayLightPosBySlot[slot] = { x = home.x, y = home.y, z = home.z }
         return
+    end
+    -- TOR-344: fall back to per-table absolute light home (same x/z as drawer).
+    if light ~= nil then
+        local lightGuid = nil
+        local lightRef = SLOT_LIGHT_REFS[slot]
+        local lData = type(lightRef) == "string" and L.LIGHTMODES[lightRef] or nil
+        if type(lData) == "table" then
+            lightGuid = lData.guid
+        end
+        local tableKey = S.getStateVal("seatLayout", "currentTableKey")
+        if type(tableKey) ~= "string" or C.Tables[tableKey] == nil then
+            tableKey = "Table A"
+        end
+        local partial = type(lightGuid) == "string" and tableLayoutPartialPosition(C.Tables[tableKey], lightGuid) or nil
+        local partialRot = type(lightGuid) == "string" and tableLayoutPartialRotation(C.Tables[tableKey], lightGuid) or nil
+        if type(partial) == "table" and type(partial.x) == "number" and type(partial.z) == "number" then
+            local cur = light.getPosition()
+            local y = type(cur) == "userdata" and cur.y or 0
+            light.setPosition({ x = partial.x, y = y, z = partial.z })
+            if type(partialRot) == "table"
+                and type(partialRot.x) == "number"
+                and type(partialRot.y) == "number"
+                and type(partialRot.z) == "number" then
+                light.setRotation({ x = partialRot.x, y = partialRot.y, z = partialRot.z })
+            end
+            defaultTrayLightPosBySlot[slot] = { x = partial.x, y = y, z = partial.z }
+            return
+        end
     end
     restoreTrayLightPosition(slot)
 end
