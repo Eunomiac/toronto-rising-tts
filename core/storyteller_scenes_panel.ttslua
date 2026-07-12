@@ -1349,6 +1349,7 @@ function StorytellerScenesPanel.endSceneNarrative(player)
     end
 
     -- Stop mirroring before clearing live location so `Sync.full` does not persist null keys into the library row.
+    -- (applyDefaultNoSceneEnvironment also detaches — kept here so End scene is explicit before staged work.)
     SceneLibrary.detachLiveTableFromLibraryMirror()
     clockDraft.sceneKey = nil
     clockDraft.dirty = false

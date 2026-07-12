@@ -1026,10 +1026,17 @@ local function fadeOutFeaturedChannels(generation, fadeSeconds)
     end, fadeSeconds)
 end
 
-stopFeaturedMusicInternal = function(shouldResumeBackground)
+stopFeaturedMusicInternal = function(shouldResumeBackground, opts)
+    opts = type(opts) == "table" and opts or {}
     featuredGeneration = featuredGeneration + 1
     local thisFeaturedGeneration = featuredGeneration
-    local fadeSeconds = tonumber(Catalog.DEFAULTS.fadeSeconds.featured) or 0
+    local fadeSeconds = tonumber(opts.fadeSeconds)
+    if fadeSeconds == nil then
+        fadeSeconds = tonumber(Catalog.DEFAULTS.fadeSeconds.featured) or 0
+    end
+    if fadeSeconds < 0 then
+        fadeSeconds = 0
+    end
     fadeOutFeaturedChannels(thisFeaturedGeneration, fadeSeconds)
 
     local state = ensureState()
@@ -2079,10 +2086,17 @@ function Soundscape.playFeaturedMusic(featureKey)
 end
 
 --- Stops the featured lane without erasing background music context.
+-- @param opts table|nil `{ fadeSeconds?: number, resumeBackground?: boolean }` —
+--   `resumeBackground` defaults true; set false for staged handoffs (e.g. Intermission→Play).
 -- @return boolean
 -- @return string
-function Soundscape.stopFeaturedMusic()
-    return stopFeaturedMusicInternal(true)
+function Soundscape.stopFeaturedMusic(opts)
+    opts = type(opts) == "table" and opts or {}
+    local resumeBackground = opts.resumeBackground
+    if resumeBackground == nil then
+        resumeBackground = true
+    end
+    return stopFeaturedMusicInternal(resumeBackground == true, opts)
 end
 
 --- Restarts the saved background music context.

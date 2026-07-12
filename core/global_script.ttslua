@@ -411,13 +411,19 @@ local function showStartupLoadingOverlays()
 end
 
 --- Global blindfold follows phase: visible in Intermission; hidden otherwise (TOR-143 / TOR-319).
+--- While a top-level phase Advance is in flight, do not auto-hide — Play enter owns the delayed
+--- lift after Intermission→Play audio (5s Loop out + 3s Main in). Auto-show for Intermission is OK.
 local function applyGlobalBlindfoldFromPhase()
     local phase = S.getStateVal("currentPhase")
     if phase == nil or phase == C.Phases.INTERMISSION then
         showStartupLoadingOverlays()
-    else
-        hideStartupLoadingOverlays()
+        return
     end
+    local PhasesMod = require("core.phases")
+    if type(PhasesMod.isAdvancing) == "function" and PhasesMod.isAdvancing() == true then
+        return
+    end
+    hideStartupLoadingOverlays()
 end
 
 --- Exposed for core.phases — Global-script top-level only; never assign onto TTS `Global` userdata.

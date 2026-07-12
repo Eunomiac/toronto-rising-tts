@@ -166,7 +166,7 @@ Storyteller **Stats** panel: edit PC backgrounds/merits/flaws and coterie advant
 
 | Handler | XML Element(s) | Params | Behavior |
 | ------- | ---------------- | ------ | -------- |
-| `HUD_phaseAdvance` | `phase_Advance` | `(player, button, id)` | ST-gated. `Phases.advanceNext()` — Intermission → Play → Spotlight → End → Intermission (TOR-143). |
+| `HUD_phaseAdvance` | `phase_Advance` | `(player, button, id)` | ST-gated. Closes storyteller panels immediately, then `Phases.advanceNext()` — Intermission → Play → Spotlight → End → Intermission (TOR-143 / TOR-364). |
 | `HUD_advancePhase` | _(legacy alias)_ | `(player, button, id)` | Calls `HUD_phaseAdvance` (free-jump removed). |
 | `HUD_setPlaySubPhase` | `phase_sub_Main`, `phase_sub_Downtime`, `phase_sub_Memoriam` | `(player, button, id)` | ST-gated. Free switch among Play subphases via `Phases.setPlaySubPhase`. |
 | `HUD_sessionNumInput` | `input_sessionNum` | `(player, value, id)` | ST-gated. Persists `sessionNum` (≥1); refreshes phase UI + game-state overlay roman. |

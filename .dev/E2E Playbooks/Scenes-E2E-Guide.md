@@ -105,7 +105,7 @@ Scene Apply uses `core.hud_blindfold.runStagedTransition`: fade outgoing ambient
 
 Pending library rows use blue panel highlights. While pending, table, seat, location, and clock edits write to `sceneLibrary.scenes[activeKey].sessionScene` only. Live `sessionScene`, physical table, soundscape, and map pins change only after library Apply.
 
-End scene detaches live mirroring before clearing live location keys, stops real-time clock, applies the default no-scene environment, and fades Main-only ambient back in.
+End scene detaches live mirroring before clearing live location keys, stops real-time clock, applies the default no-scene environment, and fades Main-only ambient back in. (`Scenes.applyDefaultNoSceneEnvironment` also detaches — same path as Play enter no-scene / TOR-362.)
 
 ## Inspection cheat sheet
 

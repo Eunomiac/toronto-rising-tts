@@ -1,13 +1,17 @@
+<!--
+UI.setAttributes("input_sessionNum", {minHeight = "30", fontStyle = "Bold"})
+-->
+
 <Panel id="panel_phases" active="false">
   <VerticalLayout class="storyteller_panel_column" spacing="6" padding="6 6 6 6" childForceExpandWidth="false">
     <Text class="hud_storyteller_header">Session phase</Text>
-    <Text id="phase_currentLabel" fontSize="14" color="#FFFFFF" text="Intermission" />
-    <Text fontSize="9" color="#AAAAAA">Advance loops Intermission → Play → Spotlight → End. Play subphases switch freely.</Text>
+    <Text id="phase_currentLabel" fontSize="16" fontStyle="Bold" color="#FFFFFF" text="Intermission" />
+    <Text fontSize="12" color="#AAAAAA">Advance loops Intermission → Play → Spotlight → End. Play subphases switch freely.</Text>
     <HorizontalLayout class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
       <Button id="phase_Advance" text="Advance →" minWidth="120" preferredWidth="120" onClick="HUD_phaseAdvance"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
     </HorizontalLayout>
-    <Text fontSize="10" color="#AAAAAA">Play subphase</Text>
+    <Text fontSize="12" color="#AAAAAA">Play subphase</Text>
     <HorizontalLayout id="phase_subphaseRow" class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
       <Button id="phase_sub_Main" text="Main" minWidth="72" preferredWidth="72" onClick="HUD_setPlaySubPhase"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
@@ -16,8 +20,8 @@
       <Button id="phase_sub_Memoriam" text="Memoriam" minWidth="72" preferredWidth="72" onClick="HUD_setPlaySubPhase"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
     </HorizontalLayout>
-    <Text fontSize="10" color="#AAAAAA">Session number</Text>
-    <InputField id="input_sessionNum" characterValidation="Integer" text="1" minWidth="80" preferredWidth="80"
+    <Text fontSize="14" fontStyle="Bold" color="#AAAAAA">Session number</Text>
+    <InputField id="input_sessionNum" characterValidation="Integer" text="1" minHeight="30" fontStyle="Bold" minWidth="80" preferredWidth="80"
       onValueChanged="HUD_sessionNumInput" onEndEdit="HUD_sessionNumInput" />
   </VerticalLayout>
 </Panel>

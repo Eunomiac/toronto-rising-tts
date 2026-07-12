@@ -19,9 +19,17 @@ local S = require("core.state")
 local SESSION_START_HEAL_PANEL = "sessionStartHeal_panel"
 local HEAL_BROADCAST_HOLD_SEC = 6
 local INTERMISSION_THEME_FADE_SEC = 2
+--- Intermission → Play Advance (TOR-361): Loop out, then Main in, then global blindfold.
+local INTERMISSION_TO_PLAY_FEATURED_FADE_SEC = 5
+local INTERMISSION_TO_PLAY_MAIN_FADE_SEC = 3
 
 --- Single in-flight top-level transition token.
 local advancing = false
+
+--- True while `Phases.advanceTo` / `advanceNext` RunSequence is in flight (exit → mutate → enter).
+function Phases.isAdvancing()
+    return advancing == true
+end
 
 --- @type table<string, fun(ctx: table): table>
 Phases.onExit = {}
@@ -179,12 +187,13 @@ function Phases.fadeOutAllEmitters(_ctx)
     return true
 end
 
+--- Starts looping TR_Loop on the featured lane (Intermission ambient).
 function Phases.startIntermissionThemePlaylistLoop(_ctx)
     local Soundscape = require("core.soundscape")
     if type(Soundscape.stopAll) == "function" then
         Soundscape.stopAll()
     end
-    local key = C.IntermissionThemeFeaturedKey or "TR_Intro"
+    local key = C.IntermissionThemeFeaturedKey or "TR_Loop"
     local ok, msg = Soundscape.playFeaturedMusic(key)
     if ok ~= true then
         U.AlertGM("Intermission theme: " .. tostring(msg or "playFeaturedMusic failed"))
@@ -256,13 +265,53 @@ function Phases.freezeClock(_ctx)
     return true
 end
 
-function Phases.applyNoSceneDefault(_ctx)
+function Phases.applyNoSceneDefault(_ctx, opts)
+    opts = type(opts) == "table" and opts or {}
     local Scenes = require("core.scenes")
     Scenes.applyDefaultNoSceneEnvironment({
-        reason = "phase_play_enter",
+        reason = opts.reason or "phase_play_enter",
         skipTransitionBlindfold = true,
+        skipSoundscape = opts.skipSoundscape == true,
     })
     return true
+end
+
+--- Fade Intermission TR_Loop out; does not start Main (no crossfade).
+function Phases.fadeOutIntermissionTheme(_ctx)
+    local Soundscape = require("core.soundscape")
+    local ok, msg = Soundscape.stopFeaturedMusic({
+        fadeSeconds = INTERMISSION_TO_PLAY_FEATURED_FADE_SEC,
+        resumeBackground = false,
+    })
+    if ok ~= true then
+        U.AlertGM("Intermission→Play theme fade-out: " .. tostring(msg or "stopFeaturedMusic failed"))
+    end
+    if type(Soundscape.commitEagerSteadyState) == "function" then
+        Soundscape.commitEagerSteadyState(ok == true)
+    end
+    return INTERMISSION_TO_PLAY_FEATURED_FADE_SEC
+end
+
+--- After Loop silence: fade Main mood in over INTERMISSION_TO_PLAY_MAIN_FADE_SEC.
+function Phases.fadeInPlayMainTheme(_ctx)
+    local Soundscape = require("core.soundscape")
+    local Scenes = require("core.scenes")
+    if type(Soundscape.beginTransitionFadeWindow) == "function" then
+        Soundscape.beginTransitionFadeWindow(INTERMISSION_TO_PLAY_MAIN_FADE_SEC)
+    end
+    if type(Scenes.applyMainOnlySoundscape) == "function" then
+        Scenes.applyMainOnlySoundscape()
+    else
+        S.setStateVal("main", "soundscape", "musicMood")
+        Soundscape.setMusicMood("main")
+    end
+    if type(Soundscape.endTransitionFadeWindow) == "function" then
+        Soundscape.endTransitionFadeWindow()
+    end
+    if type(Soundscape.commitEagerSteadyState) == "function" then
+        Soundscape.commitEagerSteadyState(true)
+    end
+    return INTERMISSION_TO_PLAY_MAIN_FADE_SEC
 end
 
 local function healAmountForPlayer(playerID)
@@ -372,7 +421,24 @@ end
 Phases.onEnter[C.Phases.PLAY] = function(ctx)
     return {
         function()
-            return Phases.applyNoSceneDefault(ctx)
+            -- Phase is already PLAY (set before enter steps). Re-assert global blindfold so any
+            -- applyGlobalBlindfoldFromPhase race during the phase flip cannot lift early (TOR-363).
+            return Phases.showGlobalBlindfold(ctx)
+        end,
+        function()
+            -- World/lights first; Main ambient deferred until after Loop fade-out (TOR-361).
+            return Phases.applyNoSceneDefault(ctx, {
+                reason = "phase_play_enter",
+                skipSoundscape = true,
+            })
+        end,
+        function()
+            -- Start 5s Loop fade-out; RunSequence waits on this return before Main fade-in.
+            return Phases.fadeOutIntermissionTheme(ctx)
+        end,
+        function()
+            -- Start 3s Main fade-in; RunSequence waits on this return before blindfold lift.
+            return Phases.fadeInPlayMainTheme(ctx)
         end,
         function()
             return Phases.hideGlobalBlindfold(ctx)
@@ -403,7 +469,7 @@ end
 Phases.onExit[C.Phases.SPOTLIGHT] = function(ctx)
     return {
         function()
-            return Phases.applyNoSceneDefault(ctx)
+            return Phases.applyNoSceneDefault(ctx, { reason = "phase_spotlight_exit" })
         end,
     }
 end
@@ -447,6 +513,11 @@ end
 --- @return boolean
 function Phases.advanceTo(newPhase, opts)
     opts = type(opts) == "table" and opts or {}
+    -- Close ST toolbar panels first so Advance UI is not stuck open through heavy enter work (TOR-364).
+    local StorytellerPanelUI = require("core.storyteller_panel_ui")
+    if type(StorytellerPanelUI.closeAllPanels) == "function" then
+        StorytellerPanelUI.closeAllPanels()
+    end
     if type(newPhase) ~= "string" or not U.isIn(newPhase, C.Phases) then
         U.AlertGM("Phases.advanceTo: Invalid phase '" .. tostring(newPhase) .. "'")
         return false

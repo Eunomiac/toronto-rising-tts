@@ -1353,7 +1353,7 @@ local function rollE2eSeatPrepInternal(targetColor)
         end
     end
 
-    UI.hide("overlay_loadingScreen_startup")
+    UI.hide("overlay_globalBlindfold")
 
     local CameraDebugFocus = require("core.camera_debug_focus")
     local ok = CameraDebugFocus.onSpoofColor(hostPlayer, targetColor)

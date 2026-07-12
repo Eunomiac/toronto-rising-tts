@@ -2,6 +2,10 @@
 <!-- Lua: hideStartupLoadingOverlays() / showStartupLoadingOverlaysForPhases (Play hide / Intermission show). -->
 <!-- Per-player transition blinds: ui/.templates/panel_overlay_blindfold.xml — not used by phases. -->
 <!-- Placed last in ui/Global.xml so it draws above other HUD layers. -->
+<!--
+UI.show("overlay_globalBlindfold")
+-->
+
 
 <Image id="overlay_globalBlindfold"
   image="global_blindfold_session_1"

@@ -49,6 +49,8 @@
 
 </Panel>
 
+<!-- 6. Startup loading screen (last — draws above all HUD; no visibility filter) -->
+<Include src="shared/panel_overlay_global_blindfold.xml" />
 
 <!-- 3. Storyteller HUD (Black): admin panel + sidebar + camera defaults -->
 <Panel id="HUD_PANEL_BLACK" class="hud_root_panel" visibility="Black|Host">
@@ -72,6 +74,3 @@
 <Include src="storyteller/panel_scenes_location_modals.xml" />
 <Include src="storyteller/advantage_editor_modal.xml" />
 <Include src="storyteller/project_editor_modal.xml" />
-
-<!-- 6. Startup loading screen (last — draws above all HUD; no visibility filter) -->
-<Include src="shared/panel_overlay_loading_startup.xml" />

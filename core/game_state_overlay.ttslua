@@ -470,12 +470,18 @@ function GameStateOverlay.reconcileFromState()
         return
     end
 
+    -- Session roman lives inside the time/location panel; keep it in sync even while the panel is hidden
+    -- (e.g. Intermission edits to sessionNum) so Play reveal is not stale (TOR-362).
+    reconcileSessionNumberFromState()
+
     if not shouldShowNarrativeClockOnOverlay() then
         pushOverlayActive(OVERLAY_TIME_LOCATION_ID, false)
         pushOverlayActive(OVERLAY_WEATHER_ID, false)
         pushOverlayText("gameStateOverlay_datetime", "")
         pushOverlayText("gameStateOverlay_time", "")
         clearOverlayTextCache()
+        -- Re-push session after cache clear so the next Play show is not skipped as "unchanged".
+        reconcileSessionNumberFromState()
         return
     end
 
@@ -496,10 +502,15 @@ function GameStateOverlay.reconcileFromState()
     reconcileLocationRowFromState()
 
     local ck = S.getStateVal("sessionScene", "clock")
-    if type(ck) ~= "table" then
-        pushOverlayText("gameStateOverlay_datetime", "—")
+    -- Cleared datetime (no-scene / End) must not fall through to year/month/day defaults (2026-01-01).
+    local hasDatetime = type(ck) == "table"
+        and tonumber(ck.year) ~= nil
+        and tonumber(ck.month) ~= nil
+        and tonumber(ck.day) ~= nil
+    if not hasDatetime then
+        pushOverlayText("gameStateOverlay_datetime", "")
         pushOverlayText("gameStateOverlay_time", "")
-        GameStateOverlay.reconcileWeatherFromState()
+        pushOverlayActive(OVERLAY_WEATHER_ID, false)
         return
     end
 

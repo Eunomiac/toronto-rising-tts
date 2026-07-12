@@ -796,6 +796,11 @@ local function applyMainOnlySoundscapeIntent()
     end
 end
 
+--- Public wrapper for staged Play enter (fade window already open) or callers that deferred soundscape.
+function Scenes.applyMainOnlySoundscape()
+    applyMainOnlySoundscapeIntent()
+end
+
 --- Random generic skybox when no narrative site is active (TOR-151).
 --- @return boolean
 local function applyRandomGenericSkybox()
@@ -922,6 +927,10 @@ end
 --- @return boolean
 function Scenes.applyDefaultNoSceneEnvironment(opts)
     opts = type(opts) == "table" and opts or {}
+
+    -- Must detach before mutating live sessionScene / Sync.full, or `hasLiveSceneOnTable` stays true
+    -- (overlay shows Jan 1 2026 defaults) and mirror would write cleared keys into the library row (TOR-362).
+    SceneLibrary.detachLiveTableFromLibraryMirror()
 
     mutateDefaultNoSceneSessionState()
 

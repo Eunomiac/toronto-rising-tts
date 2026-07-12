@@ -73,7 +73,7 @@ C.PlayerColors = {
 
 -- Number of random blindfold art variants (overlay_blindfold_1 .. overlay_blindfold_N).
 -- Single authority for the blindfold range used by hud_blindfold, hud_overlays, and condition_effects.
-C.BlindfoldVariantCount = 22
+C.BlindfoldVariantCount = 32
 
 --- When an object is hidden from every PC seat, also hide from spectators (White/Grey). Never use this list to *grant* visibility to White/Grey alone.
 C.HideFromPcSeatsAndSpectators = {
@@ -273,8 +273,8 @@ C.PlaySubPhases = {
   MEMORIAM = "Memoriam",
 }
 
---- Featured track that starts the Intermission theme playlist (Intro → Loop).
-C.IntermissionThemeFeaturedKey = "TR_Intro"
+--- Featured track for Intermission ambient (looping TR Loop only; no Intro→Loop handoff).
+C.IntermissionThemeFeaturedKey = "TR_Loop"
 
 --- Hardcoded Spotlight scene library key (author fills row later; soft-fail if missing).
 C.SpotlightSceneLibraryKey = "spotlight_session"

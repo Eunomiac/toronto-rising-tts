@@ -683,7 +683,7 @@ Catalog.TRACKS = {
     subType = "mainThemeLoop",
     isLooping = true,
     duration = 113,
-    volume = 1,
+    volume = 0.25,
     order = 2,
   },
   STB_HouseOfTheRisingSun = {
