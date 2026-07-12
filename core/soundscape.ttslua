@@ -1102,13 +1102,17 @@ function playFeaturedTrack(feature, playlist, trackIndex, options)
     local state = ensureState()
     local oldChannel = resolveActiveFeaturedChannel(state)
     local crossFadeSeconds = tonumber(playlist and playlist.crossFadeSeconds) or tonumber(Catalog.DEFAULTS.fadeSeconds.featured) or 0
+    local incomingFadeSeconds = 0
+    if opts.incomingFadeSeconds ~= nil then
+        incomingFadeSeconds = tonumber(opts.incomingFadeSeconds) or 0
+    end
     local okPlay, message, newChannel = playPairedEmitterEntry(feature, {
         channelA = "featuredA",
         channelB = "featuredB",
         oldChannel = oldChannel,
         volume = tonumber(feature.volume) or 0.65,
         fadeSeconds = crossFadeSeconds,
-        incomingFadeSeconds = 0,
+        incomingFadeSeconds = incomingFadeSeconds,
         canSilenceOld = function(channelKey)
             local latest = ensureState()
             return thisFeaturedGeneration == featuredGeneration and latest.activeFeaturedChannel ~= channelKey
@@ -2073,16 +2077,17 @@ end
 
 --- Plays a featured music effect on the dedicated featured lane.
 -- @param featureKey string
+-- @param opts table|nil `{ incomingFadeSeconds?: number }` — TOR-366 Intermission fade-in
 -- @return boolean
 -- @return string
-function Soundscape.playFeaturedMusic(featureKey)
+function Soundscape.playFeaturedMusic(featureKey, opts)
     local feature = Catalog.getFeaturedTrack(featureKey)
     if feature == nil then
         return false, "Unknown featured music: " .. tostring(featureKey)
     end
 
     local playlist, trackIndex = findFeaturedSequence(featureKey)
-    return playFeaturedTrack(feature, playlist, trackIndex, nil)
+    return playFeaturedTrack(feature, playlist, trackIndex, opts)
 end
 
 --- Stops the featured lane without erasing background music context.

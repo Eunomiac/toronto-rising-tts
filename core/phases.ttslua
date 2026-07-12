@@ -188,13 +188,16 @@ function Phases.fadeOutAllEmitters(_ctx)
 end
 
 --- Starts looping TR_Loop on the featured lane (Intermission ambient).
+--- TOR-366: always fade in from volume 0 (silent arm + incomingFadeSeconds).
 function Phases.startIntermissionThemePlaylistLoop(_ctx)
     local Soundscape = require("core.soundscape")
     if type(Soundscape.stopAll) == "function" then
         Soundscape.stopAll()
     end
     local key = C.IntermissionThemeFeaturedKey or "TR_Loop"
-    local ok, msg = Soundscape.playFeaturedMusic(key)
+    local ok, msg = Soundscape.playFeaturedMusic(key, {
+        incomingFadeSeconds = INTERMISSION_THEME_FADE_SEC,
+    })
     if ok ~= true then
         U.AlertGM("Intermission theme: " .. tostring(msg or "playFeaturedMusic failed"))
     end
@@ -206,7 +209,7 @@ function Phases.startIntermissionThemePlaylistLoop(_ctx)
     return true
 end
 
---- Load-time Intermission ambient: same featured theme path as phase enter (no enter fade).
+--- Load-time Intermission ambient: same featured theme path as phase enter (fade-in from 0).
 function Phases.reconcileIntermissionAmbientOnLoad()
     if S.getStateVal("currentPhase") ~= C.Phases.INTERMISSION then
         return false
