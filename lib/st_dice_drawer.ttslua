@@ -40,6 +40,14 @@ local NPC_SEAT_DRAWER_KEYS = {
 --- @type table<number, string|nil>
 local npcSeatBySlot = {}
 
+--- Workshop scale snapped before NPC-seat resize; restored on park (TOR-302 / TOR-344).
+--- @type table<number, table|nil>
+local workshopScaleBySlot = {}
+
+--- Bumped on open/close so delayed ObjectPositions finalize / smooth moves cannot undo park.
+--- @type table<number, number>
+local poseEpochBySlot = {}
+
 local findDrawerObject
 local findTrayLightObject
 local syncTrayLightXzToDrawer
@@ -48,6 +56,50 @@ local syncTrayLightXzToDrawer
 STD.DRAWER_RELEASE_MIN_Y = -50
 
 local WORKSHOP_HOME_OFF_Y = -200
+
+--- @param slot number
+-- @return number new epoch
+local function bumpPoseEpoch(slot)
+    local nextEpoch = (poseEpochBySlot[slot] or 0) + 1
+    poseEpochBySlot[slot] = nextEpoch
+    return nextEpoch
+end
+
+--- @param slot number
+--- @param epoch number
+-- @return function
+local function makePoseAbort(slot, epoch)
+    return function()
+        return poseEpochBySlot[slot] ~= epoch
+    end
+end
+
+--- Cache live scale once before NPC-seat poses mutate it.
+--- @param slot number
+--- @param obj Object
+local function cacheWorkshopScaleIfNeeded(slot, obj)
+    if workshopScaleBySlot[slot] ~= nil or obj == nil then
+        return
+    end
+    local scale = obj.getScale()
+    if scale == nil or type(scale.x) ~= "number" or type(scale.y) ~= "number" or type(scale.z) ~= "number" then
+        return
+    end
+    workshopScaleBySlot[slot] = { x = scale.x, y = scale.y, z = scale.z }
+end
+
+--- @param slot number
+--- @param obj Object
+local function restoreCachedWorkshopScale(slot, obj)
+    local cached = workshopScaleBySlot[slot]
+    workshopScaleBySlot[slot] = nil
+    if obj == nil or type(cached) ~= "table" then
+        return
+    end
+    if type(cached.x) == "number" and type(cached.y) == "number" and type(cached.z) == "number" then
+        obj.setScale({ x = cached.x, y = cached.y, z = cached.z })
+    end
+end
 
 --- @param slot number
 -- @return string
@@ -178,7 +230,7 @@ syncTrayLightXzToDrawer = function(slot)
     light.setPosition({ x = dPos.x, y = lPos.y, z = dPos.z })
 end
 
---- Snap drawer to hidden workshop home (full X/Y/Z, not Y-only merge).
+--- Snap drawer to hidden workshop home (full X/Y/Z from C.Tables — never leave NPC-seat X/Z).
 -- @param slot number
 --- @param opts table|nil  { instant?: boolean }
 -- @return boolean
@@ -188,29 +240,33 @@ local function applyWorkshopHomeOff(slot, opts)
     if obj == nil then
         return false
     end
+    -- Invalidate any in-flight NPC/default raise finalize or setPositionSmooth.
+    bumpPoseEpoch(slot)
+    obj.setLock(true)
+
     local home = resolveWorkshopHomeForSlot(slot)
     if type(home) == "table" and type(home.x) == "number" and type(home.z) == "number" then
+        -- Instant setPosition cancels smooth moves; do not use ObjectPositions Y-only merge here.
         obj.setPosition({ x = home.x, y = WORKSHOP_HOME_OFF_Y, z = home.z })
         if type(home.rotX) == "number"
             and type(home.rotY) == "number"
             and type(home.rotZ) == "number" then
             obj.setRotation({ x = home.rotX, y = home.rotY, z = home.rotZ })
         end
-        -- Scale is workshop-authored; never reset here.
+        restoreCachedWorkshopScale(slot, obj)
         obj.setInvisibleTo({ "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey", "Black" })
         syncTrayLightXzToDrawer(slot)
         return true
     end
-    local key = SLOT_DRAWER_KEYS[slot]
-    local entry = key ~= nil and C.ObjectPositions[key] or nil
-    if type(entry) ~= "table" or type(entry.off) ~= "table" then
-        return false
-    end
-    local resolvedPose = OP.resolveStatePose(obj, entry, "off") or entry.off
-    local duration = opts.instant == true and 0 or OP.DEFAULT_TRANSITION_DURATION
-    OP.applyResolvedPose(obj, resolvedPose, duration, 0, { useSmoothSetters = opts.instant ~= true })
+
+    print("[STD] Missing C.Tables objectPositions x/z for ST drawer slot "
+        .. tostring(slot)
+        .. " (tableKey="
+        .. tostring(S.getStateVal("seatLayout", "currentTableKey"))
+        .. "); refusing Y-only park that would keep NPC-seat X/Z")
+    restoreCachedWorkshopScale(slot, obj)
     syncTrayLightXzToDrawer(slot)
-    return true
+    return false
 end
 
 --- @param npcSeatKey string NPC1..NPC4
@@ -291,7 +347,8 @@ end
 --- @param npcSeatKey string NPC1..NPC4
 --- @param state string "on"|"off"
 --- @param duration number
-local function applyNpcSeatDrawerPose(slot, npcSeatKey, state, duration)
+--- @param epoch number pose generation for shouldAbort
+local function applyNpcSeatDrawerPose(slot, npcSeatKey, state, duration, epoch)
     local poseKey = NPC_SEAT_DRAWER_KEYS[npcSeatKey]
     if poseKey == nil then
         return
@@ -305,7 +362,10 @@ local function applyNpcSeatDrawerPose(slot, npcSeatKey, state, duration)
     if type(resolvedPose) ~= "table" then
         return
     end
-    OP.applyResolvedPose(obj, resolvedPose, duration, 0, { useSmoothSetters = true })
+    OP.applyResolvedPose(obj, resolvedPose, duration, 0, {
+        useSmoothSetters = duration > 0,
+        shouldAbort = makePoseAbort(slot, epoch),
+    })
     -- NPC on/off share the same anchor X/Z; sync immediately after each apply.
     syncTrayLightXzToDrawer(slot)
 end
@@ -333,8 +393,11 @@ end
 -- @param npcSeatKey string NPC1..NPC4
 local function openForSlotAtNpcSeat(slot, npcSeatKey)
     npcSeatBySlot[slot] = npcSeatKey
-    applyNpcSeatDrawerPose(slot, npcSeatKey, "off", 0)
-    applyNpcSeatDrawerPose(slot, npcSeatKey, "on", OP.DEFAULT_TRANSITION_DURATION)
+    local obj = findDrawerObject(slot)
+    cacheWorkshopScaleIfNeeded(slot, obj)
+    local epoch = bumpPoseEpoch(slot)
+    applyNpcSeatDrawerPose(slot, npcSeatKey, "off", 0, epoch)
+    applyNpcSeatDrawerPose(slot, npcSeatKey, "on", OP.DEFAULT_TRANSITION_DURATION, epoch)
     applyTrayLightForSlot(slot, true, 0.25)
 end
 
@@ -409,15 +472,20 @@ function STD.openForSlot(slot, opts)
 
     npcSeatBySlot[slot] = nil
     clearPersistedWorkshopHomes(slot)
+    workshopScaleBySlot[slot] = nil
     local key = SLOT_DRAWER_KEYS[slot]
     if key == nil then
         return
     end
     local entry = C.ObjectPositions[key]
     local obj = findDrawerObject(slot)
+    local epoch = bumpPoseEpoch(slot)
     if obj ~= nil and type(entry) == "table" and type(entry.on) == "table" then
         local resolvedPose = OP.resolveStatePose(obj, entry, "on") or entry.on
-        OP.applyResolvedPose(obj, resolvedPose, OP.DEFAULT_TRANSITION_DURATION, 0, { useSmoothSetters = true })
+        OP.applyResolvedPose(obj, resolvedPose, OP.DEFAULT_TRANSITION_DURATION, 0, {
+            useSmoothSetters = true,
+            shouldAbort = makePoseAbort(slot, epoch),
+        })
     end
     syncTrayLightXzToDrawer(slot)
     applyTrayLightForSlot(slot, true, 0.25)
@@ -522,6 +590,8 @@ function STD.reconcileAllToWorkshopHome(opts)
     for slot = 1, 3 do
         npcSeatBySlot[slot] = nil
         clearPersistedWorkshopHomes(slot)
+        -- Drop stale NPC scale cache when force-reconciling all homes.
+        workshopScaleBySlot[slot] = nil
         local applied = applyWorkshopHomeOff(slot, opts)
         applyTrayLightForSlot(slot, false, 0)
         if applied then
