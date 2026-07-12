@@ -229,15 +229,15 @@ end
 
 ## Blindfold raise — default camera (TOR-368)
 
-Before any blindfold comes **up**, call `M.setDefaultCameraBeforeBlindfold` (or equivalent `M.setCamera(..., "default")`):
+After any blindfold comes **up**, wait ~1.5s for the overlay to settle, then call `M.setDefaultCameraBeforeBlindfold` (or equivalent `M.setCamera(..., "default")`) so camera motion happens under the blindfold:
 
 | Raise path | File | When |
 | --- | --- | --- |
-| Global overlay show | `global_script.showStartupLoadingOverlays` | before `UI.show(overlay_globalBlindfold)` |
-| Per-player transition | `HUDBF.beginTransition` | before `Conditions.setEvent(hudBlindfold)` |
-| PCs panel Blind toggle on | `PCST` `blindfoldToggle` | before `Conditions.setManual(hudBlindfold)` |
+| Global overlay show | `global_script.showStartupLoadingOverlays` | after `UI.show(overlay_globalBlindfold)`, then `U.delay(1.5)` |
+| Per-player transition | `HUDBF.beginTransition` | after condition + HUD sync, then `U.delay(1.5)` |
+| PCs panel Blind toggle on | `PCST` `blindfoldToggle` | after `Conditions.setManual(hudBlindfold)`, then `U.delay(1.5)` |
 
-Lift paths may still reset cameras again (existing settle behavior).
+Lift/settle paths may still reset cameras while the blindfold is down (existing settle behavior).
 
 ## Follow-ups (outside TOR-197 scope)
 

@@ -288,12 +288,14 @@ function PCST.onHudClick(player, _button, id)
     if S.getStateVal("playerData", pid, "conditions", "hudBlindfold") ~= nil then
       Conditions.clear(pid, "hudBlindfold")
     else
-      -- TOR-368: default camera before raising this player's blindfold.
+      -- TOR-368: raise blindfold first; snap camera after overlay settle.
+      Conditions.setManual(pid, "hudBlindfold", { variant = math.random(1, 6) })
       local Main = require("core.main")
       if type(Main.setDefaultCameraBeforeBlindfold) == "function" then
-        Main.setDefaultCameraBeforeBlindfold(color)
+        U.delay(function()
+          Main.setDefaultCameraBeforeBlindfold(color)
+        end, 1.5)
       end
-      Conditions.setManual(pid, "hudBlindfold", { variant = math.random(1, 6) })
     end
     PCST.refreshCharacterSheetsForColor(color)
   end

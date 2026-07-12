@@ -20,6 +20,8 @@ local Main = require("core.main")
 local TRANSITION_SETTLE_DELAY_SEC = 10
 --- Must exceed blindfold slide-in duration (`overlay_anim_slide_top` = 1s) so heavy work does not hitch the animation.
 local TRANSITION_WORK_LEAD_IN_SEC = 2
+--- After blindfold activation: wait for overlay settle, then snap cameras (TOR-368).
+local DEFAULT_CAMERA_AFTER_BLINDFOLD_SEC = 1.5
 --- Staged transition (TOR-147) phase durations. Fade-out runs concurrently with the 1s blindfold slide;
 --- heavy reconcile then runs alone; new audio fades in only after the reconcile settles.
 local TRANSITION_FADE_OUT_SEC = 1.0
@@ -35,9 +37,17 @@ local TRANSITION_CONDITION_KEY = "hudBlindfold"
 
 local activeTransitionVariant = nil
 local pendingEndDelayId = nil
+local pendingCameraDelayId = nil
 --- playerIDs that received `hudBlindfold` in the current (or last) beginTransition.
 --- Cleared on end even if those players left their seats mid-settle (hotseat orphan fix).
 local transitionBlindfoldPlayerIds = {}
+
+local function cancelPendingDefaultCamera()
+  if pendingCameraDelayId ~= nil then
+    U.stopDelay(pendingCameraDelayId)
+    pendingCameraDelayId = nil
+  end
+end
 
 --- @return number 1..C.BlindfoldVariantCount
 local function pickRandomVariant()
@@ -126,6 +136,15 @@ local function setDefaultCameraForSeatedPlayers()
   end
 end
 
+--- Snap cameras after the blindfold overlay has had time to fully cover the view (TOR-368).
+local function scheduleDefaultCameraAfterBlindfold()
+  cancelPendingDefaultCamera()
+  pendingCameraDelayId = U.delay(function()
+    pendingCameraDelayId = nil
+    setDefaultCameraForSeatedPlayers()
+  end, DEFAULT_CAMERA_AFTER_BLINDFOLD_SEC)
+end
+
 --- @return number|nil
 function HUDBF.getActiveTransitionVariant()
   return activeTransitionVariant
@@ -140,9 +159,7 @@ function HUDBF.beginTransition(variantOptional)
   end
   -- Drop any prior transition recipients before recording a new set (mid-settle restart).
   clearTrackedTransitionBlindfolds()
-
-  -- TOR-368: default cameras before per-player transition blindfolds raise.
-  setDefaultCameraForSeatedPlayers()
+  cancelPendingDefaultCamera()
 
   local variant = tonumber(variantOptional)
   if variant == nil or variant < 1 or variant > BLINDFOLD_VARIANT_COUNT then
@@ -159,6 +176,9 @@ function HUDBF.beginTransition(variantOptional)
   else
     HO.syncAll()
   end
+
+  -- TOR-368: wait until blindfold is fully up before camera motion.
+  scheduleDefaultCameraAfterBlindfold()
 end
 
 --- Clear transition blindfold conditions and refresh HUD overlays.
@@ -167,6 +187,7 @@ function HUDBF.endTransition()
     U.stopDelay(pendingEndDelayId)
     pendingEndDelayId = nil
   end
+  cancelPendingDefaultCamera()
   activeTransitionVariant = nil
 
   clearTrackedTransitionBlindfolds()
