@@ -256,7 +256,7 @@ require("ui.ui_csheet")
 | `CONTROL_BOARD.*` | `require("objects.npc_control_board")` | `<Include src="ui/objects/npc_control_board.xml" />` |
 | `CONTROL_BOARD_PALETTE.*` | `require("objects.npc_control_board_palette")` | `<Panel />` |
 | `DICEBAG_*` | `require("objects.dice_bag")` | **none** (invisible `createButton` roll target — no Custom UI file). **Thin bundle only** (~3 modules / ~54 KB): `lib.dice_kinds`, `lib.guids`. Tray Y offset during live rolls: `Global.call("GlobalGetPcRollTrayYOffset")` — **never** `require("lib.pc_roll_tray_lower")` (pulls `core.state` → ~2.6 MB × 22 bags; broke Save & Play 2026-07-03). |
-| `COMPANION_TOGGLE_*` | `require("ui.ui_companion_toggle")` | **none** (invisible `createButton` like dice bags; clicks → `GlobalApplyCompanionToggleClick`). GMNotes roles: `COMPANION_TOGGLE_A_RED` / `_A_BROWN` (Purple tiles use same stub; handler deferred). |
+| `COMPANION_TOGGLE_*` | `require("ui.ui_companion_toggle")` | **none** (invisible `createButton` like dice bags; clicks → `GlobalApplyCompanionToggleClick`; Global swaps Custom Tile front/back images — no rotX flip). GMNotes roles: `COMPANION_TOGGLE_A_RED` / `_A_BROWN` (Purple tiles use same stub; handler deferred). |
 | `SIGNAL_CANDLE_*` | `require("ui.ui_signal_candle")` | **none** |
 | `SOUNDSCAPE_*` / `TAROT_BUTTON_*` | matching `require(...)` in fix script | **none** |
 

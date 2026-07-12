@@ -3,6 +3,7 @@
 
     Host-only world I/O. Object scripts route via GlobalApplyCompanionToggleClick (TOR-288).
     Famulus figurines are multi-state objects (one live GUID); use setState to cycle looks.
+    Enabled/disabled tile look = Custom Tile front/back image swap (tile stays face-up).
     Purple tiles deferred (figurines not in save yet).
 ]]
 
@@ -165,26 +166,123 @@ local function persistActiveState(ownerColor, state)
     S.setStateVal(state, "runtime", "companionFigurineState", ownerColor)
 end
 
---- Face-up (enabled) = rotX 0; face-down (disabled) = rotX 180. Preserve Y/Z.
---- Repositions the object createButton so the hit target stays above the visible face.
+-- Workshop ImageURL = enabled art; ImageSecondaryURL = disabled. Keep rotX≈0 and swap
+-- front/back via setCustomObject so the click button stays on a stable local +Y.
+local TOGGLE_FACE_URLS = {
+    [G.GUIDS.COMPANION_TOGGLE_TOKEN_A_RED] = {
+        enabled = "https://steamusercontent-a.akamaihd.net/ugc/16553949447146780000/1EC69A5B406A4107D4B943AAB340F5616BEF6E50/",
+        disabled = "https://steamusercontent-a.akamaihd.net/ugc/13530133642401152847/8C4699DAC8D844A0283B404735EF843736E4D81B/",
+    },
+    [G.GUIDS.COMPANION_TOGGLE_TOKEN_A_BROWN] = {
+        enabled = "https://steamusercontent-a.akamaihd.net/ugc/13954356680086275459/8E17B8CD9048F716F67B2075E679DE047E52A2F7/",
+        disabled = "https://steamusercontent-a.akamaihd.net/ugc/18146827032376912078/4AF7D07500F0346FCEE0FD5CB94AA286153E9F28/",
+    },
+}
+
+local TILE_TYPE_CIRCLE = 2
+local TILE_THICKNESS = 0.1
+
+--- @param x number|nil
+--- @return number degrees in (-180, 180]
+local function normalizeDeg(x)
+    local a = tonumber(x) or 0
+    while a > 180 do
+        a = a - 360
+    end
+    while a < -180 do
+        a = a + 360
+    end
+    return a
+end
+
+--- Keep the tile face-up so createButton local +Y stays world-up (no flip).
+--- @param toggleObj Object
+local function ensureFaceUpRotation(toggleObj)
+    local rot = toggleObj.getRotation()
+    if type(rot) ~= "userdata" and type(rot) ~= "table" then
+        return
+    end
+    if math.abs(normalizeDeg(rot.x)) < 1 then
+        return
+    end
+    toggleObj.setRotation({
+        x = 0,
+        y = rot.y or 0,
+        z = rot.z or 0,
+    })
+end
+
+--- @param toggleObj Object
+--- @return string|nil enabledUrl, string|nil disabledUrl
+local function resolveFaceUrls(toggleObj)
+    local guid = toggleObj.getGUID()
+    local known = type(guid) == "string" and TOGGLE_FACE_URLS[guid] or nil
+    if type(known) == "table"
+        and type(known.enabled) == "string" and known.enabled ~= ""
+        and type(known.disabled) == "string" and known.disabled ~= "" then
+        return known.enabled, known.disabled
+    end
+    if type(toggleObj.getCustomObject) ~= "function" then
+        return nil, nil
+    end
+    local co = toggleObj.getCustomObject()
+    if type(co) ~= "table" then
+        return nil, nil
+    end
+    local enabledUrl = co.image
+    local disabledUrl = co.image_bottom or co.image_secondary
+    if type(enabledUrl) ~= "string" or enabledUrl == "" then
+        return nil, nil
+    end
+    if type(disabledUrl) ~= "string" or disabledUrl == "" then
+        disabledUrl = enabledUrl
+    end
+    return enabledUrl, disabledUrl
+end
+
+--- Show enabled/disabled art on the top face by swapping Custom Tile URLs (no rotX flip).
 --- @param toggleObj Object|nil
 --- @param enabled boolean
 local function setToggleTokenFace(toggleObj, enabled)
     if toggleObj == nil then
         return
     end
-    local rot = toggleObj.getRotation()
-    if type(rot) ~= "userdata" and type(rot) ~= "table" then
+    ensureFaceUpRotation(toggleObj)
+    if type(toggleObj.getCustomObject) ~= "function" or type(toggleObj.setCustomObject) ~= "function" then
         return
     end
-    local wantX = enabled and 0 or 180
-    toggleObj.setRotation({
-        x = wantX,
-        y = rot.y or 0,
-        z = rot.z or 0,
+    local enabledUrl, disabledUrl = resolveFaceUrls(toggleObj)
+    if enabledUrl == nil or disabledUrl == nil then
+        print("[CompanionToggle] Missing tile face URLs for " .. tostring(toggleObj.getGUID()))
+        return
+    end
+    local wantTop = enabled and enabledUrl or disabledUrl
+    local wantBottom = enabled and disabledUrl or enabledUrl
+    local co = toggleObj.getCustomObject()
+    if type(co) == "table" and co.image == wantTop
+        and (co.image_bottom == wantBottom or co.image_secondary == wantBottom) then
+        return
+    end
+    local thickness = TILE_THICKNESS
+    local tileType = TILE_TYPE_CIRCLE
+    if type(co) == "table" then
+        if type(co.thickness) == "number" then
+            thickness = co.thickness
+        end
+        if type(co.type) == "number" then
+            tileType = co.type
+        end
+    end
+    toggleObj.setCustomObject({
+        image = wantTop,
+        image_bottom = wantBottom,
+        type = tileType,
+        thickness = thickness,
+        stackable = false,
+        stretch = true,
     })
-    if type(toggleObj.call) == "function" then
-        toggleObj.call("refreshCompanionClickButton", { faceUp = enabled == true })
+    if type(toggleObj.reload) == "function" then
+        toggleObj.reload()
     end
 end
 
@@ -231,7 +329,7 @@ local function applyFigurineVisibility(ownerColor, active, state)
     return fig
 end
 
---- Left: toggle on/off + face token. Right: cycle state 1↔2 if on.
+--- Left: toggle on/off + swap tile face images. Right: cycle state 1↔2 if on.
 --- @param params table { toggleGuid: string, playerColor: string, altClick?: boolean }
 --- @return boolean|nil
 function CompanionToggle.handleClick(params)

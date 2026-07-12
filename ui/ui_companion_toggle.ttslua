@@ -5,56 +5,23 @@
     Object stub: require("ui.ui_companion_toggle") on tiles with GMNotes
     COMPANION_TOGGLE_A_RED / _A_BROWN / Purple siblings (same pattern as objects.dice_bag).
 
-    Uses TTS createButton (not XmlUI). LEFT: toggle famulus on/off + flip token.
-    RIGHT: cycle figurine state 1↔2 if on. Routes via GlobalApplyCompanionToggleClick (TOR-288).
-
-    Button Y is local-space: +offset above the top face when face-up. When face-down
-    (rotX 180), local −Y is world-up from the underside — but the offset must also clear
-    tile thickness past the object center, so it is intentionally larger than face-up.
+    Uses TTS createButton (not XmlUI). LEFT: toggle famulus on/off (Global swaps tile
+    front/back images — no rotX flip). RIGHT: cycle figurine state 1↔2 if on.
+    Routes via GlobalApplyCompanionToggleClick (TOR-288).
 ]]
 
 local BUTTON_WIDTH = 900
 local BUTTON_HEIGHT = 900
---- Local +Y sits above the tile when rotX≈0.
-local BUTTON_Y_FACE_UP = 0.2
---- CustomTile.Thickness on companion tokens is 0.1; face-down needs face-up clearance + thickness.
-local BUTTON_Y_FACE_DOWN = -0.45
+--- Local +Y above the tile top face (token stays face-up; enabled/disabled is image swap).
+local BUTTON_Y = 0.2
 
---- @param x number|nil
---- @return number degrees in (-180, 180]
-local function normalizeDeg(x)
-    local a = tonumber(x) or 0
-    while a > 180 do
-        a = a - 360
-    end
-    while a < -180 do
-        a = a + 360
-    end
-    return a
-end
-
---- Face-up when |rotX| is nearer 0 than 180 (enabled pose).
---- @return boolean
-local function isTokenFaceUp()
-    local rot = self.getRotation()
-    if type(rot) ~= "userdata" and type(rot) ~= "table" then
-        return true
-    end
-    return math.abs(normalizeDeg(rot.x)) < 90
-end
-
---- @param faceUp boolean|nil  when nil, infer from current rotation
-local function createClickButtons(faceUp)
-    if faceUp == nil then
-        faceUp = isTokenFaceUp()
-    end
-    local y = faceUp and BUTTON_Y_FACE_UP or BUTTON_Y_FACE_DOWN
+local function createClickButtons()
     self.clearButtons()
     self.createButton({
         click_function = "click_companionToggle",
         function_owner = self,
         label = "",
-        position = { 0, y, 0 },
+        position = { 0, BUTTON_Y, 0 },
         height = BUTTON_HEIGHT,
         width = BUTTON_WIDTH,
         color = { 1, 1, 1, 0 },
@@ -65,16 +32,6 @@ end
 
 function onLoad(_savedData)
     createClickButtons()
-end
-
---- Called from Global after token face change (lib.companion_toggle).
---- @param params table|nil `{ faceUp?: boolean }`
-function refreshCompanionClickButton(params)
-    local faceUp = nil
-    if type(params) == "table" and params.faceUp ~= nil then
-        faceUp = params.faceUp == true
-    end
-    createClickButtons(faceUp)
 end
 
 --- @param _obj Object
