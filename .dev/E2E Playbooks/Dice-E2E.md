@@ -479,8 +479,9 @@ U.RunSequence({
       phase = "postRoll",
       active = {
         result = { resultClass = "bestialFailure", successes = 1, margin = -1 },
-        rollOptions = { bestialNull = true },
+        rollPolicy = { bestialNull = true },
       },
+      contributingIncludes = { "bestialNull" },
     })
   end,
   function() M.setCamera("ALL", "rollBrown") end,
@@ -1375,8 +1376,9 @@ U.RunSequence({
       phase = "postRoll",
       active = {
         result = { resultClass = "totalBestialFailure" },
-        rollOptions = { bestialNull = true },
+        rollPolicy = { bestialNull = true },
       },
+      contributingIncludes = { "bestialNull" },
     })
     rollCancel("Brown")
   end,
