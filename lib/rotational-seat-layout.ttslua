@@ -567,6 +567,89 @@ local function isPlayerSeatKey(seatKey)
   return PLAYER_COLOR_SET[string.upper(seatKey)] == true
 end
 
+--- @param roleKey string|nil
+--- @return boolean
+local function isCsheetPageRoleKey(roleKey)
+  return type(roleKey) == "string" and string.match(roleKey, "^CSHEET_PAGE_%d+$") ~= nil
+end
+
+--- CSHEET visibility follows world Y (on ≈ 3.19, off = -200). Layout must not leave setInvisibleTo stale (TOR-343).
+--- @param obj Object
+local function reconcileCsheetPageVisibilityFromY(obj)
+  if obj == nil or not U.isGameObject(obj) then
+    return
+  end
+  local pos = obj.getPosition()
+  local y = nil
+  if type(pos) == "userdata" or type(pos) == "table" then
+    y = pos.y
+  end
+  if type(y) ~= "number" then
+    return
+  end
+  local visible = y >= 0
+  obj.interactable = visible
+  if visible then
+    obj.setInvisibleTo({})
+  else
+    obj.setInvisibleTo({ "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" })
+  end
+end
+
+--- @return number configured CSHEET "on" Y
+local function csheetPageOnY()
+  local entry = C.ObjectPositions and C.ObjectPositions.CSHEET_PAGE
+  local onPose = type(entry) == "table" and entry.on or nil
+  local y = type(onPose) == "table" and type(onPose.position) == "table" and tonumber(onPose.position.y) or nil
+  if type(y) == "number" then
+    return y
+  end
+  return 3.19
+end
+
+--- If fewer than two pages are above-table for this seat, raise pages 1–2 (TOR-343 invariant).
+--- @param seatKey string
+local function ensureMinVisibleCsheetPagesForSeat(seatKey)
+  if not isPlayerSeatKey(seatKey) then
+    return
+  end
+  local tag = objectTagForPlayerColor(seatKey)
+  local tagged = getObjectsWithTag(tag) or {}
+  local pagesByNum = {}
+  local visibleCount = 0
+  for _, obj in ipairs(tagged) do
+    if obj ~= nil and U.isGameObject(obj) then
+      local disp = SRI.readRoleColorIdentity(obj)
+      if type(disp) == "string" then
+        local roleKey = SRI.parseRoleAndSuffix(disp)
+        local pageNum = type(roleKey) == "string" and tonumber(string.match(roleKey, "^CSHEET_PAGE_(%d+)$")) or nil
+        if type(pageNum) == "number" then
+          pagesByNum[pageNum] = obj
+          local pos = obj.getPosition()
+          local y = (type(pos) == "userdata" or type(pos) == "table") and pos.y or nil
+          if type(y) == "number" and y >= 0 then
+            visibleCount = visibleCount + 1
+          end
+        end
+      end
+    end
+  end
+  if visibleCount >= 2 then
+    return
+  end
+  local onY = csheetPageOnY()
+  for _, pageNum in ipairs({ 1, 2 }) do
+    local obj = pagesByNum[pageNum]
+    if obj ~= nil then
+      local pos = obj.getPosition()
+      if type(pos) == "userdata" or type(pos) == "table" then
+        obj.setPosition({ x = pos.x, y = onY, z = pos.z })
+        reconcileCsheetPageVisibilityFromY(obj)
+      end
+    end
+  end
+end
+
 --- @param seatKey string
 --- @return boolean
 local function isNpcSeatKey(seatKey)
@@ -4635,7 +4718,20 @@ local function propagateSeatRolesFromReference(
           else
             local placed = frameAfterSeatRigid(centerPoint, refFrame, rigid)
             if not dryRun then
-              placeObjectExact(obj, placed.position, placed.rotation)
+              -- TOR-343: CSHEET page Y is per-seat navigation state. Copy XZ/rot from the
+              -- reference rigid frame, but keep this seat's own Y so setInvisibleTo stays aligned.
+              local placePos = placed.position
+              if isCsheetPageRoleKey(roleKey) then
+                local cur = obj.getPosition()
+                local curY = (type(cur) == "userdata" or type(cur) == "table") and cur.y or nil
+                if type(curY) == "number" then
+                  placePos = Vector({ x = placePos.x, y = curY, z = placePos.z })
+                end
+              end
+              placeObjectExact(obj, placePos, placed.rotation)
+              if isCsheetPageRoleKey(roleKey) then
+                reconcileCsheetPageVisibilityFromY(obj)
+              end
             end
             movedCount = movedCount + 1
           end
@@ -4643,6 +4739,9 @@ local function propagateSeatRolesFromReference(
       end
       end
     end
+  end
+  if not dryRun then
+    ensureMinVisibleCsheetPagesForSeat(targetSeatKey)
   end
   return movedCount
 end
