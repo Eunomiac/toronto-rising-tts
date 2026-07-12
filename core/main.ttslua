@@ -309,7 +309,9 @@ function M.setCamera(player, cameraMode, lookAtPos)
         mergedUniversal[key] = val
       end
     end
-    if mergedUniversal[cameraMode] ~= nil or C.CameraModes[cameraMode] == "universal" then
+    -- Prefer merged universal data when present. Do not gate on C.CameraModes alone —
+    -- a "universal" label with nil data must fall through to Black/ST/per-seat resolution.
+    if type(mergedUniversal[cameraMode]) == "table" then
       cameraPreset = U.clone(mergedUniversal[cameraMode])
     elseif player.color == "Black"
         and type(C.StorytellerCameraAngles) == "table"
@@ -353,7 +355,12 @@ function M.setCamera(player, cameraMode, lookAtPos)
         cameraPreset = U.clone(C.StorytellerCameraAngles[cameraMode])
       end
       if type(cameraPreset) ~= "table" then
-        U.AlertGM("M.setCamera: No camera angle data found for player '" .. tostring(player.color) .. "' and camera mode '" .. tostring(cameraMode) .. "'")
+        local modeKind = (C ~= nil and type(C.CameraModes) == "table" and C.CameraModes[cameraMode]) or nil
+        if modeKind == "universal" then
+          U.AlertGM("M.setCamera: Camera mode '" .. tostring(cameraMode) .. "' is marked universal but has no UniversalCameraAngles / seatLayout entry for player '" .. tostring(player.color) .. "'")
+        else
+          U.AlertGM("M.setCamera: No camera angle data found for player '" .. tostring(player.color) .. "' and camera mode '" .. tostring(cameraMode) .. "'")
+        end
         return
       end
     end
