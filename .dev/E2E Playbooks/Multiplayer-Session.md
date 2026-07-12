@@ -1,26 +1,5 @@
 # Multiclient Session Script (TOR-249 / TOR-144)
 
-## Agent Routing
-
-Read this when:
-- running the initial Host + join-client friend session (**TOR-249**)
-- updating steps, pass criteria, or the friend briefing for that session
-
-Source of truth for **how to run** the session:
-- this file
-
-Policy / agent contracts (not needed during the call):
-- [Preparing For Multiplayer](../Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md) — P1–P10, solo audits
-- [Multiplayer-E2E](Multiplayer-E2E.md) — coverage checklist + console probes
-
-Verification:
-- Host + one join client on a **second machine** (Steam invite)
-- Comment pass/fail on **TOR-144**; mark **TOR-249** Done when green
-
-Status: current first-pass runbook until TOR-144 initial pass completes.
-
----
-
 **Goal:** ~25–35 minutes. One linear script. **Pass** = no duplicate world effects, correct auto-seat, phase connect blindfold matches policy, join client stays connected.
 
 **Roles**

@@ -377,7 +377,7 @@
 
 
   <!-- Box Container Styles -->
-  <VerticalLayout class="box_text_container" childForceExpandWidth="true" childForceExpandHeight="false" color="#000000" flexibleHeight="0" outline="#FFFFFF" outlineSize="3 3" spacing="5" padding="10 10 5 5" />
+  <VerticalLayout class="box_text_container" childForceExpandWidth="true" childForceExpandHeight="false" color="#000000" flexibleHeight="0" outline="#cb995c" outlineSize = "2 -2"  spacing="5" padding="10 10 5 5" />
 
   <!-- <VerticalLayout class="box_text_container" childForceExpandWidth="true" childForceExpandHeight="false" color="rgba(0, 0, 0, 0.2)" flexibleHeight="0" spacing="5" padding="10 10 5 5" /> -->
 

@@ -7,7 +7,7 @@
     visibility = "Host"
     rectAlignment = "UpperLeft"
     offsetXY = "50 0"
-    width = "1500"
+    width = "1100"
     height = "900"
     padding = "0 0 0 0"
     childAlignment = "UpperLeft" />
@@ -25,7 +25,7 @@
     childForceExpandHeight = "false" />
 
   <HorizontalLayout class="storyteller_button_bar"
-    padding = "30 800 0 0"
+    padding = "30 400 0 0"
     flexibleHeight = "0"
     spacing= "3" />
 
@@ -83,6 +83,10 @@
 
 </Defaults>
 
+<!--
+UI.setAttributes("storytellerToolbarRoot", {width = "1100"})
+-->
+
 <!-- Master root container -->
 <Panel id="storytellerToolbarRoot" class="storyteller_panel_root">
 
@@ -110,11 +114,11 @@
       <!--
       UI.setAttributes("panel_scenes", {})
       UI.setAttributes("panel_scenes_library", {})
-      UI.setAttributes("db_third_column", {})
+      UI.setAttributes("db_third_column", {active="false"})
       -->
         <Include src="panel_scenes.xml" />
         <Include src="panel_scenes_library.xml" />
-        <Panel id="db_third_column" class="storyteller_panel_column" />
+        <!-- <Panel id="db_third_column" class="storyteller_panel_column" /> -->
       </HorizontalLayout>
 
       <Include src="panel_soundscape.xml" />

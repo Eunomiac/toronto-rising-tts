@@ -1,110 +1,107 @@
-
-
-
 <!-- Storyteller Scenes: lighting presets, table, seat narrative presence, location keys, clock (see core/storyteller_scenes_panel.ttslua). -->
 <!-- `active` stays true while parent `panel_scenes_host` controls tab visibility. Width 596 pairs with library column inside 1200px host. -->
 <VerticalLayout id="panel_scenes" class="storyteller_panel_column">
-    <Text id="db_panel_scenes_header" class="hud_storyteller_header">Scenes</Text>
+  <Text id="db_panel_scenes_header" class="hud_storyteller_header">Scenes</Text>
 
-    <Text id="db_panel_scenes_table_header" class="hud_storyteller_label">Table Selection</Text>
-    <HorizontalLayout id="db_panel_scenes_table_buttons" class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
-      <Button id="scenes_tbl_TableA" text="Table A" minWidth="72" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-      <Button id="scenes_tbl_TableB" text="Table B" minWidth="72" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-      <Button id="scenes_tbl_TableB0" text="B0" minWidth="40" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-      <Button id="scenes_tbl_TableB1" text="B1" minWidth="40" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-      <Button id="scenes_tbl_TableB2" text="B2" minWidth="40" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-      <Button id="scenes_tbl_TableB3" text="B3" minWidth="40" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-      <Button id="scenes_tbl_TableB4" text="B4" minWidth="40" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-      <Button id="scenes_tbl_TableB5" text="B5" minWidth="40" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-      <Button id="scenes_tbl_TableC" text="Table C" minWidth="72" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-    </HorizontalLayout>
-<!--
-UI.setAttributes("db_panel_scenes_seat_presence_buttons", {color = "rgba(1, 0, 0, 0.15)", childAlignment = "MiddleCenter"})
--->
-    <Text id="db_panel_scenes_seat_presence_header" class="hud_storyteller_label">Seat Activation</Text>
-    <HorizontalLayout id="db_panel_scenes_seat_presence_buttons" class="hud_storyteller_button_row" spacing="3" childForceExpandWidth="false">
-      <Button id="scenes_seat_Brown" text="Brown" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-      <Button id="scenes_seat_Orange" text="Orange" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-      <Button id="scenes_seat_Red" text="Red" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-      <Button id="scenes_seat_Pink" text="Pink" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-      <Button id="scenes_seat_Purple" text="Purple" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-    </HorizontalLayout>
-    <HorizontalLayout id="db_panel_scenes_seat_presence_npc_buttons" class="hud_storyteller_button_row" spacing="3" childForceExpandWidth="false">
-      <Button id="scenes_seat_NPC1" text="NPC1" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-      <Button id="scenes_seat_NPC2" text="NPC2" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-      <Button id="scenes_seat_NPC3" text="NPC3" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-      <Button id="scenes_seat_NPC4" text="NPC4" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-    </HorizontalLayout>
+  <Text id="db_panel_scenes_table_header" class="hud_storyteller_label">Table Selection</Text>
+  <HorizontalLayout id="db_panel_scenes_table_buttons" class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
+    <Button id="scenes_tbl_TableA" text="Table A" minWidth="72" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+    <Button id="scenes_tbl_TableB" text="Table B" minWidth="72" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+    <Button id="scenes_tbl_TableB0" text="B0" minWidth="40" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+    <Button id="scenes_tbl_TableB1" text="B1" minWidth="40" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+    <Button id="scenes_tbl_TableB2" text="B2" minWidth="40" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+    <Button id="scenes_tbl_TableB3" text="B3" minWidth="40" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+    <Button id="scenes_tbl_TableB4" text="B4" minWidth="40" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+    <Button id="scenes_tbl_TableB5" text="B5" minWidth="40" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+    <Button id="scenes_tbl_TableC" text="Table C" minWidth="72" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+  </HorizontalLayout>
+  <!--
+  UI.setAttributes("db_panel_scenes_seat_presence_buttons", {color = "rgba(1, 0, 0, 0.15)", childAlignment = "MiddleCenter"})
+  -->
+  <Text id="db_panel_scenes_seat_presence_header" class="hud_storyteller_label">Seat Activation</Text>
+  <HorizontalLayout id="db_panel_scenes_seat_presence_buttons" class="hud_storyteller_button_row" spacing="3" childForceExpandWidth="false">
+    <Button id="scenes_seat_Brown" text="Brown" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+    <Button id="scenes_seat_Orange" text="Orange" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+    <Button id="scenes_seat_Red" text="Red" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+    <Button id="scenes_seat_Pink" text="Pink" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+    <Button id="scenes_seat_Purple" text="Purple" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+  </HorizontalLayout>
+  <HorizontalLayout id="db_panel_scenes_seat_presence_npc_buttons" class="hud_storyteller_button_row" spacing="3" childForceExpandWidth="false">
+    <Button id="scenes_seat_NPC1" text="NPC1" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+    <Button id="scenes_seat_NPC2" text="NPC2" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+    <Button id="scenes_seat_NPC3" text="NPC3" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+    <Button id="scenes_seat_NPC4" text="NPC4" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+  </HorizontalLayout>
 
-    <Text id="db_panel_scenes_location_header" class="hud_storyteller_label">Scene Location</Text>
-    <HorizontalLayout id="db_panel_scenes_location_buttons" spacing="6" childForceExpandWidth="false" childAlignment="UpperLeft">
+  <Text id="db_panel_scenes_location_header" class="hud_storyteller_label">Scene Location</Text>
+  <HorizontalLayout id="db_panel_scenes_location_buttons" spacing="6" childForceExpandWidth="false" childAlignment="UpperLeft">
     <!--
     UI.setAttributes("db_panel_scenes_location_district_container", {color = "rgba(1, 0, 0, 0.15)", minWidth = "0", flexibleWidth = "1", preferredWidth = "250"})
     UI.setAttributes("db_panel_scenes_location_site_container", {color = "rgba(1, 1, 0, 0.15)", minWidth = "0", flexibleWidth = "1", preferredWidth = "250"})
     -->
 
-      <VerticalLayout id="db_panel_scenes_location_district_container" class="hud_storyteller_inner_column">
+    <VerticalLayout id="db_panel_scenes_location_district_container" class="hud_storyteller_inner_column">
       <!--
       UI.setAttributes("db_panel_scenes_location_district_header", {alignment = "MiddleCenter", fontStyle = "Bold", fontSize = "14", preferredWidth = "200", flexibleWidth = "1"})
       -->
-        <Text id="db_panel_scenes_location_district_header" class="small_header_text">District</Text>
-        <Text id="scenes_districtNameDisplay" fontSize="12" color="#FFFFFF" preferredHeight="30" minHeight="30" minWidth="280" preferredWidth="280" flexibleWidth="0" text="—" />
-      </VerticalLayout>
-      <VerticalLayout id="db_panel_scenes_location_site_container" class="hud_storyteller_inner_column">
+      <Text id="db_panel_scenes_location_district_header" class="small_header_text">District</Text>
+      <Text id="scenes_districtNameDisplay" fontSize="12" color="#FFFFFF" preferredHeight="30" minHeight="30" minWidth="280" preferredWidth="280" flexibleWidth="0" text="—" />
+    </VerticalLayout>
+    <VerticalLayout id="db_panel_scenes_location_site_container" class="hud_storyteller_inner_column">
       <!--
       UI.setAttributes("db_panel_scenes_location_site_header", {alignment = "MiddleCenter", fontStyle = "Bold", fontSize = "14", preferredWidth = "200", flexibleWidth = "1"})
       -->
-        <Text id="db_panel_scenes_location_site_header" class="small_header_text">Site</Text>
-        <Text id="scenes_siteNameDisplay" fontSize="12" color="#FFFFFF" preferredHeight="30" minHeight="30" minWidth="280" preferredWidth="280" flexibleWidth="0" text="—" />
-      </VerticalLayout>
-    </HorizontalLayout>
-    <HorizontalLayout id="db_panel_scenes_location_buttons_2" spacing="6" childForceExpandWidth="false" childAlignment="UpperLeft">
-      <Button id="scenes_openDistrictModal" class="hud_storyteller_button" fontSize="11" minWidth="140" preferredHeight="30" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Browse districts..." onClick="HUD_scenesOpenDistrictModal" />
-      <Button id="scenes_openSiteModal" class="hud_storyteller_button" fontSize="11" minWidth="140" preferredHeight="30" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Browse sites..." onClick="HUD_scenesOpenSiteModal" />
-    </HorizontalLayout>
-    <Button id="scenes_apply_location_soundscape" class="hud_storyteller_button" text="Apply location + soundscape" onClick="HUD_scenesApplyLocation" />
+      <Text id="db_panel_scenes_location_site_header" class="small_header_text">Site</Text>
+      <Text id="scenes_siteNameDisplay" fontSize="12" color="#FFFFFF" preferredHeight="30" minHeight="30" minWidth="280" preferredWidth="280" flexibleWidth="0" text="—" />
+    </VerticalLayout>
+  </HorizontalLayout>
+  <HorizontalLayout id="db_panel_scenes_location_buttons_2" spacing="6" childForceExpandWidth="false" childAlignment="UpperLeft">
+    <Button id="scenes_openDistrictModal" class="hud_storyteller_button" fontSize="11" minWidth="140" preferredHeight="30" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Browse districts..." onClick="HUD_scenesOpenDistrictModal" />
+    <Button id="scenes_openSiteModal" class="hud_storyteller_button" fontSize="11" minWidth="140" preferredHeight="30" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Browse sites..." onClick="HUD_scenesOpenSiteModal" />
+  </HorizontalLayout>
+  <Button id="scenes_apply_location_soundscape" class="hud_storyteller_button" text="Apply location + soundscape" onClick="HUD_scenesApplyLocation" />
 
-    <Text id="db_panel_scenes_time_header" class="hud_storyteller_label">Scene Time</Text>
-    <HorizontalLayout id="db_panel_scenes_time_buttons" spacing="3" childForceExpandWidth="false" childAlignment="UpperLeft">
-      <Button id="scenes_month_1" class="hud_storyteller_button" text="Jan" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="scenes_month_2" class="hud_storyteller_button" text="Feb" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="scenes_month_3" class="hud_storyteller_button" text="Mar" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="scenes_month_4" class="hud_storyteller_button" text="Apr" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="scenes_month_5" class="hud_storyteller_button" text="May" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="scenes_month_6" class="hud_storyteller_button" text="Jun" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    </HorizontalLayout>
-    <HorizontalLayout id="db_panel_scenes_time_buttons_2" spacing="3" childForceExpandWidth="false" childAlignment="UpperLeft">
-      <Button id="scenes_month_7" class="hud_storyteller_button" text="Jul" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="scenes_month_8" class="hud_storyteller_button" text="Aug" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="scenes_month_9" class="hud_storyteller_button" text="Sep" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="scenes_month_10" class="hud_storyteller_button" text="Oct" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="scenes_month_11" class="hud_storyteller_button" text="Nov" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="scenes_month_12" class="hud_storyteller_button" text="Dec" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    </HorizontalLayout>
-    <HorizontalLayout id="db_panel_scenes_time_buttons_3" spacing="8" childForceExpandWidth="false" childAlignment="UpperLeft">
-      <VerticalLayout id="db_panel_scenes_time_buttons_3_day_container" spacing="2" flexibleWidth="0">
-        <Text id="db_panel_scenes_time_buttons_3_day_header" fontSize="9" color="#CCCCCC">Day</Text>
-        <InputField id="scenes_clock_day" class="hud_storyteller_input" minWidth="52" preferredWidth="52" preferredHeight="30" minHeight="30" flexibleWidth="0" fontSize="12" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" characterValidation="Integer" text="1" onValueChanged="HUD_scenesClockFieldChanged" onEndEdit="HUD_scenesClockFieldChanged" />
-      </VerticalLayout>
-      <VerticalLayout id="db_panel_scenes_time_buttons_3_year_container" spacing="2" flexibleWidth="0">
-        <Text id="db_panel_scenes_time_buttons_3_year_header" fontSize="9" color="#CCCCCC">Year</Text>
-        <InputField id="scenes_clock_year" class="hud_storyteller_input" minWidth="64" preferredWidth="64" preferredHeight="30" minHeight="30" flexibleWidth="0" fontSize="12" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" characterValidation="Integer" text="2026" onValueChanged="HUD_scenesClockFieldChanged" onEndEdit="HUD_scenesClockFieldChanged" />
-      </VerticalLayout>
-      <VerticalLayout id="db_panel_scenes_time_buttons_3_time_container" spacing="2" flexibleWidth="1">
-        <Text id="db_panel_scenes_time_buttons_3_time_header" fontSize="9" color="#CCCCCC">Time (12h)</Text>
-        <InputField id="scenes_clock_time12" class="hud_storyteller_input" minWidth="160" preferredWidth="200" preferredHeight="30" minHeight="30" flexibleWidth="1" fontSize="12" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" placeholder="7:05 PM" text="12:00 AM" onValueChanged="HUD_scenesClockFieldChanged" onEndEdit="HUD_scenesClockFieldChanged" />
-      </VerticalLayout>
-      <VerticalLayout id="db_panel_scenes_time_buttons_3_present_day_container" spacing="2" flexibleWidth="0">
-        <Text id="db_panel_scenes_time_buttons_3_present_day_header" fontSize="9" color="#CCCCCC">Present day</Text>
-        <Button id="scenes_clock_setPresentDay" class="hud_storyteller_button" text="Set" minWidth="52" preferredWidth="52" preferredHeight="30" minHeight="30" flexibleWidth="0" fontSize="11" onClick="HUD_scenesSetPresentDayClock" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      </VerticalLayout>
-    </HorizontalLayout>
-    <HorizontalLayout id="db_panel_scenes_time_buttons_4" spacing="8" childForceExpandWidth="false" childAlignment="MiddleLeft">
-      <Text id="db_panel_scenes_time_buttons_4_real_time_clock_header" fontSize="10" color="#CCCCCC">Real-time clock</Text>
-      <Button id="scenes_clock_rtToggle" class="hud_storyteller_button" text="OFF" minWidth="56" preferredHeight="28" onClick="HUD_scenesToggleRealTimeClock" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Text id="db_panel_scenes_time_buttons_4_speed_header" fontSize="10" color="#CCCCCC">Speed (× real time)</Text>
-      <InputField id="scenes_clock_speed" class="hud_storyteller_input" minWidth="48" preferredWidth="48" preferredHeight="28" minHeight="28" flexibleWidth="0" fontSize="12" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" characterValidation="FloatingPoint" text="1" onValueChanged="HUD_scenesClockFieldChanged" onEndEdit="HUD_scenesClockFieldChanged" />
-    </HorizontalLayout>
-    <Button id="scenes_clock_apply" class="hud_storyteller_button" text="Apply clock" onClick="HUD_scenesApplyClock" />
+  <Text id="db_panel_scenes_time_header" class="hud_storyteller_label">Scene Time</Text>
+  <HorizontalLayout id="db_panel_scenes_time_buttons" spacing="3" childForceExpandWidth="false" childAlignment="UpperLeft">
+    <Button id="scenes_month_1" class="hud_storyteller_button" text="Jan" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_month_2" class="hud_storyteller_button" text="Feb" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_month_3" class="hud_storyteller_button" text="Mar" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_month_4" class="hud_storyteller_button" text="Apr" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_month_5" class="hud_storyteller_button" text="May" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_month_6" class="hud_storyteller_button" text="Jun" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+  </HorizontalLayout>
+  <HorizontalLayout id="db_panel_scenes_time_buttons_2" spacing="3" childForceExpandWidth="false" childAlignment="UpperLeft">
+    <Button id="scenes_month_7" class="hud_storyteller_button" text="Jul" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_month_8" class="hud_storyteller_button" text="Aug" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_month_9" class="hud_storyteller_button" text="Sep" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_month_10" class="hud_storyteller_button" text="Oct" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_month_11" class="hud_storyteller_button" text="Nov" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_month_12" class="hud_storyteller_button" text="Dec" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+  </HorizontalLayout>
+  <HorizontalLayout id="db_panel_scenes_time_buttons_3" spacing="8" childForceExpandWidth="false" childAlignment="UpperLeft">
+    <VerticalLayout id="db_panel_scenes_time_buttons_3_day_container" spacing="2" flexibleWidth="0">
+      <Text id="db_panel_scenes_time_buttons_3_day_header" fontSize="9" color="#CCCCCC">Day</Text>
+      <InputField id="scenes_clock_day" class="hud_storyteller_input" minWidth="52" preferredWidth="52" preferredHeight="30" minHeight="30" flexibleWidth="0" fontSize="12" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" characterValidation="Integer" text="1" onValueChanged="HUD_scenesClockFieldChanged" onEndEdit="HUD_scenesClockFieldChanged" />
+    </VerticalLayout>
+    <VerticalLayout id="db_panel_scenes_time_buttons_3_year_container" spacing="2" flexibleWidth="0">
+      <Text id="db_panel_scenes_time_buttons_3_year_header" fontSize="9" color="#CCCCCC">Year</Text>
+      <InputField id="scenes_clock_year" class="hud_storyteller_input" minWidth="64" preferredWidth="64" preferredHeight="30" minHeight="30" flexibleWidth="0" fontSize="12" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" characterValidation="Integer" text="2026" onValueChanged="HUD_scenesClockFieldChanged" onEndEdit="HUD_scenesClockFieldChanged" />
+    </VerticalLayout>
+    <VerticalLayout id="db_panel_scenes_time_buttons_3_time_container" spacing="2" flexibleWidth="1">
+      <Text id="db_panel_scenes_time_buttons_3_time_header" fontSize="9" color="#CCCCCC">Time (12h)</Text>
+      <InputField id="scenes_clock_time12" class="hud_storyteller_input" minWidth="160" preferredWidth="200" preferredHeight="30" minHeight="30" flexibleWidth="1" fontSize="12" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" placeholder="7:05 PM" text="12:00 AM" onValueChanged="HUD_scenesClockFieldChanged" onEndEdit="HUD_scenesClockFieldChanged" />
+    </VerticalLayout>
+    <VerticalLayout id="db_panel_scenes_time_buttons_3_present_day_container" spacing="2" flexibleWidth="0">
+      <Text id="db_panel_scenes_time_buttons_3_present_day_header" fontSize="9" color="#CCCCCC">Present day</Text>
+      <Button id="scenes_clock_setPresentDay" class="hud_storyteller_button" text="Set" minWidth="52" preferredWidth="52" preferredHeight="30" minHeight="30" flexibleWidth="0" fontSize="11" onClick="HUD_scenesSetPresentDayClock" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    </VerticalLayout>
+  </HorizontalLayout>
+  <HorizontalLayout id="db_panel_scenes_time_buttons_4" spacing="8" childForceExpandWidth="false" childAlignment="MiddleLeft">
+    <Text id="db_panel_scenes_time_buttons_4_real_time_clock_header" fontSize="10" color="#CCCCCC">Real-time clock</Text>
+    <Button id="scenes_clock_rtToggle" class="hud_storyteller_button" text="OFF" minWidth="56" preferredHeight="28" onClick="HUD_scenesToggleRealTimeClock" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Text id="db_panel_scenes_time_buttons_4_speed_header" fontSize="10" color="#CCCCCC">Speed (× real time)</Text>
+    <InputField id="scenes_clock_speed" class="hud_storyteller_input" minWidth="48" preferredWidth="48" preferredHeight="28" minHeight="28" flexibleWidth="0" fontSize="12" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" characterValidation="FloatingPoint" text="1" onValueChanged="HUD_scenesClockFieldChanged" onEndEdit="HUD_scenesClockFieldChanged" />
+  </HorizontalLayout>
+  <Button id="scenes_clock_apply" class="hud_storyteller_button" text="Apply clock" onClick="HUD_scenesApplyClock" />
 
-  </VerticalLayout>
+</VerticalLayout>
