@@ -29,7 +29,11 @@ Status: **resolved in code** (TOR-373 / TOR-374) — re-verify under TOR-144
 
 ### Author session fact (timeouts)
 
-Timeout correlated with Host **manually seating Grey → Orange**. Client had already **heard music** and **seen the global blindfold** — partial join succeeded, then disconnect a few seconds after seat change. That matches synchronous connect-time `UI.setXml` during join sync (not P10 desync, not bootstrap-only).
+Timeout correlated with Host **manually seating Grey → Orange**. Client had already **heard music** and **seen the global blindfold**.
+
+**Correction:** client waited connected at **Grey for some time** before the Orange seat swap. Join sync had already finished — so TOR-374’s ~4s defer after seat change does **not** address handshake overlap. The remaining smoking gun is **`UI.setXml(UI.getXml())` cost itself** (full Global XmlUI rebuild).
+
+TTS cannot chunk Global `setXml` into sequential partial updates; each call replaces the whole document. See `docs/solutions/tts-xmlui-visibility-seat-assignment.md` § Multiclient note and `docs/solutions/lua-ui-full-xml-policy.md`.
 
 ---
 

@@ -20,9 +20,15 @@ Per-color loading overlays inside `visibility="<Color>"` parents never show for 
    - **First visit only (per player, per seat, since connect):** deferred `UI.setXml(UI.getXml())` (~4s, TOR-374 join-timeout mitigation) to re-evaluate `visibility`; cache cleared on `onPlayerConnect`. Seat marked refreshed only after `UI.setXml` completes (`UI.loading` clear + post-refresh). Repeat hotseat swaps to the same seat skip `setXml` but still run targeted `UpdateUIDisplays` (HUD, overlays, loading hide).
    - Wait for `UI.loading` after `setXml` when used.
 
-## Multiclient note (TOR-374)
+## Multiclient note (TOR-374) — revised
 
-Immediate `UI.setXml` on Grey→PC seat assign during join correlated with client **connection timeout** after partial join (music + global blindfold visible). Deferral keeps TOR-285 behavior while letting join sync finish first.
+**Author correction:** client stayed connected at Grey for some time before Host seated them Orange. Initial join sync had already completed. The ~4s defer after seat change therefore does **not** mitigate “overlap with join handshake.”
+
+**Revised hypothesis:** the **cost/size of `UI.setXml(UI.getXml())` itself** (full Global XmlUI replace + redistribute to all clients) is enough to drop a connected client. Approximate static Include payload for Global UI is on the order of **~1.3+ MB** of XML source (dominated by `panel_right_sidebar_referenceLayer.xml` ~530 KB and `panel_map_core.xml` ~246 KB); runtime `getXml()` may be larger after attribute mutations.
+
+**Chunking:** TTS does **not** support partial `setXml`. Each `setXml` / `setXmlTable` **replaces the entire UI document**. Sequential “chunk” replaces would mean N full rebuilds of incomplete trees — worse, not better.
+
+**Next options (not yet implemented):** avoid seat-path `setXml` if a targeted workaround works; shrink Global UI (move heavy panels / object UI); test whether `UI.setAttribute(id, "visibility", …)` alone re-evaluates for the new seat in current TTS.
 
 ## Verification
 
