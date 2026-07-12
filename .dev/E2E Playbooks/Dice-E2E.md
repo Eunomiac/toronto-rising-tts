@@ -960,9 +960,10 @@ U.RunSequence({
 ```lua
 U.RunSequence({
   function()
+    -- Cold bag initiate → SETUP (player initiator); only Remorse skips SETUP.
     rollConfirm("Brown", {
-      phase = "preRoll",
-      active = { rollType = C.RollType.ROUSE, pool = { rouse = 1 } },
+      phase = "setup",
+      active = { rollType = C.RollType.ROUSE, batonHolder = "storyteller", pool = { rouse = 1 } },
     })
     rollCancel("Brown")
   end,
@@ -1190,11 +1191,12 @@ U.RunSequence({
   end,
   function() printHeader("", 2) end,
   function() printHeader("K3a - Normal bag promotes to compound standard roll", 2) end,
-  function() rollTest("Brown", 1, C.RollType.ROUSE, "E2E K3a", { skipOpen = true }) end,
+  -- Promote requires PRE_ROLL (RC.promoteDedicatedRouseToStandard); do not skipOpen (TOR-357).
+  function() rollTest("Brown", 1, C.RollType.ROUSE, "E2E K3a") end,
   function()
     rollE2eSeatPrep("Brown")
     M.setCamera("ALL", "rollBrown")
-    printHeader("[HUMAN] Left-click Rouse bag 2 times, then left-click Normal bag 1 time", 3)
+    printHeader("[HUMAN] Left-click Rouse bag 2 times, then left-click Normal bag 1 time (PRE_ROLL — promote)", 3)
   end
 })
 ```
@@ -1203,6 +1205,7 @@ U.RunSequence({
 U.RunSequence({
   function()
     rollConfirm("Brown", {
+      phase = "preRoll",
       active = {
         rollType = C.RollType.STANDARD,
         batonHolder = "player",
@@ -1230,11 +1233,12 @@ U.RunSequence({
   end,
   function() printHeader("", 2) end,
   function() printHeader("K3c - Oblivion dedicated: Normal promotes (Purple)", 2) end,
-  function() rollTest("Purple", 1, C.RollType.ROUSE_OBLIVION, "E2E K3c", { skipOpen = true }) end,
+  -- Same as K3a: Normal promote is PRE_ROLL-only (TOR-357).
+  function() rollTest("Purple", 1, C.RollType.ROUSE_OBLIVION, "E2E K3c") end,
   function()
     rollE2eSeatPrep("Purple")
     M.setCamera("ALL", "rollPurple")
-    printHeader("[HUMAN] Left-click Oblivion-Rouse bag 1 time, then left-click Normal bag 1 time", 3)
+    printHeader("[HUMAN] Left-click Oblivion-Rouse bag 1 time, then left-click Normal bag 1 time (PRE_ROLL — promote)", 3)
   end
 })
 ```
@@ -1243,6 +1247,7 @@ U.RunSequence({
 U.RunSequence({
   function()
     rollConfirm("Purple", {
+      phase = "preRoll",
       active = {
         rollType = C.RollType.STANDARD,
         batonHolder = "player",
@@ -1750,7 +1755,8 @@ U.RunSequence({
     setHunger("Purple", 1)
     setHumanityStains("Purple", 2)
     rollConfirmTracker("Purple", { hunger = 1, stains = 2 })
-    rollTest("Purple", 2, C.RollType.STANDARD, "E2E P-F compound", { hunger = 0, skipOpen = true })
+    -- PRE_ROLL so HUMAN can Roll (skipOpen would leave SETUP with Roll greyed) (TOR-357).
+    rollTest("Purple", 2, C.RollType.STANDARD, "E2E P-F compound", { hunger = 0 })
   end,
   function()
     M.setCamera("ALL", "rollPurple")
