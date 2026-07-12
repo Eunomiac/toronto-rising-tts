@@ -176,7 +176,7 @@ local function restoreTrayLightWorkshopHome(slot)
     if light == nil then
         return
     end
-    -- TOR-344: per-table absolute light home is authoritative (same x/z/rot as drawer home).
+    -- TOR-344: apply only axes present in C.Tables[*].objectPositions (partial merge).
     local lightGuid = nil
     local lightRef = SLOT_LIGHT_REFS[slot]
     local lData = type(lightRef) == "string" and L.LIGHTMODES[lightRef] or nil
@@ -186,17 +186,20 @@ local function restoreTrayLightWorkshopHome(slot)
     local tableCfg = currentTableCfg()
     local partial = type(lightGuid) == "string" and tableLayoutPartialPosition(tableCfg, lightGuid) or nil
     local partialRot = type(lightGuid) == "string" and tableLayoutPartialRotation(tableCfg, lightGuid) or nil
-    if type(partial) == "table" and type(partial.x) == "number" and type(partial.z) == "number" then
-        local cur = light.getPosition()
-        local y = type(cur) == "userdata" and cur.y or 0
-        light.setPosition({ x = partial.x, y = y, z = partial.z })
-        if type(partialRot) == "table"
-            and type(partialRot.x) == "number"
-            and type(partialRot.y) == "number"
-            and type(partialRot.z) == "number" then
-            light.setRotation({ x = partialRot.x, y = partialRot.y, z = partialRot.z })
-        end
-        defaultTrayLightPosBySlot[slot] = { x = partial.x, y = y, z = partial.z }
+    local hasPartialPos = type(partial) == "table"
+        and (type(partial.x) == "number" or type(partial.y) == "number" or type(partial.z) == "number")
+    if hasPartialPos then
+        local merged = OP.mergePosition(light, partial)
+        light.setPosition({ x = merged.x, y = merged.y, z = merged.z })
+        defaultTrayLightPosBySlot[slot] = { x = merged.x, y = merged.y, z = merged.z }
+    end
+    local hasPartialRot = type(partialRot) == "table"
+        and (type(partialRot.x) == "number" or type(partialRot.y) == "number" or type(partialRot.z) == "number")
+    if hasPartialRot then
+        local mergedR = OP.mergeRotation(light, partialRot)
+        light.setRotation({ x = mergedR.x, y = mergedR.y, z = mergedR.z })
+    end
+    if hasPartialPos or hasPartialRot then
         return
     end
     restoreTrayLightPosition(slot)
@@ -226,10 +229,14 @@ findTrayLightObject = function(slot)
     return G.getObject(lData.guid)
 end
 
---- Seed tray-light cache from table absolute home (TOR-344); never from a live snapshot.
+--- Seed tray-light cache from table absolute home (TOR-344); never invent missing axes.
 --- @param slot number 1..3
 local function ensureDefaultTrayLightPosCached(slot)
     if defaultTrayLightPosBySlot[slot] ~= nil then
+        return
+    end
+    local light = findTrayLightObject(slot)
+    if light == nil then
         return
     end
     local lightGuid = nil
@@ -240,16 +247,10 @@ local function ensureDefaultTrayLightPosCached(slot)
     end
     local tableCfg = currentTableCfg()
     local partial = type(lightGuid) == "string" and tableLayoutPartialPosition(tableCfg, lightGuid) or nil
-    if type(partial) == "table" and type(partial.x) == "number" and type(partial.z) == "number" then
-        local light = findTrayLightObject(slot)
-        local y = 0
-        if light ~= nil then
-            local cur = light.getPosition()
-            if type(cur) == "userdata" and type(cur.y) == "number" then
-                y = cur.y
-            end
-        end
-        defaultTrayLightPosBySlot[slot] = { x = partial.x, y = y, z = partial.z }
+    if type(partial) == "table"
+        and (type(partial.x) == "number" or type(partial.y) == "number" or type(partial.z) == "number") then
+        local merged = OP.mergePosition(light, partial)
+        defaultTrayLightPosBySlot[slot] = { x = merged.x, y = merged.y, z = merged.z }
     end
 end
 
