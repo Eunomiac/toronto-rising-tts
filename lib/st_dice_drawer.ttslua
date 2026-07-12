@@ -49,11 +49,8 @@ local restoreTrayLightPosition
 
 --- Off pose is y = -200 (hidden); on pose is ~ -0.64. Gate release when above this.
 STD.DRAWER_RELEASE_MIN_Y = -50
---- Author rule (TOR-307): any ST drawer with world Y above this is physically "on" and must be stowed.
-STD.DRAWER_PHYSICALLY_ON_MIN_Y = -10
 
 local WORKSHOP_HOME_OFF_Y = -200
-local WORKSHOP_HOME_EPSILON = 0.25
 
 --- @param slot number
 -- @return string
@@ -138,31 +135,6 @@ local function resolveWorkshopHomeForSlot(slot)
         row.rotZ = partialRot.z
     end
     return row
-end
-
---- @param slot number
--- @return boolean
-local function isSlotDisplacedFromWorkshop(slot)
-    local obj = findDrawerObject(slot)
-    if obj == nil then
-        return false
-    end
-    local pos = obj.getPosition()
-    if type(pos) ~= "userdata" and type(pos) ~= "table" then
-        return false
-    end
-    -- Workshop / NPC "on" poses only raise Y (~-0.64 / ~2.97); XZ can still match workshop home.
-    if type(pos.y) == "number" and pos.y > STD.DRAWER_PHYSICALLY_ON_MIN_Y then
-        return true
-    end
-    local home = resolveWorkshopHomeForSlot(slot)
-    if type(home) ~= "table"
-        or type(pos.x) ~= "number" or type(pos.z) ~= "number"
-        or type(home.x) ~= "number" or type(home.z) ~= "number" then
-        return false
-    end
-    return math.abs(pos.x - home.x) > WORKSHOP_HOME_EPSILON
-        or math.abs(pos.z - home.z) > WORKSHOP_HOME_EPSILON
 end
 
 --- Snap drawer to hidden workshop home (full X/Y/Z, not Y-only merge).
@@ -533,6 +505,29 @@ function STD.reconcileTrayLightsFromRollState(opts)
     end
 end
 
+--- Clear live ST drawer flags so lighting reconcile keeps tray lights OFF (startup / workshop home).
+local function clearAllDrawerActiveFlags()
+    local root = S.getStateVal("storytellerRolls")
+    if type(root) ~= "table" then
+        return
+    end
+    local slots = root.slots
+    if type(slots) ~= "table" then
+        return
+    end
+    local changed = false
+    for slot = 1, 3 do
+        local slotState = slots[slot]
+        if type(slotState) == "table" and slotState.drawerActive == true then
+            slotState.drawerActive = false
+            changed = true
+        end
+    end
+    if changed then
+        S.setStateVal(root, "storytellerRolls")
+    end
+end
+
 --- Closes drawer pose and OFF tray light for a slot.
 -- @param slot number 1..3
 function STD.closeForSlot(slot)
@@ -550,22 +545,25 @@ function STD.closeForSlot(slot)
     end
 end
 
---- Return ST drawer slots to workshop hidden home (startup / after NPC-seat rolls). TOR-307.
+--- Snap every ST drawer + tray light to current-table absolute homes and deactivate (Y=-200, lights OFF).
+--- Used on onLoad (before/after SyncTable) and after NPC-seat rolls. Always applies — not only when displaced.
 --- @param opts table|nil  { instant?: boolean }
---- @return number restored count
+--- @return number slots successfully restored
 function STD.reconcileAllToWorkshopHome(opts)
     opts = type(opts) == "table" and opts or {}
+    clearAllDrawerActiveFlags()
+    defaultTrayLightPosBySlot = {}
     local restored = 0
     for slot = 1, 3 do
         npcSeatBySlot[slot] = nil
         clearPersistedWorkshopHomes(slot)
-        if isSlotDisplacedFromWorkshop(slot) then
-            applyWorkshopHomeOff(slot, opts)
-            restoreTrayLightWorkshopHome(slot)
-            local lightRef = SLOT_LIGHT_REFS[slot]
-            if type(lightRef) == "string" then
-                L.SetLightMode(lightRef, "OFF", nil, 0)
-            end
+        local applied = applyWorkshopHomeOff(slot, opts)
+        restoreTrayLightWorkshopHome(slot)
+        local lightRef = SLOT_LIGHT_REFS[slot]
+        if type(lightRef) == "string" then
+            L.SetLightMode(lightRef, "OFF", nil, 0)
+        end
+        if applied then
             restored = restored + 1
         end
     end

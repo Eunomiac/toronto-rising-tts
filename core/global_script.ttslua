@@ -2194,6 +2194,10 @@ function onLoad(saved_data)
     setStartupAction("initialize-game-state")
     S.InitializeGameState(saved_data)
 
+    -- ST tray lights follow drawerActive; clear before first Sync.full so presets cannot leave them STANDARD.
+    setStartupAction("st-dice-drawers-deactivate-flags")
+    STD.reconcileAllToWorkshopHome({ instant = true })
+
     local PrtlReconcile = require("lib.pc_roll_tray_lower")
     if type(PrtlReconcile.reconcileElevatedColorFromState) == "function" then
         PrtlReconcile.reconcileElevatedColorFromState()
@@ -2240,6 +2244,9 @@ function onLoad(saved_data)
             cleanupLooseDiceBeforeTableSync()
             setStartupAction("run-table-sync")
             R.SyncTable()
+            -- SyncTable applies table objectPositions (x/z/rot) but preserves open drawer Y; snap homes + OFF again.
+            setStartupAction("st-dice-drawers-workshop-home")
+            STD.reconcileAllToWorkshopHome({ instant = true })
             startupTableSyncDone = true
             setStartupAction("table-sync-complete")
         end, 0.5)
