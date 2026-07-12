@@ -31,7 +31,21 @@ Mechanical changes through **TOR-284**, **TOR-345**, **TOR-143**, and prior sync
 - ST-only actions rejected when triggered from a PC seat (`isStorytellerSteamPlayer`).
 - Join client auto-seats to chronicle color (or White if unregistered).
 - Connect blindfold matches phase policy (Intermission keeps up; other phases lower).
-- Document any `gameState` vs HUD mismatch on join client as **P10 known gap** (live state broadcast not yet implemented).
+- **P10:** If join-client `S.getStateVal` / HUD labels lag Host but the **table looks the same**, document it — **do not fail** the initial pass. See [P10 known gap](#p10--live-gamestate-broadcast-gap-known) below and Preparing §1.1a.
+
+## P10 — live `gameState` broadcast gap (known)
+
+TTS runs all mod Lua on the **Host**. Engine replication covers **world** (objects, lights, audio). Host `gameState` Lua is **not** automatically broadcast to join clients between saves.
+
+| Observation | Score |
+| --- | --- |
+| World matches Host; friend’s `S.getStateVal` or state-fed HUD text differs | **Document P10** — Pass for TOR-249 / initial TOR-144 |
+| World disagrees (double Apply, missing props, wrong layout) | **Fail** |
+| Friend click no-ops | **Fail** (routing/steam) — not P10 |
+
+**Do not** “fix” P10 with `isHostClient` / execution gates. Future: live state sync bridge.
+
+**Session log template:** `P10 <scenario>: Host=…, Friend=…; world matched.`
 
 ## Verification matrix
 
@@ -44,11 +58,12 @@ Mechanical changes through **TOR-284**, **TOR-345**, **TOR-143**, and prior sync
 | ST Apply gameboard | Tokens → state → figurines move once | Replicated state | Single stage layout; no fight/jitter |
 | ST Clear gameboard | Placements cleared once | Replicated clear | Palette/board state matches Host |
 | ST token drop (palette/anchor) | Snap/light coroutine once | Replicated token pose | Token settles once |
-| ST scene change | `Sync.full` reconcile once; may silent-promote to Play | Scene/light/audio replicate | Join HUD updates or document P10 gap |
+| ST scene change | `Sync.full` reconcile once; may silent-promote to Play | Scene/light/audio replicate | **World** matches Host once. HUD label lag with matching world → document P10 |
 | PC roll (join client clicks) | Host spawns/releases dice via `Global.call` | Roll UI on auto-assigned seat; replicated dice | One die set on table; drawer once |
 | Signal candle | Light toggles once | Replicated light | Single light transition |
 | ST soundscape mood | Audio fade once | Replicated audio | No stacked audio |
-| Phase HUD (D1) | Advance or Play subphase switch | Phase / session overlay update | Updates or documented P10 gap |
+| Phase HUD (D1) | Advance or Play subphase switch | Phase / session overlay update | Table transition OK; label lag with matching world → document P10 |
+| Placements probe (D2) | Host count after Apply | Friend may print different count | **World** figurines match; log Host vs friend counts as P10 if they differ |
 | Rejoin (E2) | Host stable | Auto-reassign same chronicle color | No duplicate bootstrap world I/O |
 
 ## Console probes (Host — hotseat or multiclient)
@@ -64,13 +79,13 @@ print("playSubPhase=" .. tostring(S.getStateVal("playSubPhase")))
 
 **Pass if:** ST actions (phase Advance, scene apply, gameboard Apply, dice spawn) succeed — no silent no-ops.
 
-On **Host** after ST Apply:
+On **Host** after ST Apply (and optionally on **join client** — Preparing Phase D2):
 
 ```lua
 print("npc placements=" .. tostring(#(U.getKeys(S.getStateVal("sessionScene", "npcWorld", "placements") or {}))))
 ```
 
-Join client should read the same count only after save/reload until live state broadcast exists — document mismatch as known gap if observed.
+Join-client count may differ until a live state broadcast exists. If **figurines match** Host, log `P10 D2: Host=N, Friend=M; world matched` and continue — **not** a fail. If the stage disagrees, fail as replication/dual-apply.
 
 After friend join (Host):
 
@@ -88,7 +103,7 @@ Re-run Gameboard smoke Apply/Clear and one Dice suite step after multiplayer-rel
 
 ## Related
 
-- [Preparing For Multiplayer](../Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md) — P1–P10, §2 Phases A–E script, seat + phase notes
+- [Preparing For Multiplayer](../Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md) — P1–P10, §1.1a P10 scoring, §2 Phases A–E script
 - [Phases Overview](../Phases/Phases%20Overview.md) — Intermission→Play→Spotlight→End
 - [Event Listener Policy](../Sychronizing%20Game%20Functionality/Event%20Listener%20Policy.md) — `onPlayerConnect`, phase HUD handlers
 - TOR-284 execution-model remediation — hotseat console probe + corrected policies

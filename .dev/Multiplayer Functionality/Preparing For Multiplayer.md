@@ -48,7 +48,27 @@ Status: current multiplayer authority policy until TOR-144 passes with two real 
 | **P7** | **No dual apply:** one physical channel (light fade, audio fade, spawn, lerp) per intent. After eager apply, prime fingerprint (`Soundscape.markReconciledToCurrentState`) or call `Sync.invalidateReconcileCache` when world may be stale. | See [Dual-apply survey](../Sychronizing%20Game%20Functionality/Dual_apply_survey.md). |
 | **P8** | **Object scripts: no `require("core.*")`** for mutations; thin stubs + `Global.call`. **`GlobalIsStorytellerSteamPlayer` only** for actor-identity gates from object scripts. | Bundled chunks are isolated; orchestration lives in Global. |
 | **P9** | **Document new event handlers** in [Event Listener Policy](../Sychronizing%20Game%20Functionality/Event%20Listener%20Policy.md) with delivery (host-executed event vs clicker) and tier (A/B/C). | Reviewers and future you need the inventory. |
-| **P10** | **Live `gameState` broadcast gap** may still affect join-client HUD reads; fix via sync bridge, not execution gates. | Join clients load `gameState` from save on connect but may not receive runtime Lua table updates between saves. |
+| **P10** | **Live `gameState` broadcast gap** — join-client Lua/`S.getStateVal` (and some HUD labels fed from it) may lag Host after runtime mutations; **do not** “fix” with execution gates. See [§1.1a](#11a-p10--live-gamestate-broadcast-gap-known) and Phase D. | Join clients get engine-replicated **world** (objects, lights, audio). Host `gameState` Lua tables are **not** automatically pushed live between saves. |
+
+### 1.1a P10 — live `gameState` broadcast gap (known)
+
+TTS runs **all mod Lua on the Host only**. When the Host writes `gameState` (placement counts, phase string, hunger, scene fields, …), that table lives in **Host script memory**. Join clients automatically receive **physical table replication** (figurines move, lights change, dice appear). They do **not** automatically receive every in-memory `gameState` update until save/reload — or until a deliberate sync/broadcast bridge exists.
+
+**In a friend session this looks like:**
+
+1. Host Applies → Host console `print(#placements)` → `3`
+2. Friend runs the same print → still `0` or an old count
+3. Both still **see** the same three figurines on stage
+
+**How to score it:**
+
+| Observation | Treat as |
+| --- | --- |
+| Table / lights / audio / dice **match** Host; friend’s `S.getStateVal` or a HUD label fed from stale state **differs** | **Document as P10** — **not** a fail for TOR-249 / initial TOR-144 pass |
+| Table **disagrees** with Host (double motion, missing figurines, wrong seat props) | **Fail** — replication / dual-apply / authority bug |
+| Friend click does nothing / ST action silent | **Fail** — routing / steam gate — not P10 |
+
+**Do not** address P10 by reintroducing `isHostClient` / `requireHostForWorldMutation` execution gates. Fix later via a live state sync bridge to join-client HUD reads.
 
 ### 1.2 Essential helper functions
 
@@ -201,11 +221,21 @@ Do these in order. Friend **watches** for double motion, stacked audio, or jitte
 
 ### Phase D — Join HUD, phases & known gaps (~4 min)
 
+**P10 reminder (read before D1/D2):** Friend’s console `S.getStateVal` / some HUD text may lag Host while the **table still looks correct**. That is the known live-`gameState` broadcast gap ([§1.1a](#11a-p10--live-gamestate-broadcast-gap-known)) — **document Host vs friend values**, do **not** fail the pass if the world matches. Fail only if the friend’s **view of the table** disagrees with Host.
+
 | # | Host (you) | Friend | Pass if |
 | --- | --- | --- | --- |
-| D1 | Phases panel: note current top-level phase; optionally switch a **Play** subphase (Main / Downtime / Memoriam) or Advance one step and back if safe | Compare phase label / overlays | Friend sees phase / roman session overlay update for Tier A paths, **or** document P10 gap if world matches but HUD stale |
-| D2 | After B1 Apply, both run: `print(#(U.getKeys(S.getStateVal("sessionScene","npcWorld","placements") or {})))` | Same | **May differ** — document if counts differ (known live-state gap P10); world should still **look** the same |
+| D1 | Phases panel: note current top-level phase; optionally switch a **Play** subphase (Main / Downtime / Memoriam) or Advance one step and back if safe | Compare phase label / overlays **and** what you see on the table (lights, blindfold, theme) | Table transition matches Host once. If phase **label** on friend lags but world matches → **document P10**, still Pass for this gate |
+| D2 | After B1 Apply, both run the probe below; compare numbers **and** stage figurines | Same | Counts **may differ** (P10). Pass if both see the **same figurines**; note Host count vs friend count in the session log |
 | D3 | Friend toggles a **PC-only** panel (e.g. roll control on their seat) | — | Panel opens; **no** ST-only actions exposed (Phases Advance, gameboard Apply, etc.) |
+
+**D2 probe (both machines, `~` Global):**
+
+```lua
+print("placements=" .. tostring(#(U.getKeys(S.getStateVal("sessionScene","npcWorld","placements") or {}))))
+```
+
+**Session log line (copy when counts differ):** `P10 D2: Host placements=N, Friend placements=M; world matched / mismatched.`
 
 ---
 
@@ -227,7 +257,7 @@ Do these in order. Friend **watches** for double motion, stacked audio, or jitte
 | **Blindfold stuck in Play** | Connect policy / `Phases.lowerBlindfoldForConnectingPlayer` — file bug with phase at join |
 | **Duplicate world** (double Apply, audio, dice, phase Advance) | Note scenario id (B0, B1, C2, …); grep handler for dual-apply or missing `Global.call` routing |
 | **Nothing happens on friend click** | Check Tier C routed via `Global.call`; check actor-identity steam gate |
-| **HUD stale but world OK** | Likely live `gameState` gap (P10) — document; fix via sync bridge, not execution gates |
+| **HUD / `S.getStateVal` stale but world OK** | **P10 known gap** — document Host vs friend values; **do not** fail TOR-249; later fix via sync bridge, **not** execution gates ([§1.1a](#11a-p10--live-gamestate-broadcast-gap-known)) |
 | **Hotseat broken (multi-seat solo)** | Regression — verify no dead execution gates blocking mutations |
 
 **Capture for each failure:** scenario letter, Host vs friend, screenshot or console snippet, save name.
@@ -255,9 +285,17 @@ Do these in order. Friend **watches** for double motion, stacked audio, or jitte
 - Connect during **Intermission:** keep loading/session blindfold up. Connect during any other phase: lower blindfold for that player.
 - ST **Advance** mutates state + world on Host only; join clients should see a **single** replicated transition (lights, theme, blindfolds, heal broadcast when entering Play).
 
+### P10 — live `gameState` broadcast gap (known)
+
+Full scoring rules: [§1.1a](#11a-p10--live-gamestate-broadcast-gap-known). Short version for the friend session:
+
+- **World matches, Lua/HUD numbers don’t** → note it as P10; keep going.
+- **World doesn’t match** → real fail (replication / dual-apply).
+- Never “fix” P10 by gating Host Lua behind `isHostClient`.
+
 ### What solo testing will never catch
 
-- Live `gameState` divergence on join client (HUD reads vs Host writes) — P10 sync bridge gap
+- Live `gameState` divergence on join client (HUD / `S.getStateVal` vs Host writes) — P10 sync bridge gap ([§1.1a](#11a-p10--live-gamestate-broadcast-gap-known))
 - PC-initiated Tier C without `Global.call` routing
 - Race conditions on simultaneous clicks ([Scripting Odds & Ends](https://steamcommunity.com/sharedfiles/filedetails/?id=2036657795))
 - Per-client UI visibility mismatches (XmlUI `visibility` targeting)
@@ -273,8 +311,8 @@ Do these in order. Friend **watches** for double motion, stacked audio, or jitte
 ### Scope discipline for the first pass
 
 - Do **not** expand into Remote Play or ST panel on friend's machine in v1.
-- Do **not** treat HUD `gameState` count mismatches (D2) as release blockers if the **world** matches — track as broadcast follow-up under P10 live `gameState` broadcast policy.
-- Optional deeper follow-ups (second session): full Advance loop Intermission→Play→Spotlight→End, Memoriam LUT (**TOR-101**), absent-player presence (**TOR-293**).
+- Do **not** treat D2 `placements` count mismatches (or similar `S.getStateVal` lag) as release blockers if the **world** matches — log as **P10** ([§1.1a](#11a-p10--live-gamestate-broadcast-gap-known)).
+- Optional deeper follow-ups (second session): full Advance loop Intermission→Play→Spotlight→End, Memoriam LUT (**TOR-101**), absent-player presence (**TOR-293**), live `gameState` sync bridge (P10).
 - After first pass, promote full [Multiplayer-E2E](../E2E%20Playbooks/Multiplayer-E2E.md) matrix and domain playbooks (Gameboard, Dice, Scenes) with friend time budgeted.
 
 ### When to re-run this pass
@@ -285,4 +323,4 @@ Do these in order. Friend **watches** for double motion, stacked audio, or jitte
 
 ### Friend briefing (copy-paste)
 
-> You'll join my TTS game for ~25–30 minutes. Your seat color should assign automatically from your Steam account — tell me which color you land on (expect **\<COLOR\>**). Watch for things moving twice, weird double sound fades, a stuck blindfold, or errors in chat. I'll ask you to click Roll once on your seat. You don't need to learn the mod — just tell me if something looks wrong compared to my screen.
+> You'll join my TTS game for ~25–30 minutes. Your seat color should assign automatically from your Steam account — tell me which color you land on (expect **\<COLOR\>**). Watch for things moving twice, weird double sound fades, a stuck blindfold, or errors in chat. If I ask you to run a short console line and the **number** differs from mine but the **table looks the same**, that's a known quirk — just tell me both numbers. I'll ask you to click Roll once on your seat. You don't need to learn the mod — just tell me if something looks wrong compared to my screen.
