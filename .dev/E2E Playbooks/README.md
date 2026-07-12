@@ -85,6 +85,8 @@ Full rules, layout (100-char banner with spaces around text), and a copy-paste t
 | [Dice-E2E-Guide.md](Dice-E2E-Guide.md) | Dice E2E reference: helpers, conventions, prerequisites, sign-off |
 | [Gameboard-E2E.md](Gameboard-E2E.md) | Gameboard E2E — streamlined `U.RunSequence` blocks only (run from Suite 0; see Guide for workflow) |
 | [Gameboard-E2E-Guide.md](Gameboard-E2E-Guide.md) | Gameboard reference: fixture constants, macro helpers, smoke/full/deferred tables, sign-off |
+| [Multiplayer-Session.md](Multiplayer-Session.md) | **Author** Host + join-client session script (TOR-249 / TOR-144) |
+| [Multiplayer-E2E.md](Multiplayer-E2E.md) | Agent coverage checklist + console probes for multiclient |
 
 ## Related docs
 
@@ -95,8 +97,11 @@ Full rules, layout (100-char banner with spaces around text), and a copy-paste t
 
 ## TOR-144 (multiplayer E2E)
 
-**Human gate:** **TOR-249** (run initial multiclient session with a friend on a **second machine** via Steam invite). Same-PC multi-client (**TOR-248**) was **Canceled** — not viable.
+**Human gate:** **TOR-249** (friend on a **second machine** via Steam invite). Same-PC multi-client (**TOR-248**) was **Canceled**.
 
-**Shipped prerequisites (solo):** **TOR-284** (execution model), **TOR-345** (Steam auto seat on connect + load), **TOR-143** / **TOR-319** (phase sequence + Intermission connect blindfold). Complete Preparing §1.5–§1.6 and keep Dice/Gameboard/Scenes smokes green before inviting.
+**Author runbook:** **[Multiplayer-Session.md](Multiplayer-Session.md)** — Phases A–E, P10 scoring, friend briefing.
 
-After solo suites pass, run **[Multiplayer-E2E.md](Multiplayer-E2E.md)** (matrix) using the step script in [Preparing For Multiplayer §2](../Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md) — Host + join client; verify auto-seat, phase connect blindfold, no duplicate world I/O.
+**Agent checklist:** [Multiplayer-E2E.md](Multiplayer-E2E.md) — coverage map + hotseat probes.  
+**Policy:** [Preparing For Multiplayer](../Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md).
+
+**Shipped prerequisites (solo):** **TOR-284**, **TOR-345**, **TOR-143** / **TOR-319**. Complete Preparing §1.5–§1.6 and keep Dice/Gameboard/Scenes smokes green before inviting.

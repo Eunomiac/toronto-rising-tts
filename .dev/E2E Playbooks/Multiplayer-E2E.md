@@ -3,68 +3,50 @@
 ## Agent Routing
 
 Read this when:
-- validating host/join-client behavior, authority boundaries, replication, or multiplayer-sensitive workflows
-- touching `Sync.*`, event listener dispatch, player identity gates, Storyteller-only controls, seat auto-assign, or phase Advance/connect
+- validating whether a change needs multiclient proof
+- looking up coverage / console probes for TOR-144
+- updating agent-facing multiplayer verification (not the live friend script)
 
-Source of truth:
-- `.dev/Multiplayer Functionality/Preparing For Multiplayer.md` (§1 policies, §2 Phases A–E script)
-- `.dev/Phases/Phases Overview.md` (TOR-143 sequence + TOR-319 connect blindfold)
-- `.dev/Sychronizing Game Functionality/Event Listener Policy.md`
-- relevant Dice/Gameboard/Scenes E2E playbooks for domain-specific flows
+**Author runbook (run during the friend call):** [Multiclient Session Script](Multiplayer-Session.md) — Phases A–E, P10 scoring, friend briefing, outcomes (**TOR-249**).
+
+**Policy:** [Preparing For Multiplayer](../Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md) — P1–P10, solo audits, high-risk paths.
+
+Also: [Phases Overview](../Phases/Phases%20Overview.md), [Event Listener Policy](../Sychronizing%20Game%20Functionality/Event%20Listener%20Policy.md), Dice/Gameboard/Scenes E2E for solo prerequisites.
 
 Verification:
-- two real TTS clients: Host plus at least one join client (**TOR-249** human gate)
-- solo Host regression only after the multiclient matrix is not required for the touched behavior
+- two real TTS clients via [Multiclient Session Script](Multiplayer-Session.md)
+- solo Host regression when the multiclient matrix is not required for the touched behavior
 
-**Prerequisites:** Solo Host suites pass ([Dice-E2E](Dice-E2E.md), [Gameboard-E2E](Gameboard-E2E.md), [Scenes-E2E](Scenes-E2E.md)). Actor-identity gates and sync contracts per [Preparing For Multiplayer](../Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md), [Event Listener Policy](../Sychronizing%20Game%20Functionality/Event%20Listener%20Policy.md). Host-execution gating removed per **TOR-284**. Seat auto-assign (**TOR-345**) and phase redesign (**TOR-143** / **TOR-319**) shipped — exercise them in this pass.
+**Prerequisites:** Solo Host suites pass ([Dice-E2E](Dice-E2E.md), [Gameboard-E2E](Gameboard-E2E.md), [Scenes-E2E](Scenes-E2E.md)). **TOR-284**, **TOR-345**, **TOR-143** / **TOR-319** shipped.
 
-**Setup:** Two real TTS clients — **Host** (Storyteller machine) + **Join client** (PC). Friend's Steam ID must be in `C.PlayerData` with the intended color. Prefer Host in **Play** (or Advance from Intermission after join). Save & Play from repo on Host; join from invite. Full step tables: Preparing §2.
+Status: agent checklist; step tables live only in Multiclient Session Script (avoid dual scripts).
 
-## Multiclient validation gates (required pass)
+## Multiclient validation gates
 
-Mechanical changes through **TOR-284**, **TOR-345**, **TOR-143**, and prior sync work are **not fully validated** until this playbook runs with **two or more connected clients**. Solo Host / hotseat regression alone is insufficient for replication, auto-seat on a second machine, phase connect blindfold, and HUD-state gaps.
+Mechanical sync work is **not fully validated** until [Multiclient Session Script](Multiplayer-Session.md) runs with **two or more connected clients**. Solo Host / hotseat alone is insufficient.
 
-**Pass criteria:**
+**Pass criteria** (same as the session script): no duplicate world mutations; ST-only steam gates; auto-seat; connect blindfold policy; **P10** stale Lua/HUD with matching world = document, not fail.
 
-- Every row in the verification matrix below is exercised with Host + at least one join client (or explicitly deferred with reason).
-- No duplicate world mutations (double Apply, stacked audio fades, duplicate dice spawns, double phase enter effects).
-- ST-only actions rejected when triggered from a PC seat (`isStorytellerSteamPlayer`).
-- Join client auto-seats to chronicle color (or White if unregistered).
-- Connect blindfold matches phase policy (Intermission keeps up; other phases lower).
-- **P10:** If join-client `S.getStateVal` / HUD labels lag Host but the **table looks the same**, document it — **do not fail** the initial pass. See [P10 known gap](#p10--live-gamestate-broadcast-gap-known) below and Preparing §1.1a.
+## Coverage checklist
 
-## P10 — live `gameState` broadcast gap (known)
+Maps scenarios → session step ids. **Do not** treat this as a second runbook — execute [Multiclient Session Script](Multiplayer-Session.md).
 
-TTS runs all mod Lua on the **Host**. Engine replication covers **world** (objects, lights, audio). Host `gameState` Lua is **not** automatically broadcast to join clients between saves.
-
-| Observation | Score |
-| --- | --- |
-| World matches Host; friend’s `S.getStateVal` or state-fed HUD text differs | **Document P10** — Pass for TOR-249 / initial TOR-144 |
-| World disagrees (double Apply, missing props, wrong layout) | **Fail** |
-| Friend click no-ops | **Fail** (routing/steam) — not P10 |
-
-**Do not** “fix” P10 with `isHostClient` / execution gates. Future: live state sync bridge.
-
-**Session log template:** `P10 <scenario>: Host=…, Friend=…; world matched.`
-
-## Verification matrix
-
-| Scenario | Host expected | Join client expected | Pass if |
-| --- | --- | --- | --- |
-| Join mid-session | Full bootstrap on Host load; `onPlayerConnect` auto-assign | World/objects replicate from Host; join client does **not** run mod Lua; seat changes via Host `changeColor` | Layout/audio match Host view; no orphan moves |
-| Steam auto-seat (TOR-345) | `M.tryAutoAssignSeatFromChronicle` on connect; load uses `M.assignAllConnectedSeatsFromChronicle` | Lands on `C.PlayerData[steam].color` without manual pick | Expected PC color (or White if unregistered); ST stays Black |
-| Connect blindfold (TOR-319) | Intermission: leave blindfold; else `Phases.lowerBlindfoldForConnectingPlayer` | Blindfold up only in Intermission | Matches phase at join time |
-| ST Advance → Play (B0) | `Phases.advanceNext` / enter Play once (lights, theme, blindfolds, optional heal broadcast) | Replicated transition | Single transition; no stacked audio/lights |
-| ST Apply gameboard | Tokens → state → figurines move once | Replicated state | Single stage layout; no fight/jitter |
-| ST Clear gameboard | Placements cleared once | Replicated clear | Palette/board state matches Host |
-| ST token drop (palette/anchor) | Snap/light coroutine once | Replicated token pose | Token settles once |
-| ST scene change | `Sync.full` reconcile once; may silent-promote to Play | Scene/light/audio replicate | **World** matches Host once. HUD label lag with matching world → document P10 |
-| PC roll (join client clicks) | Host spawns/releases dice via `Global.call` | Roll UI on auto-assigned seat; replicated dice | One die set on table; drawer once |
-| Signal candle | Light toggles once | Replicated light | Single light transition |
-| ST soundscape mood | Audio fade once | Replicated audio | No stacked audio |
-| Phase HUD (D1) | Advance or Play subphase switch | Phase / session overlay update | Table transition OK; label lag with matching world → document P10 |
-| Placements probe (D2) | Host count after Apply | Friend may print different count | **World** figurines match; log Host vs friend counts as P10 if they differ |
-| Rejoin (E2) | Host stable | Auto-reassign same chronicle color | No duplicate bootstrap world I/O |
+| Scenario | Session step | Pass if |
+| --- | --- | --- |
+| Join mid-session | A1–A3, A5 | Layout/audio match; no orphan bootstrap moves |
+| Steam auto-seat (TOR-345) | A1–A2, E2 | Chronicle color (or White); ST stays Black |
+| Connect blindfold (TOR-319) | A4 | Up in Intermission; lower otherwise |
+| ST Advance → Play | B0 | Single transition; no stacked audio/lights |
+| ST Apply / Clear gameboard | B1–B2 | Single stage layout / clear |
+| ST token drop | B3 | Token settles once |
+| ST scene change | B4 | World matches; HUD lag → document P10 |
+| Signal candle | B5 | One light transition |
+| ST soundscape mood | B6 | One fade |
+| PC roll (join client) | C1–C4 | One die set; drawer once |
+| Phase HUD | D1 | Table OK; label lag → document P10 |
+| Placements probe | D2 | Figurines match; count mismatch → P10 log |
+| PC-only UI | D3 | No ST-only controls exposed |
+| Rejoin | E2 | Auto-seat; no bootstrap thrash |
 
 ## Console probes (Host — hotseat or multiclient)
 
@@ -79,13 +61,13 @@ print("playSubPhase=" .. tostring(S.getStateVal("playSubPhase")))
 
 **Pass if:** ST actions (phase Advance, scene apply, gameboard Apply, dice spawn) succeed — no silent no-ops.
 
-On **Host** after ST Apply (and optionally on **join client** — Preparing Phase D2):
+After ST Apply (session **D2**; optional on join client):
 
 ```lua
 print("npc placements=" .. tostring(#(U.getKeys(S.getStateVal("sessionScene", "npcWorld", "placements") or {}))))
 ```
 
-Join-client count may differ until a live state broadcast exists. If **figurines match** Host, log `P10 D2: Host=N, Friend=M; world matched` and continue — **not** a fail. If the stage disagrees, fail as replication/dual-apply.
+If figurines match and counts differ → `P10 D2: Host=N, Friend=M; world matched` — not a fail.
 
 After friend join (Host):
 
@@ -95,16 +77,16 @@ for _, p in ipairs(Player.getPlayers()) do
 end
 ```
 
-**Pass if:** Friend color matches chronicle `C.PlayerData` entry (or White if unregistered).
+**Pass if:** Friend color matches `C.PlayerData` (or White if unregistered).
 
 ## Regression (solo Host)
 
-Re-run Gameboard smoke Apply/Clear and one Dice suite step after multiplayer-related changes. Hotseat with **2+ seats** is the minimum regression when touching ST panels, phases, seat assign, or `Sync.*`. Solo cannot fully prove TOR-345 join-client assign or Intermission connect blindfold on a second machine.
+Re-run Gameboard smoke Apply/Clear and one Dice suite step after multiplayer-related changes. Hotseat with **2+ seats** is the minimum when touching ST panels, phases, seat assign, or `Sync.*`. Solo cannot fully prove TOR-345 join-client assign or Intermission connect blindfold on a second machine.
 
 ## Related
 
-- [Preparing For Multiplayer](../Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md) — P1–P10, §1.1a P10 scoring, §2 Phases A–E script
-- [Phases Overview](../Phases/Phases%20Overview.md) — Intermission→Play→Spotlight→End
-- [Event Listener Policy](../Sychronizing%20Game%20Functionality/Event%20Listener%20Policy.md) — `onPlayerConnect`, phase HUD handlers
-- TOR-284 execution-model remediation — hotseat console probe + corrected policies
-- TOR-249 — human gate to run this pass with a friend
+- [Multiclient Session Script](Multiplayer-Session.md) — author runbook
+- [Preparing For Multiplayer](../Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md) — P1–P10
+- [Phases Overview](../Phases/Phases%20Overview.md)
+- [Event Listener Policy](../Sychronizing%20Game%20Functionality/Event%20Listener%20Policy.md)
+- **TOR-249** — human gate to run the session

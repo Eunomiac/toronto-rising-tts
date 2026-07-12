@@ -14,7 +14,7 @@ Source of truth:
 Verification:
 - Save & Play → Host Phases panel → **Advance →** through Intermission → Play → Spotlight → End → Intermission
 - Confirm Intermission dark lights + theme; Play heal broadcast when applicable; End raises blindfolds + increments sessionNum
-- Solo Host verified only until **TOR-144** (multiplayer E2E) — multiclient connect blindfold + Advance replication: [Multiplayer-E2E](../E2E%20Playbooks/Multiplayer-E2E.md) / Preparing §2 (A4, B0, D1)
+- Solo Host verified only until **TOR-144** (multiplayer E2E) — multiclient connect blindfold + Advance replication: [Multiclient Session Script](../E2E%20Playbooks/Multiplayer-Session.md) (A4, B0, D1)
 
 Status: current (TOR-143)
 

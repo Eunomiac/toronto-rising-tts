@@ -11,7 +11,7 @@ alwaysApply: true
 
 Canonical policies **P1–P10**, pre-flight checklist, and first-session script: [`.dev/Multiplayer Functionality/Preparing For Multiplayer.md`](../../.dev/Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md) §1.
 
-Verification playbook: [`.dev/E2E Playbooks/Multiplayer-E2E.md`](../../.dev/E2E%20Playbooks/Multiplayer-E2E.md).
+Verification playbook: [`.dev/E2E Playbooks/Multiplayer-Session.md`](../../.dev/E2E%20Playbooks/Multiplayer-Session.md) (author session). Agent checklist: [`.dev/E2E Playbooks/Multiplayer-E2E.md`](../../.dev/E2E%20Playbooks/Multiplayer-E2E.md).
 
 **Rule of thumb:** *One Lua brain (the host). Stop asking "which machine am I." Only ask "which player did this?" and "who should see this UI?"*
 
@@ -26,7 +26,7 @@ Verification playbook: [`.dev/E2E Playbooks/Multiplayer-E2E.md`](../../.dev/E2E%
 7. **No dual apply** — one physical channel per intent; fingerprint or invalidate when needed.
 8. **Object scripts:** no `require("core.*")` for mutations — pattern: `objects/npc_control_board.ttslua`, `objects/dice_bag.ttslua`.
 9. **New handlers:** add a row to [Event Listener Policy](../../.dev/Sychronizing%20Game%20Functionality/Event%20Listener%20Policy.md) (delivery + tier).
-10. **P10 live `gameState` broadcast gap** — join-client `S.getStateVal` / state-fed HUD may lag Host while the replicated **world** still matches. Document during multiclient tests; fix via sync bridge, **not** execution gates. Scoring: [Preparing §1.1a](../../.dev/Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md#11a-p10--live-gamestate-broadcast-gap-known).
+10. **P10 live `gameState` broadcast gap** — join-client `S.getStateVal` / state-fed HUD may lag Host while the replicated **world** still matches. Document during multiclient tests; fix via sync bridge, **not** execution gates. Scoring: [Preparing §1.1a](../../.dev/Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md#11a-p10--live-gamestate-broadcast-gap-known), [Multiclient Session Script](../../.dev/E2E%20Playbooks/Multiplayer-Session.md#p10-known--do-not-fail-the-pass-for-this-alone).
 
 ## Agent completion checklist (Lua / sync changes)
 
