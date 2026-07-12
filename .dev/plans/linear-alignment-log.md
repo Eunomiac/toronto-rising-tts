@@ -520,5 +520,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-12 | DONE | TOR-288 | Red/Brown famulus companion clicks (Purple deferred) |
 | 2026-07-12 | DONE | TOR-367 | Stage lerp diagnostics; path confirmed wired |
 | 2026-07-12 | Focus | Stack | #1 TOR-343, #2 TOR-346, #3 TOR-365, #4 TOR-328 (Priority Fixes batch Done) |
+| 2026-07-12 | UPDATE | TOR-344 | Restore always uses C.Tables absolutes; remove snapshot-first path |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
