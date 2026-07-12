@@ -314,6 +314,7 @@ _Blocked: author must define data binding approach before substantial implementa
 - [x] **Dice E2E I1/I3 canRerollHunger assert:** Expect `rollPolicy.wpCanRerollHunger` (not stale `rollOptions`) after `RC.setRollOptions`. _(TOR-352)_
 - [x] **Dice E2E I3/I4 under-cap WP Confirm:** HUMAN cues require Confirm when fewer dice are R’d than `numberOfDiceRerolled` (auto POST_ROLL only at full cap). _(TOR-354)_
 - [x] **Dice E2E J2 Open before settle:** After SETUP Hunger surge, `rollE2eOpenRoll` before `rollE2eSettlePresetCheck`. _(TOR-355)_
+- [x] **Dice E2E Suite K seat prep before bag HUMAN:** `rollE2eSeatPrep` after cancel / before bag clicks (K1b+); K2a/K2b cue SETUP do-not-Open. _(TOR-356)_
 - [ ] **Multiplayer E2E playbook:** Pre-invite solo checklist + multiclient test plan (Preparing §1–§2; sub-issue of TOR-141). Initial pass when friend available — _(TOR-144)_; execution _(TOR-249 — External Todo, human gate)_
 - [x] ~~Multi-client TTS session workflow (same PC)~~ — **Canceled:** not viable; use Steam invite + second machine. _(TOR-248)_
 - [x] **Phase 1 zones integration test** — **Canceled:** scripting zones module removed; Toronto Rising uses hand zones only. _(TOR-11)_

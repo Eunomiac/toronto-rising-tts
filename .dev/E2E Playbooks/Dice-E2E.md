@@ -929,6 +929,7 @@ U.RunSequence({
   rollCancelAll,
   function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K1a2 hunger", { hunger = 0, skipOpen = true }) end,
   function()
+    rollE2eSeatPrep("Brown")
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] Left-click Hunger bag 1 time (surge off)", 3)
   end
@@ -948,6 +949,8 @@ U.RunSequence({
   function() printHeader("K1b - Rouse bag to ROUSE + 1 die", 2) end,
   rollCancelAll,
   function()
+    -- rollCancelAll returns Host to Black; Brown bags only accept Brown seat.
+    rollE2eSeatPrep("Brown")
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] Left-click Rouse bag 1 time", 3)
   end
@@ -967,6 +970,7 @@ U.RunSequence({
   function() printHeader("K1c - Normal bag to STANDARD", 2) end,
   rollCancelAll,
   function()
+    rollE2eSeatPrep("Brown")
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] Left-click Normal bag 1 time", 3)
   end
@@ -986,8 +990,9 @@ U.RunSequence({
   function() printHeader("K2a - Normal bag left adds die", 2) end,
   function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2a", { hunger = 0, skipOpen = true }) end,
   function()
+    rollE2eSeatPrep("Brown")
     M.setCamera("ALL", "rollBrown")
-    printHeader("[HUMAN] Left-click Normal bag 2 times", 3)
+    printHeader("[HUMAN] Left-click Normal bag 2 times (SETUP — do not Open)", 3)
   end
 })
 ```
@@ -999,8 +1004,10 @@ U.RunSequence({
   function() printHeader("K2b - Normal bag right removes last normal/hunger", 2) end,
   function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2b", { hunger = 0, skipOpen = true }) end,
   function()
+    -- Re-seat after any ST-dash glance; bags are seat-gated (same class as K1b).
+    rollE2eSeatPrep("Brown")
     M.setCamera("ALL", "rollBrown")
-    printHeader("[HUMAN] Left-click Normal bag 2 times, then right-click Normal bag 1 time", 3)
+    printHeader("[HUMAN] Left-click Normal bag 2 times, then right-click Normal bag 1 time (SETUP — do not Open)", 3)
   end
 })
 ```
@@ -1015,6 +1022,7 @@ U.RunSequence({
   function() printHeader("K2c - Hunger bag left (surge off) to Blood Surge", 2) end,
   function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2c surge", { hunger = 0, skipOpen = true }) end,
   function()
+    rollE2eSeatPrep("Brown")
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] Left-click Hunger bag 1 time (surge not active)", 3)
   end
@@ -1034,6 +1042,7 @@ U.RunSequence({
   function() printHeader("K2d - Hunger bag left (surge on) adds Blood Surge rouse", 2) end,
   function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2d surge rouse", { hunger = 0, skipOpen = true }) end,
   function()
+    rollE2eSeatPrep("Brown")
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] Left-click Hunger bag 1 time (surge on), then left-click Hunger bag 1 time again", 3)
   end
@@ -1053,6 +1062,7 @@ U.RunSequence({
   function() printHeader("K2e - Rouse bag left adds rouse", 2) end,
   function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2e rouse", { hunger = 0, skipOpen = true }) end,
   function()
+    rollE2eSeatPrep("Brown")
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] Left-click Rouse bag 1 time", 3)
   end
@@ -1069,6 +1079,7 @@ U.RunSequence({
   function() printHeader("K2f - Hunger bag right with surge active (full undo)", 2) end,
   function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2f surge off", { hunger = 0, skipOpen = true }) end,
   function()
+    rollE2eSeatPrep("Brown")
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] Left-click Hunger bag 1 time (surge on), then right-click Hunger bag 1 time", 3)
   end
@@ -1088,6 +1099,7 @@ U.RunSequence({
   function() printHeader("K2f2 - Hunger bag right (surge off) is no-op", 2) end,
   function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2f2 hunger right noop", { hunger = 0, skipOpen = true }) end,
   function()
+    rollE2eSeatPrep("Brown")
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] Left-click Normal bag 1 time, then right-click Hunger bag 1 time", 3)
   end
@@ -1104,6 +1116,7 @@ U.RunSequence({
   function() printHeader("K2h - Blood Surge rouse + manual rouse coexist", 2) end,
   function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K2h compound rouse", { hunger = 0, skipOpen = true }) end,
   function()
+    rollE2eSeatPrep("Brown")
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] Left-click Hunger bag 1 time (activate surge), then left-click Rouse bag 1 time", 3)
   end
@@ -1128,6 +1141,7 @@ U.RunSequence({
     rollConfirm("Brown", { phase = "setup" })
   end,
   function()
+    rollE2eSeatPrep("Brown")
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] SETUP: 'Continue Assembling — Awaiting Storyteller'; ROLL grey/disabled; Hunger bag adds pool die", 3)
   end
@@ -1142,6 +1156,7 @@ U.RunSequence({
     rollConfirm("Brown", { phase = "preRoll" })
   end,
   function()
+    rollE2eSeatPrep("Brown")
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] PRE_ROLL: add Normal die if pool empty; ROLL green when pool non-empty; Hunger bag toggles Blood Surge", 3)
   end
@@ -1159,6 +1174,7 @@ U.RunSequence({
   function() printHeader("K2g-Purple - Oblivion-Rouse hides Rouse bag", 2) end,
   function() rollTest("Purple", 2, C.RollType.STANDARD, "E2E K2g Purple", { hunger = 0, skipOpen = true }) end,
   function()
+    rollE2eSeatPrep("Purple")
     M.setCamera("ALL", "rollPurple")
     printHeader("[HUMAN] Left-click Oblivion-Rouse bag 1 time", 3)
   end
@@ -1176,6 +1192,7 @@ U.RunSequence({
   function() printHeader("K3a - Normal bag promotes to compound standard roll", 2) end,
   function() rollTest("Brown", 1, C.RollType.ROUSE, "E2E K3a", { skipOpen = true }) end,
   function()
+    rollE2eSeatPrep("Brown")
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] Left-click Rouse bag 2 times, then left-click Normal bag 1 time", 3)
   end
@@ -1198,6 +1215,7 @@ U.RunSequence({
   function() printHeader("K3b - Rouse bag right removes last rouse", 2) end,
   function() rollTest("Brown", 1, C.RollType.ROUSE, "E2E K3b", { skipOpen = true }) end,
   function()
+    rollE2eSeatPrep("Brown")
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] Left-click Rouse bag 2 times, then right-click Rouse bag 1 time", 3)
   end
@@ -1214,6 +1232,7 @@ U.RunSequence({
   function() printHeader("K3c - Oblivion dedicated: Normal promotes (Purple)", 2) end,
   function() rollTest("Purple", 1, C.RollType.ROUSE_OBLIVION, "E2E K3c", { skipOpen = true }) end,
   function()
+    rollE2eSeatPrep("Purple")
     M.setCamera("ALL", "rollPurple")
     printHeader("[HUMAN] Left-click Oblivion-Rouse bag 1 time, then left-click Normal bag 1 time", 3)
   end
@@ -1236,6 +1255,7 @@ U.RunSequence({
   function() printHeader("K4 - Empty pool right-click cancels roll", 2) end,
   function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E K4", { hunger = 0, skipOpen = true }) end,
   function()
+    rollE2eSeatPrep("Brown")
     M.setCamera("ALL", "rollBrown")
     printHeader("[HUMAN] Left-click Normal bag 2 times, then right-click Normal bag 2 times", 3)
   end
