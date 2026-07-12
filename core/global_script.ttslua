@@ -399,10 +399,10 @@ local function hideStartupLoadingOverlays()
 end
 
 --- Exposed for core.phases Play-enter / connect policy (TOR-143 / TOR-319).
+--- Top-level Global-script function only — do not assign onto TTS `Global` userdata.
 function hideStartupLoadingOverlaysForPhases()
     hideStartupLoadingOverlays()
 end
-Global.hideStartupLoadingOverlaysForPhases = hideStartupLoadingOverlaysForPhases
 
 local function seatAssignmentPlayerKey(player)
     if player == nil or not U.isPlayer(player) then

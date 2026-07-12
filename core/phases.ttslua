@@ -129,15 +129,19 @@ function Phases.raisePlayerBlindfolds(_ctx)
     return true
 end
 
+local function hideStartupOverlaysFromPhases()
+    -- Global-script top-level only (`_G`); never index TTS `Global` userdata.
+    local fn = rawget(_G, "hideStartupLoadingOverlaysForPhases")
+    if type(fn) == "function" then
+        fn()
+    end
+end
+
 --- Lower transition blindfolds + hide startup loading overlay.
 function Phases.lowerPlayerBlindfolds(_ctx)
     local HUDBF = require("core.hud_blindfold")
     HUDBF.endTransition()
-    if type(Global) == "table" and type(Global.hideStartupLoadingOverlaysForPhases) == "function" then
-        Global.hideStartupLoadingOverlaysForPhases()
-    elseif type(_G.hideStartupLoadingOverlaysForPhases) == "function" then
-        _G.hideStartupLoadingOverlaysForPhases()
-    end
+    hideStartupOverlaysFromPhases()
     return true
 end
 
@@ -170,11 +174,7 @@ function Phases.lowerBlindfoldForConnectingPlayer(player)
     if type(HO.syncAll) == "function" then
         HO.syncAll()
     end
-    if type(Global) == "table" and type(Global.hideStartupLoadingOverlaysForPhases) == "function" then
-        Global.hideStartupLoadingOverlaysForPhases()
-    elseif type(_G.hideStartupLoadingOverlaysForPhases) == "function" then
-        _G.hideStartupLoadingOverlaysForPhases()
-    end
+    hideStartupOverlaysFromPhases()
 end
 
 function Phases.applyAllLightsDark(_ctx)
