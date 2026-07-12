@@ -1,8 +1,11 @@
 "use strict";
 
 /**
- * Normalizes unicode minus (U+2212) → ASCII hyphen in `C.Sites` `offsetXY` strings.
- * Run from repo root: node .dev/scripts/normalize_sites_offset_xy.js
+ * Normalize unicode minus (U+2212) → ASCII hyphen `-` in `lib/constants.ttslua`.
+ * Google Sheet / copy-paste often injects U+2212 into numeric strings (e.g. Sites offsetXY).
+ *
+ * Run: npm run constants:normalize-minus
+ * Also runs as part of `npm run build`.
  */
 
 const fs = require("fs");
@@ -21,4 +24,4 @@ if (!source.includes(UNICODE_MINUS)) {
 const normalized = source.split(UNICODE_MINUS).join("-");
 const count = (source.length - normalized.length) / UNICODE_MINUS.length;
 fs.writeFileSync(constantsPath, normalized, "utf8");
-console.log(`Normalized ${count} unicode minus character(s) in lib/constants.ttslua offsetXY values.`);
+console.log(`Normalized ${count} unicode minus character(s) in lib/constants.ttslua.`);

@@ -496,5 +496,14 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-10 | DONE | TOR-333 | NPC empty-seat panel gating + seat-row drop assign/presence sync; E2E canToggleNpcSeat |
 | 2026-07-10 | CREATE + DONE | TOR-336 | Stale Hunger overlay + cross-seat smoke fingerprint skip; force sync after layout |
 | 2026-07-10 | UPDATE | TOR-331–335 | Author regression follow-ups: bag vis, surge ghosts, ST empty pool, seat drop presence-only, WP Take Half + modal coupling |
+| 2026-07-11 | SHIP | TOR-342 | `npm run constants:normalize-minus` wired into `npm run build`; extends TOR-137 |
+| 2026-07-11 | CREATE | TOR-343 | CSHEET pages all hide — keep ≥2 visible; Character Sheets Bug High; parent TOR-38 |
+| 2026-07-11 | CREATE | TOR-346 | Scene change HUD stale until Scenes panel; Scenes Bug High; parent TOR-33; relatedTo TOR-314 |
+| 2026-07-11 | CREATE | TOR-345 | Steam ID auto seat colors (multiclient gate); Players Bug High; blocks TOR-249; relatedTo TOR-94/293/144 |
+| 2026-07-11 | CREATE | TOR-344 | ST dice drawer absolute X/Z per table; Dice Feature Medium; parent TOR-31; relatedTo TOR-302 |
+| 2026-07-11 | UPDATE | TOR-143 | Phase sequence Intermission→Play→Spotlight→End; Play Main/Downtime/Memoriam; High; blocks TOR-249 |
+| 2026-07-11 | UPDATE | TOR-319 | Align Intermission slice — advance to Play (not Start) |
+| 2026-07-11 | UPDATE | TOR-249 | blockedBy TOR-345 + TOR-143 |
+| 2026-07-11 | Focus | Stack | #1 TOR-343, #2 TOR-346, #3 TOR-345, #4 TOR-149, #5 TOR-328, #6 TOR-143 (TOR-331–335 Done) |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
