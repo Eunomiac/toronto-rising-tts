@@ -875,7 +875,7 @@ U.RunSequence({
   function() rollTest("Brown", 2, C.RollType.STANDARD, "E2E J2 Surge compound", { hunger = 0, skipOpen = true }) end,
   function()
     M.setCamera("ALL", "rollBrown")
-    printHeader("[HUMAN] Left-click Hunger bag 1 time", 3)
+    printHeader("[HUMAN] Left-click Hunger bag 1 time (SETUP / Awaiting Storyteller — Open is automated next)", 3)
   end
 })
 ```
@@ -885,9 +885,14 @@ U.RunSequence({
   rollE2eWaitForDiceTray,
   function()
     rollConfirm("Brown", {
+      phase = "setup",
       meta = { bloodSurgeActive = true },
       pool = { bloodSurgeRouse = 1, normal = 2, hunger = 0 },
     })
+  end,
+  function()
+    -- skipOpen left roll in SETUP for bag surge; settle needs PRE_ROLL (TOR-355).
+    rollE2eOpenRoll("Brown")
   end,
   function()
     return rollE2eSettlePresetCheck("Brown", { normal = { 7, 7 }, bloodSurgeRouse = { 4 } }, { skipSpawn = true })
