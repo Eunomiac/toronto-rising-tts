@@ -3714,6 +3714,9 @@ end
 -- @param value string|nil
 -- @param id string|nil
 function HUD_runtest_step(player, value, id)
+    if not requireStorytellerForMutation(player, "HUD_runtest_step") then
+        return
+    end
     if value == nil then
         runtestStepDraft = "1"
         return
