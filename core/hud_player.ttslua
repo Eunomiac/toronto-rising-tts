@@ -78,11 +78,6 @@ local lastLocationDockUiCache = {}
 --- seatColor -> last applied offsetXY string for map draggable (skip redundant Global UI writes).
 local mapDraggableLastOffsetStrBySeat = {}
 
---- hudSeat -> { [id\0attr] = last string value } for Prince's Court tracker boxes.
-local lastPrincesCourtTrackerUiByHudSeat = {}
-
---- "panelSeat\0hudSeat" -> fingerprint of tracker inputs (skip XmlUI when unchanged).
-local lastPrincesCourtTrackerFpByColumn = {}
 --- hudSeatColor -> (elementId .. "\0" .. attrName) -> last applied attribute string for Prince's Court page-1 trackers.
 local lastPrincesCourtTrackerUiByHudSeat = {}
 
