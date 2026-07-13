@@ -30,16 +30,16 @@
   <Panel class="hud_map_center_container"
     preferredWidth="1225"
     flexibleWidth="0"
-    minHeight="2100"
+    minHeight="2500"
     rectAlignment="MiddleCenter"
-    preferredHeight="2100"
-    offsetXY="0 -500"
+    preferredHeight="2500"
+    offsetXY="0 -400"
     flexibleHeight="0"
     color="rgba(0, 0, 0, 1)"
   />
 
   <Panel class="hud_map_draggable_container"
-    height="1600"
+    height="2000"
     width="1225"
     allowDragging="false"
     restrictDraggingToParentBounds="true"
@@ -140,5 +140,9 @@
 
 
   <Image class="hud_map_player_pin"
-    width="300" />
+    width="300"
+    preserveAspect="true"
+    rectAlignment="LowerCenter"
+    ignoreLayout="true"
+    raycastTarget="false" />
 </Defaults>
