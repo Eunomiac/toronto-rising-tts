@@ -35,6 +35,9 @@ Timeout correlated with Host **manually seating Grey → Orange**. Client had al
 
 TTS cannot chunk Global `setXml` into sequential partial updates; each call replaces the whole document. See `docs/solutions/tts-xmlui-visibility-seat-assignment.md` § Multiclient note and `docs/solutions/lua-ui-full-xml-policy.md`.
 
+### Hotseat visibility probe (2026-07-12)
+
+Author confirmed Host hotseat: after `setAttribute(visibility)` + activate/show on `visProbe_Orange`, switching to Orange **showed the square**. Runtime visibility rebind works at least for Host hotseat (C0). Join-client C1 still pending before removing seat-path `setXml`.
 ---
 
 ## Context
