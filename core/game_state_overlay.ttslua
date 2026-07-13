@@ -672,9 +672,8 @@ function GameStateOverlay.tickRealTimeClock()
     end
 
     reconcileOverlayAfterClockTick(prevY, prevMo, prevD, oldHour, y, mo, d, h, m)
-    if type(UpdateUIDisplays) == "function" then
-        UpdateUIDisplays({ playerHud = true })
-    end
+    -- Do not UpdateUIDisplays({ playerHud = true }) here: that re-ran every seated HUD
+    -- (including Prince's Court tracker clear-then-fill) on each minute advance (TOR-377).
     return true
 end
 

@@ -78,8 +78,16 @@ local lastLocationDockUiCache = {}
 --- seatColor -> last applied offsetXY string for map draggable (skip redundant Global UI writes).
 local mapDraggableLastOffsetStrBySeat = {}
 
+--- hudSeat -> { [id\0attr] = last string value } for Prince's Court tracker boxes.
+local lastPrincesCourtTrackerUiByHudSeat = {}
+
+--- "panelSeat\0hudSeat" -> fingerprint of tracker inputs (skip XmlUI when unchanged).
+local lastPrincesCourtTrackerFpByColumn = {}
 --- hudSeatColor -> (elementId .. "\0" .. attrName) -> last applied attribute string for Prince's Court page-1 trackers.
 local lastPrincesCourtTrackerUiByHudSeat = {}
+
+--- "panelSeat\0hudSeat" -> fingerprint of tracker inputs (skip XmlUI when unchanged; TOR-377).
+local lastPrincesCourtTrackerFpByColumn = {}
 
 local MAP_OVERLAY_KEYS = {
     "districtsAll",
@@ -604,31 +612,79 @@ function HUDP.reconcilePrincesCourtPagesForSeat(seatColor, playerID)
     applyPrincesCourtPageVisibility(seatColor, showPanel, page)
 end
 
---- Apply collected Prince's Court tracker diffs to Global UI (incremental cache).
--- @param hudSeatColor string
+--- Coalesce clear-then-fill pairs: last write wins per (id, attr).
 -- @param updates table[]
-local function applyPrincesCourtTrackerUpdates(hudSeatColor, updates)
-    if type(hudSeatColor) ~= "string" or type(updates) ~= "table" then
+-- @return table[] ordered entries { id, attributes }
+-- @return string fingerprint of net desired attrs
+local function coalescePrincesCourtTrackerUpdates(updates)
+    local coalescedOrder = {}
+    local coalescedById = {}
+    if type(updates) ~= "table" then
+        return coalescedOrder, ""
+    end
+    for _, u in ipairs(updates) do
+        local id = u.id
+        local attrs = u.attributes
+        if type(id) == "string" and type(attrs) == "table" then
+            local entry = coalescedById[id]
+            if entry == nil then
+                entry = { id = id, attributes = {} }
+                coalescedById[id] = entry
+                coalescedOrder[#coalescedOrder + 1] = entry
+            end
+            for attrName, attrVal in pairs(attrs) do
+                entry.attributes[attrName] = attrVal
+            end
+        end
+    end
+    local fpParts = {}
+    for i = 1, #coalescedOrder do
+        local u = coalescedOrder[i]
+        local attrs = u.attributes
+        fpParts[#fpParts + 1] = u.id .. "=" .. tostring(attrs.active) .. "," .. tostring(attrs.image)
+    end
+    return coalescedOrder, table.concat(fpParts, "|")
+end
+
+--- Apply coalesced Prince's Court tracker diffs to Global UI (incremental cache).
+-- @param hudSeatColor string
+-- @param coalesced table[]
+local function applyCoalescedPrincesCourtTrackerUpdates(hudSeatColor, coalesced)
+    if type(hudSeatColor) ~= "string" or type(coalesced) ~= "table" then
         return
     end
     if lastPrincesCourtTrackerUiByHudSeat[hudSeatColor] == nil then
         lastPrincesCourtTrackerUiByHudSeat[hudSeatColor] = {}
     end
     local cache = lastPrincesCourtTrackerUiByHudSeat[hudSeatColor]
-    for _, u in ipairs(updates) do
+    for i = 1, #coalesced do
+        local u = coalesced[i]
         local id = u.id
         local attrs = u.attributes
-        if type(id) == "string" and type(attrs) == "table" then
-            for attrName, attrVal in pairs(attrs) do
-                local cacheKey = id .. "\0" .. attrName
-                local sval = tostring(attrVal)
-                if cache[cacheKey] ~= sval then
-                    U.setAttribute(id, attrName, sval)
-                    cache[cacheKey] = sval
-                end
+        for attrName, attrVal in pairs(attrs) do
+            local cacheKey = id .. "\0" .. attrName
+            local sval = tostring(attrVal)
+            if cache[cacheKey] ~= sval then
+                U.setAttribute(id, attrName, sval)
+                cache[cacheKey] = sval
             end
         end
     end
+end
+
+--- @return boolean true if any PC HUD has Prince's Court open on page 1
+local function anyHudHasPrincesCourtPage1()
+    for _, seatColor in ipairs(C.PlayerColors or {}) do
+        local pid = S.getPlayerID(seatColor)
+        if type(pid) == "string" and pid ~= "" then
+            local ref = S.getStateVal("playerData", pid, "hud", "reference")
+            if type(ref) == "table" and type(ref.princesCourt) == "table"
+                and normalizePrincesCourtPage(ref.princesCourtPage) == 1 then
+                return true
+            end
+        end
+    end
+    return false
 end
 
 --- Resolve stats-backed tracker visibility for one Prince's Court column on one HUD seat.
@@ -646,7 +702,13 @@ local function reconcilePrincesCourtTrackerColumn(panelSeatColor, hudSeatColor)
     else
         updates = PSC.collectPrincesCourtTrackerUpdates(nil, nil, panelSeatColor, hudSeatColor)
     end
-    applyPrincesCourtTrackerUpdates(hudSeatColor, updates)
+    local coalesced, fp = coalescePrincesCourtTrackerUpdates(updates)
+    local fpKey = panelSeatColor .. "\0" .. hudSeatColor
+    if lastPrincesCourtTrackerFpByColumn[fpKey] == fp then
+        return
+    end
+    applyCoalescedPrincesCourtTrackerUpdates(hudSeatColor, coalesced)
+    lastPrincesCourtTrackerFpByColumn[fpKey] = fp
 end
 
 --- Refresh all five tracker columns on one player's HUD (Prince's Court page 1).
@@ -664,6 +726,9 @@ end
 -- @param panelSeatColor string
 function HUDP.reconcilePrincesCourtTrackersForPanelSeat(panelSeatColor)
     if type(panelSeatColor) ~= "string" then
+        return
+    end
+    if not anyHudHasPrincesCourtPage1() then
         return
     end
     for _, hudSeatColor in ipairs(C.PlayerColors or {}) do
@@ -1727,9 +1792,7 @@ function HUD_playerPrincesCourt_navigate(player, value, id)
 
     S.setStateVal(targetPage, "playerData", playerID, "hud", "reference", "princesCourtPage")
     HUDP.reconcilePrincesCourtPagesForSeat(hudSeatColor, playerID)
-    if targetPage == 1 then
-        HUDP.reconcilePrincesCourtTrackersForHudSeat(hudSeatColor)
-    end
+    -- updatePlayerUI reconciles trackers when page == 1; avoid duplicate clear-then-fill (TOR-377).
     HUDP.updatePlayerUI(player, hudSeatColor)
 end
 
