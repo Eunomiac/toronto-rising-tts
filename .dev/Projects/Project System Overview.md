@@ -18,7 +18,7 @@ Verification:
 - no implementation verification yet; human-gated planning document
 - before implementation, confirm Linear TOR-232 scope against this contract
 
-Status: implemented (TOR-228 / TOR-232); solo Host wiring — Save & Play to verify; multiclient unverified.
+Status: implemented (TOR-228 / TOR-232); multiclient scripting confirmed via TOR-144 (2026-07-13).
 
 ---
 

@@ -525,5 +525,10 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-12 | DONE | TOR-346 | Sync.ui gameStateOverlay after deferred soundscape lastApplied* writes |
 | 2026-07-12 | DONE | TOR-343 | Preserve CSHEET page Y on seat role propagate; visibility-from-Y + min-2 |
 | 2026-07-12 | Focus | Stack | #1 TOR-365, #2 TOR-328, #3 TOR-329, #4 TOR-286 |
+| 2026-07-13 | DONE | TOR-144 / TOR-249 | Multiclient E2E passed (real clients); residual join HUD → TOR-381 External |
+| 2026-07-13 | CREATE | TOR-381 | Join-client HUD missing — TTS save review (External Todo) |
+| 2026-07-13 | CREATE | TOR-382 | Coterie sheet notes — Future (from INBOX) |
+| 2026-07-13 | UNBLOCK | TOR-293 | No longer gated on TOR-144; promoted Focus #2 |
+| 2026-07-13 | Focus | Stack | #1 TOR-365, #2 TOR-293, #3 TOR-328, #4 TOR-329 |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

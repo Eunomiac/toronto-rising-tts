@@ -18,17 +18,17 @@ Verification:
 - [Multiplayer-E2E](../E2E%20Playbooks/Multiplayer-E2E.md) (agent coverage checklist)
 - relevant solo playbooks from `.dev/TESTING.md` before multiclient verification
 
-Status: current multiplayer authority policy until TOR-144 passes with two real clients.
+Status: current multiplayer authority policy. **Initial multiclient E2E passed** (**TOR-144** / **TOR-249**, 2026-07-13) — host-authority scripting confirmed with real clients. P1–P10 remain standing contracts.
 
-**Purpose:** Solo Host development cannot validate multiplayer behavior. This document is the **agent policy** surface (P1–P10, audits, high-risk paths). The **friend-session runbook** lives separately.
+**Purpose:** Solo Host development still cannot fully validate join-client-only quirks (P10, XmlUI visibility). This document is the **agent policy** surface (P1–P10, audits, high-risk paths). The **friend-session runbook** lives separately for re-smokes and regressions.
 
-**Friend session (author):** [Multiclient Session Script](../E2E%20Playbooks/Multiplayer-Session.md) — Phases A–E for **TOR-249** / **TOR-144**.
+**Friend session (author):** [Multiclient Session Script](../E2E%20Playbooks/Multiplayer-Session.md) — Phases A–E (initial gate **Done**; reuse for regressions).
 
-> **Agents (mandatory):** Until **TOR-144 (multiplayer E2E)** passes with two real clients, **every** change that adds or modifies event handlers, load/bootstrap hooks, `HUD_*` / object clicks, `Global.*` mutators, or world I/O must comply with **§1.1 policies P1–P10** and the **§1.4 pre-flight checklist**. Always-on Cursor rule: [`.cursor/rules/toronto-rising-multiplayer-authority.mdc`](../../.cursor/rules/toronto-rising-multiplayer-authority.mdc). Do not mark multiplayer sync work **Done** without multiclient verification.
+> **Agents (mandatory):** **Every** change that adds or modifies event handlers, load/bootstrap hooks, `HUD_*` / object clicks, `Global.*` mutators, or world I/O must comply with **§1.1 policies P1–P10** and the **§1.4 pre-flight checklist**. Always-on Cursor rule: [`.cursor/rules/toronto-rising-multiplayer-authority.mdc`](../../.cursor/rules/toronto-rising-multiplayer-authority.mdc). Re-smoke Multiclient Session Script when changing join/seat/HUD visibility. Residual missing join HUD: **TOR-381** (TTS External — do not invent host-execution gates).
 
 **Related:** [Multiclient Session Script](../E2E%20Playbooks/Multiplayer-Session.md), [Multiplayer-E2E](../E2E%20Playbooks/Multiplayer-E2E.md) (coverage checklist), [Event Listener Policy](../Sychronizing%20Game%20Functionality/Event%20Listener%20Policy.md), [Reconciler Contract](../Sychronizing%20Game%20Functionality/Reconciler%20Contract.md), [Dual-apply survey](../Sychronizing%20Game%20Functionality/Dual_apply_survey.md), [Phases Overview](../Phases/Phases%20Overview.md) (TOR-143), [lua-local-function-order](../../docs/solutions/lua-local-function-order.md).
 
-**Linear:** TOR-144 (multiplayer E2E) — not closed until the [session script](../E2E%20Playbooks/Multiplayer-Session.md) runs with two real clients. Shipped prerequisites for **TOR-249**: **TOR-284**, **TOR-345**, **TOR-143** / **TOR-319**.
+**Linear:** **TOR-144** / **TOR-249** Done (2026-07-13). Residual join HUD: **TOR-381**.
 
 ---
 

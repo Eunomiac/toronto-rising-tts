@@ -19,11 +19,11 @@ Verification:
 
 **Prerequisites:** Solo Host suites pass ([Dice-E2E](Dice-E2E.md), [Gameboard-E2E](Gameboard-E2E.md), [Scenes-E2E](Scenes-E2E.md)). **TOR-284**, **TOR-345**, **TOR-143** / **TOR-319** shipped.
 
-Status: agent checklist; step tables live only in Multiclient Session Script (avoid dual scripts).
+Status: agent checklist; **initial TOR-144 / TOR-249 pass Done (2026-07-13)**. Reuse for regressions. Residual join HUD: **TOR-381**. Step tables live only in Multiclient Session Script (avoid dual scripts).
 
 ## Multiclient validation gates
 
-Mechanical sync work is **not fully validated** until [Multiclient Session Script](Multiplayer-Session.md) runs with **two or more connected clients**. Solo Host / hotseat alone is insufficient.
+Initial multiclient scripting gate **passed**. Solo Host / hotseat alone is still insufficient for join-client-only quirks — re-run [Multiclient Session Script](Multiplayer-Session.md) after join/seat/HUD visibility changes.
 
 **Pass criteria** (same as the session script): no duplicate world mutations; ST-only steam gates; auto-seat; connect blindfold policy; **P10** stale Lua/HUD with matching world = document, not fail.
 

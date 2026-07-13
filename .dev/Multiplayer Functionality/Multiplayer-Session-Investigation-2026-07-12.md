@@ -16,7 +16,7 @@ Verification:
 - author confirmations below
 - optional two-client retest after mitigations (TOR-144)
 
-Status: **resolved in code** (TOR-373 / TOR-374) — re-verify under TOR-144
+Status: **initial multiclient E2E passed** (TOR-144 / TOR-249, 2026-07-13). Residual join HUD → **TOR-381** (TTS External). Re-verify with Multiclient Session Script after join/HUD regressions.
 
 ---
 

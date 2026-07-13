@@ -1,15 +1,15 @@
 ---
-description: Toronto Rising — multiplayer sync rules until multiclient E2E (TOR-144) passes
+description: Toronto Rising — host-authority multiplayer policies (P1–P10); initial E2E passed TOR-144
 alwaysApply: true
 ---
 
-# Toronto Rising — multiplayer authority (pre–second-client)
+# Toronto Rising — multiplayer authority
 
 **Execution model:** TTS runs **all mod Lua on the host only**. Connected clients do not run the Global script or object scripts. Clients transmit interactions; host Lua executes once; the engine replicates world/object state.
 
-**Until TOR-144 (multiplayer E2E) passes with two real clients**, treat solo Host Save & Play as **insufficient** proof for join-client behavior (P10 live `gameState` broadcast gap, per-client UI visibility, replication timing).
+**Status (2026-07-13):** Initial multiclient E2E (**TOR-144** / **TOR-249**) **passed** with real connected clients — host-authority scripting and world fan-out are confirmed. P1–P10 remain **standing contracts** on every new handler. Solo Host is still insufficient proof for join-client-only quirks (P10 live `gameState` gap, per-client XmlUI visibility, replication timing). Residual missing join-client HUD is tracked as **TOR-381** (TTS save review — External).
 
-Canonical policies **P1–P10**, pre-flight checklist, and first-session script: [`.dev/Multiplayer Functionality/Preparing For Multiplayer.md`](../../.dev/Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md) §1.
+Canonical policies **P1–P10**, pre-flight checklist, and session script: [`.dev/Multiplayer Functionality/Preparing For Multiplayer.md`](../../.dev/Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md) §1.
 
 Verification playbook: [`.dev/E2E Playbooks/Multiplayer-Session.md`](../../.dev/E2E%20Playbooks/Multiplayer-Session.md) (author session). Agent checklist: [`.dev/E2E Playbooks/Multiplayer-E2E.md`](../../.dev/E2E%20Playbooks/Multiplayer-E2E.md).
 
@@ -37,7 +37,7 @@ Before marking work done:
 - [ ] Mutation → narrow `Sync.*`; no dual apply without fingerprint ([Dual-apply survey](../../.dev/Sychronizing%20Game%20Functionality/Dual_apply_survey.md)).
 - [ ] Object scripts route mutations via `Global.call`; no `require("core.*")`.
 - [ ] Event Listener Policy inventory updated if handlers added/changed.
-- [ ] Solo smoke if touching gameboard or rolls (Apply/Clear, one roll path); hotseat smoke if execution-model related; note **multiclient unverified** in Linear comment unless TOR-144 exercised.
+- [ ] Solo smoke if touching gameboard or rolls (Apply/Clear, one roll path); hotseat smoke if execution-model related; re-smoke Multiclient Session Script when changing join/seat/HUD visibility paths.
 
 ## High-risk surfaces (grep when touching)
 
@@ -45,4 +45,4 @@ Load/bootstrap, gameboard Apply/Clear, token drop/pick-up, scenes/soundscape HUD
 
 ## Linear
 
-Multiplayer sync work is **not Done** until **TOR-144 (multiplayer E2E)** passes. Comment on related issues when adding event handlers or Global mutators.
+Initial multiclient gate (**TOR-144** / **TOR-249**) is **Done**. Continue upholding P1–P10; comment on related issues when adding event handlers or Global mutators. Residual join HUD: **TOR-381**.

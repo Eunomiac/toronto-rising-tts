@@ -44,7 +44,7 @@ Survey notes: [`.dev/Sychronizing Game Functionality/Dual_apply_survey.md`](.dev
 - Collapse seat-layout absence to `OFF`. Scene darkness is explicit in `C.LightModes.*.spotlights`, not inferred from preset key suffix.
 - Do not reintroduce `modeRestore`-style push/pop state.
 
-## Multiplayer (until TOR-144 E2E passes)
+## Multiplayer (TOR-144 / TOR-249 initial E2E passed)
 
 TTS runs **all mod Lua on the host only**. Apply on **every** new handler, chunk-load hook, object script, and `Global.*` mutator:
 
@@ -52,6 +52,7 @@ TTS runs **all mod Lua on the host only**. Apply on **every** new handler, chunk
 - **Per-client UI** — XmlUI `visibility` targeting (`Black`/`Admin`/`<Color>`), not Lua execution gating.
 - **Object-script mutations** — `Global.call` → Global callee (bundle-size routing); `GlobalIsStorytellerSteamPlayer` for actor-identity from object scripts.
 - **P10 live `gameState` broadcast gap** — join-client HUD may read stale in-memory state; fix via sync bridge, not execution gates.
+- **Residual join HUD** — missing join-client UI tracked as **TOR-381** (TTS External); do not reintroduce host-execution gates for it.
 
 Full policies P1–P10, authority model, pre-flight checklist, and agent audit: [`.dev/Multiplayer Functionality/Preparing For Multiplayer.md`](../../.dev/Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md). Always-on rule: [`.cursor/rules/toronto-rising-multiplayer-authority.mdc`](../../.cursor/rules/toronto-rising-multiplayer-authority.mdc).
 

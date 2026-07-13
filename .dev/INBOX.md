@@ -22,7 +22,6 @@ Verification:
 ## External Work (Set STATUS to "External To Do")
 
 ## Future Features (Set STATUS to "Future")
-- [Coterie Sheet Notes] Implement player-initiated note creation, editing and persistent display on final page right of coterie sheet: Display notes compactly by title, sorted by date, their details revealed on click or as hover-over tooltip.
 
 
 ## Needs clarification
@@ -40,6 +39,10 @@ Verification:
 
 
 ## Processed
+
+2026-07-13 Multiclient E2E closed — **TOR-144** / **TOR-249** Done (real clients); residual join HUD → **TOR-381** (TTS External); Focus refresh + **TOR-293** unblocked
+
+2026-07-13 INBOX Future Features — coterie sheet notes → **TOR-382** (Character Sheets Feature, Future; parent **TOR-38**)
 
 2026-07-13 INBOX Priority Issues — Focus #1–#4: **TOR-380** (SIGNAL_FIRE Y fan-out), **TOR-377** (court tracker flash), **TOR-378** (Orange throne postCorrections), **TOR-379** (map north pin buffer)
 

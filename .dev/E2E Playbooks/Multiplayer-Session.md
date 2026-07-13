@@ -1,5 +1,7 @@
 # Multiclient Session Script (TOR-249 / TOR-144)
 
+**Initial pass: PASSED (2026-07-13)** — author confirmed real connected clients; host-authority scripting OK. Residual missing join-client HUD tracked as **TOR-381** (TTS External — does not fail the scripting pass). Reuse this script for regressions after join/seat/HUD changes.
+
 **Goal:** ~25–35 minutes. One linear script. **Pass** = no duplicate world effects, correct auto-seat, phase connect blindfold matches policy, join client stays connected.
 
 **Roles**
