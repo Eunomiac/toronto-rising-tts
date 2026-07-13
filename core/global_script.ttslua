@@ -586,9 +586,9 @@ local function refreshGlobalUiAfterSeatAssignment(seatColor)
         shouldMarkSeatRefreshDone = true
     end
 
-    -- TOR-374: defer full rebuild so join sync can complete; TOR-285 still needs setXml eventually.
+    -- TOR-374: defer full rebuild so join sync can complete; TOR-285 still needs a full UI refresh eventually.
     print(string.format(
-        "[SeatUI] Deferring UI.setXml for %s by %.1fs (join-timeout mitigation)",
+        "[SeatUI] Deferring full UI refresh for %s by %.1fs (join-timeout mitigation)",
         tostring(seatColor),
         SEAT_ASSIGN_SET_XML_DEFER_SEC
     ))
@@ -597,15 +597,14 @@ local function refreshGlobalUiAfterSeatAssignment(seatColor)
             return
         end
         -- Prefer live XML if still available (other UI mutations may have landed during defer).
-        local liveXml = nil
+        local payload = xml
         if type(UI.getXml) == "function" then
-            liveXml = UI.getXml()
+            local liveXml = UI.getXml()
+            if type(liveXml) == "string" and liveXml ~= "" then
+                payload = liveXml
+            end
         end
-        if type(liveXml) == "string" and liveXml ~= "" then
-            UI.setXml(liveXml)
-        else
-            UI.setXml(xml)
-        end
+        UI.setXml(payload)
         schedulePostSeatUiRefresh()
     end, SEAT_ASSIGN_SET_XML_DEFER_SEC)
 end
