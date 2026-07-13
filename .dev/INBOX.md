@@ -21,10 +21,6 @@ Verification:
 
 
 ## Initial/Priority Issues: Implement Plan for Immediate Resolution
-- [Scene Apply] On scene transition, every signal light turned on when one player's was left on. Investigate why (i.e. don't just harden signal lights against activation, there should be a reason why this happened)
-- [Prince's Court Coterie Sheet XML Updates] Client reported flashing trackers on front page left of court coterie sheet (i.e. players' Health/Willpower/Humanity/Hunger bars). Suggests multiple unnecessary repeat calculations/operations?
-- [Table Seat Models] Orange throne is backwards; requires 180 degree corrective rotation around the y-axis in the post corrections (and/or confirmation that post corrections are properly being applied).
-- [Map Panel XML] Add a buffer space to the top of map so that player pins at locations in the far north of the city aren't cut off by top of screen
 
 
 ## Performance Issues: Explore & Explain
@@ -53,6 +49,8 @@ Verification:
 
 
 ## Processed
+
+2026-07-13 INBOX Priority Issues — Focus #1–#4: **TOR-380** (SIGNAL_FIRE Y fan-out), **TOR-377** (court tracker flash), **TOR-378** (Orange throne postCorrections), **TOR-379** (map north pin buffer)
 
 2026-07-12 INBOX Priority Fixes — END library wipe (capture only) → **TOR-365** (Scenes Bug, High; relatedTo **TOR-145**; not in implement batch)
 
