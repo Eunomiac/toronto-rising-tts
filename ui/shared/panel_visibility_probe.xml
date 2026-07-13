@@ -2,10 +2,10 @@
 <!-- Defaults: active=false, no visibility attr. Manipulate via console / debug: -->
 <!--   UI.setAttribute("visProbe_Orange", "visibility", "Orange") -->
 <!--   UI.setAttribute("visProbe_Orange", "active", "true") -->
-<!--   -- or -- UI.show("visProbe_Orange") -->
+<!--   alternatively UI.show("visProbe_Orange") -->
 <!-- Then hotseat between colors. If a panel stays invisible after setAttribute(visibility) -->
-<!-- + show/active when you are that color (having loaded on another seat), C1-style -->
-<!-- rebind likely fails without setXml. Join-client still required for full confirm. -->
+<!-- plus show/active when you are that color (having loaded on another seat), C1-style -->
+<!-- rebind likely fails without full UI refresh. Join-client still required for full confirm. -->
 <!-- Agent: remove when seat-HUD reveal experiment concludes. -->
 
 <GridLayout
