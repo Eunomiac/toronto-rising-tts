@@ -19,19 +19,10 @@ Verification:
 
 ## Active
 
-
-## Initial/Priority Issues: Implement Plan for Immediate Resolution
-
-
-## Performance Issues: Explore & Explain
-- ~~[Multiplayer] [Connection] timeouts on join~~ → **TOR-374** (deferred `UI.setXml` on Grey→PC seat assign; author: timeout after Host seated them Orange; partial join had music + blindfold). See investigation report.
-- ~~[Performance] Erratic Hunger 5 overlay pulse~~ → **TOR-373** (pulse layer removed; static `overlay_hunger_5` only).
-
-## Log to Linear
-- [Future] Implement player-initiated note creation, editing and persistent display on final page right of coterie sheet: Display notes compactly by title, sorted by date, their details revealed on click or as hover-over tooltip.
-
 ## External Work (Set STATUS to "External To Do")
 
+## Future Features (Set STATUS to "Future")
+- [Coterie Sheet Notes] Implement player-initiated note creation, editing and persistent display on final page right of coterie sheet: Display notes compactly by title, sorted by date, their details revealed on click or as hover-over tooltip.
 
 
 ## Needs clarification

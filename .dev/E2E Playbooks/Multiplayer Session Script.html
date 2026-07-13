@@ -1,0 +1,784 @@
+<html>
+
+<head>
+  <style>
+    :root {
+      color-scheme: dark;
+
+      --bg: #080808;
+      --surface: #101010;
+      --surface-raised: #161616;
+      --surface-soft: #1c1c1c;
+
+      --text: #e8e8e8;
+      --text-muted: #aaa;
+      --text-faint: #777;
+
+      --border: #303030;
+      --border-strong: #484848;
+
+      --accent: #c9363e;
+      --accent-bright: #ef5961;
+      --accent-soft: rgba(201, 54, 62, 0.14);
+
+      --code-bg: #050505;
+      --shadow: rgba(0, 0, 0, 0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      background: var(--bg);
+      color: var(--text);
+      font-family:
+        Inter,
+        "Segoe UI",
+        Roboto,
+        Helvetica,
+        Arial,
+        sans-serif;
+      font-size: 15px;
+      line-height: 1.55;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      width: min(100% - 32px, 800px);
+      margin: 0 auto;
+      padding: 42px 0 80px;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    ::selection {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    h1,
+    h2,
+    h3 {
+      color: #fff;
+      line-height: 1.2;
+      text-wrap: balance;
+    }
+
+    h1 {
+      margin: 0 0 18px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--accent);
+      font-size: clamp(1.8rem, 5vw, 2.45rem);
+      font-weight: 750;
+      letter-spacing: -0.035em;
+    }
+
+    h2 {
+      margin: 42px 0 14px;
+      padding-left: 12px;
+      border-left: 4px solid var(--accent);
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    h3 {
+      margin: 28px 0 10px;
+      font-size: 1.08rem;
+      font-weight: 700;
+    }
+
+    p {
+      margin: 10px 0 14px;
+    }
+
+    strong {
+      color: #fff;
+      font-weight: 700;
+    }
+
+    em {
+      color: #ffea76;
+      font-style: normal;
+      font-weight: 700;
+    }
+
+    a {
+      color: var(--accent-bright);
+      text-decoration-color: rgba(239, 89, 97, 0.45);
+      text-underline-offset: 0.18em;
+      transition:
+        color 120ms ease,
+        text-decoration-color 120ms ease;
+    }
+
+    a:hover {
+      color: #fff;
+      text-decoration-color: var(--accent-bright);
+    }
+
+    hr {
+      height: 1px;
+      margin: 36px 0;
+      border: 0;
+      background:
+        linear-gradient(to right,
+          transparent,
+          var(--border-strong) 12%,
+          var(--border-strong) 88%,
+          transparent);
+    }
+
+    table {
+      width: 100%;
+      margin: 14px 0 22px;
+      border: 1px solid var(--border-strong);
+      border-collapse: separate;
+      border-spacing: 0;
+      border-radius: 7px;
+      background: var(--surface);
+      box-shadow: 0 8px 28px var(--shadow);
+      overflow: hidden;
+    }
+
+    th,
+    td {
+      padding: 8px 10px;
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th:last-child,
+    td:last-child {
+      border-right: 0;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    th {
+      background:
+        linear-gradient(180deg,
+          var(--surface-soft),
+          var(--surface-raised));
+      color: #fff;
+      font-size: 0.78rem;
+      font-weight: 750;
+      letter-spacing: 0.045em;
+      text-transform: uppercase;
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(255, 255, 255, 0.018);
+    }
+
+    tbody tr:hover {
+      background: var(--accent-soft);
+    }
+
+    td:first-child,
+    th:first-child {
+      white-space: nowrap;
+    }
+
+    blockquote {
+      margin: 16px 0 22px;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 0 6px 6px 0;
+      background: var(--surface-raised);
+      color: #d6d6d6;
+    }
+
+    blockquote p {
+      margin: 0;
+    }
+
+    code {
+      padding: 0.12em 0.38em;
+      border: 1px solid #292929;
+      border-radius: 4px;
+      background: var(--code-bg);
+      color: #f0b1b5;
+      font-family:
+        "Cascadia Code",
+        "SFMono-Regular",
+        Consolas,
+        "Liberation Mono",
+        monospace;
+      font-size: 0.88em;
+      overflow-wrap: anywhere;
+    }
+
+    pre {
+      margin: 14px 0 22px;
+      padding: 14px 16px;
+      border: 1px solid var(--border-strong);
+      border-left: 4px solid var(--accent);
+      border-radius: 6px;
+      background: var(--code-bg);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+      white-space: pre-wrap;
+    }
+
+    pre code {
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: #ddd;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      overflow-wrap: normal;
+    }
+
+    ol,
+    ul {
+      margin: 12px 0 20px;
+      padding-left: 1.6rem;
+    }
+
+    li {
+      margin: 5px 0;
+      padding-left: 0.2rem;
+    }
+
+    li::marker {
+      color: var(--accent-bright);
+      font-weight: 700;
+    }
+
+    .hljs-string {
+      color: #e4878d;
+    }
+
+    .hljs-name {
+      color: #f1f1f1;
+    }
+
+    @media (max-width: 650px) {
+      body {
+        width: min(100% - 20px, 800px);
+        padding-top: 24px;
+      }
+
+      h2 {
+        margin-top: 34px;
+      }
+
+      table {
+        display: block;
+        overflow-x: auto;
+        white-space: normal;
+      }
+
+      th,
+      td {
+        min-width: 90px;
+        padding: 7px 8px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <h1 id="multiclient-session-script-tor-249-tor-144-">Multiclient Session Script (TOR-249 / TOR-144)</h1>
+  <p><strong>Goal:</strong> ~25–35 minutes. One linear script. <strong>Pass</strong> = no duplicate world effects,
+    correct auto-seat, phase connect blindfold matches policy, join client stays connected.</p>
+  <p><strong>Roles</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Who</th>
+        <th>Seat</th>
+        <th>Drives</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>You (Host)</td>
+        <td><strong>Black</strong> / Storyteller (Steam auto-assign)</td>
+        <td>All ST steps</td>
+      </tr>
+      <tr>
+        <td><em>Friend</em></td>
+
+        <td>Chronicle PC color from <code>C.PlayerData</code> (auto-assign)</td>
+        <td>Watch, report, one Roll, optional console line</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>Friend does <strong>not</strong> need the ST panel and should <strong>not</strong> manually pick a seat unless
+    auto-assign fails.</p>
+  <p><strong>Chronicle seat map:</strong> Thaumaterge→Brown, Hastur→Orange, PixelPuzzler→Red, JRook→Pink,
+    Roarshack→Purple (<code>lib/constants.ttslua</code>).</p>
+  <hr>
+  <h2 id="before-the-call">Before the call</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Who</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td>Host</td>
+        <td><code>npm run build</code> if UI changed; <strong>Save &amp; Play</strong> on the Storyteller machine.
+          Confirm you land on <strong>Black</strong>.</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>Host</td>
+        <td>Friend’s Steam ID is in <code>C.PlayerData</code> with the intended PC color. Unregistered →
+          <strong>White</strong>. <em>Tell friend the expected color.</em>
+        </td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>Host</td>
+        <td>No-scene default.</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>Host</td>
+        <td>Reload scenes from Google Sheet into Scenes panel.</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>Host</td>
+        <td>Confirm Session Number is 1.</td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="p10-known-do-not-fail-the-pass-for-this-alone-">P10 (known — do not fail the pass for this alone)</h3>
+  <p>Join-client console <code>S.getStateVal</code> / some HUD text may <strong>lag</strong> Host while the
+    <strong>table still looks correct</strong>. That is expected until a live state sync bridge exists.
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>Observation</th>
+        <th>Score</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Table matches Host; friend’s Lua/HUD numbers differ</td>
+        <td><strong>Document P10</strong> — keep going</td>
+      </tr>
+      <tr>
+        <td>Table disagrees (double motion, missing props)</td>
+        <td><strong>Fail</strong></td>
+      </tr>
+      <tr>
+        <td><em>Friend</em> click does nothing</td>
+        <td><strong>Fail</strong> (not P10)</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>Log line: <code>P10 D2: Host placements=N, <em>Friend</em> placements=M; world matched.</code></p>
+  <p>Full policy write-up: <a
+      href="../Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md#11a-p10--live-gamestate-broadcast-gap-known">Preparing
+      §1.1a</a>.</p>
+  <hr>
+  <h2 id="phase-a-connect-auto-seat-authority-5-min-">Phase A — Connect, auto-seat &amp; authority (~5 min)</h2>
+
+  <h3 id="friend-briefing-copy-paste-">Friend Briefing</h3>
+  <blockquote>
+    <p><strong>Phase A - Connection, Auto-Seat Assignment, Blindfolds, UI Visibility</strong><br />You&#39;ll join my TTS game for ~25–30 minutes. Your seat color should assign automatically from your Steam
+      account — tell me which color you land on (expect <strong>\<COLOR\></strong>). Watch for things moving twice,
+      weird double sound fades, a stuck blindfold, or errors in chat. If I ask you to run a short console line and the
+      <strong>number</strong> differs from mine but the <strong>table looks the same</strong>, that&#39;s a known quirk
+      — just tell me both numbers. I&#39;ll ask you to click Roll once on your seat. You don&#39;t need to learn the mod
+      — just tell me if something looks wrong compared to my screen.
+    </p>
+  </blockquote>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Host</th>
+        <th><em>Friend</em></th>
+        <th>Pass if</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>A1</td>
+        <td>Send Invite, wait for connect.</td>
+        <td><ul>
+          <li>Accept invite;</li>
+          <li>Wait for potentially lengthy load;</li>
+          <li><em>Pay attention to:</em>
+            <ul>
+              <li>When you are able to see the game world;</li>
+              <li>When the blocking overlay kicks in;</li>
+              <li>Any strangeness to how the musical theme starts playing or sounds as it plays.</li>
+            </ul>
+          </li>
+        </ul></td>
+        <td><ul>
+          <li>Friend lands on <strong>chronicle color</strong>;</li>
+          <li>Same table;</li>
+          <li>No kick.</li>
+        </ul></td>
+      </tr>
+      <tr>
+        <td>A2</td>
+        <td>Confirm still Black</td>
+        <td>—</td>
+        <td><ul>
+          <li>ST seat unchanged;</li>
+          <li>No fight for a PC color.</li>
+        </ul></td>
+      </tr>
+      <tr>
+        <td>A3</td>
+        <td>—</td>
+        <td><em>Watch table ~10s</em></td>
+        <td><ul>
+          <li><strong>No</strong> figurines sliding;</li>
+          <li>Lights sweeping;</li>
+          <li>Audio fade on join.</li>
+        </ul></td>
+      </tr>
+      <tr>
+        <td>A4</td>
+        <td><code>print(S.getStateVal(&quot;currentPhase&quot;))</code></td>
+        <td><em>Report blindfold up or down</em></td>
+        <td><ul>
+          <li>Blindfold stays up</li>
+        </ul></td>
+      </tr>
+      <tr>
+        <td>A5</td>
+        <td>Check Host console</td>
+        <td><em>Watch console, report any errors.</em></td>
+        <td><ul>
+          <li>Bootstrap clean.</li>
+        </ul></td>
+      </tr>
+    </tbody>
+  </table>
+  <p><strong>If A1 → White unexpectedly:</strong> Steam ID missing from <code>C.PlayerData</code> — fix, Save &amp;
+    Play, rejoin. Not a replication bug.</p>
+  <hr>
+  <h2 id="phase-b-st-world-actions-8-min-">Phase B — ST world actions (~8 min)</h2>
+  <h3 id="friend-briefing-copy-paste-">Friend Briefing</h3>
+  <blockquote>
+    <p><strong>Phase B - Storyteller World Actions, Synchronization & Sole Authority</strong><br />I'll be running through several steps in sequence. I'll let you know when I'm about to do something. When I do, watch for things moving twice, weird double sound fades, a stuck blindfold, errors in chat, or anything else that looks unpolished or incorrect.
+    </p>
+  </blockquote>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Host</th>
+        <th><em>Friend</em></th>
+        <th>Pass if</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>B0</td>
+        <td><strong>INTERMISSION</strong> → <strong>PLAY</strong></td>
+        <td>Watch</td>
+        <td><ul>
+          <li>Single transition;</li>
+          <li>Smooth theme/audio change.</li>
+          <li>Properly seated when blindfold comes up.</li>
+          <li>Top-center overlay is primarily blank.</li>
+          <li>No overlay at top right.</li>
+          <li>Reference panels on left are active and interactable.</li>
+          <li>Camera mode buttons at bottom right are active and interactable.</li>
+          <li>Location popout at bottom left is inactive.</li>
+        </ul></td>
+      </tr>
+      <tr>
+        <td>B1</td>
+        <td>Place one NPC control token on gameboard Mid-Center; <strong>Apply</strong></td>
+        <td>Watch</td>
+        <td><ul>
+          <li><strong>Single</strong> figurine appears;</li>
+          <li>Figurine's light smoothly animates on.</li>
+          <li>No fight/jitter/glitches.</li>
+        </ul></td>
+      </tr>
+      <tr>
+        <td>B2</td>
+        <td><strong>Move</strong> NPC control token to a new location on the stage, <strong>Apply</strong></td>
+        <td>Watch</td>
+        <td><ul>
+          <li>Figurine moves smoothly to new location;</li>
+          <li>Light smoothly animates to new location.</li>
+          <li>No fight/jitter/glitches.</li>
+        </ul></td>
+      </tr>
+      <tr>
+        <td>B3</td>
+        <td><strong>Clear</strong> gameboard</td>
+        <td>Watch</td>
+        <td><ul>
+          <li>Figurine disappears.</li>
+        </ul></td>
+      </tr>
+      <tr>
+        <td>B4</td>
+        <td>Scenes: <strong>Apply</strong> "Opening Council" scene.</td>
+        <td>Watch</td>
+        <td><ul>
+          <li>Blindfold comes down before any changes to the world.</li>
+          <li>Audio crossfades during blindfold down.</li>
+          <li>When blindfold comes up, your camera angle has been reset to your seat position.</li>
+          <li>Top overlay reads </li>
+          <li><strong>One</strong> audio fade.</li>
+        </ul></td>
+      </tr>
+      <tr>
+        <td>B5</td>
+        <td>—</td>
+        <td><ul><li>Toggle <strong>signal candle</strong></li>
+        <li>Left-click Companion token to activate it.</li>
+      <li>Right-click Companion token to hide sheet.</li>
+    </ul></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td>B6</td>
+        <td>Change soundscape mood once</td>
+        <td>Listen</td>
+        <td><strong>One</strong> fade; no doubling</td>
+      </tr>
+    </tbody>
+  </table>
+  <hr>
+  <h2 id="phase-c-pc-roll-from-join-client-5-min-">Phase C — PC roll from join client (~5 min)</h2>
+  <h3 id="friend-briefing-copy-paste-">Friend Briefing</h3>
+  <blockquote>
+    <p><strong>Phase C - Dice Roll System</strong><br />Now we'll be making a few different rolls; I'll take this opportunity to walk you through how the dice system works. Be on the lookout for HUD elements that you don't think you're meant to see, anything that looks out of place, or anything that seems to be doing something you don't expect.
+    </p>
+  </blockquote>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Host</th>
+        <th><em>Friend</em></th>
+        <th>Pass if</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>C1</td>
+        <td></td>
+        <td><ul><li>Click on your normal (black) dice token, above your character sheet.</li>
+        <li>Click several times on the same token to spawn additional dice into the pool</li>
+      <li>Note how many dice are in your pool, then click your Blood Surge bag to trigger that. Ensure a Rouse Die and your Blood Surge bonus were added to the pool.</li>
+    <li>Click the Rouse token to add a Rouse check to the pool. Click it again, confirm three Rouse dice are in the pool, separated into two groups.</li>
+    <li>Right-click the Blood Surge bag, confirm the Blood Surge has been reversed.</li>
+  <li>Left-click "ROLL" to roll manually, or right-click for automatic roll.</li>
+<li>Click Spend Willpower. Check your sheet, confirm Willpower has been spent. Reroll three dice, confirm autoprogression of roll to next step.</li></td>
+        <td><ul><li>Roll UI visible for friend</li>
+        <li>No duplicate spawns, smooth drawer movement.</li></td>
+      </tr>
+    </tbody>
+  </table>
+  <p><strong>If C2 double dice:</strong> file bug against roll / dice_bag routing.</p>
+  <hr>
+  <h2 id="phase-d-join-hud-phases-p10-4-min-">Phase D — Join HUD, phases &amp; P10 (~4 min)</h2>
+  <p>Read the <a href="#p10-known--do-not-fail-the-pass-for-this-alone">P10</a> reminder before D1/D2.</p>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Host</th>
+        <th><em>Friend</em></th>
+        <th>Pass if</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>D1</td>
+        <td>Note phase; optional Play subphase switch or safe Advance</td>
+        <td>Compare <strong>table</strong> (lights/blindfold/theme) and phase label</td>
+        <td>Table matches once. Label lag + matching world → <strong>document P10</strong>, still Pass</td>
+      </tr>
+      <tr>
+        <td>D2</td>
+        <td>After B1, both run the probe below</td>
+        <td>Same</td>
+        <td>Counts <strong>may differ</strong> (P10). Pass if both see the <strong>same figurines</strong></td>
+      </tr>
+      <tr>
+        <td>D3</td>
+        <td>—</td>
+        <td>Open a <strong>PC-only</strong> panel (e.g. roll control)</td>
+        <td>Opens; <strong>no</strong> ST-only controls (Advance, gameboard Apply, …)</td>
+      </tr>
+    </tbody>
+  </table>
+  <p><strong>D2 probe</strong> (both machines, <code>~</code> Global):</p>
+  <ol>
+    <li>Press <code>~</code> to bring up the system control.</li>
+    <li>Copy and paste the code I just sent you in Discord into the system console, press enter, and tell me what
+      message you see.</li>
+  </ol>
+  <pre><code class="lang-lua">lua print(<span class="hljs-string">"placements="</span> .. tostring(<span class="hljs-name">#</span>(<span class="hljs-name">U</span>.getKeys(<span class="hljs-name">S</span>.getStateVal(<span class="hljs-string">"sessionScene"</span>,<span class="hljs-string">"npcWorld"</span>,<span class="hljs-string">"placements"</span>) or {}))))
+</code></pre>
+  <hr>
+  <h2 id="phase-e-disconnect-rejoin-2-min-">Phase E — Disconnect / rejoin (~2 min)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Host</th>
+        <th><em>Friend</em></th>
+        <th>Pass if</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>E1</td>
+        <td>—</td>
+        <td>Disconnect cleanly</td>
+        <td>Host stable; no console spam</td>
+      </tr>
+      <tr>
+        <td>E2</td>
+        <td>Optional</td>
+        <td>Rejoin; <strong>do not</strong> pick color</td>
+        <td>Same chronicle color; stable join; no bootstrap thrash; blindfold matches A4 for current phase</td>
+      </tr>
+    </tbody>
+  </table>
+  <hr>
+  <h2 id="outcomes">Outcomes</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Result</th>
+        <th>Next step</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>All Pass rows green (P10 notes OK)</td>
+        <td>Comment <strong>TOR-144</strong>; mark <strong>TOR-249</strong> Done; deeper matrix later if needed</td>
+      </tr>
+      <tr>
+        <td>Wrong seat / White</td>
+        <td>Fix <code>C.PlayerData</code>; don’t hotseat their color; rejoin</td>
+      </tr>
+      <tr>
+        <td>Blindfold stuck in Play</td>
+        <td>Bug — note phase at join</td>
+      </tr>
+      <tr>
+        <td>Duplicate world (B0–B6, C2)</td>
+        <td>Note scenario id; dual-apply / routing</td>
+      </tr>
+      <tr>
+        <td>Nothing on friend click</td>
+        <td><code>Global.call</code> / steam gate</td>
+      </tr>
+      <tr>
+        <td>Lua/HUD stale, world OK</td>
+        <td><strong>P10</strong> — document; do not fail</td>
+      </tr>
+      <tr>
+        <td>Capture</td>
+        <td>Scenario id, Host vs friend, screenshot or console, save name</td>
+      </tr>
+    </tbody>
+  </table>
+  <hr>
+  <h2 id="coverage-what-this-script-exercises-">Coverage (what this script exercises)</h2>
+  <p>Each row is covered by a Phase step above. Use this as a sign-off checklist; do <strong>not</strong> run it as a
+    second script.</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Scenario</th>
+        <th>Step</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Join mid-session / no bootstrap thrash</td>
+        <td>A1–A3, A5</td>
+      </tr>
+      <tr>
+        <td>Steam auto-seat</td>
+        <td>A1–A2, E2</td>
+      </tr>
+      <tr>
+        <td>Connect blindfold (Intermission vs other)</td>
+        <td>A4</td>
+      </tr>
+      <tr>
+        <td>ST Advance → Play</td>
+        <td>B0</td>
+      </tr>
+      <tr>
+        <td>ST Apply / Clear gameboard</td>
+        <td>B1–B2</td>
+      </tr>
+      <tr>
+        <td>ST token drop</td>
+        <td>B3</td>
+      </tr>
+      <tr>
+        <td>ST scene change</td>
+        <td>B4</td>
+      </tr>
+      <tr>
+        <td>Signal candle</td>
+        <td>B5</td>
+      </tr>
+      <tr>
+        <td>ST soundscape mood</td>
+        <td>B6</td>
+      </tr>
+      <tr>
+        <td>PC roll from join client</td>
+        <td>C1–C4</td>
+      </tr>
+      <tr>
+        <td>Phase HUD</td>
+        <td>D1</td>
+      </tr>
+      <tr>
+        <td>Placements probe / P10</td>
+        <td>D2</td>
+      </tr>
+      <tr>
+        <td>PC-only UI (no ST leak)</td>
+        <td>D3</td>
+      </tr>
+      <tr>
+        <td>Rejoin auto-seat</td>
+        <td>E2</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>Agent-oriented matrix + hotseat console probes: <a href="Multiplayer-E2E.md">Multiplayer-E2E.md</a>.</p>
+  <hr>
+  <h2 id="after-the-session">After the session</h2>
+  <ol>
+    <li>Linear comment on <strong>TOR-144</strong> with pass/fail per phase + any <code>P10 …</code> log lines.</li>
+    <li>File bugs with scenario ids (A1, B1, C2, …).</li>
+    <li>If all green → mark <strong>TOR-249</strong> Done.</li>
+    <li>Optional later: full Advance loop, Memoriam LUT (<strong>TOR-101</strong>), absent-player presence
+      (<strong>TOR-293</strong>), P10 sync bridge.</li>
+  </ol>
+</body>
+
+</html>
