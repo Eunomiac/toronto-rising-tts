@@ -373,15 +373,15 @@ end
 
 local STARTUP_LOADING_OVERLAY_ID = "overlay_globalBlindfold"
 
---- Per connected player: seat colors that already received `UI.setXml` this session (TOR-285 hotseat lag).
-local seatXmlRefreshDoneByPlayer = {}
+--- Per connected player: seat colors that already received seat-HUD visibility reveal this session (TOR-285 / TOR-375).
+local seatHudRevealDoneByPlayer = {}
 
 --- First `onPlayerChangeColor` after `onPlayerConnect` still auto-refreshes UI (including Host connect).
 local pendingConnectSeatRefreshByPlayer = {}
 
 --- Force-hide global blindfold (`overlay_globalBlindfold`) for all clients.
---- `U.RunSequence`: hide (FadeOut) → wait 1s → clear `active` so a later full-XML seat
---- refresh (TOR-285) cannot resurrect the overlay with `active` still true.
+--- `U.RunSequence`: hide (FadeOut) → wait 1s → clear `active` so a later seat HUD reveal
+--- cannot resurrect the overlay with `active` still true.
 local function hideStartupLoadingOverlays()
     U.RunSequence({
         function()
@@ -456,41 +456,71 @@ local function seatAssignmentPlayerKey(player)
     return nil
 end
 
-local function clearSeatXmlRefreshForPlayer(player)
+local function clearSeatHudRevealForPlayer(player)
     local key = seatAssignmentPlayerKey(player)
     if key ~= nil then
-        seatXmlRefreshDoneByPlayer[key] = {}
+        seatHudRevealDoneByPlayer[key] = {}
     end
 end
 
-local function hasSeatXmlRefreshDone(player, seatColor)
+local function hasSeatHudRevealDone(player, seatColor)
     local key = seatAssignmentPlayerKey(player)
     if key == nil then
         return false
     end
-    local perPlayer = seatXmlRefreshDoneByPlayer[key]
+    local perPlayer = seatHudRevealDoneByPlayer[key]
     return type(perPlayer) == "table" and perPlayer[seatColor] == true
 end
 
-local function markSeatXmlRefreshDone(player, seatColor)
+local function markSeatHudRevealDone(player, seatColor)
     local key = seatAssignmentPlayerKey(player)
     if key == nil then
         return
     end
-    if type(seatXmlRefreshDoneByPlayer[key]) ~= "table" then
-        seatXmlRefreshDoneByPlayer[key] = {}
+    if type(seatHudRevealDoneByPlayer[key]) ~= "table" then
+        seatHudRevealDoneByPlayer[key] = {}
     end
-    seatXmlRefreshDoneByPlayer[key][seatColor] = true
+    seatHudRevealDoneByPlayer[key][seatColor] = true
 end
 
---- Seconds to wait before TOR-285 full XmlUI rebuild on seat assign.
---- Immediate setXml during join sync correlated with client connection timeouts
---- (Grey→PC seat change after partial join: music + blindfold visible, then timeout).
-local SEAT_ASSIGN_SET_XML_DEFER_SEC = 4
+--- PC Global HUD root element ids for one seat (predeclared in ui/player/*).
+--- @param seatColor string
+--- @return string[]
+local function pcSeatHudRootIds(seatColor)
+    return {
+        "playerHud_overlays_" .. seatColor,
+        "playerHud_rightSidebar_" .. seatColor,
+        "playerHud_referenceLayer_" .. seatColor,
+        "playerHud_corePanel_map_" .. seatColor,
+        "playerHud_overlay_camera_" .. seatColor,
+        "gameStateOverlay_location_" .. seatColor,
+        "playerHud_overlay_blindfold_" .. seatColor,
+        "rollControl_root_" .. seatColor,
+    }
+end
 
---- Re-evaluate XmlUI visibility after seat assignment (TTS engine snapshotted-at-load quirk; TOR-285).
---- Full `UI.setXml` runs once per player per seat color after connect; later hotseat swaps skip it.
---- Deferred briefly so join-client state sync can finish before the Global UI rebuild (TOR-374).
+--- Rebind XmlUI `visibility` for a seated player without replacing the Global UI document (TOR-375).
+--- Host hotseat probe (visProbe_*) confirmed runtime visibility rebind; join-client still verify under TOR-144.
+--- @param seatColor string
+local function revealSeatHudVisibility(seatColor)
+    if type(U.setAttribute) ~= "function" then
+        return
+    end
+    if seatColor == "Black" then
+        U.setAttribute("HUD_PANEL_BLACK", "visibility", "Black|Host")
+        return
+    end
+    if not U.isIn(seatColor, C.PlayerColors) then
+        return
+    end
+    for _, eid in ipairs(pcSeatHudRootIds(seatColor)) do
+        U.setAttribute(eid, "visibility", seatColor)
+    end
+end
+
+--- Re-evaluate seat HUD after seat assignment (TTS visibility snapshotted-at-load quirk; TOR-285 / TOR-375).
+--- Uses runtime visibility attribute rebind + targeted UpdateUIDisplays — never a full UI document replace.
+--- First visit per player per seat since connect; later hotseat swaps skip the reveal but still refresh displays.
 --- @param seatColor string
 local function refreshGlobalUiAfterSeatAssignment(seatColor)
     if type(seatColor) ~= "string" or seatColor == "" or seatColor == "Grey" then
@@ -504,22 +534,18 @@ local function refreshGlobalUiAfterSeatAssignment(seatColor)
     end
 
     local seated = Player[seatColor]
-    local needsSetXml = true
-    if U.isPlayer(seated) and hasSeatXmlRefreshDone(seated, seatColor) then
-        needsSetXml = false
+    local needsReveal = true
+    if U.isPlayer(seated) and hasSeatHudRevealDone(seated, seatColor) then
+        needsReveal = false
     end
 
-    local shouldMarkSeatRefreshDone = false
+    local shouldMarkRevealDone = false
 
     local function applyPostSeatUiRefresh()
-        -- Drop orphaned transition blindfolds on empty PC seats (host left mid-settle).
         local HUDBF = require("core.hud_blindfold")
         if type(HUDBF.clearBlindfoldsForUnoccupiedPcSeats) == "function" then
             HUDBF.clearBlindfoldsForUnoccupiedPcSeats()
         end
-        -- UI.setXml rebuilds XmlUI from source defaults (overlays active=false). Clear
-        -- HO lastVisible / fingerprint caches so the next overlay sync re-issues show/hide
-        -- instead of assuming pre-setXml visibility still matches the live UI.
         if type(HO.invalidateOverlayInputCache) == "function" then
             HO.invalidateOverlayInputCache()
         end
@@ -550,63 +576,21 @@ local function refreshGlobalUiAfterSeatAssignment(seatColor)
         if type(UpdateUIDisplays) == "function" then
             UpdateUIDisplays(delta)
         end
-        if shouldMarkSeatRefreshDone and U.isPlayer(seated) then
-            markSeatXmlRefreshDone(seated, seatColor)
-            shouldMarkSeatRefreshDone = false
+        if shouldMarkRevealDone and U.isPlayer(seated) then
+            markSeatHudRevealDone(seated, seatColor)
+            shouldMarkRevealDone = false
         end
-        -- Do not force-hide: seat XML refresh must not override Intermission global blindfold.
         applyGlobalBlindfoldFromPhase()
     end
 
-    local function schedulePostSeatUiRefresh()
-        if UI.loading == true then
-            U.waitUntil(applyPostSeatUiRefresh, function()
-                return UI.loading ~= true
-            end, false, 10, 0.05)
-        else
-            U.delay(applyPostSeatUiRefresh, 0)
+    if needsReveal then
+        if U.isPlayer(seated) then
+            shouldMarkRevealDone = true
         end
+        print(string.format("[SeatUI] Revealing HUD visibility for %s (no full UI refresh)", tostring(seatColor)))
+        revealSeatHudVisibility(seatColor)
     end
-
-    if not needsSetXml then
-        schedulePostSeatUiRefresh()
-        return
-    end
-
-    if type(UI.getXml) ~= "function" or type(UI.setXml) ~= "function" then
-        return
-    end
-
-    local xml = UI.getXml()
-    if type(xml) ~= "string" or xml == "" then
-        return
-    end
-
-    if U.isPlayer(seated) then
-        shouldMarkSeatRefreshDone = true
-    end
-
-    -- TOR-374: defer full rebuild so join sync can complete; TOR-285 still needs a full UI refresh eventually.
-    print(string.format(
-        "[SeatUI] Deferring full UI refresh for %s by %.1fs (join-timeout mitigation)",
-        tostring(seatColor),
-        SEAT_ASSIGN_SET_XML_DEFER_SEC
-    ))
-    U.delay(function()
-        if type(UI.setXml) ~= "function" then
-            return
-        end
-        -- Prefer live XML if still available (other UI mutations may have landed during defer).
-        local payload = xml
-        if type(UI.getXml) == "function" then
-            local liveXml = UI.getXml()
-            if type(liveXml) == "string" and liveXml ~= "" then
-                payload = liveXml
-            end
-        end
-        UI.setXml(payload)
-        schedulePostSeatUiRefresh()
-    end, SEAT_ASSIGN_SET_XML_DEFER_SEC)
+    applyPostSeatUiRefresh()
 end
 
 --- Bundle-safe seat-assignment UI refresh (`Global.call` from `core/main.ttslua` auto-assign early return).
@@ -6223,7 +6207,7 @@ function onPlayerConnect(playerOrColor)
             tostring(connected.steam_id),
             tostring(connected.color)
         ))
-        clearSeatXmlRefreshForPlayer(connected)
+        clearSeatHudRevealForPlayer(connected)
         local playerKey = seatAssignmentPlayerKey(connected)
         if playerKey ~= nil then
             pendingConnectSeatRefreshByPlayer[playerKey] = true

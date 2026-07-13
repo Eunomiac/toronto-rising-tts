@@ -455,7 +455,7 @@ function onFrenzyClick(player, value, id)
     initiateRollByTrigger("frenzy", "Frenzy Check")
 end
 
---- Replace dynamic-page markup from PCS-backed stats (`self.UI.setXml`).
+--- Replace dynamic-page markup from PCS-backed stats (full document replace — TOR-376 will remove).
 --- Cheap no-op when not a dynamic page, fingerprint unchanged, or builder returns empty (placeholder).
 local function applyPageDynamicXml()
   syncSheetContextFromGmNotes()

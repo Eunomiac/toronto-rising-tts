@@ -1,125 +1,67 @@
 --[[
-
     CONTROL_BOARD object UI — XmlUI on the tile (same crisp pattern as csheet_defaults `page_root`).
 
-
-
     Do not use createButton on this object: scale is ~{20, 1, 10}, so small width/height values
-
     stretch and blur. Character sheets use large pixel sizes + scale="0.1 0.1 0.1" + rotation="0 0 180".
 
-
-
     XmlUI layout source of truth: ui/objects/npc_control_board.xml
+    Baked onto the object via TTS Editor Include stub + Save & Play (TOR-375).
+    Runtime path only clears legacy 3D buttons and validates baked ids — never replaces the UI document.
 
-    Embedded at build time into lib/npc_control_board_ui_xml.ttslua (npm run npc-control-board-ui:generate).
-
-
-
-    Global reconcile (`Gameboard.ensureControlBoardObjectUi`) calls installObjectUi.
-
+    Global reconcile (`Gameboard.ensureControlBoardObjectUi`) calls ensureBakedObjectUi.
 ]]
-
-
 
 local U = require("lib.util")
 
-local UiXml = require("lib.npc_control_board_ui_xml")
-
-
-
 local NPC_CONTROL_BOARD_UI = {}
 
-
-
---- Fingerprint of last installed XML (skip redundant setXml when unchanged this session).
-
-local lastInstalledXmlFingerprint = nil
-
-
-
 --- @param obj Object
-
 --- @return boolean
-
 local function isBoardObject(obj)
-
     return U.isGameObject(obj) and obj.clearButtons ~= nil
-
 end
-
-
-
---- @param xml string
-
---- @return string
-
-local function xmlFingerprint(xml)
-
-    if type(xml) ~= "string" then
-
-        return ""
-
-    end
-
-    return tostring(#xml) .. ":" .. string.sub(xml, 1, 128)
-
-end
-
-
-
---- Install toolbar XmlUI from embedded source XML; remove legacy 3D createButton labels if present.
 
 --- @param obj Object
+--- @return boolean
+local function hasBakedToolbarUi(obj)
+    if obj.UI == nil then
+        return false
+    end
+    if type(obj.UI.getXml) == "function" then
+        local xml = obj.UI.getXml()
+        if type(xml) == "string" and string.find(xml, 'id="gb_root"', 1, true) then
+            return true
+        end
+    end
+    if type(obj.UI.getAttribute) == "function" then
+        local active = obj.UI.getAttribute("gb_root", "active")
+        if active ~= nil then
+            return true
+        end
+    end
+    return false
+end
 
-function NPC_CONTROL_BOARD_UI.installObjectUi(obj)
-
+--- Ensure toolbar XmlUI is baked on the object; remove legacy 3D createButton labels if present.
+--- @param obj Object
+function NPC_CONTROL_BOARD_UI.ensureBakedObjectUi(obj)
     if not isBoardObject(obj) then
-
         return
-
-    end
-
-    if obj.UI == nil or type(obj.UI.setXml) ~= "function" then
-
-        print("[npc_control_board_ui] installObjectUi: UI.setXml unavailable on " .. tostring(obj.getGUID()))
-
-        return
-
-    end
-
-    local xml = UiXml.getXml()
-
-    local fingerprint = xmlFingerprint(xml)
-
-    if lastInstalledXmlFingerprint == fingerprint then
-
-        return
-
     end
 
     obj.clearButtons()
 
-    local ok = obj.UI.setXml(xml)
-
-    if ok then
-
-        lastInstalledXmlFingerprint = fingerprint
-
-    else
-
-        print("[npc_control_board_ui] UI.setXml failed on " .. tostring(obj.getGUID()))
-
+    if not hasBakedToolbarUi(obj) then
+        print(
+            "[npc_control_board_ui] CONTROL_BOARD missing baked XmlUI (gb_root). "
+                .. "In TTS Editor set Custom UI Include to ui/objects/npc_control_board.xml, then Save & Play."
+        )
+        return
     end
-
 end
 
-
-
 --- @param obj Object
-
-NPC_CONTROL_BOARD_UI.installObjectButtons = NPC_CONTROL_BOARD_UI.installObjectUi
-
-
+NPC_CONTROL_BOARD_UI.installObjectUi = NPC_CONTROL_BOARD_UI.ensureBakedObjectUi
+NPC_CONTROL_BOARD_UI.installObjectButtons = NPC_CONTROL_BOARD_UI.ensureBakedObjectUi
 
 return NPC_CONTROL_BOARD_UI
