@@ -63,7 +63,7 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | `GlobalGameboardApply/Clear/ClearClick/Save/Load/ToggleLayoutLock/ToggleControlBoardSnaps/TokenDroppedOnDiceBag/StageLerpOrchestrator` | C | 5 | Gameboard; Save is state-only (B) |
 | `GlobalGameboardInstallPaletteSnaps` | C | Done | palette snap install |
 | `GlobalGameboardSyncSnapsToggleLabel` | A | — | snaps + layout-lock toolbar labels |
-| `GlobalToggleSignalFireState` | C | 5 | signal lights |
+| `GlobalToggleSignalFireState` | C | 5 | signal lights; on/off = world Y — seat layout preserves per-seat Y (TOR-380), no gameState reconciler |
 | `GlobalApplyTarotState` | C | — | Pink tarot drawer/deck/button poses (TOR-144 W2) |
 | `GlobalApplyCompanionToggleClick` | C | — | Red/Brown famulus companion left/right click (TOR-288) |
 | `GlobalDiceBagClick/RightClick/StorytellerDiceBagClick` | B+C | 5 | rolls |

@@ -573,6 +573,35 @@ local function isCsheetPageRoleKey(roleKey)
   return type(roleKey) == "string" and string.match(roleKey, "^CSHEET_PAGE_%d+$") ~= nil
 end
 
+--- Roles whose on/off (or page show/hide) is encoded in world Y — must not copy reference Y across seats.
+--- @param roleKey string|nil
+--- @return boolean
+local function isYStateRoleKey(roleKey)
+  return isCsheetPageRoleKey(roleKey) or roleKey == "SIGNAL_FIRE"
+end
+
+--- PC throne GUID in `postCorrections` — still applied when `skipPcPostCorrections` (TOR-378).
+--- @param guid string|nil
+--- @return boolean
+local function isPcSeatChairGuid(guid)
+  if type(guid) ~= "string" or guid == "" then
+    return false
+  end
+  local chairs = {
+    G.GUIDS.SEAT_CHAIR_RED,
+    G.GUIDS.SEAT_CHAIR_ORANGE,
+    G.GUIDS.SEAT_CHAIR_BROWN,
+    G.GUIDS.SEAT_CHAIR_PINK,
+    G.GUIDS.SEAT_CHAIR_PURPLE,
+  }
+  for i = 1, #chairs do
+    if chairs[i] == guid then
+      return true
+    end
+  end
+  return false
+end
+
 --- CSHEET visibility follows world Y (on ≈ 3.19, off = -200). Layout must not leave setInvisibleTo stale (TOR-343).
 --- @param obj Object
 local function reconcileCsheetPageVisibilityFromY(obj)
@@ -593,6 +622,30 @@ local function reconcileCsheetPageVisibilityFromY(obj)
     obj.setInvisibleTo({})
   else
     obj.setInvisibleTo({ "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" })
+  end
+end
+
+--- SIGNAL_FIRE on/off is world Y; layout must re-apply isHidden from preserved Y (TOR-380).
+--- @param obj Object
+local function reconcileSignalFireVisibilityFromY(obj)
+  if obj == nil or not U.isGameObject(obj) then
+    return
+  end
+  local pos = obj.getPosition()
+  local y = (type(pos) == "userdata" or type(pos) == "table") and pos.y or nil
+  if type(y) ~= "number" then
+    return
+  end
+  local entry = C.ObjectPositions and C.ObjectPositions.SIGNAL_FIRE
+  local onY = type(entry) == "table" and type(entry.on) == "table" and type(entry.on.position) == "table"
+    and tonumber(entry.on.position.y) or 7.85
+  local offY = type(entry) == "table" and type(entry.off) == "table" and type(entry.off.position) == "table"
+    and tonumber(entry.off.position.y) or -200
+  local midpointY = (onY + offY) / 2
+  if y >= midpointY then
+    obj.setInvisibleTo({})
+  else
+    obj.setInvisibleTo({ "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey", "Black" })
   end
 end
 
@@ -2996,7 +3049,9 @@ local function applyPostCorrections(sourceObjects, computed, opts)
       local applyCorrection = false
       if U.Type(applySeatKey) == "string" and applySeatKey ~= "" then
         applyCorrection = seatIncludedInLayoutPass(applySeatKey, computed)
-        if applyCorrection and skipPcPostCorrections and isPlayerSeatKey(applySeatKey) then
+        -- TOR-378: still apply PC throne (`SEAT_CHAIR_*`) rows; skip other PC postCorrections.
+        if applyCorrection and skipPcPostCorrections and isPlayerSeatKey(applySeatKey)
+            and not isPcSeatChairGuid(guid) then
           applyCorrection = false
         end
       end
@@ -4718,10 +4773,10 @@ local function propagateSeatRolesFromReference(
           else
             local placed = frameAfterSeatRigid(centerPoint, refFrame, rigid)
             if not dryRun then
-              -- TOR-343: CSHEET page Y is per-seat navigation state. Copy XZ/rot from the
-              -- reference rigid frame, but keep this seat's own Y so setInvisibleTo stays aligned.
+              -- TOR-343 / TOR-380: CSHEET page Y and SIGNAL_FIRE on/off Y are per-seat state.
+              -- Copy XZ/rot from the reference rigid frame, but keep this seat's own Y.
               local placePos = placed.position
-              if isCsheetPageRoleKey(roleKey) then
+              if isYStateRoleKey(roleKey) then
                 local cur = obj.getPosition()
                 local curY = (type(cur) == "userdata" or type(cur) == "table") and cur.y or nil
                 if type(curY) == "number" then
@@ -4731,6 +4786,8 @@ local function propagateSeatRolesFromReference(
               placeObjectExact(obj, placePos, placed.rotation)
               if isCsheetPageRoleKey(roleKey) then
                 reconcileCsheetPageVisibilityFromY(obj)
+              elseif roleKey == "SIGNAL_FIRE" then
+                reconcileSignalFireVisibilityFromY(obj)
               end
             end
             movedCount = movedCount + 1

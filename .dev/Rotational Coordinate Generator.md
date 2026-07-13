@@ -37,7 +37,9 @@ Use the table-driven entrypoints for production layout:
 Current placement behavior:
 
 - PC seats use hand-delta placement: move the hand zone, then rigid-follow `{seatKey}Object` tagged objects.
+- **Y-as-state roles** (`CSHEET_PAGE_*`, `SIGNAL_FIRE`): layout copies XZ/rot from the reference seat but **preserves each seat's own Y** (and re-applies hide from Y) so page navigation / signal on-off are not fan-out from the reference (TOR-343, TOR-380).
 - NPC seats use reference-role copy from the authored reference segment, then `postCorrections` / `postCorrectionsBySeatRole`.
+- Production passes `skipPcPostCorrections = true` for figurine/other PC rows, but **PC `SEAT_CHAIR_*` throne `postCorrections` still run** (TOR-378 — Orange/Brown/Pink rotation+Y).
 - Manual drift repair uses `R.refreshSeatRigsFromReferenceSegment(opts)` or `DEBUG.refreshSeatRigsFromReference(opts)`.
 
 Low-level helpers such as `generateRotationalCoordinates` and `resolveSeatObjects` still exist for debug/geometry workflows, but new production code should use the table-driven wrapper unless the task explicitly concerns those low-level helpers.
