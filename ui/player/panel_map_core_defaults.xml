@@ -145,8 +145,8 @@
   />
 
 
-  <!-- Tip at `C.Sites.offsetXY` (LowerCenter). Parent stack is a Panel (not a LayoutGroup), but
-       keep ignoreLayout so offsetXY is never layout-driven if the hierarchy changes (TOR-379). -->
+  <!-- Tip at `C.Sites.offsetXY` (LowerCenter). Keep ignoreLayout: TTS Panels become LayoutGroups
+       when given `padding`, which would pull absolute pin offsetXY into layout flow (TOR-379). -->
   <Image class="hud_map_player_pin"
     width="300"
     preserveAspect="true"
