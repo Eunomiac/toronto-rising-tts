@@ -472,6 +472,48 @@ local function presentMatches(color, compulsionType, playerKey, token)
         token
     ))
 end
+--- @param obj Object|nil
+--- @param color string
+--- @return boolean
+local function isInSeatHand(obj, color)
+    if obj == nil or type(color) ~= "string" then
+        return false
+    end
+    local guid = obj.getGUID and obj.getGUID() or nil
+    if type(guid) ~= "string" then
+        return false
+    end
+    local hz = U.getHandZone(color)
+    if hz == nil or hz.getObjects == nil then
+        return false
+    end
+    local zoneObjs = hz.getObjects() or {}
+    for i = 1, #zoneObjs do
+        local other = zoneObjs[i]
+        if other ~= nil and other.getGUID ~= nil and other.getGUID() == guid then
+            return true
+        end
+    end
+    return false
+end
+
+--- Shuffle the seat Compulsions deck after a generic is returned.
+--- @param color string
+local function shufflePlayerDeck(color)
+    local deck = Compulsions.resolvePlayerDeck(color)
+    if deck == nil then
+        print("[Compulsions] shuffle skipped: COMPULSION_DECK_" .. string.upper(tostring(color)) .. " missing")
+        return
+    end
+    if deck.shuffle ~= nil then
+        deck.shuffle()
+    elseif deck.randomize ~= nil then
+        deck.randomize()
+    else
+        print("[Compulsions] shuffle unavailable on player deck for " .. tostring(color))
+    end
+end
+
 --- Return a presented (or mid-callback) card to the master deck.
 --- @param card Object|nil
 local function returnCardToMaster(card)
@@ -483,7 +525,48 @@ local function returnCardToMaster(card)
         print("[Compulsions] Cannot return card: master deck missing or putObject unavailable.")
         return
     end
+    -- Locked cards often refuse putObject until unlocked.
+    if card.setLock ~= nil then
+        card.setLock(false)
+    end
     master.putObject(card)
+end
+
+--- Collect unselected presented cards (session guids + world backup by Type/charKey).
+--- @param color string
+--- @param session table
+--- @param chosenGuid string|nil
+--- @return Object[]
+local function collectUnselectedPresented(color, session, chosenGuid)
+    local byGuid = {}
+    for _, guid in ipairs(session.cardGuids or {}) do
+        if guid ~= chosenGuid then
+            byGuid[guid] = true
+        end
+    end
+    for _, obj in ipairs(getObjects() or {}) do
+        if obj ~= nil and (obj.type == "Card" or obj.tag == "Card") and obj.getGMNotes ~= nil then
+            local parsed = Compulsions.parseNotes(obj.getGMNotes())
+            if parsed ~= nil
+                and parsed.suffix ~= "generic"
+                and parsed.type == session.type
+                and charKeysEqual(parsed.playerKey, session.playerKey)
+            then
+                local g = obj.getGUID and obj.getGUID() or nil
+                if type(g) == "string" and g ~= chosenGuid then
+                    byGuid[g] = true
+                end
+            end
+        end
+    end
+    local list = {}
+    for guid, _ in pairs(byGuid) do
+        local obj = getObjectFromGUID(guid)
+        if obj ~= nil then
+            list[#list + 1] = obj
+        end
+    end
+    return list
 end
 
 --- @param color string
@@ -503,23 +586,25 @@ local function placeChosenCard(color, chosenCard, slotIndex, token)
     local mid = Vector(basePos.x, CHOSEN_HEIGHT, basePos.z)
     local offset = offsetTowardOrigin({ x = mid.x, y = mid.y, z = mid.z })
     local finalPos = Vector(offset.x, offset.y, offset.z)
+    -- Stay locked for the whole move so the card floats instead of falling.
+    if chosenCard.setLock ~= nil then
+        chosenCard.setLock(true)
+    end
     if pose.rotation ~= nil and chosenCard.setRotation ~= nil then
         chosenCard.setRotation(Vector(pose.rotation.x, pose.rotation.y, pose.rotation.z))
     end
-    if chosenCard.setLock ~= nil then
-        chosenCard.setLock(false)
-    end
-    -- Snap to anchor height first, then lerp toward origin.
     chosenCard.setPosition(mid)
     U.setPositionSlow(chosenCard, finalPos, CHOSEN_LERP_DURATION)
     U.delay(function()
         if not isTokenCurrent(color, token) then
             return
         end
-        if chosenCard == nil or chosenCard.setLock == nil then
-            return
+        if chosenCard ~= nil and chosenCard.setLock ~= nil then
+            chosenCard.setLock(true)
         end
-        chosenCard.setLock(true)
+        if chosenCard ~= nil and chosenCard.setPosition ~= nil then
+            chosenCard.setPosition(finalPos)
+        end
     end, CHOSEN_LERP_DURATION + 0.05)
 
     local slots = chosenGuidsByColor[color]
@@ -544,13 +629,14 @@ function Compulsions.finishSelection(color, chosenCard)
     presentByColor[color] = nil
 
     local chosenGuid = chosenCard ~= nil and chosenCard.getGUID and chosenCard.getGUID() or nil
-    for _, guid in ipairs(session.cardGuids or {}) do
-        if guid ~= chosenGuid then
-            local other = getObjectFromGUID(guid)
-            if other ~= nil then
-                returnCardToMaster(other)
-            end
-        end
+    local unselected = collectUnselectedPresented(color, session, chosenGuid)
+    print(string.format(
+        "[Compulsions] Returning %d unselected card(s) to master for %s",
+        #unselected,
+        color
+    ))
+    for i = 1, #unselected do
+        returnCardToMaster(unselected[i])
     end
 
     local slotIndex = firstFreePermanentSlot(color)
@@ -644,63 +730,63 @@ function Compulsions.onGenericDrawn(container, card)
     presentByColor[color] = nil
 
     print(string.format(
-        "[Compulsions] Generic draw %s (%s) — returning to deck and presenting master matches.",
+        "[Compulsions] Generic draw %s (%s) — return to deck, shuffle, then present.",
         compulsionType,
         color
     ))
 
-    -- Draw-into-hand finishes after leave-container; defer putObject so TTS does not win the race.
-    local function returnGenericAndPresent()
+    -- Leave-container races Draw-into-hand: retry putObject until the card leaves the hand,
+    -- then shuffle, then present (present only once).
+    local maxAttempts = 8
+    local attempt = 0
+    local function tryReturnGeneric()
         if not isTokenCurrent(color, token) then
             return
         end
-        local deck = nil
-        if type(deckGuid) == "string" then
-            deck = getObjectFromGUID(deckGuid)
-        end
-        if deck == nil then
-            deck = Compulsions.resolvePlayerDeck(color)
-        end
-        local loose = nil
-        if type(cardGuid) == "string" then
-            loose = getObjectFromGUID(cardGuid)
-        end
-        if deck == nil or deck.putObject == nil then
-            print("[Compulsions] Deferred return failed: player deck missing for " .. color)
-            return
-        end
-        if loose ~= nil then
+        attempt = attempt + 1
+        local deck = (type(deckGuid) == "string" and getObjectFromGUID(deckGuid))
+            or Compulsions.resolvePlayerDeck(color)
+        local loose = type(cardGuid) == "string" and getObjectFromGUID(cardGuid) or nil
+        if deck ~= nil and deck.putObject ~= nil and loose ~= nil then
             if loose.setLock ~= nil then
                 loose.setLock(false)
             end
             deck.putObject(loose)
-        else
-            print("[Compulsions] Generic card guid vanished before putObject: " .. tostring(cardGuid))
         end
-        presentMatches(color, compulsionType, charKey, token)
+
+        U.delay(function()
+            if not isTokenCurrent(color, token) then
+                return
+            end
+            local still = type(cardGuid) == "string" and getObjectFromGUID(cardGuid) or nil
+            local stillInHand = still ~= nil and isInSeatHand(still, color)
+            if stillInHand then
+                if attempt < maxAttempts then
+                    print(string.format(
+                        "[Compulsions] Generic still in %s hand — retry return (%d/%d)",
+                        color,
+                        attempt,
+                        maxAttempts
+                    ))
+                    tryReturnGeneric()
+                    return
+                end
+                print("[Compulsions] FAILED to return generic to COMPULSION_DECK_" .. string.upper(color)
+                    .. " after " .. tostring(maxAttempts) .. " attempts.")
+                U.AlertGM("[Compulsions] Could not return generic card to player deck.")
+                -- Still present so the table flow is not stuck.
+            else
+                print("[Compulsions] Generic returned to " .. color .. " deck; shuffling.")
+                shufflePlayerDeck(color)
+            end
+            if presentByColor[color] == nil and isTokenCurrent(color, token) then
+                presentMatches(color, compulsionType, charKey, token)
+            end
+        end, 0.12)
     end
 
-    -- Immediate attempt + short retry after hand deal settles.
-    returnGenericAndPresent()
-    U.delay(function()
-        if not isTokenCurrent(color, token) then
-            return
-        end
-        -- If the generic is still a loose Card (e.g. still in hand), return again then ensure present runs once.
-        local loose = type(cardGuid) == "string" and getObjectFromGUID(cardGuid) or nil
-        if loose ~= nil and (loose.type == "Card" or loose.tag == "Card") then
-            local deck = (type(deckGuid) == "string" and getObjectFromGUID(deckGuid))
-                or Compulsions.resolvePlayerDeck(color)
-            if deck ~= nil and deck.putObject ~= nil then
-                print("[Compulsions] Retry putObject for generic still loose (" .. color .. ").")
-                deck.putObject(loose)
-            end
-        end
-        -- Present only if session not yet opened (immediate path may already have started takes).
-        if presentByColor[color] == nil and isTokenCurrent(color, token) then
-            presentMatches(color, compulsionType, charKey, token)
-        end
-    end, 0.12)
+    -- First attempt after the hand deal settles.
+    U.delay(tryReturnGeneric, 0.05)
 
     return true
 end
