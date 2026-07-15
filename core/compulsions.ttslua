@@ -50,16 +50,19 @@ function Compulsions.parseNotes(notes)
     if trimmed == "" then
         return nil
     end
-    -- Suffix is case-insensitive (workshop may write Generic).
+    -- Lua patterns have no `|` alternation — capture suffix as plain text, then validate.
     local compulsionType, playerKey, suffix = string.match(
         trimmed,
-        "^Compulsion:([^-]+)%-([^:]+):([Gg]eneric|[1-4])$"
+        "^Compulsion:([^%-]+)%-([^:]+):(.+)$"
     )
     if compulsionType == nil or playerKey == nil or suffix == nil then
         return nil
     end
-    if string.lower(suffix) == "generic" then
+    suffix = string.lower(trimNotes(suffix))
+    if suffix == "generic" then
         suffix = "generic"
+    elseif suffix ~= "1" and suffix ~= "2" and suffix ~= "3" and suffix ~= "4" then
+        return nil
     end
     return {
         type = compulsionType,
