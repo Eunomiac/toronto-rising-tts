@@ -20,10 +20,7 @@ Verification:
 ## For Immediate Implementation
 > _After registering each of these issues with Linear in the ordinary fashion, before updating the Focus Stack, briefly review the issue: If it is a quick or easy fix, implement it immediately without waiting for user confirmation. Otherwise, promote it to the top of the Focus Stack, and offer to begin work on it immediately when summarizing your work processing `INBOX.md` to the user. If multiple issues require promotion in this way, consider how best to resolve them as quickly as possible, and offer to draft an implementation plan in your response to the user._
 
-
-
 ## Active
-- [Bug] There's a mysterious bug on first loading the save, by which the Global HUD is not displayed when the game is loaded for the first time. Object-hosted XML (like the Stage Control Board and character sheets) is displayed, but anything in `Global.xml` is simply absent.  Upon reloading the save, without changing anything, the Global HUD appears. During the first load of the game (when the global HUD is hidden), all of the XML code does appear in the in-TTS script editor (Modding -> Scripting -> UI).
 
 ## External Work (Set STATUS to "External To Do")
 
@@ -45,6 +42,14 @@ Verification:
 
 
 ## Processed
+
+2026-07-15 INBOX Immediate — Prince's Court stake disabled dots → **TOR-387** (Character Sheets Bug; shipped)
+
+2026-07-15 INBOX Immediate — `sheetDisplay:false` Status overlays + Stats/Projects → **TOR-385** (Character Sheets Feature, High)
+
+2026-07-15 INBOX Immediate — Domain ratings chasse/lien/portillon/haven in Stats + PE → **TOR-386** (Character Sheets Feature, High)
+
+2026-07-15 INBOX Active — Global HUD missing on first save load → **TOR-384** (UI & HUD Bug, High; relatedTo **TOR-285**, **TOR-381**)
 
 2026-07-15 INBOX Immediate — Project Editor start-date space-split parse → **TOR-383** (Character Sheets Bug; shipped)
 

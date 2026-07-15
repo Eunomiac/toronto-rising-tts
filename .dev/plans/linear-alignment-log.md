@@ -539,5 +539,11 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-15 | DONE | TOR-293 | Connection∧narrative effective presence; disconnect/connect; DEBUG toggle |
 | 2026-07-15 | DONE | TOR-328 | Sole Confirm auto-proceed with physical-alternate exceptions |
 | 2026-07-15 | Focus | Stack | #1 TOR-329 |
+| 2026-07-15 | CREATE+DONE | TOR-387 | Prince's Court stake disabled dots; `coterie_collect` + stakeQty extraDisabled; shipped Immediate QF |
+| 2026-07-15 | CREATE | TOR-384 | Global HUD missing on first save load (reload fixes); High Bug; parent TOR-37; relatedTo TOR-285/381 |
+| 2026-07-15 | CREATE | TOR-385 | sheetDisplay:false Status overlays + Stats/Projects; High Feature; parent TOR-38; blockedBy TOR-384 |
+| 2026-07-15 | CREATE | TOR-386 | Domain ratings chasse/lien/portillon/haven in Stats+PE; High Feature; parent TOR-38; blockedBy TOR-384 |
+| 2026-07-15 | BLOCK | TOR-329 / TOR-385 / TOR-386 | blockedBy TOR-384 (session HUD before Features / audit) |
+| 2026-07-15 | Focus | Stack | #1 TOR-384, #2 TOR-385, #3 TOR-386, #4 TOR-329 |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
