@@ -82,9 +82,9 @@ UI.setAttributes("panel_scenes_library", {
     <VerticalLayout id="db_panel_scenes_library_constructor_fork_modal_content" padding="10 10 10 10" spacing="6" childForceExpandWidth="true">
       <Text id="db_panel_scenes_library_constructor_fork_modal_header" class="hud_storyteller_label">Fork Active Scene</Text>
       <Text id="db_panel_scenes_library_constructor_fork_modal_new_title_header" fontSize="9" color="#CCCCCC">New scene title</Text>
-      <InputField id="scenes_ctor_fork_title_new" class="hud_storyteller_input" minHeight="28" fontSize="12" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" text="" onValueChanged="HUD_scenesCtorForkTitleChanged" onEndEdit="HUD_scenesCtorForkTitleChanged" />
+      <InputField id="scenes_ctor_fork_title_new" class="hud_storyteller_input" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" text="" onValueChanged="HUD_scenesCtorForkTitleChanged" onEndEdit="HUD_scenesCtorForkTitleChanged" />
       <Text id="db_panel_scenes_library_constructor_fork_modal_original_title_header" fontSize="9" color="#CCCCCC">Original scene title (frozen row)</Text>
-      <InputField id="scenes_ctor_fork_title_old" class="hud_storyteller_input" minHeight="28" fontSize="12" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" text="" onValueChanged="HUD_scenesCtorForkTitleChanged" onEndEdit="HUD_scenesCtorForkTitleChanged" />
+      <InputField id="scenes_ctor_fork_title_old" class="hud_storyteller_input" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" text="" onValueChanged="HUD_scenesCtorForkTitleChanged" onEndEdit="HUD_scenesCtorForkTitleChanged" />
       <HorizontalLayout id="db_panel_scenes_library_constructor_fork_modal_buttons" spacing="8" childForceExpandWidth="false" childAlignment="MiddleLeft">
         <Button id="scenes_ctor_fork_confirm" class="hud_storyteller_button" text="Fork" minWidth="96" onClick="HUD_scenesCtorForkConfirm" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
         <Button id="scenes_ctor_fork_cancel" class="hud_storyteller_button" text="Cancel" minWidth="96" onClick="HUD_scenesCtorForkCancel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />

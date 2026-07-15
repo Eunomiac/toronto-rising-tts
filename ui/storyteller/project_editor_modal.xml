@@ -14,7 +14,7 @@
     <Text class="projectEditor_text_wide" fontSize="14" color="#CCCCCC"
       flexibleWidth = "1" preferredWidth="1000" alignment="MiddleLeft" />
 
-    <InputField class="projectEditor_integer_field" contentType="IntegerNumber" characterLimit="2" alignment="MiddleCenter" preferredWidth="0" preferredHeight="28" minHeight="45" minWidth="45" fontSize="28" fontStyle="Bold" flexibleHeight="0" flexibleWidth="0" onValueChanged="HUD_projectEditorField" onEndEdit="HUD_projectEditorField" placeholder=" "  />
+    <InputField class="projectEditor_integer_field" contentType="IntegerNumber" characterLimit="2" alignment="MiddleCenter" preferredWidth="0" minWidth="45" flexibleHeight="0" flexibleWidth="0" onValueChanged="HUD_projectEditorField" onEndEdit="HUD_projectEditorField" placeholder=" "  />
 
     <VerticalLayout class="projectEditor_fullFields" spacing="10" childForceExpandHeight="false" />
 
@@ -30,9 +30,9 @@
 
     <Panel class="projectEditor_adv_picker" rectAlignment="MiddleCenter" width="420" height="420" color="rgba(0.02,0.02,0.05,0.98)" padding="8 8 8 8" />
 
-    <VerticalLayout class="projectEditor_adv_picker_list" spacing="2" childForceExpandHeight="false" />
+    <VerticalLayout class="projectEditor_adv_picker_list" spacing="2" childForceExpandHeight="false" childForceExpandWidth = "true" />
 
-    <Button class="projectEditor_adv_pick_button" preferredHeight="28" fontSize="11" colors="#1a1a22|#2a2a33|#3a3a44|#111111" textColor="#FFFFFF" textAlignment="MiddleLeft" />
+    <Button class="projectEditor_adv_pick_button" minWidth = "100" preferredHeight="28" fontSize="11" colors="#1a1a22|#2a2a33|#3a3a44|#111111" textColor="#FFFFFF" textAlignment="MiddleLeft" />
 
     <Panel class="spacer" flexibleHeight="1" flexibleWidth="1" />
 
@@ -86,7 +86,7 @@
               <Text class="projectEditor_text_label" text="Launch Roll:" flexibleWidth="1" preferredWidth="150" />
               <InputField id="projectEditor_skill" class="projectEditor_text_field" text="" />
               <Text class="projectEditor_text_label" text="+" flexibleWidth="0" preferredWidth="10" alignment="MiddleCenter" fontSize="28" fontStyle="Bold" />
-              <InputField id="projectEditor_advantage" class="projectEditor_text_field" minHeight="28" preferredWidth="1500" text="" />
+              <InputField id="projectEditor_advantage" class="projectEditor_text_field" preferredWidth="1500" text="" />
               <Text class="projectEditor_text_label" text="vs." flexibleWidth="0" preferredWidth="10"/>
               <Panel class="spacer" preferredWidth="100" flexibleWidth="1" />
             </HorizontalLayout>

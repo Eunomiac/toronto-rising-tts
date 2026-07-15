@@ -21,7 +21,7 @@ UI.setAttributes("input_sessionNum", {minHeight = "30", fontStyle = "Bold"})
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
     </HorizontalLayout>
     <Text fontSize="14" fontStyle="Bold" color="#AAAAAA">Session number</Text>
-    <InputField id="input_sessionNum" characterValidation="Integer" text="1" minHeight="30" fontStyle="Bold" minWidth="80" preferredWidth="80"
+    <InputField id="input_sessionNum" characterValidation="Integer" text="1" minWidth="80" preferredWidth="80"
       onValueChanged="HUD_sessionNumInput" onEndEdit="HUD_sessionNumInput" />
   </VerticalLayout>
 </Panel>

@@ -48,7 +48,7 @@
     </HorizontalLayout>
 
     <HorizontalLayout preferredHeight="36" spacing="8" childForceExpandWidth="false" childAlignment="MiddleCenter">
-      <InputField id="dc_mode_input" preferredWidth="280" minWidth="280" preferredHeight="34" minHeight="34" lineType="SingleLine" fontSize="15" textColor="#111111" placeholder="camera mode key (e.g. sheet)" onValueChanged="HUD_debugCameraModeInput" onEndEdit="HUD_debugCameraModeInput"></InputField>
+      <InputField id="dc_mode_input" preferredWidth="280" minWidth="280" lineType="SingleLine" textColor="#111111" placeholder="camera mode key (e.g. sheet)" onValueChanged="HUD_debugCameraModeInput" onEndEdit="HUD_debugCameraModeInput"></InputField>
       <Button class="smallButton" preferredWidth="70" fontSize="11" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugCameraApplyMode">OK</Button>
     </HorizontalLayout>
 

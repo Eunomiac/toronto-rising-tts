@@ -81,26 +81,26 @@
   <HorizontalLayout id="db_panel_scenes_time_buttons_3" spacing="8" childForceExpandWidth="false" childAlignment="UpperLeft">
     <VerticalLayout id="db_panel_scenes_time_buttons_3_day_container" spacing="2" flexibleWidth="0">
       <Text id="db_panel_scenes_time_buttons_3_day_header" fontSize="9" color="#CCCCCC">Day</Text>
-      <InputField id="scenes_clock_day" class="hud_storyteller_input" minWidth="52" preferredWidth="52" preferredHeight="30" minHeight="30" flexibleWidth="0" fontSize="12" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" characterValidation="Integer" text="1" onValueChanged="HUD_scenesClockFieldChanged" onEndEdit="HUD_scenesClockFieldChanged" />
+      <InputField id="scenes_clock_day" class="hud_storyteller_input" minWidth="52" preferredWidth="52" flexibleWidth="0" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" characterValidation="Integer" text="1" onValueChanged="HUD_scenesClockFieldChanged" onEndEdit="HUD_scenesClockFieldChanged" />
     </VerticalLayout>
     <VerticalLayout id="db_panel_scenes_time_buttons_3_year_container" spacing="2" flexibleWidth="0">
       <Text id="db_panel_scenes_time_buttons_3_year_header" fontSize="9" color="#CCCCCC">Year</Text>
-      <InputField id="scenes_clock_year" class="hud_storyteller_input" minWidth="64" preferredWidth="64" preferredHeight="30" minHeight="30" flexibleWidth="0" fontSize="12" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" characterValidation="Integer" text="2026" onValueChanged="HUD_scenesClockFieldChanged" onEndEdit="HUD_scenesClockFieldChanged" />
+      <InputField id="scenes_clock_year" class="hud_storyteller_input" minWidth="64" preferredWidth="64" flexibleWidth="0" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" characterValidation="Integer" text="2026" onValueChanged="HUD_scenesClockFieldChanged" onEndEdit="HUD_scenesClockFieldChanged" />
     </VerticalLayout>
     <VerticalLayout id="db_panel_scenes_time_buttons_3_time_container" spacing="2" flexibleWidth="1">
       <Text id="db_panel_scenes_time_buttons_3_time_header" fontSize="9" color="#CCCCCC">Time (12h)</Text>
-      <InputField id="scenes_clock_time12" class="hud_storyteller_input" minWidth="160" preferredWidth="200" preferredHeight="30" minHeight="30" flexibleWidth="1" fontSize="12" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" placeholder="7:05 PM" text="12:00 AM" onValueChanged="HUD_scenesClockFieldChanged" onEndEdit="HUD_scenesClockFieldChanged" />
+      <InputField id="scenes_clock_time12" class="hud_storyteller_input" minWidth="160" preferredWidth="200" flexibleWidth="1" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" placeholder="7:05 PM" text="12:00 AM" onValueChanged="HUD_scenesClockFieldChanged" onEndEdit="HUD_scenesClockFieldChanged" />
     </VerticalLayout>
     <VerticalLayout id="db_panel_scenes_time_buttons_3_present_day_container" spacing="2" flexibleWidth="0">
       <Text id="db_panel_scenes_time_buttons_3_present_day_header" fontSize="9" color="#CCCCCC">Present day</Text>
-      <Button id="scenes_clock_setPresentDay" class="hud_storyteller_button" text="Set" minWidth="52" preferredWidth="52" preferredHeight="30" minHeight="30" flexibleWidth="0" fontSize="11" onClick="HUD_scenesSetPresentDayClock" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+      <Button id="scenes_clock_setPresentDay" class="hud_storyteller_button" text="Set" minWidth="52" preferredWidth="52" flexibleWidth="0" fontSize="11" onClick="HUD_scenesSetPresentDayClock" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
     </VerticalLayout>
   </HorizontalLayout>
   <HorizontalLayout id="db_panel_scenes_time_buttons_4" spacing="8" childForceExpandWidth="false" childAlignment="MiddleLeft">
     <Text id="db_panel_scenes_time_buttons_4_real_time_clock_header" fontSize="10" color="#CCCCCC">Real-time clock</Text>
     <Button id="scenes_clock_rtToggle" class="hud_storyteller_button" text="OFF" minWidth="56" preferredHeight="28" onClick="HUD_scenesToggleRealTimeClock" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
     <Text id="db_panel_scenes_time_buttons_4_speed_header" fontSize="10" color="#CCCCCC">Speed (× real time)</Text>
-    <InputField id="scenes_clock_speed" class="hud_storyteller_input" minWidth="48" preferredWidth="48" preferredHeight="28" minHeight="28" flexibleWidth="0" fontSize="12" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" characterValidation="FloatingPoint" text="1" onValueChanged="HUD_scenesClockFieldChanged" onEndEdit="HUD_scenesClockFieldChanged" />
+    <InputField id="scenes_clock_speed" class="hud_storyteller_input" minWidth="48" preferredWidth="48" flexibleWidth="0" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" characterValidation="FloatingPoint" text="1" onValueChanged="HUD_scenesClockFieldChanged" onEndEdit="HUD_scenesClockFieldChanged" />
   </HorizontalLayout>
   <Button id="scenes_clock_apply" class="hud_storyteller_button" text="Apply clock" onClick="HUD_scenesApplyClock" />
 

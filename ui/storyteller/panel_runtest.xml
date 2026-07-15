@@ -32,7 +32,7 @@
     flexibleWidth="0"
     flexibleHeight="0" />
   <!-- Standard (not IntegerNumber): step index (1..N) or suite id (0, A–P, E2). -->
-  <InputField class="runtest_input" contentType="Standard" characterLimit="3" alignment="MiddleCenter" preferredWidth="0" preferredHeight="28" minHeight="45" minWidth="52" fontSize="28" fontStyle="Bold" flexibleHeight="0" flexibleWidth="0" placeholder="1" />
+  <InputField class="runtest_input" contentType="Standard" characterLimit="3" alignment="MiddleCenter" preferredWidth="0" minWidth="52" flexibleHeight="0" flexibleWidth="0" placeholder="1" />
 </Defaults>
 
 <Panel id="panel_runtest" class="panel_runtest" visibility="Host" active="false"> <!-- Initially inactive. Is toggled on by a button that should be added to the Storyteller's DEBUG panel. -->
