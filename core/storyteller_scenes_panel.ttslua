@@ -1175,8 +1175,8 @@ end
 --- @param button string|nil
 --- @param id string|nil
 function StorytellerScenesPanel.onLibrarySlotClick(player, button, id)
-    if player == nil or player.host ~= true then
-        U.AlertGM("Only the host can select a library scene.")
+    if not U.isStorytellerSteamPlayer(player) then
+        U.AlertGM("Only the Storyteller can select a library scene.")
         return
     end
     local idx = tonumber(string.match(id or "", "^scenes_lib_slot_(%d+)$"))
@@ -1223,8 +1223,8 @@ end
 --- Right-click on the pending selected library row: exit preview and restore live / no-scene panel controls.
 --- @param player Player
 function StorytellerScenesPanel.clearLibraryPreviewSelection(player)
-    if player == nil or player.host ~= true then
-        U.AlertGM("Only the host can clear scene preview.")
+    if not U.isStorytellerSteamPlayer(player) then
+        U.AlertGM("Only the Storyteller can clear scene preview.")
         return
     end
     local activeKey = getActiveLibraryKey()
@@ -1255,8 +1255,8 @@ end
 --- Sets `receivesLiveWrites = false` on the row currently mirroring (see Scene Constructor Overview).
 --- @param player Player
 function StorytellerScenesPanel.unlinkActiveMirror(player)
-    if player == nil or player.host ~= true then
-        U.AlertGM("Only the host can unlink a library scene.")
+    if not U.isStorytellerSteamPlayer(player) then
+        U.AlertGM("Only the Storyteller can unlink a library scene.")
         return
     end
     local K = SceneLibrary.resolveMirrorSceneKey()
@@ -1280,8 +1280,8 @@ end
 --- Two-step delete on the **active** row: first click arms, second within 5s removes it from `scenes` + `order`.
 --- @param player Player
 function StorytellerScenesPanel.deleteActiveSceneArmed(player)
-    if player == nil or player.host ~= true then
-        U.AlertGM("Only the host can delete a library scene.")
+    if not U.isStorytellerSteamPlayer(player) then
+        U.AlertGM("Only the Storyteller can delete a library scene.")
         return
     end
     local K = S.getStateVal("sceneLibrary", "activeKey")
@@ -1371,6 +1371,18 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
 
     if RSL.alertAndBlockIfDiceOnTable("apply a library scene") then
         return
+    end
+
+    -- Clear any in-flight ×5 catch-up immediately (including mid-settle re-Apply), before blindfold work.
+    PresentDayClock.cancelCatchUpOnLiveClock()
+    if GameStateOverlay and type(GameStateOverlay.resetRealTimeCarry) == "function" then
+        GameStateOverlay.resetRealTimeCarry()
+    end
+    if GameStateOverlay and type(GameStateOverlay.stopTicker) == "function" then
+        GameStateOverlay.stopTicker()
+    end
+    if GameStateOverlay and type(GameStateOverlay.ensureTicker) == "function" then
+        GameStateOverlay.ensureTicker()
     end
 
     closeScenesPanel()
@@ -1514,7 +1526,8 @@ function StorytellerScenesPanel.endSceneNarrative(player)
         broadcastToAll("The current narrative scene is over.", Color(1, 1, 1))
     end
 
-    -- Flush live exit time onto the mirroring row before detach (TOR-142), matching Apply-away flush.
+    -- Flush after cancelCatchUp so library row does not keep ×5 speed / catch-up restore flags.
+    PresentDayClock.cancelCatchUpOnLiveClock()
     local flushKey = SceneLibrary.resolveMirrorSceneKey()
     if type(flushKey) ~= "string" or flushKey == "" then
         flushKey = S.getStateVal("sceneLibrary", "lastAppliedKey")
@@ -1522,7 +1535,6 @@ function StorytellerScenesPanel.endSceneNarrative(player)
     if type(flushKey) == "string" and flushKey ~= "" then
         PresentDayClock.flushLibraryRowClock(flushKey)
     end
-    PresentDayClock.cancelCatchUpOnLiveClock()
 
     -- Stop mirroring before clearing live location so `Sync.full` does not persist null keys into the library row.
     -- (applyDefaultNoSceneEnvironment also detaches — kept here so End scene is explicit before staged work.)
@@ -1977,8 +1989,8 @@ end
 
 --- @param player Player
 function StorytellerScenesPanel.confirmImportConstructorModal(player)
-    if player == nil or player.host ~= true then
-        U.AlertGM("Only the host can import scenes.")
+    if not U.isStorytellerSteamPlayer(player) then
+        U.AlertGM("Only the Storyteller can import scenes.")
         return
     end
     local rawText = U.sanitizeJsonTextRemoveTrailingCommas(ctorDraft.importJson or "")
@@ -2072,8 +2084,8 @@ end
 
 --- @param player Player
 function StorytellerScenesPanel.confirmForkConstructorModal(player)
-    if player == nil or player.host ~= true then
-        U.AlertGM("Only the host can fork scenes.")
+    if not U.isStorytellerSteamPlayer(player) then
+        U.AlertGM("Only the Storyteller can fork scenes.")
         return
     end
     local newTitle = type(ctorDraft.forkTitleNew) == "string" and string.gsub(ctorDraft.forkTitleNew, "^%s+", "") or ""
