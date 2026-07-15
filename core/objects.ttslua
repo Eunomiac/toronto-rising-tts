@@ -228,19 +228,34 @@ local function isPcSeatInActiveTableLayout(seatColor)
 end
 
 --- Narrative presence for one seat (`seatSlots.isPresent` wins over `seatPresent`).
+--- PC seats also require chronicle connection (TOR-293) — same effective rule as lighting.
 --- @param seatKey string
 --- @return boolean
 local function resolveSeatPresenceForSeat(seatKey)
+    local narrative = true
     local ss = S.getStateVal("sessionScene", "seatSlots")
     if U.Type(ss) == "table" then
         local row = ss[seatKey]
         if U.Type(row) == "table" and row.isPresent ~= nil then
-            return row.isPresent ~= false
+            narrative = row.isPresent ~= false
+        else
+            local sp = S.getStateVal("sessionScene", "seatPresent")
+            if U.Type(sp) == "table" and sp[seatKey] ~= nil then
+                narrative = sp[seatKey] ~= false
+            end
+        end
+    else
+        local sp = S.getStateVal("sessionScene", "seatPresent")
+        if U.Type(sp) == "table" and sp[seatKey] ~= nil then
+            narrative = sp[seatKey] ~= false
         end
     end
-    local sp = S.getStateVal("sessionScene", "seatPresent")
-    if U.Type(sp) == "table" and sp[seatKey] ~= nil then
-        return sp[seatKey] ~= false
+    if narrative ~= true then
+        return false
+    end
+    if U.isIn(seatKey, C.PlayerColors or {}) then
+        local PlayerConnection = require("core.player_connection")
+        return PlayerConnection.isChronicleSeatConnected(seatKey)
     end
     return true
 end

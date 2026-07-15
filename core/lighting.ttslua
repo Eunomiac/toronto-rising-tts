@@ -1465,6 +1465,13 @@ function L.isPlayerPresentInActiveSeatLayout(seatKey)
     if U.Type(seatKey) ~= "string" then
         return false
     end
+    -- TOR-293: disconnected chronicle PC seats are locked absent (incl. no-scene).
+    if U.isIn(seatKey, C.PlayerColors or {}) then
+        local PlayerConnection = require("core.player_connection")
+        if not PlayerConnection.isChronicleSeatConnected(seatKey) then
+            return false
+        end
+    end
     local ss = S.getStateVal("sessionScene", "seatSlots")
     if U.Type(ss) == "table" then
         local row = ss[seatKey]

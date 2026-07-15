@@ -29,6 +29,7 @@
       <Button class="hud_storyteller_button" onClick="HUD_clearLoadingOverlay">Clear Loading Overlay</Button>
       <Button class="hud_storyteller_button" onClick="HUD_refreshUi">Refresh UI</Button>
       <Button class="hud_storyteller_button" onClick="HUD_toggleDebugAmbient">Toggle Lights</Button>
+      <Button class="hud_storyteller_button" onClick="HUD_toggleAssumePlayersConnected">Assume Players Connected</Button>
       <Button class="hud_storyteller_button" onClick="HUD_toggleRunTestPanel">RunTest</Button>
       <Button class="hud_storyteller_button" onClick="HUD_toggleAllAnchors">Toggle Anchors</Button>
       <Button class="hud_storyteller_button" onClick="HUD_toggleAllSpotlights">Toggle Spotlights</Button>

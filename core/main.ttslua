@@ -54,6 +54,10 @@ function M.setupPlayers()
   -- onPlayerConnect does not re-fire for players already present after Save & Play.
   M.assignAllConnectedSeatsFromChronicle()
 
+  -- TOR-293: lock disconnected chronicle seats inactive (narrative present unchanged).
+  local PlayerConnection = require("core.player_connection")
+  PlayerConnection.reconcileEffectivePresence(nil)
+
   -- Objects on / above the Storyteller table: GM table + GM light use `C.HiddenObjects` via O.ApplyLockedAndHiddenFromConstants() in Global.onLoad.
   U.forEach(
     U.findAboveObject(

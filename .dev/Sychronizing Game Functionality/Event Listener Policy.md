@@ -52,7 +52,8 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | `onObjectDrop` | `global_script` | Host | C | Steam + tag | Gameboard/NPCS | High | 4 |
 | `onObjectRandomize` | `global_script` | Host | B+C | d10 tag | roll FSM + lights | High | 4 |
 | `onObjectLeaveContainer` | `global_script` | Host | B | d10 tag | GM Notes | Med | 4 |
-| `onPlayerConnect` | `global_script` | Host | B | — | Steam ID → `C.PlayerData.color` (incl. Black); unregistered → White; **Grey join is valid current seat** (TOR-372 amend of TOR-345); load: `M.assignAllConnectedSeatsFromChronicle`. TOR-319: Intermission keeps blindfold; else `Phases.lowerBlindfoldForConnectingPlayer`. | Med | 4 |
+| `onPlayerConnect` | `global_script` | Host | B+C | — | Steam ID → `C.PlayerData.color` (incl. Black); unregistered → White; **Grey join is valid current seat** (TOR-372 amend of TOR-345); load: `M.assignAllConnectedSeatsFromChronicle`. TOR-293: default camera + `PlayerConnection.reconcileEffectivePresence` then blindfold. TOR-319: Intermission keeps blindfold; else `Phases.lowerBlindfoldForConnectingPlayer`. | Med | 4 |
+| `onPlayerDisconnect` | `global_script` | Host | B+C | — | TOR-293: cancel roll if any; reconcile effective presence so chronicle seat locks inactive without mutating library `isPresent`. | Med | 4 |
 | `onPlayerChangeColor` | `global_script` | Host | B | Seat HUD visibility reveal (`revealSeatHudVisibility`) + UpdateUIDisplays; Host hotseat swaps manual via `HUD_refreshUi` | state row | Med | 4 |
 | `addHotkey` (`Spotlight NPC (hold)`) | `global_script` | Clicker (per player) | C | ST steam in callee | transient spotlights | Low | — |
 

@@ -3796,6 +3796,21 @@ function HUD_toggleDebugAmbient(player, button, id)
     )
 end
 
+--- TOR-293: when on, disconnected chronicle seats stay narratively "present" for lights/world (solo/hotseat).
+function HUD_toggleAssumePlayersConnected(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_toggleAssumePlayersConnected") then
+        return
+    end
+    local PlayerConnection = require("core.player_connection")
+    local on = PlayerConnection.toggleAssumePlayersConnected()
+    PlayerConnection.reconcileEffectivePresence(nil)
+    broadcastToColor(
+        string.format("Assume players connected: %s", on and "ON" or "OFF"),
+        player.color,
+        { 0, 1, 1 }
+    )
+end
+
 -- TOR-347: RunTest on-screen controls (panel_runtest.xml). Stash InputField text — do not UI.getValue.
 local runtestStepDraft = "1"
 
@@ -6223,10 +6238,51 @@ function onPlayerConnect(playerOrColor)
         end
     end
 
+    -- TOR-293: default camera → effective presence (narrative restore + connection) before blindfold.
+    local PlayerConnection = require("core.player_connection")
+    local seatColor = nil
+    if U.isPlayer(connected) then
+        seatColor = PlayerConnection.chronicleSeatColorForPlayer(connected)
+        if type(seatColor) ~= "string" or seatColor == "" then
+            if type(connected.color) == "string" and connected.color ~= "Grey" and connected.color ~= "White" then
+                seatColor = connected.color
+            end
+        end
+    end
+    if type(seatColor) == "string" and seatColor ~= "" and U.isIn(seatColor, C.PlayerColors or {}) then
+        if M ~= nil and type(M.setCamera) == "function" and U.isPlayer(connected) then
+            M.setCamera(connected, "default")
+        end
+        PlayerConnection.reconcileEffectivePresence(seatColor)
+    end
+
     -- TOR-319: Intermission keeps global blindfold up; other phases hide it.
     local phase = S.getStateVal("currentPhase")
     if phase ~= C.Phases.INTERMISSION and U.isPlayer(connected) then
         local Phases = require("core.phases")
         Phases.lowerBlindfoldForConnectingPlayer(connected)
     end
+end
+
+--- TTS: player disconnected — treat chronicle seat as scene-absent without mutating library isPresent (TOR-293).
+function onPlayerDisconnect(player)
+    if not U.isPlayer(player) then
+        return
+    end
+    local PlayerConnection = require("core.player_connection")
+    local seatColor = PlayerConnection.chronicleSeatColorForPlayer(player)
+    if type(seatColor) ~= "string" or seatColor == "" then
+        return
+    end
+    print(string.format(
+        "onPlayerDisconnect: %s steam=%s chronicleSeat=%s",
+        tostring(player.steam_name),
+        tostring(player.steam_id),
+        tostring(seatColor)
+    ))
+    local RC = require("core.roll_controller")
+    if type(RC.cancelRoll) == "function" then
+        RC.cancelRoll(seatColor)
+    end
+    PlayerConnection.reconcileEffectivePresence(seatColor)
 end

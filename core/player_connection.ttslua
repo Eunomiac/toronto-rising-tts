@@ -1,0 +1,158 @@
+--[[
+  Connection-aware PC seat presence (TOR-293).
+
+  Narrative `seatSlots.isPresent` stays authoritative for scene authoring / library mirror.
+  Effective presence (lights, hidden objects, hosted conditions) also requires the chronicle
+  Steam player for that seat color to be connected — unless DEBUG assumePlayersConnected.
+]]
+
+local PC = {}
+
+local S = require("core.state")
+local C = require("lib.constants")
+local U = require("lib.util")
+
+--- @return boolean
+function PC.assumePlayersConnected()
+  return S.getStateVal("debug", "assumePlayersConnected") == true
+end
+
+--- @param on boolean
+function PC.setAssumePlayersConnected(on)
+  S.setStateVal(on == true, "debug", "assumePlayersConnected")
+end
+
+--- Toggle DEBUG flag; returns new value.
+--- @return boolean
+function PC.toggleAssumePlayersConnected()
+  local nextVal = not PC.assumePlayersConnected()
+  PC.setAssumePlayersConnected(nextVal)
+  return nextVal
+end
+
+--- Steam id mapped to this PC seat color in `C.PlayerData`, or nil if not a chronicle seat.
+--- @param color string
+--- @return string|nil
+function PC.steamIdForSeatColor(color)
+  if type(color) ~= "string" or color == "" then
+    return nil
+  end
+  if type(C.PlayerData) ~= "table" then
+    return nil
+  end
+  for steamId, row in pairs(C.PlayerData) do
+    if type(steamId) == "string" and type(row) == "table" and row.color == color then
+      return steamId
+    end
+  end
+  return nil
+end
+
+--- True when a Player with this Steam id is connected (any seat color).
+--- @param steamId string
+--- @return boolean
+local function isSteamIdConnected(steamId)
+  if type(steamId) ~= "string" or steamId == "" then
+    return false
+  end
+  for _, player in ipairs(Player.getPlayers()) do
+    if U.isPlayer(player) and tostring(player.steam_id) == steamId then
+      return true
+    end
+  end
+  return false
+end
+
+--- Chronicle-seat connection (ignores narrative). DEBUG assume → always true.
+--- Non-chronicle PC colors → true (no Steam lock).
+--- @param color string
+--- @return boolean
+function PC.isChronicleSeatConnected(color)
+  if PC.assumePlayersConnected() then
+    return true
+  end
+  local steamId = PC.steamIdForSeatColor(color)
+  if steamId == nil then
+    return true
+  end
+  return isSteamIdConnected(steamId)
+end
+
+--- Narrative presence only (`seatSlots.isPresent` / `seatPresent`).
+--- @param color string
+--- @return boolean
+function PC.narrativePcSeatPresent(color)
+  if type(color) ~= "string" or color == "" then
+    return false
+  end
+  local ss = S.getStateVal("sessionScene", "seatSlots")
+  if U.Type(ss) == "table" then
+    local row = ss[color]
+    if U.Type(row) == "table" and row.isPresent ~= nil then
+      return row.isPresent ~= false
+    end
+  end
+  local sp = S.getStateVal("sessionScene", "seatPresent")
+  if U.Type(sp) == "table" and sp[color] ~= nil then
+    return sp[color] ~= false
+  end
+  return true
+end
+
+--- Effective PC presence: narrative AND connection (incl. no-scene defaults).
+--- Does not write `isPresent` / library mirror.
+--- @param color string
+--- @return boolean
+function PC.effectivePcSeatPresent(color)
+  if not PC.narrativePcSeatPresent(color) then
+    return false
+  end
+  return PC.isChronicleSeatConnected(color)
+end
+
+--- Resolve chronicle PC color from a disconnected/connecting Player.
+--- @param player Player|nil
+--- @return string|nil
+function PC.chronicleSeatColorForPlayer(player)
+  if not U.isPlayer(player) then
+    return nil
+  end
+  local steamId = tostring(player.steam_id or "")
+  if steamId == "" then
+    return nil
+  end
+  local row = C.PlayerData and C.PlayerData[steamId]
+  if type(row) ~= "table" or type(row.color) ~= "string" then
+    return nil
+  end
+  if not U.isIn(row.color, C.PlayerColors or {}) then
+    return nil
+  end
+  return row.color
+end
+
+--- After connect/disconnect/load/no-scene: reconcile world from effective presence (no library write).
+--- @param color string|nil When nil, all PC seats.
+function PC.reconcileEffectivePresence(color)
+  local Sync = require("core.sync")
+  local O = require("core.objects")
+  local colors = {}
+  if type(color) == "string" and color ~= "" then
+    colors[1] = color
+  else
+    for _, c in ipairs(C.PlayerColors or {}) do
+      colors[#colors + 1] = c
+    end
+  end
+  for _, c in ipairs(colors) do
+    local present = PC.effectivePcSeatPresent(c)
+    if type(O.applyPcSeatHiddenObjectPresence) == "function" then
+      O.applyPcSeatHiddenObjectPresence(c, present)
+    end
+    if type(Sync.player) == "function" then
+      Sync.player(c)
+    end
+  end
+end
+
+return PC
