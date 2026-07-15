@@ -717,12 +717,11 @@ function Compulsions.onGenericDrawn(container, card)
         -- Container matched Role notes; use it as the putObject target.
         playerDeck = container
     end
-    if playerDeck == nil or playerDeck.putObject == nil then
-        print("[Compulsions] Player deck putObject unavailable for " .. color)
+    if playerDeck == nil then
+        print("[Compulsions] Player deck unavailable for " .. color)
         return false
     end
 
-    local cardGuid = card.getGUID and card.getGUID() or nil
     local deckGuid = playerDeck.getGUID and playerDeck.getGUID() or nil
     local compulsionType = parsed.type
     local charKey = parsed.playerKey
@@ -730,63 +729,35 @@ function Compulsions.onGenericDrawn(container, card)
     presentByColor[color] = nil
 
     print(string.format(
-        "[Compulsions] Generic draw %s (%s) — return to deck, shuffle, then present.",
+        "[Compulsions] Generic draw %s (%s) — deck.reset() (same as UI Reset), shuffle, then present.",
         compulsionType,
         color
     ))
 
-    -- Leave-container races Draw-into-hand: retry putObject until the card leaves the hand,
-    -- then shuffle, then present (present only once).
-    local maxAttempts = 8
-    local attempt = 0
-    local function tryReturnGeneric()
+    -- `putObject` cannot pull a just-dealt card out of a hand zone. Deck `reset()` matches the
+    -- right-click Reset menu and collects that deck's cards (including from hands).
+    U.delay(function()
         if not isTokenCurrent(color, token) then
             return
         end
-        attempt = attempt + 1
         local deck = (type(deckGuid) == "string" and getObjectFromGUID(deckGuid))
             or Compulsions.resolvePlayerDeck(color)
-        local loose = type(cardGuid) == "string" and getObjectFromGUID(cardGuid) or nil
-        if deck ~= nil and deck.putObject ~= nil and loose ~= nil then
-            if loose.setLock ~= nil then
-                loose.setLock(false)
-            end
-            deck.putObject(loose)
+        if deck == nil or deck.reset == nil then
+            print("[Compulsions] Player deck reset unavailable for " .. color)
+            U.AlertGM("[Compulsions] Player deck has no reset(); cannot return generic from hand.")
+            return
         end
-
-        U.delay(function()
-            if not isTokenCurrent(color, token) then
-                return
-            end
-            local still = type(cardGuid) == "string" and getObjectFromGUID(cardGuid) or nil
-            local stillInHand = still ~= nil and isInSeatHand(still, color)
-            if stillInHand then
-                if attempt < maxAttempts then
-                    print(string.format(
-                        "[Compulsions] Generic still in %s hand — retry return (%d/%d)",
-                        color,
-                        attempt,
-                        maxAttempts
-                    ))
-                    tryReturnGeneric()
-                    return
-                end
-                print("[Compulsions] FAILED to return generic to COMPULSION_DECK_" .. string.upper(color)
-                    .. " after " .. tostring(maxAttempts) .. " attempts.")
-                U.AlertGM("[Compulsions] Could not return generic card to player deck.")
-                -- Still present so the table flow is not stuck.
-            else
-                print("[Compulsions] Generic returned to " .. color .. " deck; shuffling.")
-                shufflePlayerDeck(color)
-            end
-            if presentByColor[color] == nil and isTokenCurrent(color, token) then
-                presentMatches(color, compulsionType, charKey, token)
-            end
-        end, 0.12)
-    end
-
-    -- First attempt after the hand deal settles.
-    U.delay(tryReturnGeneric, 0.05)
+        local ok = deck.reset()
+        print(string.format(
+            "[Compulsions] deck.reset() for %s → %s",
+            color,
+            tostring(ok)
+        ))
+        shufflePlayerDeck(color)
+        if presentByColor[color] == nil and isTokenCurrent(color, token) then
+            presentMatches(color, compulsionType, charKey, token)
+        end
+    end, 0.08)
 
     return true
 end
