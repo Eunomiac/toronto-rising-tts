@@ -11,6 +11,7 @@
 ]]
 
 local C = require("lib.constants")
+local G = require("lib.guids")
 local OP = require("lib.object_positions")
 local SRI = require("lib.seat-role-identity")
 local U = require("lib.util")
@@ -194,17 +195,76 @@ local function objectPositionsKey(color, index)
     return "COMPULSION_CARD_" .. tostring(index) .. "_" .. string.upper(color)
 end
 
+--- World pose for a present/chosen slot from ObjectPositions + live anchor (no card required).
 --- @param color string
 --- @param index number
---- @return table|nil resolved pose (position + rotation from ObjectPositions "on")
-local function resolveAnchorPose(color, index, card)
+--- @param height number|nil override Y (default PRESENT_HEIGHT)
+--- @return { position: table, rotation: table }|nil
+local function resolveSlotWorldPose(color, index, height)
     local key = objectPositionsKey(color, index)
     local entry = C.ObjectPositions[key]
-    if type(entry) ~= "table" then
-        print("[Compulsions] Missing C.ObjectPositions." .. key)
+    if type(entry) ~= "table" or type(entry.on) ~= "table" then
+        print("[Compulsions] Missing C.ObjectPositions." .. key .. ".on")
         return nil
     end
-    return OP.resolveStatePose(card, entry, "on")
+    local pose = entry.on
+    local anchorRef = pose.anchor
+    local anchorObj = nil
+    if type(anchorRef) == "string" and anchorRef ~= "" then
+        anchorObj = G.getObject(anchorRef)
+    end
+    if anchorObj == nil then
+        print("[Compulsions] Anchor missing for " .. key .. " ref=" .. tostring(anchorRef))
+        return nil
+    end
+    local anchorPos = anchorObj.getPosition()
+    local anchorRot = anchorObj.getRotation()
+    local yHeight = height
+    if yHeight == nil then
+        if type(pose.height) == "table" then
+            yHeight = pose.height.y
+        elseif type(pose.height) == "number" then
+            yHeight = pose.height
+        else
+            yHeight = PRESENT_HEIGHT
+        end
+    end
+    return {
+        position = {
+            x = anchorPos.x,
+            y = yHeight,
+            z = anchorPos.z,
+        },
+        rotation = {
+            x = anchorRot.x,
+            y = anchorRot.y,
+            z = anchorRot.z,
+        },
+    }
+end
+
+--- @param color string
+--- @param index number
+--- @param card Object
+--- @return table|nil resolved pose (position + rotation from ObjectPositions "on")
+local function resolveAnchorPose(color, index, card)
+    local world = resolveSlotWorldPose(color, index, nil)
+    if world == nil then
+        return nil
+    end
+    -- Prefer OP when card exists (keeps lock/merge helpers available for apply).
+    if card ~= nil then
+        local key = objectPositionsKey(color, index)
+        local entry = C.ObjectPositions[key]
+        local pose = OP.resolveStatePose(card, entry, "on")
+        if type(pose) == "table" then
+            if type(pose.position) == "table" then
+                pose.position.y = world.position.y
+            end
+            return pose
+        end
+    end
+    return world
 end
 
 --- @param pos table
@@ -293,18 +353,20 @@ local function placePresentedCard(card, color, slotIndex, token)
     if not isTokenCurrent(color, token) or card == nil then
         return
     end
-    local pose = resolveAnchorPose(color, slotIndex, card)
+    local pose = resolveSlotWorldPose(color, slotIndex, PRESENT_HEIGHT)
     if pose == nil then
         return
     end
-    if type(pose.position) == "table" then
-        pose.position.y = PRESENT_HEIGHT
-    end
-    pose.isLocked = false
+    -- Lock during snap so adjacent takes cannot restack into a mini-deck.
     if card.setLock ~= nil then
-        card.setLock(false)
+        card.setLock(true)
     end
-    OP.applyResolvedPose(card, pose, 0, 0)
+    if card.setPosition ~= nil then
+        card.setPosition(pose.position)
+    end
+    if card.setRotation ~= nil then
+        card.setRotation(pose.rotation)
+    end
     if card.setLock ~= nil then
         card.setLock(false)
     end
@@ -343,6 +405,7 @@ local function presentMatches(color, compulsionType, playerKey, token)
     presentByColor[color] = session
 
     local reservedSlots = {}
+    local planned = {}
     local takeCount = math.min(#matches, SLOT_COUNT)
     for i = 1, takeCount do
         local match = matches[i]
@@ -350,7 +413,6 @@ local function presentMatches(color, compulsionType, playerKey, token)
         if slotIndex < 1 or slotIndex > SLOT_COUNT then
             slotIndex = i
         end
-        -- Prefer note suffix slot; if already reserved in this wave, fall through 1..4.
         if reservedSlots[slotIndex] == true then
             for alt = 1, SLOT_COUNT do
                 if reservedSlots[alt] ~= true then
@@ -360,39 +422,74 @@ local function presentMatches(color, compulsionType, playerKey, token)
             end
         end
         reservedSlots[slotIndex] = true
+        local world = resolveSlotWorldPose(color, slotIndex, PRESENT_HEIGHT)
+        if world == nil then
+            print("[Compulsions] Skip take — no world pose for slot " .. tostring(slotIndex))
+        else
+            planned[#planned + 1] = {
+                guid = match.guid,
+                slotIndex = slotIndex,
+                position = world.position,
+                rotation = world.rotation,
+            }
+        end
+    end
 
-        master.takeObject({
-            guid = match.guid,
-            callback_function = function(taken)
-                if not isTokenCurrent(color, token) then
-                    local curMaster = Compulsions.resolveMasterDeck()
-                    if curMaster ~= nil and taken ~= nil and curMaster.putObject ~= nil then
-                        curMaster.putObject(taken)
+    if #planned < 1 then
+        print("[Compulsions] No present poses resolved; aborting present for " .. color)
+        presentByColor[color] = nil
+        return
+    end
+
+    -- Stagger takes + spawn at anchors (smooth=false) so TTS does not restack near the master.
+    for i = 1, #planned do
+        local plan = planned[i]
+        local delay = (i - 1) * 0.08
+        U.delay(function()
+            if not isTokenCurrent(color, token) then
+                return
+            end
+            local deck = Compulsions.resolveMasterDeck()
+            if deck == nil or deck.takeObject == nil then
+                print("[Compulsions] Master deck unavailable mid-present.")
+                return
+            end
+            deck.takeObject({
+                guid = plan.guid,
+                position = plan.position,
+                rotation = plan.rotation,
+                smooth = false,
+                callback_function = function(taken)
+                    if not isTokenCurrent(color, token) then
+                        local curMaster = Compulsions.resolveMasterDeck()
+                        if curMaster ~= nil and taken ~= nil and curMaster.putObject ~= nil then
+                            curMaster.putObject(taken)
+                        end
+                        return
                     end
-                    return
-                end
-                if taken == nil then
-                    return
-                end
-                local guid = taken.getGUID and taken.getGUID() or nil
-                if type(guid) == "string" then
-                    session.cardGuids[#session.cardGuids + 1] = guid
-                    session.guidToSlot[guid] = slotIndex
-                end
-                placePresentedCard(taken, color, slotIndex, token)
-            end,
-        })
+                    if taken == nil then
+                        print("[Compulsions] takeObject returned nil for guid " .. tostring(plan.guid))
+                        return
+                    end
+                    local guid = taken.getGUID and taken.getGUID() or nil
+                    if type(guid) == "string" then
+                        session.cardGuids[#session.cardGuids + 1] = guid
+                        session.guidToSlot[guid] = plan.slotIndex
+                    end
+                    placePresentedCard(taken, color, plan.slotIndex, token)
+                end,
+            })
+        end, delay)
     end
 
     print(string.format(
         "[Compulsions] Presenting %d card(s) for %s (%s) token=%d",
-        takeCount,
+        #planned,
         color,
         compulsionType,
         token
     ))
 end
-
 --- Return a presented (or mid-callback) card to the master deck.
 --- @param card Object|nil
 local function returnCardToMaster(card)
@@ -415,15 +512,11 @@ local function placeChosenCard(color, chosenCard, slotIndex, token)
     if chosenCard == nil then
         return
     end
-    local pose = resolveAnchorPose(color, slotIndex, chosenCard)
+    local pose = resolveSlotWorldPose(color, slotIndex, CHOSEN_HEIGHT)
     if pose == nil then
         return
     end
     local basePos = pose.position
-    if type(basePos) ~= "table" then
-        print("[Compulsions] Chosen pose missing position for slot " .. tostring(slotIndex))
-        return
-    end
     local mid = {
         x = basePos.x,
         y = CHOSEN_HEIGHT,
@@ -431,7 +524,7 @@ local function placeChosenCard(color, chosenCard, slotIndex, token)
     }
     local finalPos = offsetTowardOrigin(mid)
     if pose.rotation ~= nil and chosenCard.setRotation ~= nil then
-        chosenCard.setRotation(OP.mergeRotation(chosenCard, pose.rotation))
+        chosenCard.setRotation(pose.rotation)
     end
     if chosenCard.setLock ~= nil then
         chosenCard.setLock(false)
@@ -558,24 +651,79 @@ function Compulsions.onGenericDrawn(container, card)
         -- Container matched Role notes; use it as the putObject target.
         playerDeck = container
     end
-    if playerDeck.putObject == nil then
+    if playerDeck == nil or playerDeck.putObject == nil then
         print("[Compulsions] Player deck putObject unavailable for " .. color)
         return false
     end
 
-    print(string.format(
-        "[Compulsions] Generic draw %s (%s) — returning to deck and presenting master matches.",
-        parsed.type,
-        color
-    ))
-    playerDeck.putObject(card)
-
+    local cardGuid = card.getGUID and card.getGUID() or nil
+    local deckGuid = playerDeck.getGUID and playerDeck.getGUID() or nil
+    local compulsionType = parsed.type
+    local charKey = parsed.playerKey
     local token = bumpOpToken(color)
     presentByColor[color] = nil
-    presentMatches(color, parsed.type, parsed.playerKey, token)
+
+    print(string.format(
+        "[Compulsions] Generic draw %s (%s) — returning to deck and presenting master matches.",
+        compulsionType,
+        color
+    ))
+
+    -- Draw-into-hand finishes after leave-container; defer putObject so TTS does not win the race.
+    local function returnGenericAndPresent()
+        if not isTokenCurrent(color, token) then
+            return
+        end
+        local deck = nil
+        if type(deckGuid) == "string" then
+            deck = getObjectFromGUID(deckGuid)
+        end
+        if deck == nil then
+            deck = Compulsions.resolvePlayerDeck(color)
+        end
+        local loose = nil
+        if type(cardGuid) == "string" then
+            loose = getObjectFromGUID(cardGuid)
+        end
+        if deck == nil or deck.putObject == nil then
+            print("[Compulsions] Deferred return failed: player deck missing for " .. color)
+            return
+        end
+        if loose ~= nil then
+            if loose.setLock ~= nil then
+                loose.setLock(false)
+            end
+            deck.putObject(loose)
+        else
+            print("[Compulsions] Generic card guid vanished before putObject: " .. tostring(cardGuid))
+        end
+        presentMatches(color, compulsionType, charKey, token)
+    end
+
+    -- Immediate attempt + short retry after hand deal settles.
+    returnGenericAndPresent()
+    U.delay(function()
+        if not isTokenCurrent(color, token) then
+            return
+        end
+        -- If the generic is still a loose Card (e.g. still in hand), return again then ensure present runs once.
+        local loose = type(cardGuid) == "string" and getObjectFromGUID(cardGuid) or nil
+        if loose ~= nil and (loose.type == "Card" or loose.tag == "Card") then
+            local deck = (type(deckGuid) == "string" and getObjectFromGUID(deckGuid))
+                or Compulsions.resolvePlayerDeck(color)
+            if deck ~= nil and deck.putObject ~= nil then
+                print("[Compulsions] Retry putObject for generic still loose (" .. color .. ").")
+                deck.putObject(loose)
+            end
+        end
+        -- Present only if session not yet opened (immediate path may already have started takes).
+        if presentByColor[color] == nil and isTokenCurrent(color, token) then
+            presentMatches(color, compulsionType, charKey, token)
+        end
+    end, 0.12)
+
     return true
 end
-
 --- O(1)-friendly: true when notes look like a Compulsion payload (prefix only).
 --- @param notes string|nil
 --- @return boolean
