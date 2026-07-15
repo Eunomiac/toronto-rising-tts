@@ -545,5 +545,10 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-15 | CREATE | TOR-386 | Domain ratings chasse/lien/portillon/haven in Stats+PE; High Feature; parent TOR-38; blockedBy TOR-384 |
 | 2026-07-15 | BLOCK | TOR-329 / TOR-385 / TOR-386 | blockedBy TOR-384 (session HUD before Features / audit) |
 | 2026-07-15 | Focus | Stack | #1 TOR-384, #2 TOR-385, #3 TOR-386, #4 TOR-329 |
+| 2026-07-15 | UNBLOCK | TOR-385 / TOR-386 / TOR-329 | removeBlockedBy TOR-384 (parallel Features) |
+| 2026-07-15 | DONE | TOR-385 | Status listable + page3 overlay bake |
+| 2026-07-15 | DONE | TOR-386 | Domain ratings PE + Court stake grey |
+| 2026-07-15 | INVESTIGATE | TOR-384 | DEBUG.showGlobalHudCanaries; In Progress; author gate |
+| 2026-07-15 | Focus | Stack | #1 TOR-384, #2 TOR-329 |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
