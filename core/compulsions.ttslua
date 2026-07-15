@@ -492,14 +492,12 @@ local function placeChosenCard(color, chosenCard, slotIndex, token)
         return
     end
     local basePos = pose.position
-    local mid = {
-        x = basePos.x,
-        y = CHOSEN_HEIGHT,
-        z = basePos.z,
-    }
-    local finalPos = offsetTowardOrigin(mid)
+    -- U.setPositionSlow / Vector:lerp need TTS Vector userdata, not plain tables.
+    local mid = Vector(basePos.x, CHOSEN_HEIGHT, basePos.z)
+    local offset = offsetTowardOrigin({ x = mid.x, y = mid.y, z = mid.z })
+    local finalPos = Vector(offset.x, offset.y, offset.z)
     if pose.rotation ~= nil and chosenCard.setRotation ~= nil then
-        chosenCard.setRotation(pose.rotation)
+        chosenCard.setRotation(Vector(pose.rotation.x, pose.rotation.y, pose.rotation.z))
     end
     if chosenCard.setLock ~= nil then
         chosenCard.setLock(false)
