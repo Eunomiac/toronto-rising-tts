@@ -9,4 +9,6 @@
   <HorizontalLayout raycastTarget="false" />
   <Button preferredHeight="30" minHeight="30" height="30" />
 
+  <InputField minHeight="45" fontSize="28" fontStyle="Bold" placeholder=" " />
+
 </Defaults>
