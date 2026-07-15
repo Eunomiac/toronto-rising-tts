@@ -94,7 +94,7 @@ U.RunSequence({
       if obj ~= nil and (obj.type == "Card" or obj.tag == "Card") and obj.getGMNotes ~= nil and obj.getLock ~= nil then
         local p = Compulsions.parseNotes(obj.getGMNotes())
         if p ~= nil and p.suffix ~= "generic" and Compulsions.colorFromCharKey(p.playerKey) == "Purple"
-          and obj.getLock() ~= true
+          and obj.getLock() == true
         then
           local pos = obj.getPosition()
           if type(pos) == "table" and type(pos.y) == "number" and pos.y > 5 then
@@ -104,9 +104,9 @@ U.RunSequence({
       end
     end
     if presented < 1 then
-      error("[TOR-204 FAIL] expected ≥1 unlocked presented typed card above y=5; got " .. tostring(presented))
+      error("[TOR-204 FAIL] expected ≥1 locked floating presented typed card above y=5; got " .. tostring(presented))
     end
-    print("PASS — " .. tostring(presented) .. " unlocked presented Compulsion card(s) for Purple")
+    print("PASS — " .. tostring(presented) .. " locked presented Compulsion card(s) for Purple")
     print("▶▶▶ HUMAN ▶▶▶ Draw one presented Compulsion card into the Purple hand")
   end,
 })
