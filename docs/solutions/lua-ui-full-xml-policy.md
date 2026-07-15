@@ -2,7 +2,7 @@
 
 ## Goal
 
-**Runtime `UI.setXml` / `UI.setXmlTable` are banned** for Global and Object UI (TOR-375). They replace the whole UI document — expensive enough to drop join clients on Global, and unnecessary when elements are predeclared.
+**Runtime `UI.setXml` / `UI.setXmlTable` are banned** for Global UI and most Object UI (TOR-375). They replace the whole UI document — expensive enough to drop join clients on Global, and unnecessary when elements are predeclared.
 
 Prefer pre-declared elements in editor XML (or generated static bundles at Save & Play) plus:
 
@@ -24,9 +24,9 @@ Prefer pre-declared elements in editor XML (or generated static bundles at Save 
 | `setXml` | `\bsetXml\s*\(` |
 | `setXmlTable` | `\bsetXmlTable\s*\(` |
 
-Target baseline: **`setXml=0`**, **`setXmlTable=0`**.
+Target baseline: **`setXml≤1`**, **`setXmlTable=0`**.
 
-Until [TOR-376](https://linear.app/eunomiac-dev/issue/TOR-376) (CSHEET max-slot migrate) lands, the only remaining approved call is CSHEET `applyPageDynamicXml` (`setXml=1`). Do not add others. Comments/strings that contain `setXml(` count — avoid that substring in scanned trees.
+**Approved exception:** CSHEET pages 3–5 `applyPageDynamicXml` (`self.UI.setXml` in `ui/ui_csheet_core.ttslua`) — small object XML; max-slot static refactor is optional Future work ([TOR-376](https://linear.app/eunomiac-dev/issue/TOR-376)). Do not add other call sites. Comments/strings that contain `setXml(` count — avoid that substring in scanned trees.
 
 Related: [`lua-wait-api-policy.md`](lua-wait-api-policy.md), [`lua-pcall-policy.md`](lua-pcall-policy.md), [`tts-xmlui-visibility-seat-assignment.md`](tts-xmlui-visibility-seat-assignment.md).
 
@@ -36,6 +36,6 @@ Related: [`lua-wait-api-policy.md`](lua-wait-api-policy.md), [`lua-pcall-policy.
 |------|--------|
 | Global seat assign (`core/global_script.ttslua`) | **Removed** — `revealSeatHudVisibility` + `UpdateUIDisplays` (TOR-375) |
 | CONTROL_BOARD (`objects/npc_control_board_ui.ttslua`) | **Removed** — baked Include + Save & Play; runtime validates `gb_root` |
-| CSHEET pages 3–5 (`ui/ui_csheet_core.ttslua`) | **Remaining** — TOR-376 max-slot static XML + attribute reconcile |
+| CSHEET pages 3–5 (`ui/ui_csheet_core.ttslua`) | **Permitted exception** — TOR-376 Future optional migrate |
 
 **No `setXmlTable` in scanned trees.**
