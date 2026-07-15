@@ -56,6 +56,26 @@ end
 
 local STATUS_OVERLAY_SLOTS = 5
 
+--- Copy Status entry scalars into an object-owned table (pd.stats rows are Global-marshaled).
+--- @param entry table|nil
+--- @return table|nil
+local function copyStatusEntryLocal(entry)
+  if type(entry) ~= "table" or entry.blank == true then
+    return nil
+  end
+  if tostring(entry.name or "") ~= "Status" then
+    return nil
+  end
+  return {
+    name = "Status",
+    focus = tostring(entry.focus or ""),
+    base = math.floor(tonumber(entry.base) or 0),
+    temp = math.floor(tonumber(entry.temp) or 0),
+    disabled = math.floor(tonumber(entry.disabled) or 0),
+    max = math.floor(tonumber(entry.max) or 5),
+  }
+end
+
 --- @param backgrounds table
 --- @return table|nil camarillaEntry
 --- @return table|nil clanEntry
@@ -66,20 +86,19 @@ local function findStatusOverlayEntries(backgrounds)
     return nil, nil
   end
   for i = 1, #backgrounds do
-    local entry = backgrounds[i]
-    if type(entry) == "table" and entry.blank ~= true and entry.name == "Status" then
-      local focus = type(entry.focus) == "string" and entry.focus or ""
-      if focus == "Camarilla" then
-        camarilla = entry
+    local localEntry = copyStatusEntryLocal(backgrounds[i])
+    if localEntry ~= nil then
+      if localEntry.focus == "Camarilla" then
+        camarilla = localEntry
       else
-        clan = entry
+        clan = localEntry
       end
     end
   end
   return camarilla, clan
 end
 
---- @param entry table|nil
+--- @param entry table|nil local Status copy
 --- @param projectStakeSourceKey string|nil
 --- @return integer baseCount
 --- @return integer tempCount
@@ -89,13 +108,13 @@ local function statusSlotCounts(entry, projectStakeSourceKey)
     return 0, 0, 0
   end
   local extraDisabled = 0
-  if type(projectStakeSourceKey) == "string" and projectStakeSourceKey ~= ""
-    and Global ~= nil and type(Global.call) == "function"
-  then
+  local sourceKey = type(projectStakeSourceKey) == "string" and projectStakeSourceKey or ""
+  if sourceKey ~= "" and Global ~= nil and type(Global.call) == "function" then
+    -- Global.call args must be a fresh object-owned table of primitives (not Global-marshaled fields).
     local qty = Global.call("GlobalProjectStakeQty", {
-      sourceKey = projectStakeSourceKey,
-      name = entry.name,
-      focus = entry.focus,
+      sourceKey = "" .. sourceKey,
+      name = "" .. tostring(entry.name or ""),
+      focus = "" .. tostring(entry.focus or ""),
     })
     extraDisabled = math.max(0, math.floor(tonumber(qty) or 0))
   end
@@ -103,34 +122,45 @@ local function statusSlotCounts(entry, projectStakeSourceKey)
   return baseCount, tempCount, disabledCount
 end
 
---- Patch a self-closing Image tag's image/active by id (page3 Status overlays).
+--- Patch a self-closing Image tag's image/active by id (no gsub callback — Moonsharp/cross-script safe).
 --- @param xml string
 --- @param id string
 --- @param image string
 --- @param active string "true"|"false"
 --- @return string
 local function patchImageTagAttrs(xml, id, image, active)
-  local escaped = id:gsub("([%-%.%+%[%]%(%)%^%$%*%?%%])", "%%%1")
-  local pat = '(<Image%s+id="' .. escaped .. '"%s+)([^>]-)(/?>)'
-  local replaced = false
-  local out = xml:gsub(pat, function(pre, attrs, close)
-    if replaced then
-      return pre .. attrs .. close
-    end
-    replaced = true
-    if attrs:find('image="') then
-      attrs = attrs:gsub('image="[^"]*"', 'image="' .. image .. '"', 1)
-    else
-      attrs = attrs .. ' image="' .. image .. '"'
-    end
-    if attrs:find('active="') then
-      attrs = attrs:gsub('active="[^"]*"', 'active="' .. active .. '"', 1)
-    else
-      attrs = attrs .. ' active="' .. active .. '"'
-    end
-    return pre .. attrs .. close
-  end, 1)
-  return out
+  xml = tostring(xml or "")
+  id = tostring(id or "")
+  image = tostring(image or "")
+  active = tostring(active or "false")
+  if xml == "" or id == "" then
+    return xml
+  end
+  local idNeedle = 'id="' .. id .. '"'
+  local idAt = xml:find(idNeedle, 1, true)
+  if idAt == nil then
+    return xml
+  end
+  local tagStart = idAt
+  while tagStart > 1 and xml:sub(tagStart, tagStart) ~= "<" do
+    tagStart = tagStart - 1
+  end
+  local tagEnd = xml:find(">", idAt, true)
+  if tagEnd == nil then
+    return xml
+  end
+  local tag = xml:sub(tagStart, tagEnd)
+  if tag:find('image="', 1, true) then
+    tag = tag:gsub('image="[^"]*"', 'image="' .. image .. '"', 1)
+  else
+    tag = tag:gsub("/?>", ' image="' .. image .. '"%0', 1)
+  end
+  if tag:find('active="', 1, true) then
+    tag = tag:gsub('active="[^"]*"', 'active="' .. active .. '"', 1)
+  else
+    tag = tag:gsub("/?>", ' active="' .. active .. '"%0', 1)
+  end
+  return xml:sub(1, tagStart - 1) .. tag .. xml:sub(tagEnd + 1)
 end
 
 --- Bake Status Camarilla/Clan overlay Image attrs into page3 XML (sheetDisplay:false boxes stay omitted).
@@ -139,13 +169,20 @@ end
 --- @param projectStakeSourceKey string|nil
 --- @return string
 local function bakeStatusOverlayImages(xml, backgrounds, projectStakeSourceKey)
+  -- Force an object-owned string before patching (TPL fragments may be Global-marshaled).
+  xml = "" .. tostring(xml or "")
+  local stakeKey = ""
+  if type(projectStakeSourceKey) == "string" and projectStakeSourceKey ~= "" then
+    stakeKey = "" .. projectStakeSourceKey
+  end
   local camarilla, clan = findStatusOverlayEntries(backgrounds)
   local overlayRows = {
     { prefix = "statusCamarilla", entry = camarilla },
     { prefix = "statusClan", entry = clan },
   }
-  for _, row in ipairs(overlayRows) do
-    local baseCount, tempCount, disabledCount = statusSlotCounts(row.entry, projectStakeSourceKey)
+  for i = 1, #overlayRows do
+    local row = overlayRows[i]
+    local baseCount, tempCount, disabledCount = statusSlotCounts(row.entry, stakeKey)
     for slot = 1, STATUS_OVERLAY_SLOTS do
       local onId = "dot_on_" .. row.prefix .. "_" .. tostring(slot)
       local offId = "dot_off_" .. row.prefix .. "_" .. tostring(slot)
@@ -187,9 +224,10 @@ function M.buildPage3DocumentXml(stats, seatColorRaw)
   end
   local color = dividerFlawsImageSuffix(seatColorRaw)
   if Global ~= nil and type(Global.call) == "function" then
+    -- Existing GlobalCharKeyForSeatColor takes a raw color string (object path already uses this).
     local charKey = Global.call("GlobalCharKeyForSeatColor", color)
     if type(charKey) == "string" and charKey ~= "" then
-      opts.projectStakeSourceKey = charKey
+      opts.projectStakeSourceKey = "" .. charKey
     end
   end
 
