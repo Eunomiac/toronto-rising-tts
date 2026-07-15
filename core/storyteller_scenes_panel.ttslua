@@ -985,7 +985,9 @@ function StorytellerScenesPanel.onClockInputChanged(player, value, id)
             persistPendingLibraryClockFromDraft(activeKey)
         end
     end
+    -- Authored datetime may appear mid-edit (or after pending auto-save); keep Apply modes in sync.
     refreshClockInputSourceColors(nil)
+    refreshApplyClockButtons()
 end
 
 --- Push storyteller panel visuals from selected library preview (pending) or live `sessionScene`.
