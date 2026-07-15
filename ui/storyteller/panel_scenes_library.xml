@@ -1,66 +1,90 @@
-<!--
-UI.setAttributes("panel_scenes_library", {
-  flexibleWidth = 1,
-  minWidth = 0
-})
--->
-
 <!-- Scene library column: fixed slot buttons + constructor actions (see `core/storyteller_scenes_panel.ttslua`). -->
 <VerticalLayout id="panel_scenes_library" class="storyteller_panel_column">
-  <Text id="db_panel_scenes_library_header" class="hud_storyteller_header">Scene library</Text>
-  <Text id="db_panel_scenes_library_description" fontSize="9" color="#AAAAAA">Rows follow `gameState.sceneLibrary.order` (up to 20). Click a row to set `activeKey`. Unlink / Delete / Apply / End — see Scene Constructor Overview.</Text>
+  <Text id="db_panel_scenes_library_header" class="hud_storyteller_header">Scene Library</Text>
 
   <VerticalScrollView id="db_panel_scenes_library_scrollview" preferredHeight="380" minHeight="120" flexibleHeight="1" movementType="Clamped" vertical="true" horizontal="false" childForceExpandWidth="true">
-    <VerticalLayout id="db_panel_scenes_library_scrollview_content" spacing="4" childForceExpandWidth="true">
-      <Button id="scenes_lib_slot_01" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="scenes_lib_slot_02" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="scenes_lib_slot_03" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="scenes_lib_slot_04" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="scenes_lib_slot_05" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="scenes_lib_slot_06" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="scenes_lib_slot_07" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="scenes_lib_slot_08" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="scenes_lib_slot_09" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="scenes_lib_slot_10" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="scenes_lib_slot_11" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="scenes_lib_slot_12" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="scenes_lib_slot_13" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="scenes_lib_slot_14" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="scenes_lib_slot_15" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="scenes_lib_slot_16" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="scenes_lib_slot_17" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="scenes_lib_slot_18" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="scenes_lib_slot_19" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="scenes_lib_slot_20" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    </VerticalLayout>
+    <HorizontalLayout id="db_panel_scenes_library_columns_container" spacing="2" childForceExpandWidth="true" childForceExpandHeight="true">
+      <VerticalLayout id="db_panel_scenes_library_scrollview_content" spacing="4" childForceExpandWidth="true">
+        <Button id="scenes_lib_slot_01" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_02" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_03" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_04" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_05" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_06" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_07" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_08" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_09" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_10" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_11" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_12" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_13" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_14" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_15" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_16" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_17" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_18" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_19" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_20" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+      </VerticalLayout>
+      <VerticalLayout id="db_panel_scenes_library_scrollview_content" spacing="4" childForceExpandWidth="true">
+        <Button id="scenes_lib_slot_21" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_22" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_23" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_24" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_25" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_26" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_27" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_28" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_29" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_30" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_31" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_32" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_33" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_34" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_35" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_36" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_37" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_38" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_39" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+        <Button id="scenes_lib_slot_40" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+      </VerticalLayout>
+    </HorizontalLayout>
   </VerticalScrollView>
 
   <Text id="db_panel_scenes_library_controls_header" class="hud_storyteller_label">Scene Controls</Text>
 
-  <!--
-  UI.setAttributes("scenes_lib_btns_grid", {
-    cellSize = "150 30",
-    childForceExpandHeight = "true",
-    minHeight = "0",
-    })
+  <GridLayout id="scenes_lib_btns_grid_1" cellSize="125 30" spacing="8 6" constraint="FixedRowCount" constraintCount="1" childAlignment="MiddleCenter" childForceExpandWidth="true" childForceExpandHeight="true">
 
-  -->
-  <GridLayout id="scenes_lib_btns_grid"
-    cellSize="150 30"
-    spacing="8 6"
-    constraint="FixedRowCount"
-    constraintCount="2"
-    childAlignment="MiddleCenter"
-    childForceExpandWidth="true"
-    childForceExpandHeight="true">
+    <Button id="scenes_lib_btn_apply_clock" class="hud_storyteller_button" text="Scene Time" onClick="HUD_scenesLibApply" colors="#4444FF|#5555FF|#6666FF|rgba(0.3,0.3,1,0.5)" textColor="#FFFFFF" />
 
-    <Button id="scenes_lib_btn_apply" class="hud_storyteller_button" text="APPLY" onClick="HUD_scenesLibApply" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lib_btn_unlink" class="hud_storyteller_button" text="Unlink" onClick="HUD_scenesLibUnlink" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lib_btn_end" class="hud_storyteller_button" text="END" onClick="HUD_scenesLibEnd" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lib_btn_apply_x5" class="hud_storyteller_button" text="×5 to Now" onClick="HUD_scenesLibApply" colors="#4444FF|#5555FF|#6666FF|rgba(0.3,0.3,1,0.5)" textColor="#FFFFFF" />
+
+    <Button id="scenes_lib_btn_apply_set_present" class="hud_storyteller_button" text="SET Now" onClick="HUD_scenesLibApply" colors="#4444FF|#5555FF|#6666FF|rgba(0.3,0.3,1,0.5)" textColor="#FFFFFF" />
+
+    <Button id="scenes_lib_btn_apply_present" class="hud_storyteller_button" text="NOW" onClick="HUD_scenesLibApply" colors="#4444FF|#5555FF|#6666FF|rgba(0.3,0.3,1,0.5)" textColor="#FFFFFF" />
+
+  </GridLayout>
+<!--
+
+UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
+-->
+  <GridLayout id="scenes_lib_btns_grid_2" cellSize="125 30" spacing="8 6"
+    padding = "50 50 0 0" constraint="FixedRowCount" constraintCount="1" childAlignment="MiddleCenter" childForceExpandWidth="true" childForceExpandHeight="true">
+
+    <Button id="scenes_lib_btn_unlink" class="hud_storyteller_button" text="UNLINK" onClick="HUD_scenesLibUnlink" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_ctor_btn_fork" class="hud_storyteller_button" text="FORK" minWidth="150" onClick="HUD_scenesCtorForkOpen" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lib_btn_end" class="hud_storyteller_button" text="END" onClick="HUD_scenesLibEnd" colors="#444444|#551111|#662222|rgba(0.3,0.1,0.1,0.5)" textColor="#FFFFFF" />
+  </GridLayout>
+
+
+  <GridLayout id="scenes_lib_btns_grid_1" cellSize="125 30" spacing="8 6" constraint="FixedRowCount" constraintCount="1" childAlignment="MiddleCenter" childForceExpandWidth="true" childForceExpandHeight="true">
+
+    <Panel class="scenes_lib_btn_spacer" />
 
     <Button id="scenes_ctor_btn_import" class="hud_storyteller_button" text="Import Scene" minWidth="120" onClick="HUD_scenesCtorImportOpen" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_ctor_btn_fork" class="hud_storyteller_button" text="Fork Scene" minWidth="150" onClick="HUD_scenesCtorForkOpen" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
     <Button id="scenes_lib_btn_delete" class="hud_storyteller_button" text="Delete Scene" onClick="HUD_scenesLibDelete" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+
+    <Panel class="scenes_lib_btn_spacer" />
 
   </GridLayout>
 

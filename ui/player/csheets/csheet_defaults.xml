@@ -102,7 +102,7 @@
     image="dot_yellow" minHeight="120" minWidth="120" flexibleWidth="0" flexibleHeight="0" scale="2 2" />
 
   <Text class="project_goal_text"
-    color="#FFFFFF" fontStyle="Bold" fontSize="20" alignment="MiddleLeft" offsetXY = "10 0" preferredWidth="1000" />
+    color="#FFFFFF" fontStyle="Bold" fontSize="27" alignment="MiddleLeft" offsetXY = "10 0" preferredWidth="1000" />
 
   <Panel class="project_result_container" ignoreLayout="true" height="50" width="100" rectAlignment="UpperRight" offsetXY = "10 10" color="rgba(0.2, 0.2, 0.2, 1)" outline="#cb995c" outlineSize = "2 -2" />
 
@@ -112,14 +112,16 @@
     color="#FFFFFF" fontStyle="Bold" fontSize="40" alignment="MiddleRight" horizontalOverflow = "wrap" width = "100"/>
 
   <GridLayout class="project_stake_container" color="rgba(1, 0, 0, 0)"
-   rectAlignment="LowerLeft" cellSize = "275 25" height="100"  width="557" spacing = "2" startCorner = "UpperLeft" startAxis="Horizontal" childAlignment = "UpperLeft" padding="0 20 0 0" constraint="FixedColumnCount" constraintCount = "2" offsetXY = "20 -10"/>
+   rectAlignment="LowerLeft" cellSize = "557 30" height="100"  width="557" spacing = "0" startCorner = "UpperLeft" startAxis="Horizontal" childAlignment = "UpperLeft" padding="0 0 0 0" constraint="FixedColumnCount" constraintCount = "1" offsetXY = "5 20"/>
 
-  <HorizontalLayout class="project_stake_container" spacing = "0" color="rgba(1, 0, 1, 0)" childForceExpandWidth = "false" childForceExpandHeight = "true" padding="5 0 0 0" childAlignment="MiddleLeft" />
+  <HorizontalLayout class="project_stake_container" spacing = "15" color="rgba(1, 0, 1, 0)" childForceExpandWidth = "false" childForceExpandHeight = "true" padding="5 0 0 0" childAlignment="MiddleLeft" />
 
-  <Text class="project_stakes_label" color="#FFFFFF" fontStyle="Bold" fontSize="24" alignment="UpperLeft" offsetXY = "5 -35" flexibleWidth="0" horizontalOverflow = "overflow" />
+  <Text class="project_stakes_label" color="rgba(0, 0, 0, 0)" fontSize="0" active="false" />
 
   <GridLayout class="project_stake_dotline" color="rgba(0, 1, 0, 0)"
-     cellSize = "20 20" spacing = "2" startCorner = "UpperLeft" startAxis = "Horizontal" constraint = "FixedRowCount" constraintCount = "1" childAlignment = "MiddleLeft" childForceExpandWidth = "false" childForceExpandHeight = "false" scale="0.75" preferredWidth="0" flexibleWidth="1" minWidth = "0" padding="0 0 0 0" />
+     cellSize = "25 25" spacing = "2" startCorner = "UpperLeft" startAxis = "Horizontal" constraint = "FixedRowCount" constraintCount = "1" childAlignment = "MiddleLeft" childForceExpandWidth = "false" childForceExpandHeight = "false" scale="0.75" preferredWidth="0" flexibleWidth="0" minWidth = "0" padding="0 0 0 0" />
+
+  <Panel class="project_stake_spacer" flexibleWidth="1" />
 
   <Image class="project_stake_dot"
     image="dot_white" minHeight="120" minWidth="12" flexibleWidth="0" flexibleHeight="0" scale="2 2" />
@@ -139,12 +141,12 @@
 
 
   <Image class="project_die" ignoreLayout="true" rectAlignment="MiddleRight" width="500" preserveAspect="true" offsetXY = "0 -10" />
-  <HorizontalLayout class="project_date_container" ignoreLayout="true" height="30" width = "475" rectAlignment="LowerRight" offsetXY = "10 -10" color="rgba(0, 0, 0, 1)" outline="#cb995c" outlineSize = "2 -2" spacing = "0" />
+  <HorizontalLayout class="project_date_container" ignoreLayout="true" height="30" width = "550" rectAlignment="LowerRight" offsetXY = "10 -10" color="rgba(0, 0, 0, 1)" outline="#cb995c" outlineSize = "2 -2" spacing = "0" />
 
   <Text class="project_date_text"
     color="#FFFFFF" fontStyle="Bold" fontSize="20" alignment="MiddleCenter" preferredWidth="1000" />
   <Text class="project_increment_text"
-    fontStyle="Italic" fontSize="14" color="#999999" alignment="MiddleCenter" preferredWidth="1000" />
+    fontStyle="Italic" fontSize="18" color="#999999" alignment="MiddleCenter" preferredWidth="1000" />
 
   <Text class="project_date_start_text"
     fontStyle="Italic"

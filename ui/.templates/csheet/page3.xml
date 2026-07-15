@@ -47,15 +47,50 @@
         <Image class="dot_status" height="80" width="80" ignoreLayout="true" rectAlignment="UpperLeft" active="false" />
      </Defaults>
 
-    <Image id="dot_statusCamarilla_1" image="" class="dot dot_standard dot_status" offsetXY="286 -226" />
-    <Image id="dot_statusCamarilla_2" image="" class="dot dot_standard dot_status" offsetXY="286 -226" />
-    <Image id="dot_statusCamarilla_3" image="" class="dot dot_standard dot_status" offsetXY="286 -226" />
-    <Image id="dot_statusCamarilla_4" image="" class="dot dot_standard dot_status" offsetXY="286 -226" />
-    <Image id="dot_statusCamarilla_5" image="" class="dot dot_standard dot_status" offsetXY="286 -226" />
+    <!-- Status (Camarilla) dots-->
 
-    <Image id="dot_statusClan_1" image="" class="dot dot_standard dot_status" offsetXY="286 -226" />
-    <Image id="dot_statusClan_2" image="" class="dot dot_standard dot_status" offsetXY="286 -226" />
-    <Image id="dot_statusClan_3" image="" class="dot dot_standard dot_status" offsetXY="286 -226" />
-    <Image id="dot_statusClan_4" image="" class="dot dot_standard dot_status" offsetXY="286 -226" />
-    <Image id="dot_statusClan_5" image="" class="dot dot_standard dot_status" offsetXY="286 -226" />
+    <!--
+    Print attributes of the UI element "dot_off_statusCamarilla_1" in the console:
+
+    local obj = getObjectFromGUID("631323").
+    if obj ~= nil and obj.UI ~= nil then
+      local attrs = obj.UI.getAttributes("dot_off_statusCamarilla_1")
+      print("- Attributes for dot_off_statusCamarilla_1 -")
+      for k, v in pairs(attrs) do
+        print(k .. ": " .. tostring(v))
+      end
+    else
+      print("Object or UI not found")
+    end
+    -->
+
+
+    <!--
+    getObjectFromGUID("f8e50c").UI.setAttributes("dot_statusCamarilla_1", {offsetXY = "286 -226", image="dot_yellow", active="true"})
+    getObjectFromGUID("f8e50c").UI.setAttributes("dot_statusCamarilla_2", {offsetXY = "334 -226", image="dot_yellow", active="true"})
+    getObjectFromGUID("f8e50c").UI.setAttributes("dot_statusCamarilla_3", {offsetXY = "382 -226", image="dot_yellow", active="true"})
+    getObjectFromGUID("f8e50c").UI.setAttributes("dot_statusCamarilla_4", {offsetXY = "430 -226", image="dot_yellow", active="true"})
+    getObjectFromGUID("f8e50c").UI.setAttributes("dot_statusCamarilla_5", {offsetXY = "478 -226", image="dot_yellow", active="true"})
+
+    getObjectFromGUID("f8e50c").UI.setAttributes("dot_statusClan_1", {offsetXY = "986 -226", image="dot_yellow", active="true"})
+    getObjectFromGUID("f8e50c").UI.setAttributes("dot_statusClan_1", {offsetXY = "1010 -226", image="dot_yellow", active="true"})
+
+
+    getObjectFromGUID("f8e50c").UI.setAttributes("dot_statusClan_2", {offsetXY = "1058 -226", image="dot_yellow", active="true"})
+    getObjectFromGUID("f8e50c").UI.setAttributes("dot_statusClan_3", {offsetXY = "1106 -226", image="dot_yellow", active="true"})
+    getObjectFromGUID("f8e50c").UI.setAttributes("dot_statusClan_4", {offsetXY = "1154 -226", image="dot_yellow", active="true"})
+    getObjectFromGUID("f8e50c").UI.setAttributes("dot_statusClan_5", {offsetXY = "1202 -226", image="dot_yellow", active="true"})
+     -->
+
+    <Image id="dot_statusCamarilla_1" image="" class="dot dot_standard dot_status" offsetXY="286 -226" />
+    <Image id="dot_statusCamarilla_2" image="" class="dot dot_standard dot_status" offsetXY="334 -226" />
+    <Image id="dot_statusCamarilla_3" image="" class="dot dot_standard dot_status" offsetXY="382 -226" />
+    <Image id="dot_statusCamarilla_4" image="" class="dot dot_standard dot_status" offsetXY="430 -226" />
+    <Image id="dot_statusCamarilla_5" image="" class="dot dot_standard dot_status" offsetXY="478 -226" />
+
+    <Image id="dot_statusClan_1" image="" class="dot dot_standard dot_status" offsetXY="1010 -226" />
+    <Image id="dot_statusClan_2" image="" class="dot dot_standard dot_status" offsetXY="1058 -226" />
+    <Image id="dot_statusClan_3" image="" class="dot dot_standard dot_status" offsetXY="1106 -226" />
+    <Image id="dot_statusClan_4" image="" class="dot dot_standard dot_status" offsetXY="1154 -226" />
+    <Image id="dot_statusClan_5" image="" class="dot dot_standard dot_status" offsetXY="1202 -226" />
 </Panel>

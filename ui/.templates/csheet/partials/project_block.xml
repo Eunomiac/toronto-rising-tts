@@ -32,49 +32,116 @@
     <Text id="project_@@INDEX@@_result_margin" class="project_result_margin" text="+4" /> <!-- The margin on the launch roll, e.g. "+4", but only on a Win; if a Critical Win, set to active=false -->
   </Panel>
 
-  <Text id="project_@@INDEX@@_stakes_label" class="project_stakes_label" text="STAKE:" /> <!-- Set INACTIVE if launch roll result was a Critical Win -->
+  <Text id="project_@@INDEX@@_stakes_label" class="project_stakes_label" text="" /> <!-- Set INACTIVE if launch roll result was a Critical Win -->
 
   <GridLayout id="project_@@INDEX@@_stakes" class="project_stake_container" > <!-- Set INACTIVE if launch roll result was a Critical Win -->
 
+      <!-- Status (Camarilla) dots-->
+
+    <!--
+    Print attributes of the UI element "dot_off_statusCamarilla_1" in the console:
+
+    local obj = getObjectFromGUID("f7ab1b")
+    local elemID = "project_0_stakes"
+    if obj ~= nil and obj.UI ~= nil then
+      local attrs = obj.UI.getAttributes(elemID)
+      print("- Attributes for " .. elemID .. " -")
+      for k, v in pairs(attrs) do
+        print(k .. ": " .. tostring(v))
+      end
+    else
+      print("Object or UI not found")
+    end
+    -->
+
+
+    <!--
+    getObjectFromGUID("631323").UI.setAttributes("dot_off_statusCamarilla_1", {height="80", width="80",
+      offsetXY = "286 -226", image="dot_yellow", color="rgba(1, 1, 1, 1)", active="false"})
+    getObjectFromGUID("631323").UI.setAttributes("dot_on_statusCamarilla_2", {height="80", width="80",
+      offsetXY = "286 -226", image="dot_yellow", color="rgba(1, 1, 1, 1)", active="true",
+      ignoreLayout="true", rectAlignment="UpperLeft" })
+     -->
+
+
+  <!--
+
+  getObjectFromGUID("f7ab1b").UI.setAttributes("project_0_stakes_label", {offsetXY = "0 -30", active="false"})
+  getObjectFromGUID("f7ab1b").UI.setAttributes("project_0_stakes", {cellSize = "500 30", spacing = "0"})
+
+    getObjectFromGUID("f7ab1b").UI.setAttributes("project_0_stakes", {rectAlignment="LowerLeft", cellSize = "557 30", height="100",  width="557", spacing = "0", startCorner = "UpperLeft" ,startAxis="Horizontal", childAlignment = "UpperLeft", padding="0 0 0 0", constraint="FixedColumnCount", constraintCount = "1", offsetXY = "5 20"})
+  getObjectFromGUID("f7ab1b").UI.setAttributes("project_0_stake_1", {color = "rgba(1, 0, 0, 0)", spacing = "15"})
+  getObjectFromGUID("f7ab1b").UI.setAttributes("db_project_0_stake_1_dots", {cellSize = "25 25"})
+  getObjectFromGUID("f7ab1b").UI.setAttributes("project_0_stake_1_label", {horizontalOverflow="wrap", verticalOverflow="truncate", fontSize = "22", preferredWidth="700", flexibleWidth="1"})
+  getObjectFromGUID("f7ab1b").UI.setAttributes("db_project_0_stake_1_spacer", {color="rgba(1, 1, 0, 0.15)", flexibleWidth="1", preferredWidth="500"})
+  getObjectFromGUID("f7ab1b").UI.setAttributes("project_0_stake_1_dot_1", {height = "70", width = "70"})
+
+  getObjectFromGUID("f7ab1b").UI.setAttributes("project_0_stake_2", {color = "rgba(1, 0, 0, 0.15", minHeight = "50", flexibleHeight = "0", spacing="0", childForceExpandWidth="true"})
+  getObjectFromGUID("f7ab1b").UI.setAttributes("db_project_0_stake_2_dots", {color="rgba(1, 0, 0, 0.15)", preferredWidth="100", flexibleWidth="1"})
+  getObjectFromGUID("f7ab1b").UI.setAttributes("project_0_stake_1_label", {fontSize = "22"})
+  getObjectFromGUID("f7ab1b").UI.setAttributes("db_project_0_stake_2_spacer", {color="rgba(1, 1, 0, 0.15)", flexibleWidth="1", preferredWidth="500"})
+
+  getObjectFromGUID("f7ab1b").UI.setAttributes("project_0_stake_4", {active="true"})
+  getObjectFromGUID("f7ab1b").UI.setAttributes("db_project_0_stake_3_dots", {color="rgba(1, 0, 0, 0.15)", flexibleWidth="0"})
+  getObjectFromGUID("f7ab1b").UI.setAttributes("project_0_stake_4_label", {text = "Mawla (Damien Abanda)", active="true"})
+  getObjectFromGUID("f7ab1b").UI.setAttributes("db_project_0_stake_3_spacer", {color="rgba(1, 1, 0, 0.15)", flexibleWidth="1"})
+
+
+  getObjectFromGUID("f7ab1b").UI.setAttributes("project_0_stake_3", {active="true", color = "rgba(1, 0, 1, 0", minHeight = "50", flexibleHeight = "0"})
+  getObjectFromGUID("f7ab1b").UI.setAttributes("project_0_stake_3_label", {fontSize = "22", text = "Resources"})
+  getObjectFromGUID("f7ab1b").UI.setAttributes("project_0_stake_4", {active="true", color = "rgba(0, 1, 1, 0", minHeight = "50", flexibleHeight = "0"})
+  getObjectFromGUID("f7ab1b").UI.setAttributes("project_0_stake_4_label", {fontSize = "22", text = "Mawla (Damien Abanda)"})
+
+    getObjectFromGUID("f7ab1b").UI.setAttributes("project_0_date_increment", {fontSize = "18", horizontalOverflow = "overflow"})
+
+
+
+   -->
+
+
     <HorizontalLayout id="project_@@INDEX@@_stake_1" class="project_stake_container"  > <!-- Each of these six HorizontalLayouts areInactive by default; set active="true" for each staked Advantage -->
         <Text id="project_@@INDEX@@_stake_1_label" class="project_stake_label project_stake_label_@@PROJECT_STAKE_1_CLASS@@" text="" /> <!-- The name of the Advantage staked, e.g. "Influence (Nightlife)"-->
-        <GridLayout class="project_stake_dotline">
+        <GridLayout id="db_project_@@INDEX@@_stake_1_dots" class="project_stake_dotline">
           <Image id="project_@@INDEX@@_stake_1_dot_1" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_1_CLASS@@"  /> <!-- Dots are 'active=false' by default; activate however many dots of this advantage are staked. -->
           <Image id="project_@@INDEX@@_stake_1_dot_2" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_1_CLASS@@"  />
           <Image id="project_@@INDEX@@_stake_1_dot_3" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_1_CLASS@@"  />
           <Image id="project_@@INDEX@@_stake_1_dot_4" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_1_CLASS@@" />
           <Image id="project_@@INDEX@@_stake_1_dot_5" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_1_CLASS@@"  />
         </GridLayout>
+        <Panel id="db_project_@@INDEX@@_stake_1_spacer" class="project_stake_spacer" />
     </HorizontalLayout>
     <HorizontalLayout id="project_@@INDEX@@_stake_2" class="project_stake_container"     >
         <Text id="project_@@INDEX@@_stake_2_label" class="project_stake_label project_stake_label_@@PROJECT_STAKE_2_CLASS@@" text="" />
-        <GridLayout class="project_stake_dotline">
+        <GridLayout id="db_project_@@INDEX@@_stake_2_dots" class="project_stake_dotline">
           <Image id="project_@@INDEX@@_stake_2_dot_1" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_2_CLASS@@ "  />
           <Image id="project_@@INDEX@@_stake_2_dot_2" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_2_CLASS@@"  />
           <Image id="project_@@INDEX@@_stake_2_dot_3" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_2_CLASS@@"  />
           <Image id="project_@@INDEX@@_stake_2_dot_4" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_2_CLASS@@" />
           <Image id="project_@@INDEX@@_stake_2_dot_5" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_2_CLASS@@"  />
         </GridLayout>
+        <Panel id="db_project_@@INDEX@@_stake_2_spacer" class="project_stake_spacer" />
     </HorizontalLayout>
     <HorizontalLayout id="project_@@INDEX@@_stake_3" class="project_stake_container"     >
         <Text id="project_@@INDEX@@_stake_3_label" class="project_stake_label project_stake_label_@@PROJECT_STAKE_3_CLASS@@" text="" />
-        <GridLayout class="project_stake_dotline">
+        <GridLayout id="db_project_@@INDEX@@_stake_3_dots" class="project_stake_dotline">
           <Image id="project_@@INDEX@@_stake_3_dot_1" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_3_CLASS@@"  />
           <Image id="project_@@INDEX@@_stake_3_dot_2" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_3_CLASS@@"  />
           <Image id="project_@@INDEX@@_stake_3_dot_3" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_3_CLASS@@"  />
           <Image id="project_@@INDEX@@_stake_3_dot_4" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_3_CLASS@@"  />
           <Image id="project_@@INDEX@@_stake_3_dot_5" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_3_CLASS@@"   />
         </GridLayout>
+        <Panel id="db_project_@@INDEX@@_stake_3_spacer" class="project_stake_spacer" />
     </HorizontalLayout>
     <HorizontalLayout id="project_@@INDEX@@_stake_4" class="project_stake_container"     >
         <Text id="project_@@INDEX@@_stake_4_label" class="project_stake_label project_stake_label_@@PROJECT_STAKE_4_CLASS@@" text="" />
-        <GridLayout class="project_stake_dotline">
+        <GridLayout id="db_project_@@INDEX@@_stake_4_dots" class="project_stake_dotline">
           <Image id="project_@@INDEX@@_stake_4_dot_1" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_4_CLASS@@"  />
           <Image id="project_@@INDEX@@_stake_4_dot_2" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_4_CLASS@@"  />
           <Image id="project_@@INDEX@@_stake_4_dot_3" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_4_CLASS@@"  />
           <Image id="project_@@INDEX@@_stake_4_dot_4" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_4_CLASS@@" />
           <Image id="project_@@INDEX@@_stake_4_dot_5" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_4_CLASS@@"  />
         </GridLayout>
+        <Panel id="db_project_@@INDEX@@_stake_4_spacer" class="project_stake_spacer" />
     </HorizontalLayout>
     <HorizontalLayout id="project_@@INDEX@@_stake_5" class="project_stake_container" >
         <Text id="project_@@INDEX@@_stake_5_label" class="project_stake_label project_stake_label_@@PROJECT_STAKE_5_CLASS@@" text="" />

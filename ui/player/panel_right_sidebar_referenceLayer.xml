@@ -588,6 +588,14 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
 -->
       <VerticalLayout id="page_1_right_Brown" class="page page_right" padding = "8 8 160 50">
 
+
+    <!-- Status (Camarilla) dots-->
+    <Image id="dot_statusCamarilla_1_Brown" image="dot_yellow" class="dot dot_standard" offsetXY="100 -200" height="100" width="100" ignoreLayout="true" rectAlignment="UpperLeft" active="true" />
+    <Image id="dot_statusCamarilla_2_Brown" image="dot_yellow" class="dot dot_standard" offsetXY="319 -1256" />
+    <Image id="dot_statusCamarilla_3_Brown" image="dot_yellow" class="dot dot_standard" offsetXY="353 -1256" />
+    <Image id="dot_statusCamarilla_4_Brown" image="dot_yellow" class="dot dot_standard" offsetXY="387 -1256" />
+    <Image id="dot_statusCamarilla_5_Brown" image="dot_blank" class="dot dot_standard" offsetXY="421 -1256" />
+
         <!-- Coterie Backgrounds -->
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_bg_0_Brown" class="box_text_container" active="true">
@@ -2058,6 +2066,14 @@ UI.setAttributes("page_1_right_Pink", {padding = "8 8 160 20"})
 UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15)", rectAlignment = "MiddleLeft", offsetXY = "20 0"})
 -->
       <VerticalLayout id="page_1_right_Orange" class="page page_right" padding = "8 8 160 50">
+
+
+    <!-- Status (Camarilla) dots-->
+    <Image id="dot_statusCamarilla_1_Orange" image="dot_yellow" class="dot dot_standard" offsetXY="100 -200" height="100" width="100" ignoreLayout="true" rectAlignment="UpperLeft" active="true" />
+    <Image id="dot_statusCamarilla_2_Orange" image="dot_yellow" class="dot dot_standard" offsetXY="319 -1256" />
+    <Image id="dot_statusCamarilla_3_Orange" image="dot_yellow" class="dot dot_standard" offsetXY="353 -1256" />
+    <Image id="dot_statusCamarilla_4_Orange" image="dot_yellow" class="dot dot_standard" offsetXY="387 -1256" />
+    <Image id="dot_statusCamarilla_5_Orange" image="dot_blank" class="dot dot_standard" offsetXY="421 -1256" />
 
         <!-- Coterie Backgrounds -->
         <HorizontalLayout class="box_column_container">
@@ -3530,6 +3546,14 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
 -->
       <VerticalLayout id="page_1_right_Red" class="page page_right" padding = "8 8 160 50">
 
+
+    <!-- Status (Camarilla) dots-->
+    <Image id="dot_statusCamarilla_1_Red" image="dot_yellow" class="dot dot_standard" offsetXY="100 -200" height="100" width="100" ignoreLayout="true" rectAlignment="UpperLeft" active="true" />
+    <Image id="dot_statusCamarilla_2_Red" image="dot_yellow" class="dot dot_standard" offsetXY="319 -1256" />
+    <Image id="dot_statusCamarilla_3_Red" image="dot_yellow" class="dot dot_standard" offsetXY="353 -1256" />
+    <Image id="dot_statusCamarilla_4_Red" image="dot_yellow" class="dot dot_standard" offsetXY="387 -1256" />
+    <Image id="dot_statusCamarilla_5_Red" image="dot_blank" class="dot dot_standard" offsetXY="421 -1256" />
+
         <!-- Coterie Backgrounds -->
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_bg_0_Red" class="box_text_container" active="true">
@@ -5001,6 +5025,14 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
 -->
       <VerticalLayout id="page_1_right_Pink" class="page page_right" padding = "8 8 160 50">
 
+
+    <!-- Status (Camarilla) dots-->
+    <Image id="dot_statusCamarilla_1_Pink" image="dot_yellow" class="dot dot_standard" offsetXY="100 -200" height="100" width="100" ignoreLayout="true" rectAlignment="UpperLeft" active="true" />
+    <Image id="dot_statusCamarilla_2_Pink" image="dot_yellow" class="dot dot_standard" offsetXY="319 -1256" />
+    <Image id="dot_statusCamarilla_3_Pink" image="dot_yellow" class="dot dot_standard" offsetXY="353 -1256" />
+    <Image id="dot_statusCamarilla_4_Pink" image="dot_yellow" class="dot dot_standard" offsetXY="387 -1256" />
+    <Image id="dot_statusCamarilla_5_Pink" image="dot_blank" class="dot dot_standard" offsetXY="421 -1256" />
+
         <!-- Coterie Backgrounds -->
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_bg_0_Pink" class="box_text_container" active="true">
@@ -6471,6 +6503,14 @@ UI.setAttributes("page_1_right_Pink", {padding = "8 8 160 20"})
 UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15)", rectAlignment = "MiddleLeft", offsetXY = "20 0"})
 -->
       <VerticalLayout id="page_1_right_Purple" class="page page_right" padding = "8 8 160 50">
+
+
+    <!-- Status (Camarilla) dots-->
+    <Image id="dot_statusCamarilla_1_Purple" image="dot_yellow" class="dot dot_standard" offsetXY="100 -200" height="100" width="100" ignoreLayout="true" rectAlignment="UpperLeft" active="true" />
+    <Image id="dot_statusCamarilla_2_Purple" image="dot_yellow" class="dot dot_standard" offsetXY="319 -1256" />
+    <Image id="dot_statusCamarilla_3_Purple" image="dot_yellow" class="dot dot_standard" offsetXY="353 -1256" />
+    <Image id="dot_statusCamarilla_4_Purple" image="dot_yellow" class="dot dot_standard" offsetXY="387 -1256" />
+    <Image id="dot_statusCamarilla_5_Purple" image="dot_blank" class="dot dot_standard" offsetXY="421 -1256" />
 
         <!-- Coterie Backgrounds -->
         <HorizontalLayout class="box_column_container">
