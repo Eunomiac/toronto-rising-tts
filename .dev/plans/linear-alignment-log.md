@@ -535,5 +535,9 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-15 | DONE | TOR-375 | Seat reveal + CONTROL_BOARD bake; CSHEET setXml exception permitted; gate setXml≤1 |
 | 2026-07-15 | UPDATE | TOR-376 | Future Low; optional CSHEET max-slot migrate; parent TOR-37 |
 | 2026-07-15 | Focus | Stack | #1 TOR-365, #2 TOR-293, #3 TOR-328, #4 TOR-329 |
+| 2026-07-15 | DONE | TOR-365 | End scene panel false positive — keep activeKey pending; Suite C assert |
+| 2026-07-15 | DONE | TOR-293 | Connection∧narrative effective presence; disconnect/connect; DEBUG toggle |
+| 2026-07-15 | DONE | TOR-328 | Sole Confirm auto-proceed with physical-alternate exceptions |
+| 2026-07-15 | Focus | Stack | #1 TOR-329 |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
