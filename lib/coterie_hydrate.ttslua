@@ -23,6 +23,37 @@ M.BLANK_SLOTS_PER_ARRAY = 3
 
 M.DOMAIN_RATING_KEYS = { "chasse", "lien", "portillon", "haven" }
 
+--- Title-case stake / PE labels for top-level domain ratings (TOR-386).
+M.DOMAIN_RATING_STAKE_NAMES = {
+  chasse = "Chasse",
+  lien = "Lien",
+  portillon = "Portillon",
+  haven = "Haven",
+}
+
+--- @param ratingKey string
+--- @return string|nil Title-case name
+function M.domainRatingStakeName(ratingKey)
+  if type(ratingKey) ~= "string" then
+    return nil
+  end
+  return M.DOMAIN_RATING_STAKE_NAMES[ratingKey]
+end
+
+--- @param name string|nil
+--- @return string|nil ratingKey
+function M.domainRatingKeyFromStakeName(name)
+  if type(name) ~= "string" or name == "" then
+    return nil
+  end
+  for key, label in pairs(M.DOMAIN_RATING_STAKE_NAMES) do
+    if label == name then
+      return key
+    end
+  end
+  return nil
+end
+
 --- Coerce legacy integer domain ratings or partial tables to `{ base, temp, max, disabled }`.
 --- @param val number|table|nil
 --- @param defaultMax integer|nil

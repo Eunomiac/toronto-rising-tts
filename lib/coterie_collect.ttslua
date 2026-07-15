@@ -160,7 +160,14 @@ function CC.collectPrincesCourtHudUpdates(coterieData, hudSeatColor)
         )
         local baseCount = rating.base
         local tempCount = rating.temp
-        local disabledCount = rating.disabled
+        local stakeName = CoterieHydrate.domainRatingStakeName(key)
+        local stakeExtra = 0
+        if type(stakeName) == "string" then
+          stakeExtra = math.max(0, math.floor(tonumber(
+            Projects.stakeQtyForAdvantage("coterie", stakeName, "", nil)
+          ) or 0))
+        end
+        local disabledCount = rating.disabled + stakeExtra
         for slot = 1, MAX_DOMAIN_DOTS do
             local img = TRAIT.dotImageForDomainSlot(slot, baseCount, tempCount, disabledCount, "dot_large_yellow")
             if img ~= nil then

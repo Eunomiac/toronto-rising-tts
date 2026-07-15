@@ -200,6 +200,7 @@ Replace the multiline DSL. Modal shows structured rows.
 
 1. **Display-only:** `source` set; advantage and qty empty. Adds `source` to `displayFor` only (e.g. show on coterie sheet without staking). Not used as a phase-confirm gesture — that is **Lock & Begin**.
 2. **Stake:** `source` + advantage (from dropdown of that source’s backgrounds/merits) + `qty >= 1`. Adds to `displayFor` and to `stakedAdvantages`.
+   - When `source == "coterie"`, the dropdown also lists top-level domain ratings **Chasse**, **Lien**, **Portillon**, **Haven** (stake `name` = Title case, `focus` empty). Free-dots use the matching `coterieData[ratingKey]` table, not trait arrays.
 
 ### Row activation (XML pool)
 

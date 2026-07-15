@@ -39,13 +39,6 @@ local COTERIE_CATEGORY_LABELS = {
   havenFlaws = "Haven Flaws",
 }
 
-local RATING_LABELS = {
-  chasse = "Chasse",
-  lien = "Lien",
-  portillon = "Portillon",
-  haven = "Haven",
-}
-
 local setAttr
 local setAttrs
 local refreshPcSection
@@ -141,17 +134,7 @@ refreshCoterieDetail = function()
     refreshCoterieSection(arrayKey)
   end
   for _, ratingKey in ipairs(CoterieHydrate.DOMAIN_RATING_KEYS) do
-    local rating = Coterie.getDomainRating(ratingKey)
-    local label = string.format(
-      "%s: base %d, temp %d, max %d, disabled %d",
-      RATING_LABELS[ratingKey] or ratingKey,
-      rating.base or 0,
-      rating.temp or 0,
-      rating.max or 5,
-      rating.disabled or 0
-    )
     setAttr("stats_rating_" .. ratingKey .. "_edit", "text", "Edit")
-    -- rating row has no label id; detail title covers context
   end
 end
 
