@@ -665,8 +665,34 @@ function GameStateOverlay.tickRealTimeClock()
         realTimeSpeed = speed,
         isPresentDay = ck.isPresentDay == true,
     }
+    -- Preserve TOR-142 ×5 catch-up payload across ticks until clamp/restore.
+    if ck.catchUpToPresentDay == true then
+        nextClock.catchUpToPresentDay = true
+        nextClock.catchUpRestoreSpeed = ck.catchUpRestoreSpeed
+        nextClock.catchUpRestoreUseRealTime = ck.catchUpRestoreUseRealTime
+        local pd = PresentDayClock.getPresentDay()
+        if type(pd) == "table" and U.compareNarrativeClock(nextClock, pd) >= 0 then
+            nextClock.year = pd.year
+            nextClock.month = pd.month
+            nextClock.day = pd.day
+            nextClock.hour = pd.hour
+            nextClock.minute = pd.minute
+            y = pd.year
+            mo = pd.month
+            d = pd.day
+            h = pd.hour
+            m = pd.minute
+            PresentDayClock.clearCatchUpAndRestore(nextClock)
+        end
+    end
     S.setStateVal(nextClock, "sessionScene", "clock")
     PresentDayClock.tryAdvance(nextClock)
+    if nextClock.catchUpToPresentDay ~= true and ck.catchUpToPresentDay == true then
+        -- Catch-up just finished: re-baseline ticker / maybe stop if useRealTime restored false.
+        GameStateOverlay.resetRealTimeCarry()
+        GameStateOverlay.stopTicker()
+        GameStateOverlay.ensureTicker()
+    end
     if h ~= oldHour or d ~= oldDay then
         ChronicleWeather.applyScheduledWeather({ force = false })
     end

@@ -708,6 +708,7 @@ end
 
 function SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked()
     local S = require("core.state")
+    local PresentDayClock = require("core.present_day_clock")
     local K = SceneLibrary.resolveMirrorSceneKey()
     if K == nil then
         return
@@ -716,7 +717,12 @@ function SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked()
     if type(live) ~= "table" then
         return
     end
-    S.setStateVal(U.merge({}, live), "sceneLibrary", "scenes", K, "sessionScene")
+    -- Strip TOR-142 ×5 catch-up runtime fields before library writeback.
+    local toStore = PresentDayClock.cloneSessionSceneForLibraryMirror(live)
+    if type(toStore) ~= "table" then
+        return
+    end
+    S.setStateVal(toStore, "sceneLibrary", "scenes", K, "sessionScene")
 end
 
 --- True when a library scene is currently on the table (`lastAppliedKey` + row exists).

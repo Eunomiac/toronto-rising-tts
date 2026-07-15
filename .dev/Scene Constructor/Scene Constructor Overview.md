@@ -297,7 +297,20 @@ When `activeKey == lastAppliedKey` (or no selection), the panel stays live-bound
 
 **Clock “not set”:** `clock` may exist with only flags — all five datetime fields absent. Datetime fields are **never** defaulted during import validation or `S.validateState`; historical scenes without a full datetime fail validation.
 
-Implementation: [`core/present_day_clock.ttslua`](../../core/present_day_clock.ttslua); `sceneLibrary.lastAppliedKey` flushes the previously applied row’s clock before switching.
+Implementation: [`core/present_day_clock.ttslua`](../../core/present_day_clock.ttslua); `sceneLibrary.lastAppliedKey` flushes the previously applied row’s clock before switching. **End scene** also flushes the live clock onto the mirroring row before detach (TOR-142) so exit time survives End.
+
+### Four clock-aware Apply buttons (TOR-142)
+
+Library Apply is four buttons (`Scene Time` / `×5 to Now` / `SET Now` / `NOW`). All run the **same** staged full-scene Apply; they differ only in clock mode:
+
+| Button | Mode | Clock |
+| --- | --- | --- |
+| Scene Time | `scene` | Library authored datetime → live; present-day advances via `tryAdvance` only |
+| ×5 to Now | `x5` | Same as Scene Time; if behind present-day, temporary RT at **recorded speed × 5** until catch-up (clamp), then restore flags/speed |
+| SET Now | `setPresent` | Scene datetime → live **and** `PresentDayClock.setPresentDay` (may rewind chronicle “now”) |
+| NOW | `present` | Ignore library datetime; fill from `presentDayClock`; keep library flags |
+
+Scene Time / ×5 / SET Now are **disabled** until the selected row has an authored datetime (clockless present-day import uses NOW first; live play + flush/mirror later enables the other three from exit time). Animated ease-in/out jumps remain **TOR-222**, not ×5.
 
 ## Switching scenes
 
@@ -330,13 +343,14 @@ Messages should name the **JSON path** and the **fix** (e.g. `sessionScene.seatS
 
 Storyteller **Scenes** tab shows two columns (`ui/storyteller/panel_scenes_host.xml`): narrative controls + import/fork modals on the left; **Scene library** (`panel_scenes_library.xml`) on the right with fixed slot buttons and constructor actions.
 
-For each key in `sceneLibrary.order`, activate a pre-declared dummy button and set label from `scenes[k].title` (do **not** use `setXML` / `setXMLTable` for dynamic lists). Selected row: **green** when it is the live on-table scene, **blue** when pending (preview/edit library only); inactive: default; unlink grey (see below).
+For each key in `sceneLibrary.order`, activate a pre-declared dummy button (`scenes_lib_slot_01`…`40`, two columns) and set label from `scenes[k].title` **plus status suffix** (e.g. `Grand Audience · unlinked`) — do **not** prefix `[sceneKey]`, and do **not** use `setXML` / `setXMLTable` for dynamic lists. Selected row: **green** when it is the live on-table scene, **blue** when pending (preview/edit library only); inactive: default; unlink grey (see below).
 
 - **Import Scene** — opens modal with large text field + confirm; validation as above.
 - **New Scene** — **fork** the live table into a new library row (see **Forking a scene** below). Does **not** blindfold or apply state: the physical table and `gameState.sessionScene` stay as they are; only `sceneLibrary` changes so future mirrors target the new row while the previous row stays pinned to the fork-time snapshot.
 - **Unlink Scene** — sets `receivesLiveWrites = false` on the **active** library entry only: **stop mirroring** live `sessionScene` into that entry’s stored `sessionScene`. Does **not** snapshot-freeze; the stored bundle simply stops receiving updates until linked again.
 - **Delete Scene** — arm mode → pick scene → confirm → remove from `scenes` and `order`, clear `activeKey` if deleted, then refresh.
-- **End Scene** — narrative end: notify players, **`SceneLibrary.detachLiveTableFromLibraryMirror()`** (stop `receivesLiveWrites`, clear `lastAppliedKey` and `activeKey` so library UI drops live/mirroring/green selection; stored rows are not overwritten), clear `sessionScene.districtKey` / `siteKey`, stop real-time clock (`useRealTime = false` + overlay ticker). Now runs through the **same staged blindfold transition** (TOR-147): fade old ambient out → `Scenes.applyDefaultNoSceneEnvironment({ skipSoundscape = true })` (heavy default reconcile) → fade **Main**-only ambient in (`Scenes.applyNoSceneSoundscape`) → settle/lift. Closes the Scenes panel.
+- **Apply (four clock modes)** — see **Four clock-aware Apply buttons (TOR-142)** above.
+- **End Scene** — narrative end: notify players, **flush live clock** onto the mirroring library row, then **`SceneLibrary.detachLiveTableFromLibraryMirror()`** (stop `receivesLiveWrites`, clear `lastAppliedKey`, keep `activeKey` on the ended row for pending display — TOR-365), apply default no-scene via staged blindfold (TOR-147). Closes the Scenes panel.
 
 ## Forking a scene (“New Scene”)
 

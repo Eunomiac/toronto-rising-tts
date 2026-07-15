@@ -178,7 +178,10 @@ Re-check lighting, NPCs, pins, and soundscape after about 3 seconds.
 | Control | ID | Effect |
 | --- | --- | --- |
 | Library slot | `scenes_lib_slot_XX` | Select `activeKey` |
-| Apply scene | `scenes_lib_btn_apply` | Full staged apply + blindfold |
+| Apply Scene Time | `scenes_lib_btn_apply_clock` | Full staged apply; library datetime → live clock |
+| Apply ×5 to Now | `scenes_lib_btn_apply_x5` | Full staged apply; ×5 RT catch-up until present (TOR-142) |
+| Apply SET Now | `scenes_lib_btn_apply_set_present` | Full staged apply; set present-day to scene time |
+| Apply NOW | `scenes_lib_btn_apply_present` | Full staged apply; fill clock from present-day |
 | End | `scenes_lib_btn_end` | Detach mirror, clear live scene, no-scene transition |
 | Seat PC | `scenes_seat_Brown` etc. | Toggle `seatPresent` / `seatSlots.isPresent` |
 | Month | `scenes_month_*` | Draft month |

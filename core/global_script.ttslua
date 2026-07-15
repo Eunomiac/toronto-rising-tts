@@ -3590,7 +3590,7 @@ function HUD_scenesLibApply(player, button, id)
     if not requireStorytellerForMutation(player, "HUD_scenesLibApply") then
         return
     end
-    StorytellerScenesPanel.applyActiveLibraryScene(player)
+    StorytellerScenesPanel.applyActiveLibraryScene(player, id)
 end
 
 function HUD_scenesLibEnd(player, button, id)

@@ -125,7 +125,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `HUD_changeScene` | B+C | Yes | |
 | `HUD_selectAdminLightingScene` | B+C | Yes | |
 | `HUD_soundscape*` (mutators) | B+C | Yes | inspect read-only |
-| `HUD_scenesPanel` / apply / lib / ctor / clock | B+C | Yes | modal opens Tier A |
+| `HUD_scenesPanel` / apply / lib / ctor / clock | B+C | Yes | modal opens Tier A; TOR-142: four Apply button ids → clock modes via `HUD_scenesLibApply` |
 | `HUD_statsTarget` / `HUD_statsBack` | A | — | Stats panel navigation |
 | `HUD_statsAdd` / `HUD_statsEdit` / `HUD_statsEditRating` / `HUD_statsEditorConfirm` / `HUD_statsEditorDelete` | B+C | Yes | advantage mutations |
 | `HUD_statsEditorField` / `HUD_statsEditorCancel` | A | — | draft stash / close |

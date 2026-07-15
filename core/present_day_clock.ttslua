@@ -12,6 +12,13 @@ local PresentDayClock = {}
 local U = require("lib.util")
 local S = require("core.state")
 
+--- Runtime-only catch-up fields (TOR-142 ×5 Apply). Never persist onto library rows.
+local CATCHUP_RUNTIME_KEYS = {
+    "catchUpToPresentDay",
+    "catchUpRestoreSpeed",
+    "catchUpRestoreUseRealTime",
+}
+
 --- @param clock table|nil
 --- @return boolean
 function PresentDayClock.clockHasDatetime(clock)
@@ -23,6 +30,33 @@ end
 --- @return table|nil
 function PresentDayClock.datetimeOnly(clock)
     return U.narrativeClockDatetimeOnly(clock)
+end
+
+--- Removes TOR-142 catch-up runtime keys from a clock table (mutates and returns it).
+--- @param clock table|nil
+--- @return table|nil
+function PresentDayClock.stripCatchUpRuntimeFields(clock)
+    if type(clock) ~= "table" then
+        return clock
+    end
+    for i = 1, #CATCHUP_RUNTIME_KEYS do
+        clock[CATCHUP_RUNTIME_KEYS[i]] = nil
+    end
+    return clock
+end
+
+--- Deep-clone a sessionScene-shaped table and strip catch-up fields from `.clock`.
+--- @param sessionScene table|nil
+--- @return table|nil
+function PresentDayClock.cloneSessionSceneForLibraryMirror(sessionScene)
+    if type(sessionScene) ~= "table" then
+        return nil
+    end
+    local out = U.merge({}, sessionScene)
+    if type(out.clock) == "table" then
+        out.clock = PresentDayClock.stripCatchUpRuntimeFields(U.merge({}, out.clock))
+    end
+    return out
 end
 
 --- @param clock table|nil
@@ -92,6 +126,7 @@ function PresentDayClock.setPresentDay(clock)
 end
 
 --- Persists live `sessionScene.clock` onto a library row (always-on per-scene saved time).
+--- Strips TOR-142 catch-up runtime fields so library rows stay schema-clean.
 --- @param sceneKey string
 function PresentDayClock.flushLibraryRowClock(sceneKey)
     if type(sceneKey) ~= "string" or sceneKey == "" then
@@ -104,7 +139,8 @@ function PresentDayClock.flushLibraryRowClock(sceneKey)
     if type(live) ~= "table" then
         return
     end
-    S.setStateVal(U.merge({}, live), "sceneLibrary", "scenes", sceneKey, "sessionScene", "clock")
+    local toStore = PresentDayClock.stripCatchUpRuntimeFields(U.merge({}, live))
+    S.setStateVal(toStore, "sceneLibrary", "scenes", sceneKey, "sessionScene", "clock")
 end
 
 --- Merges bundle clock flags with datetime from `source` (present day or bundle).
@@ -127,7 +163,76 @@ local function mergeClockWithDatetime(bundleClock, datetimeSource)
     if out.isPresentDay == nil then
         out.isPresentDay = false
     end
+    PresentDayClock.stripCatchUpRuntimeFields(out)
     return out
+end
+
+--- Clears datetime fields so activation fills from `presentDayClock`.
+--- @param clock table
+--- @return table
+local function stripDatetimeKeepFlags(clock)
+    local out = U.merge({}, clock)
+    out.year = nil
+    out.month = nil
+    out.day = nil
+    out.hour = nil
+    out.minute = nil
+    PresentDayClock.stripCatchUpRuntimeFields(out)
+    return out
+end
+
+--- Arms ×5 RT catch-up on the live clock when scene time is behind present-day (TOR-142).
+--- @param clock table live sessionScene.clock after scene resolve
+--- @return table mutated clock
+local function armCatchUpIfBehindPresent(clock)
+    local pd = PresentDayClock.getPresentDay()
+    if pd == nil or not PresentDayClock.clockHasDatetime(clock) then
+        return clock
+    end
+    if U.compareNarrativeClock(clock, pd) >= 0 then
+        return clock
+    end
+
+    local recordedSpeed = tonumber(clock.realTimeSpeed)
+    if recordedSpeed == nil or recordedSpeed < 0 then
+        recordedSpeed = 1
+    end
+    local recordedUseRt = clock.useRealTime == true
+
+    clock.catchUpToPresentDay = true
+    clock.catchUpRestoreSpeed = recordedSpeed
+    clock.catchUpRestoreUseRealTime = recordedUseRt
+    clock.realTimeSpeed = recordedSpeed * 5
+    clock.useRealTime = true
+    return clock
+end
+
+--- Clears catch-up and restores recorded RT flags/speed on a clock table.
+--- @param clock table
+--- @return table
+function PresentDayClock.clearCatchUpAndRestore(clock)
+    if type(clock) ~= "table" then
+        return clock
+    end
+    local restoreSpeed = tonumber(clock.catchUpRestoreSpeed)
+    if restoreSpeed == nil or restoreSpeed < 0 then
+        restoreSpeed = 1
+    end
+    local restoreUseRt = clock.catchUpRestoreUseRealTime == true
+    PresentDayClock.stripCatchUpRuntimeFields(clock)
+    clock.realTimeSpeed = restoreSpeed
+    clock.useRealTime = restoreUseRt
+    return clock
+end
+
+--- Cancels catch-up on live `sessionScene.clock` if armed (End / new Apply that does not re-arm).
+function PresentDayClock.cancelCatchUpOnLiveClock()
+    local ck = S.getStateVal("sessionScene", "clock")
+    if type(ck) ~= "table" or ck.catchUpToPresentDay ~= true then
+        return
+    end
+    local restored = PresentDayClock.clearCatchUpAndRestore(U.merge({}, ck))
+    S.setStateVal(restored, "sessionScene", "clock")
 end
 
 --- Merges present-day clock flags with current `presentDayClock` datetime (read-only preview / cleared-input activation).
@@ -167,42 +272,65 @@ end
 
 --- Resolves live clock for library apply from an incoming `sessionScene` bundle.
 --- @param bundle table sessionScene-shaped table (mutated in place for clock)
+--- @param clockMode string|nil `"scene"` | `"x5"` | `"setPresent"` | `"present"` (default `"scene"`)
 --- @return boolean ok
 --- @return string|nil err
-function PresentDayClock.resolveAndApplyActivationClock(bundle)
+function PresentDayClock.resolveAndApplyActivationClock(bundle, clockMode)
     if type(bundle) ~= "table" then
         return false, "Internal error: scene bundle is not a table."
     end
+    if type(clockMode) ~= "string" or clockMode == "" then
+        clockMode = "scene"
+    end
+
     local ck = bundle.clock
     if type(ck) ~= "table" then
         ck = {}
         bundle.clock = ck
     end
-    local isPresentDay = ck.isPresentDay == true
+    PresentDayClock.stripCatchUpRuntimeFields(ck)
 
-    if PresentDayClock.clockHasDatetime(ck) then
-        if isPresentDay then
-            PresentDayClock.tryInitFromScene(ck)
+    -- NOW: ignore library datetime; keep flags; fill from presentDayClock (always enabled).
+    if clockMode == "present" then
+        ck = stripDatetimeKeepFlags(ck)
+        bundle.clock = ck
+        local pd = PresentDayClock.getPresentDay()
+        if pd == nil then
+            return false,
+                "Present day clock is not initialized. Import or activate a present-day scene with a full clock time first."
         end
-        S.setStateVal(ck, "sessionScene", "clock")
-        PresentDayClock.tryAdvance(ck)
+        local resolved = mergeClockWithDatetime(ck, pd)
+        bundle.clock = resolved
+        S.setStateVal(resolved, "sessionScene", "clock")
+        PresentDayClock.tryAdvance(resolved)
         return true, nil
     end
 
-    if not isPresentDay then
-        return false, "Scene clock requires hour, minute, day, month, and year when isPresentDay is false."
+    if clockMode ~= "scene" and clockMode ~= "x5" and clockMode ~= "setPresent" then
+        return false, "Unknown scene Apply clock mode: " .. tostring(clockMode)
     end
 
-    local pd = PresentDayClock.getPresentDay()
-    if pd == nil then
-        return false,
-            "Present day clock is not initialized. Import or activate a present-day scene with a full clock time first."
+    if not PresentDayClock.clockHasDatetime(ck) then
+        return false, "This Apply mode needs a scene clock time. Use NOW, or set day/year/time first."
     end
 
-    local resolved = mergeClockWithDatetime(ck, pd)
-    bundle.clock = resolved
-    S.setStateVal(resolved, "sessionScene", "clock")
-    PresentDayClock.tryAdvance(resolved)
+    local isPresentDay = ck.isPresentDay == true
+    if isPresentDay then
+        PresentDayClock.tryInitFromScene(ck)
+    end
+    if clockMode == "setPresent" then
+        local setOk, setErr = PresentDayClock.setPresentDay(ck)
+        if not setOk then
+            return false, setErr
+        end
+    else
+        PresentDayClock.tryAdvance(ck)
+    end
+    if clockMode == "x5" then
+        ck = armCatchUpIfBehindPresent(ck)
+        bundle.clock = ck
+    end
+    S.setStateVal(ck, "sessionScene", "clock")
     return true, nil
 end
 

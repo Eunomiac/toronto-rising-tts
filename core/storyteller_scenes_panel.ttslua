@@ -95,7 +95,22 @@ local TABLE_TOGGLE_IDS = {
 }
 
 --- Pre-declared rows in `ui/storyteller/panel_scenes_library.xml` (no dynamic `setXml` lists).
-local SCENE_LIB_SLOT_COUNT = 20
+local SCENE_LIB_SLOT_COUNT = 40
+
+--- TOR-142: library Apply buttons — keep author stems; optional time suffix on refresh.
+local APPLY_CLOCK_BUTTONS = {
+    { id = "scenes_lib_btn_apply_clock", mode = "scene", stem = "Scene Time", needsDatetime = true },
+    { id = "scenes_lib_btn_apply_x5", mode = "x5", stem = "×5 to Now", needsDatetime = true },
+    { id = "scenes_lib_btn_apply_set_present", mode = "setPresent", stem = "SET Now", needsDatetime = true },
+    { id = "scenes_lib_btn_apply_present", mode = "present", stem = "NOW", needsDatetime = false },
+}
+
+local APPLY_MODE_BY_BUTTON_ID = {
+    scenes_lib_btn_apply_clock = "scene",
+    scenes_lib_btn_apply_x5 = "x5",
+    scenes_lib_btn_apply_set_present = "setPresent",
+    scenes_lib_btn_apply_present = "present",
+}
 
 --- Second click on Delete within this window removes the active `sceneLibrary` row.
 local sceneLibDeleteArmedUntil = 0
@@ -743,6 +758,70 @@ local function resolvePanelDisplayClock()
     return basePreviewClockForSelection(activeKey)
 end
 
+--- Authored datetime for Scene Time / ×5 / SET Now enablement (not present-day fill-in preview).
+--- @param activeKey string|nil
+--- @return boolean
+--- @return table|nil clock with datetime when true
+local function resolveAuthoredActivationDatetime(activeKey)
+    if type(activeKey) ~= "string" or activeKey == "" then
+        return false, nil
+    end
+    if clockDraft.sceneKey == activeKey and clockDraft.dirty == true then
+        if draftHasClearedDatetimeFields() then
+            return false, nil
+        end
+        local base = getLibraryRowClock(activeKey) or {}
+        local built, _ = buildClockFromDraft(base)
+        if type(built) == "table" and PresentDayClock.clockHasDatetime(built) then
+            return true, built
+        end
+        return false, nil
+    end
+    local libClock = getLibraryRowClock(activeKey)
+    if type(libClock) == "table" and PresentDayClock.clockHasDatetime(libClock) then
+        return true, libClock
+    end
+    return false, nil
+end
+
+--- TOR-142: enable Scene Time / ×5 / SET Now when the activation clock has authored datetime.
+local function refreshApplyClockButtons()
+    if UI == nil or UI.setAttribute == nil then
+        return
+    end
+    local activeKey = getActiveLibraryKey()
+    local hasDt, dtClock = resolveAuthoredActivationDatetime(activeKey)
+    local timeSuffix = ""
+    if hasDt and type(dtClock) == "table" then
+        timeSuffix = " · " .. formatTime12h(dtClock.hour, dtClock.minute)
+    end
+    for i = 1, #APPLY_CLOCK_BUTTONS do
+        local btn = APPLY_CLOCK_BUTTONS[i]
+        local interactable = true
+        local text = btn.stem
+        if btn.needsDatetime then
+            interactable = hasDt
+            if hasDt then
+                text = btn.stem .. timeSuffix
+            end
+        end
+        U.setAttributes(btn.id, {
+            text = text,
+            interactable = interactable and "true" or "false",
+        })
+    end
+end
+
+--- Map library Apply button id → clock mode (TOR-142).
+--- @param id string|nil
+--- @return string|nil
+function StorytellerScenesPanel.clockModeFromApplyButtonId(id)
+    if type(id) ~= "string" then
+        return nil
+    end
+    return APPLY_MODE_BY_BUTTON_ID[id]
+end
+
 --- When `clockDraft` is dirty for `sceneKey`, merges parsed draft into `bundle.clock` before activation.
 --- @param bundle table
 --- @param sceneKey string
@@ -953,6 +1032,7 @@ function StorytellerScenesPanel.refresh()
     end
 
     StorytellerScenesPanel.refreshSceneLibraryRows()
+    refreshApplyClockButtons()
 end
 
 --- Pushes `sceneLibrary.order` into fixed `scenes_lib_slot_*` buttons.
@@ -985,7 +1065,7 @@ function StorytellerScenesPanel.refreshSceneLibraryRows()
         if type(key) == "string" and key ~= "" and type(scenes[key]) == "table" then
             local ent = scenes[key]
             local title = type(ent.title) == "string" and ent.title ~= "" and ent.title or key
-            local line = "[" .. key .. "] " .. title
+            local line = title
             if string.len(line) > 58 then
                 line = string.sub(line, 1, 55) .. "..."
             end
@@ -1188,16 +1268,39 @@ end
 --- Transition blindfold (`core.hud_blindfold`) covers the full apply pipeline and lifts after a 10s settle delay.
 --- Panel close + blindfold are immediate; heavy work is deferred via `U.waitUntil`.
 --- @param player Player
-function StorytellerScenesPanel.applyActiveLibraryScene(player)
-    if player == nil or player.host ~= true then
-        U.AlertGM("Only the host can apply a library scene.")
+--- @param clockModeOrId string|nil clock mode (`scene`/`x5`/`setPresent`/`present`) or Apply button id
+function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
+    if not U.isStorytellerSteamPlayer(player) then
+        U.AlertGM("Only the Storyteller can apply a library scene.")
         return
     end
+
+    local clockMode = clockModeOrId
+    if type(clockMode) == "string" and APPLY_MODE_BY_BUTTON_ID[clockMode] ~= nil then
+        clockMode = APPLY_MODE_BY_BUTTON_ID[clockMode]
+    end
+    if type(clockMode) ~= "string" or clockMode == "" then
+        clockMode = "scene"
+    end
+    if clockMode ~= "scene" and clockMode ~= "x5" and clockMode ~= "setPresent" and clockMode ~= "present" then
+        U.AlertGM("Unknown scene Apply clock mode: " .. tostring(clockMode))
+        return
+    end
+
     local K = S.getStateVal("sceneLibrary", "activeKey")
     if type(K) ~= "string" or K == "" then
         U.AlertGM("Apply: select a library row first (click a scene slot).")
         return
     end
+
+    if clockMode ~= "present" then
+        local hasDt = resolveAuthoredActivationDatetime(K)
+        if not hasDt then
+            U.AlertGM("This Apply mode needs a scene clock time. Use NOW, or set day/year/time first.")
+            return
+        end
+    end
+
     local ent = S.getStateVal("sceneLibrary", "scenes", K)
     if type(ent) ~= "table" or type(ent.sessionScene) ~= "table" then
         U.AlertGM("Apply: library row has no sessionScene bundle.")
@@ -1236,6 +1339,7 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player)
             return false, "Apply failed: " .. tostring(clockErrPre)
         end
 
+        PresentDayClock.cancelCatchUpOnLiveClock()
         PresentDayClock.flushPreviousAppliedScene(K)
 
         -- Deep copy: `U.clone(..., true)` is shallow only (see `lib/util.ttslua`); `U.merge` recurses nested tables.
@@ -1252,7 +1356,7 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player)
             return false, "Apply failed: " .. tostring(draftErr)
         end
 
-        local clockOk, clockErr = PresentDayClock.resolveAndApplyActivationClock(bundle)
+        local clockOk, clockErr = PresentDayClock.resolveAndApplyActivationClock(bundle, clockMode)
         if not clockOk then
             return false, "Apply failed: " .. tostring(clockErr)
         end
@@ -1327,7 +1431,7 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player)
             GameStateOverlay.ensureTicker()
         end
 
-        U.AlertGM("Applied library scene `" .. K .. "` (session bundle, lighting, table, location, soundscape).")
+        U.AlertGM("Applied library scene `" .. K .. "` (" .. tostring(clockMode) .. " clock mode).")
         return true
         end,
     })
@@ -1336,8 +1440,8 @@ end
 --- Broadcasts a table-wide notice, clears live location keys, stops real-time clock, clears location ambience, then `Sync.full`.
 --- @param player Player
 function StorytellerScenesPanel.endSceneNarrative(player)
-    if player == nil or player.host ~= true then
-        U.AlertGM("Only the host can end a scene.")
+    if not U.isStorytellerSteamPlayer(player) then
+        U.AlertGM("Only the Storyteller can end a scene.")
         return
     end
 
@@ -1347,6 +1451,16 @@ function StorytellerScenesPanel.endSceneNarrative(player)
     else
         broadcastToAll("The current narrative scene is over.", Color(1, 1, 1))
     end
+
+    -- Flush live exit time onto the mirroring row before detach (TOR-142), matching Apply-away flush.
+    local flushKey = SceneLibrary.resolveMirrorSceneKey()
+    if type(flushKey) ~= "string" or flushKey == "" then
+        flushKey = S.getStateVal("sceneLibrary", "lastAppliedKey")
+    end
+    if type(flushKey) == "string" and flushKey ~= "" then
+        PresentDayClock.flushLibraryRowClock(flushKey)
+    end
+    PresentDayClock.cancelCatchUpOnLiveClock()
 
     -- Stop mirroring before clearing live location so `Sync.full` does not persist null keys into the library row.
     -- (applyDefaultNoSceneEnvironment also detaches — kept here so End scene is explicit before staged work.)
