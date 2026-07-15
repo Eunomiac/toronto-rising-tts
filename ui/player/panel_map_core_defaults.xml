@@ -27,19 +27,25 @@
    />
 
 
+  <!--
+    Draggable / center heights must stay 1600 / 2100: `C.Sites[*].offsetXY` pin
+    positions are absolute UI coords in that stack. Growing height (TOR-379) left
+    pins off the authored map plane. Soften top clipping via viewport sink only
+    (`offsetXY` less negative than -500), not by enlarging the coordinate parent.
+  -->
   <Panel class="hud_map_center_container"
     preferredWidth="1225"
     flexibleWidth="0"
-    minHeight="2500"
+    minHeight="2100"
     rectAlignment="MiddleCenter"
-    preferredHeight="2500"
+    preferredHeight="2100"
     offsetXY="0 -400"
     flexibleHeight="0"
     color="rgba(0, 0, 0, 1)"
   />
 
   <Panel class="hud_map_draggable_container"
-    height="2000"
+    height="1600"
     width="1225"
     allowDragging="false"
     restrictDraggingToParentBounds="true"
@@ -139,10 +145,10 @@
   />
 
 
+  <!-- Tip at `C.Sites.offsetXY` (LowerCenter); do not change parent height to add headroom. -->
   <Image class="hud_map_player_pin"
     width="300"
     preserveAspect="true"
     rectAlignment="LowerCenter"
-    ignoreLayout="true"
     raycastTarget="false" />
 </Defaults>
