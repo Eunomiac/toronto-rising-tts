@@ -287,14 +287,17 @@ function M.selectedIndexFromOwner(owner)
   return 0
 end
 
---- Days in month with a simple four-year leap cycle (Feb 29 when year % 4 == 0).
+--- Days in month with Gregorian leap years (same rule as daysInMonth).
 --- @param year integer
 --- @param month integer
 --- @return integer
 local function parseDateDaysInMonth(year, month)
   local lengths = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
-  if month == 2 and (year % 4 == 0) then
-    return 29
+  if month == 2 then
+    local y = year
+    if (y % 4 == 0 and y % 100 ~= 0) or (y % 400 == 0) then
+      return 29
+    end
   end
   return lengths[month] or 0
 end
