@@ -249,8 +249,8 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Map pins — unmappable locations:** `C.isSiteMappable`; hide absent/stale pins; unmappable scene hides active PCs only; absent may keep cached mappable offset. _(TOR-153 — 2026-06-15)_
 - [x] **Map pins — last active location + timestamp:** See Scenes section; implementation shipped, Save & Play confirmed. _(TOR-245 — 2026-06-27)_
 - [x] **Prince's Court trackers flash while watching:** RT clock tick called full `playerHud`; clear-then-fill made every reconcile visible. Remove clock `playerHud` + coalesce/fingerprint. _(TOR-377)_
-- [x] **Map panel — north pins clipped:** Soften viewport sink + `LowerCenter` pin tips (do **not** enlarge the 1600 draggable — that broke `C.Sites` absolute pins; fixed in **TOR-388**). _(TOR-379)_
-- [x] **Map pins invisible after TOR-379 taller stack:** Restore `hud_map_draggable_container` 1600 / center 2100; keep sink soften only. _(TOR-388)_
+- [x] **Map panel — north pins clipped:** Soften viewport sink only (do **not** enlarge the 1600 draggable or change pin `rectAlignment` — offsets are MiddleCenter-authored; **TOR-388**). _(TOR-379)_
+- [x] **Map pins invisible after TOR-379 taller stack:** Restore `hud_map_draggable_container` 1600 / center 2100; keep sink soften; restore MiddleCenter pin pivot (not LowerCenter). _(TOR-388)_
 - [x] **Phase system redesign:** Top-level `Intermission` → `Play` → `Spotlight` → `End` → Intermission; Play sub-phases `Main` / `Downtime` / `Memoriam`; trim PHASES panel; session lifecycle + `sessionNum` roman overlay; phase soundscape policy. Blocks **TOR-249**. _(TOR-143)_ _(Supersedes canceled TOR-90.)_
 - [x] **Intermission phase:** Absorbed into TOR-143 — dark lights + theme on enter; connect keeps blindfold up in Intermission; lowers on other phases / Play enter. Theme is looping `TR_Loop` @ 0.5 (**TOR-360**). Countdown timer optional TBD. _(TOR-319)_
 - [x] **Session number + End exit:** Editable `sessionNum` on Phases panel + roman overlay; End exit increments + raises blindfolds (supersedes “stay in End” End Session button). Folded into **TOR-143**. _(TOR-263)_

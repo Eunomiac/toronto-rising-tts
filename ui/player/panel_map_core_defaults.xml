@@ -145,12 +145,12 @@
   />
 
 
-  <!-- Tip at `C.Sites.offsetXY` (LowerCenter). Keep ignoreLayout: TTS Panels become LayoutGroups
-       when given `padding`, which would pull absolute pin offsetXY into layout flow (TOR-379). -->
+  <!-- `C.Sites` offsets were authored for MiddleCenter (pre–TOR-379). LowerCenter shifted the
+       pivot and mis-placed every pin. Keep ignoreLayout: Panel+padding becomes a LayoutGroup. -->
   <Image class="hud_map_player_pin"
     width="300"
     preserveAspect="true"
-    rectAlignment="LowerCenter"
+    rectAlignment="MiddleCenter"
     ignoreLayout="true"
     raycastTarget="false" />
 </Defaults>
