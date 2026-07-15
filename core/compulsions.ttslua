@@ -218,15 +218,21 @@ local function resolveSlotWorldPose(color, index, height)
     end
     local anchorPos = anchorObj.getPosition()
     local anchorRot = anchorObj.getRotation()
+    -- Match OP.resolveStatePose: extract height, then fall back to anchor Y when nil
+    -- (including pose.height = { y = nil } / missing .y).
     local yHeight = height
     if yHeight == nil then
         if type(pose.height) == "table" then
             yHeight = pose.height.y
         elseif type(pose.height) == "number" then
             yHeight = pose.height
-        else
-            yHeight = PRESENT_HEIGHT
         end
+    end
+    if yHeight == nil then
+        yHeight = anchorPos.y
+    end
+    if yHeight == nil then
+        yHeight = PRESENT_HEIGHT
     end
     return {
         position = {
