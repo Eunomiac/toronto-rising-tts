@@ -145,12 +145,14 @@
   />
 
 
-  <!-- `C.Sites` offsets were authored for MiddleCenter (pre–TOR-379). LowerCenter shifted the
-       pivot and mis-placed every pin. Keep ignoreLayout: Panel+padding becomes a LayoutGroup. -->
+  <!-- `C.Sites` offsets assume this Image keeps default height="100%" of
+       hud_map_draggable_container (~1600). That makes the pin rect map-tall;
+       MiddleCenter then matches how sites were authored. Do NOT set
+       preserveAspect — it shrinks height to the texture and drops pins by
+       ~half the map (TOR-388 / TOR-379). ignoreLayout: Panel+padding becomes
+       a LayoutGroup; without this, absolute offsetXY stops applying. -->
   <Image class="hud_map_player_pin"
     width="300"
-    preserveAspect="true"
-    rectAlignment="MiddleCenter"
     ignoreLayout="true"
     raycastTarget="false" />
 </Defaults>
