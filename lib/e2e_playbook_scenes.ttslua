@@ -278,10 +278,14 @@ Playbook.steps = {
     -- step 7
         {
           function()
-            if S.getStateVal("sessionScene", "siteKey") ~= nil then error("[Scenes E2E] FAIL - siteKey should clear after End scene") end
+            local key = ((S.getStateVal("sceneLibrary", "order") or {})[18])
+            local libSite = S.getStateVal("sceneLibrary", "scenes", key, "sessionScene", "siteKey")
+            if S.getStateVal("sessionScene", "siteKey") ~= nil then error("[Scenes E2E] FAIL - live siteKey should clear after End scene") end
             if S.getStateVal("sceneLibrary", "lastAppliedKey") ~= nil then error("[Scenes E2E] FAIL - lastAppliedKey should clear after End scene") end
             if S.getStateVal("sessionScene", "clock", "useRealTime") == true then error("[Scenes E2E] FAIL - real-time clock should stop after End scene") end
-            print("[Scenes E2E] PASS - End scene cleared live linkage and stopped RT")
+            if type(libSite) ~= "string" or libSite == "" then error("[Scenes E2E] FAIL - library row B siteKey wiped after End (TOR-365)") end
+            if S.getStateVal("sceneLibrary", "activeKey") ~= key then error("[Scenes E2E] FAIL - activeKey should remain on ended scene for pending panel display (TOR-365)") end
+            print("[Scenes E2E] PASS - End scene cleared live linkage, library location intact, stopped RT")
           end,
           function()
             printHeader("", 2)

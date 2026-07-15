@@ -35,5 +35,5 @@ FOUC during reveal: hide under connect/global blindfold when needed (stylistic, 
 ## Related
 
 - [TOR-375](https://linear.app/eunomiac-dev/issue/TOR-375) eliminate runtime full UI refresh
-- [TOR-376](https://linear.app/eunomiac-dev/issue/TOR-376) CSHEET max-slot (last remaining document-replace call site)
+- [TOR-376](https://linear.app/eunomiac-dev/issue/TOR-376) CSHEET max-slot migrate (Future optional; CSHEET `setXml` is an approved exception after TOR-375)
 - [`lua-ui-full-xml-policy.md`](lua-ui-full-xml-policy.md)

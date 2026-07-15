@@ -663,17 +663,29 @@ function SceneLibrary.resolveMirrorSceneKey()
     return nil
 end
 
---- Stops live→library mirroring and clears on-table / selection indicators after End scene.
---- Call before live `sessionScene` mutations that must not write back into stored library rows.
+--- Stops live→library mirroring after End scene / no-scene apply.
+--- Clears `lastAppliedKey` and all `receivesLiveWrites` so Sync cannot write cleared live
+--- location into a library row (TOR-145 / TOR-362). Keeps `activeKey` on the previously applied
+--- row when possible so the Scenes panel shows that row's pending bundle (location intact)
+--- instead of empty live keys — the TOR-365 UI false positive.
 function SceneLibrary.detachLiveTableFromLibraryMirror()
     local S = require("core.state")
     local K = SceneLibrary.resolveMirrorSceneKey()
-    if type(K) == "string" and K ~= "" then
-        S.setStateVal(false, "sceneLibrary", "scenes", K, "receivesLiveWrites")
+    if type(K) ~= "string" or K == "" then
+        K = S.getStateVal("sceneLibrary", "lastAppliedKey")
+    end
+    if type(K) ~= "string" or K == "" then
+        K = S.getStateVal("sceneLibrary", "activeKey")
     end
     SceneLibrary.setExclusiveLiveMirror(nil)
     S.setStateVal(nil, "sceneLibrary", "lastAppliedKey")
-    S.setStateVal(nil, "sceneLibrary", "activeKey")
+    if type(K) == "string" and K ~= ""
+        and type(S.getStateVal("sceneLibrary", "scenes", K)) == "table"
+    then
+        S.setStateVal(K, "sceneLibrary", "activeKey")
+    else
+        S.setStateVal(nil, "sceneLibrary", "activeKey")
+    end
 end
 
 --- Sets `receivesLiveWrites = true` on exactly one library row; clears the flag on all others.
