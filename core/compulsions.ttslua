@@ -4,7 +4,8 @@
     Host-only world choreography. Wired from Global `onObjectLeaveContainer`
     (generic draw) and `onObjectEnterZone` (presented card enters hand).
 
-    GM Notes: `Compulsion:<Type>-<Color>:generic` | `:1`–`:4`
+    GM Notes: `Compulsion:<Type>-<charKey>:generic` | `:1`–`:4`
+    (charKey from C.PlayerData, e.g. blackCaesar → Purple)
     Master deck: tag `CompulsionsMasterDeck` (no G.GUIDS entry)
     Player decks: Role_Color GM Notes `COMPULSION_DECK_<COLOR>`
 ]]
@@ -17,7 +18,6 @@ local U = require("lib.util")
 local Compulsions = {}
 
 local MASTER_DECK_TAG = "CompulsionsMasterDeck"
-local NOTES_PATTERN = "^Compulsion:([^-]+)%-([^:]+):(generic|[1-4])$"
 local PRESENT_HEIGHT = 10
 local CHOSEN_HEIGHT = 7.5
 local CHOSEN_OFFSET_TOWARD_ORIGIN = 3
@@ -35,20 +35,70 @@ local chosenGuidsByColor = {}
 local opTokenByColor = {}
 
 --- @param notes string|nil
+--- @return string
+local function trimNotes(notes)
+    if type(notes) ~= "string" then
+        return ""
+    end
+    return string.match(notes, "^%s*(.-)%s*$") or ""
+end
+
+--- @param notes string|nil
 --- @return { type: string, playerKey: string, suffix: string }|nil
 function Compulsions.parseNotes(notes)
-    if type(notes) ~= "string" or notes == "" then
+    local trimmed = trimNotes(notes)
+    if trimmed == "" then
         return nil
     end
-    local compulsionType, playerKey, suffix = string.match(notes, NOTES_PATTERN)
+    -- Suffix is case-insensitive (workshop may write Generic).
+    local compulsionType, playerKey, suffix = string.match(
+        trimmed,
+        "^Compulsion:([^-]+)%-([^:]+):([Gg]eneric|[1-4])$"
+    )
     if compulsionType == nil or playerKey == nil or suffix == nil then
         return nil
+    end
+    if string.lower(suffix) == "generic" then
+        suffix = "generic"
     end
     return {
         type = compulsionType,
         playerKey = playerKey,
         suffix = suffix,
     }
+end
+
+--- True when container GM Notes are ROLE_COLOR `COMPULSION_DECK_<COLOR>`.
+--- @param container Object|nil
+--- @return string|nil canonical seat color
+function Compulsions.colorFromPlayerDeckContainer(container)
+    if container == nil or container.getGMNotes == nil then
+        return nil
+    end
+    local identity = trimNotes(container.getGMNotes())
+    local suffix = string.match(string.upper(identity), "^COMPULSION_DECK_([%u%d]+)$")
+    if suffix == nil then
+        return nil
+    end
+    return Compulsions.canonicalizeSeatColor(suffix)
+end
+
+--- @param container Object|nil
+--- @param color string
+--- @return boolean
+local function containerMatchesPlayerDeck(container, color)
+    if container == nil or type(color) ~= "string" then
+        return false
+    end
+    local fromNotes = Compulsions.colorFromPlayerDeckContainer(container)
+    if fromNotes ~= nil and fromNotes == color then
+        return true
+    end
+    local playerDeck = Compulsions.resolvePlayerDeck(color)
+    if playerDeck == nil or playerDeck.getGUID == nil or container.getGUID == nil then
+        return false
+    end
+    return container.getGUID() == playerDeck.getGUID()
 end
 
 --- @param playerKey string|nil
@@ -64,6 +114,33 @@ function Compulsions.canonicalizeSeatColor(playerKey)
         end
     end
     return nil
+end
+
+--- Resolve C.PlayerData charKey → chronicle seat color (not live hotseat).
+--- @param charKey string|nil e.g. `blackCaesar`
+--- @return string|nil canonical PlayerColors member
+function Compulsions.colorFromCharKey(charKey)
+    if type(charKey) ~= "string" or charKey == "" then
+        return nil
+    end
+    local lower = string.lower(charKey)
+    for _, playerData in pairs(C.PlayerData) do
+        if type(playerData) == "table"
+            and type(playerData.charKey) == "string"
+            and string.lower(playerData.charKey) == lower
+            and type(playerData.color) == "string"
+        then
+            return Compulsions.canonicalizeSeatColor(playerData.color)
+        end
+    end
+    return nil
+end
+
+--- @param a string|nil
+--- @param b string|nil
+--- @return boolean
+local function charKeysEqual(a, b)
+    return type(a) == "string" and type(b) == "string" and string.lower(a) == string.lower(b)
 end
 
 --- @return Object|nil
@@ -189,7 +266,7 @@ local function findMasterMatches(master, compulsionType, playerKey)
             if parsed ~= nil
                 and parsed.suffix ~= "generic"
                 and parsed.type == compulsionType
-                and Compulsions.canonicalizeSeatColor(parsed.playerKey) == Compulsions.canonicalizeSeatColor(playerKey)
+                and charKeysEqual(parsed.playerKey, playerKey)
             then
                 matches[#matches + 1] = {
                     guid = item.guid,
@@ -424,33 +501,70 @@ function Compulsions.onGenericDrawn(container, card)
     if card == nil or card.getGMNotes == nil then
         return false
     end
-    local parsed = Compulsions.parseNotes(card.getGMNotes())
+
+    local rawNotes = card.getGMNotes()
+    local notes = trimNotes(rawNotes)
+    local deckColor = Compulsions.colorFromPlayerDeckContainer(container)
+    local parsed = Compulsions.parseNotes(notes)
+
+    -- Left a known Compulsions player deck but notes are wrong/missing → fail loud.
+    if deckColor ~= nil and (parsed == nil or parsed.suffix ~= "generic") then
+        print(string.format(
+            "[Compulsions] Card left COMPULSION_DECK_%s but GM Notes are not Compulsion:<Type>-<charKey>:generic (got %q).",
+            string.upper(deckColor),
+            tostring(rawNotes)
+        ))
+        U.AlertGM("[Compulsions] Generic card notes mismatch — check GM Notes schema.")
+        return false
+    end
+
     if parsed == nil or parsed.suffix ~= "generic" then
         return false
     end
 
-    local color = Compulsions.canonicalizeSeatColor(parsed.playerKey)
+    local color = Compulsions.colorFromCharKey(parsed.playerKey)
     if color == nil then
-        print("[Compulsions] Unknown playerKey in notes: " .. tostring(parsed.playerKey))
+        print("[Compulsions] Unknown charKey in notes: " .. tostring(parsed.playerKey)
+            .. " (notes=" .. tostring(notes) .. ") — expected a C.PlayerData.charKey")
+        return false
+    end
+
+    if deckColor ~= nil and deckColor ~= color then
+        print(string.format(
+            "[Compulsions] Notes charKey=%s maps to %s but left COMPULSION_DECK_%s — ignoring.",
+            tostring(parsed.playerKey),
+            color,
+            string.upper(deckColor)
+        ))
+        return false
+    end
+
+    if not containerMatchesPlayerDeck(container, color) then
+        print(string.format(
+            "[Compulsions] Affinity miss: Compulsion generic for %s left container guid=%s notes=%q (expected COMPULSION_DECK_%s).",
+            color,
+            container ~= nil and container.getGUID ~= nil and tostring(container.getGUID()) or "nil",
+            container ~= nil and container.getGMNotes ~= nil and tostring(container.getGMNotes()) or "",
+            string.upper(color)
+        ))
         return false
     end
 
     local playerDeck = Compulsions.resolvePlayerDeck(color)
     if playerDeck == nil then
-        print("[Compulsions] Player deck COMPULSION_DECK_" .. string.upper(color) .. " not found.")
-        return false
+        -- Container matched Role notes; use it as the putObject target.
+        playerDeck = container
     end
-    if container == nil or container.getGUID == nil or playerDeck.getGUID == nil
-        or container.getGUID() ~= playerDeck.getGUID()
-    then
-        -- Affinity miss: not a draw from this seat's Compulsions deck.
-        return false
-    end
-
     if playerDeck.putObject == nil then
         print("[Compulsions] Player deck putObject unavailable for " .. color)
         return false
     end
+
+    print(string.format(
+        "[Compulsions] Generic draw %s (%s) — returning to deck and presenting master matches.",
+        parsed.type,
+        color
+    ))
     playerDeck.putObject(card)
 
     local token = bumpOpToken(color)
@@ -459,12 +573,29 @@ function Compulsions.onGenericDrawn(container, card)
     return true
 end
 
+--- O(1)-friendly: true when notes look like a Compulsion payload (prefix only).
+--- @param notes string|nil
+--- @return boolean
+function Compulsions.notesLookLikeCompulsion(notes)
+    return string.sub(trimNotes(notes), 1, 11) == "Compulsion:"
+end
+
+--- O(1)-friendly: true when container GM Notes start with COMPULSION_DECK_.
+--- @param container Object|nil
+--- @return boolean
+function Compulsions.containerLooksLikePlayerDeck(container)
+    return Compulsions.colorFromPlayerDeckContainer(container) ~= nil
+end
+
 --- Presented card entered a hand zone — finish pick-and-present when it matches an open session.
 --- @param zone Object
 --- @param card Object
 --- @return boolean handled
 function Compulsions.onPresentedEnteredHand(zone, card)
-    if card == nil or card.type ~= "Card" or card.getGMNotes == nil then
+    if card == nil or card.getGMNotes == nil then
+        return false
+    end
+    if card.type ~= "Card" and card.tag ~= "Card" then
         return false
     end
     local parsed = Compulsions.parseNotes(card.getGMNotes())
@@ -472,7 +603,7 @@ function Compulsions.onPresentedEnteredHand(zone, card)
         return false
     end
 
-    local color = Compulsions.canonicalizeSeatColor(parsed.playerKey)
+    local color = Compulsions.colorFromCharKey(parsed.playerKey)
     if color == nil then
         return false
     end
@@ -499,13 +630,6 @@ function Compulsions.onPresentedEnteredHand(zone, card)
 
     Compulsions.finishSelection(color, card)
     return true
-end
-
---- O(1)-friendly: true when notes look like a Compulsion payload (prefix only).
---- @param notes string|nil
---- @return boolean
-function Compulsions.notesLookLikeCompulsion(notes)
-    return type(notes) == "string" and string.sub(notes, 1, 11) == "Compulsion:"
 end
 
 return Compulsions

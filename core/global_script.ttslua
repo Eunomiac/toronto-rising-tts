@@ -4702,19 +4702,25 @@ function onObjectLeaveContainer(container, obj)
     if obj == nil then return end
 
     local isDie = obj.hasTag ~= nil and obj.hasTag("d10") == true
-    local isCard = obj.type == "Card"
+    local isCard = obj.type == "Card" or obj.tag == "Card"
     -- TOR-197 / TOR-204: O(1) gate — dice bags or cards only.
     if not isDie and not isCard then
         return
     end
 
     if isCard then
-        if obj.getGMNotes == nil then
-            return
+        local fromCompulsionDeck = false
+        if container ~= nil and container.getGMNotes ~= nil then
+            local cn = string.upper(string.match(container.getGMNotes() or "", "^%s*(.-)%s*$") or "")
+            fromCompulsionDeck = string.sub(cn, 1, 16) == "COMPULSION_DECK_"
         end
-        local notes = obj.getGMNotes()
-        -- Cheap prefix before require / deck scans.
-        if type(notes) ~= "string" or string.sub(notes, 1, 11) ~= "Compulsion:" then
+        local notes = ""
+        if obj.getGMNotes ~= nil then
+            notes = string.match(obj.getGMNotes() or "", "^%s*(.-)%s*$") or ""
+        end
+        local notesLook = string.sub(notes, 1, 11) == "Compulsion:"
+        -- Enter Compulsions only for known player decks or notes payload (skip Tarot/etc.).
+        if not fromCompulsionDeck and not notesLook then
             return
         end
         local Compulsions = require("core.compulsions")
@@ -4762,14 +4768,17 @@ end
 -- @param zone Object
 -- @param object Object
 function onObjectEnterZone(zone, object)
-    if object == nil or object.type ~= "Card" then
+    if object == nil then
+        return
+    end
+    if object.type ~= "Card" and object.tag ~= "Card" then
         return
     end
     if object.getGMNotes == nil then
         return
     end
-    local notes = object.getGMNotes()
-    if type(notes) ~= "string" or string.sub(notes, 1, 11) ~= "Compulsion:" then
+    local notes = string.match(object.getGMNotes() or "", "^%s*(.-)%s*$") or ""
+    if string.sub(notes, 1, 11) ~= "Compulsion:" then
         return
     end
     if zone == nil or zone.getData == nil then
