@@ -140,7 +140,7 @@ D.XML = [=[
     image="dot_yellow" />
 
   <Text class="project_stake_label"
-    color="#FFFFFF" fontStyle="Bold" fontSize="14" alignment="MiddleLeft" flexibleWidth="0" horizontalOverflow = "overflow" />
+    color="#FFFFFF" fontStyle="Bold" fontSize="22" alignment="MiddleLeft" flexibleWidth="0" horizontalOverflow = "overflow" />
 
   <Text class="project_stake_label_other"
     color="#AAAAAA" fontStyle="Italic"  />

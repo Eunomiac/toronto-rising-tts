@@ -42,21 +42,21 @@
       <!--
       UI.setAttributes("scenes_districtNameDisplay", {horizontalOverflow = "wrap", preferredWidth = "100", minWidth = "100"})
       -->
-      <Text id="db_panel_scenes_location_district_header" fontSize="16" color="#CCCCCC" preferredHeight="20" minHeight="20" minWidth="280" preferredWidth="280" flexibleWidth="0" text="—">District</Text>
+      <Text id="db_panel_scenes_location_district_header" fontSize="16" color="#CCCCCC" preferredHeight="20" minHeight="20" minWidth="280" preferredWidth="280" flexibleWidth="0">District</Text>
       <Text id="scenes_districtNameDisplay" fontSize="12" color="#FFFFFF" preferredHeight="30" minHeight="30" minWidth="100" preferredWidth="100" flexibleWidth="0" text="—" />
     </VerticalLayout>
     <VerticalLayout id="db_panel_scenes_location_site_container" class="hud_storyteller_inner_column" childAlignment = "MiddleCenter">
       <!--
-      UI.setAttributes("db_panel_scenes_location_site_header", {alignment = "MiddleCenter", fontStyle = "Bold", fontSize = "16", preferredWidth = "200", flexibleWidth = "1", color = })
+      UI.setAttributes("db_panel_scenes_location_skybox_header", {text = "Skybox"})
       -->
-      <Text id="db_panel_scenes_location_site_header" fontSize="16" color="#CCCCCC" preferredHeight="20" minHeight="20" minWidth="280" preferredWidth="280" flexibleWidth="0" text="—">Site</Text>
+      <Text id="db_panel_scenes_location_site_header" fontSize="16" color="#CCCCCC" preferredHeight="20" minHeight="20" minWidth="280" preferredWidth="280" flexibleWidth="0">Site</Text>
       <Text id="scenes_siteNameDisplay" fontSize="12" color="#FFFFFF" preferredHeight="30" minHeight="30" minWidth="100" preferredWidth="100" flexibleWidth="0" text="—" />
     </VerticalLayout>
     <VerticalLayout id="db_panel_scenes_location_skybox_container" class="hud_storyteller_inner_column" childAlignment = "MiddleCenter">
       <!--
       UI.setAttributes("db_panel_scenes_location_site_header", {alignment = "MiddleCenter", fontStyle = "Bold", fontSize = "14", preferredWidth = "200", flexibleWidth = "1"})
       -->
-      <Text id="db_panel_scenes_location_skybox_header" fontSize="16" color="#CCCCCC" preferredHeight="20" minHeight="20" minWidth="280" preferredWidth="280" flexibleWidth="0" text="—">Skybox</Text>
+      <Text id="db_panel_scenes_location_skybox_header" fontSize="16" color="#CCCCCC" preferredHeight="20" minHeight="20" minWidth="280" preferredWidth="280" flexibleWidth="0">Skybox</Text>
       <Text id="scenes_skyboxNameDisplay" fontSize="12" color="#FFFFFF" preferredHeight="30" minHeight="30" minWidth="100" preferredWidth="100" flexibleWidth="0" text="—" />
     </VerticalLayout>
   </HorizontalLayout>
@@ -101,7 +101,7 @@ UI.setAttributes("db_panel_scenes_time_buttons", {spacing = "0", childAlignment 
     <VerticalLayout id="db_panel_scenes_time_buttons_3_time_container" spacing="2" flexibleWidth="1">
       <Text id="db_panel_scenes_time_buttons_3_time_header" fontSize="9" color="#CCCCCC">Time (12h)</Text>
 <!--
-UI.setAttributes("db_panel_scenes_time_buttons_4_real_time_clock_header", {text = "Real Time?", fontSize = "14", fontStyle = "Bold"})
+UI.setAttributes("scenes_clock_speed", {minWidth = "45"})
 -->
 
       <InputField id="scenes_clock_time12" class="hud_storyteller_input" minHeight="30" preferredHeight="30" flexibleHeight="0"  minWidth="160" preferredWidth="200" flexibleWidth="1" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" placeholder=" " text=" " onValueChanged="HUD_scenesClockFieldChanged" onEndEdit="HUD_scenesClockFieldChanged" />
@@ -115,7 +115,7 @@ UI.setAttributes("db_panel_scenes_time_buttons_4_real_time_clock_header", {text 
     <Text id="db_panel_scenes_time_buttons_4_real_time_clock_header" fontSize="14" fontStyle="Bold" color="#CCCCCC">Real Time?</Text>
     <Button id="scenes_clock_rtToggle" class="hud_storyteller_button" text="OFF" minWidth="56" preferredHeight="28" onClick="HUD_scenesToggleRealTimeClock" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
     <Text id="db_panel_scenes_time_buttons_4_speed_header"  fontSize="14" fontStyle="Bold" color="#CCCCCC">Speed Mult</Text>
-    <InputField id="scenes_clock_speed" class="hud_storyteller_input" minHeight="30" preferredHeight="30" flexibleHeight="0" minWidth="30" preferredWidth="30" flexibleWidth="0" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" characterValidation="FloatingPoint" text="1" onValueChanged="HUD_scenesClockFieldChanged" onEndEdit="HUD_scenesClockFieldChanged" />
+    <InputField id="scenes_clock_speed" class="hud_storyteller_input" minHeight="30" preferredHeight="30" flexibleHeight="0" minWidth="45" preferredWidth="45" flexibleWidth="0" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" characterValidation="FloatingPoint" text="1" onValueChanged="HUD_scenesClockFieldChanged" onEndEdit="HUD_scenesClockFieldChanged" />
   </HorizontalLayout>
   <HorizontalLayout id="db_panel_scenes_location_buttons_3" spacing="6" childForceExpandWidth="false" childAlignment="MiddleCenter">
     <Button id="scenes_clock_apply" class="hud_storyteller_button" text="Apply clock" onClick="HUD_scenesApplyClock"  preferredWidth = "250" flexibleWidth = "0"  />
