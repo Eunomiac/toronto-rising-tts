@@ -338,7 +338,8 @@ local function placePresentedCard(card, color, slotIndex, token)
     if pose == nil then
         return
     end
-    -- Lock during snap so adjacent takes cannot restack into a mini-deck.
+    -- Lock before/during pose so cards float at anchors (and cannot restack).
+    -- Players right-click Draw from the locked presentation pose.
     if card.setLock ~= nil then
         card.setLock(true)
     end
@@ -349,7 +350,7 @@ local function placePresentedCard(card, color, slotIndex, token)
         card.setRotation(pose.rotation)
     end
     if card.setLock ~= nil then
-        card.setLock(false)
+        card.setLock(true)
     end
 end
 
