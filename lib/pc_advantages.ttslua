@@ -106,6 +106,20 @@ function M.isVisibleOnSheet(entry)
   return entry.sheetDisplay ~= false
 end
 
+--- Stats / Project Editor listing: include `sheetDisplay: false` Status (etc.).
+--- Sheet XML still uses `isVisibleOnSheet`.
+--- @param entry table|nil
+--- @return boolean
+function M.isListableAdvantage(entry)
+  if type(entry) ~= "table" then
+    return false
+  end
+  if entry.blank == true then
+    return false
+  end
+  return type(entry.name) == "string" and entry.name ~= ""
+end
+
 --- @param pid string
 --- @param category string
 --- @return table[] visible entries with `{ entry, index }`
@@ -114,7 +128,7 @@ function M.listVisibleEntries(pid, category)
   local out = {}
   for i = 1, #arr do
     local entry = arr[i]
-    if M.isVisibleOnSheet(entry) then
+    if M.isListableAdvantage(entry) then
       out[#out + 1] = { entry = entry, index = i }
     end
   end

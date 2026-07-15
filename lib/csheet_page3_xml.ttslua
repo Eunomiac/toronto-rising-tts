@@ -54,6 +54,114 @@ local function dividerFlawsImageSuffix(colorRaw)
   return c:sub(1, 1):upper() .. c:sub(2)
 end
 
+local STATUS_OVERLAY_SLOTS = 5
+
+--- @param backgrounds table
+--- @return table|nil camarillaEntry
+--- @return table|nil clanEntry
+local function findStatusOverlayEntries(backgrounds)
+  local camarilla = nil
+  local clan = nil
+  if type(backgrounds) ~= "table" then
+    return nil, nil
+  end
+  for i = 1, #backgrounds do
+    local entry = backgrounds[i]
+    if type(entry) == "table" and entry.blank ~= true and entry.name == "Status" then
+      local focus = type(entry.focus) == "string" and entry.focus or ""
+      if focus == "Camarilla" then
+        camarilla = entry
+      else
+        clan = entry
+      end
+    end
+  end
+  return camarilla, clan
+end
+
+--- @param entry table|nil
+--- @param projectStakeSourceKey string|nil
+--- @return integer baseCount
+--- @return integer tempCount
+--- @return integer disabledCount
+local function statusSlotCounts(entry, projectStakeSourceKey)
+  if type(entry) ~= "table" then
+    return 0, 0, 0
+  end
+  local extraDisabled = 0
+  if type(projectStakeSourceKey) == "string" and projectStakeSourceKey ~= ""
+    and Global ~= nil and type(Global.call) == "function"
+  then
+    local qty = Global.call("GlobalProjectStakeQty", {
+      sourceKey = projectStakeSourceKey,
+      name = entry.name,
+      focus = entry.focus,
+    })
+    extraDisabled = math.max(0, math.floor(tonumber(qty) or 0))
+  end
+  local _, baseCount, tempCount, disabledCount = TRAIT.slotBaseTempDisabled(entry, extraDisabled)
+  return baseCount, tempCount, disabledCount
+end
+
+--- Patch a self-closing Image tag's image/active by id (page3 Status overlays).
+--- @param xml string
+--- @param id string
+--- @param image string
+--- @param active string "true"|"false"
+--- @return string
+local function patchImageTagAttrs(xml, id, image, active)
+  local escaped = id:gsub("([%-%.%+%[%]%(%)%^%$%*%?%%])", "%%%1")
+  local pat = '(<Image%s+id="' .. escaped .. '"%s+)([^>]-)(/?>)'
+  local replaced = false
+  local out = xml:gsub(pat, function(pre, attrs, close)
+    if replaced then
+      return pre .. attrs .. close
+    end
+    replaced = true
+    if attrs:find('image="') then
+      attrs = attrs:gsub('image="[^"]*"', 'image="' .. image .. '"', 1)
+    else
+      attrs = attrs .. ' image="' .. image .. '"'
+    end
+    if attrs:find('active="') then
+      attrs = attrs:gsub('active="[^"]*"', 'active="' .. active .. '"', 1)
+    else
+      attrs = attrs .. ' active="' .. active .. '"'
+    end
+    return pre .. attrs .. close
+  end, 1)
+  return out
+end
+
+--- Bake Status Camarilla/Clan overlay Image attrs into page3 XML (sheetDisplay:false boxes stay omitted).
+--- @param xml string
+--- @param backgrounds table
+--- @param projectStakeSourceKey string|nil
+--- @return string
+local function bakeStatusOverlayImages(xml, backgrounds, projectStakeSourceKey)
+  local camarilla, clan = findStatusOverlayEntries(backgrounds)
+  local overlayRows = {
+    { prefix = "statusCamarilla", entry = camarilla },
+    { prefix = "statusClan", entry = clan },
+  }
+  for _, row in ipairs(overlayRows) do
+    local baseCount, tempCount, disabledCount = statusSlotCounts(row.entry, projectStakeSourceKey)
+    for slot = 1, STATUS_OVERLAY_SLOTS do
+      local onId = "dot_on_" .. row.prefix .. "_" .. tostring(slot)
+      local offId = "dot_off_" .. row.prefix .. "_" .. tostring(slot)
+      local img = TRAIT.dotImageForDomainSlot(slot, baseCount, tempCount, disabledCount, "dot_yellow")
+      if img ~= nil then
+        xml = patchImageTagAttrs(xml, onId, img, "true")
+        xml = patchImageTagAttrs(xml, offId, "dot_blank", "false")
+      else
+        xml = patchImageTagAttrs(xml, onId, "dot_yellow", "false")
+        xml = patchImageTagAttrs(xml, offId, "dot_blank", "true")
+      end
+    end
+  end
+  return xml
+end
+
 --- @param entry table
 --- @param sectionKey string
 --- @param entryIndex integer
@@ -103,6 +211,7 @@ function M.buildPage3DocumentXml(stats, seatColorRaw)
   }
 
   local pageXml = TPL.apply(TEMPLATE_PAGE, pageParams, { rawKeys = PAGE_RAW_KEYS })
+  pageXml = bakeStatusOverlayImages(pageXml, bg, opts.projectStakeSourceKey)
   return table.concat({
     CSHEET_DEFAULTS.getXml(),
     "",

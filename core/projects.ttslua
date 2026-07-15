@@ -884,6 +884,18 @@ function M.listAdvantagesForSource(sourceKey)
         end
       end
     end
+    local CoterieHydrate = require("lib.coterie_hydrate")
+    for _, ratingKey in ipairs(CoterieHydrate.DOMAIN_RATING_KEYS) do
+      local stakeName = CoterieHydrate.domainRatingStakeName(ratingKey)
+      if type(stakeName) == "string" then
+        out[#out + 1] = {
+          name = stakeName,
+          focus = "",
+          label = stakeName,
+          ratingKey = ratingKey,
+        }
+      end
+    end
     return out
   end
   local color = M.colorForCharKey(sourceKey)
@@ -899,7 +911,7 @@ function M.listAdvantagesForSource(sourceKey)
     local arr = PCAdv.getEntries(pid, category)
     for i = 1, #arr do
       local entry = arr[i]
-      if PCAdv.isVisibleOnSheet(entry) and type(entry.name) == "string" and entry.name ~= "" then
+      if PCAdv.isListableAdvantage(entry) then
         local focus = type(entry.focus) == "string" and entry.focus or ""
         local label = focus ~= "" and (entry.name .. " (" .. focus .. ")") or entry.name
         out[#out + 1] = {
@@ -925,6 +937,21 @@ function M.freeDotsForAdvantage(sourceKey, name, focus, excludeProjectId)
   focus = type(focus) == "string" and focus or ""
   local entry = nil
   if sourceKey == "coterie" then
+    local CoterieHydrate = require("lib.coterie_hydrate")
+    local ratingKey = CoterieHydrate.domainRatingKeyFromStakeName(name)
+    if ratingKey ~= nil and focus == "" then
+      local data = S.getStateVal("coterieData")
+      local rating = CoterieHydrate.normalizeDomainRatingValue(
+        type(data) == "table" and data[ratingKey] or nil,
+        5
+      )
+      local other = M.stakeQtyForAdvantage(sourceKey, name, focus, excludeProjectId)
+      local free = rating.base + rating.temp - rating.disabled - other
+      if free < 0 then
+        return 0
+      end
+      return free
+    end
     local data = S.getStateVal("coterieData")
     if type(data) == "table" then
       local keys = { "coterieBackgrounds", "coterieMerits", "domainBackgrounds", "domainMerits", "havenBackgrounds", "havenMerits" }
