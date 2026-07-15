@@ -12,7 +12,6 @@
 
 local C = require("lib.constants")
 local G = require("lib.guids")
-local OP = require("lib.object_positions")
 local SRI = require("lib.seat-role-identity")
 local U = require("lib.util")
 
@@ -241,30 +240,6 @@ local function resolveSlotWorldPose(color, index, height)
             z = anchorRot.z,
         },
     }
-end
-
---- @param color string
---- @param index number
---- @param card Object
---- @return table|nil resolved pose (position + rotation from ObjectPositions "on")
-local function resolveAnchorPose(color, index, card)
-    local world = resolveSlotWorldPose(color, index, nil)
-    if world == nil then
-        return nil
-    end
-    -- Prefer OP when card exists (keeps lock/merge helpers available for apply).
-    if card ~= nil then
-        local key = objectPositionsKey(color, index)
-        local entry = C.ObjectPositions[key]
-        local pose = OP.resolveStatePose(card, entry, "on")
-        if type(pose) == "table" then
-            if type(pose.position) == "table" then
-                pose.position.y = world.position.y
-            end
-            return pose
-        end
-    end
-    return world
 end
 
 --- @param pos table
