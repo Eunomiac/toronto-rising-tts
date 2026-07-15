@@ -17,6 +17,11 @@ Verification:
 - processed items move out of active capture sections
 - `.dev/RUNNING TASKLIST.md` and Linear stay aligned
 
+## For Immediate Implementation
+> _After registering each of these issues with Linear in the ordinary fashion, before updating the Focus Stack, briefly review the issue: If it is a quick or easy fix, implement it immediately without waiting for user confirmation. Otherwise, promote it to the top of the Focus Stack, and offer to begin work on it immediately when summarizing your work processing `INBOX.md` to the user. If multiple issues require promotion in this way, consider how best to resolve them as quickly as possible, and offer to draft an implementation plan in your response to the user._
+
+
+
 ## Active
 
 ## External Work (Set STATUS to "External To Do")
@@ -39,6 +44,8 @@ Verification:
 
 
 ## Processed
+
+2026-07-15 INBOX Immediate — Project Editor start-date space-split parse → **TOR-383** (Character Sheets Bug; shipped)
 
 2026-07-13 Multiclient E2E closed — **TOR-144** / **TOR-249** Done (real clients); residual join HUD → **TOR-381** (TTS External); Focus refresh + **TOR-293** unblocked
 

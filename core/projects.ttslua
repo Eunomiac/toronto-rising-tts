@@ -287,24 +287,85 @@ function M.selectedIndexFromOwner(owner)
   return 0
 end
 
+--- Days in month with a simple four-year leap cycle (Feb 29 when year % 4 == 0).
+--- @param year integer
+--- @param month integer
+--- @return integer
+local function parseDateDaysInMonth(year, month)
+  local lengths = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
+  if month == 2 and (year % 4 == 0) then
+    return 29
+  end
+  return lengths[month] or 0
+end
+
+--- Digits-only extract; returns nil when empty or longer than maxLen.
+--- @param token string
+--- @param maxLen integer|nil
+--- @return string|nil
+local function digitsOnly(token, maxLen)
+  local digits = token:gsub("%D", "")
+  if digits == "" then
+    return nil
+  end
+  if maxLen ~= nil and #digits > maxLen then
+    return nil
+  end
+  return digits
+end
+
+--- Parse plain-English start date without fragile Lua patterns.
+--- Expects exactly two spaces → three parts (e.g. "Jun. 3, 2027", "June 3 2027").
 --- @param text string|nil
 --- @return table|nil narrative clock datetime
 function M.parseStartDateString(text)
   if type(text) ~= "string" then
     return nil
   end
-  local trimmed = trimAscii(text)
+  local trimmed = trimAscii(text):lower()
   if trimmed == "" then
     return nil
   end
-  local mon, day, year = trimmed:match("^([A-Za-z][A-Za-z][A-Za-z])%s*(%d%d?),?%s+(%d%d%d%d)$")
-  if mon == nil then
+  local sp1 = trimmed:find(" ", 1, true)
+  if sp1 == nil then
     return nil
   end
-  local mi = MONTH_ABBR[mon:lower()]
-  local di = math.floor(tonumber(day) or 0)
-  local yi = math.floor(tonumber(year) or 0)
-  if mi == nil or di < 1 or di > 31 or yi < 1 then
+  local sp2 = trimmed:find(" ", sp1 + 1, true)
+  if sp2 == nil then
+    return nil
+  end
+  if trimmed:find(" ", sp2 + 1, true) ~= nil then
+    return nil
+  end
+  local monPart = trimmed:sub(1, sp1 - 1)
+  local dayPart = trimmed:sub(sp1 + 1, sp2 - 1)
+  local yearPart = trimmed:sub(sp2 + 1)
+  if monPart == "" or dayPart == "" or yearPart == "" or #monPart < 3 then
+    return nil
+  end
+  local mi = MONTH_ABBR[monPart:sub(1, 3)]
+  if mi == nil then
+    return nil
+  end
+  local dayDigits = digitsOnly(dayPart, 2)
+  if dayDigits == nil then
+    return nil
+  end
+  local yearDigits = digitsOnly(yearPart, nil)
+  if yearDigits == nil then
+    return nil
+  end
+  local yearLen = #yearDigits
+  if yearLen ~= 3 and yearLen ~= 4 then
+    return nil
+  end
+  local di = math.floor(tonumber(dayDigits) or 0)
+  local yi = math.floor(tonumber(yearDigits) or 0)
+  if yi < 1 then
+    return nil
+  end
+  local dim = parseDateDaysInMonth(yi, mi)
+  if di < 1 or di > dim then
     return nil
   end
   return { year = yi, month = mi, day = di, hour = 0, minute = 0 }
