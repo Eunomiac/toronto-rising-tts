@@ -472,31 +472,6 @@ local function presentMatches(color, compulsionType, playerKey, token)
         token
     ))
 end
---- @param obj Object|nil
---- @param color string
---- @return boolean
-local function isInSeatHand(obj, color)
-    if obj == nil or type(color) ~= "string" then
-        return false
-    end
-    local guid = obj.getGUID and obj.getGUID() or nil
-    if type(guid) ~= "string" then
-        return false
-    end
-    local hz = U.getHandZone(color)
-    if hz == nil or hz.getObjects == nil then
-        return false
-    end
-    local zoneObjs = hz.getObjects() or {}
-    for i = 1, #zoneObjs do
-        local other = zoneObjs[i]
-        if other ~= nil and other.getGUID ~= nil and other.getGUID() == guid then
-            return true
-        end
-    end
-    return false
-end
-
 --- Shuffle the seat Compulsions deck after a generic is returned.
 --- @param color string
 local function shufflePlayerDeck(color)

@@ -32,7 +32,7 @@ Fixture used below: **Purple** / `blackCaesar` (Roarshack). Change only if you s
 
 **Step 2.** Execute Lua Code — Code Block 0 (assert resolvers + notes parse).
 
-**Step 3.** **At Purple: draw one card from that seat’s Compulsions deck.** Console should log a Presenting / Generic draw line; generic must return to the player deck; up to four typed cards unlock at the anchors (~y=10).
+**Step 3.** **At Purple: draw one card from that seat’s Compulsions deck.** Console should log `deck.reset()` then Presenting; generic must leave the hand (scripted Reset, not `putObject`); up to four typed cards lock-float at the anchors (~y=10).
 
 **Step 4.** Execute Lua Code — Code Block A (assert unlocked presented cards for Purple).
 
