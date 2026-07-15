@@ -23,6 +23,7 @@ Verification:
 
 
 ## Active
+- [Bug] There's a mysterious bug on first loading the save, by which the Global HUD is not displayed when the game is loaded for the first time. Object-hosted XML (like the Stage Control Board and character sheets) is displayed, but anything in `Global.xml` is simply absent.  Upon reloading the save, without changing anything, the Global HUD appears. During the first load of the game (when the global HUD is hidden), all of the XML code does appear in the in-TTS script editor (Modding -> Scripting -> UI).
 
 ## External Work (Set STATUS to "External To Do")
 
