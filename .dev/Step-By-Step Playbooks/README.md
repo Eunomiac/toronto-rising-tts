@@ -48,6 +48,7 @@ Do not conflate **Steps** (author paste/click order), **Code Blocks** (IDE paste
 | Playbook | Issue | Purpose |
 | --- | --- | --- |
 | [TOR-281-clear-seat-verify.md](TOR-281-clear-seat-verify.md) | **TOR-281** Clear stage → return NPC to seat + library persistence | Sign-off when clearing stage returns seated NPCs correctly and seat toggles survive re-Apply |
+| [TOR-204-compulsions-deck-verify.md](TOR-204-compulsions-deck-verify.md) | **TOR-204** Compulsions pick-and-present | Generic draw → master present → hand Draw → permanent lock |
 
 ## Helper registry
 

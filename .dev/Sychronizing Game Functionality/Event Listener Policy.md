@@ -51,7 +51,8 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | `onObjectPickUp` | `global_script` | Host | C | Steam + tag | Gameboard flags | High | 4 |
 | `onObjectDrop` | `global_script` | Host | C | Steam + tag | Gameboard/NPCS | High | 4 |
 | `onObjectRandomize` | `global_script` | Host | B+C | d10 tag | roll FSM + lights | High | 4 |
-| `onObjectLeaveContainer` | `global_script` | Host | B | d10 tag | GM Notes | Med | 4 |
+| `onObjectLeaveContainer` | `global_script` | Host | B+C | d10 **or** Card + `Compulsion:` GM Notes prefix | Die GM Notes; Compulsions world I/O (TOR-204) | Med | 4 |
+| `onObjectEnterZone` | `global_script` | Host | C | Card + `Compulsion:` prefix + hand `FogColor` | Compulsions finish selection (TOR-204) | Med | — |
 | `onPlayerConnect` | `global_script` | Host | B+C | — | Steam ID → `C.PlayerData.color` (incl. Black); unregistered → White; **Grey join is valid current seat** (TOR-372 amend of TOR-345); load: `M.assignAllConnectedSeatsFromChronicle`. TOR-293: default camera + `PlayerConnection.reconcileEffectivePresence` then blindfold. TOR-319: Intermission keeps blindfold; else `Phases.lowerBlindfoldForConnectingPlayer`. | Med | 4 |
 | `onPlayerDisconnect` | `global_script` | Host | B+C | — | TOR-293: cancel roll if any; reconcile effective presence so chronicle seat locks inactive without mutating library `isPresent`. | Med | 4 |
 | `onPlayerChangeColor` | `global_script` | Host | B | Seat HUD visibility reveal (`revealSeatHudVisibility`) + UpdateUIDisplays; Host hotseat swaps manual via `HUD_refreshUi` | state row | Med | 4 |
@@ -162,7 +163,8 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `onObjectDrop` | `core/global_script.ttslua` | **Very high** | **Pass** | Steam + tag gates |
 | `onObjectPickUp` | `core/global_script.ttslua` | High | **Pass** | Steam + tag; `npc_control_token` tag |
 | `onObjectRandomize` | `core/global_script.ttslua` | High (rolls) | **Pass** | `hasTag("d10")` before `getTags` / roll FSM |
-| `onObjectLeaveContainer` | `core/global_script.ttslua` | Medium | **Pass** | `hasTag("d10")` before bag-spawn path |
+| `onObjectLeaveContainer` | `core/global_script.ttslua` | Medium | **Pass** | `d10` die path **or** `type==Card` + `Compulsion:` notes prefix before `require("core.compulsions")` |
+| `onObjectEnterZone` | `core/global_script.ttslua` | Medium | **Pass** | `type==Card` + `Compulsion:` prefix + hand `FogColor` in `C.PlayerColors` before finish selection (TOR-204) |
 | `addHotkey` → `Spotlight NPC (hold)` | `core/global_script.ttslua` | Low (ST hold) | **Pass** | `isStorytellerSteamPlayer` before `require`; world I/O in `Gameboard.onControlBoardSpotlightHotkey` |
 
 ## Module handlers (called from Global)
@@ -178,7 +180,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `GlobalGameboardTokenDroppedOnDiceBag` / `GlobalGameboardPcTokenDroppedOnDiceBag` | `core/global_script.ttslua` | **Pass** | tag + steam-ST before `require("core.npc_gameboard")`; PC wrapper owns `RC.initiateRoll` |
 | `GlobalRepositionStorytellerTrayDice` | `core/global_script.ttslua` | **Pass** | Tier C tray layout across all ST bags |
 | `Gameboard.onNpcControlTokenPickUp` | `core/npc_gameboard.ttslua` | **Pass** | `isNpcControlToken` |
-| `Gameboard.onControlBoardSpotlightHotkey` | `core/npc_gameboard.ttslua` | **Pass** | ST steam in Global hotkey callback; transient lights via `L.applyTransientLightMode` (no `gameState` spotlight writes) |
+| `Compulsions.onGenericDrawn` / `onPresentedEnteredHand` | `core/compulsions.ttslua` | **Pass** | Called only after Global Card + `Compulsion:` prefix gates (TOR-204) |
 
 ## Object-script handlers
 

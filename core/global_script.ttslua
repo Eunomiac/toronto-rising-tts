@@ -4694,17 +4694,34 @@ function onObjectRandomize(obj, playerColor)
 end
 
 --- Called by TTS when any object leaves a container (bag, deck, etc.).
--- When a die is spawned from a dice bag during an active roll, writes the
--- current roll ID to the die's GM Notes. This is the only dynamic tagging step;
--- type and color tags are already baked into the die by the bag setup.
+-- Die path: tag roll id on `d10` spawn (TOR-197).
+-- Card path: Compulsions generic draw → present (TOR-204).
 -- @param container Object  The container the object left
 -- @param obj       Object  The object that was taken out
 function onObjectLeaveContainer(container, obj)
     if obj == nil then return end
-    -- TOR-197: O(1) gate — only module dice leave bags with tag `d10`.
-    if obj.hasTag == nil or obj.hasTag("d10") ~= true then
+
+    local isDie = obj.hasTag ~= nil and obj.hasTag("d10") == true
+    local isCard = obj.type == "Card"
+    -- TOR-197 / TOR-204: O(1) gate — dice bags or cards only.
+    if not isDie and not isCard then
         return
     end
+
+    if isCard then
+        if obj.getGMNotes == nil then
+            return
+        end
+        local notes = obj.getGMNotes()
+        -- Cheap prefix before require / deck scans.
+        if type(notes) ~= "string" or string.sub(notes, 1, 11) ~= "Compulsion:" then
+            return
+        end
+        local Compulsions = require("core.compulsions")
+        Compulsions.onGenericDrawn(container, obj)
+        return
+    end
+
     if RC == nil then return end
 
     local tags = obj.getTags()
@@ -4739,6 +4756,35 @@ function onObjectLeaveContainer(container, obj)
             STR.onFirstDieSpawned()
         end
     end
+end
+
+--- TOR-204: presented Compulsion card Drawn into a seat hand zone → finish pick-and-present.
+-- @param zone Object
+-- @param object Object
+function onObjectEnterZone(zone, object)
+    if object == nil or object.type ~= "Card" then
+        return
+    end
+    if object.getGMNotes == nil then
+        return
+    end
+    local notes = object.getGMNotes()
+    if type(notes) ~= "string" or string.sub(notes, 1, 11) ~= "Compulsion:" then
+        return
+    end
+    if zone == nil or zone.getData == nil then
+        return
+    end
+    local data = zone.getData()
+    if type(data) ~= "table" or type(data.FogColor) ~= "string" then
+        return
+    end
+    -- Hand zones only (seat FogColor); scripting zones without FogColor exit above.
+    local Compulsions = require("core.compulsions")
+    if Compulsions.canonicalizeSeatColor(data.FogColor) == nil then
+        return
+    end
+    Compulsions.onPresentedEnteredHand(zone, object)
 end
 
 -- ============================================================================
