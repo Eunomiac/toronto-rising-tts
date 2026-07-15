@@ -538,6 +538,30 @@ function DEBUG.showState()
     print(JSON.encode_pretty(state))
 end
 
+--- TOR-384 first-load Global HUD canaries (Host cold load vs fixing reload).
+--- @usage DEBUG.showGlobalHudCanaries()
+function DEBUG.showGlobalHudCanaries()
+    printTestHeader("TOR-384 Global HUD canaries")
+    local loading = UI ~= nil and UI.loading or nil
+    print("UI.loading=" .. tostring(loading))
+    local x = (UI ~= nil and type(UI.getXml) == "function") and UI.getXml() or nil
+    local xmlLen = (type(x) == "string") and #x or 0
+    print("xmlLen=" .. tostring(xmlLen))
+    print("hasBlack=" .. tostring(type(x) == "string" and x:find("HUD_PANEL_BLACK", 1, true) ~= nil))
+    local function attr(id, a)
+        if UI == nil or type(UI.getAttribute) ~= "function" then
+            return nil
+        end
+        return UI.getAttribute(id, a)
+    end
+    print("blindfold active=" .. tostring(attr("overlay_globalBlindfold", "active")))
+    print("blindfold visibility=" .. tostring(attr("overlay_globalBlindfold", "visibility")))
+    print("HUD_PANEL_BLACK visibility=" .. tostring(attr("HUD_PANEL_BLACK", "visibility")))
+    print("HUD_PANEL_BLACK active=" .. tostring(attr("HUD_PANEL_BLACK", "active")))
+    print("currentPhase=" .. tostring(S.getStateVal("currentPhase")))
+    print("Interpretation: large xmlLen+attrs but blank canvas → dead Global canvas; blindfold active → cover; UI.loading → asset race; only BLACK wrong → seat reveal skip.")
+end
+
 --- Print orchestrator reconcile skip-cache snapshot (fingerprints, layout, init-light retries).
 function DEBUG.dumpSyncCacheState()
     printTestHeader("Sync reconcile caches")
