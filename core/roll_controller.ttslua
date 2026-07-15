@@ -2062,14 +2062,18 @@ function RC.recalculate(color, previewOnly)
     end
 
     if wasRolling and active.phase == C.RollPhase.POST_ROLL
-        and C.RollTypesAutoBroadcast[active.rollType]
-        and active.willpower.available ~= true
-        and active.pendingResolution == nil
-        and _autoConfirmDepth == 0 then
-        _autoConfirmDepth = _autoConfirmDepth + 1
-        local ok = RC.confirmRoll(color)
-        _autoConfirmDepth = _autoConfirmDepth - 1
-        return ok
+        and color ~= "Black"
+        and _autoConfirmDepth == 0
+    then
+        -- TOR-328: sole Confirm with no in-world alternate → auto-broadcast (extends TOR-306).
+        local RUI = require("core.roll_ui")
+        local shouldAuto, soleAction = RUI.shouldAutoProceedSoleAction(active, color)
+        if shouldAuto and soleAction == "confirm" then
+            _autoConfirmDepth = _autoConfirmDepth + 1
+            local ok = RC.confirmRoll(color)
+            _autoConfirmDepth = _autoConfirmDepth - 1
+            return ok
+        end
     end
 
     return true

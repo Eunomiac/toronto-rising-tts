@@ -1457,6 +1457,114 @@ local function refreshPcRollControlPanel(color, active)
     uiSetActive(string.format("rollControl_btnCancel_%s", color), showCancel)
 end
 
+--- Pure PC roll-panel action inventory (same visibility rules as `refreshPcRollControlPanel`).
+--- Used for TOR-328 single-action auto-proceed without duplicating predicates in RC.
+--- @param active table|nil
+--- @param color string|nil seat color (for live-roll initiate block)
+--- @return table `{ count, soleAction, hasPhysicalProgressAlternate, roll, half, spendWp, confirm, cancel, oblivOrBrutal }`
+function RUI.inventoryPcRollActions(active, color)
+    local empty = {
+        count = 0,
+        soleAction = nil,
+        hasPhysicalProgressAlternate = true,
+        roll = false,
+        half = false,
+        spendWp = false,
+        confirm = false,
+        cancel = false,
+        oblivOrBrutal = false,
+    }
+    if type(active) ~= "table" then
+        return empty
+    end
+
+    local isPreRoll = active.phase == C.RollPhase.PRE_ROLL
+    local isSetup = active.phase == C.RollPhase.SETUP
+    local isRolling = active.phase == C.RollPhase.ROLLING
+    local isPostRoll = active.phase == C.RollPhase.POST_ROLL
+    local pool = DK.normalizePool(active.pool)
+    local hasPool = DK.poolTotal(pool) > 0
+    local blockedByLiveRoll = type(color) == "string"
+        and isPreRoll
+        and PRTL.isInitiateBlocked(color)
+    local surgeActive = active.meta ~= nil and active.meta.bloodSurgeActive == true
+    local halfEligible = isPreRoll
+        and hasPool
+        and not surgeActive
+        and C.RollTypesNoTakeHalf[active.rollType] ~= true
+        and RO.getForActive(active, RO.ROLL_TAKE_HALF)
+
+    local wpAvailable = isPostRoll
+        and active.willpower ~= nil
+        and active.willpower.available == true
+    local isWpWaveRolling = isRolling
+        and active.willpower ~= nil
+        and active.willpower.wpRerollWave == true
+    local pendingChoice = isPostRoll and (
+        active.pendingResolution == C.PendingResolution.OBLIV_HUNGER_STAIN
+        or active.pendingResolution == C.PendingResolution.BRUTAL_FAIL_VIOLENCE
+    )
+    local showConfirm = (isPostRoll or isWpWaveRolling) and not pendingChoice
+    local playerHoldsBaton = active.batonHolder == C.BatonHolder.PLAYER
+    local canConfirm = showConfirm and (playerHoldsBaton or isWpWaveRolling)
+    local showCancel = active.takeHalfAwaitingRouse ~= true
+        and active.initiator == "player"
+        and (active.phase == C.RollPhase.PRE_ROLL
+            or (active.phase == C.RollPhase.SETUP and active.initiator == "player"))
+
+    local inv = {
+        roll = (isPreRoll or isSetup) and not blockedByLiveRoll and (isSetup or (isPreRoll and hasPool)),
+        half = halfEligible == true,
+        spendWp = wpAvailable == true,
+        confirm = canConfirm == true,
+        cancel = showCancel == true,
+        oblivOrBrutal = pendingChoice == true,
+        hasPhysicalProgressAlternate = false,
+        count = 0,
+        soleAction = nil,
+    }
+    -- SETUP / PRE_ROLL: bags + tray assemble. ROLLING: physical dice (incl. under-cap WP Confirm).
+    if isSetup or isPreRoll or isRolling then
+        inv.hasPhysicalProgressAlternate = true
+    end
+
+    local order = {
+        { "roll", inv.roll },
+        { "half", inv.half },
+        { "spendWp", inv.spendWp },
+        { "confirm", inv.confirm },
+        { "cancel", inv.cancel },
+        { "oblivOrBrutal", inv.oblivOrBrutal },
+    }
+    local sole = nil
+    local n = 0
+    for _, row in ipairs(order) do
+        if row[2] then
+            n = n + 1
+            sole = row[1]
+        end
+    end
+    inv.count = n
+    inv.soleAction = (n == 1) and sole or nil
+    return inv
+end
+
+--- True when sole visible action should auto-fire (no in-world alternate).
+--- @param active table|nil
+--- @param color string|nil
+--- @return boolean
+--- @return string|nil soleAction
+function RUI.shouldAutoProceedSoleAction(active, color)
+    local inv = RUI.inventoryPcRollActions(active, color)
+    if inv.hasPhysicalProgressAlternate then
+        return false, nil
+    end
+    if inv.count ~= 1 or inv.soleAction == nil then
+        return false, nil
+    end
+    return true, inv.soleAction
+end
+
 --- Refreshes a player's roll panel to match their current rollData.active.
 -- Shows the panel when a roll is active; hides it otherwise.
 -- Updates phase label, pool display, difficulty, dice display, result, and button visibility.
