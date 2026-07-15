@@ -66,6 +66,12 @@ local GREEN = "#228B22|#32CD32|#006400|#228B22"
 local BLUE = "#1E5AA8|#2E7AD1|#154080|#1E5AA8"
 local GREY = "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
 
+--- Day / year / time InputField tint by clock source (panel_scenes Scene Time row).
+local CLOCK_INPUT_COLORS_PRESENT = "#AAFFAA|#CCFFCC|#99DD99|rgba(0.9,1,0.9,0.98)"
+local CLOCK_INPUT_COLORS_SCENE = "#AAAAFF|#CCCCFF|#9999DD|rgba(0.9,0.9,1,0.98)"
+local CLOCK_INPUT_COLORS_CUSTOM = "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
+local CLOCK_INPUT_FIELD_IDS = { "scenes_clock_day", "scenes_clock_year", "scenes_clock_time12" }
+
 --- Sets Global UI InputField display text (`UI.setAttribute` — reliable when inactive).
 -- @param elementId string
 -- @param value string
@@ -784,6 +790,60 @@ local function resolveAuthoredActivationDatetime(activeKey)
     return false, nil
 end
 
+--- Color source for day/year/time12 inputs: present (green), scene (blue), or dirty draft (grey).
+--- @param displayClock table|nil
+--- @return string `"present"`|`"scene"`|`"custom"`
+local function resolveClockInputColorSource(displayClock)
+    if clockDraft.dirty == true then
+        return "custom"
+    end
+    local pd = PresentDayClock.getPresentDay()
+    if type(displayClock) == "table"
+        and type(pd) == "table"
+        and PresentDayClock.clockHasDatetime(displayClock)
+        and U.compareNarrativeClock(displayClock, pd) == 0
+    then
+        return "present"
+    end
+    local activeKey = getActiveLibraryKey()
+    if type(activeKey) == "string" and activeKey ~= "" then
+        local hasAuthored = select(1, resolveAuthoredActivationDatetime(activeKey))
+        if not hasAuthored then
+            return "present"
+        end
+    end
+    if type(displayClock) == "table" and PresentDayClock.clockHasDatetime(displayClock) then
+        return "scene"
+    end
+    return "present"
+end
+
+--- Tints day/year/time12 InputFields by whether they show present-day, scene, or in-progress edit.
+--- @param displayClock table|nil
+local function refreshClockInputSourceColors(displayClock)
+    if UI == nil or UI.setAttribute == nil then
+        return
+    end
+    if type(displayClock) ~= "table" then
+        displayClock = resolvePanelDisplayClock()
+    end
+    local source = resolveClockInputColorSource(displayClock)
+    local colors = CLOCK_INPUT_COLORS_PRESENT
+    local textColor = "#222222"
+    if source == "scene" then
+        colors = CLOCK_INPUT_COLORS_SCENE
+    elseif source == "custom" then
+        colors = CLOCK_INPUT_COLORS_CUSTOM
+        textColor = "#FFFFFF"
+    end
+    for i = 1, #CLOCK_INPUT_FIELD_IDS do
+        U.setAttributes(CLOCK_INPUT_FIELD_IDS[i], {
+            colors = colors,
+            textColor = textColor,
+        })
+    end
+end
+
 --- TOR-142: enable Scene Time / ×5 / SET Now when the activation clock has authored datetime.
 local function refreshApplyClockButtons()
     if UI == nil or UI.setAttribute == nil then
@@ -925,6 +985,7 @@ function StorytellerScenesPanel.onClockInputChanged(player, value, id)
             persistPendingLibraryClockFromDraft(activeKey)
         end
     end
+    refreshClockInputSourceColors(nil)
 end
 
 --- Push storyteller panel visuals from selected library preview (pending) or live `sessionScene`.
@@ -1016,6 +1077,7 @@ function StorytellerScenesPanel.refresh()
             setInputFieldText("scenes_clock_day", tostring(tonumber(ck.day) or 1))
             setInputFieldText("scenes_clock_year", tostring(tonumber(ck.year) or 2026))
             setInputFieldText("scenes_clock_time12", formatTime12h(ck.hour, ck.minute))
+            refreshClockInputSourceColors(ck)
             local spd = tonumber(ck.realTimeSpeed)
             if spd == nil then
                 spd = 1
