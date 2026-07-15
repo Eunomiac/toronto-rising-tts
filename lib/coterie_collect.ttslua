@@ -6,12 +6,25 @@ local CC = {}
 local TRAIT = require("lib.trait_sheet_xml")
 local PCT = require("lib.princes_court_trait_xml")
 local CoterieHydrate = require("lib.coterie_hydrate")
+local Projects = require("core.projects")
 
 local DOMAIN_DOT_KEYS = CoterieHydrate.DOMAIN_RATING_KEYS
 local MAX_DOMAIN_DOTS = 5
 
 --- Must match `lib/princes_court_trait_xml.ttslua` build opts so blank `setAttribute` ids align with baked XML.
 local TRAIT_ACTIVE_OPTS = { visibilityMode = "active" }
+
+--- Committed project stakes add effective-disabled on Prince's Court dots (same as CSHEET).
+--- @param entry table
+--- @return integer
+local function stakeExtraDisabledForCoterieEntry(entry)
+  if type(entry) ~= "table" or type(entry.name) ~= "string" or entry.name == "" then
+    return 0
+  end
+  return math.max(0, math.floor(tonumber(
+    Projects.stakeQtyForAdvantage("coterie", entry.name, entry.focus, nil)
+  ) or 0))
+end
 
 --- @param pageNum integer
 --- @param sectionKey string
@@ -58,7 +71,8 @@ end
 --- @param isFlaw boolean
 --- @param hudSeatColor string
 local function addTraitDotUpdates(updates, entry, pageNum, sectionKey, traitIndex, isFlaw, hudSeatColor)
-  local slotCount, baseCount, tempCount, disabledCount = TRAIT.slotBaseTempDisabled(entry)
+  local slotCount, baseCount, tempCount, disabledCount =
+    TRAIT.slotBaseTempDisabled(entry, stakeExtraDisabledForCoterieEntry(entry))
   local filledImg = isFlaw and "dot_red" or "dot_yellow"
   for slot = 1, slotCount do
     local img = TRAIT.dotImageForTraitSlot(slot, slotCount, baseCount, tempCount, disabledCount, filledImg)
