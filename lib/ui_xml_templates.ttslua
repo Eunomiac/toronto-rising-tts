@@ -39,6 +39,22 @@ M._byKey["csheet/page3"] = [=[
 
   </VerticalLayout>
 
+    <!-- Status overlays (sheetDisplay:false): single Images, LTR base/temp + grey disabled from the right. -->
+     <Defaults>
+        <Image class="dot_status" height="80" width="80" ignoreLayout="true" rectAlignment="UpperLeft" active="false" />
+     </Defaults>
+
+    <Image id="dot_statusCamarilla_1" image="" class="dot dot_standard dot_status" offsetXY="286 -226" />
+    <Image id="dot_statusCamarilla_2" image="" class="dot dot_standard dot_status" offsetXY="286 -226" />
+    <Image id="dot_statusCamarilla_3" image="" class="dot dot_standard dot_status" offsetXY="286 -226" />
+    <Image id="dot_statusCamarilla_4" image="" class="dot dot_standard dot_status" offsetXY="286 -226" />
+    <Image id="dot_statusCamarilla_5" image="" class="dot dot_standard dot_status" offsetXY="286 -226" />
+
+    <Image id="dot_statusClan_1" image="" class="dot dot_standard dot_status" offsetXY="286 -226" />
+    <Image id="dot_statusClan_2" image="" class="dot dot_standard dot_status" offsetXY="286 -226" />
+    <Image id="dot_statusClan_3" image="" class="dot dot_standard dot_status" offsetXY="286 -226" />
+    <Image id="dot_statusClan_4" image="" class="dot dot_standard dot_status" offsetXY="286 -226" />
+    <Image id="dot_statusClan_5" image="" class="dot dot_standard dot_status" offsetXY="286 -226" />
 </Panel>
 ]=]
 

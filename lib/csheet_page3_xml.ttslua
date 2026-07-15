@@ -164,6 +164,7 @@ local function patchImageTagAttrs(xml, id, image, active)
 end
 
 --- Bake Status Camarilla/Clan overlay Image attrs into page3 XML (sheetDisplay:false boxes stay omitted).
+--- Single `dot_statusCamarilla_*` / `dot_statusClan_*`: LTR base → temp; grey disabled from the right.
 --- @param xml string
 --- @param backgrounds table
 --- @param projectStakeSourceKey string|nil
@@ -184,15 +185,12 @@ local function bakeStatusOverlayImages(xml, backgrounds, projectStakeSourceKey)
     local row = overlayRows[i]
     local baseCount, tempCount, disabledCount = statusSlotCounts(row.entry, stakeKey)
     for slot = 1, STATUS_OVERLAY_SLOTS do
-      local onId = "dot_on_" .. row.prefix .. "_" .. tostring(slot)
-      local offId = "dot_off_" .. row.prefix .. "_" .. tostring(slot)
+      local id = "dot_" .. row.prefix .. "_" .. tostring(slot)
       local img = TRAIT.dotImageForDomainSlot(slot, baseCount, tempCount, disabledCount, "dot_yellow")
       if img ~= nil then
-        xml = patchImageTagAttrs(xml, onId, img, "true")
-        xml = patchImageTagAttrs(xml, offId, "dot_blank", "false")
+        xml = patchImageTagAttrs(xml, id, img, "true")
       else
-        xml = patchImageTagAttrs(xml, onId, "dot_yellow", "false")
-        xml = patchImageTagAttrs(xml, offId, "dot_blank", "true")
+        xml = patchImageTagAttrs(xml, id, "", "false")
       end
     end
   end
