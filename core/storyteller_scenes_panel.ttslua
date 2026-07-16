@@ -28,15 +28,26 @@ local NPCS = require("core.npcs")
 local function reconcileHostedConditions(opts)
     local Conditions = require("core.conditions")
     if type(Conditions.reconcileHostedForSession) == "function" then
-        Conditions.reconcileHostedForSession(opts)
+        return Conditions.reconcileHostedForSession(opts)
     elseif type(Conditions.reconcileLocationHostedForScene) == "function" then
-        Conditions.reconcileLocationHostedForScene(opts)
+        return Conditions.reconcileLocationHostedForScene(opts)
     end
+    return nil
 end
 
 --- CSHEET page 1/2 dots and BP decals after hosted reconcile used skipPresentation.
-local function refreshCharacterSheetsAfterHostedReconcile()
-    if PCST and type(PCST.refreshAllCharacterSheets) == "function" then
+--- @param changedSeatColors string[]|nil nil means the reconciler could not report scope.
+local function refreshCharacterSheetsAfterHostedReconcile(changedSeatColors)
+    if not PCST then
+        return
+    end
+    if type(changedSeatColors) == "table" then
+        for _, seatColor in ipairs(changedSeatColors) do
+            if type(PCST.refreshCharacterSheetsForColor) == "function" then
+                PCST.refreshCharacterSheetsForColor(seatColor)
+            end
+        end
+    elseif type(PCST.refreshAllCharacterSheets) == "function" then
         PCST.refreshAllCharacterSheets()
     end
 end
@@ -51,14 +62,14 @@ local function syncAfterHostedReconcileAndRefreshSheets(reason, opts)
     if Sync and type(Sync.full) == "function" then
         Sync.full({ reason = reason, skipSoundscape = opts.skipSoundscape == true })
     end
-    refreshCharacterSheetsAfterHostedReconcile()
+    refreshCharacterSheetsAfterHostedReconcile(opts.changedSeatColors)
 end
 
 --- Hosted condition mutation (skipPresentation) + world sync + sheet/decal presentation.
 --- @param reason string
 local function reconcileHostedSyncAndPresentSheets(reason)
-    reconcileHostedConditions({ skipPresentation = true })
-    syncAfterHostedReconcileAndRefreshSheets(reason)
+    local changedSeatColors = reconcileHostedConditions({ skipPresentation = true })
+    syncAfterHostedReconcileAndRefreshSheets(reason, { changedSeatColors = changedSeatColors })
 end
 
 local GREEN = "#228B22|#32CD32|#006400|#228B22"
@@ -1487,14 +1498,17 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
                 U.AlertGM("Unknown districtKey in scene bundle: " .. dKey)
             end
         end
-        reconcileHostedConditions({ skipPresentation = true })
+        local changedSeatColors = reconcileHostedConditions({ skipPresentation = true })
 
         MapPins.onSceneApplied()
 
         -- Soundscape (incl. weather) is applied authoritatively in the staged `fadeIn` phase with the
         -- transition fade window open; skip it here so the work-phase reconcile cannot slam weather to
         -- full volume via the immediate held-volume path (TOR-147 weather fade-in regression).
-        syncAfterHostedReconcileAndRefreshSheets("StorytellerScenesPanel.sceneLibraryApply", { skipSoundscape = true })
+        syncAfterHostedReconcileAndRefreshSheets("StorytellerScenesPanel.sceneLibraryApply", {
+            skipSoundscape = true,
+            changedSeatColors = changedSeatColors,
+        })
 
         if GameStateOverlay and type(GameStateOverlay.stopTicker) == "function" then
             GameStateOverlay.stopTicker()
