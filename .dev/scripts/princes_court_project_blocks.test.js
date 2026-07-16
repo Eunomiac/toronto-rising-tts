@@ -10,33 +10,21 @@ const {
 } = require("./princes_court_trait_placeholders.js");
 
 test("buildCourtProjectBlocks expands eight full sheet-style Court project blocks", () => {
-  const partial = [
-    '<Panel id="court_project_@@SLOT@@_@@color@@" class="project_container">',
-    '  <Image id="court_project_@@SLOT@@_scope_dot_1_@@color@@" class="project_scope_dot" />',
-    '  <Text id="court_project_@@SLOT@@_goal_@@color@@" class="project_goal_text" />',
-    '  <Image id="court_project_@@SLOT@@_project_die_@@color@@" class="project_die" />',
-    '  <Image id="court_project_@@SLOT@@_result_image_@@color@@" class="project_result_image" />',
-    '  <Text id="court_project_@@SLOT@@_result_margin_@@color@@" class="project_result_margin" />',
-    '  <GridLayout id="court_project_@@SLOT@@_stakes_@@color@@" class="project_stake_container">',
-    '    <HorizontalLayout id="court_project_@@SLOT@@_stake_1_@@color@@">',
-    '      <Text id="court_project_@@SLOT@@_stake_1_label_@@color@@" class="project_stake_label" />',
-    '      <Image id="court_project_@@SLOT@@_stake_1_dot_1_@@color@@" class="project_stake_dot" />',
-    "    </HorizontalLayout>",
-    "  </GridLayout>",
-    '  <Text id="court_project_@@SLOT@@_date_start_@@color@@" class="project_date_text" />',
-    '  <Text id="court_project_@@SLOT@@_date_end_@@color@@" class="project_date_text" />',
-    '  <Text id="court_project_@@SLOT@@_date_increment_@@color@@" class="project_increment_text" />',
-    "</Panel>",
-  ].join("\n");
+  const partial = fs.readFileSync(
+    path.resolve(__dirname, "../../ui/.templates/csheet/partials/project_block.xml"),
+    "utf8"
+  );
 
   const xml = buildCourtProjectBlocks(partial, 8);
 
   assert.match(xml, /court_project_01_@@color@@/);
   assert.match(xml, /court_project_08_@@color@@/);
   assert.doesNotMatch(xml, /court_project_09_/);
-  assert.doesNotMatch(xml, /@@SLOT@@/);
+  assert.doesNotMatch(xml, /@@INDEX@@|@@PROJECT_STAKE_[1-6]_CLASS@@/);
   assert.equal((xml.match(/class="project_container"/g) || []).length, 8);
-  assert.equal((xml.match(/class="project_stake_container"/g) || []).length, 8);
+  assert.equal((xml.match(/class="project_stake_container"/g) || []).length, 56);
+  assert.match(xml, /court_project_08_stake_6_dot_5_@@color@@/);
+  assert.doesNotMatch(xml, /Print attributes|Dots are 'active=false'/);
 });
 
 test("Court reconciler fills the complete character-sheet project field set", () => {
@@ -52,4 +40,22 @@ test("Court reconciler fills the complete character-sheet project field set", ()
   assert.match(source, /courtId\("date_start"\)/);
   assert.match(source, /courtId\("date_end"\)/);
   assert.match(source, /courtId\("date_increment"\)/);
+});
+
+test("Court reference layer uses the canonical CSHEET defaults and project container", () => {
+  const referenceTemplate = fs.readFileSync(
+    path.resolve(__dirname, "../../ui/.templates/panel_right_sidebar_referenceLayer.xml"),
+    "utf8"
+  );
+
+  assert.match(
+    referenceTemplate,
+    /<Include src="ui\/player\/csheets\/csheet_defaults\.xml"\s*\/>/
+  );
+  assert.doesNotMatch(referenceTemplate, /Court page 3 project styles mirror/);
+  assert.doesNotMatch(referenceTemplate, /<Panel class="project_container"/);
+  assert.match(
+    referenceTemplate,
+    /<VerticalLayout class="vertical_project_container">[\s\S]*@@COURT_PROJECT_BLOCKS@@/
+  );
 });

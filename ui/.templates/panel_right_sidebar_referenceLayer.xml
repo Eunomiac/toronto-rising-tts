@@ -7,6 +7,8 @@ UI.setAttributes("playerHud_referenceLayer_Red", {color = "rgba(1, 0, 0, 0.15)"}
 -->
 <Panel id="playerHud_referenceLayer_@@color@@" class="popupImageContainer" visibility="@@color@@">
 
+  <Include src="ui/player/csheets/csheet_defaults.xml" />
+
   <Defaults>
 
     <Panel class="princesCourt-reference"
@@ -45,76 +47,6 @@ UI.setAttributes("playerHud_referenceLayer_Red", {color = "rgba(1, 0, 0, 0.15)"}
       height = "60"
       width = "60"
       active = "true" />
-
-    <!-- Court page 3 project styles mirror csheet_defaults.xml at Court-column scale. -->
-    <Panel class="project_container"
-      minHeight="150" preferredHeight="150" flexibleHeight="0"
-      color="rgba(0, 0, 0, 1)" outline="#cb995c" outlineSize="2 -2"
-      active="false" />
-    <HorizontalLayout class="project_header_container"
-      height="30" width="100%" outline="#cb995c" outlineSize="2 -2"
-      color="rgba(0, 0, 0, 1)" rectAlignment="UpperLeft"
-      childAlignment="UpperLeft" childForceExpandWidth="false"
-      padding="8 8 0 0" spacing="6" />
-    <GridLayout class="project_header_dotline"
-      cellSize="12 12" spacing="1" startCorner="UpperLeft" startAxis="Horizontal"
-      constraint="FixedRowCount" constraintCount="1" childAlignment="MiddleLeft"
-      childForceExpandWidth="false" childForceExpandHeight="false" />
-    <Image class="project_scope_dot"
-      image="dot_yellow" minHeight="60" minWidth="60"
-      flexibleWidth="0" flexibleHeight="0" active="false" />
-    <Text class="project_goal_text"
-      color="#FFFFFF" fontStyle="Bold" fontSize="17" alignment="MiddleLeft"
-      offsetXY="6 0" preferredWidth="420" horizontalOverflow="truncate" />
-    <Panel class="project_result_container"
-      ignoreLayout="true" height="34" width="64" rectAlignment="UpperRight"
-      offsetXY="8 8" color="rgba(0.2, 0.2, 0.2, 1)"
-      outline="#cb995c" outlineSize="2 -2" />
-    <Image class="project_result_image"
-      rectAlignment="MiddleCenter" width="56" preserveAspect="true" />
-    <Text class="project_result_margin"
-      color="#FFFFFF" fontStyle="Bold" fontSize="24" alignment="MiddleRight"
-      horizontalOverflow="wrap" width="64" />
-    <GridLayout class="project_stake_container"
-      color="rgba(1, 0, 0, 0)" rectAlignment="LowerLeft"
-      cellSize="350 18" height="100" width="350" spacing="0"
-      startCorner="UpperLeft" startAxis="Horizontal" childAlignment="UpperLeft"
-      padding="0 0 0 0" constraint="FixedColumnCount" constraintCount="1"
-      offsetXY="5 20" />
-    <HorizontalLayout class="project_stake_container"
-      spacing="8" color="rgba(1, 0, 1, 0)" childForceExpandWidth="false"
-      childForceExpandHeight="true" padding="3 0 0 0"
-      childAlignment="MiddleLeft" active="false" />
-    <Text class="project_stakes_label"
-      color="rgba(0, 0, 0, 0)" fontSize="0" active="false" />
-    <GridLayout class="project_stake_dotline"
-      color="rgba(0, 1, 0, 0)" cellSize="15 15" spacing="1"
-      startCorner="UpperLeft" startAxis="Horizontal" constraint="FixedRowCount"
-      constraintCount="1" childAlignment="MiddleLeft"
-      childForceExpandWidth="false" childForceExpandHeight="false"
-      preferredWidth="0" flexibleWidth="0" minWidth="0" padding="0 0 0 0" />
-    <Panel class="project_stake_spacer" flexibleWidth="1" />
-    <Image class="project_stake_dot"
-      image="dot_white" minHeight="60" minWidth="8"
-      flexibleWidth="0" flexibleHeight="0" active="false" />
-    <Text class="project_stake_label"
-      color="#FFFFFF" fontStyle="Bold" fontSize="14" alignment="MiddleLeft"
-      flexibleWidth="0" horizontalOverflow="overflow" />
-    <Image class="project_die"
-      ignoreLayout="true" rectAlignment="MiddleRight" width="300"
-      preserveAspect="true" offsetXY="0 -6" />
-    <HorizontalLayout class="project_date_container"
-      ignoreLayout="true" height="24" width="335" rectAlignment="LowerRight"
-      offsetXY="8 -8" color="rgba(0, 0, 0, 1)"
-      outline="#cb995c" outlineSize="2 -2" spacing="0" />
-    <Text class="project_date_text"
-      color="#FFFFFF" fontStyle="Bold" fontSize="12"
-      alignment="MiddleCenter" preferredWidth="1000" />
-    <Text class="project_increment_text"
-      fontStyle="Italic" fontSize="11" color="#999999"
-      alignment="MiddleCenter" preferredWidth="1000" />
-    <Text class="project_date_start_text"
-      fontStyle="Italic" color="#999999" />
 
     <Image class="box_standard"
       height = "24"
@@ -838,7 +770,7 @@ UI.setAttributes("page_3_left_Brown", {color = "rgba(1, 0, 0, 0.15)", childForce
         width="710" height="850" rectAlignment="MiddleLeft" offsetXY="20 0"
         padding="8 8 120 50" movementType="Clamped" vertical="true"
         horizontal="false" childForceExpandWidth="true">
-        <VerticalLayout spacing="8" childForceExpandWidth="true" childForceExpandHeight="false">
+        <VerticalLayout class="vertical_project_container">
           @@COURT_PROJECT_BLOCKS@@
         </VerticalLayout>
       </VerticalScrollView>
