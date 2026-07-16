@@ -46,42 +46,75 @@ UI.setAttributes("playerHud_referenceLayer_Red", {color = "rgba(1, 0, 0, 0.15)"}
       width = "60"
       active = "true" />
 
-    <!-- TOR-371: compact coterie project cards on Court page 3 left -->
-    <Panel class="court_project_card"
-      minHeight = "72"
-      preferredHeight = "72"
-      flexibleHeight = "0"
-      color = "rgba(0, 0, 0, 0.55)"
-      outline = "#cb995c"
-      outlineSize = "1 -1"
-      active = "false" />
-    <Text class="court_project_goal"
-      fontSize = "16"
-      color = "#FFFFFF"
-      alignment = "UpperLeft"
-      horizontalOverflow = "wrap"
-      verticalOverflow = "truncate" />
-    <Text class="court_project_meta"
-      fontSize = "12"
-      color = "#CCCCCC"
-      alignment = "UpperLeft"
-      horizontalOverflow = "truncate"
-      verticalOverflow = "truncate" />
-    <Image class="court_project_die"
-      preferredWidth = "56"
-      preferredHeight = "56"
-      minWidth = "56"
-      minHeight = "56"
-      preserveAspect = "true"
-      raycastTarget = "false" />
-    <Image class="court_project_result"
-      preferredWidth = "48"
-      preferredHeight = "48"
-      minWidth = "48"
-      minHeight = "48"
-      preserveAspect = "true"
-      raycastTarget = "false"
-      active = "false" />
+    <!-- Court page 3 project styles mirror csheet_defaults.xml at Court-column scale. -->
+    <Panel class="project_container"
+      minHeight="150" preferredHeight="150" flexibleHeight="0"
+      color="rgba(0, 0, 0, 1)" outline="#cb995c" outlineSize="2 -2"
+      active="false" />
+    <HorizontalLayout class="project_header_container"
+      height="30" width="100%" outline="#cb995c" outlineSize="2 -2"
+      color="rgba(0, 0, 0, 1)" rectAlignment="UpperLeft"
+      childAlignment="UpperLeft" childForceExpandWidth="false"
+      padding="8 8 0 0" spacing="6" />
+    <GridLayout class="project_header_dotline"
+      cellSize="12 12" spacing="1" startCorner="UpperLeft" startAxis="Horizontal"
+      constraint="FixedRowCount" constraintCount="1" childAlignment="MiddleLeft"
+      childForceExpandWidth="false" childForceExpandHeight="false" />
+    <Image class="project_scope_dot"
+      image="dot_yellow" minHeight="60" minWidth="60"
+      flexibleWidth="0" flexibleHeight="0" active="false" />
+    <Text class="project_goal_text"
+      color="#FFFFFF" fontStyle="Bold" fontSize="17" alignment="MiddleLeft"
+      offsetXY="6 0" preferredWidth="420" horizontalOverflow="truncate" />
+    <Panel class="project_result_container"
+      ignoreLayout="true" height="34" width="64" rectAlignment="UpperRight"
+      offsetXY="8 8" color="rgba(0.2, 0.2, 0.2, 1)"
+      outline="#cb995c" outlineSize="2 -2" />
+    <Image class="project_result_image"
+      rectAlignment="MiddleCenter" width="56" preserveAspect="true" />
+    <Text class="project_result_margin"
+      color="#FFFFFF" fontStyle="Bold" fontSize="24" alignment="MiddleRight"
+      horizontalOverflow="wrap" width="64" />
+    <GridLayout class="project_stake_container"
+      color="rgba(1, 0, 0, 0)" rectAlignment="LowerLeft"
+      cellSize="350 18" height="100" width="350" spacing="0"
+      startCorner="UpperLeft" startAxis="Horizontal" childAlignment="UpperLeft"
+      padding="0 0 0 0" constraint="FixedColumnCount" constraintCount="1"
+      offsetXY="5 20" />
+    <HorizontalLayout class="project_stake_container"
+      spacing="8" color="rgba(1, 0, 1, 0)" childForceExpandWidth="false"
+      childForceExpandHeight="true" padding="3 0 0 0"
+      childAlignment="MiddleLeft" active="false" />
+    <Text class="project_stakes_label"
+      color="rgba(0, 0, 0, 0)" fontSize="0" active="false" />
+    <GridLayout class="project_stake_dotline"
+      color="rgba(0, 1, 0, 0)" cellSize="15 15" spacing="1"
+      startCorner="UpperLeft" startAxis="Horizontal" constraint="FixedRowCount"
+      constraintCount="1" childAlignment="MiddleLeft"
+      childForceExpandWidth="false" childForceExpandHeight="false"
+      preferredWidth="0" flexibleWidth="0" minWidth="0" padding="0 0 0 0" />
+    <Panel class="project_stake_spacer" flexibleWidth="1" />
+    <Image class="project_stake_dot"
+      image="dot_white" minHeight="60" minWidth="8"
+      flexibleWidth="0" flexibleHeight="0" active="false" />
+    <Text class="project_stake_label"
+      color="#FFFFFF" fontStyle="Bold" fontSize="14" alignment="MiddleLeft"
+      flexibleWidth="0" horizontalOverflow="overflow" />
+    <Image class="project_die"
+      ignoreLayout="true" rectAlignment="MiddleRight" width="300"
+      preserveAspect="true" offsetXY="0 -6" />
+    <HorizontalLayout class="project_date_container"
+      ignoreLayout="true" height="24" width="335" rectAlignment="LowerRight"
+      offsetXY="8 -8" color="rgba(0, 0, 0, 1)"
+      outline="#cb995c" outlineSize="2 -2" spacing="0" />
+    <Text class="project_date_text"
+      color="#FFFFFF" fontStyle="Bold" fontSize="12"
+      alignment="MiddleCenter" preferredWidth="1000" />
+    <Text class="project_increment_text"
+      fontStyle="Italic" fontSize="11" color="#999999"
+      alignment="MiddleCenter" preferredWidth="1000" />
+    <Text class="project_date_start_text"
+      fontStyle="Italic" color="#999999" />
 
     <Image class="box_standard"
       height = "24"
@@ -793,92 +826,22 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
       <Image id="playerHud_navigate_page2_next_@@color@@" class="navButton navButton_right" image="navigate_right" raycastTarget="true" onMouseEnter="HUD_playerPrincesCourt_nav_hoverOn" onMouseExit="HUD_playerPrincesCourt_nav_hoverOff" onClick="HUD_playerPrincesCourt_navigate" />
     </Panel>
 
+<!--
+UI.setAttributes("page_3_left_Brown", {color = "rgba(1, 0, 0, 0.15)", childForceExpandWidth = "true"})
+
+-->
 
     <Panel id="playerHud_refPanel_PrincesCourt_page3_@@color@@" class="princesCourt-page" active="false">
       <Image class="princeCourt_page" image="refPanel_PrincesCourt_page3" raycastTarget="false" />
-      <!-- TOR-371: coterie projects from listForDisplaySource("coterie"); fixed pool + setAttribute reconcile. -->
-      <VerticalLayout id="page_3_left_@@color@@" class="page page_left" padding="8 8 120 50" spacing="6">
-        <Panel id="court_project_01_@@color@@" class="court_project_card" active="false">
-          <HorizontalLayout spacing="8" padding="8 8 6 6" childForceExpandHeight="true">
-            <VerticalLayout flexibleWidth="1" childForceExpandWidth="true" spacing="2">
-              <Text id="court_project_01_goal_@@color@@" class="court_project_goal" text="" />
-              <Text id="court_project_01_meta_@@color@@" class="court_project_meta" text="" />
-            </VerticalLayout>
-            <Image id="court_project_01_die_@@color@@" class="court_project_die" image="" />
-            <Image id="court_project_01_result_@@color@@" class="court_project_result" image="" active="false" />
-          </HorizontalLayout>
-        </Panel>
-        <Panel id="court_project_02_@@color@@" class="court_project_card" active="false">
-          <HorizontalLayout spacing="8" padding="8 8 6 6" childForceExpandHeight="true">
-            <VerticalLayout flexibleWidth="1" childForceExpandWidth="true" spacing="2">
-              <Text id="court_project_02_goal_@@color@@" class="court_project_goal" text="" />
-              <Text id="court_project_02_meta_@@color@@" class="court_project_meta" text="" />
-            </VerticalLayout>
-            <Image id="court_project_02_die_@@color@@" class="court_project_die" image="" />
-            <Image id="court_project_02_result_@@color@@" class="court_project_result" image="" active="false" />
-          </HorizontalLayout>
-        </Panel>
-        <Panel id="court_project_03_@@color@@" class="court_project_card" active="false">
-          <HorizontalLayout spacing="8" padding="8 8 6 6" childForceExpandHeight="true">
-            <VerticalLayout flexibleWidth="1" childForceExpandWidth="true" spacing="2">
-              <Text id="court_project_03_goal_@@color@@" class="court_project_goal" text="" />
-              <Text id="court_project_03_meta_@@color@@" class="court_project_meta" text="" />
-            </VerticalLayout>
-            <Image id="court_project_03_die_@@color@@" class="court_project_die" image="" />
-            <Image id="court_project_03_result_@@color@@" class="court_project_result" image="" active="false" />
-          </HorizontalLayout>
-        </Panel>
-        <Panel id="court_project_04_@@color@@" class="court_project_card" active="false">
-          <HorizontalLayout spacing="8" padding="8 8 6 6" childForceExpandHeight="true">
-            <VerticalLayout flexibleWidth="1" childForceExpandWidth="true" spacing="2">
-              <Text id="court_project_04_goal_@@color@@" class="court_project_goal" text="" />
-              <Text id="court_project_04_meta_@@color@@" class="court_project_meta" text="" />
-            </VerticalLayout>
-            <Image id="court_project_04_die_@@color@@" class="court_project_die" image="" />
-            <Image id="court_project_04_result_@@color@@" class="court_project_result" image="" active="false" />
-          </HorizontalLayout>
-        </Panel>
-        <Panel id="court_project_05_@@color@@" class="court_project_card" active="false">
-          <HorizontalLayout spacing="8" padding="8 8 6 6" childForceExpandHeight="true">
-            <VerticalLayout flexibleWidth="1" childForceExpandWidth="true" spacing="2">
-              <Text id="court_project_05_goal_@@color@@" class="court_project_goal" text="" />
-              <Text id="court_project_05_meta_@@color@@" class="court_project_meta" text="" />
-            </VerticalLayout>
-            <Image id="court_project_05_die_@@color@@" class="court_project_die" image="" />
-            <Image id="court_project_05_result_@@color@@" class="court_project_result" image="" active="false" />
-          </HorizontalLayout>
-        </Panel>
-        <Panel id="court_project_06_@@color@@" class="court_project_card" active="false">
-          <HorizontalLayout spacing="8" padding="8 8 6 6" childForceExpandHeight="true">
-            <VerticalLayout flexibleWidth="1" childForceExpandWidth="true" spacing="2">
-              <Text id="court_project_06_goal_@@color@@" class="court_project_goal" text="" />
-              <Text id="court_project_06_meta_@@color@@" class="court_project_meta" text="" />
-            </VerticalLayout>
-            <Image id="court_project_06_die_@@color@@" class="court_project_die" image="" />
-            <Image id="court_project_06_result_@@color@@" class="court_project_result" image="" active="false" />
-          </HorizontalLayout>
-        </Panel>
-        <Panel id="court_project_07_@@color@@" class="court_project_card" active="false">
-          <HorizontalLayout spacing="8" padding="8 8 6 6" childForceExpandHeight="true">
-            <VerticalLayout flexibleWidth="1" childForceExpandWidth="true" spacing="2">
-              <Text id="court_project_07_goal_@@color@@" class="court_project_goal" text="" />
-              <Text id="court_project_07_meta_@@color@@" class="court_project_meta" text="" />
-            </VerticalLayout>
-            <Image id="court_project_07_die_@@color@@" class="court_project_die" image="" />
-            <Image id="court_project_07_result_@@color@@" class="court_project_result" image="" active="false" />
-          </HorizontalLayout>
-        </Panel>
-        <Panel id="court_project_08_@@color@@" class="court_project_card" active="false">
-          <HorizontalLayout spacing="8" padding="8 8 6 6" childForceExpandHeight="true">
-            <VerticalLayout flexibleWidth="1" childForceExpandWidth="true" spacing="2">
-              <Text id="court_project_08_goal_@@color@@" class="court_project_goal" text="" />
-              <Text id="court_project_08_meta_@@color@@" class="court_project_meta" text="" />
-            </VerticalLayout>
-            <Image id="court_project_08_die_@@color@@" class="court_project_die" image="" />
-            <Image id="court_project_08_result_@@color@@" class="court_project_result" image="" active="false" />
-          </HorizontalLayout>
-        </Panel>
-      </VerticalLayout>
+      <!-- TOR-371: full sheet-style coterie project pool; runtime remains attribute-only. -->
+      <VerticalScrollView id="page_3_left_@@color@@" class="page page_left"
+        width="710" height="850" rectAlignment="MiddleLeft" offsetXY="20 0"
+        padding="8 8 120 50" movementType="Clamped" vertical="true"
+        horizontal="false" childForceExpandWidth="true">
+        <VerticalLayout spacing="8" childForceExpandWidth="true" childForceExpandHeight="false">
+          @@COURT_PROJECT_BLOCKS@@
+        </VerticalLayout>
+      </VerticalScrollView>
       <Image id="playerHud_navigate_page3_prev_@@color@@" class="navButton navButton_left" image="navigate_left" raycastTarget="true" onMouseEnter="HUD_playerPrincesCourt_nav_hoverOn" onMouseExit="HUD_playerPrincesCourt_nav_hoverOff" onClick="HUD_playerPrincesCourt_navigate" />
     </Panel>
   </Panel>

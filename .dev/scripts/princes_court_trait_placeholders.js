@@ -22,6 +22,9 @@ const PRINCES_COURT_PARTIALS_REL = path.join("ui", ".templates", "princes_court"
 const KEY_BASE_REL = path.join("ui", ".templates");
 
 const TRAIT_TOKEN_REGEX = /@@(COTERIE|DOMAIN|HAVEN)_(BACKGROUNDS|MERITS|FLAWS)_COLUMN_[123]@@/g;
+const COURT_PROJECT_BLOCKS_TOKEN = "@@COURT_PROJECT_BLOCKS@@";
+const COURT_PROJECT_PARTIAL_KEY = "princes_court/project_block";
+const COURT_PROJECT_POOL = 8;
 
 /**
  * @param {string} projectRoot
@@ -57,6 +60,23 @@ function replacePlaceholders(xml, placeholders) {
 }
 
 /**
+ * Build the fixed Court page-3 project pool while preserving @@color@@ for the
+ * downstream color-template generator.
+ * @param {string} partialXml
+ * @param {number} poolSize
+ * @returns {string}
+ */
+function buildCourtProjectBlocks(partialXml, poolSize = COURT_PROJECT_POOL) {
+  const count = Math.max(0, Math.floor(Number(poolSize) || 0));
+  const blocks = [];
+  for (let i = 1; i <= count; i += 1) {
+    const slot = String(i).padStart(2, "0");
+    blocks.push(partialXml.split("@@SLOT@@").join(slot));
+  }
+  return blocks.join("\n");
+}
+
+/**
  * @param {string} projectRoot
  */
 function main(projectRoot) {
@@ -75,6 +95,13 @@ function main(projectRoot) {
   const coterieData = hydrateCoterieData(JSON.parse(fs.readFileSync(jsonPath, "utf8")));
   const templates = loadPrincesCourtTemplates(root);
   const placeholders = buildTraitPlaceholderMap(coterieData, templates);
+  const projectPartial = templates[COURT_PROJECT_PARTIAL_KEY];
+  if (typeof projectPartial !== "string" || projectPartial === "") {
+    throw new Error(
+      `[princes_court_trait_placeholders] Missing template: ${COURT_PROJECT_PARTIAL_KEY}`
+    );
+  }
+  placeholders.COURT_PROJECT_BLOCKS = buildCourtProjectBlocks(projectPartial);
 
   let templateXml = fs.readFileSync(sourcePath, "utf8");
   templateXml = processConditionals(templateXml, buildTraitSectionDividerFlags(coterieData));
@@ -84,6 +111,11 @@ function main(projectRoot) {
   if (remaining && remaining.length > 0) {
     throw new Error(
       `[princes_court_trait_placeholders] Unexpanded trait tokens remain: ${[...new Set(remaining)].join(", ")}`
+    );
+  }
+  if (templateXml.includes(COURT_PROJECT_BLOCKS_TOKEN)) {
+    throw new Error(
+      `[princes_court_trait_placeholders] Unexpanded token remains: ${COURT_PROJECT_BLOCKS_TOKEN}`
     );
   }
 
@@ -98,4 +130,9 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { main, replacePlaceholders, BUILD_TEMPLATE_REL };
+module.exports = {
+  main,
+  replacePlaceholders,
+  buildCourtProjectBlocks,
+  BUILD_TEMPLATE_REL,
+};

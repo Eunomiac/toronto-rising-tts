@@ -1305,15 +1305,7 @@ end
 --- Fixed XmlUI pool size for Prince's Court page 3 (TOR-371).
 M.COURT_PROJECT_POOL = 8
 
-local COURT_PHASE_SHORT = {
-  [M.PHASE.SETUP] = "Setup",
-  [M.PHASE.PRE_LAUNCH] = "Pre-launch",
-  [M.PHASE.POST_LAUNCH] = "Post-launch",
-  [M.PHASE.IN_PROGRESS] = "In progress",
-  [M.PHASE.COMPLETE] = "Complete",
-}
-
---- Fill Court page 3 project cards for one HUD seat from listForDisplaySource("coterie").
+--- Fill Court page 3 sheet-style project blocks for one HUD seat.
 --- Uses U.setAttribute only (no Global UI.setXml). Empty slots are hidden.
 --- @param hudSeatColor string
 function M.reconcileCourtProjectsForHudSeat(hudSeatColor)
@@ -1330,25 +1322,26 @@ function M.reconcileCourtProjectsForHudSeat(hudSeatColor)
     if type(project) ~= "table" then
       U.setAttribute(rootId, "active", "false")
     else
-      local die, endDate = M.deriveDieAndEnd(project)
-      local phaseLabel = COURT_PHASE_SHORT[project.phase] or tostring(project.phase or "")
-      local startStr = M.formatStartDate(project.startDate) or ""
-      local endStr = endDate and (M.formatStartDate(endDate) or "") or ""
-      local metaParts = {}
-      if phaseLabel ~= "" then
-        metaParts[#metaParts + 1] = phaseLabel
+      local function courtId(suffix)
+        return "court_project_" .. slot .. "_" .. suffix .. "_" .. color
       end
-      if startStr ~= "" then
-        if endStr ~= "" then
-          metaParts[#metaParts + 1] = startStr .. " → " .. endStr
-        else
-          metaParts[#metaParts + 1] = startStr
+      local stakeEntries = {}
+      local rows = project.stakeRows
+      if type(rows) == "table" then
+        for ri = 1, #rows do
+          local row = rows[ri]
+          if type(row) == "table" and type(row.source) == "string" and type(row.name) == "string"
+            and row.name ~= "" and math.floor(tonumber(row.qty) or 0) >= 1
+          then
+            stakeEntries[#stakeEntries + 1] = row
+          end
         end
       end
+
+      local die, endDate = M.deriveDieAndEnd(project)
+      local startStr = M.formatStartDate(project.startDate) or ""
+      local endStr = endDate and (M.formatStartDate(endDate) or "") or ""
       local incLabel = (type(project.increment) == "string" and M.INCREMENT_LABELS[project.increment]) or ""
-      if incLabel ~= "" then
-        metaParts[#metaParts + 1] = incLabel
-      end
 
       local dieImg = ""
       if die ~= nil then
@@ -1359,18 +1352,65 @@ function M.reconcileCourtProjectsForHudSeat(hudSeatColor)
       end
 
       local resultImg = ""
+      local marginText = ""
+      local marginActive = "false"
+      local stakesActive = "true"
       if project.launchRollResult == C.ResultClass.CRITICAL_WIN then
         resultImg = "project_crit"
+        stakesActive = "false"
       elseif project.launchRollResult == C.ResultClass.WIN then
         resultImg = "project_win"
+        marginText = "+" .. tostring(math.floor(tonumber(project.launchRollMargin) or 0))
+        marginActive = "true"
       end
 
       U.setAttribute(rootId, "active", "true")
-      U.setAttribute("court_project_" .. slot .. "_goal_" .. color, "text", tostring(project.goal or ""))
-      U.setAttribute("court_project_" .. slot .. "_meta_" .. color, "text", table.concat(metaParts, " · "))
-      U.setAttribute("court_project_" .. slot .. "_die_" .. color, "image", dieImg)
-      U.setAttribute("court_project_" .. slot .. "_result_" .. color, "image", resultImg)
-      U.setAttribute("court_project_" .. slot .. "_result_" .. color, "active", resultImg ~= "" and "true" or "false")
+      U.setAttribute(courtId("goal"), "text", tostring(project.goal or ""))
+      U.setAttribute(courtId("project_die"), "image", dieImg)
+      U.setAttribute(courtId("result_image"), "image", resultImg)
+      U.setAttribute(courtId("result_margin"), "text", marginText)
+      U.setAttribute(courtId("result_margin"), "active", marginActive)
+      U.setAttribute(courtId("stakes"), "active", stakesActive)
+      U.setAttribute(courtId("date_start"), "text", startStr)
+      U.setAttribute(courtId("date_end"), "text", endStr)
+      U.setAttribute(
+        courtId("date_increment"),
+        "text",
+        incLabel ~= "" and ("(Increments " .. incLabel .. ")") or ""
+      )
+
+      local scope = math.floor(tonumber(project.scope) or 0)
+      for d = 1, 15 do
+        U.setAttribute(
+          "court_project_" .. slot .. "_scope_dot_" .. tostring(d) .. "_" .. color,
+          "active",
+          d <= scope and "true" or "false"
+        )
+      end
+
+      for s = 1, 6 do
+        local stake = stakeEntries[s]
+        local stakeId = "court_project_" .. slot .. "_stake_" .. tostring(s)
+        local rowId = stakeId .. "_" .. color
+        if stake == nil then
+          U.setAttribute(rowId, "active", "false")
+        else
+          U.setAttribute(rowId, "active", "true")
+          local focus = type(stake.focus) == "string" and stake.focus or ""
+          local label = focus ~= "" and (stake.name .. " (" .. focus .. ")") or stake.name
+          local labelId = stakeId .. "_label_" .. color
+          local isCoterieStake = stake.source == "coterie"
+          U.setAttribute(labelId, "text", label)
+          U.setAttribute(labelId, "color", isCoterieStake and "#FFFFFF" or "#AAAAAA")
+          U.setAttribute(labelId, "fontStyle", isCoterieStake and "Bold" or "Italic")
+          local qty = math.min(5, math.floor(tonumber(stake.qty) or 0))
+          for d = 1, 5 do
+            local dotId = stakeId .. "_dot_" .. tostring(d) .. "_" .. color
+            U.setAttribute(dotId, "image", isCoterieStake and "dot_white" or "dot_grey")
+            U.setAttribute(dotId, "active", d <= qty and "true" or "false")
+          end
+        end
+      end
     end
   end
 end
