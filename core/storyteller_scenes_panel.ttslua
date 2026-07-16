@@ -1438,6 +1438,7 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
         end
 
         S.setStateVal(bundle, "sessionScene")
+        SceneLibrary.syncOccupiedNpcSlotsFromSeatSlots(bundle)
         SceneLibrary.setExclusiveLiveMirror(K)
         S.setStateVal(K, "sceneLibrary", "activeKey")
         S.validateState()

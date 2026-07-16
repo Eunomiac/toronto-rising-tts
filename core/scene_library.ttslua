@@ -2,6 +2,7 @@
     Scene library: validate Storyteller-pasted Scene Constructor JSON and normalize
     for `gameState.sceneLibrary` (see `.dev/Scene Constructor/Scene Constructor Overview.md`).
     Rebuilds `sessionScene.npcRoleOverride` from PC `seatSlots` via `syncNpcRoleOverrideFromSeatSlots`.
+    `syncOccupiedNpcSlotsFromSeatSlots` derives `seatLayout.occupiedNPCSlots` from NPC seat rows (scene Apply, TOR-389).
     Derives `chronicleWeatherFollowSchedule` / `chronicleWeatherManualHold` from `soundscapeNarrative`
     wind + rain + thunderstorm (all three non-nil, or none).
 
@@ -158,6 +159,36 @@ function SceneLibrary.syncNpcRoleOverrideFromSeatSlots(sessionScene)
         end
     end
     sessionScene.npcRoleOverride = o
+end
+
+--- Derive `seatLayout.occupiedNPCSlots` from a `sessionScene` bundle's NPC `seatSlots` rows.
+--- Incoming scene Apply must run this before `S.validateState` so stale live assignments are not
+--- re-hydrated into `sessionScene` by `normalizeLiveSessionSceneSeatSlots` (TOR-389).
+--- @param sessionScene table|nil when nil, reads live `gameState.sessionScene`
+function SceneLibrary.syncOccupiedNpcSlotsFromSeatSlots(sessionScene)
+    local S = require("core.state")
+    if sessionScene == nil then
+        sessionScene = S.getStateVal("sessionScene")
+    end
+    local ss = type(sessionScene) == "table" and sessionScene.seatSlots or nil
+    local occupied = {}
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local assigned = false
+        if type(ss) == "table" then
+            local row = ss[seatKey]
+            if type(row) == "table"
+                and row.slotEmpty ~= true
+                and type(row.characterKey) == "string"
+                and row.characterKey ~= "" then
+                occupied[seatKey] = row.characterKey
+                assigned = true
+            end
+        end
+        if not assigned then
+            occupied[seatKey] = false
+        end
+    end
+    S.setStateVal(occupied, "seatLayout", "occupiedNPCSlots")
 end
 
 --- Optional `sessionScene.skyboxOverride`: omit / null / blank → nil; otherwise non-empty URL string.

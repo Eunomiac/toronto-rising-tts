@@ -743,17 +743,9 @@ local function applyDefaultPcSeatPresence()
     S.setStateVal(bundle, "sessionScene")
 end
 
-local function clearOccupiedNpcSlots()
-    local occupied = {}
-    for _, seatKey in ipairs(C.NPCSeats or {}) do
-        occupied[seatKey] = false
-    end
-    S.setStateVal(occupied, "seatLayout", "occupiedNPCSlots")
-end
-
 --- No-scene baseline: empty every NPC `seatSlots` row so `S.validateState` → `normalizeLiveSessionSceneSeatSlots`
---- does not re-hydrate `occupiedNPCSlots` from a prior scene's `characterKey` (that undid `clearOccupiedNpcSlots`
---- and kept Table B resolving to B1+ with seated figurines).
+--- does not re-hydrate `occupiedNPCSlots` from a prior scene's `characterKey` (that undid occupied-slot clear
+--- and kept Table B resolving to B1+ with seated figurines). TOR-278 / TOR-389.
 local function clearNpcSeatSlotsForNoScene()
     local seatSlots = S.getStateVal("sessionScene", "seatSlots")
     if type(seatSlots) ~= "table" then
@@ -861,7 +853,7 @@ local function mutateDefaultNoSceneSessionState()
     clearLiveNpcWorldPlacements()
     clearNpcSeatSlotsForNoScene()
     applyDefaultPcSeatPresence()
-    clearOccupiedNpcSlots()
+    SceneLibrary.syncOccupiedNpcSlotsFromSeatSlots(S.getStateVal("sessionScene"))
     clearLiveClockDatetimeForOverlay()
     Scenes.syncSessionLightingPresetForLocation()
     S.validateState()
