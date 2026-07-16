@@ -20,20 +20,23 @@ Verification:
 
 Status: current performance audit; entries may be done, partial, or deferred as marked.
 
-## Implementation status (2026-06-12)
+## Implementation status (updated 2026-07-16)
 
 | Rank | Topic | Status |
 | --- | --- | --- |
-| 0 | **Interaction points (gameboard Apply/Clear/drop)** | **In progress (TOR-201)** — snap catalog cache keyed by `controlBoardSnapFingerprintFor`; orchestrator `force=false` on control-board path; `DEBUG.profileGameboardApply/Clear/TokenDrop` |
+| 0 | **Interaction points (gameboard Apply/Clear/drop)** | **Partial** — snap catalog cache keyed by `controlBoardSnapFingerprintFor`; orchestrator `force=false` on control-board path; unchanged mirror now checks `lastControlBoardMirrorFingerprint` before normal snap/UI/palette setup; control-board toolbar labels are cached; `DEBUG.profileGameboardApply/Clear/TokenDrop` |
 | 1 | `Sync.player` duplicate overlay/HUD | **Done** — `HO.reconcileForSeat`; scoped `UpdateUIDisplays`; no duplicate `overlays` / all-player `playerHud` (hunger pulse removed TOR-373) |
 | 2 | Startup bootstrap stacks | **Done** — readiness-gated `scheduleBootstrapCoordinator()` (poll `0.35s`, max `10s`) replaces blind `BOOTSTRAP_RETRY_OFFSETS_SEC`; `L.seatSpotlightsResolvable()` + pending init-light probe; bootstrap metrics (`earlyExit`, `ticksRun`, `lightsDeferredRemaining`) |
 | 3 | Seat lighting redundant lerps | **Partial** — `lastReconciledModeByRef` + `L.invalidateReconcileCache()`; bootstrap ticks use `opts.bootstrap` → `transitionTime = 0`; seat-presentation orchestrator fingerprint skips full `reconcileAllPlayers` when PC light + overlay inputs unchanged |
 | 4 | Soundscape deferred duplicates | **Done** — `pendingSoundscapeReconcileFingerprint` + `soundscapeReconcileGeneration`; fade-step metrics |
 | 5 | NPC preload / scene world | **Done** — no runtime figurine spawn or `setCustomObject`/`reload()` on placement; `NPCS.auditPreloadPoolFigurines`; workshop-baked figurine images via inject script; `npc_preload` audit metrics |
-| 6 | `UpdateUIDisplays` broad deltas | **Done** — `delta.colors` seat filter |
+| 6 | `UpdateUIDisplays` broad deltas | **Done** — `delta.colors` seat filter; admin-light scene buttons coalesced when `adminLighting` and `scenesPanel` refresh together |
 | 7 | Map/HUD scoped refresh | **Deferred** — cross-seat HUD split (`reconcileSeatHud` / `reconcileCrossSeatRows`) not started |
 | — | Overlay desired-input fingerprint | **Done** — `HO.reconcileForSeat` per-seat `lastDesiredVisibilityFpBySeat`; `HO.invalidateOverlayInputCache()` on force |
 | — | Reconciler invalidation hub | **Done** — `Sync.invalidateAllReconcileCaches()`; `DEBUG.dumpSyncCacheState()` |
+| — | Scene-panel duplicate refreshes | **Done (TOR-391)** — scene apply/table/seat/location/clock live paths rely on `Sync.full` incremental `scenesPanel`/`playerHud` deltas instead of immediate duplicate `StorytellerScenesPanel.refresh()` / all-HUD calls |
+| — | Top-fog duplicate force reconcile | **Done (TOR-391)** — `Sync.full` reconciles top fog once in the scene phase and passes `skipTopFog` to seat presentation |
+| — | Hosted-condition CSHEET refresh scope | **Done (TOR-391)** — hosted-condition reconcile returns changed seat colors; scene/table/location/seat paths refresh only changed CSHEET seats after `skipPresentation` |
 
 Opt-in metrics: `Sync.setMetricsEnabled(true)` or `gameState.debug.syncMetricsEnabled` → `U.emitForAgent("sync_metrics", …)`. See [`.dev/TTS_MCP.md`](../TTS_MCP.md).
 
@@ -42,6 +45,28 @@ Opt-in metrics: `Sync.setMetricsEnabled(true)` or `gameState.debug.syncMetricsEn
 **TTS API heavy-workload catalog (TOR-329):** For grep-friendly API names, doc evidence, tiers, guard patterns, and TOR-390 handoff rules, see [TTS API Heavy-Workload Catalog](TTS-API-Heavy-Workload-Catalog.md). Keep this page focused on Toronto Rising hotspots; do not duplicate the full API catalog here.
 
 **TTS API usage inventory (TOR-390):** For current codebase call sites keyed by cataloged API function, frequency classification, guard/cache notes, and phase-3 dispositions, see [TTS API Heavy-Workload Usage Inventory](TTS-API-Heavy-Workload-Usage-Inventory.md). Use that report as the source map for TOR-391 remediation planning.
+
+## TOR-391 Remediation Notes (2026-07-16)
+
+Resolved:
+
+- `core/global_script.ttslua`: `UpdateUIDisplays` now calls `syncAdminLightSceneButtons()` at most once per invocation when `adminLighting` and `scenesPanel` are both requested.
+- `core/storyteller_scenes_panel.ttslua`: live scene apply, table switch, seat-presence, location apply, and clock apply no longer repeat `StorytellerScenesPanel.refresh()` immediately after `Sync.full`; seat-presence no longer follows `Sync.full` with a second broad `UpdateUIDisplays({ playerHud = true })`.
+- `core/npc_gameboard.ttslua` and `objects/npc_control_board_ui.ttslua`: unchanged control-board mirror paths skip normal snap install, object-callback/UI ensure, palette-snap install, and uncached toolbar label writes before returning.
+- `core/sync.ttslua`: top fog is owned by the explicit scene phase during `Sync.full`; seat presentation still reconciles top fog when called outside that full pass.
+- `core/conditions.ttslua` and `core/storyteller_scenes_panel.ttslua`: hosted-condition reconciliation reports changed seat colors so post-sync CSHEET refreshes use `PCST.refreshCharacterSheetsForColor` instead of scanning every player color.
+
+Deferred:
+
+- `HUD_selectStorytellerPanel` one-frame delayed refreshes remain unchanged. They are visibility/layout refreshes after panel selection, and this pass did not find a concrete mutation path that double-refreshes the same panel in one user action.
+- Broader HUD decomposition (`reconcileSeatHud`, `reconcileCrossSeatRows`, location dock split) remains deferred. TOR-391 removed duplicate broad calls without changing cross-seat HUD ownership.
+- Temporary sequence instrumentation was not added because the duplicate call chains were clear from the current call graph and the fixes were local.
+
+Verification:
+
+- `npm run build` passed on 2026-07-16 after TOR-391 code changes.
+- `npm run tts:smoke` was attempted on 2026-07-16 but could not connect to the local TTS bridge (`ECONNREFUSED 127.0.0.1:39999`).
+- Manual TTS smoke still needs a live table check before treating UX behavior as fully verified: scene apply, table switch, location apply, clock apply, seat-presence toggle, gameboard Apply/Clear/Load/token drop, and storyteller panel switching.
 
 ## Scope and guardrails
 
