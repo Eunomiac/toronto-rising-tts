@@ -1130,8 +1130,8 @@ function StorytellerScenesPanel.refreshSceneLibraryRows()
             local ent = scenes[key]
             local title = type(ent.title) == "string" and ent.title ~= "" and ent.title or key
             local line = title
-            if string.len(line) > 58 then
-                line = string.sub(line, 1, 55) .. "..."
+            if string.len(line) > 36 then
+                line = string.sub(line, 1, 33) .. "..."
             end
             local isSelected = activeKey == key
             local isLinked = ent.receivesLiveWrites == true
@@ -1143,18 +1143,14 @@ function StorytellerScenesPanel.refreshSceneLibraryRows()
             elseif not isLinked then
                 colors = "#333333|#444444|#555555|rgba(0.25,0.25,0.25,0.5)"
             end
-            local suffixParts = {}
-            if isLiveOnTable and not isSelected then
-                suffixParts[#suffixParts + 1] = "live"
-            end
-            if isMirroring then
-                suffixParts[#suffixParts + 1] = "mirroring"
-            elseif not isLinked then
-                suffixParts[#suffixParts + 1] = "unlinked"
-            end
+            -- TOR-139: one short status token for narrow 3-column cells (prefer live > mirroring > unlinked).
             local suffix = ""
-            if #suffixParts > 0 then
-                suffix = " · " .. table.concat(suffixParts, ", ")
+            if isLiveOnTable and not isSelected then
+                suffix = " · live"
+            elseif isMirroring then
+                suffix = " · mirror"
+            elseif not isLinked then
+                suffix = " · unlink"
             end
             U.setAttributes(bid, {
                 text = line .. suffix,
