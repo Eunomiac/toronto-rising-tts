@@ -1496,7 +1496,6 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
         -- full volume via the immediate held-volume path (TOR-147 weather fade-in regression).
         syncAfterHostedReconcileAndRefreshSheets("StorytellerScenesPanel.sceneLibraryApply", { skipSoundscape = true })
 
-        StorytellerScenesPanel.refresh()
         if GameStateOverlay and type(GameStateOverlay.stopTicker) == "function" then
             GameStateOverlay.stopTicker()
         end
@@ -1602,7 +1601,6 @@ function StorytellerScenesPanel.onHudClick(player, button, id)
             S.setStateVal(tableKey, "sessionScene", "tableKey")
             RSL.SetTableTo(tableKey, { skipTransitionBlindfold = true })
             reconcileHostedSyncAndPresentSheets("StorytellerScenesPanel.table")
-            StorytellerScenesPanel.refresh()
             return true
         end)
         return
@@ -1631,10 +1629,6 @@ function StorytellerScenesPanel.onHudClick(player, button, id)
             O.applyPcSeatHiddenObjectPresence(seatKey, nextPresent)
         end
         reconcileHostedSyncAndPresentSheets("StorytellerScenesPanel.seatPresence")
-        StorytellerScenesPanel.refresh()
-        if type(UpdateUIDisplays) == "function" then
-            UpdateUIDisplays({ playerHud = true })
-        end
         return
     end
 end
@@ -1785,7 +1779,6 @@ function StorytellerScenesPanel.applyLocationFromInputs(player)
     end
     MapPins.onLocationChanged()
     reconcileHostedSyncAndPresentSheets("StorytellerScenesPanel.location")
-    StorytellerScenesPanel.refresh()
     U.AlertGM(result and result.message or "Location applied.")
 end
 
@@ -1855,7 +1848,6 @@ function StorytellerScenesPanel.applyClockFromInputs(player)
     clockDraft.sceneKey = activeKey
     clockDraft.dirty = false
     StorytellerScenesPanel.syncClockDraftFromClock(clock)
-    StorytellerScenesPanel.refresh()
 
     local _, weatherMsg = ChronicleWeather.applyScheduledWeather({ force = false })
     if Sync and type(Sync.full) == "function" then
