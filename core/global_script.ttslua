@@ -4359,7 +4359,8 @@ function UpdateUIDisplays(delta)
         end
     end
 
-    if wants("adminLighting") then
+    local shouldSyncAdminLightSceneButtons = wants("adminLighting") or wants("scenesPanel")
+    if shouldSyncAdminLightSceneButtons then
         syncAdminLightSceneButtons()
     end
     if refreshAll or wants("debugSeatColors") then
@@ -4369,7 +4370,6 @@ function UpdateUIDisplays(delta)
         if StorytellerScenesPanel and StorytellerScenesPanel.refresh then
             StorytellerScenesPanel.refresh()
         end
-        syncAdminLightSceneButtons()
     end
     if wants("statsPanel") then
         if StorytellerStatsPanel and StorytellerStatsPanel.refresh then
