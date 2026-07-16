@@ -1658,9 +1658,12 @@ end
 --- @return string
 local function resolveCompulsionLightDesiredMode(lightRef, lData)
     local defaultMode = U.Type(lData.default) == "string" and lData.default or "OFF"
-    local desired = S.getStateVal("lights", lightRef)
+    local stateDesired = S.getStateVal("lights", lightRef)
+    local desired = stateDesired
+    local shouldPersist = false
     if U.Type(desired) ~= "string" or desired == "" or lData[desired] == nil then
         desired = defaultMode
+        shouldPersist = true
     end
     if desired == "STANDARD" then
         local seatColor = string.match(lightRef, "^compulsionLight(.+)$")
@@ -1668,12 +1671,16 @@ local function resolveCompulsionLightDesiredMode(lightRef, lData)
             local Compulsions = require("core.compulsions")
             if Compulsions.hasActiveSelectionForColor(seatColor) ~= true then
                 desired = "OFF"
-                S.setStateVal(desired, "lights", lightRef)
+                shouldPersist = true
             end
         end
     end
     if lData[desired] == nil and lData.OFF ~= nil then
         desired = "OFF"
+        shouldPersist = true
+    end
+    if shouldPersist and stateDesired ~= desired then
+        S.setStateVal(desired, "lights", lightRef)
     end
     return desired
 end

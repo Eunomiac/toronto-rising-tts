@@ -580,6 +580,7 @@ local function finishRemoval(color, card)
             if not isTokenCurrent(color, token) then
                 return
             end
+            restoreCsheetControlsForColor(color)
             rescaleUnit(card)
             untagSeatObject(card, color)
             returnCardToMaster(card)
