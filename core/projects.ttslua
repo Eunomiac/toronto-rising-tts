@@ -1302,4 +1302,84 @@ function M.fingerprintPage5(seatColorRaw)
   return table.concat(parts, "\1")
 end
 
+--- Fixed XmlUI pool size for Prince's Court page 3 (TOR-371).
+M.COURT_PROJECT_POOL = 8
+
+local COURT_PHASE_SHORT = {
+  [M.PHASE.SETUP] = "Setup",
+  [M.PHASE.PRE_LAUNCH] = "Pre-launch",
+  [M.PHASE.POST_LAUNCH] = "Post-launch",
+  [M.PHASE.IN_PROGRESS] = "In progress",
+  [M.PHASE.COMPLETE] = "Complete",
+}
+
+--- Fill Court page 3 project cards for one HUD seat from listForDisplaySource("coterie").
+--- Uses U.setAttribute only (no Global UI.setXml). Empty slots are hidden.
+--- @param hudSeatColor string
+function M.reconcileCourtProjectsForHudSeat(hudSeatColor)
+  if type(hudSeatColor) ~= "string" or hudSeatColor == "" then
+    return
+  end
+  local color = hudSeatColor
+  local list = M.listForDisplaySource("coterie")
+  local pool = M.COURT_PROJECT_POOL
+  for i = 1, pool do
+    local slot = string.format("%02d", i)
+    local rootId = "court_project_" .. slot .. "_" .. color
+    local project = list[i]
+    if type(project) ~= "table" then
+      U.setAttribute(rootId, "active", "false")
+    else
+      local die, endDate = M.deriveDieAndEnd(project)
+      local phaseLabel = COURT_PHASE_SHORT[project.phase] or tostring(project.phase or "")
+      local startStr = M.formatStartDate(project.startDate) or ""
+      local endStr = endDate and (M.formatStartDate(endDate) or "") or ""
+      local metaParts = {}
+      if phaseLabel ~= "" then
+        metaParts[#metaParts + 1] = phaseLabel
+      end
+      if startStr ~= "" then
+        if endStr ~= "" then
+          metaParts[#metaParts + 1] = startStr .. " → " .. endStr
+        else
+          metaParts[#metaParts + 1] = startStr
+        end
+      end
+      local incLabel = (type(project.increment) == "string" and M.INCREMENT_LABELS[project.increment]) or ""
+      if incLabel ~= "" then
+        metaParts[#metaParts + 1] = incLabel
+      end
+
+      local dieImg = ""
+      if die ~= nil then
+        local d = math.max(0, math.min(10, die))
+        if d >= 1 then
+          dieImg = "project_die_" .. tostring(d)
+        end
+      end
+
+      local resultImg = ""
+      if project.launchRollResult == C.ResultClass.CRITICAL_WIN then
+        resultImg = "project_crit"
+      elseif project.launchRollResult == C.ResultClass.WIN then
+        resultImg = "project_win"
+      end
+
+      U.setAttribute(rootId, "active", "true")
+      U.setAttribute("court_project_" .. slot .. "_goal_" .. color, "text", tostring(project.goal or ""))
+      U.setAttribute("court_project_" .. slot .. "_meta_" .. color, "text", table.concat(metaParts, " · "))
+      U.setAttribute("court_project_" .. slot .. "_die_" .. color, "image", dieImg)
+      U.setAttribute("court_project_" .. slot .. "_result_" .. color, "image", resultImg)
+      U.setAttribute("court_project_" .. slot .. "_result_" .. color, "active", resultImg ~= "" and "true" or "false")
+    end
+  end
+end
+
+--- Refresh Court page 3 coterie project cards on every player HUD seat.
+function M.reconcileCourtProjectsAll()
+  for _, color in ipairs(C.PlayerColors) do
+    M.reconcileCourtProjectsForHudSeat(color)
+  end
+end
+
 return M

@@ -343,7 +343,7 @@ Messages should name the **JSON path** and the **fix** (e.g. `sessionScene.seatS
 
 Storyteller **Scenes** tab shows two columns (`ui/storyteller/panel_scenes_host.xml`): narrative controls + import/fork modals on the left; **Scene library** (`panel_scenes_library.xml`) on the right with fixed slot buttons and constructor actions.
 
-For each key in `sceneLibrary.order`, activate a pre-declared dummy button (`scenes_lib_slot_01`…`40`, two columns) and set label from `scenes[k].title` **plus status suffix** (e.g. `Grand Audience · unlinked`) — do **not** prefix `[sceneKey]`, and do **not** use `setXML` / `setXMLTable` for dynamic lists. Selected row: **green** when it is the live on-table scene, **blue** when pending (preview/edit library only); inactive: default; unlink grey (see below).
+For each key in `sceneLibrary.order`, activate a pre-declared dummy button (`scenes_lib_slot_01`…`40`, **three** library columns — 14/13/13) and set label from `scenes[k].title` **plus one short status suffix** (e.g. `Grand Audience · unlink`) — do **not** prefix `[sceneKey]`, and do **not** use `setXML` / `setXMLTable` for dynamic lists. Selected row: **green** when it is the live on-table scene, **blue** when pending (preview/edit library only); inactive: default; unlink grey (see below).
 
 - **Import Scene** — opens modal with large text field + confirm; validation as above.
 - **New Scene** — **fork** the live table into a new library row (see **Forking a scene** below). Does **not** blindfold or apply state: the physical table and `gameState.sessionScene` stay as they are; only `sceneLibrary` changes so future mirrors target the new row while the previous row stays pinned to the fork-time snapshot.

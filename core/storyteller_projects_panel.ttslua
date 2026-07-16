@@ -398,6 +398,11 @@ refreshAfterMutation = function()
   if Coterie.reconcileAll then
     Coterie.reconcileAll()
   end
+  -- TOR-371: keep Court page 3 in sync with ST project mutations.
+  local Projects = require("core.projects")
+  if Projects.reconcileCourtProjectsAll then
+    Projects.reconcileCourtProjectsAll()
+  end
 end
 
 function PJP.refresh()

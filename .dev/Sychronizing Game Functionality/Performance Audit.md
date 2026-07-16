@@ -39,6 +39,10 @@ Opt-in metrics: `Sync.setMetricsEnabled(true)` or `gameState.debug.syncMetricsEn
 
 **Event listeners (TOR-197):** High-frequency TTS handlers (`onObjectDrop`, zones, etc.) must use O(1) guards before heavy work. See [Event Listener Policy](Event%20Listener%20Policy.md).
 
+**TTS API heavy-workload catalog (TOR-329):** For grep-friendly API names, doc evidence, tiers, guard patterns, and TOR-390 handoff rules, see [TTS API Heavy-Workload Catalog](TTS-API-Heavy-Workload-Catalog.md). Keep this page focused on Toronto Rising hotspots; do not duplicate the full API catalog here.
+
+**TTS API usage inventory (TOR-390):** For current codebase call sites keyed by cataloged API function, frequency classification, guard/cache notes, and phase-3 dispositions, see [TTS API Heavy-Workload Usage Inventory](TTS-API-Heavy-Workload-Usage-Inventory.md). Use that report as the source map for TOR-391 remediation planning.
+
 ## Scope and guardrails
 
 This audit ranks expensive or repeatedly-triggered paths by static **impact x frequency hypotheses**. It is based on source reading and bounded ripgrep of `Sync.full(`, `Sync.player(`, `UpdateUIDisplays(`, `HO.syncAll(`, `L.reconcileAllPlayers(`, `U.scheduleAtOffsets`, `U.delay`, and NPC preload/spawn paths. Runtime counters should validate these rankings before behavior-tuning work lands.

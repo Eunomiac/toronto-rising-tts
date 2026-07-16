@@ -399,6 +399,10 @@ function Sync.full(opts)
 
     callIfFunction(Coterie.reconcileAll)
 
+    -- TOR-371: Court page 3 coterie project cards (fixed XmlUI pool).
+    local Projects = require("core.projects")
+    callIfFunction(Projects.reconcileCourtProjectsAll)
+
     if force then
         Sync.ui()
     else

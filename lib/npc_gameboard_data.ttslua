@@ -38,7 +38,9 @@ D.STAGE_FIGURINE_YAW_OFFSET_DEG = 180
 D.MINIMAP_SCALE_DIVISOR = 40
 
 --- Local Y above CONTROL_BOARD tile surface for minimap marker placement (object-local units).
-D.MINIMAP_SURFACE_LOCAL_Y = 0.18
+-- TOR-393: 0.18 sat tokens slightly inside CONTROL_BOARD mesh on scene mirror;
+-- +0.06 matches MINIMAP_TABLE_EXTRA_LOCAL_Y precedent so snaps + mirrors lift together.
+D.MINIMAP_SURFACE_LOCAL_Y = 0.24
 
 --- Extra local Y for table markers (thick mesh pivot sits below center).
 D.MINIMAP_TABLE_EXTRA_LOCAL_Y = 0.06
