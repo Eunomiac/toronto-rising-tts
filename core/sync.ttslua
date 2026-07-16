@@ -123,20 +123,28 @@ local function invalidateSeatPresentationFingerprint()
 end
 
 --- Reconcile seat-light and hunger-overlay state from persisted game state.
---- @param opts table|nil `{ force = boolean?, bootstrap = boolean? }` forwarded to `L.reconcileAllPlayers` / `HO.syncAll`
+--- @param opts table|nil `{ force = boolean?, bootstrap = boolean?, skipTopFog = boolean? }`
+---   forwarded to `L.reconcileAllPlayers` / `HO.syncAll`; `skipTopFog` is used when the caller already
+---   reconciled top fog in the same orchestration pass.
 local function reconcileSeatPresentationFromState(opts)
     opts = type(opts) == "table" and opts or {}
     local force = opts.force == true
+    local skipTopFog = opts.skipTopFog == true
     local fp = computeSeatPresentationFingerprint()
     if not force and fp ~= "" and fp == lastSeatPresentationFingerprint then
-        callIfFunction(Scenes.reconcileTopFogFromState, opts)
+        if not skipTopFog then
+            callIfFunction(Scenes.reconcileTopFogFromState, opts)
+        end
         return false
     end
     local pcOpts = U.clone(opts, true)
     pcOpts.skipNpcSeats = true
+    pcOpts.skipTopFog = nil
     callIfFunction(L.reconcileAllPlayers, pcOpts)
     callIfFunction(HO.syncAll, pcOpts)
-    callIfFunction(Scenes.reconcileTopFogFromState, opts)
+    if not skipTopFog then
+        callIfFunction(Scenes.reconcileTopFogFromState, opts)
+    end
     lastSeatPresentationFingerprint = fp
     return true
 end
@@ -377,13 +385,15 @@ function Sync.full(opts)
     end
 
     local presentationSkippedThisPass = false
+    local presentationOpts = U.clone(reconcileOpts, true)
+    presentationOpts.skipTopFog = true
     if not didBootstrapFullSync then
         callIfFunction(NPCS.registerRestoredInstancesFromState)
         callIfFunction(L.InitLights)
-        presentationSkippedThisPass = reconcileSeatPresentationFromState(reconcileOpts) == false
+        presentationSkippedThisPass = reconcileSeatPresentationFromState(presentationOpts) == false
         scheduleBootstrapCoordinator()
     else
-        presentationSkippedThisPass = reconcileSeatPresentationFromState(reconcileOpts) == false
+        presentationSkippedThisPass = reconcileSeatPresentationFromState(presentationOpts) == false
     end
 
     callIfFunction(NPCS.reconcileAllFromState, {

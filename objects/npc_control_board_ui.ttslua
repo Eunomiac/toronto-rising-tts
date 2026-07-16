@@ -23,6 +23,16 @@ end
 
 --- @param obj Object
 --- @return boolean
+local function hasLegacy3dButtons(obj)
+    if type(obj.getButtons) ~= "function" then
+        return false
+    end
+    local buttons = obj.getButtons()
+    return type(buttons) == "table" and #buttons > 0
+end
+
+--- @param obj Object
+--- @return boolean
 local function hasBakedToolbarUi(obj)
     if obj.UI == nil then
         return false
@@ -44,12 +54,16 @@ end
 
 --- Ensure toolbar XmlUI is baked on the object; remove legacy 3D createButton labels if present.
 --- @param obj Object
-function NPC_CONTROL_BOARD_UI.ensureBakedObjectUi(obj)
+--- @param opts table|nil `{ forceLegacyButtonClear?: boolean }`
+function NPC_CONTROL_BOARD_UI.ensureBakedObjectUi(obj, opts)
     if not isBoardObject(obj) then
         return
     end
+    opts = type(opts) == "table" and opts or {}
 
-    obj.clearButtons()
+    if opts.forceLegacyButtonClear == true or hasLegacy3dButtons(obj) then
+        obj.clearButtons()
+    end
 
     if not hasBakedToolbarUi(obj) then
         print(

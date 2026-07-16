@@ -579,26 +579,36 @@ end
 
 --- Apply or remove hosted conditions for all PCs at the current session.
 --- @param opts table|nil `{ skipPresentation = boolean? }` — when true, mutate only; caller must sync (e.g. `Sync.full`)
+--- @return string[] changedSeatColors
 function Conditions.reconcileHostedForSession(opts)
   local skipPresentation = type(opts) == "table" and opts.skipPresentation == true
   local desired = Conditions.collectHostedIdsForSession()
+  local changedSeatColors = {}
+  local changedSeatColorSet = {}
   local pd = S.getStateVal("playerData")
   if type(pd) ~= "table" then
-    return
+    return changedSeatColors
   end
 
   for playerID, row in pairs(pd) do
     if type(playerID) == "string" and playerID ~= C.StorytellerID and type(row) == "table" then
       local seatColor = seatColorForPlayer(playerID)
       local present = type(seatColor) == "string" and isSeatPresentInScene(seatColor) == true
-      reconcileHostedForPlayer(playerID, desired, present, skipPresentation)
+      if reconcileHostedForPlayer(playerID, desired, present, skipPresentation)
+        and type(seatColor) == "string"
+        and changedSeatColorSet[seatColor] ~= true
+      then
+        changedSeatColorSet[seatColor] = true
+        changedSeatColors[#changedSeatColors + 1] = seatColor
+      end
     end
   end
+  return changedSeatColors
 end
 
 --- @deprecated use `reconcileHostedForSession` — retained for call-site compatibility.
 function Conditions.reconcileLocationHostedForScene(opts)
-  Conditions.reconcileHostedForSession(opts)
+  return Conditions.reconcileHostedForSession(opts)
 end
 
 return Conditions
