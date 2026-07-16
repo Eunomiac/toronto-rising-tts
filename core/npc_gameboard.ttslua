@@ -45,6 +45,8 @@ local polarSnapInstallFingerprint = nil
 --- @type table|nil Last config installed by installPolarSnaps (for remap baselines).
 local installedPolarSnapConfig = nil
 local lastControlBoardMirrorFingerprint = nil
+--- @type table<string, string> board GUID + toolbar id -> last applied label/color fingerprint.
+local controlBoardToolbarLabelFingerprint = {}
 --- @type table<string, { halfX: number, halfZ: number }>
 local boardUvHalfExtentsCache = {}
 --- @type table<string, boolean> token guid -> true when drop may trigger anchor-family spread.
@@ -3693,39 +3695,66 @@ end
 
 --- Install Apply/Clear/Save/Lock/Load 3D buttons when the save has no object script on CONTROL_BOARD yet.
 --- @param board Object|nil
-function Gameboard.ensureControlBoardObjectUi(board)
+--- @param opts table|nil `{ force?: boolean }`
+function Gameboard.ensureControlBoardObjectUi(board, opts)
+    opts = type(opts) == "table" and opts or {}
     board = board or getControlBoard()
     if not isGameObject(board) then
         return
     end
     local BoardUi = require("objects.npc_control_board_ui")
-    BoardUi.installObjectButtons(board)
+    BoardUi.installObjectButtons(board, { forceLegacyButtonClear = opts.force == true })
+end
+
+--- @param board Object
+--- @param id string
+--- @param attrs table
+--- @param opts table|nil `{ force?: boolean }`
+local function setControlBoardToolbarLabelCached(board, id, attrs, opts)
+    opts = type(opts) == "table" and opts or {}
+    if not isGameObject(board) or board.UI == nil or type(board.UI.setAttributes) ~= "function" then
+        return
+    end
+    local guid = board.getGUID ~= nil and tostring(board.getGUID()) or "unknown"
+    local fp = table.concat({
+        tostring(attrs.text or ""),
+        tostring(attrs.colors or ""),
+        tostring(attrs.textColor or ""),
+    }, "|")
+    local key = guid .. ":" .. tostring(id)
+    if opts.force ~= true and controlBoardToolbarLabelFingerprint[key] == fp then
+        return
+    end
+    board.UI.setAttributes(id, attrs)
+    controlBoardToolbarLabelFingerprint[key] = fp
 end
 
 --- Refresh XmlUI `gb_snaps` toolbar label from `sessionScene.npcWorld.controlBoardSnapsEnabled`.
 --- @param board Object|nil
-function Gameboard.syncControlBoardSnapsToggleLabel(board)
+--- @param opts table|nil `{ force?: boolean }`
+function Gameboard.syncControlBoardSnapsToggleLabel(board, opts)
     board = board or getControlBoard()
-    if not isGameObject(board) or board.UI == nil or type(board.UI.setAttributes) ~= "function" then
+    if not isGameObject(board) then
         return
     end
     local enabled = Gameboard.areControlBoardSnapsEnabled()
     local label = enabled and "Snaps On" or "Snaps Off"
     local colors = enabled and "#336644|#448855|#55AA66|#333333" or "#555566|#666677|#777788|#333333"
-    board.UI.setAttributes("gb_snaps", { text = label, colors = colors, textColor = "#FFFFFF" })
+    setControlBoardToolbarLabelCached(board, "gb_snaps", { text = label, colors = colors, textColor = "#FFFFFF" }, opts)
 end
 
 --- Refresh XmlUI `gb_lock` toolbar label from `sessionScene.npcWorld.layoutLock`.
 --- @param board Object|nil
-function Gameboard.syncControlBoardLayoutLockLabel(board)
+--- @param opts table|nil `{ force?: boolean }`
+function Gameboard.syncControlBoardLayoutLockLabel(board, opts)
     board = board or getControlBoard()
-    if not isGameObject(board) or board.UI == nil or type(board.UI.setAttributes) ~= "function" then
+    if not isGameObject(board) then
         return
     end
     local locked = Gameboard.isLayoutLockEnabled()
     local label = locked and "Locked" or "Unlocked"
     local colors = locked and "#663344|#884455|#AA5566|#333333" or "#336644|#448855|#55AA66|#333333"
-    board.UI.setAttributes("gb_lock", { text = label, colors = colors, textColor = "#FFFFFF" })
+    setControlBoardToolbarLabelCached(board, "gb_lock", { text = label, colors = colors, textColor = "#FFFFFF" }, opts)
 end
 
 --- Static minimap markers (not npc_control_token): locked so physics does not shove them apart.
@@ -4381,13 +4410,6 @@ function Gameboard.reconcileControlBoardFromState(opts)
     if not isGameObject(board) then
         return
     end
-    Gameboard.installPolarSnaps(board)
-    Gameboard.ensureControlBoardObjectCallbacks(board)
-    Gameboard.ensureControlBoardObjectUi(board)
-    Gameboard.syncControlBoardSnapsToggleLabel(board)
-    Gameboard.syncControlBoardLayoutLockLabel(board)
-    Gameboard.installPaletteSnaps(nil, { force = opts.force == true })
-
     local npcWorld = S.getStateVal("sessionScene", "npcWorld")
     local activeTable = S.getStateVal("seatLayout", "currentTableKey")
     local layoutLocked = type(npcWorld) == "table" and npcWorld.layoutLock == true
@@ -4397,9 +4419,18 @@ function Gameboard.reconcileControlBoardFromState(opts)
     end
     local mirrorFp = controlBoardMirrorFingerprint(activeTable, layoutLocked, placements)
     if opts.force ~= true and mirrorFp == lastControlBoardMirrorFingerprint then
+        Gameboard.syncControlBoardSnapsToggleLabel(board)
+        Gameboard.syncControlBoardLayoutLockLabel(board)
         rebuildAnchorDropEligibilityCache(board)
         return
     end
+    Gameboard.installPolarSnaps(board, { force = opts.force == true })
+    Gameboard.ensureControlBoardObjectCallbacks(board)
+    Gameboard.ensureControlBoardObjectUi(board, { force = opts.force == true })
+    Gameboard.syncControlBoardSnapsToggleLabel(board, { force = opts.force == true })
+    Gameboard.syncControlBoardLayoutLockLabel(board, { force = opts.force == true })
+    Gameboard.installPaletteSnaps(nil, { force = opts.force == true })
+
     boardUvHalfExtentsCache = {}
     lastControlBoardMirrorFingerprint = mirrorFp
     local allMarkers = getObjectsWithTag(TAG_TABLE) or {}
