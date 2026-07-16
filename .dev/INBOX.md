@@ -20,6 +20,8 @@ Verification:
 ## For Immediate Implementation
 > _After registering each of these issues with Linear in the ordinary fashion, before updating the Focus Stack, briefly review the issue: If it is a quick or easy fix, implement it immediately without waiting for user confirmation. Otherwise, promote it to the top of the Focus Stack, and offer to begin work on it immediately when summarizing your work processing `INBOX.md` to the user. If multiple issues require promotion in this way, consider how best to resolve them as quickly as possible, and offer to draft an implementation plan in your response to the user._
 
+* [Bug] When an NPC token is moved to the Stage Control board during a scene transition, their y-coordinate needs to be increased slightly so they drop onto the board; currently, they're moved to slightly inside the board, making them invisible.
+
 ## Active
 
 ## External Work (Set STATUS to "External To Do")
@@ -42,6 +44,8 @@ Verification:
 
 
 ## Processed
+
+2026-07-16 INBOX Immediate — Seated NPCs retain seats when switching to scene without those slots → **TOR-389** (Scenes Bug, High; Focus #2; relatedTo **TOR-278**, **TOR-275**)
 
 2026-07-16 INBOX Immediate — Compulsions revised draw/select/remove + ColorObject + one-at-a-time deck lock → **TOR-204** (Table Objects Feature, High; Focus #1)
 

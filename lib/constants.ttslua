@@ -487,6 +487,46 @@ C.LockedObjects = {
   G.GUIDS.CSHEET_BASE_PINK,
   G.GUIDS.CSHEET_BASE_PURPLE,
   G.GUIDS.CSHEET_BASE_RED,
+  G.GUIDS.CSHEET_PAGE_1_BROWN,
+  G.GUIDS.CSHEET_PAGE_1_ORANGE,
+  G.GUIDS.CSHEET_PAGE_1_RED,
+  G.GUIDS.CSHEET_PAGE_1_PINK,
+  G.GUIDS.CSHEET_PAGE_1_PURPLE,
+  G.GUIDS.CSHEET_PAGE_2_BROWN,
+  G.GUIDS.CSHEET_PAGE_2_ORANGE,
+  G.GUIDS.CSHEET_PAGE_2_RED,
+  G.GUIDS.CSHEET_PAGE_2_PINK,
+  G.GUIDS.CSHEET_PAGE_2_PURPLE,
+  G.GUIDS.CSHEET_PAGE_3_BROWN,
+  G.GUIDS.CSHEET_PAGE_3_ORANGE,
+  G.GUIDS.CSHEET_PAGE_3_RED,
+  G.GUIDS.CSHEET_PAGE_3_PINK,
+  G.GUIDS.CSHEET_PAGE_3_PURPLE,
+  G.GUIDS.CSHEET_PAGE_4_BROWN,
+  G.GUIDS.CSHEET_PAGE_4_ORANGE,
+  G.GUIDS.CSHEET_PAGE_4_RED,
+  G.GUIDS.CSHEET_PAGE_4_PINK,
+  G.GUIDS.CSHEET_PAGE_4_PURPLE,
+  G.GUIDS.CSHEET_PAGE_5_BROWN,
+  G.GUIDS.CSHEET_PAGE_5_ORANGE,
+  G.GUIDS.CSHEET_PAGE_5_RED,
+  G.GUIDS.CSHEET_PAGE_5_PINK,
+  G.GUIDS.CSHEET_PAGE_5_PURPLE,
+  G.GUIDS.CSHEET_PAGE_6_BROWN,
+  G.GUIDS.CSHEET_PAGE_6_ORANGE,
+  G.GUIDS.CSHEET_PAGE_6_RED,
+  G.GUIDS.CSHEET_PAGE_6_PINK,
+  G.GUIDS.CSHEET_PAGE_6_PURPLE,
+  G.GUIDS.CSHEET_PAGE_7_BROWN,
+  G.GUIDS.CSHEET_PAGE_7_ORANGE,
+  G.GUIDS.CSHEET_PAGE_7_RED,
+  G.GUIDS.CSHEET_PAGE_7_PINK,
+  G.GUIDS.CSHEET_PAGE_7_PURPLE,
+  G.GUIDS.CSHEET_PAGE_8_BROWN,
+  G.GUIDS.CSHEET_PAGE_8_ORANGE,
+  G.GUIDS.CSHEET_PAGE_8_RED,
+  G.GUIDS.CSHEET_PAGE_8_PINK,
+  G.GUIDS.CSHEET_PAGE_8_PURPLE,
   G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_OFF_BROWN,
   G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_OFF_ORANGE,
   G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_OFF_PINK,
@@ -1037,7 +1077,7 @@ C.ObjectPositions = {
   COMPULSION_CARD_2_ORANGE = {
     on = {
       anchor = G.GUIDS.COMPULSION_CARD_2_ANCHOR_ORANGE,
-      height = 10,
+      height = 13.56,
       duration = 1
     },
   },
@@ -1051,7 +1091,7 @@ C.ObjectPositions = {
   COMPULSION_CARD_4_ORANGE = {
     on = {
       anchor = G.GUIDS.COMPULSION_CARD_4_ANCHOR_ORANGE,
-      height = 10,
+      height = 6.42,
       duration = 1
     },
   },
@@ -1081,7 +1121,7 @@ C.ObjectPositions = {
   COMPULSION_CARD_2_BROWN = {
     on = {
       anchor = G.GUIDS.COMPULSION_CARD_2_ANCHOR_BROWN,
-      height = 10,
+      height = 13.56,
       duration = 1
     },
   },
@@ -1095,7 +1135,7 @@ C.ObjectPositions = {
   COMPULSION_CARD_4_BROWN = {
     on = {
       anchor = G.GUIDS.COMPULSION_CARD_4_ANCHOR_BROWN,
-      height = 10,
+      height = 6.42,
       duration = 1
     },
   },
@@ -1125,7 +1165,7 @@ C.ObjectPositions = {
   COMPULSION_CARD_2_PINK = {
     on = {
       anchor = G.GUIDS.COMPULSION_CARD_2_ANCHOR_PINK,
-      height = 10,
+      height = 13.56,
       duration = 1
     },
   },
@@ -1139,7 +1179,7 @@ C.ObjectPositions = {
   COMPULSION_CARD_4_PINK = {
     on = {
       anchor = G.GUIDS.COMPULSION_CARD_4_ANCHOR_PINK,
-      height = 10,
+      height = 6.42,
       duration = 1
     },
   },
@@ -1169,7 +1209,7 @@ C.ObjectPositions = {
   COMPULSION_CARD_2_PURPLE = {
     on = {
       anchor = G.GUIDS.COMPULSION_CARD_2_ANCHOR_PURPLE,
-      height = 10,
+      height = 13.56,
       duration = 1
     },
   },
@@ -1183,7 +1223,7 @@ C.ObjectPositions = {
   COMPULSION_CARD_4_PURPLE = {
     on = {
       anchor = G.GUIDS.COMPULSION_CARD_4_ANCHOR_PURPLE,
-      height = 10,
+      height = 6.42,
       duration = 1
     },
   },
@@ -1318,10 +1358,10 @@ C.ReferenceCameraAngles = {
   },
   compulsions = {
     cameraMode = "FirstPerson",
-    position = Vector({ 0.0000, 9, -80 }),
+    position = Vector({ 0.0000, 7.5, -46 }),
     pitch = 30,
     yaw = 0,
-    distance = 14,
+    distance = 16,
     isRelativeToReferenceHandPosition = true
   },
   facing = {
@@ -2027,6 +2067,11 @@ C.TableSourceObjects = {
     G.GUIDS.PRINCE_CURTAIN_RED,
     G.GUIDS.COMPANION_TOGGLE_TOKEN_A_RED,
     "TAROT_DECK_PINK", -- not in G.GUIDS; resolved by Tarot tag via lib.tarot_objects
+    "COMPULSION_CARD_SELECTED_RED", -- loose selected card; resolved by ColorObject + Compulsion notes
+    "COMPULSION_CARD_SELECTED_ORANGE",
+    "COMPULSION_CARD_SELECTED_PINK",
+    "COMPULSION_CARD_SELECTED_PURPLE",
+    "COMPULSION_CARD_SELECTED_BROWN",
     G.GUIDS.TAROT_DRAWER_PINK,
     G.GUIDS.TAROT_BUTTON_PINK,
     G.GUIDS.TAROT_BUTTON_ANCHOR_ON_PINK,
@@ -2171,12 +2216,21 @@ local STORYTELLER_DICE_LIGHT_REFS = {
   storytellerDiceLight3 = true,
 }
 
+--- Per-seat compulsion spotlights — TOR-204 compulsions flow + `gameState.lights`, not chronicle uniform STANDARD.
+local COMPULSION_LIGHT_REFS = {
+  compulsionLightRed = true,
+  compulsionLightOrange = true,
+  compulsionLightPink = true,
+  compulsionLightPurple = true,
+  compulsionLightBrown = true,
+}
+
 --- @param modeStr string
 --- @return table
 local function spotlightMapUniform(modeStr)
   local t = {}
   for _, k in ipairs(LIGHTMODES_REGISTRY_KEYS_ORDERED) do
-    if STORYTELLER_DICE_LIGHT_REFS[k] then
+    if STORYTELLER_DICE_LIGHT_REFS[k] or COMPULSION_LIGHT_REFS[k] then
       t[k] = "OFF"
     else
       t[k] = modeStr

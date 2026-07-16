@@ -124,6 +124,7 @@ local sourceObjects = {
     -- entries used for relative objects; each element always refers to one object
     relative = {
         "TAROT_DECK_PINK", -- logical key; not in G.GUIDS — resolved by Tarot tag
+        "COMPULSION_CARD_SELECTED_PURPLE", -- loose selected card; ColorObject + Compulsion notes (optional)
     },
 
     -- camera presets to rotate when applying this table layout

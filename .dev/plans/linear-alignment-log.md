@@ -553,5 +553,9 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-16 | UPDATE | TOR-204 | INBOX Immediate — revised RunSequence DRAWN/SELECTED/lights/one-at-a-time/ColorObject; High; Focus #1 |
 | 2026-07-16 | Focus | Stack | #1 TOR-204, #2 TOR-384, #3 TOR-329 |
 | 2026-07-16 | SHIP | TOR-204 | RunSequence A/B/C; constants DRAWN/SELECTED all colors; global onSelectedEnteredHand; playbook — pending Save & Play |
+| 2026-07-16 | CREATE | TOR-389 | Seated NPCs persist across scene switch; Scenes Bug High; parent TOR-33; relatedTo TOR-278/TOR-275/TOR-311; Focus #2 |
+| 2026-07-16 | Focus | Stack | #1 TOR-204, #2 TOR-389, #3 TOR-384, #4 TOR-329 |
+| 2026-07-16 | DONE | TOR-389 | syncOccupiedNpcSlotsFromSeatSlots before validateState on library Apply; no-scene path unified; build OK — pending Save & Play |
+| 2026-07-16 | Focus | Stack | #1 TOR-204, #2 TOR-384, #3 TOR-329 |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

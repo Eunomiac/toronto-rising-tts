@@ -33,6 +33,7 @@ local L_LIGHT = require("core.lighting")
 local NPCS = require("core.npcs")
 local SRI = require("lib.seat-role-identity")
 local TarotObjects = require("lib.tarot_objects")
+local CompulsionObjects = require("lib.compulsion_objects")
 local G = require("lib.guids")
 
 --- Lazy load: core.debug is large; only needed for workspace file export helpers.
@@ -759,6 +760,9 @@ local function buildRelativeGuidSet(sourceObjects)
       if obj == nil and TarotObjects.isGuidsKey(relRef) then
         obj = TarotObjects.resolveByGuidsKey(relRef)
       end
+      if obj == nil and CompulsionObjects.isGuidsKey(relRef) then
+        obj = CompulsionObjects.resolveByGuidsKey(relRef)
+      end
     end
     if obj ~= nil and obj.getGUID ~= nil then
       local g = obj.getGUID()
@@ -810,6 +814,9 @@ local function resolveObjectRefWithRoleSupport(ref, referencePlayerColor, label)
       if obj ~= nil then
         return obj
       end
+    end
+    if CompulsionObjects.isGuidsKey(ref) then
+      return CompulsionObjects.resolveByGuidsKey(ref)
     end
   end
   if U.Type(ref) ~= "string" then
@@ -2153,18 +2160,22 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
         referencePlayerColor,
         "sourceObjects.relative[" .. tostring(i) .. "]"
       )
-      if relObj == nil then
+      if relObj == nil and not CompulsionObjects.isGuidsKey(relRef) then
         error("rotational-seat-layout: could not resolve sourceObjects.relative[" .. tostring(i) .. "]")
       end
-      local seatKey = deriveSeatKeyFromObjectTag(relObj)
-      if seatKey == nil then
-        error(
-          "rotational-seat-layout: sourceObjects.relative[" ..
-          tostring(i) .. "] has no <SeatKey>Object tag to infer target seat"
-        )
+      if relObj == nil then
+        -- optional compulsion follower absent
+      else
+        local seatKey = deriveSeatKeyFromObjectTag(relObj)
+        if seatKey == nil then
+          error(
+            "rotational-seat-layout: sourceObjects.relative[" ..
+            tostring(i) .. "] has no <SeatKey>Object tag to infer target seat"
+          )
+        end
+        relativeObjectsBySeat[seatKey] = relativeObjectsBySeat[seatKey] or {}
+        table.insert(relativeObjectsBySeat[seatKey], relObj)
       end
-      relativeObjectsBySeat[seatKey] = relativeObjectsBySeat[seatKey] or {}
-      table.insert(relativeObjectsBySeat[seatKey], relObj)
     end
   end
   for seatKey, refs in pairs(relativeObjectsBySeat) do
@@ -3486,6 +3497,12 @@ function M.resolveSeatObjectsFromTable(tableRef, sourceObjects, options)
 
   applyPostCorrections(src, computed, { skipPcPostCorrections = true })
   applyTableConfigObjectPositions(tableCfg)
+  do
+    local Compulsions = require("core.compulsions")
+    if type(Compulsions.reconcileSelectedCardsToAnchors) == "function" then
+      Compulsions.reconcileSelectedCardsToAnchors()
+    end
+  end
   enforceNPCSeatObjectVisibility(src, occupiedNPCSlots, tableCfg, previousTableCfg)
   local orchestratorActive = type(NPCS.isReconcileOrchestratorInProgress) == "function"
       and NPCS.isReconcileOrchestratorInProgress()
@@ -4650,17 +4667,20 @@ local function applyRelativeFollowersForHandMove(
       "sourceObjects.relative[" .. tostring(i) .. "]"
     )
     if relObj == nil then
-      error("rotational-seat-layout: could not resolve sourceObjects.relative[" .. tostring(i) .. "]")
-    end
-    local relSeatKey = deriveSeatKeyFromObjectTag(relObj)
-    if relSeatKey == seatKey then
-      local oldFrame = {
-        position = relObj.getPosition(),
-        rotation = relObj.getRotation(),
-      }
-      local newFrame = rigidTransformBetweenCenters(beforePos, targetPos, oldFrame, deltaYaw)
-      placeObjectExact(relObj, newFrame.position, newFrame.rotation)
-      movedCount = movedCount + 1
+      if not CompulsionObjects.isGuidsKey(relRef) then
+        error("rotational-seat-layout: could not resolve sourceObjects.relative[" .. tostring(i) .. "]")
+      end
+    elseif relObj ~= nil then
+      local relSeatKey = deriveSeatKeyFromObjectTag(relObj)
+      if relSeatKey == seatKey then
+        local oldFrame = {
+          position = relObj.getPosition(),
+          rotation = relObj.getRotation(),
+        }
+        local newFrame = rigidTransformBetweenCenters(beforePos, targetPos, oldFrame, deltaYaw)
+        placeObjectExact(relObj, newFrame.position, newFrame.rotation)
+        movedCount = movedCount + 1
+      end
     end
   end
   return movedCount

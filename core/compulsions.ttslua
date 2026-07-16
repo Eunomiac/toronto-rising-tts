@@ -23,6 +23,8 @@ local Compulsions = {}
 
 local MASTER_DECK_TAG = "CompulsionsMasterDeck"
 local SLOT_COUNT = 4
+local CSHEET_PAGE_COUNT = 8
+local CSHEET_NAV_BUTTON_IDS = { "pageBack", "pageForward", "pageInner" }
 local UNIT_SCALE = Vector({ 1, 1, 1 })
 
 --- @type table<string, { token: number, type: string, playerKey: string, cardGuids: string[], guidToSlot: table<string, number> }>
@@ -92,6 +94,81 @@ local function setPlayerDeckInteractable(color, on)
 end
 
 --- @param card Object|nil
+--- @param on boolean
+local function setCardInteractable(card, on)
+    if card ~= nil then
+        card.interactable = on == true
+    end
+end
+
+--- Clears area selection and closes the right-click context menu for a seat (Player.clearSelectedObjects).
+--- @param color string
+local function clearPlayerSelection(color)
+    if type(color) ~= "string" or color == "" then
+        return
+    end
+    local p = Player[color]
+    if p ~= nil and p.clearSelectedObjects ~= nil then
+        p.clearSelectedObjects()
+    end
+end
+
+--- @param color string
+--- @param pageNum number
+--- @return Object|nil
+local function resolveCsheetPage(color, pageNum)
+    if type(color) ~= "string" or type(pageNum) ~= "number" then
+        return nil
+    end
+    return SRI.findObjectByRoleIdentity(CI.pageRoleGmNotes(pageNum, color))
+end
+
+--- @param obj Object|nil
+--- @return boolean
+local function csheetPageIsVisibleAtCurrentY(obj)
+    if obj == nil or obj.getPosition == nil then
+        return false
+    end
+    local pos = obj.getPosition()
+    local y = (type(pos) == "userdata" or type(pos) == "table") and pos.y or nil
+    return type(y) == "number" and y >= 0
+end
+
+--- @param page Object|nil
+--- @param enabled boolean
+local function setCsheetNavButtonsEnabled(page, enabled)
+    if page == nil or page.UI == nil then
+        return
+    end
+    local active = enabled and "true" or "false"
+    for _, id in ipairs(CSHEET_NAV_BUTTON_IDS) do
+        page.UI.setAttribute(id, "active", active)
+    end
+end
+
+--- Block CSHEET page-turn / inner camera controls during open present.
+--- @param color string
+local function blockCsheetControlsForColor(color)
+    for pageNum = 1, CSHEET_PAGE_COUNT do
+        local page = resolveCsheetPage(color, pageNum)
+        if page ~= nil then
+            setCsheetNavButtonsEnabled(page, false)
+        end
+    end
+end
+
+--- Restore CSHEET controls from placement (visible pages on-table only).
+--- @param color string
+local function restoreCsheetControlsForColor(color)
+    for pageNum = 1, CSHEET_PAGE_COUNT do
+        local page = resolveCsheetPage(color, pageNum)
+        if page ~= nil then
+            setCsheetNavButtonsEnabled(page, csheetPageIsVisibleAtCurrentY(page))
+        end
+    end
+end
+
+--- @param card Object|nil
 --- @param key string
 --- @param color string
 --- @param token number
@@ -112,6 +189,9 @@ local function applyPoseFromKey(card, key, color, token, lockAtEnd)
     end
     if lockAtEnd == true then
         pose.isLocked = true
+        if card.setLock ~= nil then
+            card.setLock(true)
+        end
     end
     local duration, _ = OP.applyResolvedPose(card, pose, nil, nil, {
         shouldAbort = function()
@@ -119,6 +199,29 @@ local function applyPoseFromKey(card, key, color, token, lockAtEnd)
         end,
     })
     return duration or 0
+end
+
+--- Instant snap to a pose key (post table layout when anchors have moved).
+--- @param card Object|nil
+--- @param key string
+local function snapPoseFromKey(card, key)
+    if card == nil then
+        return
+    end
+    local entry = C.ObjectPositions[key]
+    if type(entry) ~= "table" then
+        print("[Compulsions] Missing C.ObjectPositions." .. tostring(key))
+        return
+    end
+    local pose = OP.resolveStatePose(card, entry, "on")
+    if pose == nil then
+        return
+    end
+    pose.isLocked = true
+    if card.setLock ~= nil then
+        card.setLock(true)
+    end
+    OP.applyResolvedPose(card, pose, 0, 0)
 end
 
 --- @param card Object|nil
@@ -425,6 +528,7 @@ local function finishSelection(color, chosenCard)
     if session == nil then
         return
     end
+    clearPlayerSelection(color)
     local token = bumpOpToken(color)
     presentByColor[color] = nil
 
@@ -439,7 +543,9 @@ local function finishSelection(color, chosenCard)
             if not isTokenCurrent(color, token) then
                 return
             end
+            restoreCsheetControlsForColor(color)
             local generic = type(genericGuid) == "string" and getObjectFromGUID(genericGuid) or nil
+            setCardInteractable(generic, true)
             rescaleUnit(generic)
             local deck = Compulsions.resolvePlayerDeck(color)
             if deck ~= nil and deck.reset ~= nil then
@@ -450,13 +556,10 @@ local function finishSelection(color, chosenCard)
             for i = 1, #unselected do
                 returnCardToMaster(unselected[i])
             end
-            if chosenCard ~= nil and chosenCard.setLock ~= nil then
-                chosenCard.setLock(false)
-            end
-            applyPoseFromKey(chosenCard, selectedKey, color, token, true)
+            local moveDur = applyPoseFromKey(chosenCard, selectedKey, color, token, true)
             tagSeatObject(chosenCard, color)
             print(string.format("[Compulsions] Selected Compulsion for %s", color))
-            return 0.5
+            return math.max(moveDur, 0.5)
         end,
         function()
             if not isTokenCurrent(color, token) then
@@ -470,6 +573,7 @@ end
 --- @param color string
 --- @param card Object
 local function finishRemoval(color, card)
+    clearPlayerSelection(color)
     local token = bumpOpToken(color)
     U.RunSequence({
         function()
@@ -490,6 +594,22 @@ local function finishRemoval(color, card)
             L.SetLightMode(compulsionLightRef(color), "OFF", color, 0.5)
         end,
     })
+end
+
+--- @param color string
+--- @return boolean
+function Compulsions.hasActiveSelectionForColor(color)
+    return findSelectedCompulsionForColor(color) ~= nil
+end
+
+--- After seat layout moves compulsion anchors, snap active selected cards to SELECTED poses.
+function Compulsions.reconcileSelectedCardsToAnchors()
+    for _, color in ipairs(C.PlayerColors) do
+        local card = findSelectedCompulsionForColor(color)
+        if card ~= nil then
+            snapPoseFromKey(card, positionKey("SELECTED", color))
+        end
+    end
 end
 
 --- @param notes string|nil
@@ -702,6 +822,8 @@ function Compulsions.onGenericDrawn(container, card)
         token
     ))
 
+    clearPlayerSelection(color)
+
     U.RunSequence({
         function()
             if not isTokenCurrent(color, token) then
@@ -710,7 +832,9 @@ function Compulsions.onGenericDrawn(container, card)
             if card.setLock ~= nil then
                 card.setLock(true)
             end
+            setCardInteractable(card, false)
             setPlayerDeckInteractable(color, false)
+            blockCsheetControlsForColor(color)
             applyPoseFromKey(card, drawnKey, color, token, true)
             return drawnDur
         end,

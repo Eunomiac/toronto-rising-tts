@@ -1,0 +1,89 @@
+--[[
+    Compulsion object resolution (lib/compulsion_objects.ttslua)
+
+    Selected compulsion cards are loose Card objects (no stable workshop GUID).
+    Resolve logical keys `COMPULSION_CARD_SELECTED_<COLOR>` by `<Color>Object` tag +
+    `Compulsion:` GM Notes with a typed suffix (`:1`–`:4`). Absent when no selection is active.
+]]
+
+local CI = require("lib.csheet_identity")
+
+local CompulsionObjects = {}
+
+local KEY_PREFIX = "COMPULSION_CARD_SELECTED_"
+
+--- @param ref any
+--- @return boolean
+function CompulsionObjects.isGuidsKey(ref)
+    return type(ref) == "string" and ref ~= ""
+        and string.sub(ref, 1, #KEY_PREFIX) == KEY_PREFIX
+end
+
+--- @param colorSuffix string e.g. `PURPLE`
+--- @return string|nil canonical seat color e.g. `Purple`
+local function canonicalSeatColor(colorSuffix)
+    if type(colorSuffix) ~= "string" or colorSuffix == "" then
+        return nil
+    end
+    return colorSuffix:sub(1, 1):upper() .. colorSuffix:sub(2):lower()
+end
+
+--- @param notes string|nil
+--- @return string|nil suffix when notes are a typed compulsion card
+local function typedCompulsionSuffix(notes)
+    if type(notes) ~= "string" then
+        return nil
+    end
+    local trimmed = string.match(notes, "^%s*(.-)%s*$") or ""
+    local _, _, suffix = string.match(trimmed, "^Compulsion:[^%-]+%-[^:]+:(.+)$")
+    if suffix == nil then
+        return nil
+    end
+    suffix = string.lower(string.match(suffix, "^%s*(.-)%s*$") or suffix)
+    if suffix == "generic" then
+        return nil
+    end
+    if suffix == "1" or suffix == "2" or suffix == "3" or suffix == "4" then
+        return suffix
+    end
+    return nil
+end
+
+--- @param obj Object|nil
+--- @return boolean
+local function isSelectedCompulsionCard(obj)
+    if obj == nil or obj.getGMNotes == nil then
+        return false
+    end
+    return typedCompulsionSuffix(obj.getGMNotes()) ~= nil
+end
+
+--- @param guidsKey string e.g. `COMPULSION_CARD_SELECTED_PURPLE`
+--- @return Object|nil
+function CompulsionObjects.resolveByGuidsKey(guidsKey)
+    if not CompulsionObjects.isGuidsKey(guidsKey) then
+        return nil
+    end
+    local colorSuffix = string.sub(guidsKey, #KEY_PREFIX + 1)
+    local color = canonicalSeatColor(colorSuffix)
+    if color == nil then
+        return nil
+    end
+    local tag = CI.seatColorObjectTag(color)
+    if tag == nil then
+        return nil
+    end
+    for _, obj in ipairs(getObjectsWithTag(tag) or {}) do
+        if obj ~= nil
+            and (obj.type == "Card" or obj.tag == "Card")
+            and obj.hasTag ~= nil
+            and obj.hasTag(tag) == true
+            and isSelectedCompulsionCard(obj)
+        then
+            return obj
+        end
+    end
+    return nil
+end
+
+return CompulsionObjects

@@ -32,15 +32,15 @@ Fixture used below: **Purple** / `blackCaesar` (Roarshack). Change only if you s
 
 **Step 2.** Execute Lua Code — Code Block 0 (assert resolvers + notes parse).
 
-**Step 3.** **At Purple: draw one card from that seat’s Compulsions deck.** Console should log `RunSequence present`; generic should lerp to DRAWN (~y=10, scaled); camera switches to `compulsions`; seat deck `interactable = false`; up to four typed cards stagger-lerp to anchors (not instant stack).
+**Step 3.** **At Purple: draw one card from that seat’s Compulsions deck.** Console should log `RunSequence present`; generic should lerp to DRAWN (~y=10, scaled); camera switches to `compulsions`; seat deck `interactable = false`; on all eight Purple CSHEET pages, `pageBack` / `pageForward` / `pageInner` controls set `active = false` (misclick guard under presented cards); up to four typed cards stagger-lerp to anchors (not instant stack).
 
 **Step 4.** Execute Lua Code — Code Block A (assert deck locked + presented cards).
 
-**Step 5.** **Right-click Draw one presented Compulsion card into the Purple hand.** Unselected cards return to master instantly; chosen card lerps to SELECTED (~y=8.43, scaled); gains `PurpleObject` tag; compulsion light fades STANDARD over ~1s; deck stays `interactable = false`.
+**Step 5.** **Right-click Draw one presented Compulsion card into the Purple hand.** Unselected cards return to master instantly; chosen card lerps to SELECTED (~y=8.43, scaled); gains `PurpleObject` tag; compulsion light fades STANDARD over ~1s; deck stays `interactable = false`; Purple CSHEET controls restore by visibility (visible pages re-enable `pageBack` / `pageForward` / `pageInner`, hidden pages remain disabled).
 
 **Step 6.** Execute Lua Code — Code Block B (assert SELECTED card + light).
 
-**Step 7.** **Optional:** switch table layout (scene Apply or table change) — confirm SELECTED card moves with Purple hand zone (`PurpleObject` rigid follow).
+**Step 7.** Switch table layout (scene Apply or table change) — confirm SELECTED card snaps to `COMPULSION_CARD_SELECTED_<Color>` anchor pose after layout (`reconcileSelectedCardsToAnchors` at end of `resolveSeatObjectsFromTable`).
 
 **Step 8.** **Right-click Draw the selected Compulsion into the Purple hand again (removal).** Card returns to master; `PurpleObject` tag removed; compulsion light OFF over ~0.5s; seat deck `interactable = true`.
 

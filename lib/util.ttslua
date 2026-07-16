@@ -2216,6 +2216,13 @@ function U.lightRefIsStorytellerDiceLight(lightRef)
         or lightRef == "storytellerDiceLight3"
 end
 
+--- Per-seat compulsion spotlights — owned by `gameState.lights` / TOR-204 compulsions flow, not seat-presence STANDARD.
+--- @param lightRef string
+--- @return boolean
+function U.lightRefIsCompulsionLight(lightRef)
+    return type(lightRef) == "string" and string.sub(lightRef, 1, 15) == "compulsionLight"
+end
+
 --- Changes global lighting with a delay
 -- Applies lighting changes and calls Lighting.apply after a delay.
 -- Parameters starting with "set" are treated as function calls (e.g., setLightColor).
@@ -2410,6 +2417,8 @@ function U.applyLightingPreset(preset, opts)
 			print("[applyLightingPreset] Unknown light registry key in spotlights: " .. tostring(ref))
 		elseif U.lightRefIsStorytellerDiceLight(ref) then
 			-- TOR-149: owned by STD.reconcileTrayLightsFromRollState after preset apply
+		elseif U.lightRefIsCompulsionLight(ref) then
+			-- TOR-204: owned by compulsions + gameState.lights reconcile, not scene STANDARD maps
 		elseif U.lightRefIsSeatSpotlight(ref) then
 			if U.Type(patch) == "string" and patch ~= "" then
 				seatPreset[ref] = patch

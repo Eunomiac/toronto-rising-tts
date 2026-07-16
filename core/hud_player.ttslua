@@ -78,6 +78,9 @@ local lastLocationDockUiCache = {}
 --- seatColor -> last applied offsetXY string for map draggable (skip redundant Global UI writes).
 local mapDraggableLastOffsetStrBySeat = {}
 
+--- seatColor -> last applied offsetXY string for map viewport (`playerHud_mapViewport_*`).
+local mapViewportLastOffsetStrBySeat = {}
+
 --- hudSeatColor -> (elementId .. "\0" .. attrName) -> last applied attribute string for Prince's Court page-1 trackers.
 local lastPrincesCourtTrackerUiByHudSeat = {}
 
@@ -311,6 +314,46 @@ local MAP_PAN_TOP_Y = -225
 local MAP_PAN_BOTTOM_Y = 225
 local MAP_PAN_MIDDLE_Y = 0
 
+-- Viewport sink baseline must match `hud_map_center_container` offsetXY in panel_map_core_defaults.xml.
+-- When the draggable map is panned north (y < 0), Lua shifts the viewport down for pin headroom
+-- without changing `hud_map_draggable_container` size (pin coordinate parent stays 1600).
+local MAP_VIEWPORT_OFFSET_Y_BASE = -400
+local MAP_VIEWPORT_TOP_HALF_MAX_SHIFT = 120
+
+local function computeMapViewportOffsetY(draggablePanY)
+    if type(draggablePanY) ~= "number" or draggablePanY >= MAP_PAN_MIDDLE_Y then
+        return MAP_VIEWPORT_OFFSET_Y_BASE
+    end
+    local northSpan = MAP_PAN_MIDDLE_Y - MAP_PAN_TOP_Y
+    if northSpan <= 0 then
+        return MAP_VIEWPORT_OFFSET_Y_BASE
+    end
+    local t = (MAP_PAN_MIDDLE_Y - draggablePanY) / northSpan
+    if t < 0 then
+        t = 0
+    elseif t > 1 then
+        t = 1
+    end
+    return MAP_VIEWPORT_OFFSET_Y_BASE + (t * MAP_VIEWPORT_TOP_HALF_MAX_SHIFT)
+end
+
+--- Shifts `playerHud_mapViewport_*` down when the map is panned to the northern half.
+-- @param seatColor string
+-- @param draggablePanY number current `playerHud_mapDraggable_*` offset Y
+local function applyMapViewportOffset(seatColor, draggablePanY)
+    if type(seatColor) ~= "string" then
+        return
+    end
+    local viewportY = roundToInt(computeMapViewportOffsetY(draggablePanY))
+    local viewportId = "playerHud_mapViewport_" .. seatColor
+    local offsetStr = "0 " .. tostring(viewportY)
+    if mapViewportLastOffsetStrBySeat[seatColor] == offsetStr then
+        return
+    end
+    U.setAttribute(viewportId, "offsetXY", offsetStr)
+    mapViewportLastOffsetStrBySeat[seatColor] = offsetStr
+end
+
 local function getOrCreateMapPanState(playerID)
     if type(playerID) ~= "string" then
         return nil
@@ -340,6 +383,7 @@ local function applyMapOffset(seatColor, y)
     end
     U.setAttribute(draggableId, "offsetXY", offsetStr)
     mapDraggableLastOffsetStrBySeat[seatColor] = offsetStr
+    applyMapViewportOffset(seatColor, y)
 end
 
 --- Applies an initial pan position for the map draggable panel.
@@ -1081,6 +1125,7 @@ local function applyMapPanelHud(playerID, seatColor, hud)
 
     if showMap and not wasMapActive then
         mapDraggableLastOffsetStrBySeat[seatColor] = nil
+        mapViewportLastOffsetStrBySeat[seatColor] = nil
         local targetDistrictKey = locationDistrictKey
         local y = nil
         if type(targetDistrictKey) == "string" and MAP_DISTRICT_KEY_SET[targetDistrictKey] == true then

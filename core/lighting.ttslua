@@ -689,97 +689,97 @@ L.LIGHTMODES = {
     },
     compulsionLightRed = {
       guid = G.GUIDS.COMPULSION_LIGHT_RED,
-      isPlayerLight = true,
+      isPlayerLight = false,
       default = "OFF",
       OFF = {
         enabled = false,
-        range = 48.018639,
+        range = 17,
         angle = 0,
         intensity = 0,
-        color = Color(0.525551, 0.525551, 0.525551)
+        color = Color(1, 0.4, 0.4)
       },
       STANDARD = {
         enabled = true,
-        range = 48.018639,
-        angle = 135.495407,
-        intensity = 1,
-        color = Color(0.525551, 0.525551, 0.525551)
+        range = 17,
+        angle = 133,
+        intensity = 2.7,
+        color = Color(1, 0.4, 0.4)
       }
     },
     compulsionLightOrange = {
       guid = G.GUIDS.COMPULSION_LIGHT_ORANGE,
-      isPlayerLight = true,
+      isPlayerLight = false,
       default = "OFF",
       OFF = {
         enabled = false,
-        range = 48.018639,
+        range = 17,
         angle = 0,
         intensity = 0,
-        color = Color(0.525551, 0.525551, 0.525551)
+        color = Color(1, 0.4, 0.4)
       },
       STANDARD = {
         enabled = true,
-        range = 48.018639,
-        angle = 135.495407,
-        intensity = 1,
-        color = Color(0.525551, 0.525551, 0.525551)
+        range = 17,
+        angle = 133,
+        intensity = 2.7,
+        color = Color(1, 0.4, 0.4)
       }
     },
     compulsionLightPink = {
       guid = G.GUIDS.COMPULSION_LIGHT_PINK,
-      isPlayerLight = true,
+      isPlayerLight = false,
       default = "OFF",
       OFF = {
         enabled = false,
-        range = 48.018639,
+        range = 17,
         angle = 0,
         intensity = 0,
-        color = Color(0.525551, 0.525551, 0.525551)
+        color = Color(1, 0.4, 0.4)
       },
       STANDARD = {
         enabled = true,
-        range = 48.018639,
-        angle = 135.495407,
-        intensity = 1,
-        color = Color(0.525551, 0.525551, 0.525551)
+        range = 17,
+        angle = 133,
+        intensity = 2.7,
+        color = Color(1, 0.4, 0.4)
       }
     },
     compulsionLightPurple = {
       guid = G.GUIDS.COMPULSION_LIGHT_PURPLE,
-      isPlayerLight = true,
+      isPlayerLight = false,
       default = "OFF",
       OFF = {
         enabled = false,
-        range = 48.018639,
+        range = 17,
         angle = 0,
         intensity = 0,
-        color = Color(0.525551, 0.525551, 0.525551)
+        color = Color(1, 0.4, 0.4)
       },
       STANDARD = {
         enabled = true,
-        range = 48.018639,
-        angle = 135.495407,
-        intensity = 1,
-        color = Color(0.525551, 0.525551, 0.525551)
+        range = 17,
+        angle = 133,
+        intensity = 2.7,
+        color = Color(1, 0.4, 0.4)
       }
     },
     compulsionLightBrown = {
       guid = G.GUIDS.COMPULSION_LIGHT_BROWN,
-      isPlayerLight = true,
+      isPlayerLight = false,
       default = "OFF",
       OFF = {
         enabled = false,
-        range = 48.018639,
+        range = 17,
         angle = 0,
         intensity = 0,
-        color = Color(0.525551, 0.525551, 0.525551)
+        color = Color(1, 0.4, 0.4)
       },
       STANDARD = {
         enabled = true,
-        range = 48.018639,
-        angle = 135.495407,
-        intensity = 1,
-        color = Color(0.525551, 0.525551, 0.525551)
+        range = 17,
+        angle = 133,
+        intensity = 2.7,
+        color = Color(1, 0.4, 0.4)
       }
     },
     famulusLight1Red = {
@@ -1652,6 +1652,32 @@ local function computeSeatSpotlightPriorityOverride(lightRef, seatKey)
     return nil
 end
 
+--- Compulsion spotlights: `gameState.lights` + live selected card; drop stale scene STANDARD stamps.
+--- @param lightRef string
+--- @param lData table
+--- @return string
+local function resolveCompulsionLightDesiredMode(lightRef, lData)
+    local defaultMode = U.Type(lData.default) == "string" and lData.default or "OFF"
+    local desired = S.getStateVal("lights", lightRef)
+    if U.Type(desired) ~= "string" or desired == "" or lData[desired] == nil then
+        desired = defaultMode
+    end
+    if desired == "STANDARD" then
+        local seatColor = string.match(lightRef, "^compulsionLight(.+)$")
+        if seatColor ~= nil then
+            local Compulsions = require("core.compulsions")
+            if Compulsions.hasActiveSelectionForColor(seatColor) ~= true then
+                desired = "OFF"
+                S.setStateVal(desired, "lights", lightRef)
+            end
+        end
+    end
+    if lData[desired] == nil and lData.OFF ~= nil then
+        desired = "OFF"
+    end
+    return desired
+end
+
 --- Resolves desired apply for a seat-matched registered light: override, scene `C.LightModes` seat preset, or default.
 --- @param lightRef string
 --- @param seatKey string
@@ -1660,6 +1686,11 @@ local function computeDesiredSeatLightResolution(lightRef, seatKey)
     local lData = L.LIGHTMODES[lightRef]
     if U.Type(lData) ~= "table" then
         return nil
+    end
+
+    if U.lightRefIsCompulsionLight(lightRef) then
+        local mode = resolveCompulsionLightDesiredMode(lightRef, lData)
+        return { kind = "named", mode = mode }
     end
 
     local ovr = computeSeatSpotlightPriorityOverride(lightRef, seatKey)
@@ -1786,6 +1817,15 @@ function L.reconcileLightRef(lightRef, transitionTime, opts)
     if U.lightRefIsStorytellerDiceLight(lightRef) then
         local STD = require("lib.st_dice_drawer")
         local desired = STD.desiredTrayLightModeForRef(lightRef) or "OFF"
+        if force then
+            L.invalidateReconcileCacheForRef(lightRef)
+        end
+        L.SetLightMode(lightRef, desired, nil, transitionTime or 0.25)
+        return true
+    end
+
+    if U.lightRefIsCompulsionLight(lightRef) then
+        local desired = resolveCompulsionLightDesiredMode(lightRef, lData)
         if force then
             L.invalidateReconcileCacheForRef(lightRef)
         end
