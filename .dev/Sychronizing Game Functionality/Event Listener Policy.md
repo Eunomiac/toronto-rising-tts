@@ -52,7 +52,7 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | `onObjectDrop` | `global_script` | Host | C | Steam + tag | Gameboard/NPCS | High | 4 |
 | `onObjectRandomize` | `global_script` | Host | B+C | d10 tag | roll FSM + lights | High | 4 |
 | `onObjectLeaveContainer` | `global_script` | Host | B+C | d10 **or** Card + `Compulsion:` GM Notes prefix | Die GM Notes; Compulsions world I/O (TOR-204) | Med | 4 |
-| `onObjectEnterZone` | `global_script` | Host | C | Card + `Compulsion:` prefix + hand `FogColor` | Compulsions finish selection (TOR-204) | Med | — |
+| `onObjectEnterZone` | `global_script` | Host | C | Card + `Compulsion:` prefix + hand `FogColor` | Compulsions finish selection or removal (TOR-204): `onSelectedEnteredHand` then `onPresentedEnteredHand` | Med | — |
 | `onPlayerConnect` | `global_script` | Host | B+C | — | Steam ID → `C.PlayerData.color` (incl. Black); unregistered → White; **Grey join is valid current seat** (TOR-372 amend of TOR-345); load: `M.assignAllConnectedSeatsFromChronicle`. TOR-293: default camera + `PlayerConnection.reconcileEffectivePresence` then blindfold. TOR-319: Intermission keeps blindfold; else `Phases.lowerBlindfoldForConnectingPlayer`. | Med | 4 |
 | `onPlayerDisconnect` | `global_script` | Host | B+C | — | TOR-293: cancel roll if any; reconcile effective presence so chronicle seat locks inactive without mutating library `isPresent`. | Med | 4 |
 | `onPlayerChangeColor` | `global_script` | Host | B | Seat HUD visibility reveal (`revealSeatHudVisibility`) + UpdateUIDisplays; Host hotseat swaps manual via `HUD_refreshUi` | state row | Med | 4 |
@@ -180,7 +180,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `GlobalGameboardTokenDroppedOnDiceBag` / `GlobalGameboardPcTokenDroppedOnDiceBag` | `core/global_script.ttslua` | **Pass** | tag + steam-ST before `require("core.npc_gameboard")`; PC wrapper owns `RC.initiateRoll` |
 | `GlobalRepositionStorytellerTrayDice` | `core/global_script.ttslua` | **Pass** | Tier C tray layout across all ST bags |
 | `Gameboard.onNpcControlTokenPickUp` | `core/npc_gameboard.ttslua` | **Pass** | `isNpcControlToken` |
-| `Compulsions.onGenericDrawn` / `onPresentedEnteredHand` | `core/compulsions.ttslua` | **Pass** | Called only after Global Card + `Compulsion:` prefix gates (TOR-204) |
+| `Compulsions.onGenericDrawn` / `onPresentedEnteredHand` / `onSelectedEnteredHand` | `core/compulsions.ttslua` | **Pass** | Called only after Global Card + `Compulsion:` prefix gates (TOR-204); selected path requires `<Color>Object` tag |
 
 ## Object-script handlers
 

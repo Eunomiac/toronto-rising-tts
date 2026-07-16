@@ -2,7 +2,7 @@
     Compulsions deck pick-and-present (core/compulsions.ttslua) — TOR-204
 
     Host-only world choreography. Wired from Global `onObjectLeaveContainer`
-    (generic draw) and `onObjectEnterZone` (presented card enters hand).
+    (generic draw) and `onObjectEnterZone` (presented / selected card enters hand).
 
     GM Notes: `Compulsion:<Type>-<charKey>:generic` | `:1`–`:4`
     (charKey from C.PlayerData, e.g. blackCaesar → Purple)
@@ -14,25 +14,28 @@ local C = require("lib.constants")
 local G = require("lib.guids")
 local SRI = require("lib.seat-role-identity")
 local U = require("lib.util")
+local M = require("core.main")
+local L = require("core.lighting")
+local OP = require("lib.object_positions")
+local CI = require("lib.csheet_identity")
 
 local Compulsions = {}
 
 local MASTER_DECK_TAG = "CompulsionsMasterDeck"
-local PRESENT_HEIGHT = 10
-local CHOSEN_HEIGHT = 7.5
-local CHOSEN_OFFSET_TOWARD_ORIGIN = 3
-local CHOSEN_LERP_DURATION = 0.6
 local SLOT_COUNT = 4
+local UNIT_SCALE = Vector({ 1, 1, 1 })
 
 --- @type table<string, { token: number, type: string, playerKey: string, cardGuids: string[], guidToSlot: table<string, number> }>
 local presentByColor = {}
 
---- Permanent chosen occupancy: color -> slot index -> card guid
---- @type table<string, table<number, string>>
-local chosenGuidsByColor = {}
+--- Generic card guid at DRAWN anchor during an open present session.
+--- @type table<string, string>
+local drawnGenericByColor = {}
 
 --- @type table<string, number>
 local opTokenByColor = {}
+
+local deckInteractableSynced = false
 
 --- @param notes string|nil
 --- @return string
@@ -43,6 +46,452 @@ local function trimNotes(notes)
     return string.match(notes, "^%s*(.-)%s*$") or ""
 end
 
+--- @param kind string|number `"DRAWN"` | `"SELECTED"` | slot index 1–4
+--- @param color string
+--- @return string
+local function positionKey(kind, color)
+    local upper = string.upper(color)
+    if kind == "DRAWN" then
+        return "COMPULSION_CARD_DRAWN_" .. upper
+    end
+    if kind == "SELECTED" then
+        return "COMPULSION_CARD_SELECTED_" .. upper
+    end
+    return "COMPULSION_CARD_" .. tostring(kind) .. "_" .. upper
+end
+
+--- @param color string
+--- @return string
+local function compulsionLightRef(color)
+    return "compulsionLight" .. color
+end
+
+--- @param color string
+--- @param token number
+--- @return boolean
+local function isTokenCurrent(color, token)
+    return opTokenByColor[color] == token
+end
+
+--- @param color string
+--- @return number
+local function bumpOpToken(color)
+    local nextToken = (opTokenByColor[color] or 0) + 1
+    opTokenByColor[color] = nextToken
+    return nextToken
+end
+
+--- @param color string
+--- @param on boolean
+local function setPlayerDeckInteractable(color, on)
+    local deck = Compulsions.resolvePlayerDeck(color)
+    if deck == nil then
+        return
+    end
+    deck.interactable = on == true
+end
+
+--- @param card Object|nil
+--- @param key string
+--- @param color string
+--- @param token number
+--- @param lockAtEnd boolean|nil
+--- @return number duration applied
+local function applyPoseFromKey(card, key, color, token, lockAtEnd)
+    if card == nil then
+        return 0
+    end
+    local entry = C.ObjectPositions[key]
+    if type(entry) ~= "table" then
+        print("[Compulsions] Missing C.ObjectPositions." .. tostring(key))
+        return 0
+    end
+    local pose = OP.resolveStatePose(card, entry, "on")
+    if pose == nil then
+        return 0
+    end
+    if lockAtEnd == true then
+        pose.isLocked = true
+    end
+    local duration, _ = OP.applyResolvedPose(card, pose, nil, nil, {
+        shouldAbort = function()
+            return not isTokenCurrent(color, token)
+        end,
+    })
+    return duration or 0
+end
+
+--- @param card Object|nil
+--- @param color string
+local function tagSeatObject(card, color)
+    if card == nil or card.addTag == nil then
+        return
+    end
+    local tag = CI.seatColorObjectTag(color)
+    if tag == nil then
+        return
+    end
+    if card.hasTag ~= nil and card.hasTag(tag) == true then
+        return
+    end
+    card.addTag(tag)
+end
+
+--- @param card Object|nil
+--- @param color string
+local function untagSeatObject(card, color)
+    if card == nil or card.removeTag == nil then
+        return
+    end
+    local tag = CI.seatColorObjectTag(color)
+    if tag == nil then
+        return
+    end
+    if card.hasTag ~= nil and card.hasTag(tag) ~= true then
+        return
+    end
+    card.removeTag(tag)
+end
+
+--- @param card Object|nil
+local function rescaleUnit(card)
+    if card ~= nil and card.setScale ~= nil then
+        card.setScale(UNIT_SCALE)
+    end
+end
+
+--- @param color string
+--- @return Object|nil
+local function findSelectedCompulsionForColor(color)
+    local tag = CI.seatColorObjectTag(color)
+    if tag == nil then
+        return nil
+    end
+    for _, obj in ipairs(getObjects() or {}) do
+        if obj ~= nil
+            and (obj.type == "Card" or obj.tag == "Card")
+            and obj.hasTag ~= nil
+            and obj.hasTag(tag) == true
+            and obj.getGMNotes ~= nil
+        then
+            local parsed = Compulsions.parseNotes(obj.getGMNotes())
+            if parsed ~= nil and parsed.suffix ~= "generic" then
+                return obj
+            end
+        end
+    end
+    return nil
+end
+
+--- @param color string
+local function syncDeckInteractableForColor(color)
+    if findSelectedCompulsionForColor(color) ~= nil or presentByColor[color] ~= nil then
+        setPlayerDeckInteractable(color, false)
+    else
+        setPlayerDeckInteractable(color, true)
+    end
+end
+
+local function ensureDeckInteractableSynced()
+    if deckInteractableSynced then
+        return
+    end
+    deckInteractableSynced = true
+    for _, color in ipairs(C.PlayerColors) do
+        syncDeckInteractableForColor(color)
+    end
+end
+
+--- @param a string|nil
+--- @param b string|nil
+--- @return boolean
+local function charKeysEqual(a, b)
+    return type(a) == "string" and type(b) == "string" and string.lower(a) == string.lower(b)
+end
+
+--- @param container Object|nil
+--- @param color string
+--- @return boolean
+local function containerMatchesPlayerDeck(container, color)
+    if container == nil or type(color) ~= "string" then
+        return false
+    end
+    local fromNotes = Compulsions.colorFromPlayerDeckContainer(container)
+    if fromNotes ~= nil and fromNotes == color then
+        return true
+    end
+    local playerDeck = Compulsions.resolvePlayerDeck(color)
+    if playerDeck == nil or playerDeck.getGUID == nil or container.getGUID == nil then
+        return false
+    end
+    return container.getGUID() == playerDeck.getGUID()
+end
+
+--- @param master Object
+--- @param compulsionType string
+--- @param playerKey string
+--- @return table[] contained descriptors with .guid .index .suffix .slotIndex
+local function findMasterMatches(master, compulsionType, playerKey)
+    local matches = {}
+    if master == nil or master.getObjects == nil then
+        return matches
+    end
+    local contained = master.getObjects() or {}
+    for _, item in ipairs(contained) do
+        if type(item) == "table" then
+            local parsed = Compulsions.parseNotes(item.gm_notes)
+            if parsed ~= nil
+                and parsed.suffix ~= "generic"
+                and parsed.type == compulsionType
+                and charKeysEqual(parsed.playerKey, playerKey)
+            then
+                matches[#matches + 1] = {
+                    guid = item.guid,
+                    index = item.index,
+                    suffix = parsed.suffix,
+                }
+            end
+        end
+    end
+    table.sort(matches, function(a, b)
+        return tonumber(a.suffix) < tonumber(b.suffix)
+    end)
+    return matches
+end
+
+--- @param color string
+--- @param matches table[]
+--- @return table[] planned { guid, slotIndex, key }
+local function planPresentSlots(color, matches)
+    local planned = {}
+    local reservedSlots = {}
+    local takeCount = math.min(#matches, SLOT_COUNT)
+    for i = 1, takeCount do
+        local match = matches[i]
+        local slotIndex = tonumber(match.suffix) or i
+        if slotIndex < 1 or slotIndex > SLOT_COUNT then
+            slotIndex = i
+        end
+        if reservedSlots[slotIndex] == true then
+            for alt = 1, SLOT_COUNT do
+                if reservedSlots[alt] ~= true then
+                    slotIndex = alt
+                    break
+                end
+            end
+        end
+        reservedSlots[slotIndex] = true
+        local key = positionKey(slotIndex, color)
+        if type(C.ObjectPositions[key]) == "table" then
+            planned[#planned + 1] = {
+                guid = match.guid,
+                slotIndex = slotIndex,
+                key = key,
+            }
+        else
+            print("[Compulsions] Skip plan — missing " .. key)
+        end
+    end
+    return planned
+end
+
+--- Return a presented card to the master deck.
+--- @param card Object|nil
+local function returnCardToMaster(card)
+    if card == nil then
+        return
+    end
+    local master = Compulsions.resolveMasterDeck()
+    if master == nil or master.putObject == nil then
+        print("[Compulsions] Cannot return card: master deck missing or putObject unavailable.")
+        return
+    end
+    if card.setLock ~= nil then
+        card.setLock(false)
+    end
+    master.putObject(card)
+end
+
+--- @param color string
+local function shufflePlayerDeck(color)
+    local deck = Compulsions.resolvePlayerDeck(color)
+    if deck == nil then
+        return
+    end
+    if deck.shuffle ~= nil then
+        deck.shuffle()
+    elseif deck.randomize ~= nil then
+        deck.randomize()
+    end
+end
+
+--- @param color string
+--- @param plan table
+--- @param token number
+--- @param session table
+local function takeAndPresentSlot(color, plan, token, session)
+    if not isTokenCurrent(color, token) then
+        return
+    end
+    local master = Compulsions.resolveMasterDeck()
+    if master == nil or master.takeObject == nil then
+        print("[Compulsions] Master deck unavailable for present slot.")
+        return
+    end
+    local poseEntry = C.ObjectPositions[plan.key]
+    local pose = poseEntry ~= nil and OP.resolveStatePose(master, poseEntry, "on") or nil
+    local spawnPos = pose ~= nil and pose.position or nil
+    local spawnRot = pose ~= nil and pose.rotation or nil
+    master.takeObject({
+        guid = plan.guid,
+        position = spawnPos,
+        rotation = spawnRot,
+        smooth = false,
+        callback_function = function(taken)
+            if not isTokenCurrent(color, token) then
+                returnCardToMaster(taken)
+                return
+            end
+            if taken == nil then
+                print("[Compulsions] takeObject returned nil for guid " .. tostring(plan.guid))
+                return
+            end
+            local guid = taken.getGUID and taken.getGUID() or nil
+            if type(guid) == "string" then
+                session.cardGuids[#session.cardGuids + 1] = guid
+                session.guidToSlot[guid] = plan.slotIndex
+            end
+            applyPoseFromKey(taken, plan.key, color, token, true)
+        end,
+    })
+end
+
+--- @param color string
+--- @param session table
+--- @param chosenGuid string|nil
+--- @return Object[]
+local function collectUnselectedPresented(color, session, chosenGuid)
+    local byGuid = {}
+    for _, guid in ipairs(session.cardGuids or {}) do
+        if guid ~= chosenGuid then
+            byGuid[guid] = true
+        end
+    end
+    for _, obj in ipairs(getObjects() or {}) do
+        if obj ~= nil and (obj.type == "Card" or obj.tag == "Card") and obj.getGMNotes ~= nil then
+            local parsed = Compulsions.parseNotes(obj.getGMNotes())
+            if parsed ~= nil
+                and parsed.suffix ~= "generic"
+                and parsed.type == session.type
+                and charKeysEqual(parsed.playerKey, session.playerKey)
+            then
+                local g = obj.getGUID and obj.getGUID() or nil
+                if type(g) == "string" and g ~= chosenGuid then
+                    byGuid[g] = true
+                end
+            end
+        end
+    end
+    local list = {}
+    for guid, _ in pairs(byGuid) do
+        local obj = getObjectFromGUID(guid)
+        if obj ~= nil then
+            list[#list + 1] = obj
+        end
+    end
+    return list
+end
+
+--- @param zone Object|nil
+--- @param card Object
+--- @param color string
+--- @return boolean
+local function handZoneMatchesColor(zone, color)
+    if zone == nil or zone.getData == nil then
+        return false
+    end
+    local data = zone.getData()
+    if type(data) ~= "table" or type(data.FogColor) ~= "string" then
+        return false
+    end
+    local fogColor = Compulsions.canonicalizeSeatColor(data.FogColor)
+    return fogColor ~= nil and fogColor == color
+end
+
+--- @param color string
+--- @param chosenCard Object
+local function finishSelection(color, chosenCard)
+    local session = presentByColor[color]
+    if session == nil then
+        return
+    end
+    local token = bumpOpToken(color)
+    presentByColor[color] = nil
+
+    local chosenGuid = chosenCard ~= nil and chosenCard.getGUID and chosenCard.getGUID() or nil
+    local unselected = collectUnselectedPresented(color, session, chosenGuid)
+    local genericGuid = drawnGenericByColor[color]
+    drawnGenericByColor[color] = nil
+    local selectedKey = positionKey("SELECTED", color)
+
+    U.RunSequence({
+        function()
+            if not isTokenCurrent(color, token) then
+                return
+            end
+            local generic = type(genericGuid) == "string" and getObjectFromGUID(genericGuid) or nil
+            rescaleUnit(generic)
+            local deck = Compulsions.resolvePlayerDeck(color)
+            if deck ~= nil and deck.reset ~= nil then
+                deck.reset()
+            end
+            shufflePlayerDeck(color)
+            setPlayerDeckInteractable(color, false)
+            for i = 1, #unselected do
+                returnCardToMaster(unselected[i])
+            end
+            if chosenCard ~= nil and chosenCard.setLock ~= nil then
+                chosenCard.setLock(false)
+            end
+            applyPoseFromKey(chosenCard, selectedKey, color, token, true)
+            tagSeatObject(chosenCard, color)
+            print(string.format("[Compulsions] Selected Compulsion for %s", color))
+            return 0.5
+        end,
+        function()
+            if not isTokenCurrent(color, token) then
+                return
+            end
+            L.SetLightMode(compulsionLightRef(color), "STANDARD", color, 1.0)
+        end,
+    })
+end
+
+--- @param color string
+--- @param card Object
+local function finishRemoval(color, card)
+    local token = bumpOpToken(color)
+    U.RunSequence({
+        function()
+            if not isTokenCurrent(color, token) then
+                return
+            end
+            rescaleUnit(card)
+            untagSeatObject(card, color)
+            returnCardToMaster(card)
+            setPlayerDeckInteractable(color, true)
+            print(string.format("[Compulsions] Removed Compulsion for %s — deck interactable", color))
+            return 0.25
+        end,
+        function()
+            if not isTokenCurrent(color, token) then
+                return
+            end
+            L.SetLightMode(compulsionLightRef(color), "OFF", color, 0.5)
+        end,
+    })
+end
+
 --- @param notes string|nil
 --- @return { type: string, playerKey: string, suffix: string }|nil
 function Compulsions.parseNotes(notes)
@@ -50,7 +499,6 @@ function Compulsions.parseNotes(notes)
     if trimmed == "" then
         return nil
     end
-    -- Lua patterns have no `|` alternation — capture suffix as plain text, then validate.
     local compulsionType, playerKey, suffix = string.match(
         trimmed,
         "^Compulsion:([^%-]+)%-([^:]+):(.+)$"
@@ -84,24 +532,6 @@ function Compulsions.colorFromPlayerDeckContainer(container)
         return nil
     end
     return Compulsions.canonicalizeSeatColor(suffix)
-end
-
---- @param container Object|nil
---- @param color string
---- @return boolean
-local function containerMatchesPlayerDeck(container, color)
-    if container == nil or type(color) ~= "string" then
-        return false
-    end
-    local fromNotes = Compulsions.colorFromPlayerDeckContainer(container)
-    if fromNotes ~= nil and fromNotes == color then
-        return true
-    end
-    local playerDeck = Compulsions.resolvePlayerDeck(color)
-    if playerDeck == nil or playerDeck.getGUID == nil or container.getGUID == nil then
-        return false
-    end
-    return container.getGUID() == playerDeck.getGUID()
 end
 
 --- @param playerKey string|nil
@@ -139,13 +569,6 @@ function Compulsions.colorFromCharKey(charKey)
     return nil
 end
 
---- @param a string|nil
---- @param b string|nil
---- @return boolean
-local function charKeysEqual(a, b)
-    return type(a) == "string" and type(b) == "string" and string.lower(a) == string.lower(b)
-end
-
 --- @return Object|nil
 function Compulsions.resolveMasterDeck()
     local tagged = getObjectsWithTag(MASTER_DECK_TAG) or {}
@@ -172,469 +595,13 @@ function Compulsions.resolvePlayerDeck(color)
     return SRI.findObjectByRoleIdentity("COMPULSION_DECK_" .. string.upper(canon))
 end
 
---- @param color string
---- @return number
-local function bumpOpToken(color)
-    local nextToken = (opTokenByColor[color] or 0) + 1
-    opTokenByColor[color] = nextToken
-    return nextToken
-end
-
---- @param color string
---- @param token number
---- @return boolean
-local function isTokenCurrent(color, token)
-    return opTokenByColor[color] == token
-end
-
---- @param color string
---- @param index number
---- @return string
-local function objectPositionsKey(color, index)
-    return "COMPULSION_CARD_" .. tostring(index) .. "_" .. string.upper(color)
-end
-
---- World pose for a present/chosen slot from ObjectPositions + live anchor (no card required).
---- @param color string
---- @param index number
---- @param height number|nil override Y (default PRESENT_HEIGHT)
---- @return { position: table, rotation: table }|nil
-local function resolveSlotWorldPose(color, index, height)
-    local key = objectPositionsKey(color, index)
-    local entry = C.ObjectPositions[key]
-    if type(entry) ~= "table" or type(entry.on) ~= "table" then
-        print("[Compulsions] Missing C.ObjectPositions." .. key .. ".on")
-        return nil
-    end
-    local pose = entry.on
-    local anchorRef = pose.anchor
-    local anchorObj = nil
-    if type(anchorRef) == "string" and anchorRef ~= "" then
-        anchorObj = G.getObject(anchorRef)
-    end
-    if anchorObj == nil then
-        print("[Compulsions] Anchor missing for " .. key .. " ref=" .. tostring(anchorRef))
-        return nil
-    end
-    local anchorPos = anchorObj.getPosition()
-    local anchorRot = anchorObj.getRotation()
-    -- Match OP.resolveStatePose: extract height, then fall back to anchor Y when nil
-    -- (including pose.height = { y = nil } / missing .y).
-    local yHeight = height
-    if yHeight == nil then
-        if type(pose.height) == "table" then
-            yHeight = pose.height.y
-        elseif type(pose.height) == "number" then
-            yHeight = pose.height
-        end
-    end
-    if yHeight == nil then
-        yHeight = anchorPos.y
-    end
-    if yHeight == nil then
-        yHeight = PRESENT_HEIGHT
-    end
-    return {
-        position = {
-            x = anchorPos.x,
-            y = yHeight,
-            z = anchorPos.z,
-        },
-        rotation = {
-            x = anchorRot.x,
-            y = anchorRot.y,
-            z = anchorRot.z,
-        },
-    }
-end
-
---- @param pos table
---- @return table
-local function offsetTowardOrigin(pos)
-    local x = pos.x or 0
-    local z = pos.z or 0
-    local len = math.sqrt(x * x + z * z)
-    if len < 1e-6 then
-        return { x = x, y = pos.y, z = z }
-    end
-    local nx = x / len
-    local nz = z / len
-    return {
-        x = x - nx * CHOSEN_OFFSET_TOWARD_ORIGIN,
-        y = pos.y,
-        z = z - nz * CHOSEN_OFFSET_TOWARD_ORIGIN,
-    }
-end
-
---- Drop stale guid entries when objects are missing.
---- @param color string
-local function pruneChosenSlots(color)
-    local slots = chosenGuidsByColor[color]
-    if type(slots) ~= "table" then
-        return
-    end
-    for index, guid in pairs(slots) do
-        local obj = getObjectFromGUID(guid)
-        if obj == nil then
-            slots[index] = nil
-        end
-    end
-end
-
---- @param color string
---- @return number|nil first free slot 1–4
-local function firstFreePermanentSlot(color)
-    pruneChosenSlots(color)
-    local slots = chosenGuidsByColor[color] or {}
-    for index = 1, SLOT_COUNT do
-        if slots[index] == nil then
-            return index
-        end
-    end
-    return nil
-end
-
---- @param master Object
---- @param compulsionType string
---- @param playerKey string
---- @return table[] contained descriptors with .guid .index .suffix
-local function findMasterMatches(master, compulsionType, playerKey)
-    local matches = {}
-    if master == nil or master.getObjects == nil then
-        return matches
-    end
-    local contained = master.getObjects() or {}
-    for _, item in ipairs(contained) do
-        if type(item) == "table" then
-            local parsed = Compulsions.parseNotes(item.gm_notes)
-            if parsed ~= nil
-                and parsed.suffix ~= "generic"
-                and parsed.type == compulsionType
-                and charKeysEqual(parsed.playerKey, playerKey)
-            then
-                matches[#matches + 1] = {
-                    guid = item.guid,
-                    index = item.index,
-                    suffix = parsed.suffix,
-                }
-            end
-        end
-    end
-    table.sort(matches, function(a, b)
-        return tonumber(a.suffix) < tonumber(b.suffix)
-    end)
-    return matches
-end
-
---- @param card Object
---- @param color string
---- @param slotIndex number
---- @param token number
-local function placePresentedCard(card, color, slotIndex, token)
-    if not isTokenCurrent(color, token) or card == nil then
-        return
-    end
-    local pose = resolveSlotWorldPose(color, slotIndex, PRESENT_HEIGHT)
-    if pose == nil then
-        return
-    end
-    -- Lock before/during pose so cards float at anchors (and cannot restack).
-    -- Players right-click Draw from the locked presentation pose.
-    if card.setLock ~= nil then
-        card.setLock(true)
-    end
-    if card.setPosition ~= nil then
-        card.setPosition(pose.position)
-    end
-    if card.setRotation ~= nil then
-        card.setRotation(pose.rotation)
-    end
-    if card.setLock ~= nil then
-        card.setLock(true)
-    end
-end
-
---- @param color string
---- @param compulsionType string
---- @param playerKey string
---- @param token number
-local function presentMatches(color, compulsionType, playerKey, token)
-    local master = Compulsions.resolveMasterDeck()
-    if master == nil then
-        print("[Compulsions] Master deck with tag '" .. MASTER_DECK_TAG .. "' not found.")
-        U.AlertGM("[Compulsions] Master deck missing (tag CompulsionsMasterDeck).")
-        return
-    end
-
-    local matches = findMasterMatches(master, compulsionType, playerKey)
-    if #matches < 1 then
-        print(string.format(
-            "[Compulsions] No master matches for Compulsion:%s-%s:1-4",
-            tostring(compulsionType),
-            tostring(playerKey)
-        ))
-        U.Alert(string.format("No Compulsion cards found for %s (%s).", compulsionType, color))
-        return
-    end
-
-    local session = {
-        token = token,
-        type = compulsionType,
-        playerKey = playerKey,
-        cardGuids = {},
-        guidToSlot = {},
-    }
-    presentByColor[color] = session
-
-    local reservedSlots = {}
-    local planned = {}
-    local takeCount = math.min(#matches, SLOT_COUNT)
-    for i = 1, takeCount do
-        local match = matches[i]
-        local slotIndex = tonumber(match.suffix) or i
-        if slotIndex < 1 or slotIndex > SLOT_COUNT then
-            slotIndex = i
-        end
-        if reservedSlots[slotIndex] == true then
-            for alt = 1, SLOT_COUNT do
-                if reservedSlots[alt] ~= true then
-                    slotIndex = alt
-                    break
-                end
-            end
-        end
-        reservedSlots[slotIndex] = true
-        local world = resolveSlotWorldPose(color, slotIndex, PRESENT_HEIGHT)
-        if world == nil then
-            print("[Compulsions] Skip take — no world pose for slot " .. tostring(slotIndex))
-        else
-            planned[#planned + 1] = {
-                guid = match.guid,
-                slotIndex = slotIndex,
-                position = world.position,
-                rotation = world.rotation,
-            }
-        end
-    end
-
-    if #planned < 1 then
-        print("[Compulsions] No present poses resolved; aborting present for " .. color)
-        presentByColor[color] = nil
-        return
-    end
-
-    -- Stagger takes + spawn at anchors (smooth=false) so TTS does not restack near the master.
-    for i = 1, #planned do
-        local plan = planned[i]
-        local delay = (i - 1) * 0.08
-        U.delay(function()
-            if not isTokenCurrent(color, token) then
-                return
-            end
-            local deck = Compulsions.resolveMasterDeck()
-            if deck == nil or deck.takeObject == nil then
-                print("[Compulsions] Master deck unavailable mid-present.")
-                return
-            end
-            deck.takeObject({
-                guid = plan.guid,
-                position = plan.position,
-                rotation = plan.rotation,
-                smooth = false,
-                callback_function = function(taken)
-                    if not isTokenCurrent(color, token) then
-                        local curMaster = Compulsions.resolveMasterDeck()
-                        if curMaster ~= nil and taken ~= nil and curMaster.putObject ~= nil then
-                            curMaster.putObject(taken)
-                        end
-                        return
-                    end
-                    if taken == nil then
-                        print("[Compulsions] takeObject returned nil for guid " .. tostring(plan.guid))
-                        return
-                    end
-                    local guid = taken.getGUID and taken.getGUID() or nil
-                    if type(guid) == "string" then
-                        session.cardGuids[#session.cardGuids + 1] = guid
-                        session.guidToSlot[guid] = plan.slotIndex
-                    end
-                    placePresentedCard(taken, color, plan.slotIndex, token)
-                end,
-            })
-        end, delay)
-    end
-
-    print(string.format(
-        "[Compulsions] Presenting %d card(s) for %s (%s) token=%d",
-        #planned,
-        color,
-        compulsionType,
-        token
-    ))
-end
---- Shuffle the seat Compulsions deck after a generic is returned.
---- @param color string
-local function shufflePlayerDeck(color)
-    local deck = Compulsions.resolvePlayerDeck(color)
-    if deck == nil then
-        print("[Compulsions] shuffle skipped: COMPULSION_DECK_" .. string.upper(tostring(color)) .. " missing")
-        return
-    end
-    if deck.shuffle ~= nil then
-        deck.shuffle()
-    elseif deck.randomize ~= nil then
-        deck.randomize()
-    else
-        print("[Compulsions] shuffle unavailable on player deck for " .. tostring(color))
-    end
-end
-
---- Return a presented (or mid-callback) card to the master deck.
---- @param card Object|nil
-local function returnCardToMaster(card)
-    if card == nil then
-        return
-    end
-    local master = Compulsions.resolveMasterDeck()
-    if master == nil or master.putObject == nil then
-        print("[Compulsions] Cannot return card: master deck missing or putObject unavailable.")
-        return
-    end
-    -- Locked cards often refuse putObject until unlocked.
-    if card.setLock ~= nil then
-        card.setLock(false)
-    end
-    master.putObject(card)
-end
-
---- Collect unselected presented cards (session guids + world backup by Type/charKey).
---- @param color string
---- @param session table
---- @param chosenGuid string|nil
---- @return Object[]
-local function collectUnselectedPresented(color, session, chosenGuid)
-    local byGuid = {}
-    for _, guid in ipairs(session.cardGuids or {}) do
-        if guid ~= chosenGuid then
-            byGuid[guid] = true
-        end
-    end
-    for _, obj in ipairs(getObjects() or {}) do
-        if obj ~= nil and (obj.type == "Card" or obj.tag == "Card") and obj.getGMNotes ~= nil then
-            local parsed = Compulsions.parseNotes(obj.getGMNotes())
-            if parsed ~= nil
-                and parsed.suffix ~= "generic"
-                and parsed.type == session.type
-                and charKeysEqual(parsed.playerKey, session.playerKey)
-            then
-                local g = obj.getGUID and obj.getGUID() or nil
-                if type(g) == "string" and g ~= chosenGuid then
-                    byGuid[g] = true
-                end
-            end
-        end
-    end
-    local list = {}
-    for guid, _ in pairs(byGuid) do
-        local obj = getObjectFromGUID(guid)
-        if obj ~= nil then
-            list[#list + 1] = obj
-        end
-    end
-    return list
-end
-
---- @param color string
---- @param chosenCard Object
---- @param slotIndex number
---- @param token number
-local function placeChosenCard(color, chosenCard, slotIndex, token)
-    if chosenCard == nil then
-        return
-    end
-    local pose = resolveSlotWorldPose(color, slotIndex, CHOSEN_HEIGHT)
-    if pose == nil then
-        return
-    end
-    local basePos = pose.position
-    -- U.setPositionSlow / Vector:lerp need TTS Vector userdata, not plain tables.
-    local mid = Vector(basePos.x, CHOSEN_HEIGHT, basePos.z)
-    local offset = offsetTowardOrigin({ x = mid.x, y = mid.y, z = mid.z })
-    local finalPos = Vector(offset.x, offset.y, offset.z)
-    -- Stay locked for the whole move so the card floats instead of falling.
-    if chosenCard.setLock ~= nil then
-        chosenCard.setLock(true)
-    end
-    if pose.rotation ~= nil and chosenCard.setRotation ~= nil then
-        chosenCard.setRotation(Vector(pose.rotation.x, pose.rotation.y, pose.rotation.z))
-    end
-    chosenCard.setPosition(mid)
-    U.setPositionSlow(chosenCard, finalPos, CHOSEN_LERP_DURATION)
-    U.delay(function()
-        if not isTokenCurrent(color, token) then
-            return
-        end
-        if chosenCard ~= nil and chosenCard.setLock ~= nil then
-            chosenCard.setLock(true)
-        end
-        if chosenCard ~= nil and chosenCard.setPosition ~= nil then
-            chosenCard.setPosition(finalPos)
-        end
-    end, CHOSEN_LERP_DURATION + 0.05)
-
-    local slots = chosenGuidsByColor[color]
-    if type(slots) ~= "table" then
-        slots = {}
-        chosenGuidsByColor[color] = slots
-    end
-    local guid = chosenCard.getGUID and chosenCard.getGUID() or nil
-    if type(guid) == "string" then
-        slots[slotIndex] = guid
-    end
-end
-
---- @param color string
---- @param chosenCard Object
-function Compulsions.finishSelection(color, chosenCard)
-    local session = presentByColor[color]
-    if session == nil then
-        return
-    end
-    local token = bumpOpToken(color)
-    presentByColor[color] = nil
-
-    local chosenGuid = chosenCard ~= nil and chosenCard.getGUID and chosenCard.getGUID() or nil
-    local unselected = collectUnselectedPresented(color, session, chosenGuid)
-    print(string.format(
-        "[Compulsions] Returning %d unselected card(s) to master for %s",
-        #unselected,
-        color
-    ))
-    for i = 1, #unselected do
-        returnCardToMaster(unselected[i])
-    end
-
-    local slotIndex = firstFreePermanentSlot(color)
-    if slotIndex == nil then
-        print("[Compulsions] No free permanent slot for " .. tostring(color) .. "; returning chosen to master.")
-        U.Alert("Compulsion slots full for " .. tostring(color) .. ".")
-        returnCardToMaster(chosenCard)
-        return
-    end
-
-    placeChosenCard(color, chosenCard, slotIndex, token)
-    print(string.format(
-        "[Compulsions] Chose card for %s → permanent slot %d",
-        color,
-        slotIndex
-    ))
-end
-
---- Generic drawn from a per-seat Compulsions deck: return immediately and present master matches.
+--- Generic drawn from a per-seat Compulsions deck: DRAWN pose, camera, staggered present.
 --- @param container Object
 --- @param card Object
 --- @return boolean handled
 function Compulsions.onGenericDrawn(container, card)
+    ensureDeckInteractableSynced()
+
     if card == nil or card.getGMNotes == nil then
         return false
     end
@@ -644,7 +611,6 @@ function Compulsions.onGenericDrawn(container, card)
     local deckColor = Compulsions.colorFromPlayerDeckContainer(container)
     local parsed = Compulsions.parseNotes(notes)
 
-    -- Left a known Compulsions player deck but notes are wrong/missing → fail loud.
     if deckColor ~= nil and (parsed == nil or parsed.suffix ~= "generic") then
         print(string.format(
             "[Compulsions] Card left COMPULSION_DECK_%s but GM Notes are not Compulsion:<Type>-<charKey>:generic (got %q).",
@@ -661,8 +627,7 @@ function Compulsions.onGenericDrawn(container, card)
 
     local color = Compulsions.colorFromCharKey(parsed.playerKey)
     if color == nil then
-        print("[Compulsions] Unknown charKey in notes: " .. tostring(parsed.playerKey)
-            .. " (notes=" .. tostring(notes) .. ") — expected a C.PlayerData.charKey")
+        print("[Compulsions] Unknown charKey in notes: " .. tostring(parsed.playerKey))
         return false
     end
 
@@ -677,77 +642,109 @@ function Compulsions.onGenericDrawn(container, card)
     end
 
     if not containerMatchesPlayerDeck(container, color) then
-        print(string.format(
-            "[Compulsions] Affinity miss: Compulsion generic for %s left container guid=%s notes=%q (expected COMPULSION_DECK_%s).",
-            color,
-            container ~= nil and container.getGUID ~= nil and tostring(container.getGUID()) or "nil",
-            container ~= nil and container.getGMNotes ~= nil and tostring(container.getGMNotes()) or "",
-            string.upper(color)
-        ))
         return false
     end
 
-    local playerDeck = Compulsions.resolvePlayerDeck(color)
-    if playerDeck == nil then
-        -- Container matched Role notes; use it as the putObject target.
-        playerDeck = container
-    end
-    if playerDeck == nil then
-        print("[Compulsions] Player deck unavailable for " .. color)
+    if findSelectedCompulsionForColor(color) ~= nil then
+        U.Alert("You already have an active Compulsion.")
         return false
     end
 
-    local deckGuid = playerDeck.getGUID and playerDeck.getGUID() or nil
+    if presentByColor[color] ~= nil then
+        print("[Compulsions] Present session already open for " .. color)
+        return false
+    end
+
+    local master = Compulsions.resolveMasterDeck()
+    if master == nil then
+        print("[Compulsions] Master deck with tag '" .. MASTER_DECK_TAG .. "' not found.")
+        U.AlertGM("[Compulsions] Master deck missing (tag CompulsionsMasterDeck).")
+        return false
+    end
+
     local compulsionType = parsed.type
     local charKey = parsed.playerKey
+    local matches = findMasterMatches(master, compulsionType, charKey)
+    if #matches < 1 then
+        U.Alert(string.format("No Compulsion cards found for %s (%s).", compulsionType, color))
+        return false
+    end
+
+    local planned = planPresentSlots(color, matches)
+    if #planned < 1 then
+        print("[Compulsions] No present poses resolved; aborting draw for " .. color)
+        return false
+    end
+
     local token = bumpOpToken(color)
-    presentByColor[color] = nil
+    local session = {
+        token = token,
+        type = compulsionType,
+        playerKey = charKey,
+        cardGuids = {},
+        guidToSlot = {},
+    }
+    presentByColor[color] = session
+
+    local cardGuid = card.getGUID and card.getGUID() or nil
+    if type(cardGuid) == "string" then
+        drawnGenericByColor[color] = cardGuid
+    end
+
+    local drawnKey = positionKey("DRAWN", color)
+    local drawnEntry = C.ObjectPositions[drawnKey]
+    local drawnDur = drawnEntry ~= nil and drawnEntry.on ~= nil and drawnEntry.on.duration or 0.5
 
     print(string.format(
-        "[Compulsions] Generic draw %s (%s) — deck.reset() (same as UI Reset), shuffle, then present.",
+        "[Compulsions] Generic draw %s (%s) — RunSequence present token=%d",
         compulsionType,
-        color
+        color,
+        token
     ))
 
-    -- `putObject` cannot pull a just-dealt card out of a hand zone. Deck `reset()` matches the
-    -- right-click Reset menu and collects that deck's cards (including from hands).
-    U.delay(function()
-        if not isTokenCurrent(color, token) then
-            return
-        end
-        local deck = (type(deckGuid) == "string" and getObjectFromGUID(deckGuid))
-            or Compulsions.resolvePlayerDeck(color)
-        if deck == nil or deck.reset == nil then
-            print("[Compulsions] Player deck reset unavailable for " .. color)
-            U.AlertGM("[Compulsions] Player deck has no reset(); cannot return generic from hand.")
-            return
-        end
-        local ok = deck.reset()
-        print(string.format(
-            "[Compulsions] deck.reset() for %s → %s",
-            color,
-            tostring(ok)
-        ))
-        shufflePlayerDeck(color)
-        if presentByColor[color] == nil and isTokenCurrent(color, token) then
-            presentMatches(color, compulsionType, charKey, token)
-        end
-    end, 0.08)
+    U.RunSequence({
+        function()
+            if not isTokenCurrent(color, token) then
+                return
+            end
+            if card.setLock ~= nil then
+                card.setLock(true)
+            end
+            setPlayerDeckInteractable(color, false)
+            applyPoseFromKey(card, drawnKey, color, token, true)
+            return drawnDur
+        end,
+        function()
+            if not isTokenCurrent(color, token) then
+                return
+            end
+            M.setCamera(color, "compulsions")
+            return 0.5
+        end,
+        function()
+            takeAndPresentSlot(color, planned[1], token, session)
+            return 0.25
+        end,
+        function()
+            if planned[2] ~= nil then
+                takeAndPresentSlot(color, planned[2], token, session)
+            end
+            return 0.25
+        end,
+        function()
+            if planned[3] ~= nil then
+                takeAndPresentSlot(color, planned[3], token, session)
+            end
+            return 0.25
+        end,
+        function()
+            if planned[4] ~= nil then
+                takeAndPresentSlot(color, planned[4], token, session)
+            end
+        end,
+    })
 
     return true
-end
---- O(1)-friendly: true when notes look like a Compulsion payload (prefix only).
---- @param notes string|nil
---- @return boolean
-function Compulsions.notesLookLikeCompulsion(notes)
-    return string.sub(trimNotes(notes), 1, 11) == "Compulsion:"
-end
-
---- O(1)-friendly: true when container GM Notes start with COMPULSION_DECK_.
---- @param container Object|nil
---- @return boolean
-function Compulsions.containerLooksLikePlayerDeck(container)
-    return Compulsions.colorFromPlayerDeckContainer(container) ~= nil
 end
 
 --- Presented card entered a hand zone — finish pick-and-present when it matches an open session.
@@ -755,6 +752,8 @@ end
 --- @param card Object
 --- @return boolean handled
 function Compulsions.onPresentedEnteredHand(zone, card)
+    ensureDeckInteractableSynced()
+
     if card == nil or card.getGMNotes == nil then
         return false
     end
@@ -771,6 +770,10 @@ function Compulsions.onPresentedEnteredHand(zone, card)
         return false
     end
 
+    if not handZoneMatchesColor(zone, color) then
+        return false
+    end
+
     local session = presentByColor[color]
     if session == nil then
         return false
@@ -781,18 +784,62 @@ function Compulsions.onPresentedEnteredHand(zone, card)
         return false
     end
 
-    if zone ~= nil and zone.getData ~= nil then
-        local data = zone.getData()
-        if type(data) == "table" and type(data.FogColor) == "string" then
-            local fogColor = Compulsions.canonicalizeSeatColor(data.FogColor)
-            if fogColor ~= nil and fogColor ~= color then
-                return false
-            end
-        end
+    finishSelection(color, card)
+    return true
+end
+
+--- Active selected Compulsion drawn into hand — return to master and re-enable deck.
+--- @param zone Object
+--- @param card Object
+--- @return boolean handled
+function Compulsions.onSelectedEnteredHand(zone, card)
+    ensureDeckInteractableSynced()
+
+    if card == nil or card.getGMNotes == nil then
+        return false
+    end
+    if card.type ~= "Card" and card.tag ~= "Card" then
+        return false
+    end
+    local parsed = Compulsions.parseNotes(card.getGMNotes())
+    if parsed == nil or parsed.suffix == "generic" then
+        return false
     end
 
-    Compulsions.finishSelection(color, card)
+    local color = Compulsions.colorFromCharKey(parsed.playerKey)
+    if color == nil then
+        return false
+    end
+
+    if not handZoneMatchesColor(zone, color) then
+        return false
+    end
+
+    local seatTag = CI.seatColorObjectTag(color)
+    if seatTag == nil or card.hasTag == nil or card.hasTag(seatTag) ~= true then
+        return false
+    end
+
+    if presentByColor[color] ~= nil then
+        return false
+    end
+
+    finishRemoval(color, card)
     return true
+end
+
+--- O(1)-friendly: true when notes look like a Compulsion payload (prefix only).
+--- @param notes string|nil
+--- @return boolean
+function Compulsions.notesLookLikeCompulsion(notes)
+    return string.sub(trimNotes(notes), 1, 11) == "Compulsion:"
+end
+
+--- O(1)-friendly: true when container GM Notes start with COMPULSION_DECK_.
+--- @param container Object|nil
+--- @return boolean
+function Compulsions.containerLooksLikePlayerDeck(container)
+    return Compulsions.colorFromPlayerDeckContainer(container) ~= nil
 end
 
 return Compulsions

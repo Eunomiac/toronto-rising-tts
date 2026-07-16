@@ -975,145 +975,225 @@ C.ObjectPositions = {
       scale = Vector({ 23.57, 0.1, 7.68 })
     }
   },
+  COMPULSION_CARD_DRAWN_RED = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_DRAWN_ANCHOR_RED,
+      height = 10,
+      duration = 0.5,
+      scale = Vector({ 1.5, 1.5, 1.5 })
+    }
+  },
   COMPULSION_CARD_1_RED = {
     on = {
       anchor = G.GUIDS.COMPULSION_CARD_1_ANCHOR_RED,
       height = 10,
-      duration = 0
+      duration = 1
     },
   },
   COMPULSION_CARD_2_RED = {
     on = {
       anchor = G.GUIDS.COMPULSION_CARD_2_ANCHOR_RED,
-      height = 10,
-      duration = 0
+      height = 13.56,
+      duration = 1
     },
   },
   COMPULSION_CARD_3_RED = {
     on = {
       anchor = G.GUIDS.COMPULSION_CARD_3_ANCHOR_RED,
       height = 10,
-      duration = 0
+      duration = 1
     },
   },
   COMPULSION_CARD_4_RED = {
     on = {
       anchor = G.GUIDS.COMPULSION_CARD_4_ANCHOR_RED,
-      height = 10,
-      duration = 0
+      height = 6.42,
+      duration = 1
     },
+  },
+  COMPULSION_CARD_SELECTED_RED = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_SELECTED_ANCHOR_RED,
+      height = 8.43,
+      duration = 0.5,
+      scale = Vector({ 1.5, 1.5, 1.5 })
+    }
+  },
+  COMPULSION_CARD_DRAWN_ORANGE = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_DRAWN_ANCHOR_ORANGE,
+      height = 10,
+      duration = 0.5,
+      scale = Vector({ 1.5, 1.5, 1.5 })
+    }
   },
   COMPULSION_CARD_1_ORANGE = {
     on = {
       anchor = G.GUIDS.COMPULSION_CARD_1_ANCHOR_ORANGE,
       height = 10,
-      duration = 0
+      duration = 1
     },
   },
   COMPULSION_CARD_2_ORANGE = {
     on = {
       anchor = G.GUIDS.COMPULSION_CARD_2_ANCHOR_ORANGE,
       height = 10,
-      duration = 0
+      duration = 1
     },
   },
   COMPULSION_CARD_3_ORANGE = {
     on = {
       anchor = G.GUIDS.COMPULSION_CARD_3_ANCHOR_ORANGE,
       height = 10,
-      duration = 0
+      duration = 1
     },
   },
   COMPULSION_CARD_4_ORANGE = {
     on = {
       anchor = G.GUIDS.COMPULSION_CARD_4_ANCHOR_ORANGE,
       height = 10,
-      duration = 0
+      duration = 1
     },
+  },
+  COMPULSION_CARD_SELECTED_ORANGE = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_SELECTED_ANCHOR_ORANGE,
+      height = 8.43,
+      duration = 0.5,
+      scale = Vector({ 1.5, 1.5, 1.5 })
+    }
+  },
+  COMPULSION_CARD_DRAWN_BROWN = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_DRAWN_ANCHOR_BROWN,
+      height = 10,
+      duration = 0.5,
+      scale = Vector({ 1.5, 1.5, 1.5 })
+    }
   },
   COMPULSION_CARD_1_BROWN = {
     on = {
       anchor = G.GUIDS.COMPULSION_CARD_1_ANCHOR_BROWN,
       height = 10,
-      duration = 0
+      duration = 1
     },
   },
   COMPULSION_CARD_2_BROWN = {
     on = {
       anchor = G.GUIDS.COMPULSION_CARD_2_ANCHOR_BROWN,
       height = 10,
-      duration = 0
+      duration = 1
     },
   },
   COMPULSION_CARD_3_BROWN = {
     on = {
       anchor = G.GUIDS.COMPULSION_CARD_3_ANCHOR_BROWN,
       height = 10,
-      duration = 0
+      duration = 1
     },
   },
   COMPULSION_CARD_4_BROWN = {
     on = {
       anchor = G.GUIDS.COMPULSION_CARD_4_ANCHOR_BROWN,
       height = 10,
-      duration = 0
+      duration = 1
     },
+  },
+  COMPULSION_CARD_SELECTED_BROWN = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_SELECTED_ANCHOR_BROWN,
+      height = 8.43,
+      duration = 0.5,
+      scale = Vector({ 1.5, 1.5, 1.5 })
+    }
+  },
+  COMPULSION_CARD_DRAWN_PINK = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_DRAWN_ANCHOR_PINK,
+      height = 10,
+      duration = 0.5,
+      scale = Vector({ 1.5, 1.5, 1.5 })
+    }
   },
   COMPULSION_CARD_1_PINK = {
     on = {
       anchor = G.GUIDS.COMPULSION_CARD_1_ANCHOR_PINK,
       height = 10,
-      duration = 0
+      duration = 1
     },
   },
   COMPULSION_CARD_2_PINK = {
     on = {
       anchor = G.GUIDS.COMPULSION_CARD_2_ANCHOR_PINK,
       height = 10,
-      duration = 0
+      duration = 1
     },
   },
   COMPULSION_CARD_3_PINK = {
     on = {
       anchor = G.GUIDS.COMPULSION_CARD_3_ANCHOR_PINK,
       height = 10,
-      duration = 0
+      duration = 1
     },
   },
   COMPULSION_CARD_4_PINK = {
     on = {
       anchor = G.GUIDS.COMPULSION_CARD_4_ANCHOR_PINK,
       height = 10,
-      duration = 0
+      duration = 1
     },
+  },
+  COMPULSION_CARD_SELECTED_PINK = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_SELECTED_ANCHOR_PINK,
+      height = 8.43,
+      duration = 0.5,
+      scale = Vector({ 1.5, 1.5, 1.5 })
+    }
+  },
+  COMPULSION_CARD_DRAWN_PURPLE = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_DRAWN_ANCHOR_PURPLE,
+      height = 10,
+      duration = 0.5,
+      scale = Vector({ 1.5, 1.5, 1.5 })
+    }
   },
   COMPULSION_CARD_1_PURPLE = {
     on = {
       anchor = G.GUIDS.COMPULSION_CARD_1_ANCHOR_PURPLE,
       height = 10,
-      duration = 0
+      duration = 1
     },
   },
   COMPULSION_CARD_2_PURPLE = {
     on = {
       anchor = G.GUIDS.COMPULSION_CARD_2_ANCHOR_PURPLE,
       height = 10,
-      duration = 0
+      duration = 1
     },
   },
   COMPULSION_CARD_3_PURPLE = {
     on = {
       anchor = G.GUIDS.COMPULSION_CARD_3_ANCHOR_PURPLE,
       height = 10,
-      duration = 0
+      duration = 1
     },
   },
   COMPULSION_CARD_4_PURPLE = {
     on = {
       anchor = G.GUIDS.COMPULSION_CARD_4_ANCHOR_PURPLE,
       height = 10,
-      duration = 0
+      duration = 1
     },
+  },
+  COMPULSION_CARD_SELECTED_PURPLE = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_SELECTED_ANCHOR_PURPLE,
+      height = 8.43,
+      duration = 0.5,
+      scale = Vector({ 1.5, 1.5, 1.5 })
+    }
   },
   FAMULUS_FIGURINE_RED = {
     on = {
@@ -1176,6 +1256,7 @@ C.CameraModes = {
   sheet = "bySeat",
   roll = "bySeat",
   diceTray = "bySeat",
+  compulsions = "bySeat",
   districtCard = "universal",
   siteCard = "universal",
   npcCenter = "universal",
@@ -1233,6 +1314,14 @@ C.ReferenceCameraAngles = {
     pitch = 58.6195,
     yaw = 0,
     distance = 10.8949,
+    isRelativeToReferenceHandPosition = true
+  },
+  compulsions = {
+    cameraMode = "FirstPerson",
+    position = Vector({ 0.0000, 9, -80 }),
+    pitch = 30,
+    yaw = 0,
+    distance = 14,
     isRelativeToReferenceHandPosition = true
   },
   facing = {
@@ -1919,7 +2008,10 @@ C.TableSourceObjects = {
     "FAMULUS_LIGHT_2",
     "FAMULUS_FIGURINE",
     "COMPULSION_DECK",
-    "STORAGE_TOME"
+    "STORAGE_TOME",
+    "COMPULSION_CARD_DRAWN_ANCHOR",
+    "COMPULSION_CARD_SELECTED_ANCHOR",
+    "COMPULSION_LIGHT"
   },
   all = {
     "SEAT_CHAIR",
@@ -2058,6 +2150,11 @@ local LIGHTMODES_REGISTRY_KEYS_ORDERED = {
   "playerLight3Pink",
   "playerLight3Brown",
   "playerLight3Purple",
+  "compulsionLightRed",
+  "compulsionLightOrange",
+  "compulsionLightPink",
+  "compulsionLightPurple",
+  "compulsionLightBrown",
   "famulusLight1Red",
   "famulusLight1Brown",
   "famulusLight2Red",

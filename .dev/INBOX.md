@@ -43,6 +43,8 @@ Verification:
 
 ## Processed
 
+2026-07-16 INBOX Immediate — Compulsions revised draw/select/remove + ColorObject + one-at-a-time deck lock → **TOR-204** (Table Objects Feature, High; Focus #1)
+
 2026-07-15 INBOX Immediate — Prince's Court stake disabled dots → **TOR-387** (Character Sheets Bug; shipped)
 
 2026-07-15 INBOX Immediate — `sheetDisplay:false` Status overlays + Stats/Projects → **TOR-385** (Character Sheets Feature, High)

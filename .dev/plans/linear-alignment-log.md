@@ -550,5 +550,8 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-15 | DONE | TOR-386 | Domain ratings PE + Court stake grey |
 | 2026-07-15 | INVESTIGATE | TOR-384 | DEBUG.showGlobalHudCanaries; In Progress; author gate |
 | 2026-07-15 | Focus | Stack | #1 TOR-384, #2 TOR-329 |
+| 2026-07-16 | UPDATE | TOR-204 | INBOX Immediate — revised RunSequence DRAWN/SELECTED/lights/one-at-a-time/ColorObject; High; Focus #1 |
+| 2026-07-16 | Focus | Stack | #1 TOR-204, #2 TOR-384, #3 TOR-329 |
+| 2026-07-16 | SHIP | TOR-204 | RunSequence A/B/C; constants DRAWN/SELECTED all colors; global onSelectedEnteredHand; playbook — pending Save & Play |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

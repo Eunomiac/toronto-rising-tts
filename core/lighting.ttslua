@@ -687,6 +687,101 @@ L.LIGHTMODES = {
           color = Color(0.525551, 0.525551, 0.525551)
         }
     },
+    compulsionLightRed = {
+      guid = G.GUIDS.COMPULSION_LIGHT_RED,
+      isPlayerLight = true,
+      default = "OFF",
+      OFF = {
+        enabled = false,
+        range = 48.018639,
+        angle = 0,
+        intensity = 0,
+        color = Color(0.525551, 0.525551, 0.525551)
+      },
+      STANDARD = {
+        enabled = true,
+        range = 48.018639,
+        angle = 135.495407,
+        intensity = 1,
+        color = Color(0.525551, 0.525551, 0.525551)
+      }
+    },
+    compulsionLightOrange = {
+      guid = G.GUIDS.COMPULSION_LIGHT_ORANGE,
+      isPlayerLight = true,
+      default = "OFF",
+      OFF = {
+        enabled = false,
+        range = 48.018639,
+        angle = 0,
+        intensity = 0,
+        color = Color(0.525551, 0.525551, 0.525551)
+      },
+      STANDARD = {
+        enabled = true,
+        range = 48.018639,
+        angle = 135.495407,
+        intensity = 1,
+        color = Color(0.525551, 0.525551, 0.525551)
+      }
+    },
+    compulsionLightPink = {
+      guid = G.GUIDS.COMPULSION_LIGHT_PINK,
+      isPlayerLight = true,
+      default = "OFF",
+      OFF = {
+        enabled = false,
+        range = 48.018639,
+        angle = 0,
+        intensity = 0,
+        color = Color(0.525551, 0.525551, 0.525551)
+      },
+      STANDARD = {
+        enabled = true,
+        range = 48.018639,
+        angle = 135.495407,
+        intensity = 1,
+        color = Color(0.525551, 0.525551, 0.525551)
+      }
+    },
+    compulsionLightPurple = {
+      guid = G.GUIDS.COMPULSION_LIGHT_PURPLE,
+      isPlayerLight = true,
+      default = "OFF",
+      OFF = {
+        enabled = false,
+        range = 48.018639,
+        angle = 0,
+        intensity = 0,
+        color = Color(0.525551, 0.525551, 0.525551)
+      },
+      STANDARD = {
+        enabled = true,
+        range = 48.018639,
+        angle = 135.495407,
+        intensity = 1,
+        color = Color(0.525551, 0.525551, 0.525551)
+      }
+    },
+    compulsionLightBrown = {
+      guid = G.GUIDS.COMPULSION_LIGHT_BROWN,
+      isPlayerLight = true,
+      default = "OFF",
+      OFF = {
+        enabled = false,
+        range = 48.018639,
+        angle = 0,
+        intensity = 0,
+        color = Color(0.525551, 0.525551, 0.525551)
+      },
+      STANDARD = {
+        enabled = true,
+        range = 48.018639,
+        angle = 135.495407,
+        intensity = 1,
+        color = Color(0.525551, 0.525551, 0.525551)
+      }
+    },
     famulusLight1Red = {
       guid = G.GUIDS.FAMULUS_LIGHT_1_RED,
       isPlayerLight = true,
@@ -1371,27 +1466,6 @@ end
 -- @usage L.SetLightMode("4148ba", { enabled = true, intensity = 5, range = 120, angle = 120 }, nil, 0) -- object GUID, inline mode (not in LIGHTMODES)
 
 -- L.SetLightMode("573771", { enabled = true, intensity = 5, range = 30 }, nil, 0)
-
-function workspaceSandbox()
-  L.SetLightMode("playerLight1Brown", "STANDARD", "Brown", 5)
-  L.SetLightMode("playerLight1Orange", "STANDARD", "Orange", 5)
-  L.SetLightMode("playerLight1Red", "STANDARD", "Red", 5)
-  L.SetLightMode("playerLight1Pink", "STANDARD", "Pink", 5)
-  L.SetLightMode("playerLight1Brown", "STANDARD", "Brown", 5)
-
-  L.SetLightMode("playerLight1Brown", "OFF", "Brown", 0.5)
-  L.SetLightMode("playerLight1Orange", "OFF", "Orange", 0.5)
-  L.SetLightMode("playerLight1Red", "OFF", "Red", 0.5)
-  L.SetLightMode("playerLight1Pink", "OFF", "Pink", 0.5)
-  L.SetLightMode("playerLight1Brown", "OFF", "Brown", 0.5)
-
-  L.SetLightMode(G.GUIDS.SEAT_LIGHT_2_BROWN, { enabled = true,
-  color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
-  L.SetLightMode(G.GUIDS.SEAT_LIGHT_2_ORANGE, { enabled = true, color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
-  L.SetLightMode(G.GUIDS.SEAT_LIGHT_2_RED, { enabled = true, color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
-  L.SetLightMode(G.GUIDS.SEAT_LIGHT_2_PINK, { enabled = true, color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
-  L.SetLightMode(G.GUIDS.SEAT_LIGHT_2_PURPLE, { enabled = true, color = Color(255/255, 100/255, 100/255), intensity = 5, range = 80, angle = 90}, nil, 5)
-end
 
 local NPC_LIGHT_TO_SEAT = {
     npcLight2NPC1 = "NPC1",

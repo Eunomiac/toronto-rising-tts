@@ -31,12 +31,13 @@ This file is continuously updated with issues and plans for feature development.
 
 ## Focus
 
-_Stack rank for the current cycle (2026-07-15 — **TOR-385** / **TOR-386** shipped; **TOR-384** investigate via `DEBUG.showGlobalHudCanaries`). **Precedence** = Focus stack + Linear **`blockedBy`** (not Linear priority). **TOR-141 (E2E playbooks)** is a living doc (In Progress, not Focus stack). **Back-burner / “Deferred this cycle” is paused** (author 2026-06-21) — open work stays in domain sections; sequence via Linear blockers only._
+_Stack rank for the current cycle (2026-07-16 — **TOR-204** revised Compulsions sequences from INBOX Immediate; workshop lights/anchors/camera already in branch). **Precedence** = Focus stack + Linear **`blockedBy`** (not Linear priority). **TOR-141 (E2E playbooks)** is a living doc (In Progress, not Focus stack). **Back-burner / “Deferred this cycle” is paused** (author 2026-06-21) — open work stays in domain sections; sequence via Linear blockers only._
 
 | # | Issue | Why now |
 | --- | --- | --- |
-| 1 | **TOR-384** — Global HUD missing on first save load | Author canaries; no speculative remount until class named |
-| 2 | **TOR-329** — TTS API heavy-workload audit | Performance / hitch inventory |
+| 1 | **TOR-204** — Compulsions deck (revised RunSequence flow) | INBOX Immediate; DRAWN/SELECTED + lights + one-at-a-time |
+| 2 | **TOR-384** — Global HUD missing on first save load | Author canaries; no speculative remount until class named |
+| 3 | **TOR-329** — TTS API heavy-workload audit | Performance / hitch inventory |
 
 **Also in cycle (below top stack):** **TOR-141** (E2E playbooks living doc). **TOR-286** (centralize `setInvisibleTo`). **TOR-303** (author review roll broadcast phrasing — External Todo). **TOR-376** (CSHEET max-slot setXml migrate — Future). **TOR-381** (join-client HUD missing — TTS External). **TOR-382** (coterie sheet notes — Future). **TOR-95** (play-as-NPC, **blockedBy** **TOR-247**). **TOR-330** (Fomorach shapeshift toggle; **blockedBy** **TOR-327** workshop stat deltas). **TOR-98** (Spotlight turn UX — scaffolding in TOR-143).
 
@@ -300,7 +301,7 @@ _Blocked: author must define data binding approach before substantial implementa
 - [x] **Orange throne backwards:** PC `SEAT_CHAIR_*` postCorrections skipped (`skipPcPostCorrections`); Orange already has `rotationDelta (0,180,0)`. Allow chair corrections. _(TOR-378)_
 - [x] **C.LockedObjects interactable lock:** Startup-gate apply + `pairs()` iteration; fixed nil `DICE_DRAWER_STORYTELLER` hole; audit script. _(TOR-154 — author confirmed 2026-06-15.)_
 - [x] **Tarot hide:** `G.GUIDS.TAROT_BUTTON_PINK` / [`ui/ui_tarot_button.ttslua`](../ui/ui_tarot_button.ttslua) — when hiding the deck, return all drawn tarot cards to the deck first, then hide (no orphans on table). _(TOR-96)_
-- [ ] **Compulsions deck — pick-and-present flow:** Per-player generic deck draw → master deck match (up to 4) → anchor placement + lock → player Draw one → selected card lerp/lock; unselected return to master deck. GM Notes `Compulsion:<Type>-<charKey>:…` (`C.PlayerData.charKey` → seat color for anchors/decks); anchors in `C.ObjectPositions.COMPULSION_CARD_*`. _Implementation in repo — pending Save & Play smoke_ ([playbook](Step-By-Step%20Playbooks/TOR-204-compulsions-deck-verify.md)). _(TOR-204)_
+- [ ] **Compulsions deck — revised pick-and-present:** `U.RunSequence` draw → DRAWN + camera `compulsions` → stagger four master matches → select to SELECTED + `<Color>Object` + light STANDARD; remove → master + light OFF + deck `interactable = true`; one Compulsion at a time (deck lock). GM Notes `Compulsion:<Type>-<charKey>:…`. [playbook](Step-By-Step%20Playbooks/TOR-204-compulsions-deck-verify.md). _(TOR-204)_
 - [ ] **Centralize object visibility:** Helper for reveal/hide-all-players vs Host-only (incl. Grey/White); migrate `setInvisibleTo` call sites; audit Text-tool object visibility. _(TOR-286)_
 - [x] **Player companion toggle tiles:** Red/Brown famulus A — owner-gated left (on/off + front/back image swap) / right (state 1↔2); Purple deferred (figurines not in save). Full five-tile Tarot-style reconcile later. _(TOR-288)_
 - [x] **Confirm stage figurine position lerp on Apply:** Diagnostics + eligibility audit (`NPCStageLerp`). _(TOR-367)_

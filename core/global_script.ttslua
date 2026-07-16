@@ -4793,6 +4793,9 @@ function onObjectEnterZone(zone, object)
     if Compulsions.canonicalizeSeatColor(data.FogColor) == nil then
         return
     end
+    if Compulsions.onSelectedEnteredHand(zone, object) then
+        return
+    end
     Compulsions.onPresentedEnteredHand(zone, object)
 end
 

@@ -275,6 +275,14 @@ CD.Defs = {
     priority = 10,
     statChanges = { etiquette = 2 },
   },
+  compulsion_Delusion_2 = {
+    id = "compulsion_Delusion_2",
+    type = "stat",
+    displayName = "Oracular Static",
+    canApplyManually = true,
+    priority = 10,
+    statChanges = { awareness = -2 },
+  },
   bonusWpReroll = {
     id = "bonusWpReroll",
     type = "roll",
