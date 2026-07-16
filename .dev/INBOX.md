@@ -20,7 +20,6 @@ Verification:
 ## For Immediate Implementation
 > _After registering each of these issues with Linear in the ordinary fashion, before updating the Focus Stack, briefly review the issue: If it is a quick or easy fix, implement it immediately without waiting for user confirmation. Otherwise, promote it to the top of the Focus Stack, and offer to begin work on it immediately when summarizing your work processing `INBOX.md` to the user. If multiple issues require promotion in this way, consider how best to resolve them as quickly as possible, and offer to draft an implementation plan in your response to the user._
 
-* [Bug] When an NPC token is moved to the Stage Control board during a scene transition, their y-coordinate needs to be increased slightly so they drop onto the board; currently, they're moved to slightly inside the board, making them invisible.
 
 ## Active
 
@@ -44,6 +43,10 @@ Verification:
 
 
 ## Processed
+
+2026-07-16 Focus refresh — **TOR-204** (Compulsions deck) removed from Focus (Done); **TOR-384** (Global HUD first load) deprioritized (No priority); **TOR-329** split → **TOR-390** / **TOR-391** / **TOR-392**; Focus quick fixes **TOR-140**, **TOR-139**, **TOR-393**, **TOR-371**
+
+2026-07-16 INBOX Immediate — Stage NPC token Y too low on scene transition → **TOR-393** (NPC Bug, Quick Fix; Focus #4)
 
 2026-07-16 INBOX Immediate — Seated NPCs retain seats when switching to scene without those slots → **TOR-389** (Scenes Bug, High; Focus #2; relatedTo **TOR-278**, **TOR-275**)
 
