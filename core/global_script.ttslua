@@ -3177,7 +3177,7 @@ local function syncSoundscapeLaneUi()
     local duckHint = ""
     for _, row in ipairs(rows) do
         if row.isDucked == true and (row.id == "rain" or row.id == "wind") and duckHint == "" then
-            duckHint = "Weather is ducked while Indoors is true (slider sets natural volume)."
+            duckHint = "Weather ducked (indoors)"
         end
         local suffix = ""
         if row.active ~= true then
