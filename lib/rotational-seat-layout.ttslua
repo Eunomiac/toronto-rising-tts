@@ -2275,18 +2275,19 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
         else
           local obj = referenceObjByRole[rk]
           if obj == nil then
-            error(
-              "rotational-seat-layout: internal error: missing reference object for color '"
-              .. color
-              .. "' role "
-              .. tostring(rk)
-            )
+            -- TOR-381: unresolved reference slot was skipped earlier; export empty GUID + computed frame.
+            guid = ""
+            transformNested[color][rk] = {
+              position = Vector(frComputed.position),
+              rotation = Vector(frComputed.rotation),
+            }
+          else
+            guid = obj.getGUID and obj.getGUID() or ""
+            transformNested[color][rk] = {
+              position = obj.getPosition(),
+              rotation = obj.getRotation(),
+            }
           end
-          guid = obj.getGUID and obj.getGUID() or ""
-          transformNested[color][rk] = {
-            position = obj.getPosition(),
-            rotation = obj.getRotation(),
-          }
         end
       else
         local byRoleMap = cloneGuidByColorRole[color]
@@ -2316,13 +2317,17 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
         end
       end
       if (guid == nil or guid == "") and not slotFrame and color == referencePlayerColor then
-        error(
-          "rotational-seat-layout: could not resolve object GUID for reference seat '"
-          .. color
-          .. "' role '"
-          .. rk
-          .. "'"
-        )
+        local refObj = referenceObjByRole[rk]
+        -- Empty GUID is OK when the reference slot was intentionally skipped (TOR-381).
+        if refObj ~= nil and refObj ~= false then
+          error(
+            "rotational-seat-layout: could not resolve object GUID for reference seat '"
+            .. color
+            .. "' role '"
+            .. rk
+            .. "'"
+          )
+        end
       end
       guidNested[color][rk] = guid
     end
