@@ -424,8 +424,9 @@ end
 Phases.onEnter[C.Phases.PLAY] = function(ctx)
     return {
         function()
-            -- Phase is already PLAY (set before enter steps). Re-assert global blindfold so any
-            -- applyGlobalBlindfoldFromPhase race during the phase flip cannot lift early (TOR-363).
+            -- Phase is already PLAY (set before enter steps). Idempotent re-assert so any
+            -- applyGlobalBlindfoldFromPhase race during the phase flip cannot lift early (TOR-363);
+            -- no FadeIn when already up (TOR-398).
             return Phases.showGlobalBlindfold(ctx)
         end,
         function()

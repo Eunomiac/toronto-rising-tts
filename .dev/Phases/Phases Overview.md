@@ -22,7 +22,7 @@ Status: current (TOR-143 / TOR-361 / TOR-362)
 
 | Kind | XML | Phase system |
 | --- | --- | --- |
-| **Global blindfold** | `ui/shared/panel_overlay_global_blindfold.xml` (`overlay_globalBlindfold`, `active=true` by default) | **Yes** — hide on Play enter **after** Intermission→Play audio handoff (5s Loop out + 3s Main in); show on Intermission enter; connect during Intermission leaves it up; connect elsewhere hides it. **No** timed onLoad auto-hide. |
+| **Global blindfold** | `ui/shared/panel_overlay_global_blindfold.xml` (`overlay_globalBlindfold`, `active=true` by default) | **Yes** — hide on Play enter **after** Intermission→Play audio handoff (5s Loop out + 3s Main in); show on Intermission enter; connect during Intermission leaves it up; connect elsewhere hides it. **No** timed onLoad auto-hide. Show/hide are idempotent (TOR-398): no FadeIn when already up; hide sequences do not stack. |
 | **Per-player transition blindfolds** | `ui/.templates/panel_overlay_blindfold.xml` → `hudBlindfold` via `core/hud_blindfold.ttslua` | **No** — scene/table transitions only |
 
 ## General Phase Structure

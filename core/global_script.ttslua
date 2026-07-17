@@ -383,36 +383,91 @@ local seatHudRevealDoneByPlayer = {}
 --- First `onPlayerChangeColor` after `onPlayerConnect` still auto-refreshes UI (including Host connect).
 local pendingConnectSeatRefreshByPlayer = {}
 
+--- Last applied global-blindfold visibility. `nil` = unknown after XML load (defaults
+--- `active=true` → treat as already ON so re-show does not re-trigger FadeIn). TOR-398.
+local globalBlindfoldAppliedVisible = nil
+local globalBlindfoldHideInFlight = false
+local globalBlindfoldHideCancel = nil
+
+local function setGlobalBlindfoldActive(isActive)
+    local value = isActive and "true" or "false"
+    if type(U.setAttribute) == "function" then
+        U.setAttribute(STARTUP_LOADING_OVERLAY_ID, "active", value)
+    elseif type(UI.setAttribute) == "function" then
+        UI.setAttribute(STARTUP_LOADING_OVERLAY_ID, "active", value)
+    end
+end
+
+--- After `UI.setXml`, Lua applied state may not match the reset document — re-sync via apply.
+local function invalidateGlobalBlindfoldAppliedState()
+    globalBlindfoldAppliedVisible = nil
+end
+
 --- Force-hide global blindfold (`overlay_globalBlindfold`) for all clients.
+--- Idempotent (TOR-398): skip if already hidden or a hide sequence is in flight.
 --- `U.RunSequence`: hide (FadeOut) → wait 1s → clear `active` so a later seat HUD reveal
 --- cannot resurrect the overlay with `active` still true.
 local function hideStartupLoadingOverlays()
-    U.RunSequence({
+    if globalBlindfoldAppliedVisible == false then
+        return
+    end
+    if globalBlindfoldHideInFlight then
+        return
+    end
+    globalBlindfoldHideInFlight = true
+    local cancel = { cancelled = false, reason = nil }
+    globalBlindfoldHideCancel = cancel
+    U.RunSequenceWithOptions({
         function()
+            if cancel.cancelled then
+                return
+            end
             UI.hide(STARTUP_LOADING_OVERLAY_ID)
             return 1
         end,
         function()
-            if type(U.setAttribute) == "function" then
-                U.setAttribute(STARTUP_LOADING_OVERLAY_ID, "active", "false")
-            elseif type(UI.setAttribute) == "function" then
-                UI.setAttribute(STARTUP_LOADING_OVERLAY_ID, "active", "false")
+            if cancel.cancelled then
+                return
+            end
+            setGlobalBlindfoldActive(false)
+            globalBlindfoldAppliedVisible = false
+        end,
+    }, {
+        cancelRegistry = cancel,
+        onComplete = function()
+            if globalBlindfoldHideCancel == cancel then
+                globalBlindfoldHideInFlight = false
+                globalBlindfoldHideCancel = nil
             end
         end,
     })
 end
 
 --- Restore global blindfold for all clients (Intermission enter / connect policy).
+--- Idempotent (TOR-398): if already ON (or XML-default unknown), ensure `active` only — no FadeIn.
 local function showStartupLoadingOverlays()
-    if type(U.setAttribute) == "function" then
-        U.setAttribute(STARTUP_LOADING_OVERLAY_ID, "active", "true")
-    elseif type(UI.setAttribute) == "function" then
-        UI.setAttribute(STARTUP_LOADING_OVERLAY_ID, "active", "true")
+    local interruptedHide = false
+    if globalBlindfoldHideInFlight and globalBlindfoldHideCancel ~= nil then
+        globalBlindfoldHideCancel.cancelled = true
+        globalBlindfoldHideCancel.reason = "show"
+        globalBlindfoldHideInFlight = false
+        globalBlindfoldHideCancel = nil
+        interruptedHide = true
     end
+
+    -- Already up (or XML default cover): skip UI.show / FadeIn and TOR-368 camera.
+    if not interruptedHide and (globalBlindfoldAppliedVisible == true or globalBlindfoldAppliedVisible == nil) then
+        setGlobalBlindfoldActive(true)
+        globalBlindfoldAppliedVisible = true
+        return
+    end
+
+    setGlobalBlindfoldActive(true)
     if type(UI.show) == "function" then
         UI.show(STARTUP_LOADING_OVERLAY_ID)
     end
-    -- TOR-368: wait until global blindfold is up before camera motion.
+    globalBlindfoldAppliedVisible = true
+    -- TOR-368: wait until global blindfold is up before camera motion (OFF→ON / interrupted hide only).
     local Main = require("core.main")
     if type(Main.setDefaultCameraBeforeBlindfold) == "function" then
         U.delay(function()
@@ -550,6 +605,9 @@ local function scheduleDeferredFullUiResyncForReveal(seated)
             UI.setXml(UI.getXml())
         end)
         if ok then
+            -- Full document replace resets overlay attrs; clear Lua apply cache then re-sync. TOR-398.
+            invalidateGlobalBlindfoldAppliedState()
+            applyGlobalBlindfoldFromPhase()
             print("[SeatUI] Deferred full UI resync sent (visibility-rebind fallback).")
         else
             print("[SeatUI] Deferred full UI resync failed: " .. tostring(err))
