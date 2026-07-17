@@ -43,6 +43,7 @@ You are starting (or re-scoping) work on **Toronto Rising**, a Vampire: The Masq
 12. `docs/solutions/lua-wait-api-policy.md` — **no raw `Wait.time` / `Wait.condition` / `Wait.stop`** outside `lib/util.ttslua`; use `U.delay`, `U.waitForCondition`, `U.RunSequence`, etc.
 13. `docs/solutions/lua-ui-full-xml-policy.md` — avoid **`UI.setXml` / `setXmlTable`**; prefer `setAttribute`, `setAttributes`, `setValue`, `show`/`hide`. Gate counts are baseline — do not add call sites without review.
 14. `.dev/AVAILABLE_FUNCTIONS.md` + `lib/util.ttslua` — **reuse existing helpers** (`U.map`, `U.filter`, `U.Type`, …) before writing new ones.
+15. `.dev/Sychronizing Game Functionality/TTS-API-Heavy-Workload-Catalog.md`, `.dev/Sychronizing Game Functionality/TTS-API-Heavy-Workload-Usage-Inventory.md`, and `.dev/Sychronizing Game Functionality/Performance Audit.md` — **mandatory before Lua/XML changes touching TTS APIs, scans/casts, object spawn/reload/custom object APIs, component traversal, timers, AssetBundle/audio updates, or broad UI refresh fan-out.**
 
 **When relevant**
 
@@ -61,6 +62,7 @@ You are starting (or re-scoping) work on **Toronto Rising**, a Vampire: The Masq
 | **Fail loudly** | No silent fallbacks; no unannotated `pcall`. |
 | **Timing** | All delays through `lib/util.ttslua` helpers only. |
 | **UI updates** | Targeted attribute/value updates, not full XML refresh, except approved csheet/debug paths in the UI policy doc. |
+| **TTS API heavy work** | Hot callbacks, timers, repeated reconcilers, scene/table/seat/location apply paths, UI fan-out, and scan/spawn/component-update paths need an O(1)/bounded guard first: GUID/object identity, seat/color/tag bound, cached index, dirty fingerprint, narrower sync delta, cold/setup/debug note, or chunk/defer plan. Do not duplicate broad refreshes after `Sync.full`/`Sync.player`; fix the missing delta instead. |
 | **GUIDs** | `lib/guids.ttslua` (`G` table) — not legacy `C.GUIDS.*`. |
 | **Global script** | Real logic: `core/global_script.ttslua`; `global/global_script.ttslua` is a require shim only. |
 | **Require order** | `lib/constants` → `lib/guids` → `lib/util` → `core/state` → other modules. |

@@ -74,6 +74,28 @@ This audit ranks expensive or repeatedly-triggered paths by static **impact x fr
 
 All recommendations preserve the synchronization contract: `gameState` remains the source of truth, handlers mutate state first, and reconcilers apply live TTS world/UI/audio state. Do **not** optimize by writing lights, UI, spawned objects, or AssetBundle audio directly from handlers.
 
+## Living guardrail — TTS API heavy work (TOR-392)
+
+Treat this audit, the [TTS API Heavy-Workload Catalog](TTS-API-Heavy-Workload-Catalog.md), and the [TTS API Heavy-Workload Usage Inventory](TTS-API-Heavy-Workload-Usage-Inventory.md) as living docs. Before adding scans, casts, full UI refresh, spawn/reload/custom-object work, component traversal/writes, AssetBundle/audio mutation, or timer-driven fan-out, verify whether the API family is cataloged and whether current call sites already have a safer pattern.
+
+Hot or repeated paths include `onValueChanged`, object event handlers, physical listeners, timers/delayed fan-out, repeated reconcilers, scene/table/seat/location apply paths, UI refresh fan-out, and object scan/spawn/reload/component-update paths. These paths need at least one O(1) or bounded guard before heavy work: GUID/object identity, seat/color/tag bound, known-object bounds check, dirty/fingerprint skip, cached index, narrowed sync delta, explicit cold/setup/debug-only justification, chunking/defer behavior, or profiling/logging when static risk is unclear.
+
+Do not reintroduce TOR-391 duplicates: no broad `StorytellerScenesPanel.refresh()` or all-HUD `UpdateUIDisplays` immediately after `Sync.full` when incremental sync deltas already cover the work; no duplicate top-fog reconciliation inside nested seat-presentation during full scene sync; refresh changed CSHEET colors rather than scanning all player colors when hosted-condition reconciliation reports changed seats; skip control-board mirror snap/object/UI work when the mirror fingerprint is unchanged; coalesce admin-light scene button refreshes when `adminLighting` and `scenesPanel` are requested together.
+
+### Pre-merge checklist for Lua/XML touching TTS APIs
+
+- Is this call in a hot callback, timer, repeated reconciler, or user-drag/type path?
+- Is it bounded by color, seat, GUID, tag, known object identity, or a board-local bounds check before expensive work starts?
+- Is unchanged work skipped by a fingerprint, cache, dirty check, or previous-value comparison?
+- Is a broad refresh duplicated immediately after `Sync.full`, `Sync.player`, or another reconciler?
+- Would a narrower delta (`playerHud`, `scenesPanel`, changed seat colors, targeted UI id/class/value) replace a broad refresh?
+- Does this path scan all objects or tag groups repeatedly when a GUID/cache/index would work?
+- Does this path call component setters every refresh even when values did not change?
+- Does this path spawn, reload, set XML, set custom objects, or touch AssetBundle/audio APIs in a hot path?
+- If acceptable only because it is debug/setup/cold-path, is that explicit in comments or docs?
+- Does `npm run build` pass after production Lua/XML edits?
+- If behavior depends on live TTS state, is there a manual Save & Play / live-table smoke note?
+
 ## Ranked hotspots
 
 | Rank | Hotspot | Impact hypothesis | Frequency evidence | Classification |

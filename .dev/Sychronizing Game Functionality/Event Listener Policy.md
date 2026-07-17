@@ -36,6 +36,8 @@ Every high-frequency handler must be able to **reject unrelated events in one O(
 
 If the guard fails, **return immediately** — no logging in the hot path unless `DEBUG` gated.
 
+For heavy/moderate TTS APIs, the cheap guard must happen before broad scans/casts, module fan-out, and UI/world writes. In hot listeners, prefer known-object `hasTag`/GUID checks and board-local bounds checks over `getObjects`, `getAllObjects`, `getObjectsWithTag`, `getObjectsWithAllTags`, `Physics.cast`, `UI.setXml`, spawn/reload/custom-object APIs, component traversal/writes, or AssetBundle/audio mutation. If one of those APIs is unavoidable, document why it is cold/setup/debug-only, bounded, fingerprinted, chunked/deferred, or narrower than the cataloged alternative. See [TTS API Heavy-Workload Catalog](TTS-API-Heavy-Workload-Catalog.md), [TTS API Heavy-Workload Usage Inventory](TTS-API-Heavy-Workload-Usage-Inventory.md), and [Performance Audit](Performance%20Audit.md).
+
 **Actor identity:** Storyteller **interaction** gates use **`U.isStorytellerSteamPlayer(playerRef)`** on the event's player param. See [Preparing For Multiplayer](../Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md) for tiers A/B/C and delivery types.
 
 ## Host Authority Inventory (TOR-144 audit)

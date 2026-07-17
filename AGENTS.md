@@ -76,6 +76,10 @@ Generated files, save snapshots, local tool apps, chronicle data, active task no
 ## Coding Guardrails
 
 - Treat `gameState` as the single source of truth for game intent.
+- Before adding or changing Lua/XML that touches Tabletop Simulator APIs, check `.dev/Sychronizing Game Functionality/TTS-API-Heavy-Workload-Catalog.md`, `.dev/Sychronizing Game Functionality/TTS-API-Heavy-Workload-Usage-Inventory.md`, `.dev/Sychronizing Game Functionality/Performance Audit.md`, and `.dev/Sychronizing Game Functionality/Event Listener Policy.md`.
+- Do not introduce hot-path broad scans, casts, spawn/reload/custom-object work, full XML rebuilds, component traversal/writes, AssetBundle/audio changes, timers, or broad UI refreshes without an O(1) or bounded guard first: GUID/object identity, seat/color/tag bound, dirty fingerprint, narrowed sync delta, cold/debug-only justification, or chunked/deferred work.
+- Prefer known-object bounds/tag checks, cached GUID/tag indexes, fingerprints, and explicit sync deltas over `getObjects`, `getAllObjects`, `getObjectsWithTag`, `Physics.cast`, full `UI.setXml`, or repeated component setters in event handlers, timers, reconcilers, and `onValueChanged` paths.
+- Never duplicate broad refresh work immediately after `Sync.full`, `Sync.player`, or another reconciler unless a concrete missing-refresh case is documented.
 - Keep mutation and reconciliation separate.
 - Use explicit sync entry points after state mutation.
 - Do not hide live-world side effects in state setters.

@@ -50,7 +50,9 @@ Tier guidance:
 | Control-board token surface check | `getObjectsWithTag` replaced by board-local bounds checks for hot pick-up/drag/drop eligibility | Avoid full/tag scans inside common object event paths; do one O(1)-ish known-object bounds check after an initial tag/GUID guard | `core/npc_gameboard.ttslua`, `Event Listener Policy.md` |
 | Runtime full XmlUI refresh policy | `UI.setXml`, `UI.setXmlTable`, `self.UI.setXml` | Full-document replacement is allowed only for the approved CSHEET object-page exception; prefer predeclared XML plus attribute/value deltas | `docs/solutions/lua-ui-full-xml-policy.md` |
 | Event listener guard rule | `onObjectDrop`, `onObjectRandomize`, `onObjectEnterZone`, `onFixedUpdate`-style callbacks | Reject unrelated events before `require`, scans, state iteration, timers, or `Sync.*`; hot handlers must start with cheap object/player/type gates | `Event Listener Policy.md` |
+| Control-board hot event replacement | `getObjectsWithTag` replaced by known-board local bounds checks | A tag query can still be too broad in pick-up/drag/drop style paths; use a cached/known object plus coordinate math when the event already provides the object | `core/npc_gameboard.ttslua`, `Performance Audit.md` |
 | Periodic clock/UI fan-out | timer chain to `UpdateUIDisplays({ playerHud = true })` | Timer-driven paths can be as costly as direct event paths when they refresh broad UI repeatedly; use narrow deltas and fingerprints | TOR-329 Linear comment 2026-07-13 |
+| Post-`Sync.full` duplicate refreshes | `StorytellerScenesPanel.refresh`, all-HUD `UpdateUIDisplays`, top-fog reconcile, all-color CSHEET refresh | Do not add broad refresh immediately after full/player/domain sync when the reconciler already emits incremental deltas; add or fix the missing delta instead | `Performance Audit.md` |
 
 ## Official API Spot Checks
 
