@@ -20,6 +20,9 @@ local STORYTELLER_PANELS = {
 --- Wrapper for the pop-out content (all panels). Hidden when none selected.
 local STORYTELLER_CONTENT_AREA_ID = "storytellerContentArea"
 
+--- Tab bar + content host. Collapsed on panel close (not on panel switch). TOR-395.
+local STORYTELLER_TOOLBAR_BODY_ID = "storytellerToolbarBody"
+
 --- @param elementId string
 --- @return boolean True if TTS reports the element as active.
 local function storytellerUiElementIsActive(elementId)
@@ -72,6 +75,7 @@ function StorytellerPanelUI.selectStorytellerPanel(panelKey, forceOpen)
             U.setAttribute(ids.panel, "active", "false")
             setStorytellerToggleVisual(ids.toggle, false)
         end
+        U.hideXmlElement(STORYTELLER_TOOLBAR_BODY_ID)
         return
     end
 
@@ -84,12 +88,14 @@ function StorytellerPanelUI.selectStorytellerPanel(panelKey, forceOpen)
 end
 
 --- Closes the storyteller content area and deactivates every toolbar panel (matches re-clicking an open tab).
+--- Also collapses `storytellerToolbarBody` (TOR-395); panel switches leave the body open.
 function StorytellerPanelUI.closeAllPanels()
     U.setAttribute(STORYTELLER_CONTENT_AREA_ID, "active", "false")
     for _, ids in pairs(STORYTELLER_PANELS) do
         U.setAttribute(ids.panel, "active", "false")
         setStorytellerToggleVisual(ids.toggle, false)
     end
+    U.hideXmlElement(STORYTELLER_TOOLBAR_BODY_ID)
 end
 
 return StorytellerPanelUI
