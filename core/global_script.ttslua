@@ -518,8 +518,42 @@ local function revealSeatHudVisibility(seatColor)
     end
 end
 
---- Re-evaluate seat HUD after seat assignment (TTS visibility snapshotted-at-load quirk; TOR-285 / TOR-375).
---- Uses runtime visibility attribute rebind + targeted UpdateUIDisplays — never a full UI document replace.
+--- Fallback full UI resync for remote clients where the visibility rebind above doesn't stick (TOR-381 / TOR-375).
+--- Debounced to one in-flight timer; skipped for Host.
+local pendingFullUiResyncHandle = nil
+local FULL_UI_RESYNC_FALLBACK_DELAY_SECONDS = 4
+local function scheduleDeferredFullUiResyncForReveal(seated)
+    if U.isPlayer(seated) then
+        local host = U.getHost()
+        if U.isPlayer(host) then
+            local seatedSteam, hostSteam = seated.steam_id, host.steam_id
+            local sameSteam = type(seatedSteam) == "string" and seatedSteam ~= ""
+                and type(hostSteam) == "string" and hostSteam ~= ""
+                and seatedSteam == hostSteam
+            if sameSteam or seated == host then
+                return
+            end
+        end
+    end
+    if pendingFullUiResyncHandle ~= nil then
+        U.stopDelay(pendingFullUiResyncHandle)
+    end
+    pendingFullUiResyncHandle = U.delay(function()
+        pendingFullUiResyncHandle = nil
+        local ok, err = pcall(function()
+            UI.setXml(UI.getXml())
+        end)
+        if ok then
+            print("[SeatUI] Deferred full UI resync sent (visibility-rebind fallback).")
+        else
+            print("[SeatUI] Deferred full UI resync failed: " .. tostring(err))
+        end
+    end, FULL_UI_RESYNC_FALLBACK_DELAY_SECONDS)
+end
+
+--- Re-evaluate seat HUD after seat assignment (TTS visibility snapshotted-at-load quirk; TOR-285 / TOR-375 / TOR-381).
+--- Uses runtime visibility attribute rebind + targeted UpdateUIDisplays, with a deferred full UI resync
+--- fallback for join clients where the rebind does not stick.
 --- First visit per player per seat since connect; later hotseat swaps skip the reveal but still refresh displays.
 --- @param seatColor string
 local function refreshGlobalUiAfterSeatAssignment(seatColor)
@@ -587,8 +621,9 @@ local function refreshGlobalUiAfterSeatAssignment(seatColor)
         if U.isPlayer(seated) then
             shouldMarkRevealDone = true
         end
-        print(string.format("[SeatUI] Revealing HUD visibility for %s (no full UI refresh)", tostring(seatColor)))
+        print(string.format("[SeatUI] Revealing HUD visibility for %s (attribute rebind + deferred resync fallback)", tostring(seatColor)))
         revealSeatHudVisibility(seatColor)
+        scheduleDeferredFullUiResyncForReveal(seated)
     end
     applyPostSeatUiRefresh()
 end

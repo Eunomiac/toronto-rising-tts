@@ -836,19 +836,7 @@ local function resolveObjectRefWithRoleSupport(ref, referencePlayerColor, label)
     attemptedRoleIdentity = roleName
     obj = SRI.findObjectByRoleIdentity(roleName)
   end
-  if obj == nil and label ~= nil then
-    error(
-      "rotational-seat-layout: could not resolve "
-      .. tostring(label)
-      .. " to an Object"
-      .. " | ref="
-      .. tostring(ref)
-      .. " | referencePlayerColor="
-      .. tostring(referencePlayerColor)
-      .. " | attemptedRoleIdentity="
-      .. tostring(attemptedRoleIdentity)
-    )
-  end
+  -- Callers handle nil (skip missing table objects); do not abort the whole layout pass (TOR-381).
   return obj
 end
 
@@ -958,34 +946,43 @@ local function resolveSeatTemplateSlots(entries, referencePlayerColor)
         "source template entry [" .. tostring(i) .. "]"
       )
       if obj == nil then
-        error("rotational-seat-layout: could not resolve source template entry [" .. tostring(i) .. "] to an Object")
-      end
-      local disp = resolveTemplateRoleIdentity(obj, i)
-      local roleKey, suffixUpper = SRI.parseRoleAndSuffix(disp)
-      if suffixUpper ~= refUpper then
-        error(
-          "rotational-seat-layout: template object "
-          .. tostring(i)
-          .. " ('"
-          .. disp
-          .. "') has suffix '_"
-          .. suffixUpper
-          .. "' but referencePlayerColor '"
-          .. referencePlayerColor
-          .. "' requires suffix '_"
-          .. refUpper
-          .. "'"
+        -- Skip missing template objects instead of aborting the whole sync (TOR-381).
+        print(
+          "[rotational-seat-layout] WARNING: source template entry [" .. tostring(i)
+          .. "] could not be resolved to an Object (referencePlayerColor=" .. tostring(referencePlayerColor)
+          .. ") — skipping this slot."
         )
+        slot = nil
+      else
+        local disp = resolveTemplateRoleIdentity(obj, i)
+        local roleKey, suffixUpper = SRI.parseRoleAndSuffix(disp)
+        if suffixUpper ~= refUpper then
+          error(
+            "rotational-seat-layout: template object "
+            .. tostring(i)
+            .. " ('"
+            .. disp
+            .. "') has suffix '_"
+            .. suffixUpper
+            .. "' but referencePlayerColor '"
+            .. referencePlayerColor
+            .. "' requires suffix '_"
+            .. refUpper
+            .. "'"
+          )
+        end
+        slot.roleKey = roleKey
+        slot.displayName = disp
+        slot.sourceFrame = {
+          position = obj.getPosition(),
+          rotation = obj.getRotation(),
+        }
+        slot.sourceObject = obj
       end
-      slot.roleKey = roleKey
-      slot.displayName = disp
-      slot.sourceFrame = {
-        position = obj.getPosition(),
-        rotation = obj.getRotation(),
-      }
-      slot.sourceObject = obj
     end
-    table.insert(slots, slot)
+    if slot ~= nil then
+      table.insert(slots, slot)
+    end
   end
   return slots
 end
