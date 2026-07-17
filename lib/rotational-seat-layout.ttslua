@@ -836,7 +836,7 @@ local function resolveObjectRefWithRoleSupport(ref, referencePlayerColor, label)
     attemptedRoleIdentity = roleName
     obj = SRI.findObjectByRoleIdentity(roleName)
   end
-  -- Callers handle nil (skip missing table objects); do not abort the whole layout pass (TOR-381).
+  -- Returns nil when unresolved. Callers must decide: skip (TOR-381 template/sync paths) or error.
   return obj
 end
 
@@ -1854,13 +1854,20 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
           "source template object at index " .. tostring(i)
         )
         if obj == nil then
-          error("rotational-seat-layout: could not resolve source template object at index " .. tostring(i))
+          -- Skip missing template objects (TOR-381); do not abort the whole resolve pass.
+          print(
+            "[rotational-seat-layout] WARNING: could not resolve source template object at index "
+            .. tostring(i)
+            .. " (referencePlayerColor=" .. tostring(referencePlayerColor)
+            .. ") — skipping."
+          )
+        else
+          local g = obj.getGUID and obj.getGUID() or ""
+          if g == "" then
+            error("rotational-seat-layout: source template object has no GUID")
+          end
+          templateGuidSet[g] = true
         end
-        local g = obj.getGUID and obj.getGUID() or ""
-        if g == "" then
-          error("rotational-seat-layout: source template object has no GUID")
-        end
-        templateGuidSet[g] = true
       end
     end
   end
@@ -1884,13 +1891,19 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
         "reference source object for role '" .. tostring(slot.roleKey) .. "'"
       )
       if o == nil then
-        error("rotational-seat-layout: could not resolve reference source object for role '" ..
-        tostring(slot.roleKey) .. "'")
+        -- Docstring: skip missing slots. Match resolveSeatTemplateSlots (TOR-381).
+        print(
+          "[rotational-seat-layout] WARNING: could not resolve reference source object for role '"
+          .. tostring(slot.roleKey)
+          .. "' (referencePlayerColor=" .. tostring(referencePlayerColor)
+          .. ") — skipping slot."
+        )
+      else
+        if not isHandZoneRoleKey(slot.roleKey) and not isHandZoneObject(o) then
+          mergeObjectTag(o, templateTag)
+        end
+        referenceObjByRole[slot.roleKey] = o
       end
-      if not isHandZoneRoleKey(slot.roleKey) and not isHandZoneObject(o) then
-        mergeObjectTag(o, templateTag)
-      end
-      referenceObjByRole[slot.roleKey] = o
     end
   end
 
@@ -3722,13 +3735,20 @@ function M.clearGeneratedSeatObjects(sourceObjects, seatKeys, blacklist)
           "source template entry [" .. tostring(i) .. "] for clear"
         )
         if obj == nil then
-          error("rotational-seat-layout: could not resolve source template entry [" .. tostring(i) .. "] for clear")
+          -- Skip missing template refs (TOR-381); clear still proceeds for resolved templates.
+          print(
+            "[rotational-seat-layout] WARNING: could not resolve source template entry ["
+            .. tostring(i)
+            .. "] for clear (refColor=" .. tostring(refColor)
+            .. ") — skipping."
+          )
+        else
+          local g = obj.getGUID and obj.getGUID() or ""
+          if g == "" then
+            error("rotational-seat-layout: source template object has no GUID")
+          end
+          templateGuidSet[g] = true
         end
-        local g = obj.getGUID and obj.getGUID() or ""
-        if g == "" then
-          error("rotational-seat-layout: source template object has no GUID")
-        end
-        templateGuidSet[g] = true
       end
     end
   end
