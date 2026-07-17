@@ -523,16 +523,18 @@ end
 local pendingFullUiResyncHandle = nil
 local FULL_UI_RESYNC_FALLBACK_DELAY_SECONDS = 4
 local function scheduleDeferredFullUiResyncForReveal(seated)
-    if U.isPlayer(seated) then
-        local host = U.getHost()
-        if U.isPlayer(host) then
-            local seatedSteam, hostSteam = seated.steam_id, host.steam_id
-            local sameSteam = type(seatedSteam) == "string" and seatedSteam ~= ""
-                and type(hostSteam) == "string" and hostSteam ~= ""
-                and seatedSteam == hostSteam
-            if sameSteam or seated == host then
-                return
-            end
+    -- Empty seats have no remote client to resync; host/same-Steam skips below.
+    if not U.isPlayer(seated) then
+        return
+    end
+    local host = U.getHost()
+    if U.isPlayer(host) then
+        local seatedSteam, hostSteam = seated.steam_id, host.steam_id
+        local sameSteam = type(seatedSteam) == "string" and seatedSteam ~= ""
+            and type(hostSteam) == "string" and hostSteam ~= ""
+            and seatedSteam == hostSteam
+        if sameSteam or seated == host then
+            return
         end
     end
     if pendingFullUiResyncHandle ~= nil then
