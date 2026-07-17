@@ -43,6 +43,8 @@ Verification:
 
 ## Processed
 
+2026-07-17 **TOR-398** (global blindfold flicker) + **TOR-395** (ST toolbar collapse on panel close) shipped — Linear Done; Focus empty (propose next); commits `3c616b6` / `cd3d7ad`
+
 2026-07-17 Cloud agent **TOR-392** (TTS API agent/docs guardrails) reviewed complete — Linear Done; Focus already #1 **TOR-398** / #2 **TOR-395**; phases **TOR-390**/ **TOR-391**/ **TOR-392** tasklist `[x]`
 
 2026-07-17 INBOX Immediate — debug last-load clock → **TOR-394** (shipped); ST toolbar collapse on panel close → **TOR-395** (Focus #2); debug toolbar +100px → **TOR-396** (shipped); sessionNum InputField stale after End → **TOR-397** (shipped); global blindfold flicker load/Intermission→Play → **TOR-398** (Focus #1); Focus refresh (**TOR-390**/ **TOR-391** Done → **TOR-392** unblocked)
