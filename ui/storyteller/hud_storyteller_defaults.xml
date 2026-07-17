@@ -139,7 +139,7 @@
     childForceExpandHeight="false"
     ignoreLayout="true" />
 
-  <!-- Main button column: left-aligned, half-scale, vertically stacked -->
+  <!-- Main button column: left-aligned, half-scale, vertically stacked (TOR-396: +100 Y) -->
   <VerticalLayout class="storyteller_buttonControls"
     padding="0 0 0 0"
     spacing="1"
@@ -147,7 +147,7 @@
     childAlignment="LowerRight"
     width="200"
     height="400"
-    offsetXY="-50 30"
+    offsetXY="-50 130"
     childForceExpandWidth="true"
     childForceExpandHeight="true" />
 

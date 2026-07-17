@@ -20,14 +20,6 @@ Verification:
 ## For Immediate Implementation
 > _After registering each of these issues with Linear in the ordinary fashion, before updating the Focus Stack, briefly review the issue: If it is a quick or easy fix, implement it immediately without waiting for user confirmation. Otherwise, promote it to the top of the Focus Stack, and offer to begin work on it immediately when summarizing your work processing `INBOX.md` to the user. If multiple issues require promotion in this way, consider how best to resolve them as quickly as possible, and offer to draft an implementation plan in your response to the user._
 
-* [Storyteller Debug Toolbar] Add a timestamp to state that records when the game was last loaded (i.e. timestamp during the loading process). Add a label to the top of the Storyteller debug bar (just under the header) that prints (just) that timestamp in HH:MM AM/PM format.
-* [Storyteller Main Toolbar] Whenever a panel is closed (either by clicking on the open panel's name to close it, or by automatic script action e.g. when transition scenes or phases), the entire Storyteller toolbar should also be closed. The only exception is when a panel is closed because the ST switched to a different panel.
-* [Storyteller Debug Toolbar] Move the toolbar buttons about 100 pixels up the screen (not the twirl-down button itself, just the panel that opens when you click the twirl-down button)
-* [Bug] Several times during the loading process, as well as during the transition from Intermediate to Play phases, the global blindfold overlay flickers out of view and back again.  Check for any XML refreshes or other potential causes during those time periods and resolve them.
-* [Bug] The session number input field in the Storyteller's "Phases" panel is not being updated with the automatically-incremented session number after the End phase.
-
-
-
 ## Active
 
 ## External Work (Set STATUS to "External To Do")
@@ -50,6 +42,8 @@ Verification:
 
 
 ## Processed
+
+2026-07-17 INBOX Immediate — debug last-load clock → **TOR-394** (shipped); ST toolbar collapse on panel close → **TOR-395** (Focus #2); debug toolbar +100px → **TOR-396** (shipped); sessionNum InputField stale after End → **TOR-397** (shipped); global blindfold flicker load/Intermission→Play → **TOR-398** (Focus #1); Focus refresh (**TOR-390**/ **TOR-391** Done → **TOR-392** unblocked)
 
 2026-07-16 Focus refresh — **TOR-204** (Compulsions deck) removed from Focus (Done); **TOR-384** (Global HUD first load) deprioritized (No priority); **TOR-329** split → **TOR-390** / **TOR-391** / **TOR-392**; Focus quick fixes **TOR-140**, **TOR-139**, **TOR-393**, **TOR-371**
 

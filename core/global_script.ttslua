@@ -162,6 +162,10 @@ O = require("core.objects")
 U = require("lib.util")
 local StorytellerPanelUI = require("core.storyteller_panel_ui")
 local StorytellerScenesPanel = require("core.storyteller_scenes_panel")
+
+-- Forward decls: helpers assigned later; called from onLoad / HUD_* above those assignments.
+local syncStorytellerPhaseButtons
+local syncDebugLastLoadClockLabel
 local StorytellerStatsPanel = require("core.storyteller_stats_panel")
 local StorytellerProjectsPanel = require("core.storyteller_projects_panel")
 local GameStateOverlay = require("core.game_state_overlay")
@@ -2241,6 +2245,30 @@ function onLoad(saved_data)
     setStartupAction("initialize-game-state")
     S.InitializeGameState(saved_data)
 
+    -- TOR-394: wall-clock of this load for ST debug bar (HH:MM AM/PM, no seconds).
+    do
+        local hour24 = 0
+        local minute = 0
+        if os ~= nil and type(os.date) == "function" then
+            hour24 = tonumber(os.date("%H")) or 0
+            minute = tonumber(os.date("%M")) or 0
+        end
+        local h = hour24 % 24
+        local suffix = "AM"
+        local h12 = h
+        if h >= 12 then
+            suffix = "PM"
+            if h > 12 then
+                h12 = h - 12
+            end
+        end
+        if h12 == 0 then
+            h12 = 12
+        end
+        S.setStateVal(string.format("%d:%02d %s", h12, minute, suffix), "lastLoadClockLabel")
+        syncDebugLastLoadClockLabel()
+    end
+
     -- ST tray lights follow drawerActive; clear before first Sync.full so presets cannot leave them STANDARD.
     setStartupAction("st-dice-drawers-deactivate-flags")
     STD.reconcileAllToWorkshopHome({ instant = true })
@@ -2405,6 +2433,7 @@ function onLoad(saved_data)
                 Phases.reconcileIntermissionAmbientOnLoad()
             end
             setStartupAction("startup-ready-complete")
+            syncDebugLastLoadClockLabel()
             print(
                 U.loadElapsedPrefix()
                     .. "Startup readiness gate complete (global blindfold follows phase="
@@ -2756,6 +2785,11 @@ end
 function HUD_selectStorytellerPanel(player, button, id)
     local panelKey = string.gsub(id, "^toggle_", "")
     StorytellerPanelUI.selectStorytellerPanel(panelKey)
+    if panelKey == "phases" then
+        Wait.frames(function()
+            syncStorytellerPhaseButtons()
+        end, 1)
+    end
     if panelKey == "pcs" and PCST and PCST.refreshAllRows then
         Wait.frames(function()
             PCST.refreshAllRows()
@@ -3177,7 +3211,7 @@ local function syncDebugSeatColorButtons()
 end
 
 --- Highlights phase panel (current label + Play subphase buttons). TOR-143.
-local function syncStorytellerPhaseButtons()
+syncStorytellerPhaseButtons = function()
     local phase = S.getStateVal("currentPhase") or ""
     local sub = S.getStateVal("playSubPhase") or ""
     if UI ~= nil and UI.setValue ~= nil then
@@ -3200,8 +3234,27 @@ local function syncStorytellerPhaseButtons()
         })
     end
     local sessionNum = tonumber(S.getStateVal("sessionNum")) or 1
+    local sessionNumText = tostring(sessionNum)
+    -- InputFields often ignore setValue while inactive (Advance closes panels first — TOR-364 / TOR-397).
+    if UI ~= nil and UI.setAttribute ~= nil then
+        UI.setAttribute("input_sessionNum", "text", sessionNumText)
+    end
     if UI ~= nil and UI.setValue ~= nil then
-        UI.setValue("input_sessionNum", tostring(sessionNum))
+        UI.setValue("input_sessionNum", sessionNumText)
+    end
+end
+
+--- Push last-load clock label onto the ST debug bar (TOR-394).
+syncDebugLastLoadClockLabel = function()
+    local label = S.getStateVal("lastLoadClockLabel")
+    if type(label) ~= "string" then
+        label = ""
+    end
+    if UI ~= nil and UI.setAttribute ~= nil then
+        UI.setAttribute("debug_lastLoadClock", "text", label)
+    end
+    if UI ~= nil and UI.setValue ~= nil then
+        UI.setValue("debug_lastLoadClock", label)
     end
 end
 
@@ -4386,6 +4439,10 @@ function UpdateUIDisplays(delta)
             UI_DISPLAY_CACHE.phase = currentPhase
         end
         syncStorytellerPhaseButtons()
+    end
+
+    if refreshAll then
+        syncDebugLastLoadClockLabel()
     end
 
     if wants("scene") then

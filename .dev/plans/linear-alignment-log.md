@@ -557,5 +557,12 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-16 | Focus | Stack | #1 TOR-204, #2 TOR-389, #3 TOR-384, #4 TOR-329 |
 | 2026-07-16 | DONE | TOR-389 | syncOccupiedNpcSlotsFromSeatSlots before validateState on library Apply; no-scene path unified; build OK — pending Save & Play |
 | 2026-07-16 | Focus | Stack | #1 TOR-204, #2 TOR-384, #3 TOR-329 |
+| 2026-07-17 | CREATE+SHIP | TOR-394 | Debug last-load HH:MM AM/PM under DEBUG header |
+| 2026-07-17 | CREATE | TOR-395 | Close entire ST toolbar on panel close (except switch); Focus #2 High |
+| 2026-07-17 | CREATE+SHIP | TOR-396 | Debug toolbar buttons +100px Y |
+| 2026-07-17 | CREATE+SHIP | TOR-397 | Phases sessionNum InputField text attr + reopen sync |
+| 2026-07-17 | CREATE | TOR-398 | Global blindfold flicker load/Intermission→Play; Focus #1 High; relatedTo TOR-363/323/361 |
+| 2026-07-17 | UNBLOCK | TOR-392 | removeBlockedBy TOR-391 (phase 3 Done); Focus #3 |
+| 2026-07-17 | Focus | Stack | #1 TOR-398, #2 TOR-395, #3 TOR-392 |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
