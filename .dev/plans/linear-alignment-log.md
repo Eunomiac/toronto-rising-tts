@@ -564,5 +564,7 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-17 | CREATE | TOR-398 | Global blindfold flicker load/Intermission→Play; Focus #1 High; relatedTo TOR-363/323/361 |
 | 2026-07-17 | UNBLOCK | TOR-392 | removeBlockedBy TOR-391 (phase 3 Done); Focus #3 |
 | 2026-07-17 | Focus | Stack | #1 TOR-398, #2 TOR-395, #3 TOR-392 |
+| 2026-07-17 | DONE | TOR-392 | Cloud agent shipped guardrails (`2aef9e5`); Linear closed after review; Focus drops TOR-392 |
+| 2026-07-17 | Focus | Stack | #1 TOR-398, #2 TOR-395 |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

@@ -31,7 +31,7 @@ This file is continuously updated with issues and plans for feature development.
 
 ## Focus
 
-_Stack rank for the current cycle (2026-07-17 — INBOX Immediate triage; **TOR-390**/ **TOR-391** API audit Done; session-blocking UI bugs first). **Precedence** = Focus stack + Linear **`blockedBy`** (not Linear priority). **TOR-141 (E2E playbooks)** is a living doc (In Progress, not Focus stack). **Back-burner / “Deferred this cycle” is paused** (author 2026-06-21) — open work stays in domain sections; sequence via Linear blockers only._
+_Stack rank for the current cycle (2026-07-17 — **TOR-392** API guardrails Done; Focus = session UI bugs). **Precedence** = Focus stack + Linear **`blockedBy`** (not Linear priority). **TOR-141 (E2E playbooks)** is a living doc (In Progress, not Focus stack). **Back-burner / “Deferred this cycle” is paused** (author 2026-06-21) — open work stays in domain sections; sequence via Linear blockers only._
 
 | # | Issue | Why now |
 | --- | --- | --- |
@@ -350,8 +350,8 @@ _Blocked: author must define data binding approach before substantial implementa
 - [x] Agent prompt: **performance** hotspots (`Sync.full`, spawn pools, lighting lerps, UI refresh). → [Performance Audit](Sychronizing%20Game%20Functionality/Performance%20Audit.md); Prompt 4 in [Agent Reviews/AGENT_REVIEW_PROMPTS.md](Agent%20Reviews/AGENT_REVIEW_PROMPTS.md) _(TOR-50)_
 - [ ] **Sync.full call-site audit:** Inventory every `Sync.full(` in production Lua; classify Keep full vs narrow (`Sync.player`, `Sync.soundscape`, `NPCS.reconcileAllFromState`, planned `Sync.npcs`); update Performance Audit with findings. _(TOR-168)_
 - [x] **TTS API heavy-workload catalog (phase 1):** Review TTS API docs; catalog synchronous heavy-work functions. See [TTS API Heavy-Workload Catalog](Sychronizing%20Game%20Functionality/TTS-API-Heavy-Workload-Catalog.md). _(TOR-329)_
-- [ ] **TTS API heavy-workload usage inventory (phase 2):** Grep every cataloged API call site. Unblocked by **TOR-329**. _(TOR-390)_
-- [ ] **TTS API heavy-workload remediation (phase 3):** Plan + fix hot paths from inventory. `blockedBy` **TOR-390**. _(TOR-391)_
+- [x] **TTS API heavy-workload usage inventory (phase 2):** Grep every cataloged API call site. Unblocked by **TOR-329**. _(TOR-390)_
+- [x] **TTS API heavy-workload remediation (phase 3):** Plan + fix hot paths from inventory. `blockedBy` **TOR-390**. _(TOR-391)_
 - [x] **TTS API heavy-workload agent guardrails (phase 4):** Update docs/rules so agents avoid new hot-path misuse. `blockedBy` **TOR-391**. _(TOR-392)_
 - [x] **Event listener early-return audit + policy:** O(1) guards on all active physical Global listeners; `.dev/Sychronizing Game Functionality/Event Listener Policy.md`. _(TOR-197)_
 - [x] **Gitignore bundle-size-gate artifact:** `.dev/build-logs/bundle-size-gate.json` gitignored and untracked. _(TOR-291)_
