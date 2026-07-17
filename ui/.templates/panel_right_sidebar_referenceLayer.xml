@@ -7,8 +7,6 @@ UI.setAttributes("playerHud_referenceLayer_Red", {color = "rgba(1, 0, 0, 0.15)"}
 -->
 <Panel id="playerHud_referenceLayer_@@color@@" class="popupImageContainer" visibility="@@color@@">
 
-  <Include src="ui/player/csheets/csheet_defaults.xml" />
-
   <Defaults>
 
     <Panel class="princesCourt-reference"

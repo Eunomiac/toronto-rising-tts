@@ -7,7 +7,7 @@
     rectAlignment="LeftCenter"
     width="100%"
     height="200%"
-    offsetXY="0 0"
+    offsetXY="0 -100"
     active="false"
   />
 
@@ -24,6 +24,9 @@
   <Panel class="hud_map_hover_button_panel_wrapper"
     rectAlignment="UpperRight"
     minWidth="150"
+    preferredHeight = "1300"
+    minHeight = "1300"
+    height = "1300"
    />
 
 
@@ -88,7 +91,7 @@
   <Panel class="hud_map_navigation_panel"
     ignoreLayout="true"
     rectAlignment="UpperLeft"
-    offsetXY="150 -20"
+    offsetXY="150 40"
     height="200"
     width="100"
   />
@@ -132,7 +135,7 @@
     width="600"
     height="500"
     rectAlignment="MiddleLeft"
-    offsetXY="30 -350"
+    offsetXY = "0 -300"
   />
 
   <Image class="hud_map_district_card"

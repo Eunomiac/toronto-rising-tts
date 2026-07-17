@@ -3,8 +3,6 @@
 
 <Panel id="playerHud_referenceLayer_Brown" class="popupImageContainer" visibility="Brown">
 
-  <Include src="ui/player/csheets/csheet_defaults.xml" />
-
   <Defaults>
 
     <Panel class="princesCourt-reference"
@@ -2407,8 +2405,6 @@ UI.setAttributes("page_3_left_Brown", {color = "rgba(1, 0, 0, 0.15)", childForce
 </Panel>
 
 <Panel id="playerHud_referenceLayer_Orange" class="popupImageContainer" visibility="Orange">
-
-  <Include src="ui/player/csheets/csheet_defaults.xml" />
 
   <Defaults>
 
@@ -4813,8 +4809,6 @@ UI.setAttributes("page_3_left_Brown", {color = "rgba(1, 0, 0, 0.15)", childForce
 
 <Panel id="playerHud_referenceLayer_Red" class="popupImageContainer" visibility="Red">
 
-  <Include src="ui/player/csheets/csheet_defaults.xml" />
-
   <Defaults>
 
     <Panel class="princesCourt-reference"
@@ -7218,8 +7212,6 @@ UI.setAttributes("page_3_left_Brown", {color = "rgba(1, 0, 0, 0.15)", childForce
 
 <Panel id="playerHud_referenceLayer_Pink" class="popupImageContainer" visibility="Pink">
 
-  <Include src="ui/player/csheets/csheet_defaults.xml" />
-
   <Defaults>
 
     <Panel class="princesCourt-reference"
@@ -9622,8 +9614,6 @@ UI.setAttributes("page_3_left_Brown", {color = "rgba(1, 0, 0, 0.15)", childForce
 </Panel>
 
 <Panel id="playerHud_referenceLayer_Purple" class="popupImageContainer" visibility="Purple">
-
-  <Include src="ui/player/csheets/csheet_defaults.xml" />
 
   <Defaults>
 

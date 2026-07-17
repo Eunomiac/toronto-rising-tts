@@ -13,13 +13,13 @@
         Max Width: 150
         Total Height: 2*50 + 5*25 = 225
         -->
-        <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" />
+        <VerticalLayout id="db_base_hover_button_panel_Brown" class="hover_button_panel">
+          <Image id="db_base_overlayDivider_cityFeatures_Brown" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" />
           <Image id="playerHud_mapOverlayToggle_districtsAll_Brown" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_districtsAll_inactive" />
           <Image id="playerHud_mapOverlayToggle_majorRoads_Brown" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_majorRoads_inactive" />
           <Image id="playerHud_mapOverlayToggle_localRoads_Brown" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_localRoads_inactive" />
           <Image id="playerHud_mapOverlayToggle_majorSites_Brown" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_majorSites_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" />
+          <Image id="db_base_overlayDivider_domains_Brown" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" />
 
           <Image id="playerHud_mapOverlayToggle_domain_theCourt_Brown" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_domain_theCourt_inactive" />
           <Text class="spacer_10" />
@@ -39,17 +39,17 @@
           <Image id="playerHud_mapOverlayToggle_domain_islandDevil_Brown" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_domain_islandDevil_inactive" />
           <Text class="spacer_20" preferredHeight="15" />
           <Image id="playerHud_mapOverlayToggle_domain_domainConflicts_Brown" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_domain_domainConflicts_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" />
+          <Image id="db_base_overlayDivider_regions_Brown" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" />
           <Image id="playerHud_mapOverlayToggle_domain_barrens_Brown" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_domain_barrens_inactive" />
           <Image id="playerHud_mapOverlayToggle_domain_theRack_Brown" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_domain_theRack_inactive" />
         </VerticalLayout>
-        <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
+        <VerticalLayout id="db_hover_hover_button_panel_Brown" class="hover_button_panel">
+          <Image id="db_hover_overlayDivider_cityFeatures_Brown" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
           <Image id="playerHud_mapOverlayToggle_districtsAll_Brown_hover" class="hover_button hover_button_hover" image="toggleOverlay_districtsAll_hover" />
           <Image id="playerHud_mapOverlayToggle_majorRoads_Brown_hover" class="hover_button hover_button_hover" image="toggleOverlay_majorRoads_hover" />
           <Image id="playerHud_mapOverlayToggle_localRoads_Brown_hover" class="hover_button hover_button_hover" image="toggleOverlay_localRoads_hover" />
           <Image id="playerHud_mapOverlayToggle_majorSites_Brown_hover" class="hover_button hover_button_hover" image="toggleOverlay_majorSites_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
+          <Image id="db_hover_overlayDivider_domains_Brown" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
           <Image id="playerHud_mapOverlayToggle_domain_theCourt_Brown_hover" class="hover_button hover_button_hover" image="toggleOverlay_domain_theCourt_hover" />
           <Text class="spacer_10" />
           <Image id="playerHud_mapOverlayToggle_domain_fiveKeys_Brown_hover" class="hover_button hover_button_hover" image="toggleOverlay_domain_fiveKeys_hover" />
@@ -68,17 +68,17 @@
           <Image id="playerHud_mapOverlayToggle_domain_islandDevil_Brown_hover" class="hover_button hover_button_hover" image="toggleOverlay_domain_islandDevil_hover" />
           <Text class="spacer_20" preferredHeight="15" />
           <Image id="playerHud_mapOverlayToggle_domain_domainConflicts_Brown_hover" class="hover_button hover_button_hover" image="toggleOverlay_domain_domainConflicts_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
+          <Image id="db_hover_overlayDivider_regions_Brown" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
           <Image id="playerHud_mapOverlayToggle_domain_barrens_Brown_hover" class="hover_button hover_button_hover" image="toggleOverlay_domain_barrens_hover" />
           <Image id="playerHud_mapOverlayToggle_domain_theRack_Brown_hover" class="hover_button hover_button_hover" image="toggleOverlay_domain_theRack_hover" />
         </VerticalLayout>
-        <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
+        <VerticalLayout id="db_active_hover_button_panel_Brown" class="hover_button_panel">
+          <Image id="db_active_overlayDivider_cityFeatures_Brown" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
           <Image id="playerHud_mapOverlayToggle_districtsAll_Brown_active" class="hover_button hover_button_active" image="toggleOverlay_districtsAll_active" />
           <Image id="playerHud_mapOverlayToggle_majorRoads_Brown_active" class="hover_button hover_button_active" image="toggleOverlay_majorRoads_active" />
           <Image id="playerHud_mapOverlayToggle_localRoads_Brown_active" class="hover_button hover_button_active" image="toggleOverlay_localRoads_active" />
           <Image id="playerHud_mapOverlayToggle_majorSites_Brown_active" class="hover_button hover_button_active" image="toggleOverlay_majorSites_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
+          <Image id="db_active_overlayDivider_domains_Brown" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
           <Image id="playerHud_mapOverlayToggle_domain_theCourt_Brown_active" class="hover_button hover_button_active" image="toggleOverlay_domain_theCourt_active" />
           <Text class="spacer_10" />
           <Image id="playerHud_mapOverlayToggle_domain_fiveKeys_Brown_active" class="hover_button hover_button_active" image="toggleOverlay_domain_fiveKeys_active" />
@@ -97,13 +97,50 @@
           <Image id="playerHud_mapOverlayToggle_domain_islandDevil_Brown_active" class="hover_button hover_button_active" image="toggleOverlay_domain_islandDevil_active" />
           <Text class="spacer_20" preferredHeight="15" />
           <Image id="playerHud_mapOverlayToggle_domain_domainConflicts_Brown_active" class="hover_button hover_button_active" image="toggleOverlay_domain_domainConflicts_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
+          <Image id="db_active_overlayDivider_regions_Brown" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
           <Image id="playerHud_mapOverlayToggle_domain_barrens_Brown_active" class="hover_button hover_button_active" image="toggleOverlay_domain_barrens_active" />
           <Image id="playerHud_mapOverlayToggle_domain_theRack_Brown_active" class="hover_button hover_button_active" image="toggleOverlay_domain_theRack_active" />
         </VerticalLayout>
       </Panel>
     </Panel>
+<!--
+UI.setAttributes("playerHud_mapViewport_Red", {color = "rgba(1, 0, 0, 0.15)", minHeight = "3000", height = "3000", preferredHeight = "3000"})
+UI.setAttributes("playerHud_mapDraggable_Red", {color = "rgba(1, 1, 0, 0.15)"})
+UI.setAttributes("playerHud_corePanel_map_Red", {offsetXY = "0 -100"})
+UI.setAttributes("playerHud_mapPanel_districtCard_Red", {offsetXY = "0 -300"})
+UI.setAttributes("db_hud_map_hover_button_panel_wrapper_Red", {offsetXY = "0 0", color = "rgba(1, 0, 0, 0.15)", padding = "0 0 0 0", childAlignment = "UpperLeft", preferredHeight = "1300", minHeight = "1300", height = "1300"})
 
+local viewportData = UI.getAttributes("playerHud_mapViewport_Red")
+local draggableData = UI.getAttributes("playerHud_mapDraggable_Red")
+local buttonWrapperPanelData = UI.getAttributes("db_hud_map_hover_button_panel_wrapper_Red")
+
+local function prettyPrintTable(tbl, name, indent)
+  indent = indent or ""
+  name = name or "table"
+  print(indent .. tostring(name) .. " = {")
+  local nextIndent = indent .. "  "
+  for k, v in pairs(tbl) do
+    local keyStr = tostring(k)
+    local valueStr
+    if type(v) == "table" then
+      prettyPrintTable(v, keyStr, nextIndent)
+    else
+      if type(v) == "string" then
+        valueStr = '"' .. tostring(v) .. '"'
+      else
+        valueStr = tostring(v)
+      end
+      print(nextIndent .. keyStr .. " = " .. valueStr .. ",")
+    end
+  end
+  print(indent .. "}")
+end
+
+prettyPrintTable(buttonWrapperPanelData, "buttonWrapperPanelData")
+prettyPrintTable(viewportData, "viewportData")
+prettyPrintTable(draggableData, "draggableData")
+
+-->
     <Panel class="hud_map_center_container" id="playerHud_mapViewport_Brown">
       <Panel class="hud_map_draggable_container" id="playerHud_mapDraggable_Brown">
         <Image class="hud_map_image hud_map_image_base" id="playerHud_mapBase_Brown" image="mapBase" />
@@ -179,8 +216,8 @@
       </VerticalLayout>
     </Panel>
 
-    <Panel class="hud_map_hover_button_panel_wrapper">
-      <Panel class="hover_button_panel_container hover_button_panel_container_wide" height="900">
+    <Panel id="db_hud_map_hover_button_panel_wrapper_Brown" class="hud_map_hover_button_panel_wrapper">
+      <Panel id="db_hover_button_panel_container_Brown" class="hover_button_panel_container hover_button_panel_container_wide" height="900">
         <!--
         Border Dimensions: 150x50    Count: 2
         Base Dimensions: 175x20      Count: 36
@@ -188,9 +225,12 @@
         Active Dimensions: 175x20    Count: 36
         Max Width: 175
         Total Height: 2*50 + 36*20 = 900
+
+
+        UI.setAttributes("db_base_districtDivider_northOfBloor_Red", {minHeight = "52", minWidth = "175"})
         -->
-        <VerticalLayout class="hover_button_panel" childAlignment="UpperLeft" spacing="0">
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" />
+        <VerticalLayout id="db_base_button_panel_Brown" class="hover_button_panel" childAlignment="UpperLeft" spacing="0">
+          <Image id="db_base_districtDivider_northOfBloor_Brown" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Bennington_Brown" image="toggleDistrict_Bennington_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_DeerPark_Brown" image="toggleDistrict_DeerPark_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_DupontByTheCastle_Brown" image="toggleDistrict_DupontByTheCastle_inactive" />
@@ -200,18 +240,18 @@
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_StJamesTown_Brown" image="toggleDistrict_StJamesTown_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Wychwood_Brown" image="toggleDistrict_Wychwood_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Yorkville_Brown" image="toggleDistrict_Yorkville_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" />
+          <Image id="db_base_districtDivider_westToronto_Brown" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Annex_Brown" image="toggleDistrict_Annex_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Chinatown_Brown" image="toggleDistrict_Chinatown_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_HarbordVillage_Brown" image="toggleDistrict_HarbordVillage_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_LittleItaly_Brown" image="toggleDistrict_LittleItaly_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_LittlePortugal_Brown" image="toggleDistrict_LittlePortugal_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" />
+          <Image id="db_base_districtDivider_eastToronto_Brown" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Danforth_Brown" image="toggleDistrict_Danforth_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_DonRavine_Brown" image="toggleDistrict_DonRavine_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_RegentPark_Brown" image="toggleDistrict_RegentPark_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Riverdale_Brown" image="toggleDistrict_Riverdale_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" />
+          <Image id="db_base_districtDivider_cityCenter_Brown" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_BayStFinancial_Brown" image="toggleDistrict_BayStFinancial_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Cabbagetown_Brown" image="toggleDistrict_Cabbagetown_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Corktown_Brown" image="toggleDistrict_Corktown_inactive" />
@@ -221,20 +261,20 @@
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_YongeBloorMuseum_Brown" image="toggleDistrict_YongeBloorMuseum_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_YongeDundasHospital_Brown" image="toggleDistrict_YongeDundasHospital_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_YongeStreet_Brown" image="toggleDistrict_YongeStreet_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" />
+          <Image id="db_base_districtDivider_shoreline_Brown" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_CentreIsland_Brown" image="toggleDistrict_CentreIsland_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_DistilleryDist_Brown" image="toggleDistrict_DistilleryDist_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_LakeOntario_Brown" image="toggleDistrict_LakeOntario_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_LibertyVillage_Brown" image="toggleDistrict_LibertyVillage_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Waterfront_Brown" image="toggleDistrict_Waterfront_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" />
+          <Image id="db_base_districtDivider_notDepicted_Brown" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_PATH_Brown" image="toggleDistrict_PATH_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Sewers_Brown" image="toggleDistrict_Sewers_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Streets_Brown" image="toggleDistrict_Streets_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Subway_Brown" image="toggleDistrict_Subway_inactive" />
         </VerticalLayout>
-        <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" color="clear"/>
+        <VerticalLayout id="db_hover_button_panel_Brown" class="hover_button_panel">
+          <Image id="db_hover_districtDivider_northOfBloor_Brown" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" color="clear"/>
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Bennington_Brown_hover" image="toggleDistrict_Bennington_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_DeerPark_Brown_hover" image="toggleDistrict_DeerPark_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_DupontByTheCastle_Brown_hover" image="toggleDistrict_DupontByTheCastle_hover" />
@@ -244,18 +284,18 @@
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_StJamesTown_Brown_hover" image="toggleDistrict_StJamesTown_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Wychwood_Brown_hover" image="toggleDistrict_Wychwood_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Yorkville_Brown_hover" image="toggleDistrict_Yorkville_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" color="clear" />
+          <Image id="db_hover_districtDivider_westToronto_Brown" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Annex_Brown_hover" image="toggleDistrict_Annex_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Chinatown_Brown_hover" image="toggleDistrict_Chinatown_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_HarbordVillage_Brown_hover" image="toggleDistrict_HarbordVillage_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_LittleItaly_Brown_hover" image="toggleDistrict_LittleItaly_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_LittlePortugal_Brown_hover" image="toggleDistrict_LittlePortugal_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" color="clear" />
+          <Image id="db_hover_districtDivider_eastToronto_Brown" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Danforth_Brown_hover" image="toggleDistrict_Danforth_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_DonRavine_Brown_hover" image="toggleDistrict_DonRavine_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_RegentPark_Brown_hover" image="toggleDistrict_RegentPark_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Riverdale_Brown_hover" image="toggleDistrict_Riverdale_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" color="clear" />
+          <Image id="db_hover_districtDivider_cityCenter_Brown" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_BayStFinancial_Brown_hover" image="toggleDistrict_BayStFinancial_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Cabbagetown_Brown_hover" image="toggleDistrict_Cabbagetown_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Corktown_Brown_hover" image="toggleDistrict_Corktown_hover" />
@@ -265,20 +305,20 @@
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_YongeBloorMuseum_Brown_hover" image="toggleDistrict_YongeBloorMuseum_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_YongeDundasHospital_Brown_hover" image="toggleDistrict_YongeDundasHospital_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_YongeStreet_Brown_hover" image="toggleDistrict_YongeStreet_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" color="clear" />
+          <Image id="db_hover_districtDivider_shoreline_Brown" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_CentreIsland_Brown_hover" image="toggleDistrict_CentreIsland_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_DistilleryDist_Brown_hover" image="toggleDistrict_DistilleryDist_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_LakeOntario_Brown_hover" image="toggleDistrict_LakeOntario_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_LibertyVillage_Brown_hover" image="toggleDistrict_LibertyVillage_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Waterfront_Brown_hover" image="toggleDistrict_Waterfront_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" color="clear" />
+          <Image id="db_hover_districtDivider_notDepicted_Brown" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_PATH_Brown_hover" image="toggleDistrict_PATH_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Sewers_Brown_hover" image="toggleDistrict_Sewers_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Streets_Brown_hover" image="toggleDistrict_Streets_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Subway_Brown_hover" image="toggleDistrict_Subway_hover" />
         </VerticalLayout>
-        <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" color="clear"/>
+        <VerticalLayout id="db_active_button_panel_Brown" class="hover_button_panel">
+          <Image id="db_active_districtDivider_northOfBloor_Brown" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" color="clear"/>
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Bennington_Brown_active" image="toggleDistrict_Bennington_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_DeerPark_Brown_active" image="toggleDistrict_DeerPark_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_DupontByTheCastle_Brown_active" image="toggleDistrict_DupontByTheCastle_active" />
@@ -288,18 +328,18 @@
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_StJamesTown_Brown_active" image="toggleDistrict_StJamesTown_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Wychwood_Brown_active" image="toggleDistrict_Wychwood_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Yorkville_Brown_active" image="toggleDistrict_Yorkville_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" color="clear" />
+          <Image id="db_active_districtDivider_westToronto_Brown" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Annex_Brown_active" image="toggleDistrict_Annex_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Chinatown_Brown_active" image="toggleDistrict_Chinatown_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_HarbordVillage_Brown_active" image="toggleDistrict_HarbordVillage_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_LittleItaly_Brown_active" image="toggleDistrict_LittleItaly_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_LittlePortugal_Brown_active" image="toggleDistrict_LittlePortugal_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" color="clear" />
+          <Image id="db_active_districtDivider_eastToronto_Brown" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Danforth_Brown_active" image="toggleDistrict_Danforth_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_DonRavine_Brown_active" image="toggleDistrict_DonRavine_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_RegentPark_Brown_active" image="toggleDistrict_RegentPark_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Riverdale_Brown_active" image="toggleDistrict_Riverdale_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" color="clear" />
+          <Image id="db_active_districtDivider_cityCenter_Brown" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_BayStFinancial_Brown_active" image="toggleDistrict_BayStFinancial_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Cabbagetown_Brown_active" image="toggleDistrict_Cabbagetown_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Corktown_Brown_active" image="toggleDistrict_Corktown_active" />
@@ -309,13 +349,13 @@
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_YongeBloorMuseum_Brown_active" image="toggleDistrict_YongeBloorMuseum_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_YongeDundasHospital_Brown_active" image="toggleDistrict_YongeDundasHospital_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_YongeStreet_Brown_active" image="toggleDistrict_YongeStreet_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" color="clear" />
+          <Image id="db_active_districtDivider_shoreline_Brown" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_CentreIsland_Brown_active" image="toggleDistrict_CentreIsland_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_DistilleryDist_Brown_active" image="toggleDistrict_DistilleryDist_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_LakeOntario_Brown_active" image="toggleDistrict_LakeOntario_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_LibertyVillage_Brown_active" image="toggleDistrict_LibertyVillage_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Waterfront_Brown_active" image="toggleDistrict_Waterfront_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" color="clear" />
+          <Image id="db_active_districtDivider_notDepicted_Brown" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_PATH_Brown_active" image="toggleDistrict_PATH_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Sewers_Brown_active" image="toggleDistrict_Sewers_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Streets_Brown_active" image="toggleDistrict_Streets_active" />
@@ -378,13 +418,13 @@
         Max Width: 150
         Total Height: 2*50 + 5*25 = 225
         -->
-        <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" />
+        <VerticalLayout id="db_base_hover_button_panel_Orange" class="hover_button_panel">
+          <Image id="db_base_overlayDivider_cityFeatures_Orange" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" />
           <Image id="playerHud_mapOverlayToggle_districtsAll_Orange" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_districtsAll_inactive" />
           <Image id="playerHud_mapOverlayToggle_majorRoads_Orange" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_majorRoads_inactive" />
           <Image id="playerHud_mapOverlayToggle_localRoads_Orange" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_localRoads_inactive" />
           <Image id="playerHud_mapOverlayToggle_majorSites_Orange" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_majorSites_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" />
+          <Image id="db_base_overlayDivider_domains_Orange" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" />
 
           <Image id="playerHud_mapOverlayToggle_domain_theCourt_Orange" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_domain_theCourt_inactive" />
           <Text class="spacer_10" />
@@ -404,17 +444,17 @@
           <Image id="playerHud_mapOverlayToggle_domain_islandDevil_Orange" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_domain_islandDevil_inactive" />
           <Text class="spacer_20" preferredHeight="15" />
           <Image id="playerHud_mapOverlayToggle_domain_domainConflicts_Orange" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_domain_domainConflicts_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" />
+          <Image id="db_base_overlayDivider_regions_Orange" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" />
           <Image id="playerHud_mapOverlayToggle_domain_barrens_Orange" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_domain_barrens_inactive" />
           <Image id="playerHud_mapOverlayToggle_domain_theRack_Orange" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_domain_theRack_inactive" />
         </VerticalLayout>
-        <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
+        <VerticalLayout id="db_hover_hover_button_panel_Orange" class="hover_button_panel">
+          <Image id="db_hover_overlayDivider_cityFeatures_Orange" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
           <Image id="playerHud_mapOverlayToggle_districtsAll_Orange_hover" class="hover_button hover_button_hover" image="toggleOverlay_districtsAll_hover" />
           <Image id="playerHud_mapOverlayToggle_majorRoads_Orange_hover" class="hover_button hover_button_hover" image="toggleOverlay_majorRoads_hover" />
           <Image id="playerHud_mapOverlayToggle_localRoads_Orange_hover" class="hover_button hover_button_hover" image="toggleOverlay_localRoads_hover" />
           <Image id="playerHud_mapOverlayToggle_majorSites_Orange_hover" class="hover_button hover_button_hover" image="toggleOverlay_majorSites_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
+          <Image id="db_hover_overlayDivider_domains_Orange" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
           <Image id="playerHud_mapOverlayToggle_domain_theCourt_Orange_hover" class="hover_button hover_button_hover" image="toggleOverlay_domain_theCourt_hover" />
           <Text class="spacer_10" />
           <Image id="playerHud_mapOverlayToggle_domain_fiveKeys_Orange_hover" class="hover_button hover_button_hover" image="toggleOverlay_domain_fiveKeys_hover" />
@@ -433,17 +473,17 @@
           <Image id="playerHud_mapOverlayToggle_domain_islandDevil_Orange_hover" class="hover_button hover_button_hover" image="toggleOverlay_domain_islandDevil_hover" />
           <Text class="spacer_20" preferredHeight="15" />
           <Image id="playerHud_mapOverlayToggle_domain_domainConflicts_Orange_hover" class="hover_button hover_button_hover" image="toggleOverlay_domain_domainConflicts_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
+          <Image id="db_hover_overlayDivider_regions_Orange" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
           <Image id="playerHud_mapOverlayToggle_domain_barrens_Orange_hover" class="hover_button hover_button_hover" image="toggleOverlay_domain_barrens_hover" />
           <Image id="playerHud_mapOverlayToggle_domain_theRack_Orange_hover" class="hover_button hover_button_hover" image="toggleOverlay_domain_theRack_hover" />
         </VerticalLayout>
-        <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
+        <VerticalLayout id="db_active_hover_button_panel_Orange" class="hover_button_panel">
+          <Image id="db_active_overlayDivider_cityFeatures_Orange" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
           <Image id="playerHud_mapOverlayToggle_districtsAll_Orange_active" class="hover_button hover_button_active" image="toggleOverlay_districtsAll_active" />
           <Image id="playerHud_mapOverlayToggle_majorRoads_Orange_active" class="hover_button hover_button_active" image="toggleOverlay_majorRoads_active" />
           <Image id="playerHud_mapOverlayToggle_localRoads_Orange_active" class="hover_button hover_button_active" image="toggleOverlay_localRoads_active" />
           <Image id="playerHud_mapOverlayToggle_majorSites_Orange_active" class="hover_button hover_button_active" image="toggleOverlay_majorSites_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
+          <Image id="db_active_overlayDivider_domains_Orange" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
           <Image id="playerHud_mapOverlayToggle_domain_theCourt_Orange_active" class="hover_button hover_button_active" image="toggleOverlay_domain_theCourt_active" />
           <Text class="spacer_10" />
           <Image id="playerHud_mapOverlayToggle_domain_fiveKeys_Orange_active" class="hover_button hover_button_active" image="toggleOverlay_domain_fiveKeys_active" />
@@ -462,13 +502,50 @@
           <Image id="playerHud_mapOverlayToggle_domain_islandDevil_Orange_active" class="hover_button hover_button_active" image="toggleOverlay_domain_islandDevil_active" />
           <Text class="spacer_20" preferredHeight="15" />
           <Image id="playerHud_mapOverlayToggle_domain_domainConflicts_Orange_active" class="hover_button hover_button_active" image="toggleOverlay_domain_domainConflicts_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
+          <Image id="db_active_overlayDivider_regions_Orange" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
           <Image id="playerHud_mapOverlayToggle_domain_barrens_Orange_active" class="hover_button hover_button_active" image="toggleOverlay_domain_barrens_active" />
           <Image id="playerHud_mapOverlayToggle_domain_theRack_Orange_active" class="hover_button hover_button_active" image="toggleOverlay_domain_theRack_active" />
         </VerticalLayout>
       </Panel>
     </Panel>
+<!--
+UI.setAttributes("playerHud_mapViewport_Red", {color = "rgba(1, 0, 0, 0.15)", minHeight = "3000", height = "3000", preferredHeight = "3000"})
+UI.setAttributes("playerHud_mapDraggable_Red", {color = "rgba(1, 1, 0, 0.15)"})
+UI.setAttributes("playerHud_corePanel_map_Red", {offsetXY = "0 -100"})
+UI.setAttributes("playerHud_mapPanel_districtCard_Red", {offsetXY = "0 -300"})
+UI.setAttributes("db_hud_map_hover_button_panel_wrapper_Red", {offsetXY = "0 0", color = "rgba(1, 0, 0, 0.15)", padding = "0 0 0 0", childAlignment = "UpperLeft", preferredHeight = "1300", minHeight = "1300", height = "1300"})
 
+local viewportData = UI.getAttributes("playerHud_mapViewport_Red")
+local draggableData = UI.getAttributes("playerHud_mapDraggable_Red")
+local buttonWrapperPanelData = UI.getAttributes("db_hud_map_hover_button_panel_wrapper_Red")
+
+local function prettyPrintTable(tbl, name, indent)
+  indent = indent or ""
+  name = name or "table"
+  print(indent .. tostring(name) .. " = {")
+  local nextIndent = indent .. "  "
+  for k, v in pairs(tbl) do
+    local keyStr = tostring(k)
+    local valueStr
+    if type(v) == "table" then
+      prettyPrintTable(v, keyStr, nextIndent)
+    else
+      if type(v) == "string" then
+        valueStr = '"' .. tostring(v) .. '"'
+      else
+        valueStr = tostring(v)
+      end
+      print(nextIndent .. keyStr .. " = " .. valueStr .. ",")
+    end
+  end
+  print(indent .. "}")
+end
+
+prettyPrintTable(buttonWrapperPanelData, "buttonWrapperPanelData")
+prettyPrintTable(viewportData, "viewportData")
+prettyPrintTable(draggableData, "draggableData")
+
+-->
     <Panel class="hud_map_center_container" id="playerHud_mapViewport_Orange">
       <Panel class="hud_map_draggable_container" id="playerHud_mapDraggable_Orange">
         <Image class="hud_map_image hud_map_image_base" id="playerHud_mapBase_Orange" image="mapBase" />
@@ -544,8 +621,8 @@
       </VerticalLayout>
     </Panel>
 
-    <Panel class="hud_map_hover_button_panel_wrapper">
-      <Panel class="hover_button_panel_container hover_button_panel_container_wide" height="900">
+    <Panel id="db_hud_map_hover_button_panel_wrapper_Orange" class="hud_map_hover_button_panel_wrapper">
+      <Panel id="db_hover_button_panel_container_Orange" class="hover_button_panel_container hover_button_panel_container_wide" height="900">
         <!--
         Border Dimensions: 150x50    Count: 2
         Base Dimensions: 175x20      Count: 36
@@ -553,9 +630,12 @@
         Active Dimensions: 175x20    Count: 36
         Max Width: 175
         Total Height: 2*50 + 36*20 = 900
+
+
+        UI.setAttributes("db_base_districtDivider_northOfBloor_Red", {minHeight = "52", minWidth = "175"})
         -->
-        <VerticalLayout class="hover_button_panel" childAlignment="UpperLeft" spacing="0">
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" />
+        <VerticalLayout id="db_base_button_panel_Orange" class="hover_button_panel" childAlignment="UpperLeft" spacing="0">
+          <Image id="db_base_districtDivider_northOfBloor_Orange" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Bennington_Orange" image="toggleDistrict_Bennington_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_DeerPark_Orange" image="toggleDistrict_DeerPark_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_DupontByTheCastle_Orange" image="toggleDistrict_DupontByTheCastle_inactive" />
@@ -565,18 +645,18 @@
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_StJamesTown_Orange" image="toggleDistrict_StJamesTown_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Wychwood_Orange" image="toggleDistrict_Wychwood_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Yorkville_Orange" image="toggleDistrict_Yorkville_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" />
+          <Image id="db_base_districtDivider_westToronto_Orange" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Annex_Orange" image="toggleDistrict_Annex_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Chinatown_Orange" image="toggleDistrict_Chinatown_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_HarbordVillage_Orange" image="toggleDistrict_HarbordVillage_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_LittleItaly_Orange" image="toggleDistrict_LittleItaly_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_LittlePortugal_Orange" image="toggleDistrict_LittlePortugal_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" />
+          <Image id="db_base_districtDivider_eastToronto_Orange" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Danforth_Orange" image="toggleDistrict_Danforth_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_DonRavine_Orange" image="toggleDistrict_DonRavine_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_RegentPark_Orange" image="toggleDistrict_RegentPark_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Riverdale_Orange" image="toggleDistrict_Riverdale_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" />
+          <Image id="db_base_districtDivider_cityCenter_Orange" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_BayStFinancial_Orange" image="toggleDistrict_BayStFinancial_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Cabbagetown_Orange" image="toggleDistrict_Cabbagetown_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Corktown_Orange" image="toggleDistrict_Corktown_inactive" />
@@ -586,20 +666,20 @@
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_YongeBloorMuseum_Orange" image="toggleDistrict_YongeBloorMuseum_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_YongeDundasHospital_Orange" image="toggleDistrict_YongeDundasHospital_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_YongeStreet_Orange" image="toggleDistrict_YongeStreet_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" />
+          <Image id="db_base_districtDivider_shoreline_Orange" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_CentreIsland_Orange" image="toggleDistrict_CentreIsland_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_DistilleryDist_Orange" image="toggleDistrict_DistilleryDist_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_LakeOntario_Orange" image="toggleDistrict_LakeOntario_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_LibertyVillage_Orange" image="toggleDistrict_LibertyVillage_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Waterfront_Orange" image="toggleDistrict_Waterfront_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" />
+          <Image id="db_base_districtDivider_notDepicted_Orange" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_PATH_Orange" image="toggleDistrict_PATH_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Sewers_Orange" image="toggleDistrict_Sewers_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Streets_Orange" image="toggleDistrict_Streets_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Subway_Orange" image="toggleDistrict_Subway_inactive" />
         </VerticalLayout>
-        <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" color="clear"/>
+        <VerticalLayout id="db_hover_button_panel_Orange" class="hover_button_panel">
+          <Image id="db_hover_districtDivider_northOfBloor_Orange" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" color="clear"/>
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Bennington_Orange_hover" image="toggleDistrict_Bennington_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_DeerPark_Orange_hover" image="toggleDistrict_DeerPark_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_DupontByTheCastle_Orange_hover" image="toggleDistrict_DupontByTheCastle_hover" />
@@ -609,18 +689,18 @@
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_StJamesTown_Orange_hover" image="toggleDistrict_StJamesTown_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Wychwood_Orange_hover" image="toggleDistrict_Wychwood_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Yorkville_Orange_hover" image="toggleDistrict_Yorkville_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" color="clear" />
+          <Image id="db_hover_districtDivider_westToronto_Orange" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Annex_Orange_hover" image="toggleDistrict_Annex_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Chinatown_Orange_hover" image="toggleDistrict_Chinatown_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_HarbordVillage_Orange_hover" image="toggleDistrict_HarbordVillage_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_LittleItaly_Orange_hover" image="toggleDistrict_LittleItaly_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_LittlePortugal_Orange_hover" image="toggleDistrict_LittlePortugal_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" color="clear" />
+          <Image id="db_hover_districtDivider_eastToronto_Orange" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Danforth_Orange_hover" image="toggleDistrict_Danforth_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_DonRavine_Orange_hover" image="toggleDistrict_DonRavine_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_RegentPark_Orange_hover" image="toggleDistrict_RegentPark_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Riverdale_Orange_hover" image="toggleDistrict_Riverdale_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" color="clear" />
+          <Image id="db_hover_districtDivider_cityCenter_Orange" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_BayStFinancial_Orange_hover" image="toggleDistrict_BayStFinancial_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Cabbagetown_Orange_hover" image="toggleDistrict_Cabbagetown_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Corktown_Orange_hover" image="toggleDistrict_Corktown_hover" />
@@ -630,20 +710,20 @@
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_YongeBloorMuseum_Orange_hover" image="toggleDistrict_YongeBloorMuseum_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_YongeDundasHospital_Orange_hover" image="toggleDistrict_YongeDundasHospital_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_YongeStreet_Orange_hover" image="toggleDistrict_YongeStreet_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" color="clear" />
+          <Image id="db_hover_districtDivider_shoreline_Orange" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_CentreIsland_Orange_hover" image="toggleDistrict_CentreIsland_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_DistilleryDist_Orange_hover" image="toggleDistrict_DistilleryDist_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_LakeOntario_Orange_hover" image="toggleDistrict_LakeOntario_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_LibertyVillage_Orange_hover" image="toggleDistrict_LibertyVillage_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Waterfront_Orange_hover" image="toggleDistrict_Waterfront_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" color="clear" />
+          <Image id="db_hover_districtDivider_notDepicted_Orange" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_PATH_Orange_hover" image="toggleDistrict_PATH_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Sewers_Orange_hover" image="toggleDistrict_Sewers_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Streets_Orange_hover" image="toggleDistrict_Streets_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Subway_Orange_hover" image="toggleDistrict_Subway_hover" />
         </VerticalLayout>
-        <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" color="clear"/>
+        <VerticalLayout id="db_active_button_panel_Orange" class="hover_button_panel">
+          <Image id="db_active_districtDivider_northOfBloor_Orange" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" color="clear"/>
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Bennington_Orange_active" image="toggleDistrict_Bennington_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_DeerPark_Orange_active" image="toggleDistrict_DeerPark_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_DupontByTheCastle_Orange_active" image="toggleDistrict_DupontByTheCastle_active" />
@@ -653,18 +733,18 @@
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_StJamesTown_Orange_active" image="toggleDistrict_StJamesTown_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Wychwood_Orange_active" image="toggleDistrict_Wychwood_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Yorkville_Orange_active" image="toggleDistrict_Yorkville_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" color="clear" />
+          <Image id="db_active_districtDivider_westToronto_Orange" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Annex_Orange_active" image="toggleDistrict_Annex_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Chinatown_Orange_active" image="toggleDistrict_Chinatown_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_HarbordVillage_Orange_active" image="toggleDistrict_HarbordVillage_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_LittleItaly_Orange_active" image="toggleDistrict_LittleItaly_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_LittlePortugal_Orange_active" image="toggleDistrict_LittlePortugal_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" color="clear" />
+          <Image id="db_active_districtDivider_eastToronto_Orange" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Danforth_Orange_active" image="toggleDistrict_Danforth_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_DonRavine_Orange_active" image="toggleDistrict_DonRavine_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_RegentPark_Orange_active" image="toggleDistrict_RegentPark_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Riverdale_Orange_active" image="toggleDistrict_Riverdale_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" color="clear" />
+          <Image id="db_active_districtDivider_cityCenter_Orange" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_BayStFinancial_Orange_active" image="toggleDistrict_BayStFinancial_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Cabbagetown_Orange_active" image="toggleDistrict_Cabbagetown_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Corktown_Orange_active" image="toggleDistrict_Corktown_active" />
@@ -674,13 +754,13 @@
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_YongeBloorMuseum_Orange_active" image="toggleDistrict_YongeBloorMuseum_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_YongeDundasHospital_Orange_active" image="toggleDistrict_YongeDundasHospital_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_YongeStreet_Orange_active" image="toggleDistrict_YongeStreet_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" color="clear" />
+          <Image id="db_active_districtDivider_shoreline_Orange" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_CentreIsland_Orange_active" image="toggleDistrict_CentreIsland_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_DistilleryDist_Orange_active" image="toggleDistrict_DistilleryDist_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_LakeOntario_Orange_active" image="toggleDistrict_LakeOntario_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_LibertyVillage_Orange_active" image="toggleDistrict_LibertyVillage_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Waterfront_Orange_active" image="toggleDistrict_Waterfront_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" color="clear" />
+          <Image id="db_active_districtDivider_notDepicted_Orange" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_PATH_Orange_active" image="toggleDistrict_PATH_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Sewers_Orange_active" image="toggleDistrict_Sewers_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Streets_Orange_active" image="toggleDistrict_Streets_active" />
@@ -743,13 +823,13 @@
         Max Width: 150
         Total Height: 2*50 + 5*25 = 225
         -->
-        <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" />
+        <VerticalLayout id="db_base_hover_button_panel_Red" class="hover_button_panel">
+          <Image id="db_base_overlayDivider_cityFeatures_Red" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" />
           <Image id="playerHud_mapOverlayToggle_districtsAll_Red" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_districtsAll_inactive" />
           <Image id="playerHud_mapOverlayToggle_majorRoads_Red" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_majorRoads_inactive" />
           <Image id="playerHud_mapOverlayToggle_localRoads_Red" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_localRoads_inactive" />
           <Image id="playerHud_mapOverlayToggle_majorSites_Red" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_majorSites_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" />
+          <Image id="db_base_overlayDivider_domains_Red" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" />
 
           <Image id="playerHud_mapOverlayToggle_domain_theCourt_Red" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_domain_theCourt_inactive" />
           <Text class="spacer_10" />
@@ -769,17 +849,17 @@
           <Image id="playerHud_mapOverlayToggle_domain_islandDevil_Red" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_domain_islandDevil_inactive" />
           <Text class="spacer_20" preferredHeight="15" />
           <Image id="playerHud_mapOverlayToggle_domain_domainConflicts_Red" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_domain_domainConflicts_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" />
+          <Image id="db_base_overlayDivider_regions_Red" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" />
           <Image id="playerHud_mapOverlayToggle_domain_barrens_Red" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_domain_barrens_inactive" />
           <Image id="playerHud_mapOverlayToggle_domain_theRack_Red" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_domain_theRack_inactive" />
         </VerticalLayout>
-        <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
+        <VerticalLayout id="db_hover_hover_button_panel_Red" class="hover_button_panel">
+          <Image id="db_hover_overlayDivider_cityFeatures_Red" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
           <Image id="playerHud_mapOverlayToggle_districtsAll_Red_hover" class="hover_button hover_button_hover" image="toggleOverlay_districtsAll_hover" />
           <Image id="playerHud_mapOverlayToggle_majorRoads_Red_hover" class="hover_button hover_button_hover" image="toggleOverlay_majorRoads_hover" />
           <Image id="playerHud_mapOverlayToggle_localRoads_Red_hover" class="hover_button hover_button_hover" image="toggleOverlay_localRoads_hover" />
           <Image id="playerHud_mapOverlayToggle_majorSites_Red_hover" class="hover_button hover_button_hover" image="toggleOverlay_majorSites_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
+          <Image id="db_hover_overlayDivider_domains_Red" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
           <Image id="playerHud_mapOverlayToggle_domain_theCourt_Red_hover" class="hover_button hover_button_hover" image="toggleOverlay_domain_theCourt_hover" />
           <Text class="spacer_10" />
           <Image id="playerHud_mapOverlayToggle_domain_fiveKeys_Red_hover" class="hover_button hover_button_hover" image="toggleOverlay_domain_fiveKeys_hover" />
@@ -798,17 +878,17 @@
           <Image id="playerHud_mapOverlayToggle_domain_islandDevil_Red_hover" class="hover_button hover_button_hover" image="toggleOverlay_domain_islandDevil_hover" />
           <Text class="spacer_20" preferredHeight="15" />
           <Image id="playerHud_mapOverlayToggle_domain_domainConflicts_Red_hover" class="hover_button hover_button_hover" image="toggleOverlay_domain_domainConflicts_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
+          <Image id="db_hover_overlayDivider_regions_Red" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
           <Image id="playerHud_mapOverlayToggle_domain_barrens_Red_hover" class="hover_button hover_button_hover" image="toggleOverlay_domain_barrens_hover" />
           <Image id="playerHud_mapOverlayToggle_domain_theRack_Red_hover" class="hover_button hover_button_hover" image="toggleOverlay_domain_theRack_hover" />
         </VerticalLayout>
-        <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
+        <VerticalLayout id="db_active_hover_button_panel_Red" class="hover_button_panel">
+          <Image id="db_active_overlayDivider_cityFeatures_Red" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
           <Image id="playerHud_mapOverlayToggle_districtsAll_Red_active" class="hover_button hover_button_active" image="toggleOverlay_districtsAll_active" />
           <Image id="playerHud_mapOverlayToggle_majorRoads_Red_active" class="hover_button hover_button_active" image="toggleOverlay_majorRoads_active" />
           <Image id="playerHud_mapOverlayToggle_localRoads_Red_active" class="hover_button hover_button_active" image="toggleOverlay_localRoads_active" />
           <Image id="playerHud_mapOverlayToggle_majorSites_Red_active" class="hover_button hover_button_active" image="toggleOverlay_majorSites_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
+          <Image id="db_active_overlayDivider_domains_Red" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
           <Image id="playerHud_mapOverlayToggle_domain_theCourt_Red_active" class="hover_button hover_button_active" image="toggleOverlay_domain_theCourt_active" />
           <Text class="spacer_10" />
           <Image id="playerHud_mapOverlayToggle_domain_fiveKeys_Red_active" class="hover_button hover_button_active" image="toggleOverlay_domain_fiveKeys_active" />
@@ -827,13 +907,50 @@
           <Image id="playerHud_mapOverlayToggle_domain_islandDevil_Red_active" class="hover_button hover_button_active" image="toggleOverlay_domain_islandDevil_active" />
           <Text class="spacer_20" preferredHeight="15" />
           <Image id="playerHud_mapOverlayToggle_domain_domainConflicts_Red_active" class="hover_button hover_button_active" image="toggleOverlay_domain_domainConflicts_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
+          <Image id="db_active_overlayDivider_regions_Red" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
           <Image id="playerHud_mapOverlayToggle_domain_barrens_Red_active" class="hover_button hover_button_active" image="toggleOverlay_domain_barrens_active" />
           <Image id="playerHud_mapOverlayToggle_domain_theRack_Red_active" class="hover_button hover_button_active" image="toggleOverlay_domain_theRack_active" />
         </VerticalLayout>
       </Panel>
     </Panel>
+<!--
+UI.setAttributes("playerHud_mapViewport_Red", {color = "rgba(1, 0, 0, 0.15)", minHeight = "3000", height = "3000", preferredHeight = "3000"})
+UI.setAttributes("playerHud_mapDraggable_Red", {color = "rgba(1, 1, 0, 0.15)"})
+UI.setAttributes("playerHud_corePanel_map_Red", {offsetXY = "0 -100"})
+UI.setAttributes("playerHud_mapPanel_districtCard_Red", {offsetXY = "0 -300"})
+UI.setAttributes("db_hud_map_hover_button_panel_wrapper_Red", {offsetXY = "0 0", color = "rgba(1, 0, 0, 0.15)", padding = "0 0 0 0", childAlignment = "UpperLeft", preferredHeight = "1300", minHeight = "1300", height = "1300"})
 
+local viewportData = UI.getAttributes("playerHud_mapViewport_Red")
+local draggableData = UI.getAttributes("playerHud_mapDraggable_Red")
+local buttonWrapperPanelData = UI.getAttributes("db_hud_map_hover_button_panel_wrapper_Red")
+
+local function prettyPrintTable(tbl, name, indent)
+  indent = indent or ""
+  name = name or "table"
+  print(indent .. tostring(name) .. " = {")
+  local nextIndent = indent .. "  "
+  for k, v in pairs(tbl) do
+    local keyStr = tostring(k)
+    local valueStr
+    if type(v) == "table" then
+      prettyPrintTable(v, keyStr, nextIndent)
+    else
+      if type(v) == "string" then
+        valueStr = '"' .. tostring(v) .. '"'
+      else
+        valueStr = tostring(v)
+      end
+      print(nextIndent .. keyStr .. " = " .. valueStr .. ",")
+    end
+  end
+  print(indent .. "}")
+end
+
+prettyPrintTable(buttonWrapperPanelData, "buttonWrapperPanelData")
+prettyPrintTable(viewportData, "viewportData")
+prettyPrintTable(draggableData, "draggableData")
+
+-->
     <Panel class="hud_map_center_container" id="playerHud_mapViewport_Red">
       <Panel class="hud_map_draggable_container" id="playerHud_mapDraggable_Red">
         <Image class="hud_map_image hud_map_image_base" id="playerHud_mapBase_Red" image="mapBase" />
@@ -909,8 +1026,8 @@
       </VerticalLayout>
     </Panel>
 
-    <Panel class="hud_map_hover_button_panel_wrapper">
-      <Panel class="hover_button_panel_container hover_button_panel_container_wide" height="900">
+    <Panel id="db_hud_map_hover_button_panel_wrapper_Red" class="hud_map_hover_button_panel_wrapper">
+      <Panel id="db_hover_button_panel_container_Red" class="hover_button_panel_container hover_button_panel_container_wide" height="900">
         <!--
         Border Dimensions: 150x50    Count: 2
         Base Dimensions: 175x20      Count: 36
@@ -918,9 +1035,12 @@
         Active Dimensions: 175x20    Count: 36
         Max Width: 175
         Total Height: 2*50 + 36*20 = 900
+
+
+        UI.setAttributes("db_base_districtDivider_northOfBloor_Red", {minHeight = "52", minWidth = "175"})
         -->
-        <VerticalLayout class="hover_button_panel" childAlignment="UpperLeft" spacing="0">
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" />
+        <VerticalLayout id="db_base_button_panel_Red" class="hover_button_panel" childAlignment="UpperLeft" spacing="0">
+          <Image id="db_base_districtDivider_northOfBloor_Red" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Bennington_Red" image="toggleDistrict_Bennington_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_DeerPark_Red" image="toggleDistrict_DeerPark_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_DupontByTheCastle_Red" image="toggleDistrict_DupontByTheCastle_inactive" />
@@ -930,18 +1050,18 @@
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_StJamesTown_Red" image="toggleDistrict_StJamesTown_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Wychwood_Red" image="toggleDistrict_Wychwood_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Yorkville_Red" image="toggleDistrict_Yorkville_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" />
+          <Image id="db_base_districtDivider_westToronto_Red" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Annex_Red" image="toggleDistrict_Annex_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Chinatown_Red" image="toggleDistrict_Chinatown_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_HarbordVillage_Red" image="toggleDistrict_HarbordVillage_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_LittleItaly_Red" image="toggleDistrict_LittleItaly_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_LittlePortugal_Red" image="toggleDistrict_LittlePortugal_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" />
+          <Image id="db_base_districtDivider_eastToronto_Red" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Danforth_Red" image="toggleDistrict_Danforth_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_DonRavine_Red" image="toggleDistrict_DonRavine_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_RegentPark_Red" image="toggleDistrict_RegentPark_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Riverdale_Red" image="toggleDistrict_Riverdale_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" />
+          <Image id="db_base_districtDivider_cityCenter_Red" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_BayStFinancial_Red" image="toggleDistrict_BayStFinancial_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Cabbagetown_Red" image="toggleDistrict_Cabbagetown_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Corktown_Red" image="toggleDistrict_Corktown_inactive" />
@@ -951,20 +1071,20 @@
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_YongeBloorMuseum_Red" image="toggleDistrict_YongeBloorMuseum_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_YongeDundasHospital_Red" image="toggleDistrict_YongeDundasHospital_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_YongeStreet_Red" image="toggleDistrict_YongeStreet_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" />
+          <Image id="db_base_districtDivider_shoreline_Red" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_CentreIsland_Red" image="toggleDistrict_CentreIsland_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_DistilleryDist_Red" image="toggleDistrict_DistilleryDist_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_LakeOntario_Red" image="toggleDistrict_LakeOntario_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_LibertyVillage_Red" image="toggleDistrict_LibertyVillage_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Waterfront_Red" image="toggleDistrict_Waterfront_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" />
+          <Image id="db_base_districtDivider_notDepicted_Red" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_PATH_Red" image="toggleDistrict_PATH_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Sewers_Red" image="toggleDistrict_Sewers_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Streets_Red" image="toggleDistrict_Streets_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Subway_Red" image="toggleDistrict_Subway_inactive" />
         </VerticalLayout>
-        <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" color="clear"/>
+        <VerticalLayout id="db_hover_button_panel_Red" class="hover_button_panel">
+          <Image id="db_hover_districtDivider_northOfBloor_Red" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" color="clear"/>
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Bennington_Red_hover" image="toggleDistrict_Bennington_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_DeerPark_Red_hover" image="toggleDistrict_DeerPark_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_DupontByTheCastle_Red_hover" image="toggleDistrict_DupontByTheCastle_hover" />
@@ -974,18 +1094,18 @@
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_StJamesTown_Red_hover" image="toggleDistrict_StJamesTown_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Wychwood_Red_hover" image="toggleDistrict_Wychwood_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Yorkville_Red_hover" image="toggleDistrict_Yorkville_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" color="clear" />
+          <Image id="db_hover_districtDivider_westToronto_Red" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Annex_Red_hover" image="toggleDistrict_Annex_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Chinatown_Red_hover" image="toggleDistrict_Chinatown_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_HarbordVillage_Red_hover" image="toggleDistrict_HarbordVillage_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_LittleItaly_Red_hover" image="toggleDistrict_LittleItaly_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_LittlePortugal_Red_hover" image="toggleDistrict_LittlePortugal_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" color="clear" />
+          <Image id="db_hover_districtDivider_eastToronto_Red" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Danforth_Red_hover" image="toggleDistrict_Danforth_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_DonRavine_Red_hover" image="toggleDistrict_DonRavine_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_RegentPark_Red_hover" image="toggleDistrict_RegentPark_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Riverdale_Red_hover" image="toggleDistrict_Riverdale_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" color="clear" />
+          <Image id="db_hover_districtDivider_cityCenter_Red" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_BayStFinancial_Red_hover" image="toggleDistrict_BayStFinancial_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Cabbagetown_Red_hover" image="toggleDistrict_Cabbagetown_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Corktown_Red_hover" image="toggleDistrict_Corktown_hover" />
@@ -995,20 +1115,20 @@
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_YongeBloorMuseum_Red_hover" image="toggleDistrict_YongeBloorMuseum_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_YongeDundasHospital_Red_hover" image="toggleDistrict_YongeDundasHospital_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_YongeStreet_Red_hover" image="toggleDistrict_YongeStreet_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" color="clear" />
+          <Image id="db_hover_districtDivider_shoreline_Red" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_CentreIsland_Red_hover" image="toggleDistrict_CentreIsland_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_DistilleryDist_Red_hover" image="toggleDistrict_DistilleryDist_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_LakeOntario_Red_hover" image="toggleDistrict_LakeOntario_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_LibertyVillage_Red_hover" image="toggleDistrict_LibertyVillage_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Waterfront_Red_hover" image="toggleDistrict_Waterfront_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" color="clear" />
+          <Image id="db_hover_districtDivider_notDepicted_Red" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_PATH_Red_hover" image="toggleDistrict_PATH_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Sewers_Red_hover" image="toggleDistrict_Sewers_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Streets_Red_hover" image="toggleDistrict_Streets_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Subway_Red_hover" image="toggleDistrict_Subway_hover" />
         </VerticalLayout>
-        <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" color="clear"/>
+        <VerticalLayout id="db_active_button_panel_Red" class="hover_button_panel">
+          <Image id="db_active_districtDivider_northOfBloor_Red" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" color="clear"/>
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Bennington_Red_active" image="toggleDistrict_Bennington_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_DeerPark_Red_active" image="toggleDistrict_DeerPark_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_DupontByTheCastle_Red_active" image="toggleDistrict_DupontByTheCastle_active" />
@@ -1018,18 +1138,18 @@
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_StJamesTown_Red_active" image="toggleDistrict_StJamesTown_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Wychwood_Red_active" image="toggleDistrict_Wychwood_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Yorkville_Red_active" image="toggleDistrict_Yorkville_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" color="clear" />
+          <Image id="db_active_districtDivider_westToronto_Red" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Annex_Red_active" image="toggleDistrict_Annex_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Chinatown_Red_active" image="toggleDistrict_Chinatown_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_HarbordVillage_Red_active" image="toggleDistrict_HarbordVillage_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_LittleItaly_Red_active" image="toggleDistrict_LittleItaly_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_LittlePortugal_Red_active" image="toggleDistrict_LittlePortugal_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" color="clear" />
+          <Image id="db_active_districtDivider_eastToronto_Red" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Danforth_Red_active" image="toggleDistrict_Danforth_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_DonRavine_Red_active" image="toggleDistrict_DonRavine_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_RegentPark_Red_active" image="toggleDistrict_RegentPark_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Riverdale_Red_active" image="toggleDistrict_Riverdale_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" color="clear" />
+          <Image id="db_active_districtDivider_cityCenter_Red" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_BayStFinancial_Red_active" image="toggleDistrict_BayStFinancial_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Cabbagetown_Red_active" image="toggleDistrict_Cabbagetown_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Corktown_Red_active" image="toggleDistrict_Corktown_active" />
@@ -1039,13 +1159,13 @@
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_YongeBloorMuseum_Red_active" image="toggleDistrict_YongeBloorMuseum_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_YongeDundasHospital_Red_active" image="toggleDistrict_YongeDundasHospital_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_YongeStreet_Red_active" image="toggleDistrict_YongeStreet_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" color="clear" />
+          <Image id="db_active_districtDivider_shoreline_Red" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_CentreIsland_Red_active" image="toggleDistrict_CentreIsland_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_DistilleryDist_Red_active" image="toggleDistrict_DistilleryDist_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_LakeOntario_Red_active" image="toggleDistrict_LakeOntario_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_LibertyVillage_Red_active" image="toggleDistrict_LibertyVillage_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Waterfront_Red_active" image="toggleDistrict_Waterfront_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" color="clear" />
+          <Image id="db_active_districtDivider_notDepicted_Red" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_PATH_Red_active" image="toggleDistrict_PATH_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Sewers_Red_active" image="toggleDistrict_Sewers_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Streets_Red_active" image="toggleDistrict_Streets_active" />
@@ -1108,13 +1228,13 @@
         Max Width: 150
         Total Height: 2*50 + 5*25 = 225
         -->
-        <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" />
+        <VerticalLayout id="db_base_hover_button_panel_Pink" class="hover_button_panel">
+          <Image id="db_base_overlayDivider_cityFeatures_Pink" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" />
           <Image id="playerHud_mapOverlayToggle_districtsAll_Pink" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_districtsAll_inactive" />
           <Image id="playerHud_mapOverlayToggle_majorRoads_Pink" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_majorRoads_inactive" />
           <Image id="playerHud_mapOverlayToggle_localRoads_Pink" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_localRoads_inactive" />
           <Image id="playerHud_mapOverlayToggle_majorSites_Pink" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_majorSites_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" />
+          <Image id="db_base_overlayDivider_domains_Pink" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" />
 
           <Image id="playerHud_mapOverlayToggle_domain_theCourt_Pink" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_domain_theCourt_inactive" />
           <Text class="spacer_10" />
@@ -1134,17 +1254,17 @@
           <Image id="playerHud_mapOverlayToggle_domain_islandDevil_Pink" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_domain_islandDevil_inactive" />
           <Text class="spacer_20" preferredHeight="15" />
           <Image id="playerHud_mapOverlayToggle_domain_domainConflicts_Pink" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_domain_domainConflicts_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" />
+          <Image id="db_base_overlayDivider_regions_Pink" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" />
           <Image id="playerHud_mapOverlayToggle_domain_barrens_Pink" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_domain_barrens_inactive" />
           <Image id="playerHud_mapOverlayToggle_domain_theRack_Pink" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_domain_theRack_inactive" />
         </VerticalLayout>
-        <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
+        <VerticalLayout id="db_hover_hover_button_panel_Pink" class="hover_button_panel">
+          <Image id="db_hover_overlayDivider_cityFeatures_Pink" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
           <Image id="playerHud_mapOverlayToggle_districtsAll_Pink_hover" class="hover_button hover_button_hover" image="toggleOverlay_districtsAll_hover" />
           <Image id="playerHud_mapOverlayToggle_majorRoads_Pink_hover" class="hover_button hover_button_hover" image="toggleOverlay_majorRoads_hover" />
           <Image id="playerHud_mapOverlayToggle_localRoads_Pink_hover" class="hover_button hover_button_hover" image="toggleOverlay_localRoads_hover" />
           <Image id="playerHud_mapOverlayToggle_majorSites_Pink_hover" class="hover_button hover_button_hover" image="toggleOverlay_majorSites_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
+          <Image id="db_hover_overlayDivider_domains_Pink" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
           <Image id="playerHud_mapOverlayToggle_domain_theCourt_Pink_hover" class="hover_button hover_button_hover" image="toggleOverlay_domain_theCourt_hover" />
           <Text class="spacer_10" />
           <Image id="playerHud_mapOverlayToggle_domain_fiveKeys_Pink_hover" class="hover_button hover_button_hover" image="toggleOverlay_domain_fiveKeys_hover" />
@@ -1163,17 +1283,17 @@
           <Image id="playerHud_mapOverlayToggle_domain_islandDevil_Pink_hover" class="hover_button hover_button_hover" image="toggleOverlay_domain_islandDevil_hover" />
           <Text class="spacer_20" preferredHeight="15" />
           <Image id="playerHud_mapOverlayToggle_domain_domainConflicts_Pink_hover" class="hover_button hover_button_hover" image="toggleOverlay_domain_domainConflicts_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
+          <Image id="db_hover_overlayDivider_regions_Pink" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
           <Image id="playerHud_mapOverlayToggle_domain_barrens_Pink_hover" class="hover_button hover_button_hover" image="toggleOverlay_domain_barrens_hover" />
           <Image id="playerHud_mapOverlayToggle_domain_theRack_Pink_hover" class="hover_button hover_button_hover" image="toggleOverlay_domain_theRack_hover" />
         </VerticalLayout>
-        <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
+        <VerticalLayout id="db_active_hover_button_panel_Pink" class="hover_button_panel">
+          <Image id="db_active_overlayDivider_cityFeatures_Pink" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
           <Image id="playerHud_mapOverlayToggle_districtsAll_Pink_active" class="hover_button hover_button_active" image="toggleOverlay_districtsAll_active" />
           <Image id="playerHud_mapOverlayToggle_majorRoads_Pink_active" class="hover_button hover_button_active" image="toggleOverlay_majorRoads_active" />
           <Image id="playerHud_mapOverlayToggle_localRoads_Pink_active" class="hover_button hover_button_active" image="toggleOverlay_localRoads_active" />
           <Image id="playerHud_mapOverlayToggle_majorSites_Pink_active" class="hover_button hover_button_active" image="toggleOverlay_majorSites_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
+          <Image id="db_active_overlayDivider_domains_Pink" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
           <Image id="playerHud_mapOverlayToggle_domain_theCourt_Pink_active" class="hover_button hover_button_active" image="toggleOverlay_domain_theCourt_active" />
           <Text class="spacer_10" />
           <Image id="playerHud_mapOverlayToggle_domain_fiveKeys_Pink_active" class="hover_button hover_button_active" image="toggleOverlay_domain_fiveKeys_active" />
@@ -1192,13 +1312,50 @@
           <Image id="playerHud_mapOverlayToggle_domain_islandDevil_Pink_active" class="hover_button hover_button_active" image="toggleOverlay_domain_islandDevil_active" />
           <Text class="spacer_20" preferredHeight="15" />
           <Image id="playerHud_mapOverlayToggle_domain_domainConflicts_Pink_active" class="hover_button hover_button_active" image="toggleOverlay_domain_domainConflicts_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
+          <Image id="db_active_overlayDivider_regions_Pink" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
           <Image id="playerHud_mapOverlayToggle_domain_barrens_Pink_active" class="hover_button hover_button_active" image="toggleOverlay_domain_barrens_active" />
           <Image id="playerHud_mapOverlayToggle_domain_theRack_Pink_active" class="hover_button hover_button_active" image="toggleOverlay_domain_theRack_active" />
         </VerticalLayout>
       </Panel>
     </Panel>
+<!--
+UI.setAttributes("playerHud_mapViewport_Red", {color = "rgba(1, 0, 0, 0.15)", minHeight = "3000", height = "3000", preferredHeight = "3000"})
+UI.setAttributes("playerHud_mapDraggable_Red", {color = "rgba(1, 1, 0, 0.15)"})
+UI.setAttributes("playerHud_corePanel_map_Red", {offsetXY = "0 -100"})
+UI.setAttributes("playerHud_mapPanel_districtCard_Red", {offsetXY = "0 -300"})
+UI.setAttributes("db_hud_map_hover_button_panel_wrapper_Red", {offsetXY = "0 0", color = "rgba(1, 0, 0, 0.15)", padding = "0 0 0 0", childAlignment = "UpperLeft", preferredHeight = "1300", minHeight = "1300", height = "1300"})
 
+local viewportData = UI.getAttributes("playerHud_mapViewport_Red")
+local draggableData = UI.getAttributes("playerHud_mapDraggable_Red")
+local buttonWrapperPanelData = UI.getAttributes("db_hud_map_hover_button_panel_wrapper_Red")
+
+local function prettyPrintTable(tbl, name, indent)
+  indent = indent or ""
+  name = name or "table"
+  print(indent .. tostring(name) .. " = {")
+  local nextIndent = indent .. "  "
+  for k, v in pairs(tbl) do
+    local keyStr = tostring(k)
+    local valueStr
+    if type(v) == "table" then
+      prettyPrintTable(v, keyStr, nextIndent)
+    else
+      if type(v) == "string" then
+        valueStr = '"' .. tostring(v) .. '"'
+      else
+        valueStr = tostring(v)
+      end
+      print(nextIndent .. keyStr .. " = " .. valueStr .. ",")
+    end
+  end
+  print(indent .. "}")
+end
+
+prettyPrintTable(buttonWrapperPanelData, "buttonWrapperPanelData")
+prettyPrintTable(viewportData, "viewportData")
+prettyPrintTable(draggableData, "draggableData")
+
+-->
     <Panel class="hud_map_center_container" id="playerHud_mapViewport_Pink">
       <Panel class="hud_map_draggable_container" id="playerHud_mapDraggable_Pink">
         <Image class="hud_map_image hud_map_image_base" id="playerHud_mapBase_Pink" image="mapBase" />
@@ -1274,8 +1431,8 @@
       </VerticalLayout>
     </Panel>
 
-    <Panel class="hud_map_hover_button_panel_wrapper">
-      <Panel class="hover_button_panel_container hover_button_panel_container_wide" height="900">
+    <Panel id="db_hud_map_hover_button_panel_wrapper_Pink" class="hud_map_hover_button_panel_wrapper">
+      <Panel id="db_hover_button_panel_container_Pink" class="hover_button_panel_container hover_button_panel_container_wide" height="900">
         <!--
         Border Dimensions: 150x50    Count: 2
         Base Dimensions: 175x20      Count: 36
@@ -1283,9 +1440,12 @@
         Active Dimensions: 175x20    Count: 36
         Max Width: 175
         Total Height: 2*50 + 36*20 = 900
+
+
+        UI.setAttributes("db_base_districtDivider_northOfBloor_Red", {minHeight = "52", minWidth = "175"})
         -->
-        <VerticalLayout class="hover_button_panel" childAlignment="UpperLeft" spacing="0">
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" />
+        <VerticalLayout id="db_base_button_panel_Pink" class="hover_button_panel" childAlignment="UpperLeft" spacing="0">
+          <Image id="db_base_districtDivider_northOfBloor_Pink" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Bennington_Pink" image="toggleDistrict_Bennington_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_DeerPark_Pink" image="toggleDistrict_DeerPark_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_DupontByTheCastle_Pink" image="toggleDistrict_DupontByTheCastle_inactive" />
@@ -1295,18 +1455,18 @@
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_StJamesTown_Pink" image="toggleDistrict_StJamesTown_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Wychwood_Pink" image="toggleDistrict_Wychwood_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Yorkville_Pink" image="toggleDistrict_Yorkville_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" />
+          <Image id="db_base_districtDivider_westToronto_Pink" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Annex_Pink" image="toggleDistrict_Annex_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Chinatown_Pink" image="toggleDistrict_Chinatown_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_HarbordVillage_Pink" image="toggleDistrict_HarbordVillage_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_LittleItaly_Pink" image="toggleDistrict_LittleItaly_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_LittlePortugal_Pink" image="toggleDistrict_LittlePortugal_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" />
+          <Image id="db_base_districtDivider_eastToronto_Pink" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Danforth_Pink" image="toggleDistrict_Danforth_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_DonRavine_Pink" image="toggleDistrict_DonRavine_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_RegentPark_Pink" image="toggleDistrict_RegentPark_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Riverdale_Pink" image="toggleDistrict_Riverdale_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" />
+          <Image id="db_base_districtDivider_cityCenter_Pink" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_BayStFinancial_Pink" image="toggleDistrict_BayStFinancial_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Cabbagetown_Pink" image="toggleDistrict_Cabbagetown_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Corktown_Pink" image="toggleDistrict_Corktown_inactive" />
@@ -1316,20 +1476,20 @@
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_YongeBloorMuseum_Pink" image="toggleDistrict_YongeBloorMuseum_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_YongeDundasHospital_Pink" image="toggleDistrict_YongeDundasHospital_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_YongeStreet_Pink" image="toggleDistrict_YongeStreet_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" />
+          <Image id="db_base_districtDivider_shoreline_Pink" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_CentreIsland_Pink" image="toggleDistrict_CentreIsland_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_DistilleryDist_Pink" image="toggleDistrict_DistilleryDist_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_LakeOntario_Pink" image="toggleDistrict_LakeOntario_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_LibertyVillage_Pink" image="toggleDistrict_LibertyVillage_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Waterfront_Pink" image="toggleDistrict_Waterfront_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" />
+          <Image id="db_base_districtDivider_notDepicted_Pink" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_PATH_Pink" image="toggleDistrict_PATH_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Sewers_Pink" image="toggleDistrict_Sewers_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Streets_Pink" image="toggleDistrict_Streets_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Subway_Pink" image="toggleDistrict_Subway_inactive" />
         </VerticalLayout>
-        <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" color="clear"/>
+        <VerticalLayout id="db_hover_button_panel_Pink" class="hover_button_panel">
+          <Image id="db_hover_districtDivider_northOfBloor_Pink" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" color="clear"/>
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Bennington_Pink_hover" image="toggleDistrict_Bennington_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_DeerPark_Pink_hover" image="toggleDistrict_DeerPark_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_DupontByTheCastle_Pink_hover" image="toggleDistrict_DupontByTheCastle_hover" />
@@ -1339,18 +1499,18 @@
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_StJamesTown_Pink_hover" image="toggleDistrict_StJamesTown_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Wychwood_Pink_hover" image="toggleDistrict_Wychwood_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Yorkville_Pink_hover" image="toggleDistrict_Yorkville_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" color="clear" />
+          <Image id="db_hover_districtDivider_westToronto_Pink" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Annex_Pink_hover" image="toggleDistrict_Annex_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Chinatown_Pink_hover" image="toggleDistrict_Chinatown_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_HarbordVillage_Pink_hover" image="toggleDistrict_HarbordVillage_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_LittleItaly_Pink_hover" image="toggleDistrict_LittleItaly_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_LittlePortugal_Pink_hover" image="toggleDistrict_LittlePortugal_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" color="clear" />
+          <Image id="db_hover_districtDivider_eastToronto_Pink" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Danforth_Pink_hover" image="toggleDistrict_Danforth_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_DonRavine_Pink_hover" image="toggleDistrict_DonRavine_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_RegentPark_Pink_hover" image="toggleDistrict_RegentPark_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Riverdale_Pink_hover" image="toggleDistrict_Riverdale_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" color="clear" />
+          <Image id="db_hover_districtDivider_cityCenter_Pink" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_BayStFinancial_Pink_hover" image="toggleDistrict_BayStFinancial_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Cabbagetown_Pink_hover" image="toggleDistrict_Cabbagetown_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Corktown_Pink_hover" image="toggleDistrict_Corktown_hover" />
@@ -1360,20 +1520,20 @@
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_YongeBloorMuseum_Pink_hover" image="toggleDistrict_YongeBloorMuseum_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_YongeDundasHospital_Pink_hover" image="toggleDistrict_YongeDundasHospital_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_YongeStreet_Pink_hover" image="toggleDistrict_YongeStreet_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" color="clear" />
+          <Image id="db_hover_districtDivider_shoreline_Pink" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_CentreIsland_Pink_hover" image="toggleDistrict_CentreIsland_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_DistilleryDist_Pink_hover" image="toggleDistrict_DistilleryDist_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_LakeOntario_Pink_hover" image="toggleDistrict_LakeOntario_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_LibertyVillage_Pink_hover" image="toggleDistrict_LibertyVillage_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Waterfront_Pink_hover" image="toggleDistrict_Waterfront_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" color="clear" />
+          <Image id="db_hover_districtDivider_notDepicted_Pink" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_PATH_Pink_hover" image="toggleDistrict_PATH_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Sewers_Pink_hover" image="toggleDistrict_Sewers_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Streets_Pink_hover" image="toggleDistrict_Streets_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Subway_Pink_hover" image="toggleDistrict_Subway_hover" />
         </VerticalLayout>
-        <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" color="clear"/>
+        <VerticalLayout id="db_active_button_panel_Pink" class="hover_button_panel">
+          <Image id="db_active_districtDivider_northOfBloor_Pink" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" color="clear"/>
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Bennington_Pink_active" image="toggleDistrict_Bennington_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_DeerPark_Pink_active" image="toggleDistrict_DeerPark_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_DupontByTheCastle_Pink_active" image="toggleDistrict_DupontByTheCastle_active" />
@@ -1383,18 +1543,18 @@
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_StJamesTown_Pink_active" image="toggleDistrict_StJamesTown_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Wychwood_Pink_active" image="toggleDistrict_Wychwood_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Yorkville_Pink_active" image="toggleDistrict_Yorkville_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" color="clear" />
+          <Image id="db_active_districtDivider_westToronto_Pink" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Annex_Pink_active" image="toggleDistrict_Annex_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Chinatown_Pink_active" image="toggleDistrict_Chinatown_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_HarbordVillage_Pink_active" image="toggleDistrict_HarbordVillage_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_LittleItaly_Pink_active" image="toggleDistrict_LittleItaly_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_LittlePortugal_Pink_active" image="toggleDistrict_LittlePortugal_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" color="clear" />
+          <Image id="db_active_districtDivider_eastToronto_Pink" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Danforth_Pink_active" image="toggleDistrict_Danforth_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_DonRavine_Pink_active" image="toggleDistrict_DonRavine_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_RegentPark_Pink_active" image="toggleDistrict_RegentPark_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Riverdale_Pink_active" image="toggleDistrict_Riverdale_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" color="clear" />
+          <Image id="db_active_districtDivider_cityCenter_Pink" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_BayStFinancial_Pink_active" image="toggleDistrict_BayStFinancial_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Cabbagetown_Pink_active" image="toggleDistrict_Cabbagetown_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Corktown_Pink_active" image="toggleDistrict_Corktown_active" />
@@ -1404,13 +1564,13 @@
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_YongeBloorMuseum_Pink_active" image="toggleDistrict_YongeBloorMuseum_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_YongeDundasHospital_Pink_active" image="toggleDistrict_YongeDundasHospital_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_YongeStreet_Pink_active" image="toggleDistrict_YongeStreet_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" color="clear" />
+          <Image id="db_active_districtDivider_shoreline_Pink" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_CentreIsland_Pink_active" image="toggleDistrict_CentreIsland_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_DistilleryDist_Pink_active" image="toggleDistrict_DistilleryDist_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_LakeOntario_Pink_active" image="toggleDistrict_LakeOntario_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_LibertyVillage_Pink_active" image="toggleDistrict_LibertyVillage_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Waterfront_Pink_active" image="toggleDistrict_Waterfront_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" color="clear" />
+          <Image id="db_active_districtDivider_notDepicted_Pink" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_PATH_Pink_active" image="toggleDistrict_PATH_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Sewers_Pink_active" image="toggleDistrict_Sewers_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Streets_Pink_active" image="toggleDistrict_Streets_active" />
@@ -1473,13 +1633,13 @@
         Max Width: 150
         Total Height: 2*50 + 5*25 = 225
         -->
-        <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" />
+        <VerticalLayout id="db_base_hover_button_panel_Purple" class="hover_button_panel">
+          <Image id="db_base_overlayDivider_cityFeatures_Purple" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" />
           <Image id="playerHud_mapOverlayToggle_districtsAll_Purple" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_districtsAll_inactive" />
           <Image id="playerHud_mapOverlayToggle_majorRoads_Purple" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_majorRoads_inactive" />
           <Image id="playerHud_mapOverlayToggle_localRoads_Purple" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_localRoads_inactive" />
           <Image id="playerHud_mapOverlayToggle_majorSites_Purple" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_majorSites_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" />
+          <Image id="db_base_overlayDivider_domains_Purple" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" />
 
           <Image id="playerHud_mapOverlayToggle_domain_theCourt_Purple" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_domain_theCourt_inactive" />
           <Text class="spacer_10" />
@@ -1499,17 +1659,17 @@
           <Image id="playerHud_mapOverlayToggle_domain_islandDevil_Purple" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_domain_islandDevil_inactive" />
           <Text class="spacer_20" preferredHeight="15" />
           <Image id="playerHud_mapOverlayToggle_domain_domainConflicts_Purple" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_domain_domainConflicts_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" />
+          <Image id="db_base_overlayDivider_regions_Purple" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" />
           <Image id="playerHud_mapOverlayToggle_domain_barrens_Purple" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_domain_barrens_inactive" />
           <Image id="playerHud_mapOverlayToggle_domain_theRack_Purple" class="hover_button hover_button_base hover_button_base_overlay" image="toggleOverlay_domain_theRack_inactive" />
         </VerticalLayout>
-        <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
+        <VerticalLayout id="db_hover_hover_button_panel_Purple" class="hover_button_panel">
+          <Image id="db_hover_overlayDivider_cityFeatures_Purple" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
           <Image id="playerHud_mapOverlayToggle_districtsAll_Purple_hover" class="hover_button hover_button_hover" image="toggleOverlay_districtsAll_hover" />
           <Image id="playerHud_mapOverlayToggle_majorRoads_Purple_hover" class="hover_button hover_button_hover" image="toggleOverlay_majorRoads_hover" />
           <Image id="playerHud_mapOverlayToggle_localRoads_Purple_hover" class="hover_button hover_button_hover" image="toggleOverlay_localRoads_hover" />
           <Image id="playerHud_mapOverlayToggle_majorSites_Purple_hover" class="hover_button hover_button_hover" image="toggleOverlay_majorSites_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
+          <Image id="db_hover_overlayDivider_domains_Purple" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
           <Image id="playerHud_mapOverlayToggle_domain_theCourt_Purple_hover" class="hover_button hover_button_hover" image="toggleOverlay_domain_theCourt_hover" />
           <Text class="spacer_10" />
           <Image id="playerHud_mapOverlayToggle_domain_fiveKeys_Purple_hover" class="hover_button hover_button_hover" image="toggleOverlay_domain_fiveKeys_hover" />
@@ -1528,17 +1688,17 @@
           <Image id="playerHud_mapOverlayToggle_domain_islandDevil_Purple_hover" class="hover_button hover_button_hover" image="toggleOverlay_domain_islandDevil_hover" />
           <Text class="spacer_20" preferredHeight="15" />
           <Image id="playerHud_mapOverlayToggle_domain_domainConflicts_Purple_hover" class="hover_button hover_button_hover" image="toggleOverlay_domain_domainConflicts_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
+          <Image id="db_hover_overlayDivider_regions_Purple" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
           <Image id="playerHud_mapOverlayToggle_domain_barrens_Purple_hover" class="hover_button hover_button_hover" image="toggleOverlay_domain_barrens_hover" />
           <Image id="playerHud_mapOverlayToggle_domain_theRack_Purple_hover" class="hover_button hover_button_hover" image="toggleOverlay_domain_theRack_hover" />
         </VerticalLayout>
-        <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
+        <VerticalLayout id="db_active_hover_button_panel_Purple" class="hover_button_panel">
+          <Image id="db_active_overlayDivider_cityFeatures_Purple" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
           <Image id="playerHud_mapOverlayToggle_districtsAll_Purple_active" class="hover_button hover_button_active" image="toggleOverlay_districtsAll_active" />
           <Image id="playerHud_mapOverlayToggle_majorRoads_Purple_active" class="hover_button hover_button_active" image="toggleOverlay_majorRoads_active" />
           <Image id="playerHud_mapOverlayToggle_localRoads_Purple_active" class="hover_button hover_button_active" image="toggleOverlay_localRoads_active" />
           <Image id="playerHud_mapOverlayToggle_majorSites_Purple_active" class="hover_button hover_button_active" image="toggleOverlay_majorSites_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
+          <Image id="db_active_overlayDivider_domains_Purple" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
           <Image id="playerHud_mapOverlayToggle_domain_theCourt_Purple_active" class="hover_button hover_button_active" image="toggleOverlay_domain_theCourt_active" />
           <Text class="spacer_10" />
           <Image id="playerHud_mapOverlayToggle_domain_fiveKeys_Purple_active" class="hover_button hover_button_active" image="toggleOverlay_domain_fiveKeys_active" />
@@ -1557,13 +1717,50 @@
           <Image id="playerHud_mapOverlayToggle_domain_islandDevil_Purple_active" class="hover_button hover_button_active" image="toggleOverlay_domain_islandDevil_active" />
           <Text class="spacer_20" preferredHeight="15" />
           <Image id="playerHud_mapOverlayToggle_domain_domainConflicts_Purple_active" class="hover_button hover_button_active" image="toggleOverlay_domain_domainConflicts_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
+          <Image id="db_active_overlayDivider_regions_Purple" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
           <Image id="playerHud_mapOverlayToggle_domain_barrens_Purple_active" class="hover_button hover_button_active" image="toggleOverlay_domain_barrens_active" />
           <Image id="playerHud_mapOverlayToggle_domain_theRack_Purple_active" class="hover_button hover_button_active" image="toggleOverlay_domain_theRack_active" />
         </VerticalLayout>
       </Panel>
     </Panel>
+<!--
+UI.setAttributes("playerHud_mapViewport_Red", {color = "rgba(1, 0, 0, 0.15)", minHeight = "3000", height = "3000", preferredHeight = "3000"})
+UI.setAttributes("playerHud_mapDraggable_Red", {color = "rgba(1, 1, 0, 0.15)"})
+UI.setAttributes("playerHud_corePanel_map_Red", {offsetXY = "0 -100"})
+UI.setAttributes("playerHud_mapPanel_districtCard_Red", {offsetXY = "0 -300"})
+UI.setAttributes("db_hud_map_hover_button_panel_wrapper_Red", {offsetXY = "0 0", color = "rgba(1, 0, 0, 0.15)", padding = "0 0 0 0", childAlignment = "UpperLeft", preferredHeight = "1300", minHeight = "1300", height = "1300"})
 
+local viewportData = UI.getAttributes("playerHud_mapViewport_Red")
+local draggableData = UI.getAttributes("playerHud_mapDraggable_Red")
+local buttonWrapperPanelData = UI.getAttributes("db_hud_map_hover_button_panel_wrapper_Red")
+
+local function prettyPrintTable(tbl, name, indent)
+  indent = indent or ""
+  name = name or "table"
+  print(indent .. tostring(name) .. " = {")
+  local nextIndent = indent .. "  "
+  for k, v in pairs(tbl) do
+    local keyStr = tostring(k)
+    local valueStr
+    if type(v) == "table" then
+      prettyPrintTable(v, keyStr, nextIndent)
+    else
+      if type(v) == "string" then
+        valueStr = '"' .. tostring(v) .. '"'
+      else
+        valueStr = tostring(v)
+      end
+      print(nextIndent .. keyStr .. " = " .. valueStr .. ",")
+    end
+  end
+  print(indent .. "}")
+end
+
+prettyPrintTable(buttonWrapperPanelData, "buttonWrapperPanelData")
+prettyPrintTable(viewportData, "viewportData")
+prettyPrintTable(draggableData, "draggableData")
+
+-->
     <Panel class="hud_map_center_container" id="playerHud_mapViewport_Purple">
       <Panel class="hud_map_draggable_container" id="playerHud_mapDraggable_Purple">
         <Image class="hud_map_image hud_map_image_base" id="playerHud_mapBase_Purple" image="mapBase" />
@@ -1639,8 +1836,8 @@
       </VerticalLayout>
     </Panel>
 
-    <Panel class="hud_map_hover_button_panel_wrapper">
-      <Panel class="hover_button_panel_container hover_button_panel_container_wide" height="900">
+    <Panel id="db_hud_map_hover_button_panel_wrapper_Purple" class="hud_map_hover_button_panel_wrapper">
+      <Panel id="db_hover_button_panel_container_Purple" class="hover_button_panel_container hover_button_panel_container_wide" height="900">
         <!--
         Border Dimensions: 150x50    Count: 2
         Base Dimensions: 175x20      Count: 36
@@ -1648,9 +1845,12 @@
         Active Dimensions: 175x20    Count: 36
         Max Width: 175
         Total Height: 2*50 + 36*20 = 900
+
+
+        UI.setAttributes("db_base_districtDivider_northOfBloor_Red", {minHeight = "52", minWidth = "175"})
         -->
-        <VerticalLayout class="hover_button_panel" childAlignment="UpperLeft" spacing="0">
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" />
+        <VerticalLayout id="db_base_button_panel_Purple" class="hover_button_panel" childAlignment="UpperLeft" spacing="0">
+          <Image id="db_base_districtDivider_northOfBloor_Purple" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Bennington_Purple" image="toggleDistrict_Bennington_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_DeerPark_Purple" image="toggleDistrict_DeerPark_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_DupontByTheCastle_Purple" image="toggleDistrict_DupontByTheCastle_inactive" />
@@ -1660,18 +1860,18 @@
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_StJamesTown_Purple" image="toggleDistrict_StJamesTown_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Wychwood_Purple" image="toggleDistrict_Wychwood_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Yorkville_Purple" image="toggleDistrict_Yorkville_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" />
+          <Image id="db_base_districtDivider_westToronto_Purple" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Annex_Purple" image="toggleDistrict_Annex_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Chinatown_Purple" image="toggleDistrict_Chinatown_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_HarbordVillage_Purple" image="toggleDistrict_HarbordVillage_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_LittleItaly_Purple" image="toggleDistrict_LittleItaly_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_LittlePortugal_Purple" image="toggleDistrict_LittlePortugal_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" />
+          <Image id="db_base_districtDivider_eastToronto_Purple" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Danforth_Purple" image="toggleDistrict_Danforth_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_DonRavine_Purple" image="toggleDistrict_DonRavine_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_RegentPark_Purple" image="toggleDistrict_RegentPark_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Riverdale_Purple" image="toggleDistrict_Riverdale_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" />
+          <Image id="db_base_districtDivider_cityCenter_Purple" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_BayStFinancial_Purple" image="toggleDistrict_BayStFinancial_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Cabbagetown_Purple" image="toggleDistrict_Cabbagetown_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Corktown_Purple" image="toggleDistrict_Corktown_inactive" />
@@ -1681,20 +1881,20 @@
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_YongeBloorMuseum_Purple" image="toggleDistrict_YongeBloorMuseum_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_YongeDundasHospital_Purple" image="toggleDistrict_YongeDundasHospital_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_YongeStreet_Purple" image="toggleDistrict_YongeStreet_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" />
+          <Image id="db_base_districtDivider_shoreline_Purple" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_CentreIsland_Purple" image="toggleDistrict_CentreIsland_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_DistilleryDist_Purple" image="toggleDistrict_DistilleryDist_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_LakeOntario_Purple" image="toggleDistrict_LakeOntario_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_LibertyVillage_Purple" image="toggleDistrict_LibertyVillage_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Waterfront_Purple" image="toggleDistrict_Waterfront_inactive" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" />
+          <Image id="db_base_districtDivider_notDepicted_Purple" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_PATH_Purple" image="toggleDistrict_PATH_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Sewers_Purple" image="toggleDistrict_Sewers_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Streets_Purple" image="toggleDistrict_Streets_inactive" />
           <Image class="hover_button hover_button_thin hover_button_base hover_button_base_district" id="playerHud_mapDistrictToggle_Subway_Purple" image="toggleDistrict_Subway_inactive" />
         </VerticalLayout>
-        <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" color="clear"/>
+        <VerticalLayout id="db_hover_button_panel_Purple" class="hover_button_panel">
+          <Image id="db_hover_districtDivider_northOfBloor_Purple" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" color="clear"/>
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Bennington_Purple_hover" image="toggleDistrict_Bennington_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_DeerPark_Purple_hover" image="toggleDistrict_DeerPark_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_DupontByTheCastle_Purple_hover" image="toggleDistrict_DupontByTheCastle_hover" />
@@ -1704,18 +1904,18 @@
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_StJamesTown_Purple_hover" image="toggleDistrict_StJamesTown_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Wychwood_Purple_hover" image="toggleDistrict_Wychwood_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Yorkville_Purple_hover" image="toggleDistrict_Yorkville_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" color="clear" />
+          <Image id="db_hover_districtDivider_westToronto_Purple" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Annex_Purple_hover" image="toggleDistrict_Annex_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Chinatown_Purple_hover" image="toggleDistrict_Chinatown_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_HarbordVillage_Purple_hover" image="toggleDistrict_HarbordVillage_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_LittleItaly_Purple_hover" image="toggleDistrict_LittleItaly_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_LittlePortugal_Purple_hover" image="toggleDistrict_LittlePortugal_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" color="clear" />
+          <Image id="db_hover_districtDivider_eastToronto_Purple" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Danforth_Purple_hover" image="toggleDistrict_Danforth_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_DonRavine_Purple_hover" image="toggleDistrict_DonRavine_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_RegentPark_Purple_hover" image="toggleDistrict_RegentPark_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Riverdale_Purple_hover" image="toggleDistrict_Riverdale_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" color="clear" />
+          <Image id="db_hover_districtDivider_cityCenter_Purple" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_BayStFinancial_Purple_hover" image="toggleDistrict_BayStFinancial_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Cabbagetown_Purple_hover" image="toggleDistrict_Cabbagetown_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Corktown_Purple_hover" image="toggleDistrict_Corktown_hover" />
@@ -1725,20 +1925,20 @@
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_YongeBloorMuseum_Purple_hover" image="toggleDistrict_YongeBloorMuseum_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_YongeDundasHospital_Purple_hover" image="toggleDistrict_YongeDundasHospital_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_YongeStreet_Purple_hover" image="toggleDistrict_YongeStreet_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" color="clear" />
+          <Image id="db_hover_districtDivider_shoreline_Purple" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_CentreIsland_Purple_hover" image="toggleDistrict_CentreIsland_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_DistilleryDist_Purple_hover" image="toggleDistrict_DistilleryDist_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_LakeOntario_Purple_hover" image="toggleDistrict_LakeOntario_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_LibertyVillage_Purple_hover" image="toggleDistrict_LibertyVillage_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Waterfront_Purple_hover" image="toggleDistrict_Waterfront_hover" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" color="clear" />
+          <Image id="db_hover_districtDivider_notDepicted_Purple" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_PATH_Purple_hover" image="toggleDistrict_PATH_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Sewers_Purple_hover" image="toggleDistrict_Sewers_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Streets_Purple_hover" image="toggleDistrict_Streets_hover" />
           <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Subway_Purple_hover" image="toggleDistrict_Subway_hover" />
         </VerticalLayout>
-        <VerticalLayout class="hover_button_panel">
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" color="clear"/>
+        <VerticalLayout id="db_active_button_panel_Purple" class="hover_button_panel">
+          <Image id="db_active_districtDivider_northOfBloor_Purple" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" color="clear"/>
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Bennington_Purple_active" image="toggleDistrict_Bennington_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_DeerPark_Purple_active" image="toggleDistrict_DeerPark_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_DupontByTheCastle_Purple_active" image="toggleDistrict_DupontByTheCastle_active" />
@@ -1748,18 +1948,18 @@
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_StJamesTown_Purple_active" image="toggleDistrict_StJamesTown_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Wychwood_Purple_active" image="toggleDistrict_Wychwood_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Yorkville_Purple_active" image="toggleDistrict_Yorkville_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" color="clear" />
+          <Image id="db_active_districtDivider_westToronto_Purple" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Annex_Purple_active" image="toggleDistrict_Annex_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Chinatown_Purple_active" image="toggleDistrict_Chinatown_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_HarbordVillage_Purple_active" image="toggleDistrict_HarbordVillage_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_LittleItaly_Purple_active" image="toggleDistrict_LittleItaly_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_LittlePortugal_Purple_active" image="toggleDistrict_LittlePortugal_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" color="clear" />
+          <Image id="db_active_districtDivider_eastToronto_Purple" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Danforth_Purple_active" image="toggleDistrict_Danforth_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_DonRavine_Purple_active" image="toggleDistrict_DonRavine_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_RegentPark_Purple_active" image="toggleDistrict_RegentPark_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Riverdale_Purple_active" image="toggleDistrict_Riverdale_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" color="clear" />
+          <Image id="db_active_districtDivider_cityCenter_Purple" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_BayStFinancial_Purple_active" image="toggleDistrict_BayStFinancial_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Cabbagetown_Purple_active" image="toggleDistrict_Cabbagetown_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Corktown_Purple_active" image="toggleDistrict_Corktown_active" />
@@ -1769,13 +1969,13 @@
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_YongeBloorMuseum_Purple_active" image="toggleDistrict_YongeBloorMuseum_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_YongeDundasHospital_Purple_active" image="toggleDistrict_YongeDundasHospital_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_YongeStreet_Purple_active" image="toggleDistrict_YongeStreet_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" color="clear" />
+          <Image id="db_active_districtDivider_shoreline_Purple" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_CentreIsland_Purple_active" image="toggleDistrict_CentreIsland_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_DistilleryDist_Purple_active" image="toggleDistrict_DistilleryDist_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_LakeOntario_Purple_active" image="toggleDistrict_LakeOntario_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_LibertyVillage_Purple_active" image="toggleDistrict_LibertyVillage_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Waterfront_Purple_active" image="toggleDistrict_Waterfront_active" />
-          <Image class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" color="clear" />
+          <Image id="db_active_districtDivider_notDepicted_Purple" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" color="clear" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_PATH_Purple_active" image="toggleDistrict_PATH_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Sewers_Purple_active" image="toggleDistrict_Sewers_active" />
           <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Streets_Purple_active" image="toggleDistrict_Streets_active" />
