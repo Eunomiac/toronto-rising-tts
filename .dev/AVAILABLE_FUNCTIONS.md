@@ -392,7 +392,7 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 
 ### Narrative calendar (`lib/narrative_calendar.ttslua`)
 
-**Require:** `local NarrativeCalendar = require("lib.narrative_calendar")`  
+**Require:** `local NarrativeCalendar = require("lib.narrative_calendar")`
 In-fiction Y/M/D/h/m arithmetic (leap-aware; no DST). Used by TOR-401 travel Apply and TOR-222 clock lerp.
 
 | Function | Description | Usage Example |
@@ -418,7 +418,7 @@ Rough geometric sunrise/sunset for Toronto (~43.65°N, 79.38°W). Fixed Eastern 
 
 ### Narrative clock lerp (`core/narrative_clock_lerp.ttslua`)
 
-**Require:** `local NarrativeClockLerp = require("core.narrative_clock_lerp")`  
+**Require:** `local NarrativeClockLerp = require("core.narrative_clock_lerp")`
 Animated Scene Time jumps (TOR-222). Display-only during motion; present day / weather / `Sync.full` on settle. Duration from `C.CLOCK_LERP`. Live scene required (`SceneLibrary.hasLiveSceneOnTable`).
 
 | Function | Description | Usage Example |
