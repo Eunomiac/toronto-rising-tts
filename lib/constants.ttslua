@@ -2802,19 +2802,183 @@ C.Districts = {
 -- #endregion
 
 -- #region Skyboxes
--- Additional skyboxes that aren't associated with a specific site are registered here.
+-- Catalog of skybox assets. Site `skybox` fields reference these by key; resolve via `C.Skyboxes[key].url`.
 C.Skyboxes = {
-  Memoriam = {
-    lordLucien = {
-      [1] = "https://steamusercontent-a.akamaihd.net/ugc/10207205942730426287/208F09B99D2B2462A838A0A649DD98B8F8D00E03/"
-    }
+  Memoriam_lordLucien_1 = {
+    key = "Memoriam_lordLucien_1",
+    display = "Memoriam - Lucien 1 - Lucerne",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/13848577772813192455/F739C5068AA926C5BD99B23CADF613F46D4CD532/"
+  },
+  Memoriam_lordLucien_2 = {
+    key = "Memoriam_lordLucien_2",
+    display = "Memoriam - Lucien 2 - Paris",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/16359846726575171369/6D6FA80CB925D8E9DF3562F6C7E8BB2CE1530731/"
+  },
+  Memoriam_lordLucien_3 = {
+    key = "Memoriam_lordLucien_3",
+    display = "Memoriam - Lucien 3 - Mexico",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/12362658886795600199/626F15588079A71C8431D6C3819AEA582902F155/"
+  },
+  Memoriam_lordLucien_4 = {
+    key = "Memoriam_lordLucien_4",
+    display = "Memoriam - Lucien 4 - Las Vegas",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/15997513845398585235/0770EACBB191493E2FD50BD7DFBC2BFCA80984E4/"
+  },
+  Memoriam_lordLucien_5 = {
+    key = "Memoriam_lordLucien_5",
+    display = "Memoriam - Lucien 5 - Road Trip",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/9366797038274814939/BF98B843EF9CC7C5A8FDB373FB1D7409B5D02DDB/"
+  },
+  Memoriam_lordLucien_6 = {
+    key = "Memoriam_lordLucien_6",
+    display = "Memoriam - Lucien 6 - '60s Toronto",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/16523063491802303454/DCAD825ACC68C5583A166133F37C9B2C51F23D11/"
+  },
+  Memoriam_lordLucien_7 = {
+    key = "Memoriam_lordLucien_7",
+    display = "Memoriam - Lucien 7 - Montreal",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/12197770916454962091/1CC219C3F7F0BFFD91D383A5C5CA1258586EDD26/"
+  },
+  Memoriam_lordLucien_8 = {
+    key = "Memoriam_lordLucien_8",
+    display = "Memoriam - Lucien 8 - Week of Nightmares",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/11666778478254478311/9CA14DB530FF71D5C39EE8E8FBFC071D8798C2E8/"
+  },
+  PATH = {
+    key = "PATH",
+    display = "PATH",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/15375843588775839041/3A60CA3E4F123EF24EF4130C04DB1FE0BB6DB9F0/"
+  },
+  BackAlley1 = {
+    key = "BackAlley1",
+    display = "Back Alley",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/12930388377252487409/1A5BCA2C1176B7A125C0138407E0BFEDE84AE1C9/"
+  },
+  CityPark = {
+    key = "CityPark",
+    display = "City Park",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/14810892747457874521/B3DFB3CF2C6D12B8BC415F3851E0986E2E41869B/"
+  },
+  CLGreatHall = {
+    key = "CLGreatHall",
+    display = "Casa Loma: Great Hall",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/12857638481862152813/4A8CFAF76C6EF66353A6EEE6AB3910B8179D7582/"
+  },
+  CLGrounds = {
+    key = "CLGrounds",
+    display = "Casa Loma: Estate Grounds",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/14179846110223042314/99DD84556B6E3C41489A144C42A2CB75A22B41B2/"
+  },
+  FireSaleChantry = {
+    key = "FireSaleChantry",
+    display = "Fire Sale Chantry",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/11654425755197381163/B91622EAC6CE05D4003526416CA2F9C3E685B8A5/"
+  },
+  Keyhouse = {
+    key = "Keyhouse",
+    display = "Keyhouse",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/15297612651271636561/1CD6C7AFADDA4B592D0F7FDE5230183707878A1C/"
+  },
+  Limousine = {
+    key = "Limousine",
+    display = "Limousine",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/12891187118152732202/636E052C979D2B6364EF4757DBCEA42784094E0F/"
+  },
+  Ravenwing = {
+    key = "Ravenwing",
+    display = "Ravenwing",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/16515690108275274607/789562DC3F455554CF95E19281978983B2B28CF1/"
+  },
+  REMState = {
+    key = "REMState",
+    display = "REM/State",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/18408343188806175215/E357A20E10C64E76650C46413879512E44AB9369/"
+  },
+  ROMHallOfExtinction = {
+    key = "ROMHallOfExtinction",
+    display = "ROM: Hall of Extinction",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/17138739773892053541/120B910DA0B8553AD83D6EB4A465D02D658CE1E0/"
+  },
+  ROMRotunda = {
+    key = "ROMRotunda",
+    display = "ROM: Rotunda Mezzanine",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/15003041483509342664/9BF41E40C91076F05F702562B2CCFC526937FFDE/"
+  },
+  Rooftop = {
+    key = "Rooftop",
+    display = "Rooftop",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/13037688246790937124/6F623729D2DD26C75C8827F9221024C3DFCD1920/"
+  },
+  SewerTunnel1 = {
+    key = "SewerTunnel1",
+    display = "Sewer Tunnel 1",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/17350579786083043383/28209BC005309B6CE3CFD6690A1893137520CE97/"
+  },
+  SewerTunnel2 = {
+    key = "SewerTunnel2",
+    display = "Sewer Tunnel 2",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/11854333014927274836/7C5BE3C0090195E237A8D00E2A543E95AD2F9AA7/"
+  },
+  Sidewalk1 = {
+    key = "Sidewalk1",
+    display = "Sidewalk",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/12792922146026622636/CBFF9E4B470CA2B1AA7D689B2C4B780383D4E25C/"
+  },
+  StMichaelsCathedral = {
+    key = "StMichaelsCathedral",
+    display = "St. Michael's",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/17158291445512415236/1141146CFD6C8A2B146290EC0D5DC0409492872C/"
+  },
+  StRegisCouncilChamber = {
+    key = "StRegisCouncilChamber",
+    display = "St. Regis: Council Chamber",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/15959087884505981274/D36A0ED4969D960988E92B185326A1552E737BEE/"
+  },
+  StRegisGrandSalon = {
+    key = "StRegisGrandSalon",
+    display = "St. Regis: Grand Salon",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/11866721771016672788/9A79A4AE1C26F806908ABC91085953D7145BCD31/"
+  },
+  StRegisRoom101 = {
+    key = "StRegisRoom101",
+    display = "St. Regis: Room 101",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/11907578944795624952/374FFE58F45AD4321517478615A17B0DF202E3D9/"
+  },
+  UnionGrandClock = {
+    key = "UnionGrandClock",
+    display = "Union: Grand Clock",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/16978235608608045449/C09C69F2B6229E760FE779DAFC2CACCB44A550A9/"
+  },
+  UnionServiceCorridor = {
+    key = "UnionServiceCorridor",
+    display = "Union: Service Corridor",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/10907450321955205561/096CAB8F7CACC2EA66457CABB773EE3906B7FA7A/"
+  },
+  WarrensLabyrinth = {
+    key = "WarrensLabyrinth",
+    display = "Warrens: Labyrinth",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/17892954931611002859/B548B8F184F440041FDFA999143955FEDB4C9944/"
+  },
+  WarrensTunnelJunction = {
+    key = "WarrensTunnelJunction",
+    display = "Warrens: Tunnel Junction",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/10514672785003801373/3A4FE7F0E73170C5EA6B3861A05286E36249624B/"
   }
+}
+-- Sentinel for `sessionScene.skyboxOverride` / picker: force random `C.GenericSkyboxes` (ignore site `skybox`).
+C.SKYBOX_GENERIC_KEY = "Generic"
+
+-- Generic skyboxes: A random skybox from this list should be assigned whenever a scene is set at a site without a skybox,
+-- or when override is `C.SKYBOX_GENERIC_KEY`.
+C.GenericSkyboxes = {
+  "https://steamusercontent-a.akamaihd.net/ugc/9635803439806194822/777817ED5F8282C5C7DD18FFBBF1247513C26E6A/"
 }
 
 -- #region Sites
 
 -- Sites
--- Optional `skyboxURL` (string): custom table background applied via `Scenes.reconcileSkyboxFromState` when this site is live (`sessionScene.siteKey`) and `sessionScene.skyboxOverride` is unset. When omitted, a random entry from `C.GenericSkyboxes` is used.
+-- Optional `skybox` (string): catalog key into `C.Skyboxes`. Applied via `Scenes.reconcileSkyboxFromState` when this site is live
+-- (`sessionScene.siteKey`) and `sessionScene.skyboxOverride` is unset. When omitted, a random entry from `C.GenericSkyboxes` is used.
 
 -- Optional `isSilent = true`: full ambient mute (background, location ambience, weather); featured music may still be played via Storyteller action. Merge with `Soundscape.applyContext(Soundscape.contextFromSite(site))`.
 -- Optional `soundscape.backgroundMusic.playlist = "none"`: silence background music only (location ambience and weather still apply). Omit `backgroundMusic` to use catalog default mood (`main`).
@@ -2822,33 +2986,8 @@ C.Skyboxes = {
 -- `weatherDucking` (number 0..1): per-site weather volume multiplier via `Soundscape.applyContext` (`state.siteWeatherDucking`); when omitted, indoor/outdoor catalog defaults apply.
 -- Optional `mappable` (boolean, default true): when false, active PCs' map pins hide at this scene site; absent PCs may keep a cached mappable offset.
 
--- Generic skyboxes: A random skybox from this list should be assigned whenever a scene is set at a site without a skyboxURL.
-C.GenericSkyboxes = {
-  "https://steamusercontent-a.akamaihd.net/ugc/9635803439806194822/777817ED5F8282C5C7DD18FFBBF1247513C26E6A/"
-}
-
---- Resolves the TTS background (`Backgrounds.setCustomURL`) for a site key.
---- Uses `C.Sites[siteKey].skyboxURL` when present; otherwise picks randomly from `C.GenericSkyboxes`.
---- Scene-level override is handled separately via `sessionScene.skyboxOverride` in `Scenes.reconcileSkyboxFromState`.
---- @param siteKey string|nil
---- @return string|nil url
-function C.resolveSkyboxURLForSite(siteKey)
-  if type(siteKey) ~= "string" then
-    return nil
-  end
-  siteKey = string.gsub(string.gsub(siteKey, "^%s+", ""), "%s+$", "")
-  if siteKey == "" then
-    return nil
-  end
-
-  local site = C.Sites[siteKey]
-  if type(site) == "table" and type(site.skyboxURL) == "string" then
-    local authored = string.gsub(string.gsub(site.skyboxURL, "^%s+", ""), "%s+$", "")
-    if authored ~= "" then
-      return authored
-    end
-  end
-
+--- @return string|nil trimmed non-empty URL from `C.GenericSkyboxes`, or nil
+function C.pickRandomGenericSkyboxURL()
   local generics = C.GenericSkyboxes
   if type(generics) ~= "table" then
     return nil
@@ -2866,6 +3005,80 @@ function C.resolveSkyboxURLForSite(siteKey)
     return nil
   end
   return pick
+end
+
+--- @param key any
+--- @return boolean
+function C.isValidSkyboxKey(key)
+  if type(key) ~= "string" or key == "" then
+    return false
+  end
+  key = string.gsub(string.gsub(key, "^%s+", ""), "%s+$", "")
+  if key == "" then
+    return false
+  end
+  if key == C.SKYBOX_GENERIC_KEY then
+    return true
+  end
+  local entry = C.Skyboxes[key]
+  if type(entry) ~= "table" or type(entry.url) ~= "string" then
+    return false
+  end
+  local url = string.gsub(string.gsub(entry.url, "^%s+", ""), "%s+$", "")
+  return url ~= ""
+end
+
+--- Resolves a catalog / Generic skybox key to a TTS background URL.
+--- `"Generic"` returns nil — caller should use `C.pickRandomGenericSkyboxURL`.
+--- @param key string|nil
+--- @return string|nil url
+function C.resolveSkyboxURLFromKey(key)
+  if type(key) ~= "string" then
+    return nil
+  end
+  key = string.gsub(string.gsub(key, "^%s+", ""), "%s+$", "")
+  if key == "" or key == C.SKYBOX_GENERIC_KEY then
+    return nil
+  end
+  local entry = C.Skyboxes[key]
+  if type(entry) ~= "table" or type(entry.url) ~= "string" then
+    return nil
+  end
+  local url = string.gsub(string.gsub(entry.url, "^%s+", ""), "%s+$", "")
+  if url == "" then
+    return nil
+  end
+  return url
+end
+
+--- Resolves the TTS background (`Backgrounds.setCustomURL`) for a site key.
+--- Uses `C.Sites[siteKey].skybox` catalog key → `C.Skyboxes[key].url` when present;
+--- otherwise picks randomly from `C.GenericSkyboxes`.
+--- Scene-level override is handled separately via `sessionScene.skyboxOverride` in `Scenes.reconcileSkyboxFromState`.
+--- @param siteKey string|nil
+--- @return string|nil url
+function C.resolveSkyboxURLForSite(siteKey)
+  if type(siteKey) ~= "string" then
+    return nil
+  end
+  siteKey = string.gsub(string.gsub(siteKey, "^%s+", ""), "%s+$", "")
+  if siteKey == "" then
+    return nil
+  end
+
+  local site = C.Sites[siteKey]
+  if type(site) == "table" and type(site.skybox) == "string" then
+    local authored = string.gsub(string.gsub(site.skybox, "^%s+", ""), "%s+$", "")
+    if authored ~= "" then
+      local url = C.resolveSkyboxURLFromKey(authored)
+      if url ~= nil then
+        return url
+      end
+      print("[constants] resolveSkyboxURLForSite: unknown skybox key `" .. authored .. "` for site `" .. siteKey .. "`.")
+    end
+  end
+
+  return C.pickRandomGenericSkyboxURL()
 end
 
 --- Resolves `C.Districts` table key for a district object reference from `C.Sites[*].district`.
@@ -2903,7 +3116,7 @@ C.Sites = {
     key = "CLGrounds",
     name = "Casa Loma: Estate Grounds",
     image = "siteCard_CLGrounds",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14179846110223042314/99DD84556B6E3C41489A144C42A2CB75A22B41B2/",
+    skybox = "CLGrounds",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
       backgroundMusic = {playlist = "casaLoma"},
@@ -2919,7 +3132,7 @@ C.Sites = {
     key = "CLGallery",
     name = "Casa Loma: Gallery of Mirrors",
     image = "siteCard_CLGallery",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/12857638481862152813/4A8CFAF76C6EF66353A6EEE6AB3910B8179D7582/",
+    skybox = "CLGreatHall",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
       backgroundMusic = {playlist = "casaLoma"},
@@ -2935,7 +3148,7 @@ C.Sites = {
     key = "CLGreatHall",
     name = "Casa Loma: Great Hall",
     image = "siteCard_CLGreatHall",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/12857638481862152813/4A8CFAF76C6EF66353A6EEE6AB3910B8179D7582/",
+    skybox = "CLGreatHall",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
       backgroundMusic = {playlist = "casaLoma"},
@@ -2951,7 +3164,7 @@ C.Sites = {
     key = "CLDrawingRoom",
     name = "Casa Loma: Maximillian Steele Drawing Room",
     image = "siteCard_CLDrawingRoom",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/12857638481862152813/4A8CFAF76C6EF66353A6EEE6AB3910B8179D7582/",
+    skybox = "CLGreatHall",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
       backgroundMusic = {playlist = "casaLoma"},
@@ -2967,7 +3180,7 @@ C.Sites = {
     key = "CLTerrace",
     name = "Casa Loma: Moonlit Terrace",
     image = "siteCard_CLTerrace",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14179846110223042314/99DD84556B6E3C41489A144C42A2CB75A22B41B2/",
+    skybox = "CLGrounds",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
       backgroundMusic = {playlist = "casaLoma"},
@@ -2983,7 +3196,7 @@ C.Sites = {
     key = "CLOverlook",
     name = "Casa Loma: Overlook",
     image = "siteCard_CLOverlook",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/12857638481862152813/4A8CFAF76C6EF66353A6EEE6AB3910B8179D7582/",
+    skybox = "CLGreatHall",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
       backgroundMusic = {playlist = "casaLoma"},
@@ -2999,7 +3212,7 @@ C.Sites = {
     key = "CLLibrary",
     name = "Casa Loma: Tacettin Ayhan Library",
     image = "siteCard_CLLibrary",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/12857638481862152813/4A8CFAF76C6EF66353A6EEE6AB3910B8179D7582/",
+    skybox = "CLGreatHall",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
       backgroundMusic = {playlist = "casaLoma"},
@@ -3015,7 +3228,7 @@ C.Sites = {
     key = "CLVestibule",
     name = "Casa Loma: Vestibule",
     image = "siteCard_CLVestibule",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/12857638481862152813/4A8CFAF76C6EF66353A6EEE6AB3910B8179D7582/",
+    skybox = "CLGreatHall",
     district = C.Districts.DupontByTheCastle,
     soundscape = {
       backgroundMusic = {playlist = "casaLoma"},
@@ -3106,7 +3319,7 @@ C.Sites = {
     key = "WarrensAntechamber",
     name = "The Nosferatu Warrens: Antechamber",
     image = "siteCard_WarrensAntechamber",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/17892954931611002859/B548B8F184F440041FDFA999143955FEDB4C9944/",
+    skybox = "WarrensLabyrinth",
     district = C.Districts.Sewers,
     soundscape = {
       backgroundMusic = {playlist = "nosWarrens"},
@@ -3135,7 +3348,7 @@ C.Sites = {
     key = "WarrensFomorach",
     name = "The Nosferatu Warrens: Fomórach's",
     image = "siteCard_WarrensFomorach",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/17892954931611002859/B548B8F184F440041FDFA999143955FEDB4C9944/",
+    skybox = "WarrensLabyrinth",
     district = C.Districts.Sewers,
     soundscape = {
       location = {playlist = "location", track = "warrensSafe"}
@@ -3149,7 +3362,7 @@ C.Sites = {
     key = "WarrensIQs",
     name = "The Nosferatu Warrens: I.Q.'s",
     image = "siteCard_WarrensIQs",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/17892954931611002859/B548B8F184F440041FDFA999143955FEDB4C9944/",
+    skybox = "WarrensLabyrinth",
     district = C.Districts.Sewers,
     soundscape = {
       location = {playlist = "location", track = "warrensSafe"}
@@ -3163,7 +3376,7 @@ C.Sites = {
     key = "WarrensLabyrinth",
     name = "The Nosferatu Warrens: Labyrinth",
     image = "siteCard_WarrensLabyrinth",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/17892954931611002859/B548B8F184F440041FDFA999143955FEDB4C9944/",
+    skybox = "WarrensLabyrinth",
     district = C.Districts.Sewers,
     soundscape = {
       backgroundMusic = {playlist = "nosWarrens"},
@@ -3178,7 +3391,7 @@ C.Sites = {
     key = "WarrensPalis",
     name = "The Nosferatu Warrens: Palis'",
     image = "siteCard_WarrensPalis",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/17892954931611002859/B548B8F184F440041FDFA999143955FEDB4C9944/",
+    skybox = "WarrensLabyrinth",
     district = C.Districts.Sewers,
     soundscape = {
       location = {playlist = "location", track = "warrensSafe"}
@@ -3192,7 +3405,7 @@ C.Sites = {
     key = "WarrensSpawningPool",
     name = "The Nosferatu Warrens: Spawning Pool",
     image = "siteCard_WarrensSpawningPool",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/17892954931611002859/B548B8F184F440041FDFA999143955FEDB4C9944/",
+    skybox = "WarrensLabyrinth",
     district = C.Districts.Sewers,
     soundscape = {
       backgroundMusic = {playlist = "nosWarrens"},
@@ -3207,7 +3420,7 @@ C.Sites = {
     key = "WarrensTunnelJunction",
     name = "The Nosferatu Warrens: Tunnel Junction",
     image = "siteCard_WarrensTunnelJunction",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/17892954931611002859/B548B8F184F440041FDFA999143955FEDB4C9944/",
+    skybox = "WarrensLabyrinth",
     district = C.Districts.Sewers,
     soundscape = {
       backgroundMusic = {playlist = "nosWarrens"},
@@ -3222,7 +3435,7 @@ C.Sites = {
     key = "ROMLoadingZone",
     name = "Royal Ontario Museum: Bloor Street Loading Zone",
     image = "siteCard_ROMLoadingZone",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/15003041483509342664/9BF41E40C91076F05F702562B2CCFC526937FFDE/",
+    skybox = "ROMRotunda",
     district = C.Districts.YongeBloorMuseum,
     soundscape = {
       location = {playlist = "location", track = "quietCity"}
@@ -3237,7 +3450,7 @@ C.Sites = {
     key = "ROMC5Lounge",
     name = "Royal Ontario Museum: C5 Lounge",
     image = "siteCard_ROMC5Lounge",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/15003041483509342664/9BF41E40C91076F05F702562B2CCFC526937FFDE/",
+    skybox = "ROMRotunda",
     district = C.Districts.YongeBloorMuseum,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
@@ -3252,7 +3465,7 @@ C.Sites = {
     key = "ROMRotunda",
     name = "Royal Ontario Museum: Rotunda Mezzanine",
     image = "siteCard_ROMRotunda",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/15003041483509342664/9BF41E40C91076F05F702562B2CCFC526937FFDE/",
+    skybox = "ROMRotunda",
     district = C.Districts.YongeBloorMuseum,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
@@ -3267,7 +3480,7 @@ C.Sites = {
     key = "ROMSpiritHouse",
     name = "Royal Ontario Museum: Spirit House",
     image = "siteCard_ROMSpiritHouse",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/15003041483509342664/9BF41E40C91076F05F702562B2CCFC526937FFDE/",
+    skybox = "ROMRotunda",
     district = C.Districts.YongeBloorMuseum,
     soundscape = {
       location = {playlist = "location", track = "softHum"}
@@ -3282,7 +3495,7 @@ C.Sites = {
     key = "ROMHallOfExtinction",
     name = "Royal Ontario Museum: The Hall of Extinction",
     image = "siteCard_ROMHallOfExtinction",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/15003041483509342664/9BF41E40C91076F05F702562B2CCFC526937FFDE/",
+    skybox = "ROMRotunda",
     district = C.Districts.YongeBloorMuseum,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
@@ -3297,7 +3510,7 @@ C.Sites = {
     key = "StRegisAishe",
     name = "The St. Regis Toronto: Aishe's",
     image = "siteCard_StRegisAishe",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/15959087884505981274/D36A0ED4969D960988E92B185326A1552E737BEE/",
+    skybox = "StRegisCouncilChamber",
     district = C.Districts.BayStFinancial,
     soundscape = {
       location = {playlist = "location", track = "softHum"}
@@ -3312,7 +3525,7 @@ C.Sites = {
     key = "StRegisBlackCaesar",
     name = "The St. Regis Toronto: Black Caesar's",
     image = "siteCard_StRegisBlackCaesar",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/15959087884505981274/D36A0ED4969D960988E92B185326A1552E737BEE/",
+    skybox = "StRegisCouncilChamber",
     district = C.Districts.BayStFinancial,
     soundscape = {
       backgroundMusic = {playlist = "none"},
@@ -3328,7 +3541,7 @@ C.Sites = {
     key = "StRegisCouncilChamber",
     name = "The St. Regis Toronto: Council Chamber",
     image = "siteCard_StRegisCouncilChamber",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/15959087884505981274/D36A0ED4969D960988E92B185326A1552E737BEE/",
+    skybox = "StRegisCouncilChamber",
     district = C.Districts.BayStFinancial,
     soundscape = {
       location = {playlist = "location", track = "softHum"}
@@ -3343,7 +3556,7 @@ C.Sites = {
     key = "StRegisFomorach",
     name = "The St. Regis Toronto: Fomórach's",
     image = "siteCard_StRegisFomorach",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/15959087884505981274/D36A0ED4969D960988E92B185326A1552E737BEE/",
+    skybox = "StRegisCouncilChamber",
     district = C.Districts.BayStFinancial,
     soundscape = {
       location = {playlist = "location", track = "softHum"}
@@ -3358,7 +3571,7 @@ C.Sites = {
     key = "StRegisFoyer",
     name = "The St. Regis Toronto: Foyer",
     image = "siteCard_StRegisFoyer",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/11866721771016672788/9A79A4AE1C26F806908ABC91085953D7145BCD31/",
+    skybox = "StRegisGrandSalon",
     district = C.Districts.BayStFinancial,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
@@ -3373,7 +3586,7 @@ C.Sites = {
     key = "StRegisGrandSalon",
     name = "The St. Regis Toronto: Grand Salon",
     image = "siteCard_StRegisGrandSalon",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/11866721771016672788/9A79A4AE1C26F806908ABC91085953D7145BCD31/",
+    skybox = "StRegisGrandSalon",
     district = C.Districts.BayStFinancial,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
@@ -3388,7 +3601,7 @@ C.Sites = {
     key = "StRegisLucien",
     name = "The St. Regis Toronto: Lord Lucien's",
     image = "siteCard_StRegisLucien",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/15959087884505981274/D36A0ED4969D960988E92B185326A1552E737BEE/",
+    skybox = "StRegisCouncilChamber",
     district = C.Districts.BayStFinancial,
     soundscape = {
       location = {playlist = "location", track = "softHum"}
@@ -3403,7 +3616,7 @@ C.Sites = {
     key = "StRegisRashid",
     name = "The St. Regis Toronto: Rashid's",
     image = "siteCard_StRegisRashid",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/15959087884505981274/D36A0ED4969D960988E92B185326A1552E737BEE/",
+    skybox = "StRegisCouncilChamber",
     district = C.Districts.BayStFinancial,
     soundscape = {
       location = {playlist = "location", track = "softHum"}
@@ -3418,7 +3631,7 @@ C.Sites = {
     key = "StRegisRoom101",
     name = "The St. Regis Toronto: Room 101",
     image = "siteCard_StRegisRoom101",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/11907578944795624952/374FFE58F45AD4321517478615A17B0DF202E3D9/",
+    skybox = "StRegisRoom101",
     district = C.Districts.BayStFinancial,
     soundscape = {
       location = {playlist = "location", track = "computer"}
@@ -3433,7 +3646,7 @@ C.Sites = {
     key = "UnionConcourse",
     name = "Union Station: Bay St. Concourse",
     image = "siteCard_UnionConcourse",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/16978235608608045449/C09C69F2B6229E760FE779DAFC2CACCB44A550A9/",
+    skybox = "UnionGrandClock",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "cityWalking"}
@@ -3448,7 +3661,7 @@ C.Sites = {
     key = "UnionGrandClock",
     name = "Union Station: Grand Clock",
     image = "siteCard_UnionGrandClock",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/16978235608608045449/C09C69F2B6229E760FE779DAFC2CACCB44A550A9/",
+    skybox = "UnionGrandClock",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "cityWalking"}
@@ -3463,7 +3676,7 @@ C.Sites = {
     key = "UnionLine1",
     name = "Union Station: Line 1",
     image = "siteCard_UnionLine1",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/16978235608608045449/C09C69F2B6229E760FE779DAFC2CACCB44A550A9/",
+    skybox = "UnionGrandClock",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "subway"}
@@ -3478,7 +3691,7 @@ C.Sites = {
     key = "UnionSecOffice",
     name = "Union Station: Security Office",
     image = "siteCard_UnionSecOffice",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/16978235608608045449/C09C69F2B6229E760FE779DAFC2CACCB44A550A9/",
+    skybox = "UnionGrandClock",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "computer"}
@@ -3493,7 +3706,7 @@ C.Sites = {
     key = "UnionServiceCorridor",
     name = "Union Station: Service Corridor",
     image = "siteCard_UnionServiceCorridor",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/16978235608608045449/C09C69F2B6229E760FE779DAFC2CACCB44A550A9/",
+    skybox = "UnionGrandClock",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "softHum"}
@@ -3508,7 +3721,7 @@ C.Sites = {
     key = "UnionUPExpress",
     name = "Union Station: UP Express Platform",
     image = "siteCard_UnionUPExpress",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/16978235608608045449/C09C69F2B6229E760FE779DAFC2CACCB44A550A9/",
+    skybox = "UnionGrandClock",
     district = C.Districts.Waterfront,
     soundscape = {
       location = {playlist = "location", track = "softIndoor"}
@@ -3888,7 +4101,7 @@ C.Sites = {
     key = "FireSaleChantry",
     name = "Fire Sale Chantry",
     image = "siteCard_FireSaleChantry",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/13308582823730150246/0B858B10381311EA7A56642ECE50A9A7AF947458/",
+    skybox = "FireSaleChantry",
     district = C.Districts.LittleItaly,
     soundscape = {
       location = {playlist = "location", track = "ritualRoom"}
@@ -4042,7 +4255,7 @@ C.Sites = {
     key = "Keyhouse",
     name = "Keyhouse",
     image = "siteCard_Keyhouse",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/14843441517643253825/8C6D7841EA174DA93041FF4BCEF6EA213E631805/",
+    skybox = "Keyhouse",
     district = C.Districts.Bennington,
     soundscape = {
       location = {playlist = "location", track = "softHum"}
@@ -4214,7 +4427,7 @@ C.Sites = {
     key = "Ravenwing",
     name = "Ravenwing",
     image = "siteCard_Ravenwing",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/16515690108275274607/789562DC3F455554CF95E19281978983B2B28CF1/",
+    skybox = "Ravenwing",
     district = C.Districts.WestQueenWest,
     soundscape = {
       backgroundMusic = {playlist = "none"},
@@ -4258,7 +4471,7 @@ C.Sites = {
     key = "REMState",
     name = "REM/State Institute for Sleep Science",
     image = "siteCard_REMState",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/18408343188806175215/E357A20E10C64E76650C46413879512E44AB9369/",
+    skybox = "REMState",
     district = C.Districts.DistilleryDist,
     soundscape = {
       backgroundMusic = {playlist = "none"},
@@ -4603,7 +4816,7 @@ C.Sites = {
     key = "BackAlley1",
     name = "Back Alley",
     image = "siteCard_BackAlley1",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/12930388377252487409/1A5BCA2C1176B7A125C0138407E0BFEDE84AE1C9/",
+    skybox = "BackAlley1",
     soundscape = {
       location = {playlist = "location", track = "cityTraffic"}
     },
@@ -4616,7 +4829,7 @@ C.Sites = {
     key = "BackAlley2",
     name = "Back Alley",
     image = "siteCard_BackAlley2",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/12930388377252487409/1A5BCA2C1176B7A125C0138407E0BFEDE84AE1C9/",
+    skybox = "BackAlley1",
     soundscape = {
       location = {playlist = "location", track = "cityTraffic"}
     },
@@ -4629,7 +4842,7 @@ C.Sites = {
     key = "BackAlley3",
     name = "Back Alley",
     image = "siteCard_BackAlley3",
-    skyboxURL = "https://steamusercontent-a.akamaihd.net/ugc/12930388377252487409/1A5BCA2C1176B7A125C0138407E0BFEDE84AE1C9/",
+    skybox = "BackAlley1",
     soundscape = {
       location = {playlist = "location", track = "cityTraffic"}
     },

@@ -337,7 +337,7 @@ function S.GetDefaultGameState()
             npcRoleOverride = {},
             districtKey = nil,
             siteKey = nil,
-            --- Optional custom table background URL. When set, overrides site/`C.GenericSkyboxes` in `Scenes.reconcileSkyboxFromState`.
+            --- Optional skybox catalog key (`C.Skyboxes`) or `C.SKYBOX_GENERIC_KEY`. When set, overrides site default in `Scenes.reconcileSkyboxFromState`.
             skyboxOverride = nil,
             clock = {
                 hour = 0,
@@ -728,8 +728,11 @@ function S.validateState()
             local trimmedSky = string.gsub(string.gsub(skyOverride, "^%s+", ""), "%s+$", "")
             if trimmedSky == "" then
                 gameState.sessionScene.skyboxOverride = nil
-            else
+            elseif C.isValidSkyboxKey(trimmedSky) then
                 gameState.sessionScene.skyboxOverride = trimmedSky
+            else
+                print("[state] sessionScene.skyboxOverride unknown key `" .. trimmedSky .. "` — clearing.")
+                gameState.sessionScene.skyboxOverride = nil
             end
         end
     end

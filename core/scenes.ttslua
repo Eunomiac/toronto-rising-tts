@@ -514,9 +514,8 @@ function Scenes.reconcileTopFogFromState(opts)
     return true
 end
 
---- Reconciles TTS table background (skybox) from `sessionScene.skyboxOverride` (when set)
---- or `sessionScene.siteKey` via `C.resolveSkyboxURLForSite`.
---- Sites with `skyboxURL` use that URL; others get a random `C.GenericSkyboxes` entry per site change.
+--- Reconciles TTS table background (skybox) from `sessionScene.skyboxOverride` (catalog key or `"Generic"`)
+--- or `sessionScene.siteKey` via `C.resolveSkyboxURLForSite` (site `skybox` key → `C.Skyboxes[key].url`, else random generic).
 --- @param opts table|nil `{ force = boolean }`
 --- @return boolean
 function Scenes.reconcileSkyboxFromState(opts)
@@ -542,11 +541,19 @@ function Scenes.reconcileSkyboxFromState(opts)
     local url = nil
     local fingerprint = nil
     if type(override) == "string" then
-        url = override
         fingerprint = "override:" .. override
+        if override == C.SKYBOX_GENERIC_KEY then
+            url = C.pickRandomGenericSkyboxURL()
+        else
+            url = C.resolveSkyboxURLFromKey(override)
+            if url == nil then
+                print("[Scenes] reconcileSkyboxFromState: unknown skyboxOverride key `" .. override .. "`.")
+                return false
+            end
+        end
     elseif siteKey ~= "" then
         url = C.resolveSkyboxURLForSite(siteKey)
-        fingerprint = siteKey
+        fingerprint = "site:" .. siteKey
     else
         lastSkyboxReconcileFingerprint = nil
         return true
@@ -557,7 +564,9 @@ function Scenes.reconcileSkyboxFromState(opts)
     end
 
     if type(url) ~= "string" or url == "" then
-        if siteKey ~= "" then
+        if type(override) == "string" then
+            print("[Scenes] reconcileSkyboxFromState: no skybox URL for override `" .. override .. "`.")
+        elseif siteKey ~= "" then
             print("[Scenes] reconcileSkyboxFromState: no skybox URL for site `" .. siteKey .. "`.")
         else
             print("[Scenes] reconcileSkyboxFromState: skyboxOverride is empty.")
@@ -573,7 +582,7 @@ function Scenes.reconcileSkyboxFromState(opts)
     local ok = Backgrounds.setCustomURL(url)
     if ok ~= true then
         if type(override) == "string" then
-            print("[Scenes] reconcileSkyboxFromState: Backgrounds.setCustomURL failed for skyboxOverride.")
+            print("[Scenes] reconcileSkyboxFromState: Backgrounds.setCustomURL failed for skyboxOverride `" .. override .. "`.")
         else
             print("[Scenes] reconcileSkyboxFromState: Backgrounds.setCustomURL failed for site `" .. siteKey .. "`.")
         end
@@ -801,12 +810,8 @@ end
 --- Random generic skybox when no narrative site is active (TOR-151).
 --- @return boolean
 local function applyRandomGenericSkybox()
-    local generics = C.GenericSkyboxes
-    if type(generics) ~= "table" or #generics < 1 then
-        return false
-    end
-    local url = generics[math.random(#generics)]
-    if type(url) ~= "string" or trimSceneKey(url) == "" then
+    local url = C.pickRandomGenericSkyboxURL()
+    if type(url) ~= "string" or url == "" then
         return false
     end
     if Backgrounds == nil or type(Backgrounds.setCustomURL) ~= "function" then

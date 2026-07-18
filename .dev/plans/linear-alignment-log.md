@@ -569,5 +569,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-17 | DONE | TOR-395 | Collapse storytellerToolbarBody on panel close (`cd3d7ad`) |
 | 2026-07-17 | DONE | TOR-398 | Idempotent global blindfold show/hide (`3c616b6`) |
 | 2026-07-17 | Focus | Stack | empty — propose TOR-286 / TOR-72 / TOR-89 |
+| 2026-07-17 | CREATE+SHIP | TOR-399 | Key-based skybox catalog + Scenes panel; relatedTo TOR-58/TOR-313; INBOX [Skyboxes] cleared |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

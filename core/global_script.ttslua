@@ -3609,20 +3609,38 @@ end
 --- Scenes panel: open district modal (`panel_scenes_location_modals.xml`, generated from `C.Districts`).
 function HUD_scenesOpenDistrictModal(player, button, id)
     U.setAttribute("scenes_modal_sites_root", "active", "false")
+    U.setAttribute("scenes_modal_skyboxes_root", "active", "false")
     U.setAttribute("scenes_modal_districts_root", "active", "true")
 end
 
 --- Scenes panel: open site modal (generated from `C.Sites`; district bucket toggled from `sessionScene.districtKey`).
 function HUD_scenesOpenSiteModal(player, button, id)
     U.setAttribute("scenes_modal_districts_root", "active", "false")
+    U.setAttribute("scenes_modal_skyboxes_root", "active", "false")
     StorytellerScenesPanel.applySiteModalDistrictVisibility()
     U.setAttribute("scenes_modal_sites_root", "active", "true")
 end
 
---- Close district/site picker modals (Close buttons or after a selection).
+--- Scenes panel: open skybox modal (generated from `C.Skyboxes`). Right-click (`-2`) clears override.
+function HUD_scenesOpenSkyboxModal(player, button, id)
+    if button == "-2" or button == -2 or tostring(button) == "-2" then
+        if not requireStorytellerForMutation(player, "HUD_scenesOpenSkyboxModal") then
+            return
+        end
+        StorytellerScenesPanel.clearSkyboxOverrideFromPicker()
+        U.AlertGM("Skybox override cleared — site default (or Generic) applies. Click Apply location when ready.")
+        return
+    end
+    U.setAttribute("scenes_modal_districts_root", "active", "false")
+    U.setAttribute("scenes_modal_sites_root", "active", "false")
+    U.setAttribute("scenes_modal_skyboxes_root", "active", "true")
+end
+
+--- Close district/site/skybox picker modals (Close buttons or after a selection).
 function HUD_scenesCloseLocationModals(player, button, id)
     U.setAttribute("scenes_modal_districts_root", "active", "false")
     U.setAttribute("scenes_modal_sites_root", "active", "false")
+    U.setAttribute("scenes_modal_skyboxes_root", "active", "false")
 end
 
 --- Writes district into pending library row or live sessionScene; Apply location still required when live.
@@ -3655,6 +3673,25 @@ function HUD_scenesPickSite(player, button, id)
     HUD_scenesCloseLocationModals(player, button, id)
     StorytellerScenesPanel.setLocationKeyFromPicker("site", key)
     U.AlertGM("Site set: " .. key .. " — click Apply location + soundscape when ready.")
+end
+
+--- Writes skyboxOverride into pending library row or live sessionScene; Apply location still required when live.
+function HUD_scenesPickSkybox(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_scenesPickSkybox") then
+        return
+    end
+    local key = string.match(id or "", "^scenes_pick_skybox_(.+)$")
+    if type(key) ~= "string" or key == "" then
+        U.AlertGM("Scenes: could not parse skybox picker control.")
+        return
+    end
+    if not C.isValidSkyboxKey(key) then
+        U.AlertGM("Scenes: unknown skybox key `" .. key .. "`.")
+        return
+    end
+    HUD_scenesCloseLocationModals(player, button, id)
+    StorytellerScenesPanel.setSkyboxKeyFromPicker(key)
+    U.AlertGM("Skybox override set: " .. key .. " — click Apply location + soundscape when ready.")
 end
 
 --- Month button on Scenes panel (`scenes_month_1` … `12`).

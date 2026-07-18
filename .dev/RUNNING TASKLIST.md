@@ -188,8 +188,9 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [ ] **Scene light modes as color tones:** Rename/reshape scene presets to tone keys (`AmberBright`, `AmberDim`, `AmberDark`, `BlueBright`, `GreenBright`, `WhiteBright`, …). `blockedBy` **TOR-81**. _(TOR-320)_
 - [ ] **Subtle scene LUTs:** Light-touch LUTs for atmosphere; Memoriam sepia first (coordinate with **TOR-101**). `blockedBy` **TOR-81**. _(TOR-321)_
 - [x] **Scenes/locations** drive global/seat light mode via state → `Scenes.reconcileFromState` / lighting reconciler (no dual apply). _(TOR-84 — 2026-06-15)_
-- [x] **Site skybox:** `sessionScene.siteKey` → `Scenes.reconcileSkyboxFromState` (`C.Sites[*].skyboxURL` or random `C.GenericSkyboxes` via `Backgrounds.setCustomURL`). _(TOR-58)_
-- [x] **Scene skybox override:** Optional `sessionScene.skyboxOverride` (URL) on Scene Constructor import + library/live state; reconciler prefers override over site/generic. _(TOR-313)_
+- [x] **Site skybox:** `sessionScene.siteKey` → `Scenes.reconcileSkyboxFromState` (`C.Sites[*].skybox` catalog key → `C.Skyboxes[key].url`, or random `C.GenericSkyboxes` via `Backgrounds.setCustomURL`). _(TOR-58)_
+- [x] **Scene skybox override:** Optional `sessionScene.skyboxOverride` (`C.Skyboxes` key or `"Generic"`) on Scene Constructor import + library/live state; reconciler prefers override over site/generic. _(TOR-313)_
+- [x] **Key-based skybox catalog + Scenes panel:** `C.Skyboxes` + resolve helpers; import validates keys (not URLs); generated skybox modal; panel display / pick / right-click clear. _(TOR-399)_
 
 ## Scenes Panel & Scene State
 

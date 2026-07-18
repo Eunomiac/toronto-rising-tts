@@ -2,7 +2,7 @@
 
 /**
  * Builds `ui/storyteller/panel_scenes_location_modals.xml` from `lib/constants.ttslua`
- * (`C.Districts` + `C.Sites` keys and human `name` strings).
+ * (`C.Districts` + `C.Sites` + `C.Skyboxes` keys and human labels).
  *
  * Run from repo root: node .dev/scripts/generate_scenes_location_modals_xml.js
  */
@@ -148,16 +148,18 @@ function xmlEscapeAttr(s) {
 }
 
 /**
- * Grid of picker buttons: `BUTTONS_PER_ROW` per row. Display text is human `name` only;
+ * Grid of picker buttons: `BUTTONS_PER_ROW` per row. Display text is human label only;
  * lua handlers still read the canonical key from `id` (`scenes_pick_*_<key>`).
  *
  * @param {{ key: string, label: string }[]} rows
- * @param {"district"|"site"} kind
+ * @param {"district"|"site"|"skybox"} kind
  * @param {string} [rowIndent] indent before each HorizontalLayout row (default 8 spaces)
  */
 function renderPickerButtons(rows, kind, rowIndent = "        ") {
-  const prefix = kind === "district" ? "scenes_pick_district_" : "scenes_pick_site_";
-  const handler = kind === "district" ? "HUD_scenesPickDistrict" : "HUD_scenesPickSite";
+  const prefix =
+    kind === "district" ? "scenes_pick_district_" : kind === "site" ? "scenes_pick_site_" : "scenes_pick_skybox_";
+  const handler =
+    kind === "district" ? "HUD_scenesPickDistrict" : kind === "site" ? "HUD_scenesPickSite" : "HUD_scenesPickSkybox";
   const btnIndent = `${rowIndent}  `;
   const chunks = chunkArray(rows, BUTTONS_PER_ROW);
   const blocks = [];
@@ -236,6 +238,7 @@ const luaSource = fs.readFileSync(constantsPath, "utf8");
 
 const districtBlock = extractBlock(luaSource, "C.Districts =");
 const siteBlock = extractBlock(luaSource, "C.Sites =");
+const skyboxBlock = extractBlock(luaSource, "C.Skyboxes =");
 
 const districtEntries = parseTopLevelEntries(districtBlock).map((entry) => {
   const nameMatch = entry.body.match(/name\s*=\s*"([^"]*)"/);
@@ -248,6 +251,13 @@ const siteEntries = parseTopLevelEntries(siteBlock).map((entry) => {
   const nameMatch = entry.body.match(/name\s*=\s*"([^"]*)"/);
   const label = nameMatch ? nameMatch[1] : entry.key;
   return { key: entry.key, label, districtKey: parseSiteDistrictKey(entry.body) };
+});
+
+/** @type {{ key: string, label: string }[]} */
+const skyboxEntries = parseTopLevelEntries(skyboxBlock).map((entry) => {
+  const displayMatch = entry.body.match(/display\s*=\s*"([^"]*)"/);
+  const label = displayMatch ? displayMatch[1] : entry.key;
+  return { key: entry.key, label };
 });
 
 /** Sort key: ignore a leading "The " (e.g. "The Discovery District" → "discovery district, the"). */
@@ -293,12 +303,18 @@ for (const d of districtEntries) {
 genericSites.sort(sortByLabel);
 disambiguateDuplicatePickerLabels(genericSites);
 
+skyboxEntries.sort(sortByLabel);
+disambiguateDuplicatePickerLabels(skyboxEntries);
+
+/** Leading Generic sentinel (C.SKYBOX_GENERIC_KEY), then catalog entries. */
+const skyboxPickerRows = [{ key: "Generic", label: "Generic" }, ...skyboxEntries];
+
 const header = `<!-- AUTO-GENERATED — do not edit by hand. Source: lib/constants.ttslua -->
 <!-- Regenerate: node .dev/scripts/generate_scenes_location_modals_xml.js -->
 `;
 
 const xml = `${header}
-<!-- Host/Black only; centered pickers for Scenes panel district/site keys. -->
+<!-- Host/Black only; centered pickers for Scenes panel district/site/skybox keys. -->
 <Panel id="scenes_modal_districts_root" visibility="Black|Host" active="False" width="${MODAL_WIDTH}" height="${MODAL_HEIGHT}" rectAlignment="MiddleCenter" offsetXY="0 0">
   <VerticalLayout padding="14" spacing="8" color="#1A1A1AE6" childForceExpandWidth="true">
     <Text fontSize="16" fontStyle="Bold" color="#C9A84C" alignment="MiddleCenter" text="Pick district" />
@@ -328,10 +344,25 @@ ${renderSiteModalBody(districtEntries, sitesByDistrict, genericSites)}
     </VerticalScrollView>
   </VerticalLayout>
 </Panel>
+
+<Panel id="scenes_modal_skyboxes_root" visibility="Black|Host" active="False" width="${MODAL_WIDTH}" height="${MODAL_HEIGHT}" rectAlignment="MiddleCenter" offsetXY="0 0">
+  <VerticalLayout padding="14" spacing="8" color="#1A1A1AE6" childForceExpandWidth="true">
+    <Text fontSize="16" fontStyle="Bold" color="#C9A84C" alignment="MiddleCenter" text="Pick skybox" />
+    <Text fontSize="10" color="#888888" alignment="MiddleCenter" text="Sets sessionScene.skyboxOverride (catalog key or Generic). Right-click Skyboxes... to clear override. Apply location still required for live world." />
+    <HorizontalLayout spacing="8" childAlignment="MiddleCenter">
+      <Button id="scenes_modal_skyboxes_close" class="hud_storyteller_button" fontSize="12" preferredWidth="120" preferredHeight="32" colors="${BTN_COLORS}" textColor="#FFFFFF" text="Close" onClick="HUD_scenesCloseLocationModals" />
+    </HorizontalLayout>
+    <VerticalScrollView preferredHeight="460" minHeight="200" flexibleHeight="1" movementType="Clamped" vertical="true" horizontal="false" childForceExpandWidth="true">
+      <VerticalLayout spacing="4" padding="4" childForceExpandWidth="true">
+${renderPickerButtons(skyboxPickerRows, "skybox")}
+      </VerticalLayout>
+    </VerticalScrollView>
+  </VerticalLayout>
+</Panel>
 `;
 
 fs.writeFileSync(outPath, xml, "utf8");
 const districtSiteCount = siteEntries.length - genericSites.length;
 console.log(
-  `Wrote ${outPath} (${districtEntries.length} districts, ${siteEntries.length} sites: ${districtSiteCount} district-scoped, ${genericSites.length} general)`,
+  `Wrote ${outPath} (${districtEntries.length} districts, ${siteEntries.length} sites: ${districtSiteCount} district-scoped, ${genericSites.length} general; ${skyboxEntries.length} skyboxes + Generic)`,
 );

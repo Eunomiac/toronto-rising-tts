@@ -402,6 +402,46 @@ local function resolvePanelDisplayBundle()
     return {}, false, activeKey
 end
 
+--- Human label for skybox column: override display / Generic, else site default, else Generic.
+--- @param bundle table|nil
+--- @return string
+local function resolveSkyboxDisplayLabel(bundle)
+    local override = type(bundle) == "table" and bundle.skyboxOverride or nil
+    if type(override) == "string" then
+        override = string.gsub(string.gsub(override, "^%s+", ""), "%s+$", "")
+        if override == C.SKYBOX_GENERIC_KEY then
+            return "Generic"
+        end
+        if override ~= "" then
+            local entry = C.Skyboxes[override]
+            if type(entry) == "table" and type(entry.display) == "string" and entry.display ~= "" then
+                return entry.display
+            end
+            return override
+        end
+    end
+    local sk = type(bundle) == "table" and bundle.siteKey or nil
+    if type(sk) == "string" then
+        sk = string.gsub(string.gsub(sk, "^%s+", ""), "%s+$", "")
+    else
+        sk = ""
+    end
+    if sk ~= "" then
+        local site = C.Sites[sk]
+        if type(site) == "table" and type(site.skybox) == "string" then
+            local key = string.gsub(string.gsub(site.skybox, "^%s+", ""), "%s+$", "")
+            if key ~= "" then
+                local entry = C.Skyboxes[key]
+                if type(entry) == "table" and type(entry.display) == "string" and entry.display ~= "" then
+                    return entry.display
+                end
+                return key
+            end
+        end
+    end
+    return "Generic"
+end
+
 --- Table key shown on the panel (pending library row, else live effective table).
 --- @param bundle table|nil
 --- @param pending boolean
@@ -1065,6 +1105,9 @@ function StorytellerScenesPanel.refresh()
         end
         U.setAttribute("scenes_siteNameDisplay", "text", sLabel)
 
+        local skyLabel = resolveSkyboxDisplayLabel(displayBundle)
+        U.setAttribute("scenes_skyboxNameDisplay", "text", skyLabel)
+
         local activeKeyForClock = getActiveLibraryKey()
         if activeKeyForClock ~= nil and clockDraft.sceneKey ~= activeKeyForClock then
             resetClockDraftForLibrarySelection(activeKeyForClock)
@@ -1714,6 +1757,42 @@ function StorytellerScenesPanel.setLocationKeyFromPicker(kind, key)
         end
     end
     S.setStateVal(key, "sessionScene", field)
+    StorytellerScenesPanel.refresh()
+    return true
+end
+
+--- Skybox override picker: pending → selected library row; live → sessionScene. Apply location still required when live.
+--- @param key string catalog key or `C.SKYBOX_GENERIC_KEY`
+--- @return boolean ok
+function StorytellerScenesPanel.setSkyboxKeyFromPicker(key)
+    if type(key) ~= "string" or key == "" then
+        return false
+    end
+    key = string.gsub(string.gsub(key, "^%s+", ""), "%s+$", "")
+    if not C.isValidSkyboxKey(key) then
+        return false
+    end
+    local activeKey = getActiveLibraryKey()
+    if type(activeKey) == "string" and isPendingSceneActivation(activeKey) then
+        writePendingLibrarySessionSceneField(key, "skyboxOverride")
+        StorytellerScenesPanel.refresh()
+        return true
+    end
+    S.setStateVal(key, "sessionScene", "skyboxOverride")
+    StorytellerScenesPanel.refresh()
+    return true
+end
+
+--- Clears `skyboxOverride` (site default / generic fallthrough). Pending or live.
+--- @return boolean ok
+function StorytellerScenesPanel.clearSkyboxOverrideFromPicker()
+    local activeKey = getActiveLibraryKey()
+    if type(activeKey) == "string" and isPendingSceneActivation(activeKey) then
+        writePendingLibrarySessionSceneField(nil, "skyboxOverride")
+        StorytellerScenesPanel.refresh()
+        return true
+    end
+    S.setStateVal(nil, "sessionScene", "skyboxOverride")
     StorytellerScenesPanel.refresh()
     return true
 end

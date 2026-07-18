@@ -191,7 +191,7 @@ function SceneLibrary.syncOccupiedNpcSlotsFromSeatSlots(sessionScene)
     S.setStateVal(occupied, "seatLayout", "occupiedNPCSlots")
 end
 
---- Optional `sessionScene.skyboxOverride`: omit / null / blank → nil; otherwise non-empty URL string.
+--- Optional `sessionScene.skyboxOverride`: omit / null / blank → nil; otherwise a `C.Skyboxes` key or `C.SKYBOX_GENERIC_KEY` (not a URL).
 --- @param sessionScene table|nil
 --- @return boolean ok
 --- @return string|nil err
@@ -204,12 +204,15 @@ local function validateAndNormalizeSkyboxOverrideForImport(sessionScene)
         return true, nil
     end
     if type(raw) ~= "string" then
-        return false, "sessionScene.skyboxOverride: must be a URL string when present (or omit / null)."
+        return false, "sessionScene.skyboxOverride: must be a C.Skyboxes key or \"Generic\" when present (or omit / null)."
     end
     local trimmed = string.gsub(string.gsub(raw, "^%s+", ""), "%s+$", "")
     if trimmed == "" then
         sessionScene.skyboxOverride = nil
         return true, nil
+    end
+    if not C.isValidSkyboxKey(trimmed) then
+        return false, "sessionScene.skyboxOverride: unknown key `" .. trimmed .. "` (must exist in C.Skyboxes, or be \"Generic\"; URLs are not accepted)."
     end
     sessionScene.skyboxOverride = trimmed
     return true, nil

@@ -48,7 +48,7 @@
     },
     "districtKey": "BayStFinancial",
     "siteKey": "StRegisCouncilChamber",
-    // Optional: "skyboxOverride": "https://…", // overrides site/generic skybox when set
+    // Optional: "skyboxOverride": "CLGrounds", // C.Skyboxes key or "Generic"; overrides site/generic when set
     "clock": {
       "hour": 22,
       "minute": 15,
