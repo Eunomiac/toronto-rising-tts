@@ -114,12 +114,16 @@ local TABLE_TOGGLE_IDS = {
 --- Pre-declared rows in `ui/storyteller/panel_scenes_library.xml` (no dynamic `setXml` lists).
 local SCENE_LIB_SLOT_COUNT = 40
 
---- TOR-142: library Apply buttons — keep author stems; optional time suffix on refresh.
+--- TOR-142 / TOR-401: library Apply buttons — keep author stems; optional time suffix on refresh.
 local APPLY_CLOCK_BUTTONS = {
     { id = "scenes_lib_btn_apply_clock", mode = "scene", stem = "Scene Time", needsDatetime = true },
     { id = "scenes_lib_btn_apply_x5", mode = "x5", stem = "×5 to Now", needsDatetime = true },
     { id = "scenes_lib_btn_apply_set_present", mode = "setPresent", stem = "SET Now", needsDatetime = true },
     { id = "scenes_lib_btn_apply_present", mode = "present", stem = "NOW", needsDatetime = false },
+    { id = "scenes_lib_btn_apply_present_15", mode = "presentPlus15", stem = "NOW +15", needsDatetime = false },
+    { id = "scenes_lib_btn_apply_present_30", mode = "presentPlus30", stem = "NOW +30", needsDatetime = false },
+    { id = "scenes_lib_btn_apply_present_60", mode = "presentPlus60", stem = "NOW +60", needsDatetime = false },
+    { id = "scenes_lib_btn_apply_present_120", mode = "presentPlus120", stem = "NOW +120", needsDatetime = false },
 }
 
 local APPLY_MODE_BY_BUTTON_ID = {
@@ -127,7 +131,20 @@ local APPLY_MODE_BY_BUTTON_ID = {
     scenes_lib_btn_apply_x5 = "x5",
     scenes_lib_btn_apply_set_present = "setPresent",
     scenes_lib_btn_apply_present = "present",
+    scenes_lib_btn_apply_present_15 = "presentPlus15",
+    scenes_lib_btn_apply_present_30 = "presentPlus30",
+    scenes_lib_btn_apply_present_60 = "presentPlus60",
+    scenes_lib_btn_apply_present_120 = "presentPlus120",
 }
+
+--- @param clockMode string|nil
+--- @return boolean
+local function isPresentFamilyClockMode(clockMode)
+    if clockMode == "present" then
+        return true
+    end
+    return type(clockMode) == "string" and string.match(clockMode, "^presentPlus%d+$") ~= nil
+end
 
 --- Second click on Delete within this window removes the active `sceneLibrary` row.
 local sceneLibDeleteArmedUntil = 0
@@ -1396,7 +1413,11 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
     if type(clockMode) ~= "string" or clockMode == "" then
         clockMode = "scene"
     end
-    if clockMode ~= "scene" and clockMode ~= "x5" and clockMode ~= "setPresent" and clockMode ~= "present" then
+    if clockMode ~= "scene"
+        and clockMode ~= "x5"
+        and clockMode ~= "setPresent"
+        and not isPresentFamilyClockMode(clockMode)
+    then
         U.AlertGM("Unknown scene Apply clock mode: " .. tostring(clockMode))
         return
     end
@@ -1407,7 +1428,7 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
         return
     end
 
-    if clockMode ~= "present" then
+    if not isPresentFamilyClockMode(clockMode) then
         local hasDt = resolveAuthoredActivationDatetime(K)
         if not hasDt then
             U.AlertGM("This Apply mode needs a scene clock time. Use NOW, or set day/year/time first.")

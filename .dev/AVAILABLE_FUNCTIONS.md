@@ -390,6 +390,32 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 | `ChronicleWeather.shouldAutoApply()` | Currently always `true` (gates removed); reserved for future hold/follow wiring | Rarely called directly |
 | `ChronicleWeather.applyScheduledWeather(opts)` | Resolves schedule, sets `soundscape.weather` to `"none"`, applies rain/wind/thunder via `Soundscape.set*`; on **full success** primes `Soundscape.markReconciledToCurrentState`; on **partial failure** calls `invalidateReconcileCache`; returns `ok`, `message`, `outcome` (`"skipped"` \| `"applied"` \| `"partial"`); `opts.force` | `local ok, msg, outcome = ChronicleWeather.applyScheduledWeather({ force = true })` |
 
+### Narrative calendar (`lib/narrative_calendar.ttslua`)
+
+**Require:** `local NarrativeCalendar = require("lib.narrative_calendar")`  
+In-fiction Y/M/D/h/m arithmetic (leap-aware; no DST). Used by TOR-401 travel Apply and TOR-222 clock lerp.
+
+| Function | Description | Usage Example |
+| :--------- | :------------- | :--------------- |
+| `NarrativeCalendar.isLeapYear(year)` | Gregorian leap | Feb 29 checks |
+| `NarrativeCalendar.daysInMonth(year, month)` | 28–31 (29 in leap Feb) | DOM clamp |
+| `NarrativeCalendar.addMinutes(dt, delta)` | Rollover across days/months/years | NOW+N travel; minute/hour jumps |
+| `NarrativeCalendar.addMonths(dt, delta)` | Same DOM or clamp to month length | Month grid |
+| `NarrativeCalendar.addYears(dt, delta)` | Same month/day or clamp (Feb 29→28) | Year Go |
+| `NarrativeCalendar.toAbsoluteMinutes(dt)` | Minutes since year-1 epoch | Lerp scrub |
+| `NarrativeCalendar.fromAbsoluteMinutes(n)` | Inverse of `toAbsoluteMinutes` | Lerp scrub |
+
+### Toronto sunrise / sunset (`lib/toronto_sun.ttslua`)
+
+**Require:** `local TorontoSun = require("lib.toronto_sun")`
+Rough geometric sunrise/sunset for Toronto (~43.65°N, 79.38°W). Fixed Eastern Standard (UTC−5 / −75° meridian); **no DST** (matches narrative clock). Not civil twilight — use `deltaMinutes` / `offset` for worry windows. Scenes panel dusk/dawn UI is **TOR-222**, not this module.
+
+| Function | Description | Usage Example |
+| :--------- | :------------- | :--------------- |
+| `TorontoSun.estimate(month, day)` | `{ sunrise = {hour, minute}, sunset = {hour, minute} }` | Dusk/dawn labels; land-at-dusk+1h targets |
+| `TorontoSun.offset(month, day, anchor, deltaMinutes)` | Clock at `"sunrise"` / `"sunset"` ± minutes | Absolute dawn−N / dusk+N targets |
+| `TorontoSun.addMinutes(hm, deltaMinutes)` | Wrap `{hour, minute}` by minute delta | Shared by `offset` |
+
 ---
 
 ## 5b. SYNC ORCHESTRATOR (`core/sync.ttslua`)

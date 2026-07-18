@@ -1,0 +1,131 @@
+--[[
+    Rough Toronto geometric sunrise / sunset from month + day.
+
+    Closed-form solar estimate (no per-day table, no equation of time polish).
+    Fixed Eastern Standard (UTC−5 / −75° meridian) — no DST, matching the narrative clock.
+
+    Agent guidance: geometric horizon only; tune vampire "worry" windows via deltaMinutes.
+]]
+
+local TorontoSun = {}
+
+--- Toronto City Hall vicinity.
+TorontoSun.LATITUDE_DEG = 43.6532
+TorontoSun.LONGITUDE_DEG = -79.3832
+--- Eastern Standard Time standard meridian (no DST).
+TorontoSun.TZ_MERIDIAN_DEG = -75
+
+local DAYS_BEFORE_MONTH = { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 }
+local DAYS_IN_MONTH = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
+
+--- @param value number|nil
+--- @param lo number
+--- @param hi number
+--- @param fallback number
+--- @return number
+local function clampInt(value, lo, hi, fallback)
+    local n = tonumber(value)
+    if n == nil then
+        return fallback
+    end
+    local k = math.floor(n + 0.0)
+    if k < lo then
+        return lo
+    end
+    if k > hi then
+        return hi
+    end
+    return k
+end
+
+--- Non-leap day-of-year (1–365). Feb 29 clamps to day 60 (same as Mar 1 non-leap).
+--- @param month number|nil
+--- @param day number|nil
+--- @return number
+local function dayOfYear(month, day)
+    local m = clampInt(month, 1, 12, 1)
+    local maxDay = DAYS_IN_MONTH[m] or 31
+    local d = clampInt(day, 1, maxDay, 1)
+    return (DAYS_BEFORE_MONTH[m] or 0) + d
+end
+
+--- @param hours number fractional hours from midnight
+--- @return table `{ hour = 0–23, minute = 0–59 }`
+local function hoursToClock(hours)
+    local totalMin = math.floor(hours * 60 + 0.5)
+    totalMin = totalMin % (24 * 60)
+    if totalMin < 0 then
+        totalMin = totalMin + 24 * 60
+    end
+    return {
+        hour = math.floor(totalMin / 60),
+        minute = totalMin % 60,
+    }
+end
+
+--- @param hm table|nil `{ hour, minute }`
+--- @param deltaMinutes number|nil
+--- @return table `{ hour, minute }`
+function TorontoSun.addMinutes(hm, deltaMinutes)
+    local h = clampInt(type(hm) == "table" and hm.hour or nil, 0, 23, 0)
+    local m = clampInt(type(hm) == "table" and hm.minute or nil, 0, 59, 0)
+    local delta = math.floor(tonumber(deltaMinutes) or 0)
+    local total = h * 60 + m + delta
+    total = total % (24 * 60)
+    if total < 0 then
+        total = total + 24 * 60
+    end
+    return {
+        hour = math.floor(total / 60),
+        minute = total % 60,
+    }
+end
+
+--- Rough geometric sunrise / sunset for Toronto on the given calendar day.
+--- @param month number|nil 1–12
+--- @param day number|nil 1–31 (clamped to month length; non-leap)
+--- @return table|nil `{ sunrise = {hour,minute}, sunset = {hour,minute} }`
+function TorontoSun.estimate(month, day)
+    local n = dayOfYear(month, day)
+    local lat = TorontoSun.LATITUDE_DEG * math.pi / 180
+    -- Cooper declination (° → rad): good enough without equation-of-time polish.
+    local decl = (23.44 * math.sin(2 * math.pi * (284 + n) / 365)) * math.pi / 180
+
+    local cosH = -math.tan(lat) * math.tan(decl)
+    if cosH > 1 then
+        cosH = 1
+    elseif cosH < -1 then
+        cosH = -1
+    end
+    local hourAngleHours = (math.acos(cosH) * 180 / math.pi) / 15
+    local solarNoon = 12 + (TorontoSun.TZ_MERIDIAN_DEG - TorontoSun.LONGITUDE_DEG) / 15
+
+    return {
+        sunrise = hoursToClock(solarNoon - hourAngleHours),
+        sunset = hoursToClock(solarNoon + hourAngleHours),
+    }
+end
+
+--- Clock time at sunrise or sunset plus `deltaMinutes` (negative = before).
+--- @param month number|nil
+--- @param day number|nil
+--- @param anchor string `"sunrise"` | `"sunset"`
+--- @param deltaMinutes number|nil
+--- @return table|nil `{ hour, minute }`
+function TorontoSun.offset(month, day, anchor, deltaMinutes)
+    local est = TorontoSun.estimate(month, day)
+    if est == nil then
+        return nil
+    end
+    local base = nil
+    if anchor == "sunrise" then
+        base = est.sunrise
+    elseif anchor == "sunset" then
+        base = est.sunset
+    else
+        return nil
+    end
+    return TorontoSun.addMinutes(base, deltaMinutes)
+end
+
+return TorontoSun

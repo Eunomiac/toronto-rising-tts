@@ -1,0 +1,204 @@
+--[[
+    Narrative calendar arithmetic for in-fiction Y/M/D/h/m (not wall-clock, no DST).
+
+    Used by present-day travel Apply (TOR-401) and animated clock lerp (TOR-222).
+    Global-safe only — do not require from object scripts.
+]]
+
+local NarrativeCalendar = {}
+
+local DAYS_IN_MONTH = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
+
+--- @param year number
+--- @return boolean
+function NarrativeCalendar.isLeapYear(year)
+    local y = math.floor(tonumber(year) or 0)
+    if y % 400 == 0 then
+        return true
+    end
+    if y % 100 == 0 then
+        return false
+    end
+    return (y % 4) == 0
+end
+
+--- @param year number
+--- @param month number 1–12
+--- @return number
+function NarrativeCalendar.daysInMonth(year, month)
+    local m = math.floor(tonumber(month) or 1)
+    if m < 1 then
+        m = 1
+    elseif m > 12 then
+        m = 12
+    end
+    if m == 2 and NarrativeCalendar.isLeapYear(year) then
+        return 29
+    end
+    return DAYS_IN_MONTH[m] or 31
+end
+
+--- @param dt table|nil `{ year, month, day, hour, minute }`
+--- @return table|nil normalized copy or nil
+local function normalizeDt(dt)
+    if type(dt) ~= "table" then
+        return nil
+    end
+    local y = tonumber(dt.year)
+    local mo = tonumber(dt.month)
+    local d = tonumber(dt.day)
+    local h = tonumber(dt.hour)
+    local mi = tonumber(dt.minute)
+    if y == nil or mo == nil or d == nil or h == nil or mi == nil then
+        return nil
+    end
+    return {
+        year = math.floor(y),
+        month = math.floor(mo),
+        day = math.floor(d),
+        hour = math.floor(h),
+        minute = math.floor(mi),
+    }
+end
+
+--- Absolute minutes since an arbitrary epoch (year 1 Jan 1 00:00), for lerp scrubbing.
+--- @param dt table|nil
+--- @return number|nil
+function NarrativeCalendar.toAbsoluteMinutes(dt)
+    local n = normalizeDt(dt)
+    if n == nil then
+        return nil
+    end
+    local totalDays = 0
+    for y = 1, n.year - 1 do
+        totalDays = totalDays + (NarrativeCalendar.isLeapYear(y) and 366 or 365)
+    end
+    for m = 1, n.month - 1 do
+        totalDays = totalDays + NarrativeCalendar.daysInMonth(n.year, m)
+    end
+    totalDays = totalDays + (n.day - 1)
+    return totalDays * 1440 + n.hour * 60 + n.minute
+end
+
+--- @param absMin number
+--- @return table `{ year, month, day, hour, minute }`
+function NarrativeCalendar.fromAbsoluteMinutes(absMin)
+    local total = math.floor(tonumber(absMin) or 0)
+    if total < 0 then
+        total = 0
+    end
+    local dayIndex = math.floor(total / 1440)
+    local tod = total % 1440
+    local hour = math.floor(tod / 60)
+    local minute = tod % 60
+
+    local year = 1
+    while true do
+        local diy = NarrativeCalendar.isLeapYear(year) and 366 or 365
+        if dayIndex < diy then
+            break
+        end
+        dayIndex = dayIndex - diy
+        year = year + 1
+        if year > 9999 then
+            break
+        end
+    end
+
+    local month = 1
+    while month <= 12 do
+        local dim = NarrativeCalendar.daysInMonth(year, month)
+        if dayIndex < dim then
+            break
+        end
+        dayIndex = dayIndex - dim
+        month = month + 1
+    end
+    if month > 12 then
+        month = 12
+        dayIndex = NarrativeCalendar.daysInMonth(year, 12) - 1
+    end
+
+    return {
+        year = year,
+        month = month,
+        day = dayIndex + 1,
+        hour = hour,
+        minute = minute,
+    }
+end
+
+--- @param dt table|nil
+--- @param deltaMinutes number|nil
+--- @return table|nil
+function NarrativeCalendar.addMinutes(dt, deltaMinutes)
+    local n = normalizeDt(dt)
+    if n == nil then
+        return nil
+    end
+    local abs = NarrativeCalendar.toAbsoluteMinutes(n)
+    if abs == nil then
+        return nil
+    end
+    local delta = math.floor(tonumber(deltaMinutes) or 0)
+    return NarrativeCalendar.fromAbsoluteMinutes(abs + delta)
+end
+
+--- @param dt table|nil
+--- @param deltaMonths number|nil
+--- @return table|nil
+function NarrativeCalendar.addMonths(dt, deltaMonths)
+    local n = normalizeDt(dt)
+    if n == nil then
+        return nil
+    end
+    local delta = math.floor(tonumber(deltaMonths) or 0)
+    local monthIndex = (n.year * 12) + (n.month - 1) + delta
+    local year = math.floor(monthIndex / 12)
+    local month = (monthIndex % 12) + 1
+    if year < 1 then
+        year = 1
+        month = 1
+    end
+    local dim = NarrativeCalendar.daysInMonth(year, month)
+    local day = n.day
+    if day > dim then
+        day = dim
+    end
+    return {
+        year = year,
+        month = month,
+        day = day,
+        hour = n.hour,
+        minute = n.minute,
+    }
+end
+
+--- @param dt table|nil
+--- @param deltaYears number|nil
+--- @return table|nil
+function NarrativeCalendar.addYears(dt, deltaYears)
+    local n = normalizeDt(dt)
+    if n == nil then
+        return nil
+    end
+    local delta = math.floor(tonumber(deltaYears) or 0)
+    local year = n.year + delta
+    if year < 1 then
+        year = 1
+    end
+    local dim = NarrativeCalendar.daysInMonth(year, n.month)
+    local day = n.day
+    if day > dim then
+        day = dim
+    end
+    return {
+        year = year,
+        month = n.month,
+        day = day,
+        hour = n.hour,
+        minute = n.minute,
+    }
+end
+
+return NarrativeCalendar

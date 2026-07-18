@@ -31,11 +31,11 @@ This file is continuously updated with issues and plans for feature development.
 
 ## Focus
 
-_Stack rank for the current cycle (2026-07-17 — **TOR-398** / **TOR-395** Done; Focus empty — pick next). **Precedence** = Focus stack + Linear **`blockedBy`** (not Linear priority). **TOR-141 (E2E playbooks)** is a living doc (In Progress, not Focus stack). **Back-burner / “Deferred this cycle” is paused** (author 2026-06-21) — open work stays in domain sections; sequence via Linear blockers only._
+_Stack rank for the current cycle (2026-07-17 — **TOR-401** Done; clock lerp next). **Precedence** = Focus stack + Linear **`blockedBy`** (not Linear priority). **TOR-141 (E2E playbooks)** is a living doc (In Progress, not Focus stack). **Back-burner / “Deferred this cycle” is paused** (author 2026-06-21) — open work stays in domain sections; sequence via Linear blockers only._
 
 | # | Issue | Why now |
 | --- | --- | --- |
-| — | _(empty — propose below)_ | Session UI bugs cleared |
+| 1 | **TOR-222** — Animated clock FF/rewind grids | Full dusk/dawn + delta grid spec ready; uses TOR-400 `TorontoSun` |
 
 **Also in cycle (below top stack):** **TOR-141** (E2E playbooks living doc). **TOR-384** (Global HUD first load — **deprioritized**; reload workaround; Linear No priority). **TOR-286** (centralize `setInvisibleTo`). **TOR-303** (author review roll broadcast phrasing — External Todo). **TOR-376** (CSHEET max-slot setXml migrate — Future). **TOR-382** (coterie sheet notes — Future). **TOR-95** (play-as-NPC, **blockedBy** **TOR-247**). **TOR-330** (Fomorach shapeshift toggle; **blockedBy** **TOR-327** workshop stat deltas). **TOR-98** (Spotlight turn UX — scaffolding in TOR-143).
 
@@ -203,7 +203,9 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Apply active scene — four clock buttons:** Replace single switch button with Apply (scene clock), Apply x5 until present, Apply = PRESENT, Apply (Present); all apply full scene. _(TOR-142)_
 - [x] **Default no-scene environment:** When no live library scene — Table B0 (dynamic `Table B`, zero NPC seats), five PC seats, empty NPC world/stage, OutdoorDim, Main BGM, cleared location/weather on table (do not write cleared location to library or PC pins); overlay blanks date/time + hides weather; map pins hidden (`SceneLibrary.hasLiveSceneOnTable`); random generic skybox. `Scenes.applyDefaultNoSceneEnvironment`; converges `endSceneNarrative`. _(TOR-151)_
 - [x] **Restore scene on Play load / Start→Play:** `Scenes.reconcilePlaySessionOnEnter` on startup gate (Play/Downtime) + `M.advancePhase`; restores active scene (`lastAppliedKey`) via `restoreActiveSceneWorld` (soundscape site+narrative+chronicle weather) or applies default no-scene; control board via `Sync.full` force. _(TOR-152)_
-- [ ] **Animated narrative clock fast-forward:** Ease-in/out lerp to target date; overlay updates each frame during time jump (future/past). _(TOR-222)_
+- [x] **NOW +15/+30/+60/+120 travel-time Apply:** Same as NOW Apply, but advance present-day clock by N minutes during blindfold transition (no lerp). XML ids already in `panel_scenes_library.xml`. _(TOR-401)_
+- [ ] **Animated narrative clock fast-forward:** Scene Time grids (minutes/hours/days/weeks/months + dusk/dawn + year Go); ease-in/out lerp; settle applies clock rules; uses `TorontoSun`. _(TOR-222)_
+- [x] **Toronto sunrise/sunset estimate:** `lib/toronto_sun.ttslua` rough geometric EST (no DST) from month/day — estimate API only; Scenes dusk/dawn controls are TOR-222. _(TOR-400)_
 - [x] **End scene library sync:** `detachLiveTableFromLibraryMirror()` before clearing live location — stops mirroring, clears `lastAppliedKey` + `activeKey`, UI hides mirroring when no on-table scene; prevents live→library writeback of cleared keys. _(TOR-145)_
 - [x] **End scene — location wiped from library (reported):** Root cause was panel reading cleared live after End (activeKey cleared); library row intact (TOR-145 detach OK). Detach now keeps `activeKey` on ended scene for pending display; Suite C asserts library siteKey. _(TOR-365)_
 - [x] **Scene Apply fans out SIGNAL_FIRE Y:** Layout stamped reference-seat signal-fire Y onto all seats (same class as TOR-343 CSHEET). Preserve per-seat Y. _(TOR-380)_

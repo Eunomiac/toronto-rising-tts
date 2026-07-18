@@ -11,6 +11,7 @@ local PresentDayClock = {}
 
 local U = require("lib.util")
 local S = require("core.state")
+local NarrativeCalendar = require("lib.narrative_calendar")
 
 --- Runtime-only catch-up fields (TOR-142 ×5 Apply). Never persist onto library rows.
 local CATCHUP_RUNTIME_KEYS = {
@@ -272,7 +273,7 @@ end
 
 --- Resolves live clock for library apply from an incoming `sessionScene` bundle.
 --- @param bundle table sessionScene-shaped table (mutated in place for clock)
---- @param clockMode string|nil `"scene"` | `"x5"` | `"setPresent"` | `"present"` (default `"scene"`)
+--- @param clockMode string|nil `"scene"` | `"x5"` | `"setPresent"` | `"present"` | `"presentPlus15"`… (default `"scene"`)
 --- @return boolean ok
 --- @return string|nil err
 function PresentDayClock.resolveAndApplyActivationClock(bundle, clockMode)
@@ -290,7 +291,14 @@ function PresentDayClock.resolveAndApplyActivationClock(bundle, clockMode)
     end
     PresentDayClock.stripCatchUpRuntimeFields(ck)
 
-    -- NOW: ignore library datetime; keep flags; fill from presentDayClock (always enabled).
+    local travelMinutes = 0
+    local presentPlus = string.match(clockMode, "^presentPlus(%d+)$")
+    if presentPlus ~= nil then
+        travelMinutes = tonumber(presentPlus) or 0
+        clockMode = "present"
+    end
+
+    -- NOW / NOW+N: ignore library datetime; keep flags; fill from presentDayClock (always enabled).
     if clockMode == "present" then
         ck = stripDatetimeKeepFlags(ck)
         bundle.clock = ck
@@ -298,6 +306,17 @@ function PresentDayClock.resolveAndApplyActivationClock(bundle, clockMode)
         if pd == nil then
             return false,
                 "Present day clock is not initialized. Import or activate a present-day scene with a full clock time first."
+        end
+        if travelMinutes > 0 then
+            local advanced = NarrativeCalendar.addMinutes(pd, travelMinutes)
+            if advanced == nil then
+                return false, "Could not advance present day clock by travel minutes."
+            end
+            local setOk, setErr = PresentDayClock.setPresentDay(advanced)
+            if not setOk then
+                return false, setErr or "Could not set present day after travel."
+            end
+            pd = advanced
         end
         local resolved = mergeClockWithDatetime(ck, pd)
         bundle.clock = resolved

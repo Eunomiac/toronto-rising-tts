@@ -182,6 +182,7 @@ Re-check lighting, NPCs, pins, and soundscape after about 3 seconds.
 | Apply ×5 to Now | `scenes_lib_btn_apply_x5` | Full staged apply; ×5 RT catch-up until present (TOR-142) |
 | Apply SET Now | `scenes_lib_btn_apply_set_present` | Full staged apply; set present-day to scene time |
 | Apply NOW | `scenes_lib_btn_apply_present` | Full staged apply; fill clock from present-day |
+| Apply NOW +15/+30/+60/+120 | `scenes_lib_btn_apply_present_15` etc. | Same as NOW; advance present-day by N minutes first (TOR-401; no lerp) |
 | End | `scenes_lib_btn_end` | Detach mirror, clear live scene, no-scene transition |
 | Seat PC | `scenes_seat_Brown` etc. | Toggle `seatPresent` / `seatSlots.isPresent` |
 | Month | `scenes_month_*` | Draft month |
