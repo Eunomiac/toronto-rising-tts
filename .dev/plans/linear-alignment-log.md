@@ -570,5 +570,12 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-17 | DONE | TOR-398 | Idempotent global blindfold show/hide (`3c616b6`) |
 | 2026-07-17 | Focus | Stack | empty — propose TOR-286 / TOR-72 / TOR-89 |
 | 2026-07-17 | CREATE+SHIP | TOR-399 | Key-based skybox catalog + Scenes panel; relatedTo TOR-58/TOR-313; INBOX [Skyboxes] cleared |
+| 2026-07-17 | CREATE+SHIP | TOR-400 | TorontoSun estimate API (UI descoped; orphan jump wiring removed) |
+| 2026-07-17 | CREATE | TOR-401 | NOW +15/30/60/120 travel Apply; Focus #1 High; relatedTo TOR-142/TOR-222 |
+| 2026-07-17 | UPDATE | TOR-222 | Full clock-grid + dusk/dawn + duration spec; Focus #2 Medium; relatedTo TOR-400 |
+| 2026-07-17 | Focus | Stack | #1 TOR-401, #2 TOR-222 |
+| 2026-07-17 | DONE | TOR-401 | NOW+N travel Apply (`15b01e8`) |
+| 2026-07-17 | DONE | TOR-222 | Animated Scene Time lerp grids; Focus cleared |
+| 2026-07-17 | Focus | Stack | empty — pick next via what’s next / inbox |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

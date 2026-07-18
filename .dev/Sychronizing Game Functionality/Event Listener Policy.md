@@ -128,7 +128,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `HUD_changeScene` | B+C | Yes | |
 | `HUD_selectAdminLightingScene` | B+C | Yes | |
 | `HUD_soundscape*` (mutators) | B+C | Yes | inspect read-only |
-| `HUD_scenesPanel` / apply / lib / ctor / clock / location+skybox modals | B+C | Yes | modal opens Tier A; TOR-142/TOR-401: Apply button ids → clock modes via `HUD_scenesLibApply` (incl. `presentPlus15`–`120`); skybox pick/clear Tier B until Apply location |
+| `HUD_scenesPanel` / apply / lib / ctor / clock / location+skybox modals / clock lerp | B+C | Yes | modal opens Tier A; TOR-142/TOR-401: Apply button ids → clock modes via `HUD_scenesLibApply` (incl. `presentPlus15`–`120`); TOR-222: `HUD_scenesClockLerpDelta` / `Sun` / `YearGo` animate live clock (display-only mid-lerp; settle = tryAdvance on forward + weather + Sync); skybox pick/clear Tier B until Apply location |
 | `HUD_statsTarget` / `HUD_statsBack` | A | — | Stats panel navigation |
 | `HUD_statsAdd` / `HUD_statsEdit` / `HUD_statsEditRating` / `HUD_statsEditorConfirm` / `HUD_statsEditorDelete` | B+C | Yes | advantage mutations |
 | `HUD_statsEditorField` / `HUD_statsEditorCancel` | A | — | draft stash / close |

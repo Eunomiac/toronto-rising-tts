@@ -1,0 +1,344 @@
+--[[
+    Animated narrative clock lerp (TOR-222).
+
+    During motion: overlay / panel display only. Side effects (present day, weather, Sync)
+    run on settle. Pause real-time ticker while active.
+]]
+
+local NarrativeClockLerp = {}
+
+local C = require("lib.constants")
+local U = require("lib.util")
+local S = require("core.state")
+local NarrativeCalendar = require("lib.narrative_calendar")
+local TorontoSun = require("lib.toronto_sun")
+local PresentDayClock = require("core.present_day_clock")
+local ChronicleWeather = require("lib.chronicle_weather")
+local Sync = require("core.sync")
+local GameStateOverlay = require("core.game_state_overlay")
+local MapPins = require("core.map_pins")
+local SceneLibrary = require("core.scene_library")
+
+local active = false
+local tickHandle = nil
+local gen = 0
+
+--- @return boolean
+function NarrativeClockLerp.isActive()
+    return active == true
+end
+
+--- @param t number 0–1
+--- @return number
+local function easeInOutCubic(t)
+    if t < 0.5 then
+        return 4 * t * t * t
+    end
+    local u = -2 * t + 2
+    return 1 - (u * u * u) / 2
+end
+
+--- @param deltaAbs number
+--- @return number seconds
+local function durationForDeltaMinutes(deltaAbs)
+    local cfg = C.CLOCK_LERP or {}
+    local minD = tonumber(cfg.minDuration) or 0.75
+    local maxD = tonumber(cfg.maxDuration) or 6
+    local minDelta = tonumber(cfg.minDeltaMinutes) or 10
+    local maxDelta = tonumber(cfg.maxDeltaMinutes) or 525600
+    local d = math.abs(tonumber(deltaAbs) or 0)
+    if d <= minDelta then
+        return minD
+    end
+    if d >= maxDelta then
+        return maxD
+    end
+    local t = (d - minDelta) / (maxDelta - minDelta)
+    return minD + t * (maxD - minD)
+end
+
+--- @param dt table
+--- @return table
+local function applyDuskPlusOneHour(dt)
+    local sun = TorontoSun.estimate(dt.month, dt.day)
+    if type(sun) ~= "table" or type(sun.sunset) ~= "table" then
+        return dt
+    end
+    local withSunset = {
+        year = dt.year,
+        month = dt.month,
+        day = dt.day,
+        hour = sun.sunset.hour,
+        minute = sun.sunset.minute,
+    }
+    return NarrativeCalendar.addMinutes(withSunset, 60) or withSunset
+end
+
+--- Clamp target so it is never after present day (when present day exists).
+--- @param target table
+--- @return table
+local function clampToPresentDay(target)
+    local pd = PresentDayClock.getPresentDay()
+    if pd == nil then
+        return target
+    end
+    if U.compareNarrativeClock(target, pd) > 0 then
+        return {
+            year = pd.year,
+            month = pd.month,
+            day = pd.day,
+            hour = pd.hour,
+            minute = pd.minute,
+        }
+    end
+    return target
+end
+
+--- @param startDt table
+--- @param unit string
+--- @param amount number
+--- @param forward boolean
+--- @return table|nil
+function NarrativeClockLerp.resolveDeltaTarget(startDt, unit, amount, forward)
+    local n = U.narrativeClockDatetimeOnly(startDt)
+    if n == nil then
+        return nil
+    end
+    local amt = tonumber(amount) or 0
+    if amt < 0 then
+        amt = -amt
+    end
+    if forward ~= true then
+        amt = -amt
+    end
+
+    local target = nil
+    if unit == "minutes" then
+        target = NarrativeCalendar.addMinutes(n, amt)
+    elseif unit == "hours" then
+        target = NarrativeCalendar.addMinutes(n, math.floor(amt * 60 + 0.5))
+    elseif unit == "days" then
+        target = NarrativeCalendar.addMinutes(n, amt * 1440)
+        if target ~= nil then
+            target = applyDuskPlusOneHour(target)
+        end
+    elseif unit == "weeks" then
+        target = NarrativeCalendar.addMinutes(n, amt * 7 * 1440)
+        if target ~= nil then
+            target = applyDuskPlusOneHour(target)
+        end
+    elseif unit == "months" then
+        target = NarrativeCalendar.addMonths(n, amt)
+        if target ~= nil then
+            target = applyDuskPlusOneHour(target)
+        end
+    else
+        return nil
+    end
+
+    if target == nil then
+        return nil
+    end
+    if forward == true then
+        target = clampToPresentDay(target)
+    end
+    return target
+end
+
+--- Absolute dawn−N or dusk+N on the given calendar date (year from startDt).
+--- @param startDt table for year (+ fallback)
+--- @param minutesBeforeDawnOrAfterDusk number
+--- @param towardDawn boolean true = before dawn; false = after dusk
+--- @return table|nil
+function NarrativeClockLerp.resolveDawnDuskTarget(startDt, minutesBeforeDawnOrAfterDusk, towardDawn)
+    local n = U.narrativeClockDatetimeOnly(startDt)
+    if n == nil then
+        return nil
+    end
+    local sun = TorontoSun.estimate(n.month, n.day)
+    if type(sun) ~= "table" then
+        return nil
+    end
+    local base = towardDawn and sun.sunrise or sun.sunset
+    if type(base) ~= "table" then
+        return nil
+    end
+    local delta = math.floor(tonumber(minutesBeforeDawnOrAfterDusk) or 0)
+    if towardDawn then
+        delta = -delta
+    end
+    local target = {
+        year = n.year,
+        month = n.month,
+        day = n.day,
+        hour = base.hour,
+        minute = base.minute,
+    }
+    target = NarrativeCalendar.addMinutes(target, delta)
+    if target == nil then
+        return nil
+    end
+    -- Absolute target may be forward or back; only clamp if after present day.
+    target = clampToPresentDay(target)
+    return target
+end
+
+--- @param startDt table
+--- @param year number
+--- @return table|nil
+function NarrativeClockLerp.resolveYearTarget(startDt, year)
+    local n = U.narrativeClockDatetimeOnly(startDt)
+    if n == nil then
+        return nil
+    end
+    local y = math.floor(tonumber(year) or n.year)
+    local target = NarrativeCalendar.addYears(n, y - n.year)
+    if target == nil then
+        return nil
+    end
+    target = applyDuskPlusOneHour(target)
+    local forward = U.compareNarrativeClock(target, n) > 0
+    if forward then
+        target = clampToPresentDay(target)
+    end
+    return target
+end
+
+--- @param dt table
+local function pushDisplayOnly(dt)
+    if GameStateOverlay and type(GameStateOverlay.pushNarrativeClockDisplay) == "function" then
+        GameStateOverlay.pushNarrativeClockDisplay(dt.year, dt.month, dt.day, dt.hour, dt.minute)
+    end
+    local StorytellerScenesPanel = require("core.storyteller_scenes_panel")
+    if type(StorytellerScenesPanel.pushClockDisplayOnly) == "function" then
+        StorytellerScenesPanel.pushClockDisplayOnly(dt)
+    end
+end
+
+local function clearTick()
+    if tickHandle ~= nil then
+        U.stopDelay(tickHandle)
+        tickHandle = nil
+    end
+end
+
+--- @param finalDt table
+--- @param startDt table
+local function settle(finalDt, startDt)
+    active = false
+    clearTick()
+
+    local ck = S.getStateVal("sessionScene", "clock")
+    if type(ck) ~= "table" then
+        ck = {}
+    end
+    local nextClock = U.merge({}, ck)
+    nextClock.year = finalDt.year
+    nextClock.month = finalDt.month
+    nextClock.day = finalDt.day
+    nextClock.hour = finalDt.hour
+    nextClock.minute = finalDt.minute
+
+    if GameStateOverlay and type(GameStateOverlay.resetRealTimeCarry) == "function" then
+        GameStateOverlay.resetRealTimeCarry()
+    end
+
+    S.setStateVal(nextClock, "sessionScene", "clock")
+    MapPins.onClockChanged()
+
+    local forward = U.compareNarrativeClock(finalDt, startDt) > 0
+    if forward then
+        PresentDayClock.tryAdvance(nextClock)
+    end
+
+    ChronicleWeather.applyScheduledWeather({ force = false })
+    if Sync and type(Sync.full) == "function" then
+        Sync.full({ reason = "NarrativeClockLerp.settle" })
+    end
+
+    if GameStateOverlay and type(GameStateOverlay.stopTicker) == "function" then
+        GameStateOverlay.stopTicker()
+    end
+    if GameStateOverlay and type(GameStateOverlay.ensureTicker) == "function" then
+        GameStateOverlay.ensureTicker()
+    end
+
+    local StorytellerScenesPanel = require("core.storyteller_scenes_panel")
+    if type(StorytellerScenesPanel.onClockLerpSettled) == "function" then
+        StorytellerScenesPanel.onClockLerpSettled(nextClock)
+    end
+end
+
+--- Begin lerp from live session clock to `targetDt`.
+--- @param targetDt table
+--- @return boolean ok
+--- @return string|nil err
+function NarrativeClockLerp.startToTarget(targetDt)
+    if active then
+        return false, "Clock animation already in progress."
+    end
+    if not SceneLibrary.hasLiveSceneOnTable or not SceneLibrary.hasLiveSceneOnTable() then
+        return false, nil
+    end
+
+    local ck = S.getStateVal("sessionScene", "clock")
+    local startDt = U.narrativeClockDatetimeOnly(ck)
+    if startDt == nil then
+        return false, "Live scene clock has no datetime."
+    end
+    local target = U.narrativeClockDatetimeOnly(targetDt)
+    if target == nil then
+        return false, "Invalid target datetime."
+    end
+
+    -- Always clamp forward past present day.
+    target = clampToPresentDay(target)
+
+    local startAbs = NarrativeCalendar.toAbsoluteMinutes(startDt)
+    local endAbs = NarrativeCalendar.toAbsoluteMinutes(target)
+    if startAbs == nil or endAbs == nil then
+        return false, "Could not compute timeline."
+    end
+    if startAbs == endAbs then
+        pushDisplayOnly(target)
+        settle(target, startDt)
+        return true, nil
+    end
+
+    if GameStateOverlay and type(GameStateOverlay.stopTicker) == "function" then
+        GameStateOverlay.stopTicker()
+    end
+
+    active = true
+    gen = gen + 1
+    local myGen = gen
+    local duration = durationForDeltaMinutes(endAbs - startAbs)
+    local tickSec = tonumber((C.CLOCK_LERP or {}).tickSeconds) or 0.05
+    local t0 = os.clock()
+
+    clearTick()
+
+    local function step()
+        if myGen ~= gen or not active then
+            return
+        end
+        local elapsed = os.clock() - t0
+        local t = elapsed / duration
+        if t >= 1 then
+            pushDisplayOnly(target)
+            settle(target, startDt)
+            return
+        end
+        local eased = easeInOutCubic(t)
+        local abs = startAbs + (endAbs - startAbs) * eased
+        local mid = NarrativeCalendar.fromAbsoluteMinutes(abs)
+        pushDisplayOnly(mid)
+        tickHandle = U.delay(step, tickSec)
+    end
+
+    pushDisplayOnly(startDt)
+    tickHandle = U.delay(step, tickSec)
+    return true, nil
+end
+
+return NarrativeClockLerp

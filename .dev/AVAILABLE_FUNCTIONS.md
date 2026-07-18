@@ -416,6 +416,19 @@ Rough geometric sunrise/sunset for Toronto (~43.65°N, 79.38°W). Fixed Eastern 
 | `TorontoSun.offset(month, day, anchor, deltaMinutes)` | Clock at `"sunrise"` / `"sunset"` ± minutes | Absolute dawn−N / dusk+N targets |
 | `TorontoSun.addMinutes(hm, deltaMinutes)` | Wrap `{hour, minute}` by minute delta | Shared by `offset` |
 
+### Narrative clock lerp (`core/narrative_clock_lerp.ttslua`)
+
+**Require:** `local NarrativeClockLerp = require("core.narrative_clock_lerp")`  
+Animated Scene Time jumps (TOR-222). Display-only during motion; present day / weather / `Sync.full` on settle. Duration from `C.CLOCK_LERP`. Live scene required (`SceneLibrary.hasLiveSceneOnTable`).
+
+| Function | Description | Usage Example |
+| :--------- | :------------- | :--------------- |
+| `NarrativeClockLerp.isActive()` | Mid-lerp lock | Ignore month/Apply/Set/RT while true |
+| `NarrativeClockLerp.resolveDeltaTarget(start, unit, amount, forward)` | Minutes/hours keep H:M; days+ land dusk+1h; forward clamped to present day | Delta grid |
+| `NarrativeClockLerp.resolveDawnDuskTarget(start, minutes, towardDawn)` | Absolute dawn−N or dusk+N on displayed date | Sun grid L/R |
+| `NarrativeClockLerp.resolveYearTarget(start, year)` | Same month/day (Feb 29→28) then dusk+1h | Year Go |
+| `NarrativeClockLerp.startToTarget(targetDt)` | Ease scrub overlay + panel; settle side effects | After resolve* |
+
 ---
 
 ## 5b. SYNC ORCHESTRATOR (`core/sync.ttslua`)

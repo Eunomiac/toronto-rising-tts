@@ -14,6 +14,8 @@ local RSL = require("lib.rotational-seat-layout")
 local Sync = require("core.sync")
 local SS = require("core.soundscape")
 local ChronicleWeather = require("lib.chronicle_weather")
+local NarrativeClockLerp = require("core.narrative_clock_lerp")
+local TorontoSun = require("lib.toronto_sun")
 local GameStateOverlay = require("core.game_state_overlay")
 local SceneLibrary = require("core.scene_library")
 local PresentDayClock = require("core.present_day_clock")
@@ -356,6 +358,14 @@ local clockDraft = {
     dirty = false,
 }
 
+--- Year Go InputField stash (TOR-222); not part of pending library clock draft.
+local lerpYearDraft = ""
+
+--- @return boolean
+local function clockLerpBusy()
+    return NarrativeClockLerp.isActive() == true
+end
+
 --- @return string|nil
 local function getActiveLibraryKey()
     local k = S.getStateVal("sceneLibrary", "activeKey")
@@ -617,6 +627,189 @@ end
 
 function StorytellerScenesPanel.syncClockDraftFromState()
     StorytellerScenesPanel.syncClockDraftFromClock(S.getStateVal("sessionScene", "clock"))
+end
+
+--- @param hour24 number|nil
+--- @param minute number|nil
+--- @return string
+local function formatHm24(hour24, minute)
+    local h = math.floor(tonumber(hour24) or 0) % 24
+    local m = math.floor(tonumber(minute) or 0)
+    if m < 0 then
+        m = 0
+    end
+    if m > 59 then
+        m = 59
+    end
+    return string.format("%02d:%02d", h, m)
+end
+
+--- Dusk/dawn HH:MM labels from TorontoSun for the given (or panel) month/day.
+--- @param month number|nil
+--- @param day number|nil
+local function refreshLerpSunLabels(month, day)
+    if UI == nil or UI.setAttribute == nil then
+        return
+    end
+    local mo = math.floor(tonumber(month) or 0)
+    local d = math.floor(tonumber(day) or 0)
+    if mo < 1 or mo > 12 or d < 1 then
+        local ck = S.getStateVal("sessionScene", "clock")
+        if type(ck) ~= "table" then
+            mo = math.floor(tonumber(clockDraft.month) or 1)
+            d = math.floor(tonumber(clockDraft.day) or 1)
+        else
+            mo = math.floor(tonumber(ck.month) or 1)
+            d = math.floor(tonumber(ck.day) or 1)
+        end
+    end
+    local sun = TorontoSun.estimate(mo, d)
+    if type(sun) ~= "table" then
+        U.setAttribute("scenes_lerp_dusk_time", "text", "—")
+        U.setAttribute("scenes_lerp_dawn_time", "text", "—")
+        return
+    end
+    local dusk = type(sun.sunset) == "table" and formatHm24(sun.sunset.hour, sun.sunset.minute) or "—"
+    local dawn = type(sun.sunrise) == "table" and formatHm24(sun.sunrise.hour, sun.sunrise.minute) or "—"
+    U.setAttribute("scenes_lerp_dusk_time", "text", dusk)
+    U.setAttribute("scenes_lerp_dawn_time", "text", dawn)
+end
+
+--- Lerp controls always green when a live scene is on the table (never pending-blue).
+local function refreshLerpControlColors()
+    if UI == nil or UI.setAttributes == nil then
+        return
+    end
+    local live = SceneLibrary.hasLiveSceneOnTable and SceneLibrary.hasLiveSceneOnTable() == true
+    local colors = live and GREEN or GREY
+    local ids = {
+        "scenes_lerp_min_10", "scenes_lerp_min_20", "scenes_lerp_min_30", "scenes_lerp_min_40",
+        "scenes_lerp_min_50", "scenes_lerp_min_60",
+        "scenes_lerp_hr_1", "scenes_lerp_hr_1p5", "scenes_lerp_hr_2", "scenes_lerp_hr_2p5",
+        "scenes_lerp_hr_3", "scenes_lerp_hr_3p5", "scenes_lerp_hr_4", "scenes_lerp_hr_4p5",
+        "scenes_lerp_hr_5", "scenes_lerp_hr_5p5", "scenes_lerp_hr_6", "scenes_lerp_hr_8",
+        "scenes_lerp_day_1", "scenes_lerp_day_2", "scenes_lerp_day_3", "scenes_lerp_day_4",
+        "scenes_lerp_day_5", "scenes_lerp_day_6",
+        "scenes_lerp_wk_1", "scenes_lerp_wk_2", "scenes_lerp_wk_3", "scenes_lerp_wk_4",
+        "scenes_lerp_wk_5", "scenes_lerp_wk_6",
+        "scenes_lerp_mo_1", "scenes_lerp_mo_2", "scenes_lerp_mo_3", "scenes_lerp_mo_4",
+        "scenes_lerp_mo_5", "scenes_lerp_mo_6", "scenes_lerp_mo_7", "scenes_lerp_mo_8",
+        "scenes_lerp_mo_9", "scenes_lerp_mo_10", "scenes_lerp_mo_11", "scenes_lerp_mo_12",
+        "scenes_lerp_sun_0", "scenes_lerp_sun_5", "scenes_lerp_sun_15", "scenes_lerp_sun_30",
+        "scenes_lerp_sun_60", "scenes_lerp_sun_120",
+        "scenes_lerp_year_go",
+    }
+    for _, bid in ipairs(ids) do
+        U.setAttributes(bid, {
+            colors = colors,
+            textColor = "#FFFFFF",
+        })
+    end
+end
+
+--- Display-only clock fields during lerp (does not write state).
+--- @param dt table
+function StorytellerScenesPanel.pushClockDisplayOnly(dt)
+    if type(dt) ~= "table" or UI == nil then
+        return
+    end
+    local mo = math.floor(tonumber(dt.month) or 1)
+    for m = 1, 12 do
+        U.setAttributes("scenes_month_" .. tostring(m), {
+            colors = (m == mo) and GREEN or GREY,
+            fontStyle = "Bold",
+            textColor = "#FFFFFF",
+        })
+    end
+    setInputFieldText("scenes_clock_day", tostring(tonumber(dt.day) or 1))
+    setInputFieldText("scenes_clock_year", tostring(tonumber(dt.year) or 2026))
+    setInputFieldText("scenes_clock_time12", formatTime12h(dt.hour, dt.minute))
+    refreshLerpSunLabels(mo, tonumber(dt.day))
+end
+
+--- After lerp settle: sync draft + full panel refresh.
+--- @param clock table|nil
+function StorytellerScenesPanel.onClockLerpSettled(clock)
+    if type(clock) == "table" then
+        StorytellerScenesPanel.syncClockDraftFromClock(clock)
+        clockDraft.dirty = false
+    end
+    StorytellerScenesPanel.refresh()
+end
+
+--- @param unit string
+--- @param amount number
+--- @param forward boolean
+function StorytellerScenesPanel.startClockLerpDelta(unit, amount, forward)
+    if clockLerpBusy() then
+        return
+    end
+    local ck = S.getStateVal("sessionScene", "clock")
+    local startDt = U.narrativeClockDatetimeOnly(ck)
+    if startDt == nil then
+        return
+    end
+    local target = NarrativeClockLerp.resolveDeltaTarget(startDt, unit, amount, forward == true)
+    if target == nil then
+        return
+    end
+    local ok, err = NarrativeClockLerp.startToTarget(target)
+    if not ok and type(err) == "string" and err ~= "" then
+        U.AlertGM(err)
+    end
+end
+
+--- @param minutes number
+--- @param towardDawn boolean
+function StorytellerScenesPanel.startClockLerpSun(minutes, towardDawn)
+    if clockLerpBusy() then
+        return
+    end
+    local ck = S.getStateVal("sessionScene", "clock")
+    local startDt = U.narrativeClockDatetimeOnly(ck)
+    if startDt == nil then
+        return
+    end
+    local target = NarrativeClockLerp.resolveDawnDuskTarget(startDt, minutes, towardDawn == true)
+    if target == nil then
+        return
+    end
+    local ok, err = NarrativeClockLerp.startToTarget(target)
+    if not ok and type(err) == "string" and err ~= "" then
+        U.AlertGM(err)
+    end
+end
+
+--- @param value string|nil
+function StorytellerScenesPanel.onClockLerpYearChanged(value)
+    if clockLerpBusy() then
+        return
+    end
+    lerpYearDraft = type(value) == "string" and value or ""
+end
+
+function StorytellerScenesPanel.startClockLerpYearGo()
+    if clockLerpBusy() then
+        return
+    end
+    local y = tonumber(lerpYearDraft)
+    if y == nil then
+        U.AlertGM("Enter a target year, then Go.")
+        return
+    end
+    local ck = S.getStateVal("sessionScene", "clock")
+    local startDt = U.narrativeClockDatetimeOnly(ck)
+    if startDt == nil then
+        return
+    end
+    local target = NarrativeClockLerp.resolveYearTarget(startDt, y)
+    if target == nil then
+        return
+    end
+    local ok, err = NarrativeClockLerp.startToTarget(target)
+    if not ok and type(err) == "string" and err ~= "" then
+        U.AlertGM(err)
+    end
 end
 
 --- Resets pending activation draft for a newly selected library row.
@@ -1035,6 +1228,9 @@ end
 --- @param value string|nil
 --- @param id string|nil
 function StorytellerScenesPanel.onClockInputChanged(player, value, id)
+    if clockLerpBusy() then
+        return
+    end
     local v = type(value) == "string" and value or ""
     if id == "scenes_clock_day" then
         clockDraft.day = v
@@ -1130,44 +1326,50 @@ function StorytellerScenesPanel.refresh()
             resetClockDraftForLibrarySelection(activeKeyForClock)
         end
 
-        local ck = resolvePanelDisplayClock()
-        if type(ck) == "table" then
-            local activeKey = getActiveLibraryKey()
-            if activeKey ~= nil and clockDraft.sceneKey == activeKey and clockDraft.dirty ~= true then
-                StorytellerScenesPanel.syncClockDraftFromClock(ck)
-            elseif activeKey == nil then
-                StorytellerScenesPanel.syncClockDraftFromClock(ck)
-            end
+        if not clockLerpBusy() then
+            local ck = resolvePanelDisplayClock()
+            if type(ck) == "table" then
+                local activeKey = getActiveLibraryKey()
+                if activeKey ~= nil and clockDraft.sceneKey == activeKey and clockDraft.dirty ~= true then
+                    StorytellerScenesPanel.syncClockDraftFromClock(ck)
+                elseif activeKey == nil then
+                    StorytellerScenesPanel.syncClockDraftFromClock(ck)
+                end
 
-            local mo = math.floor(tonumber(ck.month) or 1)
-            for m = 1, 12 do
-                U.setAttributes("scenes_month_" .. tostring(m), {
-                    colors = (m == mo) and onColors or GREY,
+                local mo = math.floor(tonumber(ck.month) or 1)
+                for m = 1, 12 do
+                    U.setAttributes("scenes_month_" .. tostring(m), {
+                        colors = (m == mo) and onColors or GREY,
+                        fontStyle = "Bold",
+                        textColor = "#FFFFFF",
+                    })
+                end
+                setInputFieldText("scenes_clock_day", tostring(tonumber(ck.day) or 1))
+                setInputFieldText("scenes_clock_year", tostring(tonumber(ck.year) or 2026))
+                setInputFieldText("scenes_clock_time12", formatTime12h(ck.hour, ck.minute))
+                refreshClockInputSourceColors(ck)
+                local spd = tonumber(ck.realTimeSpeed)
+                if spd == nil then
+                    spd = 1
+                end
+                setInputFieldText("scenes_clock_speed", tostring(spd))
+                local rt = ck.useRealTime == true
+                U.setAttributes("scenes_clock_rtToggle", {
+                    text = rt and "ON" or "OFF",
+                    colors = rt and onColors or GREY,
                     fontStyle = "Bold",
                     textColor = "#FFFFFF",
                 })
+                refreshLerpSunLabels(mo, tonumber(ck.day))
+            else
+                refreshLerpSunLabels(nil, nil)
             end
-            setInputFieldText("scenes_clock_day", tostring(tonumber(ck.day) or 1))
-            setInputFieldText("scenes_clock_year", tostring(tonumber(ck.year) or 2026))
-            setInputFieldText("scenes_clock_time12", formatTime12h(ck.hour, ck.minute))
-            refreshClockInputSourceColors(ck)
-            local spd = tonumber(ck.realTimeSpeed)
-            if spd == nil then
-                spd = 1
-            end
-            setInputFieldText("scenes_clock_speed", tostring(spd))
-            local rt = ck.useRealTime == true
-            U.setAttributes("scenes_clock_rtToggle", {
-                text = rt and "ON" or "OFF",
-                colors = rt and onColors or GREY,
-                fontStyle = "Bold",
-                textColor = "#FFFFFF",
-            })
         end
     end
 
     StorytellerScenesPanel.refreshSceneLibraryRows()
     refreshApplyClockButtons()
+    refreshLerpControlColors()
 end
 
 --- Pushes `sceneLibrary.order` into fixed `scenes_lib_slot_*` buttons.
@@ -1401,6 +1603,9 @@ end
 --- @param player Player
 --- @param clockModeOrId string|nil clock mode (`scene`/`x5`/`setPresent`/`present`) or Apply button id
 function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
+    if clockLerpBusy() then
+        return
+    end
     if not U.isStorytellerSteamPlayer(player) then
         U.AlertGM("Only the Storyteller can apply a library scene.")
         return
@@ -1898,6 +2103,9 @@ end
 
 --- @param player Player
 function StorytellerScenesPanel.applyClockFromInputs(player)
+    if clockLerpBusy() then
+        return
+    end
     local activeKey = getActiveLibraryKey()
     local baseClock = type(activeKey) == "string" and getLibraryRowClock(activeKey) or S.getStateVal("sessionScene", "clock")
     if type(baseClock) ~= "table" then
@@ -1988,6 +2196,9 @@ end
 --- Overwrites `gameState.presentDayClock` from stashed clock inputs (`clockDraft`); does not change live `sessionScene.clock`.
 --- @param player Player
 function StorytellerScenesPanel.setPresentDayClockFromInputs(player)
+    if clockLerpBusy() then
+        return
+    end
     local activeKey = getActiveLibraryKey()
     local baseClock = type(activeKey) == "string" and getLibraryRowClock(activeKey) or S.getStateVal("sessionScene", "clock")
     if type(baseClock) ~= "table" then
@@ -2012,6 +2223,9 @@ end
 --- Sets pending month (1–12). Pending activation: draft only; live scene: writes `sessionScene.clock`.
 --- @param month number
 function StorytellerScenesPanel.setPendingMonth(month)
+    if clockLerpBusy() then
+        return
+    end
     local m = math.floor(tonumber(month) or 1)
     if m < 1 then
         m = 1
@@ -2254,6 +2468,9 @@ end
 
 --- Toggles `useRealTime` on the pending activation draft or live `sessionScene.clock`.
 function StorytellerScenesPanel.toggleRealTimeClock()
+    if clockLerpBusy() then
+        return
+    end
     local activeKey = getActiveLibraryKey()
 
     if type(activeKey) == "string" and isPendingSceneActivation(activeKey) then

@@ -117,6 +117,80 @@ UI.setAttributes("scenes_clock_speed", {minWidth = "45"})
     <Text id="db_panel_scenes_time_buttons_4_speed_header"  fontSize="14" fontStyle="Bold" color="#CCCCCC">Speed Mult</Text>
     <InputField id="scenes_clock_speed" class="hud_storyteller_input" minHeight="30" preferredHeight="30" flexibleHeight="0" minWidth="45" preferredWidth="45" flexibleWidth="0" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" characterValidation="FloatingPoint" text="1" onValueChanged="HUD_scenesClockFieldChanged" onEndEdit="HUD_scenesClockFieldChanged" />
   </HorizontalLayout>
+
+  <GridLayout id="scenes_lerp_delta_grid" constraint="FixedColumnCount" constraintCount="7" cellSize="72 26" spacing="4 4" startCorner="UpperLeft" startAxis="Horizontal" childAlignment="MiddleCenter" preferredHeight="200" flexibleHeight="0">
+    <Text id="scenes_lerp_label_min" fontSize="11" color="#CCCCCC" alignment="MiddleLeft">Minutes</Text>
+    <Button id="scenes_lerp_min_10" class="hud_storyteller_button" text="10" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_min_20" class="hud_storyteller_button" text="20" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_min_30" class="hud_storyteller_button" text="30" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_min_40" class="hud_storyteller_button" text="40" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_min_50" class="hud_storyteller_button" text="50" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_min_60" class="hud_storyteller_button" text="60" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Text id="scenes_lerp_label_hr" fontSize="11" color="#CCCCCC" alignment="MiddleLeft">Hours</Text>
+    <Button id="scenes_lerp_hr_1" class="hud_storyteller_button" text="1" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_hr_1p5" class="hud_storyteller_button" text="1.5" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_hr_2" class="hud_storyteller_button" text="2" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_hr_2p5" class="hud_storyteller_button" text="2.5" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_hr_3" class="hud_storyteller_button" text="3" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_hr_3p5" class="hud_storyteller_button" text="3.5" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Text id="scenes_lerp_label_hr2" fontSize="11" color="#CCCCCC" alignment="MiddleLeft"> </Text>
+    <Button id="scenes_lerp_hr_4" class="hud_storyteller_button" text="4" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_hr_4p5" class="hud_storyteller_button" text="4.5" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_hr_5" class="hud_storyteller_button" text="5" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_hr_5p5" class="hud_storyteller_button" text="5.5" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_hr_6" class="hud_storyteller_button" text="6" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_hr_8" class="hud_storyteller_button" text="8" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Text id="scenes_lerp_label_day" fontSize="11" color="#CCCCCC" alignment="MiddleLeft">Days</Text>
+    <Button id="scenes_lerp_day_1" class="hud_storyteller_button" text="1" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_day_2" class="hud_storyteller_button" text="2" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_day_3" class="hud_storyteller_button" text="3" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_day_4" class="hud_storyteller_button" text="4" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_day_5" class="hud_storyteller_button" text="5" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_day_6" class="hud_storyteller_button" text="6" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Text id="scenes_lerp_label_wk" fontSize="11" color="#CCCCCC" alignment="MiddleLeft">Weeks</Text>
+    <Button id="scenes_lerp_wk_1" class="hud_storyteller_button" text="1" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_wk_2" class="hud_storyteller_button" text="2" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_wk_3" class="hud_storyteller_button" text="3" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_wk_4" class="hud_storyteller_button" text="4" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_wk_5" class="hud_storyteller_button" text="5" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_wk_6" class="hud_storyteller_button" text="6" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Text id="scenes_lerp_label_mo" fontSize="11" color="#CCCCCC" alignment="MiddleLeft">Months</Text>
+    <Button id="scenes_lerp_mo_1" class="hud_storyteller_button" text="1" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_mo_2" class="hud_storyteller_button" text="2" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_mo_3" class="hud_storyteller_button" text="3" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_mo_4" class="hud_storyteller_button" text="4" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_mo_5" class="hud_storyteller_button" text="5" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_mo_6" class="hud_storyteller_button" text="6" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Text id="scenes_lerp_label_mo2" fontSize="11" color="#CCCCCC" alignment="MiddleLeft"> </Text>
+    <Button id="scenes_lerp_mo_7" class="hud_storyteller_button" text="7" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_mo_8" class="hud_storyteller_button" text="8" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_mo_9" class="hud_storyteller_button" text="9" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_mo_10" class="hud_storyteller_button" text="10" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_mo_11" class="hud_storyteller_button" text="11" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_mo_12" class="hud_storyteller_button" text="12" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+  </GridLayout>
+
+  <GridLayout id="scenes_lerp_sun_grid" constraint="FixedColumnCount" constraintCount="6" cellSize="84 26" spacing="4 4" startCorner="UpperLeft" startAxis="Horizontal" childAlignment="MiddleCenter" preferredHeight="60" flexibleHeight="0">
+    <Text id="scenes_lerp_label_dusk" fontSize="11" color="#CCCCCC" alignment="MiddleCenter">Dusk</Text>
+    <Text id="scenes_lerp_dusk_time" fontSize="11" color="#EEEEEE" alignment="MiddleCenter">—</Text>
+    <Text id="scenes_lerp_sun_blank_a" fontSize="11" color="#CCCCCC" alignment="MiddleCenter"> </Text>
+    <Text id="scenes_lerp_sun_blank_b" fontSize="11" color="#CCCCCC" alignment="MiddleCenter"> </Text>
+    <Text id="scenes_lerp_dawn_time" fontSize="11" color="#EEEEEE" alignment="MiddleCenter">—</Text>
+    <Text id="scenes_lerp_label_dawn" fontSize="11" color="#CCCCCC" alignment="MiddleCenter">Dawn</Text>
+    <Button id="scenes_lerp_sun_0" class="hud_storyteller_button" text="0" fontSize="11" onClick="HUD_scenesClockLerpSun" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_sun_5" class="hud_storyteller_button" text="5" fontSize="11" onClick="HUD_scenesClockLerpSun" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_sun_15" class="hud_storyteller_button" text="15" fontSize="11" onClick="HUD_scenesClockLerpSun" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_sun_30" class="hud_storyteller_button" text="30" fontSize="11" onClick="HUD_scenesClockLerpSun" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_sun_60" class="hud_storyteller_button" text="60" fontSize="11" onClick="HUD_scenesClockLerpSun" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_lerp_sun_120" class="hud_storyteller_button" text="120" fontSize="11" onClick="HUD_scenesClockLerpSun" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+  </GridLayout>
+
+  <HorizontalLayout id="scenes_lerp_year_row" spacing="8" childForceExpandWidth="false" childAlignment="MiddleLeft">
+    <Text id="scenes_lerp_label_year" fontSize="11" color="#CCCCCC">Years</Text>
+    <InputField id="scenes_lerp_year_input" class="hud_storyteller_input" minHeight="28" preferredHeight="28" minWidth="72" preferredWidth="72" flexibleWidth="0" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" characterValidation="Integer" text="" onValueChanged="HUD_scenesClockLerpYearChanged" onEndEdit="HUD_scenesClockLerpYearChanged" />
+    <Button id="scenes_lerp_year_go" class="hud_storyteller_button" text="Go" minWidth="52" preferredWidth="52" fontSize="11" onClick="HUD_scenesClockLerpYearGo" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+  </HorizontalLayout>
+
   <HorizontalLayout id="db_panel_scenes_location_buttons_3" spacing="6" childForceExpandWidth="false" childAlignment="MiddleCenter">
     <Button id="scenes_clock_apply" class="hud_storyteller_button" text="Apply clock" onClick="HUD_scenesApplyClock"  preferredWidth = "250" flexibleWidth = "0"  />
   </HorizontalLayout>

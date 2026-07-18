@@ -183,6 +183,9 @@ Re-check lighting, NPCs, pins, and soundscape after about 3 seconds.
 | Apply SET Now | `scenes_lib_btn_apply_set_present` | Full staged apply; set present-day to scene time |
 | Apply NOW | `scenes_lib_btn_apply_present` | Full staged apply; fill clock from present-day |
 | Apply NOW +15/+30/+60/+120 | `scenes_lib_btn_apply_present_15` etc. | Same as NOW; advance present-day by N minutes first (TOR-401; no lerp) |
+| Clock lerp delta | `scenes_lerp_min_*` / `hr_*` / `day_*` / `wk_*` / `mo_*` | L=forward / R=rewind; days+ land ~dusk+1h; clamp to present day (TOR-222) |
+| Clock lerp dusk/dawn | `scenes_lerp_sun_*` | L=dawn−N / R=dusk+N absolute on current date |
+| Clock lerp year | `scenes_lerp_year_input` + `scenes_lerp_year_go` | Target year then dusk+1h |
 | End | `scenes_lib_btn_end` | Detach mirror, clear live scene, no-scene transition |
 | Seat PC | `scenes_seat_Brown` etc. | Toggle `seatPresent` / `seatSlots.isPresent` |
 | Month | `scenes_month_*` | Draft month |

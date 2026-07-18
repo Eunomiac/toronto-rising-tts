@@ -3696,6 +3696,9 @@ end
 
 --- Month button on Scenes panel (`scenes_month_1` … `12`).
 function HUD_scenesMonthPick(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_scenesMonthPick") then
+        return
+    end
     local m = tonumber(string.match(id or "", "^scenes_month_(%d+)$"))
     if m == nil then
         U.AlertGM("Scenes: could not parse month picker id.")
@@ -3710,6 +3713,60 @@ function HUD_scenesToggleRealTimeClock(player, button, id)
         return
     end
     StorytellerScenesPanel.toggleRealTimeClock()
+end
+
+--- TOR-222: minutes/hours/days/weeks/months lerp. Left = forward, right-click (`-2`) = rewind.
+--- Ids: `scenes_lerp_min_30`, `scenes_lerp_hr_1p5`, `scenes_lerp_day_1`, …
+function HUD_scenesClockLerpDelta(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_scenesClockLerpDelta") then
+        return
+    end
+    local unitKey, amountRaw = string.match(id or "", "^scenes_lerp_(min|hr|day|wk|mo)_(%d+p?%d*)$")
+    if unitKey == nil or amountRaw == nil then
+        U.AlertGM("Scenes: could not parse clock lerp control.")
+        return
+    end
+    local unitMap = {
+        min = "minutes",
+        hr = "hours",
+        day = "days",
+        wk = "weeks",
+        mo = "months",
+    }
+    local unit = unitMap[unitKey]
+    local amountStr = string.gsub(amountRaw, "p", ".")
+    local amount = tonumber(amountStr)
+    if unit == nil or amount == nil then
+        U.AlertGM("Scenes: invalid clock lerp amount.")
+        return
+    end
+    local forward = not (button == "-2" or button == -2 or tostring(button) == "-2")
+    StorytellerScenesPanel.startClockLerpDelta(unit, amount, forward)
+end
+
+--- TOR-222: absolute dawn−N (left) or dusk+N (right-click). Ids: `scenes_lerp_sun_0` … `_120`.
+function HUD_scenesClockLerpSun(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_scenesClockLerpSun") then
+        return
+    end
+    local minutes = tonumber(string.match(id or "", "^scenes_lerp_sun_(%d+)$"))
+    if minutes == nil then
+        U.AlertGM("Scenes: could not parse dusk/dawn lerp control.")
+        return
+    end
+    local towardDawn = not (button == "-2" or button == -2 or tostring(button) == "-2")
+    StorytellerScenesPanel.startClockLerpSun(minutes, towardDawn)
+end
+
+function HUD_scenesClockLerpYearChanged(player, value, id)
+    StorytellerScenesPanel.onClockLerpYearChanged(value)
+end
+
+function HUD_scenesClockLerpYearGo(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_scenesClockLerpYearGo") then
+        return
+    end
+    StorytellerScenesPanel.startClockLerpYearGo()
 end
 
 --- Scene Constructor: open import JSON modal.

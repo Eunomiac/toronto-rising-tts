@@ -22,7 +22,6 @@ Verification:
 
 ## Active
 
-
 ## External Work (Set STATUS to "External To Do")
 
 ## Future Features (Set STATUS to "Future")
@@ -43,6 +42,8 @@ Verification:
 
 
 ## Processed
+
+2026-07-17 Inbox — Immediate NOW+N travel Apply → **TOR-401** (Focus #1 High; not a one-liner — wire PresentDayClock + Apply registry); Active TOR-222 clock grids → Linear description refreshed (Focus #2 Medium; relatedTo TOR-400); TOR-400 remains estimate-only
 
 2026-07-17 **TOR-398** (global blindfold flicker) + **TOR-395** (ST toolbar collapse on panel close) shipped — Linear Done; Focus empty (propose next); commits `3c616b6` / `cd3d7ad`
 

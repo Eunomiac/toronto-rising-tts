@@ -67,11 +67,23 @@
     <Button id="scenes_lib_btn_apply_present" class="hud_storyteller_button" text="NOW" onClick="HUD_scenesLibApply" colors="#4444FF|#5555FF|#6666FF|rgba(0.3,0.3,1,0.5)" textColor="#FFFFFF" />
 
   </GridLayout>
+
+  <GridLayout id="scenes_lib_btns_grid_2" cellSize="125 30" spacing="8 6" constraint="FixedRowCount" constraintCount="1" childAlignment="MiddleCenter" childForceExpandWidth="true" childForceExpandHeight="true">
+
+    <Button id="scenes_lib_btn_apply_present_15" class="hud_storyteller_button" text="NOW +15" onClick="HUD_scenesLibApply" colors="#4444FF|#5555FF|#6666FF|rgba(0.3,0.3,1,0.5)" textColor="#FFFFFF" />
+
+    <Button id="scenes_lib_btn_apply_present_30" class="hud_storyteller_button" text="NOW +30" onClick="HUD_scenesLibApply" colors="#4444FF|#5555FF|#6666FF|rgba(0.3,0.3,1,0.5)" textColor="#FFFFFF" />
+
+    <Button id="scenes_lib_btn_apply_present_60" class="hud_storyteller_button" text="NOW +60" onClick="HUD_scenesLibApply" colors="#4444FF|#5555FF|#6666FF|rgba(0.3,0.3,1,0.5)" textColor="#FFFFFF" />
+
+    <Button id="scenes_lib_btn_apply_present_120" class="hud_storyteller_button" text="NOW +120" onClick="HUD_scenesLibApply" colors="#4444FF|#5555FF|#6666FF|rgba(0.3,0.3,1,0.5)" textColor="#FFFFFF" />
+
+  </GridLayout>
 <!--
 
 UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
 -->
-  <GridLayout id="scenes_lib_btns_grid_2" cellSize="125 30" spacing="8 6"
+  <GridLayout id="scenes_lib_btns_grid_3" cellSize="125 30" spacing="8 6"
     padding = "50 50 0 0" constraint="FixedRowCount" constraintCount="1" childAlignment="MiddleCenter" childForceExpandWidth="true" childForceExpandHeight="true">
 
     <Button id="scenes_lib_btn_unlink" class="hud_storyteller_button" text="UNLINK" onClick="HUD_scenesLibUnlink" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
@@ -80,7 +92,7 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
   </GridLayout>
 
 
-  <GridLayout id="scenes_lib_btns_grid_3" cellSize="125 30" spacing="8 6" constraint="FixedRowCount" constraintCount="1" childAlignment="MiddleCenter" childForceExpandWidth="true" childForceExpandHeight="true">
+  <GridLayout id="scenes_lib_btns_grid_4" cellSize="125 30" spacing="8 6" constraint="FixedRowCount" constraintCount="1" childAlignment="MiddleCenter" childForceExpandWidth="true" childForceExpandHeight="true">
 
     <Panel class="scenes_lib_btn_spacer" />
 

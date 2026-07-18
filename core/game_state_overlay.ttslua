@@ -559,6 +559,27 @@ local function reconcileOverlayAfterClockTick(prevY, prevMo, prevD, prevH, y, mo
     end
 end
 
+--- Display-only overlay clock update during TOR-222 lerp (no weather / no state write).
+--- @param year number
+--- @param month number
+--- @param day number
+--- @param hour24 number
+--- @param minute number
+function GameStateOverlay.pushNarrativeClockDisplay(year, month, day, hour24, minute)
+    if UI == nil or UI.setValue == nil or UI.setAttribute == nil then
+        return
+    end
+    if not shouldShowNarrativeClockOnOverlay() then
+        return
+    end
+    pushOverlayActive(OVERLAY_TIME_LOCATION_ID, true)
+    local y = math.floor(tonumber(year) or 2026)
+    local mo = math.floor(tonumber(month) or 1)
+    local d = math.floor(tonumber(day) or 1)
+    pushOverlayText("gameStateOverlay_datetime", formatOverlayDateLine(y, mo, d))
+    pushOverlayText("gameStateOverlay_time", format12h(hour24, minute))
+end
+
 --- Advances `sessionScene.clock` when real-time simulation is enabled.
 --- @return boolean True when state was mutated.
 function GameStateOverlay.tickRealTimeClock()

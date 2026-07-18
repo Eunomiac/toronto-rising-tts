@@ -5810,5 +5810,21 @@ C.WEATHER_AUDIO_OVERRIDES = {
     forcedOff = { Base = "BY_RAIN_AUDIO", Wind = "BY_WIND_AUDIO" }
   }
 }
+
 -- #endregion
+
+-- #region Narrative clock lerp (TOR-222)
+--[[
+  Duration for animated Scene Time jumps: clamp |Δminutes| to [minDeltaMinutes, maxDeltaMinutes],
+  normalize to t in [0,1], duration = minDuration + t * (maxDuration - minDuration).
+]]
+C.CLOCK_LERP = {
+  minDuration = 0.75,
+  maxDuration = 6.0,
+  minDeltaMinutes = 10,
+  maxDeltaMinutes = 525600, -- 365 days
+  tickSeconds = 0.05,
+}
+-- #endregion
+
 return C
