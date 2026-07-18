@@ -2527,4 +2527,10 @@ function StorytellerScenesPanel.canToggleNpcSeat(seatKey)
     return canToggleNpcSeatForDisplay(displayBundle, seatKey, pending)
 end
 
+-- Break circular require: lerp must not `require` this panel module.
+NarrativeClockLerp.setPanelHooks({
+    pushDisplayOnly = StorytellerScenesPanel.pushClockDisplayOnly,
+    onSettled = StorytellerScenesPanel.onClockLerpSettled,
+})
+
 return StorytellerScenesPanel

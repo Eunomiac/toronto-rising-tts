@@ -424,6 +424,7 @@ Animated Scene Time jumps (TOR-222). Display-only during motion; present day / w
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
 | `NarrativeClockLerp.isActive()` | Mid-lerp lock | Ignore month/Apply/Set/RT while true |
+| `NarrativeClockLerp.setPanelHooks(hooks)` | Register panel `pushDisplayOnly` / `onSettled` (avoids circular require) | Called by `storyteller_scenes_panel` at load |
 | `NarrativeClockLerp.resolveDeltaTarget(start, unit, amount, forward)` | Minutes/hours keep H:M; days+ land dusk+1h; forward clamped to present day | Delta grid |
 | `NarrativeClockLerp.resolveDawnDuskTarget(start, minutes, towardDawn)` | Absolute dawn−N or dusk+N on displayed date | Sun grid L/R |
 | `NarrativeClockLerp.resolveYearTarget(start, year)` | Same month/day (Feb 29→28) then dusk+1h | Year Go |

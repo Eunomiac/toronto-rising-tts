@@ -23,6 +23,20 @@ local active = false
 local tickHandle = nil
 local gen = 0
 
+--- Panel UI hooks (registered by `core.storyteller_scenes_panel` to avoid a circular require).
+--- @type function|nil
+local panelPushDisplayOnly = nil
+--- @type function|nil
+local panelOnSettled = nil
+
+--- Wire Scenes panel display/settle callbacks. Call once after panel module load.
+--- @param hooks table|nil `{ pushDisplayOnly?: fun(dt), onSettled?: fun(clock) }`
+function NarrativeClockLerp.setPanelHooks(hooks)
+    hooks = type(hooks) == "table" and hooks or {}
+    panelPushDisplayOnly = type(hooks.pushDisplayOnly) == "function" and hooks.pushDisplayOnly or nil
+    panelOnSettled = type(hooks.onSettled) == "function" and hooks.onSettled or nil
+end
+
 --- @return boolean
 function NarrativeClockLerp.isActive()
     return active == true
@@ -209,9 +223,8 @@ local function pushDisplayOnly(dt)
     if GameStateOverlay and type(GameStateOverlay.pushNarrativeClockDisplay) == "function" then
         GameStateOverlay.pushNarrativeClockDisplay(dt.year, dt.month, dt.day, dt.hour, dt.minute)
     end
-    local StorytellerScenesPanel = require("core.storyteller_scenes_panel")
-    if type(StorytellerScenesPanel.pushClockDisplayOnly) == "function" then
-        StorytellerScenesPanel.pushClockDisplayOnly(dt)
+    if type(panelPushDisplayOnly) == "function" then
+        panelPushDisplayOnly(dt)
     end
 end
 
@@ -263,9 +276,8 @@ local function settle(finalDt, startDt)
         GameStateOverlay.ensureTicker()
     end
 
-    local StorytellerScenesPanel = require("core.storyteller_scenes_panel")
-    if type(StorytellerScenesPanel.onClockLerpSettled) == "function" then
-        StorytellerScenesPanel.onClockLerpSettled(nextClock)
+    if type(panelOnSettled) == "function" then
+        panelOnSettled(nextClock)
     end
 end
 
