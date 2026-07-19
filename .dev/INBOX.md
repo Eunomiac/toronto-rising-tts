@@ -20,8 +20,6 @@ Verification:
 ## For Immediate Implementation
 > _After registering each of these issues with Linear in the ordinary fashion, before updating the Focus Stack, briefly review the issue: If it is a quick or easy fix, implement it immediately without waiting for user confirmation. Otherwise, promote it to the top of the Focus Stack, and offer to begin work on it immediately when summarizing your work processing `INBOX.md` to the user. If multiple issues require promotion in this way, consider how best to resolve them as quickly as possible, and offer to draft an implementation plan in your response to the user._
 
-
-
 ## Active
 
 ## External Work (Set STATUS to "External To Do")
@@ -44,6 +42,8 @@ Verification:
 
 
 ## Processed
+
+2026-07-19 Clock lerp closes panel / time unchanged (silent no-op) → **TOR-418** (validate before close; AlertGM; no Sync.full on zero delta)
 
 2026-07-19 Far-ring overflow (num=6 ±half stack) + bee hive leader no accompany → **TOR-415**
 

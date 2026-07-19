@@ -35,7 +35,8 @@ _Stack rank for the current cycle (2026-07-19 — **TOR-402**–**TOR-411** ship
 
 | # | Issue | Why now |
 | --- | --- | --- |
-| — | _(empty — Save & Play verify TOR-402–411, then pick next via “what’s next” / `/tr-inbox`)_ | |
+| 1 | **TOR-418** (clock lerp silent no-op) | Author repro: panel closes, time unchanged — fix in flight |
+| — | then Save & Play verify TOR-402–411 / TOR-417 | |
 
 **Also in cycle (below top stack):** **TOR-141** (E2E playbooks living doc). **TOR-384** (Global HUD first load — **deprioritized**; reload workaround; Linear No priority). **TOR-286** (centralize `setInvisibleTo`). **TOR-303** (author review roll broadcast phrasing — External Todo). **TOR-376** (CSHEET max-slot setXml migrate — Future). **TOR-382** (coterie sheet notes — Future). **TOR-95** (play-as-NPC, **blockedBy** **TOR-247**). **TOR-330** (Fomorach shapeshift toggle; **blockedBy** **TOR-327** workshop stat deltas). **TOR-98** (Spotlight turn UX — scaffolding in TOR-143).
 
@@ -215,6 +216,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Skybox-only Apply Location:** Allow Apply when `skyboxOverride` set without District/Site. Pending Save & Play. _(TOR-402)_
 - [x] **Clock lerp id parse:** Lua `|` is literal — match unit token then validate (fixes “could not parse clock lerp control”). Pending Save & Play. _(TOR-403)_
 - [x] **Close ST toolbar before clock lerp:** Same preliminary close as scene Apply. Pending Save & Play. _(TOR-405)_
+- [ ] **Clock lerp silent no-op:** Validate before close; AlertGM on missing live scene / datetime / zero-delta clamp; skip Sync.full when target equals start. relatedTo **TOR-222**, **TOR-405**. _(TOR-418)_
 - [x] **Advance: yield after toolbar close:** Defer exit/enter work one frame so close paints without hitch. Pending Save & Play. _(TOR-404)_
 - [x] **Toronto sunrise/sunset estimate:** `lib/toronto_sun.ttslua` rough geometric EST (no DST) from month/day — estimate API only; Scenes dusk/dawn controls are TOR-222. _(TOR-400)_
 - [x] **End scene library sync:** `detachLiveTableFromLibraryMirror()` before clearing live location — stops mirroring, clears `lastAppliedKey` + `activeKey`, UI hides mirroring when no on-table scene; prevents live→library writeback of cleared keys. _(TOR-145)_

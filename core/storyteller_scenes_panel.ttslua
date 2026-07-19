@@ -730,6 +730,45 @@ function StorytellerScenesPanel.pushClockDisplayOnly(dt)
     refreshLerpSunLabels(mo, tonumber(dt.day))
 end
 
+--- Validate live clock, then close the panel only when a real lerp can start (TOR-418 / TOR-405).
+--- @param buildTarget fun(startDt: table): table|nil
+local function tryStartClockLerp(buildTarget)
+    if clockLerpBusy() then
+        U.AlertGM("Clock animation already in progress.")
+        return
+    end
+    if not SceneLibrary.hasLiveSceneOnTable or SceneLibrary.hasLiveSceneOnTable() ~= true then
+        U.AlertGM("Clock lerp needs a live scene on the table (Apply a library row first).")
+        return
+    end
+    local ck = S.getStateVal("sessionScene", "clock")
+    local startDt = U.narrativeClockDatetimeOnly(ck)
+    if startDt == nil then
+        U.AlertGM("Live scene clock has no datetime — set day/year/time (or Apply a timed scene) first.")
+        return
+    end
+    if type(buildTarget) ~= "function" then
+        U.AlertGM("Clock lerp: internal target builder missing.")
+        return
+    end
+    local target = buildTarget(startDt)
+    if type(target) ~= "table" then
+        U.AlertGM("Could not compute clock lerp target.")
+        return
+    end
+    local targetNorm = U.narrativeClockDatetimeOnly(target)
+    if targetNorm ~= nil and U.compareNarrativeClock(startDt, targetNorm) == 0 then
+        U.AlertGM("Clock is already at that time (forward jumps clamp to present day).")
+        return
+    end
+    -- Close ST toolbar only after validation so silent failures do not dismiss the panel (TOR-405/418).
+    closeScenesPanel()
+    local ok, err = NarrativeClockLerp.startToTarget(target)
+    if not ok then
+        U.AlertGM(type(err) == "string" and err ~= "" and err or "Clock lerp failed.")
+    end
+end
+
 --- After lerp settle: sync draft + full panel refresh.
 --- @param clock table|nil
 function StorytellerScenesPanel.onClockLerpSettled(clock)
@@ -744,46 +783,17 @@ end
 --- @param amount number
 --- @param forward boolean
 function StorytellerScenesPanel.startClockLerpDelta(unit, amount, forward)
-    if clockLerpBusy() then
-        return
-    end
-    -- Close ST toolbar before lerp work so the click does not hitch on a still-open panel (TOR-405).
-    closeScenesPanel()
-    local ck = S.getStateVal("sessionScene", "clock")
-    local startDt = U.narrativeClockDatetimeOnly(ck)
-    if startDt == nil then
-        return
-    end
-    local target = NarrativeClockLerp.resolveDeltaTarget(startDt, unit, amount, forward == true)
-    if target == nil then
-        return
-    end
-    local ok, err = NarrativeClockLerp.startToTarget(target)
-    if not ok and type(err) == "string" and err ~= "" then
-        U.AlertGM(err)
-    end
+    tryStartClockLerp(function(startDt)
+        return NarrativeClockLerp.resolveDeltaTarget(startDt, unit, amount, forward == true)
+    end)
 end
 
 --- @param minutes number
 --- @param towardDawn boolean
 function StorytellerScenesPanel.startClockLerpSun(minutes, towardDawn)
-    if clockLerpBusy() then
-        return
-    end
-    closeScenesPanel()
-    local ck = S.getStateVal("sessionScene", "clock")
-    local startDt = U.narrativeClockDatetimeOnly(ck)
-    if startDt == nil then
-        return
-    end
-    local target = NarrativeClockLerp.resolveDawnDuskTarget(startDt, minutes, towardDawn == true)
-    if target == nil then
-        return
-    end
-    local ok, err = NarrativeClockLerp.startToTarget(target)
-    if not ok and type(err) == "string" and err ~= "" then
-        U.AlertGM(err)
-    end
+    tryStartClockLerp(function(startDt)
+        return NarrativeClockLerp.resolveDawnDuskTarget(startDt, minutes, towardDawn == true)
+    end)
 end
 
 --- @param value string|nil
@@ -795,28 +805,14 @@ function StorytellerScenesPanel.onClockLerpYearChanged(value)
 end
 
 function StorytellerScenesPanel.startClockLerpYearGo()
-    if clockLerpBusy() then
-        return
-    end
     local y = tonumber(lerpYearDraft)
     if y == nil then
         U.AlertGM("Enter a target year, then Go.")
         return
     end
-    closeScenesPanel()
-    local ck = S.getStateVal("sessionScene", "clock")
-    local startDt = U.narrativeClockDatetimeOnly(ck)
-    if startDt == nil then
-        return
-    end
-    local target = NarrativeClockLerp.resolveYearTarget(startDt, y)
-    if target == nil then
-        return
-    end
-    local ok, err = NarrativeClockLerp.startToTarget(target)
-    if not ok and type(err) == "string" and err ~= "" then
-        U.AlertGM(err)
-    end
+    tryStartClockLerp(function(startDt)
+        return NarrativeClockLerp.resolveYearTarget(startDt, y)
+    end)
 end
 
 --- Resets pending activation draft for a newly selected library row.

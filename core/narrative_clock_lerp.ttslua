@@ -290,13 +290,13 @@ function NarrativeClockLerp.startToTarget(targetDt)
         return false, "Clock animation already in progress."
     end
     if not SceneLibrary.hasLiveSceneOnTable or not SceneLibrary.hasLiveSceneOnTable() then
-        return false, nil
+        return false, "Clock lerp needs a live scene on the table (Apply a library row first)."
     end
 
     local ck = S.getStateVal("sessionScene", "clock")
     local startDt = U.narrativeClockDatetimeOnly(ck)
     if startDt == nil then
-        return false, "Live scene clock has no datetime."
+        return false, "Live scene clock has no datetime — set day/year/time (or Apply a timed scene) first."
     end
     local target = U.narrativeClockDatetimeOnly(targetDt)
     if target == nil then
@@ -311,10 +311,9 @@ function NarrativeClockLerp.startToTarget(targetDt)
     if startAbs == nil or endAbs == nil then
         return false, "Could not compute timeline."
     end
+    -- Zero-delta after clamp: do not Sync.full / settle — caller already closed UI on older paths.
     if startAbs == endAbs then
-        pushDisplayOnly(target)
-        settle(target, startDt)
-        return true, nil
+        return false, "Clock is already at that time (forward jumps clamp to present day)."
     end
 
     if GameStateOverlay and type(GameStateOverlay.stopTicker) == "function" then
