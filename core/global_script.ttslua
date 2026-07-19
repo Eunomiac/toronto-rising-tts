@@ -3323,11 +3323,17 @@ end
 
 --- Red outline on the debug seat button matching the Host's current seat.
 --- Signal-on seats: bright green fill + thick white outline (overrides Host red) (TOR-409).
+--- Only PC seats (`C.PlayerColors`) have signal fires — never query Black/White/Grey.
 syncDebugSeatColorButtons = function()
     local active = hostCurrentSeatColor()
     for _, seatColor in ipairs(DEBUG_SEAT_COLOR_ORDER) do
-        local signalOn = O ~= nil and type(O.GetSignalFireState) == "function"
-            and O.GetSignalFireState(seatColor) == "on"
+        local signalOn = false
+        if U.isIn(seatColor, C.PlayerColors or {})
+            and O ~= nil
+            and type(O.GetSignalFireState) == "function"
+        then
+            signalOn = O.GetSignalFireState(seatColor) == "on"
+        end
         local isActive = active == seatColor
         local attrs
         if signalOn then
@@ -6375,8 +6381,12 @@ function HUD_debugSeatColor(player, button, id)
         return
     end
 
-    -- Signal lit: left-click clears the player's signal (TOR-409).
-    if O ~= nil and type(O.GetSignalFireState) == "function" and O.GetSignalFireState(targetColor) == "on" then
+    -- Signal lit: left-click clears the player's signal (TOR-409). PC seats only.
+    if U.isIn(targetColor, C.PlayerColors or {})
+        and O ~= nil
+        and type(O.GetSignalFireState) == "function"
+        and O.GetSignalFireState(targetColor) == "on"
+    then
         if type(O.SetSignalFireState) == "function" then
             O.SetSignalFireState(targetColor, "off", 0.2)
         end

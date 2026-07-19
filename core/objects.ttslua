@@ -327,8 +327,12 @@ end
 -- @param color string Player color (e.g., "Brown", "Orange", "Red", "Pink", "Purple")
 -- @return Object|nil Signal fire object, or nil if unavailable
 local function getSignalFireObject(color)
-    if U.Type(color) ~= "string" or not U.isIn(color, C.PlayerColors) then
+    if U.Type(color) ~= "string" then
         U.AlertGM(string.format("O.getSignalFireObject: Invalid player color: %s", tostring(color)))
+        return nil
+    end
+    -- Storyteller / spectator seats are not PC signal-fire owners (debug seat row includes Black).
+    if not U.isIn(color, C.PlayerColors) then
         return nil
     end
 
