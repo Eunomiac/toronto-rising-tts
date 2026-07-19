@@ -836,36 +836,33 @@ function GlobalGameboardSyncSnapsToggleLabel(params)
         board = G.getObject(params.boardGuid)
     end
     Gameboard.syncControlBoardSnapsToggleLabel(board)
-    Gameboard.syncControlBoardLayoutLockLabel(board)
+    Gameboard.syncControlBoardModeToolbar(board)
 end
 
---- NPC gameboard: scan CONTROL_BOARD → placements state only (no figurine sync). Save (board → state).
+--- NPC gameboard: toggle HERE/THERE scope.
 --- @param params table|nil
---- @return boolean
-function GlobalGameboardSave(params)
+--- @return table `{ changed, mode }`
+function GlobalGameboardToggleScope(params)
     local Gameboard = require("core.npc_gameboard")
-    local ok = Gameboard.saveFromControlBoard()
-    if type(ok) == "boolean" then
-        return ok
-    end
-    return ok == true
+    local changed, mode = Gameboard.togglePreviewMode()
+    return { changed = changed == true, mode = mode }
 end
 
---- NPC gameboard: toggle `sessionScene.npcWorld.layoutLock`.
+--- NPC gameboard: arm/disarm one-shot participant carry for the next successful scene Apply.
 --- @param params table|nil `{ boardGuid?: string }`
 --- @return boolean locked after toggle
-function GlobalGameboardToggleLayoutLock(params)
+function GlobalGameboardToggleNextSceneApplyLock(params)
     local Gameboard = require("core.npc_gameboard")
     local board = nil
     if type(params) == "table" and type(params.boardGuid) == "string" then
         board = G.getObject(params.boardGuid)
     end
-    local locked = Gameboard.toggleLayoutLock()
-    Gameboard.syncControlBoardLayoutLockLabel(board)
+    local locked = Gameboard.toggleNextSceneApplyLock()
+    Gameboard.syncControlBoardModeToolbar(board)
     return locked
 end
 
---- NPC gameboard: mirror persisted placements onto CONTROL_BOARD tokens (bypasses layout lock).
+--- NPC gameboard: mirror the persisted active board model onto CONTROL_BOARD tokens.
 --- @param params table|nil
 --- @return boolean
 function GlobalGameboardLoad(params)
@@ -2397,6 +2394,8 @@ function onLoad(saved_data)
     -- Synchronization orchestration (step 2): consolidate the onLoad fan-out into Sync.full().
     setStartupAction("initial-sync-full")
     Sync.full({ reason = "onLoad_initial", skipSoundscape = true })
+    local StartupGameboard = require("core.npc_gameboard")
+    StartupGameboard.recoverPreviewDraftOnLoad()
     if GameStateOverlay and type(GameStateOverlay.stopTicker) == "function" then
         GameStateOverlay.stopTicker()
     end
@@ -2850,7 +2849,7 @@ function onObjectDrop(playerColor, object)
     end
 end
 
---- Control-token FlipOver (F): with Group-move hotkey held, match polar-family faces (TOR-414).
+--- Control-token rotation: persist THERE edits; with Group-move held, match NPC family faces.
 function onObjectRotate(object, spin, flip, player_color, old_spin, old_flip)
     if not isStorytellerSteamPlayer(player_color) then
         return
@@ -2858,10 +2857,18 @@ function onObjectRotate(object, spin, flip, player_color, old_spin, old_flip)
     if object == nil or object.hasTag == nil then
         return
     end
-    if object.hasTag("npc_control_token") ~= true then
+    local isNpcToken = object.hasTag("npc_control_token") == true
+    local isPcToken = object.hasTag("pc_control_token") == true
+    if not isNpcToken and not isPcToken then
         return
     end
     local Gameboard = require("core.npc_gameboard")
+    if type(Gameboard.onControlTokenRotated) == "function" then
+        Gameboard.onControlTokenRotated(object)
+    end
+    if not isNpcToken then
+        return
+    end
     -- Fail closed: missing API or hotkey not held → no family flip (TOR-414).
     if type(Gameboard.isGroupMoveHotkeyHeld) ~= "function" or Gameboard.isGroupMoveHotkeyHeld() ~= true then
         return

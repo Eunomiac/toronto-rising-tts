@@ -2124,8 +2124,6 @@ end
 --- @return string
 local function sessionNpcWorldFingerprint()
     local lines = {}
-    local lock = S.getStateVal("sessionScene", "npcWorld", "layoutLock")
-    lines[#lines + 1] = "layoutLock:" .. tostring(lock == true)
     for _, pl in ipairs(collectSessionStagePlacements()) do
         local lm = pl.npcLightMode or ""
         lines[#lines + 1] = string.format(

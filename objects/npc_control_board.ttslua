@@ -76,16 +76,18 @@ function click_snaps_toggle(player, value, id)
     end
 end
 
-function click_save(player, value, id)
+function click_scope(player, value, id)
     local player_color = resolveControlBoardClickColor(player, value)
     if not isStorytellerSteamClick(player, value) then
         return
     end
-    local ok = Global.call("GlobalGameboardSave", {})
+    local result = Global.call("GlobalGameboardToggleScope", {})
     if broadcastToColor ~= nil then
-        local msg = ok == true and "Save: board layout saved to state (no figurine sync)."
-            or "Save failed — host only or CONTROL_BOARD missing."
-        broadcastToColor(msg, player_color, ok == true and { 0, 1, 1 } or { 1, 0.35, 0.35 })
+        local changed = type(result) == "table" and result.changed == true
+        local mode = type(result) == "table" and result.mode or "HERE"
+        local msg = changed and ("Control Board mode: " .. mode)
+            or "THERE requires a pending Scenes Panel selection."
+        broadcastToColor(msg, player_color, changed and { 0, 1, 1 } or { 1, 0.75, 0.2 })
     end
 end
 
@@ -96,11 +98,11 @@ function click_lock(player, value, id)
     end
     local locked = nil
     if Global ~= nil and type(Global.call) == "function" then
-        locked = Global.call("GlobalGameboardToggleLayoutLock", { boardGuid = self.getGUID() })
+        locked = Global.call("GlobalGameboardToggleNextSceneApplyLock", { boardGuid = self.getGUID() })
     end
     if broadcastToColor ~= nil then
-        local msg = locked == true and "Layout locked — token positions preserved on reconcile."
-            or locked == false and "Layout unlocked — token positions follow state on reconcile."
+        local msg = locked == true and "Lock armed — current participants carry into the next scene Apply."
+            or locked == false and "Lock disarmed."
             or "Lock toggle failed — host only."
         broadcastToColor(msg, player_color, locked ~= nil and { 0, 1, 1 } or { 1, 0.35, 0.35 })
     end

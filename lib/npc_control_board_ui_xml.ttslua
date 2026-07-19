@@ -21,8 +21,8 @@ D.XML = [=[
       colors="#663333|#884444|#AA5555|#333333">Clear</Button>
     <Button id="gb_snaps" class="gb_toolbar_btn" onClick="click_snaps_toggle"
       colors="#336644|#448855|#55AA66|#333333">Snaps On</Button>
-    <Button id="gb_save" class="gb_toolbar_btn" onClick="click_save" fontSize="40" preferredWidth="150"
-      colors="#336644|#448855|#55AA66|#333333">Save</Button>
+    <Button id="gb_scope" class="gb_toolbar_btn" onClick="click_scope" fontSize="40" preferredWidth="150"
+      colors="#336644|#448855|#55AA66|#333333">HERE</Button>
     <Button id="gb_lock" class="gb_toolbar_btn" onClick="click_lock" fontSize="32" preferredWidth="180"
       colors="#336644|#448855|#55AA66|#333333">Unlocked</Button>
     <Button id="gb_load" class="gb_toolbar_btn" onClick="click_load" fontSize="40" preferredWidth="150"

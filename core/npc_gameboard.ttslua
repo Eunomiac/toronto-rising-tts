@@ -80,6 +80,8 @@ local CONTROL_BOARD_SNAP_MATCH_FUZZINESS = 0.45
 local anchorFamilySpreadDepth = 0
 --- Prevents recursive family flip when programmatic setRotation fires onObjectRotate (TOR-414).
 local familyFlipDepth = 0
+--- Coalesces sibling drop/rotate callbacks into one bounded THERE draft scan.
+Gameboard.previewDraftCaptureGeneration = 0
 
 --- @param obj Object|nil
 --- @return boolean
@@ -1117,26 +1119,24 @@ end
 
 --- Fingerprint for static marker + token mirror work on CONTROL_BOARD.
 --- @param activeTable string|nil
---- @param layoutLocked boolean
+--- @param mode string
 --- @param placements table|nil
+--- @param seatSlots table|nil
 --- @return string
-local function controlBoardMirrorFingerprint(activeTable, layoutLocked, placements)
+function Gameboard.controlBoardMirrorFingerprint(activeTable, mode, placements, seatSlots)
     local lines = {}
     lines[#lines + 1] = "table:" .. tostring(activeTable or "")
-    lines[#lines + 1] = "lock:" .. tostring(layoutLocked == true)
-    local slots = stateModule().getStateVal("seatLayout", "occupiedNPCSlots")
-    if type(slots) == "table" then
-        for _, seatKey in ipairs(C.NPCSeats or {}) do
-            lines[#lines + 1] = "occ:" .. seatKey .. "=" .. tostring(slots[seatKey] or "")
-        end
-    end
+    lines[#lines + 1] = "mode:" .. tostring(mode or "HERE")
+    seatSlots = type(seatSlots) == "table" and seatSlots or {}
     for _, seatKey in ipairs(C.NPCSeats or {}) do
-        local NPCS = require("core.npcs")
-        local present = true
-        if type(NPCS.resolveSeatNarrativePresence) == "function" then
-            present = NPCS.resolveSeatNarrativePresence(seatKey) == true
-        end
-        lines[#lines + 1] = "present:" .. seatKey .. "=" .. tostring(present)
+        local row = type(seatSlots[seatKey]) == "table" and seatSlots[seatKey] or {}
+        lines[#lines + 1] = "npc:" .. seatKey
+            .. "=" .. tostring(row.characterKey or "")
+            .. ":" .. tostring(row.isPresent == true)
+    end
+    for _, seatKey in ipairs(C.PlayerColors or {}) do
+        local row = type(seatSlots[seatKey]) == "table" and seatSlots[seatKey] or {}
+        lines[#lines + 1] = "pc:" .. seatKey .. "=" .. tostring(row.isPresent == true)
     end
     placements = type(placements) == "table" and placements or {}
     local keys = {}
@@ -1180,6 +1180,100 @@ local function placementsMapFromRows(rows)
         end
     end
     return placements
+end
+
+--- Current board authority. HERE reads live sessionScene; THERE reads only the persisted draft.
+--- @return table `{ mode, placements, seatSlots }`
+function Gameboard.getActiveBoardModel()
+    local Preview = require("core.control_board_preview")
+    local draft = Preview.getDraft()
+    if draft ~= nil then
+        return {
+            mode = "THERE",
+            placements = draft.npcWorld.placements,
+            seatSlots = draft.seatSlots,
+        }
+    end
+    local sessionScene = stateModule().getStateVal("sessionScene")
+    return {
+        mode = "HERE",
+        placements = type(sessionScene) == "table"
+            and type(sessionScene.npcWorld) == "table"
+            and sessionScene.npcWorld.placements
+            or {},
+        seatSlots = type(sessionScene) == "table" and sessionScene.seatSlots or {},
+    }
+end
+
+--- Captures all board-owned participants while retaining inactive homeland metadata for staged NPCs.
+--- @param board Object
+--- @param baseSeatSlots table|nil
+--- @return table
+function Gameboard.buildParticipantSnapshot(board, baseSeatSlots)
+    baseSeatSlots = type(baseSeatSlots) == "table" and baseSeatSlots or {}
+    local placements = placementsMapFromRows(Gameboard.scanControlBoardTokens(board))
+    local npcBySeat = scanSeatRowTokensBySeatKey(board)
+    local pcByColor = scanSeatRowPcTokensByColor(board)
+    local seatSlots = {}
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local base = type(baseSeatSlots[seatKey]) == "table" and U.merge({}, baseSeatSlots[seatKey]) or {}
+        local scan = npcBySeat[seatKey]
+        if type(scan) == "table" then
+            base.characterKey = scan.characterKey
+            base.slotEmpty = nil
+            base.isPresent = scan.present == true
+        elseif type(base.characterKey) == "string" and type(placements[base.characterKey]) == "table" then
+            base.slotEmpty = nil
+            base.isPresent = false
+        else
+            base.characterKey = nil
+            base.slotEmpty = true
+            base.isPresent = false
+        end
+        seatSlots[seatKey] = base
+    end
+    for _, color in ipairs(C.PlayerColors or {}) do
+        local base = type(baseSeatSlots[color]) == "table" and U.merge({}, baseSeatSlots[color]) or {}
+        local scan = pcByColor[color]
+        if type(scan) == "table" then
+            base.isPresent = scan.present == true
+        end
+        seatSlots[color] = base
+    end
+    return {
+        npcWorld = { placements = placements },
+        seatSlots = seatSlots,
+    }
+end
+
+--- Persist a settled THERE board scan; does no live mutation or world reconciliation.
+--- @return boolean
+function Gameboard.capturePreviewDraftNow()
+    local Preview = require("core.control_board_preview")
+    local draft = Preview.getDraft()
+    if draft == nil then
+        return false
+    end
+    local board = getControlBoard()
+    if not isGameObject(board) then
+        return false
+    end
+    return Preview.capture(Gameboard.buildParticipantSnapshot(board, draft.seatSlots))
+end
+
+--- O(1) mode guard before delayed board tag scans.
+function Gameboard.schedulePreviewDraftCapture()
+    local Preview = require("core.control_board_preview")
+    if not Preview.isThere() then
+        return
+    end
+    Gameboard.previewDraftCaptureGeneration = Gameboard.previewDraftCaptureGeneration + 1
+    local generation = Gameboard.previewDraftCaptureGeneration
+    U.delay(function()
+        if generation == Gameboard.previewDraftCaptureGeneration then
+            Gameboard.capturePreviewDraftNow()
+        end
+    end, 0.18)
 end
 
 --- @param placements table|nil
@@ -1496,6 +1590,22 @@ end
 function Gameboard.applyFromControlBoard()
     beginInteractionProfile("apply")
     local t0 = os.clock()
+    local Preview = require("core.control_board_preview")
+    if Preview.isThere() then
+        if Preview.reset() == nil then
+            finishInteractionProfile(t0)
+            return false, "Preview scene is no longer available"
+        end
+        lastControlBoardMirrorFingerprint = nil
+        Gameboard.reconcileControlBoardFromState({
+            force = true,
+            forceTokenMirror = true,
+            allowPreview = true,
+        })
+        print("[Gameboard] Reset: committed library participants → THERE draft")
+        finishInteractionProfile(t0)
+        return true, nil
+    end
     local board = getControlBoard()
     if not isGameObject(board) then
         finishInteractionProfile(t0)
@@ -1572,49 +1682,56 @@ function Gameboard.applyFromControlBoard()
     return true, nil
 end
 
---- Scan CONTROL_BOARD token UV layout into `sessionScene.npcWorld.placements` only (no `Sync.npcs`).
---- Save (board → state); paired with Load (state → board).
---- @return boolean ok, string|nil message
-function Gameboard.saveFromControlBoard()
-    beginInteractionProfile("save")
-    local t0 = os.clock()
-    local board = getControlBoard()
-    if not isGameObject(board) then
-        finishInteractionProfile(t0)
-        return false, "CONTROL_BOARD not found — set G.GUIDS.CONTROL_BOARD in lib/guids.ttslua"
+--- Toggle HERE/THERE. Enter requires a pending Scenes Panel selection; leave commits the draft.
+--- @return boolean changed
+--- @return string mode
+function Gameboard.togglePreviewMode()
+    local Preview = require("core.control_board_preview")
+    if Preview.isThere() then
+        Gameboard.capturePreviewDraftNow()
+        if not Preview.commit() then
+            return false, "THERE"
+        end
+        Preview.clear()
+        lastControlBoardMirrorFingerprint = nil
+        Gameboard.reconcileControlBoardFromState({ force = true, forceTokenMirror = true })
+        print("[Gameboard] HERE: preview draft committed; live participants restored")
+        return true, "HERE"
     end
-    local rows = Gameboard.scanControlBoardTokens(board)
-    local placements = placementsMapFromRows(rows)
-    local existing = stateModule().getStateVal("sessionScene", "npcWorld", "placements")
-    if placementsMapsEqual(placements, existing) then
-        print("[Gameboard] Save: placements unchanged — no state write")
-        finishInteractionProfile(t0)
-        return true, nil
+    if not Preview.enter() then
+        return false, "HERE"
     end
-    stateModule().setStateVal(placements, "sessionScene", "npcWorld", "placements")
     lastControlBoardMirrorFingerprint = nil
-    print("[Gameboard] Save: " .. tostring(#rows) .. " token(s) → state (no figurine sync)")
-    finishInteractionProfile(t0)
-    return true, nil
+    Gameboard.reconcileControlBoardFromState({
+        force = true,
+        forceTokenMirror = true,
+        allowPreview = true,
+    })
+    print("[Gameboard] THERE: pending scene participants loaded")
+    return true, "THERE"
 end
 
 --- @return boolean
-function Gameboard.isLayoutLockEnabled()
-    return stateModule().getStateVal("sessionScene", "npcWorld", "layoutLock") == true
+function Gameboard.isNextSceneApplyLocked()
+    return stateModule().getStateVal("controlBoard", "lockNextSceneApply") == true
 end
 
---- Toggle `sessionScene.npcWorld.layoutLock` (token mirror skipped on reconcile when true).
+--- Arm/disarm the one-shot participant carry for the next successful scene Apply.
+--- Disabled while THERE so draft editing cannot alter live transition intent.
 --- @return boolean locked after toggle
-function Gameboard.toggleLayoutLock()
+function Gameboard.toggleNextSceneApplyLock()
+    local Preview = require("core.control_board_preview")
+    if Preview.isThere() then
+        return Gameboard.isNextSceneApplyLocked()
+    end
     local S = stateModule()
-    local nextLocked = not (S.getStateVal("sessionScene", "npcWorld", "layoutLock") == true)
-    S.setStateVal(nextLocked, "sessionScene", "npcWorld", "layoutLock")
-    lastControlBoardMirrorFingerprint = nil
-    print("[Gameboard] Layout lock: " .. (nextLocked and "ON" or "OFF"))
+    local nextLocked = not Gameboard.isNextSceneApplyLocked()
+    S.setStateVal(nextLocked, "controlBoard", "lockNextSceneApply")
+    print("[Gameboard] Lock next scene Apply: " .. (nextLocked and "ARMED" or "OFF"))
     return nextLocked
 end
 
---- Mirror persisted placements onto CONTROL_BOARD tokens (explicit Load; bypasses layout lock).
+--- Force-mirror the active persisted board model (live HERE or draft THERE).
 --- @return boolean ok, string|nil message
 function Gameboard.loadControlBoardFromState()
     beginInteractionProfile("load")
@@ -1624,8 +1741,12 @@ function Gameboard.loadControlBoardFromState()
         finishInteractionProfile(t0)
         return false, "CONTROL_BOARD not found — set G.GUIDS.CONTROL_BOARD in lib/guids.ttslua"
     end
-    Gameboard.reconcileControlBoardFromState({ force = true, forceTokenMirror = true })
-    print("[Gameboard] Load: state placements → CONTROL_BOARD tokens")
+    Gameboard.reconcileControlBoardFromState({
+        force = true,
+        forceTokenMirror = true,
+        allowPreview = true,
+    })
+    print("[Gameboard] Load: active board model → CONTROL_BOARD tokens")
     finishInteractionProfile(t0)
     return true, nil
 end
@@ -1635,6 +1756,33 @@ end
 function Gameboard.clearControlBoard()
     beginInteractionProfile("clear")
     local t0 = os.clock()
+    local Preview = require("core.control_board_preview")
+    local draft = Preview.getDraft()
+    if draft ~= nil then
+        local placements = draft.npcWorld.placements
+        for characterKey, placement in pairs(type(placements) == "table" and placements or {}) do
+            for _, seatKey in ipairs(C.NPCSeats or {}) do
+                local row = type(draft.seatSlots[seatKey]) == "table" and draft.seatSlots[seatKey] or nil
+                if type(row) == "table" and row.characterKey == characterKey then
+                    local mode = type(placement) == "table" and placement.npcLightMode or "STANDARD"
+                    if row.isPresent ~= true and mode ~= "OFF" then
+                        row.isPresent = true
+                    end
+                end
+            end
+        end
+        draft.npcWorld.placements = {}
+        stateModule().setStateVal(draft, "controlBoard", "previewDraft")
+        lastControlBoardMirrorFingerprint = nil
+        Gameboard.reconcileControlBoardFromState({
+            force = true,
+            forceTokenMirror = true,
+            allowPreview = true,
+        })
+        print("[Gameboard] Clear: THERE draft stage emptied; live state unchanged")
+        finishInteractionProfile(t0)
+        return true, nil
+    end
     local existingPlacements = stateModule().getStateVal("sessionScene", "npcWorld", "placements")
     local hadPlacements = placementsCount(existingPlacements) > 0
     local seatPresenceChanged = false
@@ -3706,16 +3854,18 @@ function click_snaps_toggle(player, value, id)
     end
 end
 
-function click_save(player, value, id)
+function click_scope(player, value, id)
     local player_color = resolveControlBoardClickColor(player, value)
     if not isStorytellerSteamClick(player, value) then
         return
     end
-    local ok = Global.call("GlobalGameboardSave", {})
+    local result = Global.call("GlobalGameboardToggleScope", {})
     if broadcastToColor ~= nil then
-        local msg = ok == true and "Save: board layout saved to state (no figurine sync)."
-            or "Save failed — host only or CONTROL_BOARD missing."
-        broadcastToColor(msg, player_color, ok == true and { 0, 1, 1 } or { 1, 0.35, 0.35 })
+        local changed = type(result) == "table" and result.changed == true
+        local mode = type(result) == "table" and result.mode or "HERE"
+        local msg = changed and ("Control Board mode: " .. mode)
+            or "THERE requires a pending Scenes Panel selection."
+        broadcastToColor(msg, player_color, changed and { 0, 1, 1 } or { 1, 0.75, 0.2 })
     end
 end
 
@@ -3726,11 +3876,11 @@ function click_lock(player, value, id)
     end
     local locked = nil
     if Global ~= nil and type(Global.call) == "function" then
-        locked = Global.call("GlobalGameboardToggleLayoutLock", { boardGuid = self.getGUID() })
+        locked = Global.call("GlobalGameboardToggleNextSceneApplyLock", { boardGuid = self.getGUID() })
     end
     if broadcastToColor ~= nil then
-        local msg = locked == true and "Layout locked — token positions preserved on reconcile."
-            or locked == false and "Layout unlocked — token positions follow state on reconcile."
+        local msg = locked == true and "Lock armed — current participants carry into the next scene Apply."
+            or locked == false and "Lock disarmed."
             or "Lock toggle failed — host only."
         broadcastToColor(msg, player_color, locked ~= nil and { 0, 1, 1 } or { 1, 0.35, 0.35 })
     end
@@ -3755,6 +3905,7 @@ end
 local function controlBoardScriptDefinesClickApply(script)
     return type(script) == "string"
         and script:find("function click_apply", 1, true) ~= nil
+        and script:find("function click_scope", 1, true) ~= nil
         and script:find("resolveControlBoardClickColor", 1, true) ~= nil
 end
 
@@ -3786,7 +3937,7 @@ function Gameboard.ensureControlBoardObjectCallbacks(board)
     return true
 end
 
---- Install Apply/Clear/Save/Lock/Load 3D buttons when the save has no object script on CONTROL_BOARD yet.
+--- Install Apply/Clear/HERE-THERE/Lock/Load XmlUI when the save has no object script on CONTROL_BOARD yet.
 --- @param board Object|nil
 --- @param opts table|nil `{ force?: boolean }`
 function Gameboard.ensureControlBoardObjectUi(board, opts)
@@ -3813,6 +3964,7 @@ local function setControlBoardToolbarLabelCached(board, id, attrs, opts)
         tostring(attrs.text or ""),
         tostring(attrs.colors or ""),
         tostring(attrs.textColor or ""),
+        tostring(attrs.interactable),
     }, "|")
     local key = guid .. ":" .. tostring(id)
     if opts.force ~= true and controlBoardToolbarLabelFingerprint[key] == fp then
@@ -3836,18 +3988,45 @@ function Gameboard.syncControlBoardSnapsToggleLabel(board, opts)
     setControlBoardToolbarLabelCached(board, "gb_snaps", { text = label, colors = colors, textColor = "#FFFFFF" }, opts)
 end
 
---- Refresh XmlUI `gb_lock` toolbar label from `sessionScene.npcWorld.layoutLock`.
+--- Refresh all mode-dependent toolbar labels from the active board model.
 --- @param board Object|nil
 --- @param opts table|nil `{ force?: boolean }`
-function Gameboard.syncControlBoardLayoutLockLabel(board, opts)
+function Gameboard.syncControlBoardModeToolbar(board, opts)
     board = board or getControlBoard()
     if not isGameObject(board) then
         return
     end
-    local locked = Gameboard.isLayoutLockEnabled()
+    local Preview = require("core.control_board_preview")
+    local there = Preview.isThere()
+    local locked = Gameboard.isNextSceneApplyLocked()
     local label = locked and "Locked" or "Unlocked"
-    local colors = locked and "#663344|#884455|#AA5566|#333333" or "#336644|#448855|#55AA66|#333333"
-    setControlBoardToolbarLabelCached(board, "gb_lock", { text = label, colors = colors, textColor = "#FFFFFF" }, opts)
+    local colors = locked and "#663344|#884455|#AA5566|#333333"
+        or "#336644|#448855|#55AA66|#333333"
+    if there then
+        colors = "#444455|#444455|#444455|#333333"
+    end
+    setControlBoardToolbarLabelCached(board, "gb_lock", {
+        text = label,
+        colors = colors,
+        textColor = there and "#999999" or "#FFFFFF",
+        interactable = there and "false" or "true",
+    }, opts)
+    setControlBoardToolbarLabelCached(board, "gb_scope", {
+        text = there and "THERE" or "HERE",
+        colors = there
+            and "#334E7A|#41659C|#527DBD|#333333"
+            or "#336644|#448855|#55AA66|#333333",
+        textColor = "#FFFFFF",
+        interactable = "true",
+    }, opts)
+    setControlBoardToolbarLabelCached(board, "gb_apply", {
+        text = there and "Reset" or "Apply",
+        colors = there
+            and "#334E7A|#41659C|#527DBD|#333333"
+            or "#336644|#448855|#55AA66|#333333",
+        textColor = "#FFFFFF",
+        interactable = "true",
+    }, opts)
 end
 
 --- Static minimap markers (not npc_control_token): locked so physics does not shove them apart.
@@ -4226,7 +4405,8 @@ local function restoreNpcControlTokenHome(token, characterKey)
         tokenPickedUpFromPaletteGuid[guid] = nil
     end
 
-    local placements = stateModule().getStateVal("sessionScene", "npcWorld", "placements")
+    local model = Gameboard.getActiveBoardModel()
+    local placements = model.placements
     local placementRow = type(placements) == "table" and normalizePlacementRow(placements[characterKey]) or nil
     if placementRow ~= nil then
         local board = getControlBoard()
@@ -4236,19 +4416,24 @@ local function restoreNpcControlTokenHome(token, characterKey)
         end
     end
 
-    local seatKey = homelandSeatForCharacterKey(characterKey)
+    local seatKey = nil
+    for _, candidate in ipairs(C.NPCSeats or {}) do
+        local row = type(model.seatSlots) == "table" and model.seatSlots[candidate] or nil
+        if type(row) == "table" and row.characterKey == characterKey and row.slotEmpty ~= true then
+            seatKey = candidate
+            break
+        end
+    end
     if type(seatKey) == "string" and seatKey ~= "" then
         local board = getControlBoard()
         if isGameObject(board) then
             local seatCatalog = getSeatRowCatalogMaps(board).npc
             local entry = seatCatalog[seatKey]
             if type(entry) == "table" then
-                local NPCS = require("core.npcs")
-                local present = true
-                if type(NPCS.resolveSeatNarrativePresence) == "function" then
-                    present = NPCS.resolveSeatNarrativePresence(seatKey) == true
-                end
+                local row = type(model.seatSlots) == "table" and model.seatSlots[seatKey] or {}
+                local present = row.isPresent == true
                 mirrorSeatRowControlToken(token, board, entry, present)
+                Gameboard.schedulePreviewDraftCapture()
                 return true
             end
         end
@@ -4355,8 +4540,10 @@ local function restorePcControlTokenHome(token, color)
     if type(entry) ~= "table" then
         return false
     end
-    local NPCS = require("core.npcs")
-    mirrorSeatRowControlToken(token, board, entry, NPCS.resolvePlayerSeatPresence(color))
+    local model = Gameboard.getActiveBoardModel()
+    local row = type(model.seatSlots) == "table" and model.seatSlots[color] or {}
+    mirrorSeatRowControlToken(token, board, entry, row.isPresent == true)
+    Gameboard.schedulePreviewDraftCapture()
     return true
 end
 
@@ -4421,22 +4608,22 @@ end
 Gameboard.restorePcControlTokenHome = restorePcControlTokenHome
 Gameboard.tryPcControlTokenDroppedOnStorytellerDiceBag = tryPcControlTokenDroppedOnStorytellerDiceBag
 
---- Mirror tagged control tokens from placements + seat row onto CONTROL_BOARD.
+--- Mirror tagged control tokens from an explicit live/draft participant model.
 --- @param board Object
---- @param placements table|nil
-local function mirrorControlBoardTokensFromPlacements(board, placements)
-    placements = type(placements) == "table" and placements or {}
+--- @param model table|nil `{ placements, seatSlots }`
+function Gameboard.mirrorControlBoardTokensFromModel(board, model)
+    model = type(model) == "table" and model or {}
+    local placements = type(model.placements) == "table" and model.placements or {}
+    local seatSlots = type(model.seatSlots) == "table" and model.seatSlots or {}
     local byChar = buildTokenByCharacterKey()
-    local NPCS = require("core.npcs")
     local seatCatalog = seatRowCatalogByNpcSeatKey(Gameboard.buildControlBoardSnapCatalog(board, nil))
     --- Character keys that should remain on the minimap (seat row or stage); all other NPC tokens
     --- currently on the board are orphaned (e.g. scene change reduced occupied NPC seats) and are parked.
     local keepOnBoard = {}
-    local occupied = stateModule().getStateVal("seatLayout", "occupiedNPCSlots")
-    if type(occupied) == "table" then
-        for _, seatKey in ipairs(C.NPCSeats or {}) do
-            local ck = occupied[seatKey]
-            if type(ck) == "string" and ck ~= "" then
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local row = seatSlots[seatKey]
+        local ck = type(row) == "table" and row.characterKey or nil
+        if type(ck) == "string" and ck ~= "" and row.slotEmpty ~= true then
                 keepOnBoard[ck] = true
                 local entry = seatCatalog[seatKey]
                 local token = byChar[ck]
@@ -4444,13 +4631,8 @@ local function mirrorControlBoardTokensFromPlacements(board, placements)
                 --- palette: scene transitions and Load make the board reflect state, so an
                 --- occupied seat must show its token regardless of where it sits now.
                 if entry ~= nil and isGameObject(token) then
-                    local present = true
-                    if type(NPCS.resolveSeatNarrativePresence) == "function" then
-                        present = NPCS.resolveSeatNarrativePresence(seatKey) == true
-                    end
-                    mirrorSeatRowControlToken(token, board, entry, present)
+                    mirrorSeatRowControlToken(token, board, entry, row.isPresent == true)
                 end
-            end
         end
     end
     for characterKey, row in pairs(placements) do
@@ -4489,15 +4671,17 @@ local function mirrorControlBoardTokensFromPlacements(board, placements)
                 local color = resolvePcTokenSeatColor(obj)
                 local entry = color ~= nil and pcCatalog[color] or nil
                 if entry ~= nil then
-                    mirrorSeatRowControlToken(obj, board, entry, NPCS.resolvePlayerSeatPresence(color))
+                    local row = type(seatSlots[color]) == "table" and seatSlots[color] or {}
+                    mirrorSeatRowControlToken(obj, board, entry, row.isPresent == true)
                 end
             end
         end
     end
 end
 
---- Position static table/seat markers for active table.
---- @param opts table|nil `{ force?: boolean, forceTokenMirror?: boolean }`
+--- Position static markers and mirror the active participant model.
+--- Normal Sync calls do not write board objects while THERE; dedicated preview actions pass `allowPreview`.
+--- @param opts table|nil `{ force?: boolean, forceTokenMirror?: boolean, allowPreview?: boolean }`
 function Gameboard.reconcileControlBoardFromState(opts)
     opts = type(opts) == "table" and opts or {}
     local S = stateModule()
@@ -4509,17 +4693,19 @@ function Gameboard.reconcileControlBoardFromState(opts)
     if not isGameObject(board) then
         return
     end
-    local npcWorld = S.getStateVal("sessionScene", "npcWorld")
+    local model = Gameboard.getActiveBoardModel()
     local activeTable = S.getStateVal("seatLayout", "currentTableKey")
-    local layoutLocked = type(npcWorld) == "table" and npcWorld.layoutLock == true
-    local placements = {}
-    if type(npcWorld) == "table" and type(npcWorld.placements) == "table" then
-        placements = npcWorld.placements
+    local placements = type(model.placements) == "table" and model.placements or {}
+    local seatSlots = type(model.seatSlots) == "table" and model.seatSlots or {}
+    if model.mode == "THERE" and opts.allowPreview ~= true then
+        Gameboard.syncControlBoardSnapsToggleLabel(board)
+        Gameboard.syncControlBoardModeToolbar(board)
+        return
     end
-    local mirrorFp = controlBoardMirrorFingerprint(activeTable, layoutLocked, placements)
+    local mirrorFp = Gameboard.controlBoardMirrorFingerprint(activeTable, model.mode, placements, seatSlots)
     if opts.force ~= true and mirrorFp == lastControlBoardMirrorFingerprint then
         Gameboard.syncControlBoardSnapsToggleLabel(board)
-        Gameboard.syncControlBoardLayoutLockLabel(board)
+        Gameboard.syncControlBoardModeToolbar(board)
         rebuildAnchorDropEligibilityCache(board)
         return
     end
@@ -4527,7 +4713,7 @@ function Gameboard.reconcileControlBoardFromState(opts)
     Gameboard.ensureControlBoardObjectCallbacks(board)
     Gameboard.ensureControlBoardObjectUi(board, { force = opts.force == true })
     Gameboard.syncControlBoardSnapsToggleLabel(board, { force = opts.force == true })
-    Gameboard.syncControlBoardLayoutLockLabel(board, { force = opts.force == true })
+    Gameboard.syncControlBoardModeToolbar(board, { force = opts.force == true })
     Gameboard.installPaletteSnaps(nil, { force = opts.force == true })
 
     boardUvHalfExtentsCache = {}
@@ -4601,13 +4787,25 @@ function Gameboard.reconcileControlBoardFromState(opts)
         end
     end
 
-    --- Mirror tokens when unlocked, or when Load forces token mirror past layout lock.
-    if not layoutLocked or opts.forceTokenMirror == true then
-        mirrorControlBoardTokensFromPlacements(board, placements)
-    end
+    Gameboard.mirrorControlBoardTokensFromModel(board, model)
 
     applyControlBoardComponentPlayerInvisibility()
     rebuildAnchorDropEligibilityCache(board)
+end
+
+--- Restore a valid persisted THERE draft after Save & Play.
+function Gameboard.recoverPreviewDraftOnLoad()
+    local Preview = require("core.control_board_preview")
+    if not Preview.isThere() then
+        return false
+    end
+    lastControlBoardMirrorFingerprint = nil
+    Gameboard.reconcileControlBoardFromState({
+        force = true,
+        forceTokenMirror = true,
+        allowPreview = true,
+    })
+    return true
 end
 
 --- Nearest installed snap catalog entry for a token on CONTROL_BOARD (world XZ within fuzziness).
@@ -5372,6 +5570,15 @@ function Gameboard.onNpcControlTokenRotated(token, playerColor, flip, oldFlip)
     end, 1)
 end
 
+--- Any ordinary NPC/PC token rotation can change persisted THERE presence/light intent.
+--- @param token Object
+function Gameboard.onControlTokenRotated(token)
+    if not isNpcControlToken(token) and not isPcControlToken(token) then
+        return
+    end
+    Gameboard.schedulePreviewDraftCapture()
+end
+
 --- Polar snap families for CONTROL_BOARD export (excludes seat-row snaps).
 --- @param catalog table[] from `buildControlBoardSnapCatalog`
 --- @return table<string, table> familyId → `{ anchor, siblings, ringIndex, rayIndex }`
@@ -5621,6 +5828,7 @@ function Gameboard.onPcControlTokenDropped(token, playerColor)
     if not isPcControlToken(token) then
         return
     end
+    Gameboard.schedulePreviewDraftCapture()
     local board = getControlBoard()
     if not isGameObject(board) then
         return
@@ -5636,6 +5844,10 @@ end
 --- @return boolean changed
 local function applyNpcSeatRowFromDroppedToken(token, board, fuzziness)
     if not isGameObject(token) or not isGameObject(board) then
+        return false
+    end
+    local Preview = require("core.control_board_preview")
+    if Preview.isThere() then
         return false
     end
     if not isTokenOnControlBoardSurface(board, token) then
@@ -5678,6 +5890,7 @@ function Gameboard.onNpcControlTokenDropped(token, playerColor)
     if not isNpcControlToken(token) then
         return
     end
+    Gameboard.schedulePreviewDraftCapture()
     beginInteractionProfile("token_drop")
     local t0 = os.clock()
     local board = getControlBoard()
@@ -6005,6 +6218,14 @@ end
 --- @param isKeyUp boolean
 function Gameboard.onControlBoardSpotlightHotkey(playerColor, hoveredObject, isKeyUp)
     if type(playerColor) ~= "string" or playerColor == "" then
+        return
+    end
+    local Preview = require("core.control_board_preview")
+    if Preview.isThere() then
+        controlBoardSpotlightHeld = false
+        controlBoardSpotlightPlayerColor = nil
+        controlBoardSpotlightPollGen = controlBoardSpotlightPollGen + 1
+        clearControlBoardSpotlightPreview()
         return
     end
     if isKeyUp == true then
