@@ -59,6 +59,7 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | `onPlayerDisconnect` | `global_script` | Host | B+C | — | TOR-293: cancel roll if any; reconcile effective presence so chronicle seat locks inactive without mutating library `isPresent`. | Med | 4 |
 | `onPlayerChangeColor` | `global_script` | Host | B | Seat HUD visibility reveal (`revealSeatHudVisibility`) + UpdateUIDisplays; Host hotseat swaps manual via `HUD_refreshUi` | state row | Med | 4 |
 | `addHotkey` (`Spotlight NPC (hold)`) | `global_script` | Clicker (per player) | C | ST steam in callee | transient spotlights | Low | — |
+| `addHotkey` (`Group move (hold)`) | `global_script` | Clicker (per player) | C | ST steam in callee | CONTROL_BOARD family relocate | Low | — |
 
 ### `Global.call` targets (mutating)
 
@@ -168,6 +169,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `onObjectLeaveContainer` | `core/global_script.ttslua` | Medium | **Pass** | `d10` die path **or** `type==Card` + `Compulsion:` notes prefix before `require("core.compulsions")` |
 | `onObjectEnterZone` | `core/global_script.ttslua` | Medium | **Pass** | `type==Card` + `Compulsion:` prefix + hand `FogColor` in `C.PlayerColors` before finish selection (TOR-204) |
 | `addHotkey` → `Spotlight NPC (hold)` | `core/global_script.ttslua` | Low (ST hold) | **Pass** | `isStorytellerSteamPlayer` before `require`; world I/O in `Gameboard.onControlBoardSpotlightHotkey` |
+| `addHotkey` → `Group move (hold)` | `core/global_script.ttslua` | Low (ST hold) | **Pass** | `isStorytellerSteamPlayer` before `require`; hold flag + board→board family relocate in `Gameboard.onGroupMoveHotkey` / `tryBoardFamilyGroupRelocate` (TOR-412) |
 
 ## Module handlers (called from Global)
 

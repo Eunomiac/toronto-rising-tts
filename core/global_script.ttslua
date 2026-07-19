@@ -2525,6 +2525,20 @@ function onLoad(saved_data)
             end,
             true
         )
+        -- Bind in TTS Options (e.g. mouse side button). Hold while dropping a board token to relocate its snap family (TOR-412).
+        addHotkey(
+            "Group move (hold)",
+            function(playerColor, hoveredObject, pointerPosition, isKeyUp)
+                if not U.isStorytellerSteamPlayer(playerColor) then
+                    return
+                end
+                local Gameboard = require("core.npc_gameboard")
+                if type(Gameboard.onGroupMoveHotkey) == "function" then
+                    Gameboard.onGroupMoveHotkey(playerColor, hoveredObject, isKeyUp == true)
+                end
+            end,
+            true
+        )
     end
 
     print(U.loadElapsedPrefix() .. "Module initialization complete.")

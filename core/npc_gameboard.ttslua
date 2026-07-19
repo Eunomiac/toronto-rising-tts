@@ -53,6 +53,10 @@ local boardUvHalfExtentsCache = {}
 local anchorDropEligibleByTokenGuid = {}
 --- @type table<string, boolean> token guid -> picked up while on CONTROL_BOARD_PALETTE (TOR-172 palette-drop flip).
 local tokenPickedUpFromPaletteGuid = {}
+--- @type table<string, string> token guid -> polar `familyId` at pick-up (board→board group relocate, TOR-412).
+local tokenBoardFamilyAtPickUp = {}
+--- Storyteller hold state for `Group move (hold)` hotkey (TOR-412).
+local groupMoveHotkeyHeld = false
 --- Default-config snap catalog cache: key = boardGuid:fingerprint → catalog entries.
 --- @type table<string, table[]>
 local defaultSnapCatalogCache = {}
@@ -4702,7 +4706,7 @@ local function placeTokenOnControlBoardSnap(token, snapEntry, board, boardYaw)
     if type(snapEntry) == "table" and snapEntry.snapKind == SNAP_KIND_SEAT then
         applySeatRowNpcControlTokenScale(token)
     else
-        ensureDefaultNpcControlTokenScale(token)
+        applyNpcControlTokenScaleVec(token, controlTokenScaleForCatalogEntry(snapEntry))
     end
     token.setRotation(rotationForNpcControlToken(boardYaw, snapEntry.yawDeg, faceUp))
     Gameboard.setHiddenFromPlayerColors(token)
@@ -5004,6 +5008,148 @@ function Gameboard.tryAnchorFamilyGroupSpread(droppedToken)
     return { placed = placed, reason = "ok", groupId = groupId }
 end
 
+--- Tokens currently occupying snaps in a polar family (optional ignore).
+--- @param board Object
+--- @param familyId string
+--- @param fuzziness number
+--- @param catalog table[]
+--- @param ignoreToken Object|nil
+--- @return table[] `{ token, entry }`
+local function tokensOccupyingPolarFamily(board, familyId, fuzziness, catalog, ignoreToken)
+    local out = {}
+    if type(familyId) ~= "string" or familyId == "" or type(catalog) ~= "table" then
+        return out
+    end
+    for _, entry in ipairs(catalog) do
+        if entry.snapKind ~= SNAP_KIND_SEAT and entry.familyId == familyId then
+            local occ = findOccupyingTokenAtSnapWorld(board, entry.worldPos, fuzziness, ignoreToken)
+            if isNpcControlToken(occ) then
+                out[#out + 1] = { token = occ, entry = entry }
+            end
+        end
+    end
+    return out
+end
+
+--- Empty polar snaps in a family (excludes `excludeEntry` snapIndex when set).
+--- @param board Object
+--- @param familyId string
+--- @param fuzziness number
+--- @param catalog table[]
+--- @param ignoreToken Object|nil treated as non-occupant
+--- @param excludeEntry table|nil catalog row to skip (e.g. drop target)
+--- @return table[] catalog entries
+local function emptyPolarFamilySnaps(board, familyId, fuzziness, catalog, ignoreToken, excludeEntry)
+    local out = {}
+    local excludeIndex = type(excludeEntry) == "table" and tonumber(excludeEntry.snapIndex) or nil
+    for _, entry in ipairs(catalog) do
+        if entry.snapKind ~= SNAP_KIND_SEAT
+            and entry.familyId == familyId
+            and (excludeIndex == nil or tonumber(entry.snapIndex) ~= excludeIndex) then
+            local occ = findOccupyingTokenAtSnapWorld(board, entry.worldPos, fuzziness, ignoreToken)
+            if occ == nil then
+                out[#out + 1] = entry
+            end
+        end
+    end
+    return out
+end
+
+--- Board→board relocate: while Group-move hotkey held, move source-family cohabitants onto free dest snaps (TOR-412).
+--- Dropped token stays on its landing snap; siblings fill remaining empty dest slots center-out (palette-leader parity).
+--- @param droppedToken Object
+--- @param sourceFamilyId string
+--- @return table `{ placed: number, reason?: string, sourceFamilyId?: string, destFamilyId?: string }`
+function Gameboard.tryBoardFamilyGroupRelocate(droppedToken, sourceFamilyId)
+    if anchorFamilySpreadDepth > 0 then
+        return { placed = 0, reason = "suppressed" }
+    end
+    if type(sourceFamilyId) ~= "string" or sourceFamilyId == "" then
+        return { placed = 0, reason = "no_source_family" }
+    end
+    local board = getControlBoard()
+    if not isGameObject(board) or not isNpcControlToken(droppedToken) then
+        return { placed = 0, reason = "invalid_token" }
+    end
+    if not isTokenOnControlBoardSurface(board, droppedToken) then
+        return { placed = 0, reason = "not_on_board" }
+    end
+    local fuzziness = snapMatchFuzzinessForBoard(board)
+    local catalog = Gameboard.buildControlBoardSnapCatalog(board, nil)
+    local destEntry = resolveTokenSnapCatalogEntry(board, droppedToken, fuzziness, nil)
+    if destEntry == nil then
+        return { placed = 0, reason = "no_dest_snap", sourceFamilyId = sourceFamilyId }
+    end
+    if destEntry.snapKind == SNAP_KIND_SEAT then
+        return { placed = 0, reason = "dest_seat_row", sourceFamilyId = sourceFamilyId }
+    end
+    local destFamilyId = destEntry.familyId
+    if type(destFamilyId) ~= "string" or destFamilyId == "" then
+        return { placed = 0, reason = "no_dest_family", sourceFamilyId = sourceFamilyId }
+    end
+    if destFamilyId == sourceFamilyId then
+        return { placed = 0, reason = "same_family", sourceFamilyId = sourceFamilyId, destFamilyId = destFamilyId }
+    end
+
+    local NPCS = require("core.npcs")
+    local sourceAnchor = anchorCatalogEntryForFamilyId(catalog, sourceFamilyId)
+    local movers = tokensOccupyingPolarFamily(board, sourceFamilyId, fuzziness, catalog, droppedToken)
+    local toPlace = {}
+    for i = 1, #movers do
+        local row = movers[i]
+        local ck = resolveTokenCharacterKey(row.token)
+        if type(NPCS.isCharacterSeatedAtTable) == "function"
+            and type(ck) == "string"
+            and NPCS.isCharacterSeatedAtTable(ck) then
+            -- TOR-76: seated table NPCs stay put.
+        else
+            toPlace[#toPlace + 1] = row
+        end
+    end
+    if sourceAnchor ~= nil then
+        table.sort(toPlace, function(a, b)
+            return compareFamilySnapCenterOutAlternating(a.entry, b.entry, sourceAnchor, board)
+        end)
+    end
+
+    local destAnchor = anchorCatalogEntryForFamilyId(catalog, destFamilyId) or destEntry
+    local emptyDest = emptyPolarFamilySnaps(board, destFamilyId, fuzziness, catalog, droppedToken, destEntry)
+    Gameboard.orderFamilySnapsForAnchorSpread(emptyDest, destAnchor, board)
+
+    if #toPlace == 0 then
+        return {
+            placed = 0,
+            reason = "nothing_to_place",
+            sourceFamilyId = sourceFamilyId,
+            destFamilyId = destFamilyId,
+        }
+    end
+    if #emptyDest == 0 then
+        return {
+            placed = 0,
+            reason = "no_free_dest_snaps",
+            sourceFamilyId = sourceFamilyId,
+            destFamilyId = destFamilyId,
+        }
+    end
+
+    local boardYaw = objectYawDeg(board)
+    anchorFamilySpreadDepth = anchorFamilySpreadDepth + 1
+    local placed = 0
+    local limit = math.min(#toPlace, #emptyDest)
+    for i = 1, limit do
+        placeTokenOnControlBoardSnap(toPlace[i].token, emptyDest[i], board, boardYaw)
+        placed = placed + 1
+    end
+    anchorFamilySpreadDepth = anchorFamilySpreadDepth - 1
+    return {
+        placed = placed,
+        reason = "ok",
+        sourceFamilyId = sourceFamilyId,
+        destFamilyId = destFamilyId,
+    }
+end
+
 --- Polar snap families for CONTROL_BOARD export (excludes seat-row snaps).
 --- @param catalog table[] from `buildControlBoardSnapCatalog`
 --- @return table<string, table> familyId → `{ anchor, siblings, ringIndex, rayIndex }`
@@ -5138,16 +5284,51 @@ function Gameboard.onControlTokenPickUp(token)
     if not isNpcControlToken(token) then
         return
     end
+    local guid = tostring(token.getGUID() or "")
+    if guid ~= "" then
+        tokenBoardFamilyAtPickUp[guid] = nil
+    end
+    local board = getControlBoard()
+    if isGameObject(board) and isTokenOnControlBoardSurface(board, token) then
+        local fuzziness = snapMatchFuzzinessForBoard(board)
+        local entry = resolveTokenSnapCatalogEntry(board, token, fuzziness, nil)
+        if type(entry) == "table"
+            and entry.snapKind ~= SNAP_KIND_SEAT
+            and type(entry.familyId) == "string"
+            and entry.familyId ~= ""
+            and guid ~= "" then
+            tokenBoardFamilyAtPickUp[guid] = entry.familyId
+        end
+    end
     local palette = getControlBoardPalette()
     if not isGameObject(palette) then
         return
     end
     if Palette.isTokenOnPaletteBoard(palette, token) then
-        local guid = tostring(token.getGUID() or "")
         if guid ~= "" then
             tokenPickedUpFromPaletteGuid[guid] = true
         end
     end
+end
+
+--- Hold hotkey: Storyteller binds in TTS Options (e.g. mouse side button). TOR-412.
+--- @param playerColor string
+--- @param hoveredObject Object|nil unused
+--- @param isKeyUp boolean
+function Gameboard.onGroupMoveHotkey(playerColor, hoveredObject, isKeyUp)
+    if type(playerColor) ~= "string" or playerColor == "" then
+        return
+    end
+    if isKeyUp == true then
+        groupMoveHotkeyHeld = false
+        return
+    end
+    groupMoveHotkeyHeld = true
+end
+
+--- @return boolean
+function Gameboard.isGroupMoveHotkeyHeld()
+    return groupMoveHotkeyHeld == true
 end
 
 --- Apply per-ring `defaultLightMode` when a token is dropped from the palette onto CONTROL_BOARD (not ring-to-ring).
@@ -5284,6 +5465,10 @@ function Gameboard.onNpcControlTokenDropped(token, playerColor)
     end
     if not isTokenOnControlBoardSurface(board, token) then
         ensureDefaultNpcControlTokenScale(token)
+        local offGuid = tostring(token.getGUID() or "")
+        if offGuid ~= "" then
+            tokenBoardFamilyAtPickUp[offGuid] = nil
+        end
         finishInteractionProfile(t0)
         return
     end
@@ -5291,6 +5476,10 @@ function Gameboard.onNpcControlTokenDropped(token, playerColor)
     local tokenGuid = tostring(token.getGUID() or "")
     local wantPaletteLight = tokenGuid ~= "" and tokenPickedUpFromPaletteGuid[tokenGuid] == true
     local wantAnchorSpread = tokenGuid ~= "" and anchorDropEligibleByTokenGuid[tokenGuid] == true
+    local sourceFamilyForGroup = tokenGuid ~= "" and tokenBoardFamilyAtPickUp[tokenGuid] or nil
+    local wantGroupRelocate = groupMoveHotkeyHeld == true
+        and type(sourceFamilyForGroup) == "string"
+        and sourceFamilyForGroup ~= ""
     -- Seat-row scale only; rotation comes from snap points. Skip waitForCondition when palette/anchor
     -- flags are false — b16f26b entered wait with wantSeatRow alone and timed out up to 1s.
     applyControlTokenDropScaleByBoardPosition(token, board)
@@ -5320,7 +5509,10 @@ function Gameboard.onNpcControlTokenDropped(token, playerColor)
         1.0
     )
 
-    if not wantPaletteLight and not wantAnchorSpread then
+    if not wantPaletteLight and not wantAnchorSpread and not wantGroupRelocate then
+        if tokenGuid ~= "" then
+            tokenBoardFamilyAtPickUp[tokenGuid] = nil
+        end
         finishInteractionProfile(t0)
         return
     end
@@ -5343,6 +5535,29 @@ function Gameboard.onNpcControlTokenDropped(token, playerColor)
             if wantAnchorSpread then
                 logAnchorSpreadResult(Gameboard.tryAnchorFamilyGroupSpread(token))
             end
+            if wantGroupRelocate then
+                if tokenGuid ~= "" then
+                    tokenBoardFamilyAtPickUp[tokenGuid] = nil
+                end
+                local relocate = Gameboard.tryBoardFamilyGroupRelocate(token, sourceFamilyForGroup)
+                if type(relocate) == "table" and (relocate.placed or 0) > 0 then
+                    print(
+                        "[Gameboard] group relocate: placed "
+                            .. tostring(relocate.placed)
+                            .. " from "
+                            .. tostring(relocate.sourceFamilyId)
+                            .. " → "
+                            .. tostring(relocate.destFamilyId)
+                    )
+                elseif type(relocate) == "table"
+                    and relocate.reason ~= nil
+                    and relocate.reason ~= "same_family"
+                    and relocate.reason ~= "nothing_to_place" then
+                    print("[Gameboard] group relocate skipped: " .. tostring(relocate.reason))
+                end
+            elseif tokenGuid ~= "" then
+                tokenBoardFamilyAtPickUp[tokenGuid] = nil
+            end
         end,
         function()
             if not isGameObject(token) then
@@ -5356,6 +5571,12 @@ function Gameboard.onNpcControlTokenDropped(token, playerColor)
                 return false
             end
             if wantAnchorSpread and entry.isAnchor ~= true then
+                return false
+            end
+            if wantGroupRelocate and entry.snapKind == SNAP_KIND_SEAT then
+                return true
+            end
+            if wantGroupRelocate and type(entry.familyId) ~= "string" then
                 return false
             end
             return true

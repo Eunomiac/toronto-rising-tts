@@ -579,7 +579,7 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-17 | Focus | Stack | empty — pick next via what’s next / inbox |
 | 2026-07-19 | VERIFY | TOR-398, TOR-395, TOR-397, TOR-204, TOR-393, TOR-139, TOR-140, TOR-329, TOR-390, TOR-391, TOR-392 | Author Save & Play / acceptance confirmed; Linear comments + tasklist annotated |
 | 2026-07-19 | VERIFY | TOR-389, TOR-401 | Author Save & Play confirmed; remaining recent-wave verify: TOR-394, TOR-371, TOR-381, TOR-222, TOR-399 (+ TOR-396 offset tweak in INBOX) |
-| 2026-07-19 | CREATE+SHIP | TOR-402–TOR-411 | INBOX Immediate batch shipped (pending Save & Play); Focus cleared |
+| 2026-07-19 | CREATE+SHIP | TOR-412 | CONTROL_BOARD group move via hold hotkey (INBOX; revised from Solo/Group toggle) |
 | 2026-07-19 | VERIFY | TOR-279 | Author confirmed Stats advantage editor |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
