@@ -590,17 +590,22 @@ local function resolveTokenCharacterKey(obj)
     if not isGameObject(obj) then
         return nil
     end
-    local key = readMarkerKey(obj, DATA.TOKEN_GM_PREFIX)
-    if key ~= nil then
-        return key
-    end
-    if obj.getName ~= nil then
+    local raw = readMarkerKey(obj, DATA.TOKEN_GM_PREFIX)
+    if raw == nil and obj.getName ~= nil then
         local name = tostring(obj.getName() or "")
         if name ~= "" then
-            return name
+            raw = name
         end
     end
-    return nil
+    if type(raw) ~= "string" or raw == "" then
+        return nil
+    end
+    -- Canonicalize display/fullName/"Bee" → characters key `bee` (TOR-415).
+    local canonical = NPCS_DATA.resolveCharacterKeyByDisplayName(raw)
+    if type(canonical) == "string" and canonical ~= "" then
+        return canonical
+    end
+    return raw
 end
 
 --- @param obj Object|nil
@@ -2308,6 +2313,22 @@ local function bearingUvDeg(fromU, fromV, toU, toV)
     return math.deg(math.atan2(dv, du))
 end
 
+--- Inclusive familyK range for `num` snaps on a ray.
+--- Even `num` with full-circle `angleDelta` must not use both ±half (same angle → duplicate/stack; TOR-415).
+--- @param num number
+--- @return number kMin, number kMax
+local function familyKBoundsForSnapCount(num)
+    local n = math.floor(tonumber(num) or 0)
+    if n < 1 then
+        return 0, -1
+    end
+    local half = math.floor(n / 2)
+    if n % 2 == 0 then
+        return -half, half - 1
+    end
+    return -half, half
+end
+
 --- Family angle on the ring ellipse: master-origin rings use ray anchors; satellite rings rotate so k=0 faces master.
 --- @param cfg table
 --- @param ringIndex number
@@ -2629,10 +2650,10 @@ local function buildControlBoardSnapEntries(board, cfg, rings)
         if ringYawOffsetDeg == nil then
             ringYawOffsetDeg = tonumber(cfg.snapYawOffsetDeg) or 0
         end
-        local half = math.floor(num / 2)
+        local kMin, kMax = familyKBoundsForSnapCount(num)
         for rayIndex = 0, rays - 1 do
             local familyId = tostring(ringIndex) .. ":" .. tostring(rayIndex)
-            for k = -half, half do
+            for k = kMin, kMax do
                 local u, v, lp = controlBoardSnapCandidate(board, cfg, rings, ringIndex, rayIndex, k)
                 if u ~= nil and lp ~= nil then
                     --- ringGroundLevel (when set) is absolute world Y for figurines on Apply — catalog metadata only; snaps stay on tile surface.
@@ -2676,10 +2697,10 @@ function Gameboard.countControlBoardSnapPoints(config)
         local group = cfg.snapGroups[ringIndex]
         local num = tonumber(group.num)
         local rays = tonumber(group.rays)
-        local half = math.floor(num / 2)
+        local kMin, kMax = familyKBoundsForSnapCount(num)
         local ringTotal = 0
         for rayIndex = 0, rays - 1 do
-            for k = -half, half do
+            for k = kMin, kMax do
                 local u, _, _ = controlBoardSnapCandidate(board, cfg, rings, ringIndex, rayIndex, k)
                 if u ~= nil then
                     ringTotal = ringTotal + 1
@@ -2755,9 +2776,9 @@ function Gameboard.exportSnapFamiliesByRole(config, options)
         local num = tonumber(group.num)
         local rays = tonumber(group.rays)
         local ringGroundLevel = resolveSnapGroupGroundLevel(group)
-        local half = math.floor(num / 2)
+        local kMin, kMax = familyKBoundsForSnapCount(num)
         for rayIndex = 0, rays - 1 do
-            for k = -half, half do
+            for k = kMin, kMax do
                 local u, v = controlBoardSnapCandidate(board, cfg, rings, ringIndex, rayIndex, k)
                 if u ~= nil then
                     local wp = Gameboard.worldFromUv(u, v, { groundLevel = ringGroundLevel })
@@ -2913,6 +2934,8 @@ controlBoardSnapFingerprintFor = function(board, config)
         string.format("%.3f,%.3f", sx, sz),
         string.format("%.4f,%.4f", cfg.origin.u, cfg.origin.v),
         tostring(#(cfg.snapGroups or {})),
+        -- TOR-415: even-num familyK bounds (exclude +half duplicate on full circle).
+        "fkEven1",
         table.concat({
             tostring(cfg.innerRingMaxU or ""),
             tostring(cfg.innerRingMaxV or ""),
@@ -4945,9 +4968,31 @@ function Gameboard.tryAnchorFamilyGroupSpread(droppedToken)
         return a.slotIndex < b.slotIndex
     end)
     local emptyFamilySnaps = {}
+    local seenWorldXZ = {}
+    local leaderSnapIndex = tonumber(anchorEntry.snapIndex)
+    local function worldXZKey(entry)
+        local wp = entry and entry.worldPos
+        if wp == nil then
+            return nil
+        end
+        return string.format("%.3f:%.3f", tonumber(wp.x) or 0, tonumber(wp.z) or 0)
+    end
+    local leaderXZ = worldXZKey(anchorEntry)
     for _, entry in ipairs(catalog) do
         if entry.familyId == anchorEntry.familyId and entry.isAnchor ~= true then
-            emptyFamilySnaps[#emptyFamilySnaps + 1] = entry
+            if leaderSnapIndex ~= nil and tonumber(entry.snapIndex) == leaderSnapIndex then
+                -- Leader snap (defensive; anchors are already excluded by isAnchor).
+            else
+                local xz = worldXZKey(entry)
+                if xz ~= nil and (xz == leaderXZ or seenWorldXZ[xz] == true) then
+                    -- Duplicate full-circle angle (±half) or coincident with leader (TOR-415).
+                else
+                    if xz ~= nil then
+                        seenWorldXZ[xz] = true
+                    end
+                    emptyFamilySnaps[#emptyFamilySnaps + 1] = entry
+                end
+            end
         end
     end
     Gameboard.orderFamilySnapsForAnchorSpread(emptyFamilySnaps, anchorEntry, board)
@@ -5050,13 +5095,34 @@ emptyPolarFamilySnaps = function(board, familyId, fuzziness, catalog, ignoreToke
         end
     end
     local excludeIndex = type(excludeEntry) == "table" and tonumber(excludeEntry.snapIndex) or nil
+    local excludeXZ = nil
+    if type(excludeEntry) == "table" and excludeEntry.worldPos ~= nil then
+        local wp = excludeEntry.worldPos
+        excludeXZ = string.format("%.3f:%.3f", tonumber(wp.x) or 0, tonumber(wp.z) or 0)
+    end
+    local seenWorldXZ = {}
     for _, entry in ipairs(catalog) do
         if entry.snapKind ~= SNAP_KIND_SEAT
             and entry.familyId == familyId
             and (excludeIndex == nil or tonumber(entry.snapIndex) ~= excludeIndex)
             and occupiedSnapIndex[tonumber(entry.snapIndex)] ~= true
         then
-            out[#out + 1] = entry
+            local xz = nil
+            if entry.worldPos ~= nil then
+                xz = string.format(
+                    "%.3f:%.3f",
+                    tonumber(entry.worldPos.x) or 0,
+                    tonumber(entry.worldPos.z) or 0
+                )
+            end
+            if xz ~= nil and (xz == excludeXZ or seenWorldXZ[xz] == true) then
+                -- Skip full-circle duplicate / coincident with exclude (TOR-415).
+            else
+                if xz ~= nil then
+                    seenWorldXZ[xz] = true
+                end
+                out[#out + 1] = entry
+            end
         end
     end
     return out

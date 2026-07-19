@@ -92,6 +92,10 @@ function Palette.resolveGroupForCharacterKey(characterKey)
     if U.Type(characters) ~= "table" then
         return nil, nil
     end
+    local canonical = NPCS_DATA.resolveCharacterKeyByDisplayName(characterKey)
+    if U.Type(canonical) == "string" and canonical ~= "" then
+        characterKey = canonical
+    end
     return Palette.resolvePaletteGroupForCharacter(characters[characterKey])
 end
 
@@ -641,16 +645,22 @@ local function tokenCharacterKey(obj)
         notes = tostring(obj.getDescription() or "")
     end
     local key = string.match(notes, "^" .. TOKEN_PREFIX .. "([^,\r\n]+)")
-    if U.Type(key) == "string" and key ~= "" then
-        return key
-    end
-    if obj.getName ~= nil then
-        local name = tostring(obj.getName() or "")
-        if name ~= "" then
-            return name
+    if U.Type(key) ~= "string" or key == "" then
+        if obj.getName ~= nil then
+            local name = tostring(obj.getName() or "")
+            if name ~= "" then
+                key = name
+            end
         end
     end
-    return nil
+    if U.Type(key) ~= "string" or key == "" then
+        return nil
+    end
+    local canonical = NPCS_DATA.resolveCharacterKeyByDisplayName(key)
+    if U.Type(canonical) == "string" and canonical ~= "" then
+        return canonical
+    end
+    return key
 end
 
 --- Max board-local |Y − surface| for a token to count as on the palette tile.

@@ -110,7 +110,9 @@ Anchor snaps and family members are generated together (no separate anchor pass)
 rays = snapGroups[ringIndex].rays
 anchorDeg = (rayIndex / rays) * 360   -- rayIndex = 0 .. rays-1
 half = math.floor(num / 2)
-for k = -half, half do
+-- Even num: use k = -half .. half-1 so ±half do not both install (same angle on a full circle).
+kMin, kMax = (num % 2 == 0) and (-half, half - 1) or (-half, half)
+for k = kMin, kMax do
   -- Master-origin ring: angleDeg = anchorDeg + k * angleDelta
   -- Satellite ring (ring origin ≠ master): anchor (k=0) on bearing ring→master, then spread by k
   angleDeg = towardMasterDeg + anchorDeg + k * angleDelta   -- towardMasterDeg = 0 when origins match
@@ -121,9 +123,9 @@ end
 
 Example: ring 3, `num=5`, `angleDelta=4`, `anchorDeg=90` → **82°, 86°, 90°, 94°, 98°** (master-origin ring).
 
-**Satellite rings** (per-ring `origin` ≠ master `origin`, e.g. Far Left / Far Right with `rays = 1`, `num = 6`): `towardMasterDeg` is the u/v bearing from the ring origin to the master origin; the anchor snap (`k = 0`) sits on that radial on the ellipse, facing inward — not a fixed board direction (e.g. always “rightmost”).
+**Satellite rings** (per-ring `origin` ≠ master `origin`, e.g. Far Left / Far Right with `rays = 1`, `num = 6`): `towardMasterDeg` is the u/v bearing from the ring origin to the master origin; the anchor snap (`k = 0`) sits on that radial on the ellipse, facing inward — not a fixed board direction (e.g. always “rightmost”). For `num = 6` / `angleDelta = 60°`, familyK is `-3…+2` (six unique bearings); including both `±3` would stack two snaps at 180°.
 
-- **Duplicates** at overlapping angles are allowed (no dedupe).
+- Candidates with coincident world XZ (legacy even-num full-circle) are skipped at install and at anchor-spread fill (TOR-415).
 - Candidates with `u` or `v` outside `[0, 1]` are omitted (not clamped).
 - Every snap uses `rotation_snap = true` (no `tags` — any object can snap), and board-local yaw **toward the master/default `origin`** plus ring-level or default `snapYawOffsetDeg`.
 - Per-ring `origin` sets the ellipse center for that ring; when it differs from the master origin, **family angles** rotate so the anchor faces the master (token yaw still faces the master origin).

@@ -170,6 +170,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **CONTROL_BOARD group move (hold hotkey):** `addHotkey("Group move (hold)")`; hold at drop relocates source polar-family cohabitants onto free dest snaps (palette center-out parity). Pending Save & Play. _(TOR-412)_
 - [x] **Group relocate close-family stick:** Nearest-catalog occupancy + brief lock/re-assert so Mid Center → CENTER moves do not leave tokens behind. Pending Save & Play. _(TOR-413)_
 - [x] **Group flip + palette tokenScale:** Palette→board keeps ring `tokenScale` (no default reset on light apply); hold Group-move while flipping matches family faces to the flipped token. Pending Save & Play. _(TOR-414)_
+- [x] **Far-ring even-num snaps + bee leader:** Even `num` no longer installs ±half duplicate; world-XZ dedupe on spread; token keys canonicalize display name → `bee`. Reinstall snaps (Sync/Apply) after Save & Play. _(TOR-415)_
 
 ## Soundscape
 

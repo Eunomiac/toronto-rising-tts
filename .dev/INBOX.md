@@ -45,6 +45,8 @@ Verification:
 
 ## Processed
 
+2026-07-19 Far-ring overflow (num=6 ±half stack) + bee hive leader no accompany → **TOR-415**
+
 2026-07-19 Author verify TOR-412: close-family group relocate left tokens behind → **TOR-413**; palette tokenScale on place + group flip → **TOR-414**
 
 2026-07-19 Inbox Immediate Stage Control Board Solo/Group → **TOR-412** (hold hotkey `Group move (hold)`; revised from toolbar toggle — TTS cannot read OS Shift on drop)
