@@ -2862,7 +2862,8 @@ function onObjectRotate(object, spin, flip, player_color, old_spin, old_flip)
         return
     end
     local Gameboard = require("core.npc_gameboard")
-    if type(Gameboard.isGroupMoveHotkeyHeld) == "function" and Gameboard.isGroupMoveHotkeyHeld() ~= true then
+    -- Fail closed: missing API or hotkey not held → no family flip (TOR-414).
+    if type(Gameboard.isGroupMoveHotkeyHeld) ~= "function" or Gameboard.isGroupMoveHotkeyHeld() ~= true then
         return
     end
     if type(Gameboard.onNpcControlTokenRotated) == "function" then
