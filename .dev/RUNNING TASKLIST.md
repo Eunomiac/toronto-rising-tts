@@ -168,6 +168,8 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Stage NPC token Y on scene transition:** Token Y slightly inside board mesh during scene transition — nudge up so visible on drop. Author confirmed 2026-07-19. _(TOR-393)_
 - [x] **Stage snap tokenScale:** Ring `tokenScale` / `defaultTokenScale` on drop, scene mirror, pickup, palette. Pending Save & Play. _(TOR-410)_
 - [x] **CONTROL_BOARD group move (hold hotkey):** `addHotkey("Group move (hold)")`; hold at drop relocates source polar-family cohabitants onto free dest snaps (palette center-out parity). Pending Save & Play. _(TOR-412)_
+- [x] **Group relocate close-family stick:** Nearest-catalog occupancy + brief lock/re-assert so Mid Center → CENTER moves do not leave tokens behind. Pending Save & Play. _(TOR-413)_
+- [x] **Group flip + palette tokenScale:** Palette→board keeps ring `tokenScale` (no default reset on light apply); hold Group-move while flipping matches family faces to the flipped token. Pending Save & Play. _(TOR-414)_
 
 ## Soundscape
 

@@ -45,6 +45,8 @@ Verification:
 
 ## Processed
 
+2026-07-19 Author verify TOR-412: close-family group relocate left tokens behind → **TOR-413**; palette tokenScale on place + group flip → **TOR-414**
+
 2026-07-19 Inbox Immediate Stage Control Board Solo/Group → **TOR-412** (hold hotkey `Group move (hold)`; revised from toolbar toggle — TTS cannot read OS Shift on drop)
 
 2026-07-19 Inbox Immediate → **TOR-402** (skybox-only Apply Location), **TOR-403** (clock lerp parse `|`), **TOR-404** (Advance toolbar close lag), **TOR-405** (close toolbar before clock lerp), **TOR-406** (debug timestamp on open), **TOR-407** (debug offset −20 −20), **TOR-408** (occupied seat → sheet camera), **TOR-409** (signal chrome on seat buttons), **TOR-410** (stage snap tokenScale), **TOR-411** (Pink Tarot Y 7.7) — implementing this session

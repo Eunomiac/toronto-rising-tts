@@ -2850,6 +2850,26 @@ function onObjectDrop(playerColor, object)
     end
 end
 
+--- Control-token FlipOver (F): with Group-move hotkey held, match polar-family faces (TOR-414).
+function onObjectRotate(object, spin, flip, player_color, old_spin, old_flip)
+    if not isStorytellerSteamPlayer(player_color) then
+        return
+    end
+    if object == nil or object.hasTag == nil then
+        return
+    end
+    if object.hasTag("npc_control_token") ~= true then
+        return
+    end
+    local Gameboard = require("core.npc_gameboard")
+    if type(Gameboard.isGroupMoveHotkeyHeld) == "function" and Gameboard.isGroupMoveHotkeyHeld() ~= true then
+        return
+    end
+    if type(Gameboard.onNpcControlTokenRotated) == "function" then
+        Gameboard.onNpcControlTokenRotated(object, player_color, flip, old_flip)
+    end
+end
+
 --[[
     UI Event Handlers
     These functions are called by UI buttons via onClick attributes in the XML.
