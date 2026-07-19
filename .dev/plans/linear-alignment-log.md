@@ -577,5 +577,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-17 | DONE | TOR-401 | NOW+N travel Apply (`15b01e8`) |
 | 2026-07-17 | DONE | TOR-222 | Animated Scene Time lerp grids; Focus cleared |
 | 2026-07-17 | Focus | Stack | empty — pick next via what’s next / inbox |
+| 2026-07-19 | VERIFY | TOR-398, TOR-395, TOR-397, TOR-204, TOR-393, TOR-139, TOR-140, TOR-329, TOR-390, TOR-391, TOR-392 | Author Save & Play / acceptance confirmed; Linear comments + tasklist annotated |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
