@@ -265,6 +265,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Debug toolbar offset −20 −20:** `offsetXY` −50 130 → −70 110. Pending Save & Play. _(TOR-407)_
 - [x] **Occupied seat-change → sheet camera:** Left-click debug seat button when client seated → `sheet<Color>`; empty seat still `changeColor`. Pending Save & Play. _(TOR-408)_
 - [x] **Signal chrome on seat-change buttons:** Bright green + thick white outline while signal on; left-click clears signal. relatedTo **TOR-408**. Pending Save & Play. _(TOR-409)_
+- [x] **Debug seat sync skips Black signal fire:** Stop AlertGM when Host is Black — signal queries only for `C.PlayerColors`. relatedTo **TOR-409**. _(TOR-420)_
 - [x] **Phases sessionNum InputField after End:** set `text` attribute + re-sync on Phases open (inactive setValue ignored). Author confirmed 2026-07-19. _(TOR-397)_
 - [x] **Close entire ST toolbar when panel closes:** Collapse `storytellerToolbarBody` on panel close / `closeAllPanels`; exception = panel switch. Author confirmed 2026-07-19. _(TOR-395)_
 - [x] **Global blindfold flickers on load + Intermission→Play:** Idempotent show/hide (no FadeIn when already up); relatedTo **TOR-363**, **TOR-361**. Author confirmed 2026-07-19. _(TOR-398)_
