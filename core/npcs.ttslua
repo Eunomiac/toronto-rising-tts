@@ -1809,45 +1809,33 @@ function NPCS.getMergedModeDefinition(npcName, modeKey)
     return merged
 end
 
---- @param npcName string
---- @param modeKey string
---- @return table|nil mode table with position, rotation Vectors
-function NPCS.buildResolvedLightModeTable(npcName, modeKey)
-    local rec = NPCS.getInstanceRecord(npcName)
-    if rec == nil then
+--- Resolve light world pose from a figurine's live bounds + a `positioning` block (TOR-416 lock-on).
+--- @param fig Object
+--- @param positioning table|nil
+--- @param npcName string|nil used for ImageScalar bounds correction
+--- @return table|nil `{ position, lookAtTarget, rotation }`
+function NPCS.resolveFigurineLightPose(fig, positioning, npcName)
+    if not U.isGameObject(fig) or U.Type(positioning) ~= "table" then
         return nil
     end
-    local fig = lightAlignFigOverride[npcName]
-    if fig == nil or not U.isGameObject(fig) then
-        fig = G.getObject(rec.figurineGuid or "")
-    end
-    if fig == nil then
-        return nil
-    end
-    local mode = NPCS.getMergedModeDefinition(npcName, modeKey)
     local b = fig.getBounds()
     if b == nil or b.center == nil or b.size == nil then
-        return mode
+        return nil
     end
     local cx = b.center.x or b.center[1] or 0
     local cy = b.center.y or b.center[2] or 0
     local cz = b.center.z or b.center[3] or 0
     local sy = b.size.y or b.size[2] or 1
-    cy, sy = correctFigurineBoundsForRegistryScalar(fig, npcName, cy, sy)
-    local topY = cy + sy / 2
-    local out = U.clone(mode) or {}
-    out.positioning = nil
-    -- No `positioning` block => this mode does not move/aim the light (e.g. OFF).
-    local positioning = mode.positioning
-    if U.Type(positioning) ~= "table" then
-        return out
+    if U.Type(npcName) == "string" and npcName ~= "" then
+        cy, sy = correctFigurineBoundsForRegistryScalar(fig, npcName, cy, sy)
     end
+    local topY = cy + sy / 2
     local px, pz = cx, cz
     local len2 = px * px + pz * pz
     local inv = (len2 > 1e-6) and (1 / math.sqrt(len2)) or 0
     local lightPos
     if positioning.deltaUp ~= nil or positioning.deltaInward ~= nil then
-        -- New placement: `deltaUp` above bounds top, `deltaInward` toward origin in XZ.
+        -- `deltaUp` above bounds top, `deltaInward` toward origin in XZ.
         local deltaUp = tonumber(positioning.deltaUp) or NPC_FIGURINE_LIGHT_ABOVE_TOP_Y
         local deltaInward = tonumber(positioning.deltaInward) or NPC_FIGURINE_LIGHT_INWARD_XZ
         lightPos = Vector(
@@ -1856,7 +1844,7 @@ function NPCS.buildResolvedLightModeTable(npcName, modeKey)
             pz + (-pz * inv) * deltaInward
         )
     elseif positioning.positionYShift ~= nil or positioning.distance ~= nil then
-        -- Legacy placement: `positionYShift` fraction below bounds top, `distance` radial (negative = inward).
+        -- Legacy: `positionYShift` fraction below bounds top, `distance` radial (negative = inward).
         local posFrac = tonumber(positioning.positionYShift) or 0.3
         local dist = tonumber(positioning.distance) or -15
         lightPos = Vector(
@@ -1866,20 +1854,110 @@ function NPCS.buildResolvedLightModeTable(npcName, modeKey)
         )
     end
     if lightPos == nil then
-        return out
+        return nil
     end
-    -- Rotation is always a look-at toward the figurine; `lookAtYShift` (fraction of height
-    -- below bounds top) shifts the aim target, defaulting to bounds center when absent.
     local faceY = cy
     if positioning.lookAtYShift ~= nil then
         faceY = topY - (tonumber(positioning.lookAtYShift) or 0) * sy
     end
     local lookAtTarget = Vector(cx, faceY, cz)
-    out.position = lightPos
-    out.rotation = U.lookAtRotation(lightPos, lookAtTarget)
-    -- Ephemeral: SetLightMode couples pos→lookAt during transitions (TOR-369); not persisted.
-    out.lookAtTarget = lookAtTarget
+    return {
+        position = lightPos,
+        lookAtTarget = lookAtTarget,
+        rotation = U.lookAtRotation(lightPos, lookAtTarget),
+    }
+end
+
+--- Normalize positioning to lerpable `deltaUp` / `deltaInward` / `lookAtYShift` (TOR-416).
+--- Legacy `distance` / `positionYShift` map to approximate deltas for mid-lerp blends.
+--- @param positioning table|nil
+--- @return table|nil
+function NPCS.normalizeLightPositioningForLerp(positioning)
+    if U.Type(positioning) ~= "table" then
+        return nil
+    end
+    if positioning.deltaUp ~= nil or positioning.deltaInward ~= nil then
+        return {
+            deltaUp = tonumber(positioning.deltaUp) or NPC_FIGURINE_LIGHT_ABOVE_TOP_Y,
+            deltaInward = tonumber(positioning.deltaInward) or NPC_FIGURINE_LIGHT_INWARD_XZ,
+            lookAtYShift = tonumber(positioning.lookAtYShift) or 0.1,
+        }
+    end
+    if positioning.positionYShift ~= nil or positioning.distance ~= nil then
+        local dist = tonumber(positioning.distance) or -15
+        return {
+            deltaUp = NPC_FIGURINE_LIGHT_ABOVE_TOP_Y,
+            deltaInward = math.abs(dist),
+            lookAtYShift = tonumber(positioning.lookAtYShift) or 0.1,
+        }
+    end
+    return nil
+end
+
+--- Lerp two normalized positioning tables (TOR-416).
+--- @param a table|nil
+--- @param b table|nil
+--- @param t number 0..1
+--- @return table|nil
+function NPCS.lerpLightPositioning(a, b, t)
+    local na = NPCS.normalizeLightPositioningForLerp(a)
+    local nb = NPCS.normalizeLightPositioningForLerp(b)
+    if na == nil and nb == nil then
+        return nil
+    end
+    na = na or nb
+    nb = nb or na
+    t = math.max(0, math.min(1, tonumber(t) or 0))
+    return {
+        deltaUp = na.deltaUp + (nb.deltaUp - na.deltaUp) * t,
+        deltaInward = na.deltaInward + (nb.deltaInward - na.deltaInward) * t,
+        lookAtYShift = na.lookAtYShift + (nb.lookAtYShift - na.lookAtYShift) * t,
+    }
+end
+
+--- Resolve full mode table (scalars + pose) for an NPC light mode against a figurine.
+--- @param npcName string
+--- @param modeKey string
+--- @param figOverride Object|nil
+--- @return table|nil
+function NPCS.resolveNpcLightPose(npcName, modeKey, figOverride)
+    local rec = NPCS.getInstanceRecord(npcName)
+    if rec == nil then
+        return nil
+    end
+    local fig = figOverride
+    if fig == nil or not U.isGameObject(fig) then
+        fig = lightAlignFigOverride[npcName]
+    end
+    if fig == nil or not U.isGameObject(fig) then
+        fig = G.getObject(rec.figurineGuid or "")
+    end
+    if fig == nil then
+        return nil
+    end
+    local mode = NPCS.getMergedModeDefinition(npcName, modeKey)
+    local out = U.clone(mode) or {}
+    out.positioning = nil
+    local positioning = mode.positioning
+    if U.Type(positioning) ~= "table" then
+        return out
+    end
+    local pose = NPCS.resolveFigurineLightPose(fig, positioning, npcName)
+    if pose == nil then
+        return out
+    end
+    out.position = pose.position
+    out.rotation = pose.rotation
+    -- Ephemeral: SetLightMode couples pos→lookAt during transitions (TOR-369 / TOR-416).
+    out.lookAtTarget = pose.lookAtTarget
     return out
+end
+
+--- @param npcName string
+--- @param modeKey string
+--- @return table|nil mode table with position, rotation Vectors
+function NPCS.buildResolvedLightModeTable(npcName, modeKey)
+    return NPCS.resolveNpcLightPose(npcName, modeKey, nil)
 end
 
 --- @param lightGuid string

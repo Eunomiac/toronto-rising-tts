@@ -123,6 +123,7 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 | `U.rotateAroundPoint(center, radius, angle, y)` | Calculate position rotated around center | Position objects in circle |
 | `U.XYZToCylindrical(pos, center)` | Convert XYZ to cylindrical coords | Get angle/radius from position |
 | `U.XYZToSpherical(pos, center)` | Convert XYZ to spherical coords | 3D angle calculations |
+| `U.SphericalToXYZ(spherical, center)` | Convert spherical `{radius,angle,angle2}` to XYZ | Aim-centered light pose lerp |
 | `U.Distance(pos1, pos2)` | 3D distance between points | Object proximity |
 | `U.HorizontalDistance(pos1, pos2)` | Distance in XZ plane only | Table-top distance |
 | `U.RotateToFrom(frameRefs, toAngle, fromAngle, origin)` | Rotate objects/frames in cylindrical coords | Rotate objects around point |

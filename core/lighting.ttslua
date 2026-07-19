@@ -2187,8 +2187,8 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
                 end
 
                 -- Transform lerps use inline U.Lerp (not U.setPositionSlow) so epoch guards apply every tick.
-                -- When `lookAtTarget` is present (NPC pooled spotlights), drive rotation from the
-                -- interpolated position so STANDARD↔SPOTLIGHT cannot Euler-spin the long way (TOR-369).
+                -- When `lookAtTarget` is present (NPC pooled spotlights), interpolate in spherical
+                -- coords around the aim so the cone settles with minimal swing (TOR-416).
                 local lookAtTarget = modeDef.lookAtTarget
                 local useLookAtCoupled = modeDef.position ~= nil and lookAtTarget ~= nil
                     and (type(lookAtTarget) == "table" or U.isInstance(lookAtTarget, Vector))
@@ -2200,13 +2200,33 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
                         tonumber(lookAtTarget.y or lookAtTarget[2]) or 0,
                         tonumber(lookAtTarget.z or lookAtTarget[3]) or 0
                     )
-                    table.insert(lerpFuncs, U.Lerp(function(pos)
+                    local startPos = light.getPosition()
+                    local startSph = U.XYZToSpherical(startPos, aim)
+                    local endSph = U.XYZToSpherical(posEnd, aim)
+                    local function lerpAngleShortest(a, b, t)
+                        local d = (tonumber(b) or 0) - (tonumber(a) or 0)
+                        while d > 180 do
+                            d = d - 360
+                        end
+                        while d < -180 do
+                            d = d + 360
+                        end
+                        return (tonumber(a) or 0) + d * t
+                    end
+                    table.insert(lerpFuncs, U.Lerp(function(t)
                         if transitionEpoch[lightRef] ~= myEpoch then
                             return
                         end
+                        local tt = tonumber(t) or 0
+                        local sph = {
+                            radius = startSph.radius + (endSph.radius - startSph.radius) * tt,
+                            angle = lerpAngleShortest(startSph.angle, endSph.angle, tt),
+                            angle2 = startSph.angle2 + (endSph.angle2 - startSph.angle2) * tt,
+                        }
+                        local pos = U.SphericalToXYZ(sph, aim)
                         light.setPosition(pos)
                         light.setRotation(U.lookAtRotation(pos, aim))
-                    end, light.getPosition(), posEnd, transitionTime, false))
+                    end, 0, 1, transitionTime, false))
                 else
                     if modeDef.rotation ~= nil then
                         local rotEnd = OP.mergeRotation(light, modeDef.rotation)

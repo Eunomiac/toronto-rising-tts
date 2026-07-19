@@ -2676,6 +2676,21 @@ function U.resolvePositionData(data, coordinateSystem, center, centerYaw, center
 	return resolvePosition(data, coordinateSystem, center, centerYaw, centerPitch)
 end
 
+--- Convert spherical coordinates to world XYZ (inverse of `U.XYZToSpherical`).
+-- @param spherical table `{ radius, angle, angle2 }` (degrees; angle2 0 = horizontal)
+-- @param center Vector|table|Object Center / aim point
+-- @param centerYaw number|nil Optional yaw when center is not an Object
+-- @param centerPitch number|nil Optional pitch when center is not an Object
+-- @return Vector
+-- @usage local pos = U.SphericalToXYZ({ radius = 10, angle = 90, angle2 = 0 }, aim)
+function U.SphericalToXYZ(spherical, center, centerYaw, centerPitch)
+	U.Val("U.SphericalToXYZ", spherical, U.Type(spherical) == "table", "spherical must be a table")
+	U.Val("U.SphericalToXYZ", spherical.radius, U.Type(spherical.radius) == "number", "spherical.radius required")
+	U.Val("U.SphericalToXYZ", spherical.angle, U.Type(spherical.angle) == "number", "spherical.angle required")
+	U.Val("U.SphericalToXYZ", spherical.angle2, U.Type(spherical.angle2) == "number", "spherical.angle2 required")
+	return sphericalToXYZ(spherical, center, centerYaw, centerPitch)
+end
+
 -- Helper: Resolve center data from PositionOrientationData (handles Objects)
 -- @param data table PositionOrientationData
 -- @return table {pos=Vector, obj=Object|nil}

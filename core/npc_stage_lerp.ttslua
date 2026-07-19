@@ -149,22 +149,53 @@ local function resolveFigurineEndPose(placement)
     return pos, yawDeg
 end
 
-local function bakeLightPose(npcName, fig, modeKey)
+--- Positioning block for a mode key (for lock-on lerp; TOR-416).
+local function positioningForMode(npcName, modeKey)
     local NPCS = npcsModule()
-    if type(NPCS.buildResolvedLightModeTable) ~= "function" then
-        return nil, nil, nil
+    if type(NPCS.getMergedModeDefinition) ~= "function" then
+        return nil
     end
-    if type(NPCS.setLightAlignFigOverride) == "function" then
-        NPCS.setLightAlignFigOverride(npcName, fig)
+    local mode = NPCS.getMergedModeDefinition(npcName, modeKey)
+    if type(mode) ~= "table" then
+        return nil
     end
-    local modeTable = NPCS.buildResolvedLightModeTable(npcName, modeKey)
-    if type(NPCS.setLightAlignFigOverride) == "function" then
-        NPCS.setLightAlignFigOverride(npcName, nil)
+    return mode.positioning
+end
+
+--- Apply lock-on light pose from live figurine + (possibly lerped) positioning.
+local function applyLockOnLightPose(anim, t)
+    if not U.isGameObject(anim.lit) or not U.isGameObject(anim.fig) then
+        return
     end
-    if type(modeTable) ~= "table" then
-        return nil, nil, nil
+    -- Only when already lit at anim start (LIT→LIT travel / mode-only). OFF→LIT uses delayed spring.
+    if anim.startLit ~= "LIT" then
+        return
     end
-    return modeTable.position, modeTable.rotation, modeTable.lookAtTarget
+    -- LIT→OFF: after fade starts, skip lock-on so reconcile can dim/disable.
+    if anim.endLit == "OFF" and anim.lightOffFired then
+        return
+    end
+    local NPCS = npcsModule()
+    local positioning = nil
+    if type(NPCS.lerpLightPositioning) == "function" then
+        positioning = NPCS.lerpLightPositioning(anim.startPositioning, anim.endPositioning, t)
+    end
+    if positioning == nil then
+        positioning = anim.endPositioning or anim.startPositioning
+    end
+    if type(NPCS.resolveFigurineLightPose) ~= "function" then
+        return
+    end
+    local pose = NPCS.resolveFigurineLightPose(anim.fig, positioning, anim.npcName)
+    if type(pose) ~= "table" or pose.position == nil then
+        return
+    end
+    anim.lit.setPosition(pose.position)
+    if pose.lookAtTarget ~= nil then
+        anim.lit.setRotation(U.lookAtRotation(pose.position, pose.lookAtTarget))
+    elseif pose.rotation ~= nil then
+        anim.lit.setRotation(pose.rotation)
+    end
 end
 
 local function snapNpcToCommittedState(npcName)
@@ -373,55 +404,17 @@ local function buildAnimForCandidate(candidate, startDelayFrames, frames, durati
     local modeOnly = candidate.modeOnly == true
     local startMode = effectiveLitMode(npcName, candidate.startNpcLightMode or rec.npcLightMode)
     local endMode = effectiveLitMode(npcName, normalizedStageLightMode(placement))
-    local endModeKey = endMode
-    local startLightPos = nil
-    local startLightRot = nil
-    local endLightPos = nil
-    local endLightRot = nil
-    local lookAtTarget = nil
-    if U.isGameObject(lit) then
-        startLightPos = lit.getPosition()
-        startLightRot = lit.getRotation()
-        -- Mode-only STANDARD↔SPOTLIGHT must still move/aim the light (TOR-369 follow-up).
-        -- Freezing start pose left the transition to SetLightMode Euler lerp, which spun Y long-way.
-        local savedPos = fig.getPosition()
-        local savedRot = fig.getRotation()
-        if not modeOnly then
-            fig.setPosition(endPos)
-            fig.setRotation(Vector(0, endYaw, 0))
-        end
-        endLightPos, endLightRot, lookAtTarget = bakeLightPose(npcName, fig, endModeKey)
-        if not modeOnly then
-            fig.setPosition(savedPos)
-            fig.setRotation(savedRot)
-        end
-        if endLightPos == nil then
-            endLightPos = startLightPos
-            endLightRot = startLightRot
-        end
-    end
     local figPath = modeOnly and nil or bakeVectorPath(startPos, endPos, frames)
     local yawPath = modeOnly and nil or bakeYawPath(startYaw, endYaw, frames)
-    local lightPath = nil
-    local lightRotPath = nil
-    if startLightPos ~= nil and endLightPos ~= nil then
-        lightPath = bakeVectorPath(startLightPos, endLightPos, frames)
-        lightRotPath = {}
-        local aim = lookAtTarget
-        for i = 0, frames do
-            local t = applyConfiguredEase(i / frames)
-            local pos = lightPath[i]
-            if aim ~= nil and pos ~= nil then
-                -- Continuous look-at along the path (shortest visual arc for aim).
-                lightRotPath[i] = U.lookAtRotation(pos, aim)
-            elseif startLightRot ~= nil and endLightRot ~= nil then
-                lightRotPath[i] = U.lerpRotationShortest(startLightRot, endLightRot, t)
-            end
-        end
-    end
     local reg = nil
     if type(rec.lightGuid) == "string" and rec.lightGuid ~= "" then
         reg = NPCS.lightRegistryName(rec.lightGuid)
+    end
+    local startPositioning = positioningForMode(npcName, startMode)
+    local endPositioning = positioningForMode(npcName, endMode)
+    if type(NPCS.normalizeLightPositioningForLerp) == "function" then
+        startPositioning = NPCS.normalizeLightPositioningForLerp(startPositioning) or startPositioning
+        endPositioning = NPCS.normalizeLightPositioningForLerp(endPositioning) or endPositioning
     end
     return {
         npcName = npcName,
@@ -430,12 +423,14 @@ local function buildAnimForCandidate(candidate, startDelayFrames, frames, durati
         reg = reg,
         figPath = figPath,
         yawPath = yawPath,
-        lightPath = lightPath,
-        lightRotPath = lightRotPath,
         frames = frames,
         durationSec = durationSec,
         startDelayFrames = startDelayFrames,
         modeOnly = modeOnly,
+        startModeKey = startMode,
+        endModeKey = endMode,
+        startPositioning = startPositioning,
+        endPositioning = endPositioning,
         startLit = litCategory(startMode),
         endLit = litCategory(endMode),
         lightOnFired = false,
@@ -454,14 +449,8 @@ local function applyAnimFrame(anim, localFrame)
             anim.fig.setRotation(Vector(0, anim.yawPath[idx], 0))
         end
     end
-    if U.isGameObject(anim.lit) then
-        if anim.lightPath and anim.lightPath[idx] then
-            anim.lit.setPosition(anim.lightPath[idx])
-        end
-        if anim.lightRotPath and anim.lightRotPath[idx] then
-            anim.lit.setRotation(anim.lightRotPath[idx])
-        end
-    end
+    local t = applyConfiguredEase(idx / math.max(anim.frames, 1))
+    applyLockOnLightPose(anim, t)
 end
 
 local function tickLightModeTransitions(anim, localFrame)

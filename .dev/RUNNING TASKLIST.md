@@ -171,6 +171,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Group relocate close-family stick:** Nearest-catalog occupancy + brief lock/re-assert so Mid Center → CENTER moves do not leave tokens behind. Pending Save & Play. _(TOR-413)_
 - [x] **Group flip + palette tokenScale:** Palette→board keeps ring `tokenScale` (no default reset on light apply); hold Group-move while flipping matches family faces to the flipped token. Pending Save & Play. _(TOR-414)_
 - [x] **Far-ring even-num snaps + bee leader:** Even `num` no longer installs ±half duplicate; world-XZ dedupe on spread; token keys canonicalize display name → `bee`. Reinstall snaps (Sync/Apply) after Save & Play. _(TOR-415)_
+- [x] **Stage light lock-on + minimal spotlight swing:** Lit stage→stage lerp re-resolves light from live figurine each frame; STANDARD↔SPOTLIGHT uses near-STANDARD `deltaUp`/`deltaInward` + spherical arc around aim. relatedTo **TOR-369**, **TOR-173**. Pending Save & Play. _(TOR-416)_
 
 ## Soundscape
 
@@ -328,7 +329,7 @@ _Blocked: author must define data binding approach before substantial implementa
 - [ ] **Centralize object visibility:** Helper for reveal/hide-all-players vs Host-only (incl. Grey/White); migrate `setInvisibleTo` call sites; audit Text-tool object visibility. _(TOR-286)_
 - [x] **Player companion toggle tiles:** Red/Brown famulus A — owner-gated left (on/off + front/back image swap) / right (state 1↔2); Purple deferred (figurines not in save). Full five-tile Tarot-style reconcile later. _(TOR-288)_
 - [x] **Confirm stage figurine position lerp on Apply:** Diagnostics + eligibility audit (`NPCStageLerp`). _(TOR-367)_
-- [x] **Stage spotlight shortest-angle rotation during lerp:** Look-at–coupled pos lerp + mode-only light bake (not raw Euler Y). _(TOR-369)_
+- [x] **Stage spotlight shortest-angle rotation during lerp:** Look-at–coupled pos lerp + mode-only light bake (not raw Euler Y). Superseded for stage travel by **TOR-416** lock-on. _(TOR-369)_
 
 ## New Features (pending design)
 

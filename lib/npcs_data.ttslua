@@ -33,9 +33,11 @@ D.lights = {
     range = 100,
     intensity = 3,
     angle = 70,
+    -- Same placement family as STANDARD (TOR-416): small geometric delta so cone barely relocates;
+    -- visual punch is intensity / angle / color.
     positioning = {
-      positionYShift = 0.3,
-      distance = -20,
+      deltaUp = 6,
+      deltaInward = 4,
       lookAtYShift = 0.1
     }
   }
