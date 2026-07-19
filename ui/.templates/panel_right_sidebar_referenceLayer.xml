@@ -764,14 +764,52 @@ UI.setAttributes("page_3_left_Brown", {color = "rgba(1, 0, 0, 0.15)", childForce
     <Panel id="playerHud_refPanel_PrincesCourt_page3_@@color@@" class="princesCourt-page" active="false">
       <Image class="princeCourt_page" image="refPanel_PrincesCourt_page3" raycastTarget="false" />
       <!-- TOR-371: full sheet-style coterie project pool; runtime remains attribute-only. -->
-      <VerticalScrollView id="page_3_left_@@color@@" class="page page_left"
-        width="710" height="850" rectAlignment="MiddleLeft" offsetXY="20 0"
-        padding="8 8 120 50" movementType="Clamped" vertical="true"
-        horizontal="false" childForceExpandWidth="true">
-        <VerticalLayout class="vertical_project_container">
-          @@COURT_PROJECT_BLOCKS@@
-        </VerticalLayout>
-      </VerticalScrollView>
+
+      <VerticalLayout id="page_3_left_@@color@@" class="vertical_project_container"  >
+
+        <Panel id="project_@@INDEX@@" class="project_container" padding = "8 8 150 50">
+          <HorizontalLayout class="project_header_container"  >
+              <GridLayout class="project_header_dotline">
+                <Image id="project_@@INDEX@@_scope_dot_1" class="project_scope_dot"  />
+                <Image id="project_@@INDEX@@_scope_dot_2" class="project_scope_dot"  />
+                <Image id="project_@@INDEX@@_scope_dot_3" class="project_scope_dot"  />
+                <Image id="project_@@INDEX@@_scope_dot_4" class="project_scope_dot" active="false" />
+                <Image id="project_@@INDEX@@_scope_dot_5" class="project_scope_dot" active="false" />
+                <Image id="project_@@INDEX@@_scope_dot_6" class="project_scope_dot" active="false" />
+                <Image id="project_@@INDEX@@_scope_dot_7" class="project_scope_dot"  active="false" />
+                <Image id="project_@@INDEX@@_scope_dot_8" class="project_scope_dot"  active="false" />
+                <Image id="project_@@INDEX@@_scope_dot_9" class="project_scope_dot"  active="false" />
+                <Image id="project_@@INDEX@@_scope_dot_10" class="project_scope_dot"  active="false" />
+                <Image id="project_@@INDEX@@_scope_dot_11" class="project_scope_dot" active="false" />
+                <Image id="project_@@INDEX@@_scope_dot_12" class="project_scope_dot"  active="false" />
+                <Image id="project_@@INDEX@@_scope_dot_13" class="project_scope_dot"  active="false" />
+                <Image id="project_@@INDEX@@_scope_dot_14" class="project_scope_dot"  active="false" />
+                <Image id="project_@@INDEX@@_scope_dot_15" class="project_scope_dot"  active="false" />
+              </GridLayout>
+            <Text id="project_@@INDEX@@_goal" class="project_goal_text" text="Learn the location of the Deck of Wandering Stars"  />
+          </HorizontalLayout>
+
+          <Panel class="project_result_container" >
+            <Image id="project_@@INDEX@@_result_image" class="project_result_image" image="project_crit" />
+            <Text id="project_@@INDEX@@_result_margin" class="project_result_margin" text="+4" active="false" />
+          </Panel>
+
+          <Image id="project_@@INDEX@@_project_die" class="project_die" image="project_die_7"  />
+
+          <HorizontalLayout class="project_date_container" >
+            <Text id="project_@@INDEX@@_date_start" class="project_date_text project_date_start_text" text="Sept. 24, 2027"  />
+            <Text class="project_date_text  project_date_start_text" text="—" preferredWidth="0" minWidth = "20"  />
+            <Text id="project_@@INDEX@@_date_end" class="project_date_text" text="Dec. 24, 2027"  />
+            <Text id="project_@@INDEX@@_date_increment" class="project_increment_text" text="(Increments Weekly)"  />
+          </HorizontalLayout>
+
+
+        </Panel>
+
+        <Panel class="vertical_spacer" flexibleHeight="1" />
+
+      </VerticalLayout>
+
       <Image id="playerHud_navigate_page3_prev_@@color@@" class="navButton navButton_left" image="navigate_left" raycastTarget="true" onMouseEnter="HUD_playerPrincesCourt_nav_hoverOn" onMouseExit="HUD_playerPrincesCourt_nav_hoverOff" onClick="HUD_playerPrincesCourt_navigate" />
     </Panel>
   </Panel>

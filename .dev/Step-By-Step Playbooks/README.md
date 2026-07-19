@@ -20,7 +20,7 @@ Status: current preferred format for new targeted verification.
 
 Iterative **AI/human hybrid** verification: bug repro, feature sign-off, ad-hoc Save & Play checks. The author pastes Lua from the IDE, acts in TTS only when automation cannot, and reads `PASS` / `FAIL` / `▶▶▶ HUMAN ▶▶▶` in the console.
 
-**Authoritative template:** [`.Step-By-Step Template.md`](.Step-By-Step%20Template.md)  
+**Authoritative template:** [`.Step-By-Step Template.md`](.Step-By-Step%20Template.md)
 **Agent skill:** [`.cursor/skills/step-by-step-guidance/SKILL.md`](../../.cursor/skills/step-by-step-guidance/SKILL.md)
 
 ## Three layers
