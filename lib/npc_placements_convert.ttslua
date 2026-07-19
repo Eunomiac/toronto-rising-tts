@@ -270,7 +270,7 @@ function Convert.normalizeSessionScene(sessionScene)
         return false, 0
     end
     if type(sessionScene.npcWorld) ~= "table" then
-        sessionScene.npcWorld = { placements = {}, byArea = {}, layoutLock = false }
+        sessionScene.npcWorld = { placements = {}, byArea = {} }
         return false, 0
     end
     return Convert.normalizeNpcWorld(sessionScene.npcWorld)

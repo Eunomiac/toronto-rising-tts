@@ -172,6 +172,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Group flip + palette tokenScale:** Palette→board keeps ring `tokenScale` (no default reset on light apply); hold Group-move while flipping matches family faces to the flipped token. Pending Save & Play. _(TOR-414)_
 - [x] **Far-ring even-num snaps + bee leader:** Even `num` no longer installs ±half duplicate; world-XZ dedupe on spread; token keys canonicalize display name → `bee`. Reinstall snaps (Sync/Apply) after Save & Play. _(TOR-415)_
 - [x] **Stage light lock-on + minimal spotlight swing:** Lit stage→stage lerp re-resolves light from live figurine each frame; STANDARD↔SPOTLIGHT uses near-STANDARD `deltaUp`/`deltaInward` + spherical arc around aim. relatedTo **TOR-369**, **TOR-173**. Pending Save & Play. _(TOR-416)_
+- [ ] **Control Board HERE/THERE scene preview editor:** Persistent pending-scene participant draft; mode-aware Reset/Clear/Load; one-shot locked participant merge on scene Apply. relatedTo **TOR-244**, **TOR-237**. _(TOR-417)_
 
 ## Soundscape
 

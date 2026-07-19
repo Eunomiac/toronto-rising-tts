@@ -134,6 +134,20 @@ local function applyChronicleWeatherFromSoundscapeForImport(sessionScene)
     end
 end
 
+--- True when `sceneKey` is the selected library row but is not the scene currently linked to live state.
+--- Shared by the Scenes Panel and Control Board so preview eligibility has one definition.
+--- @param sceneKey string|nil defaults to sceneLibrary.activeKey
+--- @return boolean
+function SceneLibrary.isPendingSelection(sceneKey)
+    local S = require("core.state")
+    local key = sceneKey or S.getStateVal("sceneLibrary", "activeKey")
+    if not isNonEmptyString(key)
+        or type(S.getStateVal("sceneLibrary", "scenes", key)) ~= "table" then
+        return false
+    end
+    return key ~= S.getStateVal("sceneLibrary", "lastAppliedKey")
+end
+
 --- Rebuilds `sessionScene.npcRoleOverride` from PC `seatSlots` only (authoritative).
 --- Shape: sparse map keyed by `C.PlayerColors`; value is a non-empty NPC `characterKey` string
 --- when that seat has `isPlayingNPC == true` and `npcCharacterKey` is set; absent keys mean no override.

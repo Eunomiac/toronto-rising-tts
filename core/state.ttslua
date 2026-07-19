@@ -322,6 +322,11 @@ function S.GetDefaultGameState()
         --- Per-PC last map pin location + narrative clock when last active (TOR-245). Top-level (not in
         --- sessionScene) so cross-scene history survives scene apply. `[color] = { siteKey, districtKey?, activeAt }`.
         lastActiveMapPin = {},
+        --- Control Board runtime intent persisted across Save & Play. A valid previewDraft means THERE mode.
+        controlBoard = {
+            lockNextSceneApply = false,
+            previewDraft = nil,
+        },
         --- Narrative/session scene bundle (table presence, location, clock, roll defaults).
         sessionScene = {
             lightingPresetKey = nil,
@@ -361,7 +366,6 @@ function S.GetDefaultGameState()
             soundscapeNarrative = {},
             --- NPC stage layout: `placements` (u,v,yaw on STAGE_BOARD). Import may paste `byArea`; normalized to placements.
             npcWorld = {
-                layoutLock = false,
                 placements = {},
                 byArea = {},
                 --- When false, CONTROL_BOARD polar snaps are cleared (tokens stay put).
@@ -709,10 +713,38 @@ function S.validateState()
     if not gameState.sessionScene or type(gameState.sessionScene) ~= "table" then
         gameState.sessionScene = {}
     end
+    local legacyLayoutLock = type(gameState.sessionScene.npcWorld) == "table"
+        and gameState.sessionScene.npcWorld.layoutLock == true
     mergeSessionSceneDefaults(gameState.sessionScene, S.GetDefaultGameState().sessionScene)
     local liveMigrated = NpcPlacementsConvert.normalizeSessionScene(gameState.sessionScene)
     if liveMigrated then
         print("[state] sessionScene.npcWorld: migrated legacy byArea → placements")
+    end
+    if type(gameState.controlBoard) ~= "table" then
+        gameState.controlBoard = {}
+    end
+    if type(gameState.controlBoard.lockNextSceneApply) ~= "boolean" then
+        gameState.controlBoard.lockNextSceneApply = false
+    end
+    if legacyLayoutLock then
+        gameState.controlBoard.lockNextSceneApply = true
+    end
+    if type(gameState.sessionScene.npcWorld) == "table" then
+        gameState.sessionScene.npcWorld.layoutLock = nil
+    end
+    local previewDraft = gameState.controlBoard.previewDraft
+    if previewDraft ~= nil then
+        local validDraft = type(previewDraft) == "table"
+            and type(previewDraft.sceneKey) == "string"
+            and previewDraft.sceneKey ~= ""
+            and type(previewDraft.npcWorld) == "table"
+            and type(previewDraft.npcWorld.placements) == "table"
+            and type(previewDraft.seatSlots) == "table"
+        if validDraft then
+            previewDraft.npcWorld.layoutLock = nil
+        else
+            gameState.controlBoard.previewDraft = nil
+        end
     end
     local lpKey = gameState.sessionScene.lightingPresetKey
     if lpKey ~= nil and type(lpKey) == "string" and lpKey ~= "" and not C.isValidLightModeKey(lpKey) then
@@ -812,6 +844,9 @@ function S.validateState()
             end
             mergeSessionSceneDefaults(entry.sessionScene, S.GetDefaultGameState().sessionScene)
             NpcPlacementsConvert.normalizeSessionScene(entry.sessionScene)
+            if type(entry.sessionScene.npcWorld) == "table" then
+                entry.sessionScene.npcWorld.layoutLock = nil
+            end
             if SceneLibrary and type(SceneLibrary.syncNpcRoleOverrideFromSeatSlots) == "function" then
                 SceneLibrary.syncNpcRoleOverrideFromSeatSlots(entry.sessionScene)
             end
@@ -830,6 +865,10 @@ function S.validateState()
                 entry.title = ""
             end
         end
+    end
+    if type(gameState.controlBoard.previewDraft) == "table"
+        and gameState.sceneLibrary.scenes[gameState.controlBoard.previewDraft.sceneKey] == nil then
+        gameState.controlBoard.previewDraft = nil
     end
 
     if not gameState.npcs or type(gameState.npcs) ~= "table" then
@@ -1251,6 +1290,14 @@ local function buildSaveState()
             saveState.sceneLibrary = U.clone(gameState.sceneLibrary, true)
         else
             print("[WARNING] buildSaveState: sceneLibrary omitted — failed isValueSafeForState")
+        end
+    end
+
+    if gameState.controlBoard and type(gameState.controlBoard) == "table" then
+        if isValueSafeForState(gameState.controlBoard, "controlBoard") then
+            saveState.controlBoard = U.clone(gameState.controlBoard, true)
+        else
+            print("[WARNING] buildSaveState: controlBoard omitted — failed isValueSafeForState")
         end
     end
 

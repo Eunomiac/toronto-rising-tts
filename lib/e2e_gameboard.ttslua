@@ -15,6 +15,7 @@ local Sync = require("core.sync")
 local SRI = require("lib.seat-role-identity")
 local DATA = require("lib.npc_gameboard_data")
 local Palette = require("lib.npc_control_board_palette")
+local ControlBoardPreview = require("core.control_board_preview")
 
 local E2E_GB = {}
 
@@ -1172,8 +1173,105 @@ local function runTor333SeatOccupancyTests(failures)
     clearNpcSeatsAndPlacements()
 end
 
+local function runControlBoardPreviewDomainTests(failures)
+    local library = {
+        npcWorld = {
+            placements = {
+                alpha = { u = 0.1, v = 0.2, yaw = 30, npcLightMode = "STANDARD" },
+            },
+        },
+        seatSlots = {
+            Brown = { isPresent = true, custom = "keep" },
+            NPC1 = { characterKey = "alpha", isPresent = false, custom = "keep" },
+            NPC2 = { characterKey = "beta", isPresent = false },
+        },
+        seatPresent = { Brown = true, NPC1 = false, NPC2 = false },
+    }
+    local draft = ControlBoardPreview.buildDraft("preview_scene", library)
+    if draft.sceneKey ~= "preview_scene" or draft.npcWorld.placements.alpha == nil then
+        failures[#failures + 1] = "P1: buildDraft did not copy scene participants"
+        return
+    end
+    draft.npcWorld.placements.alpha.u = 0.9
+    draft.seatSlots.NPC1.characterKey = "gamma"
+    if library.npcWorld.placements.alpha.u ~= 0.1 or library.seatSlots.NPC1.characterKey ~= "alpha" then
+        failures[#failures + 1] = "P1: draft aliases library nested tables"
+    end
+
+    local presenceLibrary = U.merge({}, library)
+    presenceLibrary.seatSlots.NPC1.isPresent = true
+    presenceLibrary.seatSlots.NPC2.isPresent = true
+    ControlBoardPreview.syncDraftSeatPresence(draft, presenceLibrary)
+    if draft.seatSlots.NPC1.characterKey ~= "gamma"
+        or draft.seatSlots.NPC1.isPresent ~= true
+        or draft.seatSlots.NPC2.isPresent ~= true then
+        failures[#failures + 1] = "P2: seat-presence sync moved occupants or missed library presence"
+    end
+
+    local committed = ControlBoardPreview.mergeDraftIntoSessionScene(draft, library)
+    if committed.npcWorld.placements.alpha.u ~= 0.9
+        or committed.seatSlots.NPC1.characterKey ~= "gamma"
+        or committed.seatSlots.NPC1.custom ~= "keep"
+        or committed.seatSlots.Brown.custom ~= "keep"
+        or committed.seatPresent.NPC1 ~= true then
+        failures[#failures + 1] = "P3: draft commit did not replace only board-owned participant fields"
+    end
+
+    local source = {
+        npcWorld = {
+            placements = {
+                lockedStage = { u = 0.1, v = 0.2, npcLightMode = "STANDARD" },
+            },
+        },
+        seatSlots = {
+            Brown = { isPresent = false },
+            NPC1 = { characterKey = "brett", isPresent = true },
+            NPC2 = { characterKey = "abby", isPresent = false },
+            NPC3 = { slotEmpty = true },
+            NPC4 = { slotEmpty = true },
+        },
+    }
+    local destination = {
+        npcWorld = {
+            placements = {
+                collision = { u = 0.1, v = 0.2, npcLightMode = "OFF" },
+                survivor = { u = 0.8, v = 0.8, npcLightMode = "STANDARD" },
+            },
+        },
+        seatSlots = {
+            Brown = { isPresent = true },
+            NPC1 = { characterKey = "cory", isPresent = true },
+            NPC2 = { characterKey = "abby", isPresent = true },
+            NPC3 = { slotEmpty = true },
+            NPC4 = { slotEmpty = true },
+        },
+    }
+    local merged = ControlBoardPreview.mergeLockedParticipants(source, destination, {
+        npcSeats = { "NPC1", "NPC2", "NPC3", "NPC4" },
+        playerColors = { "Brown" },
+        placementIdentity = function(row)
+            return string.format("%.3f:%.3f", row.u, row.v)
+        end,
+    })
+    if merged.npcWorld.placements.lockedStage == nil
+        or merged.npcWorld.placements.collision ~= nil
+        or merged.npcWorld.placements.survivor == nil then
+        failures[#failures + 1] = "P4: locked stage merge did not prefer source snap occupants"
+    end
+    if merged.seatSlots.NPC1.characterKey ~= "brett"
+        or merged.seatSlots.NPC1.isPresent ~= true
+        or merged.seatSlots.NPC2.characterKey ~= "abby"
+        or merged.seatSlots.NPC2.isPresent ~= false
+        or merged.seatSlots.NPC3.characterKey ~= "cory"
+        or merged.seatSlots.NPC3.isPresent ~= true
+        or merged.seatSlots.Brown.isPresent ~= false then
+        failures[#failures + 1] = "P5: locked seat merge did not preserve source priority/status and relocate destination"
+    end
+end
+
 local function runFullSuites(failures)
     local fx = fixture()
+    runControlBoardPreviewDomainTests(failures)
 
     setPlacementRow(fx.npcA, fx.uvA.u, fx.uvA.v, "STANDARD")
     assignSeatSlot("NPC1", fx.npcA, true)

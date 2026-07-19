@@ -1,0 +1,386 @@
+--[[
+    Persisted Control Board preview drafts and pure participant merge rules.
+
+    `gameState.sessionScene` remains the live authority. This module owns only the
+    temporary participant draft for a pending scene-library row and never performs
+    physical board/stage reconciliation.
+]]
+
+local Preview = {}
+
+local C = require("lib.constants")
+local U = require("lib.util")
+
+local function deepCopy(value)
+    if type(value) ~= "table" then
+        return value
+    end
+    return U.merge({}, value)
+end
+
+local function isNonEmptyString(value)
+    return type(value) == "string" and value ~= ""
+end
+
+local function seatPresence(sessionScene, seatKey)
+    local row = type(sessionScene) == "table"
+        and type(sessionScene.seatSlots) == "table"
+        and sessionScene.seatSlots[seatKey]
+        or nil
+    if type(row) == "table" and type(row.isPresent) == "boolean" then
+        return row.isPresent
+    end
+    local legacy = type(sessionScene) == "table" and sessionScene.seatPresent or nil
+    return type(legacy) == "table" and legacy[seatKey] == true
+end
+
+local function ensureDraftSeatRow(draft, seatKey)
+    draft.seatSlots = type(draft.seatSlots) == "table" and draft.seatSlots or {}
+    local row = draft.seatSlots[seatKey]
+    if type(row) ~= "table" then
+        row = {}
+        draft.seatSlots[seatKey] = row
+    end
+    return row
+end
+
+local function copyNpcSeatBoardFields(target, source)
+    target.characterKey = nil
+    target.slotEmpty = nil
+    if type(source) == "table" and isNonEmptyString(source.characterKey) and source.slotEmpty ~= true then
+        target.characterKey = source.characterKey
+    else
+        target.slotEmpty = true
+    end
+    target.isPresent = type(source) == "table" and source.isPresent == true
+end
+
+local function placementIdentity(row, identityFn)
+    if type(identityFn) == "function" then
+        local resolved = identityFn(row)
+        if resolved ~= nil then
+            return tostring(resolved)
+        end
+    end
+    if type(row) ~= "table" then
+        return nil
+    end
+    local u = tonumber(row.u)
+    local v = tonumber(row.v)
+    if u == nil or v == nil then
+        return nil
+    end
+    return string.format("uv:%.4f:%.4f", u, v)
+end
+
+local function npcSeatHasOccupant(row)
+    return type(row) == "table"
+        and row.slotEmpty ~= true
+        and isNonEmptyString(row.characterKey)
+end
+
+local function emptyNpcSeatRow(row)
+    local result = type(row) == "table" and deepCopy(row) or {}
+    result.characterKey = nil
+    result.slotEmpty = true
+    return result
+end
+
+--- Builds a detached JSON-safe participant draft from a library `sessionScene`.
+--- @param sceneKey string
+--- @param sessionScene table
+--- @return table
+function Preview.buildDraft(sceneKey, sessionScene)
+    local source = type(sessionScene) == "table" and sessionScene or {}
+    local sourceWorld = type(source.npcWorld) == "table" and source.npcWorld or {}
+    local draft = {
+        sceneKey = sceneKey,
+        npcWorld = {
+            placements = deepCopy(type(sourceWorld.placements) == "table" and sourceWorld.placements or {}),
+        },
+        seatSlots = deepCopy(type(source.seatSlots) == "table" and source.seatSlots or {}),
+    }
+    for _, seatKey in ipairs(C.PlayerColors or {}) do
+        ensureDraftSeatRow(draft, seatKey).isPresent = seatPresence(source, seatKey)
+    end
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local row = ensureDraftSeatRow(draft, seatKey)
+        row.isPresent = seatPresence(source, seatKey)
+        if not npcSeatHasOccupant(row) then
+            row.characterKey = nil
+            row.slotEmpty = true
+        end
+    end
+    return draft
+end
+
+--- Validates the persisted draft shape without consulting live objects.
+--- @param draft any
+--- @return boolean
+function Preview.isValidDraft(draft)
+    return type(draft) == "table"
+        and isNonEmptyString(draft.sceneKey)
+        and type(draft.npcWorld) == "table"
+        and type(draft.npcWorld.placements) == "table"
+        and type(draft.seatSlots) == "table"
+end
+
+--- Replaces board-owned fields on a library `sessionScene`, preserving all other row metadata.
+--- @param draft table
+--- @param sessionScene table
+--- @return table
+function Preview.mergeDraftIntoSessionScene(draft, sessionScene)
+    local result = deepCopy(type(sessionScene) == "table" and sessionScene or {})
+    result.npcWorld = type(result.npcWorld) == "table" and result.npcWorld or {}
+    result.npcWorld.placements = deepCopy(draft.npcWorld.placements)
+    result.seatSlots = type(result.seatSlots) == "table" and result.seatSlots or {}
+    result.seatPresent = type(result.seatPresent) == "table" and result.seatPresent or {}
+
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local target = type(result.seatSlots[seatKey]) == "table"
+            and deepCopy(result.seatSlots[seatKey])
+            or {}
+        local source = type(draft.seatSlots) == "table" and draft.seatSlots[seatKey] or nil
+        copyNpcSeatBoardFields(target, source)
+        result.seatSlots[seatKey] = target
+        result.seatPresent[seatKey] = target.isPresent
+    end
+    for _, seatKey in ipairs(C.PlayerColors or {}) do
+        local target = type(result.seatSlots[seatKey]) == "table"
+            and deepCopy(result.seatSlots[seatKey])
+            or {}
+        local source = type(draft.seatSlots) == "table" and draft.seatSlots[seatKey] or nil
+        target.isPresent = type(source) == "table" and source.isPresent == true
+        result.seatSlots[seatKey] = target
+        result.seatPresent[seatKey] = target.isPresent
+    end
+    return result
+end
+
+--- Copies every library PC/NPC presence flag into a draft without moving draft occupants.
+--- @param draft table
+--- @param librarySessionScene table
+function Preview.syncDraftSeatPresence(draft, librarySessionScene)
+    for _, seatKey in ipairs(C.PlayerColors or {}) do
+        ensureDraftSeatRow(draft, seatKey).isPresent = seatPresence(librarySessionScene, seatKey)
+    end
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        ensureDraftSeatRow(draft, seatKey).isPresent = seatPresence(librarySessionScene, seatKey)
+    end
+end
+
+--- Returns the currently persisted preview draft.
+--- @return table|nil
+function Preview.getDraft()
+    local S = require("core.state")
+    local draft = S.getStateVal("controlBoard", "previewDraft")
+    return Preview.isValidDraft(draft) and draft or nil
+end
+
+--- @return boolean
+function Preview.isThere()
+    return Preview.getDraft() ~= nil
+end
+
+--- Starts THERE for a pending library row.
+--- @param sceneKey string|nil defaults to sceneLibrary.activeKey
+--- @return boolean
+function Preview.enter(sceneKey)
+    local S = require("core.state")
+    local SceneLibrary = require("core.scene_library")
+    local key = sceneKey or S.getStateVal("sceneLibrary", "activeKey")
+    if not SceneLibrary.isPendingSelection(key) then
+        return false
+    end
+    local sessionScene = S.getStateVal("sceneLibrary", "scenes", key, "sessionScene")
+    if type(sessionScene) ~= "table" then
+        return false
+    end
+    S.setStateVal(Preview.buildDraft(key, sessionScene), "controlBoard", "previewDraft")
+    return true
+end
+
+--- Replaces the active draft's participant snapshot after a settled board scan.
+--- @param snapshot table `{ npcWorld = { placements }, seatSlots }`
+--- @return boolean
+function Preview.capture(snapshot)
+    local S = require("core.state")
+    local draft = Preview.getDraft()
+    if draft == nil or type(snapshot) ~= "table" then
+        return false
+    end
+    local world = type(snapshot.npcWorld) == "table" and snapshot.npcWorld or {}
+    draft.npcWorld.placements = deepCopy(type(world.placements) == "table" and world.placements or {})
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local target = ensureDraftSeatRow(draft, seatKey)
+        local source = type(snapshot.seatSlots) == "table" and snapshot.seatSlots[seatKey] or nil
+        copyNpcSeatBoardFields(target, source)
+    end
+    for _, seatKey in ipairs(C.PlayerColors or {}) do
+        local target = ensureDraftSeatRow(draft, seatKey)
+        local source = type(snapshot.seatSlots) == "table" and snapshot.seatSlots[seatKey] or nil
+        target.isPresent = type(source) == "table" and source.isPresent == true
+    end
+    S.setStateVal(draft, "controlBoard", "previewDraft")
+    return true
+end
+
+--- Reloads the active draft from its committed library row.
+--- @return table|nil
+function Preview.reset()
+    local S = require("core.state")
+    local draft = Preview.getDraft()
+    if draft == nil then
+        return nil
+    end
+    local sessionScene = S.getStateVal("sceneLibrary", "scenes", draft.sceneKey, "sessionScene")
+    if type(sessionScene) ~= "table" then
+        return nil
+    end
+    local resetDraft = Preview.buildDraft(draft.sceneKey, sessionScene)
+    S.setStateVal(resetDraft, "controlBoard", "previewDraft")
+    return resetDraft
+end
+
+--- Commits board-owned draft fields to its library row without clearing THERE.
+--- @return boolean
+function Preview.commit()
+    local S = require("core.state")
+    local draft = Preview.getDraft()
+    if draft == nil then
+        return false
+    end
+    local sessionScene = S.getStateVal("sceneLibrary", "scenes", draft.sceneKey, "sessionScene")
+    if type(sessionScene) ~= "table" then
+        return false
+    end
+    local committed = Preview.mergeDraftIntoSessionScene(draft, sessionScene)
+    S.setStateVal(committed, "sceneLibrary", "scenes", draft.sceneKey, "sessionScene")
+    return true
+end
+
+--- Copies committed library presence into the active draft.
+--- @return boolean
+function Preview.syncPresenceFromLibrary()
+    local S = require("core.state")
+    local draft = Preview.getDraft()
+    if draft == nil then
+        return false
+    end
+    local sessionScene = S.getStateVal("sceneLibrary", "scenes", draft.sceneKey, "sessionScene")
+    if type(sessionScene) ~= "table" then
+        return false
+    end
+    Preview.syncDraftSeatPresence(draft, sessionScene)
+    S.setStateVal(draft, "controlBoard", "previewDraft")
+    return true
+end
+
+function Preview.clear()
+    local S = require("core.state")
+    S.setStateVal(nil, "controlBoard", "previewDraft")
+end
+
+--- Merges source live participants over a destination scene bundle.
+--- @param source table
+--- @param destination table
+--- @param options table|nil `{ npcSeats, playerColors, placementIdentity }`
+--- @return table
+function Preview.mergeLockedParticipants(source, destination, options)
+    local opts = type(options) == "table" and options or {}
+    local npcSeats = type(opts.npcSeats) == "table" and opts.npcSeats or C.NPCSeats or {}
+    local playerColors = type(opts.playerColors) == "table" and opts.playerColors or C.PlayerColors or {}
+    local result = deepCopy(type(destination) == "table" and destination or {})
+    local sourceScene = type(source) == "table" and source or {}
+    local sourceWorld = type(sourceScene.npcWorld) == "table" and sourceScene.npcWorld or {}
+    local sourcePlacements = type(sourceWorld.placements) == "table" and sourceWorld.placements or {}
+    result.npcWorld = type(result.npcWorld) == "table" and result.npcWorld or {}
+    result.npcWorld.placements = type(result.npcWorld.placements) == "table"
+        and result.npcWorld.placements
+        or {}
+    result.seatSlots = type(result.seatSlots) == "table" and result.seatSlots or {}
+    result.seatPresent = type(result.seatPresent) == "table" and result.seatPresent or {}
+    local sourceSlots = type(sourceScene.seatSlots) == "table" and sourceScene.seatSlots or {}
+
+    local sourceNpcKeys = {}
+    for characterKey, _ in pairs(sourcePlacements) do
+        sourceNpcKeys[characterKey] = true
+    end
+    for _, seatKey in ipairs(npcSeats) do
+        local row = sourceSlots[seatKey]
+        if npcSeatHasOccupant(row) then
+            sourceNpcKeys[row.characterKey] = true
+        end
+    end
+
+    local sourceSnapIds = {}
+    for _, row in pairs(sourcePlacements) do
+        local identity = placementIdentity(row, opts.placementIdentity)
+        if identity ~= nil then
+            sourceSnapIds[identity] = true
+        end
+    end
+    for characterKey, row in pairs(result.npcWorld.placements) do
+        local identity = placementIdentity(row, opts.placementIdentity)
+        if sourceNpcKeys[characterKey] == true or (identity ~= nil and sourceSnapIds[identity] == true) then
+            result.npcWorld.placements[characterKey] = nil
+        end
+    end
+
+    local displaced = {}
+    for _, seatKey in ipairs(npcSeats) do
+        local sourceRow = sourceSlots[seatKey]
+        local destinationRow = result.seatSlots[seatKey]
+        if npcSeatHasOccupant(sourceRow)
+            and npcSeatHasOccupant(destinationRow)
+            and sourceNpcKeys[destinationRow.characterKey] ~= true then
+            displaced[#displaced + 1] = deepCopy(destinationRow)
+        end
+    end
+
+    for _, seatKey in ipairs(npcSeats) do
+        local row = result.seatSlots[seatKey]
+        if npcSeatHasOccupant(row) and sourceNpcKeys[row.characterKey] == true then
+            result.seatSlots[seatKey] = emptyNpcSeatRow(row)
+        end
+    end
+    for _, seatKey in ipairs(npcSeats) do
+        local sourceRow = sourceSlots[seatKey]
+        if npcSeatHasOccupant(sourceRow) then
+            result.seatSlots[seatKey] = deepCopy(sourceRow)
+        end
+    end
+    for _, displacedRow in ipairs(displaced) do
+        local placed = false
+        for _, seatKey in ipairs(npcSeats) do
+            if not npcSeatHasOccupant(result.seatSlots[seatKey]) then
+                result.seatSlots[seatKey] = displacedRow
+                placed = true
+                break
+            end
+        end
+        if not placed then
+            -- No seat remains; the destination-only NPC is intentionally removed.
+        end
+    end
+
+    for characterKey, row in pairs(sourcePlacements) do
+        result.npcWorld.placements[characterKey] = deepCopy(row)
+    end
+    for _, seatKey in ipairs(npcSeats) do
+        local row = result.seatSlots[seatKey]
+        result.seatPresent[seatKey] = type(row) == "table" and row.isPresent == true
+    end
+    for _, seatKey in ipairs(playerColors) do
+        local sourceRow = sourceSlots[seatKey]
+        local targetRow = type(result.seatSlots[seatKey]) == "table"
+            and result.seatSlots[seatKey]
+            or {}
+        targetRow.isPresent = type(sourceRow) == "table" and sourceRow.isPresent == true
+        result.seatSlots[seatKey] = targetRow
+        result.seatPresent[seatKey] = targetRow.isPresent
+    end
+    return result
+end
+
+return Preview
