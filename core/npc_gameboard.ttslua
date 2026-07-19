@@ -3738,6 +3738,21 @@ function Gameboard.resolvePlacementSnapCatalogEntry(u, v, config)
     return bestWorld or bestUv
 end
 
+--- Stable snap identity for one-shot locked participant collision handling.
+--- Returns nil when the current board catalog cannot resolve the placement.
+--- @param row table|nil
+--- @return string|nil
+function Gameboard.lockedPlacementIdentity(row)
+    if type(row) ~= "table" then
+        return nil
+    end
+    local entry = Gameboard.resolvePlacementSnapCatalogEntry(row.u, row.v, nil)
+    if type(entry) ~= "table" or entry.snapIndex == nil then
+        return nil
+    end
+    return "snap:" .. tostring(entry.snapIndex)
+end
+
 --- Sort key for stage lerp anchor-family batches: center-out on destination anchor; tie-break by anchor travel.
 --- @param srcEntry table|nil catalog entry at move start
 --- @param destEntry table|nil catalog entry at move end

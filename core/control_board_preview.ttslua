@@ -62,15 +62,27 @@ local function placementIdentity(row, identityFn)
             return tostring(resolved)
         end
     end
-    if type(row) ~= "table" then
-        return nil
+    return nil
+end
+
+local function placementsCollide(a, b, identityFn, uvTolerance)
+    local aIdentity = placementIdentity(a, identityFn)
+    local bIdentity = placementIdentity(b, identityFn)
+    if aIdentity ~= nil or bIdentity ~= nil then
+        return aIdentity ~= nil and bIdentity ~= nil and aIdentity == bIdentity
     end
-    local u = tonumber(row.u)
-    local v = tonumber(row.v)
-    if u == nil or v == nil then
-        return nil
+    if type(a) ~= "table" or type(b) ~= "table" then
+        return false
     end
-    return string.format("uv:%.4f:%.4f", u, v)
+    local au = tonumber(a.u)
+    local av = tonumber(a.v)
+    local bu = tonumber(b.u)
+    local bv = tonumber(b.v)
+    if au == nil or av == nil or bu == nil or bv == nil then
+        return false
+    end
+    local tolerance = tonumber(uvTolerance) or 0.002
+    return math.abs(au - bu) <= tolerance and math.abs(av - bv) <= tolerance
 end
 
 local function npcSeatHasOccupant(row)
@@ -313,16 +325,15 @@ function Preview.mergeLockedParticipants(source, destination, options)
         end
     end
 
-    local sourceSnapIds = {}
-    for _, row in pairs(sourcePlacements) do
-        local identity = placementIdentity(row, opts.placementIdentity)
-        if identity ~= nil then
-            sourceSnapIds[identity] = true
-        end
-    end
     for characterKey, row in pairs(result.npcWorld.placements) do
-        local identity = placementIdentity(row, opts.placementIdentity)
-        if sourceNpcKeys[characterKey] == true or (identity ~= nil and sourceSnapIds[identity] == true) then
+        local collides = false
+        for _, sourceRow in pairs(sourcePlacements) do
+            if placementsCollide(row, sourceRow, opts.placementIdentity, opts.uvTolerance) then
+                collides = true
+                break
+            end
+        end
+        if sourceNpcKeys[characterKey] == true or collides then
             result.npcWorld.placements[characterKey] = nil
         end
     end

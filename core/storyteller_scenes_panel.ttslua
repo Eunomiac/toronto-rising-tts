@@ -1758,6 +1758,17 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
 
         -- Deep copy: `U.clone(..., true)` is shallow only (see `lib/util.ttslua`); `U.merge` recurses nested tables.
         local bundle = U.merge({}, ent.sessionScene)
+        local lockNextSceneApply = S.getStateVal("controlBoard", "lockNextSceneApply") == true
+        if lockNextSceneApply then
+            local liveParticipants = U.merge({}, S.getStateVal("sessionScene") or {})
+            local Gameboard = require("core.npc_gameboard")
+            bundle = Preview.mergeLockedParticipants(liveParticipants, bundle, {
+                npcSeats = C.NPCSeats,
+                playerColors = C.PlayerColors,
+                placementIdentity = Gameboard.lockedPlacementIdentity,
+                uvTolerance = 0.002,
+            })
+        end
         SceneLibrary.syncNpcRoleOverrideFromSeatSlots(bundle)
         local lightingKey, lightingErr = validateLightingPresetKey(bundle.lightingPresetKey)
         if lightingKey == nil then
@@ -1775,6 +1786,9 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
             return false, "Apply failed: " .. tostring(clockErr)
         end
 
+        if lockNextSceneApply then
+            S.setStateVal(U.merge({}, bundle), "sceneLibrary", "scenes", K, "sessionScene")
+        end
         S.setStateVal(bundle, "sessionScene")
         SceneLibrary.syncOccupiedNpcSlotsFromSeatSlots(bundle)
         SceneLibrary.setExclusiveLiveMirror(K)
@@ -1840,9 +1854,15 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
             skipSoundscape = true,
             changedSeatColors = changedSeatColors,
         })
+        local Gameboard = nil
+        if lockNextSceneApply then
+            S.setStateVal(false, "controlBoard", "lockNextSceneApply")
+            Gameboard = require("core.npc_gameboard")
+            Gameboard.syncControlBoardModeToolbar()
+        end
         if applyingControlBoardPreview then
             Preview.clear()
-            local Gameboard = require("core.npc_gameboard")
+            Gameboard = Gameboard or require("core.npc_gameboard")
             Gameboard.reconcileControlBoardFromState({ force = true, forceTokenMirror = true })
         end
 
