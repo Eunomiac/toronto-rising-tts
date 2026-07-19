@@ -68,18 +68,20 @@ D.DEFAULT_STAGE_WORLD = {
 --- See .dev/NPC Object Spawning & Spotlighting/Generating Snap Points For Control Board.md
 D.CONTROL_BOARD_SNAP = {
   origin = { u = 0.5, v = 0.35 },
+  defaultTokenScale = Vector(0.2, 1, 0.2),
   snapYawOffsetDeg = 0,
   snapGroups = {
     {
       num = 5,
       angleDelta = 7,
       rays = 8,
-      groundLevel = -50,
+      groundLevel = -40,
       radialStagger = 15,
       maxU = 0.65,
       maxV = 0.45,
       origin = { u = 0.5, v = 0.3 },
       defaultLightMode = "STANDARD",
+      tokenScale = Vector(0.3, 1, 0.3),
       validSnaps = {
         minU = 0.3, maxU = 0.7, minV = 0.38, maxV = 0.5 }
     }, -- CENTER, Center Left, Center Right
@@ -92,13 +94,14 @@ D.CONTROL_BOARD_SNAP = {
       maxU = 0.7,
       maxV = 0.566,
       defaultLightMode = "OFF",
+      tokenScale = Vector(0.3, 1, 0.3),
       validSnaps = {
         minU = 0.35, maxU = 0.65, minV = 0.5, maxV = 0.6 }
     }, -- Mid Center, Mid Left, Mid Right
-    { num = 6, angleDelta = 360 / 6, rays = 1, groundLevel = -30, radialStagger = 0, maxU = 0.3, maxV = 0.65, origin = { u = 0.25, v = 0.6 }, defaultLightMode = "OFF" }, -- Far Left
-    { num = 6, angleDelta = 360 / 6, rays = 1, groundLevel = -10, radialStagger = 0, maxU = 0.45, maxV = 0.85, origin = { u = 0.4, v = 0.8 }, defaultLightMode = "OFF" }, -- Far Center-Left
-    { num = 6, angleDelta = 360 / 6, rays = 1, groundLevel = -10, radialStagger = 0, maxU = 0.65, maxV = 0.85, origin = { u = 0.6, v = 0.8 }, defaultLightMode = "OFF" }, -- Far Center-Right
-    { num = 6, angleDelta = 360 / 6, rays = 1, groundLevel = -30, radialStagger = 0, maxU = 0.8, maxV = 0.65, origin = { u = 0.75, v = 0.6 }, defaultLightMode = "OFF" }, -- Far Right
+    { num = 6, angleDelta = 360 / 6, rays = 1, groundLevel = -30, radialStagger = 0, maxU = 0.3, maxV = 0.65, origin = { u = 0.25, v = 0.6 }, defaultLightMode = "OFF", tokenScale = Vector(0.7, 1, 0.7) }, -- Far Left
+    { num = 6, angleDelta = 360 / 6, rays = 1, groundLevel = -10, radialStagger = 0, maxU = 0.45, maxV = 0.85, origin = { u = 0.4, v = 0.8 }, defaultLightMode = "OFF", tokenScale = Vector(0.7, 1, 0.7) }, -- Far Center-Left
+    { num = 6, angleDelta = 360 / 6, rays = 1, groundLevel = -10, radialStagger = 0, maxU = 0.65, maxV = 0.85, origin = { u = 0.6, v = 0.8 }, defaultLightMode = "OFF", tokenScale = Vector(0.7, 1, 0.7) }, -- Far Center-Right
+    { num = 6, angleDelta = 360 / 6, rays = 1, groundLevel = -30, radialStagger = 0, maxU = 0.8, maxV = 0.65, origin = { u = 0.75, v = 0.6 }, defaultLightMode = "OFF", tokenScale = Vector(0.7, 1, 0.7) }, -- Far Right
   }
 }
 
