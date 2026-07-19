@@ -43,6 +43,8 @@ Verification:
 
 ## Processed
 
+2026-07-19 Project die white past end date (skip `project_die_0`) → **TOR-421**
+
 2026-07-19 Group flip: inconsistent family, wrong faces, Y sink, stage light without Apply → **TOR-419**
 
 2026-07-19 Clock lerp closes panel / time unchanged (silent no-op) → **TOR-418** (validate before close; AlertGM; no Sync.full on zero delta)

@@ -308,6 +308,7 @@ _Blocked: author must define data binding approach before substantial implementa
 - [x] **Projects system (mission-critical):** Create/launch/lifecycle per overview doc (multiclient confirmed via TOR-144). _(TOR-232 — Done 2026-07-10)_
 - [x] **Project Editor start-date parse:** Space-split month/day/year (no rigid RegExp); accepts `formatStartDate` output like `Jun. 3, 2027`. _(TOR-383)_
 - [x] **Prince's Court committed stake dots:** Fold `Projects.stakeQtyForAdvantage("coterie", …)` into Court trait dots as `extraDisabled` (same as CSHEET). _(TOR-387)_
+- [x] **Project die image 0–10:** In-progress CSHEET/Court always set `project_die_N` (never blank); after end → `project_die_0`, high/before start clamp → `project_die_10`. _(TOR-421)_
 - [x] **Prince's Court page 3 — coterie projects list:** Reconcile `listForDisplaySource("coterie")` into Court page 3 left (static image today). _(TOR-371)_
 - [x] **sheetDisplay:false Status:** Temp/disabled overlays on page 3; list in Stats + Project Editor Advantages. _(TOR-385)_
 - [x] **Domain ratings in Stats + Project Editor:** Top-level `chasse` / `lien` / `portillon` / `haven` stakeable + listed when Coterie selected. _(TOR-386)_

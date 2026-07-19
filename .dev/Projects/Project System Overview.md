@@ -185,6 +185,7 @@ endDate    = startDate advanced by `duration` increments
 
 - Present day before `startDate` → die displays as `duration` (typically 10 if mod is 0).
 - Present day after `endDate` / huge Memoriam jumps → die clamps to `0` (and duration upper bound as above).
+- **CSHEET / Court image:** always set `project_die_N` for in-progress projects with display index clamped to **0–10** (`project_die_0` … `project_die_10`). Never leave the image attribute blank while in progress (blank → white tile). Values above 10 (positive `projectDieMod`) still show `project_die_10`.
 - ST never edits `projectDie` directly; Goal-roll outcomes are applied by editing `projectDieMod`.
 - No per-project timeline event table in v1. On present-day settle / jump, recompute derived die/end for in-progress projects (N is small).
 

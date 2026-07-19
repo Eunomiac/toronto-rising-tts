@@ -1227,12 +1227,10 @@ function M.buildPage5DocumentXml(seatColorRaw)
       setImage("project_" .. tostring(index0) .. "_result_image", resultImg)
       setText("project_" .. tostring(index0) .. "_result_margin", marginText)
       setActive("project_" .. tostring(index0) .. "_result_margin", marginActive)
+      -- In-progress: always show project_die_0..10 (never blank). Before start / high die → 10; after end → 0.
       local dieImg = ""
       if die ~= nil then
-        local d = math.max(0, math.min(10, die))
-        if d >= 1 then
-          dieImg = "project_die_" .. tostring(d)
-        end
+        dieImg = "project_die_" .. tostring(math.max(0, math.min(10, die)))
       end
       setImage("project_" .. tostring(index0) .. "_project_die", dieImg)
       setActive("project_" .. tostring(index0) .. "_stakes_label", stakesActive)
@@ -1343,12 +1341,10 @@ function M.reconcileCourtProjectsForHudSeat(hudSeatColor)
       local endStr = endDate and (M.formatStartDate(endDate) or "") or ""
       local incLabel = (type(project.increment) == "string" and M.INCREMENT_LABELS[project.increment]) or ""
 
+      -- In-progress: always show project_die_0..10 (never blank). Before start / high die → 10; after end → 0.
       local dieImg = ""
       if die ~= nil then
-        local d = math.max(0, math.min(10, die))
-        if d >= 1 then
-          dieImg = "project_die_" .. tostring(d)
-        end
+        dieImg = "project_die_" .. tostring(math.max(0, math.min(10, die)))
       end
 
       local resultImg = ""
