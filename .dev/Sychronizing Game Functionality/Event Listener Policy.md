@@ -52,6 +52,7 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | `onSave` | `global_script` | Save | B | — | lights state | Med | 4 |
 | `onObjectPickUp` | `global_script` | Host | C | Steam + tag | Gameboard flags | High | 4 |
 | `onObjectDrop` | `global_script` | Host | C | Steam + tag | Gameboard/NPCS | High | 4 |
+| `onObjectRotate` | `global_script` | Host | B+C | Steam + NPC/PC control-token tag | THERE draft capture; NPC family flip when Group Move held | Med | 4 |
 | `onObjectRandomize` | `global_script` | Host | B+C | d10 tag | roll FSM + lights | High | 4 |
 | `onObjectLeaveContainer` | `global_script` | Host | B+C | d10 **or** Card + `Compulsion:` GM Notes prefix | Die GM Notes; Compulsions world I/O (TOR-204) | Med | 4 |
 | `onObjectEnterZone` | `global_script` | Host | C | Card + `Compulsion:` prefix + hand `FogColor` | Compulsions finish selection or removal (TOR-204): `onSelectedEnteredHand` then `onPresentedEnteredHand` | Med | — |
@@ -170,7 +171,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `onObjectEnterZone` | `core/global_script.ttslua` | Medium | **Pass** | `type==Card` + `Compulsion:` prefix + hand `FogColor` in `C.PlayerColors` before finish selection (TOR-204) |
 | `addHotkey` → `Spotlight NPC (hold)` | `core/global_script.ttslua` | Low (ST hold) | **Pass** | `isStorytellerSteamPlayer` before `require`; world I/O in `Gameboard.onControlBoardSpotlightHotkey` |
 | `addHotkey` → `Group move (hold)` | `core/global_script.ttslua` | Low (ST hold) | **Pass** | `isStorytellerSteamPlayer` before `require`; hold flag + board→board family relocate / family flip in `Gameboard.onGroupMoveHotkey` / `tryBoardFamilyGroupRelocate` / `tryBoardFamilyGroupFlip` (TOR-412 / TOR-413 / TOR-414) |
-| `onObjectRotate` | `core/global_script.ttslua` | Medium | **Pass** | Steam + `npc_control_token` + `isGroupMoveHotkeyHeld` before family flip (TOR-414) |
+| `onObjectRotate` | `core/global_script.ttslua` | Medium | **Pass** | Steam + `npc_control_token`/`pc_control_token` O(1) tag gate; `Gameboard.onControlTokenRotated` exits unless THERE before debounced draft capture. NPC-only family flip additionally requires `isGroupMoveHotkeyHeld` (TOR-414). |
 
 ## Module handlers (called from Global)
 
@@ -180,6 +181,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `NPCS.isPooledFigurineObject` | `core/npcs.ttslua` | **Pass** | `npc_figurine` **or** seat `*Object` tag + `Figurine_Custom` + (`npcInstance:` GM Notes **or** instance `figurineGuid` registry when seated) |
 | `NPCS.resolveNpcNameFromFigurine` | `core/npcs.ttslua` | **Pass** | GM Notes, then O(1) `figurineGuidToNpcName` cache (rebuilt on bulk instance replace) |
 | `Gameboard.onNpcControlTokenDropped` | `core/npc_gameboard.ttslua` | **Pass** | `isNpcControlToken` + palette/anchor flags before `waitForCondition` |
+| `Gameboard.onControlTokenRotated` | `core/npc_gameboard.ttslua` | **Pass** | Global pre-gates NPC/PC token; O(1) THERE check precedes generation/debounce capture scheduling |
 | `Gameboard.onNpcControlTokenRotated` | `core/npc_gameboard.ttslua` | **Pass** | Hotkey-held polar family face match; `familyFlipDepth` suppresses recursive rotate |
 | `Gameboard.tryNpcControlTokenDroppedOnStorytellerDiceBag` | `core/npc_gameboard.ttslua` | **Pass** | Black/ST + `dieKindNearStorytellerDiceBag` before restore/roll |
 | `Gameboard.tryPcControlTokenDroppedOnStorytellerDiceBag` | `core/npc_gameboard.ttslua` | **Pass** | `isPcControlToken` + Black/ST + `dieKindNearStorytellerDiceBag` before restore; returns `rollColor, rollType` via `STR.rollTypeForStorytellerBagDrop` |

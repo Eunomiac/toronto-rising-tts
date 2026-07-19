@@ -290,6 +290,7 @@ In-fiction chronicle time — **not** real-world date/time.
 
 - **Table / seats / location** write immediately into `sceneLibrary.scenes[activeKey].sessionScene` (no `SetTableTo` / soundscape / world reconcile). Location **Apply** validates and stores keys (+ top fog) on the row only.
 - **Clock** still uses the in-memory `clockDraft` until **Activate scene** (same present-day rules as below).
+- **Control Board THERE:** the blue HERE/THERE scope button copies pending `npcWorld.placements` and `seatSlots` into persisted `gameState.controlBoard.previewDraft`. Token edits update only that draft. Leaving THERE, selecting another row, clearing preview, or activating the row commits board-owned participant fields to the corresponding library row before restoring HERE. Scenes seat buttons still write the library first, then copy all presence flags into the draft without moving its occupants.
 
 When `activeKey == lastAppliedKey` (or no selection), the panel stays live-bound: table transitions, seat world reconcile + TOR-281 mirror, and Apply location + soundscape behave as before.
 
@@ -318,7 +319,7 @@ Scene **Apply** uses the **staged** transition `core.hud_blindfold.runStagedTran
 
 1. **Blindfold down** — close Scenes panel, show one random blindfold variant; slide-in is 1s.
 2. **Fade-out (~1s, concurrent with slide-in)** — `Soundscape.fadeOutTransitionAmbient` fades BGM + location + weather toward silence (emitter-only; no `gameState` intent change). Weather compares **outgoing vs incoming** (preview from the target bundle): different track → full fade-out; same track, different volume → duck to the **lower** volume (hold without restart, TOR-136).
-3. **Heavy work (settle ~0.75s)** — write **live** state from the chosen library entry’s `sessionScene`, switch table, hosted reconcile, `Sync.full({ skipSoundscape = true })`. New soundscape is **not** applied here.
+3. **Heavy work (settle ~0.75s)** — commit a matching Control Board THERE draft before cloning the row. If `gameState.controlBoard.lockNextSceneApply` is armed, merge the outgoing live stage placements, occupied NPC seats, and PC presence over the destination participants, persist the merged participants back to the destination library row, then write live state, switch table, hosted reconcile, and `Sync.full({ skipSoundscape = true })`. Clear the one-shot lock only after this activation succeeds. New soundscape is **not** applied here.
 4. **Silent settle** — `M.setCamera(..., "default")` for all seated players, then hold the blindfold **down in silence** for the rest of the settle window (`settleDelaySec - workSettleSec`, ~9.25s of a 10s budget). New soundscape is still **not** applied.
 5. **Lift + fade-in (~2s, concurrent)** — at the **end** of the settle, `Scenes.applyActiveSceneSoundscapeFromSession()` runs inside `Soundscape.beginTransitionFadeWindow` **as the blindfold rises**, so the new scene audio fades in alongside the visual reveal (TOR-273; ~2s `TRANSITION_FADE_IN_SEC`). Blindfolds lift once via `scheduleEnd(0)`.
 

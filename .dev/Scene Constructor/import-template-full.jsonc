@@ -109,9 +109,6 @@
     },
 
     "npcWorld": {
-      // Optional: when true, control-board token UV mirror skips overwrite on reconcile.
-      "layoutLock": false,
-
       // Authoritative stage layout: characterKey → STAGE_BOARD u/v (0–1).
       "placements": {
         "adrianVarga": {

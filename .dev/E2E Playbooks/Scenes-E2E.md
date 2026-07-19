@@ -678,3 +678,126 @@ U.RunSequence({
   end
 })
 ```
+
+```lua
+U.RunSequence({
+  function()
+    printHeader("Scenes E2E: SUITE N - Control Board HERE/THERE lifecycle", 1)
+  end,
+  function()
+    printHeader("N1 - Establish live row A", 2)
+  end,
+  function()
+    printHeader("[HUMAN] Apply slot 17 and wait for the transition to finish; leave the Control Board in green HERE", 3)
+  end
+})
+```
+
+```lua
+U.RunSequence({
+  function()
+    if S.getStateVal("sceneLibrary", "lastAppliedKey") ~= SCENES_E2E.sceneA then
+      error("[Scenes E2E] FAIL - slot 17 is not live")
+    end
+    _G.SCENES_E2E_PREVIEW_LIVE = U.clone(S.getStateVal("sessionScene", "npcWorld", "placements") or {}, true)
+    _G.SCENES_E2E_PREVIEW_LIBRARY = U.clone(S.getStateVal("sceneLibrary", "scenes", SCENES_E2E.sceneB, "sessionScene", "npcWorld", "placements") or {}, true)
+    printHeader("N2 - Draft isolation", 2)
+  end,
+  function()
+    printHeader("[HUMAN] Select slot 18, click green HERE to enter blue THERE, then move and flip one NPC control token and one PC control token", 3)
+  end
+})
+```
+
+```lua
+U.RunSequence({
+  function()
+    local Preview = require("core.control_board_preview")
+    local function same(a, b) return JSON.encode(a or {}) == JSON.encode(b or {}) end
+    if not Preview.isThere() then error("[Scenes E2E] FAIL - Control Board did not enter THERE") end
+    if not same(_G.SCENES_E2E_PREVIEW_LIVE, S.getStateVal("sessionScene", "npcWorld", "placements")) then
+      error("[Scenes E2E] FAIL - THERE edit mutated live placements")
+    end
+    if not same(_G.SCENES_E2E_PREVIEW_LIBRARY, S.getStateVal("sceneLibrary", "scenes", SCENES_E2E.sceneB, "sessionScene", "npcWorld", "placements")) then
+      error("[Scenes E2E] FAIL - uncommitted THERE edit mutated library placements")
+    end
+    if same(_G.SCENES_E2E_PREVIEW_LIBRARY, S.getStateVal("controlBoard", "previewDraft", "npcWorld", "placements")) then
+      error("[Scenes E2E] FAIL - token move was not captured in previewDraft")
+    end
+    print("[Scenes E2E] PASS - THERE draft is persisted and isolated")
+  end,
+  function()
+    printHeader("N3 - Seat override and explicit commit", 2)
+  end,
+  function()
+    printHeader("[HUMAN] Toggle Brown in the Scenes Panel; confirm draft token occupants do not move, then click blue THERE to return HERE", 3)
+  end
+})
+```
+
+```lua
+U.RunSequence({
+  function()
+    local function same(a, b) return JSON.encode(a or {}) == JSON.encode(b or {}) end
+    if S.getStateVal("controlBoard", "previewDraft") ~= nil then
+      error("[Scenes E2E] FAIL - returning HERE did not clear previewDraft")
+    end
+    if same(_G.SCENES_E2E_PREVIEW_LIBRARY, S.getStateVal("sceneLibrary", "scenes", SCENES_E2E.sceneB, "sessionScene", "npcWorld", "placements")) then
+      error("[Scenes E2E] FAIL - returning HERE did not commit draft placements")
+    end
+    if not same(_G.SCENES_E2E_PREVIEW_LIVE, S.getStateVal("sessionScene", "npcWorld", "placements")) then
+      error("[Scenes E2E] FAIL - HERE restoration changed live placements")
+    end
+    print("[Scenes E2E] PASS - draft committed and HERE restored")
+  end,
+  function()
+    printHeader("N4 - Reset, Clear, Load, and Apply", 2)
+  end,
+  function()
+    printHeader("[HUMAN] Re-enter THERE on slot 18. Move a token, press Reset and confirm baseline restoration. Press Clear twice and confirm only the draft clears. Press Load and confirm the draft restores. Make one final edit, then Apply slot 18 and wait for transition", 3)
+  end
+})
+```
+
+```lua
+U.RunSequence({
+  function()
+    if S.getStateVal("sceneLibrary", "lastAppliedKey") ~= SCENES_E2E.sceneB then
+      error("[Scenes E2E] FAIL - edited preview row did not apply")
+    end
+    if S.getStateVal("controlBoard", "previewDraft") ~= nil then
+      error("[Scenes E2E] FAIL - scene Apply did not restore HERE")
+    end
+    print("[Scenes E2E] PASS - THERE Apply committed and restored HERE")
+  end,
+  function()
+    printHeader("N5 - One-shot Lock merge", 2)
+  end,
+  function()
+    printHeader("[HUMAN] In HERE, arm Lock. Select slot 17, arrange a destination participant on the same board snap/seat as a live participant, then Apply. Confirm source wins, displaced NPCs move to later free seats or leave when full, PC presence carries, and Lock turns off", 3)
+  end
+})
+```
+
+```lua
+U.RunSequence({
+  function()
+    if S.getStateVal("controlBoard", "lockNextSceneApply") == true then
+      error("[Scenes E2E] FAIL - successful locked activation did not auto-unlock")
+    end
+    if S.getStateVal("controlBoard", "previewDraft") ~= nil then
+      error("[Scenes E2E] FAIL - locked activation left Control Board in THERE")
+    end
+    print("[Scenes E2E] PASS - one-shot Lock auto-unlocked")
+  end,
+  function()
+    printHeader("", 2)
+  end,
+  function()
+    printHeader("", 1)
+  end,
+  function()
+    print("")
+  end
+})
+```

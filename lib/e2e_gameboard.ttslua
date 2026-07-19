@@ -437,7 +437,8 @@ end
 
 local function clearNpcSeatsAndPlacements()
     S.setStateVal({}, "sessionScene", "npcWorld", "placements")
-    S.setStateVal(false, "sessionScene", "npcWorld", "layoutLock")
+    S.setStateVal(false, "controlBoard", "lockNextSceneApply")
+    S.setStateVal(nil, "controlBoard", "previewDraft")
     for _, seatKey in ipairs(C.NPCSeats or {}) do
         S.setStateVal(false, "seatLayout", "occupiedNPCSlots", seatKey)
     end
@@ -1173,6 +1174,26 @@ local function runTor333SeatOccupancyTests(failures)
     clearNpcSeatsAndPlacements()
 end
 
+local function plainTablesEqual(a, b)
+    if type(a) ~= type(b) then
+        return false
+    end
+    if type(a) ~= "table" then
+        return a == b
+    end
+    for key, value in pairs(a) do
+        if not plainTablesEqual(value, b[key]) then
+            return false
+        end
+    end
+    for key, _ in pairs(b) do
+        if a[key] == nil then
+            return false
+        end
+    end
+    return true
+end
+
 local function runControlBoardPreviewDomainTests(failures)
     local library = {
         npcWorld = {
@@ -1267,6 +1288,120 @@ local function runControlBoardPreviewDomainTests(failures)
         or merged.seatSlots.Brown.isPresent ~= false then
         failures[#failures + 1] = "P5: locked seat merge did not preserve source priority/status and relocate destination"
     end
+
+    local fallbackCollision = ControlBoardPreview.mergeLockedParticipants({
+        npcWorld = { placements = { source = { u = 0.2000, v = 0.3000 } } },
+        seatSlots = {},
+    }, {
+        npcWorld = {
+            placements = {
+                near = { u = 0.2015, v = 0.3015 },
+                far = { u = 0.21, v = 0.31 },
+            },
+        },
+        seatSlots = {},
+    }, {
+        npcSeats = {},
+        playerColors = {},
+        placementIdentity = function()
+            return nil
+        end,
+        uvTolerance = 0.002,
+    })
+    if fallbackCollision.npcWorld.placements.near ~= nil
+        or fallbackCollision.npcWorld.placements.far == nil then
+        failures[#failures + 1] = "P6: unresolved placement collision did not use narrow UV tolerance"
+    end
+
+    local overflow = ControlBoardPreview.mergeLockedParticipants({
+        npcWorld = { placements = {} },
+        seatSlots = {
+            NPC1 = { characterKey = "sourceA", isPresent = true },
+            NPC2 = { characterKey = "sourceB", isPresent = false },
+        },
+    }, {
+        npcWorld = {
+            placements = {
+                sourceA = { u = 0.6, v = 0.6 },
+            },
+        },
+        seatSlots = {
+            NPC1 = { characterKey = "displacedA", isPresent = false },
+            NPC2 = { characterKey = "displacedB", isPresent = true },
+        },
+    }, {
+        npcSeats = { "NPC1", "NPC2" },
+        playerColors = {},
+    })
+    if overflow.seatSlots.NPC1.characterKey ~= "sourceA"
+        or overflow.seatSlots.NPC2.characterKey ~= "sourceB"
+        or overflow.npcWorld.placements.sourceA ~= nil then
+        failures[#failures + 1] = "P7: locked overflow did not prune duplicates and remove unseatable destination NPCs"
+    end
+
+    local originalLibrary = U.merge({}, S.getStateVal("sceneLibrary") or {})
+    local originalControlBoard = U.merge({}, S.getStateVal("controlBoard") or {})
+    local livePlacementsBefore = U.merge({}, S.getStateVal("sessionScene", "npcWorld", "placements") or {})
+    local testKey = "__e2e_control_board_preview"
+    S.setStateVal({
+        title = "E2E Control Board Preview",
+        receivesLiveWrites = false,
+        sessionScene = U.merge({}, library),
+    }, "sceneLibrary", "scenes", testKey)
+    S.setStateVal(testKey, "sceneLibrary", "activeKey")
+    S.setStateVal("__different_live_scene", "sceneLibrary", "lastAppliedKey")
+    ControlBoardPreview.clear()
+    if not ControlBoardPreview.enter(testKey) then
+        failures[#failures + 1] = "P8: pending library row did not enter THERE"
+    else
+        ControlBoardPreview.capture({
+            npcWorld = {
+                placements = {
+                    draftOnly = { u = 0.7, v = 0.4, npcLightMode = "OFF" },
+                },
+            },
+            seatSlots = {
+                Brown = { isPresent = false },
+                NPC1 = { characterKey = "draftNpc", isPresent = true },
+            },
+        })
+        local libBeforeCommit = S.getStateVal(
+            "sceneLibrary",
+            "scenes",
+            testKey,
+            "sessionScene",
+            "npcWorld",
+            "placements",
+            "draftOnly"
+        )
+        if libBeforeCommit ~= nil
+            or not plainTablesEqual(
+                livePlacementsBefore,
+                S.getStateVal("sessionScene", "npcWorld", "placements")
+            ) then
+            failures[#failures + 1] = "P9: draft capture leaked into library or live sessionScene"
+        end
+        if not ControlBoardPreview.commit()
+            or S.getStateVal(
+                "sceneLibrary",
+                "scenes",
+                testKey,
+                "sessionScene",
+                "npcWorld",
+                "placements",
+                "draftOnly"
+            ) == nil then
+            failures[#failures + 1] = "P10: draft commit did not update its library row"
+        end
+    end
+    ControlBoardPreview.clear()
+    S.setStateVal(testKey, "sceneLibrary", "lastAppliedKey")
+    if ControlBoardPreview.enter(testKey) then
+        failures[#failures + 1] = "P11: HERE entered THERE without a pending selection"
+    end
+    S.setStateVal(originalLibrary, "sceneLibrary")
+    S.setStateVal(originalControlBoard, "controlBoard")
+    S.validateState()
 end
 
 local function runFullSuites(failures)
@@ -1353,44 +1488,28 @@ local function runFullSuites(failures)
 
     clearNpcSeatsAndPlacements()
     setPlacementRow(fx.npcA, fx.uvA.u, fx.uvA.v, "STANDARD")
-    S.setStateVal(true, "sessionScene", "npcWorld", "layoutLock")
+    S.setStateVal(true, "controlBoard", "lockNextSceneApply")
     S.validateState()
     placeTokenOnBoard(fx.npcA, fx.uvB.u, fx.uvB.v, true)
-    local before = Gameboard.scanControlBoardTokens(getControlBoard()) or {}
+    Gameboard.reconcileControlBoardFromState({ force = true })
+    local after = Gameboard.scanControlBoardTokens(getControlBoard()) or {}
     local scannedU, scannedV
-    for _, row in ipairs(before) do
+    for _, row in ipairs(after) do
         if row.characterKey == fx.npcA then
             scannedU = row.u
             scannedV = row.v
         end
     end
-    Gameboard.reconcileControlBoardFromState({ force = true })
-    if scannedU ~= nil and (math.abs(scannedU - fx.uvA.u) > fx.uvTol or math.abs(scannedV - fx.uvA.v) > fx.uvTol) then
-        failures[#failures + 1] = "H1: layoutLock=true but token UV moved on reconcile"
+    if scannedU == nil
+        or math.abs(scannedU - fx.uvA.u) > fx.uvTol
+        or math.abs(scannedV - fx.uvA.v) > fx.uvTol then
+        failures[#failures + 1] = "H1: HERE did not restore live placement while one-shot Lock was armed"
+    end
+    if S.getStateVal("controlBoard", "lockNextSceneApply") ~= true then
+        failures[#failures + 1] = "H2: ordinary HERE reconcile consumed the one-shot Lock"
     end
 
-    S.setStateVal(true, "sessionScene", "npcWorld", "layoutLock")
-    assignSeatSlot("NPC1", fx.npcB, true)
-    Gameboard.reconcileControlBoardFromState({ force = true })
-    local stashY = DATA.MARKER_STASH_WORLD_Y or -200
-    local markers = getObjectsWithTag(DATA.TAG_GAMEBOARD_NPC_SEAT) or {}
-    local npc1MarkerStashed = true
-    for _, obj in ipairs(markers) do
-        if U.isGameObject(obj) then
-            local notes = obj.getGMNotes and obj.getGMNotes() or ""
-            if type(notes) == "string" and string.find(notes, "gameboardNpcSeat:NPC1", 1, true) then
-                local pos = obj.getPosition()
-                if pos ~= nil and math.abs((pos.y or 0) - stashY) > 5 then
-                    npc1MarkerStashed = false
-                end
-            end
-        end
-    end
-    if not npc1MarkerStashed then
-        failures[#failures + 1] = "H2: NPC1 seat marker should update while layoutLock (not all stashed)"
-    end
-
-    S.setStateVal(false, "sessionScene", "npcWorld", "layoutLock")
+    S.setStateVal(false, "controlBoard", "lockNextSceneApply")
     S.validateState()
 end
 

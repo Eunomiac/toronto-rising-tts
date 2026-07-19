@@ -71,7 +71,7 @@ Keep these in sync with `lib/e2e_gameboard.ttslua`.
 | `GB_E2E_NPC_B` | `adrianVarga` | Second placement / seat conflict |
 | `GB_E2E_TABLE_KEY` | `Table A` | NPC1 seat tests |
 | `GB_E2E_UV_A` | `u=0.18, v=0.72` | Stable on-board snap |
-| `GB_E2E_UV_B` | `u=0.42, v=0.55` | Move / layoutLock tests |
+| `GB_E2E_UV_B` | `u=0.42, v=0.55` | Move / one-shot Lock tests |
 | `GB_E2E_PC_ABSENT` | `Brown` | Reload PC-token absent probe |
 
 ## Session prereqs
@@ -165,12 +165,27 @@ Pass if `gbE2eContinue:scene_apply` reports PASS:
 | TOR-333 | Empty NPC seats are not toggleable | Empty live/preview seats can toggle |
 | G1 | Reconcile pulls token from palette | Token stays on palette |
 | G2 | `syncTokensToPalette` skips on-stage keys | On-stage token parked |
-| H1 | `layoutLock` blocks token UV overwrite | Token moved on reconcile |
-| H2 | `layoutLock` still updates seat markers | All markers stashed |
+| H1 | HERE reconcile mirrors live tokens even when next-scene Lock is armed | Token does not return to live UV |
+| H2 | One-shot Lock is stored outside `sessionScene.npcWorld` | `layoutLock` survives validation or live/library world carries the flag |
+| P1-P5 | Draft build, seat-presence sync, board-field commit isolation, snap collision, PC presence carry | Draft changes unrelated narrative, loses occupants, or merges wrong participants |
+| P6-P7 | Unresolved-UV collision fallback and deterministic NPC-seat overflow | Source does not win, duplicate remains staged, or unseatable NPC survives |
+| P8-P11 | Pending enter gate, persisted capture isolation, library commit, and non-pending rejection | Draft leaks live/library before commit or THERE enters without a pending row |
+
+### HERE/THERE + one-shot Lock human gate
+
+Use two fixture rows with visibly different stage placements and NPC/PC seat presence:
+
+1. Apply row A, select row B without applying, then click green **HERE**. It must become blue **THERE** and mirror row B while row A's live figurines stay unchanged.
+2. Move and flip NPC/PC tokens. Run `Sync.full({ force = true })`; the preview tokens must remain in their draft positions and the live stage must remain row A.
+3. Toggle one seat in the Scenes Panel. All draft presence flips must match the library while draft occupant positions remain fixed.
+4. Exercise **Reset**, **Clear**, and **Load**: Reset restores row B's committed participants; Clear changes only the draft; Load restores the persisted draft.
+5. Select another pending row, then return: the old draft must have committed. Clear Scenes preview: it must commit, return HERE, and mirror row A.
+6. Re-enter THERE, edit, and apply row B. After the transition, the board must be HERE and both live state and row B must contain the committed edits.
+7. From HERE, arm **Lock**, alter row B to collide with a live source placement and occupy the same NPC seat, then apply. The live source wins the snap/seat, displaced destination NPCs fill later free seats in order, PC presence carries, the merged participants are stored in row B, and Lock auto-clears.
 
 ### Optional reload gate
 
-`gbE2eRunFull()` still prints an optional reload gate for direct macro users. Treat it as an ad-hoc follow-up, not part of the generated default `RunTest("Gameboard")` pass:
+`gbE2eRunFull()` still prints an optional reload gate for direct macro users. In addition to the normal prereq check, Save & Play while THERE once: the persisted draft must restore to the board and remain isolated from live state. Treat it as an ad-hoc follow-up, not part of the generated default `RunTest("Gameboard")` pass:
 
 ```lua
 lua gbE2eRunFull()
@@ -206,6 +221,8 @@ When a deferred feature ships, move its probe into `gbE2eRunFull()` and expect P
 | A Smoke + scene Apply | [ ] | |
 | B Full reconcile | [ ] | |
 | C PC tokens | [ ] | |
+| HERE/THERE + Lock gate | [ ] | |
+| THERE Save & Play recovery | [ ] | |
 | Deferred probes | [ ] | manual only |
 
 ## Related
