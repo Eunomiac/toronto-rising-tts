@@ -758,7 +758,7 @@ local function tryStartClockLerp(buildTarget)
     end
     local targetNorm = U.narrativeClockDatetimeOnly(target)
     if targetNorm ~= nil and U.compareNarrativeClock(startDt, targetNorm) == 0 then
-        U.AlertGM("Clock is already at that time (forward jumps clamp to present day).")
+        U.AlertGM("Clock is already at that time.")
         return
     end
     -- Close ST toolbar only after validation so silent failures do not dismiss the panel (TOR-405/418).

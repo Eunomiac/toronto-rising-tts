@@ -88,26 +88,6 @@ local function applyDuskPlusOneHour(dt)
     return NarrativeCalendar.addMinutes(withSunset, 60) or withSunset
 end
 
---- Clamp target so it is never after present day (when present day exists).
---- @param target table
---- @return table
-local function clampToPresentDay(target)
-    local pd = PresentDayClock.getPresentDay()
-    if pd == nil then
-        return target
-    end
-    if U.compareNarrativeClock(target, pd) > 0 then
-        return {
-            year = pd.year,
-            month = pd.month,
-            day = pd.day,
-            hour = pd.hour,
-            minute = pd.minute,
-        }
-    end
-    return target
-end
-
 --- @param startDt table
 --- @param unit string
 --- @param amount number
@@ -150,12 +130,6 @@ function NarrativeClockLerp.resolveDeltaTarget(startDt, unit, amount, forward)
         return nil
     end
 
-    if target == nil then
-        return nil
-    end
-    if forward == true then
-        target = clampToPresentDay(target)
-    end
     return target
 end
 
@@ -188,13 +162,7 @@ function NarrativeClockLerp.resolveDawnDuskTarget(startDt, minutesBeforeDawnOrAf
         hour = base.hour,
         minute = base.minute,
     }
-    target = NarrativeCalendar.addMinutes(target, delta)
-    if target == nil then
-        return nil
-    end
-    -- Absolute target may be forward or back; only clamp if after present day.
-    target = clampToPresentDay(target)
-    return target
+    return NarrativeCalendar.addMinutes(target, delta)
 end
 
 --- @param startDt table
@@ -210,12 +178,7 @@ function NarrativeClockLerp.resolveYearTarget(startDt, year)
     if target == nil then
         return nil
     end
-    target = applyDuskPlusOneHour(target)
-    local forward = U.compareNarrativeClock(target, n) > 0
-    if forward then
-        target = clampToPresentDay(target)
-    end
-    return target
+    return applyDuskPlusOneHour(target)
 end
 
 --- @param dt table
@@ -259,6 +222,7 @@ local function settle(finalDt, startDt)
     S.setStateVal(nextClock, "sessionScene", "clock")
     MapPins.onClockChanged()
 
+    -- Forward past present day: tryAdvance lifts chronicle "now" to the settled time (TOR-418/222).
     local forward = U.compareNarrativeClock(finalDt, startDt) > 0
     if forward then
         PresentDayClock.tryAdvance(nextClock)
@@ -303,17 +267,13 @@ function NarrativeClockLerp.startToTarget(targetDt)
         return false, "Invalid target datetime."
     end
 
-    -- Always clamp forward past present day.
-    target = clampToPresentDay(target)
-
     local startAbs = NarrativeCalendar.toAbsoluteMinutes(startDt)
     local endAbs = NarrativeCalendar.toAbsoluteMinutes(target)
     if startAbs == nil or endAbs == nil then
         return false, "Could not compute timeline."
     end
-    -- Zero-delta after clamp: do not Sync.full / settle — caller already closed UI on older paths.
     if startAbs == endAbs then
-        return false, "Clock is already at that time (forward jumps clamp to present day)."
+        return false, "Clock is already at that time."
     end
 
     if GameStateOverlay and type(GameStateOverlay.stopTicker) == "function" then
