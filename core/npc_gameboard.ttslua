@@ -4965,19 +4965,32 @@ rebuildAnchorDropEligibilityCache = function(board)
     end
 end
 
+--- Extra board-local Y when re-seating after Flip (TTS FlipOver can leave tiles slightly below surface).
+local CONTROL_TOKEN_FLIP_RESEAT_EXTRA_LOCAL_Y = 0.05
+
 --- @param token Object
 --- @param snapEntry table
 --- @param board Object
 --- @param boardYaw number
-local function placeTokenOnControlBoardSnap(token, snapEntry, board, boardYaw)
-    token.setPosition(snapEntry.worldPos)
-    local faceUp = tokenRotationIsFaceUp(token)
+--- @param faceUpOverride boolean|nil when set, use instead of reading token face
+--- @param extraLocalY number|nil additional board-local Y lift (e.g. flip re-seat)
+local function placeTokenOnControlBoardSnap(token, snapEntry, board, boardYaw, faceUpOverride, extraLocalY)
+    local lift = tonumber(extraLocalY) or 0
+    local wp = snapEntry.worldPos
+    if lift ~= 0 and type(snapEntry.u) == "number" and type(snapEntry.v) == "number" then
+        wp = boardLocalToWorld(board, boardLocalFromUv(board, snapEntry.u, snapEntry.v, lift))
+    end
+    token.setPosition(wp)
+    local faceUp = faceUpOverride
+    if faceUp == nil then
+        faceUp = tokenRotationIsFaceUp(token)
+    end
     if type(snapEntry) == "table" and snapEntry.snapKind == SNAP_KIND_SEAT then
         applySeatRowNpcControlTokenScale(token)
     else
         applyNpcControlTokenScaleVec(token, controlTokenScaleForCatalogEntry(snapEntry))
     end
-    token.setRotation(rotationForNpcControlToken(boardYaw, snapEntry.yawDeg, faceUp))
+    token.setRotation(rotationForNpcControlToken(boardYaw, snapEntry.yawDeg, faceUp == true))
     Gameboard.setHiddenFromPlayerColors(token)
 end
 
@@ -5124,14 +5137,7 @@ local function applySnapGroupDefaultLightAtEntry(token, entry, board, cfg)
     end
     Gameboard.setHiddenFromPlayerColors(token)
 
-    local characterKey = resolveTokenCharacterKey(token)
-    if type(characterKey) == "string" and characterKey ~= "" then
-        local NPCS = require("core.npcs")
-        if type(NPCS.applyControlTokenLightMode) == "function" then
-            NPCS.applyControlTokenLightMode(characterKey, mode)
-        end
-    end
-
+    -- Board token face only. Stage figurine lights wait for Apply (Spotlight hold remains the live preview).
     result.applied = true
     result.reason = "ok"
     result.defaultLightMode = mode
@@ -5514,11 +5520,14 @@ function Gameboard.tryBoardFamilyGroupRelocate(droppedToken, sourceFamilyId)
     }
 end
 
---- While Group-move hotkey held: set all polar-family cohabitants to the same face as `flippedToken` (TOR-414).
---- Tokens already on the target face are unchanged. Does not toggle each token independently.
+--- While Group-move hotkey held: set polar-family cohabitants to the same face (TOR-414 / TOR-419).
+--- Prefer `opts` captured at rotate-start (family + intended face + member GUIDs) — FlipOver can move
+--- the lead token onto a neighboring Mid Center ray snap and/or leave face mid-settle if read after Wait.
+--- Does not touch stage figurine lights (Apply / Spotlight hold only).
 --- @param flippedToken Object
+--- @param opts table|nil `{ familyId?: string, targetFaceUp?: boolean, members?: { guid: string, snapIndex: number }[] }`
 --- @return table `{ flipped: number, reason?: string, familyId?: string, faceUp?: boolean }`
-function Gameboard.tryBoardFamilyGroupFlip(flippedToken)
+function Gameboard.tryBoardFamilyGroupFlip(flippedToken, opts)
     if familyFlipDepth > 0 then
         return { flipped = 0, reason = "suppressed" }
     end
@@ -5532,51 +5541,90 @@ function Gameboard.tryBoardFamilyGroupFlip(flippedToken)
     if not isTokenOnControlBoardSurface(board, flippedToken) then
         return { flipped = 0, reason = "not_on_board" }
     end
+    if type(opts) ~= "table" then
+        opts = {}
+    end
     local fuzziness = snapMatchFuzzinessForBoard(board)
     local catalog = Gameboard.buildControlBoardSnapCatalog(board, nil)
-    local entry = resolveTokenSnapCatalogEntry(board, flippedToken, fuzziness, nil)
-    if entry == nil then
-        return { flipped = 0, reason = "no_snap" }
+    local familyId = opts.familyId
+    if type(familyId) ~= "string" or familyId == "" then
+        local leadEntry = resolveTokenSnapCatalogEntry(board, flippedToken, fuzziness, nil)
+        if leadEntry == nil then
+            return { flipped = 0, reason = "no_snap" }
+        end
+        if leadEntry.snapKind == SNAP_KIND_SEAT then
+            return { flipped = 0, reason = "seat_row" }
+        end
+        familyId = leadEntry.familyId
     end
-    if entry.snapKind == SNAP_KIND_SEAT then
-        return { flipped = 0, reason = "seat_row" }
-    end
-    local familyId = entry.familyId
     if type(familyId) ~= "string" or familyId == "" then
         return { flipped = 0, reason = "no_family" }
     end
 
-    local targetFaceUp = tokenRotationIsFaceUp(flippedToken)
-    local targetMode = tokenLightModeFromFlip(flippedToken)
-    local boardYaw = objectYawDeg(board)
-    local cohabitants = tokensOccupyingPolarFamily(board, familyId, fuzziness, catalog, nil)
-    local NPCS = require("core.npcs")
+    local targetFaceUp = opts.targetFaceUp
+    if targetFaceUp == nil then
+        targetFaceUp = tokenRotationIsFaceUp(flippedToken)
+    else
+        targetFaceUp = targetFaceUp == true
+    end
 
+    local bySnapIndex = {}
+    for i = 1, #catalog do
+        local e = catalog[i]
+        if type(e) == "table" and e.snapIndex ~= nil then
+            bySnapIndex[tonumber(e.snapIndex)] = e
+        end
+    end
+
+    --- @type table[] `{ token, entry }`
+    local cohabitants = {}
+    local seenGuid = {}
+    local capturedMembers = opts.members
+    if type(capturedMembers) == "table" then
+        for i = 1, #capturedMembers do
+            local row = capturedMembers[i]
+            local guid = type(row) == "table" and tostring(row.guid or "") or ""
+            local snapIndex = type(row) == "table" and tonumber(row.snapIndex) or nil
+            local entry = snapIndex ~= nil and bySnapIndex[snapIndex] or nil
+            local tok = guid ~= "" and getObjectFromGUID(guid) or nil
+            if isGameObject(tok)
+                and isNpcControlToken(tok)
+                and type(entry) == "table"
+                and entry.familyId == familyId
+                and seenGuid[guid] ~= true
+            then
+                seenGuid[guid] = true
+                cohabitants[#cohabitants + 1] = { token = tok, entry = entry }
+            end
+        end
+    end
+    if #cohabitants == 0 then
+        cohabitants = tokensOccupyingPolarFamily(board, familyId, fuzziness, catalog, nil)
+    end
+
+    local boardYaw = objectYawDeg(board)
+    local leadGuid = tostring(flippedToken.getGUID() or "")
     familyFlipDepth = familyFlipDepth + 1
     local flipped = 0
     for i = 1, #cohabitants do
         local row = cohabitants[i]
         local tok = row.token
-        if tok ~= flippedToken and isGameObject(tok) then
-            if tokenRotationIsFaceUp(tok) ~= targetFaceUp then
-                tok.setRotation(rotationForNpcControlToken(boardYaw, row.entry.yawDeg, targetFaceUp))
+        if isGameObject(tok) and type(row.entry) == "table" then
+            local wasFaceUp = tokenRotationIsFaceUp(tok)
+            local isLead = tostring(tok.getGUID() or "") == leadGuid
+            -- Always re-seat onto snap + surface lift so FlipOver cannot leave tiles below the board.
+            placeTokenOnControlBoardSnap(
+                tok,
+                row.entry,
+                board,
+                boardYaw,
+                targetFaceUp,
+                CONTROL_TOKEN_FLIP_RESEAT_EXTRA_LOCAL_Y
+            )
+            if not isLead and wasFaceUp ~= targetFaceUp then
                 flipped = flipped + 1
-                local ck = resolveTokenCharacterKey(tok)
-                if type(ck) == "string"
-                    and ck ~= ""
-                    and type(NPCS.applyControlTokenLightMode) == "function"
-                then
-                    NPCS.applyControlTokenLightMode(ck, targetMode)
-                end
             end
         end
-    end
-    local leadKey = resolveTokenCharacterKey(flippedToken)
-    if type(leadKey) == "string"
-        and leadKey ~= ""
-        and type(NPCS.applyControlTokenLightMode) == "function"
-    then
-        NPCS.applyControlTokenLightMode(leadKey, targetMode)
     end
     familyFlipDepth = familyFlipDepth - 1
 
@@ -5588,10 +5636,10 @@ function Gameboard.tryBoardFamilyGroupFlip(flippedToken)
     }
 end
 
---- Global onObjectRotate: with Group-move hotkey held, match family tokens to flipped face (TOR-414).
+--- Global onObjectRotate: with Group-move hotkey held, match family tokens to flipped face (TOR-414 / TOR-419).
 --- @param token Object
 --- @param playerColor string|nil
---- @param flip number|nil
+--- @param flip number|nil TTS flip degrees after rotate [0, 360)
 --- @param oldFlip number|nil
 function Gameboard.onNpcControlTokenRotated(token, playerColor, flip, oldFlip)
     if familyFlipDepth > 0 then
@@ -5612,7 +5660,40 @@ function Gameboard.onNpcControlTokenRotated(token, playerColor, flip, oldFlip)
     if guid == "" then
         return
     end
-    -- Let TTS finish FlipOver before reading face-up / applying siblings.
+
+    -- Capture family membership + intended face BEFORE FlipOver moves the lead token (dense Mid Center rays).
+    local board = getControlBoard()
+    local capturedFamilyId = nil
+    local capturedMembers = nil
+    local targetFaceUp = nil
+    if flipN ~= nil then
+        targetFaceUp = not eulerAxisFlippedDeg(flipN)
+    end
+    if isGameObject(board) then
+        local fuzziness = snapMatchFuzzinessForBoard(board)
+        local catalog = Gameboard.buildControlBoardSnapCatalog(board, nil)
+        local entry = resolveTokenSnapCatalogEntry(board, token, fuzziness, nil)
+        if type(entry) == "table"
+            and entry.snapKind ~= SNAP_KIND_SEAT
+            and type(entry.familyId) == "string"
+            and entry.familyId ~= ""
+        then
+            capturedFamilyId = entry.familyId
+            local members = tokensOccupyingPolarFamily(board, capturedFamilyId, fuzziness, catalog, nil)
+            capturedMembers = {}
+            for i = 1, #members do
+                local mTok = members[i].token
+                local mEntry = members[i].entry
+                local mGuid = isGameObject(mTok) and tostring(mTok.getGUID() or "") or ""
+                local snapIndex = type(mEntry) == "table" and tonumber(mEntry.snapIndex) or nil
+                if mGuid ~= "" and snapIndex ~= nil then
+                    capturedMembers[#capturedMembers + 1] = { guid = mGuid, snapIndex = snapIndex }
+                end
+            end
+        end
+    end
+
+    -- Let TTS finish FlipOver physics; face/family come from capture, not post-settle read.
     Wait.frames(function()
         if groupMoveHotkeyHeld ~= true or familyFlipDepth > 0 then
             return
@@ -5621,18 +5702,23 @@ function Gameboard.onNpcControlTokenRotated(token, playerColor, flip, oldFlip)
         if tok == nil or not isNpcControlToken(tok) then
             return
         end
-        local result = Gameboard.tryBoardFamilyGroupFlip(tok)
-        if type(result) == "table" and (result.flipped or 0) > 0 then
+        local result = Gameboard.tryBoardFamilyGroupFlip(tok, {
+            familyId = capturedFamilyId,
+            targetFaceUp = targetFaceUp,
+            members = capturedMembers,
+        })
+        if type(result) == "table" and result.reason == "ok" then
             print(
-                "[Gameboard] group flip: matched "
-                    .. tostring(result.flipped)
-                    .. " sibling(s) in "
+                "[Gameboard] group flip: family "
                     .. tostring(result.familyId)
                     .. " → "
                     .. (result.faceUp == true and "STANDARD" or "OFF")
+                    .. " ("
+                    .. tostring(result.flipped or 0)
+                    .. " sibling face change(s))"
             )
         end
-    end, 1)
+    end, 2)
 end
 
 --- Any ordinary NPC/PC token rotation can change persisted THERE presence/light intent.

@@ -35,7 +35,8 @@ _Stack rank for the current cycle (2026-07-19 — **TOR-402**–**TOR-411** ship
 
 | # | Issue | Why now |
 | --- | --- | --- |
-| 1 | **TOR-418** (clock lerp silent no-op) | Author repro: panel closes, time unchanged — fix in flight |
+| 1 | **TOR-419** (group flip family/face/Y/stage light) | Author Mid Center repro — fix in flight |
+| 2 | **TOR-418** (clock lerp silent no-op) | Fix shipped; Save & Play verify |
 | — | then Save & Play verify TOR-402–411 / TOR-417 | |
 
 **Also in cycle (below top stack):** **TOR-141** (E2E playbooks living doc). **TOR-384** (Global HUD first load — **deprioritized**; reload workaround; Linear No priority). **TOR-286** (centralize `setInvisibleTo`). **TOR-303** (author review roll broadcast phrasing — External Todo). **TOR-376** (CSHEET max-slot setXml migrate — Future). **TOR-382** (coterie sheet notes — Future). **TOR-95** (play-as-NPC, **blockedBy** **TOR-247**). **TOR-330** (Fomorach shapeshift toggle; **blockedBy** **TOR-327** workshop stat deltas). **TOR-98** (Spotlight turn UX — scaffolding in TOR-143).
@@ -171,6 +172,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **CONTROL_BOARD group move (hold hotkey):** `addHotkey("Group move (hold)")`; hold at drop relocates source polar-family cohabitants onto free dest snaps (palette center-out parity). Pending Save & Play. _(TOR-412)_
 - [x] **Group relocate close-family stick:** Nearest-catalog occupancy + brief lock/re-assert so Mid Center → CENTER moves do not leave tokens behind. Pending Save & Play. _(TOR-413)_
 - [x] **Group flip + palette tokenScale:** Palette→board keeps ring `tokenScale` (no default reset on light apply); hold Group-move while flipping matches family faces to the flipped token. Pending Save & Play. _(TOR-414)_
+- [ ] **Group flip follow-ups:** Capture family+face before Flip settle; re-seat +0.05 Y; no stage light until Apply; siblings match destination face. relatedTo **TOR-414**. _(TOR-419)_
 - [x] **Far-ring even-num snaps + bee leader:** Even `num` no longer installs ±half duplicate; world-XZ dedupe on spread; token keys canonicalize display name → `bee`. Reinstall snaps (Sync/Apply) after Save & Play. _(TOR-415)_
 - [x] **Stage light lock-on + minimal spotlight swing:** Lit stage→stage lerp re-resolves light from live figurine each frame; STANDARD↔SPOTLIGHT uses near-STANDARD `deltaUp`/`deltaInward` + spherical arc around aim. relatedTo **TOR-369**, **TOR-173**. Pending Save & Play. _(TOR-416)_
 - [ ] **Control Board HERE/THERE scene preview editor:** Persistent pending-scene participant draft; mode-aware Reset/Clear/Load; one-shot locked participant merge on scene Apply. relatedTo **TOR-244**, **TOR-237**. _(TOR-417)_
