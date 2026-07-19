@@ -4679,6 +4679,56 @@ function Gameboard.mirrorControlBoardTokensFromModel(board, model)
     end
 end
 
+--- Apply library-driven draft seat presence by flipping existing seat tokens in place.
+--- Occupants and token positions are intentionally untouched.
+function Gameboard.syncPreviewSeatTokenFaces()
+    local Preview = require("core.control_board_preview")
+    local draft = Preview.getDraft()
+    local board = getControlBoard()
+    if draft == nil or not isGameObject(board) then
+        return false
+    end
+    local fuzziness = snapMatchFuzzinessForBoard(board)
+    local byChar = buildTokenByCharacterKey()
+    local changed = false
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local row = type(draft.seatSlots[seatKey]) == "table" and draft.seatSlots[seatKey] or nil
+        local token = type(row) == "table" and byChar[row.characterKey] or nil
+        if isGameObject(token) then
+            local entry = resolveTokenSnapCatalogEntry(board, token, fuzziness, nil)
+            if type(entry) == "table"
+                and entry.snapKind == SNAP_KIND_SEAT
+                and entry.seatKey == seatKey then
+                token.setRotation(rotationForNpcControlToken(
+                    objectYawDeg(board),
+                    entry.yawDeg,
+                    row.isPresent == true
+                ))
+                changed = true
+            end
+        end
+    end
+    for _, token in ipairs(getObjectsWithTag(TAG_PC_TOKEN) or {}) do
+        if isGameObject(token) then
+            local color = resolvePcTokenSeatColor(token)
+            local row = type(draft.seatSlots[color]) == "table" and draft.seatSlots[color] or nil
+            local entry = resolveTokenSnapCatalogEntry(board, token, fuzziness, nil)
+            if type(row) == "table"
+                and type(entry) == "table"
+                and entry.snapKind == SNAP_KIND_SEAT
+                and entry.seatKey == color then
+                token.setRotation(rotationForNpcControlToken(
+                    objectYawDeg(board),
+                    entry.yawDeg,
+                    row.isPresent == true
+                ))
+                changed = true
+            end
+        end
+    end
+    return changed
+end
+
 --- Position static markers and mirror the active participant model.
 --- Normal Sync calls do not write board objects while THERE; dedicated preview actions pass `allowPreview`.
 --- @param opts table|nil `{ force?: boolean, forceTokenMirror?: boolean, allowPreview?: boolean }`
