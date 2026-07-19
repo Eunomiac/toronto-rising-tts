@@ -420,7 +420,7 @@ Rough geometric sunrise/sunset for Toronto (~43.65°N, 79.38°W). Fixed Eastern 
 ### Narrative clock lerp (`core/narrative_clock_lerp.ttslua`)
 
 **Require:** `local NarrativeClockLerp = require("core.narrative_clock_lerp")`
-Animated Scene Time jumps (TOR-222). Display-only during motion; present day / weather / `Sync.full` on settle. Duration from `C.CLOCK_LERP`. Live scene required (`SceneLibrary.hasLiveSceneOnTable`).
+Animated Scene Time jumps (TOR-222). Display-only during motion; present day / weather / `Sync.full` on settle. Duration + `ease` (`cubic`/`quint`/`expo`) from `C.CLOCK_LERP`. Live scene required (`SceneLibrary.hasLiveSceneOnTable`).
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |

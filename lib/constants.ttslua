@@ -5947,13 +5947,15 @@ C.WEATHER_AUDIO_OVERRIDES = {
 --[[
   Duration for animated Scene Time jumps: clamp |Δminutes| to [minDeltaMinutes, maxDeltaMinutes],
   normalize to t in [0,1], duration = minDuration + t * (maxDuration - minDuration).
+  ease: "cubic" | "quint" (default) | "expo" — ease-in-out; higher power = slower ends / faster middle.
 ]]
 C.CLOCK_LERP = {
-  minDuration = 0.75,
-  maxDuration = 6.0,
+  minDuration = 5,
+  maxDuration = 8,
   minDeltaMinutes = 10,
   maxDeltaMinutes = 525600, -- 365 days
-  tickSeconds = 0.05,
+  tickSeconds = 0.25,
+  ease = "quint",
 }
 -- #endregion
 

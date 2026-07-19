@@ -52,6 +52,46 @@ local function easeInOutCubic(t)
     return 1 - (u * u * u) / 2
 end
 
+--- Stronger ease-in-out: slower start/end, faster middle than cubic.
+--- @param t number 0–1
+--- @return number
+local function easeInOutQuint(t)
+    if t < 0.5 then
+        return 16 * t * t * t * t * t
+    end
+    local u = -2 * t + 2
+    return 1 - (u * u * u * u * u) / 2
+end
+
+--- Very pronounced ease-in-out (slowest ends).
+--- @param t number 0–1
+--- @return number
+local function easeInOutExpo(t)
+    if t <= 0 then
+        return 0
+    end
+    if t >= 1 then
+        return 1
+    end
+    if t < 0.5 then
+        return (2 ^ (20 * t - 10)) / 2
+    end
+    return (2 - (2 ^ (-20 * t + 10))) / 2
+end
+
+--- @param t number 0–1
+--- @return number
+local function easeClockLerp(t)
+    local name = tostring((C.CLOCK_LERP or {}).ease or "quint")
+    if name == "cubic" then
+        return easeInOutCubic(t)
+    end
+    if name == "expo" then
+        return easeInOutExpo(t)
+    end
+    return easeInOutQuint(t)
+end
+
 --- @param deltaAbs number
 --- @return number seconds
 local function durationForDeltaMinutes(deltaAbs)
@@ -300,7 +340,7 @@ function NarrativeClockLerp.startToTarget(targetDt)
             settle(target, startDt)
             return
         end
-        local eased = easeInOutCubic(t)
+        local eased = easeClockLerp(t)
         local abs = startAbs + (endAbs - startAbs) * eased
         local mid = NarrativeCalendar.fromAbsoluteMinutes(abs)
         pushDisplayOnly(mid)
