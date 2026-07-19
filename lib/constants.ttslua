@@ -907,7 +907,8 @@ C.ObjectPositions = {
   },
   TAROT_DECK_PINK = {
     on = {
-      position = { y = 12 },
+      -- Semi-lock physics: deck no longer falls into place; spawn at resting height (TOR-411).
+      position = { y = 7.7 },
       duration = 0,
       delay = 1.5,
       isLocked = false

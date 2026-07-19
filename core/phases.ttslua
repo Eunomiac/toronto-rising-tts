@@ -545,6 +545,10 @@ function Phases.advanceTo(newPhase, opts)
     }
 
     local steps = {}
+    -- Yield one frame after close so the toolbar paints before exit/enter work (TOR-404).
+    steps[#steps + 1] = function()
+        return 0.05
+    end
     appendSteps(steps, buildSteps(Phases.onExit, oldPhase, ctx))
     steps[#steps + 1] = function()
         S.setCurrentPhase(newPhase)

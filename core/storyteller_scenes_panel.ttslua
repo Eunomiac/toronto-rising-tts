@@ -744,6 +744,8 @@ function StorytellerScenesPanel.startClockLerpDelta(unit, amount, forward)
     if clockLerpBusy() then
         return
     end
+    -- Close ST toolbar before lerp work so the click does not hitch on a still-open panel (TOR-405).
+    closeScenesPanel()
     local ck = S.getStateVal("sessionScene", "clock")
     local startDt = U.narrativeClockDatetimeOnly(ck)
     if startDt == nil then
@@ -765,6 +767,7 @@ function StorytellerScenesPanel.startClockLerpSun(minutes, towardDawn)
     if clockLerpBusy() then
         return
     end
+    closeScenesPanel()
     local ck = S.getStateVal("sessionScene", "clock")
     local startDt = U.narrativeClockDatetimeOnly(ck)
     if startDt == nil then
@@ -797,6 +800,7 @@ function StorytellerScenesPanel.startClockLerpYearGo()
         U.AlertGM("Enter a target year, then Go.")
         return
     end
+    closeScenesPanel()
     local ck = S.getStateVal("sessionScene", "clock")
     local startDt = U.narrativeClockDatetimeOnly(ck)
     if startDt == nil then
@@ -2039,7 +2043,32 @@ function StorytellerScenesPanel.applyLocationFromInputs(player)
     sKey = string.gsub(sKey, "^%s+", "")
     sKey = string.gsub(sKey, "%s+$", "")
 
+    -- Skybox-only Apply: picker already wrote skyboxOverride; site is optional (TOR-402).
     if sKey == "" then
+        local override = nil
+        if type(displayBundle) == "table" and type(displayBundle.skyboxOverride) == "string" then
+            override = displayBundle.skyboxOverride
+        else
+            override = S.getStateVal("sessionScene", "skyboxOverride")
+        end
+        if type(override) == "string" then
+            override = string.gsub(string.gsub(override, "^%s+", ""), "%s+$", "")
+        end
+        if type(override) == "string" and override ~= "" and C.isValidSkyboxKey(override) then
+            if pending and type(activeKey) == "string" then
+                writePendingLibrarySessionSceneField(override, "skyboxOverride")
+                StorytellerScenesPanel.refresh()
+                U.AlertGM("Skybox saved on `" .. activeKey .. "` (applies when you Activate that scene).")
+                return
+            end
+            S.setStateVal(override, "sessionScene", "skyboxOverride")
+            if type(Scenes.reconcileSkyboxFromState) == "function" then
+                Scenes.reconcileSkyboxFromState({ force = true })
+            end
+            StorytellerScenesPanel.refresh()
+            U.AlertGM("Skybox applied.")
+            return
+        end
         U.AlertGM("Pick a site from Browse sites (or restore keys in state), then Apply.")
         return
     end

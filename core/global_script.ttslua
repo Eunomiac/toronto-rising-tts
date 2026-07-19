@@ -166,6 +166,7 @@ local StorytellerScenesPanel = require("core.storyteller_scenes_panel")
 -- Forward decls: helpers assigned later; called from onLoad / HUD_* above those assignments.
 local syncStorytellerPhaseButtons
 local syncDebugLastLoadClockLabel
+local syncDebugSeatColorButtons
 local StorytellerStatsPanel = require("core.storyteller_stats_panel")
 local StorytellerProjectsPanel = require("core.storyteller_projects_panel")
 local GameStateOverlay = require("core.game_state_overlay")
@@ -743,7 +744,12 @@ function GlobalToggleSignalFireState(params)
     if duration == nil then
         duration = 0.2
     end
-    return O.ToggleSignalFireState(color, duration)
+    local nextState = O.ToggleSignalFireState(color, duration)
+    -- Seat-change chrome tracks signal fire (TOR-409); sync after object-script toggle.
+    if type(syncDebugSeatColorButtons) == "function" then
+        syncDebugSeatColorButtons()
+    end
+    return nextState
 end
 
 --- Pink tarot drawer/deck/button pose toggle (host-only; object script routes via Global.call).
@@ -3103,6 +3109,11 @@ function HUD_togglePanel(player, button, id)
     -- Extract the element ID by removing "toggleElem_" prefix
     local elemID = string.gsub(id, "^toggleElem_", "")
     U.toggleXmlElement(elemID, button)
+    -- Debug body starts collapsed; inactive Text may ignore earlier setValue (TOR-406).
+    if elemID == "adminControlsBody" and U.isXmlElementExpanded("adminControlsBody") then
+        syncDebugLastLoadClockLabel()
+        syncDebugSeatColorButtons()
+    end
 end
 
 --- Change scene preset
@@ -3152,6 +3163,18 @@ local DEBUG_SEAT_COLOR_ORDER = { "Black", "Red", "Orange", "Brown", "Pink", "Pur
 local DEBUG_SEAT_OUTLINE_ACTIVE = "#FF0000"
 local DEBUG_SEAT_OUTLINE_INACTIVE = "rgba(0,0,0,0)"
 local DEBUG_SEAT_OUTLINE_SIZE_ACTIVE = "4 4"
+--- Signal-fire chrome on seat-change buttons (TOR-409); wins over Host-seat red outline.
+local DEBUG_SEAT_SIGNAL_COLORS = "#00FF00|#33FF33|#00CC00|#00FF00"
+local DEBUG_SEAT_SIGNAL_OUTLINE = "#FFFFFF"
+local DEBUG_SEAT_SIGNAL_OUTLINE_SIZE = "6 6"
+local DEBUG_SEAT_BUTTON_COLORS = {
+    Black = "#1A1A1A|#2A2A2A|#0F0F0F|#1A1A1A",
+    Red = "#B22222|#C42828|#901818|#B22222",
+    Orange = "#E67300|#F08010|#CC6600|#E67300",
+    Brown = "#6B4423|#7A5030|#5A3820|#6B4423",
+    Pink = "#C71585|#D02090|#B01075|#C71585",
+    Purple = "#5E2A7E|#6E358E|#4E2070|#5E2A7E",
+}
 
 local SOUNDSCAPE_MOOD_BUTTONS = {
     main = "soundscapeMood_main",
@@ -3257,14 +3280,28 @@ local function hostCurrentSeatColor()
 end
 
 --- Red outline on the debug seat button matching the Host's current seat.
-local function syncDebugSeatColorButtons()
+--- Signal-on seats: bright green fill + thick white outline (overrides Host red) (TOR-409).
+syncDebugSeatColorButtons = function()
     local active = hostCurrentSeatColor()
     for _, seatColor in ipairs(DEBUG_SEAT_COLOR_ORDER) do
+        local signalOn = O ~= nil and type(O.GetSignalFireState) == "function"
+            and O.GetSignalFireState(seatColor) == "on"
         local isActive = active == seatColor
-        U.setAttributes(debugSeatButtonId(seatColor), {
-            outline = isActive and DEBUG_SEAT_OUTLINE_ACTIVE or DEBUG_SEAT_OUTLINE_INACTIVE,
-            outlineSize = isActive and DEBUG_SEAT_OUTLINE_SIZE_ACTIVE or "0 0",
-        })
+        local attrs
+        if signalOn then
+            attrs = {
+                colors = DEBUG_SEAT_SIGNAL_COLORS,
+                outline = DEBUG_SEAT_SIGNAL_OUTLINE,
+                outlineSize = DEBUG_SEAT_SIGNAL_OUTLINE_SIZE,
+            }
+        else
+            attrs = {
+                colors = DEBUG_SEAT_BUTTON_COLORS[seatColor] or DEBUG_SEAT_BUTTON_COLORS.Black,
+                outline = isActive and DEBUG_SEAT_OUTLINE_ACTIVE or DEBUG_SEAT_OUTLINE_INACTIVE,
+                outlineSize = isActive and DEBUG_SEAT_OUTLINE_SIZE_ACTIVE or "0 0",
+            }
+        end
+        U.setAttributes(debugSeatButtonId(seatColor), attrs)
     end
 end
 
@@ -3717,15 +3754,12 @@ end
 
 --- TOR-222: minutes/hours/days/weeks/months lerp. Left = forward, right-click (`-2`) = rewind.
 --- Ids: `scenes_lerp_min_30`, `scenes_lerp_hr_1p5`, `scenes_lerp_day_1`, …
+--- Lua patterns treat `|` as literal — match unit token then validate against unitMap (TOR-403).
 function HUD_scenesClockLerpDelta(player, button, id)
     if not requireStorytellerForMutation(player, "HUD_scenesClockLerpDelta") then
         return
     end
-    local unitKey, amountRaw = string.match(id or "", "^scenes_lerp_(min|hr|day|wk|mo)_(%d+p?%d*)$")
-    if unitKey == nil or amountRaw == nil then
-        U.AlertGM("Scenes: could not parse clock lerp control.")
-        return
-    end
+    local unitKey, amountRaw = string.match(id or "", "^scenes_lerp_(%a+)_(%d+p?%d*)$")
     local unitMap = {
         min = "minutes",
         hr = "hours",
@@ -3733,10 +3767,14 @@ function HUD_scenesClockLerpDelta(player, button, id)
         wk = "weeks",
         mo = "months",
     }
-    local unit = unitMap[unitKey]
+    local unit = unitKey ~= nil and unitMap[unitKey] or nil
+    if unit == nil or amountRaw == nil then
+        U.AlertGM("Scenes: could not parse clock lerp control.")
+        return
+    end
     local amountStr = string.gsub(amountRaw, "p", ".")
     local amount = tonumber(amountStr)
-    if unit == nil or amount == nil then
+    if amount == nil then
         U.AlertGM("Scenes: invalid clock lerp amount.")
         return
     end
@@ -6275,7 +6313,7 @@ end
 -- DICE SYSTEM DEBUG HUD HANDLERS (Host only; wired to admin panel buttons)
 -- ============================================================================
 
---- Debug admin row: left-click seat swap; right-click `default<Color>` camera for clicker.
+--- Debug admin row: left-click seat swap / sheet camera / clear signal; right-click `default<Color>` camera.
 -- id format: `debugSeat_<Color>` (e.g. `debugSeat_Brown`)
 -- @param button string TTS mouse button (`"-1"` left, `"-2"` right)
 function HUD_debugSeatColor(player, button, id)
@@ -6291,6 +6329,24 @@ function HUD_debugSeatColor(player, button, id)
     if button == "-2" then
         if M ~= nil and type(M.setCamera) == "function" then
             M.setCamera(player, "default" .. targetColor)
+        end
+        return
+    end
+
+    -- Signal lit: left-click clears the player's signal (TOR-409).
+    if O ~= nil and type(O.GetSignalFireState) == "function" and O.GetSignalFireState(targetColor) == "on" then
+        if type(O.SetSignalFireState) == "function" then
+            O.SetSignalFireState(targetColor, "off", 0.2)
+        end
+        syncDebugSeatColorButtons()
+        return
+    end
+
+    -- Occupied by a connected client: sheet camera, do not steal the seat (TOR-408).
+    local seated = Player[targetColor]
+    if U.isPlayer(seated) and seated.seated == true then
+        if M ~= nil and type(M.setCamera) == "function" then
+            M.setCamera(player, "sheet" .. targetColor)
         end
         return
     end

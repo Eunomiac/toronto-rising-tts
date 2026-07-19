@@ -373,12 +373,22 @@ end
 
 --- Reset a parked token to the default polar token scale. Seat-row assignment enlarges tokens to
 --- `NPC_CONTROL_TOKEN_SCALE_SEAT_ROW` (0.7); without this they stay enlarged after Clear (TOR-199).
+--- Prefers `CONTROL_BOARD_SNAP.defaultTokenScale` when present (TOR-410).
 --- @param token Object
 function Palette.applyPaletteParkingScale(token)
     if not U.isGameObject(token) or token.setScale == nil or token.getScale == nil then
         return
     end
     local d = DATA.NPC_CONTROL_TOKEN_SCALE_POLAR
+    local snap = DATA.CONTROL_BOARD_SNAP
+    local def = type(snap) == "table" and snap.defaultTokenScale or nil
+    if type(def) == "table" or type(def) == "userdata" then
+        d = {
+            x = tonumber(def.x) or d.x,
+            y = tonumber(def.y) or d.y,
+            z = tonumber(def.z) or d.z,
+        }
+    end
     local s = token.getScale()
     if type(s) == "table"
         and math.abs((s.x or 0) - d.x) <= 0.02

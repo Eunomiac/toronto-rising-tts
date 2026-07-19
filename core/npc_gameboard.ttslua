@@ -768,11 +768,45 @@ local function setNpcControlTokenScale(token, sx, sy, sz)
     end
 end
 
---- Revert enlarged seat-row token scale when leaving seat snaps (TOR-199).
+--- Default control-token scale: `CONTROL_BOARD_SNAP.defaultTokenScale` or polar constant (TOR-410).
+--- @return table `{ x, y, z }`
+local function resolveDefaultControlTokenScale()
+    local snap = DATA.CONTROL_BOARD_SNAP
+    local d = type(snap) == "table" and snap.defaultTokenScale or nil
+    if type(d) == "table" or type(d) == "userdata" then
+        return {
+            x = tonumber(d.x) or 0.2,
+            y = tonumber(d.y) or 1,
+            z = tonumber(d.z) or 0.2,
+        }
+    end
+    local p = DATA.NPC_CONTROL_TOKEN_SCALE_POLAR
+    return { x = p.x, y = p.y, z = p.z }
+end
+
+--- Optional per-ring tokenScale from snap group (falls through to nil → default at apply time).
+--- @param group table|nil
+--- @return table|nil `{ x, y, z }`
+local function tokenScaleFromSnapGroup(group)
+    if type(group) ~= "table" then
+        return nil
+    end
+    local ts = group.tokenScale
+    if type(ts) ~= "table" and type(ts) ~= "userdata" then
+        return nil
+    end
+    return {
+        x = tonumber(ts.x) or 0.2,
+        y = tonumber(ts.y) or 1,
+        z = tonumber(ts.z) or 0.2,
+    }
+end
+
+--- Revert enlarged seat-row / ring token scale when leaving snaps (TOR-199 / TOR-410).
 --- @param token Object
 --- @return boolean true when scale was changed
 local function ensureDefaultNpcControlTokenScale(token)
-    local d = DATA.NPC_CONTROL_TOKEN_SCALE_POLAR
+    local d = resolveDefaultControlTokenScale()
     if not tokenScaleIsNear(token, d.x, d.y, d.z) then
         setNpcControlTokenScale(token, d.x, d.y, d.z)
         return true
@@ -781,11 +815,38 @@ local function ensureDefaultNpcControlTokenScale(token)
 end
 
 --- @param token Object
+--- @param scale table|nil `{ x, y, z }`
+local function applyNpcControlTokenScaleVec(token, scale)
+    if type(scale) ~= "table" then
+        ensureDefaultNpcControlTokenScale(token)
+        return
+    end
+    local sx = tonumber(scale.x) or 0.2
+    local sy = tonumber(scale.y) or 1
+    local sz = tonumber(scale.z) or 0.2
+    if not tokenScaleIsNear(token, sx, sy, sz) then
+        setNpcControlTokenScale(token, sx, sy, sz)
+    end
+end
+
+--- @param token Object
 local function applySeatRowNpcControlTokenScale(token)
     local s = DATA.NPC_CONTROL_TOKEN_SCALE_SEAT_ROW
-    if not tokenScaleIsNear(token, s.x, s.y, s.z) then
-        setNpcControlTokenScale(token, s.x, s.y, s.z)
+    applyNpcControlTokenScaleVec(token, s)
+end
+
+--- Scale for a polar/stage catalog entry (ring `tokenScale` or board default) (TOR-410).
+--- @param entry table|nil
+--- @return table `{ x, y, z }`
+local function controlTokenScaleForCatalogEntry(entry)
+    if type(entry) == "table" and (type(entry.tokenScale) == "table" or type(entry.tokenScale) == "userdata") then
+        return {
+            x = tonumber(entry.tokenScale.x) or 0.2,
+            y = tonumber(entry.tokenScale.y) or 1,
+            z = tonumber(entry.tokenScale.z) or 0.2,
+        }
     end
+    return resolveDefaultControlTokenScale()
 end
 
 --- @param board Object
@@ -2582,6 +2643,7 @@ local function buildControlBoardSnapEntries(board, cfg, rings)
                         worldPos = boardLocalToWorld(board, lp),
                         groundLevel = ringGroundLevel,
                         defaultLightMode = snapGroupDefaultLightMode(group),
+                        tokenScale = tokenScaleFromSnapGroup(group),
                     }
                 end
             end
@@ -4028,7 +4090,13 @@ local function mirrorControlTokenToPlacementRow(token, board, row)
     local boardYaw = objectYawDeg(board)
     local relYaw = Gameboard.placementBoardRelYawDeg(u, v)
     local faceUp = row.npcLightMode ~= "OFF"
-    ensureDefaultNpcControlTokenScale(token)
+    local fuzziness = snapMatchFuzzinessForBoard(board)
+    local entry = resolveTokenSnapCatalogEntry(board, token, fuzziness, nil)
+    if entry ~= nil and entry.snapKind == SNAP_KIND_SEAT then
+        applySeatRowNpcControlTokenScale(token)
+    else
+        applyNpcControlTokenScaleVec(token, controlTokenScaleForCatalogEntry(entry))
+    end
     token.setRotation(rotationForNpcControlToken(boardYaw, relYaw, faceUp))
     Gameboard.setHiddenFromPlayerColors(token)
 end
@@ -5117,12 +5185,22 @@ function Gameboard.applySnapGroupDefaultLightOnPaletteDrop(token)
     return applySnapGroupDefaultLightAtEntry(token, entry, board, cfg)
 end
 
---- Seat-row vs polar token scale after a manual drop on CONTROL_BOARD (TOR-199).
+--- Seat-row vs polar/stage token scale after a manual drop on CONTROL_BOARD (TOR-199 / TOR-410).
 --- @param token Object
 --- @param board Object
 local function applyControlTokenDropScaleByBoardPosition(token, board)
     if not isTokenOnControlBoardSurface(board, token) then
         ensureDefaultNpcControlTokenScale(token)
+        return
+    end
+    local fuzziness = snapMatchFuzzinessForBoard(board)
+    local entry = resolveTokenSnapCatalogEntry(board, token, fuzziness, nil)
+    if entry ~= nil and entry.snapKind == SNAP_KIND_SEAT then
+        applySeatRowNpcControlTokenScale(token)
+        return
+    end
+    if entry ~= nil then
+        applyNpcControlTokenScaleVec(token, controlTokenScaleForCatalogEntry(entry))
         return
     end
     local u, v = uvFromWorldOnBoard(board, token.getPosition())

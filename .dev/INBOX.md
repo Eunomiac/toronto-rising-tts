@@ -20,19 +20,6 @@ Verification:
 ## For Immediate Implementation
 > _After registering each of these issues with Linear in the ordinary fashion, before updating the Focus Stack, briefly review the issue: If it is a quick or easy fix, implement it immediately without waiting for user confirmation. Otherwise, promote it to the top of the Focus Stack, and offer to begin work on it immediately when summarizing your work processing `INBOX.md` to the user. If multiple issues require promotion in this way, consider how best to resolve them as quickly as possible, and offer to draft an implementation plan in your response to the user._
 
-- [Bug - Scenes Panel] Upon selecting a Skybox from the "Skyboxes..." modal and clicking "Apply location", nothing happens, and I am broadcast a message directing me to select a District/Site. However it should be possible to change the Skybox without needing to set a District/Site.
-- [Bug - Scenes Panel] Upon clicking one of the numbered clock-lerping buttons, nothing happens, and a broadcast message reads: `Scenes: could not parse clock lerp control`.
-- [Bug - Phases Panel] Upon clicking "Advance", there is a lag spike before the Storyteller Toolbar closes, likely because the closing of the panel is running synchronously with the work of advancing the phase. The "Advance" button should function like the scene apply buttons, i.e., the panel should close immediately, during a preliminary step before any work is done, ensuring there are no lag spikes.
-- [Change - Scenes Panel] Upon clicking one of the lerp-clock buttons, the Storyteller Toolbar should close immediately (during a preliminary before-work step, just like the Advance and Apply scene buttons)
-- [Debug Toolbar] No timestamp appears beneath the "== DEBUG ==" header when I open the debug panel
-- [Debug Toolbar] Shift the Debug panel's offset by (adding) "-20 -20" to the current value.
-- [Debug Tools] Regarding the six buttons that allow the Storyteller to quickly seat themselves at a player's color -- buttons should NOT switch the Storyteller to a player's seat if that player is connected (i.e. if that color is already assigned). Left-clicking on one of the seat-change buttons while a client is connected and seated there should instead set the Storyteller's camera mode to "sheet<Color>"
-- [Signal Lights] When a player activates their signal light, the corresponding "seat change" button (discussed above) should turn bright green with a thick white outline, and its click-behavior should change such that left-clicking toggles off the player's signal light (and restores the button to its original appearance).
-- [Stage Control Board] Currently, tokens are rescaled when they are dropped onto the snap points reserved for positions seated at the table. I'd like to extend this rescaling to positions on the stage. I've added the requisite information to `D.CONTROL_BOARD_SNAP`:
-  - `D.CONTROL_BOARD_SNAP.defaultTokenScale` describes the scale tokens should be set at when picked up, when on the palette, and/or when no tokenScale is defined for the stage position they have been moved to.
-  - If a snap ring contains a `tokenScale` value, however, any tokens moved to this location should have their scale immediately set to this value. This should occur whether the token is manually dropped, or if the token is moved automatically as part of a scene transition. The scaling should be reversed (back to `defaultTokenScale`) when the token is picked up and/or when the token is returned to the palette.
-- [Tarot Deck] With our transition to semi-lock physics, objects no longer fall into place unless acted upon by a player. This means we need to be a bit more precise with the height at which we spawn the pink player's Tarot deck.  Currently, it spawns at y=12; that value should be changed to y = 7.7
-
 
 
 ## Active
@@ -57,6 +44,8 @@ Verification:
 
 
 ## Processed
+
+2026-07-19 Inbox Immediate → **TOR-402** (skybox-only Apply Location), **TOR-403** (clock lerp parse `|`), **TOR-404** (Advance toolbar close lag), **TOR-405** (close toolbar before clock lerp), **TOR-406** (debug timestamp on open), **TOR-407** (debug offset −20 −20), **TOR-408** (occupied seat → sheet camera), **TOR-409** (signal chrome on seat buttons), **TOR-410** (stage snap tokenScale), **TOR-411** (Pink Tarot Y 7.7) — implementing this session
 
 2026-07-17 Inbox — Immediate NOW+N travel Apply → **TOR-401** (Focus #1 High; not a one-liner — wire PresentDayClock + Apply registry); Active TOR-222 clock grids → Linear description refreshed (Focus #2 Medium; relatedTo TOR-400); TOR-400 remains estimate-only
 
