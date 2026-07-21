@@ -1,7 +1,7 @@
 # Skybox Google Sheet → Lua catalog import
 
 **Date:** 2026-07-21  
-**Status:** draft (awaiting author review)  
+**Status:** implemented (TOR-422)  
 **Approach:** B — generated standalone catalog; Constants re-exports; Sheet is sole source of truth
 
 ## Agent Routing
