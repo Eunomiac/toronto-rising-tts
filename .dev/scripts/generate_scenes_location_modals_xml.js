@@ -1,10 +1,12 @@
 "use strict";
 
 /**
- * Builds `ui/storyteller/panel_scenes_location_modals.xml` from `lib/constants.ttslua`
- * (`C.Districts` + `C.Sites` + `C.Skyboxes` keys and human labels).
+ * Builds `ui/storyteller/panel_scenes_location_modals.xml` from
+ * `lib/constants.ttslua` (`C.Districts` + `C.Sites`) and
+ * `lib/skyboxes_catalog.ttslua` (`SkyboxesCatalog.Skyboxes` keys and display labels).
  *
  * Run from repo root: node .dev/scripts/generate_scenes_location_modals_xml.js
+ * (Also chained from `npm run skyboxes:import`.)
  */
 
 const fs = require("fs");
@@ -12,6 +14,7 @@ const path = require("path");
 
 const root = path.resolve(__dirname, "..", "..");
 const constantsPath = path.join(root, "lib", "constants.ttslua");
+const skyboxesCatalogPath = path.join(root, "lib", "skyboxes_catalog.ttslua");
 const outPath = path.join(root, "ui", "storyteller", "panel_scenes_location_modals.xml");
 
 const BTN_COLORS = "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)";
@@ -235,10 +238,11 @@ function renderSiteModalBody(districtEntries, sitesByDistrict, genericSites) {
 }
 
 const luaSource = fs.readFileSync(constantsPath, "utf8");
+const skyboxesCatalogSource = fs.readFileSync(skyboxesCatalogPath, "utf8");
 
 const districtBlock = extractBlock(luaSource, "C.Districts =");
 const siteBlock = extractBlock(luaSource, "C.Sites =");
-const skyboxBlock = extractBlock(luaSource, "C.Skyboxes =");
+const skyboxBlock = extractBlock(skyboxesCatalogSource, "SkyboxesCatalog.Skyboxes =");
 
 const districtEntries = parseTopLevelEntries(districtBlock).map((entry) => {
   const nameMatch = entry.body.match(/name\s*=\s*"([^"]*)"/);
@@ -309,8 +313,8 @@ disambiguateDuplicatePickerLabels(skyboxEntries);
 /** Leading Generic sentinel (C.SKYBOX_GENERIC_KEY), then catalog entries. */
 const skyboxPickerRows = [{ key: "Generic", label: "Generic" }, ...skyboxEntries];
 
-const header = `<!-- AUTO-GENERATED — do not edit by hand. Source: lib/constants.ttslua -->
-<!-- Regenerate: node .dev/scripts/generate_scenes_location_modals_xml.js -->
+const header = `<!-- AUTO-GENERATED — do not edit by hand. Sources: lib/constants.ttslua (districts/sites), lib/skyboxes_catalog.ttslua (skyboxes) -->
+<!-- Regenerate: node .dev/scripts/generate_scenes_location_modals_xml.js (or npm run skyboxes:import) -->
 `;
 
 const xml = `${header}

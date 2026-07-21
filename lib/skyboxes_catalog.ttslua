@@ -1,0 +1,429 @@
+--[[
+    Toronto Rising — skybox catalog (keyed assets + generic URL pool).
+    AUTO-GENERATED from Google Sheet — DO NOT EDIT BY HAND.
+    Sheet id: 1mzgMSivCYvTfYAQNL61oApAvTHUbEi7YoiwZFr7PPo4
+    Ranges: SKYBOXCSV (Key,Display,URL), SKYBOXGENERICCSV (URL)
+    Regenerate: npm run skyboxes:import
+    Script: .dev/scripts/import_skyboxes_from_sheet.js
+]]
+
+local SkyboxesCatalog = {}
+
+SkyboxesCatalog.Skyboxes = {
+  AnarchBar = {
+    key = "AnarchBar",
+    display = "Anarch Dive Bar",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/13845478097145568291/AA65EE34E24E90D2612729F7ECF3A08059C2E844/"
+  },
+  AptStreetside = {
+    key = "AptStreetside",
+    display = "Apartment Streetside",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/17392343277944315872/DE443459EBE5B62FF7CE03429CFC95E63410B2CF/"
+  },
+  BackAlley1 = {
+    key = "BackAlley1",
+    display = "Back Alley",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/12930388377252487409/1A5BCA2C1176B7A125C0138407E0BFEDE84AE1C9/"
+  },
+  BackAlley2 = {
+    key = "BackAlley2",
+    display = "Back Alley",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/10768024147607726143/2DD2E0C4170168A68C8502C9DD1D1234A3E689CA/"
+  },
+  BayTower = {
+    key = "BayTower",
+    display = "Bay Wellington Tower",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/13002498875258931350/C426E141048D34075CE1C19DBFE2C51D90251765/"
+  },
+  BillyBishopAirport = {
+    key = "BillyBishopAirport",
+    display = "Billy Bishop Airport",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/12862718704800079351/CF381D4CF442BC2C8AE1DD78D14A4E6E88175973/"
+  },
+  BillyBishopFerry = {
+    key = "BillyBishopFerry",
+    display = "Billy Bishop Ferry",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/12530740442080888424/BF86BDE0E497A5A8CEDDE01F256852DE0C550C7A/"
+  },
+  BrickWorks = {
+    key = "BrickWorks",
+    display = "Evergreen Brick Works",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/16328211719702697223/990A8D31493DB9120836733D35C7A4B8833F3064/"
+  },
+  ChantryGrounds = {
+    key = "ChantryGrounds",
+    display = "The University Chantry: Grounds",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/12758076444243025290/AA5EBC83EE0898B75C499C74021CCB52F0D0428A/"
+  },
+  ChantryLibrary = {
+    key = "ChantryLibrary",
+    display = "The University Chantry: Grand Library",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/12585711380481526842/1DB1DD135DC10EF6929755567A003045939515F6/"
+  },
+  CityApt1 = {
+    key = "CityApt1",
+    display = "City Apartment",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/12716873094900351984/937631B39405DA21DCDF6D584FDCE05004E87549/"
+  },
+  CityHall = {
+    key = "CityHall",
+    display = "City Hall",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/17112164863274880396/B86A3464230EFDBD2ED906E00DA58D9A02F806E9/"
+  },
+  CityPark = {
+    key = "CityPark",
+    display = "City Park",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/14810892747457874521/B3DFB3CF2C6D12B8BC415F3851E0986E2E41869B/"
+  },
+  CLGreatHall = {
+    key = "CLGreatHall",
+    display = "Casa Loma: Great Hall",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/9788197039060534115/D95D9D7CBDDAC114D24A623C25227DF3EF408168/"
+  },
+  CLGrounds = {
+    key = "CLGrounds",
+    display = "Casa Loma: Estate Grounds",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/17322423175365528513/A81A4E631E1F7B382D298833BE20F2EAC7AE1838/"
+  },
+  CoachHouseEmbassy = {
+    key = "CoachHouseEmbassy",
+    display = "The Coach House Embassy",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/16934434232310696602/6852DFBBF96A77E3738F349BBCC8E5411E39C968/"
+  },
+  Distillery = {
+    key = "Distillery",
+    display = "The Historic Distillery",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/14516147378028219274/5DACE18D7CC7D5F8E1AB97CFA4DA09703457FB9C/"
+  },
+  Docks = {
+    key = "Docks",
+    display = "The Docks",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/17047823445628751855/0B6B509C76D5EBFF38E85F5BFB5E39BBE5E1570C/"
+  },
+  EatonCentre = {
+    key = "EatonCentre",
+    display = "Eaton Centre",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/17380723954329703787/CCE94F640E082A1D628A4C85EE0377888834A536/"
+  },
+  EvergreenPalisades = {
+    key = "EvergreenPalisades",
+    display = "Evergreen Palisades",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/10537511443423554781/F6C00CE65D6DC99867DF0E58DB40AA9B991A2331/"
+  },
+  FireSaleChantry = {
+    key = "FireSaleChantry",
+    display = "Fire Sale Chantry",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/11654425755197381163/B91622EAC6CE05D4003526416CA2F9C3E685B8A5/"
+  },
+  GEDiningHall = {
+    key = "GEDiningHall",
+    display = "The Giovanni Estate: Dining Hall",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/17009120514347121848/818657B5D9C265266C84577FBCB457C3F0C725DF/"
+  },
+  GEEstateGrounds = {
+    key = "GEEstateGrounds",
+    display = "The Giovanni Estate: Estate Grounds",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/12090593329288187480/84C0FED8F2B63FEB6468E7E8DBB41777F7470F95/"
+  },
+  GraffitiAlley = {
+    key = "GraffitiAlley",
+    display = "Graffiti Alley",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/18389041855900693634/08F13D14418926439C02ED43D82D977B8B1AE2F2/"
+  },
+  HemovoreResearch = {
+    key = "HemovoreResearch",
+    display = "Douglas Netchurch Facility for Hemovore Research",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/16775225861774864358/4075458DDF2ECBE938C23CF96EFEDE42BCE02336/"
+  },
+  Kensington = {
+    key = "Kensington",
+    display = "Kensington Market",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/13013572531394572159/43F889AE1711DC9A5A101C96AD712CA274F5C2AF/"
+  },
+  Keyhouse = {
+    key = "Keyhouse",
+    display = "Keyhouse",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/16586443721799618918/69104B4A751554AF8A0EDD69A7C33A03BE42D59A/"
+  },
+  Laboratory = {
+    key = "Laboratory",
+    display = "Laboratory",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/10786628384146557443/849988BF14476100EC68DDE34EEF989CCE9C137F/"
+  },
+  Library = {
+    key = "Library",
+    display = "Library",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/9295111366516931173/717D74FC882B4DCAA1DAAFFFFD3F3568EC9B51E4/"
+  },
+  Limousine = {
+    key = "Limousine",
+    display = "Limousine",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/12891187118152732202/636E052C979D2B6364EF4757DBCEA42784094E0F/"
+  },
+  MadinaMasjid = {
+    key = "MadinaMasjid",
+    display = "Madina Masjid",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/9234321456991578650/B9B463313B565E1AEA8542702272D3545D15986A/"
+  },
+  Nightclub1 = {
+    key = "Nightclub1",
+    display = "Nightclub",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/11753037908273608379/5611F3230FF55F5C83E2E2F5A4B855087341BFCE/"
+  },
+  Office = {
+    key = "Office",
+    display = "Office",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/16810892330757248457/1AACEAB2C64157BB7732E341617603E0060C6929/"
+  },
+  OldOsgoodeHall = {
+    key = "OldOsgoodeHall",
+    display = "Old Osgoode Hall",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/13773508212837974671/6E9676D49B2BB727EB94E591FD1435466B7B9E50/"
+  },
+  PenthouseApt1 = {
+    key = "PenthouseApt1",
+    display = "Penthouse Apartment",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/16278079520671421847/9C79476509D76DCE6DA89C74D2CB9E4FE6374802/"
+  },
+  Ravenwing = {
+    key = "Ravenwing",
+    display = "Ravenwing",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/16515690108275274607/789562DC3F455554CF95E19281978983B2B28CF1/"
+  },
+  ReconciliationHouse = {
+    key = "ReconciliationHouse",
+    display = "Reconciliation House",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/17101848223550481201/5EBAFEE98081325B81BC14F950C885982260B292/"
+  },
+  RedemptionHouse = {
+    key = "RedemptionHouse",
+    display = "Redemption House",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/12380741094581793096/8046D74BCB3C6FAB394066CD7501E1AC31DF898D/"
+  },
+  RemembranceHouse = {
+    key = "RemembranceHouse",
+    display = "Remembrance House",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/11874371063312490575/CB4E6D4082F1854AB3F43FA6A90CD2DD225821F1/"
+  },
+  REMState = {
+    key = "REMState",
+    display = "REM/State Institute for Sleep Science",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/15138858195663274855/BD32778303E26218A02004ED493942DB54E77F5D/"
+  },
+  RevelationHouse = {
+    key = "RevelationHouse",
+    display = "Revelation House",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/18071453458681234942/25C5A31DF5B7926ECA10B3D35E205EC22947DE47/"
+  },
+  ROMHallOfExtinction = {
+    key = "ROMHallOfExtinction",
+    display = "Royal Ontario Museum: The Hall of Extinction",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/16743979326120796669/F5AFEA23E7929626C95CFABC872D057D9920DAD0/"
+  },
+  ROMRotunda = {
+    key = "ROMRotunda",
+    display = "Royal Ontario Museum: Rotunda Mezzanine",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/16600672822010610291/DAAC0300972F6C5F52666E73FFB0D17570848791/"
+  },
+  Rooftop = {
+    key = "Rooftop",
+    display = "Rooftop",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/13037688246790937124/6F623729D2DD26C75C8827F9221024C3DFCD1920/"
+  },
+  SecludedDeadEnd = {
+    key = "SecludedDeadEnd",
+    display = "Secluded Dead End",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/15020065920628315954/83D8B87981A1A72DD8E9C443FF1C128EAC803A48/"
+  },
+  SewerTunnel1 = {
+    key = "SewerTunnel1",
+    display = "Sewer Tunnel",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/17350579786083043383/28209BC005309B6CE3CFD6690A1893137520CE97/"
+  },
+  SewerTunnel2 = {
+    key = "SewerTunnel2",
+    display = "Sewer Tunnel",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/11854333014927274836/7C5BE3C0090195E237A8D00E2A543E95AD2F9AA7/"
+  },
+  SickKids = {
+    key = "SickKids",
+    display = "Hospital for Sick Children",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/9742829070915239149/93FAE3EA14B168BC43F29E8B3BEB96D3CEF4770C/"
+  },
+  Sidewalk1 = {
+    key = "Sidewalk1",
+    display = "Sidewalk",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/12792922146026622636/CBFF9E4B470CA2B1AA7D689B2C4B780383D4E25C/"
+  },
+  StLawrenceMarket = {
+    key = "StLawrenceMarket",
+    display = "St. Lawrence Market",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/14517455280691396686/E162993FF0A3EB7D72714DBEA5570844CD04F17E/"
+  },
+  StMichaelsCathedral = {
+    key = "StMichaelsCathedral",
+    display = "St. Michael's Cathedral Basilica",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/17158291445512415236/1141146CFD6C8A2B146290EC0D5DC0409492872C/"
+  },
+  StRegisCouncilChamber = {
+    key = "StRegisCouncilChamber",
+    display = "The St. Regis Toronto: Council Chamber",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/12234799762012207874/2D1130537EB234F334382C1BA1D4E8A919D9D7A1/"
+  },
+  StRegisGrandSalon = {
+    key = "StRegisGrandSalon",
+    display = "The St. Regis Toronto: Grand Salon",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/13608096964765612110/9A79A4AE1C26F806908ABC91085953D7145BCD31/"
+  },
+  StRegisRoom101 = {
+    key = "StRegisRoom101",
+    display = "The St. Regis Toronto: Room 101",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/13440786198975849096/78FE5299456CCD14C1DD767C08558EC86CEFE886/"
+  },
+  SuburbanHouse1 = {
+    key = "SuburbanHouse1",
+    display = "Suburban House",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/10891518515063817065/C96B5E2C7F7706F0DD072DA96585DEDF3E88C1DE/"
+  },
+  SubwayStation = {
+    key = "SubwayStation",
+    display = "Subway Station",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/17170491252481600010/909A8E8D763330A40231382C469F0F2087C66E8D/"
+  },
+  TeteATete = {
+    key = "TeteATete",
+    display = "Tête-à-Tête Hair Atelier",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/16894342242919355940/41D0AE3833671D258601C58469B1CCE3859F981F/"
+  },
+  ThreefoldExchange = {
+    key = "ThreefoldExchange",
+    display = "The Threefold Exchange",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/12419013145790968120/87BE9110B8080EE6918BF4CEC0F4E1742E1B4D25/"
+  },
+  TPSHQ = {
+    key = "TPSHQ",
+    display = "Toronto Police Service Headquarters",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/12981635375697177320/8736AC3F4A93E7BB224C5CC37C4310A4FB989169/"
+  },
+  UnionGrandClock = {
+    key = "UnionGrandClock",
+    display = "Union Station: Grand Clock",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/18072810140327563304/3A1B5F2287A4177F49EE2669CF01E787407F1EE1/"
+  },
+  UnionServiceCorridor = {
+    key = "UnionServiceCorridor",
+    display = "Union Station: Service Corridor",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/10907450321955205561/096CAB8F7CACC2EA66457CABB773EE3906B7FA7A/"
+  },
+  WarrensDrakes = {
+    key = "WarrensDrakes",
+    display = "The Nosferatu Warrens: Drake's",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/15823724815521326152/CF673DABB0E144F941D31DBDA53409C9B6F6ABED/"
+  },
+  WarrensLabyrinth = {
+    key = "WarrensLabyrinth",
+    display = "The Nosferatu Warrens: Labyrinth",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/9807534811910580231/5A8F9F3F926AADA4F4CADD1E1416100C610483F4/"
+  },
+  WarrensTunnelJunction = {
+    key = "WarrensTunnelJunction",
+    display = "The Nosferatu Warrens: Tunnel Junction",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/10514672785003801373/3A4FE7F0E73170C5EA6B3861A05286E36249624B/"
+  },
+  WealthyEstate1 = {
+    key = "WealthyEstate1",
+    display = "Wealthy Estate",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/15755893415293709211/A78F79BE74DB80DFB2A75889590CA5C63C584C81/"
+  },
+  WealthyEstate2 = {
+    key = "WealthyEstate2",
+    display = "Wealthy Estate",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/9477851971371345371/12176C18B3D8BAC06F77D857AD8D5A757660303E/"
+  },
+  Yacht = {
+    key = "Yacht",
+    display = "Luxury Yacht",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/10560035547739322716/5AE1B223ED402BD3BBAD338C1652EE0116EF8408/"
+  },
+  YongeDundasSquare = {
+    key = "YongeDundasSquare",
+    display = "Yonge & Dundas Square",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/10938195880862955125/5E8362B80D12A1BCC9C6A1E043D4C211474885E5/"
+  },
+  Memoriam_lordLucien_1 = {
+    key = "Memoriam_lordLucien_1",
+    display = "Memoriam - Lucien 1 - Lucerne",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/13848577772813192455/F739C5068AA926C5BD99B23CADF613F46D4CD532/"
+  },
+  Memoriam_lordLucien_2 = {
+    key = "Memoriam_lordLucien_2",
+    display = "Memoriam - Lucien 2 - Paris",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/16359846726575171369/6D6FA80CB925D8E9DF3562F6C7E8BB2CE1530731/"
+  },
+  Memoriam_lordLucien_3 = {
+    key = "Memoriam_lordLucien_3",
+    display = "Memoriam - Lucien 3 - Mexico",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/12362658886795600199/626F15588079A71C8431D6C3819AEA582902F155/"
+  },
+  Memoriam_lordLucien_4 = {
+    key = "Memoriam_lordLucien_4",
+    display = "Memoriam - Lucien 4 - Las Vegas",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/15997513845398585235/0770EACBB191493E2FD50BD7DFBC2BFCA80984E4/"
+  },
+  Memoriam_lordLucien_5 = {
+    key = "Memoriam_lordLucien_5",
+    display = "Memoriam - Lucien 5 - Road Trip",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/9366797038274814939/BF98B843EF9CC7C5A8FDB373FB1D7409B5D02DDB/"
+  },
+  Memoriam_lordLucien_6 = {
+    key = "Memoriam_lordLucien_6",
+    display = "Memoriam - Lucien 6 - '60s Toronto",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/16523063491802303454/DCAD825ACC68C5583A166133F37C9B2C51F23D11/"
+  },
+  Memoriam_lordLucien_7 = {
+    key = "Memoriam_lordLucien_7",
+    display = "Memoriam - Lucien 7 - Montreal",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/12197770916454962091/1CC219C3F7F0BFFD91D383A5C5CA1258586EDD26/"
+  },
+  Memoriam_lordLucien_8 = {
+    key = "Memoriam_lordLucien_8",
+    display = "Memoriam - Lucien 8 - Week of Nightmares",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/11666778478254478311/9CA14DB530FF71D5C39EE8E8FBFC071D8798C2E8/"
+  },
+  CrowdOfSilhouettes = {
+    key = "CrowdOfSilhouettes",
+    display = "Crowd of Silhouettes",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/11739257324663050000/FF367C8B3AD190B230BFA99F1F846ABADEC0DECB/"
+  },
+  JustSmoke = {
+    key = "JustSmoke",
+    display = "Just Smoke",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/10459853701563340854/1621764FD0BFF80BA131E99211A430FC1AC9327C/"
+  },
+  Spotlight = {
+    key = "Spotlight",
+    display = "Spotlight",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/10826446675614890645/4F0B8F185D0E3063D0986E342CDF1BF488C4328C/"
+  },
+  PATH = {
+    key = "PATH",
+    display = "P.A.T.H.",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/11078955156945464025/C74AA114E07E7FB7F42FBA3C36F4B9ABBC1ED273/"
+  },
+}
+
+SkyboxesCatalog.GenericSkyboxes = {
+  "https://steamusercontent-a.akamaihd.net/ugc/10421882096674390851/2994BC6100D023BE54A79EF408D9BBF28F15F66C/",
+  "https://steamusercontent-a.akamaihd.net/ugc/16741031119473117744/C453B0224559192337FF0E050E8140580E0294A5/",
+  "https://steamusercontent-a.akamaihd.net/ugc/10831707983359018782/67B55238B3CB12DBD8C97D497ED59CAE700F9F00/",
+  "https://steamusercontent-a.akamaihd.net/ugc/11002461391493536327/651EABD7273DF6146483832F54B3ADD1C1741A6E/",
+  "https://steamusercontent-a.akamaihd.net/ugc/18409211358109772988/80570A2A1CB46C1FB3F3990CEA1E436122020CBC/",
+  "https://steamusercontent-a.akamaihd.net/ugc/18376606045988775303/A594061717B0A184802224CCC95B4CF05A36DEC2/",
+  "https://steamusercontent-a.akamaihd.net/ugc/11209982522350228187/4A83547581FFCDACC00D63E24E65FED67163DD8D/",
+  "https://steamusercontent-a.akamaihd.net/ugc/17638525735268004087/DE673DDC9EE8A695F2DBD36203CA619C438F40CA/",
+  "https://steamusercontent-a.akamaihd.net/ugc/14296994836620801848/51A9AD04E2C354E665DB399891B8C927D4BD9978/",
+  "https://steamusercontent-a.akamaihd.net/ugc/13602333389534714653/14C02F19C32CBD5B9D32744C72D8DD1665795A8B/",
+  "https://steamusercontent-a.akamaihd.net/ugc/14269416598791524785/1A6412DA82479C1F4F23757E8DC9320EB941D961/",
+}
+
+return SkyboxesCatalog

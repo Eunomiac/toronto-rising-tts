@@ -93,6 +93,28 @@
       }
     },
     {
+      "label": "Import skyboxes from Google Sheet",
+      "type": "shell",
+      "command": "npm",
+      "args": [
+        "run",
+        "skyboxes:import"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "focus": true
+      }
+    },
+    {
       "label": "Fix TTS object stubs (.tts/objects XML + Lua)",
       "type": "shell",
       "command": "node",
