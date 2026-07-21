@@ -1,0 +1,502 @@
+--[[
+    NPC gameboard — UV math + board accessors (TOR-423).
+    Board must NOT require tokens / apply / reconcile / facade.
+]]
+
+local Board = {}
+
+local U = require("lib.util")
+local G = require("lib.guids")
+local DATA = require("lib.npc_gameboard_data")
+local Palette = require("lib.npc_control_board_palette")
+
+--- World XZ tolerance when matching tokens to installed control-board snap points.
+local CONTROL_BOARD_SNAP_MATCH_FUZZINESS = 0.45
+--- @type table<string, { halfX: number, halfZ: number }>
+local boardUvHalfExtentsCache = {}
+
+local function isGameObject(obj)
+    return U.isGameObject(obj)
+end
+
+--- @param obj Object|nil
+--- @return number
+local function objectYawDeg(obj)
+    if not isGameObject(obj) or obj.getRotation == nil then
+        return 0
+    end
+    local rot = obj.getRotation()
+    if type(rot) ~= "table" then
+        return 0
+    end
+    return rot.y or 0
+end
+
+--- @param board Object
+--- @return number
+local function snapMatchFuzzinessForBoard(board)
+    if not isGameObject(board) or board.getBounds == nil then
+        return CONTROL_BOARD_SNAP_MATCH_FUZZINESS
+    end
+    local b = board.getBounds()
+    if b == nil or b.size == nil then
+        return CONTROL_BOARD_SNAP_MATCH_FUZZINESS
+    end
+    local sx = b.size.x or b.size[1] or 1
+    local sz = b.size.z or b.size[3] or 1
+    local scaleHint = math.min(math.abs(sx), math.abs(sz))
+    return math.max(CONTROL_BOARD_SNAP_MATCH_FUZZINESS, scaleHint * 0.035)
+end
+
+--- @param n number
+--- @param lo number
+--- @param hi number
+--- @return number
+local function clamp(n, lo, hi)
+    if n < lo then
+        return lo
+    end
+    if n > hi then
+        return hi
+    end
+    return n
+end
+
+--- @param guid string|nil
+--- @return Object|nil
+local function objectFromGuid(guid)
+    return G.getObject(guid)
+end
+
+--- @return Object|nil
+local function getStageBoard()
+    return objectFromGuid(G.GUIDS.STAGE_BOARD)
+end
+
+--- @return Object|nil
+local function getControlBoard()
+    return objectFromGuid(G.GUIDS.CONTROL_BOARD)
+end
+
+--- @return Object|nil
+local function getControlBoardPalette()
+    return objectFromGuid(G.GUIDS.CONTROL_BOARD_PALETTE)
+end
+
+--- @return table
+local function defaultStageWorld()
+    local d = DATA.DEFAULT_STAGE_WORLD
+    return {
+        centerX = d.centerX,
+        centerZ = d.centerZ,
+        halfWidthX = d.halfWidthX,
+        halfDepthZ = d.halfDepthZ,
+        groundY = d.groundY,
+    }
+end
+
+--- Derive world XZ extents from STAGE_BOARD bounds when present.
+--- @return table
+local function resolveStageWorldExtents()
+    local board = getStageBoard()
+    if not isGameObject(board) or board.getBounds == nil then
+        return defaultStageWorld()
+    end
+    local b = board.getBounds()
+    if b == nil or b.center == nil or b.size == nil then
+        return defaultStageWorld()
+    end
+    local cx = b.center.x or b.center[1] or 0
+    local cz = b.center.z or b.center[3] or 0
+    local sx = b.size.x or b.size[1] or 1
+    local sz = b.size.z or b.size[3] or 1
+    local cy = b.center.y or b.center[2] or DATA.DEFAULT_STAGE_WORLD.groundY
+    return {
+        centerX = cx,
+        centerZ = cz,
+        halfWidthX = math.max(sx * 0.5, 50),
+        halfDepthZ = math.max(sz * 0.5, 50),
+        groundY = cy,
+    }
+end
+
+--- @param a Vector
+--- @param b Vector
+--- @return number
+local function vectorDot(a, b)
+    return a.x * b.x + a.y * b.y + a.z * b.z
+end
+
+--- Custom_Tile boards use `positionToWorld` / `positionToLocal` (not `localToWorld`).
+--- @param board Object
+--- @param localPos Vector|table
+--- @return Vector
+local function boardLocalToWorld(board, localPos)
+    local lp = Vector(localPos)
+    if type(board.positionToWorld) == "function" then
+        return board.positionToWorld(lp)
+    end
+    local origin = board.getPosition()
+    local right = board.getTransformRight()
+    local up = board.getTransformUp()
+    local fwd = board.getTransformForward()
+    return origin + right * lp.x + up * lp.y + fwd * lp.z
+end
+
+--- Custom_Tile `positionToLocal` / `positionToWorld` use object-local units (typically ±0.5 on X/Z for a unit tile).
+--- `getBounds().size` is world-space and must not be used as the UV divisor/multiplier.
+--- Derive local half-extents by projecting world bound corners through `positionToLocal`.
+--- @param board Object
+--- @return number halfX, number halfZ
+local function boardLocalSurfaceHalfExtents(board)
+    if not isGameObject(board) then
+        return 0.5, 0.5
+    end
+    local guid = board.getGUID()
+    if type(guid) == "string" and guid ~= "" then
+        local cached = boardUvHalfExtentsCache[guid]
+        if type(cached) == "table" and type(cached.halfX) == "number" and type(cached.halfZ) == "number" then
+            return cached.halfX, cached.halfZ
+        end
+    end
+    local halfX = 0.5
+    local halfZ = 0.5
+    if board.getBounds ~= nil and board.positionToLocal ~= nil then
+        local b = board.getBounds()
+        if b ~= nil and b.center ~= nil and b.size ~= nil then
+            local cx = b.center.x or b.center[1] or 0
+            local cy = b.center.y or b.center[2] or 0
+            local cz = b.center.z or b.center[3] or 0
+            local worldHalfX = (b.size.x or b.size[1] or 1) * 0.5
+            local worldHalfZ = (b.size.z or b.size[3] or 1) * 0.5
+            local cornerX = board.positionToLocal(Vector({ x = cx + worldHalfX, y = cy, z = cz }))
+            local cornerZ = board.positionToLocal(Vector({ x = cx, y = cy, z = cz + worldHalfZ }))
+            if cornerX ~= nil then
+                halfX = math.abs(cornerX.x or 0)
+            end
+            if cornerZ ~= nil then
+                halfZ = math.abs(cornerZ.z or 0)
+            end
+        end
+    end
+    if halfX < 0.01 then
+        halfX = 0.5
+    end
+    if halfZ < 0.01 then
+        halfZ = 0.5
+    end
+    if type(guid) == "string" and guid ~= "" then
+        boardUvHalfExtentsCache[guid] = { halfX = halfX, halfZ = halfZ }
+    end
+    return halfX, halfZ
+end
+
+--- @param board Object
+--- @param worldPos Vector|table
+--- @return Vector|nil
+local function boardWorldToLocal(board, worldPos)
+    local wp = Vector(worldPos)
+    if type(board.positionToLocal) == "function" then
+        return board.positionToLocal(wp)
+    end
+    local origin = board.getPosition()
+    local delta = wp - origin
+    local right = board.getTransformRight()
+    local up = board.getTransformUp()
+    local fwd = board.getTransformForward()
+    return Vector(vectorDot(delta, right), vectorDot(delta, up), vectorDot(delta, fwd))
+end
+
+--- @param board Object
+--- @param worldPos Vector|table
+--- @return number|nil u, number|nil v
+local function uvFromWorldOnBoard(board, worldPos)
+    if not isGameObject(board) or worldPos == nil then
+        return nil, nil
+    end
+    local localPos = boardWorldToLocal(board, worldPos)
+    if localPos == nil then
+        return nil, nil
+    end
+    local halfX, halfZ = boardLocalSurfaceHalfExtents(board)
+    local u = 0.5 + localPos.x / (2 * halfX)
+    local v = 0.5 + localPos.z / (2 * halfZ)
+    return clamp(u, 0, 1), clamp(v, 0, 1)
+end
+
+--- Tagged objects on CONTROL_BOARD surface. Custom_Tile exposes getObjects but throws on call —
+--- never use `board.getObjects and board.getObjects()` (the `and` still invokes the method).
+--- @param board Object
+--- @param tag string
+--- @return table
+local function objectsOnControlBoard(board, tag)
+    if not isGameObject(board) or type(tag) ~= "string" or tag == "" then
+        return {}
+    end
+    local halfX, halfZ = boardLocalSurfaceHalfExtents(board)
+    local margin = 2.5
+    local maxLocalX = halfX * margin
+    local maxLocalZ = halfZ * margin
+    local out = {}
+    local tagged = getObjectsWithTag(tag) or {}
+    for _, obj in ipairs(tagged) do
+        if isGameObject(obj) and obj.hasTag ~= nil and obj.hasTag(tag) == true then
+            local localPos = boardWorldToLocal(board, obj.getPosition())
+            if localPos ~= nil then
+                local lx = math.abs(localPos.x or 0)
+                local lz = math.abs(localPos.z or 0)
+                if lx <= maxLocalX and lz <= maxLocalZ then
+                    out[#out + 1] = obj
+                end
+            end
+        end
+    end
+    return out
+end
+
+--- Max board-local |Y − surface| for a token to count as on the minimap (not dragged off / in the air).
+local MINIMAP_TOKEN_SURFACE_Y_TOLERANCE = 0.4
+
+--- Token on CONTROL_BOARD face (not palette): tight XZ on tile + near surface Y.
+--- @param board Object
+--- @param token Object
+--- @return boolean
+local function isTokenOnMinimapTokenSurface(board, token)
+    if not isGameObject(board) or not isGameObject(token) then
+        return false
+    end
+    local palette = getControlBoardPalette()
+    if isGameObject(palette) and Palette.isTokenOnPaletteBoard(palette, token) then
+        return false
+    end
+    local localPos = boardWorldToLocal(board, token.getPosition())
+    if localPos == nil then
+        return false
+    end
+    local halfX, halfZ = boardLocalSurfaceHalfExtents(board)
+    local xzMargin = 1.05
+    if math.abs(localPos.x or 0) > halfX * xzMargin or math.abs(localPos.z or 0) > halfZ * xzMargin then
+        return false
+    end
+    local surfaceY = tonumber(DATA.MINIMAP_SURFACE_LOCAL_Y) or 0.18
+    if math.abs((localPos.y or 0) - surfaceY) > MINIMAP_TOKEN_SURFACE_Y_TOLERANCE then
+        return false
+    end
+    return true
+end
+
+--- Token on CONTROL_BOARD minimap (not palette): loose XZ (2.5× tile) — drop handlers, snap settle, scans.
+--- Does not require surface Y (tokens mid-snap or seat scale still count as on-board).
+--- O(1) bounds check — do not scan all tagged tokens (was a major pick-up/drag/drop lag source).
+--- @param board Object
+--- @param token Object
+--- @return boolean
+local function isTokenOnControlBoardSurface(board, token)
+    if not isGameObject(board) or not isGameObject(token) then
+        return false
+    end
+    local palette = getControlBoardPalette()
+    if isGameObject(palette) and Palette.isTokenOnPaletteBoard(palette, token) then
+        return false
+    end
+    local localPos = boardWorldToLocal(board, token.getPosition())
+    if localPos == nil then
+        return false
+    end
+    local halfX, halfZ = boardLocalSurfaceHalfExtents(board)
+    local margin = 2.5
+    if math.abs(localPos.x or 0) > halfX * margin or math.abs(localPos.z or 0) > halfZ * margin then
+        return false
+    end
+    return true
+end
+
+--- Same XZ band as `isTokenOnControlBoardSurface` plus surface Y — Clear parking / stray recovery only.
+--- Off-world tokens under the board footprint are not treated as on-board.
+--- @param board Object
+--- @param token Object
+--- @return boolean
+local function isTokenOnControlBoardFace(board, token)
+    if not isGameObject(board) or not isGameObject(token) then
+        return false
+    end
+    local palette = getControlBoardPalette()
+    if isGameObject(palette) and Palette.isTokenOnPaletteBoard(palette, token) then
+        return false
+    end
+    local localPos = boardWorldToLocal(board, token.getPosition())
+    if localPos == nil then
+        return false
+    end
+    local halfX, halfZ = boardLocalSurfaceHalfExtents(board)
+    local margin = 2.5
+    if math.abs(localPos.x or 0) > halfX * margin or math.abs(localPos.z or 0) > halfZ * margin then
+        return false
+    end
+    local surfaceY = tonumber(DATA.MINIMAP_SURFACE_LOCAL_Y) or 0.18
+    if math.abs((localPos.y or 0) - surfaceY) > MINIMAP_TOKEN_SURFACE_Y_TOLERANCE then
+        return false
+    end
+    return true
+end
+
+--- @param board Object
+--- @param u number
+--- @param v number
+--- @return Vector local position on board surface (Y slightly above tile)
+--- @param board Object
+--- @param u number
+--- @param v number
+--- @param extraLocalY number|nil Additional lift in board-local Y (e.g. table mesh thickness)
+local function boardLocalFromUv(board, u, v, extraLocalY)
+    local halfX, halfZ = boardLocalSurfaceHalfExtents(board)
+    local surfaceY = tonumber(DATA.MINIMAP_SURFACE_LOCAL_Y) or 0.18
+    local lift = tonumber(extraLocalY) or 0
+    return Vector((u - 0.5) * 2 * halfX, surfaceY + lift, (v - 0.5) * 2 * halfZ)
+end
+
+--- Inverse of `boardLocalFromUv` for surface XZ (ignores local Y).
+--- @param board Object
+--- @param localPos Vector|table
+--- @return number u, number v
+local function uvFromBoardLocal(board, localPos)
+    local halfX, halfZ = boardLocalSurfaceHalfExtents(board)
+    local lx = localPos.x or localPos[1] or 0
+    local lz = localPos.z or localPos[3] or 0
+    return 0.5 + lx / (2 * halfX), 0.5 + lz / (2 * halfZ)
+end
+
+--- Extent-based fallback when STAGE_BOARD is not in the save (workshop prep).
+--- @param worldPos Vector|table
+--- @return number|nil u, number|nil v
+local function uvFromWorldFallbackExtents(worldPos)
+    if worldPos == nil then
+        return nil, nil
+    end
+    local ext = resolveStageWorldExtents()
+    local x = worldPos.x or worldPos[1]
+    local z = worldPos.z or worldPos[3]
+    if type(x) ~= "number" or type(z) ~= "number" then
+        return nil, nil
+    end
+    local u = 0.5 + (x - ext.centerX) / (2 * ext.halfWidthX)
+    local v = 0.5 + (z - ext.centerZ) / (2 * ext.halfDepthZ)
+    return clamp(u, 0, 1), clamp(v, 0, 1)
+end
+
+--- Normalized map UV (0–1) from a world position using STAGE_BOARD as the canonical minimap.
+--- CONTROL_BOARD uses the same u,v via worldOnControlBoard; do not project world XZ through CONTROL_BOARD.
+--- @param worldPos Vector|table
+--- @return number|nil u, number|nil v
+local function normalizedUvFromWorld(worldPos)
+    if worldPos == nil then
+        return nil, nil
+    end
+    local stage = getStageBoard()
+    if isGameObject(stage) then
+        return uvFromWorldOnBoard(stage, worldPos)
+    end
+    return uvFromWorldFallbackExtents(worldPos)
+end
+
+--- World position for figurine placement from normalized u/v on STAGE_BOARD.
+--- X/Z come from STAGE_BOARD `positionToWorld`; `groundLevel` when set is **absolute world Y** (not board-local).
+--- @param u number
+--- @param v number
+--- @param options table|nil `{ groundLevel?: number }` absolute world Y from snap ring (optional)
+--- @return Vector
+local function worldFromUv(u, v, options)
+    options = type(options) == "table" and options or {}
+    local worldY = tonumber(options.groundLevel)
+    local stage = getStageBoard()
+    if isGameObject(stage) then
+        local lp = boardLocalFromUv(stage, u, v)
+        local wp = boardLocalToWorld(stage, lp)
+        if worldY ~= nil then
+            return Vector(wp.x, worldY, wp.z)
+        end
+        return wp
+    end
+    print("[Gameboard] worldFromUv: STAGE_BOARD missing (GUID "
+        .. tostring(G.GUIDS.STAGE_BOARD)
+        .. ") — using DEFAULT_STAGE_WORLD fallback")
+    local ext = resolveStageWorldExtents()
+    local x = ext.centerX + (u - 0.5) * 2 * ext.halfWidthX
+    local z = ext.centerZ + (v - 0.5) * 2 * ext.halfDepthZ
+    local y = worldY ~= nil and worldY or ext.groundY
+    return Vector(x, y, z)
+end
+
+--- World Y rotation for a figurine on STAGE_BOARD at u,v (master-origin facing; ignores stored placement yaw).
+--- @param placementYaw number|nil Legacy / unused when u,v supplied via caller; kept for API compat.
+--- @return number
+local function stageFigurineWorldYawDeg(placementYaw)
+    local stageYaw = getStageBoardYawDeg()
+    local rel = tonumber(placementYaw) or 0
+    local offset = tonumber(DATA.STAGE_FIGURINE_YAW_OFFSET_DEG) or 0
+    return (stageYaw + rel + offset) % 360
+end
+
+--- STAGE_BOARD world Y rotation (degrees), or 0 when the board object is missing.
+--- @return number
+local function getStageBoardYawDeg()
+    local stage = getStageBoard()
+    return objectYawDeg(stage)
+end
+
+--- @param worldPos Vector|table
+--- @return number|nil u, number|nil v
+local function uvFromWorldFallback(worldPos)
+    return uvFromWorldFallbackExtents(worldPos)
+end
+
+--- @param worldPos Vector|table
+--- @return number|nil u, number|nil v
+local function uvFromWorld(worldPos)
+    return normalizedUvFromWorld(worldPos)
+end
+
+--- @param board Object
+--- @param u number
+--- @param v number
+--- @param options table|nil { extraLocalY?: number }
+--- @return Vector world position on CONTROL_BOARD surface (same u,v as STAGE_BOARD map)
+local function worldOnControlBoard(board, u, v, options)
+    if not isGameObject(board) then
+        return Vector(0, 0, 0)
+    end
+    local extraLocalY = options and options.extraLocalY or nil
+    return boardLocalToWorld(board, boardLocalFromUv(board, u, v, extraLocalY))
+end
+
+Board.isGameObject = isGameObject
+Board.objectYawDeg = objectYawDeg
+Board.snapMatchFuzzinessForBoard = snapMatchFuzzinessForBoard
+Board.clamp = clamp
+Board.objectFromGuid = objectFromGuid
+Board.getStageBoard = getStageBoard
+Board.getControlBoard = getControlBoard
+Board.getControlBoardPalette = getControlBoardPalette
+Board.defaultStageWorld = defaultStageWorld
+Board.resolveStageWorldExtents = resolveStageWorldExtents
+Board.vectorDot = vectorDot
+Board.boardLocalToWorld = boardLocalToWorld
+Board.boardLocalSurfaceHalfExtents = boardLocalSurfaceHalfExtents
+Board.boardWorldToLocal = boardWorldToLocal
+Board.uvFromWorldOnBoard = uvFromWorldOnBoard
+Board.objectsOnControlBoard = objectsOnControlBoard
+Board.isTokenOnMinimapTokenSurface = isTokenOnMinimapTokenSurface
+Board.isTokenOnControlBoardSurface = isTokenOnControlBoardSurface
+Board.isTokenOnControlBoardFace = isTokenOnControlBoardFace
+Board.boardLocalFromUv = boardLocalFromUv
+Board.uvFromBoardLocal = uvFromBoardLocal
+Board.uvFromWorldFallbackExtents = uvFromWorldFallbackExtents
+Board.normalizedUvFromWorld = normalizedUvFromWorld
+Board.worldFromUv = worldFromUv
+Board.stageFigurineWorldYawDeg = stageFigurineWorldYawDeg
+Board.getStageBoardYawDeg = getStageBoardYawDeg
+Board.uvFromWorldFallback = uvFromWorldFallback
+Board.uvFromWorld = uvFromWorld
+Board.worldOnControlBoard = worldOnControlBoard
+
+return Board

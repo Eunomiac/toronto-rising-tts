@@ -1,0 +1,700 @@
+--[[
+    NPC gameboard — Apply / Clear / Load / lock / palette (TOR-423).
+    Apply may require Reconcile; Reconcile must not require Apply.
+]]
+
+local Apply = {}
+
+local C = require("lib.constants")
+local G = require("lib.guids")
+local Palette = require("lib.npc_control_board_palette")
+local Board = require("core.npc_gameboard_board")
+local Tokens = require("core.npc_gameboard_tokens")
+local Snaps = require("core.npc_gameboard_snaps")
+local Reconcile = require("core.npc_gameboard_reconcile")
+
+--- @type table|nil
+local stateModuleCache = nil
+
+--- @return table|nil
+local function stateModule()
+    if type(stateModuleCache) == "table" and type(stateModuleCache.getStateVal) == "function" then
+        return stateModuleCache
+    end
+    local loaded = require("core.state")
+    if type(loaded) == "table" then
+        stateModuleCache = loaded
+    end
+    return loaded
+end
+
+local clearArmExpireByColor = {}
+
+--- Injected by facade (interaction profile).
+Apply.beginInteractionProfile = function(_reason) end
+Apply.finishInteractionProfile = function(_t0) end
+
+--- Forward declare: Apply callers above definition (Lua local-function order).
+local parkVacatedNpcControlTokensToPalette
+
+--- @param placements table|nil
+--- @return number
+local function placementsCount(placements)
+    if type(placements) ~= "table" then
+        return 0
+    end
+    local n = 0
+    for _, row in pairs(placements) do
+        if type(row) == "table" then
+            n = n + 1
+        end
+    end
+    return n
+end
+
+--- Shared fast Sync.npcs path used by control-board interactions.
+--- Orchestrator fingerprint skip (npcReconcileFingerprint) applies when force is false.
+--- RSL layout force inside commitNpcSeatLayout (TOR-210) is separate and unchanged.
+--- @param reason string
+--- @param opts table|nil `{ seatMutation?: boolean, placementMutation?: boolean }`
+local function syncNpcsFromControlBoard(reason, opts)
+    opts = type(opts) == "table" and opts or {}
+    local seatMutation = opts.seatMutation == true
+    local placementMutation = opts.placementMutation == true
+    local Sync = require("core.sync")
+    --- Clear: vacate off-board homelands first; on-board homelands re-seat via Step Three (TOR-178).
+    --- Placement-only Apply (seat → stage) needs Steps Three–Four for homeland chair/lights (TOR-178).
+    local onlySteps = { 1, 5 }
+    if seatMutation or placementMutation or reason == "gameboard_clear" then
+        onlySteps = { 1, 2, 3, 4, 5 }
+    end
+    Sync.npcs({
+        reason = reason,
+        force = false,
+        onlySteps = onlySteps,
+        deferUiRefresh = true,
+        skipPreloadPopulate = true,
+        animateStageMoves = reason == "gameboard_apply",
+    })
+end
+
+--- True when an empty NPC seat snap should clear `occupiedNPCSlots` on Apply.
+--- Keep assignment only while the token remains on the CONTROL_BOARD minimap (polar/stage snap this scan).
+--- Palette and off-board tokens do not retain a homeland seat.
+--- @param characterKey string
+--- @param polarOnBoardByCharacter table<string, boolean>
+--- @return boolean
+local function shouldUnassignNpcSeatWhenSnapEmpty(characterKey, polarOnBoardByCharacter)
+    if type(characterKey) ~= "string" or characterKey == "" then
+        return false
+    end
+    if polarOnBoardByCharacter[characterKey] == true then
+        return false
+    end
+    return true
+end
+
+--- Seat-row Apply: assign/unassign NPC seats and narrative presence from seat snaps (TOR-180).
+--- @param board Object
+--- @param polarOnBoardByCharacter table<string, boolean> characters on polar snaps (live scan)
+--- @return boolean changed, string[] vacatedCharacterKeys
+local function applySeatRowFromControlBoard(board, polarOnBoardByCharacter)
+    polarOnBoardByCharacter = type(polarOnBoardByCharacter) == "table" and polarOnBoardByCharacter or {}
+    local bySeat = Reconcile.scanSeatRowTokensBySeatKey(board)
+    local NPCS = require("core.npcs")
+    local occupied = stateModule().getStateVal("seatLayout", "occupiedNPCSlots")
+    if type(occupied) ~= "table" then
+        occupied = {}
+    end
+    local changed = false
+    local vacatedKeys = {}
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local scan = bySeat[seatKey]
+        local current = occupied[seatKey]
+        if type(current) ~= "string" or current == "" then
+            current = nil
+        end
+        if scan == nil then
+            if current ~= nil and shouldUnassignNpcSeatWhenSnapEmpty(current, polarOnBoardByCharacter) then
+                local ok, err = NPCS.unseatNpc(current)
+                if not ok then
+                    print("[Gameboard] Apply seat row: unseat " .. tostring(current) .. ": " .. tostring(err))
+                else
+                    changed = true
+                    vacatedKeys[#vacatedKeys + 1] = current
+                end
+            end
+        else
+            local ck = scan.characterKey
+            if current ~= ck then
+                local ok, err = NPCS.assignNpcToSeat(ck, seatKey, { deferLayoutSync = true })
+                if not ok then
+                    print("[Gameboard] Apply seat row: assign " .. tostring(ck) .. " → " .. seatKey .. ": " .. tostring(err))
+                else
+                    changed = true
+                end
+            end
+            local wantPresent = scan.present == true
+            local wasPresent = NPCS.resolveSeatNarrativePresence(seatKey)
+            if wantPresent ~= wasPresent then
+                NPCS.setNpcSeatNarrativePresence(seatKey, wantPresent)
+                changed = true
+            end
+        end
+    end
+    if changed then
+        print("[Gameboard] Apply: seat row updated")
+    end
+    return changed, vacatedKeys
+end
+
+--- Seat-row Apply for PC columns: `pc_control_token` flip → `seatSlots[color].isPresent` (TOR-236).
+--- Apply-time only — sets presence for colors that have a PC token on their column; PCs without a
+--- token are left untouched (connection-driven presence stays intact pre-TOR-247 seat decoupling).
+--- @param board Object
+--- @return boolean changed
+local function applyPcSeatRowFromControlBoard(board)
+    local byColor = Reconcile.scanSeatRowPcTokensByColor(board)
+    if next(byColor) == nil then
+        return false
+    end
+    local NPCS = require("core.npcs")
+    local changed = false
+    for _, color in ipairs(C.PlayerColors or {}) do
+        local scan = byColor[color]
+        if scan ~= nil then
+            local wantPresent = scan.present == true
+            if NPCS.resolvePlayerSeatPresence(color) ~= wantPresent then
+                if NPCS.setPlayerSeatPresence(color, wantPresent) then
+                    changed = true
+                end
+            end
+        end
+    end
+    if changed then
+        print("[Gameboard] Apply: PC seat row updated")
+    end
+    return changed
+end
+
+--- Homeland seat assigned but figurine on stage: deactivate narrative presence (TOR-250).
+--- Runs after seat-row scan; stage placement overrides seat-row token flip for that homeland.
+--- @param placements table<string, table> sessionScene.npcWorld.placements map
+--- @return boolean changed
+local function deactivateHomelandSeatsForStagePlacements(placements)
+    if type(placements) ~= "table" then
+        return false
+    end
+    local NPCS = require("core.npcs")
+    local occupied = stateModule().getStateVal("seatLayout", "occupiedNPCSlots")
+    if type(occupied) ~= "table" then
+        return false
+    end
+    local changed = false
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local characterKey = occupied[seatKey]
+        if type(characterKey) == "string" and characterKey ~= "" and type(placements[characterKey]) == "table" then
+            if NPCS.resolveSeatNarrativePresence(seatKey) then
+                NPCS.setNpcSeatNarrativePresence(seatKey, false)
+                changed = true
+            end
+        end
+    end
+    return changed
+end
+
+--- After Clear from stage: restore homeland seat narrative presence from staged light mode (TOR-281).
+--- Case 1 — seat disabled: activate when stage `npcLightMode` was visible (not `OFF`); stay off when dark.
+--- Case 2 — seat enabled: unchanged regardless of stage light.
+--- @param placements table<string, table> sessionScene.npcWorld.placements map (pre-clear snapshot)
+--- @return boolean changed
+local function applyHomelandSeatPresenceAfterStageClear(placements)
+    if type(placements) ~= "table" then
+        return false
+    end
+    local NPCS = require("core.npcs")
+    local occupied = stateModule().getStateVal("seatLayout", "occupiedNPCSlots")
+    if type(occupied) ~= "table" then
+        return false
+    end
+    local changed = false
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local characterKey = occupied[seatKey]
+        if type(characterKey) == "string" and characterKey ~= "" and type(placements[characterKey]) == "table" then
+            if not NPCS.resolveSeatNarrativePresence(seatKey) then
+                local mode = placements[characterKey].npcLightMode or "STANDARD"
+                if mode ~= "OFF" then
+                    NPCS.setNpcSeatNarrativePresence(seatKey, true)
+                    changed = true
+                end
+            end
+        end
+    end
+    return changed
+end
+
+--- True when Apply would need a dynamic-table grow for the given (post-scan) occupied slot map.
+--- Used to preflight dice-on-table before committing seat/placement state (TOR-304).
+--- @param occupiedSlots table|nil
+--- @return boolean
+local function applyWouldRequireDynamicTableGrow(occupiedSlots)
+    local RSL = require("lib.rotational-seat-layout")
+    local intent = stateModule().getStateVal("sessionScene", "tableKey")
+    if not RSL.isDynamicTableFamilyKey(intent) then
+        return false
+    end
+    local slotIndex = RSL.highestOccupiedNpcSlotIndex(occupiedSlots)
+    local currentKey = stateModule().getStateVal("seatLayout", "currentTableKey")
+    local currentCfg = type(currentKey) == "string" and C.Tables[currentKey] or nil
+    if slotIndex <= RSL.tableNpcSlotCapacity(currentCfg) then
+        return false
+    end
+    local targetKey = RSL.resolveTableKey(intent, { occupiedSlotIndex = slotIndex })
+    return type(targetKey) == "string" and targetKey ~= currentKey
+end
+
+--- Build the occupied-NPC slot map that Apply would produce from the live seat-row scan (dry-run; no state writes).
+--- @param board Object
+--- @param polarOnBoardByCharacter table<string, boolean>
+--- @return table slotKey → characterKey
+local function previewOccupiedNpcSlotsAfterSeatRowApply(board, polarOnBoardByCharacter)
+    polarOnBoardByCharacter = type(polarOnBoardByCharacter) == "table" and polarOnBoardByCharacter or {}
+    local bySeat = Reconcile.scanSeatRowTokensBySeatKey(board)
+    local occupied = stateModule().getStateVal("seatLayout", "occupiedNPCSlots")
+    local nextOccupied = {}
+    if type(occupied) == "table" then
+        for seatKey, characterKey in pairs(occupied) do
+            if type(characterKey) == "string" and characterKey ~= "" then
+                nextOccupied[seatKey] = characterKey
+            end
+        end
+    end
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local scan = bySeat[seatKey]
+        if scan == nil then
+            local current = nextOccupied[seatKey]
+            if type(current) == "string"
+                and current ~= ""
+                and shouldUnassignNpcSeatWhenSnapEmpty(current, polarOnBoardByCharacter)
+            then
+                nextOccupied[seatKey] = nil
+            end
+        else
+            nextOccupied[seatKey] = scan.characterKey
+        end
+    end
+    return nextOccupied
+end
+
+--- Grow-only dynamic table transition on Apply (TOR-258): when the table intent (`sessionScene.tableKey`)
+--- is a dynamic family key (e.g. "Table B") and occupied NPC seats now exceed the active table's NPC
+--- capacity, switch up to the larger variant. Never shrinks when seats are removed — table switches are
+--- expensive and the author wants them only when strictly required.
+--- @return boolean true when a table transition was triggered
+local function maybeGrowDynamicTableForOccupiedSeats()
+    local RSL = require("lib.rotational-seat-layout")
+    local intent = stateModule().getStateVal("sessionScene", "tableKey")
+    if not RSL.isDynamicTableFamilyKey(intent) then
+        return false
+    end
+    local slotIndex = RSL.highestOccupiedNpcSlotIndex()
+    local currentKey = stateModule().getStateVal("seatLayout", "currentTableKey")
+    local currentCfg = type(currentKey) == "string" and C.Tables[currentKey] or nil
+    if slotIndex <= RSL.tableNpcSlotCapacity(currentCfg) then
+        return false
+    end
+    local targetKey = RSL.resolveTableKey(intent, { occupiedSlotIndex = slotIndex })
+    if type(targetKey) ~= "string" or targetKey == currentKey then
+        return false
+    end
+    RSL.SetTableTo(targetKey, { skipTransitionBlindfold = true })
+    return true
+end
+
+--- Apply CONTROL_BOARD tokens → state → Sync.npcs.
+--- @return boolean ok, string|nil message
+function Apply.applyFromControlBoard()
+    Apply.beginInteractionProfile("apply")
+    local t0 = os.clock()
+    local Preview = require("core.control_board_preview")
+    if Preview.isThere() then
+        if Preview.reset() == nil then
+            Apply.finishInteractionProfile(t0)
+            return false, "Preview scene is no longer available"
+        end
+        Reconcile.lastControlBoardMirrorFingerprint = nil
+        Reconcile.reconcileControlBoardFromState({
+            force = true,
+            forceTokenMirror = true,
+            allowPreview = true,
+        })
+        print("[Gameboard] Reset: committed library participants → THERE draft")
+        Apply.finishInteractionProfile(t0)
+        return true, nil
+    end
+    local board = Board.getControlBoard()
+    if not Board.isGameObject(board) then
+        Apply.finishInteractionProfile(t0)
+        return false, "CONTROL_BOARD not found — set G.GUIDS.CONTROL_BOARD in lib/guids.ttslua"
+    end
+    local rows = Reconcile.scanControlBoardTokens(board)
+    local polarOnBoardByCharacter = {}
+    for _, row in ipairs(rows) do
+        if type(row.characterKey) == "string" then
+            polarOnBoardByCharacter[row.characterKey] = true
+        end
+    end
+    -- TOR-304: if Apply would grow the dynamic table while dice are loose, abort BEFORE seat/placement
+    -- mutations. Otherwise state + Sync fingerprints advance with the old table and the next Apply
+    -- early-exits as "unchanged" without ever growing.
+    local previewOccupied = previewOccupiedNpcSlotsAfterSeatRowApply(board, polarOnBoardByCharacter)
+    if applyWouldRequireDynamicTableGrow(previewOccupied) then
+        local RSL = require("lib.rotational-seat-layout")
+        if RSL.alertAndBlockIfDiceOnTable("apply control board (table grow)") then
+            Apply.finishInteractionProfile(t0)
+            return false, "blocked: loose dice on table (dynamic table grow required)"
+        end
+    end
+    local seatChanged, vacatedKeys = applySeatRowFromControlBoard(board, polarOnBoardByCharacter)
+    local pcSeatChanged = applyPcSeatRowFromControlBoard(board)
+    local placements = Reconcile.placementsMapFromRows(rows)
+    if deactivateHomelandSeatsForStagePlacements(placements) then
+        seatChanged = true
+    end
+    if seatChanged and type(vacatedKeys) == "table" then
+        for i = 1, #vacatedKeys do
+            local ck = vacatedKeys[i]
+            if type(ck) == "string" and polarOnBoardByCharacter[ck] ~= true then
+                placements[ck] = nil
+            end
+        end
+    end
+    local existing = stateModule().getStateVal("sessionScene", "npcWorld", "placements")
+    local placementChanged = not Reconcile.placementsMapsEqual(placements, existing)
+    local seatMutated = seatChanged or pcSeatChanged
+    if not seatMutated and not placementChanged then
+        print("[Gameboard] Apply: placements and seat row unchanged — skipped figurine reconcile")
+        Apply.finishInteractionProfile(t0)
+        return true, nil
+    end
+    if placementChanged then
+        stateModule().setStateVal(placements, "sessionScene", "npcWorld", "placements")
+    end
+    if seatChanged and type(vacatedKeys) == "table" and #vacatedKeys > 0 then
+        parkVacatedNpcControlTokensToPalette(vacatedKeys, board)
+        Reconcile.lastControlBoardMirrorFingerprint = nil
+    elseif seatMutated then
+        Reconcile.lastControlBoardMirrorFingerprint = nil
+    end
+    if pcSeatChanged then
+        local Conditions = require("core.conditions")
+        Conditions.reconcileHostedForSession()
+    end
+    if seatChanged then
+        maybeGrowDynamicTableForOccupiedSeats()
+    end
+    syncNpcsFromControlBoard("gameboard_apply", {
+        seatMutation = seatMutated,
+        placementMutation = placementChanged,
+    })
+    print(
+        "[Gameboard] Apply: "
+            .. tostring(#rows)
+            .. " stage token(s)"
+            .. (seatMutated and "; seat row" or "")
+            .. " → Sync.npcs"
+    )
+    Apply.finishInteractionProfile(t0)
+    return true, nil
+end
+
+--- Toggle HERE/THERE. Enter requires a pending Scenes Panel selection; leave commits the draft.
+--- @return boolean changed
+--- @return string mode
+function Apply.togglePreviewMode()
+    local Preview = require("core.control_board_preview")
+    if Preview.isThere() then
+        Reconcile.capturePreviewDraftNow()
+        if not Preview.commit() then
+            return false, "THERE"
+        end
+        Preview.clear()
+        Reconcile.lastControlBoardMirrorFingerprint = nil
+        Reconcile.reconcileControlBoardFromState({ force = true, forceTokenMirror = true })
+        print("[Gameboard] HERE: preview draft committed; live participants restored")
+        return true, "HERE"
+    end
+    if not Preview.enter() then
+        return false, "HERE"
+    end
+    Reconcile.lastControlBoardMirrorFingerprint = nil
+    Reconcile.reconcileControlBoardFromState({
+        force = true,
+        forceTokenMirror = true,
+        allowPreview = true,
+    })
+    print("[Gameboard] THERE: pending scene participants loaded")
+    return true, "THERE"
+end
+
+--- @return boolean
+function Apply.isNextSceneApplyLocked()
+    return stateModule().getStateVal("controlBoard", "lockNextSceneApply") == true
+end
+
+--- Arm/disarm the one-shot participant carry for the next successful scene Apply.
+--- Disabled while THERE so draft editing cannot alter live transition intent.
+--- @return boolean locked after toggle
+function Apply.toggleNextSceneApplyLock()
+    local Preview = require("core.control_board_preview")
+    if Preview.isThere() then
+        return Apply.isNextSceneApplyLocked()
+    end
+    local S = stateModule()
+    local nextLocked = not Apply.isNextSceneApplyLocked()
+    S.setStateVal(nextLocked, "controlBoard", "lockNextSceneApply")
+    print("[Gameboard] Lock next scene Apply: " .. (nextLocked and "ARMED" or "OFF"))
+    return nextLocked
+end
+
+--- Force-mirror the active persisted board model (live HERE or draft THERE).
+--- @return boolean ok, string|nil message
+function Apply.loadControlBoardFromState()
+    Apply.beginInteractionProfile("load")
+    local t0 = os.clock()
+    local board = Board.getControlBoard()
+    if not Board.isGameObject(board) then
+        Apply.finishInteractionProfile(t0)
+        return false, "CONTROL_BOARD not found — set G.GUIDS.CONTROL_BOARD in lib/guids.ttslua"
+    end
+    Reconcile.reconcileControlBoardFromState({
+        force = true,
+        forceTokenMirror = true,
+        allowPreview = true,
+    })
+    print("[Gameboard] Load: active board model → CONTROL_BOARD tokens")
+    Apply.finishInteractionProfile(t0)
+    return true, nil
+end
+
+--- Remove tokens from control board and clear placements in state.
+--- @return boolean ok, string|nil message
+function Apply.clearControlBoard()
+    Apply.beginInteractionProfile("clear")
+    local t0 = os.clock()
+    local Preview = require("core.control_board_preview")
+    local draft = Preview.getDraft()
+    if draft ~= nil then
+        local placements = draft.npcWorld.placements
+        for characterKey, placement in pairs(type(placements) == "table" and placements or {}) do
+            for _, seatKey in ipairs(C.NPCSeats or {}) do
+                local row = type(draft.seatSlots[seatKey]) == "table" and draft.seatSlots[seatKey] or nil
+                if type(row) == "table" and row.characterKey == characterKey then
+                    local mode = type(placement) == "table" and placement.npcLightMode or "STANDARD"
+                    if row.isPresent ~= true and mode ~= "OFF" then
+                        row.isPresent = true
+                    end
+                end
+            end
+        end
+        draft.npcWorld.placements = {}
+        stateModule().setStateVal(draft, "controlBoard", "previewDraft")
+        Reconcile.lastControlBoardMirrorFingerprint = nil
+        Reconcile.reconcileControlBoardFromState({
+            force = true,
+            forceTokenMirror = true,
+            allowPreview = true,
+        })
+        print("[Gameboard] Clear: THERE draft stage emptied; live state unchanged")
+        Apply.finishInteractionProfile(t0)
+        return true, nil
+    end
+    local existingPlacements = stateModule().getStateVal("sessionScene", "npcWorld", "placements")
+    local hadPlacements = placementsCount(existingPlacements) > 0
+    local seatPresenceChanged = false
+    if hadPlacements then
+        seatPresenceChanged = applyHomelandSeatPresenceAfterStageClear(existingPlacements)
+        stateModule().setStateVal({}, "sessionScene", "npcWorld", "placements")
+    end
+    local board = Board.getControlBoard()
+    local seatReleased = Tokens.releaseHomelandSeatsForOffBoardTokens(board)
+    local palette = Board.getControlBoardPalette()
+    local moved = 0
+    if Board.isGameObject(palette) then
+        moved = Palette.syncTokensToPalette(palette, {
+            skipParkIf = function(token, ck)
+                if not Board.isGameObject(board) then
+                    return false
+                end
+                if not Board.isTokenOnControlBoardFace(board, token) then
+                    return false
+                end
+                if type(ck) ~= "string" or ck == "" then
+                    return false
+                end
+                local fuzz = Board.snapMatchFuzzinessForBoard(board)
+                local entry = Snaps.resolveTokenSnapCatalogEntry(board, token, fuzz, nil)
+                if type(entry) == "table"
+                    and entry.snapKind == Snaps.SNAP_KIND_SEAT
+                    and entry.columnKind == "pc" then
+                    return true
+                end
+                local occupied = stateModule().getStateVal("seatLayout", "occupiedNPCSlots")
+                if type(occupied) ~= "table" then
+                    return false
+                end
+                for _, assigned in pairs(occupied) do
+                    if assigned == ck then
+                        return type(entry) == "table" and entry.snapKind == Snaps.SNAP_KIND_SEAT
+                    end
+                end
+                return false
+            end,
+        })
+        if Board.isGameObject(board) then
+            Apply.relocateHomelandSeatTokensAfterClear(board)
+        end
+        if hadPlacements then
+            print("[Gameboard] Clear: placements emptied; " .. tostring(moved) .. " token(s) parked on palette")
+        else
+            print("[Gameboard] Clear: placements already empty; " .. tostring(moved) .. " token(s) parked on palette")
+        end
+    else
+        if hadPlacements then
+            print("[Gameboard] Clear: placements emptied (CONTROL_BOARD_PALETTE missing — tokens not parked)")
+        else
+            print("[Gameboard] Clear: placements already empty (CONTROL_BOARD_PALETTE missing — tokens not parked)")
+        end
+    end
+    if not hadPlacements and moved == 0 and not seatReleased and not seatPresenceChanged then
+        print("[Gameboard] Clear: no state/token changes — skipped figurine sync")
+        Reconcile.reconcileControlBoardFromState({ force = true })
+        Apply.finishInteractionProfile(t0)
+        return true, nil
+    end
+    syncNpcsFromControlBoard("gameboard_clear", { seatMutation = seatPresenceChanged })
+    Apply.finishInteractionProfile(t0)
+    return true, nil
+end
+
+--- Return lost tokens (not on CONTROL_BOARD or palette) to palette parking slots.
+--- Used by console / tooling; confirmed Clear parks via `Palette.syncTokensToPalette`.
+--- @return number moved
+function Apply.recoverStrayNpcTokensToPalette()
+    local palette = Board.getControlBoardPalette()
+    local board = Board.getControlBoard()
+    if not Board.isGameObject(palette) then
+        return 0
+    end
+    return Palette.recoverStrayTokensToPalette(palette, {
+        isOnControlBoard = function(token)
+            return Board.isGameObject(board) and Board.isTokenOnControlBoardFace(board, token)
+        end,
+    })
+end
+
+--- Park all NPC control tokens on CONTROL_BOARD_PALETTE (group layout from npcs_data).
+--- @param options table|nil Forwarded to `Palette.syncTokensToPalette` (e.g. `skipParkIf`).
+--- @return number moved
+function Apply.syncTokensToPalette(options)
+    local palette = Board.getControlBoardPalette()
+    if not Board.isGameObject(palette) then
+        print("[Gameboard] syncTokensToPalette: CONTROL_BOARD_PALETTE missing (GUID " .. tostring(G.GUIDS.CONTROL_BOARD_PALETTE) .. ")")
+        return 0
+    end
+    return Palette.syncTokensToPalette(palette, options)
+end
+
+--- Install palette snaps (one per token parking slot, not full 20×40 grid).
+--- @param board Object|nil
+--- @param options table|nil { force?: boolean }
+--- @return boolean
+function Apply.installPaletteSnaps(board, options)
+    board = board or Board.getControlBoardPalette()
+    return Palette.installSnaps(board, options)
+end
+
+--- @param playerColor string|nil
+--- @return boolean consumed second click
+function Apply.tryConfirmClear(playerColor)
+    local color = type(playerColor) == "string" and playerColor or "Black"
+    local now = os.time()
+    if clearArmExpireByColor[color] == nil or now > clearArmExpireByColor[color] then
+        clearArmExpireByColor[color] = now + 5
+        if broadcastToColor ~= nil then
+            broadcastToColor("Click Clear again within 5s to confirm.", color, { 1, 0.35, 0.35 })
+        end
+        return false
+    end
+    clearArmExpireByColor[color] = nil
+    return true
+end
+
+--- Park NPC control tokens removed from the seat row (off minimap / in the air).
+--- @param characterKeys string[]
+--- @param board Object|nil
+--- @return number moved
+parkVacatedNpcControlTokensToPalette = function(characterKeys, board)
+    if type(characterKeys) ~= "table" or #characterKeys < 1 then
+        return 0
+    end
+    board = board or Board.getControlBoard()
+    local byChar = Reconcile.buildTokenByCharacterKey()
+    local moved = 0
+    for i = 1, #characterKeys do
+        local ck = characterKeys[i]
+        local token = type(ck) == "string" and byChar[ck] or nil
+        if Board.isGameObject(token) and (not Board.isGameObject(board) or not Board.isTokenOnMinimapTokenSurface(board, token)) then
+            if Snaps.parkNpcTokenOnPalette(token, ck) then
+                moved = moved + 1
+            end
+        end
+    end
+    if moved > 0 then
+        print("[Gameboard] Apply: parked " .. tostring(moved) .. " vacated token(s) on palette")
+    end
+    return moved
+end
+
+
+--- After Clear: park stage tokens but return homeland assignments to the seat-row snap (TOR-180).
+--- @param board Object|nil
+function Apply.relocateHomelandSeatTokensAfterClear(board)
+    board = board or Board.getControlBoard()
+    if not Board.isGameObject(board) then
+        return
+    end
+    local NPCS = require("core.npcs")
+    local seatCatalog = Snaps.seatRowCatalogByNpcSeatKey(Snaps.buildControlBoardSnapCatalog(board, nil))
+    local occupied = stateModule().getStateVal("seatLayout", "occupiedNPCSlots")
+    if type(occupied) ~= "table" then
+        return
+    end
+    local byChar = Reconcile.buildTokenByCharacterKey()
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local ck = occupied[seatKey]
+        if type(ck) == "string" and ck ~= "" then
+            local entry = seatCatalog[seatKey]
+            local token = byChar[ck]
+            if entry ~= nil and Board.isGameObject(token) then
+                local present = true
+                if type(NPCS.resolveSeatNarrativePresence) == "function" then
+                    present = NPCS.resolveSeatNarrativePresence(seatKey) == true
+                end
+                Tokens.mirrorSeatRowControlToken(token, board, entry, present)
+            end
+        end
+    end
+end
+
+--- @param placements table|nil
+function Apply.populateControlBoardFromPlacements(placements)
+    placements = type(placements) == "table" and placements or stateModule().getStateVal("sessionScene", "npcWorld", "placements")
+    if type(placements) ~= "table" then
+        placements = {}
+    end
+    stateModule().setStateVal(placements, "sessionScene", "npcWorld", "placements")
+    Reconcile.reconcileControlBoardFromState()
+end
+
+return Apply

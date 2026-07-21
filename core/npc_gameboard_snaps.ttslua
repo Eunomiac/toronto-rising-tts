@@ -1,0 +1,2044 @@
+--[[
+    NPC gameboard — polar/seat-row snaps: catalog, install, remap, lerp helpers (TOR-423).
+    Snaps may require Board / Tokens. Must NOT require apply / reconcile / interactions / facade.
+]]
+
+local Snaps = {}
+
+local U = require("lib.util")
+local C = require("lib.constants")
+local DATA = require("lib.npc_gameboard_data")
+local Palette = require("lib.npc_control_board_palette")
+local Board = require("core.npc_gameboard_board")
+local Tokens = require("core.npc_gameboard_tokens")
+
+--- First `require("core.state")` during luabundle registration can return nil (circular load).
+--- @type table|nil
+local stateModuleCache = nil
+
+--- @return table|nil
+local function stateModule()
+    if type(stateModuleCache) == "table" and type(stateModuleCache.getStateVal) == "function" then
+        return stateModuleCache
+    end
+    local loaded = require("core.state")
+    if type(loaded) == "table" then
+        stateModuleCache = loaded
+    end
+    return loaded
+end
+
+local TAG_TOKEN = DATA.TAG_NPC_CONTROL_TOKEN
+local SNAP_KIND_SEAT = "seat"
+
+local polarSnapInstallFingerprint = nil
+--- @type table|nil Last config installed by installPolarSnaps (for remap baselines).
+local installedPolarSnapConfig = nil
+--- Default-config snap catalog cache: key = boardGuid:fingerprint → catalog entries.
+--- @type table<string, table[]>
+local defaultSnapCatalogCache = {}
+local seatRowCatalogCache = {}
+
+--- Optional: facade binds to return active interaction profile table (catalog_builds counter).
+Snaps.getActiveInteractionProfile = nil
+
+--- Forward declarations (Lua local-function order).
+local isNpcSeatRowColumn
+local controlBoardSnapFingerprintFor
+local resolveTokenSnapCatalogEntry
+local placeTokenOnControlBoardSnap
+
+--- @param board Object|nil When nil, clears entire default-config catalog cache.
+local function invalidateDefaultSnapCatalogCache(board)
+    if not Board.isGameObject(board) then
+        defaultSnapCatalogCache = {}
+        seatRowCatalogCache = {}
+        return
+    end
+    local guidPrefix = tostring(board.getGUID()) .. ":"
+    local nextCache = {}
+    for key, catalog in pairs(defaultSnapCatalogCache) do
+        if type(key) ~= "string" or string.sub(key, 1, #guidPrefix) ~= guidPrefix then
+            nextCache[key] = catalog
+        end
+    end
+    defaultSnapCatalogCache = nextCache
+    local nextSeatCache = {}
+    for key, maps in pairs(seatRowCatalogCache) do
+        if type(key) ~= "string" or string.sub(key, 1, #guidPrefix) ~= guidPrefix then
+            nextSeatCache[key] = maps
+        end
+    end
+    seatRowCatalogCache = nextSeatCache
+end
+
+--- World-space XZ extents from `getBounds` (minimap marker scale ratios only — not UV math).
+--- @param board Object
+--- @return number sx, number sz
+local function boardMapExtents(board)
+    local sx = 1
+    local sz = 1
+    if Board.isGameObject(board) and board.getBounds ~= nil then
+        local b = board.getBounds()
+        if b ~= nil and b.size ~= nil then
+            sx = b.size.x or b.size[1] or sx
+            sz = b.size.z or b.size[3] or sz
+        end
+    end
+    if sx < 0.01 then
+        sx = 0.01
+    end
+    if sz < 0.01 then
+        sz = 0.01
+    end
+    return sx, sz
+end
+
+--- Stage vs control minimap scale divisors from board XZ bounds (e.g. ~40 when stage is 800×400 and control is 20×10).
+--- Third return is a uniform divisor for marker scale on all axes (do not use board transform Y — both boards are Y scale 1).
+--- @return number|nil ratioX, number|nil ratioZ, number|nil uniformRatio
+function Snaps.minimapScaleRatios()
+    local stage = Board.getStageBoard()
+    local control = Board.getControlBoard()
+    if not Board.isGameObject(stage) or not Board.isGameObject(control) then
+        return nil, nil, nil
+    end
+    local stageSx, stageSz = boardMapExtents(stage)
+    local controlSx, controlSz = boardMapExtents(control)
+    local ratioX = stageSx / controlSx
+    local ratioZ = stageSz / controlSz
+    return ratioX, ratioZ, (ratioX + ratioZ) * 0.5
+end
+
+
+--- Deep copy plain tables (nested `snapGroups` entries).
+--- @param src table
+--- @return table
+local function deepCopyPlainTable(src)
+    if type(src) ~= "table" then
+        return {}
+    end
+    local copy = {}
+    for k, v in pairs(src) do
+        if type(v) == "table" then
+            copy[k] = deepCopyPlainTable(v)
+        else
+            copy[k] = v
+        end
+    end
+    return copy
+end
+
+--- Working copy for validate/install — never return `DATA.CONTROL_BOARD_SNAP` by reference.
+--- @param config table|nil
+--- @return table
+local function resolveControlBoardSnapConfig(config)
+    local src = type(config) == "table" and config or (DATA.CONTROL_BOARD_SNAP or {})
+    return deepCopyPlainTable(src)
+end
+
+--- @param group table|nil snapGroups ring entry
+--- @return string|nil OFF|STANDARD when set
+local function snapGroupDefaultLightMode(group)
+    if type(group) ~= "table" then
+        return nil
+    end
+    local raw = group.defaultLightMode
+    if type(raw) ~= "string" or raw == "" then
+        return nil
+    end
+    local mode = string.upper(raw)
+    if mode == "OFF" or mode == "STANDARD" then
+        return mode
+    end
+    return nil
+end
+
+--- @param cfg table
+--- @return table cfg, number rings
+local function validateControlBoardSnapConfig(cfg)
+    if type(cfg) ~= "table" then
+        error("CONTROL_BOARD_SNAP config must be a table")
+    end
+    local origin = cfg.origin
+    if type(origin) ~= "table" or type(origin.u) ~= "number" or type(origin.v) ~= "number" then
+        error("CONTROL_BOARD_SNAP.origin must be { u = number, v = number }")
+    end
+    local innerRingMaxU = tonumber(cfg.innerRingMaxU)
+    local innerRingMaxV = tonumber(cfg.innerRingMaxV)
+    local outerRingMaxU = tonumber(cfg.outerRingMaxU)
+    local outerRingMaxV = tonumber(cfg.outerRingMaxV)
+    local hasGlobalRingMax = innerRingMaxU ~= nil
+        and innerRingMaxV ~= nil
+        and outerRingMaxU ~= nil
+        and outerRingMaxV ~= nil
+    local legacyRays = tonumber(cfg.rays)
+    local snapGroups = cfg.snapGroups
+    if type(snapGroups) ~= "table" or #snapGroups < 1 then
+        error("CONTROL_BOARD_SNAP.snapGroups must be a non-empty array (one entry per ring)")
+    end
+    local rings = #snapGroups
+    local legacyRings = tonumber(cfg.rings)
+    if legacyRings ~= nil then
+        if legacyRings < 1 or math.floor(legacyRings) ~= legacyRings then
+            error("CONTROL_BOARD_SNAP.rings must be an integer >= 1 when set")
+        end
+        if math.floor(legacyRings) ~= rings then
+            error("CONTROL_BOARD_SNAP.rings must match #CONTROL_BOARD_SNAP.snapGroups when set")
+        end
+    end
+    for ringIndex = 1, rings do
+        local group = snapGroups[ringIndex]
+        if type(group) ~= "table" then
+            error("CONTROL_BOARD_SNAP.snapGroups[" .. tostring(ringIndex) .. "] must be a table")
+        end
+        local num = tonumber(group.num)
+        if num == nil or num < 1 or math.floor(num) ~= num then
+            error("CONTROL_BOARD_SNAP.snapGroups[" .. tostring(ringIndex) .. "].num must be an integer >= 1")
+        end
+        if tonumber(group.angleDelta) == nil then
+            error("CONTROL_BOARD_SNAP.snapGroups[" .. tostring(ringIndex) .. "].angleDelta must be a number")
+        end
+        local rays = tonumber(group.rays)
+        if rays == nil and legacyRays ~= nil then
+            rays = legacyRays
+        end
+        if rays == nil or rays < 1 or math.floor(rays) ~= rays then
+            error(
+                "CONTROL_BOARD_SNAP.snapGroups["
+                    .. tostring(ringIndex)
+                    .. "].rays must be an integer >= 1 (or set legacy top-level rays)"
+            )
+        end
+        group.rays = math.floor(rays)
+        local ringMaxU = tonumber(group.maxU)
+        local ringMaxV = tonumber(group.maxV)
+        if group.maxU ~= nil and ringMaxU == nil then
+            error(
+                "CONTROL_BOARD_SNAP.snapGroups["
+                    .. tostring(ringIndex)
+                    .. "].maxU must be a number when set"
+            )
+        end
+        if group.maxV ~= nil and ringMaxV == nil then
+            error(
+                "CONTROL_BOARD_SNAP.snapGroups["
+                    .. tostring(ringIndex)
+                    .. "].maxV must be a number when set"
+            )
+        end
+        if (ringMaxU ~= nil) ~= (ringMaxV ~= nil) then
+            error(
+                "CONTROL_BOARD_SNAP.snapGroups["
+                    .. tostring(ringIndex)
+                    .. "] must set both maxU and maxV together"
+            )
+        end
+        local ringOrigin = group.origin
+        if ringOrigin ~= nil then
+            if type(ringOrigin) ~= "table" then
+                error(
+                    "CONTROL_BOARD_SNAP.snapGroups["
+                        .. tostring(ringIndex)
+                        .. "].origin must be { u = number, v = number } when set"
+                )
+            end
+            local ringOriginU = tonumber(ringOrigin.u)
+            local ringOriginV = tonumber(ringOrigin.v)
+            if (ringOriginU ~= nil) ~= (ringOriginV ~= nil) then
+                error(
+                    "CONTROL_BOARD_SNAP.snapGroups["
+                        .. tostring(ringIndex)
+                        .. "].origin must set both u and v together"
+                )
+            end
+            if ringOriginU == nil or ringOriginV == nil then
+                error(
+                    "CONTROL_BOARD_SNAP.snapGroups["
+                        .. tostring(ringIndex)
+                        .. "].origin must be { u = number, v = number } when set"
+                )
+            end
+        end
+        if group.snapYawOffsetDeg ~= nil and tonumber(group.snapYawOffsetDeg) == nil then
+            error(
+                "CONTROL_BOARD_SNAP.snapGroups["
+                    .. tostring(ringIndex)
+                    .. "].snapYawOffsetDeg must be a number when set"
+            )
+        end
+        if group.defaultLightMode ~= nil and snapGroupDefaultLightMode(group) == nil then
+            error(
+                "CONTROL_BOARD_SNAP.snapGroups["
+                    .. tostring(ringIndex)
+                    .. "].defaultLightMode must be \"OFF\" or \"STANDARD\" when set"
+            )
+        end
+        if group.groundLevel ~= nil and tonumber(group.groundLevel) == nil then
+            error(
+                "CONTROL_BOARD_SNAP.snapGroups["
+                    .. tostring(ringIndex)
+                    .. "].groundLevel must be a number when set"
+            )
+        end
+        if group.radialStagger ~= nil and tonumber(group.radialStagger) == nil then
+            error(
+                "CONTROL_BOARD_SNAP.snapGroups["
+                    .. tostring(ringIndex)
+                    .. "].radialStagger must be a number when set"
+            )
+        end
+        local validSnaps = group.validSnaps
+        if validSnaps ~= nil then
+            if type(validSnaps) ~= "table" then
+                error(
+                    "CONTROL_BOARD_SNAP.snapGroups["
+                        .. tostring(ringIndex)
+                        .. "].validSnaps must be { minU, maxU, minV, maxV } when set"
+                )
+            end
+            local minU = tonumber(validSnaps.minU)
+            local maxU = tonumber(validSnaps.maxU)
+            local minV = tonumber(validSnaps.minV)
+            local maxV = tonumber(validSnaps.maxV)
+            if minU == nil or maxU == nil or minV == nil or maxV == nil then
+                error(
+                    "CONTROL_BOARD_SNAP.snapGroups["
+                        .. tostring(ringIndex)
+                        .. "].validSnaps requires minU, maxU, minV, maxV numbers"
+                )
+            end
+            if minU > maxU or minV > maxV then
+                error(
+                    "CONTROL_BOARD_SNAP.snapGroups["
+                        .. tostring(ringIndex)
+                        .. "].validSnaps min must be <= max"
+                )
+            end
+        end
+    end
+    if not hasGlobalRingMax then
+        for ringIndex = 1, rings do
+            local group = snapGroups[ringIndex]
+            if tonumber(group.maxU) == nil or tonumber(group.maxV) == nil then
+                error(
+                    "CONTROL_BOARD_SNAP.snapGroups["
+                        .. tostring(ringIndex)
+                        .. "].maxU/maxV required when inner/outer ring max omitted"
+                )
+            end
+        end
+    end
+    return cfg, rings
+end
+
+--- Absolute world Y for figurines on a ring when `snapGroups[ring].groundLevel` is set.
+--- @param group table
+--- @return number|nil
+local function resolveSnapGroupGroundLevel(group)
+    if type(group) == "table" and tonumber(group.groundLevel) ~= nil then
+        return tonumber(group.groundLevel)
+    end
+    return nil
+end
+
+--- Absolute board maxU/maxV for ring index (1 = innermost).
+--- Per-ring `snapGroups[ringIndex].maxU/maxV` override inner→outer interpolation when set.
+--- @param cfg table
+--- @param ringIndex number
+--- @param rings number
+--- @return number maxU, number maxV
+local function ringMaxUvForIndex(cfg, ringIndex, rings)
+    local group = type(cfg.snapGroups) == "table" and cfg.snapGroups[ringIndex] or nil
+    if type(group) == "table" then
+        local maxU = tonumber(group.maxU)
+        local maxV = tonumber(group.maxV)
+        if maxU ~= nil and maxV ~= nil then
+            return maxU, maxV
+        end
+    end
+    local innerRingMaxU = tonumber(cfg.innerRingMaxU)
+    local innerRingMaxV = tonumber(cfg.innerRingMaxV)
+    local outerRingMaxU = tonumber(cfg.outerRingMaxU)
+    local outerRingMaxV = tonumber(cfg.outerRingMaxV)
+    if innerRingMaxU == nil or innerRingMaxV == nil or outerRingMaxU == nil or outerRingMaxV == nil then
+        error(
+            "CONTROL_BOARD_SNAP ring "
+                .. tostring(ringIndex)
+                .. " needs snapGroups.maxU/maxV or top-level inner/outer ring max"
+        )
+    end
+    local t = 0
+    if rings > 1 then
+        t = (ringIndex - 1) / (rings - 1)
+    end
+    local maxU = innerRingMaxU + t * (outerRingMaxU - innerRingMaxU)
+    local maxV = innerRingMaxV + t * (outerRingMaxV - innerRingMaxV)
+    return maxU, maxV
+end
+
+--- Ring-local origin in board u/v, defaulting to top-level config origin.
+--- @param cfg table
+--- @param ringIndex number
+--- @return number originU, number originV
+local function ringOriginUvForIndex(cfg, ringIndex)
+    local group = type(cfg.snapGroups) == "table" and cfg.snapGroups[ringIndex] or nil
+    if type(group) == "table" and type(group.origin) == "table" then
+        local ringOriginU = tonumber(group.origin.u)
+        local ringOriginV = tonumber(group.origin.v)
+        if ringOriginU ~= nil and ringOriginV ~= nil then
+            return ringOriginU, ringOriginV
+        end
+    end
+    return cfg.origin.u, cfg.origin.v
+end
+
+--- True when this ring's polar origin is not the config master origin (satellite / outskirts rings).
+--- @param cfg table
+--- @param ringIndex number
+--- @return boolean
+local function ringOriginDiffersFromMaster(cfg, ringIndex)
+    local ringU, ringV = ringOriginUvForIndex(cfg, ringIndex)
+    local masterU = tonumber(cfg.origin and cfg.origin.u) or 0.5
+    local masterV = tonumber(cfg.origin and cfg.origin.v) or 0.5
+    local eps = 1e-4
+    return math.abs(ringU - masterU) > eps or math.abs(ringV - masterV) > eps
+end
+
+--- Board u/v bearing from (fromU,fromV) toward (toU,toV); 0° = +u, 90° = +v (matches `uvOnEllipse`).
+--- @param fromU number
+--- @param fromV number
+--- @param toU number
+--- @param toV number
+--- @return number degrees
+local function bearingUvDeg(fromU, fromV, toU, toV)
+    local du = toU - fromU
+    local dv = toV - fromV
+    return math.deg(math.atan2(dv, du))
+end
+
+--- Inclusive familyK range for `num` snaps on a ray.
+--- Even `num` with full-circle `angleDelta` must not use both ±half (same angle → duplicate/stack; TOR-415).
+--- @param num number
+--- @return number kMin, number kMax
+local function familyKBoundsForSnapCount(num)
+    local n = math.floor(tonumber(num) or 0)
+    if n < 1 then
+        return 0, -1
+    end
+    local half = math.floor(n / 2)
+    if n % 2 == 0 then
+        return -half, half - 1
+    end
+    return -half, half
+end
+
+--- Family angle on the ring ellipse: master-origin rings use ray anchors; satellite rings rotate so k=0 faces master.
+--- @param cfg table
+--- @param ringIndex number
+--- @param rayIndex number 0-based
+--- @param familyK number
+--- @param angleDelta number
+--- @param rays number
+--- @return number angleDeg
+local function familyAngleDegForSnap(cfg, ringIndex, rayIndex, familyK, angleDelta, rays)
+    local anchorDeg = (rayIndex / rays) * 360
+    if not ringOriginDiffersFromMaster(cfg, ringIndex) then
+        return anchorDeg + familyK * angleDelta
+    end
+    local ringOriginU, ringOriginV = ringOriginUvForIndex(cfg, ringIndex)
+    local masterU = tonumber(cfg.origin and cfg.origin.u) or 0.5
+    local masterV = tonumber(cfg.origin and cfg.origin.v) or 0.5
+    local towardMasterDeg = bearingUvDeg(ringOriginU, ringOriginV, masterU, masterV)
+    return towardMasterDeg + anchorDeg + familyK * angleDelta
+end
+
+--- Board u/v on an axis-aligned ellipse: at angleDeg, u reaches maxU on +u axis and v reaches maxV on +v axis.
+--- @param originU number
+--- @param originV number
+--- @param angleDeg number
+--- @param maxU number absolute board u at theta=0
+--- @param maxV number absolute board v at theta=90
+--- @return number u, number v
+local function uvOnEllipse(originU, originV, angleDeg, maxU, maxV)
+    local theta = math.rad(angleDeg)
+    local u = originU + math.cos(theta) * (maxU - originU)
+    local v = originV + math.sin(theta) * (maxV - originV)
+    return u, v
+end
+
+--- True when normalized board u/v lies on the minimap tile (inclusive 0–1).
+--- @param u number
+--- @param v number
+--- @return boolean
+local function snapUvOnBoard(u, v)
+    if type(u) ~= "number" or type(v) ~= "number" then
+        return false
+    end
+    return u >= 0 and u <= 1 and v >= 0 and v <= 1
+end
+
+--- Per-ring optional `validSnaps` box: all four bounds must pass (inclusive).
+--- @param group table snapGroups entry
+--- @param u number
+--- @param v number
+--- @return boolean
+local function snapUvPassesValidSnaps(group, u, v)
+    if type(group) ~= "table" then
+        return true
+    end
+    local box = group.validSnaps
+    if type(box) ~= "table" then
+        return true
+    end
+    local minU = tonumber(box.minU)
+    local maxU = tonumber(box.maxU)
+    local minV = tonumber(box.minV)
+    local maxV = tonumber(box.maxV)
+    if minU == nil or maxU == nil or minV == nil or maxV == nil then
+        return false
+    end
+    return u >= minU and u <= maxU and v >= minV and v <= maxV
+end
+
+--- Push snap u/v outward from polar origin by `abs(familyK) * radialStagger` along STAGE world XZ.
+--- Anchor (`familyK == 0`) is unchanged. Units are STAGE_BOARD / playfield world inches (not CONTROL_BOARD minimap inches).
+--- @param originU number
+--- @param originV number
+--- @param familyK number
+--- @param radialStagger number world XZ inches on STAGE_BOARD per family step from anchor
+--- @param u number
+--- @param v number
+--- @return number u, number v
+local function applyRadialStaggerUv(originU, originV, familyK, radialStagger, u, v)
+    local k = tonumber(familyK) or 0
+    local staggerStep = tonumber(radialStagger) or 0
+    if k == 0 or staggerStep == 0 then
+        return u, v
+    end
+    local du = u - originU
+    local dv = v - originV
+    local stage = Board.getStageBoard()
+    if not Board.isGameObject(stage) then
+        local ext = Board.defaultStageWorld()
+        local x0 = ext.centerX + (originU - 0.5) * 2 * ext.halfWidthX
+        local z0 = ext.centerZ + (originV - 0.5) * 2 * ext.halfDepthZ
+        local x1 = ext.centerX + (u - 0.5) * 2 * ext.halfWidthX
+        local z1 = ext.centerZ + (v - 0.5) * 2 * ext.halfDepthZ
+        local dx = x1 - x0
+        local dz = z1 - z0
+        local worldDist = math.sqrt(dx * dx + dz * dz)
+        if worldDist < 1e-6 then
+            return u, v
+        end
+        local scale = (worldDist + math.abs(k) * staggerStep) / worldDist
+        return originU + du * scale, originV + dv * scale
+    end
+    local originLp = Board.boardLocalFromUv(stage, originU, originV)
+    local snapLp = Board.boardLocalFromUv(stage, u, v)
+    local originWp = Board.boardLocalToWorld(stage, originLp)
+    local snapWp = Board.boardLocalToWorld(stage, snapLp)
+    local dx = snapWp.x - originWp.x
+    local dz = snapWp.z - originWp.z
+    local worldDist = math.sqrt(dx * dx + dz * dz)
+    if worldDist < 1e-6 then
+        return u, v
+    end
+    local scale = (worldDist + math.abs(k) * staggerStep) / worldDist
+    local newWp = Vector(originWp.x + dx * scale, snapWp.y, originWp.z + dz * scale)
+    local newLp = Board.boardWorldToLocal(stage, newWp)
+    if newLp == nil then
+        return u, v
+    end
+    -- Unclamped u/v so off-board stagger candidates are pruned by snapUvOnBoard (not pinned to edges).
+    return Board.uvFromBoardLocal(stage, newLp)
+end
+
+--- Ellipse u/v + optional radial stagger for one family member; nil when off the minimap tile.
+--- @param board Object|nil Used for snap local position on CONTROL_BOARD (stagger uses STAGE_BOARD)
+--- @param cfg table
+--- @param rings number
+--- @param ringIndex number
+--- @param rayIndex number 0-based
+--- @param familyK number
+--- @return number|nil u, number|nil v, Vector|nil localPos
+local function controlBoardSnapCandidate(board, cfg, rings, ringIndex, rayIndex, familyK)
+    local group = cfg.snapGroups[ringIndex]
+    local rays = tonumber(group.rays)
+    local angleDelta = tonumber(group.angleDelta) or 0
+    local radialStagger = tonumber(group.radialStagger) or 0
+    local maxU, maxV = ringMaxUvForIndex(cfg, ringIndex, rings)
+    local ringOriginU, ringOriginV = ringOriginUvForIndex(cfg, ringIndex)
+    local angleDeg = familyAngleDegForSnap(cfg, ringIndex, rayIndex, familyK, angleDelta, rays)
+    local u, v = uvOnEllipse(ringOriginU, ringOriginV, angleDeg, maxU, maxV)
+    if radialStagger ~= 0 and familyK ~= 0 then
+        u, v = applyRadialStaggerUv(ringOriginU, ringOriginV, familyK, radialStagger, u, v)
+    end
+    if not snapUvOnBoard(u, v) then
+        return nil, nil, nil
+    end
+    if not snapUvPassesValidSnaps(group, u, v) then
+        return nil, nil, nil
+    end
+    local lp = nil
+    if Board.isGameObject(board) then
+        lp = Board.boardLocalFromUv(board, u, v)
+    end
+    return u, v, lp
+end
+
+--- Pick the ring whose ellipse best matches normalized board u/v (same geometry as snap generation).
+--- @param cfg table
+--- @param u number
+--- @param v number
+--- @param rings number
+--- @return number ringIndex 1-based
+local function resolveRingIndexForUv(cfg, u, v, rings)
+    local bestRing = 1
+    local bestDist = math.huge
+    for ringIndex = 1, rings do
+        local ringOriginU, ringOriginV = ringOriginUvForIndex(cfg, ringIndex)
+        local du = u - ringOriginU
+        local dv = v - ringOriginV
+        local angleDeg = math.deg(math.atan2(dv, du))
+        local maxU, maxV = ringMaxUvForIndex(cfg, ringIndex, rings)
+        local eu, ev = uvOnEllipse(ringOriginU, ringOriginV, angleDeg, maxU, maxV)
+        local dist = (u - eu) * (u - eu) + (v - ev) * (v - ev)
+        if dist < bestDist then
+            bestDist = dist
+            bestRing = ringIndex
+        end
+    end
+    return bestRing
+end
+
+--- Yaw in board-local space so snapped tokens face the polar origin.
+--- @param board Object
+--- @param u number
+--- @param v number
+--- @param originU number
+--- @param originV number
+--- @return number yawDeg
+local function snapYawTowardOriginDeg(board, u, v, originU, originV)
+    local snapLp = Board.boardLocalFromUv(board, u, v)
+    local originLp = Board.boardLocalFromUv(board, originU, originV)
+    local dx = originLp.x - snapLp.x
+    local dz = originLp.z - snapLp.z
+    return math.deg(math.atan2(dx, dz))
+end
+
+--- @return table|nil
+local function resolveControlBoardSeatRowConfig()
+    local row = DATA.CONTROL_BOARD_SEAT_ROW
+    if type(row) ~= "table" or type(row.columns) ~= "table" or #row.columns < 1 then
+        return nil
+    end
+    return row
+end
+
+--- @param col table|nil
+--- @return boolean
+isNpcSeatRowColumn = function(col)
+    return type(col) == "table" and col.kind == "npc" and U.isIn(col.seatKey, C.NPCSeats or {})
+end
+
+--- Seat-row catalog entries appended after polar rings (TOR-180).
+--- @param board Object
+--- @param polarCount number snaps already in catalog
+--- @return table[]
+local function buildSeatRowSnapEntries(board, polarCount)
+    local seatCfg = resolveControlBoardSeatRowConfig()
+    if seatCfg == nil or not Board.isGameObject(board) then
+        return {}
+    end
+    local columns = seatCfg.columns
+    local n = #columns
+    local v = tonumber(seatCfg.v) or 0.15
+    local uMin = tonumber(seatCfg.uMin) or 0.35
+    local uMax = tonumber(seatCfg.uMax) or 0.65
+    if uMax < uMin then
+        uMin, uMax = uMax, uMin
+    end
+    -- Seat-row: fixed board-local yaw (offsets CONTROL_BOARD world Y=180°); PC columns add Z flip.
+    local yawDeg = ((tonumber(seatCfg.snapYawOffsetDeg) or 0) % 360 + 360) % 360
+    local pcSnapZDeg = ((tonumber(seatCfg.pcSnapZDeg) or 0) % 360 + 360) % 360
+    local entries = {}
+    for i = 1, n do
+        local col = columns[i]
+        local kind = col.kind or "pc"
+        local snapZDeg = kind == "pc" and pcSnapZDeg or 0
+        local u = (uMin + uMax) * 0.5
+        if n > 1 then
+            u = uMin + (i - 1) * (uMax - uMin) / (n - 1)
+        end
+        local lp = Board.boardLocalFromUv(board, u, v)
+        entries[#entries + 1] = {
+            snapKind = SNAP_KIND_SEAT,
+            seatKey = col.seatKey,
+            columnKind = kind,
+            u = u,
+            v = v,
+            yawDeg = yawDeg,
+            snapZDeg = snapZDeg,
+            localPos = lp,
+            worldPos = Board.boardLocalToWorld(board, lp),
+            groundLevel = nil,
+            defaultLightMode = nil,
+            isAnchor = false,
+            snapIndex = polarCount + #entries + 1,
+        }
+    end
+    return entries
+end
+
+--- @param catalog table[]
+--- @return table<string, table> npc seatKey -> catalog entry
+local function seatRowCatalogByNpcSeatKey(catalog)
+    local out = {}
+    for _, entry in ipairs(catalog) do
+        if entry.snapKind == SNAP_KIND_SEAT and isNpcSeatRowColumn({ seatKey = entry.seatKey, kind = "npc" }) then
+            out[entry.seatKey] = entry
+        end
+    end
+    return out
+end
+
+--- @param catalog table[]
+--- @return table<string, table> PC color -> seat-row catalog entry (`columnKind = pc`)
+local function seatRowCatalogByPcColor(catalog)
+    local out = {}
+    for _, entry in ipairs(catalog) do
+        if entry.snapKind == SNAP_KIND_SEAT and entry.columnKind == "pc"
+            and U.isIn(entry.seatKey, C.PlayerColors or {}) then
+            out[entry.seatKey] = entry
+        end
+    end
+    return out
+end
+
+--- Cached seat-row catalog slices (npc seatKey + PC color columns).
+--- @param board Object
+--- @return table { npc: table<string, table>, pc: table<string, table> }
+local function getSeatRowCatalogMaps(board)
+    if not Board.isGameObject(board) then
+        return { npc = {}, pc = {} }
+    end
+    local fp = controlBoardSnapFingerprintFor(board, nil)
+    local cacheKey = tostring(board.getGUID()) .. ":" .. fp
+    local cached = seatRowCatalogCache[cacheKey]
+    if type(cached) == "table" then
+        return cached
+    end
+    local catalog = Snaps.buildControlBoardSnapCatalog(board, nil)
+    cached = {
+        npc = seatRowCatalogByNpcSeatKey(catalog),
+        pc = seatRowCatalogByPcColor(catalog),
+    }
+    seatRowCatalogCache[cacheKey] = cached
+    return cached
+end
+
+--- Rich snap catalog entry (install order matches TTS getSnapPoints indices).
+--- @param board Object
+--- @param cfg table validated CONTROL_BOARD_SNAP config
+--- @param rings number
+--- @return table[]
+local function buildControlBoardSnapEntries(board, cfg, rings)
+    local entries = {}
+    for ringIndex = 1, rings do
+        local group = cfg.snapGroups[ringIndex]
+        local num = tonumber(group.num)
+        local rays = tonumber(group.rays)
+        local ringGroundLevel = resolveSnapGroupGroundLevel(group)
+        local ringYawOffsetDeg = tonumber(group.snapYawOffsetDeg)
+        if ringYawOffsetDeg == nil then
+            ringYawOffsetDeg = tonumber(cfg.snapYawOffsetDeg) or 0
+        end
+        local kMin, kMax = familyKBoundsForSnapCount(num)
+        for rayIndex = 0, rays - 1 do
+            local familyId = tostring(ringIndex) .. ":" .. tostring(rayIndex)
+            for k = kMin, kMax do
+                local u, v, lp = controlBoardSnapCandidate(board, cfg, rings, ringIndex, rayIndex, k)
+                if u ~= nil and lp ~= nil then
+                    --- ringGroundLevel (when set) is absolute world Y for figurines on Apply — catalog metadata only; snaps stay on tile surface.
+                    local yawDeg = ((snapYawTowardOriginDeg(board, u, v, cfg.origin.u, cfg.origin.v) + ringYawOffsetDeg) % 360 + 360) % 360
+                    entries[#entries + 1] = {
+                        snapIndex = #entries + 1,
+                        ringIndex = ringIndex,
+                        rayIndex = rayIndex,
+                        familyId = familyId,
+                        familyK = k,
+                        isAnchor = (k == 0),
+                        u = u,
+                        v = v,
+                        yawDeg = yawDeg,
+                        localPos = lp,
+                        worldPos = Board.boardLocalToWorld(board, lp),
+                        groundLevel = ringGroundLevel,
+                        defaultLightMode = snapGroupDefaultLightMode(group),
+                        tokenScale = Tokens.tokenScaleFromSnapGroup(group),
+                    }
+                end
+            end
+        end
+    end
+    local seatEntries = buildSeatRowSnapEntries(board, #entries)
+    for i = 1, #seatEntries do
+        seatEntries[i].snapIndex = #entries + i
+        entries[#entries + 1] = seatEntries[i]
+    end
+    return entries
+end
+
+--- @param config table|nil
+--- @return number total, table perRingCounts indexed by ring
+function Snaps.countControlBoardSnapPoints(config)
+    local cfg, rings = validateControlBoardSnapConfig(resolveControlBoardSnapConfig(config))
+    local board = Board.getControlBoard()
+    local perRing = {}
+    local total = 0
+    for ringIndex = 1, rings do
+        local group = cfg.snapGroups[ringIndex]
+        local num = tonumber(group.num)
+        local rays = tonumber(group.rays)
+        local kMin, kMax = familyKBoundsForSnapCount(num)
+        local ringTotal = 0
+        for rayIndex = 0, rays - 1 do
+            for k = kMin, kMax do
+                local u, _, _ = controlBoardSnapCandidate(board, cfg, rings, ringIndex, rayIndex, k)
+                if u ~= nil then
+                    ringTotal = ringTotal + 1
+                end
+            end
+        end
+        perRing[ringIndex] = ringTotal
+        total = total + ringTotal
+    end
+    local seatCfg = resolveControlBoardSeatRowConfig()
+    if seatCfg ~= nil then
+        total = total + #(seatCfg.columns or {})
+    end
+    return total, perRing
+end
+
+local SNAP_FAMILY_ROLE_BY_K = {
+    [-2] = "farLeft",
+    [-1] = "nearLeft",
+    [0] = "center",
+    [1] = "nearRight",
+    [2] = "farRight",
+}
+
+--- @param familyK number
+--- @return string
+local function familyRoleLabelForK(familyK)
+    local label = SNAP_FAMILY_ROLE_BY_K[familyK]
+    if label ~= nil then
+        return label
+    end
+    return "k" .. tostring(familyK)
+end
+
+--- Collect on-board snap positions grouped by family role (farLeft … center … farRight).
+--- World X/Z use STAGE_BOARD via `worldFromUv`; Y omitted from each point.
+--- @param config table|nil Defaults to DATA.CONTROL_BOARD_SNAP
+--- @param options table|nil `{ useInterpolatedRings?: boolean }` when true, ignore per-ring maxU/maxV and interpolate inner→outer
+--- @return table<string, table[]> roleName → `{ { x, z, u, v, ringIndex, rayIndex, familyK }, ... }`
+function Snaps.exportSnapFamiliesByRole(config, options)
+    options = type(options) == "table" and options or {}
+    local cfg = resolveControlBoardSnapConfig(config)
+    if options.useInterpolatedRings == true then
+        local ringCount = #(cfg.snapGroups or {})
+        local firstGroup = type(cfg.snapGroups) == "table" and cfg.snapGroups[1] or nil
+        local lastGroup = type(cfg.snapGroups) == "table" and cfg.snapGroups[ringCount] or nil
+        if cfg.innerRingMaxU == nil and type(firstGroup) == "table" then
+            cfg.innerRingMaxU = firstGroup.maxU
+        end
+        if cfg.innerRingMaxV == nil and type(firstGroup) == "table" then
+            cfg.innerRingMaxV = firstGroup.maxV
+        end
+        if cfg.outerRingMaxU == nil and type(lastGroup) == "table" then
+            cfg.outerRingMaxU = lastGroup.maxU
+        end
+        if cfg.outerRingMaxV == nil and type(lastGroup) == "table" then
+            cfg.outerRingMaxV = lastGroup.maxV
+        end
+        for ringIndex = 1, #(cfg.snapGroups or {}) do
+            local group = cfg.snapGroups[ringIndex]
+            if type(group) == "table" then
+                group.maxU = nil
+                group.maxV = nil
+            end
+        end
+    end
+    local rings
+    cfg, rings = validateControlBoardSnapConfig(cfg)
+    local board = Board.getControlBoard()
+    local byRole = {}
+    for ringIndex = 1, rings do
+        local group = cfg.snapGroups[ringIndex]
+        local num = tonumber(group.num)
+        local rays = tonumber(group.rays)
+        local ringGroundLevel = resolveSnapGroupGroundLevel(group)
+        local kMin, kMax = familyKBoundsForSnapCount(num)
+        for rayIndex = 0, rays - 1 do
+            for k = kMin, kMax do
+                local u, v = controlBoardSnapCandidate(board, cfg, rings, ringIndex, rayIndex, k)
+                if u ~= nil then
+                    local wp = Board.worldFromUv(u, v, { groundLevel = ringGroundLevel })
+                    local role = familyRoleLabelForK(k)
+                    local bucket = byRole[role]
+                    if bucket == nil then
+                        bucket = {}
+                        byRole[role] = bucket
+                    end
+                    bucket[#bucket + 1] = {
+                        x = wp.x,
+                        z = wp.z,
+                        u = u,
+                        v = v,
+                        ringIndex = ringIndex,
+                        rayIndex = rayIndex,
+                        familyK = k,
+                    }
+                end
+            end
+        end
+    end
+    return byRole
+end
+
+--- Serialize `exportSnapFamiliesByRole` output as a Lua table literal (1-based slot indices per role).
+--- @param byRole table
+--- @return string
+function Snaps.formatSnapFamiliesLua(byRole)
+    if type(byRole) ~= "table" then
+        return "return {}"
+    end
+    local roleNames = {}
+    for roleName, _ in pairs(byRole) do
+        roleNames[#roleNames + 1] = roleName
+    end
+    table.sort(roleNames)
+    local lines = { "return {" }
+    for _, roleName in ipairs(roleNames) do
+        lines[#lines + 1] = "  " .. roleName .. " = {"
+        local points = byRole[roleName]
+        if type(points) == "table" then
+            for slotIndex, pt in ipairs(points) do
+                if type(pt) == "table" and type(pt.x) == "number" and type(pt.z) == "number" then
+                    lines[#lines + 1] = string.format(
+                        "    [%d] = { x = %.6f, z = %.6f },",
+                        slotIndex,
+                        pt.x,
+                        pt.z
+                    )
+                end
+            end
+        end
+        lines[#lines + 1] = "  },"
+    end
+    lines[#lines + 1] = "}"
+    return table.concat(lines, "\n")
+end
+
+--- Serialize `exportSnapFamiliesByRole` as CSV: area, slot, x, z (area = family role name).
+--- @param byRole table
+--- @return string
+function Snaps.formatSnapFamiliesCsv(byRole)
+    if type(byRole) ~= "table" then
+        return "area,slot,x,z"
+    end
+    local roleNames = {}
+    for roleName, _ in pairs(byRole) do
+        roleNames[#roleNames + 1] = roleName
+    end
+    table.sort(roleNames)
+    local lines = { "area,slot,x,z" }
+    for _, roleName in ipairs(roleNames) do
+        local points = byRole[roleName]
+        if type(points) == "table" then
+            for slotIndex, pt in ipairs(points) do
+                if type(pt) == "table" and type(pt.x) == "number" and type(pt.z) == "number" then
+                    lines[#lines + 1] = string.format(
+                        "%s,%d,%.6f,%.6f",
+                        roleName,
+                        slotIndex,
+                        pt.x,
+                        pt.z
+                    )
+                end
+            end
+        end
+    end
+    return table.concat(lines, "\n")
+end
+
+--- Snap catalog with family metadata (anchor = familyK 0 at each ray).
+--- Default config (config nil) is cached by board fingerprint; explicit config always rebuilds.
+--- @param board Object
+--- @param config table|nil Defaults to DATA.CONTROL_BOARD_SNAP
+--- @return table[]
+function Snaps.buildControlBoardSnapCatalog(board, config)
+    if not Board.isGameObject(board) then
+        error("Snaps.buildControlBoardSnapCatalog: board object required")
+    end
+    if config ~= nil then
+        local profile = type(Snaps.getActiveInteractionProfile) == "function" and Snaps.getActiveInteractionProfile() or nil
+        if type(profile) == "table" then
+            profile.catalog_builds = (profile.catalog_builds or 0) + 1
+        end
+        local cfg, rings = validateControlBoardSnapConfig(resolveControlBoardSnapConfig(config))
+        return buildControlBoardSnapEntries(board, cfg, rings)
+    end
+    local fp = controlBoardSnapFingerprintFor(board, nil)
+    local cacheKey = tostring(board.getGUID()) .. ":" .. fp
+    local cached = defaultSnapCatalogCache[cacheKey]
+    if type(cached) == "table" then
+        return cached
+    end
+    local profile = type(Snaps.getActiveInteractionProfile) == "function" and Snaps.getActiveInteractionProfile() or nil
+    if type(profile) == "table" then
+        profile.catalog_builds = (profile.catalog_builds or 0) + 1
+    end
+    local cfg, rings = validateControlBoardSnapConfig(resolveControlBoardSnapConfig(nil))
+    local catalog = buildControlBoardSnapEntries(board, cfg, rings)
+    defaultSnapCatalogCache[cacheKey] = catalog
+    return catalog
+end
+
+--- Build TTS snap points in board-local space (combined ray + family angles per ring).
+--- @param board Object
+--- @param config table|nil Defaults to DATA.CONTROL_BOARD_SNAP
+--- @return table[]
+function Snaps.buildControlBoardSnapPoints(board, config)
+    if not Board.isGameObject(board) then
+        error("Snaps.buildControlBoardSnapPoints: board object required")
+    end
+    local cfg, rings = validateControlBoardSnapConfig(resolveControlBoardSnapConfig(config))
+    local entries = buildControlBoardSnapEntries(board, cfg, rings)
+    local points = {}
+    for _, entry in ipairs(entries) do
+        local snapZ = tonumber(entry.snapZDeg) or 0
+        points[#points + 1] = {
+            position = { entry.localPos.x, entry.localPos.y, entry.localPos.z },
+            rotation = { 0, entry.yawDeg, snapZ },
+            rotation_snap = true,
+        }
+    end
+    return points
+end
+
+--- @param board Object
+--- @param config table|nil
+--- @return string
+controlBoardSnapFingerprintFor = function(board, config)
+    local cfg = resolveControlBoardSnapConfig(config)
+    local sx, sz = boardMapExtents(board)
+    local parts = {
+        tostring(board.getGUID()),
+        string.format("%.3f,%.3f", sx, sz),
+        string.format("%.4f,%.4f", cfg.origin.u, cfg.origin.v),
+        tostring(#(cfg.snapGroups or {})),
+        -- TOR-415: even-num familyK bounds (exclude +half duplicate on full circle).
+        "fkEven1",
+        table.concat({
+            tostring(cfg.innerRingMaxU or ""),
+            tostring(cfg.innerRingMaxV or ""),
+            tostring(cfg.outerRingMaxU or ""),
+            tostring(cfg.outerRingMaxV or ""),
+        }, ","),
+    }
+    local rings = #(cfg.snapGroups or {})
+    for ringIndex = 1, rings do
+        local group = cfg.snapGroups[ringIndex]
+        if type(group) == "table" then
+            parts[#parts + 1] = tostring(group.num)
+                .. ":"
+                .. tostring(group.angleDelta)
+                .. ":"
+                .. tostring(group.rays)
+                .. ":"
+                .. tostring(group.groundLevel or "")
+                .. ":"
+                .. tostring(group.radialStagger or "")
+                .. ":"
+                .. tostring(group.maxU or "")
+                .. ":"
+                .. tostring(group.maxV or "")
+                .. ":"
+                .. tostring(type(group.origin) == "table" and group.origin.u or "")
+                .. ":"
+                .. tostring(type(group.origin) == "table" and group.origin.v or "")
+                .. ":"
+                .. tostring(group.snapYawOffsetDeg or "")
+                .. ":"
+                .. tostring(group.defaultLightMode or "")
+        end
+    end
+    parts[#parts + 1] = "snapTag:none"
+    parts[#parts + 1] = "yawOff:" .. tostring(tonumber(cfg.snapYawOffsetDeg) or 0)
+    local seatCfg = resolveControlBoardSeatRowConfig()
+    if seatCfg ~= nil then
+        parts[#parts + 1] = "seatRow:v:" .. tostring(seatCfg.v)
+        parts[#parts + 1] = "seatRow:yaw:" .. tostring(tonumber(seatCfg.snapYawOffsetDeg) or 0)
+        parts[#parts + 1] = "seatRow:pcZ:" .. tostring(tonumber(seatCfg.pcSnapZDeg) or 0)
+        for i = 1, #(seatCfg.columns or {}) do
+            local col = seatCfg.columns[i]
+            parts[#parts + 1] = "seatCol:" .. tostring(i) .. "=" .. tostring(col.seatKey) .. ":" .. tostring(col.kind)
+        end
+    end
+    return table.concat(parts, ":")
+end
+
+--- @return boolean True unless `sessionScene.npcWorld.controlBoardSnapsEnabled` is explicitly false.
+function Snaps.areControlBoardSnapsEnabled()
+    local S = stateModule()
+    if type(S) ~= "table" or type(S.getStateVal) ~= "function" then
+        return true
+    end
+    local nw = S.getStateVal("sessionScene", "npcWorld")
+    if type(nw) == "table" and nw.controlBoardSnapsEnabled == false then
+        return false
+    end
+    return true
+end
+
+--- Enable or disable CONTROL_BOARD polar snaps (persists in `sessionScene.npcWorld`).
+--- @param enabled boolean
+--- @param options table|nil `{ board?: Object }`
+--- @return boolean enabled after call
+function Snaps.setControlBoardSnapsEnabled(enabled, options)
+    options = type(options) == "table" and options or {}
+    local S = stateModule()
+    if type(S) == "table" and type(S.setStateVal) == "function" then
+        S.setStateVal(enabled ~= false, "sessionScene", "npcWorld", "controlBoardSnapsEnabled")
+    end
+    local board = options.board or Board.getControlBoard()
+    if not Board.isGameObject(board) or board.setSnapPoints == nil then
+        return enabled ~= false
+    end
+    if enabled == false then
+        board.setSnapPoints({})
+        polarSnapInstallFingerprint = nil
+        installedPolarSnapConfig = nil
+        invalidateDefaultSnapCatalogCache(board)
+        print("[Gameboard] Control-board snaps disabled (cleared on " .. tostring(board.getGUID()) .. ")")
+        return false
+    end
+    Snaps.installPolarSnaps(board, { force = true })
+    return true
+end
+
+--- Flip CONTROL_BOARD snap grid on/off.
+--- @param options table|nil `{ board?: Object }`
+--- @return boolean enabled after toggle
+function Snaps.toggleControlBoardSnaps(options)
+    local nextEnabled = not Snaps.areControlBoardSnapsEnabled()
+    return Snaps.setControlBoardSnapsEnabled(nextEnabled, options)
+end
+
+--- Install CONTROL_BOARD snap points (idempotent; safe from Global reconcile).
+--- @param board Object|nil Defaults to G.GUIDS.CONTROL_BOARD
+--- @param options table|nil { force?: boolean, config?: table }
+--- @return boolean installed
+function Snaps.installPolarSnaps(board, options)
+    options = type(options) == "table" and options or {}
+    board = board or Board.getControlBoard()
+    if not Board.isGameObject(board) or board.setSnapPoints == nil then
+        print("[Gameboard] installPolarSnaps: CONTROL_BOARD missing or has no setSnapPoints")
+        return false
+    end
+    if Snaps.areControlBoardSnapsEnabled() ~= true then
+        if #board.getSnapPoints() > 0 then
+            board.setSnapPoints({})
+            polarSnapInstallFingerprint = nil
+            installedPolarSnapConfig = nil
+            invalidateDefaultSnapCatalogCache(board)
+        end
+        return true
+    end
+    local cfg = resolveControlBoardSnapConfig(options.config)
+    local fp = controlBoardSnapFingerprintFor(board, cfg)
+    if options.force ~= true and polarSnapInstallFingerprint == fp then
+        return true
+    end
+    invalidateDefaultSnapCatalogCache(board)
+    local points = Snaps.buildControlBoardSnapPoints(board, cfg)
+    if #points < 1 then
+        print("[Gameboard] installPolarSnaps: no snap points built")
+        return false
+    end
+    local ok = board.setSnapPoints(points)
+    if ok then
+        polarSnapInstallFingerprint = fp
+        installedPolarSnapConfig = resolveControlBoardSnapConfig(cfg)
+        Snaps.buildControlBoardSnapCatalog(board, nil)
+        print(
+            U.loadElapsedPrefix()
+                .. "[Gameboard] Control-board snaps installed ("
+                .. tostring(#points)
+                .. " points on "
+                .. tostring(board.getGUID())
+                .. ")"
+        )
+    else
+        print("[Gameboard] installPolarSnaps: setSnapPoints returned false on " .. tostring(board.getGUID()))
+    end
+    return ok == true
+end
+
+--- Alias for installPolarSnaps (same behavior).
+Snaps.installControlBoardSnaps = Snaps.installPolarSnaps
+
+--- Last installed CONTROL_BOARD snap config, captured from installPolarSnaps.
+--- @return table|nil
+function Snaps.getInstalledControlBoardSnapConfig()
+    if type(installedPolarSnapConfig) ~= "table" then
+        return nil
+    end
+    return resolveControlBoardSnapConfig(installedPolarSnapConfig)
+end
+
+--- Anchor ray angle (degrees) for a catalog entry.
+--- @param cfg table
+--- @param entry table
+--- @return number
+local function anchorDegForSnapEntry(cfg, entry)
+    local group = type(cfg.snapGroups) == "table" and cfg.snapGroups[entry.ringIndex] or nil
+    local rays = tonumber(group and group.rays) or 1
+    if rays < 1 then
+        rays = 1
+    end
+    local anchorDeg = (entry.rayIndex / rays) * 360
+    if not ringOriginDiffersFromMaster(cfg, entry.ringIndex) then
+        return anchorDeg
+    end
+    local ringOriginU, ringOriginV = ringOriginUvForIndex(cfg, entry.ringIndex)
+    local masterU = tonumber(cfg.origin and cfg.origin.u) or 0.5
+    local masterV = tonumber(cfg.origin and cfg.origin.v) or 0.5
+    return bearingUvDeg(ringOriginU, ringOriginV, masterU, masterV) + anchorDeg
+end
+
+--- Family spread offset (degrees) = familyK * angleDelta on that ring.
+--- @param cfg table
+--- @param entry table
+--- @return number
+local function spreadOffsetForSnapEntry(cfg, entry)
+    local group = type(cfg.snapGroups) == "table" and cfg.snapGroups[entry.ringIndex] or nil
+    local angleDelta = tonumber(group and group.angleDelta) or 0
+    return (entry.familyK or 0) * angleDelta
+end
+
+--- @param a number degrees
+--- @param b number degrees
+--- @return number shortest arc distance in [0, 180]
+local function angularDeltaDeg(a, b)
+    local d = ((a - b) % 360 + 360) % 360
+    if d > 180 then
+        d = 360 - d
+    end
+    return d
+end
+
+--- Best snap on `ringIndex` matching spread offset, then anchor ray.
+--- @param catalog table[]
+--- @param cfg table
+--- @param ringIndex number
+--- @param targetSpread number
+--- @param targetAnchor number
+--- @return table|nil
+local function findBestCatalogEntryOnRing(catalog, cfg, ringIndex, targetSpread, targetAnchor)
+    local best = nil
+    local bestSpreadDiff = math.huge
+    local bestAnchorDiff = math.huge
+    for _, entry in ipairs(catalog) do
+        if entry.ringIndex == ringIndex then
+            local spreadDiff = math.abs(spreadOffsetForSnapEntry(cfg, entry) - targetSpread)
+            local anchorDiff = angularDeltaDeg(anchorDegForSnapEntry(cfg, entry), targetAnchor)
+            if spreadDiff < bestSpreadDiff
+                or (spreadDiff == bestSpreadDiff and anchorDiff < bestAnchorDiff) then
+                bestSpreadDiff = spreadDiff
+                bestAnchorDiff = anchorDiff
+                best = entry
+            end
+        end
+    end
+    return best
+end
+
+--- Park one token on its palette grid cell when `buildTokenSnapAssignments` has a slot.
+--- @param token Object
+--- @param characterKey string
+--- @return boolean
+local function parkNpcTokenOnPalette(token, characterKey)
+    local palette = Board.getControlBoardPalette()
+    if not Board.isGameObject(palette) or not Board.isGameObject(token) or type(characterKey) ~= "string" then
+        return false
+    end
+    local assignments = Palette.buildTokenSnapAssignments()
+    local wantIndex = assignments[characterKey]
+    if type(wantIndex) ~= "number" then
+        return false
+    end
+    local wp = Palette.worldPositionForSnapIndex(palette, wantIndex)
+    if wp == nil then
+        return false
+    end
+    token.setPosition(wp)
+    Tokens.ensureDefaultNpcControlTokenScale(token)
+    Palette.applyPaletteParkingRotation(palette, token)
+    Palette.applyPaletteParkingScale(token)
+    if token.setInvisibleTo ~= nil then
+        token.setInvisibleTo(C.PlayerColors or {})
+    end
+    return true
+end
+
+--- Log each NPC token on CONTROL_BOARD (not palette) with ring from snap catalog match.
+--- @param board Object|nil
+--- @param config table|nil Snap config used to build the catalog for matching
+--- @return table[] rows { characterKey, ringIndex?, rayIndex?, familyK?, spreadOffset?, anchorDeg?, reason? }
+function Snaps.logControlBoardTokenSnapRings(board, config)
+    board = board or Board.getControlBoard()
+    local cfg = resolveControlBoardSnapConfig(config)
+    local fuzziness = Board.snapMatchFuzzinessForBoard(board)
+    local rows = {}
+    if not Board.isGameObject(board) then
+        print("[Gameboard] logControlBoardTokenSnapRings: CONTROL_BOARD missing")
+        return rows
+    end
+    for _, token in ipairs(Board.objectsOnControlBoard(board, TAG_TOKEN)) do
+        if Board.isGameObject(token) then
+            local characterKey = Tokens.resolveTokenCharacterKey(token)
+            if type(characterKey) == "string" and characterKey ~= "" then
+                local palette = Board.getControlBoardPalette()
+                if Board.isGameObject(palette) and Palette.isTokenOnPaletteBoard(palette, token) then
+                    rows[#rows + 1] = { characterKey = characterKey, reason = "on_palette" }
+                    print("[Gameboard] token " .. characterKey .. ": on palette (skipped)")
+                else
+                    local entry = resolveTokenSnapCatalogEntry(board, token, fuzziness, cfg)
+                    if entry ~= nil then
+                        local spread = spreadOffsetForSnapEntry(cfg, entry)
+                        local anchor = anchorDegForSnapEntry(cfg, entry)
+                        rows[#rows + 1] = {
+                            characterKey = characterKey,
+                            ringIndex = entry.ringIndex,
+                            rayIndex = entry.rayIndex,
+                            familyK = entry.familyK,
+                            spreadOffset = spread,
+                            anchorDeg = anchor,
+                        }
+                        print(
+                            "[Gameboard] token "
+                                .. characterKey
+                                .. ": ring "
+                                .. tostring(entry.ringIndex)
+                                .. " ray "
+                                .. tostring(entry.rayIndex)
+                                .. " familyK "
+                                .. tostring(entry.familyK)
+                                .. " spreadOffset "
+                                .. string.format("%.2f", spread)
+                                .. " anchorDeg "
+                                .. string.format("%.1f", anchor)
+                        )
+                    else
+                        rows[#rows + 1] = { characterKey = characterKey, reason = "no_snap_match" }
+                        print("[Gameboard] token " .. characterKey .. ": no snap match")
+                    end
+                end
+            end
+        end
+    end
+    return rows
+end
+
+--- Install a new CONTROL_BOARD snap grid and remap tokens + placements to the nearest snap on each ring (by spread offset).
+--- Tokens on a ring that no longer exists are parked on CONTROL_BOARD_PALETTE and removed from placements.
+--- @param oldConfig table|nil Config that matches current token positions (default DATA.CONTROL_BOARD_SNAP)
+--- @param newConfig table New CONTROL_BOARD_SNAP table to install
+--- @param options table|nil `{ skipSync?: boolean }`
+--- @return table stats
+function Snaps.remapControlBoardSnapsToConfig(oldConfig, newConfig, options)
+    options = type(options) == "table" and options or {}
+    local board = Board.getControlBoard()
+    local stats = {
+        logged = 0,
+        remapped = 0,
+        palette = 0,
+        skipped = 0,
+    }
+    if not Board.isGameObject(board) then
+        print("[Gameboard] remapControlBoardSnapsToConfig: CONTROL_BOARD missing")
+        return stats
+    end
+    if type(newConfig) ~= "table" then
+        error("remapControlBoardSnapsToConfig: newConfig table required")
+    end
+    local oldCfg = type(oldConfig) == "table"
+        and resolveControlBoardSnapConfig(oldConfig)
+        or Snaps.getInstalledControlBoardSnapConfig()
+        or resolveControlBoardSnapConfig(DATA.CONTROL_BOARD_SNAP)
+    local newCfg, newRings = validateControlBoardSnapConfig(resolveControlBoardSnapConfig(newConfig))
+    local fuzziness = Board.snapMatchFuzzinessForBoard(board)
+
+    print("[Gameboard] remap: logging token rings (old snap config)")
+    local tokenPlans = {}
+    for _, token in ipairs(Board.objectsOnControlBoard(board, TAG_TOKEN)) do
+        if Board.isGameObject(token) then
+            local characterKey = Tokens.resolveTokenCharacterKey(token)
+            if type(characterKey) == "string" and characterKey ~= "" then
+                local palette = Board.getControlBoardPalette()
+                if Board.isGameObject(palette) and Palette.isTokenOnPaletteBoard(palette, token) then
+                    stats.skipped = stats.skipped + 1
+                else
+                    stats.logged = stats.logged + 1
+                    local oldEntry = resolveTokenSnapCatalogEntry(board, token, fuzziness, oldCfg)
+                    tokenPlans[#tokenPlans + 1] = {
+                        token = token,
+                        characterKey = characterKey,
+                        oldEntry = oldEntry,
+                        npcLightMode = Tokens.tokenLightModeFromFlip(token),
+                    }
+                    if oldEntry ~= nil then
+                        print(
+                            "[Gameboard] remap log "
+                                .. characterKey
+                                .. ": ring "
+                                .. tostring(oldEntry.ringIndex)
+                        )
+                    else
+                        print("[Gameboard] remap log " .. characterKey .. ": no snap match (old config)")
+                    end
+                end
+            end
+        end
+    end
+
+    Snaps.installPolarSnaps(board, { force = true, config = newCfg })
+    local newCatalog = Snaps.buildControlBoardSnapCatalog(board, newCfg)
+    local placements = {}
+    local existing = stateModule().getStateVal("sessionScene", "npcWorld", "placements")
+    if type(existing) == "table" then
+        for ck, row in pairs(existing) do
+            if type(ck) == "string" and type(row) == "table" then
+                placements[ck] = row
+            end
+        end
+    end
+    local boardYaw = Board.objectYawDeg(board)
+
+    for _, plan in ipairs(tokenPlans) do
+        local token = plan.token
+        local characterKey = plan.characterKey
+        local oldEntry = plan.oldEntry
+        if oldEntry == nil then
+            placements[characterKey] = nil
+            stats.skipped = stats.skipped + 1
+        elseif oldEntry.snapKind == SNAP_KIND_SEAT then
+            stats.skipped = stats.skipped + 1
+        elseif oldEntry.ringIndex > newRings then
+            placements[characterKey] = nil
+            if parkNpcTokenOnPalette(token, characterKey) then
+                stats.palette = stats.palette + 1
+            else
+                stats.skipped = stats.skipped + 1
+            end
+            print(
+                "[Gameboard] remap "
+                    .. characterKey
+                    .. ": ring "
+                    .. tostring(oldEntry.ringIndex)
+                    .. " removed → palette"
+            )
+        else
+            local targetSpread = spreadOffsetForSnapEntry(oldCfg, oldEntry)
+            local targetAnchor = anchorDegForSnapEntry(oldCfg, oldEntry)
+            local newEntry = findBestCatalogEntryOnRing(
+                newCatalog,
+                newCfg,
+                oldEntry.ringIndex,
+                targetSpread,
+                targetAnchor
+            )
+            if newEntry == nil then
+                placements[characterKey] = nil
+                stats.skipped = stats.skipped + 1
+                print("[Gameboard] remap " .. characterKey .. ": no target snap on ring " .. tostring(oldEntry.ringIndex))
+            else
+                placeTokenOnControlBoardSnap(token, newEntry, board, boardYaw)
+                local row = {
+                    u = newEntry.u,
+                    v = newEntry.v,
+                    yaw = newEntry.yawDeg,
+                    npcLightMode = plan.npcLightMode,
+                }
+                if newEntry.groundLevel ~= nil then
+                    row.groundLevel = newEntry.groundLevel
+                end
+                placements[characterKey] = row
+                stats.remapped = stats.remapped + 1
+                print(
+                    "[Gameboard] remap "
+                        .. characterKey
+                        .. ": ring "
+                        .. tostring(oldEntry.ringIndex)
+                        .. " → ray "
+                        .. tostring(newEntry.rayIndex)
+                        .. " familyK "
+                        .. tostring(newEntry.familyK)
+                )
+            end
+        end
+    end
+
+    stateModule().setStateVal(placements, "sessionScene", "npcWorld", "placements")
+    local palette = Board.getControlBoardPalette()
+    if Board.isGameObject(palette) then
+        Palette.syncTokensToPalette(palette)
+    end
+
+    if options.skipSync ~= true then
+        local Sync = require("core.sync")
+        Sync.npcs({
+            reason = "gameboard_snap_remap",
+            force = true,
+            onlySteps = { 1, 5 },
+            deferUiRefresh = true,
+            skipPreloadPopulate = true,
+        })
+    end
+
+    print(
+        "[Gameboard] remap complete: logged="
+            .. tostring(stats.logged)
+            .. " remapped="
+            .. tostring(stats.remapped)
+            .. " palette="
+            .. tostring(stats.palette)
+            .. " skipped="
+            .. tostring(stats.skipped)
+    )
+    return stats
+end
+
+--- Absolute world Y for a normalized u/v on the control-board snap grid (from matching ring `groundLevel`).
+--- When the ring omits `groundLevel`, returns nil and `worldFromUv` uses STAGE_BOARD surface world Y at u,v.
+--- @param u number
+--- @param v number
+--- @param config table|nil Defaults to DATA.CONTROL_BOARD_SNAP
+--- @return number|nil
+function Snaps.groundLevelForSnapUv(u, v, config)
+    u = tonumber(u)
+    v = tonumber(v)
+    local seatCfg = resolveControlBoardSeatRowConfig()
+    if seatCfg ~= nil and u ~= nil and v ~= nil then
+        local seatV = tonumber(seatCfg.v) or 0.15
+        if math.abs(v - seatV) < 0.02 then
+            return nil
+        end
+    end
+    local cfg, rings = validateControlBoardSnapConfig(resolveControlBoardSnapConfig(config))
+    local ringIndex = resolveRingIndexForUv(cfg, u, v, rings)
+    local group = cfg.snapGroups[ringIndex]
+    return resolveSnapGroupGroundLevel(group)
+end
+
+--- @param u number
+--- @param v number
+--- @param config table|nil
+--- @return number ringIndex 1-based
+function Snaps.resolveSnapRingIndexForUv(u, v, config)
+    local cfg, rings = validateControlBoardSnapConfig(resolveControlBoardSnapConfig(config))
+    return resolveRingIndexForUv(cfg, u, v, rings)
+end
+
+--- Board-relative Y yaw for a placement at u,v: face the config master `origin` (token Y is cosmetic; figurines use the same math).
+--- @param u number
+--- @param v number
+--- @param config table|nil Defaults to DATA.CONTROL_BOARD_SNAP
+--- @return number yawDeg 0–360 board-local
+function Snaps.placementBoardRelYawDeg(u, v, config)
+    u = tonumber(u)
+    v = tonumber(v)
+    if u == nil or v == nil then
+        return 0
+    end
+    local board = Board.getControlBoard()
+    if not Board.isGameObject(board) then
+        return 0
+    end
+    local cfg, rings = validateControlBoardSnapConfig(resolveControlBoardSnapConfig(config))
+    local originU = tonumber(cfg.origin.u) or 0.5
+    local originV = tonumber(cfg.origin.v) or 0.5
+    local ringIndex = resolveRingIndexForUv(cfg, u, v, rings)
+    local group = cfg.snapGroups[ringIndex]
+    local ringYawOffsetDeg = tonumber(group.snapYawOffsetDeg)
+    if ringYawOffsetDeg == nil then
+        ringYawOffsetDeg = tonumber(cfg.snapYawOffsetDeg) or 0
+    end
+    local towardOrigin = snapYawTowardOriginDeg(board, u, v, originU, originV)
+    return ((towardOrigin + ringYawOffsetDeg) % 360 + 360) % 360
+end
+
+--- @param catalog table[]
+--- @param familyId string
+--- @return table|nil anchor catalog entry (`familyK == 0`)
+local function anchorCatalogEntryForFamilyId(catalog, familyId)
+    if type(catalog) ~= "table" or type(familyId) ~= "string" or familyId == "" then
+        return nil
+    end
+    for _, entry in ipairs(catalog) do
+        if entry.familyId == familyId and entry.isAnchor == true then
+            return entry
+        end
+    end
+    return nil
+end
+
+--- @param board Object
+--- @param anchorEntry table catalog entry with `worldPos`
+--- @param cfg table CONTROL_BOARD_SNAP config
+--- @return number distance in CONTROL_BOARD world XZ from master origin to anchor
+local function anchorWorldDistanceFromMasterOrigin(board, anchorEntry, cfg)
+    if type(anchorEntry) ~= "table" or anchorEntry.worldPos == nil then
+        return math.huge
+    end
+    local originU = tonumber(cfg.origin.u) or 0.5
+    local originV = tonumber(cfg.origin.v) or 0.35
+    local originLp = Board.boardLocalFromUv(board, originU, originV)
+    local originWorld = Board.boardLocalToWorld(board, originLp)
+    local ap = anchorEntry.worldPos
+    local odx = (ap.x or 0) - (originWorld.x or 0)
+    local odz = (ap.z or 0) - (originWorld.z or 0)
+    return math.sqrt(odx * odx + odz * odz)
+end
+
+--- Resolve a persisted placement u/v to the same anchor-family catalog row used by anchor spread.
+--- Prefers board u/v match; falls back to STAGE world XZ nearest snap when scan drift exceeds tolerance.
+--- @param u number normalized placement u
+--- @param v number normalized placement v
+--- @param config table|nil Defaults to DATA.CONTROL_BOARD_SNAP
+--- @return table|nil catalog entry with `familyId`, `familyK`, `isAnchor`, …
+function Snaps.resolvePlacementSnapCatalogEntry(u, v, config)
+    u = tonumber(u)
+    v = tonumber(v)
+    if u == nil or v == nil then
+        return nil
+    end
+    local board = Board.getControlBoard()
+    if not Board.isGameObject(board) then
+        return nil
+    end
+    local catalog = Snaps.buildControlBoardSnapCatalog(board, config)
+    local bestUv = nil
+    local bestUvDist2 = math.huge
+    for _, entry in ipairs(catalog) do
+        if entry.snapKind ~= SNAP_KIND_SEAT and entry.u ~= nil and entry.v ~= nil then
+            local du = u - entry.u
+            local dv = v - entry.v
+            local d2 = du * du + dv * dv
+            if d2 < bestUvDist2 then
+                bestUvDist2 = d2
+                bestUv = entry
+            end
+        end
+    end
+    local uvTol = 0.02
+    if bestUv ~= nil and bestUvDist2 <= uvTol * uvTol then
+        return bestUv
+    end
+    local targetWorld = Board.worldFromUv(u, v, {
+        groundLevel = Snaps.groundLevelForSnapUv(u, v, config),
+    })
+    local bestWorld = nil
+    local bestWorldDist2 = math.huge
+    for _, entry in ipairs(catalog) do
+        if entry.snapKind ~= SNAP_KIND_SEAT and entry.worldPos ~= nil then
+            local wp = entry.worldPos
+            local dx = (wp.x or 0) - targetWorld.x
+            local dz = (wp.z or 0) - targetWorld.z
+            local d2 = dx * dx + dz * dz
+            if d2 < bestWorldDist2 then
+                bestWorldDist2 = d2
+                bestWorld = entry
+            end
+        end
+    end
+    return bestWorld or bestUv
+end
+
+--- Stable snap identity for one-shot locked participant collision handling.
+--- Returns nil when the current board catalog cannot resolve the placement.
+--- @param row table|nil
+--- @return string|nil
+function Snaps.lockedPlacementIdentity(row)
+    if type(row) ~= "table" then
+        return nil
+    end
+    local entry = Snaps.resolvePlacementSnapCatalogEntry(row.u, row.v, nil)
+    if type(entry) ~= "table" or entry.snapIndex == nil then
+        return nil
+    end
+    return "snap:" .. tostring(entry.snapIndex)
+end
+
+--- Sort key for stage lerp anchor-family batches: center-out on destination anchor; tie-break by anchor travel.
+--- @param srcEntry table|nil catalog entry at move start
+--- @param destEntry table|nil catalog entry at move end
+--- @param config table|nil Defaults to DATA.CONTROL_BOARD_SNAP
+--- @return number lower = earlier in orchestrator
+function Snaps.stageLerpFamilyGroupSortKey(srcEntry, destEntry, config)
+    if type(destEntry) ~= "table" then
+        return math.huge
+    end
+    local board = Board.getControlBoard()
+    if not Board.isGameObject(board) then
+        return math.huge
+    end
+    local cfg = resolveControlBoardSnapConfig(config)
+    local catalog = Snaps.buildControlBoardSnapCatalog(board, config)
+    local destFamilyId = destEntry.familyId
+    local destAnchor = anchorCatalogEntryForFamilyId(catalog, destFamilyId) or destEntry
+    local destDist = anchorWorldDistanceFromMasterOrigin(board, destAnchor, cfg)
+    local travel = 0
+    if type(srcEntry) == "table" and type(srcEntry.familyId) == "string" then
+        local srcAnchor = anchorCatalogEntryForFamilyId(catalog, srcEntry.familyId) or srcEntry
+        if type(srcAnchor) == "table" and srcAnchor.worldPos ~= nil and destAnchor.worldPos ~= nil then
+            local sp = srcAnchor.worldPos
+            local dp = destAnchor.worldPos
+            local tdx = (dp.x or 0) - (sp.x or 0)
+            local tdz = (dp.z or 0) - (sp.z or 0)
+            travel = math.sqrt(tdx * tdx + tdz * tdz)
+        end
+    end
+    return destDist + travel * 0.001
+end
+
+--- Destination anchor-family for stage lerp batching (TOR-173): same `familyId` grouping as anchor spread.
+--- @param u number normalized placement u
+--- @param v number normalized placement v
+--- @param config table|nil Defaults to DATA.CONTROL_BOARD_SNAP
+--- @return table|nil `{ areaKey: string, sortKey: number, familyId: string, snapEntry: table }`
+function Snaps.stageAreaGroupForPlacement(u, v, config)
+    local entry = Snaps.resolvePlacementSnapCatalogEntry(u, v, config)
+    if entry == nil then
+        return nil
+    end
+    local familyId = entry.familyId or (tostring(entry.ringIndex) .. ":" .. tostring(entry.rayIndex))
+    return {
+        areaKey = familyId,
+        sortKey = Snaps.stageLerpFamilyGroupSortKey(nil, entry, config),
+        familyId = familyId,
+        snapEntry = entry,
+    }
+end
+
+--- Nearest installed snap catalog entry for a token on CONTROL_BOARD (world XZ within fuzziness).
+--- @param board Object
+--- @param token Object
+--- @param fuzziness number|nil
+--- @param config table|nil
+--- @return table|nil catalog entry with snapIndex, isAnchor, familyK, worldPos, …
+resolveTokenSnapCatalogEntry = function(board, token, fuzziness, config)
+    if not Board.isGameObject(board) or not Board.isGameObject(token) then
+        return nil
+    end
+    fuzziness = tonumber(fuzziness) or Board.snapMatchFuzzinessForBoard(board)
+    local catalog = Snaps.buildControlBoardSnapCatalog(board, config)
+    if #catalog == 0 then
+        return nil
+    end
+    local pos = token.getPosition()
+    if pos == nil then
+        return nil
+    end
+    local fuzzSq = fuzziness * fuzziness
+    local best = nil
+    local bestDistSq = math.huge
+    for _, entry in ipairs(catalog) do
+        local wp = entry.worldPos
+        if wp ~= nil then
+            local dx = (pos.x or 0) - (wp.x or 0)
+            local dz = (pos.z or 0) - (wp.z or 0)
+            local distSq = dx * dx + dz * dz
+            if distSq <= fuzzSq and distSq < bestDistSq then
+                bestDistSq = distSq
+                best = entry
+            end
+        end
+    end
+    return best
+end
+
+--- @param board Object
+--- @param token Object
+--- @param fuzziness number|nil
+--- @return number|nil snapIndex 1-based in installed getSnapPoints order
+local function resolveTokenSnapSlot(board, token, fuzziness)
+    local entry = resolveTokenSnapCatalogEntry(board, token, fuzziness, nil)
+    return entry and entry.snapIndex or nil
+end
+
+--- @param token Object
+--- @param snapEntry table
+--- @param board Object
+--- @param boardYaw number
+--- @param faceUpOverride boolean|nil when set, use instead of reading token face
+--- @param extraLocalY number|nil additional board-local Y lift (e.g. flip re-seat)
+placeTokenOnControlBoardSnap = function(token, snapEntry, board, boardYaw, faceUpOverride, extraLocalY)
+    local lift = tonumber(extraLocalY) or 0
+    local wp = snapEntry.worldPos
+    if lift ~= 0 and type(snapEntry.u) == "number" and type(snapEntry.v) == "number" then
+        wp = Board.boardLocalToWorld(board, Board.boardLocalFromUv(board, snapEntry.u, snapEntry.v, lift))
+    end
+    token.setPosition(wp)
+    local faceUp = faceUpOverride
+    if faceUp == nil then
+        faceUp = Tokens.tokenRotationIsFaceUp(token)
+    end
+    if type(snapEntry) == "table" and snapEntry.snapKind == SNAP_KIND_SEAT then
+        Tokens.applySeatRowNpcControlTokenScale(token)
+    else
+        Tokens.applyNpcControlTokenScaleVec(token, Tokens.controlTokenScaleForCatalogEntry(snapEntry))
+    end
+    token.setRotation(Tokens.rotationForNpcControlToken(boardYaw, snapEntry.yawDeg, faceUp == true))
+    Tokens.setHiddenFromPlayerColors(token)
+end
+
+--- XZ distance from anchor snap on CONTROL_BOARD (board-local when board exists).
+--- @param entry table catalog entry with `worldPos`
+--- @param anchorEntry table anchor catalog entry
+--- @param board Object|nil CONTROL_BOARD
+--- @return number
+local function familySnapRadialDistFromAnchor(entry, anchorEntry, board)
+    local wp = entry and entry.worldPos
+    local ap = anchorEntry and anchorEntry.worldPos
+    if wp == nil or ap == nil then
+        return math.huge
+    end
+    if Board.isGameObject(board) then
+        local eLp = Board.boardWorldToLocal(board, wp)
+        local aLp = Board.boardWorldToLocal(board, ap)
+        if eLp ~= nil and aLp ~= nil then
+            local dx = (eLp.x or 0) - (aLp.x or 0)
+            local dz = (eLp.z or 0) - (aLp.z or 0)
+            return math.sqrt(dx * dx + dz * dz)
+        end
+    end
+    local dx = (wp.x or 0) - (ap.x or 0)
+    local dz = (wp.z or 0) - (ap.z or 0)
+    return math.sqrt(dx * dx + dz * dz)
+end
+
+--- Signed lateral offset on the minimap tile (board-local X when possible; lower = screen-left).
+--- @param entry table
+--- @param anchorEntry table
+--- @param board Object|nil
+--- @return number
+local function familySnapLateralFromAnchor(entry, anchorEntry, board)
+    local wp = entry and entry.worldPos
+    local ap = anchorEntry and anchorEntry.worldPos
+    if wp == nil or ap == nil then
+        return 0
+    end
+    if Board.isGameObject(board) then
+        local eLp = Board.boardWorldToLocal(board, wp)
+        local aLp = Board.boardWorldToLocal(board, ap)
+        if eLp ~= nil and aLp ~= nil then
+            return (eLp.x or 0) - (aLp.x or 0)
+        end
+    end
+    return (wp.x or 0) - (ap.x or 0)
+end
+
+--- Compare sibling snaps for spread: nearest ring first, then screen-left before screen-right (not raw familyK sign).
+--- @param a table catalog entry
+--- @param b table catalog entry
+--- @param anchorEntry table anchor catalog entry
+--- @param board Object|nil CONTROL_BOARD
+--- @return boolean
+local function compareFamilySnapCenterOutAlternating(a, b, anchorEntry, board)
+    local distA = familySnapRadialDistFromAnchor(a, anchorEntry, board)
+    local distB = familySnapRadialDistFromAnchor(b, anchorEntry, board)
+    if math.abs(distA - distB) > 0.001 then
+        return distA < distB
+    end
+    local latA = familySnapLateralFromAnchor(a, anchorEntry, board)
+    local latB = familySnapLateralFromAnchor(b, anchorEntry, board)
+    if math.abs(latA - latB) > 0.001 then
+        return latA < latB
+    end
+    return (tonumber(a.snapIndex) or 0) < (tonumber(b.snapIndex) or 0)
+end
+
+--- Sort non-anchor family catalog entries for anchor-group spread (mutates list).
+--- @param entries table[] catalog rows with `worldPos`
+--- @param anchorEntry table|nil anchor row (required for spatial center-out)
+--- @param board Object|nil CONTROL_BOARD
+function Snaps.orderFamilySnapsForAnchorSpread(entries, anchorEntry, board)
+    if type(entries) ~= "table" then
+        return
+    end
+    if type(anchorEntry) ~= "table" or anchorEntry.worldPos == nil then
+        table.sort(entries, function(a, b)
+            local ka = tonumber(a.familyK) or 0
+            local kb = tonumber(b.familyK) or 0
+            local magA = math.abs(ka)
+            local magB = math.abs(kb)
+            if magA ~= magB then
+                return magA < magB
+            end
+            if ka ~= kb then
+                return ka < kb
+            end
+            return (tonumber(a.snapIndex) or 0) < (tonumber(b.snapIndex) or 0)
+        end)
+        return
+    end
+    table.sort(entries, function(a, b)
+        return compareFamilySnapCenterOutAlternating(a, b, anchorEntry, board)
+    end)
+end
+
+--- @return boolean true — anchor spread assigns snaps in center-out alternating order (TOR-175).
+function Snaps.anchorSpreadUsesCenterOutOrdering()
+    return true
+end
+
+local function collectPolarSnapFamiliesFromCatalog(catalog)
+    local families = {}
+    for _, entry in ipairs(catalog) do
+        if entry.snapKind ~= SNAP_KIND_SEAT and type(entry.familyId) == "string" then
+            local fam = families[entry.familyId]
+            if fam == nil then
+                fam = {
+                    anchor = nil,
+                    siblings = {},
+                    ringIndex = entry.ringIndex,
+                    rayIndex = entry.rayIndex,
+                }
+                families[entry.familyId] = fam
+            end
+            if entry.isAnchor == true then
+                fam.anchor = entry
+            else
+                fam.siblings[#fam.siblings + 1] = entry
+            end
+        end
+    end
+    return families
+end
+
+--- Sort polar snap families for stable `group` indices: ring ascending (inner first);
+--- within ring, anchors at master origin u first, then anchor u ascending.
+--- @param groups table[] mutable list of family tables
+--- @param cfg table CONTROL_BOARD_SNAP config
+local function sortPolarSnapFamiliesForExport(groups, cfg)
+    local masterU = tonumber(cfg and cfg.origin and cfg.origin.u) or 0.5
+    local uEps = 1e-4
+    table.sort(groups, function(a, b)
+        local ra = tonumber(a.ringIndex) or 0
+        local rb = tonumber(b.ringIndex) or 0
+        if ra ~= rb then
+            return ra < rb
+        end
+        local ua = tonumber(a.anchor and a.anchor.u) or 0
+        local ub = tonumber(b.anchor and b.anchor.u) or 0
+        local aCentered = math.abs(ua - masterU) <= uEps
+        local bCentered = math.abs(ub - masterU) <= uEps
+        if aCentered ~= bCentered then
+            return aCentered
+        end
+        if math.abs(ua - ub) > uEps then
+            return ua < ub
+        end
+        return (tonumber(a.rayIndex) or 0) < (tonumber(b.rayIndex) or 0)
+    end)
+end
+
+--- Rows for CONTROL_BOARD polar snap group export (`group`, `index`, `u`, `v`).
+--- `group` is 0-based: rings inner→outer; within ring centered anchors first, then by anchor u.
+--- `index` is 0-based per group: anchor 0; siblings match anchor-family coterie spread order.
+--- @param config table|nil Defaults to DATA.CONTROL_BOARD_SNAP
+--- @return table[] rows `{ group, index, u, v }`
+function Snaps.buildControlBoardSnapGroupExportRows(config)
+    local board = Board.getControlBoard()
+    if not Board.isGameObject(board) then
+        error("Snaps.buildControlBoardSnapGroupExportRows: CONTROL_BOARD object required")
+    end
+    local cfg = resolveControlBoardSnapConfig(config)
+    local catalog = Snaps.buildControlBoardSnapCatalog(board, config)
+    local families = collectPolarSnapFamiliesFromCatalog(catalog)
+    local groups = {}
+    for _, fam in pairs(families) do
+        if type(fam.anchor) == "table" then
+            groups[#groups + 1] = fam
+        end
+    end
+    sortPolarSnapFamiliesForExport(groups, cfg)
+    local rows = {}
+    for groupIndex, fam in ipairs(groups) do
+        local groupId = groupIndex - 1
+        local anchor = fam.anchor
+        local siblings = {}
+        for i = 1, #fam.siblings do
+            siblings[i] = fam.siblings[i]
+        end
+        Snaps.orderFamilySnapsForAnchorSpread(siblings, anchor, board)
+        rows[#rows + 1] = {
+            group = groupId,
+            index = 0,
+            u = anchor.u,
+            v = anchor.v,
+        }
+        for snapIndex, sib in ipairs(siblings) do
+            rows[#rows + 1] = {
+                group = groupId,
+                index = snapIndex,
+                u = sib.u,
+                v = sib.v,
+            }
+        end
+    end
+    return rows
+end
+
+--- CSV for `buildControlBoardSnapGroupExportRows` (`group,index,u,v` header).
+--- @param rows table[]
+--- @return string
+function Snaps.formatControlBoardSnapGroupsCsv(rows)
+    rows = type(rows) == "table" and rows or {}
+    local lines = { "group,index,u,v" }
+    for _, row in ipairs(rows) do
+        lines[#lines + 1] = string.format(
+            "%d,%d,%.6f,%.6f",
+            tonumber(row.group) or 0,
+            tonumber(row.index) or 0,
+            tonumber(row.u) or 0,
+            tonumber(row.v) or 0
+        )
+    end
+    return table.concat(lines, "\n") .. "\n"
+end
+
+-- Public / cross-module exports
+Snaps.SNAP_KIND_SEAT = SNAP_KIND_SEAT
+Snaps.invalidateDefaultSnapCatalogCache = invalidateDefaultSnapCatalogCache
+Snaps.boardMapExtents = boardMapExtents
+Snaps.deepCopyPlainTable = deepCopyPlainTable
+Snaps.resolveControlBoardSnapConfig = resolveControlBoardSnapConfig
+Snaps.snapGroupDefaultLightMode = snapGroupDefaultLightMode
+Snaps.validateControlBoardSnapConfig = validateControlBoardSnapConfig
+Snaps.resolveSnapGroupGroundLevel = resolveSnapGroupGroundLevel
+Snaps.isNpcSeatRowColumn = isNpcSeatRowColumn
+Snaps.seatRowCatalogByNpcSeatKey = seatRowCatalogByNpcSeatKey
+Snaps.seatRowCatalogByPcColor = seatRowCatalogByPcColor
+Snaps.getSeatRowCatalogMaps = getSeatRowCatalogMaps
+Snaps.controlBoardSnapFingerprintFor = controlBoardSnapFingerprintFor
+Snaps.parkNpcTokenOnPalette = parkNpcTokenOnPalette
+Snaps.resolveTokenSnapCatalogEntry = resolveTokenSnapCatalogEntry
+Snaps.placeTokenOnControlBoardSnap = placeTokenOnControlBoardSnap
+
+return Snaps

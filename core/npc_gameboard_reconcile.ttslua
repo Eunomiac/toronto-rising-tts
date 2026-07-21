@@ -1,0 +1,1305 @@
+--[[
+    NPC gameboard — scan / mirror / XmlUI / preview draft (TOR-423).
+    Reconcile must NOT require Apply (call Palette.installSnaps directly).
+]]
+
+local Reconcile = {}
+
+local U = require("lib.util")
+local C = require("lib.constants")
+local G = require("lib.guids")
+local DATA = require("lib.npc_gameboard_data")
+local Palette = require("lib.npc_control_board_palette")
+local Board = require("core.npc_gameboard_board")
+local Tokens = require("core.npc_gameboard_tokens")
+local Snaps = require("core.npc_gameboard_snaps")
+
+local TAG_TOKEN = DATA.TAG_NPC_CONTROL_TOKEN
+local TAG_PC_TOKEN = DATA.TAG_PC_CONTROL_TOKEN or "pc_control_token"
+local TAG_PC = DATA.TAG_GAMEBOARD_PC_SEAT
+local TAG_NPC_SEAT = DATA.TAG_GAMEBOARD_NPC_SEAT
+local TAG_TABLE = DATA.TAG_GAMEBOARD_TABLE
+local TAG_COMPONENT = DATA.TAG_GAMEBOARD_TABLE_COMPONENT
+
+--- @type table|nil
+local stateModuleCache = nil
+
+--- @return table|nil
+local function stateModule()
+    if type(stateModuleCache) == "table" and type(stateModuleCache.getStateVal) == "function" then
+        return stateModuleCache
+    end
+    local loaded = require("core.state")
+    if type(loaded) == "table" then
+        stateModuleCache = loaded
+    end
+    return loaded
+end
+
+Reconcile.lastControlBoardMirrorFingerprint = nil
+--- @type table<string, string> board GUID + toolbar id -> last applied label/color fingerprint.
+local controlBoardToolbarLabelFingerprint = {}
+--- Coalesces sibling drop/rotate callbacks into one bounded THERE draft scan.
+Reconcile.previewDraftCaptureGeneration = 0
+
+--- Injected by facade (interaction profile counters).
+Reconcile.noteInteractionTagScan = function(_count) end
+--- Injected by facade (anchor-drop eligibility cache).
+Reconcile.rebuildAnchorDropEligibilityCache = function(_board) end
+
+--- NPC seat-row tokens on CONTROL_BOARD (`snapKind = seat`, `kind = npc` columns only).
+--- @param board Object
+--- @return table<string, table> seatKey -> `{ seatKey, characterKey, present }`
+local function scanSeatRowTokensBySeatKey(board)
+    local out = {}
+    if not Board.isGameObject(board) then
+        return out
+    end
+    local fuzziness = Board.snapMatchFuzzinessForBoard(board)
+    for _, obj in ipairs(getObjectsWithTag(TAG_TOKEN) or {}) do
+        if Board.isGameObject(obj) and Board.isTokenOnMinimapTokenSurface(board, obj) then
+            local characterKey = Tokens.resolveTokenCharacterKey(obj)
+            if type(characterKey) == "string" and characterKey ~= "" then
+                local entry = Snaps.resolveTokenSnapCatalogEntry(board, obj, fuzziness, nil)
+                if type(entry) == "table"
+                    and entry.snapKind == Snaps.SNAP_KIND_SEAT
+                    and Snaps.isNpcSeatRowColumn({ seatKey = entry.seatKey, kind = "npc" }) then
+                    out[entry.seatKey] = {
+                        seatKey = entry.seatKey,
+                        characterKey = characterKey,
+                        present = Tokens.tokenRotationIsFaceUp(obj),
+                    }
+                end
+            end
+        end
+    end
+    return out
+end
+
+--- PC control tokens on CONTROL_BOARD seat-row PC columns (`snapKind = seat`, `columnKind = pc`).
+--- Keyed by the seat-row column color the token sits on; presence from token flip (TOR-236).
+--- @param board Object
+--- @return table<string, table> color -> `{ color, present }`
+local function scanSeatRowPcTokensByColor(board)
+    local out = {}
+    if not Board.isGameObject(board) then
+        return out
+    end
+    local fuzziness = Board.snapMatchFuzzinessForBoard(board)
+    for _, obj in ipairs(getObjectsWithTag(TAG_PC_TOKEN) or {}) do
+        if Board.isGameObject(obj) and Board.isTokenOnMinimapTokenSurface(board, obj) then
+            local entry = Snaps.resolveTokenSnapCatalogEntry(board, obj, fuzziness, nil)
+            if type(entry) == "table"
+                and entry.snapKind == Snaps.SNAP_KIND_SEAT
+                and entry.columnKind == "pc"
+                and U.isIn(entry.seatKey, C.PlayerColors or {}) then
+                out[entry.seatKey] = {
+                    color = entry.seatKey,
+                    present = Tokens.tokenRotationIsFaceUp(obj),
+                }
+            end
+        end
+    end
+    return out
+end
+
+--- @param board Object
+--- @return table[] rows with characterKey, u, v, yaw, npcLightMode (polar/stage snaps only; not seat row)
+function Reconcile.scanControlBoardTokens(board)
+    board = board or Board.getControlBoard()
+    local out = {}
+    if not Board.isGameObject(board) then
+        print("[Gameboard] scan: CONTROL_BOARD missing (GUID " .. tostring(G.GUIDS.CONTROL_BOARD) .. ")")
+        return out
+    end
+    local fuzziness = Board.snapMatchFuzzinessForBoard(board)
+    Reconcile.noteInteractionTagScan(1)
+    for _, obj in ipairs(getObjectsWithTag(TAG_TOKEN) or {}) do
+        if Board.isGameObject(obj) and Board.isTokenOnMinimapTokenSurface(board, obj) then
+            local characterKey = Tokens.resolveTokenCharacterKey(obj)
+            if type(characterKey) == "string" and characterKey ~= "" then
+                local u, v, _ = Tokens.tokenPlacementOnBoard(obj, board)
+                if type(u) == "number" and type(v) == "number" then
+                    local entry = Snaps.resolveTokenSnapCatalogEntry(board, obj, fuzziness, nil)
+                    if type(entry) == "table" and entry.snapKind == Snaps.SNAP_KIND_SEAT then
+                        -- Seat row: assign/presence via `applySeatRowFromControlBoard`, not `placements`.
+                    else
+                        local groundLevel = Snaps.groundLevelForSnapUv(u, v)
+                        local row = {
+                            characterKey = characterKey,
+                            u = u,
+                            v = v,
+                            yaw = Snaps.placementBoardRelYawDeg(u, v),
+                            npcLightMode = Tokens.tokenLightModeFromFlip(obj),
+                        }
+                        if groundLevel ~= nil then
+                            row.groundLevel = groundLevel
+                        end
+                        out[#out + 1] = row
+                    end
+                end
+            end
+        end
+    end
+    return out
+end
+
+--- @param row table|nil
+--- @return table|nil normalized row for comparison
+local function normalizePlacementRow(row)
+    if type(row) ~= "table" then
+        return nil
+    end
+    local u = tonumber(row.u)
+    local v = tonumber(row.v)
+    if u == nil or v == nil then
+        return nil
+    end
+    local out = {
+        u = u,
+        v = v,
+        yaw = tonumber(row.yaw) or 0,
+        npcLightMode = row.npcLightMode,
+    }
+    local groundLevel = tonumber(row.groundLevel)
+    if groundLevel ~= nil then
+        out.groundLevel = groundLevel
+    end
+    if out.npcLightMode ~= "OFF" and out.npcLightMode ~= "STANDARD" and out.npcLightMode ~= "SPOTLIGHT" then
+        out.npcLightMode = "STANDARD"
+    end
+    return out
+end
+
+--- @param a table|nil
+--- @param b table|nil
+--- @return boolean
+local function placementRowsEqual(a, b)
+    local na = normalizePlacementRow(a)
+    local nb = normalizePlacementRow(b)
+    if na == nil or nb == nil then
+        return false
+    end
+    if math.abs(na.u - nb.u) > 0.0001 or math.abs(na.v - nb.v) > 0.0001 then
+        return false
+    end
+    if math.abs(na.yaw - nb.yaw) > 0.5 then
+        return false
+    end
+    if na.npcLightMode ~= nb.npcLightMode then
+        return false
+    end
+    return (na.groundLevel or nil) == (nb.groundLevel or nil)
+end
+
+--- @param nextMap table|nil
+--- @param prevMap table|nil
+--- @return boolean
+local function placementsMapsEqual(nextMap, prevMap)
+    nextMap = type(nextMap) == "table" and nextMap or {}
+    prevMap = type(prevMap) == "table" and prevMap or {}
+    local keys = {}
+    local seen = {}
+    for key in pairs(nextMap) do
+        if type(key) == "string" and key ~= "" then
+            keys[#keys + 1] = key
+            seen[key] = true
+        end
+    end
+    for key in pairs(prevMap) do
+        if type(key) == "string" and key ~= "" and not seen[key] then
+            keys[#keys + 1] = key
+            seen[key] = true
+        end
+    end
+    table.sort(keys)
+    for _, key in ipairs(keys) do
+        if not placementRowsEqual(nextMap[key], prevMap[key]) then
+            return false
+        end
+    end
+    return true
+end
+
+--- Fingerprint for static marker + token mirror work on CONTROL_BOARD.
+--- @param activeTable string|nil
+--- @param mode string
+--- @param placements table|nil
+--- @param seatSlots table|nil
+--- @return string
+function Reconcile.controlBoardMirrorFingerprint(activeTable, mode, placements, seatSlots)
+    local lines = {}
+    lines[#lines + 1] = "table:" .. tostring(activeTable or "")
+    lines[#lines + 1] = "mode:" .. tostring(mode or "HERE")
+    seatSlots = type(seatSlots) == "table" and seatSlots or {}
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local row = type(seatSlots[seatKey]) == "table" and seatSlots[seatKey] or {}
+        lines[#lines + 1] = "npc:" .. seatKey
+            .. "=" .. tostring(row.characterKey or "")
+            .. ":" .. tostring(row.isPresent == true)
+    end
+    for _, seatKey in ipairs(C.PlayerColors or {}) do
+        local row = type(seatSlots[seatKey]) == "table" and seatSlots[seatKey] or {}
+        lines[#lines + 1] = "pc:" .. seatKey .. "=" .. tostring(row.isPresent == true)
+    end
+    placements = type(placements) == "table" and placements or {}
+    local keys = {}
+    for key in pairs(placements) do
+        if type(key) == "string" and key ~= "" then
+            keys[#keys + 1] = key
+        end
+    end
+    table.sort(keys)
+    for _, characterKey in ipairs(keys) do
+        local row = normalizePlacementRow(placements[characterKey])
+        if row ~= nil then
+            lines[#lines + 1] = string.format(
+                "p:%s:%.4f:%.4f:%.1f:%s:%s",
+                characterKey,
+                row.u,
+                row.v,
+                row.yaw,
+                row.npcLightMode or "",
+                tostring(row.groundLevel or "")
+            )
+        end
+    end
+    return table.concat(lines, "\n")
+end
+
+--- Build placements map from scan rows.
+--- @param rows table[]
+--- @return table
+local function placementsMapFromRows(rows)
+    local placements = {}
+    for _, row in ipairs(rows) do
+        if type(row.characterKey) == "string" then
+            placements[row.characterKey] = {
+                u = row.u,
+                v = row.v,
+                yaw = row.yaw,
+                npcLightMode = row.npcLightMode,
+                groundLevel = row.groundLevel,
+            }
+        end
+    end
+    return placements
+end
+
+--- Current board authority. HERE reads live sessionScene; THERE reads only the persisted draft.
+--- @return table `{ mode, placements, seatSlots }`
+function Reconcile.getActiveBoardModel()
+    local Preview = require("core.control_board_preview")
+    local draft = Preview.getDraft()
+    if draft ~= nil then
+        return {
+            mode = "THERE",
+            placements = draft.npcWorld.placements,
+            seatSlots = draft.seatSlots,
+        }
+    end
+    local sessionScene = stateModule().getStateVal("sessionScene")
+    return {
+        mode = "HERE",
+        placements = type(sessionScene) == "table"
+            and type(sessionScene.npcWorld) == "table"
+            and sessionScene.npcWorld.placements
+            or {},
+        seatSlots = type(sessionScene) == "table" and sessionScene.seatSlots or {},
+    }
+end
+
+--- Captures all board-owned participants while retaining inactive homeland metadata for staged NPCs.
+--- @param board Object
+--- @param baseSeatSlots table|nil
+--- @return table
+function Reconcile.buildParticipantSnapshot(board, baseSeatSlots)
+    baseSeatSlots = type(baseSeatSlots) == "table" and baseSeatSlots or {}
+    local placements = placementsMapFromRows(Reconcile.scanControlBoardTokens(board))
+    local npcBySeat = scanSeatRowTokensBySeatKey(board)
+    local pcByColor = scanSeatRowPcTokensByColor(board)
+    local seatSlots = {}
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local base = type(baseSeatSlots[seatKey]) == "table" and U.merge({}, baseSeatSlots[seatKey]) or {}
+        local scan = npcBySeat[seatKey]
+        if type(scan) == "table" then
+            base.characterKey = scan.characterKey
+            base.slotEmpty = nil
+            base.isPresent = scan.present == true
+        elseif type(base.characterKey) == "string" and type(placements[base.characterKey]) == "table" then
+            base.slotEmpty = nil
+            base.isPresent = false
+        else
+            base.characterKey = nil
+            base.slotEmpty = true
+            base.isPresent = false
+        end
+        seatSlots[seatKey] = base
+    end
+    for _, color in ipairs(C.PlayerColors or {}) do
+        local base = type(baseSeatSlots[color]) == "table" and U.merge({}, baseSeatSlots[color]) or {}
+        local scan = pcByColor[color]
+        if type(scan) == "table" then
+            base.isPresent = scan.present == true
+        end
+        seatSlots[color] = base
+    end
+    return {
+        npcWorld = { placements = placements },
+        seatSlots = seatSlots,
+    }
+end
+
+--- Persist a settled THERE board scan; does no live mutation or world reconciliation.
+--- @return boolean
+function Reconcile.capturePreviewDraftNow()
+    local Preview = require("core.control_board_preview")
+    local draft = Preview.getDraft()
+    if draft == nil then
+        return false
+    end
+    local board = Board.getControlBoard()
+    if not Board.isGameObject(board) then
+        return false
+    end
+    return Preview.capture(Reconcile.buildParticipantSnapshot(board, draft.seatSlots))
+end
+
+--- O(1) mode guard before delayed board tag scans.
+function Reconcile.schedulePreviewDraftCapture()
+    local Preview = require("core.control_board_preview")
+    if not Preview.isThere() then
+        return
+    end
+    Reconcile.previewDraftCaptureGeneration = Reconcile.previewDraftCaptureGeneration + 1
+    local generation = Reconcile.previewDraftCaptureGeneration
+    U.delay(function()
+        if generation == Reconcile.previewDraftCaptureGeneration then
+            Reconcile.capturePreviewDraftNow()
+        end
+    end, 0.18)
+end
+
+--- @param tableKey string|nil
+--- @return table|nil
+local function tableConfig(tableKey)
+    if type(tableKey) ~= "string" then
+        return nil
+    end
+    return C.Tables[tableKey]
+end
+
+--- @param seatKey string
+--- @return boolean
+local function npcSeatOccupiedOnTable(seatKey)
+    if type(seatKey) ~= "string" or seatKey == "" then
+        return false
+    end
+    local slots = stateModule().getStateVal("seatLayout", "occupiedNPCSlots")
+    if type(slots) ~= "table" then
+        return false
+    end
+    local assigned = slots[seatKey]
+    return type(assigned) == "string" and assigned ~= ""
+end
+
+--- Same activation rule as `lib.rotational-seat-layout` `applyTableComponentsState` (incl. `alsoEnable`).
+--- @param parentTable string
+--- @param activeTable string|nil
+--- @return table<string, boolean>
+local function buildTableComponentActivationMap(parentTable, activeTable)
+    local cfg = tableConfig(parentTable)
+    if cfg == nil or type(cfg.components) ~= "table" then
+        return {}
+    end
+    local isActiveTable = parentTable == activeTable
+    local occupied = stateModule().getStateVal("seatLayout", "occupiedNPCSlots")
+    if type(occupied) ~= "table" then
+        occupied = {}
+    end
+    local activateByName = {}
+    for componentName, componentCfg in pairs(cfg.components) do
+        if type(componentCfg) == "table" and type(componentCfg.guid) == "string" then
+            local active = isActiveTable
+            if active then
+                local usedBy = componentCfg.usedBy
+                if type(usedBy) ~= "string" or usedBy == "" then
+                    active = true
+                else
+                    local assigned = occupied[usedBy]
+                    active = type(assigned) == "string" and assigned ~= ""
+                end
+            end
+            activateByName[componentName] = active
+        end
+    end
+    for componentName, componentCfg in pairs(cfg.components) do
+        if activateByName[componentName] == true
+            and type(componentCfg) == "table"
+            and type(componentCfg.alsoEnable) == "string" then
+            activateByName[componentCfg.alsoEnable] = true
+        end
+    end
+    return activateByName
+end
+
+--- @param parentTable string
+--- @param componentName string
+--- @param activeTable string|nil
+--- @return boolean
+local function tableComponentActiveForOccupiedSlots(parentTable, componentName, activeTable)
+    if parentTable ~= activeTable or type(componentName) ~= "string" or componentName == "" then
+        return false
+    end
+    local activateByName = buildTableComponentActivationMap(parentTable, activeTable)
+    return activateByName[componentName] == true
+end
+
+--- Playfield world XZ → shared map u,v (via STAGE_BOARD), for CONTROL_BOARD marker placement.
+--- @param tableKey string
+--- @return number|nil u, number|nil v
+local function mapUvForTableCenter(tableKey)
+    local cfg = tableConfig(tableKey)
+    if cfg == nil or cfg.centerPoint == nil then
+        return nil, nil
+    end
+    return Board.normalizedUvFromWorld(Vector(cfg.centerPoint))
+end
+
+--- @param source Object|nil
+--- @return Vector|nil
+local function objectScaleVector(source)
+    if not Board.isGameObject(source) or source.getScale == nil then
+        return nil
+    end
+    local s = source.getScale()
+    if type(s) ~= "table" then
+        return nil
+    end
+    return Vector(s.x or 1, s.y or 1, s.z or 1)
+end
+
+--- Minimap marker scale:
+--- - X/Z: source playfield object scale ÷ live STAGE:CONTROL board axis ratios.
+--- - Y: source scale ÷ MINIMAP_SCALE_DIVISOR (fixed vertical lift control only).
+--- @param marker Object
+--- @param source Object|nil Playfield table, leaf, or seat chair being mimicked
+local function applyMinimapMarkerScale(marker, source)
+    if not Board.isGameObject(marker) or marker.setScale == nil then
+        return
+    end
+    local src = objectScaleVector(source)
+    if src == nil then
+        return
+    end
+    local ratioX, ratioZ, uniformRatio = Snaps.minimapScaleRatios()
+    local xDivisor = tonumber(ratioX) or tonumber(uniformRatio) or 40
+    local zDivisor = tonumber(ratioZ) or tonumber(uniformRatio) or 40
+    local yDivisor = tonumber(DATA.MINIMAP_SCALE_DIVISOR) or 40
+    if xDivisor < 0.01 then xDivisor = 0.01 end
+    if yDivisor < 0.01 then yDivisor = 0.01 end
+    if zDivisor < 0.01 then zDivisor = 0.01 end
+    marker.setScale({
+        x = src.x / xDivisor,
+        y = src.y / yDivisor,
+        z = src.z / zDivisor,
+    })
+end
+
+--- Minimap marker rotation = playfield source euler + CONTROL_BOARD euler (per axis), plus an
+--- optional per-table Y offset for models whose playfield euler is authored opposite the family
+--- (e.g. Table A is 180° off the Table B family — see `C.Tables[...].minimapRotationOffsetYDeg`).
+--- @param marker Object
+--- @param board Object
+--- @param source Object|nil
+--- @param rotationOffsetYDeg number|nil
+local function applyMinimapMarkerRotation(marker, board, source, rotationOffsetYDeg)
+    if not Board.isGameObject(marker) or marker.setRotation == nil or not Board.isGameObject(board) then
+        return
+    end
+    local boardRot = board.getRotation and board.getRotation() or nil
+    local bx = 0
+    local by = 0
+    local bz = 0
+    if boardRot ~= nil then
+        bx = boardRot.x or 0
+        by = boardRot.y or 0
+        bz = boardRot.z or 0
+    end
+    local sx = 0
+    local sy = 0
+    local sz = 0
+    if Board.isGameObject(source) and source.getRotation ~= nil then
+        local srcRot = source.getRotation()
+        if type(srcRot) == "table" then
+            sx = srcRot.x or 0
+            sy = srcRot.y or 0
+            sz = srcRot.z or 0
+        end
+    end
+    marker.setRotation(Vector(sx + bx, sy + by + (tonumber(rotationOffsetYDeg) or 0), sz + bz))
+end
+
+--- @param tableKey string
+--- @return Object|nil
+local function sourceObjectForTable(tableKey)
+    local cfg = tableConfig(tableKey)
+    if cfg == nil or type(cfg.guid) ~= "string" or cfg.guid == "" then
+        return nil
+    end
+    return Board.objectFromGuid(cfg.guid)
+end
+
+
+--- Minimal object Lua when the save has no bundled CONTROL_BOARD script (GUID bea29a).
+--- 3D/XmlUI buttons call `click_*` on the board object; Global reconcile installs buttons but cannot define handlers without this.
+local CONTROL_BOARD_FALLBACK_LUA_SCRIPT = [=[--- Toronto Rising — CONTROL_BOARD fallback (Global-injected when save LuaScript is empty).
+--- Persist a bundled script: `.tts/objects/CONTROL_BOARD.*.ttslua` → require("objects.npc_control_board") → Save & Play.
+
+local function resolveControlBoardClickColor(arg1, arg2)
+    if arg1 ~= nil and type(arg1.color) == "string" and arg1.color ~= "" then
+        return arg1.color
+    end
+    if type(arg2) == "string" and arg2 ~= "" then
+        return arg2
+    end
+    return nil
+end
+
+local function isStorytellerSteamClick(arg1, arg2)
+    if Global == nil or type(Global.call) ~= "function" then
+        return false
+    end
+    if arg1 ~= nil and type(arg1.steam_id) == "string" then
+        return Global.call("GlobalIsStorytellerSteamPlayer", { player = arg1 }) == true
+    end
+    local color = resolveControlBoardClickColor(arg1, arg2)
+    if color == nil then
+        return false
+    end
+    return Global.call("GlobalIsStorytellerSteamPlayer", { player_color = color }) == true
+end
+
+function onLoad()
+    if Global ~= nil and type(Global.call) == "function" then
+        Global.call("GlobalGameboardSyncSnapsToggleLabel", { boardGuid = self.getGUID() })
+    end
+end
+
+function click_apply(player, value, id)
+    if not isStorytellerSteamClick(player, value) then
+        return
+    end
+    Global.call("GlobalGameboardApply", {})
+end
+
+function click_clear(player, value, id)
+    local player_color = resolveControlBoardClickColor(player, value)
+    if not isStorytellerSteamClick(player, value) then
+        return
+    end
+    Global.call("GlobalGameboardClearClick", { player_color = player_color })
+end
+
+function click_snaps_toggle(player, value, id)
+    local player_color = resolveControlBoardClickColor(player, value)
+    if not isStorytellerSteamClick(player, value) then
+        return
+    end
+    local enabled = nil
+    if Global ~= nil and type(Global.call) == "function" then
+        enabled = Global.call("GlobalGameboardToggleControlBoardSnaps", { boardGuid = self.getGUID() })
+    end
+    if broadcastToColor ~= nil then
+        local msg = enabled and "Control-board snap points enabled." or "Control-board snap points disabled."
+        broadcastToColor(msg, player_color, { 0, 1, 1 })
+    end
+end
+
+function click_scope(player, value, id)
+    local player_color = resolveControlBoardClickColor(player, value)
+    if not isStorytellerSteamClick(player, value) then
+        return
+    end
+    local result = Global.call("GlobalGameboardToggleScope", {})
+    if broadcastToColor ~= nil then
+        local changed = type(result) == "table" and result.changed == true
+        local mode = type(result) == "table" and result.mode or "HERE"
+        local msg = changed and ("Control Board mode: " .. mode)
+            or "THERE requires a pending Scenes Panel selection."
+        broadcastToColor(msg, player_color, changed and { 0, 1, 1 } or { 1, 0.75, 0.2 })
+    end
+end
+
+function click_lock(player, value, id)
+    local player_color = resolveControlBoardClickColor(player, value)
+    if not isStorytellerSteamClick(player, value) then
+        return
+    end
+    local locked = nil
+    if Global ~= nil and type(Global.call) == "function" then
+        locked = Global.call("GlobalGameboardToggleNextSceneApplyLock", { boardGuid = self.getGUID() })
+    end
+    if broadcastToColor ~= nil then
+        local msg = locked == true and "Lock armed — current participants carry into the next scene Apply."
+            or locked == false and "Lock disarmed."
+            or "Lock toggle failed — host only."
+        broadcastToColor(msg, player_color, locked ~= nil and { 0, 1, 1 } or { 1, 0.35, 0.35 })
+    end
+end
+
+function click_load(player, value, id)
+    local player_color = resolveControlBoardClickColor(player, value)
+    if not isStorytellerSteamClick(player, value) then
+        return
+    end
+    local ok = Global.call("GlobalGameboardLoad", {})
+    if broadcastToColor ~= nil then
+        local msg = ok == true and "Load: state placements mirrored onto CONTROL_BOARD."
+            or "Load failed — host only or CONTROL_BOARD missing."
+        broadcastToColor(msg, player_color, ok == true and { 0, 1, 1 } or { 1, 0.35, 0.35 })
+    end
+end
+]=]
+
+--- @param script string|nil
+--- @return boolean
+local function controlBoardScriptDefinesClickApply(script)
+    return type(script) == "string"
+        and script:find("function click_apply", 1, true) ~= nil
+        and script:find("function click_scope", 1, true) ~= nil
+        and script:find("resolveControlBoardClickColor", 1, true) ~= nil
+end
+
+--- Inject `click_*` handlers when the workshop save has empty CONTROL_BOARD LuaScript.
+--- @param board Object|nil
+--- @return boolean true when handlers are present (already or after inject)
+function Reconcile.ensureControlBoardObjectCallbacks(board)
+    board = board or Board.getControlBoard()
+    if not Board.isGameObject(board) or board.getLuaScript == nil or board.setLuaScript == nil then
+        return false
+    end
+    local existing = board.getLuaScript() or ""
+    if controlBoardScriptDefinesClickApply(existing) then
+        return true
+    end
+    local ok = board.setLuaScript(CONTROL_BOARD_FALLBACK_LUA_SCRIPT)
+    if ok ~= true then
+        print(
+            "[Gameboard] ensureControlBoardObjectCallbacks: setLuaScript failed on "
+                .. tostring(board.getGUID())
+        )
+        return false
+    end
+    print(
+        "[Gameboard] installed CONTROL_BOARD click_* fallback on "
+            .. tostring(board.getGUID())
+            .. " — Save & Play with require(\"objects.npc_control_board\") to persist the full bundle"
+    )
+    return true
+end
+
+--- Install Apply/Clear/HERE-THERE/Lock/Load XmlUI when the save has no object script on CONTROL_BOARD yet.
+--- @param board Object|nil
+--- @param opts table|nil `{ force?: boolean }`
+function Reconcile.ensureControlBoardObjectUi(board, opts)
+    opts = type(opts) == "table" and opts or {}
+    board = board or Board.getControlBoard()
+    if not Board.isGameObject(board) then
+        return
+    end
+    local BoardUi = require("objects.npc_control_board_ui")
+    BoardUi.installObjectButtons(board, { forceLegacyButtonClear = opts.force == true })
+end
+
+--- @param board Object
+--- @param id string
+--- @param attrs table
+--- @param opts table|nil `{ force?: boolean }`
+local function setControlBoardToolbarLabelCached(board, id, attrs, opts)
+    opts = type(opts) == "table" and opts or {}
+    if not Board.isGameObject(board) or board.UI == nil or type(board.UI.setAttributes) ~= "function" then
+        return
+    end
+    local guid = board.getGUID ~= nil and tostring(board.getGUID()) or "unknown"
+    local fp = table.concat({
+        tostring(attrs.text or ""),
+        tostring(attrs.colors or ""),
+        tostring(attrs.textColor or ""),
+        tostring(attrs.interactable),
+    }, "|")
+    local key = guid .. ":" .. tostring(id)
+    if opts.force ~= true and controlBoardToolbarLabelFingerprint[key] == fp then
+        return
+    end
+    board.UI.setAttributes(id, attrs)
+    controlBoardToolbarLabelFingerprint[key] = fp
+end
+
+--- Refresh XmlUI `gb_snaps` toolbar label from `sessionScene.npcWorld.controlBoardSnapsEnabled`.
+--- @param board Object|nil
+--- @param opts table|nil `{ force?: boolean }`
+function Reconcile.syncControlBoardSnapsToggleLabel(board, opts)
+    board = board or Board.getControlBoard()
+    if not Board.isGameObject(board) then
+        return
+    end
+    local enabled = Snaps.areControlBoardSnapsEnabled()
+    local label = enabled and "Snaps On" or "Snaps Off"
+    local colors = enabled and "#336644|#448855|#55AA66|#333333" or "#555566|#666677|#777788|#333333"
+    setControlBoardToolbarLabelCached(board, "gb_snaps", { text = label, colors = colors, textColor = "#FFFFFF" }, opts)
+end
+
+--- Refresh all mode-dependent toolbar labels from the active board model.
+--- @param board Object|nil
+--- @param opts table|nil `{ force?: boolean }`
+function Reconcile.syncControlBoardModeToolbar(board, opts)
+    board = board or Board.getControlBoard()
+    if not Board.isGameObject(board) then
+        return
+    end
+    local Preview = require("core.control_board_preview")
+    local there = Preview.isThere()
+    local locked = stateModule().getStateVal("controlBoard", "lockNextSceneApply") == true
+    local label = locked and "Locked" or "Unlocked"
+    local colors = locked and "#663344|#884455|#AA5566|#333333"
+        or "#336644|#448855|#55AA66|#333333"
+    if there then
+        colors = "#444455|#444455|#444455|#333333"
+    end
+    setControlBoardToolbarLabelCached(board, "gb_lock", {
+        text = label,
+        colors = colors,
+        textColor = there and "#999999" or "#FFFFFF",
+        interactable = there and "false" or "true",
+    }, opts)
+    setControlBoardToolbarLabelCached(board, "gb_scope", {
+        text = there and "THERE" or "HERE",
+        colors = there
+            and "#334E7A|#41659C|#527DBD|#333333"
+            or "#336644|#448855|#55AA66|#333333",
+        textColor = "#FFFFFF",
+        interactable = "true",
+    }, opts)
+    setControlBoardToolbarLabelCached(board, "gb_apply", {
+        text = there and "Reset" or "Apply",
+        colors = there
+            and "#334E7A|#41659C|#527DBD|#333333"
+            or "#336644|#448855|#55AA66|#333333",
+        textColor = "#FFFFFF",
+        interactable = "true",
+    }, opts)
+end
+
+--- Static minimap markers (not npc_control_token): locked so physics does not shove them apart.
+--- @param marker Object|nil
+local function lockControlBoardMarker(marker)
+    if not Board.isGameObject(marker) or marker.setLock == nil then
+        return
+    end
+    marker.setLock(true)
+end
+
+--- Park empty / inactive NPC seat markers off the play surface (locked).
+--- @param marker Object
+--- @param npcSeatKey string|nil Used to spread stash X slightly per slot
+local function stashNpcSeatMarker(marker, npcSeatKey)
+    if not Board.isGameObject(marker) or marker.setPosition == nil then
+        return
+    end
+    local stashY = tonumber(DATA.MARKER_STASH_WORLD_Y) or -200
+    local pos = marker.getPosition()
+    local offsetX = 0
+    if type(npcSeatKey) == "string" then
+        for i = 1, #(C.NPCSeats or {}) do
+            if C.NPCSeats[i] == npcSeatKey then
+                offsetX = (i - 1) * 0.75
+                break
+            end
+        end
+    end
+    marker.setPosition(Vector({ x = pos.x + offsetX, y = stashY, z = pos.z }))
+    lockControlBoardMarker(marker)
+end
+
+--- Park inactive table-component markers off the control surface (locked).
+--- @param marker Object
+--- @param componentName string|nil Used to spread stash X slightly per component
+local function stashTableComponentMarker(marker, componentName)
+    if not Board.isGameObject(marker) or marker.setPosition == nil then
+        return
+    end
+    local stashY = tonumber(DATA.MARKER_STASH_WORLD_Y) or -200
+    local pos = marker.getPosition()
+    local offsetX = 0
+    if type(componentName) == "string" then
+        offsetX = (string.byte(componentName, 1) or 0) * 0.01
+    end
+    marker.setPosition(Vector({ x = pos.x + offsetX, y = stashY, z = pos.z }))
+    lockControlBoardMarker(marker)
+end
+
+--- Park inactive table minimap markers off the control surface (locked).
+--- @param marker Object
+--- @param tableKey string|nil Used to spread stash X slightly per table
+local function stashTableMarker(marker, tableKey)
+    if not Board.isGameObject(marker) or marker.setPosition == nil then
+        return
+    end
+    local stashY = tonumber(DATA.MARKER_STASH_WORLD_Y) or -200
+    local pos = marker.getPosition()
+    local offsetX = 0
+    if type(tableKey) == "string" then
+        offsetX = (string.byte(tableKey, 1) or 0) * 0.02
+    end
+    marker.setPosition(Vector({ x = pos.x + offsetX, y = stashY, z = pos.z }))
+    lockControlBoardMarker(marker)
+end
+
+--- @param marker Object
+--- @param board Object
+--- @param u number|nil
+--- @param v number|nil
+--- @param source Object|nil Playfield object this minimap piece mimics (scale + rotation)
+--- @param options table|nil { extraLocalY?: number, rotationOffsetYDeg?: number }
+local function placeControlBoardMarker(marker, board, u, v, source, options)
+    local opts = options or {}
+    if u ~= nil and v ~= nil then
+        marker.setPosition(Board.worldOnControlBoard(board, u, v, {
+            extraLocalY = opts.extraLocalY,
+        }))
+    end
+    if Board.isGameObject(source) then
+        applyMinimapMarkerScale(marker, source)
+    end
+    applyMinimapMarkerRotation(marker, board, source, opts.rotationOffsetYDeg)
+    lockControlBoardMarker(marker)
+end
+
+--- Active table-leaf markers use the parent table's CONTROL_BOARD transform (models are authored table-relative).
+--- @param marker Object
+--- @param board Object
+--- @param parentTable string
+--- @return boolean placed
+local function placeActiveTableComponentMarker(marker, board, parentTable)
+    local u, v = mapUvForTableCenter(parentTable)
+    if u == nil or v == nil then
+        return false
+    end
+    local cfg = tableConfig(parentTable)
+    local tableSource = sourceObjectForTable(parentTable)
+    placeControlBoardMarker(
+        marker,
+        board,
+        u,
+        v,
+        tableSource,
+        {
+            extraLocalY = tonumber(DATA.MINIMAP_TABLE_EXTRA_LOCAL_Y) or 0.06,
+            rotationOffsetYDeg = cfg and tonumber(cfg.minimapRotationOffsetYDeg) or 0,
+        }
+    )
+    return true
+end
+
+--- Build diagnostics for a control-board table-component marker.
+--- @param marker Object
+--- @param activeTable string|nil
+--- @return table row
+local function describeTableComponentMarker(marker, activeTable)
+    local row = {
+        markerGuid = Board.isGameObject(marker) and marker.getGUID and marker.getGUID() or nil,
+        markerName = Board.isGameObject(marker) and marker.getName and marker.getName() or nil,
+        activeTable = activeTable,
+        show = false,
+        reasons = {},
+    }
+    local compKey = Tokens.readMarkerKey(marker, DATA.MARKER_COMPONENT_PREFIX)
+    row.compKey = compKey
+    local parentTable, componentName = Tokens.parseComponentMarkerKey(compKey)
+    row.parentTable = parentTable
+    row.componentName = componentName
+    if type(parentTable) ~= "string" or parentTable == "" then
+        row.reasons[#row.reasons + 1] = "missing_parent_table"
+    end
+    if type(componentName) ~= "string" or componentName == "" then
+        row.reasons[#row.reasons + 1] = "missing_component_name"
+    end
+    local cfg = tableConfig(parentTable)
+    row.tableExists = type(cfg) == "table"
+    if row.tableExists ~= true then
+        row.reasons[#row.reasons + 1] = "table_cfg_missing"
+    end
+    local comp = nil
+    if row.tableExists and type(cfg.components) == "table" then
+        comp = cfg.components[componentName]
+    end
+    row.componentExists = type(comp) == "table"
+    if row.componentExists ~= true then
+        row.reasons[#row.reasons + 1] = "component_cfg_missing"
+    end
+    local usedBy = row.componentExists and comp.usedBy or nil
+    row.usedBy = usedBy
+    local usedByOccupied = nil
+    if type(usedBy) == "string" and usedBy ~= "" then
+        usedByOccupied = npcSeatOccupiedOnTable(usedBy)
+    end
+    row.usedByOccupied = usedByOccupied
+    if usedByOccupied == false then
+        row.reasons[#row.reasons + 1] = "used_by_seat_empty"
+    end
+    local show = tableComponentActiveForOccupiedSlots(parentTable, componentName, activeTable)
+    row.show = show
+    if parentTable ~= activeTable then
+        row.reasons[#row.reasons + 1] = "inactive_table"
+    end
+    local tableU, tableV = nil, nil
+    if type(parentTable) == "string" then
+        tableU, tableV = mapUvForTableCenter(parentTable)
+    end
+    row.tableU = tableU
+    row.tableV = tableV
+    row.targetU = tableU
+    row.targetV = tableV
+    row.placementMode = "table_transform"
+    if show and (tableU == nil or tableV == nil) then
+        row.reasons[#row.reasons + 1] = "table_uv_mapping_failed"
+    end
+    local tableSource = sourceObjectForTable(parentTable)
+    row.tableSourceExists = Board.isGameObject(tableSource)
+    row.tableSourceGuid = row.tableSourceExists and tableSource.getGUID and tableSource.getGUID() or nil
+    if show and row.tableSourceExists ~= true then
+        row.reasons[#row.reasons + 1] = "table_source_missing"
+    end
+    if Board.isGameObject(marker) and marker.getPosition ~= nil then
+        row.markerPosition = marker.getPosition()
+    end
+    return row
+end
+
+--- Print one-line diagnostics for a component marker.
+--- @param row table
+local function printTableComponentMarkerRow(row)
+    local reasons = table.concat(row.reasons or {}, ",")
+    if reasons == "" then
+        reasons = "none"
+    end
+    print(
+        "[Gameboard] component marker "
+            .. tostring(row.componentName or row.compKey or "<unknown>")
+            .. " guid=" .. tostring(row.markerGuid or "")
+            .. " table=" .. tostring(row.parentTable or "")
+            .. " activeTable=" .. tostring(row.activeTable or "")
+            .. " show=" .. tostring(row.show == true)
+            .. " usedBy=" .. tostring(row.usedBy or "")
+            .. " occupied=" .. tostring(row.usedByOccupied)
+            .. " uv=(" .. tostring(row.targetU) .. "," .. tostring(row.targetV) .. ")"
+            .. " tableSource=" .. tostring(row.tableSourceGuid or "")
+            .. " mode=" .. tostring(row.placementMode or "")
+            .. " reasons=" .. reasons
+    )
+end
+
+
+--- @return table<string, Object>
+local function buildTokenByCharacterKey()
+    local byKey = {}
+    local tagged = getObjectsWithTag(TAG_TOKEN) or {}
+    for _, tok in ipairs(tagged) do
+        if Board.isGameObject(tok) then
+            local ck = Tokens.resolveTokenCharacterKey(tok)
+            if type(ck) == "string" and ck ~= "" and byKey[ck] == nil then
+                byKey[ck] = tok
+            end
+        end
+    end
+    return byKey
+end
+
+--- Move one control token to exact placement u,v on CONTROL_BOARD (from palette or elsewhere).
+--- @param token Object
+--- @param board Object
+--- @param row table `{ u, v, npcLightMode? }`
+local function mirrorControlTokenToPlacementRow(token, board, row)
+    if not Board.isGameObject(token) or not Board.isGameObject(board) or type(row) ~= "table" then
+        return
+    end
+    local u = tonumber(row.u)
+    local v = tonumber(row.v)
+    if u == nil or v == nil then
+        return
+    end
+    token.setPosition(Board.worldOnControlBoard(board, u, v))
+    local boardYaw = Board.objectYawDeg(board)
+    local relYaw = Snaps.placementBoardRelYawDeg(u, v)
+    local faceUp = row.npcLightMode ~= "OFF"
+    local fuzziness = Board.snapMatchFuzzinessForBoard(board)
+    local entry = Snaps.resolveTokenSnapCatalogEntry(board, token, fuzziness, nil)
+    if entry ~= nil and entry.snapKind == Snaps.SNAP_KIND_SEAT then
+        Tokens.applySeatRowNpcControlTokenScale(token)
+    else
+        Tokens.applyNpcControlTokenScaleVec(token, Tokens.controlTokenScaleForCatalogEntry(entry))
+    end
+    token.setRotation(Tokens.rotationForNpcControlToken(boardYaw, relYaw, faceUp))
+    Tokens.setHiddenFromPlayerColors(token)
+end
+
+--- Mirror tagged control tokens from an explicit live/draft participant model.
+--- @param board Object
+--- @param model table|nil `{ placements, seatSlots }`
+function Reconcile.mirrorControlBoardTokensFromModel(board, model)
+    model = type(model) == "table" and model or {}
+    local placements = type(model.placements) == "table" and model.placements or {}
+    local seatSlots = type(model.seatSlots) == "table" and model.seatSlots or {}
+    local byChar = buildTokenByCharacterKey()
+    local seatCatalog = Snaps.seatRowCatalogByNpcSeatKey(Snaps.buildControlBoardSnapCatalog(board, nil))
+    --- Character keys that should remain on the minimap (seat row or stage); all other NPC tokens
+    --- currently on the board are orphaned (e.g. scene change reduced occupied NPC seats) and are parked.
+    local keepOnBoard = {}
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local row = seatSlots[seatKey]
+        local ck = type(row) == "table" and row.characterKey or nil
+        if type(ck) == "string" and ck ~= "" and row.slotEmpty ~= true then
+                keepOnBoard[ck] = true
+                local entry = seatCatalog[seatKey]
+                local token = byChar[ck]
+                --- Place the token onto the seat row even when it is currently parked on the
+                --- palette: scene transitions and Load make the board reflect state, so an
+                --- occupied seat must show its token regardless of where it sits now.
+                if entry ~= nil and Board.isGameObject(token) then
+                    Tokens.mirrorSeatRowControlToken(token, board, entry, row.isPresent == true)
+                end
+        end
+    end
+    for characterKey, row in pairs(placements) do
+        if type(row) == "table" and type(row.u) == "number" and type(row.v) == "number" then
+            keepOnBoard[characterKey] = true
+            local token = byChar[characterKey]
+            --- Pull staged tokens onto the board from the palette too (see seat-row note above).
+            if Board.isGameObject(token) then
+                mirrorControlTokenToPlacementRow(token, board, row)
+            end
+        end
+    end
+    --- Park NPC tokens still on the minimap that no longer map to an occupied seat or a stage placement.
+    local orphaned = {}
+    for characterKey, token in pairs(byChar) do
+        if keepOnBoard[characterKey] ~= true
+            and Board.isGameObject(token)
+            and Board.isTokenOnMinimapTokenSurface(board, token)
+        then
+            orphaned[#orphaned + 1] = characterKey
+        end
+    end
+    if #orphaned > 0 then
+        for i = 1, #orphaned do
+            local ck = orphaned[i]
+            if not Snaps.parkNpcTokenOnPalette(byChar[ck], ck) then
+                print("[Gameboard] mirror: could not park orphaned token " .. tostring(ck))
+            end
+        end
+        print("[Gameboard] mirror: parked " .. tostring(#orphaned) .. " orphaned NPC token(s) to palette")
+    end
+    local pcCatalog = Snaps.getSeatRowCatalogMaps(board).pc
+    if next(pcCatalog) ~= nil then
+        for _, obj in ipairs(getObjectsWithTag(TAG_PC_TOKEN) or {}) do
+            if Board.isGameObject(obj) then
+                local color = Tokens.resolvePcTokenSeatColor(obj)
+                local entry = color ~= nil and pcCatalog[color] or nil
+                if entry ~= nil then
+                    local row = type(seatSlots[color]) == "table" and seatSlots[color] or {}
+                    Tokens.mirrorSeatRowControlToken(obj, board, entry, row.isPresent == true)
+                end
+            end
+        end
+    end
+end
+
+--- Apply library-driven draft seat presence by flipping existing seat tokens in place.
+--- Occupants and token positions are intentionally untouched.
+function Reconcile.syncPreviewSeatTokenFaces()
+    local Preview = require("core.control_board_preview")
+    local draft = Preview.getDraft()
+    local board = Board.getControlBoard()
+    if draft == nil or not Board.isGameObject(board) then
+        return false
+    end
+    local fuzziness = Board.snapMatchFuzzinessForBoard(board)
+    local byChar = buildTokenByCharacterKey()
+    local changed = false
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local row = type(draft.seatSlots[seatKey]) == "table" and draft.seatSlots[seatKey] or nil
+        local token = type(row) == "table" and byChar[row.characterKey] or nil
+        if Board.isGameObject(token) then
+            local entry = Snaps.resolveTokenSnapCatalogEntry(board, token, fuzziness, nil)
+            if type(entry) == "table"
+                and entry.snapKind == Snaps.SNAP_KIND_SEAT
+                and entry.seatKey == seatKey then
+                token.setRotation(Tokens.rotationForNpcControlToken(
+                    Board.objectYawDeg(board),
+                    entry.yawDeg,
+                    row.isPresent == true
+                ))
+                changed = true
+            end
+        end
+    end
+    for _, token in ipairs(getObjectsWithTag(TAG_PC_TOKEN) or {}) do
+        if Board.isGameObject(token) then
+            local color = Tokens.resolvePcTokenSeatColor(token)
+            local row = type(draft.seatSlots[color]) == "table" and draft.seatSlots[color] or nil
+            local entry = Snaps.resolveTokenSnapCatalogEntry(board, token, fuzziness, nil)
+            if type(row) == "table"
+                and type(entry) == "table"
+                and entry.snapKind == Snaps.SNAP_KIND_SEAT
+                and entry.seatKey == color then
+                token.setRotation(Tokens.rotationForNpcControlToken(
+                    Board.objectYawDeg(board),
+                    entry.yawDeg,
+                    row.isPresent == true
+                ))
+                changed = true
+            end
+        end
+    end
+    return changed
+end
+
+--- Position static markers and mirror the active participant model.
+--- Normal Sync calls do not write board objects while THERE; dedicated preview actions pass `allowPreview`.
+--- @param opts table|nil `{ force?: boolean, forceTokenMirror?: boolean, allowPreview?: boolean }`
+function Reconcile.reconcileControlBoardFromState(opts)
+    opts = type(opts) == "table" and opts or {}
+    local S = stateModule()
+    if type(S) ~= "table" or type(S.getStateVal) ~= "function" then
+        print("[Gameboard] reconcileControlBoardFromState: core.state unavailable")
+        return
+    end
+    local board = Board.getControlBoard()
+    if not Board.isGameObject(board) then
+        return
+    end
+    local model = Reconcile.getActiveBoardModel()
+    local activeTable = S.getStateVal("seatLayout", "currentTableKey")
+    local placements = type(model.placements) == "table" and model.placements or {}
+    local seatSlots = type(model.seatSlots) == "table" and model.seatSlots or {}
+    if model.mode == "THERE" and opts.allowPreview ~= true then
+        Reconcile.syncControlBoardSnapsToggleLabel(board)
+        Reconcile.syncControlBoardModeToolbar(board)
+        return
+    end
+    local mirrorFp = Reconcile.controlBoardMirrorFingerprint(activeTable, model.mode, placements, seatSlots)
+    if opts.force ~= true and mirrorFp == Reconcile.lastControlBoardMirrorFingerprint then
+        Reconcile.syncControlBoardSnapsToggleLabel(board)
+        Reconcile.syncControlBoardModeToolbar(board)
+        Reconcile.rebuildAnchorDropEligibilityCache(board)
+        return
+    end
+    Snaps.installPolarSnaps(board, { force = opts.force == true })
+    Reconcile.ensureControlBoardObjectCallbacks(board)
+    Reconcile.ensureControlBoardObjectUi(board, { force = opts.force == true })
+    Reconcile.syncControlBoardSnapsToggleLabel(board, { force = opts.force == true })
+    Reconcile.syncControlBoardModeToolbar(board, { force = opts.force == true })
+    Palette.installSnaps(Board.getControlBoardPalette(), { force = opts.force == true })
+
+    Reconcile.lastControlBoardMirrorFingerprint = mirrorFp
+    local allMarkers = getObjectsWithTag(TAG_TABLE) or {}
+    for _, tag in ipairs({ TAG_PC, TAG_NPC_SEAT, TAG_COMPONENT }) do
+        local extra = getObjectsWithTag(tag) or {}
+        for i = 1, #extra do
+            allMarkers[#allMarkers + 1] = extra[i]
+        end
+    end
+
+    for _, obj in ipairs(allMarkers) do
+        if Board.isGameObject(obj) then
+            lockControlBoardMarker(obj)
+            local tableKey = Tokens.readMarkerKey(obj, DATA.MARKER_TABLE_PREFIX)
+            local compKey = Tokens.readMarkerKey(obj, DATA.MARKER_COMPONENT_PREFIX)
+            local pcSeat = Tokens.readMarkerKey(obj, DATA.MARKER_PC_SEAT_PREFIX)
+            local npcSeat = Tokens.readMarkerKey(obj, DATA.MARKER_NPC_SEAT_PREFIX)
+
+            if tableKey ~= nil then
+                local show = tableKey == activeTable
+                Tokens.setMarkerVisible(obj, show)
+                if show then
+                    local u, v = mapUvForTableCenter(tableKey)
+                    local cfg = tableConfig(tableKey)
+                    placeControlBoardMarker(
+                        obj,
+                        board,
+                        u,
+                        v,
+                        sourceObjectForTable(tableKey),
+                        {
+                            extraLocalY = tonumber(DATA.MINIMAP_TABLE_EXTRA_LOCAL_Y) or 0.06,
+                            rotationOffsetYDeg = cfg and tonumber(cfg.minimapRotationOffsetYDeg) or 0,
+                        }
+                    )
+                else
+                    stashTableMarker(obj, tableKey)
+                end
+            elseif compKey ~= nil then
+                local markerRow = describeTableComponentMarker(obj, activeTable)
+                local parentTable = markerRow.parentTable
+                local componentName = markerRow.componentName
+                local show = markerRow.show == true
+                Tokens.setMarkerVisible(obj, show)
+                if opts.debugComponentMarkers == true then
+                    printTableComponentMarkerRow(markerRow)
+                end
+                if show and parentTable ~= nil then
+                    if not placeActiveTableComponentMarker(obj, board, parentTable) then
+                        print(
+                            "[Gameboard] component marker "
+                                .. tostring(componentName)
+                                .. " active on "
+                                .. tostring(parentTable)
+                                .. " but table minimap placement failed"
+                        )
+                        stashTableComponentMarker(obj, componentName)
+                    end
+                else
+                    stashTableComponentMarker(obj, componentName)
+                end
+            elseif pcSeat ~= nil then
+                Tokens.setMarkerVisible(obj, false)
+                stashNpcSeatMarker(obj, pcSeat)
+            elseif npcSeat ~= nil then
+                Tokens.setMarkerVisible(obj, false)
+                stashNpcSeatMarker(obj, npcSeat)
+            end
+        end
+    end
+
+    Reconcile.mirrorControlBoardTokensFromModel(board, model)
+
+    Tokens.applyControlBoardComponentPlayerInvisibility()
+    Reconcile.rebuildAnchorDropEligibilityCache(board)
+end
+
+--- Restore a valid persisted THERE draft after Save & Play.
+function Reconcile.recoverPreviewDraftOnLoad()
+    local Preview = require("core.control_board_preview")
+    if not Preview.isThere() then
+        return false
+    end
+    Reconcile.lastControlBoardMirrorFingerprint = nil
+    Reconcile.reconcileControlBoardFromState({
+        force = true,
+        forceTokenMirror = true,
+        allowPreview = true,
+    })
+    return true
+end
+
+Reconcile.scanSeatRowTokensBySeatKey = scanSeatRowTokensBySeatKey
+Reconcile.scanSeatRowPcTokensByColor = scanSeatRowPcTokensByColor
+Reconcile.normalizePlacementRow = normalizePlacementRow
+Reconcile.placementRowsEqual = placementRowsEqual
+Reconcile.placementsMapsEqual = placementsMapsEqual
+Reconcile.placementsMapFromRows = placementsMapFromRows
+Reconcile.buildTokenByCharacterKey = buildTokenByCharacterKey
+Reconcile.mirrorControlTokenToPlacementRow = mirrorControlTokenToPlacementRow
+
+return Reconcile

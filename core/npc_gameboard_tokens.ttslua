@@ -1,0 +1,481 @@
+--[[
+    NPC gameboard — token identity / flip / scale / hide (TOR-423).
+]]
+
+local Tokens = {}
+
+local U = require("lib.util")
+local C = require("lib.constants")
+local DATA = require("lib.npc_gameboard_data")
+local NPCS_DATA = require("lib.npcs_data")
+local Board = require("core.npc_gameboard_board")
+
+local TAG_TOKEN = DATA.TAG_NPC_CONTROL_TOKEN
+local TAG_PC_TOKEN = DATA.TAG_PC_CONTROL_TOKEN or "pc_control_token"
+local TAG_PC = DATA.TAG_GAMEBOARD_PC_SEAT
+local TAG_NPC_SEAT = DATA.TAG_GAMEBOARD_NPC_SEAT
+local TAG_TABLE = DATA.TAG_GAMEBOARD_TABLE
+local TAG_COMPONENT = DATA.TAG_GAMEBOARD_TABLE_COMPONENT
+
+--- First `require("core.state")` during luabundle registration can return nil (circular load).
+--- @type table|nil
+local stateModuleCache = nil
+
+--- @return table|nil
+local function stateModule()
+    if type(stateModuleCache) == "table" and type(stateModuleCache.getStateVal) == "function" then
+        return stateModuleCache
+    end
+    local loaded = require("core.state")
+    if type(loaded) == "table" then
+        stateModuleCache = loaded
+    end
+    return loaded
+end
+
+local function readMarkerKey(obj, prefix)
+    if not Board.isGameObject(obj) then
+        return nil
+    end
+    local notes = ""
+    if obj.getGMNotes ~= nil then
+        notes = tostring(obj.getGMNotes() or "")
+    end
+    if notes == "" and obj.getDescription ~= nil then
+        notes = tostring(obj.getDescription() or "")
+    end
+    local key = string.match(notes, "^" .. prefix .. "([^,\r\n]+)")
+    if type(key) == "string" then
+        key = string.match(key, "^%s*(.-)%s*$")
+    end
+    if type(key) == "string" and key ~= "" then
+        return key
+    end
+    return nil
+end
+
+--- @param compKey string|nil Raw value after `gameboardComponent:` prefix
+--- @return string|nil parentTable, string|nil componentName
+local function parseComponentMarkerKey(compKey)
+    if type(compKey) ~= "string" or compKey == "" then
+        return nil, nil
+    end
+    compKey = string.match(compKey, "^%s*(.-)%s*$") or compKey
+    local pipeAt = compKey:find("|", 1, true)
+    if pipeAt ~= nil then
+        local parentTable = string.match(compKey:sub(1, pipeAt - 1), "^%s*(.-)%s*$")
+        local componentName = string.match(compKey:sub(pipeAt + 1), "^%s*(.-)%s*$")
+        if type(parentTable) == "string" and parentTable ~= ""
+            and type(componentName) == "string" and componentName ~= "" then
+            return parentTable, componentName
+        end
+    end
+    for tk, cfg in pairs(C.Tables or {}) do
+        if type(cfg) == "table" and type(cfg.components) == "table" and cfg.components[compKey] ~= nil then
+            return tk, compKey
+        end
+    end
+    return nil, compKey
+end
+
+--- @param obj Object
+--- @return string|nil characterKey
+local function resolveTokenCharacterKey(obj)
+    if not Board.isGameObject(obj) then
+        return nil
+    end
+    local raw = readMarkerKey(obj, DATA.TOKEN_GM_PREFIX)
+    if raw == nil and obj.getName ~= nil then
+        local name = tostring(obj.getName() or "")
+        if name ~= "" then
+            raw = name
+        end
+    end
+    if type(raw) ~= "string" or raw == "" then
+        return nil
+    end
+    -- Canonicalize display/fullName/"Bee" → characters key `bee` (TOR-415).
+    local canonical = NPCS_DATA.resolveCharacterKeyByDisplayName(raw)
+    if type(canonical) == "string" and canonical ~= "" then
+        return canonical
+    end
+    return raw
+end
+
+--- @param obj Object|nil
+--- @return boolean
+local function isNpcControlToken(obj)
+    return Board.isGameObject(obj) and obj.hasTag ~= nil and obj.hasTag(TAG_TOKEN) == true
+end
+
+--- @param obj Object|nil
+--- @return boolean
+local function isPcControlToken(obj)
+    return Board.isGameObject(obj) and obj.hasTag ~= nil and obj.hasTag(TAG_PC_TOKEN) == true
+end
+
+--- Player color a `pc_control_token` is bound to via GM Notes `pcToken:<Color>` (case-insensitive).
+--- @param obj Object|nil
+--- @return string|nil color canonical `C.PlayerColors` value
+local function resolvePcTokenSeatColor(obj)
+    if not Board.isGameObject(obj) then
+        return nil
+    end
+    local raw = readMarkerKey(obj, DATA.PC_TOKEN_GM_PREFIX)
+    if type(raw) ~= "string" or raw == "" then
+        return nil
+    end
+    local lower = string.lower(raw)
+    for _, color in ipairs(C.PlayerColors or {}) do
+        if type(color) == "string" and string.lower(color) == lower then
+            return color
+        end
+    end
+    return nil
+end
+
+--- Live control token for a character key (CONTROL_BOARD or palette).
+--- @param characterKey string
+--- @return Object|nil
+local function controlTokenForCharacterKey(characterKey)
+    if type(characterKey) ~= "string" or characterKey == "" then
+        return nil
+    end
+    for _, obj in ipairs(getObjectsWithTag(TAG_TOKEN) or {}) do
+        if Board.isGameObject(obj) and resolveTokenCharacterKey(obj) == characterKey then
+            return obj
+        end
+    end
+    return nil
+end
+
+--- Unassign homeland seats when the character's token is not on the CONTROL_BOARD minimap (palette / off-board = out of play).
+--- @param board Object|nil
+--- @return boolean changed
+local function releaseHomelandSeatsForOffBoardTokens(board)
+    board = board or Board.getControlBoard()
+    if not Board.isGameObject(board) then
+        return false
+    end
+    local NPCS = require("core.npcs")
+    local occupied = stateModule().getStateVal("seatLayout", "occupiedNPCSlots")
+    if type(occupied) ~= "table" then
+        return false
+    end
+    local changed = false
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local ck = occupied[seatKey]
+        if type(ck) == "string" and ck ~= "" then
+            local token = controlTokenForCharacterKey(ck)
+            local onBoard = Board.isGameObject(token) and Board.isTokenOnControlBoardSurface(board, token)
+            if not onBoard then
+                local ok, err = NPCS.unseatNpc(ck)
+                if not ok then
+                    print(
+                        "[Gameboard] release homeland seat (token off board): "
+                            .. tostring(ck)
+                            .. ": "
+                            .. tostring(err)
+                    )
+                else
+                    changed = true
+                end
+            end
+        end
+    end
+    if changed then
+        print("[Gameboard] homeland seat(s) released — token not on CONTROL_BOARD")
+    end
+    return changed
+end
+
+--- @param deg number|nil
+--- @return boolean true when axis reads as flipped (~180°)
+local function eulerAxisFlippedDeg(deg)
+    local norm = ((tonumber(deg) or 0) % 360 + 360) % 360
+    return norm > 90 and norm < 270
+end
+
+--- Custom_Tile (and similar) have no `is_face_up` field — reading it throws.
+--- Prefer transform up-vector sign; flip is Z=180 (TTS Flip key). Legacy tokens may have X=180.
+--- @param token Object
+--- @return boolean
+local function tokenRotationIsFaceUp(token)
+    if not U.isGameObject(token) then
+        return true
+    end
+    if type(token.getTransformUp) == "function" then
+        local up = token.getTransformUp()
+        if up ~= nil then
+            local uy = up.y or up[2]
+            if type(uy) == "number" then
+                return uy >= 0
+            end
+        end
+    end
+    if type(token.getRotation) ~= "function" then
+        return true
+    end
+    local rot = token.getRotation()
+    if rot == nil then
+        return true
+    end
+    if eulerAxisFlippedDeg(rot.z) or eulerAxisFlippedDeg(rot.x) then
+        return false
+    end
+    return true
+end
+
+--- @param token Object
+--- @return string OFF|STANDARD
+local function tokenLightModeFromFlip(token)
+    if tokenRotationIsFaceUp(token) then
+        return "STANDARD"
+    end
+    return "OFF"
+end
+
+--- Board-plane yaw on Y; flip (face up/down) on Z only — independent axes for control tokens.
+--- @param boardYaw number
+--- @param yawDeg number
+--- @param faceUp boolean
+--- @return Vector
+local function rotationForNpcControlToken(boardYaw, yawDeg, faceUp)
+    local rz = faceUp and 0 or 180
+    return Vector(0, boardYaw + (yawDeg or 0), rz)
+end
+
+local TOKEN_SCALE_MATCH_EPS = 0.02
+
+--- @param token Object
+--- @param sx number
+--- @param sy number
+--- @param sz number
+--- @return boolean
+local function tokenScaleIsNear(token, sx, sy, sz)
+    if not Board.isGameObject(token) or token.getScale == nil then
+        return false
+    end
+    local s = token.getScale()
+    if s == nil then
+        return false
+    end
+    return math.abs((s.x or 0) - sx) <= TOKEN_SCALE_MATCH_EPS
+        and math.abs((s.y or 0) - sy) <= TOKEN_SCALE_MATCH_EPS
+        and math.abs((s.z or 0) - sz) <= TOKEN_SCALE_MATCH_EPS
+end
+
+--- @param token Object
+--- @param sx number
+--- @param sy number
+--- @param sz number
+local function setNpcControlTokenScale(token, sx, sy, sz)
+    if Board.isGameObject(token) and token.setScale ~= nil then
+        token.setScale({ x = sx, y = sy, z = sz })
+    end
+end
+
+--- Default control-token scale: `CONTROL_BOARD_SNAP.defaultTokenScale` or polar constant (TOR-410).
+--- @return table `{ x, y, z }`
+local function resolveDefaultControlTokenScale()
+    local snap = DATA.CONTROL_BOARD_SNAP
+    local d = type(snap) == "table" and snap.defaultTokenScale or nil
+    if type(d) == "table" or type(d) == "userdata" then
+        return {
+            x = tonumber(d.x) or 0.2,
+            y = tonumber(d.y) or 1,
+            z = tonumber(d.z) or 0.2,
+        }
+    end
+    local p = DATA.NPC_CONTROL_TOKEN_SCALE_POLAR
+    return { x = p.x, y = p.y, z = p.z }
+end
+
+--- Optional per-ring tokenScale from snap group (falls through to nil → default at apply time).
+--- @param group table|nil
+--- @return table|nil `{ x, y, z }`
+local function tokenScaleFromSnapGroup(group)
+    if type(group) ~= "table" then
+        return nil
+    end
+    local ts = group.tokenScale
+    if type(ts) ~= "table" and type(ts) ~= "userdata" then
+        return nil
+    end
+    return {
+        x = tonumber(ts.x) or 0.2,
+        y = tonumber(ts.y) or 1,
+        z = tonumber(ts.z) or 0.2,
+    }
+end
+
+--- Revert enlarged seat-row / ring token scale when leaving snaps (TOR-199 / TOR-410).
+--- @param token Object
+--- @return boolean true when scale was changed
+local function ensureDefaultNpcControlTokenScale(token)
+    local d = resolveDefaultControlTokenScale()
+    if not tokenScaleIsNear(token, d.x, d.y, d.z) then
+        setNpcControlTokenScale(token, d.x, d.y, d.z)
+        return true
+    end
+    return false
+end
+
+--- @param token Object
+--- @param scale table|nil `{ x, y, z }`
+local function applyNpcControlTokenScaleVec(token, scale)
+    if type(scale) ~= "table" then
+        ensureDefaultNpcControlTokenScale(token)
+        return
+    end
+    local sx = tonumber(scale.x) or 0.2
+    local sy = tonumber(scale.y) or 1
+    local sz = tonumber(scale.z) or 0.2
+    if not tokenScaleIsNear(token, sx, sy, sz) then
+        setNpcControlTokenScale(token, sx, sy, sz)
+    end
+end
+
+--- @param token Object
+local function applySeatRowNpcControlTokenScale(token)
+    local s = DATA.NPC_CONTROL_TOKEN_SCALE_SEAT_ROW
+    applyNpcControlTokenScaleVec(token, s)
+end
+
+--- Scale for a polar/stage catalog entry (ring `tokenScale` or board default) (TOR-410).
+--- @param entry table|nil
+--- @return table `{ x, y, z }`
+local function controlTokenScaleForCatalogEntry(entry)
+    if type(entry) == "table" and (type(entry.tokenScale) == "table" or type(entry.tokenScale) == "userdata") then
+        return {
+            x = tonumber(entry.tokenScale.x) or 0.2,
+            y = tonumber(entry.tokenScale.y) or 1,
+            z = tonumber(entry.tokenScale.z) or 0.2,
+        }
+    end
+    return resolveDefaultControlTokenScale()
+end
+
+--- PC seat colors only — Storyteller (Black) and spectators (White/Grey) still see control-board pieces.
+--- @return string[]
+local function playerColorsHiddenFromControlBoard()
+    return C.PlayerColors or {}
+end
+
+--- Tokens and markers on CONTROL_BOARD are never visible to seated players.
+--- @param obj Object|nil
+local function setHiddenFromPlayerColors(obj)
+    if not Board.isGameObject(obj) or obj.setInvisibleTo == nil then
+        return
+    end
+    obj.setInvisibleTo(playerColorsHiddenFromControlBoard())
+end
+
+--- @param obj Object
+--- @param activeForLayout boolean When false, marker is not positioned for the active table (still PC-hidden).
+local function setMarkerVisible(obj, activeForLayout)
+    if not Board.isGameObject(obj) then
+        return
+    end
+    setHiddenFromPlayerColors(obj)
+end
+
+local CONTROL_BOARD_COMPONENT_TAGS = {
+    TAG_TABLE,
+    TAG_PC,
+    TAG_NPC_SEAT,
+    TAG_COMPONENT,
+    TAG_TOKEN,
+    TAG_PC_TOKEN,
+}
+
+--- Re-apply PC-only invisibility on every control-board marker and token.
+local function applyControlBoardComponentPlayerInvisibility()
+    for _, tag in ipairs(CONTROL_BOARD_COMPONENT_TAGS) do
+        local objs = getObjectsWithTag(tag) or {}
+        for _, obj in ipairs(objs) do
+            setHiddenFromPlayerColors(obj)
+        end
+    end
+end
+
+--- @param board Object
+--- @param u number
+--- @param v number
+--- @return boolean
+local function isNearSeatRowUv(board, u, v)
+    if not Board.isGameObject(board) or type(u) ~= "number" or type(v) ~= "number" then
+        return false
+    end
+    local seatCfg = DATA.CONTROL_BOARD_SEAT_ROW
+    if type(seatCfg) ~= "table" then
+        return false
+    end
+    local rowV = tonumber(seatCfg.v) or 0.15
+    local uMin = tonumber(seatCfg.uMin) or 0.35
+    local uMax = tonumber(seatCfg.uMax) or 0.65
+    return math.abs(v - rowV) <= 0.08 and u >= (uMin - 0.05) and u <= (uMax + 0.05)
+end
+
+--- Programmatic mirror onto a seat-row catalog entry (Apply / Clear / reconcile — manual drops use `rotation_snap` only).
+--- @param token Object
+--- @param board Object
+--- @param entry table catalog entry with `u`, `v`, `yawDeg`
+--- @param faceUp boolean|nil narrative presence; default from token flip
+local function mirrorSeatRowControlToken(token, board, entry, faceUp)
+    if not Board.isGameObject(token) or not Board.isGameObject(board) or type(entry) ~= "table" then
+        return
+    end
+    if faceUp == nil then
+        faceUp = tokenRotationIsFaceUp(token)
+    end
+    token.setPosition(Board.worldOnControlBoard(board, entry.u, entry.v))
+    applySeatRowNpcControlTokenScale(token)
+    local boardYaw = Board.objectYawDeg(board)
+    token.setRotation(rotationForNpcControlToken(boardYaw, entry.yawDeg, faceUp))
+    setHiddenFromPlayerColors(token)
+end
+
+--- @param token Object
+--- @param board Object
+--- @return number|nil u, number|nil v, number|nil yaw
+local function tokenPlacementOnBoard(token, board)
+    if not Board.isGameObject(token) or not Board.isGameObject(board) then
+        return nil, nil, nil
+    end
+    local u, v = Board.uvFromWorldOnBoard(board, token.getPosition())
+    local boardYaw = Board.objectYawDeg(board)
+    local tokenYaw = Board.objectYawDeg(token)
+    local yaw = ((tokenYaw - boardYaw) % 360 + 360) % 360
+    return u, v, yaw
+end
+
+Tokens.readMarkerKey = readMarkerKey
+Tokens.parseComponentMarkerKey = parseComponentMarkerKey
+Tokens.resolveTokenCharacterKey = resolveTokenCharacterKey
+Tokens.isNpcControlToken = isNpcControlToken
+Tokens.isPcControlToken = isPcControlToken
+Tokens.resolvePcTokenSeatColor = resolvePcTokenSeatColor
+Tokens.controlTokenForCharacterKey = controlTokenForCharacterKey
+Tokens.releaseHomelandSeatsForOffBoardTokens = releaseHomelandSeatsForOffBoardTokens
+Tokens.eulerAxisFlippedDeg = eulerAxisFlippedDeg
+Tokens.tokenRotationIsFaceUp = tokenRotationIsFaceUp
+Tokens.tokenLightModeFromFlip = tokenLightModeFromFlip
+Tokens.rotationForNpcControlToken = rotationForNpcControlToken
+Tokens.tokenScaleIsNear = tokenScaleIsNear
+Tokens.setNpcControlTokenScale = setNpcControlTokenScale
+Tokens.resolveDefaultControlTokenScale = resolveDefaultControlTokenScale
+Tokens.tokenScaleFromSnapGroup = tokenScaleFromSnapGroup
+Tokens.ensureDefaultNpcControlTokenScale = ensureDefaultNpcControlTokenScale
+Tokens.applyNpcControlTokenScaleVec = applyNpcControlTokenScaleVec
+Tokens.applySeatRowNpcControlTokenScale = applySeatRowNpcControlTokenScale
+Tokens.controlTokenScaleForCatalogEntry = controlTokenScaleForCatalogEntry
+Tokens.isNearSeatRowUv = isNearSeatRowUv
+Tokens.mirrorSeatRowControlToken = mirrorSeatRowControlToken
+Tokens.tokenPlacementOnBoard = tokenPlacementOnBoard
+Tokens.playerColorsHiddenFromControlBoard = playerColorsHiddenFromControlBoard
+Tokens.setHiddenFromPlayerColors = setHiddenFromPlayerColors
+Tokens.setMarkerVisible = setMarkerVisible
+Tokens.applyControlBoardComponentPlayerInvisibility = applyControlBoardComponentPlayerInvisibility
+
+return Tokens
