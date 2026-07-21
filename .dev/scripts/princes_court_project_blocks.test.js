@@ -46,18 +46,21 @@ test("Court reconciler fills the complete character-sheet project field set with
   assert.match(source, /courtId\("date_increment"\)/);
 });
 
-test("Court reference layer uses the canonical CSHEET defaults and project container", () => {
+test("Court reference layer uses Global project classes and the project-block token", () => {
   const referenceTemplate = fs.readFileSync(
     path.resolve(__dirname, "../../ui/.templates/panel_right_sidebar_referenceLayer.xml"),
     "utf8"
   );
-
-  assert.match(
-    referenceTemplate,
-    /<Include src="ui\/player\/csheets\/csheet_defaults\.xml"\s*\/>/
+  const globalDefaults = fs.readFileSync(
+    path.resolve(__dirname, "../../ui/defaults_classes.xml"),
+    "utf8"
   );
+
+  assert.doesNotMatch(referenceTemplate, /csheet_defaults\.xml/);
   assert.doesNotMatch(referenceTemplate, /Court page 3 project styles mirror/);
   assert.doesNotMatch(referenceTemplate, /<Panel class="project_container"/);
+  assert.match(globalDefaults, /class="vertical_project_container"/);
+  assert.match(globalDefaults, /class="project_container"/);
   assert.match(
     referenceTemplate,
     /<VerticalLayout class="vertical_project_container">[\s\S]*@@COURT_PROJECT_BLOCKS@@/

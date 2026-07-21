@@ -7,7 +7,9 @@ UI.setAttributes("playerHud_referenceLayer_Red", {color = "rgba(1, 0, 0, 0.15)"}
 -->
 <Panel id="playerHud_referenceLayer_@@color@@" class="popupImageContainer" visibility="@@color@@">
 
-  <Include src="ui/player/csheets/csheet_defaults.xml" />
+  <!-- Project block classes come from ui/defaults_classes.xml (Global include). Do not
+       Include csheet_defaults here: Global resolves paths under ui/, so ui/player/... fails,
+       and nesting a second Defaults block five times per seat is unnecessary. -->
 
   <Defaults>
 

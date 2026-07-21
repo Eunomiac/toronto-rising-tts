@@ -250,7 +250,7 @@ For a given sheet source S, show projects where `displayFor` contains S.
 | --- | --- |
 | PC character sheet page 5 | Yes — `Projects.buildPage5DocumentXml` |
 | ST Projects panel list for Coterie target | Yes — `listForDisplaySource("coterie")` |
-| Prince’s Court HUD (page 3 left / coterie sheet art) | Yes — scrollable fixed 8-slot pool (0-based indices) from `ui/.templates/princes_court/partials/project_block.xml`; reference layer includes `ui/player/csheets/csheet_defaults.xml`; `Projects.reconcileCourtProjectsAll` applies `listForDisplaySource("coterie")` through `U.setAttribute` |
+| Prince’s Court HUD (page 3 left / coterie sheet art) | Yes — scrollable fixed 8-slot pool (0-based indices) from `ui/.templates/princes_court/partials/project_block.xml`; project classes come from Global `ui/defaults_classes.xml` (same `project_*` set as CSHEET); `Projects.reconcileCourtProjectsAll` applies `listForDisplaySource("coterie")` through `U.setAttribute` |
 
 So a project owned by `lordLucien` with Coterie stakes correctly gets `"coterie"` in `displayFor`, appears under ST Projects → Coterie, on Lucien’s page 5, and on Prince’s Court page 3. Court blocks use the same sheet-style structure and Defaults as character-sheet projects (scope, result/margin, up to four stake rows, die, and dates); empty slots are hidden.
 
