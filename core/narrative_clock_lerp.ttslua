@@ -3,6 +3,10 @@
 
     During motion: overlay / panel display only. Side effects (present day, weather, Sync)
     run on settle. Pause real-time ticker while active.
+
+    Zero-delta targets (start == end): `startToTarget` returns false with an error string and
+    does **not** call settle / Sync.full (TOR-418). Callers must AlertGM; do not treat this as
+    success.
 ]]
 
 local NarrativeClockLerp = {}
@@ -286,6 +290,8 @@ local function settle(finalDt, startDt)
 end
 
 --- Begin lerp from live session clock to `targetDt`.
+--- Returns false (with err) when blocked or when target equals the live clock — intentional
+--- no-op: does not settle or Sync.full (TOR-418). Upstream should AlertGM and keep the panel open.
 --- @param targetDt table
 --- @return boolean ok
 --- @return string|nil err
@@ -312,6 +318,7 @@ function NarrativeClockLerp.startToTarget(targetDt)
     if startAbs == nil or endAbs == nil then
         return false, "Could not compute timeline."
     end
+    -- TOR-418: zero delta must not settle → Sync.full (lag spike, no visible change).
     if startAbs == endAbs then
         return false, "Clock is already at that time."
     end

@@ -429,7 +429,7 @@ Animated Scene Time jumps (TOR-222). Display-only during motion; present day / w
 | `NarrativeClockLerp.resolveDeltaTarget(start, unit, amount, forward)` | Minutes/hours keep H:M; days+ land dusk+1h; may pass present day (tryAdvance on settle) | Delta grid |
 | `NarrativeClockLerp.resolveDawnDuskTarget(start, minutes, towardDawn)` | Absolute dawn−N or dusk+N on displayed date | Sun grid L/R |
 | `NarrativeClockLerp.resolveYearTarget(start, year)` | Same month/day (Feb 29→28) then dusk+1h | Year Go |
-| `NarrativeClockLerp.startToTarget(targetDt)` | Ease scrub overlay + panel; settle side effects | After resolve* |
+| `NarrativeClockLerp.startToTarget(targetDt)` | Ease scrub overlay + panel; settle side effects. Zero-delta → `false, err` (no Sync.full; TOR-418) | After resolve* |
 
 ---
 
