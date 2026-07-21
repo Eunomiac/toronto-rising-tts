@@ -34,6 +34,12 @@
   <Image id="overlay_blindfold_30_Brown" image="overlay_blindfold_30" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
   <Image id="overlay_blindfold_31_Brown" image="overlay_blindfold_31" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
   <Image id="overlay_blindfold_32_Brown" image="overlay_blindfold_32" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+
+  <!-- District Card Display - Deactivate if transitioning to end scene or scene without a location -->
+  <Image id="overlay_district_card_display_Brown" image="" class="player_overlay_district_card_display" />
+
+  <!-- Site Card Display - Deactivate if transitioning to end scene or scene without a location -->
+  <Image id="overlay_site_card_display_Brown" image="" class="player_overlay_site_card_display" />
 </Panel>
 
 <Panel id="playerHud_overlay_blindfold_Orange" class="playerHud_overlaysLayer" visibility="Orange">
@@ -69,6 +75,12 @@
   <Image id="overlay_blindfold_30_Orange" image="overlay_blindfold_30" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
   <Image id="overlay_blindfold_31_Orange" image="overlay_blindfold_31" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
   <Image id="overlay_blindfold_32_Orange" image="overlay_blindfold_32" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+
+  <!-- District Card Display - Deactivate if transitioning to end scene or scene without a location -->
+  <Image id="overlay_district_card_display_Orange" image="" class="player_overlay_district_card_display" />
+
+  <!-- Site Card Display - Deactivate if transitioning to end scene or scene without a location -->
+  <Image id="overlay_site_card_display_Orange" image="" class="player_overlay_site_card_display" />
 </Panel>
 
 <Panel id="playerHud_overlay_blindfold_Red" class="playerHud_overlaysLayer" visibility="Red">
@@ -104,6 +116,12 @@
   <Image id="overlay_blindfold_30_Red" image="overlay_blindfold_30" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
   <Image id="overlay_blindfold_31_Red" image="overlay_blindfold_31" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
   <Image id="overlay_blindfold_32_Red" image="overlay_blindfold_32" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+
+  <!-- District Card Display - Deactivate if transitioning to end scene or scene without a location -->
+  <Image id="overlay_district_card_display_Red" image="" class="player_overlay_district_card_display" />
+
+  <!-- Site Card Display - Deactivate if transitioning to end scene or scene without a location -->
+  <Image id="overlay_site_card_display_Red" image="" class="player_overlay_site_card_display" />
 </Panel>
 
 <Panel id="playerHud_overlay_blindfold_Pink" class="playerHud_overlaysLayer" visibility="Pink">
@@ -139,6 +157,12 @@
   <Image id="overlay_blindfold_30_Pink" image="overlay_blindfold_30" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
   <Image id="overlay_blindfold_31_Pink" image="overlay_blindfold_31" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
   <Image id="overlay_blindfold_32_Pink" image="overlay_blindfold_32" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+
+  <!-- District Card Display - Deactivate if transitioning to end scene or scene without a location -->
+  <Image id="overlay_district_card_display_Pink" image="" class="player_overlay_district_card_display" />
+
+  <!-- Site Card Display - Deactivate if transitioning to end scene or scene without a location -->
+  <Image id="overlay_site_card_display_Pink" image="" class="player_overlay_site_card_display" />
 </Panel>
 
 <Panel id="playerHud_overlay_blindfold_Purple" class="playerHud_overlaysLayer" visibility="Purple">
@@ -174,4 +198,10 @@
   <Image id="overlay_blindfold_30_Purple" image="overlay_blindfold_30" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
   <Image id="overlay_blindfold_31_Purple" image="overlay_blindfold_31" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
   <Image id="overlay_blindfold_32_Purple" image="overlay_blindfold_32" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+
+  <!-- District Card Display - Deactivate if transitioning to end scene or scene without a location -->
+  <Image id="overlay_district_card_display_Purple" image="" class="player_overlay_district_card_display" />
+
+  <!-- Site Card Display - Deactivate if transitioning to end scene or scene without a location -->
+  <Image id="overlay_site_card_display_Purple" image="" class="player_overlay_site_card_display" />
 </Panel>

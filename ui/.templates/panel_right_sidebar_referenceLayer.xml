@@ -761,14 +761,14 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     </Panel>
 
 <!--
-UI.setAttributes("page_3_left_Brown", {color = "rgba(1, 0, 0, 0.15)", childForceExpandWidth = "true"})
+UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%"})
 
 -->
 
     <Panel id="playerHud_refPanel_PrincesCourt_page3_@@color@@" class="princesCourt-page" active="false">
       <Image id="db_princeCourt_page_@@color@@" class="princeCourt_page" image="refPanel_PrincesCourt_page3" raycastTarget="false" />
       <!-- TOR-371: same layout as CSHEET page 5 — VerticalLayout + project blocks; attribute-only reconcile. -->
-      <VerticalLayout id="page_3_left_@@color@@" class="vertical_project_container">
+      <VerticalLayout id="page_3_left_@@color@@" class="vertical_project_container" width = "50%" padding = "30 40 70 150" childForceExpandWidth = "true">
         @@COURT_PROJECT_BLOCKS@@
       </VerticalLayout>
       <Image id="playerHud_navigate_page3_prev_@@color@@" class="navButton navButton_left" image="navigate_left" raycastTarget="true" onMouseEnter="HUD_playerPrincesCourt_nav_hoverOn" onMouseExit="HUD_playerPrincesCourt_nav_hoverOff" onClick="HUD_playerPrincesCourt_navigate" />

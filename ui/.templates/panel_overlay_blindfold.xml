@@ -36,4 +36,22 @@
   <Image id="overlay_blindfold_30_@@color@@" image="overlay_blindfold_30" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
   <Image id="overlay_blindfold_31_@@color@@" image="overlay_blindfold_31" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
   <Image id="overlay_blindfold_32_@@color@@" image="overlay_blindfold_32" class="player_overlay player_blindfold_overlay overlay_anim_slide_top" preserveAspect="true" />
+
+<!--
+UI.hide("overlay_district_card_display_Red")
+UI.hide("overlay_site_card_display_Red")
+UI.hide("overlay_district_card_display_Orange")
+UI.hide("overlay_site_card_display_Orange")
+UI.hide("overlay_district_card_display_Brown")
+UI.hide("overlay_site_card_display_Brown")
+UI.hide("overlay_district_card_display_Pink")
+UI.hide("overlay_site_card_display_Pink")
+UI.hide("overlay_district_card_display_Purple")
+UI.hide("overlay_site_card_display_Purple")
+-->
+  <!-- District Card Display - Deactivate if transitioning to end scene or scene without a location -->
+  <Image id="overlay_district_card_display_@@color@@" image="" class="player_overlay_district_card_display" />
+
+  <!-- Site Card Display - Deactivate if transitioning to end scene or scene without a location -->
+  <Image id="overlay_site_card_display_@@color@@" image="" class="player_overlay_site_card_display" />
 </Panel>
