@@ -904,7 +904,16 @@ function U.error(source, message, val)
 		valString = U.ToString(val)
 	end
 
-	log({ErrorTraceback = debug.traceback()})
+	-- Stock TTS omits `debug`; never let traceback crash before we raise the real error.
+	local dbg = rawget(_G, "debug")
+	if type(dbg) == "table" and type(dbg.traceback) == "function" then
+		local okTb, tb = pcall(function()
+			return dbg.traceback()
+		end)
+		if okTb then
+			log({ ErrorTraceback = tb })
+		end
+	end
 
 	error(errString .. (valString and (": " .. valString) or ""), 3)
 end
@@ -956,7 +965,15 @@ function U.Val(source, checkVal, testResult, errorMsg, params)
 	if params.isSilent then return false end
 
 	if params.isThrowing then
-		log(debug.traceback())
+		local dbg = rawget(_G, "debug")
+		if type(dbg) == "table" and type(dbg.traceback) == "function" then
+			local okTb, tb = pcall(function()
+				return dbg.traceback()
+			end)
+			if okTb then
+				log(tb)
+			end
+		end
 		error(errorMessage, 2)
 	end
 
@@ -1925,17 +1942,38 @@ function U.Alert(message, color)
 end
 
 --- Log coroutine wait / RunSequence faults to the TTS console via `print`.
+--- Must never throw: waitUntil/RunSequence call this from pcall recovery paths; a logger crash would
+--- replace the real waiter error (TTS sandboxes out `debug`, so `debug.traceback` is unavailable).
 --- Use in `U.waitUntil` and `U.RunSequenceWithOptions` error paths (replaces extension `log()` in those paths).
 --- @param tag string short context label (e.g. `waitUntil:check`, `RunSequence:step`)
 --- @param err any error message from the failed step or wait callback
 --- @param detail table|nil optional structured fields (stepIndex, etc.)
 function U.logCoroutineIssue(tag, err, detail)
-	local tb = debug.traceback("", 2)
-	print("[coroutine] " .. tostring(tag) .. ": " .. tostring(err))
+	local tagStr = tostring(tag)
+	local errStr = tostring(err)
+	print("[coroutine] " .. tagStr .. ": " .. errStr)
 	if detail ~= nil and U.Type(detail) == "table" then
-		print("[coroutine] detail: " .. JSON.encode(detail))
+		-- pcall: detail may contain userdata TTS cannot encode; still print the primary err above.
+		local okEnc, encoded = pcall(function()
+			return JSON.encode(detail)
+		end)
+		if okEnc and type(encoded) == "string" then
+			print("[coroutine] detail: " .. encoded)
+		else
+			print("[coroutine] detail: <encode failed>")
+		end
 	end
-	print(tb)
+	-- Stock TTS Lua omits the `debug` library; only attempt traceback when present (e.g. unsandboxed debug DLL).
+	local dbg = rawget(_G, "debug")
+	if type(dbg) == "table" and type(dbg.traceback) == "function" then
+		-- pcall: traceback itself must not mask the issue we just printed.
+		local okTb, tb = pcall(function()
+			return dbg.traceback("", 2)
+		end)
+		if okTb and type(tb) == "string" and tb ~= "" then
+			print(tb)
+		end
+	end
 end
 
 -- ============================================================================
@@ -3460,8 +3498,9 @@ function U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency, abor
 			-- pcall: Condition callbacks are author-supplied and may throw as objects spawn; the coroutine logs once and exits instead of tearing down Global. Propagating would hard-stop unrelated systems sharing the same script VM.
 			local success, checkResult = pcall(function() return pCheckFunc() end)
 			if not success then
-				-- Log error but don't crash - just break the loop
+				-- Soft-stop this waiter (do not tear down Global), but surface loudly — never silent.
 				U.logCoroutineIssue("waitUntil:check", checkResult)
+				U.AlertGM("waitUntil check failed: " .. tostring(checkResult))
 				break
 			end
 
@@ -3512,6 +3551,7 @@ function U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency, abor
 				afterReturnVal = result
 			else
 				U.logCoroutineIssue("waitUntil:afterFunc", result)
+				U.AlertGM("waitUntil afterFunc failed: " .. tostring(result))
 			end
 		end
 
