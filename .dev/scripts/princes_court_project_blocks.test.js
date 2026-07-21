@@ -61,8 +61,9 @@ test("Court reference layer uses Global project classes and the project-block to
   assert.doesNotMatch(referenceTemplate, /<Panel class="project_container"/);
   assert.match(globalDefaults, /class="vertical_project_container"/);
   assert.match(globalDefaults, /class="project_container"/);
+  assert.doesNotMatch(referenceTemplate, /VerticalScrollView/);
   assert.match(
     referenceTemplate,
-    /<VerticalLayout class="vertical_project_container">[\s\S]*@@COURT_PROJECT_BLOCKS@@/
+    /<VerticalLayout id="page_3_left_@@color@@" class="vertical_project_container">[\s\S]*@@COURT_PROJECT_BLOCKS@@/
   );
 });

@@ -1366,13 +1366,9 @@ UI.setAttributes("page_3_left_Brown", {color = "rgba(1, 0, 0, 0.15)", childForce
 
     <Panel id="playerHud_refPanel_PrincesCourt_page3_Brown" class="princesCourt-page" active="false">
       <Image id="db_princeCourt_page_Brown" class="princeCourt_page" image="refPanel_PrincesCourt_page3" raycastTarget="false" />
-      <!-- TOR-371: full sheet-style coterie project pool; runtime remains attribute-only. -->
-      <VerticalScrollView id="page_3_left_Brown" class="page page_left"
-        width="710" height="850" rectAlignment="MiddleLeft" offsetXY="20 0"
-        padding="8 8 120 50" movementType="Clamped" vertical="true"
-        horizontal="false" childForceExpandWidth="true">
-        <VerticalLayout class="vertical_project_container">
-          <Panel id="court_project_0_Brown" class="project_container" active="false">
+      <!-- TOR-371: same layout as CSHEET page 5 — VerticalLayout + project blocks; attribute-only reconcile. -->
+      <VerticalLayout id="page_3_left_Brown" class="vertical_project_container">
+        <Panel id="court_project_0_Brown" class="project_container" active="false">
   <HorizontalLayout id="db_court_project_0_header_container_Brown" class="project_header_container">
     <GridLayout id="db_court_project_0_header_dotline_Brown" class="project_header_dotline">
 
@@ -2116,8 +2112,7 @@ UI.setAttributes("page_3_left_Brown", {color = "rgba(1, 0, 0, 0.15)", childForce
     <Text id="court_project_7_date_increment_Brown" class="project_increment_text" text="(Increments Weekly)" />
   </HorizontalLayout>
 </Panel>
-        </VerticalLayout>
-      </VerticalScrollView>
+      </VerticalLayout>
       <Image id="playerHud_navigate_page3_prev_Brown" class="navButton navButton_left" image="navigate_left" raycastTarget="true" onMouseEnter="HUD_playerPrincesCourt_nav_hoverOn" onMouseExit="HUD_playerPrincesCourt_nav_hoverOff" onClick="HUD_playerPrincesCourt_navigate" />
     </Panel>
   </Panel>
@@ -3605,13 +3600,9 @@ UI.setAttributes("page_3_left_Brown", {color = "rgba(1, 0, 0, 0.15)", childForce
 
     <Panel id="playerHud_refPanel_PrincesCourt_page3_Orange" class="princesCourt-page" active="false">
       <Image id="db_princeCourt_page_Orange" class="princeCourt_page" image="refPanel_PrincesCourt_page3" raycastTarget="false" />
-      <!-- TOR-371: full sheet-style coterie project pool; runtime remains attribute-only. -->
-      <VerticalScrollView id="page_3_left_Orange" class="page page_left"
-        width="710" height="850" rectAlignment="MiddleLeft" offsetXY="20 0"
-        padding="8 8 120 50" movementType="Clamped" vertical="true"
-        horizontal="false" childForceExpandWidth="true">
-        <VerticalLayout class="vertical_project_container">
-          <Panel id="court_project_0_Orange" class="project_container" active="false">
+      <!-- TOR-371: same layout as CSHEET page 5 — VerticalLayout + project blocks; attribute-only reconcile. -->
+      <VerticalLayout id="page_3_left_Orange" class="vertical_project_container">
+        <Panel id="court_project_0_Orange" class="project_container" active="false">
   <HorizontalLayout id="db_court_project_0_header_container_Orange" class="project_header_container">
     <GridLayout id="db_court_project_0_header_dotline_Orange" class="project_header_dotline">
 
@@ -4355,8 +4346,7 @@ UI.setAttributes("page_3_left_Brown", {color = "rgba(1, 0, 0, 0.15)", childForce
     <Text id="court_project_7_date_increment_Orange" class="project_increment_text" text="(Increments Weekly)" />
   </HorizontalLayout>
 </Panel>
-        </VerticalLayout>
-      </VerticalScrollView>
+      </VerticalLayout>
       <Image id="playerHud_navigate_page3_prev_Orange" class="navButton navButton_left" image="navigate_left" raycastTarget="true" onMouseEnter="HUD_playerPrincesCourt_nav_hoverOn" onMouseExit="HUD_playerPrincesCourt_nav_hoverOff" onClick="HUD_playerPrincesCourt_navigate" />
     </Panel>
   </Panel>
@@ -5844,13 +5834,9 @@ UI.setAttributes("page_3_left_Brown", {color = "rgba(1, 0, 0, 0.15)", childForce
 
     <Panel id="playerHud_refPanel_PrincesCourt_page3_Red" class="princesCourt-page" active="false">
       <Image id="db_princeCourt_page_Red" class="princeCourt_page" image="refPanel_PrincesCourt_page3" raycastTarget="false" />
-      <!-- TOR-371: full sheet-style coterie project pool; runtime remains attribute-only. -->
-      <VerticalScrollView id="page_3_left_Red" class="page page_left"
-        width="710" height="850" rectAlignment="MiddleLeft" offsetXY="20 0"
-        padding="8 8 120 50" movementType="Clamped" vertical="true"
-        horizontal="false" childForceExpandWidth="true">
-        <VerticalLayout class="vertical_project_container">
-          <Panel id="court_project_0_Red" class="project_container" active="false">
+      <!-- TOR-371: same layout as CSHEET page 5 — VerticalLayout + project blocks; attribute-only reconcile. -->
+      <VerticalLayout id="page_3_left_Red" class="vertical_project_container">
+        <Panel id="court_project_0_Red" class="project_container" active="false">
   <HorizontalLayout id="db_court_project_0_header_container_Red" class="project_header_container">
     <GridLayout id="db_court_project_0_header_dotline_Red" class="project_header_dotline">
 
@@ -6594,8 +6580,7 @@ UI.setAttributes("page_3_left_Brown", {color = "rgba(1, 0, 0, 0.15)", childForce
     <Text id="court_project_7_date_increment_Red" class="project_increment_text" text="(Increments Weekly)" />
   </HorizontalLayout>
 </Panel>
-        </VerticalLayout>
-      </VerticalScrollView>
+      </VerticalLayout>
       <Image id="playerHud_navigate_page3_prev_Red" class="navButton navButton_left" image="navigate_left" raycastTarget="true" onMouseEnter="HUD_playerPrincesCourt_nav_hoverOn" onMouseExit="HUD_playerPrincesCourt_nav_hoverOff" onClick="HUD_playerPrincesCourt_navigate" />
     </Panel>
   </Panel>
@@ -8083,13 +8068,9 @@ UI.setAttributes("page_3_left_Brown", {color = "rgba(1, 0, 0, 0.15)", childForce
 
     <Panel id="playerHud_refPanel_PrincesCourt_page3_Pink" class="princesCourt-page" active="false">
       <Image id="db_princeCourt_page_Pink" class="princeCourt_page" image="refPanel_PrincesCourt_page3" raycastTarget="false" />
-      <!-- TOR-371: full sheet-style coterie project pool; runtime remains attribute-only. -->
-      <VerticalScrollView id="page_3_left_Pink" class="page page_left"
-        width="710" height="850" rectAlignment="MiddleLeft" offsetXY="20 0"
-        padding="8 8 120 50" movementType="Clamped" vertical="true"
-        horizontal="false" childForceExpandWidth="true">
-        <VerticalLayout class="vertical_project_container">
-          <Panel id="court_project_0_Pink" class="project_container" active="false">
+      <!-- TOR-371: same layout as CSHEET page 5 — VerticalLayout + project blocks; attribute-only reconcile. -->
+      <VerticalLayout id="page_3_left_Pink" class="vertical_project_container">
+        <Panel id="court_project_0_Pink" class="project_container" active="false">
   <HorizontalLayout id="db_court_project_0_header_container_Pink" class="project_header_container">
     <GridLayout id="db_court_project_0_header_dotline_Pink" class="project_header_dotline">
 
@@ -8833,8 +8814,7 @@ UI.setAttributes("page_3_left_Brown", {color = "rgba(1, 0, 0, 0.15)", childForce
     <Text id="court_project_7_date_increment_Pink" class="project_increment_text" text="(Increments Weekly)" />
   </HorizontalLayout>
 </Panel>
-        </VerticalLayout>
-      </VerticalScrollView>
+      </VerticalLayout>
       <Image id="playerHud_navigate_page3_prev_Pink" class="navButton navButton_left" image="navigate_left" raycastTarget="true" onMouseEnter="HUD_playerPrincesCourt_nav_hoverOn" onMouseExit="HUD_playerPrincesCourt_nav_hoverOff" onClick="HUD_playerPrincesCourt_navigate" />
     </Panel>
   </Panel>
@@ -10322,13 +10302,9 @@ UI.setAttributes("page_3_left_Brown", {color = "rgba(1, 0, 0, 0.15)", childForce
 
     <Panel id="playerHud_refPanel_PrincesCourt_page3_Purple" class="princesCourt-page" active="false">
       <Image id="db_princeCourt_page_Purple" class="princeCourt_page" image="refPanel_PrincesCourt_page3" raycastTarget="false" />
-      <!-- TOR-371: full sheet-style coterie project pool; runtime remains attribute-only. -->
-      <VerticalScrollView id="page_3_left_Purple" class="page page_left"
-        width="710" height="850" rectAlignment="MiddleLeft" offsetXY="20 0"
-        padding="8 8 120 50" movementType="Clamped" vertical="true"
-        horizontal="false" childForceExpandWidth="true">
-        <VerticalLayout class="vertical_project_container">
-          <Panel id="court_project_0_Purple" class="project_container" active="false">
+      <!-- TOR-371: same layout as CSHEET page 5 — VerticalLayout + project blocks; attribute-only reconcile. -->
+      <VerticalLayout id="page_3_left_Purple" class="vertical_project_container">
+        <Panel id="court_project_0_Purple" class="project_container" active="false">
   <HorizontalLayout id="db_court_project_0_header_container_Purple" class="project_header_container">
     <GridLayout id="db_court_project_0_header_dotline_Purple" class="project_header_dotline">
 
@@ -11072,8 +11048,7 @@ UI.setAttributes("page_3_left_Brown", {color = "rgba(1, 0, 0, 0.15)", childForce
     <Text id="court_project_7_date_increment_Purple" class="project_increment_text" text="(Increments Weekly)" />
   </HorizontalLayout>
 </Panel>
-        </VerticalLayout>
-      </VerticalScrollView>
+      </VerticalLayout>
       <Image id="playerHud_navigate_page3_prev_Purple" class="navButton navButton_left" image="navigate_left" raycastTarget="true" onMouseEnter="HUD_playerPrincesCourt_nav_hoverOn" onMouseExit="HUD_playerPrincesCourt_nav_hoverOff" onClick="HUD_playerPrincesCourt_navigate" />
     </Panel>
   </Panel>
