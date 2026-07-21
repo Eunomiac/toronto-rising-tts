@@ -1,6 +1,6 @@
 <!-- Parameters:
 @@INDEX@@ - entry index (0-based)
-@@PROJECT_STAKE_1_CLASS@@ .. @@PROJECT_STAKE_6_CLASS@@ - one of "self", "coterie", "other", depending on the origin of the staked Advantage
+@@PROJECT_STAKE_1_CLASS@@ .. @@PROJECT_STAKE_4_CLASS@@ - one of "self", "coterie", "other", depending on the origin of the staked Advantage
 -->
 
 <Panel class="project_container" >
@@ -99,7 +99,7 @@
    -->
 
 
-    <HorizontalLayout id="project_@@INDEX@@_stake_1" class="project_stake_container"  > <!-- Each of these six HorizontalLayouts areInactive by default; set active="true" for each staked Advantage -->
+    <HorizontalLayout id="project_@@INDEX@@_stake_1" class="project_stake_container"  > <!-- Each of these four HorizontalLayouts are inactive by default; set active="true" for each staked Advantage -->
         <Text id="project_@@INDEX@@_stake_1_label" class="project_stake_label project_stake_label_@@PROJECT_STAKE_1_CLASS@@" text="" /> <!-- The name of the Advantage staked, e.g. "Influence (Nightlife)"-->
         <GridLayout id="db_project_@@INDEX@@_stake_1_dots" class="project_stake_dotline">
           <Image id="project_@@INDEX@@_stake_1_dot_1" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_1_CLASS@@"  /> <!-- Dots are 'active=false' by default; activate however many dots of this advantage are staked. -->
@@ -142,25 +142,6 @@
           <Image id="project_@@INDEX@@_stake_4_dot_5" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_4_CLASS@@"  />
         </GridLayout>
         <Panel id="db_project_@@INDEX@@_stake_4_spacer" class="project_stake_spacer" />
-    </HorizontalLayout>
-    <HorizontalLayout id="project_@@INDEX@@_stake_5" class="project_stake_container" >
-        <Text id="project_@@INDEX@@_stake_5_label" class="project_stake_label project_stake_label_@@PROJECT_STAKE_5_CLASS@@" text="" />
-        <GridLayout class="project_stake_dotline">
-          <Image id="project_@@INDEX@@_stake_5_dot_1" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_5_CLASS@@"  />
-          <Image id="project_@@INDEX@@_stake_5_dot_2" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_5_CLASS@@"  />
-          <Image id="project_@@INDEX@@_stake_5_dot_3" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_5_CLASS@@"  />
-          <Image id="project_@@INDEX@@_stake_5_dot_4" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_5_CLASS@@"  />
-          <Image id="project_@@INDEX@@_stake_5_dot_5" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_5_CLASS@@"  />
-        </GridLayout>    </HorizontalLayout>
-    <HorizontalLayout id="project_@@INDEX@@_stake_6" class="project_stake_container"  >
-        <Text id="project_@@INDEX@@_stake_6_label" class="project_stake_label project_stake_label_@@PROJECT_STAKE_6_CLASS@@" text="" />
-        <GridLayout class="project_stake_dotline">
-          <Image id="project_@@INDEX@@_stake_6_dot_1" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_6_CLASS@@"  />
-          <Image id="project_@@INDEX@@_stake_6_dot_2" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_6_CLASS@@"  />
-          <Image id="project_@@INDEX@@_stake_6_dot_3" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_6_CLASS@@"  />
-          <Image id="project_@@INDEX@@_stake_6_dot_4" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_6_CLASS@@"  />
-          <Image id="project_@@INDEX@@_stake_6_dot_5" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_6_CLASS@@"  />
-        </GridLayout>
     </HorizontalLayout>
   </GridLayout>
 

@@ -19,10 +19,10 @@ const SOURCE_TEMPLATE_REL = path.join("ui", ".templates", "panel_right_sidebar_r
 const BUILD_TEMPLATE_REL = path.join("ui", ".templates", ".build", "panel_right_sidebar_referenceLayer.xml");
 const COTERIE_JSON_REL = path.join("lib", "json", "Coterie.json");
 const PRINCES_COURT_PARTIALS_REL = path.join("ui", ".templates", "princes_court");
-const CSHEET_PROJECT_PARTIAL_REL = path.join(
+const COURT_PROJECT_PARTIAL_REL = path.join(
   "ui",
   ".templates",
-  "csheet",
+  "princes_court",
   "partials",
   "project_block.xml"
 );
@@ -31,6 +31,7 @@ const KEY_BASE_REL = path.join("ui", ".templates");
 const TRAIT_TOKEN_REGEX = /@@(COTERIE|DOMAIN|HAVEN)_(BACKGROUNDS|MERITS|FLAWS)_COLUMN_[123]@@/g;
 const COURT_PROJECT_BLOCKS_TOKEN = "@@COURT_PROJECT_BLOCKS@@";
 const COURT_PROJECT_POOL = 8;
+const COURT_PROJECT_STAKE_ROWS = 4;
 
 /**
  * @param {string} projectRoot
@@ -68,6 +69,10 @@ function replacePlaceholders(xml, placeholders) {
 /**
  * Build the fixed Court page-3 project pool while preserving @@color@@ for the
  * downstream color-template generator.
+ *
+ * Court partial already authors court_project_* ids with _@@color@@ suffixes.
+ * This step only expands @@INDEX@@ (0-based) and stake-class tokens.
+ *
  * @param {string} partialXml
  * @param {number} poolSize
  * @returns {string}
@@ -82,23 +87,18 @@ function buildCourtProjectBlocks(partialXml, poolSize = COURT_PROJECT_POOL) {
     .join("\n")
     .trim();
   const blocks = [];
-  for (let i = 1; i <= count; i += 1) {
-    const slot = String(i).padStart(2, "0");
+  for (let i = 0; i < count; i += 1) {
+    const slot = String(i);
     let block = source.split("@@INDEX@@").join(slot);
-    block = block.replace(/@@PROJECT_STAKE_[1-6]_CLASS@@/g, "self");
-    block = block.replace(
-      /id="((?:db_)?project_[^"]+)"/g,
-      (_match, id) => {
-        const courtId = id
-          .replace(/^db_project_/, "db_court_project_")
-          .replace(/^project_/, "court_project_");
-        return `id="${courtId}_@@color@@"`;
-      }
-    );
-    block = block.replace(
-      /<Panel\s+class="project_container"\s*>/,
-      `<Panel id="court_project_${slot}_@@color@@" class="project_container" active="false">`
-    );
+    block = block.replace(/@@PROJECT_STAKE_[1-4]_CLASS@@/g, "self");
+    if (/@@PROJECT_STAKE_[5-9]_CLASS@@/.test(block)) {
+      throw new Error(
+        "[buildCourtProjectBlocks] Unexpected stake-class token beyond max of 4 rows"
+      );
+    }
+    if (block.includes("@@INDEX@@") || block.includes("@@PROJECT_STAKE_")) {
+      throw new Error("[buildCourtProjectBlocks] Unexpanded project-block token remains");
+    }
     blocks.push(block);
   }
   return blocks.join("\n");
@@ -112,7 +112,7 @@ function main(projectRoot) {
   const sourcePath = path.join(root, SOURCE_TEMPLATE_REL);
   const buildPath = path.join(root, BUILD_TEMPLATE_REL);
   const jsonPath = path.join(root, COTERIE_JSON_REL);
-  const projectPartialPath = path.join(root, CSHEET_PROJECT_PARTIAL_REL);
+  const projectPartialPath = path.join(root, COURT_PROJECT_PARTIAL_REL);
 
   if (!fs.existsSync(sourcePath)) {
     throw new Error(`Source template not found: ${sourcePath}`);
@@ -121,7 +121,7 @@ function main(projectRoot) {
     throw new Error(`Coterie JSON not found: ${jsonPath}`);
   }
   if (!fs.existsSync(projectPartialPath)) {
-    throw new Error(`CSHEET project partial not found: ${projectPartialPath}`);
+    throw new Error(`Court project partial not found: ${projectPartialPath}`);
   }
 
   const coterieData = hydrateCoterieData(JSON.parse(fs.readFileSync(jsonPath, "utf8")));
@@ -162,4 +162,6 @@ module.exports = {
   replacePlaceholders,
   buildCourtProjectBlocks,
   BUILD_TEMPLATE_REL,
+  COURT_PROJECT_POOL,
+  COURT_PROJECT_STAKE_ROWS,
 };

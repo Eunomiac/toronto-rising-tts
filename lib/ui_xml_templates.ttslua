@@ -511,7 +511,7 @@ M._byKey["csheet/partials/project_block"] = [=[
    -->
 
 
-    <HorizontalLayout id="project_@@INDEX@@_stake_1" class="project_stake_container"  > <!-- Each of these six HorizontalLayouts areInactive by default; set active="true" for each staked Advantage -->
+    <HorizontalLayout id="project_@@INDEX@@_stake_1" class="project_stake_container"  > <!-- Each of these four HorizontalLayouts are inactive by default; set active="true" for each staked Advantage -->
         <Text id="project_@@INDEX@@_stake_1_label" class="project_stake_label project_stake_label_@@PROJECT_STAKE_1_CLASS@@" text="" /> <!-- The name of the Advantage staked, e.g. "Influence (Nightlife)"-->
         <GridLayout id="db_project_@@INDEX@@_stake_1_dots" class="project_stake_dotline">
           <Image id="project_@@INDEX@@_stake_1_dot_1" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_1_CLASS@@"  /> <!-- Dots are 'active=false' by default; activate however many dots of this advantage are staked. -->
@@ -554,25 +554,6 @@ M._byKey["csheet/partials/project_block"] = [=[
           <Image id="project_@@INDEX@@_stake_4_dot_5" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_4_CLASS@@"  />
         </GridLayout>
         <Panel id="db_project_@@INDEX@@_stake_4_spacer" class="project_stake_spacer" />
-    </HorizontalLayout>
-    <HorizontalLayout id="project_@@INDEX@@_stake_5" class="project_stake_container" >
-        <Text id="project_@@INDEX@@_stake_5_label" class="project_stake_label project_stake_label_@@PROJECT_STAKE_5_CLASS@@" text="" />
-        <GridLayout class="project_stake_dotline">
-          <Image id="project_@@INDEX@@_stake_5_dot_1" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_5_CLASS@@"  />
-          <Image id="project_@@INDEX@@_stake_5_dot_2" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_5_CLASS@@"  />
-          <Image id="project_@@INDEX@@_stake_5_dot_3" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_5_CLASS@@"  />
-          <Image id="project_@@INDEX@@_stake_5_dot_4" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_5_CLASS@@"  />
-          <Image id="project_@@INDEX@@_stake_5_dot_5" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_5_CLASS@@"  />
-        </GridLayout>    </HorizontalLayout>
-    <HorizontalLayout id="project_@@INDEX@@_stake_6" class="project_stake_container"  >
-        <Text id="project_@@INDEX@@_stake_6_label" class="project_stake_label project_stake_label_@@PROJECT_STAKE_6_CLASS@@" text="" />
-        <GridLayout class="project_stake_dotline">
-          <Image id="project_@@INDEX@@_stake_6_dot_1" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_6_CLASS@@"  />
-          <Image id="project_@@INDEX@@_stake_6_dot_2" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_6_CLASS@@"  />
-          <Image id="project_@@INDEX@@_stake_6_dot_3" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_6_CLASS@@"  />
-          <Image id="project_@@INDEX@@_stake_6_dot_4" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_6_CLASS@@"  />
-          <Image id="project_@@INDEX@@_stake_6_dot_5" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_6_CLASS@@"  />
-        </GridLayout>
     </HorizontalLayout>
   </GridLayout>
 
@@ -866,6 +847,102 @@ M._byKey["princes_court/partials/merit_block"] = [=[
   </Panel>
   ##ENDIF##
 </VerticalLayout>
+]=]
+
+M._byKey["princes_court/partials/project_block"] = [=[
+<Panel id="court_project_@@INDEX@@_@@color@@" class="project_container" active="false">
+  <HorizontalLayout id="db_court_project_@@INDEX@@_header_container_@@color@@" class="project_header_container">
+    <GridLayout id="db_court_project_@@INDEX@@_header_dotline_@@color@@" class="project_header_dotline">
+      <!-- Dots are inactive by default; activate a number of dots equal to the project's scope. -->
+      <Image id="court_project_@@INDEX@@_scope_dot_1_@@color@@" class="project_scope_dot" />
+      <Image id="court_project_@@INDEX@@_scope_dot_2_@@color@@" class="project_scope_dot" />
+      <Image id="court_project_@@INDEX@@_scope_dot_3_@@color@@" class="project_scope_dot" />
+      <Image id="court_project_@@INDEX@@_scope_dot_4_@@color@@" class="project_scope_dot" />
+      <Image id="court_project_@@INDEX@@_scope_dot_5_@@color@@" class="project_scope_dot" />
+      <Image id="court_project_@@INDEX@@_scope_dot_6_@@color@@" class="project_scope_dot" />
+      <Image id="court_project_@@INDEX@@_scope_dot_7_@@color@@" class="project_scope_dot" />
+      <Image id="court_project_@@INDEX@@_scope_dot_8_@@color@@" class="project_scope_dot" />
+      <Image id="court_project_@@INDEX@@_scope_dot_9_@@color@@" class="project_scope_dot" />
+      <Image id="court_project_@@INDEX@@_scope_dot_10_@@color@@" class="project_scope_dot" />
+      <Image id="court_project_@@INDEX@@_scope_dot_11_@@color@@" class="project_scope_dot" />
+      <Image id="court_project_@@INDEX@@_scope_dot_12_@@color@@" class="project_scope_dot" />
+      <Image id="court_project_@@INDEX@@_scope_dot_13_@@color@@" class="project_scope_dot" />
+      <Image id="court_project_@@INDEX@@_scope_dot_14_@@color@@" class="project_scope_dot" />
+      <Image id="court_project_@@INDEX@@_scope_dot_15_@@color@@" class="project_scope_dot" />
+    </GridLayout>
+    <!-- Goal text, e.g. "Wrest control of the Distillery District from the Jarvis Jacks" -->
+    <Text id="court_project_@@INDEX@@_goal_@@color@@" class="project_goal_text" text="" />
+  </HorizontalLayout>
+
+  <!-- In-progress: always project_die_0..10 from clock vs start/increment. Before start / high die → project_die_10; after end → project_die_0. -->
+  <Image id="court_project_@@INDEX@@_project_die_@@color@@" class="project_die" image="" />
+
+  <Panel id="db_court_project_@@INDEX@@_result_container_@@color@@" class="project_result_container">
+    <!-- Either "project_win" or "project_crit", depending on launch-roll result -->
+    <Image id="court_project_@@INDEX@@_result_image_@@color@@" class="project_result_image" image="" />
+    <!-- Margin on a Win (e.g. "+4"); inactive on Critical Win -->
+    <Text id="court_project_@@INDEX@@_result_margin_@@color@@" class="project_result_margin" text="+4" />
+  </Panel>
+
+  <!-- Inactive when launch roll was a Critical Win -->
+  <Text id="court_project_@@INDEX@@_stakes_label_@@color@@" class="project_stakes_label" text="" />
+
+  <!-- Inactive when launch roll was a Critical Win. Max four stake rows. -->
+  <GridLayout id="court_project_@@INDEX@@_stakes_@@color@@" class="project_stake_container">
+    <!-- Each stake row starts inactive; set active="true" for each staked Advantage -->
+    <HorizontalLayout id="court_project_@@INDEX@@_stake_1_@@color@@" class="project_stake_container">
+      <Text id="court_project_@@INDEX@@_stake_1_label_@@color@@" class="project_stake_label project_stake_label_@@PROJECT_STAKE_1_CLASS@@" text="" />
+      <GridLayout id="db_court_project_@@INDEX@@_stake_1_dots_@@color@@" class="project_stake_dotline">
+        <Image id="court_project_@@INDEX@@_stake_1_dot_1_@@color@@" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_1_CLASS@@" />
+        <Image id="court_project_@@INDEX@@_stake_1_dot_2_@@color@@" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_1_CLASS@@" />
+        <Image id="court_project_@@INDEX@@_stake_1_dot_3_@@color@@" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_1_CLASS@@" />
+        <Image id="court_project_@@INDEX@@_stake_1_dot_4_@@color@@" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_1_CLASS@@" />
+        <Image id="court_project_@@INDEX@@_stake_1_dot_5_@@color@@" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_1_CLASS@@" />
+      </GridLayout>
+      <Panel id="db_court_project_@@INDEX@@_stake_1_spacer_@@color@@" class="project_stake_spacer" />
+    </HorizontalLayout>
+    <HorizontalLayout id="court_project_@@INDEX@@_stake_2_@@color@@" class="project_stake_container">
+      <Text id="court_project_@@INDEX@@_stake_2_label_@@color@@" class="project_stake_label project_stake_label_@@PROJECT_STAKE_2_CLASS@@" text="" />
+      <GridLayout id="db_court_project_@@INDEX@@_stake_2_dots_@@color@@" class="project_stake_dotline">
+        <Image id="court_project_@@INDEX@@_stake_2_dot_1_@@color@@" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_2_CLASS@@" />
+        <Image id="court_project_@@INDEX@@_stake_2_dot_2_@@color@@" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_2_CLASS@@" />
+        <Image id="court_project_@@INDEX@@_stake_2_dot_3_@@color@@" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_2_CLASS@@" />
+        <Image id="court_project_@@INDEX@@_stake_2_dot_4_@@color@@" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_2_CLASS@@" />
+        <Image id="court_project_@@INDEX@@_stake_2_dot_5_@@color@@" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_2_CLASS@@" />
+      </GridLayout>
+      <Panel id="db_court_project_@@INDEX@@_stake_2_spacer_@@color@@" class="project_stake_spacer" />
+    </HorizontalLayout>
+    <HorizontalLayout id="court_project_@@INDEX@@_stake_3_@@color@@" class="project_stake_container">
+      <Text id="court_project_@@INDEX@@_stake_3_label_@@color@@" class="project_stake_label project_stake_label_@@PROJECT_STAKE_3_CLASS@@" text="" />
+      <GridLayout id="db_court_project_@@INDEX@@_stake_3_dots_@@color@@" class="project_stake_dotline">
+        <Image id="court_project_@@INDEX@@_stake_3_dot_1_@@color@@" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_3_CLASS@@" />
+        <Image id="court_project_@@INDEX@@_stake_3_dot_2_@@color@@" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_3_CLASS@@" />
+        <Image id="court_project_@@INDEX@@_stake_3_dot_3_@@color@@" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_3_CLASS@@" />
+        <Image id="court_project_@@INDEX@@_stake_3_dot_4_@@color@@" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_3_CLASS@@" />
+        <Image id="court_project_@@INDEX@@_stake_3_dot_5_@@color@@" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_3_CLASS@@" />
+      </GridLayout>
+      <Panel id="db_court_project_@@INDEX@@_stake_3_spacer_@@color@@" class="project_stake_spacer" />
+    </HorizontalLayout>
+    <HorizontalLayout id="court_project_@@INDEX@@_stake_4_@@color@@" class="project_stake_container">
+      <Text id="court_project_@@INDEX@@_stake_4_label_@@color@@" class="project_stake_label project_stake_label_@@PROJECT_STAKE_4_CLASS@@" text="" />
+      <GridLayout id="db_court_project_@@INDEX@@_stake_4_dots_@@color@@" class="project_stake_dotline">
+        <Image id="court_project_@@INDEX@@_stake_4_dot_1_@@color@@" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_4_CLASS@@" />
+        <Image id="court_project_@@INDEX@@_stake_4_dot_2_@@color@@" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_4_CLASS@@" />
+        <Image id="court_project_@@INDEX@@_stake_4_dot_3_@@color@@" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_4_CLASS@@" />
+        <Image id="court_project_@@INDEX@@_stake_4_dot_4_@@color@@" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_4_CLASS@@" />
+        <Image id="court_project_@@INDEX@@_stake_4_dot_5_@@color@@" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_4_CLASS@@" />
+      </GridLayout>
+      <Panel id="db_court_project_@@INDEX@@_stake_4_spacer_@@color@@" class="project_stake_spacer" />
+    </HorizontalLayout>
+  </GridLayout>
+
+  <HorizontalLayout id="db_court_project_@@INDEX@@_date_container_@@color@@" class="project_date_container">
+    <Text id="court_project_@@INDEX@@_date_start_@@color@@" class="project_date_text project_date_start_text" text="" />
+    <Text id="db_court_project_@@INDEX@@_date_separator_@@color@@" class="project_date_text project_date_start_text" text="—" preferredWidth="0" minWidth="20" />
+    <Text id="court_project_@@INDEX@@_date_end_@@color@@" class="project_date_text" text="" />
+    <Text id="court_project_@@INDEX@@_date_increment_@@color@@" class="project_increment_text" text="(Increments Weekly)" />
+  </HorizontalLayout>
+</Panel>
 ]=]
 
 --- @param templateKey string e.g. "csheet/page3"

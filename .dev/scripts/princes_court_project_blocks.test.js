@@ -9,30 +9,34 @@ const {
   buildCourtProjectBlocks,
 } = require("./princes_court_trait_placeholders.js");
 
-test("buildCourtProjectBlocks expands eight full sheet-style Court project blocks", () => {
+test("buildCourtProjectBlocks expands eight 0-based Court project blocks from the princes_court partial", () => {
   const partial = fs.readFileSync(
-    path.resolve(__dirname, "../../ui/.templates/csheet/partials/project_block.xml"),
+    path.resolve(__dirname, "../../ui/.templates/princes_court/partials/project_block.xml"),
     "utf8"
   );
 
   const xml = buildCourtProjectBlocks(partial, 8);
 
-  assert.match(xml, /court_project_01_@@color@@/);
-  assert.match(xml, /court_project_08_@@color@@/);
-  assert.doesNotMatch(xml, /court_project_09_/);
-  assert.doesNotMatch(xml, /@@INDEX@@|@@PROJECT_STAKE_[1-6]_CLASS@@/);
+  assert.match(xml, /court_project_0_@@color@@/);
+  assert.match(xml, /court_project_7_@@color@@/);
+  assert.doesNotMatch(xml, /court_project_8_/);
+  assert.doesNotMatch(xml, /@@INDEX@@|@@PROJECT_STAKE_[1-4]_CLASS@@/);
   assert.equal((xml.match(/class="project_container"/g) || []).length, 8);
-  assert.equal((xml.match(/class="project_stake_container"/g) || []).length, 56);
-  assert.match(xml, /court_project_08_stake_6_dot_5_@@color@@/);
+  assert.equal((xml.match(/id="court_project_\d+_stake_\d+_@@color@@"/g) || []).length, 32);
+  assert.match(xml, /court_project_7_stake_4_dot_5_@@color@@/);
+  assert.doesNotMatch(xml, /_stake_5_|_stake_6_/);
   assert.doesNotMatch(xml, /Print attributes|Dots are 'active=false'/);
+  assert.match(xml, /active="false"/);
 });
 
-test("Court reconciler fills the complete character-sheet project field set", () => {
+test("Court reconciler fills the complete character-sheet project field set with 0-based slots", () => {
   const source = fs.readFileSync(
     path.resolve(__dirname, "../../core/projects.ttslua"),
     "utf8"
   );
 
+  assert.match(source, /M\.DISPLAY_STAKE_ROWS = 4/);
+  assert.match(source, /for i = 0, pool - 1 do/);
   assert.match(source, /court_project_" \.\. slot \.\. "_scope_dot_/);
   assert.match(source, /courtId\("result_margin"\)/);
   assert.match(source, /courtId\("stakes"\)/);
