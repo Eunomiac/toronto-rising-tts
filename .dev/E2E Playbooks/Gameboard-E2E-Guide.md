@@ -5,13 +5,13 @@
 Read this when:
 - running, regenerating, or modifying the Gameboard E2E playbook or `RunTest("Gameboard")`
 - validating Storyteller gameboard, stage placement, control-token, NPC seating, or palette behavior
-- changing `core/npc_gameboard.ttslua`, `core/npcs.ttslua`, or control-board object/UI scripts
+- changing `core/npc_gameboard*.ttslua` (facade + siblings), `core/npcs.ttslua`, or control-board object/UI scripts
 
 Source of truth:
 - `.dev/E2E Playbooks/Gameboard-E2E.md`
 - `lib/e2e_playbook_gameboard.ttslua`
 - `lib/e2e_gameboard.ttslua`
-- `core/npc_gameboard.ttslua`
+- `core/npc_gameboard.ttslua` (+ siblings under `core/npc_gameboard_*.ttslua`)
 - `core/npcs.ttslua`
 - `.dev/NPC Object Spawning & Spotlighting/Storyteller Gameboard Control.md`
 - `.dev/NPC Object Spawning & Spotlighting/NPC Reconciler Procedure.md`

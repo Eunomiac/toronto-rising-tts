@@ -8,7 +8,7 @@ Read this when:
 
 Source of truth:
 - `core/npcs.ttslua`
-- `core/npc_gameboard.ttslua`
+- `core/npc_gameboard.ttslua` (+ siblings `npc_gameboard_{board,tokens,snaps,reconcile,apply,interactions,spotlight}`)
 - `lib/npcs_data.ttslua`
 - `lib/npcs_light_spawn_defaults.ttslua`
 - `.dev/custom-ui-assets/README.md`

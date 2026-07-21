@@ -1,0 +1,1351 @@
+--[[
+    NPC gameboard — drops / spread / group relocate-flip / pick-up / rotate (TOR-423).
+    May require Board, Tokens, Snaps, Reconcile; lazy-require npcs/rolls/preview/state.
+]]
+
+local Interactions = {}
+
+local U = require("lib.util")
+local C = require("lib.constants")
+local G = require("lib.guids")
+local DATA = require("lib.npc_gameboard_data")
+local DK = require("lib.dice_kinds")
+local NPCS_DATA = require("lib.npcs_data")
+local Palette = require("lib.npc_control_board_palette")
+local Board = require("core.npc_gameboard_board")
+local Tokens = require("core.npc_gameboard_tokens")
+local Snaps = require("core.npc_gameboard_snaps")
+local Reconcile = require("core.npc_gameboard_reconcile")
+
+--- First `require("core.state")` during luabundle registration can return nil (circular load).
+--- @type table|nil
+local stateModuleCache = nil
+
+--- @return table|nil
+local function stateModule()
+    if type(stateModuleCache) == "table" and type(stateModuleCache.getStateVal) == "function" then
+        return stateModuleCache
+    end
+    local loaded = require("core.state")
+    if type(loaded) == "table" then
+        stateModuleCache = loaded
+    end
+    return loaded
+end
+
+local TAG_TOKEN = DATA.TAG_NPC_CONTROL_TOKEN
+
+--- @type table<string, boolean> token guid -> true when drop may trigger anchor-family spread.
+local anchorDropEligibleByTokenGuid = {}
+--- @type table<string, boolean> token guid -> picked up while on CONTROL_BOARD_PALETTE (TOR-172 palette-drop flip).
+local tokenPickedUpFromPaletteGuid = {}
+--- @type table<string, string> token guid -> polar `familyId` at pick-up (board→board group relocate, TOR-412).
+local tokenBoardFamilyAtPickUp = {}
+--- Storyteller hold state for `Group move (hold)` hotkey (TOR-412).
+local groupMoveHotkeyHeld = false
+
+--- Forward declaration (Lua local-function order): defined after helper dependencies.
+local rebuildAnchorDropEligibilityCache
+local tokensOccupyingPolarFamily
+local emptyPolarFamilySnaps
+--- Prevents recursive anchor-family spread when programmatic moves fire onObjectDrop.
+local anchorFamilySpreadDepth = 0
+--- Prevents recursive family flip when programmatic setRotation fires onObjectRotate (TOR-414).
+local familyFlipDepth = 0
+
+--- Injected by facade (interaction profile counters).
+Interactions.beginInteractionProfile = function(_reason) end
+Interactions.finishInteractionProfile = function(_t0) end
+
+local ST_DICE_BAG_TOKEN_DROP_RADIUS = 3
+local storytellerDiceBagDropEntries = nil
+
+--- @return table[] { kind: string, guid: string }
+local function storytellerDiceBagDropEntriesList()
+    if storytellerDiceBagDropEntries ~= nil then
+        return storytellerDiceBagDropEntries
+    end
+    storytellerDiceBagDropEntries = {}
+    local bags = G.GetAllStorytellerDiceBagGUIDs()
+    for kind, guid in pairs(bags) do
+        if type(kind) == "string" and type(guid) == "string" and guid ~= "" then
+            storytellerDiceBagDropEntries[#storytellerDiceBagDropEntries + 1] = {
+                kind = kind,
+                guid = guid,
+            }
+        end
+    end
+    return storytellerDiceBagDropEntries
+end
+
+--- @param pos Vector|table|nil
+--- @return string|nil bag pool key (`normal`, `hunger`, …) when within hit radius
+local function dieKindNearStorytellerDiceBag(pos)
+    if pos == nil then
+        return nil
+    end
+    local bestKind = nil
+    local bestDist = ST_DICE_BAG_TOKEN_DROP_RADIUS
+    for _, entry in ipairs(storytellerDiceBagDropEntriesList()) do
+        local bag = G.getObject(entry.guid)
+        if U.isGameObject(bag) and bag.getPosition ~= nil then
+            local dist = U.HorizontalDistance(pos, bag.getPosition())
+            if dist < bestDist then
+                bestDist = dist
+                bestKind = entry.kind
+            end
+        end
+    end
+    return bestKind
+end
+
+--- @param characterKey string
+--- @return string|nil NPC full name for ST roll label
+local function npcDisplayNameForCharacterKey(characterKey)
+    if type(characterKey) ~= "string" or characterKey == "" then
+        return nil
+    end
+    local def = type(NPCS_DATA.characters) == "table" and NPCS_DATA.characters[characterKey] or nil
+    if type(def) == "table" then
+        local display = def.fullName or def.name
+        if type(display) == "string" and display ~= "" then
+            return display
+        end
+    end
+    return characterKey
+end
+
+--- Re-apply committed token home from state (stage placement, homeland seat row, or palette).
+--- @param token Object
+--- @param characterKey string|nil
+--- @return boolean restored
+local function restoreNpcControlTokenHome(token, characterKey)
+    if not Tokens.isNpcControlToken(token) then
+        return false
+    end
+    characterKey = characterKey or Tokens.resolveTokenCharacterKey(token)
+    if type(characterKey) ~= "string" or characterKey == "" then
+        return false
+    end
+    local guid = tostring(token.getGUID() or "")
+    if guid ~= "" then
+        tokenPickedUpFromPaletteGuid[guid] = nil
+    end
+
+    local model = Reconcile.getActiveBoardModel()
+    local placements = model.placements
+    local placementRow = type(placements) == "table" and Reconcile.normalizePlacementRow(placements[characterKey]) or nil
+    if placementRow ~= nil then
+        local board = Board.getControlBoard()
+        if Board.isGameObject(board) then
+            Reconcile.mirrorControlTokenToPlacementRow(token, board, placementRow)
+            return true
+        end
+    end
+
+    local seatKey = nil
+    for _, candidate in ipairs(C.NPCSeats or {}) do
+        local row = type(model.seatSlots) == "table" and model.seatSlots[candidate] or nil
+        if type(row) == "table" and row.characterKey == characterKey and row.slotEmpty ~= true then
+            seatKey = candidate
+            break
+        end
+    end
+    if type(seatKey) == "string" and seatKey ~= "" then
+        local board = Board.getControlBoard()
+        if Board.isGameObject(board) then
+            local seatCatalog = Snaps.getSeatRowCatalogMaps(board).npc
+            local entry = seatCatalog[seatKey]
+            if type(entry) == "table" then
+                local row = type(model.seatSlots) == "table" and model.seatSlots[seatKey] or {}
+                local present = row.isPresent == true
+                Tokens.mirrorSeatRowControlToken(token, board, entry, present)
+                Reconcile.schedulePreviewDraftCapture()
+                return true
+            end
+        end
+    end
+
+    local palette = Board.getControlBoardPalette()
+    if Board.isGameObject(palette) and Palette.parkTokenAtAssignedSnap(palette, token, characterKey) then
+        Tokens.ensureDefaultNpcControlTokenScale(token)
+        return true
+    end
+    return false
+end
+
+--- Storyteller drops NPC control token on a dice bag → restore home from state + initiate NPC roll (TOR-174).
+--- @param token Object
+--- @param playerColor string|nil
+--- @param opts table|nil `{ skipRestore?: boolean }`
+--- @return boolean true when drop was consumed (hit an ST bag)
+local function tryNpcControlTokenDroppedOnStorytellerDiceBag(token, playerColor, opts)
+    opts = type(opts) == "table" and opts or {}
+    if not Tokens.isNpcControlToken(token) then
+        return false
+    end
+    if playerColor ~= "Black" and playerColor ~= "Host" then
+        return false
+    end
+    if token.getPosition == nil then
+        return false
+    end
+    local board = Board.getControlBoard()
+    if Board.isGameObject(board) and Board.isTokenOnMinimapTokenSurface(board, token) then
+        return false
+    end
+    local palette = Board.getControlBoardPalette()
+    if Board.isGameObject(palette) and Palette.isTokenOnPaletteBoard(palette, token) then
+        return false
+    end
+    local bagKind = dieKindNearStorytellerDiceBag(token.getPosition())
+    if bagKind == nil then
+        return false
+    end
+    local characterKey = Tokens.resolveTokenCharacterKey(token)
+    if type(characterKey) ~= "string" or characterKey == "" then
+        return false
+    end
+    local label = npcDisplayNameForCharacterKey(characterKey)
+    if type(label) ~= "string" or label == "" then
+        return false
+    end
+
+    if opts.skipRestore ~= true then
+        restoreNpcControlTokenHome(token, characterKey)
+    end
+
+    local dieKind = bagKind
+    if dieKind ~= DK.KIND_NORMAL
+        and dieKind ~= DK.KIND_HUNGER
+        and dieKind ~= DK.KIND_ROUSE
+        and dieKind ~= DK.KIND_OBLIV_ROUSE
+        and dieKind ~= DK.KIND_WEREWOLF
+        and dieKind ~= DK.KIND_RAGE then
+        dieKind = DK.KIND_NORMAL
+    end
+
+    local tokenIsWerewolf = token.hasTag ~= nil and token.hasTag("Werewolf") == true
+
+    local STR = require("core.storyteller_rolls")
+    local ok = STR.initiateFromBagLabel(label, dieKind, characterKey, { tokenIsWerewolf = tokenIsWerewolf })
+    if ok ~= true then
+        print(
+            "[Gameboard] ST dice-bag token drop: roll not started for "
+                .. label
+                .. " ("
+                .. tostring(dieKind)
+                .. ")"
+        )
+    end
+    return true
+end
+
+Interactions.restoreNpcControlTokenHome = restoreNpcControlTokenHome
+Interactions.tryNpcControlTokenDroppedOnStorytellerDiceBag = tryNpcControlTokenDroppedOnStorytellerDiceBag
+
+--- Re-pin a `pc_control_token` to its color seat-row column; flip matches current
+--- `seatSlots[color].isPresent` (state authoritative — TOR-236). This is the token's home,
+--- so it doubles as "return to previous position and orientation".
+--- @param token Object
+--- @param color string|nil player seat color (defaults to GM Notes `pcToken:<Color>`)
+--- @return boolean restored
+local function restorePcControlTokenHome(token, color)
+    if not Tokens.isPcControlToken(token) then
+        return false
+    end
+    color = color or Tokens.resolvePcTokenSeatColor(token)
+    if type(color) ~= "string" or color == "" then
+        return false
+    end
+    local board = Board.getControlBoard()
+    if not Board.isGameObject(board) then
+        return false
+    end
+    local pcCatalog = Snaps.getSeatRowCatalogMaps(board).pc
+    local entry = pcCatalog[color]
+    if type(entry) ~= "table" then
+        return false
+    end
+    local model = Reconcile.getActiveBoardModel()
+    local row = type(model.seatSlots) == "table" and model.seatSlots[color] or {}
+    Tokens.mirrorSeatRowControlToken(token, board, entry, row.isPresent == true)
+    Reconcile.schedulePreviewDraftCapture()
+    return true
+end
+
+--- Storyteller drops a `pc_control_token` on a dice bag → always return the token home, and
+--- report the PC color + roll type from `STR.rollTypeForStorytellerBagDrop` (same mapping as NPC
+--- tokens and the bag name modal — TOR-236 / TOR-283).
+--- @param token Object
+--- @param playerColor string|nil
+--- @param opts table|nil `{ skipRestore?: boolean }` when true, only validates and returns roll metadata
+--- @return boolean consumed true when the drop hit an ST bag and was handled
+--- @return string|nil rollColor PC seat color to start a roll for
+--- @return string|nil rollType `C.RollType` for the roll
+local function tryPcControlTokenDroppedOnStorytellerDiceBag(token, playerColor, opts)
+    opts = type(opts) == "table" and opts or {}
+    if not Tokens.isPcControlToken(token) then
+        return false
+    end
+    if playerColor ~= "Black" and playerColor ~= "Host" then
+        return false
+    end
+    if token.getPosition == nil then
+        return false
+    end
+    local board = Board.getControlBoard()
+    if Board.isGameObject(board) and Board.isTokenOnMinimapTokenSurface(board, token) then
+        return false
+    end
+    local palette = Board.getControlBoardPalette()
+    if Board.isGameObject(palette) and Palette.isTokenOnPaletteBoard(palette, token) then
+        return false
+    end
+    local bagKind = dieKindNearStorytellerDiceBag(token.getPosition())
+    if bagKind == nil then
+        return false
+    end
+    local color = Tokens.resolvePcTokenSeatColor(token)
+    if type(color) ~= "string" or color == "" then
+        return false
+    end
+
+    if opts.skipRestore ~= true then
+        restorePcControlTokenHome(token, color)
+    end
+
+    local dieKind = bagKind
+    if dieKind ~= DK.KIND_NORMAL
+        and dieKind ~= DK.KIND_HUNGER
+        and dieKind ~= DK.KIND_ROUSE
+        and dieKind ~= DK.KIND_OBLIV_ROUSE
+        and dieKind ~= DK.KIND_WEREWOLF
+        and dieKind ~= DK.KIND_RAGE then
+        dieKind = DK.KIND_NORMAL
+    end
+
+    local tokenIsWerewolf = token.hasTag ~= nil and token.hasTag("Werewolf") == true
+
+    local STR = require("core.storyteller_rolls")
+    local rollType = STR.rollTypeForStorytellerBagDrop(dieKind, { tokenIsWerewolf = tokenIsWerewolf })
+    return true, color, rollType
+end
+
+Interactions.restorePcControlTokenHome = restorePcControlTokenHome
+Interactions.tryPcControlTokenDroppedOnStorytellerDiceBag = tryPcControlTokenDroppedOnStorytellerDiceBag
+
+
+
+--- @param result table
+local function logAnchorSpreadResult(result)
+    if type(result) ~= "table" or result.reason == "suppressed" then
+        return
+    end
+    if (result.placed or 0) > 0 then
+        print(
+            "[Gameboard] anchor spread: placed "
+                .. tostring(result.placed)
+                .. " token(s) for group "
+                .. tostring(result.groupId)
+        )
+        return
+    end
+    local detail = tostring(result.reason or "unknown")
+    if type(result.groupId) == "string" and result.groupId ~= "" then
+        detail = detail .. " (group=" .. result.groupId .. ")"
+    end
+    if result.matchedSnapIndex ~= nil then
+        detail = detail
+            .. " snap="
+            .. tostring(result.matchedSnapIndex)
+            .. " familyK="
+            .. tostring(result.familyK)
+    end
+    print("[Gameboard] anchor spread skipped: " .. detail)
+end
+
+--- Build fast lookup for drop events: only group-leading (slotIndex 1) tokens that are currently off CONTROL_BOARD.
+--- @param board Object|nil
+rebuildAnchorDropEligibilityCache = function(board)
+    anchorDropEligibleByTokenGuid = {}
+    if not Board.isGameObject(board) then
+        return
+    end
+    local byKey = Reconcile.buildTokenByCharacterKey()
+    for characterKey, token in pairs(byKey) do
+        if Board.isGameObject(token) and not Board.isTokenOnControlBoardSurface(board, token) then
+            local _, slotIndex = Palette.resolveGroupForCharacterKey(characterKey)
+            if tonumber(slotIndex) == 1 then
+                anchorDropEligibleByTokenGuid[tostring(token.getGUID())] = true
+            end
+        end
+    end
+end
+
+Interactions.rebuildAnchorDropEligibilityCache = rebuildAnchorDropEligibilityCache
+
+--- Extra board-local Y when re-seating after Flip (TTS FlipOver can leave tiles slightly below surface).
+local CONTROL_TOKEN_FLIP_RESEAT_EXTRA_LOCAL_Y = 0.05
+
+
+--- Apply ring `defaultLightMode` flip + optional stage light preview for a token on a catalog snap.
+--- @param token Object
+--- @param entry table catalog entry (`ringIndex`, `yawDeg`)
+--- @param board Object
+--- @param cfg table|nil CONTROL_BOARD_SNAP config
+--- @return table { applied: boolean, reason: string, defaultLightMode?: string, ringIndex?: number }
+local function applySnapGroupDefaultLightAtEntry(token, entry, board, cfg)
+    local result = { applied = false, reason = "invalid_token" }
+    if not Tokens.isNpcControlToken(token) or type(entry) ~= "table" then
+        return result
+    end
+    if entry.snapKind == Snaps.SNAP_KIND_SEAT then
+        result.reason = "seat_snap"
+        return result
+    end
+    -- Ring tokenScale (TOR-410); do not reset to board default (undid palette→board scale).
+    Tokens.applyNpcControlTokenScaleVec(token, Tokens.controlTokenScaleForCatalogEntry(entry))
+    if type(cfg) ~= "table" then
+        cfg = Snaps.resolveControlBoardSnapConfig(nil)
+    end
+    local group = type(cfg.snapGroups) == "table" and cfg.snapGroups[entry.ringIndex] or nil
+    local mode = Snaps.snapGroupDefaultLightMode(group)
+    if mode == nil then
+        result.reason = "no_default_mode"
+        return result
+    end
+
+    local boardYaw = Board.objectYawDeg(board)
+    local faceUp = mode == "STANDARD"
+    if token.setRotation ~= nil then
+        local rot = Tokens.rotationForNpcControlToken(boardYaw, entry.yawDeg, faceUp)
+        token.setRotation(rot)
+        U.delay(function()
+            if not Board.isGameObject(token) or not Board.isTokenOnControlBoardSurface(board, token) then
+                return
+            end
+            if Tokens.tokenRotationIsFaceUp(token) ~= faceUp then
+                token.setRotation(rot)
+            end
+        end, 0.05)
+    end
+    Tokens.setHiddenFromPlayerColors(token)
+
+    -- Board token face only. Stage figurine lights wait for Apply (Spotlight hold remains the live preview).
+    result.applied = true
+    result.reason = "ok"
+    result.defaultLightMode = mode
+    result.ringIndex = entry.ringIndex
+    return result
+end
+
+--- When an anchor snap receives a grouped token and the rest of the family is empty,
+--- park remaining group members on sibling snaps (lowest slotIndex first; snaps center-out alternating).
+--- @param droppedToken Object
+--- @return table result { placed: number, reason?: string, groupId?: string }
+function Interactions.tryAnchorFamilyGroupSpread(droppedToken)
+    if anchorFamilySpreadDepth > 0 then
+        return { placed = 0, reason = "suppressed" }
+    end
+    local board = Board.getControlBoard()
+    if not Board.isGameObject(board) or not Tokens.isNpcControlToken(droppedToken) then
+        return { placed = 0, reason = "invalid_token" }
+    end
+    if not Board.isTokenOnControlBoardSurface(board, droppedToken) then
+        return { placed = 0, reason = "not_on_board" }
+    end
+    local palette = Board.getControlBoardPalette()
+    if Board.isGameObject(palette) and Palette.isTokenOnPaletteBoard(palette, droppedToken) then
+        return { placed = 0, reason = "on_palette" }
+    end
+    local characterKey = Tokens.resolveTokenCharacterKey(droppedToken)
+    if type(characterKey) ~= "string" or characterKey == "" then
+        return { placed = 0, reason = "no_character_key" }
+    end
+    local groupId, _ = Palette.resolveGroupForCharacterKey(characterKey)
+    if groupId == nil then
+        return { placed = 0, reason = "no_group" }
+    end
+    if board.getSnapPoints == nil then
+        return { placed = 0, reason = "no_snaps" }
+    end
+    local installedSnaps = board.getSnapPoints()
+    if type(installedSnaps) ~= "table" or #installedSnaps == 0 then
+        return { placed = 0, reason = "no_snaps" }
+    end
+    local fuzziness = Board.snapMatchFuzzinessForBoard(board)
+    local catalog = Snaps.buildControlBoardSnapCatalog(board, nil)
+    if #catalog ~= #installedSnaps then
+        print(
+            "[Gameboard] anchor spread: snap catalog mismatch (installed="
+                .. tostring(#installedSnaps)
+                .. " catalog="
+                .. tostring(#catalog)
+                .. "); Save & Play or Sync.npcs to reinstall snaps"
+        )
+    end
+    local anchorEntry = Snaps.resolveTokenSnapCatalogEntry(board, droppedToken, fuzziness, nil)
+    if anchorEntry == nil then
+        return { placed = 0, reason = "no_snap_match" }
+    end
+    if anchorEntry.isAnchor ~= true then
+        return {
+            placed = 0,
+            reason = "not_anchor",
+            matchedSnapIndex = anchorEntry.snapIndex,
+            familyK = anchorEntry.familyK,
+        }
+    end
+    local familyCohabitants = tokensOccupyingPolarFamily(
+        board,
+        anchorEntry.familyId,
+        fuzziness,
+        catalog,
+        droppedToken
+    )
+    if #familyCohabitants > 0 then
+        return { placed = 0, reason = "family_not_empty", groupId = groupId }
+    end
+    local members = Palette.getSortedGroupMembers(groupId)
+    local byKey = Reconcile.buildTokenByCharacterKey()
+    local NPCS = require("core.npcs")
+    local toPlace = {}
+    for _, member in ipairs(members) do
+        if type(NPCS.isCharacterSeatedAtTable) == "function"
+            and NPCS.isCharacterSeatedAtTable(member.characterKey) then
+            -- TOR-76: seated table NPCs stay put during family anchor spread.
+        else
+            local tok = byKey[member.characterKey]
+            if tok ~= nil and tok ~= droppedToken and not Board.isTokenOnControlBoardSurface(board, tok) then
+                toPlace[#toPlace + 1] = {
+                    token = tok,
+                    slotIndex = member.slotIndex,
+                }
+            end
+        end
+    end
+    table.sort(toPlace, function(a, b)
+        if a.slotIndex == b.slotIndex then
+            return tostring(a.token.getGUID()) < tostring(b.token.getGUID())
+        end
+        return a.slotIndex < b.slotIndex
+    end)
+    local emptyFamilySnaps = {}
+    local seenWorldXZ = {}
+    local leaderSnapIndex = tonumber(anchorEntry.snapIndex)
+    local function worldXZKey(entry)
+        local wp = entry and entry.worldPos
+        if wp == nil then
+            return nil
+        end
+        return string.format("%.3f:%.3f", tonumber(wp.x) or 0, tonumber(wp.z) or 0)
+    end
+    local leaderXZ = worldXZKey(anchorEntry)
+    for _, entry in ipairs(catalog) do
+        if entry.familyId == anchorEntry.familyId and entry.isAnchor ~= true then
+            if leaderSnapIndex ~= nil and tonumber(entry.snapIndex) == leaderSnapIndex then
+                -- Leader snap (defensive; anchors are already excluded by isAnchor).
+            else
+                local xz = worldXZKey(entry)
+                if xz ~= nil and (xz == leaderXZ or seenWorldXZ[xz] == true) then
+                    -- Duplicate full-circle angle (±half) or coincident with leader (TOR-415).
+                else
+                    if xz ~= nil then
+                        seenWorldXZ[xz] = true
+                    end
+                    emptyFamilySnaps[#emptyFamilySnaps + 1] = entry
+                end
+            end
+        end
+    end
+    Snaps.orderFamilySnapsForAnchorSpread(emptyFamilySnaps, anchorEntry, board)
+    if #toPlace == 0 then
+        return { placed = 0, reason = "nothing_to_place", groupId = groupId }
+    end
+    if #emptyFamilySnaps == 0 then
+        return { placed = 0, reason = "family_has_no_sibling_snaps", groupId = groupId }
+    end
+    local boardYaw = Board.objectYawDeg(board)
+    local snapCfg = Snaps.getInstalledControlBoardSnapConfig()
+    if type(snapCfg) ~= "table" then
+        snapCfg = Snaps.resolveControlBoardSnapConfig(nil)
+    end
+    anchorFamilySpreadDepth = anchorFamilySpreadDepth + 1
+    local placed = 0
+    local limit = math.min(#toPlace, #emptyFamilySnaps)
+    for i = 1, limit do
+        local tok = toPlace[i].token
+        local snapEntry = emptyFamilySnaps[i]
+        local fromPalette = Board.isGameObject(palette) and Palette.isTokenOnPaletteBoard(palette, tok)
+        Snaps.placeTokenOnControlBoardSnap(tok, snapEntry, board, boardYaw)
+        if fromPalette then
+            local lightResult = applySnapGroupDefaultLightAtEntry(tok, snapEntry, board, snapCfg)
+            if lightResult.applied == true then
+                print(
+                    "[Gameboard] anchor spread palette light: "
+                        .. tostring(Tokens.resolveTokenCharacterKey(tok))
+                        .. " ring "
+                        .. tostring(lightResult.ringIndex)
+                        .. " "
+                        .. tostring(lightResult.defaultLightMode)
+                )
+            end
+        end
+        placed = placed + 1
+    end
+    anchorFamilySpreadDepth = anchorFamilySpreadDepth - 1
+    return { placed = placed, reason = "ok", groupId = groupId }
+end
+
+--- Tokens whose nearest catalog snap is in a polar family (unique by GUID; TOR-413).
+--- Avoids per-snap fuzziness double-counts when sibling snaps are closer than match fuzziness.
+--- @param board Object
+--- @param familyId string
+--- @param fuzziness number
+--- @param catalog table[] unused (signature kept for call sites); nearest match uses live catalog build
+--- @param ignoreToken Object|nil
+--- @return table[] `{ token, entry }`
+tokensOccupyingPolarFamily = function(board, familyId, fuzziness, catalog, ignoreToken)
+    local out = {}
+    if type(familyId) ~= "string" or familyId == "" or not Board.isGameObject(board) then
+        return out
+    end
+    local seen = {}
+    for _, tok in ipairs(Board.objectsOnControlBoard(board, TAG_TOKEN)) do
+        if tok ~= ignoreToken and Tokens.isNpcControlToken(tok) then
+            local entry = Snaps.resolveTokenSnapCatalogEntry(board, tok, fuzziness, nil)
+            if type(entry) == "table"
+                and entry.snapKind ~= Snaps.SNAP_KIND_SEAT
+                and entry.familyId == familyId
+            then
+                local guid = tostring(tok.getGUID() or "")
+                if guid ~= "" and seen[guid] ~= true then
+                    seen[guid] = true
+                    out[#out + 1] = { token = tok, entry = entry }
+                end
+            end
+        end
+    end
+    return out
+end
+
+--- Empty polar snaps in a family by nearest-entry occupancy (excludes `excludeEntry` snapIndex).
+--- @param board Object
+--- @param familyId string
+--- @param fuzziness number
+--- @param catalog table[]
+--- @param ignoreToken Object|nil treated as non-occupant
+--- @param excludeEntry table|nil catalog row to skip (e.g. drop target)
+--- @return table[] catalog entries
+emptyPolarFamilySnaps = function(board, familyId, fuzziness, catalog, ignoreToken, excludeEntry)
+    local out = {}
+    if type(familyId) ~= "string" or familyId == "" or type(catalog) ~= "table" then
+        return out
+    end
+    local occupiedSnapIndex = {}
+    if Board.isGameObject(board) then
+        for _, tok in ipairs(Board.objectsOnControlBoard(board, TAG_TOKEN)) do
+            if tok ~= ignoreToken and Tokens.isNpcControlToken(tok) then
+                local entry = Snaps.resolveTokenSnapCatalogEntry(board, tok, fuzziness, nil)
+                if type(entry) == "table"
+                    and entry.snapKind ~= Snaps.SNAP_KIND_SEAT
+                    and entry.familyId == familyId
+                    and entry.snapIndex ~= nil
+                then
+                    occupiedSnapIndex[tonumber(entry.snapIndex)] = true
+                end
+            end
+        end
+    end
+    local excludeIndex = type(excludeEntry) == "table" and tonumber(excludeEntry.snapIndex) or nil
+    local excludeXZ = nil
+    if type(excludeEntry) == "table" and excludeEntry.worldPos ~= nil then
+        local wp = excludeEntry.worldPos
+        excludeXZ = string.format("%.3f:%.3f", tonumber(wp.x) or 0, tonumber(wp.z) or 0)
+    end
+    local seenWorldXZ = {}
+    for _, entry in ipairs(catalog) do
+        if entry.snapKind ~= Snaps.SNAP_KIND_SEAT
+            and entry.familyId == familyId
+            and (excludeIndex == nil or tonumber(entry.snapIndex) ~= excludeIndex)
+            and occupiedSnapIndex[tonumber(entry.snapIndex)] ~= true
+        then
+            local xz = nil
+            if entry.worldPos ~= nil then
+                xz = string.format(
+                    "%.3f:%.3f",
+                    tonumber(entry.worldPos.x) or 0,
+                    tonumber(entry.worldPos.z) or 0
+                )
+            end
+            if xz ~= nil and (xz == excludeXZ or seenWorldXZ[xz] == true) then
+                -- Skip full-circle duplicate / coincident with exclude (TOR-415).
+            else
+                if xz ~= nil then
+                    seenWorldXZ[xz] = true
+                end
+                out[#out + 1] = entry
+            end
+        end
+    end
+    return out
+end
+
+--- Board→board relocate: while Group-move hotkey held, move source-family cohabitants onto free dest snaps (TOR-412).
+--- Dropped token stays on its landing snap; siblings fill remaining empty dest slots center-out (palette-leader parity).
+--- @param droppedToken Object
+--- @param sourceFamilyId string
+--- @return table `{ placed: number, reason?: string, sourceFamilyId?: string, destFamilyId?: string }`
+function Interactions.tryBoardFamilyGroupRelocate(droppedToken, sourceFamilyId)
+    if anchorFamilySpreadDepth > 0 then
+        return { placed = 0, reason = "suppressed" }
+    end
+    if type(sourceFamilyId) ~= "string" or sourceFamilyId == "" then
+        return { placed = 0, reason = "no_source_family" }
+    end
+    local board = Board.getControlBoard()
+    if not Board.isGameObject(board) or not Tokens.isNpcControlToken(droppedToken) then
+        return { placed = 0, reason = "invalid_token" }
+    end
+    if not Board.isTokenOnControlBoardSurface(board, droppedToken) then
+        return { placed = 0, reason = "not_on_board" }
+    end
+    local fuzziness = Board.snapMatchFuzzinessForBoard(board)
+    local catalog = Snaps.buildControlBoardSnapCatalog(board, nil)
+    local destEntry = Snaps.resolveTokenSnapCatalogEntry(board, droppedToken, fuzziness, nil)
+    if destEntry == nil then
+        return { placed = 0, reason = "no_dest_snap", sourceFamilyId = sourceFamilyId }
+    end
+    if destEntry.snapKind == Snaps.SNAP_KIND_SEAT then
+        return { placed = 0, reason = "dest_seat_row", sourceFamilyId = sourceFamilyId }
+    end
+    local destFamilyId = destEntry.familyId
+    if type(destFamilyId) ~= "string" or destFamilyId == "" then
+        return { placed = 0, reason = "no_dest_family", sourceFamilyId = sourceFamilyId }
+    end
+    if destFamilyId == sourceFamilyId then
+        return { placed = 0, reason = "same_family", sourceFamilyId = sourceFamilyId, destFamilyId = destFamilyId }
+    end
+
+    local NPCS = require("core.npcs")
+    local sourceAnchor = Snaps.anchorCatalogEntryForFamilyId(catalog, sourceFamilyId)
+    local movers = tokensOccupyingPolarFamily(board, sourceFamilyId, fuzziness, catalog, droppedToken)
+    local toPlace = {}
+    for i = 1, #movers do
+        local row = movers[i]
+        local ck = Tokens.resolveTokenCharacterKey(row.token)
+        if type(NPCS.isCharacterSeatedAtTable) == "function"
+            and type(ck) == "string"
+            and NPCS.isCharacterSeatedAtTable(ck) then
+            -- TOR-76: seated table NPCs stay put.
+        else
+            toPlace[#toPlace + 1] = row
+        end
+    end
+    if sourceAnchor ~= nil then
+        table.sort(toPlace, function(a, b)
+            return Snaps.compareFamilySnapCenterOutAlternating(a.entry, b.entry, sourceAnchor, board)
+        end)
+    end
+
+    local destAnchor = Snaps.anchorCatalogEntryForFamilyId(catalog, destFamilyId) or destEntry
+    local emptyDest = emptyPolarFamilySnaps(board, destFamilyId, fuzziness, catalog, droppedToken, destEntry)
+    Snaps.orderFamilySnapsForAnchorSpread(emptyDest, destAnchor, board)
+
+    if #toPlace == 0 then
+        return {
+            placed = 0,
+            reason = "nothing_to_place",
+            sourceFamilyId = sourceFamilyId,
+            destFamilyId = destFamilyId,
+        }
+    end
+    if #emptyDest == 0 then
+        return {
+            placed = 0,
+            reason = "no_free_dest_snaps",
+            sourceFamilyId = sourceFamilyId,
+            destFamilyId = destFamilyId,
+        }
+    end
+
+    local boardYaw = Board.objectYawDeg(board)
+    anchorFamilySpreadDepth = anchorFamilySpreadDepth + 1
+    local placed = 0
+    local limit = math.min(#toPlace, #emptyDest)
+    --- @type table[] `{ token, entry }` for sticky re-assert after TTS snap-back (close families).
+    local sticky = { { token = droppedToken, entry = destEntry } }
+    for i = 1, limit do
+        local tok = toPlace[i].token
+        local snapEntry = emptyDest[i]
+        Snaps.placeTokenOnControlBoardSnap(tok, snapEntry, board, boardYaw)
+        if type(tok.setLock) == "function" then
+            tok.setLock(true)
+        end
+        sticky[#sticky + 1] = { token = tok, entry = snapEntry }
+        placed = placed + 1
+    end
+    anchorFamilySpreadDepth = anchorFamilySpreadDepth - 1
+
+    -- Close families (e.g. Mid Center → CENTER): vacated source snaps can pull tokens back.
+    U.delay(function()
+        if not Board.isGameObject(board) then
+            return
+        end
+        anchorFamilySpreadDepth = anchorFamilySpreadDepth + 1
+        local yaw = Board.objectYawDeg(board)
+        for i = 1, #sticky do
+            local row = sticky[i]
+            if Board.isGameObject(row.token) and type(row.entry) == "table" then
+                Snaps.placeTokenOnControlBoardSnap(row.token, row.entry, board, yaw)
+                if row.token ~= droppedToken and type(row.token.setLock) == "function" then
+                    row.token.setLock(false)
+                end
+            end
+        end
+        anchorFamilySpreadDepth = anchorFamilySpreadDepth - 1
+    end, 0.08)
+
+    return {
+        placed = placed,
+        reason = "ok",
+        sourceFamilyId = sourceFamilyId,
+        destFamilyId = destFamilyId,
+    }
+end
+
+--- While Group-move hotkey held: set polar-family cohabitants to the same face (TOR-414 / TOR-419).
+--- Prefer `opts` captured at rotate-start (family + intended face + member GUIDs) — FlipOver can move
+--- the lead token onto a neighboring Mid Center ray snap and/or leave face mid-settle if read after Wait.
+--- Does not touch stage figurine lights (Apply / Spotlight hold only).
+--- @param flippedToken Object
+--- @param opts table|nil `{ familyId?: string, targetFaceUp?: boolean, members?: { guid: string, snapIndex: number }[] }`
+--- @return table `{ flipped: number, reason?: string, familyId?: string, faceUp?: boolean }`
+function Interactions.tryBoardFamilyGroupFlip(flippedToken, opts)
+    if familyFlipDepth > 0 then
+        return { flipped = 0, reason = "suppressed" }
+    end
+    if groupMoveHotkeyHeld ~= true then
+        return { flipped = 0, reason = "hotkey_not_held" }
+    end
+    local board = Board.getControlBoard()
+    if not Board.isGameObject(board) or not Tokens.isNpcControlToken(flippedToken) then
+        return { flipped = 0, reason = "invalid_token" }
+    end
+    if not Board.isTokenOnControlBoardSurface(board, flippedToken) then
+        return { flipped = 0, reason = "not_on_board" }
+    end
+    if type(opts) ~= "table" then
+        opts = {}
+    end
+    local fuzziness = Board.snapMatchFuzzinessForBoard(board)
+    local catalog = Snaps.buildControlBoardSnapCatalog(board, nil)
+    local familyId = opts.familyId
+    if type(familyId) ~= "string" or familyId == "" then
+        local leadEntry = Snaps.resolveTokenSnapCatalogEntry(board, flippedToken, fuzziness, nil)
+        if leadEntry == nil then
+            return { flipped = 0, reason = "no_snap" }
+        end
+        if leadEntry.snapKind == Snaps.SNAP_KIND_SEAT then
+            return { flipped = 0, reason = "seat_row" }
+        end
+        familyId = leadEntry.familyId
+    end
+    if type(familyId) ~= "string" or familyId == "" then
+        return { flipped = 0, reason = "no_family" }
+    end
+
+    local targetFaceUp = opts.targetFaceUp
+    if targetFaceUp == nil then
+        targetFaceUp = Tokens.tokenRotationIsFaceUp(flippedToken)
+    else
+        targetFaceUp = targetFaceUp == true
+    end
+
+    local bySnapIndex = {}
+    for i = 1, #catalog do
+        local e = catalog[i]
+        if type(e) == "table" and e.snapIndex ~= nil then
+            bySnapIndex[tonumber(e.snapIndex)] = e
+        end
+    end
+
+    --- @type table[] `{ token, entry }`
+    local cohabitants = {}
+    local seenGuid = {}
+    local capturedMembers = opts.members
+    if type(capturedMembers) == "table" then
+        for i = 1, #capturedMembers do
+            local row = capturedMembers[i]
+            local guid = type(row) == "table" and tostring(row.guid or "") or ""
+            local snapIndex = type(row) == "table" and tonumber(row.snapIndex) or nil
+            local entry = snapIndex ~= nil and bySnapIndex[snapIndex] or nil
+            local tok = guid ~= "" and getObjectFromGUID(guid) or nil
+            if Board.isGameObject(tok)
+                and Tokens.isNpcControlToken(tok)
+                and type(entry) == "table"
+                and entry.familyId == familyId
+                and seenGuid[guid] ~= true
+            then
+                seenGuid[guid] = true
+                cohabitants[#cohabitants + 1] = { token = tok, entry = entry }
+            end
+        end
+    end
+    if #cohabitants == 0 then
+        cohabitants = tokensOccupyingPolarFamily(board, familyId, fuzziness, catalog, nil)
+    end
+
+    local boardYaw = Board.objectYawDeg(board)
+    local leadGuid = tostring(flippedToken.getGUID() or "")
+    familyFlipDepth = familyFlipDepth + 1
+    local flipped = 0
+    for i = 1, #cohabitants do
+        local row = cohabitants[i]
+        local tok = row.token
+        if Board.isGameObject(tok) and type(row.entry) == "table" then
+            local wasFaceUp = Tokens.tokenRotationIsFaceUp(tok)
+            local isLead = tostring(tok.getGUID() or "") == leadGuid
+            -- Always re-seat onto snap + surface lift so FlipOver cannot leave tiles below the board.
+            Snaps.placeTokenOnControlBoardSnap(
+                tok,
+                row.entry,
+                board,
+                boardYaw,
+                targetFaceUp,
+                CONTROL_TOKEN_FLIP_RESEAT_EXTRA_LOCAL_Y
+            )
+            if not isLead and wasFaceUp ~= targetFaceUp then
+                flipped = flipped + 1
+            end
+        end
+    end
+    familyFlipDepth = familyFlipDepth - 1
+
+    return {
+        flipped = flipped,
+        reason = "ok",
+        familyId = familyId,
+        faceUp = targetFaceUp,
+    }
+end
+
+--- Global onObjectRotate: with Group-move hotkey held, match family tokens to flipped face (TOR-414 / TOR-419).
+--- @param token Object
+--- @param playerColor string|nil
+--- @param flip number|nil TTS flip degrees after rotate [0, 360)
+--- @param oldFlip number|nil
+function Interactions.onNpcControlTokenRotated(token, playerColor, flip, oldFlip)
+    if familyFlipDepth > 0 then
+        return
+    end
+    if groupMoveHotkeyHeld ~= true then
+        return
+    end
+    if not Tokens.isNpcControlToken(token) then
+        return
+    end
+    local flipN = tonumber(flip)
+    local oldN = tonumber(oldFlip)
+    if flipN ~= nil and oldN ~= nil and math.abs(flipN - oldN) < 1 then
+        return
+    end
+    local guid = tostring(token.getGUID() or "")
+    if guid == "" then
+        return
+    end
+
+    -- Capture family membership + intended face BEFORE FlipOver moves the lead token (dense Mid Center rays).
+    local board = Board.getControlBoard()
+    local capturedFamilyId = nil
+    local capturedMembers = nil
+    local targetFaceUp = nil
+    if flipN ~= nil then
+        targetFaceUp = not Tokens.eulerAxisFlippedDeg(flipN)
+    end
+    if Board.isGameObject(board) then
+        local fuzziness = Board.snapMatchFuzzinessForBoard(board)
+        local catalog = Snaps.buildControlBoardSnapCatalog(board, nil)
+        local entry = Snaps.resolveTokenSnapCatalogEntry(board, token, fuzziness, nil)
+        if type(entry) == "table"
+            and entry.snapKind ~= Snaps.SNAP_KIND_SEAT
+            and type(entry.familyId) == "string"
+            and entry.familyId ~= ""
+        then
+            capturedFamilyId = entry.familyId
+            local members = tokensOccupyingPolarFamily(board, capturedFamilyId, fuzziness, catalog, nil)
+            capturedMembers = {}
+            for i = 1, #members do
+                local mTok = members[i].token
+                local mEntry = members[i].entry
+                local mGuid = Board.isGameObject(mTok) and tostring(mTok.getGUID() or "") or ""
+                local snapIndex = type(mEntry) == "table" and tonumber(mEntry.snapIndex) or nil
+                if mGuid ~= "" and snapIndex ~= nil then
+                    capturedMembers[#capturedMembers + 1] = { guid = mGuid, snapIndex = snapIndex }
+                end
+            end
+        end
+    end
+
+    -- Let TTS finish FlipOver physics; face/family come from capture, not post-settle read.
+    Wait.frames(function()
+        if groupMoveHotkeyHeld ~= true or familyFlipDepth > 0 then
+            return
+        end
+        local tok = getObjectFromGUID(guid)
+        if tok == nil or not Tokens.isNpcControlToken(tok) then
+            return
+        end
+        local result = Interactions.tryBoardFamilyGroupFlip(tok, {
+            familyId = capturedFamilyId,
+            targetFaceUp = targetFaceUp,
+            members = capturedMembers,
+        })
+        if type(result) == "table" and result.reason == "ok" then
+            print(
+                "[Gameboard] group flip: family "
+                    .. tostring(result.familyId)
+                    .. " → "
+                    .. (result.faceUp == true and "STANDARD" or "OFF")
+                    .. " ("
+                    .. tostring(result.flipped or 0)
+                    .. " sibling face change(s))"
+            )
+        end
+    end, 2)
+end
+
+--- Any ordinary NPC/PC token rotation can change persisted THERE presence/light intent.
+--- @param token Object
+function Interactions.onControlTokenRotated(token)
+    if not Tokens.isNpcControlToken(token) and not Tokens.isPcControlToken(token) then
+        return
+    end
+    Reconcile.schedulePreviewDraftCapture()
+end
+
+--- Record palette origin on pick-up; revert seat-row scale when leaving the board (TOR-199).
+--- @param token Object|nil
+function Interactions.onNpcControlTokenPickUp(token)
+    Interactions.onControlTokenPickUp(token)
+end
+
+--- @param token Object|nil
+function Interactions.onControlTokenPickUp(token)
+    if not Tokens.isNpcControlToken(token) and not Tokens.isPcControlToken(token) then
+        return
+    end
+    Tokens.ensureDefaultNpcControlTokenScale(token)
+    if not Tokens.isNpcControlToken(token) then
+        return
+    end
+    local guid = tostring(token.getGUID() or "")
+    if guid ~= "" then
+        tokenBoardFamilyAtPickUp[guid] = nil
+    end
+    local board = Board.getControlBoard()
+    if Board.isGameObject(board) and Board.isTokenOnControlBoardSurface(board, token) then
+        local fuzziness = Board.snapMatchFuzzinessForBoard(board)
+        local entry = Snaps.resolveTokenSnapCatalogEntry(board, token, fuzziness, nil)
+        if type(entry) == "table"
+            and entry.snapKind ~= Snaps.SNAP_KIND_SEAT
+            and type(entry.familyId) == "string"
+            and entry.familyId ~= ""
+            and guid ~= "" then
+            tokenBoardFamilyAtPickUp[guid] = entry.familyId
+        end
+    end
+    local palette = Board.getControlBoardPalette()
+    if not Board.isGameObject(palette) then
+        return
+    end
+    if Palette.isTokenOnPaletteBoard(palette, token) then
+        if guid ~= "" then
+            tokenPickedUpFromPaletteGuid[guid] = true
+        end
+    end
+end
+
+--- Hold hotkey: Storyteller binds in TTS Options (e.g. mouse side button). TOR-412.
+--- @param playerColor string
+--- @param hoveredObject Object|nil unused
+--- @param isKeyUp boolean
+function Interactions.onGroupMoveHotkey(playerColor, hoveredObject, isKeyUp)
+    if type(playerColor) ~= "string" or playerColor == "" then
+        return
+    end
+    if isKeyUp == true then
+        groupMoveHotkeyHeld = false
+        return
+    end
+    groupMoveHotkeyHeld = true
+end
+
+--- @return boolean
+function Interactions.isGroupMoveHotkeyHeld()
+    return groupMoveHotkeyHeld == true
+end
+
+--- Apply per-ring `defaultLightMode` when a token is dropped from the palette onto CONTROL_BOARD (not ring-to-ring).
+--- @param token Object|nil
+--- @return table { applied: boolean, reason: string, defaultLightMode?: string, ringIndex?: number }
+function Interactions.applySnapGroupDefaultLightOnPaletteDrop(token)
+    local result = { applied = false, reason = "invalid_token" }
+    if not Tokens.isNpcControlToken(token) then
+        return result
+    end
+    local guid = tostring(token.getGUID() or "")
+    if guid == "" or tokenPickedUpFromPaletteGuid[guid] ~= true then
+        result.reason = "not_palette_drop"
+        return result
+    end
+    tokenPickedUpFromPaletteGuid[guid] = nil
+
+    local board = Board.getControlBoard()
+    if not Board.isGameObject(board) or not Board.isTokenOnControlBoardSurface(board, token) then
+        result.reason = "not_on_board"
+        return result
+    end
+
+    local cfg = Snaps.getInstalledControlBoardSnapConfig()
+    if type(cfg) ~= "table" then
+        cfg = Snaps.resolveControlBoardSnapConfig(nil)
+    end
+    local fuzziness = Board.snapMatchFuzzinessForBoard(board)
+    local entry = Snaps.resolveTokenSnapCatalogEntry(board, token, fuzziness, cfg)
+    if entry == nil then
+        result.reason = "no_snap"
+        return result
+    end
+
+    return applySnapGroupDefaultLightAtEntry(token, entry, board, cfg)
+end
+
+--- Seat-row vs polar/stage token scale after a manual drop on CONTROL_BOARD (TOR-199 / TOR-410).
+--- @param token Object
+--- @param board Object
+local function applyControlTokenDropScaleByBoardPosition(token, board)
+    if not Board.isTokenOnControlBoardSurface(board, token) then
+        Tokens.ensureDefaultNpcControlTokenScale(token)
+        return
+    end
+    local fuzziness = Board.snapMatchFuzzinessForBoard(board)
+    local entry = Snaps.resolveTokenSnapCatalogEntry(board, token, fuzziness, nil)
+    if entry ~= nil and entry.snapKind == Snaps.SNAP_KIND_SEAT then
+        Tokens.applySeatRowNpcControlTokenScale(token)
+        return
+    end
+    if entry ~= nil then
+        Tokens.applyNpcControlTokenScaleVec(token, Tokens.controlTokenScaleForCatalogEntry(entry))
+        return
+    end
+    local u, v = Board.uvFromWorldOnBoard(board, token.getPosition())
+    if Tokens.isNearSeatRowUv(board, u, v) then
+        Tokens.applySeatRowNpcControlTokenScale(token)
+    else
+        Tokens.ensureDefaultNpcControlTokenScale(token)
+    end
+end
+
+--- Global onObjectDrop hook: seat-row scale for PC columns (TOR-236 / TOR-199).
+--- @param token Object
+--- @param playerColor string|nil
+function Interactions.onPcControlTokenDropped(token, playerColor)
+    if not Tokens.isPcControlToken(token) then
+        return
+    end
+    Reconcile.schedulePreviewDraftCapture()
+    local board = Board.getControlBoard()
+    if not Board.isGameObject(board) then
+        return
+    end
+    applyControlTokenDropScaleByBoardPosition(token, board)
+end
+
+--- Live seat-row presence from a dropped NPC control token (TOR-333).
+--- Assignment / figurine spawn still require Apply (`applySeatRowFromControlBoard`).
+--- @param token Object
+--- @param board Object
+--- @param fuzziness number
+--- @return boolean changed
+local function applyNpcSeatRowFromDroppedToken(token, board, fuzziness)
+    if not Board.isGameObject(token) or not Board.isGameObject(board) then
+        return false
+    end
+    local Preview = require("core.control_board_preview")
+    if Preview.isThere() then
+        return false
+    end
+    if not Board.isTokenOnControlBoardSurface(board, token) then
+        return false
+    end
+    local entry = Snaps.resolveTokenSnapCatalogEntry(board, token, fuzziness, nil)
+    if type(entry) ~= "table"
+        or entry.snapKind ~= Snaps.SNAP_KIND_SEAT
+        or not Snaps.isNpcSeatRowColumn({ seatKey = entry.seatKey, kind = "npc" }) then
+        return false
+    end
+    local characterKey = Tokens.resolveTokenCharacterKey(token)
+    if type(characterKey) ~= "string" or characterKey == "" then
+        return false
+    end
+    local occupied = stateModule().getStateVal("seatLayout", "occupiedNPCSlots")
+    local current = type(occupied) == "table" and occupied[entry.seatKey] or nil
+    if type(current) ~= "string" or current == "" or current ~= characterKey then
+        return false
+    end
+    local faceUp = Tokens.tokenRotationIsFaceUp(token)
+    local NPCS = require("core.npcs")
+    if NPCS.resolveSeatNarrativePresence(entry.seatKey) == faceUp then
+        return false
+    end
+    NPCS.setNpcSeatNarrativePresence(entry.seatKey, faceUp)
+    local Sync = require("core.sync")
+    Sync.npcs({ onlySteps = { 4 }, reason = "Interactions.npcSeatRowDropPresence" })
+    local SSP = require("core.storyteller_scenes_panel")
+    if type(SSP.refresh) == "function" then
+        SSP.refresh()
+    end
+    return true
+end
+
+--- Global onObjectDrop hook: seat-row scale, palette defaultLightMode, anchor-family spread.
+--- @param token Object
+--- @param playerColor string|nil
+function Interactions.onNpcControlTokenDropped(token, playerColor)
+    if not Tokens.isNpcControlToken(token) then
+        return
+    end
+    Reconcile.schedulePreviewDraftCapture()
+    Interactions.beginInteractionProfile("token_drop")
+    local t0 = os.clock()
+    local board = Board.getControlBoard()
+    if not Board.isGameObject(board) then
+        Interactions.finishInteractionProfile(t0)
+        return
+    end
+    if not Board.isTokenOnControlBoardSurface(board, token) then
+        Tokens.ensureDefaultNpcControlTokenScale(token)
+        local offGuid = tostring(token.getGUID() or "")
+        if offGuid ~= "" then
+            tokenBoardFamilyAtPickUp[offGuid] = nil
+        end
+        Interactions.finishInteractionProfile(t0)
+        return
+    end
+
+    local tokenGuid = tostring(token.getGUID() or "")
+    local wantPaletteLight = tokenGuid ~= "" and tokenPickedUpFromPaletteGuid[tokenGuid] == true
+    local wantAnchorSpread = tokenGuid ~= "" and anchorDropEligibleByTokenGuid[tokenGuid] == true
+    local sourceFamilyForGroup = tokenGuid ~= "" and tokenBoardFamilyAtPickUp[tokenGuid] or nil
+    local wantGroupRelocate = groupMoveHotkeyHeld == true
+        and type(sourceFamilyForGroup) == "string"
+        and sourceFamilyForGroup ~= ""
+    -- Seat-row scale only; rotation comes from snap points. Skip waitForCondition when palette/anchor
+    -- flags are false — b16f26b entered wait with wantSeatRow alone and timed out up to 1s.
+    applyControlTokenDropScaleByBoardPosition(token, board)
+
+    local fuzziness = Board.snapMatchFuzzinessForBoard(board)
+    U.waitForCondition(
+        function()
+            applyNpcSeatRowFromDroppedToken(token, board, fuzziness)
+        end,
+        function()
+            if not Board.isGameObject(token) then
+                return true
+            end
+            if not Board.isTokenOnControlBoardSurface(board, token) then
+                return true
+            end
+            local entry = Snaps.resolveTokenSnapCatalogEntry(board, token, fuzziness, nil)
+            if entry == nil then
+                return false
+            end
+            if entry.snapKind == Snaps.SNAP_KIND_SEAT
+                and Snaps.isNpcSeatRowColumn({ seatKey = entry.seatKey, kind = "npc" }) then
+                return true
+            end
+            return true
+        end,
+        1.0
+    )
+
+    if not wantPaletteLight and not wantAnchorSpread and not wantGroupRelocate then
+        if tokenGuid ~= "" then
+            tokenBoardFamilyAtPickUp[tokenGuid] = nil
+        end
+        Interactions.finishInteractionProfile(t0)
+        return
+    end
+
+    U.waitForCondition(
+        function()
+            if wantPaletteLight then
+                local lightResult = Interactions.applySnapGroupDefaultLightOnPaletteDrop(token)
+                if lightResult.applied == true then
+                    print(
+                        "[Gameboard] palette drop: ring "
+                            .. tostring(lightResult.ringIndex)
+                            .. " defaultLightMode "
+                            .. tostring(lightResult.defaultLightMode)
+                    )
+                elseif lightResult.reason ~= "not_palette_drop" then
+                    print("[Gameboard] palette drop defaultLightMode skipped: " .. tostring(lightResult.reason))
+                end
+            end
+            if wantAnchorSpread then
+                logAnchorSpreadResult(Interactions.tryAnchorFamilyGroupSpread(token))
+            end
+            if wantGroupRelocate then
+                if tokenGuid ~= "" then
+                    tokenBoardFamilyAtPickUp[tokenGuid] = nil
+                end
+                local relocate = Interactions.tryBoardFamilyGroupRelocate(token, sourceFamilyForGroup)
+                if type(relocate) == "table" and (relocate.placed or 0) > 0 then
+                    print(
+                        "[Gameboard] group relocate: placed "
+                            .. tostring(relocate.placed)
+                            .. " from "
+                            .. tostring(relocate.sourceFamilyId)
+                            .. " → "
+                            .. tostring(relocate.destFamilyId)
+                    )
+                elseif type(relocate) == "table"
+                    and relocate.reason ~= nil
+                    and relocate.reason ~= "same_family"
+                    and relocate.reason ~= "nothing_to_place" then
+                    print("[Gameboard] group relocate skipped: " .. tostring(relocate.reason))
+                end
+            elseif tokenGuid ~= "" then
+                tokenBoardFamilyAtPickUp[tokenGuid] = nil
+            end
+        end,
+        function()
+            if not Board.isGameObject(token) then
+                return true
+            end
+            if not Board.isTokenOnControlBoardSurface(board, token) then
+                return false
+            end
+            local entry = Snaps.resolveTokenSnapCatalogEntry(board, token, fuzziness, nil)
+            if entry == nil then
+                return false
+            end
+            if wantAnchorSpread and entry.isAnchor ~= true then
+                return false
+            end
+            if wantGroupRelocate and entry.snapKind == Snaps.SNAP_KIND_SEAT then
+                return true
+            end
+            if wantGroupRelocate and type(entry.familyId) ~= "string" then
+                return false
+            end
+            return true
+        end,
+        1.0
+    )
+    Interactions.finishInteractionProfile(t0)
+end
+
+return Interactions

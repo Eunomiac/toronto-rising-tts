@@ -25,7 +25,7 @@ Lua 5.1 compiles each function body when the chunk loads. A call to `myHelper()`
 
 1. **List every new or moved `local function`** in the file you touched.
 2. For each, **grep callers** in the same file (`myHelper(`) and confirm the definition line number is **less than** every caller line number — or use forward declare (below).
-3. If you added a helper **near the bottom** of a large file (`core/npcs.ttslua`, `core/npc_gameboard.ttslua`, `core/global_script.ttslua`), **stop** and move it up or forward-declare.
+3. If you added a helper **near the bottom** of a large file (`core/npcs.ttslua`, `core/npc_gameboard_*.ttslua` siblings, `core/global_script.ttslua`), **stop** and move it up or forward-declare.
 4. After Save & Play, exercise the path once (button, Apply, roll cancel, etc.) — nil-call bugs do not show in `npm run build`.
 
 ## Forward declaration (when order is awkward)
@@ -52,7 +52,11 @@ Use `local function foo` only when `foo` is defined **before** all callers. Othe
 | File | Risk |
 | --- | --- |
 | `core/global_script.ttslua` | Many `Global.*` entry points; helpers often appended at bottom |
-| `core/npc_gameboard.ttslua` | Long file; seat/stage Apply locals |
+| `core/npc_gameboard.ttslua` | Thin facade only; prefer editing the owning sibling |
+| `core/npc_gameboard_snaps.ttslua` | Large catalog/install block |
+| `core/npc_gameboard_reconcile.ttslua` | Scan/mirror/draft locals |
+| `core/npc_gameboard_interactions.ttslua` | Drop/spread/group/dice-bag locals |
+| `core/npc_gameboard_apply.ttslua` | Apply/Clear/Load locals |
 | `core/npcs.ttslua` | `resolveNpcPlacementIntent` and other late-assigned locals |
 | `core/lighting.ttslua`, `core/scenes.ttslua` | Large reconciler/helper blocks |
 

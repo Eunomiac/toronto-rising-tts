@@ -9,7 +9,14 @@ Read this when:
 - debugging minimap marker mirroring, stage placement lerps, homeland seat retention, or Storyteller token-to-dice-bag rolls
 
 Source of truth:
-- `core/npc_gameboard.ttslua`
+- `core/npc_gameboard.ttslua` — thin `Gameboard` facade (re-exports siblings; TOR-423)
+- `core/npc_gameboard_board.ttslua` — UV / board accessors
+- `core/npc_gameboard_tokens.ttslua` — identity / flip / scale / hide
+- `core/npc_gameboard_snaps.ttslua` — polar + seat-row catalog / install / remap / lerp helpers
+- `core/npc_gameboard_reconcile.ttslua` — scan / mirror / XmlUI / preview draft
+- `core/npc_gameboard_apply.ttslua` — Apply / Clear / Load / Lock / HERE-THERE
+- `core/npc_gameboard_interactions.ttslua` — drops / spread / group / dice-bag / rotate
+- `core/npc_gameboard_spotlight.ttslua` — TOR-238 hold spotlight preview
 - `lib/npc_gameboard_data.ttslua`
 - `objects/npc_control_board.ttslua`
 - `objects/npc_control_board_ui.ttslua`
@@ -18,11 +25,11 @@ Source of truth:
 - `core/storyteller_rolls.ttslua`
 
 Verification:
-- `npm run build`
+- `npm run build` (includes `check:lua-local-limit-gate` for `core/npc_gameboard*.ttslua`)
 - `npm run npc-control-board-ui:generate`
 - `.dev/E2E Playbooks/Gameboard-E2E.md`
 
-Physical **STAGE_BOARD** (hidden world floor) + **CONTROL_BOARD** (GM table minimap) replace XML area placement for NPC staging. Code: `core/npc_gameboard.ttslua`, `lib/npc_gameboard_data.ttslua`, `objects/npc_control_board.ttslua`.
+Physical **STAGE_BOARD** (hidden world floor) + **CONTROL_BOARD** (GM table minimap) replace XML area placement for NPC staging. Code: `core/npc_gameboard*.ttslua` (facade + siblings), `lib/npc_gameboard_data.ttslua`, `objects/npc_control_board.ttslua`.
 
 ## Contract
 

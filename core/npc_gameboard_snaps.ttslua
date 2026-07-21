@@ -2040,5 +2040,7 @@ Snaps.controlBoardSnapFingerprintFor = controlBoardSnapFingerprintFor
 Snaps.parkNpcTokenOnPalette = parkNpcTokenOnPalette
 Snaps.resolveTokenSnapCatalogEntry = resolveTokenSnapCatalogEntry
 Snaps.placeTokenOnControlBoardSnap = placeTokenOnControlBoardSnap
+Snaps.anchorCatalogEntryForFamilyId = anchorCatalogEntryForFamilyId
+Snaps.compareFamilySnapCenterOutAlternating = compareFamilySnapCenterOutAlternating
 
 return Snaps

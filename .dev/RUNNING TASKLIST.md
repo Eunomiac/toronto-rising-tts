@@ -35,7 +35,7 @@ _Stack rank for the current cycle (2026-07-19 — **TOR-402**–**TOR-411** ship
 
 | # | Issue | Why now |
 | --- | --- | --- |
-| 1 | **TOR-423** (split npc_gameboard past Lua 200-local limit) | Chunk at 203 locals; LuaLS local-limit; in flight |
+| 1 | **TOR-423** (split npc_gameboard past Lua 200-local limit) | Sibling extract complete; gate green; Save & Play smoke pending |
 | 2 | **TOR-419** (group flip family/face/Y/stage light) | Author Mid Center repro — fix in flight |
 | 3 | **TOR-418** (clock lerp silent no-op) | Fix shipped; Save & Play verify |
 | — | then Save & Play verify TOR-402–411 / TOR-417 | |
@@ -128,7 +128,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Seat tags:** `npc_figurine` ↔ `NPCnObject` on seat/unseat; layout matches pooled figurine by tag + `Figurine_Custom` (`NPCS.isPooledFigurineObject`). _(TOR-65)_
 - [x] **Group spawn exclusion:** When spawning an NPC group into a stage area, do not pull members who are already seated (e.g. `fiveKeys` spawn must leave `myleneHamelin` in her table seat). _(TOR-76)_
 - [x] **Storyteller NPC gameboard (Phase A/B):** `STAGE_BOARD` + `CONTROL_BOARD`, tokens, markers, configurable `CONTROL_BOARD_SNAP` grid (~160 snaps), Apply/Clear wired; `placements` v3 + `Sync.npcs`. Phase B: **TOR-237** (Read/Lock/Load), **TOR-238** (hover stage figurine spotlight). Phase C panel retirement Done (TOR-181). Author Save & Play verified 2026-06-26. _(TOR-169)_
-- [ ] **Split npc_gameboard past Lua 200-local limit:** `core/npc_gameboard.ttslua` exceeded Lua 5.1’s 200 chunk locals; split into board/tokens/snaps/reconcile/apply/interactions/spotlight siblings + thin `Gameboard` facade; add `check:lua-local-limit-gate`. _(TOR-423)_
+- [x] **Split npc_gameboard past Lua 200-local limit:** `core/npc_gameboard.ttslua` exceeded Lua 5.1’s 200 chunk locals; split into board/tokens/snaps/reconcile/apply/interactions/spotlight siblings + thin `Gameboard` facade; add `check:lua-local-limit-gate`. Gate green; Save & Play smoke pending. _(TOR-423)_
 - [x] **Control token tag contract:** Handler matrix + `pcToken:<Color>` identity; Apply-time PC seat activate/deactivate from seat-row flip → `seatSlots[color].isPresent`; reconcile pins PC token to column (state authoritative); NPC-only palette/preload via `D.getNpcCharacters()`. Full token-as-sole-authority deferred to **TOR-247**. _(TOR-236)_
 - [x] **Control board Save / Lock / Load (superseded by TOR-417):** Original XmlUI workflow shipped; Save was later replaced by HERE/THERE and Lock was redefined as a one-shot scene-apply merge. _(TOR-237)_
 - [x] **Hover token → stage figurine spotlight preview:** Hold bound Game Key **Spotlight NPC (hold)** and sweep over on-board `npc_control_token` tiles → transient stage figurine SPOTLIGHT + storyteller board indicator at token X/Z; no `gameState` writes (`L.applyTransientLightMode`). Not game-phase Spotlight (TOR-98). _(TOR-238)_ — author Save & Play smoke pending

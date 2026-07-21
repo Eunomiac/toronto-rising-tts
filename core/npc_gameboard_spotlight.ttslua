@@ -1,0 +1,253 @@
+--[[
+    NPC gameboard — TOR-238 Storyteller spotlight hold preview (TOR-423).
+    May require Board, Tokens; lazy lighting/npcs/preview/state. Uses Reconcile.normalizePlacementRow.
+]]
+
+local Spotlight = {}
+
+local U = require("lib.util")
+local G = require("lib.guids")
+local Board = require("core.npc_gameboard_board")
+local Tokens = require("core.npc_gameboard_tokens")
+local Reconcile = require("core.npc_gameboard_reconcile")
+
+--- First `require("core.state")` during luabundle registration can return nil (circular load).
+--- @type table|nil
+local stateModuleCache = nil
+
+--- @return table|nil
+local function stateModule()
+    if type(stateModuleCache) == "table" and type(stateModuleCache.getStateVal) == "function" then
+        return stateModuleCache
+    end
+    local loaded = require("core.state")
+    if type(loaded) == "table" then
+        stateModuleCache = loaded
+    end
+    return loaded
+end
+
+local STORYTELLER_SPOTLIGHT_REF = "storytellerSpotlight"
+local controlBoardSpotlightPollGen = 0
+local controlBoardSpotlightHeld = false
+local controlBoardSpotlightPlayerColor = nil
+local controlBoardSpotlightNpcName = nil
+
+--- @param characterKey string
+--- @return boolean
+local function npcHasStagePlacementForSpotlight(characterKey)
+    if type(characterKey) ~= "string" or characterKey == "" then
+        return false
+    end
+    local placements = stateModule().getStateVal("sessionScene", "npcWorld", "placements")
+    if type(placements) ~= "table" then
+        return false
+    end
+    return Reconcile.normalizePlacementRow(placements[characterKey]) ~= nil
+end
+
+--- @param playerColor string
+--- @return Object|nil
+local function hoveredNpcControlTokenOnBoard(playerColor)
+    if type(playerColor) ~= "string" or playerColor == "" then
+        return nil
+    end
+    local player = Player[playerColor]
+    if player == nil or player.getHoverObject == nil then
+        return nil
+    end
+    local obj = player.getHoverObject()
+    if not Tokens.isNpcControlToken(obj) then
+        return nil
+    end
+    local board = Board.getControlBoard()
+    if not Board.isGameObject(board) or not Board.isTokenOnMinimapTokenSurface(board, obj) then
+        return nil
+    end
+    return obj
+end
+
+local function clearControlBoardSpotlightPreview()
+    local L = require("core.lighting")
+    local NPCS = require("core.npcs")
+    local prev = controlBoardSpotlightNpcName
+    controlBoardSpotlightNpcName = nil
+    if type(prev) == "string" and prev ~= "" then
+        local rec = NPCS.getInstanceRecord(prev)
+        if type(rec) == "table" and type(rec.lightGuid) == "string" and rec.lightGuid ~= "" then
+            local steady = rec.npcLightMode or "STANDARD"
+            local modeTable = NPCS.buildResolvedLightModeTable(prev, steady)
+            if type(modeTable) == "table" then
+                local reg = NPCS.lightRegistryName(rec.lightGuid)
+                L.applyTransientLightMode(reg, modeTable, { transitionTime = 0.12 })
+            end
+        end
+    end
+    L.applyTransientLightMode(STORYTELLER_SPOTLIGHT_REF, "OFF", { transitionTime = 0.1 })
+end
+
+--- @param token Object
+--- @return boolean applied
+local function applyControlBoardSpotlightPreviewForToken(token)
+    if not Tokens.isNpcControlToken(token) then
+        return false
+    end
+    local characterKey = Tokens.resolveTokenCharacterKey(token)
+    if type(characterKey) ~= "string" or characterKey == "" then
+        return false
+    end
+    if not npcHasStagePlacementForSpotlight(characterKey) then
+        return false
+    end
+
+    local L = require("core.lighting")
+    local NPCS = require("core.npcs")
+
+    if controlBoardSpotlightNpcName == characterKey then
+        local tokenPos = token.getPosition and token.getPosition() or nil
+        if tokenPos ~= nil then
+            local stLight = L.GetLight(STORYTELLER_SPOTLIGHT_REF, true)
+            local indicatorY = tokenPos.y + 8
+            if U.isGameObject(stLight) and stLight.getPosition ~= nil then
+                local cur = stLight.getPosition()
+                if cur ~= nil then
+                    indicatorY = cur.y
+                end
+            end
+            local lModes = L.LIGHTMODES[STORYTELLER_SPOTLIGHT_REF]
+            local std = type(lModes) == "table" and lModes.STANDARD or nil
+            if type(std) == "table" then
+                local indicatorMode = U.clone(std)
+                indicatorMode.enabled = true
+                indicatorMode.position = Vector(tokenPos.x, indicatorY, tokenPos.z)
+                L.applyTransientLightMode(STORYTELLER_SPOTLIGHT_REF, indicatorMode, { transitionTime = 0 })
+            end
+        end
+        return true
+    end
+
+    local rec = NPCS.getInstanceRecord(characterKey)
+    if type(rec) ~= "table" or type(rec.lightGuid) ~= "string" or rec.lightGuid == "" then
+        return false
+    end
+    if type(rec.seatedSeatKey) == "string" and rec.seatedSeatKey ~= "" then
+        return false
+    end
+
+    if type(controlBoardSpotlightNpcName) == "string" and controlBoardSpotlightNpcName ~= "" then
+        local prev = controlBoardSpotlightNpcName
+        controlBoardSpotlightNpcName = nil
+        local prevRec = NPCS.getInstanceRecord(prev)
+        if type(prevRec) == "table" and type(prevRec.lightGuid) == "string" and prevRec.lightGuid ~= "" then
+            local steady = prevRec.npcLightMode or "STANDARD"
+            local prevMode = NPCS.buildResolvedLightModeTable(prev, steady)
+            if type(prevMode) == "table" then
+                L.applyTransientLightMode(NPCS.lightRegistryName(prevRec.lightGuid), prevMode, { transitionTime = 0.1 })
+            end
+        end
+    end
+
+    local lit = G.getObject(rec.lightGuid)
+    if U.isGameObject(lit) and lit.setInvisibleTo ~= nil then
+        lit.setInvisibleTo({})
+    end
+
+    local spotMode = NPCS.buildResolvedLightModeTable(characterKey, "SPOTLIGHT")
+    if type(spotMode) ~= "table" then
+        return false
+    end
+    L.applyTransientLightMode(NPCS.lightRegistryName(rec.lightGuid), spotMode, { transitionTime = 0.12 })
+
+    local tokenPos = token.getPosition and token.getPosition() or nil
+    if tokenPos ~= nil then
+        local stLight = L.GetLight(STORYTELLER_SPOTLIGHT_REF, true)
+        local indicatorY = tokenPos.y + 8
+        if U.isGameObject(stLight) and stLight.getPosition ~= nil then
+            local cur = stLight.getPosition()
+            if cur ~= nil then
+                indicatorY = cur.y
+            end
+        end
+        local lModes = L.LIGHTMODES[STORYTELLER_SPOTLIGHT_REF]
+        local std = type(lModes) == "table" and lModes.STANDARD or nil
+        if type(std) == "table" then
+            local indicatorMode = U.clone(std)
+            indicatorMode.enabled = true
+            indicatorMode.position = Vector(tokenPos.x, indicatorY, tokenPos.z)
+            L.applyTransientLightMode(STORYTELLER_SPOTLIGHT_REF, indicatorMode, { transitionTime = 0 })
+        else
+            L.applyTransientLightMode(STORYTELLER_SPOTLIGHT_REF, "STANDARD", { transitionTime = 0 })
+        end
+    end
+
+    controlBoardSpotlightNpcName = characterKey
+    return true
+end
+
+--- @param playerColor string
+local function tickControlBoardSpotlightHoverPoll(playerColor)
+    if not controlBoardSpotlightHeld or controlBoardSpotlightPlayerColor ~= playerColor then
+        return
+    end
+    local gen = controlBoardSpotlightPollGen
+    local token = hoveredNpcControlTokenOnBoard(playerColor)
+    if token ~= nil then
+        applyControlBoardSpotlightPreviewForToken(token)
+    else
+        clearControlBoardSpotlightPreview()
+    end
+    if controlBoardSpotlightHeld and controlBoardSpotlightPollGen == gen then
+        U.delay(function()
+            tickControlBoardSpotlightHoverPoll(playerColor)
+        end, 0.08)
+    end
+end
+
+--- Hold-to-sweep hotkey: Storyteller holds bound key and points at CONTROL_BOARD tokens (TOR-238).
+--- Host-only world I/O; does not write spotlight into `gameState`.
+--- @param playerColor string
+--- @param hoveredObject Object|nil
+--- @param isKeyUp boolean
+function Spotlight.onControlBoardSpotlightHotkey(playerColor, hoveredObject, isKeyUp)
+    if type(playerColor) ~= "string" or playerColor == "" then
+        return
+    end
+    local Preview = require("core.control_board_preview")
+    if Preview.isThere() then
+        controlBoardSpotlightHeld = false
+        controlBoardSpotlightPlayerColor = nil
+        controlBoardSpotlightPollGen = controlBoardSpotlightPollGen + 1
+        clearControlBoardSpotlightPreview()
+        return
+    end
+    if isKeyUp == true then
+        controlBoardSpotlightHeld = false
+        controlBoardSpotlightPlayerColor = nil
+        controlBoardSpotlightPollGen = controlBoardSpotlightPollGen + 1
+        clearControlBoardSpotlightPreview()
+        return
+    end
+
+    controlBoardSpotlightHeld = true
+    controlBoardSpotlightPlayerColor = playerColor
+    controlBoardSpotlightPollGen = controlBoardSpotlightPollGen + 1
+    local gen = controlBoardSpotlightPollGen
+
+    local token = hoveredObject
+    if not Tokens.isNpcControlToken(token) then
+        token = hoveredNpcControlTokenOnBoard(playerColor)
+    end
+    if token ~= nil then
+        applyControlBoardSpotlightPreviewForToken(token)
+    else
+        clearControlBoardSpotlightPreview()
+    end
+
+    U.delay(function()
+        if controlBoardSpotlightHeld and controlBoardSpotlightPollGen == gen then
+            tickControlBoardSpotlightHoverPoll(playerColor)
+        end
+    end, 0.08)
+end
+
+return Spotlight
