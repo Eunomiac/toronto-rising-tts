@@ -101,7 +101,7 @@ When extension **Save & Play** hangs on “Sending Scripts” (often due to ~150
 
 **Cursor task**
 
-**Tasks: Run Task** → **TTS: Inject Bundled Global into Save JSON** — prompts for save id, then writes root `LuaScript`, `XmlUI`, and clears `LuaScriptState`.
+**CLI:** `node .tools/tts-save/inject-bundled-global-from-save-name.js --saveName <id>` — writes root `LuaScript`, `XmlUI`, and clears `LuaScriptState`. (No longer a Run Task; use when you need a surgical inject without Save & Play.)
 
 **CLI**
 

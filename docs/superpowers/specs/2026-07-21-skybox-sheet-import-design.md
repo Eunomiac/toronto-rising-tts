@@ -131,7 +131,9 @@ C.GenericSkyboxes = SkyboxesCatalog.GenericSkyboxes
 
 - Script: `.dev/scripts/import_skyboxes_from_sheet.js` (name may vary slightly; keep npm key stable)
 - `package.json`: `"skyboxes:import": "node .dev/scripts/import_skyboxes_from_sheet.js && node .dev/scripts/generate_scenes_location_modals_xml.js"`
-- VS Code task label e.g. **Import skyboxes from Google Sheet** → `npm run skyboxes:import`
+- VS Code / Cursor default build (**BUILD PIPELINE** / `npm run build`) runs `npm run skyboxes:import`
+- Standalone: `npm run skyboxes:import`
+
 - Not part of default `build:all-tooling` (network-dependent)
 
 ### Docs

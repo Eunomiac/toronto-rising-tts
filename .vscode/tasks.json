@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Build: Module tooling (gate + generated Lua + UI XML templates)",
+      "label": "BUILD PIPELINE",
       "type": "shell",
       "command": "npm run build",
       "options": {
@@ -31,187 +31,16 @@
       }
     },
     {
-      "label": "Manual: Build TTS MCP (Node)",
-      "type": "shell",
-      "command": "npm run tts-mcp:build",
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "problemMatcher": [],
-      "group": {
-        "kind": "build",
-        "isDefault": false
-      },
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": true,
-        "panel": "dedicated",
-        "showReuseMessage": true,
-        "clear": false
-      }
-    },
-    {
-      "label": "Export PC reference markdown",
-      "type": "shell",
+      "label": "[Assets 1] Fetch URLs from Cloud",
+      "type": "process",
       "command": "node",
       "args": [
-        ".dev/scripts/export_pc_reference_markdown.js"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "problemMatcher": [],
-      "group": {
-        "kind": "none",
-        "isDefault": false
-      },
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared",
-        "focus": true
-      }
-    },
-    {
-      "label": "Generate PCS data (pcs_data.ttslua from JSON)",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        ".dev/scripts/generate_pcs_data_lua.js"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "problemMatcher": [],
-      "group": {
-        "kind": "build",
-        "isDefault": false
-      },
-      "presentation": {
-        "reveal": "silent",
-        "panel": "shared"
-      }
-    },
-    {
-      "label": "Import skyboxes from Google Sheet",
-      "type": "shell",
-      "command": "npm",
-      "args": [
-        "run",
-        "skyboxes:import"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "problemMatcher": [],
-      "group": {
-        "kind": "build",
-        "isDefault": false
-      },
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared",
-        "focus": true
-      }
-    },
-    {
-      "label": "Import site cards from Google Sheet",
-      "type": "shell",
-      "command": "npm",
-      "args": [
-        "run",
-        "site-cards:import",
-        "--",
-        "--range",
-        "${input:siteCardsNamedRange}"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "problemMatcher": [],
-      "group": {
-        "kind": "build",
-        "isDefault": false
-      },
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared",
-        "focus": true
-      }
-    },
-    {
-      "label": "Fix TTS object stubs (.tts/objects XML + Lua)",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        ".dev/scripts/fix_tts_object_stubs.js"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "problemMatcher": [],
-      "group": {
-        "kind": "none",
-        "isDefault": false
-      },
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared",
-        "focus": true
-      }
-    },
-    {
-      "label": "Generate CSheet defaults Lua (csheet_defaults_xml.ttslua)",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        ".dev/scripts/generate_csheet_defaults_lua.js"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "problemMatcher": [],
-      "group": {
-        "kind": "build",
-        "isDefault": false
-      },
-      "presentation": {
-        "reveal": "silent",
-        "panel": "shared"
-      }
-    },
-    {
-      "label": "Generate UI XML from templates",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        ".dev/scripts/xml_color_template_generator.js",
-        "--templateDir",
-        "ui/.templates"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "problemMatcher": [],
-      "group": {
-        "kind": "build",
-        "isDefault": false
-      },
-      "presentation": {
-        "reveal": "silent",
-        "panel": "shared"
-      }
-    },
-    {
-      "label": "Custom UI Assets: Full Pipeline (Build -> Pause -> Merge)",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        ".tools/custom-ui-assets/run-custom-ui-assets-pipeline.js",
-        "--input",
-        "${input:customUiAssetsImageFolder}",
-        "--saveName",
-        "${input:customUiAssetsSaveName}"
+        ".tools/tts-cloud/export-folder-csv.js",
+        "${input:ttsCloudExportSubfolder}",
+        "--out",
+        "${input:ttsCloudExportOutPath}",
+        "--name-filter",
+        "${input:ttsCloudExportNameFilter}"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -224,32 +53,18 @@
       }
     },
     {
-      "label": "NPCs: Report missing D.characters stubs from disk",
-      "type": "shell",
+      "label": "[Assets 2] Purge Assets from Save",
+      "type": "process",
       "command": "node",
       "args": [
-        ".dev/scripts/report-missing-npc-characters-from-disk.js"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared",
-        "focus": true
-      }
-    },
-    {
-      "label": "Custom UI Assets: Apply NPC hosted world to save",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        ".tools/custom-ui-assets/apply-npc-hosted-world-from-upload.js",
+        ".tools/custom-ui-assets/purge-custom-ui-assets-by-pattern.js",
+        "--pattern",
+        "${input:customUiPurgePattern}",
         "--saveName",
         "${input:customUiAssetsSaveName}",
-        "--assetsOut",
-        ".dev/custom-ui-assets/npc-group-generated-assets.json"
+        "--guids",
+        "${input:customUiAssetsGuids}",
+        "${input:customUiAssetsDryRunFlag}"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -262,38 +77,22 @@
       }
     },
     {
-      "label": "Custom UI Assets: Build Manifest from Image Files",
-      "type": "shell",
+      "label": "[Assets 3] Add Cloud Assets to Save",
+      "type": "process",
       "command": "node",
       "args": [
-        ".tools/custom-ui-assets/build-manifest-from-task.js",
-        "--mode",
-        "${input:customUiManifestMode}",
-        "--input",
-        "${input:customUiAssetsImageFolder}"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared",
-        "focus": true
-      }
-    },
-    {
-      "label": "Custom UI Assets: Merge Hosted URLs into Save CustomUIAssets",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        ".tools/custom-ui-assets/merge-custom-ui-assets-from-save-name.js",
+        ".tools/custom-ui-assets/add-custom-ui-assets-from-csv.js",
+        "--csv",
+        "${input:customUiAddCsvPath}",
+        "--name-match",
+        "${input:customUiAddNameMatch}",
+        "--name-replace",
+        "${input:customUiAddNameReplace}",
         "--saveName",
         "${input:customUiAssetsSaveName}",
-        "--manifest",
-        ".dev/custom-ui-assets/manifest.json",
-        "--assetsOut",
-        ".dev/custom-ui-assets/generated-assets.json"
+        "--guids",
+        "${input:customUiAssetsGuids}",
+        "${input:customUiAssetsDryRunFlag}"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -306,46 +105,8 @@
       }
     },
     {
-      "label": "Custom UI Assets: List Custom UI Assets in Save",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        ".tools/custom-ui-assets/list-custom-ui-assets-from-save-name.js",
-        "--saveName",
-        "${input:customUiAssetsSaveName}"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared",
-        "focus": true
-      }
-    },
-    {
-      "label": "Custom UI Assets: Prune Custom UI Assets in Save",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        ".tools/custom-ui-assets/prune-custom-ui-assets-from-save-name.js",
-        "--saveName",
-        "${input:customUiAssetsSaveName}"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared",
-        "focus": true
-      }
-    },
-    {
-      "label": "Custom UI Assets: TTS Image Cache Clear",
-      "type": "shell",
+      "label": "Clear TTS Image Cache",
+      "type": "process",
       "command": "node",
       "args": [
         ".tools/custom-ui-assets/clear-tts-image-cache.js"
@@ -361,30 +122,11 @@
       }
     },
     {
-      "label": "TTS: Inject Bundled Global into Save JSON",
+      "label": "STORYTELLER DASHBOARD",
       "type": "shell",
-      "command": "node",
-      "args": [
-        ".tools/tts-save/inject-bundled-global-from-save-name.js",
-        "--saveName",
-        "${input:ttsSaveName}"
-      ],
+      "command": "npm run storyteller-dashboard:dev",
       "options": {
         "cwd": "${workspaceFolder}"
-      },
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared",
-        "focus": true
-      }
-    },
-    {
-      "label": "Storyteller Dashboard: Start server",
-      "type": "shell",
-      "command": "npm run dev",
-      "options": {
-        "cwd": "${workspaceFolder}/.dev/storyteller-dashboard"
       },
       "windows": {
         "options": {
@@ -396,7 +138,7 @@
       },
       "isBackground": true,
       "problemMatcher": {
-        "owner": "storyteller-dashboard-pr10",
+        "owner": "storyteller-dashboard",
         "pattern": {
           "regexp": "^(.*Storyteller dashboard listening on (https?://\\S+).*)$",
           "line": 1,
@@ -417,77 +159,78 @@
         "showReuseMessage": false,
         "clear": true
       }
-    },
-    {
-      "label": "Storyteller Dashboard: Open in browser",
-      "type": "shell",
-      "command": "start",
-      "args": ["chrome", "http://127.0.0.1:8788"],
-      "windows": {
-        "options": {
-          "shell": {
-            "executable": "cmd.exe",
-            "args": ["/d", "/c"]
-          }
-        }
-      },
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "never",
-        "panel": "shared",
-        "close": true
-      }
-    },
-    {
-      "label": "Storyteller Dashboard: Dev (server + browser)",
-      "dependsOn": [
-        "Storyteller Dashboard: Start server",
-        "Storyteller Dashboard: Open in browser"
-      ],
-      "dependsOrder": "sequence",
-      "problemMatcher": [],
-      "group": {
-        "kind": "none",
-        "isDefault": false
-      }
     }
   ],
   "inputs": [
     {
-      "id": "customUiManifestMode",
-      "type": "pickString",
-      "description": "Manifest source: folder (WEBP/PNG) or C.Sites in lib/constants.ttslua (see Terminal for steps)",
-      "options": [
-        "folder",
-        "sites",
-        "npc-groups",
-        "npc-tokens"
-      ],
-      "default": "folder"
-    },
-    {
-      "id": "customUiAssetsImageFolder",
-      "type": "promptString",
-      "description": "Relative image folder (folder mode: new_images; npc-groups: NPCs; npc-tokens: NPC Tokens; ignored for sites)",
-      "default": "assets\\images\\new_images"
-    },
-    {
       "id": "customUiAssetsSaveName",
       "type": "promptString",
-      "description": "TTS save name or number (examples: 123, TS_Save_123, TS_Save_123.json)",
-      "default": "TS_Save_"
+      "description": "TTS save name or number (examples: 230, TS_Save_230, TS_Save_230.json)",
+      "default": "230"
     },
     {
-      "id": "ttsSaveName",
+      "id": "ttsCloudExportSubfolder",
       "type": "promptString",
-      "description": "TTS save slot to patch (examples: 123, TS_Save_123). Requires .tts/bundled/Global.lua + Global.xml first.",
-      "default": "TS_Save_"
+      "description": "TTS Cloud Manager subfolder under CLOUD_ROOT (config.js), e.g. Sites or Districts",
+      "default": "Sites"
     },
     {
-      "id": "siteCardsNamedRange",
+      "id": "ttsCloudExportOutPath",
       "type": "promptString",
-      "description": "Google Sheet named range for site cards (columns Name, URL)",
-      "default": "SITECARDCSV"
+      "description": "Output name or path (blank = out/<Subfolder>.csv). Bare names go under .tools/tts-cloud/out/; .csv added if missing.",
+      "default": ""
+    },
+    {
+      "id": "ttsCloudExportNameFilter",
+      "type": "promptString",
+      "description": "Optional Name whitelist regexp. Alternation OK, e.g. /^dot_(grey_red|project)/. Blank = all files.",
+      "default": ""
+    },
+    {
+      "id": "customUiPurgePattern",
+      "type": "promptString",
+      "description": "Regexp tested against CustomUIAssets Name (e.g. ^siteCard_ or /^siteCard_/i)",
+      "default": "^siteCard_"
+    },
+    {
+      "id": "customUiAddCsvPath",
+      "type": "promptString",
+      "description": "Name/URL CSV path (relative to repo root ok)",
+      "default": ".tools/tts-cloud/out/Sites.csv"
+    },
+    {
+      "id": "customUiAddNameMatch",
+      "type": "promptString",
+      "description": "Regexp matched against CSV Name (filename). Use ^(.*)\\.webp$ for .webp files.",
+      "default": "^(.*)\\.webp$"
+    },
+    {
+      "id": "customUiAddNameReplace",
+      "type": "promptString",
+      "description": "Replacement for asset Name ($1 capture ok). Example: siteCard_$1",
+      "default": "siteCard_$1"
+    },
+    {
+      "id": "customUiAssetsGuids",
+      "type": "promptString",
+      "description": "Optional object GUIDs (comma-separated). Blank = global CustomUIAssets. Non-blank = object mode only.",
+      "default": ""
+    },
+    {
+      "id": "customUiAssetsDryRunFlag",
+      "type": "pickString",
+      "description": "Write mode for CustomUIAssets purge/add tasks",
+      "options": [
+        {
+          "label": "Dry run (list only, no save write)",
+          "value": "--dry-run"
+        },
+        {
+          "label": "Write save (terminal will ask Y/N)",
+          "value": ""
+        }
+      ],
+      "default": "--dry-run"
     }
   ]
 }

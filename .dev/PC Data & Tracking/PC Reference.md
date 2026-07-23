@@ -1,5 +1,5 @@
 <!-- AUTO-GENERATED — do not edit by hand -->
-<!-- Regenerate: VS Code task "Export PC reference markdown" or node .dev/scripts/export_pc_reference_markdown.js -->
+<!-- Regenerate: node .dev/scripts/export_pc_reference_markdown.js -->
 
 # Player Character Reference
 

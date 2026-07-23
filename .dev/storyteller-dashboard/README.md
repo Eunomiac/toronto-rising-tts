@@ -56,7 +56,7 @@ PORT=8788
 
 ## Run locally
 
-**From Cursor / VS Code:** Run Task → **Storyteller Dashboard: Dev (server + browser)**. Builds, starts the server on `http://127.0.0.1:8788`, and opens Chrome.
+**From Cursor / VS Code:** Run Task → **STORYTELLER DASHBOARD**. Builds, starts the server on `http://127.0.0.1:8788`, and opens Chrome (`npm run storyteller-dashboard:dev` from repo root).
 
 **From a terminal:**
 
