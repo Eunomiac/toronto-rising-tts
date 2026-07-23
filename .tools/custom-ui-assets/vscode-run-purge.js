@@ -3,19 +3,18 @@
 
 /**
  * VS Code / Cursor task adapter for purge-by-pattern.
- * Avoids empty process-task args (which can abort the task or bind the next flag as --guids).
  *
- * argv: <pattern> <saveName> <guidsOrBlank> <dry-run|write>
+ * argv: <pattern> <saveName> <dry-run|write> <global|objects> <guidsOrDash>
  */
 
 const { spawnSync } = require("child_process");
 const path = require("path");
 
 function main() {
-  const [pattern, saveName, guidsRaw, writeMode] = process.argv.slice(2);
-  if (!pattern || !saveName || !writeMode) {
+  const [pattern, saveName, writeMode, targetMode, guidsRaw] = process.argv.slice(2);
+  if (!pattern || !saveName || !writeMode || !targetMode) {
     console.error(
-      "Usage: node vscode-run-purge.js <pattern> <saveName> <guids|-> <dry-run|write>",
+      "Usage: node vscode-run-purge.js <pattern> <saveName> <dry-run|write> <global|objects> <guids|->",
     );
     process.exit(2);
   }
@@ -28,9 +27,19 @@ function main() {
     saveName,
   ];
 
-  const guids = String(guidsRaw || "").trim();
-  if (guids !== "" && guids !== "-" && guids !== "_") {
+  const target = String(targetMode).trim().toLowerCase();
+  if (target === "objects" || target === "object" || target === "guids") {
+    const guids = String(guidsRaw || "").trim();
+    if (guids === "" || guids === "-" || guids === "_") {
+      console.error(
+        "[vscode-run-purge] Object mode requires a comma-separated GUID list (not blank / '-').",
+      );
+      process.exit(2);
+    }
     args.push("--guids", guids);
+  } else if (target !== "global" && target !== "save" && target !== "-") {
+    console.error(`[vscode-run-purge] Unknown target mode: ${targetMode} (use global or objects)`);
+    process.exit(2);
   }
 
   const mode = String(writeMode).trim().toLowerCase();

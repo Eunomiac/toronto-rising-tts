@@ -58,8 +58,9 @@
         ".tools/custom-ui-assets/vscode-run-purge.js",
         "${input:customUiPurgePattern}",
         "${input:customUiAssetsSaveName}",
-        "${input:customUiAssetsGuids}",
-        "${input:customUiAssetsWriteMode}"
+        "${input:customUiAssetsWriteMode}",
+        "${input:customUiAssetsTargetMode}",
+        "${input:customUiAssetsGuids}"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -81,8 +82,9 @@
         "${input:customUiAddNameMatch}",
         "${input:customUiAddNameReplace}",
         "${input:customUiAssetsSaveName}",
-        "${input:customUiAssetsGuids}",
-        "${input:customUiAssetsWriteMode}"
+        "${input:customUiAssetsWriteMode}",
+        "${input:customUiAssetsTargetMode}",
+        "${input:customUiAssetsGuids}"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -167,13 +169,13 @@
     {
       "id": "ttsCloudExportOutPath",
       "type": "promptString",
-      "description": "Output name/path. Use - for default (.tools/tts-cloud/out/<Subfolder>.csv). Bare names go under out/ with .csv added.",
+      "description": "Output name/path. Keep '-' for default (.tools/tts-cloud/out/<Subfolder>.csv). Do not clear to blank.",
       "default": "-"
     },
     {
       "id": "ttsCloudExportNameFilter",
       "type": "promptString",
-      "description": "Optional Name whitelist regexp (e.g. /^dot_(grey_red|project)/). Use - for all files.",
+      "description": "Name whitelist regexp, or keep '-' for all files. Do not clear to blank (cancels the task).",
       "default": "-"
     },
     {
@@ -201,15 +203,9 @@
       "default": "siteCard_$1"
     },
     {
-      "id": "customUiAssetsGuids",
-      "type": "promptString",
-      "description": "Object GUIDs (comma-separated), or - for global CustomUIAssets",
-      "default": "-"
-    },
-    {
       "id": "customUiAssetsWriteMode",
       "type": "pickString",
-      "description": "Write mode for CustomUIAssets purge/add tasks",
+      "description": "Write mode",
       "options": [
         {
           "label": "Dry run (list only, no save write)",
@@ -221,6 +217,28 @@
         }
       ],
       "default": "dry-run"
+    },
+    {
+      "id": "customUiAssetsTargetMode",
+      "type": "pickString",
+      "description": "Where to apply CustomUIAssets changes",
+      "options": [
+        {
+          "label": "Global save CustomUIAssets",
+          "value": "global"
+        },
+        {
+          "label": "Specific object GUIDs",
+          "value": "objects"
+        }
+      ],
+      "default": "global"
+    },
+    {
+      "id": "customUiAssetsGuids",
+      "type": "promptString",
+      "description": "Object GUIDs (comma-separated). Ignored for Global — keep '-' and do not clear to blank.",
+      "default": "-"
     }
   ]
 }

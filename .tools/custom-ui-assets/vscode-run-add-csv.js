@@ -3,19 +3,22 @@
 
 /**
  * VS Code / Cursor task adapter for add-from-csv.
- * Avoids empty process-task args (which can abort the task or bind the next flag as --guids).
  *
- * argv: <csv> <nameMatch> <nameReplace> <saveName> <guidsOrBlank> <dry-run|write>
+ * argv: <csv> <nameMatch> <nameReplace> <saveName> <dry-run|write> <global|objects> <guidsOrDash>
+ *
+ * Write mode is prompted before GUID fields so a cleared GUID prompt cannot
+ * cancel the task before dry-run/write is chosen.
  */
 
 const { spawnSync } = require("child_process");
 const path = require("path");
 
 function main() {
-  const [csv, nameMatch, nameReplace, saveName, guidsRaw, writeMode] = process.argv.slice(2);
-  if (!csv || !nameMatch || nameReplace == null || !saveName || !writeMode) {
+  const [csv, nameMatch, nameReplace, saveName, writeMode, targetMode, guidsRaw] =
+    process.argv.slice(2);
+  if (!csv || !nameMatch || nameReplace == null || !saveName || !writeMode || !targetMode) {
     console.error(
-      "Usage: node vscode-run-add-csv.js <csv> <nameMatch> <nameReplace> <saveName> <guids|-> <dry-run|write>",
+      "Usage: node vscode-run-add-csv.js <csv> <nameMatch> <nameReplace> <saveName> <dry-run|write> <global|objects> <guids|->",
     );
     process.exit(2);
   }
@@ -32,9 +35,19 @@ function main() {
     saveName,
   ];
 
-  const guids = String(guidsRaw || "").trim();
-  if (guids !== "" && guids !== "-" && guids !== "_") {
+  const target = String(targetMode).trim().toLowerCase();
+  if (target === "objects" || target === "object" || target === "guids") {
+    const guids = String(guidsRaw || "").trim();
+    if (guids === "" || guids === "-" || guids === "_") {
+      console.error(
+        "[vscode-run-add-csv] Object mode requires a comma-separated GUID list (not blank / '-').",
+      );
+      process.exit(2);
+    }
     args.push("--guids", guids);
+  } else if (target !== "global" && target !== "save" && target !== "-") {
+    console.error(`[vscode-run-add-csv] Unknown target mode: ${targetMode} (use global or objects)`);
+    process.exit(2);
   }
 
   const mode = String(writeMode).trim().toLowerCase();
