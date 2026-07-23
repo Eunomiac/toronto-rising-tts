@@ -431,9 +431,9 @@
   <Text class="project_goal_text"
     color="#FFFFFF" fontStyle="Bold" fontSize="27" alignment="MiddleLeft" offsetXY = "10 0" preferredWidth="1000" />
 
-  <Panel class="project_result_container" ignoreLayout="true" height="50" width="100" rectAlignment="UpperRight" offsetXY = "10 10" color="rgba(0.2, 0.2, 0.2, 1)" outline="#cb995c" outlineSize = "2 -2" />
+  <Panel class="project_result_container" ignoreLayout="true" height="50" width="100" rectAlignment="UpperRight" offsetXY = "10 15" />
 
-  <Image class="project_result_image" rectAlignment="MiddleCenter" width="90" scale="2 2" preserveAspect="true" />
+  <Image class="project_result_image" rectAlignment="MiddleCenter" width="90" scale="2" preserveAspect="true" />
 
   <Text class="project_result_margin"
     color="#FFFFFF" fontStyle="Bold" fontSize="40" alignment="MiddleRight" horizontalOverflow = "wrap" width = "100"/>

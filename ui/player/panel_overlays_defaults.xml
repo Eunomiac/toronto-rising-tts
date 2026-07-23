@@ -20,6 +20,7 @@
   />
 
   <Image class="player_blindfold_overlay"
+    hideAnimationDelay="1"
     raycastTarget="true" />
 
   <Image class="overlay_anim_fade"
@@ -93,20 +94,22 @@
     raycastTarget="false"
     preserveAspect="true"
     rectAlignment="MiddleCenter"
-    width="420"
-    offsetXY="-280 40"
+    width="800"
+    offsetXY="0 200"
     showAnimation="FadeIn"
     hideAnimation="FadeOut"
-    animationDuration="0.5"
+    animationDuration="1"
+    showAnimationDelay="1"
   />
   <Image class="player_overlay_site_card_display"
     raycastTarget="false"
     preserveAspect="true"
     rectAlignment="MiddleCenter"
-    width="420"
-    offsetXY="280 40"
+    width="700"
+    offsetXY="0 -200"
     showAnimation="FadeIn"
     hideAnimation="FadeOut"
-    animationDuration="0.5"
+    animationDuration="1"
+    showAnimationDelay="1.5"
   />
 </Defaults>
