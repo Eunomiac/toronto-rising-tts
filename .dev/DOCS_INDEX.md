@@ -65,6 +65,7 @@ Always verify important claims against code before changing behavior.
 |---|---|---|
 | Build/generator scripts | `package.json`, [`scripts/`](scripts/) | Path-sensitive; many package scripts call `.dev/scripts/*` |
 | Custom UI assets | [`custom-ui-assets/README.md`](custom-ui-assets/README.md) | Workflow docs are versioned; generated manifests/reports are ignored |
+| TTS Assets Toolkit (public release scaffold) | [`tts-assets-toolkit/README.md`](tts-assets-toolkit/README.md) | Future public workspace root; scripts still live under `.tools/tts-cloud` + `.tools/custom-ui-assets` |
 | TTS save inventory | [`TTS_BUNDLING_SETUP.md`](TTS_BUNDLING_SETUP.md), [`custom-ui-assets/README.md`](custom-ui-assets/README.md) | `.dev/TS_Save_230.json` is a local ignored working snapshot used by save-analysis scripts |
 | CSV to Markdown parser | [`CSV to Markdown Parser/README.md`](CSV%20to%20Markdown%20Parser/README.md) | Local app; package scripts use this path |
 | Storyteller dashboard | [`storyteller-dashboard/README.md`](storyteller-dashboard/README.md) | Current dashboard app |
