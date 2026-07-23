@@ -14,10 +14,10 @@ local MAX_DOMAIN_DOTS = 5
 --- Must match `lib/princes_court_trait_xml.ttslua` build opts so blank `setAttribute` ids align with baked XML.
 local TRAIT_ACTIVE_OPTS = { visibilityMode = "active" }
 
---- Committed project stakes add effective-disabled on Prince's Court dots (same as CSHEET).
+--- Committed project stakes occupy a separate project-dot band on Prince's Court (same as CSHEET).
 --- @param entry table
 --- @return integer
-local function stakeExtraDisabledForCoterieEntry(entry)
+local function stakeProjectCountForCoterieEntry(entry)
   if type(entry) ~= "table" or type(entry.name) ~= "string" or entry.name == "" then
     return 0
   end
@@ -71,11 +71,13 @@ end
 --- @param isFlaw boolean
 --- @param hudSeatColor string
 local function addTraitDotUpdates(updates, entry, pageNum, sectionKey, traitIndex, isFlaw, hudSeatColor)
-  local slotCount, baseCount, tempCount, disabledCount =
-    TRAIT.slotBaseTempDisabled(entry, stakeExtraDisabledForCoterieEntry(entry))
+  local slotCount, baseCount, tempCount, disabledCount, projectCount =
+    TRAIT.slotBaseTempDisabledProject(entry, stakeProjectCountForCoterieEntry(entry))
   local filledImg = isFlaw and "dot_red" or "dot_yellow"
   for slot = 1, slotCount do
-    local img = TRAIT.dotImageForTraitSlot(slot, slotCount, baseCount, tempCount, disabledCount, filledImg)
+    local img = TRAIT.dotImageForTraitSlot(
+      slot, slotCount, baseCount, tempCount, disabledCount, filledImg, projectCount
+    )
     addUpdate(updates, traitDotId(pageNum, sectionKey, traitIndex, slot, hudSeatColor), {
       image = img,
       active = "true",
@@ -158,18 +160,24 @@ function CC.collectPrincesCourtHudUpdates(coterieData, hudSeatColor)
             type(coterieData) == "table" and coterieData[key] or nil,
             MAX_DOMAIN_DOTS
         )
-        local baseCount = rating.base
-        local tempCount = rating.temp
         local stakeName = CoterieHydrate.domainRatingStakeName(key)
-        local stakeExtra = 0
+        local projectCount = 0
         if type(stakeName) == "string" then
-          stakeExtra = math.max(0, math.floor(tonumber(
+          projectCount = math.max(0, math.floor(tonumber(
             Projects.stakeQtyForAdvantage("coterie", stakeName, "", nil)
           ) or 0))
         end
-        local disabledCount = rating.disabled + stakeExtra
+        local _, baseCount, tempCount, disabledCount, clampedProject =
+          TRAIT.slotBaseTempDisabledProject({
+            base = rating.base,
+            temp = rating.temp,
+            max = rating.max,
+            disabled = rating.disabled,
+          }, projectCount)
         for slot = 1, MAX_DOMAIN_DOTS do
-            local img = TRAIT.dotImageForDomainSlot(slot, baseCount, tempCount, disabledCount, "dot_large_yellow")
+            local img = TRAIT.dotImageForDomainSlot(
+              slot, baseCount, tempCount, disabledCount, "dot_large_yellow", clampedProject
+            )
             if img ~= nil then
                 addUpdate(updates, "dot_on_" .. key .. "_" .. slot .. "_" .. hudSeatColor, {
                     active = "true",

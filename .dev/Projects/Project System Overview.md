@@ -225,16 +225,22 @@ On row change, recompute Begin eligibility:
 
 `advantage.disabled` in Stats remains **manual-only** authority.
 
-Effective disabled for sheet/XML rendering:
+**Availability** (free dots / Lock & Begin validation):
 
 ```text
-effectiveDisabled = manualDisabled
-  + sum(qty for this advantage across all projects still holding stakes)
+freeDots = base + temp − manualDisabled − sum(stake qty holding for this advantage)
 ```
 
-Projects hold stakes while phase is `postLaunch` (once rows commit dots) and `inProgress`. Release on Complete, Delete, or Cancel-while-pre-inProgress wipe.
+**Sheet / Court rendering** keeps those counts as **two visual bands** (not one merged grey):
 
-Do not permanently mutate `disabled` as the stake ledger. Optionally cache nothing; derive at reconcile/sheet build from `gameState.projects`.
+1. Paint `base` then `temp` left→right (title-bar traits mirror indices; domain/Status are LTR).
+2. From the right end of the filled dots: convert `manualDisabled` slots → `dot_grey_red_x`.
+3. Continuing inward: convert holding stake qty → `dot_project`.
+4. Clamp so `disabled + project ≤ base + temp` (manual disabled fills first).
+
+Stake qty is derived at reconcile/sheet build via `Projects.stakeQtyForAdvantage` (CSHEET: `GlobalProjectStakeQty`; Court: `coterie_collect`). Do not permanently mutate `disabled` (or invent a persisted `project` field on the advantage) as the stake ledger.
+
+Projects hold stakes while phase is `postLaunch` (once rows commit dots) and `inProgress`. Release on Complete, Delete, or Cancel-while-pre-inProgress wipe.
 
 ---
 

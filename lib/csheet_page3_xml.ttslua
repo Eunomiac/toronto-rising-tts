@@ -103,11 +103,12 @@ end
 --- @return integer baseCount
 --- @return integer tempCount
 --- @return integer disabledCount
+--- @return integer projectCount
 local function statusSlotCounts(entry, projectStakeSourceKey)
   if type(entry) ~= "table" then
-    return 0, 0, 0
+    return 0, 0, 0, 0
   end
-  local extraDisabled = 0
+  local projectCount = 0
   local sourceKey = type(projectStakeSourceKey) == "string" and projectStakeSourceKey or ""
   if sourceKey ~= "" and Global ~= nil and type(Global.call) == "function" then
     -- Global.call args must be a fresh object-owned table of primitives (not Global-marshaled fields).
@@ -116,10 +117,11 @@ local function statusSlotCounts(entry, projectStakeSourceKey)
       name = "" .. tostring(entry.name or ""),
       focus = "" .. tostring(entry.focus or ""),
     })
-    extraDisabled = math.max(0, math.floor(tonumber(qty) or 0))
+    projectCount = math.max(0, math.floor(tonumber(qty) or 0))
   end
-  local _, baseCount, tempCount, disabledCount = TRAIT.slotBaseTempDisabled(entry, extraDisabled)
-  return baseCount, tempCount, disabledCount
+  local _, baseCount, tempCount, disabledCount, clampedProject =
+    TRAIT.slotBaseTempDisabledProject(entry, projectCount)
+  return baseCount, tempCount, disabledCount, clampedProject
 end
 
 --- Patch a self-closing Image tag's image/active by id (no gsub callback — Moonsharp/cross-script safe).
@@ -164,7 +166,7 @@ local function patchImageTagAttrs(xml, id, image, active)
 end
 
 --- Bake Status Camarilla/Clan overlay Image attrs into page3 XML (sheetDisplay:false boxes stay omitted).
---- Single `dot_statusCamarilla_*` / `dot_statusClan_*`: LTR base → temp; grey disabled from the right.
+--- Single `dot_statusCamarilla_*` / `dot_statusClan_*`: LTR base → temp; disabled then project from the right.
 --- @param xml string
 --- @param backgrounds table
 --- @param projectStakeSourceKey string|nil
@@ -183,10 +185,12 @@ local function bakeStatusOverlayImages(xml, backgrounds, projectStakeSourceKey)
   }
   for i = 1, #overlayRows do
     local row = overlayRows[i]
-    local baseCount, tempCount, disabledCount = statusSlotCounts(row.entry, stakeKey)
+    local baseCount, tempCount, disabledCount, projectCount = statusSlotCounts(row.entry, stakeKey)
     for slot = 1, STATUS_OVERLAY_SLOTS do
       local id = "dot_" .. row.prefix .. "_" .. tostring(slot)
-      local img = TRAIT.dotImageForDomainSlot(slot, baseCount, tempCount, disabledCount, "dot_yellow")
+      local img = TRAIT.dotImageForDomainSlot(
+        slot, baseCount, tempCount, disabledCount, "dot_yellow", projectCount
+      )
       if img ~= nil then
         xml = patchImageTagAttrs(xml, id, img, "true")
       else

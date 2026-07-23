@@ -76,10 +76,12 @@ function slotAndBase(entry) {
 }
 
 /**
+ * Manual disabled + project-stake bands (disabled fills first, then project into remainder).
  * @param {object} entry
- * @returns {[number, number, number, number]}
+ * @param {number} [projectCount]
+ * @returns {[number, number, number, number, number]}
  */
-function slotBaseTempDisabled(entry) {
+function slotBaseTempDisabledProject(entry, projectCount) {
   const [slotCount, baseCount] = slotAndBase(entry);
   let tempCount = 0;
   let disabledCount = 0;
@@ -89,8 +91,24 @@ function slotBaseTempDisabled(entry) {
   }
   tempCount = Math.max(0, tempCount);
   tempCount = Math.min(tempCount, Math.max(0, slotCount - baseCount));
+  const filled = baseCount + tempCount;
   disabledCount = Math.max(0, disabledCount);
-  disabledCount = Math.min(disabledCount, baseCount + tempCount);
+  disabledCount = Math.min(disabledCount, filled);
+  let project = Math.max(0, Math.floor(Number(projectCount) || 0));
+  project = Math.min(project, Math.max(0, filled - disabledCount));
+  return [slotCount, baseCount, tempCount, disabledCount, project];
+}
+
+/**
+ * @param {object} entry
+ * @param {number} [projectCount]
+ * @returns {[number, number, number, number]}
+ */
+function slotBaseTempDisabled(entry, projectCount) {
+  const [slotCount, baseCount, tempCount, disabledCount] = slotBaseTempDisabledProject(
+    entry,
+    projectCount
+  );
   return [slotCount, baseCount, tempCount, disabledCount];
 }
 
@@ -99,7 +117,7 @@ function slotBaseTempDisabled(entry) {
  * @returns {[number, number, number]}
  */
 function slotBaseAndTemp(entry) {
-  const [slotCount, baseCount, tempCount] = slotBaseTempDisabled(entry);
+  const [slotCount, baseCount, tempCount] = slotBaseTempDisabledProject(entry);
   return [slotCount, baseCount, tempCount];
 }
 
@@ -110,10 +128,12 @@ function slotBaseAndTemp(entry) {
  * @param {number} tempCount
  * @param {number} disabledCount
  * @param {string} filledImg
+ * @param {number} [projectCount]
  * @returns {string}
  */
-function dotImageForTraitSlot(i, slotCount, baseCount, tempCount, disabledCount, filledImg) {
+function dotImageForTraitSlot(i, slotCount, baseCount, tempCount, disabledCount, filledImg, projectCount) {
   let disabled = Math.max(0, Math.floor(Number(disabledCount) || 0));
+  let project = Math.max(0, Math.floor(Number(projectCount) || 0));
   let temp = tempCount;
   let totalFilled = baseCount + temp;
   if (totalFilled > slotCount) {
@@ -121,12 +141,16 @@ function dotImageForTraitSlot(i, slotCount, baseCount, tempCount, disabledCount,
     totalFilled = baseCount + temp;
   }
   disabled = Math.min(disabled, totalFilled);
+  project = Math.min(project, Math.max(0, totalFilled - disabled));
   if (totalFilled <= 0 || i < slotCount - totalFilled + 1) {
     return "dot_blank";
   }
   const firstFilled = slotCount - totalFilled + 1;
   if (disabled > 0 && i >= firstFilled && i < firstFilled + disabled) {
-    return "dot_grey";
+    return "dot_grey_red_x";
+  }
+  if (project > 0 && i >= firstFilled + disabled && i < firstFilled + disabled + project) {
+    return "dot_project";
   }
   if (i <= slotCount - baseCount) {
     return "dot_white";
@@ -141,17 +165,26 @@ function dotImageForTraitSlot(i, slotCount, baseCount, tempCount, disabledCount,
  * @param {number} tempCount
  * @param {number} disabledCount
  * @param {string} filledImg
+ * @param {number} [projectCount]
  * @returns {string|null}
  */
-function dotImageForDomainSlot(slot, baseCount, tempCount, disabledCount, filledImg) {
+function dotImageForDomainSlot(slot, baseCount, tempCount, disabledCount, filledImg, projectCount) {
   const totalFilled = baseCount + tempCount;
   if (slot < 1 || slot > totalFilled) {
     return null;
   }
   const disabled = Math.max(0, Math.min(Math.floor(Number(disabledCount) || 0), totalFilled));
+  const project = Math.max(
+    0,
+    Math.min(Math.floor(Number(projectCount) || 0), Math.max(0, totalFilled - disabled))
+  );
   const disableFrom = totalFilled - disabled + 1;
   if (disabled > 0 && slot >= disableFrom) {
-    return "dot_grey";
+    return "dot_grey_red_x";
+  }
+  const projectFrom = totalFilled - disabled - project + 1;
+  if (project > 0 && slot >= projectFrom && slot < disableFrom) {
+    return "dot_project";
   }
   if (slot <= baseCount) {
     return filledImg;
@@ -457,6 +490,7 @@ module.exports = {
   slotAndBase,
   slotBaseAndTemp,
   slotBaseTempDisabled,
+  slotBaseTempDisabledProject,
   dotImageForTraitSlot,
   dotImageForDomainSlot,
   entryTitleUpper,

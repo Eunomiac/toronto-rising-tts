@@ -583,6 +583,7 @@ function M.stakeQtyForAdvantage(sourceKey, name, focus, excludeProjectId)
   return total
 end
 
+--- Manual disabled + holding project stake qty (for availability math; sheet render uses separate bands).
 --- @param manualDisabled number|nil
 --- @param sourceKey string
 --- @param name string

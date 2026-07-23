@@ -80,14 +80,15 @@ function M.slotAndBase(entry)
   return slot, base
 end
 
---- @param entry table
+--- Manual disabled + project-stake bands (clamped so disabled fills first, then project into remainder).
 --- @param entry table|nil
---- @param extraDisabled integer|nil additional disabled dots (e.g. project stakes)
+--- @param projectCount integer|nil stake qty from Projects.stakeQtyForAdvantage (not merged into disabled)
 --- @return integer slotCount
 --- @return integer baseCount
 --- @return integer tempCount
---- @return integer disabledCount
-function M.slotBaseTempDisabled(entry, extraDisabled)
+--- @return integer disabledCount manual only
+--- @return integer projectCount clamped stake band
+function M.slotBaseTempDisabledProject(entry, projectCount)
   local slotCount, baseCount = M.slotAndBase(entry)
   local tempCount = 0
   local disabledCount = 0
@@ -97,9 +98,22 @@ function M.slotBaseTempDisabled(entry, extraDisabled)
   end
   tempCount = math.max(0, tempCount)
   tempCount = math.min(tempCount, math.max(0, slotCount - baseCount))
-  disabledCount = disabledCount + math.max(0, math.floor(tonumber(extraDisabled) or 0))
+  local filled = baseCount + tempCount
   disabledCount = math.max(0, disabledCount)
-  disabledCount = math.min(disabledCount, baseCount + tempCount)
+  disabledCount = math.min(disabledCount, filled)
+  local project = math.max(0, math.floor(tonumber(projectCount) or 0))
+  project = math.min(project, math.max(0, filled - disabledCount))
+  return slotCount, baseCount, tempCount, disabledCount, project
+end
+
+--- @param entry table|nil
+--- @param projectCount integer|nil optional; when set, treated as project stake qty (not merged into disabled)
+--- @return integer slotCount
+--- @return integer baseCount
+--- @return integer tempCount
+--- @return integer disabledCount
+function M.slotBaseTempDisabled(entry, projectCount)
+  local slotCount, baseCount, tempCount, disabledCount = M.slotBaseTempDisabledProject(entry, projectCount)
   return slotCount, baseCount, tempCount, disabledCount
 end
 
@@ -108,22 +122,24 @@ end
 --- @return integer baseCount
 --- @return integer tempCount
 function M.slotBaseAndTemp(entry)
-  local slotCount, baseCount, tempCount = M.slotBaseTempDisabled(entry)
+  local slotCount, baseCount, tempCount = M.slotBaseTempDisabledProject(entry)
   return slotCount, baseCount, tempCount
 end
 
 --- Title-bar dot image for slot index `i` (1 = lowest index in XML).
 --- Visually (title-bar mirror): high index = left = base (yellow/red); low index = right = temp (white).
---- `disabled` greys the visually rightmost filled dots first (lowest filled index).
+--- From the visual right: manual `disabled` → `dot_grey_red_x`, then project stakes → `dot_project`.
 --- @param i integer 1-based slot index
 --- @param slotCount integer
 --- @param baseCount integer
 --- @param tempCount integer
 --- @param disabledCount integer|nil
 --- @param filledImg string e.g. dot_yellow or dot_red
+--- @param projectCount integer|nil
 --- @return string image id
-function M.dotImageForTraitSlot(i, slotCount, baseCount, tempCount, disabledCount, filledImg)
+function M.dotImageForTraitSlot(i, slotCount, baseCount, tempCount, disabledCount, filledImg, projectCount)
   disabledCount = math.max(0, math.floor(tonumber(disabledCount) or 0))
+  projectCount = math.max(0, math.floor(tonumber(projectCount) or 0))
   local temp = tempCount
   local totalFilled = baseCount + temp
   if totalFilled > slotCount then
@@ -131,12 +147,16 @@ function M.dotImageForTraitSlot(i, slotCount, baseCount, tempCount, disabledCoun
     totalFilled = baseCount + temp
   end
   disabledCount = math.min(disabledCount, totalFilled)
+  projectCount = math.min(projectCount, math.max(0, totalFilled - disabledCount))
   if totalFilled <= 0 or i < (slotCount - totalFilled + 1) then
     return "dot_blank"
   end
   local firstFilled = slotCount - totalFilled + 1
   if disabledCount > 0 and i >= firstFilled and i < firstFilled + disabledCount then
-    return "dot_grey"
+    return "dot_grey_red_x"
+  end
+  if projectCount > 0 and i >= firstFilled + disabledCount and i < firstFilled + disabledCount + projectCount then
+    return "dot_project"
   end
   if i <= slotCount - baseCount then
     return "dot_white"
@@ -145,21 +165,28 @@ function M.dotImageForTraitSlot(i, slotCount, baseCount, tempCount, disabledCoun
 end
 
 --- Domain rating dots (Chasse/Lien/Portillon/Haven): slot 1 = left, no title-bar mirror.
+--- From the right: manual disabled → `dot_grey_red_x`, then project → `dot_project`.
 --- @param slot integer 1-based
 --- @param baseCount integer
 --- @param tempCount integer
 --- @param disabledCount integer|nil
 --- @param filledImg string e.g. dot_large_yellow
+--- @param projectCount integer|nil
 --- @return string|nil image id when filled; nil when slot should be hidden
-function M.dotImageForDomainSlot(slot, baseCount, tempCount, disabledCount, filledImg)
+function M.dotImageForDomainSlot(slot, baseCount, tempCount, disabledCount, filledImg, projectCount)
   local totalFilled = baseCount + tempCount
   if slot < 1 or slot > totalFilled then
     return nil
   end
   disabledCount = math.max(0, math.min(math.floor(tonumber(disabledCount) or 0), totalFilled))
+  projectCount = math.max(0, math.min(math.floor(tonumber(projectCount) or 0), math.max(0, totalFilled - disabledCount)))
   local disableFrom = totalFilled - disabledCount + 1
   if disabledCount > 0 and slot >= disableFrom then
-    return "dot_grey"
+    return "dot_grey_red_x"
+  end
+  local projectFrom = totalFilled - disabledCount - projectCount + 1
+  if projectCount > 0 and slot >= projectFrom and slot < disableFrom then
+    return "dot_project"
   end
   if slot <= baseCount then
     return filledImg
@@ -277,8 +304,9 @@ end
 function M.buildTraitBlockParams(entry, sectionKey, entryIndex, isFlaw, opts)
   opts = type(opts) == "table" and opts or {}
   local pageNum = opts.pageNum or 3
-  local extraDisabled = math.max(0, math.floor(tonumber(opts.extraDisabled) or 0))
-  if extraDisabled == 0
+  -- opts.extraDisabled / projectStakeSourceKey = project stake qty (separate band; not merged into disabled).
+  local projectCount = math.max(0, math.floor(tonumber(opts.extraDisabled) or 0))
+  if projectCount == 0
     and type(opts.projectStakeSourceKey) == "string" and opts.projectStakeSourceKey ~= ""
     and type(entry) == "table" and type(entry.name) == "string"
     and Global ~= nil and type(Global.call) == "function"
@@ -288,9 +316,10 @@ function M.buildTraitBlockParams(entry, sectionKey, entryIndex, isFlaw, opts)
       name = entry.name,
       focus = entry.focus,
     })
-    extraDisabled = math.max(0, math.floor(tonumber(qty) or 0))
+    projectCount = math.max(0, math.floor(tonumber(qty) or 0))
   end
-  local slotCount, baseCount, tempCount, disabledCount = M.slotBaseTempDisabled(entry, extraDisabled)
+  local slotCount, baseCount, tempCount, disabledCount, clampedProject =
+    M.slotBaseTempDisabledProject(entry, projectCount)
   local filledImg = isFlaw and "dot_red" or "dot_yellow"
   local params = {
     TITLE_BAR_DOT_CLASS = M.titleBarDotClass(slotCount),
@@ -300,7 +329,9 @@ function M.buildTraitBlockParams(entry, sectionKey, entryIndex, isFlaw, opts)
     SECTION = sectionKey,
   }
   for i = 1, slotCount do
-    params["DOT_IMG_" .. tostring(i)] = M.dotImageForTraitSlot(i, slotCount, baseCount, tempCount, disabledCount, filledImg)
+    params["DOT_IMG_" .. tostring(i)] = M.dotImageForTraitSlot(
+      i, slotCount, baseCount, tempCount, disabledCount, filledImg, clampedProject
+    )
   end
 
   local flavor = M.joinMultilineField(entry.description)

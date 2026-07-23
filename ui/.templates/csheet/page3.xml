@@ -42,7 +42,7 @@
 
   </VerticalLayout>
 
-    <!-- Status overlays (sheetDisplay:false): single Images, LTR base/temp + grey disabled from the right. -->
+    <!-- Status overlays (sheetDisplay:false): single Images, LTR base/temp; disabled (dot_grey_red_x) then project (dot_project) from the right. -->
      <Defaults>
         <Image class="dot_status" height="80" width="80" ignoreLayout="true" rectAlignment="UpperLeft" active="false" />
      </Defaults>
