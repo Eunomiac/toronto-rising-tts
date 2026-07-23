@@ -427,6 +427,14 @@ local function worldFromUv(u, v, options)
     return Vector(x, y, z)
 end
 
+--- STAGE_BOARD world Y rotation (degrees), or 0 when the board object is missing.
+--- Must be above `stageFigurineWorldYawDeg` (same-chunk local order).
+--- @return number
+local function getStageBoardYawDeg()
+    local stage = getStageBoard()
+    return objectYawDeg(stage)
+end
+
 --- World Y rotation for a figurine on STAGE_BOARD at u,v (master-origin facing; ignores stored placement yaw).
 --- @param placementYaw number|nil Legacy / unused when u,v supplied via caller; kept for API compat.
 --- @return number
@@ -435,13 +443,6 @@ local function stageFigurineWorldYawDeg(placementYaw)
     local rel = tonumber(placementYaw) or 0
     local offset = tonumber(DATA.STAGE_FIGURINE_YAW_OFFSET_DEG) or 0
     return (stageYaw + rel + offset) % 360
-end
-
---- STAGE_BOARD world Y rotation (degrees), or 0 when the board object is missing.
---- @return number
-local function getStageBoardYawDeg()
-    local stage = getStageBoard()
-    return objectYawDeg(stage)
 end
 
 --- @param worldPos Vector|table
