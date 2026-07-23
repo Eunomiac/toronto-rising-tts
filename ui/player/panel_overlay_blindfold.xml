@@ -47,10 +47,9 @@ UI.hide("overlay_site_card_display_Pink")
 UI.hide("overlay_district_card_display_Purple")
 UI.hide("overlay_site_card_display_Purple")
 -->
-  <!-- District Card Display - Deactivate if transitioning to end scene or scene without a location -->
-  <Image id="overlay_district_card_display_Brown" image="" class="player_overlay_district_card_display" active="false" />
 
-  <!-- Site Card Display - Deactivate if transitioning to end scene or scene without a location -->
+  <!-- Destination District/Site cards (TOR-425): shown with blindfold UI.show only when Apply passes both keys. -->
+  <Image id="overlay_district_card_display_Brown" image="" class="player_overlay_district_card_display" active="false" />
   <Image id="overlay_site_card_display_Brown" image="" class="player_overlay_site_card_display" active="false" />
 </Panel>
 
@@ -100,10 +99,9 @@ UI.hide("overlay_site_card_display_Pink")
 UI.hide("overlay_district_card_display_Purple")
 UI.hide("overlay_site_card_display_Purple")
 -->
-  <!-- District Card Display - Deactivate if transitioning to end scene or scene without a location -->
-  <Image id="overlay_district_card_display_Orange" image="" class="player_overlay_district_card_display" active="false" />
 
-  <!-- Site Card Display - Deactivate if transitioning to end scene or scene without a location -->
+  <!-- Destination District/Site cards (TOR-425): shown with blindfold UI.show only when Apply passes both keys. -->
+  <Image id="overlay_district_card_display_Orange" image="" class="player_overlay_district_card_display" active="false" />
   <Image id="overlay_site_card_display_Orange" image="" class="player_overlay_site_card_display" active="false" />
 </Panel>
 
@@ -153,10 +151,9 @@ UI.hide("overlay_site_card_display_Pink")
 UI.hide("overlay_district_card_display_Purple")
 UI.hide("overlay_site_card_display_Purple")
 -->
-  <!-- District Card Display - Deactivate if transitioning to end scene or scene without a location -->
-  <Image id="overlay_district_card_display_Red" image="" class="player_overlay_district_card_display" active="false" />
 
-  <!-- Site Card Display - Deactivate if transitioning to end scene or scene without a location -->
+  <!-- Destination District/Site cards (TOR-425): shown with blindfold UI.show only when Apply passes both keys. -->
+  <Image id="overlay_district_card_display_Red" image="" class="player_overlay_district_card_display" active="false" />
   <Image id="overlay_site_card_display_Red" image="" class="player_overlay_site_card_display" active="false" />
 </Panel>
 
@@ -206,10 +203,9 @@ UI.hide("overlay_site_card_display_Pink")
 UI.hide("overlay_district_card_display_Purple")
 UI.hide("overlay_site_card_display_Purple")
 -->
-  <!-- District Card Display - Deactivate if transitioning to end scene or scene without a location -->
-  <Image id="overlay_district_card_display_Pink" image="" class="player_overlay_district_card_display" active="false" />
 
-  <!-- Site Card Display - Deactivate if transitioning to end scene or scene without a location -->
+  <!-- Destination District/Site cards (TOR-425): shown with blindfold UI.show only when Apply passes both keys. -->
+  <Image id="overlay_district_card_display_Pink" image="" class="player_overlay_district_card_display" active="false" />
   <Image id="overlay_site_card_display_Pink" image="" class="player_overlay_site_card_display" active="false" />
 </Panel>
 
@@ -259,9 +255,8 @@ UI.hide("overlay_site_card_display_Pink")
 UI.hide("overlay_district_card_display_Purple")
 UI.hide("overlay_site_card_display_Purple")
 -->
-  <!-- District Card Display - Deactivate if transitioning to end scene or scene without a location -->
-  <Image id="overlay_district_card_display_Purple" image="" class="player_overlay_district_card_display" active="false" />
 
-  <!-- Site Card Display - Deactivate if transitioning to end scene or scene without a location -->
+  <!-- Destination District/Site cards (TOR-425): shown with blindfold UI.show only when Apply passes both keys. -->
+  <Image id="overlay_district_card_display_Purple" image="" class="player_overlay_district_card_display" active="false" />
   <Image id="overlay_site_card_display_Purple" image="" class="player_overlay_site_card_display" active="false" />
 </Panel>

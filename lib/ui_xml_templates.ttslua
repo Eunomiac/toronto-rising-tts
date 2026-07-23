@@ -983,7 +983,7 @@ local elemAttrs = UI.getAttributes(elemAttrIDs.headerContainer)
     <!-- Each stake row starts inactive; set active="true" for each staked Advantage -->
     <HorizontalLayout id="court_project_@@INDEX@@_stake_1_@@color@@" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_@@INDEX@@_stake_1_label_@@color@@" class="project_stake_label project_stake_label_@@PROJECT_STAKE_1_CLASS@@" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_@@INDEX@@_stake_1_dots_@@color@@" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_@@INDEX@@_stake_1_dots_@@color@@" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_@@INDEX@@_stake_1_dot_1_@@color@@" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_1_CLASS@@" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_@@INDEX@@_stake_1_dot_2_@@color@@" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_1_CLASS@@" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_@@INDEX@@_stake_1_dot_3_@@color@@" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_1_CLASS@@" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -994,7 +994,7 @@ local elemAttrs = UI.getAttributes(elemAttrIDs.headerContainer)
     </HorizontalLayout>
     <HorizontalLayout id="court_project_@@INDEX@@_stake_2_@@color@@" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_@@INDEX@@_stake_2_label_@@color@@" class="project_stake_label project_stake_label_@@PROJECT_STAKE_2_CLASS@@" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_@@INDEX@@_stake_2_dots_@@color@@" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_@@INDEX@@_stake_2_dots_@@color@@" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_@@INDEX@@_stake_2_dot_1_@@color@@" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_2_CLASS@@" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_@@INDEX@@_stake_2_dot_2_@@color@@" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_2_CLASS@@" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_@@INDEX@@_stake_2_dot_3_@@color@@" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_2_CLASS@@" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -1005,7 +1005,7 @@ local elemAttrs = UI.getAttributes(elemAttrIDs.headerContainer)
     </HorizontalLayout>
     <HorizontalLayout id="court_project_@@INDEX@@_stake_3_@@color@@" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_@@INDEX@@_stake_3_label_@@color@@" class="project_stake_label project_stake_label_@@PROJECT_STAKE_3_CLASS@@" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_@@INDEX@@_stake_3_dots_@@color@@" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_@@INDEX@@_stake_3_dots_@@color@@" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_@@INDEX@@_stake_3_dot_1_@@color@@" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_3_CLASS@@" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_@@INDEX@@_stake_3_dot_2_@@color@@" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_3_CLASS@@" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_@@INDEX@@_stake_3_dot_3_@@color@@" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_3_CLASS@@" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -1016,7 +1016,7 @@ local elemAttrs = UI.getAttributes(elemAttrIDs.headerContainer)
     </HorizontalLayout>
     <HorizontalLayout id="court_project_@@INDEX@@_stake_4_@@color@@" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_@@INDEX@@_stake_4_label_@@color@@" class="project_stake_label project_stake_label_@@PROJECT_STAKE_4_CLASS@@" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_@@INDEX@@_stake_4_dots_@@color@@" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_@@INDEX@@_stake_4_dots_@@color@@" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_@@INDEX@@_stake_4_dot_1_@@color@@" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_4_CLASS@@" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_@@INDEX@@_stake_4_dot_2_@@color@@" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_4_CLASS@@" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_@@INDEX@@_stake_4_dot_3_@@color@@" class="project_stake_dot project_stake_dot_@@PROJECT_STAKE_4_CLASS@@" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />

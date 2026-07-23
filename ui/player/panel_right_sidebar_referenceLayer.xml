@@ -1410,7 +1410,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_0_stake_1_Brown" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_0_stake_1_label_Brown" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_0_stake_1_dots_Brown" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_0_stake_1_dots_Brown" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_0_stake_1_dot_1_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_0_stake_1_dot_2_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_0_stake_1_dot_3_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -1421,7 +1421,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_0_stake_2_Brown" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_0_stake_2_label_Brown" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_0_stake_2_dots_Brown" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_0_stake_2_dots_Brown" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_0_stake_2_dot_1_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_0_stake_2_dot_2_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_0_stake_2_dot_3_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -1432,7 +1432,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_0_stake_3_Brown" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_0_stake_3_label_Brown" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_0_stake_3_dots_Brown" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_0_stake_3_dots_Brown" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_0_stake_3_dot_1_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_0_stake_3_dot_2_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_0_stake_3_dot_3_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -1443,7 +1443,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_0_stake_4_Brown" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_0_stake_4_label_Brown" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_0_stake_4_dots_Brown" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_0_stake_4_dots_Brown" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_0_stake_4_dot_1_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_0_stake_4_dot_2_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_0_stake_4_dot_3_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -1503,7 +1503,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_1_stake_1_Brown" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_1_stake_1_label_Brown" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_1_stake_1_dots_Brown" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_1_stake_1_dots_Brown" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_1_stake_1_dot_1_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_1_stake_1_dot_2_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_1_stake_1_dot_3_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -1514,7 +1514,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_1_stake_2_Brown" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_1_stake_2_label_Brown" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_1_stake_2_dots_Brown" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_1_stake_2_dots_Brown" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_1_stake_2_dot_1_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_1_stake_2_dot_2_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_1_stake_2_dot_3_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -1525,7 +1525,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_1_stake_3_Brown" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_1_stake_3_label_Brown" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_1_stake_3_dots_Brown" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_1_stake_3_dots_Brown" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_1_stake_3_dot_1_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_1_stake_3_dot_2_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_1_stake_3_dot_3_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -1536,7 +1536,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_1_stake_4_Brown" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_1_stake_4_label_Brown" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_1_stake_4_dots_Brown" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_1_stake_4_dots_Brown" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_1_stake_4_dot_1_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_1_stake_4_dot_2_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_1_stake_4_dot_3_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -1596,7 +1596,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_2_stake_1_Brown" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_2_stake_1_label_Brown" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_2_stake_1_dots_Brown" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_2_stake_1_dots_Brown" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_2_stake_1_dot_1_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_2_stake_1_dot_2_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_2_stake_1_dot_3_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -1607,7 +1607,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_2_stake_2_Brown" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_2_stake_2_label_Brown" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_2_stake_2_dots_Brown" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_2_stake_2_dots_Brown" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_2_stake_2_dot_1_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_2_stake_2_dot_2_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_2_stake_2_dot_3_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -1618,7 +1618,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_2_stake_3_Brown" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_2_stake_3_label_Brown" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_2_stake_3_dots_Brown" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_2_stake_3_dots_Brown" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_2_stake_3_dot_1_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_2_stake_3_dot_2_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_2_stake_3_dot_3_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -1629,7 +1629,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_2_stake_4_Brown" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_2_stake_4_label_Brown" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_2_stake_4_dots_Brown" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_2_stake_4_dots_Brown" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_2_stake_4_dot_1_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_2_stake_4_dot_2_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_2_stake_4_dot_3_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -1689,7 +1689,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_3_stake_1_Brown" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_3_stake_1_label_Brown" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_3_stake_1_dots_Brown" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_3_stake_1_dots_Brown" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_3_stake_1_dot_1_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_3_stake_1_dot_2_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_3_stake_1_dot_3_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -1700,7 +1700,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_3_stake_2_Brown" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_3_stake_2_label_Brown" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_3_stake_2_dots_Brown" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_3_stake_2_dots_Brown" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_3_stake_2_dot_1_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_3_stake_2_dot_2_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_3_stake_2_dot_3_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -1711,7 +1711,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_3_stake_3_Brown" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_3_stake_3_label_Brown" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_3_stake_3_dots_Brown" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_3_stake_3_dots_Brown" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_3_stake_3_dot_1_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_3_stake_3_dot_2_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_3_stake_3_dot_3_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -1722,7 +1722,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_3_stake_4_Brown" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_3_stake_4_label_Brown" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_3_stake_4_dots_Brown" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_3_stake_4_dots_Brown" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_3_stake_4_dot_1_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_3_stake_4_dot_2_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_3_stake_4_dot_3_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -1782,7 +1782,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_4_stake_1_Brown" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_4_stake_1_label_Brown" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_4_stake_1_dots_Brown" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_4_stake_1_dots_Brown" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_4_stake_1_dot_1_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_4_stake_1_dot_2_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_4_stake_1_dot_3_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -1793,7 +1793,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_4_stake_2_Brown" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_4_stake_2_label_Brown" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_4_stake_2_dots_Brown" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_4_stake_2_dots_Brown" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_4_stake_2_dot_1_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_4_stake_2_dot_2_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_4_stake_2_dot_3_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -1804,7 +1804,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_4_stake_3_Brown" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_4_stake_3_label_Brown" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_4_stake_3_dots_Brown" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_4_stake_3_dots_Brown" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_4_stake_3_dot_1_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_4_stake_3_dot_2_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_4_stake_3_dot_3_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -1815,7 +1815,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_4_stake_4_Brown" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_4_stake_4_label_Brown" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_4_stake_4_dots_Brown" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_4_stake_4_dots_Brown" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_4_stake_4_dot_1_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_4_stake_4_dot_2_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_4_stake_4_dot_3_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -1875,7 +1875,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_5_stake_1_Brown" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_5_stake_1_label_Brown" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_5_stake_1_dots_Brown" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_5_stake_1_dots_Brown" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_5_stake_1_dot_1_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_5_stake_1_dot_2_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_5_stake_1_dot_3_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -1886,7 +1886,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_5_stake_2_Brown" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_5_stake_2_label_Brown" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_5_stake_2_dots_Brown" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_5_stake_2_dots_Brown" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_5_stake_2_dot_1_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_5_stake_2_dot_2_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_5_stake_2_dot_3_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -1897,7 +1897,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_5_stake_3_Brown" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_5_stake_3_label_Brown" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_5_stake_3_dots_Brown" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_5_stake_3_dots_Brown" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_5_stake_3_dot_1_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_5_stake_3_dot_2_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_5_stake_3_dot_3_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -1908,7 +1908,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_5_stake_4_Brown" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_5_stake_4_label_Brown" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_5_stake_4_dots_Brown" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_5_stake_4_dots_Brown" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_5_stake_4_dot_1_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_5_stake_4_dot_2_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_5_stake_4_dot_3_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -1968,7 +1968,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_6_stake_1_Brown" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_6_stake_1_label_Brown" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_6_stake_1_dots_Brown" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_6_stake_1_dots_Brown" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_6_stake_1_dot_1_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_6_stake_1_dot_2_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_6_stake_1_dot_3_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -1979,7 +1979,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_6_stake_2_Brown" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_6_stake_2_label_Brown" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_6_stake_2_dots_Brown" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_6_stake_2_dots_Brown" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_6_stake_2_dot_1_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_6_stake_2_dot_2_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_6_stake_2_dot_3_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -1990,7 +1990,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_6_stake_3_Brown" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_6_stake_3_label_Brown" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_6_stake_3_dots_Brown" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_6_stake_3_dots_Brown" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_6_stake_3_dot_1_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_6_stake_3_dot_2_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_6_stake_3_dot_3_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -2001,7 +2001,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_6_stake_4_Brown" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_6_stake_4_label_Brown" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_6_stake_4_dots_Brown" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_6_stake_4_dots_Brown" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_6_stake_4_dot_1_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_6_stake_4_dot_2_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_6_stake_4_dot_3_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -2061,7 +2061,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_7_stake_1_Brown" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_7_stake_1_label_Brown" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_7_stake_1_dots_Brown" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_7_stake_1_dots_Brown" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_7_stake_1_dot_1_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_7_stake_1_dot_2_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_7_stake_1_dot_3_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -2072,7 +2072,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_7_stake_2_Brown" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_7_stake_2_label_Brown" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_7_stake_2_dots_Brown" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_7_stake_2_dots_Brown" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_7_stake_2_dot_1_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_7_stake_2_dot_2_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_7_stake_2_dot_3_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -2083,7 +2083,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_7_stake_3_Brown" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_7_stake_3_label_Brown" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_7_stake_3_dots_Brown" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_7_stake_3_dots_Brown" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_7_stake_3_dot_1_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_7_stake_3_dot_2_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_7_stake_3_dot_3_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -2094,7 +2094,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_7_stake_4_Brown" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_7_stake_4_label_Brown" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_7_stake_4_dots_Brown" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_7_stake_4_dots_Brown" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_7_stake_4_dot_1_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_7_stake_4_dot_2_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_7_stake_4_dot_3_Brown" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -3644,7 +3644,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_0_stake_1_Orange" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_0_stake_1_label_Orange" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_0_stake_1_dots_Orange" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_0_stake_1_dots_Orange" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_0_stake_1_dot_1_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_0_stake_1_dot_2_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_0_stake_1_dot_3_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -3655,7 +3655,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_0_stake_2_Orange" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_0_stake_2_label_Orange" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_0_stake_2_dots_Orange" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_0_stake_2_dots_Orange" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_0_stake_2_dot_1_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_0_stake_2_dot_2_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_0_stake_2_dot_3_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -3666,7 +3666,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_0_stake_3_Orange" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_0_stake_3_label_Orange" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_0_stake_3_dots_Orange" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_0_stake_3_dots_Orange" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_0_stake_3_dot_1_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_0_stake_3_dot_2_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_0_stake_3_dot_3_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -3677,7 +3677,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_0_stake_4_Orange" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_0_stake_4_label_Orange" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_0_stake_4_dots_Orange" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_0_stake_4_dots_Orange" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_0_stake_4_dot_1_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_0_stake_4_dot_2_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_0_stake_4_dot_3_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -3737,7 +3737,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_1_stake_1_Orange" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_1_stake_1_label_Orange" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_1_stake_1_dots_Orange" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_1_stake_1_dots_Orange" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_1_stake_1_dot_1_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_1_stake_1_dot_2_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_1_stake_1_dot_3_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -3748,7 +3748,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_1_stake_2_Orange" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_1_stake_2_label_Orange" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_1_stake_2_dots_Orange" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_1_stake_2_dots_Orange" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_1_stake_2_dot_1_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_1_stake_2_dot_2_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_1_stake_2_dot_3_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -3759,7 +3759,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_1_stake_3_Orange" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_1_stake_3_label_Orange" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_1_stake_3_dots_Orange" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_1_stake_3_dots_Orange" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_1_stake_3_dot_1_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_1_stake_3_dot_2_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_1_stake_3_dot_3_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -3770,7 +3770,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_1_stake_4_Orange" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_1_stake_4_label_Orange" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_1_stake_4_dots_Orange" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_1_stake_4_dots_Orange" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_1_stake_4_dot_1_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_1_stake_4_dot_2_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_1_stake_4_dot_3_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -3830,7 +3830,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_2_stake_1_Orange" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_2_stake_1_label_Orange" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_2_stake_1_dots_Orange" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_2_stake_1_dots_Orange" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_2_stake_1_dot_1_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_2_stake_1_dot_2_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_2_stake_1_dot_3_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -3841,7 +3841,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_2_stake_2_Orange" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_2_stake_2_label_Orange" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_2_stake_2_dots_Orange" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_2_stake_2_dots_Orange" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_2_stake_2_dot_1_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_2_stake_2_dot_2_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_2_stake_2_dot_3_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -3852,7 +3852,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_2_stake_3_Orange" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_2_stake_3_label_Orange" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_2_stake_3_dots_Orange" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_2_stake_3_dots_Orange" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_2_stake_3_dot_1_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_2_stake_3_dot_2_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_2_stake_3_dot_3_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -3863,7 +3863,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_2_stake_4_Orange" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_2_stake_4_label_Orange" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_2_stake_4_dots_Orange" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_2_stake_4_dots_Orange" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_2_stake_4_dot_1_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_2_stake_4_dot_2_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_2_stake_4_dot_3_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -3923,7 +3923,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_3_stake_1_Orange" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_3_stake_1_label_Orange" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_3_stake_1_dots_Orange" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_3_stake_1_dots_Orange" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_3_stake_1_dot_1_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_3_stake_1_dot_2_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_3_stake_1_dot_3_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -3934,7 +3934,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_3_stake_2_Orange" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_3_stake_2_label_Orange" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_3_stake_2_dots_Orange" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_3_stake_2_dots_Orange" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_3_stake_2_dot_1_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_3_stake_2_dot_2_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_3_stake_2_dot_3_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -3945,7 +3945,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_3_stake_3_Orange" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_3_stake_3_label_Orange" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_3_stake_3_dots_Orange" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_3_stake_3_dots_Orange" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_3_stake_3_dot_1_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_3_stake_3_dot_2_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_3_stake_3_dot_3_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -3956,7 +3956,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_3_stake_4_Orange" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_3_stake_4_label_Orange" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_3_stake_4_dots_Orange" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_3_stake_4_dots_Orange" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_3_stake_4_dot_1_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_3_stake_4_dot_2_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_3_stake_4_dot_3_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -4016,7 +4016,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_4_stake_1_Orange" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_4_stake_1_label_Orange" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_4_stake_1_dots_Orange" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_4_stake_1_dots_Orange" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_4_stake_1_dot_1_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_4_stake_1_dot_2_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_4_stake_1_dot_3_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -4027,7 +4027,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_4_stake_2_Orange" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_4_stake_2_label_Orange" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_4_stake_2_dots_Orange" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_4_stake_2_dots_Orange" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_4_stake_2_dot_1_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_4_stake_2_dot_2_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_4_stake_2_dot_3_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -4038,7 +4038,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_4_stake_3_Orange" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_4_stake_3_label_Orange" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_4_stake_3_dots_Orange" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_4_stake_3_dots_Orange" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_4_stake_3_dot_1_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_4_stake_3_dot_2_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_4_stake_3_dot_3_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -4049,7 +4049,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_4_stake_4_Orange" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_4_stake_4_label_Orange" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_4_stake_4_dots_Orange" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_4_stake_4_dots_Orange" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_4_stake_4_dot_1_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_4_stake_4_dot_2_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_4_stake_4_dot_3_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -4109,7 +4109,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_5_stake_1_Orange" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_5_stake_1_label_Orange" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_5_stake_1_dots_Orange" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_5_stake_1_dots_Orange" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_5_stake_1_dot_1_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_5_stake_1_dot_2_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_5_stake_1_dot_3_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -4120,7 +4120,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_5_stake_2_Orange" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_5_stake_2_label_Orange" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_5_stake_2_dots_Orange" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_5_stake_2_dots_Orange" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_5_stake_2_dot_1_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_5_stake_2_dot_2_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_5_stake_2_dot_3_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -4131,7 +4131,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_5_stake_3_Orange" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_5_stake_3_label_Orange" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_5_stake_3_dots_Orange" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_5_stake_3_dots_Orange" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_5_stake_3_dot_1_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_5_stake_3_dot_2_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_5_stake_3_dot_3_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -4142,7 +4142,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_5_stake_4_Orange" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_5_stake_4_label_Orange" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_5_stake_4_dots_Orange" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_5_stake_4_dots_Orange" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_5_stake_4_dot_1_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_5_stake_4_dot_2_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_5_stake_4_dot_3_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -4202,7 +4202,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_6_stake_1_Orange" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_6_stake_1_label_Orange" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_6_stake_1_dots_Orange" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_6_stake_1_dots_Orange" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_6_stake_1_dot_1_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_6_stake_1_dot_2_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_6_stake_1_dot_3_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -4213,7 +4213,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_6_stake_2_Orange" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_6_stake_2_label_Orange" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_6_stake_2_dots_Orange" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_6_stake_2_dots_Orange" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_6_stake_2_dot_1_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_6_stake_2_dot_2_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_6_stake_2_dot_3_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -4224,7 +4224,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_6_stake_3_Orange" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_6_stake_3_label_Orange" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_6_stake_3_dots_Orange" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_6_stake_3_dots_Orange" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_6_stake_3_dot_1_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_6_stake_3_dot_2_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_6_stake_3_dot_3_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -4235,7 +4235,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_6_stake_4_Orange" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_6_stake_4_label_Orange" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_6_stake_4_dots_Orange" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_6_stake_4_dots_Orange" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_6_stake_4_dot_1_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_6_stake_4_dot_2_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_6_stake_4_dot_3_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -4295,7 +4295,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_7_stake_1_Orange" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_7_stake_1_label_Orange" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_7_stake_1_dots_Orange" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_7_stake_1_dots_Orange" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_7_stake_1_dot_1_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_7_stake_1_dot_2_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_7_stake_1_dot_3_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -4306,7 +4306,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_7_stake_2_Orange" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_7_stake_2_label_Orange" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_7_stake_2_dots_Orange" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_7_stake_2_dots_Orange" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_7_stake_2_dot_1_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_7_stake_2_dot_2_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_7_stake_2_dot_3_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -4317,7 +4317,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_7_stake_3_Orange" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_7_stake_3_label_Orange" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_7_stake_3_dots_Orange" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_7_stake_3_dots_Orange" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_7_stake_3_dot_1_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_7_stake_3_dot_2_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_7_stake_3_dot_3_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -4328,7 +4328,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_7_stake_4_Orange" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_7_stake_4_label_Orange" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_7_stake_4_dots_Orange" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_7_stake_4_dots_Orange" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_7_stake_4_dot_1_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_7_stake_4_dot_2_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_7_stake_4_dot_3_Orange" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -5878,7 +5878,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_0_stake_1_Red" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_0_stake_1_label_Red" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_0_stake_1_dots_Red" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_0_stake_1_dots_Red" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_0_stake_1_dot_1_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_0_stake_1_dot_2_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_0_stake_1_dot_3_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -5889,7 +5889,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_0_stake_2_Red" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_0_stake_2_label_Red" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_0_stake_2_dots_Red" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_0_stake_2_dots_Red" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_0_stake_2_dot_1_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_0_stake_2_dot_2_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_0_stake_2_dot_3_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -5900,7 +5900,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_0_stake_3_Red" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_0_stake_3_label_Red" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_0_stake_3_dots_Red" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_0_stake_3_dots_Red" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_0_stake_3_dot_1_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_0_stake_3_dot_2_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_0_stake_3_dot_3_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -5911,7 +5911,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_0_stake_4_Red" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_0_stake_4_label_Red" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_0_stake_4_dots_Red" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_0_stake_4_dots_Red" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_0_stake_4_dot_1_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_0_stake_4_dot_2_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_0_stake_4_dot_3_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -5971,7 +5971,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_1_stake_1_Red" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_1_stake_1_label_Red" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_1_stake_1_dots_Red" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_1_stake_1_dots_Red" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_1_stake_1_dot_1_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_1_stake_1_dot_2_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_1_stake_1_dot_3_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -5982,7 +5982,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_1_stake_2_Red" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_1_stake_2_label_Red" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_1_stake_2_dots_Red" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_1_stake_2_dots_Red" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_1_stake_2_dot_1_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_1_stake_2_dot_2_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_1_stake_2_dot_3_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -5993,7 +5993,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_1_stake_3_Red" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_1_stake_3_label_Red" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_1_stake_3_dots_Red" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_1_stake_3_dots_Red" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_1_stake_3_dot_1_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_1_stake_3_dot_2_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_1_stake_3_dot_3_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -6004,7 +6004,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_1_stake_4_Red" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_1_stake_4_label_Red" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_1_stake_4_dots_Red" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_1_stake_4_dots_Red" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_1_stake_4_dot_1_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_1_stake_4_dot_2_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_1_stake_4_dot_3_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -6064,7 +6064,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_2_stake_1_Red" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_2_stake_1_label_Red" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_2_stake_1_dots_Red" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_2_stake_1_dots_Red" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_2_stake_1_dot_1_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_2_stake_1_dot_2_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_2_stake_1_dot_3_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -6075,7 +6075,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_2_stake_2_Red" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_2_stake_2_label_Red" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_2_stake_2_dots_Red" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_2_stake_2_dots_Red" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_2_stake_2_dot_1_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_2_stake_2_dot_2_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_2_stake_2_dot_3_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -6086,7 +6086,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_2_stake_3_Red" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_2_stake_3_label_Red" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_2_stake_3_dots_Red" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_2_stake_3_dots_Red" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_2_stake_3_dot_1_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_2_stake_3_dot_2_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_2_stake_3_dot_3_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -6097,7 +6097,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_2_stake_4_Red" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_2_stake_4_label_Red" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_2_stake_4_dots_Red" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_2_stake_4_dots_Red" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_2_stake_4_dot_1_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_2_stake_4_dot_2_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_2_stake_4_dot_3_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -6157,7 +6157,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_3_stake_1_Red" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_3_stake_1_label_Red" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_3_stake_1_dots_Red" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_3_stake_1_dots_Red" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_3_stake_1_dot_1_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_3_stake_1_dot_2_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_3_stake_1_dot_3_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -6168,7 +6168,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_3_stake_2_Red" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_3_stake_2_label_Red" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_3_stake_2_dots_Red" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_3_stake_2_dots_Red" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_3_stake_2_dot_1_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_3_stake_2_dot_2_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_3_stake_2_dot_3_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -6179,7 +6179,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_3_stake_3_Red" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_3_stake_3_label_Red" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_3_stake_3_dots_Red" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_3_stake_3_dots_Red" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_3_stake_3_dot_1_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_3_stake_3_dot_2_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_3_stake_3_dot_3_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -6190,7 +6190,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_3_stake_4_Red" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_3_stake_4_label_Red" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_3_stake_4_dots_Red" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_3_stake_4_dots_Red" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_3_stake_4_dot_1_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_3_stake_4_dot_2_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_3_stake_4_dot_3_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -6250,7 +6250,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_4_stake_1_Red" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_4_stake_1_label_Red" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_4_stake_1_dots_Red" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_4_stake_1_dots_Red" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_4_stake_1_dot_1_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_4_stake_1_dot_2_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_4_stake_1_dot_3_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -6261,7 +6261,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_4_stake_2_Red" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_4_stake_2_label_Red" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_4_stake_2_dots_Red" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_4_stake_2_dots_Red" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_4_stake_2_dot_1_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_4_stake_2_dot_2_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_4_stake_2_dot_3_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -6272,7 +6272,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_4_stake_3_Red" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_4_stake_3_label_Red" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_4_stake_3_dots_Red" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_4_stake_3_dots_Red" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_4_stake_3_dot_1_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_4_stake_3_dot_2_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_4_stake_3_dot_3_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -6283,7 +6283,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_4_stake_4_Red" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_4_stake_4_label_Red" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_4_stake_4_dots_Red" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_4_stake_4_dots_Red" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_4_stake_4_dot_1_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_4_stake_4_dot_2_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_4_stake_4_dot_3_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -6343,7 +6343,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_5_stake_1_Red" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_5_stake_1_label_Red" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_5_stake_1_dots_Red" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_5_stake_1_dots_Red" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_5_stake_1_dot_1_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_5_stake_1_dot_2_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_5_stake_1_dot_3_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -6354,7 +6354,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_5_stake_2_Red" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_5_stake_2_label_Red" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_5_stake_2_dots_Red" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_5_stake_2_dots_Red" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_5_stake_2_dot_1_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_5_stake_2_dot_2_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_5_stake_2_dot_3_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -6365,7 +6365,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_5_stake_3_Red" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_5_stake_3_label_Red" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_5_stake_3_dots_Red" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_5_stake_3_dots_Red" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_5_stake_3_dot_1_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_5_stake_3_dot_2_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_5_stake_3_dot_3_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -6376,7 +6376,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_5_stake_4_Red" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_5_stake_4_label_Red" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_5_stake_4_dots_Red" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_5_stake_4_dots_Red" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_5_stake_4_dot_1_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_5_stake_4_dot_2_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_5_stake_4_dot_3_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -6436,7 +6436,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_6_stake_1_Red" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_6_stake_1_label_Red" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_6_stake_1_dots_Red" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_6_stake_1_dots_Red" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_6_stake_1_dot_1_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_6_stake_1_dot_2_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_6_stake_1_dot_3_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -6447,7 +6447,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_6_stake_2_Red" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_6_stake_2_label_Red" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_6_stake_2_dots_Red" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_6_stake_2_dots_Red" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_6_stake_2_dot_1_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_6_stake_2_dot_2_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_6_stake_2_dot_3_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -6458,7 +6458,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_6_stake_3_Red" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_6_stake_3_label_Red" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_6_stake_3_dots_Red" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_6_stake_3_dots_Red" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_6_stake_3_dot_1_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_6_stake_3_dot_2_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_6_stake_3_dot_3_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -6469,7 +6469,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_6_stake_4_Red" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_6_stake_4_label_Red" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_6_stake_4_dots_Red" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_6_stake_4_dots_Red" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_6_stake_4_dot_1_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_6_stake_4_dot_2_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_6_stake_4_dot_3_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -6529,7 +6529,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_7_stake_1_Red" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_7_stake_1_label_Red" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_7_stake_1_dots_Red" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_7_stake_1_dots_Red" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_7_stake_1_dot_1_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_7_stake_1_dot_2_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_7_stake_1_dot_3_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -6540,7 +6540,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_7_stake_2_Red" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_7_stake_2_label_Red" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_7_stake_2_dots_Red" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_7_stake_2_dots_Red" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_7_stake_2_dot_1_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_7_stake_2_dot_2_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_7_stake_2_dot_3_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -6551,7 +6551,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_7_stake_3_Red" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_7_stake_3_label_Red" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_7_stake_3_dots_Red" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_7_stake_3_dots_Red" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_7_stake_3_dot_1_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_7_stake_3_dot_2_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_7_stake_3_dot_3_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -6562,7 +6562,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_7_stake_4_Red" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_7_stake_4_label_Red" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_7_stake_4_dots_Red" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_7_stake_4_dots_Red" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_7_stake_4_dot_1_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_7_stake_4_dot_2_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_7_stake_4_dot_3_Red" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -8112,7 +8112,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_0_stake_1_Pink" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_0_stake_1_label_Pink" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_0_stake_1_dots_Pink" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_0_stake_1_dots_Pink" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_0_stake_1_dot_1_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_0_stake_1_dot_2_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_0_stake_1_dot_3_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -8123,7 +8123,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_0_stake_2_Pink" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_0_stake_2_label_Pink" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_0_stake_2_dots_Pink" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_0_stake_2_dots_Pink" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_0_stake_2_dot_1_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_0_stake_2_dot_2_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_0_stake_2_dot_3_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -8134,7 +8134,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_0_stake_3_Pink" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_0_stake_3_label_Pink" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_0_stake_3_dots_Pink" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_0_stake_3_dots_Pink" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_0_stake_3_dot_1_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_0_stake_3_dot_2_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_0_stake_3_dot_3_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -8145,7 +8145,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_0_stake_4_Pink" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_0_stake_4_label_Pink" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_0_stake_4_dots_Pink" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_0_stake_4_dots_Pink" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_0_stake_4_dot_1_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_0_stake_4_dot_2_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_0_stake_4_dot_3_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -8205,7 +8205,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_1_stake_1_Pink" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_1_stake_1_label_Pink" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_1_stake_1_dots_Pink" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_1_stake_1_dots_Pink" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_1_stake_1_dot_1_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_1_stake_1_dot_2_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_1_stake_1_dot_3_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -8216,7 +8216,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_1_stake_2_Pink" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_1_stake_2_label_Pink" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_1_stake_2_dots_Pink" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_1_stake_2_dots_Pink" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_1_stake_2_dot_1_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_1_stake_2_dot_2_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_1_stake_2_dot_3_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -8227,7 +8227,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_1_stake_3_Pink" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_1_stake_3_label_Pink" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_1_stake_3_dots_Pink" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_1_stake_3_dots_Pink" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_1_stake_3_dot_1_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_1_stake_3_dot_2_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_1_stake_3_dot_3_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -8238,7 +8238,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_1_stake_4_Pink" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_1_stake_4_label_Pink" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_1_stake_4_dots_Pink" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_1_stake_4_dots_Pink" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_1_stake_4_dot_1_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_1_stake_4_dot_2_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_1_stake_4_dot_3_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -8298,7 +8298,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_2_stake_1_Pink" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_2_stake_1_label_Pink" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_2_stake_1_dots_Pink" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_2_stake_1_dots_Pink" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_2_stake_1_dot_1_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_2_stake_1_dot_2_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_2_stake_1_dot_3_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -8309,7 +8309,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_2_stake_2_Pink" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_2_stake_2_label_Pink" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_2_stake_2_dots_Pink" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_2_stake_2_dots_Pink" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_2_stake_2_dot_1_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_2_stake_2_dot_2_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_2_stake_2_dot_3_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -8320,7 +8320,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_2_stake_3_Pink" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_2_stake_3_label_Pink" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_2_stake_3_dots_Pink" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_2_stake_3_dots_Pink" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_2_stake_3_dot_1_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_2_stake_3_dot_2_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_2_stake_3_dot_3_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -8331,7 +8331,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_2_stake_4_Pink" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_2_stake_4_label_Pink" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_2_stake_4_dots_Pink" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_2_stake_4_dots_Pink" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_2_stake_4_dot_1_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_2_stake_4_dot_2_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_2_stake_4_dot_3_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -8391,7 +8391,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_3_stake_1_Pink" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_3_stake_1_label_Pink" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_3_stake_1_dots_Pink" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_3_stake_1_dots_Pink" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_3_stake_1_dot_1_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_3_stake_1_dot_2_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_3_stake_1_dot_3_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -8402,7 +8402,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_3_stake_2_Pink" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_3_stake_2_label_Pink" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_3_stake_2_dots_Pink" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_3_stake_2_dots_Pink" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_3_stake_2_dot_1_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_3_stake_2_dot_2_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_3_stake_2_dot_3_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -8413,7 +8413,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_3_stake_3_Pink" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_3_stake_3_label_Pink" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_3_stake_3_dots_Pink" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_3_stake_3_dots_Pink" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_3_stake_3_dot_1_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_3_stake_3_dot_2_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_3_stake_3_dot_3_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -8424,7 +8424,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_3_stake_4_Pink" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_3_stake_4_label_Pink" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_3_stake_4_dots_Pink" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_3_stake_4_dots_Pink" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_3_stake_4_dot_1_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_3_stake_4_dot_2_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_3_stake_4_dot_3_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -8484,7 +8484,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_4_stake_1_Pink" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_4_stake_1_label_Pink" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_4_stake_1_dots_Pink" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_4_stake_1_dots_Pink" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_4_stake_1_dot_1_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_4_stake_1_dot_2_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_4_stake_1_dot_3_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -8495,7 +8495,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_4_stake_2_Pink" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_4_stake_2_label_Pink" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_4_stake_2_dots_Pink" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_4_stake_2_dots_Pink" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_4_stake_2_dot_1_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_4_stake_2_dot_2_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_4_stake_2_dot_3_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -8506,7 +8506,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_4_stake_3_Pink" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_4_stake_3_label_Pink" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_4_stake_3_dots_Pink" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_4_stake_3_dots_Pink" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_4_stake_3_dot_1_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_4_stake_3_dot_2_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_4_stake_3_dot_3_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -8517,7 +8517,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_4_stake_4_Pink" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_4_stake_4_label_Pink" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_4_stake_4_dots_Pink" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_4_stake_4_dots_Pink" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_4_stake_4_dot_1_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_4_stake_4_dot_2_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_4_stake_4_dot_3_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -8577,7 +8577,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_5_stake_1_Pink" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_5_stake_1_label_Pink" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_5_stake_1_dots_Pink" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_5_stake_1_dots_Pink" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_5_stake_1_dot_1_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_5_stake_1_dot_2_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_5_stake_1_dot_3_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -8588,7 +8588,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_5_stake_2_Pink" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_5_stake_2_label_Pink" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_5_stake_2_dots_Pink" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_5_stake_2_dots_Pink" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_5_stake_2_dot_1_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_5_stake_2_dot_2_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_5_stake_2_dot_3_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -8599,7 +8599,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_5_stake_3_Pink" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_5_stake_3_label_Pink" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_5_stake_3_dots_Pink" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_5_stake_3_dots_Pink" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_5_stake_3_dot_1_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_5_stake_3_dot_2_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_5_stake_3_dot_3_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -8610,7 +8610,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_5_stake_4_Pink" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_5_stake_4_label_Pink" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_5_stake_4_dots_Pink" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_5_stake_4_dots_Pink" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_5_stake_4_dot_1_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_5_stake_4_dot_2_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_5_stake_4_dot_3_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -8670,7 +8670,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_6_stake_1_Pink" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_6_stake_1_label_Pink" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_6_stake_1_dots_Pink" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_6_stake_1_dots_Pink" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_6_stake_1_dot_1_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_6_stake_1_dot_2_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_6_stake_1_dot_3_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -8681,7 +8681,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_6_stake_2_Pink" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_6_stake_2_label_Pink" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_6_stake_2_dots_Pink" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_6_stake_2_dots_Pink" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_6_stake_2_dot_1_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_6_stake_2_dot_2_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_6_stake_2_dot_3_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -8692,7 +8692,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_6_stake_3_Pink" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_6_stake_3_label_Pink" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_6_stake_3_dots_Pink" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_6_stake_3_dots_Pink" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_6_stake_3_dot_1_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_6_stake_3_dot_2_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_6_stake_3_dot_3_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -8703,7 +8703,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_6_stake_4_Pink" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_6_stake_4_label_Pink" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_6_stake_4_dots_Pink" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_6_stake_4_dots_Pink" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_6_stake_4_dot_1_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_6_stake_4_dot_2_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_6_stake_4_dot_3_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -8763,7 +8763,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_7_stake_1_Pink" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_7_stake_1_label_Pink" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_7_stake_1_dots_Pink" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_7_stake_1_dots_Pink" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_7_stake_1_dot_1_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_7_stake_1_dot_2_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_7_stake_1_dot_3_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -8774,7 +8774,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_7_stake_2_Pink" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_7_stake_2_label_Pink" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_7_stake_2_dots_Pink" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_7_stake_2_dots_Pink" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_7_stake_2_dot_1_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_7_stake_2_dot_2_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_7_stake_2_dot_3_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -8785,7 +8785,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_7_stake_3_Pink" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_7_stake_3_label_Pink" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_7_stake_3_dots_Pink" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_7_stake_3_dots_Pink" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_7_stake_3_dot_1_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_7_stake_3_dot_2_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_7_stake_3_dot_3_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -8796,7 +8796,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_7_stake_4_Pink" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_7_stake_4_label_Pink" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_7_stake_4_dots_Pink" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_7_stake_4_dots_Pink" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_7_stake_4_dot_1_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_7_stake_4_dot_2_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_7_stake_4_dot_3_Pink" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -10346,7 +10346,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_0_stake_1_Purple" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_0_stake_1_label_Purple" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_0_stake_1_dots_Purple" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_0_stake_1_dots_Purple" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_0_stake_1_dot_1_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_0_stake_1_dot_2_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_0_stake_1_dot_3_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -10357,7 +10357,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_0_stake_2_Purple" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_0_stake_2_label_Purple" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_0_stake_2_dots_Purple" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_0_stake_2_dots_Purple" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_0_stake_2_dot_1_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_0_stake_2_dot_2_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_0_stake_2_dot_3_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -10368,7 +10368,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_0_stake_3_Purple" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_0_stake_3_label_Purple" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_0_stake_3_dots_Purple" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_0_stake_3_dots_Purple" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_0_stake_3_dot_1_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_0_stake_3_dot_2_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_0_stake_3_dot_3_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -10379,7 +10379,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_0_stake_4_Purple" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_0_stake_4_label_Purple" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_0_stake_4_dots_Purple" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_0_stake_4_dots_Purple" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_0_stake_4_dot_1_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_0_stake_4_dot_2_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_0_stake_4_dot_3_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -10439,7 +10439,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_1_stake_1_Purple" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_1_stake_1_label_Purple" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_1_stake_1_dots_Purple" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_1_stake_1_dots_Purple" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_1_stake_1_dot_1_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_1_stake_1_dot_2_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_1_stake_1_dot_3_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -10450,7 +10450,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_1_stake_2_Purple" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_1_stake_2_label_Purple" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_1_stake_2_dots_Purple" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_1_stake_2_dots_Purple" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_1_stake_2_dot_1_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_1_stake_2_dot_2_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_1_stake_2_dot_3_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -10461,7 +10461,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_1_stake_3_Purple" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_1_stake_3_label_Purple" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_1_stake_3_dots_Purple" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_1_stake_3_dots_Purple" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_1_stake_3_dot_1_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_1_stake_3_dot_2_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_1_stake_3_dot_3_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -10472,7 +10472,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_1_stake_4_Purple" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_1_stake_4_label_Purple" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_1_stake_4_dots_Purple" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_1_stake_4_dots_Purple" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_1_stake_4_dot_1_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_1_stake_4_dot_2_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_1_stake_4_dot_3_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -10532,7 +10532,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_2_stake_1_Purple" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_2_stake_1_label_Purple" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_2_stake_1_dots_Purple" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_2_stake_1_dots_Purple" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_2_stake_1_dot_1_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_2_stake_1_dot_2_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_2_stake_1_dot_3_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -10543,7 +10543,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_2_stake_2_Purple" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_2_stake_2_label_Purple" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_2_stake_2_dots_Purple" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_2_stake_2_dots_Purple" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_2_stake_2_dot_1_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_2_stake_2_dot_2_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_2_stake_2_dot_3_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -10554,7 +10554,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_2_stake_3_Purple" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_2_stake_3_label_Purple" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_2_stake_3_dots_Purple" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_2_stake_3_dots_Purple" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_2_stake_3_dot_1_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_2_stake_3_dot_2_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_2_stake_3_dot_3_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -10565,7 +10565,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_2_stake_4_Purple" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_2_stake_4_label_Purple" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_2_stake_4_dots_Purple" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_2_stake_4_dots_Purple" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_2_stake_4_dot_1_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_2_stake_4_dot_2_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_2_stake_4_dot_3_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -10625,7 +10625,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_3_stake_1_Purple" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_3_stake_1_label_Purple" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_3_stake_1_dots_Purple" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_3_stake_1_dots_Purple" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_3_stake_1_dot_1_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_3_stake_1_dot_2_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_3_stake_1_dot_3_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -10636,7 +10636,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_3_stake_2_Purple" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_3_stake_2_label_Purple" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_3_stake_2_dots_Purple" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_3_stake_2_dots_Purple" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_3_stake_2_dot_1_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_3_stake_2_dot_2_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_3_stake_2_dot_3_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -10647,7 +10647,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_3_stake_3_Purple" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_3_stake_3_label_Purple" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_3_stake_3_dots_Purple" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_3_stake_3_dots_Purple" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_3_stake_3_dot_1_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_3_stake_3_dot_2_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_3_stake_3_dot_3_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -10658,7 +10658,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_3_stake_4_Purple" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_3_stake_4_label_Purple" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_3_stake_4_dots_Purple" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_3_stake_4_dots_Purple" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_3_stake_4_dot_1_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_3_stake_4_dot_2_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_3_stake_4_dot_3_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -10718,7 +10718,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_4_stake_1_Purple" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_4_stake_1_label_Purple" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_4_stake_1_dots_Purple" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_4_stake_1_dots_Purple" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_4_stake_1_dot_1_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_4_stake_1_dot_2_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_4_stake_1_dot_3_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -10729,7 +10729,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_4_stake_2_Purple" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_4_stake_2_label_Purple" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_4_stake_2_dots_Purple" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_4_stake_2_dots_Purple" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_4_stake_2_dot_1_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_4_stake_2_dot_2_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_4_stake_2_dot_3_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -10740,7 +10740,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_4_stake_3_Purple" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_4_stake_3_label_Purple" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_4_stake_3_dots_Purple" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_4_stake_3_dots_Purple" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_4_stake_3_dot_1_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_4_stake_3_dot_2_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_4_stake_3_dot_3_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -10751,7 +10751,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_4_stake_4_Purple" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_4_stake_4_label_Purple" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_4_stake_4_dots_Purple" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_4_stake_4_dots_Purple" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_4_stake_4_dot_1_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_4_stake_4_dot_2_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_4_stake_4_dot_3_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -10811,7 +10811,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_5_stake_1_Purple" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_5_stake_1_label_Purple" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_5_stake_1_dots_Purple" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_5_stake_1_dots_Purple" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_5_stake_1_dot_1_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_5_stake_1_dot_2_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_5_stake_1_dot_3_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -10822,7 +10822,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_5_stake_2_Purple" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_5_stake_2_label_Purple" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_5_stake_2_dots_Purple" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_5_stake_2_dots_Purple" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_5_stake_2_dot_1_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_5_stake_2_dot_2_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_5_stake_2_dot_3_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -10833,7 +10833,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_5_stake_3_Purple" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_5_stake_3_label_Purple" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_5_stake_3_dots_Purple" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_5_stake_3_dots_Purple" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_5_stake_3_dot_1_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_5_stake_3_dot_2_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_5_stake_3_dot_3_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -10844,7 +10844,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_5_stake_4_Purple" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_5_stake_4_label_Purple" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_5_stake_4_dots_Purple" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_5_stake_4_dots_Purple" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_5_stake_4_dot_1_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_5_stake_4_dot_2_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_5_stake_4_dot_3_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -10904,7 +10904,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_6_stake_1_Purple" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_6_stake_1_label_Purple" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_6_stake_1_dots_Purple" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_6_stake_1_dots_Purple" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_6_stake_1_dot_1_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_6_stake_1_dot_2_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_6_stake_1_dot_3_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -10915,7 +10915,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_6_stake_2_Purple" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_6_stake_2_label_Purple" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_6_stake_2_dots_Purple" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_6_stake_2_dots_Purple" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_6_stake_2_dot_1_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_6_stake_2_dot_2_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_6_stake_2_dot_3_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -10926,7 +10926,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_6_stake_3_Purple" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_6_stake_3_label_Purple" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_6_stake_3_dots_Purple" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_6_stake_3_dots_Purple" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_6_stake_3_dot_1_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_6_stake_3_dot_2_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_6_stake_3_dot_3_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -10937,7 +10937,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_6_stake_4_Purple" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_6_stake_4_label_Purple" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_6_stake_4_dots_Purple" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_6_stake_4_dots_Purple" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_6_stake_4_dot_1_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_6_stake_4_dot_2_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_6_stake_4_dot_3_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -10997,7 +10997,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
     <HorizontalLayout id="court_project_7_stake_1_Purple" class="project_stake_container" spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_7_stake_1_label_Purple" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_7_stake_1_dots_Purple" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_7_stake_1_dots_Purple" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_7_stake_1_dot_1_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_7_stake_1_dot_2_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
         <Image id="court_project_7_stake_1_dot_3_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5" />
@@ -11008,7 +11008,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_7_stake_2_Purple" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_7_stake_2_label_Purple" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_7_stake_2_dots_Purple" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_7_stake_2_dots_Purple" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_7_stake_2_dot_1_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_7_stake_2_dot_2_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_7_stake_2_dot_3_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -11019,7 +11019,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_7_stake_3_Purple" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_7_stake_3_label_Purple" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_7_stake_3_dots_Purple" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_7_stake_3_dots_Purple" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_7_stake_3_dot_1_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_7_stake_3_dot_2_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_7_stake_3_dot_3_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
@@ -11030,7 +11030,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
     </HorizontalLayout>
     <HorizontalLayout id="court_project_7_stake_4_Purple" class="project_stake_container"  spacing = "10" height = "25" width = "257" preferredWidth = "257" childForceExpandWidth = "false" childAlignment = "MiddleLeft">
       <Text id="court_project_7_stake_4_label_Purple" class="project_stake_label project_stake_label_self" text="" fontSize = "14" />
-      <GridLayout id="db_court_project_7_stake_4_dots_Purple" class="project_stake_dotline" cellSize = "20 20">
+      <GridLayout id="db_court_project_7_stake_4_dots_Purple" class="project_stake_dotline" cellSize = "20 20" scale="1">
         <Image id="court_project_7_stake_4_dot_1_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_7_stake_4_dot_2_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
         <Image id="court_project_7_stake_4_dot_3_Purple" class="project_stake_dot project_stake_dot_self" minHeight = "40" minWidth = "40" scale = "2" pivot = "0.5 0.5"  />
