@@ -48,6 +48,8 @@ local transitionDistrictCardImage = nil
 local transitionSiteCardImage = nil
 --- True after we UI.show'd location cards for this transition (drives matching UI.hide on end).
 local transitionLocationCardsVisible = false
+--- Seat colors that received UI.show for location cards this transition (hide only these).
+local transitionLocationCardSeatColors = {}
 
 local function cancelPendingDefaultCamera()
   if pendingCameraDelayId ~= nil then
@@ -104,7 +106,12 @@ local function resolveSiteCardImage(siteKey)
   if type(k) ~= "string" or trimKey(k) == "" then
     k = sk
   end
-  return "siteCard_" .. trimKey(k)
+  local suffix = trimKey(k)
+  -- Never emit `siteCard_` with an empty suffix (invalid Custom UI asset name).
+  if suffix == "" then
+    return nil
+  end
+  return "siteCard_" .. suffix
 end
 
 --- @param opts table|nil `{ districtKey?, siteKey? }`
@@ -159,6 +166,7 @@ local function deactivateTransitionLocationCardsForAllSeats()
   transitionLocationCardsVisible = false
   transitionDistrictCardImage = nil
   transitionSiteCardImage = nil
+  transitionLocationCardSeatColors = {}
 end
 
 --- Show destination District + Site cards for the same seated non-ST seats as the transition blindfold (TOR-425).
@@ -171,6 +179,7 @@ local function showTransitionLocationCardsForSeatedPlayers(districtImage, siteIm
   end
   transitionDistrictCardImage = districtImage
   transitionSiteCardImage = siteImage
+  transitionLocationCardSeatColors = {}
   forEachSeatedSeatColorMatchingBlindfold(function(seatColor)
     local districtId = "overlay_district_card_display_" .. seatColor
     local siteId = "overlay_site_card_display_" .. seatColor
@@ -180,29 +189,25 @@ local function showTransitionLocationCardsForSeatedPlayers(districtImage, siteIm
     UI.show(siteId)
     U.setAttribute(districtId, "active", "true")
     U.setAttribute(siteId, "active", "true")
+    transitionLocationCardSeatColors[#transitionLocationCardSeatColors + 1] = seatColor
   end)
   transitionLocationCardsVisible = true
 end
 
---- Hide destination cards in lockstep with blindfold lift (only if this transition showed them).
+--- Hide destination cards in lockstep with blindfold lift (only seats that received UI.show).
+--- Recorded seat colors (not "currently seated") so mid-settle leavers still get UI.hide.
 local function hideTransitionLocationCardsIfVisible()
   if transitionLocationCardsVisible ~= true then
     deactivateTransitionLocationCardsForAllSeats()
     return
   end
-  for _, seatColor in ipairs(C.PlayerColors or {}) do
+  for _, seatColor in ipairs(transitionLocationCardSeatColors) do
     local districtId = "overlay_district_card_display_" .. seatColor
     local siteId = "overlay_site_card_display_" .. seatColor
     UI.hide(districtId)
     UI.hide(siteId)
-    U.setAttribute(districtId, "active", "false")
-    U.setAttribute(siteId, "active", "false")
-    U.setAttribute(districtId, "image", "")
-    U.setAttribute(siteId, "image", "")
   end
-  transitionLocationCardsVisible = false
-  transitionDistrictCardImage = nil
-  transitionSiteCardImage = nil
+  deactivateTransitionLocationCardsForAllSeats()
 end
 
 --- @param fn fun(playerID: string)
