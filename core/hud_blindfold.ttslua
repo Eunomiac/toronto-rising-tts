@@ -2,6 +2,8 @@
   Scene/table transition blindfold orchestration.
   Picks one random blindfold variant (1..C.BlindfoldVariantCount) shared by all seated players,
   runs synchronous work, then lifts blindfolds after a settle delay.
+  Optional destination District/Site cards (TOR-425) show over the blindfold when both keys
+  resolve; End scene / table-only / no-location transitions leave those Images active=false.
   Global session blindfold (`overlay_globalBlindfold` in Global.xml) is phase-owned
   (Intermission show / Play hide / connect policy) — never by this module or a timed onLoad hide.
   Agent guidance: .dev/Scene Constructor/Scene Constructor Overview.md; .dev/HUD_FUNCTIONS.md.
@@ -41,6 +43,11 @@ local pendingCameraDelayId = nil
 --- playerIDs that received `hudBlindfold` in the current (or last) beginTransition.
 --- Cleared on end even if those players left their seats mid-settle (hotseat orphan fix).
 local transitionBlindfoldPlayerIds = {}
+--- Custom UI image refs for destination cards while a transition is active (nil when skipped).
+local transitionDistrictCardImage = nil
+local transitionSiteCardImage = nil
+--- True after we UI.show'd location cards for this transition (drives matching UI.hide on end).
+local transitionLocationCardsVisible = false
 
 local function cancelPendingDefaultCamera()
   if pendingCameraDelayId ~= nil then
@@ -52,6 +59,147 @@ end
 --- @return number 1..C.BlindfoldVariantCount
 local function pickRandomVariant()
   return math.random(1, BLINDFOLD_VARIANT_COUNT)
+end
+
+--- @param s string|nil
+--- @return string
+local function trimKey(s)
+  if type(s) ~= "string" then
+    return ""
+  end
+  return string.gsub(string.gsub(s, "^%s+", ""), "%s+$", "")
+end
+
+--- District Custom UI asset name (`districtCard_<key>`), or nil when unknown.
+--- @param districtKey string|nil
+--- @return string|nil
+local function resolveDistrictCardImage(districtKey)
+  local dk = trimKey(districtKey)
+  if dk == "" or type(C.Districts) ~= "table" or type(C.Districts[dk]) ~= "table" then
+    return nil
+  end
+  return "districtCard_" .. dk
+end
+
+--- Site Custom UI asset name (`C.Sites[*].image` or `siteCard_<key>`), or nil when unknown.
+--- @param siteKey string|nil
+--- @return string|nil
+local function resolveSiteCardImage(siteKey)
+  local sk = trimKey(siteKey)
+  if sk == "" or type(C.Sites) ~= "table" then
+    return nil
+  end
+  local site = C.Sites[sk]
+  if type(site) ~= "table" then
+    return nil
+  end
+  local img = site.image
+  if type(img) == "string" then
+    img = trimKey(img)
+    if img ~= "" then
+      return img
+    end
+  end
+  local k = site.key
+  if type(k) ~= "string" or trimKey(k) == "" then
+    k = sk
+  end
+  return "siteCard_" .. trimKey(k)
+end
+
+--- @param opts table|nil `{ districtKey?, siteKey? }`
+--- @return string|nil districtImage, string|nil siteImage — both set only when both keys resolve
+local function resolveTransitionLocationCardImages(opts)
+  if type(opts) ~= "table" then
+    return nil, nil
+  end
+  local districtImage = resolveDistrictCardImage(opts.districtKey)
+  local siteImage = resolveSiteCardImage(opts.siteKey)
+  if type(districtImage) ~= "string" or type(siteImage) ~= "string" then
+    return nil, nil
+  end
+  return districtImage, siteImage
+end
+
+--- @param fn fun(seatColor: string)
+local function forEachSeatedPcSeatColor(fn)
+  if type(fn) ~= "function" then
+    return
+  end
+  local seated = Player.getPlayers() or {}
+  local seen = {}
+  for _, player in ipairs(seated) do
+    local color = player and player.color or nil
+    if type(color) == "string"
+      and seen[color] ~= true
+      and color ~= C.StorytellerColor
+    then
+      local playerID = S.getPlayerID(color)
+      if U.Type(playerID) == "string" and playerID ~= C.StorytellerID then
+        seen[color] = true
+        fn(color)
+      end
+    end
+  end
+end
+
+--- Keep destination cards inactive (no UI.show) for every PC seat row.
+local function deactivateTransitionLocationCardsForAllSeats()
+  for _, seatColor in ipairs(C.PlayerColors or {}) do
+    local districtId = "overlay_district_card_display_" .. seatColor
+    local siteId = "overlay_site_card_display_" .. seatColor
+    U.setAttribute(districtId, "active", "false")
+    U.setAttribute(siteId, "active", "false")
+    U.setAttribute(districtId, "image", "")
+    U.setAttribute(siteId, "image", "")
+  end
+  transitionLocationCardsVisible = false
+  transitionDistrictCardImage = nil
+  transitionSiteCardImage = nil
+end
+
+--- Show destination District + Site cards with the same seated fan-out as the blindfold (TOR-425).
+--- @param districtImage string
+--- @param siteImage string
+local function showTransitionLocationCardsForSeatedPlayers(districtImage, siteImage)
+  if type(districtImage) ~= "string" or type(siteImage) ~= "string" then
+    deactivateTransitionLocationCardsForAllSeats()
+    return
+  end
+  transitionDistrictCardImage = districtImage
+  transitionSiteCardImage = siteImage
+  forEachSeatedPcSeatColor(function(seatColor)
+    local districtId = "overlay_district_card_display_" .. seatColor
+    local siteId = "overlay_site_card_display_" .. seatColor
+    U.setAttribute(districtId, "image", districtImage)
+    U.setAttribute(siteId, "image", siteImage)
+    UI.show(districtId)
+    UI.show(siteId)
+    U.setAttribute(districtId, "active", "true")
+    U.setAttribute(siteId, "active", "true")
+  end)
+  transitionLocationCardsVisible = true
+end
+
+--- Hide destination cards in lockstep with blindfold lift (only if this transition showed them).
+local function hideTransitionLocationCardsIfVisible()
+  if transitionLocationCardsVisible ~= true then
+    deactivateTransitionLocationCardsForAllSeats()
+    return
+  end
+  for _, seatColor in ipairs(C.PlayerColors or {}) do
+    local districtId = "overlay_district_card_display_" .. seatColor
+    local siteId = "overlay_site_card_display_" .. seatColor
+    UI.hide(districtId)
+    UI.hide(siteId)
+    U.setAttribute(districtId, "active", "false")
+    U.setAttribute(siteId, "active", "false")
+    U.setAttribute(districtId, "image", "")
+    U.setAttribute(siteId, "image", "")
+  end
+  transitionLocationCardsVisible = false
+  transitionDistrictCardImage = nil
+  transitionSiteCardImage = nil
 end
 
 --- @param fn fun(playerID: string)
@@ -151,8 +299,11 @@ function HUDBF.getActiveTransitionVariant()
 end
 
 --- Apply transition blindfold HUD conditions for all seated players.
---- @param variantOptional number|nil 1..C.BlindfoldVariantCount; random when omitted
-function HUDBF.beginTransition(variantOptional)
+--- Destination District/Site cards (TOR-425) show only when both `districtKey` and `siteKey` resolve.
+--- @param optsOrVariant number|table|nil
+---   number — blindfold variant 1..C.BlindfoldVariantCount
+---   table — `{ variant?, districtKey?, siteKey? }` (keys from the *destination* scene; live sessionScene is still old)
+function HUDBF.beginTransition(optsOrVariant)
   if pendingEndDelayId ~= nil then
     U.stopDelay(pendingEndDelayId)
     pendingEndDelayId = nil
@@ -160,12 +311,25 @@ function HUDBF.beginTransition(variantOptional)
   -- Drop any prior transition recipients before recording a new set (mid-settle restart).
   clearTrackedTransitionBlindfolds()
   cancelPendingDefaultCamera()
+  -- Always reset location cards before deciding whether this transition shows them.
+  hideTransitionLocationCardsIfVisible()
+
+  local opts = nil
+  local variantOptional = nil
+  if type(optsOrVariant) == "table" then
+    opts = optsOrVariant
+    variantOptional = opts.variant
+  else
+    variantOptional = optsOrVariant
+  end
 
   local variant = tonumber(variantOptional)
   if variant == nil or variant < 1 or variant > BLINDFOLD_VARIANT_COUNT then
     variant = pickRandomVariant()
   end
   activeTransitionVariant = variant
+
+  local districtImage, siteImage = resolveTransitionLocationCardImages(opts)
 
   forEachSeatedPlayer(function(playerID)
     transitionBlindfoldPlayerIds[playerID] = true
@@ -175,6 +339,11 @@ function HUDBF.beginTransition(variantOptional)
     HO.applyBlindfoldVariantForSeatedPlayers(variant)
   else
     HO.syncAll()
+  end
+
+  -- Same moment as blindfold UI.show — author may stagger via XML animationDelay on the card classes.
+  if type(districtImage) == "string" and type(siteImage) == "string" then
+    showTransitionLocationCardsForSeatedPlayers(districtImage, siteImage)
   end
 
   -- TOR-368: wait until blindfold is fully up before camera motion.
@@ -189,6 +358,9 @@ function HUDBF.endTransition()
   end
   cancelPendingDefaultCamera()
   activeTransitionVariant = nil
+
+  -- Same moment as blindfold UI.hide (HO.syncAll → applyBlindfoldOverlaysExclusive).
+  hideTransitionLocationCardsIfVisible()
 
   clearTrackedTransitionBlindfolds()
   HUDBF.clearBlindfoldsForUnoccupiedPcSeats()
@@ -236,7 +408,7 @@ function HUDBF.runTransitionAfterLeadIn(workFn, opts)
     settleDelaySec = TRANSITION_SETTLE_DELAY_SEC
   end
 
-  HUDBF.beginTransition(opts.variant)
+  HUDBF.beginTransition(opts)
 
   U.waitUntil(function()
     local ok, errMsg = workFn()
@@ -253,7 +425,7 @@ end
 
 --- Blindfold on → synchronous work → settle delay → blindfold off.
 --- @param workFn fun(): boolean, string|nil returns success and optional error message
---- @param opts table|nil { settleDelaySec = number }
+--- @param opts table|nil `{ settleDelaySec?, variant?, districtKey?, siteKey? }`
 --- @return boolean true when workFn succeeded (lift is still delayed)
 function HUDBF.runTransition(workFn, opts)
   if type(workFn) ~= "function" then
@@ -265,7 +437,7 @@ function HUDBF.runTransition(workFn, opts)
     settleDelaySec = TRANSITION_SETTLE_DELAY_SEC
   end
 
-  HUDBF.beginTransition()
+  HUDBF.beginTransition(opts)
   local ok, errMsg = workFn()
   if ok ~= true then
     if type(errMsg) == "string" and errMsg ~= "" then
@@ -286,7 +458,7 @@ end
 ---   - `work` returns `ok, errMsg`; on failure the blindfold lifts immediately and `fadeIn` is skipped
 ---   - `fadeIn` runs as the blindfold **rises** (after the silent settle hold), so the new-location audio
 ---     reveal aligns with the visual reveal (TOR-273). Blindfold stays down `settleDelaySec` total.
---- @param opts table|nil `{ fadeOutSec?, workSettleSec?, fadeInSec?, settleDelaySec?, variant? }`
+--- @param opts table|nil `{ fadeOutSec?, workSettleSec?, fadeInSec?, settleDelaySec?, variant?, districtKey?, siteKey? }`
 function HUDBF.runStagedTransition(phases, opts)
   if type(phases) ~= "table" then
     error("hud_blindfold.runStagedTransition: phases must be a table")
@@ -297,7 +469,7 @@ function HUDBF.runStagedTransition(phases, opts)
   local fadeInSec = tonumber(opts.fadeInSec) or TRANSITION_FADE_IN_SEC
   local settleDelaySec = tonumber(opts.settleDelaySec) or TRANSITION_SETTLE_DELAY_SEC
 
-  HUDBF.beginTransition(opts.variant)
+  HUDBF.beginTransition(opts)
 
   local workFailed = false
   U.RunSequence({

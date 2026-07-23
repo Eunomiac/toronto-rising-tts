@@ -87,4 +87,26 @@
 
   <Image class="gameStateOverlay_district" rectAlignment="UpperLeft" width="800" offsetXY="0 0" active="false" />
   <Image class="gameStateOverlay_site" rectAlignment="LowerLeft" width="800" offsetXY="300 0" active="false" />
+
+  <!-- Destination District/Site cards over scene-transition blindfolds (TOR-425). Tune animationDelay on these classes to stagger vs blindfold slide. -->
+  <Image class="player_overlay_district_card_display"
+    raycastTarget="false"
+    preserveAspect="true"
+    rectAlignment="MiddleCenter"
+    width="420"
+    offsetXY="-280 40"
+    showAnimation="FadeIn"
+    hideAnimation="FadeOut"
+    animationDuration="0.5"
+  />
+  <Image class="player_overlay_site_card_display"
+    raycastTarget="false"
+    preserveAspect="true"
+    rectAlignment="MiddleCenter"
+    width="420"
+    offsetXY="280 40"
+    showAnimation="FadeIn"
+    hideAnimation="FadeOut"
+    animationDuration="0.5"
+  />
 </Defaults>

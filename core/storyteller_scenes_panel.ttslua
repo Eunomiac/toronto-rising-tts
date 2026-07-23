@@ -1725,6 +1725,11 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
 
     local incomingWeather = Scenes.computeIncomingWeatherPreview(ent.sessionScene)
 
+    -- Destination location for blindfold card overlay (TOR-425). Must be captured before work writes
+    -- live sessionScene — beginTransition runs immediately while sessionScene is still the old scene.
+    local destDistrictKey = ent.sessionScene.districtKey
+    local destSiteKey = ent.sessionScene.siteKey
+
     HUDBF.runStagedTransition({
         fadeOut = function()
             if type(SS.fadeOutTransitionAmbient) == "function" then
@@ -1872,6 +1877,9 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
         U.AlertGM("Applied library scene `" .. K .. "` (" .. tostring(clockMode) .. " clock mode).")
         return true
         end,
+    }, {
+        districtKey = destDistrictKey,
+        siteKey = destSiteKey,
     })
 end
 
