@@ -121,8 +121,10 @@ local function resolveTransitionLocationCardImages(opts)
   return districtImage, siteImage
 end
 
---- Seated seat colors with the same fan-out as `HO.applyBlindfoldVariantForSeatedPlayers`
---- (unique `player.color` only — no Storyteller color/ID gates).
+--- Seat colors for destination cards — same recipients as transition blindfold *conditions*
+--- (`forEachSeatedPlayer`): seated non-Storyteller players only, unique by seat color.
+--- Do not mirror `HO.applyBlindfoldVariantForSeatedPlayers` (that lead-in also touches the ST seat;
+--- `Sync.full` → `HO.syncAll` then drops ST blindfolds because ST never gets `hudBlindfold`).
 --- @param fn fun(seatColor: string)
 local function forEachSeatedSeatColorMatchingBlindfold(fn)
   if type(fn) ~= "function" then
@@ -132,7 +134,12 @@ local function forEachSeatedSeatColorMatchingBlindfold(fn)
   local seen = {}
   for _, player in ipairs(seated) do
     local color = player and player.color or nil
-    if type(color) == "string" and seen[color] ~= true then
+    local playerID = U.Type(color) == "string" and S.getPlayerID(color) or nil
+    if type(color) == "string"
+      and seen[color] ~= true
+      and U.Type(playerID) == "string"
+      and playerID ~= C.StorytellerID
+    then
       seen[color] = true
       fn(color)
     end
@@ -154,7 +161,7 @@ local function deactivateTransitionLocationCardsForAllSeats()
   transitionSiteCardImage = nil
 end
 
---- Show destination District + Site cards with the same seated fan-out as the blindfold (TOR-425).
+--- Show destination District + Site cards for the same seated non-ST seats as the transition blindfold (TOR-425).
 --- @param districtImage string
 --- @param siteImage string
 local function showTransitionLocationCardsForSeatedPlayers(districtImage, siteImage)
