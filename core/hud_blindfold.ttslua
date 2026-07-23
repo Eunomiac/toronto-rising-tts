@@ -183,12 +183,14 @@ local function showTransitionLocationCardsForSeatedPlayers(districtImage, siteIm
   forEachSeatedSeatColorMatchingBlindfold(function(seatColor)
     local districtId = "overlay_district_card_display_" .. seatColor
     local siteId = "overlay_site_card_display_" .. seatColor
+    -- Keep inactive while assigning art so TTS does not flash a full-opacity frame before
+    -- FadeIn / showAnimationDelay (blindfolds likewise stay active=false and rely on UI.show).
+    U.setAttribute(districtId, "active", "false")
+    U.setAttribute(siteId, "active", "false")
     U.setAttribute(districtId, "image", districtImage)
     U.setAttribute(siteId, "image", siteImage)
     UI.show(districtId)
     UI.show(siteId)
-    U.setAttribute(districtId, "active", "true")
-    U.setAttribute(siteId, "active", "true")
     transitionLocationCardSeatColors[#transitionLocationCardSeatColors + 1] = seatColor
   end)
   transitionLocationCardsVisible = true
