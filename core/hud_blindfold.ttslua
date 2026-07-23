@@ -121,8 +121,10 @@ local function resolveTransitionLocationCardImages(opts)
   return districtImage, siteImage
 end
 
+--- Seated seat colors with the same fan-out as `HO.applyBlindfoldVariantForSeatedPlayers`
+--- (unique `player.color` only — no Storyteller color/ID gates).
 --- @param fn fun(seatColor: string)
-local function forEachSeatedPcSeatColor(fn)
+local function forEachSeatedSeatColorMatchingBlindfold(fn)
   if type(fn) ~= "function" then
     return
   end
@@ -130,15 +132,9 @@ local function forEachSeatedPcSeatColor(fn)
   local seen = {}
   for _, player in ipairs(seated) do
     local color = player and player.color or nil
-    if type(color) == "string"
-      and seen[color] ~= true
-      and color ~= C.StorytellerColor
-    then
-      local playerID = S.getPlayerID(color)
-      if U.Type(playerID) == "string" and playerID ~= C.StorytellerID then
-        seen[color] = true
-        fn(color)
-      end
+    if type(color) == "string" and seen[color] ~= true then
+      seen[color] = true
+      fn(color)
     end
   end
 end
@@ -168,7 +164,7 @@ local function showTransitionLocationCardsForSeatedPlayers(districtImage, siteIm
   end
   transitionDistrictCardImage = districtImage
   transitionSiteCardImage = siteImage
-  forEachSeatedPcSeatColor(function(seatColor)
+  forEachSeatedSeatColorMatchingBlindfold(function(seatColor)
     local districtId = "overlay_district_card_display_" .. seatColor
     local siteId = "overlay_site_card_display_" .. seatColor
     U.setAttribute(districtId, "image", districtImage)
