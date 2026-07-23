@@ -52,14 +52,16 @@ Older targeted cleanups still worth citing:
 
 **Gate scope:** the numeric baseline in `.dev/build-logs/pcall-gate.txt` matches **only** `*.ttslua` under `core/`, `global/`, `lib/`, `objects/`, `ui/`. Files elsewhere (e.g. `.dev/test_rotatetofrom.ttslua`) are not counted by the gate but should still follow this policy if they ship with the game.
 
-**Current inventory** (26 matches under the gate trees; lines drift — re-run ripgrep `\bpcall\s*\(` after edits):
+**Current inventory** (25 matches under the gate trees; lines drift — re-run ripgrep `\bpcall\s*\(` after edits):
 
 | Count | File | Lines (approx.) | Role |
 |------:|------|-----------------|------|
-| 13 | `lib/util.ttslua` | 1499, 2594, 2756, 2891, 2927, 2940, 2976, 2990, 3045, 3075, 3080, 3083, 3399 | `U.isIn` userdata probe; `startLuaCoroutine` startup guards; `U.waitUntil` / `U.RunSequenceWithOptions` isolation around author-supplied callbacks and hooks |
-| 4 | `core/debug.ttslua` | 3474, 4498, 4704, 4711 | Isolated test runner; optional `require` of generated custom-UI manifest (primary + slash fallback) |
-| 4 | `core/npcs.ttslua` | 90, 95, 864, 1635 | JSON encode/decode clone for spawn snapshots; deferred `applyCurrentLightMode` with guaranteed override cleanup; optional `require("core.debug")` |
+| 14 | `lib/util.ttslua` | 1681, 1949, 3155, 3317, 3452, 3488, 3502, 3538, 3552, 3607, 3637, 3642, 3645, 3954 | `U.isIn` userdata probe; `U.logCoroutineIssue` JSON.encode of waiter detail (TOR-424); `startLuaCoroutine` startup guards; `U.waitUntil` / `U.RunSequenceWithOptions` isolation around author-supplied callbacks and hooks |
+| 3 | `lib/seat-role-identity.ttslua` | 195, 203, 205 | JSON decode/encode + Notebook reload when rewriting seat-role identity |
 | 2 | `lib/pc_bootstrap.ttslua` | 16, 21 | JSON round-trip deep clone with `U.clone` fallback |
+| 2 | `core/npcs.ttslua` | 180, 185 | JSON encode/decode clone for spawn snapshots |
+| 1 | `core/debug.ttslua` | 4776 | Optional `require` of generated custom-UI manifest |
+| 1 | `core/global_script.ttslua` | 605 | Host bootstrap path that must not abort Global load on a recoverable init fault |
 | 1 | `lib/object_positions.ttslua` | 72 | `Global.call("GlobalGetSeatLayoutCenterPoint")` from object-script VMs (bridge not ready during startup → `pcall`; callers without retry must tolerate nil center) |
 | 1 | `lib/pcs_data.ttslua` | 4174 | `JSON.decode` on embedded PCS blob — failures re-raised via `error()` (not a silent mask; candidate for direct call) |
 

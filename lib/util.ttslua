@@ -904,15 +904,10 @@ function U.error(source, message, val)
 		valString = U.ToString(val)
 	end
 
-	-- Stock TTS omits `debug`; never let traceback crash before we raise the real error.
+	-- Stock TTS omits `debug`; only log a traceback when the library is present (TOR-424).
 	local dbg = rawget(_G, "debug")
 	if type(dbg) == "table" and type(dbg.traceback) == "function" then
-		local okTb, tb = pcall(function()
-			return dbg.traceback()
-		end)
-		if okTb then
-			log({ ErrorTraceback = tb })
-		end
+		log({ ErrorTraceback = dbg.traceback() })
 	end
 
 	error(errString .. (valString and (": " .. valString) or ""), 3)
@@ -965,14 +960,10 @@ function U.Val(source, checkVal, testResult, errorMsg, params)
 	if params.isSilent then return false end
 
 	if params.isThrowing then
+		-- Stock TTS omits `debug`; only log a traceback when the library is present (TOR-424).
 		local dbg = rawget(_G, "debug")
 		if type(dbg) == "table" and type(dbg.traceback) == "function" then
-			local okTb, tb = pcall(function()
-				return dbg.traceback()
-			end)
-			if okTb then
-				log(tb)
-			end
+			log(dbg.traceback())
 		end
 		error(errorMessage, 2)
 	end
@@ -1953,7 +1944,8 @@ function U.logCoroutineIssue(tag, err, detail)
 	local errStr = tostring(err)
 	print("[coroutine] " .. tagStr .. ": " .. errStr)
 	if detail ~= nil and U.Type(detail) == "table" then
-		-- pcall: detail may contain userdata TTS cannot encode; still print the primary err above.
+		-- pcall: JSON.encode throws on userdata/cycles in waiter detail tables. Propagating would
+		-- crash this logger mid-recovery and replace the primary waitUntil/RunSequence fault (TOR-424).
 		local okEnc, encoded = pcall(function()
 			return JSON.encode(detail)
 		end)
@@ -1963,14 +1955,11 @@ function U.logCoroutineIssue(tag, err, detail)
 			print("[coroutine] detail: <encode failed>")
 		end
 	end
-	-- Stock TTS Lua omits the `debug` library; only attempt traceback when present (e.g. unsandboxed debug DLL).
+	-- Stock TTS omits `debug`; only print a traceback when the library is present (TOR-424).
 	local dbg = rawget(_G, "debug")
 	if type(dbg) == "table" and type(dbg.traceback) == "function" then
-		-- pcall: traceback itself must not mask the issue we just printed.
-		local okTb, tb = pcall(function()
-			return dbg.traceback("", 2)
-		end)
-		if okTb and type(tb) == "string" and tb ~= "" then
+		local tb = dbg.traceback("", 2)
+		if type(tb) == "string" and tb ~= "" then
 			print(tb)
 		end
 	end
