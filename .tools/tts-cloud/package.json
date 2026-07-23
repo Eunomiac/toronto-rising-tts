@@ -1,0 +1,12 @@
+{
+  "name": "toronto-rising-tts-cloud",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Steam Cloud helpers for Toronto Rising TTS tooling (isolated deps)",
+  "type": "commonjs",
+  "dependencies": {
+    "bson": "^7.3.1",
+    "koffi": "^3.1.2",
+    "steamworks.js": "^0.4.0"
+  }
+}

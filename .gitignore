@@ -2,6 +2,15 @@
 node_modules/
 yarn.lock
 
+# Local Steamworks redistributable copy for .tools/tts-cloud (copied from steamworks.js)
+.tools/tts-cloud/steamworks_sdk/
+.tools/tts-cloud/*.bson.dump
+.tools/tts-cloud/out/
+
+# Local TTS assets tooling config + save backups (see tts-assets.config.example.json)
+tts-assets.config.json
+**/tts-assets-backups/
+
 # Local secrets (Linear API, etc.)
 .env
 
