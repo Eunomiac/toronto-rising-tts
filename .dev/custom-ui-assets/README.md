@@ -62,6 +62,16 @@ Writes `.dev/build-logs/save-entities-latest.{json,csv,md}` with per-object GUID
 
 **Tasks: Run Task** → **Custom UI Assets: Build Manifest from Image Files** runs `.tools/custom-ui-assets/build-manifest-from-task.js`. You are prompted for **mode** (`folder` or `sites`), then for a **folder path** (used only in `folder` mode; in `sites` mode you can accept the default). The task panel prints step banners and what to do next in TTS (Save & Play, spawn batch, merge task, clear tokens). For batched or `--skipMissing` site manifests, use the `npm` / `node` commands below instead of the task’s default `sites` run.
 
+## Site cards from Google Sheet (CustomUIAssets URLs)
+
+When Name/URL rows live in a public Google Sheet named range:
+
+```text
+npm run site-cards:import -- --range <NamedRange>
+```
+
+Fetches CSV (`Name`,`URL`), writes `lib/json/Site Cards.json`, and replaces every `siteCard_*` entry in the TTS save’s `CustomUIAssets` (default save `TS_Save_230.json` under known Saves dirs). Options: `--sheet-id`, `--save`, `--saveName`, `--skip-save`, `--dry-run`. Sheet must be link-viewable. Script: `.dev/scripts/import_site_cards_from_sheet.js`.
+
 ## Site cards from `C.Sites` (recommended for Toronto Rising sites)
 
 Each row in `lib/constants.ttslua` → `C.Sites` should define:

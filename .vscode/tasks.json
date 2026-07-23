@@ -115,6 +115,31 @@
       }
     },
     {
+      "label": "Import site cards from Google Sheet",
+      "type": "shell",
+      "command": "npm",
+      "args": [
+        "run",
+        "site-cards:import",
+        "--",
+        "--range",
+        "${input:siteCardsNamedRange}"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "focus": true
+      }
+    },
+    {
       "label": "Fix TTS object stubs (.tts/objects XML + Lua)",
       "type": "shell",
       "command": "node",
@@ -457,6 +482,12 @@
       "type": "promptString",
       "description": "TTS save slot to patch (examples: 123, TS_Save_123). Requires .tts/bundled/Global.lua + Global.xml first.",
       "default": "TS_Save_"
+    },
+    {
+      "id": "siteCardsNamedRange",
+      "type": "promptString",
+      "description": "Google Sheet named range for site cards (columns Name, URL)",
+      "default": "SITECARDCSV"
     }
   ]
 }
