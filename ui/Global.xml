@@ -10,7 +10,7 @@
 <Include src="defaults_classes.xml" />
 <Include src="shared/panel_roll_controls_defaults.xml" />
 
-<!-- 4. Player HUD (per-color panels) -->
+<!-- 4. Player HUD (per-color panels). hud_root_panel: full-screen MiddleCenter ignoreLayout (TOR-436). -->
 <Panel id="HUD_PANEL_PLAYER" class="hud_root_panel">
 
   <!-- Defaults -->

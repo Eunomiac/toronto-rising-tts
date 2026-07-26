@@ -10,6 +10,14 @@
   <Text class="spacer_20" color="clear" fontSize="32" />
 
   <!-- Panel Styles -->
+  <!-- Player/ST HUD roots in Global.xml: full-screen absolute layer (no padding — padding would turn Panel into a LayoutGroup). -->
+  <Panel class="hud_root_panel"
+    width="100%"
+    height="100%"
+    rectAlignment="MiddleCenter"
+    ignoreLayout="true"
+    raycastTarget="false"
+  />
   <Panel class="panel-base" color="rgba(0, 0, 0, 0.7)" padding="10 10 10 10" />
   <Panel class="panel-dark" color="rgba(0, 0, 0, 0.85)" padding="10 10 10 10" />
 

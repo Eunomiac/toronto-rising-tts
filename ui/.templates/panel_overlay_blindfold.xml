@@ -4,8 +4,10 @@
 <!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md (generator); .dev/HUDs & Overlays/Player HUD Overview.md (map panels). -->
 <!-- Visibility: UI.show / UI.hide on the PARENT Panel animates the panel and any active children (TOR-431). -->
 <!--
+  Hierarchy (TOR-436): hud_root_panel + playerHud_overlaysLayer + playerHud_blindfoldOverlay are full-screen
+  1920×1200 (root 100%), MiddleCenter, ignoreLayout — same art box as overlay_globalBlindfold.
   Parent: playerHud_blindfoldOverlay (SlideIn_Top / SlideOut_Top, duration 2, hideDelay 1).
-  Children: arm active=true BEFORE parent UI.show; do not UI.show children separately.
+  Children: arm active=true BEFORE parent UI.show; do not UI.show children separately (ignoreLayout).
   Cards: with location set White+image; without location keep Clear + empty image (invisible if animated).
   Hide: UI.hide(parent) → wait ~3s → restore child defaults only (not the parent).
 -->
@@ -48,3 +50,67 @@
   <Image id="overlay_district_card_display_@@color@@" class="player_overlay_district_card_display" />
   <Image id="overlay_site_card_display_@@color@@" class="player_overlay_site_card_display" />
 </Panel>
+
+
+
+    <!--
+
+    - The blindfold animation is being changed to the parent container, which will slide in from the top and then slide up from the bottom on hide.
+    - Child content should be active = "true" _before_ the animation is run on the parent container: that single call will properly animate the child contents
+
+    BLINDFOLD DEFAULTS:ks
+    - playerHud_overlay_blindfold_@@color@@: active = "false"
+    - overlay_blindfold_##_@@color@@: active = "false"
+    - overlay_district_card_display_@@color@@: active = "false", color = "clear", image = ""
+    - overlay_site_card_display_@@color@@: active = "false", color = "clear", image = ""
+
+    BLINDFOLD ACTIVATION PROCEDURE:
+    - randomly select one of the overlay_blindfold_##_@@color@@ images to reveal, set it to active = "true"
+    - if there is a location set, set the district and site cards attributes as follows, in one UI.setAttributes call for each:
+      - {active = "true", color = "White", image = "<corresponding district/site image>"}
+    - call UI.show() on playerHud_overlay_blindfold_@@color@@
+
+    BLINDFOLD DEACTIVATION PROCEDURE:
+    - inside a U.RunSequence call:
+      - function #1: call UI.hide() on playerHud_overlay_blindfold_@@color@@, return a 3-second wait
+      - function #2: restore defaults to CHILD elements only: set overlay_blindfold_##_@@color@@ to active = "false", set the district and site card attributes as follows, in one UI.setAttributes call for each:
+        - {active = "false", color = "clear", image = ""}
+
+
+    UI.setAttributes("overlay_district_card_display_Red", {image = "districtCard_Annex"})
+    UI.setAttributes("overlay_site_card_display_Red", {image = "siteCard_BillyBishopAirport"})
+
+    DEBUG.printTable(UI.getAttributes("playerHud_overlay_blindfold_Red"))
+    DEBUG.printTable(UI.getAttributes("overlay_blindfold_26_Red"))
+    DEBUG.printTable(UI.getAttributes("overlay_district_card_display_Red"))
+    DEBUG.printTable(UI.getAttributes("overlay_site_card_display_Red"))
+
+    UI.setAttributes("playerHud_overlay_blindfold_Red", {animationDuration = 2, showAnimation = "SlideIn_Top", hideAnimation = "SlideOut_Top", hideAnimationDelay = 1, color = "rgba(1, 0, 0, 0.15)", active = "true", rectAlignment = "LowerCenter", ignoreLayout = "true", offsetXY = "0 -500", width = "1920", height = "2000"})
+    UI.setAttributes("overlay_blindfold_26_Red", {active = "true"})
+    UI.setAttributes("overlay_district_card_display_Red", {hideAnimationDelay = 0.25})
+    UI.setAttributes("overlay_site_card_display_Red", {hideAnimationDelay = 0})
+
+
+    UI.setAttribute("playerHud_overlay_blindfold_Red", "active", "true")
+    UI.setAttribute("overlay_district_card_display_Red", "active", "true")
+    UI.setAttribute("overlay_site_card_display_Red", "active", "true")
+    UI.setAttribute("overlay_district_card_display_Red", "color", "White")
+    UI.setAttribute("overlay_site_card_display_Red", "active", "true")
+
+
+    UI.hide("overlay_district_card_display_Red")
+    UI.hide("overlay_site_card_display_Red")
+
+    UI.hide("playerHud_overlay_blindfold_Red")
+
+    UI.setAttribute("playerHud_overlay_blindfold_Red", "active", "false")
+    UI.setAttributes("overlay_blindfold_26_Red", {active = "true"})
+    UI.setAttributes("overlay_district_card_display_Red", {active = "true", color = "White", image = "districtCard_Annex"})
+    UI.setAttributes("overlay_site_card_display_Red", {active = "true", color = "White", image = "siteCard_BillyBishopAirport"})
+    UI.show("playerHud_overlay_blindfold_Red")
+
+
+
+    UI.show("overlay_district_card_display_Red")
+    UI.show("overlay_site_card_display_Red")
+    -->
