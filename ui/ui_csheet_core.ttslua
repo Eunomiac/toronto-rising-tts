@@ -402,6 +402,60 @@ local function getMergedPlayerDataFromGlobal(pid)
   return nil
 end
 
+--- Apply Desire InputField text + class from merged playerData (TOR-97).
+--- @param pd table|nil
+local function applyDesireFieldFromMerged(pd)
+  if pageNum ~= 1 or self.UI == nil then
+    return
+  end
+  local desire = ""
+  if type(pd) == "table" and type(pd.desire) == "string" then
+    desire = trim(pd.desire)
+  end
+  local className = "player_desire"
+  if desire == "" then
+    className = "player_desire player_desire_unset"
+  end
+  self.UI.setAttributes("player_desire", {
+    text = desire,
+    class = className,
+  })
+end
+
+--- CSHEET Desire InputField: stash via Global (cannot read InputField text later).
+--- @param player table|nil
+--- @param value string|nil
+--- @param _id string|nil
+--- @param syncText boolean
+local function handleDesireChanged(player, value, _id, syncText)
+  syncSheetContextFromGmNotes()
+  if pageNum ~= 1 or seatColor == nil then
+    return
+  end
+  if Global == nil or type(Global.call) ~= "function" then
+    error("[ui_csheet] handleDesireChanged: Global.call unavailable")
+  end
+  local playerColor = nil
+  if type(player) == "table" and type(player.color) == "string" then
+    playerColor = player.color
+  end
+  local result = Global.call("GlobalSetPlayerDesire", {
+    seatColor = seatColor,
+    text = value,
+    player_color = playerColor,
+    syncText = syncText == true,
+  })
+  if type(result) ~= "table" or self.UI == nil then
+    return
+  end
+  local className = type(result.class) == "string" and result.class or "player_desire player_desire_unset"
+  local attrs = { class = className }
+  if result.ok ~= true or result.syncText == true or result.text == "" then
+    attrs.text = type(result.text) == "string" and result.text or ""
+  end
+  self.UI.setAttributes("player_desire", attrs)
+end
+
 -- ============================================================================
 -- ROLL INITIATION (player-side)
 -- Character sheet elements call these handlers via onClick XML attributes.
@@ -602,6 +656,7 @@ function refreshCharacterSheetUi()
 
   if pageNum == 1 and self.UI then
     self.UI.setAttribute("xp_text", "text", tostring(tonumber(stats.xp) or 0))
+    applyDesireFieldFromMerged(pd)
   end
 
   if PAGE_DYNAMIC_XML[pageNum] ~= nil then
@@ -726,6 +781,15 @@ end
 
 function refreshFromGameState()
   CSHEET.refreshFromGameState()
+end
+
+--- Desire InputField (page1): live typed text only arrives here (TOR-97).
+function onDesireChanged(player, value, id)
+  handleDesireChanged(player, value, id, false)
+end
+
+function onDesireEndEdit(player, value, id)
+  handleDesireChanged(player, value, id, true)
 end
 
 return CSHEET

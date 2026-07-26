@@ -591,5 +591,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-26 | CREATE+SHIP | TOR-434 | Defer transition work until blindfold-down animations finish; relatedTo TOR-431/TOR-147 |
 | 2026-07-26 | CREATE+SHIP | TOR-435 | leadInDelaySec=0 honored via resolveOptSec (not tonumber-or); relatedTo TOR-434 |
 | 2026-07-26 | CREATE+SHIP | TOR-436 | Blindfold parent full-screen ancestors (hud_root + overlay layers); relatedTo TOR-431 |
+| 2026-07-26 | SHIP | TOR-97 | Desires: `playerData.desire`, CSHEET InputField listeners, ST PCs row + Clear |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

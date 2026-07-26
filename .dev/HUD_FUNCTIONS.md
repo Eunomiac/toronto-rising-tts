@@ -180,6 +180,13 @@ Storyteller **Stats** panel: edit PC backgrounds/merits/flaws and coterie advant
 | `HUD_phaseRefreshXml` | `phase_refreshXml` | `(player, button, id)` | ST-gated. One-shot Global full UI resync; does **not** clear Defer setXML (TOR-428). |
 | `HUD_pcsDeferAutoSeat` | `pcs_deferAutoSeat_<Color>` | `(player, value, id)` | ST-gated. Persists `connectionControls.deferAutoSeatByColor[color]` (TOR-428). |
 | `HUD_pcsDeferConnect` | `pcs_deferConnect_<Color>` | `(player, value, id)` | ST-gated. Persists `connectionControls.deferConnectByColor[color]`; when on, `onPlayerConnect` O(1)-exits for that chronicle PC (TOR-430). |
+| `HUD_pcPanel` | `pcs_<Color>_<action>` incl. `pcs_<Color>_desireClear` | `(player, button, id)` | ST-gated. Tracker buffers/apply; **Desire Clear** sets `playerData[pid].desire` to `""` and refreshes sheet + ST row (TOR-97). |
+
+## Character sheet Desire (object UI — not Global HUD)
+
+| Handler | XML Element(s) | Params | Behavior |
+| ------- | ---------------- | ------ | -------- |
+| `onDesireChanged` / `onDesireEndEdit` | page1 `player_desire` | `(player, value, id)` | Object script → `GlobalSetPlayerDesire`. Seat owner or ST steam only. Whitespace → `""` + unset class. Prefill on sheet refresh from state. |
 | `HUD_resetGame` | `utility_reset` | `(player, button, id)` | Calls `S.resetGameState()`, `Scenes.resetScene(0)` (instant), updates UI, broadcasts "Game has been reset." to all players. |
 | `HUD_saveState` | `utility_save` | `(player, button, id)` | Reads state via `S.getGameState()`, JSON-encodes it for verification. Broadcasts confirmation to the clicking player. Note: TTS also auto-saves via `onSave()`. |
 

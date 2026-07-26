@@ -320,6 +320,59 @@ function GlobalGetMergedPlayerData(playerID)
     return S.getPlayerData(playerID)
 end
 
+--- Set / clear a PC Desire from CSHEET InputField callbacks (TOR-97).
+--- Actor gate: sheet seat owner color or Storyteller steam player.
+--- Object scripts must pass `player_color` (Player userdata does not cross Global.call).
+--- @param params table `{ seatColor: string, text?: string, player_color?: string, syncText?: boolean }`
+--- @return table `{ ok: boolean, text: string, class: string }`
+function GlobalSetPlayerDesire(params)
+    if type(params) ~= "table" then
+        return { ok = false, text = "", class = PCST.desireInputClass("") }
+    end
+    local seatColor = params.seatColor or params.color
+    if type(seatColor) ~= "string" or seatColor == "" then
+        return { ok = false, text = "", class = PCST.desireInputClass("") }
+    end
+    local lr = string.lower(seatColor)
+    local canon = nil
+    for _, col in ipairs(C.PlayerColors) do
+        if string.lower(col) == lr then
+            canon = col
+            break
+        end
+    end
+    if canon == nil then
+        return { ok = false, text = "", class = PCST.desireInputClass("") }
+    end
+
+    local clickerColor = params.player_color or params.clickerColor
+    local allowed = false
+    if type(clickerColor) == "string" and clickerColor ~= "" then
+        if string.lower(clickerColor) == string.lower(canon) then
+            allowed = true
+        elseif U.isStorytellerSteamPlayer(clickerColor) == true then
+            allowed = true
+        end
+    end
+
+    local current = PCST.getDesireForColor(canon)
+    if not allowed then
+        return {
+            ok = false,
+            text = current,
+            class = PCST.desireInputClass(current),
+        }
+    end
+
+    local desire = PCST.setDesireForColor(canon, params.text, { refreshSheets = false })
+    return {
+        ok = true,
+        text = desire,
+        class = PCST.desireInputClass(desire),
+        syncText = params.syncText == true or desire == "",
+    }
+end
+
 --- @param color string seat color
 --- @return string|nil charKey
 function GlobalCharKeyForSeatColor(color)

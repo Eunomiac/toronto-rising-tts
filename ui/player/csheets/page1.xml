@@ -51,11 +51,11 @@ Dot ids: <dot_image_name>_bloodPotency_<slot_number>
   <Button id="pageInner" class="page_navigation page_inner_right" />
 
   <!--
-  getObjectFromGUID("21d213").UI.setAttributes("player_desire", {ignoreLayout = "true", width = "87%", color = "#000000", textColor = "#fce5c1", height = "50", fontSize = "30", fontStyle = "Bold", text = "", placeholder = " ", rectAlignment = "UpperCenter", offsetXY = "0 -447", alignment = "MiddleCenter", padding = "10 10 0 0" })
-
+  Desire (TOR-97): live text only via onValueChanged / onEndEdit → GlobalSetPlayerDesire.
+  Unset (whitespace-only) → state "" + class "player_desire player_desire_unset".
   -->
-
-  <InputField id="player_desire" class="player_desire" />
+  <InputField id="player_desire" class="player_desire player_desire_unset"
+    onValueChanged="onDesireChanged" onEndEdit="onDesireEndEdit" />
 
   <!-- === ATTRIBUTES === -->
   <Panel id="attributes_panel">

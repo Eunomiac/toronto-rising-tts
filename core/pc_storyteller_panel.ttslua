@@ -61,6 +61,7 @@ local ACTIONS_SKIP_OVERLAY_REFRESH = {
   hungerApply = true,
   autoSeat = true,
   connect = true,
+  desireClear = true,
 }
 
 --- Scan character sheets for a seat color (GM Notes `CSHEET_PAGE_*_<COLOR>`) and refresh embedded UI.
@@ -104,6 +105,64 @@ end
 --- @param val string|number|boolean
 local function safeSetAttr(elementId, attr, val)
   U.setAttribute(elementId, attr, tostring(val))
+end
+
+--- Normalize Desire text: whitespace-only → "" (TOR-97).
+--- @param raw any
+--- @return string
+function PCST.normalizeDesire(raw)
+  if type(raw) ~= "string" then
+    return ""
+  end
+  local trimmed = string.match(raw, "^%s*(.-)%s*$") or ""
+  if trimmed == "" then
+    return ""
+  end
+  return trimmed
+end
+
+--- XmlUI class list for the page1 Desire InputField.
+--- @param desire string|nil
+--- @return string
+function PCST.desireInputClass(desire)
+  if PCST.normalizeDesire(desire) == "" then
+    return "player_desire player_desire_unset"
+  end
+  return "player_desire"
+end
+
+--- Read stored Desire for a seat (nil/missing → "").
+--- @param color string
+--- @return string
+function PCST.getDesireForColor(color)
+  local pid = playerIdForColor(color)
+  if pid == nil or pid == C.StorytellerID then
+    return ""
+  end
+  return PCST.normalizeDesire(S.getStateVal("playerData", pid, "desire"))
+end
+
+--- Persist Desire and refresh ST row (+ optional page1 CSHEET).
+--- @param color string
+--- @param rawText any
+--- @param opts table|nil `{ refreshSheets?: boolean }` default refreshSheets true
+--- @return string normalized desire
+function PCST.setDesireForColor(color, rawText, opts)
+  local pid = playerIdForColor(color)
+  if pid == nil or pid == C.StorytellerID then
+    return ""
+  end
+  local desire = PCST.normalizeDesire(rawText)
+  S.setStateVal(desire, "playerData", pid, "desire")
+  PCST.refreshRow(color)
+  local refreshSheets = true
+  if type(opts) == "table" and opts.refreshSheets == false then
+    refreshSheets = false
+  end
+  if refreshSheets then
+    PCST.refreshCharacterSheetsForColor(color)
+  end
+  return desire
 end
 
 --- Chronicle character display name for a seat (PlayerData.charName or PCS.name).
@@ -153,6 +212,7 @@ function PCST.refreshRow(color)
 
   if pid == nil or pid == C.StorytellerID then
     safeSetValue("pcs_hungerDots_" .. color, "")
+    safeSetValue("pcs_desire_" .. color, "—")
     safeSetAttr("pcs_" .. color .. "_frenzyToggle", "text", "—")
     safeSetAttr("pcs_" .. color .. "_blindfoldToggle", "text", "—")
     return
@@ -165,6 +225,9 @@ function PCST.refreshRow(color)
 
   local xp = S.getStateVal("playerData", pid, "stats", "xp")
   safeSetValue("pcs_xpVal_" .. color, tostring(xp or 0))
+
+  local desire = PCST.normalizeDesire(S.getStateVal("playerData", pid, "desire"))
+  safeSetValue("pcs_desire_" .. color, desire ~= "" and desire or "—")
 
   safeSetValue("pcs_hungerDots_" .. color, P.formatHungerDotLine(color))
 
@@ -305,6 +368,8 @@ function PCST.onHudClick(player, _button, id)
       end
     end
     PCST.refreshCharacterSheetsForColor(color)
+  elseif action == "desireClear" then
+    PCST.setDesireForColor(color, "")
   elseif action == "autoSeat" then
     local Main = require("core.main")
     Main.manualAssignSeatForColor(color)

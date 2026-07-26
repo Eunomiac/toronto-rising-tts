@@ -9,6 +9,11 @@
         <Text class="pcs_row_title" id="pcs_rowName_Brown">Brown</Text>
         <Text class="pcs_char_title" id="pcs_charFullName_Brown">—</Text>
         <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_desire">Desire:</Text>
+          <Text class="pcs_desire_text" id="pcs_desire_Brown">—</Text>
+          <Button class="pcs_btn pcs_btn_clear_52 pcs_btn_palette_hum_dark" id="pcs_Brown_desireClear" />
+        </HorizontalLayout>
+        <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">Join:</Text>
           <Toggle class="pcs_join_toggle" id="pcs_deferAutoSeat_Brown" isOn="false" onValueChanged="HUD_pcsDeferAutoSeat">Defer Auto-Seat</Toggle>
           <Button class="pcs_btn pcs_btn_auto_seat pcs_btn_palette_join" id="pcs_Brown_autoSeat" />
@@ -89,6 +94,11 @@
         <Text class="pcs_row_title" id="pcs_rowName_Orange">Orange</Text>
         <Text class="pcs_char_title" id="pcs_charFullName_Orange">—</Text>
         <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_desire">Desire:</Text>
+          <Text class="pcs_desire_text" id="pcs_desire_Orange">—</Text>
+          <Button class="pcs_btn pcs_btn_clear_52 pcs_btn_palette_hum_dark" id="pcs_Orange_desireClear" />
+        </HorizontalLayout>
+        <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">Join:</Text>
           <Toggle class="pcs_join_toggle" id="pcs_deferAutoSeat_Orange" isOn="false" onValueChanged="HUD_pcsDeferAutoSeat">Defer Auto-Seat</Toggle>
           <Button class="pcs_btn pcs_btn_auto_seat pcs_btn_palette_join" id="pcs_Orange_autoSeat" />
@@ -167,6 +177,11 @@
       <VerticalLayout class="pcs_seat_column">
         <Text class="pcs_row_title" id="pcs_rowName_Red">Red</Text>
         <Text class="pcs_char_title" id="pcs_charFullName_Red">—</Text>
+        <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_desire">Desire:</Text>
+          <Text class="pcs_desire_text" id="pcs_desire_Red">—</Text>
+          <Button class="pcs_btn pcs_btn_clear_52 pcs_btn_palette_hum_dark" id="pcs_Red_desireClear" />
+        </HorizontalLayout>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">Join:</Text>
           <Toggle class="pcs_join_toggle" id="pcs_deferAutoSeat_Red" isOn="false" onValueChanged="HUD_pcsDeferAutoSeat">Defer Auto-Seat</Toggle>
@@ -247,6 +262,11 @@
         <Text class="pcs_row_title" id="pcs_rowName_Pink">Pink</Text>
         <Text class="pcs_char_title" id="pcs_charFullName_Pink">—</Text>
         <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_desire">Desire:</Text>
+          <Text class="pcs_desire_text" id="pcs_desire_Pink">—</Text>
+          <Button class="pcs_btn pcs_btn_clear_52 pcs_btn_palette_hum_dark" id="pcs_Pink_desireClear" />
+        </HorizontalLayout>
+        <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">Join:</Text>
           <Toggle class="pcs_join_toggle" id="pcs_deferAutoSeat_Pink" isOn="false" onValueChanged="HUD_pcsDeferAutoSeat">Defer Auto-Seat</Toggle>
           <Button class="pcs_btn pcs_btn_auto_seat pcs_btn_palette_join" id="pcs_Pink_autoSeat" />
@@ -325,6 +345,11 @@
       <VerticalLayout class="pcs_seat_column">
         <Text class="pcs_row_title" id="pcs_rowName_Purple">Purple</Text>
         <Text class="pcs_char_title" id="pcs_charFullName_Purple">—</Text>
+        <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_desire">Desire:</Text>
+          <Text class="pcs_desire_text" id="pcs_desire_Purple">—</Text>
+          <Button class="pcs_btn pcs_btn_clear_52 pcs_btn_palette_hum_dark" id="pcs_Purple_desireClear" />
+        </HorizontalLayout>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">Join:</Text>
           <Toggle class="pcs_join_toggle" id="pcs_deferAutoSeat_Purple" isOn="false" onValueChanged="HUD_pcsDeferAutoSeat">Defer Auto-Seat</Toggle>

@@ -8,6 +8,10 @@ local D = {}
 D.XML = [=[
 <Defaults>
 
+  <InputField class="player_desire" ignoreLayout="true" width="87%" color="#000000" textColor="#fce5c1" height="50" fontSize="30" fontStyle="Bold" rectAlignment="UpperCenter" offsetXY="0 -447" placeholder=" " />
+
+  <InputField class="player_desire_unset" color="#440000" />
+
   <Image preserveAspect="true" />
   <Image class="dot" rectAlignment="UpperLeft" preserveAspect="true" raycastTarget="false" active="false" />
   <Image class="dot_standard" height="63" width="63"  />

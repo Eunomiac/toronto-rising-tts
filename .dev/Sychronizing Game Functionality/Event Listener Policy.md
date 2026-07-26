@@ -104,7 +104,7 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | `ui_signal_candle.ttslua` | clicker → Global.call | Global callee | 5 |
 | `ui_tarot_button.ttslua` | clicker → `GlobalApplyTarotState` | Global callee | W2 |
 | `ui_companion_toggle.ttslua` | clicker → `GlobalApplyCompanionToggleClick` | Global callee | TOR-288 |
-| `ui_csheet_core.ttslua` | clicker → Global.call; onLoad layout | Global mutators | W4 |
+| `ui_csheet_core.ttslua` | clicker → Global.call; Desire InputField onValueChanged/onEndEdit → `GlobalSetPlayerDesire`; onLoad layout | Global mutators; seat owner or ST steam for Desire | W4 / TOR-97 |
 
 ### HUD handlers (summary)
 
@@ -125,7 +125,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | Handler | Tier | ST steam | Notes |
 | --- | --- | --- | --- |
 | `HUD_selectStorytellerPanel` | A | — | panel visibility |
-| `HUD_pcPanel` | B+C | Yes | PCs tracker apply |
+| `HUD_pcPanel` | B+C | Yes | PCs tracker apply; Desire Clear (`pcs_<Color>_desireClear`, TOR-97) |
 | `HUD_togglePanel` | A | — | XmlUI collapse |
 | `HUD_changeScene` | B+C | Yes | |
 | `HUD_selectAdminLightingScene` | B+C | Yes | |

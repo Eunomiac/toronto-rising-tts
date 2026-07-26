@@ -988,6 +988,12 @@ function S.validateState()
             if type(playerData.conditions) ~= "table" then
                 playerData.conditions = {}
             end
+            if type(playerData.desire) ~= "string" then
+                playerData.desire = ""
+            else
+                local trimmed = string.match(playerData.desire, "^%s*(.-)%s*$") or ""
+                playerData.desire = trimmed
+            end
         else
             if type(playerData.stats) ~= "table" then
                 playerData.conditions = nil

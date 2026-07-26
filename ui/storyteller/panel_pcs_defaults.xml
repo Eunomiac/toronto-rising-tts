@@ -9,10 +9,12 @@
 
   <Text class="pcs_row_title" fontSize="13" fontStyle="Bold" color="#F5F5F5" />
   <Text class="pcs_char_title" fontSize="17" fontStyle="Bold" color="#FFFFFF" />
+  <Text class="pcs_desire_text" fontSize="12" color="#FCE5C1" preferredWidth="480" minWidth="200" flexibleWidth="1" alignment="MiddleLeft" />
 
   <HorizontalLayout class="pcs_stat_row" spacing="3" height="26" childForceExpandWidth="false" />
 
   <Text class="pcs_prefix_wide" fontSize="11" fontStyle="Bold" color="#FFFFFF" preferredWidth="42" minWidth="42" flexibleWidth="0" alignment="MiddleLeft" />
+  <Text class="pcs_prefix_desire" fontSize="11" fontStyle="Bold" color="#FFFFFF" preferredWidth="56" minWidth="56" flexibleWidth="0" alignment="MiddleLeft" />
   <Text class="pcs_prefix_hg" fontSize="11" fontStyle="Bold" color="#FFFFFF" preferredWidth="36" minWidth="36" flexibleWidth="0" alignment="MiddleLeft" />
 
   <Text class="pcs_track_damage" fontSize="27" fontStyle="Bold" color="#EEEEEE" preferredWidth="280" minWidth="280" flexibleWidth="0" alignment="MiddleLeft" />

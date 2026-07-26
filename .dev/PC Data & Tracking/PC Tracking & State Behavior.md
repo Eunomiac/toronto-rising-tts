@@ -48,11 +48,19 @@ The steam ID numbers (used as keys in the `playerData` table) are stored in the 
         "hud": PlayerHUDData, // As changing this is beyond the scope of this document, it is not detailed here.
         "playerName": "Thaumaterge",
         "stats": PCStatsPartA & PCStatsPartB & PCStatsPartC & PCStatsPartD,
-        "conditions": {}
+        "conditions": {},
+        "desire": "" // Session Desire string (TOR-97); whitespace-only stored as ""
     }
 ```
 
-`conditions` is a **sibling** of `stats` on the same `playerData` entry (not nested under `stats`). The Storyteller entry in `playerData` does not use `stats` or `conditions`.
+`conditions` and **`desire`** are **siblings** of `stats` on the same `playerData` entry (not nested under `stats`). The Storyteller entry in `playerData` does not use `stats`, `conditions`, or `desire`.
+
+### `playerData.desire` (TOR-97)
+
+- **Type:** string. Missing/nil normalizes to `""`.
+- **Unset:** whitespace-only input is stored as `""`. Sheet InputField class becomes `player_desire player_desire_unset`.
+- **Mutation:** page1 CSHEET `onValueChanged` / `onEndEdit` → `GlobalSetPlayerDesire` (seat owner or Storyteller steam); ST PCs panel **Clear** → `pcs_<Color>_desireClear` via `HUD_pcPanel`.
+- **UI sync:** ST row `pcs_desire_<Color>` + page1 `player_desire` text/class (no `Sync.full`).
 
 ## `PCStatsPartA`: `stats.attributes`, `stats.skills`, and `stats.specialties`
 
