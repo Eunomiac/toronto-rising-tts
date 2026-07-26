@@ -59,6 +59,7 @@ local ACTIONS_SKIP_OVERLAY_REFRESH = {
   hungerDown = true,
   -- hungerApply uses P.refreshHudOverlaysForSeat after Sync.player (TOR-340).
   hungerApply = true,
+  autoSeat = true,
 }
 
 --- Scan character sheets for a seat color (GM Notes `CSHEET_PAGE_*_<COLOR>`) and refresh embedded UI.
@@ -143,6 +144,9 @@ function PCST.refreshRow(color)
   safeSetValue("pcs_rowName_" .. color, displayName)
   local charFull = characterFullNameForPlayerId(pid)
   safeSetValue("pcs_charFullName_" .. color, charFull ~= "" and charFull or "—")
+
+  local deferAutoSeat = S.getStateVal("connectionControls", "deferAutoSeatByColor", color) == true
+  U.setAttributes("pcs_deferAutoSeat_" .. color, { isOn = deferAutoSeat })
 
   if pid == nil or pid == C.StorytellerID then
     safeSetValue("pcs_hungerDots_" .. color, "")
@@ -298,6 +302,9 @@ function PCST.onHudClick(player, _button, id)
       end
     end
     PCST.refreshCharacterSheetsForColor(color)
+  elseif action == "autoSeat" then
+    local Main = require("core.main")
+    Main.manualAssignSeatForColor(color)
   end
 
   PCST.refreshRow(color)

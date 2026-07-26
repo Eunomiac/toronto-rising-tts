@@ -327,6 +327,19 @@ function S.GetDefaultGameState()
             lockNextSceneApply = false,
             previewDraft = nil,
         },
+        --- Join-stress ST controls (TOR-428). Persist until cleared; defaults off.
+        --- `deferSetXml`: skip automatic Global full UI document refresh (manual Refresh XML still allowed).
+        --- `deferAutoSeatByColor[color]`: skip chronicle auto-seat for that PC row (manual Auto-Seat still allowed).
+        connectionControls = {
+            deferSetXml = false,
+            deferAutoSeatByColor = {
+                Brown = false,
+                Orange = false,
+                Red = false,
+                Pink = false,
+                Purple = false,
+            },
+        },
         --- Narrative/session scene bundle (table presence, location, clock, roll defaults).
         sessionScene = {
             lightingPresetKey = nil,
@@ -725,6 +738,26 @@ function S.validateState()
     end
     if type(gameState.controlBoard.lockNextSceneApply) ~= "boolean" then
         gameState.controlBoard.lockNextSceneApply = false
+    end
+    do
+        local defaults = S.GetDefaultGameState().connectionControls
+        if type(gameState.connectionControls) ~= "table" then
+            gameState.connectionControls = U.clone(defaults, true)
+        else
+            S.mergeDefaults(gameState.connectionControls, defaults)
+            if type(gameState.connectionControls.deferSetXml) ~= "boolean" then
+                gameState.connectionControls.deferSetXml = false
+            end
+            if type(gameState.connectionControls.deferAutoSeatByColor) ~= "table" then
+                gameState.connectionControls.deferAutoSeatByColor = U.clone(defaults.deferAutoSeatByColor, true)
+            else
+                for _, col in ipairs(C.PlayerColors or {}) do
+                    if type(gameState.connectionControls.deferAutoSeatByColor[col]) ~= "boolean" then
+                        gameState.connectionControls.deferAutoSeatByColor[col] = false
+                    end
+                end
+            end
+        end
     end
     if legacyLayoutLock then
         gameState.controlBoard.lockNextSceneApply = true

@@ -588,6 +588,16 @@ function M.tryAutoAssignSeatFromChronicle(colorOrPlayer, opts)
         return
     end
 
+    if U.isIn(targetColor, C.PlayerColors)
+        and S.getStateVal("connectionControls", "deferAutoSeatByColor", targetColor) == true
+    then
+        print(string.format(
+            "Main: tryAutoAssign - Defer Auto-Seat on for %s; skipping auto-assign for %s",
+            targetColor, playerID
+        ))
+        return
+    end
+
     if color == targetColor then
         M.onPlayerChangeColor(color)
         if refreshIfAlreadySeated and Global ~= nil and type(Global.call) == "function" then
@@ -648,6 +658,77 @@ function M.tryAutoAssignSeatFromChronicle(colorOrPlayer, opts)
             end
         end, 0.5)
     end
+end
+
+--[[
+    Manual Auto-Seat for a PCs-panel row (TOR-428).
+    Finds the connected player whose Steam ID maps to `targetColor` in C.PlayerData and seats them.
+    Does not clear Defer Auto-Seat; occupancy / changeColor failures alert the GM.
+    @param targetColor string PC seat color
+    @return boolean true if already seated or changeColor accepted
+]]
+function M.manualAssignSeatForColor(targetColor)
+    if type(targetColor) ~= "string" or not U.isIn(targetColor, C.PlayerColors) then
+        U.AlertGM("Auto-Seat: invalid color " .. tostring(targetColor))
+        return false
+    end
+
+    local playerID = C.GetPlayerIDOrNil(targetColor)
+    if type(playerID) ~= "string" or playerID == "" then
+        U.AlertGM("Auto-Seat: no chronicle Steam ID for " .. targetColor)
+        return false
+    end
+
+    local player = nil
+    for _, p in ipairs(Player.getPlayers()) do
+        if U.isPlayer(p) and S.getStorageID(p) == playerID then
+            player = p
+            break
+        end
+    end
+    if player == nil then
+        U.AlertGM("Auto-Seat: " .. targetColor .. " player is not connected")
+        return false
+    end
+
+    if player.color == targetColor then
+        print(string.format("Main: manualAssign - %s already on %s", playerID, targetColor))
+        if Global ~= nil and type(Global.call) == "function" then
+            Global.call("GlobalRefreshUiAfterSeatAssignment", { color = targetColor })
+        end
+        return true
+    end
+
+    local occupant = Player[targetColor]
+    if occupant ~= nil and U.isPlayer(occupant) then
+        local occupantId = S.getStorageID(occupant)
+        if type(occupantId) == "string" and occupantId ~= playerID then
+            U.AlertGM(string.format(
+                "Auto-Seat: %s occupied by another player",
+                targetColor
+            ))
+            return false
+        end
+    end
+
+    if type(player.changeColor) ~= "function" then
+        U.AlertGM("Auto-Seat: changeColor unavailable for " .. targetColor)
+        return false
+    end
+
+    print(string.format(
+        "Main: manualAssign %s (%s) %s → %s",
+        tostring(player.steam_name), playerID, tostring(player.color), targetColor
+    ))
+    local changed = player.changeColor(targetColor)
+    if changed == false then
+        U.AlertGM(string.format(
+            "Auto-Seat: changeColor(%s) failed (from %s)",
+            targetColor, tostring(player.color)
+        ))
+        return false
+    end
+    return true
 end
 
 --[[

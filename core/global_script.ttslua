@@ -579,12 +579,49 @@ local function revealSeatHudVisibility(seatColor)
 end
 
 --- Fallback full UI resync for remote clients where the visibility rebind above doesn't stick (TOR-381 / TOR-375).
---- Debounced to one in-flight timer; skipped for Host.
+--- Debounced to one in-flight timer; skipped for Host. Honors Defer setXML (TOR-428).
 local pendingFullUiResyncHandle = nil
 local FULL_UI_RESYNC_FALLBACK_DELAY_SECONDS = 4
+
+local function cancelPendingFullUiResync()
+    if pendingFullUiResyncHandle ~= nil then
+        U.stopDelay(pendingFullUiResyncHandle)
+        pendingFullUiResyncHandle = nil
+    end
+end
+
+--- Single Global full-document resync call site (manual Refresh XML + deferred join fallback).
+--- @param reason string|nil log label
+local function performFullUiResync(reason)
+    cancelPendingFullUiResync()
+    local ok, err = pcall(function()
+        UI.setXml(UI.getXml())
+    end)
+    if ok then
+        -- Full document replace resets overlay attrs; clear Lua apply cache then re-sync. TOR-398.
+        invalidateGlobalBlindfoldAppliedState()
+        applyGlobalBlindfoldFromPhase()
+        print(string.format(
+            "[SeatUI] Full UI resync sent (%s).",
+            type(reason) == "string" and reason ~= "" and reason or "unspecified"
+        ))
+    else
+        print("[SeatUI] Full UI resync failed: " .. tostring(err))
+    end
+    return ok == true
+end
+
+local function isDeferSetXmlEnabled()
+    return S.getStateVal("connectionControls", "deferSetXml") == true
+end
+
 local function scheduleDeferredFullUiResyncForReveal(seated)
     -- Empty seats have no remote client to resync; host/same-Steam skips below.
     if not U.isPlayer(seated) then
+        return
+    end
+    if isDeferSetXmlEnabled() then
+        print("[SeatUI] Skipping deferred full UI resync (Defer setXML on).")
         return
     end
     local host = U.getHost()
@@ -597,22 +634,14 @@ local function scheduleDeferredFullUiResyncForReveal(seated)
             return
         end
     end
-    if pendingFullUiResyncHandle ~= nil then
-        U.stopDelay(pendingFullUiResyncHandle)
-    end
+    cancelPendingFullUiResync()
     pendingFullUiResyncHandle = U.delay(function()
         pendingFullUiResyncHandle = nil
-        local ok, err = pcall(function()
-            UI.setXml(UI.getXml())
-        end)
-        if ok then
-            -- Full document replace resets overlay attrs; clear Lua apply cache then re-sync. TOR-398.
-            invalidateGlobalBlindfoldAppliedState()
-            applyGlobalBlindfoldFromPhase()
-            print("[SeatUI] Deferred full UI resync sent (visibility-rebind fallback).")
-        else
-            print("[SeatUI] Deferred full UI resync failed: " .. tostring(err))
+        if isDeferSetXmlEnabled() then
+            print("[SeatUI] Deferred full UI resync aborted (Defer setXML on).")
+            return
         end
+        performFullUiResync("visibility-rebind fallback")
     end, FULL_UI_RESYNC_FALLBACK_DELAY_SECONDS)
 end
 
@@ -3385,6 +3414,8 @@ syncStorytellerPhaseButtons = function()
     if UI ~= nil and UI.setValue ~= nil then
         UI.setValue("input_sessionNum", sessionNumText)
     end
+    local deferSetXml = S.getStateVal("connectionControls", "deferSetXml") == true
+    U.setAttributes("phase_deferSetXml", { isOn = deferSetXml })
 end
 
 --- Push last-load clock label onto the ST debug bar (TOR-394).
@@ -3974,6 +4005,81 @@ function HUD_sessionNumInput(player, value, id)
     S.setSessionNum(n)
     UpdateUIDisplays({ phase = true, gameStateOverlay = true })
     syncStorytellerPhaseButtons()
+end
+
+--- Parse XmlUI Toggle onValueChanged payloads to boolean (TOR-428).
+--- @param val unknown
+--- @return boolean|nil
+local function coerceUiToggleBool(val)
+    if val == true then
+        return true
+    end
+    if val == false then
+        return false
+    end
+    if type(val) == "string" then
+        local s = string.lower(val)
+        if s == "true" or s == "1" or s == "on" then
+            return true
+        end
+        if s == "false" or s == "0" or s == "off" then
+            return false
+        end
+    end
+    if type(val) == "number" then
+        if val == 1 then
+            return true
+        end
+        if val == 0 then
+            return false
+        end
+    end
+    return nil
+end
+
+--- Phases panel: persist Defer setXML (blocks automatic Global full UI resync). TOR-428.
+function HUD_phaseDeferSetXml(player, value, id)
+    if not requireStorytellerForMutation(player, "HUD_phaseDeferSetXml") then
+        return
+    end
+    local on = coerceUiToggleBool(value)
+    if on == nil then
+        return
+    end
+    S.setStateVal(on, "connectionControls", "deferSetXml")
+    if on then
+        cancelPendingFullUiResync()
+    end
+    print(string.format("[JoinControls] Defer setXML = %s", tostring(on)))
+    syncStorytellerPhaseButtons()
+end
+
+--- Phases panel: one-shot Global full UI resync; does not clear Defer setXML. TOR-428.
+function HUD_phaseRefreshXml(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_phaseRefreshXml") then
+        return
+    end
+    performFullUiResync("manual Refresh XML")
+end
+
+--- PCs panel: persist Defer Auto-Seat per seat color. TOR-428.
+function HUD_pcsDeferAutoSeat(player, value, id)
+    if not requireStorytellerForMutation(player, "HUD_pcsDeferAutoSeat") then
+        return
+    end
+    local color = type(id) == "string" and id:match("^pcs_deferAutoSeat_(%a+)$") or nil
+    if color == nil or not U.isIn(color, C.PlayerColors) then
+        return
+    end
+    local on = coerceUiToggleBool(value)
+    if on == nil then
+        return
+    end
+    S.setStateVal(on, "connectionControls", "deferAutoSeatByColor", color)
+    print(string.format("[JoinControls] Defer Auto-Seat %s = %s", color, tostring(on)))
+    if PCST and PCST.refreshRow then
+        PCST.refreshRow(color)
+    end
 end
 
 --- Reset game state

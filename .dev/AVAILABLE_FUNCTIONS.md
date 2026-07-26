@@ -459,6 +459,7 @@ Animated Scene Time jumps (TOR-222). Display-only during motion; present day / w
 | `M.setupPlayers()` | Promote players + load-time Steam seat assign (TOR-345) | Bootstrap |
 | `M.tryAutoAssignSeatFromChronicle(colorOrPlayer, opts?)` | Steam ID → chronicle color (ST → Black; else White) | Connect / seat assign |
 | `M.assignAllConnectedSeatsFromChronicle()` | Assign all connected players from chronicle (two-pass) | Load-time seat assign |
+| `M.manualAssignSeatForColor(color)` | Manual Auto-Seat for a PC row (Steam ID from `C.PlayerData`) | ST PCs panel (TOR-428) |
 | `M.forPlayers(func)` | Iterate over all players | DRY pattern |
 | `M.advancePhase(newPhase)` | Lifecycle transition via `core.phases` (enter/exit registries) | `M.advancePhase(C.Phases.PLAY)` |
 | `M.advancePhaseNext()` | Advance one step in `C.PhaseSequence` | Storyteller Advance button |

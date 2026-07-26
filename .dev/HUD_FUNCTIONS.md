@@ -176,6 +176,9 @@ Storyteller **Stats** panel: edit PC backgrounds/merits/flaws and coterie advant
 | `HUD_advancePhase` | _(legacy alias)_ | `(player, button, id)` | Calls `HUD_phaseAdvance` (free-jump removed). |
 | `HUD_setPlaySubPhase` | `phase_sub_Main`, `phase_sub_Downtime`, `phase_sub_Memoriam` | `(player, button, id)` | ST-gated. Free switch among Play subphases via `Phases.setPlaySubPhase`. |
 | `HUD_sessionNumInput` | `input_sessionNum` | `(player, value, id)` | ST-gated. Persists `sessionNum` (≥1); refreshes phase UI + game-state overlay roman. |
+| `HUD_phaseDeferSetXml` | `phase_deferSetXml` | `(player, value, id)` | ST-gated. Persists `connectionControls.deferSetXml`; when on, cancels pending deferred Global full UI resync and blocks future automatic ones (TOR-428). |
+| `HUD_phaseRefreshXml` | `phase_refreshXml` | `(player, button, id)` | ST-gated. One-shot Global full UI resync; does **not** clear Defer setXML (TOR-428). |
+| `HUD_pcsDeferAutoSeat` | `pcs_deferAutoSeat_<Color>` | `(player, value, id)` | ST-gated. Persists `connectionControls.deferAutoSeatByColor[color]` (TOR-428). |
 | `HUD_resetGame` | `utility_reset` | `(player, button, id)` | Calls `S.resetGameState()`, `Scenes.resetScene(0)` (instant), updates UI, broadcasts "Game has been reset." to all players. |
 | `HUD_saveState` | `utility_save` | `(player, button, id)` | Reads state via `S.getGameState()`, JSON-encodes it for verification. Broadcasts confirmation to the clicking player. Note: TTS also auto-saves via `onSave()`. |
 

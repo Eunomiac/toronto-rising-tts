@@ -329,6 +329,7 @@ _Blocked: author must define data binding approach before substantial implementa
 - [x] **Auto-seat from Grey on join connect:** Join clients arrive Grey; assign must not early-return on Grey (host load path was fine). _(TOR-372)_
 - [x] **Absent player presence override:** Disconnected chronicle seats inactive (effective presence; no library `isPresent` write); connect camera + reconcile then blindfold; disconnect cancel+reconcile; DEBUG Assume Players Connected. _(TOR-293)_
 - [x] **Solo Host auto Assume Players Connected:** Intermission→Play Advance enables DEBUG assume when exactly one connected player and they are Host. Pending Save & Play. _(TOR-429)_
+- [x] **Defer setXML + Auto-Seat join controls:** Phases: Defer setXML + Refresh XML (global; persists); PCs rows: Defer Auto-Seat + Auto-Seat (per color; persists). Skips automatic `UI.setXml` / chronicle auto-seat only. Pending Save & Play. _(TOR-428)_
 - [ ] **Play as NPC:** Control-board `pc_control_token` seat activate/deactivate (baseline shipped TOR-236); play-as-NPC swaps sheet by tag; `sessionScene.npcRoleOverride` / `seatSlots`; lighting exception per Scene Constructor spec ([Scene Constructor Overview](Scene%20Constructor/Scene%20Constructor%20Overview.md)). `blockedBy` **TOR-247** (rotational seat decoupling + full PC-token authority). _(TOR-95)_
 
 ## Table Objects

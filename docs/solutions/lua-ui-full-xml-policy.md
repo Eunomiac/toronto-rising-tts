@@ -34,7 +34,7 @@ Related: [`lua-wait-api-policy.md`](lua-wait-api-policy.md), [`lua-pcall-policy.
 
 | Site | Status |
 |------|--------|
-| Global seat assign (`core/global_script.ttslua`) | **Removed** — `revealSeatHudVisibility` + `UpdateUIDisplays` (TOR-375) |
+| Global seat assign (`core/global_script.ttslua`) | **Visibility rebind** (TOR-375) + **deferred** join-client full resync fallback (TOR-381). Automatic resync gated by `connectionControls.deferSetXml` (TOR-428); manual **Refresh XML** on Phases panel. |
 | CONTROL_BOARD (`objects/npc_control_board_ui.ttslua`) | **Removed** — baked Include + Save & Play; runtime validates `gb_root` |
 | CSHEET pages 3–5 (`ui/ui_csheet_core.ttslua`) | **Permitted exception** — TOR-376 Future optional migrate |
 

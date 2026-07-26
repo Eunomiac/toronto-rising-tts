@@ -37,6 +37,8 @@
   <Button class="pcs_btn_clear_52" preferredWidth="52" minWidth="52" text="Clear" />
   <Button class="pcs_btn_torpor" preferredWidth="76" minWidth="76" text="Torpor" />
   <Button class="pcs_btn_cond" preferredWidth="86" minWidth="80" fontSize="10" height="26" />
+  <Button class="pcs_btn_auto_seat" preferredWidth="88" minWidth="80" fontSize="10" height="26" text="Auto-Seat" />
+  <Toggle class="pcs_join_toggle" preferredWidth="150" minWidth="130" fontSize="11" textColor="#FFFFFF" />
 
   <Button class="pcs_btn_palette_agg" colors="#662222|#883333|#991111|rgba(0.5,0.1,0.1,0.4)" />
   <Button class="pcs_btn_palette_sup" colors="#444444|#555555|#666666|rgba(0.2,0.2,0.2,0.4)" />
@@ -49,6 +51,7 @@
   <Button class="pcs_btn_palette_torpor" colors="#441122|#552233|#663344|rgba(0.2,0.05,0.1,0.4)" />
   <Button class="pcs_btn_palette_frenzy" colors="#662200|#883300|#AA4400|rgba(0.35,0.1,0,0.45)" />
   <Button class="pcs_btn_palette_blindfold" colors="#222233|#333344|#444466|rgba(0.12,0.12,0.2,0.45)" />
+  <Button class="pcs_btn_palette_join" colors="#1A3A4A|#285060|#3A7080|rgba(0.1,0.2,0.25,0.5)" />
 
   <!-- Roll initiation buttons: compact, shared base size -->
   <Button class="pcs_btn_roll" preferredWidth="52" minWidth="46" fontSize="10" height="26" onClick="HUD_rollInitiate" />

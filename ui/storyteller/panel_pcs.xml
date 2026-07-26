@@ -8,6 +8,11 @@
       <VerticalLayout class="pcs_seat_column">
         <Text class="pcs_row_title" id="pcs_rowName_Brown">Brown</Text>
         <Text class="pcs_char_title" id="pcs_charFullName_Brown">—</Text>
+        <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_wide">Join:</Text>
+          <Toggle class="pcs_join_toggle" id="pcs_deferAutoSeat_Brown" isOn="false" onValueChanged="HUD_pcsDeferAutoSeat">Defer Auto-Seat</Toggle>
+          <Button class="pcs_btn pcs_btn_auto_seat pcs_btn_palette_join" id="pcs_Brown_autoSeat" />
+        </HorizontalLayout>
         <!-- Roll initiation row: each button starts a roll of that type in SETUP -->
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">Roll:</Text>
@@ -82,6 +87,11 @@
         <Text class="pcs_row_title" id="pcs_rowName_Orange">Orange</Text>
         <Text class="pcs_char_title" id="pcs_charFullName_Orange">—</Text>
         <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_wide">Join:</Text>
+          <Toggle class="pcs_join_toggle" id="pcs_deferAutoSeat_Orange" isOn="false" onValueChanged="HUD_pcsDeferAutoSeat">Defer Auto-Seat</Toggle>
+          <Button class="pcs_btn pcs_btn_auto_seat pcs_btn_palette_join" id="pcs_Orange_autoSeat" />
+        </HorizontalLayout>
+        <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">Roll:</Text>
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"        id="rollBtn_standard_Orange"    text="Std"   />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_simple"   id="rollBtn_simplecheck_Orange" text="Simple" />
@@ -153,6 +163,11 @@
       <VerticalLayout class="pcs_seat_column">
         <Text class="pcs_row_title" id="pcs_rowName_Red">Red</Text>
         <Text class="pcs_char_title" id="pcs_charFullName_Red">—</Text>
+        <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_wide">Join:</Text>
+          <Toggle class="pcs_join_toggle" id="pcs_deferAutoSeat_Red" isOn="false" onValueChanged="HUD_pcsDeferAutoSeat">Defer Auto-Seat</Toggle>
+          <Button class="pcs_btn pcs_btn_auto_seat pcs_btn_palette_join" id="pcs_Red_autoSeat" />
+        </HorizontalLayout>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">Roll:</Text>
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"        id="rollBtn_standard_Red"    text="Std"   />
@@ -226,6 +241,11 @@
         <Text class="pcs_row_title" id="pcs_rowName_Pink">Pink</Text>
         <Text class="pcs_char_title" id="pcs_charFullName_Pink">—</Text>
         <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_wide">Join:</Text>
+          <Toggle class="pcs_join_toggle" id="pcs_deferAutoSeat_Pink" isOn="false" onValueChanged="HUD_pcsDeferAutoSeat">Defer Auto-Seat</Toggle>
+          <Button class="pcs_btn pcs_btn_auto_seat pcs_btn_palette_join" id="pcs_Pink_autoSeat" />
+        </HorizontalLayout>
+        <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">Roll:</Text>
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"        id="rollBtn_standard_Pink"    text="Std"   />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_simple"   id="rollBtn_simplecheck_Pink" text="Simple" />
@@ -297,6 +317,11 @@
       <VerticalLayout class="pcs_seat_column">
         <Text class="pcs_row_title" id="pcs_rowName_Purple">Purple</Text>
         <Text class="pcs_char_title" id="pcs_charFullName_Purple">—</Text>
+        <HorizontalLayout class="pcs_stat_row">
+          <Text class="pcs_prefix_wide">Join:</Text>
+          <Toggle class="pcs_join_toggle" id="pcs_deferAutoSeat_Purple" isOn="false" onValueChanged="HUD_pcsDeferAutoSeat">Defer Auto-Seat</Toggle>
+          <Button class="pcs_btn pcs_btn_auto_seat pcs_btn_palette_join" id="pcs_Purple_autoSeat" />
+        </HorizontalLayout>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">Roll:</Text>
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"        id="rollBtn_standard_Purple"    text="Std"   />
