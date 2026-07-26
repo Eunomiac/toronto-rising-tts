@@ -53,9 +53,7 @@ Dot ids: <dot_image_name>_bloodPotency_<slot_number>
   <!--
   Desire (TOR-97): live text only via onValueChanged / onEndEdit → GlobalSetPlayerDesire.
   Unset (whitespace-only) → state "" + class "player_desire player_desire_unset".
-
-    getObjectFromGUID("f10182").UI.setAttributes("player_desire", {color = "#440000", fontStyle = "Italic", textColor = "#555555"})
-
+  Runtime class changes must use UI.setClass (not setAttributes class).
   -->
   <InputField id="player_desire" class="player_desire player_desire_unset"
     onValueChanged="onDesireChanged" onEndEdit="onDesireEndEdit" />

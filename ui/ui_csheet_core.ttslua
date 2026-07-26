@@ -403,6 +403,7 @@ local function getMergedPlayerDataFromGlobal(pid)
 end
 
 --- Apply Desire InputField text + class from merged playerData (TOR-97).
+--- Class must use UI.setClass — setAttributes("class") does not replace classes in TTS.
 --- @param pd table|nil
 local function applyDesireFieldFromMerged(pd)
   if pageNum ~= 1 or self.UI == nil then
@@ -416,10 +417,8 @@ local function applyDesireFieldFromMerged(pd)
   if desire == "" then
     className = "player_desire player_desire_unset"
   end
-  self.UI.setAttributes("player_desire", {
-    text = desire,
-    class = className,
-  })
+  self.UI.setClass("player_desire", className)
+  self.UI.setAttribute("player_desire", "text", desire)
 end
 
 --- CSHEET Desire InputField: stash via Global (cannot read InputField text later).
@@ -449,12 +448,11 @@ local function handleDesireChanged(player, value, _id, syncText)
     return
   end
   local className = type(result.class) == "string" and result.class or "player_desire player_desire_unset"
-  local attrs = { class = className }
+  self.UI.setClass("player_desire", className)
   -- Only rewrite text when denied, EndEdit, or emptied — never on every keystroke (caret fight).
   if result.ok ~= true or result.syncText == true then
-    attrs.text = type(result.text) == "string" and result.text or ""
+    self.UI.setAttribute("player_desire", "text", type(result.text) == "string" and result.text or "")
   end
-  self.UI.setAttributes("player_desire", attrs)
 end
 
 -- ============================================================================
