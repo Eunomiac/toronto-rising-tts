@@ -58,6 +58,7 @@ Ending events of the previous phase run before starting events of the new phase 
 
 ### Starting Events: `PLAY`
 
+* When advancing from Intermission with exactly one connected player who is the Host, auto-enable DEBUG **Assume Players Connected** before no-scene world apply (TOR-429 / TOR-293).
 * Detach any live library mirror, then apply "no scene" default (table/lights; soundscape deferred for staged handoff). Overlay: blank clock, weather hidden, session roman from `sessionNum` (TOR-362).
 * **Intermission → Play audio (TOR-361):** TR Loop fades out over **5s**, then Main mood fades in over **3s** (no crossfade).
 * Only after Main fade-in completes: global blindfold hidden (`overlay_globalBlindfold`). Competing auto-hide from `applyGlobalBlindfoldFromPhase` is suppressed while `Phases.isAdvancing()` (TOR-363).

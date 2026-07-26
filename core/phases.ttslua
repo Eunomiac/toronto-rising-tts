@@ -279,6 +279,24 @@ function Phases.applyNoSceneDefault(_ctx, opts)
     return true
 end
 
+--- Intermission → Play: solo Host auto-enables DEBUG Assume Players Connected (TOR-429).
+--- @param ctx table|nil
+--- @return boolean
+function Phases.maybeEnableAssumePlayersConnectedForSoloHost(ctx)
+    ctx = type(ctx) == "table" and ctx or {}
+    if ctx.from ~= C.Phases.INTERMISSION then
+        return true
+    end
+    local PlayerConnection = require("core.player_connection")
+    if type(PlayerConnection.enableAssumePlayersConnectedIfSoloHost) ~= "function" then
+        return true
+    end
+    if PlayerConnection.enableAssumePlayersConnectedIfSoloHost() then
+        U.AlertGM("Assume players connected: ON (solo Host)")
+    end
+    return true
+end
+
 --- Fade Intermission TR_Loop out; does not start Main (no crossfade).
 function Phases.fadeOutIntermissionTheme(_ctx)
     local Soundscape = require("core.soundscape")
@@ -423,6 +441,10 @@ end
 
 Phases.onEnter[C.Phases.PLAY] = function(ctx)
     return {
+        function()
+            -- Before no-scene world apply so chronicle seats stay present under TOR-293.
+            return Phases.maybeEnableAssumePlayersConnectedForSoloHost(ctx)
+        end,
         function()
             -- Phase is already PLAY (set before enter steps). Idempotent re-assert so any
             -- applyGlobalBlindfoldFromPhase race during the phase flip cannot lift early (TOR-363);

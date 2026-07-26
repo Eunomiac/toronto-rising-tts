@@ -30,6 +30,26 @@ function PC.toggleAssumePlayersConnected()
   return nextVal
 end
 
+--- Solo Host playtest helper (TOR-429): if exactly one seated player and they are Host,
+--- turn assumePlayersConnected on and reconcile. No-op when already on or multiplayer.
+--- @return boolean true when the flag was newly enabled
+function PC.enableAssumePlayersConnectedIfSoloHost()
+  if PC.assumePlayersConnected() then
+    return false
+  end
+  local seated = Player.getPlayers() or {}
+  if #seated ~= 1 then
+    return false
+  end
+  local only = seated[1]
+  if not U.isPlayer(only) or only.host ~= true then
+    return false
+  end
+  PC.setAssumePlayersConnected(true)
+  PC.reconcileEffectivePresence(nil)
+  return true
+end
+
 --- Steam id mapped to this PC seat color in `C.PlayerData`, or nil if not a chronicle seat.
 --- @param color string
 --- @return string|nil

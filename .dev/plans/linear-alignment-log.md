@@ -582,5 +582,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-19 | CREATE+SHIP | TOR-412 | CONTROL_BOARD group move via hold hotkey (INBOX; revised from Solo/Group toggle) |
 | 2026-07-19 | VERIFY | TOR-279 | Author confirmed Stats advantage editor |
 | 2026-07-23 | CREATE | TOR-427 | Manual disabled vs project stake dots (`dot_grey_red_x` / `dot_project`); Character Sheets Feature; parent TOR-38; relatedTo TOR-387/TOR-232 |
+| 2026-07-26 | CREATE+SHIP | TOR-429 | Solo Host auto Assume Players Connected on Intermission→Play; relatedTo TOR-293 |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
