@@ -586,5 +586,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-26 | CREATE+SHIP | TOR-428 | Defer setXML (Phases) + Defer Auto-Seat / Auto-Seat (PCs); persist `connectionControls`; relatedTo TOR-381/TOR-374/TOR-345 |
 | 2026-07-26 | CREATE+SHIP | TOR-430 | Defer Connect + Connect on PCs panel; O(1) `onPlayerConnect` gate; relatedTo TOR-428 |
 | 2026-07-26 | CREATE+SHIP | TOR-431 | Blindfold parent-panel animation; relatedTo TOR-425 |
+| 2026-07-26 | CREATE+SHIP | TOR-432 | Whitelist `connectionControls` in `buildSaveState` (Defer toggles survived Save); relatedTo TOR-428/TOR-430 |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
