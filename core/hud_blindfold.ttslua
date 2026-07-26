@@ -26,14 +26,14 @@ local BLINDFOLD_SLIDE_IN_SEC = 2
 local BLINDFOLD_CHILD_SHOW_COMPLETE_SEC = 2.5
 --- Wait before any costly transition work so XmlUI slide/FadeIn is not hitch-frozen (TOR-434).
 --- = max(parent slide-in, last destination-card FadeIn end).
-local BLINDFOLD_DOWN_COMPLETE_SEC = math.max(BLINDFOLD_SLIDE_IN_SEC, BLINDFOLD_CHILD_SHOW_COMPLETE_SEC)
+local BLINDFOLD_DOWN_COMPLETE_SEC = math.max(BLINDFOLD_SLIDE_IN_SEC, BLINDFOLD_CHILD_SHOW_COMPLETE_SEC) + 2
 --- Default lead-in for `runTransitionAfterLeadIn` (same gate as staged / simple transition).
 local TRANSITION_WORK_LEAD_IN_SEC = BLINDFOLD_DOWN_COMPLETE_SEC
 --- After blindfold activation: wait for overlay settle, then snap cameras (TOR-368).
 local DEFAULT_CAMERA_AFTER_BLINDFOLD_SEC = 1.5
 --- Staged transition (TOR-147 / TOR-434): fade-out runs only after blindfold-down animations finish;
 --- heavy reconcile then runs alone; new audio fades in only after the reconcile settles.
-local TRANSITION_FADE_OUT_SEC = 1.0
+local TRANSITION_FADE_OUT_SEC = 3.0
 local TRANSITION_WORK_SETTLE_SEC = 0.75
 --- New-location ambient fades in as the blindfold rises (TOR-273), so this runs concurrently with the
 --- blindfold slide-up rather than under the blindfold — ~2s gives an audible reveal alongside the visual.

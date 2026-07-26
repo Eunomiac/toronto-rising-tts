@@ -6,6 +6,9 @@
 UI.show("overlay_globalBlindfold")
 -->
 
+<!--
+UI.setAttributes("overlay_globalBlindfold", {height = "1200"})
+-->
 
 <Image id="overlay_globalBlindfold"
   image="global_blindfold_session_1"

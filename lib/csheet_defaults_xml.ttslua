@@ -8,7 +8,7 @@ local D = {}
 D.XML = [=[
 <Defaults>
 
-  <InputField class="player_desire" ignoreLayout="true" width="87%" color="#000000" textColor="#fce5c1" height="50" fontSize="30" fontStyle="Bold" rectAlignment="UpperCenter" offsetXY="0 -447" placeholder=" " />
+  <InputField class="player_desire" ignoreLayout="true" width="87%" color="#000000" textColor="#fce5c1" height="50" fontSize="30" fontStyle="Bold" rectAlignment="UpperCenter" offsetXY="0 -447" placeholder="Enter your Desire ..." />
 
   <InputField class="player_desire_unset" color="#440000" />
 

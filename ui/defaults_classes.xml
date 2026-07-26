@@ -12,8 +12,8 @@
   <!-- Panel Styles -->
   <!-- Player/ST HUD roots in Global.xml: full-screen absolute layer (no padding — padding would turn Panel into a LayoutGroup). -->
   <Panel class="hud_root_panel"
-    width="100%"
-    height="100%"
+    width="1920"
+    height="1080"
     rectAlignment="MiddleCenter"
     ignoreLayout="true"
     raycastTarget="false"
