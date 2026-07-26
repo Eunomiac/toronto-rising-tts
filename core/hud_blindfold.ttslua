@@ -339,6 +339,19 @@ function HUDBF.scheduleEnd(delaySec)
   end, d)
 end
 
+--- Parse optional duration seconds. Explicit `0` is kept; nil/invalid → default (TOR-435).
+--- Do not use `tonumber(x) or default` — Lua treats 0 as falsy.
+--- @param raw any
+--- @param defaultSec number
+--- @return number
+local function resolveOptSec(raw, defaultSec)
+  local n = tonumber(raw)
+  if n == nil then
+    return defaultSec
+  end
+  return n
+end
+
 --- Close panel + blindfold immediately; defer heavy work with `U.waitUntil` until blindfold-down
 --- animations finish (TOR-434), then settle and lift.
 --- @param workFn fun(): boolean, string|nil returns success and optional error message
@@ -348,14 +361,8 @@ function HUDBF.runTransitionAfterLeadIn(workFn, opts)
     error("hud_blindfold.runTransitionAfterLeadIn: workFn must be a function")
   end
   opts = opts or {}
-  local leadInDelaySec = opts.leadInDelaySec
-  if leadInDelaySec == nil then
-    leadInDelaySec = TRANSITION_WORK_LEAD_IN_SEC
-  end
-  local settleDelaySec = opts.settleDelaySec
-  if settleDelaySec == nil then
-    settleDelaySec = TRANSITION_SETTLE_DELAY_SEC
-  end
+  local leadInDelaySec = resolveOptSec(opts.leadInDelaySec, TRANSITION_WORK_LEAD_IN_SEC)
+  local settleDelaySec = resolveOptSec(opts.settleDelaySec, TRANSITION_SETTLE_DELAY_SEC)
 
   HUDBF.beginTransition(opts)
 
@@ -381,11 +388,8 @@ function HUDBF.runTransition(workFn, opts)
     error("hud_blindfold.runTransition: workFn must be a function")
   end
   opts = opts or {}
-  local settleDelaySec = opts.settleDelaySec
-  if settleDelaySec == nil then
-    settleDelaySec = TRANSITION_SETTLE_DELAY_SEC
-  end
-  local leadInDelaySec = tonumber(opts.leadInDelaySec) or BLINDFOLD_DOWN_COMPLETE_SEC
+  local settleDelaySec = resolveOptSec(opts.settleDelaySec, TRANSITION_SETTLE_DELAY_SEC)
+  local leadInDelaySec = resolveOptSec(opts.leadInDelaySec, BLINDFOLD_DOWN_COMPLETE_SEC)
 
   HUDBF.beginTransition(opts)
 
@@ -422,11 +426,11 @@ function HUDBF.runStagedTransition(phases, opts)
     error("hud_blindfold.runStagedTransition: phases must be a table")
   end
   opts = opts or {}
-  local leadInDelaySec = tonumber(opts.leadInDelaySec) or BLINDFOLD_DOWN_COMPLETE_SEC
-  local fadeOutSec = tonumber(opts.fadeOutSec) or TRANSITION_FADE_OUT_SEC
-  local workSettleSec = tonumber(opts.workSettleSec) or TRANSITION_WORK_SETTLE_SEC
-  local fadeInSec = tonumber(opts.fadeInSec) or TRANSITION_FADE_IN_SEC
-  local settleDelaySec = tonumber(opts.settleDelaySec) or TRANSITION_SETTLE_DELAY_SEC
+  local leadInDelaySec = resolveOptSec(opts.leadInDelaySec, BLINDFOLD_DOWN_COMPLETE_SEC)
+  local fadeOutSec = resolveOptSec(opts.fadeOutSec, TRANSITION_FADE_OUT_SEC)
+  local workSettleSec = resolveOptSec(opts.workSettleSec, TRANSITION_WORK_SETTLE_SEC)
+  local fadeInSec = resolveOptSec(opts.fadeInSec, TRANSITION_FADE_IN_SEC)
+  local settleDelaySec = resolveOptSec(opts.settleDelaySec, TRANSITION_SETTLE_DELAY_SEC)
 
   HUDBF.beginTransition(opts)
 
