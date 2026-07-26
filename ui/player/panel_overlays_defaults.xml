@@ -19,9 +19,15 @@
     preserveAspect="false"
   />
 
-  <Image class="player_blindfold_overlay"
+  <!-- Parent owns SlideIn/Out (Panel-typed Defaults). Duration 2 + hideAnimationDelay 1 ≈ 3s hide cleanup. -->
+  <Panel class="playerHud_blindfoldOverlay"
+    active="false"
+    showAnimation="SlideIn_Top"
+    hideAnimation="SlideOut_Top"
+    animationDuration="2"
     hideAnimationDelay="1"
-    raycastTarget="true" />
+    raycastTarget="true"
+  />
 
   <Image class="overlay_anim_fade"
     showAnimation="FadeIn"
@@ -100,6 +106,10 @@
     hideAnimation="FadeOut"
     animationDuration="1"
     showAnimationDelay="1"
+    hideAnimationDelay = "0.5"
+    active = "false"
+    image = ""
+    color = "clear"
   />
   <Image class="player_overlay_site_card_display"
     raycastTarget="false"
@@ -111,5 +121,8 @@
     hideAnimation="FadeOut"
     animationDuration="1"
     showAnimationDelay="1.5"
+    active = "false"
+    image = ""
+    color = "clear"
   />
 </Defaults>

@@ -2,8 +2,8 @@
   Scene/table transition blindfold orchestration.
   Picks one random blindfold variant (1..C.BlindfoldVariantCount) shared by all seated players,
   runs synchronous work, then lifts blindfolds after a settle delay.
-  Optional destination District/Site cards (TOR-425) show over the blindfold when both keys
-  resolve; End scene / table-only / no-location transitions leave those Images active=false.
+  Optional destination District/Site cards (TOR-425 / TOR-431) are armed on the parent Panel before
+  one UI.show; End scene / table-only / no-location keep cards Clear (invisible if animated).
   Global session blindfold (`overlay_globalBlindfold` in Global.xml) is phase-owned
   (Intermission show / Play hide / connect policy) — never by this module or a timed onLoad hide.
   Agent guidance: .dev/Scene Constructor/Scene Constructor Overview.md; .dev/HUD_FUNCTIONS.md.
@@ -20,11 +20,11 @@ local HO = require("core.hud_overlays")
 local Main = require("core.main")
 
 local TRANSITION_SETTLE_DELAY_SEC = 10
---- Must exceed blindfold slide-in duration (`overlay_anim_slide_top` = 1s) so heavy work does not hitch the animation.
+--- Must exceed parent blindfold slide-in (`playerHud_blindfoldOverlay` animationDuration = 2s).
 local TRANSITION_WORK_LEAD_IN_SEC = 2
 --- After blindfold activation: wait for overlay settle, then snap cameras (TOR-368).
 local DEFAULT_CAMERA_AFTER_BLINDFOLD_SEC = 1.5
---- Staged transition (TOR-147) phase durations. Fade-out runs concurrently with the 1s blindfold slide;
+--- Staged transition (TOR-147) phase durations. Fade-out runs concurrently with blindfold slide-in;
 --- heavy reconcile then runs alone; new audio fades in only after the reconcile settles.
 local TRANSITION_FADE_OUT_SEC = 1.0
 local TRANSITION_WORK_SETTLE_SEC = 0.75
@@ -46,10 +46,6 @@ local transitionBlindfoldPlayerIds = {}
 --- Custom UI image refs for destination cards while a transition is active (nil when skipped).
 local transitionDistrictCardImage = nil
 local transitionSiteCardImage = nil
---- True after we UI.show'd location cards for this transition (drives matching UI.hide on end).
-local transitionLocationCardsVisible = false
---- Seat colors that received UI.show for location cards this transition (hide only these).
-local transitionLocationCardSeatColors = {}
 
 local function cancelPendingDefaultCamera()
   if pendingCameraDelayId ~= nil then
@@ -128,88 +124,16 @@ local function resolveTransitionLocationCardImages(opts)
   return districtImage, siteImage
 end
 
---- Seat colors for destination cards — same recipients as transition blindfold *conditions*
---- (`forEachSeatedPlayer`): seated non-Storyteller players only, unique by seat color.
---- Do not mirror `HO.applyBlindfoldVariantForSeatedPlayers` (that lead-in also touches the ST seat;
---- `Sync.full` → `HO.syncAll` then drops ST blindfolds because ST never gets `hudBlindfold`).
---- @param fn fun(seatColor: string)
-local function forEachSeatedSeatColorMatchingBlindfold(fn)
-  if type(fn) ~= "function" then
-    return
-  end
-  local seated = Player.getPlayers() or {}
-  local seen = {}
-  for _, player in ipairs(seated) do
-    local color = player and player.color or nil
-    local playerID = U.Type(color) == "string" and S.getPlayerID(color) or nil
-    if type(color) == "string"
-      and seen[color] ~= true
-      and U.Type(playerID) == "string"
-      and playerID ~= C.StorytellerID
-    then
-      seen[color] = true
-      fn(color)
-    end
-  end
-end
-
---- Keep destination cards inactive (no UI.show) for every PC seat row.
-local function deactivateTransitionLocationCardsForAllSeats()
+--- Force destination cards to Clear defaults (no separate UI.hide — parent owns animation, TOR-431).
+local function clearTransitionLocationCardDefaultsForAllSeats()
   for _, seatColor in ipairs(C.PlayerColors or {}) do
     local districtId = "overlay_district_card_display_" .. seatColor
     local siteId = "overlay_site_card_display_" .. seatColor
-    U.setAttribute(districtId, "active", "false")
-    U.setAttribute(siteId, "active", "false")
-    U.setAttribute(districtId, "image", "")
-    U.setAttribute(siteId, "image", "")
+    U.setAttributes(districtId, { active = "false", color = "Clear", image = "" })
+    U.setAttributes(siteId, { active = "false", color = "Clear", image = "" })
   end
-  transitionLocationCardsVisible = false
   transitionDistrictCardImage = nil
   transitionSiteCardImage = nil
-  transitionLocationCardSeatColors = {}
-end
-
---- Show destination District + Site cards for the same seated non-ST seats as the transition blindfold (TOR-425).
---- @param districtImage string
---- @param siteImage string
-local function showTransitionLocationCardsForSeatedPlayers(districtImage, siteImage)
-  if type(districtImage) ~= "string" or type(siteImage) ~= "string" then
-    deactivateTransitionLocationCardsForAllSeats()
-    return
-  end
-  transitionDistrictCardImage = districtImage
-  transitionSiteCardImage = siteImage
-  transitionLocationCardSeatColors = {}
-  forEachSeatedSeatColorMatchingBlindfold(function(seatColor)
-    local districtId = "overlay_district_card_display_" .. seatColor
-    local siteId = "overlay_site_card_display_" .. seatColor
-    -- Keep inactive while assigning art so TTS does not flash a full-opacity frame before
-    -- FadeIn / showAnimationDelay (blindfolds likewise stay active=false and rely on UI.show).
-    U.setAttribute(districtId, "active", "false")
-    U.setAttribute(siteId, "active", "false")
-    U.setAttribute(districtId, "image", districtImage)
-    U.setAttribute(siteId, "image", siteImage)
-    UI.show(districtId)
-    UI.show(siteId)
-    transitionLocationCardSeatColors[#transitionLocationCardSeatColors + 1] = seatColor
-  end)
-  transitionLocationCardsVisible = true
-end
-
---- Hide destination cards in lockstep with blindfold lift (only seats that received UI.show).
---- Recorded seat colors (not "currently seated") so mid-settle leavers still get UI.hide.
-local function hideTransitionLocationCardsIfVisible()
-  if transitionLocationCardsVisible ~= true then
-    deactivateTransitionLocationCardsForAllSeats()
-    return
-  end
-  for _, seatColor in ipairs(transitionLocationCardSeatColors) do
-    local districtId = "overlay_district_card_display_" .. seatColor
-    local siteId = "overlay_site_card_display_" .. seatColor
-    UI.hide(districtId)
-    UI.hide(siteId)
-  end
-  deactivateTransitionLocationCardsForAllSeats()
 end
 
 --- @param fn fun(playerID: string)
@@ -309,7 +233,8 @@ function HUDBF.getActiveTransitionVariant()
 end
 
 --- Apply transition blindfold HUD conditions for all seated players.
---- Destination District/Site cards (TOR-425) show only when both `districtKey` and `siteKey` resolve.
+--- Destination District/Site cards (TOR-425 / TOR-431) arm on the parent before one UI.show when
+--- both `districtKey` and `siteKey` resolve; otherwise cards stay Clear.
 --- @param optsOrVariant number|table|nil
 ---   number — blindfold variant 1..C.BlindfoldVariantCount
 ---   table — `{ variant?, districtKey?, siteKey? }` (keys from the *destination* scene; live sessionScene is still old)
@@ -321,8 +246,8 @@ function HUDBF.beginTransition(optsOrVariant)
   -- Drop any prior transition recipients before recording a new set (mid-settle restart).
   clearTrackedTransitionBlindfolds()
   cancelPendingDefaultCamera()
-  -- Always reset location cards before deciding whether this transition shows them.
-  hideTransitionLocationCardsIfVisible()
+  -- Reset card attrs before deciding whether this transition arms destination art.
+  clearTransitionLocationCardDefaultsForAllSeats()
 
   local opts = nil
   local variantOptional = nil
@@ -340,27 +265,32 @@ function HUDBF.beginTransition(optsOrVariant)
   activeTransitionVariant = variant
 
   local districtImage, siteImage = resolveTransitionLocationCardImages(opts)
+  if type(districtImage) == "string" and type(siteImage) == "string" then
+    transitionDistrictCardImage = districtImage
+    transitionSiteCardImage = siteImage
+  end
 
   forEachSeatedPlayer(function(playerID)
     transitionBlindfoldPlayerIds[playerID] = true
     Conditions.setEvent(playerID, TRANSITION_CONDITION_KEY, { variant = variant })
   end)
+  -- Parent Panel UI.show after children are armed (variant + optional cards). forceReshow so a
+  -- mid-settle restart always slides in again.
   if type(HO.applyBlindfoldVariantForSeatedPlayers) == "function" then
-    HO.applyBlindfoldVariantForSeatedPlayers(variant)
+    HO.applyBlindfoldVariantForSeatedPlayers(variant, {
+      forceReshow = true,
+      districtImage = districtImage,
+      siteImage = siteImage,
+    })
   else
     HO.syncAll()
-  end
-
-  -- Same moment as blindfold UI.show — author may stagger via XML animationDelay on the card classes.
-  if type(districtImage) == "string" and type(siteImage) == "string" then
-    showTransitionLocationCardsForSeatedPlayers(districtImage, siteImage)
   end
 
   -- TOR-368: wait until blindfold is fully up before camera motion.
   scheduleDefaultCameraAfterBlindfold()
 end
 
---- Clear transition blindfold conditions and refresh HUD overlays.
+--- Clear transition blindfold conditions and refresh HUD overlays (parent UI.hide + delayed child reset).
 function HUDBF.endTransition()
   if pendingEndDelayId ~= nil then
     U.stopDelay(pendingEndDelayId)
@@ -368,12 +298,12 @@ function HUDBF.endTransition()
   end
   cancelPendingDefaultCamera()
   activeTransitionVariant = nil
-
-  -- Same moment as blindfold UI.hide (HO.syncAll → applyBlindfoldOverlaysExclusive).
-  hideTransitionLocationCardsIfVisible()
+  transitionDistrictCardImage = nil
+  transitionSiteCardImage = nil
 
   clearTrackedTransitionBlindfolds()
   HUDBF.clearBlindfoldsForUnoccupiedPcSeats()
+  -- HO.syncAll → parent UI.hide; child defaults restore after ~3s (do not Clear mid-slide).
   HO.syncAll()
 
   local PCST = require("core.pc_storyteller_panel")

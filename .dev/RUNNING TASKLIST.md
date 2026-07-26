@@ -273,6 +273,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Close entire ST toolbar when panel closes:** Collapse `storytellerToolbarBody` on panel close / `closeAllPanels`; exception = panel switch. Author confirmed 2026-07-19. _(TOR-395)_
 - [x] **Global blindfold flickers on load + Intermission→Play:** Idempotent show/hide (no FadeIn when already up); relatedTo **TOR-363**, **TOR-361**. Author confirmed 2026-07-19. _(TOR-398)_
 - [x] **Blindfold destination District + Site cards:** On library scene Apply with both keys, set `image` and `UI.show`/`UI.hide` location cards with the transition blindfold; End/table/no-location leave `active=false`. Pending Save & Play. _(TOR-425)_
+- [x] **Blindfold parent-panel animation:** Animate `playerHud_overlay_blindfold_*` (not per-variant Images); arm children before one `UI.show`; no-location cards stay Clear; hide then ~3s child cleanup. Pending Save & Play. _(TOR-431)_
 - [x] **Coterie ref grid — Color Blitz + Jarvis Jacks:** Anarch row buttons + popups; `inCoterieRef` in constants; assets in save. relatedTo **TOR-190**. _(INBOX 2026-07-05 quick fix)_
 - [x] **Storyteller Stats panel — advantage editor:** Stats toolbar tab; PC backgrounds/merits/flaws + coterie 9 categories + domain ratings; Advantage Editor modal; seed-only PCS hydrate. Author confirmed 2026-07-19. _(TOR-279)_
 - [ ] **Center-top overlay polish:** Scale down overlay; fix background image alignment/scaling. _(TOR-86)_
