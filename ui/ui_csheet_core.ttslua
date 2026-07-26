@@ -141,6 +141,26 @@ local function trim(s)
   return string.match(s, "^%s*(.-)%s*$") or ""
 end
 
+--- Last Desire `setClass` mode for this object: true = unset, false = set, nil = unknown.
+local lastDesireClassIsUnset = nil
+
+--- O(1) skip when already on the desired set/unset class (TOR-97).
+--- @param wantUnset boolean
+local function applyDesireClassIfChanged(wantUnset)
+  if self.UI == nil then
+    return
+  end
+  if lastDesireClassIsUnset == wantUnset then
+    return
+  end
+  if wantUnset then
+    self.UI.setClass("player_desire", "player_desire player_desire_unset")
+  else
+    self.UI.setClass("player_desire", "player_desire")
+  end
+  lastDesireClassIsUnset = wantUnset
+end
+
 --- Re-parse this object's GM Notes into `pageNum` / `seatColor`.
 --- Call from UI callbacks so navigation still works if a host script replaced `onLoad` after `require`.
 local function syncSheetContextFromGmNotes()
@@ -414,11 +434,7 @@ local function applyDesireFieldFromMerged(pd)
   if type(pd) == "table" and type(pd.desire) == "string" then
     desire = trim(pd.desire)
   end
-  local className = "player_desire"
-  if desire == "" then
-    className = "player_desire player_desire_unset"
-  end
-  self.UI.setClass("player_desire", className)
+  applyDesireClassIfChanged(desire == "")
   self.UI.setAttribute("player_desire", "text", desire)
 end
 
@@ -435,6 +451,8 @@ local function handleDesireChanged(player, value, _id, syncText)
   if Global == nil or type(Global.call) ~= "function" then
     error("[ui_csheet] handleDesireChanged: Global.call unavailable")
   end
+  -- Class first (immediate on first non-whitespace key); O(1) skip once already set/unset.
+  applyDesireClassIfChanged(trim(value) == "")
   local playerColor = nil
   if player ~= nil and type(player.color) == "string" then
     playerColor = player.color
@@ -448,11 +466,12 @@ local function handleDesireChanged(player, value, _id, syncText)
   if type(result) ~= "table" or self.UI == nil then
     return
   end
-  local className = type(result.class) == "string" and result.class or "player_desire player_desire_unset"
-  self.UI.setClass("player_desire", className)
+  local desire = type(result.text) == "string" and result.text or ""
+  -- Denied / normalized: reconcile class if Global disagrees with the optimistic apply.
+  applyDesireClassIfChanged(desire == "")
   -- Only rewrite text when denied, EndEdit, or emptied — never on every keystroke (caret fight).
   if result.ok ~= true or result.syncText == true then
-    self.UI.setAttribute("player_desire", "text", type(result.text) == "string" and result.text or "")
+    self.UI.setAttribute("player_desire", "text", desire)
   end
 end
 
