@@ -403,7 +403,8 @@ local function getMergedPlayerDataFromGlobal(pid)
 end
 
 --- Apply Desire InputField text + class from merged playerData (TOR-97).
---- Class must use UI.setClass — setAttributes("class") does not replace classes in TTS.
+--- Use UI.setClass(id, fullClassList) — setAttributes("class") does not replace classes.
+--- Unset: setClass(..., "player_desire player_desire_unset"); set: setClass(..., "player_desire").
 --- @param pd table|nil
 local function applyDesireFieldFromMerged(pd)
   if pageNum ~= 1 or self.UI == nil then

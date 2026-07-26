@@ -121,7 +121,8 @@ function PCST.normalizeDesire(raw)
   return trimmed
 end
 
---- XmlUI class list for the page1 Desire InputField.
+--- Full class list for page1 Desire InputField (passed to UI.setClass as the names arg).
+--- Unset → "player_desire player_desire_unset"; set → "player_desire" (TOR-97).
 --- @param desire string|nil
 --- @return string
 function PCST.desireInputClass(desire)
