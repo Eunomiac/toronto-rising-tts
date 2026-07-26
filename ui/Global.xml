@@ -10,7 +10,7 @@
 <Include src="defaults_classes.xml" />
 <Include src="shared/panel_roll_controls_defaults.xml" />
 
-<!-- 4. Player HUD (per-color panels). hud_root_panel: full-screen MiddleCenter ignoreLayout (TOR-436). -->
+<!-- 4. Player HUD (per-color panels) -->
 <Panel id="HUD_PANEL_PLAYER" class="hud_root_panel">
 
   <!-- Defaults -->
@@ -41,6 +41,8 @@
   <!-- Location Overlay (generated per player color) -->
   <Include src="player/panel_overlay_location.xml" />
 
+  <!-- Player HUD Blindfold Overlay -->
+  <Include src="player/panel_overlay_blindfold.xml" />
 
   <!-- Roll control panels (generated per player color) -->
   <Include src="player/panel_roll_controls.xml" />
@@ -49,8 +51,6 @@
 
 <!-- 6. Startup loading screen (last — draws above all HUD; no visibility filter) -->
 <Include src="shared/panel_overlay_global_blindfold.xml" />
-<!-- Player HUD Blindfold Overlay -->
-<Include src="player/panel_overlay_blindfold.xml" />
 
 <!-- 3. Storyteller HUD (Black): admin panel + sidebar + camera defaults -->
 <Panel id="HUD_PANEL_BLACK" class="hud_root_panel" visibility="Black|Host">

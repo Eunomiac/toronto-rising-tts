@@ -5,22 +5,13 @@
 <!-- (hideAnimation never set; FadeOut/Shrink assigned incorrectly as showAnimation). -->
 
 <Defaults>
-  <!-- Full-screen overlay hosts under HUD_PANEL_PLAYER (TOR-436). Match global blindfold art box. -->
-  <Panel class="playerHud_overlaysLayer"
-    width="1920"
-    rectAlignment="MiddleCenter"
-    preserveAspect = "true"
-    ignoreLayout="true"
-    raycastTarget="false"
-  />
-
   <Image class="player_overlay"
     active="false"
     width="1920"
+    height="1200"
     preserveAspect="true"
     raycastTarget="false"
     rectAlignment="MiddleCenter"
-    ignoreLayout="true"
   />
 
   <Image class="squeeze_overlay"
@@ -31,10 +22,6 @@
   <!-- Parent owns SlideIn/Out (Panel-typed Defaults). Duration 2 + hideAnimationDelay 1 ≈ 3s hide cleanup. -->
   <Panel class="playerHud_blindfoldOverlay"
     active="false"
-    preserveAspect = "true"
-    width="1920"
-    rectAlignment="MiddleCenter"
-    ignoreLayout="true"
     showAnimation="SlideIn_Top"
     hideAnimation="SlideOut_Top"
     animationDuration="2"
@@ -113,7 +100,6 @@
     raycastTarget="false"
     preserveAspect="true"
     rectAlignment="MiddleCenter"
-    ignoreLayout="true"
     width="800"
     offsetXY="0 200"
     showAnimation="FadeIn"
@@ -129,7 +115,6 @@
     raycastTarget="false"
     preserveAspect="true"
     rectAlignment="MiddleCenter"
-    ignoreLayout="true"
     width="700"
     offsetXY="0 -200"
     showAnimation="FadeIn"
