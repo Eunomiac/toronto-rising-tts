@@ -354,7 +354,7 @@ _Blocked: author must define data binding approach before substantial implementa
 
 ## New Features (pending design)
 
-- [x] **Desires** — page1 InputField → `playerData[pid].desire`; unset class; ST PCs row + Clear. Pending Save & Play. _(TOR-97)_
+- [x] **Desires** — page1 InputField → `playerData[pid].desire`; unset class via `UI.setClass`; ST PCs row + Clear. Author verified 2026-07-26. _(TOR-97)_
 - [ ] **Spotlight phase** — primary phase + silence/scene scaffolding shipped in TOR-143; NPC/player Spotlight turn UX + full scene Apply still TBD (see TOR-100). _(TOR-98)_
 - [ ] **Memoriam toggle** — Play sub-phase placement in TOR-143; global LUT + HUD overlay when Memoriam active still TBD. _(TOR-101)_
 - [ ] **Spotlight NPC distinction:** Use player color or other visual to distinguish spotlighted NPCs in-world and UI. _(TOR-100)_
