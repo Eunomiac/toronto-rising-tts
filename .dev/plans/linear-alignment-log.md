@@ -588,5 +588,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-26 | CREATE+SHIP | TOR-431 | Blindfold parent-panel animation; relatedTo TOR-425 |
 | 2026-07-26 | CREATE+SHIP | TOR-432 | Whitelist `connectionControls` in `buildSaveState` (Defer toggles survived Save); relatedTo TOR-428/TOR-430 |
 | 2026-07-26 | CREATE+SHIP | TOR-433 | Fail-open `buildSaveState` (ephemeral blacklist, not domain whitelist); relatedTo TOR-432 |
+| 2026-07-26 | CREATE+SHIP | TOR-434 | Defer transition work until blindfold-down animations finish; relatedTo TOR-431/TOR-147 |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

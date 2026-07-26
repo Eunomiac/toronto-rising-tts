@@ -20,11 +20,18 @@ local HO = require("core.hud_overlays")
 local Main = require("core.main")
 
 local TRANSITION_SETTLE_DELAY_SEC = 10
---- Must exceed parent blindfold slide-in (`playerHud_blindfoldOverlay` animationDuration = 2s).
-local TRANSITION_WORK_LEAD_IN_SEC = 2
+--- Parent Panel slide-in (`playerHud_blindfoldOverlay` animationDuration).
+local BLINDFOLD_SLIDE_IN_SEC = 2
+--- Latest child show complete: site card showAnimationDelay 1.5 + animationDuration 1.
+local BLINDFOLD_CHILD_SHOW_COMPLETE_SEC = 2.5
+--- Wait before any costly transition work so XmlUI slide/FadeIn is not hitch-frozen (TOR-434).
+--- = max(parent slide-in, last destination-card FadeIn end).
+local BLINDFOLD_DOWN_COMPLETE_SEC = math.max(BLINDFOLD_SLIDE_IN_SEC, BLINDFOLD_CHILD_SHOW_COMPLETE_SEC)
+--- Default lead-in for `runTransitionAfterLeadIn` (same gate as staged / simple transition).
+local TRANSITION_WORK_LEAD_IN_SEC = BLINDFOLD_DOWN_COMPLETE_SEC
 --- After blindfold activation: wait for overlay settle, then snap cameras (TOR-368).
 local DEFAULT_CAMERA_AFTER_BLINDFOLD_SEC = 1.5
---- Staged transition (TOR-147) phase durations. Fade-out runs concurrently with blindfold slide-in;
+--- Staged transition (TOR-147 / TOR-434): fade-out runs only after blindfold-down animations finish;
 --- heavy reconcile then runs alone; new audio fades in only after the reconcile settles.
 local TRANSITION_FADE_OUT_SEC = 1.0
 local TRANSITION_WORK_SETTLE_SEC = 0.75
@@ -34,6 +41,7 @@ local TRANSITION_FADE_IN_SEC = 2.0
 --- Exported so soundscape callers can fade ambient out/in over the same windows as the staged transition.
 HUDBF.TRANSITION_FADE_OUT_SEC = TRANSITION_FADE_OUT_SEC
 HUDBF.TRANSITION_FADE_IN_SEC = TRANSITION_FADE_IN_SEC
+HUDBF.BLINDFOLD_DOWN_COMPLETE_SEC = BLINDFOLD_DOWN_COMPLETE_SEC
 local BLINDFOLD_VARIANT_COUNT = C.BlindfoldVariantCount
 local TRANSITION_CONDITION_KEY = "hudBlindfold"
 
@@ -331,7 +339,8 @@ function HUDBF.scheduleEnd(delaySec)
   end, d)
 end
 
---- Close panel + blindfold immediately; defer heavy work with `U.waitUntil`, then settle and lift.
+--- Close panel + blindfold immediately; defer heavy work with `U.waitUntil` until blindfold-down
+--- animations finish (TOR-434), then settle and lift.
 --- @param workFn fun(): boolean, string|nil returns success and optional error message
 --- @param opts table|nil { leadInDelaySec = number, settleDelaySec = number, variant = number|nil }
 function HUDBF.runTransitionAfterLeadIn(workFn, opts)
@@ -363,10 +372,10 @@ function HUDBF.runTransitionAfterLeadIn(workFn, opts)
   end, leadInDelaySec)
 end
 
---- Blindfold on → synchronous work → settle delay → blindfold off.
+--- Blindfold on → wait for slide/FadeIn → work → settle delay → blindfold off (TOR-434).
+--- Work is deferred via `U.RunSequence` so XmlUI animations are not hitch-frozen.
 --- @param workFn fun(): boolean, string|nil returns success and optional error message
---- @param opts table|nil `{ settleDelaySec?, variant?, districtKey?, siteKey? }`
---- @return boolean true when workFn succeeded (lift is still delayed)
+--- @param opts table|nil `{ settleDelaySec?, variant?, districtKey?, siteKey?, leadInDelaySec? }`
 function HUDBF.runTransition(workFn, opts)
   if type(workFn) ~= "function" then
     error("hud_blindfold.runTransition: workFn must be a function")
@@ -376,34 +385,44 @@ function HUDBF.runTransition(workFn, opts)
   if settleDelaySec == nil then
     settleDelaySec = TRANSITION_SETTLE_DELAY_SEC
   end
+  local leadInDelaySec = tonumber(opts.leadInDelaySec) or BLINDFOLD_DOWN_COMPLETE_SEC
 
   HUDBF.beginTransition(opts)
-  local ok, errMsg = workFn()
-  if ok ~= true then
-    if type(errMsg) == "string" and errMsg ~= "" then
-      U.AlertGM(errMsg)
-    end
-    HUDBF.scheduleEnd(0)
-    return false
-  end
-  HUDBF.scheduleEnd(settleDelaySec)
-  return true
+
+  U.RunSequence({
+    function()
+      return leadInDelaySec
+    end,
+    function()
+      local ok, errMsg = workFn()
+      if ok ~= true then
+        if type(errMsg) == "string" and errMsg ~= "" then
+          U.AlertGM(errMsg)
+        end
+        HUDBF.scheduleEnd(0)
+        return
+      end
+      HUDBF.scheduleEnd(settleDelaySec)
+    end,
+  })
 end
 
---- Staged scene transition (TOR-147): blindfold down → fade-out → heavy work → silent settle → lift + fade-in.
---- Each phase is isolated in time via `U.RunSequence` so the resource-heavy reconcile never competes with
---- audio fade scheduling (prevents lag spikes that hitched the old single-burst path).
+--- Staged scene transition (TOR-147 / TOR-434): blindfold down → wait for animations → fade-out →
+--- heavy work → silent settle → lift + fade-in.
+--- Each phase is isolated in time via `U.RunSequence` so XmlUI slide/FadeIn and resource-heavy
+--- reconcile never compete (prevents animation hitch).
 --- @param phases table `{ fadeOut?: fun(), work?: fun(): boolean, string|nil, fadeIn?: fun() }`
----   - `fadeOut` runs as blindfolds drop (quick ambient fade-out)
+---   - `fadeOut` runs only after blindfold-down animations finish
 ---   - `work` returns `ok, errMsg`; on failure the blindfold lifts immediately and `fadeIn` is skipped
 ---   - `fadeIn` runs as the blindfold **rises** (after the silent settle hold), so the new-location audio
----     reveal aligns with the visual reveal (TOR-273). Blindfold stays down `settleDelaySec` total.
---- @param opts table|nil `{ fadeOutSec?, workSettleSec?, fadeInSec?, settleDelaySec?, variant?, districtKey?, siteKey? }`
+---     reveal aligns with the visual reveal (TOR-273). Blindfold stays down `settleDelaySec` after work.
+--- @param opts table|nil `{ fadeOutSec?, workSettleSec?, fadeInSec?, settleDelaySec?, leadInDelaySec?, variant?, districtKey?, siteKey? }`
 function HUDBF.runStagedTransition(phases, opts)
   if type(phases) ~= "table" then
     error("hud_blindfold.runStagedTransition: phases must be a table")
   end
   opts = opts or {}
+  local leadInDelaySec = tonumber(opts.leadInDelaySec) or BLINDFOLD_DOWN_COMPLETE_SEC
   local fadeOutSec = tonumber(opts.fadeOutSec) or TRANSITION_FADE_OUT_SEC
   local workSettleSec = tonumber(opts.workSettleSec) or TRANSITION_WORK_SETTLE_SEC
   local fadeInSec = tonumber(opts.fadeInSec) or TRANSITION_FADE_IN_SEC
@@ -413,6 +432,10 @@ function HUDBF.runStagedTransition(phases, opts)
 
   local workFailed = false
   U.RunSequence({
+    function()
+      -- Hold until parent SlideIn + destination-card FadeIns finish (TOR-434).
+      return leadInDelaySec
+    end,
     function()
       if type(phases.fadeOut) == "function" then
         phases.fadeOut()
@@ -434,7 +457,8 @@ function HUDBF.runStagedTransition(phases, opts)
     function()
       -- Hold the blindfold down in silence through the settle window; reset cameras now. New-location
       -- audio is NOT applied yet — it fades in as the blindfold rises (next step) so the audio reveal
-      -- aligns with the visual reveal. Budget: workSettle + this hold == settleDelaySec down-time.
+      -- aligns with the visual reveal. Budget: workSettle + this hold == settleDelaySec down-time
+      -- after the post-animation fade-out (lead-in is separate).
       if workFailed then
         return 0
       end
