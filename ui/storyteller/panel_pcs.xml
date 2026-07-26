@@ -12,6 +12,8 @@
           <Text class="pcs_prefix_wide">Join:</Text>
           <Toggle class="pcs_join_toggle" id="pcs_deferAutoSeat_Brown" isOn="false" onValueChanged="HUD_pcsDeferAutoSeat">Defer Auto-Seat</Toggle>
           <Button class="pcs_btn pcs_btn_auto_seat pcs_btn_palette_join" id="pcs_Brown_autoSeat" />
+          <Toggle class="pcs_join_toggle" id="pcs_deferConnect_Brown" isOn="false" onValueChanged="HUD_pcsDeferConnect">Defer Connect</Toggle>
+          <Button class="pcs_btn pcs_btn_connect pcs_btn_palette_join" id="pcs_Brown_connect" />
         </HorizontalLayout>
         <!-- Roll initiation row: each button starts a roll of that type in SETUP -->
         <HorizontalLayout class="pcs_stat_row">
@@ -90,6 +92,8 @@
           <Text class="pcs_prefix_wide">Join:</Text>
           <Toggle class="pcs_join_toggle" id="pcs_deferAutoSeat_Orange" isOn="false" onValueChanged="HUD_pcsDeferAutoSeat">Defer Auto-Seat</Toggle>
           <Button class="pcs_btn pcs_btn_auto_seat pcs_btn_palette_join" id="pcs_Orange_autoSeat" />
+          <Toggle class="pcs_join_toggle" id="pcs_deferConnect_Orange" isOn="false" onValueChanged="HUD_pcsDeferConnect">Defer Connect</Toggle>
+          <Button class="pcs_btn pcs_btn_connect pcs_btn_palette_join" id="pcs_Orange_connect" />
         </HorizontalLayout>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">Roll:</Text>
@@ -167,6 +171,8 @@
           <Text class="pcs_prefix_wide">Join:</Text>
           <Toggle class="pcs_join_toggle" id="pcs_deferAutoSeat_Red" isOn="false" onValueChanged="HUD_pcsDeferAutoSeat">Defer Auto-Seat</Toggle>
           <Button class="pcs_btn pcs_btn_auto_seat pcs_btn_palette_join" id="pcs_Red_autoSeat" />
+          <Toggle class="pcs_join_toggle" id="pcs_deferConnect_Red" isOn="false" onValueChanged="HUD_pcsDeferConnect">Defer Connect</Toggle>
+          <Button class="pcs_btn pcs_btn_connect pcs_btn_palette_join" id="pcs_Red_connect" />
         </HorizontalLayout>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">Roll:</Text>
@@ -244,6 +250,8 @@
           <Text class="pcs_prefix_wide">Join:</Text>
           <Toggle class="pcs_join_toggle" id="pcs_deferAutoSeat_Pink" isOn="false" onValueChanged="HUD_pcsDeferAutoSeat">Defer Auto-Seat</Toggle>
           <Button class="pcs_btn pcs_btn_auto_seat pcs_btn_palette_join" id="pcs_Pink_autoSeat" />
+          <Toggle class="pcs_join_toggle" id="pcs_deferConnect_Pink" isOn="false" onValueChanged="HUD_pcsDeferConnect">Defer Connect</Toggle>
+          <Button class="pcs_btn pcs_btn_connect pcs_btn_palette_join" id="pcs_Pink_connect" />
         </HorizontalLayout>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">Roll:</Text>
@@ -321,6 +329,8 @@
           <Text class="pcs_prefix_wide">Join:</Text>
           <Toggle class="pcs_join_toggle" id="pcs_deferAutoSeat_Purple" isOn="false" onValueChanged="HUD_pcsDeferAutoSeat">Defer Auto-Seat</Toggle>
           <Button class="pcs_btn pcs_btn_auto_seat pcs_btn_palette_join" id="pcs_Purple_autoSeat" />
+          <Toggle class="pcs_join_toggle" id="pcs_deferConnect_Purple" isOn="false" onValueChanged="HUD_pcsDeferConnect">Defer Connect</Toggle>
+          <Button class="pcs_btn pcs_btn_connect pcs_btn_palette_join" id="pcs_Purple_connect" />
         </HorizontalLayout>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">Roll:</Text>

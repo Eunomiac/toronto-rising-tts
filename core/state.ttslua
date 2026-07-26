@@ -327,12 +327,20 @@ function S.GetDefaultGameState()
             lockNextSceneApply = false,
             previewDraft = nil,
         },
-        --- Join-stress ST controls (TOR-428). Persist until cleared; defaults off.
+        --- Join-stress ST controls (TOR-428 / TOR-430). Persist until cleared; defaults off.
         --- `deferSetXml`: skip automatic Global full UI document refresh (manual Refresh XML still allowed).
         --- `deferAutoSeatByColor[color]`: skip chronicle auto-seat for that PC row (manual Auto-Seat still allowed).
+        --- `deferConnectByColor[color]`: O(1) skip of all `onPlayerConnect` work for that PC (manual Connect still allowed).
         connectionControls = {
             deferSetXml = false,
             deferAutoSeatByColor = {
+                Brown = false,
+                Orange = false,
+                Red = false,
+                Pink = false,
+                Purple = false,
+            },
+            deferConnectByColor = {
                 Brown = false,
                 Orange = false,
                 Red = false,
@@ -754,6 +762,15 @@ function S.validateState()
                 for _, col in ipairs(C.PlayerColors or {}) do
                     if type(gameState.connectionControls.deferAutoSeatByColor[col]) ~= "boolean" then
                         gameState.connectionControls.deferAutoSeatByColor[col] = false
+                    end
+                end
+            end
+            if type(gameState.connectionControls.deferConnectByColor) ~= "table" then
+                gameState.connectionControls.deferConnectByColor = U.clone(defaults.deferConnectByColor, true)
+            else
+                for _, col in ipairs(C.PlayerColors or {}) do
+                    if type(gameState.connectionControls.deferConnectByColor[col]) ~= "boolean" then
+                        gameState.connectionControls.deferConnectByColor[col] = false
                     end
                 end
             end

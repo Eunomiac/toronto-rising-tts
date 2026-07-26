@@ -306,7 +306,7 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 
 **Roll controller:** `RC.applyRollPolicyToActive(active)` seeds `rollOptions` from `active.rollPolicy`.
 
-**Debug:** `DEBUG.dumpConditions(seatColor)`, `DEBUG.dumpRollPolicy(seatColor)`
+**Debug:** `DEBUG.printTable(value, label?)`, `DEBUG.dumpConditions(seatColor)`, `DEBUG.dumpRollPolicy(seatColor)`
 
 ---
 
@@ -460,6 +460,7 @@ Animated Scene Time jumps (TOR-222). Display-only during motion; present day / w
 | `M.tryAutoAssignSeatFromChronicle(colorOrPlayer, opts?)` | Steam ID → chronicle color (ST → Black; else White) | Connect / seat assign |
 | `M.assignAllConnectedSeatsFromChronicle()` | Assign all connected players from chronicle (two-pass) | Load-time seat assign |
 | `M.manualAssignSeatForColor(color)` | Manual Auto-Seat for a PC row (Steam ID from `C.PlayerData`) | ST PCs panel (TOR-428) |
+| `M.manualRunPlayerConnect(color)` | Manual Connect: force-run `onPlayerConnect` for that PC (bypasses Defer Connect) | ST PCs panel (TOR-430) |
 | `M.forPlayers(func)` | Iterate over all players | DRY pattern |
 | `M.advancePhase(newPhase)` | Lifecycle transition via `core.phases` (enter/exit registries) | `M.advancePhase(C.Phases.PLAY)` |
 | `M.advancePhaseNext()` | Advance one step in `C.PhaseSequence` | Storyteller Advance button |

@@ -4082,6 +4082,26 @@ function HUD_pcsDeferAutoSeat(player, value, id)
     end
 end
 
+--- PCs panel: persist Defer Connect per seat color. TOR-430.
+function HUD_pcsDeferConnect(player, value, id)
+    if not requireStorytellerForMutation(player, "HUD_pcsDeferConnect") then
+        return
+    end
+    local color = type(id) == "string" and id:match("^pcs_deferConnect_(%a+)$") or nil
+    if color == nil or not U.isIn(color, C.PlayerColors) then
+        return
+    end
+    local on = coerceUiToggleBool(value)
+    if on == nil then
+        return
+    end
+    S.setStateVal(on, "connectionControls", "deferConnectByColor", color)
+    print(string.format("[JoinControls] Defer Connect %s = %s", color, tostring(on)))
+    if PCST and PCST.refreshRow then
+        PCST.refreshRow(color)
+    end
+end
+
 --- Reset game state
 -- Called when the "Reset Game" button is clicked
 -- @param player Player The player who clicked the button
@@ -6722,10 +6742,33 @@ function onPlayerChangeColor(color)
     syncDebugSeatColorButtons()
 end
 
+--- O(1) Steam ID → chronicle PC seat color (PlayerColors only). Used by Defer Connect gate before any require. TOR-430.
+--- @param steamId string|nil
+--- @return string|nil
+local function chroniclePcColorFromSteamId(steamId)
+    if type(steamId) ~= "string" or steamId == "" then
+        return nil
+    end
+    local row = C.PlayerData[steamId]
+    if type(row) ~= "table" then
+        row = C.PlayerData[tostring(steamId)]
+    end
+    if type(row) ~= "table" then
+        return nil
+    end
+    local col = row.color
+    if type(col) == "string" and U.isIn(col, C.PlayerColors) then
+        return col
+    end
+    return nil
+end
+
 --- TTS: player connected (assign chronicle seat when mapped in C.PlayerData; else White).
 --- TTS API passes a Player; tolerate a seat color string for older call sites.
 --- Join clients usually arrive as Grey — auto-assign must still run (TOR-372).
-function onPlayerConnect(playerOrColor)
+--- @param playerOrColor Player|string
+--- @param forceRun boolean|nil When true, bypass Defer Connect (manual Connect button, TOR-430).
+function onPlayerConnect(playerOrColor, forceRun)
     local connected = nil
     if U.isPlayer(playerOrColor) then
         connected = playerOrColor
@@ -6733,12 +6776,28 @@ function onPlayerConnect(playerOrColor)
         connected = Player[playerOrColor]
     end
 
+    -- TOR-430: O(1) gate — Steam → chronicle PC color → deferConnectByColor; skip all connect work.
+    if forceRun ~= true and U.isPlayer(connected) then
+        local deferColor = chroniclePcColorFromSteamId(connected.steam_id)
+        if deferColor ~= nil
+            and S.getStateVal("connectionControls", "deferConnectByColor", deferColor) == true
+        then
+            print(string.format(
+                "onPlayerConnect: Defer Connect on for %s; skipping all connect activity (steam=%s)",
+                deferColor,
+                tostring(connected.steam_id)
+            ))
+            return
+        end
+    end
+
     if U.isPlayer(connected) then
         print(string.format(
-            "onPlayerConnect: %s steam=%s color=%s",
+            "onPlayerConnect: %s steam=%s color=%s%s",
             tostring(connected.steam_name),
             tostring(connected.steam_id),
-            tostring(connected.color)
+            tostring(connected.color),
+            forceRun == true and " (force)" or ""
         ))
         clearSeatHudRevealForPlayer(connected)
         local playerKey = seatAssignmentPlayerKey(connected)

@@ -732,6 +732,50 @@ function M.manualAssignSeatForColor(targetColor)
 end
 
 --[[
+    Manually run the full `onPlayerConnect` pipeline for the chronicle player of `targetColor`.
+    Bypasses Defer Connect (`forceRun`). Does not clear the defer toggle. TOR-430.
+    @param targetColor string PC seat color
+    @return boolean
+]]
+function M.manualRunPlayerConnect(targetColor)
+    if type(targetColor) ~= "string" or not U.isIn(targetColor, C.PlayerColors) then
+        U.AlertGM("Connect: invalid color " .. tostring(targetColor))
+        return false
+    end
+
+    local playerID = C.GetPlayerIDOrNil(targetColor)
+    if type(playerID) ~= "string" or playerID == "" then
+        U.AlertGM("Connect: no chronicle Steam ID for " .. targetColor)
+        return false
+    end
+
+    local player = nil
+    for _, p in ipairs(Player.getPlayers()) do
+        if U.isPlayer(p) and S.getStorageID(p) == playerID then
+            player = p
+            break
+        end
+    end
+    if player == nil then
+        U.AlertGM("Connect: " .. targetColor .. " player is not connected")
+        return false
+    end
+
+    local fn = rawget(_G, "onPlayerConnect")
+    if type(fn) ~= "function" then
+        U.AlertGM("Connect: onPlayerConnect unavailable")
+        return false
+    end
+
+    print(string.format(
+        "Main: manualRunPlayerConnect %s (%s) currentSeat=%s",
+        tostring(player.steam_name), playerID, tostring(player.color)
+    ))
+    fn(player, true)
+    return true
+end
+
+--[[
     Assign every connected player from chronicle Steam IDs (load-time; TOR-345).
     Two passes so Storyteller leaving a PC seat frees it for the registered PC.
 ]]

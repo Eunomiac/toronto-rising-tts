@@ -38,7 +38,8 @@
   <Button class="pcs_btn_torpor" preferredWidth="76" minWidth="76" text="Torpor" />
   <Button class="pcs_btn_cond" preferredWidth="86" minWidth="80" fontSize="10" height="26" />
   <Button class="pcs_btn_auto_seat" preferredWidth="88" minWidth="80" fontSize="10" height="26" text="Auto-Seat" />
-  <Toggle class="pcs_join_toggle" preferredWidth="150" minWidth="130" fontSize="11" textColor="#FFFFFF" />
+  <Button class="pcs_btn_connect" preferredWidth="72" minWidth="64" fontSize="10" height="26" text="Connect" />
+  <Toggle class="pcs_join_toggle" preferredWidth="128" minWidth="110" fontSize="11" textColor="#FFFFFF" />
 
   <Button class="pcs_btn_palette_agg" colors="#662222|#883333|#991111|rgba(0.5,0.1,0.1,0.4)" />
   <Button class="pcs_btn_palette_sup" colors="#444444|#555555|#666666|rgba(0.2,0.2,0.2,0.4)" />

@@ -179,6 +179,7 @@ Storyteller **Stats** panel: edit PC backgrounds/merits/flaws and coterie advant
 | `HUD_phaseDeferSetXml` | `phase_deferSetXml` | `(player, value, id)` | ST-gated. Persists `connectionControls.deferSetXml`; when on, cancels pending deferred Global full UI resync and blocks future automatic ones (TOR-428). |
 | `HUD_phaseRefreshXml` | `phase_refreshXml` | `(player, button, id)` | ST-gated. One-shot Global full UI resync; does **not** clear Defer setXML (TOR-428). |
 | `HUD_pcsDeferAutoSeat` | `pcs_deferAutoSeat_<Color>` | `(player, value, id)` | ST-gated. Persists `connectionControls.deferAutoSeatByColor[color]` (TOR-428). |
+| `HUD_pcsDeferConnect` | `pcs_deferConnect_<Color>` | `(player, value, id)` | ST-gated. Persists `connectionControls.deferConnectByColor[color]`; when on, `onPlayerConnect` O(1)-exits for that chronicle PC (TOR-430). |
 | `HUD_resetGame` | `utility_reset` | `(player, button, id)` | Calls `S.resetGameState()`, `Scenes.resetScene(0)` (instant), updates UI, broadcasts "Game has been reset." to all players. |
 | `HUD_saveState` | `utility_save` | `(player, button, id)` | Reads state via `S.getGameState()`, JSON-encodes it for verification. Broadcasts confirmation to the clicking player. Note: TTS also auto-saves via `onSave()`. |
 
