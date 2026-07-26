@@ -117,7 +117,7 @@ function slotBaseTempDisabled(entry, projectCount) {
  * @returns {[number, number, number]}
  */
 function slotBaseAndTemp(entry) {
-  const [slotCount, baseCount, tempCount] = slotBaseTempDisabledProject(entry);
+  const [slotCount, baseCount, tempCount] = slotBaseTempDisabled(entry);
   return [slotCount, baseCount, tempCount];
 }
 

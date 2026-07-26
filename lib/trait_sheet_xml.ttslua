@@ -122,7 +122,7 @@ end
 --- @return integer baseCount
 --- @return integer tempCount
 function M.slotBaseAndTemp(entry)
-  local slotCount, baseCount, tempCount = M.slotBaseTempDisabledProject(entry)
+  local slotCount, baseCount, tempCount = M.slotBaseTempDisabled(entry)
   return slotCount, baseCount, tempCount
 end
 
