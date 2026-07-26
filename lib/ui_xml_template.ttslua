@@ -1,6 +1,11 @@
 --[[
   Runtime XML template engine: @@parameter@@ substitution and ##IF @@KEY@@## conditionals.
-  Template bodies are embedded at build time in lib/ui_xml_templates.ttslua (see embed_ui_xml_templates.js).
+  Template bodies live in per-consumer packs from embed_ui_xml_templates.js
+  (lib/ui_xml_templates_csheet_page3.ttslua, …_page4, …_page5, …_princes_court).
+
+  Object scripts must register only the pack(s) they need before apply():
+    local TPL = require("lib.ui_xml_template")
+    TPL.registerPack(require("lib.ui_xml_templates_csheet_page3"))
 
   ##IF: include inner XML only when the parameter key exists in the params table (any value, including "").
   Callers must omit keys for content that should not appear.
@@ -10,7 +15,34 @@
 
 local M = {}
 
-local TEMPLATES = require("lib.ui_xml_templates")
+--- Merged template bodies from registerPack calls in this Lua VM.
+local byKey = {}
+
+--- Merge a generated pack module into the lookup table (idempotent per key).
+--- @param pack table pack with `_byKey` map (from lib.ui_xml_templates_*)
+function M.registerPack(pack)
+  if type(pack) ~= "table" then
+    error("[ui_xml_template] registerPack expects a pack table")
+  end
+  local src = pack._byKey
+  if type(src) ~= "table" then
+    error("[ui_xml_template] pack missing _byKey")
+  end
+  for k, v in pairs(src) do
+    if type(k) == "string" and type(v) == "string" then
+      byKey[k] = v
+    end
+  end
+end
+
+--- @param templateKey string
+--- @return string|nil
+function M.get(templateKey)
+  if type(templateKey) ~= "string" or templateKey == "" then
+    return nil
+  end
+  return byKey[templateKey]
+end
 
 --- @param s string|nil
 --- @return string
@@ -143,9 +175,9 @@ function M.apply(templateName, params, opts)
   params = type(params) == "table" and params or {}
   opts = type(opts) == "table" and opts or {}
 
-  local template = TEMPLATES.get(templateName)
+  local template = M.get(templateName)
   if type(template) ~= "string" then
-    error("[ui_xml_template] Unknown template: " .. tostring(templateName))
+    error("[ui_xml_template] Unknown template (register the pack first): " .. tostring(templateName))
   end
 
   local afterIf = processConditionals(template, params)

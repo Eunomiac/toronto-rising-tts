@@ -12,6 +12,7 @@ local M = {}
 
 local CSHEET_DEFAULTS = require("lib.csheet_defaults_xml")
 local TPL = require("lib.ui_xml_template")
+TPL.registerPack(require("lib.ui_xml_templates_csheet_page3"))
 local TRAIT = require("lib.trait_sheet_xml")
 
 local PAGE_NUM = 3

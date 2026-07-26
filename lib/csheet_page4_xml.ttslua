@@ -11,6 +11,7 @@ local M = {}
 
 local CSHEET_DEFAULTS = require("lib.csheet_defaults_xml")
 local TPL = require("lib.ui_xml_template")
+TPL.registerPack(require("lib.ui_xml_templates_csheet_page4"))
 local PC_REL = require("lib.pc_relationships_data")
 
 local PAGE_NUM = 4

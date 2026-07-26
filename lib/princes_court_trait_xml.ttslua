@@ -8,6 +8,8 @@
 
 local M = {}
 
+local TPL = require("lib.ui_xml_template")
+TPL.registerPack(require("lib.ui_xml_templates_princes_court"))
 local TRAIT = require("lib.trait_sheet_xml")
 
 local PRINCES_COURT_TRAIT_OPTS = {

@@ -1,6 +1,7 @@
 --[[
   Shared trait-box XML builder: 3-column greedy packing + PCS-shaped entry → partial template params.
   Used by lib/csheet_page3_xml.ttslua (CSHEET page 3) and lib/princes_court_trait_xml.ttslua (Prince's Court reference).
+  Callers must register the matching ui_xml_templates_* pack on lib.ui_xml_template before packing.
 
   Visibility modes (opts.visibilityMode):
   - "sheetDisplay" (default): omit entry when entry.sheetDisplay == false (CSHEET).

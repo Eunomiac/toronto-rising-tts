@@ -63,13 +63,13 @@ const GATE_ENTRIES = [
   {
     id: "ui.ui_csheet_page3",
     entry: 'require("ui.ui_csheet_page3")\n',
-    maxBytes: 160 * 1024,
+    maxBytes: 120 * 1024,
     forbidCore: true,
   },
   {
     id: "ui.ui_csheet_page4",
     entry: 'require("ui.ui_csheet_page4")\n',
-    maxBytes: 200 * 1024,
+    maxBytes: 140 * 1024,
     forbidCore: true,
   },
   {

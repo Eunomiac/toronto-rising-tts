@@ -370,7 +370,8 @@ TTS resolves that path on **Save & Play** before object Lua runs. You always nee
 | **1–2** | Static shipped XML | `ui/player/csheets/page1.xml`, `page2.xml` — dot/box updates via `UI.setAttribute` from `GlobalCollectSheetImageUpdates` |
 | **3** | **Dynamic** (`UI.setXml`) | Layout: **`ui/.templates/csheet/page3.xml`** + partials; builder: **`lib/csheet_page3_xml.ttslua`**. Shipped **`ui/player/csheets/page3.xml`** is only a minimal Include placeholder. |
 | **4** | **Dynamic** (`UI.setXml`) | **`lib/json/PC_Relationships.json`** → **`lib/csheet_page4_xml.ttslua`**; templates **`ui/.templates/csheet/page4.xml`** + partials. Regenerate data: `node .dev/scripts/generate_pc_relationships_lua.js`. |
-| **5–6** | **Dynamic entry** (placeholder builders) | Object stub `require("ui.ui_csheet_pageN")`; builders still placeholders until templates ship. |
+| **5** | **Dynamic** (`UI.setXml` via Global) | Object entry `ui.ui_csheet_page5`; XML built in Global `Projects.buildPage5DocumentXml` (templates pack `ui_xml_templates_csheet_page5`). |
+| **6** | **Dynamic entry** (placeholder builder) | Object stub `require("ui.ui_csheet_page6")`; placeholder until templates ship. |
 | **7–8** | Static shipped XML (scaffolding / WIP) | `ui/player/csheets/page7.xml`, `page8.xml` — default csheet entry only |
 
 **Do not** bundle dynamic template chains on the default csheet entry. When a page needs PCS-driven layout like page 3: (1) add templates under `ui/.templates/csheet/`, (2) replace **`lib/csheet_pageN_xml.ttslua`** placeholder with a real builder (entry + `_local` shims already exist for pages 4–6), (3) run `npm run ui-xml-templates:embed`, (4) **replace** the shipped `ui/player/csheets/pageN.xml` with a thin placeholder (keep the file so Includes still resolve). Pages 7–8 remain static until you add `ui.ui_csheet_page7` stubs the same way.
@@ -379,11 +380,15 @@ TTS resolves that path on **Save & Play** before object Lua runs. You always nee
 
 Some panels are assembled at runtime via `UI.setXml` (character sheet **pages 3–4** today). Lua cannot read the repo filesystem in TTS, so template XML is **embedded at build time**:
 
-- **Authoring**: Edit templates under **`ui/.templates/csheet/`** only (for example `page3.xml` and `partials/*.xml`). The embed script does not read top-level `ui/.templates/*.xml` (those are color-expansion sources).
+- **Authoring**: Edit templates under **`ui/.templates/csheet/`** or **`ui/.templates/princes_court/`** (for example `page3.xml` and `partials/*.xml`). The embed script does not read top-level `ui/.templates/*.xml` (those are color-expansion sources).
 - **Parameters**: `@@NAME@@` tokens substituted by `lib/ui_xml_template.ttslua` at runtime.
 - **Conditionals**: `##IF @@NAME@@##` … `##ENDIF##` — inner XML is kept only when the caller included `NAME` in the params table (omit keys you do not want rendered).
-- **Build**: `npm run ui-xml-templates:embed` (also in `npm run build`) writes **`lib/ui_xml_templates.ttslua`**.
-- **Consumers**: Domain modules map data → params and call `require("lib.ui_xml_template").apply(templateKey, params, opts)`; use `opts.rawKeys` for values that are already XML fragments (column slot concatenations).
+- **Build**: `npm run ui-xml-templates:embed` (also in `npm run build`) writes **per-consumer packs**:
+  - `lib/ui_xml_templates_csheet_page3.ttslua` — page 3 + bg/merit/flaw partials
+  - `lib/ui_xml_templates_csheet_page4.ttslua` — page 4 + relationship partials
+  - `lib/ui_xml_templates_csheet_page5.ttslua` — page 5 + project_block (Global `Projects.buildPage5DocumentXml`)
+  - `lib/ui_xml_templates_princes_court.ttslua` — Prince’s Court HUD partials (Global only)
+- **Consumers**: Register the pack before apply — `require("lib.ui_xml_template").registerPack(require("lib.ui_xml_templates_csheet_page3"))` — then map data → params and call `.apply(templateKey, params, opts)`; use `opts.rawKeys` for values that are already XML fragments (column slot concatenations). **Do not** pull every pack into an object script VM.
 - **Not the same as color templates**: Top-level `ui/.templates/*.xml` files with `<!-- TARGET: ui/... -->` are processed by `xml_color_template_generator.js` into shipped per-color UI files. Nested folders such as `ui/.templates/csheet/` are **embed-only** (no `TARGET` line). **`ui/.templates/roll/`** is a **build-time composer** (partials + `dash_body.xml` → `ui/shared/roll_dash_generated.xml` via `npm run roll-dashboard:generate`); not embedded in Lua and not expanded by the color generator.
 
 ## File Structure

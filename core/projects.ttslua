@@ -1159,6 +1159,7 @@ end
 function M.buildPage5DocumentXml(seatColorRaw)
   local CSHEET_DEFAULTS = require("lib.csheet_defaults_xml")
   local TPL = require("lib.ui_xml_template")
+  TPL.registerPack(require("lib.ui_xml_templates_csheet_page5"))
   local color = type(seatColorRaw) == "string" and seatColorRaw or ""
   if color ~= "" then
     local c = color:lower()
