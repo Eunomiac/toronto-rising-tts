@@ -41,15 +41,15 @@
   <!-- Location Overlay (generated per player color) -->
   <Include src="player/panel_overlay_location.xml" />
 
-  <!-- Player HUD Blindfold Overlay -->
-  <Include src="player/panel_overlay_blindfold.xml" />
-
   <!-- Roll control panels (generated per player color) -->
   <Include src="player/panel_roll_controls.xml" />
 
 </Panel>
 
-<!-- 6. Startup loading screen (last — draws above all HUD; no visibility filter) -->
+<!-- Per-player transition blindfolds (TOR-436): root sibling like overlay_globalBlindfold — not under HUD_PANEL_PLAYER. -->
+<Include src="player/panel_overlay_blindfold.xml" />
+
+<!-- 6. Startup loading screen (last among blindfolds — draws above transition blinds when both up). -->
 <Include src="shared/panel_overlay_global_blindfold.xml" />
 
 <!-- 3. Storyteller HUD (Black): admin panel + sidebar + camera defaults -->

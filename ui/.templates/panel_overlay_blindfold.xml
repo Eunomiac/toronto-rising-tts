@@ -4,13 +4,15 @@
 <!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md (generator); .dev/HUDs & Overlays/Player HUD Overview.md (map panels). -->
 <!-- Visibility: UI.show / UI.hide on the PARENT Panel animates the panel and any active children (TOR-431). -->
 <!--
-  Parent: playerHud_blindfoldOverlay (SlideIn_Top / SlideOut_Top, duration 2, hideDelay 1).
+  Placement (TOR-436): root Include in Global.xml beside overlay_globalBlindfold (not under HUD_PANEL_PLAYER).
+  Geometry: match global blindfold — width 1920 height 1200 rectAlignment MiddleCenter (playerHud_blindfoldOverlay).
+  Parent: SlideIn_Top / SlideOut_Top, duration 2, hideDelay 1.
   Children: arm active=true BEFORE parent UI.show; do not UI.show children separately.
   Cards: with location set White+image; without location keep Clear + empty image (invisible if animated).
   Hide: UI.hide(parent) → wait ~3s → restore child defaults only (not the parent).
 -->
 
-<Panel id="playerHud_overlay_blindfold_@@color@@" class="playerHud_overlaysLayer playerHud_blindfoldOverlay" visibility="@@color@@">
+<Panel id="playerHud_overlay_blindfold_@@color@@" class="playerHud_blindfoldOverlay" visibility="@@color@@">
   <Image id="overlay_blindfold_1_@@color@@" image="overlay_blindfold_1" class="player_overlay" />
   <Image id="overlay_blindfold_2_@@color@@" image="overlay_blindfold_2" class="player_overlay" />
   <Image id="overlay_blindfold_3_@@color@@" image="overlay_blindfold_3" class="player_overlay" />

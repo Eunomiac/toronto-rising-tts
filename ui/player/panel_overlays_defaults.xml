@@ -19,14 +19,17 @@
     preserveAspect="false"
   />
 
-  <!-- Parent owns SlideIn/Out (Panel-typed Defaults). Duration 2 + hideAnimationDelay 1 ≈ 3s hide cleanup. -->
+  <!-- Transition blindfold Panel: same art box as overlay_globalBlindfold (root sibling in Global.xml, TOR-436). -->
   <Panel class="playerHud_blindfoldOverlay"
     active="false"
+    width="1920"
+    height="1200"
+    rectAlignment="MiddleCenter"
+    raycastTarget="true"
     showAnimation="SlideIn_Top"
     hideAnimation="SlideOut_Top"
     animationDuration="2"
     hideAnimationDelay="1"
-    raycastTarget="true"
   />
 
   <Image class="overlay_anim_fade"

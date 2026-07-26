@@ -276,7 +276,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Blindfold parent-panel animation:** Animate `playerHud_overlay_blindfold_*` (not per-variant Images); arm children before one `UI.show`; no-location cards stay Clear; hide then ~3s child cleanup. Pending Save & Play. _(TOR-431)_
 - [x] **Defer transition work until blindfold-down finishes:** `U.RunSequence` waits ~2.5s (slide + card FadeIns) before fade-out / heavy reconcile so animations are not hitch-frozen. Pending Save & Play. _(TOR-434)_
 - [x] **leadInDelaySec=0 honored:** `resolveOptSec` (nil-check after tonumber) so explicit 0 skips wait; relatedTo **TOR-434**. _(TOR-435)_
-- [ ] **Blindfold parent off-screen:** Reverted TOR-436 full-screen ancestor Defaults / Global include move — still broken after parent-panel animation (TOR-431). _(TOR-436)_
+- [ ] **Blindfold parent off-screen:** Root sibling of global blindfold + matching 1920×1200 MiddleCenter Panel Defaults (prior ancestor-Defaults experiment reverted). Pending Save & Play. _(TOR-436)_
 - [x] **Coterie ref grid — Color Blitz + Jarvis Jacks:** Anarch row buttons + popups; `inCoterieRef` in constants; assets in save. relatedTo **TOR-190**. _(INBOX 2026-07-05 quick fix)_
 - [x] **Storyteller Stats panel — advantage editor:** Stats toolbar tab; PC backgrounds/merits/flaws + coterie 9 categories + domain ratings; Advantage Editor modal; seed-only PCS hydrate. Author confirmed 2026-07-19. _(TOR-279)_
 - [ ] **Center-top overlay polish:** Scale down overlay; fix background image alignment/scaling. _(TOR-86)_

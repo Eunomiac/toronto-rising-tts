@@ -591,6 +591,7 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-26 | CREATE+SHIP | TOR-434 | Defer transition work until blindfold-down animations finish; relatedTo TOR-431/TOR-147 |
 | 2026-07-26 | CREATE+SHIP | TOR-435 | leadInDelaySec=0 honored via resolveOptSec (not tonumber-or); relatedTo TOR-434 |
 | 2026-07-26 | CREATE+REVERT | TOR-436 | Full-screen overlay ancestors shipped then reverted (still off-screen); relatedTo TOR-431 |
+| 2026-07-26 | UPDATE | TOR-436 | Remodel transition blinds as root sibling of global blindfold + same 1920×1200 MiddleCenter |
 | 2026-07-26 | SHIP | TOR-97 | Desires: `playerData.desire`, CSHEET InputField listeners, ST PCs row + Clear |
 | 2026-07-26 | VERIFY | TOR-97 | Author confirmed Desire input + setClass/unset styling + O(1) class skip |
 
