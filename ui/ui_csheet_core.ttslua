@@ -423,7 +423,7 @@ local function applyDesireFieldFromMerged(pd)
 end
 
 --- CSHEET Desire InputField: stash via Global (cannot read InputField text later).
---- @param player table|nil
+--- @param player Player|nil TTS Player is userdata (not a Lua table)
 --- @param value string|nil
 --- @param _id string|nil
 --- @param syncText boolean
@@ -436,7 +436,7 @@ local function handleDesireChanged(player, value, _id, syncText)
     error("[ui_csheet] handleDesireChanged: Global.call unavailable")
   end
   local playerColor = nil
-  if type(player) == "table" and type(player.color) == "string" then
+  if player ~= nil and type(player.color) == "string" then
     playerColor = player.color
   end
   local result = Global.call("GlobalSetPlayerDesire", {
@@ -450,7 +450,8 @@ local function handleDesireChanged(player, value, _id, syncText)
   end
   local className = type(result.class) == "string" and result.class or "player_desire player_desire_unset"
   local attrs = { class = className }
-  if result.ok ~= true or result.syncText == true or result.text == "" then
+  -- Only rewrite text when denied, EndEdit, or emptied — never on every keystroke (caret fight).
+  if result.ok ~= true or result.syncText == true then
     attrs.text = type(result.text) == "string" and result.text or ""
   end
   self.UI.setAttributes("player_desire", attrs)
