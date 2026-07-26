@@ -252,6 +252,9 @@ function S.GetDefaultGameState()
             or getDefaultPlayerCameraAngles()
     }
 
+    -- Default shape for in-memory + load merge. Save policy (TOR-433): fail-open —
+    -- `buildSaveState` persists every safe top-level key except `SAVE_STATE_EPHEMERAL_KEYS`.
+    -- Add new domains here; do not maintain a parallel save whitelist.
     return {
         currentPhase = C.Phases.INTERMISSION,
         playSubPhase = C.PlaySubPhases.MAIN,
@@ -1169,216 +1172,112 @@ local function isValueSafeForState(value, keyPath)
     return false
 end
 
---- Builds a save-safe state by copying serializable fields.
--- For `playerData`, persist all dynamic keys and exclude static keys from `C.PlayerData`.
--- This preserves any runtime-authored state while keeping save payloads JSON-safe.
--- @return table A new table containing only serializable state data
+--- Top-level `gameState` keys that must not round-trip through Save (runtime-only).
+--- Prefer module-private caches for scratch data; only list keys that already live on `gameState`.
+local SAVE_STATE_EPHEMERAL_KEYS = {
+    --- Live PC roll seat (TOR-262); do not restore mid-roll across Save & Play.
+    rollConcurrency = true,
+    --- In-flight lighting/scene transition scratch.
+    sceneTransition = true,
+    --- ST debug bar label rewritten on each load.
+    lastLoadClockLabel = true,
+}
+
+--- Persist dynamic playerData only (strip static keys owned by `C.PlayerData`).
+--- @return table
+local function buildSavePlayerData()
+    local out = {}
+    if type(gameState.playerData) ~= "table" then
+        return out
+    end
+    for playerID, playerData in pairs(gameState.playerData) do
+        if type(playerData) ~= "table" then
+            print("[WARNING] buildSaveState: Skipping player ID '" .. tostring(playerID) .. "' - not a table, type: " .. type(playerData))
+        elseif type(playerID) ~= "string" and type(playerID) ~= "number" then
+            print("[WARNING] buildSaveState: Skipping player entry with non-serializable key type: " .. type(playerID))
+        else
+            local dynamicPlayerData = {}
+            local staticData = C.PlayerData[playerID]
+            for fieldName, fieldVal in pairs(playerData) do
+                if type(staticData) == "table" and staticData[fieldName] ~= nil then
+                    -- Skip static field from merged runtime data.
+                elseif isValueSafeForState(fieldVal, "playerData." .. tostring(playerID) .. "." .. tostring(fieldName)) then
+                    if type(fieldVal) == "table" then
+                        dynamicPlayerData[fieldName] = U.clone(fieldVal, true)
+                    else
+                        dynamicPlayerData[fieldName] = fieldVal
+                    end
+                else
+                    print("[WARNING] buildSaveState: Player ID '" .. tostring(playerID) .. "' skipping unsafe field '" .. tostring(fieldName) .. "'")
+                end
+            end
+            if next(dynamicPlayerData) ~= nil then
+                out[playerID] = dynamicPlayerData
+            end
+        end
+    end
+    return out
+end
+
+--- Persist lights as mode strings and/or JSON-safe inline mode tables (scrub vectors/colors).
+--- @return table
+local function buildSaveLights()
+    local out = {}
+    if type(gameState.lights) ~= "table" then
+        return out
+    end
+    for lightName, lightData in pairs(gameState.lights) do
+        if type(lightName) ~= "string" and type(lightName) ~= "number" then
+            -- skip
+        elseif type(lightData) == "string" then
+            out[lightName] = lightData
+        elseif type(lightData) == "table" then
+            local cleanLightData = {}
+            for key, val in pairs(lightData) do
+                if type(key) == "string" then
+                    local vt = type(val)
+                    if vt == "string" or vt == "number" or vt == "boolean" then
+                        cleanLightData[key] = val
+                    elseif vt == "table" and val.x ~= nil and val.y ~= nil and val.z ~= nil then
+                        cleanLightData[key] = { x = val.x, y = val.y, z = val.z }
+                    elseif vt == "table" and val.r ~= nil and val.g ~= nil and val.b ~= nil then
+                        cleanLightData[key] = { r = val.r, g = val.g, b = val.b }
+                    end
+                end
+            end
+            if next(cleanLightData) ~= nil then
+                out[lightName] = cleanLightData
+            end
+        end
+    end
+    return out
+end
+
+--- Builds a save-safe state for `onSave`.
+--- Fail-open: every top-level `gameState` key round-trips unless ephemeral or unsafe (TOR-433).
+--- Special handlers: `playerData` (strip static chronicle keys), `lights` (vector/color scrub).
+--- @return table A new table containing only serializable state data
 local function buildSaveState()
     local saveState = {}
-
-    -- Copy only the fields we want to save (whitelist approach)
-    if gameState.currentPhase then
-        saveState.currentPhase = gameState.currentPhase
-    end
-    if gameState.playSubPhase then
-        saveState.playSubPhase = gameState.playSubPhase
-    end
-    if gameState.sessionNum ~= nil then
-        saveState.sessionNum = gameState.sessionNum
+    if type(gameState) ~= "table" then
+        return saveState
     end
 
-    if gameState.currentScene then
-        saveState.currentScene = gameState.currentScene
-    end
-
-    if gameState.presentDayClock and type(gameState.presentDayClock) == "table" then
-        if isValueSafeForState(gameState.presentDayClock, "presentDayClock") then
-            saveState.presentDayClock = U.clone(gameState.presentDayClock, true)
-        end
-    end
-
-    if type(gameState.lastActiveMapPin) == "table" then
-        if isValueSafeForState(gameState.lastActiveMapPin, "lastActiveMapPin") then
-            saveState.lastActiveMapPin = U.clone(gameState.lastActiveMapPin, true)
-        end
-    end
-
-    -- Copy playerData (all dynamic values - static data still comes from C.PlayerData).
-    -- Persist every safe dynamic key so writes to state survive save/load cycles.
-    if gameState.playerData then
-        saveState.playerData = {}
-        for playerID, playerData in pairs(gameState.playerData) do
-            -- Skip non-table entries (safety check)
-            if type(playerData) ~= "table" then
-                print("[WARNING] buildSaveState: Skipping player ID '" .. tostring(playerID) .. "' - not a table, type: " .. type(playerData))
-                -- Skip this iteration
-            -- Skip if the key itself is not serializable (should be a player ID string)
-            elseif type(playerID) ~= "string" and type(playerID) ~= "number" then
-                print("[WARNING] buildSaveState: Skipping player entry with non-serializable key type: " .. type(playerID))
-                -- Skip this iteration
+    for key, value in pairs(gameState) do
+        if SAVE_STATE_EPHEMERAL_KEYS[key] == true then
+            -- Runtime-only; intentionally omitted.
+        elseif key == "playerData" then
+            saveState.playerData = buildSavePlayerData()
+        elseif key == "lights" then
+            saveState.lights = buildSaveLights()
+        elseif isValueSafeForState(value, tostring(key)) then
+            if type(value) == "table" then
+                saveState[key] = U.clone(value, true)
             else
-                local dynamicPlayerData = {}
-                local staticData = C.PlayerData[playerID]
-
-                for fieldName, fieldVal in pairs(playerData) do
-                    -- Do not persist static character/config keys owned by constants.
-                    if type(staticData) == "table" and staticData[fieldName] ~= nil then
-                        -- Skip static field from merged runtime data.
-                    elseif isValueSafeForState(fieldVal, "playerData." .. tostring(playerID) .. "." .. tostring(fieldName)) then
-                        if type(fieldVal) == "table" then
-                            dynamicPlayerData[fieldName] = U.clone(fieldVal, true)
-                        else
-                            dynamicPlayerData[fieldName] = fieldVal
-                        end
-                    else
-                        print("[WARNING] buildSaveState: Player ID '" .. tostring(playerID) .. "' skipping unsafe field '" .. tostring(fieldName) .. "'")
-                    end
-                end
-
-                -- Only save if we have at least one dynamic field
-                if next(dynamicPlayerData) ~= nil then
-                    saveState.playerData[playerID] = dynamicPlayerData
-                end
-                -- Note: We don't warn if no dynamic fields - player might not have any dynamic state yet
+                saveState[key] = value
             end
-        end
-    end
-
-    -- Copy lights data (mode string and/or JSON-safe inline mode tables)
-    if gameState.lights then
-        saveState.lights = {}
-        for lightName, lightData in pairs(gameState.lights) do
-            if type(lightName) ~= "string" and type(lightName) ~= "number" then
-            elseif type(lightData) == "string" then
-                saveState.lights[lightName] = lightData
-            elseif type(lightData) == "table" then
-                local cleanLightData = {}
-                for key, val in pairs(lightData) do
-                    if type(key) == "string" then
-                        local vt = type(val)
-                        if vt == "string" or vt == "number" or vt == "boolean" then
-                            cleanLightData[key] = val
-                        elseif vt == "table" and val.x ~= nil and val.y ~= nil and val.z ~= nil then
-                            cleanLightData[key] = { x = val.x, y = val.y, z = val.z }
-                        elseif vt == "table" and val.r ~= nil and val.g ~= nil and val.b ~= nil then
-                            cleanLightData[key] = { r = val.r, g = val.g, b = val.b }
-                        end
-                    end
-                end
-                if next(cleanLightData) ~= nil then
-                    saveState.lights[lightName] = cleanLightData
-                end
-            end
-        end
-    end
-
-    -- Copy scene data (only serializable fields)
-    if gameState.scene then
-        saveState.scene = {}
-        if gameState.scene.name then saveState.scene.name = gameState.scene.name end
-        if gameState.scene.description then saveState.scene.description = gameState.scene.description end
-        if gameState.scene.mood then saveState.scene.mood = gameState.scene.mood end
-    end
-
-    -- Copy soundscape data (only serializable fields)
-    if gameState.soundscape and type(gameState.soundscape) == "table" then
-        saveState.soundscape = U.clone(gameState.soundscape, true)
-    end
-
-    -- Copy seat-layout state used by relative ObjectPositions resolution.
-    if gameState.seatLayout and type(gameState.seatLayout) == "table" then
-        saveState.seatLayout = {}
-        if type(gameState.seatLayout.currentTableKey) == "string" and gameState.seatLayout.currentTableKey ~= "" then
-            saveState.seatLayout.currentTableKey = gameState.seatLayout.currentTableKey
-        end
-        if type(gameState.seatLayout.occupiedNPCSlots) == "table" then
-            local occupiedNPCSlots = {}
-            for _, seatKey in ipairs(C.NPCSeats) do
-                local slotValue = gameState.seatLayout.occupiedNPCSlots[seatKey]
-                if slotValue == false or type(slotValue) == "string" then
-                    occupiedNPCSlots[seatKey] = slotValue
-                else
-                    occupiedNPCSlots[seatKey] = false
-                end
-            end
-            saveState.seatLayout.occupiedNPCSlots = occupiedNPCSlots
-        end
-        if type(gameState.seatLayout.universalCameraAngles) == "table" then
-            saveState.seatLayout.universalCameraAngles = U.clone(gameState.seatLayout.universalCameraAngles, true)
-        end
-        if next(saveState.seatLayout) == nil then
-            saveState.seatLayout = nil
-        end
-    end
-
-    if gameState.npcs and type(gameState.npcs) == "table" and gameState.npcs.instances and type(gameState.npcs.instances) == "table" then
-        saveState.npcs = { instances = {} }
-        for npcName, rec in pairs(gameState.npcs.instances) do
-            if type(npcName) == "string" and type(rec) == "table" then
-                saveState.npcs.instances[npcName] = {
-                    figurineGuid = rec.figurineGuid,
-                    lightGuid = rec.lightGuid,
-                    areaKey = rec.areaKey,
-                    slotIndex = rec.slotIndex,
-                    npcLightMode = rec.npcLightMode,
-                    seatedSeatKey = rec.seatedSeatKey,
-                }
-            end
-        end
-    end
-
-    if gameState.sessionScene and type(gameState.sessionScene) == "table" then
-        if isValueSafeForState(gameState.sessionScene, "sessionScene") then
-            saveState.sessionScene = U.clone(gameState.sessionScene, true)
         else
-            print("[WARNING] buildSaveState: sessionScene omitted — failed isValueSafeForState")
-        end
-    end
-
-    if gameState.sceneLibrary and type(gameState.sceneLibrary) == "table" then
-        if isValueSafeForState(gameState.sceneLibrary, "sceneLibrary") then
-            saveState.sceneLibrary = U.clone(gameState.sceneLibrary, true)
-        else
-            print("[WARNING] buildSaveState: sceneLibrary omitted — failed isValueSafeForState")
-        end
-    end
-
-    if gameState.controlBoard and type(gameState.controlBoard) == "table" then
-        if isValueSafeForState(gameState.controlBoard, "controlBoard") then
-            saveState.controlBoard = U.clone(gameState.controlBoard, true)
-        else
-            print("[WARNING] buildSaveState: controlBoard omitted — failed isValueSafeForState")
-        end
-    end
-
-    -- Join-stress ST controls (TOR-428 / TOR-430); must whitelist or Save & Play resets toggles.
-    if gameState.connectionControls and type(gameState.connectionControls) == "table" then
-        if isValueSafeForState(gameState.connectionControls, "connectionControls") then
-            saveState.connectionControls = U.clone(gameState.connectionControls, true)
-        else
-            print("[WARNING] buildSaveState: connectionControls omitted — failed isValueSafeForState")
-        end
-    end
-
-    if gameState.stRollSettings and type(gameState.stRollSettings) == "table" then
-        if isValueSafeForState(gameState.stRollSettings, "stRollSettings") then
-            saveState.stRollSettings = U.clone(gameState.stRollSettings, true)
-        end
-    end
-
-    if gameState.coterieData and type(gameState.coterieData) == "table" then
-        if isValueSafeForState(gameState.coterieData, "coterieData") then
-            saveState.coterieData = U.clone(gameState.coterieData, true)
-        else
-            print("[WARNING] buildSaveState: coterieData omitted — failed isValueSafeForState")
-        end
-    end
-
-    if type(gameState.projects) == "table" then
-        if isValueSafeForState(gameState.projects, "projects") then
-            saveState.projects = U.clone(gameState.projects, true)
-        else
-            print("[WARNING] buildSaveState: projects omitted — failed isValueSafeForState")
+            print("[WARNING] buildSaveState: omitted unsafe key '" .. tostring(key) .. "'")
         end
     end
 

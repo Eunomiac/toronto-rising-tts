@@ -248,7 +248,7 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 | :--------- | :------------- | :--------------- |
 | `S.InitializeGameState(saved_data)` | Load or create game state | Called in `onLoad` |
 | `S.GetDefaultGameState()` | Return default state structure | Initialization |
-| `S.getGameState(shouldSanitize)` | Get raw or save-safe state table; prefer nested access outside save/debug code | `S.getGameState(true)` in `onSave` |
+| `S.getGameState(shouldSanitize)` | Get raw or save-safe state table; prefer nested access outside save/debug code. Save-safe (`true`) is **fail-open**: every top-level key round-trips unless ephemeral (`rollConcurrency`, `sceneTransition`, `lastLoadClockLabel`) or JSON-unsafe; special scrub for `playerData` / `lights` (TOR-433). | `S.getGameState(true)` in `onSave` |
 | `S.setGameState(data)` | Set entire game state | Bulk state update |
 | `S.getStateVal(...)` | Get nested state value safely | `S.getStateVal("sessionScene", "clock")` |
 | `S.setStateVal(value, ...)` | Set nested state value safely | `S.setStateVal(clock, "sessionScene", "clock")` |
