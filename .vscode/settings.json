@@ -2,6 +2,7 @@
   "terminal.integrated.automationProfile.windows": {
     "path": "cmd.exe"
   },
+  "npm.exclude": "**/{.dev,.tools,node_modules}/**",
   "ttslua.fileManagement.includePaths": ["${workspaceFolder}"],
   "TTSLua.includeOtherFilesPaths": ["${workspaceFolder}"],
   "ttslua.misc.debugSearchPaths": true,

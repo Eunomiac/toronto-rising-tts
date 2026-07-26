@@ -152,6 +152,7 @@ See [Dice-E2E-Guide.md](E2E%20Playbooks/Dice-E2E-Guide.md) § Running the playbo
 
 ```lua
 lua debugHelp()
+lua printTable(someTable, "optional label")
 lua showState()
 lua showScene()
 lua inspectSoundscapeAudio()
@@ -159,7 +160,7 @@ lua DEBUG.dumpConditions("Brown")
 lua DEBUG.dumpRollPolicy("Brown")
 ```
 
-`showScene()` prints `sessionScene` + `sceneLibrary` keys (not legacy preset names).
+`printTable(value, label?)` pretty-prints via `JSON.encode_pretty` (also `DEBUG.printTable`). `showScene()` prints `sessionScene` + `sceneLibrary` keys (not legacy preset names).
 
 ## Dice debug (solo Host — no second client)
 

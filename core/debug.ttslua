@@ -531,6 +531,30 @@ end
     State Inspection Functions
 ]]
 
+--- Pretty-print a table (or other value) to the TTS console.
+-- Tables use `JSON.encode_pretty`; scalars use `tostring`. Optional label is printed first.
+-- @param value any Table or scalar to print
+-- @param label? string Optional header line before the dump
+-- @return string Formatted output that was printed
+-- @usage lua DEBUG.printTable(S.getStateVal("connectionControls"))
+-- @usage lua printTable(activeRoll, "active roll")
+function DEBUG.printTable(value, label)
+    local text
+    if type(value) == "table" then
+        text = JSON.encode_pretty(value)
+        if text == nil then
+            error("DEBUG.printTable: JSON.encode_pretty returned nil (unencodable table?)")
+        end
+    else
+        text = tostring(value)
+    end
+    if type(label) == "string" and label ~= "" then
+        print("[DEBUG.printTable] " .. label)
+    end
+    print(text)
+    return text
+end
+
 --- Display current game state (readable format)
 function DEBUG.showState()
     printTestHeader("Current Game State")
@@ -5424,6 +5448,7 @@ function DEBUG.help()
     print(string.rep("=", 70))
     print("\nUse in TTS console: lua <command>()  |  Manual E2E: .dev/E2E Playbooks/")
     print("\nINSPECTION:")
+    print("  printTable(value, label?) - Pretty-print a table (JSON) to console")
     print("  showState()              - Full gameState JSON")
     print("  showScene()              - sessionScene + sceneLibrary keys")
     print("  ensureSceneLibraryStub(slotIndex, sceneKey?, opts?) - E2E scene library row stub (no Apply)")
@@ -5547,6 +5572,7 @@ refreshSeatRigsFromReference = DEBUG.refreshSeatRigsFromReference
 syncTableSimplified = DEBUG.syncTableSimplified
 
 -- Expose inspection functions
+printTable = DEBUG.printTable
 showState = DEBUG.showState
 showScene = DEBUG.showScene
 ensureSceneLibraryStub = DEBUG.ensureSceneLibraryStub
