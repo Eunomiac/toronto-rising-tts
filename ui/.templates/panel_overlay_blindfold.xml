@@ -85,9 +85,9 @@
     DEBUG.printTable(UI.getAttributes("overlay_district_card_display_Red"))
     DEBUG.printTable(UI.getAttributes("overlay_site_card_display_Red"))
 
-    UI.setAttributes("HUD_PANEL_PLAYER", {color = "rgba(1, 1, 0, 0.15)", height = "1080", width = "1920"})
-    UI.setAttributes("playerHud_overlay_blindfold_Red", {animationDuration = 2, showAnimation = "SlideIn_Top", hideAnimation = "SlideOut_Top", hideAnimationDelay = 1, color = "rgba(1, 0, 0, 0.15)", active = "true", rectAlignment = "LowerCenter", ignoreLayout = "true", offsetXY = "0 -500", width = "1920", height = "2000"})
-    UI.setAttributes("overlay_blindfold_26_Red", {active = "true"})
+    UI.setAttributes("HUD_PANEL_PLAYER", {color = "rgba(1, 1, 0, 0)", height = "1200", width = "1920", rectAlignment = "MiddleCenter", ignoreLayout = "true"})
+    UI.setAttributes("playerHud_overlay_blindfold_Red", {offsetXY = "0 -50", rectAlignment = "MiddleCenter", ignoreLayout = "true"})
+    UI.setAttributes("overlay_blindfold_26_Red", {active = "true", rectAlignment = "LowerCenter", ignoreLayout = "true", height = "1200"})
     UI.setAttributes("overlay_district_card_display_Red", {hideAnimationDelay = 0.25})
     UI.setAttributes("overlay_site_card_display_Red", {hideAnimationDelay = 0})
 

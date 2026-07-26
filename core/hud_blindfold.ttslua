@@ -33,7 +33,7 @@ local TRANSITION_WORK_LEAD_IN_SEC = BLINDFOLD_DOWN_COMPLETE_SEC
 local DEFAULT_CAMERA_AFTER_BLINDFOLD_SEC = 1.5
 --- Staged transition (TOR-147 / TOR-434): fade-out runs only after blindfold-down animations finish;
 --- heavy reconcile then runs alone; new audio fades in only after the reconcile settles.
-local TRANSITION_FADE_OUT_SEC = 3.0
+local TRANSITION_FADE_OUT_SEC = 1
 local TRANSITION_WORK_SETTLE_SEC = 0.75
 --- New-location ambient fades in as the blindfold rises (TOR-273), so this runs concurrently with the
 --- blindfold slide-up rather than under the blindfold — ~2s gives an audible reveal alongside the visual.
