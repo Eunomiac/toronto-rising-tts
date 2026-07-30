@@ -1,0 +1,439 @@
+--[[
+    Join-stress cold pools (TOR-439): destroy / restore ObjectStates slices with GUID preserve.
+
+    Targets:
+      - NPC preload-pool figurines (+ paired preload lights)
+      - Soundscape emitter AssetBundles (fixed G.GUIDS.SOUNDSCAPE_*)
+
+    Contract:
+      1. Snapshot via Object.getData() before destroy
+      2. destroyObject; wait until getObjectFromGUID is nil for every GUID
+      3. spawnObjectData({ data }) with data.GUID kept
+      4. Assert spawned.getGUID() == expected (fail loudly on mismatch)
+
+    Backup lives in connectionControls.joinColdPoolsBackup (plus module cache) so File → Save
+    after Arm can restore on Disarm / Refresh after load.
+]]
+
+local U = require("lib.util")
+local S = require("core.state")
+local G = require("lib.guids")
+local Catalog = require("lib.soundscape_catalog")
+
+local JoinColdPools = {}
+
+local PRELOAD_AREA_KEY = "preload"
+
+--- @type table|nil `{ entries = { { kind, guid, npcName?, channelKey?, data } } }`
+local runtimeBackup = nil
+
+--- @type table<string, boolean>|nil GUIDs waiting to leave the scene after destroy
+local pendingGoneGuids = nil
+
+--- @type table<string, boolean>|nil GUIDs expected after warm spawn
+local pendingWarmGuids = nil
+
+local function getGetObjectFromGUID()
+    local fn = rawget(_G, "getObjectFromGUID")
+    if type(fn) ~= "function" then
+        error("[JoinColdPools] getObjectFromGUID unavailable")
+    end
+    return fn
+end
+
+local function getSpawnObjectData()
+    local fn = rawget(_G, "spawnObjectData")
+    if type(fn) ~= "function" then
+        error("[JoinColdPools] spawnObjectData unavailable")
+    end
+    return fn
+end
+
+local function getDestroyObject()
+    local fn = rawget(_G, "destroyObject")
+    if type(fn) ~= "function" then
+        error("[JoinColdPools] destroyObject unavailable")
+    end
+    return fn
+end
+
+--- Deep-clone object data and keep the expected GUID (opposite of NPC template clone).
+--- @param data table
+--- @param expectedGuid string
+--- @return table
+local function cloneObjectDataKeepGuid(data, expectedGuid)
+    if type(data) ~= "table" then
+        error("[JoinColdPools] cloneObjectDataKeepGuid requires table data")
+    end
+    if type(expectedGuid) ~= "string" or expectedGuid == "" then
+        error("[JoinColdPools] cloneObjectDataKeepGuid requires expectedGuid")
+    end
+    local cloned = nil
+    if JSON ~= nil and type(JSON.encode) == "function" and type(JSON.decode) == "function" then
+        local encOk, encoded = pcall(function()
+            return JSON.encode(data)
+        end)
+        if encOk and type(encoded) == "string" then
+            local decOk, decoded = pcall(function()
+                return JSON.decode(encoded)
+            end)
+            if decOk and type(decoded) == "table" then
+                cloned = decoded
+            end
+        end
+    end
+    if cloned == nil then
+        cloned = U.clone(data, true)
+    end
+    if type(cloned) ~= "table" then
+        error("[JoinColdPools] Failed to clone object data for GUID " .. expectedGuid)
+    end
+    cloned.GUID = expectedGuid
+    return cloned
+end
+
+--- @return boolean
+function JoinColdPools.isActive()
+    return S.getStateVal("connectionControls", "joinColdPoolsActive") == true
+end
+
+--- @return table|nil
+local function loadBackupFromState()
+    local backup = S.getStateVal("connectionControls", "joinColdPoolsBackup")
+    if type(backup) == "table" and type(backup.entries) == "table" and #backup.entries > 0 then
+        return backup
+    end
+    return nil
+end
+
+--- @param backup table|nil
+local function persistBackup(backup)
+    runtimeBackup = backup
+    if backup == nil then
+        S.setStateVal(nil, "connectionControls", "joinColdPoolsBackup")
+        S.setStateVal(false, "connectionControls", "joinColdPoolsActive")
+        return
+    end
+    S.setStateVal(backup, "connectionControls", "joinColdPoolsBackup")
+    S.setStateVal(true, "connectionControls", "joinColdPoolsActive")
+end
+
+--- @return table|nil
+local function resolveBackup()
+    if type(runtimeBackup) == "table" and type(runtimeBackup.entries) == "table" and #runtimeBackup.entries > 0 then
+        return runtimeBackup
+    end
+    local fromState = loadBackupFromState()
+    if fromState ~= nil then
+        runtimeBackup = fromState
+    end
+    return fromState
+end
+
+--- Snapshot + destroy one live object; GUID must match expected.
+--- @param obj table
+--- @param expectedGuid string
+--- @param meta table
+--- @return table entry
+local function snapshotAndDestroy(obj, expectedGuid, meta)
+    if obj == nil or obj.getData == nil then
+        error("[JoinColdPools] Missing object for GUID " .. tostring(expectedGuid))
+    end
+    local liveGuid = obj.getGUID and obj.getGUID() or obj.guid
+    if liveGuid ~= expectedGuid then
+        error(string.format(
+            "[JoinColdPools] GUID mismatch before destroy: expected %s got %s",
+            tostring(expectedGuid),
+            tostring(liveGuid)
+        ))
+    end
+    local data = obj.getData()
+    if type(data) ~= "table" then
+        error("[JoinColdPools] getData() failed for GUID " .. expectedGuid)
+    end
+    local entry = {
+        kind = meta.kind,
+        guid = expectedGuid,
+        npcName = meta.npcName,
+        channelKey = meta.channelKey,
+        guidKey = meta.guidKey,
+        data = cloneObjectDataKeepGuid(data, expectedGuid),
+    }
+    getDestroyObject()(obj)
+    return entry
+end
+
+--- Collect preload-pool NPC figurines + paired lights (skip seated / stage).
+--- @return table[] entries destroyed
+local function coldNpcPreloadPool()
+    local NPCS = rawget(_G, "NPCS")
+    if NPCS == nil then
+        NPCS = require("core.npcs")
+    end
+    local instances = S.getStateVal("npcs", "instances")
+    if type(instances) ~= "table" then
+        return {}
+    end
+    local getObj = getGetObjectFromGUID()
+    local entries = {}
+    local names = {}
+    for npcName, _ in pairs(instances) do
+        if type(npcName) == "string" then
+            names[#names + 1] = npcName
+        end
+    end
+    table.sort(names)
+
+    for _, npcName in ipairs(names) do
+        local rec = instances[npcName]
+        if type(rec) == "table" and rec.areaKey == PRELOAD_AREA_KEY then
+            local figGuid = rec.figurineGuid
+            if type(figGuid) == "string" and figGuid ~= "" then
+                local fig = getObj(figGuid)
+                if fig ~= nil then
+                    entries[#entries + 1] = snapshotAndDestroy(fig, figGuid, {
+                        kind = "npc_figurine",
+                        npcName = npcName,
+                    })
+                end
+            end
+            local lightGuid = rec.lightGuid
+            if type(lightGuid) == "string" and lightGuid ~= "" then
+                local lit = getObj(lightGuid)
+                if lit ~= nil then
+                    entries[#entries + 1] = snapshotAndDestroy(lit, lightGuid, {
+                        kind = "npc_light",
+                        npcName = npcName,
+                    })
+                end
+            end
+        end
+    end
+    return entries
+end
+
+--- Collect fixed soundscape emitters.
+--- @return table[] entries destroyed
+local function coldSoundscapeEmitters()
+    local getObj = getGetObjectFromGUID()
+    local entries = {}
+    local channelKeys = {}
+    for channelKey, _ in pairs(Catalog.CHANNELS or {}) do
+        channelKeys[#channelKeys + 1] = channelKey
+    end
+    table.sort(channelKeys)
+
+    for _, channelKey in ipairs(channelKeys) do
+        local channelDef = Catalog.CHANNELS[channelKey]
+        if type(channelDef) == "table" and type(channelDef.guidKey) == "string" then
+            local guidRef = G.GUIDS[channelDef.guidKey]
+            if not G.isGuidRef(guidRef) then
+                error("[JoinColdPools] Missing GUID for soundscape " .. tostring(channelDef.guidKey))
+            end
+            local guid = G.getActiveGuid(guidRef)
+            if type(guid) ~= "string" or guid == "" then
+                error("[JoinColdPools] Empty active GUID for soundscape " .. tostring(channelDef.guidKey))
+            end
+            local obj = getObj(guid)
+            if obj ~= nil then
+                entries[#entries + 1] = snapshotAndDestroy(obj, guid, {
+                    kind = "soundscape_emitter",
+                    channelKey = channelKey,
+                    guidKey = channelDef.guidKey,
+                })
+            end
+        end
+    end
+
+    local SS = rawget(_G, "SS")
+    if SS == nil then
+        SS = require("core.soundscape")
+    end
+    if type(SS.clearEmitterObjectCache) == "function" then
+        SS.clearEmitterObjectCache()
+    end
+    return entries
+end
+
+--- Begin cold: snapshot + destroy preload NPC figurines/lights + soundscape emitters.
+--- @return function waitUntilGone predicate for U.chain / U.await
+function JoinColdPools.beginCold()
+    if JoinColdPools.isActive() and resolveBackup() ~= nil then
+        print("[JoinColdPools] Already cold; skipping destroy.")
+        pendingGoneGuids = {}
+        return function()
+            return true
+        end
+    end
+
+    local entries = {}
+    local npcEntries = coldNpcPreloadPool()
+    for i = 1, #npcEntries do
+        entries[#entries + 1] = npcEntries[i]
+    end
+    local emitterEntries = coldSoundscapeEmitters()
+    for i = 1, #emitterEntries do
+        entries[#entries + 1] = emitterEntries[i]
+    end
+
+    if #entries == 0 then
+        error("[JoinColdPools] Cold found nothing to destroy (no preload NPCs / emitters?)")
+    end
+
+    local gone = {}
+    for i = 1, #entries do
+        gone[entries[i].guid] = true
+    end
+    pendingGoneGuids = gone
+    persistBackup({ entries = entries, version = 1 })
+
+    local figN, lightN, emitN = 0, 0, 0
+    for i = 1, #entries do
+        local k = entries[i].kind
+        if k == "npc_figurine" then
+            figN = figN + 1
+        elseif k == "npc_light" then
+            lightN = lightN + 1
+        elseif k == "soundscape_emitter" then
+            emitN = emitN + 1
+        end
+    end
+    print(string.format(
+        "[JoinColdPools] Cold destroy queued: figurines=%d lights=%d emitters=%d (total %d). Waiting for GUIDs to clear.",
+        figN,
+        lightN,
+        emitN,
+        #entries
+    ))
+
+    local getObj = getGetObjectFromGUID()
+    return function()
+        if type(pendingGoneGuids) ~= "table" then
+            return true
+        end
+        for guid, _ in pairs(pendingGoneGuids) do
+            if getObj(guid) ~= nil then
+                return false
+            end
+        end
+        pendingGoneGuids = nil
+        print("[JoinColdPools] All cold GUIDs cleared.")
+        return true
+    end
+end
+
+--- Spawn one backup entry; asserts GUID after spawn callback path via pendingWarmGuids wait.
+--- @param entry table
+local function spawnBackupEntry(entry)
+    if type(entry) ~= "table" then
+        error("[JoinColdPools] Invalid backup entry")
+    end
+    local guid = entry.guid
+    local data = entry.data
+    if type(guid) ~= "string" or guid == "" then
+        error("[JoinColdPools] Backup entry missing guid")
+    end
+    if type(data) ~= "table" then
+        error("[JoinColdPools] Backup entry missing data for " .. guid)
+    end
+    local getObj = getGetObjectFromGUID()
+    if getObj(guid) ~= nil then
+        error("[JoinColdPools] Cannot warm GUID still occupied: " .. guid)
+    end
+    local payload = cloneObjectDataKeepGuid(data, guid)
+    local obj = getSpawnObjectData()({
+        data = payload,
+        callback_function = function(spawned)
+            if spawned == nil then
+                error("[JoinColdPools] spawn callback nil for " .. guid)
+            end
+            local got = spawned.getGUID and spawned.getGUID() or spawned.guid
+            if got ~= guid then
+                error(string.format(
+                    "[JoinColdPools] GUID not preserved on spawn: expected %s got %s (kind=%s)",
+                    guid,
+                    tostring(got),
+                    tostring(entry.kind)
+                ))
+            end
+        end,
+    })
+    if obj == nil then
+        error("[JoinColdPools] spawnObjectData returned nil for " .. guid)
+    end
+end
+
+--- Begin warm: spawnObjectData all backup entries with GUID preserve.
+--- @return function waitUntilReady predicate
+function JoinColdPools.beginWarm()
+    local backup = resolveBackup()
+    if backup == nil or type(backup.entries) ~= "table" or #backup.entries == 0 then
+        print("[JoinColdPools] No cold backup; warm is a no-op.")
+        pendingWarmGuids = {}
+        S.setStateVal(false, "connectionControls", "joinColdPoolsActive")
+        return function()
+            return true
+        end
+    end
+
+    local getObj = getGetObjectFromGUID()
+    local warm = {}
+    for i = 1, #backup.entries do
+        local entry = backup.entries[i]
+        local guid = entry.guid
+        if type(guid) == "string" and guid ~= "" then
+            if getObj(guid) == nil then
+                spawnBackupEntry(entry)
+                warm[guid] = true
+            else
+                -- Already present (partial warm / File Load still had object) — keep GUID claim.
+                warm[guid] = true
+            end
+        end
+    end
+    pendingWarmGuids = warm
+
+    print(string.format(
+        "[JoinColdPools] Warm spawn queued for %d objects; waiting for GUID assert + spawning=false.",
+        #backup.entries
+    ))
+
+    return function()
+        if type(pendingWarmGuids) ~= "table" then
+            return true
+        end
+        for guid, _ in pairs(pendingWarmGuids) do
+            local obj = getObj(guid)
+            if obj == nil then
+                return false
+            end
+            local got = obj.getGUID and obj.getGUID() or obj.guid
+            if got ~= guid then
+                error(string.format(
+                    "[JoinColdPools] Warm GUID drift: expected %s got %s",
+                    guid,
+                    tostring(got)
+                ))
+            end
+            if obj.spawning == true then
+                return false
+            end
+        end
+        pendingWarmGuids = nil
+        persistBackup(nil)
+        local SS = rawget(_G, "SS")
+        if SS == nil then
+            SS = require("core.soundscape")
+        end
+        if type(SS.clearEmitterObjectCache) == "function" then
+            SS.clearEmitterObjectCache()
+        end
+        if type(SS.bootstrapSilenceStrayEmitterLoops) == "function" then
+            SS.bootstrapSilenceStrayEmitterLoops()
+        end
+        print("[JoinColdPools] Warm complete; backup cleared.")
+        return true
+    end
+end
+
+return JoinColdPools

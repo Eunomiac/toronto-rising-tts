@@ -333,11 +333,16 @@ function S.GetDefaultGameState()
         --- Join-stress ST controls (TOR-428 / TOR-430). Persist until cleared; defaults off.
         --- `deferSetXml`: skip automatic Global full UI document refresh (manual Refresh XML still allowed).
         --- `joinXmlArmed`: Host remounted minimal Global XmlUI (TOR-439); onLoad remounts minimal if true.
+        --- `joinXmlCustomAssetsBackup`: `{ name, url }[]` from UI.getCustomAssets before Arm slim (TOR-439).
+        --- `joinColdPoolsActive` / `joinColdPoolsBackup`: NPC preload + soundscape emitter destroy/restore (TOR-439).
         --- `deferAutoSeatByColor[color]`: skip chronicle auto-seat for that PC row (manual Auto-Seat still allowed).
         --- `deferConnectByColor[color]`: O(1) skip of all `onPlayerConnect` work for that PC (manual Connect still allowed).
         connectionControls = {
             deferSetXml = false,
             joinXmlArmed = false,
+            joinXmlCustomAssetsBackup = nil,
+            joinColdPoolsActive = false,
+            joinColdPoolsBackup = nil,
             deferAutoSeatByColor = {
                 Brown = false,
                 Orange = false,
@@ -763,6 +768,22 @@ function S.validateState()
             end
             if type(gameState.connectionControls.joinXmlArmed) ~= "boolean" then
                 gameState.connectionControls.joinXmlArmed = false
+            end
+            do
+                local backup = gameState.connectionControls.joinXmlCustomAssetsBackup
+                if backup ~= nil and type(backup) ~= "table" then
+                    gameState.connectionControls.joinXmlCustomAssetsBackup = nil
+                end
+            end
+            if type(gameState.connectionControls.joinColdPoolsActive) ~= "boolean" then
+                gameState.connectionControls.joinColdPoolsActive = false
+            end
+            do
+                local cold = gameState.connectionControls.joinColdPoolsBackup
+                if cold ~= nil and type(cold) ~= "table" then
+                    gameState.connectionControls.joinColdPoolsBackup = nil
+                    gameState.connectionControls.joinColdPoolsActive = false
+                end
             end
             if type(gameState.connectionControls.deferAutoSeatByColor) ~= "table" then
                 gameState.connectionControls.deferAutoSeatByColor = U.clone(defaults.deferAutoSeatByColor, true)

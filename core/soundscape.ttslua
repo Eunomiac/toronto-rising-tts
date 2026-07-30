@@ -858,6 +858,11 @@ function Soundscape.bootstrapSilenceStrayEmitterLoops()
     end
 end
 
+--- Drop cached emitter Object refs (after destroy/restore of AssetBundle objects). TOR-439.
+function Soundscape.clearEmitterObjectCache()
+    cachedEmitters = {}
+end
+
 --- Physical-only: silence the music channel not currently active in `gameState.soundscape`.
 function Soundscape.silenceInactiveMusicChannel()
     local state = ensureState()
@@ -1506,6 +1511,13 @@ local RECONCILE_APPLY_DEFER_SECONDS = 0.15
 --- @param opts table|nil `{ force = boolean?, deferApplySeconds = number? }` — when `force`, fingerprint short-circuit is skipped; optional defer override (seconds).
 function Soundscape.reconcileFromState(opts)
     opts = type(opts) == "table" and opts or {}
+    do
+        local JoinColdPools = require("core.join_cold_pools")
+        if JoinColdPools.isActive() == true then
+            print("[Soundscape] Skipping reconcileFromState (join cold pools active).")
+            return
+        end
+    end
     local force = opts.force == true
     local deferSeconds = RECONCILE_APPLY_DEFER_SECONDS
     local deferOverride = tonumber(opts.deferApplySeconds)

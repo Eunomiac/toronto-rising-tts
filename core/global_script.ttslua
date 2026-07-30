@@ -689,8 +689,148 @@ local function postMountGlobalUi(reason, armedMinimal)
     ))
 end
 
+--- Normalize one CustomUIAssets entry from getCustomAssets / save shapes. TOR-439.
+-- @param entry table|nil
+-- @return table|nil `{ name = string, url = string }`
+local function normalizeCustomUiAssetEntry(entry)
+    if type(entry) ~= "table" then
+        return nil
+    end
+    local name = entry.name or entry.Name
+    local url = entry.url or entry.URL
+    if type(name) ~= "string" or name == "" then
+        return nil
+    end
+    if type(url) ~= "string" or url == "" then
+        return nil
+    end
+    return { name = name, url = url }
+end
+
+--- Snapshot full Global CustomUIAssets into connectionControls (once per Arm cycle).
+--- Uses UI.getCustomAssets — https://api.tabletopsimulator.com/ui/#getcustomassets
+-- @return number count stored (0 if backup already present)
+local function ensureJoinXmlCustomAssetsBackup()
+    local existing = S.getStateVal("connectionControls", "joinXmlCustomAssetsBackup")
+    if type(existing) == "table" and #existing > 0 then
+        return 0
+    end
+    if UI == nil or type(UI.getCustomAssets) ~= "function" then
+        error("[JoinXmlAssets] UI.getCustomAssets unavailable")
+    end
+    local raw = UI.getCustomAssets()
+    if type(raw) ~= "table" then
+        error("[JoinXmlAssets] UI.getCustomAssets returned non-table")
+    end
+    local backup = {}
+    for i = 1, #raw do
+        local norm = normalizeCustomUiAssetEntry(raw[i])
+        if norm ~= nil then
+            backup[#backup + 1] = norm
+        end
+    end
+    if #backup == 0 then
+        error("[JoinXmlAssets] UI.getCustomAssets returned no usable assets before slim")
+    end
+    local keepPreview = UiGlobalXmlDocs.getMinimalAssetNames()
+    local keepN = (type(keepPreview) == "table") and #keepPreview or 0
+    if keepN > 0 and #backup <= keepN + 8 then
+        print(string.format(
+            "[JoinXmlAssets] WARNING: backup count %d looks already slim (keep-list %d); Refresh/Disarm cannot restore full CustomUIAssets from this session.",
+            #backup,
+            keepN
+        ))
+    end
+    S.setStateVal(backup, "connectionControls", "joinXmlCustomAssetsBackup")
+    print(string.format("[JoinXmlAssets] Backed up %d CustomUIAssets for restore.", #backup))
+    return #backup
+end
+
+--- Replace Global CustomUIAssets with join-minimal keep-list only.
+--- Uses UI.setCustomAssets — https://api.tabletopsimulator.com/ui/#setcustomassets (full replace).
+local function applyJoinXmlSlimCustomAssets()
+    ensureJoinXmlCustomAssetsBackup()
+    local backup = S.getStateVal("connectionControls", "joinXmlCustomAssetsBackup")
+    if type(backup) ~= "table" then
+        error("[JoinXmlAssets] Missing joinXmlCustomAssetsBackup before slim")
+    end
+    local keepNames = UiGlobalXmlDocs.getMinimalAssetNames()
+    if type(keepNames) ~= "table" or #keepNames == 0 then
+        error("[JoinXmlAssets] Embedded minimal asset names empty; run npm run ui-global-xml:embed")
+    end
+    local keepSet = {}
+    for i = 1, #keepNames do
+        keepSet[keepNames[i]] = true
+    end
+    local byName = {}
+    for i = 1, #backup do
+        local norm = normalizeCustomUiAssetEntry(backup[i])
+        if norm ~= nil then
+            byName[norm.name] = norm
+        end
+    end
+    local slim = {}
+    local missing = {}
+    for i = 1, #keepNames do
+        local name = keepNames[i]
+        local entry = byName[name]
+        if entry ~= nil then
+            slim[#slim + 1] = entry
+        else
+            missing[#missing + 1] = name
+        end
+    end
+    if #missing > 0 then
+        error(string.format(
+            "[JoinXmlAssets] Slim keep-list missing from backup: %s",
+            table.concat(missing, ", ")
+        ))
+    end
+    if UI == nil or type(UI.setCustomAssets) ~= "function" then
+        error("[JoinXmlAssets] UI.setCustomAssets unavailable")
+    end
+    UI.setCustomAssets(slim)
+    print(string.format(
+        "[JoinXmlAssets] setCustomAssets slim %d → %d (join-minimal keep-list).",
+        #backup,
+        #slim
+    ))
+end
+
+--- Restore full CustomUIAssets from Arm backup and clear the backup. TOR-439.
+local function restoreJoinXmlCustomAssetsBackup()
+    local backup = S.getStateVal("connectionControls", "joinXmlCustomAssetsBackup")
+    if type(backup) ~= "table" or #backup == 0 then
+        return false
+    end
+    if UI == nil or type(UI.setCustomAssets) ~= "function" then
+        error("[JoinXmlAssets] UI.setCustomAssets unavailable for restore")
+    end
+    local restored = {}
+    for i = 1, #backup do
+        local norm = normalizeCustomUiAssetEntry(backup[i])
+        if norm ~= nil then
+            restored[#restored + 1] = norm
+        end
+    end
+    UI.setCustomAssets(restored)
+    S.setStateVal(nil, "connectionControls", "joinXmlCustomAssetsBackup")
+    print(string.format("[JoinXmlAssets] Restored %d CustomUIAssets from backup.", #restored))
+    return true
+end
+
+--- Wait predicate for UI.loading after setXml / setCustomAssets.
+-- @return function
+local function waitUiAssetsNotLoading()
+    return function()
+        return UI == nil or UI.loading ~= true
+    end
+end
+
 --- Single Global full-document remount call site (Refresh / Arm / Disarm / deferred join fallback).
 --- Uses build-embedded XML (not UI.getXml) so Refresh works after Arm Join XML. TOR-439.
+--- Minimal mode also slims CustomUIAssets via getCustomAssets backup + setCustomAssets keep-list;
+--- full mode restores the backup when present.
 -- @param reason string|nil log label
 -- @param opts table|nil `{ mode = "full"|"minimal" }` (default full)
 -- @return boolean true when remount chain was started
@@ -710,24 +850,62 @@ local function performFullUiResync(reason, opts)
     local xmlString = resolveGlobalXmlDoc(mode)
     local label = type(reason) == "string" and reason ~= "" and reason or "unspecified"
     pendingFullUiRemount = true
-    U.chain({
-        function()
-            local ok, err = pcall(function()
-                UI.setXml(xmlString)
-            end)
-            if not ok then
-                error(tostring(err))
-            end
-            return function()
-                return UI == nil or UI.loading ~= true
-            end
-        end,
-        function()
-            postMountGlobalUi(label, mode == "minimal")
-        end,
-    }, {
-        maxWait = 60,
-        stepNames = { "setXml", "postMount" },
+
+    local JoinColdPools = require("core.join_cold_pools")
+    local chainSteps
+    local stepNames
+    if mode == "minimal" then
+        chainSteps = {
+            function()
+                ensureJoinXmlCustomAssetsBackup()
+                local ok, err = pcall(function()
+                    UI.setXml(xmlString)
+                end)
+                if not ok then
+                    error(tostring(err))
+                end
+                return waitUiAssetsNotLoading()
+            end,
+            function()
+                applyJoinXmlSlimCustomAssets()
+                return waitUiAssetsNotLoading()
+            end,
+            function()
+                return JoinColdPools.beginCold()
+            end,
+            function()
+                postMountGlobalUi(label, true)
+            end,
+        }
+        stepNames = { "setXml", "slimAssets", "coldPools", "postMount" }
+    else
+        chainSteps = {
+            function()
+                restoreJoinXmlCustomAssetsBackup()
+                return waitUiAssetsNotLoading()
+            end,
+            function()
+                return JoinColdPools.beginWarm()
+            end,
+            function()
+                local ok, err = pcall(function()
+                    UI.setXml(xmlString)
+                end)
+                if not ok then
+                    error(tostring(err))
+                end
+                return waitUiAssetsNotLoading()
+            end,
+            function()
+                postMountGlobalUi(label, false)
+            end,
+        }
+        stepNames = { "restoreAssets", "warmPools", "setXml", "postMount" }
+    end
+
+    U.chain(chainSteps, {
+        maxWait = 300,
+        stepNames = stepNames,
         onComplete = function(ok, detail)
             pendingFullUiRemount = false
             if not ok then
@@ -2466,9 +2644,10 @@ function onLoad(saved_data)
     setStartupAction("initialize-game-state")
     S.InitializeGameState(saved_data)
 
-    -- TOR-439: armed save load — remount minimal Global XmlUI before the rest of startup UI work.
-    -- Persist via File → Save after Arm (not Save & Play / inject full Global.xml). Loading-bar
-    -- CustomUIAssets still come from the save registry; this keeps Host on slim chrome after load.
+    -- TOR-439: armed save load — remount minimal Global XmlUI + slim CustomUIAssets before
+    -- the rest of startup UI work. Persist via File → Save after Arm (not Save & Play /
+    -- inject full Global.xml). Prefer Arm's UI.setCustomAssets slim so Loading can see a
+    -- smaller registry; joinXmlCustomAssetsBackup in state restores on Refresh/Disarm.
     if S.getStateVal("connectionControls", "joinXmlArmed") == true then
         setStartupAction("join-xml-armed-remount-minimal")
         S.setStateVal(true, "connectionControls", "deferSetXml")

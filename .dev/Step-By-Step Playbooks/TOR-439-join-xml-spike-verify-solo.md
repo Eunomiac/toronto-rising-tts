@@ -16,7 +16,7 @@ Verification:
 
 Confirm Host-side Arm Join XML remounts the minimal document, Phases chrome stays usable, and Refresh remounts the full HUD and clears `joinXmlArmed`. This does **not** measure join-client connection timeouts — that still needs [the full playbook](TOR-439-join-xml-spike-verify.md) with a second client.
 
-**Armed-save load (CustomUIAssets):** After Arm, use TTS **File → Save** (not Save & Play), or `npm run tts-save:inject-join-minimal -- --saveName <id>`, then **File → Load** so Loading sees minimal XmlUI. Details: [Join-Load Inventory § Armed-save load](../Multiplayer%20Functionality/Join-Load%20Inventory.md#armed-save-load-customuiassets-q1--host-alone).
+**Armed-save load (CustomUIAssets):** After Arm (which now also slims CustomUIAssets via `UI.setCustomAssets`), use TTS **File → Save** (not Save & Play), then **File → Load** so Loading can see a slim registry. Details: [Join-Load Inventory § Armed-save load](../Multiplayer%20Functionality/Join-Load%20Inventory.md#armed-save-load-customuiassets-q1--host-alone).
 
 ## Session mode (pick this)
 
@@ -108,7 +108,7 @@ U.chain({
     print("PASS — Host alone, Intermission, unarmed, Phases opened, global blindfold faded for smoke")
   end,
   function()
-    print("▶▶▶ HUMAN ▶▶▶ Confirm Defer setXML on + status 'Join XML: full' + table visible through faded blindfold. Click Arm Join XML once; wait for [SeatUI] Full UI resync sent. Then paste Code Block A.")
+    print("▶▶▶ HUMAN ▶▶▶ Confirm Defer setXML on + status 'Join XML: full' + table visible through faded blindfold. Click Arm Join XML once; wait for [JoinXmlAssets] slim + [JoinColdPools] cold + [SeatUI] Full UI resync sent. Then paste Code Block A.")
   end,
 }, { maxWait = 30 })
 ```

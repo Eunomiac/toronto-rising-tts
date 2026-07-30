@@ -89,11 +89,45 @@ function fieldLiteral(xml, fieldName, sourceRel) {
 }
 
 /**
- * @param {string} fullXml
- * @param {string} minimalXml
+ * Asset names referenced by expanded join-minimal XmlUI (`image` / `icon` / `rawImage`).
+ * Used with UI.getCustomAssets / UI.setCustomAssets on Arm (TOR-439).
+ * @param {string} xml
+ * @returns {string[]}
+ */
+function extractCustomAssetNames(xml) {
+  const names = new Set();
+  const re = /\b(?:image|icon|rawImage)\s*=\s*"([^"]+)"/gi;
+  let match;
+  while ((match = re.exec(xml)) !== null) {
+    if (match[1]) {
+      names.add(match[1]);
+    }
+  }
+  return [...names].sort();
+}
+
+/**
+ * @param {string[]} names
  * @returns {string}
  */
-function buildLuaModule(fullXml, minimalXml) {
+function minimalAssetNamesLiteral(names) {
+  if (names.length === 0) {
+    return "M.minimalAssetNames = {}\n";
+  }
+  const lines = names.map((n) => `    ${JSON.stringify(n)},`);
+  return ["M.minimalAssetNames = {", ...lines, "}", ""].join("\n");
+}
+
+/**
+ * @param {string} fullXml
+ * @param {string} minimalXml
+ * @param {string[]} [minimalAssetNames]
+ * @returns {string}
+ */
+function buildLuaModule(fullXml, minimalXml, minimalAssetNames) {
+  const names = Array.isArray(minimalAssetNames)
+    ? minimalAssetNames
+    : extractCustomAssetNames(minimalXml);
   return [
     "--[[",
     "    Expanded Global XmlUI documents for Host remount (TOR-439 join-XML spike).",
@@ -106,6 +140,8 @@ function buildLuaModule(fullXml, minimalXml) {
     "",
     fieldLiteral(minimalXml, "minimal", "ui/Global.join_minimal.xml"),
     "",
+    "-- CustomUIAssets names referenced by expanded join-minimal XmlUI.",
+    minimalAssetNamesLiteral(names),
     "--- @return string",
     "function M.getFull()",
     "    return M.full",
@@ -114,6 +150,11 @@ function buildLuaModule(fullXml, minimalXml) {
     "--- @return string",
     "function M.getMinimal()",
     "    return M.minimal",
+    "end",
+    "",
+    "--- @return table array of CustomUIAssets name strings for join-minimal XmlUI",
+    "function M.getMinimalAssetNames()",
+    "    return M.minimalAssetNames",
     "end",
     "",
     "return M",
@@ -136,7 +177,8 @@ function main() {
 
   const fullXml = expandXmlFile(projectRoot, fullRoot, new Set());
   const minimalXml = expandXmlFile(projectRoot, minimalRoot, new Set());
-  const lua = buildLuaModule(fullXml, minimalXml);
+  const minimalAssetNames = extractCustomAssetNames(minimalXml);
+  const lua = buildLuaModule(fullXml, minimalXml, minimalAssetNames);
 
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
   fs.writeFileSync(outPath, lua, "utf8");
@@ -144,7 +186,7 @@ function main() {
   const outRel = path.relative(projectRoot, outPath).split(path.sep).join("/");
   const sizeMb = (fs.statSync(outPath).size / (1024 * 1024)).toFixed(2);
   console.log(
-    `[ui_global_xml_docs] Wrote ${outRel} (${sizeMb} MB; full=${(fullXml.length / 1024).toFixed(0)} KB, minimal=${(minimalXml.length / 1024).toFixed(0)} KB)`
+    `[ui_global_xml_docs] Wrote ${outRel} (${sizeMb} MB; full=${(fullXml.length / 1024).toFixed(0)} KB, minimal=${(minimalXml.length / 1024).toFixed(0)} KB; minimalAssets=${minimalAssetNames.length})`
   );
 }
 
@@ -155,5 +197,6 @@ if (require.main === module) {
 module.exports = {
   expandXmlFile,
   resolveIncludePath,
+  extractCustomAssetNames,
   buildLuaModule,
 };

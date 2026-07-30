@@ -111,7 +111,7 @@ npm run tts-save:inject-global -- --saveName 123
 
 Optional: `--savesDir <path>` (override Saves folder), `--lua`, `--xml`, `--dryRun`, `--noBackup`.
 
-Default Saves folder resolution: `--savesDir` → env `TTS_SAVES_DIR` → `D:/OneDrive/Documents/My Games/Tabletop Simulator/Saves` if present → `%USERPROFILE%/Documents/My Games/Tabletop Simulator/Saves`.
+Default Saves folder resolution: `--savesDir` → env `TTS_SAVES_DIR` → `tts-assets.config.json` `savesDir` → first existing candidate (`D:/Owner/Documents/.../Saves`, OneDrive, `%USERPROFILE%/Documents/...`) → hard default `D:/Owner/Documents/My Games/Tabletop Simulator/Saves`.
 
 **After inject**
 

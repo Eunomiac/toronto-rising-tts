@@ -24457,6 +24457,14 @@ UI.setAttributes("input_sessionNum", {minHeight = "30", fontStyle = "Bold"})
 </Panel>
 ]=]
 
+-- CustomUIAssets names referenced by expanded join-minimal XmlUI.
+M.minimalAssetNames = {
+    "dot_grey",
+    "dot_white",
+    "dot_yellow",
+    "global_blindfold_session_1",
+}
+
 --- @return string
 function M.getFull()
     return M.full
@@ -24465,6 +24473,11 @@ end
 --- @return string
 function M.getMinimal()
     return M.minimal
+end
+
+--- @return table array of CustomUIAssets name strings for join-minimal XmlUI
+function M.getMinimalAssetNames()
+    return M.minimalAssetNames
 end
 
 return M

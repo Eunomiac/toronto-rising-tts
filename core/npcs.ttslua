@@ -4079,8 +4079,15 @@ end
 --- @return boolean ok
 --- @return string|nil err
 function NPCS.auditPreloadPoolFigurines(opts)
-    ensurePreloadLayoutCapacity()
     opts = U.Type(opts) == "table" and opts or {}
+    do
+        local JoinColdPools = require("core.join_cold_pools")
+        if JoinColdPools.isActive() == true then
+            print("[NPCS] Skipping preload figurine audit (join cold pools active).")
+            return true, nil
+        end
+    end
+    ensurePreloadLayoutCapacity()
     local names = U.getKeys(NPCS.characters or {})
     table.sort(names)
 

@@ -127,8 +127,8 @@ Host Lua here is **cheap** compared to ~2000 loading-bar rows. The dangerous Hos
 | **0** | **Experiment: Arm Join XML** (minimal Global XmlUI → Refresh remount) | Isolates whether heavy Global XmlUI at connect drives post-Loading timeouts | Host loses full HUD while armed; remount may still timeout; embeds ~2MB into Global Lua | Phases **Arm Join XML** before joiner; settle Grey; Auto-Seat/Connect; **Refresh XML**. Record control vs treatment. Timing: [Agent-Handoff-Timing-API](../Timing%20Optimizations/Agent-Handoff-Timing-API.md). _(TOR-439)_ |
 | 1 | **Operational playbook** (existing Defer toggles) | Immediate; no architecture change | Needs author/player discipline | Use for struggling seats every join |
 | 2 | **Prune unused CustomUIAssets** | Cuts Loading bar without runtime batching | Need reference audit so used art stays | `tts-save:extract-assets` / custom-ui prune dry-run |
-| 3 | **Slim Intermission CustomUIAssets + `UI.setCustomAssets` batches** | Large join win if engine loads full registry on connect | API **replaces** entire registry; late joiners / mid-session Host must re-apply batches | Spike: empty→minimal→add siteCard batch; measure join Loading N/M |
-| 4 | **Cold table: park preload pools** (NPC figurines, dice) until Host spawn | Shrinks ObjectStates ~100–400 | Late spawn still hits mid-session joiners; Apply UX changes | Inventory GUIDs/tags; Host “Warm NPC pool” / “Warm dice” buttons |
+| 3 | **Slim Intermission CustomUIAssets + `UI.setCustomAssets`** | Large join win if engine loads full registry on connect | API **replaces** entire registry (no merge); Host must restore on Refresh/Disarm | TOR-439 Arm: `getCustomAssets` backup → slim keep-list → `setCustomAssets`; Refresh restores |
+| 4 | **Cold table: park preload pools** (NPC figurines, dice, emitters) | Shrinks ObjectStates ~100–400+ | GUID-preserving destroy/restore; late joiners still need warm before use | TOR-439 Arm: `JoinColdPools.beginCold` / `beginWarm` (preload NPCs + soundscape emitters). Dice pool still open. |
 | 5 | **Lobby save vs full chronicle save** | Clearest engine win | Ops heavy (two saves, promotion workflow) | Only if prune + batches insufficient |
 
 ### Experiment #0 — minimal Global XmlUI (TOR-439)
@@ -143,25 +143,34 @@ Sources: `ui/Global.join_minimal.xml`, Phases Arm/Disarm/Refresh in `core/global
 
 #### Armed-save load (CustomUIAssets Q1 — Host alone)
 
-Goal: load a save whose **Global XmlUI is already minimal**, with full CustomUIAssets registry still in the save, and never remount full HUD before observing Loading.
+Goal: load a save whose **Global XmlUI is already minimal**, preferably with a **slimmed** CustomUIAssets registry from Arm’s `UI.setCustomAssets`, and never remount full HUD before observing Loading.
 
-1. **Save & Play** once with current TOR-439 scripts (so Lua has onLoad armed remount).
-2. In TTS (solo): **Arm Join XML**; confirm slim chrome.
+1. **Save & Play** once with current TOR-439 scripts (so Lua has Arm slim + onLoad armed remount).
+2. In TTS (solo): **Arm Join XML**; confirm slim chrome + console `[JoinXmlAssets] setCustomAssets slim …`.
 3. **Either:**
-   - **A (in-game):** TTS **File → Save** (not Save & Play) while armed — persists `joinXmlArmed` in `LuaScriptState` and (usually) current XmlUI; or
-   - **B (disk, preferred for Loading experiment):** close TTS / switch slot, then:
-     `npm run tts-save:inject-join-minimal -- --saveName <id>`
-     Writes expanded minimal XmlUI into the save and patches `connectionControls.joinXmlArmed` + `deferSetXml` **without** replacing `LuaScript` or wiping state.
-4. **File → Load** that save. Watch Loading (N/M) / network. After load, Host should stay on minimal chrome (`onLoad` remounts minimal when `joinXmlArmed`).
+   - **A (in-game, preferred for asset slim):** TTS **File → Save** (not Save & Play) while armed — persists `joinXmlArmed`, `joinXmlCustomAssetsBackup`, current XmlUI, and (if TTS writes runtime assets) the slim CustomUIAssets registry; or
+   - **B (disk XmlUI only):** `npm run tts-save:inject-join-minimal -- --saveName <id>`
+     Writes expanded minimal XmlUI + armed flags **without** replacing `LuaScript`. Does **not** slim CustomUIAssets on disk — use after Arm+File Save, or accept full registry until onLoad Arm slim runs (too late for Loading N/M).
+4. **File → Load** that save. Watch Loading (N/M). After load, Host stays on minimal chrome (`onLoad` remounts minimal when `joinXmlArmed`; restores backup only on Refresh/Disarm).
 5. **Do not** Save & Play or `tts-save:inject-global` before that load — those rewrite **full** `XmlUI`.
 
-Open question this answers: does Loading still pull the full CustomUIAssets registry when save XmlUI is minimal?
+Open questions: (Q1) does Loading pull every save-root CustomUIAssets URL even when XmlUI is minimal? (Q1b) after Arm+File Save, is the save’s CustomUIAssets array already slim?
+
+### Cold ObjectStates pools (TOR-439)
+
+Arm also destroys **preload-area** NPC figurines + paired lights and all **soundscape emitters**, snapshots `getData()`, and restores via `spawnObjectData` with **`GUID` kept**. Wait until `getObjectFromGUID` is nil before spawn; assert GUID after warm. Module: `core/join_cold_pools.ttslua`.
+
+- Seated / stage NPCs are **not** destroyed.
+- Dice preload pool is **not** included yet (larger ObjectStates slice — follow-on).
+- Soundscape `reconcileFromState` and NPC preload audit **no-op** while `joinColdPoolsActive`.
+- Backup persists in `connectionControls.joinColdPoolsBackup` (can be large — File Save after Arm may grow `LuaScriptState`).
 
 ### `UI.setCustomAssets` research notes
 
-From TTS API (`.dev/tts-api/Scripting API/UI.md`):
-- Replaces **all** Global Custom UI assets (empty table clears).
-- Images only; no merge API.
+API: [getCustomAssets](https://api.tabletopsimulator.com/ui/#getcustomassets) / [setCustomAssets](https://api.tabletopsimulator.com/ui/#setcustomassets) (also `.dev/tts-api/Scripting API/UI.md`):
+- `getCustomAssets()` returns the current Global custom-asset table.
+- `setCustomAssets(assets)` **replaces** the entire registry (empty table clears). Images only; **no merge**.
+- TOR-439 Arm path: backup via `getCustomAssets` → `setCustomAssets` filtered to join-minimal keep-list (`lib.ui_global_xml_docs.getMinimalAssetNames`); Refresh/Disarm restores backup then remounts full XmlUI.
 
 **Answered (author, 2026-07-30):**
 
@@ -197,5 +206,6 @@ If hang is on Loading, Host Lua defer alone cannot fix it — pursue ranks 2–4
 
 - Experiment #0 author multiclient verify (TOR-439) — control vs treatment above.
 - Linear research follow-ons from this inventory (CustomUIAssets / ObjectStates).
-- Experiment #1: CustomUIAssets prune report + optional Intermission-minimal registry spike.
+- Experiment #1: TOR-439 Arm `setCustomAssets` slim + File Save Loading N/M (prefer runtime API over save-JSON prune).
+- Experiment #1b: TOR-439 Arm cold pools (NPC preload figurines/lights + soundscape emitters) via GUID-preserving `spawnObjectData`; dice pool still open.
 - Experiment #2: Host-warmed NPC/dice preload (ObjectStates cold start).

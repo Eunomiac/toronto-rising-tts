@@ -7,8 +7,13 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 
-/** Default TTS Saves folder on this machine (OneDrive Documents layout). */
-const DEFAULT_SAVES_DIR = "D:/OneDrive/Documents/My Games/Tabletop Simulator/Saves";
+const {
+  findExistingConfig,
+  candidateSavesDirs,
+} = require("../custom-ui-assets/lib/tts-assets-config.js");
+
+/** Last-resort default when config / env / candidates are missing (author machine). */
+const DEFAULT_SAVES_DIR = "D:/Owner/Documents/My Games/Tabletop Simulator/Saves";
 
 /**
  * Normalize user-entered save identifier into TS save JSON filename.
@@ -33,7 +38,7 @@ function toSaveFileName(raw) {
 }
 
 /**
- * Resolve the Saves directory: CLI override, env, then repo default, then standard Documents path.
+ * Resolve the Saves directory: CLI → env → tts-assets.config.json → first existing candidate → default.
  * @param {string | undefined} savesDirArg
  * @returns {string}
  */
@@ -47,18 +52,29 @@ function resolveSavesDirectory(savesDirArg) {
     return path.resolve(fromEnv.trim());
   }
 
+  const found = findExistingConfig();
+  if (found && found.config && typeof found.config.savesDir === "string") {
+    return found.config.savesDir;
+  }
+
+  for (const candidate of candidateSavesDirs()) {
+    const resolved = path.resolve(candidate);
+    if (fs.existsSync(resolved)) {
+      return resolved;
+    }
+  }
+
   if (fs.existsSync(DEFAULT_SAVES_DIR)) {
     return DEFAULT_SAVES_DIR;
   }
 
-  const documentsFallback = path.join(
+  return path.join(
     os.homedir(),
     "Documents",
     "My Games",
     "Tabletop Simulator",
     "Saves"
   );
-  return documentsFallback;
 }
 
 /**
