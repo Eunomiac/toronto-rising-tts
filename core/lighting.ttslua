@@ -1988,7 +1988,7 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
 
         light = getLight(lightRef, true)
         if light == nil and isSpawned then
-            return U.waitUntil(function()
+            return U.await(function()
                 return L.SetLightMode(lightRef, mode, player, transitionTime)
             end, function()
                 return getLight(lightRef, true) ~= nil
@@ -2146,7 +2146,7 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
         end
 
         -- Create lerp functions for each property that needs transitioning
-        return U.RunSequence({
+        return U.chain({
             function()
                 local lerpFuncs = {}
 
@@ -2270,9 +2270,9 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
     end
 
     -- Wait for light component if needed (Custom_Assetbundle spotlights: object exists before Unity Light is ready).
-    -- `U.waitUntil` + `CheckCoroutine` is unreliable from spawn callbacks; `Wait.condition` is the TTS-native queue.
+    -- `U.await` + `CheckCoroutine` is unreliable from spawn callbacks; `Wait.condition` is the TTS-native queue.
     if isSpawned and getLightComponent(light, true) == nil then
-        U.waitForCondition(function()
+        U.await(function()
             activateLight()
         end, function()
             return getLightComponent(light, true) ~= nil
@@ -2469,7 +2469,7 @@ function L.InitLights()
     L.reconcileAllPlayers()
 end
 
---- Second pass after load (late-spawned objects). Call from `U.delay` in global onLoad.
+--- Second pass after load (late-spawned objects). Call from `U.await` in global onLoad.
 function L.InitLightsDeferred()
     L.cleanupLightsState()
     local savedLights = S.getStateVal("lights") or {}

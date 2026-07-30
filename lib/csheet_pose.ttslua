@@ -112,7 +112,7 @@ function CP.applyResolvedPose(obj, pose, baseDuration, baseDelay)
   end
 
   if delay > 0 then
-    CU.delay(run, delay)
+    CU.await(run, delay)
   else
     run()
   end

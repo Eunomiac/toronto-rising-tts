@@ -32,10 +32,12 @@
 --   local U = require("lib.util")
 --   local doubled = U.map({1,2,3}, function(x) return x*2 end)
 --   U.AlertGM("Warning message")
---   U.waitUntil(function() doSomething() end, 5) -- Wait 5 seconds
+--   U.await(function() doSomething() end, 5) -- Wait 5 seconds
+--   U.chain({ function() work() return 1 end, function() done() end })
 --
 -- IMPORTANT NOTES:
---   - Coroutine functions (U.waitUntil, U.RunSequence, U.Lerp) require startLuaCoroutine(Global, "...")
+--   - Timing trio: U.await (one-shot), U.chain (dependent steps), U.stagger (parallel offsets)
+--   - U.chain inter-step waits use startLuaCoroutine (unique names); U.await uses Wait.time / Wait.condition
 --   - In Global context, 'self' refers to Global
 --   - Many functions use U.Type() for enhanced type checking (handles TTS userdata types)
 --
@@ -1113,36 +1115,120 @@ function U.iForEach(tbl, func)
 	end
 end
 
---- Schedules a one-shot callback after `seconds` (thin wrapper over TTS `Wait.time`).
--- Game code must use this instead of calling `Wait.time` directly.
--- @param callback function|string Callable when the delay elapses (function reference form supported).
--- @param seconds number Delay in seconds.
--- @return any handle Opaque timer id from TTS (pass to `U.stopDelay` to cancel).
-function U.delay(callback, seconds)
-	U.Assert("U.delay", callback, "function")
-	if seconds == nil then
-		seconds = 0
+--- Wall-clock seconds for timing utilities (`Time.time` when available; else `os.clock`).
+-- @return number
+local function utilNowTime()
+	if Time ~= nil and type(Time.time) == "number" then
+		return Time.time
 	end
-	return Wait.time(callback, seconds)
+	return os.clock()
 end
 
---- Cancels a timer returned by `U.delay` when `handle` is non-nil.
--- @param handle any|nil Timer id from `U.delay`.
-function U.stopDelay(handle)
+--- True when object is finished loading and at rest (or missing — treated as settled/gone).
+-- @param obj Object|nil
+-- @return boolean
+local function objectPhysicsSettled(obj)
+	if obj == nil then
+		return true
+	end
+	if obj.loading_custom == true then
+		return false
+	end
+	return obj.resting == true
+end
+
+--- Build a poll predicate from an await/chain testRef (number | function | Object | table | nil).
+-- Number refs use `startClock` + duration against `utilNowTime` (caller supplies startClock table `{ t = nil }`).
+-- @param tRef any
+-- @param startClock table|nil Shared `{ t = number|nil }` for number waits / maxWait (mutated)
+-- @return function
+local function parseAwaitTestRef(tRef, startClock)
+	local clock = startClock or { t = nil }
+	if tRef == nil then
+		tRef = 0.5
+	end
+	local tRefType = U.Type(tRef)
+	if tRefType == "function" then
+		return tRef
+	elseif tRefType == "number" then
+		local waitDuration = tRef
+		return function()
+			if clock.t == nil then
+				clock.t = utilNowTime()
+			end
+			return (utilNowTime() - clock.t) >= waitDuration
+		end
+	elseif U.isGameObject(tRef) then
+		return function()
+			return objectPhysicsSettled(tRef)
+		end
+	elseif tRefType == "table" then
+		local checkFuncs = U.map(tRef, function(tr)
+			return parseAwaitTestRef(tr, clock)
+		end)
+		return function()
+			if checkFuncs and #checkFuncs > 0 then
+				checkFuncs = U.filter(checkFuncs, function(cf)
+					if cf and U.Type(cf) == "function" then
+						-- pcall: AND-wait tables treat one bad sub-check as non-fatal prune.
+						local success, result = pcall(function() return cf() end)
+						if success then
+							return result == false
+						end
+					end
+					return false
+				end)
+				return #checkFuncs == 0
+			end
+			return true
+		end
+	end
+	return function() return true end
+end
+
+--- Cancels a numeric `U.await` handle (`Wait.stop`). No-op for nil.
+-- Predicate/object awaits are not cancellable via this API in v1.
+-- @param handle any|nil
+function U.cancel(handle)
 	if handle ~= nil and type(Wait) == "table" and type(Wait.stop) == "function" then
 		Wait.stop(handle)
 	end
 end
 
---- Runs `onDone` when `testFn` returns true (thin wrapper over TTS `Wait.condition`).
--- Do not nest `U.delay` inside the `onDone` callback of a condition wait; use `U.RunSequence` instead.
--- @param onDone function Called when the condition is satisfied.
--- @param testFn function Poll function; return true when ready.
--- @param timeoutSeconds number|nil Optional timeout passed to TTS.
-function U.waitForCondition(onDone, testFn, timeoutSeconds)
-	U.Assert("U.waitForCondition", onDone, "function")
-	U.Assert("U.waitForCondition", testFn, "function")
-	Wait.condition(onDone, testFn, timeoutSeconds)
+--- One-shot: run `callback` after `testRef` (seconds | predicate | resting object | AND-table).
+-- Numeric waits use `Wait.time` and return a handle for `U.cancel`. Other waits use `Wait.condition`.
+-- Do not schedule numeric `U.await` from inside a `Wait.condition` completion — use `U.chain` instead.
+-- @param callback function
+-- @param testRef function|number|Object|table|nil
+-- @param opts table|nil `{ maxWait = number }` for non-numeric waits (passed to Wait.condition timeout)
+-- @return any|nil Wait id for numeric awaits; nil otherwise
+function U.await(callback, testRef, opts)
+	U.Assert("U.await", callback, "function")
+	-- Accept legacy third-arg shapes: number = maxWait; boolean (old isForcing) ignored.
+	if U.Type(opts) == "number" then
+		opts = { maxWait = opts }
+	elseif U.Type(opts) ~= "table" then
+		opts = {}
+	end
+	if testRef == nil then
+		testRef = 0.5
+	end
+	local tRefType = U.Type(testRef)
+	if tRefType == "number" then
+		return Wait.time(callback, testRef)
+	end
+	local clock = { t = utilNowTime() }
+	local pred = parseAwaitTestRef(testRef, clock)
+	local maxWait = opts.maxWait
+	local function onTimeout()
+		U.logCoroutineIssue("await:timeout", "maxWait exceeded (" .. tostring(maxWait) .. "s)")
+	end
+	if maxWait ~= nil and U.Type(maxWait) == "number" then
+		Wait.condition(callback, pred, maxWait, onTimeout)
+	else
+		Wait.condition(callback, pred)
+	end
+	return nil
 end
 
 --- Schedules the same `callback` at multiple wall-clock offsets (seconds from now).
@@ -1153,94 +1239,9 @@ function U.scheduleAtOffsets(callback, offsetsSeconds)
 	U.Assert("U.scheduleAtOffsets", offsetsSeconds, "table")
 	for _, sec in ipairs(offsetsSeconds) do
 		if U.Type(sec) == "number" then
-			U.delay(callback, sec)
+			U.await(callback, sec)
 		end
 	end
-end
-
---- Executes a sequence of functions, waiting for objects to rest between each
--- Each function should return an object or table of objects. The sequence waits until all returned objects
--- have finished spawning and come to rest before executing the next function.
--- Uses U.waitForCondition internally (not coroutines).
--- @param funcs table Array of functions. Each function can optionally return an object/objects to wait for.
---   Functions can also return numbers to add delay.
--- @param maxTime number Optional: Maximum time to wait for objects to rest (default: nil, no timeout)
--- @param isLoose boolean Optional: If false, errors on timeout; if true, continues anyway
--- @usage U.waitRestingSequence({
---   function() return spawnCard() end,  -- Wait for card to rest
---   function() return spawnToken() end  -- Then wait for token to rest
--- })
-function U.waitRestingSequence(funcs, maxTime, isLoose)
-	-- funcs is a table of functions, each of which returns an object or a table of objects
-	-- U.waitRestingSequence will wait until the object is resting, before
-	-- calling the next function
-		-- can set a timeout optionally
-		-- can pass 'false' to have function error out rather than continue on timeout
-
-	local delay = 0.5
-	local objTargets
-
-	local function callNext()
-		if #funcs == 0 then return end
-		local func = table.remove(funcs, 1)
-		if U.Type(func) == "function" then
-			if objTargets ~= nil then
-				U.delay(function()
-					U.waitForCondition(function()
-						objTargets = func(objTargets)
-						if objTargets ~= nil and U.Type(objTargets) ~= "table" then
-							objTargets = {objTargets}
-						end
-						callNext()
-					end, function()
-						if objTargets ~= nil and U.Type(objTargets) ~= "table" then
-							objTargets = {objTargets}
-						end
-						for _, objTarget in pairs(objTargets) do
-							if objTarget.loading_custom == true then return false end
-							if objTarget.resting ~= true then return false end
-						end
-						return true
-					end, maxTime)
-				end, delay)
-				delay = 0.5
-			else
-				objTargets = func(objTargets)
-				callNext()
-			end
-		elseif U.Type(func) == "number" then
-			delay = delay + func
-		end
-	end
-
-	callNext()
-end
-
---- Runs `callback` once via `Wait.condition` after physics settles, when `getObject()` is nil (destroyed), or when `completeEarlyIf` returns true if provided.
---
--- Uses the same **`resting`** / **`loading_custom`** rules as **`U.waitRestingSequence`**. Prefer over coroutine-based **`U.waitUntil(..., obj)`** when running from **`onObjectRandomize`** or similar callbacks where **`CheckCoroutine`** can be unreliable (see **`core/lighting.ttslua`** spotlight handling).
---
--- **`callback(o)`** receives **`getObject()`** at completion (**`nil`** if missing). The completion handler may still run **on timeout** (third **`Wait.condition`** argument): call sites mutating physics-sensitive state **must verify** **`o ~= nil`**, not **`loading_custom`**, and **`resting == true`** before acting unless intentionally no-oping.
---
--- @param getObject fun():Object|nil Called each evaluation; typical pattern **`function() return G.getObject(guid) end`**.
--- @param timeoutSeconds number|nil Passed to **`Wait.condition`** (**`nil`** uses engine defaults).
--- @param callback fun(o: Object|nil)
--- @param completeEarlyIf fun():boolean|nil If set and returns **`true`**, the wait succeeds immediately (caller still receives current **`getObject()`** — use **`completeEarlyIf`** for cancel tokens, not as a substitute for resting checks inside **`callback`**).
-function U.runAfterObjectPhysicsSettled(getObject, timeoutSeconds, callback, completeEarlyIf)
-	U.Assert("U.runAfterObjectPhysicsSettled", getObject, "function")
-	U.Assert("U.runAfterObjectPhysicsSettled", callback, "function")
-	if completeEarlyIf ~= nil then
-		U.Assert("U.runAfterObjectPhysicsSettled(completeEarlyIf)", completeEarlyIf, "function")
-	end
-	U.waitForCondition(function()
-		callback(getObject())
-	end, function()
-		if completeEarlyIf ~= nil and completeEarlyIf() then return true end
-		local o = getObject()
-		if o == nil then return true end
-		if o.loading_custom == true then return false end
-		return o.resting == true
-	end, timeoutSeconds)
 end
 
 --- Transforms a table by applying a function to each element
@@ -1762,9 +1763,9 @@ function U.splashUIElement(elemID, duration, delay)
   if (duration == nil) then duration = 5 end
   if (delay == nil or delay == 0) then
     UI.show(elemID)
-    U.delay(function() UI.hide(elemID) end, duration)
+    U.await(function() UI.hide(elemID) end, duration)
   else
-    U.delay(function() U.splashUIElement(elemID, duration, 0) end, delay)
+    U.await(function() U.splashUIElement(elemID, duration, 0) end, delay)
   end
 end
 
@@ -1932,11 +1933,11 @@ function U.Alert(message, color)
 	broadcastToAll(message, color)
 end
 
---- Log coroutine wait / RunSequence faults to the TTS console via `print`.
---- Must never throw: waitUntil/RunSequence call this from pcall recovery paths; a logger crash would
+--- Log coroutine wait / chain faults to the TTS console via `print`.
+--- Must never throw: chainWait/U.chain call this from pcall recovery paths; a logger crash would
 --- replace the real waiter error (TTS sandboxes out `debug`, so `debug.traceback` is unavailable).
---- Use in `U.waitUntil` and `U.RunSequenceWithOptions` error paths (replaces extension `log()` in those paths).
---- @param tag string short context label (e.g. `waitUntil:check`, `RunSequence:step`)
+--- Use in `chainWait` and `U.chain` error paths (replaces extension `log()` in those paths).
+--- @param tag string short context label (e.g. `chainWait:check`, `chain:step`)
 --- @param err any error message from the failed step or wait callback
 --- @param detail table|nil optional structured fields (stepIndex, etc.)
 function U.logCoroutineIssue(tag, err, detail)
@@ -1945,7 +1946,7 @@ function U.logCoroutineIssue(tag, err, detail)
 	print("[coroutine] " .. tagStr .. ": " .. errStr)
 	if detail ~= nil and U.Type(detail) == "table" then
 		-- pcall: JSON.encode throws on userdata/cycles in waiter detail tables. Propagating would
-		-- crash this logger mid-recovery and replace the primary waitUntil/RunSequence fault (TOR-424).
+		-- crash this logger mid-recovery and replace the primary chainWait/U.chain fault (TOR-424).
 		local okEnc, encoded = pcall(function()
 			return JSON.encode(detail)
 		end)
@@ -2293,7 +2294,7 @@ function U.changeLighting(params)
 		return Color(c)
 	end
 
-	U.sequence({
+	U.stagger({
 		function()
 			-- Gradient colors only take effect when ambient_type is 2; set it before other members
 			-- so `Lighting.setAmbient*Color` runs in the correct mode (see TTS Lighting API).
@@ -3373,132 +3374,59 @@ function U.setScaleSlow(obj, scale, duration, easing)
 end
 
 -- ============================================================================
--- TIME & SEQUENCE UTILITIES (COROUTINE-BASED)
+-- TIME & SEQUENCE UTILITIES
 -- ============================================================================
+-- Public trio:
+--   U.await  — one-shot after seconds | pred | object rest | AND-table (Wait.time / Wait.condition)
+--   U.chain  — dependent steps; inter-step waits via unique-name coroutines (do not nest Wait.time in Wait.condition)
+--   U.stagger — parallel fixed offsets (fire-and-forget)
+-- Plus: U.cancel (numeric await handles), U.scheduleAtOffsets
 
---- Delays execution of a function until a condition is met (coroutine-based)
---
--- This is a powerful coroutine-based utility that waits until a condition is satisfied, then executes
--- a function. Supports multiple test types and can wait for objects, time delays, custom conditions, or
--- combinations thereof. Uses startLuaCoroutine internally, so must be called from Global context.
---
--- The testRef parameter determines what condition to wait for:
---   - function: Custom test function that must return true when condition is met
---   - number: Wait this many seconds before executing (0 = immediately)
---   - GameObject: Wait until object has finished spawning AND is at rest
---   - nil: Wait default 0.5 seconds
---   - table: Array of any above types - waits until ALL conditions are met (AND logic)
---
--- @param afterFunc function The function to execute when condition is met
--- @param testRef function|number|Object|table|nil Condition to wait for (see description above)
--- @param isForcing boolean Optional: If true, executes afterFunc even if timeout (default: false)
--- @param maxWait number Optional: Max seconds to wait before timeout (default: 60)
--- @param testFrequency number Optional: Seconds between condition checks (default: 0.1)
--- @param abortCheck function|nil Optional: If set, called each loop iteration; if it returns true, the wait ends successfully and afterFunc runs (used by U.RunSequenceWithOptions for cancel / sequence timeout)
--- @return function Returns a function that returns true when afterFunc has completed
---
--- @usage U.waitUntil(function() print("Done!") end, 5) -- Wait 5 seconds
--- @usage U.waitUntil(function() moveCard() end, cardObj) -- Wait for card to rest
--- @usage U.waitUntil(func, function() return condition == true end) -- Custom condition
--- @usage U.waitUntil(func, {cardObj, 2, customTest}) -- Wait for all conditions
---
--- NOTE: Requires startLuaCoroutine(Global, "CheckCoroutine") - self refers to Global in Global context
-function U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency, abortCheck)
-	if afterFunc == nil then return end
-	if isForcing == nil then isForcing = false end
-	if maxWait == nil then maxWait = 60 end  -- Default to 60 seconds (changed from frames)
-	if testFrequency == nil then testFrequency = 0.1 end  -- Default to 0.1 seconds between checks (changed from frames)
+local chainWaitSeq = 0
 
-	local waitStartTime = nil  -- Start time for time-based waits
-	local hasWaited = false
-
-	-- parseCheckFunc(testRef): Converts testRef into a test function (recursively, if testRef is a table)
-	local function parseCheckFunc(tRef)
-		if tRef == nil then
-			tRef = 0.5  -- Default to 0.5 seconds
-		end
-
-		local tRefType = U.Type(tRef)
-
-		if tRefType == "function" then
-			return tRef
-		elseif tRefType == "number" then
-			-- Use time-based waiting instead of frame counting
-			-- Capture the duration in the closure
-			local waitDuration = tRef  -- Duration in seconds
-			return function()
-				if waitStartTime == nil then
-					waitStartTime = os.time()  -- Initialize start time on first check
-				end
-				local elapsed = os.time() - waitStartTime
-				return elapsed >= waitDuration
-			end
-		elseif U.isGameObject(tRef) then
-			return function()
-				-- Safe access with fallback values
-				local resting = tRef.resting or false
-				local loading = tRef.loading_custom or false
-				return resting and not loading
-			end
-		elseif tRefType == "table" then
-			local checkFuncs = U.map(tRef, function(tr)
-				return parseCheckFunc(tr)
-			end)
-			return function()
-				if checkFuncs and #checkFuncs > 0 then
-					checkFuncs = U.filter(checkFuncs, function(cf)
-						if cf and U.Type(cf) == "function" then
-							-- pcall: AND-wait tables treat one bad sub-check as non-fatal prune; callers rely on timeout/abort paths instead of a full coroutine abort. Propagating would stall unrelated waits that compose heterogeneous conditions.
-							local success, result = pcall(function() return cf() end)
-							if success then
-								return result == false
-							end
-						end
-						return false
-					end)
-					return #checkFuncs == 0
-				end
-				return true
-			end
-		end
-		-- Fallback: return a function that always returns true
+--- Internal: coroutine waiter for U.chain inter-step gaps (unique Global name; Time.time clocks; aborts on maxWait).
+-- On maxWait, calls `onTimeout` (if set) and does **not** run `afterFunc`. AbortCheck ends the wait and runs `afterFunc`.
+-- @param afterFunc function
+-- @param testRef function|number|Object|table|nil
+-- @param maxWait number|nil Per-wait cap seconds (default 60)
+-- @param abortCheck function|nil If returns true, ends wait and runs afterFunc
+-- @param onTimeout function|nil Called when maxWait exceeded
+-- @return function isDone()
+local function chainWait(afterFunc, testRef, maxWait, abortCheck, onTimeout)
+	if afterFunc == nil then
 		return function() return true end
 	end
-
-	if testRef == nil then
-		testRef = 0.5  -- Default to 0.5 seconds
+	if maxWait == nil then
+		maxWait = 60
 	end
 
-	local pCheckFunc = parseCheckFunc(testRef)
-
-	-- Ensure pCheckFunc is valid (parseCheckFunc always returns a function, but be safe)
+	local clock = { t = utilNowTime() }
+	local pCheckFunc = parseAwaitTestRef(testRef, clock)
 	if pCheckFunc == nil or U.Type(pCheckFunc) ~= "function" then
-		pCheckFunc = function() return true end  -- Fallback
+		pCheckFunc = function() return true end
 	end
 
-	local afterReturnVal
+	local finished = false
+	chainWaitSeq = chainWaitSeq + 1
+	local coroutineName = "ChainWaitCoroutine_" .. tostring(chainWaitSeq)
 
-	function CheckCoroutine()
-		if pCheckFunc == nil or U.Type(pCheckFunc) ~= "function" then
-			return 1
-		end
-
+	_G[coroutineName] = function()
+		local timedOut = false
 		while true do
-			-- pcall: Condition callbacks are author-supplied and may throw as objects spawn; the coroutine logs once and exits instead of tearing down Global. Propagating would hard-stop unrelated systems sharing the same script VM.
+			-- pcall: Condition callbacks are author-supplied and may throw as objects spawn; the coroutine logs once and exits instead of tearing down Global.
 			local success, checkResult = pcall(function() return pCheckFunc() end)
 			if not success then
-				-- Soft-stop this waiter (do not tear down Global), but surface loudly — never silent.
-				U.logCoroutineIssue("waitUntil:check", checkResult)
-				U.AlertGM("waitUntil check failed: " .. tostring(checkResult))
+				U.logCoroutineIssue("chainWait:check", checkResult)
+				U.AlertGM("chainWait check failed: " .. tostring(checkResult))
 				break
 			end
 
 			if checkResult then
-				break  -- Condition met, exit loop
+				break
 			end
 
 			if abortCheck ~= nil and U.Type(abortCheck) == "function" then
-				-- pcall: External cancel hooks should never take down the waiter if a listener raises; sequence timeout still applies. Propagating would convert a bad cancel predicate into a full waiter crash.
+				-- pcall: External cancel hooks should never take down the waiter if a listener raises.
 				local okAbort, abortResult = pcall(function()
 					return abortCheck()
 				end)
@@ -3507,88 +3435,77 @@ function U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency, abor
 				end
 			end
 
-			-- Calculate elapsed time
-			local elapsedTime = 0
-			if waitStartTime ~= nil then
-				elapsedTime = os.time() - waitStartTime
+			local elapsedTime = utilNowTime() - clock.t
+			if elapsedTime > maxWait then
+				timedOut = true
+				U.logCoroutineIssue("chainWait:timeout", "maxWait exceeded (" .. tostring(maxWait) .. "s)")
+				U.AlertGM("chainWait timeout (" .. tostring(maxWait) .. "s)")
+				break
 			end
 
-			-- Check timeout (maxWait is now in seconds)
-			if elapsedTime > maxWait and not hasWaited then
-				U.logCoroutineIssue("waitUntil:timeout", "maxWait exceeded (" .. tostring(maxWait) .. "s)")
-				hasWaited = true
-				if isForcing then
-					U.AlertGM("Coroutine Timeout: Forcing ResultFunc")
-					break
-				end
-				U.AlertGM("Coroutine Still Waiting! (See Log Traceback)")
-			end
-
-			-- Yield for a short time (testFrequency is now in seconds)
-			-- Convert seconds to approximate frame yields (60 FPS = ~0.016s per frame)
-			-- Use a minimum of 1 frame yield to avoid tight loops
-			local yieldFrames = math.max(1, math.floor(testFrequency * 60))
-			for i = 1, yieldFrames do
-				coroutine.yield(0)
-			end
+			coroutine.yield(0)
 		end
 
-		if afterFunc ~= nil and U.Type(afterFunc) == "function" then
-			-- pcall: afterFunc runs after long polling; a throw should be recorded without unwinding the entire coroutine host. Propagating would paste surprising errors above TTS’s own coroutine harness noise.
+		if timedOut then
+			if onTimeout ~= nil and U.Type(onTimeout) == "function" then
+				onTimeout()
+			end
+		elseif afterFunc ~= nil and U.Type(afterFunc) == "function" then
+			-- pcall: afterFunc runs after long polling; a throw should be recorded without unwinding the entire coroutine host.
 			local success, result = pcall(function() return afterFunc() end)
-			if success then
-				afterReturnVal = result
-			else
-				U.logCoroutineIssue("waitUntil:afterFunc", result)
-				U.AlertGM("waitUntil afterFunc failed: " .. tostring(result))
+			if not success then
+				U.logCoroutineIssue("chainWait:afterFunc", result)
+				U.AlertGM("chainWait afterFunc failed: " .. tostring(result))
 			end
 		end
 
+		finished = true
+		_G[coroutineName] = nil
 		return 1
 	end
 
-	--- Spawn/callback contexts often have no `self`. TTS expects the Global script object for coroutines, not `_G`.
-	-- pcall: startLuaCoroutine rejects invalid hosts; we log and continue so callers still get the isDone predicate. Propagating would make waitUntil unusable from object contexts even when the rest of the flow is recoverable.
+	-- pcall: startLuaCoroutine rejects invalid hosts; we log and continue so callers still get the isDone predicate.
 	local _okCo, _coErr = pcall(function()
 		local coTarget = self
 		if coTarget == nil then
 			---@diagnostic disable-next-line: undefined-global
 			coTarget = Global ~= nil and Global or _G
 		end
-		startLuaCoroutine(coTarget, "CheckCoroutine")
+		startLuaCoroutine(coTarget, coroutineName)
 	end)
 	if not _okCo then
-		U.logCoroutineIssue("waitUntil:startFailed", _coErr)
+		U.logCoroutineIssue("chainWait:startFailed", _coErr)
+		_G[coroutineName] = nil
+		finished = true
 	end
 
-	return function() return afterReturnVal ~= nil end
+	return function()
+		return finished == true
+	end
 end
 
---- Options table for U.RunSequenceWithOptions (keys are optional unless noted):
--- maxWait — per-step max wait seconds for U.waitUntil (default 60 when nil)
--- frequency — per-step poll interval seconds for U.waitUntil
--- onComplete(ok, detail) — runs exactly once when the sequence ends; detail may be "step_error", "sequence_timeout", "cancelled", or cancelRegistry.reason
--- onStepStart(stepIndex, stepName) — before each step function runs
--- onStepEnd(stepIndex, stepName, success, err) — after each step (err if pcall failed)
--- stepNames — array of labels, e.g. stepNames[1] for the first step
--- sequenceTimeoutSeconds — wall-clock cap; sets cancel.cancelled and reason "sequence_timeout"
--- cancelRegistry — table { cancelled = boolean, reason = string|nil }; set cancelled to abort (best-effort). Pass your own table if you need external cancel together with sequenceTimeoutSeconds.
+--- Options for U.chain (all optional):
+-- maxWait — per-step max wait seconds for inter-step chainWait (default 60)
+-- onComplete(ok, detail) — once when the sequence ends; detail may be "step_error", "step_timeout", "sequence_timeout", "cancelled", or cancelRegistry.reason
+-- onStepStart(stepIndex, stepName) / onStepEnd(stepIndex, stepName, success, err)
+-- stepNames — array of labels
+-- sequenceTimeoutSeconds — wall-clock cap via U.await; sets cancel.cancelled + reason "sequence_timeout"
+-- cancelRegistry — { cancelled, reason }; set cancelled to abort (best-effort)
 
---- Executes a sequence with optional completion hooks, step labels, sequence timeout, and external cancel.
--- Mutates funcs via U.shift (callers must pass a disposable table). Uses U.waitUntil with abortCheck so
--- cancelRegistry / sequence timeout ends waits without waiting for the step condition.
---
--- MCP / External Editor: the chunk that calls this returns immediately; work continues in coroutines.
--- Use the returned isDone predicate, onComplete, or U.emitForAgent / U.mcpEmitResult — not a bare return — for agent-visible completion.
---
--- @param funcs table Array of step functions (each returns a U.waitUntil testRef for the *next* inter-step wait)
--- @param opts table|nil Options (see fields above)
--- @return function isDone() returns true when the sequence has fully finished (including error / cancel paths)
-function U.RunSequenceWithOptions(funcs, opts)
-	U.Assert("U.RunSequenceWithOptions", funcs, "table", "function")
-	opts = opts or {}
+--- Dependent sequencer: each step's return value is the testRef for the next inter-step wait.
+-- Mutates funcs via U.shift (pass a disposable table). Inter-step waits use coroutines — safe for `return 3` gaps.
+-- @param funcs table Step functions
+-- @param opts table|nil See options above
+-- @return function isDone()
+function U.chain(funcs, opts)
+	U.Assert("U.chain", funcs, "table", "function")
+	-- Legacy U.RunSequence(funcs, maxWait, frequency): treat bare number as maxWait.
+	if U.Type(opts) == "number" then
+		opts = { maxWait = opts }
+	elseif U.Type(opts) ~= "table" then
+		opts = {}
+	end
 	local maxWait = opts.maxWait
-	local frequency = opts.frequency
 	local onComplete = opts.onComplete
 	local onStepStart = opts.onStepStart
 	local onStepEnd = opts.onStepEnd
@@ -3603,12 +3520,12 @@ function U.RunSequenceWithOptions(funcs, opts)
 		end
 		completionFired = true
 		if onComplete ~= nil and U.Type(onComplete) == "function" then
-			-- pcall: onComplete is observer code; failures must not mask sequence outcome already committed. Propagating would turn a logging bug into a false “sequence never finished” perception for MCP callers.
+			-- pcall: onComplete is observer code; failures must not mask sequence outcome already committed.
 			local cok, cerr = pcall(function()
 				onComplete(ok, detail)
 			end)
 			if not cok then
-				U.logCoroutineIssue("RunSequence:onComplete", cerr)
+				U.logCoroutineIssue("chain:onComplete", cerr)
 			end
 		end
 	end
@@ -3618,7 +3535,7 @@ function U.RunSequenceWithOptions(funcs, opts)
 		cancel = { cancelled = false, reason = nil }
 	end
 	if sequenceTimeoutSeconds ~= nil and U.Type(sequenceTimeoutSeconds) == "number" and sequenceTimeoutSeconds > 0 then
-		U.delay(function()
+		U.await(function()
 			cancel.cancelled = true
 			cancel.reason = "sequence_timeout"
 		end, sequenceTimeoutSeconds)
@@ -3633,21 +3550,21 @@ function U.RunSequenceWithOptions(funcs, opts)
 			name = stepNames[index]
 		end
 		if onStepStart ~= nil and U.Type(onStepStart) == "function" then
-			-- pcall: Step telemetry hooks are best-effort; a bad hook should not abort the sequence scheduler. Propagating would strand in-flight coroutine waits mid-sequence.
+			-- pcall: Step telemetry hooks are best-effort; a bad hook should not abort the sequence scheduler.
 			pcall(function()
 				onStepStart(index, name)
 			end)
 		end
-		-- pcall: Sequence steps are arbitrary game code; failures must convert to structured logs + onComplete(false) instead of unwinding TTS. Propagating would bypass RunSequenceWithOptions’ completion accounting.
+		-- pcall: Sequence steps are arbitrary game code; failures must convert to structured logs + onComplete(false).
 		local ok, result = pcall(fn)
 		if onStepEnd ~= nil and U.Type(onStepEnd) == "function" then
-			-- pcall: Step end hooks run after potentially throwing steps; isolating prevents double faults while still recording ok/err. Propagating would lose the primary step error detail in the logs.
+			-- pcall: Step end hooks run after potentially throwing steps; isolating prevents double faults.
 			pcall(function()
 				onStepEnd(index, name, ok, ok and nil or result)
 			end)
 		end
 		if not ok then
-			U.logCoroutineIssue("RunSequence:step", result, { stepIndex = index, stepName = name })
+			U.logCoroutineIssue("chain:step", result, { stepIndex = index, stepName = name })
 			return nil, false
 		end
 		return result, true
@@ -3659,7 +3576,7 @@ function U.RunSequenceWithOptions(funcs, opts)
 			return cancel.cancelled == true
 		end
 
-		U.waitUntil(function()
+		chainWait(function()
 			if cancel.cancelled then
 				isDone = true
 				invokeOnComplete(false, cancel.reason or "cancelled")
@@ -3683,7 +3600,10 @@ function U.RunSequenceWithOptions(funcs, opts)
 				return
 			end
 			runNextFunc(ret)
-		end, lastFuncReturnTest, false, maxWait, frequency, abortCheck)
+		end, lastFuncReturnTest, maxWait, abortCheck, function()
+			isDone = true
+			invokeOnComplete(false, "step_timeout")
+		end)
 	end
 
 	local firstFunc = U.shift(funcs)
@@ -3705,39 +3625,6 @@ function U.RunSequenceWithOptions(funcs, opts)
 	end
 
 	return function() return isDone == true end
-end
-
---- Executes a sequence of functions sequentially with conditional delays (coroutine-based)
---
--- Runs functions one after another, where each function's return value determines when the next executes.
--- The return value is used as testRef for U.waitUntil, so you can return:
---   - A number (seconds to wait)
---   - An object (wait until it rests)
---   - A function (wait until it returns true)
---   - A table (wait until all conditions met)
---   - nil (default 0.5s delay)
---
--- This enables complex multi-step sequences like scene transitions: fade lights -> wait -> display text -> wait -> play sound.
---
--- For completion callbacks, step names, sequence timeout, or cancel, use U.RunSequenceWithOptions.
---
--- @param funcs table Array of functions to execute sequentially
--- @param maxWait number Optional: Maximum wait time per step (default: uses U.waitUntil default)
--- @param frequency number Optional: Test frequency per step (default: uses U.waitUntil default)
--- @return function Returns a function that returns true when sequence is complete
---
--- @usage U.RunSequence({
---   function() fadeLights() return 1 end,  -- Wait 1 second after fading
---   function() showText() return cardObj end,  -- Wait for card to rest after showing
---   function() playSound() end  -- Default delay, then complete
--- })
---
--- NOTE: Uses U.waitUntil internally, requires coroutine support in Global context
-function U.RunSequence(funcs, maxWait, frequency)
-	return U.RunSequenceWithOptions(funcs, {
-		maxWait = maxWait,
-		frequency = frequency,
-	})
 end
 
 --- Line prefix for U.emitForAgent / U.mcpEmitResult (parse: strip prefix and first space, then JSON.decode).
@@ -3776,40 +3663,61 @@ function U.mcpEmitResult(data)
 	U.emitForAgent("result", data)
 end
 
---- Executes a sequence of functions with fixed time delays (using U.delay)
---
--- Simpler alternative to U.RunSequence that uses fixed delays between function calls.
--- Each function is scheduled with U.delay. Functions can be numbers to add extra delay.
---
--- @param funcs table Array of functions (and optional numbers for extra delay)
--- @param timeDelay number Fixed delay in seconds between functions (default: 0.5)
--- @return number Total delay time accumulated
---
--- @usage U.sequence({
---   function() showUI() end,
---   2,  -- Extra 2 second pause
---   function() hideUI() end
--- }, 1.0)  -- 1 second between each
-function U.sequence(funcs, timeDelay)
-	timeDelay = timeDelay or 0.5 -- Set default value if none provided
-	local delay = 0 -- Initialize delay to 0
-	for i, func in ipairs(funcs) do
-			if U.Type(func) == "function" then
-				if delay == 0 then
-					func()
-				else
-					U.delay(function()
-							func()
-					end, delay)
-				end
-				delay = delay + timeDelay -- Increment delay by timeDelay
-			elseif U.Type(func) == "number" then
-				delay = delay + func + timeDelay -- Increment delay by func + timeDelay
+--- Parallel fixed offsets: schedule each function (and optional numeric extra pauses) with accumulating delay.
+-- Not dependent — later steps do not wait on earlier return values. Prefer U.chain for sequenced waits.
+-- @param funcs table Functions and optional numbers (extra seconds)
+-- @param timeDelay number Base seconds between scheduled functions (default 0.5)
+-- @return number Total scheduled horizon seconds
+-- @usage U.stagger({ function() showUI() end, 2, function() hideUI() end }, 1.0)
+function U.stagger(funcs, timeDelay)
+	timeDelay = timeDelay or 0.5
+	local delay = 0
+	for _, func in ipairs(funcs) do
+		if U.Type(func) == "function" then
+			if delay == 0 then
+				func()
 			else
-				error("Invalid element in funcs table")
+				U.await(function()
+					func()
+				end, delay)
 			end
+			delay = delay + timeDelay
+		elseif U.Type(func) == "number" then
+			delay = delay + func + timeDelay
+		else
+			error("Invalid element in funcs table")
+		end
 	end
 	return delay
+end
+
+-- Hard-cut landmines (no silent forwarders).
+function U.delay(...)
+	error("Use U.await instead of U.delay", 2)
+end
+function U.stopDelay(...)
+	error("Use U.cancel instead of U.stopDelay", 2)
+end
+function U.waitForCondition(...)
+	error("Use U.await instead of U.waitForCondition", 2)
+end
+function U.waitUntil(...)
+	error("Use U.await (one-shot) or U.chain (sequences) instead of U.waitUntil", 2)
+end
+function U.RunSequence(...)
+	error("Use U.chain instead of U.RunSequence", 2)
+end
+function U.RunSequenceWithOptions(...)
+	error("Use U.chain(funcs, opts) instead of U.RunSequenceWithOptions", 2)
+end
+function U.sequence(...)
+	error("Use U.stagger instead of U.sequence", 2)
+end
+function U.waitRestingSequence(...)
+	error("U.waitRestingSequence was removed; use U.chain / U.await", 2)
+end
+function U.runAfterObjectPhysicsSettled(...)
+	error("Use U.await(callback, pred, { maxWait = ... }) instead of U.runAfterObjectPhysicsSettled", 2)
 end
 
 --- Rounds all components of a Vector to specified precision
@@ -3835,7 +3743,7 @@ end
 -- Uses coroutines internally, so must be called from a context that supports startLuaCoroutine.
 -- In Global context, coroutine name is assigned per call (safe for concurrent U.Lerp usage).
 --
--- Can be used in U.RunSequence by returning it from a function, or by returning a table of lerp
+-- Can be used in U.chain by returning it from a function, or by returning a table of lerp
 -- functions for parallel animation of multiple properties.
 --
 -- @param setFunc function Setter function that receives the interpolated value: setFunc(currentValue)
@@ -3932,18 +3840,18 @@ function U.Lerp(setFunc, paramStart, paramEnd, duration, isRotationLerp, easing,
 		return 0
 	end
 
-	local startTime = os.time()
+	local startTime = utilNowTime()
 	-- Unique global name so multiple U.Lerp runs (e.g. parallel color + angle + intensity) do not
 	-- overwrite the same "LerpCoroutine" entry and cancel each other.
 	local coroutineId = math.random(1000000, 9999999)
 	local coroutineName = "LerpCoroutine_" .. coroutineId
 
 	_G[coroutineName] = function()
-		local timeFrac = (os.time() - startTime) / duration
+		local timeFrac = (utilNowTime() - startTime) / duration
 		while timeFrac < 1 do
 			setFunc(getParam(timeFrac))
 			coroutine.yield(0)
-			timeFrac = (os.time() - startTime) / duration
+			timeFrac = (utilNowTime() - startTime) / duration
 		end
 		setFunc(getParam(1))
 		_G[coroutineName] = nil

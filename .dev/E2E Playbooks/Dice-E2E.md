@@ -3,7 +3,7 @@
 ## Agent Routing
 
 Read this when:
-- executing or editing the canonical Dice E2E `U.RunSequence` blocks
+- executing or editing the canonical Dice E2E `U.chain` blocks
 - regenerating the embedded Dice `RunTest` harness
 
 Source of truth:
@@ -26,7 +26,7 @@ RunTest()
 ## Beginning of Dice E2E Testing Campaign
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     printHeader("Dice E2E: SUITE 0 - Cleanup", 1)
   end,
@@ -72,7 +72,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function() rollConfirm("Brown", { phase = "setup", active = { pool = { normal = 1, hunger = 4 } } }) end,
   function()
     M.setCamera("ALL", "rollBrown")
@@ -82,7 +82,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function() rollConfirm("Brown", { active = { pool = { normal = 0, hunger = 3 } } }) end,
   function()
     M.setCamera("ALL", "rollBrown")
@@ -92,7 +92,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function() rollConfirm("Brown", { active = { pool = { normal = 1, hunger = 4 } } }) end,
   function()
     M.setCamera("ALL", "rollBrown")
@@ -108,7 +108,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollConfirm("Brown", {
       phase = "postRoll",
@@ -222,7 +222,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollStConfirm({
       initiateBlocked = true,
@@ -533,7 +533,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function() printHeader("", 2) end,
   function() printHeader("H1c - Take Half, zero successes (pool 1)", 2) end,
   rollCancelAll,
@@ -583,7 +583,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollSetFaces("Brown", { rouse = { 4 } })
     RC.onDiceSettled("Brown")
@@ -604,7 +604,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollForceConfirm("Brown")
     rollE2eExpectBroadcast({
@@ -702,7 +702,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollConfirm("Brown", {
       phase = "postRoll",
@@ -741,7 +741,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollConfirm("Brown", {
       phase = "postRoll",
@@ -783,7 +783,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollConfirm("Brown", {
       phase = "postRoll",
@@ -826,7 +826,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollConfirm("Brown", {
       phase = "postRoll",
@@ -868,7 +868,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function() printHeader("", 2) end,
   function() printHeader("J2 - Blood surge + compound (same roll)", 2) end,
   rollCancelAll,
@@ -881,7 +881,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   rollE2eWaitForDiceTray,
   function()
     rollConfirm("Brown", {
@@ -914,7 +914,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function() printHeader("", 2) end,
   function() printHeader("", 1) end,
   function() print("") end,
@@ -937,7 +937,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollConfirm("Brown", {
       meta = { bloodSurgeActive = true },
@@ -958,7 +958,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     -- Cold bag initiate → SETUP (player initiator); only Remorse skips SETUP.
     rollConfirm("Brown", {
@@ -979,7 +979,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollConfirm("Brown", {
       phase = "setup",
@@ -999,7 +999,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function() rollConfirm("Brown", { active = { pool = { normal = 2 } } }) end,
   function() printHeader("", 2) end,
   function() printHeader("K2b - Normal bag right removes last normal/hunger", 2) end,
@@ -1014,7 +1014,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollConfirm("Brown", { active = { pool = { normal = 1 } } })
     rollCancel("Brown")
@@ -1031,7 +1031,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollConfirm("Brown", {
       meta = { bloodSurgeActive = true },
@@ -1051,7 +1051,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollConfirm("Brown", {
       meta = { bloodSurgeActive = true },
@@ -1071,7 +1071,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollConfirm("Brown", { active = { pool = { rouse = 1 } } })
     rollCancel("Brown")
@@ -1088,7 +1088,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollConfirm("Brown", {
       meta = { bloodSurgeActive = false },
@@ -1108,7 +1108,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollConfirm("Brown", { active = { pool = { normal = 1 } } })
     rollCancel("Brown")
@@ -1125,7 +1125,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollConfirm("Brown", {
       meta = { bloodSurgeActive = true },
@@ -1150,7 +1150,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollE2eOpenRoll("Brown")
     rollE2eConfirmBagEnabled("Brown", "hunger", true)
@@ -1165,7 +1165,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function() printHeader("", 2) end,
   function() printHeader("K2g-Brown - SKIP (no Oblivion-Rouse bag on Brown)", 2) end,
   function()
@@ -1183,7 +1183,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollConfirm("Purple", { pool = { rouse = 0, oblivRouse = 1 } })
     rollE2eConfirmBagEnabled("Purple", "rouse", false)
@@ -1202,7 +1202,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollConfirm("Brown", {
       phase = "preRoll",
@@ -1226,7 +1226,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollConfirm("Brown", { active = { pool = { rouse = 2 } } })
     rollCancel("Brown")
@@ -1244,7 +1244,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollConfirm("Purple", {
       phase = "preRoll",
@@ -1268,7 +1268,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function() rollConfirm("Brown", { noActive = true }) end,
   function() printHeader("", 2) end,
   function() printHeader("", 1) end,
@@ -1293,7 +1293,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollConfirm("Brown", {
       phase = "preRoll",
@@ -1331,7 +1331,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollConfirm("Brown", { pool = { normal = 1, hunger = 0 } })
     rollCancel("Brown")
@@ -1360,7 +1360,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollConfirmTracker("Brown", { willpowerSuperficial = 3 })
     rollCancel("Brown")
@@ -1403,7 +1403,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollSetFaces("Brown", { normal = {7, 3}, hunger = {1} })
     rollConfirm("Brown", {
@@ -1430,7 +1430,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollConfirm("Brown", {
       meta = { bloodSurgeActive = true },
@@ -1449,7 +1449,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollConfirm("Brown", {
       meta = { bloodSurgeActive = true },
@@ -1468,7 +1468,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollConfirm("Brown", {
       meta = { bloodSurgeActive = false },
@@ -1508,7 +1508,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function() rollStConfirm({ liveSlotIndexAbsent = true, slotNotCleared = 1 }) end,
   function()
     M.setCamera("ALL", "rollBlack")
@@ -1518,7 +1518,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollStConfirm({ liveSlotIndexAbsent = true })
     rollCancel("Black")
@@ -1534,7 +1534,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollSetFaces("Black", { werewolf = { 8, 6 }, rage = { 5, 7 } })
     RC.startRolling("Black")
@@ -1557,7 +1557,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollSetFaces("Black", { werewolf = { 8, 6 }, rage = { 5, 7 } })
     RC.startRolling("Black")
@@ -1592,7 +1592,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollSetFaces("Black", { rage = { 1, 2 } })
     RC.startRolling("Black")
@@ -1623,7 +1623,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   rollE2eWaitForDiceTray,
   function()
     return rollE2eSettlePresetCheck("Purple", { oblivRouse = { 6, 6 } }, { skipSpawn = true })
@@ -1649,7 +1649,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   rollE2eWaitForDiceTray,
   function()
     return rollE2eSettlePresetCheck("Purple", { oblivRouse = { 3, 3 } }, { skipSpawn = true })
@@ -1674,7 +1674,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   rollE2eWaitForDiceTray,
   function()
     return rollE2eSettlePresetCheck("Purple", { oblivRouse = { 3, 10 } }, { skipSpawn = true })
@@ -1702,7 +1702,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   rollE2eWaitForDiceTray,
   function()
     return rollE2eSettlePresetCheck("Purple", { oblivRouse = { 1, 10 } }, { skipSpawn = true })
@@ -1728,7 +1728,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   rollE2eWaitForDiceTray,
   function()
     return rollE2eSettlePresetCheck("Purple", { oblivRouse = { 3, 7 } }, { skipSpawn = true })
@@ -1759,7 +1759,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   rollE2eWaitForDiceTray,
   function()
     return rollE2eSettlePresetCheck("Purple", {
@@ -1782,7 +1782,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     rollConfirm("Purple", { noActive = true })
     rollConfirmTracker("Purple", { hunger = 1, stains = 2 })

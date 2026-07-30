@@ -360,7 +360,7 @@ function Palette.applyPaletteParkingRotation(palette, token)
         return
     end
     token.setRotation(Palette.rotationForPaletteParking(palette))
-    U.delay(function()
+    U.await(function()
         if not U.isGameObject(token) then
             return
         end

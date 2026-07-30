@@ -363,7 +363,7 @@ function PCST.onHudClick(player, _button, id)
       Conditions.setManual(pid, "hudBlindfold", { variant = math.random(1, 6) })
       local Main = require("core.main")
       if type(Main.setDefaultCameraBeforeBlindfold) == "function" then
-        U.delay(function()
+        U.await(function()
           Main.setDefaultCameraBeforeBlindfold(color)
         end, 1.5)
       end

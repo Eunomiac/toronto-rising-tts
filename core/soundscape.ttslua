@@ -24,7 +24,7 @@ local musicGeneration = 0
 local featuredGeneration = 0
 local weatherGeneration = 0
 local singleEmitterTransitionGeneration = {}
---- Bumped on each `playCatalogEntry` clip swap and `cancelSingleEmitterTransition`; stale `U.delay` volume arms no-op.
+--- Bumped on each `playCatalogEntry` clip swap and `cancelSingleEmitterTransition`; stale `U.await` volume arms no-op.
 local playCatalogEntryGeneration = {}
 --- Let Unity finish AssetBundle clip swap before unmute/fade (~one frame at 30fps).
 local EMITTER_POST_SWAP_ARM_SECONDS = 0.034
@@ -615,8 +615,8 @@ local function playCatalogEntry(channelKey, entry, volume, fadeSeconds, fromVolu
         updateChannelState(channelKey, { volumeControl = didSetVolume })
     end
 
-    if U ~= nil and type(U.delay) == "function" then
-        U.delay(armEmitterVolumeAfterClipSwap, EMITTER_POST_SWAP_ARM_SECONDS)
+    if U ~= nil and type(U.await) == "function" then
+        U.await(armEmitterVolumeAfterClipSwap, EMITTER_POST_SWAP_ARM_SECONDS)
     else
         armEmitterVolumeAfterClipSwap()
     end

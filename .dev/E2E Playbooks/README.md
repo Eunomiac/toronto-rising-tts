@@ -63,13 +63,13 @@ Snippets are diagnostic only. Do **not** call `Sync.full({ force = true })` duri
 
 **TOR-141** long-term target: migrate playbooks to [Step-by-step template](../Step-By-Step%20Playbooks/.Step-By-Step%20Template.md) (`▶▶▶ HUMAN ▶▶▶` cues, merged phases per Code Block) while retaining **`RunTest`** harness wiring. Dice, Scenes, and Gameboard now use the two-document lean playbook + guide format. New ad-hoc verification should use [Step-By-Step Playbooks](../Step-By-Step%20Playbooks/README.md).
 
-### Console output (`printHeader` + `U.RunSequence`)
+### Console output (`printHeader` + `U.chain`)
 
 All manual playbooks should structure Lua steps like **[Dice-E2E.md](Dice-E2E.md)** so the TTS log is ordered and readable:
 
 - **Lean playbook file** — title + fenced `lua` blocks only; suite/step names in `printHeader`, not markdown headings. Split blocks **only** on human TTS interaction ([TESTING.md § Streamlined block workflow](../TESTING.md#streamlined-block-workflow)).
 - **`RunTest` driver** — `npm run e2e-playbook:generate` embeds Dice, Scenes, and Gameboard blocks into `lib/e2e_playbook_*.ttslua`; in TTS: `RunTest("Dice")`, `RunTest("Scenes")`, or `RunTest("Gameboard")`, then `RunTest()` per step.
-- **`U.RunSequence`** — one paste per block; `printHeader` / `print` each in its own `function()` step.
+- **`U.chain`** — one paste per block; `printHeader` / `print` each in its own `function()` step.
 - **`printHeader(text, level)`** — level 1 `*` (suite), 2 `=` (step), 3 `-` (`[HUMAN]` instructions; never closed). Close suites/steps with `printHeader("", level)`; add `print("")` after each suite.
 - **`M.setCamera("ALL", "roll<Color>")`** — before human bag/dice/panel steps.
 
@@ -79,11 +79,11 @@ Full rules, layout (100-char banner with spaces around text), and a copy-paste t
 
 | Doc | Scope |
 | --- | --- |
-| [Scenes-E2E.md](Scenes-E2E.md) | Scenes E2E — streamlined `U.RunSequence` blocks only (run from Suite 0; see Guide for workflow) |
+| [Scenes-E2E.md](Scenes-E2E.md) | Scenes E2E — streamlined `U.chain` blocks only (run from Suite 0; see Guide for workflow) |
 | [Scenes-E2E-Guide.md](Scenes-E2E-Guide.md) | Scenes E2E reference: fixture slots, conventions, prerequisites, sign-off |
-| [Dice-E2E.md](Dice-E2E.md) | Dice E2E — streamlined `U.RunSequence` blocks only (run from Suite 0; see Guide for workflow) |
+| [Dice-E2E.md](Dice-E2E.md) | Dice E2E — streamlined `U.chain` blocks only (run from Suite 0; see Guide for workflow) |
 | [Dice-E2E-Guide.md](Dice-E2E-Guide.md) | Dice E2E reference: helpers, conventions, prerequisites, sign-off |
-| [Gameboard-E2E.md](Gameboard-E2E.md) | Gameboard E2E — streamlined `U.RunSequence` blocks only (run from Suite 0; see Guide for workflow) |
+| [Gameboard-E2E.md](Gameboard-E2E.md) | Gameboard E2E — streamlined `U.chain` blocks only (run from Suite 0; see Guide for workflow) |
 | [Gameboard-E2E-Guide.md](Gameboard-E2E-Guide.md) | Gameboard reference: fixture constants, macro helpers, smoke/full/deferred tables, sign-off |
 | [Multiplayer-Session.md](Multiplayer-Session.md) | **Author** Host + join-client session script (TOR-249 / TOR-144) |
 | [Multiplayer-E2E.md](Multiplayer-E2E.md) | Agent coverage checklist + console probes for multiclient |

@@ -421,7 +421,7 @@ local function applySnapGroupDefaultLightAtEntry(token, entry, board, cfg)
     if token.setRotation ~= nil then
         local rot = Tokens.rotationForNpcControlToken(boardYaw, entry.yawDeg, faceUp)
         token.setRotation(rot)
-        U.delay(function()
+        U.await(function()
             if not Board.isGameObject(token) or not Board.isTokenOnControlBoardSurface(board, token) then
                 return
             end
@@ -789,7 +789,7 @@ function Interactions.tryBoardFamilyGroupRelocate(droppedToken, sourceFamilyId)
     anchorFamilySpreadDepth = anchorFamilySpreadDepth - 1
 
     -- Close families (e.g. Mid Center → CENTER): vacated source snaps can pull tokens back.
-    U.delay(function()
+    U.await(function()
         if not Board.isGameObject(board) then
             return
         end
@@ -1247,7 +1247,7 @@ function Interactions.onNpcControlTokenDropped(token, playerColor)
     applyControlTokenDropScaleByBoardPosition(token, board)
 
     local fuzziness = Board.snapMatchFuzzinessForBoard(board)
-    U.waitForCondition(
+    U.await(
         function()
             applyNpcSeatRowFromDroppedToken(token, board, fuzziness)
         end,
@@ -1268,7 +1268,7 @@ function Interactions.onNpcControlTokenDropped(token, playerColor)
             end
             return true
         end,
-        1.0
+        { maxWait = 1.0 }
     )
 
     if not wantPaletteLight and not wantAnchorSpread and not wantGroupRelocate then
@@ -1279,7 +1279,7 @@ function Interactions.onNpcControlTokenDropped(token, playerColor)
         return
     end
 
-    U.waitForCondition(
+    U.await(
         function()
             if wantPaletteLight then
                 local lightResult = Interactions.applySnapGroupDefaultLightOnPaletteDrop(token)
@@ -1343,7 +1343,7 @@ function Interactions.onNpcControlTokenDropped(token, playerColor)
             end
             return true
         end,
-        1.0
+        { maxWait = 1.0 }
     )
     Interactions.finishInteractionProfile(t0)
 end

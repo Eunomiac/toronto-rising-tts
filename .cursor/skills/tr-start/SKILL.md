@@ -40,7 +40,7 @@ You are starting (or re-scoping) work on **Toronto Rising**, a Vampire: The Masq
 
 10. **`docs/solutions/lua-local-function-order.md`** — **READ FIRST among Lua policies.** Top recurring runtime bug: **`local function` before every caller** in the same file (or forward-declare). Causes `attempt to call a nil value` in `Global.*`, `Global.call`, HUD/object handlers; **not caught by `npm run build`**. Always-on: `.cursor/rules/toronto-rising-lua-local-function-order.mdc`.
 11. `docs/solutions/lua-pcall-policy.md` — **no `pcall`** in production paths unless annotated necessity + impact.
-12. `docs/solutions/lua-wait-api-policy.md` — **no raw `Wait.time` / `Wait.condition` / `Wait.stop`** outside `lib/util.ttslua`; use `U.delay`, `U.waitForCondition`, `U.RunSequence`, etc.
+12. `docs/solutions/lua-wait-api-policy.md` — **no raw `Wait.time` / `Wait.condition` / `Wait.stop`** outside `lib/util.ttslua`; use `U.await`, `U.chain`, `U.stagger`, etc.
 13. `docs/solutions/lua-ui-full-xml-policy.md` — avoid **`UI.setXml` / `setXmlTable`**; prefer `setAttribute`, `setAttributes`, `setValue`, `show`/`hide`. Gate counts are baseline — do not add call sites without review.
 14. `.dev/AVAILABLE_FUNCTIONS.md` + `lib/util.ttslua` — **reuse existing helpers** (`U.map`, `U.filter`, `U.Type`, …) before writing new ones.
 15. `.dev/Sychronizing Game Functionality/TTS-API-Heavy-Workload-Catalog.md`, `.dev/Sychronizing Game Functionality/TTS-API-Heavy-Workload-Usage-Inventory.md`, and `.dev/Sychronizing Game Functionality/Performance Audit.md` — **mandatory before Lua/XML changes touching TTS APIs, scans/casts, object spawn/reload/custom object APIs, component traversal, timers, AssetBundle/audio updates, or broad UI refresh fan-out.**

@@ -31,7 +31,7 @@ Every high-frequency handler must be able to **reject unrelated events in one O(
 
 - `require()` of heavy modules
 - Iterating `gameState` or NPC instance tables
-- Starting `U.waitForCondition` / coroutines
+- Starting `U.await` / coroutines
 - Calling `Sync.*` or domain reconcilers
 
 If the guard fails, **return immediately** — no logging in the hot path unless `DEBUG` gated.
@@ -246,9 +246,9 @@ After any blindfold comes **up**, wait ~1.5s for the overlay to settle, then cal
 
 | Raise path | File | When |
 | --- | --- | --- |
-| Global overlay show | `global_script.showStartupLoadingOverlays` | after `UI.show(overlay_globalBlindfold)`, then `U.delay(1.5)` |
-| Per-player transition | `HUDBF.beginTransition` | after condition + parent Panel `UI.show` (children armed first, incl. optional destination cards — TOR-431 / TOR-425), then `U.delay(1.5)` |
-| PCs panel Blind toggle on | `PCST` `blindfoldToggle` | after `Conditions.setManual(hudBlindfold)`, then `U.delay(1.5)` |
+| Global overlay show | `global_script.showStartupLoadingOverlays` | after `UI.show(overlay_globalBlindfold)`, then `U.await(1.5)` |
+| Per-player transition | `HUDBF.beginTransition` | after condition + parent Panel `UI.show` (children armed first, incl. optional destination cards — TOR-431 / TOR-425), then `U.await(1.5)` |
+| PCs panel Blind toggle on | `PCST` `blindfoldToggle` | after `Conditions.setManual(hudBlindfold)`, then `U.await(1.5)` |
 
 Lift/settle paths may still reset cameras while the blindfold is down (existing settle behavior).
 

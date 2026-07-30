@@ -23,22 +23,25 @@ The gate fails when any metric **increases** above the last logged baseline. Aft
 
 `pcall` is still counted in **all** scanned `*.ttslua` files (including util). See [`lua-pcall-policy.md`](lua-pcall-policy.md).
 
-## Approved APIs
+## Approved APIs (TOR-438)
 
 | Need | Use |
 |------|-----|
-| One-shot delay, debounce, cancellable timer handle | `U.delay(callback, seconds)` / `U.stopDelay(handle)` |
-| Poll until predicate (non-coroutine) | `U.waitForCondition(onDone, testFn, timeoutSeconds?)` |
+| One-shot delay, debounce, cancellable timer handle | `U.await(callback, seconds)` / `U.cancel(handle)` |
+| Poll until predicate | `U.await(onDone, testFn, { maxWait = n }?)` |
 | Same callback at several offsets | `U.scheduleAtOffsets(callback, { 0.35, 1.5, ... })` |
-| Fixed stagger between steps | `U.sequence(funcs, timeDelay)` |
-| Conditional steps, lerps, load gates | `U.RunSequence` / `U.RunSequenceWithOptions` |
-| Physics settled after randomize / spawn | `U.runAfterObjectPhysicsSettled` (not `U.waitUntil(obj)` from those callbacks) |
+| Fixed stagger between steps (parallel offsets) | `U.stagger(funcs, timeDelay)` |
+| Dependent steps / lerps / load gates | `U.chain(funcs, opts?)` |
+| Physics settled after randomize / spawn | `U.await(callback, pred, { maxWait = n })` with resting/`loading_custom` (and cancel token) in `pred` |
+
+Object scripts that cannot `require("lib.util")` may use thin `CU.await` in `lib/csheet_util.ttslua` / `lib/object_positions_object.ttslua` (direct `Wait.time`).
 
 ## Do not
 
-- Nest `U.delay` inside the completion callback of `U.waitForCondition` — TTS may fire the delay immediately. Use `U.RunSequence` instead (see [`HUD_FUNCTIONS.md`](../../.dev/HUD_FUNCTIONS.md) loading-overlay note).
-- Call `U.waitUntil(..., gameObject)` from `onObjectRandomize` or similar — use `U.runAfterObjectPhysicsSettled`.
+- Nest numeric `U.await` inside the completion callback of a predicate `U.await` — TTS may fire the delay immediately. Use `U.chain` instead (see [`HUD_FUNCTIONS.md`](../../.dev/HUD_FUNCTIONS.md) loading-overlay note).
+- Call raw `Wait.time` / `Wait.condition` / `Wait.stop` from game modules.
+- Use removed names (`U.delay`, `U.RunSequence`, `U.waitUntil`, …) — they `error()` loudly.
 
 ## Comments and the gate
 
-The gate matches **comments and strings** that contain `Wait.time(` or `Wait.condition(`. Prefer `U.delay` / `U.waitForCondition` in prose, or describe behavior without those substrings.
+The gate matches **comments and strings** that contain `Wait.time(` or `Wait.condition(`. Prefer `U.await` / `U.chain` in prose, or describe behavior without those substrings.

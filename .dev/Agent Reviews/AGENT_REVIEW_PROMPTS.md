@@ -128,7 +128,7 @@ Update **`.dev/Sychronizing Game Functionality/Dual_apply_survey.md`** with a fr
    - `U.applyLightingPreset`
    - `Sync.full`, `Sync.player`, `invalidateReconcileCache`, `markReconciledToCurrentState`
    - `UpdateUIDisplays`, `HO.syncAll`
-   - `Wait.time` / `U.delay` / `U.scheduleAtOffsets` adjacent to the above (stacked fades)
+   - `Wait.time` / `U.await` / `U.scheduleAtOffsets` adjacent to the above (stacked fades)
 
 4. For each **mutation handler** (Storyteller panels, global UI handlers, scene library apply, weather/chronicle tick, debug helpers that are production-adjacent):
    - Trace: **state write → eager world apply? → Sync call?**
@@ -243,7 +243,7 @@ Identify **expensive or repeatedly-triggered** sync/world/UI paths and recommend
 2. **Ripgrep for call frequency risk:**
    - `Sync.full\(`, `Sync.player\(`, `UpdateUIDisplays\(`, `HO.syncAll\(`, `L.reconcileAllPlayers\(`
    - Loops over `C.PlayerColors` containing sync calls
-   - `U.scheduleAtOffsets` / `U.delay` chains tied to sync
+   - `U.scheduleAtOffsets` / `U.await` chains tied to sync
    - NPC preload / spawn pool sizing
 
 3. For each hotspot document:

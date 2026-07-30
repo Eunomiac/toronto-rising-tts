@@ -57,7 +57,7 @@ local transitionSiteCardImage = nil
 
 local function cancelPendingDefaultCamera()
   if pendingCameraDelayId ~= nil then
-    U.stopDelay(pendingCameraDelayId)
+    U.cancel(pendingCameraDelayId)
     pendingCameraDelayId = nil
   end
 end
@@ -229,7 +229,7 @@ end
 --- Snap cameras after the blindfold overlay has had time to fully cover the view (TOR-368).
 local function scheduleDefaultCameraAfterBlindfold()
   cancelPendingDefaultCamera()
-  pendingCameraDelayId = U.delay(function()
+  pendingCameraDelayId = U.await(function()
     pendingCameraDelayId = nil
     setDefaultCameraForSeatedPlayers()
   end, DEFAULT_CAMERA_AFTER_BLINDFOLD_SEC)
@@ -248,7 +248,7 @@ end
 ---   table — `{ variant?, districtKey?, siteKey? }` (keys from the *destination* scene; live sessionScene is still old)
 function HUDBF.beginTransition(optsOrVariant)
   if pendingEndDelayId ~= nil then
-    U.stopDelay(pendingEndDelayId)
+    U.cancel(pendingEndDelayId)
     pendingEndDelayId = nil
   end
   -- Drop any prior transition recipients before recording a new set (mid-settle restart).
@@ -301,7 +301,7 @@ end
 --- Clear transition blindfold conditions and refresh HUD overlays (parent UI.hide + delayed child reset).
 function HUDBF.endTransition()
   if pendingEndDelayId ~= nil then
-    U.stopDelay(pendingEndDelayId)
+    U.cancel(pendingEndDelayId)
     pendingEndDelayId = nil
   end
   cancelPendingDefaultCamera()
@@ -323,7 +323,7 @@ end
 --- @param delaySec number
 function HUDBF.scheduleEnd(delaySec)
   if pendingEndDelayId ~= nil then
-    U.stopDelay(pendingEndDelayId)
+    U.cancel(pendingEndDelayId)
     pendingEndDelayId = nil
   end
   local d = tonumber(delaySec) or 0
@@ -333,7 +333,7 @@ function HUDBF.scheduleEnd(delaySec)
   if d > 0 then
     setDefaultCameraForSeatedPlayers()
   end
-  pendingEndDelayId = U.delay(function()
+  pendingEndDelayId = U.await(function()
     pendingEndDelayId = nil
     HUDBF.endTransition()
   end, d)
@@ -352,7 +352,7 @@ local function resolveOptSec(raw, defaultSec)
   return n
 end
 
---- Close panel + blindfold immediately; defer heavy work with `U.waitUntil` until blindfold-down
+--- Close panel + blindfold immediately; defer heavy work with `U.await` until blindfold-down
 --- animations finish (TOR-434), then settle and lift.
 --- @param workFn fun(): boolean, string|nil returns success and optional error message
 --- @param opts table|nil { leadInDelaySec = number, settleDelaySec = number, variant = number|nil }
@@ -366,7 +366,7 @@ function HUDBF.runTransitionAfterLeadIn(workFn, opts)
 
   HUDBF.beginTransition(opts)
 
-  U.waitUntil(function()
+  U.await(function()
     local ok, errMsg = workFn()
     if ok ~= true then
       if type(errMsg) == "string" and errMsg ~= "" then
@@ -380,7 +380,7 @@ function HUDBF.runTransitionAfterLeadIn(workFn, opts)
 end
 
 --- Blindfold on → wait for slide/FadeIn → work → settle delay → blindfold off (TOR-434).
---- Work is deferred via `U.RunSequence` so XmlUI animations are not hitch-frozen.
+--- Work is deferred via `U.chain` so XmlUI animations are not hitch-frozen.
 --- @param workFn fun(): boolean, string|nil returns success and optional error message
 --- @param opts table|nil `{ settleDelaySec?, variant?, districtKey?, siteKey?, leadInDelaySec? }`
 function HUDBF.runTransition(workFn, opts)
@@ -393,7 +393,7 @@ function HUDBF.runTransition(workFn, opts)
 
   HUDBF.beginTransition(opts)
 
-  U.RunSequence({
+  U.chain({
     function()
       return leadInDelaySec
     end,
@@ -413,7 +413,7 @@ end
 
 --- Staged scene transition (TOR-147 / TOR-434): blindfold down → wait for animations → fade-out →
 --- heavy work → silent settle → lift + fade-in.
---- Each phase is isolated in time via `U.RunSequence` so XmlUI slide/FadeIn and resource-heavy
+--- Each phase is isolated in time via `U.chain` so XmlUI slide/FadeIn and resource-heavy
 --- reconcile never compete (prevents animation hitch).
 --- @param phases table `{ fadeOut?: fun(), work?: fun(): boolean, string|nil, fadeIn?: fun() }`
 ---   - `fadeOut` runs only after blindfold-down animations finish
@@ -435,7 +435,7 @@ function HUDBF.runStagedTransition(phases, opts)
   HUDBF.beginTransition(opts)
 
   local workFailed = false
-  U.RunSequence({
+  U.chain({
     function()
       -- Hold until parent SlideIn + destination-card FadeIns finish (TOR-434).
       return leadInDelaySec

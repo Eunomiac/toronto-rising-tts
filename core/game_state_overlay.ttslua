@@ -24,7 +24,7 @@ local ChronicleWeather = require("lib.chronicle_weather")
 
 local tickerHandle = nil
 
---- Monotonic token bumped on every ticker stop/(re)start. A stale `U.delay` callback whose
+--- Monotonic token bumped on every ticker stop/(re)start. A stale `U.await` callback whose
 --- `Wait.stop` did not actually cancel checks this and aborts instead of re-arming the loop —
 --- root cause of the RT clock accelerating as scenes change (duplicate tick chains).
 local tickerEpoch = 0
@@ -730,14 +730,14 @@ local function scheduleNextTick(epoch)
         return
     end
     if tickerHandle ~= nil then
-        U.stopDelay(tickerHandle)
+        U.cancel(tickerHandle)
         tickerHandle = nil
     end
     local ckPre = S.getStateVal("sessionScene", "clock")
     if type(ckPre) ~= "table" or ckPre.useRealTime ~= true then
         return
     end
-    tickerHandle = U.delay(function()
+    tickerHandle = U.await(function()
         if epoch ~= tickerEpoch then
             return
         end
@@ -767,7 +767,7 @@ end
 function GameStateOverlay.stopTicker()
     tickerEpoch = tickerEpoch + 1
     if tickerHandle ~= nil then
-        U.stopDelay(tickerHandle)
+        U.cancel(tickerHandle)
         tickerHandle = nil
     end
     rtMinuteCarry = 0

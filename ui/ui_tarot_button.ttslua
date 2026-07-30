@@ -66,7 +66,7 @@ local function runWhenSeatLayoutReady(callback, attempt)
             return
         end
         local delaySeconds = getBackoffDelaySeconds(currentAttempt)
-        CU.delay(function()
+        CU.await(function()
             retry(currentAttempt + 1)
         end, delaySeconds)
     end

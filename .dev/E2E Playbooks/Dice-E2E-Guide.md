@@ -25,7 +25,7 @@ Reference for the lean test playbook `Dice-E2E.md`. Run tests in order from Suit
 
 ## Running the playbook (streamlined blocks)
 
-`Dice-E2E.md` contains **only** fenced `U.RunSequence` Lua blocks (no markdown suite/step headers). Context appears in console via **`printHeader`**:
+`Dice-E2E.md` contains **only** fenced `U.chain` Lua blocks (no markdown suite/step headers). Context appears in console via **`printHeader`**:
 
 | Level | Meaning |
 | --- | --- |
@@ -43,7 +43,7 @@ lua RunTest("Dice", 8)     -- arm at step 8/56; RunTest("Dice", "H") jumps to su
 lua RunTest()              -- prints [RunTest] Dice step N/total, then runs the block
 ```
 
-Re-arming with `RunTest("Dice")` resets the step index and cancels any in-flight step. Step index is **1-based** (each fenced `U.RunSequence` block). Suite ids (`0`, `A`–`P`, `E2`) map to the first block that opens that suite. After a **Save & Play** reload, all steps are replayable; without reload, steps already run in-session may be empty (playbook tables are mutated once per load).
+Re-arming with `RunTest("Dice")` resets the step index and cancels any in-flight step. Step index is **1-based** (each fenced `U.chain` block). Suite ids (`0`, `A`–`P`, `E2`) map to the first block that opens that suite. After a **Save & Play** reload, all steps are replayable; without reload, steps already run in-session may be empty (playbook tables are mutated once per load).
 
 `RunTest` adds no extra lines after the step — rely on level-3 `[HUMAN]` banners inside the playbook output. FAIL-abort arms only after a **level-1** suite `printHeader` (ten leading `*`) in that step; then any console line containing **`FAIL`** (case-sensitive) cancels the step (`[RunTest] Stopped at step N/total: FAIL detected in output`). Mid-playbook `RunTest("Dice", N)` without a suite banner does not arm FAIL-abort. `RunTest("Scenes")` and `RunTest("Gameboard")` use their own generated playbook modules. Regenerate: `npm run e2e-playbook:generate` (or full `npm run build`), then **Save & Play**.
 
@@ -73,7 +73,7 @@ Ground truth: `[core/roll_controller.ttslua](../../core/roll_controller.ttslua)`
 | --- | --- |
 | **SETUP** pool build before ST **Open** | Bag-click suites use `rollTest(..., { skipOpen = true })` (or `{ hunger = n, skipOpen = true }`); assert `phase = "setup"` while building pool |
 | **Open** → **PRE_ROLL** | Suite A Step A3 / K2i: hunger bag enabled in **SETUP**; left-click toggles **Blood Surge** (pool hunger dice via Normal bag auto-hunger only); automation: `rollE2eOpenRoll(color)` for baton/Open checks |
-| Drawer **y > 2.5** before `releaseDice` | `rollE2eWaitForDiceTray` (~1.0s); `rollE2eSettlePresetCheck` may **return wait seconds** → follow with `rollE2eSettlePresetCheckResume(color)` in the **next** `U.RunSequence` function |
+| Drawer **y > 2.5** before `releaseDice` | `rollE2eWaitForDiceTray` (~1.0s); `rollE2eSettlePresetCheck` may **return wait seconds** → follow with `rollE2eSettlePresetCheckResume(color)` in the **next** `U.chain` function |
 | **POST_ROLL Confirm** on player panel | `batonHolder = "player"` after settle/take-half; human **Brown/Purple Confirm** (not ST dashboard confirm); `rollForceConfirm` still valid for automation |
 | Pool spawn on **open** | Dedicated rouse/remorse: `rollE2eSpawnActivePool` after `rollTest` when bag auto-spawn is not used |
 
@@ -112,7 +112,7 @@ You do **not** need a second player connected. `rollTest` / `rollStTest` move th
 | `rollE2eSetPoolAndSpawn(color, normal, hunger)`                         | Set `active.pool` + spawn staged dice (PRE_ROLL)                                                            |
 | `rollE2eSetPoolAutoHunger(color, normalBagClicks)`                      | Auto-Hunger pool from virtual Normal-bag clicks + spawn (Suite G)                                           |
 | `rollE2eAddPoolKindSpawn(color, kind, count)`                           | Add pool kind + spawn after base pool (H2, I4, J1). **Rouse-family** kinds spawn via bag hook (+1 pool per die); helper must not preset count before spawn. |
-| `rollE2eWaitForDiceTray`                                                | `U.RunSequence` step — returns ~1.0s pause after spawn (drawer must reach y > 2.5 before dice unlock)         |
+| `rollE2eWaitForDiceTray`                                                | `U.chain` step — returns ~1.0s pause after spawn (drawer must reach y > 2.5 before dice unlock)         |
 | `rollE2eSpawnActivePool(color)`                                         | Spawn missing PRE_ROLL pool dice (dedicated rouse / after `rollTest`)                                       |
 | `rollE2ePrepareRollRelease(color)`                                      | Dice-tray camera + open drawer (mirrors panel Roll prep; used before Take Half + rouse release)             |
 | `rollE2eSettlePresetCheck(color, faces, opts?)`          | **PRE_ROLL:** `GlobalReleaseBagDice` (already `startRolling` for PCs), preset faces, settle; only calls `RC.startRolling` if still PRE_ROLL. **SETUP:** spawn/wait only (`{}` faces; no release) — same async wait + **`rollE2eSettlePresetCheckResume(color)`** when drawer is still opening |
@@ -124,7 +124,7 @@ You do **not** need a second player connected. `rollTest` / `rollStTest` move th
 | `RunTest("Dice")` / `RunTest()`                                          | Console step driver over generated `lib/e2e_playbook_dice.ttslua` (build: `npm run e2e-playbook:generate`) |
 
 
-## Console output (`printHeader` + `U.RunSequence`)
+## Console output (`printHeader` + `U.chain`)
 
 Cross-playbook rules live in [TESTING.md § E2E console output conventions](../TESTING.md#e2e-console-output-conventions). **Dice-E2E.md** is the reference implementation.
 
@@ -143,9 +143,9 @@ Cross-playbook rules live in [TESTING.md § E2E console output conventions](../T
 3. Setup + pre-human assertions in one `function()` (e.g. `rollTest`, `rollE2eSetPoolAndSpawn`, `rollConfirm` for `preRoll`).
 4. **`rollE2eWaitForDiceTray`** after any staged spawn (or human bag clicks) and **before** release / `rollE2eSettlePresetCheck` / Take Half that unlocks dice.
 5. `M.setCamera` + level-3 `[HUMAN]` header (own `function()` step) — tester performs UI actions (SETUP bag clicks, ST **Open**, player **Roll**, player **Confirm**).
-6. **Separate** `U.RunSequence` block after human acts: optional `rollE2eWaitForDiceTray` if human just spawned dice; then `return rollE2eSettlePresetCheck(...)` when automating settle; **`rollE2eSettlePresetCheckResume(color)`** in the following function when the prior step returned a wait; post-settle `rollConfirm` / `rollE2eExpectBroadcast`, then `printHeader("", 2)` if the step ends.
+6. **Separate** `U.chain` block after human acts: optional `rollE2eWaitForDiceTray` if human just spawned dice; then `return rollE2eSettlePresetCheck(...)` when automating settle; **`rollE2eSettlePresetCheckResume(color)`** in the following function when the prior step returned a wait; post-settle `rollConfirm` / `rollE2eExpectBroadcast`, then `printHeader("", 2)` if the step ends.
 
-**One `[HUMAN]` per block** — never two level-3 headers in one `U.RunSequence` (e.g. Suite E: ST label check and bag click are separate blocks).
+**One `[HUMAN]` per block** — never two level-3 headers in one `U.chain` (e.g. Suite E: ST label check and bag click are separate blocks).
 
 Multi-phase steps within one level-2 section (e.g. Suite A Step A2 bag clicks) repeat steps 5–6 without closing level 2 until the step’s final assertion passes. Automated substeps with no human gate between them belong in the **same** block (see streamlined merges in `Dice-E2E.md`: E2a→E2b→F, G1–G6, etc.).
 

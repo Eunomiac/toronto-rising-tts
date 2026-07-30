@@ -356,7 +356,7 @@ function DEBUG.applyLastCapturedCameraPreset(player)
         yaw = entry.yaw,
         distance = entry.distance,
     })
-    U.delay(function()
+    U.await(function()
         player.setCameraMode(entry.cameraMode)
     end, 0.5)
 
@@ -2147,7 +2147,7 @@ function DEBUG.rollE2eDiceTrayWaitSeconds()
     return OP.DEFAULT_TRANSITION_DURATION + 0.5
 end
 
---- `U.RunSequence` step: pause after spawn so the dice tray can finish opening before release.
+--- `U.chain` step: pause after spawn so the dice tray can finish opening before release.
 -- @return number seconds for RunSequence wait
 function DEBUG.rollE2eWaitForDiceTray()
     return DEBUG.rollE2eDiceTrayWaitSeconds()
@@ -3274,7 +3274,7 @@ local function e2eCancelActiveRunTestSequence()
     e2eRunTestState.sequenceCancel = { cancelled = false, reason = nil }
 end
 
---- Shallow copy so U.RunSequence (U.shift) does not drain the embedded playbook step table.
+--- Shallow copy so U.chain (U.shift) does not drain the embedded playbook step table.
 -- @param sequence table
 -- @return table
 local function e2eCopyRunSequenceStep(sequence)
@@ -3419,7 +3419,7 @@ end
 --- Run the next E2E playbook step, or initialize a campaign.
 -- With a campaign name: cancel any in-flight step, reset index, arm the playbook (does not run a step).
 -- Optional second arg: 1-based step index (8) or top-level suite id ("H", "E2") before the first RunTest().
--- With no args: advance index by one and execute the next U.RunSequence from the armed campaign.
+-- With no args: advance index by one and execute the next U.chain from the armed campaign.
 -- @param campaignName string|nil "Dice" | "Scenes" | "Gameboard"
 -- @param startAt number|string|nil Step index or suite id when initializing
 -- @usage lua RunTest("Dice")
@@ -3504,7 +3504,7 @@ function DEBUG.RunTest(campaignName, startAt)
     local sequenceCopy = e2eCopyRunSequenceStep(sequence)
     local cancelRegistry = e2eRunTestState.sequenceCancel
     e2eBeginRunTestPrintWatch(cancelRegistry)
-    U.RunSequenceWithOptions(sequenceCopy, {
+    U.chain(sequenceCopy, {
         cancelRegistry = cancelRegistry,
         onComplete = function(ok, detail)
             local failDetected = type(cancelRegistry) == "table"

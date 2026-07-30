@@ -56,7 +56,7 @@ Older targeted cleanups still worth citing:
 
 | Count | File | Lines (approx.) | Role |
 |------:|------|-----------------|------|
-| 14 | `lib/util.ttslua` | 1681, 1949, 3155, 3317, 3452, 3488, 3502, 3538, 3552, 3607, 3637, 3642, 3645, 3954 | `U.isIn` userdata probe; `U.logCoroutineIssue` JSON.encode of waiter detail (TOR-424); `startLuaCoroutine` startup guards; `U.waitUntil` / `U.RunSequenceWithOptions` isolation around author-supplied callbacks and hooks |
+| 14 | `lib/util.ttslua` | 1681, 1949, 3155, 3317, 3452, 3488, 3502, 3538, 3552, 3607, 3637, 3642, 3645, 3954 | `U.isIn` userdata probe; `U.logCoroutineIssue` JSON.encode of waiter detail (TOR-424); `startLuaCoroutine` startup guards; `U.await` / `U.chain` isolation around author-supplied callbacks and hooks |
 | 3 | `lib/seat-role-identity.ttslua` | 195, 203, 205 | JSON decode/encode + Notebook reload when rewriting seat-role identity |
 | 2 | `lib/pc_bootstrap.ttslua` | 16, 21 | JSON round-trip deep clone with `U.clone` fallback |
 | 2 | `core/npcs.ttslua` | 180, 185 | JSON encode/decode clone for spawn snapshots |

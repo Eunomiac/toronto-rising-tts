@@ -557,7 +557,7 @@ function STR.physicalRollTrayDice(opts)
                 end
             end
             if index <= #diceList then
-                U.delay(rollNextDie, ST_PHYSICAL_ROLL_STAGGER_SEC)
+                U.await(rollNextDie, ST_PHYSICAL_ROLL_STAGGER_SEC)
             end
         end
 
@@ -571,7 +571,7 @@ function STR.physicalRollTrayDice(opts)
     end
 
     -- Tag scan can lag briefly after unlock; retry once before giving up.
-    U.delay(runPhysicalRoll, 0.15)
+    U.await(runPhysicalRoll, 0.15)
 end
 
 --- Called when Black roll state changes (hooked from global_script).

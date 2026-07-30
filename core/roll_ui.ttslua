@@ -759,14 +759,14 @@ end
 
 --- Cancel deferred post-hide reset when a new broadcast is shown early.
 local function cancelBroadcastHideCleanup()
-    U.stopDelay(broadcastHideCleanupHandle)
+    U.cancel(broadcastHideCleanupHandle)
     broadcastHideCleanupHandle = nil
 end
 
 --- Clear rollRes_* fields after hide animation finishes (do not reset synchronously on UI.hide).
 local function scheduleBroadcastPanelCleanupAfterHide()
     cancelBroadcastHideCleanup()
-    broadcastHideCleanupHandle = U.delay(function()
+    broadcastHideCleanupHandle = U.await(function()
         broadcastHideCleanupHandle = nil
         resetBroadcastPanel()
     end, C.ROLL_RESULT_BROADCAST_HIDE_CLEANUP_SECONDS)
@@ -1795,7 +1795,7 @@ function RUI.showResultBroadcast(color, result, label, historyEntryOverride)
 
     UI.show("rollRes_panel")
 
-    U.delay(function()
+    U.await(function()
         UI.hide("rollRes_panel")
         scheduleBroadcastPanelCleanupAfterHide()
     end, C.ROLL_RESULT_BROADCAST_SECONDS)

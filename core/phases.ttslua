@@ -4,7 +4,7 @@
     Top-level: Intermission → Play → Spotlight → End → Intermission.
     Play subphases (free switch): Main / Downtime / Memoriam.
 
-    Enter/exit events are registry step builders consumed by U.RunSequence
+    Enter/exit events are registry step builders consumed by U.chain
     (exit of old phase, then state mutate, then enter of new). Append steps
     to Phases.onEnter / Phases.onExit / onEnterSub / onExitSub without
     changing advanceTo control flow.
@@ -587,7 +587,7 @@ function Phases.advanceTo(newPhase, opts)
         return true
     end
 
-    U.RunSequence(steps)
+    U.chain(steps)
     return true
 end
 
@@ -624,7 +624,7 @@ function Phases.setPlaySubPhase(subPhase)
         syncPhaseUi()
         return true
     end
-    U.RunSequence(steps)
+    U.chain(steps)
     return true
 end
 

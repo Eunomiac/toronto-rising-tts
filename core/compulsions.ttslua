@@ -538,7 +538,7 @@ local function finishSelection(color, chosenCard)
     drawnGenericByColor[color] = nil
     local selectedKey = positionKey("SELECTED", color)
 
-    U.RunSequence({
+    U.chain({
         function()
             if not isTokenCurrent(color, token) then
                 return
@@ -575,7 +575,7 @@ end
 local function finishRemoval(color, card)
     clearPlayerSelection(color)
     local token = bumpOpToken(color)
-    U.RunSequence({
+    U.chain({
         function()
             if not isTokenCurrent(color, token) then
                 return
@@ -825,7 +825,7 @@ function Compulsions.onGenericDrawn(container, card)
 
     clearPlayerSelection(color)
 
-    U.RunSequence({
+    U.chain({
         function()
             if not isTokenCurrent(color, token) then
                 return

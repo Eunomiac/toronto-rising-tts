@@ -32,7 +32,7 @@ Reference for the lean test playbook `Scenes-E2E.md`. Run tests from Suite 0 unl
 
 ## Running the playbook
 
-`Scenes-E2E.md` contains only fenced `U.RunSequence` Lua blocks. Context appears in the console via `printHeader`:
+`Scenes-E2E.md` contains only fenced `U.chain` Lua blocks. Context appears in the console via `printHeader`:
 
 | Level | Meaning |
 | --- | --- |

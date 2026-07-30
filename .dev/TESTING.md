@@ -49,13 +49,13 @@ E2E playbooks still use `printHeader("[HUMAN] …", 3)` for `RunTest` compatibil
 
 ## E2E console output conventions
 
-Manual playbooks use **`U.RunSequence`** + **`printHeader`** so TTS console output stays ordered and scannable. **Dice-E2E.md** is the canonical example; new or revised playbooks should follow the same pattern.
+Manual playbooks use **`U.chain`** + **`printHeader`** so TTS console output stays ordered and scannable. **Dice-E2E.md** is the canonical example; new or revised playbooks should follow the same pattern.
 
 ### Playbook file split
 
 | File | Contents |
 | --- | --- |
-| `*-E2E.md` | Title line + **only** fenced `U.RunSequence` Lua blocks — no markdown suite/step headers, no inline **Human:** / **Pass if:** prose |
+| `*-E2E.md` | Title line + **only** fenced `U.chain` Lua blocks — no markdown suite/step headers, no inline **Human:** / **Pass if:** prose |
 | `*-E2E-Guide.md` (when needed) | How to run blocks, helpers, prerequisites, deterministic rules, sign-off, known failures |
 
 Keep reference tables and long prose out of the lean test file. Suite and step names live in **`printHeader`** banners inside Lua (levels 1 and 2), not as markdown headings.
@@ -69,7 +69,7 @@ lua RunTest("Dice")        -- [RunTest] Initialized 'Dice' (next RunTest runs st
 lua RunTest("Dice", 8)     -- arm at step 8/56; RunTest("Dice", "H") at suite H
 lua RunTest("Scenes")      -- arm Scenes E2E; RunTest("Scenes", "F") jumps to suite F
 lua RunTest("Gameboard")   -- arm Gameboard E2E; RunTest("Gameboard", "B") jumps to suite B
-lua RunTest()              -- [RunTest] <Campaign> step N/total, then U.RunSequence (repeat after each [HUMAN] gate)
+lua RunTest()              -- [RunTest] <Campaign> step N/total, then U.chain (repeat after each [HUMAN] gate)
 lua StopRunTest()          -- cancel in-flight step and clear armed campaign (HUD Stop)
 ```
 
@@ -77,7 +77,7 @@ lua StopRunTest()          -- cancel in-flight step and clear armed campaign (HU
 
 Re-arming with `RunTest("<Campaign>")` resets index and cancels any in-flight step. Step index is 1-based; suite second arg uses top-level ids (`0`, `A`–`P`, `E2` when present). **Save & Play** after updating harness code so playbook step tables are fresh.
 
-**Stop rule:** After a step prints a **level-1** `printHeader` (suite banner: line begins with ten `*`), `RunTest` arms FAIL-abort for that step only. While armed, any console line containing the case-sensitive substring `FAIL` (e.g. `[rollConfirm] FAIL`) cancels the in-flight `U.RunSequence` and prints `[RunTest] Stopped at step N/total: FAIL detected in output`. Lines before the suite banner (or mid-playbook `RunTest("<Campaign>", N)` jumps without a fresh suite header) do **not** abort — prerequisite checks may FAIL without stopping the harness. Re-arm at the same step after fixing.
+**Stop rule:** After a step prints a **level-1** `printHeader` (suite banner: line begins with ten `*`), `RunTest` arms FAIL-abort for that step only. While armed, any console line containing the case-sensitive substring `FAIL` (e.g. `[rollConfirm] FAIL`) cancels the in-flight `U.chain` and prints `[RunTest] Stopped at step N/total: FAIL detected in output`. Lines before the suite banner (or mid-playbook `RunTest("<Campaign>", N)` jumps without a fresh suite header) do **not** abort — prerequisite checks may FAIL without stopping the harness. Re-arm at the same step after fixing.
 
 Regenerate after editing `Dice-E2E.md`, `Scenes-E2E.md`, or `Gameboard-E2E.md`: `npm run e2e-playbook:generate` (included in `npm run build`), then **Save & Play**.
 
@@ -86,7 +86,7 @@ Manual paste workflow (same blocks):
 1. **Paste one `lua` block** into TTS console / External Editor and execute.
 2. When a block ends with **`printHeader("[HUMAN] …", 3)`**, perform that action in TTS before running the **next** block.
 3. **Merge** automated setup, spawns, and `rollConfirm` / `rollE2eExpectBroadcast` into the same block when no human action sits between them.
-4. **Split** only on human gates — **one `[HUMAN]` cue per block** (two level-3 headers in one `U.RunSequence` print back-to-back and skip the pause).
+4. **Split** only on human gates — **one `[HUMAN]` cue per block** (two level-3 headers in one `U.chain` print back-to-back and skip the pause).
 5. **Last step of each block** — `[HUMAN]` for every block that needs tester input; automated-only blocks may end with assertions then suite/step close (`printHeader("", 2)` / `printHeader("", 1)` + `print("")`). The **final block** of the playbook closes the run only (`printHeader("", 1)` + `print("")`), with no `[HUMAN]`.
 
 ### `printHeader(text, level)`
@@ -101,14 +101,14 @@ Implemented in [`core/debug.ttslua`](../core/debug.ttslua) as `DEBUG.printHeader
 
 **Layout:** When the label fits in 100 chars: `10×padChar` + `" " + text + " "` + `padChar` fill. Empty `text` (`printHeader("", level)`) prints a pad-only line (suite/step “close” banner). When the label is too long for that layout, the line is `10×padChar` + `" "` + **full text** (no trailing pad).
 
-After each **suite** ends (level-1 close), add `print("")` in its own `U.RunSequence` step for a blank line in the log.
+After each **suite** ends (level-1 close), add `print("")` in its own `U.chain` step for a blank line in the log.
 
-### `U.RunSequence` ordering rules
+### `U.chain` ordering rules
 
-1. **Wrap every playbook Lua block** in `U.RunSequence({ … })` — no bare top-level `rollTest` / `rollConfirm` in the markdown.
+1. **Wrap every playbook Lua block** in `U.chain({ … })` — no bare top-level `rollTest` / `rollConfirm` in the markdown.
 2. **Isolate prints** — each `printHeader` and each `print` call lives in its **own** `function() … end` step so coroutine sequencing preserves console order.
 3. **Group logic** — setup (`rollTest`, `rollCancelAll`, state seeding) and assertions (`rollConfirm`, `rollConfirmTracker`) may share a step when no human action sits between them.
-4. **Split on human gates** — when the tester must act between setup and assertion, end one `U.RunSequence` with a level-3 `[HUMAN]` header (+ `M.setCamera` when needed), then start a **new** block for post-action `rollConfirm` / `rollE2eExpectBroadcast`. **Never** put two level-3 `[HUMAN]` steps in the same block.
+4. **Split on human gates** — when the tester must act between setup and assertion, end one `U.chain` with a level-3 `[HUMAN]` header (+ `M.setCamera` when needed), then start a **new** block for post-action `rollConfirm` / `rollE2eExpectBroadcast`. **Never** put two level-3 `[HUMAN]` steps in the same block.
 5. **Function references** — pass harness helpers directly when they are single-call steps, e.g. `rollCancelAll` (no parentheses) as a sequence entry.
 6. **Suite close** — last step(s) of each suite: `printHeader("", 1)` then `print("")`. Mid-suite steps close with `printHeader("", 2)` only when that step/substep is finished (not between substeps that continue the same suite section).
 
@@ -119,7 +119,7 @@ When a step requires bag clicks, tray dice, or roll-panel UI, include **`M.setCa
 ### Minimal template (copy for new suites)
 
 ```lua
-U.RunSequence({
+U.chain({
   function() printHeader("<Playbook>: SUITE X - Title", 1) end,
   function() printHeader("Step X1 - Short name", 2) end,
   rollCancelAll,
@@ -136,7 +136,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function() rollConfirm("Brown", { /* post-human expected */ }) end,
   function() printHeader("", 2) end,
   function() printHeader("", 1) end,

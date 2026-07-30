@@ -50,7 +50,7 @@ Scene library **Apply** promotes to Play via `Phases.ensurePlayPhaseForSceneAppl
 
 ## Starting & Ending Events
 
-Ending events of the previous phase run before starting events of the new phase (`U.RunSequence` via `Phases.advanceTo`).
+Ending events of the previous phase run before starting events of the new phase (`U.chain` via `Phases.advanceTo`).
 
 ### Ending Events: `INTERMISSION`
 

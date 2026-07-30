@@ -237,7 +237,7 @@ end
 
 local function clearTick()
     if tickHandle ~= nil then
-        U.stopDelay(tickHandle)
+        U.cancel(tickHandle)
         tickHandle = nil
     end
 end
@@ -351,11 +351,11 @@ function NarrativeClockLerp.startToTarget(targetDt)
         local abs = startAbs + (endAbs - startAbs) * eased
         local mid = NarrativeCalendar.fromAbsoluteMinutes(abs)
         pushDisplayOnly(mid)
-        tickHandle = U.delay(step, tickSec)
+        tickHandle = U.await(step, tickSec)
     end
 
     pushDisplayOnly(startDt)
-    tickHandle = U.delay(step, tickSec)
+    tickHandle = U.await(step, tickSec)
     return true, nil
 end
 

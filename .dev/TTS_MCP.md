@@ -74,7 +74,7 @@ Agents should not enable or call MCP unless the user explicitly requests it.
 
 | Tool | Purpose |
 |------|---------|
-| `tts_execute_lua` | Send `messageID: 3` execute with `script` and optional `guid` (default `"-1"` Global). **Timeouts:** `idleTimeoutMs` default 90000 — omit for long sequence gaps; pass ~2000–5000 for fast print-only probes. `maxWaitMs` default 30000 — raise toward 120000 for multi-minute `U.RunSequenceWithOptions` flows. See **Return values** below — do not assume complex Lua `return` values always appear in `returnValue`. In mod Lua, prefer **`U.emitForAgent`** / **`U.mcpEmitResult`** (`TR_AGENT_V1` lines in `prints`) for structured output. Returns `prints`, `returnValue`, `error`, `customMessages`, `timedOut`. |
+| `tts_execute_lua` | Send `messageID: 3` execute with `script` and optional `guid` (default `"-1"` Global). **Timeouts:** `idleTimeoutMs` default 90000 — omit for long sequence gaps; pass ~2000–5000 for fast print-only probes. `maxWaitMs` default 30000 — raise toward 120000 for multi-minute `U.chain` flows. See **Return values** below — do not assume complex Lua `return` values always appear in `returnValue`. In mod Lua, prefer **`U.emitForAgent`** / **`U.mcpEmitResult`** (`TR_AGENT_V1` lines in `prints`) for structured output. Returns `prints`, `returnValue`, `error`, `customMessages`, `timedOut`. |
 | `tts_send_custom_message` | Send `messageID: 2` with a JSON object; TTS delivers it to `onExternalMessage` in Lua. Fire-and-forget (no output capture). |
 
 **Execute context:** The target object must already have a script slot in TTS, or execute fails (see External Editor API “Execute Lua Code”).
@@ -104,13 +104,13 @@ These issues showed up while running Toronto Rising Lua through **`tts_execute_l
 
 ### 4. Long-running sequences and timeouts
 
-- **`U.RunSequenceWithOptions`** does **not** block until the sequence finishes; the execute chunk returns while coroutines run. Rely on **`onComplete`**, **`U.mcpEmitResult`**, and **`prints`** (see *Orchestration* and *Machine-readable agent lines*).
+- **`U.chain`** does **not** block until the sequence finishes; the execute chunk returns while coroutines run. Rely on **`onComplete`**, **`U.mcpEmitResult`**, and **`prints`** (see *Orchestration* and *Machine-readable agent lines*).
 - Use a high **`maxWaitMs`** (up to **120000**) and the default or higher **`idleTimeoutMs`** (**90000** in the bridge when omitted) for multi-step visual sequences. See the tools table above.
 
 ### 5. Bridge “hangs” after the test looks done (`idleTimeoutMs`)
 
 - The bridge completes an execute when it receives **`messageID` 5** (`returnValue`), **or** when **`idleTimeoutMs`** elapses **with no new** inbound **`messageID` 2–5** (prints, errors, return, custom payloads all reset the idle timer).
-- Chunks that call **`U.RunSequenceWithOptions`** return from the Lua chunk quickly while coroutines keep running. **`messageID` 5** (if any) therefore often reflects **“chunk returned”**, not **“animations + `onComplete` finished”**. The session then stays open until prints stop and **idle** fires.
+- Chunks that call **`U.chain`** return from the Lua chunk quickly while coroutines keep running. **`messageID` 5** (if any) therefore often reflects **“chunk returned”**, not **“animations + `onComplete` finished”**. The session then stays open until prints stop and **idle** fires.
 - If **`idleTimeoutMs`** is very large (e.g. **120000**), you can sit for **minutes after the last `TR_AGENT_V1` / `mcpEmitResult` line** with nothing left to observe — that is the timer waiting out silence, not TTS still working. Prefer a **moderate idle** (e.g. **10–20 s**) once you trust the longest **quiet** gap between prints in your sequence, or lower it when the final structured line is always last.
 
 ### 6. Local harness (bridge smoke)
@@ -142,7 +142,7 @@ For automation and MCP, prefer **structured lines** over many unrelated `print` 
 
 **Host parsing:** find lines starting with **`TR_AGENT_V1`**, strip the prefix and the first space, **`JSON.parse`** the remainder. Prefer **`kind === "result"`** for pass/fail; use other **`kind`** values (e.g. `"trace"`) for progress.
 
-**When to use:** Any `tts_execute_lua` snippet that must be parsed reliably; combine with **`return JSON.encode(...)`** when a string return is enough (see *Return values* above). Orchestrations using **`U.RunSequenceWithOptions`** should call **`U.mcpEmitResult`** from **`onComplete`** (and/or **`emitForAgent`** per step) so agents do not depend on idle timing alone.
+**When to use:** Any `tts_execute_lua` snippet that must be parsed reliably; combine with **`return JSON.encode(...)`** when a string return is enough (see *Return values* above). Orchestrations using **`U.chain`** should call **`U.mcpEmitResult`** from **`onComplete`** (and/or **`emitForAgent`** per step) so agents do not depend on idle timing alone.
 
 Defined in [`lib/util.ttslua`](../lib/util.ttslua) (`U.AGENT_EMIT_LINE_PREFIX`, `U.emitForAgent`, `U.mcpEmitResult`).
 
@@ -172,13 +172,13 @@ NPC preload batches emit **`kind`** = **`npc_preload`** with **`characterCount`*
 
 **Verification:** Save and Play, run a hunger change or load, then parse MCP **`prints`** for `TR_AGENT_V1` lines (filter `kind === "sync_metrics"`). Compare before/after optimization work.
 
-## Orchestration (`U.RunSequence` / `U.RunSequenceWithOptions`)
+## Orchestration (`U.chain` / `U.chain`)
 
-Multi-step table logic in this project often uses [`U.RunSequence`](../lib/util.ttslua) (coroutine-driven via `U.waitUntil`). Important for agents:
+Multi-step table logic in this project often uses [`U.chain`](../lib/util.ttslua) (coroutine-driven via `U.await`). Important for agents:
 
-1. **Non-blocking execute:** A Lua snippet invoked through the External Editor **returns as soon as the chunk finishes**. `U.RunSequence` / `U.RunSequenceWithOptions` **schedule** work in coroutines; they **do not** block the bridge until animations or waits finish. Treat completion as **asynchronous** unless you explicitly design otherwise.
-2. **Completion hooks:** Use **`U.RunSequenceWithOptions(funcs, { onComplete = ... })`** for a single callback when the sequence finishes (`ok` plus optional `detail`: `step_error`, `sequence_timeout`, `cancelled`). You still get the returned **`isDone`** predicate: `local done = U.RunSequenceWithOptions(...);` later `done()`.
-3. **Cancel / sequence timeout:** Pass **`cancelRegistry`** (`{ cancelled = false, reason = nil }`) and/or **`sequenceTimeoutSeconds`**. Waits use an **`abortCheck`** on `U.waitUntil` so timeouts and cancellation can end a step without waiting for the original condition.
+1. **Non-blocking execute:** A Lua snippet invoked through the External Editor **returns as soon as the chunk finishes**. `U.chain` / `U.chain` **schedule** work in coroutines; they **do not** block the bridge until animations or waits finish. Treat completion as **asynchronous** unless you explicitly design otherwise.
+2. **Completion hooks:** Use **`U.chain(funcs, { onComplete = ... })`** for a single callback when the sequence finishes (`ok` plus optional `detail`: `step_error`, `sequence_timeout`, `cancelled`). You still get the returned **`isDone`** predicate: `local done = U.chain(...);` later `done()`.
+3. **Cancel / sequence timeout:** Pass **`cancelRegistry`** (`{ cancelled = false, reason = nil }`) and/or **`sequenceTimeoutSeconds`**. Waits use an **`abortCheck`** on `U.await` so timeouts and cancellation can end a step without waiting for the original condition.
 4. **MCP observation:** Prefer **`onComplete`** plus **`U.mcpEmitResult`** / **`U.emitForAgent`**, and generous **`maxWaitMs` / `idleTimeoutMs`** on `tts_execute_lua`, over assuming a **`return`** from the snippet finalizes after long sequences.
 
 ## Scripts (local)

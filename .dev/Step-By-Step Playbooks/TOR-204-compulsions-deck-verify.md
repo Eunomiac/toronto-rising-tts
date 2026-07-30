@@ -51,7 +51,7 @@ Fixture used below: **Purple** / `blackCaesar` (Roarshack). Change only if you s
 ## Code Block 0 — Resolver + notes verify
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     printHeader("TOR-204: Compulsions resolver verify", 1)
   end,
@@ -83,7 +83,7 @@ U.RunSequence({
 ## Code Block A — After generic draw + present
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     printHeader("TOR-204: after generic draw", 1)
   end,
@@ -124,7 +124,7 @@ U.RunSequence({
 ## Code Block B — After selection (SELECTED + light)
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     printHeader("TOR-204: after selection", 1)
   end,
@@ -162,7 +162,7 @@ U.RunSequence({
 ## Code Block C — After removal (deck unlocked)
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     printHeader("TOR-204: after removal", 1)
   end,

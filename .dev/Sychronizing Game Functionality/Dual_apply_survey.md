@@ -92,7 +92,7 @@ commitEagerSteadyState|markReconciledToCurrentState|invalidateReconcileCache|Sou
 L.SetLightMode|lightComp.set|L.InitLights|L.reconcile|U.applyLightingPreset
 spawnObjectData|spawnObject\(|NPCS\.(spawn|move|Move|restore|reconcile|ensure|ensureAllNpcsPreloaded)
 UpdateUIDisplays|HO.syncAll|HUD_soundscape|HUD_scenes|HUD_sync
-Wait.time|U.delay|U.scheduleAtOffsets|RSL.SetTableTo
+Wait.time|U.await|U.scheduleAtOffsets|RSL.SetTableTo
 ```
 
 ## Verification

@@ -13,10 +13,10 @@ Source of truth:
 - Full research/plan: [`Timing-Utilities-Plan.md`](Timing-Utilities-Plan.md)
 
 Verification:
-- Grep for banned old names (must be zero in live Lua): `RunSequence`, `waitUntil`, `U.sequence(`, `U.delay(`, `waitForCondition`, `runAfterObjectPhysicsSettled`, `stopDelay`
+- Grep for banned old names (must be zero in live Lua outside util landmines): `U.delay`, `U.RunSequence`, `U.waitUntil`, `U.sequence`, `U.waitForCondition`, `U.runAfterObjectPhysicsSettled`, `U.stopDelay`
 - Prefer `U.await` / `U.chain` / `U.stagger` only
 
-Status: **target regime after the timing merge ships.** Treat this as the only approved timing surface for new work.
+Status: **shipped (TOR-438, 2026-07-30).** Treat this as the only approved timing surface for new work.
 
 ---
 
@@ -24,7 +24,7 @@ Status: **target regime after the timing merge ships.** Treat this as the only a
 
 Toronto Rising collapsed overlapping wait helpers into three clearly named APIs so agents do not mix “parallel stagger,” “one-shot wait,” and “dependent sequence.” The merge also hardens clocks (`Time.time` / `Wait.time`) and removes compatibility aliases — **old names error or are gone.**
 
-If you are the **join / startup defer** agent: schedule Host Lua work with these APIs only. Do not reintroduce `U.delay` / `U.RunSequence` / nested `Wait.time` inside `Wait.condition` completions.
+If you are the **join / startup defer** agent: schedule Host Lua work with these APIs only. Do not nest numeric `U.await` inside `Wait.condition` / predicate-`U.await` completions — use `U.chain` for sequenced gaps. Do not reintroduce old names (`U.delay`, `U.RunSequence`, …).
 
 ---
 
@@ -130,14 +130,13 @@ U.chain({
 
 | Old (banned) | New |
 | --- | --- |
-| `U.delay(fn, sec)` | `U.await(fn, sec)` |
-| `U.stopDelay(h)` | `U.cancel(h)` |
-| `U.waitUntil(fn, testRef, …)` | `U.await(fn, testRef, opts?)` |
+| `U.delay(fn, sec)` / `U.stopDelay(h)` | `U.await(fn, sec)` / `U.cancel(h)` |
+| `U.waitUntil(fn, testRef, …)` | `U.await(fn, testRef, opts?)` (one-shot) or `U.chain` (sequences) |
 | `U.waitForCondition(onDone, pred, timeout?)` | `U.await(onDone, pred, { maxWait = timeout })` |
-| `U.RunSequence(funcs)` / `U.RunSequenceWithOptions(funcs, opts)` | `U.chain(funcs, opts?)` |
+| `U.RunSequence` / `U.RunSequenceWithOptions` | `U.chain(funcs, opts?)` |
 | `U.sequence(funcs, dt)` | `U.stagger(funcs, dt)` |
 | `U.runAfterObjectPhysicsSettled(getObj, timeout, cb, early?)` | `U.await(cb, pred, { maxWait = timeout })` with resting/`completeEarlyIf` in `pred` |
-| `U.waitRestingSequence` | Deleted — use `U.chain` |
+| `U.waitRestingSequence` | Deleted — use `U.chain` / `U.await` |
 
 `U.scheduleAtOffsets(callback, { 0.35, 1.5, … })` remains for “same callback at several delays” (Sync bootstrap style). Prefer `U.chain` if steps differ.
 

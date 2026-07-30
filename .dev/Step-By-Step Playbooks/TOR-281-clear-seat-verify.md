@@ -62,7 +62,7 @@ Test constants (shared via `_G.TOR281`):
 
 ## Code Block 1 — Full TOR-281 verification
 
-One `U.RunSequence` with inter-step waits: human gates print `▶▶▶ HUMAN ▶▶▶` and **return** a poll or delay; asserts run in the following step(s) without a separate paste.
+One `U.chain` with inter-step waits: human gates print `▶▶▶ HUMAN ▶▶▶` and **return** a poll or delay; asserts run in the following step(s) without a separate paste.
 
 ```lua
 local function tor281Fixture()
@@ -117,7 +117,7 @@ local function tor281ResolveSceneKey(F)
   return key
 end
 
-U.RunSequence({
+U.chain({
   function()
     printHeader("TOR-281: Session setup", 1)
   end,

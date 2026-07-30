@@ -115,7 +115,7 @@ local function trScheduleEarlySoundscapeSilenceDeferred(schedulerLabel)
     end
     for _, sec in ipairs(TR_EARLY_SILENCE_DEFERRAL_SECONDS) do
         local delay = sec
-        U.delay(function()
+        U.await(function()
             trEarlySilenceSoundscapeEmitters(tag .. "-wait-" .. tostring(delay))
         end, delay)
     end
@@ -459,7 +459,7 @@ end
 
 --- Force-hide global blindfold (`overlay_globalBlindfold`) for all clients.
 --- Idempotent (TOR-398): skip if already hidden or a hide sequence is in flight.
---- `U.RunSequence`: hide (FadeOut) → wait 1s → clear `active` so a later seat HUD reveal
+--- `U.chain`: hide (FadeOut) → wait 1s → clear `active` so a later seat HUD reveal
 --- cannot resurrect the overlay with `active` still true.
 local function hideStartupLoadingOverlays()
     if globalBlindfoldAppliedVisible == false then
@@ -471,7 +471,7 @@ local function hideStartupLoadingOverlays()
     globalBlindfoldHideInFlight = true
     local cancel = { cancelled = false, reason = nil }
     globalBlindfoldHideCancel = cancel
-    U.RunSequenceWithOptions({
+    U.chain({
         function()
             if cancel.cancelled then
                 return
@@ -524,7 +524,7 @@ local function showStartupLoadingOverlays()
     -- TOR-368: wait until global blindfold is up before camera motion (OFF→ON / interrupted hide only).
     local Main = require("core.main")
     if type(Main.setDefaultCameraBeforeBlindfold) == "function" then
-        U.delay(function()
+        U.await(function()
             Main.setDefaultCameraBeforeBlindfold("ALL")
         end, 1.5)
     end
@@ -638,7 +638,7 @@ local FULL_UI_RESYNC_FALLBACK_DELAY_SECONDS = 4
 
 local function cancelPendingFullUiResync()
     if pendingFullUiResyncHandle ~= nil then
-        U.stopDelay(pendingFullUiResyncHandle)
+        U.cancel(pendingFullUiResyncHandle)
         pendingFullUiResyncHandle = nil
     end
 end
@@ -688,7 +688,7 @@ local function scheduleDeferredFullUiResyncForReveal(seated)
         end
     end
     cancelPendingFullUiResync()
-    pendingFullUiResyncHandle = U.delay(function()
+    pendingFullUiResyncHandle = U.await(function()
         pendingFullUiResyncHandle = nil
         if isDeferSetXmlEnabled() then
             print("[SeatUI] Deferred full UI resync aborted (Defer setXML on).")
@@ -1749,7 +1749,7 @@ local function scheduleSecretRollDiceInvisibility(rollId)
     if type(active) ~= "table" or type(active.meta) ~= "table" or active.meta.secretDice ~= true then
         return
     end
-    U.delay(function()
+    U.await(function()
         GlobalApplySecretRollDiceInvisibility({ rollId = rollId })
     end, 0.5)
 end
@@ -1915,7 +1915,7 @@ function GlobalPostRollAddDie(params)
     DK.ensureMeta(active)
     active.meta.stPostRollModifyLock = true
     S.setStateVal(active, "playerData", pid, "hud", "rollData", "active")
-    U.delay(function()
+    U.await(function()
         local die = G.getObject(dieGuid)
         if die == nil then
             return
@@ -2457,7 +2457,7 @@ function onLoad(saved_data)
     local startupTableSyncDone = false
     setStartupAction("schedule-table-sync")
     if U.Type(R) == "table" and type(R.SyncTable) == "function" then
-        U.delay(function()
+        U.await(function()
             setStartupAction("startup-loose-dice-cleanup")
             cleanupLooseDiceBeforeTableSync()
             setStartupAction("run-table-sync")
@@ -2488,7 +2488,7 @@ function onLoad(saved_data)
     setStartupAction("initial-sync-full-complete")
 
     setStartupAction("dice-bag-visibility-defaults")
-    U.delay(function()
+    U.await(function()
         DBV.disableHungerBagsForAllPlayers()
     end, 1.0)
 
@@ -2497,9 +2497,9 @@ function onLoad(saved_data)
     -- - first sync pass has been issued
     -- - seat lights are resolvable
     -- Then final sync, locked-objects, dice warm, then apply global blindfold from currentPhase.
-    -- Use U.RunSequence (U.waitUntil) instead of U.waitForCondition with nested U.delay:
-    -- TTS does not reliably honor U.delay scheduled from inside a condition callback.
-    U.RunSequence({
+    -- Use U.chain (U.await) instead of U.await with nested U.await:
+    -- TTS does not reliably honor U.await scheduled from inside a condition callback.
+    U.chain({
         function()
             return function()
                 if not startupTableSyncDone then
@@ -5017,7 +5017,7 @@ local function cancelPendingRollCleanup(color)
     end
     local timerId = pendingRollCleanupTimerIds[color]
     if timerId ~= nil then
-        U.stopDelay(timerId)
+        U.cancel(timerId)
     end
     pendingRollCleanup[color] = nil
     pendingRollCleanupTimerIds[color] = nil
@@ -5074,11 +5074,11 @@ RC.onRollResolved = function(color, result, label)
     -- Drawer stays open until the broadcast hides and dice are destroyed (see below).
     local existingTimerId = pendingRollCleanupTimerIds[color]
     if existingTimerId ~= nil then
-        U.stopDelay(existingTimerId)
+        U.cancel(existingTimerId)
     end
 
     pendingRollCleanup[color] = rollId or true
-    pendingRollCleanupTimerIds[color] = U.delay(function()
+    pendingRollCleanupTimerIds[color] = U.await(function()
         pendingRollCleanup[color] = nil
         pendingRollCleanupTimerIds[color] = nil
         finishPostBroadcastRollCleanup(color, rollId)
@@ -5111,7 +5111,7 @@ function GlobalConsumePendingRollCleanup(params)
 
     local timerId = pendingRollCleanupTimerIds[color]
     if timerId ~= nil then
-        U.stopDelay(timerId)
+        U.cancel(timerId)
     end
     pendingRollCleanup[color] = nil
     pendingRollCleanupTimerIds[color] = nil
@@ -5128,7 +5128,7 @@ end
 -- ID to obj.setGMNotes() so RC._getDiceForRoll can identify which dice belong
 -- to which roll (relevant for Extended rolls / queued Rouse checks).
 -- onObjectRandomize resets the debounce timer in ROLLING and POST_ROLL phases;
--- the eventual U.delay fires RC.onDiceSettled → RC.recalculate (live read).
+-- the eventual U.await fires RC.onDiceSettled → RC.recalculate (live read).
 -- ============================================================================
 
 --- Extracts the owner color from an object's tag list.
@@ -5737,7 +5737,7 @@ end
 
 local blackRollSequenceRunning = false
 
---- U.waitUntil testRef: ST drawer slot has finished rising (`STD.isRaisedForRelease`).
+--- U.await testRef: ST drawer slot has finished rising (`STD.isRaisedForRelease`).
 -- @param slot number
 -- @return function
 local function blackRollWaitDrawerRaised(slot)
@@ -5766,7 +5766,7 @@ local function runBlackRollSequence()
     local slot = active.stDrawerSlot
     local rollId = active.id
 
-    U.RunSequenceWithOptions({
+    U.chain({
         function()
             local STR = require("core.storyteller_rolls")
             STR.activateDrawerForSlot(slot)
@@ -5821,7 +5821,7 @@ local function finishRollRelease(color)
                 delayedRollId = active.id
             end
         end
-        U.delay(function()
+        U.await(function()
             if RC.startRolling(color) ~= true then
                 return
             end
@@ -5855,7 +5855,7 @@ local function finishRollRelease(color)
                 active.meta.autoRollOnRelease = nil
                 S.setStateVal(active, "playerData", pid, "hud", "rollData", "active")
                 local rollId = active.id
-                U.delay(function()
+                U.await(function()
                     randomizeAllRollDiceForColor(color, rollId)
                 end, 0.15)
             end
@@ -5908,7 +5908,7 @@ function GlobalWaitDrawerThenReleaseBagDice()
     if type(job) ~= "table" or type(job.color) ~= "string" then
         return 1
     end
-    U.waitUntil(function()
+    U.await(function()
         if job.completed == true then
             return
         end
@@ -6268,7 +6268,7 @@ function HUD_rollRollButton(player, value, id)
     end
 
     if didAutoSpawn then
-        U.delay(releaseThenStartRolling, 0.2)
+        U.await(releaseThenStartRolling, 0.2)
     else
         releaseThenStartRolling()
     end

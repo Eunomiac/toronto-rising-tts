@@ -130,7 +130,7 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | Commit phantom | Actual Linear | Topic |
 |----------------|---------------|-------|
 | TOR-123/124 | TOR-116 | Custom UI assets pipeline |
-| TOR-125/126 | TOR-117 | U.delay migration |
+| TOR-125/126 | TOR-117 | U.await migration |
 | TOR-127 | TOR-115 | NPC figurine lock |
 | TOR-128 | TOR-119 | Staggered group spawn |
 | TOR-129 | TOR-118 | NPC slot resolution |
@@ -374,7 +374,7 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-06-25 | UPDATE | TOR-237 | Rename Read→Save (board→state; pairs with Load); toolbar font −1 step, strip shifted left |
 | 2026-06-25 | `/tr-inbox` | INBOX | Quick fixes shipped TOR-255/256/257; Active promoted TOR-258–263; Focus re-stacked (TOR-238→250→245→141→259); removed stale `blockedBy` TOR-151 on TOR-245; TOR-258 `blockedBy` TOR-261; TOR-260 `blockedBy` TOR-259 |
 | 2026-06-25 | DONE | TOR-238 | Hold hotkey + sweep hover → transient stage figurine SPOTLIGHT + `storytellerSpotlight` board indicator; `L.applyTransientLightMode`; Event Listener Policy + gameboard doc; Focus #1 → TOR-250; Save & Play smoke pending author |
-| 2026-06-25 | DONE | TOR-147 | Soundscape fade on blindfold down — staged scene transition `HUDBF.runStagedTransition` (`U.RunSequence`: fade-out → heavy reconcile → fade-in → settle/lift); `Soundscape.fadeOutTransitionAmbient` (emitter-only, weather outgoing-vs-incoming policy) + `beginTransitionFadeWindow`/`previewIncomingWeather`; `Scenes.buildSoundscapeContextForSession`/`applyNoSceneSoundscape` + `applyDefaultNoSceneEnvironment({skipSoundscape})`; Apply + End scene wired. Author confirmed Save & Play; multiclient unverified (TOR-144) |
+| 2026-06-25 | DONE | TOR-147 | Soundscape fade on blindfold down — staged scene transition `HUDBF.runStagedTransition` (`U.chain`: fade-out → heavy reconcile → fade-in → settle/lift); `Soundscape.fadeOutTransitionAmbient` (emitter-only, weather outgoing-vs-incoming policy) + `beginTransitionFadeWindow`/`previewIncomingWeather`; `Scenes.buildSoundscapeContextForSession`/`applyNoSceneSoundscape` + `applyDefaultNoSceneEnvironment({skipSoundscape})`; Apply + End scene wired. Author confirmed Save & Play; multiclient unverified (TOR-144) |
 | 2026-06-25 | CREATE+DONE | TOR-264 | Double music emitters on load — dual-apply fix: `Sync.full({skipSoundscape})` re-primes soundscape fingerprint but skips forced `reconcileFromState` so load helpers' eager apply is single music authority; `core/sync.ttslua` + `core/scenes.ttslua`. Promoted from INBOX; relatedTo TOR-138/TOR-136; author confirmed Save & Play; multiclient unverified (TOR-144) |
 | 2026-06-25 | COMMENT | TOR-147, TOR-264 | Author confirmed both fixed in Save & Play |
 | 2026-06-25 | CREATE | TOR-265 | Inbox promote — control-board Apply/Clear flickers off-seat NPC lights on then off; NPC & Spotlight, parent TOR-169, relatedTo TOR-250/TOR-178; Todo, Medium; fold in alongside TOR-250 (Focus #2) |
@@ -595,5 +595,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-26 | SHIP | TOR-97 | Desires: `playerData.desire`, CSHEET InputField listeners, ST PCs row + Clear |
 | 2026-07-26 | VERIFY | TOR-97 | Author confirmed Desire input + setClass/unset styling + O(1) class skip |
 | 2026-07-30 | CREATE+SHIP | TOR-437 | Join-load inventory (engine vs Host Lua); relatedTo TOR-428/430/381/375/374 |
+| 2026-07-30 | CREATE+SHIP | TOR-438 | Timing API merge: U.stagger / U.chain / U.await; hard-cut old names |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

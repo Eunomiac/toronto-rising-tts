@@ -32,7 +32,7 @@ Legacy E2E playbooks ([Dice-E2E](../../../.dev/E2E%20Playbooks/Dice-E2E.md), etc
 | Paste boundaries | **Code Block 0, A.1, …** | Split **only** at a [human gate](#human-gates-when-to-stop-automation) (not for phase labels or handoff) |
 | Console structure | **Phase 1.1, 2.1, …** | **Never** — `printHeader(..., 1)` labels inside a block |
 
-**Agent rule:** Step numbers track **author actions**, not test phases. Phases 1.1 → 2.1 → 3.1 belong in **one** Code Block and **one** `U.RunSequence` until a [human gate](#human-gates-when-to-stop-automation) forces a stop.
+**Agent rule:** Step numbers track **author actions**, not test phases. Phases 1.1 → 2.1 → 3.1 belong in **one** Code Block and **one** `U.chain` until a [human gate](#human-gates-when-to-stop-automation) forces a stop.
 
 **Anti-patterns:** Do not create Step N = “Phase 2.1”. Do not add markdown `### Phase 2.1` above Lua fences. Do not split blocks because a phase number changed.
 
@@ -122,18 +122,18 @@ Do **not** copy illustration dummies from the template into production runbooks.
 
 ## Long procedures (multi-step verification)
 
-**Default: merge automation.** Batch setup, phase banners, and asserts in as few `U.RunSequence` steps and Code Blocks as possible. Split only at a human gate.
+**Default: merge automation.** Batch setup, phase banners, and asserts in as few `U.chain` steps and Code Blocks as possible. Split only at a human gate.
 
 ### Human gates (when to stop automation)
 
 **Balance:** Automate everything **reasonable and practical** in Lua (state, harness helpers, asserts). The author **is available** and **does not mind** simple TTS actions — drops, bag clicks, dice rolls, panel toggles. Do **not** invent elaborate automation to avoid those.
 
-End a `U.RunSequence` / start a new Code Block / emit `▶▶▶ HUMAN ▶▶▶` **only** when one of these applies:
+End a `U.chain` / start a new Code Block / emit `▶▶▶ HUMAN ▶▶▶` **only** when one of these applies:
 
 | # | Gate | When to use | Examples |
 | --- | --- | --- | --- |
 | **1** | **Human interaction required** | Normal UI / table action is the **straightforward** path | Toolbar Clear (5s confirm), Scenes panel toggle, **drop token on snap**, **click dice bag**, Apply scene |
-| **2** | **Human senses required** | Lua cannot reliably observe or schedule the check | Visual fade/timing, layout eyeball, “wait ~12s for blindfold” when `U.waitUntil` is not trustworthy |
+| **2** | **Human senses required** | Lua cannot reliably observe or schedule the check | Visual fade/timing, layout eyeball, “wait ~12s for blindfold” when `U.await` is not trustworthy |
 | **3** | **Automation unreasonable** | Automating would be **fragile, clunky, or disproportionate** — not merely “human could do it” | Many manual alignments at once, simulating drag/drop/physics, fake bag clicks, spawning objects to mimic a roll **when the author can just roll** |
 | **4** | **Verification complete** | Playbook finished | `Verification complete. No further action.` |
 
@@ -146,13 +146,13 @@ End a `U.RunSequence` / start a new Code Block / emit `▶▶▶ HUMAN ▶▶▶
 | Roll dice on table | Force faces via debug **only when** harness already provides that path (`rollSetFaces`, `rollTest`); do not build a one-off roller |
 | Clear toolbar (5s confirm) | `GlobalGameboardClear` alone when the test is **about** the real Clear UX |
 
-**Not a human gate:** “Run Code Block X” handoffs between Lua-only sections, phase number changes, or checkpoint pastes when the author does nothing in TTS. **Merge** those into the same `U.RunSequence` and prefer **one Code Block** until gate **(1)–(4)**.
+**Not a human gate:** “Run Code Block X” handoffs between Lua-only sections, phase number changes, or checkpoint pastes when the author does nothing in TTS. **Merge** those into the same `U.chain` and prefer **one Code Block** until gate **(1)–(4)**.
 
-### `U.RunSequence` — inter-step waits (read before splitting blocks)
+### `U.chain` — inter-step waits (read before splitting blocks)
 
-Implementation and comments: [`lib/util.ttslua`](../../../lib/util.ttslua) (`U.RunSequence`, `U.RunSequenceWithOptions`, `U.waitUntil`).
+Implementation and comments: [`lib/util.ttslua`](../../../lib/util.ttslua) (`U.chain`, `U.chain`, `U.await`).
 
-Each step is a `function() … end`. After a step runs, its **return value** becomes the `U.waitUntil` **testRef** that controls when the **next** step runs:
+Each step is a `function() … end`. After a step runs, its **return value** becomes the `U.await` **testRef** that controls when the **next** step runs:
 
 | Step returns | Next step waits until… |
 | --- | --- |
@@ -162,7 +162,7 @@ Each step is a `function() … end`. After a step runs, its **return value** bec
 | `table` | Every entry in the table satisfies its own test (AND) |
 | `nil` / nothing | Default **0.5s** delay |
 
-So **`U.RunSequence` does wait** between steps — including while the author performs a TTS action — when the prior step returns an appropriate testRef. The caller’s chunk returns immediately; work continues in coroutines. The return value of `U.RunSequence(...)` is `isDone()` — a function that becomes true when the full chain finishes (or errors).
+So **`U.chain` does wait** between steps — including while the author performs a TTS action — when the prior step returns an appropriate testRef. The caller’s chunk returns immediately; work continues in coroutines. The return value of `U.chain(...)` is `isDone()` — a function that becomes true when the full chain finishes (or errors).
 
 **Gate (1) pattern (preferred when state is pollable):** print `▶▶▶ HUMAN ▶▶▶` and **`return` a wait** in the **same step**; put post-action asserts in the **next** step(s) of the **same** sequence — no extra Code Block paste.
 
@@ -184,20 +184,20 @@ end,
 
 **Gate (2) timing:** return a **number** (seconds) when a fixed delay is enough; return a **poll function** when Lua can observe readiness (e.g. blindfold flag, phase change). Use a subjective HUMAN + separate Code Block only when neither is reliable. Poll only for the human action’s effect — assert feature behavior in the following step(s). Coroutine faults print as `[coroutine] …` via `U.logCoroutineIssue` when a wait or step throws.
 
-**`U.RunSequenceWithOptions`** (when needed): `maxWait` / `frequency` per inter-step wait (default max **60s** — increase for slow human actions, e.g. `U.RunSequence(funcs, 120)`), `onComplete(ok, detail)`, `stepNames`, `sequenceTimeoutSeconds`, `cancelRegistry` for external abort. See inline option comments in `util.ttslua`.
+**`U.chain`** (when needed): `maxWait` / `frequency` per inter-step wait (default max **60s** — increase for slow human actions, e.g. `U.chain(funcs, 120)`), `onComplete(ok, detail)`, `stepNames`, `sequenceTimeoutSeconds`, `cancelRegistry` for external abort. See inline option comments in `util.ttslua`.
 
 **When to split into a new Code Block anyway:**
 
 - Gate **(2)** or **(3)** with no trustworthy poll (subjective visual, manual alignment report).
-- Current **`RunTest`** harness — still expects a paste boundary at `[HUMAN]` ([TESTING.md § U.RunSequence](../../../.dev/TESTING.md#usequence-ordering-rules)).
+- Current **`RunTest`** harness — still expects a paste boundary at `[HUMAN]` ([TESTING.md § U.chain](../../../.dev/TESTING.md#usequence-ordering-rules)).
 - Optional **recovery** — author re-pastes only the assert half while debugging (not required if poll + assert share one sequence).
 
-**Do not split** gate **(1)** into “setup block → human paste → assert block” when a return testRef can bridge the action and the asserts in one `U.RunSequence`.
+**Do not split** gate **(1)** into “setup block → human paste → assert block” when a return testRef can bridge the action and the asserts in one `U.chain`.
 
 ### Console cues
 
-- Batch automated work in **`U.RunSequence({ … })`** — setup, cameras, `rollConfirm`, phase banners via **`printHeader(text, level)`** (levels 1–2 for phases inside one block).
-- **`▶▶▶ HUMAN ▶▶▶` format** — in the step that **`return`s the inter-step wait** (gate **(1)** / **(2)**), or alone at completion (gate **(4)**). See gate **(1)** example in [`U.RunSequence`](#usequence--inter-step-waits-read-before-splitting-blocks) above.
+- Batch automated work in **`U.chain({ … })`** — setup, cameras, `rollConfirm`, phase banners via **`printHeader(text, level)`** (levels 1–2 for phases inside one block).
+- **`▶▶▶ HUMAN ▶▶▶` format** — in the step that **`return`s the inter-step wait** (gate **(1)** / **(2)**), or alone at completion (gate **(4)**). See gate **(1)** example in [`U.chain`](#usequence--inter-step-waits-read-before-splitting-blocks) above.
 - **One `▶▶▶ HUMAN ▶▶▶` cue per human gate** — the step that prints it must **`return` the inter-step wait** before the next step runs; never two HUMAN prints back-to-back in adjacent steps with no wait between.
 - **Between automated steps:** use `print("PASS — …")` breadcrumbs; do **not** insert handoff HUMAN lines.
 - Each `printHeader` / `print` in its **own** `function() … end` step inside the sequence (preserves console order).

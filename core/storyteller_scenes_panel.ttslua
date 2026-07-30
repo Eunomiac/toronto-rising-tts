@@ -1641,7 +1641,7 @@ end
 --- Applies `sceneLibrary.scenes[activeKey].sessionScene` to live state, switches table when `tableKey` is valid,
 --- reapplies soundscape site context, optional `soundscapeNarrative`, then `Sync.full`.
 --- Transition blindfold (`core.hud_blindfold`) covers the full apply pipeline and lifts after a 10s settle delay.
---- Panel close + blindfold are immediate; heavy work is deferred via `U.waitUntil`.
+--- Panel close + blindfold are immediate; heavy work is deferred via `U.await`.
 --- @param player Player
 --- @param clockModeOrId string|nil clock mode (`scene`/`x5`/`setPresent`/`present`) or Apply button id
 function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)

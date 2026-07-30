@@ -373,7 +373,7 @@ function Reconcile.schedulePreviewDraftCapture()
     end
     Reconcile.previewDraftCaptureGeneration = Reconcile.previewDraftCaptureGeneration + 1
     local generation = Reconcile.previewDraftCaptureGeneration
-    U.delay(function()
+    U.await(function()
         if generation == Reconcile.previewDraftCaptureGeneration then
             Reconcile.capturePreviewDraftNow()
         end

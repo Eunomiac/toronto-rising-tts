@@ -70,7 +70,7 @@ Verification:
 
 ## Scope and guardrails
 
-This audit ranks expensive or repeatedly-triggered paths by static **impact x frequency hypotheses**. It is based on source reading and bounded ripgrep of `Sync.full(`, `Sync.player(`, `UpdateUIDisplays(`, `HO.syncAll(`, `L.reconcileAllPlayers(`, `U.scheduleAtOffsets`, `U.delay`, and NPC preload/spawn paths. Runtime counters should validate these rankings before behavior-tuning work lands.
+This audit ranks expensive or repeatedly-triggered paths by static **impact x frequency hypotheses**. It is based on source reading and bounded ripgrep of `Sync.full(`, `Sync.player(`, `UpdateUIDisplays(`, `HO.syncAll(`, `L.reconcileAllPlayers(`, `U.scheduleAtOffsets`, `U.await`, and NPC preload/spawn paths. Runtime counters should validate these rankings before behavior-tuning work lands.
 
 All recommendations preserve the synchronization contract: `gameState` remains the source of truth, handlers mutate state first, and reconcilers apply live TTS world/UI/audio state. Do **not** optimize by writing lights, UI, spawned objects, or AssetBundle audio directly from handlers.
 
@@ -195,7 +195,7 @@ Do not reintroduce TOR-391 duplicates: no broad `StorytellerScenesPanel.refresh(
 - `L.reconcileForPlayer(seatKey)` loops every `L.LIGHTMODES` entry, filters by suffix match, computes desired resolution, writes `gameState.lights`, and calls `L.SetLightMode(..., L.DEFAULT_RECONCILE_LERP_SECONDS)` for live lights. See `core/lighting.ttslua:1429-1457`.
 - `L.reconcileAllPlayers()` loops all `C.PlayerColors` and all `C.NPCSeats`. See `core/lighting.ttslua:1459-1467`.
 - `L.InitLights()` and `L.InitLightsDeferred()` both end with `L.reconcileAllPlayers()`. See `core/lighting.ttslua:1904-1951`.
-- `L.SetLightMode` persists state, bumps `transitionEpoch`, and uses `U.RunSequence` / `U.Lerp` for properties when transition time is positive. See `core/lighting.ttslua:1579-1865`.
+- `L.SetLightMode` persists state, bumps `transitionEpoch`, and uses `U.chain` / `U.Lerp` for properties when transition time is positive. See `core/lighting.ttslua:1579-1865`.
 
 **Top call sites**
 
@@ -349,7 +349,7 @@ Do not reintroduce TOR-391 duplicates: no broad `StorytellerScenesPanel.refresh(
 ## Measurement harness ideas
 
 - Add lightweight per-sync counters under `Sync.full` / `Sync.player`: reason, force, pass kind, elapsed `os.clock`, counts for seat lights attempted/applied/skipped, overlay show/hide calls, UI attributes set, soundscape fade steps scheduled, NPC spawn pairs issued.
-- Emit measurement rows with `U.emitForAgent` / `U.mcpEmitResult` so TTS MCP can parse structured `TR_AGENT_V1` lines. `.dev/TTS_MCP.md` documents structured prints, idle timeouts, and why long `U.RunSequence` work needs explicit completion signals.
+- Emit measurement rows with `U.emitForAgent` / `U.mcpEmitResult` so TTS MCP can parse structured `TR_AGENT_V1` lines. `.dev/TTS_MCP.md` documents structured prints, idle timeouts, and why long `U.chain` work needs explicit completion signals.
 - Use `.dev/testbed/TEST BED.ttslua` as the pattern for writing focused workspace logs when a measurement run needs repeatable table/lighting/soundscape setup.
 
 ## Recommended implementation order

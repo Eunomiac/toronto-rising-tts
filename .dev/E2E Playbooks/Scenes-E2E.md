@@ -1,7 +1,7 @@
 # Scenes - manual E2E playbook
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     printHeader("Scenes E2E: SUITE 0 - Fixture setup", 1)
   end,
@@ -134,7 +134,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     printHeader("Scenes E2E: SUITE A - Apply library scene", 1)
   end,
@@ -149,7 +149,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     local key = ((S.getStateVal("sceneLibrary", "order") or {})[17])
     if S.getStateVal("sceneLibrary", "activeKey") ~= key then
@@ -170,7 +170,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     local key = ((S.getStateVal("sceneLibrary", "order") or {})[17])
     local row = S.getStateVal("sceneLibrary", "scenes", key, "sessionScene")
@@ -194,7 +194,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     DEBUG.inspectSoundscapeAudio()
   end,
@@ -221,7 +221,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     local key = ((S.getStateVal("sceneLibrary", "order") or {})[18])
     local row = S.getStateVal("sceneLibrary", "scenes", key, "sessionScene")
@@ -253,7 +253,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     local key = ((S.getStateVal("sceneLibrary", "order") or {})[18])
     local libSite = S.getStateVal("sceneLibrary", "scenes", key, "sessionScene", "siteKey")
@@ -286,7 +286,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     DEBUG.showScene()
     if gbE2eVerifyPcTokens then gbE2eVerifyPcTokens() end
@@ -313,7 +313,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     local sk = S.getStateVal("sessionScene", "siteKey")
     if type(sk) ~= "string" or sk == "" then error("[Scenes E2E] FAIL - Apply location should leave a live siteKey") end
@@ -342,7 +342,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     local pd = S.getStateVal("presentDayClock")
     local ck = S.getStateVal("sessionScene", "clock")
@@ -365,7 +365,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     local pd = S.getStateVal("presentDayClock")
     local ck = S.getStateVal("sessionScene", "clock")
@@ -389,7 +389,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     local before = _G.SCENES_E2E_SET_LIVE_CLOCK
     local live = S.getStateVal("sessionScene", "clock")
@@ -423,7 +423,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     local start = _G.SCENES_E2E_RT_START or {}
     local now = S.getStateVal("sessionScene", "clock") or {}
@@ -447,7 +447,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     local ck = S.getStateVal("sessionScene", "clock") or {}
     if ck.useRealTime == true then error("[Scenes E2E] FAIL - useRealTime should be false after RT off") end
@@ -476,7 +476,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     local before = _G.SCENES_E2E_PD_BEFORE_SWITCH or {}
     local pd = S.getStateVal("presentDayClock") or {}
@@ -507,7 +507,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     local before = _G.SCENES_E2E_LIVE_BEFORE_PENDING or {}
     local live = S.getStateVal("sessionScene") or {}
@@ -528,7 +528,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     local key = S.getStateVal("sceneLibrary", "activeKey")
     if S.getStateVal("sceneLibrary", "lastAppliedKey") ~= key then error("[Scenes E2E] FAIL - pending row did not become lastAppliedKey") end
@@ -556,7 +556,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     local row = S.getStateVal("sessionScene", "seatSlots", "Brown")
     if type(row) ~= "table" or row.isPresent ~= false then error("[Scenes E2E] FAIL - Brown should be absent") end
@@ -575,7 +575,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     local row = S.getStateVal("sessionScene", "seatSlots", "Brown")
     if type(row) == "table" and row.isPresent == false then error("[Scenes E2E] FAIL - Brown should be present again") end
@@ -603,7 +603,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     print("seatPresent " .. JSON.encode(S.getStateVal("sessionScene", "seatPresent")))
     print("lastActiveMapPin " .. JSON.encode(S.getStateVal("sessionScene", "lastActiveMapPin")))
@@ -632,7 +632,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     if S.getStateVal("sceneLibrary", "lastAppliedKey") ~= _G.SCENES_E2E_LAST_BEFORE_INVALID then
       error("[Scenes E2E] FAIL - invalid historical row changed lastAppliedKey")
@@ -661,7 +661,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     print("clock " .. JSON.encode(S.getStateVal("sessionScene", "clock")))
     print("soundscape " .. JSON.encode(S.getStateVal("soundscape")))
@@ -680,7 +680,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     printHeader("Scenes E2E: SUITE N - Control Board HERE/THERE lifecycle", 1)
   end,
@@ -694,7 +694,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     if S.getStateVal("sceneLibrary", "lastAppliedKey") ~= SCENES_E2E.sceneA then
       error("[Scenes E2E] FAIL - slot 17 is not live")
@@ -710,7 +710,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     local Preview = require("core.control_board_preview")
     local function same(a, b) return JSON.encode(a or {}) == JSON.encode(b or {}) end
@@ -736,7 +736,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     local function same(a, b) return JSON.encode(a or {}) == JSON.encode(b or {}) end
     if S.getStateVal("controlBoard", "previewDraft") ~= nil then
@@ -760,7 +760,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     if S.getStateVal("sceneLibrary", "lastAppliedKey") ~= SCENES_E2E.sceneB then
       error("[Scenes E2E] FAIL - edited preview row did not apply")
@@ -780,7 +780,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     if S.getStateVal("controlBoard", "lockNextSceneApply") == true then
       error("[Scenes E2E] FAIL - successful locked activation did not auto-unlock")

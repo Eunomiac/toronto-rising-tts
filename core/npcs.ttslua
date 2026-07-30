@@ -109,7 +109,7 @@ local deferredLightAlignGeneration = {}
 --- Seat→stage `reload()` snapshot: bounds must grow before spotlight Y align (ImageScalar leads mesh).
 local pendingStageImageScalarReload = {}
 
---- Custom_Assetbundle spotlights: `L.GetLight` can be true while `loading_custom` is still true; component `set` calls are then ignored (matches `U.waitUntil` object-resting checks in `lib.util`).
+--- Custom_Assetbundle spotlights: `L.GetLight` can be true while `loading_custom` is still true; component `set` calls are then ignored (matches `U.await` object-resting checks in `lib.util`).
 --- @param lightGuid string
 --- @param reg string `npcLight_<guid>`
 --- @return boolean
@@ -412,7 +412,7 @@ local function requestSeatLayoutSync()
         return
     end
     seatSyncQueued = true
-    U.delay(function()
+    U.await(function()
         seatSyncQueued = false
         if rsl ~= nil and type(rsl.isLayoutSyncCurrent) == "function" and rsl.isLayoutSyncCurrent() then
             return
@@ -1204,7 +1204,7 @@ local function deferNpcSpotlightAlignedToFigurine(npcName, fig, lit, transitionT
     local deferLit = lit
     local deferTrans = transitionTime
     local deferName = npcName
-    U.RunSequenceWithOptions({
+    U.chain({
         function()
             return 0
         end,

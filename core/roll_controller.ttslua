@@ -84,7 +84,7 @@ RC.onLiveConcurrencyChanged = nil
 -- ============================================================================
 
 -- Debounce handles keyed by player color.
--- Each entry is a string token; the pending U.delay closure checks its own
+-- Each entry is a string token; the pending U.await closure checks its own
 -- captured token against this table — if mismatched, it was superseded and no-ops.
 local _debounceHandles = {}
 
@@ -1886,7 +1886,7 @@ function RC.onDieSettledSignal(color, obj)
     local myHandle = string.format("%d_%d", math.floor(os.time() * 1000), math.random(99999))
     _debounceHandles[color] = myHandle
 
-    U.delay(function()
+    U.await(function()
         if _debounceHandles[color] == myHandle then
             RC.onDiceSettled(color)
         end
@@ -2080,7 +2080,7 @@ function RC.recalculate(color, previewOnly)
 end
 
 --- Called from global_script.onObjectRandomize during a Willpower reroll wave.
--- Schedules locking this die once physics settle (`U.runAfterObjectPhysicsSettled`; max `C.WP_REROLL_DIE_REST_MAX_WAIT_SECONDS`).
+--- Schedules locking this die once physics settle (`U.await` resting pred; max `C.WP_REROLL_DIE_REST_MAX_WAIT_SECONDS`).
 -- @param color string
 -- @param obj Object
 function RC.onWpRerollDieRandomized(color, obj)
@@ -2126,12 +2126,9 @@ function RC.onWpRerollDieRandomized(color, obj)
     local rollIdCaptured = active.id
     local guidCaptured   = guid
 
-    U.runAfterObjectPhysicsSettled(
+    U.await(
         function()
-            return G.getObject(guidCaptured)
-        end,
-        C.WP_REROLL_DIE_REST_MAX_WAIT_SECONDS,
-        function(o)
+            local o = G.getObject(guidCaptured)
             if _wpDieLockWaitTokens[timerKey] ~= nonce then return end
 
             if o == nil then
@@ -2168,8 +2165,19 @@ function RC.onWpRerollDieRandomized(color, obj)
             end
         end,
         function()
-            return _wpDieLockWaitTokens[timerKey] ~= nonce
-        end
+            if _wpDieLockWaitTokens[timerKey] ~= nonce then
+                return true
+            end
+            local o = G.getObject(guidCaptured)
+            if o == nil then
+                return true
+            end
+            if o.loading_custom == true then
+                return false
+            end
+            return o.resting == true
+        end,
+        { maxWait = C.WP_REROLL_DIE_REST_MAX_WAIT_SECONDS }
     )
 end
 
@@ -2303,12 +2311,9 @@ function RC.onStSelectiveRerollDieRandomized(color, obj)
     local rollIdCaptured = active.id
     local guidCaptured = guid
 
-    U.runAfterObjectPhysicsSettled(
+    U.await(
         function()
-            return G.getObject(guidCaptured)
-        end,
-        C.WP_REROLL_DIE_REST_MAX_WAIT_SECONDS,
-        function(o)
+            local o = G.getObject(guidCaptured)
             if _stRerollDieLockWaitTokens[timerKey] ~= nonce then return end
 
             if o == nil then
@@ -2345,8 +2350,19 @@ function RC.onStSelectiveRerollDieRandomized(color, obj)
             onStSelectiveRerollDieSettled(color)
         end,
         function()
-            return _stRerollDieLockWaitTokens[timerKey] ~= nonce
-        end
+            if _stRerollDieLockWaitTokens[timerKey] ~= nonce then
+                return true
+            end
+            local o = G.getObject(guidCaptured)
+            if o == nil then
+                return true
+            end
+            if o.loading_custom == true then
+                return false
+            end
+            return o.resting == true
+        end,
+        { maxWait = C.WP_REROLL_DIE_REST_MAX_WAIT_SECONDS }
     )
 end
 

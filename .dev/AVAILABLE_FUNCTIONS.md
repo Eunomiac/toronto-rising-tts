@@ -170,15 +170,11 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
-| `U.delay(callback, seconds)` | One-shot delayed callback (wraps TTS `Wait.time`) | Debounce, timers, stagger |
-| `U.stopDelay(handle)` | Cancel a timer from `U.delay` | Real-time ticker, roll cleanup |
-| `U.waitForCondition(onDone, testFn, timeoutSeconds?)` | Poll until true, then run callback | Light component ready |
+| `U.await(callback, testRef, opts?)` | One-shot after seconds \| pred \| object rest \| AND-table | Debounce, settle, light ready |
+| `U.cancel(handle)` | Cancel a numeric `U.await` (`Wait.stop`) | Real-time ticker, roll cleanup |
 | `U.scheduleAtOffsets(callback, offsetsSeconds)` | Same callback at multiple delays | Bootstrap retries in `Sync.full` |
-| `U.waitUntil(afterFunc, testRef, isForcing, maxWait, testFrequency)` | Wait until condition met, then execute | Wait for object to rest |
-| `U.RunSequence(funcs, maxWait, frequency)` | Execute functions sequentially with conditions | Scene transitions |
-| `U.sequence(funcs, timeDelay)` | Execute functions with fixed delays | Staggered UI updates |
-| `U.runAfterObjectPhysicsSettled(getObject, timeout, callback, completeEarlyIf?)` | `Wait.condition` after object rests | `onObjectRandomize` die settle |
-| `U.waitRestingSequence(funcs, maxTime, isLoose)` | Wait for multiple objects to rest | Wait for all cards to settle |
+| `U.chain(funcs, opts?)` | Dependent sequential steps (coroutine inter-step waits) | Scene transitions, phase Advance |
+| `U.stagger(funcs, timeDelay)` | Parallel fixed offsets (not dependent) | Staggered UI / lighting updates |
 
 ### 1.10 Animation & Interpolation Utilities
 
@@ -583,7 +579,7 @@ TTS also exposes **`UI.setAttributes`** natively; use **`U.setAttributes`** when
 
 ### Need to wait for conditions?
 
-→ Use `U.delay()`, `U.waitForCondition()`, `U.scheduleAtOffsets()`, `U.waitUntil()`, `U.RunSequence()`, `U.sequence()`, `U.runAfterObjectPhysicsSettled()` — not raw `Wait.time` / `Wait.condition` (see `docs/solutions/lua-wait-api-policy.md`)
+→ Use `U.await()`, `U.cancel()`, `U.scheduleAtOffsets()`, `U.chain()`, `U.stagger()` — not raw `Wait.time` / `Wait.condition` (see `docs/solutions/lua-wait-api-policy.md`)
 
 ### Need to manipulate UI?
 

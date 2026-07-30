@@ -197,7 +197,7 @@ local function tickControlBoardSpotlightHoverPoll(playerColor)
         clearControlBoardSpotlightPreview()
     end
     if controlBoardSpotlightHeld and controlBoardSpotlightPollGen == gen then
-        U.delay(function()
+        U.await(function()
             tickControlBoardSpotlightHoverPoll(playerColor)
         end, 0.08)
     end
@@ -243,7 +243,7 @@ function Spotlight.onControlBoardSpotlightHotkey(playerColor, hoveredObject, isK
         clearControlBoardSpotlightPreview()
     end
 
-    U.delay(function()
+    U.await(function()
         if controlBoardSpotlightHeld and controlBoardSpotlightPollGen == gen then
             tickControlBoardSpotlightHoverPoll(playerColor)
         end

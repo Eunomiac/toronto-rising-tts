@@ -30,9 +30,9 @@ end
 --- @param callback function
 --- @param seconds number|nil
 --- @return any
-function CU.delay(callback, seconds)
+function CU.await(callback, seconds)
   if type(callback) ~= "function" then
-    error("csheet_util.delay: callback must be a function")
+    error("csheet_util.await: callback must be a function")
   end
   if seconds == nil then
     seconds = 0

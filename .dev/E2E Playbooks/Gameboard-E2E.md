@@ -1,7 +1,7 @@
 # Gameboard E2E
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     printHeader("Gameboard E2E: SUITE 0 - Prereq and reset", 1)
   end,
@@ -34,7 +34,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     printHeader("Gameboard E2E: SUITE A - Smoke apply and scene gate", 1)
   end,
@@ -58,7 +58,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     printHeader("A3 - Verify scene Apply gate", 2)
   end,
@@ -78,7 +78,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     printHeader("Gameboard E2E: SUITE B - Full reconcile suites", 1)
   end,
@@ -101,7 +101,7 @@ U.RunSequence({
 ```
 
 ```lua
-U.RunSequence({
+U.chain({
   function()
     printHeader("Gameboard E2E: SUITE C - PC control tokens", 1)
   end,

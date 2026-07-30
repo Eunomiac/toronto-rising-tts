@@ -315,7 +315,7 @@ Scene Time / ×5 / SET Now are **disabled** until the selected row has an author
 
 ## Switching scenes
 
-Scene **Apply** uses the **staged** transition `core.hud_blindfold.runStagedTransition` (built on `U.RunSequence`) so XmlUI blindfold animations and heavy reconcile never compete (TOR-147 / TOR-434). Phases:
+Scene **Apply** uses the **staged** transition `core.hud_blindfold.runStagedTransition` (built on `U.chain`) so XmlUI blindfold animations and heavy reconcile never compete (TOR-147 / TOR-434). Phases:
 
 1. **Blindfold down** — close Scenes panel; arm one random blindfold variant (+ destination District/Site cards when both keys resolve) on the parent Panel, then one `UI.show` on `playerHud_overlay_blindfold_*` (slide-in ~2s; cards FadeIn with XML delays — TOR-431 / TOR-425). Transition blinds are **root siblings** of `overlay_globalBlindfold` with the same 1920×1200 MiddleCenter art box (TOR-436). End scene / table-only / missing location keep cards `color=Clear` / empty image so they stay invisible.
 2. **Wait for animations (~2.5s)** — hold until parent SlideIn and destination-card FadeIns finish (`HUDBF.BLINDFOLD_DOWN_COMPLETE_SEC`). No fade-out or heavy work yet (TOR-434).

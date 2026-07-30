@@ -254,7 +254,7 @@ function coroutine_ambientTransition(ambientSettings, transitionTime)
         end, startLightIntensity, targetLightIntensity, transitionTime)
 
         -- Run both lerps in parallel
-        U.RunSequence({lerpFunc, lerpLightFunc})
+        U.chain({lerpFunc, lerpLightFunc})
     end
 
     return 1

@@ -29,7 +29,7 @@ Reference for the lean test playbook `Gameboard-E2E.md`. Run tests from Suite 0.
 
 ## Running the playbook
 
-`Gameboard-E2E.md` contains only fenced `U.RunSequence` Lua blocks. Context appears in the console via `printHeader`:
+`Gameboard-E2E.md` contains only fenced `U.chain` Lua blocks. Context appears in the console via `printHeader`:
 
 | Level | Meaning |
 | --- | --- |

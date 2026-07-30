@@ -242,7 +242,7 @@ local function scheduleBootstrapCoordinator()
         })
     end
 
-    U.RunSequence({
+    U.chain({
         function()
             return function()
                 if generation ~= bootstrapRetryGeneration then

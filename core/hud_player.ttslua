@@ -457,7 +457,7 @@ local function animateMapPanTo(playerID, seatColor, targetY, durationSeconds)
         s.y = y
 
         if currentStep < steps then
-            U.delay(tick, step)
+            U.await(tick, step)
         else
             applyMapOffset(seatColor, targetY)
             s.y = targetY
@@ -1950,7 +1950,7 @@ function HUD_playerMap_districtToggle_hoverOn(player, value, id)
     mapPanHoverTokenByPlayerID[playerID] = token
 
     local debounceSeconds = 0.15
-    U.delay(function()
+    U.await(function()
         if mapPanHoverTokenByPlayerID[playerID] ~= token then
             return
         end
@@ -1985,7 +1985,7 @@ function HUD_playerMap_districtToggle_hoverOff(player, value, id)
     mapPanHoverTokenByPlayerID[playerID] = token
 
     local debounceSeconds = 0.10
-    U.delay(function()
+    U.await(function()
         if mapPanHoverTokenByPlayerID[playerID] ~= token then
             return
         end
