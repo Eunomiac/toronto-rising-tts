@@ -103,7 +103,7 @@ U.chain({
       UI.setAttribute("storytellerToolbarBody", "active", "true")
       UI.setAttribute("storytellerContentArea", "active", "true")
     end
-    HUD_selectStorytellerPanel(Player["Black"], nil, "toggle_phases")
+    HUD_selectStorytellerPanel(Player["Black"], nil, "toggle_phases", true)
     if PCST ~= nil and type(PCST.refreshAllRows) == "function" then
       PCST.refreshAllRows()
     end
@@ -156,6 +156,11 @@ U.chain({
     if S.getStateVal("connectionControls", "joinXmlArmed") == true then
       error("[FAIL] joinXmlArmed flipped during control — expected still false")
     end
+    if UI ~= nil and UI.setAttribute ~= nil then
+      UI.setAttribute("storytellerToolbarBody", "active", "true")
+      UI.setAttribute("storytellerContentArea", "active", "true")
+    end
+    HUD_selectStorytellerPanel(Player["Black"], nil, "toggle_phases", true)
   end,
   function()
     print("PASS — still unarmed (control)")
@@ -201,7 +206,7 @@ U.chain({
       UI.setAttribute("storytellerToolbarBody", "active", "true")
       UI.setAttribute("storytellerContentArea", "active", "true")
     end
-    HUD_selectStorytellerPanel(Player["Black"], nil, "toggle_phases")
+    HUD_selectStorytellerPanel(Player["Black"], nil, "toggle_phases", true)
     if PCST ~= nil and type(PCST.refreshAllRows) == "function" then
       PCST.refreshAllRows()
     end
@@ -241,6 +246,11 @@ U.chain({
     if S.getStateVal("connectionControls", "deferSetXml") ~= true then
       error("[FAIL] deferSetXml should stay true after Arm")
     end
+    if UI ~= nil and UI.setAttribute ~= nil then
+      UI.setAttribute("storytellerToolbarBody", "active", "true")
+      UI.setAttribute("storytellerContentArea", "active", "true")
+    end
+    HUD_selectStorytellerPanel(Player["Black"], nil, "toggle_phases", true)
   end,
   function()
     print("PASS — joinXmlArmed + Defer setXML")
@@ -264,6 +274,11 @@ U.chain({
     if S.getStateVal("connectionControls", "joinXmlArmed") == true then
       error("[FAIL] joinXmlArmed still true after Refresh — expected cleared")
     end
+    if UI ~= nil and UI.setAttribute ~= nil then
+      UI.setAttribute("storytellerToolbarBody", "active", "true")
+      UI.setAttribute("storytellerContentArea", "active", "true")
+    end
+    HUD_selectStorytellerPanel(Player["Black"], nil, "toggle_phases", true)
   end,
   function()
     print("PASS — joinXmlArmed cleared after Refresh")

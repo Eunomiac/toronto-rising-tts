@@ -3048,9 +3048,10 @@ end
 -- @param player Player The player who clicked the button
 -- @param button string Button value
 -- @param id string The UI element ID (e.g., "toggle_scenes")
-function HUD_selectStorytellerPanel(player, button, id)
+-- @param forceOpen boolean|nil If true, always open (skip same-tab collapse). Use after remount / playbook reopen.
+function HUD_selectStorytellerPanel(player, button, id, forceOpen)
     local panelKey = string.gsub(id, "^toggle_", "")
-    StorytellerPanelUI.selectStorytellerPanel(panelKey)
+    StorytellerPanelUI.selectStorytellerPanel(panelKey, forceOpen == true)
     if panelKey == "phases" then
         Wait.frames(function()
             syncStorytellerPhaseButtons()

@@ -92,7 +92,7 @@ U.chain({
       UI.setAttribute("storytellerToolbarBody", "active", "true")
       UI.setAttribute("storytellerContentArea", "active", "true")
     end
-    HUD_selectStorytellerPanel(Player["Black"], nil, "toggle_phases")
+    HUD_selectStorytellerPanel(Player["Black"], nil, "toggle_phases", true)
     U.setAttributes("phase_deferSetXml", { isOn = true })
     if UI ~= nil and UI.setAttribute ~= nil then
       UI.setAttribute("phase_joinXmlStatus", "text", "Join XML: full")
@@ -130,7 +130,7 @@ Any remount resets the Intermission blindfold. Re-fade mid-sequence if needed:
 
 ```lua
 UI.setAttribute("overlay_globalBlindfold", "color", "rgba(1, 1, 1, 0.1)")
-UI.hide("oerlay_globalBlindfold")
+UI.hide("overlay_globalBlindfold")
 ```
 
 After a **Save & Play** with the blindfold-before-chrome fix, slim Phases should appear upper-left after Arm and you can click the buttons again.
@@ -158,6 +158,12 @@ U.chain({
       error("[FAIL] deferSetXml should be true after Arm")
     end
     UI.setAttribute("overlay_globalBlindfold", "color", "rgba(1, 1, 1, 0.1)")
+    if UI ~= nil and UI.setAttribute ~= nil then
+      UI.setAttribute("storytellerToolbarBody", "active", "true")
+      UI.setAttribute("storytellerContentArea", "active", "true")
+    end
+    -- forceOpen: remount resets panels; do not toggle-close if already active
+    HUD_selectStorytellerPanel(Player["Black"], nil, "toggle_phases", true)
   end,
   function()
     print("PASS — armed + Defer setXML + UI idle + blindfold re-faded")
@@ -187,6 +193,11 @@ U.chain({
       error("[FAIL] joinXmlArmed still true after Refresh")
     end
     UI.setAttribute("overlay_globalBlindfold", "color", "rgba(1, 1, 1, 0.1)")
+    if UI ~= nil and UI.setAttribute ~= nil then
+      UI.setAttribute("storytellerToolbarBody", "active", "true")
+      UI.setAttribute("storytellerContentArea", "active", "true")
+    end
+    HUD_selectStorytellerPanel(Player["Black"], nil, "toggle_phases", true)
   end,
   function()
     print("PASS — joinXmlArmed cleared after Refresh; blindfold re-faded")
@@ -216,6 +227,11 @@ U.chain({
       error("[FAIL] joinXmlArmed still true after Disarm")
     end
     UI.setAttribute("overlay_globalBlindfold", "color", "rgba(1, 1, 1, 0.1)")
+    if UI ~= nil and UI.setAttribute ~= nil then
+      UI.setAttribute("storytellerToolbarBody", "active", "true")
+      UI.setAttribute("storytellerContentArea", "active", "true")
+    end
+    HUD_selectStorytellerPanel(Player["Black"], nil, "toggle_phases", true)
   end,
   function()
     print("PASS — Disarm cleared joinXmlArmed; blindfold re-faded")
