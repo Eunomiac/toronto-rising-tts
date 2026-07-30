@@ -88,6 +88,7 @@ U.chain({
     -- Solo smoke only: keep Intermission blindfold up but nearly transparent so Host sees the table.
     -- Remount resets Image attrs — Code Blocks A/B/C re-apply after each remount.
     UI.setAttribute("overlay_globalBlindfold", "color", "rgba(1, 1, 1, 0.1)")
+    UI.setAttribute("overlay_globalBlindfold", "raycastTarget", "false")
     if UI ~= nil and UI.setAttribute ~= nil then
       UI.setAttribute("storytellerToolbarBody", "active", "true")
       UI.setAttribute("storytellerContentArea", "active", "true")
@@ -130,6 +131,7 @@ Any remount resets the Intermission blindfold. Re-fade mid-sequence if needed:
 
 ```lua
 UI.setAttribute("overlay_globalBlindfold", "color", "rgba(1, 1, 1, 0.1)")
+    UI.setAttribute("overlay_globalBlindfold", "raycastTarget", "false")
 UI.hide("overlay_globalBlindfold")
 ```
 
@@ -158,6 +160,7 @@ U.chain({
       error("[FAIL] deferSetXml should be true after Arm")
     end
     UI.setAttribute("overlay_globalBlindfold", "color", "rgba(1, 1, 1, 0.1)")
+    UI.setAttribute("overlay_globalBlindfold", "raycastTarget", "false")
     if UI ~= nil and UI.setAttribute ~= nil then
       UI.setAttribute("storytellerToolbarBody", "active", "true")
       UI.setAttribute("storytellerContentArea", "active", "true")
@@ -193,6 +196,7 @@ U.chain({
       error("[FAIL] joinXmlArmed still true after Refresh")
     end
     UI.setAttribute("overlay_globalBlindfold", "color", "rgba(1, 1, 1, 0.1)")
+    UI.setAttribute("overlay_globalBlindfold", "raycastTarget", "false")
     if UI ~= nil and UI.setAttribute ~= nil then
       UI.setAttribute("storytellerToolbarBody", "active", "true")
       UI.setAttribute("storytellerContentArea", "active", "true")
@@ -227,6 +231,7 @@ U.chain({
       error("[FAIL] joinXmlArmed still true after Disarm")
     end
     UI.setAttribute("overlay_globalBlindfold", "color", "rgba(1, 1, 1, 0.1)")
+    UI.setAttribute("overlay_globalBlindfold", "raycastTarget", "false")
     if UI ~= nil and UI.setAttribute ~= nil then
       UI.setAttribute("storytellerToolbarBody", "active", "true")
       UI.setAttribute("storytellerContentArea", "active", "true")
