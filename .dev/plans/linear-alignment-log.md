@@ -594,5 +594,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-26 | UPDATE | TOR-436 | Remodel transition blinds as root sibling of global blindfold + same 1920×1200 MiddleCenter |
 | 2026-07-26 | SHIP | TOR-97 | Desires: `playerData.desire`, CSHEET InputField listeners, ST PCs row + Clear |
 | 2026-07-26 | VERIFY | TOR-97 | Author confirmed Desire input + setClass/unset styling + O(1) class skip |
+| 2026-07-30 | CREATE+SHIP | TOR-437 | Join-load inventory (engine vs Host Lua); relatedTo TOR-428/430/381/375/374 |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
