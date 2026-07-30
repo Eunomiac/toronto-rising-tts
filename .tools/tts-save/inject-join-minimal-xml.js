@@ -18,6 +18,10 @@
  *   npm run tts-save:inject-join-minimal -- --saveName 230
  *   … --xmlOnly          # XmlUI + armed flags only (no asset/object purge)
  *   … --dryRun
+ *   … --noBackup         # skip pre-inject file copy
+ *
+ * Pre-inject copies go to {tts-assets.config.json backupDir}/join-minimal-inject/
+ * (never the TTS Saves folder — those appear in the in-game load window).
  *
  * Then File → Load that save in TTS (close TTS or switch slot first if the file is locked).
  */
@@ -25,10 +29,14 @@
 const fs = require("fs");
 const path = require("path");
 const { resolveSavePath } = require("./resolve-save-path.js");
+const { findExistingConfig } = require("../custom-ui-assets/lib/tts-assets-config.js");
 const {
   expandXmlFile,
   extractCustomAssetNames,
 } = require("../../.dev/scripts/embed_ui_global_xml_docs.js");
+
+/** Subfolder under tts-assets.config.json `backupDir` (keeps TTS Saves load UI clean). */
+const JOIN_MINIMAL_BACKUP_SUBDIR = "join-minimal-inject";
 
 /**
  * @param {string[]} argv
@@ -55,11 +63,27 @@ function parseArgs(argv) {
 }
 
 /**
+ * Pre-inject copy of the live save — under config `backupDir` / join-minimal-inject/, never in Saves/.
  * @param {string} savePath
  * @returns {string}
  */
 function buildBackupPath(savePath) {
-  const dir = path.dirname(savePath);
+  const found = findExistingConfig();
+  const configured =
+    found &&
+    found.config &&
+    typeof found.config.backupDir === "string" &&
+    found.config.backupDir.trim() !== ""
+      ? path.resolve(found.config.backupDir)
+      : null;
+  if (configured == null) {
+    throw new Error(
+      "tts-assets.config.json must set backupDir (used for pre-inject copies). " +
+        "Refusing to write backups into the TTS Saves folder (clutters the load window)."
+    );
+  }
+  const dir = path.join(configured, JOIN_MINIMAL_BACKUP_SUBDIR);
+  fs.mkdirSync(dir, { recursive: true });
   const base = path.basename(savePath, ".json");
   const stamp = new Date().toISOString().replace(/[:.]/g, "-");
   return path.join(dir, `${base}.pre-inject-join-minimal.${stamp}.json`);

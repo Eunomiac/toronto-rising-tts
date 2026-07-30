@@ -130,7 +130,7 @@ Writes expanded `ui/Global.join_minimal.xml` into save `XmlUI`, and by default a
 - Remove preload-area NPC figurines/lights + soundscape emitters from `ObjectStates`
 - Patch `LuaScriptState.connectionControls` (`joinXmlArmed`, `deferSetXml`, asset + cold-pool backups for staged restore 1–4)
 
-Does **not** replace `LuaScript`. Use `--xmlOnly` for XmlUI + armed flags only.
+Does **not** replace `LuaScript`. Use `--xmlOnly` for XmlUI + armed flags only. Pre-inject file copies go to `{backupDir}/join-minimal-inject/` from `tts-assets.config.json` (not the TTS Saves folder).
 
 ```text
 npm run tts-save:inject-join-minimal -- --saveName 123
