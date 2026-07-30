@@ -187,6 +187,14 @@ function loadFromUrlList(filePath) {
  */
 function readMeta(headers) {
   const contentType = (headers.get("content-type") || "").split(";")[0].trim();
+  const cr = headers.get("content-range") || "";
+  const crMatch = /\/(\d+)\s*$/.exec(cr);
+  if (crMatch) {
+    const total = Number(crMatch[1]);
+    if (Number.isFinite(total)) {
+      return { contentType, contentLength: total };
+    }
+  }
   const lenRaw = headers.get("content-length");
   const contentLength =
     lenRaw != null && lenRaw !== "" && Number.isFinite(Number(lenRaw))
