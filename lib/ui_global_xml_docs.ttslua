@@ -776,15 +776,19 @@ M.full = [=[
     preserveAspect="false"
   />
 
-  <!-- Transition blindfold Panel: same art box as overlay_globalBlindfold (root sibling in Global.xml, TOR-436). -->
+  <!-- Transition blindfold Panel: same art box as overlay_globalBlindfold (root sibling in Global.xml, TOR-436).
+
+  Testing possible bug with slide animations. Temp change
+   from `showAnimation="SlideIn_Top"` and `hideAnimation="SlideOut_Top"`.
+   -->
   <Panel class="playerHud_blindfoldOverlay"
     active="false"
     width="1920"
     height="1200"
     rectAlignment="MiddleCenter"
     raycastTarget="true"
-    showAnimation="SlideIn_Top"
-    hideAnimation="SlideOut_Top"
+    showAnimation="FadeIn"
+    hideAnimation="FadeOut"
     animationDuration="2"
     hideAnimationDelay="1"
   />
@@ -800,8 +804,8 @@ M.full = [=[
     animationDuration="0.35"
   />
   <Image class="overlay_anim_slide_top"
-    showAnimation="SlideIn_Top"
-    hideAnimation="SlideOut_Top"
+    showAnimation="FadeIn"
+    hideAnimation="FadeOut"
     animationDuration="1"
   />
 
@@ -17434,8 +17438,8 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 <!-- Generated file. Edit ui/.templates/panel_overlay_blindfold.xml only. -->
 <!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md; .dev/HUDs & Overlays/Player HUD Overview.md. -->
 
-<Panel id="playerHud_overlay_blindfold_Brown" class="playerHud_blindfoldOverlay" visibility="Brown">
-  <Image id="overlay_blindfold_1_Brown" image="overlay_blindfold_1" class="player_overlay" />
+<Panel id="playerHud_overlay_blindfold_Brown" class="playerHud_overlaysLayer playerHud_blindfoldOverlay" visibility="Brown">
+  <Image id="overlay_blindfold_1_Brown" image="overlay_blindfold_1" class="player_overlay" active = "true" color = "Clear" />
   <Image id="overlay_blindfold_2_Brown" image="overlay_blindfold_2" class="player_overlay" />
   <Image id="overlay_blindfold_3_Brown" image="overlay_blindfold_3" class="player_overlay" />
   <Image id="overlay_blindfold_4_Brown" image="overlay_blindfold_4" class="player_overlay" />
@@ -17473,8 +17477,8 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
   <Image id="overlay_site_card_display_Brown" class="player_overlay_site_card_display" />
 </Panel>
 
-<Panel id="playerHud_overlay_blindfold_Orange" class="playerHud_blindfoldOverlay" visibility="Orange">
-  <Image id="overlay_blindfold_1_Orange" image="overlay_blindfold_1" class="player_overlay" />
+<Panel id="playerHud_overlay_blindfold_Orange" class="playerHud_overlaysLayer playerHud_blindfoldOverlay" visibility="Orange">
+  <Image id="overlay_blindfold_1_Orange" image="overlay_blindfold_1" class="player_overlay" active = "true" color = "Clear" />
   <Image id="overlay_blindfold_2_Orange" image="overlay_blindfold_2" class="player_overlay" />
   <Image id="overlay_blindfold_3_Orange" image="overlay_blindfold_3" class="player_overlay" />
   <Image id="overlay_blindfold_4_Orange" image="overlay_blindfold_4" class="player_overlay" />
@@ -17512,8 +17516,8 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
   <Image id="overlay_site_card_display_Orange" class="player_overlay_site_card_display" />
 </Panel>
 
-<Panel id="playerHud_overlay_blindfold_Red" class="playerHud_blindfoldOverlay" visibility="Red">
-  <Image id="overlay_blindfold_1_Red" image="overlay_blindfold_1" class="player_overlay" />
+<Panel id="playerHud_overlay_blindfold_Red" class="playerHud_overlaysLayer playerHud_blindfoldOverlay" visibility="Red">
+  <Image id="overlay_blindfold_1_Red" image="overlay_blindfold_1" class="player_overlay" active = "true" color = "Clear" />
   <Image id="overlay_blindfold_2_Red" image="overlay_blindfold_2" class="player_overlay" />
   <Image id="overlay_blindfold_3_Red" image="overlay_blindfold_3" class="player_overlay" />
   <Image id="overlay_blindfold_4_Red" image="overlay_blindfold_4" class="player_overlay" />
@@ -17551,8 +17555,8 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
   <Image id="overlay_site_card_display_Red" class="player_overlay_site_card_display" />
 </Panel>
 
-<Panel id="playerHud_overlay_blindfold_Pink" class="playerHud_blindfoldOverlay" visibility="Pink">
-  <Image id="overlay_blindfold_1_Pink" image="overlay_blindfold_1" class="player_overlay" />
+<Panel id="playerHud_overlay_blindfold_Pink" class="playerHud_overlaysLayer playerHud_blindfoldOverlay" visibility="Pink">
+  <Image id="overlay_blindfold_1_Pink" image="overlay_blindfold_1" class="player_overlay" active = "true" color = "Clear" />
   <Image id="overlay_blindfold_2_Pink" image="overlay_blindfold_2" class="player_overlay" />
   <Image id="overlay_blindfold_3_Pink" image="overlay_blindfold_3" class="player_overlay" />
   <Image id="overlay_blindfold_4_Pink" image="overlay_blindfold_4" class="player_overlay" />
@@ -17590,8 +17594,8 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
   <Image id="overlay_site_card_display_Pink" class="player_overlay_site_card_display" />
 </Panel>
 
-<Panel id="playerHud_overlay_blindfold_Purple" class="playerHud_blindfoldOverlay" visibility="Purple">
-  <Image id="overlay_blindfold_1_Purple" image="overlay_blindfold_1" class="player_overlay" />
+<Panel id="playerHud_overlay_blindfold_Purple" class="playerHud_overlaysLayer playerHud_blindfoldOverlay" visibility="Purple">
+  <Image id="overlay_blindfold_1_Purple" image="overlay_blindfold_1" class="player_overlay" active = "true" color = "Clear" />
   <Image id="overlay_blindfold_2_Purple" image="overlay_blindfold_2" class="player_overlay" />
   <Image id="overlay_blindfold_3_Purple" image="overlay_blindfold_3" class="player_overlay" />
   <Image id="overlay_blindfold_4_Purple" image="overlay_blindfold_4" class="player_overlay" />
@@ -23064,22 +23068,32 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
         </HorizontalLayout>
         <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
           <Button id="scenes_pick_skybox_CLGrounds" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Casa Loma: Estate Grounds" onClick="HUD_scenesPickSkybox" />
+          <Button id="scenes_pick_skybox_CLGallery" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Casa Loma: Gallery of Mirrors" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_CLGreatHall" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Casa Loma: Great Hall" onClick="HUD_scenesPickSkybox" />
+          <Button id="scenes_pick_skybox_CLDrawingRoom" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Casa Loma: Maximillian Steele Drawing Room" onClick="HUD_scenesPickSkybox" />
+          <Button id="scenes_pick_skybox_CLTerrace" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Casa Loma: Moonlit Terrace" onClick="HUD_scenesPickSkybox" />
+          <Button id="scenes_pick_skybox_CLOverlook" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Casa Loma: Overlook" onClick="HUD_scenesPickSkybox" />
+          <Button id="scenes_pick_skybox_CLLibrary" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Casa Loma: Tacettin Ayhan Library" onClick="HUD_scenesPickSkybox" />
+          <Button id="scenes_pick_skybox_CLVestibule" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Casa Loma: Vestibule" onClick="HUD_scenesPickSkybox" />
+        </HorizontalLayout>
+        <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
+          <Button id="scenes_pick_skybox_Cemetery" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Cemetery" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_CityApt1" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="City Apartment" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_CityHall" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="City Hall" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_CityPark" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="City Park" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_CoachHouseEmbassy" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Coach House Embassy" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_CrowdOfSilhouettes" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Crowd of Silhouettes" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_Docks" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Docks" onClick="HUD_scenesPickSkybox" />
+          <Button id="scenes_pick_skybox_HemovoreResearch" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Douglas Netchurch Facility for Hemovore Research" onClick="HUD_scenesPickSkybox" />
         </HorizontalLayout>
         <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
-          <Button id="scenes_pick_skybox_HemovoreResearch" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Douglas Netchurch Facility for Hemovore Research" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_EatonCentre" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Eaton Centre" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_BrickWorks" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Evergreen Brick Works" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_EvergreenPalisades" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Evergreen Palisades" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_FireSaleChantry" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Fire Sale Chantry" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_GEDiningHall" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Giovanni Estate: Dining Hall" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_GEEstateGrounds" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Giovanni Estate: Estate Grounds" onClick="HUD_scenesPickSkybox" />
+          <Button id="scenes_pick_skybox_GETowerRoom" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Giovanni Estate: Tower Room" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_GraffitiAlley" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Graffiti Alley" onClick="HUD_scenesPickSkybox" />
         </HorizontalLayout>
         <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
@@ -23106,53 +23120,70 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
           <Button id="scenes_pick_skybox_Memoriam_lordLucien_7" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Memoriam - Lucien 7 - Montreal" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_Memoriam_lordLucien_8" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Memoriam - Lucien 8 - Week of Nightmares" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_Nightclub1" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Nightclub" onClick="HUD_scenesPickSkybox" />
+          <Button id="scenes_pick_skybox_WarrensAntechamber" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Nosferatu Warrens: Antechamber" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_WarrensDrakes" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Nosferatu Warrens: Drake's" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_WarrensLabyrinth" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Nosferatu Warrens: Labyrinth" onClick="HUD_scenesPickSkybox" />
+          <Button id="scenes_pick_skybox_WarrensSpawningPool" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Nosferatu Warrens: Spawning Pool" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_WarrensTunnelJunction" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Nosferatu Warrens: Tunnel Junction" onClick="HUD_scenesPickSkybox" />
-          <Button id="scenes_pick_skybox_Office" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Office" onClick="HUD_scenesPickSkybox" />
-          <Button id="scenes_pick_skybox_OldOsgoodeHall" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Old Osgoode Hall" onClick="HUD_scenesPickSkybox" />
         </HorizontalLayout>
         <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
+          <Button id="scenes_pick_skybox_Office" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Office" onClick="HUD_scenesPickSkybox" />
+          <Button id="scenes_pick_skybox_OldOsgoodeHall" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Old Osgoode Hall" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_PATH" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="P.A.T.H." onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_PenthouseApt1" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Penthouse Apartment" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_Ravenwing" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Ravenwing" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_ReconciliationHouse" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Reconciliation House" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_RedemptionHouse" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Redemption House" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_REMState" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="REM/State Institute for Sleep Science" onClick="HUD_scenesPickSkybox" />
-          <Button id="scenes_pick_skybox_RemembranceHouse" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Remembrance House" onClick="HUD_scenesPickSkybox" />
-          <Button id="scenes_pick_skybox_RevelationHouse" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Revelation House" onClick="HUD_scenesPickSkybox" />
         </HorizontalLayout>
         <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
+          <Button id="scenes_pick_skybox_RemembranceHouse" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Remembrance House" onClick="HUD_scenesPickSkybox" />
+          <Button id="scenes_pick_skybox_RevelationHouse" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Revelation House" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_Rooftop" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Rooftop" onClick="HUD_scenesPickSkybox" />
+          <Button id="scenes_pick_skybox_ROMLoadingZone" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Royal Ontario Museum: Bloor Street Loading Zone" onClick="HUD_scenesPickSkybox" />
+          <Button id="scenes_pick_skybox_ROMC5Lounge" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Royal Ontario Museum: C5 Lounge" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_ROMRotunda" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Royal Ontario Museum: Rotunda Mezzanine" onClick="HUD_scenesPickSkybox" />
+          <Button id="scenes_pick_skybox_ROMSpiritHouse" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Royal Ontario Museum: Spirit House" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_ROMHallOfExtinction" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Royal Ontario Museum: The Hall of Extinction" onClick="HUD_scenesPickSkybox" />
+        </HorizontalLayout>
+        <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
+          <Button id="scenes_pick_skybox_RunDownApt1" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Run-Down Apartment" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_SecludedDeadEnd" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Secluded Dead End" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_SewerTunnel1" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Sewer Tunnel" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_SewerTunnel2" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Sewer Tunnel 2" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_Sidewalk1" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Sidewalk" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_Spotlight" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Spotlight" onClick="HUD_scenesPickSkybox" />
-        </HorizontalLayout>
-        <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
           <Button id="scenes_pick_skybox_StLawrenceMarket" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="St. Lawrence Market" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_StMichaelsCathedral" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="St. Michael's Cathedral Basilica" onClick="HUD_scenesPickSkybox" />
+        </HorizontalLayout>
+        <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
           <Button id="scenes_pick_skybox_StRegisCouncilChamber" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The St. Regis Toronto: Council Chamber" onClick="HUD_scenesPickSkybox" />
+          <Button id="scenes_pick_skybox_StRegisFoyer" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The St. Regis Toronto: Foyer" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_StRegisGrandSalon" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The St. Regis Toronto: Grand Salon" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_StRegisRoom101" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The St. Regis Toronto: Room 101" onClick="HUD_scenesPickSkybox" />
+          <Button id="scenes_pick_skybox_StreetCorner1" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Street Corner" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_SuburbanHouse1" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Suburban House" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_SubwayStation" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Subway Station" onClick="HUD_scenesPickSkybox" />
-          <Button id="scenes_pick_skybox_ThreefoldExchange" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Threefold Exchange" onClick="HUD_scenesPickSkybox" />
+          <Button id="scenes_pick_skybox_SubwayTunnels" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Subway Tunnels" onClick="HUD_scenesPickSkybox" />
         </HorizontalLayout>
         <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
+          <Button id="scenes_pick_skybox_Taxi" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Taxi" onClick="HUD_scenesPickSkybox" />
+          <Button id="scenes_pick_skybox_ThreefoldExchange" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Threefold Exchange" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_TPSHQ" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Toronto Police Service Headquarters" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_TeteATete" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Tête-à-Tête Hair Atelier" onClick="HUD_scenesPickSkybox" />
+          <Button id="scenes_pick_skybox_UnionConcourse" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Union Station: Bay St. Concourse" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_UnionGrandClock" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Union Station: Grand Clock" onClick="HUD_scenesPickSkybox" />
-          <Button id="scenes_pick_skybox_UnionServiceCorridor" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Union Station: Service Corridor" onClick="HUD_scenesPickSkybox" />
-          <Button id="scenes_pick_skybox_ChantryLibrary" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The University Chantry: Grand Library" onClick="HUD_scenesPickSkybox" />
-          <Button id="scenes_pick_skybox_ChantryGrounds" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The University Chantry: Grounds" onClick="HUD_scenesPickSkybox" />
-          <Button id="scenes_pick_skybox_WealthyEstate1" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Wealthy Estate" onClick="HUD_scenesPickSkybox" />
-          <Button id="scenes_pick_skybox_WealthyEstate2" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Wealthy Estate 2" onClick="HUD_scenesPickSkybox" />
+          <Button id="scenes_pick_skybox_UnionLine1" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Union Station: Line 1" onClick="HUD_scenesPickSkybox" />
+          <Button id="scenes_pick_skybox_UnionSecOffice" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Union Station: Security Office" onClick="HUD_scenesPickSkybox" />
         </HorizontalLayout>
         <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
+          <Button id="scenes_pick_skybox_UnionServiceCorridor" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Union Station: Service Corridor" onClick="HUD_scenesPickSkybox" />
+          <Button id="scenes_pick_skybox_UnionUPExpress" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Union Station: UP Express Platform" onClick="HUD_scenesPickSkybox" />
+          <Button id="scenes_pick_skybox_ChantryLibrary" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The University Chantry: Grand Library" onClick="HUD_scenesPickSkybox" />
+          <Button id="scenes_pick_skybox_ChantryGrounds" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The University Chantry: Grounds" onClick="HUD_scenesPickSkybox" />
+          <Button id="scenes_pick_skybox_ChantryThaumatorium" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The University Chantry: Thaumatorium" onClick="HUD_scenesPickSkybox" />
+          <Button id="scenes_pick_skybox_WealthyEstate1" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Wealthy Estate" onClick="HUD_scenesPickSkybox" />
+          <Button id="scenes_pick_skybox_WealthyEstate2" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Wealthy Estate 2" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_YongeDundasSquare" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Yonge &amp; Dundas Square" onClick="HUD_scenesPickSkybox" />
         </HorizontalLayout>
       </VerticalLayout>
@@ -24321,7 +24352,40 @@ M.minimal = [=[
 <!-- /include ui/storyteller/panel_join_xml_chrome_defaults.xml -->
 
 
-<!-- 4. Slim Host chrome: Phases join controls only (panel forced active in post-mount). -->
+<!-- 4. Global session blindfold BEFORE Host chrome (same order as ui/Global.xml). -->
+<!-- Later siblings draw above earlier ones — if blindfold is last, it covers Phases. -->
+
+<!-- include ui/shared/panel_overlay_global_blindfold.xml -->
+<!-- Global session blindfold — no visibility filter (all clients). active=true by default / on connect. -->
+<!-- Lua: hideStartupLoadingOverlays() / showStartupLoadingOverlaysForPhases (Play hide / Intermission show). -->
+<!-- Per-player transition blinds: ui/.templates/panel_overlay_blindfold.xml — root sibling beside this file (TOR-436). -->
+<!-- Placed last among blindfolds in ui/Global.xml so it draws above transition blinds when both are up. -->
+<!--
+UI.show("overlay_globalBlindfold")
+-->
+
+<!--
+UI.hide("overlay_globalBlindfold")
+UI.setAttributes("overlay_globalBlindfold", {height = "1200"})
+-->
+
+<Image id="overlay_globalBlindfold"
+  image="global_blindfold_session_1"
+  active="true"
+  width="1920"
+  height="1200"
+  preserveAspect="true"
+  raycastTarget="true"
+  rectAlignment="MiddleCenter"
+  showAnimation="FadeIn"
+  hideAnimation="FadeOut"
+  animationDuration="0.3"
+/>
+
+<!-- /include ui/shared/panel_overlay_global_blindfold.xml -->
+
+
+<!-- 5. Slim Host chrome: Phases join controls only (panel forced active in post-mount). -->
 <Panel id="HUD_PANEL_BLACK" class="hud_root_panel" visibility="Black|Host">
   <Panel id="joinXmlChromeRoot" visibility="Host" active="true"
     rectAlignment="UpperLeft" offsetXY="20 -20" width="520" height="640"
@@ -24376,38 +24440,6 @@ UI.setAttributes("input_sessionNum", {minHeight = "30", fontStyle = "Bold"})
 
   </Panel>
 </Panel>
-
-<!-- 5. Global session blindfold (phase-owned). -->
-
-<!-- include ui/shared/panel_overlay_global_blindfold.xml -->
-<!-- Global session blindfold — no visibility filter (all clients). active=true by default / on connect. -->
-<!-- Lua: hideStartupLoadingOverlays() / showStartupLoadingOverlaysForPhases (Play hide / Intermission show). -->
-<!-- Per-player transition blinds: ui/.templates/panel_overlay_blindfold.xml — root sibling beside this file (TOR-436). -->
-<!-- Placed last among blindfolds in ui/Global.xml so it draws above transition blinds when both are up. -->
-<!--
-UI.show("overlay_globalBlindfold")
--->
-
-<!--
-UI.hide("overlay_globalBlindfold")
-UI.setAttributes("overlay_globalBlindfold", {height = "1200"})
--->
-
-<Image id="overlay_globalBlindfold"
-  image="global_blindfold_session_1"
-  active="true"
-  width="1920"
-  height="1200"
-  preserveAspect="true"
-  raycastTarget="true"
-  rectAlignment="MiddleCenter"
-  showAnimation="FadeIn"
-  hideAnimation="FadeOut"
-  animationDuration="0.3"
-/>
-
-<!-- /include ui/shared/panel_overlay_global_blindfold.xml -->
-
 ]=]
 
 --- @return string
