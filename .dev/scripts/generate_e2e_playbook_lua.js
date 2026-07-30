@@ -1,7 +1,7 @@
 "use strict";
 
 /**
- * Extracts fenced `lua` U.RunSequence blocks from E2E playbook markdown into a Lua module
+ * Extracts fenced `lua` `U.chain` blocks from E2E playbook markdown into a Lua module
  * consumed by DEBUG.RunTest / RunTest in core/debug.ttslua.
  *
  * Usage (repo root):
@@ -71,17 +71,17 @@ function extractLuaBlocks(markdown) {
 }
 
 /**
- * Pull the `{ ... }` table argument from `U.RunSequence({ ... })`.
+ * Pull the `{ ... }` table argument from `U.chain({ ... })`.
  * @param {string} blockText
  * @param {number} stepIndex
  * @returns {string}
  */
-function extractRunSequenceTable(blockText, stepIndex) {
+function extractChainTable(blockText, stepIndex) {
   const trimmed = blockText.trim();
-  const prefix = "U.RunSequence(";
+  const prefix = "U.chain(";
   if (!trimmed.startsWith(prefix)) {
     throw new Error(
-      `Step ${stepIndex}: expected block to start with U.RunSequence( — got: ${trimmed.slice(0, 40)}…`
+      `Step ${stepIndex}: expected block to start with U.chain( — got: ${trimmed.slice(0, 40)}…`
     );
   }
 
@@ -90,7 +90,7 @@ function extractRunSequenceTable(blockText, stepIndex) {
     index += 1;
   }
   if (trimmed[index] !== "{") {
-    throw new Error(`Step ${stepIndex}: expected table argument after U.RunSequence(`);
+    throw new Error(`Step ${stepIndex}: expected table argument after U.chain(`);
   }
 
   let depth = 0;
@@ -106,7 +106,7 @@ function extractRunSequenceTable(blockText, stepIndex) {
         const remainder = trimmed.slice(index + 1).trim();
         if (remainder !== ")") {
           throw new Error(
-            `Step ${stepIndex}: expected closing ")" after RunSequence table — trailing: ${remainder.slice(0, 20)}`
+            `Step ${stepIndex}: expected closing ")" after U.chain table — trailing: ${remainder.slice(0, 20)}`
           );
         }
         return tableText;
@@ -114,7 +114,7 @@ function extractRunSequenceTable(blockText, stepIndex) {
     }
   }
 
-  throw new Error(`Step ${stepIndex}: unbalanced braces in U.RunSequence table`);
+  throw new Error(`Step ${stepIndex}: unbalanced braces in U.chain table`);
 }
 
 /**
@@ -146,7 +146,7 @@ const SUITE_L1_HEADER_RE =
   /printHeader\("[^"]*E2E: SUITE (0|E2|[A-Z])\s*[-:][^"]*"\s*,\s*1\)/g;
 
 /**
- * Maps top-level suite id → first RunSequence step index (1-based).
+ * Maps top-level suite id → first U.chain step index (1-based).
  * @param {string[]} blocks
  * @returns {{ suiteSteps: Record<string, number>, suiteIds: string[] }}
  */
@@ -255,7 +255,7 @@ function generateCampaign(repoRoot, campaign) {
   const humanGates = [];
   blocks.forEach((block, idx) => {
     const stepIndex = idx + 1;
-    const tableText = extractRunSequenceTable(block, stepIndex);
+    const tableText = extractChainTable(block, stepIndex);
     validateLuaTable(tableText, stepIndex);
     stepTables.push(tableText);
     humanGates.push(blockEndsWithHumanGate(block));
@@ -311,7 +311,7 @@ if (require.main === module) {
 module.exports = {
   CAMPAIGNS,
   extractLuaBlocks,
-  extractRunSequenceTable,
+  extractChainTable,
   validateLuaTable,
   blockEndsWithHumanGate,
   extractTopLevelSuiteSteps,

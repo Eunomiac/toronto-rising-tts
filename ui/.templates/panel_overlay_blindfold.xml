@@ -71,7 +71,7 @@
     - call UI.show() on playerHud_overlay_blindfold_@@color@@
 
     BLINDFOLD DEACTIVATION PROCEDURE:
-    - inside a U.RunSequence call:
+    - inside a U.chain call:
       - function #1: call UI.hide() on playerHud_overlay_blindfold_@@color@@, return a 3-second wait
       - function #2: restore defaults to CHILD elements only: set overlay_blindfold_##_@@color@@ to active = "false", set the district and site card attributes as follows, in one UI.setAttributes call for each:
         - {active = "false", color = "clear", image = ""}

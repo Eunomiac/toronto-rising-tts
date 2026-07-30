@@ -172,12 +172,12 @@ NPC preload batches emit **`kind`** = **`npc_preload`** with **`characterCount`*
 
 **Verification:** Save and Play, run a hunger change or load, then parse MCP **`prints`** for `TR_AGENT_V1` lines (filter `kind === "sync_metrics"`). Compare before/after optimization work.
 
-## Orchestration (`U.chain` / `U.chain`)
+## Orchestration (`U.chain`)
 
-Multi-step table logic in this project often uses [`U.chain`](../lib/util.ttslua) (coroutine-driven via `U.await`). Important for agents:
+Multi-step table logic in this project often uses [`U.chain`](../lib/util.ttslua) (coroutine-driven inter-step waits). Important for agents:
 
-1. **Non-blocking execute:** A Lua snippet invoked through the External Editor **returns as soon as the chunk finishes**. `U.chain` / `U.chain` **schedule** work in coroutines; they **do not** block the bridge until animations or waits finish. Treat completion as **asynchronous** unless you explicitly design otherwise.
-2. **Completion hooks:** Use **`U.chain(funcs, { onComplete = ... })`** for a single callback when the sequence finishes (`ok` plus optional `detail`: `step_error`, `sequence_timeout`, `cancelled`). You still get the returned **`isDone`** predicate: `local done = U.chain(...);` later `done()`.
+1. **Non-blocking execute:** A Lua snippet invoked through the External Editor **returns as soon as the chunk finishes**. `U.chain` **schedules** work in coroutines; it **does not** block the bridge until animations or waits finish. Treat completion as **asynchronous** unless you explicitly design otherwise.
+2. **Completion hooks:** Use **`U.chain(funcs, { onComplete = ... })`** for a single callback when the sequence finishes (`ok` plus optional `detail`: `step_error`, `step_timeout`, `sequence_timeout`, `cancelled`). You still get the returned **`isDone`** predicate: `local done = U.chain(...);` later `done()`.
 3. **Cancel / sequence timeout:** Pass **`cancelRegistry`** (`{ cancelled = false, reason = nil }`) and/or **`sequenceTimeoutSeconds`**. Waits use an **`abortCheck`** on `U.await` so timeouts and cancellation can end a step without waiting for the original condition.
 4. **MCP observation:** Prefer **`onComplete`** plus **`U.mcpEmitResult`** / **`U.emitForAgent`**, and generous **`maxWaitMs` / `idleTimeoutMs`** on `tts_execute_lua`, over assuming a **`return`** from the snippet finalizes after long sequences.
 

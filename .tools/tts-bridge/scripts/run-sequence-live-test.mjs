@@ -1,5 +1,5 @@
 /**
- * Live integration test: U.RunSequenceWithOptions in real TTS (Global `U` from bundled mod).
+ * Live integration test: U.chain in real TTS (Global `U` from bundled mod).
  * Requires: TTS running, External Editor on, port 39998 free for the bridge, Toronto Rising loaded with current `lib/util.ttslua`.
  *
  * Usage: npm run tts-bridge:build && npm run tts-bridge:run-sequence-test
@@ -24,7 +24,7 @@ do
       return 0.12
     end,
   }
-  U.RunSequenceWithOptions(seq, {
+  U.chain(seq, {
     stepNames = { "a", "b", "c" },
     onStepStart = function(i, name)
       print("RS_START_" .. tostring(i) .. "_" .. tostring(name))
@@ -34,7 +34,7 @@ do
     end,
     onComplete = function(ok, detail)
       print("RS_ONCOMPLETE ok=" .. tostring(ok) .. " detail=" .. tostring(detail))
-      U.mcpEmitResult({ test = "RunSequenceLiveHarness", ok = ok, detail = detail })
+      U.mcpEmitResult({ test = "ChainLiveHarness", ok = ok, detail = detail })
     end,
   })
   print("RS_SCHEDULED")
@@ -62,13 +62,13 @@ try {
     text.includes("RS_START_1_a") &&
     text.includes("RS_END_3_true") &&
     text.includes("TR_AGENT_V1") &&
-    text.includes("RunSequenceLiveHarness");
+    text.includes("ChainLiveHarness");
 
   if (!pass) {
-    console.error("RUN_SEQUENCE_LIVE_TEST: FAIL (see prints above)");
+    console.error("CHAIN_LIVE_TEST: FAIL (see prints above)");
     process.exitCode = 1;
   } else {
-    console.error("RUN_SEQUENCE_LIVE_TEST: PASS");
+    console.error("CHAIN_LIVE_TEST: PASS");
   }
 } catch (e) {
   console.error(e instanceof Error ? e.message : e);

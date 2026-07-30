@@ -23,6 +23,7 @@
     "npc-placements:migrate-byarea": "node .dev/scripts/migrate_npc_byarea_to_placements.mjs",
     "e2e-playbook:generate": "node .dev/scripts/generate_e2e_playbook_lua.js --campaign all",
     "e2e-playbook:generate:test": "node .dev/scripts/generate_e2e_playbook_lua.test.js",
+    "crawl:workspace-strings": "node .dev/scripts/crawl_workspace_strings.js",
     "ui-xml-templates:embed": "node .dev/scripts/embed_ui_xml_templates.js",
     "ui-global-xml:embed": "node .dev/scripts/embed_ui_global_xml_docs.js",
     "roll-dashboard:generate": "node .dev/scripts/generate_roll_dashboard_xml.js",

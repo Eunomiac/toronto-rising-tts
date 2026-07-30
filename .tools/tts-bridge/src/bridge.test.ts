@@ -196,10 +196,10 @@ describe("TtsExternalEditorBridge", () => {
   });
 
   /**
-   * U.RunSequenceWithOptions finishes in coroutines after the chunk may have ended without a return value.
+   * U.chain finishes in coroutines after the chunk may have ended without a return value.
    * Mock: delayed prints, no messageID 5 — bridge must idle-collect final line (agent harness for Phase 1).
    */
-  it("collects delayed prints without returnValue (RunSequence / MCP pattern)", async () => {
+  it("collects delayed prints without returnValue (U.chain / MCP pattern)", async () => {
     const { editorPort, commandPort } = await twoDistinctFreePorts();
     mock = new MockTts(commandPort, editorPort, async (msg) => {
       if (msg["messageID"] !== 3) {

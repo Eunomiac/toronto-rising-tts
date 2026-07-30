@@ -4,7 +4,7 @@ const assert = require("assert");
 const {
   CAMPAIGNS,
   extractLuaBlocks,
-  extractRunSequenceTable,
+  extractChainTable,
   blockEndsWithHumanGate,
   extractTopLevelSuiteSteps,
   buildLuaModule,
@@ -14,7 +14,7 @@ assert.ok(CAMPAIGNS.Dice);
 assert.ok(CAMPAIGNS.Scenes);
 assert.ok(CAMPAIGNS.Gameboard);
 
-const sampleBlock = `U.RunSequence({
+const sampleBlock = `U.chain({
   function()
     printHeader("[HUMAN] Click Roll", 3)
   end
@@ -22,13 +22,13 @@ const sampleBlock = `U.RunSequence({
 
 assert.strictEqual(blockEndsWithHumanGate(sampleBlock), true);
 
-const autoBlock = `U.RunSequence({
+const autoBlock = `U.chain({
   function() rollConfirm("Brown", { noActive = true }) end
 })`;
 
 assert.strictEqual(blockEndsWithHumanGate(autoBlock), false);
 
-const tableText = extractRunSequenceTable(autoBlock, 1);
+const tableText = extractChainTable(autoBlock, 1);
 assert.ok(tableText.startsWith("{"));
 assert.ok(tableText.endsWith("}"));
 
@@ -40,7 +40,7 @@ const moduleText = buildLuaModule("Dice", ".dev/E2E Playbooks/Dice-E2E.md", [tab
 assert.ok(moduleText.includes('Playbook.suiteSteps = {'));
 assert.ok(moduleText.includes('["H"] = 12'));
 
-const suiteBlock = `U.RunSequence({
+const suiteBlock = `U.chain({
   function()
     printHeader("Scenes E2E: SUITE A - Apply library scene", 1)
   end
