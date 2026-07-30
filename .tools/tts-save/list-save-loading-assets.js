@@ -820,4 +820,14 @@ function main() {
   console.log(`MD:   ${mdOut}`);
 }
 
-main();
+if (require.main === module) {
+  main();
+}
+
+module.exports = {
+  buildLoadingInventory,
+  loadGGuidsRegistry,
+  urlHostKind,
+  extractObjectUrls,
+  isExcludedFromLoadingBar,
+};

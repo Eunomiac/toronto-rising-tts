@@ -97,11 +97,17 @@ lua DEBUG.dumpCustomAssetsToFile()
 
 Writes pretty JSON `{ dumpedAt, source, count, assets }` from `UI.getCustomAssets()` via `DEBUG.writeWorkspaceFile`.
 
-Probe URL sizes/types from that dump (or a live save):
+Probe URL sizes/types from that dump (or a live save Loading inventory):
 
 ```powershell
+# Full Loading-bar model: global CustomUIAssets + object ImageURLs + nested object UI assets
+npm run custom-ui-assets:probe-urls -- --saveName 230 --out .dev/.debug/loading_urls_probe.csv
+
+# Global HUD assets only
+npm run custom-ui-assets:probe-urls -- --saveName 230 --globalOnly
+
+# From a DEBUG dump (also finds .tts/output/debug_logs/…)
 npm run custom-ui-assets:probe-urls
-npm run custom-ui-assets:probe-urls -- --saveName 230 --out .dev/.debug/custom_ui_assets_probe.csv
 ```
 
 ### Test Result Logging

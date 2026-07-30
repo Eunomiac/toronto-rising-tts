@@ -51,15 +51,18 @@ Options: `--guids <csv>`, `--saveName 230`, `--save <path>`, `--dry-run`, `--yes
 
 ## Probe URL Content-Type / size
 
-After `lua DEBUG.dumpCustomAssetsToFile()` (or against a save):
+After `lua DEBUG.dumpCustomAssetsToFile()`, or against the **Loading-bar inventory** (global UI + object images — what still drives ~N/M on join):
 
 ```powershell
-npm run custom-ui-assets:probe-urls
-npm run custom-ui-assets:probe-urls -- --dump .dev/.debug/debug_logs/custom_ui_assets.json --out .dev/.debug/custom_ui_assets_probe.csv
-npm run custom-ui-assets:probe-urls -- --saveName 230 --jsonOut .dev/.debug/custom_ui_assets_probe.json
+# Recommended for join Loading analysis (~object URLs after Global prune)
+npm run custom-ui-assets:probe-urls -- --saveName 230 --out .dev/.debug/loading_urls_probe.csv
+
+npm run custom-ui-assets:probe-urls -- --dump .tts/output/debug_logs/custom_ui_assets.json
+npm run custom-ui-assets:probe-urls -- --saveName 230 --globalOnly
+npm run custom-ui-assets:probe-urls -- --saveName 230 --includeExtras --jsonOut .dev/.debug/loading_urls_probe.json
 ```
 
-HEAD/Range-GET each URL; prints a size-sorted summary plus optional CSV/JSON.
+Uses the same Loading model as `npm run tts-save:list-loading-assets`. HEAD/Range-GET each unique URL; prints size-sorted summary plus optional CSV/JSON.
 
 ## Add from Name/URL CSV
 
