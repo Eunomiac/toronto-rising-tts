@@ -8,7 +8,7 @@ Read this when:
 
 Source of truth:
 - Full join experiment: [TOR-439-join-xml-spike-verify.md](TOR-439-join-xml-spike-verify.md)
-- `core/global_script.ttslua` (`HUD_phaseArmJoinXml`, `HUD_phaseRefreshXml`, `HUD_phaseDisarmJoinXml`)
+- `core/global_script.ttslua` (`HUD_phaseArmJoinXml`, staged restore `HUD_phaseRestoreJoin*`)
 - Linear [TOR-439](https://linear.app/eunomiac-dev/issue/TOR-439/players-join-stress-minimal-global-xmlui-spike-armrefresh)
 
 Verification:
@@ -54,7 +54,7 @@ Do **not** use hotseat for this smoke. Hotseat shares one Steam identity across 
 
 **Step 6.** **Confirm Host UI is slim join chrome** (Phases panel upper-left; normal player/ST HUD gone; table visible through faded blindfold). Record: Arm remount OK Y/N. If chrome is missing but `SeatUI` logged success, paste the Recovery block below instead of clicking Refresh.
 
-**Step 7.** **Click Refresh XML once.** Wait until status returns to `Join XML: full` and console logs remount complete.
+**Step 7.** Restore in order (wait for console between presses): **1 Assets** → **2 HUD** → **3 Emitters** → **4 Figurines**. Status line should move toward `assets:full` / `hud:full` / `pools:warm`.
 
 **Step 8.** Execute Lua Code — Code Block B (assert disarmed after Refresh; re-fade blindfold).
 
@@ -115,18 +115,18 @@ U.chain({
 
 ---
 
-## Recovery — Refresh / Disarm / re-fade blindfold (Lua)
+## Recovery — staged restore / re-fade blindfold (Lua)
 
-If Arm remounted but Host chrome is still hidden (e.g. old embed with blindfold on top), do **not** re-Arm. After Code Block A, use these instead of clicking Refresh / Disarm:
-
-```lua
--- Refresh XML (full remount + clear joinXmlArmed)
-HUD_phaseRefreshXml(Player["Black"])
-```
+If Arm remounted but Host chrome is still hidden, do **not** re-Arm. Use staged restore (or Phases buttons **1–4**):
 
 ```lua
--- Disarm Join XML (full remount + clear joinXmlArmed)
-HUD_phaseDisarmJoinXml(Player["Black"])
+HUD_phaseRestoreJoinAssets(Player["Black"])
+-- wait for [JoinControls] CustomUIAssets restored
+HUD_phaseRestoreJoinHud(Player["Black"])
+-- wait for [SeatUI] Full UI resync sent
+HUD_phaseRestoreJoinEmitters(Player["Black"])
+-- wait for emitters restored
+HUD_phaseRestoreJoinFigurines(Player["Black"])
 ```
 
 Any remount resets the Intermission blindfold. Re-fade mid-sequence if needed:

@@ -137,7 +137,7 @@ Host Lua here is **cheap** compared to ~2000 loading-bar rows. The dangerous Hos
 
 **Control:** Defer triad on; full XmlUI; join → settle Grey → Auto-Seat (+ Connect if needed); no Refresh. Record timeout Y/N.
 
-**Treatment:** Host alone → Phases **Arm Join XML** (auto-enables Defer setXML) → joiner connects → settle → Auto-Seat/Connect → **Refresh XML** (or **Disarm Join XML**). Record: survive join? survive Refresh?
+**Treatment:** Host alone → Phases **Arm Join XML** → joiner connects → settle → Auto-Seat/Connect → staged restore **1 Assets → 2 HUD → 3 Emitters → 4 Figurines** (pace between presses). Record: survive join? survive each restore step?
 
 Sources: `ui/Global.join_minimal.xml`, Phases Arm/Disarm/Refresh in `core/global_script.ttslua`.
 

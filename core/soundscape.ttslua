@@ -1513,8 +1513,8 @@ function Soundscape.reconcileFromState(opts)
     opts = type(opts) == "table" and opts or {}
     do
         local JoinColdPools = require("core.join_cold_pools")
-        if JoinColdPools.isActive() == true then
-            print("[Soundscape] Skipping reconcileFromState (join cold pools active).")
+        if JoinColdPools.hasColdEmitters() == true then
+            print("[Soundscape] Skipping reconcileFromState (soundscape emitters still cold).")
             return
         end
     end

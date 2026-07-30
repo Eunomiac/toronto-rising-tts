@@ -827,10 +827,9 @@ local function waitUiAssetsNotLoading()
     end
 end
 
---- Single Global full-document remount call site (Refresh / Arm / Disarm / deferred join fallback).
---- Uses build-embedded XML (not UI.getXml) so Refresh works after Arm Join XML. TOR-439.
---- Minimal mode also slims CustomUIAssets via getCustomAssets backup + setCustomAssets keep-list;
---- full mode restores the backup when present.
+--- Single Global full-document remount call site (Refresh / Arm / deferred join fallback).
+--- Minimal mode: slim CustomUIAssets + cold pools. Full mode: remount XmlUI only — staged restore
+--- buttons restore assets / emitters / figurines separately (TOR-439).
 -- @param reason string|nil log label
 -- @param opts table|nil `{ mode = "full"|"minimal" }` (default full)
 -- @return boolean true when remount chain was started
@@ -881,13 +880,6 @@ local function performFullUiResync(reason, opts)
     else
         chainSteps = {
             function()
-                restoreJoinXmlCustomAssetsBackup()
-                return waitUiAssetsNotLoading()
-            end,
-            function()
-                return JoinColdPools.beginWarm()
-            end,
-            function()
                 local ok, err = pcall(function()
                     UI.setXml(xmlString)
                 end)
@@ -900,7 +892,7 @@ local function performFullUiResync(reason, opts)
                 postMountGlobalUi(label, false)
             end,
         }
-        stepNames = { "restoreAssets", "warmPools", "setXml", "postMount" }
+        stepNames = { "setXml", "postMount" }
     end
 
     U.chain(chainSteps, {
@@ -908,10 +900,48 @@ local function performFullUiResync(reason, opts)
         stepNames = stepNames,
         onComplete = function(ok, detail)
             pendingFullUiRemount = false
+            if syncStorytellerPhaseButtons ~= nil then
+                syncStorytellerPhaseButtons()
+            end
             if not ok then
                 print(string.format(
                     "[SeatUI] Full UI resync chain failed (%s): %s",
                     label,
+                    tostring(detail)
+                ))
+            end
+        end,
+    })
+    return true
+end
+
+--- Run a short join-restore U.chain (assets / emitters / figurines). Shares remount-in-flight guard.
+-- @param label string
+-- @param steps function[]
+-- @param stepNames string[]
+-- @return boolean
+local function performJoinRestoreStep(label, steps, stepNames)
+    cancelPendingFullUiResync()
+    if pendingFullUiRemount then
+        print(string.format(
+            "[JoinControls] Restore already in flight; ignoring (%s).",
+            type(label) == "string" and label or "unspecified"
+        ))
+        return false
+    end
+    pendingFullUiRemount = true
+    U.chain(steps, {
+        maxWait = 300,
+        stepNames = stepNames,
+        onComplete = function(ok, detail)
+            pendingFullUiRemount = false
+            if syncStorytellerPhaseButtons ~= nil then
+                syncStorytellerPhaseButtons()
+            end
+            if not ok then
+                print(string.format(
+                    "[JoinControls] Restore step failed (%s): %s",
+                    tostring(label),
                     tostring(detail)
                 ))
             end
@@ -3738,7 +3768,23 @@ syncStorytellerPhaseButtons = function()
     local deferSetXml = S.getStateVal("connectionControls", "deferSetXml") == true
     U.setAttributes("phase_deferSetXml", { isOn = deferSetXml })
     local joinXmlArmed = S.getStateVal("connectionControls", "joinXmlArmed") == true
-    local joinStatus = joinXmlArmed and "Join XML: ARMED (minimal)" or "Join XML: full"
+    local assetsSlim = type(S.getStateVal("connectionControls", "joinXmlCustomAssetsBackup")) == "table"
+        and #(S.getStateVal("connectionControls", "joinXmlCustomAssetsBackup") or {}) > 0
+    local JoinColdPools = require("core.join_cold_pools")
+    local joinStatus
+    if joinXmlArmed then
+        joinStatus = string.format(
+            "Join: ARMED | assets:%s | hud:min | %s",
+            assetsSlim and "slim" or "full",
+            JoinColdPools.statusSuffix()
+        )
+    else
+        joinStatus = string.format(
+            "Join: hud:full | assets:%s | %s",
+            assetsSlim and "slim" or "full",
+            JoinColdPools.statusSuffix()
+        )
+    end
     if UI ~= nil and UI.setAttribute ~= nil then
         UI.setAttribute("phase_joinXmlStatus", "text", joinStatus)
     end
@@ -4383,13 +4429,14 @@ function HUD_phaseDeferSetXml(player, value, id)
     syncStorytellerPhaseButtons()
 end
 
---- Phases panel: one-shot Global full UI remount from build embed; does not clear Defer setXML. TOR-428 / TOR-439.
+--- Phases panel: remount full Global XmlUI only (step 2 of staged restore). Does not restore assets/pools. TOR-439.
 function HUD_phaseRefreshXml(player, button, id)
     if not requireStorytellerForMutation(player, "HUD_phaseRefreshXml") then
         return
     end
     S.setStateVal(false, "connectionControls", "joinXmlArmed")
-    performFullUiResync("manual Refresh XML", { mode = "full" })
+    print("[JoinControls] Restore HUD — remounting full Global XmlUI (assets/pools unchanged).")
+    performFullUiResync("Restore HUD / Refresh XML", { mode = "full" })
 end
 
 --- Phases panel: mount join-minimal Global XmlUI before a struggling client connects. TOR-439.
@@ -4404,14 +4451,60 @@ function HUD_phaseArmJoinXml(player, button, id)
     performFullUiResync("Arm Join XML", { mode = "minimal" })
 end
 
---- Phases panel: remount full Global XmlUI and clear joinXmlArmed. TOR-439.
-function HUD_phaseDisarmJoinXml(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_phaseDisarmJoinXml") then
+--- Staged restore 1/4: CustomUIAssets from Arm backup. TOR-439.
+function HUD_phaseRestoreJoinAssets(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_phaseRestoreJoinAssets") then
         return
     end
-    S.setStateVal(false, "connectionControls", "joinXmlArmed")
-    print("[JoinControls] Disarm Join XML — remounting full Global XmlUI.")
-    performFullUiResync("Disarm Join XML", { mode = "full" })
+    print("[JoinControls] Restore Assets — setCustomAssets from backup.")
+    performJoinRestoreStep("Restore Assets", {
+        function()
+            restoreJoinXmlCustomAssetsBackup()
+            return waitUiAssetsNotLoading()
+        end,
+        function()
+            print("[JoinControls] CustomUIAssets restored.")
+        end,
+    }, { "restoreAssets", "done" })
+end
+
+--- Staged restore 2/4: full Global XmlUI (alias of Refresh XML). TOR-439.
+function HUD_phaseRestoreJoinHud(player, button, id)
+    HUD_phaseRefreshXml(player, button, id)
+end
+
+--- Staged restore 3/4: soundscape emitters. TOR-439.
+function HUD_phaseRestoreJoinEmitters(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_phaseRestoreJoinEmitters") then
+        return
+    end
+    local JoinColdPools = require("core.join_cold_pools")
+    print("[JoinControls] Restore Emitters — spawnObjectData with GUID keep.")
+    performJoinRestoreStep("Restore Emitters", {
+        function()
+            return JoinColdPools.beginWarmEmitters()
+        end,
+        function()
+            print("[JoinControls] Soundscape emitters restored.")
+        end,
+    }, { "warmEmitters", "done" })
+end
+
+--- Staged restore 4/4: preload NPC figurines + lights. TOR-439.
+function HUD_phaseRestoreJoinFigurines(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_phaseRestoreJoinFigurines") then
+        return
+    end
+    local JoinColdPools = require("core.join_cold_pools")
+    print("[JoinControls] Restore Figurines — spawnObjectData with GUID keep.")
+    performJoinRestoreStep("Restore Figurines", {
+        function()
+            return JoinColdPools.beginWarmFigurines()
+        end,
+        function()
+            print("[JoinControls] Preload figurines/lights restored.")
+        end,
+    }, { "warmFigurines", "done" })
 end
 
 --- PCs panel: persist Defer Auto-Seat per seat color. TOR-428.

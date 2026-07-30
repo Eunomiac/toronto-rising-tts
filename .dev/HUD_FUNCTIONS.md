@@ -177,9 +177,11 @@ Storyteller **Stats** panel: edit PC backgrounds/merits/flaws and coterie advant
 | `HUD_setPlaySubPhase` | `phase_sub_Main`, `phase_sub_Downtime`, `phase_sub_Memoriam` | `(player, button, id)` | ST-gated. Free switch among Play subphases via `Phases.setPlaySubPhase`. |
 | `HUD_sessionNumInput` | `input_sessionNum` | `(player, value, id)` | ST-gated. Persists `sessionNum` (≥1); refreshes phase UI + game-state overlay roman. |
 | `HUD_phaseDeferSetXml` | `phase_deferSetXml` | `(player, value, id)` | ST-gated. Persists `connectionControls.deferSetXml`; when on, cancels pending deferred Global full UI remount and blocks future automatic ones (TOR-428). |
-| `HUD_phaseRefreshXml` | `phase_refreshXml` | `(player, button, id)` | ST-gated. Remounts **full** build-embedded Global XmlUI via `U.chain` (clears `joinXmlArmed`); does **not** clear Defer setXML (TOR-428 / TOR-439). |
-| `HUD_phaseArmJoinXml` | `phase_armJoinXml` | `(player, button, id)` | ST-gated. Sets `joinXmlArmed` + Defer setXML; remounts **minimal** Global XmlUI; slims CustomUIAssets (`getCustomAssets`/`setCustomAssets`); colds NPC preload figurines/lights + soundscape emitters with GUID-preserving `spawnObjectData` restore on Refresh/Disarm (TOR-439). |
-| `HUD_phaseDisarmJoinXml` | `phase_disarmJoinXml` | `(player, button, id)` | ST-gated. Clears `joinXmlArmed`; remounts full Global XmlUI (TOR-439). |
+| `HUD_phaseRefreshXml` / `HUD_phaseRestoreJoinHud` | `phase_refreshXml` / `phase_restoreJoinHud` | `(player, button, id)` | ST-gated. Staged restore **2/4**: remounts **full** Global XmlUI; clears `joinXmlArmed`. Does **not** restore CustomUIAssets or cold pools (TOR-439). |
+| `HUD_phaseArmJoinXml` | `phase_armJoinXml` | `(player, button, id)` | ST-gated. Arms minimal XmlUI + slim assets + cold preload NPCs/emitters (TOR-439). |
+| `HUD_phaseRestoreJoinAssets` | `phase_restoreJoinAssets` | `(player, button, id)` | ST-gated. Staged restore **1/4**: `setCustomAssets` from Arm backup. |
+| `HUD_phaseRestoreJoinEmitters` | `phase_restoreJoinEmitters` | `(player, button, id)` | ST-gated. Staged restore **3/4**: warm soundscape emitters (GUID keep). |
+| `HUD_phaseRestoreJoinFigurines` | `phase_restoreJoinFigurines` | `(player, button, id)` | ST-gated. Staged restore **4/4**: warm preload figurines/lights (GUID keep). |
 | `HUD_pcsDeferAutoSeat` | `pcs_deferAutoSeat_<Color>` | `(player, value, id)` | ST-gated. Persists `connectionControls.deferAutoSeatByColor[color]` (TOR-428). |
 | `HUD_pcsDeferConnect` | `pcs_deferConnect_<Color>` | `(player, value, id)` | ST-gated. Persists `connectionControls.deferConnectByColor[color]`; when on, `onPlayerConnect` O(1)-exits for that chronicle PC (TOR-430). |
 | `HUD_pcPanel` | `pcs_<Color>_<action>` incl. `pcs_<Color>_desireClear` | `(player, button, id)` | ST-gated. Tracker buffers/apply; **Desire Clear** sets `playerData[pid].desire` to `""` and refreshes sheet + ST row (TOR-97). |

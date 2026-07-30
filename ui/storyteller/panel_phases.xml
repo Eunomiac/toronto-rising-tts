@@ -24,19 +24,27 @@ UI.setAttributes("input_sessionNum", {minHeight = "30", fontStyle = "Bold"})
     <InputField id="input_sessionNum" characterValidation="Integer" text="1" minWidth="80" preferredWidth="80"
       onValueChanged="HUD_sessionNumInput" onEndEdit="HUD_sessionNumInput" />
     <Text fontSize="14" fontStyle="Bold" color="#AAAAAA">Join controls</Text>
-    <Text fontSize="12" color="#AAAAAA">Defer setXML skips automatic Global UI rebuild for all clients. Refresh XML remounts the full HUD document; the defer toggle stays as set.</Text>
+    <Text fontSize="12" color="#AAAAAA">Defer setXML skips automatic Global UI rebuild. Arm colds HUD/assets/pools; restore in order with the buttons below.</Text>
     <HorizontalLayout class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
       <Toggle id="phase_deferSetXml" isOn="false" onValueChanged="HUD_phaseDeferSetXml"
         minWidth="160" preferredWidth="180" textColor="#FFFFFF">Defer setXML</Toggle>
-      <Button id="phase_refreshXml" text="Refresh XML" minWidth="120" preferredWidth="120" onClick="HUD_phaseRefreshXml"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    </HorizontalLayout>
-    <Text fontSize="12" color="#AAAAAA">Join XML spike (TOR-439): Arm before a struggling client connects; Refresh/Disarm remounts full HUD after they settle.</Text>
-    <Text id="phase_joinXmlStatus" fontSize="12" color="#FFDD00" text="Join XML: full" />
-    <HorizontalLayout class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
       <Button id="phase_armJoinXml" text="Arm Join XML" minWidth="140" preferredWidth="140" onClick="HUD_phaseArmJoinXml"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="phase_disarmJoinXml" text="Disarm Join XML" minWidth="150" preferredWidth="150" onClick="HUD_phaseDisarmJoinXml"
+    </HorizontalLayout>
+    <Text id="phase_joinXmlStatus" fontSize="11" color="#FFDD00" text="Join: hud:full | assets:full | pools:warm" />
+    <Text fontSize="12" color="#AAAAAA">Staged restore (after Arm): 1 Assets → 2 HUD → 3 Emitters → 4 Figurines</Text>
+    <HorizontalLayout class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
+      <Button id="phase_restoreJoinAssets" text="1 Assets" minWidth="90" preferredWidth="90" onClick="HUD_phaseRestoreJoinAssets"
+        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+      <Button id="phase_restoreJoinHud" text="2 HUD" minWidth="80" preferredWidth="80" onClick="HUD_phaseRestoreJoinHud"
+        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+      <Button id="phase_restoreJoinEmitters" text="3 Emitters" minWidth="100" preferredWidth="100" onClick="HUD_phaseRestoreJoinEmitters"
+        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+      <Button id="phase_restoreJoinFigurines" text="4 Figurines" minWidth="110" preferredWidth="110" onClick="HUD_phaseRestoreJoinFigurines"
+        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    </HorizontalLayout>
+    <HorizontalLayout class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
+      <Button id="phase_refreshXml" text="Refresh XML (=2 HUD)" minWidth="180" preferredWidth="180" onClick="HUD_phaseRefreshXml"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
     </HorizontalLayout>
   </VerticalLayout>

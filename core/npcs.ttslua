@@ -4082,8 +4082,8 @@ function NPCS.auditPreloadPoolFigurines(opts)
     opts = U.Type(opts) == "table" and opts or {}
     do
         local JoinColdPools = require("core.join_cold_pools")
-        if JoinColdPools.isActive() == true then
-            print("[NPCS] Skipping preload figurine audit (join cold pools active).")
+        if JoinColdPools.hasColdFigurines() == true then
+            print("[NPCS] Skipping preload figurine audit (figurines still cold).")
             return true, nil
         end
     end

@@ -8,7 +8,7 @@
     rectAlignment="UpperLeft"
     offsetXY="20 -20"
     width="520"
-    height="640"
+    height="720"
     color="rgba(0,0,0,0.85)"
   />
   <VerticalLayout class="storyteller_panel_column"

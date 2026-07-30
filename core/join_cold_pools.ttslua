@@ -92,11 +92,6 @@ local function cloneObjectDataKeepGuid(data, expectedGuid)
     return cloned
 end
 
---- @return boolean
-function JoinColdPools.isActive()
-    return S.getStateVal("connectionControls", "joinColdPoolsActive") == true
-end
-
 --- @return table|nil
 local function loadBackupFromState()
     local backup = S.getStateVal("connectionControls", "joinColdPoolsBackup")
@@ -109,7 +104,8 @@ end
 --- @param backup table|nil
 local function persistBackup(backup)
     runtimeBackup = backup
-    if backup == nil then
+    if backup == nil or type(backup.entries) ~= "table" or #backup.entries == 0 then
+        runtimeBackup = nil
         S.setStateVal(nil, "connectionControls", "joinColdPoolsBackup")
         S.setStateVal(false, "connectionControls", "joinColdPoolsActive")
         return
@@ -128,6 +124,57 @@ local function resolveBackup()
         runtimeBackup = fromState
     end
     return fromState
+end
+
+--- @return boolean
+function JoinColdPools.isActive()
+    local backup = resolveBackup()
+    return backup ~= nil and type(backup.entries) == "table" and #backup.entries > 0
+end
+
+--- @param kind string
+--- @return boolean
+local function backupHasKind(kind)
+    local backup = resolveBackup()
+    if backup == nil or type(backup.entries) ~= "table" then
+        return false
+    end
+    for i = 1, #backup.entries do
+        if backup.entries[i].kind == kind then
+            return true
+        end
+    end
+    return false
+end
+
+--- @return boolean
+function JoinColdPools.hasColdEmitters()
+    return backupHasKind("soundscape_emitter")
+end
+
+--- @return boolean
+function JoinColdPools.hasColdFigurines()
+    return backupHasKind("npc_figurine") or backupHasKind("npc_light")
+end
+
+--- Compact status fragment for Phases join line (TOR-439 staged restore).
+--- @return string
+function JoinColdPools.statusSuffix()
+    if not JoinColdPools.isActive() then
+        return "pools:warm"
+    end
+    local parts = {}
+    if JoinColdPools.hasColdEmitters() then
+        parts[#parts + 1] = "emit:cold"
+    else
+        parts[#parts + 1] = "emit:warm"
+    end
+    if JoinColdPools.hasColdFigurines() then
+        parts[#parts + 1] = "figs:cold"
+    else
+        parts[#parts + 1] = "figs:warm"
+    end
+    return table.concat(parts, " ")
 end
 
 --- Snapshot + destroy one live object; GUID must match expected.
@@ -363,14 +410,37 @@ local function spawnBackupEntry(entry)
     end
 end
 
---- Begin warm: spawnObjectData all backup entries with GUID preserve.
---- @return function waitUntilReady predicate
-function JoinColdPools.beginWarm()
+--- Warm a subset of cold backup entries (GUID-preserving spawnObjectData).
+--- Remaining entries stay in backup for later staged restore.
+--- @param kindPredicate fun(entry: table): boolean
+--- @param label string
+--- @param afterWarm fun()|nil
+--- @return function waitUntilReady
+local function beginWarmFiltered(kindPredicate, label, afterWarm)
     local backup = resolveBackup()
     if backup == nil or type(backup.entries) ~= "table" or #backup.entries == 0 then
-        print("[JoinColdPools] No cold backup; warm is a no-op.")
+        print(string.format("[JoinColdPools] No cold backup for %s; warm is a no-op.", tostring(label)))
         pendingWarmGuids = {}
-        S.setStateVal(false, "connectionControls", "joinColdPoolsActive")
+        persistBackup(nil)
+        return function()
+            return true
+        end
+    end
+
+    local toWarm = {}
+    local remaining = {}
+    for i = 1, #backup.entries do
+        local entry = backup.entries[i]
+        if kindPredicate(entry) then
+            toWarm[#toWarm + 1] = entry
+        else
+            remaining[#remaining + 1] = entry
+        end
+    end
+
+    if #toWarm == 0 then
+        print(string.format("[JoinColdPools] No %s entries left to warm.", tostring(label)))
+        pendingWarmGuids = {}
         return function()
             return true
         end
@@ -378,24 +448,22 @@ function JoinColdPools.beginWarm()
 
     local getObj = getGetObjectFromGUID()
     local warm = {}
-    for i = 1, #backup.entries do
-        local entry = backup.entries[i]
+    for i = 1, #toWarm do
+        local entry = toWarm[i]
         local guid = entry.guid
         if type(guid) == "string" and guid ~= "" then
             if getObj(guid) == nil then
                 spawnBackupEntry(entry)
-                warm[guid] = true
-            else
-                -- Already present (partial warm / File Load still had object) — keep GUID claim.
-                warm[guid] = true
             end
+            warm[guid] = true
         end
     end
     pendingWarmGuids = warm
 
     print(string.format(
-        "[JoinColdPools] Warm spawn queued for %d objects; waiting for GUID assert + spawning=false.",
-        #backup.entries
+        "[JoinColdPools] Warm %s queued (%d objects); waiting for GUID assert + spawning=false.",
+        tostring(label),
+        #toWarm
     ))
 
     return function()
@@ -410,7 +478,8 @@ function JoinColdPools.beginWarm()
             local got = obj.getGUID and obj.getGUID() or obj.guid
             if got ~= guid then
                 error(string.format(
-                    "[JoinColdPools] Warm GUID drift: expected %s got %s",
+                    "[JoinColdPools] Warm GUID drift (%s): expected %s got %s",
+                    tostring(label),
                     guid,
                     tostring(got)
                 ))
@@ -420,7 +489,28 @@ function JoinColdPools.beginWarm()
             end
         end
         pendingWarmGuids = nil
-        persistBackup(nil)
+        if #remaining > 0 then
+            persistBackup({ entries = remaining, version = backup.version or 1 })
+        else
+            persistBackup(nil)
+        end
+        if type(afterWarm) == "function" then
+            afterWarm()
+        end
+        print(string.format(
+            "[JoinColdPools] Warm %s complete (%d left in backup).",
+            tostring(label),
+            #remaining
+        ))
+        return true
+    end
+end
+
+--- @return function
+function JoinColdPools.beginWarmEmitters()
+    return beginWarmFiltered(function(entry)
+        return entry ~= nil and entry.kind == "soundscape_emitter"
+    end, "emitters", function()
         local SS = rawget(_G, "SS")
         if SS == nil then
             SS = require("core.soundscape")
@@ -431,9 +521,34 @@ function JoinColdPools.beginWarm()
         if type(SS.bootstrapSilenceStrayEmitterLoops) == "function" then
             SS.bootstrapSilenceStrayEmitterLoops()
         end
-        print("[JoinColdPools] Warm complete; backup cleared.")
+    end)
+end
+
+--- Preload figurines + paired lights.
+--- @return function
+function JoinColdPools.beginWarmFigurines()
+    return beginWarmFiltered(function(entry)
+        return entry ~= nil and (entry.kind == "npc_figurine" or entry.kind == "npc_light")
+    end, "figurines", nil)
+end
+
+--- Warm everything still in the cold backup (convenience; prefer staged buttons).
+--- @return function
+function JoinColdPools.beginWarm()
+    return beginWarmFiltered(function()
         return true
-    end
+    end, "all", function()
+        local SS = rawget(_G, "SS")
+        if SS == nil then
+            SS = require("core.soundscape")
+        end
+        if type(SS.clearEmitterObjectCache) == "function" then
+            SS.clearEmitterObjectCache()
+        end
+        if type(SS.bootstrapSilenceStrayEmitterLoops) == "function" then
+            SS.bootstrapSilenceStrayEmitterLoops()
+        end
+    end)
 end
 
 return JoinColdPools

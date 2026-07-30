@@ -26,7 +26,7 @@
   <!-- ignoreLayout: padding would turn this into a LayoutGroup and can bury children. -->
   <Panel id="joinXmlChromeRoot" visibility="Host" active="true"
     ignoreLayout="true"
-    rectAlignment="UpperLeft" offsetXY="20 -20" width="520" height="640"
+    rectAlignment="UpperLeft" offsetXY="20 -20" width="520" height="720"
     color="rgba(0,0,0,0.85)">
     <Include src="storyteller/panel_phases.xml" />
   </Panel>
