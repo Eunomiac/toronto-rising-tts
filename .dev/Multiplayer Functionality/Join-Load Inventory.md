@@ -147,10 +147,13 @@ From TTS API (`.dev/tts-api/Scripting API/UI.md`):
 - Replaces **all** Global Custom UI assets (empty table clears).
 - Images only; no merge API.
 
-Open questions (spike, not assumed):
+**Answered (author, 2026-07-30):**
+
+3. **Object XmlUI vs Global assets** — Yes; they **must** use object-local Custom Assets. Object-hosted XmlUI **cannot** read Global CustomUIAssets at all. Slimming Global and hoping objects “share” those images is a non-starter. Overlap that exists today (icons, stat dots, other small shared art duplicated on Global + objects) is small; moving or deduping it would yield **negligible** Loading-bar savings. Do not rank “dedupe Global↔object CustomUIAssets” as a join win.
+
+Still open (spike, not assumed):
 1. Does a join client download **every** save-root CustomUIAssets URL during Loading even if unused by current XmlUI?
 2. After Host `setCustomAssets`, do connected clients pull new URLs immediately? Do late joiners only see the current registry?
-3. Can object XmlUI keep object-local CustomUIAssets while Global HUD uses a slim set?
 
 ---
 
