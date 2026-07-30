@@ -149,12 +149,18 @@ Goal: load a save whose **Global XmlUI is already minimal**, preferably with a *
 2. In TTS (solo): **Arm Join XML**; confirm slim chrome + console `[JoinXmlAssets] setCustomAssets slim …`.
 3. **Either:**
    - **A (in-game, preferred for asset slim):** TTS **File → Save** (not Save & Play) while armed — persists `joinXmlArmed`, `joinXmlCustomAssetsBackup`, current XmlUI, and (if TTS writes runtime assets) the slim CustomUIAssets registry; or
-   - **B (disk XmlUI only):** `npm run tts-save:inject-join-minimal -- --saveName <id>`
-     Writes expanded minimal XmlUI + armed flags **without** replacing `LuaScript`. Does **not** slim CustomUIAssets on disk — use after Arm+File Save, or accept full registry until onLoad Arm slim runs (too late for Loading N/M).
+   - **B (disk, preferred for Loading experiment):** `npm run tts-save:inject-join-minimal -- --saveName <id>`
+     Writes minimal XmlUI, slims CustomUIAssets, removes Arm cold-pool objects, patches armed flags + restore backups. Use `--xmlOnly` to skip asset/object purge.
 4. **File → Load** that save. Watch Loading (N/M). After load, Host stays on minimal chrome (`onLoad` remounts minimal when `joinXmlArmed`; restores backup only on Refresh/Disarm).
 5. **Do not** Save & Play or `tts-save:inject-global` before that load — those rewrite **full** `XmlUI`.
 
-Open questions: (Q1) does Loading pull every save-root CustomUIAssets URL even when XmlUI is minimal? (Q1b) after Arm+File Save, is the save’s CustomUIAssets array already slim?
+Open questions answered (author, 2026-07-30):
+
+1. **Q1 — CustomUIAssets vs XmlUI:** Join/load downloads **every** save-root CustomUIAssets URL during Loading even when Global XmlUI is minimal / unused. Slim XmlUI alone does **not** cut the asset Loading bar — use Arm `setCustomAssets` or `tts-save:inject-join-minimal` (default purge).
+
+Still open:
+2. After Host `setCustomAssets`, do connected clients pull new URLs immediately? Do late joiners only see the current registry?
+3. (Q1b) After Arm+File Save, does TTS persist the slim CustomUIAssets array into the save JSON?
 
 ### Cold ObjectStates pools (TOR-439)
 
@@ -177,7 +183,6 @@ API: [getCustomAssets](https://api.tabletopsimulator.com/ui/#getcustomassets) / 
 3. **Object XmlUI vs Global assets** — Yes; they **must** use object-local Custom Assets. Object-hosted XmlUI **cannot** read Global CustomUIAssets at all. Slimming Global and hoping objects “share” those images is a non-starter. Overlap that exists today (icons, stat dots, other small shared art duplicated on Global + objects) is small; moving or deduping it would yield **negligible** Loading-bar savings. Do not rank “dedupe Global↔object CustomUIAssets” as a join win.
 
 Still open (spike, not assumed):
-1. Does a join client download **every** save-root CustomUIAssets URL during Loading even if unused by current XmlUI?
 2. After Host `setCustomAssets`, do connected clients pull new URLs immediately? Do late joiners only see the current registry?
 
 ---

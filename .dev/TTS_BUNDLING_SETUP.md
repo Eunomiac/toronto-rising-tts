@@ -122,15 +122,22 @@ A timestamped backup is written beside the save (`TS_Save_<n>.pre-inject-global.
 
 **Scope:** Global Lua + Global UI only. Object scripts (character sheets, dice bags, etc.) are unchanged.
 
-### Inject join-minimal XmlUI only (TOR-439 CustomUIAssets load test)
+### Inject join-minimal + Arm Loading purge (TOR-439)
 
-Writes **expanded** `ui/Global.join_minimal.xml` into save `XmlUI` and patches `LuaScriptState.connectionControls.joinXmlArmed` / `deferSetXml`. Does **not** replace `LuaScript` or clear state (unlike inject-global).
+Writes expanded `ui/Global.join_minimal.xml` into save `XmlUI`, and by default also applies the same Loading cuts as Host **Arm Join XML**:
+
+- Slim global `CustomUIAssets` to join-minimal image keep-list
+- Remove preload-area NPC figurines/lights + soundscape emitters from `ObjectStates`
+- Patch `LuaScriptState.connectionControls` (`joinXmlArmed`, `deferSetXml`, asset + cold-pool backups for staged restore 1–4)
+
+Does **not** replace `LuaScript`. Use `--xmlOnly` for XmlUI + armed flags only.
 
 ```text
 npm run tts-save:inject-join-minimal -- --saveName 123
+npm run tts-save:inject-join-minimal -- --saveName 123 --xmlOnly
 ```
 
-Then File → Load. Do not Save & Play / inject-global before that load. See [Join-Load Inventory § Armed-save load](Multiplayer%20Functionality/Join-Load%20Inventory.md#armed-save-load-customuiassets-q1--host-alone).
+Then File → Load. Do not Save & Play / inject-global before that load. Author confirmed (2026-07-30): CustomUIAssets load whether or not XmlUI references them — purge is required for Loading relief. See [Join-Load Inventory](Multiplayer%20Functionality/Join-Load%20Inventory.md).
 
 ### Issue 0: Connection Refused (ECONNREFUSED 127.0.0.1:39999)
 
