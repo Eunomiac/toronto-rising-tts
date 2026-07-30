@@ -49,6 +49,18 @@ Pattern forms: bare `^siteCard_` or slash `/^siteCard_/i`.
 
 Options: `--guids <csv>`, `--saveName 230`, `--save <path>`, `--dry-run`, `--yes` (skip confirm; automation only).
 
+## Probe URL Content-Type / size
+
+After `lua DEBUG.dumpCustomAssetsToFile()` (or against a save):
+
+```powershell
+npm run custom-ui-assets:probe-urls
+npm run custom-ui-assets:probe-urls -- --dump .dev/.debug/debug_logs/custom_ui_assets.json --out .dev/.debug/custom_ui_assets_probe.csv
+npm run custom-ui-assets:probe-urls -- --saveName 230 --jsonOut .dev/.debug/custom_ui_assets_probe.json
+```
+
+HEAD/Range-GET each URL; prints a size-sorted summary plus optional CSV/JSON.
+
 ## Add from Name/URL CSV
 
 Reads a CSV with `Name,URL` columns (e.g. from `npm run tts-cloud:export`), transforms

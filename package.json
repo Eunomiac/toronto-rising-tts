@@ -17,6 +17,7 @@
     "tts-cloud:export": "node .tools/tts-cloud/export-folder-csv.js",
     "custom-ui-assets:purge": "node .tools/custom-ui-assets/purge-custom-ui-assets-by-pattern.js",
     "custom-ui-assets:add-csv": "node .tools/custom-ui-assets/add-custom-ui-assets-from-csv.js",
+    "custom-ui-assets:probe-urls": "node .tools/custom-ui-assets/probe-custom-ui-asset-urls.js",
     "tts-assets:configure": "node .tools/custom-ui-assets/configure-tts-assets.js",
     "csheet-defaults:generate": "node .dev/scripts/generate_csheet_defaults_lua.js",
     "npc-control-board-ui:generate": "node .dev/scripts/generate_npc_control_board_ui_lua.js",

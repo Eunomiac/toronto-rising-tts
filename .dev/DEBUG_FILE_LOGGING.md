@@ -97,6 +97,13 @@ lua DEBUG.dumpCustomAssetsToFile()
 
 Writes pretty JSON `{ dumpedAt, source, count, assets }` from `UI.getCustomAssets()` via `DEBUG.writeWorkspaceFile`.
 
+Probe URL sizes/types from that dump (or a live save):
+
+```powershell
+npm run custom-ui-assets:probe-urls
+npm run custom-ui-assets:probe-urls -- --saveName 230 --out .dev/.debug/custom_ui_assets_probe.csv
+```
+
 ### Test Result Logging
 
 ```lua
