@@ -1,22 +1,32 @@
-# Join-stress minimal Global XmlUI — solo Host remount smoke _(TOR-439)_
+# Join-stress minimal Global XmlUI — solo Host remount smoke *(TOR-439)*
 
 ## Agent Routing
 
 Read this when:
-- smoking TOR-439 Arm / Refresh / Disarm **without** a second join client
+
+- smoking TOR-439 Arm + staged restore **1–4** (and optional Disarm) **without** a second join client
 - Host-only confirmation that remount works before multiclient Experiment #0
 
 Source of truth:
+
 - Full join experiment: [TOR-439-join-xml-spike-verify.md](TOR-439-join-xml-spike-verify.md)
 - `core/global_script.ttslua` (`HUD_phaseArmJoinXml`, staged restore `HUD_phaseRestoreJoin*`)
 - Linear [TOR-439](https://linear.app/eunomiac-dev/issue/TOR-439/players-join-stress-minimal-global-xmlui-spike-armrefresh)
 
 Verification:
+
 - this playbook (Save & Play + Host alone)
 
-Confirm Host-side Arm Join XML remounts the minimal document, Phases chrome stays usable, and Refresh remounts the full HUD and clears `joinXmlArmed`. This does **not** measure join-client connection timeouts — that still needs [the full playbook](TOR-439-join-xml-spike-verify.md) with a second client.
+Confirm Host-side Arm Join XML remounts the minimal document, Phases chrome stays usable, and staged restore **1 Assets → 2 HUD → 3 Emitters → 4 Figurines** restores full HUD / pools and clears `joinXmlArmed`. This does **not** measure join-client connection timeouts — that still needs [the full playbook](TOR-439-join-xml-spike-verify.md) with a second client.
 
-**Armed-save load (CustomUIAssets):** After Arm (which now also slims CustomUIAssets via `UI.setCustomAssets`), use TTS **File → Save** (not Save & Play), then **File → Load** so Loading can see a slim registry. Details: [Join-Load Inventory § Armed-save load](../Multiplayer%20Functionality/Join-Load%20Inventory.md#armed-save-load-customuiassets-q1--host-alone).
+## Save / Load (read once)
+
+| When | Action |
+| --- | --- |
+| **Before this smoke** | **Save & Play** once, then load multiplayer Host alone |
+| **During Steps 2–11** | Stay in-session — **no** File Save / File Load |
+| **Do not** | File Save / Load after Disarm or after restore **1–4** |
+| **Separate Loading test only** | After Arm, **while still armed**: **File → Save** (not Save & Play) → **File → Load** — see [Join-Load Inventory § Armed-save load](../Multiplayer%20Functionality/Join-Load%20Inventory.md#armed-save-load-customuiassets-q1--host-alone). Not part of the Steps below. |
 
 ## Session mode (pick this)
 
@@ -26,13 +36,17 @@ Do **not** use hotseat for this smoke. Hotseat shares one Steam identity across 
 
 ## What this covers / skips
 
-| Covered (solo) | Not covered (needs joiner) |
-| --- | --- |
-| Arm remount → minimal XmlUI | Join timeout on Loading / post-table |
-| Defer setXML forced on by Arm | Grey settle / Auto-Seat / Connect under load |
-| Refresh remount → full XmlUI + `joinXmlArmed` clear | Treatment “survive join on minimal” |
-| Disarm remount → full XmlUI | Control vs treatment timeout comparison |
-| Host visual: slim chrome ↔ full HUD | Join-client HUD after Refresh |
+
+| Covered (solo)                                      | Not covered (needs joiner)                   |
+| --------------------------------------------------- | -------------------------------------------- |
+| Arm remount → minimal XmlUI + slim assets + cold pools | Join timeout on Loading / post-table      |
+| Defer setXML forced on by Arm                       | Grey settle / Auto-Seat / Connect under load |
+| Staged restore **1–4** → full HUD + warm pools      | Treatment “survive join on armed Host”       |
+| Optional Disarm all-at-once remount                 | Control vs treatment timeout comparison      |
+| Host visual: slim chrome ↔ full HUD                 | Join-client HUD after restore                |
+
+
+
 
 ## Prerequisites (human — keep short)
 
@@ -40,31 +54,35 @@ Do **not** use hotseat for this smoke. Hotseat shares one Steam identity across 
 - **Host** loads the chronicle in **multiplayer**, alone (one connected player).
 - Phase is **Intermission**. If not, Advance to Intermission before Code Block 0.
 
+
+
 ## Run order
 
 **Step 1.** **Save & Play**, then load as **multiplayer Host alone**. Confirm Intermission.
 
 **Step 2.** Execute Lua Code — Code Block 0 (prep + open Phases + fade global blindfold for table visibility).
 
-**Step 3.** **Confirm Phases shows Defer setXML on and status `Join XML: full`.** Leave Phases open. Table should show through a near-transparent Intermission blindfold (`rgba(1,1,1,0.1)` — smoke only).
+**Step 3.** **Confirm Phases shows Defer setXML on and status** `Join XML: full`**.** Leave Phases open. Table should show through a near-transparent Intermission blindfold (`rgba(1,1,1,0.1)` — smoke only).
 
-**Step 4.** **Click Arm Join XML once.** Wait for console `[SeatUI] Full UI resync sent (Arm Join XML).` (that is the remount-done cue — not a Phases status label). Remount resets blindfold opacity; Code Block A re-fades it. After remount, Host should show **slim Phases chrome upper-left in front of** the Intermission blindfold (Refresh / Disarm live there).
+**Step 4.** **Click Arm Join XML once.** Wait for console `[JoinXmlAssets] setCustomAssets slim`, `[JoinColdPools]` cold, and `[SeatUI] Full UI resync sent (Arm Join XML)`. Remount resets blindfold opacity; Code Block A re-fades it. After remount, Host should show **slim Phases chrome upper-left in front of** the Intermission blindfold (restore **1–4** / Disarm live there).
 
 **Step 5.** Execute Lua Code — Code Block A (wait remount idle; assert armed; re-fade blindfold).
 
-**Step 6.** **Confirm Host UI is slim join chrome** (Phases panel upper-left; normal player/ST HUD gone; table visible through faded blindfold). Record: Arm remount OK Y/N. If chrome is missing but `SeatUI` logged success, paste the Recovery block below instead of clicking Refresh.
+**Step 6.** **Confirm Host UI is slim join chrome** (Phases panel upper-left; normal player/ST HUD gone; table visible through faded blindfold). Record: Arm remount OK Y/N. If chrome is missing but `SeatUI` logged success, use the Recovery block below (staged restore via Lua) — do not re-Arm.
 
-**Step 7.** Restore in order (wait for console between presses): **1 Assets** → **2 HUD** → **3 Emitters** → **4 Figurines**. Status line should move toward `assets:full` / `hud:full` / `pools:warm`.
+**Step 7.** **Press restore `1 Assets`, wait; then `2 HUD`, wait** for full HUD / `joinXmlArmed` clear.
 
-**Step 8.** Execute Lua Code — Code Block B (assert disarmed after Refresh; re-fade blindfold).
+**Step 8.** Execute Lua Code — Code Block B (assert Assets+HUD; re-fade blindfold).
 
-**Step 9.** **Confirm full Host HUD is restored.** Record: Refresh remount OK Y/N.
+**Step 9.** **Press restore `3 Emitters`, wait; then `4 Figurines`, wait** until pools warm.
 
-**Step 10.** **Click Arm Join XML once**, wait until SeatUI remount sent, then **click Disarm Join XML once**, wait until SeatUI remount sent again.
+**Step 10.** Execute Lua Code — Code Block C (assert staged restore complete).
 
-**Step 11.** Execute Lua Code — Code Block C (assert disarmed after Disarm; re-fade; complete).
+**Step 11.** **Optional Disarm smoke:** **Click Arm Join XML once**, wait until SeatUI remount sent, then **click Disarm Join XML once**, wait until SeatUI remount sent again. Record: Disarm remount OK Y/N. No File Save/Load.
 
 ---
+
+
 
 ## Code Block 0 — Prep + open Phases
 
@@ -115,6 +133,8 @@ U.chain({
 
 ---
 
+
+
 ## Recovery — staged restore / re-fade blindfold (Lua)
 
 If Arm remounted but Host chrome is still hidden, do **not** re-Arm. Use staged restore (or Phases buttons **1–4**):
@@ -139,6 +159,8 @@ UI.setAttribute("overlay_globalBlindfold", "raycastTarget", "false")
 After a **Save & Play** with the blindfold-before-chrome fix, slim Phases should appear upper-left after Arm and you can click the buttons again.
 
 ---
+
+
 
 ## Code Block A — After Arm
 
@@ -180,6 +202,8 @@ U.chain({
 
 ---
 
+
+
 ## Code Block B — After 1 Assets + 2 HUD
 
 ```lua
@@ -218,6 +242,8 @@ U.chain({
 ```
 
 ---
+
+
 
 ## Code Block C — After full staged restore
 
@@ -263,7 +289,7 @@ U.chain({
     print("  Host slim to full visuals OK Y/N = ?")
   end,
   function()
-    print("▶▶▶ HUMAN ▶▶▶ Verification complete. No further action. (Join timeouts still need the full TOR-439 playbook with a second client.)")
+    print("▶▶▶ HUMAN ▶▶▶ Staged restore complete. Optional: Arm then Disarm once (no File Save). Join timeouts still need the full TOR-439 playbook with a second client.")
   end,
 }, { maxWait = 60 })
 ```

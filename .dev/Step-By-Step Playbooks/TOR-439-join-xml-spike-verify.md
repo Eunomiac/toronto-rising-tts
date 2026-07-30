@@ -3,12 +3,13 @@
 ## Agent Routing
 
 Read this when:
-- verifying TOR-439 Arm Join XML / Refresh remount experiment in multiclient
-- recording whether post-Loading join timeouts track heavy Global XmlUI at connect
+- verifying TOR-439 Arm Join XML + staged restore in multiclient
+- recording whether post-Loading join timeouts track heavy Global XmlUI / CustomUIAssets / cold pools at connect
 
 Source of truth:
 - `ui/Global.join_minimal.xml`
-- `core/global_script.ttslua` (`performFullUiResync`, `HUD_phaseArmJoinXml`, `HUD_phaseRefreshXml`)
+- `core/global_script.ttslua` (`HUD_phaseArmJoinXml`, `HUD_phaseRestoreJoinAssets` / `Hud` / `Emitters` / `Figurines`)
+- `core/join_cold_pools.ttslua`
 - [Join-Load Inventory](../Multiplayer%20Functionality/Join-Load%20Inventory.md) Experiment #0
 - Linear [TOR-439](https://linear.app/eunomiac-dev/issue/TOR-439/players-join-stress-minimal-global-xmlui-spike-armrefresh)
 
@@ -16,13 +17,23 @@ Verification:
 - this playbook (Save & Play + Host-alone start + one join client)
 - Host-only remount smoke (no joiner): [TOR-439-join-xml-spike-verify-solo.md](TOR-439-join-xml-spike-verify-solo.md)
 
-Prove whether joining into a **minimal** Global XmlUI (then remounting full via Refresh) changes post-Loading connection timeouts versus the normal full HUD with Defer triad on.
+Prove whether joining into an **armed** Host (minimal Global XmlUI + slim CustomUIAssets + cold preload pools), then restoring in stages, changes post-Loading connection timeouts versus the normal full HUD with Defer triad on.
 
 Fixture seat below: **Purple**. Edit `FIXTURE.joinColor` in Code Block 0 if the joining player’s chronicle seat is a different PC color.
 
+## Save / Load (read once — do not mix into restore)
+
+| When | Action | Purpose |
+| --- | --- | --- |
+| **Before this experiment** | **Save & Play** once (current TOR-439 Lua), then **File → Load** as multiplayer Host alone | Puts scripts into TTS. Start the control/treatment run from that load. |
+| **During control → treatment** | Stay in the same Host session. **No** File Save / File Load / Save & Play mid-run | Arm live → joiner connects → Auto-Seat/Connect → staged restore **1–4**. |
+| **Do not** | File Save / Load **after Disarm** or after staged restore | Disarm and buttons **1–4** are in-session restore paths, not save cues. |
+| **Separate Host-alone Loading test only** | After Arm, **while still armed**: **File → Save** (not Save & Play) → **File → Load** | Measures Loading N/M with slim CustomUIAssets. Not part of this multiclient control/treatment sequence. Details: [Join-Load Inventory § Armed-save load](../Multiplayer%20Functionality/Join-Load%20Inventory.md#armed-save-load-customuiassets-q1--host-alone). |
+| **Host session died** | Reload multiplayer Host alone; Save & Play only if scripts drifted | Recovery; re-run from Code Block 0 / Step 2. |
+
 ## Prerequisites (human — keep short)
 
-- **Save & Play** after TOR-439 Lua (includes `lib/ui_global_xml_docs.ttslua`).
+- **Save & Play** after TOR-439 Lua (includes `lib/ui_global_xml_docs.ttslua`, `core/join_cold_pools.ttslua`).
 - **Host** loads the chronicle into a **multiplayer** game and is the **only** connected player (joiner waits until the playbook says to connect).
 - Phase is **Intermission** (global blindfold up). If not, Advance until Intermission before Code Block 0.
 
@@ -48,23 +59,31 @@ Fixture seat below: **Purple**. Edit `FIXTURE.joinColor` in Code Block 0 if the 
 
 **Step 5.** Execute Lua Code — Code Block A (prints control checklist; asserts still unarmed).
 
-**Step 6.** **If the joiner is Grey: on PCs panel for the fixture color, click Auto-Seat, then Connect.** Wait ~10s. Do **not** click Refresh XML. Record: timeout after Auto-Seat/Connect Y/N.
+**Step 6.** **If the joiner is Grey: on PCs panel for the fixture color, click Auto-Seat, then Connect.** Wait ~10s. Do **not** press restore **1–4** and do **not** click Disarm. Record: timeout after Auto-Seat/Connect Y/N.
 
-**Step 7.** **Kick or disconnect the join client.** Host alone again. If the Host session died, reload multiplayer Host alone, Save & Play if needed, then re-run from Step 2 before treatment.
+**Step 7.** **Kick or disconnect the join client.** Host alone again. If the Host session died, reload multiplayer Host alone (Save & Play only if scripts drifted), then re-run from Step 2 before treatment.
 
 **Step 8.** Execute Lua Code — Code Block B (treatment prep: keep defer triad; ensure unarmed).
 
-**Step 9.** **On Phases: click Arm Join XML once.** Wait until console logs Arm remount and status becomes `Join XML: ARMED (minimal)`. Host HUD should shrink to slim join chrome (Phases still usable).
+**Step 9.** **On Phases: click Arm Join XML once.** Wait for console `[JoinXmlAssets] setCustomAssets slim`, `[JoinColdPools]` cold, and `[SeatUI] Full UI resync sent (Arm Join XML)`. Host HUD should shrink to slim join chrome (Phases still usable; restore buttons **1–4** live there).
 
 **Step 10.** Execute Lua Code — Code Block C (assert armed + Defer setXML on).
 
-**Step 11.** **Have the same join client connect again.** Wait for Loading / Grey / timeout. Record: survive join on minimal XmlUI Y/N (same timeout questions as Step 4).
+**Step 11.** **Have the same join client connect again.** Wait for Loading / Grey / timeout. Record: survive join on armed Host Y/N (same timeout questions as Step 4).
 
 **Step 12.** **If Grey: Auto-Seat then Connect for the fixture color.** Wait ~10s. Record timeout Y/N.
 
-**Step 13.** **On Phases: click Refresh XML once.** Wait until console logs remount complete and status returns to `Join XML: full`. Record: survive Refresh Y/N; Host full HUD restored Y/N.
+**Step 13.** **On Phases: press restore `1 Assets` once.** Wait for console CustomUIAssets restored. Record: joiner/Host survive step 1 Y/N.
 
-**Step 14.** Execute Lua Code — Code Block D (assert disarmed after Refresh; dump results reminder).
+**Step 14.** **Press restore `2 HUD` once.** Wait for `[SeatUI] Full UI resync sent`. Status should clear `joinXmlArmed` / move toward `hud:full`. Record: survive step 2 Y/N; Host full HUD Y/N.
+
+**Step 15.** Execute Lua Code — Code Block D (assert disarmed after Assets+HUD).
+
+**Step 16.** **Press restore `3 Emitters` once.** Wait for emitters restored. Record: survive step 3 Y/N.
+
+**Step 17.** **Press restore `4 Figurines` once.** Wait for figurines/lights restored / pools warm. Record: survive step 4 Y/N.
+
+**Step 18.** Execute Lua Code — Code Block E (assert pools warm; dump results reminder).
 
 ---
 
@@ -178,7 +197,7 @@ U.chain({
     print("  CONTROL survived to Grey Y/N = ?")
   end,
   function()
-    print("▶▶▶ HUMAN ▶▶▶ If joiner is Grey: Auto-Seat then Connect for " .. tostring(FIXTURE.joinColor) .. ". Do NOT Refresh XML. Record timeout after seat/connect. Then disconnect joiner so Host is alone again.")
+    print("▶▶▶ HUMAN ▶▶▶ If joiner is Grey: Auto-Seat then Connect for " .. tostring(FIXTURE.joinColor) .. ". Do NOT press restore 1-4 or Disarm. Record timeout after seat/connect. Then disconnect joiner so Host is alone again.")
   end,
 }, { maxWait = 30 })
 ```
@@ -225,7 +244,7 @@ U.chain({
     print("PASS — ready to Arm Join XML")
   end,
   function()
-    print("▶▶▶ HUMAN ▶▶▶ Click Arm Join XML once; wait for ARMED status / slim HUD. Then paste Code Block C.")
+    print("▶▶▶ HUMAN ▶▶▶ Click Arm Join XML once; wait for [JoinXmlAssets] slim + [JoinColdPools] cold + [SeatUI] Full UI resync sent. Then paste Code Block C.")
   end,
 }, { maxWait = 30 })
 ```
@@ -238,6 +257,11 @@ U.chain({
 U.chain({
   function()
     printHeader("TOR-439: Armed verify", 1)
+  end,
+  function()
+    return function()
+      return UI == nil or UI.loading ~= true
+    end
   end,
   function()
     if S.getStateVal("connectionControls", "joinXmlArmed") ~= true then
@@ -253,26 +277,35 @@ U.chain({
     HUD_selectStorytellerPanel(Player["Black"], nil, "toggle_phases", true)
   end,
   function()
-    print("PASS — joinXmlArmed + Defer setXML")
+    print("PASS — joinXmlArmed + Defer setXML + UI idle")
   end,
   function()
-    print("▶▶▶ HUMAN ▶▶▶ Joiner connects again. Record survive join Y/N. If Grey: Auto-Seat then Connect. Then click Refresh XML; record survive Refresh + full HUD restored. Then paste Code Block D.")
+    print("▶▶▶ HUMAN ▶▶▶ Joiner connects again. Record survive join Y/N. If Grey: Auto-Seat then Connect. Then press restore 1 Assets (wait), 2 HUD (wait). Then paste Code Block D.")
   end,
-}, { maxWait = 30 })
+}, { maxWait = 60 })
 ```
 
 ---
 
-## Code Block D — After Refresh / complete
+## Code Block D — After restore 1 Assets + 2 HUD
 
 ```lua
 U.chain({
   function()
-    printHeader("TOR-439: After Refresh", 1)
+    printHeader("TOR-439: After Assets+HUD", 1)
+  end,
+  function()
+    return function()
+      return UI == nil or UI.loading ~= true
+    end
   end,
   function()
     if S.getStateVal("connectionControls", "joinXmlArmed") == true then
-      error("[FAIL] joinXmlArmed still true after Refresh — expected cleared")
+      error("[FAIL] joinXmlArmed still true after Restore HUD — expected cleared")
+    end
+    local assetsBackup = S.getStateVal("connectionControls", "joinXmlCustomAssetsBackup")
+    if type(assetsBackup) == "table" and #assetsBackup > 0 then
+      error("[FAIL] CustomUIAssets backup still present — press 1 Assets first")
     end
     if UI ~= nil and UI.setAttribute ~= nil then
       UI.setAttribute("storytellerToolbarBody", "active", "true")
@@ -281,7 +314,53 @@ U.chain({
     HUD_selectStorytellerPanel(Player["Black"], nil, "toggle_phases", true)
   end,
   function()
-    print("PASS — joinXmlArmed cleared after Refresh")
+    print("PASS — assets restored + joinXmlArmed cleared")
+  end,
+  function()
+    print("Record now:")
+  end,
+  function()
+    print("  TREATMENT survive restore 1 Assets Y/N = ?")
+  end,
+  function()
+    print("  TREATMENT survive restore 2 HUD Y/N = ?")
+  end,
+  function()
+    print("▶▶▶ HUMAN ▶▶▶ Press restore 3 Emitters (wait), then 4 Figurines (wait). Record survive each. Then paste Code Block E.")
+  end,
+}, { maxWait = 60 })
+```
+
+---
+
+## Code Block E — After staged restore complete
+
+```lua
+U.chain({
+  function()
+    printHeader("TOR-439: After staged restore", 1)
+  end,
+  function()
+    return function()
+      return UI == nil or UI.loading ~= true
+    end
+  end,
+  function()
+    local JoinColdPools = require("core.join_cold_pools")
+    if JoinColdPools.isActive() == true then
+      error("[FAIL] cold pools still active — finish 3 Emitters + 4 Figurines")
+    end
+    if S.getStateVal("connectionControls", "joinXmlArmed") == true then
+      error("[FAIL] joinXmlArmed still true")
+    end
+    if UI ~= nil and UI.setAttribute ~= nil then
+      UI.setAttribute("storytellerToolbarBody", "active", "true")
+      UI.setAttribute("storytellerContentArea", "active", "true")
+    end
+    HUD_selectStorytellerPanel(Player["Black"], nil, "toggle_phases", true)
+  end,
+  function()
+    print("PASS — staged restore complete; pools warm")
   end,
   function()
     print("Paste your Y/N answers in chat:")
@@ -290,10 +369,10 @@ U.chain({
     print("  CONTROL Loading / post-table / Grey / after Auto-Seat")
   end,
   function()
-    print("  TREATMENT join / after Auto-Seat / after Refresh / Host HUD restored")
+    print("  TREATMENT join / after Auto-Seat / restore 1-4 / Host HUD restored")
   end,
   function()
-    print("▶▶▶ HUMAN ▶▶▶ Verification complete. No further action.")
+    print("▶▶▶ HUMAN ▶▶▶ Verification complete. No File Save/Load needed. (Armed-save Loading test is a separate Host-alone procedure.)")
   end,
-}, { maxWait = 30 })
+}, { maxWait = 60 })
 ```

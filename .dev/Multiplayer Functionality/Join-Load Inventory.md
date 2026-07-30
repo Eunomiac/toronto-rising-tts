@@ -124,7 +124,7 @@ Host Lua here is **cheap** compared to ~2000 loading-bar rows. The dangerous Hos
 
 | Rank | Avenue | Upside | Risk | Next step |
 | ---: | --- | --- | --- | --- |
-| **0** | **Experiment: Arm Join XML** (minimal Global XmlUI → Refresh remount) | Isolates whether heavy Global XmlUI at connect drives post-Loading timeouts | Host loses full HUD while armed; remount may still timeout; embeds ~2MB into Global Lua | Phases **Arm Join XML** before joiner; settle Grey; Auto-Seat/Connect; **Refresh XML**. Record control vs treatment. Timing: [Agent-Handoff-Timing-API](../Timing%20Optimizations/Agent-Handoff-Timing-API.md). _(TOR-439)_ |
+| **0** | **Experiment: Arm Join XML** (minimal Global XmlUI → staged restore **1–4**) | Isolates whether heavy Global XmlUI / assets / cold pools at connect drive post-Loading timeouts | Host loses full HUD while armed; each restore step may still timeout; embeds ~2MB into Global Lua | Phases **Arm Join XML** before joiner; settle Grey; Auto-Seat/Connect; restore **1 Assets → 2 HUD → 3 Emitters → 4 Figurines**. Record control vs treatment. Playbook: [TOR-439-join-xml-spike-verify.md](../Step-By-Step%20Playbooks/TOR-439-join-xml-spike-verify.md). Timing: [Agent-Handoff-Timing-API](../Timing%20Optimizations/Agent-Handoff-Timing-API.md). _(TOR-439)_ |
 | 1 | **Operational playbook** (existing Defer toggles) | Immediate; no architecture change | Needs author/player discipline | Use for struggling seats every join |
 | 2 | **Prune unused CustomUIAssets** | Cuts Loading bar without runtime batching | Need reference audit so used art stays | `tts-save:extract-assets` / custom-ui prune dry-run |
 | 3 | **Slim Intermission CustomUIAssets + `UI.setCustomAssets`** | Large join win if engine loads full registry on connect | API **replaces** entire registry (no merge); Host must restore on Refresh/Disarm | TOR-439 Arm: `getCustomAssets` backup → slim keep-list → `setCustomAssets`; Refresh restores |
@@ -139,7 +139,7 @@ Host Lua here is **cheap** compared to ~2000 loading-bar rows. The dangerous Hos
 
 **Treatment:** Host alone → Phases **Arm Join XML** → joiner connects → settle → Auto-Seat/Connect → staged restore **1 Assets → 2 HUD → 3 Emitters → 4 Figurines** (pace between presses). Record: survive join? survive each restore step?
 
-Sources: `ui/Global.join_minimal.xml`, Phases Arm/Disarm/Refresh in `core/global_script.ttslua`.
+Sources: `ui/Global.join_minimal.xml`, Phases Arm + staged restore / Disarm in `core/global_script.ttslua`. Multiclient runbook: [TOR-439-join-xml-spike-verify.md](../Step-By-Step%20Playbooks/TOR-439-join-xml-spike-verify.md) (Save/Load rules are in that file — **not** after Disarm).
 
 #### Armed-save load (CustomUIAssets Q1 — Host alone)
 
