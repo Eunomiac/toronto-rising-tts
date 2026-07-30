@@ -4005,6 +4005,51 @@ function DEBUG.logStateToFile(filename)
     print("DEBUG: Game state logged to " .. WORKSPACE_DEBUG_WRITE_ROOT .. "/" .. LOG_DIR .. "/" .. filename .. "." .. LOG_EXTENSION)
 end
 
+--- Dump Global `UI.getCustomAssets()` to `.dev/.debug/<relativePath>` via the TTS bridge.
+--- Run from External Editor / console: `lua DEBUG.dumpCustomAssetsToFile()` (or `dumpCustomAssetsToFile()`).
+--- Requires the External Editor bridge on port 39998 (see `.dev/DEBUG_FILE_LOGGING.md`).
+--- @param relativePath string|nil default `debug_logs/custom_ui_assets.json`
+--- @return table|nil assets raw return from `UI.getCustomAssets`
+--- @return boolean wrote
+function DEBUG.dumpCustomAssetsToFile(relativePath)
+    relativePath = relativePath or "debug_logs/custom_ui_assets.json"
+    if UI == nil or type(UI.getCustomAssets) ~= "function" then
+        error("DEBUG.dumpCustomAssetsToFile: UI.getCustomAssets unavailable")
+    end
+    local assets = UI.getCustomAssets()
+    if type(assets) ~= "table" then
+        error("DEBUG.dumpCustomAssetsToFile: UI.getCustomAssets returned " .. type(assets))
+    end
+
+    local count = #assets
+    if count == 0 then
+        for _ in pairs(assets) do
+            count = count + 1
+        end
+    end
+
+    local payload = {
+        dumpedAt = getTimestamp(),
+        source = "UI.getCustomAssets",
+        count = count,
+        assets = assets,
+    }
+    local body = JSON.encode_pretty(payload)
+    if type(body) ~= "string" or body == "" then
+        error("DEBUG.dumpCustomAssetsToFile: JSON.encode_pretty failed")
+    end
+
+    local wrote = DEBUG.writeWorkspaceFile(relativePath, body, "none", false)
+    print(string.format(
+        "DEBUG.dumpCustomAssetsToFile: count=%d → %s/%s (wrote=%s)",
+        count,
+        WORKSPACE_DEBUG_WRITE_ROOT,
+        relativePath,
+        tostring(wrote)
+    ))
+    return assets, wrote
+end
+
 --- @param lightRef string
 --- @param seatColor string
 --- @return boolean
@@ -5459,6 +5504,7 @@ function DEBUG.help()
     print("\nFILE LOGGING:")
     print("  logToFile(level, msg, filename?) - Log a message to file")
     print("  logStateToFile(filename?)       - Log game state to file (JSON)")
+    print("  dumpCustomAssetsToFile(path?)   - Dump UI.getCustomAssets() → .dev/.debug/debug_logs/custom_ui_assets.json")
     print("  logNpcPlacementIntentToFile(filename?) - Log Step Zero NPC placement intent (reconcile verify)")
     print("  exportNpcSeatFigurinesToFile(path?)     - Export NPC#Object figurines (name + GUID) to debug_logs")
     print("  exportControlBoardSnapGroupsToFile(filename?, config?) - CSV polar snap groups (logStateToFile path)")
@@ -5646,6 +5692,7 @@ clearCustomUiUploadTokens = DEBUG.clearCustomUiUploadTokens
 -- Expose file logging functions
 logToFile = DEBUG.logToFile
 logStateToFile = DEBUG.logStateToFile
+dumpCustomAssetsToFile = DEBUG.dumpCustomAssetsToFile
 logNpcPlacementIntentToFile = DEBUG.logNpcPlacementIntentToFile
 logSceneToFile = DEBUG.logSceneToFile
 logTestToFile = DEBUG.logTestToFile

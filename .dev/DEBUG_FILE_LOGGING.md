@@ -87,6 +87,16 @@ lua logStateToFile()
 lua logSceneToFile()
 ```
 
+### CustomUIAssets dump (TOR-439)
+
+```lua
+lua DEBUG.dumpCustomAssetsToFile()
+-- or: lua dumpCustomAssetsToFile()
+-- optional path under .dev/.debug/: lua DEBUG.dumpCustomAssetsToFile("debug_logs/custom_ui_assets_armed.json")
+```
+
+Writes pretty JSON `{ dumpedAt, source, count, assets }` from `UI.getCustomAssets()` via `DEBUG.writeWorkspaceFile`.
+
 ### Test Result Logging
 
 ```lua
