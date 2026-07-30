@@ -12,6 +12,8 @@ For any agent working in this repo:
 4. Follow repo-local Cursor rules in [`.cursor/rules/`](.cursor/rules/) when working in Cursor.
 5. Use repo-local skills in [`.cursor/skills/`](.cursor/skills/) when explicitly invoked or when their workflow applies.
 
+Multi-root Cursor workspaces may include **Toronto Rising (Project)** and **TTS (Documents)** alongside this repo. Treat those folders as walled browse roots: do not Glob, Grep, Read, Write, or Delete there unless the author explicitly points you at a path. Node tooling still uses absolute paths from `tts-assets.config.json`. Full policy: [`.cursor/rules/toronto-rising-walled-workspace-roots.mdc`](.cursor/rules/toronto-rising-walled-workspace-roots.mdc) (including the `Saves/` exception for save inspection).
+
 ## Current Workflows
 
 `/tr-start` is the current start command when the user wants to work on "the next task." It reads Focus, Linear context, and architecture policies before implementation.

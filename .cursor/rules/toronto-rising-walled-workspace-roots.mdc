@@ -1,0 +1,26 @@
+---
+description: Wall off non-code multi-root folders (Project materials + TTS Documents) from agents
+alwaysApply: true
+---
+
+# Toronto Rising — walled workspace roots
+
+This Cursor window may include extra multi-root folders that are **not** the code repo. Treat them as human browse roots unless the author explicitly asks you to use them.
+
+## Roots
+
+| Workspace name | Role | Default agent policy |
+| --- | --- | --- |
+| `toronto-rising-tts` | Code repo | Normal — primary working root |
+| `Toronto Rising (Project)` | Chronicle materials (art, sheets, notes, backups, …) | **Do not** Glob / Grep / Read / Write / Delete unless the author explicitly points here |
+| `TTS (Documents)` | TTS Documents tree (`Mods`, `DLC`, …) | **Do not** browse broadly. **Allowed gap:** `Saves/` (especially `TS_Save_*.json`) when save inspection or tooling diagnosis needs it |
+
+## Tooling vs IDE walls
+
+- Node/tts-assets scripts use **absolute paths** from `tts-assets.config.json` (`savesDir`, `backupDir`). IDE `.cursorignore` / `search.exclude` / `files.watcherExclude` do **not** block those scripts.
+- `backupDir` may live under the Project root (`!! Backup Saves`); still do not crawl the Project tree unless asked.
+- Walls live **in those folders** (outside git): `.cursorignore` + `.vscode/settings.json`. Repo tracks this policy via the `.code-workspace` names and this rule.
+
+## When the author asks
+
+If they `@`-mention a path or explicitly request a file under a walled root, you may open that path. Do not expand into a full-tree exploration afterward.
