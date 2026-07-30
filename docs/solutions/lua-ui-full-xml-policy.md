@@ -24,9 +24,16 @@ Prefer pre-declared elements in editor XML (or generated static bundles at Save 
 | `setXml` | `\bsetXml\s*\(` |
 | `setXmlTable` | `\bsetXmlTable\s*\(` |
 
-Target baseline: **`setXml≤1`**, **`setXmlTable=0`**.
+Target baseline: **`setXml≤2`**, **`setXmlTable=0`**.
 
-**Approved exception:** CSHEET pages 3–5 `applyPageDynamicXml` (`self.UI.setXml` in `ui/ui_csheet_core.ttslua`) — small object XML; max-slot static refactor is optional Future work ([TOR-376](https://linear.app/eunomiac-dev/issue/TOR-376)). Do not add other call sites. Comments/strings that contain `setXml(` count — avoid that substring in scanned trees.
+**Approved exceptions:**
+
+| Site | Notes |
+|------|--------|
+| CSHEET pages 3–5 `applyPageDynamicXml` (`self.UI.setXml` in `ui/ui_csheet_core.ttslua`) | Small object XML; max-slot static refactor is optional Future work ([TOR-376](https://linear.app/eunomiac-dev/issue/TOR-376)). |
+| Global remount (`performFullUiResync` in `core/global_script.ttslua`) | **Experiment** ([TOR-439](https://linear.app/eunomiac-dev/issue/TOR-439)): Arm Join XML (minimal embed), Refresh/Disarm (full embed), deferred join fallback when Defer setXML is off. Remount source is build-embedded XML (`lib.ui_global_xml_docs`), not `UI.getXml()`. Not permanent architecture. |
+
+Do not add other call sites. Comments/strings that contain `setXml(` count — avoid that substring in scanned trees.
 
 Related: [`lua-wait-api-policy.md`](lua-wait-api-policy.md), [`lua-pcall-policy.md`](lua-pcall-policy.md), [`tts-xmlui-visibility-seat-assignment.md`](tts-xmlui-visibility-seat-assignment.md).
 
@@ -34,7 +41,7 @@ Related: [`lua-wait-api-policy.md`](lua-wait-api-policy.md), [`lua-pcall-policy.
 
 | Site | Status |
 |------|--------|
-| Global seat assign (`core/global_script.ttslua`) | **Visibility rebind** (TOR-375) + **deferred** join-client full resync fallback (TOR-381). Automatic resync gated by `connectionControls.deferSetXml` (TOR-428); manual **Refresh XML** on Phases panel. |
+| Global remount (`core/global_script.ttslua`) | **Visibility rebind** (TOR-375) + **deferred** join-client full remount fallback (TOR-381). Automatic remount gated by `connectionControls.deferSetXml` (TOR-428). Manual **Refresh XML** / **Arm Join XML** / **Disarm Join XML** on Phases panel (TOR-439). |
 | CONTROL_BOARD (`objects/npc_control_board_ui.ttslua`) | **Removed** — baked Include + Save & Play; runtime validates `gb_root` |
 | CSHEET pages 3–5 (`ui/ui_csheet_core.ttslua`) | **Permitted exception** — TOR-376 Future optional migrate |
 

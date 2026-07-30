@@ -337,8 +337,9 @@ _Blocked: author must define data binding approach before substantial implementa
 - [x] **Defer Connect + Connect:** PCs rows: Defer Connect (O(1) skip of all `onPlayerConnect` for that color) + Connect (force-run). Persists in `connectionControls.deferConnectByColor`. Pending Save & Play. _(TOR-430)_
 - [x] **connectionControls survive Save:** Whitelist `connectionControls` in `buildSaveState` so Defer setXML / Auto-Seat / Connect toggles do not reset on reload. Pending Save & Play. _(TOR-432)_
 - [x] **Fail-open save persistence:** `buildSaveState` persists all safe top-level keys; ephemeral blacklist only (`rollConcurrency`, `sceneTransition`, `lastLoadClockLabel`); special scrub for `playerData` / `lights`. _(TOR-433)_
-- [x] **Join-load inventory (research):** Engine vs Host Lua connect cost; save 230 ≈ 1087 CustomUIAssets + 930 ObjectStates; ranked defer candidates; setXml bootstrap out of scope. See [Join-Load Inventory](Multiplayer%20Functionality/Join-Load%20Inventory.md). _(TOR-437)_
+- [x] **Join-load inventory (research):** Engine vs Host Lua connect cost; save 230 ≈ 1087 CustomUIAssets + 930 ObjectStates; ranked defer candidates. See [Join-Load Inventory](Multiplayer%20Functionality/Join-Load%20Inventory.md). _(TOR-437)_
 - [x] **Timing API merge:** `U.stagger` / `U.chain` / `U.await` (+ `U.cancel`); `Time.time` clocks; unique chain waiters; hard-cut old names. Policy + handoff updated. Pending Save & Play smoke. _(TOR-438)_
+- [x] **Join-stress minimal Global XmlUI spike:** Phases Arm/Disarm Join XML; build-embed full+minimal docs; remount via `U.chain`. Pending author multiclient control/treatment verify. _(TOR-439)_
 - [ ] **Play as NPC:** Control-board `pc_control_token` seat activate/deactivate (baseline shipped TOR-236); play-as-NPC swaps sheet by tag; `sessionScene.npcRoleOverride` / `seatSlots`; lighting exception per Scene Constructor spec ([Scene Constructor Overview](Scene%20Constructor/Scene%20Constructor%20Overview.md)). `blockedBy` **TOR-247** (rotational seat decoupling + full PC-token authority). _(TOR-95)_
 
 ## Table Objects

@@ -178,6 +178,7 @@ PCST = require("core.pc_storyteller_panel")
 local DiceDrawer = require("lib.dice_drawer")
 local STD = require("lib.st_dice_drawer")
 local DBV = require("lib.dice_bag_visibility")
+local UiGlobalXmlDocs = require("lib.ui_global_xml_docs")
 
 --- Park a roll die into the preload pool, or destroy overflow / unknown dice (TOR-308).
 -- Must stay above every Global / local destroy path that formerly used bare destroyObject on dice.
@@ -635,6 +636,8 @@ end
 --- Debounced to one in-flight timer; skipped for Host. Honors Defer setXML (TOR-428).
 local pendingFullUiResyncHandle = nil
 local FULL_UI_RESYNC_FALLBACK_DELAY_SECONDS = 4
+--- True while a Global remount U.chain is in flight (TOR-439).
+local pendingFullUiRemount = false
 
 local function cancelPendingFullUiResync()
     if pendingFullUiResyncHandle ~= nil then
@@ -643,25 +646,94 @@ local function cancelPendingFullUiResync()
     end
 end
 
---- Single Global full-document resync call site (manual Refresh XML + deferred join fallback).
---- @param reason string|nil log label
-local function performFullUiResync(reason)
+--- Resolve build-embedded Global XmlUI for remount (full HUD or join-minimal). TOR-439.
+-- @param mode string "full"|"minimal"
+-- @return string
+local function resolveGlobalXmlDoc(mode)
+    local xml = nil
+    if mode == "minimal" then
+        xml = UiGlobalXmlDocs.getMinimal()
+    else
+        xml = UiGlobalXmlDocs.getFull()
+    end
+    if type(xml) ~= "string" or xml == "" then
+        error(string.format(
+            "[SeatUI] Embedded Global XmlUI (%s) is empty; run npm run ui-global-xml:embed",
+            tostring(mode)
+        ))
+    end
+    return xml
+end
+
+--- After Global document remount: re-apply phase blindfold + join chrome (TOR-398 / TOR-439).
+-- @param reason string
+-- @param armedMinimal boolean
+local function postMountGlobalUi(reason, armedMinimal)
+    invalidateGlobalBlindfoldAppliedState()
+    applyGlobalBlindfoldFromPhase()
+    if armedMinimal == true and UI ~= nil and UI.setAttribute ~= nil then
+        UI.setAttribute("panel_phases", "active", "true")
+    end
+    if syncStorytellerPhaseButtons ~= nil then
+        syncStorytellerPhaseButtons()
+    end
+    print(string.format(
+        "[SeatUI] Full UI resync sent (%s).",
+        type(reason) == "string" and reason ~= "" and reason or "unspecified"
+    ))
+end
+
+--- Single Global full-document remount call site (Refresh / Arm / Disarm / deferred join fallback).
+--- Uses build-embedded XML (not UI.getXml) so Refresh works after Arm Join XML. TOR-439.
+-- @param reason string|nil log label
+-- @param opts table|nil `{ mode = "full"|"minimal" }` (default full)
+-- @return boolean true when remount chain was started
+local function performFullUiResync(reason, opts)
     cancelPendingFullUiResync()
-    local ok, err = pcall(function()
-        UI.setXml(UI.getXml())
-    end)
-    if ok then
-        -- Full document replace resets overlay attrs; clear Lua apply cache then re-sync. TOR-398.
-        invalidateGlobalBlindfoldAppliedState()
-        applyGlobalBlindfoldFromPhase()
+    if pendingFullUiRemount then
         print(string.format(
-            "[SeatUI] Full UI resync sent (%s).",
+            "[SeatUI] Remount already in flight; ignoring (%s).",
             type(reason) == "string" and reason ~= "" and reason or "unspecified"
         ))
-    else
-        print("[SeatUI] Full UI resync failed: " .. tostring(err))
+        return false
     end
-    return ok == true
+    local mode = "full"
+    if type(opts) == "table" and opts.mode == "minimal" then
+        mode = "minimal"
+    end
+    local xmlString = resolveGlobalXmlDoc(mode)
+    local label = type(reason) == "string" and reason ~= "" and reason or "unspecified"
+    pendingFullUiRemount = true
+    U.chain({
+        function()
+            local ok, err = pcall(function()
+                UI.setXml(xmlString)
+            end)
+            if not ok then
+                error(tostring(err))
+            end
+            return function()
+                return UI == nil or UI.loading ~= true
+            end
+        end,
+        function()
+            postMountGlobalUi(label, mode == "minimal")
+        end,
+    }, {
+        maxWait = 60,
+        stepNames = { "setXml", "postMount" },
+        onComplete = function(ok, detail)
+            pendingFullUiRemount = false
+            if not ok then
+                print(string.format(
+                    "[SeatUI] Full UI resync chain failed (%s): %s",
+                    label,
+                    tostring(detail)
+                ))
+            end
+        end,
+    })
+    return true
 end
 
 local function isDeferSetXmlEnabled()
@@ -694,7 +766,7 @@ local function scheduleDeferredFullUiResyncForReveal(seated)
             print("[SeatUI] Deferred full UI resync aborted (Defer setXML on).")
             return
         end
-        performFullUiResync("visibility-rebind fallback")
+        performFullUiResync("visibility-rebind fallback", { mode = "full" })
     end, FULL_UI_RESYNC_FALLBACK_DELAY_SECONDS)
 end
 
@@ -3469,6 +3541,14 @@ syncStorytellerPhaseButtons = function()
     end
     local deferSetXml = S.getStateVal("connectionControls", "deferSetXml") == true
     U.setAttributes("phase_deferSetXml", { isOn = deferSetXml })
+    local joinXmlArmed = S.getStateVal("connectionControls", "joinXmlArmed") == true
+    local joinStatus = joinXmlArmed and "Join XML: ARMED (minimal)" or "Join XML: full"
+    if UI ~= nil and UI.setAttribute ~= nil then
+        UI.setAttribute("phase_joinXmlStatus", "text", joinStatus)
+    end
+    if UI ~= nil and UI.setValue ~= nil then
+        UI.setValue("phase_joinXmlStatus", joinStatus)
+    end
 end
 
 --- Push last-load clock label onto the ST debug bar (TOR-394).
@@ -4107,12 +4187,35 @@ function HUD_phaseDeferSetXml(player, value, id)
     syncStorytellerPhaseButtons()
 end
 
---- Phases panel: one-shot Global full UI resync; does not clear Defer setXML. TOR-428.
+--- Phases panel: one-shot Global full UI remount from build embed; does not clear Defer setXML. TOR-428 / TOR-439.
 function HUD_phaseRefreshXml(player, button, id)
     if not requireStorytellerForMutation(player, "HUD_phaseRefreshXml") then
         return
     end
-    performFullUiResync("manual Refresh XML")
+    S.setStateVal(false, "connectionControls", "joinXmlArmed")
+    performFullUiResync("manual Refresh XML", { mode = "full" })
+end
+
+--- Phases panel: mount join-minimal Global XmlUI before a struggling client connects. TOR-439.
+function HUD_phaseArmJoinXml(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_phaseArmJoinXml") then
+        return
+    end
+    S.setStateVal(true, "connectionControls", "joinXmlArmed")
+    S.setStateVal(true, "connectionControls", "deferSetXml")
+    cancelPendingFullUiResync()
+    print("[JoinControls] Arm Join XML — remounting minimal Global XmlUI; Defer setXML on.")
+    performFullUiResync("Arm Join XML", { mode = "minimal" })
+end
+
+--- Phases panel: remount full Global XmlUI and clear joinXmlArmed. TOR-439.
+function HUD_phaseDisarmJoinXml(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_phaseDisarmJoinXml") then
+        return
+    end
+    S.setStateVal(false, "connectionControls", "joinXmlArmed")
+    print("[JoinControls] Disarm Join XML — remounting full Global XmlUI.")
+    performFullUiResync("Disarm Join XML", { mode = "full" })
 end
 
 --- PCs panel: persist Defer Auto-Seat per seat color. TOR-428.

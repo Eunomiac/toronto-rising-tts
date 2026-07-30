@@ -27,7 +27,7 @@ Related: [Preparing For Multiplayer](Preparing%20For%20Multiplayer.md), [Multipl
 
 **Connection timeouts are primarily TTS engine join cost** (download/parse CustomUIAssets + replicate ObjectStates + XmlUI), not Host `onPlayerConnect` Lua.
 
-Host Lua already has join-stress gates. Full Global `UI.setXml` on Grey→PC has **correlated with timeouts** — do **not** redesign around “minimal Global.xml + Host setXml bootstrap.” Prefer prune + defer assets/objects; keep setXml as a rare manual fallback (Defer setXML / Refresh XML).
+Host Lua already has join-stress gates. Full Global document remount on Grey→PC has **correlated with timeouts** — keep remount rare (Defer setXML / Refresh XML). **Experiment #0** (TOR-439) tests whether *joining into* a minimal Global XmlUI avoids post-Loading timeouts; it is diagnostic only, not the permanent architecture.
 
 ```mermaid
 flowchart TD
@@ -124,12 +124,22 @@ Host Lua here is **cheap** compared to ~2000 loading-bar rows. The dangerous Hos
 
 | Rank | Avenue | Upside | Risk | Next step |
 | ---: | --- | --- | --- | --- |
+| **0** | **Experiment: Arm Join XML** (minimal Global XmlUI → Refresh remount) | Isolates whether heavy Global XmlUI at connect drives post-Loading timeouts | Host loses full HUD while armed; remount may still timeout; embeds ~2MB into Global Lua | Phases **Arm Join XML** before joiner; settle Grey; Auto-Seat/Connect; **Refresh XML**. Record control vs treatment. Timing: [Agent-Handoff-Timing-API](../Timing%20Optimizations/Agent-Handoff-Timing-API.md). _(TOR-439)_ |
 | 1 | **Operational playbook** (existing Defer toggles) | Immediate; no architecture change | Needs author/player discipline | Use for struggling seats every join |
 | 2 | **Prune unused CustomUIAssets** | Cuts Loading bar without runtime batching | Need reference audit so used art stays | `tts-save:extract-assets` / custom-ui prune dry-run |
 | 3 | **Slim Intermission CustomUIAssets + `UI.setCustomAssets` batches** | Large join win if engine loads full registry on connect | API **replaces** entire registry; late joiners / mid-session Host must re-apply batches | Spike: empty→minimal→add siteCard batch; measure join Loading N/M |
 | 4 | **Cold table: park preload pools** (NPC figurines, dice) until Host spawn | Shrinks ObjectStates ~100–400 | Late spawn still hits mid-session joiners; Apply UX changes | Inventory GUIDs/tags; Host “Warm NPC pool” / “Warm dice” buttons |
 | 5 | **Lobby save vs full chronicle save** | Clearest engine win | Ops heavy (two saves, promotion workflow) | Only if prune + batches insufficient |
-| **Out** | Minimal Global.xml + Host `setXml` to mount HUD | — | Documented timeout correlation (TOR-375) | Do not pursue for v1 |
+
+### Experiment #0 — minimal Global XmlUI (TOR-439)
+
+**Not** the permanent default save XmlUI. Host arms at runtime; Remount uses build-embedded full XML (`npm run ui-global-xml:embed` → `lib.ui_global_xml_docs`).
+
+**Control:** Defer triad on; full XmlUI; join → settle Grey → Auto-Seat (+ Connect if needed); no Refresh. Record timeout Y/N.
+
+**Treatment:** Host alone → Phases **Arm Join XML** (auto-enables Defer setXML) → joiner connects → settle → Auto-Seat/Connect → **Refresh XML** (or **Disarm Join XML**). Record: survive join? survive Refresh?
+
+Sources: `ui/Global.join_minimal.xml`, Phases Arm/Disarm/Refresh in `core/global_script.ttslua`.
 
 ### `UI.setCustomAssets` research notes
 
@@ -166,6 +176,7 @@ If hang is on Loading, Host Lua defer alone cannot fix it — pursue ranks 2–4
 
 ## Follow-up work (not started)
 
-- Linear research epic: join-load reduction (this inventory is the baseline).
+- Experiment #0 author multiclient verify (TOR-439) — control vs treatment above.
+- Linear research follow-ons from this inventory (CustomUIAssets / ObjectStates).
 - Experiment #1: CustomUIAssets prune report + optional Intermission-minimal registry spike.
 - Experiment #2: Host-warmed NPC/dice preload (ObjectStates cold start).

@@ -1,0 +1,14 @@
+<!-- Defaults for join-minimal chrome wrapper (TOR-439). -->
+<!-- storyteller_panel_column lives on full toolbar Defaults; redefine the subset Phases needs. -->
+
+<Defaults>
+  <VerticalLayout class="storyteller_panel_column"
+    color="rgba(0, 0, 0, 0.8)"
+    spacing="6"
+    padding="6 6 6 6"
+    childForceExpandWidth="true"
+    flexibleWidth="1"
+    minWidth="0"
+    preferredWidth="0"
+  />
+</Defaults>

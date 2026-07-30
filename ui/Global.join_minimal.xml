@@ -1,0 +1,26 @@
+<!-- Join-stress minimal Global XmlUI (TOR-439 diagnostic spike). -->
+<!-- Host arms this via Phases → Arm Join XML before a struggling client connects. -->
+<!-- Not the permanent save default — Remount with full embed via Refresh / Disarm. -->
+<!-- Include paths: same rules as ui/Global.xml (relative to this file's directory / ui/). -->
+
+<!-- 1. Tag-based defaults -->
+<Include src="defaults_tags.xml" />
+
+<!-- 2. Shared classes -->
+<Include src="defaults_classes.xml" />
+
+<!-- 3. Storyteller defaults needed by Phases join chrome -->
+<Include src="storyteller/hud_storyteller_defaults.xml" />
+<Include src="storyteller/panel_join_xml_chrome_defaults.xml" />
+
+<!-- 4. Slim Host chrome: Phases join controls only (panel forced active in post-mount). -->
+<Panel id="HUD_PANEL_BLACK" class="hud_root_panel" visibility="Black|Host">
+  <Panel id="joinXmlChromeRoot" visibility="Host" active="true"
+    rectAlignment="UpperLeft" offsetXY="20 -20" width="520" height="640"
+    color="rgba(0,0,0,0.85)" padding="8 8 8 8">
+    <Include src="storyteller/panel_phases.xml" />
+  </Panel>
+</Panel>
+
+<!-- 5. Global session blindfold (phase-owned). -->
+<Include src="shared/panel_overlay_global_blindfold.xml" />
