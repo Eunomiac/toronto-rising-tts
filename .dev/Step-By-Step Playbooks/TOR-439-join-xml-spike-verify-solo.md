@@ -16,6 +16,8 @@ Verification:
 
 Confirm Host-side Arm Join XML remounts the minimal document, Phases chrome stays usable, and Refresh remounts the full HUD and clears `joinXmlArmed`. This does **not** measure join-client connection timeouts — that still needs [the full playbook](TOR-439-join-xml-spike-verify.md) with a second client.
 
+**Armed-save load (CustomUIAssets):** After Arm, use TTS **File → Save** (not Save & Play), or `npm run tts-save:inject-join-minimal -- --saveName <id>`, then **File → Load** so Loading sees minimal XmlUI. Details: [Join-Load Inventory § Armed-save load](../Multiplayer%20Functionality/Join-Load%20Inventory.md#armed-save-load-customuiassets-q1--host-alone).
+
 ## Session mode (pick this)
 
 **Use multiplayer with only your client connected (Host alone).**

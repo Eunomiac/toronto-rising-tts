@@ -2466,6 +2466,16 @@ function onLoad(saved_data)
     setStartupAction("initialize-game-state")
     S.InitializeGameState(saved_data)
 
+    -- TOR-439: armed save load — remount minimal Global XmlUI before the rest of startup UI work.
+    -- Persist via File → Save after Arm (not Save & Play / inject full Global.xml). Loading-bar
+    -- CustomUIAssets still come from the save registry; this keeps Host on slim chrome after load.
+    if S.getStateVal("connectionControls", "joinXmlArmed") == true then
+        setStartupAction("join-xml-armed-remount-minimal")
+        S.setStateVal(true, "connectionControls", "deferSetXml")
+        print(U.loadElapsedPrefix() .. "[JoinControls] joinXmlArmed — remounting minimal Global XmlUI on load.")
+        performFullUiResync("onLoad joinXmlArmed", { mode = "minimal" })
+    end
+
     -- TOR-394: wall-clock of this load for ST debug bar (HH:MM AM/PM, no seconds).
     do
         local hour24 = 0

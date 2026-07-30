@@ -65,6 +65,7 @@
     "tts-save:prune-component-tags:apply": "node .tools/tts-save/prune-save-component-tags.js --save .dev/TS_Save_230.json",
     "tts-save:extract-save-inventory": "npm run tts-save:extract-assets -- --outBasename save-assets-latest && npm run tts-save:extract-entities",
     "tts-save:inject-global": "node .tools/tts-save/inject-bundled-global-from-save-name.js",
+    "tts-save:inject-join-minimal": "node .tools/tts-save/inject-join-minimal-xml.js",
     "tts-save:measure-bundles": "node .tools/tts-save/measure-bundles.js",
     "tts-save:bundle-csheet-sample": "node .tools/tts-save/bundle-csheet-sample.js",
     "tts-save:migrate-seat-gmnotes:dry-run": "node .dev/scripts/migrate_seat_layout_gmnotes_save.js --dry-run --save .dev/TS_Save_230.json",

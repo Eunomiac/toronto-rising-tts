@@ -141,6 +141,22 @@ Host Lua here is **cheap** compared to ~2000 loading-bar rows. The dangerous Hos
 
 Sources: `ui/Global.join_minimal.xml`, Phases Arm/Disarm/Refresh in `core/global_script.ttslua`.
 
+#### Armed-save load (CustomUIAssets Q1 — Host alone)
+
+Goal: load a save whose **Global XmlUI is already minimal**, with full CustomUIAssets registry still in the save, and never remount full HUD before observing Loading.
+
+1. **Save & Play** once with current TOR-439 scripts (so Lua has onLoad armed remount).
+2. In TTS (solo): **Arm Join XML**; confirm slim chrome.
+3. **Either:**
+   - **A (in-game):** TTS **File → Save** (not Save & Play) while armed — persists `joinXmlArmed` in `LuaScriptState` and (usually) current XmlUI; or
+   - **B (disk, preferred for Loading experiment):** close TTS / switch slot, then:
+     `npm run tts-save:inject-join-minimal -- --saveName <id>`
+     Writes expanded minimal XmlUI into the save and patches `connectionControls.joinXmlArmed` + `deferSetXml` **without** replacing `LuaScript` or wiping state.
+4. **File → Load** that save. Watch Loading (N/M) / network. After load, Host should stay on minimal chrome (`onLoad` remounts minimal when `joinXmlArmed`).
+5. **Do not** Save & Play or `tts-save:inject-global` before that load — those rewrite **full** `XmlUI`.
+
+Open question this answers: does Loading still pull the full CustomUIAssets registry when save XmlUI is minimal?
+
 ### `UI.setCustomAssets` research notes
 
 From TTS API (`.dev/tts-api/Scripting API/UI.md`):

@@ -332,10 +332,12 @@ function S.GetDefaultGameState()
         },
         --- Join-stress ST controls (TOR-428 / TOR-430). Persist until cleared; defaults off.
         --- `deferSetXml`: skip automatic Global full UI document refresh (manual Refresh XML still allowed).
+        --- `joinXmlArmed`: Host remounted minimal Global XmlUI (TOR-439); onLoad remounts minimal if true.
         --- `deferAutoSeatByColor[color]`: skip chronicle auto-seat for that PC row (manual Auto-Seat still allowed).
         --- `deferConnectByColor[color]`: O(1) skip of all `onPlayerConnect` work for that PC (manual Connect still allowed).
         connectionControls = {
             deferSetXml = false,
+            joinXmlArmed = false,
             deferAutoSeatByColor = {
                 Brown = false,
                 Orange = false,
@@ -758,6 +760,9 @@ function S.validateState()
             S.mergeDefaults(gameState.connectionControls, defaults)
             if type(gameState.connectionControls.deferSetXml) ~= "boolean" then
                 gameState.connectionControls.deferSetXml = false
+            end
+            if type(gameState.connectionControls.joinXmlArmed) ~= "boolean" then
+                gameState.connectionControls.joinXmlArmed = false
             end
             if type(gameState.connectionControls.deferAutoSeatByColor) ~= "table" then
                 gameState.connectionControls.deferAutoSeatByColor = U.clone(defaults.deferAutoSeatByColor, true)

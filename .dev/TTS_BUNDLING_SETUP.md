@@ -122,6 +122,15 @@ A timestamped backup is written beside the save (`TS_Save_<n>.pre-inject-global.
 
 **Scope:** Global Lua + Global UI only. Object scripts (character sheets, dice bags, etc.) are unchanged.
 
+### Inject join-minimal XmlUI only (TOR-439 CustomUIAssets load test)
+
+Writes **expanded** `ui/Global.join_minimal.xml` into save `XmlUI` and patches `LuaScriptState.connectionControls.joinXmlArmed` / `deferSetXml`. Does **not** replace `LuaScript` or clear state (unlike inject-global).
+
+```text
+npm run tts-save:inject-join-minimal -- --saveName 123
+```
+
+Then File → Load. Do not Save & Play / inject-global before that load. See [Join-Load Inventory § Armed-save load](Multiplayer%20Functionality/Join-Load%20Inventory.md#armed-save-load-customuiassets-q1--host-alone).
 
 ### Issue 0: Connection Refused (ECONNREFUSED 127.0.0.1:39999)
 
