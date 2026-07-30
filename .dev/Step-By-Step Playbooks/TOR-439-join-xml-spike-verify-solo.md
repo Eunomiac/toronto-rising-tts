@@ -173,19 +173,19 @@ U.chain({
     print("PASS — armed + Defer setXML + UI idle + blindfold re-faded")
   end,
   function()
-    print("▶▶▶ HUMAN ▶▶▶ Confirm slim Host chrome upper-left + table visible (or use Recovery Lua). Click Refresh XML once; wait for [SeatUI] Full UI resync sent + full HUD. Then paste Code Block B.")
+    print("▶▶▶ HUMAN ▶▶▶ Confirm slim Host chrome. Press restore **1 Assets**, wait; **2 HUD**, wait for full HUD. Then paste Code Block B.")
   end,
 }, { maxWait = 60 })
 ```
 
 ---
 
-## Code Block B — After Refresh
+## Code Block B — After 1 Assets + 2 HUD
 
 ```lua
 U.chain({
   function()
-    printHeader("TOR-439 solo: After Refresh", 1)
+    printHeader("TOR-439 solo: After Assets+HUD", 1)
   end,
   function()
     return function()
@@ -194,7 +194,11 @@ U.chain({
   end,
   function()
     if S.getStateVal("connectionControls", "joinXmlArmed") == true then
-      error("[FAIL] joinXmlArmed still true after Refresh")
+      error("[FAIL] joinXmlArmed still true after Restore HUD")
+    end
+    local assetsBackup = S.getStateVal("connectionControls", "joinXmlCustomAssetsBackup")
+    if type(assetsBackup) == "table" and #assetsBackup > 0 then
+      error("[FAIL] CustomUIAssets backup still present — press 1 Assets first")
     end
     UI.setAttribute("overlay_globalBlindfold", "color", "rgba(1, 1, 1, 0.1)")
     UI.setAttribute("overlay_globalBlindfold", "raycastTarget", "false")
@@ -205,22 +209,22 @@ U.chain({
     HUD_selectStorytellerPanel(Player["Black"], nil, "toggle_phases", true)
   end,
   function()
-    print("PASS — joinXmlArmed cleared after Refresh; blindfold re-faded")
+    print("PASS — assets restored + joinXmlArmed cleared; blindfold re-faded")
   end,
   function()
-    print("▶▶▶ HUMAN ▶▶▶ Confirm full Host HUD restored + table visible. Then Arm once (wait SeatUI), Disarm once (wait SeatUI). Then paste Code Block C.")
+    print("▶▶▶ HUMAN ▶▶▶ Press **3 Emitters**, wait; **4 Figurines**, wait. Then paste Code Block C.")
   end,
 }, { maxWait = 60 })
 ```
 
 ---
 
-## Code Block C — After Disarm + complete
+## Code Block C — After full staged restore
 
 ```lua
 U.chain({
   function()
-    printHeader("TOR-439 solo: After Disarm", 1)
+    printHeader("TOR-439 solo: After staged restore", 1)
   end,
   function()
     return function()
@@ -228,8 +232,12 @@ U.chain({
     end
   end,
   function()
+    local JoinColdPools = require("core.join_cold_pools")
+    if JoinColdPools.isActive() == true then
+      error("[FAIL] cold pools still active — finish 3 Emitters + 4 Figurines")
+    end
     if S.getStateVal("connectionControls", "joinXmlArmed") == true then
-      error("[FAIL] joinXmlArmed still true after Disarm")
+      error("[FAIL] joinXmlArmed still true")
     end
     UI.setAttribute("overlay_globalBlindfold", "color", "rgba(1, 1, 1, 0.1)")
     UI.setAttribute("overlay_globalBlindfold", "raycastTarget", "false")
@@ -240,7 +248,7 @@ U.chain({
     HUD_selectStorytellerPanel(Player["Black"], nil, "toggle_phases", true)
   end,
   function()
-    print("PASS — Disarm cleared joinXmlArmed; blindfold re-faded")
+    print("PASS — staged restore complete; pools warm")
   end,
   function()
     print("Solo smoke answers for chat:")
@@ -249,13 +257,10 @@ U.chain({
     print("  Arm remount OK Y/N = ?")
   end,
   function()
-    print("  Refresh remount OK Y/N = ?")
+    print("  Restore 1-4 OK Y/N = ?")
   end,
   function()
-    print("  Disarm remount OK Y/N = ?")
-  end,
-  function()
-    print("  Host slim→full visuals OK Y/N = ?")
+    print("  Host slim to full visuals OK Y/N = ?")
   end,
   function()
     print("▶▶▶ HUMAN ▶▶▶ Verification complete. No further action. (Join timeouts still need the full TOR-439 playbook with a second client.)")
