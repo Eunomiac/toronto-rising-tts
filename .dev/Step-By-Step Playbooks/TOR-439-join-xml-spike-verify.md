@@ -14,6 +14,7 @@ Source of truth:
 
 Verification:
 - this playbook (Save & Play + Host-alone start + one join client)
+- Host-only remount smoke (no joiner): [TOR-439-join-xml-spike-verify-solo.md](TOR-439-join-xml-spike-verify-solo.md)
 
 Prove whether joining into a **minimal** Global XmlUI (then remounting full via Refresh) changes post-Loading connection timeouts versus the normal full HUD with Defer triad on.
 
