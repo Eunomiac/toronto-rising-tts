@@ -70,19 +70,9 @@ local function cloneObjectDataKeepGuid(data, expectedGuid)
     end
     local cloned = nil
     if JSON ~= nil and type(JSON.encode) == "function" and type(JSON.decode) == "function" then
-        local encOk, encoded = pcall(function()
-            return JSON.encode(data)
-        end)
-        if encOk and type(encoded) == "string" then
-            local decOk, decoded = pcall(function()
-                return JSON.decode(encoded)
-            end)
-            if decOk and type(decoded) == "table" then
-                cloned = decoded
-            end
-        end
-    end
-    if cloned == nil then
+        -- Let encode/decode throw — unexpected snapshot shapes should fail loudly (no silent pcall).
+        cloned = JSON.decode(JSON.encode(data))
+    else
         cloned = U.clone(data, true)
     end
     if type(cloned) ~= "table" then

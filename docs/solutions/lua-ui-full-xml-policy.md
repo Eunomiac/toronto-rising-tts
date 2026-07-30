@@ -31,7 +31,7 @@ Target baseline: **`setXml≤2`**, **`setXmlTable=0`**.
 | Site | Notes |
 |------|--------|
 | CSHEET pages 3–5 `applyPageDynamicXml` (`self.UI.setXml` in `ui/ui_csheet_core.ttslua`) | Small object XML; max-slot static refactor is optional Future work ([TOR-376](https://linear.app/eunomiac-dev/issue/TOR-376)). |
-| Global remount (`performFullUiResync` in `core/global_script.ttslua`) | **Experiment** ([TOR-439](https://linear.app/eunomiac-dev/issue/TOR-439)): Arm Join XML (minimal embed), Refresh/Disarm (full embed), deferred join fallback when Defer setXML is off. Remount source is build-embedded XML (`lib.ui_global_xml_docs`), not `UI.getXml()`. Not permanent architecture. |
+| Global remount (`performFullUiResync` → `applyEmbeddedGlobalXml` in `core/global_script.ttslua`) | **Experiment** ([TOR-439](https://linear.app/eunomiac-dev/issue/TOR-439)): Arm Join XML (minimal embed) and Restore HUD / Refresh (full embed), plus deferred join fallback when Defer setXML is off. One lexical `UI.setXml` call site; remount source is build-embedded XML (`lib.ui_global_xml_docs`), not `UI.getXml()`. Not permanent architecture. |
 
 Do not add other call sites. Comments/strings that contain `setXml(` count — avoid that substring in scanned trees.
 

@@ -827,6 +827,13 @@ local function waitUiAssetsNotLoading()
     end
 end
 
+--- Single Global XmlUI remount helper for TOR-439 (Arm minimal / Restore HUD full).
+--- One lexical UI.setXml call so the full-XML gate stays at CSHEET + Global.
+-- @param xmlString string
+local function applyEmbeddedGlobalXml(xmlString)
+    UI.setXml(xmlString)
+end
+
 --- Single Global full-document remount call site (Refresh / Arm / deferred join fallback).
 --- Minimal mode: slim CustomUIAssets + cold pools. Full mode: remount XmlUI only — staged restore
 --- buttons restore assets / emitters / figurines separately (TOR-439).
@@ -857,12 +864,7 @@ local function performFullUiResync(reason, opts)
         chainSteps = {
             function()
                 ensureJoinXmlCustomAssetsBackup()
-                local ok, err = pcall(function()
-                    UI.setXml(xmlString)
-                end)
-                if not ok then
-                    error(tostring(err))
-                end
+                applyEmbeddedGlobalXml(xmlString)
                 return waitUiAssetsNotLoading()
             end,
             function()
@@ -880,12 +882,7 @@ local function performFullUiResync(reason, opts)
     else
         chainSteps = {
             function()
-                local ok, err = pcall(function()
-                    UI.setXml(xmlString)
-                end)
-                if not ok then
-                    error(tostring(err))
-                end
+                applyEmbeddedGlobalXml(xmlString)
                 return waitUiAssetsNotLoading()
             end,
             function()
