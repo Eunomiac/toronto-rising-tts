@@ -42,25 +42,25 @@ Do **not** use hotseat for this smoke. Hotseat shares one Steam identity across 
 
 **Step 1.** **Save & Play**, then load as **multiplayer Host alone**. Confirm Intermission.
 
-**Step 2.** Execute Lua Code — Code Block 0 (prep + open Phases).
+**Step 2.** Execute Lua Code — Code Block 0 (prep + open Phases + fade global blindfold for table visibility).
 
-**Step 3.** **Confirm Phases shows Defer setXML on and status `Join XML: full`.** Leave Phases open.
+**Step 3.** **Confirm Phases shows Defer setXML on and status `Join XML: full`.** Leave Phases open. Table should show through a near-transparent Intermission blindfold (`rgba(1,1,1,0.1)` — smoke only).
 
-**Step 4.** **Click Arm Join XML once.** Wait for console `[SeatUI] Full UI resync sent (Arm Join XML).` (that is the remount-done cue — not a Phases status label). After remount, Host should show **slim Phases chrome upper-left** above the Intermission blindfold (Refresh / Disarm live there).
+**Step 4.** **Click Arm Join XML once.** Wait for console `[SeatUI] Full UI resync sent (Arm Join XML).` (that is the remount-done cue — not a Phases status label). Remount resets blindfold opacity; Code Block A re-fades it. After remount, Host should show **slim Phases chrome upper-left** (Refresh / Disarm live there).
 
-**Step 5.** Execute Lua Code — Code Block A (wait remount idle; assert armed).
+**Step 5.** Execute Lua Code — Code Block A (wait remount idle; assert armed; re-fade blindfold).
 
-**Step 6.** **Confirm Host UI is slim join chrome** (Phases panel upper-left; normal player/ST HUD gone). Record: Arm remount OK Y/N. If chrome is missing but `SeatUI` logged success, paste the Recovery block below instead of clicking Refresh.
+**Step 6.** **Confirm Host UI is slim join chrome** (Phases panel upper-left; normal player/ST HUD gone; table visible through faded blindfold). Record: Arm remount OK Y/N. If chrome is missing but `SeatUI` logged success, paste the Recovery block below instead of clicking Refresh.
 
 **Step 7.** **Click Refresh XML once.** Wait until status returns to `Join XML: full` and console logs remount complete.
 
-**Step 8.** Execute Lua Code — Code Block B (assert disarmed after Refresh).
+**Step 8.** Execute Lua Code — Code Block B (assert disarmed after Refresh; re-fade blindfold).
 
 **Step 9.** **Confirm full Host HUD is restored.** Record: Refresh remount OK Y/N.
 
-**Step 10.** **Click Arm Join XML once**, wait until ARMED, then **click Disarm Join XML once**, wait until status is `Join XML: full` again.
+**Step 10.** **Click Arm Join XML once**, wait until SeatUI remount sent, then **click Disarm Join XML once**, wait until SeatUI remount sent again.
 
-**Step 11.** Execute Lua Code — Code Block C (assert disarmed after Disarm; complete).
+**Step 11.** Execute Lua Code — Code Block C (assert disarmed after Disarm; re-fade; complete).
 
 ---
 
@@ -85,6 +85,9 @@ U.chain({
     end
     S.setStateVal(true, "connectionControls", "deferSetXml")
     S.setStateVal(false, "connectionControls", "joinXmlArmed")
+    -- Solo smoke only: keep Intermission blindfold up but nearly transparent so Host sees the table.
+    -- Remount resets Image attrs — Code Blocks A/B/C re-apply after each remount.
+    UI.setAttribute("overlay_globalBlindfold", "color", "rgba(1, 1, 1, 0.1)")
     if UI ~= nil and UI.setAttribute ~= nil then
       UI.setAttribute("storytellerToolbarBody", "active", "true")
       UI.setAttribute("storytellerContentArea", "active", "true")
@@ -97,15 +100,15 @@ U.chain({
     if UI ~= nil and UI.setValue ~= nil then
       UI.setValue("phase_joinXmlStatus", "Join XML: full")
     end
-    print("PASS — Host alone, Intermission, unarmed, Phases opened")
-    print("▶▶▶ HUMAN ▶▶▶ Confirm Defer setXML on + status 'Join XML: full'. Click Arm Join XML once; wait for [SeatUI] Full UI resync sent. Then paste Code Block A.")
+    print("PASS — Host alone, Intermission, unarmed, Phases opened, global blindfold faded for smoke")
+    print("▶▶▶ HUMAN ▶▶▶ Confirm Defer setXML on + status 'Join XML: full' + table visible through faded blindfold. Click Arm Join XML once; wait for [SeatUI] Full UI resync sent. Then paste Code Block A.")
   end,
 }, { maxWait = 30 })
 ```
 
 ---
 
-## Recovery — Refresh / Disarm without visible Phases (Lua)
+## Recovery — Refresh / Disarm / re-fade blindfold (Lua)
 
 If Arm remounted but Host chrome is still hidden (e.g. old embed with blindfold on top), do **not** re-Arm. After Code Block A, use these instead of clicking Refresh / Disarm:
 
@@ -117,6 +120,12 @@ HUD_phaseRefreshXml(Player["Black"])
 ```lua
 -- Disarm Join XML (full remount + clear joinXmlArmed)
 HUD_phaseDisarmJoinXml(Player["Black"])
+```
+
+Any remount resets the Intermission blindfold. Re-fade mid-sequence if needed:
+
+```lua
+UI.setAttribute("overlay_globalBlindfold", "color", "rgba(1, 1, 1, 0.1)")
 ```
 
 After a **Save & Play** with the blindfold-before-chrome fix, slim Phases should appear upper-left after Arm and you can click the buttons again.
@@ -143,8 +152,9 @@ U.chain({
     if S.getStateVal("connectionControls", "deferSetXml") ~= true then
       error("[FAIL] deferSetXml should be true after Arm")
     end
-    print("PASS — armed + Defer setXML + UI idle")
-    print("▶▶▶ HUMAN ▶▶▶ Confirm slim Host chrome upper-left (or use Recovery Lua). Click Refresh XML once; wait for [SeatUI] Full UI resync sent + full HUD. Then paste Code Block B.")
+    UI.setAttribute("overlay_globalBlindfold", "color", "rgba(1, 1, 1, 0.1)")
+    print("PASS — armed + Defer setXML + UI idle + blindfold re-faded")
+    print("▶▶▶ HUMAN ▶▶▶ Confirm slim Host chrome upper-left + table visible (or use Recovery Lua). Click Refresh XML once; wait for [SeatUI] Full UI resync sent + full HUD. Then paste Code Block B.")
   end,
 }, { maxWait = 60 })
 ```
@@ -167,8 +177,9 @@ U.chain({
     if S.getStateVal("connectionControls", "joinXmlArmed") == true then
       error("[FAIL] joinXmlArmed still true after Refresh")
     end
-    print("PASS — joinXmlArmed cleared after Refresh")
-    print("▶▶▶ HUMAN ▶▶▶ Confirm full Host HUD restored. Then Arm once, wait ARMED, Disarm once, wait full status. Then paste Code Block C.")
+    UI.setAttribute("overlay_globalBlindfold", "color", "rgba(1, 1, 1, 0.1)")
+    print("PASS — joinXmlArmed cleared after Refresh; blindfold re-faded")
+    print("▶▶▶ HUMAN ▶▶▶ Confirm full Host HUD restored + table visible. Then Arm once (wait SeatUI), Disarm once (wait SeatUI). Then paste Code Block C.")
   end,
 }, { maxWait = 60 })
 ```
@@ -191,7 +202,8 @@ U.chain({
     if S.getStateVal("connectionControls", "joinXmlArmed") == true then
       error("[FAIL] joinXmlArmed still true after Disarm")
     end
-    print("PASS — Disarm cleared joinXmlArmed")
+    UI.setAttribute("overlay_globalBlindfold", "color", "rgba(1, 1, 1, 0.1)")
+    print("PASS — Disarm cleared joinXmlArmed; blindfold re-faded")
     print("Solo smoke answers for chat:")
     print("  Arm remount OK Y/N = ?")
     print("  Refresh remount OK Y/N = ?")
