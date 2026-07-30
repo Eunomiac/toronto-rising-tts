@@ -19,7 +19,7 @@ Verification:
 
 Status: current research baseline (2026-07-30). Regenerated counts from `.dev/TS_Save_230.json`.
 
-Related: [Preparing For Multiplayer](Preparing%20For%20Multiplayer.md), [Multiplayer-Session-Investigation-2026-07-12](Multiplayer-Session-Investigation-2026-07-12.md), [tts-xmlui-visibility-seat-assignment](../../docs/solutions/tts-xmlui-visibility-seat-assignment.md), [lua-ui-full-xml-policy](../../docs/solutions/lua-ui-full-xml-policy.md).
+Related: [Preparing For Multiplayer](Preparing%20For%20Multiplayer.md), [Multiplayer-Session-Investigation-2026-07-12](Multiplayer-Session-Investigation-2026-07-12.md), [tts-xmlui-visibility-seat-assignment](../../docs/solutions/tts-xmlui-visibility-seat-assignment.md), [lua-ui-full-xml-policy](../../docs/solutions/lua-ui-full-xml-policy.md), Host Lua scheduling after timing merge: [Agent-Handoff-Timing-API](../Timing%20Optimizations/Agent-Handoff-Timing-API.md).
 
 ---
 

@@ -7,6 +7,7 @@ UI.show("overlay_globalBlindfold")
 -->
 
 <!--
+UI.hide("overlay_globalBlindfold")
 UI.setAttributes("overlay_globalBlindfold", {height = "1200"})
 -->
 
