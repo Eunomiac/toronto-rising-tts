@@ -26,7 +26,7 @@ local INTERMISSION_TO_PLAY_MAIN_FADE_SEC = 3
 --- Single in-flight top-level transition token.
 local advancing = false
 
---- True while `Phases.advanceTo` / `advanceNext` RunSequence is in flight (exit → mutate → enter).
+--- True while `Phases.advanceTo` / `advanceNext` U.chain is in flight (exit → mutate → enter).
 function Phases.isAdvancing()
     return advancing == true
 end
@@ -459,11 +459,11 @@ Phases.onEnter[C.Phases.PLAY] = function(ctx)
             })
         end,
         function()
-            -- Start 5s Loop fade-out; RunSequence waits on this return before Main fade-in.
+            -- Start 5s Loop fade-out; U.chain waits on this return before Main fade-in.
             return Phases.fadeOutIntermissionTheme(ctx)
         end,
         function()
-            -- Start 3s Main fade-in; RunSequence waits on this return before blindfold lift.
+            -- Start 3s Main fade-in; U.chain waits on this return before blindfold lift.
             return Phases.fadeInPlayMainTheme(ctx)
         end,
         function()

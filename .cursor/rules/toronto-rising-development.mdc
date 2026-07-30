@@ -22,6 +22,9 @@ Keep Linear, [RUNNING TASKLIST](../../.dev/RUNNING%20TASKLIST.md), and code alig
 ## Synchronization Flow & Naming Conventions
 For synchronization flow and naming conventions, follow `.cursor/rules/toronto-rising-synchronization.mdc`.
 
+## Timing contract
+Host Lua waits use **`U.stagger` / `U.chain` / `U.await`** only — see [`docs/solutions/lua-wait-api-policy.md`](../../docs/solutions/lua-wait-api-policy.md) and [`.dev/Timing Optimizations/Agent-Handoff-Timing-API.md`](../../.dev/Timing%20Optimizations/Agent-Handoff-Timing-API.md). No raw `Wait.time` / `Wait.condition` / `Wait.stop` outside `lib/util.ttslua`.
+
 ## TTS API heavy-workload guardrails
 Before merging Lua/XML changes that touch TTS APIs, read [TTS API Heavy-Workload Catalog](../../.dev/Sychronizing%20Game%20Functionality/TTS-API-Heavy-Workload-Catalog.md), [TTS API Heavy-Workload Usage Inventory](../../.dev/Sychronizing%20Game%20Functionality/TTS-API-Heavy-Workload-Usage-Inventory.md), [Performance Audit](../../.dev/Sychronizing%20Game%20Functionality/Performance%20Audit.md), and [Event Listener Policy](../../.dev/Sychronizing%20Game%20Functionality/Event%20Listener%20Policy.md). In hot callbacks, timers, repeated reconcilers, scene/table/seat/location apply paths, UI fan-out, and object scan/spawn/component-update paths, require a cheap guard or skip condition before expensive work: GUID/object identity, seat/color/tag bound, cached index, fingerprint/dirty check, narrower sync delta, chunk/defer plan, or explicit cold/setup/debug-only note. Do not duplicate broad `StorytellerScenesPanel.refresh`, `UpdateUIDisplays`, full HUD, top-fog, CSHEET, or other broad refreshes immediately after `Sync.full`, `Sync.player`, or a domain reconciler without documenting the missing delta.
 

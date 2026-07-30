@@ -2,7 +2,7 @@
 
 ## Goal
 
-Game-facing Lua must not call TTS `Wait.time`, `Wait.condition`, or `Wait.stop` directly. Schedule delays and condition waits through [`lib/util.ttslua`](../../lib/util.ttslua) so timing behavior stays centralized and the build gate can enforce the rule.
+Game-facing Lua must not call TTS `Wait.time`, `Wait.condition`, or `Wait.stop` directly. Schedule delays and condition waits through the **timing contract** in [`lib/util.ttslua`](../../lib/util.ttslua) (`U.stagger` / `U.chain` / `U.await`) so timing behavior stays centralized and the build gate can enforce the rule.
 
 ## Build gate
 
@@ -23,7 +23,7 @@ The gate fails when any metric **increases** above the last logged baseline. Aft
 
 `pcall` is still counted in **all** scanned `*.ttslua` files (including util). See [`lua-pcall-policy.md`](lua-pcall-policy.md).
 
-## Approved APIs (TOR-438)
+## Approved APIs — timing contract (TOR-438)
 
 | Need | Use |
 |------|-----|

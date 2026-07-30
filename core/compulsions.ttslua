@@ -817,7 +817,7 @@ function Compulsions.onGenericDrawn(container, card)
     local drawnDur = drawnEntry ~= nil and drawnEntry.on ~= nil and drawnEntry.on.duration or 0.5
 
     print(string.format(
-        "[Compulsions] Generic draw %s (%s) — RunSequence present token=%d",
+        "[Compulsions] Generic draw %s (%s) — chain present token=%d",
         compulsionType,
         color,
         token

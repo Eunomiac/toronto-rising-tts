@@ -227,7 +227,7 @@ When a deferred feature ships, move its probe into `gbE2eRunFull()` and expect P
 
 ## Related
 
-- [Gameboard-E2E.md](Gameboard-E2E.md) - lean RunSequence blocks
+- [Gameboard-E2E.md](Gameboard-E2E.md) - lean `U.chain` blocks
 - [Scenes-E2E-Guide.md](Scenes-E2E-Guide.md) - scene Apply timing and fixtures
 - [TESTING.md](../TESTING.md) - E2E output and generator contract
 - [Storyteller Gameboard Control](../NPC%20Object%20Spawning%20%26%20Spotlighting/Storyteller%20Gameboard%20Control.md)

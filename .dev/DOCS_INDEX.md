@@ -34,8 +34,7 @@ Always verify important claims against code before changing behavior.
 | Lua/XML changes touching TTS APIs or UI fan-out | [`Sychronizing Game Functionality/TTS-API-Heavy-Workload-Catalog.md`](Sychronizing%20Game%20Functionality/TTS-API-Heavy-Workload-Catalog.md), [`Sychronizing Game Functionality/TTS-API-Heavy-Workload-Usage-Inventory.md`](Sychronizing%20Game%20Functionality/TTS-API-Heavy-Workload-Usage-Inventory.md), [`Sychronizing Game Functionality/Performance Audit.md`](Sychronizing%20Game%20Functionality/Performance%20Audit.md), [`Sychronizing Game Functionality/Event Listener Policy.md`](Sychronizing%20Game%20Functionality/Event%20Listener%20Policy.md) | `core/`, `lib/`, `objects/`, `ui/`, `docs/solutions/lua-ui-full-xml-policy.md` |
 | Bundling, Save & Play, or TTS extension issues | [`TTS_BUNDLING_SETUP.md`](TTS_BUNDLING_SETUP.md), [`TTS_MCP.md`](TTS_MCP.md) | `package.json`, `.tools/tts-save/`, `.tts/` |
 | Reusing helpers or avoiding duplicate utilities | [`AVAILABLE_FUNCTIONS.md`](AVAILABLE_FUNCTIONS.md) | `lib/util.ttslua`, relevant modules |
-| Timing / wait / RunSequence improvements | [`Timing Optimizations/Timing-Utilities-Plan.md`](Timing%20Optimizations/Timing-Utilities-Plan.md) | `lib/util.ttslua`, [`../docs/solutions/lua-wait-api-policy.md`](../docs/solutions/lua-wait-api-policy.md) |
-| Timing API after merge (stagger / chain / await) — agent handoff | [`Timing Optimizations/Agent-Handoff-Timing-API.md`](Timing%20Optimizations/Agent-Handoff-Timing-API.md) | `lib/util.ttslua`; use before join/startup defer Lua |
+| Timing utilities (`U.stagger` / `U.chain` / `U.await`) | [`Timing Optimizations/Agent-Handoff-Timing-API.md`](Timing%20Optimizations/Agent-Handoff-Timing-API.md), [`Timing Optimizations/Timing-Utilities-Plan.md`](Timing%20Optimizations/Timing-Utilities-Plan.md) | `lib/util.ttslua`, [`../docs/solutions/lua-wait-api-policy.md`](../docs/solutions/lua-wait-api-policy.md) |
 
 ## Core Architecture
 

@@ -2148,7 +2148,7 @@ function DEBUG.rollE2eDiceTrayWaitSeconds()
 end
 
 --- `U.chain` step: pause after spawn so the dice tray can finish opening before release.
--- @return number seconds for RunSequence wait
+-- @return number seconds for U.chain wait
 function DEBUG.rollE2eWaitForDiceTray()
     return DEBUG.rollE2eDiceTrayWaitSeconds()
 end
@@ -2985,7 +2985,7 @@ end
 --   `successes` — integer N matches `rollRes_successes` (number only) or history
 --   `margin` — integer matches trailing signed margin on `rollRes_resultDisplay`
 --   `marginAbsent` — when true, `rollRes_resultDisplay` must not end with a signed margin
--- UI `getValue` can lag `setValue` by a frame; call from the RunSequence step *after*
+-- UI `getValue` can lag `setValue` by a frame; call from the U.chain step *after*
 -- `rollForceConfirm` (default inter-step wait). Field checks run even when the panel is not
 -- visible yet; matching resolved history tail for the same seat satisfies visibility and each field.
 -- Pinned context from `rollForceConfirm` is consumed only on PASS so a failed step can retry
@@ -3070,7 +3070,7 @@ function DEBUG.rollE2eExpectBroadcast(expected)
 
     if #failures == 0 then
         -- Consume pinned context only after a successful assertion so a failed
-        -- step can retry without passing color again (same RunSequence block).
+        -- step can retry without passing color again (same U.chain block).
         if e2eLastBroadcastContext ~= nil
             and type(histColor) == "string"
             and e2eLastBroadcastContext.color == histColor then
@@ -3259,7 +3259,7 @@ local function e2eBeginRunTestPrintWatch(cancelRegistry)
     print = e2eRunTestPrintWatchHandler
 end
 
---- Cancel any in-flight RunSequence from a prior RunTest() (re-init or next step).
+--- Cancel any in-flight U.chain from a prior RunTest() (re-init or next step).
 -- Allocates a fresh cancelRegistry so stale cancelled flags do not abort the new step.
 local function e2eCancelActiveRunTestSequence()
     e2eEndRunTestPrintWatch()

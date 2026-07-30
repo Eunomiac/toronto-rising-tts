@@ -19,11 +19,11 @@ Verification:
 - Save & Play + one `U.chain` path (phase Advance, blindfold, or Dice step)
 - Concurrent smoke: two overlapping awaits/lerps (unique-name regression)
 
-Status: **implemented 2026-07-30 (TOR-438)**. Research below retained as rationale.
+Status: **implemented 2026-07-30 (TOR-438)** as the project **timing contract**. Research below retained as rationale.
 
 ---
 
-## Shipped public API
+## Shipped public API (timing contract)
 
 | API | Role | Transport |
 | --- | --- | --- |

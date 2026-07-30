@@ -32,7 +32,7 @@ Fixture used below: **Purple** / `blackCaesar` (Roarshack). Change only if you s
 
 **Step 2.** Execute Lua Code — Code Block 0 (assert resolvers + notes parse).
 
-**Step 3.** **At Purple: draw one card from that seat’s Compulsions deck.** Console should log `RunSequence present`; generic should lerp to DRAWN (~y=10, scaled); camera switches to `compulsions`; seat deck `interactable = false`; on all eight Purple CSHEET pages, `pageBack` / `pageForward` / `pageInner` controls set `active = false` (misclick guard under presented cards); up to four typed cards stagger-lerp to anchors (not instant stack).
+**Step 3.** **At Purple: draw one card from that seat’s Compulsions deck.** Console should log `chain present`; generic should lerp to DRAWN (~y=10, scaled); camera switches to `compulsions`; seat deck `interactable = false`; on all eight Purple CSHEET pages, `pageBack` / `pageForward` / `pageInner` controls set `active = false` (misclick guard under presented cards); up to four typed cards stagger-lerp to anchors (not instant stack).
 
 **Step 4.** Execute Lua Code — Code Block A (assert deck locked + presented cards).
 

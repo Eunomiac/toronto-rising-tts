@@ -16,15 +16,17 @@ Verification:
 - Grep for banned old names (must be zero in live Lua outside util landmines): `U.delay`, `U.RunSequence`, `U.waitUntil`, `U.sequence`, `U.waitForCondition`, `U.runAfterObjectPhysicsSettled`, `U.stopDelay`
 - Prefer `U.await` / `U.chain` / `U.stagger` only
 
-Status: **shipped (TOR-438, 2026-07-30).** Treat this as the only approved timing surface for new work.
+Status: **shipped (TOR-438, 2026-07-30).** This is the **timing contract** for new Host Lua work (`U.stagger` / `U.chain` / `U.await`).
 
 ---
 
 ## Why this exists
 
-Toronto Rising collapsed overlapping wait helpers into three clearly named APIs so agents do not mix “parallel stagger,” “one-shot wait,” and “dependent sequence.” The merge also hardens clocks (`Time.time` / `Wait.time`) and removes compatibility aliases — **old names error or are gone.**
+Toronto Rising collapsed overlapping wait helpers into a small **timing contract** — three named APIs — so agents do not mix “parallel stagger,” “one-shot wait,” and “dependent sequence.” The merge also hardens clocks (`Time.time` / `Wait.time`) and removes compatibility aliases — **old names error or are gone.**
 
-If you are the **join / startup defer** agent: schedule Host Lua work with these APIs only. Do not nest numeric `U.await` inside `Wait.condition` / predicate-`U.await` completions — use `U.chain` for sequenced gaps. Do not reintroduce old names (`U.delay`, `U.RunSequence`, …).
+If you are the **join / startup defer** agent: schedule Host Lua work under this contract only. Do not nest numeric `U.await` inside `Wait.condition` / predicate-`U.await` completions — use `U.chain` for sequenced gaps. Do not reintroduce old names (`U.delay`, `U.RunSequence`, …).
+
+Prefer the word **contract** (or **trio** when naming the three functions). Avoid “regime” / “framework.”
 
 ---
 
@@ -94,7 +96,7 @@ end, { maxWait = timeoutSec })
 
 ### `U.chain(funcs, opts?)`
 
-Dependent multi-step sequencer. Each step runs; its **return value** is the wait before the **next** step (same `testRef` rules as `U.await`). Optional `opts`: `maxWait`, `frequency`, `onComplete`, `onStepStart`, `onStepEnd`, `stepNames`, `sequenceTimeoutSeconds`, `cancelRegistry`.
+Dependent multi-step sequencer. Each step runs; its **return value** is the wait before the **next** step (same `testRef` rules as `U.await`). Optional `opts`: `maxWait`, `onComplete`, `onStepStart`, `onStepEnd`, `stepNames`, `sequenceTimeoutSeconds`, `cancelRegistry`.
 
 ```lua
 U.chain({
@@ -113,7 +115,7 @@ U.chain({
   end,
 }, {
   onComplete = function(ok, detail)
-    -- ok false => step_error / cancelled / sequence_timeout
+    -- ok false => step_error / step_timeout / cancelled / sequence_timeout
   end,
 })
 ```

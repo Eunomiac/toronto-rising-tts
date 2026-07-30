@@ -2092,7 +2092,7 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
             end
         end
 
-        -- Instant apply: skip RunSequence/waitUntil coroutines entirely. Overlapping async steps
+        -- Instant apply: skip U.chain / coroutine waits entirely. Overlapping async steps
         -- from prior SetLightMode calls could otherwise run finalize/lerps out of order and leave
         -- the light disabled.
         if transitionTime <= 0 then
@@ -2270,7 +2270,7 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
     end
 
     -- Wait for light component if needed (Custom_Assetbundle spotlights: object exists before Unity Light is ready).
-    -- `U.await` + `CheckCoroutine` is unreliable from spawn callbacks; `Wait.condition` is the TTS-native queue.
+    -- Prefer pred `U.await` (Wait.condition) from spawn callbacks over coroutine-backed chain waits.
     if isSpawned and getLightComponent(light, true) == nil then
         U.await(function()
             activateLight()

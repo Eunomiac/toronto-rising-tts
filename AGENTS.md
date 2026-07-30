@@ -85,6 +85,7 @@ Generated files, save snapshots, local tool apps, chronicle data, active task no
 - Do not hide live-world side effects in state setters.
 - For Lua, define `local function` helpers above every caller in the same chunk or forward-declare them.
 - Object-hosted scripts must not require broad `core.*` or `lib.constants` graphs; route mutations through `Global.call`.
+- Timing: use the **timing contract** `U.stagger` / `U.chain` / `U.await` (`docs/solutions/lua-wait-api-policy.md`); no raw `Wait.time` / `Wait.condition` / `Wait.stop` outside `lib/util.ttslua`.
 - Fail loudly. Do not add silent fallbacks or unannotated `pcall` in production paths.
 
 See `.cursor/rules/` and `.dev/DOCS_INDEX.md` for task-specific policy routing.

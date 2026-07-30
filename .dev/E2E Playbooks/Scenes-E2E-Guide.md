@@ -198,7 +198,7 @@ Re-check lighting, NPCs, pins, and soundscape after about 3 seconds.
 
 ## Related
 
-- [Scenes-E2E.md](Scenes-E2E.md) - lean RunSequence blocks
+- [Scenes-E2E.md](Scenes-E2E.md) - lean `U.chain` blocks
 - [TESTING.md](../TESTING.md) - E2E output and generator contract
 - [Scene Constructor Overview](../Scene%20Constructor/Scene%20Constructor%20Overview.md) - state shape and apply semantics
 - [HUD_FUNCTIONS.md](../HUD_FUNCTIONS.md) - Scenes UI callback map

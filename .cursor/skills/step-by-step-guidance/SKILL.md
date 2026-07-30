@@ -150,9 +150,9 @@ End a `U.chain` / start a new Code Block / emit `▶▶▶ HUMAN ▶▶▶` **on
 
 ### `U.chain` — inter-step waits (read before splitting blocks)
 
-Implementation and comments: [`lib/util.ttslua`](../../../lib/util.ttslua) (`U.chain`, `U.chain`, `U.await`).
+Implementation and comments: [`lib/util.ttslua`](../../../lib/util.ttslua) (`U.chain`, `U.await`).
 
-Each step is a `function() … end`. After a step runs, its **return value** becomes the `U.await` **testRef** that controls when the **next** step runs:
+Each step is a `function() … end`. After a step runs, its **return value** becomes the inter-step **testRef** (same shapes as `U.await`) that controls when the **next** step runs:
 
 | Step returns | Next step waits until… |
 | --- | --- |
@@ -184,12 +184,12 @@ end,
 
 **Gate (2) timing:** return a **number** (seconds) when a fixed delay is enough; return a **poll function** when Lua can observe readiness (e.g. blindfold flag, phase change). Use a subjective HUMAN + separate Code Block only when neither is reliable. Poll only for the human action’s effect — assert feature behavior in the following step(s). Coroutine faults print as `[coroutine] …` via `U.logCoroutineIssue` when a wait or step throws.
 
-**`U.chain`** (when needed): `maxWait` / `frequency` per inter-step wait (default max **60s** — increase for slow human actions, e.g. `U.chain(funcs, 120)`), `onComplete(ok, detail)`, `stepNames`, `sequenceTimeoutSeconds`, `cancelRegistry` for external abort. See inline option comments in `util.ttslua`.
+**`U.chain` opts** (when needed): `maxWait` per inter-step wait (default **60s** — increase for slow human actions, e.g. `U.chain(funcs, 120)` or `{ maxWait = 120 }`), `onComplete(ok, detail)`, `stepNames`, `sequenceTimeoutSeconds`, `cancelRegistry` for external abort. See inline option comments in `util.ttslua`. Detail may be `step_error`, `step_timeout`, `sequence_timeout`, `cancelled`, or a cancel reason.
 
 **When to split into a new Code Block anyway:**
 
 - Gate **(2)** or **(3)** with no trustworthy poll (subjective visual, manual alignment report).
-- Current **`RunTest`** harness — still expects a paste boundary at `[HUMAN]` ([TESTING.md § U.chain](../../../.dev/TESTING.md#usequence-ordering-rules)).
+- Current **`RunTest`** harness — still expects a paste boundary at `[HUMAN]` ([TESTING.md § U.chain](../../../.dev/TESTING.md#uchain-ordering-rules)).
 - Optional **recovery** — author re-pastes only the assert half while debugging (not required if poll + assert share one sequence).
 
 **Do not split** gate **(1)** into “setup block → human paste → assert block” when a return testRef can bridge the action and the asserts in one `U.chain`.
@@ -197,7 +197,7 @@ end,
 ### Console cues
 
 - Batch automated work in **`U.chain({ … })`** — setup, cameras, `rollConfirm`, phase banners via **`printHeader(text, level)`** (levels 1–2 for phases inside one block).
-- **`▶▶▶ HUMAN ▶▶▶` format** — in the step that **`return`s the inter-step wait** (gate **(1)** / **(2)**), or alone at completion (gate **(4)**). See gate **(1)** example in [`U.chain`](#usequence--inter-step-waits-read-before-splitting-blocks) above.
+- **`▶▶▶ HUMAN ▶▶▶` format** — in the step that **`return`s the inter-step wait** (gate **(1)** / **(2)**), or alone at completion (gate **(4)**). See gate **(1)** example in [`U.chain`](#uchain--inter-step-waits-read-before-splitting-blocks) above.
 - **One `▶▶▶ HUMAN ▶▶▶` cue per human gate** — the step that prints it must **`return` the inter-step wait** before the next step runs; never two HUMAN prints back-to-back in adjacent steps with no wait between.
 - **Between automated steps:** use `print("PASS — …")` breadcrumbs; do **not** insert handoff HUMAN lines.
 - Each `printHeader` / `print` in its **own** `function() … end` step inside the sequence (preserves console order).

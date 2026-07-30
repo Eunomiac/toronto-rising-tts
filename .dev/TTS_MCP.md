@@ -115,7 +115,7 @@ These issues showed up while running Toronto Rising Lua through **`tts_execute_l
 
 ### 6. Local harness (bridge smoke)
 
-- **`npm run tts-bridge:run-sequence-test`** — smaller **`RunSequenceWithOptions`** live check against TTS.
+- **`npm run tts-bridge:run-sequence-test`** — smaller **`U.chain`** live check against TTS.
 
 **Manual E2E:** Periodic in-table verification uses [`.dev/E2E Playbooks/`](E2E%20Playbooks/README.md) (not automated MCP easing tests).
 
