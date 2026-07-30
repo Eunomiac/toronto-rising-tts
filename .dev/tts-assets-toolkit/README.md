@@ -83,6 +83,10 @@ Set cloud export root in `.tools/tts-cloud/config.js` (`CLOUD_ROOT`) to your Clo
 
 Before any save **write**, a timestamped backup goes to `<Saves>/tts-assets-backups/` (disable with `--no-backup` or `"backupBeforeWrite": false`).
 
+### Daily save snapshot (build hook)
+
+`npm run build` runs `tts-save:backup-daily` first. It copies the live save from `savesDir` + `defaultSaveName` into `backupDir` (or `<savesDir>/tts-assets-backups/`) as `TS_Save_<id>_YYYY_MM_DD.json`, at most once per 24 hours (stamp file `.last-daily-backup` in that folder). Missing config/save soft-fails so codegen still runs. If `_a`/`_b` variants for that date already exist, the build hard-fails. First same-day collision renames the existing dated file to `_a` and writes the new copy as `_b`. Skip with `SKIP_SAVE_BACKUP=1` or `npm run tts-save:backup-daily -- --skip`; force with `npm run tts-save:backup-daily:force`. Retention is unbounded — prune the backup folder manually.
+
 ## Scripts
 
 Paths below are the **current monorepo** locations. After the public package lands, the same commands will run from this toolkit root with a local `package.json`.

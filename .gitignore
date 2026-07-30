@@ -10,6 +10,7 @@ yarn.lock
 # Local TTS assets tooling config + save backups (see tts-assets.config.example.json)
 tts-assets.config.json
 **/tts-assets-backups/
+**/.last-daily-backup
 
 # Local secrets (Linear API, etc.)
 .env
