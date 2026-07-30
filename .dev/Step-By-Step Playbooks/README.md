@@ -20,6 +20,8 @@ Status: current preferred format for new targeted verification.
 
 Iterative **AI/human hybrid** verification: bug repro, feature sign-off, ad-hoc Save & Play checks. The author pastes Lua from the IDE, acts in TTS only when automation cannot, and reads `PASS` / `FAIL` / `▶▶▶ HUMAN ▶▶▶` in the console.
 
+**Console `print` order:** Isolate each `print` / `printHeader` in its own `U.chain` / `U.stagger` step — TTS does not reliably order multiple prints from one function. Use `log` for table dumps. Canonical rule: [TESTING.md § Console print ordering](../TESTING.md#console-print-ordering-tts); examples in [Dice-E2E.md](../E2E%20Playbooks/Dice-E2E.md).
+
 **Authoritative template:** [`.Step-By-Step Template.md`](.Step-By-Step%20Template.md)
 **Agent skill:** [`.cursor/skills/step-by-step-guidance/SKILL.md`](../../.cursor/skills/step-by-step-guidance/SKILL.md)
 

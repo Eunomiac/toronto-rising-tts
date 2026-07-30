@@ -51,6 +51,17 @@ E2E playbooks still use `printHeader("[HUMAN] …", 3)` for `RunTest` compatibil
 
 Manual playbooks use **`U.chain`** + **`printHeader`** so TTS console output stays ordered and scannable. **Dice-E2E.md** is the canonical example; new or revised playbooks should follow the same pattern.
 
+### Console `print` ordering (TTS)
+
+TTS does **not** reliably show `print` lines in source order when several calls run in the same Lua function (batching / editor delivery). Do not put multiple `print` / `printHeader` calls in one `function() … end` and expect the console to match that order.
+
+**Fix options:**
+
+1. **Preferred for playbooks / sequenced diagnostics** — Inside `U.chain` or `U.stagger`, put **each** `print` / `printHeader` in its **own** step function so the sequencer’s step boundary orders the console. Canonical examples: [Dice-E2E.md](E2E%20Playbooks/Dice-E2E.md).
+2. **`log(...)`** — Use when dumping a **table** (or a few values) as one console object. Formatting is more limited than a sequence of `print` lines; prefer option 1 for multi-line human-readable breadcrumbs (`PASS`, `▶▶▶ HUMAN ▶▶▶`, answer dumps).
+
+Structured MCP lines (`U.emitForAgent` / `U.mcpEmitResult`) still carry their own `seq` / `t` when order across coroutines matters — see [TTS_MCP.md](TTS_MCP.md).
+
 ### Playbook file split
 
 | File | Contents |
@@ -106,7 +117,7 @@ After each **suite** ends (level-1 close), add `print("")` in its own `U.chain` 
 ### `U.chain` ordering rules
 
 1. **Wrap every playbook Lua block** in `U.chain({ … })` — no bare top-level `rollTest` / `rollConfirm` in the markdown.
-2. **Isolate prints** — each `printHeader` and each `print` call lives in its **own** `function() … end` step so coroutine sequencing preserves console order.
+2. **Isolate prints** — each `printHeader` and each `print` call lives in its **own** `function() … end` step (see **Console `print` ordering** above). Never batch several prints in one step.
 3. **Group logic** — setup (`rollTest`, `rollCancelAll`, state seeding) and assertions (`rollConfirm`, `rollConfirmTracker`) may share a step when no human action sits between them.
 4. **Split on human gates** — when the tester must act between setup and assertion, end one `U.chain` with a level-3 `[HUMAN]` header (+ `M.setCamera` when needed), then start a **new** block for post-action `rollConfirm` / `rollE2eExpectBroadcast`. **Never** put two level-3 `[HUMAN]` steps in the same block.
 5. **Function references** — pass harness helpers directly when they are single-call steps, e.g. `rollCancelAll` (no parentheses) as a sequence entry.

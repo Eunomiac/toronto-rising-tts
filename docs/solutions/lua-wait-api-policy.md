@@ -33,6 +33,7 @@ The gate fails when any metric **increases** above the last logged baseline. Aft
 | Fixed stagger between steps (parallel offsets) | `U.stagger(funcs, timeDelay)` |
 | Dependent steps / lerps / load gates | `U.chain(funcs, opts?)` |
 | Physics settled after randomize / spawn | `U.await(callback, pred, { maxWait = n })` with resting/`loading_custom` (and cancel token) in `pred` |
+| Ordered console breadcrumbs in a sequence | One `print` / `printHeader` per `U.chain` / `U.stagger` step ([TESTING.md § Console print ordering](../../.dev/TESTING.md#console-print-ordering-tts)); `log` for table dumps |
 
 Object scripts that cannot `require("lib.util")` may use thin `CU.await` in `lib/csheet_util.ttslua` / `lib/object_positions_object.ttslua` (direct `Wait.time`).
 

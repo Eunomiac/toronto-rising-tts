@@ -100,7 +100,11 @@ U.chain({
     if UI ~= nil and UI.setValue ~= nil then
       UI.setValue("phase_joinXmlStatus", "Join XML: full")
     end
+  end,
+  function()
     print("PASS — Host alone, Intermission, unarmed, Phases opened, global blindfold faded for smoke")
+  end,
+  function()
     print("▶▶▶ HUMAN ▶▶▶ Confirm Defer setXML on + status 'Join XML: full' + table visible through faded blindfold. Click Arm Join XML once; wait for [SeatUI] Full UI resync sent. Then paste Code Block A.")
   end,
 }, { maxWait = 30 })
@@ -153,7 +157,11 @@ U.chain({
       error("[FAIL] deferSetXml should be true after Arm")
     end
     UI.setAttribute("overlay_globalBlindfold", "color", "rgba(1, 1, 1, 0.1)")
+  end,
+  function()
     print("PASS — armed + Defer setXML + UI idle + blindfold re-faded")
+  end,
+  function()
     print("▶▶▶ HUMAN ▶▶▶ Confirm slim Host chrome upper-left + table visible (or use Recovery Lua). Click Refresh XML once; wait for [SeatUI] Full UI resync sent + full HUD. Then paste Code Block B.")
   end,
 }, { maxWait = 60 })
@@ -178,7 +186,11 @@ U.chain({
       error("[FAIL] joinXmlArmed still true after Refresh")
     end
     UI.setAttribute("overlay_globalBlindfold", "color", "rgba(1, 1, 1, 0.1)")
+  end,
+  function()
     print("PASS — joinXmlArmed cleared after Refresh; blindfold re-faded")
+  end,
+  function()
     print("▶▶▶ HUMAN ▶▶▶ Confirm full Host HUD restored + table visible. Then Arm once (wait SeatUI), Disarm once (wait SeatUI). Then paste Code Block C.")
   end,
 }, { maxWait = 60 })
@@ -203,12 +215,26 @@ U.chain({
       error("[FAIL] joinXmlArmed still true after Disarm")
     end
     UI.setAttribute("overlay_globalBlindfold", "color", "rgba(1, 1, 1, 0.1)")
+  end,
+  function()
     print("PASS — Disarm cleared joinXmlArmed; blindfold re-faded")
+  end,
+  function()
     print("Solo smoke answers for chat:")
+  end,
+  function()
     print("  Arm remount OK Y/N = ?")
+  end,
+  function()
     print("  Refresh remount OK Y/N = ?")
+  end,
+  function()
     print("  Disarm remount OK Y/N = ?")
+  end,
+  function()
     print("  Host slim→full visuals OK Y/N = ?")
+  end,
+  function()
     print("▶▶▶ HUMAN ▶▶▶ Verification complete. No further action. (Join timeouts still need the full TOR-439 playbook with a second client.)")
   end,
 }, { maxWait = 60 })

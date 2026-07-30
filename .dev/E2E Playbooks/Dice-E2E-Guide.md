@@ -126,7 +126,7 @@ You do **not** need a second player connected. `rollTest` / `rollStTest` move th
 
 ## Console output (`printHeader` + `U.chain`)
 
-Cross-playbook rules live in [TESTING.md § E2E console output conventions](../TESTING.md#e2e-console-output-conventions). **Dice-E2E.md** is the reference implementation.
+Cross-playbook rules live in [TESTING.md § E2E console output conventions](../TESTING.md#e2e-console-output-conventions) (including **[Console `print` ordering](../TESTING.md#console-print-ordering-tts)** — isolate each `print` / `printHeader` in its own `U.chain` step; use `log` for table dumps). **Dice-E2E.md** is the reference implementation.
 
 ### Banner levels
 

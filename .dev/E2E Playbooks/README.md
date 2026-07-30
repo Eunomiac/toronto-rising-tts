@@ -73,7 +73,7 @@ All manual playbooks should structure Lua steps like **[Dice-E2E.md](Dice-E2E.md
 - **`printHeader(text, level)`** — level 1 `*` (suite), 2 `=` (step), 3 `-` (`[HUMAN]` instructions; never closed). Close suites/steps with `printHeader("", level)`; add `print("")` after each suite.
 - **`M.setCamera("ALL", "roll<Color>")`** — before human bag/dice/panel steps.
 
-Full rules, layout (100-char banner with spaces around text), and a copy-paste template: [TESTING.md § E2E console output conventions](../TESTING.md#e2e-console-output-conventions). Dice workflow + detail: [Dice-E2E-Guide.md § Running the playbook](Dice-E2E-Guide.md#running-the-playbook-streamlined-blocks), [§ Console output](Dice-E2E-Guide.md#console-output-printheader--urunsequence).
+Full rules, layout (100-char banner with spaces around text), **console `print` ordering**, and a copy-paste template: [TESTING.md § E2E console output conventions](../TESTING.md#e2e-console-output-conventions) (incl. [Console print ordering](../TESTING.md#console-print-ordering-tts)). Dice workflow + detail: [Dice-E2E-Guide.md § Running the playbook](Dice-E2E-Guide.md#running-the-playbook-streamlined-blocks), [§ Console output](Dice-E2E-Guide.md#console-output-printheader--uchain).
 
 ## Playbooks
 

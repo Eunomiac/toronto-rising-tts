@@ -180,6 +180,7 @@ Multi-step table logic in this project often uses [`U.chain`](../lib/util.ttslua
 2. **Completion hooks:** Use **`U.chain(funcs, { onComplete = ... })`** for a single callback when the sequence finishes (`ok` plus optional `detail`: `step_error`, `step_timeout`, `sequence_timeout`, `cancelled`). You still get the returned **`isDone`** predicate: `local done = U.chain(...);` later `done()`.
 3. **Cancel / sequence timeout:** Pass **`cancelRegistry`** (`{ cancelled = false, reason = nil }`) and/or **`sequenceTimeoutSeconds`**. Waits use an **`abortCheck`** on `U.await` so timeouts and cancellation can end a step without waiting for the original condition.
 4. **MCP observation:** Prefer **`onComplete`** plus **`U.mcpEmitResult`** / **`U.emitForAgent`**, and generous **`maxWaitMs` / `idleTimeoutMs`** on `tts_execute_lua`, over assuming a **`return`** from the snippet finalizes after long sequences.
+5. **Console `print` order:** Multiple `print` calls in one Lua function do **not** reliably appear in source order in the TTS console / `prints` array. Inside `U.chain` / `U.stagger`, isolate each `print` / `printHeader` in its own step (see [Dice-E2E.md](E2E%20Playbooks/Dice-E2E.md)). Prefer `log` for table dumps, or `U.emitForAgent` / `U.mcpEmitResult` when order must be reconstructed via `seq` / `t`. Full rule: [TESTING.md § Console print ordering](TESTING.md#console-print-ordering-tts).
 
 ## Scripts (local)
 

@@ -98,6 +98,8 @@ end, { maxWait = timeoutSec })
 
 Dependent multi-step sequencer. Each step runs; its **return value** is the wait before the **next** step (same `testRef` rules as `U.await`). Optional `opts`: `maxWait`, `onComplete`, `onStepStart`, `onStepEnd`, `stepNames`, `sequenceTimeoutSeconds`, `cancelRegistry`.
 
+**Console `print` order:** Put each `print` / `printHeader` in its **own** chain (or stagger) step — TTS does not reliably show multiple prints from one function in source order. Prefer `log` for table dumps. See [TESTING.md § Console print ordering](../TESTING.md#console-print-ordering-tts).
+
 ```lua
 U.chain({
   function()

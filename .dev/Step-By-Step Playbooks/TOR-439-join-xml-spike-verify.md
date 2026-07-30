@@ -114,7 +114,9 @@ U.chain({
     if UI ~= nil and UI.setValue ~= nil then
       UI.setValue("phase_joinXmlStatus", "Join XML: full")
     end
-    print("PASS — Host alone, Intermission, defer triad on for " .. color .. ", joinXmlArmed=false")
+  end,
+  function()
+    print("PASS — Host alone, Intermission, defer triad on for " .. FIXTURE.joinColor .. ", joinXmlArmed=false")
   end,
   function()
     printHeader("TOR-439: Control verify", 1)
@@ -134,6 +136,8 @@ U.chain({
       error("[Verify FAIL] joinXmlArmed should be false for control run")
     end
     print("PASS — control state ready (full XmlUI expected)")
+  end,
+  function()
     print("▶▶▶ HUMAN ▶▶▶ Confirm Phases: Defer setXML on + status 'Join XML: full'. Then have joiner connect; record Loading/post-table/Grey timeout Y/N. Do not Auto-Seat yet.")
   end,
 }, { maxWait = 30 })
@@ -152,11 +156,23 @@ U.chain({
     if S.getStateVal("connectionControls", "joinXmlArmed") == true then
       error("[FAIL] joinXmlArmed flipped during control — expected still false")
     end
+  end,
+  function()
     print("PASS — still unarmed (control)")
+  end,
+  function()
     print("Record now:")
+  end,
+  function()
     print("  CONTROL timeout Loading Y/N = ?")
+  end,
+  function()
     print("  CONTROL timeout after table visible Y/N = ?")
+  end,
+  function()
     print("  CONTROL survived to Grey Y/N = ?")
+  end,
+  function()
     print("▶▶▶ HUMAN ▶▶▶ If joiner is Grey: Auto-Seat then Connect for " .. tostring(FIXTURE.joinColor) .. ". Do NOT Refresh XML. Record timeout after seat/connect. Then disconnect joiner so Host is alone again.")
   end,
 }, { maxWait = 30 })
@@ -199,7 +215,11 @@ U.chain({
     if S.getStateVal("connectionControls", "joinXmlArmed") == true then
       error("[Verify FAIL] expected joinXmlArmed false before Arm click")
     end
+  end,
+  function()
     print("PASS — ready to Arm Join XML")
+  end,
+  function()
     print("▶▶▶ HUMAN ▶▶▶ Click Arm Join XML once; wait for ARMED status / slim HUD. Then paste Code Block C.")
   end,
 }, { maxWait = 30 })
@@ -221,7 +241,11 @@ U.chain({
     if S.getStateVal("connectionControls", "deferSetXml") ~= true then
       error("[FAIL] deferSetXml should stay true after Arm")
     end
+  end,
+  function()
     print("PASS — joinXmlArmed + Defer setXML")
+  end,
+  function()
     print("▶▶▶ HUMAN ▶▶▶ Joiner connects again. Record survive join Y/N. If Grey: Auto-Seat then Connect. Then click Refresh XML; record survive Refresh + full HUD restored. Then paste Code Block D.")
   end,
 }, { maxWait = 30 })
@@ -240,10 +264,20 @@ U.chain({
     if S.getStateVal("connectionControls", "joinXmlArmed") == true then
       error("[FAIL] joinXmlArmed still true after Refresh — expected cleared")
     end
+  end,
+  function()
     print("PASS — joinXmlArmed cleared after Refresh")
+  end,
+  function()
     print("Paste your Y/N answers in chat:")
+  end,
+  function()
     print("  CONTROL Loading / post-table / Grey / after Auto-Seat")
+  end,
+  function()
     print("  TREATMENT join / after Auto-Seat / after Refresh / Host HUD restored")
+  end,
+  function()
     print("▶▶▶ HUMAN ▶▶▶ Verification complete. No further action.")
   end,
 }, { maxWait = 30 })

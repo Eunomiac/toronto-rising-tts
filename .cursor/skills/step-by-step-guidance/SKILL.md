@@ -200,7 +200,7 @@ end,
 - **`▶▶▶ HUMAN ▶▶▶` format** — in the step that **`return`s the inter-step wait** (gate **(1)** / **(2)**), or alone at completion (gate **(4)**). See gate **(1)** example in [`U.chain`](#uchain--inter-step-waits-read-before-splitting-blocks) above.
 - **One `▶▶▶ HUMAN ▶▶▶` cue per human gate** — the step that prints it must **`return` the inter-step wait** before the next step runs; never two HUMAN prints back-to-back in adjacent steps with no wait between.
 - **Between automated steps:** use `print("PASS — …")` breadcrumbs; do **not** insert handoff HUMAN lines.
-- Each `printHeader` / `print` in its **own** `function() … end` step inside the sequence (preserves console order).
+- **Console `print` ordering:** TTS does not reliably show multiple `print` calls from one function in source order. Put **each** `printHeader` / `print` in its **own** `function() … end` step inside `U.chain` / `U.stagger` (see [Dice-E2E.md](../../../.dev/E2E%20Playbooks/Dice-E2E.md)). For table dumps, `log(...)` is OK but has weaker formatting than sequential prints. Full rule: [TESTING.md § Console print ordering](../../../.dev/TESTING.md#console-print-ordering-tts).
 - Playbook-scale runs with the `RunTest` harness: **`RunTest("Dice")`** then **`RunTest()`** after each human gate ([TESTING.md § Streamlined block workflow](../../../.dev/TESTING.md#streamlined-block-workflow)). Target: migrate E2E to Step-By-Step format + retain `RunTest`.
 
 **Canonical examples:**
