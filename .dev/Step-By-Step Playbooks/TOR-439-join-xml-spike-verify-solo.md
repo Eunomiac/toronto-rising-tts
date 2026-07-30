@@ -46,7 +46,7 @@ Do **not** use hotseat for this smoke. Hotseat shares one Steam identity across 
 
 **Step 3.** **Confirm Phases shows Defer setXML on and status `Join XML: full`.** Leave Phases open. Table should show through a near-transparent Intermission blindfold (`rgba(1,1,1,0.1)` — smoke only).
 
-**Step 4.** **Click Arm Join XML once.** Wait for console `[SeatUI] Full UI resync sent (Arm Join XML).` (that is the remount-done cue — not a Phases status label). Remount resets blindfold opacity; Code Block A re-fades it. After remount, Host should show **slim Phases chrome upper-left** (Refresh / Disarm live there).
+**Step 4.** **Click Arm Join XML once.** Wait for console `[SeatUI] Full UI resync sent (Arm Join XML).` (that is the remount-done cue — not a Phases status label). Remount resets blindfold opacity; Code Block A re-fades it. After remount, Host should show **slim Phases chrome upper-left in front of** the Intermission blindfold (Refresh / Disarm live there).
 
 **Step 5.** Execute Lua Code — Code Block A (wait remount idle; assert armed; re-fade blindfold).
 
@@ -130,6 +130,7 @@ Any remount resets the Intermission blindfold. Re-fade mid-sequence if needed:
 
 ```lua
 UI.setAttribute("overlay_globalBlindfold", "color", "rgba(1, 1, 1, 0.1)")
+UI.hide("oerlay_globalBlindfold")
 ```
 
 After a **Save & Play** with the blindfold-before-chrome fix, slim Phases should appear upper-left after Arm and you can click the buttons again.

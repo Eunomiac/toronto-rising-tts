@@ -23605,6 +23605,8 @@ M.minimal = [=[
 <!-- Host arms this via Phases → Arm Join XML before a struggling client connects. -->
 <!-- Not the permanent save default — Remount with full embed via Refresh / Disarm. -->
 <!-- Include paths: same rules as ui/Global.xml (relative to this file's directory / ui/). -->
+<!-- Stacking: Global XmlUI draws later siblings above earlier ones. Keep blindfold BEFORE Host chrome -->
+<!-- (same as ui/Global.xml: overlay_globalBlindfold, then HUD_PANEL_BLACK / ST toolbar). -->
 
 <!-- 1. Tag-based defaults -->
 
@@ -24335,9 +24337,18 @@ M.minimal = [=[
 
 <!-- include ui/storyteller/panel_join_xml_chrome_defaults.xml -->
 <!-- Defaults for join-minimal chrome wrapper (TOR-439). -->
-<!-- storyteller_panel_column lives on full toolbar Defaults; redefine the subset Phases needs. -->
+<!-- Mirrors storyteller_panel_root / storyteller_panel_column so Phases matches full ST chrome. -->
 
 <Defaults>
+  <Panel class="join_xml_chrome_root"
+    visibility="Host"
+    ignoreLayout="true"
+    rectAlignment="UpperLeft"
+    offsetXY="20 -20"
+    width="520"
+    height="640"
+    color="rgba(0,0,0,0.85)"
+  />
   <VerticalLayout class="storyteller_panel_column"
     color="rgba(0, 0, 0, 0.8)"
     spacing="6"
@@ -24352,8 +24363,7 @@ M.minimal = [=[
 <!-- /include ui/storyteller/panel_join_xml_chrome_defaults.xml -->
 
 
-<!-- 4. Global session blindfold BEFORE Host chrome (same order as ui/Global.xml). -->
-<!-- Later siblings draw above earlier ones — if blindfold is last, it covers Phases. -->
+<!-- 4. Global session blindfold (Intermission cover for all clients). -->
 
 <!-- include ui/shared/panel_overlay_global_blindfold.xml -->
 <!-- Global session blindfold — no visibility filter (all clients). active=true by default / on connect. -->
@@ -24385,11 +24395,16 @@ UI.setAttributes("overlay_globalBlindfold", {height = "1200"})
 <!-- /include ui/shared/panel_overlay_global_blindfold.xml -->
 
 
-<!-- 5. Slim Host chrome: Phases join controls only (panel forced active in post-mount). -->
-<Panel id="HUD_PANEL_BLACK" class="hud_root_panel" visibility="Black|Host">
+<!-- 5. Slim Host chrome AFTER blindfold — Phases must draw above Intermission cover. -->
+<!-- Full-screen clear root (like full ST HUD) so UpperLeft chrome is a later sibling of the Image. -->
+<Panel id="HUD_PANEL_BLACK" visibility="Black|Host"
+  width="1920" height="1200" rectAlignment="MiddleCenter"
+  color="clear" raycastTarget="false">
+  <!-- ignoreLayout: padding would turn this into a LayoutGroup and can bury children. -->
   <Panel id="joinXmlChromeRoot" visibility="Host" active="true"
+    ignoreLayout="true"
     rectAlignment="UpperLeft" offsetXY="20 -20" width="520" height="640"
-    color="rgba(0,0,0,0.85)" padding="8 8 8 8">
+    color="rgba(0,0,0,0.85)">
     
 <!-- include ui/storyteller/panel_phases.xml -->
 <!--

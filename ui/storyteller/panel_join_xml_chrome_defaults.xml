@@ -1,7 +1,16 @@
 <!-- Defaults for join-minimal chrome wrapper (TOR-439). -->
-<!-- storyteller_panel_column lives on full toolbar Defaults; redefine the subset Phases needs. -->
+<!-- Mirrors storyteller_panel_root / storyteller_panel_column so Phases matches full ST chrome. -->
 
 <Defaults>
+  <Panel class="join_xml_chrome_root"
+    visibility="Host"
+    ignoreLayout="true"
+    rectAlignment="UpperLeft"
+    offsetXY="20 -20"
+    width="520"
+    height="640"
+    color="rgba(0,0,0,0.85)"
+  />
   <VerticalLayout class="storyteller_panel_column"
     color="rgba(0, 0, 0, 0.8)"
     spacing="6"

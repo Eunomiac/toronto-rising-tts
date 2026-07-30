@@ -672,7 +672,13 @@ local function postMountGlobalUi(reason, armedMinimal)
     invalidateGlobalBlindfoldAppliedState()
     applyGlobalBlindfoldFromPhase()
     if armedMinimal == true and UI ~= nil and UI.setAttribute ~= nil then
+        -- Force Phases chrome above Intermission blindfold (XML order + raise after blindfold apply).
+        UI.setAttribute("joinXmlChromeRoot", "active", "true")
         UI.setAttribute("panel_phases", "active", "true")
+        if type(UI.show) == "function" then
+            UI.show("joinXmlChromeRoot")
+            UI.show("panel_phases")
+        end
     end
     if syncStorytellerPhaseButtons ~= nil then
         syncStorytellerPhaseButtons()
