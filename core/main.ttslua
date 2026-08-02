@@ -405,13 +405,39 @@ function M.setCamera(player, cameraMode, lookAtPos)
 end
 
 --- TOR-368: snap cameras to default after blindfold overlay has settled (~1.5s on raise paths).
+--- After lookAt, force FirstPerson so players are not left in ThirdPerson/TopDown under the cover.
+--- Re-assert after a short delay — lookAt can clobber mode (same pattern as DEBUG.applyLastCapturedCameraPreset).
 --- @param colorOrPlayer string|Player|nil  nil/"ALL" → every seated player; else that seat only
 function M.setDefaultCameraBeforeBlindfold(colorOrPlayer)
+  local function applyFirstPerson(player)
+    if not U.isPlayer(player) then
+      return
+    end
+    if type(player.setCameraMode) ~= "function" then
+      return
+    end
+    player.setCameraMode("FirstPerson")
+    U.await(function()
+      if U.isPlayer(player) and type(player.setCameraMode) == "function" then
+        player.setCameraMode("FirstPerson")
+      end
+    end, 0.5)
+  end
+
   if colorOrPlayer == nil or colorOrPlayer == "ALL" then
     M.setCamera("ALL", "default")
+    M.forPlayers(function(p, _)
+      applyFirstPerson(p)
+    end)
     return
   end
+
+  local player = colorOrPlayer
+  if type(player) == "string" then
+    player = Player[player]
+  end
   M.setCamera(colorOrPlayer, "default")
+  applyFirstPerson(player)
 end
 
 --[[

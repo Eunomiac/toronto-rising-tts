@@ -229,6 +229,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Scene Apply fans out SIGNAL_FIRE Y:** Layout stamped reference-seat signal-fire Y onto all seats (same class as TOR-343 CSHEET). Preserve per-seat Y. _(TOR-380)_
 - [x] **Intermission theme fade-in from volume 0:** Non-zero `incomingFadeSeconds` for TR_Loop enter. _(TOR-366)_
 - [x] **Default camera before blindfold raise:** Global + per-player raise paths. _(TOR-368)_
+- [x] **Blindfold default camera → FirstPerson:** After TOR-368 lookAt snap, `setCameraMode("FirstPerson")` on affected players. Pending Save & Play. _(TOR-443)_
 - [x] **Delete active scene:** Deleting live `lastAppliedKey` row calls `endSceneNarrative` first. _(TOR-146 — 2026-06-15)_
 - [ ] **Pre-Apply seat presence modal:** Before blindfold scene transition, ST modal with per-seat present/absent toggles so PCs can be left behind at prior location. _(TOR-157)_
 - [x] **Real-time clock too fast (intermittent):** `ensureTicker` no-ops when already armed; stop before re-arm on Apply/load/clock Apply. _(TOR-148 — 2026-06-15)_

@@ -212,6 +212,7 @@ function HUDBF.clearBlindfoldsForUnoccupiedPcSeats()
 end
 
 --- Reset every seated player to the layout-derived default camera when the pre-lift settle delay starts.
+--- `M.setDefaultCameraBeforeBlindfold` also forces FirstPerson after the lookAt snap.
 local function setDefaultCameraForSeatedPlayers()
   if type(Main) == "table" and type(Main.setDefaultCameraBeforeBlindfold) == "function" then
     Main.setDefaultCameraBeforeBlindfold("ALL")
@@ -224,6 +225,9 @@ local function setDefaultCameraForSeatedPlayers()
   for _, player in ipairs(seated) do
     if player ~= nil then
       Main.setCamera(player, "default")
+      if type(player.setCameraMode) == "function" then
+        player.setCameraMode("FirstPerson")
+      end
     end
   end
 end

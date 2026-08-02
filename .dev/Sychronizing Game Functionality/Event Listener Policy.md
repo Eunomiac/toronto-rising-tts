@@ -244,7 +244,7 @@ end
 
 ## Blindfold raise — default camera (TOR-368)
 
-After any blindfold comes **up**, wait ~1.5s for the overlay to settle, then call `M.setDefaultCameraBeforeBlindfold` (or equivalent `M.setCamera(..., "default")`) so camera motion happens under the blindfold:
+After any blindfold comes **up**, wait ~1.5s for the overlay to settle, then call `M.setDefaultCameraBeforeBlindfold` (or equivalent `M.setCamera(..., "default")` + `setCameraMode("FirstPerson")`) so camera motion happens under the blindfold:
 
 | Raise path | File | When |
 | --- | --- | --- |
