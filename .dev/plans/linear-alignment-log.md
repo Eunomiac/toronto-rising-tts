@@ -596,5 +596,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-26 | VERIFY | TOR-97 | Author confirmed Desire input + setClass/unset styling + O(1) class skip |
 | 2026-07-30 | CREATE+SHIP | TOR-437 | Join-load inventory (engine vs Host Lua); relatedTo TOR-428/430/381/375/374 |
 | 2026-07-30 | CREATE+SHIP | TOR-438 | Timing API merge: U.stagger / U.chain / U.await; hard-cut old names |
+| 2026-08-02 | CREATE+SHIP | TOR-441 | Scene transition blindfold double UI.show — `skipAfterChange` + one armed parent show; TOR-434 lead-in preserved; relatedTo TOR-431/434/425 |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

@@ -289,7 +289,8 @@ end
 --- @param playerID string
 --- @param conditionId string
 --- @param instance table
-function Conditions.setEvent(playerID, conditionId, instance)
+--- @param opts table|nil `{ skipAfterChange?: boolean }` — when true, write state only; caller owns presentation
+function Conditions.setEvent(playerID, conditionId, instance, opts)
   if playerID == C.StorytellerID then
     return
   end
@@ -302,17 +303,26 @@ function Conditions.setEvent(playerID, conditionId, instance)
   end
   assertPersistedShape(conditionId, instance)
   S.setStateVal(instance, "playerData", playerID, "conditions", conditionId)
+  opts = type(opts) == "table" and opts or {}
+  if opts.skipAfterChange == true then
+    return
+  end
   Conditions.afterChange(playerID)
 end
 
 --- @param playerID string
 --- @param conditionId string
-function Conditions.clear(playerID, conditionId)
+--- @param opts table|nil `{ skipAfterChange?: boolean }` — when true, write state only; caller owns presentation
+function Conditions.clear(playerID, conditionId, opts)
   if playerID == C.StorytellerID then
     return
   end
   CD.getDef(conditionId)
   S.setStateVal(nil, "playerData", playerID, "conditions", conditionId)
+  opts = type(opts) == "table" and opts or {}
+  if opts.skipAfterChange == true then
+    return
+  end
   Conditions.afterChange(playerID)
 end
 

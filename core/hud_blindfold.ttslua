@@ -160,10 +160,12 @@ local function forEachSeatedPlayer(fn)
 end
 
 --- Clear transition `hudBlindfold` for every playerID recorded at begin (not only currently seated).
-local function clearTrackedTransitionBlindfolds()
+--- @param opts table|nil `{ skipAfterChange?: boolean }` forwarded to Conditions.clear
+local function clearTrackedTransitionBlindfolds(opts)
+  opts = type(opts) == "table" and opts or nil
   for playerID, _ in pairs(transitionBlindfoldPlayerIds) do
     if type(playerID) == "string" and playerID ~= C.StorytellerID then
-      Conditions.clear(playerID, TRANSITION_CONDITION_KEY)
+      Conditions.clear(playerID, TRANSITION_CONDITION_KEY, opts)
     end
   end
   transitionBlindfoldPlayerIds = {}
@@ -243,6 +245,7 @@ end
 --- Apply transition blindfold HUD conditions for all seated players.
 --- Destination District/Site cards (TOR-425 / TOR-431) arm on the parent before one UI.show when
 --- both `districtKey` and `siteKey` resolve; otherwise cards stay Clear.
+--- Condition writes use `skipAfterChange` so Conditions.afterChange cannot UI.show before arming (TOR-441).
 --- @param optsOrVariant number|table|nil
 ---   number — blindfold variant 1..C.BlindfoldVariantCount
 ---   table — `{ variant?, districtKey?, siteKey? }` (keys from the *destination* scene; live sessionScene is still old)
@@ -251,8 +254,9 @@ function HUDBF.beginTransition(optsOrVariant)
     U.cancel(pendingEndDelayId)
     pendingEndDelayId = nil
   end
-  -- Drop any prior transition recipients before recording a new set (mid-settle restart).
-  clearTrackedTransitionBlindfolds()
+  -- Drop prior transition state without per-player afterChange (each would UI.hide/show and
+  -- fight the single armed parent UI.show below). Lift uses skipAfterChange + one HO.syncAll.
+  clearTrackedTransitionBlindfolds({ skipAfterChange = true })
   cancelPendingDefaultCamera()
   -- Reset card attrs before deciding whether this transition arms destination art.
   clearTransitionLocationCardDefaultsForAllSeats()
@@ -278,12 +282,15 @@ function HUDBF.beginTransition(optsOrVariant)
     transitionSiteCardImage = siteImage
   end
 
+  -- Mutation only: skip afterChange so Conditions cannot UI.show before children are armed.
   forEachSeatedPlayer(function(playerID)
     transitionBlindfoldPlayerIds[playerID] = true
-    Conditions.setEvent(playerID, TRANSITION_CONDITION_KEY, { variant = variant })
+    Conditions.setEvent(playerID, TRANSITION_CONDITION_KEY, { variant = variant }, {
+      skipAfterChange = true,
+    })
   end)
-  -- Parent Panel UI.show after children are armed (variant + optional cards). forceReshow so a
-  -- mid-settle restart always slides in again.
+  -- Single parent UI.show after children are armed (variant + optional cards). forceReshow so a
+  -- mid-settle restart always slides in again. TOR-434 lead-in waits still gate heavy work.
   if type(HO.applyBlindfoldVariantForSeatedPlayers) == "function" then
     HO.applyBlindfoldVariantForSeatedPlayers(variant, {
       forceReshow = true,
@@ -309,7 +316,8 @@ function HUDBF.endTransition()
   transitionDistrictCardImage = nil
   transitionSiteCardImage = nil
 
-  clearTrackedTransitionBlindfolds()
+  -- Batch-clear state, then one overlay reconcile owns parent UI.hide (avoid N afterChange hides).
+  clearTrackedTransitionBlindfolds({ skipAfterChange = true })
   HUDBF.clearBlindfoldsForUnoccupiedPcSeats()
   -- HO.syncAll → parent UI.hide; child defaults restore after ~3s (do not Clear mid-slide).
   HO.syncAll()

@@ -248,7 +248,7 @@ After any blindfold comes **up**, wait ~1.5s for the overlay to settle, then cal
 | Raise path | File | When |
 | --- | --- | --- |
 | Global overlay show | `global_script.showStartupLoadingOverlays` | after `UI.show(overlay_globalBlindfold)`, then `U.await(1.5)` |
-| Per-player transition | `HUDBF.beginTransition` | after condition + parent Panel `UI.show` (children armed first, incl. optional destination cards — TOR-431 / TOR-425), then `U.await(1.5)` |
+| Per-player transition | `HUDBF.beginTransition` | Write `hudBlindfold` with `skipAfterChange`, arm children (variant + optional destination cards), **one** parent Panel `UI.show` (TOR-431 / TOR-425 / TOR-441); then `U.await(1.5)` for default camera (TOR-368). TOR-434 lead-in still gates heavy work. |
 | PCs panel Blind toggle on | `PCST` `blindfoldToggle` | after `Conditions.setManual(hudBlindfold)`, then `U.await(1.5)` |
 
 Lift/settle paths may still reset cameras while the blindfold is down (existing settle behavior).
