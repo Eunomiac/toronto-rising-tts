@@ -17658,7 +17658,7 @@ UI.setAttributes("overlay_globalBlindfold", {height = "1200"})
   width="1920"
   height="1200"
   preserveAspect="true"
-  raycastTarget="false"
+  raycastTarget="true"
   rectAlignment="MiddleCenter"
   showAnimation="FadeIn"
   hideAnimation="FadeOut"
@@ -18034,9 +18034,10 @@ UI.setAttributes("overlay_globalBlindfold", {height = "1200"})
     <!-- ================================================================ -->
     <!-- Main Button Column (left side): Print State + debug test buttons  -->
     <!-- ================================================================ -->
-    <VerticalLayout class="storyteller_buttonControls" visibility="Host" height="340">
+    <VerticalLayout class="storyteller_buttonControls" visibility="Host" height="370">
       <Text class="hud_storyteller_header">== DEBUG ==</Text>
       <Text id="debug_lastLoadClock" fontSize="12" color="#AAAAAA" alignment="MiddleCenter" text="" />
+      <Button id="debug_overlayAlpha" class="hud_storyteller_button" onClick="HUD_toggleOverlayAlpha">Overlay Alpha: Full</Button>
       <Button class="hud_storyteller_button" onClick="HUD_printState">Print State</Button>
       <Button class="hud_storyteller_button" onClick="HUD_syncAll">Sync All (force)</Button>
       <Button class="hud_storyteller_button" onClick="HUD_updateCoterieData">Update Coterie Data</Button>
@@ -24396,7 +24397,7 @@ UI.setAttributes("overlay_globalBlindfold", {height = "1200"})
   width="1920"
   height="1200"
   preserveAspect="true"
-  raycastTarget="false"
+  raycastTarget="true"
   rectAlignment="MiddleCenter"
   showAnimation="FadeIn"
   hideAnimation="FadeOut"

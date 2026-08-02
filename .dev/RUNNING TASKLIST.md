@@ -278,6 +278,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **leadInDelaySec=0 honored:** `resolveOptSec` (nil-check after tonumber) so explicit 0 skips wait; relatedTo **TOR-434**. _(TOR-435)_
 - [x] **Scene transition blindfold double UI.show:** `beginTransition` wrote `hudBlindfold` via `afterChange` (show #1) then `forceReshow` (show #2); now `skipAfterChange` + one armed parent show. TOR-434 lead-in unchanged. Pending Save & Play. _(TOR-441)_
 - [ ] **Blindfold parent off-screen:** Root sibling of global blindfold + matching 1920×1200 MiddleCenter Panel Defaults (prior ancestor-Defaults experiment reverted). Pending Save & Play. _(TOR-436)_
+- [x] **DEBUG Overlay Alpha toggle:** == DEBUG == button above Print State toggles `overlay_globalBlindfold` Full↔Min (`color` + `raycastTarget`); label tracks overlay state. _(TOR-442)_
 - [x] **Coterie ref grid — Color Blitz + Jarvis Jacks:** Anarch row buttons + popups; `inCoterieRef` in constants; assets in save. relatedTo **TOR-190**. _(INBOX 2026-07-05 quick fix)_
 - [x] **Storyteller Stats panel — advantage editor:** Stats toolbar tab; PC backgrounds/merits/flaws + coterie 9 categories + domain ratings; Advantage Editor modal; seed-only PCS hydrate. Author confirmed 2026-07-19. _(TOR-279)_
 - [ ] **Center-top overlay polish:** Scale down overlay; fix background image alignment/scaling. _(TOR-86)_

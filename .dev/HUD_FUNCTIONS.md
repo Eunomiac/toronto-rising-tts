@@ -39,6 +39,7 @@ Per the TTS **InputField** note ([Input Elements](https://api.tabletopsimulator.
 
 | Handler | XML Element(s) | Params | Behavior |
 | ------- | ---------------- | ------ | -------- |
+| `HUD_toggleOverlayAlpha` | `Overlay Alpha: Full` / `Min` (`debug_overlayAlpha`) | `(player, button, id)` | ST-gated debug toggle for `overlay_globalBlindfold`. Reads `raycastTarget`: `true` (Full) → `color=rgba(1,1,1,0.25)` + `raycastTarget=false` + label **Min**; `false` (Min) → `color=White` + `raycastTarget=true` + label **Full**. |
 | `HUD_printState` | `Print State` button | `(player, button, id)` | Calls `DEBUG.logStateToFile("game_state")`. Writes **`.dev/.debug/debug_logs/game_state.txt`** when the tts-bridge listens on **39998**. |
 | `HUD_syncAll` | `Sync All (force)` button | `(player, button, id)` | Calls `Sync.full({ force = true })` — bypass scene/soundscape fingerprints; full `UpdateUIDisplays` (overlay repair). |
 | `HUD_clearLoadingOverlay` | `Clear Loading Overlay` button | `(player, button, id)` | ST-gated. Manual hide of `overlay_globalBlindfold` (escape hatch). Normal visibility is **phase-owned**: shown in Intermission, hidden on Play enter and on connect outside Intermission. Do not nest numeric **`U.await`** inside a predicate-**`U.await`** / `Wait.condition` completion — TTS can fire the timer immediately; use **`U.chain`** instead. |

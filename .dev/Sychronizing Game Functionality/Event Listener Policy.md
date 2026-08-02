@@ -142,6 +142,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `HUD_phaseDeferSetXml` / `HUD_phaseRefreshXml` / `HUD_phaseArmJoinXml` / `HUD_phaseRestoreJoinAssets` / `HUD_phaseRestoreJoinHud` / `HUD_phaseRestoreJoinEmitters` / `HUD_phaseRestoreJoinFigurines` | A/B + C (remount / spawn) | Yes | TOR-428 defer; TOR-439 Arm + staged restore (assets → HUD → emitters → figurines) |
 | `HUD_resetGame` / `HUD_syncAll` | B+C | Yes | |
 | `HUD_saveState` / `HUD_logState` / `HUD_printState` | A/B | — | encode/log |
+| `HUD_toggleOverlayAlpha` | A | Yes | debug: Full↔Min alpha/`raycastTarget` on `overlay_globalBlindfold` |
 | `HUD_toggleAllAnchors` / `HUD_toggleAllSpotlights` | C | Yes | |
 | `HUD_clearLoadingOverlay` | A | Yes | hide + `active=false` on startup loading screen |
 | `HUD_toggleDebugAmbient` | C | Yes | ambient intensity 0↔2 (debug, not persisted) |

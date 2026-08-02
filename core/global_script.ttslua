@@ -4605,6 +4605,34 @@ function HUD_logState(player, button, id)
     broadcastToColor("Game state logged to console.", player.color, {0, 1, 1})
 end
 
+--- Toggle global blindfold overlay between Full (opaque + raycast) and Min (25% alpha, no raycast).
+-- Reads `raycastTarget` on `overlay_globalBlindfold` so the button label stays synced with overlay state.
+-- @param player Player The player who clicked (Host/Black)
+-- @param button string Button value
+-- @param id string The UI element ID
+function HUD_toggleOverlayAlpha(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_toggleOverlayAlpha") then
+        return
+    end
+    local raycast = UI.getAttribute("overlay_globalBlindfold", "raycastTarget")
+    local isFull = string.lower(tostring(raycast or "")) == "true"
+    if isFull then
+        UI.setAttributes("overlay_globalBlindfold", {
+            color = "rgba(1, 1, 1, 0.25)",
+            raycastTarget = "false",
+        })
+        U.setAttribute("debug_overlayAlpha", "text", "Overlay Alpha: Min")
+        broadcastToColor("Overlay alpha: Min (25%, raycast off).", player.color, {0, 1, 1})
+    else
+        UI.setAttributes("overlay_globalBlindfold", {
+            color = "White",
+            raycastTarget = "true",
+        })
+        U.setAttribute("debug_overlayAlpha", "text", "Overlay Alpha: Full")
+        broadcastToColor("Overlay alpha: Full (opaque, raycast on).", player.color, {0, 1, 1})
+    end
+end
+
 --- Pretty-print full game state to workspace file (same path as DEBUG.logStateToFile).
 -- Writes **.dev/.debug/debug_logs/game_state.txt** when the tts-bridge listens on 39998 (overwrites each click). See .dev/DEBUG_FILE_LOGGING.md.
 -- Called when the Storyteller left-panel "Print State" button is clicked.

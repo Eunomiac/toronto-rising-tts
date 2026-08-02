@@ -248,6 +248,7 @@ lua logAllToFiles()
 
 Storyteller **== DEBUG ==** column (no automated test suites):
 
+- Overlay Alpha: Full/Min (global blindfold translucent inspect)
 - Print State, Sync All (force)
 - **Debug Camera**, **Debug Light** (+ GUID field)
 

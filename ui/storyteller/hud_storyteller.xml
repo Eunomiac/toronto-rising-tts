@@ -21,9 +21,10 @@
     <!-- ================================================================ -->
     <!-- Main Button Column (left side): Print State + debug test buttons  -->
     <!-- ================================================================ -->
-    <VerticalLayout class="storyteller_buttonControls" visibility="Host" height="340">
+    <VerticalLayout class="storyteller_buttonControls" visibility="Host" height="370">
       <Text class="hud_storyteller_header">== DEBUG ==</Text>
       <Text id="debug_lastLoadClock" fontSize="12" color="#AAAAAA" alignment="MiddleCenter" text="" />
+      <Button id="debug_overlayAlpha" class="hud_storyteller_button" onClick="HUD_toggleOverlayAlpha">Overlay Alpha: Full</Button>
       <Button class="hud_storyteller_button" onClick="HUD_printState">Print State</Button>
       <Button class="hud_storyteller_button" onClick="HUD_syncAll">Sync All (force)</Button>
       <Button class="hud_storyteller_button" onClick="HUD_updateCoterieData">Update Coterie Data</Button>
