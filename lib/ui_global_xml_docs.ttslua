@@ -863,9 +863,9 @@ M.full = [=[
   <Image class="player_overlay_district_card_display"
     raycastTarget="false"
     preserveAspect="true"
-    rectAlignment="MiddleCenter"
-    width="800"
-    offsetXY="0 200"
+    rectAlignment="LowerLeft"
+    width="900"
+    offsetXY="50 75"
     showAnimation="FadeIn"
     hideAnimation="FadeOut"
     animationDuration="1"
@@ -878,9 +878,9 @@ M.full = [=[
   <Image class="player_overlay_site_card_display"
     raycastTarget="false"
     preserveAspect="true"
-    rectAlignment="MiddleCenter"
-    width="700"
-    offsetXY="0 -200"
+    rectAlignment="LowerRight"
+    width="900"
+    offsetXY="-50 125"
     showAnimation="FadeIn"
     hideAnimation="FadeOut"
     animationDuration="1"
@@ -17866,7 +17866,7 @@ UI.setAttributes("overlay_globalBlindfold", {height = "1200"})
 <!-- Classes for Storyteller PCs panel (`panel_pcs.xml`). Seat tint `color` stays per-Panel; ids and row label text stay on elements. -->
 <!-- Agent guidance: .dev/tts-api/UI API/Defaults.md -->
 <Defaults>
-  <Panel class="pcs_panel_root" padding="6 6 6 6" width="680" color="rgba(0, 0, 0, 0.8)" />
+  <Panel class="pcs_panel_root" padding="6 6 6 6" scale="0.75" pivot="0 1" width="680" color="rgba(0, 0, 0, 0.8)" />
   <VerticalLayout class="pcs_root_vl" spacing="8" childAlignment="UpperLeft" childForceExpandWidth="false" />
 
   <Panel class="pcs_seat_block" padding="6 8 6 8" />
@@ -19107,7 +19107,10 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
 <!-- include ui/storyteller/panel_pcs.xml -->
 <!-- Storyteller PCs panel: health / will / humanity / XP / hunger + torpor (Host only) -->
 <!-- Classes: panel_pcs_defaults.xml — seat `color`, `id`, and button `text` stay inline per element. -->
-<!-- Agent guidance: .dev/HUD_FUNCTIONS.md; .dev/PC Data & Tracking/PC Tracking & State Behavior.md -->
+<!-- Agent guidance: .dev/HUD_FUNCTIONS.md; .dev/PC Data & Tracking/PC Tracking & State Behavior.md
+
+
+-->
 <Panel id="panel_pcs" class="pcs_panel_root" active="false">
   <VerticalLayout class="pcs_root_vl">
     <!-- Brown -->

@@ -154,6 +154,7 @@ Any remount resets the Intermission blindfold. Re-fade mid-sequence if needed:
 ```lua
 UI.setAttribute("overlay_globalBlindfold", "color", "rgba(1, 1, 1, 0.1)")
 UI.setAttribute("overlay_globalBlindfold", "raycastTarget", "false")
+log(UI.getCustomAssets())
 ```
 
 After a **Save & Play** with the blindfold-before-chrome fix, slim Phases should appear upper-left after Arm and you can click the buttons again.

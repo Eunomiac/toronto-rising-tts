@@ -6,14 +6,14 @@
 <!--
   Hierarchy (TOR-436): hud_root_panel + playerHud_overlaysLayer + playerHud_blindfoldOverlay are full-screen
   1920×1200 (root 100%), MiddleCenter, ignoreLayout — same art box as overlay_globalBlindfold.
-  Parent: playerHud_blindfoldOverlay (SlideIn_Top / SlideOut_Top, duration 2, hideDelay 1).
-  Children: arm active=true BEFORE parent UI.show; do not UI.show children separately (ignoreLayout).
-  Cards: with location set White+image; without location keep Clear + empty image (invisible if animated).
-  Hide: UI.hide(parent) → wait ~3s → restore child defaults only (not the parent).
+  Parent: playerHud_blindfoldOverlay (FadeIn / FadeOut, duration 2, hideDelay 1). (temp change from SlideIn_Top / SlideOut_Top)
+  Activate (TOR-441): parent active=false → arm chosen variant (+ cards White+image or Clear) → one parent UI.show.
+  Do not UI.show children separately; do not call Conditions.afterChange before the armed parent show.
+  Hide: UI.hide(parent) once; child defaults restore after ~3s (not mid-animation).
 -->
 
 <Panel id="playerHud_overlay_blindfold_@@color@@" class="playerHud_overlaysLayer playerHud_blindfoldOverlay" visibility="@@color@@">
-  <Image id="overlay_blindfold_1_@@color@@" image="overlay_blindfold_1" class="player_overlay" />
+  <Image id="overlay_blindfold_1_@@color@@" image="overlay_blindfold_1" class="player_overlay" active = "true" color = "Clear" />
   <Image id="overlay_blindfold_2_@@color@@" image="overlay_blindfold_2" class="player_overlay" />
   <Image id="overlay_blindfold_3_@@color@@" image="overlay_blindfold_3" class="player_overlay" />
   <Image id="overlay_blindfold_4_@@color@@" image="overlay_blindfold_4" class="player_overlay" />
@@ -104,14 +104,31 @@
 
     UI.hide("playerHud_overlay_blindfold_Red")
 
-    UI.setAttribute("playerHud_overlay_blindfold_Red", "active", "false")
-    UI.setAttributes("overlay_blindfold_26_Red", {active = "true"})
-    UI.setAttributes("overlay_district_card_display_Red", {active = "true", color = "White", image = "districtCard_Annex"})
-    UI.setAttributes("overlay_site_card_display_Red", {active = "true", color = "White", image = "siteCard_BillyBishopAirport"})
-    UI.show("playerHud_overlay_blindfold_Red")
-
-
-
     UI.show("overlay_district_card_display_Red")
     UI.show("overlay_site_card_display_Red")
+
+    log(UI.getAttributes("overlay_site_card_display_Red"))
+    UI.setAttributes("overlay_district_card_display_Red", {width = "900", offsetXY = "50 75", rectAlignment = "LowerLeft", color="White"})
+    UI.setAttributes("overlay_site_card_display_Red", {width = "900", offsetXY = "-50 125", rectAlignment = "LowerRight", color="White"})
+
+
+
+    == PROCEDURE: ACTIVATING THE BLINDFOLD ==
+    UI.setAttribute("playerHud_overlay_blindfold_Red", "active", "false") -- initialize the parent container to inactive
+    UI.setAttributes("overlay_blindfold_26_Red", {active = "true"}) -- initialize the randomly-chosen child image to `active = "true"`
+
+    IF WE ARE TRANSITIONING TO A LOCATION (i.e. DISTRICT + SITE), THEN::
+    UI.setAttributes("overlay_district_card_display_Red", {active = "true", color = "White", image = "districtCard_Annex"}) -- initialize the district card to `active = "true" and color = "White", then set the image to the appropriate location district
+    UI.setAttributes("overlay_site_card_display_Red", {active = "true", color = "White", image = "siteCard_BillyBishopAirport"}) -- initialize the site card to `active = "true" and color = "White", then set the image to the appropriate location site
+
+    OTHERWISE:
+    UI.setAttributes("overlay_district_card_display_Red", {active = "false", color = "Clear", image = ""}) -- initialize the district card to `active = "false", color = "Clear", image = ""`
+    UI.setAttributes("overlay_site_card_display_Red", {active = "false", color = "Clear", image = ""}) -- initialize the site card to `active = "false", color = "Clear", image = ""`
+
+    FINALLY:
+    UI.show("playerHud_overlay_blindfold_Red") -- call UI.show() ONCE, on the parent container only, AFTER ALL CHILD ELEMENTS HAVE BEEN INITIALIZED
+
+    == PROCEDURE: DEACTIVATING THE BLINDFOLD ==
+    UI.hide("playerHud_overlay_blindfold_Red") -- call UI.hide() ONCE, on the parent container only. No further steps need to be taken after this call.
+
     -->

@@ -50,6 +50,11 @@ SkyboxesCatalog.Skyboxes = {
     display = "Evergreen Brick Works",
     url = "https://steamusercontent-a.akamaihd.net/ugc/16328211719702697223/990A8D31493DB9120836733D35C7A4B8833F3064/"
   },
+  Cemetery = {
+    key = "Cemetery",
+    display = "Cemetery",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/12361344958891184587/05F7D793DDFB718F9A5CFF37092B3B9C383895B8/"
+  },
   ChantryGrounds = {
     key = "ChantryGrounds",
     display = "The University Chantry: Grounds",
@@ -59,6 +64,11 @@ SkyboxesCatalog.Skyboxes = {
     key = "ChantryLibrary",
     display = "The University Chantry: Grand Library",
     url = "https://steamusercontent-a.akamaihd.net/ugc/12585711380481526842/1DB1DD135DC10EF6929755567A003045939515F6/"
+  },
+  ChantryThaumatorium = {
+    key = "ChantryThaumatorium",
+    display = "The University Chantry: Thaumatorium",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/10642077768531862632/F171447723BE7A8841FA338F381A8AE8848743E4/"
   },
   CityApt1 = {
     key = "CityApt1",
@@ -75,6 +85,16 @@ SkyboxesCatalog.Skyboxes = {
     display = "City Park",
     url = "https://steamusercontent-a.akamaihd.net/ugc/14810892747457874521/B3DFB3CF2C6D12B8BC415F3851E0986E2E41869B/"
   },
+  CLDrawingRoom = {
+    key = "CLDrawingRoom",
+    display = "Casa Loma: Maximillian Steele Drawing Room",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/14656073304876597790/26C8E50B4E34E6384E765162F47CCE4E0029E4CF/"
+  },
+  CLGallery = {
+    key = "CLGallery",
+    display = "Casa Loma: Gallery of Mirrors",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/13748480684919234031/326C12B638D3F2459FE3C190A7C596CAC6DAA334/"
+  },
   CLGreatHall = {
     key = "CLGreatHall",
     display = "Casa Loma: Great Hall",
@@ -84,6 +104,26 @@ SkyboxesCatalog.Skyboxes = {
     key = "CLGrounds",
     display = "Casa Loma: Estate Grounds",
     url = "https://steamusercontent-a.akamaihd.net/ugc/17322423175365528513/A81A4E631E1F7B382D298833BE20F2EAC7AE1838/"
+  },
+  CLLibrary = {
+    key = "CLLibrary",
+    display = "Casa Loma: Tacettin Ayhan Library",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/12119415813032157798/A7C577988C4148CF4C1CAABC455C19CC710E3153/"
+  },
+  CLOverlook = {
+    key = "CLOverlook",
+    display = "Casa Loma: Overlook",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/10364465120281815606/D14000067017A59CF40DFE7F21F2E7C5C2FAE929/"
+  },
+  CLTerrace = {
+    key = "CLTerrace",
+    display = "Casa Loma: Moonlit Terrace",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/11556535864750492889/3289F151F9BA0B1671379454D1189279F5A90BE9/"
+  },
+  CLVestibule = {
+    key = "CLVestibule",
+    display = "Casa Loma: Vestibule",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/12987827468744451950/25955F77AA6DD35BB0DC34CFBAA8A05B39CFAFF5/"
   },
   CoachHouseEmbassy = {
     key = "CoachHouseEmbassy",
@@ -124,6 +164,11 @@ SkyboxesCatalog.Skyboxes = {
     key = "GEEstateGrounds",
     display = "The Giovanni Estate: Estate Grounds",
     url = "https://steamusercontent-a.akamaihd.net/ugc/12090593329288187480/84C0FED8F2B63FEB6468E7E8DBB41777F7470F95/"
+  },
+  GETowerRoom = {
+    key = "GETowerRoom",
+    display = "The Giovanni Estate: Tower Room",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/14771562377901716209/3251C42686823AE26D93E677ECDF9846747BFC4B/"
   },
   GraffitiAlley = {
     key = "GraffitiAlley",
@@ -215,20 +260,40 @@ SkyboxesCatalog.Skyboxes = {
     display = "Revelation House",
     url = "https://steamusercontent-a.akamaihd.net/ugc/18071453458681234942/25C5A31DF5B7926ECA10B3D35E205EC22947DE47/"
   },
+  ROMC5Lounge = {
+    key = "ROMC5Lounge",
+    display = "Royal Ontario Museum: C5 Lounge",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/10454717290819666996/E600EC3F7007623233C6FEF1F8921E56FFCA8FAA/"
+  },
   ROMHallOfExtinction = {
     key = "ROMHallOfExtinction",
     display = "Royal Ontario Museum: The Hall of Extinction",
     url = "https://steamusercontent-a.akamaihd.net/ugc/16743979326120796669/F5AFEA23E7929626C95CFABC872D057D9920DAD0/"
+  },
+  ROMLoadingZone = {
+    key = "ROMLoadingZone",
+    display = "Royal Ontario Museum: Bloor Street Loading Zone",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/13637776043539775402/D2F1AD293F4B7D3A771516E53669849CBBF91C69/"
   },
   ROMRotunda = {
     key = "ROMRotunda",
     display = "Royal Ontario Museum: Rotunda Mezzanine",
     url = "https://steamusercontent-a.akamaihd.net/ugc/16600672822010610291/DAAC0300972F6C5F52666E73FFB0D17570848791/"
   },
+  ROMSpiritHouse = {
+    key = "ROMSpiritHouse",
+    display = "Royal Ontario Museum: Spirit House",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/15323516500247138709/23CD87226F671F8B9A04EF9CA8F9E9355ACF58FB/"
+  },
   Rooftop = {
     key = "Rooftop",
     display = "Rooftop",
     url = "https://steamusercontent-a.akamaihd.net/ugc/13037688246790937124/6F623729D2DD26C75C8827F9221024C3DFCD1920/"
+  },
+  RunDownApt1 = {
+    key = "RunDownApt1",
+    display = "Run-Down Apartment",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/17549551933531122765/077C49384896BE68D4E6ACA07D72F67F8B717E1C/"
   },
   SecludedDeadEnd = {
     key = "SecludedDeadEnd",
@@ -265,10 +330,20 @@ SkyboxesCatalog.Skyboxes = {
     display = "St. Michael's Cathedral Basilica",
     url = "https://steamusercontent-a.akamaihd.net/ugc/17158291445512415236/1141146CFD6C8A2B146290EC0D5DC0409492872C/"
   },
+  StreetCorner1 = {
+    key = "StreetCorner1",
+    display = "Street Corner",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/13841376190981438875/7DC71BEE1156C7A4E5864A2F44C55F432B2226E3/"
+  },
   StRegisCouncilChamber = {
     key = "StRegisCouncilChamber",
     display = "The St. Regis Toronto: Council Chamber",
     url = "https://steamusercontent-a.akamaihd.net/ugc/12234799762012207874/2D1130537EB234F334382C1BA1D4E8A919D9D7A1/"
+  },
+  StRegisFoyer = {
+    key = "StRegisFoyer",
+    display = "The St. Regis Toronto: Foyer",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/14322149117036998501/47751DB78BBC8C6B6967BDCF9E620CEB69580CA9/"
   },
   StRegisGrandSalon = {
     key = "StRegisGrandSalon",
@@ -290,6 +365,16 @@ SkyboxesCatalog.Skyboxes = {
     display = "Subway Station",
     url = "https://steamusercontent-a.akamaihd.net/ugc/17170491252481600010/909A8E8D763330A40231382C469F0F2087C66E8D/"
   },
+  SubwayTunnels = {
+    key = "SubwayTunnels",
+    display = "Subway Tunnels",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/11535979796367245836/F47534B5C9DA45CCE5D5A6875D0C6E6E1C719626/"
+  },
+  Taxi = {
+    key = "Taxi",
+    display = "Taxi",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/13484869517735559031/F58C9E8CD1D2C99773FE76473EEFD04FFFE6858E/"
+  },
   TeteATete = {
     key = "TeteATete",
     display = "Tête-à-Tête Hair Atelier",
@@ -305,15 +390,40 @@ SkyboxesCatalog.Skyboxes = {
     display = "Toronto Police Service Headquarters",
     url = "https://steamusercontent-a.akamaihd.net/ugc/12981635375697177320/8736AC3F4A93E7BB224C5CC37C4310A4FB989169/"
   },
+  UnionConcourse = {
+    key = "UnionConcourse",
+    display = "Union Station: Bay St. Concourse",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/18008324009522825179/1D6162A8639FCDC7B91AF98329BE84F9CCBA9CDA/"
+  },
   UnionGrandClock = {
     key = "UnionGrandClock",
     display = "Union Station: Grand Clock",
     url = "https://steamusercontent-a.akamaihd.net/ugc/18072810140327563304/3A1B5F2287A4177F49EE2669CF01E787407F1EE1/"
   },
+  UnionLine1 = {
+    key = "UnionLine1",
+    display = "Union Station: Line 1",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/11658517891930326362/E7722DD41802CC1FF8C07B9F95A2BA1A6F589F45/"
+  },
+  UnionSecOffice = {
+    key = "UnionSecOffice",
+    display = "Union Station: Security Office",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/12034139125012218130/A26DFCD82BFAB999CE644369DC2AA75F114FC614/"
+  },
   UnionServiceCorridor = {
     key = "UnionServiceCorridor",
     display = "Union Station: Service Corridor",
     url = "https://steamusercontent-a.akamaihd.net/ugc/10907450321955205561/096CAB8F7CACC2EA66457CABB773EE3906B7FA7A/"
+  },
+  UnionUPExpress = {
+    key = "UnionUPExpress",
+    display = "Union Station: UP Express Platform",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/12224788177824580158/ABDEEA1464B0162041E501946173575553A1FA14/"
+  },
+  WarrensAntechamber = {
+    key = "WarrensAntechamber",
+    display = "The Nosferatu Warrens: Antechamber",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/14555875740175570437/7AC25B00AFE8B2F5767101D00AF6AEACC69F2A65/"
   },
   WarrensDrakes = {
     key = "WarrensDrakes",
@@ -324,6 +434,11 @@ SkyboxesCatalog.Skyboxes = {
     key = "WarrensLabyrinth",
     display = "The Nosferatu Warrens: Labyrinth",
     url = "https://steamusercontent-a.akamaihd.net/ugc/9807534811910580231/5A8F9F3F926AADA4F4CADD1E1416100C610483F4/"
+  },
+  WarrensSpawningPool = {
+    key = "WarrensSpawningPool",
+    display = "The Nosferatu Warrens: Spawning Pool",
+    url = "https://steamusercontent-a.akamaihd.net/ugc/18444022992114838216/8293AF8A3CA4657BF14CDF525CE60D5A1D532959/"
   },
   WarrensTunnelJunction = {
     key = "WarrensTunnelJunction",
