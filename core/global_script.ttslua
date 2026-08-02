@@ -813,6 +813,14 @@ local function restoreJoinXmlCustomAssetsBackup()
             restored[#restored + 1] = norm
         end
     end
+    -- Never call setCustomAssets({}) here — empty table clears the whole registry.
+    if #restored == 0 then
+        error(string.format(
+            "[JoinXmlAssets] Restore aborted: backup had %d entr%s but none normalized (name/url). Registry left unchanged.",
+            #backup,
+            #backup == 1 and "y" or "ies"
+        ))
+    end
     UI.setCustomAssets(restored)
     S.setStateVal(nil, "connectionControls", "joinXmlCustomAssetsBackup")
     print(string.format("[JoinXmlAssets] Restored %d CustomUIAssets from backup.", #restored))
