@@ -19,9 +19,8 @@ local S = require("core.state")
 local SESSION_START_HEAL_PANEL = "sessionStartHeal_panel"
 local HEAL_BROADCAST_HOLD_SEC = 6
 local INTERMISSION_THEME_FADE_SEC = 2
---- Intermission → Play Advance (TOR-361): Loop out, then Main in, then global blindfold.
-local INTERMISSION_TO_PLAY_FEATURED_FADE_SEC = 5
-local INTERMISSION_TO_PLAY_MAIN_FADE_SEC = 3
+--- Intermission → Play Advance (TOR-445): 5s Loop↔Main crossfade, then global blindfold.
+local INTERMISSION_TO_PLAY_CROSSFADE_SEC = 5
 
 --- Single in-flight top-level transition token.
 local advancing = false
@@ -297,42 +296,42 @@ function Phases.maybeEnableAssumePlayersConnectedForSoloHost(ctx)
     return true
 end
 
---- Fade Intermission TR_Loop out; does not start Main (no crossfade).
-function Phases.fadeOutIntermissionTheme(_ctx)
-    local Soundscape = require("core.soundscape")
-    local ok, msg = Soundscape.stopFeaturedMusic({
-        fadeSeconds = INTERMISSION_TO_PLAY_FEATURED_FADE_SEC,
-        resumeBackground = false,
-    })
-    if ok ~= true then
-        U.AlertGM("Intermission→Play theme fade-out: " .. tostring(msg or "stopFeaturedMusic failed"))
-    end
-    if type(Soundscape.commitEagerSteadyState) == "function" then
-        Soundscape.commitEagerSteadyState(ok == true)
-    end
-    return INTERMISSION_TO_PLAY_FEATURED_FADE_SEC
-end
-
---- After Loop silence: fade Main mood in over INTERMISSION_TO_PLAY_MAIN_FADE_SEC.
-function Phases.fadeInPlayMainTheme(_ctx)
+--- Intermission → Play: fade TR_Loop out and Main mood in together over INTERMISSION_TO_PLAY_CROSSFADE_SEC.
+--- Featured and background are separate emitter lanes, so both can run for the full window (TOR-445).
+--- @param _ctx table|nil
+--- @return number chain wait seconds
+function Phases.crossfadeIntermissionThemeToPlayMain(_ctx)
     local Soundscape = require("core.soundscape")
     local Scenes = require("core.scenes")
+    local sec = INTERMISSION_TO_PLAY_CROSSFADE_SEC
+
     if type(Soundscape.beginTransitionFadeWindow) == "function" then
-        Soundscape.beginTransitionFadeWindow(INTERMISSION_TO_PLAY_MAIN_FADE_SEC)
+        Soundscape.beginTransitionFadeWindow(sec)
     end
+
+    local okStop, stopMsg = Soundscape.stopFeaturedMusic({
+        fadeSeconds = sec,
+        resumeBackground = false,
+    })
+    if okStop ~= true then
+        U.AlertGM("Intermission→Play Loop fade-out: " .. tostring(stopMsg or "stopFeaturedMusic failed"))
+    end
+
     if type(Scenes.applyMainOnlySoundscape) == "function" then
         Scenes.applyMainOnlySoundscape()
     else
         S.setStateVal("main", "soundscape", "musicMood")
         Soundscape.setMusicMood("main")
     end
+
     if type(Soundscape.endTransitionFadeWindow) == "function" then
         Soundscape.endTransitionFadeWindow()
     end
     if type(Soundscape.commitEagerSteadyState) == "function" then
+        -- Main mood is the Play steady state; prime even if Loop stop logged a warning.
         Soundscape.commitEagerSteadyState(true)
     end
-    return INTERMISSION_TO_PLAY_MAIN_FADE_SEC
+    return sec
 end
 
 local function healAmountForPlayer(playerID)
@@ -452,19 +451,15 @@ Phases.onEnter[C.Phases.PLAY] = function(ctx)
             return Phases.showGlobalBlindfold(ctx)
         end,
         function()
-            -- World/lights first; Main ambient deferred until after Loop fade-out (TOR-361).
+            -- World/lights first; Main ambient crossfades with Loop in the next step (TOR-445).
             return Phases.applyNoSceneDefault(ctx, {
                 reason = "phase_play_enter",
                 skipSoundscape = true,
             })
         end,
         function()
-            -- Start 5s Loop fade-out; U.chain waits on this return before Main fade-in.
-            return Phases.fadeOutIntermissionTheme(ctx)
-        end,
-        function()
-            -- Start 3s Main fade-in; U.chain waits on this return before blindfold lift.
-            return Phases.fadeInPlayMainTheme(ctx)
+            -- 5s Loop out + Main in together; U.chain waits once before blindfold lift.
+            return Phases.crossfadeIntermissionThemeToPlayMain(ctx)
         end,
         function()
             return Phases.hideGlobalBlindfold(ctx)

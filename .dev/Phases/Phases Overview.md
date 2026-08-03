@@ -13,7 +13,7 @@ Source of truth:
 
 Verification:
 - Save & Play → Host Phases panel → **Advance →** (panel closes immediately) through Intermission → Play → Spotlight → End → Intermission
-- Confirm Intermission dark lights + theme + **global blindfold shown**; Play: Loop fades 5s → Main fades in 3s → then global blindfold lifts; no-scene overlay (blank clock, weather hidden, correct session roman) + heal broadcast when applicable
+- Confirm Intermission dark lights + theme + **global blindfold shown**; Play: 5s Loop↔Main crossfade → then global blindfold lifts; no-scene overlay (blank clock, weather hidden, correct session roman) + heal broadcast when applicable
 - Solo Host verified only until **TOR-144** (multiplayer E2E) — multiclient connect blindfold + Advance replication: [Multiclient Session Script](../E2E%20Playbooks/Multiplayer-Session.md) (A4, B0, D1)
 
 Status: current (TOR-143 / TOR-361 / TOR-362)
@@ -22,7 +22,7 @@ Status: current (TOR-143 / TOR-361 / TOR-362)
 
 | Kind | XML | Phase system |
 | --- | --- | --- |
-| **Global blindfold** | `ui/shared/panel_overlay_global_blindfold.xml` (`overlay_globalBlindfold`, `active=true` by default) | **Yes** — hide on Play enter **after** Intermission→Play audio handoff (5s Loop out + 3s Main in); show on Intermission enter; connect during Intermission leaves it up; connect elsewhere hides it. **No** timed onLoad auto-hide. Show/hide are idempotent (TOR-398): no FadeIn when already up; hide sequences do not stack. |
+| **Global blindfold** | `ui/shared/panel_overlay_global_blindfold.xml` (`overlay_globalBlindfold`, `active=true` by default) | **Yes** — hide on Play enter **after** Intermission→Play audio handoff (5s Loop↔Main crossfade); show on Intermission enter; connect during Intermission leaves it up; connect elsewhere hides it. **No** timed onLoad auto-hide. Show/hide are idempotent (TOR-398): no FadeIn when already up; hide sequences do not stack. |
 | **Per-player transition blindfolds** | `ui/.templates/panel_overlay_blindfold.xml` → parent Panel `UI.show`/`UI.hide` via `core/hud_blindfold.ttslua` + `hud_overlays` (optional destination cards, TOR-425 / TOR-431) | **No** — scene/table transitions only |
 
 ## General Phase Structure
@@ -60,8 +60,8 @@ Ending events of the previous phase run before starting events of the new phase 
 
 * When advancing from Intermission with exactly one connected player who is the Host, auto-enable DEBUG **Assume Players Connected** before no-scene world apply (TOR-429 / TOR-293).
 * Detach any live library mirror, then apply "no scene" default (table/lights; soundscape deferred for staged handoff). Overlay: blank clock, weather hidden, session roman from `sessionNum` (TOR-362).
-* **Intermission → Play audio (TOR-361):** TR Loop fades out over **5s**, then Main mood fades in over **3s** (no crossfade).
-* Only after Main fade-in completes: global blindfold hidden (`overlay_globalBlindfold`). Competing auto-hide from `applyGlobalBlindfoldFromPhase` is suppressed while `Phases.isAdvancing()` (TOR-363).
+* **Intermission → Play audio (TOR-445):** TR Loop fades out and Main mood fades in together over **5s** (crossfade on separate emitter lanes; supersedes TOR-361 staged 5s+3s).
+* Only after that crossfade completes: global blindfold hidden (`overlay_globalBlindfold`). Competing auto-hide from `applyGlobalBlindfoldFromPhase` is suppressed while `Phases.isAdvancing()` (TOR-363).
 * All players heal Superficial Willpower equal to max(Resolve, Composure) (temp dots included); if anyone healed, show `session_start_heal_broadcast.xml` briefly.
 
 ### Ending Events: `PLAY`

@@ -293,6 +293,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Map pins invisible / Y-shifted after TOR-379:** Restore stack 1600 / 2100; keep sink soften; no LowerCenter; strip pin `preserveAspect` (default height 100% is part of `C.Sites` offset geometry). _(TOR-388)_
 - [x] **Phase system redesign:** Top-level `Intermission` → `Play` → `Spotlight` → `End` → Intermission; Play sub-phases `Main` / `Downtime` / `Memoriam`; trim PHASES panel; session lifecycle + `sessionNum` roman overlay; phase soundscape policy. Blocks **TOR-249**. _(TOR-143)_ _(Supersedes canceled TOR-90.)_
 - [x] **Intermission phase:** Absorbed into TOR-143 — dark lights + theme on enter; connect keeps blindfold up in Intermission; lowers on other phases / Play enter. Theme is looping `TR_Loop` @ 0.5 (**TOR-360**). Countdown timer optional TBD. _(TOR-319)_
+- [x] **Intermission→Play audio crossfade:** Loop out + Main in together over **5s**, then lift global blindfold (supersedes TOR-361 staged 5s+3s). Pending Save & Play. _(TOR-445)_
 - [x] **Session number + End exit:** Editable `sessionNum` on Phases panel + roman overlay; End exit increments + raises blindfolds (supersedes “stay in End” End Session button). Folded into **TOR-143**. _(TOR-263)_
 - [ ] **Scrolling viewbox:** Author experimenting in TTS on scroll-container height — no implementation until after tinkering. _(TOR-91)_
 - [x] **Sound panel UI trim + larger text:** Remove excess instructional copy; increase Text element font size. Author confirmed 2026-07-19. _(TOR-140)_

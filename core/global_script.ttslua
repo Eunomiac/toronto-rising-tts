@@ -533,7 +533,7 @@ end
 
 --- Global blindfold follows phase: visible in Intermission; hidden otherwise (TOR-143 / TOR-319).
 --- While a top-level phase Advance is in flight, do not auto-hide — Play enter owns the delayed
---- lift after Intermission→Play audio (5s Loop out + 3s Main in). Auto-show for Intermission is OK.
+--- lift after Intermission→Play audio (5s Loop↔Main crossfade). Auto-show for Intermission is OK.
 local function applyGlobalBlindfoldFromPhase()
     local phase = S.getStateVal("currentPhase")
     if phase == nil or phase == C.Phases.INTERMISSION then
