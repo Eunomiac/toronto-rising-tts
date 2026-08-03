@@ -719,6 +719,8 @@ local function applyPrincesCourtPageVisibility(seatColor, showPanel, page)
             aud[seatColor] = nil
         end
         U.setVisibleTo(panelId, audienceSetToTokens(aud))
+        -- UI.hide is only for an empty union (no remaining viewers). Do not hide when this
+        -- seat left the page but others still have it in `aud` (concurrent different spreads).
         if audienceSetNonEmpty(aud) then
             setActive(panelId, true)
             if show and type(UI.show) == "function" then
