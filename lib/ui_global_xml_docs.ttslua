@@ -869,8 +869,7 @@ M.full = [=[
     showAnimation="FadeIn"
     hideAnimation="FadeOut"
     animationDuration="1"
-    showAnimationDelay="1"
-    hideAnimationDelay = "0.5"
+    showAnimationDelay="4"
     active = "false"
     image = ""
     color = "clear"
@@ -884,7 +883,7 @@ M.full = [=[
     showAnimation="FadeIn"
     hideAnimation="FadeOut"
     animationDuration="1"
-    showAnimationDelay="1.5"
+    showAnimationDelay="4.5"
     active = "false"
     image = ""
     color = "clear"
@@ -3366,7 +3365,6 @@ prettyPrintTable(draggableData, "draggableData")
   class="playerHud_rightSidebar"
 >
   <Panel class="hover_button_panel_container">
-    <!-- Base layer: 750 = (50+150+50)+(50+180+50)+(50+120+50) -->
     <VerticalLayout class="hover_button_panel hover_button_panel_right">
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
@@ -3512,182 +3510,6 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
     </VerticalLayout>
-
-    <VerticalLayout class="hover_button_panel hover_button_panel_right" height="750">
-      <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
-      <Image
-        id="playerHud_RSidebarBtn_core_map_Brown_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_CorePanel_Map_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_princesCourt_Brown_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_PrincesCourt_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_coteries_Brown_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Coteries_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_chronicleTenets_Brown_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_ChronicleTenets_hover"
-      />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
-
-          <Text class="spacer_20" preferredHeight="30"/>
-      <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
-      <Image
-        id="playerHud_RSidebarBtn_ref_rolls_Brown_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Rolls_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_physicalCombat_Brown_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_PhysicalCombat_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_socialCombat_Brown_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_SocialCombat_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_threats_Brown_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Threats_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_frenzy_Brown_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Frenzy_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_recovery_Brown_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Recovery_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_resonance_Brown_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Resonance_hover"
-      />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
-
-          <Text class="spacer_20" preferredHeight="30"/>
-      <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
-      <Image
-        id="playerHud_RSidebarBtn_ref_experience_Brown_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Experience_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_advantages_Brown_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Advantages_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_projects_Brown_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Projects_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_memoriam_Brown_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Memoriam_hover"
-      />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
-    </VerticalLayout>
-
-    <VerticalLayout class="hover_button_panel hover_button_panel_right  hover_button_panel_wide" height="750">
-      <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
-      <Image
-        id="playerHud_RSidebarBtn_core_map_Brown_active"
-        class="hover_button hover_button_wide hover_button_active"
-        image="toggle_CorePanel_Map_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_princesCourt_Brown_active"
-        class="hover_button hover_button_wide hover_button_active"
-        image="toggle_PrincesCourt_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_coteries_Brown_active"
-        class="hover_button hover_button_wide hover_button_active"
-        image="toggle_Coteries_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_chronicleTenets_Brown_active"
-        class="hover_button hover_button_active"
-        image="toggle_ChronicleTenets_active"
-      />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
-
-          <Text class="spacer_20" preferredHeight="30"/>
-      <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
-      <Image
-        id="playerHud_RSidebarBtn_ref_rolls_Brown_active"
-        class="hover_button hover_button_active"
-        image="toggle_Rolls_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_physicalCombat_Brown_active"
-        class="hover_button hover_button_active"
-        image="toggle_PhysicalCombat_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_socialCombat_Brown_active"
-        class="hover_button hover_button_active"
-        image="toggle_SocialCombat_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_threats_Brown_active"
-        class="hover_button hover_button_active"
-        image="toggle_Threats_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_frenzy_Brown_active"
-        class="hover_button hover_button_active"
-        image="toggle_Frenzy_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_recovery_Brown_active"
-        class="hover_button hover_button_active"
-        image="toggle_Recovery_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_resonance_Brown_active"
-        class="hover_button hover_button_active"
-        image="toggle_Resonance_active"
-      />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
-
-          <Text class="spacer_20" preferredHeight="30"/>
-      <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
-      <Image
-        id="playerHud_RSidebarBtn_ref_experience_Brown_active"
-        class="hover_button hover_button_active"
-        image="toggle_Experience_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_advantages_Brown_active"
-        class="hover_button hover_button_active"
-        image="toggle_Advantages_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_projects_Brown_active"
-        class="hover_button hover_button_active"
-        image="toggle_Projects_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_memoriam_Brown_active"
-        class="hover_button hover_button_active"
-        image="toggle_Memoriam_active"
-      />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
-    </VerticalLayout>
   </Panel>
 </Panel>
 
@@ -3697,7 +3519,6 @@ prettyPrintTable(draggableData, "draggableData")
   class="playerHud_rightSidebar"
 >
   <Panel class="hover_button_panel_container">
-    <!-- Base layer: 750 = (50+150+50)+(50+180+50)+(50+120+50) -->
     <VerticalLayout class="hover_button_panel hover_button_panel_right">
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
@@ -3843,182 +3664,6 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
     </VerticalLayout>
-
-    <VerticalLayout class="hover_button_panel hover_button_panel_right" height="750">
-      <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
-      <Image
-        id="playerHud_RSidebarBtn_core_map_Orange_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_CorePanel_Map_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_princesCourt_Orange_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_PrincesCourt_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_coteries_Orange_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Coteries_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_chronicleTenets_Orange_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_ChronicleTenets_hover"
-      />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
-
-          <Text class="spacer_20" preferredHeight="30"/>
-      <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
-      <Image
-        id="playerHud_RSidebarBtn_ref_rolls_Orange_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Rolls_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_physicalCombat_Orange_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_PhysicalCombat_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_socialCombat_Orange_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_SocialCombat_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_threats_Orange_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Threats_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_frenzy_Orange_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Frenzy_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_recovery_Orange_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Recovery_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_resonance_Orange_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Resonance_hover"
-      />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
-
-          <Text class="spacer_20" preferredHeight="30"/>
-      <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
-      <Image
-        id="playerHud_RSidebarBtn_ref_experience_Orange_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Experience_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_advantages_Orange_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Advantages_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_projects_Orange_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Projects_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_memoriam_Orange_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Memoriam_hover"
-      />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
-    </VerticalLayout>
-
-    <VerticalLayout class="hover_button_panel hover_button_panel_right  hover_button_panel_wide" height="750">
-      <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
-      <Image
-        id="playerHud_RSidebarBtn_core_map_Orange_active"
-        class="hover_button hover_button_wide hover_button_active"
-        image="toggle_CorePanel_Map_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_princesCourt_Orange_active"
-        class="hover_button hover_button_wide hover_button_active"
-        image="toggle_PrincesCourt_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_coteries_Orange_active"
-        class="hover_button hover_button_wide hover_button_active"
-        image="toggle_Coteries_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_chronicleTenets_Orange_active"
-        class="hover_button hover_button_active"
-        image="toggle_ChronicleTenets_active"
-      />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
-
-          <Text class="spacer_20" preferredHeight="30"/>
-      <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
-      <Image
-        id="playerHud_RSidebarBtn_ref_rolls_Orange_active"
-        class="hover_button hover_button_active"
-        image="toggle_Rolls_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_physicalCombat_Orange_active"
-        class="hover_button hover_button_active"
-        image="toggle_PhysicalCombat_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_socialCombat_Orange_active"
-        class="hover_button hover_button_active"
-        image="toggle_SocialCombat_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_threats_Orange_active"
-        class="hover_button hover_button_active"
-        image="toggle_Threats_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_frenzy_Orange_active"
-        class="hover_button hover_button_active"
-        image="toggle_Frenzy_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_recovery_Orange_active"
-        class="hover_button hover_button_active"
-        image="toggle_Recovery_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_resonance_Orange_active"
-        class="hover_button hover_button_active"
-        image="toggle_Resonance_active"
-      />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
-
-          <Text class="spacer_20" preferredHeight="30"/>
-      <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
-      <Image
-        id="playerHud_RSidebarBtn_ref_experience_Orange_active"
-        class="hover_button hover_button_active"
-        image="toggle_Experience_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_advantages_Orange_active"
-        class="hover_button hover_button_active"
-        image="toggle_Advantages_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_projects_Orange_active"
-        class="hover_button hover_button_active"
-        image="toggle_Projects_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_memoriam_Orange_active"
-        class="hover_button hover_button_active"
-        image="toggle_Memoriam_active"
-      />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
-    </VerticalLayout>
   </Panel>
 </Panel>
 
@@ -4028,7 +3673,6 @@ prettyPrintTable(draggableData, "draggableData")
   class="playerHud_rightSidebar"
 >
   <Panel class="hover_button_panel_container">
-    <!-- Base layer: 750 = (50+150+50)+(50+180+50)+(50+120+50) -->
     <VerticalLayout class="hover_button_panel hover_button_panel_right">
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
@@ -4174,182 +3818,6 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
     </VerticalLayout>
-
-    <VerticalLayout class="hover_button_panel hover_button_panel_right" height="750">
-      <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
-      <Image
-        id="playerHud_RSidebarBtn_core_map_Red_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_CorePanel_Map_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_princesCourt_Red_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_PrincesCourt_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_coteries_Red_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Coteries_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_chronicleTenets_Red_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_ChronicleTenets_hover"
-      />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
-
-          <Text class="spacer_20" preferredHeight="30"/>
-      <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
-      <Image
-        id="playerHud_RSidebarBtn_ref_rolls_Red_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Rolls_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_physicalCombat_Red_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_PhysicalCombat_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_socialCombat_Red_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_SocialCombat_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_threats_Red_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Threats_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_frenzy_Red_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Frenzy_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_recovery_Red_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Recovery_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_resonance_Red_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Resonance_hover"
-      />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
-
-          <Text class="spacer_20" preferredHeight="30"/>
-      <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
-      <Image
-        id="playerHud_RSidebarBtn_ref_experience_Red_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Experience_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_advantages_Red_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Advantages_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_projects_Red_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Projects_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_memoriam_Red_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Memoriam_hover"
-      />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
-    </VerticalLayout>
-
-    <VerticalLayout class="hover_button_panel hover_button_panel_right  hover_button_panel_wide" height="750">
-      <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
-      <Image
-        id="playerHud_RSidebarBtn_core_map_Red_active"
-        class="hover_button hover_button_wide hover_button_active"
-        image="toggle_CorePanel_Map_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_princesCourt_Red_active"
-        class="hover_button hover_button_wide hover_button_active"
-        image="toggle_PrincesCourt_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_coteries_Red_active"
-        class="hover_button hover_button_wide hover_button_active"
-        image="toggle_Coteries_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_chronicleTenets_Red_active"
-        class="hover_button hover_button_active"
-        image="toggle_ChronicleTenets_active"
-      />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
-
-          <Text class="spacer_20" preferredHeight="30"/>
-      <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
-      <Image
-        id="playerHud_RSidebarBtn_ref_rolls_Red_active"
-        class="hover_button hover_button_active"
-        image="toggle_Rolls_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_physicalCombat_Red_active"
-        class="hover_button hover_button_active"
-        image="toggle_PhysicalCombat_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_socialCombat_Red_active"
-        class="hover_button hover_button_active"
-        image="toggle_SocialCombat_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_threats_Red_active"
-        class="hover_button hover_button_active"
-        image="toggle_Threats_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_frenzy_Red_active"
-        class="hover_button hover_button_active"
-        image="toggle_Frenzy_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_recovery_Red_active"
-        class="hover_button hover_button_active"
-        image="toggle_Recovery_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_resonance_Red_active"
-        class="hover_button hover_button_active"
-        image="toggle_Resonance_active"
-      />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
-
-          <Text class="spacer_20" preferredHeight="30"/>
-      <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
-      <Image
-        id="playerHud_RSidebarBtn_ref_experience_Red_active"
-        class="hover_button hover_button_active"
-        image="toggle_Experience_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_advantages_Red_active"
-        class="hover_button hover_button_active"
-        image="toggle_Advantages_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_projects_Red_active"
-        class="hover_button hover_button_active"
-        image="toggle_Projects_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_memoriam_Red_active"
-        class="hover_button hover_button_active"
-        image="toggle_Memoriam_active"
-      />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
-    </VerticalLayout>
   </Panel>
 </Panel>
 
@@ -4359,7 +3827,6 @@ prettyPrintTable(draggableData, "draggableData")
   class="playerHud_rightSidebar"
 >
   <Panel class="hover_button_panel_container">
-    <!-- Base layer: 750 = (50+150+50)+(50+180+50)+(50+120+50) -->
     <VerticalLayout class="hover_button_panel hover_button_panel_right">
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
@@ -4505,182 +3972,6 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
     </VerticalLayout>
-
-    <VerticalLayout class="hover_button_panel hover_button_panel_right" height="750">
-      <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
-      <Image
-        id="playerHud_RSidebarBtn_core_map_Pink_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_CorePanel_Map_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_princesCourt_Pink_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_PrincesCourt_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_coteries_Pink_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Coteries_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_chronicleTenets_Pink_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_ChronicleTenets_hover"
-      />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
-
-          <Text class="spacer_20" preferredHeight="30"/>
-      <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
-      <Image
-        id="playerHud_RSidebarBtn_ref_rolls_Pink_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Rolls_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_physicalCombat_Pink_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_PhysicalCombat_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_socialCombat_Pink_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_SocialCombat_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_threats_Pink_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Threats_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_frenzy_Pink_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Frenzy_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_recovery_Pink_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Recovery_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_resonance_Pink_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Resonance_hover"
-      />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
-
-          <Text class="spacer_20" preferredHeight="30"/>
-      <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
-      <Image
-        id="playerHud_RSidebarBtn_ref_experience_Pink_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Experience_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_advantages_Pink_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Advantages_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_projects_Pink_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Projects_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_memoriam_Pink_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Memoriam_hover"
-      />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
-    </VerticalLayout>
-
-    <VerticalLayout class="hover_button_panel hover_button_panel_right  hover_button_panel_wide" height="750">
-      <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
-      <Image
-        id="playerHud_RSidebarBtn_core_map_Pink_active"
-        class="hover_button hover_button_wide hover_button_active"
-        image="toggle_CorePanel_Map_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_princesCourt_Pink_active"
-        class="hover_button hover_button_wide hover_button_active"
-        image="toggle_PrincesCourt_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_coteries_Pink_active"
-        class="hover_button hover_button_wide hover_button_active"
-        image="toggle_Coteries_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_chronicleTenets_Pink_active"
-        class="hover_button hover_button_active"
-        image="toggle_ChronicleTenets_active"
-      />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
-
-          <Text class="spacer_20" preferredHeight="30"/>
-      <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
-      <Image
-        id="playerHud_RSidebarBtn_ref_rolls_Pink_active"
-        class="hover_button hover_button_active"
-        image="toggle_Rolls_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_physicalCombat_Pink_active"
-        class="hover_button hover_button_active"
-        image="toggle_PhysicalCombat_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_socialCombat_Pink_active"
-        class="hover_button hover_button_active"
-        image="toggle_SocialCombat_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_threats_Pink_active"
-        class="hover_button hover_button_active"
-        image="toggle_Threats_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_frenzy_Pink_active"
-        class="hover_button hover_button_active"
-        image="toggle_Frenzy_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_recovery_Pink_active"
-        class="hover_button hover_button_active"
-        image="toggle_Recovery_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_resonance_Pink_active"
-        class="hover_button hover_button_active"
-        image="toggle_Resonance_active"
-      />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
-
-          <Text class="spacer_20" preferredHeight="30"/>
-      <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
-      <Image
-        id="playerHud_RSidebarBtn_ref_experience_Pink_active"
-        class="hover_button hover_button_active"
-        image="toggle_Experience_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_advantages_Pink_active"
-        class="hover_button hover_button_active"
-        image="toggle_Advantages_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_projects_Pink_active"
-        class="hover_button hover_button_active"
-        image="toggle_Projects_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_memoriam_Pink_active"
-        class="hover_button hover_button_active"
-        image="toggle_Memoriam_active"
-      />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
-    </VerticalLayout>
   </Panel>
 </Panel>
 
@@ -4690,7 +3981,6 @@ prettyPrintTable(draggableData, "draggableData")
   class="playerHud_rightSidebar"
 >
   <Panel class="hover_button_panel_container">
-    <!-- Base layer: 750 = (50+150+50)+(50+180+50)+(50+120+50) -->
     <VerticalLayout class="hover_button_panel hover_button_panel_right">
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
@@ -4835,182 +4125,6 @@ prettyPrintTable(draggableData, "draggableData")
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
       <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
-    </VerticalLayout>
-
-    <VerticalLayout class="hover_button_panel hover_button_panel_right" height="750">
-      <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
-      <Image
-        id="playerHud_RSidebarBtn_core_map_Purple_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_CorePanel_Map_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_princesCourt_Purple_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_PrincesCourt_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_coteries_Purple_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Coteries_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_chronicleTenets_Purple_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_ChronicleTenets_hover"
-      />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
-
-          <Text class="spacer_20" preferredHeight="30"/>
-      <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
-      <Image
-        id="playerHud_RSidebarBtn_ref_rolls_Purple_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Rolls_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_physicalCombat_Purple_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_PhysicalCombat_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_socialCombat_Purple_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_SocialCombat_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_threats_Purple_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Threats_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_frenzy_Purple_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Frenzy_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_recovery_Purple_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Recovery_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_resonance_Purple_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Resonance_hover"
-      />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
-
-          <Text class="spacer_20" preferredHeight="30"/>
-      <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
-      <Image
-        id="playerHud_RSidebarBtn_ref_experience_Purple_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Experience_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_advantages_Purple_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Advantages_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_projects_Purple_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Projects_hover"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_memoriam_Purple_hover"
-        class="hover_button hover_button_hover"
-        image="toggle_Memoriam_hover"
-      />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
-    </VerticalLayout>
-
-    <VerticalLayout class="hover_button_panel hover_button_panel_right  hover_button_panel_wide" height="750">
-      <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
-      <Image
-        id="playerHud_RSidebarBtn_core_map_Purple_active"
-        class="hover_button hover_button_wide hover_button_active"
-        image="toggle_CorePanel_Map_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_princesCourt_Purple_active"
-        class="hover_button hover_button_wide hover_button_active"
-        image="toggle_PrincesCourt_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_coteries_Purple_active"
-        class="hover_button hover_button_wide hover_button_active"
-        image="toggle_Coteries_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_chronicleTenets_Purple_active"
-        class="hover_button hover_button_active"
-        image="toggle_ChronicleTenets_active"
-      />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
-
-          <Text class="spacer_20" preferredHeight="30"/>
-      <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
-      <Image
-        id="playerHud_RSidebarBtn_ref_rolls_Purple_active"
-        class="hover_button hover_button_active"
-        image="toggle_Rolls_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_physicalCombat_Purple_active"
-        class="hover_button hover_button_active"
-        image="toggle_PhysicalCombat_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_socialCombat_Purple_active"
-        class="hover_button hover_button_active"
-        image="toggle_SocialCombat_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_threats_Purple_active"
-        class="hover_button hover_button_active"
-        image="toggle_Threats_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_frenzy_Purple_active"
-        class="hover_button hover_button_active"
-        image="toggle_Frenzy_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_recovery_Purple_active"
-        class="hover_button hover_button_active"
-        image="toggle_Recovery_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_resonance_Purple_active"
-        class="hover_button hover_button_active"
-        image="toggle_Resonance_active"
-      />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
-
-          <Text class="spacer_20" preferredHeight="30"/>
-      <Image class="hover_button_panel_border" image="border-gold-right-top" color="clear" />
-      <Image
-        id="playerHud_RSidebarBtn_ref_experience_Purple_active"
-        class="hover_button hover_button_active"
-        image="toggle_Experience_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_advantages_Purple_active"
-        class="hover_button hover_button_active"
-        image="toggle_Advantages_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_projects_Purple_active"
-        class="hover_button hover_button_active"
-        image="toggle_Projects_active"
-      />
-      <Image
-        id="playerHud_RSidebarBtn_ref_memoriam_Purple_active"
-        class="hover_button hover_button_active"
-        image="toggle_Memoriam_active"
-      />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" color="clear" />
     </VerticalLayout>
   </Panel>
 </Panel>
@@ -17472,7 +16586,12 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
   <Image id="overlay_blindfold_31_Brown" image="overlay_blindfold_31" class="player_overlay" />
   <Image id="overlay_blindfold_32_Brown" image="overlay_blindfold_32" class="player_overlay" />
 
-  <!-- Destination District/Site cards (TOR-425 / TOR-431): arm before parent UI.show when both keys resolve. -->
+  <!-- Destination District/Site cards (TOR-425 / TOR-431): arm before parent UI.show when both keys resolve.
+
+  UI.setAttributes("overlay_district_card_display_Brown", {showAnimationDelay = "4", animationDuration = "1"})
+  UI.setAttributes("overlay_site_card_display_Brown", {showAnimationDelay = "4.5", animationDuration = "1"})
+
+   -->
   <Image id="overlay_district_card_display_Brown" class="player_overlay_district_card_display" />
   <Image id="overlay_site_card_display_Brown" class="player_overlay_site_card_display" />
 </Panel>
@@ -17511,7 +16630,12 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
   <Image id="overlay_blindfold_31_Orange" image="overlay_blindfold_31" class="player_overlay" />
   <Image id="overlay_blindfold_32_Orange" image="overlay_blindfold_32" class="player_overlay" />
 
-  <!-- Destination District/Site cards (TOR-425 / TOR-431): arm before parent UI.show when both keys resolve. -->
+  <!-- Destination District/Site cards (TOR-425 / TOR-431): arm before parent UI.show when both keys resolve.
+
+  UI.setAttributes("overlay_district_card_display_Brown", {showAnimationDelay = "4", animationDuration = "1"})
+  UI.setAttributes("overlay_site_card_display_Brown", {showAnimationDelay = "4.5", animationDuration = "1"})
+
+   -->
   <Image id="overlay_district_card_display_Orange" class="player_overlay_district_card_display" />
   <Image id="overlay_site_card_display_Orange" class="player_overlay_site_card_display" />
 </Panel>
@@ -17550,7 +16674,12 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
   <Image id="overlay_blindfold_31_Red" image="overlay_blindfold_31" class="player_overlay" />
   <Image id="overlay_blindfold_32_Red" image="overlay_blindfold_32" class="player_overlay" />
 
-  <!-- Destination District/Site cards (TOR-425 / TOR-431): arm before parent UI.show when both keys resolve. -->
+  <!-- Destination District/Site cards (TOR-425 / TOR-431): arm before parent UI.show when both keys resolve.
+
+  UI.setAttributes("overlay_district_card_display_Brown", {showAnimationDelay = "4", animationDuration = "1"})
+  UI.setAttributes("overlay_site_card_display_Brown", {showAnimationDelay = "4.5", animationDuration = "1"})
+
+   -->
   <Image id="overlay_district_card_display_Red" class="player_overlay_district_card_display" />
   <Image id="overlay_site_card_display_Red" class="player_overlay_site_card_display" />
 </Panel>
@@ -17589,7 +16718,12 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
   <Image id="overlay_blindfold_31_Pink" image="overlay_blindfold_31" class="player_overlay" />
   <Image id="overlay_blindfold_32_Pink" image="overlay_blindfold_32" class="player_overlay" />
 
-  <!-- Destination District/Site cards (TOR-425 / TOR-431): arm before parent UI.show when both keys resolve. -->
+  <!-- Destination District/Site cards (TOR-425 / TOR-431): arm before parent UI.show when both keys resolve.
+
+  UI.setAttributes("overlay_district_card_display_Brown", {showAnimationDelay = "4", animationDuration = "1"})
+  UI.setAttributes("overlay_site_card_display_Brown", {showAnimationDelay = "4.5", animationDuration = "1"})
+
+   -->
   <Image id="overlay_district_card_display_Pink" class="player_overlay_district_card_display" />
   <Image id="overlay_site_card_display_Pink" class="player_overlay_site_card_display" />
 </Panel>
@@ -17628,7 +16762,12 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
   <Image id="overlay_blindfold_31_Purple" image="overlay_blindfold_31" class="player_overlay" />
   <Image id="overlay_blindfold_32_Purple" image="overlay_blindfold_32" class="player_overlay" />
 
-  <!-- Destination District/Site cards (TOR-425 / TOR-431): arm before parent UI.show when both keys resolve. -->
+  <!-- Destination District/Site cards (TOR-425 / TOR-431): arm before parent UI.show when both keys resolve.
+
+  UI.setAttributes("overlay_district_card_display_Brown", {showAnimationDelay = "4", animationDuration = "1"})
+  UI.setAttributes("overlay_site_card_display_Brown", {showAnimationDelay = "4.5", animationDuration = "1"})
+
+   -->
   <Image id="overlay_district_card_display_Purple" class="player_overlay_district_card_display" />
   <Image id="overlay_site_card_display_Purple" class="player_overlay_site_card_display" />
 </Panel>
@@ -17649,7 +16788,7 @@ UI.show("overlay_globalBlindfold")
 
 <!--
 UI.hide("overlay_globalBlindfold")
-UI.setAttributes("overlay_globalBlindfold", {height = "1200"})
+UI.setAttributes("overlay_globalBlindfold", {color = "rgba(1, 1, 1, 0.25)"})
 -->
 
 <Image id="overlay_globalBlindfold"
@@ -24388,7 +23527,7 @@ UI.show("overlay_globalBlindfold")
 
 <!--
 UI.hide("overlay_globalBlindfold")
-UI.setAttributes("overlay_globalBlindfold", {height = "1200"})
+UI.setAttributes("overlay_globalBlindfold", {color = "rgba(1, 1, 1, 0.25)"})
 -->
 
 <Image id="overlay_globalBlindfold"

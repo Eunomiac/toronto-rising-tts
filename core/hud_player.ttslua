@@ -782,14 +782,74 @@ function HUDP.reconcileAllPrincesCourtTrackers()
     end
 end
 
---- Sets right-sidebar overlay Image visibility: `color` only (`active` stays true in XML).
--- @param elementID string
--- @param isVisible boolean
-local function setSidebarOverlay(elementID, isVisible)
+--- Sets right-sidebar button chrome via XmlUI `color` on the base Image (TOR-444).
+-- Priority: active > hover > idle. No `_hover` / `_active` sibling Images.
+local SIDEBAR_BTN_COLOR_IDLE = "#FFFFFF"
+local SIDEBAR_BTN_COLOR_HOVER = "#FFD27A"
+local SIDEBAR_BTN_COLOR_ACTIVE = "#FFE8A8"
+local lastSidebarBtnColorById = {}
+
+--- @param elementID string base button id (no _hover/_active suffix)
+--- @param isActive boolean
+--- @param isHovered boolean
+local function applySidebarButtonChrome(elementID, isActive, isHovered)
     if type(elementID) ~= "string" then
         return
     end
-    U.setAttribute(elementID, "color", isVisible and "#FFFFFF" or "clear")
+    local color = SIDEBAR_BTN_COLOR_IDLE
+    if isActive == true then
+        color = SIDEBAR_BTN_COLOR_ACTIVE
+    elseif isHovered == true then
+        color = SIDEBAR_BTN_COLOR_HOVER
+    end
+    if lastSidebarBtnColorById[elementID] == color then
+        return
+    end
+    lastSidebarBtnColorById[elementID] = color
+    U.setAttribute(elementID, "color", color)
+end
+
+--- Whether a right-sidebar base button id is in the "active" chrome state for this seat.
+-- @param playerID string
+-- @param seatColor string|nil
+-- @param baseId string
+-- @return boolean
+local function sidebarButtonIsActive(playerID, seatColor, baseId)
+    if type(playerID) ~= "string" or type(baseId) ~= "string" or type(seatColor) ~= "string" then
+        return false
+    end
+    local pData = S.getPlayerData and S.getPlayerData(playerID) or nil
+    if type(pData) ~= "table" or type(pData.hud) ~= "table" then
+        return false
+    end
+    local hud = pData.hud
+    local ref = hud.reference
+    if baseId == ("playerHud_RSidebarBtn_core_map_" .. seatColor) then
+        return hud.activeCorePanel == "map"
+    end
+    if type(ref) ~= "table" then
+        return false
+    end
+    local tempRefKey = tempHoldRefByPlayerID[playerID]
+    local showRefKey = nil
+    if type(tempRefKey) == "string" then
+        showRefKey = tempRefKey
+    elseif type(ref.coteries) == "table" then
+        showRefKey = "coteries"
+    elseif type(ref.princesCourt) == "table" then
+        showRefKey = "princesCourt"
+    else
+        for k, _ in pairs(NESTEDLESS_REF_KEYS) do
+            if ref[k] == true then
+                showRefKey = k
+                break
+            end
+        end
+    end
+    if type(showRefKey) ~= "string" then
+        return false
+    end
+    return baseId == ("playerHud_RSidebarBtn_ref_" .. showRefKey .. "_" .. seatColor)
 end
 
 --- Map / sidebar stacked Image tint: visible vs hidden (`color` only; `active` is XML-owned).
@@ -1310,28 +1370,15 @@ function HUDP.updatePlayerUI(player, color)
         setActive("playerHud_refPanel_" .. refKey .. "_" .. seatColor, showRefKey == refKey)
     end
 
-    -- Right Sidebar active overlays (mirror showRefKey)
-    -- Ensure hover/active overlay elements always occupy layout space.
-    -- (We hide via `color="clear"` instead of toggling `active="false"`.)
-    setSidebarOverlay("playerHud_RSidebarBtn_core_map_" .. seatColor .. "_hover", currentHoverBaseId == ("playerHud_RSidebarBtn_core_map_" .. seatColor))
-    setSidebarOverlay("playerHud_RSidebarBtn_core_sheet_" .. seatColor .. "_hover", currentHoverBaseId == ("playerHud_RSidebarBtn_core_sheet_" .. seatColor))
-
-    setSidebarOverlay("playerHud_RSidebarBtn_ref_coteries_" .. seatColor .. "_hover", currentHoverBaseId == ("playerHud_RSidebarBtn_ref_coteries_" .. seatColor))
-    setSidebarOverlay("playerHud_RSidebarBtn_ref_princesCourt_" .. seatColor .. "_hover", currentHoverBaseId == ("playerHud_RSidebarBtn_ref_princesCourt_" .. seatColor))
-    for refKey, _ in pairs(NESTEDLESS_REF_KEYS) do
-        setSidebarOverlay("playerHud_RSidebarBtn_ref_" .. refKey .. "_" .. seatColor .. "_hover",
-            currentHoverBaseId == ("playerHud_RSidebarBtn_ref_" .. refKey .. "_" .. seatColor))
+    -- Right sidebar chrome: tint base Images (active > hover > idle). TOR-444.
+    local function chrome(baseId, isActive)
+        applySidebarButtonChrome(baseId, isActive == true, currentHoverBaseId == baseId)
     end
-
-    -- Active overlays reflect currently-visible core/reference panels.
-    setSidebarOverlay("playerHud_RSidebarBtn_core_map_" .. seatColor .. "_active", hud.activeCorePanel == "map")
-    setSidebarOverlay("playerHud_RSidebarBtn_core_sheet_" .. seatColor .. "_active", hud.activeCorePanel == "sheet")
-
-    setSidebarOverlay("playerHud_RSidebarBtn_ref_coteries_" .. seatColor .. "_active", showRefKey == "coteries")
-    setSidebarOverlay("playerHud_RSidebarBtn_ref_princesCourt_" .. seatColor .. "_active", showRefKey == "princesCourt")
-
+    chrome("playerHud_RSidebarBtn_core_map_" .. seatColor, hud.activeCorePanel == "map")
+    chrome("playerHud_RSidebarBtn_ref_coteries_" .. seatColor, showRefKey == "coteries")
+    chrome("playerHud_RSidebarBtn_ref_princesCourt_" .. seatColor, showRefKey == "princesCourt")
     for refKey, _ in pairs(NESTEDLESS_REF_KEYS) do
-        setSidebarOverlay("playerHud_RSidebarBtn_ref_" .. refKey .. "_" .. seatColor .. "_active", showRefKey == refKey)
+        chrome("playerHud_RSidebarBtn_ref_" .. refKey .. "_" .. seatColor, showRefKey == refKey)
     end
 
     -- Coterie popup images (only when coteries panel is visible)
@@ -1597,30 +1644,30 @@ function HUD_locationOverlay_hoverOff(player, value, id)
     U.setAttributes("popout_locationPanel_" .. seat, { color = CAMERA_ALPHA_CONTROL_RGBA_IDLE })
 end
 
---- Hover on: show the sidebar button hover layer.
+--- Hover on: tint the sidebar base button (TOR-444; no _hover sibling Image).
 function HUD_playerRightSidebar_hoverOn(player, value, id)
     if type(id) ~= "string" then
         return
     end
-    local playerID, _ = getPlayerIDAndColor(player)
+    local playerID, color = getPlayerIDAndColor(player)
     if type(playerID) ~= "string" then
         return
     end
     currentHoverBaseIdByPlayerID[playerID] = id
-    setSidebarOverlay(id .. "_hover", true)
+    applySidebarButtonChrome(id, sidebarButtonIsActive(playerID, color, id), true)
 end
 
---- Hover off: hide the sidebar button hover layer.
+--- Hover off: restore idle/active tint from HUD state.
 function HUD_playerRightSidebar_hoverOff(player, value, id)
     if type(id) ~= "string" then
         return
     end
-    local playerID, _ = getPlayerIDAndColor(player)
+    local playerID, color = getPlayerIDAndColor(player)
     if type(playerID) ~= "string" then
         return
     end
     currentHoverBaseIdByPlayerID[playerID] = nil
-    setSidebarOverlay(id .. "_hover", false)
+    applySidebarButtonChrome(id, sidebarButtonIsActive(playerID, color, id), false)
 end
 
 --- Mouse down on a sidebar base button.
