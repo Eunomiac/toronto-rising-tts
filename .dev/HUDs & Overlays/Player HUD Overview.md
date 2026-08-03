@@ -254,7 +254,7 @@ UNLIKE overlays, only one district can be displayed at a time. When a district o
 
 This panel should be displayed to the left of the `mapPanel_main` panel, about one third down from the top of the screen. It should occupy all remaining horizontal space between the left edge of the screen and the `mapPanel_overlayToggles` panel, with the height determined by the image aspect ratio.
 
-**Layout (implemented):** `player/panel_map_core_defaults.xml` class `hud_map_district_card_container` (`ignoreLayout` / `rectAlignment` / `offsetXY` as authored there). Visibility of each `districtCard_` image is driven only by Lua (`setMapStackImageVisibility`: `active` + `color="#FFFFFF"` on the **Image** id `playerHud_districtCard_<District>_<Seat>`, not the wrapping `Panel`).
+**Layout (implemented):** `player/panel_map_core_defaults.xml` class `hud_map_district_card_container`. TOR-444 Strategy 1: one Image per seat (`playerHud_districtCard_current_<Seat>`); Lua sets `image` to `districtCard_<District>` then `setMapStackImageVisibility`. Map highlight uses `playerHud_mapOverlay_districtCurrent_<Seat>` + `mapOverlay_<District>` (hidden for PATH/Sewers/Streets/Subway).
 
 | Asset | Purpose | Done? |
 | ------- | -------- | -------- |

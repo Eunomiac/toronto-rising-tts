@@ -161,38 +161,8 @@ prettyPrintTable(draggableData, "draggableData")
         <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_domainConflicts_@@color@@" image="mapOverlay_domain_domainConflicts" />
         <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_barrens_@@color@@" image="mapOverlay_domain_barrens" />
         <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_domain_theRack_@@color@@" image="mapOverlay_domain_theRack" />
-        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_Annex_@@color@@" image="mapOverlay_Annex" />
-        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_BayStFinancial_@@color@@" image="mapOverlay_BayStFinancial" />
-        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_Bennington_@@color@@" image="mapOverlay_Bennington" />
-        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_Cabbagetown_@@color@@" image="mapOverlay_Cabbagetown" />
-        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_CentreIsland_@@color@@" image="mapOverlay_CentreIsland" />
-        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_Chinatown_@@color@@" image="mapOverlay_Chinatown" />
-        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_Corktown_@@color@@" image="mapOverlay_Corktown" />
-        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_Danforth_@@color@@" image="mapOverlay_Danforth" />
-        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_DeerPark_@@color@@" image="mapOverlay_DeerPark" />
-        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_Discovery_@@color@@" image="mapOverlay_Discovery" />
-        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_DistilleryDist_@@color@@" image="mapOverlay_DistilleryDist" />
-        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_DonRavine_@@color@@" image="mapOverlay_DonRavine" />
-        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_DupontByTheCastle_@@color@@" image="mapOverlay_DupontByTheCastle" />
-        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_GayVillage_@@color@@" image="mapOverlay_GayVillage" />
-        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_HarbordVillage_@@color@@" image="mapOverlay_HarbordVillage" />
-        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_Humewood_@@color@@" image="mapOverlay_Humewood" />
-        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_LakeOntario_@@color@@" image="mapOverlay_LakeOntario" />
-        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_LibertyVillage_@@color@@" image="mapOverlay_LibertyVillage" />
-        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_LittleItaly_@@color@@" image="mapOverlay_LittleItaly" />
-        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_LittlePortugal_@@color@@" image="mapOverlay_LittlePortugal" />
-        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_RegentPark_@@color@@" image="mapOverlay_RegentPark" />
-        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_Riverdale_@@color@@" image="mapOverlay_Riverdale" />
-        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_Rosedale_@@color@@" image="mapOverlay_Rosedale" />
-        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_StJamesTown_@@color@@" image="mapOverlay_StJamesTown" />
-        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_Summerhill_@@color@@" image="mapOverlay_Summerhill" />
-        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_Waterfront_@@color@@" image="mapOverlay_Waterfront" />
-        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_WestQueenWest_@@color@@" image="mapOverlay_WestQueenWest" />
-        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_Wychwood_@@color@@" image="mapOverlay_Wychwood" />
-        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_YongeBloorMuseum_@@color@@" image="mapOverlay_YongeBloorMuseum" />
-        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_YongeDundasHospital_@@color@@" image="mapOverlay_YongeDundasHospital" />
-        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_YongeStreet_@@color@@" image="mapOverlay_YongeStreet" />
-        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_Yorkville_@@color@@" image="mapOverlay_Yorkville" />
+        <!-- TOR-444 Strategy 1: one district highlight Image + image= (per seat; selection is per-player). -->
+        <Image class="hud_map_image hud_map_image_overlay" id="playerHud_mapOverlay_districtCurrent_@@color@@" active="false" image="" />
 
         <Image id="playerHud_playerPin_Red_@@color@@" class="hud_map_player_pin" image="pin_LordLucien" />
         <Image id="playerHud_playerPin_Orange_@@color@@" class="hud_map_player_pin" image="pin_Rashid" />
@@ -365,42 +335,8 @@ prettyPrintTable(draggableData, "draggableData")
   </HorizontalLayout>
 
 
+  <!-- TOR-444 Strategy 1: one district card Image + image= (per seat; selection is per-player). -->
   <Panel id="playerHud_mapPanel_districtCard_@@color@@" class="hud_map_district_card_container">
-    <Image class="hud_map_district_card" id="playerHud_districtCard_Annex_@@color@@" image="districtCard_Annex" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_BayStFinancial_@@color@@" image="districtCard_BayStFinancial" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_Bennington_@@color@@" image="districtCard_Bennington" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_Cabbagetown_@@color@@" image="districtCard_Cabbagetown" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_CentreIsland_@@color@@" image="districtCard_CentreIsland" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_Chinatown_@@color@@" image="districtCard_Chinatown" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_Corktown_@@color@@" image="districtCard_Corktown" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_Danforth_@@color@@" image="districtCard_Danforth" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_DeerPark_@@color@@" image="districtCard_DeerPark" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_Discovery_@@color@@" image="districtCard_Discovery" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_DistilleryDist_@@color@@" image="districtCard_DistilleryDist" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_DonRavine_@@color@@" image="districtCard_DonRavine" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_DupontByTheCastle_@@color@@" image="districtCard_DupontByTheCastle" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_GayVillage_@@color@@" image="districtCard_GayVillage" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_HarbordVillage_@@color@@" image="districtCard_HarbordVillage" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_Humewood_@@color@@" image="districtCard_Humewood" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_LakeOntario_@@color@@" image="districtCard_LakeOntario" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_LibertyVillage_@@color@@" image="districtCard_LibertyVillage" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_LittleItaly_@@color@@" image="districtCard_LittleItaly" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_LittlePortugal_@@color@@" image="districtCard_LittlePortugal" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_PATH_@@color@@" image="districtCard_PATH" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_RegentPark_@@color@@" image="districtCard_RegentPark" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_Riverdale_@@color@@" image="districtCard_Riverdale" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_Rosedale_@@color@@" image="districtCard_Rosedale" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_Sewers_@@color@@" image="districtCard_Sewers" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_StJamesTown_@@color@@" image="districtCard_StJamesTown" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_Streets_@@color@@" image="districtCard_Streets" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_Subway_@@color@@" image="districtCard_Subway" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_Summerhill_@@color@@" image="districtCard_Summerhill" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_Waterfront_@@color@@" image="districtCard_Waterfront" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_WestQueenWest_@@color@@" image="districtCard_WestQueenWest" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_Wychwood_@@color@@" image="districtCard_Wychwood" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_YongeBloorMuseum_@@color@@" image="districtCard_YongeBloorMuseum" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_YongeDundasHospital_@@color@@" image="districtCard_YongeDundasHospital" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_YongeStreet_@@color@@" image="districtCard_YongeStreet" />
-    <Image class="hud_map_district_card" id="playerHud_districtCard_Yorkville_@@color@@" image="districtCard_Yorkville" />
+    <Image class="hud_map_district_card" id="playerHud_districtCard_current_@@color@@" active="false" image="" />
   </Panel>
 </Panel>

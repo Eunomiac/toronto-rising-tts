@@ -968,11 +968,17 @@ local function setMapStackImageVisibility(elementID, isVisible)
 end
 
 --- Clears incremental map-panel UI cache so the next refresh reapplies all attributes (e.g. map just opened).
+-- Also clears Strategy-1 district card/highlight image caches for this seat (remount / reopen heal).
 -- @param playerID string
-local function clearMapPanelUiCache(playerID)
+-- @param seatColor string|nil
+local function clearMapPanelUiCache(playerID, seatColor)
     if type(playerID) == "string" then
         lastMapPanelUiByPlayerID[playerID] = {}
         lastMapPinOffsetByPlayerID[playerID] = {}
+    end
+    if type(seatColor) == "string" then
+        lastSiteCardImageByElementId["playerHud_districtCard_current_" .. seatColor] = nil
+        lastSiteCardImageByElementId["playerHud_mapOverlay_districtCurrent_" .. seatColor] = nil
     end
 end
 
@@ -1286,7 +1292,7 @@ local function applyMapPanelHud(playerID, seatColor, hud)
     mapWasActiveByPlayerID[playerID] = showMap
 
     if showMap and not wasMapActive then
-        clearMapPanelUiCache(playerID)
+        clearMapPanelUiCache(playerID, seatColor)
     end
 
     local effectiveDistrictKey = nil
@@ -1313,17 +1319,25 @@ local function applyMapPanelHud(playerID, seatColor, hud)
         applyCachedMapPanelBool(playerID, overlayActiveId, showMap and overlayOn, setTintVisibility)
     end
 
+    -- TOR-444 Strategy 1: one district card + one highlight Image per seat (image= swap).
+    local districtCardId = "playerHud_districtCard_current_" .. seatColor
+    local districtHighlightId = "playerHud_mapOverlay_districtCurrent_" .. seatColor
+    local showDistrictCard = showMap and type(effectiveDistrictKey) == "string"
+    local showDistrictHighlight = showDistrictCard and MAP_DISTRICT_KEYS_WITH_OVERLAY[effectiveDistrictKey] == true
+    if showDistrictCard then
+        applySiteCardImageIfChanged(districtCardId, "districtCard_" .. effectiveDistrictKey)
+    else
+        applySiteCardImageIfChanged(districtCardId, nil)
+    end
+    applyCachedMapPanelBool(playerID, districtCardId, showDistrictCard, setMapStackImageVisibility)
+    if showDistrictHighlight then
+        applySiteCardImageIfChanged(districtHighlightId, "mapOverlay_" .. effectiveDistrictKey)
+    else
+        applySiteCardImageIfChanged(districtHighlightId, nil)
+    end
+    applyCachedMapPanelBool(playerID, districtHighlightId, showDistrictHighlight, setMapStackImageVisibility)
+
     for districtKey, _ in pairs(MAP_DISTRICT_KEYS) do
-        local showDistrict = showMap and (effectiveDistrictKey == districtKey)
-
-        local districtCardId = "playerHud_districtCard_" .. districtKey .. "_" .. seatColor
-        applyCachedMapPanelBool(playerID, districtCardId, showDistrict, setMapStackImageVisibility)
-
-        if MAP_DISTRICT_KEYS_WITH_OVERLAY[districtKey] == true then
-            local districtOverlayId = "playerHud_mapOverlay_" .. districtKey .. "_" .. seatColor
-            applyCachedMapPanelBool(playerID, districtOverlayId, showDistrict, setMapStackImageVisibility)
-        end
-
         local showDistrictActiveLayer = showMap and (activeDistrictKey == districtKey)
         local showDistrictHoverLayer = showMap and (hoverDistrictKey == districtKey) and (not showDistrictActiveLayer)
 

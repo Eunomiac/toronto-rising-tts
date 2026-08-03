@@ -115,7 +115,7 @@
 
 
 
-  <!-- District card stack: `hud_map_district_card_container` / `hud_map_district_card` (see Player HUD Overview). -->
+  <!-- District card (TOR-444): one Image `playerHud_districtCard_current_<Seat>` + image=; see Player HUD Overview. -->
   <!-- Recenter: fixed in viewport; sibling of draggable map stack. -->
   <Panel class="mapPanel_recenterButton"
     rectAlignment="UpperLeft"
@@ -142,7 +142,7 @@
     width="700"
     preserveAspect="true"
     raycastTarget="false"
-    active="true"
+    active="false"
     color="clear"
     rectAlignment="UpperLeft"
   />
