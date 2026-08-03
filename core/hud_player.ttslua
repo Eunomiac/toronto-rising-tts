@@ -880,7 +880,7 @@ end
 
 --- Sets right-sidebar button chrome via XmlUI `color` on the base Image (TOR-444).
 -- Priority: active > hover > idle. No `_hover` / `_active` sibling Images.
-local SIDEBAR_BTN_COLOR_IDLE = "#888888"
+local SIDEBAR_BTN_COLOR_IDLE = "#C9C9C9"
 local SIDEBAR_BTN_COLOR_HOVER = "#FFFFFF"
 local SIDEBAR_BTN_COLOR_ACTIVE = "#C00000"
 local lastSidebarBtnColorById = {}

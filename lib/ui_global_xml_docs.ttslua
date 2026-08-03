@@ -753,7 +753,7 @@ M.full = [=[
 <Panel id="HUD_PANEL_PLAYER" class="hud_root_panel">
 
   <!-- Defaults -->
-  
+
 <!-- include ui/player/panel_overlays_defaults.xml -->
 <!-- Player HUD Overlays defaults -->
 <!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md (generator); .dev/HUDs & Overlays/Player HUD Overview.md (overlays). -->
@@ -893,7 +893,7 @@ M.full = [=[
 
 <!-- /include ui/player/panel_overlays_defaults.xml -->
 
-  
+
 <!-- include ui/player/panel_right_sidebar_defaults.xml -->
 <!-- Agent guidance: .dev/HUDs & Overlays/Player HUD Overview.md; .dev/TTS_BUNDLING_SETUP.md. -->
 <Defaults>
@@ -941,9 +941,9 @@ M.full = [=[
     flexibleWidth="0" />
 
   <!-- Sidebar toggle rows: 30px tall; 175px row for sheet/map/princes/coteries active art, 150px for the rest. -->
-  <!-- TOR-451: idle chrome matches SIDEBAR_BTN_COLOR_IDLE (#888888) so buttons are grey before first Lua hover. -->
+  <!-- TOR-451: idle chrome matches SIDEBAR_BTN_COLOR_IDLE (#C9C9C9) so buttons are grey before first Lua hover. -->
   <Image class="RSidebar_btn"
-    color="#888888"
+    color="#C9C9C9"
   />
   <Image class="RSidebar_btn_base_wide"
     preferredHeight="30"
@@ -1003,7 +1003,7 @@ M.full = [=[
 
 <!-- /include ui/player/panel_right_sidebar_defaults.xml -->
 
-  
+
 <!-- include ui/player/panel_map_core_defaults.xml -->
 <!-- Player HUD CorePanel_Map defaults (map layout + toggle stacks + draggable viewport) -->
 <!-- Agent guidance: .dev/HUDs & Overlays/Player HUD Overview.md (map panels); .dev/TTS_BUNDLING_SETUP.md. -->
@@ -1074,12 +1074,19 @@ M.full = [=[
     raycastTarget="false"
   />
 
-  <!-- Stacked map overlays: Lua uses setMapStackImageVisibility (inactive when off; on = active + #FFFFFF). Toggle/row chrome uses tint-only. -->
+  <!-- Stacked map overlays: Lua uses setMapStackImageVisibility (inactive when off; on = active + #FFFFFF). -->
   <Image class="hud_map_image_overlay"
     raycastTarget="false"
     active="true"
     color="clear"
     rectAlignment="MiddleCenter"
+  />
+
+  <!-- Shared map sidebar hover/active columns (Option B): gated by visibility, must stay opaque.
+       Do not use hover_button_hover/active here — those Defaults use color="clear" for tint-hide (pan/recenter). -->
+  <Image class="hover_button_map_shared_layer"
+    raycastTarget="false"
+    color="#FFFFFF"
   />
 
   <Image class="hover_button_base_overlay"
@@ -1173,7 +1180,7 @@ M.full = [=[
 
 
   <!-- 4a. Player HUD Overlays -->
-  
+
 <!-- include ui/player/panel_overlays.xml -->
 <!-- Generated file. Edit ui/.templates/panel_overlays.xml only. -->
 <!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md; .dev/HUDs & Overlays/Player HUD Overview.md. -->
@@ -1236,7 +1243,7 @@ M.full = [=[
 <!-- /include ui/player/panel_overlays.xml -->
 
   <!-- Game State Overlay -->
-  
+
 <!-- include ui/shared/game_state_overlay.xml -->
 <!-- Center-top overlay: in-game location + date/time during Play + Downtime (see `GameStateOverlay.reconcileFromState`). -->
 <!-- Lua: `core/game_state_overlay.ttslua` — `GameStateOverlay.reconcileFromState()` / `ensureTicker()`. -->
@@ -1305,7 +1312,7 @@ UI.setAttributes("gameStateOverlay_timeAndLocation_background", {offsetXY = "0 1
   <!-- 4a. Player HUD Right Sidebar -->
 
   <!-- Map panels (generated per player color) -->
-  
+
 <!-- include ui/player/panel_map_core.xml -->
 <!-- Generated file. Edit ui/.templates/panel_map_core.xml only. -->
 <!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md; .dev/HUDs & Overlays/Player HUD Overview.md. -->
@@ -1803,10 +1810,11 @@ prettyPrintTable(draggableData, "draggableData")
 <!-- /include ui/player/panel_map_core.xml -->
 
   <!-- Shared map overlay + district toggle sidebars (TOR-444 Option B) -->
-  
+
 <!-- include ui/shared/panel_map_sidebars.xml -->
 <!-- Shared map overlay + district toggle sidebars (TOR-444 Option B).
      Root visibility = seats with map open; hover/active layers use per-player visibility unions.
+     Hover/active Images use hover_button_map_shared_layer (opaque) — not hover_button_hover/active (tint-hide clear).
      Per-seat map HorizontalLayout keeps width spacers so the pan surface stays aligned. -->
 <Panel id="playerHud_mapSidebarsShared" class="playerHud_coreLayer" visibility="None" active="false" raycastTarget="false">
   <HorizontalLayout class="hud_map_parent_container" raycastTarget="false">
@@ -1852,61 +1860,61 @@ prettyPrintTable(draggableData, "draggableData")
         </VerticalLayout>
         <VerticalLayout id="db_hover_hover_button_panel" class="hover_button_panel">
           <Image id="db_hover_overlayDivider_cityFeatures" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
-          <Image id="playerHud_mapOverlayToggle_districtsAll_hover" visibility="None" class="hover_button hover_button_hover" image="toggleOverlay_districtsAll_hover" />
-          <Image id="playerHud_mapOverlayToggle_majorRoads_hover" visibility="None" class="hover_button hover_button_hover" image="toggleOverlay_majorRoads_hover" />
-          <Image id="playerHud_mapOverlayToggle_localRoads_hover" visibility="None" class="hover_button hover_button_hover" image="toggleOverlay_localRoads_hover" />
-          <Image id="playerHud_mapOverlayToggle_majorSites_hover" visibility="None" class="hover_button hover_button_hover" image="toggleOverlay_majorSites_hover" />
+          <Image id="playerHud_mapOverlayToggle_districtsAll_hover" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_districtsAll_hover" />
+          <Image id="playerHud_mapOverlayToggle_majorRoads_hover" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_majorRoads_hover" />
+          <Image id="playerHud_mapOverlayToggle_localRoads_hover" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_localRoads_hover" />
+          <Image id="playerHud_mapOverlayToggle_majorSites_hover" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_majorSites_hover" />
           <Image id="db_hover_overlayDivider_domains" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
-          <Image id="playerHud_mapOverlayToggle_domain_theCourt_hover" visibility="None" class="hover_button hover_button_hover" image="toggleOverlay_domain_theCourt_hover" />
+          <Image id="playerHud_mapOverlayToggle_domain_theCourt_hover" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_domain_theCourt_hover" />
           <Text class="spacer_10" />
-          <Image id="playerHud_mapOverlayToggle_domain_fiveKeys_hover" visibility="None" class="hover_button hover_button_hover" image="toggleOverlay_domain_fiveKeys_hover" />
-          <Image id="playerHud_mapOverlayToggle_domain_moonClub_hover" visibility="None" class="hover_button hover_button_hover" image="toggleOverlay_domain_moonClub_hover" />
-          <Image id="playerHud_mapOverlayToggle_domain_universityChantry_hover" visibility="None" class="hover_button hover_button_hover" image="toggleOverlay_domain_universityChantry_hover" />
+          <Image id="playerHud_mapOverlayToggle_domain_fiveKeys_hover" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_domain_fiveKeys_hover" />
+          <Image id="playerHud_mapOverlayToggle_domain_moonClub_hover" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_domain_moonClub_hover" />
+          <Image id="playerHud_mapOverlayToggle_domain_universityChantry_hover" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_domain_universityChantry_hover" />
           <Text class="spacer_20" preferredHeight="15" />
-          <Image id="playerHud_mapOverlayToggle_domain_freeChantry_hover" visibility="None" class="hover_button hover_button_hover" image="toggleOverlay_domain_freeChantry_hover" />
-          <Image id="playerHud_mapOverlayToggle_domain_ironGuard_hover" visibility="None" class="hover_button hover_button_hover" image="toggleOverlay_domain_ironGuard_hover" />
-          <Image id="playerHud_mapOverlayToggle_domain_scarlett_hover" visibility="None" class="hover_button hover_button_hover" image="toggleOverlay_domain_scarlett_hover" />
+          <Image id="playerHud_mapOverlayToggle_domain_freeChantry_hover" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_domain_freeChantry_hover" />
+          <Image id="playerHud_mapOverlayToggle_domain_ironGuard_hover" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_domain_ironGuard_hover" />
+          <Image id="playerHud_mapOverlayToggle_domain_scarlett_hover" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_domain_scarlett_hover" />
           <Text class="spacer_20" preferredHeight="15" />
-          <Image id="playerHud_mapOverlayToggle_domain_anarchFreeZone_hover" visibility="None" class="hover_button hover_button_hover" image="toggleOverlay_domain_anarchFreeZone_hover" />
+          <Image id="playerHud_mapOverlayToggle_domain_anarchFreeZone_hover" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_domain_anarchFreeZone_hover" />
           <Text class="spacer_20" preferredHeight="15" />
-          <Image id="playerHud_mapOverlayToggle_domain_hecata_hover" visibility="None" class="hover_button hover_button_hover" image="toggleOverlay_domain_hecata_hover" />
+          <Image id="playerHud_mapOverlayToggle_domain_hecata_hover" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_domain_hecata_hover" />
           <Text class="spacer_20" preferredHeight="15" />
-          <Image id="playerHud_mapOverlayToggle_domain_bertrice_hover" visibility="None" class="hover_button hover_button_hover" image="toggleOverlay_domain_bertrice_hover" />
-          <Image id="playerHud_mapOverlayToggle_domain_islandDevil_hover" visibility="None" class="hover_button hover_button_hover" image="toggleOverlay_domain_islandDevil_hover" />
+          <Image id="playerHud_mapOverlayToggle_domain_bertrice_hover" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_domain_bertrice_hover" />
+          <Image id="playerHud_mapOverlayToggle_domain_islandDevil_hover" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_domain_islandDevil_hover" />
           <Text class="spacer_20" preferredHeight="15" />
-          <Image id="playerHud_mapOverlayToggle_domain_domainConflicts_hover" visibility="None" class="hover_button hover_button_hover" image="toggleOverlay_domain_domainConflicts_hover" />
+          <Image id="playerHud_mapOverlayToggle_domain_domainConflicts_hover" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_domain_domainConflicts_hover" />
           <Image id="db_hover_overlayDivider_regions" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
-          <Image id="playerHud_mapOverlayToggle_domain_barrens_hover" visibility="None" class="hover_button hover_button_hover" image="toggleOverlay_domain_barrens_hover" />
-          <Image id="playerHud_mapOverlayToggle_domain_theRack_hover" visibility="None" class="hover_button hover_button_hover" image="toggleOverlay_domain_theRack_hover" />
+          <Image id="playerHud_mapOverlayToggle_domain_barrens_hover" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_domain_barrens_hover" />
+          <Image id="playerHud_mapOverlayToggle_domain_theRack_hover" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_domain_theRack_hover" />
         </VerticalLayout>
         <VerticalLayout id="db_active_hover_button_panel" class="hover_button_panel">
           <Image id="db_active_overlayDivider_cityFeatures" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_cityFeatures" color="clear" />
-          <Image id="playerHud_mapOverlayToggle_districtsAll_active" visibility="None" class="hover_button hover_button_active" image="toggleOverlay_districtsAll_active" />
-          <Image id="playerHud_mapOverlayToggle_majorRoads_active" visibility="None" class="hover_button hover_button_active" image="toggleOverlay_majorRoads_active" />
-          <Image id="playerHud_mapOverlayToggle_localRoads_active" visibility="None" class="hover_button hover_button_active" image="toggleOverlay_localRoads_active" />
-          <Image id="playerHud_mapOverlayToggle_majorSites_active" visibility="None" class="hover_button hover_button_active" image="toggleOverlay_majorSites_active" />
+          <Image id="playerHud_mapOverlayToggle_districtsAll_active" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_districtsAll_active" />
+          <Image id="playerHud_mapOverlayToggle_majorRoads_active" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_majorRoads_active" />
+          <Image id="playerHud_mapOverlayToggle_localRoads_active" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_localRoads_active" />
+          <Image id="playerHud_mapOverlayToggle_majorSites_active" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_majorSites_active" />
           <Image id="db_active_overlayDivider_domains" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_domains" color="clear" />
-          <Image id="playerHud_mapOverlayToggle_domain_theCourt_active" visibility="None" class="hover_button hover_button_active" image="toggleOverlay_domain_theCourt_active" />
+          <Image id="playerHud_mapOverlayToggle_domain_theCourt_active" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_domain_theCourt_active" />
           <Text class="spacer_10" />
-          <Image id="playerHud_mapOverlayToggle_domain_fiveKeys_active" visibility="None" class="hover_button hover_button_active" image="toggleOverlay_domain_fiveKeys_active" />
-          <Image id="playerHud_mapOverlayToggle_domain_moonClub_active" visibility="None" class="hover_button hover_button_active" image="toggleOverlay_domain_moonClub_active" />
-          <Image id="playerHud_mapOverlayToggle_domain_universityChantry_active" visibility="None" class="hover_button hover_button_active" image="toggleOverlay_domain_universityChantry_active" />
+          <Image id="playerHud_mapOverlayToggle_domain_fiveKeys_active" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_domain_fiveKeys_active" />
+          <Image id="playerHud_mapOverlayToggle_domain_moonClub_active" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_domain_moonClub_active" />
+          <Image id="playerHud_mapOverlayToggle_domain_universityChantry_active" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_domain_universityChantry_active" />
           <Text class="spacer_20" preferredHeight="15" />
-          <Image id="playerHud_mapOverlayToggle_domain_freeChantry_active" visibility="None" class="hover_button hover_button_active" image="toggleOverlay_domain_freeChantry_active" />
-          <Image id="playerHud_mapOverlayToggle_domain_ironGuard_active" visibility="None" class="hover_button hover_button_active" image="toggleOverlay_domain_ironGuard_active" />
-          <Image id="playerHud_mapOverlayToggle_domain_scarlett_active" visibility="None" class="hover_button hover_button_active" image="toggleOverlay_domain_scarlett_active" />
+          <Image id="playerHud_mapOverlayToggle_domain_freeChantry_active" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_domain_freeChantry_active" />
+          <Image id="playerHud_mapOverlayToggle_domain_ironGuard_active" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_domain_ironGuard_active" />
+          <Image id="playerHud_mapOverlayToggle_domain_scarlett_active" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_domain_scarlett_active" />
           <Text class="spacer_20" preferredHeight="15" />
-          <Image id="playerHud_mapOverlayToggle_domain_anarchFreeZone_active" visibility="None" class="hover_button hover_button_active" image="toggleOverlay_domain_anarchFreeZone_active" />
+          <Image id="playerHud_mapOverlayToggle_domain_anarchFreeZone_active" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_domain_anarchFreeZone_active" />
           <Text class="spacer_20" preferredHeight="15" />
-          <Image id="playerHud_mapOverlayToggle_domain_hecata_active" visibility="None" class="hover_button hover_button_active" image="toggleOverlay_domain_hecata_active" />
+          <Image id="playerHud_mapOverlayToggle_domain_hecata_active" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_domain_hecata_active" />
           <Text class="spacer_20" preferredHeight="15" />
-          <Image id="playerHud_mapOverlayToggle_domain_bertrice_active" visibility="None" class="hover_button hover_button_active" image="toggleOverlay_domain_bertrice_active" />
-          <Image id="playerHud_mapOverlayToggle_domain_islandDevil_active" visibility="None" class="hover_button hover_button_active" image="toggleOverlay_domain_islandDevil_active" />
+          <Image id="playerHud_mapOverlayToggle_domain_bertrice_active" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_domain_bertrice_active" />
+          <Image id="playerHud_mapOverlayToggle_domain_islandDevil_active" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_domain_islandDevil_active" />
           <Text class="spacer_20" preferredHeight="15" />
-          <Image id="playerHud_mapOverlayToggle_domain_domainConflicts_active" visibility="None" class="hover_button hover_button_active" image="toggleOverlay_domain_domainConflicts_active" />
+          <Image id="playerHud_mapOverlayToggle_domain_domainConflicts_active" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_domain_domainConflicts_active" />
           <Image id="db_active_overlayDivider_regions" class="hover_button_panel_border hover_button_panel_border_short" image="overlayDivider_regions" color="clear" />
-          <Image id="playerHud_mapOverlayToggle_domain_barrens_active" visibility="None" class="hover_button hover_button_active" image="toggleOverlay_domain_barrens_active" />
-          <Image id="playerHud_mapOverlayToggle_domain_theRack_active" visibility="None" class="hover_button hover_button_active" image="toggleOverlay_domain_theRack_active" />
+          <Image id="playerHud_mapOverlayToggle_domain_barrens_active" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_domain_barrens_active" />
+          <Image id="playerHud_mapOverlayToggle_domain_theRack_active" visibility="None" class="hover_button hover_button_map_shared_layer" image="toggleOverlay_domain_theRack_active" />
         </VerticalLayout>
       </Panel>
     </Panel>
@@ -1971,91 +1979,91 @@ prettyPrintTable(draggableData, "draggableData")
         </VerticalLayout>
         <VerticalLayout id="db_hover_button_panel" class="hover_button_panel">
           <Image id="db_hover_districtDivider_northOfBloor" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" color="clear"/>
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Bennington_hover" visibility="None" image="toggleDistrict_Bennington_hover" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_DeerPark_hover" visibility="None" image="toggleDistrict_DeerPark_hover" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_DupontByTheCastle_hover" visibility="None" image="toggleDistrict_DupontByTheCastle_hover" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Humewood_hover" visibility="None" image="toggleDistrict_Humewood_hover" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Rosedale_hover" visibility="None" image="toggleDistrict_Rosedale_hover" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Summerhill_hover" visibility="None" image="toggleDistrict_Summerhill_hover" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_StJamesTown_hover" visibility="None" image="toggleDistrict_StJamesTown_hover" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Wychwood_hover" visibility="None" image="toggleDistrict_Wychwood_hover" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Yorkville_hover" visibility="None" image="toggleDistrict_Yorkville_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Bennington_hover" visibility="None" image="toggleDistrict_Bennington_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_DeerPark_hover" visibility="None" image="toggleDistrict_DeerPark_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_DupontByTheCastle_hover" visibility="None" image="toggleDistrict_DupontByTheCastle_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Humewood_hover" visibility="None" image="toggleDistrict_Humewood_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Rosedale_hover" visibility="None" image="toggleDistrict_Rosedale_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Summerhill_hover" visibility="None" image="toggleDistrict_Summerhill_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_StJamesTown_hover" visibility="None" image="toggleDistrict_StJamesTown_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Wychwood_hover" visibility="None" image="toggleDistrict_Wychwood_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Yorkville_hover" visibility="None" image="toggleDistrict_Yorkville_hover" />
           <Image id="db_hover_districtDivider_westToronto" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" color="clear" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Annex_hover" visibility="None" image="toggleDistrict_Annex_hover" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Chinatown_hover" visibility="None" image="toggleDistrict_Chinatown_hover" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_HarbordVillage_hover" visibility="None" image="toggleDistrict_HarbordVillage_hover" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_LittleItaly_hover" visibility="None" image="toggleDistrict_LittleItaly_hover" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_LittlePortugal_hover" visibility="None" image="toggleDistrict_LittlePortugal_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Annex_hover" visibility="None" image="toggleDistrict_Annex_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Chinatown_hover" visibility="None" image="toggleDistrict_Chinatown_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_HarbordVillage_hover" visibility="None" image="toggleDistrict_HarbordVillage_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_LittleItaly_hover" visibility="None" image="toggleDistrict_LittleItaly_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_LittlePortugal_hover" visibility="None" image="toggleDistrict_LittlePortugal_hover" />
           <Image id="db_hover_districtDivider_eastToronto" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" color="clear" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Danforth_hover" visibility="None" image="toggleDistrict_Danforth_hover" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_DonRavine_hover" visibility="None" image="toggleDistrict_DonRavine_hover" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_RegentPark_hover" visibility="None" image="toggleDistrict_RegentPark_hover" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Riverdale_hover" visibility="None" image="toggleDistrict_Riverdale_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Danforth_hover" visibility="None" image="toggleDistrict_Danforth_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_DonRavine_hover" visibility="None" image="toggleDistrict_DonRavine_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_RegentPark_hover" visibility="None" image="toggleDistrict_RegentPark_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Riverdale_hover" visibility="None" image="toggleDistrict_Riverdale_hover" />
           <Image id="db_hover_districtDivider_cityCenter" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" color="clear" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_BayStFinancial_hover" visibility="None" image="toggleDistrict_BayStFinancial_hover" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Cabbagetown_hover" visibility="None" image="toggleDistrict_Cabbagetown_hover" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Corktown_hover" visibility="None" image="toggleDistrict_Corktown_hover" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Discovery_hover" visibility="None" image="toggleDistrict_Discovery_hover" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_GayVillage_hover" visibility="None" image="toggleDistrict_GayVillage_hover" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_WestQueenWest_hover" visibility="None" image="toggleDistrict_WestQueenWest_hover" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_YongeBloorMuseum_hover" visibility="None" image="toggleDistrict_YongeBloorMuseum_hover" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_YongeDundasHospital_hover" visibility="None" image="toggleDistrict_YongeDundasHospital_hover" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_YongeStreet_hover" visibility="None" image="toggleDistrict_YongeStreet_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_BayStFinancial_hover" visibility="None" image="toggleDistrict_BayStFinancial_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Cabbagetown_hover" visibility="None" image="toggleDistrict_Cabbagetown_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Corktown_hover" visibility="None" image="toggleDistrict_Corktown_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Discovery_hover" visibility="None" image="toggleDistrict_Discovery_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_GayVillage_hover" visibility="None" image="toggleDistrict_GayVillage_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_WestQueenWest_hover" visibility="None" image="toggleDistrict_WestQueenWest_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_YongeBloorMuseum_hover" visibility="None" image="toggleDistrict_YongeBloorMuseum_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_YongeDundasHospital_hover" visibility="None" image="toggleDistrict_YongeDundasHospital_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_YongeStreet_hover" visibility="None" image="toggleDistrict_YongeStreet_hover" />
           <Image id="db_hover_districtDivider_shoreline" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" color="clear" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_CentreIsland_hover" visibility="None" image="toggleDistrict_CentreIsland_hover" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_DistilleryDist_hover" visibility="None" image="toggleDistrict_DistilleryDist_hover" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_LakeOntario_hover" visibility="None" image="toggleDistrict_LakeOntario_hover" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_LibertyVillage_hover" visibility="None" image="toggleDistrict_LibertyVillage_hover" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Waterfront_hover" visibility="None" image="toggleDistrict_Waterfront_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_CentreIsland_hover" visibility="None" image="toggleDistrict_CentreIsland_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_DistilleryDist_hover" visibility="None" image="toggleDistrict_DistilleryDist_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_LakeOntario_hover" visibility="None" image="toggleDistrict_LakeOntario_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_LibertyVillage_hover" visibility="None" image="toggleDistrict_LibertyVillage_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Waterfront_hover" visibility="None" image="toggleDistrict_Waterfront_hover" />
           <Image id="db_hover_districtDivider_notDepicted" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" color="clear" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_PATH_hover" visibility="None" image="toggleDistrict_PATH_hover" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Sewers_hover" visibility="None" image="toggleDistrict_Sewers_hover" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Streets_hover" visibility="None" image="toggleDistrict_Streets_hover" />
-          <Image class="hover_button hover_button_thin hover_button_hover" id="playerHud_mapDistrictToggle_Subway_hover" visibility="None" image="toggleDistrict_Subway_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_PATH_hover" visibility="None" image="toggleDistrict_PATH_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Sewers_hover" visibility="None" image="toggleDistrict_Sewers_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Streets_hover" visibility="None" image="toggleDistrict_Streets_hover" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Subway_hover" visibility="None" image="toggleDistrict_Subway_hover" />
         </VerticalLayout>
         <VerticalLayout id="db_active_button_panel" class="hover_button_panel">
           <Image id="db_active_districtDivider_northOfBloor" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_northOfBloor" color="clear"/>
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Bennington_active" visibility="None" image="toggleDistrict_Bennington_active" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_DeerPark_active" visibility="None" image="toggleDistrict_DeerPark_active" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_DupontByTheCastle_active" visibility="None" image="toggleDistrict_DupontByTheCastle_active" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Humewood_active" visibility="None" image="toggleDistrict_Humewood_active" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Rosedale_active" visibility="None" image="toggleDistrict_Rosedale_active" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Summerhill_active" visibility="None" image="toggleDistrict_Summerhill_active" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_StJamesTown_active" visibility="None" image="toggleDistrict_StJamesTown_active" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Wychwood_active" visibility="None" image="toggleDistrict_Wychwood_active" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Yorkville_active" visibility="None" image="toggleDistrict_Yorkville_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Bennington_active" visibility="None" image="toggleDistrict_Bennington_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_DeerPark_active" visibility="None" image="toggleDistrict_DeerPark_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_DupontByTheCastle_active" visibility="None" image="toggleDistrict_DupontByTheCastle_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Humewood_active" visibility="None" image="toggleDistrict_Humewood_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Rosedale_active" visibility="None" image="toggleDistrict_Rosedale_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Summerhill_active" visibility="None" image="toggleDistrict_Summerhill_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_StJamesTown_active" visibility="None" image="toggleDistrict_StJamesTown_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Wychwood_active" visibility="None" image="toggleDistrict_Wychwood_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Yorkville_active" visibility="None" image="toggleDistrict_Yorkville_active" />
           <Image id="db_active_districtDivider_westToronto" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_westToronto" color="clear" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Annex_active" visibility="None" image="toggleDistrict_Annex_active" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Chinatown_active" visibility="None" image="toggleDistrict_Chinatown_active" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_HarbordVillage_active" visibility="None" image="toggleDistrict_HarbordVillage_active" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_LittleItaly_active" visibility="None" image="toggleDistrict_LittleItaly_active" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_LittlePortugal_active" visibility="None" image="toggleDistrict_LittlePortugal_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Annex_active" visibility="None" image="toggleDistrict_Annex_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Chinatown_active" visibility="None" image="toggleDistrict_Chinatown_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_HarbordVillage_active" visibility="None" image="toggleDistrict_HarbordVillage_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_LittleItaly_active" visibility="None" image="toggleDistrict_LittleItaly_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_LittlePortugal_active" visibility="None" image="toggleDistrict_LittlePortugal_active" />
           <Image id="db_active_districtDivider_eastToronto" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_eastToronto" color="clear" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Danforth_active" visibility="None" image="toggleDistrict_Danforth_active" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_DonRavine_active" visibility="None" image="toggleDistrict_DonRavine_active" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_RegentPark_active" visibility="None" image="toggleDistrict_RegentPark_active" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Riverdale_active" visibility="None" image="toggleDistrict_Riverdale_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Danforth_active" visibility="None" image="toggleDistrict_Danforth_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_DonRavine_active" visibility="None" image="toggleDistrict_DonRavine_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_RegentPark_active" visibility="None" image="toggleDistrict_RegentPark_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Riverdale_active" visibility="None" image="toggleDistrict_Riverdale_active" />
           <Image id="db_active_districtDivider_cityCenter" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_cityCenter" color="clear" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_BayStFinancial_active" visibility="None" image="toggleDistrict_BayStFinancial_active" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Cabbagetown_active" visibility="None" image="toggleDistrict_Cabbagetown_active" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Corktown_active" visibility="None" image="toggleDistrict_Corktown_active" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Discovery_active" visibility="None" image="toggleDistrict_Discovery_active" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_GayVillage_active" visibility="None" image="toggleDistrict_GayVillage_active" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_WestQueenWest_active" visibility="None" image="toggleDistrict_WestQueenWest_active" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_YongeBloorMuseum_active" visibility="None" image="toggleDistrict_YongeBloorMuseum_active" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_YongeDundasHospital_active" visibility="None" image="toggleDistrict_YongeDundasHospital_active" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_YongeStreet_active" visibility="None" image="toggleDistrict_YongeStreet_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_BayStFinancial_active" visibility="None" image="toggleDistrict_BayStFinancial_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Cabbagetown_active" visibility="None" image="toggleDistrict_Cabbagetown_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Corktown_active" visibility="None" image="toggleDistrict_Corktown_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Discovery_active" visibility="None" image="toggleDistrict_Discovery_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_GayVillage_active" visibility="None" image="toggleDistrict_GayVillage_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_WestQueenWest_active" visibility="None" image="toggleDistrict_WestQueenWest_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_YongeBloorMuseum_active" visibility="None" image="toggleDistrict_YongeBloorMuseum_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_YongeDundasHospital_active" visibility="None" image="toggleDistrict_YongeDundasHospital_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_YongeStreet_active" visibility="None" image="toggleDistrict_YongeStreet_active" />
           <Image id="db_active_districtDivider_shoreline" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_shoreline" color="clear" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_CentreIsland_active" visibility="None" image="toggleDistrict_CentreIsland_active" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_DistilleryDist_active" visibility="None" image="toggleDistrict_DistilleryDist_active" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_LakeOntario_active" visibility="None" image="toggleDistrict_LakeOntario_active" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_LibertyVillage_active" visibility="None" image="toggleDistrict_LibertyVillage_active" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Waterfront_active" visibility="None" image="toggleDistrict_Waterfront_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_CentreIsland_active" visibility="None" image="toggleDistrict_CentreIsland_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_DistilleryDist_active" visibility="None" image="toggleDistrict_DistilleryDist_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_LakeOntario_active" visibility="None" image="toggleDistrict_LakeOntario_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_LibertyVillage_active" visibility="None" image="toggleDistrict_LibertyVillage_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Waterfront_active" visibility="None" image="toggleDistrict_Waterfront_active" />
           <Image id="db_active_districtDivider_notDepicted" class="hover_button_panel_border hover_button_panel_border_short" image="districtDivider_notDepicted" color="clear" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_PATH_active" visibility="None" image="toggleDistrict_PATH_active" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Sewers_active" visibility="None" image="toggleDistrict_Sewers_active" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Streets_active" visibility="None" image="toggleDistrict_Streets_active" />
-          <Image class="hover_button hover_button_thin hover_button_active" id="playerHud_mapDistrictToggle_Subway_active" visibility="None" image="toggleDistrict_Subway_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_PATH_active" visibility="None" image="toggleDistrict_PATH_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Sewers_active" visibility="None" image="toggleDistrict_Sewers_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Streets_active" visibility="None" image="toggleDistrict_Streets_active" />
+          <Image class="hover_button hover_button_thin hover_button_map_shared_layer" id="playerHud_mapDistrictToggle_Subway_active" visibility="None" image="toggleDistrict_Subway_active" />
         </VerticalLayout>
       </Panel>
     </Panel>
@@ -2066,7 +2074,7 @@ prettyPrintTable(draggableData, "draggableData")
 
 
   <!-- Right sidebar buttons (generated per player color) -->
-  
+
 <!-- include ui/player/panel_right_sidebar_buttons.xml -->
 <!-- Generated file. Edit ui/.templates/panel_right_sidebar_buttons.xml only. -->
 <!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md; .dev/HUDs & Overlays/Player HUD Overview.md. -->
@@ -2081,7 +2089,7 @@ prettyPrintTable(draggableData, "draggableData")
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_core_map_Brown"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_CorePanel_Map_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2090,7 +2098,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_princesCourt_Brown"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_PrincesCourt_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2099,7 +2107,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_coteries_Brown"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Coteries_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2111,7 +2119,7 @@ prettyPrintTable(draggableData, "draggableData")
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_chronicleTenets_Brown"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_ChronicleTenets_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2120,7 +2128,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_rolls_Brown"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Rolls_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2129,7 +2137,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_physicalCombat_Brown"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_PhysicalCombat_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2138,7 +2146,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_socialCombat_Brown"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_SocialCombat_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2147,7 +2155,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_threats_Brown"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Threats_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2156,7 +2164,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_frenzy_Brown"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Frenzy_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2165,7 +2173,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_recovery_Brown"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Recovery_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2174,7 +2182,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_resonance_Brown"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Resonance_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2186,7 +2194,7 @@ prettyPrintTable(draggableData, "draggableData")
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_experience_Brown"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Experience_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2195,7 +2203,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_advantages_Brown"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Advantages_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2204,7 +2212,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_projects_Brown"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Projects_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2213,7 +2221,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_memoriam_Brown"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Memoriam_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2235,7 +2243,7 @@ prettyPrintTable(draggableData, "draggableData")
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_core_map_Orange"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_CorePanel_Map_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2244,7 +2252,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_princesCourt_Orange"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_PrincesCourt_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2253,7 +2261,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_coteries_Orange"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Coteries_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2265,7 +2273,7 @@ prettyPrintTable(draggableData, "draggableData")
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_chronicleTenets_Orange"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_ChronicleTenets_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2274,7 +2282,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_rolls_Orange"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Rolls_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2283,7 +2291,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_physicalCombat_Orange"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_PhysicalCombat_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2292,7 +2300,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_socialCombat_Orange"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_SocialCombat_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2301,7 +2309,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_threats_Orange"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Threats_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2310,7 +2318,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_frenzy_Orange"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Frenzy_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2319,7 +2327,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_recovery_Orange"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Recovery_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2328,7 +2336,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_resonance_Orange"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Resonance_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2340,7 +2348,7 @@ prettyPrintTable(draggableData, "draggableData")
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_experience_Orange"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Experience_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2349,7 +2357,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_advantages_Orange"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Advantages_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2358,7 +2366,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_projects_Orange"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Projects_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2367,7 +2375,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_memoriam_Orange"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Memoriam_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2389,7 +2397,7 @@ prettyPrintTable(draggableData, "draggableData")
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_core_map_Red"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_CorePanel_Map_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2398,7 +2406,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_princesCourt_Red"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_PrincesCourt_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2407,7 +2415,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_coteries_Red"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Coteries_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2419,7 +2427,7 @@ prettyPrintTable(draggableData, "draggableData")
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_chronicleTenets_Red"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_ChronicleTenets_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2428,7 +2436,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_rolls_Red"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Rolls_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2437,7 +2445,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_physicalCombat_Red"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_PhysicalCombat_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2446,7 +2454,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_socialCombat_Red"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_SocialCombat_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2455,7 +2463,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_threats_Red"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Threats_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2464,7 +2472,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_frenzy_Red"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Frenzy_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2473,7 +2481,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_recovery_Red"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Recovery_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2482,7 +2490,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_resonance_Red"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Resonance_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2494,7 +2502,7 @@ prettyPrintTable(draggableData, "draggableData")
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_experience_Red"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Experience_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2503,7 +2511,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_advantages_Red"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Advantages_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2512,7 +2520,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_projects_Red"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Projects_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2521,7 +2529,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_memoriam_Red"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Memoriam_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2543,7 +2551,7 @@ prettyPrintTable(draggableData, "draggableData")
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_core_map_Pink"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_CorePanel_Map_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2552,7 +2560,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_princesCourt_Pink"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_PrincesCourt_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2561,7 +2569,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_coteries_Pink"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Coteries_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2573,7 +2581,7 @@ prettyPrintTable(draggableData, "draggableData")
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_chronicleTenets_Pink"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_ChronicleTenets_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2582,7 +2590,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_rolls_Pink"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Rolls_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2591,7 +2599,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_physicalCombat_Pink"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_PhysicalCombat_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2600,7 +2608,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_socialCombat_Pink"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_SocialCombat_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2609,7 +2617,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_threats_Pink"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Threats_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2618,7 +2626,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_frenzy_Pink"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Frenzy_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2627,7 +2635,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_recovery_Pink"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Recovery_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2636,7 +2644,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_resonance_Pink"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Resonance_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2648,7 +2656,7 @@ prettyPrintTable(draggableData, "draggableData")
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_experience_Pink"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Experience_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2657,7 +2665,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_advantages_Pink"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Advantages_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2666,7 +2674,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_projects_Pink"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Projects_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2675,7 +2683,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_memoriam_Pink"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Memoriam_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2697,7 +2705,7 @@ prettyPrintTable(draggableData, "draggableData")
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_core_map_Purple"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_CorePanel_Map_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2706,7 +2714,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_princesCourt_Purple"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_PrincesCourt_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2715,7 +2723,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_coteries_Purple"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Coteries_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2727,7 +2735,7 @@ prettyPrintTable(draggableData, "draggableData")
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_chronicleTenets_Purple"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_ChronicleTenets_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2736,7 +2744,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_rolls_Purple"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Rolls_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2745,7 +2753,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_physicalCombat_Purple"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_PhysicalCombat_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2754,7 +2762,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_socialCombat_Purple"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_SocialCombat_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2763,7 +2771,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_threats_Purple"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Threats_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2772,7 +2780,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_frenzy_Purple"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Frenzy_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2781,7 +2789,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_recovery_Purple"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Recovery_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2790,7 +2798,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_resonance_Purple"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Resonance_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2802,7 +2810,7 @@ prettyPrintTable(draggableData, "draggableData")
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_experience_Purple"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Experience_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2811,7 +2819,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_advantages_Purple"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Advantages_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2820,7 +2828,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_projects_Purple"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Projects_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2829,7 +2837,7 @@ prettyPrintTable(draggableData, "draggableData")
       />
       <Image
         id="playerHud_RSidebarBtn_ref_memoriam_Purple"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Memoriam_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -2846,7 +2854,7 @@ prettyPrintTable(draggableData, "draggableData")
 
 
   <!-- Shared nestedless ref popups (TOR-444); coteries remain in per-seat referenceLayer -->
-  
+
 <!-- include ui/shared/panel_ref_panels_nestedless.xml -->
 <!-- Shared nestedless reference popups (TOR-444).
      One Image per sheet for all seats; audience via XmlUI visibility unions.
@@ -2871,7 +2879,7 @@ prettyPrintTable(draggableData, "draggableData")
 
 
   <!-- Shared Prince's Court (TOR-444) -->
-  
+
 <!-- include ui/shared/panel_ref_princes_court.xml -->
 <!-- Shared Prince's Court reference (TOR-444). Generated by extract_shared_princes_court.js.
      Audience: root + page panels via U.showTo/hideFrom. Tracker ids: box_*_<PanelSeat> (no HUD viewer suffix).
@@ -3158,126 +3166,126 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   <HorizontalLayout id="db_p2_bg_0_title_bar" class="box_text_title_bar 5_dots">
     <Text id="pc_p2_bg_0_title" class="box_text_title_text" text="RESOURCES" />
     <Panel id="db_p2_bg_0_panel_title_dotline" class="box_text_panel_title_dotline">
-      
+
       <Image id="pc_p2_bg_0_dot_1" image="dot_white" class="dot box_text_title_dot dot_1" />
-      
-      
+
+
       <Image id="pc_p2_bg_0_dot_2" image="dot_white" class="dot box_text_title_dot dot_2" />
-      
-      
+
+
       <Image id="pc_p2_bg_0_dot_3" image="dot_white" class="dot box_text_title_dot dot_3" />
-      
-      
+
+
       <Image id="pc_p2_bg_0_dot_4" image="dot_white" class="dot box_text_title_dot dot_4" />
-      
-      
+
+
       <Image id="pc_p2_bg_0_dot_5" image="dot_yellow" class="dot box_text_title_dot dot_5" />
-      
-      
+
+
     </Panel>
   </HorizontalLayout>
-  
+
   <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
     <Text id="pc_p2_bg_0_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="While not personally wealthy, your control over the Bay Street Financial District gives you access to a vast array of resources." />
     <Text id="pc_p2_bg_0_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="You may commit coterie Resources to Projects or other endeavors." />
   </VerticalLayout>
-  
-  
+
+
 </VerticalLayout></VerticalLayout>
           <VerticalLayout class="box_column"></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_bg_1" class="box_text_container" active="false">
   <HorizontalLayout id="db_p2_bg_1_title_bar" class="box_text_title_bar 5_dots">
     <Text id="pc_p2_bg_1_title" class="box_text_title_text" text="" />
     <Panel id="db_p2_bg_1_panel_title_dotline" class="box_text_panel_title_dotline">
-      
+
       <Image id="pc_p2_bg_1_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
+
+
       <Image id="pc_p2_bg_1_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
+
+
       <Image id="pc_p2_bg_1_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
+
+
       <Image id="pc_p2_bg_1_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
+
+
       <Image id="pc_p2_bg_1_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
+
+
     </Panel>
   </HorizontalLayout>
-  
+
   <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
     <Text id="pc_p2_bg_1_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
     <Text id="pc_p2_bg_1_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
-  
-  
+
+
 </VerticalLayout><VerticalLayout id="pc_p2_bg_2" class="box_text_container" active="false">
   <HorizontalLayout id="db_p2_bg_2_title_bar" class="box_text_title_bar 5_dots">
     <Text id="pc_p2_bg_2_title" class="box_text_title_text" text="" />
     <Panel id="db_p2_bg_2_panel_title_dotline" class="box_text_panel_title_dotline">
-      
+
       <Image id="pc_p2_bg_2_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
+
+
       <Image id="pc_p2_bg_2_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
+
+
       <Image id="pc_p2_bg_2_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
+
+
       <Image id="pc_p2_bg_2_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
+
+
       <Image id="pc_p2_bg_2_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
+
+
     </Panel>
   </HorizontalLayout>
-  
+
   <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
     <Text id="pc_p2_bg_2_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
     <Text id="pc_p2_bg_2_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
-  
-  
+
+
 </VerticalLayout><VerticalLayout id="pc_p2_bg_3" class="box_text_container" active="false">
   <HorizontalLayout id="db_p2_bg_3_title_bar" class="box_text_title_bar 5_dots">
     <Text id="pc_p2_bg_3_title" class="box_text_title_text" text="" />
     <Panel id="db_p2_bg_3_panel_title_dotline" class="box_text_panel_title_dotline">
-      
+
       <Image id="pc_p2_bg_3_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
+
+
       <Image id="pc_p2_bg_3_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
+
+
       <Image id="pc_p2_bg_3_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
+
+
       <Image id="pc_p2_bg_3_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
+
+
       <Image id="pc_p2_bg_3_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
+
+
     </Panel>
   </HorizontalLayout>
-  
+
   <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
     <Text id="pc_p2_bg_3_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
     <Text id="pc_p2_bg_3_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
-  
-  
+
+
 </VerticalLayout></VerticalLayout>
         </HorizontalLayout>
 
-        
+
         <Image id="divider_coterieMerits" image="divider_coterieMerits" class="divider_image" />
-        
+
 
         <!-- Coterie Merits -->
         <HorizontalLayout class="box_column_container">
@@ -3285,187 +3293,187 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   <HorizontalLayout class="box_text_title_bar 2_dots">
     <Text id="pc_p2_merit_0_title" class="box_text_title_text" text="MULTI-LEVEL LOREKEEPING" />
     <Panel class="box_text_panel_title_dotline">
-      
+
       <Image id="pc_p2_merit_0_dot_1" image="dot_yellow" class="dot box_text_title_dot dot_1" />
-      
-      
+
+
       <Image id="pc_p2_merit_0_dot_2" image="dot_yellow" class="dot box_text_title_dot dot_2" />
-      
-      
-      
-      
-      
+
+
+
+
+
     </Panel>
   </HorizontalLayout>
-  
-  
+
+
 </VerticalLayout><VerticalLayout id="pc_p2_merit_3" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 1_dot">
     <Text id="pc_p2_merit_3_title" class="box_text_title_text" text="ALL ACCESS" />
     <Panel class="box_text_panel_title_dotline">
-      
+
       <Image id="pc_p2_merit_3_dot_1" image="dot_yellow" class="dot box_text_title_dot dot_1" />
-      
-      
-      
-      
-      
-      
+
+
+
+
+
+
     </Panel>
   </HorizontalLayout>
-  
-  
+
+
 </VerticalLayout></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_merit_1" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 3_dots">
     <Text id="pc_p2_merit_1_title" class="box_text_title_text" text="EVERYTHING IS CONNECTED" />
     <Panel class="box_text_panel_title_dotline">
-      
+
       <Image id="pc_p2_merit_1_dot_1" image="dot_yellow" class="dot box_text_title_dot dot_1" />
-      
-      
+
+
       <Image id="pc_p2_merit_1_dot_2" image="dot_yellow" class="dot box_text_title_dot dot_2" />
-      
-      
+
+
       <Image id="pc_p2_merit_1_dot_3" image="dot_yellow" class="dot box_text_title_dot dot_3" />
-      
-      
-      
-      
+
+
+
+
     </Panel>
   </HorizontalLayout>
-  
-  
+
+
 </VerticalLayout><VerticalLayout id="pc_p2_merit_4" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 2_dots">
     <Text id="pc_p2_merit_4_title" class="box_text_title_text" text="CALL TO PURPOSE" />
     <Panel class="box_text_panel_title_dotline">
-      
+
       <Image id="pc_p2_merit_4_dot_1" image="dot_yellow" class="dot box_text_title_dot dot_1" />
-      
-      
+
+
       <Image id="pc_p2_merit_4_dot_2" image="dot_yellow" class="dot box_text_title_dot dot_2" />
-      
-      
-      
-      
-      
+
+
+
+
+
     </Panel>
   </HorizontalLayout>
-  
-  
+
+
 </VerticalLayout></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_merit_2" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 2_dots">
     <Text id="pc_p2_merit_2_title" class="box_text_title_text" text="CONTEXTUAL CONTACT" />
     <Panel class="box_text_panel_title_dotline">
-      
+
       <Image id="pc_p2_merit_2_dot_1" image="dot_yellow" class="dot box_text_title_dot dot_1" />
-      
-      
+
+
       <Image id="pc_p2_merit_2_dot_2" image="dot_yellow" class="dot box_text_title_dot dot_2" />
-      
-      
-      
-      
-      
+
+
+
+
+
     </Panel>
   </HorizontalLayout>
-  
-  
+
+
 </VerticalLayout><VerticalLayout id="pc_p2_merit_5" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
     <Text id="pc_p2_merit_5_title" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
-      
+
       <Image id="pc_p2_merit_5_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
+
+
       <Image id="pc_p2_merit_5_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
+
+
       <Image id="pc_p2_merit_5_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
+
+
       <Image id="pc_p2_merit_5_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
+
+
       <Image id="pc_p2_merit_5_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
+
+
     </Panel>
   </HorizontalLayout>
-  
+
   <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
     <Text id="pc_p2_merit_5_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
     <Text id="pc_p2_merit_5_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
-  
-  
+
+
 </VerticalLayout><VerticalLayout id="pc_p2_merit_6" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
     <Text id="pc_p2_merit_6_title" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
-      
+
       <Image id="pc_p2_merit_6_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
+
+
       <Image id="pc_p2_merit_6_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
+
+
       <Image id="pc_p2_merit_6_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
+
+
       <Image id="pc_p2_merit_6_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
+
+
       <Image id="pc_p2_merit_6_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
+
+
     </Panel>
   </HorizontalLayout>
-  
+
   <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
     <Text id="pc_p2_merit_6_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
     <Text id="pc_p2_merit_6_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
-  
-  
+
+
 </VerticalLayout><VerticalLayout id="pc_p2_merit_7" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
     <Text id="pc_p2_merit_7_title" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
-      
+
       <Image id="pc_p2_merit_7_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
+
+
       <Image id="pc_p2_merit_7_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
+
+
       <Image id="pc_p2_merit_7_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
+
+
       <Image id="pc_p2_merit_7_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
+
+
       <Image id="pc_p2_merit_7_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
+
+
     </Panel>
   </HorizontalLayout>
-  
+
   <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
     <Text id="pc_p2_merit_7_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
     <Text id="pc_p2_merit_7_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
-  
-  
+
+
 </VerticalLayout></VerticalLayout>
         </HorizontalLayout>
 
-        
+
         <Image id="divider_coterieFlaws" image="divider_coterieFlaws" class="divider_image" />
-        
+
 
         <!-- Coterie Flaws -->
         <HorizontalLayout class="box_column_container">
@@ -3473,121 +3481,121 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   <HorizontalLayout class="box_text_title_bar 5_dots">
     <Text id="pc_p2_flaw_0_title" class="box_text_title_text flaw_title" text="ADVERSARY: [REDACTED]" />
     <Panel class="box_text_panel_title_dotline">
-      
+
       <Image id="pc_p2_flaw_0_dot_1" image="dot_red" class="dot box_text_title_dot dot_1" />
-      
-      
+
+
       <Image id="pc_p2_flaw_0_dot_2" image="dot_red" class="dot box_text_title_dot dot_2" />
-      
-      
+
+
       <Image id="pc_p2_flaw_0_dot_3" image="dot_red" class="dot box_text_title_dot dot_3" />
-      
-      
+
+
       <Image id="pc_p2_flaw_0_dot_4" image="dot_red" class="dot box_text_title_dot dot_4" />
-      
-      
+
+
       <Image id="pc_p2_flaw_0_dot_5" image="dot_red" class="dot box_text_title_dot dot_5" />
-      
-      
+
+
     </Panel>
   </HorizontalLayout>
-  
+
   <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
     <Text id="pc_p2_flaw_0_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="Your rise to power has earned the enmity of a very powerful, very mysterious enemy who will act towards your destruction at every opportunity." />
     <Text id="pc_p2_flaw_0_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="Your enemy is a Difficulty 6 (!) monstrous elder, vengeful methuselah, embittered Justicar, or the equivalent, and their traits are thus free to break usual statistical limitations.
 Expect to feel their influence at least once per story." />
   </VerticalLayout>
-  
-  
+
+
 </VerticalLayout></VerticalLayout>
           <VerticalLayout class="box_column"></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_flaw_1" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
     <Text id="pc_p2_flaw_1_title" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
-      
+
       <Image id="pc_p2_flaw_1_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
+
+
       <Image id="pc_p2_flaw_1_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
+
+
       <Image id="pc_p2_flaw_1_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
+
+
       <Image id="pc_p2_flaw_1_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
+
+
       <Image id="pc_p2_flaw_1_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
+
+
     </Panel>
   </HorizontalLayout>
-  
+
   <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
     <Text id="pc_p2_flaw_1_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
     <Text id="pc_p2_flaw_1_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
-  
-  
+
+
 </VerticalLayout><VerticalLayout id="pc_p2_flaw_2" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
     <Text id="pc_p2_flaw_2_title" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
-      
+
       <Image id="pc_p2_flaw_2_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
+
+
       <Image id="pc_p2_flaw_2_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
+
+
       <Image id="pc_p2_flaw_2_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
+
+
       <Image id="pc_p2_flaw_2_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
+
+
       <Image id="pc_p2_flaw_2_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
+
+
     </Panel>
   </HorizontalLayout>
-  
+
   <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
     <Text id="pc_p2_flaw_2_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
     <Text id="pc_p2_flaw_2_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
-  
-  
+
+
 </VerticalLayout><VerticalLayout id="pc_p2_flaw_3" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
     <Text id="pc_p2_flaw_3_title" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
-      
+
       <Image id="pc_p2_flaw_3_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
+
+
       <Image id="pc_p2_flaw_3_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
+
+
       <Image id="pc_p2_flaw_3_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
+
+
       <Image id="pc_p2_flaw_3_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
+
+
       <Image id="pc_p2_flaw_3_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
+
+
     </Panel>
   </HorizontalLayout>
-  
+
   <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
     <Text id="pc_p2_flaw_3_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
     <Text id="pc_p2_flaw_3_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
-  
-  
+
+
 </VerticalLayout></VerticalLayout>
         </HorizontalLayout>
 
@@ -3645,265 +3653,265 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
       <VerticalLayout id="page_2_left" class="page page_left" padding = "8 8 150 50">
 
         <!-- Domain Backgrounds -->
-        
+
 
         <!-- Domain Claims -->
         <Image id="divider_domainClaims" image="divider_domainClaims" class="divider_claims_image" raycastTarget="true" onMouseEnter="HUD_playerPrincesCourt_domainClaimsDivider_hoverOn" onMouseExit="HUD_playerPrincesCourt_domainClaimsDivider_hoverOff" />
 
         <!-- Domain Merits -->
-        
+
         <Image id="divider_domainMerits" image="divider_domainMerits" class="divider_image" />
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_merit_0" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 2_dots">
     <Text id="pc_p3_merit_0_title" class="box_text_title_text" text="TRANSPORTATION" />
     <Panel class="box_text_panel_title_dotline">
-      
+
       <Image id="pc_p3_merit_0_dot_1" image="dot_yellow" class="dot box_text_title_dot dot_1" />
-      
-      
+
+
       <Image id="pc_p3_merit_0_dot_2" image="dot_yellow" class="dot box_text_title_dot dot_2" />
-      
-      
-      
-      
-      
+
+
+
+
+
     </Panel>
   </HorizontalLayout>
-  
+
   <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
     <Text id="pc_p3_merit_0_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="You have a small fleet of luxury vehicles and drivers at your disposal." />
     <Text id="pc_p3_merit_0_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="You can call upon your drivers (Driving 6) on short notice.
 Once per story, you can call upon a rare or expensive vehicle such as a helicopter or bulletproof SUV for a night." />
   </VerticalLayout>
-  
-  
+
+
 </VerticalLayout></VerticalLayout>
           <VerticalLayout class="box_column"></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_merit_1" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
     <Text id="pc_p3_merit_1_title" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
-      
+
       <Image id="pc_p3_merit_1_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
+
+
       <Image id="pc_p3_merit_1_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
+
+
       <Image id="pc_p3_merit_1_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
+
+
       <Image id="pc_p3_merit_1_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
+
+
       <Image id="pc_p3_merit_1_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
+
+
     </Panel>
   </HorizontalLayout>
-  
+
   <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
     <Text id="pc_p3_merit_1_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
     <Text id="pc_p3_merit_1_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
-  
-  
+
+
 </VerticalLayout><VerticalLayout id="pc_p3_merit_2" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
     <Text id="pc_p3_merit_2_title" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
-      
+
       <Image id="pc_p3_merit_2_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
+
+
       <Image id="pc_p3_merit_2_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
+
+
       <Image id="pc_p3_merit_2_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
+
+
       <Image id="pc_p3_merit_2_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
+
+
       <Image id="pc_p3_merit_2_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
+
+
     </Panel>
   </HorizontalLayout>
-  
+
   <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
     <Text id="pc_p3_merit_2_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
     <Text id="pc_p3_merit_2_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
-  
-  
+
+
 </VerticalLayout><VerticalLayout id="pc_p3_merit_3" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
     <Text id="pc_p3_merit_3_title" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
-      
+
       <Image id="pc_p3_merit_3_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
+
+
       <Image id="pc_p3_merit_3_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
+
+
       <Image id="pc_p3_merit_3_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
+
+
       <Image id="pc_p3_merit_3_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
+
+
       <Image id="pc_p3_merit_3_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
+
+
     </Panel>
   </HorizontalLayout>
-  
+
   <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
     <Text id="pc_p3_merit_3_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
     <Text id="pc_p3_merit_3_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
-  
-  
+
+
 </VerticalLayout></VerticalLayout>
         </HorizontalLayout>
-        
+
 
 
         <!-- Domain Flaws -->
-        
+
         <Image id="divider_domainFlaws" image="divider_domainFlaws" class="divider_image" />
         <HorizontalLayout class="box_column_container">
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_flaw_0" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 2_dots">
     <Text id="pc_p3_flaw_0_title" class="box_text_title_text flaw_title" text="CUSTODIANS" />
     <Panel class="box_text_panel_title_dotline">
-      
+
       <Image id="pc_p3_flaw_0_dot_1" image="dot_red" class="dot box_text_title_dot dot_1" />
-      
-      
+
+
       <Image id="pc_p3_flaw_0_dot_2" image="dot_red" class="dot box_text_title_dot dot_2" />
-      
-      
-      
-      
-      
+
+
+
+
+
     </Panel>
   </HorizontalLayout>
-  
+
   <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
     <Text id="pc_p3_flaw_0_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="Your domain comes with certain inconvenient responsibilities: You must secure the main entry points of Union Station and the Billy Bishop Ferry (from Billy Bishop Airport, on Centre Island) against unauthorized entry by Kindred of any sect." />
     <Text id="pc_p3_flaw_0_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="You gain no benefits from fulfilling your obligations, but every failure to do so will cost your coterie a dot of Status until you have made amends." />
   </VerticalLayout>
-  
-  
+
+
 </VerticalLayout></VerticalLayout>
           <VerticalLayout class="box_column"></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_flaw_1" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
     <Text id="pc_p3_flaw_1_title" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
-      
+
       <Image id="pc_p3_flaw_1_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
+
+
       <Image id="pc_p3_flaw_1_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
+
+
       <Image id="pc_p3_flaw_1_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
+
+
       <Image id="pc_p3_flaw_1_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
+
+
       <Image id="pc_p3_flaw_1_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
+
+
     </Panel>
   </HorizontalLayout>
-  
+
   <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
     <Text id="pc_p3_flaw_1_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
     <Text id="pc_p3_flaw_1_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
-  
-  
+
+
 </VerticalLayout><VerticalLayout id="pc_p3_flaw_2" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
     <Text id="pc_p3_flaw_2_title" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
-      
+
       <Image id="pc_p3_flaw_2_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
+
+
       <Image id="pc_p3_flaw_2_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
+
+
       <Image id="pc_p3_flaw_2_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
+
+
       <Image id="pc_p3_flaw_2_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
+
+
       <Image id="pc_p3_flaw_2_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
+
+
     </Panel>
   </HorizontalLayout>
-  
+
   <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
     <Text id="pc_p3_flaw_2_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
     <Text id="pc_p3_flaw_2_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
-  
-  
+
+
 </VerticalLayout><VerticalLayout id="pc_p3_flaw_3" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
     <Text id="pc_p3_flaw_3_title" class="box_text_title_text flaw_title" text="" />
     <Panel class="box_text_panel_title_dotline">
-      
+
       <Image id="pc_p3_flaw_3_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
+
+
       <Image id="pc_p3_flaw_3_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
+
+
       <Image id="pc_p3_flaw_3_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
+
+
       <Image id="pc_p3_flaw_3_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
+
+
       <Image id="pc_p3_flaw_3_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
+
+
     </Panel>
   </HorizontalLayout>
-  
+
   <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
     <Text id="pc_p3_flaw_3_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
     <Text id="pc_p3_flaw_3_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
-  
-  
+
+
 </VerticalLayout></VerticalLayout>
         </HorizontalLayout>
-        
+
 
       </VerticalLayout>
 
       <VerticalLayout id="page_2_right" class="page page_right" padding = "8 8 200 50">
 
         <!-- Haven Backgrounds -->
-        
+
 
         <!-- Haven Merits -->
-        
+
 
         <!-- Haven Flaws -->
-        
+
 
       </VerticalLayout>
 
@@ -4674,7 +4682,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
 
   <!-- Reference layer (generated per player color): coteries -->
-  
+
 <!-- include ui/player/panel_right_sidebar_referenceLayer.xml -->
 <!-- Generated file. Edit ui/.templates/panel_right_sidebar_referenceLayer.xml only. -->
 <!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md; .dev/HUDs & Overlays/Player HUD Overview.md. -->
@@ -5693,7 +5701,7 @@ UI.setAttributes("playerHud_refPanel_princesCourt_Red", {offsetXY = "-50 0"})
 
 
   <!-- Camera Controls Overlay (generated per player color) -->
-  
+
 <!-- include ui/player/panel_overlay_camera.xml -->
 <!-- Generated file. Edit ui/.templates/panel_overlay_camera.xml only. -->
 <!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md; .dev/HUDs & Overlays/Player HUD Overview.md. -->
@@ -5957,7 +5965,7 @@ UI.setAttributes("playerHud_refPanel_princesCourt_Red", {offsetXY = "-50 0"})
 
 
   <!-- Location Overlay (generated per player color) -->
-  
+
 <!-- include ui/player/panel_overlay_location.xml -->
 <!-- Generated file. Edit ui/.templates/panel_overlay_location.xml only. -->
 <!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md; .dev/HUDs & Overlays/Player HUD Overview.md. -->
@@ -6046,7 +6054,7 @@ UI.setAttributes("playerHud_refPanel_princesCourt_Red", {offsetXY = "-50 0"})
 
 
   <!-- Roll control panels (generated per player color) -->
-  
+
 <!-- include ui/player/panel_roll_controls.xml -->
 <!-- Generated file. Edit ui/.templates/panel_roll_controls.xml only. -->
 <!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md; .dev/HUDs & Overlays/Player HUD Overview.md. -->
@@ -6874,7 +6882,7 @@ UI.setAttributes("overlay_globalBlindfold", {color = "rgba(1, 1, 1, 0.25)"})
 <!-- 3. Storyteller HUD (Black): admin panel + sidebar + camera defaults -->
 <Panel id="HUD_PANEL_BLACK" class="hud_root_panel" visibility="Black|Host">
   <!-- 3a. Storyteller HUD defaults -->
-  
+
 <!-- include ui/storyteller/hud_storyteller_defaults.xml -->
 <!-- Storyteller HUD Defaults -->
 <!-- Agent guidance: .dev/HUD_FUNCTIONS.md; .dev/TTS_BUNDLING_SETUP.md; .dev/tts-api/UI API/Defaults.md. -->
@@ -7064,7 +7072,7 @@ UI.setAttributes("overlay_globalBlindfold", {color = "rgba(1, 1, 1, 0.25)"})
 
 <!-- /include ui/storyteller/hud_storyteller_defaults.xml -->
 
-  
+
 <!-- include ui/storyteller/panel_pcs_defaults.xml -->
 <!-- Classes for Storyteller PCs panel (`panel_pcs.xml`). Seat tint `color` stays per-Panel; ids and row label text stay on elements. -->
 <!-- Agent guidance: .dev/tts-api/UI API/Defaults.md -->
@@ -7138,7 +7146,7 @@ UI.setAttributes("overlay_globalBlindfold", {color = "rgba(1, 1, 1, 0.25)"})
 
 <!-- /include ui/storyteller/panel_pcs_defaults.xml -->
 
-  
+
 <!-- include ui/storyteller/panel_stats_defaults.xml -->
 <!-- Classes for Storyteller Stats panel (`panel_stats.xml`). -->
 <Defaults>
@@ -7175,7 +7183,7 @@ UI.setAttributes("overlay_globalBlindfold", {color = "rgba(1, 1, 1, 0.25)"})
 
 <!-- /include ui/storyteller/panel_stats_defaults.xml -->
 
-  
+
 <!-- include ui/storyteller/panel_projects_defaults.xml -->
 <!-- Classes for Storyteller Projects panel (`panel_projects.xml`). -->
 <Defaults>
@@ -7212,7 +7220,7 @@ UI.setAttributes("overlay_globalBlindfold", {color = "rgba(1, 1, 1, 0.25)"})
 
 
   <!-- 3b. Storyteller HUD -->
-  
+
 <!-- include ui/storyteller/hud_storyteller.xml -->
 <!-- Storyteller HUD Layout -->
 <!-- Agent guidance: .dev/HUD_FUNCTIONS.md; .dev/TTS_BUNDLING_SETUP.md; .dev/TESTING.md. -->
@@ -7258,7 +7266,7 @@ UI.setAttributes("overlay_globalBlindfold", {color = "rgba(1, 1, 1, 0.25)"})
       </HorizontalLayout>
     </VerticalLayout>
 
-    
+
 <!-- include ui/storyteller/panel_debug_light.xml -->
 <Defaults>
 
@@ -7339,7 +7347,7 @@ UI.setAttributes("overlay_globalBlindfold", {color = "rgba(1, 1, 1, 0.25)"})
 
 <!-- /include ui/storyteller/panel_debug_light.xml -->
 
-    
+
 <!-- include ui/storyteller/panel_debug_camera.xml -->
 <Defaults>
   <HorizontalLayout flexibleHeight="0" />
@@ -7463,7 +7471,7 @@ UI.setAttributes("overlay_globalBlindfold", {color = "rgba(1, 1, 1, 0.25)"})
     <!-- ================================================================ -->
     <!-- Sidebar (reference image toggles) and Camera bar                 -->
     <!-- ================================================================ -->
-    
+
 <!-- include ui/storyteller/panel_camera.xml -->
 <!-- Camera Control Panel -->
 <!-- Agent guidance: .dev/HUD_FUNCTIONS.md; .dev/TTS_BUNDLING_SETUP.md. -->
@@ -7894,7 +7902,7 @@ UI.setAttributes("storytellerToolbarRoot", {width = "1100"})
       UI.setAttributes("panel_scenes_library", {})
       UI.setAttributes("db_third_column", {active="false"})
       -->
-        
+
 <!-- include ui/storyteller/panel_scenes.xml -->
 <!-- Storyteller Scenes: lighting presets, table, seat narrative presence, location keys, clock (see core/storyteller_scenes_panel.ttslua). -->
 <!-- `active` stays true while parent `panel_scenes_host` controls tab visibility. Width 596 pairs with library column inside 1200px host. -->
@@ -8097,7 +8105,7 @@ UI.setAttributes("scenes_clock_speed", {minWidth = "45"})
 
 <!-- /include ui/storyteller/panel_scenes.xml -->
 
-        
+
 <!-- include ui/storyteller/panel_scenes_library.xml -->
 <!-- Scene library column: fixed slot buttons + constructor actions (see `core/storyteller_scenes_panel.ttslua`). -->
 <VerticalLayout id="panel_scenes_library" class="storyteller_panel_column">
@@ -8238,7 +8246,7 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
         <!-- <Panel id="db_third_column" class="storyteller_panel_column" /> -->
       </HorizontalLayout>
 
-      
+
 <!-- include ui/storyteller/panel_soundscape.xml -->
 <!-- Storyteller Soundscape Controls -->
 <!-- Agent guidance: .dev/Soundscape & Audio/SOUNDSCAPE_UNITY_SETUP.md; .dev/HUD_FUNCTIONS.md. -->
@@ -8307,7 +8315,7 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
 
 <!-- /include ui/storyteller/panel_soundscape.xml -->
 
-      
+
 <!-- include ui/storyteller/panel_pcs.xml -->
 <!-- Storyteller PCs panel: health / will / humanity / XP / hunger + torpor (Host only) -->
 <!-- Classes: panel_pcs_defaults.xml — seat `color`, `id`, and button `text` stay inline per element. -->
@@ -8742,7 +8750,7 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
 
 <!-- /include ui/storyteller/panel_pcs.xml -->
 
-      
+
 <!-- include ui/storyteller/panel_phases.xml -->
 <!--
 UI.setAttributes("input_sessionNum", {minHeight = "30", fontStyle = "Bold"})
@@ -8798,7 +8806,7 @@ UI.setAttributes("input_sessionNum", {minHeight = "30", fontStyle = "Bold"})
 
 <!-- /include ui/storyteller/panel_phases.xml -->
 
-      
+
 <!-- include ui/storyteller/panel_stats.xml -->
 <!-- Storyteller Stats panel: PC + Coterie advantage editing -->
 <!-- Agent guidance: .dev/HUD_FUNCTIONS.md -->
@@ -9483,7 +9491,7 @@ UI.setAttributes("input_sessionNum", {minHeight = "30", fontStyle = "Bold"})
 
 <!-- /include ui/storyteller/panel_stats.xml -->
 
-      
+
 <!-- include ui/storyteller/panel_projects.xml -->
 <!-- Storyteller Projects panel: PC + Coterie project tracking -->
 <!-- Agent guidance: .dev/HUD_FUNCTIONS.md -->
@@ -9689,7 +9697,7 @@ UI.setAttributes("input_sessionNum", {minHeight = "30", fontStyle = "Bold"})
 <!-- Body rows: generated ui/shared/roll_dash_generated.xml (TOR-218)              -->
 <!-- ============================================================================ -->
 <Panel id="rollDash_ST" class="rollPanel_ST">
-  
+
 <!-- include ui/shared/roll_dash_generated.xml -->
 <!-- Generated file. Edit ui/.templates/roll/dash_body.xml and partials under ui/.templates/roll/partials/ only. -->
 <!-- Regenerate: node .dev/scripts/generate_roll_dashboard_xml.js -->
@@ -9910,7 +9918,7 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
     </Panel>
   </GridLayout>
 
-  
+
   <Button id="rollDash_opts_Brown"
     rectAlignment="MiddleRight"
     offsetXY="-70 0"
@@ -9922,7 +9930,7 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
     outline="#FFFFFF"
     outlineSize = "2 -2"
     text="O" />
-  
+
 
   <Button id="rollDash_pcBroadcast_Brown"
     active="False"
@@ -10157,7 +10165,7 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
     </Panel>
   </GridLayout>
 
-  
+
   <Button id="rollDash_opts_Orange"
     rectAlignment="MiddleRight"
     offsetXY="-70 0"
@@ -10169,7 +10177,7 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
     outline="#FFFFFF"
     outlineSize = "2 -2"
     text="O" />
-  
+
 
   <Button id="rollDash_pcBroadcast_Orange"
     active="False"
@@ -10404,7 +10412,7 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
     </Panel>
   </GridLayout>
 
-  
+
   <Button id="rollDash_opts_Red"
     rectAlignment="MiddleRight"
     offsetXY="-70 0"
@@ -10416,7 +10424,7 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
     outline="#FFFFFF"
     outlineSize = "2 -2"
     text="O" />
-  
+
 
   <Button id="rollDash_pcBroadcast_Red"
     active="False"
@@ -10651,7 +10659,7 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
     </Panel>
   </GridLayout>
 
-  
+
   <Button id="rollDash_opts_Pink"
     rectAlignment="MiddleRight"
     offsetXY="-70 0"
@@ -10663,7 +10671,7 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
     outline="#FFFFFF"
     outlineSize = "2 -2"
     text="O" />
-  
+
 
   <Button id="rollDash_pcBroadcast_Pink"
     active="False"
@@ -10898,7 +10906,7 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
     </Panel>
   </GridLayout>
 
-  
+
   <Button id="rollDash_opts_Purple"
     rectAlignment="MiddleRight"
     offsetXY="-70 0"
@@ -10910,7 +10918,7 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
     outline="#FFFFFF"
     outlineSize = "2 -2"
     text="O" />
-  
+
 
   <Button id="rollDash_pcBroadcast_Purple"
     active="False"
@@ -13620,7 +13628,7 @@ UI.setAttributes("overlay_globalBlindfold", {color = "rgba(1, 1, 1, 0.25)"})
     ignoreLayout="true"
     rectAlignment="UpperLeft" offsetXY="20 -20" width="520" height="720"
     color="rgba(0,0,0,0.85)">
-    
+
 <!-- include ui/storyteller/panel_phases.xml -->
 <!--
 UI.setAttributes("input_sessionNum", {minHeight = "30", fontStyle = "Bold"})

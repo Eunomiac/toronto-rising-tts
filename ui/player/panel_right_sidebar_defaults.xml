@@ -44,9 +44,9 @@
     flexibleWidth="0" />
 
   <!-- Sidebar toggle rows: 30px tall; 175px row for sheet/map/princes/coteries active art, 150px for the rest. -->
-  <!-- TOR-451: idle chrome matches SIDEBAR_BTN_COLOR_IDLE (#888888) so buttons are grey before first Lua hover. -->
+  <!-- TOR-451: idle chrome matches SIDEBAR_BTN_COLOR_IDLE (#C9C9C9) so buttons are grey before first Lua hover. -->
   <Image class="RSidebar_btn"
-    color="#888888"
+    color="#C9C9C9"
   />
   <Image class="RSidebar_btn_base_wide"
     preferredHeight="30"
