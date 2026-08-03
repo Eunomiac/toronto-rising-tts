@@ -52,6 +52,29 @@ local function setStorytellerToggleVisual(toggleId, isActive)
     })
 end
 
+--- Collapses every storyteller toolbar panel without Scenes THERE/deselect guards.
+function StorytellerPanelUI.closeAllPanelsUnconditionally()
+    U.setAttribute(STORYTELLER_CONTENT_AREA_ID, "active", "false")
+    for _, ids in pairs(STORYTELLER_PANELS) do
+        U.setAttribute(ids.panel, "active", "false")
+        setStorytellerToggleVisual(ids.toggle, false)
+    end
+    U.hideXmlElement(STORYTELLER_TOOLBAR_BODY_ID)
+end
+
+--- Closes the storyteller content area and deactivates every toolbar panel (matches re-clicking an open tab).
+--- Also collapses `storytellerToolbarBody` (TOR-395); panel switches leave the body open.
+--- TOR-449: when Scenes is (or was) involved, block while THERE and deselect pending preview.
+--- @return boolean false when close blocked (THERE)
+function StorytellerPanelUI.closeAllPanels()
+    local ScenesPanel = require("core.storyteller_scenes_panel")
+    if type(ScenesPanel.tryCloseScenesPanelOrBlock) == "function" then
+        return ScenesPanel.tryCloseScenesPanelOrBlock() == true
+    end
+    StorytellerPanelUI.closeAllPanelsUnconditionally()
+    return true
+end
+
 --- Selects a storyteller panel (mutually exclusive: only one open at a time).
 --- Shows the content area, hides all panels, shows the selected one, and updates toggle button highlight.
 --- Clicking the same top button again hides the content area (all toggles inactive).
@@ -59,6 +82,7 @@ end
 ---
 --- @param panelKey string One of: "scenes", "soundscape", "pcs", "phases", "stats", "projects"
 --- @param forceOpen boolean|nil If true, always apply the open-panel branch (no toggle-close).
+--- @return boolean|nil false when leaving/closing Scenes was blocked (THERE)
 function StorytellerPanelUI.selectStorytellerPanel(panelKey, forceOpen)
     if type(panelKey) ~= "string" then
         error("StorytellerPanelUI.selectStorytellerPanel: panelKey must be a string", 2)
@@ -69,14 +93,25 @@ function StorytellerPanelUI.selectStorytellerPanel(panelKey, forceOpen)
         return
     end
 
-    if forceOpen ~= true and storytellerUiElementIsActive(STORYTELLER_CONTENT_AREA_ID) and storytellerUiElementIsActive(selected.panel) then
-        U.setAttribute(STORYTELLER_CONTENT_AREA_ID, "active", "false")
-        for _, ids in pairs(STORYTELLER_PANELS) do
-            U.setAttribute(ids.panel, "active", "false")
-            setStorytellerToggleVisual(ids.toggle, false)
+    local scenesIds = STORYTELLER_PANELS.scenes
+    local scenesHostActive = scenesIds ~= nil and storytellerUiElementIsActive(scenesIds.panel)
+    local contentActive = storytellerUiElementIsActive(STORYTELLER_CONTENT_AREA_ID)
+    local ScenesPanel = require("core.storyteller_scenes_panel")
+
+    -- Same-tab re-click closes (TOR-449 guard when closing Scenes).
+    if forceOpen ~= true and contentActive and storytellerUiElementIsActive(selected.panel) then
+        if panelKey == "scenes" and type(ScenesPanel.tryCloseScenesPanelOrBlock) == "function" then
+            return ScenesPanel.tryCloseScenesPanelOrBlock() == true
         end
-        U.hideXmlElement(STORYTELLER_TOOLBAR_BODY_ID)
-        return
+        StorytellerPanelUI.closeAllPanelsUnconditionally()
+        return true
+    end
+
+    -- Leaving Scenes for another tab (TOR-449).
+    if scenesHostActive and panelKey ~= "scenes" and type(ScenesPanel.prepareLeaveScenesPanelOrBlock) == "function" then
+        if ScenesPanel.prepareLeaveScenesPanelOrBlock() ~= true then
+            return false
+        end
     end
 
     U.setAttribute(STORYTELLER_CONTENT_AREA_ID, "active", "true")
@@ -85,17 +120,7 @@ function StorytellerPanelUI.selectStorytellerPanel(panelKey, forceOpen)
         U.setAttribute(ids.panel, "active", key == panelKey and "true" or "false")
         setStorytellerToggleVisual(ids.toggle, key == panelKey)
     end
-end
-
---- Closes the storyteller content area and deactivates every toolbar panel (matches re-clicking an open tab).
---- Also collapses `storytellerToolbarBody` (TOR-395); panel switches leave the body open.
-function StorytellerPanelUI.closeAllPanels()
-    U.setAttribute(STORYTELLER_CONTENT_AREA_ID, "active", "false")
-    for _, ids in pairs(STORYTELLER_PANELS) do
-        U.setAttribute(ids.panel, "active", "false")
-        setStorytellerToggleVisual(ids.toggle, false)
-    end
-    U.hideXmlElement(STORYTELLER_TOOLBAR_BODY_ID)
+    return true
 end
 
 return StorytellerPanelUI

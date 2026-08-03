@@ -290,7 +290,7 @@ In-fiction chronicle time — **not** real-world date/time.
 
 - **Table / seats / location** write immediately into `sceneLibrary.scenes[activeKey].sessionScene` (no `SetTableTo` / soundscape / world reconcile). Location **Apply** validates and stores keys (+ top fog) on the row only.
 - **Clock** still uses the in-memory `clockDraft` until **Activate scene** (same present-day rules as below).
-- **Control Board THERE:** the blue HERE/THERE scope button copies pending `npcWorld.placements` and `seatSlots` into persisted `gameState.controlBoard.previewDraft`. Token edits update only that draft. Leaving THERE, selecting another row, clearing preview, or activating the row commits board-owned participant fields to the corresponding library row before restoring HERE. Scenes seat buttons still write the library first, then copy all presence flags into the draft without moving its occupants.
+- **Control Board THERE:** the blue HERE/THERE scope button copies pending `npcWorld.placements` and `seatSlots` into persisted `gameState.controlBoard.previewDraft`. Token edits update only that draft. Leaving THERE, selecting another row, clearing preview, or activating the row commits board-owned participant fields to the corresponding library row before restoring HERE. **TOR-449:** Scenes panel close deselects pending preview (unless THERE — then close is blocked); load and End force HERE; End clears library `activeKey`. Scenes seat buttons still write the library first, then copy all presence flags into the draft without moving its occupants.
 
 When `activeKey == lastAppliedKey` (or no selection), the panel stays live-bound: table transitions, seat world reconcile + TOR-281 mirror, and Apply location + soundscape behave as before.
 

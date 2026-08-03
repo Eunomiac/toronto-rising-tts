@@ -1278,19 +1278,14 @@ function Reconcile.reconcileControlBoardFromState(opts)
     Reconcile.rebuildAnchorDropEligibilityCache(board)
 end
 
---- Restore a valid persisted THERE draft after Save & Play.
+--- TOR-449: on load, commit any saved THERE draft into its library row and restore HERE
+--- (preview drafts are mid-session only — do not resume THERE after Save & Play).
 function Reconcile.recoverPreviewDraftOnLoad()
     local Preview = require("core.control_board_preview")
     if not Preview.isThere() then
         return false
     end
-    Reconcile.lastControlBoardMirrorFingerprint = nil
-    Reconcile.reconcileControlBoardFromState({
-        force = true,
-        forceTokenMirror = true,
-        allowPreview = true,
-    })
-    return true
+    return Preview.forceHere({ commit = true }) == true
 end
 
 Reconcile.scanSeatRowTokensBySeatKey = scanSeatRowTokensBySeatKey

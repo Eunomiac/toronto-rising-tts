@@ -293,6 +293,29 @@ function Preview.clear()
     S.setStateVal(nil, "controlBoard", "previewDraft")
 end
 
+--- TOR-449: leave THERE — optional commit into library, clear draft, restore HERE board.
+--- @param opts table|nil `{ commit?: boolean }` default commit=true when a draft exists
+--- @return boolean true when ended HERE (or already HERE)
+function Preview.forceHere(opts)
+    opts = type(opts) == "table" and opts or {}
+    local shouldCommit = opts.commit ~= false
+    if not Preview.isThere() then
+        return true
+    end
+    local Gameboard = require("core.npc_gameboard")
+    if shouldCommit then
+        if type(Gameboard.capturePreviewDraftNow) == "function" then
+            Gameboard.capturePreviewDraftNow()
+        end
+        Preview.commit()
+    end
+    Preview.clear()
+    if type(Gameboard.reconcileControlBoardFromState) == "function" then
+        Gameboard.reconcileControlBoardFromState({ force = true, forceTokenMirror = true })
+    end
+    return true
+end
+
 --- Merges source live participants over a destination scene bundle.
 --- @param source table
 --- @param destination table

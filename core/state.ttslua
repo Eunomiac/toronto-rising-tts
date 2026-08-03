@@ -325,7 +325,8 @@ function S.GetDefaultGameState()
         --- Per-PC last map pin location + narrative clock when last active (TOR-245). Top-level (not in
         --- sessionScene) so cross-scene history survives scene apply. `[color] = { siteKey, districtKey?, activeAt }`.
         lastActiveMapPin = {},
-        --- Control Board runtime intent persisted across Save & Play. A valid previewDraft means THERE mode.
+        --- Control Board runtime. A valid previewDraft means THERE mode (mid-session only;
+        --- TOR-449 clears THERE on load via Preview.forceHere).
         controlBoard = {
             lockNextSceneApply = false,
             previewDraft = nil,

@@ -136,6 +136,10 @@ Gameboard.clearControlBoard = Apply.clearControlBoard
 Gameboard.tryConfirmClear = Apply.tryConfirmClear
 Gameboard.loadControlBoardFromState = Apply.loadControlBoardFromState
 Gameboard.togglePreviewMode = Apply.togglePreviewMode
+Gameboard.forceHere = function(opts)
+    local Preview = require("core.control_board_preview")
+    return Preview.forceHere(opts)
+end
 Gameboard.isNextSceneApplyLocked = Apply.isNextSceneApplyLocked
 Gameboard.toggleNextSceneApplyLock = Apply.toggleNextSceneApplyLock
 Gameboard.syncTokensToPalette = Apply.syncTokensToPalette

@@ -605,5 +605,8 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-08-03 | FOCUS | TOR-448, TOR-449, TOR-417, TOR-444, TOR-439, TOR-436 | Re-stack after INBOX Immediate; demote stale TOR-423/419/418 from top |
 | 2026-08-03 | DONE | TOR-417 | Author confirmed HERE/THERE preview editor; tasklist `[x]`; Focus re-stack |
 | 2026-08-03 | UNBLOCK | TOR-449 | Removed `blockedBy` TOR-417; Focus #2 |
+| 2026-08-03 | SHIP | TOR-448 | ST tray/light ordering + 0.15s randomize pop; commit `6d19081` |
+| 2026-08-03 | SHIP | TOR-449 | Scenes close deselect + THERE guard; load/End force HERE; End clears activeKey |
+| 2026-08-03 | FOCUS | TOR-444, TOR-439, TOR-436 | Re-stack after TOR-448/449 Done |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

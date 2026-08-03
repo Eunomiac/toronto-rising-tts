@@ -713,9 +713,8 @@ end
 
 --- Stops live→library mirroring after End scene / no-scene apply.
 --- Clears `lastAppliedKey` and all `receivesLiveWrites` so Sync cannot write cleared live
---- location into a library row (TOR-145 / TOR-362). Keeps `activeKey` on the previously applied
---- row when possible so the Scenes panel shows that row's pending bundle (location intact)
---- instead of empty live keys — the TOR-365 UI false positive.
+--- location into a library row (TOR-145 / TOR-362). TOR-449: End scene then clears `activeKey`
+--- via `deselectPendingPreview({ clearActiveKey = true })` — preview is for scenes about to enter.
 function SceneLibrary.detachLiveTableFromLibraryMirror()
     local S = require("core.state")
     local K = SceneLibrary.resolveMirrorSceneKey()
