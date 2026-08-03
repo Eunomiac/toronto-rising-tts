@@ -1964,18 +1964,44 @@ end
 --- Seconds to hold a post-roll correction die locked above the tray before randomize (ST roll hover).
 local POST_ROLL_DIE_HOVER_SEC = 1
 
---- Unlocks and randomizes one die (ST roll / post-roll correction path).
--- @param color string
+--- TTS `Object.randomize(color)` toss impulse follows the acting seat; Black alone often
+--- fails to pop like player right-click ROLL. Prefer the clicker's seated color for ST.
+-- @param rollColor string  roll owner ("Black" / PC seat)
+-- @param actorColor string|nil  HUD clicker seat when known
+-- @return string|nil  color passed to `die.randomize`, or nil for unscoped randomize()
+local function resolveDieRandomizePhysicsColor(rollColor, actorColor)
+    if type(rollColor) == "string" and rollColor ~= "Black" then
+        return rollColor
+    end
+    if type(actorColor) == "string" and actorColor ~= "" then
+        return actorColor
+    end
+    if Player ~= nil and Player["Black"] ~= nil and Player["Black"].seated == true then
+        return "Black"
+    end
+    return nil
+end
+
+--- Unlocks and randomizes one die (ST roll / post-roll correction / PC auto-roll path).
+-- @param color string  roll owner (pool scan / settle attribution via die tags)
 -- @param die Object
+-- @param physicsColor string|nil  optional `randomize(...)` seat; defaults via resolveDieRandomizePhysicsColor
 -- @return boolean
-local function randomizeReleasedDieForRoll(color, die)
+local function randomizeReleasedDieForRoll(color, die, physicsColor)
     if die == nil or die.randomize == nil then
         return false
     end
     if die.getLock ~= nil and die.getLock() == true then
         die.setLock(false)
     end
-    local ok = die.randomize(color)
+    local rollAs = physicsColor
+    if type(rollAs) ~= "string" or rollAs == "" then
+        rollAs = resolveDieRandomizePhysicsColor(color, nil)
+    end
+    local ok = false
+    if type(rollAs) == "string" and rollAs ~= "" then
+        ok = die.randomize(rollAs)
+    end
     if ok ~= true then
         die.randomize()
     end
@@ -6119,14 +6145,19 @@ end
 --- Randomize every die in the active roll at once (Global context; fires onObjectRandomize).
 -- @param color string
 -- @param rollId string
-local function randomizeAllRollDiceForColor(color, rollId)
+-- @param physicsColor string|nil  ST: clicker seat so toss matches player R / right-click ROLL
+local function randomizeAllRollDiceForColor(color, rollId, physicsColor)
     if type(color) ~= "string" or type(rollId) ~= "string" then
         return
+    end
+    local rollAs = physicsColor
+    if type(rollAs) ~= "string" or rollAs == "" then
+        rollAs = resolveDieRandomizePhysicsColor(color, nil)
     end
     local _, objectsByKind = RC._getDicePoolsForRoll(color, rollId)
     for _, kind in ipairs(DK.ALL_KINDS) do
         for _, die in ipairs(objectsByKind[kind] or {}) do
-            randomizeReleasedDieForRoll(color, die)
+            randomizeReleasedDieForRoll(color, die, rollAs)
         end
     end
     if color == "Black" then
@@ -6136,8 +6167,9 @@ end
 
 --- Randomize every die in the active Black roll at once (Global context; fires onObjectRandomize).
 -- @param rollId string
-local function randomizeBlackTrayDiceSimultaneous(rollId)
-    randomizeAllRollDiceForColor("Black", rollId)
+-- @param physicsColor string|nil  acting seat for toss impulse
+local function randomizeBlackTrayDiceSimultaneous(rollId, physicsColor)
+    randomizeAllRollDiceForColor("Black", rollId, physicsColor)
 end
 
 --- Unlocks staged bag dice for one seat (drawer must already be opening or open).
@@ -6171,8 +6203,10 @@ local function blackRollWaitDrawerRaised(slot)
     end
 end
 
---- ST Roll click (TOR-448): open → fully raised + light → spawn → tray ring → hover → unlock → 0.15s → randomize.
-local function runBlackRollSequence()
+--- ST Roll click: open → fully raised + light → spawn → tray ring → hover →
+--- locked beat → unlock+randomize same frame (player right-click ROLL pop; TOR-448 follow-up).
+-- @param physicsColor string|nil  HUD clicker seat for Object.randomize toss
+local function runBlackRollSequence(physicsColor)
     local pid = S.getPlayerID("Black")
     if pid == nil then
         return
@@ -6190,6 +6224,7 @@ local function runBlackRollSequence()
     blackRollSequenceRunning = true
     local slot = active.stDrawerSlot
     local rollId = active.id
+    local rollAs = resolveDieRandomizePhysicsColor("Black", physicsColor)
 
     U.chain({
         function()
@@ -6217,12 +6252,12 @@ local function runBlackRollSequence()
             if RC.startRolling("Black") ~= true then
                 return nil
             end
-            unlockStagedBagDice("Black")
+            ensureBlackStagedRollTags()
             local activeNow = S.getStateVal("playerData", pid, "hud", "rollData", "active")
             if activeNow == nil or activeNow.phase ~= C.RollPhase.ROLLING then
                 return nil
             end
-            -- Match player right-click ROLL: brief free-physics window before randomize pop.
+            -- Match player auto-roll beat, but keep locked so dice do not free-fall before toss.
             return 0.15
         end,
         function()
@@ -6230,7 +6265,10 @@ local function runBlackRollSequence()
             if activeNow == nil or activeNow.phase ~= C.RollPhase.ROLLING then
                 return nil
             end
-            randomizeBlackTrayDiceSimultaneous(activeNow.id or rollId)
+            -- Unlock + randomize per die in one call (same as R on staged dice / PC right-click).
+            randomizeBlackTrayDiceSimultaneous(activeNow.id or rollId, rollAs)
+            -- Clear ST bag staging lists (dice already unlocked by randomize).
+            unlockStagedBagDice("Black")
             return nil
         end,
     }, {
@@ -6242,11 +6280,12 @@ local function runBlackRollSequence()
 end
 
 --- Advances to ROLLING and unlocks staged dice (drawer must already be raised when applicable).
--- Black legacy/debug path: startRolling → 1s hover → unlock → 0.15s → simultaneous randomize (TOR-448).
+-- Black legacy/debug path: startRolling → 1s hover → locked beat → unlock+randomize (TOR-448 follow-up).
 -- PC path: live tray elevation + startRolling must complete before unlock (TOR-262).
 -- @param color string
+-- @param physicsColor string|nil  ST only: acting seat for toss impulse
 -- @return boolean
-local function finishRollRelease(color)
+local function finishRollRelease(color, physicsColor)
     if color == "Black" then
         local pid = S.getPlayerID(color)
         local delayedRollId = nil
@@ -6265,16 +6304,19 @@ local function finishRollRelease(color)
         if type(stSlot) == "number" then
             STD.applyTrayLightForSlot(stSlot, true, 0.25)
         end
+        local rollAs = resolveDieRandomizePhysicsColor("Black", physicsColor)
         U.await(function()
             if RC.startRolling(color) ~= true then
                 return
             end
-            unlockStagedBagDice(color)
+            ensureBlackStagedRollTags()
             if type(delayedRollId) ~= "string" then
+                unlockStagedBagDice(color)
                 return
             end
             U.await(function()
-                randomizeBlackTrayDiceSimultaneous(delayedRollId)
+                randomizeBlackTrayDiceSimultaneous(delayedRollId, rollAs)
+                unlockStagedBagDice(color)
             end, 0.15)
         end, 1)
         return true
@@ -6686,7 +6728,11 @@ function HUD_rollRollButton(player, value, id)
 
     if color == "Black" then
         applyBlackRollMetaFlag(color, value, "secretDice")
-        runBlackRollSequence()
+        local physicsColor = nil
+        if player ~= nil and type(player.color) == "string" then
+            physicsColor = player.color
+        end
+        runBlackRollSequence(physicsColor)
         return
     end
 
