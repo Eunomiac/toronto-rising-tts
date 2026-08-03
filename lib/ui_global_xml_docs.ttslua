@@ -7802,20 +7802,11 @@ UI.setAttributes("playerHud_refPanel_princesCourt_Red", {offsetXY = "-50 0"})
 <!-- Placed last among blindfolds in ui/Global.xml so it draws above transition blinds when both are up. -->
 <!--
 UI.show("overlay_globalBlindfold")
-
-refresh dynamic hud on refresh during phase
-red outline on unconfirmed rolls
-make sure interactive false of figurines
-make sure visibility hidden for figurines and everything else under table
-make a helper function for disabling objects that automatically sets them invisible and uninteractive and y = -200.
-
-
 -->
 
 <!--
 UI.hide("overlay_globalBlindfold")
 UI.setAttributes("overlay_globalBlindfold", {color = "rgba(1, 1, 1, 0.25)"})
-
 -->
 
 <Image id="overlay_globalBlindfold"
@@ -14550,20 +14541,11 @@ M.minimal = [=[
 <!-- Placed last among blindfolds in ui/Global.xml so it draws above transition blinds when both are up. -->
 <!--
 UI.show("overlay_globalBlindfold")
-
-refresh dynamic hud on refresh during phase
-red outline on unconfirmed rolls
-make sure interactive false of figurines
-make sure visibility hidden for figurines and everything else under table
-make a helper function for disabling objects that automatically sets them invisible and uninteractive and y = -200.
-
-
 -->
 
 <!--
 UI.hide("overlay_globalBlindfold")
 UI.setAttributes("overlay_globalBlindfold", {color = "rgba(1, 1, 1, 0.25)"})
-
 -->
 
 <Image id="overlay_globalBlindfold"
