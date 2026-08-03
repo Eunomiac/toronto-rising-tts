@@ -6218,8 +6218,8 @@ local function blackRollWaitDrawerRaised(slot)
     end
 end
 
---- ST Roll click: open → fully raised + light → spawn unlocked on tray (y=2.04) →
---- ring layout → settle → unlock (noop) → 0.15s → randomize (TOR-448).
+--- ST Roll click: open → fully raised + light → spawn → tray ring → settle →
+--- unlock → 0.15s → randomize (PC auto-roll order; longer settle than manual PC assemble).
 -- @param physicsColor string|nil  HUD clicker seat for Object.randomize toss
 local function runBlackRollSequence(physicsColor)
     local pid = S.getPlayerID("Black")
@@ -6258,6 +6258,7 @@ local function runBlackRollSequence(physicsColor)
         end,
         function()
             moveBlackStagedDiceToTray()
+            -- Locked settle: mirror PC dice that sat assembled before right-click ROLL.
             return ST_ROLL_TRAY_SETTLE_SEC
         end,
         function()
@@ -6272,7 +6273,7 @@ local function runBlackRollSequence(physicsColor)
             if activeNow == nil or activeNow.phase ~= C.RollPhase.ROLLING then
                 return nil
             end
-            -- Same as PC autoRollOnRelease: unlock first, brief free-physics window, then toss.
+            -- Same order as PC autoRollOnRelease (unlock → delay → toss); delay is diagnostic 5s.
             return ST_ROLL_POST_UNLOCK_SEC
         end,
         function()
@@ -6447,7 +6448,8 @@ end
 --- Opens drawer if needed, waits until raised, then unlocks staged dice.
 -- @param color string
 -- @param onComplete function|nil  optional callback after dice are released
-local function releaseBagDice(color, onComplete)
+-- @param physicsColor string|nil  ST: HUD clicker seat for Object.randomize toss (TOR-448)
+local function releaseBagDice(color, onComplete, physicsColor)
     if color ~= "Black" and PRTL.isInitiateBlocked(color) then
         return
     end
@@ -6463,14 +6465,14 @@ local function releaseBagDice(color, onComplete)
             end
         end
         if slot == nil then
-            finishRollRelease(color)
+            finishRollRelease(color, physicsColor)
             if type(onComplete) == "function" then
                 onComplete()
             end
             return
         end
         if STD.isRaisedForRelease(slot) then
-            finishRollRelease(color)
+            finishRollRelease(color, physicsColor)
             if type(onComplete) == "function" then
                 onComplete()
             end
@@ -6480,6 +6482,7 @@ local function releaseBagDice(color, onComplete)
             color = color,
             onComplete = onComplete,
             stDrawerSlot = slot,
+            physicsColor = physicsColor,
         }
         startLuaCoroutine(Global, "GlobalWaitDrawerThenReleaseBagDice")
         return
@@ -6503,12 +6506,16 @@ local function releaseBagDice(color, onComplete)
         end
         return
     end
-    drawerReleaseJobQueue[#drawerReleaseJobQueue + 1] = { color = color, onComplete = onComplete }
+    drawerReleaseJobQueue[#drawerReleaseJobQueue + 1] = {
+        color = color,
+        onComplete = onComplete,
+        physicsColor = physicsColor,
+    }
     startLuaCoroutine(Global, "GlobalWaitDrawerThenReleaseBagDice")
 end
 
 --- Global.call entry: unlock staged bag dice (PRE_ROLL → ROLLING), same as panel Roll.
--- @param params table  { color: string }
+-- @param params table  { color: string, physicsColor?: string }
 function GlobalReleaseBagDice(params)
     if type(params) ~= "table" or type(params.color) ~= "string" then
         return false
@@ -6516,7 +6523,11 @@ function GlobalReleaseBagDice(params)
     if params.color ~= "Black" and PRTL.isInitiateBlocked(params.color) then
         return false
     end
-    releaseBagDice(params.color)
+    local physicsColor = nil
+    if type(params.physicsColor) == "string" and params.physicsColor ~= "" then
+        physicsColor = params.physicsColor
+    end
+    releaseBagDice(params.color, nil, physicsColor)
     return true
 end
 
