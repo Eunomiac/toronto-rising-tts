@@ -62,13 +62,13 @@ Do not conflate them. Hunger TOR-340 sticky-`active` under empty-seat `visibilit
 
 ## Strategy 3 eligibility
 
-**Share:** nestedless `refPanel_*`; Court **page** panels (page1/2/3 — concurrent viewers on different pages via per-page unions); coterie grid/popups when state allows; **scene-transition blindfold** (one random variant + cards for all); location dock (shared session location); camera overlay chrome.
+**Share:** nestedless `refPanel_*`; Court **page** panels (page1/2/3 — concurrent viewers on different pages via per-page unions); coterie grid/popups when state allows; **scene-transition blindfold** (one random variant + cards for all); location dock (shared session location).
 
-**Keep per-seat (divergent content/interaction):** map (pan/hover); roll controls; **hunger + condition overlays** (different per-PC art at once — dropping FadeIn does not remove this need).
+**Keep per-seat (divergent content/interaction):** map (pan/hover); roll controls; **hunger + condition overlays** (different per-PC art at once — keep FadeIn; Images are already per-seat); **camera dock** (left = other players only; right = self controls).
 
 ### Animation contract
 
-`UI.show` / `UI.hide` fire XmlUI animations. For shared animated panels: set `visibility` audience first (while inactive), then `UI.show`. Do not keep ×5 copies solely to run per-seat fades when content is shared or the fade is dispensable.
+`UI.show` / `UI.hide` fire XmlUI animations. For shared animated panels: set `visibility` audience first (while inactive), then `UI.show`. Do not keep ×5 copies solely to run per-seat fades when content is shared or the fade is dispensable. Where content already requires per-seat Images (hunger/conditions), keep overlay FadeIn.
 
 Nav: XmlUI `(player, value, id)` → `getPlayerIDAndColor(player)`.
 
