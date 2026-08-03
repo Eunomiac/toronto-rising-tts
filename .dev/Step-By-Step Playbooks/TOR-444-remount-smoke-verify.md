@@ -25,7 +25,7 @@ Confirm remount-weight cuts still open nestedless refs, Prince’s Court, the sh
 ## What this playbook checks
 
 1. **Structural remount** — shared element ids exist; old per-seat / stack sibling ids are gone.
-2. **Nestedless Rolls** — open via state; audience includes Red; you confirm the shared popup looks right.
+2. **Nestedless Rolls** — open via state; audience includes Red; you confirm the single shared popup’s image looks right (not a multi-seat visibility check).
 3. **Prince’s Court** — shared tree + single tracker Images; you flip to page 2; Lua asserts page audience.
 4. **Shared blindfold** — arm shared panel via `U`/`UI` (mirrors `HO.applyBlindfoldVariantForSeatedPlayers`); you confirm FadeIn; Lua hides and continues.
 5. **Location dock + sidebar tint** — district `image=` on the single per-seat Image; hover sibling chrome absent.
@@ -53,7 +53,7 @@ Test constants (shared via `_G.TOR444`):
 
 **Step 1b (optional).** If a prior run left the shared blindfold (or refs) up — Execute Lua Code — **Code Block Cleanup**, then continue from **Step 2** (0 → A → B). Cleanup resets Court to page 1 and closes refs — **do not** jump to Block B after Cleanup alone (B expects page 2 from A’s navigate click).
 
-**Step 2.** Execute Lua Code — **Code Block 0**. Watch for `▶▶▶ HUMAN ▶▶▶` — confirm the Rolls reference popup looks correct (shared image, not a blank/broken panel).
+**Step 2.** Execute Lua Code — **Code Block 0**. Watch for `▶▶▶ HUMAN ▶▶▶` — confirm the Rolls popup shows its reference image (not blank/broken). Audience for Red is Lua-asserted; you do not need a second seated color.
 
 **Step 3.** Execute Lua Code — **Code Block A**. When prompted: **confirm Court page 1 looks correct**, then **click the Court navigate-right control once** (to page 2).
 
