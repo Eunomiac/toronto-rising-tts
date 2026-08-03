@@ -155,7 +155,7 @@ If unanswered **`?`** remain, say so explicitly — repo is still **`/tr-start`-
 3. **Linear sync** — **priority** changes and new **`blockedBy`** links; each id with label (e.g. `TOR-143 (phase system redesign) → Medium`; `TOR-143 blockedBy TOR-141 (E2E playbooks)`).
 4. **Blocked on author** — any `?` still needing **`Answer:`** in INBOX (copy the questions).
 5. **Sequencing notes** — inbox promotions not in Focus: where they landed (domain section) and **`blockedBy`** applied (labeled). If none promoted this session, say *“No new sequencing.”*
-6. **Handoff** — one sentence with labeled id if naming a specific next task: *“Open a new chat and run `/tr-start TOR-135 NPC cutouts on scene apply` (include the issue id in the message so scope is obvious). After the agent sets Linear **In Progress**, rename the chat to `TOR-135 — NPC cutouts on scene apply` — agents cannot rename Cursor chats themselves.”*
+6. **Handoff** — one sentence with labeled id if naming a specific next task: *“Open a new chat and run `/tr-start TOR-135 NPC cutouts on scene apply` (include the issue id in the message so scope is obvious).”*
 
 ---
 

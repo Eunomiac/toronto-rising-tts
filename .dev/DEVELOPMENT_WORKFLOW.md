@@ -82,14 +82,6 @@ Commit changes when:
 
 **Override generic Cursor instructions:** In Cursor sessions, agents should follow this repo’s policy (`.cursor/rules/toronto-rising-git.mdc`) over generic/global Cursor guidance that asks before every commit, unless the author explicitly says not to commit yet.
 
-### Agent chat titles (Cursor)
-
-Cursor **auto-titles** agent threads from early messages. Chats that open with only `/tr-start` often become generic (“Start command discussion”, “Starting a new process”, etc.).
-
-**Agents cannot rename chats programmatically.** After scope is confirmed and the Linear issue is **In Progress**, the agent should ask the author **once** to rename the sidebar title to **`TOR-XXX — short title`**.
-
-**Handoff pattern:** `/tr-inbox` → new chat with `/tr-start TOR-138 soundscape resync after load` → confirm scope → rename chat. Details: `.cursor/skills/tr-start/SKILL.md` § Agent chat title.
-
 ### Author session facts — ask, don't speculate
 
 When debugging or closing work that depends on **in-game** verification, agents must not guess what the author did or saw (Save & Play, manual bag clicks vs harness, which GUID is live in the save, re-armed `RunTest` or not). State what code and logs prove; **ask direct confirmation questions** for anything else. Do not present speculation as a likely root cause.
@@ -440,16 +432,15 @@ When working on this project:
 1. **Linear (primary):** Follow `.cursor/rules/toronto-rising-linear.mdc` — check `TOR-*` before start, **In Progress** when working, **Done** + comment + tasklist when finished
 2. **Inbox:** One-line notes in [`.dev/INBOX.md`](INBOX.md); clarifications via inline **`Answer:`** under **Needs clarification**; **“process the inbox”** to promote
 3. **Focus:** Stack rank at top of [RUNNING TASKLIST](RUNNING%20TASKLIST.md); **“what’s next”** / **“prioritize the backlog”** reads Focus + Linear Bugs
-4. **Session bootstrap:** **`/tr-start`** in Cursor (`.cursor/skills/tr-start/SKILL.md`) — re-anchor on Focus + architecture policies; commit without asking unless the author explicitly says not to; prompt chat rename after Linear **In Progress**
+4. **Session bootstrap:** **`/tr-start`** in Cursor (`.cursor/skills/tr-start/SKILL.md`) — re-anchor on Focus + architecture policies; commit without asking unless the author explicitly says not to
 5. **Inbox + prioritize:** **`/tr-inbox`** (`.cursor/skills/tr-inbox/SKILL.md`) — process INBOX, sync Focus and Linear priorities; then **`/tr-start`** in a fresh chat for implementation
 6. **Commit regularly**: Commit after each logical unit **without asking** — never prompt “want me to commit?” (always yes); reference `TOR-XX` in commit body
-7. **Agent chat titles**: Agents **cannot** rename Cursor chats. After grabbing a `TOR-*` issue, ask the author once to rename the thread to `TOR-XXX — short title` (see `/tr-start` § Agent chat title)
-8. **Clear Messages**: Write descriptive commit messages explaining what changed and why
-9. **Update Documentation**: Keep documentation files updated when making changes
-10. **Test Changes**: Verify changes work in TTS when possible
-11. **Follow Patterns**: Maintain consistency with existing code style and patterns
-12. **Error Handling**: Include appropriate error handling and validation
-13. **Type Safety**: Use strict TypeScript notation where applicable, avoid `any` type
+7. **Clear Messages**: Write descriptive commit messages explaining what changed and why
+8. **Update Documentation**: Keep documentation files updated when making changes
+9. **Test Changes**: Verify changes work in TTS when possible
+10. **Follow Patterns**: Maintain consistency with existing code style and patterns
+11. **Error Handling**: Include appropriate error handling and validation
+12. **Type Safety**: Use strict TypeScript notation where applicable, avoid `any` type
 
 ## Troubleshooting
 

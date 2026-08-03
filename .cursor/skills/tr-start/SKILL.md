@@ -74,17 +74,6 @@ You are starting (or re-scoping) work on **Toronto Rising**, a Vampire: The Masq
 | **Commits (Cursor policy)** | In Cursor sessions, after every logical unit — **without asking** unless the author explicitly says not to. Never prompt “want me to commit?” Reference `TOR-XX` in the commit body. `.cursor/rules/toronto-rising-git.mdc` |
 | **Ask, don't speculate** | Do not guess author-only facts (Save & Play, manual repro, live GUIDs, in-game observations). Ask direct confirmation questions. `.cursor/rules/toronto-rising-author-session.mdc` |
 
-## 2b) Agent chat title (Cursor)
-
-**Agents cannot rename Cursor agent chats programmatically.** Cursor auto-titles threads from early messages; a chat that opens with only `/tr-start` often becomes an unhelpful generic title (e.g. “Start command discussion”).
-
-**Mitigation:**
-
-1. **Do not** treat orientation boilerplate as the “name” of the session — wait until a **`TOR-*` issue is grabbed** (Linear **In Progress** + confirmed scope).
-2. **Immediately after** scope is confirmed and the issue is **In Progress**, add **one line** to your reply asking the author to rename the chat in the sidebar to: **`TOR-XXX — short title`** (use the Linear/tasklist label, not a bare id).
-3. **Prefer** starting with issue context when possible: `/tr-start TOR-138 soundscape resync after load` — still rename manually after confirm; auto-title may stay generic.
-4. **`/tr-inbox` handoff** should name the recommended next `TOR-*` so the follow-up `/tr-start` message can include it.
-
 ## 3) How to choose work
 
 - If the user **named a task** (e.g. `TOR-135` NPC cutouts, “fix weather burst”, “process the inbox”): that is scope — confirm briefly with labeled id, set Linear **In Progress**, proceed.
@@ -101,7 +90,6 @@ Post a **short orientation** (not a wall of text):
 3. **Docs you read** — checklist of the numbered reads above that you actually opened (honest list).
 4. **Plan** — 3–5 bullets for the first implementation or triage pass.
 5. **Risk callouts** — dual-apply, reconciler boundary, or gate policy if relevant.
-6. **Chat rename** — once scope is confirmed and Linear is **In Progress**, one line: ask the author to rename this chat to **`TOR-XXX — short title`**. Skip only if the user already renamed it or the thread title already matches the issue.
 
 Then execute unless the user only wanted orientation. In Cursor sessions, **commit** after each logical unit without asking for permission unless the author explicitly says not to.
 
