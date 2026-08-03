@@ -44,6 +44,22 @@ Related: [Join-Load Inventory](../Multiplayer%20Functionality/Join-Load%20Invent
 | 2 | One Image + XmlUI `color` tint | `_hover` / `_active` sibling Images + triple assets |
 | 3 | Shared element; `visibility` unions (`Red\|Orange`) | ×5 trees when attrs are the same for all viewers |
 
+### Strategy 2 ↔ 3 conflict (hover chrome)
+
+One Image has one `color`. If that Image is shared and visible to `Red|Orange`, a hover tint for Red is also seen by Orange. So for interactive chrome that needs concurrent per-player hover/active feedback:
+
+| Option | Structure | Feedback mechanism |
+| --- | --- | --- |
+| **A** | Per-player containers (×5); **collapse** stacks → one Image each | Strategy **2** tint / asset swap |
+| **B** | **Shared** container (×1); **keep** base/hover/active siblings | Strategy **3** — per-player `visibility` on hover/active layers (`active` union = who has that toggle on; `hover` = who is hovering) |
+
+Cannot combine “shared single Image” + “per-player tint.” Pick A or B per surface.
+
+Rough chrome Image count for ~54 map sidebar buttons (status quo ≈ 54×3×5 = **810**):
+
+- **A:** 54×5 = **270**
+- **B:** 54×3 = **162** (best remount if Lua can drive per-layer audiences)
+
 ### `active` vs `visibility`
 
 | Attribute | Meaning | Helpers |
@@ -66,18 +82,16 @@ Do not conflate them. Hunger TOR-340 sticky-`active` under empty-seat `visibilit
 
 **Keep per-seat (divergent content/interaction):** map pan surface + in-map overlays (see Map section); roll controls; **hunger + condition overlays** (different per-PC art at once — keep FadeIn; Images are already per-seat); **camera dock** (left = other players only; right = self controls).
 
-### Map (pan forces ×5 of the surface; collapse *within* seat)
+### Map (pan forces ×5 of the surface; chrome is A-or-B)
 
-Pan/`offsetXY` cannot differ per viewer on one Image → keep per-seat: map base, feature/domain overlays, pins, district highlight, district card (cards sit outside the draggable but selection is still per-player).
+Pan/`offsetXY` cannot differ per viewer on one Image → keep per-seat: map base, feature/domain overlays, pins, district highlight (collapsed), district card (collapsed; selection still per-player).
 
-| Within each seat copy | Strategy |
+| Within / beside map | Approach |
 | --- | --- |
-| District highlight stack → **one** Image + guarded `image=` | 1 |
-| District card stack → **one** Image + guarded `image=` | 1 |
-| Left/right sidebar chrome (base/hover/active banks) → **one** Image + tint / asset swap | 2 |
-| Pan nav chrome banks → tint | 2 |
+| District highlight / card exclusive stacks | Strategy **1** — one Image + `image=` **per seat** (live under / with pan selection) |
+| Left/right sidebar + pan nav chrome | **Option A or B** (see Strategy 2↔3 conflict). Prefer **B** for max Image cut if concurrent independent toggles stay; **A** if we keep proven tint path and accept ×5 containers |
 
-**Sidebars are not strategy-3 shareable** while concurrent map viewers keep independent `hud.map.overlays` / district hover: art is identical, but selected/hover attrs diverge. Sharing would need a product rule (e.g. one open map at a time, or global overlay state). Prefer within-seat chrome collapse.
+Shared map sidebars (B): root audience = players with map open; each `_active` / `_hover` sibling’s `visibility` = the subset of those players in that chrome state.
 
 ### Animation contract
 
@@ -137,11 +151,11 @@ Floor ~800+ while map / rolls / camera stay seat-local.
 
 ## Implementation phases
 
-0. This doc + DOCS_INDEX  
-1. Audience helpers in `lib/util.ttslua`  
-2. Migrate Global visibility writers onto helpers  
-3. Sidebar chrome tint pilot  
-4. Shared nestedless ref panels  
-5. Shared Court pages + tracker collapse  
-6. Remaining stacks/chrome / pip meters  
-7. Recount + Save & Play + join Reload UI smoke  
+0. This doc + DOCS_INDEX
+1. Audience helpers in `lib/util.ttslua`
+2. Migrate Global visibility writers onto helpers
+3. Sidebar chrome tint pilot
+4. Shared nestedless ref panels
+5. Shared Court pages + tracker collapse
+6. Remaining stacks/chrome / pip meters
+7. Recount + Save & Play + join Reload UI smoke
