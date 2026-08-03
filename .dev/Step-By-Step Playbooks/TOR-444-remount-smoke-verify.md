@@ -360,7 +360,7 @@ U.chain({
   end,
   function()
     print(
-      "   ▶▶▶ HUMAN ▶▶▶ Confirm the Rolls reference popup looks correct (shared art, readable), then run Code Block A."
+      "   ▶▶▶ HUMAN ▶▶▶ Confirm the Rolls popup shows its reference image (not blank/broken), then run Code Block A."
     )
   end,
 })
