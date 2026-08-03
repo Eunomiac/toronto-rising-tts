@@ -1,0 +1,61 @@
+<!-- Shared scene-transition blindfold (TOR-444).
+     One panel for all seats; one variant Image (image= swap); one district/site card pair.
+     Arm audience (U.setVisibleTo PC colors) while inactive, then UI.show parent.
+     Phases still use ui/shared/panel_overlay_global_blindfold.xml. -->
+<Defaults>
+  <Image class="player_overlay_transition"
+    active="true"
+    width="1920"
+    height="1200"
+    preserveAspect="true"
+    raycastTarget="false"
+    rectAlignment="MiddleCenter"
+  />
+  <Image class="player_overlay_district_card_display"
+    raycastTarget="false"
+    preserveAspect="true"
+    rectAlignment="LowerLeft"
+    width="900"
+    offsetXY="50 75"
+    showAnimation="FadeIn"
+    hideAnimation="FadeOut"
+    animationDuration="1"
+    showAnimationDelay="4"
+    active="false"
+    image=""
+    color="clear"
+  />
+  <Image class="player_overlay_site_card_display"
+    raycastTarget="false"
+    preserveAspect="true"
+    rectAlignment="LowerRight"
+    width="900"
+    offsetXY="-50 125"
+    showAnimation="FadeIn"
+    hideAnimation="FadeOut"
+    animationDuration="1"
+    showAnimationDelay="4.5"
+    active="false"
+    image=""
+    color="clear"
+  />
+</Defaults>
+
+<Panel id="playerHud_overlay_blindfold"
+  active="false"
+  width="1920"
+  height="1200"
+  rectAlignment="MiddleCenter"
+  raycastTarget="true"
+  visibility="None"
+  showAnimation="FadeIn"
+  hideAnimation="FadeOut"
+  animationDuration="2"
+  hideAnimationDelay="1">
+  <Image id="overlay_blindfold_display"
+    image="overlay_blindfold_1"
+    class="player_overlay_transition"
+    color="White" />
+  <Image id="overlay_district_card_display" class="player_overlay_district_card_display" />
+  <Image id="overlay_site_card_display" class="player_overlay_site_card_display" />
+</Panel>

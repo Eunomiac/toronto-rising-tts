@@ -22,7 +22,7 @@ local lastVisible = {}
 --- Per-seat desired overlay inputs fingerprint (skip full reconcile when unchanged).
 local lastDesiredVisibilityFpBySeat = {}
 
---- seatColor -> delay id for post-hide child default restore (TOR-431).
+--- seatColor -> delay id unused after TOR-444 shared blindfold (kept nil).
 local pendingBlindfoldChildCleanupBySeat = {}
 
 --- Parent Panel hide: animationDuration 2 + hideAnimationDelay 1 (playerHud_blindfoldOverlay).
@@ -31,22 +31,27 @@ local BLINDFOLD_HIDE_CHILD_CLEANUP_SEC = 3
 --- Tier images overlay_hunger_0 .. overlay_hunger_5 (mutually exclusive).
 local HUNGER_LEVELS = { 0, 1, 2, 3, 4, 5 }
 
---- Blindfold art variants overlay_blindfold_1 .. overlay_blindfold_N (mutually exclusive).
+--- Blindfold art variants overlay_blindfold_1 .. overlay_blindfold_N (asset names; one shared Image).
 local BLINDFOLD_VARIANTS = {}
 for v = 1, C.BlindfoldVariantCount do
   BLINDFOLD_VARIANTS[v] = v
 end
 
---- @param seatColor string
+local SHARED_BLINDFOLD_PANEL = "playerHud_overlay_blindfold"
+local SHARED_BLINDFOLD_DISPLAY = "overlay_blindfold_display"
+local SHARED_BLINDFOLD_DISTRICT = "overlay_district_card_display"
+local SHARED_BLINDFOLD_SITE = "overlay_site_card_display"
+
 --- @return string
-local function blindfoldPanelId(seatColor)
-  return "playerHud_overlay_blindfold_" .. seatColor
+local function blindfoldPanelId()
+  return SHARED_BLINDFOLD_PANEL
 end
 
 --- @param elementId string
 --- @return boolean
 local function isExclusiveBlindfoldElementId(elementId)
-  return type(elementId) == "string" and string.match(elementId, "^overlay_blindfold_%d+_") ~= nil
+  return elementId == SHARED_BLINDFOLD_DISPLAY
+    or (type(elementId) == "string" and string.match(elementId, "^overlay_blindfold_%d+") ~= nil)
 end
 
 --- @param seatColor string
@@ -60,11 +65,7 @@ local function allManagedOverlayIdsForSeat(seatColor)
     "overlay_humanity_impaired_" .. seatColor,
     "overlay_stained_" .. seatColor,
     "overlay_frenzy_" .. seatColor,
-    blindfoldPanelId(seatColor),
   }
-  for _, variant in ipairs(BLINDFOLD_VARIANTS) do
-    ids[#ids + 1] = "overlay_blindfold_" .. variant .. "_" .. seatColor
-  end
   for _, n in ipairs(HUNGER_LEVELS) do
     ids[#ids + 1] = "overlay_hunger_" .. n .. "_" .. seatColor
   end
@@ -195,121 +196,106 @@ local function desiredHungerLevelFromWant(want, seatColor)
   return 0
 end
 
---- @param want table<string, boolean>
---- @param seatColor string
---- @param playerID string|nil
---- @return number|nil variant 1..C.BlindfoldVariantCount when any blindfold overlay is wanted
-local function desiredBlindfoldFromWant(want, seatColor, playerID)
-  if type(want) ~= "table" or type(seatColor) ~= "string" then
-    return nil
-  end
-  local variant = nil
-
-  if type(playerID) == "string" and playerID ~= "" and playerID ~= C.StorytellerID then
-    local conditions = S.getStateVal("playerData", playerID, "conditions")
-    if type(conditions) == "table" then
-      local blindfold = conditions.hudBlindfold
-      if type(blindfold) == "table" then
-        -- Persisted instance schema uses `variant` (see lib/condition_defs.ttslua).
-        variant = tonumber(blindfold.variant)
+--- @return number|nil variant from any seated PC's hudBlindfold condition
+local function desiredSharedBlindfoldVariantFromConditions()
+  local seated = Player.getPlayers() or {}
+  for _, player in ipairs(seated) do
+    local color = player and player.color or nil
+    if type(color) == "string" then
+      local playerID = S.getPlayerID(color)
+      if type(playerID) == "string" and playerID ~= "" and playerID ~= C.StorytellerID then
+        local conditions = S.getStateVal("playerData", playerID, "conditions")
+        if type(conditions) == "table" and type(conditions.hudBlindfold) == "table" then
+          local variant = tonumber(conditions.hudBlindfold.variant)
+          if variant ~= nil and variant >= 1 and variant <= C.BlindfoldVariantCount then
+            return variant
+          end
+          return 1
+        end
       end
     end
   end
-
-  if variant == nil then
-    for _, v in ipairs(BLINDFOLD_VARIANTS) do
-      if want["overlay_blindfold_" .. v .. "_" .. seatColor] == true then
-        variant = v
-        break
-      end
-    end
-  end
-
-  return variant
+  return nil
 end
 
---- @param seatColor string
-local function cancelBlindfoldChildCleanup(seatColor)
-  local delayId = pendingBlindfoldChildCleanupBySeat[seatColor]
-  if delayId ~= nil then
-    U.cancel(delayId)
-    pendingBlindfoldChildCleanupBySeat[seatColor] = nil
+--- Pending shared-blindfold child cleanup delay id (TOR-444 shared panel).
+local pendingSharedBlindfoldChildCleanup = nil
+
+local function cancelSharedBlindfoldChildCleanup()
+  if pendingSharedBlindfoldChildCleanup ~= nil then
+    U.cancel(pendingSharedBlindfoldChildCleanup)
+    pendingSharedBlindfoldChildCleanup = nil
   end
 end
 
---- Restore child defaults only (variants + destination cards). Parent stays as UI.hide left it.
---- @param seatColor string
-local function restoreBlindfoldChildDefaults(seatColor)
-  if type(seatColor) ~= "string" then
-    return
-  end
-  for _, v in ipairs(BLINDFOLD_VARIANTS) do
-    U.setAttribute("overlay_blindfold_" .. v .. "_" .. seatColor, "active", "false")
-  end
-  local districtId = "overlay_district_card_display_" .. seatColor
-  local siteId = "overlay_site_card_display_" .. seatColor
-  U.setAttributes(districtId, { active = "false", color = "Clear", image = "" })
-  U.setAttributes(siteId, { active = "false", color = "Clear", image = "" })
+local function restoreSharedBlindfoldChildDefaults()
+  U.setAttribute(SHARED_BLINDFOLD_DISPLAY, "image", "overlay_blindfold_1")
+  U.setAttributes(SHARED_BLINDFOLD_DISTRICT, { active = "false", color = "Clear", image = "" })
+  U.setAttributes(SHARED_BLINDFOLD_SITE, { active = "false", color = "Clear", image = "" })
 end
 
---- @param seatColor string
-local function scheduleBlindfoldChildCleanup(seatColor)
-  cancelBlindfoldChildCleanup(seatColor)
-  pendingBlindfoldChildCleanupBySeat[seatColor] = U.await(function()
-    pendingBlindfoldChildCleanupBySeat[seatColor] = nil
-    restoreBlindfoldChildDefaults(seatColor)
+local function scheduleSharedBlindfoldChildCleanup()
+  cancelSharedBlindfoldChildCleanup()
+  pendingSharedBlindfoldChildCleanup = U.await(function()
+    pendingSharedBlindfoldChildCleanup = nil
+    restoreSharedBlindfoldChildDefaults()
   end, BLINDFOLD_HIDE_CHILD_CLEANUP_SEC)
 end
 
---- Arm destination cards before parent UI.show (TOR-425 / TOR-431).
---- When both images are set: White + art + active. Otherwise Clear defaults (invisible if animated).
---- @param seatColor string
---- @param districtImage string|nil
---- @param siteImage string|nil
-local function armBlindfoldLocationCards(seatColor, districtImage, siteImage)
-  local districtId = "overlay_district_card_display_" .. seatColor
-  local siteId = "overlay_site_card_display_" .. seatColor
+--- Arm destination cards before parent UI.show (TOR-425 / TOR-431 / TOR-444 shared).
+local function armSharedBlindfoldLocationCards(districtImage, siteImage)
   if type(districtImage) == "string" and type(siteImage) == "string" then
-    U.setAttributes(districtId, { active = "true", color = "White", image = districtImage })
-    U.setAttributes(siteId, { active = "true", color = "White", image = siteImage })
+    U.setAttributes(SHARED_BLINDFOLD_DISTRICT, { active = "true", color = "White", image = districtImage })
+    U.setAttributes(SHARED_BLINDFOLD_SITE, { active = "true", color = "White", image = siteImage })
     return
   end
-  U.setAttributes(districtId, { active = "false", color = "Clear", image = "" })
-  U.setAttributes(siteId, { active = "false", color = "Clear", image = "" })
+  U.setAttributes(SHARED_BLINDFOLD_DISTRICT, { active = "false", color = "Clear", image = "" })
+  U.setAttributes(SHARED_BLINDFOLD_SITE, { active = "false", color = "Clear", image = "" })
 end
 
---- Blindfold visibility is owned by the parent Panel (TOR-431).
---- Arm the chosen variant Image (and optional location cards) before UI.show on the parent.
---- UI.show/hide only when parent visibility changes so repeated sync passes do not replay slides.
---- After hide, child defaults restore after BLINDFOLD_HIDE_CHILD_CLEANUP_SEC (do not reset mid-animation).
---- @param seatColor string
---- @param variant number|nil 1..C.BlindfoldVariantCount = show only that variant
---- @param opts table|nil `{ districtImage?, siteImage?, forceReshow?, touchLocationCards? }`
----   - location images: arm White+art when both strings; otherwise Clear (when touchLocationCards ~= false on show)
----   - touchLocationCards=false: leave card attrs alone (mid-settle reconcile while transition cards are up)
----   - forceReshow=true: parent active=false + UI.show even if lastVisible already true (new transition)
-local function applyBlindfoldOverlaysExclusive(seatColor, variant, opts)
-  if type(seatColor) ~= "string" then
-    return
+--- @return table array of seated PC seat colors (for visibility audience)
+local function seatedPcVisibilityAudience()
+  local tokens = {}
+  local seen = {}
+  for _, player in ipairs(Player.getPlayers() or {}) do
+    local color = player and player.color or nil
+    if type(color) == "string" and seen[color] ~= true and U.isIn(color, C.PlayerColors) then
+      seen[color] = true
+      tokens[#tokens + 1] = color
+    end
   end
+  return tokens
+end
+
+--- Shared transition blindfold (TOR-444): one panel, one variant Image via image=.
+--- @param variant number|nil 1..N = show; nil = hide
+--- @param opts table|nil `{ districtImage?, siteImage?, forceReshow?, touchLocationCards? }`
+local function applySharedBlindfold(variant, opts)
   opts = type(opts) == "table" and opts or {}
-  local panelId = blindfoldPanelId(seatColor)
+  local panelId = SHARED_BLINDFOLD_PANEL
   local shouldShow = variant ~= nil
   local prev = lastVisible[panelId]
   local touchCards = opts.touchLocationCards ~= false
 
   if shouldShow then
-    cancelBlindfoldChildCleanup(seatColor)
+    cancelSharedBlindfoldChildCleanup()
     local forceReshow = opts.forceReshow == true
     if forceReshow or prev ~= true then
       U.setAttribute(panelId, "active", "false")
     end
-    for _, v in ipairs(BLINDFOLD_VARIANTS) do
-      local eid = "overlay_blindfold_" .. v .. "_" .. seatColor
-      U.setAttribute(eid, "active", (v == variant) and "true" or "false")
+    U.setVisibleTo(panelId, seatedPcVisibilityAudience())
+    local v = tonumber(variant) or 1
+    if v < 1 then
+      v = 1
     end
+    if v > C.BlindfoldVariantCount then
+      v = C.BlindfoldVariantCount
+    end
+    U.setAttribute(SHARED_BLINDFOLD_DISPLAY, "image", "overlay_blindfold_" .. tostring(v))
+    U.setAttribute(SHARED_BLINDFOLD_DISPLAY, "active", "true")
+    U.setAttribute(SHARED_BLINDFOLD_DISPLAY, "color", "White")
     if touchCards then
-      armBlindfoldLocationCards(seatColor, opts.districtImage, opts.siteImage)
+      armSharedBlindfoldLocationCards(opts.districtImage, opts.siteImage)
     end
     if forceReshow or prev ~= true then
       UI.show(panelId)
@@ -321,40 +307,27 @@ local function applyBlindfoldOverlaysExclusive(seatColor, variant, opts)
   if prev == true then
     UI.hide(panelId)
     lastVisible[panelId] = false
-    scheduleBlindfoldChildCleanup(seatColor)
+    scheduleSharedBlindfoldChildCleanup()
   elseif prev == nil then
     lastVisible[panelId] = false
   end
 end
 
---- Show one blindfold variant for every seated player without a full overlay sync (transition lead-in).
+--- Show one blindfold variant for all seated PCs (shared panel, TOR-444).
 --- @param variant number 1..C.BlindfoldVariantCount
---- @param opts table|nil `{ districtImage?, siteImage?, forceReshow? }` — location cards only for non-ST seats
+--- @param opts table|nil `{ districtImage?, siteImage?, forceReshow? }`
 function HO.applyBlindfoldVariantForSeatedPlayers(variant, opts)
   local v = tonumber(variant)
   if v == nil or v < 1 or v > C.BlindfoldVariantCount then
     return
   end
   opts = type(opts) == "table" and opts or {}
-  local seated = Player.getPlayers() or {}
-  local seen = {}
-  for _, player in ipairs(seated) do
-    local color = player and player.color or nil
-    if type(color) == "string" and seen[color] ~= true then
-      seen[color] = true
-      local playerID = S.getPlayerID(color)
-      local seatOpts = {
-        forceReshow = opts.forceReshow == true,
-        -- ST seat never gets destination cards; Clear so parent show cannot flash prior art.
-        touchLocationCards = true,
-      }
-      if playerID ~= C.StorytellerID then
-        seatOpts.districtImage = opts.districtImage
-        seatOpts.siteImage = opts.siteImage
-      end
-      applyBlindfoldOverlaysExclusive(color, v, seatOpts)
-    end
-  end
+  applySharedBlindfold(v, {
+    forceReshow = opts.forceReshow == true,
+    touchLocationCards = true,
+    districtImage = opts.districtImage,
+    siteImage = opts.siteImage,
+  })
 end
 
 --- Keep hunger smoke synced to hunger threshold:
@@ -420,7 +393,6 @@ function HO.invalidateSeatCache(seatColor)
   if type(seatColor) ~= "string" then
     return
   end
-  cancelBlindfoldChildCleanup(seatColor)
   for _, eid in ipairs(allManagedOverlayIdsForSeat(seatColor)) do
     lastVisible[eid] = nil
   end
@@ -451,44 +423,38 @@ function HO.reconcileForSeat(seatColor, opts)
 
   local ids = allManagedOverlayIdsForSeat(seatColor)
   for _, eid in ipairs(ids) do
-    if not string.match(eid, "^overlay_hunger_%d+_")
-      and not isExclusiveBlindfoldElementId(eid)
-      and eid ~= blindfoldPanelId(seatColor)
-    then
+    if not string.match(eid, "^overlay_hunger_%d+_") then
       if want[eid] ~= true then
         applyOverlayVisibility(eid, false)
       end
     end
   end
   for _, eid in ipairs(ids) do
-    if not string.match(eid, "^overlay_hunger_%d+_")
-      and not isExclusiveBlindfoldElementId(eid)
-      and eid ~= blindfoldPanelId(seatColor)
-    then
+    if not string.match(eid, "^overlay_hunger_%d+_") then
       if want[eid] == true then
         applyOverlayVisibility(eid, true)
       end
     end
   end
-  local blindfoldVariant = desiredBlindfoldFromWant(want, seatColor, playerID)
-  -- Mid-settle Sync.full must not Clear destination cards while the parent is already up.
-  local panelPrev = lastVisible[blindfoldPanelId(seatColor)]
-  local leaveCardsAlone = blindfoldVariant ~= nil and panelPrev == true
-  applyBlindfoldOverlaysExclusive(seatColor, blindfoldVariant, {
-    touchLocationCards = not leaveCardsAlone,
-  })
   applyHungerOverlaysExclusive(seatColor, hungerLevel)
   syncHungerSmokeForSeat(seatColor, hungerLevel)
   lastDesiredVisibilityFpBySeat[seatColor] = fp
 end
 
---- Refresh overlay visibility for every player color row.
+--- Refresh overlay visibility for every player color row; then shared transition blindfold.
 --- @param opts table|nil forwarded to `HO.reconcileForSeat` (e.g. `{ force = true }`)
 function HO.syncAll(opts)
   opts = type(opts) == "table" and opts or {}
   for _, seatColor in ipairs(C.PlayerColors) do
     HO.reconcileForSeat(seatColor, opts)
   end
+  local sharedVariant = desiredSharedBlindfoldVariantFromConditions()
+  local panelPrev = lastVisible[SHARED_BLINDFOLD_PANEL]
+  local leaveCardsAlone = sharedVariant ~= nil and panelPrev == true
+  applySharedBlindfold(sharedVariant, {
+    touchLocationCards = not leaveCardsAlone,
+    forceReshow = opts.force == true and sharedVariant ~= nil,
+  })
 end
 
 return HO

@@ -52,8 +52,8 @@
 
 </Panel>
 
-<!-- Per-player transition blindfolds (TOR-436): root sibling like overlay_globalBlindfold — not under HUD_PANEL_PLAYER. -->
-<Include src="player/panel_overlay_blindfold.xml" />
+<!-- Per-player transition blindfolds removed (TOR-444) — shared transition blindfold: -->
+<Include src="shared/panel_overlay_transition_blindfold.xml" />
 
 <!-- 6. Startup loading screen (last among blindfolds — draws above transition blinds when both up). -->
 <Include src="shared/panel_overlay_global_blindfold.xml" />
