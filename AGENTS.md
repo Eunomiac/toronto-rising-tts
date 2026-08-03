@@ -87,7 +87,7 @@ Generated files, save snapshots, local tool apps, chronicle data, active task no
 - Do not hide live-world side effects in state setters.
 - For Lua, define `local function` helpers above every caller in the same chunk or forward-declare them.
 - Object-hosted scripts must not require broad `core.*` or `lib.constants` graphs; route mutations through `Global.call`.
-- Timing: use the **timing contract** `U.stagger` / `U.chain` / `U.await` (`docs/solutions/lua-wait-api-policy.md`); no raw `Wait.time` / `Wait.condition` / `Wait.stop` outside `lib/util.ttslua`.
+- Timing: use the **timing contract** `U.stagger` / `U.chain` / `U.await` (`docs/solutions/lua-wait-api-policy.md`); no raw `Wait.time` / `Wait.condition` / `Wait.stop` outside `lib/util.ttslua`. In `U.chain`, **`return <seconds>`** from a step to delay before the next (prefer that over a no-op `U.await` step).
 - Console `print` order is unreliable in TTS when several prints share one function. In `U.chain` / `U.stagger`, isolate each `print` / `printHeader` in its own step (see [Dice-E2E.md](.dev/E2E%20Playbooks/Dice-E2E.md)); use `log` for table dumps. Canonical rule: [`.dev/TESTING.md`](.dev/TESTING.md#console-print-ordering-tts).
 - Fail loudly. Do not add silent fallbacks or unannotated `pcall` in production paths.
 

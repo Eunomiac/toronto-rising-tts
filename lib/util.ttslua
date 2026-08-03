@@ -3669,6 +3669,8 @@ end
 
 --- Dependent sequencer: each step's return value is the testRef for the next inter-step wait.
 -- Mutates funcs via U.shift (pass a disposable table). Inter-step waits use coroutines — safe for `return 3` gaps.
+-- Prefer `return <seconds>` for fixed delays (e.g. print HUMAN then `return 3.5`). Do not add a follow-up step
+-- that only does `return U.await(function() end, n)`.
 -- @param funcs table Step functions
 -- @param opts table|nil See options above
 -- @return function isDone()

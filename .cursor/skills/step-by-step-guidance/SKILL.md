@@ -156,11 +156,13 @@ Each step is a `function() … end`. After a step runs, its **return value** bec
 
 | Step returns | Next step waits until… |
 | --- | --- |
-| `number` | That many seconds elapse |
+| `number` | That many **seconds** elapse (`return 3.5` → wait 3.5s) |
 | GameObject | Object is resting and not loading |
 | `function` | The function returns true (poll loop) |
 | `table` | Every entry in the table satisfies its own test (AND) |
 | `nil` / nothing | Default **0.5s** delay |
+
+**Fixed delay (preferred):** `return <seconds>` from the step — do **not** add a follow-up step that only does `return U.await(function() end, n)` or a bare empty wait. One step can print a HUMAN cue and `return 3.5` in the same function.
 
 So **`U.chain` does wait** between steps — including while the author performs a TTS action — when the prior step returns an appropriate testRef. The caller’s chunk returns immediately; work continues in coroutines. The return value of `U.chain(...)` is `isDone()` — a function that becomes true when the full chain finishes (or errors).
 
@@ -182,7 +184,34 @@ function()
 end,
 ```
 
-**Gate (2) timing:** return a **number** (seconds) when a fixed delay is enough; return a **poll function** when Lua can observe readiness (e.g. blindfold flag, phase change). Use a subjective HUMAN + separate Code Block only when neither is reliable. Poll only for the human action’s effect — assert feature behavior in the following step(s). Coroutine faults print as `[coroutine] …` via `U.logCoroutineIssue` when a wait or step throws.
+**Gate (2) timing (fixed pause):** print HUMAN and **`return` a number of seconds** in the **same** step — the next step runs after that delay:
+
+```lua
+function()
+  print("   ▶▶▶ HUMAN ▶▶▶ Confirm the FadeIn looks correct — sequence continues after a short pause.")
+  return 3.5
+end,
+function()
+  UI.hide("playerHud_overlay_blindfold")
+  print("PASS — blindfold hidden after visual check")
+end,
+```
+
+**Anti-pattern:** separate print step + empty wait step:
+
+```lua
+-- BAD
+function() print("   ▶▶▶ HUMAN ▶▶▶ …") end,
+function() return U.await(function() end, 3.5) end,
+
+-- GOOD
+function()
+  print("   ▶▶▶ HUMAN ▶▶▶ …")
+  return 3.5
+end,
+```
+
+Return a **poll function** when Lua can observe readiness (e.g. blindfold flag, phase change). Use a subjective HUMAN + separate Code Block only when neither is reliable. Poll only for the human action’s effect — assert feature behavior in the following step(s). Coroutine faults print as `[coroutine] …` via `U.logCoroutineIssue` when a wait or step throws.
 
 **`U.chain` opts** (when needed): `maxWait` per inter-step wait (default **60s** — increase for slow human actions, e.g. `U.chain(funcs, 120)` or `{ maxWait = 120 }`), `onComplete(ok, detail)`, `stepNames`, `sequenceTimeoutSeconds`, `cancelRegistry` for external abort. See inline option comments in `util.ttslua`. Detail may be `step_error`, `step_timeout`, `sequence_timeout`, `cancelled`, or a cancel reason.
 

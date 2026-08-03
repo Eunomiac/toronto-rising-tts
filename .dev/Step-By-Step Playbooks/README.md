@@ -22,6 +22,8 @@ Iterative **AI/human hybrid** verification: bug repro, feature sign-off, ad-hoc 
 
 **Console `print` order:** Isolate each `print` / `printHeader` in its own `U.chain` / `U.stagger` step — TTS does not reliably order multiple prints from one function. Use `log` for table dumps. Canonical rule: [TESTING.md § Console print ordering](../TESTING.md#console-print-ordering-tts); examples in [Dice-E2E.md](../E2E%20Playbooks/Dice-E2E.md).
 
+**`U.chain` delays:** return a **number of seconds** from a step to pause before the next (`return 3.5`). Prefer that over a follow-up empty `U.await`. Step-by-step HUMAN gates that need a fixed look-at pause: print `▶▶▶ HUMAN ▶▶▶` and `return <seconds>` in the **same** step ([skill § U.chain](../../.cursor/skills/step-by-step-guidance/SKILL.md#uchain--inter-step-waits-read-before-splitting-blocks)).
+
 **Authoritative template:** [`.Step-By-Step Template.md`](.Step-By-Step%20Template.md)
 **Agent skill:** [`.cursor/skills/step-by-step-guidance/SKILL.md`](../../.cursor/skills/step-by-step-guidance/SKILL.md)
 

@@ -31,15 +31,16 @@ The gate fails when any metric **increases** above the last logged baseline. Aft
 | Poll until predicate | `U.await(onDone, testFn, { maxWait = n }?)` |
 | Same callback at several offsets | `U.scheduleAtOffsets(callback, { 0.35, 1.5, ... })` |
 | Fixed stagger between steps (parallel offsets) | `U.stagger(funcs, timeDelay)` |
-| Dependent steps / lerps / load gates | `U.chain(funcs, opts?)` |
+| Dependent steps / lerps / load gates | `U.chain(funcs, opts?)` — each step’s **return value** is the wait before the next (`return 2.5` = 2.5s delay; `return predFn` = poll; `nil` = default 0.5s) |
 | Physics settled after randomize / spawn | `U.await(callback, pred, { maxWait = n })` with resting/`loading_custom` (and cancel token) in `pred` |
-| Ordered console breadcrumbs in a sequence | One `print` / `printHeader` per `U.chain` / `U.stagger` step ([TESTING.md § Console print ordering](../../.dev/TESTING.md#console-print-ordering-tts)); `log` for table dumps |
+| Ordered console breadcrumbs in a sequence | One `print` / `printHeader` per `U.chain` / `U.stagger` step ([TESTING.md § Console print ordering](../../.dev/TESTING.md#console-print-ordering-tts)); `log` for table dumps. One print + `return <seconds>` in the same step is OK. |
 
 Object scripts that cannot `require("lib.util")` may use thin `CU.await` in `lib/csheet_util.ttslua` / `lib/object_positions_object.ttslua` (direct `Wait.time`).
 
 ## Do not
 
 - Nest numeric `U.await` inside the completion callback of a predicate `U.await` — TTS may fire the delay immediately. Use `U.chain` instead (see [`HUD_FUNCTIONS.md`](../../.dev/HUD_FUNCTIONS.md) loading-overlay note).
+- Add a `U.chain` step whose only job is `return U.await(function() end, n)` — **`return n`** from the previous step instead.
 - Call raw `Wait.time` / `Wait.condition` / `Wait.stop` from game modules.
 - Use removed names (`U.delay`, `U.RunSequence`, `U.waitUntil`, …) — they `error()` loudly.
 

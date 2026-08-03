@@ -57,8 +57,10 @@ TTS does **not** reliably show `print` lines in source order when several calls 
 
 **Fix options:**
 
-1. **Preferred for playbooks / sequenced diagnostics** — Inside `U.chain` or `U.stagger`, put **each** `print` / `printHeader` in its **own** step function so the sequencer’s step boundary orders the console. Canonical examples: [Dice-E2E.md](E2E%20Playbooks/Dice-E2E.md).
+1. **Preferred for playbooks / sequenced diagnostics** — Inside `U.chain` or `U.stagger`, put **each** `print` / `printHeader` in its **own** step function so the sequencer’s step boundary orders the console. Canonical examples: [Dice-E2E.md](E2E%20Playbooks/Dice-E2E.md). A step may still **`return <seconds>`** after a single print (fixed inter-step delay) — that is not multiple prints.
 2. **`log(...)`** — Use when dumping a **table** (or a few values) as one console object. Formatting is more limited than a sequence of `print` lines; prefer option 1 for multi-line human-readable breadcrumbs (`PASS`, `▶▶▶ HUMAN ▶▶▶`, answer dumps).
+
+**`U.chain` fixed delays:** return a **number** from a step to wait that many seconds before the next (`return 3.5`). Prefer that over a follow-up step that only does `return U.await(function() end, n)`. Step-by-step playbooks: [skill § U.chain](../.cursor/skills/step-by-step-guidance/SKILL.md#uchain--inter-step-waits-read-before-splitting-blocks).
 
 Structured MCP lines (`U.emitForAgent` / `U.mcpEmitResult`) still carry their own `seq` / `t` when order across coroutines matters — see [TTS_MCP.md](TTS_MCP.md).
 
@@ -117,9 +119,9 @@ After each **suite** ends (level-1 close), add `print("")` in its own `U.chain` 
 ### `U.chain` ordering rules
 
 1. **Wrap every playbook Lua block** in `U.chain({ … })` — no bare top-level `rollTest` / `rollConfirm` in the markdown.
-2. **Isolate prints** — each `printHeader` and each `print` call lives in its **own** `function() … end` step (see **Console `print` ordering** above). Never batch several prints in one step.
+2. **Isolate prints** — each `printHeader` and each `print` call lives in its **own** `function() … end` step (see **Console `print` ordering** above). Never batch several prints in one step. A single print plus `return <seconds>` in that same step is fine (numeric return = inter-step delay).
 3. **Group logic** — setup (`rollTest`, `rollCancelAll`, state seeding) and assertions (`rollConfirm`, `rollConfirmTracker`) may share a step when no human action sits between them.
-4. **Split on human gates** — when the tester must act between setup and assertion, end one `U.chain` with a level-3 `[HUMAN]` header (+ `M.setCamera` when needed), then start a **new** block for post-action `rollConfirm` / `rollE2eExpectBroadcast`. **Never** put two level-3 `[HUMAN]` steps in the same block.
+4. **Split on human gates** — when the tester must act between setup and assertion, end one `U.chain` with a level-3 `[HUMAN]` header (+ `M.setCamera` when needed), then start a **new** block for post-action `rollConfirm` / `rollE2eExpectBroadcast`. **Never** put two level-3 `[HUMAN]` steps in the same block. (Step-by-step playbooks instead keep HUMAN + `return <seconds|pred>` in one sequence — see [step-by-step skill](../.cursor/skills/step-by-step-guidance/SKILL.md).)
 5. **Function references** — pass harness helpers directly when they are single-call steps, e.g. `rollCancelAll` (no parentheses) as a sequence entry.
 6. **Suite close** — last step(s) of each suite: `printHeader("", 1)` then `print("")`. Mid-suite steps close with `printHeader("", 2)` only when that step/substep is finished (not between substeps that continue the same suite section).
 
