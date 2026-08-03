@@ -462,7 +462,7 @@ function PSC.collectPrincesCourtTrackerUpdates(stats, resolvedStatChanges, panel
 
   local hunger = math.max(0, math.min(5, math.floor(tonumber(stats.hunger) or 0)))
   for i = 1, 5 do
-    push("box_hunger_" .. i .. suffix, i <= hunger, "box_white")
+    push("box_hunger_" .. i .. suffix, i <= hunger, "box_red")
   end
 
   return updates

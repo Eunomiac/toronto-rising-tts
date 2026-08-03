@@ -89,7 +89,7 @@ Nav: XmlUI `(player, value, id)` → `getPlayerIDAndColor(player)`.
 
 ## Strategy 3 eligibility
 
-**Share:** nestedless `refPanel_*`; Court **page** panels (page1/2/3 — concurrent viewers on different pages via per-page unions); coterie grid/popups when state allows; **scene-transition blindfold** (one random variant + cards for all); location dock (shared session location); **map left/right sidebars (Option B)**.
+**Share:** nestedless `refPanel_*`; Court **page** panels (page1/2/3 — concurrent viewers on different pages via per-page unions); Court **coterie/domain/trait content** (`pc_p*_…`, `dot_on_chasse_*`, … — no seat suffix; `Coterie.reconcile*` writes shared ids); coterie grid/popups when state allows; **scene-transition blindfold** (one random variant + cards for all); location dock (shared session location); **map left/right sidebars (Option B)**.
 
 **Keep per-seat (divergent content/interaction):** map **pan surface** + in-map overlays (see Map); roll controls; **hunger + condition overlays** (different per-PC art at once — keep FadeIn); **camera dock** (left = other players only; right = self controls); player HUD right-sidebar chrome (Phase 3 — Option **A**, container already seat-local).
 

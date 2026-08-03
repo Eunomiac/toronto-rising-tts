@@ -1,5 +1,6 @@
 --- Collect Global UI attribute updates for Prince's Court coterie display from `gameState.coterieData`.
--- Agent guidance: .dev/HUDs & Overlays/Player HUD Overview.md
+-- Shared Court tree (TOR-444): element ids have **no** seat suffix (`pc_p2_bg_0_dot_1`, `dot_on_chasse_1`).
+-- Agent guidance: .dev/HUDs & Overlays/Player HUD Overview.md; Global-UI-Image-Stacks.md
 
 local CC = {}
 
@@ -26,33 +27,31 @@ local function stakeProjectCountForCoterieEntry(entry)
   ) or 0))
 end
 
+--- Shared Court ids (extract_shared_princes_court strips `_@@color@@`).
 --- @param pageNum integer
 --- @param sectionKey string
 --- @param index integer 0-based trait index (real + blank entries share one sequence; matches build `INDEX`)
---- @param hudSeatColor string
 --- @return string rootId
-local function traitBlockRootId(pageNum, sectionKey, index, hudSeatColor)
-  return string.format("pc_p%d_%s_%d_%s", pageNum, sectionKey, index, hudSeatColor)
+local function traitBlockRootId(pageNum, sectionKey, index)
+  return string.format("pc_p%d_%s_%d", pageNum, sectionKey, index)
 end
 
 --- @param pageNum integer
 --- @param sectionKey string
 --- @param index integer
---- @param hudSeatColor string
 --- @param suffix string e.g. "title", "flavor", "rules"
 --- @return string
-local function traitElementId(pageNum, sectionKey, index, hudSeatColor, suffix)
-  return string.format("pc_p%d_%s_%d_%s_%s", pageNum, sectionKey, index, suffix, hudSeatColor)
+local function traitElementId(pageNum, sectionKey, index, suffix)
+  return string.format("pc_p%d_%s_%d_%s", pageNum, sectionKey, index, suffix)
 end
 
 --- @param pageNum integer
 --- @param sectionKey string
 --- @param index integer
 --- @param slot integer 1-based
---- @param hudSeatColor string
 --- @return string
-local function traitDotId(pageNum, sectionKey, index, slot, hudSeatColor)
-  return string.format("pc_p%d_%s_%d_dot_%d_%s", pageNum, sectionKey, index, slot, hudSeatColor)
+local function traitDotId(pageNum, sectionKey, index, slot)
+  return string.format("pc_p%d_%s_%d_dot_%d", pageNum, sectionKey, index, slot)
 end
 
 --- @param updates table[]
@@ -69,8 +68,7 @@ end
 --- @param sectionKey string
 --- @param traitIndex integer
 --- @param isFlaw boolean
---- @param hudSeatColor string
-local function addTraitDotUpdates(updates, entry, pageNum, sectionKey, traitIndex, isFlaw, hudSeatColor)
+local function addTraitDotUpdates(updates, entry, pageNum, sectionKey, traitIndex, isFlaw)
   local slotCount, baseCount, tempCount, disabledCount, projectCount =
     TRAIT.slotBaseTempDisabledProject(entry, stakeProjectCountForCoterieEntry(entry))
   local filledImg = isFlaw and "dot_red" or "dot_yellow"
@@ -78,7 +76,7 @@ local function addTraitDotUpdates(updates, entry, pageNum, sectionKey, traitInde
     local img = TRAIT.dotImageForTraitSlot(
       slot, slotCount, baseCount, tempCount, disabledCount, filledImg, projectCount
     )
-    addUpdate(updates, traitDotId(pageNum, sectionKey, traitIndex, slot, hudSeatColor), {
+    addUpdate(updates, traitDotId(pageNum, sectionKey, traitIndex, slot), {
       image = img,
       active = "true",
     })
@@ -86,13 +84,10 @@ local function addTraitDotUpdates(updates, entry, pageNum, sectionKey, traitInde
 end
 
 --- @param coterieData table|nil
---- @param hudSeatColor string
+--- @param hudSeatColor string|nil ignored (call-site compat; shared Court has no seat suffix)
 --- @return table[] list of { id = string, attributes = table }
 function CC.collectPrincesCourtTraitBlankUpdates(coterieData, hudSeatColor)
   local updates = {}
-  if type(hudSeatColor) ~= "string" or hudSeatColor == "" then
-    return updates
-  end
   if type(coterieData) ~= "table" then
     return updates
   end
@@ -106,10 +101,10 @@ function CC.collectPrincesCourtTraitBlankUpdates(coterieData, hudSeatColor)
         local isFlaw = group.isFlaw == true
 
         if entry.blank ~= true then
-          addTraitDotUpdates(updates, entry, pageNum, sectionKey, traitIndex, isFlaw, hudSeatColor)
-          local titleId = traitElementId(pageNum, sectionKey, traitIndex, hudSeatColor, "title")
-          local flavorId = traitElementId(pageNum, sectionKey, traitIndex, hudSeatColor, "flavor")
-          local rulesId = traitElementId(pageNum, sectionKey, traitIndex, hudSeatColor, "rules")
+          addTraitDotUpdates(updates, entry, pageNum, sectionKey, traitIndex, isFlaw)
+          local titleId = traitElementId(pageNum, sectionKey, traitIndex, "title")
+          local flavorId = traitElementId(pageNum, sectionKey, traitIndex, "flavor")
+          local rulesId = traitElementId(pageNum, sectionKey, traitIndex, "rules")
           addUpdate(updates, titleId, { text = TRAIT.entryTitleUpper(entry) })
           local flavor = TRAIT.joinMultilineField(entry.description)
           addUpdate(updates, flavorId, { text = flavor or "" })
@@ -118,10 +113,10 @@ function CC.collectPrincesCourtTraitBlankUpdates(coterieData, hudSeatColor)
           return
         end
 
-        local rootId = traitBlockRootId(pageNum, sectionKey, traitIndex, hudSeatColor)
-        local titleId = traitElementId(pageNum, sectionKey, traitIndex, hudSeatColor, "title")
-        local flavorId = traitElementId(pageNum, sectionKey, traitIndex, hudSeatColor, "flavor")
-        local rulesId = traitElementId(pageNum, sectionKey, traitIndex, hudSeatColor, "rules")
+        local rootId = traitBlockRootId(pageNum, sectionKey, traitIndex)
+        local titleId = traitElementId(pageNum, sectionKey, traitIndex, "title")
+        local flavorId = traitElementId(pageNum, sectionKey, traitIndex, "flavor")
+        local rulesId = traitElementId(pageNum, sectionKey, traitIndex, "rules")
 
         if entry.active == true then
           addUpdate(updates, rootId, { active = "true" })
@@ -133,7 +128,7 @@ function CC.collectPrincesCourtTraitBlankUpdates(coterieData, hudSeatColor)
           local rules = TRAIT.joinMultilineField(entry.rules)
           addUpdate(updates, rulesId, { text = rules or "" })
 
-          addTraitDotUpdates(updates, entry, pageNum, sectionKey, traitIndex, isFlaw, hudSeatColor)
+          addTraitDotUpdates(updates, entry, pageNum, sectionKey, traitIndex, isFlaw)
         else
           addUpdate(updates, rootId, { active = "false" })
         end
@@ -145,15 +140,12 @@ function CC.collectPrincesCourtTraitBlankUpdates(coterieData, hudSeatColor)
 end
 
 --- Build UI updates for domain rating dots (page 2) and blank trait slots.
+-- Shared Court (TOR-444): `dot_on_<key>_<slot>` with no seat suffix.
 -- @param coterieData table|nil `gameState.coterieData`
--- @param hudSeatColor string HUD owner seat suffix (Purple, Pink, Red, Orange, Brown)
+-- @param hudSeatColor string|nil ignored (call-site compat)
 -- @return table[] list of { id = string, attributes = table }
 function CC.collectPrincesCourtHudUpdates(coterieData, hudSeatColor)
     local updates = {}
-
-    if type(hudSeatColor) ~= "string" or hudSeatColor == "" then
-        return updates
-    end
 
     for _, key in ipairs(DOMAIN_DOT_KEYS) do
         local rating = CoterieHydrate.normalizeDomainRatingValue(
@@ -178,13 +170,14 @@ function CC.collectPrincesCourtHudUpdates(coterieData, hudSeatColor)
             local img = TRAIT.dotImageForDomainSlot(
               slot, baseCount, tempCount, disabledCount, "dot_large_yellow", clampedProject
             )
+            local id = "dot_on_" .. key .. "_" .. slot
             if img ~= nil then
-                addUpdate(updates, "dot_on_" .. key .. "_" .. slot .. "_" .. hudSeatColor, {
+                addUpdate(updates, id, {
                     active = "true",
                     image = img,
                 })
             else
-                addUpdate(updates, "dot_on_" .. key .. "_" .. slot .. "_" .. hudSeatColor, {
+                addUpdate(updates, id, {
                     active = "false",
                 })
             end
