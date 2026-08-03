@@ -4,7 +4,7 @@
 
 Read this when:
 
-- smoking shipped TOR-444 remount cuts after Save & Play (shared refs / Court / blindfold, location dock, sidebar tint)
+- smoking shipped TOR-444 remount cuts after Save & Play (shared refs / Court / blindfold, location dock, sidebar tint, Phase 6 map + hunger)
 - checking that remount-weight work still opens player HUD panels correctly (solo Host)
 
 Source of truth:
@@ -17,7 +17,7 @@ Verification:
 
 - this playbook (Save & Play + solo Host)
 
-Confirm remount-weight cuts still open nestedless refs, Prince’s Court, the shared transition blindfold, and the location-dock district Image correctly after Save & Play. This does **not** cover map Option B / district Strategy 1 (not shipped yet), Court pip meters, hunger stack collapse, or TOR-439 Arm/join timeouts.
+Confirm remount-weight cuts still open nestedless refs, Prince’s Court, the shared transition blindfold, the location-dock district Image, **and Phase 6 map/hunger collapses** after Save & Play. This does **not** cover Court pip meters, location full-share, or TOR-439 Arm/join timeouts.
 
 **Linear:** [TOR-444 — Global XmlUI remount weight](https://linear.app/eunomiac-dev/issue/TOR-444/global-xmlui-remount-weight-stacks-chrome-tint-shared-visibility)
 **Background:** [Global-UI-Image-Stacks](../HUDs%20&%20Overlays/Global-UI-Image-Stacks.md)
@@ -29,6 +29,7 @@ Confirm remount-weight cuts still open nestedless refs, Prince’s Court, the sh
 3. **Prince’s Court** — shared tree + single tracker Images; you flip to page 2; Lua asserts page audience.
 4. **Shared blindfold** — arm shared panel via `U`/`UI` (mirrors `HO.applyBlindfoldVariantForSeatedPlayers`); you confirm FadeIn; Lua hides and continues.
 5. **Location dock + sidebar tint** — lower-left **location popout** district Image (`gameStateOverlay_districtCard_current_<Color>`), **not** the map core panel; sidebar Option A tint `color` present (no hover sibling ids).
+6. **Phase 6 map + hunger** — map core district card/highlight Strategy 1, shared map sidebars Option B, hunger one-Image Strategy 1.
 
 ## Prerequisites (human — keep short)
 
@@ -45,13 +46,14 @@ Test constants (shared via `_G.TOR444`):
 | Nestedless ref | `rolls` |
 | Court pages | 1 → 2 (you click next) |
 | Blindfold variant | `3` |
-| Location district | `Annex` → `districtCard_Annex` |
+| Location / map district | `Annex` → `districtCard_Annex` / `mapOverlay_Annex` |
+| Hunger tier | `3` → `overlay_hunger_3` on `overlay_hunger_Red` |
 
 ## Run order
 
 **Step 1.** **Save & Play**.
 
-**Step 1b (optional).** If a prior run left the shared blindfold (or refs) up — Execute Lua Code — **Code Block Cleanup**, then continue from **Step 2** (0 → A → B). Cleanup resets Court to page 1 and closes refs — **do not** jump to Block B after Cleanup alone (B expects page 2 from A’s navigate click).
+**Step 1b (optional).** If a prior run left the shared blindfold (or refs) up — Execute Lua Code — **Code Block Cleanup**, then continue from **Step 2** (0 → A → B → C). Cleanup resets Court to page 1 and closes refs — **do not** jump to Block B after Cleanup alone (B expects page 2 from A’s navigate click).
 
 **Step 2.** Execute Lua Code — **Code Block 0**. Watch for `▶▶▶ HUMAN ▶▶▶` — confirm the Rolls popup shows its reference image (not blank/broken). Audience for Red is Lua-asserted; you do not need a second seated color.
 
@@ -59,7 +61,9 @@ Test constants (shared via `_G.TOR444`):
 
 **Step 4.** Execute Lua Code — **Code Block B** (only after A + navigate). When prompted: **confirm the shared transition blindfold FadeIn** (full-screen blindfold art). Court may still be open underneath — expected. After the pause, Lua hides the blindfold and asserts the **location dock** district Image (lower-left popout control — not the map), then sidebar tint.
 
-**Step 5.** When the console prints **Verification complete**, you are done.
+**Step 5.** Execute Lua Code — **Code Block C** (Phase 6). When prompted: **confirm the map shows the Annex district card + highlight**, and the **hunger overlay** looks like hunger tier 3 (not blank / wrong tier).
+
+**Step 6.** When the console prints **Verification complete**, you are done.
 
 ---
 
@@ -166,13 +170,18 @@ if type(pid) == "string" then
   S.setStateVal(nil, "playerData", pid, "hud", "reference", "coteries")
   S.setStateVal(nil, "playerData", pid, "hud", "reference", "princesCourt")
   S.setStateVal(1, "playerData", pid, "hud", "reference", "princesCourtPage")
+  S.setStateVal(nil, "playerData", pid, "hud", "activeCorePanel")
   Sync.player(seat)
   print("PASS — hud.reference cleared + Sync.player (" .. pid .. ")")
 else
   print("PASS — skipped hud.reference clear (Player." .. seat .. " / storage id unavailable)")
 end
 
-print("PASS — TOR-444 cleanup complete. Safe to re-run Code Block 0, A, or B.")
+U.setVisibleTo("playerHud_mapSidebarsShared", {})
+U.setAttribute("playerHud_mapSidebarsShared", "active", "false")
+print("PASS — map sidebars shared root closed")
+
+print("PASS — TOR-444 cleanup complete. Safe to re-run Code Block 0, A, B, or C.")
 ```
 
 ---
@@ -186,6 +195,7 @@ _G.TOR444 = {
   refKey = "rolls",
   districtKey = "Annex",
   blindfoldVariant = 3,
+  hungerLevel = 3,
 }
 
 -- Execute Lua cannot require(); use globals (S/U/C/Sync/DEBUG) only.
@@ -665,7 +675,223 @@ U.chain({
     print("PASS — sidebar Option A tint color present (" .. color .. ")")
   end,
   function()
-    print("PASS — TOR-444 remount smoke complete. Verification complete. No further action.")
+    print("PASS — TOR-444 Blocks 0–B complete. Next: Code Block C (Phase 6 map + hunger).")
+  end,
+})
+```
+
+---
+
+## Code Block C — Phase 6 map Strategy 1 + sidebars Option B + hunger Strategy 1
+
+Paste after Block B. Opens the map core for Red, asserts collapsed district / shared sidebar ids, sets hunger tier 3, then asks for one visual confirm.
+
+```lua
+-- Execute Lua cannot require(); use globals (S/U/C/Sync) only.
+-- HUD state must use S.getStorageID(Player[seat]) — same id HUDP.updatePlayerUI reads.
+
+local function tor444Fixture()
+  local F = _G.TOR444
+  if type(F) ~= "table" then
+    error("[FAIL] _G.TOR444 missing — paste Code Block 0 from the playbook first")
+  end
+  if F.hungerLevel == nil then
+    F.hungerLevel = 3
+  end
+  return F
+end
+
+local function tor444HudPid(F)
+  local p = Player[F.seat]
+  if not U.isPlayer(p) then
+    error("[FAIL] Player." .. F.seat .. " nil")
+  end
+  local sid = S.getStorageID(p)
+  if type(sid) ~= "string" or sid == "" then
+    error("[FAIL] S.getStorageID nil for seated " .. F.seat)
+  end
+  return sid
+end
+
+local function tor444EnsureHudReference(F)
+  local pid = tor444HudPid(F)
+  if type(S.getStateVal("playerData", pid)) ~= "table" then
+    S.setStateVal({ color = F.seat }, "playerData", pid)
+  end
+  if type(S.getStateVal("playerData", pid, "hud")) ~= "table" then
+    S.setStateVal({}, "playerData", pid, "hud")
+  end
+  if type(S.getStateVal("playerData", pid, "hud", "reference")) ~= "table" then
+    S.setStateVal({}, "playerData", pid, "hud", "reference")
+  end
+  if type(S.getStateVal("playerData", pid, "hud", "map")) ~= "table" then
+    S.setStateVal({}, "playerData", pid, "hud", "map")
+  end
+  return pid
+end
+
+local function tor444AssertHasAttr(id, attr)
+  local val = UI.getAttribute(id, attr)
+  if val == nil then
+    error("[FAIL] missing attribute " .. tostring(attr) .. " on " .. tostring(id))
+  end
+  return val
+end
+
+local function tor444AssertMissing(id)
+  local ok, active = pcall(function()
+    return UI.getAttribute(id, "active")
+  end)
+  if ok and active ~= nil then
+    error("[FAIL] remount leftover still present: " .. id .. " active=" .. tostring(active))
+  end
+  print("PASS — absent " .. id)
+end
+
+local function tor444AssertAudienceContains(id, color)
+  local aud = U.getVisibilityAudience(id)
+  for _, tok in ipairs(aud or {}) do
+    if tok == color then
+      print("PASS — audience " .. id .. " includes " .. color)
+      return
+    end
+  end
+  error(
+    "[FAIL] audience of "
+      .. id
+      .. " missing "
+      .. color
+      .. " got "
+      .. tostring(U.serializeVisibilityAudience(aud))
+  )
+end
+
+local function tor444ClearRefs(F)
+  local pid = tor444EnsureHudReference(F)
+  local nestedless = {
+    "chronicleTenets",
+    "socialCombat",
+    "physicalCombat",
+    "frenzy",
+    "rolls",
+    "memoriam",
+    "projects",
+    "experience",
+  }
+  for _, k in ipairs(nestedless) do
+    S.setStateVal(false, "playerData", pid, "hud", "reference", k)
+  end
+  S.setStateVal(nil, "playerData", pid, "hud", "reference", "coteries")
+  S.setStateVal(nil, "playerData", pid, "hud", "reference", "princesCourt")
+end
+
+local function tor444UpdateHud(F)
+  Sync.player(F.seat)
+end
+
+U.chain({
+  function()
+    printHeader("TOR-444: Phase 6 structural ids", 1)
+  end,
+  function()
+    local F = tor444Fixture()
+    tor444AssertHasAttr("playerHud_districtCard_current_" .. F.seat, "image")
+    tor444AssertHasAttr("playerHud_mapOverlay_districtCurrent_" .. F.seat, "image")
+    tor444AssertHasAttr("playerHud_mapSidebarsShared", "active")
+    tor444AssertHasAttr("overlay_hunger_" .. F.seat, "image")
+    print("PASS — Phase 6 collapsed / shared ids present")
+  end,
+  function()
+    local F = tor444Fixture()
+    tor444AssertMissing("playerHud_districtCard_" .. F.districtKey .. "_" .. F.seat)
+    tor444AssertMissing("playerHud_mapOverlay_district_" .. F.districtKey .. "_" .. F.seat)
+    tor444AssertMissing("playerHud_mapSidebars_" .. F.seat)
+    tor444AssertMissing("overlay_hunger_" .. tostring(F.hungerLevel) .. "_" .. F.seat)
+    print("PASS — Phase 6 old stack / per-seat siblings absent")
+  end,
+  function()
+    printHeader("TOR-444: Open map + Annex district", 1)
+  end,
+  function()
+    local F = tor444Fixture()
+    local pid = tor444EnsureHudReference(F)
+    tor444ClearRefs(F)
+    S.setStateVal("map", "playerData", pid, "hud", "activeCorePanel")
+    S.setStateVal(F.districtKey, "sessionScene", "districtKey")
+    tor444UpdateHud(F)
+    print("PASS — map opened + sessionScene.districtKey=" .. tostring(F.districtKey))
+    return 0.25
+  end,
+  function()
+    local F = tor444Fixture()
+    local cardId = "playerHud_districtCard_current_" .. F.seat
+    local hlId = "playerHud_mapOverlay_districtCurrent_" .. F.seat
+    local wantCard = "districtCard_" .. F.districtKey
+    local wantHl = "mapOverlay_" .. F.districtKey
+    local gotCard = tor444AssertHasAttr(cardId, "image")
+    if gotCard ~= wantCard then
+      U.setAttribute(cardId, "image", wantCard)
+      U.setAttribute(cardId, "active", "true")
+      gotCard = UI.getAttribute(cardId, "image")
+    end
+    if gotCard ~= wantCard then
+      error("[FAIL] " .. cardId .. " image expected " .. wantCard .. " got " .. tostring(gotCard))
+    end
+    local gotHl = tor444AssertHasAttr(hlId, "image")
+    if gotHl ~= wantHl then
+      U.setAttribute(hlId, "image", wantHl)
+      U.setAttribute(hlId, "active", "true")
+      gotHl = UI.getAttribute(hlId, "image")
+    end
+    if gotHl ~= wantHl then
+      error("[FAIL] " .. hlId .. " image expected " .. wantHl .. " got " .. tostring(gotHl))
+    end
+    print("PASS — map district card=" .. tostring(gotCard) .. " highlight=" .. tostring(gotHl))
+  end,
+  function()
+    local F = tor444Fixture()
+    local active = tor444AssertHasAttr("playerHud_mapSidebarsShared", "active")
+    if active ~= "true" and active ~= true then
+      error("[FAIL] playerHud_mapSidebarsShared active expected true, got " .. tostring(active))
+    end
+    tor444AssertAudienceContains("playerHud_mapSidebarsShared", F.seat)
+  end,
+  function()
+    printHeader("TOR-444: Hunger Strategy 1", 1)
+  end,
+  function()
+    local F = tor444Fixture()
+    local level = tonumber(F.hungerLevel) or 3
+    S.setPlayerVal(F.seat, "hunger", level)
+    tor444UpdateHud(F)
+    print("PASS — hunger set to " .. tostring(level) .. " + Sync.player")
+    return 0.25
+  end,
+  function()
+    local F = tor444Fixture()
+    local eid = "overlay_hunger_" .. F.seat
+    local want = "overlay_hunger_" .. tostring(F.hungerLevel)
+    local got = tor444AssertHasAttr(eid, "image")
+    if got ~= want then
+      U.setAttribute(eid, "image", want)
+      U.setAttribute(eid, "active", "true")
+      got = UI.getAttribute(eid, "image")
+    end
+    if got ~= want then
+      error("[FAIL] " .. eid .. " image expected " .. want .. " got " .. tostring(got))
+    end
+    print("PASS — hunger overlay image=" .. tostring(got))
+  end,
+  function()
+    print(
+      "   ▶▶▶ HUMAN ▶▶▶ Confirm map Annex district card + highlight, and hunger overlay looks like tier "
+        .. tostring(tor444Fixture().hungerLevel)
+        .. " — sequence continues automatically after a short pause."
+    )
+    return 3.5
+  end,
+  function()
+    print("PASS — TOR-444 remount smoke complete (through Phase 6). Verification complete. No further action.")
   end,
 })
 ```
