@@ -83,7 +83,7 @@ Do not conflate them. Hunger TOR-340 sticky-`active` under empty-seat `visibilit
 
 ### Animation contract
 
-`UI.show` / `UI.hide` fire XmlUI animations. For shared animated panels: set `visibility` audience first (while inactive), then `UI.show`. **Shared transition blindfold:** after `UI.show` on `playerHud_overlay_blindfold`, set `overlay_blindfold_display` `image=` — parent show re-applies XML defaults (`image="overlay_blindfold_1"`). Do not keep ×5 copies solely to run per-seat fades when content is shared or the fade is dispensable. Where content already requires per-seat Images (hunger/conditions), keep overlay FadeIn.
+`UI.show` / `UI.hide` fire XmlUI animations. For shared animated panels: set `visibility` audience first (while inactive), then `UI.show`. **Shared transition blindfold:** after `UI.show` on `playerHud_overlay_blindfold`, set `overlay_blindfold_display` `image=` — parent show re-applies XML defaults (`image="overlay_blindfold_1"`). Same-frame `UI.getAttribute(..., "image")` can still report that XML default even when the correct variant is already visible; delay or poll before asserting. Do not keep ×5 copies solely to run per-seat fades when content is shared or the fade is dispensable. Where content already requires per-seat Images (hunger/conditions), keep overlay FadeIn.
 
 Nav: XmlUI `(player, value, id)` → `getPlayerIDAndColor(player)`.
 

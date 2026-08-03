@@ -548,6 +548,8 @@ end
 
 --- Inline HO.applyBlindfoldVariantForSeatedPlayers (HO is a Global local).
 --- Set display image *after* UI.show — parent show re-applies XML default image=overlay_blindfold_1.
+--- Do not assert image= in the same step as UI.show: getAttribute can still report the XML default
+--- for a beat even when the correct variant is already on screen (author: saw _3, immediate read _1).
 local function tor444ArmSharedBlindfold(F)
   local panelId = "playerHud_overlay_blindfold"
   local displayId = "overlay_blindfold_display"
@@ -567,6 +569,19 @@ local function tor444ArmSharedBlindfold(F)
   U.setAttribute(displayId, "image", "overlay_blindfold_" .. tostring(v))
   U.setAttribute(displayId, "active", "true")
   U.setAttribute(displayId, "color", "White")
+end
+
+local function tor444AssertBlindfoldVariant(F)
+  local displayId = "overlay_blindfold_display"
+  local want = "overlay_blindfold_" .. tostring(F.blindfoldVariant)
+  -- Re-assert image after show settle (defensive if show wiped child attrs a frame late).
+  U.setAttribute(displayId, "image", want)
+  local got = tor444AssertHasAttr(displayId, "image")
+  if got ~= want then
+    error("[FAIL] overlay_blindfold_display image expected " .. want .. " got " .. tostring(got))
+  end
+  tor444AssertAudienceContains("playerHud_overlay_blindfold", F.seat)
+  print("PASS — shared blindfold variant " .. tostring(F.blindfoldVariant) .. " armed")
 end
 
 U.chain({
@@ -589,13 +604,10 @@ U.chain({
   function()
     local F = tor444Fixture()
     tor444ArmSharedBlindfold(F)
-    local want = "overlay_blindfold_" .. tostring(F.blindfoldVariant)
-    local got = tor444AssertHasAttr("overlay_blindfold_display", "image")
-    if got ~= want then
-      error("[FAIL] overlay_blindfold_display image expected " .. want .. " got " .. tostring(got))
-    end
-    tor444AssertAudienceContains("playerHud_overlay_blindfold", F.seat)
-    print("PASS — shared blindfold variant " .. tostring(F.blindfoldVariant) .. " armed")
+    return 0.25
+  end,
+  function()
+    tor444AssertBlindfoldVariant(tor444Fixture())
   end,
   function()
     print(
