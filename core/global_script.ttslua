@@ -1964,8 +1964,8 @@ end
 --- Seconds to hold a post-roll correction die locked above the tray before randomize (ST roll hover).
 local POST_ROLL_DIE_HOVER_SEC = 1
 
---- TTS `Object.randomize(color)` toss impulse follows the acting seat; Black alone often
---- fails to pop like player right-click ROLL. Prefer the clicker's seated color for ST.
+--- TTS `Object.randomize(color)` toss impulse follows the acting seat; Black alone may
+--- not match player right-click ROLL. Prefer the clicker seated color for ST tosses.
 -- @param rollColor string  roll owner ("Black" / PC seat)
 -- @param actorColor string|nil  HUD clicker seat when known
 -- @return string|nil  color passed to `die.randomize`, or nil for unscoped randomize()
@@ -6204,7 +6204,7 @@ local function blackRollWaitDrawerRaised(slot)
 end
 
 --- ST Roll click: open → fully raised + light → spawn → tray ring → hover →
---- locked beat → unlock+randomize same frame (player right-click ROLL pop; TOR-448 follow-up).
+--- unlock → 0.15s → randomize (same order as player right-click ROLL; TOR-448).
 -- @param physicsColor string|nil  HUD clicker seat for Object.randomize toss
 local function runBlackRollSequence(physicsColor)
     local pid = S.getPlayerID("Black")
@@ -6252,12 +6252,12 @@ local function runBlackRollSequence(physicsColor)
             if RC.startRolling("Black") ~= true then
                 return nil
             end
-            ensureBlackStagedRollTags()
+            unlockStagedBagDice("Black")
             local activeNow = S.getStateVal("playerData", pid, "hud", "rollData", "active")
             if activeNow == nil or activeNow.phase ~= C.RollPhase.ROLLING then
                 return nil
             end
-            -- Match player auto-roll beat, but keep locked so dice do not free-fall before toss.
+            -- Same as PC autoRollOnRelease: unlock first, brief free-physics window, then toss.
             return 0.15
         end,
         function()
@@ -6265,10 +6265,7 @@ local function runBlackRollSequence(physicsColor)
             if activeNow == nil or activeNow.phase ~= C.RollPhase.ROLLING then
                 return nil
             end
-            -- Unlock + randomize per die in one call (same as R on staged dice / PC right-click).
             randomizeBlackTrayDiceSimultaneous(activeNow.id or rollId, rollAs)
-            -- Clear ST bag staging lists (dice already unlocked by randomize).
-            unlockStagedBagDice("Black")
             return nil
         end,
     }, {
@@ -6280,7 +6277,7 @@ local function runBlackRollSequence(physicsColor)
 end
 
 --- Advances to ROLLING and unlocks staged dice (drawer must already be raised when applicable).
--- Black legacy/debug path: startRolling → 1s hover → locked beat → unlock+randomize (TOR-448 follow-up).
+-- Black legacy/debug path: startRolling → 1s hover → unlock → 0.15s → randomize (same as PC auto-roll).
 -- PC path: live tray elevation + startRolling must complete before unlock (TOR-262).
 -- @param color string
 -- @param physicsColor string|nil  ST only: acting seat for toss impulse
@@ -6309,14 +6306,12 @@ local function finishRollRelease(color, physicsColor)
             if RC.startRolling(color) ~= true then
                 return
             end
-            ensureBlackStagedRollTags()
+            unlockStagedBagDice(color)
             if type(delayedRollId) ~= "string" then
-                unlockStagedBagDice(color)
                 return
             end
             U.await(function()
                 randomizeBlackTrayDiceSimultaneous(delayedRollId, rollAs)
-                unlockStagedBagDice(color)
             end, 0.15)
         end, 1)
         return true
