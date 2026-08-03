@@ -1899,6 +1899,192 @@ function U.hideXmlElement(elemID)
   U.setAttribute("toggleElem_" .. elemID, "text", "►")
 end
 
+-- ---------------------------------------------------------------------------
+-- XmlUI audience visibility (`visibility` attribute) — TOR-444
+-- Distinct from U.showXmlElement / U.hideXmlElement which toggle `active` (layout).
+-- Empty audience serializes as "None". Change-guards skip unchanged writes.
+-- ---------------------------------------------------------------------------
+
+local VISIBILITY_NONE = "None"
+
+--- Normalize one visibility token (trim; reject empty).
+-- @param token any
+-- @return string|nil
+local function normalizeVisibilityToken(token)
+  if type(token) ~= "string" then
+    return nil
+  end
+  local t = token:match("^%s*(.-)%s*$")
+  if t == nil or t == "" then
+    return nil
+  end
+  if string.lower(t) == "none" then
+    return VISIBILITY_NONE
+  end
+  return t
+end
+
+--- Parse a TTS XmlUI visibility string into an ordered unique token list.
+-- `None` / empty / whitespace → empty list. `|` separated; order preserved; duplicates dropped.
+-- @param visibilityStr string|nil
+-- @return table array of string tokens (never contains "None")
+function U.parseVisibilityAudience(visibilityStr)
+  local out = {}
+  local seen = {}
+  if type(visibilityStr) ~= "string" then
+    return out
+  end
+  local trimmed = visibilityStr:match("^%s*(.-)%s*$") or ""
+  if trimmed == "" or string.lower(trimmed) == "none" then
+    return out
+  end
+  for part in string.gmatch(trimmed, "[^|]+") do
+    local tok = normalizeVisibilityToken(part)
+    if tok ~= nil and tok ~= VISIBILITY_NONE and seen[tok] ~= true then
+      seen[tok] = true
+      out[#out + 1] = tok
+    end
+  end
+  return out
+end
+
+--- Serialize audience tokens to a visibility attribute value.
+-- @param tokens table|nil array of color/role strings
+-- @return string "None" or "Red|Orange|…"
+function U.serializeVisibilityAudience(tokens)
+  if type(tokens) ~= "table" then
+    return VISIBILITY_NONE
+  end
+  local parts = {}
+  local seen = {}
+  for i = 1, #tokens do
+    local tok = normalizeVisibilityToken(tokens[i])
+    if tok ~= nil and tok ~= VISIBILITY_NONE and seen[tok] ~= true then
+      seen[tok] = true
+      parts[#parts + 1] = tok
+    end
+  end
+  if #parts == 0 then
+    return VISIBILITY_NONE
+  end
+  return table.concat(parts, "|")
+end
+
+--- Read current audience from live XmlUI (may be stale after remount — prefer Lua-side sets for shared panels).
+-- @param elemID string
+-- @return table array of tokens
+function U.getVisibilityAudience(elemID)
+  if type(elemID) ~= "string" then
+    error("U.getVisibilityAudience: elemID must be a string", 2)
+  end
+  return U.parseVisibilityAudience(UI.getAttribute(elemID, "visibility"))
+end
+
+--- Absolute replace of who may see the element (`visibility` attribute).
+-- @param elemID string
+-- @param colorsOrString table|string|nil array of colors, or "Red|Orange", or nil/empty → None
+-- @return boolean true if attribute was written
+function U.setVisibleTo(elemID, colorsOrString)
+  if type(elemID) ~= "string" then
+    error("U.setVisibleTo: elemID must be a string", 2)
+  end
+  local tokens
+  if type(colorsOrString) == "string" then
+    tokens = U.parseVisibilityAudience(colorsOrString)
+  elseif type(colorsOrString) == "table" then
+    tokens = {}
+    local seen = {}
+    for i = 1, #colorsOrString do
+      local tok = normalizeVisibilityToken(colorsOrString[i])
+      if tok ~= nil and tok ~= VISIBILITY_NONE and seen[tok] ~= true then
+        seen[tok] = true
+        tokens[#tokens + 1] = tok
+      end
+    end
+  else
+    tokens = {}
+  end
+  local serialized = U.serializeVisibilityAudience(tokens)
+  local current = UI.getAttribute(elemID, "visibility")
+  local currentNorm = U.serializeVisibilityAudience(U.parseVisibilityAudience(current))
+  if currentNorm == serialized then
+    return false
+  end
+  U.setAttribute(elemID, "visibility", serialized)
+  return true
+end
+
+--- Add one color/role to the element's visibility audience.
+-- Fails if the element has no `visibility` attribute yet (TTS default = everyone). Call
+-- `U.setVisibleTo` first to establish an explicit audience (or `None`).
+-- @param elemID string
+-- @param color string e.g. "Red" or "Host"
+-- @return boolean true if attribute was written
+function U.showTo(elemID, color)
+  if type(elemID) ~= "string" then
+    error("U.showTo: elemID must be a string", 2)
+  end
+  local tok = normalizeVisibilityToken(color)
+  if tok == nil or tok == VISIBILITY_NONE then
+    error("U.showTo: color must be a non-empty visibility token", 2)
+  end
+  local raw = UI.getAttribute(elemID, "visibility")
+  if raw == nil then
+    error(
+      "U.showTo: '"
+        .. elemID
+        .. "' has no visibility attribute (unrestricted). Call U.setVisibleTo first.",
+      2
+    )
+  end
+  local tokens = U.parseVisibilityAudience(raw)
+  for i = 1, #tokens do
+    if tokens[i] == tok then
+      return false
+    end
+  end
+  tokens[#tokens + 1] = tok
+  return U.setVisibleTo(elemID, tokens)
+end
+
+--- Remove one color/role from the element's visibility audience (empty → None).
+-- Fails if the element has no `visibility` attribute yet (same as U.showTo).
+-- @param elemID string
+-- @param color string
+-- @return boolean true if attribute was written
+function U.hideFrom(elemID, color)
+  if type(elemID) ~= "string" then
+    error("U.hideFrom: elemID must be a string", 2)
+  end
+  local tok = normalizeVisibilityToken(color)
+  if tok == nil or tok == VISIBILITY_NONE then
+    error("U.hideFrom: color must be a non-empty visibility token", 2)
+  end
+  local raw = UI.getAttribute(elemID, "visibility")
+  if raw == nil then
+    error(
+      "U.hideFrom: '"
+        .. elemID
+        .. "' has no visibility attribute (unrestricted). Call U.setVisibleTo first.",
+      2
+    )
+  end
+  local tokens = U.parseVisibilityAudience(raw)
+  local nextTokens = {}
+  local found = false
+  for i = 1, #tokens do
+    if tokens[i] == tok then
+      found = true
+    else
+      nextTokens[#nextTokens + 1] = tokens[i]
+    end
+  end
+  if not found then
+    return false
+  end
+  return U.setVisibleTo(elemID, nextTokens)
+end
+
 --- @param elemID string
 --- @return boolean True if `active` is true for the element
 function U.isXmlElementExpanded(elemID)

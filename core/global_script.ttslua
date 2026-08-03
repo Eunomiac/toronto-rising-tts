@@ -617,18 +617,18 @@ end
 --- Host hotseat probe (visProbe_*) confirmed runtime visibility rebind; join-client still verify under TOR-144.
 --- @param seatColor string
 local function revealSeatHudVisibility(seatColor)
-    if type(U.setAttribute) ~= "function" then
+    if type(U.setVisibleTo) ~= "function" then
         return
     end
     if seatColor == "Black" then
-        U.setAttribute("HUD_PANEL_BLACK", "visibility", "Black|Host")
+        U.setVisibleTo("HUD_PANEL_BLACK", { "Black", "Host" })
         return
     end
     if not U.isIn(seatColor, C.PlayerColors) then
         return
     end
     for _, eid in ipairs(pcSeatHudRootIds(seatColor)) do
-        U.setAttribute(eid, "visibility", seatColor)
+        U.setVisibleTo(eid, seatColor)
     end
 end
 

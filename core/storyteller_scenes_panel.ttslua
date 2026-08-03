@@ -2030,11 +2030,11 @@ function StorytellerScenesPanel.applySiteModalDistrictVisibility()
             local elemId = "scenes_site_group_dist_" .. distKey
             local show = valid and raw == distKey
             U.setAttribute(elemId, "active", show and "true" or "false")
-            U.setAttribute(elemId, "visibility", show and SITE_MODAL_BUCKET_VISIBILITY_ON or SITE_MODAL_BUCKET_VISIBILITY_OFF)
+            U.setVisibleTo(elemId, show and SITE_MODAL_BUCKET_VISIBILITY_ON or SITE_MODAL_BUCKET_VISIBILITY_OFF)
         end
     end
     U.setAttribute("scenes_site_group_generic", "active", "true")
-    U.setAttribute("scenes_site_group_generic", "visibility", SITE_MODAL_BUCKET_VISIBILITY_ON)
+    U.setVisibleTo("scenes_site_group_generic", SITE_MODAL_BUCKET_VISIBILITY_ON)
 end
 
 --- District / site pickers: pending → selected library row; live → sessionScene (TOR-244 / TOR-314).

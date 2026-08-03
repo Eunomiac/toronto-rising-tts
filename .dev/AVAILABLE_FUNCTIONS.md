@@ -488,9 +488,20 @@ General-purpose UI helpers (system-agnostic). Prefer **`U.setAttribute` / `U.set
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
 | `U.toggleXmlElement(elemID, button)` | Toggle `active`; syncs `toggleElem_<elemID>` text ► / ▼ | Panel sections |
-| `U.showXmlElement(elemID)` | Force expanded | Open section |
-| `U.hideXmlElement(elemID)` | Force collapsed | Close section |
+| `U.showXmlElement(elemID)` | Force expanded (`active`) | Open section |
+| `U.hideXmlElement(elemID)` | Force collapsed (`active`) | Close section |
 | `U.isXmlElementExpanded(elemID)` | Whether `active` reads as true | State checks |
+
+### Audience visibility (`visibility` attribute — TOR-444)
+
+Distinct from `active`. Empty audience → `None`. `showTo`/`hideFrom` require an existing `visibility` attr (missing = TTS unrestricted; call `setVisibleTo` first).
+
+| Function | Description | Usage Example |
+| :--------- | :------------- | :--------------- |
+| `U.setVisibleTo(elemID, colorsOrString)` | Absolute audience replace | Seat reveal / shared panels |
+| `U.showTo(elemID, color)` / `U.hideFrom(elemID, color)` | Add/remove one color in the union | Open/close shared ref for one seat |
+| `U.parseVisibilityAudience` / `U.serializeVisibilityAudience` | Parse/format `Red\|Orange` | Lua-side audience sets |
+| `U.getVisibilityAudience(elemID)` | Read live attribute into token list | Debug / reconcile |
 
 ### Global UI `InputField` text
 
