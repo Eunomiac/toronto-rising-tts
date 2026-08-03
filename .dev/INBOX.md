@@ -20,16 +20,6 @@ Verification:
 ## For Immediate Implementation
 > _After registering each of these issues with Linear in the ordinary fashion, before updating the Focus Stack, briefly review the issue: If it is a quick or easy fix, implement it immediately without waiting for user confirmation. Otherwise, promote it to the top of the Focus Stack, and offer to begin work on it immediately when summarizing your work processing `INBOX.md` to the user. If multiple issues require promotion in this way, consider how best to resolve them as quickly as possible, and offer to draft an implementation plan in your response to the user._
 
-- [Storyteller Dice Rolls] Object movement of dice tray, light, and dice for Storyteller rolls has a few problems:
-  1. The dice spawn in a ring, and the light illuminates, several seconds before the dice tray moves into place.  Expected behavior:  The light and dice tray should appear roughly simultaneously. Only when the dice tray has moved into place should the dice be moved into their ring and randomized.
-  2. When randomized, the dice simply drop onto the dice tray instead of popping up into the air as they do when a player right-clicks their "ROLL" button to automatically roll.  I'm not sure if this means the dice are not randomizing or if it's just a visual matter, but I would like the randomization of storyteller dice rolls to resemble the auto-randomization of player rolls so my players don't suspect me of fudging the results
-- [Scenes Panel] A previewed scene in the scenes panel should be deselected (i.e. restoring everything to green/live scene editing) in all of the following cases:
-  1. Whenever the Scenes panel is closed for any reason, UNLESS the Stage Control board is in preview/"THERE" mode. If the Stage Control Board is in preview/"THERE" mode, the Scenes panel should not be allowed to close -- a broadcast to Black/Host should instruct me to first resolve the Stage Control Board before closing the Scenes panel.
-  2. Whenever the game is loaded. This should also automatically restore the Stage Control Board to "HERE" mode, if it was in preview mode when the game was last saved.
-  3. Whenever a scene is transitioned to or ended (i.e. on scene change). As with #2, this should also restore the Stage Control Board to "HERE" mode.
-- [Player Cameras] Remove the switch to FirstPerson camera mode that currently occurs during a scene transition.
-- [Tarot Deck] When the Tarot deck is activated and moved into position, it should be randomized/shuffled automatically.
-
 ## Active
 
 ## External Work (Set STATUS to "External To Do")
@@ -52,6 +42,8 @@ Verification:
 
 
 ## Processed
+
+2026-08-03 INBOX Immediate — ST tray/light before dice + match player randomize pop → **TOR-448** (Focus #1 High); Scenes preview deselect + THERE close guard → **TOR-449** (Focus #2 High; `blockedBy` **TOR-417**); Remove FirstPerson on blindfold/scene transition → **TOR-446** (shipped); Tarot shuffle on activate → **TOR-447** (shipped)
 
 2026-07-19 Project die white past end date (skip `project_die_0`) → **TOR-421**
 

@@ -140,6 +140,19 @@ local function applyObjectState(key, state, token, buttonGuid)
     })
 end
 
+--- @param buttonGuid string|nil
+local function shuffleTarotDeck(buttonGuid)
+    local deck = getTarotDeck(buttonGuid)
+    if deck == nil then
+        return
+    end
+    if deck.shuffle ~= nil then
+        deck.shuffle()
+    elseif deck.randomize ~= nil then
+        deck.randomize()
+    end
+end
+
 --- @param targetOn boolean
 --- @param token number
 --- @param buttonGuid string|nil
@@ -155,6 +168,10 @@ local function applyTarotStateNow(targetOn, token, buttonGuid)
         applyObjectState(TAROT_KEYS[i], state, token, buttonGuid)
     end
     setDeckInteractable(targetOn, buttonGuid)
+    -- TOR-447: shuffle when activating so the drawn order is fresh after the deck settles into pose.
+    if targetOn then
+        shuffleTarotDeck(buttonGuid)
+    end
     return targetOn
 end
 

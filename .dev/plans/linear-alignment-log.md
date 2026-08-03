@@ -598,4 +598,10 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-07-30 | CREATE+SHIP | TOR-438 | Timing API merge: U.stagger / U.chain / U.await; hard-cut old names |
 | 2026-08-02 | CREATE+SHIP | TOR-441 | Scene transition blindfold double UI.show — `skipAfterChange` + one armed parent show; TOR-434 lead-in preserved; relatedTo TOR-431/434/425 |
 
+| 2026-08-03 | CREATE+SHIP | TOR-446 | Remove FirstPerson on blindfold/scene transition (INBOX Immediate; reverses TOR-443) |
+| 2026-08-03 | CREATE+SHIP | TOR-447 | Tarot shuffle on activate (INBOX Immediate) |
+| 2026-08-03 | CREATE | TOR-448 | ST tray/light before dice + player-like randomize pop (INBOX Immediate → Focus #1) |
+| 2026-08-03 | CREATE | TOR-449 | Scenes preview deselect + THERE close guard (INBOX Immediate → Focus #2; blockedBy TOR-417) |
+| 2026-08-03 | FOCUS | TOR-448, TOR-449, TOR-417, TOR-444, TOR-439, TOR-436 | Re-stack after INBOX Immediate; demote stale TOR-423/419/418 from top |
+
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
