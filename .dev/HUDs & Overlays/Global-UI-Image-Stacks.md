@@ -64,7 +64,20 @@ Do not conflate them. Hunger TOR-340 sticky-`active` under empty-seat `visibilit
 
 **Share:** nestedless `refPanel_*`; Court **page** panels (page1/2/3 — concurrent viewers on different pages via per-page unions); coterie grid/popups when state allows; **scene-transition blindfold** (one random variant + cards for all); location dock (shared session location).
 
-**Keep per-seat (divergent content/interaction):** map (pan/hover); roll controls; **hunger + condition overlays** (different per-PC art at once — keep FadeIn; Images are already per-seat); **camera dock** (left = other players only; right = self controls).
+**Keep per-seat (divergent content/interaction):** map pan surface + in-map overlays (see Map section); roll controls; **hunger + condition overlays** (different per-PC art at once — keep FadeIn; Images are already per-seat); **camera dock** (left = other players only; right = self controls).
+
+### Map (pan forces ×5 of the surface; collapse *within* seat)
+
+Pan/`offsetXY` cannot differ per viewer on one Image → keep per-seat: map base, feature/domain overlays, pins, district highlight, district card (cards sit outside the draggable but selection is still per-player).
+
+| Within each seat copy | Strategy |
+| --- | --- |
+| District highlight stack → **one** Image + guarded `image=` | 1 |
+| District card stack → **one** Image + guarded `image=` | 1 |
+| Left/right sidebar chrome (base/hover/active banks) → **one** Image + tint / asset swap | 2 |
+| Pan nav chrome banks → tint | 2 |
+
+**Sidebars are not strategy-3 shareable** while concurrent map viewers keep independent `hud.map.overlays` / district hover: art is identical, but selected/hover attrs diverge. Sharing would need a product rule (e.g. one open map at a time, or global overlay state). Prefer within-seat chrome collapse.
 
 ### Animation contract
 
