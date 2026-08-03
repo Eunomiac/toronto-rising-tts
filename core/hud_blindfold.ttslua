@@ -133,15 +133,22 @@ local function resolveTransitionLocationCardImages(opts)
 end
 
 --- Force destination cards to Clear defaults (no separate UI.hide — parent owns animation, TOR-431).
+--- Shared tree (TOR-444): one district/site pair — not per-seat ids.
 local function clearTransitionLocationCardDefaultsForAllSeats()
-  for _, seatColor in ipairs(C.PlayerColors or {}) do
-    local districtId = "overlay_district_card_display_" .. seatColor
-    local siteId = "overlay_site_card_display_" .. seatColor
-    U.setAttributes(districtId, { active = "false", color = "Clear", image = "" })
-    U.setAttributes(siteId, { active = "false", color = "Clear", image = "" })
+  if type(HO.clearSharedBlindfoldLocationCards) == "function" then
+    HO.clearSharedBlindfoldLocationCards()
   end
   transitionDistrictCardImage = nil
   transitionSiteCardImage = nil
+end
+
+--- Destination District/Site Custom UI image names for the active transition (nil when none).
+--- @return string|nil, string|nil
+function HUDBF.getTransitionLocationCardImages()
+  if type(transitionDistrictCardImage) == "string" and type(transitionSiteCardImage) == "string" then
+    return transitionDistrictCardImage, transitionSiteCardImage
+  end
+  return nil, nil
 end
 
 --- @param fn fun(playerID: string)

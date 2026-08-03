@@ -1,5 +1,7 @@
 <!-- TARGET: ui/player/panel_overlay_blindfold.xml -->
-<!-- TOR-444: per-seat transition blindfolds removed — see ui/shared/panel_overlay_transition_blindfold.xml.
+<!-- TOR-444: per-seat transition blindfolds removed.
+     Canonical XML + activation procedure: ui/shared/panel_overlay_transition_blindfold.xml
+     (Lua: core/hud_overlays.ttslua applySharedBlindfold; orchestration: core/hud_blindfold.ttslua).
      Stub kept so the color generator still has a TARGET file. -->
 <Panel id="playerHud_overlay_blindfold_stub_@@color@@" active="false" width="1" height="1" raycastTarget="false">
 </Panel>

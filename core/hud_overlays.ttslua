@@ -1,11 +1,14 @@
 --[[
   Full-screen player HUD overlay Images (conditions + hunger).
   Visibility: UI.show / UI.hide (triggers XML showAnimation / hideAnimation per TTS API).
-  Blindfolds (TOR-431): animate the parent Panel `playerHud_overlay_blindfold_<Color>`;
-  arm child Images (variant + optional District/Site cards) before UI.show — do not UI.show children.
-  Hunger tiers also clear/set `active` after hide/show (TOR-340): UI.hide alone can fail to
-  stick for `visibility="<Color>"` panels when that seat is empty. Other overlays still avoid
-  mixing active with show/hide unless a similar off-seat hide bug appears.
+
+  Shared scene-transition blindfold (TOR-444 / TOR-431 / TOR-425):
+  Canonical procedure lives on `ui/shared/panel_overlay_transition_blindfold.xml`.
+  Arm children (variant Image + optional District/Site cards) before one parent `UI.show`,
+  then re-arm the same attrs after show — parent show re-applies XML defaults.
+  Do not UI.show children. Hide: parent UI.hide only; restore child defaults after ~3s.
+
+  Hunger: one Image per seat + image= (TOR-444); clear/set `active` after show (TOR-340).
 ]]
 ---@diagnostic disable: undefined-global
 
@@ -243,7 +246,7 @@ local function scheduleSharedBlindfoldChildCleanup()
   end, BLINDFOLD_HIDE_CHILD_CLEANUP_SEC)
 end
 
---- Arm destination cards before parent UI.show (TOR-425 / TOR-431 / TOR-444 shared).
+--- Arm destination cards (TOR-425 / TOR-431). One setAttributes per card.
 local function armSharedBlindfoldLocationCards(districtImage, siteImage)
   if type(districtImage) == "string" and type(siteImage) == "string" then
     U.setAttributes(SHARED_BLINDFOLD_DISTRICT, { active = "true", color = "White", image = districtImage })
@@ -252,6 +255,32 @@ local function armSharedBlindfoldLocationCards(districtImage, siteImage)
   end
   U.setAttributes(SHARED_BLINDFOLD_DISTRICT, { active = "false", color = "Clear", image = "" })
   U.setAttributes(SHARED_BLINDFOLD_SITE, { active = "false", color = "Clear", image = "" })
+end
+
+--- Arm variant display Image (shared tree — image= swap, TOR-444).
+local function armSharedBlindfoldDisplay(variant)
+  local v = tonumber(variant) or 1
+  if v < 1 then
+    v = 1
+  end
+  if v > C.BlindfoldVariantCount then
+    v = C.BlindfoldVariantCount
+  end
+  U.setAttributes(SHARED_BLINDFOLD_DISPLAY, {
+    active = "true",
+    color = "White",
+    image = "overlay_blindfold_" .. tostring(v),
+  })
+  return v
+end
+
+--- Lazy: destination card images held by hud_blindfold for the active transition.
+local function transitionCardImagesFromHudBlindfold()
+  local HUDBF = require("core.hud_blindfold")
+  if type(HUDBF) ~= "table" or type(HUDBF.getTransitionLocationCardImages) ~= "function" then
+    return nil, nil
+  end
+  return HUDBF.getTransitionLocationCardImages()
 end
 
 --- @return table array of seated PC seat colors (for visibility audience)
@@ -269,6 +298,7 @@ local function seatedPcVisibilityAudience()
 end
 
 --- Shared transition blindfold (TOR-444): one panel, one variant Image via image=.
+--- Procedure: arm children → one UI.show → re-arm children (show resets XML defaults).
 --- @param variant number|nil 1..N = show; nil = hide
 --- @param opts table|nil `{ districtImage?, siteImage?, forceReshow?, touchLocationCards? }`
 local function applySharedBlindfold(variant, opts)
@@ -281,27 +311,40 @@ local function applySharedBlindfold(variant, opts)
   if shouldShow then
     cancelSharedBlindfoldChildCleanup()
     local forceReshow = opts.forceReshow == true
-    if forceReshow or prev ~= true then
-      U.setAttribute(panelId, "active", "false")
-    end
+    local needShow = forceReshow or prev ~= true
+
+    -- Audience while inactive / before show (TOR-444).
     U.setVisibleTo(panelId, seatedPcVisibilityAudience())
-    local v = tonumber(variant) or 1
-    if v < 1 then
-      v = 1
+
+    local districtImage = opts.districtImage
+    local siteImage = opts.siteImage
+    if type(districtImage) ~= "string" or type(siteImage) ~= "string" then
+      local d2, s2 = transitionCardImagesFromHudBlindfold()
+      if type(d2) == "string" and type(s2) == "string" then
+        districtImage = d2
+        siteImage = s2
+      end
     end
-    if v > C.BlindfoldVariantCount then
-      v = C.BlindfoldVariantCount
-    end
-    if touchCards then
-      armSharedBlindfoldLocationCards(opts.districtImage, opts.siteImage)
-    end
-    if forceReshow or prev ~= true then
+
+    if needShow then
+      -- Reset so UI.show restarts FadeIn (beginTransition forceReshow). Avoid extra
+      -- hide/show from Sync.full — syncAll must not set forceReshow while already up.
+      if forceReshow and prev == true then
+        U.setAttribute(panelId, "active", "false")
+      end
+      -- Arm BEFORE show, then again AFTER (parent UI.show re-applies XML defaults).
+      local v = armSharedBlindfoldDisplay(variant)
+      armSharedBlindfoldLocationCards(districtImage, siteImage)
       UI.show(panelId)
+      armSharedBlindfoldDisplay(v)
+      armSharedBlindfoldLocationCards(districtImage, siteImage)
+    else
+      -- Already visible: refresh variant art only; leave cards alone unless explicitly touching.
+      armSharedBlindfoldDisplay(variant)
+      if touchCards then
+        armSharedBlindfoldLocationCards(districtImage, siteImage)
+      end
     end
-    -- After UI.show: parent show re-applies XML child attrs (display defaults to overlay_blindfold_1).
-    U.setAttribute(SHARED_BLINDFOLD_DISPLAY, "image", "overlay_blindfold_" .. tostring(v))
-    U.setAttribute(SHARED_BLINDFOLD_DISPLAY, "active", "true")
-    U.setAttribute(SHARED_BLINDFOLD_DISPLAY, "color", "White")
     lastVisible[panelId] = true
     return
   end
@@ -313,6 +356,11 @@ local function applySharedBlindfold(variant, opts)
   elseif prev == nil then
     lastVisible[panelId] = false
   end
+end
+
+--- Clear shared destination cards to defaults (for beginTransition reset). Shared ids only.
+function HO.clearSharedBlindfoldLocationCards()
+  armSharedBlindfoldLocationCards(nil, nil)
 end
 
 --- Show one blindfold variant for all seated PCs (shared panel, TOR-444).
@@ -454,10 +502,11 @@ function HO.syncAll(opts)
   end
   local sharedVariant = desiredSharedBlindfoldVariantFromConditions()
   local panelPrev = lastVisible[SHARED_BLINDFOLD_PANEL]
-  local leaveCardsAlone = sharedVariant ~= nil and panelPrev == true
+  -- beginTransition owns forceReshow / first slide-in. Sync.full must not restart FadeIn
+  -- (active=false + UI.show flicker) or wipe cards via UI.show without re-arm.
   applySharedBlindfold(sharedVariant, {
-    touchLocationCards = not leaveCardsAlone,
-    forceReshow = opts.force == true and sharedVariant ~= nil,
+    touchLocationCards = sharedVariant ~= nil and panelPrev ~= true,
+    forceReshow = false,
   })
 end
 

@@ -6756,9 +6756,23 @@ UI.setAttributes("playerHud_refPanel_princesCourt_Red", {offsetXY = "-50 0"})
 <!-- include ui/shared/panel_overlay_transition_blindfold.xml -->
 <!-- Shared scene-transition blindfold (TOR-444).
      One panel for all seats; one variant Image (image= swap); one district/site card pair.
-     Arm audience (U.setVisibleTo PC colors) while inactive, then UI.show parent.
-     Then set overlay_blindfold_display image= (UI.show re-applies XML default image=overlay_blindfold_1).
-     Phases still use ui/shared/panel_overlay_global_blindfold.xml. -->
+     Phases still use ui/shared/panel_overlay_global_blindfold.xml — never this panel.
+
+  TOR-431 / TOR-425 activation (Lua: `HO.applyBlindfoldVariantForSeatedPlayers` / `applySharedBlindfold`):
+  1. Audience: `U.setVisibleTo` seated PC colors while parent still inactive.
+  2. Arm children BEFORE parent `UI.show` (do not `UI.show` children):
+     - `overlay_blindfold_display`: active=true, color=White, image=overlay_blindfold_N
+     - With destination location: district/site cards `{active=true, color=White, image=...}`
+       in one `U.setAttributes` each; without location: `{active=false, color=Clear, image=""}`.
+  3. One `UI.show` on `playerHud_overlay_blindfold` (parent owns FadeIn).
+  4. Re-arm the same child attrs AFTER `UI.show` — parent show re-applies XML defaults
+     (display → overlay_blindfold_1; cards → inactive/Clear). Same footgun as Image-Stacks notes.
+
+  Deactivation (`HO.syncAll` when no hudBlindfold / `HUDBF.endTransition`):
+  1. `UI.hide` parent only.
+  2. After ~3s, restore CHILD defaults only (not the parent): display image=overlay_blindfold_1;
+     cards `{active=false, color=Clear, image=""}`.
+-->
 <Defaults>
   <Image class="player_overlay_transition"
     active="true"
