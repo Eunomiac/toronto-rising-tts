@@ -1965,12 +1965,16 @@ end
 local POST_ROLL_DIE_HOVER_SEC = 1
 
 --- After ST tray ring snap: locked settle before unlock/randomize (TOR-448).
---- PC auto-roll usually happens long after manual pool spawn; ST must pause here so dice
---- finish appearing before the unlock → 0.15s → randomize toss.
-local ST_ROLL_TRAY_SETTLE_SEC = 2
+--- DIAGNOSTIC: 5s to test whether short settle prevents pop (revert after author verify).
+local ST_ROLL_TRAY_SETTLE_SEC = 5
 
---- After ST bag spawn (before tray snap): brief pause for preload claim / mesh appear.
-local ST_ROLL_SPAWN_SETTLE_SEC = 0.75
+--- After ST bag spawn (before tray snap): pause for preload claim / mesh appear.
+--- DIAGNOSTIC: 5s (same as tray settle) for delay-theory test.
+local ST_ROLL_SPAWN_SETTLE_SEC = 5
+
+--- After ST unlock, before randomize (PC auto-roll uses 0.15).
+--- DIAGNOSTIC: 5s with the other settles for delay-theory test.
+local ST_ROLL_POST_UNLOCK_SEC = 5
 
 --- TTS `Object.randomize(color)` toss impulse follows the acting seat; Black alone may
 --- not match player right-click ROLL. Prefer the clicker seated color for ST tosses.
@@ -6266,8 +6270,8 @@ local function runBlackRollSequence(physicsColor)
             if activeNow == nil or activeNow.phase ~= C.RollPhase.ROLLING then
                 return nil
             end
-            -- Same as PC autoRollOnRelease: unlock first, brief free-physics window, then toss.
-            return 0.15
+            -- Same order as PC autoRollOnRelease (unlock → delay → toss); delay is diagnostic 5s.
+            return ST_ROLL_POST_UNLOCK_SEC
         end,
         function()
             local activeNow = S.getStateVal("playerData", pid, "hud", "rollData", "active")
@@ -6321,7 +6325,7 @@ local function finishRollRelease(color, physicsColor)
             end
             U.await(function()
                 randomizeBlackTrayDiceSimultaneous(delayedRollId, rollAs)
-            end, 0.15)
+            end, ST_ROLL_POST_UNLOCK_SEC)
         end, ST_ROLL_TRAY_SETTLE_SEC)
         return true
     end
