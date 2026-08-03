@@ -56,7 +56,7 @@ _Stack rank for the current cycle (2026-08-03 — **TOR-449** shipped; **TOR-448
 
 ## Dice Roller
 
-- [ ] **ST roll tray/light before dice + player-like randomize pop:** Tray/light ordering shipped; pop path = unlock → 0.15s → `randomize(clickerSeat)` (same order as PC right-click ROLL). Pending Save & Play. _(TOR-448)_
+- [ ] **ST roll tray/light before dice + player-like randomize pop:** Tray/light ordering shipped; ST dice spawn unlocked at tray Y=2.04 then unlock → 0.15s → `randomize(clickerSeat)`. Pending Save & Play. _(TOR-448)_
 
 - [x] Roll conditions set on rolls via the Storyteller control panel are not persisted and do not apply to rolls. _(Addressed: `roll_ui.ttslua` `uiToggleGet` normalizes Toggle `isOn` from string/boolean/number so Apply writes correct booleans.)_ _(TOR-54)_
 - [x] Automatic camera repositioning during the roll sequence is inconsistent. Should be modeled off of how the camera controls are applied in the Admin Debug panel (since they work flawlessly). _(Addressed: `main.ttslua` `M.setCamera` now applies `lookAt(intermediateCameraData)` before the final preset.)_ _(TOR-57)_

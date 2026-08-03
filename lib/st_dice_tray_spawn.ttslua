@@ -9,8 +9,8 @@
 
 local STS = {}
 
---- Unchanged staging hover height above the drawer tray (matches player STAGING_WORLD_Y; TOR-310).
-STS.STAGING_BASE_Y = 8
+--- Tray-surface Y for ST staged dice (unlocked; TOR-448 pop). Not the PC hover height of 8.
+STS.STAGING_BASE_Y = 2.04
 
 --- Inset from drawer edges as a fraction of playable half-extent (author target 15–20%).
 STS.TRAY_EDGE_INSET_RATIO = 0.20

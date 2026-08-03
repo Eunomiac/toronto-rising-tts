@@ -6218,8 +6218,8 @@ local function blackRollWaitDrawerRaised(slot)
     end
 end
 
---- ST Roll click: open → fully raised + light → spawn → tray ring → settle →
---- unlock → 0.15s → randomize (PC auto-roll order; longer settle than manual PC assemble).
+--- ST Roll click: open → fully raised + light → spawn unlocked on tray (y=2.04) →
+--- ring layout → settle → unlock (noop) → 0.15s → randomize (TOR-448).
 -- @param physicsColor string|nil  HUD clicker seat for Object.randomize toss
 local function runBlackRollSequence(physicsColor)
     local pid = S.getPlayerID("Black")
@@ -6258,7 +6258,6 @@ local function runBlackRollSequence(physicsColor)
         end,
         function()
             moveBlackStagedDiceToTray()
-            -- Locked settle: mirror PC dice that sat assembled before right-click ROLL.
             return ST_ROLL_TRAY_SETTLE_SEC
         end,
         function()
@@ -6273,7 +6272,7 @@ local function runBlackRollSequence(physicsColor)
             if activeNow == nil or activeNow.phase ~= C.RollPhase.ROLLING then
                 return nil
             end
-            -- Same order as PC autoRollOnRelease (unlock → delay → toss); delay is diagnostic 5s.
+            -- Same as PC autoRollOnRelease: unlock first, brief free-physics window, then toss.
             return ST_ROLL_POST_UNLOCK_SEC
         end,
         function()

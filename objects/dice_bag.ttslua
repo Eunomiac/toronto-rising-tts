@@ -25,6 +25,8 @@ HEIGHT   = 1.5
 STAGING_WORLD_Y = 8
 --- World Y for bag-anchored spawn hover before smooth move into arc (TOR-318).
 SPAWN_HOVER_WORLD_Y = 8
+--- ST tray-surface Y; must match `lib/st_dice_tray_spawn` `STS.STAGING_BASE_Y` (TOR-448).
+ST_TRAY_SURFACE_Y = 2.04
 SCALE    = 1.75
 
 -- Spawn-arc overflow layering: a single arc holds at most MAX_DICE_PER_ARC dice. Overflow
@@ -261,13 +263,22 @@ local function worldArcPoint(bagColor, arcCenter, i, total, radius)
     local trayYOffset = pcTrayYOffset(bagColor)
     -- ST drawer tray passes a fixed world-space arc center (no bag transform).
     if type(arcCenter) == "table" and type(arcCenter.x) == "number" then
+        -- Tray-surface Y is already in arcCenter; do not add HEIGHT (that was hover offset).
+        local y = arcCenter.y + layerY + trayYOffset
+        if not isStorytellerBag() then
+            y = arcCenter.y + (localPt.y or 0) + layerY + trayYOffset
+        end
         return {
             x = arcCenter.x + localPt.x,
-            y = arcCenter.y + (localPt.y or 0) + layerY + trayYOffset,
+            y = y,
             z = arcCenter.z + localPt.z,
         }
     end
     -- Player arc: Normal bag Y-rotation for XZ; fixed world Y (pivot Y ≠ staging hover height).
+    if isStorytellerBag() then
+        local world = self.positionToWorld({ x = localPt.x, y = 0, z = localPt.z })
+        return { x = world.x, y = ST_TRAY_SURFACE_Y + layerY, z = world.z }
+    end
     local normalBag = getPlayerNormalBag(bagColor)
     if normalBag ~= nil then
         local world = normalBag.positionToWorld({ x = localPt.x, y = 0, z = localPt.z })
@@ -376,7 +387,12 @@ function spawnDie(bagColor, dieType, opts)
             return
         end
         die.setScale({ SCALE, SCALE, SCALE })
-        die.setLock(true)
+        -- ST: unlocked on tray surface so randomize can toss (TOR-448). PC: locked until Roll.
+        if isStorytellerBag() then
+            die.setLock(false)
+        else
+            die.setLock(true)
+        end
         die.script_state = " "
         if bloodSurgePool == true then
             die.script_state = DK.SCRIPT_STATE_BLOOD_SURGE_POOL
