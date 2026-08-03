@@ -4,7 +4,7 @@
 
 <Panel id="playerHud_overlay_camera_@@color@@" class="playerHud_overlay_camera" visibility="@@color@@">
 
-  <Image id="popout_cameraPanel_@@color@@" class="popoutControl_camera alpha_control" image="popoutControl_camera" onClick="HUD_popoutCameraControl_click" />
+  <Image id="popout_cameraPanel_@@color@@" class="popoutControl_camera" image="popoutControl_camera" onClick="HUD_popoutCameraControl_click" />
 
 
   <Panel id="playerHud_overlay_cameraControls_@@color@@" class="playerHud_overlay_cameraControls" padding="30 30 10 10" active="false">

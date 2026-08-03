@@ -97,7 +97,7 @@
   <!-- Per-seat lower-left location card popout (see `ui/.templates/panel_overlay_location.xml`). Hover lives on `popout_locationPanel_<Color>` only; root does not raycast. -->
   <Panel class="playerHud_overlay_location" height="800" width="1000" rectAlignment="LowerLeft" offsetXY="0 0" raycastTarget="false" />
 
-  <Image class="popoutControl_location" raycastTarget="true" rectAlignment="LowerLeft" height="100" width="100" color="rgba(1, 1, 1, 0.15)" />
+  <Image class="popoutControl_location" raycastTarget="true" rectAlignment="LowerLeft" height="100" width="100" color="rgba(1, 1, 1, 1)" />
 
   <Image class="gameStateOverlay_district" rectAlignment="UpperLeft" width="800" offsetXY="0 0" active="false" />
   <Image class="gameStateOverlay_site" rectAlignment="LowerLeft" width="800" offsetXY="300 0" active="false" />

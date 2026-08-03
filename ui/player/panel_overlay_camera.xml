@@ -3,7 +3,7 @@
 
 <Panel id="playerHud_overlay_camera_Brown" class="playerHud_overlay_camera" visibility="Brown">
 
-  <Image id="popout_cameraPanel_Brown" class="popoutControl_camera alpha_control" image="popoutControl_camera" onClick="HUD_popoutCameraControl_click" />
+  <Image id="popout_cameraPanel_Brown" class="popoutControl_camera" image="popoutControl_camera" onClick="HUD_popoutCameraControl_click" />
 
 
   <Panel id="playerHud_overlay_cameraControls_Brown" class="playerHud_overlay_cameraControls" padding="30 30 10 10" active="false">
@@ -54,7 +54,7 @@
 
 <Panel id="playerHud_overlay_camera_Orange" class="playerHud_overlay_camera" visibility="Orange">
 
-  <Image id="popout_cameraPanel_Orange" class="popoutControl_camera alpha_control" image="popoutControl_camera" onClick="HUD_popoutCameraControl_click" />
+  <Image id="popout_cameraPanel_Orange" class="popoutControl_camera" image="popoutControl_camera" onClick="HUD_popoutCameraControl_click" />
 
 
   <Panel id="playerHud_overlay_cameraControls_Orange" class="playerHud_overlay_cameraControls" padding="30 30 10 10" active="false">
@@ -105,7 +105,7 @@
 
 <Panel id="playerHud_overlay_camera_Red" class="playerHud_overlay_camera" visibility="Red">
 
-  <Image id="popout_cameraPanel_Red" class="popoutControl_camera alpha_control" image="popoutControl_camera" onClick="HUD_popoutCameraControl_click" />
+  <Image id="popout_cameraPanel_Red" class="popoutControl_camera" image="popoutControl_camera" onClick="HUD_popoutCameraControl_click" />
 
 
   <Panel id="playerHud_overlay_cameraControls_Red" class="playerHud_overlay_cameraControls" padding="30 30 10 10" active="false">
@@ -156,7 +156,7 @@
 
 <Panel id="playerHud_overlay_camera_Pink" class="playerHud_overlay_camera" visibility="Pink">
 
-  <Image id="popout_cameraPanel_Pink" class="popoutControl_camera alpha_control" image="popoutControl_camera" onClick="HUD_popoutCameraControl_click" />
+  <Image id="popout_cameraPanel_Pink" class="popoutControl_camera" image="popoutControl_camera" onClick="HUD_popoutCameraControl_click" />
 
 
   <Panel id="playerHud_overlay_cameraControls_Pink" class="playerHud_overlay_cameraControls" padding="30 30 10 10" active="false">
@@ -207,7 +207,7 @@
 
 <Panel id="playerHud_overlay_camera_Purple" class="playerHud_overlay_camera" visibility="Purple">
 
-  <Image id="popout_cameraPanel_Purple" class="popoutControl_camera alpha_control" image="popoutControl_camera" onClick="HUD_popoutCameraControl_click" />
+  <Image id="popout_cameraPanel_Purple" class="popoutControl_camera" image="popoutControl_camera" onClick="HUD_popoutCameraControl_click" />
 
 
   <Panel id="playerHud_overlay_cameraControls_Purple" class="playerHud_overlay_cameraControls" padding="30 30 10 10" active="false">

@@ -38,7 +38,8 @@ C.PlayerData = {
     color = "Brown",
     playerName = "Thaumaterge",
     charKey = "fomorach",
-    charName = "Fomórach"
+    charName = "Fomórach",
+    hasCompanionFigurine = true
   },
   [C.PlayerIDs.Hastur] = {
     color = "Orange",
@@ -50,7 +51,8 @@ C.PlayerData = {
     color = "Red",
     playerName = "PixelPuzzler",
     charKey = "lordLucien",
-    charName = "Lord Lucien"
+    charName = "Lord Lucien",
+    hasCompanionFigurine = true
   },
   [C.PlayerIDs.JRook] = {
     color = "Pink",
@@ -1060,6 +1062,13 @@ C.ObjectPositions = {
       scale = Vector({ 1.5, 1.5, 1.5 })
     }
   },
+  COMPULSION_CARD_SELECTED_LIVEROLL_RED = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_SELECTED_LIVEROLL_ANCHOR_RED,
+      height = 8.43,
+      duration = 0.5
+    }
+  },
   COMPULSION_CARD_DRAWN_ORANGE = {
     on = {
       anchor = G.GUIDS.COMPULSION_CARD_DRAWN_ANCHOR_ORANGE,
@@ -1104,12 +1113,26 @@ C.ObjectPositions = {
       scale = Vector({ 1.5, 1.5, 1.5 })
     }
   },
+  COMPULSION_CARD_SELECTED_LIVEROLL_ORANGE = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_SELECTED_LIVEROLL_ANCHOR_ORANGE,
+      height = 8.43,
+      duration = 0.5
+    }
+  },
   COMPULSION_CARD_DRAWN_BROWN = {
     on = {
       anchor = G.GUIDS.COMPULSION_CARD_DRAWN_ANCHOR_BROWN,
       height = 10,
       duration = 0.5,
       scale = Vector({ 1.5, 1.5, 1.5 })
+    }
+  },
+  COMPULSION_CARD_SELECTED_LIVEROLL_BROWN = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_SELECTED_LIVEROLL_ANCHOR_BROWN,
+      height = 8.43,
+      duration = 0.5
     }
   },
   COMPULSION_CARD_1_BROWN = {
@@ -1192,6 +1215,13 @@ C.ObjectPositions = {
       scale = Vector({ 1.5, 1.5, 1.5 })
     }
   },
+  COMPULSION_CARD_SELECTED_LIVEROLL_PINK = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_SELECTED_LIVEROLL_ANCHOR_PINK,
+      height = 8.43,
+      duration = 0.5
+    }
+  },
   COMPULSION_CARD_DRAWN_PURPLE = {
     on = {
       anchor = G.GUIDS.COMPULSION_CARD_DRAWN_ANCHOR_PURPLE,
@@ -1234,6 +1264,13 @@ C.ObjectPositions = {
       height = 8.43,
       duration = 0.5,
       scale = Vector({ 1.5, 1.5, 1.5 })
+    }
+  },
+  COMPULSION_CARD_SELECTED_LIVEROLL_PURPLE = {
+    on = {
+      anchor = G.GUIDS.COMPULSION_CARD_SELECTED_LIVEROLL_ANCHOR_PURPLE,
+      height = 8.43,
+      duration = 0.5
     }
   },
   FAMULUS_FIGURINE_RED = {
@@ -1325,7 +1362,7 @@ C.CameraAuthoringReferenceHandPosition = Vector({ 0.00, 3.22, -76.61 })
 
 C.ReferenceCameraAngles = {
   default = {
-    cameraMode = "FirstPerson",
+    cameraMode = "ThirdPerson",
     position = Vector({ 0, 28.5760, -54.5664 }),
     pitch = 0,
     yaw = 0,
@@ -1333,16 +1370,16 @@ C.ReferenceCameraAngles = {
     isRelativeToReferenceHandPosition = true
   },
   sheet = {
-    cameraMode = "FirstPerson",
-    position = Vector({ 0.0000, 5.8436, -53.0298 }),
+    cameraMode = "ThirdPerson",
+    position = Vector({ 0.0000, 5.8436, -52.07 }),
     pitch = 70.5275,
     yaw = 0,
-    distance = 11,
+    distance = 14,
     isRelativeToReferenceHandPosition = true
   },
   roll = {
 
-    cameraMode = "FirstPerson",
+    cameraMode = "ThirdPerson",
     position = Vector({ 0, 5.8436, -50.6698 }),
     pitch = 35.9174,
     yaw = 0,
@@ -1350,7 +1387,7 @@ C.ReferenceCameraAngles = {
     isRelativeToReferenceHandPosition = true
   },
   diceTray = {
-    cameraMode = "FirstPerson",
+    cameraMode = "ThirdPerson",
     position = Vector({ 0, 17.8731, -43.3904 }),
     pitch = 58.6195,
     yaw = 0,
@@ -1358,7 +1395,7 @@ C.ReferenceCameraAngles = {
     isRelativeToReferenceHandPosition = true
   },
   compulsions = {
-    cameraMode = "FirstPerson",
+    cameraMode = "ThirdPerson",
     position = Vector({ 0.0000, 7.5, -46 }),
     pitch = 30,
     yaw = 0,
@@ -1366,7 +1403,7 @@ C.ReferenceCameraAngles = {
     isRelativeToReferenceHandPosition = true
   },
   facing = {
-    cameraMode = "FirstPerson",
+    cameraMode = "ThirdPerson",
     position = Vector({ 0.0000, 28.1757, -36.0090 }),
     pitch = 14.6121,
     yaw = 177.8662,
@@ -1379,7 +1416,7 @@ C.ReferenceCameraAngles = {
 -- These are the definitions for camera modes that are the same for all players.
 C.UniversalCameraAngles = {
   districtCard = {
-    cameraMode = "FirstPerson",
+    cameraMode = "ThirdPerson",
     position = Vector({ 0, 37.7789, -25.0052 }),
     pitch = 15.8187,
     yaw = 0.0000,
@@ -1387,7 +1424,7 @@ C.UniversalCameraAngles = {
     isRelativeToReferenceHandPosition = true
   },
   siteCard = {
-    cameraMode = "FirstPerson",
+    cameraMode = "ThirdPerson",
     position = Vector({ 0, 37.7789, -25.0052 }),
     pitch = 15.8187,
     yaw = 0.0000,
@@ -1395,7 +1432,7 @@ C.UniversalCameraAngles = {
     isRelativeToReferenceHandPosition = true
   },
   npcCenter = {
-    cameraMode = "FirstPerson",
+    cameraMode = "ThirdPerson",
     position = Vector({ 0, 0, 0 }),
     pitch = 0,
     yaw = 0,
@@ -1403,7 +1440,7 @@ C.UniversalCameraAngles = {
     isRelativeToReferenceHandPosition = false
   },
   npcNearLeft = {
-    cameraMode = "FirstPerson",
+    cameraMode = "ThirdPerson",
     position = Vector({ 0, 0, 0 }),
     pitch = 0,
     yaw = 0,
@@ -1411,7 +1448,7 @@ C.UniversalCameraAngles = {
     isRelativeToReferenceHandPosition = false
   },
   npcNearRight = {
-    cameraMode = "FirstPerson",
+    cameraMode = "ThirdPerson",
     position = Vector({ 0, 0, 0 }),
     pitch = 0,
     yaw = 0,
@@ -1419,7 +1456,7 @@ C.UniversalCameraAngles = {
     isRelativeToReferenceHandPosition = false
   },
   npcFarLeft = {
-    cameraMode = "FirstPerson",
+    cameraMode = "ThirdPerson",
     position = Vector({ 0, 0, 0 }),
     pitch = 0,
     yaw = 0,
@@ -1427,7 +1464,7 @@ C.UniversalCameraAngles = {
     isRelativeToReferenceHandPosition = false
   },
   npcFarRight = {
-    cameraMode = "FirstPerson",
+    cameraMode = "ThirdPerson",
     position = Vector({ 0, 0, 0 }),
     pitch = 0,
     yaw = 0,
@@ -1435,7 +1472,7 @@ C.UniversalCameraAngles = {
     isRelativeToReferenceHandPosition = false
   },
   wide = {
-    cameraMode = "FirstPerson",
+    cameraMode = "ThirdPerson",
     position = Vector({ 0, 37.7789, -25.0052 }),
     pitch = 15.8187,
     yaw = 0.0000,
@@ -1443,7 +1480,7 @@ C.UniversalCameraAngles = {
     isRelativeToReferenceHandPosition = true
   },
   wideFacing = {
-    cameraMode = "FirstPerson",
+    cameraMode = "ThirdPerson",
     position = Vector({ 0.0000, 79.4413, 66.9976 }),
     pitch = 34.4825,
     yaw = 177.8662,
@@ -2052,6 +2089,7 @@ C.TableSourceObjects = {
     "STORAGE_TOME",
     "COMPULSION_CARD_DRAWN_ANCHOR",
     "COMPULSION_CARD_SELECTED_ANCHOR",
+    "COMPULSION_CARD_SELECTED_LIVEROLL_ANCHOR",
     "COMPULSION_LIGHT"
   },
   all = {
