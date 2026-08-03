@@ -27,7 +27,7 @@ Confirm remount-weight cuts still open nestedless refs, Prince’s Court, the sh
 1. **Structural remount** — shared element ids exist; old per-seat / stack sibling ids are gone.
 2. **Nestedless Rolls** — open via state; audience includes Red; you confirm the shared popup looks right.
 3. **Prince’s Court** — shared tree + single tracker Images; you flip to page 2; Lua asserts page audience.
-4. **Shared blindfold** — `HO.applyBlindfoldVariantForSeatedPlayers`; you confirm FadeIn; Lua hides and continues.
+4. **Shared blindfold** — arm shared panel via `U`/`UI` (mirrors `HO.applyBlindfoldVariantForSeatedPlayers`); you confirm FadeIn; Lua hides and continues.
 5. **Location dock + sidebar tint** — district `image=` on the single per-seat Image; hover sibling chrome absent.
 
 ## Prerequisites (human — keep short)
@@ -72,8 +72,7 @@ _G.TOR444 = {
   blindfoldVariant = 3,
 }
 
--- executeScript does not see Global locals (HUDP/HO); require like production call sites.
-local HUDP = require("core.hud_player")
+-- Execute Lua cannot require(); use globals (S/U/C/Sync/DEBUG) only.
 
 local function tor444Fixture()
   local F = _G.TOR444
@@ -81,14 +80,6 @@ local function tor444Fixture()
     error("[FAIL] _G.TOR444 missing — paste Code Block 0 from the playbook first")
   end
   return F
-end
-
-local function tor444SeatPlayer(F)
-  local p = Player[F.seat]
-  if p == nil then
-    error("[FAIL] Player." .. F.seat .. " nil after seat prep")
-  end
-  return p
 end
 
 local function tor444Pid(F)
@@ -154,8 +145,9 @@ local function tor444ClearRefs(F)
   S.setStateVal(nil, "playerData", pid, "hud", "reference", "princesCourt")
 end
 
+--- Sync.player → HUDP.updatePlayerUI (HUDP is a Global local; not visible here).
 local function tor444UpdateHud(F)
-  HUDP.updatePlayerUI(tor444SeatPlayer(F), F.seat)
+  Sync.player(F.seat)
 end
 
 U.chain({
@@ -218,7 +210,7 @@ U.chain({
     tor444ClearRefs(F)
     S.setStateVal(true, "playerData", tor444Pid(F), "hud", "reference", F.refKey)
     tor444UpdateHud(F)
-    print("PASS — Rolls opened via state + HUDP.updatePlayerUI")
+    print("PASS — Rolls opened via state + Sync.player")
   end,
   function()
     local F = tor444Fixture()
@@ -242,7 +234,7 @@ U.chain({
 ## Code Block A — Court open + page flip gate
 
 ```lua
-local HUDP = require("core.hud_player")
+-- Execute Lua cannot require(); use globals (S/U/C/Sync) only.
 
 local function tor444Fixture()
   local F = _G.TOR444
@@ -250,14 +242,6 @@ local function tor444Fixture()
     error("[FAIL] _G.TOR444 missing — paste Code Block 0 first")
   end
   return F
-end
-
-local function tor444SeatPlayer(F)
-  local p = Player[F.seat]
-  if p == nil then
-    error("[FAIL] Player." .. F.seat .. " nil")
-  end
-  return p
 end
 
 local function tor444Pid(F)
@@ -314,7 +298,7 @@ local function tor444ClearRefs(F)
 end
 
 local function tor444UpdateHud(F)
-  HUDP.updatePlayerUI(tor444SeatPlayer(F), F.seat)
+  Sync.player(F.seat)
 end
 
 U.chain({
@@ -353,8 +337,7 @@ U.chain({
 ## Code Block B — Page 2 assert, blindfold, location dock, done
 
 ```lua
-local HUDP = require("core.hud_player")
-local HO = require("core.hud_overlays")
+-- Execute Lua cannot require(); use globals (S/U/C/Sync) only.
 
 local function tor444Fixture()
   local F = _G.TOR444
@@ -362,14 +345,6 @@ local function tor444Fixture()
     error("[FAIL] _G.TOR444 missing — paste Code Block 0 first")
   end
   return F
-end
-
-local function tor444SeatPlayer(F)
-  local p = Player[F.seat]
-  if p == nil then
-    error("[FAIL] Player." .. F.seat .. " nil")
-  end
-  return p
 end
 
 local function tor444Pid(F)
@@ -407,7 +382,29 @@ local function tor444AssertAudienceContains(id, color)
 end
 
 local function tor444UpdateHud(F)
-  HUDP.updatePlayerUI(tor444SeatPlayer(F), F.seat)
+  Sync.player(F.seat)
+end
+
+--- Inline HO.applyBlindfoldVariantForSeatedPlayers (HO is a Global local).
+local function tor444ArmSharedBlindfold(F)
+  local panelId = "playerHud_overlay_blindfold"
+  local displayId = "overlay_blindfold_display"
+  local v = tonumber(F.blindfoldVariant) or 3
+  U.setAttribute(panelId, "active", "false")
+  local tokens = {}
+  local seen = {}
+  for _, player in ipairs(Player.getPlayers() or {}) do
+    local color = player and player.color or nil
+    if type(color) == "string" and seen[color] ~= true and U.isIn(color, C.PlayerColors) then
+      seen[color] = true
+      tokens[#tokens + 1] = color
+    end
+  end
+  U.setVisibleTo(panelId, tokens)
+  U.setAttribute(displayId, "image", "overlay_blindfold_" .. tostring(v))
+  U.setAttribute(displayId, "active", "true")
+  U.setAttribute(displayId, "color", "White")
+  UI.show(panelId)
 end
 
 U.chain({
@@ -428,7 +425,7 @@ U.chain({
   end,
   function()
     local F = tor444Fixture()
-    HO.applyBlindfoldVariantForSeatedPlayers(F.blindfoldVariant, { forceReshow = true })
+    tor444ArmSharedBlindfold(F)
     local want = "overlay_blindfold_" .. tostring(F.blindfoldVariant)
     local got = tor444AssertHasAttr("overlay_blindfold_display", "image")
     if got ~= want then
