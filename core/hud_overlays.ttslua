@@ -28,8 +28,10 @@ local pendingBlindfoldChildCleanupBySeat = {}
 --- Parent Panel hide: animationDuration 2 + hideAnimationDelay 1 (playerHud_blindfoldOverlay).
 local BLINDFOLD_HIDE_CHILD_CLEANUP_SEC = 3
 
---- Tier images overlay_hunger_0 .. overlay_hunger_5 (mutually exclusive).
-local HUNGER_LEVELS = { 0, 1, 2, 3, 4, 5 }
+--- Tier assets overlay_hunger_0 .. overlay_hunger_5 (one Image per seat + image=; TOR-444).
+
+--- seatColor -> last applied hunger Custom UI image name (guarded setAttribute).
+local lastHungerImageBySeat = {}
 
 --- Blindfold art variants overlay_blindfold_1 .. overlay_blindfold_N (asset names; one shared Image).
 local BLINDFOLD_VARIANTS = {}
@@ -55,24 +57,46 @@ local function isExclusiveBlindfoldElementId(elementId)
 end
 
 --- @param seatColor string
+--- @return string
+local function hungerOverlayIdForSeat(seatColor)
+  return "overlay_hunger_" .. seatColor
+end
+
+--- @param seatColor string
 --- @return string[]
 local function allManagedOverlayIdsForSeat(seatColor)
   if type(seatColor) ~= "string" then
     return {}
   end
-  local ids = {
+  return {
     "overlay_health_impaired_" .. seatColor,
     "overlay_humanity_impaired_" .. seatColor,
     "overlay_stained_" .. seatColor,
     "overlay_frenzy_" .. seatColor,
+    hungerOverlayIdForSeat(seatColor),
   }
-  for _, n in ipairs(HUNGER_LEVELS) do
-    ids[#ids + 1] = "overlay_hunger_" .. n .. "_" .. seatColor
-  end
-  return ids
 end
 
---- Merge condition hudChanges and hunger-only overlays for one seat.
+--- @param playerID string|nil
+--- @param seatColor string
+--- @return number 0..5
+local function resolveHungerLevel(playerID, seatColor)
+  local hg = 0
+  if type(playerID) == "string" and playerID ~= "" and playerID ~= C.StorytellerID then
+    hg = tonumber(S.getStateVal("playerData", playerID, "stats", "hunger")) or 0
+  elseif type(seatColor) == "string" then
+    hg = tonumber(S.getPlayerVal(seatColor, "hunger")) or 0
+  end
+  if hg < 0 then
+    hg = 0
+  end
+  if hg > 5 then
+    hg = 5
+  end
+  return hg
+end
+
+--- Merge condition hudChanges and hunger overlay for one seat.
 --- @param playerID string|nil
 --- @param seatColor string
 --- @return table<string, boolean> ids that should be visible
@@ -90,24 +114,9 @@ local function computeDesiredVisibility(playerID, seatColor)
     end
   end
 
-  -- Hunger overlays: exactly one tier 0..5 (stat-driven; not conditions)
-  for _, n in ipairs(HUNGER_LEVELS) do
-    want["overlay_hunger_" .. n .. "_" .. seatColor] = nil
-  end
+  -- Hunger: one Image per seat always shown (tier via image=); level encoded in fingerprint.
   if type(seatColor) == "string" then
-    local hg = 0
-    if type(playerID) == "string" and playerID ~= "" and playerID ~= C.StorytellerID then
-      hg = tonumber(S.getStateVal("playerData", playerID, "stats", "hunger")) or 0
-    else
-      hg = tonumber(S.getPlayerVal(seatColor, "hunger")) or 0
-    end
-    if hg < 0 then
-      hg = 0
-    end
-    if hg > 5 then
-      hg = 5
-    end
-    want["overlay_hunger_" .. hg .. "_" .. seatColor] = true
+    want[hungerOverlayIdForSeat(seatColor)] = true
   end
 
   return want
@@ -128,7 +137,7 @@ local function overlayInputFingerprintForSeat(seatColor)
     end
   end
   table.sort(keys)
-  return seatColor .. ":" .. table.concat(keys, ",")
+  return seatColor .. ":" .. table.concat(keys, ",") .. ":h" .. tostring(resolveHungerLevel(playerID, seatColor))
 end
 
 --- Stable fingerprint of overlay visibility inputs for all player seat rows.
@@ -144,16 +153,14 @@ end
 --- Clears per-seat desired-overlay input fingerprints (pair with `Sync.full({ force = true })`).
 function HO.invalidateOverlayInputCache()
   lastDesiredVisibilityFpBySeat = {}
+  lastHungerImageBySeat = {}
 end
 
---- Hunger uses six mutually exclusive Image elements (overlay_hunger_0 .. overlay_hunger_5).
---- Always issues UI.hide/show for all six ids — no lastVisible short-circuit.
---- After hide, also clear `active` (TOR-323 / TOR-340): TTS FadeOut via UI.hide often does not
---- stick for elements under `visibility="<Color>"` when no one is seated at that color, so
---- reducing hunger off-seat left higher tiers visible until that seat was occupied.
+--- Hunger uses one Image per seat (`overlay_hunger_<Seat>`) + `image=overlay_hunger_N` (TOR-444).
+--- Always show + active=true (tier 0..5); guarded image write; clear image cache via invalidateSeatCache.
 --- @param seatColor string
---- @param level number 0..5 = show only that tier
-local function applyHungerOverlaysExclusive(seatColor, level)
+--- @param level number 0..5
+local function applyHungerOverlay(seatColor, level)
   if type(seatColor) ~= "string" then
     return
   end
@@ -167,33 +174,27 @@ local function applyHungerOverlaysExclusive(seatColor, level)
   if lv > 5 then
     lv = 5
   end
-  for _, n in ipairs(HUNGER_LEVELS) do
-    local eid = "overlay_hunger_" .. n .. "_" .. seatColor
-    local shouldShow = n == lv
-    if shouldShow then
-      UI.show(eid)
-      U.setAttribute(eid, "active", "true")
-    else
-      UI.hide(eid)
-      U.setAttribute(eid, "active", "false")
+  local eid = hungerOverlayIdForSeat(seatColor)
+  local imageRef = "overlay_hunger_" .. lv
+  if lastHungerImageBySeat[seatColor] ~= imageRef then
+    if UI ~= nil and UI.setAttribute ~= nil then
+      UI.setAttribute(eid, "image", imageRef)
     end
-    lastVisible[eid] = shouldShow
+    lastHungerImageBySeat[seatColor] = imageRef
   end
+  UI.show(eid)
+  U.setAttribute(eid, "active", "true")
+  lastVisible[eid] = true
 end
 
---- @param want table<string, boolean>
+--- @param playerID string|nil
 --- @param seatColor string
---- @return number 0..5 — which hunger tier overlay should be visible
-local function desiredHungerLevelFromWant(want, seatColor)
-  if type(want) ~= "table" or type(seatColor) ~= "string" then
+--- @return number 0..5
+local function desiredHungerLevelFromWant(_want, seatColor)
+  if type(seatColor) ~= "string" then
     return 0
   end
-  for _, n in ipairs(HUNGER_LEVELS) do
-    if want["overlay_hunger_" .. n .. "_" .. seatColor] == true then
-      return n
-    end
-  end
-  return 0
+  return resolveHungerLevel(S.getPlayerID(seatColor), seatColor)
 end
 
 --- @return number|nil variant from any seated PC's hudBlindfold condition
@@ -397,6 +398,7 @@ function HO.invalidateSeatCache(seatColor)
   for _, eid in ipairs(allManagedOverlayIdsForSeat(seatColor)) do
     lastVisible[eid] = nil
   end
+  lastHungerImageBySeat[seatColor] = nil
   lastDesiredVisibilityFpBySeat[seatColor] = nil
 end
 
@@ -411,33 +413,34 @@ function HO.reconcileForSeat(seatColor, opts)
   local fp = overlayInputFingerprintForSeat(seatColor)
   local playerID = S.getPlayerID(seatColor)
   local want = computeDesiredVisibility(playerID, seatColor)
-  local hungerLevel = desiredHungerLevelFromWant(want, seatColor)
+  local hungerLevel = resolveHungerLevel(playerID, seatColor)
   local fpSkip = opts.force ~= true and lastDesiredVisibilityFpBySeat[seatColor] == fp
 
-  -- Fingerprint skip must not leave world smoke / XmlUI hunger tiers stale after layout
+  -- Fingerprint skip must not leave world smoke / XmlUI hunger stale after layout
   -- repositions smoke or TTS hide fails (BUG 7 / BUG 8).
   if fpSkip then
-    applyHungerOverlaysExclusive(seatColor, hungerLevel)
+    applyHungerOverlay(seatColor, hungerLevel)
     syncHungerSmokeForSeat(seatColor, hungerLevel)
     return
   end
 
   local ids = allManagedOverlayIdsForSeat(seatColor)
+  local hungerId = hungerOverlayIdForSeat(seatColor)
   for _, eid in ipairs(ids) do
-    if not string.match(eid, "^overlay_hunger_%d+_") then
+    if eid ~= hungerId then
       if want[eid] ~= true then
         applyOverlayVisibility(eid, false)
       end
     end
   end
   for _, eid in ipairs(ids) do
-    if not string.match(eid, "^overlay_hunger_%d+_") then
+    if eid ~= hungerId then
       if want[eid] == true then
         applyOverlayVisibility(eid, true)
       end
     end
   end
-  applyHungerOverlaysExclusive(seatColor, hungerLevel)
+  applyHungerOverlay(seatColor, hungerLevel)
   syncHungerSmokeForSeat(seatColor, hungerLevel)
   lastDesiredVisibilityFpBySeat[seatColor] = fp
 end
