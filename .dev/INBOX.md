@@ -20,25 +20,9 @@ Verification:
 ## For Immediate Implementation
 > _After registering each of these issues with Linear in the ordinary fashion, before updating the Focus Stack, briefly review the issue: If it is a quick or easy fix, implement it immediately without waiting for user confirmation. Otherwise, promote it to the top of the Focus Stack, and offer to begin work on it immediately when summarizing your work processing `INBOX.md` to the user. If multiple issues require promotion in this way, consider how best to resolve them as quickly as possible, and offer to draft an implementation plan in your response to the user._
 
-* Remove the alpha-changing effect on interaction with the player's `id = "gameStateOverlay_location_@@color@@"` element, as well as the `id = "popout_cameraPanel_@@color@@"` controls -- the buttons at the lower left and lower right of the player HUD, respectively: they block TTS features that I _want_ blocked, so keeping them at full alpha all of the time (and `raycastTarget = true` all of the time) is ideal.
-* Change the tinting of player right-sidebar toggles from yellow/gold to ...
-  - **Default State:** A middling grey tint
-  - **Hover-Over:** Bright white
-  - **Active:** Deep, Saturated Red
-* Currently, when no scene is selected in the Scenes panel, the "Scene Time" inputs displaying the date and time revert to Jan 1st, 2026 at 12:00 AM.  Expected behavior: When a scene is not selected, those inputs should display the present day and time (and be colored green, accordingly). If there is no present-day time set for some reason, the inputs should be blank.
-* Whenever a player's dice tray opens, the following additional steps should be performed:
-  1. If the player has a selected Compulsion card, it should be moved from `C.ObjectPositions.COMPULSION_CARD_SELECTED_<COLOR>` to `C.ObjectPositions.COMPULSION_CARD_SELECTED_LIVEROLL_<COLOR>`.
-  2. If the player has a companion figurine (can check in `C.PlayerData`) AND that figurine is enabled AND it is set to state `1`, its state should be set to `2`.
-  Then, whenever a player's dice tray is closed/hidden, the reverse of the above should be performed:
-  1. If the player has a selected Compulsion card, it should be moved from `C.ObjectPositions.COMPULSION_CARD_SELECTED_LIVEROLL_<COLOR>` back to `C.ObjectPositions.COMPULSION_CARD_SELECTED_<COLOR>`.
-  2. If the player has a companion figurine whose state was changed during step 2 of the "drawer opening" procedure, its state should be restored to state `1`.
-
 ## Active
 
 ## External Work (Set STATUS to "External To Do")
-
-* Style modal popup announcing willpower healing at the beginning of each session.
-* Review all Site and District Aspects for location Conditions that should apply.
 
 ## Future Features (Set STATUS to "Future")
 
@@ -58,6 +42,8 @@ Verification:
 
 
 ## Processed
+
+2026-08-03 INBOX Immediate — location/camera full-alpha → **TOR-450** (shipped); sidebar tint grey/white/red → **TOR-451** (shipped); Scene Time no-selection → **TOR-453** (Focus #1 High); Compulsion+companion tray → **TOR-452** (Focus #2 High); External willpower modal → **TOR-454**; Aspects→Conditions → **TOR-456**; spotlight tune → **TOR-455**
 
 2026-08-03 INBOX Immediate — ST tray/light before dice + match player randomize pop → **TOR-448** (Focus #1 High); Scenes preview deselect + THERE close guard → **TOR-449** (Focus #2 High; `blockedBy` **TOR-417**); Remove FirstPerson on blindfold/scene transition → **TOR-446** (shipped); Tarot shuffle on activate → **TOR-447** (shipped)
 
@@ -243,7 +229,7 @@ Verification:
 
 2026-07-04 INBOX Active — connect-time UI missing until reload (White/unseated) → **TOR-285** (UI & HUD Bug, High; relatedTo TOR-144 multiplayer E2E)
 
-2026-07-04 INBOX Active — centralize `setInvisibleTo` helper + Text tool visibility audit → **TOR-286** (Table Objects Improvement, Medium)
+2026-07-04 INBOX Active — centralize `setInvisibleTo` helper + Test tool visibility audit → **TOR-286** (Table Objects Improvement, Medium)
 
 2026-07-04 INBOX Active — dice preload pool for instant spawn → **TOR-287** (Dice & Rolls Improvement, Medium)
 

@@ -880,9 +880,9 @@ end
 
 --- Sets right-sidebar button chrome via XmlUI `color` on the base Image (TOR-444).
 -- Priority: active > hover > idle. No `_hover` / `_active` sibling Images.
-local SIDEBAR_BTN_COLOR_IDLE = "#FFFFFF"
-local SIDEBAR_BTN_COLOR_HOVER = "#FFD27A"
-local SIDEBAR_BTN_COLOR_ACTIVE = "#FFE8A8"
+local SIDEBAR_BTN_COLOR_IDLE = "#888888"
+local SIDEBAR_BTN_COLOR_HOVER = "#FFFFFF"
+local SIDEBAR_BTN_COLOR_ACTIVE = "#C00000"
 local lastSidebarBtnColorById = {}
 
 --- @param elementID string base button id (no _hover/_active suffix)
@@ -1654,7 +1654,9 @@ end
 local CAMERA_ALPHA_CONTROL_RGBA_FULL = "rgba(1, 1, 1, 1)"
 local CAMERA_ALPHA_CONTROL_RGBA_IDLE = "rgba(1, 1, 1, 0.15)"
 
---- After closing the camera picker, force idle tint on every `alpha_control` (hover can leave a control at full opacity without a matching mouse exit).
+--- After closing the camera picker, force idle tint on inner `alpha_control` buttons
+--- (hover can leave a control at full opacity without a matching mouse exit).
+--- `popout_cameraPanel_*` stays full-alpha always (blocks TTS chrome the author wants blocked).
 --- @param seatColor string HUD owner seat (Brown, Orange, …)
 local function resetCameraOverlayAlphaTintsForSeat(seatColor)
     if type(seatColor) ~= "string" or UI == nil or UI.setAttributes == nil then
@@ -1662,7 +1664,6 @@ local function resetCameraOverlayAlphaTintsForSeat(seatColor)
     end
     local idle = { color = CAMERA_ALPHA_CONTROL_RGBA_IDLE }
     local ids = {
-        "popout_cameraPanel_" .. seatColor,
         "cameraControl_default_" .. seatColor,
         "cameraControl_diceTray_" .. seatColor,
         "cameraControl_sheet_" .. seatColor,
@@ -1674,6 +1675,7 @@ local function resetCameraOverlayAlphaTintsForSeat(seatColor)
     for _, elemId in ipairs(ids) do
         U.setAttributes(elemId, idle)
     end
+    U.setAttributes("popout_cameraPanel_" .. seatColor, { color = CAMERA_ALPHA_CONTROL_RGBA_FULL })
 end
 
 --- @param seatColor string
@@ -1766,24 +1768,23 @@ local function parseSeatColorFromPopoutLocationPanelId(id)
     return col
 end
 
---- Per-seat lower-left location popout: hover shows `gameStateOverlay_locationPanel_<Color>` and brightens the icon.
+--- Per-seat lower-left location popout: hover shows `gameStateOverlay_locationPanel_<Color>`.
+--- Popout stays full-alpha always (blocks TTS chrome the author wants blocked).
 function HUD_locationOverlay_hoverOn(player, value, id)
     local seat = parseSeatColorFromPopoutLocationPanelId(id)
     if seat == nil then
         return
     end
     setActive("gameStateOverlay_locationPanel_" .. seat, true)
-    U.setAttributes("popout_locationPanel_" .. seat, { color = CAMERA_ALPHA_CONTROL_RGBA_FULL })
 end
 
---- Mouse left the popout: collapse the panel and restore idle tint.
+--- Mouse left the popout: collapse the district/site panel.
 function HUD_locationOverlay_hoverOff(player, value, id)
     local seat = parseSeatColorFromPopoutLocationPanelId(id)
     if seat == nil then
         return
     end
     setActive("gameStateOverlay_locationPanel_" .. seat, false)
-    U.setAttributes("popout_locationPanel_" .. seat, { color = CAMERA_ALPHA_CONTROL_RGBA_IDLE })
 end
 
 --- Hover on: tint the sidebar base button (TOR-444; no _hover sibling Image).

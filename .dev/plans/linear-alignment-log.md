@@ -608,5 +608,13 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-08-03 | SHIP | TOR-448 | ST tray/light ordering + 0.15s randomize pop; commit `6d19081` |
 | 2026-08-03 | SHIP | TOR-449 | Scenes close deselect + THERE guard; load/End force HERE; End clears activeKey |
 | 2026-08-03 | FOCUS | TOR-444, TOR-439, TOR-436 | Re-stack after TOR-448/449 Done |
+| 2026-08-03 | CREATE+SHIP | TOR-450 | Location/camera popouts full-alpha (INBOX Immediate Quick Fix) |
+| 2026-08-03 | CREATE+SHIP | TOR-451 | Right-sidebar tint grey/white/red (INBOX Immediate Quick Fix) |
+| 2026-08-03 | CREATE | TOR-453 | Scene Time → present day when no scene selected (Focus #1 High; relatedTo TOR-449) |
+| 2026-08-03 | CREATE | TOR-452 | Compulsion card + companion with tray open/close (Focus #2 High; relatedTo TOR-305/204) |
+| 2026-08-03 | CREATE | TOR-454 | Workshop: style willpower-healing session modal (External Todo) |
+| 2026-08-03 | CREATE | TOR-456 | Workshop: Site/District Aspects → location Conditions (External Todo; relatedTo TOR-85) |
+| 2026-08-03 | CREATE | TOR-455 | Workshop: tune NPC spotlight obviousness (External Todo; relatedTo TOR-266) |
+| 2026-08-03 | FOCUS | TOR-453, TOR-452, TOR-448, TOR-444, TOR-439, TOR-436 | INBOX Immediate re-stack |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

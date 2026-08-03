@@ -836,7 +836,8 @@ M.full = [=[
     raycastTarget="true"
     rectAlignment="LowerRight"
     height="100"
-    width="100" />
+    width="100"
+    color="rgba(1, 1, 1, 1)" />
 
   <Image class="alpha_control"
     color="rgba(1, 1, 1, 0.15)"
