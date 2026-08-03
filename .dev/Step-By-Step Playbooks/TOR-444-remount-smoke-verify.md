@@ -601,9 +601,7 @@ U.chain({
     print(
       "   ▶▶▶ HUMAN ▶▶▶ Confirm the shared transition blindfold FadeIn looks correct — sequence continues automatically after a short pause."
     )
-  end,
-  function()
-    return U.await(function() end, 3.5)
+    return 3.5
   end,
   function()
     UI.hide("playerHud_overlay_blindfold")
