@@ -62,9 +62,13 @@ Do not conflate them. Hunger TOR-340 sticky-`active` under empty-seat `visibilit
 
 ## Strategy 3 eligibility
 
-**Share:** nestedless `refPanel_*`; Court **page** panels (page1/2/3 — concurrent viewers on different pages via per-page unions); coterie grid/popups when state allows.
+**Share:** nestedless `refPanel_*`; Court **page** panels (page1/2/3 — concurrent viewers on different pages via per-page unions); coterie grid/popups when state allows; **scene-transition blindfold** (one random variant + cards for all); location dock (shared session location); camera overlay chrome.
 
-**Keep per-seat:** map (pan/hover), roll controls, hunger/conditions, transition blindfolds.
+**Keep per-seat (divergent content/interaction):** map (pan/hover); roll controls; **hunger + condition overlays** (different per-PC art at once — dropping FadeIn does not remove this need).
+
+### Animation contract
+
+`UI.show` / `UI.hide` fire XmlUI animations. For shared animated panels: set `visibility` audience first (while inactive), then `UI.show`. Do not keep ×5 copies solely to run per-seat fades when content is shared or the fade is dispensable.
 
 Nav: XmlUI `(player, value, id)` → `getPlayerIDAndColor(player)`.
 
