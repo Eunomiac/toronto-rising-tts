@@ -1,0 +1,472 @@
+# Global XmlUI remount smoke _(TOR-444)_
+
+## Agent Routing
+
+Read this when:
+
+- smoking shipped TOR-444 remount cuts after Save & Play (shared refs / Court / blindfold, location dock, sidebar tint)
+- checking that remount-weight work still opens player HUD panels correctly (solo Host)
+
+Source of truth:
+
+- `.dev/HUDs & Overlays/Global-UI-Image-Stacks.md`
+- `core/hud_player.ttslua`, `core/hud_overlays.ttslua`
+- `ui/shared/panel_ref_panels_nestedless.xml`, `ui/shared/panel_ref_princes_court.xml`, `ui/shared/panel_overlay_transition_blindfold.xml`
+
+Verification:
+
+- this playbook (Save & Play + solo Host)
+
+Confirm remount-weight cuts still open nestedless refs, Prince’s Court, the shared transition blindfold, and the location-dock district Image correctly after Save & Play. This does **not** cover map Option B / district Strategy 1 (not shipped yet), Court pip meters, hunger stack collapse, or TOR-439 Arm/join timeouts.
+
+**Linear:** [TOR-444 — Global XmlUI remount weight](https://linear.app/eunomiac-dev/issue/TOR-444/global-xmlui-remount-weight-stacks-chrome-tint-shared-visibility)
+**Background:** [Global-UI-Image-Stacks](../HUDs%20&%20Overlays/Global-UI-Image-Stacks.md)
+
+## What this playbook checks
+
+1. **Structural remount** — shared element ids exist; old per-seat / stack sibling ids are gone.
+2. **Nestedless Rolls** — open via state; audience includes Red; you confirm the shared popup looks right.
+3. **Prince’s Court** — shared tree + single tracker Images; you flip to page 2; Lua asserts page audience.
+4. **Shared blindfold** — `HO.applyBlindfoldVariantForSeatedPlayers`; you confirm FadeIn; Lua hides and continues.
+5. **Location dock + sidebar tint** — district `image=` on the single per-seat Image; hover sibling chrome absent.
+
+## Prerequisites (human — keep short)
+
+- **Save & Play** — required (TOR-444 Lua/XML remount work).
+- **Host** connected (solo is fine).
+
+Everything else — Red seat, Table A, HUD state — is automated in **Code Block 0**.
+
+Test constants (shared via `_G.TOR444`):
+
+| What | Value |
+| --- | --- |
+| Test seat | `Red` |
+| Nestedless ref | `rolls` |
+| Court pages | 1 → 2 (you click next) |
+| Blindfold variant | `3` |
+| Location district | `Annex` → `districtCard_Annex` |
+
+## Run order
+
+**Step 1.** **Save & Play**.
+
+**Step 2.** Execute Lua Code — **Code Block 0**. Watch for `▶▶▶ HUMAN ▶▶▶` — confirm the Rolls reference popup looks correct (shared image, not a blank/broken panel).
+
+**Step 3.** Execute Lua Code — **Code Block A**. When prompted: **confirm Court page 1 looks correct**, then **click the Court navigate-right control once** (to page 2).
+
+**Step 4.** Execute Lua Code — **Code Block B**. When prompted: **confirm the shared transition blindfold FadeIn** (full-screen blindfold art). The sequence pauses briefly, then hides the blindfold and finishes location/sidebar asserts.
+
+**Step 5.** When the console prints **Verification complete**, you are done.
+
+---
+
+## Code Block 0 — Setup, structural asserts, open Rolls
+
+```lua
+_G.TOR444 = {
+  seat = "Red",
+  tableKey = "Table A",
+  refKey = "rolls",
+  districtKey = "Annex",
+  blindfoldVariant = 3,
+}
+
+local function tor444Fixture()
+  local F = _G.TOR444
+  if type(F) ~= "table" then
+    error("[FAIL] _G.TOR444 missing — paste Code Block 0 from the playbook first")
+  end
+  return F
+end
+
+local function tor444SeatPlayer(F)
+  local p = Player[F.seat]
+  if p == nil then
+    error("[FAIL] Player." .. F.seat .. " nil after seat prep")
+  end
+  return p
+end
+
+local function tor444Pid(F)
+  local pid = S.getPlayerID(F.seat)
+  if type(pid) ~= "string" or pid == "" then
+    error("[FAIL] no playerID for seat " .. F.seat)
+  end
+  return pid
+end
+
+local function tor444AssertHasAttr(id, attr)
+  local val = UI.getAttribute(id, attr)
+  if val == nil then
+    error("[FAIL] missing attribute " .. tostring(attr) .. " on " .. tostring(id))
+  end
+  return val
+end
+
+local function tor444AssertMissing(id)
+  local ok, active = pcall(function()
+    return UI.getAttribute(id, "active")
+  end)
+  if ok and active ~= nil then
+    error("[FAIL] remount leftover still present: " .. id .. " active=" .. tostring(active))
+  end
+  print("PASS — absent " .. id)
+end
+
+local function tor444AssertAudienceContains(id, color)
+  local aud = U.getVisibilityAudience(id)
+  for _, tok in ipairs(aud or {}) do
+    if tok == color then
+      print("PASS — audience " .. id .. " includes " .. color)
+      return
+    end
+  end
+  error(
+    "[FAIL] audience of "
+      .. id
+      .. " missing "
+      .. color
+      .. " got "
+      .. tostring(U.serializeVisibilityAudience(aud))
+  )
+end
+
+local function tor444ClearRefs(F)
+  local pid = tor444Pid(F)
+  local nestedless = {
+    "chronicleTenets",
+    "socialCombat",
+    "physicalCombat",
+    "frenzy",
+    "rolls",
+    "memoriam",
+    "projects",
+    "experience",
+  }
+  for _, k in ipairs(nestedless) do
+    S.setStateVal(false, "playerData", pid, "hud", "reference", k)
+  end
+  S.setStateVal(nil, "playerData", pid, "hud", "reference", "coteries")
+  S.setStateVal(nil, "playerData", pid, "hud", "reference", "princesCourt")
+end
+
+local function tor444UpdateHud(F)
+  HUDP.updatePlayerUI(tor444SeatPlayer(F), F.seat)
+end
+
+U.chain({
+  function()
+    printHeader("TOR-444: Session setup", 1)
+  end,
+  function()
+    if #(Player.getPlayers() or {}) < 1 then
+      error("[Setup FAIL] Host not connected")
+    end
+    rollE2eSeatPrep(_G.TOR444.seat)
+    DEBUG.syncTableSimplified(_G.TOR444.tableKey)
+    print("PASS — session prepared (Red seat, Table A)")
+  end,
+  function()
+    printHeader("TOR-444: Verify ready", 1)
+  end,
+  function()
+    local F = tor444Fixture()
+    if Player[F.seat] == nil then
+      error("[Verify FAIL] Host not on " .. F.seat .. " after rollE2eSeatPrep")
+    end
+    if S.getStateVal("seatLayout", "currentTableKey") ~= F.tableKey then
+      error("[Verify FAIL] table key not " .. F.tableKey)
+    end
+    if type(S.getPlayerID(F.seat)) ~= "string" then
+      error("[Verify FAIL] no playerID for " .. F.seat)
+    end
+    print("PASS — prerequisites satisfied")
+  end,
+  function()
+    printHeader("TOR-444: Structural remount ids", 1)
+  end,
+  function()
+    local F = tor444Fixture()
+    tor444AssertHasAttr("playerHud_refPanel_rolls", "image")
+    tor444AssertHasAttr("playerHud_refPanel_princesCourt", "active")
+    tor444AssertHasAttr("playerHud_overlay_blindfold", "active")
+    tor444AssertHasAttr("overlay_blindfold_display", "image")
+    tor444AssertHasAttr("box_health_1_Red", "image")
+    tor444AssertHasAttr("gameStateOverlay_districtCard_current_" .. F.seat, "image")
+    tor444AssertHasAttr("playerHud_RSidebarBtn_ref_rolls_" .. F.seat, "color")
+    print("PASS — shared / collapsed ids present")
+  end,
+  function()
+    local F = tor444Fixture()
+    tor444AssertMissing("playerHud_refPanel_rolls_" .. F.seat)
+    tor444AssertMissing("playerHud_overlay_blindfold_" .. F.seat)
+    tor444AssertMissing("playerHud_RSidebarBtn_ref_rolls_" .. F.seat .. "_hover")
+    tor444AssertMissing("playerHud_RSidebarBtn_ref_rolls_" .. F.seat .. "_active")
+    tor444AssertMissing("box_health_1_Red_hover")
+    tor444AssertMissing("box_health_1_Red_active")
+    print("PASS — old per-seat / stack siblings absent")
+  end,
+  function()
+    printHeader("TOR-444: Open shared Rolls", 1)
+  end,
+  function()
+    local F = tor444Fixture()
+    tor444ClearRefs(F)
+    S.setStateVal(true, "playerData", tor444Pid(F), "hud", "reference", F.refKey)
+    tor444UpdateHud(F)
+    print("PASS — Rolls opened via state + HUDP.updatePlayerUI")
+  end,
+  function()
+    local F = tor444Fixture()
+    local id = "playerHud_refPanel_" .. F.refKey
+    local active = tor444AssertHasAttr(id, "active")
+    if active ~= "true" and active ~= true then
+      error("[FAIL] " .. id .. " active expected true, got " .. tostring(active))
+    end
+    tor444AssertAudienceContains(id, F.seat)
+  end,
+  function()
+    print(
+      "   ▶▶▶ HUMAN ▶▶▶ Confirm the Rolls reference popup looks correct (shared art, readable), then run Code Block A."
+    )
+  end,
+})
+```
+
+---
+
+## Code Block A — Court open + page flip gate
+
+```lua
+local function tor444Fixture()
+  local F = _G.TOR444
+  if type(F) ~= "table" then
+    error("[FAIL] _G.TOR444 missing — paste Code Block 0 first")
+  end
+  return F
+end
+
+local function tor444SeatPlayer(F)
+  local p = Player[F.seat]
+  if p == nil then
+    error("[FAIL] Player." .. F.seat .. " nil")
+  end
+  return p
+end
+
+local function tor444Pid(F)
+  local pid = S.getPlayerID(F.seat)
+  if type(pid) ~= "string" or pid == "" then
+    error("[FAIL] no playerID for seat " .. F.seat)
+  end
+  return pid
+end
+
+local function tor444AssertHasAttr(id, attr)
+  local val = UI.getAttribute(id, attr)
+  if val == nil then
+    error("[FAIL] missing attribute " .. tostring(attr) .. " on " .. tostring(id))
+  end
+  return val
+end
+
+local function tor444AssertAudienceContains(id, color)
+  local aud = U.getVisibilityAudience(id)
+  for _, tok in ipairs(aud or {}) do
+    if tok == color then
+      print("PASS — audience " .. id .. " includes " .. color)
+      return
+    end
+  end
+  error(
+    "[FAIL] audience of "
+      .. id
+      .. " missing "
+      .. color
+      .. " got "
+      .. tostring(U.serializeVisibilityAudience(aud))
+  )
+end
+
+local function tor444ClearRefs(F)
+  local pid = tor444Pid(F)
+  local nestedless = {
+    "chronicleTenets",
+    "socialCombat",
+    "physicalCombat",
+    "frenzy",
+    "rolls",
+    "memoriam",
+    "projects",
+    "experience",
+  }
+  for _, k in ipairs(nestedless) do
+    S.setStateVal(false, "playerData", pid, "hud", "reference", k)
+  end
+  S.setStateVal(nil, "playerData", pid, "hud", "reference", "coteries")
+  S.setStateVal(nil, "playerData", pid, "hud", "reference", "princesCourt")
+end
+
+local function tor444UpdateHud(F)
+  HUDP.updatePlayerUI(tor444SeatPlayer(F), F.seat)
+end
+
+U.chain({
+  function()
+    printHeader("TOR-444: Open shared Court", 1)
+  end,
+  function()
+    local F = tor444Fixture()
+    tor444ClearRefs(F)
+    local pid = tor444Pid(F)
+    S.setStateVal({}, "playerData", pid, "hud", "reference", "princesCourt")
+    S.setStateVal(1, "playerData", pid, "hud", "reference", "princesCourtPage")
+    tor444UpdateHud(F)
+    print("PASS — Court opened on page 1")
+  end,
+  function()
+    local F = tor444Fixture()
+    tor444AssertAudienceContains("playerHud_refPanel_princesCourt", F.seat)
+    tor444AssertAudienceContains("playerHud_refPanel_PrincesCourt_page1", F.seat)
+    local img = tor444AssertHasAttr("box_health_1_Red", "image")
+    if type(img) ~= "string" or img == "" then
+      error("[FAIL] box_health_1_Red image empty")
+    end
+    print("PASS — Court root/page1 audience + tracker Image ok (" .. img .. ")")
+  end,
+  function()
+    print(
+      "   ▶▶▶ HUMAN ▶▶▶ Confirm Court page 1 looks correct, then click navigate-right once (to page 2), then run Code Block B."
+    )
+  end,
+})
+```
+
+---
+
+## Code Block B — Page 2 assert, blindfold, location dock, done
+
+```lua
+local function tor444Fixture()
+  local F = _G.TOR444
+  if type(F) ~= "table" then
+    error("[FAIL] _G.TOR444 missing — paste Code Block 0 first")
+  end
+  return F
+end
+
+local function tor444SeatPlayer(F)
+  local p = Player[F.seat]
+  if p == nil then
+    error("[FAIL] Player." .. F.seat .. " nil")
+  end
+  return p
+end
+
+local function tor444Pid(F)
+  local pid = S.getPlayerID(F.seat)
+  if type(pid) ~= "string" or pid == "" then
+    error("[FAIL] no playerID for seat " .. F.seat)
+  end
+  return pid
+end
+
+local function tor444AssertHasAttr(id, attr)
+  local val = UI.getAttribute(id, attr)
+  if val == nil then
+    error("[FAIL] missing attribute " .. tostring(attr) .. " on " .. tostring(id))
+  end
+  return val
+end
+
+local function tor444AssertAudienceContains(id, color)
+  local aud = U.getVisibilityAudience(id)
+  for _, tok in ipairs(aud or {}) do
+    if tok == color then
+      print("PASS — audience " .. id .. " includes " .. color)
+      return
+    end
+  end
+  error(
+    "[FAIL] audience of "
+      .. id
+      .. " missing "
+      .. color
+      .. " got "
+      .. tostring(U.serializeVisibilityAudience(aud))
+  )
+end
+
+local function tor444UpdateHud(F)
+  HUDP.updatePlayerUI(tor444SeatPlayer(F), F.seat)
+end
+
+U.chain({
+  function()
+    printHeader("TOR-444: Court page 2 after navigate", 1)
+  end,
+  function()
+    local F = tor444Fixture()
+    local page = tonumber(S.getStateVal("playerData", tor444Pid(F), "hud", "reference", "princesCourtPage"))
+    if page ~= 2 then
+      error("[FAIL] princesCourtPage expected 2 after navigate click, got " .. tostring(page))
+    end
+    tor444AssertAudienceContains("playerHud_refPanel_PrincesCourt_page2", F.seat)
+    print("PASS — Court page 2 state + audience")
+  end,
+  function()
+    printHeader("TOR-444: Shared transition blindfold", 1)
+  end,
+  function()
+    local F = tor444Fixture()
+    HO.applyBlindfoldVariantForSeatedPlayers(F.blindfoldVariant, { forceReshow = true })
+    local want = "overlay_blindfold_" .. tostring(F.blindfoldVariant)
+    local got = tor444AssertHasAttr("overlay_blindfold_display", "image")
+    if got ~= want then
+      error("[FAIL] overlay_blindfold_display image expected " .. want .. " got " .. tostring(got))
+    end
+    tor444AssertAudienceContains("playerHud_overlay_blindfold", F.seat)
+    print("PASS — shared blindfold variant " .. tostring(F.blindfoldVariant) .. " armed")
+  end,
+  function()
+    print(
+      "   ▶▶▶ HUMAN ▶▶▶ Confirm the shared transition blindfold FadeIn looks correct — sequence continues automatically after a short pause."
+    )
+  end,
+  function()
+    return U.await(function() end, 3.5)
+  end,
+  function()
+    UI.hide("playerHud_overlay_blindfold")
+    print("PASS — shared blindfold hidden after visual check")
+  end,
+  function()
+    printHeader("TOR-444: Location dock + sidebar tint", 1)
+  end,
+  function()
+    local F = tor444Fixture()
+    S.setStateVal(F.districtKey, "sessionScene", "districtKey")
+    tor444UpdateHud(F)
+    local dockId = "gameStateOverlay_districtCard_current_" .. F.seat
+    local want = "districtCard_" .. F.districtKey
+    local got = tor444AssertHasAttr(dockId, "image")
+    if got ~= want then
+      error("[FAIL] " .. dockId .. " image expected " .. want .. " got " .. tostring(got))
+    end
+    print("PASS — location dock district image=" .. got)
+  end,
+  function()
+    local F = tor444Fixture()
+    local chromeId = "playerHud_RSidebarBtn_ref_princesCourt_" .. F.seat
+    local color = tor444AssertHasAttr(chromeId, "color")
+    if type(color) ~= "string" or color == "" then
+      error("[FAIL] sidebar chrome color empty on " .. chromeId)
+    end
+    print("PASS — sidebar Option A tint color present (" .. color .. ")")
+  end,
+  function()
+    print("PASS — TOR-444 remount smoke complete. Verification complete. No further action.")
+  end,
+})
+```
