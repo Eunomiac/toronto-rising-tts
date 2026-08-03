@@ -81,10 +81,10 @@ local mapDraggableLastOffsetStrBySeat = {}
 --- seatColor -> last applied offsetXY string for map viewport (`playerHud_mapViewport_*`).
 local mapViewportLastOffsetStrBySeat = {}
 
---- hudSeatColor -> (elementId .. "\0" .. attrName) -> last applied attribute string for Prince's Court page-1 trackers.
-local lastPrincesCourtTrackerUiByHudSeat = {}
+--- Shared Court tracker attr cache (elementId .. "\0" .. attrName) -> last applied string (TOR-444).
+local lastPrincesCourtTrackerUiAttrs = {}
 
---- "panelSeat\0hudSeat" -> fingerprint of tracker inputs (skip XmlUI when unchanged; TOR-377).
+--- panelSeatColor -> fingerprint of tracker inputs (skip XmlUI when unchanged; TOR-377).
 local lastPrincesCourtTrackerFpByColumn = {}
 
 local MAP_OVERLAY_KEYS = {
@@ -641,7 +641,8 @@ local function normalizePrincesCourtPage(page)
     return n
 end
 
---- Applies Prince's Court page panel visibility for one HUD seat.
+--- Applies Prince's Court page panel visibility for one HUD seat (shared tree, TOR-444).
+-- Root + page audiences are visibility unions; concurrent viewers may be on different pages.
 -- @param seatColor string
 -- @param showPanel boolean court reference open
 -- @param page number 1|2|3
@@ -649,16 +650,51 @@ local function applyPrincesCourtPageVisibility(seatColor, showPanel, page)
     if type(seatColor) ~= "string" then
         return
     end
+    local rootId = "playerHud_refPanel_princesCourt"
     local targetPage = normalizePrincesCourtPage(page)
+    if showPanel == true then
+        U.showTo(rootId, seatColor)
+        setActive(rootId, true)
+    else
+        U.hideFrom(rootId, seatColor)
+        local rootAud = U.getVisibilityAudience(rootId)
+        local anyRoot = false
+        if type(rootAud) == "table" then
+            for _i, _c in ipairs(rootAud) do
+                anyRoot = true
+                break
+            end
+        end
+        if not anyRoot then
+            setActive(rootId, false)
+        end
+    end
     for p = 1, 3 do
-        local panelId = "playerHud_refPanel_PrincesCourt_page" .. p .. "_" .. seatColor
+        local panelId = "playerHud_refPanel_PrincesCourt_page" .. p
         local show = showPanel == true and p == targetPage
         if show then
-            UI.show(panelId)
+            U.showTo(panelId, seatColor)
+            setActive(panelId, true)
+            if type(UI.show) == "function" then
+                UI.show(panelId)
+            end
         else
-            UI.hide(panelId)
+            U.hideFrom(panelId, seatColor)
+            local pageAud = U.getVisibilityAudience(panelId)
+            local anyPage = false
+            if type(pageAud) == "table" then
+                for _i, _c in ipairs(pageAud) do
+                    anyPage = true
+                    break
+                end
+            end
+            if not anyPage then
+                if type(UI.hide) == "function" then
+                    UI.hide(panelId)
+                end
+                setActive(panelId, false)
+            end
         end
-        setActive(panelId, show)
     end
 end
 
@@ -722,16 +758,12 @@ local function coalescePrincesCourtTrackerUpdates(updates)
 end
 
 --- Apply coalesced Prince's Court tracker diffs to Global UI (incremental cache).
--- @param hudSeatColor string
 -- @param coalesced table[]
-local function applyCoalescedPrincesCourtTrackerUpdates(hudSeatColor, coalesced)
-    if type(hudSeatColor) ~= "string" or type(coalesced) ~= "table" then
+local function applyCoalescedPrincesCourtTrackerUpdates(coalesced)
+    if type(coalesced) ~= "table" then
         return
     end
-    if lastPrincesCourtTrackerUiByHudSeat[hudSeatColor] == nil then
-        lastPrincesCourtTrackerUiByHudSeat[hudSeatColor] = {}
-    end
-    local cache = lastPrincesCourtTrackerUiByHudSeat[hudSeatColor]
+    local cache = lastPrincesCourtTrackerUiAttrs
     for i = 1, #coalesced do
         local u = coalesced[i]
         local id = u.id
@@ -762,42 +794,37 @@ local function anyHudHasPrincesCourtPage1()
     return false
 end
 
---- Resolve stats-backed tracker visibility for one Prince's Court column on one HUD seat.
+--- Resolve stats-backed tracker visibility for one Prince's Court column (shared tree).
 -- @param panelSeatColor string column seat (Purple, Pink, …)
--- @param hudSeatColor string HUD owner seat
-local function reconcilePrincesCourtTrackerColumn(panelSeatColor, hudSeatColor)
-    if type(panelSeatColor) ~= "string" or type(hudSeatColor) ~= "string" then
+local function reconcilePrincesCourtTrackerColumn(panelSeatColor)
+    if type(panelSeatColor) ~= "string" then
         return
     end
     local pid = S.getPlayerID(panelSeatColor)
     local updates
     if type(pid) == "string" and pid ~= "" then
         local ctx = ES.forPlayer(pid)
-        updates = PSC.collectPrincesCourtTrackerUpdates(ctx.stats, ctx.statChanges, panelSeatColor, hudSeatColor)
+        updates = PSC.collectPrincesCourtTrackerUpdates(ctx.stats, ctx.statChanges, panelSeatColor, nil)
     else
-        updates = PSC.collectPrincesCourtTrackerUpdates(nil, nil, panelSeatColor, hudSeatColor)
+        updates = PSC.collectPrincesCourtTrackerUpdates(nil, nil, panelSeatColor, nil)
     end
     local coalesced, fp = coalescePrincesCourtTrackerUpdates(updates)
-    local fpKey = panelSeatColor .. "\0" .. hudSeatColor
-    if lastPrincesCourtTrackerFpByColumn[fpKey] == fp then
+    if lastPrincesCourtTrackerFpByColumn[panelSeatColor] == fp then
         return
     end
-    applyCoalescedPrincesCourtTrackerUpdates(hudSeatColor, coalesced)
-    lastPrincesCourtTrackerFpByColumn[fpKey] = fp
+    applyCoalescedPrincesCourtTrackerUpdates(coalesced)
+    lastPrincesCourtTrackerFpByColumn[panelSeatColor] = fp
 end
 
---- Refresh all five tracker columns on one player's HUD (Prince's Court page 1).
--- @param hudSeatColor string
+--- Refresh all five tracker columns on the shared Prince's Court page 1.
+-- @param hudSeatColor string|nil ignored (kept for call-site compat)
 function HUDP.reconcilePrincesCourtTrackersForHudSeat(hudSeatColor)
-    if type(hudSeatColor) ~= "string" then
-        return
-    end
     for _, panelSeatColor in ipairs(C.PlayerColors or {}) do
-        reconcilePrincesCourtTrackerColumn(panelSeatColor, hudSeatColor)
+        reconcilePrincesCourtTrackerColumn(panelSeatColor)
     end
 end
 
---- Refresh one tracker column on every player HUD (after that seat's CSHEET refresh).
+--- Refresh one tracker column after that seat's CSHEET refresh (shared tree).
 -- @param panelSeatColor string
 function HUDP.reconcilePrincesCourtTrackersForPanelSeat(panelSeatColor)
     if type(panelSeatColor) ~= "string" then
@@ -806,16 +833,12 @@ function HUDP.reconcilePrincesCourtTrackersForPanelSeat(panelSeatColor)
     if not anyHudHasPrincesCourtPage1() then
         return
     end
-    for _, hudSeatColor in ipairs(C.PlayerColors or {}) do
-        reconcilePrincesCourtTrackerColumn(panelSeatColor, hudSeatColor)
-    end
+    reconcilePrincesCourtTrackerColumn(panelSeatColor)
 end
 
---- Refresh the full Prince's Court tracker grid on every player HUD.
+--- Refresh the full Prince's Court tracker grid.
 function HUDP.reconcileAllPrincesCourtTrackers()
-    for _, hudSeatColor in ipairs(C.PlayerColors or {}) do
-        HUDP.reconcilePrincesCourtTrackersForHudSeat(hudSeatColor)
-    end
+    HUDP.reconcilePrincesCourtTrackersForHudSeat(nil)
 end
 
 --- Sets right-sidebar button chrome via XmlUI `color` on the base Image (TOR-444).
@@ -1121,28 +1144,18 @@ local function parseSeatColorFromPrincesCourtNavId(id)
     return nil
 end
 
---- Parses a Prince's Court nav button id to the target page (1–3).
--- Id format: `playerHud_navigate_page<N>_(prev|next)_<Color>`
+--- Parses target page from shared Court nav id: `playerHud_navigate_page<N>_(prev|next)`.
 -- @param id string
 -- @return number|nil
 local function parsePrincesCourtTargetPageFromNavigateId(id)
     if type(id) ~= "string" then
         return nil
     end
-    local seatColor = parseSeatColorFromPrincesCourtNavId(id)
-    if seatColor == nil then
-        return nil
-    end
-    local suffix = "_" .. seatColor
-    if #id <= #suffix or id:sub(-#suffix) ~= suffix then
-        return nil
-    end
-    local base = id:sub(1, #id - #suffix)
     local prefix = "playerHud_navigate_page"
-    if base:sub(1, #prefix) ~= prefix then
+    if id:sub(1, #prefix) ~= prefix then
         return nil
     end
-    local rest = base:sub(#prefix + 1)
+    local rest = id:sub(#prefix + 1)
     local underscorePos = rest:find("_", 1, true)
     if underscorePos == nil or underscorePos <= 1 then
         return nil
@@ -1395,7 +1408,6 @@ function HUDP.updatePlayerUI(player, color)
     -- Top-level reference panels
     setActive("playerHud_refPanel_coteries_" .. seatColor, showRefKey == "coteries")
     local showPrincesCourtRef = showRefKey == "princesCourt"
-    setActive("playerHud_refPanel_princesCourt_" .. seatColor, showPrincesCourtRef)
     reconcilePrincesCourtPagesFromState(seatColor, ref, showPrincesCourtRef)
     if showPrincesCourtRef and normalizePrincesCourtPage(ref.princesCourtPage) == 1 then
         HUDP.reconcilePrincesCourtTrackersForHudSeat(seatColor)
@@ -1878,7 +1890,7 @@ local PRINCES_COURT_NAV_COLOR_HOVER = "rgba(1, 1, 1, 1)"
 
 --- Prince's Court nav button hover: full-opacity tint for affordance.
 function HUD_playerPrincesCourt_nav_hoverOn(player, value, id)
-    if type(id) ~= "string" or parseSeatColorFromPrincesCourtNavId(id) == nil then
+    if type(id) ~= "string" or id:sub(1, #"playerHud_navigate_page") ~= "playerHud_navigate_page" then
         return
     end
     UI.setAttribute(id, "color", PRINCES_COURT_NAV_COLOR_HOVER)
@@ -1886,30 +1898,25 @@ end
 
 --- Prince's Court nav button hover off: restore semi-transparent default.
 function HUD_playerPrincesCourt_nav_hoverOff(player, value, id)
-    if type(id) ~= "string" or parseSeatColorFromPrincesCourtNavId(id) == nil then
+    if type(id) ~= "string" or id:sub(1, #"playerHud_navigate_page") ~= "playerHud_navigate_page" then
         return
     end
     UI.setAttribute(id, "color", PRINCES_COURT_NAV_COLOR_IDLE)
 end
 
---- Prince's Court page navigation button.
+--- Prince's Court page navigation button (shared tree — seat from clicker, TOR-444).
 function HUD_playerPrincesCourt_navigate(player, value, id)
     if type(id) ~= "string" then
         return
     end
 
-    local hudSeatColor = parseSeatColorFromPrincesCourtNavId(id)
-    if hudSeatColor == nil then
+    local playerID, hudSeatColor = getPlayerIDAndColor(player)
+    if type(playerID) ~= "string" or playerID == "" or type(hudSeatColor) ~= "string" then
         return
     end
 
     local targetPage = parsePrincesCourtTargetPageFromNavigateId(id)
     if targetPage == nil then
-        return
-    end
-
-    local playerID = S.getStorageID and S.getStorageID(player) or nil
-    if type(playerID) ~= "string" or playerID == "" then
         return
     end
 
@@ -1919,12 +1926,12 @@ function HUD_playerPrincesCourt_navigate(player, value, id)
     HUDP.updatePlayerUI(player, hudSeatColor)
 end
 
-local DOMAIN_CLAIMS_DIVIDER_PREFIX = "divider_domainClaims_"
+local DOMAIN_CLAIMS_DIVIDER_ID = "divider_domainClaims"
 local DOMAIN_CLAIMS_DIVIDER_IMAGE = "divider_domainClaims"
 local DOMAIN_CLAIMS_DIVIDER_IMAGE_HOVER = "divider_domainClaimsClear"
 
 local function isDividerDomainClaimsId(id)
-    return type(id) == "string" and id:sub(1, #DOMAIN_CLAIMS_DIVIDER_PREFIX) == DOMAIN_CLAIMS_DIVIDER_PREFIX
+    return id == DOMAIN_CLAIMS_DIVIDER_ID
 end
 
 --- Prince's Court page 2: domain claims divider hover — swap to clear variant.

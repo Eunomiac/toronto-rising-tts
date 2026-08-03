@@ -336,7 +336,8 @@ end
 --- @param hudSeatColor string HUD owner seat
 --- @return table[] list of { id = string, attributes = { active = "true"|"false", image?: string } }
 function PSC.collectPrincesCourtTrackerUpdates(stats, resolvedStatChanges, panelSeatColor, hudSeatColor)
-  local suffix = "_" .. tostring(panelSeatColor) .. "_" .. tostring(hudSeatColor)
+  -- TOR-444: shared Court tree — tracker ids are box_*_<panelSeat> (hudSeatColor unused).
+  local suffix = "_" .. tostring(panelSeatColor)
   local updates = {}
 
   local function push(id, active, imageName)

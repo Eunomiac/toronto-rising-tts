@@ -1307,25 +1307,21 @@ M.COURT_PROJECT_POOL = 8
 --- Max stake rows rendered on CSHEET page 5 and Court page 3 project blocks.
 M.DISPLAY_STAKE_ROWS = 4
 
---- Fill Court page 3 sheet-style project blocks for one HUD seat.
+--- Fill Court page 3 sheet-style project blocks on the shared Court tree (TOR-444).
 --- Uses U.setAttribute only (no Global UI.setXml). Empty slots are hidden.
---- @param hudSeatColor string
+--- @param hudSeatColor string|nil ignored (call-site compat)
 function M.reconcileCourtProjectsForHudSeat(hudSeatColor)
-  if type(hudSeatColor) ~= "string" or hudSeatColor == "" then
-    return
-  end
-  local color = hudSeatColor
   local list = M.listForDisplaySource("coterie")
   local pool = M.COURT_PROJECT_POOL
   for i = 0, pool - 1 do
     local slot = tostring(i)
-    local rootId = "court_project_" .. slot .. "_" .. color
+    local rootId = "court_project_" .. slot
     local project = list[i + 1]
     if type(project) ~= "table" then
       U.setAttribute(rootId, "active", "false")
     else
       local function courtId(suffix)
-        return "court_project_" .. slot .. "_" .. suffix .. "_" .. color
+        return "court_project_" .. slot .. "_" .. suffix
       end
       local stakeEntries = {}
       local rows = project.stakeRows
@@ -1382,7 +1378,7 @@ function M.reconcileCourtProjectsForHudSeat(hudSeatColor)
       local scope = math.floor(tonumber(project.scope) or 0)
       for d = 1, 15 do
         U.setAttribute(
-          "court_project_" .. slot .. "_scope_dot_" .. tostring(d) .. "_" .. color,
+          "court_project_" .. slot .. "_scope_dot_" .. tostring(d),
           "active",
           d <= scope and "true" or "false"
         )
@@ -1391,21 +1387,21 @@ function M.reconcileCourtProjectsForHudSeat(hudSeatColor)
       for s = 1, M.DISPLAY_STAKE_ROWS do
         local stake = stakeEntries[s]
         local stakeId = "court_project_" .. slot .. "_stake_" .. tostring(s)
-        local rowId = stakeId .. "_" .. color
+        local rowId = stakeId
         if stake == nil then
           U.setAttribute(rowId, "active", "false")
         else
           U.setAttribute(rowId, "active", "true")
           local focus = type(stake.focus) == "string" and stake.focus or ""
           local label = focus ~= "" and (stake.name .. " (" .. focus .. ")") or stake.name
-          local labelId = stakeId .. "_label_" .. color
+          local labelId = stakeId .. "_label"
           local isCoterieStake = stake.source == "coterie"
           U.setAttribute(labelId, "text", label)
           U.setAttribute(labelId, "color", isCoterieStake and "#FFFFFF" or "#AAAAAA")
           U.setAttribute(labelId, "fontStyle", isCoterieStake and "Bold" or "Italic")
           local qty = math.min(5, math.floor(tonumber(stake.qty) or 0))
           for d = 1, 5 do
-            local dotId = stakeId .. "_dot_" .. tostring(d) .. "_" .. color
+            local dotId = stakeId .. "_dot_" .. tostring(d)
             U.setAttribute(dotId, "image", isCoterieStake and "dot_white" or "dot_grey")
             U.setAttribute(dotId, "active", d <= qty and "true" or "false")
           end
@@ -1415,11 +1411,9 @@ function M.reconcileCourtProjectsForHudSeat(hudSeatColor)
   end
 end
 
---- Refresh Court page 3 coterie project cards on every player HUD seat.
+--- Refresh Court page 3 coterie project cards (shared tree).
 function M.reconcileCourtProjectsAll()
-  for _, color in ipairs(C.PlayerColors) do
-    M.reconcileCourtProjectsForHudSeat(color)
-  end
+  M.reconcileCourtProjectsForHudSeat(nil)
 end
 
 return M
