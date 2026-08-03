@@ -173,7 +173,7 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 | `U.await(callback, testRef, opts?)` | One-shot after seconds \| pred \| object rest \| AND-table | Debounce, settle, light ready |
 | `U.cancel(handle)` | Cancel a numeric `U.await` (`Wait.stop`) | Real-time ticker, roll cleanup |
 | `U.scheduleAtOffsets(callback, offsetsSeconds)` | Same callback at multiple delays | Bootstrap retries in `Sync.full` |
-| `U.chain(funcs, opts?)` | Dependent sequential steps (coroutine inter-step waits) | Scene transitions, phase Advance |
+| `U.chain(funcs, opts?)` | Dependent sequential steps; step **return** = wait before next (`return 2.5` = 2.5s; prefer over empty `U.await`) | Scene transitions, phase Advance, playbook HUMAN pauses |
 | `U.stagger(funcs, timeDelay)` | Parallel fixed offsets (not dependent) | Staggered UI / lighting updates |
 
 ### 1.10 Animation & Interpolation Utilities
