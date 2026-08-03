@@ -52,8 +52,10 @@ local findDrawerObject
 local findTrayLightObject
 local syncTrayLightXzToDrawer
 
---- Off pose is y = -200 (hidden); on pose is ~ -0.64. Gate release when above this.
-STD.DRAWER_RELEASE_MIN_Y = -50
+--- TOR-448: release only when near the on pose (not mid-rise).
+--- Default on ≈ -0.64; NPC on ≈ 2.97 (off is already -30 — old -50 gate passed immediately).
+STD.DRAWER_RELEASE_MIN_Y = -2
+STD.DRAWER_RELEASE_MIN_Y_NPC = 2.0
 
 local WORKSHOP_HOME_OFF_Y = -200
 
@@ -398,7 +400,7 @@ local function openForSlotAtNpcSeat(slot, npcSeatKey)
     local epoch = bumpPoseEpoch(slot)
     applyNpcSeatDrawerPose(slot, npcSeatKey, "off", 0, epoch)
     applyNpcSeatDrawerPose(slot, npcSeatKey, "on", OP.DEFAULT_TRANSITION_DURATION, epoch)
-    applyTrayLightForSlot(slot, true, 0.25)
+    -- TOR-448: tray light waits until STD.isRaisedForRelease (runBlackRollSequence / release path).
 end
 
 --- Current world Y of an ST dice drawer prop (nil when missing).
@@ -420,12 +422,19 @@ function STD.getPositionY(slot)
     return pos.y
 end
 
---- True when the drawer has risen enough to catch released dice (not still at off/hidden pose).
+--- True when the drawer has risen enough to catch released dice (near on pose; TOR-448).
 -- @param slot number 1..3
 -- @return boolean
 function STD.isRaisedForRelease(slot)
     local y = STD.getPositionY(slot)
-    return type(y) == "number" and y > STD.DRAWER_RELEASE_MIN_Y
+    if type(y) ~= "number" then
+        return false
+    end
+    local npcSeatKey = npcSeatKeyForSlot(slot)
+    if type(npcSeatKey) == "string" then
+        return y > STD.DRAWER_RELEASE_MIN_Y_NPC
+    end
+    return y > STD.DRAWER_RELEASE_MIN_Y
 end
 
 --- World-space tray origin for spawning dice into an ST roll tray.
@@ -488,7 +497,7 @@ function STD.openForSlot(slot, opts)
         })
     end
     syncTrayLightXzToDrawer(slot)
-    applyTrayLightForSlot(slot, true, 0.25)
+    -- TOR-448: tray light waits until STD.isRaisedForRelease (runBlackRollSequence / release path).
 end
 
 --- Desired tray light mode for a registry ref from live `drawerActive` (not `gameState.lights`).

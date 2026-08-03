@@ -6171,7 +6171,7 @@ local function blackRollWaitDrawerRaised(slot)
     end
 end
 
---- ST Roll click: tray open → spawn → move to tray → 1s hover → unlock + simultaneous roll.
+--- ST Roll click (TOR-448): open → fully raised + light → spawn → tray ring → hover → unlock → 0.15s → randomize.
 local function runBlackRollSequence()
     local pid = S.getPlayerID("Black")
     if pid == nil then
@@ -6198,6 +6198,8 @@ local function runBlackRollSequence()
             return blackRollWaitDrawerRaised(slot)
         end,
         function()
+            -- Light with tray arrival (deferred from openForSlot).
+            STD.applyTrayLightForSlot(slot, true, 0.25)
             spawnBlackPoolLocked()
             return 0.5
         end,
@@ -6220,6 +6222,14 @@ local function runBlackRollSequence()
             if activeNow == nil or activeNow.phase ~= C.RollPhase.ROLLING then
                 return nil
             end
+            -- Match player right-click ROLL: brief free-physics window before randomize pop.
+            return 0.15
+        end,
+        function()
+            local activeNow = S.getStateVal("playerData", pid, "hud", "rollData", "active")
+            if activeNow == nil or activeNow.phase ~= C.RollPhase.ROLLING then
+                return nil
+            end
             randomizeBlackTrayDiceSimultaneous(activeNow.id or rollId)
             return nil
         end,
@@ -6232,7 +6242,7 @@ local function runBlackRollSequence()
 end
 
 --- Advances to ROLLING and unlocks staged dice (drawer must already be raised when applicable).
--- Black legacy/debug path: startRolling → 1s hover → unlock + simultaneous randomize.
+-- Black legacy/debug path: startRolling → 1s hover → unlock → 0.15s → simultaneous randomize (TOR-448).
 -- PC path: live tray elevation + startRolling must complete before unlock (TOR-262).
 -- @param color string
 -- @return boolean
@@ -6240,20 +6250,32 @@ local function finishRollRelease(color)
     if color == "Black" then
         local pid = S.getPlayerID(color)
         local delayedRollId = nil
+        local stSlot = nil
         if pid ~= nil then
             local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
-            if type(active) == "table" and type(active.id) == "string" then
-                delayedRollId = active.id
+            if type(active) == "table" then
+                if type(active.id) == "string" then
+                    delayedRollId = active.id
+                end
+                if type(active.stDrawerSlot) == "number" then
+                    stSlot = active.stDrawerSlot
+                end
             end
+        end
+        if type(stSlot) == "number" then
+            STD.applyTrayLightForSlot(stSlot, true, 0.25)
         end
         U.await(function()
             if RC.startRolling(color) ~= true then
                 return
             end
             unlockStagedBagDice(color)
-            if type(delayedRollId) == "string" then
-                randomizeBlackTrayDiceSimultaneous(delayedRollId)
+            if type(delayedRollId) ~= "string" then
+                return
             end
+            U.await(function()
+                randomizeBlackTrayDiceSimultaneous(delayedRollId)
+            end, 0.15)
         end, 1)
         return true
     end
