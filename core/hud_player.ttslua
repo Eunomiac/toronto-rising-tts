@@ -591,6 +591,42 @@ local function setActive(elementID, isActive)
     U.setAttribute(elementID, "active", isActive and "true" or "false")
 end
 
+--- Shared nestedless ref audiences (TOR-444). refKey → { [seatColor] = true }
+local nestedlessRefAudienceByKey = {}
+
+--- Show/hide one shared nestedless ref Image for a seat via visibility unions.
+-- Always writes showTo/hideFrom (change-guarded) so remounts that reset XML audience still heal.
+-- @param refKey string
+-- @param seatColor string
+-- @param shouldShow boolean
+local function applyNestedlessRefForSeat(refKey, seatColor, shouldShow)
+    if type(refKey) ~= "string" or type(seatColor) ~= "string" then
+        return
+    end
+    local elementID = "playerHud_refPanel_" .. refKey
+    local aud = nestedlessRefAudienceByKey[refKey]
+    if type(aud) ~= "table" then
+        aud = {}
+        nestedlessRefAudienceByKey[refKey] = aud
+    end
+    if shouldShow == true then
+        aud[seatColor] = true
+        U.showTo(elementID, seatColor)
+        setActive(elementID, true)
+        return
+    end
+    aud[seatColor] = nil
+    U.hideFrom(elementID, seatColor)
+    local any = false
+    for _color, _flag in pairs(aud) do
+        any = true
+        break
+    end
+    if not any then
+        setActive(elementID, false)
+    end
+end
+
 --- Clamps Prince's Court reference page to 1–3.
 -- @param page number|nil
 -- @return number
@@ -1367,7 +1403,7 @@ function HUDP.updatePlayerUI(player, color)
     Coterie.reconcileForHudSeat(seatColor)
 
     for refKey, _ in pairs(NESTEDLESS_REF_KEYS) do
-        setActive("playerHud_refPanel_" .. refKey .. "_" .. seatColor, showRefKey == refKey)
+        applyNestedlessRefForSeat(refKey, seatColor, showRefKey == refKey)
     end
 
     -- Right sidebar chrome: tint base Images (active > hover > idle). TOR-444.

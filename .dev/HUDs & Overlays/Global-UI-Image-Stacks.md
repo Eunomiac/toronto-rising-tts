@@ -161,7 +161,7 @@ Floor ~800+ while map **pan surface** / rolls / camera stay seat-local (map **si
 1. Audience helpers in `lib/util.ttslua` — **done**
 2. Migrate Global visibility writers onto helpers — **done**
 3. Sidebar chrome tint pilot (Option A, seat-local HUD) — **done**
-4. Shared nestedless ref panels — **next**
+4. Shared nestedless ref panels — **done** (`ui/shared/panel_ref_panels_nestedless.xml` + `applyNestedlessRefForSeat`)
 5. Shared Court pages + tracker collapse
 6. Location dock share; map strategy-1 district stacks; map sidebars Option **B**; shared transition blindfold; hunger per seat; camera stays per-seat; coterie; pip meters as time allows
 7. Recount + Save & Play + join Reload UI smoke

@@ -32,7 +32,10 @@
   <Include src="player/panel_right_sidebar_buttons.xml" />
 
 
-  <!-- Reference layer (generated per player color) -->
+  <!-- Shared nestedless ref popups (TOR-444); Court/coteries remain in per-seat referenceLayer -->
+  <Include src="shared/panel_ref_panels_nestedless.xml" />
+
+  <!-- Reference layer (generated per player color): Court + coteries -->
   <Include src="player/panel_right_sidebar_referenceLayer.xml" />
 
   <!-- Camera Controls Overlay (generated per player color) -->

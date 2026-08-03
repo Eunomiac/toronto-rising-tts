@@ -4133,7 +4133,32 @@ prettyPrintTable(draggableData, "draggableData")
 
 
 
-  <!-- Reference layer (generated per player color) -->
+  <!-- Shared nestedless ref popups (TOR-444); Court/coteries remain in per-seat referenceLayer -->
+  
+<!-- include ui/shared/panel_ref_panels_nestedless.xml -->
+<!-- Shared nestedless reference popups (TOR-444).
+     One Image per sheet for all seats; audience via XmlUI visibility unions.
+     Open/close: core/hud_player.ttslua applyNestedlessRefForSeat → U.showTo / U.hideFrom.
+     Court / coteries stay per-seat until Phase 5. -->
+<Panel id="playerHud_referenceLayer_nestedless" class="popupImageContainer">
+  <Image id="playerHud_refPanel_chronicleTenets" visibility="None" active="false" class="popupImage" image="refPanel_ChronicleTenets" />
+  <Image id="playerHud_refPanel_rolls" visibility="None" active="false" class="popupImage" image="refPanel_Rolls" />
+  <Image id="playerHud_refPanel_physicalCombat" visibility="None" active="false" class="popupImage" image="refPanel_PhysicalCombat" />
+  <Image id="playerHud_refPanel_socialCombat" visibility="None" active="false" class="popupImage" image="refPanel_SocialCombat" />
+  <Image id="playerHud_refPanel_threats" visibility="None" active="false" class="popupImage" image="refPanel_Threats" />
+  <Image id="playerHud_refPanel_frenzy" visibility="None" active="false" class="popupImage" image="refPanel_Frenzy" />
+  <Image id="playerHud_refPanel_recovery" visibility="None" active="false" class="popupImage" image="refPanel_Recovery" />
+  <Image id="playerHud_refPanel_resonance" visibility="None" active="false" class="popupImage" image="refPanel_Resonance" />
+  <Image id="playerHud_refPanel_experience" visibility="None" active="false" class="popupImage" image="refPanel_Experience" />
+  <Image id="playerHud_refPanel_advantages" visibility="None" active="false" class="popupImage" image="refPanel_Advantages" />
+  <Image id="playerHud_refPanel_projects" visibility="None" active="false" class="popupImage" image="refPanel_Projects" />
+  <Image id="playerHud_refPanel_memoriam" visibility="None" active="false" class="popupImage" image="refPanel_Memoriam" />
+</Panel>
+
+<!-- /include ui/shared/panel_ref_panels_nestedless.xml -->
+
+
+  <!-- Reference layer (generated per player color): Court + coteries -->
   
 <!-- include ui/player/panel_right_sidebar_referenceLayer.xml -->
 <!-- Generated file. Edit ui/.templates/panel_right_sidebar_referenceLayer.xml only. -->
@@ -4216,19 +4241,7 @@ prettyPrintTable(draggableData, "draggableData")
 
   </Defaults>
 
-  <Image id="playerHud_refPanel_chronicleTenets_Brown" active="false" class="popupImage" image="refPanel_ChronicleTenets" />
-  <Image id="playerHud_refPanel_rolls_Brown" active="false" class="popupImage" image="refPanel_Rolls" />
-  <Image id="playerHud_refPanel_physicalCombat_Brown" active="false" class="popupImage" image="refPanel_PhysicalCombat" />
-  <Image id="playerHud_refPanel_socialCombat_Brown" active="false" class="popupImage" image="refPanel_SocialCombat" />
-  <Image id="playerHud_refPanel_threats_Brown" active="false" class="popupImage" image="refPanel_Threats" />
-  <Image id="playerHud_refPanel_frenzy_Brown" active="false" class="popupImage" image="refPanel_Frenzy" />
-  <Image id="playerHud_refPanel_recovery_Brown" active="false" class="popupImage" image="refPanel_Recovery" />
-  <Image id="playerHud_refPanel_resonance_Brown" active="false" class="popupImage" image="refPanel_Resonance" />
-  <Image id="playerHud_refPanel_experience_Brown" active="false" class="popupImage" image="refPanel_Experience" />
-  <Image id="playerHud_refPanel_advantages_Brown" active="false" class="popupImage" image="refPanel_Advantages" />
-  <Image id="playerHud_refPanel_projects_Brown" active="false" class="popupImage" image="refPanel_Projects" />
-  <Image id="playerHud_refPanel_memoriam_Brown" active="false" class="popupImage" image="refPanel_Memoriam" />
-
+  <!-- Nestedless refPanels live in ui/shared/panel_ref_panels_nestedless.xml (TOR-444 shared). -->
 
   <!--
 UI.setAttributes("playerHud_refPanel_princesCourt_Red", {offsetXY = "-50 0"})
@@ -6450,19 +6463,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
   </Defaults>
 
-  <Image id="playerHud_refPanel_chronicleTenets_Orange" active="false" class="popupImage" image="refPanel_ChronicleTenets" />
-  <Image id="playerHud_refPanel_rolls_Orange" active="false" class="popupImage" image="refPanel_Rolls" />
-  <Image id="playerHud_refPanel_physicalCombat_Orange" active="false" class="popupImage" image="refPanel_PhysicalCombat" />
-  <Image id="playerHud_refPanel_socialCombat_Orange" active="false" class="popupImage" image="refPanel_SocialCombat" />
-  <Image id="playerHud_refPanel_threats_Orange" active="false" class="popupImage" image="refPanel_Threats" />
-  <Image id="playerHud_refPanel_frenzy_Orange" active="false" class="popupImage" image="refPanel_Frenzy" />
-  <Image id="playerHud_refPanel_recovery_Orange" active="false" class="popupImage" image="refPanel_Recovery" />
-  <Image id="playerHud_refPanel_resonance_Orange" active="false" class="popupImage" image="refPanel_Resonance" />
-  <Image id="playerHud_refPanel_experience_Orange" active="false" class="popupImage" image="refPanel_Experience" />
-  <Image id="playerHud_refPanel_advantages_Orange" active="false" class="popupImage" image="refPanel_Advantages" />
-  <Image id="playerHud_refPanel_projects_Orange" active="false" class="popupImage" image="refPanel_Projects" />
-  <Image id="playerHud_refPanel_memoriam_Orange" active="false" class="popupImage" image="refPanel_Memoriam" />
-
+  <!-- Nestedless refPanels live in ui/shared/panel_ref_panels_nestedless.xml (TOR-444 shared). -->
 
   <!--
 UI.setAttributes("playerHud_refPanel_princesCourt_Red", {offsetXY = "-50 0"})
@@ -8684,19 +8685,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
   </Defaults>
 
-  <Image id="playerHud_refPanel_chronicleTenets_Red" active="false" class="popupImage" image="refPanel_ChronicleTenets" />
-  <Image id="playerHud_refPanel_rolls_Red" active="false" class="popupImage" image="refPanel_Rolls" />
-  <Image id="playerHud_refPanel_physicalCombat_Red" active="false" class="popupImage" image="refPanel_PhysicalCombat" />
-  <Image id="playerHud_refPanel_socialCombat_Red" active="false" class="popupImage" image="refPanel_SocialCombat" />
-  <Image id="playerHud_refPanel_threats_Red" active="false" class="popupImage" image="refPanel_Threats" />
-  <Image id="playerHud_refPanel_frenzy_Red" active="false" class="popupImage" image="refPanel_Frenzy" />
-  <Image id="playerHud_refPanel_recovery_Red" active="false" class="popupImage" image="refPanel_Recovery" />
-  <Image id="playerHud_refPanel_resonance_Red" active="false" class="popupImage" image="refPanel_Resonance" />
-  <Image id="playerHud_refPanel_experience_Red" active="false" class="popupImage" image="refPanel_Experience" />
-  <Image id="playerHud_refPanel_advantages_Red" active="false" class="popupImage" image="refPanel_Advantages" />
-  <Image id="playerHud_refPanel_projects_Red" active="false" class="popupImage" image="refPanel_Projects" />
-  <Image id="playerHud_refPanel_memoriam_Red" active="false" class="popupImage" image="refPanel_Memoriam" />
-
+  <!-- Nestedless refPanels live in ui/shared/panel_ref_panels_nestedless.xml (TOR-444 shared). -->
 
   <!--
 UI.setAttributes("playerHud_refPanel_princesCourt_Red", {offsetXY = "-50 0"})
@@ -10918,19 +10907,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
   </Defaults>
 
-  <Image id="playerHud_refPanel_chronicleTenets_Pink" active="false" class="popupImage" image="refPanel_ChronicleTenets" />
-  <Image id="playerHud_refPanel_rolls_Pink" active="false" class="popupImage" image="refPanel_Rolls" />
-  <Image id="playerHud_refPanel_physicalCombat_Pink" active="false" class="popupImage" image="refPanel_PhysicalCombat" />
-  <Image id="playerHud_refPanel_socialCombat_Pink" active="false" class="popupImage" image="refPanel_SocialCombat" />
-  <Image id="playerHud_refPanel_threats_Pink" active="false" class="popupImage" image="refPanel_Threats" />
-  <Image id="playerHud_refPanel_frenzy_Pink" active="false" class="popupImage" image="refPanel_Frenzy" />
-  <Image id="playerHud_refPanel_recovery_Pink" active="false" class="popupImage" image="refPanel_Recovery" />
-  <Image id="playerHud_refPanel_resonance_Pink" active="false" class="popupImage" image="refPanel_Resonance" />
-  <Image id="playerHud_refPanel_experience_Pink" active="false" class="popupImage" image="refPanel_Experience" />
-  <Image id="playerHud_refPanel_advantages_Pink" active="false" class="popupImage" image="refPanel_Advantages" />
-  <Image id="playerHud_refPanel_projects_Pink" active="false" class="popupImage" image="refPanel_Projects" />
-  <Image id="playerHud_refPanel_memoriam_Pink" active="false" class="popupImage" image="refPanel_Memoriam" />
-
+  <!-- Nestedless refPanels live in ui/shared/panel_ref_panels_nestedless.xml (TOR-444 shared). -->
 
   <!--
 UI.setAttributes("playerHud_refPanel_princesCourt_Red", {offsetXY = "-50 0"})
@@ -13152,19 +13129,7 @@ UI.setAttributes("page_3_left_Red", {color = "rgba(1, 0, 0, 0.15)", width = "50%
 
   </Defaults>
 
-  <Image id="playerHud_refPanel_chronicleTenets_Purple" active="false" class="popupImage" image="refPanel_ChronicleTenets" />
-  <Image id="playerHud_refPanel_rolls_Purple" active="false" class="popupImage" image="refPanel_Rolls" />
-  <Image id="playerHud_refPanel_physicalCombat_Purple" active="false" class="popupImage" image="refPanel_PhysicalCombat" />
-  <Image id="playerHud_refPanel_socialCombat_Purple" active="false" class="popupImage" image="refPanel_SocialCombat" />
-  <Image id="playerHud_refPanel_threats_Purple" active="false" class="popupImage" image="refPanel_Threats" />
-  <Image id="playerHud_refPanel_frenzy_Purple" active="false" class="popupImage" image="refPanel_Frenzy" />
-  <Image id="playerHud_refPanel_recovery_Purple" active="false" class="popupImage" image="refPanel_Recovery" />
-  <Image id="playerHud_refPanel_resonance_Purple" active="false" class="popupImage" image="refPanel_Resonance" />
-  <Image id="playerHud_refPanel_experience_Purple" active="false" class="popupImage" image="refPanel_Experience" />
-  <Image id="playerHud_refPanel_advantages_Purple" active="false" class="popupImage" image="refPanel_Advantages" />
-  <Image id="playerHud_refPanel_projects_Purple" active="false" class="popupImage" image="refPanel_Projects" />
-  <Image id="playerHud_refPanel_memoriam_Purple" active="false" class="popupImage" image="refPanel_Memoriam" />
-
+  <!-- Nestedless refPanels live in ui/shared/panel_ref_panels_nestedless.xml (TOR-444 shared). -->
 
   <!--
 UI.setAttributes("playerHud_refPanel_princesCourt_Red", {offsetXY = "-50 0"})
