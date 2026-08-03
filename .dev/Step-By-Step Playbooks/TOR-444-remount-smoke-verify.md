@@ -73,6 +73,8 @@ _G.TOR444 = {
 }
 
 -- Execute Lua cannot require(); use globals (S/U/C/Sync/DEBUG) only.
+-- HUDP.updatePlayerUI keys off S.getStorageID(Player[seat]) (Host hotseat ≠ steam/ST id,
+-- not chronicle getPlayerID(seat)). All hud.reference writes must use that same id.
 
 local function tor444Fixture()
   local F = _G.TOR444
@@ -82,10 +84,30 @@ local function tor444Fixture()
   return F
 end
 
-local function tor444Pid(F)
-  local pid = S.getPlayerID(F.seat)
-  if type(pid) ~= "string" or pid == "" then
-    error("[FAIL] no playerID for seat " .. F.seat)
+--- Storage id HUDP.updatePlayerUI reads for the seated Player (Host-on-Red → ST/steam id).
+local function tor444HudPid(F)
+  local p = Player[F.seat]
+  if not U.isPlayer(p) then
+    error("[FAIL] Player." .. F.seat .. " nil")
+  end
+  local sid = S.getStorageID(p)
+  if type(sid) ~= "string" or sid == "" then
+    error("[FAIL] S.getStorageID nil for seated " .. F.seat)
+  end
+  return sid
+end
+
+--- Ensure playerData[hudPid].hud.reference exists so updatePlayerUI does not early-return.
+local function tor444EnsureHudReference(F)
+  local pid = tor444HudPid(F)
+  if type(S.getStateVal("playerData", pid)) ~= "table" then
+    S.setStateVal({ color = F.seat }, "playerData", pid)
+  end
+  if type(S.getStateVal("playerData", pid, "hud")) ~= "table" then
+    S.setStateVal({}, "playerData", pid, "hud")
+  end
+  if type(S.getStateVal("playerData", pid, "hud", "reference")) ~= "table" then
+    S.setStateVal({}, "playerData", pid, "hud", "reference")
   end
   return pid
 end
@@ -127,7 +149,7 @@ local function tor444AssertAudienceContains(id, color)
 end
 
 local function tor444ClearRefs(F)
-  local pid = tor444Pid(F)
+  local pid = tor444EnsureHudReference(F)
   local nestedless = {
     "chronicleTenets",
     "socialCombat",
@@ -173,10 +195,8 @@ U.chain({
     if S.getStateVal("seatLayout", "currentTableKey") ~= F.tableKey then
       error("[Verify FAIL] table key not " .. F.tableKey)
     end
-    if type(S.getPlayerID(F.seat)) ~= "string" then
-      error("[Verify FAIL] no playerID for " .. F.seat)
-    end
-    print("PASS — prerequisites satisfied")
+    local hudPid = tor444EnsureHudReference(F)
+    print("PASS — prerequisites satisfied (hudPid=" .. hudPid .. ")")
   end,
   function()
     printHeader("TOR-444: Structural remount ids", 1)
@@ -207,10 +227,11 @@ U.chain({
   end,
   function()
     local F = tor444Fixture()
+    local pid = tor444EnsureHudReference(F)
     tor444ClearRefs(F)
-    S.setStateVal(true, "playerData", tor444Pid(F), "hud", "reference", F.refKey)
+    S.setStateVal(true, "playerData", pid, "hud", "reference", F.refKey)
     tor444UpdateHud(F)
-    print("PASS — Rolls opened via state + Sync.player")
+    print("PASS — Rolls opened via state + Sync.player (pid=" .. pid .. ")")
   end,
   function()
     local F = tor444Fixture()
@@ -235,6 +256,7 @@ U.chain({
 
 ```lua
 -- Execute Lua cannot require(); use globals (S/U/C/Sync) only.
+-- HUD state must use S.getStorageID(Player[seat]) — same id HUDP.updatePlayerUI reads.
 
 local function tor444Fixture()
   local F = _G.TOR444
@@ -244,10 +266,28 @@ local function tor444Fixture()
   return F
 end
 
-local function tor444Pid(F)
-  local pid = S.getPlayerID(F.seat)
-  if type(pid) ~= "string" or pid == "" then
-    error("[FAIL] no playerID for seat " .. F.seat)
+local function tor444HudPid(F)
+  local p = Player[F.seat]
+  if not U.isPlayer(p) then
+    error("[FAIL] Player." .. F.seat .. " nil")
+  end
+  local sid = S.getStorageID(p)
+  if type(sid) ~= "string" or sid == "" then
+    error("[FAIL] S.getStorageID nil for seated " .. F.seat)
+  end
+  return sid
+end
+
+local function tor444EnsureHudReference(F)
+  local pid = tor444HudPid(F)
+  if type(S.getStateVal("playerData", pid)) ~= "table" then
+    S.setStateVal({ color = F.seat }, "playerData", pid)
+  end
+  if type(S.getStateVal("playerData", pid, "hud")) ~= "table" then
+    S.setStateVal({}, "playerData", pid, "hud")
+  end
+  if type(S.getStateVal("playerData", pid, "hud", "reference")) ~= "table" then
+    S.setStateVal({}, "playerData", pid, "hud", "reference")
   end
   return pid
 end
@@ -279,7 +319,7 @@ local function tor444AssertAudienceContains(id, color)
 end
 
 local function tor444ClearRefs(F)
-  local pid = tor444Pid(F)
+  local pid = tor444EnsureHudReference(F)
   local nestedless = {
     "chronicleTenets",
     "socialCombat",
@@ -307,12 +347,12 @@ U.chain({
   end,
   function()
     local F = tor444Fixture()
+    local pid = tor444EnsureHudReference(F)
     tor444ClearRefs(F)
-    local pid = tor444Pid(F)
     S.setStateVal({}, "playerData", pid, "hud", "reference", "princesCourt")
     S.setStateVal(1, "playerData", pid, "hud", "reference", "princesCourtPage")
     tor444UpdateHud(F)
-    print("PASS — Court opened on page 1")
+    print("PASS — Court opened on page 1 (pid=" .. pid .. ")")
   end,
   function()
     local F = tor444Fixture()
@@ -338,6 +378,7 @@ U.chain({
 
 ```lua
 -- Execute Lua cannot require(); use globals (S/U/C/Sync) only.
+-- HUD state must use S.getStorageID(Player[seat]) — same id HUDP.updatePlayerUI reads.
 
 local function tor444Fixture()
   local F = _G.TOR444
@@ -347,12 +388,16 @@ local function tor444Fixture()
   return F
 end
 
-local function tor444Pid(F)
-  local pid = S.getPlayerID(F.seat)
-  if type(pid) ~= "string" or pid == "" then
-    error("[FAIL] no playerID for seat " .. F.seat)
+local function tor444HudPid(F)
+  local p = Player[F.seat]
+  if not U.isPlayer(p) then
+    error("[FAIL] Player." .. F.seat .. " nil")
   end
-  return pid
+  local sid = S.getStorageID(p)
+  if type(sid) ~= "string" or sid == "" then
+    error("[FAIL] S.getStorageID nil for seated " .. F.seat)
+  end
+  return sid
 end
 
 local function tor444AssertHasAttr(id, attr)
@@ -413,9 +458,10 @@ U.chain({
   end,
   function()
     local F = tor444Fixture()
-    local page = tonumber(S.getStateVal("playerData", tor444Pid(F), "hud", "reference", "princesCourtPage"))
+    local pid = tor444HudPid(F)
+    local page = tonumber(S.getStateVal("playerData", pid, "hud", "reference", "princesCourtPage"))
     if page ~= 2 then
-      error("[FAIL] princesCourtPage expected 2 after navigate click, got " .. tostring(page))
+      error("[FAIL] princesCourtPage expected 2 after navigate click, got " .. tostring(page) .. " (pid=" .. pid .. ")")
     end
     tor444AssertAudienceContains("playerHud_refPanel_PrincesCourt_page2", F.seat)
     print("PASS — Court page 2 state + audience")
