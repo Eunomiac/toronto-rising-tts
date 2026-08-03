@@ -161,7 +161,16 @@ Floor ~800+ while map **pan surface** / rolls / camera stay seat-local (map **si
 1. Audience helpers in `lib/util.ttslua` — **done**
 2. Migrate Global visibility writers onto helpers — **done**
 3. Sidebar chrome tint pilot (Option A, seat-local HUD) — **done**
-4. Shared nestedless ref panels — **done** (`ui/shared/panel_ref_panels_nestedless.xml` + `applyNestedlessRefForSeat`)
-5. Shared Court pages — **done** (`ui/shared/panel_ref_princes_court.xml`); tracker stack collapse + pip meters next
-6. Location dock share; map strategy-1 district stacks; map sidebars Option **B**; shared transition blindfold; hunger per seat; camera stays per-seat; coterie; pip meters as time allows
+4. Shared nestedless ref panels — **done**
+5. Shared Court + tracker collapse — **done** (pip meters: branch `tor-444-court-pip-meters`)
+6. Shared transition blindfold — **done**; location dock district stack→one Image per seat — **done**; remaining: map district stacks + map sidebars Option B; hunger strategy 1; optional location full share
 7. Recount + Save & Play + join Reload UI smoke
+
+### Remount ballpark (Image tags in embedded Global)
+
+| Checkpoint | ~Images | Embed size |
+| --- | ---: | ---: |
+| Start (TOR-444) | ~7,435 | ~1.83 MB |
+| After nestedless share | ~7,216 | |
+| After Court share + trackers | ~3,297 | ~1.14 MB |
+| After shared blindfold + location collapse | **~2,958** | **~1.10 MB** |

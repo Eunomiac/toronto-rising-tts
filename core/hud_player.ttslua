@@ -985,17 +985,20 @@ local function applyLocationDockCachedBool(elementID, desired, applyFn)
     lastLocationDockUiCache[elementID] = desired
 end
 
---- Per-seat location popout: district + site card stacks mirror `sessionScene.districtKey` / `siteKey`.
+--- Per-seat location popout: one district + one site Image mirror `sessionScene` (TOR-444 stack collapse).
 -- @param seatColor string HUD owner seat
 local function reconcileLocationDockCardsFromState(seatColor)
     if type(seatColor) ~= "string" then
         return
     end
     local sessionD = trimHudKey(S.getStateVal("sessionScene", "districtKey"))
-    for districtKey, _ in pairs(MAP_DISTRICT_KEYS) do
-        local id = "gameStateOverlay_districtCard_" .. districtKey .. "_" .. seatColor
-        local show = sessionD ~= "" and districtKey == sessionD
-        applyLocationDockCachedBool(id, show, setMapStackImageVisibility)
+    local dockDistrictId = "gameStateOverlay_districtCard_current_" .. seatColor
+    if sessionD == "" or MAP_DISTRICT_KEYS[sessionD] ~= true then
+        applySiteCardImageIfChanged(dockDistrictId, nil)
+        applyLocationDockCachedBool(dockDistrictId, false, setMapStackImageVisibility)
+    else
+        applySiteCardImageIfChanged(dockDistrictId, "districtCard_" .. sessionD)
+        applyLocationDockCachedBool(dockDistrictId, true, setMapStackImageVisibility)
     end
     local sessionS = trimHudKey(S.getStateVal("sessionScene", "siteKey"))
     local dockSiteId = "gameStateOverlay_siteCard_current_" .. seatColor
