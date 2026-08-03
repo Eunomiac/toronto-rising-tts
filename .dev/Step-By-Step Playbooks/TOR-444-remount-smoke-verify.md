@@ -51,6 +51,8 @@ Test constants (shared via `_G.TOR444`):
 
 **Step 1.** **Save & Play**.
 
+**Step 1b (optional).** If a prior run left the shared blindfold (or refs) up — Execute Lua Code — **Code Block Cleanup**, then continue.
+
 **Step 2.** Execute Lua Code — **Code Block 0**. Watch for `▶▶▶ HUMAN ▶▶▶` — confirm the Rolls reference popup looks correct (shared image, not a blank/broken panel).
 
 **Step 3.** Execute Lua Code — **Code Block A**. When prompted: **confirm Court page 1 looks correct**, then **click the Court navigate-right control once** (to page 2).
@@ -58,6 +60,120 @@ Test constants (shared via `_G.TOR444`):
 **Step 4.** Execute Lua Code — **Code Block B**. When prompted: **confirm the shared transition blindfold FadeIn** (full-screen blindfold art). The sequence pauses briefly, then hides the blindfold and finishes location/sidebar asserts.
 
 **Step 5.** When the console prints **Verification complete**, you are done.
+
+---
+
+## Code Block Cleanup — restore starting UI (safe to re-run anytime)
+
+Use after an interrupted Block B (stuck shared blindfold), or before re-pasting Block 0/A/B. Does not require a prior successful Block 0; uses `_G.TOR444` when present, else Red defaults.
+
+```lua
+-- Execute Lua cannot require(); use globals (S/U/C/Sync) only.
+if type(_G.TOR444) ~= "table" then
+  _G.TOR444 = {
+    seat = "Red",
+    tableKey = "Table A",
+    refKey = "rolls",
+    districtKey = "Annex",
+    blindfoldVariant = 3,
+  }
+end
+
+local F = _G.TOR444
+local seat = F.seat or "Red"
+
+local function tor444HudPid()
+  local p = Player[seat]
+  if not U.isPlayer(p) then
+    return nil
+  end
+  local sid = S.getStorageID(p)
+  if type(sid) ~= "string" or sid == "" then
+    return nil
+  end
+  return sid
+end
+
+printHeader("TOR-444: Cleanup", 1)
+
+-- Shared transition blindfold → hidden + XML defaults
+UI.hide("playerHud_overlay_blindfold")
+U.setAttribute("playerHud_overlay_blindfold", "active", "false")
+U.setVisibleTo("playerHud_overlay_blindfold", {})
+U.setAttributes("overlay_blindfold_display", {
+  image = "overlay_blindfold_1",
+  active = "true",
+  color = "White",
+})
+U.setAttributes("overlay_district_card_display", {
+  active = "false",
+  color = "Clear",
+  image = "",
+})
+U.setAttributes("overlay_site_card_display", {
+  active = "false",
+  color = "Clear",
+  image = "",
+})
+print("PASS — shared transition blindfold hidden + display defaults")
+
+-- Nestedless + Court shared refs → closed (visibility None, active false)
+local refIds = {
+  "playerHud_refPanel_rolls",
+  "playerHud_refPanel_chronicleTenets",
+  "playerHud_refPanel_socialCombat",
+  "playerHud_refPanel_physicalCombat",
+  "playerHud_refPanel_frenzy",
+  "playerHud_refPanel_memoriam",
+  "playerHud_refPanel_projects",
+  "playerHud_refPanel_experience",
+  "playerHud_refPanel_princesCourt",
+  "playerHud_refPanel_PrincesCourt_page1",
+  "playerHud_refPanel_PrincesCourt_page2",
+  "playerHud_refPanel_PrincesCourt_page3",
+}
+for _, id in ipairs(refIds) do
+  U.setVisibleTo(id, {})
+  U.setAttribute(id, "active", "false")
+  if type(UI.hide) == "function" and string.find(id, "PrincesCourt_page", 1, true) then
+    UI.hide(id)
+  end
+end
+print("PASS — shared ref / Court panels closed")
+
+-- HUD state for seated Player (Host hotseat → storage id)
+local pid = tor444HudPid()
+if type(pid) == "string" then
+  if type(S.getStateVal("playerData", pid, "hud")) ~= "table" then
+    S.setStateVal({}, "playerData", pid, "hud")
+  end
+  if type(S.getStateVal("playerData", pid, "hud", "reference")) ~= "table" then
+    S.setStateVal({}, "playerData", pid, "hud", "reference")
+  end
+  local nestedless = {
+    "chronicleTenets",
+    "socialCombat",
+    "physicalCombat",
+    "frenzy",
+    "rolls",
+    "memoriam",
+    "projects",
+    "experience",
+  }
+  for _, k in ipairs(nestedless) do
+    S.setStateVal(false, "playerData", pid, "hud", "reference", k)
+  end
+  S.setStateVal(nil, "playerData", pid, "hud", "reference", "coteries")
+  S.setStateVal(nil, "playerData", pid, "hud", "reference", "princesCourt")
+  S.setStateVal(1, "playerData", pid, "hud", "reference", "princesCourtPage")
+  Sync.player(seat)
+  print("PASS — hud.reference cleared + Sync.player (" .. pid .. ")")
+else
+  print("PASS — skipped hud.reference clear (Player." .. seat .. " / storage id unavailable)")
+end
+
+print("PASS — TOR-444 cleanup complete. Safe to re-run Code Block 0, A, or B.")
+```
 
 ---
 
