@@ -8,7 +8,7 @@ UI.show("overlay_globalBlindfold")
 
 <!--
 UI.hide("overlay_globalBlindfold")
-UI.setAttributes("overlay_globalBlindfold", {height = "1200"})
+UI.setAttributes("overlay_globalBlindfold", {color = "rgba(1, 1, 1, 0.25)"})
 -->
 
 <Image id="overlay_globalBlindfold"

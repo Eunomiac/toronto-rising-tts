@@ -46,7 +46,12 @@
   <Image id="overlay_blindfold_31_@@color@@" image="overlay_blindfold_31" class="player_overlay" />
   <Image id="overlay_blindfold_32_@@color@@" image="overlay_blindfold_32" class="player_overlay" />
 
-  <!-- Destination District/Site cards (TOR-425 / TOR-431): arm before parent UI.show when both keys resolve. -->
+  <!-- Destination District/Site cards (TOR-425 / TOR-431): arm before parent UI.show when both keys resolve.
+
+  UI.setAttributes("overlay_district_card_display_Brown", {showAnimationDelay = "4", animationDuration = "1"})
+  UI.setAttributes("overlay_site_card_display_Brown", {showAnimationDelay = "4.5", animationDuration = "1"})
+
+   -->
   <Image id="overlay_district_card_display_@@color@@" class="player_overlay_district_card_display" />
   <Image id="overlay_site_card_display_@@color@@" class="player_overlay_site_card_display" />
 </Panel>

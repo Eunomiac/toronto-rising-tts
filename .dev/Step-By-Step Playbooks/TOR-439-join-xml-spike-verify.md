@@ -1,3 +1,19 @@
+# Things to Test
+
+- Initial load: See ONLY splash screen, nothing else, hear music
+- Scene transition
+  - Maps panel
+  - Coterie sheet
+  - Reference sheets
+  - Character sheets
+ - Dice rolls (indicate reference sheet)
+  - Player
+  - Storyteller
+- Compulsions
+  - Draw & choose
+
+
+
 # Join-stress minimal Global XmlUI — control vs treatment *(TOR-439)*
 
 ## Agent Routing

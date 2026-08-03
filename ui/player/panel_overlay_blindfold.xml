@@ -35,7 +35,12 @@
   <Image id="overlay_blindfold_31_Brown" image="overlay_blindfold_31" class="player_overlay" />
   <Image id="overlay_blindfold_32_Brown" image="overlay_blindfold_32" class="player_overlay" />
 
-  <!-- Destination District/Site cards (TOR-425 / TOR-431): arm before parent UI.show when both keys resolve. -->
+  <!-- Destination District/Site cards (TOR-425 / TOR-431): arm before parent UI.show when both keys resolve.
+
+  UI.setAttributes("overlay_district_card_display_Brown", {showAnimationDelay = "4", animationDuration = "1"})
+  UI.setAttributes("overlay_site_card_display_Brown", {showAnimationDelay = "4.5", animationDuration = "1"})
+
+   -->
   <Image id="overlay_district_card_display_Brown" class="player_overlay_district_card_display" />
   <Image id="overlay_site_card_display_Brown" class="player_overlay_site_card_display" />
 </Panel>
@@ -74,7 +79,12 @@
   <Image id="overlay_blindfold_31_Orange" image="overlay_blindfold_31" class="player_overlay" />
   <Image id="overlay_blindfold_32_Orange" image="overlay_blindfold_32" class="player_overlay" />
 
-  <!-- Destination District/Site cards (TOR-425 / TOR-431): arm before parent UI.show when both keys resolve. -->
+  <!-- Destination District/Site cards (TOR-425 / TOR-431): arm before parent UI.show when both keys resolve.
+
+  UI.setAttributes("overlay_district_card_display_Brown", {showAnimationDelay = "4", animationDuration = "1"})
+  UI.setAttributes("overlay_site_card_display_Brown", {showAnimationDelay = "4.5", animationDuration = "1"})
+
+   -->
   <Image id="overlay_district_card_display_Orange" class="player_overlay_district_card_display" />
   <Image id="overlay_site_card_display_Orange" class="player_overlay_site_card_display" />
 </Panel>
@@ -113,7 +123,12 @@
   <Image id="overlay_blindfold_31_Red" image="overlay_blindfold_31" class="player_overlay" />
   <Image id="overlay_blindfold_32_Red" image="overlay_blindfold_32" class="player_overlay" />
 
-  <!-- Destination District/Site cards (TOR-425 / TOR-431): arm before parent UI.show when both keys resolve. -->
+  <!-- Destination District/Site cards (TOR-425 / TOR-431): arm before parent UI.show when both keys resolve.
+
+  UI.setAttributes("overlay_district_card_display_Brown", {showAnimationDelay = "4", animationDuration = "1"})
+  UI.setAttributes("overlay_site_card_display_Brown", {showAnimationDelay = "4.5", animationDuration = "1"})
+
+   -->
   <Image id="overlay_district_card_display_Red" class="player_overlay_district_card_display" />
   <Image id="overlay_site_card_display_Red" class="player_overlay_site_card_display" />
 </Panel>
@@ -152,7 +167,12 @@
   <Image id="overlay_blindfold_31_Pink" image="overlay_blindfold_31" class="player_overlay" />
   <Image id="overlay_blindfold_32_Pink" image="overlay_blindfold_32" class="player_overlay" />
 
-  <!-- Destination District/Site cards (TOR-425 / TOR-431): arm before parent UI.show when both keys resolve. -->
+  <!-- Destination District/Site cards (TOR-425 / TOR-431): arm before parent UI.show when both keys resolve.
+
+  UI.setAttributes("overlay_district_card_display_Brown", {showAnimationDelay = "4", animationDuration = "1"})
+  UI.setAttributes("overlay_site_card_display_Brown", {showAnimationDelay = "4.5", animationDuration = "1"})
+
+   -->
   <Image id="overlay_district_card_display_Pink" class="player_overlay_district_card_display" />
   <Image id="overlay_site_card_display_Pink" class="player_overlay_site_card_display" />
 </Panel>
@@ -191,7 +211,12 @@
   <Image id="overlay_blindfold_31_Purple" image="overlay_blindfold_31" class="player_overlay" />
   <Image id="overlay_blindfold_32_Purple" image="overlay_blindfold_32" class="player_overlay" />
 
-  <!-- Destination District/Site cards (TOR-425 / TOR-431): arm before parent UI.show when both keys resolve. -->
+  <!-- Destination District/Site cards (TOR-425 / TOR-431): arm before parent UI.show when both keys resolve.
+
+  UI.setAttributes("overlay_district_card_display_Brown", {showAnimationDelay = "4", animationDuration = "1"})
+  UI.setAttributes("overlay_site_card_display_Brown", {showAnimationDelay = "4.5", animationDuration = "1"})
+
+   -->
   <Image id="overlay_district_card_display_Purple" class="player_overlay_district_card_display" />
   <Image id="overlay_site_card_display_Purple" class="player_overlay_site_card_display" />
 </Panel>
