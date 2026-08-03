@@ -329,6 +329,50 @@ local function applyFigurineVisibility(ownerColor, active, state)
     return fig
 end
 
+--- TOR-452: true when tray-open choreography flipped state 1→2 (restore only if we did).
+--- @type table<string, boolean>
+local trayFlippedCompanionByColor = {}
+
+--- Seat has a famulus companion figurine in the save (Red/Brown today).
+--- @param ownerColor string
+--- @return boolean
+local function hasCompanionFigurineSeat(ownerColor)
+    return type(ownerColor) == "string" and GUIDS_KEY_BY_OWNER[ownerColor] ~= nil
+end
+
+--- TOR-452: on PC dice tray open — if enabled companion is state 1, set state 2.
+--- @param ownerColor string
+function CompanionToggle.onPcDiceTrayOpened(ownerColor)
+    if not hasCompanionFigurineSeat(ownerColor) then
+        return
+    end
+    if isFigurineActive(ownerColor) ~= true then
+        return
+    end
+    local state = resolveActiveState(ownerColor)
+    if state ~= 1 then
+        return
+    end
+    applyFigurineVisibility(ownerColor, true, 2)
+    trayFlippedCompanionByColor[ownerColor] = true
+end
+
+--- TOR-452: on PC dice tray close — restore state 1 only if tray-open flipped it.
+--- @param ownerColor string
+function CompanionToggle.onPcDiceTrayClosed(ownerColor)
+    if trayFlippedCompanionByColor[ownerColor] ~= true then
+        return
+    end
+    trayFlippedCompanionByColor[ownerColor] = nil
+    if not hasCompanionFigurineSeat(ownerColor) then
+        return
+    end
+    if isFigurineActive(ownerColor) ~= true then
+        return
+    end
+    applyFigurineVisibility(ownerColor, true, 1)
+end
+
 --- Left: toggle on/off + swap tile face images. Right: cycle state 1↔2 if on.
 --- @param params table { toggleGuid: string, playerColor: string, altClick?: boolean }
 --- @return boolean|nil

@@ -616,5 +616,9 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-08-03 | CREATE | TOR-456 | Workshop: Site/District Aspects → location Conditions (External Todo; relatedTo TOR-85) |
 | 2026-08-03 | CREATE | TOR-455 | Workshop: tune NPC spotlight obviousness (External Todo; relatedTo TOR-266) |
 | 2026-08-03 | FOCUS | TOR-453, TOR-452, TOR-448, TOR-444, TOR-439, TOR-436 | INBOX Immediate re-stack |
+| 2026-08-03 | DONE | TOR-448 | Author confirmed ST randomize pop fixed |
+| 2026-08-03 | DONE | TOR-444 | Author confirmed Global XmlUI remount weight dramatically reduced |
+| 2026-08-03 | DONE | TOR-436 | Author confirmed blindfold parent with new animation strategy |
+| 2026-08-03 | FOCUS | TOR-453, TOR-452, TOR-439 | Re-stack after gate closes; implementing TOR-453/452 |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

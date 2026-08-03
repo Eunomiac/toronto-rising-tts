@@ -14,6 +14,31 @@ local DD = {}
 --- @type table<string, boolean>
 local drawerOpenByColor = {}
 
+--- TOR-452: Compulsion LIVEROLL + companion state when tray opens/closes (lazy require — avoid cycles).
+--- @param color string
+local function runTrayOpenChoreography(color)
+  local Compulsions = require("core.compulsions")
+  local CompanionToggle = require("lib.companion_toggle")
+  if Compulsions.moveSelectedToLiveRoll ~= nil then
+    Compulsions.moveSelectedToLiveRoll(color)
+  end
+  if CompanionToggle.onPcDiceTrayOpened ~= nil then
+    CompanionToggle.onPcDiceTrayOpened(color)
+  end
+end
+
+--- @param color string
+local function runTrayCloseChoreography(color)
+  local Compulsions = require("core.compulsions")
+  local CompanionToggle = require("lib.companion_toggle")
+  if Compulsions.moveSelectedFromLiveRoll ~= nil then
+    Compulsions.moveSelectedFromLiveRoll(color)
+  end
+  if CompanionToggle.onPcDiceTrayClosed ~= nil then
+    CompanionToggle.onPcDiceTrayClosed(color)
+  end
+end
+
 --- @param color string Seat color e.g. "Brown"
 --- @return string|nil
 local function objectPositionsKey(color)
@@ -139,14 +164,19 @@ function DD.openForRoll(color, opts)
   end
   opts = type(opts) == "table" and opts or {}
   local minReleaseY = 2.5
-  if drawerOpenByColor[color] == true and opts.force ~= true then
+  local wasOpen = drawerOpenByColor[color] == true
+  if wasOpen and opts.force ~= true then
     local y = DD.getPositionY(color)
     if type(y) == "number" and y > minReleaseY then
       return
     end
   end
+  local newlyOpening = wasOpen ~= true
   drawerOpenByColor[color] = true
   L.onDiceDrawerStateChanged(color, true)
+  if newlyOpening then
+    runTrayOpenChoreography(color)
+  end
   local pose = getPoseEntry(color, true)
   if pose == nil then
     return
@@ -168,6 +198,7 @@ local function applyClosePose(color, opts)
   opts = type(opts) == "table" and opts or {}
   drawerOpenByColor[color] = false
   L.onDiceDrawerStateChanged(color, false)
+  runTrayCloseChoreography(color)
   local pose = getPoseEntry(color, false)
   if pose == nil then
     return
@@ -185,6 +216,12 @@ local function applyClosePose(color, opts)
   local instant = opts.instant == true
   local duration = instant and 0 or OP.DEFAULT_TRANSITION_DURATION
   OP.applyResolvedPose(obj, resolvedPose, duration, 0, { useSmoothSetters = not instant })
+end
+
+--- @param color string
+--- @return boolean
+function DD.isOpen(color)
+  return type(color) == "string" and drawerOpenByColor[color] == true
 end
 
 --- Move drawer to the "off" pose when staged dice are destroyed (cancel / take half /

@@ -59,6 +59,9 @@ local function positionKey(kind, color)
     if kind == "SELECTED" then
         return "COMPULSION_CARD_SELECTED_" .. upper
     end
+    if kind == "SELECTED_LIVEROLL" then
+        return "COMPULSION_CARD_SELECTED_LIVEROLL_" .. upper
+    end
     return "COMPULSION_CARD_" .. tostring(kind) .. "_" .. upper
 end
 
@@ -603,12 +606,44 @@ function Compulsions.hasActiveSelectionForColor(color)
     return findSelectedCompulsionForColor(color) ~= nil
 end
 
---- After seat layout moves compulsion anchors, snap active selected cards to SELECTED poses.
+--- TOR-452: selected Compulsion → live-roll pose while PC dice tray is open.
+--- @param color string
+function Compulsions.moveSelectedToLiveRoll(color)
+    if type(color) ~= "string" then
+        return
+    end
+    local card = findSelectedCompulsionForColor(color)
+    if card == nil then
+        return
+    end
+    local token = bumpOpToken(color)
+    applyPoseFromKey(card, positionKey("SELECTED_LIVEROLL", color), color, token, true)
+end
+
+--- TOR-452: restore selected Compulsion to idle SELECTED pose when tray closes.
+--- @param color string
+function Compulsions.moveSelectedFromLiveRoll(color)
+    if type(color) ~= "string" then
+        return
+    end
+    local card = findSelectedCompulsionForColor(color)
+    if card == nil then
+        return
+    end
+    local token = bumpOpToken(color)
+    applyPoseFromKey(card, positionKey("SELECTED", color), color, token, true)
+end
+
+--- After seat layout moves compulsion anchors, snap active selected cards to SELECTED or LIVEROLL poses.
 function Compulsions.reconcileSelectedCardsToAnchors()
+    local DiceDrawer = require("lib.dice_drawer")
     for _, color in ipairs(C.PlayerColors) do
         local card = findSelectedCompulsionForColor(color)
         if card ~= nil then
-            snapPoseFromKey(card, positionKey("SELECTED", color))
+            local kind = (DiceDrawer.isOpen ~= nil and DiceDrawer.isOpen(color) == true)
+                and "SELECTED_LIVEROLL"
+                or "SELECTED"
+            snapPoseFromKey(card, positionKey(kind, color))
         end
     end
 end
