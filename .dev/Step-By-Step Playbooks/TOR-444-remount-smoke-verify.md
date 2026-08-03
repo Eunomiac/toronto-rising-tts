@@ -51,13 +51,13 @@ Test constants (shared via `_G.TOR444`):
 
 **Step 1.** **Save & Play**.
 
-**Step 1b (optional).** If a prior run left the shared blindfold (or refs) up — Execute Lua Code — **Code Block Cleanup**, then continue.
+**Step 1b (optional).** If a prior run left the shared blindfold (or refs) up — Execute Lua Code — **Code Block Cleanup**, then continue from **Step 2** (0 → A → B). Cleanup resets Court to page 1 and closes refs — **do not** jump to Block B after Cleanup alone (B expects page 2 from A’s navigate click).
 
 **Step 2.** Execute Lua Code — **Code Block 0**. Watch for `▶▶▶ HUMAN ▶▶▶` — confirm the Rolls reference popup looks correct (shared image, not a blank/broken panel).
 
 **Step 3.** Execute Lua Code — **Code Block A**. When prompted: **confirm Court page 1 looks correct**, then **click the Court navigate-right control once** (to page 2).
 
-**Step 4.** Execute Lua Code — **Code Block B**. When prompted: **confirm the shared transition blindfold FadeIn** (full-screen blindfold art). The sequence pauses briefly, then hides the blindfold and finishes location/sidebar asserts.
+**Step 4.** Execute Lua Code — **Code Block B** (only after A + navigate). When prompted: **confirm the shared transition blindfold FadeIn** (full-screen blindfold art). The sequence pauses briefly, then hides the blindfold and finishes location/sidebar asserts.
 
 **Step 5.** When the console prints **Verification complete**, you are done.
 
@@ -65,7 +65,7 @@ Test constants (shared via `_G.TOR444`):
 
 ## Code Block Cleanup — restore starting UI (safe to re-run anytime)
 
-Use after an interrupted Block B (stuck shared blindfold), or before re-pasting Block 0/A/B. Does not require a prior successful Block 0; uses `_G.TOR444` when present, else Red defaults.
+Use after an interrupted Block B (stuck shared blindfold), or before re-pasting Block 0/A/B. Does not require a prior successful Block 0; uses `_G.TOR444` when present, else Red defaults. After Cleanup, resume at **Code Block 0** (or at least **A** if you only need Court→B); Cleanup sets `princesCourtPage = 1`, so Block B’s page-2 assert will fail if you skip A + the navigate click.
 
 ```lua
 -- Execute Lua cannot require(); use globals (S/U/C/Sync) only.
