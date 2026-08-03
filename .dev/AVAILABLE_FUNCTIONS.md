@@ -494,12 +494,12 @@ General-purpose UI helpers (system-agnostic). Prefer **`U.setAttribute` / `U.set
 
 ### Audience visibility (`visibility` attribute — TOR-444)
 
-Distinct from `active`. Empty audience → `None`. `showTo`/`hideFrom` require an existing `visibility` attr (missing = TTS unrestricted; call `setVisibleTo` first).
+Distinct from `active`. Empty audience → `None`. If `visibility` is missing (TTS unrestricted / remount unread), `showTo`/`hideFrom` initialize from empty (`None`) then mutate — do not use on panels that must stay unrestricted.
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
 | `U.setVisibleTo(elemID, colorsOrString)` | Absolute audience replace | Seat reveal / shared panels |
-| `U.showTo(elemID, color)` / `U.hideFrom(elemID, color)` | Add/remove one color in the union | Open/close shared ref for one seat |
+| `U.showTo(elemID, color)` / `U.hideFrom(elemID, color)` | Add/remove one color; heal missing attr to `None` first | Open/close shared ref for one seat |
 | `U.parseVisibilityAudience` / `U.serializeVisibilityAudience` | Parse/format `Red\|Orange` | Lua-side audience sets |
 | `U.getVisibilityAudience(elemID)` | Read live attribute into token list | Debug / reconcile |
 

@@ -2015,8 +2015,9 @@ function U.setVisibleTo(elemID, colorsOrString)
 end
 
 --- Add one color/role to the element's visibility audience.
--- Fails if the element has no `visibility` attribute yet (TTS default = everyone). Call
--- `U.setVisibleTo` first to establish an explicit audience (or `None`).
+-- If `visibility` is missing (TTS unrestricted / remount unread), initializes from empty (`None`)
+-- then adds the color — same as calling `U.setVisibleTo` first for audience-gated panels (TOR-444).
+-- Do not use on elements that must stay unrestricted for all clients.
 -- @param elemID string
 -- @param color string e.g. "Red" or "Host"
 -- @return boolean true if attribute was written
@@ -2029,15 +2030,7 @@ function U.showTo(elemID, color)
     error("U.showTo: color must be a non-empty visibility token", 2)
   end
   local raw = UI.getAttribute(elemID, "visibility")
-  if raw == nil then
-    error(
-      "U.showTo: '"
-        .. elemID
-        .. "' has no visibility attribute (unrestricted). Call U.setVisibleTo first.",
-      2
-    )
-  end
-  local tokens = U.parseVisibilityAudience(raw)
+  local tokens = (raw == nil) and {} or U.parseVisibilityAudience(raw)
   for i = 1, #tokens do
     if tokens[i] == tok then
       return false
@@ -2048,7 +2041,7 @@ function U.showTo(elemID, color)
 end
 
 --- Remove one color/role from the element's visibility audience (empty → None).
--- Fails if the element has no `visibility` attribute yet (same as U.showTo).
+-- If `visibility` is missing, writes explicit `None` (heal remount / unread XML) and returns.
 -- @param elemID string
 -- @param color string
 -- @return boolean true if attribute was written
@@ -2062,12 +2055,8 @@ function U.hideFrom(elemID, color)
   end
   local raw = UI.getAttribute(elemID, "visibility")
   if raw == nil then
-    error(
-      "U.hideFrom: '"
-        .. elemID
-        .. "' has no visibility attribute (unrestricted). Call U.setVisibleTo first.",
-      2
-    )
+    -- Explicit None: convert unrestricted/missing into a gated audience baseline.
+    return U.setVisibleTo(elemID, {})
   end
   local tokens = U.parseVisibilityAudience(raw)
   local nextTokens = {}

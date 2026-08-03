@@ -77,7 +77,7 @@ Do not conflate them. Hunger TOR-340 sticky-`active` under empty-seat `visibilit
 ### Audience API
 
 - `U.setVisibleTo(elemId, colorsOrString)` — absolute audience; empty → `None`
-- `U.showTo(elemId, color)` / `U.hideFrom(elemId, color)` — add/remove one color (errors if element has no `visibility` yet — unrestricted TTS default must be converted via `setVisibleTo` first)
+- `U.showTo(elemId, color)` / `U.hideFrom(elemId, color)` — add/remove one color; if `visibility` is missing (remount unread / TTS unrestricted), heal to `None` then mutate (do not use on truly unrestricted panels)
 - Change-guard: skip write if serialized union unchanged
 - Shared panels: keep Lua-side audience sets; write full unions (don’t rely only on live `getAttribute`)
 
