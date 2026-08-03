@@ -620,5 +620,8 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-08-03 | DONE | TOR-444 | Author confirmed Global XmlUI remount weight dramatically reduced |
 | 2026-08-03 | DONE | TOR-436 | Author confirmed blindfold parent with new animation strategy |
 | 2026-08-03 | FOCUS | TOR-453, TOR-452, TOR-439 | Re-stack after gate closes; implementing TOR-453/452 |
+| 2026-08-03 | SHIP | TOR-453 | Scene Time present day / blank when no selection; commit `f2c2101` |
+| 2026-08-03 | SHIP | TOR-452 | Compulsion LIVEROLL + companion with tray; commit `6e56aa9` |
+| 2026-08-03 | FOCUS | TOR-439 | After TOR-453/452 Done — propose join spike verify next |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
