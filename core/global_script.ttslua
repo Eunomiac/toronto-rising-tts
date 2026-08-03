@@ -3313,7 +3313,10 @@ end
 -- @param forceOpen boolean|nil If true, always open (skip same-tab collapse). Use after remount / playbook reopen.
 function HUD_selectStorytellerPanel(player, button, id, forceOpen)
     local panelKey = string.gsub(id, "^toggle_", "")
-    StorytellerPanelUI.selectStorytellerPanel(panelKey, forceOpen == true)
+    -- TOR-449: false when Scenes leave/close is blocked (THERE); skip target-panel refreshes.
+    if StorytellerPanelUI.selectStorytellerPanel(panelKey, forceOpen == true) == false then
+        return
+    end
     if panelKey == "phases" then
         Wait.frames(function()
             syncStorytellerPhaseButtons()
