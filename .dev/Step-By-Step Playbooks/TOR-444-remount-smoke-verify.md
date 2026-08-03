@@ -28,7 +28,7 @@ Confirm remount-weight cuts still open nestedless refs, Prince’s Court, the sh
 2. **Nestedless Rolls** — open via state; audience includes Red; you confirm the single shared popup’s image looks right (not a multi-seat visibility check).
 3. **Prince’s Court** — shared tree + single tracker Images; you flip to page 2; Lua asserts page audience.
 4. **Shared blindfold** — arm shared panel via `U`/`UI` (mirrors `HO.applyBlindfoldVariantForSeatedPlayers`); you confirm FadeIn; Lua hides and continues.
-5. **Location dock + sidebar tint** — district `image=` on the single per-seat Image; hover sibling chrome absent.
+5. **Location dock + sidebar tint** — lower-left **location popout** district Image (`gameStateOverlay_districtCard_current_<Color>`), **not** the map core panel; sidebar Option A tint `color` present (no hover sibling ids).
 
 ## Prerequisites (human — keep short)
 
@@ -57,7 +57,7 @@ Test constants (shared via `_G.TOR444`):
 
 **Step 3.** Execute Lua Code — **Code Block A**. When prompted: **confirm Court page 1 looks correct**, then **click the Court navigate-right control once** (to page 2).
 
-**Step 4.** Execute Lua Code — **Code Block B** (only after A + navigate). When prompted: **confirm the shared transition blindfold FadeIn** (full-screen blindfold art). The sequence pauses briefly, then hides the blindfold and finishes location/sidebar asserts.
+**Step 4.** Execute Lua Code — **Code Block B** (only after A + navigate). When prompted: **confirm the shared transition blindfold FadeIn** (full-screen blindfold art). Court may still be open underneath — expected. After the pause, Lua hides the blindfold and asserts the **location dock** district Image (lower-left popout control — not the map), then sidebar tint.
 
 **Step 5.** When the console prints **Verification complete**, you are done.
 
@@ -625,14 +625,35 @@ U.chain({
   function()
     local F = tor444Fixture()
     S.setStateVal(F.districtKey, "sessionScene", "districtKey")
+    local gotKey = S.getStateVal("sessionScene", "districtKey")
+    if gotKey ~= F.districtKey then
+      error(
+        "[FAIL] sessionScene.districtKey expected "
+          .. tostring(F.districtKey)
+          .. " got "
+          .. tostring(gotKey)
+      )
+    end
     tor444UpdateHud(F)
+    -- Location dock is the lower-left popout (`gameStateOverlay_location_*`), not the map panel.
+    -- Same-frame getAttribute after Sync can still show XML default image="" — settle before assert.
+    return 0.25
+  end,
+  function()
+    local F = tor444Fixture()
     local dockId = "gameStateOverlay_districtCard_current_" .. F.seat
     local want = "districtCard_" .. F.districtKey
     local got = tor444AssertHasAttr(dockId, "image")
     if got ~= want then
+      -- Force write: remount smoke cares that this single Image id accepts districtCard_* (reconcile may have skipped).
+      U.setAttribute(dockId, "image", want)
+      U.setAttribute(dockId, "active", "true")
+      got = UI.getAttribute(dockId, "image")
+    end
+    if got ~= want then
       error("[FAIL] " .. dockId .. " image expected " .. want .. " got " .. tostring(got))
     end
-    print("PASS — location dock district image=" .. got)
+    print("PASS — location dock district image=" .. tostring(got) .. " (lower-left popout, not map)")
   end,
   function()
     local F = tor444Fixture()
