@@ -67,12 +67,19 @@
     raycastTarget="false"
   />
 
-  <!-- Stacked map overlays: Lua uses setMapStackImageVisibility (inactive when off; on = active + #FFFFFF). Toggle/row chrome uses tint-only. -->
+  <!-- Stacked map overlays: Lua uses setMapStackImageVisibility (inactive when off; on = active + #FFFFFF). -->
   <Image class="hud_map_image_overlay"
     raycastTarget="false"
     active="true"
     color="clear"
     rectAlignment="MiddleCenter"
+  />
+
+  <!-- Shared map sidebar hover/active columns (Option B): gated by visibility, must stay opaque.
+       Do not use hover_button_hover/active here — those Defaults use color="clear" for tint-hide (pan/recenter). -->
+  <Image class="hover_button_map_shared_layer"
+    raycastTarget="false"
+    color="#FFFFFF"
   />
 
   <Image class="hover_button_base_overlay"

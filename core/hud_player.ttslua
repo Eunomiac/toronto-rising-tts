@@ -962,7 +962,8 @@ end
 -- Off = `active="false"` so TTS skips the subtree (critical for perf; tint-only “off” kept every
 -- layer active and composited transparent art → massive overdraw / input lag).
 -- On = `active="true"` + `color="#FFFFFF"` (XML defaults use `color="clear"` when applicable).
--- Toggle chrome (hover/active columns) stays on `setTintVisibility` (`color` only); do not mix patterns on the same id.
+-- Per-seat pan/recenter chrome stays on `setTintVisibility` (`color` only).
+-- Shared map overlay/district toggle chrome (Option B) uses `U.setVisibleTo` + opaque `hover_button_map_shared_layer` (not tint-hide).
 -- @param elementID string
 -- @param isVisible boolean
 local function setMapStackImageVisibility(elementID, isVisible)

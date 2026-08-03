@@ -105,6 +105,8 @@ Pan/`offsetXY` cannot differ per viewer on one Image → keep per-seat: map base
 
 Shared map sidebars (B): root audience = players with map open; each `_active` / `_hover` sibling’s `visibility` = the subset of those players in that chrome state. Overlay on/off and district hover stay in per-player `hud.map.*`; layer visibility encodes that for concurrent viewers.
 
+**Chrome opacity:** shared `_hover` / `_active` Images must use opaque `hover_button_map_shared_layer` (`color="#FFFFFF"`). Do **not** reuse Defaults `hover_button_hover` / `hover_button_active` (`color="clear"`) — those are for per-seat pan/recenter tint-hide. Visibility alone cannot show a clear-tinted Image.
+
 ## Court budget (×5 seats)
 
 | Slice | Current | After 1 Image / tracker square |
