@@ -11,7 +11,7 @@
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_core_map_@@color@@"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_CorePanel_Map_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -20,7 +20,7 @@
       />
       <Image
         id="playerHud_RSidebarBtn_ref_princesCourt_@@color@@"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_PrincesCourt_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -29,7 +29,7 @@
       />
       <Image
         id="playerHud_RSidebarBtn_ref_coteries_@@color@@"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Coteries_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -41,7 +41,7 @@
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_chronicleTenets_@@color@@"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_ChronicleTenets_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -50,7 +50,7 @@
       />
       <Image
         id="playerHud_RSidebarBtn_ref_rolls_@@color@@"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Rolls_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -59,7 +59,7 @@
       />
       <Image
         id="playerHud_RSidebarBtn_ref_physicalCombat_@@color@@"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_PhysicalCombat_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -68,7 +68,7 @@
       />
       <Image
         id="playerHud_RSidebarBtn_ref_socialCombat_@@color@@"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_SocialCombat_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -77,7 +77,7 @@
       />
       <Image
         id="playerHud_RSidebarBtn_ref_threats_@@color@@"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Threats_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -86,7 +86,7 @@
       />
       <Image
         id="playerHud_RSidebarBtn_ref_frenzy_@@color@@"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Frenzy_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -95,7 +95,7 @@
       />
       <Image
         id="playerHud_RSidebarBtn_ref_recovery_@@color@@"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Recovery_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -104,7 +104,7 @@
       />
       <Image
         id="playerHud_RSidebarBtn_ref_resonance_@@color@@"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Resonance_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -116,7 +116,7 @@
       <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_experience_@@color@@"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Experience_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -125,7 +125,7 @@
       />
       <Image
         id="playerHud_RSidebarBtn_ref_advantages_@@color@@"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Advantages_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -134,7 +134,7 @@
       />
       <Image
         id="playerHud_RSidebarBtn_ref_projects_@@color@@"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Projects_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
@@ -143,7 +143,7 @@
       />
       <Image
         id="playerHud_RSidebarBtn_ref_memoriam_@@color@@"
-        class="hover_button hover_button_base"
+        class="hover_button hover_button_base RSidebar_btn"
         image="toggle_Memoriam_inactive"
         onMouseDown="HUD_playerRightSidebar_mouseDown"
         onMouseUp="HUD_playerRightSidebar_mouseUp"
