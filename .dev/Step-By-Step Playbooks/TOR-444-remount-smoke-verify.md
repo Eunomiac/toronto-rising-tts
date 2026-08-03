@@ -72,6 +72,9 @@ _G.TOR444 = {
   blindfoldVariant = 3,
 }
 
+-- executeScript does not see Global locals (HUDP/HO); require like production call sites.
+local HUDP = require("core.hud_player")
+
 local function tor444Fixture()
   local F = _G.TOR444
   if type(F) ~= "table" then
@@ -239,6 +242,8 @@ U.chain({
 ## Code Block A — Court open + page flip gate
 
 ```lua
+local HUDP = require("core.hud_player")
+
 local function tor444Fixture()
   local F = _G.TOR444
   if type(F) ~= "table" then
@@ -348,6 +353,9 @@ U.chain({
 ## Code Block B — Page 2 assert, blindfold, location dock, done
 
 ```lua
+local HUDP = require("core.hud_player")
+local HO = require("core.hud_overlays")
+
 local function tor444Fixture()
   local F = _G.TOR444
   if type(F) ~= "table" then
