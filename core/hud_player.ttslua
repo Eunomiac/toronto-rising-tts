@@ -993,7 +993,7 @@ local function reconcileLocationDockCardsFromState(seatColor)
     end
     local sessionD = trimHudKey(S.getStateVal("sessionScene", "districtKey"))
     local dockDistrictId = "gameStateOverlay_districtCard_current_" .. seatColor
-    if sessionD == "" or MAP_DISTRICT_KEYS[sessionD] ~= true then
+    if sessionD == "" or MAP_DISTRICT_KEY_SET[sessionD] ~= true then
         applySiteCardImageIfChanged(dockDistrictId, nil)
         applyLocationDockCachedBool(dockDistrictId, false, setMapStackImageVisibility)
     else
