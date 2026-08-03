@@ -744,8 +744,8 @@ function StorytellerScenesPanel.pushClockDisplayOnly(dt)
             textColor = "#FFFFFF",
         })
     end
-    setInputFieldText("scenes_clock_day", tostring(tonumber(dt.day) or 1))
-    setInputFieldText("scenes_clock_year", tostring(tonumber(dt.year) or 2026))
+    setInputFieldText("scenes_clock_day", tostring(math.floor(tonumber(dt.day) or 1)))
+    setInputFieldText("scenes_clock_year", tostring(math.floor(tonumber(dt.year) or 2026)))
     setInputFieldText("scenes_clock_time12", formatTime12h(dt.hour, dt.minute))
     refreshLerpSunLabels(mo, tonumber(dt.day))
 end
@@ -1410,8 +1410,8 @@ function StorytellerScenesPanel.refresh()
                         textColor = "#FFFFFF",
                     })
                 end
-                setInputFieldText("scenes_clock_day", tostring(tonumber(ck.day) or 1))
-                setInputFieldText("scenes_clock_year", tostring(tonumber(ck.year) or 2026))
+                setInputFieldText("scenes_clock_day", tostring(math.floor(tonumber(ck.day) or 1)))
+                setInputFieldText("scenes_clock_year", tostring(math.floor(tonumber(ck.year) or 2026)))
                 setInputFieldText("scenes_clock_time12", formatTime12h(ck.hour, ck.minute))
                 refreshClockInputSourceColors(ck)
                 local spd = tonumber(ck.realTimeSpeed)
