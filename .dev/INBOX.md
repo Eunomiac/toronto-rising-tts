@@ -27,12 +27,10 @@ Verification:
   1. Whenever the Scenes panel is closed for any reason, UNLESS the Stage Control board is in preview/"THERE" mode. If the Stage Control Board is in preview/"THERE" mode, the Scenes panel should not be allowed to close -- a broadcast to Black/Host should instruct me to first resolve the Stage Control Board before closing the Scenes panel.
   2. Whenever the game is loaded. This should also automatically restore the Stage Control Board to "HERE" mode, if it was in preview mode when the game was last saved.
   3. Whenever a scene is transitioned to or ended (i.e. on scene change). As with #2, this should also restore the Stage Control Board to "HERE" mode.
-- [Player Cameras] During any transition involving a blindfold, the player camera mode should be set to First Person after the camera angle is set. (Note: Camera mode should not be changed at any other time, as it causes jarring visual motion that's only acceptable when it's hidden beneath a blindfold.)
+- [Player Cameras] Remove the switch to FirstPerson camera mode that currently occurs during a scene transition.
 - [Tarot Deck] When the Tarot deck is activated and moved into position, it should be randomized/shuffled automatically.
 
 ## Active
-
-- [Scene Transition Blindfold] The District and Site Cards of the destination location should be displayed over top of the blindfold image during a scene transition. These should be set before the blindfold comes down, and should use the same image references as the location popup player display uses in the Global HUD.
 
 ## External Work (Set STATUS to "External To Do")
 

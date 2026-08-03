@@ -36,6 +36,9 @@
         onMouseEnter="HUD_playerRightSidebar_hoverOn"
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
+      <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
+      <Text class="spacer_20" preferredHeight="30"/>
+      <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_chronicleTenets_@@color@@"
         class="hover_button hover_button_base"
@@ -45,9 +48,6 @@
         onMouseEnter="HUD_playerRightSidebar_hoverOn"
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
-      <Text class="spacer_20" preferredHeight="30"/>
-      <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_rolls_@@color@@"
         class="hover_button hover_button_base"

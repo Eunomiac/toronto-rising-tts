@@ -36,6 +36,9 @@
         onMouseEnter="HUD_playerRightSidebar_hoverOn"
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
+      <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
+      <Text class="spacer_20" preferredHeight="30"/>
+      <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_chronicleTenets_Brown"
         class="hover_button hover_button_base"
@@ -45,9 +48,6 @@
         onMouseEnter="HUD_playerRightSidebar_hoverOn"
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
-      <Text class="spacer_20" preferredHeight="30"/>
-      <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_rolls_Brown"
         class="hover_button hover_button_base"
@@ -190,6 +190,9 @@
         onMouseEnter="HUD_playerRightSidebar_hoverOn"
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
+      <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
+      <Text class="spacer_20" preferredHeight="30"/>
+      <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_chronicleTenets_Orange"
         class="hover_button hover_button_base"
@@ -199,9 +202,6 @@
         onMouseEnter="HUD_playerRightSidebar_hoverOn"
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
-      <Text class="spacer_20" preferredHeight="30"/>
-      <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_rolls_Orange"
         class="hover_button hover_button_base"
@@ -344,6 +344,9 @@
         onMouseEnter="HUD_playerRightSidebar_hoverOn"
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
+      <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
+      <Text class="spacer_20" preferredHeight="30"/>
+      <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_chronicleTenets_Red"
         class="hover_button hover_button_base"
@@ -353,9 +356,6 @@
         onMouseEnter="HUD_playerRightSidebar_hoverOn"
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
-      <Text class="spacer_20" preferredHeight="30"/>
-      <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_rolls_Red"
         class="hover_button hover_button_base"
@@ -498,6 +498,9 @@
         onMouseEnter="HUD_playerRightSidebar_hoverOn"
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
+      <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
+      <Text class="spacer_20" preferredHeight="30"/>
+      <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_chronicleTenets_Pink"
         class="hover_button hover_button_base"
@@ -507,9 +510,6 @@
         onMouseEnter="HUD_playerRightSidebar_hoverOn"
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
-      <Text class="spacer_20" preferredHeight="30"/>
-      <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_rolls_Pink"
         class="hover_button hover_button_base"
@@ -652,6 +652,9 @@
         onMouseEnter="HUD_playerRightSidebar_hoverOn"
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
+      <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
+      <Text class="spacer_20" preferredHeight="30"/>
+      <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_chronicleTenets_Purple"
         class="hover_button hover_button_base"
@@ -661,9 +664,6 @@
         onMouseEnter="HUD_playerRightSidebar_hoverOn"
         onMouseExit="HUD_playerRightSidebar_hoverOff"
       />
-      <Image class="hover_button_panel_border" image="border-gold-right-bottom" />
-      <Text class="spacer_20" preferredHeight="30"/>
-      <Image class="hover_button_panel_border" image="border-gold-right-top" />
       <Image
         id="playerHud_RSidebarBtn_ref_rolls_Purple"
         class="hover_button hover_button_base"
