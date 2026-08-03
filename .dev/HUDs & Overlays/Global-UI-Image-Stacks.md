@@ -132,7 +132,7 @@ Further: share Court pages (÷5); collapse pip rows to one Image per meter.
 
 | Family | Approach | Est. note |
 | --- | --- | --- |
-| Map overlay + district sidebars | **B** (share + keep stacks) | ~810 → ~162 Images; one DOM tree |
+| Map overlay + district sidebars | **B** (share + keep stacks) | **done** (~810→~162) |
 | Map pan chrome | B if shared with sidebars; else A | ~15 |
 | Right-sidebar HUD chrome | **A** (done Phase 3) | ~150 (triple → one ×5) |
 | Coterie grid hover | A unless grid is shared | ~80 |
@@ -163,7 +163,7 @@ Floor ~800+ while map **pan surface** / rolls / camera stay seat-local (map **si
 3. Sidebar chrome tint pilot (Option A, seat-local HUD) — **done**
 4. Shared nestedless ref panels — **done**
 5. Shared Court + tracker collapse — **done** (pip meters: branch `tor-444-court-pip-meters`)
-6. Shared transition blindfold — **done**; location dock district stack→one Image per seat — **done**; map district cards/highlights Strategy 1 — **done**; remaining: map sidebars Option B; hunger strategy 1; optional location full share
+6. Shared transition blindfold — **done**; location dock district stack→one Image per seat — **done**; map district cards/highlights Strategy 1 — **done**; map sidebars Option B — **done**; remaining: hunger strategy 1; optional location full share
 7. Recount + Save & Play + join Reload UI smoke
 
 ### Remount ballpark (Image tags in embedded Global)
@@ -174,4 +174,5 @@ Floor ~800+ while map **pan surface** / rolls / camera stay seat-local (map **si
 | After nestedless share | ~7,216 | |
 | After Court share + trackers | ~3,297 | ~1.14 MB |
 | After shared blindfold + location collapse | ~2,958 | ~1.10 MB |
-| After map district Strategy 1 | **~2,589** | **~1.06 MB** |
+| After map district Strategy 1 | ~2,589 | ~1.06 MB |
+| After map sidebars Option B | **~1,833** | **~0.93 MB** |

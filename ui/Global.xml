@@ -27,6 +27,8 @@
 
   <!-- Map panels (generated per player color) -->
   <Include src="player/panel_map_core.xml" />
+  <!-- Shared map overlay + district toggle sidebars (TOR-444 Option B) -->
+  <Include src="shared/panel_map_sidebars.xml" />
 
   <!-- Right sidebar buttons (generated per player color) -->
   <Include src="player/panel_right_sidebar_buttons.xml" />

@@ -93,6 +93,14 @@ local lastPrincesCourtTrackerFpByColumn = {}
 local princesCourtRootAudience = {}
 local princesCourtPageAudience = { {}, {}, {} }
 
+--- Shared map sidebars (TOR-444 Option B): root = seats with map open;
+--- hover/active layer audiences are per-key subsets (Lua-owned unions).
+local mapSidebarsRootAudience = {}
+local mapOverlayToggleHoverAudience = {}
+local mapOverlayToggleActiveAudience = {}
+local mapDistrictToggleHoverAudience = {}
+local mapDistrictToggleActiveAudience = {}
+
 local MAP_OVERLAY_KEYS = {
     "districtsAll",
     "localRoads",
@@ -1111,57 +1119,52 @@ local function parseRightSidebarId(id, color)
     return nil
 end
 
---- Parses a map overlay toggle button base id to extract `overlayKey`.
--- Base id format:
--- - `playerHud_mapOverlayToggle_<overlayKey>_<Color>`
+--- Parses a map overlay toggle button id to extract `overlayKey` (shared tree, TOR-444).
+-- Ids: `playerHud_mapOverlayToggle_<overlayKey>` / `_hover` / `_active`.
 -- @param id string
--- @param seatColor string
 -- @return string|nil
-local function parseMapOverlayToggleKeyFromId(id, seatColor)
-    if type(id) ~= "string" or type(seatColor) ~= "string" then
+local function parseMapOverlayToggleKeyFromId(id)
+    if type(id) ~= "string" then
         return nil
     end
     local prefix = "playerHud_mapOverlayToggle_"
-    local suffix = "_" .. seatColor
     if id:sub(1, #prefix) ~= prefix then
         return nil
     end
-    if id:sub(-#suffix) ~= suffix then
+    local rest = id:sub(#prefix + 1)
+    if rest:sub(-6) == "_hover" then
+        rest = rest:sub(1, #rest - 6)
+    elseif rest:sub(-7) == "_active" then
+        rest = rest:sub(1, #rest - 7)
+    end
+    if rest == "" or MAP_OVERLAY_KEY_SET[rest] ~= true then
         return nil
     end
-    local overlayKey = id:sub(#prefix + 1, #id - #suffix)
-    if overlayKey == "" then
-        return nil
-    end
-    if MAP_OVERLAY_KEY_SET[overlayKey] ~= true then
-        return nil
-    end
-    return overlayKey
+    return rest
 end
 
---- Parses a map district toggle button base id to extract `districtKey`.
--- Base id format:
--- - `playerHud_mapDistrictToggle_<districtKey>_<Color>`
+--- Parses a map district toggle button id to extract `districtKey` (shared tree, TOR-444).
+-- Ids: `playerHud_mapDistrictToggle_<districtKey>` / `_hover` / `_active`.
 -- @param id string
--- @param seatColor string
 -- @return string|nil
-local function parseMapDistrictToggleKeyFromId(id, seatColor)
-    if type(id) ~= "string" or type(seatColor) ~= "string" then
+local function parseMapDistrictToggleKeyFromId(id)
+    if type(id) ~= "string" then
         return nil
     end
     local prefix = "playerHud_mapDistrictToggle_"
-    local suffix = "_" .. seatColor
     if id:sub(1, #prefix) ~= prefix then
         return nil
     end
-    if id:sub(-#suffix) ~= suffix then
+    local rest = id:sub(#prefix + 1)
+    if rest:sub(-6) == "_hover" then
+        rest = rest:sub(1, #rest - 6)
+    elseif rest:sub(-7) == "_active" then
+        rest = rest:sub(1, #rest - 7)
+    end
+    if rest == "" or MAP_DISTRICT_KEY_SET[rest] ~= true then
         return nil
     end
-    local districtKey = id:sub(#prefix + 1, #id - #suffix)
-    if districtKey == "" then
-        return nil
-    end
-    return districtKey
+    return rest
 end
 
 --- Parses the HUD owner seat color from a Prince's Court nav button id suffix.
@@ -1311,12 +1314,29 @@ local function applyMapPanelHud(playerID, seatColor, hud)
         local overlayImageId = "playerHud_mapOverlay_" .. overlayKey .. "_" .. seatColor
         applyCachedMapPanelBool(playerID, overlayImageId, showOverlayImage, setMapStackImageVisibility)
 
+        local hoverAud = mapOverlayToggleHoverAudience[overlayKey]
+        if type(hoverAud) ~= "table" then
+            hoverAud = {}
+            mapOverlayToggleHoverAudience[overlayKey] = hoverAud
+        end
+        local activeAud = mapOverlayToggleActiveAudience[overlayKey]
+        if type(activeAud) ~= "table" then
+            activeAud = {}
+            mapOverlayToggleActiveAudience[overlayKey] = activeAud
+        end
         local showHoverLayer = showMap and (hoverOverlayKey == overlayKey) and (not overlayOn)
-        local overlayHoverId = "playerHud_mapOverlayToggle_" .. overlayKey .. "_" .. seatColor .. "_hover"
-        applyCachedMapPanelBool(playerID, overlayHoverId, showHoverLayer, setTintVisibility)
-
-        local overlayActiveId = "playerHud_mapOverlayToggle_" .. overlayKey .. "_" .. seatColor .. "_active"
-        applyCachedMapPanelBool(playerID, overlayActiveId, showMap and overlayOn, setTintVisibility)
+        if showHoverLayer then
+            hoverAud[seatColor] = true
+        else
+            hoverAud[seatColor] = nil
+        end
+        if showMap and overlayOn then
+            activeAud[seatColor] = true
+        else
+            activeAud[seatColor] = nil
+        end
+        U.setVisibleTo("playerHud_mapOverlayToggle_" .. overlayKey .. "_hover", audienceSetToTokens(hoverAud))
+        U.setVisibleTo("playerHud_mapOverlayToggle_" .. overlayKey .. "_active", audienceSetToTokens(activeAud))
     end
 
     -- TOR-444 Strategy 1: one district card + one highlight Image per seat (image= swap).
@@ -1338,14 +1358,42 @@ local function applyMapPanelHud(playerID, seatColor, hud)
     applyCachedMapPanelBool(playerID, districtHighlightId, showDistrictHighlight, setMapStackImageVisibility)
 
     for districtKey, _ in pairs(MAP_DISTRICT_KEYS) do
+        local hoverAud = mapDistrictToggleHoverAudience[districtKey]
+        if type(hoverAud) ~= "table" then
+            hoverAud = {}
+            mapDistrictToggleHoverAudience[districtKey] = hoverAud
+        end
+        local activeAud = mapDistrictToggleActiveAudience[districtKey]
+        if type(activeAud) ~= "table" then
+            activeAud = {}
+            mapDistrictToggleActiveAudience[districtKey] = activeAud
+        end
         local showDistrictActiveLayer = showMap and (activeDistrictKey == districtKey)
         local showDistrictHoverLayer = showMap and (hoverDistrictKey == districtKey) and (not showDistrictActiveLayer)
+        if showDistrictHoverLayer then
+            hoverAud[seatColor] = true
+        else
+            hoverAud[seatColor] = nil
+        end
+        if showDistrictActiveLayer then
+            activeAud[seatColor] = true
+        else
+            activeAud[seatColor] = nil
+        end
+        U.setVisibleTo("playerHud_mapDistrictToggle_" .. districtKey .. "_hover", audienceSetToTokens(hoverAud))
+        U.setVisibleTo("playerHud_mapDistrictToggle_" .. districtKey .. "_active", audienceSetToTokens(activeAud))
+    end
 
-        local districtActiveId = "playerHud_mapDistrictToggle_" .. districtKey .. "_" .. seatColor .. "_active"
-        applyCachedMapPanelBool(playerID, districtActiveId, showDistrictActiveLayer, setTintVisibility)
-
-        local districtHoverId = "playerHud_mapDistrictToggle_" .. districtKey .. "_" .. seatColor .. "_hover"
-        applyCachedMapPanelBool(playerID, districtHoverId, showDistrictHoverLayer, setTintVisibility)
+    if showMap == true then
+        mapSidebarsRootAudience[seatColor] = true
+    else
+        mapSidebarsRootAudience[seatColor] = nil
+    end
+    U.setVisibleTo("playerHud_mapSidebarsShared", audienceSetToTokens(mapSidebarsRootAudience))
+    if audienceSetNonEmpty(mapSidebarsRootAudience) then
+        setActive("playerHud_mapSidebarsShared", true)
+    else
+        setActive("playerHud_mapSidebarsShared", false)
     end
 
     local pinOffsetCache = lastMapPinOffsetByPlayerID[playerID]
@@ -2005,7 +2053,7 @@ function HUD_playerMap_overlayToggle_hoverOn(player, value, id)
         return
     end
 
-    local overlayKey = parseMapOverlayToggleKeyFromId(id, seatColor)
+    local overlayKey = parseMapOverlayToggleKeyFromId(id)
     if type(overlayKey) ~= "string" then
         return
     end
@@ -2021,7 +2069,7 @@ function HUD_playerMap_overlayToggle_hoverOff(player, value, id)
         return
     end
 
-    local overlayKey = parseMapOverlayToggleKeyFromId(id, seatColor)
+    local overlayKey = parseMapOverlayToggleKeyFromId(id)
     if type(overlayKey) ~= "string" then
         return
     end
@@ -2039,7 +2087,7 @@ function HUD_playerMap_overlayToggle_mouseDown(player, value, id)
         return
     end
 
-    local overlayKey = parseMapOverlayToggleKeyFromId(id, seatColor)
+    local overlayKey = parseMapOverlayToggleKeyFromId(id)
     if type(overlayKey) ~= "string" then
         return
     end
@@ -2068,7 +2116,7 @@ function HUD_playerMap_districtToggle_hoverOn(player, value, id)
         return
     end
 
-    local districtKey = parseMapDistrictToggleKeyFromId(id, seatColor)
+    local districtKey = parseMapDistrictToggleKeyFromId(id)
     if type(districtKey) ~= "string" then
         return
     end
@@ -2103,7 +2151,7 @@ function HUD_playerMap_districtToggle_hoverOff(player, value, id)
         return
     end
 
-    local districtKey = parseMapDistrictToggleKeyFromId(id, seatColor)
+    local districtKey = parseMapDistrictToggleKeyFromId(id)
     if type(districtKey) ~= "string" then
         return
     end
@@ -2157,7 +2205,7 @@ function HUD_playerMap_districtToggle_mouseDown(player, value, id)
         return
     end
 
-    local districtKey = parseMapDistrictToggleKeyFromId(id, seatColor)
+    local districtKey = parseMapDistrictToggleKeyFromId(id)
     if type(districtKey) ~= "string" then
         return
     end
