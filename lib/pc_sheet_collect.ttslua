@@ -328,56 +328,141 @@ function PSC.collectSheetImageUpdates(stats, resolvedStatChanges, pageNum)
   return updates
 end
 
---- Build Global HUD attribute updates for Prince's Court page-1 tracker columns.
---- CSHEET ids (`box_on_health_1`) gain `_{panelSeatColor}_{hudSeatColor}` (e.g. `_Purple_Brown`).
+--- Build Global HUD attribute updates for Prince's Court page-1 tracker columns (shared tree, TOR-444).
+--- One Image per cell: `box_<kind>_<i>_<panelSeat>` with `image` + `active` (no on/agg/sup siblings).
 --- @param stats table|nil when nil, every box in the column is hidden
 --- @param resolvedStatChanges table|nil merged statChanges from condition_effects
 --- @param panelSeatColor string column seat (Purple, Pink, …)
---- @param hudSeatColor string HUD owner seat
+--- @param hudSeatColor string|nil ignored (call-site compat)
 --- @return table[] list of { id = string, attributes = { active = "true"|"false", image?: string } }
 function PSC.collectPrincesCourtTrackerUpdates(stats, resolvedStatChanges, panelSeatColor, hudSeatColor)
-  -- TOR-444: shared Court tree — tracker ids are box_*_<panelSeat> (hudSeatColor unused).
   local suffix = "_" .. tostring(panelSeatColor)
   local updates = {}
 
   local function push(id, active, imageName)
     local attrs = { active = active and "true" or "false" }
-    if type(imageName) == "string" and imageName ~= "" then
+    if active and type(imageName) == "string" and imageName ~= "" then
       attrs.image = imageName
     end
     updates[#updates + 1] = { id = id, attributes = attrs }
   end
 
+  local function defaultBoxImg(layer)
+    if layer == "aggravated" then
+      return "box_red_x"
+    end
+    if layer == "superficial" then
+      return "box_grey_slash"
+    end
+    if layer == "undamaged" or layer == "filled" then
+      return "box_white"
+    end
+    if layer == "stain" then
+      return "box_black"
+    end
+    if layer == "impaired" then
+      return "box_red"
+    end
+    return "box_white"
+  end
+
   if type(stats) ~= "table" then
-    for _, trackerKey in ipairs({ "health", "willpower" }) do
+    for _, trackerKey in ipairs({ "health", "willpower", "humanity" }) do
       for i = 1, 10 do
-        push("box_agg_" .. trackerKey .. "_" .. i .. suffix, false)
-        push("box_sup_" .. trackerKey .. "_" .. i .. suffix, false)
-        push("box_on_" .. trackerKey .. "_" .. i .. suffix, false)
+        push("box_" .. trackerKey .. "_" .. i .. suffix, false)
       end
     end
-    for i = 1, 10 do
-      push("box_on_humanity_" .. i .. suffix, false)
-      push("box_stain_humanity_" .. i .. suffix, false)
-      push("box_impaired_humanity_" .. i .. suffix, false)
-    end
     for i = 1, 5 do
-      push("box_on_hunger_" .. i .. suffix, false)
+      push("box_hunger_" .. i .. suffix, false)
     end
     return updates
   end
 
-  local base = PSC.collectSheetImageUpdates(stats, resolvedStatChanges, 1)
-  for _, u in ipairs(base) do
-    local id = u.id
-    if type(id) == "string" and id:match("^box_") then
-      updates[#updates + 1] = { id = id .. suffix, attributes = u.attributes }
+  local function fillDamageTracker(which, trackerKey)
+    local tr = stats[which]
+    if type(tr) ~= "table" then
+      for i = 1, 10 do
+        push("box_" .. trackerKey .. "_" .. i .. suffix, false)
+      end
+      return
+    end
+    local maxB = (tonumber(tr.base) or 0) + PSC.effectiveTempForAggregate(stats, resolvedStatChanges, which)
+    local sup = tonumber(tr.superficial) or 0
+    local agg = tonumber(tr.aggravated) or 0
+    local cells = {}
+    local idx = 1
+    for _ = 1, agg do
+      if idx <= maxB then
+        cells[idx] = "aggravated"
+        idx = idx + 1
+      end
+    end
+    for _ = 1, sup do
+      if idx <= maxB then
+        cells[idx] = "superficial"
+        idx = idx + 1
+      end
+    end
+    while idx <= maxB do
+      cells[idx] = "undamaged"
+      idx = idx + 1
+    end
+    for i = 1, 10 do
+      local layer = cells[i]
+      if layer == nil then
+        push("box_" .. trackerKey .. "_" .. i .. suffix, false)
+      else
+        push("box_" .. trackerKey .. "_" .. i .. suffix, true, defaultBoxImg(layer))
+      end
+    end
+  end
+
+  fillDamageTracker("health", "health")
+  fillDamageTracker("willpower", "willpower")
+
+  if type(stats.humanity) == "table" then
+    local hu = stats.humanity
+    local lineLen = (tonumber(hu.base) or 0) + PSC.effectiveTempForAggregate(stats, resolvedStatChanges, "humanity")
+    local stains = tonumber(hu.stains) or 0
+    local slots = {}
+    for i = 1, 10 do
+      slots[i] = "empty"
+    end
+    for i = 1, lineLen do
+      slots[i] = "on"
+    end
+    local sIdx = 10
+    for _ = 1, stains do
+      if sIdx < 1 then
+        break
+      end
+      if slots[sIdx] == "on" then
+        slots[sIdx] = "impaired"
+        break
+      end
+      slots[sIdx] = "stain"
+      sIdx = sIdx - 1
+    end
+    for i = 1, 10 do
+      if slots[i] == "on" then
+        push("box_humanity_" .. i .. suffix, true, defaultBoxImg("filled"))
+      elseif slots[i] == "stain" then
+        push("box_humanity_" .. i .. suffix, true, defaultBoxImg("stain"))
+      elseif slots[i] == "impaired" then
+        push("box_humanity_" .. i .. suffix, true, defaultBoxImg("impaired"))
+      else
+        push("box_humanity_" .. i .. suffix, false)
+      end
+    end
+  else
+    for i = 1, 10 do
+      push("box_humanity_" .. i .. suffix, false)
     end
   end
 
   local hunger = math.max(0, math.min(5, math.floor(tonumber(stats.hunger) or 0)))
   for i = 1, 5 do
-    push("box_on_hunger_" .. i .. suffix, i <= hunger)
+    push("box_hunger_" .. i .. suffix, i <= hunger, "box_white")
   end
 
   return updates

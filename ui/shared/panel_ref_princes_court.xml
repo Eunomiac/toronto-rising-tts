@@ -79,489 +79,189 @@
     <Panel id="playerHud_refPanel_PrincesCourt_page1" class="princesCourt-page" visibility="None" active="false">
       <Image id="refPanel_PrincesCourt_page1" class="princeCourt_page" image="refPanel_PrincesCourt_page1" raycastTarget="false" />
       <!-- PURPLE panel trackers -->
-      <Image id="box_on_health_1_Purple" image="box_white" class="box box_standard" offsetXY="22 107" />
-      <Image id="box_agg_health_1_Purple" image="box_red_x" class="box box_standard" offsetXY="22 107" />
-      <Image id="box_sup_health_1_Purple" image="box_grey_slash" class="box box_standard" offsetXY="22 107" />
-      <Image id="box_on_health_2_Purple" image="box_white" class="box box_standard" offsetXY="34.5 107" />
-      <Image id="box_agg_health_2_Purple" image="box_red_x" class="box box_standard" offsetXY="34.5 107" />
-      <Image id="box_sup_health_2_Purple" image="box_grey_slash" class="box box_standard" offsetXY="34.5 107" />
-      <Image id="box_on_health_3_Purple" image="box_white" class="box box_standard" offsetXY="47 107" />
-      <Image id="box_agg_health_3_Purple" image="box_red_x" class="box box_standard" offsetXY="47 107" />
-      <Image id="box_sup_health_3_Purple" image="box_grey_slash" class="box box_standard" offsetXY="47 107" />
-      <Image id="box_on_health_4_Purple" image="box_white" class="box box_standard" offsetXY="59.5 107" />
-      <Image id="box_agg_health_4_Purple" image="box_red_x" class="box box_standard" offsetXY="59.5 107" />
-      <Image id="box_sup_health_4_Purple" image="box_grey_slash" class="box box_standard" offsetXY="59.5 107" />
-      <Image id="box_on_health_5_Purple" image="box_white" class="box box_standard" offsetXY="72 107" />
-      <Image id="box_agg_health_5_Purple" image="box_red_x" class="box box_standard" offsetXY="72 107" />
-      <Image id="box_sup_health_5_Purple" image="box_grey_slash" class="box box_standard" offsetXY="72 107" />
-      <Image id="box_on_health_6_Purple" image="box_white" class="box box_standard" offsetXY="84.5 107" />
-      <Image id="box_agg_health_6_Purple" image="box_red_x" class="box box_standard" offsetXY="84.5 107" />
-      <Image id="box_sup_health_6_Purple" image="box_grey_slash" class="box box_standard" offsetXY="84.5 107" />
-      <Image id="box_on_health_7_Purple" image="box_white" class="box box_standard" offsetXY="97 107" />
-      <Image id="box_agg_health_7_Purple" image="box_red_x" class="box box_standard" offsetXY="97 107" />
-      <Image id="box_sup_health_7_Purple" image="box_grey_slash" class="box box_standard" offsetXY="97 107" />
-      <Image id="box_on_health_8_Purple" image="box_white" class="box box_standard" offsetXY="109.5 107" />
-      <Image id="box_agg_health_8_Purple" image="box_red_x" class="box box_standard" offsetXY="109.5 107" />
-      <Image id="box_sup_health_8_Purple" image="box_grey_slash" class="box box_standard" offsetXY="109.5 107" />
-      <Image id="box_on_health_9_Purple" image="box_white" class="box box_standard" offsetXY="122 107" />
-      <Image id="box_agg_health_9_Purple" image="box_red_x" class="box box_standard" offsetXY="122 107" />
-      <Image id="box_sup_health_9_Purple" image="box_grey_slash" class="box box_standard" offsetXY="122 107" />
-      <Image id="box_on_health_10_Purple" image="box_white" class="box box_standard" offsetXY="134.5 107" />
-      <Image id="box_agg_health_10_Purple" image="box_red_x" class="box box_standard" offsetXY="134.5 107" />
-      <Image id="box_sup_health_10_Purple" image="box_grey_slash" class="box box_standard" offsetXY="134.5 107" />
-      <Image id="box_on_willpower_1_Purple" image="box_white" class="box box_standard" offsetXY="22 82" />
-      <Image id="box_agg_willpower_1_Purple" image="box_red_x" class="box box_standard" offsetXY="22 82" />
-      <Image id="box_sup_willpower_1_Purple" image="box_grey_slash" class="box box_standard" offsetXY="22 82" />
-      <Image id="box_on_willpower_2_Purple" image="box_white" class="box box_standard" offsetXY="34.5 82" />
-      <Image id="box_agg_willpower_2_Purple" image="box_red_x" class="box box_standard" offsetXY="34.5 82" />
-      <Image id="box_sup_willpower_2_Purple" image="box_grey_slash" class="box box_standard" offsetXY="34.5 82" />
-      <Image id="box_on_willpower_3_Purple" image="box_white" class="box box_standard" offsetXY="47 82" />
-      <Image id="box_agg_willpower_3_Purple" image="box_red_x" class="box box_standard" offsetXY="47 82" />
-      <Image id="box_sup_willpower_3_Purple" image="box_grey_slash" class="box box_standard" offsetXY="47 82" />
-      <Image id="box_on_willpower_4_Purple" image="box_white" class="box box_standard" offsetXY="59.5 82" />
-      <Image id="box_agg_willpower_4_Purple" image="box_red_x" class="box box_standard" offsetXY="59.5 82" />
-      <Image id="box_sup_willpower_4_Purple" image="box_grey_slash" class="box box_standard" offsetXY="59.5 82" />
-      <Image id="box_on_willpower_5_Purple" image="box_white" class="box box_standard" offsetXY="72 82" />
-      <Image id="box_agg_willpower_5_Purple" image="box_red_x" class="box box_standard" offsetXY="72 82" />
-      <Image id="box_sup_willpower_5_Purple" image="box_grey_slash" class="box box_standard" offsetXY="72 82" />
-      <Image id="box_on_willpower_6_Purple" image="box_white" class="box box_standard" offsetXY="84.5 82" />
-      <Image id="box_agg_willpower_6_Purple" image="box_red_x" class="box box_standard" offsetXY="84.5 82" />
-      <Image id="box_sup_willpower_6_Purple" image="box_grey_slash" class="box box_standard" offsetXY="84.5 82" />
-      <Image id="box_on_willpower_7_Purple" image="box_white" class="box box_standard" offsetXY="97 82" />
-      <Image id="box_agg_willpower_7_Purple" image="box_red_x" class="box box_standard" offsetXY="97 82" />
-      <Image id="box_sup_willpower_7_Purple" image="box_grey_slash" class="box box_standard" offsetXY="97 82" />
-      <Image id="box_on_willpower_8_Purple" image="box_white" class="box box_standard" offsetXY="109.5 82" />
-      <Image id="box_agg_willpower_8_Purple" image="box_red_x" class="box box_standard" offsetXY="109.5 82" />
-      <Image id="box_sup_willpower_8_Purple" image="box_grey_slash" class="box box_standard" offsetXY="109.5 82" />
-      <Image id="box_on_willpower_9_Purple" image="box_white" class="box box_standard" offsetXY="122 82" />
-      <Image id="box_agg_willpower_9_Purple" image="box_red_x" class="box box_standard" offsetXY="122 82" />
-      <Image id="box_sup_willpower_9_Purple" image="box_grey_slash" class="box box_standard" offsetXY="122 82" />
-      <Image id="box_on_willpower_10_Purple" image="box_white" class="box box_standard" offsetXY="134.5 82" />
-      <Image id="box_agg_willpower_10_Purple" image="box_red_x" class="box box_standard" offsetXY="134.5 82" />
-      <Image id="box_sup_willpower_10_Purple" image="box_grey_slash" class="box box_standard" offsetXY="134.5 82" />
-      <Image id="box_on_humanity_1_Purple" image="box_white" class="box box_standard" offsetXY="22 57" />
-      <Image id="box_impaired_humanity_1_Purple" image="box_red" class="box box_standard" offsetXY="22 57" />
-      <Image id="box_stain_humanity_1_Purple" image="box_black" class="box box_standard" offsetXY="22 57" />
-      <Image id="box_on_humanity_2_Purple" image="box_white" class="box box_standard" offsetXY="34.5 57" />
-      <Image id="box_impaired_humanity_2_Purple" image="box_red" class="box box_standard" offsetXY="34.5 57" />
-      <Image id="box_stain_humanity_2_Purple" image="box_black" class="box box_standard" offsetXY="34.5 57" />
-      <Image id="box_on_humanity_3_Purple" image="box_white" class="box box_standard" offsetXY="47 57" />
-      <Image id="box_impaired_humanity_3_Purple" image="box_red" class="box box_standard" offsetXY="47 57" />
-      <Image id="box_stain_humanity_3_Purple" image="box_black" class="box box_standard" offsetXY="47 57" />
-      <Image id="box_on_humanity_4_Purple" image="box_white" class="box box_standard" offsetXY="59.5 57" />
-      <Image id="box_impaired_humanity_4_Purple" image="box_red" class="box box_standard" offsetXY="59.5 57" />
-      <Image id="box_stain_humanity_4_Purple" image="box_black" class="box box_standard" offsetXY="59.5 57" />
-      <Image id="box_on_humanity_5_Purple" image="box_white" class="box box_standard" offsetXY="72 57" />
-      <Image id="box_impaired_humanity_5_Purple" image="box_red" class="box box_standard" offsetXY="72 57" />
-      <Image id="box_stain_humanity_5_Purple" image="box_black" class="box box_standard" offsetXY="72 57" />
-      <Image id="box_on_humanity_6_Purple" image="box_white" class="box box_standard" offsetXY="84.5 57" />
-      <Image id="box_impaired_humanity_6_Purple" image="box_red" class="box box_standard" offsetXY="84.5 57" />
-      <Image id="box_stain_humanity_6_Purple" image="box_black" class="box box_standard" offsetXY="84.5 57" />
-      <Image id="box_on_humanity_7_Purple" image="box_white" class="box box_standard" offsetXY="97 57" />
-      <Image id="box_impaired_humanity_7_Purple" image="box_red" class="box box_standard" offsetXY="97 57" />
-      <Image id="box_stain_humanity_7_Purple" image="box_black" class="box box_standard" offsetXY="97 57" />
-      <Image id="box_on_humanity_8_Purple" image="box_white" class="box box_standard" offsetXY="109.5 57" />
-      <Image id="box_impaired_humanity_8_Purple" image="box_red" class="box box_standard" offsetXY="109.5 57" />
-      <Image id="box_stain_humanity_8_Purple" image="box_black" class="box box_standard" offsetXY="109.5 57" />
-      <Image id="box_on_humanity_9_Purple" image="box_white" class="box box_standard" offsetXY="122 57" />
-      <Image id="box_impaired_humanity_9_Purple" image="box_red" class="box box_standard" offsetXY="122 57" />
-      <Image id="box_stain_humanity_9_Purple" image="box_black" class="box box_standard" offsetXY="122 57" />
-      <Image id="box_on_humanity_10_Purple" image="box_white" class="box box_standard" offsetXY="134.5 57" />
-      <Image id="box_impaired_humanity_10_Purple" image="box_red" class="box box_standard" offsetXY="134.5 57" />
-      <Image id="box_stain_humanity_10_Purple" image="box_black" class="box box_standard" offsetXY="134.5 57" />
-      <Image id="box_on_hunger_1_Purple" image="box_red" class="box box_standard" offsetXY="53.25 32" />
-      <Image id="box_on_hunger_2_Purple" image="box_red" class="box box_standard" offsetXY="65.75 32" />
-      <Image id="box_on_hunger_3_Purple" image="box_red" class="box box_standard" offsetXY="78.25 32" />
-      <Image id="box_on_hunger_4_Purple" image="box_red" class="box box_standard" offsetXY="90.75 32" />
-      <Image id="box_on_hunger_5_Purple" image="box_red" class="box box_standard" offsetXY="103.25 32" />
+      <Image id="box_health_1_Purple" image="box_white" class="box box_standard" offsetXY="22 107" active="false" />
+      <Image id="box_health_2_Purple" image="box_white" class="box box_standard" offsetXY="34.5 107" active="false" />
+      <Image id="box_health_3_Purple" image="box_white" class="box box_standard" offsetXY="47 107" active="false" />
+      <Image id="box_health_4_Purple" image="box_white" class="box box_standard" offsetXY="59.5 107" active="false" />
+      <Image id="box_health_5_Purple" image="box_white" class="box box_standard" offsetXY="72 107" active="false" />
+      <Image id="box_health_6_Purple" image="box_white" class="box box_standard" offsetXY="84.5 107" active="false" />
+      <Image id="box_health_7_Purple" image="box_white" class="box box_standard" offsetXY="97 107" active="false" />
+      <Image id="box_health_8_Purple" image="box_white" class="box box_standard" offsetXY="109.5 107" active="false" />
+      <Image id="box_health_9_Purple" image="box_white" class="box box_standard" offsetXY="122 107" active="false" />
+      <Image id="box_health_10_Purple" image="box_white" class="box box_standard" offsetXY="134.5 107" active="false" />
+      <Image id="box_willpower_1_Purple" image="box_white" class="box box_standard" offsetXY="22 82" active="false" />
+      <Image id="box_willpower_2_Purple" image="box_white" class="box box_standard" offsetXY="34.5 82" active="false" />
+      <Image id="box_willpower_3_Purple" image="box_white" class="box box_standard" offsetXY="47 82" active="false" />
+      <Image id="box_willpower_4_Purple" image="box_white" class="box box_standard" offsetXY="59.5 82" active="false" />
+      <Image id="box_willpower_5_Purple" image="box_white" class="box box_standard" offsetXY="72 82" active="false" />
+      <Image id="box_willpower_6_Purple" image="box_white" class="box box_standard" offsetXY="84.5 82" active="false" />
+      <Image id="box_willpower_7_Purple" image="box_white" class="box box_standard" offsetXY="97 82" active="false" />
+      <Image id="box_willpower_8_Purple" image="box_white" class="box box_standard" offsetXY="109.5 82" active="false" />
+      <Image id="box_willpower_9_Purple" image="box_white" class="box box_standard" offsetXY="122 82" active="false" />
+      <Image id="box_willpower_10_Purple" image="box_white" class="box box_standard" offsetXY="134.5 82" active="false" />
+      <Image id="box_humanity_1_Purple" image="box_white" class="box box_standard" offsetXY="22 57" active="false" />
+      <Image id="box_humanity_2_Purple" image="box_white" class="box box_standard" offsetXY="34.5 57" active="false" />
+      <Image id="box_humanity_3_Purple" image="box_white" class="box box_standard" offsetXY="47 57" active="false" />
+      <Image id="box_humanity_4_Purple" image="box_white" class="box box_standard" offsetXY="59.5 57" active="false" />
+      <Image id="box_humanity_5_Purple" image="box_white" class="box box_standard" offsetXY="72 57" active="false" />
+      <Image id="box_humanity_6_Purple" image="box_white" class="box box_standard" offsetXY="84.5 57" active="false" />
+      <Image id="box_humanity_7_Purple" image="box_white" class="box box_standard" offsetXY="97 57" active="false" />
+      <Image id="box_humanity_8_Purple" image="box_white" class="box box_standard" offsetXY="109.5 57" active="false" />
+      <Image id="box_humanity_9_Purple" image="box_white" class="box box_standard" offsetXY="122 57" active="false" />
+      <Image id="box_humanity_10_Purple" image="box_white" class="box box_standard" offsetXY="134.5 57" active="false" />
+      <Image id="box_hunger_1_Purple" image="box_red" class="box box_standard" offsetXY="53.25 32" />
+      <Image id="box_hunger_2_Purple" image="box_red" class="box box_standard" offsetXY="65.75 32" />
+      <Image id="box_hunger_3_Purple" image="box_red" class="box box_standard" offsetXY="78.25 32" />
+      <Image id="box_hunger_4_Purple" image="box_red" class="box box_standard" offsetXY="90.75 32" />
+      <Image id="box_hunger_5_Purple" image="box_red" class="box box_standard" offsetXY="103.25 32" />
 
       <!-- PINK panel trackers -->
-      <Image id="box_on_health_1_Pink" image="box_white" class="box box_standard" offsetXY="165 107" />
-      <Image id="box_agg_health_1_Pink" image="box_red_x" class="box box_standard" offsetXY="165 107" />
-      <Image id="box_sup_health_1_Pink" image="box_grey_slash" class="box box_standard" offsetXY="165 107" />
-      <Image id="box_on_health_2_Pink" image="box_white" class="box box_standard" offsetXY="177.5 107" />
-      <Image id="box_agg_health_2_Pink" image="box_red_x" class="box box_standard" offsetXY="177.5 107" />
-      <Image id="box_sup_health_2_Pink" image="box_grey_slash" class="box box_standard" offsetXY="177.5 107" />
-      <Image id="box_on_health_3_Pink" image="box_white" class="box box_standard" offsetXY="190 107" />
-      <Image id="box_agg_health_3_Pink" image="box_red_x" class="box box_standard" offsetXY="190 107" />
-      <Image id="box_sup_health_3_Pink" image="box_grey_slash" class="box box_standard" offsetXY="190 107" />
-      <Image id="box_on_health_4_Pink" image="box_white" class="box box_standard" offsetXY="202.5 107" />
-      <Image id="box_agg_health_4_Pink" image="box_red_x" class="box box_standard" offsetXY="202.5 107" />
-      <Image id="box_sup_health_4_Pink" image="box_grey_slash" class="box box_standard" offsetXY="202.5 107" />
-      <Image id="box_on_health_5_Pink" image="box_white" class="box box_standard" offsetXY="215 107" />
-      <Image id="box_agg_health_5_Pink" image="box_red_x" class="box box_standard" offsetXY="215 107" />
-      <Image id="box_sup_health_5_Pink" image="box_grey_slash" class="box box_standard" offsetXY="215 107" />
-      <Image id="box_on_health_6_Pink" image="box_white" class="box box_standard" offsetXY="227.5 107" />
-      <Image id="box_agg_health_6_Pink" image="box_red_x" class="box box_standard" offsetXY="227.5 107" />
-      <Image id="box_sup_health_6_Pink" image="box_grey_slash" class="box box_standard" offsetXY="227.5 107" />
-      <Image id="box_on_health_7_Pink" image="box_white" class="box box_standard" offsetXY="240 107" />
-      <Image id="box_agg_health_7_Pink" image="box_red_x" class="box box_standard" offsetXY="240 107" />
-      <Image id="box_sup_health_7_Pink" image="box_grey_slash" class="box box_standard" offsetXY="240 107" />
-      <Image id="box_on_health_8_Pink" image="box_white" class="box box_standard" offsetXY="252.5 107" />
-      <Image id="box_agg_health_8_Pink" image="box_red_x" class="box box_standard" offsetXY="252.5 107" />
-      <Image id="box_sup_health_8_Pink" image="box_grey_slash" class="box box_standard" offsetXY="252.5 107" />
-      <Image id="box_on_health_9_Pink" image="box_white" class="box box_standard" offsetXY="265 107" />
-      <Image id="box_agg_health_9_Pink" image="box_red_x" class="box box_standard" offsetXY="265 107" />
-      <Image id="box_sup_health_9_Pink" image="box_grey_slash" class="box box_standard" offsetXY="265 107" />
-      <Image id="box_on_health_10_Pink" image="box_white" class="box box_standard" offsetXY="277.5 107" />
-      <Image id="box_agg_health_10_Pink" image="box_red_x" class="box box_standard" offsetXY="277.5 107" />
-      <Image id="box_sup_health_10_Pink" image="box_grey_slash" class="box box_standard" offsetXY="277.5 107" />
-      <Image id="box_on_willpower_1_Pink" image="box_white" class="box box_standard" offsetXY="165 82" />
-      <Image id="box_agg_willpower_1_Pink" image="box_red_x" class="box box_standard" offsetXY="165 82" />
-      <Image id="box_sup_willpower_1_Pink" image="box_grey_slash" class="box box_standard" offsetXY="165 82" />
-      <Image id="box_on_willpower_2_Pink" image="box_white" class="box box_standard" offsetXY="177.5 82" />
-      <Image id="box_agg_willpower_2_Pink" image="box_red_x" class="box box_standard" offsetXY="177.5 82" />
-      <Image id="box_sup_willpower_2_Pink" image="box_grey_slash" class="box box_standard" offsetXY="177.5 82" />
-      <Image id="box_on_willpower_3_Pink" image="box_white" class="box box_standard" offsetXY="190 82" />
-      <Image id="box_agg_willpower_3_Pink" image="box_red_x" class="box box_standard" offsetXY="190 82" />
-      <Image id="box_sup_willpower_3_Pink" image="box_grey_slash" class="box box_standard" offsetXY="190 82" />
-      <Image id="box_on_willpower_4_Pink" image="box_white" class="box box_standard" offsetXY="202.5 82" />
-      <Image id="box_agg_willpower_4_Pink" image="box_red_x" class="box box_standard" offsetXY="202.5 82" />
-      <Image id="box_sup_willpower_4_Pink" image="box_grey_slash" class="box box_standard" offsetXY="202.5 82" />
-      <Image id="box_on_willpower_5_Pink" image="box_white" class="box box_standard" offsetXY="215 82" />
-      <Image id="box_agg_willpower_5_Pink" image="box_red_x" class="box box_standard" offsetXY="215 82" />
-      <Image id="box_sup_willpower_5_Pink" image="box_grey_slash" class="box box_standard" offsetXY="215 82" />
-      <Image id="box_on_willpower_6_Pink" image="box_white" class="box box_standard" offsetXY="227.5 82" />
-      <Image id="box_agg_willpower_6_Pink" image="box_red_x" class="box box_standard" offsetXY="227.5 82" />
-      <Image id="box_sup_willpower_6_Pink" image="box_grey_slash" class="box box_standard" offsetXY="227.5 82" />
-      <Image id="box_on_willpower_7_Pink" image="box_white" class="box box_standard" offsetXY="240 82" />
-      <Image id="box_agg_willpower_7_Pink" image="box_red_x" class="box box_standard" offsetXY="240 82" />
-      <Image id="box_sup_willpower_7_Pink" image="box_grey_slash" class="box box_standard" offsetXY="240 82" />
-      <Image id="box_on_willpower_8_Pink" image="box_white" class="box box_standard" offsetXY="252.5 82" />
-      <Image id="box_agg_willpower_8_Pink" image="box_red_x" class="box box_standard" offsetXY="252.5 82" />
-      <Image id="box_sup_willpower_8_Pink" image="box_grey_slash" class="box box_standard" offsetXY="252.5 82" />
-      <Image id="box_on_willpower_9_Pink" image="box_white" class="box box_standard" offsetXY="265 82" />
-      <Image id="box_agg_willpower_9_Pink" image="box_red_x" class="box box_standard" offsetXY="265 82" />
-      <Image id="box_sup_willpower_9_Pink" image="box_grey_slash" class="box box_standard" offsetXY="265 82" />
-      <Image id="box_on_willpower_10_Pink" image="box_white" class="box box_standard" offsetXY="277.5 82" />
-      <Image id="box_agg_willpower_10_Pink" image="box_red_x" class="box box_standard" offsetXY="277.5 82" />
-      <Image id="box_sup_willpower_10_Pink" image="box_grey_slash" class="box box_standard" offsetXY="277.5 82" />
-      <Image id="box_on_humanity_1_Pink" image="box_white" class="box box_standard" offsetXY="165 57" />
-      <Image id="box_impaired_humanity_1_Pink" image="box_red" class="box box_standard" offsetXY="165 57" />
-      <Image id="box_stain_humanity_1_Pink" image="box_black" class="box box_standard" offsetXY="165 57" />
-      <Image id="box_on_humanity_2_Pink" image="box_white" class="box box_standard" offsetXY="177.5 57" />
-      <Image id="box_impaired_humanity_2_Pink" image="box_red" class="box box_standard" offsetXY="177.5 57" />
-      <Image id="box_stain_humanity_2_Pink" image="box_black" class="box box_standard" offsetXY="177.5 57" />
-      <Image id="box_on_humanity_3_Pink" image="box_white" class="box box_standard" offsetXY="190 57" />
-      <Image id="box_impaired_humanity_3_Pink" image="box_red" class="box box_standard" offsetXY="190 57" />
-      <Image id="box_stain_humanity_3_Pink" image="box_black" class="box box_standard" offsetXY="190 57" />
-      <Image id="box_on_humanity_4_Pink" image="box_white" class="box box_standard" offsetXY="202.5 57" />
-      <Image id="box_impaired_humanity_4_Pink" image="box_red" class="box box_standard" offsetXY="202.5 57" />
-      <Image id="box_stain_humanity_4_Pink" image="box_black" class="box box_standard" offsetXY="202.5 57" />
-      <Image id="box_on_humanity_5_Pink" image="box_white" class="box box_standard" offsetXY="215 57" />
-      <Image id="box_impaired_humanity_5_Pink" image="box_red" class="box box_standard" offsetXY="215 57" />
-      <Image id="box_stain_humanity_5_Pink" image="box_black" class="box box_standard" offsetXY="215 57" />
-      <Image id="box_on_humanity_6_Pink" image="box_white" class="box box_standard" offsetXY="227.5 57" />
-      <Image id="box_impaired_humanity_6_Pink" image="box_red" class="box box_standard" offsetXY="227.5 57" />
-      <Image id="box_stain_humanity_6_Pink" image="box_black" class="box box_standard" offsetXY="227.5 57" />
-      <Image id="box_on_humanity_7_Pink" image="box_white" class="box box_standard" offsetXY="240 57" />
-      <Image id="box_impaired_humanity_7_Pink" image="box_red" class="box box_standard" offsetXY="240 57" />
-      <Image id="box_stain_humanity_7_Pink" image="box_black" class="box box_standard" offsetXY="240 57" />
-      <Image id="box_on_humanity_8_Pink" image="box_white" class="box box_standard" offsetXY="252.5 57" />
-      <Image id="box_impaired_humanity_8_Pink" image="box_red" class="box box_standard" offsetXY="252.5 57" />
-      <Image id="box_stain_humanity_8_Pink" image="box_black" class="box box_standard" offsetXY="252.5 57" />
-      <Image id="box_on_humanity_9_Pink" image="box_white" class="box box_standard" offsetXY="265 57" />
-      <Image id="box_impaired_humanity_9_Pink" image="box_red" class="box box_standard" offsetXY="265 57" />
-      <Image id="box_stain_humanity_9_Pink" image="box_black" class="box box_standard" offsetXY="265 57" />
-      <Image id="box_on_humanity_10_Pink" image="box_white" class="box box_standard" offsetXY="277.5 57" />
-      <Image id="box_impaired_humanity_10_Pink" image="box_red" class="box box_standard" offsetXY="277.5 57" />
-      <Image id="box_stain_humanity_10_Pink" image="box_black" class="box box_standard" offsetXY="277.5 57" />
-      <Image id="box_on_hunger_1_Pink" image="box_red" class="box box_standard" offsetXY="196.25 32" />
-      <Image id="box_on_hunger_2_Pink" image="box_red" class="box box_standard" offsetXY="208.75 32" />
-      <Image id="box_on_hunger_3_Pink" image="box_red" class="box box_standard" offsetXY="221.25 32" />
-      <Image id="box_on_hunger_4_Pink" image="box_red" class="box box_standard" offsetXY="233.75 32" />
-      <Image id="box_on_hunger_5_Pink" image="box_red" class="box box_standard" offsetXY="246.25 32" />
+      <Image id="box_health_1_Pink" image="box_white" class="box box_standard" offsetXY="165 107" active="false" />
+      <Image id="box_health_2_Pink" image="box_white" class="box box_standard" offsetXY="177.5 107" active="false" />
+      <Image id="box_health_3_Pink" image="box_white" class="box box_standard" offsetXY="190 107" active="false" />
+      <Image id="box_health_4_Pink" image="box_white" class="box box_standard" offsetXY="202.5 107" active="false" />
+      <Image id="box_health_5_Pink" image="box_white" class="box box_standard" offsetXY="215 107" active="false" />
+      <Image id="box_health_6_Pink" image="box_white" class="box box_standard" offsetXY="227.5 107" active="false" />
+      <Image id="box_health_7_Pink" image="box_white" class="box box_standard" offsetXY="240 107" active="false" />
+      <Image id="box_health_8_Pink" image="box_white" class="box box_standard" offsetXY="252.5 107" active="false" />
+      <Image id="box_health_9_Pink" image="box_white" class="box box_standard" offsetXY="265 107" active="false" />
+      <Image id="box_health_10_Pink" image="box_white" class="box box_standard" offsetXY="277.5 107" active="false" />
+      <Image id="box_willpower_1_Pink" image="box_white" class="box box_standard" offsetXY="165 82" active="false" />
+      <Image id="box_willpower_2_Pink" image="box_white" class="box box_standard" offsetXY="177.5 82" active="false" />
+      <Image id="box_willpower_3_Pink" image="box_white" class="box box_standard" offsetXY="190 82" active="false" />
+      <Image id="box_willpower_4_Pink" image="box_white" class="box box_standard" offsetXY="202.5 82" active="false" />
+      <Image id="box_willpower_5_Pink" image="box_white" class="box box_standard" offsetXY="215 82" active="false" />
+      <Image id="box_willpower_6_Pink" image="box_white" class="box box_standard" offsetXY="227.5 82" active="false" />
+      <Image id="box_willpower_7_Pink" image="box_white" class="box box_standard" offsetXY="240 82" active="false" />
+      <Image id="box_willpower_8_Pink" image="box_white" class="box box_standard" offsetXY="252.5 82" active="false" />
+      <Image id="box_willpower_9_Pink" image="box_white" class="box box_standard" offsetXY="265 82" active="false" />
+      <Image id="box_willpower_10_Pink" image="box_white" class="box box_standard" offsetXY="277.5 82" active="false" />
+      <Image id="box_humanity_1_Pink" image="box_white" class="box box_standard" offsetXY="165 57" active="false" />
+      <Image id="box_humanity_2_Pink" image="box_white" class="box box_standard" offsetXY="177.5 57" active="false" />
+      <Image id="box_humanity_3_Pink" image="box_white" class="box box_standard" offsetXY="190 57" active="false" />
+      <Image id="box_humanity_4_Pink" image="box_white" class="box box_standard" offsetXY="202.5 57" active="false" />
+      <Image id="box_humanity_5_Pink" image="box_white" class="box box_standard" offsetXY="215 57" active="false" />
+      <Image id="box_humanity_6_Pink" image="box_white" class="box box_standard" offsetXY="227.5 57" active="false" />
+      <Image id="box_humanity_7_Pink" image="box_white" class="box box_standard" offsetXY="240 57" active="false" />
+      <Image id="box_humanity_8_Pink" image="box_white" class="box box_standard" offsetXY="252.5 57" active="false" />
+      <Image id="box_humanity_9_Pink" image="box_white" class="box box_standard" offsetXY="265 57" active="false" />
+      <Image id="box_humanity_10_Pink" image="box_white" class="box box_standard" offsetXY="277.5 57" active="false" />
+      <Image id="box_hunger_1_Pink" image="box_red" class="box box_standard" offsetXY="196.25 32" />
+      <Image id="box_hunger_2_Pink" image="box_red" class="box box_standard" offsetXY="208.75 32" />
+      <Image id="box_hunger_3_Pink" image="box_red" class="box box_standard" offsetXY="221.25 32" />
+      <Image id="box_hunger_4_Pink" image="box_red" class="box box_standard" offsetXY="233.75 32" />
+      <Image id="box_hunger_5_Pink" image="box_red" class="box box_standard" offsetXY="246.25 32" />
 
       <!-- RED panel trackers -->
-      <Image id="box_on_health_1_Red" image="box_white" class="box box_standard" offsetXY="308 107" />
-      <Image id="box_agg_health_1_Red" image="box_red_x" class="box box_standard" offsetXY="308 107" />
-      <Image id="box_sup_health_1_Red" image="box_grey_slash" class="box box_standard" offsetXY="308 107" />
-      <Image id="box_on_health_2_Red" image="box_white" class="box box_standard" offsetXY="320.5 107" />
-      <Image id="box_agg_health_2_Red" image="box_red_x" class="box box_standard" offsetXY="320.5 107" />
-      <Image id="box_sup_health_2_Red" image="box_grey_slash" class="box box_standard" offsetXY="320.5 107" />
-      <Image id="box_on_health_3_Red" image="box_white" class="box box_standard" offsetXY="333 107" />
-      <Image id="box_agg_health_3_Red" image="box_red_x" class="box box_standard" offsetXY="333 107" />
-      <Image id="box_sup_health_3_Red" image="box_grey_slash" class="box box_standard" offsetXY="333 107" />
-      <Image id="box_on_health_4_Red" image="box_white" class="box box_standard" offsetXY="345.5 107" />
-      <Image id="box_agg_health_4_Red" image="box_red_x" class="box box_standard" offsetXY="345.5 107" />
-      <Image id="box_sup_health_4_Red" image="box_grey_slash" class="box box_standard" offsetXY="345.5 107" />
-      <Image id="box_on_health_5_Red" image="box_white" class="box box_standard" offsetXY="358 107" />
-      <Image id="box_agg_health_5_Red" image="box_red_x" class="box box_standard" offsetXY="358 107" />
-      <Image id="box_sup_health_5_Red" image="box_grey_slash" class="box box_standard" offsetXY="358 107" />
-      <Image id="box_on_health_6_Red" image="box_white" class="box box_standard" offsetXY="370.5 107" />
-      <Image id="box_agg_health_6_Red" image="box_red_x" class="box box_standard" offsetXY="370.5 107" />
-      <Image id="box_sup_health_6_Red" image="box_grey_slash" class="box box_standard" offsetXY="370.5 107" />
-      <Image id="box_on_health_7_Red" image="box_white" class="box box_standard" offsetXY="383 107" />
-      <Image id="box_agg_health_7_Red" image="box_red_x" class="box box_standard" offsetXY="383 107" />
-      <Image id="box_sup_health_7_Red" image="box_grey_slash" class="box box_standard" offsetXY="383 107" />
-      <Image id="box_on_health_8_Red" image="box_white" class="box box_standard" offsetXY="395.5 107" />
-      <Image id="box_agg_health_8_Red" image="box_red_x" class="box box_standard" offsetXY="395.5 107" />
-      <Image id="box_sup_health_8_Red" image="box_grey_slash" class="box box_standard" offsetXY="395.5 107" />
-      <Image id="box_on_health_9_Red" image="box_white" class="box box_standard" offsetXY="408 107" />
-      <Image id="box_agg_health_9_Red" image="box_red_x" class="box box_standard" offsetXY="408 107" />
-      <Image id="box_sup_health_9_Red" image="box_grey_slash" class="box box_standard" offsetXY="408 107" />
-      <Image id="box_on_health_10_Red" image="box_white" class="box box_standard" offsetXY="420.5 107" />
-      <Image id="box_agg_health_10_Red" image="box_red_x" class="box box_standard" offsetXY="420.5 107" />
-      <Image id="box_sup_health_10_Red" image="box_grey_slash" class="box box_standard" offsetXY="420.5 107" />
-      <Image id="box_on_willpower_1_Red" image="box_white" class="box box_standard" offsetXY="308 82" />
-      <Image id="box_agg_willpower_1_Red" image="box_red_x" class="box box_standard" offsetXY="308 82" />
-      <Image id="box_sup_willpower_1_Red" image="box_grey_slash" class="box box_standard" offsetXY="308 82" />
-      <Image id="box_on_willpower_2_Red" image="box_white" class="box box_standard" offsetXY="320.5 82" />
-      <Image id="box_agg_willpower_2_Red" image="box_red_x" class="box box_standard" offsetXY="320.5 82" />
-      <Image id="box_sup_willpower_2_Red" image="box_grey_slash" class="box box_standard" offsetXY="320.5 82" />
-      <Image id="box_on_willpower_3_Red" image="box_white" class="box box_standard" offsetXY="333 82" />
-      <Image id="box_agg_willpower_3_Red" image="box_red_x" class="box box_standard" offsetXY="333 82" />
-      <Image id="box_sup_willpower_3_Red" image="box_grey_slash" class="box box_standard" offsetXY="333 82" />
-      <Image id="box_on_willpower_4_Red" image="box_white" class="box box_standard" offsetXY="345.5 82" />
-      <Image id="box_agg_willpower_4_Red" image="box_red_x" class="box box_standard" offsetXY="345.5 82" />
-      <Image id="box_sup_willpower_4_Red" image="box_grey_slash" class="box box_standard" offsetXY="345.5 82" />
-      <Image id="box_on_willpower_5_Red" image="box_white" class="box box_standard" offsetXY="358 82" />
-      <Image id="box_agg_willpower_5_Red" image="box_red_x" class="box box_standard" offsetXY="358 82" />
-      <Image id="box_sup_willpower_5_Red" image="box_grey_slash" class="box box_standard" offsetXY="358 82" />
-      <Image id="box_on_willpower_6_Red" image="box_white" class="box box_standard" offsetXY="370.5 82" />
-      <Image id="box_agg_willpower_6_Red" image="box_red_x" class="box box_standard" offsetXY="370.5 82" />
-      <Image id="box_sup_willpower_6_Red" image="box_grey_slash" class="box box_standard" offsetXY="370.5 82" />
-      <Image id="box_on_willpower_7_Red" image="box_white" class="box box_standard" offsetXY="383 82" />
-      <Image id="box_agg_willpower_7_Red" image="box_red_x" class="box box_standard" offsetXY="383 82" />
-      <Image id="box_sup_willpower_7_Red" image="box_grey_slash" class="box box_standard" offsetXY="383 82" />
-      <Image id="box_on_willpower_8_Red" image="box_white" class="box box_standard" offsetXY="395.5 82" />
-      <Image id="box_agg_willpower_8_Red" image="box_red_x" class="box box_standard" offsetXY="395.5 82" />
-      <Image id="box_sup_willpower_8_Red" image="box_grey_slash" class="box box_standard" offsetXY="395.5 82" />
-      <Image id="box_on_willpower_9_Red" image="box_white" class="box box_standard" offsetXY="408 82" />
-      <Image id="box_agg_willpower_9_Red" image="box_red_x" class="box box_standard" offsetXY="408 82" />
-      <Image id="box_sup_willpower_9_Red" image="box_grey_slash" class="box box_standard" offsetXY="408 82" />
-      <Image id="box_on_willpower_10_Red" image="box_white" class="box box_standard" offsetXY="420.5 82" />
-      <Image id="box_agg_willpower_10_Red" image="box_red_x" class="box box_standard" offsetXY="420.5 82" />
-      <Image id="box_sup_willpower_10_Red" image="box_grey_slash" class="box box_standard" offsetXY="420.5 82" />
-      <Image id="box_on_humanity_1_Red" image="box_white" class="box box_standard" offsetXY="308 57" />
-      <Image id="box_impaired_humanity_1_Red" image="box_red" class="box box_standard" offsetXY="308 57" />
-      <Image id="box_stain_humanity_1_Red" image="box_black" class="box box_standard" offsetXY="308 57" />
-      <Image id="box_on_humanity_2_Red" image="box_white" class="box box_standard" offsetXY="320.5 57" />
-      <Image id="box_impaired_humanity_2_Red" image="box_red" class="box box_standard" offsetXY="320.5 57" />
-      <Image id="box_stain_humanity_2_Red" image="box_black" class="box box_standard" offsetXY="320.5 57" />
-      <Image id="box_on_humanity_3_Red" image="box_white" class="box box_standard" offsetXY="333 57" />
-      <Image id="box_impaired_humanity_3_Red" image="box_red" class="box box_standard" offsetXY="333 57" />
-      <Image id="box_stain_humanity_3_Red" image="box_black" class="box box_standard" offsetXY="333 57" />
-      <Image id="box_on_humanity_4_Red" image="box_white" class="box box_standard" offsetXY="345.5 57" />
-      <Image id="box_impaired_humanity_4_Red" image="box_red" class="box box_standard" offsetXY="345.5 57" />
-      <Image id="box_stain_humanity_4_Red" image="box_black" class="box box_standard" offsetXY="345.5 57" />
-      <Image id="box_on_humanity_5_Red" image="box_white" class="box box_standard" offsetXY="358 57" />
-      <Image id="box_impaired_humanity_5_Red" image="box_red" class="box box_standard" offsetXY="358 57" />
-      <Image id="box_stain_humanity_5_Red" image="box_black" class="box box_standard" offsetXY="358 57" />
-      <Image id="box_on_humanity_6_Red" image="box_white" class="box box_standard" offsetXY="370.5 57" />
-      <Image id="box_impaired_humanity_6_Red" image="box_red" class="box box_standard" offsetXY="370.5 57" />
-      <Image id="box_stain_humanity_6_Red" image="box_black" class="box box_standard" offsetXY="370.5 57" />
-      <Image id="box_on_humanity_7_Red" image="box_white" class="box box_standard" offsetXY="383 57" />
-      <Image id="box_impaired_humanity_7_Red" image="box_red" class="box box_standard" offsetXY="383 57" />
-      <Image id="box_stain_humanity_7_Red" image="box_black" class="box box_standard" offsetXY="383 57" />
-      <Image id="box_on_humanity_8_Red" image="box_white" class="box box_standard" offsetXY="395.5 57" />
-      <Image id="box_impaired_humanity_8_Red" image="box_red" class="box box_standard" offsetXY="395.5 57" />
-      <Image id="box_stain_humanity_8_Red" image="box_black" class="box box_standard" offsetXY="395.5 57" />
-      <Image id="box_on_humanity_9_Red" image="box_white" class="box box_standard" offsetXY="408 57" />
-      <Image id="box_impaired_humanity_9_Red" image="box_red" class="box box_standard" offsetXY="408 57" />
-      <Image id="box_stain_humanity_9_Red" image="box_black" class="box box_standard" offsetXY="408 57" />
-      <Image id="box_on_humanity_10_Red" image="box_white" class="box box_standard" offsetXY="420.5 57" />
-      <Image id="box_impaired_humanity_10_Red" image="box_red" class="box box_standard" offsetXY="420.5 57" />
-      <Image id="box_stain_humanity_10_Red" image="box_black" class="box box_standard" offsetXY="420.5 57" />
-      <Image id="box_on_hunger_1_Red" image="box_red" class="box box_standard" offsetXY="339.25 32" />
-      <Image id="box_on_hunger_2_Red" image="box_red" class="box box_standard" offsetXY="351.75 32" />
-      <Image id="box_on_hunger_3_Red" image="box_red" class="box box_standard" offsetXY="364.25 32" />
-      <Image id="box_on_hunger_4_Red" image="box_red" class="box box_standard" offsetXY="376.75 32" />
-      <Image id="box_on_hunger_5_Red" image="box_red" class="box box_standard" offsetXY="389.25 32" />
+      <Image id="box_health_1_Red" image="box_white" class="box box_standard" offsetXY="308 107" active="false" />
+      <Image id="box_health_2_Red" image="box_white" class="box box_standard" offsetXY="320.5 107" active="false" />
+      <Image id="box_health_3_Red" image="box_white" class="box box_standard" offsetXY="333 107" active="false" />
+      <Image id="box_health_4_Red" image="box_white" class="box box_standard" offsetXY="345.5 107" active="false" />
+      <Image id="box_health_5_Red" image="box_white" class="box box_standard" offsetXY="358 107" active="false" />
+      <Image id="box_health_6_Red" image="box_white" class="box box_standard" offsetXY="370.5 107" active="false" />
+      <Image id="box_health_7_Red" image="box_white" class="box box_standard" offsetXY="383 107" active="false" />
+      <Image id="box_health_8_Red" image="box_white" class="box box_standard" offsetXY="395.5 107" active="false" />
+      <Image id="box_health_9_Red" image="box_white" class="box box_standard" offsetXY="408 107" active="false" />
+      <Image id="box_health_10_Red" image="box_white" class="box box_standard" offsetXY="420.5 107" active="false" />
+      <Image id="box_willpower_1_Red" image="box_white" class="box box_standard" offsetXY="308 82" active="false" />
+      <Image id="box_willpower_2_Red" image="box_white" class="box box_standard" offsetXY="320.5 82" active="false" />
+      <Image id="box_willpower_3_Red" image="box_white" class="box box_standard" offsetXY="333 82" active="false" />
+      <Image id="box_willpower_4_Red" image="box_white" class="box box_standard" offsetXY="345.5 82" active="false" />
+      <Image id="box_willpower_5_Red" image="box_white" class="box box_standard" offsetXY="358 82" active="false" />
+      <Image id="box_willpower_6_Red" image="box_white" class="box box_standard" offsetXY="370.5 82" active="false" />
+      <Image id="box_willpower_7_Red" image="box_white" class="box box_standard" offsetXY="383 82" active="false" />
+      <Image id="box_willpower_8_Red" image="box_white" class="box box_standard" offsetXY="395.5 82" active="false" />
+      <Image id="box_willpower_9_Red" image="box_white" class="box box_standard" offsetXY="408 82" active="false" />
+      <Image id="box_willpower_10_Red" image="box_white" class="box box_standard" offsetXY="420.5 82" active="false" />
+      <Image id="box_humanity_1_Red" image="box_white" class="box box_standard" offsetXY="308 57" active="false" />
+      <Image id="box_humanity_2_Red" image="box_white" class="box box_standard" offsetXY="320.5 57" active="false" />
+      <Image id="box_humanity_3_Red" image="box_white" class="box box_standard" offsetXY="333 57" active="false" />
+      <Image id="box_humanity_4_Red" image="box_white" class="box box_standard" offsetXY="345.5 57" active="false" />
+      <Image id="box_humanity_5_Red" image="box_white" class="box box_standard" offsetXY="358 57" active="false" />
+      <Image id="box_humanity_6_Red" image="box_white" class="box box_standard" offsetXY="370.5 57" active="false" />
+      <Image id="box_humanity_7_Red" image="box_white" class="box box_standard" offsetXY="383 57" active="false" />
+      <Image id="box_humanity_8_Red" image="box_white" class="box box_standard" offsetXY="395.5 57" active="false" />
+      <Image id="box_humanity_9_Red" image="box_white" class="box box_standard" offsetXY="408 57" active="false" />
+      <Image id="box_humanity_10_Red" image="box_white" class="box box_standard" offsetXY="420.5 57" active="false" />
+      <Image id="box_hunger_1_Red" image="box_red" class="box box_standard" offsetXY="339.25 32" />
+      <Image id="box_hunger_2_Red" image="box_red" class="box box_standard" offsetXY="351.75 32" />
+      <Image id="box_hunger_3_Red" image="box_red" class="box box_standard" offsetXY="364.25 32" />
+      <Image id="box_hunger_4_Red" image="box_red" class="box box_standard" offsetXY="376.75 32" />
+      <Image id="box_hunger_5_Red" image="box_red" class="box box_standard" offsetXY="389.25 32" />
 
       <!-- ORANGE panel trackers -->
-      <Image id="box_on_health_1_Orange" image="box_white" class="box box_standard" offsetXY="451 107" />
-      <Image id="box_agg_health_1_Orange" image="box_red_x" class="box box_standard" offsetXY="451 107" />
-      <Image id="box_sup_health_1_Orange" image="box_grey_slash" class="box box_standard" offsetXY="451 107" />
-      <Image id="box_on_health_2_Orange" image="box_white" class="box box_standard" offsetXY="463.5 107" />
-      <Image id="box_agg_health_2_Orange" image="box_red_x" class="box box_standard" offsetXY="463.5 107" />
-      <Image id="box_sup_health_2_Orange" image="box_grey_slash" class="box box_standard" offsetXY="463.5 107" />
-      <Image id="box_on_health_3_Orange" image="box_white" class="box box_standard" offsetXY="476 107" />
-      <Image id="box_agg_health_3_Orange" image="box_red_x" class="box box_standard" offsetXY="476 107" />
-      <Image id="box_sup_health_3_Orange" image="box_grey_slash" class="box box_standard" offsetXY="476 107" />
-      <Image id="box_on_health_4_Orange" image="box_white" class="box box_standard" offsetXY="488.5 107" />
-      <Image id="box_agg_health_4_Orange" image="box_red_x" class="box box_standard" offsetXY="488.5 107" />
-      <Image id="box_sup_health_4_Orange" image="box_grey_slash" class="box box_standard" offsetXY="488.5 107" />
-      <Image id="box_on_health_5_Orange" image="box_white" class="box box_standard" offsetXY="501 107" />
-      <Image id="box_agg_health_5_Orange" image="box_red_x" class="box box_standard" offsetXY="501 107" />
-      <Image id="box_sup_health_5_Orange" image="box_grey_slash" class="box box_standard" offsetXY="501 107" />
-      <Image id="box_on_health_6_Orange" image="box_white" class="box box_standard" offsetXY="513.5 107" />
-      <Image id="box_agg_health_6_Orange" image="box_red_x" class="box box_standard" offsetXY="513.5 107" />
-      <Image id="box_sup_health_6_Orange" image="box_grey_slash" class="box box_standard" offsetXY="513.5 107" />
-      <Image id="box_on_health_7_Orange" image="box_white" class="box box_standard" offsetXY="526 107" />
-      <Image id="box_agg_health_7_Orange" image="box_red_x" class="box box_standard" offsetXY="526 107" />
-      <Image id="box_sup_health_7_Orange" image="box_grey_slash" class="box box_standard" offsetXY="526 107" />
-      <Image id="box_on_health_8_Orange" image="box_white" class="box box_standard" offsetXY="538.5 107" />
-      <Image id="box_agg_health_8_Orange" image="box_red_x" class="box box_standard" offsetXY="538.5 107" />
-      <Image id="box_sup_health_8_Orange" image="box_grey_slash" class="box box_standard" offsetXY="538.5 107" />
-      <Image id="box_on_health_9_Orange" image="box_white" class="box box_standard" offsetXY="551 107" />
-      <Image id="box_agg_health_9_Orange" image="box_red_x" class="box box_standard" offsetXY="551 107" />
-      <Image id="box_sup_health_9_Orange" image="box_grey_slash" class="box box_standard" offsetXY="551 107" />
-      <Image id="box_on_health_10_Orange" image="box_white" class="box box_standard" offsetXY="563.5 107" />
-      <Image id="box_agg_health_10_Orange" image="box_red_x" class="box box_standard" offsetXY="563.5 107" />
-      <Image id="box_sup_health_10_Orange" image="box_grey_slash" class="box box_standard" offsetXY="563.5 107" />
-      <Image id="box_on_willpower_1_Orange" image="box_white" class="box box_standard" offsetXY="451 82" />
-      <Image id="box_agg_willpower_1_Orange" image="box_red_x" class="box box_standard" offsetXY="451 82" />
-      <Image id="box_sup_willpower_1_Orange" image="box_grey_slash" class="box box_standard" offsetXY="451 82" />
-      <Image id="box_on_willpower_2_Orange" image="box_white" class="box box_standard" offsetXY="463.5 82" />
-      <Image id="box_agg_willpower_2_Orange" image="box_red_x" class="box box_standard" offsetXY="463.5 82" />
-      <Image id="box_sup_willpower_2_Orange" image="box_grey_slash" class="box box_standard" offsetXY="463.5 82" />
-      <Image id="box_on_willpower_3_Orange" image="box_white" class="box box_standard" offsetXY="476 82" />
-      <Image id="box_agg_willpower_3_Orange" image="box_red_x" class="box box_standard" offsetXY="476 82" />
-      <Image id="box_sup_willpower_3_Orange" image="box_grey_slash" class="box box_standard" offsetXY="476 82" />
-      <Image id="box_on_willpower_4_Orange" image="box_white" class="box box_standard" offsetXY="488.5 82" />
-      <Image id="box_agg_willpower_4_Orange" image="box_red_x" class="box box_standard" offsetXY="488.5 82" />
-      <Image id="box_sup_willpower_4_Orange" image="box_grey_slash" class="box box_standard" offsetXY="488.5 82" />
-      <Image id="box_on_willpower_5_Orange" image="box_white" class="box box_standard" offsetXY="501 82" />
-      <Image id="box_agg_willpower_5_Orange" image="box_red_x" class="box box_standard" offsetXY="501 82" />
-      <Image id="box_sup_willpower_5_Orange" image="box_grey_slash" class="box box_standard" offsetXY="501 82" />
-      <Image id="box_on_willpower_6_Orange" image="box_white" class="box box_standard" offsetXY="513.5 82" />
-      <Image id="box_agg_willpower_6_Orange" image="box_red_x" class="box box_standard" offsetXY="513.5 82" />
-      <Image id="box_sup_willpower_6_Orange" image="box_grey_slash" class="box box_standard" offsetXY="513.5 82" />
-      <Image id="box_on_willpower_7_Orange" image="box_white" class="box box_standard" offsetXY="526 82" />
-      <Image id="box_agg_willpower_7_Orange" image="box_red_x" class="box box_standard" offsetXY="526 82" />
-      <Image id="box_sup_willpower_7_Orange" image="box_grey_slash" class="box box_standard" offsetXY="526 82" />
-      <Image id="box_on_willpower_8_Orange" image="box_white" class="box box_standard" offsetXY="538.5 82" />
-      <Image id="box_agg_willpower_8_Orange" image="box_red_x" class="box box_standard" offsetXY="538.5 82" />
-      <Image id="box_sup_willpower_8_Orange" image="box_grey_slash" class="box box_standard" offsetXY="538.5 82" />
-      <Image id="box_on_willpower_9_Orange" image="box_white" class="box box_standard" offsetXY="551 82" />
-      <Image id="box_agg_willpower_9_Orange" image="box_red_x" class="box box_standard" offsetXY="551 82" />
-      <Image id="box_sup_willpower_9_Orange" image="box_grey_slash" class="box box_standard" offsetXY="551 82" />
-      <Image id="box_on_willpower_10_Orange" image="box_white" class="box box_standard" offsetXY="563.5 82" />
-      <Image id="box_agg_willpower_10_Orange" image="box_red_x" class="box box_standard" offsetXY="563.5 82" />
-      <Image id="box_sup_willpower_10_Orange" image="box_grey_slash" class="box box_standard" offsetXY="563.5 82" />
-      <Image id="box_on_humanity_1_Orange" image="box_white" class="box box_standard" offsetXY="451 57" />
-      <Image id="box_impaired_humanity_1_Orange" image="box_red" class="box box_standard" offsetXY="451 57" />
-      <Image id="box_stain_humanity_1_Orange" image="box_black" class="box box_standard" offsetXY="451 57" />
-      <Image id="box_on_humanity_2_Orange" image="box_white" class="box box_standard" offsetXY="463.5 57" />
-      <Image id="box_impaired_humanity_2_Orange" image="box_red" class="box box_standard" offsetXY="463.5 57" />
-      <Image id="box_stain_humanity_2_Orange" image="box_black" class="box box_standard" offsetXY="463.5 57" />
-      <Image id="box_on_humanity_3_Orange" image="box_white" class="box box_standard" offsetXY="476 57" />
-      <Image id="box_impaired_humanity_3_Orange" image="box_red" class="box box_standard" offsetXY="476 57" />
-      <Image id="box_stain_humanity_3_Orange" image="box_black" class="box box_standard" offsetXY="476 57" />
-      <Image id="box_on_humanity_4_Orange" image="box_white" class="box box_standard" offsetXY="488.5 57" />
-      <Image id="box_impaired_humanity_4_Orange" image="box_red" class="box box_standard" offsetXY="488.5 57" />
-      <Image id="box_stain_humanity_4_Orange" image="box_black" class="box box_standard" offsetXY="488.5 57" />
-      <Image id="box_on_humanity_5_Orange" image="box_white" class="box box_standard" offsetXY="501 57" />
-      <Image id="box_impaired_humanity_5_Orange" image="box_red" class="box box_standard" offsetXY="501 57" />
-      <Image id="box_stain_humanity_5_Orange" image="box_black" class="box box_standard" offsetXY="501 57" />
-      <Image id="box_on_humanity_6_Orange" image="box_white" class="box box_standard" offsetXY="513.5 57" />
-      <Image id="box_impaired_humanity_6_Orange" image="box_red" class="box box_standard" offsetXY="513.5 57" />
-      <Image id="box_stain_humanity_6_Orange" image="box_black" class="box box_standard" offsetXY="513.5 57" />
-      <Image id="box_on_humanity_7_Orange" image="box_white" class="box box_standard" offsetXY="526 57" />
-      <Image id="box_impaired_humanity_7_Orange" image="box_red" class="box box_standard" offsetXY="526 57" />
-      <Image id="box_stain_humanity_7_Orange" image="box_black" class="box box_standard" offsetXY="526 57" />
-      <Image id="box_on_humanity_8_Orange" image="box_white" class="box box_standard" offsetXY="538.5 57" />
-      <Image id="box_impaired_humanity_8_Orange" image="box_red" class="box box_standard" offsetXY="538.5 57" />
-      <Image id="box_stain_humanity_8_Orange" image="box_black" class="box box_standard" offsetXY="538.5 57" />
-      <Image id="box_on_humanity_9_Orange" image="box_white" class="box box_standard" offsetXY="551 57" />
-      <Image id="box_impaired_humanity_9_Orange" image="box_red" class="box box_standard" offsetXY="551 57" />
-      <Image id="box_stain_humanity_9_Orange" image="box_black" class="box box_standard" offsetXY="551 57" />
-      <Image id="box_on_humanity_10_Orange" image="box_white" class="box box_standard" offsetXY="563.5 57" />
-      <Image id="box_impaired_humanity_10_Orange" image="box_red" class="box box_standard" offsetXY="563.5 57" />
-      <Image id="box_stain_humanity_10_Orange" image="box_black" class="box box_standard" offsetXY="563.5 57" />
-      <Image id="box_on_hunger_1_Orange" image="box_red" class="box box_standard" offsetXY="482.25 32" />
-      <Image id="box_on_hunger_2_Orange" image="box_red" class="box box_standard" offsetXY="494.75 32" />
-      <Image id="box_on_hunger_3_Orange" image="box_red" class="box box_standard" offsetXY="507.25 32" />
-      <Image id="box_on_hunger_4_Orange" image="box_red" class="box box_standard" offsetXY="519.75 32" />
-      <Image id="box_on_hunger_5_Orange" image="box_red" class="box box_standard" offsetXY="532.25 32" />
+      <Image id="box_health_1_Orange" image="box_white" class="box box_standard" offsetXY="451 107" active="false" />
+      <Image id="box_health_2_Orange" image="box_white" class="box box_standard" offsetXY="463.5 107" active="false" />
+      <Image id="box_health_3_Orange" image="box_white" class="box box_standard" offsetXY="476 107" active="false" />
+      <Image id="box_health_4_Orange" image="box_white" class="box box_standard" offsetXY="488.5 107" active="false" />
+      <Image id="box_health_5_Orange" image="box_white" class="box box_standard" offsetXY="501 107" active="false" />
+      <Image id="box_health_6_Orange" image="box_white" class="box box_standard" offsetXY="513.5 107" active="false" />
+      <Image id="box_health_7_Orange" image="box_white" class="box box_standard" offsetXY="526 107" active="false" />
+      <Image id="box_health_8_Orange" image="box_white" class="box box_standard" offsetXY="538.5 107" active="false" />
+      <Image id="box_health_9_Orange" image="box_white" class="box box_standard" offsetXY="551 107" active="false" />
+      <Image id="box_health_10_Orange" image="box_white" class="box box_standard" offsetXY="563.5 107" active="false" />
+      <Image id="box_willpower_1_Orange" image="box_white" class="box box_standard" offsetXY="451 82" active="false" />
+      <Image id="box_willpower_2_Orange" image="box_white" class="box box_standard" offsetXY="463.5 82" active="false" />
+      <Image id="box_willpower_3_Orange" image="box_white" class="box box_standard" offsetXY="476 82" active="false" />
+      <Image id="box_willpower_4_Orange" image="box_white" class="box box_standard" offsetXY="488.5 82" active="false" />
+      <Image id="box_willpower_5_Orange" image="box_white" class="box box_standard" offsetXY="501 82" active="false" />
+      <Image id="box_willpower_6_Orange" image="box_white" class="box box_standard" offsetXY="513.5 82" active="false" />
+      <Image id="box_willpower_7_Orange" image="box_white" class="box box_standard" offsetXY="526 82" active="false" />
+      <Image id="box_willpower_8_Orange" image="box_white" class="box box_standard" offsetXY="538.5 82" active="false" />
+      <Image id="box_willpower_9_Orange" image="box_white" class="box box_standard" offsetXY="551 82" active="false" />
+      <Image id="box_willpower_10_Orange" image="box_white" class="box box_standard" offsetXY="563.5 82" active="false" />
+      <Image id="box_humanity_1_Orange" image="box_white" class="box box_standard" offsetXY="451 57" active="false" />
+      <Image id="box_humanity_2_Orange" image="box_white" class="box box_standard" offsetXY="463.5 57" active="false" />
+      <Image id="box_humanity_3_Orange" image="box_white" class="box box_standard" offsetXY="476 57" active="false" />
+      <Image id="box_humanity_4_Orange" image="box_white" class="box box_standard" offsetXY="488.5 57" active="false" />
+      <Image id="box_humanity_5_Orange" image="box_white" class="box box_standard" offsetXY="501 57" active="false" />
+      <Image id="box_humanity_6_Orange" image="box_white" class="box box_standard" offsetXY="513.5 57" active="false" />
+      <Image id="box_humanity_7_Orange" image="box_white" class="box box_standard" offsetXY="526 57" active="false" />
+      <Image id="box_humanity_8_Orange" image="box_white" class="box box_standard" offsetXY="538.5 57" active="false" />
+      <Image id="box_humanity_9_Orange" image="box_white" class="box box_standard" offsetXY="551 57" active="false" />
+      <Image id="box_humanity_10_Orange" image="box_white" class="box box_standard" offsetXY="563.5 57" active="false" />
+      <Image id="box_hunger_1_Orange" image="box_red" class="box box_standard" offsetXY="482.25 32" />
+      <Image id="box_hunger_2_Orange" image="box_red" class="box box_standard" offsetXY="494.75 32" />
+      <Image id="box_hunger_3_Orange" image="box_red" class="box box_standard" offsetXY="507.25 32" />
+      <Image id="box_hunger_4_Orange" image="box_red" class="box box_standard" offsetXY="519.75 32" />
+      <Image id="box_hunger_5_Orange" image="box_red" class="box box_standard" offsetXY="532.25 32" />
 
       <!-- BROWN panel trackers -->
-      <Image id="box_on_health_1_Brown" image="box_white" class="box box_standard" offsetXY="594 107" />
-      <Image id="box_agg_health_1_Brown" image="box_red_x" class="box box_standard" offsetXY="594 107" />
-      <Image id="box_sup_health_1_Brown" image="box_grey_slash" class="box box_standard" offsetXY="594 107" />
-      <Image id="box_on_health_2_Brown" image="box_white" class="box box_standard" offsetXY="606.5 107" />
-      <Image id="box_agg_health_2_Brown" image="box_red_x" class="box box_standard" offsetXY="606.5 107" />
-      <Image id="box_sup_health_2_Brown" image="box_grey_slash" class="box box_standard" offsetXY="606.5 107" />
-      <Image id="box_on_health_3_Brown" image="box_white" class="box box_standard" offsetXY="619 107" />
-      <Image id="box_agg_health_3_Brown" image="box_red_x" class="box box_standard" offsetXY="619 107" />
-      <Image id="box_sup_health_3_Brown" image="box_grey_slash" class="box box_standard" offsetXY="619 107" />
-      <Image id="box_on_health_4_Brown" image="box_white" class="box box_standard" offsetXY="631.5 107" />
-      <Image id="box_agg_health_4_Brown" image="box_red_x" class="box box_standard" offsetXY="631.5 107" />
-      <Image id="box_sup_health_4_Brown" image="box_grey_slash" class="box box_standard" offsetXY="631.5 107" />
-      <Image id="box_on_health_5_Brown" image="box_white" class="box box_standard" offsetXY="644 107" />
-      <Image id="box_agg_health_5_Brown" image="box_red_x" class="box box_standard" offsetXY="644 107" />
-      <Image id="box_sup_health_5_Brown" image="box_grey_slash" class="box box_standard" offsetXY="644 107" />
-      <Image id="box_on_health_6_Brown" image="box_white" class="box box_standard" offsetXY="656.5 107" />
-      <Image id="box_agg_health_6_Brown" image="box_red_x" class="box box_standard" offsetXY="656.5 107" />
-      <Image id="box_sup_health_6_Brown" image="box_grey_slash" class="box box_standard" offsetXY="656.5 107" />
-      <Image id="box_on_health_7_Brown" image="box_white" class="box box_standard" offsetXY="669 107" />
-      <Image id="box_agg_health_7_Brown" image="box_red_x" class="box box_standard" offsetXY="669 107" />
-      <Image id="box_sup_health_7_Brown" image="box_grey_slash" class="box box_standard" offsetXY="669 107" />
-      <Image id="box_on_health_8_Brown" image="box_white" class="box box_standard" offsetXY="681.5 107" />
-      <Image id="box_agg_health_8_Brown" image="box_red_x" class="box box_standard" offsetXY="681.5 107" />
-      <Image id="box_sup_health_8_Brown" image="box_grey_slash" class="box box_standard" offsetXY="681.5 107" />
-      <Image id="box_on_health_9_Brown" image="box_white" class="box box_standard" offsetXY="694 107" />
-      <Image id="box_agg_health_9_Brown" image="box_red_x" class="box box_standard" offsetXY="694 107" />
-      <Image id="box_sup_health_9_Brown" image="box_grey_slash" class="box box_standard" offsetXY="694 107" />
-      <Image id="box_on_health_10_Brown" image="box_white" class="box box_standard" offsetXY="706.5 107" />
-      <Image id="box_agg_health_10_Brown" image="box_red_x" class="box box_standard" offsetXY="706.5 107" />
-      <Image id="box_sup_health_10_Brown" image="box_grey_slash" class="box box_standard" offsetXY="706.5 107" />
-      <Image id="box_on_willpower_1_Brown" image="box_white" class="box box_standard" offsetXY="594 82" />
-      <Image id="box_agg_willpower_1_Brown" image="box_red_x" class="box box_standard" offsetXY="594 82" />
-      <Image id="box_sup_willpower_1_Brown" image="box_grey_slash" class="box box_standard" offsetXY="594 82" />
-      <Image id="box_on_willpower_2_Brown" image="box_white" class="box box_standard" offsetXY="606.5 82" />
-      <Image id="box_agg_willpower_2_Brown" image="box_red_x" class="box box_standard" offsetXY="606.5 82" />
-      <Image id="box_sup_willpower_2_Brown" image="box_grey_slash" class="box box_standard" offsetXY="606.5 82" />
-      <Image id="box_on_willpower_3_Brown" image="box_white" class="box box_standard" offsetXY="619 82" />
-      <Image id="box_agg_willpower_3_Brown" image="box_red_x" class="box box_standard" offsetXY="619 82" />
-      <Image id="box_sup_willpower_3_Brown" image="box_grey_slash" class="box box_standard" offsetXY="619 82" />
-      <Image id="box_on_willpower_4_Brown" image="box_white" class="box box_standard" offsetXY="631.5 82" />
-      <Image id="box_agg_willpower_4_Brown" image="box_red_x" class="box box_standard" offsetXY="631.5 82" />
-      <Image id="box_sup_willpower_4_Brown" image="box_grey_slash" class="box box_standard" offsetXY="631.5 82" />
-      <Image id="box_on_willpower_5_Brown" image="box_white" class="box box_standard" offsetXY="644 82" />
-      <Image id="box_agg_willpower_5_Brown" image="box_red_x" class="box box_standard" offsetXY="644 82" />
-      <Image id="box_sup_willpower_5_Brown" image="box_grey_slash" class="box box_standard" offsetXY="644 82" />
-      <Image id="box_on_willpower_6_Brown" image="box_white" class="box box_standard" offsetXY="656.5 82" />
-      <Image id="box_agg_willpower_6_Brown" image="box_red_x" class="box box_standard" offsetXY="656.5 82" />
-      <Image id="box_sup_willpower_6_Brown" image="box_grey_slash" class="box box_standard" offsetXY="656.5 82" />
-      <Image id="box_on_willpower_7_Brown" image="box_white" class="box box_standard" offsetXY="669 82" />
-      <Image id="box_agg_willpower_7_Brown" image="box_red_x" class="box box_standard" offsetXY="669 82" />
-      <Image id="box_sup_willpower_7_Brown" image="box_grey_slash" class="box box_standard" offsetXY="669 82" />
-      <Image id="box_on_willpower_8_Brown" image="box_white" class="box box_standard" offsetXY="681.5 82" />
-      <Image id="box_agg_willpower_8_Brown" image="box_red_x" class="box box_standard" offsetXY="681.5 82" />
-      <Image id="box_sup_willpower_8_Brown" image="box_grey_slash" class="box box_standard" offsetXY="681.5 82" />
-      <Image id="box_on_willpower_9_Brown" image="box_white" class="box box_standard" offsetXY="694 82" />
-      <Image id="box_agg_willpower_9_Brown" image="box_red_x" class="box box_standard" offsetXY="694 82" />
-      <Image id="box_sup_willpower_9_Brown" image="box_grey_slash" class="box box_standard" offsetXY="694 82" />
-      <Image id="box_on_willpower_10_Brown" image="box_white" class="box box_standard" offsetXY="706.5 82" />
-      <Image id="box_agg_willpower_10_Brown" image="box_red_x" class="box box_standard" offsetXY="706.5 82" />
-      <Image id="box_sup_willpower_10_Brown" image="box_grey_slash" class="box box_standard" offsetXY="706.5 82" />
-      <Image id="box_on_humanity_1_Brown" image="box_white" class="box box_standard" offsetXY="594 57" />
-      <Image id="box_impaired_humanity_1_Brown" image="box_red" class="box box_standard" offsetXY="594 57" />
-      <Image id="box_stain_humanity_1_Brown" image="box_black" class="box box_standard" offsetXY="594 57" />
-      <Image id="box_on_humanity_2_Brown" image="box_white" class="box box_standard" offsetXY="606.5 57" />
-      <Image id="box_impaired_humanity_2_Brown" image="box_red" class="box box_standard" offsetXY="606.5 57" />
-      <Image id="box_stain_humanity_2_Brown" image="box_black" class="box box_standard" offsetXY="606.5 57" />
-      <Image id="box_on_humanity_3_Brown" image="box_white" class="box box_standard" offsetXY="619 57" />
-      <Image id="box_impaired_humanity_3_Brown" image="box_red" class="box box_standard" offsetXY="619 57" />
-      <Image id="box_stain_humanity_3_Brown" image="box_black" class="box box_standard" offsetXY="619 57" />
-      <Image id="box_on_humanity_4_Brown" image="box_white" class="box box_standard" offsetXY="631.5 57" />
-      <Image id="box_impaired_humanity_4_Brown" image="box_red" class="box box_standard" offsetXY="631.5 57" />
-      <Image id="box_stain_humanity_4_Brown" image="box_black" class="box box_standard" offsetXY="631.5 57" />
-      <Image id="box_on_humanity_5_Brown" image="box_white" class="box box_standard" offsetXY="644 57" />
-      <Image id="box_impaired_humanity_5_Brown" image="box_red" class="box box_standard" offsetXY="644 57" />
-      <Image id="box_stain_humanity_5_Brown" image="box_black" class="box box_standard" offsetXY="644 57" />
-      <Image id="box_on_humanity_6_Brown" image="box_white" class="box box_standard" offsetXY="656.5 57" />
-      <Image id="box_impaired_humanity_6_Brown" image="box_red" class="box box_standard" offsetXY="656.5 57" />
-      <Image id="box_stain_humanity_6_Brown" image="box_black" class="box box_standard" offsetXY="656.5 57" />
-      <Image id="box_on_humanity_7_Brown" image="box_white" class="box box_standard" offsetXY="669 57" />
-      <Image id="box_impaired_humanity_7_Brown" image="box_red" class="box box_standard" offsetXY="669 57" />
-      <Image id="box_stain_humanity_7_Brown" image="box_black" class="box box_standard" offsetXY="669 57" />
-      <Image id="box_on_humanity_8_Brown" image="box_white" class="box box_standard" offsetXY="681.5 57" />
-      <Image id="box_impaired_humanity_8_Brown" image="box_red" class="box box_standard" offsetXY="681.5 57" />
-      <Image id="box_stain_humanity_8_Brown" image="box_black" class="box box_standard" offsetXY="681.5 57" />
-      <Image id="box_on_humanity_9_Brown" image="box_white" class="box box_standard" offsetXY="694 57" />
-      <Image id="box_impaired_humanity_9_Brown" image="box_red" class="box box_standard" offsetXY="694 57" />
-      <Image id="box_stain_humanity_9_Brown" image="box_black" class="box box_standard" offsetXY="694 57" />
-      <Image id="box_on_humanity_10_Brown" image="box_white" class="box box_standard" offsetXY="706.5 57" />
-      <Image id="box_impaired_humanity_10_Brown" image="box_red" class="box box_standard" offsetXY="706.5 57" />
-      <Image id="box_stain_humanity_10_Brown" image="box_black" class="box box_standard" offsetXY="706.5 57" />
-      <Image id="box_on_hunger_1_Brown" image="box_red" class="box box_standard" offsetXY="625.25 32" />
-      <Image id="box_on_hunger_2_Brown" image="box_red" class="box box_standard" offsetXY="637.75 32" />
-      <Image id="box_on_hunger_3_Brown" image="box_red" class="box box_standard" offsetXY="650.25 32" />
-      <Image id="box_on_hunger_4_Brown" image="box_red" class="box box_standard" offsetXY="662.75 32" />
-      <Image id="box_on_hunger_5_Brown" image="box_red" class="box box_standard" offsetXY="675.25 32" />
+      <Image id="box_health_1_Brown" image="box_white" class="box box_standard" offsetXY="594 107" active="false" />
+      <Image id="box_health_2_Brown" image="box_white" class="box box_standard" offsetXY="606.5 107" active="false" />
+      <Image id="box_health_3_Brown" image="box_white" class="box box_standard" offsetXY="619 107" active="false" />
+      <Image id="box_health_4_Brown" image="box_white" class="box box_standard" offsetXY="631.5 107" active="false" />
+      <Image id="box_health_5_Brown" image="box_white" class="box box_standard" offsetXY="644 107" active="false" />
+      <Image id="box_health_6_Brown" image="box_white" class="box box_standard" offsetXY="656.5 107" active="false" />
+      <Image id="box_health_7_Brown" image="box_white" class="box box_standard" offsetXY="669 107" active="false" />
+      <Image id="box_health_8_Brown" image="box_white" class="box box_standard" offsetXY="681.5 107" active="false" />
+      <Image id="box_health_9_Brown" image="box_white" class="box box_standard" offsetXY="694 107" active="false" />
+      <Image id="box_health_10_Brown" image="box_white" class="box box_standard" offsetXY="706.5 107" active="false" />
+      <Image id="box_willpower_1_Brown" image="box_white" class="box box_standard" offsetXY="594 82" active="false" />
+      <Image id="box_willpower_2_Brown" image="box_white" class="box box_standard" offsetXY="606.5 82" active="false" />
+      <Image id="box_willpower_3_Brown" image="box_white" class="box box_standard" offsetXY="619 82" active="false" />
+      <Image id="box_willpower_4_Brown" image="box_white" class="box box_standard" offsetXY="631.5 82" active="false" />
+      <Image id="box_willpower_5_Brown" image="box_white" class="box box_standard" offsetXY="644 82" active="false" />
+      <Image id="box_willpower_6_Brown" image="box_white" class="box box_standard" offsetXY="656.5 82" active="false" />
+      <Image id="box_willpower_7_Brown" image="box_white" class="box box_standard" offsetXY="669 82" active="false" />
+      <Image id="box_willpower_8_Brown" image="box_white" class="box box_standard" offsetXY="681.5 82" active="false" />
+      <Image id="box_willpower_9_Brown" image="box_white" class="box box_standard" offsetXY="694 82" active="false" />
+      <Image id="box_willpower_10_Brown" image="box_white" class="box box_standard" offsetXY="706.5 82" active="false" />
+      <Image id="box_humanity_1_Brown" image="box_white" class="box box_standard" offsetXY="594 57" active="false" />
+      <Image id="box_humanity_2_Brown" image="box_white" class="box box_standard" offsetXY="606.5 57" active="false" />
+      <Image id="box_humanity_3_Brown" image="box_white" class="box box_standard" offsetXY="619 57" active="false" />
+      <Image id="box_humanity_4_Brown" image="box_white" class="box box_standard" offsetXY="631.5 57" active="false" />
+      <Image id="box_humanity_5_Brown" image="box_white" class="box box_standard" offsetXY="644 57" active="false" />
+      <Image id="box_humanity_6_Brown" image="box_white" class="box box_standard" offsetXY="656.5 57" active="false" />
+      <Image id="box_humanity_7_Brown" image="box_white" class="box box_standard" offsetXY="669 57" active="false" />
+      <Image id="box_humanity_8_Brown" image="box_white" class="box box_standard" offsetXY="681.5 57" active="false" />
+      <Image id="box_humanity_9_Brown" image="box_white" class="box box_standard" offsetXY="694 57" active="false" />
+      <Image id="box_humanity_10_Brown" image="box_white" class="box box_standard" offsetXY="706.5 57" active="false" />
+      <Image id="box_hunger_1_Brown" image="box_red" class="box box_standard" offsetXY="625.25 32" />
+      <Image id="box_hunger_2_Brown" image="box_red" class="box box_standard" offsetXY="637.75 32" />
+      <Image id="box_hunger_3_Brown" image="box_red" class="box box_standard" offsetXY="650.25 32" />
+      <Image id="box_hunger_4_Brown" image="box_red" class="box box_standard" offsetXY="662.75 32" />
+      <Image id="box_hunger_5_Brown" image="box_red" class="box box_standard" offsetXY="675.25 32" />
 
       <!--
 UI.setAttributes("page_1_right_Pink", {padding = "8 8 160 20"})
