@@ -630,6 +630,28 @@ function StorytellerScenesPanel.syncClockDraftFromState()
     StorytellerScenesPanel.syncClockDraftFromClock(S.getStateVal("sessionScene", "clock"))
 end
 
+--- TOR-453: when no library row is selected, draft shows present-day datetime or blank fields (no Jan 1 invent).
+function StorytellerScenesPanel.syncClockDraftFromPresentDayOrBlank()
+    local pd = PresentDayClock.getPresentDay()
+    if type(pd) == "table" and PresentDayClock.clockHasDatetime(pd) then
+        clockDraft.day = tostring(math.floor(tonumber(pd.day) or 0))
+        clockDraft.year = tostring(math.floor(tonumber(pd.year) or 0))
+        clockDraft.time12 = formatTime12h(pd.hour, pd.minute)
+        clockDraft.month = math.floor(tonumber(pd.month) or 1)
+        clockDraft.speed = "1"
+        clockDraft.useRealTime = false
+        clockDraft.dirty = false
+        return
+    end
+    clockDraft.day = ""
+    clockDraft.year = ""
+    clockDraft.time12 = ""
+    clockDraft.month = 1
+    clockDraft.speed = "1"
+    clockDraft.useRealTime = false
+    clockDraft.dirty = false
+end
+
 --- @param hour24 number|nil
 --- @param minute number|nil
 --- @return string
@@ -993,13 +1015,13 @@ local function buildClockFromDraft(baseClock)
     }, nil
 end
 
---- Clock row source: selected library preview (or draft override), else live `sessionScene.clock`.
+--- Clock row source: selected library preview (or draft override); with no selection → present day or nil.
 --- @return table|nil
 local function resolvePanelDisplayClock()
     local activeKey = getActiveLibraryKey()
     if activeKey == nil then
-        local live = S.getStateVal("sessionScene", "clock")
-        return type(live) == "table" and live or nil
+        -- TOR-453: do not show live sessionScene.clock (cleared datetime paints as Jan 1 2026 defaults).
+        return PresentDayClock.getPresentDay()
     end
 
     if clockDraft.sceneKey == activeKey and clockDraft.dirty then
@@ -1329,11 +1351,54 @@ function StorytellerScenesPanel.refresh()
 
         if not clockLerpBusy() then
             local ck = resolvePanelDisplayClock()
-            if type(ck) == "table" then
-                local activeKey = getActiveLibraryKey()
-                if activeKey ~= nil and clockDraft.sceneKey == activeKey and clockDraft.dirty ~= true then
-                    StorytellerScenesPanel.syncClockDraftFromClock(ck)
-                elseif activeKey == nil then
+            local activeKey = getActiveLibraryKey()
+            if activeKey == nil then
+                -- TOR-453: present-day or blank — never invent Jan 1 2026 from cleared live clock.
+                StorytellerScenesPanel.syncClockDraftFromPresentDayOrBlank()
+                if type(ck) == "table" and PresentDayClock.clockHasDatetime(ck) then
+                    local mo = math.floor(tonumber(ck.month) or 1)
+                    for m = 1, 12 do
+                        U.setAttributes("scenes_month_" .. tostring(m), {
+                            colors = (m == mo) and onColors or GREY,
+                            fontStyle = "Bold",
+                            textColor = "#FFFFFF",
+                        })
+                    end
+                    setInputFieldText("scenes_clock_day", tostring(math.floor(tonumber(ck.day) or 0)))
+                    setInputFieldText("scenes_clock_year", tostring(math.floor(tonumber(ck.year) or 0)))
+                    setInputFieldText("scenes_clock_time12", formatTime12h(ck.hour, ck.minute))
+                    refreshClockInputSourceColors(ck)
+                    setInputFieldText("scenes_clock_speed", "1")
+                    U.setAttributes("scenes_clock_rtToggle", {
+                        text = "OFF",
+                        colors = GREY,
+                        fontStyle = "Bold",
+                        textColor = "#FFFFFF",
+                    })
+                    refreshLerpSunLabels(mo, tonumber(ck.day))
+                else
+                    for m = 1, 12 do
+                        U.setAttributes("scenes_month_" .. tostring(m), {
+                            colors = GREY,
+                            fontStyle = "Bold",
+                            textColor = "#FFFFFF",
+                        })
+                    end
+                    setInputFieldText("scenes_clock_day", "")
+                    setInputFieldText("scenes_clock_year", "")
+                    setInputFieldText("scenes_clock_time12", "")
+                    refreshClockInputSourceColors(nil)
+                    setInputFieldText("scenes_clock_speed", "1")
+                    U.setAttributes("scenes_clock_rtToggle", {
+                        text = "OFF",
+                        colors = GREY,
+                        fontStyle = "Bold",
+                        textColor = "#FFFFFF",
+                    })
+                    refreshLerpSunLabels(nil, nil)
+                end
+            elseif type(ck) == "table" then
+                if clockDraft.sceneKey == activeKey and clockDraft.dirty ~= true then
                     StorytellerScenesPanel.syncClockDraftFromClock(ck)
                 end
 
@@ -1585,7 +1650,7 @@ function StorytellerScenesPanel.deselectPendingPreview(opts)
         S.setStateVal(nil, "sceneLibrary", "activeKey")
         clockDraft.sceneKey = nil
         clockDraft.dirty = false
-        StorytellerScenesPanel.syncClockDraftFromState()
+        StorytellerScenesPanel.syncClockDraftFromPresentDayOrBlank()
     else
         local lastApplied = S.getStateVal("sceneLibrary", "lastAppliedKey")
         if type(lastApplied) == "string" and lastApplied ~= "" then
@@ -1595,7 +1660,7 @@ function StorytellerScenesPanel.deselectPendingPreview(opts)
             S.setStateVal(nil, "sceneLibrary", "activeKey")
             clockDraft.sceneKey = nil
             clockDraft.dirty = false
-            StorytellerScenesPanel.syncClockDraftFromState()
+            StorytellerScenesPanel.syncClockDraftFromPresentDayOrBlank()
         end
     end
 
