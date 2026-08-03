@@ -87,6 +87,12 @@ local lastPrincesCourtTrackerUiAttrs = {}
 --- panelSeatColor -> fingerprint of tracker inputs (skip XmlUI when unchanged; TOR-377).
 local lastPrincesCourtTrackerFpByColumn = {}
 
+--- Lua-side visibility unions for shared Court root + page panels (TOR-444).
+--- Do not trust live UI.getAttribute after showTo/hideFrom — stale reads left prior spreads
+--- active (e.g. page2 next still visible on the last double-page / pages 5–6).
+local princesCourtRootAudience = {}
+local princesCourtPageAudience = { {}, {}, {} }
+
 local MAP_OVERLAY_KEYS = {
     "districtsAll",
     "localRoads",
@@ -641,8 +647,38 @@ local function normalizePrincesCourtPage(page)
     return n
 end
 
+--- @param audienceSet table<string, boolean>
+--- @return string[]
+local function audienceSetToTokens(audienceSet)
+    local tokens = {}
+    if type(audienceSet) ~= "table" then
+        return tokens
+    end
+    for _, col in ipairs(C.PlayerColors or {}) do
+        if audienceSet[col] == true then
+            tokens[#tokens + 1] = col
+        end
+    end
+    return tokens
+end
+
+--- @param audienceSet table<string, boolean>
+--- @return boolean
+local function audienceSetNonEmpty(audienceSet)
+    if type(audienceSet) ~= "table" then
+        return false
+    end
+    for _, on in pairs(audienceSet) do
+        if on == true then
+            return true
+        end
+    end
+    return false
+end
+
 --- Applies Prince's Court page panel visibility for one HUD seat (shared tree, TOR-444).
--- Root + page audiences are visibility unions; concurrent viewers may be on different pages.
+-- Three panels = three double-page spreads (facing pages 1–2 / 3–4 / 5–6). Page 1 has next only;
+-- page 3 has prev only. Concurrent viewers may sit on different spreads via per-panel visibility unions.
 -- @param seatColor string
 -- @param showPanel boolean court reference open
 -- @param page number 1|2|3
@@ -652,48 +688,39 @@ local function applyPrincesCourtPageVisibility(seatColor, showPanel, page)
     end
     local rootId = "playerHud_refPanel_princesCourt"
     local targetPage = normalizePrincesCourtPage(page)
+
     if showPanel == true then
-        U.showTo(rootId, seatColor)
+        princesCourtRootAudience[seatColor] = true
+    else
+        princesCourtRootAudience[seatColor] = nil
+    end
+    U.setVisibleTo(rootId, audienceSetToTokens(princesCourtRootAudience))
+    if audienceSetNonEmpty(princesCourtRootAudience) then
         setActive(rootId, true)
     else
-        U.hideFrom(rootId, seatColor)
-        local rootAud = U.getVisibilityAudience(rootId)
-        local anyRoot = false
-        if type(rootAud) == "table" then
-            for _i, _c in ipairs(rootAud) do
-                anyRoot = true
-                break
-            end
-        end
-        if not anyRoot then
-            setActive(rootId, false)
-        end
+        setActive(rootId, false)
     end
+
     for p = 1, 3 do
         local panelId = "playerHud_refPanel_PrincesCourt_page" .. p
+        local aud = princesCourtPageAudience[p]
         local show = showPanel == true and p == targetPage
         if show then
-            U.showTo(panelId, seatColor)
+            aud[seatColor] = true
+        else
+            aud[seatColor] = nil
+        end
+        U.setVisibleTo(panelId, audienceSetToTokens(aud))
+        if audienceSetNonEmpty(aud) then
             setActive(panelId, true)
-            if type(UI.show) == "function" then
+            if show and type(UI.show) == "function" then
                 UI.show(panelId)
             end
         else
-            U.hideFrom(panelId, seatColor)
-            local pageAud = U.getVisibilityAudience(panelId)
-            local anyPage = false
-            if type(pageAud) == "table" then
-                for _i, _c in ipairs(pageAud) do
-                    anyPage = true
-                    break
-                end
+            if type(UI.hide) == "function" then
+                UI.hide(panelId)
             end
-            if not anyPage then
-                if type(UI.hide) == "function" then
-                    UI.hide(panelId)
-                end
-                setActive(panelId, false)
-            end
+            setActive(panelId, false)
         end
     end
 end
