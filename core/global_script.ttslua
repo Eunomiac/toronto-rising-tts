@@ -1964,6 +1964,14 @@ end
 --- Seconds to hold a post-roll correction die locked above the tray before randomize (ST roll hover).
 local POST_ROLL_DIE_HOVER_SEC = 1
 
+--- After ST tray ring snap: locked settle before unlock/randomize (TOR-448).
+--- PC auto-roll usually happens long after manual pool spawn; ST must pause here so dice
+--- finish appearing before the unlock → 0.15s → randomize toss.
+local ST_ROLL_TRAY_SETTLE_SEC = 2
+
+--- After ST bag spawn (before tray snap): brief pause for preload claim / mesh appear.
+local ST_ROLL_SPAWN_SETTLE_SEC = 0.75
+
 --- TTS `Object.randomize(color)` toss impulse follows the acting seat; Black alone may
 --- not match player right-click ROLL. Prefer the clicker seated color for ST tosses.
 -- @param rollColor string  roll owner ("Black" / PC seat)
@@ -6203,8 +6211,8 @@ local function blackRollWaitDrawerRaised(slot)
     end
 end
 
---- ST Roll click: open → fully raised + light → spawn → tray ring → hover →
---- unlock → 0.15s → randomize (same order as player right-click ROLL; TOR-448).
+--- ST Roll click: open → fully raised + light → spawn → tray ring → settle →
+--- unlock → 0.15s → randomize (PC auto-roll order; longer settle than manual PC assemble).
 -- @param physicsColor string|nil  HUD clicker seat for Object.randomize toss
 local function runBlackRollSequence(physicsColor)
     local pid = S.getPlayerID("Black")
@@ -6236,14 +6244,15 @@ local function runBlackRollSequence(physicsColor)
             -- Light with tray arrival (deferred from openForSlot).
             STD.applyTrayLightForSlot(slot, true, 0.25)
             spawnBlackPoolLocked()
-            return 0.5
+            return ST_ROLL_SPAWN_SETTLE_SEC
         end,
         function()
             return blackRollWaitDrawerRaised(slot)
         end,
         function()
             moveBlackStagedDiceToTray()
-            return 1
+            -- Locked settle: mirror PC dice that sat assembled before right-click ROLL.
+            return ST_ROLL_TRAY_SETTLE_SEC
         end,
         function()
             return blackRollWaitDrawerRaised(slot)
@@ -6277,7 +6286,7 @@ local function runBlackRollSequence(physicsColor)
 end
 
 --- Advances to ROLLING and unlocks staged dice (drawer must already be raised when applicable).
--- Black legacy/debug path: startRolling → 1s hover → unlock → 0.15s → randomize (same as PC auto-roll).
+-- Black legacy/debug path: startRolling → tray settle → unlock → 0.15s → randomize (same as PC auto-roll).
 -- PC path: live tray elevation + startRolling must complete before unlock (TOR-262).
 -- @param color string
 -- @param physicsColor string|nil  ST only: acting seat for toss impulse
@@ -6313,7 +6322,7 @@ local function finishRollRelease(color, physicsColor)
             U.await(function()
                 randomizeBlackTrayDiceSimultaneous(delayedRollId, rollAs)
             end, 0.15)
-        end, 1)
+        end, ST_ROLL_TRAY_SETTLE_SEC)
         return true
     end
     if RC.startRolling(color) ~= true then
