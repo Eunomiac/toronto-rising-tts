@@ -431,6 +431,7 @@ local function tor444UpdateHud(F)
 end
 
 --- Inline HO.applyBlindfoldVariantForSeatedPlayers (HO is a Global local).
+--- Set display image *after* UI.show — parent show re-applies XML default image=overlay_blindfold_1.
 local function tor444ArmSharedBlindfold(F)
   local panelId = "playerHud_overlay_blindfold"
   local displayId = "overlay_blindfold_display"
@@ -446,10 +447,10 @@ local function tor444ArmSharedBlindfold(F)
     end
   end
   U.setVisibleTo(panelId, tokens)
+  UI.show(panelId)
   U.setAttribute(displayId, "image", "overlay_blindfold_" .. tostring(v))
   U.setAttribute(displayId, "active", "true")
   U.setAttribute(displayId, "color", "White")
-  UI.show(panelId)
 end
 
 U.chain({

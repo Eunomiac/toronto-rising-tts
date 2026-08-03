@@ -1,6 +1,7 @@
 <!-- Shared scene-transition blindfold (TOR-444).
      One panel for all seats; one variant Image (image= swap); one district/site card pair.
      Arm audience (U.setVisibleTo PC colors) while inactive, then UI.show parent.
+     Then set overlay_blindfold_display image= (UI.show re-applies XML default image=overlay_blindfold_1).
      Phases still use ui/shared/panel_overlay_global_blindfold.xml. -->
 <Defaults>
   <Image class="player_overlay_transition"

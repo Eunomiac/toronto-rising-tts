@@ -291,15 +291,16 @@ local function applySharedBlindfold(variant, opts)
     if v > C.BlindfoldVariantCount then
       v = C.BlindfoldVariantCount
     end
-    U.setAttribute(SHARED_BLINDFOLD_DISPLAY, "image", "overlay_blindfold_" .. tostring(v))
-    U.setAttribute(SHARED_BLINDFOLD_DISPLAY, "active", "true")
-    U.setAttribute(SHARED_BLINDFOLD_DISPLAY, "color", "White")
     if touchCards then
       armSharedBlindfoldLocationCards(opts.districtImage, opts.siteImage)
     end
     if forceReshow or prev ~= true then
       UI.show(panelId)
     end
+    -- After UI.show: parent show re-applies XML child attrs (display defaults to overlay_blindfold_1).
+    U.setAttribute(SHARED_BLINDFOLD_DISPLAY, "image", "overlay_blindfold_" .. tostring(v))
+    U.setAttribute(SHARED_BLINDFOLD_DISPLAY, "active", "true")
+    U.setAttribute(SHARED_BLINDFOLD_DISPLAY, "color", "White")
     lastVisible[panelId] = true
     return
   end
