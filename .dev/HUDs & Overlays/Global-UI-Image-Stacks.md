@@ -21,7 +21,7 @@ Verification:
 
 Status: current (2026-08-03)
 
-Related: [Join-Load Inventory](../Multiplayer%20Functionality/Join-Load%20Inventory.md), [tts-xmlui-visibility-seat-assignment](../../docs/solutions/tts-xmlui-visibility-seat-assignment.md), [lua-ui-full-xml-policy](../../docs/solutions/lua-ui-full-xml-policy.md), TOR-439, TOR-375
+Related: [Join-Load Inventory](../Multiplayer%20Functionality/Join-Load%20Inventory.md), [tts-xmlui-visibility-seat-assignment](../../docs/solutions/tts-xmlui-visibility-seat-assignment.md), [lua-ui-full-xml-policy](../../docs/solutions/lua-ui-full-xml-policy.md), TOR-439, TOR-375, **TOR-444**
 
 ---
 
@@ -46,19 +46,24 @@ Related: [Join-Load Inventory](../Multiplayer%20Functionality/Join-Load%20Invent
 
 ### Strategy 2 ↔ 3 conflict (hover chrome)
 
-One Image has one `color`. If that Image is shared and visible to `Red|Orange`, a hover tint for Red is also seen by Orange. So for interactive chrome that needs concurrent per-player hover/active feedback:
+One Image has one `color`. If that Image is shared and visible to `Red|Orange`, a hover tint for Red is also seen by Orange. Concurrent per-player hover/active feedback needs a choice:
 
 | Option | Structure | Feedback mechanism |
 | --- | --- | --- |
 | **A** | Per-player containers (×5); **collapse** stacks → one Image each | Strategy **2** tint / asset swap |
 | **B** | **Shared** container (×1); **keep** base/hover/active siblings | Strategy **3** — per-player `visibility` on hover/active layers (`active` union = who has that toggle on; `hover` = who is hovering) |
 
-Cannot combine “shared single Image” + “per-player tint.” Pick A or B per surface.
+Cannot combine “shared single Image” + “per-player tint.”
+
+**Locked rule of thumb (author + agent, 2026-08-03):**
+
+- **A** when the container must stay seat-local for other reasons (pan, private layout, already-per-seat HUD chrome).
+- **B** when we are sharing the container and still need concurrent hover/active (remount prefers one DOM tree).
 
 Rough chrome Image count for ~54 map sidebar buttons (status quo ≈ 54×3×5 = **810**):
 
-- **A:** 54×5 = **270**
-- **B:** 54×3 = **162** (best remount if Lua can drive per-layer audiences)
+- **A:** 54×5 = **270** (still five sidebar trees)
+- **B (locked for map sidebars):** 54×3 = **162** + one shared DOM — better remount than Image delta alone suggests
 
 ### `active` vs `visibility`
 
@@ -76,28 +81,29 @@ Do not conflate them. Hunger TOR-340 sticky-`active` under empty-seat `visibilit
 - Change-guard: skip write if serialized union unchanged
 - Shared panels: keep Lua-side audience sets; write full unions (don’t rely only on live `getAttribute`)
 
-## Strategy 3 eligibility
-
-**Share:** nestedless `refPanel_*`; Court **page** panels (page1/2/3 — concurrent viewers on different pages via per-page unions); coterie grid/popups when state allows; **scene-transition blindfold** (one random variant + cards for all); location dock (shared session location).
-
-**Keep per-seat (divergent content/interaction):** map pan surface + in-map overlays (see Map section); roll controls; **hunger + condition overlays** (different per-PC art at once — keep FadeIn; Images are already per-seat); **camera dock** (left = other players only; right = self controls).
-
-### Map (pan forces ×5 of the surface; chrome is A-or-B)
-
-Pan/`offsetXY` cannot differ per viewer on one Image → keep per-seat: map base, feature/domain overlays, pins, district highlight (collapsed), district card (collapsed; selection still per-player).
-
-| Within / beside map | Approach |
-| --- | --- |
-| District highlight / card exclusive stacks | Strategy **1** — one Image + `image=` **per seat** (live under / with pan selection) |
-| Left/right sidebar + pan nav chrome | **Option A or B** (see Strategy 2↔3 conflict). Prefer **B** for max Image cut if concurrent independent toggles stay; **A** if we keep proven tint path and accept ×5 containers |
-
-Shared map sidebars (B): root audience = players with map open; each `_active` / `_hover` sibling’s `visibility` = the subset of those players in that chrome state.
-
 ### Animation contract
 
 `UI.show` / `UI.hide` fire XmlUI animations. For shared animated panels: set `visibility` audience first (while inactive), then `UI.show`. Do not keep ×5 copies solely to run per-seat fades when content is shared or the fade is dispensable. Where content already requires per-seat Images (hunger/conditions), keep overlay FadeIn.
 
 Nav: XmlUI `(player, value, id)` → `getPlayerIDAndColor(player)`.
+
+## Strategy 3 eligibility
+
+**Share:** nestedless `refPanel_*`; Court **page** panels (page1/2/3 — concurrent viewers on different pages via per-page unions); coterie grid/popups when state allows; **scene-transition blindfold** (one random variant + cards for all); location dock (shared session location); **map left/right sidebars (Option B)**.
+
+**Keep per-seat (divergent content/interaction):** map **pan surface** + in-map overlays (see Map); roll controls; **hunger + condition overlays** (different per-PC art at once — keep FadeIn); **camera dock** (left = other players only; right = self controls); player HUD right-sidebar chrome (Phase 3 — Option **A**, container already seat-local).
+
+### Map
+
+Pan/`offsetXY` cannot differ per viewer on one Image → keep per-seat: map base, feature/domain overlays, pins, district highlight (collapsed), district card (collapsed; selection still per-player).
+
+| Slice | Locked approach |
+| --- | --- |
+| District highlight / card exclusive stacks | Strategy **1** — one Image + `image=` **per seat** |
+| Left overlay-toggle + right district-toggle sidebars | Option **B** — one shared tree; keep base/hover/active; per-player layer `visibility` |
+| Pan nav chrome | Prefer **B** if lifted beside shared sidebars; else **A** if it remains inside per-seat map root |
+
+Shared map sidebars (B): root audience = players with map open; each `_active` / `_hover` sibling’s `visibility` = the subset of those players in that chrome state. Overlay on/off and district hover stay in per-player `hud.map.*`; layer visibility encodes that for concurrent viewers.
 
 ## Court budget (×5 seats)
 
@@ -114,23 +120,22 @@ Further: share Court pages (÷5); collapse pip rows to one Image per meter.
 ## Catalog — exclusive stacks (strategy 1)
 
 | Family | Template / area | Est. save |
-| --- | --- | ---: |
+| --- | ---: | ---: |
 | Court tracker triples | `panel_right_sidebar_referenceLayer` | ~1500 |
 | Location-dock district cards | `panel_overlay_location` | ~175 |
 | Map district cards / highlights | `panel_map_core` | ~175 + ~155 |
-| Blindfold variants | `panel_overlay_blindfold` | ~155 |
+| Blindfold variants | `panel_overlay_blindfold` | ~155 (plus drop ×5 seat copies when shared) |
 | Flat ref popups | referenceLayer | ~55 or share (strategy 3) |
 | Hunger tiers | `panel_overlays` | ~25 |
 
-## Catalog — chrome tint (strategy 2)
+## Catalog — chrome
 
-| Family | Est. save |
-| --- | ---: |
-| Map district-toggle chrome | ~360 |
-| Map overlay-toggle chrome | ~180 |
-| Right-sidebar chrome | ~150 |
-| Coterie grid hover | ~80 |
-| Map pan chrome | ~15 |
+| Family | Approach | Est. note |
+| --- | --- | --- |
+| Map overlay + district sidebars | **B** (share + keep stacks) | ~810 → ~162 Images; one DOM tree |
+| Map pan chrome | B if shared with sidebars; else A | ~15 |
+| Right-sidebar HUD chrome | **A** (done Phase 3) | ~150 (triple → one ×5) |
+| Coterie grid hover | A unless grid is shared | ~80 |
 
 ## Ballpark after all strategies
 
@@ -140,7 +145,7 @@ Further: share Court pages (÷5); collapse pip rows to one Image per meter.
 | Aggressive (incl. pip meters + share) | ~1,500–1,800 |
 | Without pip-meter collapse | ~2,000–2,500 |
 
-Floor ~800+ while map / rolls / camera stay seat-local.
+Floor ~800+ while map **pan surface** / rolls / camera stay seat-local (map **sidebars** are shared under Option B).
 
 ## Exemplars already in tree
 
@@ -148,14 +153,15 @@ Floor ~800+ while map / rolls / camera stay seat-local.
 - Blindfold district/site cards — `core/hud_overlays.ttslua`
 - Dice faces — `core/roll_ui.ttslua`
 - Domain-claims divider — image swap on hover
+- Right-sidebar HUD tint — Phase 3 Option A (`core/hud_player.ttslua`)
 
 ## Implementation phases
 
-0. This doc + DOCS_INDEX
-1. Audience helpers in `lib/util.ttslua`
-2. Migrate Global visibility writers onto helpers
-3. Sidebar chrome tint pilot
-4. Shared nestedless ref panels
+0. This doc + DOCS_INDEX — **done**
+1. Audience helpers in `lib/util.ttslua` — **done**
+2. Migrate Global visibility writers onto helpers — **done**
+3. Sidebar chrome tint pilot (Option A, seat-local HUD) — **done**
+4. Shared nestedless ref panels — **next**
 5. Shared Court pages + tracker collapse
-6. Remaining stacks/chrome / pip meters
+6. Location dock share; map strategy-1 district stacks; map sidebars Option **B**; shared transition blindfold; hunger per seat; camera stays per-seat; coterie; pip meters as time allows
 7. Recount + Save & Play + join Reload UI smoke
