@@ -929,28 +929,48 @@ local function isGlobalHudDocumentMounted()
     return UI.getAttribute("overlay_globalBlindfold", "active") ~= nil
 end
 
---- TOR-384: wait until UI assets are idle; if Global canary is missing, remount full embedded
---- Global XmlUI once (same path as Phases Refresh XML), then wait until the canary appears.
+--- TOR-384: if Global canary is missing, remount full embedded Global XmlUI once (same path as
+--- Phases Refresh XML), then wait until the canary appears.
 -- Must run before startup-gate Sync.full so UI writes land on a live document.
+-- Do **not** wait on `UI.loading` when the canary is missing — cold-load attach failure can leave
+-- `UI.loading` stuck true forever, which previously timed out the readiness gate with no remount.
+-- Once the canary is present, proceed even if `UI.loading` is still true (remount may still be
+-- finishing asset load in the background).
 -- @return function wait predicate for U.chain
 local function waitEnsureGlobalHudDocumentMounted()
     local remountRequested = false
+    local loggedMissingWhileLoading = false
+    local loggedProceedWhileLoading = false
     return function()
-        if UI ~= nil and UI.loading == true then
-            return false
-        end
+        local loading = UI ~= nil and UI.loading == true
         if isGlobalHudDocumentMounted() then
+            if loading and not loggedProceedWhileLoading then
+                loggedProceedWhileLoading = true
+                print(
+                    U.loadElapsedPrefix()
+                        .. "[TOR-384] Global HUD canary present; continuing startup (UI.loading still true)."
+                )
+            end
             return true
         end
+        -- Canary missing: remount even if UI.loading is still true (cold-load failure mode).
         if pendingFullUiRemount then
             return false
         end
         if not remountRequested then
             remountRequested = true
-            print(
-                U.loadElapsedPrefix()
-                    .. "[TOR-384] Global HUD canary missing — remounting full Global XmlUI."
-            )
+            if loading and not loggedMissingWhileLoading then
+                loggedMissingWhileLoading = true
+                print(
+                    U.loadElapsedPrefix()
+                        .. "[TOR-384] Global HUD canary missing while UI.loading=true — remounting anyway."
+                )
+            else
+                print(
+                    U.loadElapsedPrefix()
+                        .. "[TOR-384] Global HUD canary missing — remounting full Global XmlUI."
+                )
+            end
             performFullUiResync("onLoad missing Global HUD", { mode = "full" })
             return false
         end

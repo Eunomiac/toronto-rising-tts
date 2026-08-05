@@ -23,7 +23,7 @@ Per-color loading overlays inside `visibility="<Color>"` parents never show for 
 
 ## Cold-load Global missing (TOR-384)
 
-Distinct from seat-visibility snapshot: Host **first load from main menu** can leave Global XmlUI unmounted (`UI.getAttribute("overlay_globalBlindfold", "active") == nil`) while object XmlUI works; plain reload often attaches. Startup readiness gate runs `waitEnsureGlobalHudDocumentMounted` **before** gate `Sync.full`: if the canary is missing after `UI.loading` clears, one full `performFullUiResync("onLoad missing Global HUD")` (same embed path as Phases **Refresh XML**). Remount failure with canary still absent errors loudly.
+Distinct from seat-visibility snapshot: Host **first load from main menu** can leave Global XmlUI unmounted (`UI.getAttribute("overlay_globalBlindfold", "active") == nil`) while object XmlUI works; plain reload often attaches. Startup readiness gate runs `waitEnsureGlobalHudDocumentMounted` **before** gate `Sync.full`: if the canary is missing, one full `performFullUiResync("onLoad missing Global HUD")` (same embed path as Phases **Refresh XML**) — **without** waiting for `UI.loading` (cold-load can leave `UI.loading` stuck true; waiting first timed out the gate with no remount). Once the canary is present, the gate continues even if `UI.loading` is still true. Remount failure with canary still absent errors loudly.
 
 ## Multiclient note (TOR-374 / TOR-375 / TOR-381 / TOR-428)
 
