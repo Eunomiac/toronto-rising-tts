@@ -583,7 +583,7 @@ function DEBUG.showGlobalHudCanaries()
     print("HUD_PANEL_BLACK visibility=" .. tostring(attr("HUD_PANEL_BLACK", "visibility")))
     print("HUD_PANEL_BLACK active=" .. tostring(attr("HUD_PANEL_BLACK", "active")))
     print("currentPhase=" .. tostring(S.getStateVal("currentPhase")))
-    print("Interpretation: large xmlLen+attrs but blank canvas → dead Global canvas; blindfold active → cover; UI.loading → asset race; only BLACK wrong → seat reveal skip.")
+    print("Interpretation: large xmlLen+attrs but blank canvas → dead Global canvas; blindfold active → cover; UI.loading → asset race; only BLACK wrong → seat reveal skip; canary nil → TOR-384 missing mount (startup gate remounts).")
 end
 
 --- Print orchestrator reconcile skip-cache snapshot (fingerprints, layout, init-light retries).

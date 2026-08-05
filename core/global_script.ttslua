@@ -920,6 +920,46 @@ local function performFullUiResync(reason, opts)
     return true
 end
 
+--- TOR-384: canary for a mounted Global XmlUI document (ungated session blindfold root).
+-- @return boolean
+local function isGlobalHudDocumentMounted()
+    if UI == nil or type(UI.getAttribute) ~= "function" then
+        return false
+    end
+    return UI.getAttribute("overlay_globalBlindfold", "active") ~= nil
+end
+
+--- TOR-384: wait until UI assets are idle; if Global canary is missing, remount full embedded
+--- Global XmlUI once (same path as Phases Refresh XML), then wait until the canary appears.
+-- Must run before startup-gate Sync.full so UI writes land on a live document.
+-- @return function wait predicate for U.chain
+local function waitEnsureGlobalHudDocumentMounted()
+    local remountRequested = false
+    return function()
+        if UI ~= nil and UI.loading == true then
+            return false
+        end
+        if isGlobalHudDocumentMounted() then
+            return true
+        end
+        if pendingFullUiRemount then
+            return false
+        end
+        if not remountRequested then
+            remountRequested = true
+            print(
+                U.loadElapsedPrefix()
+                    .. "[TOR-384] Global HUD canary missing — remounting full Global XmlUI."
+            )
+            performFullUiResync("onLoad missing Global HUD", { mode = "full" })
+            return false
+        end
+        error(
+            "[TOR-384] Global HUD still missing after remount (canary overlay_globalBlindfold)."
+        )
+    end
+end
+
 --- Run a short join-restore U.chain (assets / emitters / figurines). Shares remount-in-flight guard.
 -- @param label string
 -- @param steps function[]
@@ -2841,6 +2881,7 @@ function onLoad(saved_data)
     -- - table sync callback has run
     -- - first sync pass has been issued
     -- - seat lights are resolvable
+    -- - Global XmlUI document mounted (TOR-384 canary remount if cold-load attach failed)
     -- Then final sync, locked-objects, dice warm, then apply global blindfold from currentPhase.
     -- Use U.chain (U.await) instead of U.await with nested U.await:
     -- TTS does not reliably honor U.await scheduled from inside a condition callback.
@@ -2862,6 +2903,11 @@ function onLoad(saved_data)
                 setStartupAction("startup-ready-conditions-met")
                 return true
             end
+        end,
+        function()
+            -- Before gate Sync.full: recover missing Global document so UI writes stick (TOR-384).
+            setStartupAction("startup-ready-ensure-global-xml")
+            return waitEnsureGlobalHudDocumentMounted()
         end,
         function()
             setStartupAction("startup-ready-final-sync-full")

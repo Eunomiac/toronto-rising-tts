@@ -21,6 +21,10 @@ Per-color loading overlays inside `visibility="<Color>"` parents never show for 
    - Join clients: optional deferred full UI document resync (TOR-381), skipped when `connectionControls.deferSetXml` is on (TOR-428). Manual **Refresh XML** on the Phases panel.
    - Host hotseat probe (`ui/shared/panel_visibility_probe.xml`) confirmed runtime visibility rebind (2026-07-12).
 
+## Cold-load Global missing (TOR-384)
+
+Distinct from seat-visibility snapshot: Host **first load from main menu** can leave Global XmlUI unmounted (`UI.getAttribute("overlay_globalBlindfold", "active") == nil`) while object XmlUI works; plain reload often attaches. Startup readiness gate runs `waitEnsureGlobalHudDocumentMounted` **before** gate `Sync.full`: if the canary is missing after `UI.loading` clears, one full `performFullUiResync("onLoad missing Global HUD")` (same embed path as Phases **Refresh XML**). Remount failure with canary still absent errors loudly.
+
 ## Multiclient note (TOR-374 / TOR-375 / TOR-381 / TOR-428)
 
 Full Global UI document reload on Grey→PC correlated with client **connection timeout**. Prefer visibility rebind. Join-client deferred resync remains a fallback and can be deferred indefinitely via Phases **Defer setXML**.

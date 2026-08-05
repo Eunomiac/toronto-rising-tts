@@ -48,7 +48,7 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 
 | Handler | File | Delivery | Tier | Guards | World I/O | Risk | Phase |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `onLoad` | `global_script` | Host | B+C | — | bootstrap | Low | Done |
+| `onLoad` | `global_script` | Host | B+C | Startup readiness: TOR-384 Global HUD canary remount before gate Sync.full when `overlay_globalBlindfold` missing | bootstrap | Low | Done |
 | `onSave` | `global_script` | Save | B | — | lights state | Med | 4 |
 | `onObjectPickUp` | `global_script` | Host | C | Steam + tag | Gameboard flags | High | 4 |
 | `onObjectDrop` | `global_script` | Host | C | Steam + tag | Gameboard/NPCS | High | 4 |
