@@ -624,5 +624,13 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-08-03 | SHIP | TOR-452 | Compulsion LIVEROLL + companion with tray; commit `6e56aa9` |
 | 2026-08-03 | FOCUS | TOR-439 | After TOR-453/452 Done — propose join spike verify next |
 | 2026-08-03 | VALIDATE | TOR-406–411, TOR-412, TOR-416, TOR-425, TOR-431, TOR-434, TOR-441, TOR-445–447, TOR-428–430, TOR-432, TOR-438, TOR-381 | Author confirmed Done pending-verify batch; tasklist pending notes cleared; TOR-402–405 / TOR-222 / TOR-413–414 / TOR-449 still pending |
+| 2026-08-04 | CREATE | TOR-459 | Spotlight→End transition blindfold (INBOX Immediate → Focus #2 High) |
+| 2026-08-04 | CREATE+SHIP | TOR-460 | CSHEET inner-edge right-click → diceTray (INBOX Immediate Quick Fix) |
+| 2026-08-04 | CREATE+SHIP | TOR-461 | Map/Court/Coteries mutual exclusive sidebar (INBOX Immediate Quick Fix) |
+| 2026-08-04 | CREATE | TOR-462 | Map sidebar permanently shows active chrome (INBOX Immediate → Focus #1 High; relatedTo TOR-457) |
+| 2026-08-04 | CREATE | TOR-463 | External: snowfall from The Thing mod |
+| 2026-08-04 | REPURPOSE+SHIP | TOR-100 | Pink Tarot camera diceTray/default (was canceled Spotlight NPC distinction; Linear free create limit) |
+| 2026-08-04 | REPURPOSE | TOR-88 | External: recommended client TTS settings (was canceled PCs deactivate) |
+| 2026-08-04 | FOCUS | TOR-462, TOR-459, TOR-439 | INBOX Immediate re-stack; session bugs ahead of join spike |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

@@ -1848,6 +1848,11 @@ function HUD_playerRightSidebar_mouseDown(player, value, id)
             nextVal = action.coreKey
         end
         S.setStateVal(nextVal, "playerData", playerID, "hud", "activeCorePanel")
+        -- Map is mutually exclusive with Court / Coteries (sheet may stay independent).
+        if nextVal == "map" then
+            S.setStateVal(nil, "playerData", playerID, "hud", "reference", "coteries")
+            S.setStateVal(nil, "playerData", playerID, "hud", "reference", "princesCourt")
+        end
         HUDP.updatePlayerUI(player, color)
         return
     end
@@ -1860,11 +1865,12 @@ function HUD_playerRightSidebar_mouseDown(player, value, id)
             if isOpen then
                 S.setStateVal(nil, "playerData", playerID, "hud", "reference", action.refKey)
             else
-                -- Open this nested panel, close the sibling, and close nestedless persistent panels.
+                -- Open this nested panel, close the sibling, map, and nestedless persistent panels.
                 S.setStateVal({}, "playerData", playerID, "hud", "reference", action.refKey)
 
                 local otherNested = action.refKey == "coteries" and "princesCourt" or "coteries"
                 S.setStateVal(nil, "playerData", playerID, "hud", "reference", otherNested)
+                S.setStateVal(nil, "playerData", playerID, "hud", "activeCorePanel")
 
                 -- Nestedless persistent panels: force hidden
                 for nestedlessKey, _ in pairs(NESTEDLESS_REF_KEYS) do

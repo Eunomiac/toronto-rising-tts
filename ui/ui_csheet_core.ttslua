@@ -762,7 +762,8 @@ function CSHEET.onPageBack()
   navigateCsheetPagePair(colorUpper, pageNum, pageNum + 1, pageNum - 2, pageNum - 1)
 end
 
---- UI: inner spine click — switch clicker to this sheet owner's camera preset (sheetRed, …).
+--- UI: inner spine click — left → sheet camera; right → clicker's diceTray camera.
+--- XmlUI onClick value: "-1" left, "-2" right (TTS UI Attributes).
 --- @param player table TTS player who clicked
 function CSHEET.onPageInnerClick(player, value, id)
   syncSheetContextFromGmNotes()
@@ -774,6 +775,13 @@ function CSHEET.onPageInnerClick(player, value, id)
   end
   if Global == nil or type(Global.call) ~= "function" then
     error("[ui_csheet] onPageInnerClick: Global.call unavailable")
+  end
+  if value == "-2" or value == -2 then
+    Global.call("GlobalRollSeatCamera", {
+      color = player.color,
+      mode = "diceTray",
+    })
+    return
   end
   Global.call("GlobalSetSheetCamera", {
     clickerColor = player.color,

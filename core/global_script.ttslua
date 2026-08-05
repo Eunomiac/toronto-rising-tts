@@ -1126,6 +1126,7 @@ function GlobalToggleSignalFireState(params)
 end
 
 --- Pink tarot drawer/deck/button pose toggle (host-only; object script routes via Global.call).
+--- On success: Pink camera → diceTray when activating, default when hiding.
 --- @param params table { targetOn: boolean, buttonGuid?: string }
 --- @return boolean|nil applied on-state, or nil on failure / non-host
 function GlobalApplyTarotState(params)
@@ -1133,7 +1134,14 @@ function GlobalApplyTarotState(params)
         return nil
     end
     local TarotToggle = require("lib.tarot_toggle")
-    return TarotToggle.applyState(params.targetOn, params.buttonGuid)
+    local applied = TarotToggle.applyState(params.targetOn, params.buttonGuid)
+    if applied ~= nil then
+        GlobalRollSeatCamera({
+            color = "Pink",
+            mode = params.targetOn and "diceTray" or "default",
+        })
+    end
+    return applied
 end
 
 --- Red/Brown famulus companion token click (host-only; object script via Global.call). TOR-288.

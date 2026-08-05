@@ -20,13 +20,12 @@ Verification:
 ## For Immediate Implementation
 > _After registering each of these issues with Linear in the ordinary fashion, before updating the Focus Stack, briefly review the issue: If it is a quick or easy fix, implement it immediately without waiting for user confirmation. Otherwise, promote it to the top of the Focus Stack, and offer to begin work on it immediately when summarizing your work processing `INBOX.md` to the user. If multiple issues require promotion in this way, consider how best to resolve them as quickly as possible, and offer to draft an implementation plan in your response to the user._
 
-* [Bug] Upon transitioning from Spotlight to End phase, there should be a transition blindfold sequence as if moving to a new scene.
-
 ## Active
 
 ## External Work (Set STATUS to "External To Do")
 
 ## Future Features (Set STATUS to "Future")
+
 
 
 ## Needs clarification
@@ -44,6 +43,8 @@ Verification:
 
 
 ## Processed
+
+2026-08-04 INBOX Immediate — map sidebar active chrome → **TOR-462** (Focus #1 High); Spotlight→End blindfold → **TOR-459** (Focus #2 High); CSHEET right-click diceTray → **TOR-460** (shipped); Map/Court/Coteries exclusive → **TOR-461** (shipped); Tarot Pink camera → **TOR-100** (shipped; id reused — Linear free create limit); External client settings → **TOR-88** (repurposed); External snowfall → **TOR-463**
 
 2026-08-03 INBOX Immediate — location/camera full-alpha → **TOR-450** (shipped); sidebar tint grey/white/red → **TOR-451** (shipped); Scene Time no-selection → **TOR-453** (Focus #1 High); Compulsion+companion tray → **TOR-452** (Focus #2 High); External willpower modal → **TOR-454**; Aspects→Conditions → **TOR-456**; spotlight tune → **TOR-455**
 
