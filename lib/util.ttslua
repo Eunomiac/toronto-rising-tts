@@ -2006,6 +2006,13 @@ function U.setVisibleTo(elemID, colorsOrString)
   end
   local serialized = U.serializeVisibilityAudience(tokens)
   local current = UI.getAttribute(elemID, "visibility")
+  -- Missing visibility = TTS unrestricted (remount unread). That is NOT the same as explicit
+  -- `None` — empty-audience writes must still apply so gated chrome (map `_active` / `_hover`)
+  -- does not stay visible to everyone (TOR-462). `showTo` / `hideFrom` already heal nil.
+  if current == nil then
+    U.setAttribute(elemID, "visibility", serialized)
+    return true
+  end
   local currentNorm = U.serializeVisibilityAudience(U.parseVisibilityAudience(current))
   if currentNorm == serialized then
     return false

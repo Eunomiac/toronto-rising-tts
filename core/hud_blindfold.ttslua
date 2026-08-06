@@ -41,6 +41,8 @@ local TRANSITION_FADE_IN_SEC = 2.0
 HUDBF.TRANSITION_FADE_OUT_SEC = TRANSITION_FADE_OUT_SEC
 HUDBF.TRANSITION_FADE_IN_SEC = TRANSITION_FADE_IN_SEC
 HUDBF.BLINDFOLD_DOWN_COMPLETE_SEC = BLINDFOLD_DOWN_COMPLETE_SEC
+--- Default post-work settle hold (seconds) for staged / simple transitions.
+HUDBF.TRANSITION_SETTLE_DELAY_SEC = TRANSITION_SETTLE_DELAY_SEC
 local BLINDFOLD_VARIANT_COUNT = C.BlindfoldVariantCount
 local TRANSITION_CONDITION_KEY = "hudBlindfold"
 
@@ -345,6 +347,18 @@ local function resolveOptSec(raw, defaultSec)
     return defaultSec
   end
   return n
+end
+
+--- Wall-clock estimate for `runStagedTransition` (lead-in + fade-out + settle budget).
+--- Used by phase Advance to wait for nested staged work without dual-driving the world.
+--- @param opts table|nil same keys as `runStagedTransition`
+--- @return number
+function HUDBF.estimateStagedTransitionSec(opts)
+  opts = opts or {}
+  local leadInDelaySec = resolveOptSec(opts.leadInDelaySec, BLINDFOLD_DOWN_COMPLETE_SEC)
+  local fadeOutSec = resolveOptSec(opts.fadeOutSec, TRANSITION_FADE_OUT_SEC)
+  local settleDelaySec = resolveOptSec(opts.settleDelaySec, TRANSITION_SETTLE_DELAY_SEC)
+  return leadInDelaySec + fadeOutSec + settleDelaySec
 end
 
 --- Close panel + blindfold immediately; defer heavy work with `U.await` until blindfold-down

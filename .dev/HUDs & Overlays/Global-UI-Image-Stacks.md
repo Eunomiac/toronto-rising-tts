@@ -77,6 +77,7 @@ Do not conflate them. Hunger TOR-340 sticky-`active` under empty-seat `visibilit
 ### Audience API
 
 - `U.setVisibleTo(elemId, colorsOrString)` — absolute audience; empty → `None`
+- `U.setVisibleTo(elemId, colors)` — absolute audience replace. Empty → `None`. **Missing** live `visibility` (remount / unrestricted) is always rewritten, even when desired is `None` — otherwise empty-audience chrome (map `_active` / `_hover`) stays visible to everyone (TOR-462).
 - `U.showTo(elemId, color)` / `U.hideFrom(elemId, color)` — add/remove one color; if `visibility` is missing (remount unread / TTS unrestricted), heal to `None` then mutate (do not use on truly unrestricted panels)
 - Change-guard: skip write if serialized union unchanged
 - Shared panels: keep Lua-side audience sets; write full unions (don’t rely only on live `getAttribute`). Court page spreads (`applyPrincesCourtPageVisibility` in `core/hud_player.ttslua`) are the canonical example — stale reads left page2 active so its next button showed on the last spread.

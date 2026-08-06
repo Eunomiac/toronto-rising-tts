@@ -23,7 +23,7 @@ Status: current (TOR-143 / TOR-361 / TOR-362)
 | Kind | XML | Phase system |
 | --- | --- | --- |
 | **Global blindfold** | `ui/shared/panel_overlay_global_blindfold.xml` (`overlay_globalBlindfold`, `active=true` by default) | **Yes** — hide on Play enter **after** Intermission→Play audio handoff (5s Loop↔Main crossfade); show on Intermission enter; connect during Intermission leaves it up; connect elsewhere hides it. **No** timed onLoad auto-hide. Show/hide are idempotent (TOR-398): no FadeIn when already up; hide sequences do not stack. |
-| **Per-player transition blindfolds** | `ui/.templates/panel_overlay_blindfold.xml` → parent Panel `UI.show`/`UI.hide` via `core/hud_blindfold.ttslua` + `hud_overlays` (optional destination cards, TOR-425 / TOR-431) | **No** — scene/table transitions only |
+| **Per-player transition blindfolds** | `ui/.templates/panel_overlay_blindfold.xml` → parent Panel `UI.show`/`UI.hide` via `core/hud_blindfold.ttslua` + `hud_overlays` (optional destination cards, TOR-425 / TOR-431) | **Spotlight → End Advance** uses the same staged path as End scene / library Apply (TOR-459). Other phase enters still use global blindfold only. |
 
 ## General Phase Structure
 
@@ -34,7 +34,7 @@ There are four top-level phases, advanced by the Storyteller **Advance** button 
 1. `INTERMISSION` — Between sessions: dark lights, theme playlist, **global blindfold shown**; connect keeps global blindfold up (TOR-319).
 2. `PLAY` — Session start: no-scene default, staged audio (Loop out → Main in), **then** hide global blindfold, Superficial WP heal + optional broadcast. Contains most gameplay.
 3. `SPOTLIGHT` — End-of-session player vignettes: silence emitters, apply Spotlight scene (soft-fail if missing), freeze clock.
-4. `END` — Remorse / session-end bookkeeping phase. Leaving End increments `sessionNum` (global blindfold restored on next Intermission enter).
+4. `END` — Remorse / session-end bookkeeping phase. **Advance Spotlight → End** runs a staged transition blindfold while applying the default no-scene environment (TOR-459), then enters End. Leaving End increments `sessionNum` (global blindfold restored on next Intermission enter).
 
 Advancing from `END` returns to `INTERMISSION`.
 

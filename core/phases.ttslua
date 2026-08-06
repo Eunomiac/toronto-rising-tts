@@ -278,6 +278,48 @@ function Phases.applyNoSceneDefault(_ctx, opts)
     return true
 end
 
+--- Spotlight → End: staged transition blindfold + no-scene apply (TOR-459), same shape as End scene.
+--- Starts `HUDBF.runStagedTransition` and returns the wait so Advance does not enter End early.
+--- @param ctx table|nil
+--- @return number|boolean
+local function runSpotlightExitToEndTransition(ctx)
+    local HUDBF = require("core.hud_blindfold")
+    local SS = require("core.soundscape")
+    local Scenes = require("core.scenes")
+    HUDBF.runStagedTransition({
+        fadeOut = function()
+            if type(SS.fadeOutTransitionAmbient) == "function" then
+                SS.fadeOutTransitionAmbient({ seconds = HUDBF.TRANSITION_FADE_OUT_SEC })
+            end
+        end,
+        work = function()
+            Scenes.applyDefaultNoSceneEnvironment({
+                reason = (type(ctx) == "table" and ctx.reason) or "phase_spotlight_exit",
+                skipTransitionBlindfold = true,
+                skipSoundscape = true,
+            })
+            return true
+        end,
+        fadeIn = function()
+            if type(SS.beginTransitionFadeWindow) == "function" then
+                SS.beginTransitionFadeWindow(HUDBF.TRANSITION_FADE_IN_SEC)
+            end
+            if type(Scenes.applyNoSceneSoundscape) == "function" then
+                Scenes.applyNoSceneSoundscape()
+            end
+            if type(SS.endTransitionFadeWindow) == "function" then
+                SS.endTransitionFadeWindow()
+            end
+        end,
+    })
+    if type(HUDBF.estimateStagedTransitionSec) == "function" then
+        return HUDBF.estimateStagedTransitionSec()
+    end
+    return (HUDBF.BLINDFOLD_DOWN_COMPLETE_SEC or 4)
+        + (HUDBF.TRANSITION_FADE_OUT_SEC or 1)
+        + (HUDBF.TRANSITION_SETTLE_DELAY_SEC or 10)
+end
+
 --- Intermission → Play: solo Host auto-enables DEBUG Assume Players Connected (TOR-429).
 --- @param ctx table|nil
 --- @return boolean
@@ -490,7 +532,11 @@ end
 Phases.onExit[C.Phases.SPOTLIGHT] = function(ctx)
     return {
         function()
-            return Phases.applyNoSceneDefault(ctx, { reason = "phase_spotlight_exit" })
+            -- Default Advance path is Spotlight → End. Use scene-like staged blindfold (TOR-459).
+            if type(ctx) == "table" and ctx.to ~= nil and ctx.to ~= C.Phases.END then
+                return Phases.applyNoSceneDefault(ctx, { reason = "phase_spotlight_exit" })
+            end
+            return runSpotlightExitToEndTransition(ctx)
         end,
     }
 end
