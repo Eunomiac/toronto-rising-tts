@@ -1900,12 +1900,23 @@ function U.hideXmlElement(elemID)
 end
 
 -- ---------------------------------------------------------------------------
--- XmlUI audience visibility (`visibility` attribute) — TOR-444
+-- XmlUI audience visibility (`visibility` attribute) — TOR-444 / TOR-462
 -- Distinct from U.showXmlElement / U.hideXmlElement which toggle `active` (layout).
--- Empty audience serializes as "None". Change-guards skip unchanged writes.
+-- Empty audience serializes as U.VISIBILITY_EMPTY_SENTINEL ("Blue") — an unused PC
+-- seat color so the whitelist matches nobody in this chronicle. Do not use TTS
+-- `None` for empty writes: that is the None *team* and matches unteamed players.
+-- Change-guards skip unchanged writes.
 -- ---------------------------------------------------------------------------
 
-local VISIBILITY_NONE = "None"
+--- Unused seat color used as “visible to nobody” (not in C.PlayerColors).
+U.VISIBILITY_EMPTY_SENTINEL = "Blue"
+
+-- Legacy TTS team token; still parsed as empty, never written for empty audiences.
+local VISIBILITY_NONE_TEAM = "None"
+
+local function isEmptyAudienceToken(tok)
+  return tok == U.VISIBILITY_EMPTY_SENTINEL or tok == VISIBILITY_NONE_TEAM
+end
 
 --- Normalize one visibility token (trim; reject empty).
 -- @param token any
@@ -1919,15 +1930,16 @@ local function normalizeVisibilityToken(token)
     return nil
   end
   if string.lower(t) == "none" then
-    return VISIBILITY_NONE
+    return VISIBILITY_NONE_TEAM
   end
   return t
 end
 
 --- Parse a TTS XmlUI visibility string into an ordered unique token list.
--- `None` / empty / whitespace → empty list. `|` separated; order preserved; duplicates dropped.
+-- Empty / whitespace / `None` (team) / empty-sentinel alone → empty list.
+-- `|` separated; order preserved; duplicates and empty-markers dropped.
 -- @param visibilityStr string|nil
--- @return table array of string tokens (never contains "None")
+-- @return table array of string tokens (never contains empty markers)
 function U.parseVisibilityAudience(visibilityStr)
   local out = {}
   local seen = {}
@@ -1935,12 +1947,14 @@ function U.parseVisibilityAudience(visibilityStr)
     return out
   end
   local trimmed = visibilityStr:match("^%s*(.-)%s*$") or ""
-  if trimmed == "" or string.lower(trimmed) == "none" then
+  if trimmed == ""
+      or string.lower(trimmed) == "none"
+      or trimmed == U.VISIBILITY_EMPTY_SENTINEL then
     return out
   end
   for part in string.gmatch(trimmed, "[^|]+") do
     local tok = normalizeVisibilityToken(part)
-    if tok ~= nil and tok ~= VISIBILITY_NONE and seen[tok] ~= true then
+    if tok ~= nil and not isEmptyAudienceToken(tok) and seen[tok] ~= true then
       seen[tok] = true
       out[#out + 1] = tok
     end
@@ -1950,22 +1964,22 @@ end
 
 --- Serialize audience tokens to a visibility attribute value.
 -- @param tokens table|nil array of color/role strings
--- @return string "None" or "Red|Orange|…"
+-- @return string empty-sentinel ("Blue") or "Red|Orange|…"
 function U.serializeVisibilityAudience(tokens)
   if type(tokens) ~= "table" then
-    return VISIBILITY_NONE
+    return U.VISIBILITY_EMPTY_SENTINEL
   end
   local parts = {}
   local seen = {}
   for i = 1, #tokens do
     local tok = normalizeVisibilityToken(tokens[i])
-    if tok ~= nil and tok ~= VISIBILITY_NONE and seen[tok] ~= true then
+    if tok ~= nil and not isEmptyAudienceToken(tok) and seen[tok] ~= true then
       seen[tok] = true
       parts[#parts + 1] = tok
     end
   end
   if #parts == 0 then
-    return VISIBILITY_NONE
+    return U.VISIBILITY_EMPTY_SENTINEL
   end
   return table.concat(parts, "|")
 end
@@ -1996,7 +2010,7 @@ function U.setVisibleTo(elemID, colorsOrString)
     local seen = {}
     for i = 1, #colorsOrString do
       local tok = normalizeVisibilityToken(colorsOrString[i])
-      if tok ~= nil and tok ~= VISIBILITY_NONE and seen[tok] ~= true then
+      if tok ~= nil and not isEmptyAudienceToken(tok) and seen[tok] ~= true then
         seen[tok] = true
         tokens[#tokens + 1] = tok
       end
@@ -2006,10 +2020,8 @@ function U.setVisibleTo(elemID, colorsOrString)
   end
   local serialized = U.serializeVisibilityAudience(tokens)
   local current = UI.getAttribute(elemID, "visibility")
-  -- Missing or blank visibility = TTS unrestricted (visible to all). That is NOT the same as
-  -- an explicit audience string — always write. Note: serializing an empty audience as `None`
-  -- targets the TTS **None team**, not “hidden from everyone”; callers that need a true idle
-  -- hide (shared map chrome) must also tint-clear (TOR-462).
+  -- Missing or blank visibility = TTS unrestricted (visible to all). Always rewrite.
+  -- Empty audience writes U.VISIBILITY_EMPTY_SENTINEL ("Blue"), not TTS team `None` (TOR-462).
   if current == nil or (type(current) == "string" and current:match("^%s*$") ~= nil) then
     U.setAttribute(elemID, "visibility", serialized)
     return true
@@ -2023,8 +2035,8 @@ function U.setVisibleTo(elemID, colorsOrString)
 end
 
 --- Add one color/role to the element's visibility audience.
--- If `visibility` is missing (TTS unrestricted / remount unread), initializes from empty (`None`)
--- then adds the color — same as calling `U.setVisibleTo` first for audience-gated panels (TOR-444).
+-- If `visibility` is missing (TTS unrestricted / remount unread), initializes from empty
+-- (empty-sentinel) then adds the color — same as calling `U.setVisibleTo` first (TOR-444).
 -- Do not use on elements that must stay unrestricted for all clients.
 -- @param elemID string
 -- @param color string e.g. "Red" or "Host"
@@ -2034,8 +2046,8 @@ function U.showTo(elemID, color)
     error("U.showTo: elemID must be a string", 2)
   end
   local tok = normalizeVisibilityToken(color)
-  if tok == nil or tok == VISIBILITY_NONE then
-    error("U.showTo: color must be a non-empty visibility token", 2)
+  if tok == nil or isEmptyAudienceToken(tok) then
+    error("U.showTo: color must be a non-empty visibility token (not the empty sentinel)", 2)
   end
   local raw = UI.getAttribute(elemID, "visibility")
   local tokens = (raw == nil or (type(raw) == "string" and raw:match("^%s*$") ~= nil))
@@ -2050,8 +2062,8 @@ function U.showTo(elemID, color)
   return U.setVisibleTo(elemID, tokens)
 end
 
---- Remove one color/role from the element's visibility audience (empty → None).
--- If `visibility` is missing, writes explicit `None` (heal remount / unread XML) and returns.
+--- Remove one color/role from the element's visibility audience (empty → empty-sentinel).
+-- If `visibility` is missing, writes the empty sentinel (heal remount / unread XML) and returns.
 -- @param elemID string
 -- @param color string
 -- @return boolean true if attribute was written
@@ -2060,8 +2072,8 @@ function U.hideFrom(elemID, color)
     error("U.hideFrom: elemID must be a string", 2)
   end
   local tok = normalizeVisibilityToken(color)
-  if tok == nil or tok == VISIBILITY_NONE then
-    error("U.hideFrom: color must be a non-empty visibility token", 2)
+  if tok == nil or isEmptyAudienceToken(tok) then
+    error("U.hideFrom: color must be a non-empty visibility token (not the empty sentinel)", 2)
   end
   local raw = UI.getAttribute(elemID, "visibility")
   if raw == nil or (type(raw) == "string" and raw:match("^%s*$") ~= nil) then

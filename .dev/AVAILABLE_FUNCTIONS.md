@@ -499,13 +499,14 @@ General-purpose UI helpers (system-agnostic). Prefer **`U.setAttribute` / `U.set
 
 ### Audience visibility (`visibility` attribute — TOR-444)
 
-Distinct from `active`. Empty audience serializes as `None` (TTS **None team** token — not a universal hide). If `visibility` is missing or blank (TTS unrestricted / remount unread), `setVisibleTo` / `showTo` / `hideFrom` always rewrite. Shared map idle chrome also tint-clears when empty (`applySharedMapChromeAudience` — TOR-462).
+Distinct from `active`. Empty audience serializes as `U.VISIBILITY_EMPTY_SENTINEL` (`"Blue"` — unused PC seat). Do not write TTS team `None` for empty (TOR-462). If `visibility` is missing or blank (TTS unrestricted / remount unread), `setVisibleTo` / `showTo` / `hideFrom` always rewrite.
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
+| `U.VISIBILITY_EMPTY_SENTINEL` | `"Blue"` — empty-audience write target | Docs / asserts |
 | `U.setVisibleTo(elemID, colorsOrString)` | Absolute audience replace; missing/blank live visibility always rewritten | Seat reveal / shared panels |
 | `U.showTo(elemID, color)` / `U.hideFrom(elemID, color)` | Add/remove one color; heal missing/blank attr first | Open/close shared ref for one seat |
-| `U.parseVisibilityAudience` / `U.serializeVisibilityAudience` | Parse/format `Red\|Orange` | Lua-side audience sets |
+| `U.parseVisibilityAudience` / `U.serializeVisibilityAudience` | Parse/format `Red\|Orange`; empty ↔ sentinel | Lua-side audience sets |
 | `U.getVisibilityAudience(elemID)` | Read live attribute into token list | Debug / reconcile |
 
 ### Global UI `InputField` text

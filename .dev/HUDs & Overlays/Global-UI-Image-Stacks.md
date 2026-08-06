@@ -76,11 +76,12 @@ Do not conflate them. Hunger TOR-340 sticky-`active` under empty-seat `visibilit
 
 ### Audience API
 
-- `U.setVisibleTo(elemId, colors)` — absolute audience replace. Empty serializes as `None` (TTS **None team** token — not a universal hide). Missing or blank live `visibility` (unrestricted) is always rewritten.
-- Shared map sidebar idle chrome must **tint-clear** when the audience is empty (`applySharedMapChromeAudience` in `core/hud_player.ttslua`) — writing `None` alone still shows the layer to unteamed players (TOR-462).
+- `U.VISIBILITY_EMPTY_SENTINEL` (`"Blue"`) — unused PC seat used as “visible to nobody.” Empty audiences serialize to this; do **not** write TTS team `None` (matches unteamed players — TOR-462).
+- `U.setVisibleTo(elemId, colors)` — absolute audience replace. Empty → empty-sentinel. Missing or blank live `visibility` (unrestricted) is always rewritten.
+- Shared map sidebar idle chrome relies on empty-sentinel alone (opaque `hover_button_map_shared_layer`; no tint branch).
 - `U.showTo(elemId, color)` / `U.hideFrom(elemId, color)` — add/remove one color; if `visibility` is missing/blank (remount unread / TTS unrestricted), heal from empty then mutate (do not use on truly unrestricted panels)
 - Change-guard: skip write if serialized union unchanged (after unrestricted heal)
-- Shared panels: keep Lua-side audience sets; write full unions (don’t rely only on live `getAttribute`). Court page spreads (`applyPrincesCourtPageVisibility` in `core/hud_player.ttslua`) are the canonical example — stale reads left page2 active so its next button showed on the last spread. Court also toggles `active` when the union is empty; map chrome cannot (layout alignment), so it uses tint-clear instead.
+- Shared panels: keep Lua-side audience sets; write full unions (don’t rely only on live `getAttribute`). Court page spreads (`applyPrincesCourtPageVisibility` in `core/hud_player.ttslua`) are the canonical example — stale reads left page2 active so its next button showed on the last spread. Court also toggles `active` when the union is empty; map chrome keeps layout with empty-sentinel visibility instead.
 
 ### Animation contract
 
@@ -106,11 +107,11 @@ Pan/`offsetXY` cannot differ per viewer on one Image → keep per-seat: map base
 
 Shared map sidebars (B): root audience = players with map open; each `_active` / `_hover` sibling’s `visibility` = the subset of those players in that chrome state. Overlay on/off and district hover stay in per-player `hud.map.*`; layer visibility encodes that for concurrent viewers.
 
-**Chrome opacity (TOR-462):** shared `_hover` / `_active` Images use `hover_button_map_shared_layer` and `applySharedMapChromeAudience`:
-- Non-empty audience → `color="#FFFFFF"` + `visibility` seat union
-- Empty audience → `color="clear"` (true idle hide)
+**Chrome opacity (TOR-462):** shared `_hover` / `_active` Images use opaque `hover_button_map_shared_layer` (`color="#FFFFFF"`) and `U.setVisibleTo`:
+- Non-empty audience → seat color union
+- Empty audience → `U.VISIBILITY_EMPTY_SENTINEL` (`"Blue"`, unused PC seat)
 
-Do **not** reuse Defaults `hover_button_hover` / `hover_button_active` (`color="clear"` always) for the “on” state — visibility cannot reveal a clear-tinted Image (TOR-457). Do **not** rely on empty → `visibility="None"` alone: TTS documents `None` as the **None team** (default for unteamed players), not “hidden from everyone.”
+Do **not** reuse Defaults `hover_button_hover` / `hover_button_active` (`color="clear"` always) for the “on” state — visibility cannot reveal a clear-tinted Image (TOR-457). Do **not** write empty as TTS `None` (None *team*, default for unteamed players).
 
 ## Court budget (×5 seats)
 
