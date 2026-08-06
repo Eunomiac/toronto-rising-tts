@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-08-06 — `/tr-inbox` cleared author ✅ on TOR-476 / 472 / 477 / 478 / 479 / 480 / 483; added freshly shipped verify rows; removed accidental Lua paste under Cleared._
+_Last populated: 2026-08-06 — author chat confirmed TOR-418 / TOR-419 / TOR-459; TOR-459 removed from Outstanding._
 
 ### High — session / join / first-load
 
@@ -38,12 +38,6 @@ _Last populated: 2026-08-06 — `/tr-inbox` cleared author ✅ on TOR-476 / 472 
 **How to verify:** Save & Play. Open the map. Overlay (left) and district (right) buttons should show **inactive** art by default — not the active art stacked on top. Hover one button: only that button’s hover chrome for you. Click an overlay on: only that button shows active chrome; click off → idle again. Optional: with two seats, one player’s active/hover should not appear on the other seat’s map view.
 
 **Context:** Empty audiences now use unused seat `Blue` as a hide sentinel (`U.VISIBILITY_EMPTY_SENTINEL`), not TTS team `None`. Follow-up after an earlier visibility-only attempt still looked permanently active.
-
-#### TOR-459 — Spotlight → End transition blindfold
-
-**How to verify:** Save & Play. Advance through phases until you are in Spotlight (with a seated PC if you can). Press Advance to End. You should get the full transition blindfold sequence while the table returns to the default no-scene environment, then land in End — not an instant world snap with no cover.
-
-**Context:** Same staged path as End scene / library Apply.
 
 #### TOR-481 — ST toolbar + debug hotkeys replace twirldowns
 
