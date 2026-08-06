@@ -129,7 +129,7 @@
     outlineSize="0 0" />
 
   <HorizontalLayout class="debug_seat_color_row"
-    rectAlignment="LowerRight"
+    rectAlignment="LowerCenter"
     offsetXY="-34 0"
     width="190"
     height="30"

@@ -20,6 +20,23 @@ Verification:
 ## For Immediate Implementation
 > _After registering each of these issues with Linear in the ordinary fashion, before updating the Focus Stack, briefly review the issue: If it is a quick or easy fix, implement it immediately without waiting for user confirmation. Otherwise, promote it to the top of the Focus Stack, and offer to begin work on it immediately when summarizing your work processing `INBOX.md` to the user. If multiple issues require promotion in this way, consider how best to resolve them as quickly as possible, and offer to draft an implementation plan in your response to the user._
 
+* [Dice Rolling] When a player selects "Take Half" and they have Rouse Dice in the pool, those Rouse Dice should be rolled automatically (as if they had right-clicked on the "Roll" button).  Currently, they prompt the player to roll them manually.
+* [Scenes Panel] Upon applying a location (regardless of whether or not a scene was applied), the blindfold process for a scene transition should run in full, including the display of the district and site card for the new location.
+* [Compulsions] Add a tally within each player's `playerData` that tracks which of the four Compulsions they choose when they are presented with the initial choice of Compulsion to draw from the master deck. The GM Notes of each card is of the form `Compulsion:<Compulsion Name>-<characterKey>:<Compulsion Variant>`. For example, if Lord Lucien's first ever compulsion choice has GM Notes reading `Compulsion:Paranoia-lordLucien:2`, his player data should contain:
+
+```lua
+-- (under lordLucien's player data)
+compulsionsTally: {
+  Paranoia = {
+    1 = 0,
+    2 = 1,
+    3 = 0,
+    4 = 0
+  }
+  -- ... and so on
+}
+```
+
 ## Active
 
 ## External Work (Set STATUS to "External To Do")
