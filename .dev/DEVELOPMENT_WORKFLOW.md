@@ -329,7 +329,7 @@ Linear is the source of truth for project state. [`.dev/RUNNING TASKLIST.md`](RU
 1. Mark the Linear issue **Done** with a comment (files changed, commits, verification).
 2. Change the tasklist checkbox to `[x]`; keep the TOR id.
 3. Reference the TOR id in git commit bodies (see `.cursor/rules/toronto-rising-git.mdc`).
-4. **Author verification:** If Save & Play / multiclient / listen-check is still owed, put a **plain-English how-to-verify** paragraph in the Linear **Done** comment (policy: [PENDING AUTHOR VERIFICATION.agent.md](PENDING%20AUTHOR%20VERIFICATION.agent.md)). **Do not** edit [PENDING AUTHOR VERIFICATION.md](PENDING%20AUTHOR%20VERIFICATION.md) when finishing — checklist add/remove and **✅** / **❌** / **⚠️** processing happen only on **`/tr-inbox`** / “process the inbox”. Optionally note “Pending Save & Play” on the tasklist bullet. Linear **Done** alone is not author verification.
+4. **Author verification:** If Save & Play / multiclient / listen-check is still owed, put a **plain-English how-to-verify** paragraph in the Linear **Done** comment (policy: [PENDING AUTHOR VERIFICATION.agent.md](PENDING%20AUTHOR%20VERIFICATION.agent.md)). **Do not** edit [PENDING AUTHOR VERIFICATION.md](PENDING%20AUTHOR%20VERIFICATION.md) when finishing — checklist add/remove, **✅** / **❌** / **⚠️** processing, and **⌚** (not ready to verify) happen only on **`/tr-inbox`** / “process the inbox”. Optionally note “Pending Save & Play” on the tasklist bullet. Linear **Done** alone is not author verification.
 
 ### Gate-close survey (when marking Done or Canceled)
 
