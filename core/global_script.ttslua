@@ -3006,7 +3006,7 @@ function onLoad(saved_data)
                     .. tostring(phase)
                     .. ")."
             )
-            return 0
+            return 0.5
         end,
         function()
             print(U.loadElapsedPrefix() .. "=== VTM5E Module Loading Complete ===")
