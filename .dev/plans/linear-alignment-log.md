@@ -651,6 +651,7 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-08-06 | CREATE | TOR-482 | Daysleep Refresh gold button (INBOX Immediate) |
 | 2026-08-06 | CREATE+SHIP | TOR-483 | CSHEET right-click dice tray uses clicked sheet seat (amends TOR-460) |
 | 2026-08-06 | FOCUS | TOR-476, TOR-472, TOR-477, TOR-478, TOR-479, TOR-462 | PAVE failures ahead of map chrome / join spike |
-| 2026-08-06 | PAVE | checklist | Cleared ✅ batch; narrowed ❌/⚠️ to TOR-476/472/477/478/479; added TOR-480/483/473 verify |
+| 2026-08-06 | PAVE | TOR-423, TOR-473 | Author ✅ cleared from checklist; TOR-423 Linear Done; tasklist author-confirmed |
+| 2026-08-06 | UPDATE | TOR-476 | Expected: audio crossfade aligned with District/Site card FadeIn (or same window when no cards / End) |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

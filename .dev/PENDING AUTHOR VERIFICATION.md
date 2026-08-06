@@ -8,17 +8,17 @@ Your TTS checklist for shipped work that still needs Save & Play / in-game confi
 
 ## Outstanding
 
-_Last populated: 2026-08-06 — `/tr-inbox`: cleared confirmed ✅ entries; promoted PAVE ❌/⚠️ follow-ups to Linear; added Done-without-confirm for Quick Fixes shipped this pass._
+_Last populated: 2026-08-06 — PAVE pass: author ✅ TOR-423 / TOR-473; TOR-476 expected timing corrected (district/site card reveal)._
 
 ### High — session / join / first-load
 
-#### ❌ TOR-469 → follow-up **TOR-476** — Scene transition audio crossfade
+#### ❌ TOR-476 — Scene transition audio crossfade (aligned with district/site cards)
 
-**How to verify (remaining):** Save & Play. Apply a library scene with music/ambience. Watch and listen through the blindfold: as the old scene’s audio fades out, the new scene’s audio should already be fading in under the blindfold. When the blindfold rises, the new scene should already be at full volume — no silent stretch after the lift. (Lead-in / camera timing from TOR-469 may still be fine; the failure was audio timing.)
+**How to verify (remaining):** Save & Play. Apply a library scene with music/ambience. As the destination District and Site cards fade in on the blindfold, the audio should crossfade with them — old scene fading out, new scene fading in — even when a transition has no district/site cards (for example End Scene). When the blindfold rises, the new scene should already be at full volume with no silent stretch after the lift.
 
-**Context:** Original TOR-469 lead-in + camera snap shipped. Author ❌: new audio started several seconds after blindfold rise. Remaining work tracked as **TOR-476** (scene transition audio fades in after blindfold rises).
+**Context:** Follow-up to TOR-469. Lead-in / camera may be fine. Author ❌: new audio started several seconds after blindfold rise. Author correction (2026-08-06): cue the audio change to the district/site card reveal (or the same timing window when those cards are absent), not merely “sometime under the blindfold before lift.”
 
-**Verification Failures:** The fading-in of the new scene's audio begins several seconds after the blindfold has been raised. Expected: true crossfade with the previous scene’s fade-out; new audio at full before the blindfold rises.
+**Verification Failures:** New-scene audio fade-in begins several seconds after the blindfold has risen; stretches of silence. Expected: crossfade timed with district/site card FadeIn (or equivalent window on End / no-card transitions); full volume before lift.
 
 #### TOR-439 — Join-stress re-verify after Global HUD remount weight cut
 
@@ -67,18 +67,6 @@ _Last populated: 2026-08-06 — `/tr-inbox`: cleared confirmed ✅ entries; prom
 #### TOR-480 — Set present-day refreshes Day/Year/Time green tint
 
 **How to verify:** On Scenes → Scene Time, change Day/Year/Time so the fields look blue or grey, then click **Set**. Those three fields should switch to present-day green.
-
----
-
-### NPC / gameboard smoke
-
-#### TOR-423 — npc_gameboard module split
-
-**How to verify:** Save & Play so the split `npc_gameboard_*` siblings load. Smoke Control Board Apply and Clear, drop an NPC token onto a stage snap, and confirm seating / placement still works with no nil-call or missing-module errors in the console.
-
-#### TOR-473 — Bake NPC light modes + family OFFSPOTLIGHT neighbor dim
-
-**How to verify:** Save & Play. Put two or more NPC figurines in the same snap family on stage. Put one into SPOTLIGHT (flip or Apply). The other family members should dim to the softer OFFSPOTLIGHT look in sync with the spotlight transition, then return toward STANDARD when the spotlight lifts. Spotlit figurine should still read clearly.
 
 ---
 
