@@ -32,7 +32,7 @@ These workflows are not permanent architecture. Preserve their current behavior 
 
 For Codex/API sessions where slash commands are not available, mirror the same behavior manually: inspect `.dev/RUNNING TASKLIST.md`, read `.dev/PENDING AUTHOR VERIFICATION.md` when useful, follow `.dev/PENDING AUTHOR VERIFICATION.agent.md` for verify wording, edit the PAVE checklist **only** when mirroring `/tr-inbox` / “process the inbox”, inspect `.dev/INBOX.md` when relevant, Linear context if available, and the task-specific routing in `.dev/DOCS_INDEX.md`.
 
-**Author verification:** Linear **Done** does not mean Save & Play confirmed. Put plain-English how-to-verify in the Linear Done comment when shipping. Agents **edit** the checklist [`.dev/PENDING AUTHOR VERIFICATION.md`](.dev/PENDING%20AUTHOR%20VERIFICATION.md) **only during `/tr-inbox`** (or “process the inbox”); policy: [`.dev/PENDING AUTHOR VERIFICATION.agent.md`](.dev/PENDING%20AUTHOR%20VERIFICATION.agent.md). On inbox, process author marks **✅** / **❌** / **⚠️** and add missing Outstanding entries from Done comments / tasklist notes.
+**Author verification:** Linear **Done** does not mean Save & Play confirmed. Put plain-English how-to-verify in the Linear Done comment when shipping. Agents **edit** the checklist [`.dev/PENDING AUTHOR VERIFICATION.md`](.dev/PENDING%20AUTHOR%20VERIFICATION.md) **only during `/tr-inbox`** (or “process the inbox”); policy: [`.dev/PENDING AUTHOR VERIFICATION.agent.md`](.dev/PENDING%20AUTHOR%20VERIFICATION.agent.md). On inbox, process author marks **✅** / **❌** / **⚠️**, mark unshipped follow-ups **⌚** (not ready to verify), and add missing Outstanding entries from Done comments / tasklist notes.
 
 ## Trust Hierarchy
 
