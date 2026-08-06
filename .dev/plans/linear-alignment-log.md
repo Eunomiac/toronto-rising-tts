@@ -653,5 +653,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-08-06 | FOCUS | TOR-476, TOR-472, TOR-477, TOR-478, TOR-479, TOR-462 | PAVE failures ahead of map chrome / join spike |
 | 2026-08-06 | PAVE | TOR-423, TOR-473 | Author ✅ cleared from checklist; TOR-423 Linear Done; tasklist author-confirmed |
 | 2026-08-06 | DOC | PENDING AUTHOR VERIFICATION | **⌚** mark = not ready to verify (open Linear follow-up); agent sets on unshipped ❌/⚠️ disposition; clear when Done |
+| 2026-08-06 | PAVE+FOCUS | evening `/tr-inbox` | Capture empty. ✅ cleared TOR-476/472/477/478/479/480/483 (+ Linear verify comments). Outstanding + TOR-462/459/481/484/485/449/469. Canceled duplicate TOR-474 → TOR-476. Focus: TOR-439, TOR-482, TOR-418, TOR-419. Removed accidental Lua paste from PAVE Cleared. |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

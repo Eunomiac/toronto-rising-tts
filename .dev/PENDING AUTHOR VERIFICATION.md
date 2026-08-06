@@ -17,17 +17,9 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-08-06 — cleared **⌚** on shipped PAVE follow-ups (TOR-476 / 472 / 477 / 478 / 479); ready for Save & Play re-test._
+_Last populated: 2026-08-06 — `/tr-inbox` cleared author ✅ on TOR-476 / 472 / 477 / 478 / 479 / 480 / 483; added freshly shipped verify rows; removed accidental Lua paste under Cleared._
 
 ### High — session / join / first-load
-
-#### TOR-476 — Scene transition audio crossfade (aligned with district/site cards)
-
-**How to verify:** Save & Play. Apply a library scene with music/ambience. As the destination District and Site cards fade in on the blindfold, the audio should crossfade with them — old scene fading out, new scene fading in — even when a transition has no district/site cards (for example End Scene). When the blindfold rises, the new scene should already be at full volume with no silent stretch after the lift.
-
-**Context:** Follow-up to TOR-469. Lead-in / camera may be fine. Author ❌ on prior ship: new audio started several seconds after blindfold rise. Correction: cue the audio change to the district/site card reveal (or the same timing window when those cards are absent). Shipped — ready to verify.
-
-**Verification Failures (from prior pass):** New-scene audio fade-in begins several seconds after the blindfold has risen; stretches of silence.
 
 #### TOR-439 — Join-stress re-verify after Global HUD remount weight cut
 
@@ -39,49 +31,49 @@ _Last populated: 2026-08-06 — cleared **⌚** on shipped PAVE follow-ups (TOR-
 
 ---
 
-### Scenes / clock follow-ups (from TOR-222 / TOR-402 verify)
+### UI / map / phases (shipped — need Save & Play)
 
-#### ✅ TOR-478 — Skybox-only Apply brief blindfold
+#### TOR-462 — Map sidebar idle art (empty audience → Blue sentinel)
 
-**How to verify:** On the Scenes panel, change only the skybox and press Apply Location. The blindfold should come down, finish its fade-in (~2s), apply the skybox under cover, hold about two seconds, then lift. District/Site should still not be required for skybox-only Apply (that part of TOR-402 already works).
+**How to verify:** Save & Play. Open the map. Overlay (left) and district (right) buttons should show **inactive** art by default — not the active art stacked on top. Hover one button: only that button’s hover chrome for you. Click an overlay on: only that button shows active chrome; click off → idle again. Optional: with two seats, one player’s active/hover should not appear on the other seat’s map view.
 
-**Context:** Promoted from ⚠️ Corrections on TOR-402. Shipped — ready to verify.
+**Context:** Empty audiences now use unused seat `Blue` as a hide sentinel (`U.VISIBILITY_EMPTY_SENTINEL`), not TTS team `None`. Follow-up after an earlier visibility-only attempt still looked permanently active.
 
-#### ✅ TOR-472 — Dusk/Dawn stay on the same night
+#### TOR-459 — Spotlight → End transition blindfold
 
-**How to verify:** On Scene Time, use the Dusk/Dawn buttons. The clock should always land on the same night (dusk-to-dawn block). Crossing midnight may change the calendar date, but the lerp must not animate through daytime hours. Minutes/Hours/Days/Weeks/Months grids already passed under TOR-222.
+**How to verify:** Save & Play. Advance through phases until you are in Spotlight (with a seated PC if you can). Press Advance to End. You should get the full transition blindfold sequence while the table returns to the default no-scene environment, then land in End — not an instant world snap with no cover.
 
-**Context:** Shipped — ready to verify. Smoke: ~23:00 → Dawn 0 lands next dawn without afternoon scrub; ~02:00 → Dusk 0 lands prior dusk without daytime scrub.
+**Context:** Same staged path as End scene / library Apply.
 
-#### ✅ TOR-477 — Years Go delta / right-click rewind
+#### TOR-481 — ST toolbar + debug hotkeys replace twirldowns
 
-**How to verify:** On Scene Time Years: enter `1996` and Go (absolute year → dusk that date). Enter `554` with year 2026 — left-click Go → dusk in 2580; right-click Go → dusk in 1472. Enter `-554` — both clicks → dusk in 1472 (right-click must not flip the sign).
-
-**Context:** Shipped — ready to verify. Duplicate TOR-475 canceled in favor of this id.
-
-#### ✅ TOR-479 — Debug last-load clock still missing
-
-**How to verify:** Load the save, open the DEBUG / admin controls panel. Between `== DEBUG ==` and `Overlay Alpha: Full` there should be a centered, slightly smaller grey `HH:MM AM/PM` load time (or an em dash placeholder before the first sync).
-
-**Context:** Follow-up to TOR-394 / TOR-406. Author ❌: no time text beneath the DEBUG header. Shipped — ready to verify.
-
-**Verification Failures (from prior pass):** No time text beneath `== DEBUG ==`; Overlay Alpha sits immediately under the header.
+**How to verify:** Save & Play. Options → Game Keys — bind **Storyteller toolbar (toggle)** and **Debug panel (toggle)**. Press each key — toolbar / debug should open and close. The old ► buttons should be gone. Open debug once and confirm the last-load clock line still appears. Open a ST panel tab, then close it — toolbar body should still collapse (TOR-395).
 
 ---
 
-### Quick Fixes this inbox (Done — need Save & Play)
+### NPC gameboard (shipped — need Save & Play)
 
-#### ✅ TOR-483 — CSHEET right-click uses clicked seat’s dice tray
+#### TOR-484 — Group-move onto occupied family auto-evacuates
 
-**How to verify:** Save & Play. From your seat, left-click another player’s sheet inner-edge control — camera should go to **their** sheet. Right-click the same control — camera should go to **their** dice tray, not yours.
+**How to verify:** Save & Play. Put a few NPC tokens on one Far or Mid family. Hold **Group move**, then drop another family’s tokens onto that occupied family. Expect: old occupants jump to the first empty priority family (dark side); movers take the destination. Fill every priority family, then group-move onto one more occupied spot — expect overflow occupants to park on the palette face-up.
 
-**Context:** Amends TOR-460 (which previously aimed the clicker’s own tray). Shipped — ready to verify.
+#### TOR-485 — Clear right-click recovers stray tokens
 
-#### ✅ TOR-480 — Set present-day refreshes Day/Year/Time green tint
+**How to verify:** Save & Play. Drag some NPC tokens off the control board (not onto the palette). Right-click **Clear** — those tokens should return to their palette slots; board placements stay. Left-click **Clear** twice within five seconds — still confirms and clears the stage as before.
 
-**How to verify:** On Scenes → Scene Time, change Day/Year/Time so the fields look blue or grey, then click **Set**. Those three fields should switch to present-day green.
+---
 
-**Context:** Shipped — ready to verify.
+### Scenes (shipped — need Save & Play)
+
+#### TOR-449 — Scenes preview deselect + THERE close guard
+
+**How to verify:** Save & Play. With a pending (blue) library row selected, close Scenes — pending should deselect and the green live row should return. Switch to THERE, try to close Scenes — should block with an Alert. Apply while THERE. End a live scene — library selection should clear (no leftover preview of the ended scene). Save & Play while THERE should restore HERE.
+
+#### TOR-469 — Scene transition lead-in + camera in heavy work
+
+**How to verify:** Save & Play. Apply a library scene with district + site cards. Watch the early blindfold fades and confirm the default camera snap does not hitch early during lead-in (camera should move in the heavy-work window). Audio timing was re-checked under **TOR-476** (author confirmed) — this row is mainly lead-in length and camera placement.
+
+**Context:** Audio silence-after-lift was fixed and author-confirmed as **TOR-476**.
 
 ---
 
