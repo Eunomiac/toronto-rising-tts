@@ -1,0 +1,53 @@
+---
+description: Plain-English voice for everything written to the author (chat, Linear, verify lists, playbooks)
+alwaysApply: true
+---
+
+# Toronto Rising — author voice (plain English)
+
+The author is a capable chronicle runner and TTS builder, **not** a full-time engineer. They should be able to **read** agent output, not decode it.
+
+This rule applies to **everything written for the author**, not only verification checklists. It **overrides** generic “be concise / telegram-style” defaults when those would make the reply feel like jargon or shorthand.
+
+## Where it applies
+
+| Surface | Expectation |
+| --- | --- |
+| **Chat replies** | Full sentences; explain what changed and what to do next in everyday language |
+| **Status summaries** (`/tr-inbox`, finish work, “what’s next”) | Same — readable paragraphs over dense bullet stacks of nicknames |
+| **Linear comments** | Human-readable Done/In Progress notes, including how to test when verification is owed |
+| **PENDING AUTHOR VERIFICATION** | Plain-English **How to verify** on the checklist (**agents edit checklist only on `/tr-inbox`**); agent policy in `.agent.md` |
+| **Step-by-step / author playbooks** | Followable instructions without assuming Linear or code literacy |
+| **Questions to the author** | Ask in clear English; one idea per question when possible |
+
+## Where denser language is OK
+
+- **Code**, identifiers, and file paths (still introduce them in plain English when first mentioned).
+- **Agent-first `.dev` routing blocks** meant for other agents (Agent Routing tables, sync contracts). When the same doc also guides the author, keep the author-facing parts plain.
+
+## Do
+
+- Prefer **complete sentences** and a short “so what” after technical detail.
+- When you name a system nickname (`canary remount`, `Defer triad`, `Sync.full`), **say what it means in practice** in the same breath.
+- Always give **human context** with `TOR-*` ids (already required by the Linear rule).
+- Prefer a slightly longer clear paragraph over a clever compressed clause.
+- For “what should I do?”, spell out clicks, panels, Save & Play, and what success looks like.
+
+## Do not
+
+- Write **telegram fragments** as the main message (`Cold File→Load OK; remount path; Arm→2 HUD timed out`).
+- Lead with stacks of bare file paths, commit hashes, or API names with no plain-English frame.
+- Assume the author remembers internal epic nicknames or prior agent shorthand.
+- Treat “concise” as “omit the explanation.” Concise is fine when the idea is already plain; cryptic is not.
+
+## Examples
+
+**Bad (chat):** `TOR-384 Done. Canary remount on cold load; pending PAVE.`
+
+**Good (chat):** `I finished **TOR-384** (Global HUD missing on first save load). On a fresh load from the main menu, the script now checks whether the global HUD is present and remounts it if it is missing, so you should not need a second reload. I have not seen you confirm that in TTS yet, so it is listed under Pending Author Verification with step-by-step check instructions.`
+
+**Bad:** `blockedBy TOR-444; re-smoke step 2.`
+
+**Good:** `This join test is waiting on a re-check after **TOR-444** (we cut how heavy the Global HUD remount is). Please re-run the join playbook and pay special attention to step 2 — the HUD refresh — to see whether the client still drops.`
+
+Canonical companion for verify entries: [`.dev/PENDING AUTHOR VERIFICATION.agent.md`](../../.dev/PENDING%20AUTHOR%20VERIFICATION.agent.md) § Writing style (checklist: [PENDING AUTHOR VERIFICATION.md](../../.dev/PENDING%20AUTHOR%20VERIFICATION.md) — agents edit that file **only on `/tr-inbox`**). Session facts (do not guess Save & Play): [toronto-rising-author-session.mdc](toronto-rising-author-session.mdc).

@@ -15,6 +15,8 @@ alwaysApply: true
 | --- | --- |
 | **Linear** (`Toronto Rising` team, `TOR-*`) | Status, ownership, history, bug anchors for shipped features |
 | [`.dev/RUNNING TASKLIST.md`](../../.dev/RUNNING%20TASKLIST.md) | Planned work + **`## Focus`** stack rank; every bullet has `_(TOR-XX)_` |
+| [`.dev/PENDING AUTHOR VERIFICATION.md`](../../.dev/PENDING%20AUTHOR%20VERIFICATION.md) | Author checklist of Done/verify-gate issues awaiting TTS confirmation (**agents edit only on `/tr-inbox`**) |
+| [`.dev/PENDING AUTHOR VERIFICATION.agent.md`](../../.dev/PENDING%20AUTHOR%20VERIFICATION.agent.md) | Agent policy for that checklist (edit gate, marks, writing style) |
 | [`.dev/INBOX.md`](../../.dev/INBOX.md) | Quick capture (`bug` / `intent` / `idea`); **not** authoritative for status until triaged |
 | **Code + `.dev/` docs** | Implementation truth; must match Done issues |
 
@@ -93,6 +95,8 @@ See [`.cursor/skills/tr-inbox/SKILL.md`](../skills/tr-inbox/SKILL.md) § No back
 2. **When starting** — Set issue **In Progress**; confirm tasklist bullet has the correct `_(TOR-XX)_`.
 3. **When finishing** — Mark **Done** (or **Canceled** if descoped) with a comment: what changed, key files, verification, commit refs. Update tasklist `[ ]` → `[x]` if applicable. Reference `TOR-XX` in commit body when committing. **`living-doc` issues:** baseline may be `[x]` on tasklist but issue stays **In Progress** — see § Living documentation.
 
+   **Pending author verification:** Linear **Done** ≠ author tested in TTS. If the author has not confirmed Save & Play / multiclient / listen-check, put a **plain-English how-to-verify** note in the Linear **Done** comment (and chat) per [PENDING AUTHOR VERIFICATION.agent.md](../../.dev/PENDING%20AUTHOR%20VERIFICATION.agent.md) — complete sentences: what to open/click/load, what success looks like. **Do not** edit [`.dev/PENDING AUTHOR VERIFICATION.md`](../../.dev/PENDING%20AUTHOR%20VERIFICATION.md) when finishing work; checklist add/remove/mark processing happens only on **`/tr-inbox`** (or “process the inbox”). Optionally note “Pending Save & Play” on the tasklist bullet. Broader rule for *all* author-facing writing (chat included): [toronto-rising-author-voice.mdc](toronto-rising-author-voice.mdc).
+
    **Host-authority / fan-out work:** Initial multiclient E2E (**TOR-144** / **TOR-249**) is **Done**. Still uphold P1–P10 per [`.cursor/rules/toronto-rising-multiplayer-authority.mdc`](../../.cursor/rules/toronto-rising-multiplayer-authority.mdc). For join/seat/HUD visibility paths, prefer re-smoke notes from [Multiplayer-Session](../../.dev/E2E%20Playbooks/Multiplayer-Session.md); do not invent host-execution gates for residual join HUD (**TOR-381**).
 
    **Gate-close survey:** When the closed issue is on **Focus** or is a **`blockedBy` prerequisite** for other open work:
@@ -147,6 +151,7 @@ Use for manuals/playbooks/registries that are **never “finished”** (e.g. **T
 ## Non-negotiables
 
 - **Never** leave RUNNING TASKLIST and Linear out of sync after a session.
+- **Never** edit [PENDING AUTHOR VERIFICATION.md](../../.dev/PENDING%20AUTHOR%20VERIFICATION.md) outside **`/tr-inbox`** / “process the inbox” (author owns the checklist between passes; Done how-to-verify lives in Linear comments until inbox syncs the list).
 - **Never** delete Linear issues; cancel or close with reason.
 - **Never** skip creating a Done issue for shipped work — completed features are bug anchors.
 - **Do not** wait for the user to ask for Linear updates; sync is part of the definition of done.

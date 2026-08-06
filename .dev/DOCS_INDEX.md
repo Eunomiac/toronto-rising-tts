@@ -23,11 +23,15 @@ Use this file to decide what to read before touching a system. It is a routing i
 
 Always verify important claims against code before changing behavior.
 
+**Author-facing writing:** Chat, Linear notes, verify lists, and playbooks use plain English ([`toronto-rising-author-voice.mdc`](../.cursor/rules/toronto-rising-author-voice.mdc)). Agent-first routing docs may stay compact.
+
 ## Start By Intent
 
 | If the task is... | Read first | Then check |
 |---|---|---|
 | Starting the next scheduled task | [`RUNNING TASKLIST.md`](RUNNING%20TASKLIST.md), current workflow: [`../.cursor/skills/tr-start/SKILL.md`](../.cursor/skills/tr-start/SKILL.md) | Linear issue, relevant system docs below |
+| Writing chat / Linear / verify text the author will read | [`../.cursor/rules/toronto-rising-author-voice.mdc`](../.cursor/rules/toronto-rising-author-voice.mdc), [`AGENTS.md`](../AGENTS.md) § Author voice | [`PENDING AUTHOR VERIFICATION.md`](PENDING%20AUTHOR%20VERIFICATION.md) checklist; agent policy in [`PENDING AUTHOR VERIFICATION.agent.md`](PENDING%20AUTHOR%20VERIFICATION.agent.md) |
+| Author TTS verification debt (Done but untested) | [`PENDING AUTHOR VERIFICATION.md`](PENDING%20AUTHOR%20VERIFICATION.md) (checklist — **agent edits only on `/tr-inbox`**), [`PENDING AUTHOR VERIFICATION.agent.md`](PENDING%20AUTHOR%20VERIFICATION.agent.md) (agent policy) | Linear Done comments (how-to-verify), tasklist domain bullets |
 | Processing captured ideas/bugs | [`INBOX.md`](INBOX.md), current workflow: [`../.cursor/skills/tr-inbox/SKILL.md`](../.cursor/skills/tr-inbox/SKILL.md) | [`DEVELOPMENT_WORKFLOW.md`](DEVELOPMENT_WORKFLOW.md), Linear |
 | Debugging a runtime issue | [`SOLVING ISSUES & DEBUGGING.md`](SOLVING%20ISSUES%20%26%20DEBUGGING.md), [`DEBUG_FILE_LOGGING.md`](DEBUG_FILE_LOGGING.md) | `core/debug.ttslua`, relevant system docs |
 | Running or writing tests/playbooks | [`TESTING.md`](TESTING.md) (incl. [Console print ordering](TESTING.md#console-print-ordering-tts)), [`E2E Playbooks/README.md`](E2E%20Playbooks/README.md), [`Step-By-Step Playbooks/README.md`](Step-By-Step%20Playbooks/README.md) | [`../.cursor/skills/step-by-step-guidance/SKILL.md`](../.cursor/skills/step-by-step-guidance/SKILL.md) |

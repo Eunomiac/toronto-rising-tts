@@ -21,6 +21,8 @@ Status: current agent workflow guide; task history tables are audit records, not
 
 This document outlines the development workflow and best practices for this project.
 
+**Author voice:** When writing *to* the author (chat summaries, Linear comments, verification steps, playbooks), use plain English — complete sentences, explained nicknames, clarity over telegram shorthand. See [`.cursor/rules/toronto-rising-author-voice.mdc`](../.cursor/rules/toronto-rising-author-voice.mdc) and [AGENTS.md](../AGENTS.md) § Author voice.
+
 ## Linear synchronization (primary responsibility)
 
 **Linear is a primary source of truth for project state**, alongside the codebase. Agents must follow **`.cursor/rules/toronto-rising-linear.mdc`** on every task — check issues before starting, sync when finishing, never leave RUNNING TASKLIST and Linear diverged.
@@ -253,6 +255,8 @@ For every item Phase 1 marked ready (clear Active lines + answered Needs clarifi
 | `.dev/INBOX.md` | Ephemeral capture; not authoritative for status; headers persist after triage |
 | **Linear** | Status, history, bug anchors |
 | `.dev/RUNNING TASKLIST.md` | Shaped planned work with `_(TOR-XX)_`; **Focus** = current stack rank |
+| `.dev/PENDING AUTHOR VERIFICATION.md` | Author checklist of Done/verify-gate issues awaiting TTS confirmation (**agents edit only on `/tr-inbox`**) |
+| `.dev/PENDING AUTHOR VERIFICATION.agent.md` | Agent policy for that checklist (edit gate, marks, writing style) |
 | `docs/solutions/` | Patterns after solving — **not** a tracker |
 
 ## Focus & backlog prioritization
@@ -325,6 +329,7 @@ Linear is the source of truth for project state. [`.dev/RUNNING TASKLIST.md`](RU
 1. Mark the Linear issue **Done** with a comment (files changed, commits, verification).
 2. Change the tasklist checkbox to `[x]`; keep the TOR id.
 3. Reference the TOR id in git commit bodies (see `.cursor/rules/toronto-rising-git.mdc`).
+4. **Author verification:** If Save & Play / multiclient / listen-check is still owed, put a **plain-English how-to-verify** paragraph in the Linear **Done** comment (policy: [PENDING AUTHOR VERIFICATION.agent.md](PENDING%20AUTHOR%20VERIFICATION.agent.md)). **Do not** edit [PENDING AUTHOR VERIFICATION.md](PENDING%20AUTHOR%20VERIFICATION.md) when finishing — checklist add/remove and **✅** / **❌** / **⚠️** processing happen only on **`/tr-inbox`** / “process the inbox”. Optionally note “Pending Save & Play” on the tasklist bullet. Linear **Done** alone is not author verification.
 
 ### Gate-close survey (when marking Done or Canceled)
 
@@ -400,9 +405,9 @@ Do not create circular **`blockedBy`** chains. Do not use blocking where **`pare
 
 - **Before coding:** Search Linear for related `TOR-*` issues; read matching tasklist bullet; skim [`.dev/INBOX.md`](INBOX.md) Active if the task might overlap an unprocessed note.
 - **When starting:** Set issue **In Progress**; confirm tasklist has correct `_(TOR-XX)_`.
-- **When finishing:** Mark **Done** with comment (files, commits, verification); update tasklist `[x]`; reference `TOR-XX` in commit body; run **§ Deferred resurfacing** when the issue is a Focus/Deferred gate or **`blockedBy` prerequisite**. **`living-doc`:** keep issue **In Progress** after baseline; see § Living documentation.
+- **When finishing:** Mark **Done** with comment (files, commits, verification); update tasklist `[x]`; if author TTS verify is still owed, put plain-English how-to-verify in the Done comment (policy: [PENDING AUTHOR VERIFICATION.agent.md](PENDING%20AUTHOR%20VERIFICATION.agent.md)) — **do not** edit [PENDING AUTHOR VERIFICATION.md](PENDING%20AUTHOR%20VERIFICATION.md) outside **`/tr-inbox`**; reference `TOR-XX` in commit body; run **§ Deferred resurfacing** when the issue is a Focus/Deferred gate or **`blockedBy` prerequisite**. **`living-doc`:** keep issue **In Progress** after baseline; see § Living documentation.
 - **New work:** Create Linear issue in domain project first; append `_(TOR-XX)_` to tasklist (or INBOX first if capture-only).
-- **Inbox triage:** Follow **§ Inbox capture & triage** on “process the inbox”: Phase 1 park + `?` in INBOX; Phase 2 promote when every `?` has inline **`Answer:`**.
+- **Inbox triage:** Follow **§ Inbox capture & triage** on “process the inbox”: Phase 1 park + `?` in INBOX; Phase 2 promote when every `?` has inline **`Answer:`**. Also maintain [PENDING AUTHOR VERIFICATION.md](PENDING%20AUTHOR%20VERIFICATION.md) on that same inbox pass (only edit path for the checklist).
 - **Never** leave tasklist and Linear diverged at end of session.
 
 ## Documentation
@@ -419,6 +424,8 @@ Do not create circular **`blockedBy`** chains. Do not use blocking where **`pare
 - `.cursor/rules/toronto-rising-linear.mdc` - **Primary:** Linear + RUNNING TASKLIST + INBOX sync (always-on)
 - `.dev/INBOX.md` - Quick capture: `bug` / `intent` / `idea` before Linear promotion
 - `.dev/RUNNING TASKLIST.md` - Planned work; every bullet `_(TOR-XX)_`
+- `.dev/PENDING AUTHOR VERIFICATION.md` - Author checklist awaiting TTS confirmation (agents edit **only** on `/tr-inbox`)
+- `.dev/PENDING AUTHOR VERIFICATION.agent.md` - Agent policy for that checklist (edit gate, marks, writing style)
 - `.dev/plans/linear-alignment-log.md` - Linear alignment audit trail
 - `.dev/TESTING.md` - Testing guide and test functions
 - `.dev/GUID_REQUIREMENTS.md` - GUID requirements and setup

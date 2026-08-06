@@ -3,27 +3,42 @@
 ## Agent Routing
 
 Read this when:
-- marking a Linear issue **Done** before the author has confirmed in Tabletop Simulator
-- the author says they verified / Save & Play confirmed an issue
-- `/tr-inbox`, `/tr-start`, or “what’s next” when surfacing verification debt
-- closing a Focus item that still needs Save & Play / multiclient smoke
-- processing author marks (**✅** / **❌** / **⚠️**) on checklist headers
+- marking a Linear issue **Done** before the author has confirmed in Tabletop Simulator (write how-to-verify in the **Done comment** only — do **not** edit the checklist)
+- `/tr-inbox` / “process the inbox” — **the only agent workflow that may edit** [PENDING AUTHOR VERIFICATION.md](PENDING%20AUTHOR%20VERIFICATION.md)
+- `/tr-start` or “what’s next” when **reading** verification debt (skim/read only; no checklist edits)
+- needing the writing-style rules for verify text that will land in Linear comments or (later) on the checklist
 
 **Checklist (author-facing Outstanding list):** [PENDING AUTHOR VERIFICATION.md](PENDING%20AUTHOR%20VERIFICATION.md)
 
 Source of truth:
 - [PENDING AUTHOR VERIFICATION.md](PENDING%20AUTHOR%20VERIFICATION.md) for the living **Outstanding** entries (Linear **Done** ≠ verified in TTS)
-- **This file** for how agents add, rewrite, and process those entries
-- Linear for issue status / comments
+- **This file** for how agents add, rewrite, and process those entries — **edits to the checklist itself are `/tr-inbox` only**
+- Linear for issue status / comments (including how-to-verify notes when Done)
 - [RUNNING TASKLIST.md](RUNNING%20TASKLIST.md) for Focus + domain bullets
 
-Verification:
+Verification (checked during **`/tr-inbox`**):
 - every checklist entry has a live `TOR-*` that is **Done** (or noted as a verification gate still In Progress)
 - every entry’s **How to verify** uses plain English (see **Writing style** below)
-- watch issue headers in the checklist for author marks **✅** / **❌** / **⚠️** (see **Author marks on issue headers** below) and process them in the same session when you open either file
-- remove an entry when the author marks **✅** (or confirms in chat / Linear); then update the tasklist bullet
+- process author marks **✅** / **❌** / **⚠️** on checklist headers during inbox only
+- remove an entry when the author marks **✅** (or confirms in chat / Linear during an inbox pass); then update the tasklist bullet
 
 Status: living agent policy for the author verification checklist.
+
+---
+
+## Edit gate (mandatory)
+
+**Agents must not Write / StrReplace / otherwise edit** [PENDING AUTHOR VERIFICATION.md](PENDING%20AUTHOR%20VERIFICATION.md) except during an explicit **`/tr-inbox`** (or “process the inbox”) run.
+
+| Allowed anytime | Checklist edits — **`/tr-inbox` only** |
+| --- | --- |
+| **Read** / skim the checklist | Add Outstanding entries for Done-without-confirm work |
+| Put plain-English how-to-verify in Linear **Done** comments + chat | Process **✅** / **❌** / **⚠️** marks; remove or rewrite entries |
+| Note “pending Save & Play” on tasklist bullets | Sync checklist ↔ Linear / tasklist after author confirmation |
+
+**Do not** touch the checklist when finishing a feature, running `/tr-start`, debugging, or “in passing” because the file is open. The author often edits this file by hand; treat it as author-owned between inbox passes.
+
+Exception: the author explicitly asks you to edit that file outside inbox (rare).
 
 ---
 
@@ -35,9 +50,9 @@ Linear **Done** means the code and docs were shipped. It does **not** mean the a
 
 ---
 
-## Author marks on issue headers (mandatory for agents)
+## Author marks on issue headers (`/tr-inbox` only)
 
-As the author works through the checklist in Tabletop Simulator, they will prefix issue headings with one of these symbols. **Whenever you open or edit either verification file** (including `/tr-inbox`, `/tr-start`, finishing related work, or when the author says they marked items), scan every `####` heading under **Outstanding** in [PENDING AUTHOR VERIFICATION.md](PENDING%20AUTHOR%20VERIFICATION.md) for these marks and act on them. Do not wait for a separate chat instruction if the mark is already in the checklist.
+As the author works through the checklist in Tabletop Simulator, they will prefix issue headings with one of these symbols. **During `/tr-inbox` only**, scan every `####` heading under **Outstanding** in [PENDING AUTHOR VERIFICATION.md](PENDING%20AUTHOR%20VERIFICATION.md) for these marks and act on them. Outside inbox: if the author says they marked items, remind them that checklist updates run on the next **`/tr-inbox`** (or ask them to run it), unless they explicitly ask you to edit the file now.
 
 **Where the mark appears:** on the issue header line, for example:
 
@@ -50,13 +65,13 @@ As the author works through the checklist in Tabletop Simulator, they will prefi
 **Corrections:** …
 ```
 
-| Mark | Meaning | What the agent must do |
+| Mark | Meaning | What the agent must do (**`/tr-inbox`**) |
 | --- | --- | --- |
 | **✅** | Confirmed. The author followed the **How to verify** steps and everything passed. | **Remove** this entire issue entry from **Outstanding**. Mark the matching RUNNING TASKLIST bullet as author-confirmed (or clear its “Pending Save & Play” wording). Optionally leave a short Linear comment that author verification passed. Treat the work as fully closed for verification debt. |
 | **❌** | Testing failed. The bug or missing behavior is still live. | Expect two paragraphs under that entry when the author provides them: **`**Verification Failures:**`** (what still breaks) and, when anything passed, **`**Verified:**`** (which parts of the how-to-verify steps succeeded). Read both carefully. **Do not remove** the entry until remaining failures are fixed and the author re-confirms with **✅**. Narrow the remaining work: rewrite **How to verify** so it only covers what still needs checking; put already-passed behavior in **Context** (or a short “Already verified” note) so the next pass does not re-litigate it. Mirror that narrowing in Linear (Bug description / comments on the original Done issue or a new related Bug): what passed, what remains. Prefer creating or reopening a Linear **Bug** (`relatedTo` the original Done issue when one exists), set it **In Progress** if you are fixing now. Summarize in plain English in chat. |
 | **⚠️** | The issue definition or expected validation is wrong or misleading (for example, “End scene should remain selected” when End should deselect). | Expect a paragraph under that entry beginning with **`**Corrections:**`** — read it carefully. Fix the inaccurate **How to verify** text (and any matching docs, E2E asserts, or Linear notes) so they match intended behavior. If the correction implies a code change, treat that as real work (Linear update + implement). After corrections are applied, **remove the ⚠️ mark and the Corrections paragraph** (or replace them with a short **Context** note that the verify text was corrected and re-test is still owed). Leave the entry in **Outstanding** until the author marks **✅** or **❌** on a fresh pass. |
 
-**Unmarked headers** still mean “not yet tested” — leave them alone unless you are adding a new entry or the author confirmed elsewhere (chat / Linear).
+**Unmarked headers** still mean “not yet tested” — leave them alone unless you are adding a new entry (inbox) or the author confirmed elsewhere and inbox is syncing that fact.
 
 **If both a mark and detail paragraphs appear**, trust the mark for status and the paragraphs for specifics. For **❌**, use **Verified:** to shrink scope and **Verification Failures:** to define remaining work. If a mark is present but the expected failure/correction paragraph is missing (**Verification Failures:** / **Corrections:**), ask the author in plain English what failed or what to correct before guessing. A missing **Verified:** on **❌** is allowed when nothing passed — do not invent successes.
 
@@ -66,7 +81,7 @@ As the author works through the checklist in Tabletop Simulator, they will prefi
 
 Checklist entries follow the project-wide **author voice** rule: [`.cursor/rules/toronto-rising-author-voice.mdc`](../.cursor/rules/toronto-rising-author-voice.mdc). That rule covers **all** writing to the author (chat included). The notes below are the verify-entry specialization.
 
-When you add or rewrite a verification entry, write **plain English instructions the author can follow without decoding shorthand**.
+When you add or rewrite a verification entry (**`/tr-inbox`**), or when you write how-to-verify in a Linear **Done** comment (any time), write **plain English instructions the author can follow without decoding shorthand**.
 
 **Do:**
 
@@ -85,22 +100,22 @@ When you add or rewrite a verification entry, write **plain English instructions
 
 **Good:** `Load into the save from the main menu. Ensure the global HUD appears without requiring a reload, confirming that the script checks for the existence of the global HUD on load and remounts it automatically if it does not.`
 
-Same standard applies to Linear Done comments that say verification is still owed: write a short plain-English test note there too, not only a code dump.
+Same standard applies to Linear Done comments that say verification is still owed: write a short plain-English test note there too. Checklist population from those notes happens on **`/tr-inbox`**.
 
 Also: [`.cursor/rules/toronto-rising-linear.mdc`](../.cursor/rules/toronto-rising-linear.mdc) § Pending author verification.
 
 ---
 
-## Agent maintenance (mandatory)
+## Agent maintenance
 
-Edits to **Outstanding** happen in [PENDING AUTHOR VERIFICATION.md](PENDING%20AUTHOR%20VERIFICATION.md). Policy lives here.
+Edits to **Outstanding** happen in [PENDING AUTHOR VERIFICATION.md](PENDING%20AUTHOR%20VERIFICATION.md) **only during `/tr-inbox`**. Policy lives here.
 
-| Event | Update the checklist |
+| Event | What to do |
 | --- | --- |
-| Mark Linear **Done** but author has **not** confirmed in-TTS | **Add** an entry with a plain-English **How to verify** paragraph (and a playbook link if one exists) |
-| Author marks header **✅** (or confirms in chat / Linear) | **Remove** the entry; mark the tasklist bullet author-confirmed; optional Linear comment |
-| Author marks header **❌** + **Verification Failures:** (and optional **Verified:**) | Keep the entry; narrow **How to verify** to remaining failures; record what already passed in **Context** + Linear; open/reopen Bug as needed; do not treat as confirmed |
-| Author marks header **⚠️** + **Corrections:** | Fix verify text / docs / code per the correction; clear the ⚠️ + Corrections once addressed; leave entry until re-tested |
-| `/tr-inbox` / Focus re-stack | Skim **Outstanding** for **✅** / **❌** / **⚠️** and process them; mention remaining high-priority verify debt if it would block a play session |
+| Mark Linear **Done** but author has **not** confirmed in-TTS | **Do not** edit the checklist. Put a plain-English how-to-verify note in the Linear **Done** comment (and chat). Optionally note “Pending Save & Play” on the tasklist bullet. |
+| **`/tr-inbox`** | Add missing Outstanding entries from recent Done-without-confirm work (Linear Done comments, tasklist “Pending Save & Play” wording). Process **✅** / **❌** / **⚠️**. Mention remaining high-priority verify debt if it would block a play session. |
+| Author marks header **✅** (or confirms in chat / Linear) | On **`/tr-inbox`**: **Remove** the entry; mark the tasklist bullet author-confirmed; optional Linear comment. Outside inbox: do not edit the checklist unless the author explicitly asks. |
+| Author marks header **❌** + **Verification Failures:** (and optional **Verified:**) | On **`/tr-inbox`**: keep the entry; narrow **How to verify**; record what already passed in **Context** + Linear; open/reopen Bug as needed. |
+| Author marks header **⚠️** + **Corrections:** | On **`/tr-inbox`**: fix verify text / docs / code per the correction; clear the ⚠️ + Corrections once addressed; leave entry until re-tested |
 
-When finishing work: if verification is still owed, say so in the Linear **Done** comment with a plain-English test note **and** add the entry to the checklist in the same change.
+When finishing work: if verification is still owed, say so in the Linear **Done** comment with a plain-English test note. **Do not** add the checklist entry until **`/tr-inbox`**.

@@ -14,6 +14,14 @@ For any agent working in this repo:
 
 Multi-root Cursor workspaces may include **Toronto Rising (Project)** and **TTS (Documents)** alongside this repo. Treat those folders as walled browse roots: do not Glob, Grep, Read, Write, or Delete there unless the author explicitly points you at a path. Node tooling still uses absolute paths from `tts-assets.config.json`. Full policy: [`.cursor/rules/toronto-rising-walled-workspace-roots.mdc`](.cursor/rules/toronto-rising-walled-workspace-roots.mdc) (including the `Saves/` exception for save inspection).
 
+## Author voice (mandatory)
+
+**Write to the author in plain English.** The author should read your chat, Linear notes, and verification instructions — not decipher them. Prefer complete sentences and a short plain “so what” over engineer telegram style, even when that means being more verbose. Explain nicknames (`canary remount`, `Sync.full`, and so on) in everyday language the first time you use them in a reply.
+
+This is a first-class project rule: [`.cursor/rules/toronto-rising-author-voice.mdc`](.cursor/rules/toronto-rising-author-voice.mdc). It applies to **all author-facing writing** (chat, status summaries, Linear comments, Pending Author Verification, author playbooks), not only verify checklists. It overrides generic “be terse” defaults when terseness would feel like jargon.
+
+Agent-first `.dev` routing docs may stay compact for other agents; anything the author is expected to act on must stay readable.
+
 ## Current Workflows
 
 `/tr-start` is the current start command when the user wants to work on "the next task." It reads Focus, Linear context, and architecture policies before implementation.
@@ -22,7 +30,9 @@ Multi-root Cursor workspaces may include **Toronto Rising (Project)** and **TTS 
 
 These workflows are not permanent architecture. Preserve their current behavior until a cleaner agent-first workflow is deliberately introduced.
 
-For Codex/API sessions where slash commands are not available, mirror the same behavior manually: inspect `.dev/RUNNING TASKLIST.md`, `.dev/INBOX.md` when relevant, Linear context if available, and the task-specific routing in `.dev/DOCS_INDEX.md`.
+For Codex/API sessions where slash commands are not available, mirror the same behavior manually: inspect `.dev/RUNNING TASKLIST.md`, read `.dev/PENDING AUTHOR VERIFICATION.md` when useful, follow `.dev/PENDING AUTHOR VERIFICATION.agent.md` for verify wording, edit the PAVE checklist **only** when mirroring `/tr-inbox` / “process the inbox”, inspect `.dev/INBOX.md` when relevant, Linear context if available, and the task-specific routing in `.dev/DOCS_INDEX.md`.
+
+**Author verification:** Linear **Done** does not mean Save & Play confirmed. Put plain-English how-to-verify in the Linear Done comment when shipping. Agents **edit** the checklist [`.dev/PENDING AUTHOR VERIFICATION.md`](.dev/PENDING%20AUTHOR%20VERIFICATION.md) **only during `/tr-inbox`** (or “process the inbox”); policy: [`.dev/PENDING AUTHOR VERIFICATION.agent.md`](.dev/PENDING%20AUTHOR%20VERIFICATION.agent.md). On inbox, process author marks **✅** / **❌** / **⚠️** and add missing Outstanding entries from Done comments / tasklist notes.
 
 ## Trust Hierarchy
 
@@ -42,6 +52,8 @@ Notion is an index/planning layer, not the source of truth for code-adjacent doc
 ## Documentation Policy
 
 Docs are agent-first by default. Optimize for routing, source-of-truth clarity, verification steps, and "read this before touching X." Do not create broad user manuals unless the user asks or a complex private reference genuinely needs human-facing prose.
+
+**Exception — author-facing surfaces:** Chat, Linear comments meant for the author, [PENDING AUTHOR VERIFICATION](.dev/PENDING%20AUTHOR%20VERIFICATION.md) (checklist), and step-by-step / author playbooks must use **plain English** per [`.cursor/rules/toronto-rising-author-voice.mdc`](.cursor/rules/toronto-rising-author-voice.mdc). Prefer clarity over brevity when those conflict.
 
 When adding or updating canonical docs, prefer an agent routing block:
 

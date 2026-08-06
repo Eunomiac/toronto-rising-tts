@@ -13,14 +13,14 @@ Source of truth:
 - `.cursor/skills/tr-inbox/SKILL.md`
 - `.cursor/rules/toronto-rising-linear.mdc`
 - `.dev/INBOX.md` for raw capture before triage
-- [PENDING AUTHOR VERIFICATION.md](PENDING%20AUTHOR%20VERIFICATION.md) — author checklist of Done work still awaiting TTS confirmation
-- [PENDING AUTHOR VERIFICATION.agent.md](PENDING%20AUTHOR%20VERIFICATION.agent.md) — agent policy for that checklist
+- [PENDING AUTHOR VERIFICATION.md](PENDING%20AUTHOR%20VERIFICATION.md) — author checklist of Done work still awaiting TTS confirmation (**agents edit only on `/tr-inbox`**)
+- [PENDING AUTHOR VERIFICATION.agent.md](PENDING%20AUTHOR%20VERIFICATION.agent.md) — agent policy for that checklist (edit gate, marks, writing style)
 
 Verification:
 - every active bullet has a matching `TOR-*` Linear issue
 - Focus order matches current Linear blocker/priority intent
 - completed work is reflected in Linear and relevant docs
-- author-unconfirmed Done work is listed in PENDING AUTHOR VERIFICATION
+- author-unconfirmed Done work is listed in PENDING AUTHOR VERIFICATION (checklist synced on `/tr-inbox`; how-to-verify also in Linear Done comments)
 
 This file is continuously updated with issues and plans for feature development.
 
@@ -28,7 +28,7 @@ This file is continuously updated with issues and plans for feature development.
 
 **Quick capture before items are shaped:** [INBOX.md](INBOX.md) — one-line notes only; say **“process the inbox”** to triage (agent promotes to Linear + this file when ready).
 
-**Author TTS verification debt:** [PENDING AUTHOR VERIFICATION.md](PENDING%20AUTHOR%20VERIFICATION.md) — Linear Done ≠ Save & Play confirmed. Agent instructions: [PENDING AUTHOR VERIFICATION.agent.md](PENDING%20AUTHOR%20VERIFICATION.agent.md).
+**Author TTS verification debt:** [PENDING AUTHOR VERIFICATION.md](PENDING%20AUTHOR%20VERIFICATION.md) — Linear Done ≠ Save & Play confirmed. Agents edit that checklist **only on `/tr-inbox`**. Agent instructions: [PENDING AUTHOR VERIFICATION.agent.md](PENDING%20AUTHOR%20VERIFICATION.agent.md).
 
 **What to work next:** skim **Focus** below, then say **“what’s next”** or pick the top unchecked Focus item. Re-stack Focus when priorities shift (after inbox triage, before a play session, or weekly).
 
