@@ -641,5 +641,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-08-06 | CREATE+SHIP | TOR-470 | Clock lerp: overlay-only mid ticks; DEBUG.setClockLerpTickSeconds; panel/weather on settle; PAVE pending |
 | 2026-08-06 | CREATE+SHIP | TOR-471 | DEBUG NPC light mode template tuner (`npcLightModeShow/Set/Reset/Export`); `gameState.debug.npcLightModes` merge in `getMergedModeDefinition`; relatedTo TOR-455; PAVE pending |
 | 2026-08-06 | DOC | PENDING AUTHOR VERIFICATION | Agent edit gate: checklist (`PENDING AUTHOR VERIFICATION.md`) writable **only** on `/tr-inbox`; Done how-to-verify stays in Linear comments until inbox sync |
+| 2026-08-06 | DOC | PENDING AUTHOR VERIFICATION | ❌/⚠️ follow INBOX For Immediate Implementation disposition (ship quick fixes in inbox; Focus top otherwise; defer only complex refactors) |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

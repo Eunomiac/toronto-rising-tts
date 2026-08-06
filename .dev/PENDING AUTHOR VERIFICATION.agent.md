@@ -68,12 +68,28 @@ As the author works through the checklist in Tabletop Simulator, they will prefi
 | Mark | Meaning | What the agent must do (**`/tr-inbox`**) |
 | --- | --- | --- |
 | **✅** | Confirmed. The author followed the **How to verify** steps and everything passed. | **Remove** this entire issue entry from **Outstanding**. Mark the matching RUNNING TASKLIST bullet as author-confirmed (or clear its “Pending Save & Play” wording). Optionally leave a short Linear comment that author verification passed. Treat the work as fully closed for verification debt. |
-| **❌** | Testing failed. The bug or missing behavior is still live. | Expect two paragraphs under that entry when the author provides them: **`**Verification Failures:**`** (what still breaks) and, when anything passed, **`**Verified:**`** (which parts of the how-to-verify steps succeeded). Read both carefully. **Do not remove** the entry until remaining failures are fixed and the author re-confirms with **✅**. Narrow the remaining work: rewrite **How to verify** so it only covers what still needs checking; put already-passed behavior in **Context** (or a short “Already verified” note) so the next pass does not re-litigate it. Mirror that narrowing in Linear (Bug description / comments on the original Done issue or a new related Bug): what passed, what remains. Prefer creating or reopening a Linear **Bug** (`relatedTo` the original Done issue when one exists), set it **In Progress** if you are fixing now. Summarize in plain English in chat. |
-| **⚠️** | The issue definition or expected validation is wrong or misleading (for example, “End scene should remain selected” when End should deselect). | Expect a paragraph under that entry beginning with **`**Corrections:**`** — read it carefully. Fix the inaccurate **How to verify** text (and any matching docs, E2E asserts, or Linear notes) so they match intended behavior. If the correction implies a code change, treat that as real work (Linear update + implement). After corrections are applied, **remove the ⚠️ mark and the Corrections paragraph** (or replace them with a short **Context** note that the verify text was corrected and re-test is still owed). Leave the entry in **Outstanding** until the author marks **✅** or **❌** on a fresh pass. |
+| **❌** | Testing failed. The bug or missing behavior is still live. | Expect **`**Verification Failures:**`** (and optional **`**Verified:**`**). Narrow the checklist entry (remaining how-to-verify + Context for what already passed). Then handle remaining failures under **§ Immediate disposition** below — same urgency as INBOX **For Immediate Implementation**. Keep the Outstanding entry until fixed and the author re-confirms with **✅**. |
+| **⚠️** | The issue definition or expected validation is wrong or misleading (for example, “End scene should remain selected” when End should deselect). | Expect **`**Corrections:**`**. Fix inaccurate verify text / docs immediately when that is the whole correction. If the correction implies product/code change, handle under **§ Immediate disposition** below. After doc-only corrections are applied, **remove the ⚠️ mark and the Corrections paragraph** (or replace with a short **Context** note that verify text was corrected and re-test is still owed). Leave the entry until the author marks **✅** or **❌** on a fresh pass. |
 
 **Unmarked headers** still mean “not yet tested” — leave them alone unless you are adding a new entry (inbox) or the author confirmed elsewhere and inbox is syncing that fact.
 
 **If both a mark and detail paragraphs appear**, trust the mark for status and the paragraphs for specifics. For **❌**, use **Verified:** to shrink scope and **Verification Failures:** to define remaining work. If a mark is present but the expected failure/correction paragraph is missing (**Verification Failures:** / **Corrections:**), ask the author in plain English what failed or what to correct before guessing. A missing **Verified:** on **❌** is allowed when nothing passed — do not invent successes.
+
+### Immediate disposition for ❌ / ⚠️ (`/tr-inbox`)
+
+Treat **Verification Failures** and **Corrections** that need code or behavior changes like bullets under [INBOX.md](INBOX.md) **For Immediate Implementation**:
+
+> After registering each issue with Linear in the ordinary fashion, briefly review it: If it is a quick or easy fix, **implement it immediately** without waiting for user confirmation. Otherwise, promote it to the **top of the Focus Stack**, and offer to begin work on it immediately when summarizing inbox processing. If multiple items need promotion this way, consider how best to resolve them quickly, and offer to draft an implementation plan in the summary.
+
+| Disposition | When | Agent action |
+| --- | --- | --- |
+| **Implement now** | Clear, bounded fix (wrong verify wording, small bug, obvious one-file/logic tweak) | Register/update Linear Bug if needed (`relatedTo` the original Done issue), set **In Progress**, **ship the fix in this inbox session**, leave/narrow the PAVE entry for re-test |
+| **Focus #1 (or top stack) + offer to start** | Needs a short plan or a few coordinated files, but not a large redesign | Create/update Linear, put at **top of Focus**, offer to begin immediately in the inbox summary |
+| **Defer into Linear only** | Truly complex refactor, multi-system redesign, or unclear architecture | Create/update Linear with full description; place in the right domain tasklist section with **`blockedBy`** as needed — **do not** use backlog deferral as the default for verify failures |
+
+**Do not** park ordinary ❌ / ⚠️ follow-ups as quiet Backlog/Todo while inbox finishes. Author verification debt that still breaks is urgent unless complexity clearly forces a planned refactor.
+
+Mirror what passed vs what remains in Linear comments. Prefer a new related **Bug** when the original feature issue is already **Done**.
 
 ---
 
@@ -115,7 +131,7 @@ Edits to **Outstanding** happen in [PENDING AUTHOR VERIFICATION.md](PENDING%20AU
 | Mark Linear **Done** but author has **not** confirmed in-TTS | **Do not** edit the checklist. Put a plain-English how-to-verify note in the Linear **Done** comment (and chat). Optionally note “Pending Save & Play” on the tasklist bullet. |
 | **`/tr-inbox`** | Add missing Outstanding entries from recent Done-without-confirm work (Linear Done comments, tasklist “Pending Save & Play” wording). Process **✅** / **❌** / **⚠️**. Mention remaining high-priority verify debt if it would block a play session. |
 | Author marks header **✅** (or confirms in chat / Linear) | On **`/tr-inbox`**: **Remove** the entry; mark the tasklist bullet author-confirmed; optional Linear comment. Outside inbox: do not edit the checklist unless the author explicitly asks. |
-| Author marks header **❌** + **Verification Failures:** (and optional **Verified:**) | On **`/tr-inbox`**: keep the entry; narrow **How to verify**; record what already passed in **Context** + Linear; open/reopen Bug as needed. |
-| Author marks header **⚠️** + **Corrections:** | On **`/tr-inbox`**: fix verify text / docs / code per the correction; clear the ⚠️ + Corrections once addressed; leave entry until re-tested |
+| Author marks header **❌** + **Verification Failures:** (and optional **Verified:**) | On **`/tr-inbox`**: keep/narrow the entry; then **§ Immediate disposition** (implement now / Focus top / defer only if complex refactor). |
+| Author marks header **⚠️** + **Corrections:** | On **`/tr-inbox`**: apply doc corrections immediately when possible; code/behavior corrections use **§ Immediate disposition**; clear ⚠️ + Corrections once addressed; leave entry until re-tested |
 
 When finishing work: if verification is still owed, say so in the Linear **Done** comment with a plain-English test note. **Do not** add the checklist entry until **`/tr-inbox`**.

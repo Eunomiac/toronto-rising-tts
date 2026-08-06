@@ -117,10 +117,10 @@ After Quick Fixes + Phase 1/2, apply **INBOX cleanup** (Conventions above): remo
 Even if capture sections were empty, refresh the stack so **`/tr-start`** readers get current truth:
 
 1. Read **`## Focus`** in [`.dev/RUNNING TASKLIST.md`](../../../.dev/RUNNING%20TASKLIST.md).
-1b. Maintain [`.dev/PENDING AUTHOR VERIFICATION.md`](../../../.dev/PENDING%20AUTHOR%20VERIFICATION.md) (**this is the only workflow that may edit that file**): (1) add Outstanding entries for recent Done-without-confirm work using plain-English how-to-verify from Linear Done comments / tasklist “Pending Save & Play” notes; (2) process any author header marks **✅** / **❌** / **⚠️** per [PENDING AUTHOR VERIFICATION.agent.md](../../../.dev/PENDING%20AUTHOR%20VERIFICATION.agent.md). If High-priority verify debt would block a play session, mention it in the summary (do not auto-promote into Focus).
+1b. Maintain [`.dev/PENDING AUTHOR VERIFICATION.md`](../../../.dev/PENDING%20AUTHOR%20VERIFICATION.md) (**this is the only workflow that may edit that file**): (1) add Outstanding entries for recent Done-without-confirm work using plain-English how-to-verify from Linear Done comments / tasklist “Pending Save & Play” notes; (2) process any author header marks **✅** / **❌** / **⚠️** per [PENDING AUTHOR VERIFICATION.agent.md](../../../.dev/PENDING%20AUTHOR%20VERIFICATION.agent.md). **❌ Verification Failures** and **⚠️ Corrections** that need behavior changes follow the same urgency as INBOX **For Immediate Implementation** (implement quick fixes in this session; otherwise Focus top + offer to start; defer to Linear backlog **only** for complex refactors). If High-priority verify debt would block a play session, mention it in the summary.
 2. List open Linear **Bug** issues and non-epic **In Progress** work (ignore epic-only noise unless actively blocking).
 3. **Re-stack Focus** (update the table + dated blurb) using this default policy unless the user overrode in chat:
-   - **Session-blocking bugs** and audible/regression failures first.
+   - **Session-blocking bugs** and audible/regression failures first — including PAVE **❌** / **⚠️** follow-ups promoted under Immediate disposition.
    - **Manual E2E playbooks — TOR-141 (Dice + Scenes E2E playbooks)** soon after the worst scene/audio bugs — regression harness before large refactors.
    - Quick tooling wins (e.g. **TOR-137 (Sites unicode minus import)**) after that.
    - Large in-flight refactors (e.g. **TOR-81 (light modes cleanup)**) when Focus bugs + TOR-141 foundation are done.
@@ -135,7 +135,7 @@ Even if capture sections were empty, refresh the stack so **`/tr-start`** reader
 7. Ensure every Focus row has a matching open tasklist bullet and Linear issue; remove Focus rows for **Done** or **Canceled** work.
 8. **Do not** update **Deferred this cycle** — it is **paused** (historical line in RUNNING TASKLIST is context only).
 
-Part B remains **tracking-only** (no Active-item implementation). Quick Fixes are handled in Part A.0 only.
+Part B is **tracking-only for INBOX Active / Focus re-stack**, except: **Quick Fixes** (Part A.0) and **PAVE ❌ / ⚠️ Immediate disposition** may implement in this session when the fix is quick.
 
 ## Part C — `/tr-start` readiness checklist
 
@@ -149,7 +149,7 @@ Before your final reply, verify and report:
 | **Processed** | New session entries appended for handled items |
 | **RUNNING TASKLIST** | New `[ ]` bullets for every scheduled promotion |
 | **Focus** | Dated stack rank; top row is the recommended next task |
-| **PENDING AUTHOR VERIFICATION** | **Only edit path for the checklist:** add Done-without-confirm entries in **plain English**; process **✅** / **❌** / **⚠️** per [PENDING AUTHOR VERIFICATION.agent.md](../../../.dev/PENDING%20AUTHOR%20VERIFICATION.agent.md) |
+| **PENDING AUTHOR VERIFICATION** | **Only edit path for the checklist:** add Done-without-confirm entries in **plain English**; process **✅** / **❌** / **⚠️** per [PENDING AUTHOR VERIFICATION.agent.md](../../../.dev/PENDING%20AUTHOR%20VERIFICATION.agent.md); **❌**/**⚠️** follow Immediate Implementation disposition (ship quick fixes here; Focus top otherwise; defer only complex refactors) |
 | **Linear** | Priorities reflect **importance**; **`blockedBy`** reflects **precedence**; no orphan promoted ids |
 
 If unanswered **`?`** remain, say so explicitly — repo is still **`/tr-start`-ready** for implementation on existing Focus items; promotion waits for **`Answer:`** + re-run **`/tr-inbox`**.
@@ -158,7 +158,7 @@ If unanswered **`?`** remain, say so explicitly — repo is still **`/tr-start`-
 
 Write the whole reply in plain English (author voice). Tables are fine; do not let the prose around them collapse into cryptic shorthand.
 
-1. **Inbox summary** — quick-fix shipped / promoted / parked / dismissed / duplicate. Every `TOR-XXX` includes a short label. Say what each item means in everyday language when the label alone is jargon.
+1. **Inbox summary** — quick-fix shipped / promoted / parked / dismissed / duplicate. Every `TOR-XXX` includes a short label. Say what each item means in everyday language when the label alone is jargon. Include PAVE **❌**/**⚠️** items shipped or Focus-promoted under Immediate disposition.
 2. **Focus table** — reproduce the updated **`## Focus`** rows (top 6 max). Ids in the table already have a **Why now** column — that satisfies the context rule for those rows.
 3. **Linear sync** — **priority** changes and new **`blockedBy`** links; each id with label (e.g. `TOR-143 (phase system redesign) → Medium`; `TOR-143 blockedBy TOR-141 (E2E playbooks)`).
 4. **Blocked on author** — any `?` still needing **`Answer:`** in INBOX (copy the questions).
