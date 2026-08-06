@@ -25,7 +25,7 @@ local Sync = require("core.sync")
 local SRI = require("lib.seat-role-identity")
 LightTest = require("core.light_test")
 -- Bundler tracing: `lib.workspace_ndjson_log` is otherwise only required from inside DEBUG.* at runtime
--- and can be omitted from Save & Play bundles ΓåÆ a late require there fails in-game. Keep one top-level require.
+-- and can be omitted from Save & Play bundles → a late require there fails in-game. Keep one top-level require.
 require("lib.workspace_ndjson_log")
 
 --- Keep debug-side hunger writes aligned with runtime sync behavior.
@@ -123,7 +123,7 @@ end
 --- @return table summary `{ ok, failCount, maxPosErr, maxRotErr, ... }`
 function DEBUG.compareHandFrames(tableKey)
   if type(R) ~= "table" or type(R.compareHandFrames) ~= "function" then
-    error("DEBUG.compareHandFrames: global R.compareHandFrames missing ΓÇö re-bundle Global and Save & Play")
+    error("DEBUG.compareHandFrames: global R.compareHandFrames missing — re-bundle Global and Save & Play")
   end
   local key = tableKey
   if U.Type(key) ~= "string" or key == "" then
@@ -140,7 +140,7 @@ end
 --- @return table summary
 function DEBUG.compareLayoutPaths(tableKey)
   if type(R) ~= "table" or type(R.compareLayoutPaths) ~= "function" then
-    error("DEBUG.compareLayoutPaths: global R.compareLayoutPaths missing ΓÇö re-bundle Global and Save & Play")
+    error("DEBUG.compareLayoutPaths: global R.compareLayoutPaths missing — re-bundle Global and Save & Play")
   end
   local key = tableKey
   if U.Type(key) ~= "string" or key == "" then
@@ -157,7 +157,7 @@ end
 --- @return table summary
 function DEBUG.refreshSeatRigsFromReference(opts)
   if type(R) ~= "table" or type(R.refreshSeatRigsFromReferenceSegment) ~= "function" then
-    error("DEBUG.refreshSeatRigsFromReference: global R.refreshSeatRigsFromReferenceSegment missing ΓÇö re-bundle Global and Save & Play")
+    error("DEBUG.refreshSeatRigsFromReference: global R.refreshSeatRigsFromReferenceSegment missing — re-bundle Global and Save & Play")
   end
   return R.refreshSeatRigsFromReferenceSegment(opts)
 end
@@ -168,7 +168,7 @@ end
 --- @return table|nil computed
 function DEBUG.syncTableSimplified(tableKey, opts)
   if type(R) ~= "table" or type(R.resolveSeatObjectsFromTable) ~= "function" then
-    error("DEBUG.syncTableSimplified: global R.resolveSeatObjectsFromTable missing ΓÇö re-bundle Global and Save & Play")
+    error("DEBUG.syncTableSimplified: global R.resolveSeatObjectsFromTable missing — re-bundle Global and Save & Play")
   end
   local key = tableKey
   if U.Type(key) ~= "string" or key == "" then
@@ -394,7 +394,7 @@ function DEBUG.workspaceNdjsonBegin(relativePath)
         if not warnedNdjsonSendExternalMissing then
             warnedNdjsonSendExternalMissing = true
             print(
-                "DEBUG.workspaceNdjsonBegin: sendExternalMessage is nil ΓÇö workspace NDJSON will NOT be written."
+                "DEBUG.workspaceNdjsonBegin: sendExternalMessage is nil — workspace NDJSON will NOT be written."
             )
             print(
                 "  Fix: use TTS Editor / extension connected to this workspace, enable custom messages (ttsEditor.enableMessages), then Save & Play."
@@ -436,7 +436,7 @@ function DEBUG.workspaceNdjsonAppend(relativePath, payload)
         if not warnedNdjsonSendExternalMissing then
             warnedNdjsonSendExternalMissing = true
             print(
-                "DEBUG.workspaceNdjsonAppend: sendExternalMessage is nil ΓÇö NDJSON append skipped. See DEBUG.workspaceNdjsonBegin message for fixes."
+                "DEBUG.workspaceNdjsonAppend: sendExternalMessage is nil — NDJSON append skipped. See DEBUG.workspaceNdjsonBegin message for fixes."
             )
         end
         return
@@ -462,7 +462,7 @@ end
 -- @param passed boolean Whether the test passed
 -- @param details string Optional details about the test
 local function printTestResult(testName, passed, details)
-    local status = passed and "Γ£ô PASS" or "Γ£ù FAIL"
+    local status = passed and "✓ PASS" or "✗ FAIL"
     local color = passed and {0, 1, 0} or {1, 0, 0}
     print(status .. ": " .. testName)
     if details then
@@ -583,7 +583,7 @@ function DEBUG.showGlobalHudCanaries()
     print("HUD_PANEL_BLACK visibility=" .. tostring(attr("HUD_PANEL_BLACK", "visibility")))
     print("HUD_PANEL_BLACK active=" .. tostring(attr("HUD_PANEL_BLACK", "active")))
     print("currentPhase=" .. tostring(S.getStateVal("currentPhase")))
-    print("Interpretation: large xmlLen+attrs but blank canvas ΓåÆ dead Global canvas; blindfold active ΓåÆ cover; UI.loading ΓåÆ asset race; only BLACK wrong ΓåÆ seat reveal skip; canary nil ΓåÆ TOR-384 missing mount (startup gate remounts).")
+    print("Interpretation: large xmlLen+attrs but blank canvas → dead Global canvas; blindfold active → cover; UI.loading → asset race; only BLACK wrong → seat reveal skip; canary nil → TOR-384 missing mount (startup gate remounts).")
 end
 
 --- Print orchestrator reconcile skip-cache snapshot (fingerprints, layout, init-light retries).
@@ -613,7 +613,7 @@ function DEBUG.showScene()
     if type(npcWorld) == "table" and type(npcWorld.byArea) == "table" then
         local Convert = require("lib.npc_placements_convert")
         if Convert.byAreaHasEntries(npcWorld.byArea) then
-            print("sessionScene.npcWorld.byArea: legacy entries present ΓÇö run S.validateState or npm run npc-placements:migrate-byarea")
+            print("sessionScene.npcWorld.byArea: legacy entries present — run S.validateState or npm run npc-placements:migrate-byarea")
         end
     end
     if type(npcWorld) == "table" and type(npcWorld.placements) == "table" then
@@ -655,7 +655,7 @@ function DEBUG.getClockLerpTickSeconds()
 end
 
 --- Ensure `sceneLibrary.order[slotIndex]` points at `sceneKey` and a minimal library row exists.
---- Does not Apply the scene to live `sessionScene` ΓÇö use for E2E / step-by-step playbook setup.
+--- Does not Apply the scene to live `sessionScene` — use for E2E / step-by-step playbook setup.
 --- Order is always updated: `order[slotIndex] = sceneKey`, with the key cleared from other indices first.
 --- When the row already exists and `opts.overwrite` is not true, the row is left unchanged.
 --- @param slotIndex number 1-based index into `sceneLibrary.order` (matches `scenes_lib_slot_NN`)
@@ -729,12 +729,12 @@ function DEBUG.ensureSceneLibraryStub(slotIndex, sceneKey, opts)
         print(
             "ensureSceneLibraryStub: slot "
                 .. slotIndex
-                .. " ΓåÆ "
+                .. " → "
                 .. sceneKey
                 .. " (existing row kept)"
         )
     else
-        print("ensureSceneLibraryStub: slot " .. slotIndex .. " ΓåÆ " .. sceneKey)
+        print("ensureSceneLibraryStub: slot " .. slotIndex .. " → " .. sceneKey)
     end
     return sceneKey
 end
@@ -782,11 +782,11 @@ function DEBUG.dumpNpcPlacements()
     end
 end
 
---[[ Gameboard & Stage E2E (TOR-141 / TOR-169) ΓÇö see .dev/E2E Playbooks/Gameboard-E2E.md ]]
+--[[ Gameboard & Stage E2E (TOR-141 / TOR-169) — see .dev/E2E Playbooks/Gameboard-E2E.md ]]
 local E2E_GB = require("lib.e2e_gameboard")
 
 --- Assert gameboard/state probes; prints `[gbConfirm] PASS` / `FAIL`.
---- @param labelOrExpected string|table test label, or `{ placements = ΓÇª }` only
+--- @param labelOrExpected string|table test label, or `{ placements = … }` only
 --- @param maybeExpected table|nil
 --- @return boolean
 function DEBUG.gbConfirm(labelOrExpected, maybeExpected)
@@ -845,7 +845,7 @@ local function printGameboardInteractionProfile(label)
     local Gameboard = require("core.npc_gameboard")
     local profile = Gameboard.getLastInteractionProfile()
     if type(profile) ~= "table" then
-        print("[DEBUG] gameboard profile: (none ΓÇö run Apply, Clear, or drop a token first)")
+        print("[DEBUG] gameboard profile: (none — run Apply, Clear, or drop a token first)")
         return nil
     end
     local prefix = type(label) == "string" and label ~= "" and (label .. " ") or ""
@@ -897,7 +897,7 @@ function DEBUG.profileGameboardTokenDrop()
     return printGameboardInteractionProfile("TokenDrop")
 end
 
---- Snap table from DEBUG.installNpcControlBoardSnaps options (flat fields or `{ config = ΓÇª }`).
+--- Snap table from DEBUG.installNpcControlBoardSnaps options (flat fields or `{ config = … }`).
 --- @param options table|nil
 --- @return table|nil
 local function resolveDebugControlBoardSnapConfig(options)
@@ -912,7 +912,7 @@ local function resolveDebugControlBoardSnapConfig(options)
 end
 
 --- Force CONTROL_BOARD snap grid (normally runs from reconcile / Sync.npcs).
---- @param options table|nil Full `CONTROL_BOARD_SNAP` table, or `{ config?: table }` ΓÇö overrides `DATA.CONTROL_BOARD_SNAP` for IDE iteration
+--- @param options table|nil Full `CONTROL_BOARD_SNAP` table, or `{ config?: table }` — overrides `DATA.CONTROL_BOARD_SNAP` for IDE iteration
 --- @return boolean
 function DEBUG.installNpcControlBoardSnaps(options)
     local Gameboard = require("core.npc_gameboard")
@@ -925,15 +925,15 @@ end
 --- Install a new CONTROL_BOARD snap grid, remap tokens by ring + spread offset, sync stage figurines.
 --- A. Logs each token's ring (old config catalog match).
 --- B. `installPolarSnaps` with `options` / `options.config` as the new snap table.
---- C. Moves tokens + `sessionScene.npcWorld.placements` to best-matching snaps on the same ring; missing rings ΓåÆ palette; `Sync.npcs` unless `skipSync`.
---- @param options table|nil New `CONTROL_BOARD_SNAP` (or `{ config = ΓÇª }`); optional `oldConfig` for matching override; by default old config comes from currently installed board snaps; `skipSync` to skip figurine reconcile
+--- C. Moves tokens + `sessionScene.npcWorld.placements` to best-matching snaps on the same ring; missing rings → palette; `Sync.npcs` unless `skipSync`.
+--- @param options table|nil New `CONTROL_BOARD_SNAP` (or `{ config = … }`); optional `oldConfig` for matching override; by default old config comes from currently installed board snaps; `skipSync` to skip figurine reconcile
 --- @return table|nil stats from Gameboard.remapControlBoardSnapsToConfig
 function DEBUG.installAndRemapNpcControlBoardSnaps(options)
     options = type(options) == "table" and options or {}
     local Gameboard = require("core.npc_gameboard")
     local newConfig = resolveDebugControlBoardSnapConfig(options)
     if type(newConfig) ~= "table" then
-        print("[DEBUG] installAndRemapNpcControlBoardSnaps: pass a CONTROL_BOARD_SNAP table or { config = ΓÇª }")
+        print("[DEBUG] installAndRemapNpcControlBoardSnaps: pass a CONTROL_BOARD_SNAP table or { config = … }")
         return nil
     end
     local oldConfig = type(options.oldConfig) == "table" and options.oldConfig or nil
@@ -942,7 +942,7 @@ function DEBUG.installAndRemapNpcControlBoardSnaps(options)
     if oldConfig ~= nil then
         sourceLabel = "options.oldConfig"
     end
-    print("[DEBUG] installAndRemapNpcControlBoardSnaps: begin (" .. sourceLabel .. " ΓåÆ new config)")
+    print("[DEBUG] installAndRemapNpcControlBoardSnaps: begin (" .. sourceLabel .. " → new config)")
     return Gameboard.remapControlBoardSnapsToConfig(oldConfig, newConfig, {
         skipSync = options.skipSync == true,
     })
@@ -960,7 +960,7 @@ function DEBUG.previewControlBoardSnapCount(config)
     end
 end
 
---- Print Lua table or CSV of snap family roles ΓåÆ world X/Z (STAGE) for tuning or migration.
+--- Print Lua table or CSV of snap family roles → world X/Z (STAGE) for tuning or migration.
 --- @param config table|nil Full CONTROL_BOARD_SNAP table or nil for DATA default
 --- @param options table|nil `{ useInterpolatedRings?: boolean, format?: "lua"|"csv" }`
 function DEBUG.exportControlBoardSnapFamilies(config, options)
@@ -979,7 +979,7 @@ end
 --- Write CONTROL_BOARD polar snap groups to CSV content via `writeToFile` (same path as `logStateToFile`).
 --- Group/index ordering matches anchor-family coterie spread (`orderFamilySnapsForAnchorSpread`).
 --- Requires TTS Tools extension / External Editor (`sendExternalMessage`); see `.dev/DEBUG_FILE_LOGGING.md`.
---- @param filename string|nil Basename without extension (default: `control_board_snap_groups` ΓåÆ `debug_logs/control_board_snap_groups.txt`)
+--- @param filename string|nil Basename without extension (default: `control_board_snap_groups` → `debug_logs/control_board_snap_groups.txt`)
 --- @param config table|nil Full `CONTROL_BOARD_SNAP` table or nil for DATA default
 --- @return table[] rows written
 function DEBUG.exportControlBoardSnapGroupsToFile(filename, config)
@@ -1080,7 +1080,7 @@ end
 
 --- Set every Spotlight-tagged object to Looping Effect UI slot 2 (invisible arrow).
 --- Same object set as `DEBUG.toggleAllSpotlightArrows` (`getObjectsWithTag("Spotlight")`).
---- UI slot 2 ΓåÆ API index 1 (0-based), matching the Toggle Spotlights debug control.
+--- UI slot 2 → API index 1 (0-based), matching the Toggle Spotlights debug control.
 --- Console: `lua DEBUG.hideAllSpotlightArrows()`
 --- @return table
 function DEBUG.hideAllSpotlightArrows()
@@ -1485,20 +1485,20 @@ local function rollE2eSpawnDefaultPoolIfNeeded(color, rollType)
         return
     end
     if Global == nil or type(Global.call) ~= "function" then
-        print("[rollE2eSpawnDefaultPoolIfNeeded] WARN: Global.call unavailable ΓÇö pool die may be missing")
+        print("[rollE2eSpawnDefaultPoolIfNeeded] WARN: Global.call unavailable — pool die may be missing")
         return
     end
     Global.call("GlobalSpawnDefaultPoolDiceForActive", rollE2eSpawnActivePoolParams(color))
 end
 
 --- Initiates, opens, and arms a roll for a player in one shot.
--- Always runs E2E seat prep: Host changeColor ΓåÆ target seat, loading overlay hide, camera spoof.
+-- Always runs E2E seat prep: Host changeColor → target seat, loading overlay hide, camera spoof.
 --
 -- @param color      string       Player seat color (e.g. "Brown")
 -- @param difficulty number|nil   Required successes; default 2
 -- @param rollType   string|nil   C.RollType value; default C.RollType.STANDARD
 -- @param label      string|nil   Roll label shown in the panel; default "Debug Test"
--- @param hungerLevel number|nil  Sets player hunger 0ΓÇô5 before arming (Suite G, etc.)
+-- @param hungerLevel number|nil  Sets player hunger 0–5 before arming (Suite G, etc.)
 -- @usage lua rollTest("Brown", 3)
 -- @usage lua rollTest("Brown", 3, C.RollType.STANDARD, "E2E G2", 2)
 function DEBUG.rollTest(color, difficulty, rollType, label, hungerLevel)
@@ -1517,7 +1517,7 @@ function DEBUG.rollTest(color, difficulty, rollType, label, hungerLevel)
     local lbl   = (type(label) == "string" and label ~= "") and label or "Debug Test"
 
     if rollE2eSeatPrepInternal(color) ~= true then
-        print("[DEBUG.rollTest] E2E seat prep failed ΓÇö aborting.")
+        print("[DEBUG.rollTest] E2E seat prep failed — aborting.")
         return
     end
 
@@ -1542,7 +1542,7 @@ function DEBUG.rollTest(color, difficulty, rollType, label, hungerLevel)
     local pid = S.getPlayerID(color)
     local phase = pid and S.getStateVal("playerData", pid, "hud", "rollData", "active", "phase")
     print(string.format(
-        "[DEBUG.rollTest] %s %s ΓÇö diff=%d type=%s label='%s'",
+        "[DEBUG.rollTest] %s %s — diff=%d type=%s label='%s'",
         color, tostring(phase or "unknown"), diff, rType, lbl))
 end
 
@@ -1566,7 +1566,7 @@ function DEBUG.rollTestNoDiff(color, rollType, label, hungerLevel)
     local lbl   = (type(label) == "string" and label ~= "") and label or "Debug Test No Diff"
 
     if rollE2eSeatPrepInternal(color) ~= true then
-        print("[DEBUG.rollTestNoDiff] E2E seat prep failed ΓÇö aborting.")
+        print("[DEBUG.rollTestNoDiff] E2E seat prep failed — aborting.")
         return
     end
 
@@ -1590,11 +1590,11 @@ function DEBUG.rollTestNoDiff(color, rollType, label, hungerLevel)
     local pid = S.getPlayerID(color)
     local phase = pid and S.getStateVal("playerData", pid, "hud", "rollData", "active", "phase")
     print(string.format(
-        "[DEBUG.rollTestNoDiff] %s %s ΓÇö no diff type=%s label='%s'",
+        "[DEBUG.rollTestNoDiff] %s %s — no diff type=%s label='%s'",
         color, tostring(phase or "unknown"), rType, lbl))
 end
 
---- E2E: ST dashboard **Open** (SETUP ΓåÆ PRE_ROLL). Use after SETUP pool build before Roll.
+--- E2E: ST dashboard **Open** (SETUP → PRE_ROLL). Use after SETUP pool build before Roll.
 -- @param color string
 -- @return boolean
 function DEBUG.rollE2eOpenRoll(color)
@@ -1611,7 +1611,7 @@ function DEBUG.rollE2eOpenRoll(color)
         print("[rollE2eOpenRoll] FAIL: RC.openRoll failed for " .. color)
         return false
     end
-    print("[rollE2eOpenRoll] PASS ΓÇö " .. color .. " opened to PRE_ROLL")
+    print("[rollE2eOpenRoll] PASS — " .. color .. " opened to PRE_ROLL")
     return true
 end
 
@@ -1770,7 +1770,7 @@ local function parseRollConfirmArgs(colorOrSpec, maybeExpected)
     end
     if string.lower(colorOrSpec) == "global" then
         if type(maybeExpected) ~= "table" then
-            return nil, nil, "\"Global\" is deprecated ΓÇö use rollConfirm(\"Brown\", { phase = \"preRoll\", ... })"
+            return nil, nil, "\"Global\" is deprecated — use rollConfirm(\"Brown\", { phase = \"preRoll\", ... })"
         end
         local seat = maybeExpected.color
         if type(seat) ~= "string" then
@@ -1791,9 +1791,9 @@ end
 -- @usage lua rollConfirm("Brown", { phase = "preRoll", active = { difficulty = 3, rollType = C.RollType.STANDARD } })
 -- @usage lua rollConfirm({ color = "Brown", phase = "postRoll", active = { result = { present = true } } })
 function DEBUG.rollConfirm(colorOrSpec, maybeExpected)
-    -- Legacy one-arg form (preΓÇôTOR-141 E2E harness): force-confirm POST_ROLL.
+    -- Legacy one-arg form (pre–TOR-141 E2E harness): force-confirm POST_ROLL.
     if maybeExpected == nil and type(colorOrSpec) == "string" then
-        print("[rollConfirm] DEPRECATED: one-arg rollConfirm(color) ΓÇö use rollForceConfirm(color)")
+        print("[rollConfirm] DEPRECATED: one-arg rollConfirm(color) — use rollForceConfirm(color)")
         return DEBUG.rollForceConfirm(colorOrSpec)
     end
 
@@ -1964,10 +1964,10 @@ function DEBUG.rollConfirm(colorOrSpec, maybeExpected)
     end
 
     if #failures == 0 then
-        print("[rollConfirm] PASS ΓÇö " .. label)
+        print("[rollConfirm] PASS — " .. label)
         return true
     end
-    print("[rollConfirm] FAIL ΓÇö " .. label)
+    print("[rollConfirm] FAIL — " .. label)
     for i, line in ipairs(failures) do
         print(string.format("  %d) %s", i, line))
     end
@@ -2032,10 +2032,10 @@ function DEBUG.rollConfirmTracker(color, expected)
         end
     end
     if #failures == 0 then
-        print("[rollConfirmTracker] PASS ΓÇö " .. color)
+        print("[rollConfirmTracker] PASS — " .. color)
         return true
     end
-    print("[rollConfirmTracker] FAIL ΓÇö " .. color)
+    print("[rollConfirmTracker] FAIL — " .. color)
     for i, line in ipairs(failures) do
         print(string.format("  %d) %s", i, line))
     end
@@ -2106,12 +2106,12 @@ function DEBUG.rollE2eConfirmBagEnabled(color, dieKind, wantEnabled)
     local got = Global.call("GlobalIsPlayerDiceBagEnabled", { color = color, dieKind = dieKind }) == true
     if got == wantEnabled then
         print(string.format(
-            "[rollE2eConfirmBagEnabled] PASS ΓÇö %s %s enabled=%s",
+            "[rollE2eConfirmBagEnabled] PASS — %s %s enabled=%s",
             color, dieKind, tostring(got)))
         return true
     end
     print(string.format(
-        "[rollE2eConfirmBagEnabled] FAIL ΓÇö %s %s: got enabled=%s, want %s",
+        "[rollE2eConfirmBagEnabled] FAIL — %s %s: got enabled=%s, want %s",
         color, dieKind, tostring(got), tostring(wantEnabled)))
     return false
 end
@@ -2253,7 +2253,7 @@ local function rollE2eFinishSettlePresetCheck(color, facesByKind, opts)
                 .. " after release")
             return false
         end
-        -- Release may have already advanced PRE_ROLL ΓåÆ ROLLING; only startRolling if still PRE_ROLL
+        -- Release may have already advanced PRE_ROLL → ROLLING; only startRolling if still PRE_ROLL
         -- (skipRelease / drawer coroutine not finished yet).
         if active.phase == C.RollPhase.PRE_ROLL then
             if RC.startRolling(color) ~= true then
@@ -2282,14 +2282,14 @@ local function rollE2eFinishSettlePresetCheck(color, facesByKind, opts)
     end
 
     RC.onDiceSettled(color)
-    print("[rollE2eSettlePresetCheck] PASS ΓÇö preset faces applied and settle triggered for " .. color)
+    print("[rollE2eSettlePresetCheck] PASS — preset faces applied and settle triggered for " .. color)
     return true
 end
 
 --- E2E: spawn pool dice, startRolling, preset faces, settle (no randomize).
--- Replaces panel **Roll** + manual face tweak. Playbook flow: spawn (or human bags) ΓåÆ
--- `rollE2eWaitForDiceTray` ΓåÆ this helper (returns wait seconds when drawer release is async)
--- ΓåÆ `rollE2eSettlePresetCheckResume` ΓåÆ assertions.
+-- Replaces panel **Roll** + manual face tweak. Playbook flow: spawn (or human bags) →
+-- `rollE2eWaitForDiceTray` → this helper (returns wait seconds when drawer release is async)
+-- → `rollE2eSettlePresetCheckResume` → assertions.
 -- Do not click panel Roll before this helper.
 -- @param color string
 -- @param facesByKind table
@@ -2370,7 +2370,7 @@ function DEBUG.rollState(color)
     local pid    = S.getPlayerID(color)
     local active = pid and S.getStateVal("playerData", pid, "hud", "rollData", "active")
     local queue  = (pid and S.getStateVal("playerData", pid, "hud", "rollData", "queue")) or {}
-    print(string.format("[DEBUG.rollState] %s ΓÇö active roll:", color))
+    print(string.format("[DEBUG.rollState] %s — active roll:", color))
     if active ~= nil then
         print(JSON.encode_pretty(active))
     else
@@ -2394,7 +2394,7 @@ local function e2eFaceValueNumber(v)
     return nil
 end
 
---- True when a rotation-value entry matches the target face (1ΓÇô10).
+--- True when a rotation-value entry matches the target face (1–10).
 -- @param entryValue string|number
 -- @param target number
 -- @return boolean
@@ -2403,7 +2403,7 @@ local function e2eRotationEntryMatches(entryValue, target)
     return n ~= nil and n == target
 end
 
---- Reads a custom die face as integer 1ΓÇô10 (E2E preset verify only).
+--- Reads a custom die face as integer 1–10 (E2E preset verify only).
 -- @param obj Object
 -- @return number|nil
 local function e2eReadDieFaceValue(obj)
@@ -2422,9 +2422,9 @@ end
 
 --- Applies one custom-die face via instant setRotation (not setRotationValue).
 -- setValue/setRotationValue animate (lift/spin/drop); immediate getValue still reads the old face.
--- Bag-spawned dice are locked until panel Roll ΓÇö unlock briefly for the snap.
+-- Bag-spawned dice are locked until panel Roll — unlock briefly for the snap.
 -- @param obj Object
--- @param faceVal number 1ΓÇô10
+-- @param faceVal number 1–10
 -- @return boolean true when read-back matches target
 local function e2eSetDieFaceValue(obj, faceVal)
     if obj == nil or type(faceVal) ~= "number" then
@@ -2554,7 +2554,7 @@ function DEBUG.rollSetFaces(color, facesByKind)
     end
     if expectedCount > 0 and setCount < expectedCount then
         print(string.format(
-            "[DEBUG.rollSetFaces] FAIL ΓÇö %s: set %d/%d face(s) (missing dice or face snap failed)",
+            "[DEBUG.rollSetFaces] FAIL — %s: set %d/%d face(s) (missing dice or face snap failed)",
             color, setCount, expectedCount))
         return 0
     end
@@ -2656,7 +2656,7 @@ function DEBUG.rollE2eSetPoolAndSpawn(color, normal, hunger)
     local stagedMismatches = e2ePoolStagedMismatchLines(color, pool)
     local visibilityMismatches = e2ePoolBagVisibilityLines(color, pool)
     if #stagedMismatches > 0 or #visibilityMismatches > 0 then
-        print("[rollE2eSetPoolAndSpawn] FAIL ΓÇö pool spawn check for " .. color)
+        print("[rollE2eSetPoolAndSpawn] FAIL — pool spawn check for " .. color)
         for i, line in ipairs(stagedMismatches) do
             print(string.format("  %d) %s", i, line))
         end
@@ -2766,13 +2766,13 @@ function DEBUG.rollE2eAddPoolKindSpawn(color, kind, count)
     local got = pool[kind] or 0
     if got ~= count then
         print(string.format(
-            "[rollE2eAddPoolKindSpawn] FAIL ΓÇö %s: pool %s=%d want=%d (bag spawn hook mismatch?)",
+            "[rollE2eAddPoolKindSpawn] FAIL — %s: pool %s=%d want=%d (bag spawn hook mismatch?)",
             color, kind, got, count))
         return false
     end
     local stagedMismatches = e2ePoolStagedMismatchLines(color, pool)
     if #stagedMismatches > 0 then
-        print("[rollE2eAddPoolKindSpawn] FAIL ΓÇö staged dice check for " .. color)
+        print("[rollE2eAddPoolKindSpawn] FAIL — staged dice check for " .. color)
         for i, line in ipairs(stagedMismatches) do
             print(string.format("  %d) %s", i, line))
         end
@@ -2852,14 +2852,14 @@ local function rollE2eParseMarginFromResultDisplay(resultText)
     if type(resultText) ~= "string" or resultText == "" then
         return nil
     end
-    local signed = resultText:match(" ([+%ΓêÆ][%d]+)$")
+    local signed = resultText:match(" ([+%−][%d]+)$")
     if signed == nil then
         signed = resultText:match(" ([+%-][%d]+)$")
     end
     if signed == nil then
         return nil
     end
-    local normalized = signed:gsub("ΓêÆ", "-")
+    local normalized = signed:gsub("−", "-")
     return tonumber(normalized)
 end
 
@@ -2951,7 +2951,7 @@ local function rollE2eBroadcastClassMatches(classText, expected)
     return false
 end
 
---- True when resolved history result class matches E2E shorthand (Win, Failure, ΓÇª).
+--- True when resolved history result class matches E2E shorthand (Win, Failure, …).
 -- @param result table|nil
 -- @param expectedClass string
 -- @return boolean
@@ -3007,13 +3007,13 @@ end
 
 --- E2E: assert `rollRes_*` broadcast UI after `rollForceConfirm` / panel Confirm.
 -- @param expected table|nil  `{ color = "Brown", visible = true, resultClass = "Failure", successes = 2, margin = -1 }`
---   `color` ΓÇö seat color; required unless the prior step called `rollForceConfirm` on that seat
---   `visible` ΓÇö when true, or when any field below is set, panel must be active or history must match
---   `resultClass` ΓÇö substring match (case-insensitive) on `rollRes_resultDisplay`; E2E shorthands
---     ("Win", "Failure", ΓÇª) also match `C.ResultClassLabel` panel text (e.g. Win ΓåÆ WIN)
---   `successes` ΓÇö integer N matches `rollRes_successes` (number only) or history
---   `margin` ΓÇö integer matches trailing signed margin on `rollRes_resultDisplay`
---   `marginAbsent` ΓÇö when true, `rollRes_resultDisplay` must not end with a signed margin
+--   `color` — seat color; required unless the prior step called `rollForceConfirm` on that seat
+--   `visible` — when true, or when any field below is set, panel must be active or history must match
+--   `resultClass` — substring match (case-insensitive) on `rollRes_resultDisplay`; E2E shorthands
+--     ("Win", "Failure", …) also match `C.ResultClassLabel` panel text (e.g. Win → WIN)
+--   `successes` — integer N matches `rollRes_successes` (number only) or history
+--   `margin` — integer matches trailing signed margin on `rollRes_resultDisplay`
+--   `marginAbsent` — when true, `rollRes_resultDisplay` must not end with a signed margin
 -- UI `getValue` can lag `setValue` by a frame; call from the U.chain step *after*
 -- `rollForceConfirm` (default inter-step wait). Field checks run even when the panel is not
 -- visible yet; matching resolved history tail for the same seat satisfies visibility and each field.
@@ -3173,7 +3173,7 @@ local e2eRunTestState = {
 local e2eEndRunTestPrintWatch
 
 --- While a RunTest step runs, intercept print() and abort on case-sensitive "FAIL".
--- failAbortArmed stays false until a level-1 printHeader (10├ù *) opens a suite so
+-- failAbortArmed stays false until a level-1 printHeader (10× *) opens a suite so
 -- mid-playbook RunTest("Dice", N) steps are not aborted by prerequisite FAIL lines.
 local e2eRunTestPrintWatch = {
     active = false,
@@ -3314,7 +3314,7 @@ local function e2eCopyRunSequenceStep(sequence)
     return copy
 end
 
---- Normalize top-level suite id (0, AΓÇôP, E2). Rejects substeps (H1, K2a, ΓÇª).
+--- Normalize top-level suite id (0, A–P, E2). Rejects substeps (H1, K2a, …).
 -- @param suiteId string|nil
 -- @return string|nil
 local function normalizeE2eSuiteId(suiteId)
@@ -3372,7 +3372,7 @@ local function e2eLoadPlaybookModule(campaign)
         -- Direct require: missing module or parse error must fail loud, not be masked.
         local mod = require("lib.e2e_playbook_dice")
         if type(mod) ~= "table" or type(mod.steps) ~= "table" or type(mod.stepCount) ~= "number" then
-            return nil, "lib.e2e_playbook_dice is missing steps/stepCount ΓÇö regenerate playbook Lua"
+            return nil, "lib.e2e_playbook_dice is missing steps/stepCount — regenerate playbook Lua"
         end
         return mod, nil
     end
@@ -3380,7 +3380,7 @@ local function e2eLoadPlaybookModule(campaign)
         -- Generated by npm run e2e-playbook:generate (committed lib/e2e_playbook_scenes.ttslua).
         local mod = require("lib.e2e_playbook_scenes")
         if type(mod) ~= "table" or type(mod.steps) ~= "table" or type(mod.stepCount) ~= "number" then
-            return nil, "lib.e2e_playbook_scenes is missing steps/stepCount ΓÇö regenerate playbook Lua"
+            return nil, "lib.e2e_playbook_scenes is missing steps/stepCount — regenerate playbook Lua"
         end
         return mod, nil
     end
@@ -3388,7 +3388,7 @@ local function e2eLoadPlaybookModule(campaign)
         -- Generated by npm run e2e-playbook:generate (committed lib/e2e_playbook_gameboard.ttslua).
         local mod = require("lib.e2e_playbook_gameboard")
         if type(mod) ~= "table" or type(mod.steps) ~= "table" or type(mod.stepCount) ~= "number" then
-            return nil, "lib.e2e_playbook_gameboard is missing steps/stepCount ΓÇö regenerate playbook Lua"
+            return nil, "lib.e2e_playbook_gameboard is missing steps/stepCount — regenerate playbook Lua"
         end
         return mod, nil
     end
@@ -3421,7 +3421,7 @@ local function e2eResolveStartIndex(playbook, startRaw)
         local sid = normalizeE2eSuiteId(startRaw)
         if sid ~= nil then
             if type(playbook.suiteSteps) ~= "table" then
-                print("[RunTest] Playbook missing suiteSteps ΓÇö run npm run e2e-playbook:generate && Save & Play")
+                print("[RunTest] Playbook missing suiteSteps — run npm run e2e-playbook:generate && Save & Play")
                 return nil
             end
             local suiteStep = playbook.suiteSteps[sid]
@@ -3438,7 +3438,7 @@ local function e2eResolveStartIndex(playbook, startRaw)
     end
 
     print(string.format(
-        "[RunTest] Invalid start '%s' (use step 1..%d or suite 0, AΓÇôP, E2)",
+        "[RunTest] Invalid start '%s' (use step 1..%d or suite 0, A–P, E2)",
         tostring(startRaw),
         playbook.stepCount
     ))
@@ -3514,7 +3514,7 @@ function DEBUG.RunTest(campaignName, startAt)
     local sequence = steps[nextIndex]
     if type(sequence) ~= "table" or #sequence == 0 then
         print(string.format(
-            "[RunTest] FAIL: step %d has no runnable functions ΓÇö re-arm with RunTest(\"%s\")",
+            "[RunTest] FAIL: step %d has no runnable functions — re-arm with RunTest(\"%s\")",
             nextIndex,
             e2eRunTestState.campaign
         ))
@@ -3606,7 +3606,7 @@ end
 -- @usage lua rollStTest("Garou", C.RollType.WEREWOLF)
 function DEBUG.rollStTest(label, rollType)
     if rollE2eSeatPrepInternal("Black") ~= true then
-        print("[DEBUG.rollStTest] E2E seat prep failed ΓÇö aborting.")
+        print("[DEBUG.rollStTest] E2E seat prep failed — aborting.")
         return
     end
     local STR = require("core.storyteller_rolls")
@@ -3636,7 +3636,7 @@ function DEBUG.rollForceConfirm(color)
         }
     end
     print(string.format("[DEBUG.rollForceConfirm] %s: %s",
-        color, ok and "roll confirmed and resolved" or "confirm failed ΓÇö is the roll in POST_ROLL?"))
+        color, ok and "roll confirmed and resolved" or "confirm failed — is the roll in POST_ROLL?"))
 end
 
 -- Uses U.rotateAroundPoint to keep angle conventions consistent.
@@ -4070,7 +4070,7 @@ function DEBUG.dumpCustomAssetsToFile(relativePath)
 
     local wrote = DEBUG.writeWorkspaceFile(relativePath, body, "none", false)
     print(string.format(
-        "DEBUG.dumpCustomAssetsToFile: count=%d ΓåÆ %s/%s (wrote=%s)",
+        "DEBUG.dumpCustomAssetsToFile: count=%d → %s/%s (wrote=%s)",
         count,
         WORKSPACE_DEBUG_WRITE_ROOT,
         relativePath,
@@ -4255,9 +4255,9 @@ end
 
 --- Logs Step Zero placement intent plus occupied slots for NPC reconcile verification.
 --- After scene edits, run `Sync.full({ force = true })`, then compare world to intent:
---- 1) byArea + seatSlots same char ΓåÆ target area; 2) seat only ΓåÆ target seat + physicalSeatAllowed;
---- 3) seat on table without slot ΓåÆ target preload, assignment retained; 4) assigned + present false ΓåÆ seated layout, hidden props;
---- 5) seat-only scene change ΓåÆ no full pool stash; 6) save load bootstrap ΓåÆ one successful reconcile.
+--- 1) byArea + seatSlots same char → target area; 2) seat only → target seat + physicalSeatAllowed;
+--- 3) seat on table without slot → target preload, assignment retained; 4) assigned + present false → seated layout, hidden props;
+--- 5) seat-only scene change → no full pool stash; 6) save load bootstrap → one successful reconcile.
 --- @param filename string Optional filename (default: "npc_placement_intent")
 function DEBUG.logNpcPlacementIntentToFile(filename)
     filename = filename or "npc_placement_intent"
@@ -4414,7 +4414,7 @@ function DEBUG.exportNpcSeatFigurinesToFile(relativePath)
 
     local content = table.concat(lines, "\n")
     local wrote = DEBUG.writeWorkspaceFile(relativePath, content, "none", false)
-    print("DEBUG.exportNpcSeatFigurinesToFile: " .. tostring(#rows) .. " figurine(s) ΓåÆ " .. WORKSPACE_DEBUG_WRITE_ROOT .. "/" .. relativePath)
+    print("DEBUG.exportNpcSeatFigurinesToFile: " .. tostring(#rows) .. " figurine(s) → " .. WORKSPACE_DEBUG_WRITE_ROOT .. "/" .. relativePath)
     if JSON ~= nil and JSON.encode ~= nil then
         print(JSON.encode({ count = #rows, wrote = wrote, path = relativePath, rows = rows }))
     end
@@ -4502,8 +4502,8 @@ local DEBUG_UPLOAD_GMNOTES_PREFIX = "debug-custom-ui-upload:"
 local DEBUG_UPLOAD_TAG = "debug-custom-ui-upload"
 local DEBUG_UPLOAD_MANIFEST_MODULE = "lib.custom_ui_upload_manifest"
 
--- Bundler tracing + init load for committed manifest stubs (TTS_BUNDLING_SETUP.md ┬º Issue 2a).
--- No init console noise ΓÇö upload guidance prints only when DEBUG.loadCustomUiUploadManifest is invoked.
+-- Bundler tracing + init load for committed manifest stubs (TTS_BUNDLING_SETUP.md § Issue 2a).
+-- No init console noise — upload guidance prints only when DEBUG.loadCustomUiUploadManifest is invoked.
 local CUSTOM_UI_UPLOAD_MANIFEST = require("lib.custom_ui_upload_manifest")
 local NPC_TOKEN_UPLOAD_MANIFEST = require("lib.npc_token_upload_manifest")
 local NPC_GROUP_UPLOAD_MANIFEST = require("lib.npc_group_upload_manifest")
@@ -4895,7 +4895,7 @@ function DEBUG.loadCustomUiUploadManifest(moduleName, forceReload)
     print("DEBUG.loadCustomUiUploadManifest: loaded " .. tostring(count) .. " assets from " .. tostring(targetModule))
     if count == 0 then
         print(
-            "DEBUG.loadCustomUiUploadManifest: manifest is empty ΓÇö run the matching npm custom-ui-assets:manifest-* script, then Save & Play"
+            "DEBUG.loadCustomUiUploadManifest: manifest is empty — run the matching npm custom-ui-assets:manifest-* script, then Save & Play"
         )
     end
     return manifest
@@ -5243,7 +5243,7 @@ end
 
 --- Spawn paired front/back NPC control tokens on CONTROL_BOARD (palette UV grid on the minimap).
 -- Uses `lib.npc_token_hosted_urls` when populated; otherwise `lib.npc_token_upload_manifest` file:/// URLs.
--- Tiles: Custom_Tile type 2 (circle), thickness 0.1 ΓÇö enforced via spawn data + setCustomObject after spawn.
+-- Tiles: Custom_Tile type 2 (circle), thickness 0.1 — enforced via spawn data + setCustomObject after spawn.
 -- @param options table|nil { destroyExisting?, columns?, total?, uMin?, uMax?, vMin?, vMax?, scale?, preferHosted?, faceUp?, boardYaw? }
 -- @return number spawned
 function DEBUG.spawnNpcControlBoardTokens(options)
@@ -5265,7 +5265,7 @@ function DEBUG.spawnNpcControlBoardTokens(options)
 
     local pairsByKey, source = loadNpcControlTokenPairUrls(opts)
     if pairsByKey == nil then
-        print("DEBUG.spawnNpcControlBoardTokens: no token URL pairs ΓÇö run npm run custom-ui-assets:manifest-npc-tokens")
+        print("DEBUG.spawnNpcControlBoardTokens: no token URL pairs — run npm run custom-ui-assets:manifest-npc-tokens")
         return 0
     end
 
@@ -5334,7 +5334,7 @@ function DEBUG.spawnNpcControlBoardTokens(options)
             .. tostring(spawned)
             .. "/"
             .. tostring(#keys)
-            .. " ΓåÆ parked on CONTROL_BOARD_PALETTE ("
+            .. " → parked on CONTROL_BOARD_PALETTE ("
             .. tostring(source)
             .. "; tile type="
             .. tostring(NPC_CONTROL_TOKEN_TILE_TYPE)
@@ -5518,7 +5518,7 @@ end
 --- Display help for all debug functions
 function DEBUG.help()
     print("\n" .. string.rep("=", 70))
-    print("TORONTO RISING ΓÇö DEBUG CONSOLE COMMANDS")
+    print("TORONTO RISING — DEBUG CONSOLE COMMANDS")
     print(string.rep("=", 70))
     print("\nUse in TTS console: lua <command>()  |  Manual E2E: .dev/E2E Playbooks/")
     print("\nINSPECTION:")
@@ -5530,23 +5530,23 @@ function DEBUG.help()
     print("  ensureSceneLibraryStub(slotIndex, sceneKey?, opts?) - E2E scene library row stub (no Apply)")
     print("  inspectSoundscapeAudio() - Emitter GUID/tag/effect inventory")
     print("  dumpConditions(color)    - Active conditions + resolved effects")
-    print("  dumpEffectiveStats(color) - Effective stat getters (tracker max, BP, ΓÇª)")
+    print("  dumpEffectiveStats(color) - Effective stat getters (tracker max, BP, …)")
     print("  dumpRollPolicy(color)    - Merged roll policy on active roll")
     print("\nFILE LOGGING:")
     print("  logToFile(level, msg, filename?) - Log a message to file")
     print("  logStateToFile(filename?)       - Log game state to file (JSON)")
-    print("  dumpCustomAssetsToFile(path?)   - Dump UI.getCustomAssets() ΓåÆ .dev/.debug/debug_logs/custom_ui_assets.json")
+    print("  dumpCustomAssetsToFile(path?)   - Dump UI.getCustomAssets() → .dev/.debug/debug_logs/custom_ui_assets.json")
     print("  logNpcPlacementIntentToFile(filename?) - Log Step Zero NPC placement intent (reconcile verify)")
     print("  exportNpcSeatFigurinesToFile(path?)     - Export NPC#Object figurines (name + GUID) to debug_logs")
     print("  exportControlBoardSnapGroupsToFile(filename?, config?) - CSV polar snap groups (logStateToFile path)")
     print("  migrateSeatLayoutRolesToGmNotes(opts?) - Copy ROLE_COLOR Name/Nick -> GM Notes (opts.dryRun)")
-    print("  findObjectsByRole(query, opts?)        - Scan GM Notes role ΓåÆ GUID rows (opts.seatTag, opts.print)")
+    print("  findObjectsByRole(query, opts?)        - Scan GM Notes role → GUID rows (opts.seatTag, opts.print)")
     print("  guidsByRole(query, opts?)              - Same scan; returns GUID string array only")
     print("  logSceneToFile(filename?)       - Log scene info to file")
     print("  logTestToFile(name, passed, details?, filename?) - Log test result")
     print("  logAllToFiles()                   - Log all debug info to files")
     print("  clearAllLogs()                    - Clear all log files (starts new session)")
-    print("\nDICE DEBUG (solo ΓÇö no second player):")
+    print("\nDICE DEBUG (solo — no second player):")
     print("  RunTest(\"Dice\") / RunTest(\"Scenes\") / RunTest(\"Gameboard\") - Arm generated E2E playbook")
     print("  RunTest(\"Dice\", 8) / RunTest(\"Scenes\", \"F\") / RunTest(\"Gameboard\", \"B\") - Arm at step or suite")
     print("  RunTest()                  - Run next playbook step; stops step on console FAIL")
@@ -5563,7 +5563,7 @@ function DEBUG.help()
     print("  rollStConfirm({ liveSlotIndex?, initiateBlocked? }) - ST slots E2E")
     print("  rollE2eSettlePresetCheck(color, faces, opts) - Release + startRolling + preset + settle; may return wait seconds")
     print("  rollE2eSettlePresetCheckResume(color) - Finish settle after async drawer release wait")
-    print("  rollE2eOpenRoll(color) - ST Open (SETUP ΓåÆ PRE_ROLL) after SETUP bag build")
+    print("  rollE2eOpenRoll(color) - ST Open (SETUP → PRE_ROLL) after SETUP bag build")
     print("  setHumanityStains(color, n) / setWillpowerSuperficial(color, n)")
     print("  rollForceConfirm(color)  - Force-confirm POST_ROLL (UI CONFIRM)")
     print("  rollCancel(color)        - Cancel roll; Black also clears ST slots/drawers")
@@ -5571,7 +5571,7 @@ function DEBUG.help()
     print("  printHeader(text, level) - E2E banner (level 1..3: *, =, -; 100 chars or lead+text when long)")
     print("  rollStTest(label?, type?) - ST NPC roll on Black (e2e seat/camera prep)")
     print("  rollStSlots()            - Print gameState.storytellerRolls")
-    print("\nGAMEBOARD E2E (TOR-141 ΓÇö .dev/E2E Playbooks/Gameboard-E2E.md):")
+    print("\nGAMEBOARD E2E (TOR-141 — .dev/E2E Playbooks/Gameboard-E2E.md):")
     print("  gbE2ePrereqCheck()       - Boards, tokens, fixture NPCs, scene row")
     print("  gbE2eReset()             - Empty placements + fixture preload baseline")
     print("  gbE2eRunSmoke()          - Smoke macro; then human scene Apply + gbE2eContinue()")
@@ -5805,14 +5805,14 @@ function DEBUG.dumpRollPolicy(seatColor)
   local active = S.getStateVal("playerData", playerID, "hud", "rollData", "active")
   print("[DEBUG.dumpRollPolicy] seat=" .. seatColor .. " playerID=" .. playerID)
   if type(active) ~= "table" then
-    print("  no active roll ΓÇö resolved policy at initiate would be:")
+    print("  no active roll — resolved policy at initiate would be:")
     print("  " .. JSON.encode(Conditions.resolveRollPolicy(playerID)))
     return
   end
   if type(active.rollPolicy) == "table" then
     print("  active.rollPolicy: " .. JSON.encode(active.rollPolicy))
   else
-    print("  active.rollPolicy: (missing ΓÇö re-initiate roll after deploy)")
+    print("  active.rollPolicy: (missing — re-initiate roll after deploy)")
     print("  current merge: " .. JSON.encode(Conditions.resolveRollPolicy(playerID)))
   end
 end
@@ -5843,7 +5843,7 @@ function DEBUG.rollBroadcastMessageAudit()
         C.ResultClass.TOTAL_FAILURE,
         C.ResultClass.TOTAL_BESTIAL_FAILURE,
     }
-    print("[TOR-296] Roll broadcast audit ΓÇö see .dev/Dice System/Roll Broadcast Messages.md")
+    print("[TOR-296] Roll broadcast audit — see .dev/Dice System/Roll Broadcast Messages.md")
     for _, rt in ipairs(rollTypes) do
         print(string.format("--- %s (%s) ---", rt[2], rt[1]))
         for _, rc in ipairs(classes) do
@@ -5864,15 +5864,14 @@ function DEBUG.rollBroadcastMessageAudit()
                 elseif rc == C.ResultClass.FAILURE or rc == C.ResultClass.TOTAL_FAILURE then label = "Degeneration"
                 end
             end
-            print(string.format("  %s ΓåÆ %s", rc, label))
+            print(string.format("  %s → %s", rc, label))
         end
     end
     print("[TOR-296] Brutal narratives: Brutal Failure | Brutal Outcome")
     print("[TOR-296] No-difficulty broadcast types: simpleCheck, rouse, rouseOblivion, remorse, frenzy")
     print("[TOR-296] Nil-result broadcast headline: ROLL COMPLETE")
     print("[TOR-296] Common trigger: Discipline/Willpower/Humanity/Launch/Goal confirmed without ST difficulty")
-    print("[TOR-296] Panel-only (not broadcast): Roll complete. | Roll complete ΓÇö clear slot on dashboard")
+    print("[TOR-296] Panel-only (not broadcast): Roll complete. | Roll complete — clear slot on dashboard")
 end
 
 return DEBUG
-
