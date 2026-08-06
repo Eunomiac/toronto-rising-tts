@@ -41,25 +41,25 @@ _Last populated: 2026-08-06 — cleared **⌚** on shipped PAVE follow-ups (TOR-
 
 ### Scenes / clock follow-ups (from TOR-222 / TOR-402 verify)
 
-#### TOR-478 — Skybox-only Apply brief blindfold
+#### ✅ TOR-478 — Skybox-only Apply brief blindfold
 
 **How to verify:** On the Scenes panel, change only the skybox and press Apply Location. The blindfold should come down, finish its fade-in (~2s), apply the skybox under cover, hold about two seconds, then lift. District/Site should still not be required for skybox-only Apply (that part of TOR-402 already works).
 
 **Context:** Promoted from ⚠️ Corrections on TOR-402. Shipped — ready to verify.
 
-#### TOR-472 — Dusk/Dawn stay on the same night
+#### ✅ TOR-472 — Dusk/Dawn stay on the same night
 
 **How to verify:** On Scene Time, use the Dusk/Dawn buttons. The clock should always land on the same night (dusk-to-dawn block). Crossing midnight may change the calendar date, but the lerp must not animate through daytime hours. Minutes/Hours/Days/Weeks/Months grids already passed under TOR-222.
 
 **Context:** Shipped — ready to verify. Smoke: ~23:00 → Dawn 0 lands next dawn without afternoon scrub; ~02:00 → Dusk 0 lands prior dusk without daytime scrub.
 
-#### TOR-477 — Years Go delta / right-click rewind
+#### ✅ TOR-477 — Years Go delta / right-click rewind
 
 **How to verify:** On Scene Time Years: enter `1996` and Go (absolute year → dusk that date). Enter `554` with year 2026 — left-click Go → dusk in 2580; right-click Go → dusk in 1472. Enter `-554` — both clicks → dusk in 1472 (right-click must not flip the sign).
 
 **Context:** Shipped — ready to verify. Duplicate TOR-475 canceled in favor of this id.
 
-#### TOR-479 — Debug last-load clock still missing
+#### ✅ TOR-479 — Debug last-load clock still missing
 
 **How to verify:** Load the save, open the DEBUG / admin controls panel. Between `== DEBUG ==` and `Overlay Alpha: Full` there should be a centered, slightly smaller grey `HH:MM AM/PM` load time (or an em dash placeholder before the first sync).
 

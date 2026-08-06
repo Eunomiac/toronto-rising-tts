@@ -11,12 +11,12 @@ Use this skill whenever the author must **confirm something works in TTS** — a
 
 1. Copy [`.dev/Step-By-Step Playbooks/.Step-By-Step Template.md`](../../../.dev/Step-By-Step%20Playbooks/.Step-By-Step%20Template.md) to a configured playbook file, e.g. `.dev/Step-By-Step Playbooks/TOR-281-clear-seat-verify.md` (or a descriptive name when no Linear id yet).
 2. Fill in title, goal, prerequisites, Run order, and Code Blocks for **this** fix — valid Lua, repo helpers, asserts for everything Lua can check.
-3. Write in a concise but conversational tone, avoiding too much abbreviation or shorthand.
+3. Write in **plain English** for the author — complete sentences, explained nicknames, clarity over engineer shorthand. Project rule: [`.cursor/rules/toronto-rising-author-voice.mdc`](../../rules/toronto-rising-author-voice.mdc).
   **BAD:** "Verify **TOR-281 (Stage Clear seat activation + live scene-library seat persistence)**: Clear-from-stage homeland seat rules (disabled + visible stage light → activate; enabled seat unchanged) and `seatSlots.isPresent` write-back into the linked scene library row."
   **GOOD:** "Verify TOR-281: Clearing NPC figurines from the stage when those NPCs occupy table seats should return them to their chair; the seat should activate if the NPC was lit on stage. Seat toggles during play should persist in the scene library when you re-apply that scene."
 4. **Prerequisites prose: 2–4 bullets max.** Only what the author must do before pasting Code Block 0 (usually **Save & Play** + Host connected). **Automate everything else in Code Block 0** — seat, table, tokens, dummy library rows, harness baseline. Do not list workshop setup the script can perform (see **Automate prerequisites** below).
 5. **Link the configured file** in chat (markdown path). The author runs it top-to-bottom from that doc — not from a wall of inline steps.
-6. Chat message stays short: what was fixed, link to the playbook, Step 1 reminder (**Save & Play** if repo Lua changed).
+6. Chat message: what was fixed **in plain English**, link to the playbook, Step 1 reminder (**Save & Play** if repo Lua changed). Prefer a short readable paragraph over telegram fragments.
 
 Use chat-only numbered steps (no file) only for trivial one-paste smoke checks. When verification spans setup, asserts, and any TTS clicks, write the playbook file.
 
