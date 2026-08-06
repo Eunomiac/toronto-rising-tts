@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-08-06 — author chat confirmed TOR-418 / TOR-419 / TOR-459; TOR-459 removed from Outstanding._
+_Last populated: 2026-08-06 — PAVE pass: cleared ✅ TOR-462 / 481 / 484 / 449 / 469; TOR-485 ❌⚠️ → follow-up **TOR-486** (⌚)._
 
 ### High — session / join / first-load
 
@@ -31,43 +31,17 @@ _Last populated: 2026-08-06 — author chat confirmed TOR-418 / TOR-419 / TOR-45
 
 ---
 
-### UI / map / phases (shipped — need Save & Play)
+### NPC gameboard (follow-up — not ready to verify)
 
-#### TOR-462 — Map sidebar idle art (empty audience → Blue sentinel)
+#### ⌚ TOR-486 — Clear right-click: silent no-op + re-snap misplaced palette tokens
 
-**How to verify:** Save & Play. Open the map. Overlay (left) and district (right) buttons should show **inactive** art by default — not the active art stacked on top. Hover one button: only that button’s hover chrome for you. Click an overlay on: only that button shows active chrome; click off → idle again. Optional: with two seats, one player’s active/hover should not appear on the other seat’s map view.
+**Status:** Open follow-up (Focus #1). Do not Save & Play for this row until the fix ships.
 
-**Context:** Empty audiences now use unused seat `Blue` as a hide sentinel (`U.VISIBILITY_EMPTY_SENTINEL`), not TTS team `None`. Follow-up after an earlier visibility-only attempt still looked permanently active.
+**How to verify (after fix ships):** Save & Play. Drag some NPC tokens off the control board and/or leave some on the palette but out of their parking slots. Right-click **Clear** — off-board strays should return to palette slots, and misplaced palette tokens should snap to their correct parking positions. Board placements stay. You should get clear feedback even if nothing needed moving. Left-click **Clear** twice within five seconds still confirms and clears the stage.
 
-#### TOR-481 — ST toolbar + debug hotkeys replace twirldowns
+**Context:** Author ❌⚠️ on TOR-485: right-click Clear did nothing; recovery must also re-position tokens already on the palette. Original recover path skipped on-palette tokens.
 
-**How to verify:** Save & Play. Options → Game Keys — bind **Storyteller toolbar (toggle)** and **Debug panel (toggle)**. Press each key — toolbar / debug should open and close. The old ► buttons should be gone. Open debug once and confirm the last-load clock line still appears. Open a ST panel tab, then close it — toolbar body should still collapse (TOR-395).
-
----
-
-### NPC gameboard (shipped — need Save & Play)
-
-#### TOR-484 — Group-move onto occupied family auto-evacuates
-
-**How to verify:** Save & Play. Put a few NPC tokens on one Far or Mid family. Hold **Group move**, then drop another family’s tokens onto that occupied family. Expect: old occupants jump to the first empty priority family (dark side); movers take the destination. Fill every priority family, then group-move onto one more occupied spot — expect overflow occupants to park on the palette face-up.
-
-#### TOR-485 — Clear right-click recovers stray tokens
-
-**How to verify:** Save & Play. Drag some NPC tokens off the control board (not onto the palette). Right-click **Clear** — those tokens should return to their palette slots; board placements stay. Left-click **Clear** twice within five seconds — still confirms and clears the stage as before.
-
----
-
-### Scenes (shipped — need Save & Play)
-
-#### TOR-449 — Scenes preview deselect + THERE close guard
-
-**How to verify:** Save & Play. With a pending (blue) library row selected, close Scenes — pending should deselect and the green live row should return. Switch to THERE, try to close Scenes — should block with an Alert. Apply while THERE. End a live scene — library selection should clear (no leftover preview of the ended scene). Save & Play while THERE should restore HERE.
-
-#### TOR-469 — Scene transition lead-in + camera in heavy work
-
-**How to verify:** Save & Play. Apply a library scene with district + site cards. Watch the early blindfold fades and confirm the default camera snap does not hitch early during lead-in (camera should move in the heavy-work window). Audio timing was re-checked under **TOR-476** (author confirmed) — this row is mainly lead-in length and camera placement.
-
-**Context:** Audio silence-after-lift was fixed and author-confirmed as **TOR-476**.
+**Verification Failures (from TOR-485 pass):** Right-click Clear no-op.
 
 ---
 

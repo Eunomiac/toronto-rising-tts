@@ -44,6 +44,8 @@ Verification:
 
 ## Processed
 
+2026-08-06 PAVE-only — ✅ cleared **TOR-462** / **TOR-481** / **TOR-484** / **TOR-449** / **TOR-469**; ❌⚠️ **TOR-485** → **TOR-486** (Clear right-click no-op + palette re-snap; Focus #1)
+
 2026-08-06 evening `/tr-inbox` — capture empty; PAVE ✅ cleared **TOR-476** / **TOR-472** / **TOR-477** / **TOR-478** / **TOR-479** / **TOR-480** / **TOR-483**; added Outstanding for **TOR-462** / **TOR-459** / **TOR-481** / **TOR-484** / **TOR-485** / **TOR-449** / **TOR-469**; canceled duplicate **TOR-474** (→ **TOR-476**); Focus → **TOR-439**, **TOR-482**, **TOR-418**, **TOR-419**
 
 2026-08-06 INBOX Immediate + PAVE — Set present-day tint → **TOR-480** (shipped); Daysleep Refresh → **TOR-482**; ST/debug hotkeys → **TOR-481**; TOR-469 audio ❌ → **TOR-476** (Focus #1); TOR-222 dusk/dawn → **TOR-472**; Years Go → **TOR-477**; TOR-402 skybox blindfold → **TOR-478**; TOR-394 debug clock ❌ → **TOR-479**; CSHEET right-click tray seat → **TOR-483** (shipped); PAVE ✅ cleared (403/404/405/396/471/238/413/414/460/461/100/453/452/450/451)
