@@ -20,19 +20,19 @@ local HO = require("core.hud_overlays")
 local Main = require("core.main")
 
 local TRANSITION_SETTLE_DELAY_SEC = 10
---- Parent Panel slide-in (`playerHud_blindfoldOverlay` animationDuration).
+--- Parent Panel FadeIn (`animationDuration` on `playerHud_overlay_blindfold`) — cards delay longer on purpose
+--- so players can read the blindfold art before district/site cards cover it.
 local BLINDFOLD_SLIDE_IN_SEC = 2
---- Latest child show complete: site card showAnimationDelay 1.5 + animationDuration 1.
-local BLINDFOLD_CHILD_SHOW_COMPLETE_SEC = 2.5
---- Wait before any costly transition work so XmlUI slide/FadeIn is not hitch-frozen (TOR-434).
---- = max(parent slide-in, last destination-card FadeIn end).
-local BLINDFOLD_DOWN_COMPLETE_SEC = math.max(BLINDFOLD_SLIDE_IN_SEC, BLINDFOLD_CHILD_SHOW_COMPLETE_SEC) + 2
+--- Site card FadeIn end: XML `showAnimationDelay` 4.5 + `animationDuration` 1 (district ends 0.5s earlier).
+local BLINDFOLD_CHILD_SHOW_COMPLETE_SEC = 5.5
+--- Lead-in before ambient fade-out / heavy work (TOR-434). Starts 0.5s before site FadeIn completes so
+--- cards get more quiet time than the old 4.5s gate; fade-out may overlap the last half-second of site fade.
+--- Floored at parent FadeIn so work never starts during the blindfold panel FadeIn alone.
+local BLINDFOLD_DOWN_COMPLETE_SEC = math.max(BLINDFOLD_SLIDE_IN_SEC, BLINDFOLD_CHILD_SHOW_COMPLETE_SEC - 0.5)
 --- Default lead-in for `runTransitionAfterLeadIn` (same gate as staged / simple transition).
 local TRANSITION_WORK_LEAD_IN_SEC = BLINDFOLD_DOWN_COMPLETE_SEC
---- After blindfold activation: wait for overlay settle, then snap cameras (TOR-368).
-local DEFAULT_CAMERA_AFTER_BLINDFOLD_SEC = 1.5
---- Staged transition (TOR-147 / TOR-434): fade-out runs only after blindfold-down animations finish;
---- heavy reconcile then runs alone; new audio fades in only after the reconcile settles.
+--- Staged transition (TOR-147 / TOR-434): fade-out runs only after blindfold-down lead-in;
+--- heavy reconcile (incl. default camera snap, TOR-368) then runs alone; new audio fades in on lift.
 local TRANSITION_FADE_OUT_SEC = 1
 local TRANSITION_WORK_SETTLE_SEC = 0.75
 --- New-location ambient fades in as the blindfold rises (TOR-273), so this runs concurrently with the
@@ -47,20 +47,12 @@ local TRANSITION_CONDITION_KEY = "hudBlindfold"
 
 local activeTransitionVariant = nil
 local pendingEndDelayId = nil
-local pendingCameraDelayId = nil
 --- playerIDs that received `hudBlindfold` in the current (or last) beginTransition.
 --- Cleared on end even if those players left their seats mid-settle (hotseat orphan fix).
 local transitionBlindfoldPlayerIds = {}
 --- Custom UI image refs for destination cards while a transition is active (nil when skipped).
 local transitionDistrictCardImage = nil
 local transitionSiteCardImage = nil
-
-local function cancelPendingDefaultCamera()
-  if pendingCameraDelayId ~= nil then
-    U.cancel(pendingCameraDelayId)
-    pendingCameraDelayId = nil
-  end
-end
 
 --- @return number 1..C.BlindfoldVariantCount
 local function pickRandomVariant()
@@ -236,15 +228,6 @@ local function setDefaultCameraForSeatedPlayers()
   end
 end
 
---- Snap cameras after the blindfold overlay has had time to fully cover the view (TOR-368).
-local function scheduleDefaultCameraAfterBlindfold()
-  cancelPendingDefaultCamera()
-  pendingCameraDelayId = U.await(function()
-    pendingCameraDelayId = nil
-    setDefaultCameraForSeatedPlayers()
-  end, DEFAULT_CAMERA_AFTER_BLINDFOLD_SEC)
-end
-
 --- @return number|nil
 function HUDBF.getActiveTransitionVariant()
   return activeTransitionVariant
@@ -254,6 +237,8 @@ end
 --- Destination District/Site cards (TOR-425 / TOR-431) arm on the parent before one UI.show when
 --- both `districtKey` and `siteKey` resolve; otherwise cards stay Clear.
 --- Condition writes use `skipAfterChange` so Conditions.afterChange cannot UI.show before arming (TOR-441).
+--- Default camera snap is owned by staged/simple settle paths (TOR-368) — not here — so early
+--- XmlUI FadeIns are not hitch-frozen by lookAt.
 --- @param optsOrVariant number|table|nil
 ---   number — blindfold variant 1..C.BlindfoldVariantCount
 ---   table — `{ variant?, districtKey?, siteKey? }` (keys from the *destination* scene; live sessionScene is still old)
@@ -265,7 +250,6 @@ function HUDBF.beginTransition(optsOrVariant)
   -- Drop prior transition state without per-player afterChange (each would UI.hide/show and
   -- fight the single armed parent UI.show below). Lift uses skipAfterChange + one HO.syncAll.
   clearTrackedTransitionBlindfolds({ skipAfterChange = true })
-  cancelPendingDefaultCamera()
   -- Reset card attrs before deciding whether this transition arms destination art.
   clearTransitionLocationCardDefaultsForAllSeats()
 
@@ -308,9 +292,6 @@ function HUDBF.beginTransition(optsOrVariant)
   else
     HO.syncAll()
   end
-
-  -- TOR-368: wait until blindfold is fully up before camera motion.
-  scheduleDefaultCameraAfterBlindfold()
 end
 
 --- Clear transition blindfold conditions and refresh HUD overlays (parent UI.hide + delayed child reset).
@@ -319,7 +300,6 @@ function HUDBF.endTransition()
     U.cancel(pendingEndDelayId)
     pendingEndDelayId = nil
   end
-  cancelPendingDefaultCamera()
   activeTransitionVariant = nil
   transitionDistrictCardImage = nil
   transitionSiteCardImage = nil
@@ -428,12 +408,13 @@ function HUDBF.runTransition(workFn, opts)
 end
 
 --- Staged scene transition (TOR-147 / TOR-434): blindfold down → wait for animations → fade-out →
---- heavy work → silent settle → lift + fade-in.
---- Each phase is isolated in time via `U.chain` so XmlUI slide/FadeIn and resource-heavy
+--- heavy work (incl. default camera) → silent settle → lift + fade-in.
+--- Each phase is isolated in time via `U.chain` so XmlUI FadeIn and resource-heavy
 --- reconcile never compete (prevents animation hitch).
 --- @param phases table `{ fadeOut?: fun(), work?: fun(): boolean, string|nil, fadeIn?: fun() }`
----   - `fadeOut` runs only after blindfold-down animations finish
+---   - `fadeOut` runs only after the lead-in (cards may still finish the last ~0.5s of site FadeIn)
 ---   - `work` returns `ok, errMsg`; on failure the blindfold lifts immediately and `fadeIn` is skipped
+---   - default camera snaps at the start of `work` (under full cover; TOR-368) so early FadeIns stay smooth
 ---   - `fadeIn` runs as the blindfold **rises** (after the silent settle hold), so the new-location audio
 ---     reveal aligns with the visual reveal (TOR-273). Blindfold stays down `settleDelaySec` after work.
 --- @param opts table|nil `{ fadeOutSec?, workSettleSec?, fadeInSec?, settleDelaySec?, leadInDelaySec?, variant?, districtKey?, siteKey? }`
@@ -453,7 +434,7 @@ function HUDBF.runStagedTransition(phases, opts)
   local workFailed = false
   U.chain({
     function()
-      -- Hold until parent SlideIn + destination-card FadeIns finish (TOR-434).
+      -- Hold through parent FadeIn + most of destination-card FadeIns (TOR-434).
       return leadInDelaySec
     end,
     function()
@@ -463,6 +444,8 @@ function HUDBF.runStagedTransition(phases, opts)
       return fadeOutSec
     end,
     function()
+      -- TOR-368: snap default cameras here (with heavy work), not during early lead-in FadeIns.
+      setDefaultCameraForSeatedPlayers()
       if type(phases.work) == "function" then
         local ok, errMsg = phases.work()
         if ok ~= true then
@@ -475,14 +458,13 @@ function HUDBF.runStagedTransition(phases, opts)
       return workFailed and 0 or workSettleSec
     end,
     function()
-      -- Hold the blindfold down in silence through the settle window; reset cameras now. New-location
-      -- audio is NOT applied yet — it fades in as the blindfold rises (next step) so the audio reveal
-      -- aligns with the visual reveal. Budget: workSettle + this hold == settleDelaySec down-time
-      -- after the post-animation fade-out (lead-in is separate).
+      -- Hold the blindfold down in silence through the settle window. New-location audio is NOT
+      -- applied yet — it fades in as the blindfold rises (next step) so the audio reveal aligns
+      -- with the visual reveal. Budget: workSettle + this hold == settleDelaySec down-time
+      -- after the post-lead-in fade-out (lead-in is separate).
       if workFailed then
         return 0
       end
-      setDefaultCameraForSeatedPlayers()
       return math.max(0, settleDelaySec - workSettleSec)
     end,
     function()

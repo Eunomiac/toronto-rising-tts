@@ -1,103 +1,8 @@
 # Pending Author Verification
 
-## Agent Routing
+Your TTS checklist for shipped work that still needs Save & Play / in-game confirmation. Linear **Done** alone does not mean verified.
 
-Read this when:
-- marking a Linear issue **Done** before the author has confirmed in Tabletop Simulator
-- the author says they verified / Save & Play confirmed an issue
-- `/tr-inbox`, `/tr-start`, or “what’s next” when surfacing verification debt
-- closing a Focus item that still needs Save & Play / multiclient smoke
-
-Source of truth:
-- This file for **author verification debt** (Linear **Done** ≠ verified in TTS)
-- Linear for issue status / comments
-- [RUNNING TASKLIST.md](RUNNING%20TASKLIST.md) for Focus + domain bullets
-
-Verification:
-- every entry has a live `TOR-*` that is **Done** (or noted as a verification gate still In Progress)
-- every entry’s **How to verify** uses plain English (see **Writing style** below)
-- watch issue headers for author marks **✅** / **❌** / **⚠️** (see **Author marks on issue headers** below) and process them in the same session when you open this file
-- remove an entry when the author marks **✅** (or confirms in chat / Linear); then update the tasklist bullet
-
-Status: living registry — agents must keep it current.
-
----
-
-## Purpose
-
-Linear **Done** means the code and docs were shipped. It does **not** mean you have already tested the change inside Tabletop Simulator. This file is your checklist of shipped work that still needs a real in-game pass (Save & Play, multiclient join, listen check, and so on) before we treat it as fully closed.
-
-**Do not put here:** External / `workshop-only` human gates, open Feature Todo work, or living docs such as **TOR-141** (E2E playbooks). Those keep their own Linear statuses.
-
----
-
-## Author marks on issue headers (mandatory for agents)
-
-As the author works through this checklist in Tabletop Simulator, they will prefix issue headings with one of these symbols. **Whenever you open or edit this file** (including `/tr-inbox`, `/tr-start`, finishing related work, or when the author says they marked items), scan every `####` heading under **Outstanding** for these marks and act on them. Do not wait for a separate chat instruction if the mark is already in the file.
-
-**Where the mark appears:** on the issue header line, for example:
-
-```markdown
-#### ✅ TOR-384 — Global HUD missing on first save load
-#### ❌ TOR-449 — Scenes preview deselect and THERE close guard
-**Verification Failures:** Closing the Scenes panel while THERE did not block…
-**Verified:** Selecting a blue pending row and closing the panel while HERE restored the green live selection. End scene deselected as expected.
-#### ⚠️ TOR-402 — Skybox-only Apply Location
-**Corrections:** …
-```
-
-| Mark | Meaning | What the agent must do |
-| --- | --- | --- |
-| **✅** | Confirmed. The author followed the **How to verify** steps and everything passed. | **Remove** this entire issue entry from **Outstanding**. Mark the matching RUNNING TASKLIST bullet as author-confirmed (or clear its “Pending Save & Play” wording). Optionally leave a short Linear comment that author verification passed. Treat the work as fully closed for verification debt. |
-| **❌** | Testing failed. The bug or missing behavior is still live. | Expect two paragraphs under that entry when the author provides them: **`**Verification Failures:**`** (what still breaks) and, when anything passed, **`**Verified:**`** (which parts of the how-to-verify steps succeeded). Read both carefully. **Do not remove** the entry until remaining failures are fixed and the author re-confirms with **✅**. Narrow the remaining work: rewrite **How to verify** so it only covers what still needs checking; put already-passed behavior in **Context** (or a short “Already verified” note) so the next pass does not re-litigate it. Mirror that narrowing in Linear (Bug description / comments on the original Done issue or a new related Bug): what passed, what remains. Prefer creating or reopening a Linear **Bug** (`relatedTo` the original Done issue when one exists), set it **In Progress** if you are fixing now. Summarize in plain English in chat. |
-| **⚠️** | The issue definition or expected validation is wrong or misleading (for example, “End scene should remain selected” when End should deselect). | Expect a paragraph under that entry beginning with **`**Corrections:**`** — read it carefully. Fix the inaccurate **How to verify** text (and any matching docs, E2E asserts, or Linear notes) so they match intended behavior. If the correction implies a code change, treat that as real work (Linear update + implement). After corrections are applied, **remove the ⚠️ mark and the Corrections paragraph** (or replace them with a short **Context** note that the verify text was corrected and re-test is still owed). Leave the entry in **Outstanding** until the author marks **✅** or **❌** on a fresh pass. |
-
-**Unmarked headers** still mean “not yet tested” — leave them alone unless you are adding a new entry or the author confirmed elsewhere (chat / Linear).
-
-**If both a mark and detail paragraphs appear**, trust the mark for status and the paragraphs for specifics. For **❌**, use **Verified:** to shrink scope and **Verification Failures:** to define remaining work. If a mark is present but the expected failure/correction paragraph is missing (**Verification Failures:** / **Corrections:**), ask the author in plain English what failed or what to correct before guessing. A missing **Verified:** on **❌** is allowed when nothing passed — do not invent successes.
-
----
-
-## Writing style (mandatory for agents)
-
-This file follows the project-wide **author voice** rule: [`.cursor/rules/toronto-rising-author-voice.mdc`](../.cursor/rules/toronto-rising-author-voice.mdc). That rule covers **all** writing to the author (chat included). The notes below are the verify-entry specialization.
-
-When you add or rewrite a verification entry, write **plain English instructions the author can follow without decoding shorthand**.
-
-**Do:**
-
-- Use complete sentences.
-- Say what to open, click, or load, and what “pass” looks like.
-- Name panels, buttons, and seats the way they appear in TTS when you know them.
-- One issue = enough detail that a tired author does not need to open Linear to understand the test.
-
-**Do not:**
-
-- Use telegram-style fragments (`Cold File→Load`, `Idle/hover/active`, `Arm → 2 HUD`).
-- Rely on internal nicknames alone (`canary remount`, `Defer triad`) without a short explanation.
-- Compress the whole test into a single cryptic clause.
-
-**Bad:** `Cold File→Load: Global HUD present without reload; canary remount path`
-
-**Good:** `Load into the save from the main menu. Ensure the global HUD appears without requiring a reload, confirming that the script checks for the existence of the global HUD on load and remounts it automatically if it does not.`
-
-Same standard applies to Linear Done comments that say verification is still owed: write a short plain-English test note there too, not only a code dump.
-
-Also: [`.cursor/rules/toronto-rising-linear.mdc`](../.cursor/rules/toronto-rising-linear.mdc) § Pending author verification.
-
----
-
-## Agent maintenance (mandatory)
-
-| Event | Update this file |
-| --- | --- |
-| Mark Linear **Done** but author has **not** confirmed in-TTS | **Add** an entry with a plain-English **How to verify** paragraph (and a playbook link if one exists) |
-| Author marks header **✅** (or confirms in chat / Linear) | **Remove** the entry; mark the tasklist bullet author-confirmed; optional Linear comment |
-| Author marks header **❌** + **Verification Failures:** (and optional **Verified:**) | Keep the entry; narrow **How to verify** to remaining failures; record what already passed in **Context** + Linear; open/reopen Bug as needed; do not treat as confirmed |
-| Author marks header **⚠️** + **Corrections:** | Fix verify text / docs / code per the correction; clear the ⚠️ + Corrections once addressed; leave entry until re-tested |
-| `/tr-inbox` / Focus re-stack | Skim **Outstanding** for **✅** / **❌** / **⚠️** and process them; mention remaining high-priority verify debt if it would block a play session |
-
-When finishing work: if verification is still owed, say so in the Linear **Done** comment with a plain-English test note **and** add the entry here in the same change.
+**Marks for agents** (prefix the `####` header): **✅** confirmed · **❌** still broken (+ **Verification Failures:** / optional **Verified:**) · **⚠️** bad expectations (+ **Corrections:**). Agent policy: [PENDING AUTHOR VERIFICATION.agent.md](PENDING%20AUTHOR%20VERIFICATION.agent.md).
 
 ---
 
@@ -107,6 +12,12 @@ _Last populated: 2026-08-04 — Linear Done scan plus RUNNING TASKLIST “Pendin
 
 ### High — session / join / first-load
 
+#### TOR-469 — Scene transition lead-in and camera snap timing
+
+**How to verify:** Save & Play so the updated blindfold script loads. Apply a library scene that has both a District and a Site. Watch the transition: the blindfold art should sit alone for a few seconds, then the district and site cards should fade in as before. You should **not** feel a camera snap during those early fades — the default camera should wait until later, when the heavy table/scene work runs under the blindfold. When the blindfold finally rises, the new scene’s music and ambience should already be at the right volumes. Also End a live scene once and confirm that path still feels smooth (no destination cards on End).
+
+**Context:** Lead-in pushed from 4.5s to 5.0s so the site card gets more FadeIn time before ambient fade-out / Sync. Default camera moved out of the early +1.5s slot into the heavy-work step.
+
 #### TOR-439 — Join-stress re-verify after Global HUD remount weight cut
 
 **Status:** Linear **In Progress** (verification gate; code already shipped).
@@ -115,13 +26,13 @@ _Last populated: 2026-08-04 — Linear Done scan plus RUNNING TASKLIST “Pendin
 
 **Context:** Earlier run: Assets, Emitters, and Figurines restore steps succeeded; step 2 timed out and drove **TOR-444**.
 
-#### TOR-384 — Global HUD missing on first save load
+#### ✅ TOR-384 — Global HUD missing on first save load
 
 **How to verify:** From the Tabletop Simulator main menu, load into the chronicle save (a fresh load, not a reload of an already-open session). Confirm that the Storyteller / player global HUD appears on that first load without needing File → Load a second time, and that Intermission music / ambient still starts. In the console you may see a line about the Global HUD canary missing and remounting; you should **not** see a two-minute `chainWait:timeout` stuck on `startup-ready-ensure-global-xml`.
 
 **Context:** First recovery attempt waited on `UI.loading` before remounting; on a cold load that flag stayed true, so the gate never remounted and timed out after 180s. Fix: remount as soon as the canary is missing, even while `UI.loading` is true.
 
-#### TOR-449 — Scenes preview deselect and THERE close guard
+#### ✅ TOR-449 — Scenes preview deselect and THERE close guard
 
 **How to verify:** In the Scenes panel, select a library row so the blue pending preview is active, then close the panel, reload the save, or run a scene transition — the pending preview should clear and you should be editing the live (green) scene again. While THERE mode is active on the Control Board, closing the Scenes panel should be blocked (with a Host/Black broadcast telling you to resolve THERE first). When you End a live scene, that scene should be **deselected** in the library (no row highlighted as the active edit target) — End is leaving the table with no live scene, not leaving a “preview of the scene you just ended.”
 
@@ -131,9 +42,10 @@ _Last populated: 2026-08-04 — Linear Done scan plus RUNNING TASKLIST “Pendin
 
 ### Scenes / clock (2026-07-19 batch — still pending)
 
-#### TOR-402 — Skybox-only Apply Location
+#### ⚠️ TOR-402 — Skybox-only Apply Location
 
 **How to verify:** On the Scenes panel, change only the skybox (leave District and Site empty or unchanged) and press Apply Location. The skybox should update without the panel insisting you pick a District/Site first.
+**Corrections:** The global blindfold should come down immediately upon triggering an independent skybox change, but only briefly: blindfold comes down -> sufficient wait for blindfold fade-in duration animation to complete -> apply new skybox -> hide blindfold two seconds after it finished fading in (i.e. two seconds of active blindfold is all we need for a skybox transition).  Otherwise, the ability to switch skyboxes independent of Site/District is functioning as it should.
 
 #### TOR-403 — Clock lerp control id parse
 

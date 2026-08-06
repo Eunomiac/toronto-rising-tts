@@ -245,15 +245,16 @@ end
 
 ## Blindfold raise — default camera (TOR-368)
 
-After any blindfold comes **up**, wait ~1.5s for the overlay to settle, then call `M.setDefaultCameraBeforeBlindfold` (or equivalent `M.setCamera(..., "default")`) so camera motion happens under the blindfold. **TOR-446:** do **not** force `setCameraMode("FirstPerson")` afterward (reverses TOR-443).
+Snap default cameras **under** the transition blindfold after early XmlUI FadeIns, not during them — so lookAt does not hitch-freeze parent/card animations. **TOR-446:** do **not** force `setCameraMode("FirstPerson")` afterward (reverses TOR-443).
 
 | Raise path | File | When |
 | --- | --- | --- |
 | Global overlay show | `global_script.showStartupLoadingOverlays` | after `UI.show(overlay_globalBlindfold)`, then `U.await(1.5)` |
-| Per-player transition | `HUDBF.beginTransition` | Write `hudBlindfold` with `skipAfterChange`, arm children (variant + optional destination cards), **one** parent Panel `UI.show` (TOR-431 / TOR-425 / TOR-441); then `U.await(1.5)` for default camera (TOR-368). TOR-434 lead-in still gates heavy work. |
+| Staged scene transition (Apply / End) | `HUDBF.runStagedTransition` | After TOR-434 lead-in (~5.0s) + ambient fade-out (~1s); default camera at **start of heavy work**, then Sync/table work. `beginTransition` arms UI only (no early camera await). |
+| Simple / lead-in transition settle | `HUDBF.scheduleEnd` | When settle delay > 0, snap default cameras at the start of the settle wait (after work). |
 | PCs panel Blind toggle on | `PCST` `blindfoldToggle` | after `Conditions.setManual(hudBlindfold)`, then `U.await(1.5)` |
 
-Lift/settle paths may still reset cameras while the blindfold is down (existing settle behavior).
+Lift paths may still reset cameras while the blindfold is down via `scheduleEnd` when a positive settle delay is used.
 
 ## Follow-ups (outside TOR-197 scope)
 
