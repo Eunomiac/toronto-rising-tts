@@ -1370,6 +1370,7 @@ function L.registerNpcSpotlightModes(npcName, lightGuid)
         OFF = makeFn("OFF"),
         STANDARD = makeFn("STANDARD"),
         SPOTLIGHT = makeFn("SPOTLIGHT"),
+        OFFSPOTLIGHT = makeFn("OFFSPOTLIGHT"),
     }
 end
 

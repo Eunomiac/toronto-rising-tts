@@ -13,13 +13,19 @@ D.lights = {
     enabled = false,
     color = Color(1, 1, 1),
     range = 100,
-    intensity = 0
+    intensity = 0,
+    angle = 88,
+    positioning = {
+      deltaUp = 5,
+      deltaInward = 3,
+      lookAtYShift = 0.1
+    }
   },
   STANDARD = {
     enabled = true,
-    color = Color(0.75, 0.75, 0.75),
-    range = 132,
-    intensity = 5,
+    color = Color(1, 1, 1),
+    range = 100,
+    intensity = 3,
     angle = 88,
     positioning = {
       deltaUp = 5,
@@ -29,15 +35,27 @@ D.lights = {
   },
   SPOTLIGHT = {
     enabled = true,
+    color = Color(1, 1, 0.75),
+    range = 130,
+    intensity = 7,
+    angle = 45,
+    positioning = {
+      deltaUp = 25,
+      deltaInward = 10,
+      lookAtYShift = 0.1,
+    }
+  },
+  --- Sibling dim while another figurine in the same snap family is SPOTLIGHT (TOR-473).
+  --- Not written by token flip / placement scan — runtime companion mode only.
+  OFFSPOTLIGHT = {
+    enabled = true,
     color = Color(1, 1, 1),
     range = 100,
-    intensity = 3,
-    angle = 70,
-    -- Same placement family as STANDARD (TOR-416): small geometric delta so cone barely relocates;
-    -- visual punch is intensity / angle / color.
+    intensity = 2,
+    angle = 88,
     positioning = {
-      deltaUp = 6,
-      deltaInward = 4,
+      deltaUp = 5,
+      deltaInward = 3,
       lookAtYShift = 0.1
     }
   }

@@ -101,6 +101,12 @@ local npcReconcileLayoutContext = nil
 
 --- While true, instance uses spotlight mode until mouse up (not persisted).
 local spotlightHeld = {}
+--- TOR-238 hold-preview: figurine treated as SPOTLIGHT for family dim (not persisted).
+local spotlightPreviewHeld = {}
+--- Runtime companion dim while a same-snap-family NPC is SPOTLIGHT (TOR-473). Not written to placements.
+local familyOffSpotlight = {}
+--- Transient companion dim during TOR-238 hold preview (separate from state-backed `familyOffSpotlight`).
+local familyOffSpotlightPreview = {}
 
 --- Spawn callback only: `buildResolvedLightModeTable` prefers this object over `G.getObject` (GUID index can lag the live `fig`).
 local lightAlignFigOverride = {}
@@ -1054,6 +1060,69 @@ local function clearNpcFigurineSeatIdentity(fig, lit, npcName)
     setPooledSpotlightHidden(lit, false)
 end
 
+--- @param npcName string
+--- @param rec table|nil
+--- @return boolean
+local function npcIsEffectivelySpotlit(npcName, rec)
+    if spotlightHeld[npcName] == true or spotlightPreviewHeld[npcName] == true then
+        return true
+    end
+    return U.Type(rec) == "table" and rec.npcLightMode == "SPOTLIGHT"
+end
+
+--- Effective mode written to `gameState.lights` / applied to the world (includes runtime OFFSPOTLIGHT).
+--- @param npcName string
+--- @param desiredMode string|nil placement/steady mode OFF|STANDARD|SPOTLIGHT
+--- @return string
+local function effectiveAppliedLightModeKey(npcName, desiredMode)
+    if spotlightHeld[npcName] == true or spotlightPreviewHeld[npcName] == true then
+        return "SPOTLIGHT"
+    end
+    if familyOffSpotlight[npcName] == true or familyOffSpotlightPreview[npcName] == true then
+        return "OFFSPOTLIGHT"
+    end
+    if U.Type(desiredMode) == "string" and desiredMode ~= "" then
+        return desiredMode
+    end
+    return "STANDARD"
+end
+
+--- Other stage NPCs sharing the same snap `familyId` (excludes `npcName`).
+--- @param npcName string
+--- @return string[]
+local function collectStageFamilySiblingKeys(npcName)
+    local rec = getInstances()[npcName]
+    if U.Type(rec) ~= "table" or rec.areaKey ~= STAGE_BOARD_AREA_KEY or U.Type(rec.stagePlacement) ~= "table" then
+        return {}
+    end
+    local Gameboard = require("core.npc_gameboard")
+    if type(Gameboard.resolvePlacementSnapCatalogEntry) ~= "function" then
+        return {}
+    end
+    local entry = Gameboard.resolvePlacementSnapCatalogEntry(rec.stagePlacement.u, rec.stagePlacement.v)
+    if U.Type(entry) ~= "table" then
+        return {}
+    end
+    local familyId = entry.familyId
+    if U.Type(familyId) ~= "string" or familyId == "" then
+        return {}
+    end
+    local keys = {}
+    for name, other in pairs(getInstances()) do
+        if name ~= npcName
+            and U.Type(other) == "table"
+            and other.areaKey == STAGE_BOARD_AREA_KEY
+            and U.Type(other.stagePlacement) == "table"
+        then
+            local otherEntry = Gameboard.resolvePlacementSnapCatalogEntry(other.stagePlacement.u, other.stagePlacement.v)
+            if U.Type(otherEntry) == "table" and otherEntry.familyId == familyId then
+                keys[#keys + 1] = name
+            end
+        end
+    end
+    return keys
+end
+
 --- Persist `gameState.lights` mode for a pooled NPC spotlight (no world apply).
 --- @param npcName string
 --- @param desiredMode string OFF|STANDARD|SPOTLIGHT
@@ -1063,7 +1132,7 @@ local function syncStageNpcLightState(npcName, desiredMode)
         return
     end
     local reg = NPCS.lightRegistryName(rec.lightGuid)
-    local modeKey = spotlightHeld[npcName] and "SPOTLIGHT" or desiredMode
+    local modeKey = effectiveAppliedLightModeKey(npcName, desiredMode)
     if L.LIGHTMODES[reg] == nil then
         L.registerNpcSpotlightModes(npcName, rec.lightGuid)
     end
@@ -1097,7 +1166,7 @@ local function applyNpcSpotlightAlignedToFigurine(npcName, fig, transitionTime)
     end
     L.invalidateReconcileCacheForRef(reg)
     lightAlignFigOverride[npcName] = fig
-    local modeKey = spotlightHeld[npcName] and "SPOTLIGHT" or (rec.npcLightMode or "STANDARD")
+    local modeKey = effectiveAppliedLightModeKey(npcName, rec.npcLightMode or "STANDARD")
     S.setStateVal(modeKey, "lights", reg)
     local modeTable = NPCS.buildResolvedLightModeTable(npcName, modeKey)
     lightAlignFigOverride[npcName] = nil
@@ -1791,6 +1860,34 @@ function NPCS.applyFigurinePlacementAtWorld(figurine, placement)
     ))
 end
 
+--- Normalize a mode `color` field to TTS `Color` when stored as `{ r, g, b }` (save-safe state).
+--- @param mode table
+local function normalizeMergedModeColor(mode)
+    if U.Type(mode) ~= "table" then
+        return
+    end
+    local c = mode.color
+    if c == nil then
+        return
+    end
+    if type(c) == "userdata" or (U.Type(c) == "table" and type(c.get) == "function") then
+        return
+    end
+    if U.Type(c) == "table" then
+        local r = tonumber(c.r or c[1])
+        local g = tonumber(c.g or c[2])
+        local b = tonumber(c.b or c[3])
+        if r ~= nil and g ~= nil and b ~= nil then
+            local a = tonumber(c.a or c[4])
+            if a ~= nil then
+                mode.color = Color(r, g, b, a)
+            else
+                mode.color = Color(r, g, b)
+            end
+        end
+    end
+end
+
 --- @param npcName string
 --- @param modeKey string
 --- @return table
@@ -1806,6 +1903,12 @@ function NPCS.getMergedModeDefinition(npcName, modeKey)
             merged = deepMerge(merged, stageOverride)
         end
     end
+    -- Live DEBUG overrides win last (TOR-471): `gameState.debug.npcLightModes[modeKey]`.
+    local debugOverride = S.getStateVal("debug", "npcLightModes", modeKey)
+    if U.Type(debugOverride) == "table" then
+        merged = deepMerge(merged, debugOverride)
+    end
+    normalizeMergedModeColor(merged)
     return merged
 end
 
@@ -1980,9 +2083,174 @@ local function ensureSpotlightTag(obj)
     end
 end
 
+--- Ensure pooled spotlight registry includes OFFSPOTLIGHT (TOR-473).
+--- @param npcName string
+--- @param lightGuid string
+local function ensureNpcSpotlightModesRegistered(npcName, lightGuid)
+    local reg = NPCS.lightRegistryName(lightGuid)
+    if L.LIGHTMODES[reg] == nil then
+        L.registerNpcSpotlightModes(npcName, lightGuid)
+        return
+    end
+    if L.LIGHTMODES[reg].OFFSPOTLIGHT == nil then
+        L.registerNpcSpotlightModes(npcName, lightGuid)
+    end
+end
+
+--- Dim / restore same-family stage lights around SPOTLIGHT figurines (TOR-473).
+--- OFFSPOTLIGHT is runtime-only (`familyOffSpotlight`); never written to placement scans.
+--- @param transitionTime number|nil
+--- @param opts table|nil `{ force?: boolean, skipFamilyReconcile?: boolean, flagsOnly?: boolean, skipInFlight?: boolean }`
+function NPCS.reconcileFamilyOffSpotlight(transitionTime, opts)
+    opts = type(opts) == "table" and opts or {}
+    if opts.skipFamilyReconcile == true then
+        return
+    end
+    if transitionTime == nil then
+        transitionTime = 0.35
+    end
+    local desired = {}
+    for name, rec in pairs(getInstances()) do
+        if U.Type(name) == "string"
+            and U.Type(rec) == "table"
+            and rec.areaKey == STAGE_BOARD_AREA_KEY
+            and (spotlightHeld[name] == true or rec.npcLightMode == "SPOTLIGHT")
+        then
+            local siblings = collectStageFamilySiblingKeys(name)
+            for i = 1, #siblings do
+                local sib = siblings[i]
+                local srec = getInstances()[sib]
+                if U.Type(srec) == "table"
+                    and srec.npcLightMode ~= "OFF"
+                    and not npcIsEffectivelySpotlit(sib, srec)
+                    and not (U.Type(srec.seatedSeatKey) == "string" and isValidNpcSeatKey(srec.seatedSeatKey))
+                then
+                    desired[sib] = true
+                end
+            end
+        end
+    end
+
+    local StageLerp = nil
+    if opts.skipInFlight == true then
+        StageLerp = require("core.npc_stage_lerp")
+    end
+
+    local function shouldSkipWorldApply(npcName)
+        if opts.flagsOnly == true then
+            return true
+        end
+        if opts.skipInFlight == true
+            and type(StageLerp) == "table"
+            and type(StageLerp.isNpcInFlight) == "function"
+            and StageLerp.isNpcInFlight(npcName) == true
+        then
+            return true
+        end
+        return false
+    end
+
+    for name, _ in pairs(desired) do
+        local was = familyOffSpotlight[name] == true
+        familyOffSpotlight[name] = true
+        if (not was or opts.force == true) and not shouldSkipWorldApply(name) then
+            NPCS.applyCurrentLightMode(name, transitionTime, {
+                force = opts.force == true,
+                skipFamilyReconcile = true,
+            })
+        end
+    end
+    local leaving = {}
+    for name, _ in pairs(familyOffSpotlight) do
+        if desired[name] ~= true then
+            leaving[#leaving + 1] = name
+        end
+    end
+    for i = 1, #leaving do
+        local name = leaving[i]
+        familyOffSpotlight[name] = nil
+        if not shouldSkipWorldApply(name) then
+            NPCS.applyCurrentLightMode(name, transitionTime, {
+                force = opts.force == true,
+                skipFamilyReconcile = true,
+            })
+        end
+    end
+end
+
+--- TOR-238 hold-preview companion dims (transient; does not write `gameState.lights` OFFSPOTLIGHT).
+--- @param spotlitName string|nil character key under preview, or nil to clear
+--- @param transitionTime number|nil
+function NPCS.syncFamilyOffSpotlightPreview(spotlitName, transitionTime)
+    if transitionTime == nil then
+        transitionTime = 0.12
+    end
+    local L = require("core.lighting")
+    for name, _ in pairs(spotlightPreviewHeld) do
+        spotlightPreviewHeld[name] = nil
+    end
+    if U.Type(spotlitName) == "string" and spotlitName ~= "" then
+        spotlightPreviewHeld[spotlitName] = true
+    end
+
+    local desired = {}
+    if U.Type(spotlitName) == "string" and spotlitName ~= "" and spotlightPreviewHeld[spotlitName] == true then
+        local siblings = collectStageFamilySiblingKeys(spotlitName)
+        for i = 1, #siblings do
+            local sib = siblings[i]
+            local srec = getInstances()[sib]
+            if U.Type(srec) == "table"
+                and srec.npcLightMode ~= "OFF"
+                and not npcIsEffectivelySpotlit(sib, srec)
+                and not (U.Type(srec.seatedSeatKey) == "string" and isValidNpcSeatKey(srec.seatedSeatKey))
+            then
+                desired[sib] = true
+            end
+        end
+    end
+
+    local function applyTransientMode(npcName, modeKey)
+        local rec = getInstances()[npcName]
+        if U.Type(rec) ~= "table" or U.Type(rec.lightGuid) ~= "string" or rec.lightGuid == "" then
+            return
+        end
+        ensureNpcSpotlightModesRegistered(npcName, rec.lightGuid)
+        local modeTable = NPCS.buildResolvedLightModeTable(npcName, modeKey)
+        if U.Type(modeTable) ~= "table" then
+            return
+        end
+        L.applyTransientLightMode(NPCS.lightRegistryName(rec.lightGuid), modeTable, {
+            transitionTime = transitionTime,
+        })
+    end
+
+    for name, _ in pairs(desired) do
+        local was = familyOffSpotlightPreview[name] == true
+        familyOffSpotlightPreview[name] = true
+        if not was and familyOffSpotlight[name] ~= true then
+            applyTransientMode(name, "OFFSPOTLIGHT")
+        end
+    end
+    local leaving = {}
+    for name, _ in pairs(familyOffSpotlightPreview) do
+        if desired[name] ~= true then
+            leaving[#leaving + 1] = name
+        end
+    end
+    for i = 1, #leaving do
+        local name = leaving[i]
+        familyOffSpotlightPreview[name] = nil
+        if familyOffSpotlight[name] ~= true then
+            local rec = getInstances()[name]
+            local steady = (U.Type(rec) == "table" and rec.npcLightMode) or "STANDARD"
+            applyTransientMode(name, effectiveAppliedLightModeKey(name, steady))
+        end
+    end
+end
+
 --- @param npcName string
 --- @param transitionTime number|nil
---- @param opts table|nil `{ force?: boolean }`
+--- @param opts table|nil `{ force?: boolean, skipFamilyReconcile?: boolean }`
 function NPCS.applyCurrentLightMode(npcName, transitionTime, opts)
     opts = type(opts) == "table" and opts or {}
     local rec = NPCS.getInstanceRecord(npcName)
@@ -1993,10 +2261,8 @@ function NPCS.applyCurrentLightMode(npcName, transitionTime, opts)
         return
     end
     local reg = NPCS.lightRegistryName(rec.lightGuid)
-    local modeKey = spotlightHeld[npcName] and "SPOTLIGHT" or (rec.npcLightMode or "STANDARD")
-    if L.LIGHTMODES[reg] == nil then
-        L.registerNpcSpotlightModes(npcName, rec.lightGuid)
-    end
+    local modeKey = effectiveAppliedLightModeKey(npcName, rec.npcLightMode or "STANDARD")
+    ensureNpcSpotlightModesRegistered(npcName, rec.lightGuid)
     if transitionTime == nil then
         transitionTime = 0.35
     end
@@ -2006,17 +2272,28 @@ function NPCS.applyCurrentLightMode(npcName, transitionTime, opts)
     -- State-first mutation; lighting module reconcile owns live-world writes.
     S.setStateVal(modeKey, "lights", reg)
     L.reconcileLightRef(reg, transitionTime, { force = opts.force == true })
+    if opts.skipFamilyReconcile ~= true then
+        NPCS.reconcileFamilyOffSpotlight(transitionTime, {
+            force = opts.force == true,
+        })
+    end
 end
 
 --- Re-apply each spawned NPC's current light mode (used after scene transitions that force OFF).
 --- @param transitionTime number|nil
-function NPCS.reapplyAllCurrentLightModes(transitionTime)
+--- @param opts table|nil `{ force?: boolean }` — when true, bypass lighting reconcile cache (DEBUG mode tunes).
+function NPCS.reapplyAllCurrentLightModes(transitionTime, opts)
+    opts = type(opts) == "table" and opts or {}
     local instances = getInstances()
     for npcName, rec in pairs(instances) do
         if U.Type(npcName) == "string" and U.Type(rec) == "table" and U.Type(rec.lightGuid) == "string" and rec.lightGuid ~= "" then
-            NPCS.applyCurrentLightMode(npcName, transitionTime)
+            NPCS.applyCurrentLightMode(npcName, transitionTime, {
+                force = opts.force == true,
+                skipFamilyReconcile = true,
+            })
         end
     end
+    NPCS.reconcileFamilyOffSpotlight(transitionTime, { force = opts.force == true })
 end
 
 --- @param obj Object
@@ -3041,15 +3318,18 @@ local function reconcileStepFiveStagePlacements(intent, opts)
     end
     if #lerpCandidates > 0 then
         NPCStageLerp.runQueued(lerpCandidates)
-    elseif stageTargetCount > 0 then
-        local parts = {}
-        for reason, count in pairs(skipCounts) do
-            parts[#parts + 1] = tostring(reason) .. "=" .. tostring(count)
+    else
+        if stageTargetCount > 0 then
+            local parts = {}
+            for reason, count in pairs(skipCounts) do
+                parts[#parts + 1] = tostring(reason) .. "=" .. tostring(count)
+            end
+            table.sort(parts)
+            print("[NPCStageLerp] no animations for " .. tostring(stageTargetCount)
+                .. " stage target(s); snaps used. skips: "
+                .. (#parts > 0 and table.concat(parts, ", ") or "none"))
         end
-        table.sort(parts)
-        print("[NPCStageLerp] no animations for " .. tostring(stageTargetCount)
-            .. " stage target(s); snaps used. skips: "
-            .. (#parts > 0 and table.concat(parts, ", ") or "none"))
+        NPCS.reconcileFamilyOffSpotlight(0.35, { force = true })
     end
     return allOk
 end
@@ -3304,6 +3584,12 @@ end
 --- @return boolean
 function NPCS.isSpotlightHeld(npcName)
     return spotlightHeld[npcName] == true
+end
+
+--- @param npcName string
+--- @return boolean
+function NPCS.isFamilyOffSpotlight(npcName)
+    return familyOffSpotlight[npcName] == true or familyOffSpotlightPreview[npcName] == true
 end
 
 --- Temporary figurine override for `buildResolvedLightModeTable` during stage lerp bake.
@@ -3653,6 +3939,9 @@ function NPCS.removeNpc(npcName, opts)
     lights[NPCS.lightRegistryName(rec.lightGuid)] = nil
     S.setStateVal(lights, "lights")
     spotlightHeld[npcName] = nil
+    spotlightPreviewHeld[npcName] = nil
+    familyOffSpotlight[npcName] = nil
+    familyOffSpotlightPreview[npcName] = nil
     setInstanceRecord(npcName, nil)
     local seatKey = findSeatByNpcKey(npcName)
     if seatKey ~= nil then

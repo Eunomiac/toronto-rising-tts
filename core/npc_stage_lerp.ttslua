@@ -100,7 +100,7 @@ local function litCategory(mode)
     if mode == "OFF" then
         return "OFF"
     end
-    if mode == "STANDARD" or mode == "SPOTLIGHT" then
+    if mode == "STANDARD" or mode == "SPOTLIGHT" or mode == "OFFSPOTLIGHT" then
         return "LIT"
     end
     return "OFF"
@@ -554,6 +554,7 @@ function NPCStageLerp.evaluateCandidate(npcName, rec, placement, opts)
     local endMode = effectiveLitMode(npcName, normalizedStageLightMode(placement))
     local involvesStandard = startMode == "STANDARD" or endMode == "STANDARD"
         or startMode == "SPOTLIGHT" or endMode == "SPOTLIGHT"
+        or startMode == "OFFSPOTLIGHT" or endMode == "OFFSPOTLIGHT"
     if not involvesStandard then
         return nil, "mode_not_standard_or_spotlight"
     end
@@ -608,6 +609,10 @@ function NPCStageLerp.runQueued(candidates)
             NPCStageLerp.commitTargetState(candidates[i].npcName, candidates[i].placement)
         end
         snapAllCandidates(candidates)
+        local NPCS = npcsModule()
+        if type(NPCS.reconcileFamilyOffSpotlight) == "function" then
+            NPCS.reconcileFamilyOffSpotlight(0, { force = true })
+        end
         return
     end
     local NPCS = npcsModule()
@@ -628,6 +633,23 @@ function NPCStageLerp.runQueued(candidates)
         inFlightNpcs[candidates[i].npcName] = true
     end
     local cfg = DATA.STAGE_PLACEMENT_LERP or {}
+    local dimDur = tonumber(cfg.modeOnlyDurationSec) or 0.8
+    local anyPositionSpotlight = false
+    for i = 1, #candidates do
+        local c = candidates[i]
+        local startMode = effectiveLitMode(c.npcName, c.startNpcLightMode)
+        local endMode = effectiveLitMode(c.npcName, normalizedStageLightMode(c.placement))
+        if (startMode == "SPOTLIGHT" or endMode == "SPOTLIGHT") and c.modeOnly ~= true then
+            anyPositionSpotlight = true
+            break
+        end
+    end
+    if anyPositionSpotlight then
+        dimDur = tonumber(cfg.positionDurationSec) or 1.2
+    end
+    if type(NPCS.reconcileFamilyOffSpotlight) == "function" then
+        NPCS.reconcileFamilyOffSpotlight(dimDur, { force = true, skipInFlight = true })
+    end
     local dur = tonumber(cfg.positionDurationSec) or 1.2
     print("[NPCStageLerp] animating " .. tostring(#candidates)
         .. " stage move(s); positionDurationSec≈" .. tostring(dur)
@@ -683,6 +705,12 @@ end
 
 function NPCStageLerp.isOrchestratorRunning()
     return orchestratorRunning
+end
+
+--- @param npcName string
+--- @return boolean
+function NPCStageLerp.isNpcInFlight(npcName)
+    return type(npcName) == "string" and inFlightNpcs[npcName] == true
 end
 
 function NPCStageLerp.cancelEpoch()

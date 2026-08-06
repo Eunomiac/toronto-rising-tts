@@ -41,7 +41,7 @@ Flexible tree for Storyteller-readable output only.
 
 ### `npcData.lighting`
 
-Optional overrides per mode key (`off`, `standard`, `spotlight`). **Merge rule:** for each mode, start from `NPCS.lights[mode]` and **deep-merge** `npcData.lighting[mode]` on top when present. When the instance’s `areaKey` is **`__stage_board__`** (gameboard STAGE_BOARD placements, not legacy table-side areas), **deep-merge** `NPCS.stageLights[mode]` after that. Unlisted modes use globals only.
+Optional overrides per mode key (`OFF`, `STANDARD`, `SPOTLIGHT`, `OFFSPOTLIGHT` — uppercase keys in `lib/npcs_data.ttslua`). **Merge rule:** for each mode, start from `NPCS.lights[mode]` and **deep-merge** `npcData.lighting[mode]` on top when present. When the instance’s `areaKey` is **`__stage_board__`** (gameboard STAGE_BOARD placements, not legacy table-side areas), **deep-merge** `NPCS.stageLights[mode]` after that. Then **deep-merge** optional live DEBUG overrides from `gameState.debug.npcLightModes[mode]` last (TOR-471). Unlisted modes use globals only. **`OFFSPOTLIGHT`** is a runtime companion mode (TOR-473): same-snap-family neighbors dim while another figurine is `SPOTLIGHT`; it is **not** written by token flip / placement scan.
 
 * **Figurine cutout scale (ImageScalar):** `figurine.scale` is baked into save `ImageScalar` at inject time. **Transform** scale is preload `0.12` vs active `1` via `setScale`. **ImageScalar** at seats is **53**; off-seat (stage, preload, areas) restores registry `figurine.scale`. Runtime applies ImageScalar only when it differs — `setCustomObject` + `reload()` on seat ↔ off-seat transitions (TOR-223); skipped when already at target (e.g. seated at 53 when data scale is 53).
 
@@ -49,13 +49,30 @@ Optional overrides per mode key (`off`, `standard`, `spotlight`). **Merge rule:*
 
 ## NPC Data Structure: `NPCS.lights`
 
-Default mode definitions: `off`, `standard`, `spotlight`.
+Default mode definitions: `OFF`, `STANDARD`, `SPOTLIGHT`, `OFFSPOTLIGHT` (see `lib/npcs_data.ttslua` `D.lights`).
 
 Shared fields (same meaning as [`core/lighting.ttslua`](../../core/lighting.ttslua)):
 
 * `enabled`, `color`, `range`, `angle`, `intensity`
 
+### Family OFFSPOTLIGHT (TOR-473)
+
+When a stage figurine is effectively **SPOTLIGHT** (placement / hold / Apply), other figurines in the **same snap `familyId`** whose steady mode is **not OFF** apply **OFFSPOTLIGHT** (slightly dimmer STANDARD) for the same transition duration. When SPOTLIGHT lifts, those companions return to their steady mode (normally STANDARD). Hold-preview (TOR-238) uses the same companion dim via transient apply (`NPCS.syncFamilyOffSpotlightPreview`) without persisting OFFSPOTLIGHT into placements.
+
 NPC-specific placement is resolved at runtime in `NPCS.buildResolvedLightModeTable` from a per-mode **`positioning`** block. The block's presence means "this mode moves/aims the light"; absence (e.g. `OFF`) leaves the light's position and rotation untouched.
+
+### Live DEBUG overrides (TOR-471)
+
+Tune shared mode templates from the TTS console without editing `npcs_data` mid-session. Overrides live in **`gameState.debug.npcLightModes`** (persist across Save & Play) and win last in `NPCS.getMergedModeDefinition`.
+
+| Console | Behavior |
+| --- | --- |
+| `lua DEBUG.npcLightModeShow()` / `lua npcLightModeShow("SPOTLIGHT")` | Print baked defaults, state override, and effective global merge |
+| `lua DEBUG.npcLightModeSet("SPOTLIGHT", { intensity = 8, angle = 45, color = { r = 1, g = 0.95, b = 0.85 }, positioning = { deltaUp = 7, deltaInward = 2 } })` | Deep-merge patch into state; force-reapply all current NPC lights |
+| `lua DEBUG.npcLightModeReset("SPOTLIGHT")` / `lua DEBUG.npcLightModeReset()` | Clear one mode or all overrides; reapply |
+| `lua DEBUG.npcLightModeExport()` | Print a copy-pasteable `D.lights = { ... }` fragment for baking into `lib/npcs_data.ttslua` |
+
+`color` in patches must be save-safe `{ r, g, b }` (or a TTS `Color`, which is normalized on write). This is separate from the Storyteller **Debug Light** HUD panel (per-GUID component sliders).
 
 **Position** is defined by one of two field pairs:
 

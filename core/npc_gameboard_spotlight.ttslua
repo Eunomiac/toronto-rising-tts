@@ -72,16 +72,12 @@ local function clearControlBoardSpotlightPreview()
     local NPCS = require("core.npcs")
     local prev = controlBoardSpotlightNpcName
     controlBoardSpotlightNpcName = nil
-    if type(prev) == "string" and prev ~= "" then
-        local rec = NPCS.getInstanceRecord(prev)
-        if type(rec) == "table" and type(rec.lightGuid) == "string" and rec.lightGuid ~= "" then
-            local steady = rec.npcLightMode or "STANDARD"
-            local modeTable = NPCS.buildResolvedLightModeTable(prev, steady)
-            if type(modeTable) == "table" then
-                local reg = NPCS.lightRegistryName(rec.lightGuid)
-                L.applyTransientLightMode(reg, modeTable, { transitionTime = 0.12 })
-            end
-        end
+    if type(NPCS.syncFamilyOffSpotlightPreview) == "function" then
+        NPCS.syncFamilyOffSpotlightPreview(nil, 0.12)
+    end
+    if type(prev) == "string" and prev ~= "" and type(NPCS.applyCurrentLightMode) == "function" then
+        -- Restore steady / family OFFSPOTLIGHT via state path (preview was transient only).
+        NPCS.applyCurrentLightMode(prev, 0.12, { force = true })
     end
     L.applyTransientLightMode(STORYTELLER_SPOTLIGHT_REF, "OFF", { transitionTime = 0.1 })
 end
@@ -137,13 +133,11 @@ local function applyControlBoardSpotlightPreviewForToken(token)
     if type(controlBoardSpotlightNpcName) == "string" and controlBoardSpotlightNpcName ~= "" then
         local prev = controlBoardSpotlightNpcName
         controlBoardSpotlightNpcName = nil
-        local prevRec = NPCS.getInstanceRecord(prev)
-        if type(prevRec) == "table" and type(prevRec.lightGuid) == "string" and prevRec.lightGuid ~= "" then
-            local steady = prevRec.npcLightMode or "STANDARD"
-            local prevMode = NPCS.buildResolvedLightModeTable(prev, steady)
-            if type(prevMode) == "table" then
-                L.applyTransientLightMode(NPCS.lightRegistryName(prevRec.lightGuid), prevMode, { transitionTime = 0.1 })
-            end
+        if type(NPCS.syncFamilyOffSpotlightPreview) == "function" then
+            NPCS.syncFamilyOffSpotlightPreview(nil, 0.1)
+        end
+        if type(NPCS.applyCurrentLightMode) == "function" then
+            NPCS.applyCurrentLightMode(prev, 0.1, { force = true })
         end
     end
 
@@ -157,6 +151,9 @@ local function applyControlBoardSpotlightPreviewForToken(token)
         return false
     end
     L.applyTransientLightMode(NPCS.lightRegistryName(rec.lightGuid), spotMode, { transitionTime = 0.12 })
+    if type(NPCS.syncFamilyOffSpotlightPreview) == "function" then
+        NPCS.syncFamilyOffSpotlightPreview(characterKey, 0.12)
+    end
 
     local tokenPos = token.getPosition and token.getPosition() or nil
     if tokenPos ~= nil then

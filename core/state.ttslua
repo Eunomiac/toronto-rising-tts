@@ -428,6 +428,12 @@ function S.GetDefaultGameState()
             liveSlotIndex = nil,
             pcDash = {},
         },
+        --- Runtime debug bag (persists across Save & Play). Used by console DEBUG helpers.
+        --- `npcLightModes`: optional per-mode patches (`OFF` / `STANDARD` / `SPOTLIGHT` / `OFFSPOTLIGHT`)
+        --- deep-merged last in `NPCS.getMergedModeDefinition` (TOR-471 / TOR-473).
+        debug = {
+            npcLightModes = {},
+        },
     }
 end
 
@@ -735,6 +741,12 @@ function S.validateState()
     if not gameState.scene then gameState.scene = {} end
     if type(gameState.lastActiveMapPin) ~= "table" then gameState.lastActiveMapPin = {} end
     if type(gameState.projects) ~= "table" then gameState.projects = {} end
+    if type(gameState.debug) ~= "table" then
+        gameState.debug = {}
+    end
+    if type(gameState.debug.npcLightModes) ~= "table" then
+        gameState.debug.npcLightModes = {}
+    end
     if not gameState.soundscape or type(gameState.soundscape) ~= "table" then
         gameState.soundscape = {}
     end
