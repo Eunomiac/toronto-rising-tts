@@ -75,8 +75,9 @@
     rectAlignment="MiddleCenter"
   />
 
-  <!-- Shared map sidebar hover/active columns (Option B): gated by visibility, must stay opaque.
-       Do not use hover_button_hover/active here — those Defaults use color="clear" for tint-hide (pan/recenter). -->
+  <!-- Shared map sidebar hover/active columns (Option B): on-state must be opaque;
+       idle hide is tint-clear from Lua (visibility="None" alone is team None — TOR-462).
+       Do not use Defaults hover_button_hover/active (always clear) for the on-state. -->
   <Image class="hover_button_map_shared_layer"
     raycastTarget="false"
     color="#FFFFFF"

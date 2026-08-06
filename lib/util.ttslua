@@ -2006,10 +2006,11 @@ function U.setVisibleTo(elemID, colorsOrString)
   end
   local serialized = U.serializeVisibilityAudience(tokens)
   local current = UI.getAttribute(elemID, "visibility")
-  -- Missing visibility = TTS unrestricted (remount unread). That is NOT the same as explicit
-  -- `None` — empty-audience writes must still apply so gated chrome (map `_active` / `_hover`)
-  -- does not stay visible to everyone (TOR-462). `showTo` / `hideFrom` already heal nil.
-  if current == nil then
+  -- Missing or blank visibility = TTS unrestricted (visible to all). That is NOT the same as
+  -- an explicit audience string — always write. Note: serializing an empty audience as `None`
+  -- targets the TTS **None team**, not “hidden from everyone”; callers that need a true idle
+  -- hide (shared map chrome) must also tint-clear (TOR-462).
+  if current == nil or (type(current) == "string" and current:match("^%s*$") ~= nil) then
     U.setAttribute(elemID, "visibility", serialized)
     return true
   end
@@ -2037,7 +2038,9 @@ function U.showTo(elemID, color)
     error("U.showTo: color must be a non-empty visibility token", 2)
   end
   local raw = UI.getAttribute(elemID, "visibility")
-  local tokens = (raw == nil) and {} or U.parseVisibilityAudience(raw)
+  local tokens = (raw == nil or (type(raw) == "string" and raw:match("^%s*$") ~= nil))
+      and {}
+      or U.parseVisibilityAudience(raw)
   for i = 1, #tokens do
     if tokens[i] == tok then
       return false
@@ -2061,8 +2064,8 @@ function U.hideFrom(elemID, color)
     error("U.hideFrom: color must be a non-empty visibility token", 2)
   end
   local raw = UI.getAttribute(elemID, "visibility")
-  if raw == nil then
-    -- Explicit None: convert unrestricted/missing into a gated audience baseline.
+  if raw == nil or (type(raw) == "string" and raw:match("^%s*$") ~= nil) then
+    -- Convert unrestricted/missing/blank into a gated audience baseline.
     return U.setVisibleTo(elemID, {})
   end
   local tokens = U.parseVisibilityAudience(raw)

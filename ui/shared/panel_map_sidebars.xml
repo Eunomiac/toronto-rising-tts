@@ -1,6 +1,7 @@
 <!-- Shared map overlay + district toggle sidebars (TOR-444 Option B).
      Root visibility = seats with map open; hover/active layers use per-player visibility unions.
-     Hover/active Images use hover_button_map_shared_layer (opaque) — not hover_button_hover/active (tint-hide clear).
+     Hover/active Images use hover_button_map_shared_layer; Lua applies tint-clear when the
+     audience is empty (TTS visibility="None" is the None team, not a universal hide — TOR-462).
      Per-seat map HorizontalLayout keeps width spacers so the pan surface stays aligned. -->
 <Panel id="playerHud_mapSidebarsShared" class="playerHud_coreLayer" visibility="None" active="false" raycastTarget="false">
   <HorizontalLayout class="hud_map_parent_container" raycastTarget="false">

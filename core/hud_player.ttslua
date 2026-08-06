@@ -958,12 +958,30 @@ local function setTintVisibility(elementID, isVisible)
     U.setAttribute(elementID, "color", isVisible and "#FFFFFF" or "clear")
 end
 
+--- Shared Option B map sidebar `_hover` / `_active` chrome for one Image id.
+-- Non-empty audience: opaque tint + `visibility` whitelist (per-seat concurrent viewers).
+-- Empty audience: tint-clear so the layer is invisible to everyone.
+-- Do not rely on empty → `visibility="None"` alone: TTS documents `None` as the **None team**
+-- (default for unteamed players), not “hidden from all”, so idle active/hover layers would
+-- stay visible on top of the inactive base (TOR-462).
+-- @param elementID string
+-- @param tokens string[] seat colors from `audienceSetToTokens`
+local function applySharedMapChromeAudience(elementID, tokens)
+    if type(elementID) ~= "string" then
+        return
+    end
+    local nonEmpty = type(tokens) == "table" and #tokens > 0
+    setTintVisibility(elementID, nonEmpty)
+    U.setVisibleTo(elementID, tokens)
+end
+
 --- Stacked map overlay Images and district card Images (many layers in one region).
 -- Off = `active="false"` so TTS skips the subtree (critical for perf; tint-only “off” kept every
 -- layer active and composited transparent art → massive overdraw / input lag).
 -- On = `active="true"` + `color="#FFFFFF"` (XML defaults use `color="clear"` when applicable).
 -- Per-seat pan/recenter chrome stays on `setTintVisibility` (`color` only).
--- Shared map overlay/district toggle chrome (Option B) uses `U.setVisibleTo` + opaque `hover_button_map_shared_layer` (not tint-hide).
+-- Shared map overlay/district toggle chrome (Option B): `applySharedMapChromeAudience`
+-- (visibility union + tint-clear when empty).
 -- @param elementID string
 -- @param isVisible boolean
 local function setMapStackImageVisibility(elementID, isVisible)
@@ -1338,8 +1356,14 @@ local function applyMapPanelHud(playerID, seatColor, hud)
         else
             activeAud[seatColor] = nil
         end
-        U.setVisibleTo("playerHud_mapOverlayToggle_" .. overlayKey .. "_hover", audienceSetToTokens(hoverAud))
-        U.setVisibleTo("playerHud_mapOverlayToggle_" .. overlayKey .. "_active", audienceSetToTokens(activeAud))
+        applySharedMapChromeAudience(
+            "playerHud_mapOverlayToggle_" .. overlayKey .. "_hover",
+            audienceSetToTokens(hoverAud)
+        )
+        applySharedMapChromeAudience(
+            "playerHud_mapOverlayToggle_" .. overlayKey .. "_active",
+            audienceSetToTokens(activeAud)
+        )
     end
 
     -- TOR-444 Strategy 1: one district card + one highlight Image per seat (image= swap).
@@ -1383,8 +1407,14 @@ local function applyMapPanelHud(playerID, seatColor, hud)
         else
             activeAud[seatColor] = nil
         end
-        U.setVisibleTo("playerHud_mapDistrictToggle_" .. districtKey .. "_hover", audienceSetToTokens(hoverAud))
-        U.setVisibleTo("playerHud_mapDistrictToggle_" .. districtKey .. "_active", audienceSetToTokens(activeAud))
+        applySharedMapChromeAudience(
+            "playerHud_mapDistrictToggle_" .. districtKey .. "_hover",
+            audienceSetToTokens(hoverAud)
+        )
+        applySharedMapChromeAudience(
+            "playerHud_mapDistrictToggle_" .. districtKey .. "_active",
+            audienceSetToTokens(activeAud)
+        )
     end
 
     if showMap == true then
