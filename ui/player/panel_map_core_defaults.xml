@@ -75,9 +75,32 @@
     rectAlignment="MiddleCenter"
   />
 
-  <!-- Shared map sidebar hover/active columns (Option B): stay opaque; idle hide is
-       visibility=Blue (U.VISIBILITY_EMPTY_SENTINEL). Do not use Defaults
-       hover_button_hover/active (always clear) for the on-state (TOR-457 / TOR-462). -->
+  <!-- Shared map sidebar toggle chrome (Option B / TOR-462):
+       Fixed-height slot Panels hold layout; base Image always present; hover/active
+       overlay inside the slot and use visibility=Blue (empty sentinel) when idle.
+       Do not use Defaults hover_button_hover/active (always clear) for the on-state. -->
+  <Panel class="map_sidebar_toggle_slot"
+    flexibleHeight="0"
+    flexibleWidth="0"
+    raycastTarget="false"
+  />
+  <Panel class="map_sidebar_toggle_slot_overlay"
+    preferredHeight="25"
+    minHeight="25"
+    preferredWidth="150"
+    minWidth="150"
+  />
+  <Panel class="map_sidebar_toggle_slot_district"
+    preferredHeight="20"
+    minHeight="20"
+    preferredWidth="175"
+    minWidth="175"
+  />
+  <Image class="map_sidebar_toggle_layer"
+    width="100%"
+    height="100%"
+    rectAlignment="MiddleCenter"
+  />
   <Image class="hover_button_map_shared_layer"
     raycastTarget="false"
     color="#FFFFFF"
