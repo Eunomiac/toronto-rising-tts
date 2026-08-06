@@ -1,8 +1,12 @@
 --[[
-    Animated narrative clock lerp (TOR-222).
+    Animated narrative clock lerp (TOR-222 / TOR-470).
 
-    During motion: overlay / panel display only. Side effects (present day, weather, Sync)
-    run on settle. Pause real-time ticker while active.
+    During motion: overlay date/time text only (cheap display scrub). Side effects
+    (present day, weather, Sync, Scenes panel fields) run on settle. Pause real-time
+    ticker while active.
+
+    Tick interval: `C.CLOCK_LERP.tickSeconds`, overridable at runtime via
+    `NarrativeClockLerp.setTickSeconds` / `DEBUG.setClockLerpTickSeconds` (TOR-470).
 
     Zero-delta targets (start == end): `startToTarget` returns false with an error string and
     does **not** call settle / Sync.full (TOR-418). Callers must AlertGM; do not treat this as
@@ -27,17 +31,20 @@ local active = false
 local tickHandle = nil
 local gen = 0
 
---- Panel UI hooks (registered by `core.storyteller_scenes_panel` to avoid a circular require).
---- @type function|nil
-local panelPushDisplayOnly = nil
+--- Runtime override for tick interval (DEBUG). `nil` → use `C.CLOCK_LERP.tickSeconds`.
+--- `"frame"` or `0` → one TTS frame between ticks.
+--- @type number|string|nil
+local tickSecondsOverride = nil
+
+--- Panel settle hook (registered by `core.storyteller_scenes_panel` to avoid a circular require).
+--- Mid-lerp does **not** touch the Scenes panel (closed during animation); panel refresh is settle-only.
 --- @type function|nil
 local panelOnSettled = nil
 
---- Wire Scenes panel display/settle callbacks. Call once after panel module load.
---- @param hooks table|nil `{ pushDisplayOnly?: fun(dt), onSettled?: fun(clock) }`
+--- Wire Scenes panel settle callback. Call once after panel module load.
+--- @param hooks table|nil `{ onSettled?: fun(clock) }` (`pushDisplayOnly` ignored — overlay-only mid-lerp)
 function NarrativeClockLerp.setPanelHooks(hooks)
     hooks = type(hooks) == "table" and hooks or {}
-    panelPushDisplayOnly = type(hooks.pushDisplayOnly) == "function" and hooks.pushDisplayOnly or nil
     panelOnSettled = type(hooks.onSettled) == "function" and hooks.onSettled or nil
 end
 
@@ -46,6 +53,46 @@ function NarrativeClockLerp.isActive()
     return active == true
 end
 
+--- Effective tick interval for the next/ongoing lerp schedule.
+--- @return number|string seconds, or `"frame"` for every-frame
+function NarrativeClockLerp.getTickSeconds()
+    if tickSecondsOverride == "frame" or tickSecondsOverride == 0 then
+        return "frame"
+    end
+    if type(tickSecondsOverride) == "number" and tickSecondsOverride > 0 then
+        return tickSecondsOverride
+    end
+    local cfg = tonumber((C.CLOCK_LERP or {}).tickSeconds)
+    if cfg ~= nil and cfg > 0 then
+        return cfg
+    end
+    return 0.05
+end
+
+--- Override lerp tick rate for in-game tuning (persists until reset; does not rewrite constants).
+--- @param seconds number|string|nil Positive seconds; `0` / `"frame"` = every frame; `nil` = restore `C.CLOCK_LERP.tickSeconds`
+--- @return boolean ok
+--- @return number|string|nil effective tick, or error string when ok is false
+function NarrativeClockLerp.setTickSeconds(seconds)
+    if seconds == nil then
+        tickSecondsOverride = nil
+        return true, NarrativeClockLerp.getTickSeconds()
+    end
+    if seconds == "frame" or seconds == 0 or seconds == "0" then
+        tickSecondsOverride = "frame"
+        return true, NarrativeClockLerp.getTickSeconds()
+    end
+    local n = tonumber(seconds)
+    if n == nil or n < 0 then
+        return false, "expected positive seconds, 0/\"frame\", or nil"
+    end
+    if n == 0 then
+        tickSecondsOverride = "frame"
+    else
+        tickSecondsOverride = n
+    end
+    return true, NarrativeClockLerp.getTickSeconds()
+end
 --- @param t number 0–1
 --- @return number
 local function easeInOutCubic(t)
@@ -225,13 +272,28 @@ function NarrativeClockLerp.resolveYearTarget(startDt, year)
     return applyDuskPlusOneHour(target)
 end
 
+--- Mid-lerp visual only: overlay date + time text (no Scenes panel, no weather, no state).
 --- @param dt table
-local function pushDisplayOnly(dt)
-    if GameStateOverlay and type(GameStateOverlay.pushNarrativeClockDisplay) == "function" then
-        GameStateOverlay.pushNarrativeClockDisplay(dt.year, dt.month, dt.day, dt.hour, dt.minute)
+--- @param ensureVisible boolean|nil when true, also force overlay active (lerp start)
+local function pushOverlayDisplayOnly(dt, ensureVisible)
+    if GameStateOverlay == nil then
+        return
     end
-    if type(panelPushDisplayOnly) == "function" then
-        panelPushDisplayOnly(dt)
+    local y = dt.year
+    local mo = dt.month
+    local d = dt.day
+    local h = dt.hour
+    local mi = dt.minute
+    if ensureVisible == true and type(GameStateOverlay.pushNarrativeClockDisplay) == "function" then
+        GameStateOverlay.pushNarrativeClockDisplay(y, mo, d, h, mi)
+        return
+    end
+    if type(GameStateOverlay.pushNarrativeClockTextOnly) == "function" then
+        GameStateOverlay.pushNarrativeClockTextOnly(y, mo, d, h, mi)
+        return
+    end
+    if type(GameStateOverlay.pushNarrativeClockDisplay) == "function" then
+        GameStateOverlay.pushNarrativeClockDisplay(y, mo, d, h, mi)
     end
 end
 
@@ -240,6 +302,18 @@ local function clearTick()
         U.cancel(tickHandle)
         tickHandle = nil
     end
+end
+
+--- Schedule the next lerp step (seconds via `U.await`, or one frame).
+--- @param stepFn function
+local function scheduleTick(stepFn)
+    local tick = NarrativeClockLerp.getTickSeconds()
+    if tick == "frame" then
+        -- Frame waits are not part of the U.await timing contract; cancel via Wait.stop like numeric awaits.
+        tickHandle = Wait.frames(stepFn, 1)
+        return
+    end
+    tickHandle = U.await(stepFn, tick)
 end
 
 --- @param finalDt table
@@ -331,7 +405,6 @@ function NarrativeClockLerp.startToTarget(targetDt)
     gen = gen + 1
     local myGen = gen
     local duration = durationForDeltaMinutes(endAbs - startAbs)
-    local tickSec = tonumber((C.CLOCK_LERP or {}).tickSeconds) or 0.05
     local t0 = os.clock()
 
     clearTick()
@@ -343,19 +416,19 @@ function NarrativeClockLerp.startToTarget(targetDt)
         local elapsed = os.clock() - t0
         local t = elapsed / duration
         if t >= 1 then
-            pushDisplayOnly(target)
+            pushOverlayDisplayOnly(target, false)
             settle(target, startDt)
             return
         end
         local eased = easeClockLerp(t)
         local abs = startAbs + (endAbs - startAbs) * eased
         local mid = NarrativeCalendar.fromAbsoluteMinutes(abs)
-        pushDisplayOnly(mid)
-        tickHandle = U.await(step, tickSec)
+        pushOverlayDisplayOnly(mid, false)
+        scheduleTick(step)
     end
 
-    pushDisplayOnly(startDt)
-    tickHandle = U.await(step, tickSec)
+    pushOverlayDisplayOnly(startDt, true)
+    scheduleTick(step)
     return true, nil
 end
 

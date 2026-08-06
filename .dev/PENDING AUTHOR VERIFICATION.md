@@ -63,6 +63,12 @@ _Last populated: 2026-08-04 — Linear Done scan plus RUNNING TASKLIST “Pendin
 
 **How to verify:** Exercise the full Scene Time grids (minutes, hours, days, weeks, months, dusk/dawn, year Go). Confirm the clock eases forward or backward and settles into the expected narrative time. Parsing and toolbar-close fixes for that flow are covered by **TOR-403** and **TOR-405**.
 
+#### TOR-470 — Clock lerp overlay-only ticks + DEBUG tick rate
+
+**How to verify:** Save & Play. With a live scene on the table, run a Scene Time lerp (for example +1 hour). While it animates, only the center overlay date and time should scrub — you should not see heavy UI churn on the closed Scenes panel. When the lerp finishes, weather and the Scene Time fields should match the settled clock if you reopen Scenes. Then in the console try `lua DEBUG.setClockLerpTickSeconds(0.05)`, run another lerp and compare smoothness; try `lua DEBUG.setClockLerpTickSeconds(0)` or `"frame"` for every-frame; reset with `lua DEBUG.setClockLerpTickSeconds(nil)`.
+
+**Context:** Mid-lerp used to rewrite closed panel month buttons and inputs every tick at 0.25s. Now ticks are overlay text only; panel/weather/Sync stay on settle. Default tick is still `C.CLOCK_LERP.tickSeconds` (0.25) until you pick a keeper via DEBUG.
+
 ---
 
 ### Debug chrome (INBOX re-open under test)

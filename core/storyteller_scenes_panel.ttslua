@@ -730,26 +730,6 @@ local function refreshLerpControlColors()
     end
 end
 
---- Display-only clock fields during lerp (does not write state).
---- @param dt table
-function StorytellerScenesPanel.pushClockDisplayOnly(dt)
-    if type(dt) ~= "table" or UI == nil then
-        return
-    end
-    local mo = math.floor(tonumber(dt.month) or 1)
-    for m = 1, 12 do
-        U.setAttributes("scenes_month_" .. tostring(m), {
-            colors = (m == mo) and GREEN or GREY,
-            fontStyle = "Bold",
-            textColor = "#FFFFFF",
-        })
-    end
-    setInputFieldText("scenes_clock_day", tostring(math.floor(tonumber(dt.day) or 1)))
-    setInputFieldText("scenes_clock_year", tostring(math.floor(tonumber(dt.year) or 2026)))
-    setInputFieldText("scenes_clock_time12", formatTime12h(dt.hour, dt.minute))
-    refreshLerpSunLabels(mo, tonumber(dt.day))
-end
-
 --- Validate live clock, then close the panel only when a real lerp can start (TOR-418 / TOR-405).
 --- @param buildTarget fun(startDt: table): table|nil
 local function tryStartClockLerp(buildTarget)
@@ -2779,8 +2759,8 @@ function StorytellerScenesPanel.canToggleNpcSeat(seatKey)
 end
 
 -- Break circular require: lerp must not `require` this panel module.
+-- Mid-lerp is overlay-only (TOR-470); panel clock fields refresh via onSettled.
 NarrativeClockLerp.setPanelHooks({
-    pushDisplayOnly = StorytellerScenesPanel.pushClockDisplayOnly,
     onSettled = StorytellerScenesPanel.onClockLerpSettled,
 })
 

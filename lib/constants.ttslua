@@ -5841,6 +5841,8 @@ C.WEATHER_AUDIO_OVERRIDES = {
   Duration for animated Scene Time jumps: clamp |Δminutes| to [minDeltaMinutes, maxDeltaMinutes],
   normalize to t in [0,1], duration = minDuration + t * (maxDuration - minDuration).
   ease: "cubic" | "quint" (default) | "expo" — ease-in-out; higher power = slower ends / faster middle.
+  tickSeconds: wall seconds between overlay text updates (override via DEBUG.setClockLerpTickSeconds).
+  Mid-lerp updates overlay only; Scenes panel + weather apply on settle (TOR-470).
 ]]
 C.CLOCK_LERP = {
   minDuration = 5,

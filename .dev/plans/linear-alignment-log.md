@@ -638,5 +638,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-08-05 | DOC | PENDING AUTHOR VERIFICATION | Split checklist vs agent policy (`.md` Outstanding list; `.agent.md` instructions) |
 | 2026-08-04 | FIX | TOR-449 verify + Suite C | End clears `activeKey` (deselect); stale TOR-365 “keep selected” wording corrected in PAVE / E2E / Scene Constructor |
 | 2026-08-06 | CREATE+SHIP | TOR-469 | Scene transition lead-in +0.5s (5.0s); TOR-368 camera snap moved into `runStagedTransition` heavy work; PAVE pending Save & Play (`04ea3d2`) |
+| 2026-08-06 | CREATE+SHIP | TOR-470 | Clock lerp: overlay-only mid ticks; DEBUG.setClockLerpTickSeconds; panel/weather on settle; PAVE pending |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

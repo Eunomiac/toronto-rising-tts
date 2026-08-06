@@ -560,6 +560,7 @@ local function reconcileOverlayAfterClockTick(prevY, prevMo, prevD, prevH, y, mo
 end
 
 --- Display-only overlay clock update during TOR-222 lerp (no weather / no state write).
+--- Ensures the time/location overlay is active, then writes date + time text.
 --- @param year number
 --- @param month number
 --- @param day number
@@ -573,6 +574,22 @@ function GameStateOverlay.pushNarrativeClockDisplay(year, month, day, hour24, mi
         return
     end
     pushOverlayActive(OVERLAY_TIME_LOCATION_ID, true)
+    GameStateOverlay.pushNarrativeClockTextOnly(year, month, day, hour24, minute)
+end
+
+--- Mid-lerp text scrub only (TOR-470): dirty-checked `UI.setValue` for date + time; no active flag.
+--- @param year number
+--- @param month number
+--- @param day number
+--- @param hour24 number
+--- @param minute number
+function GameStateOverlay.pushNarrativeClockTextOnly(year, month, day, hour24, minute)
+    if UI == nil or UI.setValue == nil then
+        return
+    end
+    if not shouldShowNarrativeClockOnOverlay() then
+        return
+    end
     local y = math.floor(tonumber(year) or 2026)
     local mo = math.floor(tonumber(month) or 1)
     local d = math.floor(tonumber(day) or 1)

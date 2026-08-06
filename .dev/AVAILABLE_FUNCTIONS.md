@@ -416,16 +416,20 @@ Rough geometric sunrise/sunset for Toronto (~43.65°N, 79.38°W). Fixed Eastern 
 ### Narrative clock lerp (`core/narrative_clock_lerp.ttslua`)
 
 **Require:** `local NarrativeClockLerp = require("core.narrative_clock_lerp")`
-Animated Scene Time jumps (TOR-222). Display-only during motion; present day / weather / `Sync.full` on settle. Duration + `ease` (`cubic`/`quint`/`expo`) from `C.CLOCK_LERP`. Live scene required (`SceneLibrary.hasLiveSceneOnTable`).
+Animated Scene Time jumps (TOR-222 / TOR-470). Mid-lerp: overlay date/time text only. Present day / weather / `Sync.full` / Scenes panel clock fields on settle. Duration + `ease` (`cubic`/`quint`/`expo`) from `C.CLOCK_LERP`. Tick interval from `C.CLOCK_LERP.tickSeconds` or runtime override. Live scene required (`SceneLibrary.hasLiveSceneOnTable`).
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
 | `NarrativeClockLerp.isActive()` | Mid-lerp lock | Ignore month/Apply/Set/RT while true |
-| `NarrativeClockLerp.setPanelHooks(hooks)` | Register panel `pushDisplayOnly` / `onSettled` (avoids circular require) | Called by `storyteller_scenes_panel` at load |
+| `NarrativeClockLerp.setPanelHooks(hooks)` | Register panel `onSettled` (avoids circular require; mid-lerp is overlay-only) | Called by `storyteller_scenes_panel` at load |
+| `NarrativeClockLerp.getTickSeconds()` | Effective tick (`"frame"` or seconds) | DEBUG / inspect |
+| `NarrativeClockLerp.setTickSeconds(s)` | Runtime override; `nil` restores constant; `0`/`"frame"` = every frame | `DEBUG.setClockLerpTickSeconds(0.05)` |
 | `NarrativeClockLerp.resolveDeltaTarget(start, unit, amount, forward)` | Minutes/hours keep H:M; days+ land dusk+1h; may pass present day (tryAdvance on settle) | Delta grid |
 | `NarrativeClockLerp.resolveDawnDuskTarget(start, minutes, towardDawn)` | Absolute dawn−N or dusk+N on displayed date | Sun grid L/R |
 | `NarrativeClockLerp.resolveYearTarget(start, year)` | Same month/day (Feb 29→28) then dusk+1h | Year Go |
-| `NarrativeClockLerp.startToTarget(targetDt)` | Ease scrub overlay + panel; settle side effects. Zero-delta → `false, err` (no Sync.full; TOR-418) | After resolve* |
+| `NarrativeClockLerp.startToTarget(targetDt)` | Ease scrub overlay; settle side effects. Zero-delta → `false, err` (no Sync.full; TOR-418) | After resolve* |
+
+**Debug:** `DEBUG.setClockLerpTickSeconds(secondsOrNil)`, `DEBUG.getClockLerpTickSeconds()`
 
 ---
 

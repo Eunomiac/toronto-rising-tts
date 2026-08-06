@@ -625,6 +625,35 @@ function DEBUG.showScene()
     end
 end
 
+--- Override narrative clock lerp tick rate for visual tuning (TOR-470).
+--- Does not rewrite `C.CLOCK_LERP`; lasts until Save & Play reload or reset with nil.
+--- Mid-lerp only updates overlay date/time text; Scenes panel + weather still settle at end.
+--- @param seconds number|string|nil Positive seconds (e.g. 0.05); `0` or `"frame"` = every frame; omit/`nil` = restore constant default
+--- @return number|string|nil effective tick (`"frame"` or seconds)
+function DEBUG.setClockLerpTickSeconds(seconds)
+    local NarrativeClockLerp = require("core.narrative_clock_lerp")
+    local ok, result = NarrativeClockLerp.setTickSeconds(seconds)
+    if not ok then
+        print("DEBUG.setClockLerpTickSeconds: " .. tostring(result))
+        return nil
+    end
+    if result == "frame" then
+        print("DEBUG.setClockLerpTickSeconds: every frame (Wait.frames 1)")
+    else
+        print("DEBUG.setClockLerpTickSeconds: " .. tostring(result) .. "s between overlay updates")
+    end
+    print("  Tip: try 0.05, 0.1, 0.25, or 0/\"frame\". Reset with DEBUG.setClockLerpTickSeconds(nil)")
+    return result
+end
+
+--- @return number|string current effective clock-lerp tick (`"frame"` or seconds)
+function DEBUG.getClockLerpTickSeconds()
+    local NarrativeClockLerp = require("core.narrative_clock_lerp")
+    local tick = NarrativeClockLerp.getTickSeconds()
+    print("DEBUG.getClockLerpTickSeconds: " .. tostring(tick) .. (tick == "frame" and " (every frame)" or "s"))
+    return tick
+end
+
 --- Ensure `sceneLibrary.order[slotIndex]` points at `sceneKey` and a minimal library row exists.
 --- Does not Apply the scene to live `sessionScene` — use for E2E / step-by-step playbook setup.
 --- Order is always updated: `order[slotIndex] = sceneKey`, with the key cleared from other indices first.
@@ -5496,6 +5525,8 @@ function DEBUG.help()
     print("  printTable(value, label?) - Pretty-print a table (JSON) to console")
     print("  showState()              - Full gameState JSON")
     print("  showScene()              - sessionScene + sceneLibrary keys")
+    print("  setClockLerpTickSeconds(s?) - Clock lerp overlay tick rate (0/\"frame\", 0.05, nil=default)")
+    print("  getClockLerpTickSeconds()   - Print current clock lerp tick interval")
     print("  ensureSceneLibraryStub(slotIndex, sceneKey?, opts?) - E2E scene library row stub (no Apply)")
     print("  inspectSoundscapeAudio() - Emitter GUID/tag/effect inventory")
     print("  dumpConditions(color)    - Active conditions + resolved effects")
