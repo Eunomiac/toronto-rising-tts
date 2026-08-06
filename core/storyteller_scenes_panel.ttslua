@@ -804,14 +804,14 @@ function StorytellerScenesPanel.onClockLerpYearChanged(value)
     lerpYearDraft = type(value) == "string" and value or ""
 end
 
-function StorytellerScenesPanel.startClockLerpYearGo()
-    local y = tonumber(lerpYearDraft)
-    if y == nil then
-        U.AlertGM("Enter a target year, then Go.")
+--- @param isRightClick boolean|nil right-click (`-2`) rewinds unsigned deltas only (TOR-477)
+function StorytellerScenesPanel.startClockLerpYearGo(isRightClick)
+    if tonumber(lerpYearDraft) == nil then
+        U.AlertGM("Enter a target year or year delta, then Go.")
         return
     end
     tryStartClockLerp(function(startDt)
-        return NarrativeClockLerp.resolveYearTarget(startDt, y)
+        return NarrativeClockLerp.resolveYearGoTarget(startDt, lerpYearDraft, isRightClick == true)
     end)
 end
 
@@ -2263,10 +2263,16 @@ function StorytellerScenesPanel.applyLocationFromInputs(player)
                 U.AlertGM("Skybox saved on `" .. activeKey .. "` (applies when you Activate that scene).")
                 return
             end
-            S.setStateVal(override, "sessionScene", "skyboxOverride")
-            if type(Scenes.reconcileSkyboxFromState) == "function" then
-                Scenes.reconcileSkyboxFromState({ force = true })
-            end
+            HUDBF.runTransition(function()
+                S.setStateVal(override, "sessionScene", "skyboxOverride")
+                if type(Scenes.reconcileSkyboxFromState) == "function" then
+                    Scenes.reconcileSkyboxFromState({ force = true })
+                end
+                return true
+            end, {
+                leadInDelaySec = 2,
+                settleDelaySec = 2,
+            })
             StorytellerScenesPanel.refresh()
             U.AlertGM("Skybox applied.")
             return

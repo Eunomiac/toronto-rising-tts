@@ -425,7 +425,8 @@ Animated Scene Time jumps (TOR-222 / TOR-470). Mid-lerp: overlay date/time text 
 | `NarrativeClockLerp.getTickSeconds()` | Effective tick (`"frame"` or seconds) | DEBUG / inspect |
 | `NarrativeClockLerp.setTickSeconds(s)` | Runtime override; `nil` restores constant; `0`/`"frame"` = every frame | `DEBUG.setClockLerpTickSeconds(0.05)` |
 | `NarrativeClockLerp.resolveDeltaTarget(start, unit, amount, forward)` | Minutes/hours keep H:M; days+ land dusk+1h; may pass present day (tryAdvance on settle) | Delta grid |
-| `NarrativeClockLerp.resolveDawnDuskTarget(start, minutes, towardDawn)` | Absolute dawn−N or dusk+N on displayed date | Sun grid L/R |
+| `NarrativeClockLerp.resolveDawnDuskTarget(start, minutes, towardDawn)` | Dawn−N / dusk+N on **current night block** (pre-sunrise → prior dusk / today's dawn; else dusk today / next dawn) | Sun grid L/R |
+| `NarrativeClockLerp.resolveYearGoTarget(start, raw, isRightClick)` | Years Go: ≥1000 absolute; 0–999 unsigned delta (R=−); signed never flips | Year Go L/R |
 | `NarrativeClockLerp.resolveYearTarget(start, year)` | Same month/day (Feb 29→28) then dusk+1h | Year Go |
 | `NarrativeClockLerp.startToTarget(targetDt)` | Ease scrub overlay; settle side effects. Zero-delta → `false, err` (no Sync.full; TOR-418) | After resolve* |
 

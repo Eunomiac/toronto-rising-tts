@@ -4387,7 +4387,8 @@ function HUD_scenesClockLerpYearGo(player, button, id)
     if not requireStorytellerForMutation(player, "HUD_scenesClockLerpYearGo") then
         return
     end
-    StorytellerScenesPanel.startClockLerpYearGo()
+    local isRightClick = button == "-2" or button == -2 or tostring(button) == "-2"
+    StorytellerScenesPanel.startClockLerpYearGo(isRightClick)
 end
 
 --- Scene Constructor: open import JSON modal.

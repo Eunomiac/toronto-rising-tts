@@ -229,8 +229,10 @@ function NarrativeClockLerp.resolveDeltaTarget(startDt, unit, amount, forward)
     return target
 end
 
---- Absolute dawn−N or dusk+N on the given calendar date (year from startDt).
---- @param startDt table for year (+ fallback)
+--- Dawn−N / dusk+N on the **current night block** (TOR-472), not always today's calendar date.
+--- Night blocks: before today's sunrise → dusk yesterday / dawn today; at/after sunset → dusk today /
+--- dawn tomorrow; daytime → upcoming night (dusk today / dawn tomorrow).
+--- @param startDt table for current clock (+ year fallback)
 --- @param minutesBeforeDawnOrAfterDusk number
 --- @param towardDawn boolean true = before dawn; false = after dusk
 --- @return table|nil
@@ -239,7 +241,44 @@ function NarrativeClockLerp.resolveDawnDuskTarget(startDt, minutesBeforeDawnOrAf
     if n == nil then
         return nil
     end
-    local sun = TorontoSun.estimate(n.month, n.day)
+    local sunToday = TorontoSun.estimate(n.month, n.day)
+    if type(sunToday) ~= "table" then
+        return nil
+    end
+    local sunrise = sunToday.sunrise
+    local sunset = sunToday.sunset
+    if type(sunrise) ~= "table" or type(sunset) ~= "table" then
+        return nil
+    end
+
+    local nowMin = (tonumber(n.hour) or 0) * 60 + (tonumber(n.minute) or 0)
+    local sunriseMin = (tonumber(sunrise.hour) or 0) * 60 + (tonumber(sunrise.minute) or 0)
+    local sunsetMin = (tonumber(sunset.hour) or 0) * 60 + (tonumber(sunset.minute) or 0)
+
+    local todayNoon = {
+        year = n.year,
+        month = n.month,
+        day = n.day,
+        hour = 12,
+        minute = 0,
+    }
+    local dawnDayDt
+    local duskDayDt
+    if nowMin < sunriseMin then
+        -- Still in last night: dawn is today; dusk was yesterday.
+        dawnDayDt = todayNoon
+        duskDayDt = NarrativeCalendar.addMinutes(todayNoon, -1440)
+    else
+        -- At/after sunset, or daytime → upcoming night: dusk today, dawn tomorrow.
+        duskDayDt = todayNoon
+        dawnDayDt = NarrativeCalendar.addMinutes(todayNoon, 1440)
+    end
+    if dawnDayDt == nil or duskDayDt == nil then
+        return nil
+    end
+
+    local anchorDay = towardDawn and dawnDayDt or duskDayDt
+    local sun = TorontoSun.estimate(anchorDay.month, anchorDay.day)
     if type(sun) ~= "table" then
         return nil
     end
@@ -252,9 +291,9 @@ function NarrativeClockLerp.resolveDawnDuskTarget(startDt, minutesBeforeDawnOrAf
         delta = -delta
     end
     local target = {
-        year = n.year,
-        month = n.month,
-        day = n.day,
+        year = anchorDay.year,
+        month = anchorDay.month,
+        day = anchorDay.day,
         hour = base.hour,
         minute = base.minute,
     }
@@ -275,6 +314,36 @@ function NarrativeClockLerp.resolveYearTarget(startDt, year)
         return nil
     end
     return applyDuskPlusOneHour(target)
+end
+
+--- Years Go draft → target (TOR-477): ≥1000 absolute year; 0..999 unsigned delta (left +, right −);
+--- negative signed delta (right-click never flips). Then dusk+1h via `resolveYearTarget`.
+--- @param startDt table
+--- @param raw string|number|nil
+--- @param isRightClick boolean
+--- @return table|nil
+function NarrativeClockLerp.resolveYearGoTarget(startDt, raw, isRightClick)
+    local n = U.narrativeClockDatetimeOnly(startDt)
+    if n == nil then
+        return nil
+    end
+    local v = tonumber(raw)
+    if v == nil then
+        return nil
+    end
+    local year
+    if v >= 1000 then
+        year = math.floor(v)
+    elseif v < 0 then
+        year = n.year + math.floor(v)
+    else
+        local delta = math.floor(v)
+        if isRightClick == true then
+            delta = -delta
+        end
+        year = n.year + delta
+    end
+    return NarrativeClockLerp.resolveYearTarget(startDt, year)
 end
 
 --- Mid-lerp visual only: overlay date + time text (no Scenes panel, no weather, no state).
