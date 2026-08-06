@@ -525,7 +525,278 @@ function DEBUG.findPotentialLights()
     return LightTest.findPotentialLights()
 end
 
+--[[
+    NPC figurine light mode templates (TOR-471)
 
+    Live-tune `NPCS.lights` OFF / STANDARD / SPOTLIGHT / OFFSPOTLIGHT via `gameState.debug.npcLightModes`.
+    Overrides deep-merge last in `NPCS.getMergedModeDefinition`; then force-reapply stage lights.
+]]
+
+local NPC_LIGHT_MODE_KEYS = { "OFF", "STANDARD", "SPOTLIGHT", "OFFSPOTLIGHT" }
+
+local function npcLightModeKeyValid(modeKey)
+    return modeKey == "OFF" or modeKey == "STANDARD" or modeKey == "SPOTLIGHT" or modeKey == "OFFSPOTLIGHT"
+end
+
+--- @param color any Color userdata or { r, g, b [, a] }
+--- @return table|nil `{ r, g, b [, a] }` save-safe
+local function npcLightModeColorToState(color)
+    if color == nil then
+        return nil
+    end
+    if type(color) == "userdata" or (type(color) == "table" and type(color.get) == "function") then
+        local r, g, b, a = color:get()
+        local out = { r = r, g = g, b = b }
+        if a ~= nil then
+            out.a = a
+        end
+        return out
+    end
+    if type(color) == "table" then
+        local r = tonumber(color.r or color[1])
+        local g = tonumber(color.g or color[2])
+        local b = tonumber(color.b or color[3])
+        if r == nil or g == nil or b == nil then
+            return nil
+        end
+        local out = { r = r, g = g, b = b }
+        local a = tonumber(color.a or color[4])
+        if a ~= nil then
+            out.a = a
+        end
+        return out
+    end
+    return nil
+end
+
+--- Deep-merge for debug patches (tables recurse; scalars replace).
+local function npcLightModeDeepMerge(base, override)
+    local out = U.clone(base, true) or {}
+    if type(override) ~= "table" then
+        return out
+    end
+    for k, v in pairs(override) do
+        if type(v) == "table" and type(out[k]) == "table" and type(v.get) ~= "function" then
+            out[k] = npcLightModeDeepMerge(out[k], v)
+        else
+            out[k] = v
+        end
+    end
+    return out
+end
+
+--- Sanitize a patch for `gameState` (Color → {r,g,b}; nested positioning tables clone).
+--- @param patch table
+--- @return table
+local function npcLightModeSanitizePatch(patch)
+    local out = {}
+    for k, v in pairs(patch) do
+        if k == "color" then
+            local rgb = npcLightModeColorToState(v)
+            if rgb == nil then
+                error("DEBUG.npcLightModeSet: color must be Color or { r, g, b }")
+            end
+            out.color = rgb
+        elseif k == "positioning" and type(v) == "table" then
+            out.positioning = U.clone(v, true) or {}
+        elseif type(v) == "table" and type(v.get) == "function" then
+            error("DEBUG.npcLightModeSet: unsupported userdata field '" .. tostring(k) .. "'")
+        elseif type(v) == "table" then
+            out[k] = U.clone(v, true)
+        else
+            out[k] = v
+        end
+    end
+    return out
+end
+
+local function ensureNpcLightModesDebugBag()
+    if type(S.getStateVal("debug")) ~= "table" then
+        S.setStateVal({}, "debug")
+    end
+    if type(S.getStateVal("debug", "npcLightModes")) ~= "table" then
+        S.setStateVal({}, "debug", "npcLightModes")
+    end
+end
+
+local function forceReapplyNpcLightModes()
+    local NPCS = require("core.npcs")
+    NPCS.reapplyAllCurrentLightModes(0.35, { force = true })
+end
+
+--- Effective global template (baked lights + debug override; no per-character / stageLights).
+--- @param modeKey string
+--- @return table
+local function npcLightModeEffectiveGlobal(modeKey)
+    local NPCS = require("core.npcs")
+    local base = NPCS.lights[modeKey] or {}
+    local override = S.getStateVal("debug", "npcLightModes", modeKey)
+    local merged = npcLightModeDeepMerge(base, override)
+    if type(merged.color) == "table" and type(merged.color.get) ~= "function" then
+        local rgb = npcLightModeColorToState(merged.color)
+        if rgb ~= nil then
+            merged.color = rgb
+        end
+    elseif type(merged.color) == "userdata" or (type(merged.color) == "table" and type(merged.color.get) == "function") then
+        merged.color = npcLightModeColorToState(merged.color)
+    end
+    return merged
+end
+
+--- Format one mode for copy-paste into `lib/npcs_data.ttslua` `D.lights`.
+--- @param modeKey string
+--- @param mode table
+--- @return string
+local function npcLightModeFormatLua(modeKey, mode)
+    local lines = {}
+    lines[#lines + 1] = "  " .. modeKey .. " = {"
+    if mode.enabled ~= nil then
+        lines[#lines + 1] = "    enabled = " .. tostring(mode.enabled == true) .. ","
+    end
+    local c = mode.color
+    if type(c) == "table" then
+        local r = tonumber(c.r or c[1]) or 1
+        local g = tonumber(c.g or c[2]) or 1
+        local b = tonumber(c.b or c[3]) or 1
+        lines[#lines + 1] = string.format("    color = Color(%.4g, %.4g, %.4g),", r, g, b)
+    end
+    if mode.range ~= nil then
+        lines[#lines + 1] = "    range = " .. tostring(mode.range) .. ","
+    end
+    if mode.intensity ~= nil then
+        lines[#lines + 1] = "    intensity = " .. tostring(mode.intensity) .. ","
+    end
+    if mode.angle ~= nil then
+        lines[#lines + 1] = "    angle = " .. tostring(mode.angle) .. ","
+    end
+    local pos = mode.positioning
+    if type(pos) == "table" then
+        lines[#lines + 1] = "    positioning = {"
+        if pos.deltaUp ~= nil then
+            lines[#lines + 1] = "      deltaUp = " .. tostring(pos.deltaUp) .. ","
+        end
+        if pos.deltaInward ~= nil then
+            lines[#lines + 1] = "      deltaInward = " .. tostring(pos.deltaInward) .. ","
+        end
+        if pos.lookAtYShift ~= nil then
+            lines[#lines + 1] = "      lookAtYShift = " .. tostring(pos.lookAtYShift) .. ","
+        end
+        if pos.positionYShift ~= nil then
+            lines[#lines + 1] = "      positionYShift = " .. tostring(pos.positionYShift) .. ","
+        end
+        if pos.distance ~= nil then
+            lines[#lines + 1] = "      distance = " .. tostring(pos.distance) .. ","
+        end
+        lines[#lines + 1] = "    }"
+    end
+    lines[#lines + 1] = "  }"
+    return table.concat(lines, "\n")
+end
+
+--- Convert a mode table to JSON-safe form for console dumps (Color → {r,g,b}).
+--- @param mode table|nil
+--- @return table
+local function npcLightModeForPrint(mode)
+    local out = U.clone(mode, true) or {}
+    if out.color ~= nil then
+        local rgb = npcLightModeColorToState(out.color)
+        if rgb ~= nil then
+            out.color = rgb
+        else
+            out.color = tostring(out.color)
+        end
+    end
+    return out
+end
+
+--- Print baked defaults, state overrides, and effective global merge for NPC light modes.
+--- @param modeKey string|nil `OFF` / `STANDARD` / `SPOTLIGHT` / `OFFSPOTLIGHT`, or nil for all
+function DEBUG.npcLightModeShow(modeKey)
+    ensureNpcLightModesDebugBag()
+    local NPCS = require("core.npcs")
+    local keys = NPC_LIGHT_MODE_KEYS
+    if modeKey ~= nil then
+        if not npcLightModeKeyValid(modeKey) then
+            error("DEBUG.npcLightModeShow: modeKey must be OFF, STANDARD, SPOTLIGHT, or OFFSPOTLIGHT")
+        end
+        keys = { modeKey }
+    end
+    print(string.rep("=", 60))
+    print("NPC light mode templates (TOR-471)")
+    print(string.rep("=", 60))
+    for i = 1, #keys do
+        local key = keys[i]
+        print("--- " .. key .. " ---")
+        print("baked (NPCS.lights):")
+        DEBUG.printTable(npcLightModeForPrint(NPCS.lights[key] or {}))
+        local override = S.getStateVal("debug", "npcLightModes", key)
+        print("debug override:")
+        if type(override) == "table" then
+            DEBUG.printTable(npcLightModeForPrint(override))
+        else
+            print("(none)")
+        end
+        print("effective global (baked + override):")
+        DEBUG.printTable(npcLightModeForPrint(npcLightModeEffectiveGlobal(key)))
+    end
+    print(string.rep("=", 60))
+end
+
+--- Deep-merge a patch into `gameState.debug.npcLightModes[modeKey]` and force-reapply lights.
+--- @param modeKey string `OFF` / `STANDARD` / `SPOTLIGHT` / `OFFSPOTLIGHT`
+--- @param patch table fields: enabled, color, range, intensity, angle, positioning={...}
+--- @usage lua DEBUG.npcLightModeSet("SPOTLIGHT", { intensity = 8, angle = 45, positioning = { deltaUp = 7 } })
+function DEBUG.npcLightModeSet(modeKey, patch)
+    if not npcLightModeKeyValid(modeKey) then
+        error("DEBUG.npcLightModeSet: modeKey must be OFF, STANDARD, SPOTLIGHT, or OFFSPOTLIGHT")
+    end
+    if type(patch) ~= "table" then
+        error("DEBUG.npcLightModeSet: patch table required")
+    end
+    ensureNpcLightModesDebugBag()
+    local sanitized = npcLightModeSanitizePatch(patch)
+    local existing = S.getStateVal("debug", "npcLightModes", modeKey)
+    local merged = npcLightModeDeepMerge(type(existing) == "table" and existing or {}, sanitized)
+    S.setStateVal(merged, "debug", "npcLightModes", modeKey)
+    print("[DEBUG.npcLightModeSet] " .. modeKey .. " override →")
+    DEBUG.printTable(merged)
+    forceReapplyNpcLightModes()
+    print("[DEBUG.npcLightModeSet] reapplied all current NPC light modes (force)")
+end
+
+--- Clear debug overrides for one mode or all modes, then re-apply.
+--- @param modeKey string|nil when nil, clears entire `npcLightModes` bag
+function DEBUG.npcLightModeReset(modeKey)
+    ensureNpcLightModesDebugBag()
+    if modeKey == nil then
+        S.setStateVal({}, "debug", "npcLightModes")
+        print("[DEBUG.npcLightModeReset] cleared all npcLightModes overrides")
+    else
+        if not npcLightModeKeyValid(modeKey) then
+            error("DEBUG.npcLightModeReset: modeKey must be OFF, STANDARD, SPOTLIGHT, or OFFSPOTLIGHT")
+        end
+        S.setStateVal(nil, "debug", "npcLightModes", modeKey)
+        print("[DEBUG.npcLightModeReset] cleared override for " .. modeKey)
+    end
+    forceReapplyNpcLightModes()
+end
+
+--- Print copy-pasteable `D.lights` fragment (baked + current debug overrides).
+function DEBUG.npcLightModeExport()
+    ensureNpcLightModesDebugBag()
+    print("-- Paste into lib/npcs_data.ttslua as D.lights = { ... } (TOR-471 export)")
+    print("D.lights = {")
+    for i = 1, #NPC_LIGHT_MODE_KEYS do
+        local key = NPC_LIGHT_MODE_KEYS[i]
+        local chunk = npcLightModeFormatLua(key, npcLightModeEffectiveGlobal(key))
+        if i < #NPC_LIGHT_MODE_KEYS then
+            -- Insert comma after closing brace of mode block
+            chunk = chunk:gsub("%}$", "},")
+        end
+        print(chunk)
+    end
+    print("}")
+end
 
 --[[
     State Inspection Functions
@@ -642,7 +913,7 @@ function DEBUG.setClockLerpTickSeconds(seconds)
     else
         print("DEBUG.setClockLerpTickSeconds: " .. tostring(result) .. "s between overlay updates")
     end
-    print("  Tip: try 0.05, 0.1, 0.25, or 0/\"frame\". Reset with DEBUG.setClockLerpTickSeconds(nil)")
+    print("  Tip: default is every frame. Try 0.05 / 0.1 / 0.25 to compare; nil restores C.CLOCK_LERP")
     return result
 end
 
@@ -5525,7 +5796,7 @@ function DEBUG.help()
     print("  printTable(value, label?) - Pretty-print a table (JSON) to console")
     print("  showState()              - Full gameState JSON")
     print("  showScene()              - sessionScene + sceneLibrary keys")
-    print("  setClockLerpTickSeconds(s?) - Clock lerp overlay tick rate (0/\"frame\", 0.05, nil=default)")
+    print("  setClockLerpTickSeconds(s?) - Clock lerp overlay tick (default every frame; nil=C.CLOCK_LERP)")
     print("  getClockLerpTickSeconds()   - Print current clock lerp tick interval")
     print("  ensureSceneLibraryStub(slotIndex, sceneKey?, opts?) - E2E scene library row stub (no Apply)")
     print("  inspectSoundscapeAudio() - Emitter GUID/tag/effect inventory")
@@ -5631,6 +5902,11 @@ function DEBUG.help()
     print("\nLIGHT FEASIBILITY (workshop investigation):")
     print("  testSpawnLightType(), testCloneLight(guid), testInspectLight(guid)")
     print("  testSpawnLight(...), testCompareStructures(guid), findPotentialLights()")
+    print("\nNPC LIGHT MODE TEMPLATES (stage figurine STANDARD/SPOTLIGHT — TOR-471):")
+    print("  npcLightModeShow(modeKey?)     - Print baked + debug override + effective")
+    print("  npcLightModeSet(mode, patch)   - Merge patch into gameState.debug.npcLightModes; reapply")
+    print("  npcLightModeReset(modeKey?)    - Clear one mode or all overrides; reapply")
+    print("  npcLightModeExport()           - Print copy-pasteable D.lights Lua for npcs_data")
     print("\nHELP:")
     print("  debugHelp()              - Show this help message")
     print("\n" .. string.rep("=", 70))
@@ -5739,6 +6015,12 @@ testInspectLight = DEBUG.testInspectLight
 testSpawnLight = DEBUG.testSpawnLight
 testCompareStructures = DEBUG.testCompareStructures
 findPotentialLights = DEBUG.findPotentialLights
+
+-- NPC figurine light mode template tuner (TOR-471)
+npcLightModeShow = DEBUG.npcLightModeShow
+npcLightModeSet = DEBUG.npcLightModeSet
+npcLightModeReset = DEBUG.npcLightModeReset
+npcLightModeExport = DEBUG.npcLightModeExport
 
 -- Auto-show help on load (optional - comment out if not desired)
 -- DEBUG.help()

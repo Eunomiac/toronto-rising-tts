@@ -639,6 +639,7 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-08-04 | FIX | TOR-449 verify + Suite C | End clears `activeKey` (deselect); stale TOR-365 “keep selected” wording corrected in PAVE / E2E / Scene Constructor |
 | 2026-08-06 | CREATE+SHIP | TOR-469 | Scene transition lead-in +0.5s (5.0s); TOR-368 camera snap moved into `runStagedTransition` heavy work; PAVE pending Save & Play (`04ea3d2`) |
 | 2026-08-06 | CREATE+SHIP | TOR-470 | Clock lerp: overlay-only mid ticks; DEBUG.setClockLerpTickSeconds; panel/weather on settle; PAVE pending |
+| 2026-08-06 | VERIFY+TUNE | TOR-470 | Author confirmed every-frame; baked `C.CLOCK_LERP.tickSeconds = 0`; PAVE cleared |
 | 2026-08-06 | CREATE+SHIP | TOR-471 | DEBUG NPC light mode template tuner (`npcLightModeShow/Set/Reset/Export`); `gameState.debug.npcLightModes` merge in `getMergedModeDefinition`; relatedTo TOR-455; PAVE pending |
 | 2026-08-06 | DOC | PENDING AUTHOR VERIFICATION | Agent edit gate: checklist (`PENDING AUTHOR VERIFICATION.md`) writable **only** on `/tr-inbox`; Done how-to-verify stays in Linear comments until inbox sync |
 | 2026-08-06 | DOC | PENDING AUTHOR VERIFICATION | ❌/⚠️ follow INBOX For Immediate Implementation disposition (ship quick fixes in inbox; Focus top otherwise; defer only complex refactors) |

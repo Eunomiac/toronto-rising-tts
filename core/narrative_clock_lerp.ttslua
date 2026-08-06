@@ -62,11 +62,16 @@ function NarrativeClockLerp.getTickSeconds()
     if type(tickSecondsOverride) == "number" and tickSecondsOverride > 0 then
         return tickSecondsOverride
     end
-    local cfg = tonumber((C.CLOCK_LERP or {}).tickSeconds)
+    local raw = (C.CLOCK_LERP or {}).tickSeconds
+    if raw == "frame" or raw == 0 or raw == "0" then
+        return "frame"
+    end
+    local cfg = tonumber(raw)
     if cfg ~= nil and cfg > 0 then
         return cfg
     end
-    return 0.05
+    -- Default: every frame (TOR-470 author confirm).
+    return "frame"
 end
 
 --- Override lerp tick rate for in-game tuning (persists until reset; does not rewrite constants).
