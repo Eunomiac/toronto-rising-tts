@@ -48,6 +48,8 @@ local groupMoveHotkeyHeld = false
 local rebuildAnchorDropEligibilityCache
 local tokensOccupyingPolarFamily
 local emptyPolarFamilySnaps
+local buildGroupMoveEvictionFamilyPriority
+local evacuateOccupiedDestFamilyForGroupRelocate
 --- Prevents recursive anchor-family spread when programmatic moves fire onObjectDrop.
 local anchorFamilySpreadDepth = 0
 --- Prevents recursive family flip when programmatic setRotation fires onObjectRotate (TOR-414).
@@ -692,8 +694,228 @@ emptyPolarFamilySnaps = function(board, familyId, fuzziness, catalog, ignoreToke
     return out
 end
 
+--- Ordered eviction targets when group-moving onto an occupied family (TOR-484).
+--- Far packs by ring index; Mid/Center by live catalog anchor u (Center omitted).
+--- @param catalog table[]
+--- @param destFamilyId string skipped
+--- @return string[] familyIds
+buildGroupMoveEvictionFamilyPriority = function(catalog, destFamilyId)
+    local out = {}
+    local seen = {}
+    local function pushFamily(familyId)
+        if type(familyId) ~= "string" or familyId == "" then
+            return
+        end
+        if familyId == destFamilyId or seen[familyId] == true then
+            return
+        end
+        seen[familyId] = true
+        out[#out + 1] = familyId
+    end
+    local byRing = {}
+    if type(catalog) == "table" then
+        for i = 1, #catalog do
+            local entry = catalog[i]
+            if type(entry) == "table"
+                and entry.snapKind ~= Snaps.SNAP_KIND_SEAT
+                and type(entry.familyId) == "string"
+                and entry.familyId ~= ""
+            then
+                local ring = tonumber(entry.ringIndex)
+                if ring ~= nil then
+                    local list = byRing[ring]
+                    if list == nil then
+                        list = {}
+                        byRing[ring] = list
+                    end
+                    list[entry.familyId] = true
+                end
+            end
+        end
+    end
+    local function soleFamilyOnRing(ringIndex)
+        local set = byRing[ringIndex]
+        if type(set) ~= "table" then
+            return nil
+        end
+        local only = nil
+        for familyId, _ in pairs(set) do
+            if only ~= nil then
+                return nil
+            end
+            only = familyId
+        end
+        return only
+    end
+    local function familiesOnRingSortedByAnchorU(ringIndex)
+        local set = byRing[ringIndex]
+        local rows = {}
+        if type(set) ~= "table" then
+            return rows
+        end
+        for familyId, _ in pairs(set) do
+            local anchor = Snaps.anchorCatalogEntryForFamilyId(catalog, familyId)
+            rows[#rows + 1] = {
+                familyId = familyId,
+                u = tonumber(anchor and anchor.u) or 0.5,
+            }
+        end
+        table.sort(rows, function(a, b)
+            if math.abs(a.u - b.u) > 1e-6 then
+                return a.u < b.u
+            end
+            return a.familyId < b.familyId
+        end)
+        return rows
+    end
+
+    -- Far packs: rings 3 / 6 / 4 / 5 (single-family outskirts).
+    pushFamily(soleFamilyOnRing(3))
+    pushFamily(soleFamilyOnRing(6))
+    pushFamily(soleFamilyOnRing(4))
+    pushFamily(soleFamilyOnRing(5))
+
+    -- Mid (ring 2): Left (lowest u), Right (highest u); Mid Center deferred after Center L/R.
+    local midRows = familiesOnRingSortedByAnchorU(2)
+    local midCenterFamilyId = nil
+    if #midRows > 0 then
+        pushFamily(midRows[1].familyId)
+        if #midRows > 1 then
+            pushFamily(midRows[#midRows].familyId)
+        end
+        local bestDist = math.huge
+        for i = 1, #midRows do
+            local dist = math.abs(midRows[i].u - 0.5)
+            if dist < bestDist then
+                bestDist = dist
+                midCenterFamilyId = midRows[i].familyId
+            end
+        end
+    end
+
+    -- Center (ring 1): Left / Right by u; omit family closest to u=0.5 ("Center").
+    local centerRows = familiesOnRingSortedByAnchorU(1)
+    if #centerRows > 0 then
+        local centerMostId = nil
+        local bestDist = math.huge
+        for i = 1, #centerRows do
+            local dist = math.abs(centerRows[i].u - 0.5)
+            if dist < bestDist then
+                bestDist = dist
+                centerMostId = centerRows[i].familyId
+            end
+        end
+        local leftRight = {}
+        for i = 1, #centerRows do
+            if centerRows[i].familyId ~= centerMostId then
+                leftRight[#leftRight + 1] = centerRows[i]
+            end
+        end
+        if #leftRight > 0 then
+            pushFamily(leftRight[1].familyId)
+            if #leftRight > 1 then
+                pushFamily(leftRight[#leftRight].familyId)
+            end
+        end
+    end
+
+    if type(midCenterFamilyId) == "string" then
+        pushFamily(midCenterFamilyId)
+    end
+    return out
+end
+
+--- Move all dest-family occupants to the first empty priority family (dark flip) or palette (TOR-484).
+--- @param board Object
+--- @param destFamilyId string
+--- @param fuzziness number
+--- @param catalog table[]
+--- @param droppedToken Object|nil ignore as occupant
+--- @return table `{ evacuated: number, toPalette: number, reason: string }`
+evacuateOccupiedDestFamilyForGroupRelocate = function(board, destFamilyId, fuzziness, catalog, droppedToken)
+    local occupants = tokensOccupyingPolarFamily(board, destFamilyId, fuzziness, catalog, droppedToken)
+    if #occupants == 0 then
+        return { evacuated = 0, toPalette = 0, reason = "dest_empty" }
+    end
+    local NPCS = require("core.npcs")
+    local toMove = {}
+    for i = 1, #occupants do
+        local row = occupants[i]
+        local ck = Tokens.resolveTokenCharacterKey(row.token)
+        if type(NPCS.isCharacterSeatedAtTable) == "function"
+            and type(ck) == "string"
+            and NPCS.isCharacterSeatedAtTable(ck)
+        then
+            -- TOR-76: seated table NPCs stay put.
+        else
+            toMove[#toMove + 1] = row
+        end
+    end
+    if #toMove == 0 then
+        return { evacuated = 0, toPalette = 0, reason = "only_seated_occupants" }
+    end
+
+    local priority = buildGroupMoveEvictionFamilyPriority(catalog, destFamilyId)
+    local boardYaw = Board.objectYawDeg(board)
+    local palette = Board.getControlBoardPalette()
+    local evacuated = 0
+    local toPalette = 0
+    local moveIndex = 1
+
+    anchorFamilySpreadDepth = anchorFamilySpreadDepth + 1
+    for p = 1, #priority do
+        if moveIndex > #toMove then
+            break
+        end
+        local familyId = priority[p]
+        if #tokensOccupyingPolarFamily(board, familyId, fuzziness, catalog, droppedToken) == 0 then
+            local emptySnaps = emptyPolarFamilySnaps(board, familyId, fuzziness, catalog, droppedToken, nil)
+            local destAnchor = Snaps.anchorCatalogEntryForFamilyId(catalog, familyId)
+            if destAnchor ~= nil then
+                Snaps.orderFamilySnapsForAnchorSpread(emptySnaps, destAnchor, board)
+            end
+            for s = 1, #emptySnaps do
+                if moveIndex > #toMove then
+                    break
+                end
+                local tok = toMove[moveIndex].token
+                Snaps.placeTokenOnControlBoardSnap(tok, emptySnaps[s], board, boardYaw, false)
+                evacuated = evacuated + 1
+                moveIndex = moveIndex + 1
+            end
+        end
+    end
+
+    while moveIndex <= #toMove do
+        local tok = toMove[moveIndex].token
+        local ck = Tokens.resolveTokenCharacterKey(tok)
+        if Board.isGameObject(palette)
+            and type(ck) == "string"
+            and ck ~= ""
+            and Palette.parkTokenAtAssignedSnap(palette, tok, ck)
+        then
+            evacuated = evacuated + 1
+            toPalette = toPalette + 1
+        end
+        moveIndex = moveIndex + 1
+    end
+    anchorFamilySpreadDepth = anchorFamilySpreadDepth - 1
+
+    if evacuated > 0 then
+        print(
+            "[Gameboard] group-move eviction: "
+                .. tostring(evacuated)
+                .. " token(s) from "
+                .. tostring(destFamilyId)
+                .. (toPalette > 0 and (" (" .. tostring(toPalette) .. " to palette)") or "")
+        )
+    end
+    return { evacuated = evacuated, toPalette = toPalette, reason = "ok" }
+end
+
 --- Board→board relocate: while Group-move hotkey held, move source-family cohabitants onto free dest snaps (TOR-412).
 --- Dropped token stays on its landing snap; siblings fill remaining empty dest slots center-out (palette-leader parity).
+--- Occupied dest families are evacuated first (TOR-484).
 --- @param droppedToken Object
 --- @param sourceFamilyId string
 --- @return table `{ placed: number, reason?: string, sourceFamilyId?: string, destFamilyId?: string }`
@@ -727,6 +949,8 @@ function Interactions.tryBoardFamilyGroupRelocate(droppedToken, sourceFamilyId)
     if destFamilyId == sourceFamilyId then
         return { placed = 0, reason = "same_family", sourceFamilyId = sourceFamilyId, destFamilyId = destFamilyId }
     end
+
+    evacuateOccupiedDestFamilyForGroupRelocate(board, destFamilyId, fuzziness, catalog, droppedToken)
 
     local NPCS = require("core.npcs")
     local sourceAnchor = Snaps.anchorCatalogEntryForFamilyId(catalog, sourceFamilyId)

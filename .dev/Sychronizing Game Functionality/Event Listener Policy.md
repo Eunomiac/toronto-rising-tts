@@ -61,12 +61,14 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | `onPlayerChangeColor` | `global_script` | Host | B | Seat HUD visibility reveal (`revealSeatHudVisibility`) + UpdateUIDisplays; deferred Global full UI resync for join clients unless `connectionControls.deferSetXml` (TOR-381 / TOR-428); Host hotseat swaps manual via `HUD_refreshUi` | state row | Med | 4 |
 | `addHotkey` (`Spotlight NPC (hold)`) | `global_script` | Clicker (per player) | C | ST steam in callee | transient spotlights | Low | — |
 | `addHotkey` (`Group move (hold)`) | `global_script` | Clicker (per player) | C | ST steam in callee | CONTROL_BOARD family relocate | Low | — |
+| `addHotkey` (`Storyteller toolbar (toggle)`) | `global_script` | Clicker (per player) | A | ST steam in callee | one-shot toggle `storytellerToolbarBody` (TOR-481) | Low | — |
+| `addHotkey` (`Debug panel (toggle)`) | `global_script` | Clicker (per player) | A | ST steam in callee | one-shot toggle `adminControlsBody` + TOR-406 sync on open (TOR-481) | Low | — |
 
 ### `Global.call` targets (mutating)
 
 | Function | Tier | Phase | Notes |
 | --- | --- | --- | --- |
-| `GlobalGameboardApply/Clear/ClearClick/Save/Load/ToggleLayoutLock/ToggleControlBoardSnaps/TokenDroppedOnDiceBag/StageLerpOrchestrator` | C | 5 | Gameboard; Save is state-only (B) |
+| `GlobalGameboardApply/Clear/ClearClick/RecoverStrays/Save/Load/ToggleLayoutLock/ToggleControlBoardSnaps/TokenDroppedOnDiceBag/StageLerpOrchestrator` | C | 5 | Gameboard; Save is state-only (B); RecoverStrays = right-click Clear (TOR-485) |
 | `GlobalGameboardInstallPaletteSnaps` | C | Done | palette snap install |
 | `GlobalGameboardSyncSnapsToggleLabel` | A | — | snaps + layout-lock toolbar labels |
 | `GlobalToggleSignalFireState` | C | 5 | signal lights; on/off = world Y — seat layout preserves per-seat Y (TOR-380), no gameState reconciler |
@@ -200,7 +202,7 @@ Per-object scripts (`objects/*.ttslua`, `ui/ui_*.ttslua`) run in **isolated chun
 | Script | Events | Guard pattern |
 | --- | --- | --- |
 | `objects/dice_bag.ttslua` | `click_roll`, spawn, onLoad | tags; spawn via Global.call |
-| `objects/npc_control_board.ttslua` | `click_apply`, `click_clear` | Steam via `GlobalIsStorytellerSteamPlayer`; mutators via Global.call |
+| `objects/npc_control_board.ttslua` | `click_apply`, `click_clear` | Steam via `GlobalIsStorytellerSteamPlayer`; mutators via Global.call; Clear right-click (`-2`) → `GlobalGameboardRecoverStrays` (TOR-485) |
 | `objects/npc_control_board_palette.ttslua` | onLoad | One-time install via Global.call |
 | `ui/ui_signal_candle.ttslua` | click | Object GUID / color from name |
 | `ui/ui_tarot_button.ttslua` | click | Pink/Black → `GlobalApplyTarotState` |

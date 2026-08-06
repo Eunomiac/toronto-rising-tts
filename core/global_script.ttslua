@@ -1256,6 +1256,15 @@ function GlobalGameboardClearClick(params)
     return GlobalGameboardClear(params)
 end
 
+--- NPC gameboard: right-click Clear — park stray tokens to palette (no placement wipe) (TOR-485).
+--- @param params table|nil
+--- @return number moved
+function GlobalGameboardRecoverStrays(params)
+    local Gameboard = require("core.npc_gameboard")
+    local moved = Gameboard.recoverStrayNpcTokensToPalette()
+    return tonumber(moved) or 0
+end
+
 --- NPC gameboard: Clear placements (expects confirmed Clear from object UI).
 --- @param params table|nil
 --- @return boolean
@@ -3044,6 +3053,37 @@ function onLoad(saved_data)
                 end
             end,
             true
+        )
+        -- One-shot press toggles (bind under Options → Game Keys). ST steam only (TOR-481).
+        addHotkey(
+            "Storyteller toolbar (toggle)",
+            function(playerColor, hoveredObject, pointerPosition, isKeyUp)
+                if isKeyUp == true then
+                    return
+                end
+                if not U.isStorytellerSteamPlayer(playerColor) then
+                    return
+                end
+                U.toggleXmlElement("storytellerToolbarBody", "-1")
+            end,
+            false
+        )
+        addHotkey(
+            "Debug panel (toggle)",
+            function(playerColor, hoveredObject, pointerPosition, isKeyUp)
+                if isKeyUp == true then
+                    return
+                end
+                if not U.isStorytellerSteamPlayer(playerColor) then
+                    return
+                end
+                U.toggleXmlElement("adminControlsBody", "-1")
+                if U.isXmlElementExpanded("adminControlsBody") then
+                    syncDebugLastLoadClockLabel()
+                    syncDebugSeatColorButtons()
+                end
+            end,
+            false
         )
     end
 end

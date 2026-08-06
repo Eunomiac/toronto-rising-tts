@@ -25,6 +25,12 @@
 
   <!-- 4a. Player HUD Right Sidebar -->
 
+  <!-- Camera Controls Overlay (generated per player color) -->
+  <Include src="player/panel_overlay_camera.xml" />
+
+  <!-- Location Overlay (generated per player color) -->
+  <Include src="player/panel_overlay_location.xml" />
+
   <!-- Map panels (generated per player color) -->
   <Include src="player/panel_map_core.xml" />
   <!-- Shared map overlay + district toggle sidebars (TOR-444 Option B) -->
@@ -42,12 +48,6 @@
 
   <!-- Reference layer (generated per player color): coteries -->
   <Include src="player/panel_right_sidebar_referenceLayer.xml" />
-
-  <!-- Camera Controls Overlay (generated per player color) -->
-  <Include src="player/panel_overlay_camera.xml" />
-
-  <!-- Location Overlay (generated per player color) -->
-  <Include src="player/panel_overlay_location.xml" />
 
   <!-- Roll control panels (generated per player color) -->
   <Include src="player/panel_roll_controls.xml" />

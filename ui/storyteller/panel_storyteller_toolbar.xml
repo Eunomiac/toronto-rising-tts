@@ -90,10 +90,7 @@ UI.setAttributes("storytellerToolbarRoot", {width = "1100"})
 <!-- Master root container -->
 <Panel id="storytellerToolbarRoot" class="storyteller_panel_root">
 
-  <!-- Twirl-down Collapsible Button Toggle -->
-  <Button id="toggleElem_storytellerToolbarBody" class="hud_storyteller_twirldown_button" onClick="HUD_togglePanel">►</Button>
-
-  <!-- Toggleable full content container -->
+  <!-- Toggleable full content container (open/close via Game Key — TOR-481) -->
   <VerticalLayout id="storytellerToolbarBody" class="storyteller_control_container" active="false" >
 
     <!-- Top navigation buttons -->

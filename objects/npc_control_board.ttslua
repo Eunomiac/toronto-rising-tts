@@ -58,6 +58,11 @@ function click_clear(player, value, id)
     if not isStorytellerSteamClick(player, value) then
         return
     end
+    -- XmlUI: "-2" = right-click (TOR-485) — recover strays only, no Clear wipe.
+    if value == "-2" or value == -2 or tostring(value) == "-2" then
+        Global.call("GlobalGameboardRecoverStrays", {})
+        return
+    end
     Global.call("GlobalGameboardClearClick", { player_color = player_color })
 end
 

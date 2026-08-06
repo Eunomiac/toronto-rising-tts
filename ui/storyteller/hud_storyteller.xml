@@ -13,7 +13,6 @@
     <Button id="debugSeat_Pink" class="debug_seat_color_button" colors="#C71585|#D02090|#B01075|#C71585" onClick="HUD_debugSeatColor" />
     <Button id="debugSeat_Purple" class="debug_seat_color_button" colors="#5E2A7E|#6E358E|#4E2070|#5E2A7E" onClick="HUD_debugSeatColor" />
   </HorizontalLayout>
-  <Button id="toggleElem_adminControlsBody" class="hud_storyteller_button hud_storyteller_button_icon" onClick="HUD_togglePanel" rectAlignment="LowerRight" width="30" height="30">►</Button>
   <VerticalLayout class="storyteller_buttonControls" visibility="Host" height="30" childForceExpandHeight="false">
   </VerticalLayout>
   <Panel id="adminControlsBody" active="false">

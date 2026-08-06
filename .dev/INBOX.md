@@ -20,22 +20,6 @@ Verification:
 ## For Immediate Implementation
 > _After registering each of these issues with Linear in the ordinary fashion, before updating the Focus Stack, briefly review the issue: If it is a quick or easy fix, implement it immediately without waiting for user confirmation. Otherwise, promote it to the top of the Focus Stack, and offer to begin work on it immediately when summarizing your work processing `INBOX.md` to the user. If multiple issues require promotion in this way, consider how best to resolve them as quickly as possible, and offer to draft an implementation plan in your response to the user._
 
-* [Stage Control Board] If a group is group-moved (by holding down the appropriate hotkey) onto a snap group family that is already occupied, the following steps should be taken automatically immediately before or at the same time as the group move itself:
-  1. Count how many tokens currently exist in the destination snap group family
-  2. Find the first snap group family in the following list that is **empty**, and move all tokens that are currently in the destination snap group family into that group, making room for the group being moved by the GM:
-    - Far Left
-    - Far Right
-    - Far Center-Left
-    - Far Center-Right
-    - Mid Left
-    - Mid Right
-    - Center Left
-    - Center Right
-    - Mid Center
-    - Return them to the palette _(as the last option, this is the action that should be taken if no empty groups are found; the "Center" group has been intentionally omitted)_
-  3. Flip all tokens that were automatically moved out of the destination snap group to their "dark" side (so their lights will turn off on Apply), unless they were cleared to the palette.
-* [Stage Control Board] Add a new right-click function to the "Clear" button.  When the Clear button is right-clicked, all NPC tokens not on the Stage Control board (e.g. because the Storyteller moved them off the board) should be returned to their proper palette positions.
-
 ## Active
 
 ## External Work (Set STATUS to "External To Do")
