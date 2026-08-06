@@ -23,20 +23,19 @@ local TRANSITION_SETTLE_DELAY_SEC = 10
 --- Parent Panel FadeIn (`animationDuration` on `playerHud_overlay_blindfold`) — cards delay longer on purpose
 --- so players can read the blindfold art before district/site cards cover it.
 local BLINDFOLD_SLIDE_IN_SEC = 2
---- Site card FadeIn end: XML `showAnimationDelay` 4.5 + `animationDuration` 1 (district ends 0.5s earlier).
-local BLINDFOLD_CHILD_SHOW_COMPLETE_SEC = 5.5
---- Lead-in before ambient fade-out / heavy work (TOR-434). Starts 0.5s before site FadeIn completes so
---- cards get more quiet time than the old 4.5s gate; fade-out may overlap the last half-second of site fade.
+--- District card FadeIn start: XML `showAnimationDelay` on district destination card (site is 4.5s).
+local BLINDFOLD_DISTRICT_CARD_DELAY_SEC = 4.0
+--- Lead-in before ambient fade-out / heavy work (TOR-476). Starts when district cards begin FadeIn so
+--- old ambient crossfades with destination reveal (same clock when cards are Clear / End scene).
 --- Floored at parent FadeIn so work never starts during the blindfold panel FadeIn alone.
-local BLINDFOLD_DOWN_COMPLETE_SEC = math.max(BLINDFOLD_SLIDE_IN_SEC, BLINDFOLD_CHILD_SHOW_COMPLETE_SEC - 0.5)
+local BLINDFOLD_DOWN_COMPLETE_SEC = math.max(BLINDFOLD_SLIDE_IN_SEC, BLINDFOLD_DISTRICT_CARD_DELAY_SEC)
 --- Default lead-in for `runTransitionAfterLeadIn` (same gate as staged / simple transition).
 local TRANSITION_WORK_LEAD_IN_SEC = BLINDFOLD_DOWN_COMPLETE_SEC
---- Staged transition (TOR-147 / TOR-434): fade-out runs only after blindfold-down lead-in;
---- heavy reconcile (incl. default camera snap, TOR-368) then runs alone; new audio fades in on lift.
+--- Staged transition (TOR-147 / TOR-434 / TOR-476): fade-out after card-window lead-in;
+--- heavy reconcile (incl. default camera snap, TOR-368) then runs alone; new audio fades in under cover.
 local TRANSITION_FADE_OUT_SEC = 1
 local TRANSITION_WORK_SETTLE_SEC = 0.75
---- New-location ambient fades in as the blindfold rises (TOR-273), so this runs concurrently with the
---- blindfold slide-up rather than under the blindfold — ~2s gives an audible reveal alongside the visual.
+--- New-location ambient fades in under the blindfold after work (TOR-476), so lift happens with audio full.
 local TRANSITION_FADE_IN_SEC = 2.0
 --- Exported so soundscape callers can fade ambient out/in over the same windows as the staged transition.
 HUDBF.TRANSITION_FADE_OUT_SEC = TRANSITION_FADE_OUT_SEC
@@ -407,16 +406,15 @@ function HUDBF.runTransition(workFn, opts)
   })
 end
 
---- Staged scene transition (TOR-147 / TOR-434): blindfold down → wait for animations → fade-out →
---- heavy work (incl. default camera) → silent settle → lift + fade-in.
+--- Staged scene transition (TOR-147 / TOR-434 / TOR-476): blindfold down → wait for district-card
+--- window → fade-out → heavy work → fade-in under cover → settle → lift (audio already full).
 --- Each phase is isolated in time via `U.chain` so XmlUI FadeIn and resource-heavy
 --- reconcile never compete (prevents animation hitch).
 --- @param phases table `{ fadeOut?: fun(), work?: fun(): boolean, string|nil, fadeIn?: fun() }`
----   - `fadeOut` runs only after the lead-in (cards may still finish the last ~0.5s of site FadeIn)
+---   - `fadeOut` runs at the district-card FadeIn window (same lead-in when cards are Clear)
 ---   - `work` returns `ok, errMsg`; on failure the blindfold lifts immediately and `fadeIn` is skipped
 ---   - default camera snaps at the start of `work` (under full cover; TOR-368) so early FadeIns stay smooth
----   - `fadeIn` runs as the blindfold **rises** (after the silent settle hold), so the new-location audio
----     reveal aligns with the visual reveal (TOR-273). Blindfold stays down `settleDelaySec` after work.
+---   - `fadeIn` runs under the blindfold after work so new ambient is full before lift (TOR-476)
 --- @param opts table|nil `{ fadeOutSec?, workSettleSec?, fadeInSec?, settleDelaySec?, leadInDelaySec?, variant?, districtKey?, siteKey? }`
 function HUDBF.runStagedTransition(phases, opts)
   if type(phases) ~= "table" then
@@ -434,7 +432,7 @@ function HUDBF.runStagedTransition(phases, opts)
   local workFailed = false
   U.chain({
     function()
-      -- Hold through parent FadeIn + most of destination-card FadeIns (TOR-434).
+      -- Hold through parent FadeIn until district-card FadeIn starts (TOR-476 / TOR-434).
       return leadInDelaySec
     end,
     function()
@@ -458,20 +456,25 @@ function HUDBF.runStagedTransition(phases, opts)
       return workFailed and 0 or workSettleSec
     end,
     function()
-      -- Hold the blindfold down in silence through the settle window. New-location audio is NOT
-      -- applied yet — it fades in as the blindfold rises (next step) so the audio reveal aligns
-      -- with the visual reveal. Budget: workSettle + this hold == settleDelaySec down-time
-      -- after the post-lead-in fade-out (lead-in is separate).
+      -- New-location ambient fades in under the blindfold (TOR-476). Wait fadeInSec so volume
+      -- is full before any remaining settle / lift.
       if workFailed then
         return 0
       end
-      return math.max(0, settleDelaySec - workSettleSec)
-    end,
-    function()
-      -- Blindfold rises and the new-location ambient fades in simultaneously (fadeInSec, ~2s).
-      if not workFailed and type(phases.fadeIn) == "function" then
+      if type(phases.fadeIn) == "function" then
         phases.fadeIn()
       end
+      return fadeInSec
+    end,
+    function()
+      if workFailed then
+        HUDBF.scheduleEnd(0)
+        return
+      end
+      -- Remaining post-work down-time after workSettle + fadeIn (may be 0).
+      return math.max(0, settleDelaySec - workSettleSec - fadeInSec)
+    end,
+    function()
       HUDBF.scheduleEnd(0)
     end,
   })
