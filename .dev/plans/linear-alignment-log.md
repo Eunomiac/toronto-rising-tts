@@ -632,5 +632,11 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-08-04 | REPURPOSE+SHIP | TOR-100 | Pink Tarot camera diceTray/default (was canceled Spotlight NPC distinction; Linear free create limit) |
 | 2026-08-04 | REPURPOSE | TOR-88 | External: recommended client TTS settings (was canceled PCs deactivate) |
 | 2026-08-04 | FOCUS | TOR-462, TOR-459, TOR-439 | INBOX Immediate re-stack; session bugs ahead of join spike |
+| 2026-08-04 | DOC | PENDING AUTHOR VERIFICATION | New living registry for Done/verify-gate issues awaiting author TTS; wired into linear rule, AGENTS, DOCS_INDEX, tr-start/tr-inbox, DEVELOPMENT_WORKFLOW |
+| 2026-08-04 | DOC | PENDING AUTHOR VERIFICATION | Plain-English how-to-verify style + agent Writing style mandate |
+| 2026-08-04 | DOC | Author voice | Broad plain-English rule for all author-facing writing (`toronto-rising-author-voice.mdc` + AGENTS) |
+| 2026-08-05 | DOC | PENDING AUTHOR VERIFICATION | Split checklist vs agent policy (`.md` Outstanding list; `.agent.md` instructions) |
+| 2026-08-04 | FIX | TOR-449 verify + Suite C | End clears `activeKey` (deselect); stale TOR-365 “keep selected” wording corrected in PAVE / E2E / Scene Constructor |
+| 2026-08-06 | CREATE+SHIP | TOR-469 | Scene transition lead-in +0.5s (5.0s); TOR-368 camera snap moved into `runStagedTransition` heavy work; PAVE pending Save & Play (`04ea3d2`) |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
