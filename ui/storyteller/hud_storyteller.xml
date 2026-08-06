@@ -23,7 +23,7 @@
     <!-- ================================================================ -->
     <VerticalLayout class="storyteller_buttonControls" visibility="Host" height="370">
       <Text class="hud_storyteller_header">== DEBUG ==</Text>
-      <Text id="debug_lastLoadClock" fontSize="12" color="#AAAAAA" alignment="MiddleCenter" text="" />
+      <Text id="debug_lastLoadClock" fontSize="12" color="#AAAAAA" alignment="MiddleCenter" preferredHeight="18" minHeight="18" flexibleHeight="0" text="—" />
       <Button id="debug_overlayAlpha" class="hud_storyteller_button" onClick="HUD_toggleOverlayAlpha">Overlay Alpha: Full</Button>
       <Button class="hud_storyteller_button" onClick="HUD_printState">Print State</Button>
       <Button class="hud_storyteller_button" onClick="HUD_syncAll">Sync All (force)</Button>
