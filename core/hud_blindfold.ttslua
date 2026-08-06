@@ -27,8 +27,11 @@ local BLINDFOLD_SLIDE_IN_SEC = 2
 local BLINDFOLD_DISTRICT_CARD_DELAY_SEC = 4.0
 local BLINDFOLD_SITE_CARD_DELAY_SEC = 4.5
 local BLINDFOLD_CARD_FADE_DURATION_SEC = 1.0
---- Site card FadeIn end — heavy work waits until here so XmlUI is not hitch-frozen mid-fade.
+--- Site card FadeIn end — heavy work waits until here (+ pad) so XmlUI is not hitch-frozen mid-fade.
 local BLINDFOLD_SITE_CARD_COMPLETE_SEC = BLINDFOLD_SITE_CARD_DELAY_SEC + BLINDFOLD_CARD_FADE_DURATION_SEC
+--- Tiny hold after site FadeIn completes before Sync / camera / table work (author pad).
+local BLINDFOLD_HEAVY_WORK_PAD_SEC = 0.25
+local BLINDFOLD_HEAVY_WORK_START_SEC = BLINDFOLD_SITE_CARD_COMPLETE_SEC + BLINDFOLD_HEAVY_WORK_PAD_SEC
 --- Lead-in before ambient fade-out (TOR-476). Starts when district cards begin FadeIn so
 --- old ambient crossfades with destination reveal (same clock when cards are Clear / End scene).
 --- Floored at parent FadeIn so work never starts during the blindfold panel FadeIn alone.
@@ -36,7 +39,7 @@ local BLINDFOLD_DOWN_COMPLETE_SEC = math.max(BLINDFOLD_SLIDE_IN_SEC, BLINDFOLD_D
 --- Default lead-in for `runTransitionAfterLeadIn` (same gate as staged / simple transition).
 local TRANSITION_WORK_LEAD_IN_SEC = BLINDFOLD_DOWN_COMPLETE_SEC
 --- Staged transition (TOR-147 / TOR-434 / TOR-476): fade-out after district-card lead-in;
---- heavy work after site card completes; new audio fades in immediately after work (no silent settle first).
+--- heavy work after site card completes (+ pad); new audio fades in immediately after work (no silent settle first).
 local TRANSITION_FADE_OUT_SEC = 1
 local TRANSITION_WORK_SETTLE_SEC = 0.75
 --- New-location ambient fades in under the blindfold immediately after work (TOR-476), so lift has audio full.
@@ -46,6 +49,7 @@ HUDBF.TRANSITION_FADE_OUT_SEC = TRANSITION_FADE_OUT_SEC
 HUDBF.TRANSITION_FADE_IN_SEC = TRANSITION_FADE_IN_SEC
 HUDBF.BLINDFOLD_DOWN_COMPLETE_SEC = BLINDFOLD_DOWN_COMPLETE_SEC
 HUDBF.BLINDFOLD_SITE_CARD_COMPLETE_SEC = BLINDFOLD_SITE_CARD_COMPLETE_SEC
+HUDBF.BLINDFOLD_HEAVY_WORK_START_SEC = BLINDFOLD_HEAVY_WORK_START_SEC
 --- Default post-work settle hold (seconds) for staged / simple transitions.
 HUDBF.TRANSITION_SETTLE_DELAY_SEC = TRANSITION_SETTLE_DELAY_SEC
 local BLINDFOLD_VARIANT_COUNT = C.BlindfoldVariantCount
@@ -363,7 +367,7 @@ function HUDBF.estimateStagedTransitionSec(opts)
   local leadInDelaySec = resolveOptSec(opts.leadInDelaySec, BLINDFOLD_DOWN_COMPLETE_SEC)
   local fadeOutSec = resolveOptSec(opts.fadeOutSec, TRANSITION_FADE_OUT_SEC)
   local settleDelaySec = resolveOptSec(opts.settleDelaySec, TRANSITION_SETTLE_DELAY_SEC)
-  local siteGateSec = math.max(0, BLINDFOLD_SITE_CARD_COMPLETE_SEC - leadInDelaySec - fadeOutSec)
+  local siteGateSec = math.max(0, BLINDFOLD_HEAVY_WORK_START_SEC - leadInDelaySec - fadeOutSec)
   return leadInDelaySec + fadeOutSec + siteGateSec + settleDelaySec
 end
 
@@ -427,12 +431,12 @@ function HUDBF.runTransition(workFn, opts)
 end
 
 --- Staged scene transition (TOR-147 / TOR-434 / TOR-476): blindfold down → district-card lead-in →
---- fade-out → wait until site card FadeIn completes → heavy work → fade-in immediately → settle → lift.
+--- fade-out → wait until site card FadeIn completes (+ pad) → heavy work → fade-in immediately → settle → lift.
 --- Each phase is isolated in time via `U.chain` so XmlUI FadeIn and resource-heavy
 --- reconcile never compete (prevents animation hitch).
 --- @param phases table `{ fadeOut?: fun(), work?: fun(): boolean, string|nil, fadeIn?: fun() }`
 ---   - `fadeOut` runs at the district-card FadeIn window (same lead-in when cards are Clear)
----   - `work` starts after site-card FadeIn completes (~5.5s); returns `ok, errMsg`; on failure lifts immediately
+---   - `work` starts after site-card FadeIn + 0.25s pad (~5.75s); returns `ok, errMsg`; on failure lifts immediately
 ---   - default camera snaps at the start of `work` (under full cover; TOR-368) so card FadeIns stay smooth
 ---   - `fadeIn` runs immediately after work (no silent workSettle first) so new ambient fills the settle window
 --- @param opts table|nil `{ fadeOutSec?, workSettleSec?, fadeInSec?, settleDelaySec?, leadInDelaySec?, variant?, districtKey?, siteKey? }`
@@ -446,8 +450,8 @@ function HUDBF.runStagedTransition(phases, opts)
   local workSettleSec = resolveOptSec(opts.workSettleSec, TRANSITION_WORK_SETTLE_SEC)
   local fadeInSec = resolveOptSec(opts.fadeInSec, TRANSITION_FADE_IN_SEC)
   local settleDelaySec = resolveOptSec(opts.settleDelaySec, TRANSITION_SETTLE_DELAY_SEC)
-  -- Keep heavy work off the site-card FadeIn (delay 4.5 + duration 1 → complete 5.5).
-  local siteCardGateSec = math.max(0, BLINDFOLD_SITE_CARD_COMPLETE_SEC - leadInDelaySec - fadeOutSec)
+  -- Keep heavy work off the site-card FadeIn (complete 5.5) plus a 0.25s pad → start ~5.75.
+  local siteCardGateSec = math.max(0, BLINDFOLD_HEAVY_WORK_START_SEC - leadInDelaySec - fadeOutSec)
 
   HUDBF.beginTransition(opts)
 
@@ -464,7 +468,7 @@ function HUDBF.runStagedTransition(phases, opts)
       return fadeOutSec
     end,
     function()
-      -- Quiet hold until site card FadeIn finishes (audio may already be fading out).
+      -- Quiet hold until site card FadeIn finishes (+ pad; audio may already be fading out).
       return siteCardGateSec
     end,
     function()
