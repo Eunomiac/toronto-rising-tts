@@ -642,6 +642,15 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-08-06 | VERIFY+TUNE | TOR-470 | Author confirmed every-frame; baked `C.CLOCK_LERP.tickSeconds = 0`; PAVE cleared |
 | 2026-08-06 | CREATE+SHIP | TOR-471 | DEBUG NPC light mode template tuner (`npcLightModeShow/Set/Reset/Export`); `gameState.debug.npcLightModes` merge in `getMergedModeDefinition`; relatedTo TOR-455; PAVE pending |
 | 2026-08-06 | DOC | PENDING AUTHOR VERIFICATION | Agent edit gate: checklist (`PENDING AUTHOR VERIFICATION.md`) writable **only** on `/tr-inbox`; Done how-to-verify stays in Linear comments until inbox sync |
-| 2026-08-06 | DOC | PENDING AUTHOR VERIFICATION | ❌/⚠️ follow INBOX For Immediate Implementation disposition (ship quick fixes in inbox; Focus top otherwise; defer only complex refactors) |
+| 2026-08-06 | CREATE | TOR-476 | Scene transition audio crossfade after blindfold (PAVE ❌ TOR-469 → Focus #1 High) |
+| 2026-08-06 | CREATE | TOR-477 | Years Go under-1000 deltas + right-click rewind (PAVE ⚠️ TOR-222) |
+| 2026-08-06 | CREATE | TOR-478 | Skybox-only Apply brief blindfold (PAVE ⚠️ TOR-402) |
+| 2026-08-06 | CREATE | TOR-479 | Debug last-load clock still missing (PAVE ❌ TOR-394) |
+| 2026-08-06 | CREATE+SHIP | TOR-480 | Set present-day Day/Year/Time green tint after Set (INBOX Immediate Quick Fix) |
+| 2026-08-06 | CREATE | TOR-481 | ST toolbar + debug hotkeys replace twirldowns (INBOX Immediate) |
+| 2026-08-06 | CREATE | TOR-482 | Daysleep Refresh gold button (INBOX Immediate) |
+| 2026-08-06 | CREATE+SHIP | TOR-483 | CSHEET right-click dice tray uses clicked sheet seat (amends TOR-460) |
+| 2026-08-06 | FOCUS | TOR-476, TOR-472, TOR-477, TOR-478, TOR-479, TOR-462 | PAVE failures ahead of map chrome / join spike |
+| 2026-08-06 | PAVE | checklist | Cleared ✅ batch; narrowed ❌/⚠️ to TOR-476/472/477/478/479; added TOR-480/483/473 verify |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

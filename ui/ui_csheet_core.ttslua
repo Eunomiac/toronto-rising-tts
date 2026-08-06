@@ -762,7 +762,7 @@ function CSHEET.onPageBack()
   navigateCsheetPagePair(colorUpper, pageNum, pageNum + 1, pageNum - 2, pageNum - 1)
 end
 
---- UI: inner spine click — left → sheet camera; right → clicker's diceTray camera.
+--- UI: inner spine click — left → that seat's sheet camera; right → that seat's diceTray camera.
 --- XmlUI onClick value: "-1" left, "-2" right (TTS UI Attributes).
 --- @param player table TTS player who clicked
 function CSHEET.onPageInnerClick(player, value, id)
@@ -777,9 +777,11 @@ function CSHEET.onPageInnerClick(player, value, id)
     error("[ui_csheet] onPageInnerClick: Global.call unavailable")
   end
   if value == "-2" or value == -2 then
-    Global.call("GlobalRollSeatCamera", {
-      color = player.color,
-      mode = "diceTray",
+    -- TOR-483: use clicked sheet seat (same as left-click), not clicker's own tray.
+    Global.call("GlobalSetSheetCamera", {
+      clickerColor = player.color,
+      sheetSeatColor = seatColor,
+      modeStem = "diceTray",
     })
     return
   end

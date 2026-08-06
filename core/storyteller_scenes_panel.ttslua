@@ -2448,6 +2448,18 @@ function StorytellerScenesPanel.setPresentDayClockFromInputs(player)
         return
     end
 
+    -- After Set, Day/Year/Time should tint present-day green (not scene blue / draft grey).
+    StorytellerScenesPanel.syncClockDraftFromPresentDayOrBlank()
+    local pd = PresentDayClock.getPresentDay()
+    if type(pd) == "table" and PresentDayClock.clockHasDatetime(pd) then
+        setInputFieldText("scenes_clock_day", tostring(math.floor(tonumber(pd.day) or 0)))
+        setInputFieldText("scenes_clock_year", tostring(math.floor(tonumber(pd.year) or 0)))
+        setInputFieldText("scenes_clock_time12", formatTime12h(pd.hour, pd.minute))
+        refreshClockInputSourceColors(pd)
+    else
+        refreshClockInputSourceColors(nil)
+    end
+
     U.AlertGM("Present day clock set to chronicle time from inputs.")
 end
 

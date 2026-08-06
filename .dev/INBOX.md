@@ -20,6 +20,7 @@ Verification:
 ## For Immediate Implementation
 > _After registering each of these issues with Linear in the ordinary fashion, before updating the Focus Stack, briefly review the issue: If it is a quick or easy fix, implement it immediately without waiting for user confirmation. Otherwise, promote it to the top of the Focus Stack, and offer to begin work on it immediately when summarizing your work processing `INBOX.md` to the user. If multiple issues require promotion in this way, consider how best to resolve them as quickly as possible, and offer to draft an implementation plan in your response to the user._
 
+
 ## Active
 
 ## External Work (Set STATUS to "External To Do")
@@ -44,7 +45,9 @@ Verification:
 
 ## Processed
 
-2026-08-04 INBOX Immediate — map sidebar active chrome → **TOR-462** (Focus #1 High); Spotlight→End blindfold → **TOR-459** (Focus #2 High); CSHEET right-click diceTray → **TOR-460** (shipped); Map/Court/Coteries exclusive → **TOR-461** (shipped); Tarot Pink camera → **TOR-100** (shipped; id reused — Linear free create limit); External client settings → **TOR-88** (repurposed); External snowfall → **TOR-463**
+2026-08-06 INBOX Immediate + PAVE — Set present-day tint → **TOR-480** (shipped); Daysleep Refresh → **TOR-482**; ST/debug hotkeys → **TOR-481**; TOR-469 audio ❌ → **TOR-476** (Focus #1); TOR-222 dusk/dawn → **TOR-472**; Years Go → **TOR-477**; TOR-402 skybox blindfold → **TOR-478**; TOR-394 debug clock ❌ → **TOR-479**; CSHEET right-click tray seat → **TOR-483** (shipped); PAVE ✅ cleared (403/404/405/396/471/238/413/414/460/461/100/453/452/450/451)
+
+2026-08-04 INBOX Immediate — map sidebar active chrome → **TOR-462** (Focus); Spotlight→End blindfold → **TOR-459**; CSHEET right-click diceTray → **TOR-460** (shipped); Map/Court/Coteries exclusive → **TOR-461** (shipped); Tarot Pink camera → **TOR-100** (shipped; id reused — Linear free create limit); External client settings → **TOR-88** (repurposed); External snowfall → **TOR-463**
 
 2026-08-03 INBOX Immediate — location/camera full-alpha → **TOR-450** (shipped); sidebar tint grey/white/red → **TOR-451** (shipped); Scene Time no-selection → **TOR-453** (Focus #1 High); Compulsion+companion tray → **TOR-452** (Focus #2 High); External willpower modal → **TOR-454**; Aspects→Conditions → **TOR-456**; spotlight tune → **TOR-455**
 
