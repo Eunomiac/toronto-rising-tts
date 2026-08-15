@@ -36,18 +36,18 @@ This file is continuously updated with issues and plans for feature development.
 
 ## Focus
 
-_Stack rank for the current cycle (2026-08-06 PAVE: TOR-485 fail/correct -> **TOR-486** Focus #1; cleared verified checklist items). **Precedence** = Focus stack + Linear **`blockedBy`** (not Linear priority). **TOR-141 (E2E playbooks)** is a living doc (In Progress, not Focus stack). **Back-burner / "Deferred this cycle" is paused** (author 2026-06-21) - open work stays in domain sections; sequence via Linear blockers only._
+_Stack rank for the current cycle (2026-08-14 inbox: Immediate play-session bugs **TOR-487** / **TOR-488** ahead of PAVE **TOR-486**). **Precedence** = Focus stack + Linear **`blockedBy`** (not Linear priority). **TOR-141 (E2E playbooks)** is a living doc (In Progress, not Focus stack). **Back-burner / "Deferred this cycle" is paused** (author 2026-06-21) - open work stays in domain sections; sequence via Linear blockers only._
 
 | # | Issue | Why now |
 | --- | --- | --- |
-| 1 | **TOR-486** (Clear right-click no-op + palette re-snap) | PAVE fail/correct on TOR-485 - Immediate disposition |
-| 2 | **TOR-439** (join-stress re-verify after TOR-444) | Verification gate - remount weight cut needs multiclient re-smoke |
-| 3 | **TOR-482** (Daysleep Refresh gold button) | Small Scenes UX; session-start WP heal on demand |
-| 4 | **TOR-81** (centralize light modes) | High lighting cleanup; unblocks tone presets + LUTs |
-| 5 | **TOR-168** (Sync.full call-site audit) | Urgent sync/perf inventory; agent-friendly, unblocked |
-| 6 | **TOR-98** (Spotlight phase remaining UX) | High; phase shell shipped in TOR-143 - turn/NPC UX still open |
+| 1 | **TOR-487** (Take Half auto-rolls Rouse dice) | Immediate dice bug — Take Half still waits for a manual Rouse throw |
+| 2 | **TOR-488** (Apply Location full blindfold + cards) | Immediate scene bug — location Apply skips the full transition |
+| 3 | **TOR-486** (Clear right-click no-op + palette re-snap) | PAVE fail/correct on TOR-485 — still open |
+| 4 | **TOR-489** (Compulsion variant tally on first choice) | Immediate feature — persist which of the four cards each player picks |
+| 5 | **TOR-439** (join-stress re-verify after TOR-444) | Verification gate — remount weight cut needs a multiclient re-smoke |
+| 6 | **TOR-482** (Daysleep Refresh gold button) | Small Scenes UX; session-start WP heal on demand |
 
-**Also unblocked (not Focus top):** **TOR-89** (PCs map location modal). **TOR-101** (Memoriam LUT/HUD). **TOR-247** (rotational seat layout - unblocks Play-as-NPC). Soft design waits: **TOR-92** / **TOR-99**. **Blocked:** **TOR-320**/ **TOR-321** wait on **TOR-81**; **TOR-330** waits on workshop **TOR-327**; **TOR-95** waits on **TOR-247**. Living docs: **TOR-141**, **TOR-464**. External: **TOR-88**, **TOR-463**, **TOR-454**, **TOR-456**, **TOR-455**, **TOR-303**.
+**Also unblocked (not Focus top):** **TOR-81** (centralize light modes). **TOR-168** (Sync.full call-site audit). **TOR-98** (Spotlight phase remaining UX). **TOR-89** (PCs map location modal). **TOR-101** (Memoriam LUT/HUD). **TOR-247** (rotational seat layout - unblocks Play-as-NPC). Soft design waits: **TOR-92** / **TOR-99**. **Blocked:** **TOR-320**/ **TOR-321** wait on **TOR-81**; **TOR-330** waits on workshop **TOR-327**; **TOR-95** waits on **TOR-247**. Living docs: **TOR-141**, **TOR-464**. External: **TOR-88**, **TOR-463**, **TOR-454**, **TOR-456**, **TOR-455**, **TOR-303**.
 
 **Also in cycle (below top stack):** **TOR-141** (E2E playbooks living doc). **TOR-423** (npc_gameboard split - author confirmed 2026-08-06).
 
@@ -121,6 +121,7 @@ _Stack rank for the current cycle (2026-08-06 PAVE: TOR-485 fail/correct -> **TO
 - [x] **Narrative roll broadcast successes:** Frenzy/Willpower/etc. show success count + difficulty; split from hidesDifficulty margin strip. _(TOR-312)_
 - [x] **Open player dice tray on roll initiate:** Tray on player bag click + ST `openRoll`; ST SETUP defers bags/tray; `changeRollType`?PRE_ROLL opens tray. Author verified 2026-07-08. _(TOR-305)_
 - [x] **Take Half auto-broadcast:** Pure Take Half confirms/broadcasts without extra Confirm; tray force-closes on cleanup. Author verified 2026-07-08. _(TOR-306)_
+- [ ] **Take Half with Rouse auto-rolls:** Rouse / Obliv-Rouse leftover dice should toss automatically (same as right-click Roll), not wait for a manual throw. Reverses Dice-E2E H2 from **TOR-73**. relatedTo **TOR-317**. _(TOR-487)_
 - [x] **Hunger 5 voluntary rouse lockout:** At Hunger 5, Blood Surge + Obliv-Rouse locked; forced standard Rouse allowed; failed rouse ? Frenzy Resist D4 queue. _(TOR-203 ? 2026-06-15)_
 - [x] **Hunger 4 ? block Blood Surge + manual Rouse combo; Hunger 5 ? block Blood Surge:** At Hunger 4, disallow Blood Surge + separate manual Rouse in one roll; at Hunger 5, block Blood Surge (forced Rouse OK). Extends **TOR-203**. _(TOR-331)_
 - [x] **Hide player Cancel on Storyteller-initiated rolls:** Player roll panel hides Cancel when roll is ST-initiated; single-button auto-proceed when only one action remains (**TOR-328** / **TOR-306**). _(TOR-332)_
@@ -246,6 +247,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Clock lerp overlay-only ticks + DEBUG rate:** Mid-lerp updates overlay date/time only; panel/weather on settle; default every frame (`tickSeconds = 0`); DEBUG override kept. Author confirmed 2026-08-06. _(TOR-470)_
 - [x] **Skybox-only Apply Location:** Allow Apply when `skyboxOverride` set without District/Site. Author confirmed ability; brief blindfold follow-up **TOR-478**. _(TOR-402)_
 - [x] **Skybox-only Apply brief blindfold:** Fade-in ? apply skybox ? ~2s hold ? lift. relatedTo **TOR-402**. Author confirmed 2026-08-06. _(TOR-478)_
+- [ ] **Apply Location full transition blindfold:** Live District/Site Apply runs the same staged blindfold as scene Apply, including destination district/site cards. Skybox-only stays on **TOR-478**. relatedTo **TOR-425**. _(TOR-488)_
 - [x] **Set present-day refreshes Day/Year/Time green tint:** After Set, clear dirty + refresh present-day green. Author confirmed 2026-08-06. _(TOR-480)_
 - [ ] **Daysleep Refresh gold button:** Years row far-right; session-start WP heal check. relatedTo **TOR-454**, **TOR-143**. _(TOR-482)_
 - [x] **Clock lerp id parse:** Lua `|` is literal ? match unit token then validate (fixes ?could not parse clock lerp control?). Author confirmed 2026-08-06. _(TOR-403)_
@@ -395,6 +397,7 @@ _Blocked: author must define data binding approach before substantial implementa
 - [x] **Shuffle Tarot deck on activate:** `deck.shuffle()` when turning ON in `TarotToggle.applyTarotStateNow`. Author confirmed 2026-08-03. _(TOR-447)_
 - [x] **Pink Tarot camera:** Activate ? Pink `diceTray`; hide ? Pink `default` (`GlobalApplyTarotState`). _(TOR-100)_ ? id reused from canceled Spotlight NPC distinction (Linear free create limit 2026-08-04)
 - [x] **Compulsions deck ? revised pick-and-present:** `U.chain` draw ? DRAWN + camera `compulsions` ? stagger four master matches ? select to SELECTED + `<Color>Object` + light STANDARD; remove ? master + light OFF + deck `interactable = true`; one Compulsion at a time (deck lock). GM Notes `Compulsion:<Type>-<charKey>:?`. [playbook](Step-By-Step%20Playbooks/TOR-204-compulsions-deck-verify.md). Author confirmed 2026-07-19. _(TOR-204)_
+- [ ] **Compulsion variant tally:** On first choice from the four master-deck cards, increment `gameState.playerData[playerID].compulsionsTally[Type][1-4]`. relatedTo **TOR-204**. _(TOR-489)_
 - [x] **Centralize object visibility:** Canceled then deleted from Linear (quota prune 2026-08-04). Recreate if work resumes. _(TOR-286 ? deleted)_
 - [x] **Player companion toggle tiles:** Red/Brown famulus A ? owner-gated left (on/off + front/back image swap) / right (state 1?2); Purple deferred (figurines not in save). Full five-tile Tarot-style reconcile later. _(TOR-288)_
 - [x] **Confirm stage figurine position lerp on Apply:** Diagnostics + eligibility audit (`NPCStageLerp`). _(TOR-367)_

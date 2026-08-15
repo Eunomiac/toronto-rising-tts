@@ -657,5 +657,9 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-08-06 | VERIFY | TOR-418, TOR-419, TOR-459 | Author confirmed resolved/tested in chat; Linear Done; PAVE TOR-459 cleared; Focus back to TOR-439 + TOR-482 |
 | 2026-08-06 | FOCUS | expand unblocked stack | Focus → TOR-439, TOR-482, TOR-81, TOR-168, TOR-98, TOR-89; tasklist stale Done/Canceled: TOR-72, TOR-86, TOR-87, TOR-157 |
 | 2026-08-06 | PAVE | author checklist pass | ✅ cleared TOR-462/481/484/449/469; ❌⚠️ TOR-485 → CREATE **TOR-486** (Focus #1, PAVE ⌚); TOR-439 remains |
+| 2026-08-14 | CREATE | TOR-487 | Take Half with Rouse auto-roll (INBOX Immediate → Focus #1 High; relatedTo TOR-73, TOR-317) |
+| 2026-08-14 | CREATE | TOR-488 | Apply Location full blindfold + district/site cards (INBOX Immediate → Focus #2 High; relatedTo TOR-425, TOR-478, TOR-402) |
+| 2026-08-14 | CREATE | TOR-489 | Compulsion variant tally on first choice (INBOX Immediate → Focus #4 High; relatedTo TOR-204; dynamic playerData not C.PlayerData) |
+| 2026-08-14 | FOCUS | TOR-487, TOR-488, TOR-486, TOR-489, TOR-439, TOR-482 | Immediate play-session bugs ahead of PAVE Clear follow-up; TOR-81 / TOR-168 / TOR-98 remain unblocked below Focus |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
