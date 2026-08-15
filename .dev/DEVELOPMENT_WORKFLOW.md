@@ -295,6 +295,8 @@ After inbox promotion or when the user asks **“what’s next”**, **“priori
 
 **Slash command:** **`/tr-inbox`** (`.cursor/skills/tr-inbox/SKILL.md`) runs inbox triage **and** Focus/Linear prioritization in one session so a new chat can use **`/tr-start`** immediately.
 
+**Combined small batch:** **`/tr-quick`** (`.cursor/skills/tr-quick/SKILL.md`) assesses Focus (or listed `TOR-*` ids), omits items too heavy to do together, and switches to Plan mode with **one** implementation plan. Do not wait for the author to confirm the issue list.
+
 ## Linear synchronization (detail)
 
 Linear is the source of truth for project state. [`.dev/RUNNING TASKLIST.md`](RUNNING%20TASKLIST.md) is the authoring surface for planned work; every bullet must have a matching `_(TOR-XX)_` id. Alignment audit: [`.dev/plans/linear-alignment-log.md`](plans/linear-alignment-log.md). **Agent rule:** `.cursor/rules/toronto-rising-linear.mdc`.
@@ -441,6 +443,7 @@ When working on this project:
 3. **Focus:** Stack rank at top of [RUNNING TASKLIST](RUNNING%20TASKLIST.md); **“what’s next”** / **“prioritize the backlog”** reads Focus + Linear Bugs
 4. **Session bootstrap:** **`/tr-start`** in Cursor (`.cursor/skills/tr-start/SKILL.md`) — re-anchor on Focus + architecture policies; commit without asking unless the author explicitly says not to
 5. **Inbox + prioritize:** **`/tr-inbox`** (`.cursor/skills/tr-inbox/SKILL.md`) — process INBOX, sync Focus and Linear priorities; then **`/tr-start`** in a fresh chat for implementation
+5b. **Small Focus batch (plan):** **`/tr-quick`** (`.cursor/skills/tr-quick/SKILL.md`) — assess listed `TOR-*` ids or the whole Focus stack; drop items too heavy to do together; switch to Plan mode and write one combined implementation plan **without** asking the author to confirm the issue list
 6. **Commit regularly**: Commit after each logical unit **without asking** — never prompt “want me to commit?” (always yes); reference `TOR-XX` in commit body
 7. **Clear Messages**: Write descriptive commit messages explaining what changed and why
 8. **Update Documentation**: Keep documentation files updated when making changes

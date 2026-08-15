@@ -28,9 +28,11 @@ Agent-first `.dev` routing docs may stay compact for other agents; anything the 
 
 `/tr-inbox` is the current capture-processing command. It turns markdown notes in `.dev/INBOX.md` into Linear issues, tasklist updates, and Focus stack changes.
 
+`/tr-quick` batches small Focus work: assess listed `TOR-*` ids (or the whole Focus stack if none were given), drop items too heavy to do together, then switch to Plan mode and write **one** implementation plan. Do not ask the author to confirm the issue list. Skill: [`.cursor/skills/tr-quick/SKILL.md`](.cursor/skills/tr-quick/SKILL.md).
+
 These workflows are not permanent architecture. Preserve their current behavior until a cleaner agent-first workflow is deliberately introduced.
 
-For Codex/API sessions where slash commands are not available, mirror the same behavior manually: inspect `.dev/RUNNING TASKLIST.md`, read `.dev/PENDING AUTHOR VERIFICATION.md` when useful, follow `.dev/PENDING AUTHOR VERIFICATION.agent.md` for verify wording, edit the PAVE checklist **only** when mirroring `/tr-inbox` / “process the inbox”, inspect `.dev/INBOX.md` when relevant, Linear context if available, and the task-specific routing in `.dev/DOCS_INDEX.md`.
+For Codex/API sessions where slash commands are not available, mirror the same behavior manually: inspect `.dev/RUNNING TASKLIST.md`, read `.dev/PENDING AUTHOR VERIFICATION.md` when useful, follow `.dev/PENDING AUTHOR VERIFICATION.agent.md` for verify wording, edit the PAVE checklist **only** when mirroring `/tr-inbox` / “process the inbox”, inspect `.dev/INBOX.md` when relevant, Linear context if available, and the task-specific routing in `.dev/DOCS_INDEX.md`. For a combined small Focus batch, follow [`.cursor/skills/tr-quick/SKILL.md`](.cursor/skills/tr-quick/SKILL.md) (assess, then plan — do not wait for issue-list confirmation).
 
 **Author verification:** Linear **Done** does not mean Save & Play confirmed. Put plain-English how-to-verify in the Linear Done comment when shipping. Agents **edit** the checklist [`.dev/PENDING AUTHOR VERIFICATION.md`](.dev/PENDING%20AUTHOR%20VERIFICATION.md) **only during `/tr-inbox`** (or “process the inbox”); policy: [`.dev/PENDING AUTHOR VERIFICATION.agent.md`](.dev/PENDING%20AUTHOR%20VERIFICATION.agent.md). On inbox, process author marks **✅** / **❌** / **⚠️**, mark unshipped follow-ups **⌚** (not ready to verify), and add missing Outstanding entries from Done comments / tasklist notes.
 

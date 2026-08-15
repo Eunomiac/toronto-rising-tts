@@ -661,5 +661,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-08-14 | CREATE | TOR-488 | Apply Location full blindfold + district/site cards (INBOX Immediate → Focus #2 High; relatedTo TOR-425, TOR-478, TOR-402) |
 | 2026-08-14 | CREATE | TOR-489 | Compulsion variant tally on first choice (INBOX Immediate → Focus #4 High; relatedTo TOR-204; dynamic playerData not C.PlayerData) |
 | 2026-08-14 | FOCUS | TOR-487, TOR-488, TOR-486, TOR-489, TOR-439, TOR-482 | Immediate play-session bugs ahead of PAVE Clear follow-up; TOR-81 / TOR-168 / TOR-98 remain unblocked below Focus |
+| 2026-08-15 | DOC | `/tr-quick` | New skill: assess Focus (or listed TOR ids) for a combined small batch, then Plan mode without confirming the issue list |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

@@ -4,6 +4,7 @@
 
 Read this when:
 - deciding what work to start next via `/tr-start` or "what's next"
+- batching small Focus items via `/tr-quick` (plan-only combined sweep)
 - keeping Linear, focus order, and active domain work aligned
 - closing or moving tasklist items after implementation
 
@@ -11,6 +12,7 @@ Source of truth:
 - Linear for issue status, blockers, and priority metadata
 - `.cursor/skills/tr-start/SKILL.md`
 - `.cursor/skills/tr-inbox/SKILL.md`
+- `.cursor/skills/tr-quick/SKILL.md`
 - `.cursor/rules/toronto-rising-linear.mdc`
 - `.dev/INBOX.md` for raw capture before triage
 - [PENDING AUTHOR VERIFICATION.md](PENDING%20AUTHOR%20VERIFICATION.md) ? author checklist of Done work still awaiting TTS confirmation (**agents edit only on `/tr-inbox`**)

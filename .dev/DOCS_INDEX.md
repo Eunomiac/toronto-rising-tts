@@ -30,6 +30,7 @@ Always verify important claims against code before changing behavior.
 | If the task is... | Read first | Then check |
 |---|---|---|
 | Starting the next scheduled task | [`RUNNING TASKLIST.md`](RUNNING%20TASKLIST.md), current workflow: [`../.cursor/skills/tr-start/SKILL.md`](../.cursor/skills/tr-start/SKILL.md) | Linear issue, relevant system docs below |
+| Combined small Focus batch (plan only) | [`RUNNING TASKLIST.md`](RUNNING%20TASKLIST.md) **Focus**, current workflow: [`../.cursor/skills/tr-quick/SKILL.md`](../.cursor/skills/tr-quick/SKILL.md) | Linear issues; do not wait for author to confirm the set |
 | Writing chat / Linear / verify text the author will read | [`../.cursor/rules/toronto-rising-author-voice.mdc`](../.cursor/rules/toronto-rising-author-voice.mdc), [`AGENTS.md`](../AGENTS.md) § Author voice | [`PENDING AUTHOR VERIFICATION.md`](PENDING%20AUTHOR%20VERIFICATION.md) checklist; agent policy in [`PENDING AUTHOR VERIFICATION.agent.md`](PENDING%20AUTHOR%20VERIFICATION.agent.md) |
 | Author TTS verification debt (Done but untested) | [`PENDING AUTHOR VERIFICATION.md`](PENDING%20AUTHOR%20VERIFICATION.md) (checklist — **agent edits only on `/tr-inbox`**), [`PENDING AUTHOR VERIFICATION.agent.md`](PENDING%20AUTHOR%20VERIFICATION.agent.md) (agent policy) | Linear Done comments (how-to-verify), tasklist domain bullets |
 | Processing captured ideas/bugs | [`INBOX.md`](INBOX.md), current workflow: [`../.cursor/skills/tr-inbox/SKILL.md`](../.cursor/skills/tr-inbox/SKILL.md) | [`DEVELOPMENT_WORKFLOW.md`](DEVELOPMENT_WORKFLOW.md), Linear |
@@ -89,4 +90,4 @@ Always verify important claims against code before changing behavior.
 Moving these paths requires a dedicated reference update.
 
 - `.dev/Sychronizing Game Functionality/` is misspelled but path-sensitive.
-- `/tr-start` and `/tr-inbox` are current workflows, not permanent commitments.
+- `/tr-start`, `/tr-inbox`, and `/tr-quick` are current workflows, not permanent commitments.
