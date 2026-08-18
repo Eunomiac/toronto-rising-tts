@@ -7091,8 +7091,8 @@ UI.setAttributes("overlay_globalBlindfold", {color = "rgba(1, 1, 1, 0.25)"})
     outlineSize="0 0" />
 
   <HorizontalLayout class="debug_seat_color_row"
-    rectAlignment="LowerCenter"
-    offsetXY="-34 0"
+    rectAlignment="LowerRight"
+    offsetXY="-100 0"
     width="190"
     height="30"
     spacing="2"
@@ -7568,7 +7568,7 @@ UI.setAttributes("overlay_globalBlindfold", {color = "rgba(1, 1, 1, 0.25)"})
 <Defaults>
   <Panel class="panel_STcamera"
     rectAlignment="LowerLeft"
-    offsetXY="0 0"
+    offsetXY="0 10"
     width="400"
     height="20"
     color="rgba(0,0,0,0)"
@@ -11542,161 +11542,113 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
 <!-- include ui/shared/session_start_heal_broadcast.xml -->
 <Defaults>
 
-  <Panel class="sessionStartHeal_screen"
-    color = "rgba(0, 0, 0, 0.97)"
-    width = "100%"
-    height = "100%" rectAlignment="MiddleCenter" offsetXY="0 0" showAnimation = "FadeIn" hideAnimation = "FadeOut" animationDuration = "0.5" showAnimationDelay = "0.5" />
+  <VerticalLayout class="sessionStartHeal_panel"
+    width = "900"
+    spacing = "0"
+    childAlignment = "MiddleCenter"
+    height = "100%" rectAlignment="MiddleCenter" showAnimation = "FadeIn" hideAnimation = "FadeOut" animationDuration = "2" childForceExpandWidth = "true" childForceExpandHeight = "true" />
 
-  <Panel class="sessionStartHeal_screen_content_spacer" flexibleWidth="1" flexibleHeight="1" />
+  <Panel class="sessionStartHeal_spacer" flexibleWidth="1" flexibleHeight="1" preferredHeight = "0" />
 
-  <Panel class="sessionStartHeal_screen_content"
-    height = "100%"
-    width = "900" rectAlignment="MiddleCenter" />
+  <VerticalLayout class="sessionStartHeal_screen_content" padding = "30 30 0 0" spacing = "5" childForceExpandWidth = "false" childAlignment = "UpperCenter" childForceExpandHeight = "false" />
 
-  <Image class="sessionStartHeal_image" preserveAspect="true" rectAlignment = "MiddleCenter" />
+  <VerticalLayout class="sessionStartHeal_screen_title_container" flexibleHeight = "0" preferredHeight = "100" minHeight = "100" preferredWidth = "900" childAlignment = "MiddleCenter" childForceExpandWidth = "false"/>
 
-  <Image class="sessionStartHeal_image_background" height = "550" width = "1200" offsetXY = "0 -15" preserveAspect = "false" />
+  <Image class="sessionStartHeal_image" preserveAspect="true"/>
 
-  <Image class="sessionStartHeal_image_figure"
-    height = "900" rectAlignment = "UpperCenter" showAnimation = "FadeIn" animationDelay = "2" />
+  <Image class="sessionStartHeal_image_background" ignoreLayout = "true" rectAlignment = "MiddleCenter"  height = "110%" width = "150%" preserveAspect = "false" />
+  <Image class="sessionStartHeal_image_border" preferredHeight = "70" preferredWidth = "900" minWidth = "900" flexibleHeight = "0" />
 
-  <Image class="sessionStartHeal_image_border"
-    width = "100%" />
+  <Text class="sessionStartHeal_title" fontSize = "40" fontStyle = "Bold" color = "#e6be65" />
+  <Text class="sessionStartHeal_description" fontStyle = "BoldAndItalic" color = "#e6be65" preferredWidth = "550" />
 
-  <Image class="sessionStartHeal_image_border_top" />
+  <HorizontalLayout class="sessionStartHeal_playerRow" spacing="10" childAlignment = "MiddleLeft" preferredHeight = "40" preferredWidth = "900" childForceExpandWidth = "false" />
 
-  <Image class="sessionStartHeal_image_border_bottom" />
-
-  <Panel class="sessionStartHeal_rousePanel" height = "40" />
-  <Image class="sessionStartHeal_rouseDie" rectAlignment = "UpperLeft" width = "40" height = "60" outline = "#000000" outlineSize = "-1 1" preserveAspect = "true" />
-
-
-  <Text class = "sessionStartHeal_rouseText" rectAlignment = "UpperLeft" fontSize = "32" color = "#FF0000" alignment = "MiddleLeft" fontStyle = "BoldAndItalic" horizontalOverflow = "overflow" shadow = "#000000" shadowDistance = "3 -3" outline = "#000000" outlineSize = "2 -2"/>
-
-  <Text class = "sessionStartHeal_rollType" rectAlignment = "MiddleCenter" fontSize = "18" color = "#b39542" alignment = "MiddleLeft" fontStyle = "BoldAndItalic" horizontalOverflow = "overflow" shadow = "#000000" shadowDistance = "3 -3" outline = "#000000" outlineSize = "2 -2"/>
-  <Text class = "sessionStartHeal_rollIntro" rectAlignment = "MiddleCenter" fontSize = "32" color = "#ffe59d" alignment = "MiddleLeft" fontStyle = "Bold" horizontalOverflow = "overflow" shadow = "#000000" shadowDistance = "3 -3" outline = "#000000" outlineSize = "2 -2"/>
-
-  <Image class="sessionStartHeal_die"  preferredWidth = "0" minWidth = "80" preserveAspect = "true" />
-
-
-  <HorizontalLayout class="sessionStartHeal_diceContainer" height = "120" width = "2000" childAlignment = "MiddleCenter" childForceExpandWidth = "false" />
-
-  <HorizontalLayout class="sessionStartHeal_successesContainer" childAlignment = "MiddleRight" childForceExpandWidth="false" preferredWidth="0" spacing="20" preferredHeight="44" minHeight="44" flexibleHeight="0"/>
-
-  <Text class="sessionStartHeal_successes"
-    fontSize = "60"
-    color = "#ffffff"
-    outline = "#000000"
-    outlineSize = "5 5"
-    alignment = "MiddleRight"
-    fontStyle = "Bold"
-    horizontalOverflow = "overflow"
-    shadow = "#000000" flexibleWidth="0"
-    shadowDistance = "3 -3" />
-
-  <Text class="sessionStartHeal_successesPhrase"
-    fontSize = "32"
-    color = "#ffffff"
-    alignment = "MiddleRight"
-    fontStyle = "Bold"
-    horizontalOverflow = "overflow"
-    shadow = "#000000" flexibleWidth="0"
-    shadowDistance = "3 -3" />
-  <HorizontalLayout class="sessionStartHeal_difficultyDisplayContainer" spacing="15" />
-  <Text class="sessionStartHeal_difficultyVS"
-    fontSize = "32"
-    color = "#990000"
-    alignment = "MiddleRight"
-    fontStyle = "Bold"
-    horizontalOverflow = "overflow"
-    shadow = "#000000" flexibleWidth="0"
-    shadowDistance = "3 -3" />
-
-  <Text class="sessionStartHeal_difficulty"
-    fontSize = "60"
-    color = "#FF0000"
-    outline = "#000000"
-    outlineSize = "5 5"
-    alignment = "MiddleRight"
-    fontStyle = "Bold"
-    horizontalOverflow = "overflow"
-    shadow = "#000000" flexibleWidth="0"
-    shadowDistance = "3 -3" />
-
-  <Text class="sessionStartHeal_resultDisplay"
-    fontSize = "100"
-    color = "#ffffff"
-    outline = "#000000"
-    outlineSize = "3 3"
-    alignment = "MiddleRight"
-    fontStyle = "Bold"
-    horizontalOverflow = "overflow"
-    shadow = "#000000"
-    shadowDistance = "3 -3" />
-
-  <Text class="sessionStartHeal_result_win" color="#c8c8c8" />
-  <Text class="sessionStartHeal_result_failure" color="#ff0000" />
-  <Text class="sessionStartHeal_result_totalFailure" color="#000000" outline="#990000" outlineSize="5 5" alignment="MiddleCenter" />
-  <Text class="sessionStartHeal_result_criticalWin" color="#ffffff" outline="#FFDD00" outlineSize="2 2" alignment="MiddleCenter" />
-  <Text class="sessionStartHeal_result_messyCritical" color="#ffffff" outline="#FF0000" outlineSize="3 3" alignment="MiddleCenter" />
-  <Text class="sessionStartHeal_result_bestialFailure" color="#990000" outline="#FF0000" outlineSize="2 2" alignment="MiddleCenter" />
-  <Text class="sessionStartHeal_result_totalBestialFailure" color="#440000" outline="#FF0000" outlineSize="5 5" alignment="MiddleCenter" fontSize = "80" />
-  <Text class="sessionStartHeal_result_brutalFailure" outline="#ff7300" outlineSize="5 5" color="#990000" alignment="MiddleCenter" />
-  <Text class="sessionStartHeal_result_brutalOutcome" color="#ff9100" outline="#ff0000" outlineSize="2 2" alignment="MiddleCenter" />
+  <Text class="sessionStartHeal_playerName" fontSize = "24" fontStyle = "Bold" color = "#e6be65" />
+  <Text class="sessionStartHeal_phrase" fontSize = "24" fontStyle = "Bold" color = "#e6be65" />
+  <Text class="sessionStartHeal_amount" fontSize = "34" fontStyle = "Bold" color = "#FFFFFF" />
+  <Text class="sessionStartHeal_phraseEnd" fontSize = "24" fontStyle = "Bold" color = "#e6be65" />
 
 </Defaults>
 
-<!-- Activate as part of the `PLAY` phase starting events, but ONLY if at least one player has Willpower damage to heal. -->
-<Panel id="sessionStartHeal_panel" class="sessionStartHeal_screen" active="false">
+<!--
 
-  <Panel class="sessionStartHeal_screen_content">
+UI.setAttributes("sessionStartHeal_panel", {animationDuration = "2"})
+UI.setAttributes("sessionStartHeal_screen_content_background", {})
+UI.setAttributes("db_sessionStartHeal_spacer_top", {})
+UI.setAttributes("db_sessionStartHeal_image_border_top", {})
+UI.setAttributes("db_sessionStartHeal_image_border_bottom", {})
+UI.setAttributes("db_sessionStartHeal_spacer_bottom", {})
+UI.setAttributes("db_sessionStartHeal_screen_title_container", {color="rgba(1, 0, 0, 0)"})
+
+UI.setAttributes("db_sessionStartHeal_screen_content", {})
+UI.setAttributes("db_sessionStartHeal_title", {})
+UI.setAttributes("db_sessionStartHeal_description", {})
+
+UI.setAttributes("sessionStartHeal_playerContainer_Red", {})
+UI.setAttributes("sessionStartHeal_playerContainer_Orange", {})
+UI.setAttributes("sessionStartHeal_playerContainer_Pink", {})
+UI.setAttributes("sessionStartHeal_playerContainer_Brown", {})
+UI.setAttributes("sessionStartHeal_playerContainer_Purple", {})
+
+UI.show("sessionStartHeal_panel")
+UI.show("sessionStartHeal_playerContainer_Red")
+UI.show("sessionStartHeal_playerContainer_Orange")
+UI.show("sessionStartHeal_playerContainer_Pink")
+UI.show("sessionStartHeal_playerContainer_Brown")
+UI.show("sessionStartHeal_playerContainer_Purple")
+
+UI.hide("sessionStartHeal_playerContainer_Pink")
+UI.hide("sessionStartHeal_playerContainer_Brown")
+UI.hide("sessionStartHeal_playerContainer_Purple")
+UI.hide("sessionStartHeal_playerContainer_Orange")
+
+-->
+
+<VerticalLayout id="sessionStartHeal_panel" class="sessionStartHeal_panel" active="false">
+  <Panel id="db_sessionStartHeal_spacer_top" class="sessionStartHeal_spacer" />
+  <Image id="db_sessionStartHeal_image_border_top" class="sessionStartHeal_image sessionStartHeal_image_border sessionStartHeal_image_border_top" image="resultsBorder"  />
+  <VerticalLayout id="db_sessionStartHeal_screen_content" class="sessionStartHeal_screen_content">
     <Image id="sessionStartHeal_screen_content_background" class="sessionStartHeal_image sessionStartHeal_image_background" image="resultsBG" />
-    <Image class="sessionStartHeal_image sessionStartHeal_image_border sessionStartHeal_image_border_top" image="resultsBorder" offsetXY = "0 350" />
-    <Image id="sessionStartHeal_screen_content_border_bottom" class="sessionStartHeal_image sessionStartHeal_image_border sessionStartHeal_image_border_bottom" image="resultsBorderBottom" offsetXY = "0 -200" />
-
-    <Panel class="sessionStartHeal_body_container">
-
-      <Text class="sessionStartHeal_title" text="Willpower Recovery" />
-      <Text class="sessionStartHeal_description" text="All characters automatically recover an amount of Willpower equal to the highest of their Resolve or Composure attributes:" />
-
-      <!-- Only activate those HorizontalLayout elements for players who have Willpower damage to heal. -->
-      <HorizontalLayout id="sessionStartHeal_playerContainer_Red" active="false">
-        <Text class="sessionStartHeal_playerName" text="Lord Lucian" />
-        <Text class="sessionStartHeal_phrase" text="heals" />
-        <Text id="sessionStartHeal_amount_Red" class="sessionStartHeal_amount" text="3" />
-        <Text class="sessionStartHeal_phrase" text="points of superficial Willpower damage." />
-      </HorizontalLayout>
-      <HorizontalLayout id="sessionStartHeal_playerContainer_Orange" active="false">
-        <Text class="sessionStartHeal_playerName" text="Seneschal Rashid" />
-        <Text class="sessionStartHeal_phrase" text="heals" />
-        <Text id="sessionStartHeal_amount_Orange" class="sessionStartHeal_amount" text="3" />
-        <Text class="sessionStartHeal_phrase" text="points of superficial Willpower damage." />
-      </HorizontalLayout>
-      <HorizontalLayout id="sessionStartHeal_playerContainer_Pink" active="false">
-        <Text class="sessionStartHeal_playerName" text="Primogen Aishe Tache" />
-        <Text class="sessionStartHeal_phrase" text="heals" />
-        <Text id="sessionStartHeal_amount_Pink" class="sessionStartHeal_amount" text="3" />
-        <Text class="sessionStartHeal_phrase" text="points of superficial Willpower damage." />
-      </HorizontalLayout>
-      <HorizontalLayout id="sessionStartHeal_playerContainer_Brown" active="false">
-        <Text class="sessionStartHeal_playerName" text="Primogen Fomórach" />
-        <Text class="sessionStartHeal_phrase" text="heals" />
-        <Text id="sessionStartHeal_amount_Brown" class="sessionStartHeal_amount" text="3" />
-        <Text class="sessionStartHeal_phrase" text="points of superficial Willpower damage." />
-      </HorizontalLayout>
-      <HorizontalLayout id="sessionStartHeal_playerContainer_Purple" active="false">
-        <Text class="sessionStartHeal_playerName" text="Sheriff Black Caesar" />
-        <Text class="sessionStartHeal_phrase" text="heals" />
-        <Text id="sessionStartHeal_amount_Purple" class="sessionStartHeal_amount" text="3" />
-        <Text class="sessionStartHeal_phrase" text="points of superficial Willpower damage." />
-      </HorizontalLayout>
-
-
-    </Panel>
-  </Panel>
-
-</Panel>
-
+    <VerticalLayout id="db_sessionStartHeal_screen_title_container" class="sessionStartHeal_screen_title_container">
+      <Text id="db_sessionStartHeal_title" class="sessionStartHeal_title" text="Willpower Refresh" />
+      <Text id="db_sessionStartHeal_description" class="sessionStartHeal_description" text="All characters automatically heal an amount of superficial Willpower damage equal to the highest of their Resolve or Composure attributes:" />
+    </VerticalLayout>
+    <!-- Only activate those HorizontalLayout elements for players who have Willpower damage to heal. -->
+    <HorizontalLayout id="sessionStartHeal_playerContainer_Red" class="sessionStartHeal_playerRow" active="false">
+      <Text id="db_sessionStartHeal_playerName_Red" class="sessionStartHeal_playerName" text="Lord Lucien" />
+      <Text id="db_sessionStartHeal_phrase_Red" class="sessionStartHeal_phrase" text="heals" />
+      <Text id="sessionStartHeal_amount_Red" class="sessionStartHeal_amount" text="3" />
+      <Text id="db_sessionStartHeal_phraseEnd_Red" class="sessionStartHeal_phrase" text="points of superficial Willpower damage." />
+    </HorizontalLayout>
+    <HorizontalLayout id="sessionStartHeal_playerContainer_Orange" class="sessionStartHeal_playerRow" active="false">
+      <Text id="db_sessionStartHeal_playerName_Orange" class="sessionStartHeal_playerName" text="Seneschal Rashid" />
+      <Text id="db_sessionStartHeal_phrase_Orange" class="sessionStartHeal_phrase" text="heals" />
+      <Text id="sessionStartHeal_amount_Orange" class="sessionStartHeal_amount" text="3" />
+      <Text id="db_sessionStartHeal_phraseEnd_Orange" class="sessionStartHeal_phrase" text="points of superficial Willpower damage." />
+    </HorizontalLayout>
+    <HorizontalLayout id="sessionStartHeal_playerContainer_Pink" class="sessionStartHeal_playerRow" active="false">
+      <Text id="db_sessionStartHeal_playerName_Pink" class="sessionStartHeal_playerName" text="Primogen Aishe Tache" />
+      <Text id="db_sessionStartHeal_phrase_Pink" class="sessionStartHeal_phrase" text="heals" />
+      <Text id="sessionStartHeal_amount_Pink" class="sessionStartHeal_amount" text="3" />
+      <Text id="db_sessionStartHeal_phraseEnd_Pink" class="sessionStartHeal_phrase" text="points of superficial Willpower damage." />
+    </HorizontalLayout>
+    <HorizontalLayout id="sessionStartHeal_playerContainer_Brown" class="sessionStartHeal_playerRow" active="false">
+      <Text id="db_sessionStartHeal_playerName_Brown" class="sessionStartHeal_playerName" text="Primogen Fomórach" />
+      <Text id="db_sessionStartHeal_phrase_Brown" class="sessionStartHeal_phrase" text="heals" />
+      <Text id="sessionStartHeal_amount_Brown" class="sessionStartHeal_amount" text="3" />
+      <Text id="db_sessionStartHeal_phraseEnd_Brown" class="sessionStartHeal_phrase" text="points of superficial Willpower damage." />
+    </HorizontalLayout>
+    <HorizontalLayout id="sessionStartHeal_playerContainer_Purple" class="sessionStartHeal_playerRow" active="false">
+      <Text id="db_sessionStartHeal_playerName_Purple" class="sessionStartHeal_playerName" text="Sheriff Black Caesar" />
+      <Text id="db_sessionStartHeal_phrase_Purple" class="sessionStartHeal_phrase" text="heals" />
+      <Text id="sessionStartHeal_amount_Purple" class="sessionStartHeal_amount" text="3" />
+      <Text id="db_sessionStartHeal_phraseEnd_Purple" class="sessionStartHeal_phrase" text="points of superficial Willpower damage." />
+    </HorizontalLayout>
+  </VerticalLayout>
+  <Image id="db_sessionStartHeal_image_border_bottom" class="sessionStartHeal_image sessionStartHeal_image_border sessionStartHeal_image_border_bottom" image="resultsBorderBottom"  />
+  <Panel id="db_sessionStartHeal_spacer_bottom" class="sessionStartHeal_spacer" />
+</VerticalLayout>
 <!-- /include ui/shared/session_start_heal_broadcast.xml -->
 
 
@@ -13573,8 +13525,8 @@ M.minimal = [=[
     outlineSize="0 0" />
 
   <HorizontalLayout class="debug_seat_color_row"
-    rectAlignment="LowerCenter"
-    offsetXY="-34 0"
+    rectAlignment="LowerRight"
+    offsetXY="-100 0"
     width="190"
     height="30"
     spacing="2"

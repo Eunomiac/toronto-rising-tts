@@ -1,7 +1,7 @@
 <Defaults>
   <Panel class="panel_STcamera"
     rectAlignment="LowerLeft"
-    offsetXY="0 0"
+    offsetXY="0 10"
     width="400"
     height="20"
     color="rgba(0,0,0,0)"
