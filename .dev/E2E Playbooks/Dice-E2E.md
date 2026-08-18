@@ -580,26 +580,10 @@ U.chain({
   function()
     rollSetFaces("Brown", { rouse = { 4 } })
     RC.onDiceSettled("Brown")
-    rollConfirm("Brown", {
-      phase = "postRoll",
-      active = {
-        tookHalf = true,
-        result = { resultClass = "failure", successes = 2, margin = -1 },
-      },
-      rouseStrip = { label = "Rouse", narrative = "Hunger Roused" },
-    })
+    -- TOR-328 / TOR-487: Take Half + Rouse sole Confirm auto-broadcasts (no Confirm click).
+    rollConfirm("Brown", { noActive = true })
   end,
   function()
-    M.setCamera("ALL", "rollBrown")
-    printHeader("[HUMAN] Brown clicks Confirm on roll panel (or rollForceConfirm in next block)", 3)
-  end
-})
-```
-
-```lua
-U.chain({
-  function()
-    rollForceConfirm("Brown")
     rollE2eExpectBroadcast({
       color = "Brown",
       visible = true,
@@ -628,14 +612,8 @@ U.chain({
   function()
     rollSetFaces("Brown", { rouse = { 4 } })
     RC.onDiceSettled("Brown")
-    rollConfirm("Brown", {
-      phase = "postRoll",
-      active = {
-        tookHalf = true,
-        result = { resultClass = "win", successes = 2, marginAbsent = true },
-      },
-    })
-    rollForceConfirm("Brown")
+    -- TOR-328 / TOR-487: sole Confirm auto-broadcasts (no Confirm click).
+    rollConfirm("Brown", { noActive = true })
   end,
   function()
     rollE2eExpectBroadcast({
@@ -978,6 +956,23 @@ U.chain({
     -- Shortcut auto-opens + auto-tosses; sole Confirm may auto-resolve (TOR-328).
     rollConfirm("Brown", { noActive = true })
     rollCancel("Brown")
+  end,
+  function() printHeader("", 2) end,
+  function() printHeader("K1b3 - Idle Oblivion-Rouse bag right-click auto-rolls 1-die Oblivion Rouse", 2) end,
+  rollCancelAll,
+  function()
+    rollE2eSeatPrep("Purple")
+    M.setCamera("ALL", "rollPurple")
+    printHeader("[HUMAN] Right-click Oblivion-Rouse bag 1 time (no live roll). Wait until the die tosses and the result appears.", 3)
+  end
+})
+```
+
+```lua
+U.chain({
+  function()
+    rollConfirm("Purple", { noActive = true })
+    rollCancel("Purple")
   end,
   function() printHeader("", 2) end,
   function() printHeader("K1c - Normal bag to STANDARD", 2) end,

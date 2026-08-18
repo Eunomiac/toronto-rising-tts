@@ -1264,9 +1264,7 @@ function GlobalGameboardRecoverStrays(params)
     params = type(params) == "table" and params or {}
     local color = type(params.player_color) == "string" and params.player_color or "Black"
     local Gameboard = require("core.npc_gameboard")
-    local movedStray = Gameboard.recoverStrayNpcTokensToPalette()
-    local movedResnap = Gameboard.resnapPaletteTokensOnPalette()
-    local total = (tonumber(movedStray) or 0) + (tonumber(movedResnap) or 0)
+    local total = tonumber(Gameboard.recoverStraysAndResnapPalette()) or 0
     if broadcastToColor ~= nil then
         if total > 0 then
             broadcastToColor("Recovered " .. tostring(total) .. " token(s) to the palette.", color, { 0, 1, 1 })
@@ -1631,21 +1629,33 @@ function GlobalIsPlayerDiceBagEnabled(params)
     return DBV.isBagEnabled(color, dieKind)
 end
 
---- Idle Rouse-bag right-click: 1-die Rouse, skip ST Open, auto-toss (TOR-490).
+--- Idle Rouse / Oblivion-Rouse bag right-click: 1-die check, skip ST Open, auto-toss (TOR-490 / TOR-491).
 -- @param color string
-local function startQuickDedicatedRouseCheck(color)
+-- @param dieKind string  DK.KIND_ROUSE or DK.KIND_OBLIV_ROUSE
+local function startQuickDedicatedRouseCheck(color, dieKind)
     if type(color) ~= "string" or RC == nil then
         return
     end
+    local rollType = nil
+    if dieKind == DK.KIND_ROUSE then
+        rollType = C.RollType.ROUSE
+    elseif dieKind == DK.KIND_OBLIV_ROUSE then
+        if math.floor(tonumber(S.getPlayerVal(color, "hunger")) or 0) >= C.MAX_HUNGER then
+            return
+        end
+        rollType = C.RollType.ROUSE_OBLIVION
+    else
+        return
+    end
     local ok = RC.initiateRoll(color, {
-        rollType = C.RollType.ROUSE,
+        rollType = rollType,
         label = "",
         initiator = "player",
     })
     if ok ~= true then
         return
     end
-    -- Player-initiated Rouse stays in SETUP for ST Open; this shortcut Opens then auto-tosses.
+    -- Player-initiated Rouse-family stays in SETUP for ST Open; this shortcut Opens then auto-tosses.
     if RC.openRoll(color) ~= true then
         return
     end
@@ -1653,7 +1663,7 @@ local function startQuickDedicatedRouseCheck(color)
 end
 
 --- Player dice bag right-click: opposite of left-click (usually remove one die).
--- Idle Rouse bag: quick 1-die Rouse (initiate + Open + auto-toss). Other idle bags: no-op.
+-- Idle Rouse / Oblivion-Rouse bag: quick 1-die check (initiate + Open + auto-toss). Other idle bags: no-op.
 -- @param params table  { color, dieKind, phase }
 function GlobalDiceBagRightClick(params)
     if type(params) ~= "table" or RC == nil then return end
@@ -1680,8 +1690,8 @@ function GlobalDiceBagRightClick(params)
     end
 
     if phase == nil then
-        if dieKind == DK.KIND_ROUSE then
-            startQuickDedicatedRouseCheck(color)
+        if dieKind == DK.KIND_ROUSE or dieKind == DK.KIND_OBLIV_ROUSE then
+            startQuickDedicatedRouseCheck(color, dieKind)
         end
         return
     end
@@ -4471,7 +4481,7 @@ function HUD_scenesClockLerpYearGo(player, button, id)
     StorytellerScenesPanel.startClockLerpYearGo(isRightClick)
 end
 
---- TOR-482: Daysleep Refresh — session-start Willpower heal on demand (live scene only).
+--- TOR-482: Daysleep Refresh — session-start Willpower heal on demand (no live scene required).
 function HUD_scenesDaysleepRefresh(player, button, id)
     if not requireStorytellerForMutation(player, "HUD_scenesDaysleepRefresh") then
         return

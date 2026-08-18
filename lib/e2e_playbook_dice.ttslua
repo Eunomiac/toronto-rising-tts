@@ -26,9 +26,9 @@ Playbook.suiteSteps = {
     ["F"] = 6,
     ["G"] = 6,
     ["H"] = 6,
-    ["I"] = 8,
-    ["J"] = 12,
-    ["K"] = 15,
+    ["I"] = 7,
+    ["J"] = 11,
+    ["K"] = 14,
     ["L"] = 34,
     ["M"] = 37,
     ["N"] = 38,
@@ -582,24 +582,10 @@ Playbook.steps = {
           function()
             rollSetFaces("Brown", { rouse = { 4 } })
             RC.onDiceSettled("Brown")
-            rollConfirm("Brown", {
-              phase = "postRoll",
-              active = {
-                tookHalf = true,
-                result = { resultClass = "failure", successes = 2, margin = -1 },
-              },
-              rouseStrip = { label = "Rouse", narrative = "Hunger Roused" },
-            })
+            -- TOR-328 / TOR-487: Take Half + Rouse sole Confirm auto-broadcasts (no Confirm click).
+            rollConfirm("Brown", { noActive = true })
           end,
           function()
-            M.setCamera("ALL", "rollBrown")
-            printHeader("[HUMAN] Brown clicks Confirm on roll panel (or rollForceConfirm in next block)", 3)
-          end
-        },
-    -- step 8
-        {
-          function()
-            rollForceConfirm("Brown")
             rollE2eExpectBroadcast({
               color = "Brown",
               visible = true,
@@ -628,14 +614,8 @@ Playbook.steps = {
           function()
             rollSetFaces("Brown", { rouse = { 4 } })
             RC.onDiceSettled("Brown")
-            rollConfirm("Brown", {
-              phase = "postRoll",
-              active = {
-                tookHalf = true,
-                result = { resultClass = "win", successes = 2, marginAbsent = true },
-              },
-            })
-            rollForceConfirm("Brown")
+            -- TOR-328 / TOR-487: sole Confirm auto-broadcasts (no Confirm click).
+            rollConfirm("Brown", { noActive = true })
           end,
           function()
             rollE2eExpectBroadcast({
@@ -693,7 +673,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Click Spend WP; hover each of 3 normal dice and press R once; wait for settle", 3)
           end
         },
-    -- step 9
+    -- step 8
         {
           function()
             rollConfirm("Brown", {
@@ -730,7 +710,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Spend WP; reroll one die; verify second die does not reroll; wait for settle", 3)
           end
         },
-    -- step 10
+    -- step 9
         {
           function()
             rollConfirm("Brown", {
@@ -770,7 +750,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Spend WP; hover hunger die and press R once; wait for settle; Confirm (under-cap WP needs Confirm)", 3)
           end
         },
-    -- step 11
+    -- step 10
         {
           function()
             rollConfirm("Brown", {
@@ -811,7 +791,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Spend WP; rouse die must stay locked; reroll each normal die once; wait for settle; Confirm (cap 3, only 2 normals)", 3)
           end
         },
-    -- step 12
+    -- step 11
         {
           function()
             rollConfirm("Brown", {
@@ -851,7 +831,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Click Confirm once", 3)
           end
         },
-    -- step 13
+    -- step 12
         {
           function() printHeader("", 2) end,
           function() printHeader("J2 - Blood surge + compound (same roll)", 2) end,
@@ -862,7 +842,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Hunger bag 1 time (SETUP / Awaiting Storyteller — Open is automated next)", 3)
           end
         },
-    -- step 14
+    -- step 13
         {
           rollE2eWaitForDiceTray,
           function()
@@ -893,7 +873,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Click Confirm once", 3)
           end
         },
-    -- step 15
+    -- step 14
         {
           function() printHeader("", 2) end,
           function() printHeader("", 1) end,
@@ -914,7 +894,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Hunger bag 1 time (surge off)", 3)
           end
         },
-    -- step 16
+    -- step 15
         {
           function()
             rollConfirm("Brown", {
@@ -933,7 +913,7 @@ Playbook.steps = {
             printHeader("[HUMAN] Left-click Rouse bag 1 time", 3)
           end
         },
-    -- step 17
+    -- step 16
         {
           function()
             -- Cold bag initiate → SETUP (player initiator); only Remorse skips SETUP.
@@ -952,12 +932,27 @@ Playbook.steps = {
             printHeader("[HUMAN] Right-click Rouse bag 1 time (no live roll). Wait until the die tosses and the result appears.", 3)
           end
         },
-    -- step 18
+    -- step 17
         {
           function()
             -- Shortcut auto-opens + auto-tosses; sole Confirm may auto-resolve (TOR-328).
             rollConfirm("Brown", { noActive = true })
             rollCancel("Brown")
+          end,
+          function() printHeader("", 2) end,
+          function() printHeader("K1b3 - Idle Oblivion-Rouse bag right-click auto-rolls 1-die Oblivion Rouse", 2) end,
+          rollCancelAll,
+          function()
+            rollE2eSeatPrep("Purple")
+            M.setCamera("ALL", "rollPurple")
+            printHeader("[HUMAN] Right-click Oblivion-Rouse bag 1 time (no live roll). Wait until the die tosses and the result appears.", 3)
+          end
+        },
+    -- step 18
+        {
+          function()
+            rollConfirm("Purple", { noActive = true })
+            rollCancel("Purple")
           end,
           function() printHeader("", 2) end,
           function() printHeader("K1c - Normal bag to STANDARD", 2) end,
