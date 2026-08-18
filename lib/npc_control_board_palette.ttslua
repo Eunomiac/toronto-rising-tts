@@ -828,6 +828,80 @@ function Palette.resnapOnPaletteTokens(palette)
     return moved
 end
 
+--- One tagged-token scan: park off-board strays and re-snap tokens already on the palette (TOR-486).
+--- Does not move tokens on CONTROL_BOARD or on-stage placement keys. Does not wipe placements.
+--- @param palette Object
+--- @param opts table|nil `{ isOnControlBoard?: fun(token: Object): boolean }`
+--- @return number moved
+function Palette.recoverStraysAndResnapPalette(palette, opts)
+    if not U.isGameObject(palette) then
+        return 0
+    end
+    opts = U.Type(opts) == "table" and opts or {}
+    local isOnControlBoard = opts.isOnControlBoard
+    local placedOnStage = characterKeysWithStagePlacements()
+    local assignments = Palette.buildTokenSnapAssignments()
+    local snapIndices = uniqueAssignmentSnapIndices(assignments)
+    local snapWorld = {}
+    for _, snapIndex in ipairs(snapIndices) do
+        snapWorld[snapIndex] = Palette.worldPositionForSnapIndex(palette, snapIndex)
+    end
+    local snapPointsForFind = {}
+    for _, snapIndex in ipairs(snapIndices) do
+        local wp = snapWorld[snapIndex]
+        if wp ~= nil then
+            snapPointsForFind[#snapPointsForFind + 1] = { position = wp, snapIndex = snapIndex }
+        end
+    end
+
+    local moved = 0
+    local allTagged = getObjectsWithTag(TAG_TOKEN) or {}
+    for _, token in ipairs(allTagged) do
+        if U.isGameObject(token) then
+            if type(isOnControlBoard) == "function" and isOnControlBoard(token) == true then
+                -- On CONTROL_BOARD minimap — leave for Apply or second Clear click.
+            else
+                local ck = tokenCharacterKey(token)
+                local wantIndex = ck ~= nil and assignments[ck] or nil
+                local onPalette = Palette.isTokenOnPaletteBoard(palette, token)
+                if onPalette then
+                    if U.Type(wantIndex) == "number" and snapWorld[wantIndex] ~= nil and type(token.getPosition) == "function" then
+                        local nearestSlot = U.findSnapPoint(snapPointsForFind, token.getPosition(), 0.35)
+                        local nearestIndex = nil
+                        if U.Type(nearestSlot) == "number" and snapPointsForFind[nearestSlot] ~= nil then
+                            nearestIndex = snapPointsForFind[nearestSlot].snapIndex
+                        end
+                        local needPos = nearestIndex ~= wantIndex
+                        local wasFaceDown = not paletteTokenIsFaceUp(token)
+                        if needPos then
+                            token.setPosition(snapWorld[wantIndex])
+                        end
+                        Palette.applyPaletteParkingRotation(palette, token)
+                        Palette.applyPaletteParkingScale(token)
+                        if needPos or wasFaceDown then
+                            moved = moved + 1
+                        end
+                    end
+                elseif placedOnStage[ck] ~= true then
+                    if U.Type(wantIndex) == "number" and snapWorld[wantIndex] ~= nil then
+                        token.setPosition(snapWorld[wantIndex])
+                        Palette.applyPaletteParkingRotation(palette, token)
+                        Palette.applyPaletteParkingScale(token)
+                        if token.setInvisibleTo ~= nil then
+                            token.setInvisibleTo(C.PlayerColors or {})
+                        end
+                        moved = moved + 1
+                    end
+                end
+            end
+        end
+    end
+    if moved > 0 then
+        print("[Palette] recoverStraysAndResnapPalette: parked/re-snapped " .. tostring(moved) .. " token(s)")
+    end
+    return moved
+end
+
 --- Move misplaced palette tokens, then park all tokens that belong on the palette.
 --- @param palette Object
 --- @param options table|nil `{ skipParkIf?: fun(token: Object, characterKey: string|nil): boolean }` — when true, token is not repositioned in phase 2

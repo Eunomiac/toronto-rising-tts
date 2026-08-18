@@ -1600,13 +1600,29 @@ local function recalculateTakeHalfAwaitingRouse(color, active, wasRolling)
     if active.phase == C.RollPhase.POST_ROLL then
         rollCamera(color, "roll")
     end
+    if wasRolling and active.phase == C.RollPhase.POST_ROLL
+        and color ~= "Black"
+        and _autoConfirmDepth == 0
+        and active.pendingResolution == nil
+    then
+        -- TOR-328: sole Confirm with no in-world alternate → auto-broadcast (extends TOR-306 / TOR-487).
+        local RUI = require("core.roll_ui")
+        local shouldAuto, soleAction = RUI.shouldAutoProceedSoleAction(active, color)
+        if shouldAuto and soleAction == "confirm" then
+            _autoConfirmDepth = _autoConfirmDepth + 1
+            local ok = RC.confirmRoll(color)
+            _autoConfirmDepth = _autoConfirmDepth - 1
+            return ok
+        end
+    end
     return true
 end
 
 --- Player takes automatic successes (half pool, rounded down) instead of rolling.
 -- Available in PRE_ROLL when the roll type permits Take Half (ST difficulty optional).
--- When the pool includes Rouse/Oblivion-Rouse dice, non-Rouse dice are removed and the
--- roll stays in ROLLING until those dice are thrown; then POST_ROLL merges Take Half + strips.
+-- When the pool includes Rouse/Oblivion-Rouse dice, non-Rouse dice are removed and those
+-- leftover dice auto-toss; when they settle, POST_ROLL merges Take Half + strips and
+-- sole-Confirm auto-broadcasts (TOR-328 / TOR-487).
 --
 -- @param color string
 -- @return boolean

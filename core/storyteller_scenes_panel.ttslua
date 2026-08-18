@@ -736,9 +736,8 @@ local function refreshDaysleepRefreshButtonColor()
     if UI == nil or UI.setAttributes == nil then
         return
     end
-    local live = SceneLibrary.hasLiveSceneOnTable and SceneLibrary.hasLiveSceneOnTable() == true
     U.setAttributes("scenes_daysleep_refresh", {
-        colors = live and GOLD or GREY,
+        colors = GOLD,
         textColor = "#FFFFFF",
     })
 end
@@ -2380,13 +2379,15 @@ function StorytellerScenesPanel.applyLocationFromInputs(player)
 end
 
 --- Daysleep Refresh: session-start Willpower heal for seated PCs (TOR-482).
+--- Does not require a live scene. Holds the heal overlay, then hides it (same 6s as Play enter).
 function StorytellerScenesPanel.runDaysleepWillpowerRefresh()
-    if not SceneLibrary.hasLiveSceneOnTable or SceneLibrary.hasLiveSceneOnTable() ~= true then
-        U.AlertGM("Daysleep Refresh needs a live scene on the table (Apply a library row first).")
-        return
-    end
     local Phases = require("core.phases")
-    Phases.runSessionStartWillpowerHeal({ reason = "daysleepRefresh" })
+    local delay = Phases.runSessionStartWillpowerHeal({ reason = "daysleepRefresh" })
+    if type(delay) == "number" and delay > 0 then
+        U.await(function()
+            Phases.hideSessionStartHealPanel()
+        end, delay)
+    end
 end
 
 --- @param player Player

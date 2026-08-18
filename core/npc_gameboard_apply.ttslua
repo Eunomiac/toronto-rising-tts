@@ -603,6 +603,21 @@ function Apply.resnapPaletteTokensOnPalette()
     return Palette.resnapOnPaletteTokens(palette)
 end
 
+--- Park strays and re-snap on-palette tokens in one tagged-token scan (TOR-486).
+--- @return number moved
+function Apply.recoverStraysAndResnapPalette()
+    local palette = Board.getControlBoardPalette()
+    local board = Board.getControlBoard()
+    if not Board.isGameObject(palette) then
+        return 0
+    end
+    return Palette.recoverStraysAndResnapPalette(palette, {
+        isOnControlBoard = function(token)
+            return Board.isGameObject(board) and Board.isTokenOnControlBoardFace(board, token)
+        end,
+    })
+end
+
 --- Park all NPC control tokens on CONTROL_BOARD_PALETTE (group layout from npcs_data).
 --- @param options table|nil Forwarded to `Palette.syncTokensToPalette` (e.g. `skipParkIf`).
 --- @return number moved

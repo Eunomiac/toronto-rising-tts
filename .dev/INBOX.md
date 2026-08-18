@@ -44,6 +44,8 @@ Verification:
 
 ## Processed
 
+2026-08-18 `/tr-inbox` capture empty; PAVE ✅ cleared **TOR-488** (Apply Location full blindfold) and **TOR-489** (Compulsion variant tally); Immediate follow-ups shipped: **TOR-487** (Take Half + Rouse auto-confirm), **TOR-482** (Daysleep Refresh no live scene + overlay hide), **TOR-486** (one token scan on right-click Clear); **TOR-490** already author-confirmed; **TOR-491** added to Outstanding
+
 2026-08-14 `/tr-inbox` Immediate — Take Half with Rouse should auto-roll → **TOR-487** (Focus #1 High); Apply Location full blindfold + district/site cards → **TOR-488** (Focus #2 High); Compulsion variant tally on first choice → **TOR-489** (Focus #4 High)
 
 2026-08-06 PAVE-only — ✅ cleared **TOR-462** / **TOR-481** / **TOR-484** / **TOR-449** / **TOR-469**; ❌⚠️ **TOR-485** → **TOR-486** (Clear right-click no-op + palette re-snap; Focus #1)
