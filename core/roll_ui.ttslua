@@ -706,6 +706,10 @@ end
 
 local BROADCAST_FIGURE_ID = "rollRes_screen_content_figure"
 local broadcastHideCleanupHandle
+local broadcastQueue = {}
+local broadcastBusy = false
+local broadcastHoldHandle
+local broadcastGapHandle
 
 --- Re-enable figure slot after hide so the next broadcast can show a cutout again.
 local function restoreBroadcastFigureForNextRoll()
@@ -761,6 +765,19 @@ end
 local function cancelBroadcastHideCleanup()
     U.cancel(broadcastHideCleanupHandle)
     broadcastHideCleanupHandle = nil
+end
+
+--- Stop the visible hold and the post-hide gap before the next queued item.
+local function cancelBroadcastHoldAndGap()
+    U.cancel(broadcastHoldHandle)
+    broadcastHoldHandle = nil
+    U.cancel(broadcastGapHandle)
+    broadcastGapHandle = nil
+end
+
+--- Drop pending broadcasts. Does not hide the panel or cancel the running hold.
+local function clearBroadcastQueue()
+    broadcastQueue = {}
 end
 
 --- Clear rollRes_* fields after hide animation finishes (do not reset synchronously on UI.hide).
@@ -1708,22 +1725,15 @@ end
 -- PUBLIC API — RESULT BROADCAST PANEL
 -- ============================================================================
 
---- Shows the Roll Result Broadcast Panel with a resolved result.
--- The panel is visible to all players (no visibility filter).
--- Auto-hides after a timeout unless explicitly dismissed.
---
--- @param color string      Roller's seat color
--- @param result table|nil  Resolved result record (may be nil for Take Half with no difficulty)
--- @param label string|nil  Optional roll label
--- @param historyEntryOverride table|nil  Specific history row (manual ST broadcast)
--- @usage RUI.showResultBroadcast("Red", result, "Stealth vs Guard")
-function RUI.showResultBroadcast(color, result, label, historyEntryOverride)
-    U.Val("RUI.showResultBroadcast()", {color = color},
-        U.Type(color) == "string", "color must be a string")
+local pumpBroadcastQueue
 
-    cancelBroadcastHideCleanup()
-    resetBroadcastPanel()
-
+--- Snapshot display fields at enqueue time. Do not re-read live `active` later.
+-- @param color string
+-- @param result table|nil
+-- @param label string|nil
+-- @param historyEntryOverride table|nil
+-- @return table
+local function snapshotBroadcastPayload(color, result, label, historyEntryOverride)
     local pid = S.getPlayerID(color)
     local rollerName = characterName(pid, color)
     if color == "Black" and type(label) == "string" and label ~= "" then
@@ -1745,6 +1755,48 @@ function RUI.showResultBroadcast(color, result, label, historyEntryOverride)
         rouseStrips = U.Type(lastEntry.rouseOutcomeStrips) == "table" and lastEntry.rouseOutcomeStrips or nil
         npcCharacterKey = U.Type(lastEntry.npcCharacterKey) == "string" and lastEntry.npcCharacterKey or nil
     end
+
+    local resultCopy = result
+    if type(result) == "table" then
+        resultCopy = U.clone(result, true)
+    end
+    local diceFacesCopy = diceFaces
+    if type(diceFaces) == "table" then
+        diceFacesCopy = U.clone(diceFaces, true)
+    end
+    local rouseStripsCopy = rouseStrips
+    if type(rouseStrips) == "table" then
+        rouseStripsCopy = U.clone(rouseStrips, true)
+    end
+
+    return {
+        color = color,
+        pid = pid,
+        label = label,
+        result = resultCopy,
+        rollerName = rollerName,
+        rollTypeKey = rollTypeKey,
+        diceFaces = diceFacesCopy,
+        rouseStrips = rouseStripsCopy,
+        npcCharacterKey = npcCharacterKey,
+    }
+end
+
+--- Fill and show rollRes_panel from a queued snapshot.
+-- @param payload table
+local function applyBroadcastPayload(payload)
+    cancelBroadcastHideCleanup()
+    resetBroadcastPanel()
+
+    local color = payload.color
+    local pid = payload.pid
+    local label = payload.label
+    local result = payload.result
+    local rollerName = payload.rollerName
+    local rollTypeKey = payload.rollTypeKey or ""
+    local diceFaces = payload.diceFaces
+    local rouseStrips = payload.rouseStrips
+    local npcCharacterKey = payload.npcCharacterKey
 
     applyBroadcastFigure(color, pid, label, npcCharacterKey)
 
@@ -1794,11 +1846,54 @@ function RUI.showResultBroadcast(color, result, label, historyEntryOverride)
     end
 
     UI.show("rollRes_panel")
+end
 
-    U.await(function()
+--- If idle, pop the next snapshot, show it for the full hold, then fade and pump again.
+pumpBroadcastQueue = function()
+    if broadcastBusy then
+        return
+    end
+    if #broadcastQueue == 0 then
+        return
+    end
+
+    broadcastBusy = true
+    local payload = table.remove(broadcastQueue, 1)
+    applyBroadcastPayload(payload)
+
+    broadcastHoldHandle = U.await(function()
+        broadcastHoldHandle = nil
         UI.hide("rollRes_panel")
         scheduleBroadcastPanelCleanupAfterHide()
+        broadcastGapHandle = U.await(function()
+            broadcastGapHandle = nil
+            broadcastBusy = false
+            pumpBroadcastQueue()
+        end, C.ROLL_RESULT_BROADCAST_HIDE_CLEANUP_SECONDS)
     end, C.ROLL_RESULT_BROADCAST_SECONDS)
+end
+
+--- Queue a snapshot and start the pump if it is idle.
+-- @param payload table
+local function enqueueBroadcast(payload)
+    broadcastQueue[#broadcastQueue + 1] = payload
+    pumpBroadcastQueue()
+end
+
+--- Shows the Roll Result Broadcast Panel with a resolved result.
+-- The panel is visible to all players (no visibility filter).
+-- Rapid confirms enqueue FIFO: each item holds for the full timeout, then a fade gap, then the next.
+--
+-- @param color string      Roller's seat color
+-- @param result table|nil  Resolved result record (may be nil for Take Half with no difficulty)
+-- @param label string|nil  Optional roll label
+-- @param historyEntryOverride table|nil  Specific history row (manual ST broadcast)
+-- @usage RUI.showResultBroadcast("Red", result, "Stealth vs Guard")
+function RUI.showResultBroadcast(color, result, label, historyEntryOverride)
+    U.Val("RUI.showResultBroadcast()", {color = color},
+        U.Type(color) == "string", "color must be a string")
+
+    enqueueBroadcast(snapshotBroadcastPayload(color, result, label, historyEntryOverride))
 end
 
 --- Shows the broadcast panel from a specific history entry (manual ST broadcast by rollId).
@@ -1811,9 +1906,12 @@ function RUI.showResultBroadcastFromEntry(color, entry)
     RUI.showResultBroadcast(color, entry.result, entry.label, entry)
 end
 
---- Immediately hides the Roll Result Broadcast Panel.
+--- Immediately hides the Roll Result Broadcast Panel and drops any queued items.
 -- @usage RUI.hideResultBroadcast()
 function RUI.hideResultBroadcast()
+    clearBroadcastQueue()
+    cancelBroadcastHoldAndGap()
+    broadcastBusy = false
     UI.hide("rollRes_panel")
     scheduleBroadcastPanelCleanupAfterHide()
 end
