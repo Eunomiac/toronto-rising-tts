@@ -189,6 +189,7 @@ UI.setAttributes("scenes_clock_speed", {minWidth = "45"})
     <Text id="scenes_lerp_label_year" fontSize="11" color="#CCCCCC">Years</Text>
     <InputField id="scenes_lerp_year_input" class="hud_storyteller_input" minHeight="28" preferredHeight="28" minWidth="72" preferredWidth="72" flexibleWidth="0" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" characterValidation="Integer" text="" onValueChanged="HUD_scenesClockLerpYearChanged" onEndEdit="HUD_scenesClockLerpYearChanged" />
     <Button id="scenes_lerp_year_go" class="hud_storyteller_button" text="Go" minWidth="52" preferredWidth="52" fontSize="11" onClick="HUD_scenesClockLerpYearGo" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+    <Button id="scenes_daysleep_refresh" class="hud_storyteller_button" text="Refresh" minWidth="72" preferredWidth="72" fontSize="11" onClick="HUD_scenesDaysleepRefresh" colors="#B8860B|#DAA520|#8B6914|#B8860B" textColor="#FFFFFF" />
   </HorizontalLayout>
 
   <HorizontalLayout id="db_panel_scenes_location_buttons_3" spacing="6" childForceExpandWidth="false" childAlignment="MiddleCenter">

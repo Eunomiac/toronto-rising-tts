@@ -94,6 +94,7 @@ Once per roll (during `POST_ROLL` phase, before result is confirmed):
 - Not available for Rouse Checks, Remorse rolls, Frenzy rolls, or Humanity rolls.
 - Result class: **Win** / **Failure** / **Total failure** vs effective difficulty (never Critical or Messy Critical — synthetic normal dice only).
 - Broadcast shows full-pool synthetic normal faces: half with one success (ankh), remainder blank.
+- **Take Half + Rouse:** leftover Rouse / Oblivion-Rouse dice unlock and auto-toss after a short delay (same timing as right-click Roll). They do not wait for a manual throw (TOR-487).
 
 ### 1.8 Extended Rolls *(Phase 3)*
 

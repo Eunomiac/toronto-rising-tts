@@ -145,6 +145,7 @@ Gameboard.toggleNextSceneApplyLock = Apply.toggleNextSceneApplyLock
 Gameboard.syncTokensToPalette = Apply.syncTokensToPalette
 Gameboard.installPaletteSnaps = Apply.installPaletteSnaps
 Gameboard.recoverStrayNpcTokensToPalette = Apply.recoverStrayNpcTokensToPalette
+Gameboard.resnapPaletteTokensOnPalette = Apply.resnapPaletteTokensOnPalette
 Gameboard.relocateHomelandSeatTokensAfterClear = Apply.relocateHomelandSeatTokensAfterClear
 Gameboard.populateControlBoardFromPlacements = Apply.populateControlBoardFromPlacements
 

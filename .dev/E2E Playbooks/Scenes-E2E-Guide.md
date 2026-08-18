@@ -194,7 +194,7 @@ Re-check lighting, NPCs, pins, and soundscape after about 3 seconds.
 | RT toggle | `scenes_clock_rtToggle` | Draft/live real-time flag |
 | Speed | `scenes_clock_speed` | Narrative minutes per 60 wall seconds |
 | Apply clock | `scenes_clock_apply` | Live or pending row clock |
-| Apply location | location section | Site + soundscape, or pending row site only |
+| Apply location | location section | Live District/Site: full staged blindfold + destination cards + soundscape fade-in (TOR-488). Skybox-only: brief blindfold (TOR-478). Pending row: keys only. |
 
 ## Related
 

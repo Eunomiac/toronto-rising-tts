@@ -593,6 +593,16 @@ function Apply.recoverStrayNpcTokensToPalette()
     })
 end
 
+--- Re-snap tokens already parked on the palette (phase 1 only; TOR-486 right-click Clear).
+--- @return number moved
+function Apply.resnapPaletteTokensOnPalette()
+    local palette = Board.getControlBoardPalette()
+    if not Board.isGameObject(palette) then
+        return 0
+    end
+    return Palette.resnapOnPaletteTokens(palette)
+end
+
 --- Park all NPC control tokens on CONTROL_BOARD_PALETTE (group layout from npcs_data).
 --- @param options table|nil Forwarded to `Palette.syncTokensToPalette` (e.g. `skipParkIf`).
 --- @return number moved

@@ -329,7 +329,7 @@ Playbook.steps = {
             printHeader("E1 - Mid-session location apply", 2)
           end,
           function()
-            printHeader("[HUMAN] With a scene live, use Browse sites to pick a different site and click Apply location + soundscape", 3)
+            printHeader("[HUMAN] With a scene live, use Browse sites to pick a different site and click Apply location + soundscape. Expect the full scene-transition blindfold with destination district/site cards (not the short skybox-only fade).", 3)
           end
         },
     -- step 9

@@ -779,16 +779,14 @@ function Palette.recoverStrayTokensToPalette(palette, opts)
     return moved
 end
 
---- Move misplaced palette tokens, then park all tokens that belong on the palette.
+--- Re-snap tokens already on the palette tile to assigned parking snaps (phase 1 only; TOR-486).
+--- Does not park tokens from the stage or control board.
 --- @param palette Object
---- @param options table|nil `{ skipParkIf?: fun(token: Object, characterKey: string|nil): boolean }` — when true, token is not repositioned in phase 2
 --- @return number moved
-function Palette.syncTokensToPalette(palette, options)
+function Palette.resnapOnPaletteTokens(palette)
     if not U.isGameObject(palette) then
-        print("[Palette] syncTokensToPalette: CONTROL_BOARD_PALETTE missing")
         return 0
     end
-    options = U.Type(options) == "table" and options or {}
     local assignments = Palette.buildTokenSnapAssignments()
     local snapIndices = uniqueAssignmentSnapIndices(assignments)
     local snapWorld = {}
@@ -797,8 +795,6 @@ function Palette.syncTokensToPalette(palette, options)
     end
 
     local moved = 0
-
-    --- Phase 1: tokens on palette → correct snap (nearest-snap detect via findSnapPoint).
     local onPalette = Palette.tokensOnBoard(palette)
     local snapPointsForFind = {}
     for _, snapIndex in ipairs(snapIndices) do
@@ -827,6 +823,35 @@ function Palette.syncTokensToPalette(palette, options)
             if needPos or wasFaceDown then
                 moved = moved + 1
             end
+        end
+    end
+    return moved
+end
+
+--- Move misplaced palette tokens, then park all tokens that belong on the palette.
+--- @param palette Object
+--- @param options table|nil `{ skipParkIf?: fun(token: Object, characterKey: string|nil): boolean }` — when true, token is not repositioned in phase 2
+--- @return number moved
+function Palette.syncTokensToPalette(palette, options)
+    if not U.isGameObject(palette) then
+        print("[Palette] syncTokensToPalette: CONTROL_BOARD_PALETTE missing")
+        return 0
+    end
+    options = U.Type(options) == "table" and options or {}
+    local assignments = Palette.buildTokenSnapAssignments()
+    local snapIndices = uniqueAssignmentSnapIndices(assignments)
+    local snapWorld = {}
+    for _, snapIndex in ipairs(snapIndices) do
+        snapWorld[snapIndex] = Palette.worldPositionForSnapIndex(palette, snapIndex)
+    end
+
+    local moved = Palette.resnapOnPaletteTokens(palette)
+
+    local snapPointsForFind = {}
+    for _, snapIndex in ipairs(snapIndices) do
+        local wp = snapWorld[snapIndex]
+        if wp ~= nil then
+            snapPointsForFind[#snapPointsForFind + 1] = { position = wp, snapIndex = snapIndex }
         end
     end
 

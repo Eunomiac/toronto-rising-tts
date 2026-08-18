@@ -575,15 +575,8 @@ U.chain({
     })
   end,
   function()
-    rollE2ePrepareRollRelease("Brown")
-    M.setCamera("ALL", "rollBrown")
-    printHeader("[HUMAN] Throw Rouse dice (or preset + settle)", 3)
-  end
-})
-```
-
-```lua
-U.chain({
+    return 0.2
+  end,
   function()
     rollSetFaces("Brown", { rouse = { 4 } })
     RC.onDiceSettled("Brown")
@@ -629,9 +622,10 @@ U.chain({
     RC.takeHalf("Brown")
     rollConfirm("Brown", { phase = "rolling", active = { takeHalfAwaitingRouse = true } })
   end,
-  rollE2eWaitForDiceTray,
   function()
-    rollE2ePrepareRollRelease("Brown")
+    return 0.2
+  end,
+  function()
     rollSetFaces("Brown", { rouse = { 4 } })
     RC.onDiceSettled("Brown")
     rollConfirm("Brown", {

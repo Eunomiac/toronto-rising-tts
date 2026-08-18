@@ -75,6 +75,8 @@ local function reconcileHostedSyncAndPresentSheets(reason)
 end
 
 local GREEN = "#228B22|#32CD32|#006400|#228B22"
+--- Daysleep Refresh (TOR-482): stays gold when live; excluded from lerp green/grey list.
+local GOLD = "#B8860B|#DAA520|#8B6914|#B8860B"
 --- Pending library-row edit mode (activeKey ≠ lastAppliedKey): "on" highlights use blue (TOR-244).
 local BLUE = "#1E5AA8|#2E7AD1|#154080|#1E5AA8"
 local GREY = "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
@@ -728,6 +730,17 @@ local function refreshLerpControlColors()
             textColor = "#FFFFFF",
         })
     end
+end
+
+local function refreshDaysleepRefreshButtonColor()
+    if UI == nil or UI.setAttributes == nil then
+        return
+    end
+    local live = SceneLibrary.hasLiveSceneOnTable and SceneLibrary.hasLiveSceneOnTable() == true
+    U.setAttributes("scenes_daysleep_refresh", {
+        colors = live and GOLD or GREY,
+        textColor = "#FFFFFF",
+    })
 end
 
 --- Validate live clock, then close the panel only when a real lerp can start (TOR-418 / TOR-405).
@@ -1416,6 +1429,7 @@ function StorytellerScenesPanel.refresh()
     StorytellerScenesPanel.refreshSceneLibraryRows()
     refreshApplyClockButtons()
     refreshLerpControlColors()
+    refreshDaysleepRefreshButtonColor()
 end
 
 --- Pushes `sceneLibrary.order` into fixed `scenes_lib_slot_*` buttons.
@@ -2311,31 +2325,68 @@ function StorytellerScenesPanel.applyLocationFromInputs(player)
         return
     end
 
-    if SS.applyContext == nil or SS.contextFromSite == nil then
+    if type(Scenes.applyActiveSceneSoundscapeFromSession) ~= "function" then
         U.AlertGM("Soundscape module unavailable.")
         return
     end
 
-    S.setStateVal(dKey, "sessionScene", "districtKey")
-    S.setStateVal(sKey, "sessionScene", "siteKey")
+    closeScenesPanel()
 
-    if SceneLibrary and type(SceneLibrary.applySiteTopFogToSessionScene) == "function" then
-        SceneLibrary.applySiteTopFogToSessionScene(sKey)
-    end
+    local previewSession = U.merge({}, S.getStateVal("sessionScene") or {})
+    previewSession.districtKey = dKey
+    previewSession.siteKey = sKey
+    local incomingWeather = Scenes.computeIncomingWeatherPreview(previewSession)
 
-    local ctx = SS.contextFromSite(site, sKey)
-    if SS.mergeSessionSceneNarrativeIntoContext ~= nil then
-        ctx = SS.mergeSessionSceneNarrativeIntoContext(S.getStateVal("sessionScene"), ctx)
-    elseif SS.withDefaultBackgroundMusic ~= nil then
-        ctx = SS.withDefaultBackgroundMusic(ctx)
+    HUDBF.runStagedTransition({
+        fadeOut = function()
+            if type(SS.fadeOutTransitionAmbient) == "function" then
+                SS.fadeOutTransitionAmbient({
+                    seconds = HUDBF.TRANSITION_FADE_OUT_SEC,
+                    incoming = incomingWeather,
+                })
+            end
+        end,
+        work = function()
+            S.setStateVal(dKey, "sessionScene", "districtKey")
+            S.setStateVal(sKey, "sessionScene", "siteKey")
+
+            if SceneLibrary and type(SceneLibrary.applySiteTopFogToSessionScene) == "function" then
+                SceneLibrary.applySiteTopFogToSessionScene(sKey)
+            end
+
+            MapPins.onLocationChanged()
+            local changedSeatColors = reconcileHostedConditions({ skipPresentation = true })
+            syncAfterHostedReconcileAndRefreshSheets("StorytellerScenesPanel.location", {
+                skipSoundscape = true,
+                changedSeatColors = changedSeatColors,
+            })
+            StorytellerScenesPanel.refresh()
+            U.AlertGM("Location applied.")
+            return true
+        end,
+        fadeIn = function()
+            if type(SS.beginTransitionFadeWindow) == "function" then
+                SS.beginTransitionFadeWindow(HUDBF.TRANSITION_FADE_IN_SEC)
+            end
+            Scenes.applyActiveSceneSoundscapeFromSession()
+            if type(SS.endTransitionFadeWindow) == "function" then
+                SS.endTransitionFadeWindow()
+            end
+        end,
+    }, {
+        districtKey = dKey,
+        siteKey = sKey,
+    })
+end
+
+--- Daysleep Refresh: session-start Willpower heal for seated PCs (TOR-482).
+function StorytellerScenesPanel.runDaysleepWillpowerRefresh()
+    if not SceneLibrary.hasLiveSceneOnTable or SceneLibrary.hasLiveSceneOnTable() ~= true then
+        U.AlertGM("Daysleep Refresh needs a live scene on the table (Apply a library row first).")
+        return
     end
-    local result = SS.applyContext(ctx)
-    if SS.markReconciledToCurrentState ~= nil then
-        SS.markReconciledToCurrentState()
-    end
-    MapPins.onLocationChanged()
-    reconcileHostedSyncAndPresentSheets("StorytellerScenesPanel.location")
-    U.AlertGM(result and result.message or "Location applied.")
+    local Phases = require("core.phases")
+    Phases.runSessionStartWillpowerHeal({ reason = "daysleepRefresh" })
 end
 
 --- @param player Player

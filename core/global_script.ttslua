@@ -1257,12 +1257,24 @@ function GlobalGameboardClearClick(params)
 end
 
 --- NPC gameboard: right-click Clear — park stray tokens to palette (no placement wipe) (TOR-485).
---- @param params table|nil
+--- Also re-snaps tokens already on the palette; ST feedback even when zero moves (TOR-486).
+--- @param params table|nil `{ player_color?: string }`
 --- @return number moved
 function GlobalGameboardRecoverStrays(params)
+    params = type(params) == "table" and params or {}
+    local color = type(params.player_color) == "string" and params.player_color or "Black"
     local Gameboard = require("core.npc_gameboard")
-    local moved = Gameboard.recoverStrayNpcTokensToPalette()
-    return tonumber(moved) or 0
+    local movedStray = Gameboard.recoverStrayNpcTokensToPalette()
+    local movedResnap = Gameboard.resnapPaletteTokensOnPalette()
+    local total = (tonumber(movedStray) or 0) + (tonumber(movedResnap) or 0)
+    if broadcastToColor ~= nil then
+        if total > 0 then
+            broadcastToColor("Recovered " .. tostring(total) .. " token(s) to the palette.", color, { 0, 1, 1 })
+        else
+            broadcastToColor("No stray tokens — palette slots re-checked.", color, { 0, 1, 1 })
+        end
+    end
+    return total
 end
 
 --- NPC gameboard: Clear placements (expects confirmed Clear from object UI).
@@ -4431,6 +4443,14 @@ function HUD_scenesClockLerpYearGo(player, button, id)
     StorytellerScenesPanel.startClockLerpYearGo(isRightClick)
 end
 
+--- TOR-482: Daysleep Refresh — session-start Willpower heal on demand (live scene only).
+function HUD_scenesDaysleepRefresh(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_scenesDaysleepRefresh") then
+        return
+    end
+    StorytellerScenesPanel.runDaysleepWillpowerRefresh()
+end
+
 --- Scene Constructor: open import JSON modal.
 function HUD_scenesCtorImportOpen(player, button, id)
     StorytellerScenesPanel.openImportConstructorModal()
@@ -6709,6 +6729,9 @@ function GlobalReleaseRouseDiceForActiveRoll(params)
     end
     -- Force re-raise: prior pure Take Half / broadcast cleanup may have left the tray mid-close.
     DiceDrawer.openForRoll(color, { force = true })
+    U.await(function()
+        randomizeAllRollDiceForColor(color, rollId)
+    end, 0.15)
 end
 
 --- Global.call entry: stop a pending post-result dice cleanup timer for a seat.

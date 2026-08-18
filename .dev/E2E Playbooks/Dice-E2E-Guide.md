@@ -265,7 +265,7 @@ RC.setRollOptions("Brown", { wpReroll = true, numberOfDiceRerolled = 3, canRerol
 - Suite E2: Optional difficulty (TOR-163). E2c is covered by Suite O O2b.
 - Suite F: Conditions roll policy (`bestialNull`).
 - Suite G: Result classification G1–G7. G6/G7: call `RC.setRollOptions` after `rollTest`, before settle.
-- Suite H: Take Half (TOR-73; pure Take Half auto-confirms per TOR-306 — assert `noActive` + broadcast).
+- Suite H: Take Half (TOR-73; pure Take Half auto-confirms per TOR-306 — assert `noActive` + broadcast). H2/H2b: Take Half + Rouse **auto-tosses** leftover Rouse dice (TOR-487); wait ~0.2s then preset + settle — no human throw.
 - Suite I: Spend Willpower I1–I4. Overlay `canRerollHunger` asserts via `rollPolicy.wpCanRerollHunger` (not `rollOptions`). Under-cap WP waves (fewer R presses than `numberOfDiceRerolled`) stay ROLLING until **Confirm** — only a full cap auto-advances to POST_ROLL (I3/I4).
 - Suite J: Compound rouse in standard pool. J2 arms SETUP (`skipOpen`) for Hunger surge click, then `rollE2eOpenRoll` before settle.
 - Suite K: Dice bag clicks K1–K4. After `rollCancel`/`rollCancelAll`, call `rollE2eSeatPrep` before bag HUMAN (seat-gated bags). SETUP bag steps stay Awaiting Storyteller — do not Open unless the step says so. K3a/K3c Normal-bag promote requires PRE_ROLL (`RC.promoteDedicatedRouseToStandard`) — arm with default `rollTest` open, not `skipOpen`. Cold bag initiate (K1b/K1c) stays SETUP.

@@ -133,7 +133,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `HUD_changeScene` | B+C | Yes | |
 | `HUD_selectAdminLightingScene` | B+C | Yes | |
 | `HUD_soundscape*` (mutators) | B+C | Yes | inspect read-only |
-| `HUD_scenesPanel` / apply / lib / ctor / clock / location+skybox modals / clock lerp | B+C | Yes | modal opens Tier A; TOR-142/TOR-401: Apply button ids → clock modes via `HUD_scenesLibApply` (incl. `presentPlus15`–`120`); TOR-222: `HUD_scenesClockLerpDelta` / `Sun` / `YearGo` animate live clock (display-only mid-lerp; settle = tryAdvance on forward + weather + Sync); skybox pick/clear Tier B until Apply location |
+| `HUD_scenesPanel` / apply / lib / ctor / clock / location+skybox modals / clock lerp | B+C | Yes | modal opens Tier A; TOR-142/TOR-401: Apply button ids → clock modes via `HUD_scenesLibApply` (incl. `presentPlus15`–`120`); TOR-222: `HUD_scenesClockLerpDelta` / `Sun` / `YearGo` animate live clock (display-only mid-lerp; settle = tryAdvance on forward + weather + Sync); TOR-482: `HUD_scenesDaysleepRefresh` ST-gated WP heal; TOR-488: live Apply Location is staged blindfold (fadeIn owns soundscape); skybox pick/clear Tier B until Apply location |
 | `HUD_statsTarget` / `HUD_statsBack` | A | — | Stats panel navigation |
 | `HUD_statsAdd` / `HUD_statsEdit` / `HUD_statsEditRating` / `HUD_statsEditorConfirm` / `HUD_statsEditorDelete` | B+C | Yes | advantage mutations |
 | `HUD_statsEditorField` / `HUD_statsEditorCancel` | A | — | draft stash / close |
@@ -202,7 +202,7 @@ Per-object scripts (`objects/*.ttslua`, `ui/ui_*.ttslua`) run in **isolated chun
 | Script | Events | Guard pattern |
 | --- | --- | --- |
 | `objects/dice_bag.ttslua` | `click_roll`, spawn, onLoad | tags; spawn via Global.call |
-| `objects/npc_control_board.ttslua` | `click_apply`, `click_clear` | Steam via `GlobalIsStorytellerSteamPlayer`; mutators via Global.call; Clear right-click (`-2`) → `GlobalGameboardRecoverStrays` (TOR-485) |
+| `objects/npc_control_board.ttslua` | `click_apply`, `click_clear` | Steam via `GlobalIsStorytellerSteamPlayer`; mutators via Global.call; Clear right-click (`-2`) → `GlobalGameboardRecoverStrays` (TOR-485 stray park + TOR-486 palette re-snap + ST feedback) |
 | `objects/npc_control_board_palette.ttslua` | onLoad | One-time install via Global.call |
 | `ui/ui_signal_candle.ttslua` | click | Object GUID / color from name |
 | `ui/ui_tarot_button.ttslua` | click | Pink/Black → `GlobalApplyTarotState` |

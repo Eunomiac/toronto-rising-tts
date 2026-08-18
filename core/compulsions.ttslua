@@ -14,6 +14,7 @@ local C = require("lib.constants")
 local G = require("lib.guids")
 local SRI = require("lib.seat-role-identity")
 local U = require("lib.util")
+local S = require("core.state")
 local M = require("core.main")
 local L = require("core.lighting")
 local OP = require("lib.object_positions")
@@ -524,6 +525,45 @@ local function handZoneMatchesColor(zone, color)
     return fogColor ~= nil and fogColor == color
 end
 
+--- Increment dynamic `playerData.compulsionsTally[Type][1-4]` on first variant pick (TOR-489).
+--- @param color string
+--- @param chosenCard Object
+local function incrementCompulsionsTallyForCard(color, chosenCard)
+    local pid = S.getPlayerID(color)
+    if type(pid) ~= "string" or pid == "" then
+        return
+    end
+    if chosenCard == nil or chosenCard.getGMNotes == nil then
+        return
+    end
+    local parsed = Compulsions.parseNotes(chosenCard.getGMNotes())
+    if parsed == nil or parsed.suffix == "generic" then
+        return
+    end
+    local slot = tonumber(parsed.suffix)
+    if slot == nil or slot < 1 or slot > SLOT_COUNT then
+        return
+    end
+    local compType = parsed.type
+    if type(compType) ~= "string" or compType == "" then
+        return
+    end
+    local tally = S.getStateVal("playerData", pid, "compulsionsTally")
+    if type(tally) ~= "table" then
+        tally = {}
+    end
+    local typeRow = tally[compType]
+    if type(typeRow) ~= "table" then
+        typeRow = {}
+    end
+    for i = 1, SLOT_COUNT do
+        typeRow[i] = tonumber(typeRow[i]) or 0
+    end
+    typeRow[slot] = typeRow[slot] + 1
+    tally[compType] = typeRow
+    S.setStateVal(tally, "playerData", pid, "compulsionsTally")
+end
+
 --- @param color string
 --- @param chosenCard Object
 local function finishSelection(color, chosenCard)
@@ -531,6 +571,7 @@ local function finishSelection(color, chosenCard)
     if session == nil then
         return
     end
+    incrementCompulsionsTallyForCard(color, chosenCard)
     clearPlayerSelection(color)
     local token = bumpOpToken(color)
     presentByColor[color] = nil
