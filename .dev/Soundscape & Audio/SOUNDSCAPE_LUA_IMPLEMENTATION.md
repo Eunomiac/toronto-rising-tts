@@ -77,6 +77,10 @@ Do not call `AssetBundle.playLoopingEffect` or trigger effect APIs outside
 
 Per-site `soundscape.backgroundMusic.playlist = "none"` silences **background music only** (location ambience and weather still apply). Omit `backgroundMusic` entirely to get the catalog default mood (`main`) during play. Persisted `soundscape.backgroundMusicSuppressed` keeps BGM off across reconcile until a mood or site playlist is applied. Do not use `isSilent` when you only want BGM off.
 
+### Featured music vs location ambience (TOR-494)
+
+`Soundscape.playFeaturedMusic` fades **mood/playlist music** (`musicA`/`musicB`) **and site location ambience** (`locationA`/`locationB`). Sites like Ravenwing use a location loop (`nightclub`) with `backgroundMusic.playlist = "none"`; that bed must duck under a Sounds-panel featured track. When the featured song ends or is cancelled (`stopFeaturedMusic` with default resume), the same location track fades back in. Reconcile does not restart location/BGM while `featuredActive` or the pause flags are set.
+
 ## Verification Checklist
 
 Static verification:
@@ -97,8 +101,8 @@ Unity/TTS verification:
   schedules thunder.
 - `lua soundscapeWeather("<storm preset>", true)` keeps the same weather but applies
   indoor ducking.
-- `lua soundscapeFeatured("<feature key>")` plays featured music.
-- `lua soundscapeStopFeatured()` returns to the previous background music.
+- `lua soundscapeFeatured("<feature key>")` plays featured music (location ambience and mood/playlist music fade out).
+- `lua soundscapeStopFeatured()` returns to the previous background music **and** location ambience.
 - `lua soundscapeStopAll()` silences all loop layers and cancels pending music,
   featured, and thunder timers.
 

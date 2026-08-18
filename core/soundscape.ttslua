@@ -23,6 +23,7 @@ local Catalog = require("lib.soundscape_catalog")
 local musicGeneration = 0
 local featuredGeneration = 0
 local weatherGeneration = 0
+local locationPauseGeneration = 0
 local singleEmitterTransitionGeneration = {}
 --- Bumped on each `playCatalogEntry` clip swap and `cancelSingleEmitterTransition`; stale `U.await` volume arms no-op.
 local playCatalogEntryGeneration = {}
@@ -193,6 +194,7 @@ local function defaultState()
         featuredActive = false,
         featuredCompletionExpected = false,
         backgroundPausedForFeatured = false,
+        locationPausedForFeatured = false,
         weather = Catalog.DEFAULTS.weather,
         rain = Catalog.DEFAULTS.rain,
         wind = Catalog.DEFAULTS.wind,
@@ -919,13 +921,69 @@ local function pauseBackgroundForFeatured()
     return true
 end
 
-local function resumeBackgroundAfterFeatured()
+--- Fade site ambience (`locationA`/`locationB`) while featured music plays (TOR-494).
+-- Keeps `state.location` so the same track can fade back in afterward.
+-- @return boolean
+local function pauseLocationForFeatured()
     local state = ensureState()
-    if state.backgroundPausedForFeatured ~= true then
-        return false, "No paused background music context"
+    if type(state.location) ~= "string" or state.location == Catalog.DEFAULTS.location then
+        return false
     end
-    state.backgroundPausedForFeatured = false
-    return Soundscape.resumeBackgroundMusic()
+    if state.locationPausedForFeatured == true then
+        return true
+    end
+
+    locationPauseGeneration = locationPauseGeneration + 1
+    local thisGeneration = locationPauseGeneration
+    local fadeSeconds = tonumber(Catalog.DEFAULTS.fadeSeconds.location) or 0
+    for _, channelKey in ipairs({ "locationA", "locationB" }) do
+        local obj = resolveEmitter(channelKey)
+        if obj ~= nil then
+            local channelState = state.channels and state.channels[channelKey] or {}
+            fadeEmitterVolume(obj, tonumber(channelState.volume) or 0, 0, fadeSeconds)
+            updateChannelState(channelKey, { volume = 0 })
+        end
+    end
+    state.locationPausedForFeatured = true
+    waitTime(function()
+        if thisGeneration == locationPauseGeneration then
+            silenceLoopChannel("locationA")
+            silenceLoopChannel("locationB")
+        end
+    end, fadeSeconds)
+    return true
+end
+
+local function resumeAmbientAfterFeatured()
+    local state = ensureState()
+    local resumed = false
+    if state.backgroundPausedForFeatured == true then
+        state.backgroundPausedForFeatured = false
+        resumed = true
+        if state.siteSilent ~= true and state.backgroundMusicSuppressed ~= true then
+            Soundscape.resumeBackgroundMusic()
+        end
+    end
+    if state.locationPausedForFeatured == true then
+        local locationKey = state.location
+        state.locationPausedForFeatured = false
+        locationPauseGeneration = locationPauseGeneration + 1
+        resumed = true
+        if state.siteSilent ~= true
+            and type(locationKey) == "string"
+            and locationKey ~= Catalog.DEFAULTS.location then
+            Soundscape.setLocationAudio(locationKey)
+        end
+    end
+    if not resumed then
+        return false, "No paused ambient context"
+    end
+    return true, "Ambient restored after featured"
+end
+
+--- Name kept for soundscape contract tests; restores mood/playlist music and location ambience.
+local function resumeBackgroundAfterFeatured()
+    return resumeAmbientAfterFeatured()
 end
 
 local stopFeaturedMusicInternal
@@ -941,6 +999,8 @@ local function playBackgroundPlaylist(kind, key, playlist, forcedTrack)
         stopFeaturedMusicInternal(false)
         state = ensureState()
         state.backgroundPausedForFeatured = false
+        state.locationPausedForFeatured = false
+        locationPauseGeneration = locationPauseGeneration + 1
     end
 
     musicGeneration = musicGeneration + 1
@@ -1051,7 +1111,11 @@ stopFeaturedMusicInternal = function(shouldResumeBackground, opts)
     state.activeFeaturedChannel = "featuredA"
 
     if shouldResumeBackground == true then
-        resumeBackgroundAfterFeatured()
+        resumeAmbientAfterFeatured()
+    else
+        state.backgroundPausedForFeatured = false
+        state.locationPausedForFeatured = false
+        locationPauseGeneration = locationPauseGeneration + 1
     end
     return true, "Featured music stopped"
 end
@@ -1065,7 +1129,7 @@ local function completeFeaturedMusic(generation, trackKey)
     state.featuredActive = false
     state.featuredCompletionExpected = false
     state.activeFeaturedChannel = "featuredA"
-    resumeBackgroundAfterFeatured()
+    resumeAmbientAfterFeatured()
 end
 
 local playFeaturedTrack
@@ -1100,6 +1164,7 @@ function playFeaturedTrack(feature, playlist, trackIndex, options)
     local opts = type(options) == "table" and options or {}
     if opts.keepBackgroundPaused ~= true then
         pauseBackgroundForFeatured()
+        pauseLocationForFeatured()
     end
 
     featuredGeneration = featuredGeneration + 1
@@ -1283,6 +1348,7 @@ local function applySilentSiteAmbient()
     state.siteSilent = true
     if state.featuredActive ~= true then
         state.backgroundPausedForFeatured = false
+        state.locationPausedForFeatured = false
     end
 end
 
@@ -1321,6 +1387,9 @@ local function soundscapeReconcileFingerprint(state)
         return ""
     end
     local parts = {
+        state.featuredActive == true and "1" or "0",
+        state.backgroundPausedForFeatured == true and "1" or "0",
+        state.locationPausedForFeatured == true and "1" or "0",
         state.siteSilent == true and "1" or "0",
         state.backgroundMusicSuppressed == true and "1" or "0",
         state.backgroundMusicEnabled == true and "1" or "0",
@@ -1346,20 +1415,25 @@ local function applySoundscapeReconcileFromStateSnapshot(state)
         applySilentSiteAmbient()
         return
     end
-    if state.backgroundMusicSuppressed == true then
-        suppressBackgroundMusic()
-    elseif state.backgroundMusicEnabled == true then
-        if state.backgroundMusicMode == BACKGROUND_KIND_LOCATION and type(state.locationMusic) == "string" then
-            Soundscape.setLocationMusic(state.locationMusic)
-        elseif type(state.musicMood) == "string" then
-            Soundscape.setMusicMood(state.musicMood)
+    local featuredHoldingAmbient = state.featuredActive == true
+        or state.backgroundPausedForFeatured == true
+        or state.locationPausedForFeatured == true
+    if not featuredHoldingAmbient then
+        if state.backgroundMusicSuppressed == true then
+            suppressBackgroundMusic()
+        elseif state.backgroundMusicEnabled == true then
+            if state.backgroundMusicMode == BACKGROUND_KIND_LOCATION and type(state.locationMusic) == "string" then
+                Soundscape.setLocationMusic(state.locationMusic)
+            elseif type(state.musicMood) == "string" then
+                Soundscape.setMusicMood(state.musicMood)
+            end
+        elseif backgroundMusicPolicyRequiresMain() then
+            -- Load / Sync.full path when state still has BGM disabled; applyContext uses withDefaultBackgroundMusic + setMusicMood only.
+            Soundscape.setMusicMood(state.musicMood or Catalog.DEFAULTS.musicMood)
         end
-    elseif backgroundMusicPolicyRequiresMain() then
-        -- Load / Sync.full path when state still has BGM disabled; applyContext uses withDefaultBackgroundMusic + setMusicMood only.
-        Soundscape.setMusicMood(state.musicMood or Catalog.DEFAULTS.musicMood)
-    end
-    if type(state.location) == "string" and state.location ~= Catalog.DEFAULTS.location then
-        Soundscape.setLocationAudio(state.location)
+        if type(state.location) == "string" and state.location ~= Catalog.DEFAULTS.location then
+            Soundscape.setLocationAudio(state.location)
+        end
     end
     if type(state.weather) == "string" and state.weather ~= Catalog.DEFAULTS.weather then
         Soundscape.setWeatherCondition(state.weather)
@@ -2416,6 +2490,7 @@ function Soundscape.stopAll()
     state.featuredActive = false
     state.featuredCompletionExpected = false
     state.backgroundPausedForFeatured = false
+    state.locationPausedForFeatured = false
     state.weather = Catalog.DEFAULTS.weather
     state.rain = Catalog.DEFAULTS.rain
     state.wind = Catalog.DEFAULTS.wind

@@ -358,8 +358,8 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 | `Soundscape.setMusicMood(moodKey)` | Set trigger-based Storyteller music mood | `Soundscape.setMusicMood("intrigue")` |
 | `Soundscape.setLocationMusic(playlistKey)` | Set site-specific background music playlist | `Soundscape.setLocationMusic("CasaLoma")` |
 | `Soundscape.playFeaturedMusic(featureKey)` | Play featured music on the dedicated lane | `Soundscape.playFeaturedMusic("TR_Intro")` |
-| `Soundscape.stopFeaturedMusic(opts?)` | Stop the featured lane only; optional `{ fadeSeconds, resumeBackground }` | Intro/song cleanup; Intermission→Play uses `resumeBackground=false` |
-| `Soundscape.resumeBackgroundMusic()` | Restart saved mood/location music context | After featured music |
+| `Soundscape.stopFeaturedMusic(opts?)` | Stop the featured lane only; optional `{ fadeSeconds, resumeBackground }` | Intro/song cleanup; Intermission→Play uses `resumeBackground=false`. Default resume also restores location ambience (TOR-494). |
+| `Soundscape.resumeBackgroundMusic()` | Restart saved mood/location **playlist** music context | After featured music; location ambience is restored separately via the featured pause flags |
 | `Soundscape.setWeatherCondition(weatherKey)` | Set layered weather preset | `Soundscape.setWeatherCondition("thunderstorm")` |
 | `Soundscape.setRainLayer(rainKey)` | Set rain loop directly | `Soundscape.setRainLayer("heavyRain")` |
 | `Soundscape.setWindLayer(windKey)` | Set wind loop directly | `Soundscape.setWindLayer("whistlingWind1")` |

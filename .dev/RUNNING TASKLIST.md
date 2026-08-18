@@ -209,7 +209,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 
 ## Soundscape
 
-- [x] **Scene transition audio crossfade under blindfold:** New scene audio full before lift; no silence after raise. relatedTo **TOR-469**, **TOR-147**, **TOR-273**. Author confirmed 2026-08-06. _(TOR-476)_
+- [x] **Featured tracks fade location ambience:** Sounds-panel featured songs duck `locationA`/`locationB` as well as mood/playlist music; restore on natural end or Stop feat. Ravenwing nightclub bed is location, not Main. Pending Save & Play. _(TOR-494)_
 
 - [x] On load, emitters automatically play tracks from the last save. _(Mitigation: **Silence for save** on Sound panel ? `Soundscape.prepareEmittersForSave()`; fold into End Session sequence when defined.)_ _(TOR-71)_
 - [x] **Background music policy:** In any phase **other than Session Start**, background music should always play. When the active site or scene specifies no music, default to the **`Main`** playlist (`lib/soundscape_catalog.ttslua`). _(TOR-77)_

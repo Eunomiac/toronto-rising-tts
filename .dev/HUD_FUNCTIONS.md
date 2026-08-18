@@ -147,8 +147,8 @@ Root `Panel` id `gameStateOverlay_location_<Color>` uses class `playerHud_overla
 | ------- | ---------------- | ------ | -------- |
 | `HUD_soundscapeSetMusicMood` | `soundscapeMood_main`, `soundscapeMood_intrigue`, `soundscapeMood_combat` | `(player, button, id)` | Strips `soundscapeMood_` prefix from `id`, calls `SS.setMusicMood(moodKey)`. Active styling requires `backgroundMusicEnabled` and `backgroundMusicMode == "mood"`. |
 | `HUD_soundscapeSetBackgroundLocation` | `soundscapeMood_location` | `(player, button, id)` | Enabled visually only when `sessionScene.siteKey` or `soundscape.lastAppliedSiteKey` resolves to a `C.Sites` row with `soundscape.backgroundMusic.playlist`. Calls `SS.setLocationMusic(playlist)`. |
-| `HUD_soundscapePlayFeatured` | `soundscapeFeatured_*` | `(player, button, id)` | Strips `soundscapeFeatured_` prefix, calls `SS.playFeaturedMusic(trackKey)`. |
-| `HUD_soundscapeStopFeatured` | `Stop feat.` | `(player, button, id)` | `SS.stopFeaturedMusic()`. |
+| `HUD_soundscapePlayFeatured` | `soundscapeFeatured_*` | `(player, button, id)` | Strips `soundscapeFeatured_` prefix, calls `SS.playFeaturedMusic(trackKey)`. Fades mood/playlist music **and** location ambience (TOR-494). |
+| `HUD_soundscapeStopFeatured` | `Stop feat.` | `(player, button, id)` | `SS.stopFeaturedMusic()`; restores paused background music and location ambience. |
 | `HUD_soundscapeLaneSlider` | `soundscapeSlider_music`, `..._location`, `..._featured`, `..._rain`, `..._wind` | `(player, value, id)` | Calls `SS.setStorytellerLaneVolume(lane, value)`. Rain/wind sliders edit **natural** volume; indoor ducking is reapplied in soundscape. |
 | `HUD_soundscapeStopAll` | `Stop All` button | `(player, button, id)` | Calls `SS.stopAll()` to silence loop lanes with `silent` and invalidate scheduled background/featured/thunder callbacks. |
 | `HUD_soundscapePrepareSave` | `Silence for save` | `(player, button, id)` | Calls `SS.prepareEmittersForSave()` — `bootstrapSilenceStrayEmitterLoops` + `invalidateReconcileCache` only (physical silence; does **not** mutate `gameState.soundscape`). Load resync from active scene vs Main-only is **TOR-152**. |

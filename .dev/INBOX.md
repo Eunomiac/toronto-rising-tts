@@ -44,6 +44,8 @@ Verification:
 
 ## Processed
 
+2026-08-18 Immediate — featured tracks fade location ambience (Ravenwing nightclub bed) → **TOR-494** (shipped; pending Save & Play)
+
 2026-08-18 afternoon `/tr-inbox` Immediate — queue overlapping roll broadcasts → **TOR-492** (Focus #1 High); PAVE ✅ cleared **TOR-487** (Take Half + Rouse auto-confirm), **TOR-491** (idle Oblivion-Rouse bag), **TOR-482** (Daysleep Refresh), **TOR-486** (Clear right-click)
 
 2026-08-18 `/tr-inbox` capture empty; PAVE ✅ cleared **TOR-488** (Apply Location full blindfold) and **TOR-489** (Compulsion variant tally); Immediate follow-ups shipped: **TOR-487** (Take Half + Rouse auto-confirm), **TOR-482** (Daysleep Refresh no live scene + overlay hide), **TOR-486** (one token scan on right-click Clear); **TOR-490** already author-confirmed; **TOR-491** added to Outstanding

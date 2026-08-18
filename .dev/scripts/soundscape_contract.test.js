@@ -365,10 +365,13 @@ test("soundscape music exclusivity uses generic featured sequencing", () => {
     "findFeaturedSequence(trackKey)",
     "scheduleNextFeaturedTrack",
     "pauseBackgroundForFeatured",
+    "pauseLocationForFeatured",
     "resumeBackgroundAfterFeatured",
+    "resumeAmbientAfterFeatured",
     "stopFeaturedMusicInternal",
     "playFeaturedTrack(feature, playlist, trackIndex, options)",
     "state.backgroundPausedForFeatured",
+    "state.locationPausedForFeatured",
     "state.featuredCompletionExpected",
     "playFeaturedEntry(feature, targetChannel, crossFadeSeconds, fromVolume)",
   ].forEach((needle) => {
