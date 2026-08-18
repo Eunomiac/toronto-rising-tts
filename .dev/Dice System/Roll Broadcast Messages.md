@@ -4,6 +4,7 @@
 
 Read this when:
 - changing roll broadcast panel copy, roll result headlines, difficulty visibility, or broadcast suppression/auto-broadcast behavior
+- changing the fullscreen result timeout, queue, or hide/fade gap
 - debugging mismatches between player/ST roll panel result text and the final broadcast panel
 
 Source of truth:
@@ -30,7 +31,7 @@ Reference catalog for the **Roll Result Broadcast Panel** (`rollRes_panel`) and 
 | `rollRes_successes` / `rollRes_difficultyDisplay` | Hidden for no-difficulty roll types (see below) |
 | `rollRes_resultDisplay` | Headline ± signed margin | ALL CAPS headline from `panelResultHeadline` |
 
-**Timeout:** Panel auto-hides after `C.ROLL_RESULT_BROADCAST_SECONDS` (6s).
+**Timeout / queue (TOR-492):** Rapid confirms enqueue FIFO. Each snapshot stays visible for `C.ROLL_RESULT_BROADCAST_SECONDS` (6s), then `UI.hide` plus `C.ROLL_RESULT_BROADCAST_HIDE_CLEANUP_SECONDS` (1s, covers the 0.5s fade) before the next item. Duplicates are not skipped or merged. `RUI.hideResultBroadcast` clears the queue and hides immediately. This is the shared fullscreen panel queue — not `RC.queueRoll` (Frenzy follow-up rolls).
 
 ## Fixed / auxiliary broadcast strings
 

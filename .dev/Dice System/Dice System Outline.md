@@ -726,12 +726,13 @@ function RUI.refreshSTDashboard() end
 function RUI.refreshPlayerRollPanel(color) end
 
 --- Show the Roll Result Broadcast Panel with the resolved result (visible to all).
+-- Rapid confirms enqueue FIFO (TOR-492): each item holds 6s, then a 1s fade gap, then the next.
 -- @param color string  Roller's color
 -- @param result table  Resolved result record
 -- @param label string|nil
 function RUI.showResultBroadcast(color, result, label) end
 
---- Hide the Roll Result Broadcast Panel.
+--- Hide the Roll Result Broadcast Panel now and drop any queued items.
 function RUI.hideResultBroadcast() end
 
 --- Update the result broadcast panel from the last entry in a player's history.
@@ -990,8 +991,8 @@ Kind **`difficulty`** only (0–10). **`onCommit`:** `RC.setDifficulty(<Color>, 
 8b. Player clicks "CONFIRM":
     → RC.confirmRoll(color)
     → phase=RESOLVED → RC.broadcastResult() fires
-    → RUI.showResultBroadcast() — result panel visible to all for N seconds
-    → Roll cleared from active; queue processed if non-empty
+    → RUI.showResultBroadcast() — fullscreen panel enqueues FIFO (TOR-492); each result holds 6s, then a 1s fade gap, then the next
+    → Roll cleared from active; RC.queueRoll follow-ups (e.g. Frenzy) processed if non-empty
 
 9. If queue non-empty: immediately run next queued roll (repeat from step 2, SETUP skipped
    if ST pre-approved all queued rolls).

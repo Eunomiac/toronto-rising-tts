@@ -47,7 +47,7 @@ Re-arming with `RunTest("Dice")` resets the step index and cancels any in-flight
 
 `RunTest` adds no extra lines after the step — rely on level-3 `[HUMAN]` banners inside the playbook output. FAIL-abort arms only after a **level-1** suite `printHeader` (ten leading `*`) in that step; then any console line containing **`FAIL`** (case-sensitive) cancels the step (`[RunTest] Stopped at step N/total: FAIL detected in output`). Mid-playbook `RunTest("Dice", N)` without a suite banner does not arm FAIL-abort. `RunTest("Scenes")` and `RunTest("Gameboard")` use their own generated playbook modules. Regenerate: `npm run e2e-playbook:generate` (or full `npm run build`), then **Save & Play**.
 
-After `rollForceConfirm`, put `rollE2eExpectBroadcast` in the **next** `U.chain` function (not the same step as confirm) so the default inter-step wait lets the broadcast panel populate.
+After `rollForceConfirm`, put `rollE2eExpectBroadcast` in the **next** `U.chain` function (not the same step as confirm) so the default inter-step wait lets the broadcast panel populate. Two rapid auto-Rouse confirms (TOR-492) must not assert the **second** panel until the first six-second hold ends.
 
 Collapsed blocks may chain many automated steps (setup + spawn + `rollConfirm`) before the human gate. The **last block** of the file closes the run (`printHeader("", 1)` + `print("")`) with no `[HUMAN]`.
 
