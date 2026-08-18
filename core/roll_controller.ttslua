@@ -1013,7 +1013,8 @@ end
 -- @param color string  Player seat color (e.g. "Red", "Brown")
 -- @param config table
 --   Required: rollType (C.RollType value)
---   Optional: label (string), difficulty (number), pool ({normal, hunger})
+--   Optional: label (string), difficulty (number), pool ({normal, hunger}),
+--             idleBagAutoRouse (boolean) — idle Rouse bag right-click shortcut (TOR-493)
 -- @return boolean
 -- @usage RC.initiateRoll("Red", { rollType = C.RollType.STANDARD, label = "Stealth" })
 function RC.initiateRoll(color, config)
@@ -1034,7 +1035,7 @@ function RC.initiateRoll(color, config)
         local STR = require("core.storyteller_rolls")
         STR.clearPcDashSnapshot(color)
     end
-    if PRTL.isInitiateBlocked(color) then
+    if PRTL.isInitiateBlocked(color, { incomingQuickRouse = config.idleBagAutoRouse == true }) then
         print(string.format(
             "[RC] initiateRoll blocked: %s roll is live for %s",
             color, tostring(PRTL.getLivePcColor())))
@@ -1075,6 +1076,10 @@ function RC.initiateRoll(color, config)
         teamwork = nil,
         opposed  = nil,
     }
+
+    if config.idleBagAutoRouse == true then
+        active.meta.idleBagAutoRouse = true
+    end
 
     RO.seedActiveRoll(active)
     active.rollConditionOverlay = { forceOn = {}, forceOff = {} }
@@ -2558,6 +2563,9 @@ function RC.confirmRoll(color)
     if color ~= "Black" and PRTL.getLivePcColor() == color then
         PRTL.onLivePcRollFinished()
         notifyLiveConcurrencyChanged()
+    elseif color ~= "Black" then
+        -- Idle-bag auto-Rouse never takes the exclusive live lock; still refresh peer Wait copy (TOR-493).
+        notifyLiveConcurrencyChanged()
     end
 
     setActive(color, nil)
@@ -2635,6 +2643,8 @@ function RC.cancelRoll(color)
     Global.call("GlobalCancelPendingRollCleanup", { color = color })
     if PRTL.getLivePcColor() == color then
         PRTL.onLivePcRollFinished()
+        notifyLiveConcurrencyChanged()
+    elseif color ~= "Black" and hadActive then
         notifyLiveConcurrencyChanged()
     end
     -- Bags before table sweep so staged tracking can park into the preload pool (TOR-308).

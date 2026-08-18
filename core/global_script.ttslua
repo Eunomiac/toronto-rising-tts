@@ -1629,11 +1629,20 @@ function GlobalIsPlayerDiceBagEnabled(params)
     return DBV.isBagEnabled(color, dieKind)
 end
 
+-- Same-chunk tables as post-broadcast cleanup (declared here so idle-bag debounce can see them).
+local pendingRollCleanup = {}
+local pendingRollCleanupTimerIds = {}
+
 --- Idle Rouse / Oblivion-Rouse bag right-click: 1-die check, skip ST Open, auto-toss (TOR-490 / TOR-491).
+-- Concurrent with other idle-bag auto-Rouses only (TOR-493). Same seat cannot start a second while
+-- one is active or while post-confirm dice cleanup is still pending.
 -- @param color string
 -- @param dieKind string  DK.KIND_ROUSE or DK.KIND_OBLIV_ROUSE
 local function startQuickDedicatedRouseCheck(color, dieKind)
     if type(color) ~= "string" or RC == nil then
+        return
+    end
+    if pendingRollCleanupTimerIds[color] ~= nil then
         return
     end
     local rollType = nil
@@ -1651,6 +1660,7 @@ local function startQuickDedicatedRouseCheck(color, dieKind)
         rollType = rollType,
         label = "",
         initiator = "player",
+        idleBagAutoRouse = true,
     })
     if ok ~= true then
         return
@@ -5607,8 +5617,6 @@ CameraDebugFocus = require("core.camera_debug_focus")
 RC  = require("core.roll_controller")
 RUI = require("core.roll_ui")
 local PRTL = require("lib.pc_roll_tray_lower")
-local pendingRollCleanup = {}
-local pendingRollCleanupTimerIds = {}
 
 --- Return on-table dice tagged with a roll id to the preload pool (player seats). Used by cancel and post-broadcast cleanup.
 -- @param color string
@@ -6552,7 +6560,14 @@ local function beginPcLiveRollRelease(color)
     if PRTL.isInitiateBlocked(color) then
         return false
     end
-    PRTL.onPcRollGoingLive(color)
+    local pid = S.getPlayerID(color)
+    local active = pid ~= nil
+        and S.getStateVal("playerData", pid, "hud", "rollData", "active")
+        or nil
+    -- Concurrent idle-bag auto-Rouse must not steal the exclusive live lock or lower peer trays (TOR-493).
+    if not PRTL.isIdleBagAutoRouse(active) then
+        PRTL.onPcRollGoingLive(color)
+    end
     if RC.onLiveConcurrencyChanged then
         RC.onLiveConcurrencyChanged()
     end

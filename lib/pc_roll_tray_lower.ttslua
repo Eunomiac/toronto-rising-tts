@@ -1,6 +1,8 @@
 --[[
   Single live PC roll: lowers non-rolling players' trays + dice while one roll is ROLLING.
   TOR-316 amends TOR-262 — live roller stays at normal height; peers lower.
+  TOR-493: idle-bag auto-Rouse (Rouse / Oblivion Rouse) may overlap with other idle-bag auto-Rouses;
+  those rolls skip the exclusive live lock and peer-tray lower.
 ]]
 ---@diagnostic disable: undefined-global
 
@@ -144,15 +146,70 @@ function PRTL.getTrayYOffset(color)
   return 0
 end
 
---- True when another PC roll is already live (blocks Roll, Take Half, and new initiate).
+--- Idle Rouse / Oblivion-Rouse bag right-click shortcut (TOR-490 / TOR-491 / TOR-493).
+-- @param active table|nil
+-- @return boolean
+function PRTL.isIdleBagAutoRouse(active)
+  if type(active) ~= "table" then
+    return false
+  end
+  if type(active.meta) ~= "table" or active.meta.idleBagAutoRouse ~= true then
+    return false
+  end
+  return active.rollType == C.RollType.ROUSE or active.rollType == C.RollType.ROUSE_OBLIVION
+end
+
+--- True when this seat currently has dice in play (exclusive live lock or ROLLING/POST_ROLL).
 -- @param color string
 -- @return boolean
-function PRTL.isInitiateBlocked(color)
+local function isPhysicallyLivePcRoll(color)
   if type(color) ~= "string" or color == "Black" then
     return false
   end
-  local live = PRTL.getLivePcColor()
-  return type(live) == "string" and live ~= "" and live ~= color
+  if PRTL.getLivePcColor() == color then
+    return true
+  end
+  local active = getActiveRoll(color)
+  if type(active) ~= "table" then
+    return false
+  end
+  return active.phase == C.RollPhase.ROLLING or active.phase == C.RollPhase.POST_ROLL
+end
+
+--- True when another PC roll is already live (blocks Roll, Take Half, and new initiate).
+-- Idle-bag auto-Rouse may share the table with other idle-bag auto-Rouses (TOR-493).
+-- @param color string
+-- @param opts table|nil  `{ incomingQuickRouse = true }` when initiating before `active` exists
+-- @return boolean
+function PRTL.isInitiateBlocked(color, opts)
+  if type(color) ~= "string" or color == "Black" then
+    return false
+  end
+
+  local incomingQuickRouse = false
+  if type(opts) == "table" then
+    incomingQuickRouse = opts.incomingQuickRouse == true
+  else
+    incomingQuickRouse = PRTL.isIdleBagAutoRouse(getActiveRoll(color))
+  end
+
+  local anyOtherLive = false
+  local allOthersAreIdleBagAutoRouse = true
+  for _, other in ipairs(C.PlayerColors) do
+    if other ~= color and isPhysicallyLivePcRoll(other) then
+      anyOtherLive = true
+      if not PRTL.isIdleBagAutoRouse(getActiveRoll(other)) then
+        allOthersAreIdleBagAutoRouse = false
+      end
+    end
+  end
+  if not anyOtherLive then
+    return false
+  end
+  if incomingQuickRouse and allOthersAreIdleBagAutoRouse then
+    return false
+  end
+  return true
 end
 
 --- @param color string
