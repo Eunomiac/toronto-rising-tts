@@ -37,7 +37,7 @@ This file is continuously updated with issues and plans for feature development.
 ---
 
 ## Focus
- 
+
 _Stack rank for the current cycle (2026-08-18: last batch shipped **TOR-489** / **TOR-486** / **TOR-487** / **TOR-482** / **TOR-488**, pending Save & Play). **Precedence** = Focus stack + Linear **`blockedBy`** (not Linear priority). **TOR-141 (E2E playbooks)** is a living doc (In Progress, not Focus stack). **Back-burner / "Deferred this cycle" is paused** (author 2026-06-21) - open work stays in domain sections; sequence via Linear blockers only._
 
 _Deferral note:_ **TOR-439** (join-stress re-verify after TOR-444) is **deferred from the top** because it depends on your ability to get other people to test; the Focus stack should stay to items you can do solo.
