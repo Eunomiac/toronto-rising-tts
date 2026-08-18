@@ -117,6 +117,7 @@ _Deferral note:_ **TOR-439** (join-stress re-verify after TOR-444) is **deferred
 - [x] **Blood Surge Hunger bag on Discipline rolls:** `C.RollTypesBloodSurge` + bag click/right-click paths. _(TOR-325)_
 - [x] **POST_ROLL confirm-only auto-broadcast:** Sole Confirm with no in-world alternate auto-fires `confirmRoll` (extends **TOR-306**). _(TOR-328)_
 - [x] **Right-click ROLL auto-rolls:** Player roll panel right-click ROLL immediately rolls the staged pool. _(TOR-317)_
+- [x] **Idle Rouse bag right-click auto-rolls a 1-die Rouse:** No live roll → right-click Rouse bag initiates, Opens, and auto-tosses a standard Rouse check. Live-roll right-click (remove / cancel) unchanged. relatedTo **TOR-317**. Pending Save & Play. _(TOR-490)_
 - [x] **Spawn above bag then smooth-move into arc:** Dice appear above bag first, then smooth-move into staging arc. _(TOR-318)_
 - [x] **Difficulty-0 roll results display:** No difficulty/margin; successes-focused copy for opposed/extended contests (refines **TOR-163**). _(TOR-309)_
 - [x] **Narrative roll broadcast successes:** Frenzy/Willpower/etc. show success count + difficulty; split from hidesDifficulty margin strip. _(TOR-312)_

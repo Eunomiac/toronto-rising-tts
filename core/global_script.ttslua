@@ -1631,7 +1631,29 @@ function GlobalIsPlayerDiceBagEnabled(params)
     return DBV.isBagEnabled(color, dieKind)
 end
 
+--- Idle Rouse-bag right-click: 1-die Rouse, skip ST Open, auto-toss (TOR-490).
+-- @param color string
+local function startQuickDedicatedRouseCheck(color)
+    if type(color) ~= "string" or RC == nil then
+        return
+    end
+    local ok = RC.initiateRoll(color, {
+        rollType = C.RollType.ROUSE,
+        label = "",
+        initiator = "player",
+    })
+    if ok ~= true then
+        return
+    end
+    -- Player-initiated Rouse stays in SETUP for ST Open; this shortcut Opens then auto-tosses.
+    if RC.openRoll(color) ~= true then
+        return
+    end
+    HUD_rollRollButton(nil, "-2", "rollControl_btnRoll_" .. color)
+end
+
 --- Player dice bag right-click: opposite of left-click (usually remove one die).
+-- Idle Rouse bag: quick 1-die Rouse (initiate + Open + auto-toss). Other idle bags: no-op.
 -- @param params table  { color, dieKind, phase }
 function GlobalDiceBagRightClick(params)
     if type(params) ~= "table" or RC == nil then return end
@@ -1657,8 +1679,14 @@ function GlobalDiceBagRightClick(params)
         end
     end
 
-    if phase == nil
-        or (phase ~= C.RollPhase.PRE_ROLL and phase ~= C.RollPhase.SETUP) then
+    if phase == nil then
+        if dieKind == DK.KIND_ROUSE then
+            startQuickDedicatedRouseCheck(color)
+        end
+        return
+    end
+
+    if phase ~= C.RollPhase.PRE_ROLL and phase ~= C.RollPhase.SETUP then
         return
     end
 

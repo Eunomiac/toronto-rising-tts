@@ -140,9 +140,11 @@ Current behavior adds the Rouse and Oblivion-Rouse dice bags to streamline roll 
 | Player **right-clicks** `DICEBAG_NORMAL` during `PRE_ROLL` on a standard or compound roll | Remove one main-pool die (**Normal first**, else Hunger); cancel the roll if the pool total becomes zero. |
 | Player **right-clicks** `DICEBAG_HUNGER` during a standard roll while Blood Surge is **active** | Remove **one** Blood Surge rouse die; when the last BS Rouse is removed, full Blood Surge undo runs (see below). While surge is **off**, **no-op**. |
 | Player **right-clicks** `DICEBAG_ROUSE` / `DICEBAG_OBLIVROUSE` during `PRE_ROLL` | Remove one die of that kind **only if** the pool count for that kind is greater than zero; cancel if the pool becomes empty (**player-initiated** rolls only — ST-initiated empty pools stay active). |
+| Player **right-clicks** `DICEBAG_ROUSE` with no active roll | Shortcut (**TOR-490**): initiate a 1-die Rouse check, Open it (skip Storyteller approval), and auto-toss (same as right-click Roll). After settle, existing Confirm / auto-apply rules still apply. |
+| Player **right-clicks** `DICEBAG_OBLIVROUSE` with no active roll | **No-op** (idle Oblivion-Rouse bag is unchanged). |
 | Player **left-clicks** `DICEBAG_ROUSE` while the pool already has Oblivion-Rouse dice (or vice versa) | **Silent fail** — bag click does nothing. |
 | Player Clicks `DICEBAG_HUNGER` while assembling a dice pool for a dedicated Rouse or Oblivion-Rouse Check | **No-op** (Hunger bag does not add dice or reset the check). |
-| Player Clicks `DICEBAG_ROUSE` or `DICEBAG_OBLIVROUSE` with no active roll | A player-initiated Rouse Check or Oblivion Rouse Check is triggered, confirmed, and automatically opened -- no waiting for the Storyteller to approve or open Rouse Checks |
+| Player **left-clicks** `DICEBAG_ROUSE` or `DICEBAG_OBLIVROUSE` with no active roll | A player-initiated dedicated Rouse / Oblivion-Rouse check is created in **SETUP** with a pool of 1 and sent to the Storyteller to Open. |
 | Player Clicks `DICEBAG_ROUSE` or `DICEBAG_OBLIVROUSE` while assembling a dice pool for a standard roll or a Rouse Check | A Rouse Die or Oblivion-Rouse Die is added to the dice pool. (The effect of Rouse Dice in standard dice pools is explained below.) |
 
 #### Pool composition (standard rolls)
@@ -284,7 +286,7 @@ Code paths: `lib/dice_kinds.ttslua`, `lib/rouse_outcomes.ttslua`, `core/roll_con
 - **ST dashboard ROLL** unlocks tray dice, then calls `Object.randomize()` per die (physical tumble, same as R key), staggered ~0.1s — not a silent face assignment.
 - **ST roll control panel** (`rollPanel_Black`, `Black|Host`): same controls as player panels (pool, ROLL, **TAKE HALF**, WP, RECALCULATE, CONFIRM, Obliv/Brutal) alongside the sidebar dashboard. Take Half uses the same rules as player rolls (PRE_ROLL, difficulty set, roll type allowed, roll option enabled).
 - **ST slot CLEAR** (`rollDash_stCancel_1..3` → `HUD_rollCancel`): must be handled before `colorFromRollElementId` (slot ids have no `_<Color>` suffix).
-- **Dice bag right-click** (`objects/dice_bag.ttslua` `click_roll` `alt_click`): routes to `GlobalDiceBagRightClick` / `STR.onDiceBagRightClick` — remove last staged die; empty pool cancels **player-initiated** rolls (ST-initiated rolls keep an empty pool).
+- **Dice bag right-click** (`objects/dice_bag.ttslua` `click_roll` `alt_click`): routes to `GlobalDiceBagRightClick` / `STR.onDiceBagRightClick` — remove last staged die; empty pool cancels **player-initiated** rolls (ST-initiated rolls keep an empty pool). Idle **Rouse** bag right-click starts a 1-die Rouse, Opens it, and auto-tosses (**TOR-490**).
 - **Brutal Outcome confirm** (`RC.confirmBrutalChoice` → `RC.confirmRoll`): `confirmRoll` must **not** call `recalculate` after a brutal choice; result carries `brutalNarrative` for broadcast (e.g. "Brutal Win") and adjusted successes/margin.
 - **Frenzy queue** (`maybeQueueFrenzyOnHungerCap`): after rouse hunger increases, queue Frenzy only when hunger was **already at** `C.MAX_HUNGER` before the bump (would exceed cap; not on first transition to max).
 - **ST bag → name modal** when no live roll; **NPC panel R** → `STR.initiateNpcRoll`.

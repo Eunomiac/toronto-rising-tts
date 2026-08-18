@@ -95,6 +95,7 @@ Once per roll (during `POST_ROLL` phase, before result is confirmed):
 - Result class: **Win** / **Failure** / **Total failure** vs effective difficulty (never Critical or Messy Critical — synthetic normal dice only).
 - Broadcast shows full-pool synthetic normal faces: half with one success (ankh), remainder blank.
 - **Take Half + Rouse:** leftover Rouse / Oblivion-Rouse dice unlock and auto-toss after a short delay (same timing as right-click Roll). They do not wait for a manual throw (TOR-487).
+- **Idle Rouse bag right-click:** with no live roll, right-click starts a 1-die Rouse check, Opens it (skip Storyteller approval), and auto-tosses (TOR-490). Live-roll right-click still removes a Rouse die.
 
 ### 1.8 Extended Rolls *(Phase 3)*
 

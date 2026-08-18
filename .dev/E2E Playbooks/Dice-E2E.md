@@ -962,6 +962,24 @@ U.chain({
     rollCancel("Brown")
   end,
   function() printHeader("", 2) end,
+  function() printHeader("K1b2 - Idle Rouse bag right-click auto-rolls 1-die Rouse", 2) end,
+  rollCancelAll,
+  function()
+    rollE2eSeatPrep("Brown")
+    M.setCamera("ALL", "rollBrown")
+    printHeader("[HUMAN] Right-click Rouse bag 1 time (no live roll). Wait until the die tosses and the result appears.", 3)
+  end
+})
+```
+
+```lua
+U.chain({
+  function()
+    -- Shortcut auto-opens + auto-tosses; sole Confirm may auto-resolve (TOR-328).
+    rollConfirm("Brown", { noActive = true })
+    rollCancel("Brown")
+  end,
+  function() printHeader("", 2) end,
   function() printHeader("K1c - Normal bag to STANDARD", 2) end,
   rollCancelAll,
   function()

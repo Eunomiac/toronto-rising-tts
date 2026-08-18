@@ -268,7 +268,7 @@ RC.setRollOptions("Brown", { wpReroll = true, numberOfDiceRerolled = 3, canRerol
 - Suite H: Take Half (TOR-73; pure Take Half auto-confirms per TOR-306 — assert `noActive` + broadcast). H2/H2b: Take Half + Rouse **auto-tosses** leftover Rouse dice (TOR-487); wait ~0.2s then preset + settle — no human throw.
 - Suite I: Spend Willpower I1–I4. Overlay `canRerollHunger` asserts via `rollPolicy.wpCanRerollHunger` (not `rollOptions`). Under-cap WP waves (fewer R presses than `numberOfDiceRerolled`) stay ROLLING until **Confirm** — only a full cap auto-advances to POST_ROLL (I3/I4).
 - Suite J: Compound rouse in standard pool. J2 arms SETUP (`skipOpen`) for Hunger surge click, then `rollE2eOpenRoll` before settle.
-- Suite K: Dice bag clicks K1–K4. After `rollCancel`/`rollCancelAll`, call `rollE2eSeatPrep` before bag HUMAN (seat-gated bags). SETUP bag steps stay Awaiting Storyteller — do not Open unless the step says so. K3a/K3c Normal-bag promote requires PRE_ROLL (`RC.promoteDedicatedRouseToStandard`) — arm with default `rollTest` open, not `skipOpen`. Cold bag initiate (K1b/K1c) stays SETUP.
+- Suite K: Dice bag clicks K1–K4. After `rollCancel`/`rollCancelAll`, call `rollE2eSeatPrep` before bag HUMAN (seat-gated bags). SETUP bag steps stay Awaiting Storyteller — do not Open unless the step says so. K3a/K3c Normal-bag promote requires PRE_ROLL (`RC.promoteDedicatedRouseToStandard`) — arm with default `rollTest` open, not `skipOpen`. Cold **left-click** bag initiate (K1b/K1c) stays SETUP. K1b2: idle Rouse **right-click** auto-opens and auto-tosses (TOR-490) — wait for settle; assert `noActive` (sole Confirm may auto-fire, TOR-328).
 - Suite L: Baton passing and permanent automation.
 - Suite M: Bestial Null via roll option.
 - Suite N: Blood Surge.
@@ -307,7 +307,7 @@ Passed tests: ✅ beneath Pass if. Partial: ✅ + ⚠️. Failed: ❌ + notes.
 | H Take Half                     | ☐    | H1–H1c, H2–H2b           |
 | I Spend WP                      | ☐    | I1–I4                    |
 | J Compound rouse                | ☐    | J1–J2                    |
-| K Bag clicks                    | ☐    | K1a–K4, K2g-Brown/Purple |
+| K Bag clicks                    | ☐    | K1a–K1b2–K4, K2g-Brown/Purple |
 | L Baton + automation            | ☐    | L1a–L2c                  |
 | M Bestial Null (roll option)    | ☐    | M1                       |
 | N Blood Surge                   | ☐    | N1–N3                    |
