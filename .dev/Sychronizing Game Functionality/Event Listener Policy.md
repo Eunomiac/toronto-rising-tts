@@ -74,7 +74,7 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | `GlobalToggleSignalFireState` | C | 5 | signal lights; on/off = world Y — seat layout preserves per-seat Y (TOR-380), no gameState reconciler |
 | `GlobalApplyTarotState` | C | — | Pink tarot drawer/deck/button poses (TOR-144 W2) |
 | `GlobalApplyCompanionToggleClick` | C | — | Red/Brown famulus companion left/right click (TOR-288) |
-| `GlobalDiceBagClick/RightClick/StorytellerDiceBagClick` | B+C | 5 | rolls; idle Rouse / Oblivion-Rouse right-click = 1-die check + Open + auto-toss (TOR-490 / TOR-491) |
+| `GlobalDiceBagClick/RightClick/StorytellerDiceBagClick` | B+C | 5 | rolls; idle Rouse / Oblivion-Rouse right-click = 1-die check + Open + auto-toss (TOR-490 / TOR-491); concurrent idle-bag auto-Rouse exception (TOR-493) |
 | `GlobalSpawn*` / `GlobalDestroy*` / `GlobalRelease*` / `GlobalTagDie*` / `GlobalOnBagDie*` | C | 5 | dice |
 | `GlobalInitiateRoll` / `GlobalRollSpawnDieRequest` / `GlobalAdjustStorytellerPoolKind` | B+C | 5 | rolls |
 | `GlobalResolveRollPhysicalPrep` | C | 5 | rolls — coupled drawer + DBV + auto-spawn; tray open also moves Compulsion → LIVEROLL + companion state 1→2 (TOR-452 via `DiceDrawer`) |

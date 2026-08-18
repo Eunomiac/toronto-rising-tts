@@ -665,6 +665,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-08-18 | PAVE | TOR-489, TOR-486, TOR-487, TOR-482, TOR-488 | Author requested checklist update: five shipped Focus items added as ready-to-verify; ⌚ cleared on TOR-486. TOR-439 stays as multiclient gate. |
 | 2026-08-18 | CREATE+SHIP | TOR-490 | Idle Rouse bag right-click auto-rolls a 1-die Rouse (initiate + Open + auto-toss). relatedTo TOR-317 / TOR-161. Author confirmed in TTS same day. |
 | 2026-08-18 | CREATE | TOR-492 | Queue roll-result broadcasts (INBOX Immediate → Focus #1 High; relatedTo TOR-156, TOR-490, TOR-328, TOR-296) |
-| 2026-08-18 | PAVE | TOR-487, TOR-491, TOR-482, TOR-486 | Author ✅ cleared Take Half auto-confirm, idle Oblivion-Rouse bag, Daysleep Refresh, Clear right-click. TOR-439 remains. Focus → TOR-492, TOR-81, TOR-168, TOR-98. |
+| 2026-08-18 | CREATE+SHIP | TOR-493 | Concurrent idle-bag auto-Rouse exception to TOR-262 one-live-PC-roll; relatedTo TOR-262 / TOR-490 / TOR-491 / TOR-492. Pending Save & Play. |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

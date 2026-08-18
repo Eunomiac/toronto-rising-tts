@@ -95,7 +95,7 @@ Once per roll (during `POST_ROLL` phase, before result is confirmed):
 - Result class: **Win** / **Failure** / **Total failure** vs effective difficulty (never Critical or Messy Critical — synthetic normal dice only).
 - Broadcast shows full-pool synthetic normal faces: half with one success (ankh), remainder blank.
 - **Take Half + Rouse:** leftover Rouse / Oblivion-Rouse dice unlock and auto-toss after a short delay (same timing as right-click Roll). They do not wait for a manual throw (TOR-487). When Rouse settles and the only remaining action is Confirm, the roll auto-broadcasts (TOR-328 / TOR-306).
-- **Idle Rouse / Oblivion-Rouse bag right-click:** with no live roll, right-click starts a 1-die dedicated check, Opens it (skip Storyteller approval), and auto-tosses (TOR-490, TOR-491). Hunger 5 still blocks Oblivion-Rouse. Live-roll right-click still removes a die of that kind.
+- **Idle Rouse / Oblivion-Rouse bag right-click:** with no live roll of another kind, right-click starts a 1-die dedicated check, Opens it (skip Storyteller approval), and auto-tosses (TOR-490, TOR-491). Several seats may do this at once when **every** live player roll is also that shortcut (TOR-493). Hunger 5 still blocks Oblivion-Rouse. The same seat cannot start a second auto-Rouse while one is still going. Live-roll right-click still removes a die of that kind.
 
 ### 1.8 Extended Rolls *(Phase 3)*
 
