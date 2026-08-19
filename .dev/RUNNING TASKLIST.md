@@ -221,6 +221,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 
 ## Lighting
 
+- [ ] **Spotlight tuner panel:** Selection grid (build-time 60-slot pool) plus Cartesian / spherical debug sliders; lighting reconcile skips the selected GUID while the panel is open. _(TOR-495)_
 - [x] Reconciler lighting updates lerped (default 2s). _( `core/lighting.ttslua` `L.DEFAULT_RECONCILE_LERP_SECONDS`.)_ _(TOR-59)_
 - [x] Test-bed helpers to apply seat-light settings from Red to all active seats. _( `TestBed_applyPlayerSeatLightsFromRed`.)_ _(TOR-61)_
 - [x] **Storyteller camera strip + Black presets:** Host `panel_storyteller_camera` ? `HUD_STcamera`; `M.setCamera` / spoof / seat sync use `C.StorytellerCameraAngles` for Black (fixes E2E `rollE2eSeatPrep("Black")`). _(TOR-348)_

@@ -1,5 +1,4 @@
-<!-- Generated file. Edit ui/.templates/storyteller/panel_debug_light.xml and partials under ui/.templates/storyteller/partials/ only. -->
-<!-- Regenerate: node .dev/scripts/generate_debug_light_panel_xml.js -->
+<!-- TARGET: ui/storyteller/panel_debug_light.xml -->
 <!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md (generator); .dev/HUDs & Overlays/Storyteller HUD Overview.md (debug light panel). -->
 
 <!-- Parameters:
@@ -86,66 +85,7 @@ BUTTONS - concatenated renders of `./partials/debug_button_light.xml` (60-slot p
 -->
 
   <GridLayout id="panel_debug_light_selection" class="panel_debug_light_selection">
-    <Button id="debug_light_selection_01" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_02" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_03" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_04" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_05" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_06" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_07" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_08" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_09" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_10" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_11" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_12" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_13" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_14" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_15" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_16" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_17" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_18" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_19" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_20" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_21" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_22" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_23" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_24" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_25" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_26" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_27" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_28" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_29" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_30" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_31" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_32" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_33" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_34" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_35" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_36" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_37" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_38" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_39" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_40" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_41" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_42" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_43" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_44" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_45" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_46" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_47" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_48" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_49" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_50" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_51" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_52" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_53" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_54" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_55" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_56" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_57" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_58" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_59" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
-    <Button id="debug_light_selection_60" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    @@BUTTONS@@
     <Button id="debug_light_selection_done" class="debug_light_selection_done" onClick = "HUD_debugLightButtonClick(close)">DONE</Button>
   </GridLayout>
 

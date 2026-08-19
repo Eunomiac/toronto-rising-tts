@@ -604,7 +604,8 @@ C.HiddenObjects = {
   [G.GUIDS.PRINCE_CURTAIN_RED] = { "Red" },
   [G.GUIDS.STAGE_BOARD] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
   [G.GUIDS.CONTROL_BOARD] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
-  [G.GUIDS.CONTROL_BOARD_PALETTE] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" }
+  [G.GUIDS.CONTROL_BOARD_PALETTE] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  [G.GUIDS.DEBUG_LIGHT_FOCAL_POINT] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" }
 }
 -- #endregion
 

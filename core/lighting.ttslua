@@ -38,6 +38,10 @@ local SRI = require("lib.seat-role-identity")
 local transitionEpoch = {}
 --- Last mode fingerprint applied per lightRef; reconcile skips redundant `SetLightMode` lerps.
 local lastReconciledModeByRef = {}
+--- While the debug tuner is open, skip reconciler/preset SetLightMode on this object GUID
+--- unless `L.runWhileAllowingDebugHoldApply` is wrapping the call.
+local debugHoldGuid = nil
+local debugHoldAllowApply = false
 -- InitLights first-pass misses (object not ready); deferred pass retries these keys only.
 local initLightsRetryKeys = {}
 -- Warn each missing-OFF light at most once per session.
@@ -1118,6 +1122,43 @@ local function findRegisteredLightRefByGuid(guid)
     return nil
 end
 
+--- @param obj Object|nil
+--- @return string|nil
+local function objectGuidOrNil(obj)
+    if obj ~= nil and obj.getGUID ~= nil then
+        local g = obj.getGUID()
+        if type(g) == "string" and g ~= "" then
+            return g
+        end
+    end
+    return nil
+end
+
+--- True when a reconciler/preset should not overwrite the debug tuner's selected light.
+--- @param lightRef string
+--- @param lightObj Object|nil
+--- @return boolean
+local function shouldSkipDebugHold(lightRef, lightObj)
+    if debugHoldGuid == nil or debugHoldAllowApply == true then
+        return false
+    end
+    if lightRef == debugHoldGuid then
+        return true
+    end
+    if type(lightRef) == "string" and lightRef == ("npcLight_" .. debugHoldGuid) then
+        return true
+    end
+    local g = objectGuidOrNil(lightObj)
+    if g == debugHoldGuid then
+        return true
+    end
+    local lData = L.LIGHTMODES[lightRef]
+    if type(lData) == "table" and lData.guid == debugHoldGuid then
+        return true
+    end
+    return false
+end
+
 --- JSON-safe shallow copy of a mode table for persistence (raw-GUID / inline modes).
 --- @param mt table|nil
 --- @return table|nil
@@ -1731,6 +1772,27 @@ function L.invalidateReconcileCache()
     lastReconciledModeByRef = {}
 end
 
+--- Pin a spotlight GUID so named-mode / preset `SetLightMode` calls no-op while the debug tuner is open.
+--- @param guid string|nil
+function L.setDebugHoldGuid(guid)
+    if type(guid) == "string" and guid ~= "" then
+        debugHoldGuid = guid
+    else
+        debugHoldGuid = nil
+    end
+end
+
+--- Run `fn` with debug-hold skip disabled so the tuner can still apply live emission patches.
+--- @param fn function
+function L.runWhileAllowingDebugHoldApply(fn)
+    debugHoldAllowApply = true
+    local ok, err = pcall(fn)
+    debugHoldAllowApply = false
+    if not ok then
+        error(err)
+    end
+end
+
 --- Clears one light ref from the reconcile fingerprint cache (e.g. wake pooled NPC spotlight after seated park).
 --- @param lightRef string
 function L.invalidateReconcileCacheForRef(lightRef)
@@ -2039,6 +2101,10 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
         if safePersist and next(safePersist) ~= nil then
             S.setStateVal(safePersist, "lights", lightRef)
         end
+    end
+
+    if shouldSkipDebugHold(lightRef, light) then
+        return nil
     end
 
     local fingerprintMode = mode

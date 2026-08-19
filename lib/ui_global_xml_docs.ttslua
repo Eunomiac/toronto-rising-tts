@@ -7335,89 +7335,519 @@ UI.setAttributes("overlay_globalBlindfold", {color = "rgba(1, 1, 1, 0.25)"})
       <Button class="hud_storyteller_button" onClick="HUD_toggleAllAnchors">Toggle Anchors</Button>
       <Button class="hud_storyteller_button" onClick="HUD_toggleAllSpotlights">Toggle Spotlights</Button>
       <Button class="hud_storyteller_button" onClick="HUD_debugCameraActivate">Debug Camera</Button>
-      <HorizontalLayout class="hud_storyteller_control_row">
-        <Button class="hud_storyteller_button" onClick="HUD_debugLightActivate">Debug Light</Button>
-        <InputField id="dl_guid" class="hud_storyteller_input guid_input" onValueChanged="HUD_debugLightGuidInput" onEndEdit="HUD_debugLightGuidInput"></InputField>
-      </HorizontalLayout>
+      <Button class="hud_storyteller_button" onClick="HUD_debugLightActivate">Debug Light</Button>
     </VerticalLayout>
 
     
 <!-- include ui/storyteller/panel_debug_light.xml -->
+<!-- Generated file. Edit ui/.templates/storyteller/panel_debug_light.xml and partials under ui/.templates/storyteller/partials/ only. -->
+<!-- Regenerate: node .dev/scripts/generate_debug_light_panel_xml.js -->
+<!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md (generator); .dev/HUDs & Overlays/Storyteller HUD Overview.md (debug light panel). -->
+
+<!-- Parameters:
+BUTTONS - concatenated renders of `./partials/debug_button_light.xml` (60-slot pool; SLOT is 01..60). Lua fills slots on open.
+-->
+
 <Defaults>
 
-  <HorizontalLayout flexibleHeight="0" />
-  <Text flexibleWidth="0" />
-  <Button flexibleWidth="0" flexibleHeight="0" />
-  <Slider minWidth="300" />
+  <Panel class="panel_debug_lights"
+    rectAlignment = "MiddleCenter"
+    height = "900"
+    width = "1200"
+    color = "rgba(0, 0, 0, 0.82)" />
+
+  <GridLayout class="panel_debug_light_selection"
+     padding = "5 5 5 5"
+     spacing = "3 3"
+     cellSize = "80 20"
+     childAlignment = "UpperLeft"
+     constraint = "FixedColumnCount"
+     constraintCount = "6"
+     rectAlignment = "MiddleLeft" />
+
+  <Button class="panel_debug_light_selection_button"
+     fontSize = "8"
+     textColor = "#FFFFFF"
+     colors = "#999999|#AAAAAA|#FFFFFF|#000000"
+     onClick = "HUD_debugLightButtonClick" />
+
+  <Button class="selection_button_lit"
+     textColor = "#000000"
+     colors = "#BEAB00|#FFD000|#FFFF92|#FFFFAA" />
+
+  <Button class="selection_button_selected"
+     outlineColor = "#00FF00"
+     outlineSize = "2 -2" />
+
+  <Button class="debug_light_selection_done"
+    ignoreLayout = "true"
+    rectAlignment = "LowerCenter"
+    offsetXY = "0 -30"
+    fontSize = "14"
+    textColor = "#FFFFFF"
+    colors = "#555555|#666666|#777777|#444444" />
+
+  <GridLayout class="panel_debug_light_control"
+    padding = "5 5 5 5"
+    spacing = "0 0"
+    cellSize = "320 60"
+    startAxis = "Vertical"
+    startCorner = "UpperLeft"
+    childAlignment = "UpperLeft"
+    constraint = "FixedRowCount"
+    constraintCount = "13" />
+
+
+
 </Defaults>
 
-<!-- Focused spotlight debug: sliders + snapshot (Host). Handlers: HUD_debugLight* in global_script. -->
-<Panel id="panel_debug_light_root" active="false" color="rgba(0,0,0,0.82)" padding="10 10 10 10" width="500" scale="0.8" rectAlignment="MiddleLeft" offsetXY="100 0" raycastTarget="true">
-  <VerticalLayout spacing="5" childForceExpandWidth="true" childForceExpandHeight="false">
-    <Text id="dl_debug_light_label" fontSize="14" color="#FFDD00" preferredHeight="32">Debug Light</Text>
 
-    <HorizontalLayout preferredHeight="30" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
-      <Text preferredWidth="110" fontSize="12" color="#CCCCCC">Light on</Text>
-      <Toggle id="dl_enabled" isOn="true" onValueChanged="HUD_debugLightEnabled" flexibleWidth="1" minWidth="80">On</Toggle>
-      <Button id="dl_reset_enabled" preferredWidth="30" preferredHeight="30" minWidth="30" minHeight="30" flexibleWidth="0" fontSize="12" padding="0 0 0 0" colors="#555555|#666666|#777777|#444444" onClick="HUD_debugLightResetRow">&#x21BA;</Button>
-    </HorizontalLayout>
+<Panel id="panel_debug_lights" class="panel_debug_lights" active="false" raycastTarget="true">
 
-    <HorizontalLayout preferredHeight="30" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
-      <Text preferredWidth="110" fontSize="12" color="#CCCCCC">Range</Text>
-      <Slider id="dl_range" minValue="0" maxValue="200" value="80" flexibleWidth="1" onValueChanged="HUD_debugLightSlider" />
-      <Button id="dl_reset_range" preferredWidth="30" preferredHeight="30" minWidth="30" minHeight="30" flexibleWidth="0" fontSize="12" padding="0 0 0 0" colors="#555555|#666666|#777777|#444444" onClick="HUD_debugLightResetRow">&#x21BA;</Button>
-    </HorizontalLayout>
-    <HorizontalLayout preferredHeight="30" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
-      <Text preferredWidth="110" fontSize="12" color="#CCCCCC">Spot angle</Text>
-      <Slider id="dl_angle" minValue="0" maxValue="180" value="90" flexibleWidth="1" onValueChanged="HUD_debugLightSlider" />
-      <Button id="dl_reset_angle" preferredWidth="30" preferredHeight="30" minWidth="30" minHeight="30" flexibleWidth="0" fontSize="12" padding="0 0 0 0" colors="#555555|#666666|#777777|#444444" onClick="HUD_debugLightResetRow">&#x21BA;</Button>
-    </HorizontalLayout>
-    <HorizontalLayout preferredHeight="30" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
-      <Text preferredWidth="110" fontSize="12" color="#CCCCCC">Intensity</Text>
-      <Slider id="dl_intensity" minValue="0" maxValue="12" value="1" flexibleWidth="1" onValueChanged="HUD_debugLightSlider" />
-      <Button id="dl_reset_intensity" preferredWidth="30" preferredHeight="30" minWidth="30" minHeight="30" flexibleWidth="0" fontSize="12" padding="0 0 0 0" colors="#555555|#666666|#777777|#444444" onClick="HUD_debugLightResetRow">&#x21BA;</Button>
-    </HorizontalLayout>
-    <HorizontalLayout preferredHeight="30" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
-      <Text preferredWidth="110" fontSize="12" color="#CCCCCC">Hue</Text>
-      <Slider id="dl_hue" minValue="0" maxValue="360" wholeNumbers="true" value="0" flexibleWidth="1" onValueChanged="HUD_debugLightSlider" />
-      <Button id="dl_reset_hue" preferredWidth="30" preferredHeight="30" minWidth="30" minHeight="30" flexibleWidth="0" fontSize="12" padding="0 0 0 0" colors="#555555|#666666|#777777|#444444" onClick="HUD_debugLightResetRow">&#x21BA;</Button>
-    </HorizontalLayout>
-    <HorizontalLayout preferredHeight="30" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
-      <Text preferredWidth="110" fontSize="12" color="#CCCCCC">Saturation</Text>
-      <Slider id="dl_saturation" minValue="0" maxValue="1" value="0" flexibleWidth="1" onValueChanged="HUD_debugLightSlider" />
-      <Button id="dl_reset_saturation" preferredWidth="30" preferredHeight="30" minWidth="30" minHeight="30" flexibleWidth="0" fontSize="12" padding="0 0 0 0" colors="#555555|#666666|#777777|#444444" onClick="HUD_debugLightResetRow">&#x21BA;</Button>
-    </HorizontalLayout>
-    <HorizontalLayout preferredHeight="30" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
-      <Text preferredWidth="110" fontSize="12" color="#CCCCCC">Brightness</Text>
-      <Slider id="dl_brightness" minValue="0" maxValue="1" value="1" flexibleWidth="1" onValueChanged="HUD_debugLightSlider" />
-      <Button id="dl_reset_brightness" preferredWidth="30" preferredHeight="30" minWidth="30" minHeight="30" flexibleWidth="0" fontSize="12" padding="0 0 0 0" colors="#555555|#666666|#777777|#444444" onClick="HUD_debugLightResetRow">&#x21BA;</Button>
-    </HorizontalLayout>
-    <HorizontalLayout preferredHeight="30" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
-      <Text preferredWidth="110" fontSize="12" color="#CCCCCC">Rot X</Text>
-      <Slider id="dl_rotX" minValue="-180" maxValue="180" value="0" flexibleWidth="1" onValueChanged="HUD_debugLightSlider" />
-      <Button id="dl_reset_rotX" preferredWidth="30" preferredHeight="30" minWidth="30" minHeight="30" flexibleWidth="0" fontSize="12" padding="0 0 0 0" colors="#555555|#666666|#777777|#444444" onClick="HUD_debugLightResetRow">&#x21BA;</Button>
-    </HorizontalLayout>
-    <HorizontalLayout preferredHeight="30" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
-      <Text preferredWidth="110" fontSize="12" color="#CCCCCC">Rot Y</Text>
-      <Slider id="dl_rotY" minValue="-180" maxValue="180" value="0" flexibleWidth="1" onValueChanged="HUD_debugLightSlider" />
-      <Button id="dl_reset_rotY" preferredWidth="30" preferredHeight="30" minWidth="30" minHeight="30" flexibleWidth="0" fontSize="12" padding="0 0 0 0" colors="#555555|#666666|#777777|#444444" onClick="HUD_debugLightResetRow">&#x21BA;</Button>
-    </HorizontalLayout>
-    <HorizontalLayout preferredHeight="30" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
-      <Text preferredWidth="110" fontSize="12" color="#CCCCCC">Rot Z</Text>
-      <Slider id="dl_rotZ" minValue="-180" maxValue="180" value="0" flexibleWidth="1" onValueChanged="HUD_debugLightSlider" />
-      <Button id="dl_reset_rotZ" preferredWidth="30" preferredHeight="30" minWidth="30" minHeight="30" flexibleWidth="0" fontSize="12" padding="0 0 0 0" colors="#555555|#666666|#777777|#444444" onClick="HUD_debugLightResetRow">&#x21BA;</Button>
-    </HorizontalLayout>
-    <HorizontalLayout preferredHeight="30" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
-      <Text preferredWidth="110" fontSize="12" color="#CCCCCC">Distance</Text>
-      <Slider id="dl_distance" minValue="-80" maxValue="80" value="0" flexibleWidth="1" onValueChanged="HUD_debugLightSlider" />
-      <Button id="dl_reset_distance" preferredWidth="30" preferredHeight="30" minWidth="30" minHeight="30" flexibleWidth="0" fontSize="12" padding="0 0 0 0" colors="#555555|#666666|#777777|#444444" onClick="HUD_debugLightResetRow">&#x21BA;</Button>
-    </HorizontalLayout>
 
-    <HorizontalLayout preferredHeight="32" spacing="8" childAlignment="MiddleCenter">
-      <Button class="smallButton" preferredWidth="120" fontSize="11" onClick="HUD_debugLightSnapshot">Snapshot</Button>
-      <Button class="smallButton" preferredWidth="120" fontSize="11" onClick="HUD_debugLightDone">Done</Button>
+  <!-- === LIGHT SELECTION PANEL ===
+
+
+  **SPOTLIGHT SELECTION BUTTONS**
+  - must be populated with one button per spotlight in the game world, excluding spotlights in the NPC preload area
+  - buttons should display the name of the spotlight
+  - the script should dynamically update their status via UI.setClass() accordingly:
+    - LIGHT IS DISABLED/OFF — "panel_debug_light_selection_button"
+    - LIGHT IS ENABLED/ON — "panel_debug_light_selection_button selection_button_lit"
+    - LIGHT IS SELECTED AND DISABLED/OFF — "panel_debug_light_selection_button selection_button_selected"
+    - LIGHT IS SELECTED AND ENABLED/ON — "panel_debug_light_selection_button selection_button_lit selection_button_selected"
+  - clicking a button selects it
+  - only one spotlight can be selected at a time; selecting a new spotlight deselects the previous one
+  - once a spotlight is selected ...
+    - the "LIGHT CONTROL PANEL" should be made visible (if it isn't already)
+    - the G.GUIDS.DEBUG_LIGHT_FOCAL_POINT object should be positioned 5 units "downstream" of the light (in the direction it is pointing), `.highlightOn("Green")`'d, and rotated to match the orientation of the spotlight object
+    - The "LIGHT CONTROL PANEL" XML should be updated to reflect the current status of the selected light, and should be constantly and dynamically updated for as long as the panel is opened whenever the light is moved or its configuration adjusted.
+
+  **OTHER BUTTONS**
+  - [Done] - Closes the light selection panel, returning the user to the world viewportData. (Note: Parameter sent is 'close', to avoid conflict with the 'done' button in the light control panel.)
+-->
+
+  <GridLayout id="panel_debug_light_selection" class="panel_debug_light_selection">
+    <Button id="debug_light_selection_01" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_02" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_03" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_04" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_05" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_06" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_07" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_08" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_09" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_10" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_11" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_12" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_13" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_14" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_15" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_16" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_17" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_18" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_19" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_20" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_21" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_22" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_23" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_24" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_25" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_26" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_27" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_28" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_29" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_30" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_31" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_32" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_33" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_34" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_35" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_36" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_37" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_38" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_39" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_40" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_41" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_42" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_43" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_44" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_45" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_46" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_47" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_48" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_49" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_50" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_51" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_52" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_53" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_54" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_55" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_56" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_57" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_58" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_59" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_60" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
+    <Button id="debug_light_selection_done" class="debug_light_selection_done" onClick = "HUD_debugLightButtonClick(close)">DONE</Button>
+  </GridLayout>
+
+  <!-- === LIGHT CONTROL PANEL ===
+  - should be hidden unless a spotlight is selected
+  - when a light is selected, all sliders should be initialized as described below, and should then be dynamically updated for as long as the panel is opened whenever the light is moved or its configuration adjusted.
+
+  **SLIDERS**
+  - Sliders should be configured as follows:
+    - **Definitions**:
+      - **Unbalanced slider**: A slider where the center position is not the midpoint between its minimum and maximum values. Instead, the center is initialized to a context-specific value (e.g., the current position of a light). This results in the distance covered by the slider from center to min and center to max being potentially unequal.
+      - **Balanced slider**: A slider where the center position is the midpoint between its minimum and maximum values. This results in the distance covered by the slider from center to min and center to max being equal. Such sliders should be initialized with the slider set to the current value of the light (which may or may not be the center of the slider).
+      - **Logarithmic slider**: A slider where changes near the center result in small, precise adjustments, while movement further from the center results in exponentially larger or faster adjustments. This provides fine control near the central value and rapid traversal toward the extremes.
+      - **Linear slider**: A slider behaving in the standard manner, where the slider value is directly proportional to the distance moved from the center.
+      - In summary: position sliders (and any sliders tagged "unbalanced, logarithmic") are initialized with their center aligned to a relevant value (e.g., current light position), with asymmetric ranges to each side, and use a logarithmic scale for movement away from the center. Balanced sliders should have their center aligned to the midpoint between min and max, and then the value of the slider set to the current value of the light (which may or may not be the center of the slider).
+    - IMPORTANT NOTE: I've naively coded the minValue and maxValues of unbalanced logarithmic sliders to the actual values — you may find it easier to choose different values, and then normalize or map them in the code.
+
+  **POSITION & ROTATION SLIDERS**
+  - For x-position:
+    - Min: -500; Max: 500.
+    - Precision: Integer
+    - Center: initialized to the current x-position of the light when the slider's data is first populated (i.e. when the spotlight is selected)
+    - Behavior: unbalanced + logarithmic
+  - For y-position:
+    - Min: -50; Max: 100.
+    - Precision: Integer
+    - Center: initialized to the current y-position of the light when the slider's data is first populated (i.e. when the spotlight is selected)
+    - Behavior: unbalanced + logarithmic
+  - For z-position:
+    - Min: -500; Max: 500.
+    - Precision: Integer
+    - Center: initialized to the current z-position of the light when the slider's data is first populated (i.e. when the spotlight is selected)
+    - Behavior: unbalanced + logarithmic
+  - For x-rotation:
+    - Min: 0; Max: 360.
+    - Precision: Integer
+    - Center: 180.
+    - Behavior: balanced + logarithmic
+  - For y-rotation:
+    - Min: 0; Max: 360.
+    - Precision: Integer
+    - Center: 180.
+    - Behavior: balanced + logarithmic
+  - For z-rotation:
+    - Min: 0; Max: 360.
+    - Precision: Integer
+    - Center: 180.
+    - Behavior: balanced + logarithmic
+
+  **COLOR SLIDERS**
+  - For hue:
+    - Min: 0; Max: 1
+    - Precision: 2-decimal Float
+    - Center: 0.5
+    - Behavior: balanced + linear
+  - For saturation:
+    - Min: 0; Max: 1
+    - Precision: 2-decimal Float
+    - Center: 0.5
+    - Behavior: balanced + linear
+  - For brightness:
+    - Min: 0; Max: 1
+    - Precision: 2-decimal Float
+    - Center: 0.5
+    - Behavior: balanced + linear
+
+  **EMISSION SLIDERS**
+  - For range:
+    - Min: 0; Max: 200
+    - Precision: Integer
+    - Center: initialized to the current range of the light when the slider's data is first populated (i.e. when the spotlight is selected)
+    - Behavior: unbalanced + logarithmic
+  - For intensity:
+    - Min: 0, Max: 10
+    - Precision: 2-decimal Float
+    - Center: initialized to the current intensity of the light when the slider's data is first populated (i.e. when the spotlight is selected)
+    - Behavior: unbalanced + logarithmic
+  - For spot angle:
+    - Min: 0; Max: 180
+    - Precision: Integer
+    - Center: 90
+    - Behavior: balanced + linear
+
+  **FOCAL POINT SLIDERS**
+  PITCH, YAW and DISTANCE sliders control the position of the spotlight in SPHERICAL COORDINATES, centered on the G.GUIDS.DEBUG_LIGHT_FOCAL_POINT object. Moving these sliders changes the position of the spotlight, never the position of the G.GUIDS.DEBUG_LIGHT_FOCAL_POINT object. Moving these sliders also immediately snaps the light's orientation to point directly at the G.GUIDS.DEBUG_LIGHT_FOCAL_POINT object.
+  - For pitch:
+    - Min: -90; Max: 90
+    - Precision: Integer
+    - Center: 0
+    - Behavior: balanced + linear
+  - For yaw:
+    - Min: 0; Max: 360
+    - Precision: Integer
+    - Center: 0
+    - Behavior: balanced + linear
+  - For distance:
+    - Min: 0; Max: 100
+    - Precision: 1-decimal Float
+    - Center: initialized to the current distance to the G.GUIDS.DEBUG_LIGHT_FOCAL_POINT object when the slider's data is first populated (i.e. when the spotlight is selected)
+    - Behavior: unbalanced + logarithmic
+  NOTE: When first initialized, the G.GUIDS.DEBUG_LIGHT_FOCAL_POINT object is positioned 5 units "downstream" of the light (in the direction it is pointing), `.highlightOn("Green")`'d, and rotated to match the orientation of the spotlight object. This means that distance will be initialized to 5, while pitch and yaw should be derived by a coordinate conversion from the light's position relative to the focal point object.
+
+  == SLIDER INTERACTIONS ==
+  Because the light's position and rotation can be controlled by multiple sliders, it is important to ensure that all sliders are synchronized and dynamically updated to always align with the position and orientation of the light. For example, if the user moves any of the FOCAL POINT SLIDERS, this will likely require updating all POSITION and ROTATION sliders as the light orbits around the focal point object, always facing it. Likewise, if the user moves any of the POSITION or ROTATION sliders, this will likely require updating the FOCAL POINT SLIDERS as the light's position and orientation change relative to the focal point object. (NOTE: The light should not snap to point at the focal point object when the user moves the POSITION or ROTATION sliders; only when the FOCAL POINT sliders are moved should the light snap to point at the focal point object.)
+
+  IMPORTANT: In addition to updating the sliders, the text elements displaying the actual values must also be updated, and they should be displayed with the same precision as the sliders. If negative values are possible, the text elements associated with that slider should always be signed (e.g. "+500", not "500"). If the minimum value is 0 or greater, no signs are necessary.
+
+  == BUTTON CONTROLS ==
+  - [Zero] — Recenters/reinitializes the center points of all sliders that depend on the light's current position and orientation: the sliders themselves will all be set to their zero point/center/midpoints, while the slider values will be adjusted to match the new position and orientation of the light.
+  - [Refresh] - Refreshes the values of all sliders to match the current position and orientation of the light, ADDITIONALLY checking the position of the G.GUIDS.DEBUG_LIGHT_FOCAL_POINT object and updating the FOCAL POINT SLIDERS to match, in case that object has been moved manually.
+  - [Discard] - Discards all changes made to the light's configuration by the debug control panel, restoring it to its initial state.
+  - [Snapshot] - Sends a lua-table formatted configuration of the light's current state to the IDE, so it can be copied into the various LightMode definitions.
+  - [Done] - Closes the debug control panel, returning the user to the light selection panel.
+-->
+
+  <GridLayout id="panel_debug_light_control" class="panel_debug_light_control" active="false">
+    <HorizontalLayout id="db_position_header_container" class="header_container">
+      <Text id="db_position_header" class="header_text">Position</Text>
     </HorizontalLayout>
-  </VerticalLayout>
+    <VerticalLayout id="db_x_position_container" class="debug_light_control_container">
+      <Panel id="db_x_position_container_top" class="debug_light_control_container_top">
+        <Text id="db_x_position_header" class="header_text">X-Position</Text>
+        <Text id="debug_light_current_xposition" class="debug_light_current_value">+313</Text>
+      </Panel>
+      <Panel id="db_x_position_container_middle" class="debug_light_control_container_middle">
+        <Slider id="debug_light_slider_xposition" class="debug_light_slider" minValue="-1" maxValue="1" value="0" onValueChanged="HUD_debugLightSlider" />
+      </Panel>
+      <Panel id="db_x_position_container_bottom" class="debug_light_control_container_bottom">
+        <Text id="debug_light_slider_label_left_xposition" class="debug_light_slider_label slider_label_left">-500</Text>
+        <Text id="debug_light_slider_label_center_xposition" class="debug_light_slider_label slider_label_center">+313</Text>
+        <Text id="debug_light_slider_label_right_xposition" class="debug_light_slider_label slider_label_right">+500</Text>
+      </Panel>
+    </VerticalLayout>
+    <VerticalLayout id="db_y_position_container" class="debug_light_control_container">
+      <Panel id="db_y_position_container_top" class="debug_light_control_container_top">
+        <Text id="db_y_position_header" class="header_text">Y-Position</Text>
+        <Text id="debug_light_current_yposition" class="debug_light_current_value">+313</Text>
+      </Panel>
+      <Panel id="db_y_position_container_middle" class="debug_light_control_container_middle">
+        <Slider id="debug_light_slider_yposition" class="debug_light_slider" minValue="-1" maxValue="1" value="0" onValueChanged="HUD_debugLightSlider" />
+      </Panel>
+      <Panel id="db_y_position_container_bottom" class="debug_light_control_container_bottom">
+        <Text id="debug_light_slider_label_left_yposition" class="debug_light_slider_label slider_label_left">-50</Text>
+        <Text id="debug_light_slider_label_center_yposition" class="debug_light_slider_label slider_label_center">+12</Text>
+        <Text id="debug_light_slider_label_right_yposition" class="debug_light_slider_label slider_label_right">+100</Text>
+      </Panel>
+    </VerticalLayout>
+    <VerticalLayout id="db_z_position_container" class="debug_light_control_container">
+      <Panel id="db_z_position_container_top" class="debug_light_control_container_top">
+        <Text id="db_z_position_header" class="header_text">Z-Position</Text>
+        <Text id="debug_light_current_zposition" class="debug_light_current_value">-112</Text>
+      </Panel>
+      <Panel id="db_z_position_container_middle" class="debug_light_control_container_middle">
+        <Slider id="debug_light_slider_zposition" class="debug_light_slider" minValue="-1" maxValue="1" value="0" onValueChanged="HUD_debugLightSlider" />
+      </Panel>
+      <Panel id="db_z_position_container_bottom" class="debug_light_control_container_bottom">
+        <Text id="debug_light_slider_label_left_zposition" class="debug_light_slider_label slider_label_left">-500</Text>
+        <Text id="debug_light_slider_label_center_zposition" class="debug_light_slider_label slider_label_center">-112</Text>
+        <Text id="debug_light_slider_label_right_zposition" class="debug_light_slider_label slider_label_right">+500</Text>
+      </Panel>
+    </VerticalLayout>
+    <HorizontalLayout id="db_color_header_container" class="header_container">
+      <Text id="db_color_header" class="header_text">Color</Text>
+    </HorizontalLayout>
+    <VerticalLayout id="db_hue_container" class="debug_light_control_container">
+      <Panel id="db_hue_container_top" class="debug_light_control_container_top">
+        <Text id="db_hue_header" class="header_text">Hue</Text>
+        <Text id="debug_light_current_hue" class="debug_light_current_value">0.77</Text>
+      </Panel>
+      <Panel id="db_hue_container_middle" class="debug_light_control_container_middle">
+        <Slider id="debug_light_slider_hue" class="debug_light_slider" minValue="0" maxValue="1" value="0.77" onValueChanged="HUD_debugLightSlider" />
+      </Panel>
+      <Panel id="db_hue_container_bottom" class="debug_light_control_container_bottom">
+        <Text id="debug_light_slider_label_left_hue" class="debug_light_slider_label slider_label_left">0.00</Text>
+        <Text id="debug_light_slider_label_center_hue" class="debug_light_slider_label slider_label_center">0.50</Text>
+        <Text id="debug_light_slider_label_right_hue" class="debug_light_slider_label slider_label_right">1.00</Text>
+      </Panel>
+    </VerticalLayout>
+    <VerticalLayout id="db_saturation_container" class="debug_light_control_container">
+      <Panel id="db_saturation_container_top" class="debug_light_control_container_top">
+        <Text id="db_saturation_header" class="header_text">Saturation</Text>
+        <Text id="debug_light_current_saturation" class="debug_light_current_value">0.25</Text>
+      </Panel>
+      <Panel id="db_saturation_container_middle" class="debug_light_control_container_middle">
+        <Slider id="debug_light_slider_saturation" class="debug_light_slider" minValue="0" maxValue="1" value="0.25" onValueChanged="HUD_debugLightSlider" />
+      </Panel>
+      <Panel id="db_saturation_container_bottom" class="debug_light_control_container_bottom">
+        <Text id="debug_light_slider_label_left_saturation" class="debug_light_slider_label slider_label_left">0.00</Text>
+        <Text id="debug_light_slider_label_center_saturation" class="debug_light_slider_label slider_label_center">0.50</Text>
+        <Text id="debug_light_slider_label_right_saturation" class="debug_light_slider_label slider_label_right">1.00</Text>
+      </Panel>
+    </VerticalLayout>
+    <VerticalLayout id="db_brightness_container" class="debug_light_control_container">
+      <Panel id="db_brightness_container_top" class="debug_light_control_container_top">
+        <Text id="db_brightness_header" class="header_text">Brightness</Text>
+        <Text id="debug_light_current_brightness" class="debug_light_current_value">0.89</Text>
+      </Panel>
+      <Panel id="db_brightness_container_middle" class="debug_light_control_container_middle">
+        <Slider id="debug_light_slider_brightness" class="debug_light_slider" minValue="0" maxValue="1" value="0.89" onValueChanged="HUD_debugLightSlider" />
+      </Panel>
+      <Panel id="db_brightness_container_bottom" class="debug_light_control_container_bottom">
+        <Text id="debug_light_slider_label_left_brightness" class="debug_light_slider_label slider_label_left">0.00</Text>
+        <Text id="debug_light_slider_label_center_brightness" class="debug_light_slider_label slider_label_center">0.50</Text>
+        <Text id="debug_light_slider_label_right_brightness" class="debug_light_slider_label slider_label_right">1.00</Text>
+      </Panel>
+    </VerticalLayout>
+    <HorizontalLayout id="db_focalPoint_header_container" class="header_container">
+      <Text id="db_focalPoint_header" class="header_text">Focal Point</Text>
+    </HorizontalLayout>
+    <VerticalLayout id="db_pitch_container" class="debug_light_control_container">
+      <Panel id="db_pitch_container_top" class="debug_light_control_container_top">
+        <Text id="db_pitch_header" class="header_text">Pitch</Text>
+        <Text id="debug_light_current_pitch" class="debug_light_current_value">+25</Text>
+      </Panel>
+      <Panel id="db_pitch_container_middle" class="debug_light_control_container_middle">
+        <Slider id="debug_light_slider_pitch" class="debug_light_slider" minValue="-90" maxValue="90" value="25" wholeNumbers="true" onValueChanged="HUD_debugLightSlider" />
+      </Panel>
+      <Panel id="db_pitch_container_bottom" class="debug_light_control_container_bottom">
+        <Text id="debug_light_slider_label_left_pitch" class="debug_light_slider_label slider_label_left">-90</Text>
+        <Text id="debug_light_slider_label_center_pitch" class="debug_light_slider_label slider_label_center">0</Text>
+        <Text id="debug_light_slider_label_right_pitch" class="debug_light_slider_label slider_label_right">+90</Text>
+      </Panel>
+    </VerticalLayout>
+    <VerticalLayout id="db_yaw_container" class="debug_light_control_container">
+      <Panel id="db_yaw_container_top" class="debug_light_control_container_top">
+        <Text id="db_yaw_header" class="header_text">Yaw</Text>
+        <Text id="debug_light_current_yaw" class="debug_light_current_value">90</Text>
+      </Panel>
+      <Panel id="db_yaw_container_middle" class="debug_light_control_container_middle">
+        <Slider id="debug_light_slider_yaw" class="debug_light_slider" minValue="0" maxValue="360" value="90" wholeNumbers="true" onValueChanged="HUD_debugLightSlider" />
+      </Panel>
+      <Panel id="db_yaw_container_bottom" class="debug_light_control_container_bottom">
+        <Text id="debug_light_slider_label_left_yaw" class="debug_light_slider_label slider_label_left">0</Text>
+        <Text id="debug_light_slider_label_center_yaw" class="debug_light_slider_label slider_label_center">180</Text>
+        <Text id="debug_light_slider_label_right_yaw" class="debug_light_slider_label slider_label_right">360</Text>
+      </Panel>
+    </VerticalLayout>
+    <VerticalLayout id="db_distance_container" class="debug_light_control_container">
+      <Panel id="db_distance_container_top" class="debug_light_control_container_top">
+        <Text id="db_distance_header" class="header_text">Distance</Text>
+        <Text id="debug_light_current_distance" class="debug_light_current_value">5.0</Text>
+      </Panel>
+      <Panel id="db_distance_container_middle" class="debug_light_control_container_middle">
+        <Slider id="debug_light_slider_distance" class="debug_light_slider" minValue="-1" maxValue="1" value="0" onValueChanged="HUD_debugLightSlider" />
+      </Panel>
+      <Panel id="db_distance_container_bottom" class="debug_light_control_container_bottom">
+        <Text id="debug_light_slider_label_left_distance" class="debug_light_slider_label slider_label_left">0.0</Text>
+        <Text id="debug_light_slider_label_center_distance" class="debug_light_slider_label slider_label_center">5.0</Text>
+        <Text id="debug_light_slider_label_right_distance" class="debug_light_slider_label slider_label_right">100.0</Text>
+      </Panel>
+    </VerticalLayout>
+    <Panel id="db_debug_light_panel_spacer" class="debug_light_panel_spacer" />
+    <HorizontalLayout id="db_rotation_header_container" class="header_container">
+      <Text id="db_rotation_header" class="header_text">Rotation</Text>
+    </HorizontalLayout>
+    <VerticalLayout id="db_x_rotation_container" class="debug_light_control_container">
+      <Panel id="db_x_rotation_container_top" class="debug_light_control_container_top">
+        <Text id="db_x_rotation_header" class="header_text">X-Rotation</Text>
+        <Text id="debug_light_current_xrotation" class="debug_light_current_value">237</Text>
+      </Panel>
+      <Panel id="db_x_rotation_container_middle" class="debug_light_control_container_middle">
+        <Slider id="debug_light_slider_xrotation" class="debug_light_slider" minValue="0" maxValue="360" value="237" wholeNumbers="true" onValueChanged="HUD_debugLightSlider" />
+      </Panel>
+      <Panel id="db_x_rotation_container_bottom" class="debug_light_control_container_bottom">
+        <Text id="debug_light_slider_label_left_xrotation" class="debug_light_slider_label slider_label_left">0</Text>
+        <Text id="debug_light_slider_label_center_xrotation" class="debug_light_slider_label slider_label_center">180</Text>
+        <Text id="debug_light_slider_label_right_xrotation" class="debug_light_slider_label slider_label_right">360</Text>
+      </Panel>
+    </VerticalLayout>
+    <VerticalLayout id="db_y_rotation_container" class="debug_light_control_container">
+      <Panel id="db_y_rotation_container_top" class="debug_light_control_container_top">
+        <Text id="db_y_rotation_header" class="header_text">Y-Rotation</Text>
+        <Text id="debug_light_current_yrotation" class="debug_light_current_value">0</Text>
+      </Panel>
+      <Panel id="db_y_rotation_container_middle" class="debug_light_control_container_middle">
+        <Slider id="debug_light_slider_yrotation" class="debug_light_slider" minValue="0" maxValue="360" value="0" wholeNumbers="true" onValueChanged="HUD_debugLightSlider" />
+      </Panel>
+      <Panel id="db_y_rotation_container_bottom" class="debug_light_control_container_bottom">
+        <Text id="debug_light_slider_label_left_yrotation" class="debug_light_slider_label slider_label_left">0</Text>
+        <Text id="debug_light_slider_label_center_yrotation" class="debug_light_slider_label slider_label_center">180</Text>
+        <Text id="debug_light_slider_label_right_yrotation" class="debug_light_slider_label slider_label_right">360</Text>
+      </Panel>
+    </VerticalLayout>
+    <VerticalLayout id="db_z_rotation_container" class="debug_light_control_container">
+      <Panel id="db_z_rotation_container_top" class="debug_light_control_container_top">
+        <Text id="db_z_rotation_header" class="header_text">Z-Rotation</Text>
+        <Text id="debug_light_current_zrotation" class="debug_light_current_value">92</Text>
+      </Panel>
+      <Panel id="db_z_rotation_container_middle" class="debug_light_control_container_middle">
+        <Slider id="debug_light_slider_zrotation" class="debug_light_slider" minValue="0" maxValue="360" value="92" wholeNumbers="true" onValueChanged="HUD_debugLightSlider" />
+      </Panel>
+      <Panel id="db_z_rotation_container_bottom" class="debug_light_control_container_bottom">
+        <Text id="debug_light_slider_label_left_zrotation" class="debug_light_slider_label slider_label_left">0</Text>
+        <Text id="debug_light_slider_label_center_zrotation" class="debug_light_slider_label slider_label_center">180</Text>
+        <Text id="debug_light_slider_label_right_zrotation" class="debug_light_slider_label slider_label_right">360</Text>
+      </Panel>
+    </VerticalLayout>
+    <HorizontalLayout id="db_emission_header_container" class="header_container">
+      <Text id="db_emission_header" class="header_text">Emission</Text>
+    </HorizontalLayout>
+    <VerticalLayout id="db_range_container" class="debug_light_control_container">
+      <Panel id="db_range_container_top" class="debug_light_control_container_top">
+        <Text id="db_range_header" class="header_text">Range</Text>
+        <Text id="debug_light_current_range" class="debug_light_current_value">80</Text>
+      </Panel>
+      <Panel id="db_range_container_middle" class="debug_light_control_container_middle">
+        <Slider id="debug_light_slider_range" class="debug_light_slider" minValue="-1" maxValue="1" value="0" onValueChanged="HUD_debugLightSlider" />
+      </Panel>
+      <Panel id="db_range_container_bottom" class="debug_light_control_container_bottom">
+        <Text id="debug_light_slider_label_left_range" class="debug_light_slider_label slider_label_left">0</Text>
+        <Text id="debug_light_slider_label_center_range" class="debug_light_slider_label slider_label_center">80</Text>
+        <Text id="debug_light_slider_label_right_range" class="debug_light_slider_label slider_label_right">200</Text>
+      </Panel>
+    </VerticalLayout>
+    <VerticalLayout id="db_intensity_container" class="debug_light_control_container">
+      <Panel id="db_intensity_container_top" class="debug_light_control_container_top">
+        <Text id="db_intensity_header" class="header_text">Intensity</Text>
+        <Text id="debug_light_current_intensity" class="debug_light_current_value">3.23</Text>
+      </Panel>
+      <Panel id="db_intensity_container_middle" class="debug_light_control_container_middle">
+        <Slider id="debug_light_slider_intensity" class="debug_light_slider" minValue="-1" maxValue="1" value="0" onValueChanged="HUD_debugLightSlider" />
+      </Panel>
+      <Panel id="db_intensity_container_bottom" class="debug_light_control_container_bottom">
+        <Text id="debug_light_slider_label_left_intensity" class="debug_light_slider_label slider_label_left">0.00</Text>
+        <Text id="debug_light_slider_label_center_intensity" class="debug_light_slider_label slider_label_center">3.23</Text>
+        <Text id="debug_light_slider_label_right_intensity" class="debug_light_slider_label slider_label_right">10.00</Text>
+      </Panel>
+    </VerticalLayout>
+    <VerticalLayout id="db_angle_container" class="debug_light_control_container">
+      <Panel id="db_angle_container_top" class="debug_light_control_container_top">
+        <Text id="db_angle_header" class="header_text">Spot Angle</Text>
+        <Text id="debug_light_current_angle" class="debug_light_current_value">45</Text>
+      </Panel>
+      <Panel id="db_angle_container_middle" class="debug_light_control_container_middle">
+        <Slider id="debug_light_slider_angle" class="debug_light_slider" minValue="0" maxValue="180" value="45" wholeNumbers="true" onValueChanged="HUD_debugLightSlider" />
+      </Panel>
+      <Panel id="db_angle_container_bottom" class="debug_light_control_container_bottom">
+        <Text id="debug_light_slider_label_left_angle" class="debug_light_slider_label slider_label_left">0</Text>
+        <Text id="debug_light_slider_label_center_angle" class="debug_light_slider_label slider_label_center">90</Text>
+        <Text id="debug_light_slider_label_right_angle" class="debug_light_slider_label slider_label_right">180</Text>
+      </Panel>
+    </VerticalLayout>
+    <HorizontalLayout id="db_refresh_button_container" class="button_container">
+      <Button id="debug_light_control_button_refresh" class="debug_light_control_button" onClick="HUD_debugLightButtonClick(refresh)">REFRESH</Button>
+    </HorizontalLayout>
+    <HorizontalLayout id="db_snapshot_button_container" class="button_container">
+      <Button id="debug_light_control_button_snapshot" class="debug_light_control_button" onClick="HUD_debugLightButtonClick(snapshot)">SNAPSHOT</Button>
+    </HorizontalLayout>
+    <HorizontalLayout id="db_discard_button_container" class="button_container">
+      <Button id="debug_light_control_button_discard" class="debug_light_control_button" onClick="HUD_debugLightButtonClick(discard)">DISCARD</Button>
+    </HorizontalLayout>
+    <HorizontalLayout id="db_zero_button_container" class="button_container">
+      <Button id="debug_light_control_button_zero" class="debug_light_control_button" onClick="HUD_debugLightButtonClick(zero)">ZERO</Button>
+    </HorizontalLayout>
+    <HorizontalLayout id="db_done_button_container" class="button_container">
+      <Button id="debug_light_control_button_done" class="debug_light_control_button" onClick="HUD_debugLightButtonClick(done)">DONE</Button>
+    </HorizontalLayout>
+  </GridLayout>
+
+
 </Panel>
 
 <!-- /include ui/storyteller/panel_debug_light.xml -->

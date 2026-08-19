@@ -1,0 +1,5 @@
+<!-- PARAMETERS
+@@SLOT@@ - Two-digit pool index (01..60). Lua maps slot → GUID; do not put names in XML ids.
+-->
+
+<Button id="debug_light_selection_@@SLOT@@" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>

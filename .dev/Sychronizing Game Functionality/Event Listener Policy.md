@@ -116,7 +116,7 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | UI-only | `HUD_togglePanel`, `HUD_selectStorytellerPanel`, modals, `HUD_show`/`hide`, roll opts open/cancel | A | — | — |
 | ST state+world | `HUD_changeScene`, soundscape, scenes apply, `HUD_resetGame`, `HUD_syncAll`, `HUD_pcPanel` | B+C | Yes | D |
 | Roll | `HUD_roll*` | B (+ `Global.call` for C) | Partial | C |
-| Debug world | `HUD_debugLightActivate/Enabled/ResetRow/Slider`, `HUD_toggleAllAnchors/Spotlights` | C | Yes | — |
+| Debug world | `HUD_debugLightActivate/ButtonClick/Slider`, `HUD_toggleAllAnchors/Spotlights` | C | Yes | — |
 | Debug read/UI | `HUD_debugLightGuidInput`, `HUD_debugLightDone/Snapshot`, camera capture, `HUD_toggleRunTestPanel`, `HUD_runtest`, `HUD_runtest_step`, `HUD_STcamera` | A | Yes (RunTest / ST camera) | — |
 
 **TOR-144 column:** multiclient verification target from [Preparing §2](../Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md) — blank until friend session passes.
@@ -153,8 +153,8 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `HUD_STcamera` | A | Yes | Host ST camera strip → `M.setCamera(Black, mode)` from `C.StorytellerCameraAngles` (TOR-348) |
 | `HUD_cameraControl_click` | A | — | Player camera overlay; MAIN left=`default`, right=`wideFacing` |
 | `HUD_popoutCameraControl_click` / `HUD_alphaControl_hover*` | A | — | Camera picker expand + idle tint |
-| `HUD_debugLightActivate/Enabled/ResetRow/Slider` | C | Yes | |
-| `HUD_debugLightGuidInput/Done/Snapshot` | A | — | |
+| `HUD_debugLightActivate/ButtonClick/Slider` | C | Yes | Tuner select / sliders / Zero / Discard / close; `getObjectsWithTag("Spotlight")` on open and when returning to the grid |
+| `HUD_debugLightGuidInput/Enabled/ResetRow/Done/Snapshot` | A | — | Guid/Enabled/ResetRow are leftover no-ops; Done returns to selection; Snapshot writes workspace Lua |
 | `HUD_debugCamera*` / `HUD_debugCaptureCameraPreset` | A | — | local camera |
 | `HUD_rollInitiate/RollButton/Confirm/Cancel/…` | B (+C via Global) | Partial | |
 | `HUD_rollBroadcast` | B | — | ST dashboard slot **B** → `RC.broadcastHeldResult` (manual secret-roll reveal) |

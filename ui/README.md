@@ -169,6 +169,18 @@ Storyteller **Active Rolls** dashboard rows (`rollDash_row_*`, slot strip) are c
 
 Edit partials to change layout (`offsetXY`, `preferredWidth`/`preferredHeight`); `RUI.refreshSTDashboard()` still drives labels and visibility via element ids (no Global `setXml`). Dashboard content width is `DASH_LAYOUT.WIDTH` in `generate_roll_dashboard_xml.js` (730px today = `rollPanel_ST` outer 750px minus 10px horizontal padding each side); change `ST_PANEL_OUTER_WIDTH` / `ST_PANEL_PADDING_H` and `rollPanel_ST` width together.
 
+### Debug light selection pool (`ui/.templates/storyteller/`)
+
+Storyteller **Debug Light** selection buttons are composed at **build time** from a one-button partial (same idea as the roll dashboard, not a runtime `UI.setXml`):
+
+- **Partial:** `ui/.templates/storyteller/partials/debug_button_light.xml` (`@@SLOT@@` → `01`..`60`)
+- **Composer:** `ui/.templates/storyteller/panel_debug_light.xml` (`<!-- TARGET: ui/storyteller/panel_debug_light.xml -->`)
+- **Script:** `.dev/scripts/generate_debug_light_panel_xml.js`
+- **Output:** `ui/storyteller/panel_debug_light.xml` — included from `hud_storyteller.xml`
+- **Run:** `npm run debug-light-panel:generate` (also in `npm run build`, before Global XML embed)
+
+Lua maps filled slots to spotlight GUIDs when the panel opens. Keep `POOL_SIZE` in the generator in sync with `SELECTION_POOL_SIZE` in `core/light_debug_focus.ttslua`. Nested `ui/.templates/storyteller/` is **not** scanned by the color generator or the csheet/princes_court embed packs.
+
 ### Grid strip controls (`lib/grid_strip.ttslua`)
 
 Reusable hover/select strips for pool counts, difficulty, etc. **Live consumers:** [`ui/storyteller/panel_storyteller_roll_controls.xml`](storyteller/panel_storyteller_roll_controls.xml) (`gridStrip_rollPanelST_*`); ST Roll Dashboard PC rows (`gridStrip_rollDash<Color>_difficulty` in generated `roll_dash_generated.xml`). **Design mockup** (always visible, non-interactive strips): [`ui/storyteller/db_panel_storyteller_roll_controls.xml`](storyteller/db_panel_storyteller_roll_controls.xml).

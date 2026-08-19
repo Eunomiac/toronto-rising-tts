@@ -1641,6 +1641,24 @@ function NPCS.getInstanceRecord(npcName)
     return getInstances()[npcName]
 end
 
+--- True when this spotlight GUID is the paired light of an NPC currently in the preload area.
+--- @param lightGuid string
+--- @return boolean
+function NPCS.isPreloadSpotlightGuid(lightGuid)
+    if U.Type(lightGuid) ~= "string" or lightGuid == "" then
+        return false
+    end
+    for _, rec in pairs(getInstances()) do
+        if U.Type(rec) == "table"
+            and rec.lightGuid == lightGuid
+            and rec.areaKey == PRELOAD_AREA_KEY
+        then
+            return true
+        end
+    end
+    return false
+end
+
 --- Whether an NPC figurine is seated at a narrative table seat (group spawn must not pull them).
 --- @param characterKey string
 --- @return boolean
