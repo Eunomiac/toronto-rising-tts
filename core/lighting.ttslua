@@ -1775,6 +1775,7 @@ end
 --- Pin a spotlight GUID so named-mode / preset `SetLightMode` calls no-op while the debug tuner is open.
 --- @param guid string|nil
 function L.setDebugHoldGuid(guid)
+    debugHoldAllowApply = false
     if type(guid) == "string" and guid ~= "" then
         debugHoldGuid = guid
     else
@@ -1786,11 +1787,8 @@ end
 --- @param fn function
 function L.runWhileAllowingDebugHoldApply(fn)
     debugHoldAllowApply = true
-    local ok, err = pcall(fn)
+    fn()
     debugHoldAllowApply = false
-    if not ok then
-        error(err)
-    end
 end
 
 --- Clears one light ref from the reconcile fingerprint cache (e.g. wake pooled NPC spotlight after seated park).
