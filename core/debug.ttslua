@@ -229,6 +229,336 @@ local function formatCameraNumber(n)
     return string.format("%.4f", n)
 end
 
+--- @param raw string|nil
+--- @return string occupantKey C.PlayerColors or C.NPCSeats entry
+local function resolveDumpSeatOccupantKey(raw)
+    local want = raw
+    if U.Type(want) ~= "string" or want == "" then
+        want = "Red"
+    end
+    local upper = string.upper(want)
+    local lists = { C.PlayerColors or {}, C.NPCSeats or {} }
+    for li = 1, #lists do
+        local list = lists[li]
+        for i = 1, #list do
+            local key = list[i]
+            if U.Type(key) == "string" and string.upper(key) == upper then
+                return key
+            end
+        end
+    end
+    error(
+        "DEBUG.dumpSeatRoleOffsets: unknown occupant '"
+            .. tostring(raw)
+            .. "' (use a player color or NPC1..NPC4)"
+    )
+end
+
+--- @param fromDeg number
+--- @param toDeg number
+--- @return number
+local function dumpSeatRoleOffsetAngDeltaDeg(fromDeg, toDeg)
+    local a = tonumber(fromDeg) or 0
+    local b = tonumber(toDeg) or 0
+    local d = b - a
+    while d > 180 do
+        d = d - 360
+    end
+    while d < -180 do
+        d = d + 360
+    end
+    return d
+end
+
+--- @param occupantKey string
+--- @return Object|nil
+local function dumpFindSeatFigurine(occupantKey)
+    local tag = occupantKey .. "Object"
+    local tagged = getObjectsWithTag(tag)
+    if U.Type(tagged) == "table" then
+        for i = 1, #tagged do
+            local obj = tagged[i]
+            if obj ~= nil and U.isGameObject(obj) then
+                local disp = SRI.readRoleColorIdentity(obj)
+                if disp ~= nil then
+                    local roleKey = SRI.parseRoleAndSuffix(disp)
+                    if roleKey == "SEAT_FIGURE" then
+                        return obj
+                    end
+                end
+            end
+        end
+    end
+    local guidKey = "SEAT_FIGURE_" .. string.upper(occupantKey)
+    local guid = G.GUIDS and G.GUIDS[guidKey]
+    if U.Type(guid) == "string" and guid ~= "" then
+        local obj = G.getObject(guid)
+        if obj ~= nil and U.isGameObject(obj) then
+            return obj
+        end
+    end
+    return nil
+end
+
+--- @param obj Object|nil
+--- @return string
+local function dumpSeatObjectName(obj)
+    if obj == nil then
+        return ""
+    end
+    if type(obj.getName) == "function" then
+        local n = obj.getName()
+        if U.Type(n) == "string" then
+            return n
+        end
+    end
+    return ""
+end
+
+--- @param obj Object|nil
+--- @return string
+local function dumpSeatObjectTagsCsv(obj)
+    if obj == nil or type(obj.getTags) ~= "function" then
+        return ""
+    end
+    local tags = obj.getTags() or {}
+    if U.Type(tags) ~= "table" then
+        return ""
+    end
+    local parts = {}
+    for i = 1, #tags do
+        if U.Type(tags[i]) == "string" then
+            parts[#parts + 1] = tags[i]
+        end
+    end
+    table.sort(parts)
+    return table.concat(parts, ",")
+end
+
+--- Capture `{occupant}Object` poses relative to that seat's figurine (Phase 0 player-positioning).
+--- Writes pasteable Lua to `.dev/.debug/debug_logs/seat_role_offsets_<OCCUPANT>.lua`.
+--- Hidden objects may dump `defaultY = -200`; edit those by hand to the in-use height.
+--- @param occupantRaw string|nil player color or NPC1..NPC4 (default `"Red"`)
+--- @return boolean ok
+--- @return string resultMessage
+function DEBUG.dumpSeatRoleOffsets(occupantRaw)
+    local occupantKey = resolveDumpSeatOccupantKey(occupantRaw)
+    local figurine = dumpFindSeatFigurine(occupantKey)
+    if figurine == nil then
+        error(
+            "DEBUG.dumpSeatRoleOffsets: no SEAT_FIGURE found for '"
+                .. occupantKey
+                .. "' (need "
+                .. occupantKey
+                .. "Object with GM Notes SEAT_FIGURE_"
+                .. string.upper(occupantKey)
+                .. ")"
+        )
+    end
+    if type(figurine.positionToLocal) ~= "function" then
+        error("DEBUG.dumpSeatRoleOffsets: figurine for '" .. occupantKey .. "' has no positionToLocal")
+    end
+
+    local figPos = Vector(figurine.getPosition())
+    local figRot = Vector(figurine.getRotation())
+    local figGuid = ""
+    if type(figurine.getGUID) == "function" then
+        figGuid = tostring(figurine.getGUID() or "")
+    end
+
+    local tableKey = S.getStateVal("seatLayout", "currentTableKey")
+    local tagged = getObjectsWithTag(occupantKey .. "Object") or {}
+    local objects = {}
+    local seenGuid = {}
+    for i = 1, #tagged do
+        local obj = tagged[i]
+        if obj ~= nil and U.isGameObject(obj) then
+            local g = ""
+            if type(obj.getGUID) == "function" then
+                g = tostring(obj.getGUID() or "")
+            end
+            if g == "" or seenGuid[g] ~= true then
+                if g ~= "" then
+                    seenGuid[g] = true
+                end
+                objects[#objects + 1] = obj
+            end
+        end
+    end
+
+    local handZone = nil
+    if U.isIn(occupantKey, C.PlayerColors or {}) then
+        handZone = U.getHandZone(occupantKey)
+        if handZone ~= nil and U.isGameObject(handZone) then
+            local hg = ""
+            if type(handZone.getGUID) == "function" then
+                hg = tostring(handZone.getGUID() or "")
+            end
+            if hg == "" or seenGuid[hg] ~= true then
+                if hg ~= "" then
+                    seenGuid[hg] = true
+                end
+                objects[#objects + 1] = handZone
+            end
+        end
+    end
+
+    local roleUsed = {}
+    local rows = {}
+    local skipped = {}
+    for i = 1, #objects do
+        local obj = objects[i]
+        local guid = ""
+        if type(obj.getGUID) == "function" then
+            guid = tostring(obj.getGUID() or "")
+        end
+        local disp = SRI.readRoleColorIdentity(obj)
+        local roleKey = nil
+        if disp ~= nil then
+            roleKey = SRI.parseRoleAndSuffix(disp)
+        elseif handZone ~= nil and obj == handZone then
+            roleKey = "HAND_ZONE"
+        end
+        if roleKey == nil or roleKey == "" then
+            skipped[#skipped + 1] = {
+                guid = guid,
+                name = dumpSeatObjectName(obj),
+                tags = dumpSeatObjectTagsCsv(obj),
+            }
+        else
+            local pos = Vector(obj.getPosition())
+            local rot = Vector(obj.getRotation())
+            local lp = figurine.positionToLocal(pos)
+            local lx = (type(lp) == "userdata" or type(lp) == "table") and tonumber(lp.x) or 0
+            local lz = (type(lp) == "userdata" or type(lp) == "table") and tonumber(lp.z) or 0
+            local key = roleKey
+            if roleUsed[key] == true then
+                key = roleKey .. "__" .. guid
+            end
+            roleUsed[roleKey] = true
+            roleUsed[key] = true
+            local scale = nil
+            if type(obj.getScale) == "function" then
+                scale = obj.getScale()
+            end
+            rows[#rows + 1] = {
+                key = key,
+                roleKey = roleKey,
+                guid = guid,
+                localX = lx,
+                localZ = lz,
+                localRotX = dumpSeatRoleOffsetAngDeltaDeg(figRot.x, rot.x),
+                localRotY = dumpSeatRoleOffsetAngDeltaDeg(figRot.y, rot.y),
+                localRotZ = dumpSeatRoleOffsetAngDeltaDeg(figRot.z, rot.z),
+                defaultY = tonumber(pos.y) or 0,
+                worldX = tonumber(pos.x) or 0,
+                worldY = tonumber(pos.y) or 0,
+                worldZ = tonumber(pos.z) or 0,
+                scale = scale,
+            }
+        end
+    end
+    table.sort(rows, function(a, b)
+        return tostring(a.key) < tostring(b.key)
+    end)
+    table.sort(skipped, function(a, b)
+        return tostring(a.guid) < tostring(b.guid)
+    end)
+
+    local function fmtN(n)
+        return formatCameraNumber(n)
+    end
+    local function fmtVec3(x, y, z)
+        return "{ x = " .. fmtN(x) .. ", y = " .. fmtN(y) .. ", z = " .. fmtN(z) .. " }"
+    end
+
+    local lines = {
+        "-- Phase 0 seat-role offset dump (current layout still running).",
+        "-- lua DEBUG.dumpSeatRoleOffsets(\"" .. occupantKey .. "\")",
+        "-- Hidden objects may have defaultY = -200; replace those with the in-use height before pasting.",
+        "-- Copy roles into C.SeatRoleOffsets.shared / .player / .extraByOccupant[\"" .. occupantKey .. "\"].",
+        "-- occupant=" .. occupantKey
+            .. " tableKey="
+            .. tostring(tableKey)
+            .. " figurineGuid="
+            .. figGuid,
+        "",
+        "local DUMP_SEAT_ROLE_OFFSETS = {",
+        "  occupant = " .. string.format("%q", occupantKey) .. ",",
+        "  tableKey = " .. string.format("%q", tostring(tableKey or "")) .. ",",
+        "  referenceFigurine = {",
+        "    guid = " .. string.format("%q", figGuid) .. ",",
+        "    position = Vector(" .. fmtVec3(figPos.x, figPos.y, figPos.z) .. "),",
+        "    rotation = Vector(" .. fmtVec3(figRot.x, figRot.y, figRot.z) .. "),",
+        "  },",
+        "  roles = {",
+    }
+
+    for i = 1, #rows do
+        local r = rows[i]
+        lines[#lines + 1] = "    [" .. string.format("%q", r.key) .. "] = {"
+        lines[#lines + 1] = "      roleKey = " .. string.format("%q", r.roleKey) .. ","
+        lines[#lines + 1] = "      guid = " .. string.format("%q", r.guid) .. ","
+        lines[#lines + 1] = "      localXZ = { x = " .. fmtN(r.localX) .. ", z = " .. fmtN(r.localZ) .. " },"
+        lines[#lines + 1] = "      localRotation = { x = "
+            .. fmtN(r.localRotX)
+            .. ", y = "
+            .. fmtN(r.localRotY)
+            .. ", z = "
+            .. fmtN(r.localRotZ)
+            .. " },"
+        lines[#lines + 1] = "      defaultY = " .. fmtN(r.defaultY) .. ","
+        lines[#lines + 1] = "      -- world "
+            .. fmtN(r.worldX)
+            .. ", "
+            .. fmtN(r.worldY)
+            .. ", "
+            .. fmtN(r.worldZ)
+        if r.scale ~= nil then
+            local sx = tonumber(r.scale.x) or tonumber(r.scale[1])
+            local sy = tonumber(r.scale.y) or tonumber(r.scale[2])
+            local sz = tonumber(r.scale.z) or tonumber(r.scale[3])
+            if sx ~= nil and sy ~= nil and sz ~= nil then
+                lines[#lines + 1] = "      scale = { x = " .. fmtN(sx) .. ", y = " .. fmtN(sy) .. ", z = " .. fmtN(sz) .. " },"
+            end
+        end
+        lines[#lines + 1] = "    },"
+    end
+    lines[#lines + 1] = "  },"
+    lines[#lines + 1] = "  skippedNoRole = {"
+    for i = 1, #skipped do
+        local s = skipped[i]
+        lines[#lines + 1] = "    { guid = "
+            .. string.format("%q", s.guid)
+            .. ", name = "
+            .. string.format("%q", s.name)
+            .. ", tags = "
+            .. string.format("%q", s.tags)
+            .. " },"
+    end
+    lines[#lines + 1] = "  },"
+    lines[#lines + 1] = "}"
+    lines[#lines + 1] = ""
+
+    local relativePath = "debug_logs/seat_role_offsets_" .. string.upper(occupantKey) .. ".lua"
+    local body = table.concat(lines, "\n")
+    local okWrite = DEBUG.writeWorkspaceFile(relativePath, body, "none", false)
+    print(
+        "DEBUG.dumpSeatRoleOffsets: occupant="
+            .. occupantKey
+            .. " roles="
+            .. tostring(#rows)
+            .. " skipped="
+            .. tostring(#skipped)
+            .. " figurine="
+            .. figGuid
+    )
+    if not okWrite then
+        return false, "dumpSeatRoleOffsets failed to write file (is tts-bridge listening?)"
+    end
+    return true, relativePath
+end
+
 --- Capture the player's current view and export a paste-ready Lua snippet.
 --- The output can be pasted into C.UniversalCameraAngles or C.ReferenceCameraAngles.
 --- @param player Player
@@ -5536,6 +5866,7 @@ function DEBUG.help()
     print("  logToFile(level, msg, filename?) - Log a message to file")
     print("  logStateToFile(filename?)       - Log game state to file (JSON)")
     print("  dumpCustomAssetsToFile(path?)   - Dump UI.getCustomAssets() → .dev/.debug/debug_logs/custom_ui_assets.json")
+    print("  dumpSeatRoleOffsets(color?)     - Seat objects vs figurine (local XZ/rot + Y) → debug_logs/seat_role_offsets_<COLOR>.lua")
     print("  logNpcPlacementIntentToFile(filename?) - Log Step Zero NPC placement intent (reconcile verify)")
     print("  exportNpcSeatFigurinesToFile(path?)     - Export NPC#Object figurines (name + GUID) to debug_logs")
     print("  exportControlBoardSnapGroupsToFile(filename?, config?) - CSV polar snap groups (logStateToFile path)")
@@ -5724,6 +6055,7 @@ clearCustomUiUploadTokens = DEBUG.clearCustomUiUploadTokens
 logToFile = DEBUG.logToFile
 logStateToFile = DEBUG.logStateToFile
 dumpCustomAssetsToFile = DEBUG.dumpCustomAssetsToFile
+dumpSeatRoleOffsets = DEBUG.dumpSeatRoleOffsets
 logNpcPlacementIntentToFile = DEBUG.logNpcPlacementIntentToFile
 logSceneToFile = DEBUG.logSceneToFile
 logTestToFile = DEBUG.logTestToFile

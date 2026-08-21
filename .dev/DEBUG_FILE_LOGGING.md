@@ -187,5 +187,5 @@ Previously, `workspace_ndjson_log.beginSession` issued a **`write` with empty `c
 ## Notes
 
 - **Append mode** (`logToFile`, `logTestToFile`): in-memory cache in Lua; each send rewrites the full file for that path.
-- **Overwrite dumps** (`logStateToFile`, etc.): full snapshot per call.
+- **Overwrite dumps** (`logStateToFile`, `DEBUG.dumpSeatRoleOffsets`, etc.): full snapshot per call.
 - **`.gitignore`** excludes **`.dev/.debug/`** so generated logs stay out of git.
