@@ -86,6 +86,7 @@ test("soundscape runtime module exposes the planned API", () => {
     "function Soundscape.playSessionIntro(trackKey, opts)",
     "function Soundscape.stopSessionIntro(opts)",
     "function Soundscape.finishSessionIntro()",
+    "function Soundscape.describeSessionIntro()",
     "function Soundscape.resumeBackgroundMusic()",
     "function Soundscape.setWeatherCondition(weatherKey)",
     "function Soundscape.setRainLayer(rainKey)",
@@ -173,6 +174,7 @@ test("soundscape catalog defines generated playlists, channels, and context defa
     "TR_Intro",
     "TR_Loop",
     "TR_SessionStart",
+    "Session Starter",
     "thunder1",
   ].forEach((needle) => {
     assert.ok(source.includes(needle), `missing ${needle}`);
@@ -254,12 +256,17 @@ test("soundscape debug helpers expose expanded lane controls", () => {
     "function DEBUG.soundscapeWind(windKey)",
     "function DEBUG.soundscapeThunder(mode, hitKey)",
     "function DEBUG.soundscapeFeatured(featureKey)",
+    "function DEBUG.inspectSessionIntro()",
+    "function DEBUG.soundscapeSessionIntro(trackKey)",
+    "function DEBUG.soundscapeStopSessionIntro()",
     "function DEBUG.soundscapeStopFeatured()",
     "function DEBUG.soundscapeResumeBackground()",
     "soundscapeRain = DEBUG.soundscapeRain",
     "soundscapeWind = DEBUG.soundscapeWind",
     "soundscapeThunder = DEBUG.soundscapeThunder",
     "soundscapeFeatured = DEBUG.soundscapeFeatured",
+    "inspectSessionIntro = DEBUG.inspectSessionIntro",
+    "soundscapeSessionIntro = DEBUG.soundscapeSessionIntro",
   ].forEach((needle) => {
     assert.ok(source.includes(needle), `missing ${needle}`);
   });
@@ -430,6 +437,8 @@ test("session-start overture uses Music C and holds Main until the sting ends", 
     "guidKey = \"SOUNDSCAPE_MUSIC_C\"",
     "kind = \"sessionIntro\"",
     "TR_SessionStart",
+    "effect = \"Session Starter\"",
+    "effectIndex = 1",
     "function Catalog.getSessionIntroTrack(trackKey)",
   ].forEach((needle) => {
     assert.ok(catalog.includes(needle), `missing catalog session intro: ${needle}`);
@@ -437,6 +446,7 @@ test("session-start overture uses Music C and holds Main until the sting ends", 
 
   [
     'playCatalogEntry("musicC", track, volume, fadeSec',
+    "function Soundscape.describeSessionIntro()",
     "state.sessionIntroActive = true",
     "or state.sessionIntroActive == true",
     'for _, channelKey in ipairs({ "musicA", "musicB", "musicC"',

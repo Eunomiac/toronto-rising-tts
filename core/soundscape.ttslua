@@ -2292,6 +2292,85 @@ function Soundscape.stopFeaturedMusic(opts)
     return stopFeaturedMusicInternal(resumeBackground == true, opts)
 end
 
+local function formatEffectIndexList(rows)
+    local parts = {}
+    if type(rows) ~= "table" then
+        return ""
+    end
+    for i = 1, #rows do
+        local row = rows[i]
+        if type(row) == "table" then
+            parts[#parts + 1] = tostring(row.index) .. ":" .. tostring(row.name)
+        end
+    end
+    return table.concat(parts, ",")
+end
+
+--- Probe Music C: GUID, live trigger/loop names, and how TR_SessionStart would resolve.
+-- @return table
+local function describeSessionIntroState()
+    local key = C.SessionStartIntroKey or "TR_SessionStart"
+    local track = Catalog.getSessionIntroTrack(key)
+    local channelDef = Catalog.CHANNELS.musicC
+    local obj, resolveError = resolveEmitter("musicC")
+    local triggerRows = sortedEffectRows(queryEffects(obj, Catalog.EFFECT_LIST.TRIGGER))
+    local loopRows = sortedEffectRows(queryEffects(obj, Catalog.EFFECT_LIST.LOOPING))
+    local wantEffect = nil
+    local fallbackIndex = nil
+    local catalogVolume = nil
+    local catalogDuration = nil
+    if type(track) == "table" then
+        wantEffect = track.effect or track.key
+        fallbackIndex = tonumber(track.effectIndex)
+        catalogVolume = tonumber(track.volume)
+        catalogDuration = tonumber(track.durationSeconds) or tonumber(track.duration)
+    end
+    local nameIndex = nil
+    if obj ~= nil and type(wantEffect) == "string" then
+        nameIndex = resolveEffectIndex(obj, wantEffect, Catalog.EFFECT_LIST.TRIGGER)
+    end
+    local chosenIndex = nameIndex
+    local resolveHow = "missing"
+    if nameIndex ~= nil then
+        resolveHow = "name"
+        chosenIndex = nameIndex
+    elseif fallbackIndex ~= nil then
+        resolveHow = "effectIndex"
+        chosenIndex = fallbackIndex
+    end
+    local state = ensureState()
+    local liveGuid = nil
+    if obj ~= nil and obj.getGUID ~= nil then
+        liveGuid = obj.getGUID()
+    end
+    return {
+        catalogKey = key,
+        trackEffect = wantEffect,
+        catalogVolume = catalogVolume,
+        catalogDuration = catalogDuration,
+        catalogEffectIndex = fallbackIndex,
+        guidKey = channelDef and channelDef.guidKey or "SOUNDSCAPE_MUSIC_C",
+        expectedGuid = getGuidForChannel(channelDef),
+        liveGuid = liveGuid,
+        found = obj ~= nil,
+        resolveError = resolveError,
+        triggerEffects = triggerRows,
+        loopingEffects = loopRows,
+        nameMatchIndex = nameIndex,
+        chosenIndex = chosenIndex,
+        resolveHow = resolveHow,
+        sessionIntroActive = state.sessionIntroActive == true,
+        sessionIntroKey = state.sessionIntroKey,
+        channel = state.channels and state.channels.musicC or nil,
+    }
+end
+
+--- Console/Advance probe for Music C session intro (GUID, trigger names, resolve path).
+-- @return table
+function Soundscape.describeSessionIntro()
+    return describeSessionIntroState()
+end
+
 --- Plays the session-start overture on Music C at full volume (TOR-497).
 -- @param trackKey string|nil catalog key; defaults to `C.SessionStartIntroKey`
 -- @param opts table|nil `{ fadeSeconds?: number }` — 0 = snap to full after one-frame silent arm
@@ -2305,6 +2384,14 @@ function Soundscape.playSessionIntro(trackKey, opts)
     end
     local track = Catalog.getSessionIntroTrack(key)
     if track == nil then
+        local diag = describeSessionIntroState()
+        print(
+            "Session intro FAIL: unknown catalog key "
+                .. tostring(key)
+                .. " triggers=["
+                .. formatEffectIndexList(diag.triggerEffects)
+                .. "]"
+        )
         return false, "Unknown session intro: " .. tostring(key)
     end
 
@@ -2325,6 +2412,38 @@ function Soundscape.playSessionIntro(trackKey, opts)
     if okPlay ~= true then
         state.sessionIntroActive = false
         state.sessionIntroKey = nil
+    end
+    local diag = describeSessionIntroState()
+    print(
+        "Session intro: ok="
+            .. tostring(okPlay == true)
+            .. " how="
+            .. tostring(diag.resolveHow)
+            .. " chosenIndex="
+            .. tostring(diag.chosenIndex)
+            .. " nameIndex="
+            .. tostring(diag.nameMatchIndex)
+            .. " fallbackIndex="
+            .. tostring(diag.catalogEffectIndex)
+            .. " found="
+            .. tostring(diag.found)
+            .. " guid="
+            .. tostring(diag.liveGuid or diag.expectedGuid)
+            .. " want="
+            .. tostring(diag.trackEffect)
+            .. " vol="
+            .. tostring(volume)
+            .. " fade="
+            .. tostring(fadeSec)
+            .. " msg="
+            .. tostring(message)
+            .. " triggers=["
+            .. formatEffectIndexList(diag.triggerEffects)
+            .. "] loops=["
+            .. formatEffectIndexList(diag.loopingEffects)
+            .. "]"
+    )
+    if okPlay ~= true then
         return false, message
     end
     return true, message

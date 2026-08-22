@@ -690,11 +690,13 @@ Catalog.TRACKS = {
   TR_SessionStart = {
     key = "TR_SessionStart",
     type = "sessionIntro",
+    --- Live TTS Trigger Effect name on Music C (object UI slot 2).
+    effect = "Session Starter",
     isLooping = false,
     duration = 71,
     volume = 1,
-    --- Unity Trigger Effects index on SOUNDSCAPE_MUSIC_C when the clip name is not TR_SessionStart.
-    effectIndex = 2,
+    --- TTS `playTriggerEffect` is 0-based. Object UI slot 2 → Lua index 1.
+    effectIndex = 1,
   },
   STB_HouseOfTheRisingSun = {
     key = "STB_HouseOfTheRisingSun",
@@ -825,9 +827,13 @@ local function getTracks(type, subType, playMode)
         end
         usedSequenceOrders[order] = track
       end
+      local effectName = track.effect
+      if type(effectName) ~= "string" or effectName == "" then
+        effectName = track.key
+      end
       table.insert(tracks, {
         key = track.key,
-        effect = track.key,
+        effect = effectName,
         effectList = track.isLooping == true and Catalog.EFFECT_LIST.LOOPING or Catalog.EFFECT_LIST.TRIGGER,
         durationSeconds = track.duration,
         volume = track.volume,

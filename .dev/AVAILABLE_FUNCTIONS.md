@@ -360,6 +360,7 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 | `Soundscape.playFeaturedMusic(featureKey)` | Play featured music on the dedicated lane | `Soundscape.playFeaturedMusic("TR_Intro")` |
 | `Soundscape.stopFeaturedMusic(opts?)` | Stop the featured lane only; optional `{ fadeSeconds, resumeBackground }` | Intro/song cleanup; Intermission→Play uses `resumeBackground=false`. Default resume also restores location ambience (TOR-494). |
 | `Soundscape.playSessionIntro(trackKey?, opts?)` | Play the Intermission→Play overture on Music C at full volume (`fadeSeconds` 0 = snap after one-frame silent arm). Holds Main via `sessionIntroActive`. | `Soundscape.playSessionIntro("TR_SessionStart", { fadeSeconds = 0 })` |
+| `Soundscape.describeSessionIntro()` | Probe Music C GUID, live trigger/loop names, and name vs index resolve | Console: `inspectSessionIntro()` |
 | `Soundscape.stopSessionIntro(opts?)` | Silence Music C and clear the session-intro latch | Intermission enter / Spotlight silence |
 | `Soundscape.finishSessionIntro()` | Clear the session-intro latch after the sting ends (does not cut the clip) | Play enter after 71s, before Main |
 | `Soundscape.resumeBackgroundMusic()` | Restart saved mood/location **playlist** music context | After featured music; location ambience is restored separately via the featured pause flags |

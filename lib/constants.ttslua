@@ -278,8 +278,8 @@ C.PlaySubPhases = {
 --- Featured track for Intermission ambient (looping TR Loop only; no Intro→Loop handoff).
 C.IntermissionThemeFeaturedKey = "TR_Loop"
 
---- Intermission→Play session-start overture on Music C (TOR-497). Catalog key must match the Unity
---- Trigger Effect name when present; playSessionIntro also accepts catalog `effectIndex` (author: #2).
+--- Intermission→Play session-start overture on Music C (TOR-497). Lua catalog key `TR_SessionStart`;
+--- Unity Trigger Effect name is `Session Starter`. Fallback `effectIndex` is 0-based (UI slot 2 → 1).
 C.SessionStartIntroKey = "TR_SessionStart"
 C.SessionStartIntroDurationSec = 71
 C.SessionStartBlindfoldLeadSec = 2

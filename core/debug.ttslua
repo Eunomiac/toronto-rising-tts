@@ -1457,6 +1457,48 @@ function DEBUG.inspectSoundscapeAudio()
     return rows
 end
 
+--- Dump Music C GUID, live trigger/loop names, and how TR_SessionStart would resolve (no playback).
+-- @return table
+function DEBUG.inspectSessionIntro()
+    printTestHeader("Session intro (Music C)")
+    local diag = Soundscape.describeSessionIntro()
+    print(JSON.encode_pretty(diag))
+    if U.mcpEmitResult ~= nil then
+        U.mcpEmitResult({ test = "inspectSessionIntro", diag = diag })
+    end
+    return diag
+end
+
+--- Play the session-start overture on Music C (same path as Intermission→Play Advance).
+-- @param trackKey string|nil catalog key; defaults to TR_SessionStart
+function DEBUG.soundscapeSessionIntro(trackKey)
+    U.chain({
+        function()
+            printTestHeader("Session intro play")
+            return true
+        end,
+        function()
+            print(JSON.encode_pretty(Soundscape.describeSessionIntro()))
+            return true
+        end,
+        function()
+            local ok, message = Soundscape.playSessionIntro(trackKey, { fadeSeconds = 0 })
+            printTestResult("Session intro play", ok, message)
+            return true
+        end,
+        function()
+            print(JSON.encode_pretty(Soundscape.describeSessionIntro()))
+            return true
+        end,
+    })
+end
+
+--- Stop Music C session intro without starting Main.
+function DEBUG.soundscapeStopSessionIntro()
+    local ok, message = Soundscape.stopSessionIntro()
+    printTestResult("Session intro stop", ok, message)
+end
+
 --- Quick test: set a Storyteller-controlled background playlist.
 -- @param moodKey string One of: main, intrigue, combat
 function DEBUG.soundscapeMusic(moodKey)
@@ -5859,6 +5901,7 @@ function DEBUG.help()
     print("  getClockLerpTickSeconds()   - Print current clock lerp tick interval")
     print("  ensureSceneLibraryStub(slotIndex, sceneKey?, opts?) - E2E scene library row stub (no Apply)")
     print("  inspectSoundscapeAudio() - Emitter GUID/tag/effect inventory")
+    print("  inspectSessionIntro()    - Music C GUID + trigger names (session-start overture)")
     print("  dumpConditions(color)    - Active conditions + resolved effects")
     print("  dumpEffectiveStats(color) - Effective stat getters (tracker max, BP, …)")
     print("  dumpRollPolicy(color)    - Merged roll policy on active roll")
@@ -5924,6 +5967,9 @@ function DEBUG.help()
     print("  soundscapeWind(key)      - Set wind layer: none, lowWindAmbient, whistlingWind1/2/3, windyLeaves1/2")
     print("  soundscapeThunder(mode, hit?) - Enable/disable scheduled thunder, or mode='hit' to trigger one")
     print("  soundscapeFeatured(key)  - Play featured music: TR_Full, TR_Intro, STB_HouseOfTheRisingSun")
+    print("  soundscapeSessionIntro(key?) - Play Music C overture (same path as Advance); omit key for TR_SessionStart")
+    print("  inspectSessionIntro()    - Dump Music C triggers/resolve path without playing")
+    print("  soundscapeStopSessionIntro() - Silence Music C")
     print("  soundscapeStopFeatured() - Stop featured lane only")
     print("  soundscapeResumeBackground() - Resume saved background music context")
     print("  soundscapeLocation(key)  - Set location ambience: airport, industrial, sewers, warehouse, none")
@@ -5985,6 +6031,7 @@ showState = DEBUG.showState
 showScene = DEBUG.showScene
 ensureSceneLibraryStub = DEBUG.ensureSceneLibraryStub
 inspectSoundscapeAudio = DEBUG.inspectSoundscapeAudio
+inspectSessionIntro = DEBUG.inspectSessionIntro
 
 -- Expose quick setters
 setHunger = DEBUG.setHunger
@@ -5996,6 +6043,8 @@ soundscapeRain = DEBUG.soundscapeRain
 soundscapeWind = DEBUG.soundscapeWind
 soundscapeThunder = DEBUG.soundscapeThunder
 soundscapeFeatured = DEBUG.soundscapeFeatured
+soundscapeSessionIntro = DEBUG.soundscapeSessionIntro
+soundscapeStopSessionIntro = DEBUG.soundscapeStopSessionIntro
 soundscapeStopFeatured = DEBUG.soundscapeStopFeatured
 soundscapeResumeBackground = DEBUG.soundscapeResumeBackground
 soundscapeLocation = DEBUG.soundscapeLocation

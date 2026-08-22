@@ -166,11 +166,11 @@ Occasionally a scene will call for a specific piece of music to be played. Unlik
 
 ### Session-start overture (Music C)
 
-One-shot Intermission→Play lead-in on emitter `SOUNDSCAPE_MUSIC_C` (`musicC`). Not featured music and not a Main playlist track. Catalog key `TR_SessionStart`; Unity lookup uses that effect name when present, otherwise Trigger Effect index **2**. Duration **71s**, volume **1**, no fade-in. Prefer **Preload Audio Data** so the first session start does not hitch.
+One-shot Intermission→Play lead-in on emitter `SOUNDSCAPE_MUSIC_C` (`musicC`). Not featured music and not a Main playlist track. Lua catalog key `TR_SessionStart`; live Trigger Effect name is **`Session Starter`**. TTS `playTriggerEffect` indexes start at **0**, so object UI slot **2** is Lua index **1**. Duration **71s**, volume **1**, no fade-in. Prefer **Preload Audio Data** so the first session start does not hitch.
 
-| Effect Name     | Effect List     | Name (Unity)     | Duration | isLoop | Load Type            | Preload Audio Data |
-| --------------- | --------------- | ---------------- | -------: | :----: | -------------------- | ------------------ |
-| TR_SessionStart | Trigger Effects | trigger effect 2 |     1:11 |  false | Compressed In Memory | Enabled            |
+| Effect Name     | Effect List     | TTS UI slot | Lua index | Duration | isLoop | Load Type            | Preload Audio Data |
+| --------------- | --------------- | ----------: | --------: | -------: | :----: | -------------------- | ------------------ |
+| Session Starter | Trigger Effects |           2 |         1 |     1:11 |  false | Compressed In Memory | Enabled            |
 
 ## Weather Audio: Three Layers
 
