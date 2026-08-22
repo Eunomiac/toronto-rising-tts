@@ -1498,41 +1498,99 @@ C.UniversalCameraAngles = {
 
 -- Storyteller Camera Angles
 -- These modes should be added to Black's camera angles, as Black is the Storyteller.
-C.StorytellerCameraAngles = {
+--[[ Testing:
+
+
+
+
+
+local cData = {
   -- Storyteller Default
   default = {
-    position = {x=0,y=105,z=120},
-    pitch    = 45,
+    position = {x=0,y=100,z=110.5},
+    pitch    = 42,
     yaw      = 180,
-    distance = 30,
+    distance = 40,
   },
   -- Storyteller Mid
   mid = {
     position = {x=0,y=65,z=80},
-    pitch    = 35,
+    pitch    = 25,
     yaw      = 180,
     distance = 30,
   },
-  -- Storyteller Mid
+  -- Storyteller Stage Control
   stage_control = {
     position = {x=0,y=105,z=125},
     pitch    = 90,
     yaw      = 180,
-    distance = 15,
+    distance = 20,
   },
   -- Storyteller Palette
   palette = {
-    position = {x=12,y=105,z=130},
-    pitch    = 50,
+    position = {x=9.5,y=105,z=132.5},
+    pitch    = 45,
     yaw      = 180,
     distance = 17,
   },
   -- Storyteller Rolls
   rolls = {
-    position = {x=0,y=105,z=130},
+    position = {x=-3,y=100,z=122},
     pitch    = 50,
     yaw      = 180,
-    distance = 25,
+    distance = 34,
+  }
+}
+Player.Black.lookAt(cData.palette)
+
+
+
+
+
+Player.Black.lookAt(cData.default)
+Player.Black.lookAt(cData.mid)
+Player.Black.lookAt(cData.stage_control)
+Player.Black.lookAt(cData.palette)
+Player.Black.lookAt(cData.rolls)
+
+
+
+]]
+C.StorytellerCameraAngles = {
+  -- Storyteller Default
+  default = {
+    position = {x=0,y=100,z=110.5},
+    pitch    = 42,
+    yaw      = 180,
+    distance = 40,
+  },
+  -- Storyteller Mid
+  mid = {
+    position = {x=0,y=65,z=80},
+    pitch    = 25,
+    yaw      = 180,
+    distance = 30,
+  },
+  -- Storyteller Stage Control
+  stage_control = {
+    position = {x=0,y=105,z=125},
+    pitch    = 90,
+    yaw      = 180,
+    distance = 20,
+  },
+  -- Storyteller Palette
+  palette = {
+    position = {x=9.5,y=105,z=132.5},
+    pitch    = 45,
+    yaw      = 180,
+    distance = 17,
+  },
+  -- Storyteller Rolls
+  rolls = {
+    position = {x=-3,y=100,z=122},
+    pitch    = 50,
+    yaw      = 180,
+    distance = 34,
   }
 }
 
@@ -2097,7 +2155,8 @@ C.TableSourceObjects = {
     "COMPULSION_CARD_DRAWN_ANCHOR",
     "COMPULSION_CARD_SELECTED_ANCHOR",
     "COMPULSION_CARD_SELECTED_LIVEROLL_ANCHOR",
-    "COMPULSION_LIGHT"
+    "COMPULSION_LIGHT",
+    "SNOW_EFFECT"
   },
   all = {
     "SEAT_CHAIR",
@@ -2326,7 +2385,7 @@ end
 -- Light Presets: global `Lighting` fields + optional `spotlights` (`L.LIGHTMODES` key → mode string or inline patch).
 -- Seat refs are stored on `gameState.sessionScene.lightingSeatSpotlightPreset` and merged in `L.reconcileForPlayer`
 -- after rolling / dark or absent seat / conditions / hunger.
-C.LightModes = {
+C.LightModes = { -- Ambient & LUTs
   BRIGHT = {
     ambient_intensity = 1.0,
     light_intensity = 1.0,
