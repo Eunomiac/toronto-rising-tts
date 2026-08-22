@@ -30,9 +30,10 @@ remain stable.
 
 ## Current Runtime Shape
 
-The implemented Lua runtime uses nine GUID-registered AssetBundle emitters:
+The implemented Lua runtime uses ten GUID-registered AssetBundle emitters:
 
 - `musicA` / `musicB`: alternating background music lanes for trigger-based mood or location-music playlists.
+- `musicC`: dedicated session-start overture lane (one-shot trigger; not a third Main ping-pong).
 - `featuredA` / `featuredB`: alternating featured music lanes for one-off songs and catalog-driven sequence handoffs.
 - `locationA` / `locationB`: alternating sustained site ambience loops.
 - `weatherRain`: sustained rain loops.
@@ -46,7 +47,8 @@ Emitter lookup is GUID-first through `lib/guids.ttslua`, with tags retained for 
 The current Lua implementation includes:
 
 - `core/soundscape.ttslua` owns emitter lookup, looping effect playback, volume
-  control probes, trigger dispatch, background scheduling, featured music, indoor
+  control probes, trigger dispatch, background scheduling, featured music, session-start
+  overture (`playSessionIntro` on `musicC`), indoor
   weather ducking, thunder scheduling, state restoration, inspection, and live smoke tests.
 - `lib/soundscape_catalog.ttslua` is the source of truth for static audio keys,
   effect names, tags, default volumes, fade durations, and playlists.

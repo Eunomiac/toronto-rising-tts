@@ -44,7 +44,7 @@ Exact frame order can vary by TTS version and table complexity; treat this as **
    **`TorontoRisingSoundscapeEmitterBoot`** runs here: it can only affect **`AudioSource` instances that already exist under that hierarchy** (or appear later during its **bootstrap polling window**).
 
 3. **Global Lua script — top-level chunk**
-   TTS loads the **Global** Lua file and runs it **top to bottom** (`require` chain). This is **not** `onLoad` yet. Emitters may **still** be missing from `getObjectFromGUID` (your logs showed **0/9** here), or **`Wait`** may not exist yet — so **Lua cannot always mute first**.
+   TTS loads the **Global** Lua file and runs it **top to bottom** (`require` chain). This is **not** `onLoad` yet. Emitters may **still** be missing from `getObjectFromGUID` (your logs showed **0/10** here), or **`Wait`** may not exist yet — so **Lua cannot always mute first**.
 
 4. **`function onLoad(saved_data)` (Global)**
    After the chunk finishes, TTS calls **Global `onLoad`**. Toronto Rising runs **`Soundscape.bootstrapSilenceStrayEmitterLoops`**, deferred **`[SoundscapeEarly]`** passes, **`Sync.full`**, etc. By then **`Wait.time` is usually available** and **GUID lookups often succeed**.

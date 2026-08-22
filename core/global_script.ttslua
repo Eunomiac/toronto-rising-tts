@@ -20,7 +20,7 @@
 
 -- ---------------------------------------------------------------------------
 -- Soundscape: hard-mute emitters by GUID (NO require). Unity audio can resume
--- before `require("core.soundscape")`; chunk-time GUID lookups are usually 0/9
+-- before `require("core.soundscape")`; chunk-time GUID lookups are usually 0/10
 -- until `onLoad`, so `function onLoad` repeats this + schedules Wait retries.
 -- GUIDs MUST match `lib/guids.ttslua` `SOUNDSCAPE_*` (see SYNC comment there).
 -- ---------------------------------------------------------------------------
@@ -29,6 +29,7 @@ U = require("lib.util")
 local TR_EARLY_SOUNDSCAPE_EMITTER_GUIDS = {
   "2870fb",
   "ed206e",
+  "e1366c",
   "ef76cf",
   "7a1f69",
   "8ecefd",
@@ -122,7 +123,7 @@ local function trScheduleEarlySoundscapeSilenceDeferred(schedulerLabel)
     return true
 end
 
--- Chunk phase: objects often 0/9 until onLoad.
+-- Chunk phase: objects often 0/10 until onLoad.
 trEarlySilenceSoundscapeEmitters("chunk-sync-immediate")
 
 -- Load shared utilities and constants
@@ -533,7 +534,7 @@ end
 
 --- Global blindfold follows phase: visible in Intermission; hidden otherwise (TOR-143 / TOR-319).
 --- While a top-level phase Advance is in flight, do not auto-hide — Play enter owns the delayed
---- lift after Intermission→Play audio (5s Loop↔Main crossfade). Auto-show for Intermission is OK.
+--- lift after Intermission→Play audio (Music C overture, then lift ~2s before it ends). Auto-show for Intermission is OK.
 local function applyGlobalBlindfoldFromPhase()
     local phase = S.getStateVal("currentPhase")
     if phase == nil or phase == C.Phases.INTERMISSION then

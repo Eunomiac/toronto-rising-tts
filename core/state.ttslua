@@ -277,6 +277,8 @@ function S.GetDefaultGameState()
             featuredMusic = "none",
             featuredActive = false,
             featuredCompletionExpected = false,
+            sessionIntroActive = false,
+            sessionIntroKey = nil,
             backgroundPausedForFeatured = false,
             locationPausedForFeatured = false,
             lastAppliedSiteKey = nil,
@@ -292,6 +294,7 @@ function S.GetDefaultGameState()
             channels = {
                 musicA = { effect = "silent", effectList = "looping", volume = 0, available = false },
                 musicB = { effect = "silent", effectList = "looping", volume = 0, available = false },
+                musicC = { effect = "silent", effectList = "looping", volume = 0, available = false },
                 featuredA = { effect = "silent", effectList = "looping", volume = 0, available = false },
                 featuredB = { effect = "silent", effectList = "looping", volume = 0, available = false },
                 locationA = { effect = "silent", effectList = "looping", volume = 0, available = false },

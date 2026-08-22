@@ -164,6 +164,14 @@ Occasionally a scene will call for a specific piece of music to be played. Unlik
 | TR_Loop                 | Looping Effects | Toronto Rising Loop.flac           | 9.13 MB |     1:53 |  true  | WAV 44.1kHz/16-bit PCM; trim loop gap | Compressed In Memory |                    | Enabled            |
 | STB_HouseOfTheRisingSun | Trigger Effects | S&tB - House of the Rising Sun.ogg | 5.02 MB |     4:35 |  false |                                       | Streaming            |                    | Disabled           |
 
+### Session-start overture (Music C)
+
+One-shot Intermission→Play lead-in on emitter `SOUNDSCAPE_MUSIC_C` (`musicC`). Not featured music and not a Main playlist track. Catalog key `TR_SessionStart`; Unity lookup uses that effect name when present, otherwise Trigger Effect index **2**. Duration **71s**, volume **1**, no fade-in. Prefer **Preload Audio Data** so the first session start does not hitch.
+
+| Effect Name     | Effect List     | Name (Unity)     | Duration | isLoop | Load Type            | Preload Audio Data |
+| --------------- | --------------- | ---------------- | -------: | :----: | -------------------- | ------------------ |
+| TR_SessionStart | Trigger Effects | trigger effect 2 |     1:11 |  false | Compressed In Memory | Enabled            |
+
 ## Weather Audio: Three Layers
 
 Weather audio is somewhat more complex than initially planned. We want to be able to construct weather soundscapes using three separate layers: "Rain", "Wind", and "Thunder". All of these must be able to play one track each simultaneously, and all must be subject to the indoor/outdoor ducking factor

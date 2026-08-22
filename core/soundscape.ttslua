@@ -1,7 +1,7 @@
 --[[
     Layered Soundscape Runtime (core/soundscape.ttslua)
 
-    Controls non-positional layered audio through seven hidden AssetBundle emitters.
+    Controls non-positional layered audio through ten hidden AssetBundle emitters.
     The static asset contract lives in lib/soundscape_catalog.ttslua; this module
     owns all direct AssetBundle calls so scene, weather, and UI code can stay
     intent-based.
@@ -22,6 +22,7 @@ local Catalog = require("lib.soundscape_catalog")
 
 local musicGeneration = 0
 local featuredGeneration = 0
+local sessionIntroGeneration = 0
 local weatherGeneration = 0
 local locationPauseGeneration = 0
 local singleEmitterTransitionGeneration = {}
@@ -193,6 +194,8 @@ local function defaultState()
         featuredMusic = Catalog.DEFAULTS.featuredMusic,
         featuredActive = false,
         featuredCompletionExpected = false,
+        sessionIntroActive = false,
+        sessionIntroKey = nil,
         backgroundPausedForFeatured = false,
         locationPausedForFeatured = false,
         weather = Catalog.DEFAULTS.weather,
@@ -524,6 +527,7 @@ local function normalizeEntry(entry)
         effectList = entry.effectList or Catalog.EFFECT_LIST.LOOPING,
         durationSeconds = entry.durationSeconds or entry.duration,
         volume = entry.volume,
+        effectIndex = entry.effectIndex,
     }
 end
 
@@ -557,6 +561,9 @@ local function playCatalogEntry(channelKey, entry, volume, fadeSeconds, fromVolu
     end
 
     local index = resolveEffectIndex(obj, track.effect, effectList)
+    if index == nil then
+        index = tonumber(track.effectIndex)
+    end
     if index == nil then
         updateChannelState(channelKey, { available = true, lastError = "Missing effect " .. tostring(track.effect) })
         return false, "Missing " .. effectList .. " effect '" .. tostring(track.effect) .. "' on channel " .. tostring(channelKey)
@@ -818,6 +825,7 @@ end
 local BOOTSTRAP_LOOP_CHANNELS = {
     "musicA",
     "musicB",
+    "musicC",
     "featuredA",
     "featuredB",
     "locationA",
@@ -1388,6 +1396,7 @@ local function soundscapeReconcileFingerprint(state)
     end
     local parts = {
         state.featuredActive == true and "1" or "0",
+        state.sessionIntroActive == true and "1" or "0",
         state.backgroundPausedForFeatured == true and "1" or "0",
         state.locationPausedForFeatured == true and "1" or "0",
         state.siteSilent == true and "1" or "0",
@@ -1418,6 +1427,7 @@ local function applySoundscapeReconcileFromStateSnapshot(state)
     local featuredHoldingAmbient = state.featuredActive == true
         or state.backgroundPausedForFeatured == true
         or state.locationPausedForFeatured == true
+        or state.sessionIntroActive == true
     if not featuredHoldingAmbient then
         if state.backgroundMusicSuppressed == true then
             suppressBackgroundMusic()
@@ -2190,6 +2200,84 @@ function Soundscape.stopFeaturedMusic(opts)
     return stopFeaturedMusicInternal(resumeBackground == true, opts)
 end
 
+--- Plays the session-start overture on Music C at full volume (TOR-497).
+-- @param trackKey string|nil catalog key; defaults to `C.SessionStartIntroKey`
+-- @param opts table|nil `{ fadeSeconds?: number }` — 0 = snap to full after one-frame silent arm
+-- @return boolean
+-- @return string
+function Soundscape.playSessionIntro(trackKey, opts)
+    opts = type(opts) == "table" and opts or {}
+    local key = trackKey
+    if type(key) ~= "string" or key == "" then
+        key = C.SessionStartIntroKey or "TR_SessionStart"
+    end
+    local track = Catalog.getSessionIntroTrack(key)
+    if track == nil then
+        return false, "Unknown session intro: " .. tostring(key)
+    end
+
+    sessionIntroGeneration = sessionIntroGeneration + 1
+    local state = ensureState()
+    state.sessionIntroActive = true
+    state.sessionIntroKey = track.key
+
+    local fadeSec = tonumber(opts.fadeSeconds)
+    if fadeSec == nil then
+        fadeSec = 0
+    end
+    local volume = tonumber(track.volume)
+    if volume == nil then
+        volume = 1
+    end
+    local okPlay, message = playCatalogEntry("musicC", track, volume, fadeSec, fadeSec <= 0 and volume or 0)
+    if okPlay ~= true then
+        state.sessionIntroActive = false
+        state.sessionIntroKey = nil
+        return false, message
+    end
+    return true, message
+end
+
+--- Silences Music C and clears the session-intro latch (does not resume Main).
+-- @param opts table|nil `{ fadeSeconds?: number }`
+-- @return boolean
+-- @return string
+function Soundscape.stopSessionIntro(opts)
+    opts = type(opts) == "table" and opts or {}
+    sessionIntroGeneration = sessionIntroGeneration + 1
+    local state = ensureState()
+    state.sessionIntroActive = false
+    state.sessionIntroKey = nil
+
+    local fadeSec = tonumber(opts.fadeSeconds) or 0
+    local obj = resolveEmitter("musicC")
+    if obj ~= nil and fadeSec > 0 then
+        local channelState = state.channels and state.channels.musicC or {}
+        fadeEmitterVolume(obj, tonumber(channelState.volume) or 1, 0, fadeSec)
+        updateChannelState("musicC", { volume = 0 })
+        waitTime(function()
+            silenceLoopChannel("musicC")
+        end, fadeSec)
+        return true, "Session intro fading out"
+    end
+    local okSilence, silenceMsg = silenceLoopChannel("musicC")
+    if obj ~= nil then
+        armEmitterSilentBeforePlayback(obj)
+        setEmitterVolume(obj, 0)
+    end
+    return okSilence == true, silenceMsg or "Session intro stopped"
+end
+
+--- Clears the session-intro latch after the sting has finished (leaves Music C silent-ended).
+-- @return boolean
+function Soundscape.finishSessionIntro()
+    sessionIntroGeneration = sessionIntroGeneration + 1
+    local state = ensureState()
+    state.sessionIntroActive = false
+    state.sessionIntroKey = nil
+    return true
+end
+
 --- Restarts the saved background music context.
 -- @return boolean
 -- @return string
@@ -2459,13 +2547,14 @@ end
 function Soundscape.stopAll()
     musicGeneration = musicGeneration + 1
     featuredGeneration = featuredGeneration + 1
+    sessionIntroGeneration = sessionIntroGeneration + 1
     weatherGeneration = weatherGeneration + 1
     cancelSingleEmitterTransition("weatherRain")
     cancelSingleEmitterTransition("weatherWind")
 
     local messages = {}
     local ok = true
-    for _, channelKey in ipairs({ "musicA", "musicB", "featuredA", "featuredB", "locationA", "locationB", "weatherRain", "weatherWind" }) do
+    for _, channelKey in ipairs({ "musicA", "musicB", "musicC", "featuredA", "featuredB", "locationA", "locationB", "weatherRain", "weatherWind" }) do
         local channelOk, message = silenceLoopChannel(channelKey)
         ok = ok and channelOk
         table.insert(messages, message)
@@ -2489,6 +2578,8 @@ function Soundscape.stopAll()
     state.featuredMusic = Catalog.DEFAULTS.featuredMusic
     state.featuredActive = false
     state.featuredCompletionExpected = false
+    state.sessionIntroActive = false
+    state.sessionIntroKey = nil
     state.backgroundPausedForFeatured = false
     state.locationPausedForFeatured = false
     state.weather = Catalog.DEFAULTS.weather

@@ -120,6 +120,7 @@ function channelKeyFromGuidKey(guidKey) {
   const map = {
     SOUNDSCAPE_MUSIC_A: "musicA",
     SOUNDSCAPE_MUSIC_B: "musicB",
+    SOUNDSCAPE_MUSIC_C: "musicC",
     SOUNDSCAPE_FEATURED_A: "featuredA",
     SOUNDSCAPE_FEATURED_B: "featuredB",
     SOUNDSCAPE_LOCATION_A: "locationA",

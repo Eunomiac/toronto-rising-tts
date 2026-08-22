@@ -278,6 +278,12 @@ C.PlaySubPhases = {
 --- Featured track for Intermission ambient (looping TR Loop only; no Intro→Loop handoff).
 C.IntermissionThemeFeaturedKey = "TR_Loop"
 
+--- Intermission→Play session-start overture on Music C (TOR-497). Catalog key must match the Unity
+--- Trigger Effect name when present; playSessionIntro also accepts catalog `effectIndex` (author: #2).
+C.SessionStartIntroKey = "TR_SessionStart"
+C.SessionStartIntroDurationSec = 71
+C.SessionStartBlindfoldLeadSec = 2
+
 --- Hardcoded Spotlight scene library key (author fills row later; soft-fail if missing).
 C.SpotlightSceneLibraryKey = "spotlight_session"
 

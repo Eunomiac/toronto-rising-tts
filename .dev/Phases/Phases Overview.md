@@ -13,16 +13,16 @@ Source of truth:
 
 Verification:
 - Save & Play → Host Phases panel → **Advance →** (panel closes immediately) through Intermission → Play → Spotlight → End → Intermission
-- Confirm Intermission dark lights + theme + **global blindfold shown**; Play: 5s Loop↔Main crossfade → then global blindfold lifts; no-scene overlay (blank clock, weather hidden, correct session roman) + heal broadcast when applicable
+- Confirm Intermission: global blindfold first, then no-scene table prep under cover, AdminDark, TR_Loop. Play: TR_Loop fades ~0.5s, Music C overture starts immediately at full volume, global blindfold lifts ~2s before the 71s sting ends, then Main fades in and the Willpower heal overlay can appear
 - Solo Host verified only until **TOR-144** (multiplayer E2E) — multiclient connect blindfold + Advance replication: [Multiclient Session Script](../E2E%20Playbooks/Multiplayer-Session.md) (A4, B0, D1)
 
-Status: current (TOR-143 / TOR-361 / TOR-362)
+Status: current (TOR-143 / TOR-361 / TOR-362 / TOR-497)
 
 ## Blindfolds (do not conflate)
 
 | Kind | XML | Phase system |
 | --- | --- | --- |
-| **Global blindfold** | `ui/shared/panel_overlay_global_blindfold.xml` (`overlay_globalBlindfold`, `active=true` by default) | **Yes** — hide on Play enter **after** Intermission→Play audio handoff (5s Loop↔Main crossfade); show on Intermission enter; connect during Intermission leaves it up; connect elsewhere hides it. **No** timed onLoad auto-hide. Show/hide are idempotent (TOR-398): no FadeIn when already up; hide sequences do not stack. |
+| **Global blindfold** | `ui/shared/panel_overlay_global_blindfold.xml` (`overlay_globalBlindfold`, `active=true` by default) | **Yes** — hide on Play enter **after** Intermission→Play overture hold (~69s of the 71s Music C sting, TOR-497); show on Intermission enter **before** no-scene table prep; connect during Intermission leaves it up; connect elsewhere hides it. **No** timed onLoad auto-hide. Show/hide are idempotent (TOR-398): no FadeIn when already up; hide sequences do not stack. |
 | **Per-player transition blindfolds** | `ui/.templates/panel_overlay_blindfold.xml` → parent Panel `UI.show`/`UI.hide` via `core/hud_blindfold.ttslua` + `hud_overlays` (optional destination cards, TOR-425 / TOR-431) | **Spotlight → End Advance** uses the same staged path as End scene / library Apply (TOR-459). Other phase enters still use global blindfold only. |
 
 ## General Phase Structure
@@ -31,8 +31,8 @@ Status: current (TOR-143 / TOR-361 / TOR-362)
 
 There are four top-level phases, advanced by the Storyteller **Advance** button in a loop:
 
-1. `INTERMISSION` — Between sessions: dark lights, theme playlist, **global blindfold shown**; connect keeps global blindfold up (TOR-319).
-2. `PLAY` — Session start: no-scene default, staged audio (Loop out → Main in), **then** hide global blindfold, Superficial WP heal + optional broadcast. Contains most gameplay.
+1. `INTERMISSION` — Between sessions: **global blindfold shown first**, then no-scene table/skybox/overlay under that cover, AdminDark, theme playlist; connect keeps global blindfold up (TOR-319 / TOR-497).
+2. `PLAY` — Session start: Music C overture (TR_Loop 0.5s fade + immediate sting), OutdoorDim lights under cover, **then** hide global blindfold ~2s before the sting ends, Main playlist, Superficial WP heal + optional broadcast. Contains most gameplay.
 3. `SPOTLIGHT` — End-of-session player vignettes: silence emitters, apply Spotlight scene (soft-fail if missing), freeze clock.
 4. `END` — Remorse / session-end bookkeeping phase. **Advance Spotlight → End** runs a staged transition blindfold while applying the default no-scene environment (TOR-459), then enters End. Leaving End increments `sessionNum` (global blindfold restored on next Intermission enter).
 
@@ -58,11 +58,12 @@ Ending events of the previous phase run before starting events of the new phase 
 
 ### Starting Events: `PLAY`
 
-* When advancing from Intermission with exactly one connected player who is the Host, auto-enable DEBUG **Assume Players Connected** before no-scene world apply (TOR-429 / TOR-293).
-* Detach any live library mirror, then apply "no scene" default (table/lights; soundscape deferred for staged handoff). Overlay: blank clock, weather hidden, session roman from `sessionNum` (TOR-362).
-* **Intermission → Play audio (TOR-445):** TR Loop fades out and Main mood fades in together over **5s** (crossfade on separate emitter lanes; supersedes TOR-361 staged 5s+3s).
-* Only after that crossfade completes: global blindfold hidden (`overlay_globalBlindfold`). Competing auto-hide from `applyGlobalBlindfoldFromPhase` is suppressed while `Phases.isAdvancing()` (TOR-363).
-* All players heal Superficial Willpower equal to max(Resolve, Composure) (temp dots included); if anyone healed, show `session_start_heal_broadcast.xml` briefly.
+* When advancing from Intermission with exactly one connected player who is the Host, auto-enable DEBUG **Assume Players Connected** (TOR-429 / TOR-293).
+* Re-assert the global blindfold (already up from Intermission).
+* **Intermission → Play audio (TOR-497):** TR Loop fades out over **0.5s** and the Music C session-start overture (`C.SessionStartIntroKey`, 71s) starts **immediately** at full volume with no fade-in. Main mood is **not** started under the sting (`sessionIntroActive` holds reconcile).
+* Switch lights AdminDark → OutdoorDim under the cover (no `SetTableTo`; table/skybox already applied on Intermission enter).
+* After **~69s** (71 minus 2): global blindfold hidden (`overlay_globalBlindfold`). Competing auto-hide from `applyGlobalBlindfoldFromPhase` is suppressed while `Phases.isAdvancing()` (TOR-363).
+* After the remaining **2s** (sting end): fade in Main mood, then all players heal Superficial Willpower equal to max(Resolve, Composure) (temp dots included); if anyone healed, show `session_start_heal_broadcast.xml` briefly.
 
 ### Ending Events: `PLAY`
 
@@ -88,9 +89,10 @@ Ending events of the previous phase run before starting events of the new phase 
 
 ### Starting Events: `INTERMISSION`
 
+* **Show the global blindfold first** (`overlay_globalBlindfold`) so table work is not visible.
+* Apply the no-scene default environment under that cover (table, seats, generic skybox, overlay; soundscape skipped) so next week's session start does not reshuffle the table (TOR-497).
 * All lights dark (`AdminDark` phase override).
 * Fade out all emitters, then start Intermission theme (`C.IntermissionThemeFeaturedKey` = `TR_Loop`, looping at catalog volume 0.5).
-* Global blindfold shown / restored (`overlay_globalBlindfold`).
 * Countdown timer: deferred (optional TBD on **TOR-319**).
 
 ### Connect / load policy (TOR-319 / TOR-143)

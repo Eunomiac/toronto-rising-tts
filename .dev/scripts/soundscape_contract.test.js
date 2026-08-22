@@ -81,8 +81,11 @@ test("soundscape runtime module exposes the planned API", () => {
     "function Soundscape.applySessionSceneNarrativeOverrides(sessionScene)",
     "function Soundscape.setMusicMood(moodKey)",
     "function Soundscape.setLocationMusic(playlistKey)",
-    "function Soundscape.playFeaturedMusic(featureKey)",
-    "function Soundscape.stopFeaturedMusic()",
+    "function Soundscape.playFeaturedMusic(featureKey, opts)",
+    "function Soundscape.stopFeaturedMusic(opts)",
+    "function Soundscape.playSessionIntro(trackKey, opts)",
+    "function Soundscape.stopSessionIntro(opts)",
+    "function Soundscape.finishSessionIntro()",
     "function Soundscape.resumeBackgroundMusic()",
     "function Soundscape.setWeatherCondition(weatherKey)",
     "function Soundscape.setRainLayer(rainKey)",
@@ -146,11 +149,13 @@ test("soundscape catalog defines generated playlists, channels, and context defa
     "function Catalog.getBackgroundPlaylist(playlistKey)",
     "function Catalog.getLocationTrack(trackKey)",
     "function Catalog.getFeaturedTrack(trackKey)",
+    "function Catalog.getSessionIntroTrack(trackKey)",
     "function Catalog.getWeatherTrack(layerKey, trackKey)",
     "function Catalog.getDebugCategories()",
     "Catalog.WEATHER_CONDITIONS",
     "SOUNDSCAPE_MUSIC_A",
     "SOUNDSCAPE_MUSIC_B",
+    "SOUNDSCAPE_MUSIC_C",
     "SOUNDSCAPE_FEATURED_A",
     "SOUNDSCAPE_FEATURED_B",
     "SOUNDSCAPE_LOCATION_A",
@@ -167,6 +172,7 @@ test("soundscape catalog defines generated playlists, channels, and context defa
     "gioCatacombs",
     "TR_Intro",
     "TR_Loop",
+    "TR_SessionStart",
     "thunder1",
   ].forEach((needle) => {
     assert.ok(source.includes(needle), `missing ${needle}`);
@@ -213,13 +219,14 @@ test("soundscape runtime resolves GUID emitters and trigger effects", () => {
 
   [
     "require(\"lib.guids\")",
-    "getObjectFromGUID",
+    "G.getObject",
     "guidKey",
     "getTriggerEffects",
     "playTriggerEffect",
     "triggerEffects",
     "musicGeneration",
     "featuredGeneration",
+    "sessionIntroGeneration",
     "weatherGeneration",
   ].forEach((needle) => {
     assert.ok(source.includes(needle), `missing ${needle}`);
@@ -284,6 +291,7 @@ test("soundscape GUID registry contains all runtime emitters", () => {
   [
     "SOUNDSCAPE_MUSIC_A",
     "SOUNDSCAPE_MUSIC_B",
+    "SOUNDSCAPE_MUSIC_C",
     "SOUNDSCAPE_FEATURED_A",
     "SOUNDSCAPE_FEATURED_B",
     "SOUNDSCAPE_LOCATION_A",
@@ -300,6 +308,7 @@ test("soundscape Lua files parse as Lua 5.1", () => {
   [
     "lib/soundscape_catalog.ttslua",
     "core/soundscape.ttslua",
+    "core/phases.ttslua",
     "core/state.ttslua",
     "core/scenes.ttslua",
     "core/global_script.ttslua",
@@ -407,6 +416,66 @@ test("soundscape uses standard lane behavior by emitter count", () => {
     /playSingleEmitterFadeOutIn\([\s\S]*?"weatherWind"/.test(runtime),
     "wind should use same-emitter fade-out/fade-in"
   );
-  assert.ok(runtime.includes("playCatalogEntry(\"weatherThunder\", thunder, thunder.volume or 0.7, 0)"), "thunder should play immediately at full volume without fade-out/fade-in");
+  assert.ok(runtime.includes("playCatalogEntry(\"weatherThunder\", thunder, weatherVolume(naturalVol), 0)"), "thunder should play immediately at ducked volume without fade-out/fade-in");
   assert.equal(runtime.includes("playSingleEmitterFadeOutIn(\"weatherThunder\""), false, "thunder should never use same-emitter fade-out/fade-in");
+});
+
+test("session-start overture uses Music C and holds Main until the sting ends", () => {
+  const runtime = readRepoFile("core/soundscape.ttslua");
+  const catalog = readRepoFile("lib/soundscape_catalog.ttslua");
+  const phases = readRepoFile("core/phases.ttslua");
+  const constants = readRepoFile("lib/constants.ttslua");
+
+  [
+    "guidKey = \"SOUNDSCAPE_MUSIC_C\"",
+    "kind = \"sessionIntro\"",
+    "TR_SessionStart",
+    "function Catalog.getSessionIntroTrack(trackKey)",
+  ].forEach((needle) => {
+    assert.ok(catalog.includes(needle), `missing catalog session intro: ${needle}`);
+  });
+
+  [
+    'playCatalogEntry("musicC", track, volume, fadeSec',
+    "state.sessionIntroActive = true",
+    "or state.sessionIntroActive == true",
+    'for _, channelKey in ipairs({ "musicA", "musicB", "musicC"',
+  ].forEach((needle) => {
+    assert.ok(runtime.includes(needle), `missing runtime session intro: ${needle}`);
+  });
+
+  [
+    "C.SessionStartIntroKey = \"TR_SessionStart\"",
+    "C.SessionStartIntroDurationSec = 71",
+    "C.SessionStartBlindfoldLeadSec = 2",
+  ].forEach((needle) => {
+    assert.ok(constants.includes(needle), `missing session intro constant: ${needle}`);
+  });
+
+  [
+    "local INTERMISSION_TO_PLAY_LOOP_FADE_SEC = 0.5",
+    "function Phases.fireSessionIntro(_ctx)",
+    "function Phases.sessionIntroBlindfoldHoldSec(_ctx)",
+    "function Phases.startPlayMainAfterSessionIntro(_ctx)",
+    "function Phases.applyPlayEnterNoSceneLights(_ctx)",
+    "Soundscape.playSessionIntro(key, { fadeSeconds = 0 })",
+    "resumeBackground = false",
+  ].forEach((needle) => {
+    assert.ok(phases.includes(needle), `missing phase session intro: ${needle}`);
+  });
+
+  const playEnterStart = phases.indexOf("Phases.onEnter[C.Phases.PLAY]");
+  const playEnterEnd = phases.indexOf("Phases.onEnter[C.Phases.SPOTLIGHT]");
+  assert.ok(playEnterStart >= 0 && playEnterEnd > playEnterStart, "missing Play enter steps");
+  const playEnter = phases.slice(playEnterStart, playEnterEnd);
+  assert.equal(
+    playEnter.includes("applyNoSceneDefault") || playEnter.includes("applyDefaultNoSceneEnvironment"),
+    false,
+    "Play enter should not reshuffle the table during the overture",
+  );
+  assert.equal(
+    phases.includes("INTERMISSION_TO_PLAY_CROSSFADE_SEC"),
+    false,
+    "old 5s Loop↔Main crossfade constant should be gone",
+  );
 });

@@ -201,6 +201,7 @@ G.GUIDS = {
     -- SYNC: `core/global_script.ttslua` `TR_EARLY_SOUNDSCAPE_EMITTER_GUIDS` (zero-require silence on load)
     SOUNDSCAPE_MUSIC_A = "2870fb",
     SOUNDSCAPE_MUSIC_B = "ed206e",
+    SOUNDSCAPE_MUSIC_C = "e1366c",
     SOUNDSCAPE_FEATURED_A = "ef76cf",
     SOUNDSCAPE_FEATURED_B = "7a1f69",
     SOUNDSCAPE_LOCATION_A = "8ecefd",

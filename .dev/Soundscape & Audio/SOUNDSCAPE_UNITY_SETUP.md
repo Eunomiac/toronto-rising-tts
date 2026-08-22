@@ -46,7 +46,7 @@ The goal in Unity is to create one prefab that contains all named soundscape cli
 as TTS effects. Looping ambience, music, rain, and wind clips should be **Looping
 Effects**. One-shot clips such as thunder hits should be **Trigger Effects**.
 
-The current Lua runtime uses nine emitters: `musicA`, `musicB`, `featuredA`,
+The current Lua runtime uses ten emitters: `musicA`, `musicB`, `musicC`, `featuredA`,
 `featuredB`, `locationA`, `locationB`, `weatherRain`, `weatherWind`, and
 `weatherThunder`. Author the Unity AssetBundle with effect names that match
 `Audio Tracks.md` and `lib/soundscape_catalog.ttslua`.
@@ -255,10 +255,10 @@ the prefab has `TTS Asset Bundle Effects` with Looping Effects configured.
 
 ### 13. Create Runtime Emitters
 
-The current Lua system expects nine separate TTS objects using the same AssetBundle.
+The current Lua system expects ten separate TTS objects using the same AssetBundle (Music C is a dedicated session-intro bundle, not a clone of Music A).
 
 1. In TTS, select the imported soundscape object.
-2. Copy/paste or clone it until there are nine total.
+2. Copy/paste or clone it until there are ten total.
 3. For each object:
    - Right-click the object.
    - Choose **Name** or edit the name field if available.
@@ -267,11 +267,11 @@ The current Lua system expects nine separate TTS objects using the same AssetBun
    - Lock it.
    - Disable tooltip if convenient.
    - Move it somewhere out of the normal play area.
-4. Save the mod after all nine emitters are placed and tagged.
+4. Save the mod after all ten emitters are placed and tagged.
 
 The object names are for human debugging. The Lua code finds objects by tag.
 
-The runtime emitter roles are `musicA`, `musicB`, `featuredA`, `featuredB`,
+The runtime emitter roles are `musicA`, `musicB`, `musicC` (session-start overture), `featuredA`, `featuredB`,
 `locationA`, `locationB`, `weatherRain`, `weatherWind`, and `weatherThunder`.
 Rain and wind loop simultaneously while thunder plays random one-shots over them,
 with indoor/outdoor ducking applied to weather layers.
@@ -373,7 +373,7 @@ After saving the objects into the mod:
   exposed `AudioSource`s and swap to the `"silent"` looping effect by name on each
   hard-coded emitter GUID, then schedules `Wait.time` retries when available.
   During the **Global chunk**, `getObjectFromGUID` usually returns **nil** for all emitters
-  (`emitters resolved 0/9`), and **`Wait` is often unset**, so the real work runs from
+  (`emitters resolved 0/10`), and **`Wait` is often unset**, so the real work runs from
   **`onLoad`**: an immediate pass plus deferred passes at **0 / 0.05 / 0.25 / 0.5** seconds.
   **Keep those GUIDs in sync with** `lib/guids.ttslua`
   (`SYNC` comment on `SOUNDSCAPE_MUSIC_A`). The file **also** calls

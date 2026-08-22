@@ -210,6 +210,8 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 
 ## Soundscape
 
+- [x] **Intermission→Play session-start overture:** Fade TR_Loop 0.5s, immediately play Music C 71s sting at full volume, lift global blindfold ~2s before the sting ends; move no-scene table prep to Intermission enter. relatedTo **TOR-445**, **TOR-143**. Pending Save & Play. _(TOR-497)_
+
 - [x] **Featured tracks fade location ambience:** Sounds-panel featured songs duck `locationA`/`locationB` as well as mood/playlist music; restore on natural end or Stop feat. Ravenwing nightclub bed is location, not Main. Pending Save & Play. _(TOR-494)_
 
 - [x] On load, emitters automatically play tracks from the last save. _(Mitigation: **Silence for save** on Sound panel ? `Soundscape.prepareEmittersForSave()`; fold into End Session sequence when defined.)_ _(TOR-71)_

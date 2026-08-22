@@ -19,8 +19,8 @@ local S = require("core.state")
 local SESSION_START_HEAL_PANEL = "sessionStartHeal_panel"
 local HEAL_BROADCAST_HOLD_SEC = 6
 local INTERMISSION_THEME_FADE_SEC = 2
---- Intermission → Play Advance (TOR-445): 5s Loop↔Main crossfade, then global blindfold.
-local INTERMISSION_TO_PLAY_CROSSFADE_SEC = 5
+--- Intermission → Play: TR_Loop fade-out while Music C overture starts immediately (TOR-497).
+local INTERMISSION_TO_PLAY_LOOP_FADE_SEC = 0.5
 
 --- Single in-flight top-level transition token.
 local advancing = false
@@ -338,42 +338,79 @@ function Phases.maybeEnableAssumePlayersConnectedForSoloHost(ctx)
     return true
 end
 
---- Intermission → Play: fade TR_Loop out and Main mood in together over INTERMISSION_TO_PLAY_CROSSFADE_SEC.
---- Featured and background are separate emitter lanes, so both can run for the full window (TOR-445).
---- @param _ctx table|nil
---- @return number chain wait seconds
-function Phases.crossfadeIntermissionThemeToPlayMain(_ctx)
-    local Soundscape = require("core.soundscape")
+--- Play enter: Intermission AdminDark → OutdoorDim under the global cover (no SetTableTo).
+--- Table/skybox prep already ran on Intermission enter (TOR-497).
+function Phases.applyPlayEnterNoSceneLights(_ctx)
+    S.setStateVal("default", "currentScene")
+    S.setStateVal(nil, "sceneTransition")
     local Scenes = require("core.scenes")
-    local sec = INTERMISSION_TO_PLAY_CROSSFADE_SEC
-
-    if type(Soundscape.beginTransitionFadeWindow) == "function" then
-        Soundscape.beginTransitionFadeWindow(sec)
+    if type(Scenes.invalidateReconcileCache) == "function" then
+        Scenes.invalidateReconcileCache()
     end
+    if type(Scenes.syncSessionLightingPresetForLocation) == "function" then
+        Scenes.syncSessionLightingPresetForLocation()
+    end
+    if type(Scenes.reconcileFromState) == "function" then
+        Scenes.reconcileFromState({ force = true })
+    end
+    return true
+end
+
+--- Intermission → Play: fade TR_Loop 0.5s and immediately start the Music C overture at full volume.
+--- Returns true immediately so lighting can run under the cover without delaying the sting.
+--- @param _ctx table|nil
+--- @return boolean
+function Phases.fireSessionIntro(_ctx)
+    local Soundscape = require("core.soundscape")
+    local fadeSec = INTERMISSION_TO_PLAY_LOOP_FADE_SEC
 
     local okStop, stopMsg = Soundscape.stopFeaturedMusic({
-        fadeSeconds = sec,
+        fadeSeconds = fadeSec,
         resumeBackground = false,
     })
     if okStop ~= true then
         U.AlertGM("Intermission→Play Loop fade-out: " .. tostring(stopMsg or "stopFeaturedMusic failed"))
     end
 
+    local key = C.SessionStartIntroKey or "TR_SessionStart"
+    local okPlay, playMsg = Soundscape.playSessionIntro(key, { fadeSeconds = 0 })
+    if okPlay ~= true then
+        U.AlertGM("Session start overture: " .. tostring(playMsg or "playSessionIntro failed"))
+    end
+    if type(Soundscape.commitEagerSteadyState) == "function" then
+        Soundscape.commitEagerSteadyState(okPlay == true)
+    end
+    return true
+end
+
+--- Seconds to keep the global blindfold up after the overture starts (duration minus lead).
+function Phases.sessionIntroBlindfoldHoldSec(_ctx)
+    local duration = tonumber(C.SessionStartIntroDurationSec) or 71
+    local lead = tonumber(C.SessionStartBlindfoldLeadSec) or 2
+    local waitUntilLift = duration - lead
+    if waitUntilLift < 0 then
+        waitUntilLift = 0
+    end
+    return waitUntilLift
+end
+
+--- After the overture finishes: clear the intro latch and fade in Main (Play default).
+function Phases.startPlayMainAfterSessionIntro(_ctx)
+    local Soundscape = require("core.soundscape")
+    if type(Soundscape.finishSessionIntro) == "function" then
+        Soundscape.finishSessionIntro()
+    end
+    local Scenes = require("core.scenes")
     if type(Scenes.applyMainOnlySoundscape) == "function" then
         Scenes.applyMainOnlySoundscape()
     else
         S.setStateVal("main", "soundscape", "musicMood")
         Soundscape.setMusicMood("main")
     end
-
-    if type(Soundscape.endTransitionFadeWindow) == "function" then
-        Soundscape.endTransitionFadeWindow()
-    end
     if type(Soundscape.commitEagerSteadyState) == "function" then
-        -- Main mood is the Play steady state; prime even if Loop stop logged a warning.
         Soundscape.commitEagerSteadyState(true)
     end
-    return sec
+    return true
 end
 
 local function healAmountForPlayer(playerID)
@@ -469,6 +506,16 @@ end
 Phases.onEnter[C.Phases.INTERMISSION] = function(ctx)
     return {
         function()
+            -- Cover the table before no-scene world work (TOR-497).
+            return Phases.showGlobalBlindfold(ctx)
+        end,
+        function()
+            return Phases.applyNoSceneDefault(ctx, {
+                reason = "phase_intermission_enter",
+                skipSoundscape = true,
+            })
+        end,
+        function()
             return Phases.applyAllLightsDark(ctx)
         end,
         function()
@@ -477,17 +524,13 @@ Phases.onEnter[C.Phases.INTERMISSION] = function(ctx)
         function()
             return Phases.startIntermissionThemePlaylistLoop(ctx)
         end,
-        function()
-            -- Global blindfold only (`overlay_globalBlindfold`); not per-player transition overlays.
-            return Phases.showGlobalBlindfold(ctx)
-        end,
     }
 end
 
 Phases.onEnter[C.Phases.PLAY] = function(ctx)
     return {
         function()
-            -- Before no-scene world apply so chronicle seats stay present under TOR-293.
+            -- Before lighting apply so chronicle seats stay present under TOR-293.
             return Phases.maybeEnableAssumePlayersConnectedForSoloHost(ctx)
         end,
         function()
@@ -497,18 +540,28 @@ Phases.onEnter[C.Phases.PLAY] = function(ctx)
             return Phases.showGlobalBlindfold(ctx)
         end,
         function()
-            -- World/lights first; Main ambient crossfades with Loop in the next step (TOR-445).
-            return Phases.applyNoSceneDefault(ctx, {
-                reason = "phase_play_enter",
-                skipSoundscape = true,
-            })
+            -- 0.5s Loop fade + immediate Music C sting (do not wait on the fade).
+            return Phases.fireSessionIntro(ctx)
         end,
         function()
-            -- 5s Loop out + Main in together; U.chain waits once before blindfold lift.
-            return Phases.crossfadeIntermissionThemeToPlayMain(ctx)
+            -- Lighting only (AdminDark → OutdoorDim) while the sting is already playing.
+            return Phases.applyPlayEnterNoSceneLights(ctx)
+        end,
+        function()
+            return Phases.sessionIntroBlindfoldHoldSec(ctx)
         end,
         function()
             return Phases.hideGlobalBlindfold(ctx)
+        end,
+        function()
+            local lead = tonumber(C.SessionStartBlindfoldLeadSec) or 2
+            if lead < 0 then
+                lead = 0
+            end
+            return lead
+        end,
+        function()
+            return Phases.startPlayMainAfterSessionIntro(ctx)
         end,
         function()
             return Phases.runSessionStartWillpowerHeal(ctx)
