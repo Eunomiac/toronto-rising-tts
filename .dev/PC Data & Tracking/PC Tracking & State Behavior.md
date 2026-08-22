@@ -315,7 +315,7 @@ type PlayerConditions = Partial<Record<ConditionId, PersistedCondition>>;
 | `Conditions.reconcileDerivedForPlayer(playerID)` | Sync derived keys from stats |
 | `Conditions.reconcileDerivedAllPlayers()` | Load / bulk repair |
 | `Conditions.reconcileHostedForSession(opts?)` | Apply/remove hosted (`location` + `scene`) keys for present PCs; `skipPresentation` when followed by `Sync.full` |
-| `Conditions.afterChange(playerID)` | Per-player presentation (lights, HUD, overlays, sheets) — mirrors `Sync.player` |
+| `Conditions.afterChange(playerID)` | Per-player presentation (lights, HUD, overlays, sheets, Rouse/Oblivion-Rouse bags) — mirrors `Sync.player` |
 | `Conditions.resolveForPlayer(playerID)` | Merged statChanges / HUD ids / lighting modes |
 | `EffectiveStats.forPlayer(playerID)` / `forSeat(color)` | **Preferred** read-time stat math (tracker max, BP, dots) |
 | `Conditions.effectiveStatDelta` / `effectiveAggregateDelta` | Legacy delegates to `EffectiveStats` |
@@ -340,7 +340,7 @@ type PlayerConditions = Partial<Record<ConditionId, PersistedCondition>>;
 
 1. **Derive (mutation)** — recompute which *derived* IDs belong in `playerData.conditions` from current `stats` (+ `suppressedBy` / `deriveSticky`).
 2. **Hosted (mutation)** — add/remove `location` and `scene` ids from district/site rows and `sessionScene.conditions` for PCs **present** in the active scene (`L.isPlayerPresentInActiveSeatLayout`).
-3. **Apply (presentation)** — `afterChange` reconciles seat lights, HUD, overlays, and character sheets for that PC. Consumers also **read** resolved effects on demand (`resolveForPlayer`, `resolveRollPolicy`) during sheet collect, lighting reconcile, and rolls.
+3. **Apply (presentation)** — `afterChange` reconciles seat lights, HUD, overlays, character sheets, and Rouse/Oblivion-Rouse bag visibility for that PC. Consumers also **read** resolved effects on demand (`resolveForPlayer`, `resolveRollPolicy`) during sheet collect, lighting reconcile, and rolls.
 
 **Load policy:** Unknown ids or legacy inline payloads (`statChanges`, `hudChanges`, `lightingModeChanges`, …) → **`error(...)`** (no migrator). One-time fix: clear `conditions = {}` or restore a pre-migration save.
 

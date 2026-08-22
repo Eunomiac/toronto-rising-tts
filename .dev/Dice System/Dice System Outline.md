@@ -400,7 +400,7 @@ active = {
 
 `GlobalResolveRollPhysicalPrep({ color })` runs these together (spawn deferred one frame):
 
-1. `DBV.reconcileForPlayer` — hunger/rouse/obliv bag visibility
+1. `DBV.reconcileForPlayer` — hunger/rouse/obliv bag visibility (Hunger 5 hides Oblivion-Rouse; `hudFrenzy` hides Rouse and Oblivion-Rouse — TOR-505)
 2. `DiceDrawer.openForRoll` — PC dice tray
 3. `GlobalSpawnActivePoolDiceForActive` — staged dice to match `active.pool`
 

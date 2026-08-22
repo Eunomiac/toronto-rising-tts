@@ -354,6 +354,13 @@ function Conditions.afterChange(playerID)
     HO.reconcileForSeat(col)
   end
 
+  -- Frenzy overlay hides Rouse / Oblivion-Rouse bags; other conditions no-op via already-at-rest skip.
+  local DBV = require("lib.dice_bag_visibility")
+  if type(DBV.reconcileForPlayer) == "function" then
+    local active = S.getStateVal("playerData", playerID, "hud", "rollData", "active")
+    DBV.reconcileForPlayer(col, active)
+  end
+
   if type(UpdateUIDisplays) == "function" then
     UpdateUIDisplays({
       playerStats = true,

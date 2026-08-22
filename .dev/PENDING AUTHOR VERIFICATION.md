@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-08-22 evening inbox — cleared author-confirmed overture, dice, featured-track, and seat-dump rows. Added shipped follow-ups still waiting for Save & Play: rain particles, End→Intermission cover settle, catalog load, and Play seat lights. **TOR-439** remains a multiclient gate (not a solo Save & Play)._
+_Last populated: 2026-08-22 evening inbox follow-up — added **TOR-505** (frenzy hides Rouse bags). **TOR-439** remains a multiclient gate (not a solo Save & Play)._
 
 ### High — session / join / first-load
 
@@ -58,6 +58,12 @@ _Last populated: 2026-08-22 evening inbox — cleared author-confirmed overture,
 #### TOR-493 — Concurrent idle-bag auto-Rouse checks
 
 **How to verify:** Save & Play. Sit two different player seats. Right-click idle **Rouse** (or one Rouse and one Oblivion-Rouse) on both seats in quick succession. Both checks should toss. You should then see the first fullscreen result for about six seconds, a short fade, then the second. Right-click the same seat’s Rouse bag twice very quickly: only one check should start. Start an ordinary Standard roll on one seat, then try an idle Rouse right-click on another seat while that Standard roll is still going. The Rouse shortcut should still do nothing until the Standard roll is confirmed.
+
+#### TOR-505 — Frenzy overlay hides Rouse and Oblivion-Rouse bags
+
+**How to verify:** Save & Play so this script is in the table. Sit a player who is not in frenzy. Confirm their Rouse bag (and Oblivion-Rouse bag, if Hunger is below 5) is visible. On the PCs panel, click **Frenzy** so the frenzy overlay appears. Both Rouse bags should disappear under the table. Click **Frenzy** again to clear the overlay. The Rouse bag should come back. If Hunger is below 5, Oblivion-Rouse should come back too; at Hunger 5 it should stay hidden. Optionally fail a Frenzy Resist roll: the overlay should appear and the same bags should hide without using the PCs-panel toggle.
+
+**Context:** Hunger bag is unchanged. Idle right-click auto-Rouse should do nothing while frenzy is on, because the bags are gone.
 
 ---
 

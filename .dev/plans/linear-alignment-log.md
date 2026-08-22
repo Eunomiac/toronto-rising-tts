@@ -680,5 +680,7 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-08-22 | CREATE+SHIP | TOR-503 | getTracks first arg named `type` shadowed Lua type(); catalog load failed; GlobalResolveSheetPlayerID spam. relatedTo TOR-497. Pending Save & Play. |
 | 2026-08-22 | CREATE+SHIP | TOR-504 | Intermission→Play player seat lights stayed OFF; OutdoorDim preset map never ran L.reconcileAllPlayers. relatedTo TOR-497. Pending Save & Play. |
 | 2026-08-22 | PAVE+FOCUS | `/tr-inbox` evening | Capture empty. Author ✅ TOR-497 / TOR-501 / TOR-500 / TOR-499 / TOR-494 / TOR-496. PAVE added TOR-498 / TOR-502 / TOR-503 / TOR-504. Focus → TOR-81, TOR-98, TOR-168. TOR-439 remains multiclient gate. |
+| 2026-08-22 | CREATE+SHIP | TOR-505 | Frenzy overlay disables Rouse / Oblivion-Rouse bags (INBOX Immediate). relatedTo TOR-203 / TOR-491 / TOR-499. Pending Save & Play. |
+| 2026-08-22 | CREATE+SHIP | TOR-506 | End→Intermission audio handoff with global cover before table prep; relatedTo TOR-502 / TOR-497. Pending Save & Play. |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

@@ -213,6 +213,20 @@ local function isAtMaxHunger(color)
     return hunger >= C.MAX_HUNGER
 end
 
+--- Frenzy overlay (`hudFrenzy`) hides Rouse / Oblivion-Rouse bags (TOR-505).
+-- @param color string
+-- @return boolean
+local function isInFrenzy(color)
+    if type(color) ~= "string" then
+        return false
+    end
+    local pid = S.getPlayerID(color)
+    if pid == nil then
+        return false
+    end
+    return S.getStateVal("playerData", pid, "conditions", "hudFrenzy") ~= nil
+end
+
 --- Apply hunger / rouse / obliv bag visibility for one player seat.
 -- @param color string
 -- @param active table|nil  active roll record
@@ -254,6 +268,10 @@ function DBV.reconcileForPlayer(color, active)
         rouseOn = true
         oblivOn = not isAtMaxHunger(color)
     end
+    if isInFrenzy(color) then
+        rouseOn = false
+        oblivOn = false
+    end
 
     local hungerGuid = bagGuidForKind(color, DK.KIND_HUNGER)
     local rouseGuid = bagGuidForKind(color, DK.KIND_ROUSE)
@@ -270,21 +288,14 @@ function DBV.reconcileForPlayer(color, active)
     end
 end
 
---- Default layout: hunger off; rouse and obliv on for every player seat.
+--- Idle bag layout for every player seat (hunger off; rouse/obliv follow Hunger-5 and frenzy).
 function DBV.disableHungerBagsForAllPlayers()
     for _, color in ipairs(C.PlayerColors) do
-        local guid = bagGuidForKind(color, DK.KIND_HUNGER)
-        if type(guid) == "string" then
-            setBagEnabled(guid, false, color)
-        end
-        local rouseGuid = bagGuidForKind(color, DK.KIND_ROUSE)
-        if type(rouseGuid) == "string" then
-            setBagEnabled(rouseGuid, true, color)
-        end
-        local oblivGuid = bagGuidForKind(color, DK.KIND_OBLIV_ROUSE)
-        if type(oblivGuid) == "string" then
-            setBagEnabled(oblivGuid, true, color)
-        end
+        local pid = S.getPlayerID(color)
+        local active = pid ~= nil
+            and S.getStateVal("playerData", pid, "hud", "rollData", "active")
+            or nil
+        DBV.reconcileForPlayer(color, active)
     end
 end
 

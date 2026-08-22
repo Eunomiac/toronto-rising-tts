@@ -122,7 +122,7 @@ Changes confirm gating or mandatory full reroll lifecycle?
 Two phases on every change:
 
 1. **Mutation** — write/remove keys in `playerData.conditions` (derive reconcile, location reconcile, setManual, setEvent, clear).
-2. **Presentation** — `Conditions.afterChange` applies per-player lights/HUD/overlays/sheets (same slice as `Sync.player`, without requiring `core.sync`); consumers read **`Conditions.resolveForPlayer`** or **`Conditions.resolveRollPolicy`** on demand.
+2. **Presentation** — `Conditions.afterChange` applies per-player lights/HUD/overlays/sheets and dice-bag visibility (same slice as `Sync.player`, without requiring `core.sync`); consumers read **`Conditions.resolveForPlayer`** or **`Conditions.resolveRollPolicy`** on demand.
 
 Do not embed world side effects in `S.setStateVal` for stats without an explicit sync/reconcile call afterward.
 
@@ -234,6 +234,8 @@ hudFrenzy = {
   hud = { overlay = "overlay_frenzy" },
 }
 ```
+
+While `hudFrenzy` is active, `DBV.reconcileForPlayer` hides that seat’s Rouse and Oblivion-Rouse bags (TOR-505). Clearing frenzy restores them (Oblivion-Rouse still follows Hunger 5 lockout).
 
 **Per-roll overlay — bestialNull:** `type = "roll"`, `canApplyManually = true`, `roll = { bestialNull = true }`. Shown in Roll Options modal for all roll types. Dice-E2E Suite F applies via `rollE2eApplyConditions("Brown", { "bestialNull" })`.
 
