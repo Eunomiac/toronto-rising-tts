@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-08-22 inbox — added shipped dice/sound/phase work still waiting for Save & Play. **TOR-439** remains a multiclient gate (not a solo Save & Play)._
+_Last populated: 2026-08-22 evening inbox — cleared author-confirmed overture, dice, featured-track, and seat-dump rows. Added shipped follow-ups still waiting for Save & Play: rain particles, End→Intermission cover settle, catalog load, and Play seat lights. **TOR-439** remains a multiclient gate (not a solo Save & Play)._
 
 ### High — session / join / first-load
 
@@ -29,17 +29,23 @@ _Last populated: 2026-08-22 inbox — added shipped dice/sound/phase work still 
 
 **Context:** Earlier run: Assets, Emitters, and Figurines restore steps succeeded; step 2 timed out and drove **TOR-444**. Deferred from Focus until you can gather testers.
 
-#### TOR-497 — Intermission→Play 71-second session-start piece
+#### TOR-503 — Catalog load must not crash (no `getTracks` / sheet spam)
 
-**How to verify:** Save & Play so this script is in the table. From **End**, click **Advance**. The full-screen cover should drop immediately; table prep happens underneath; Intermission loop music should start as usual. Then from **Intermission**, click **Advance**. Loop should duck in about half a second, and the new 71-second piece should start at once at full volume, with no Main playlist underneath. The cover should lift about two seconds before the piece ends. After it finishes, Main should fade in, and the Willpower heal overlay can appear if anyone needed Superficial Willpower.
+**How to verify:** Save & Play so this script is in the table. On load you should **not** see `getTracks` / `attempt to call a string value` in the console, and character sheets should **not** spam `GlobalResolveSheetPlayerID`. The table should finish loading normally. Then from **Intermission**, click **Advance**: Loop should duck, the Session Starter piece should play, and the cover should lift near the end.
 
-**Context:** Pair this with **TOR-501** (Advance wait past 60 seconds) on the same Intermission→Play click. If the sting is silent, check the Music C object (GM Notes `SOUNDSCAPE_MUSIC_C`).
+**Context:** This is the load-breaker that showed up while testing the Intermission→Play overture. A helper had named its first argument `type`, which hid Lua’s built-in `type()` and stopped the sound catalog (and then Global) from finishing.
 
-#### TOR-501 — Intermission→Play cover must lift (no 60-second timeout)
+#### TOR-502 — End→Intermission cover should finish before table prep
 
-**How to verify:** Save & Play. If you are still in Play with the cover stuck from a failed earlier run, Save & Play again (or Advance to Spotlight, then back through End → Intermission) so you are in Intermission. From Intermission, click **Advance**. The 71-second piece should play through. You should not see `chainWait timeout (60s)` in the console. The cover should lift about two seconds before the piece ends. After the piece, Main should fade in and the Willpower heal overlay can appear.
+**How to verify:** Save & Play. From **End**, click **Advance**. The full-screen cover should drop and finish fading first. Only after about two seconds should the table and skybox reshuffle happen underneath. You should not see table or skybox work start on a still-visible table in the middle of the fade.
 
-**Context:** Follow-up to **TOR-497**. The Advance sequencer used to abort at 60 seconds while Play still needed ~69 seconds before lifting the cover.
+**Context:** Follow-up to **TOR-497**. Table prep now waits on Intermission enter so the cover animation is not hitch-interrupted.
+
+#### TOR-504 — Intermission→Play restores player seat lights
+
+**How to verify:** Save & Play. From **End**, click **Advance** to **Intermission** (the table goes dark under the cover). Then click **Advance** to **Play**. While the cover is still up, or as soon as it lifts near the end of the sting, each occupied player seat should have its normal seat lights on again — not stay black like Intermission. Hunger-4+ seats can still look Hungry. Empty seats can stay off.
+
+**Context:** Follow-up to **TOR-497**. Intermission turns seat lights off; Play was only applying the outdoor dim ambient and never switching the seat-light objects back on.
 
 ---
 
@@ -53,25 +59,15 @@ _Last populated: 2026-08-22 inbox — added shipped dice/sound/phase work still 
 
 **How to verify:** Save & Play. Sit two different player seats. Right-click idle **Rouse** (or one Rouse and one Oblivion-Rouse) on both seats in quick succession. Both checks should toss. You should then see the first fullscreen result for about six seconds, a short fade, then the second. Right-click the same seat’s Rouse bag twice very quickly: only one check should start. Start an ordinary Standard roll on one seat, then try an idle Rouse right-click on another seat while that Standard roll is still going. The Rouse shortcut should still do nothing until the Standard roll is confirmed.
 
-#### TOR-500 — Hide player roll panel on idle Rouse / Oblivion-Rouse right-click
-
-**How to verify:** Save & Play. With no live roll, right-click the **Rouse** bag. The die should toss and the fullscreen result should appear, but the player roll-control panel (Roll / Take Half / Cancel) should stay hidden the whole time. Repeat on the **Oblivion-Rouse** bag at Hunger 4 or lower. A normal left-click Rouse that the Storyteller Opens should still show the player panel as usual.
-
-#### TOR-499 — Hunger-5 failed Rouse auto-opens Frenzy at Difficulty 4, no Cancel
-
-**How to verify:** Save & Play. Sit a player at Hunger 5. Fail a standard Rouse so Hunger would go past 5. After that Rouse result finishes, a Frenzy Resist roll should appear already opened (you should not need the Storyteller to click Open), with Difficulty 4, and the player should have no Cancel button. Clicking Frenzy from the PCs panel yourself should still behave like a normal player-started roll.
-
 ---
 
 ### Sound / debug
 
-#### TOR-494 — Featured tracks fade out location ambience
+#### TOR-498 — Outdoor rain particles follow weather audio
 
-**How to verify:** Save & Play. Apply **Ravenwing** so you hear the nightclub location bed. On the Sounds panel, start a featured track. The nightclub bed should fade out under the song; weather can stay. Let the song finish, or press **Stop feat.** The nightclub bed should fade back in. Optionally repeat at a site that uses Main playlist music: that music should still duck and return as it did before.
+**How to verify:** Save & Play so this script is live. Apply an **outdoor** site with **light rain**, then with **heavy rain**, then with a **thunderstorm**. The rain particles should match the rain strength and the wind band (none / low / med / max) at the same time the weather audio changes — including while the cover is still down during a staged Apply. Then apply an **indoor** site (or a silent site): particles should go to none, even if rain audio is still stored and ducked. Apply a location with **no rain**: particles should stay off.
 
-#### TOR-496 — Seat-role offset dump for player-positioning capture
-
-**How to verify:** Save & Play so the new Global script is in the table. Make sure the External Editor / tts-bridge is listening (same as other debug file dumps). In the TTS console run `lua DEBUG.dumpSeatRoleOffsets("Red")`. You should see a console line with a role count, and a file at `.dev/.debug/debug_logs/seat_role_offsets_RED.lua`. Repeat with `"Pink"` and `"Purple"` if you want extras. Hidden objects may dump `defaultY = -200`; that is expected. If no file appears, the console will say the write failed because the bridge is not listening.
+**Context:** Snow and other weather particles are not part of this check.
 
 ---
 

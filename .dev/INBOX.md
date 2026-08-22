@@ -20,6 +20,8 @@ Verification:
 ## For Immediate Implementation
 > _After registering each of these issues with Linear in the ordinary fashion, before updating the Focus Stack, briefly review the issue: If it is a quick or easy fix, implement it immediately without waiting for user confirmation. Otherwise, promote it to the top of the Focus Stack, and offer to begin work on it immediately when summarizing your work processing `INBOX.md` to the user. If multiple issues require promotion in this way, consider how best to resolve them as quickly as possible, and offer to draft an implementation plan in your response to the user._
 
+- [Frenzy Disables Rouse Checks] If a character is in frenzy (i.e. the frenzy overlay is in place), their rouse bag and oblivion rouse bags should be disabled. Likewise, when a character's frenzy overlay is removed, those bags should be restored.
+
 ## Active
 
 ## External Work (Set STATUS to "External To Do")
@@ -43,6 +45,8 @@ Verification:
 
 
 ## Processed
+
+2026-08-22 evening `/tr-inbox` — capture empty. PAVE ✅ cleared **TOR-497** (Intermission→Play overture), **TOR-501** (Advance wait past 60s), **TOR-500** (idle Rouse panel hide), **TOR-499** (Hunger-5 Frenzy auto-open), **TOR-494** (featured tracks fade location), **TOR-496** (seat-role offset dump). Added Outstanding **TOR-498** (rain particles), **TOR-502** (End→Intermission cover settle), **TOR-503** (catalog load / getTracks), **TOR-504** (Play seat lights). Focus → **TOR-81**, **TOR-98**, **TOR-168**. **TOR-439** remains the multiclient gate.
 
 2026-08-22 `/tr-inbox` Immediate — outdoor rain particles → **TOR-498** (Focus #1 High); hide player roll panel on idle auto-Rouse → **TOR-500** (shipped); Hunger-5 Frenzy auto-open D4 + no Cancel → **TOR-499** (shipped). PAVE added **TOR-492** / **TOR-493** / **TOR-494** / **TOR-496** / **TOR-497** / **TOR-501** / **TOR-499** / **TOR-500**. **TOR-439** remains the multiclient gate.
 
