@@ -1604,12 +1604,8 @@ function L.isPlayerPresentInActiveSeatLayout(seatKey)
     if U.Type(tableCfg) ~= "table" then
         return true
     end
-    ---@diagnostic disable-next-line: undefined-field
-    local map = tableCfg.seatToPositionMap
-    if U.Type(map) ~= "table" then
-        return true
-    end
-    local atTable = map[seatKey] ~= nil
+    local FSL = require("lib.figurine_seat_layout")
+    local atTable = FSL.seatIsOnTable(seatKey, tableCfg)
     local sp = S.getStateVal("sessionScene", "seatPresent")
     if U.Type(sp) == "table" then
         local narrative = sp[seatKey]
@@ -1990,9 +1986,8 @@ local function isNpcSeatLightActive(lightRef)
     end
     local currentTableKey = S.getStateVal("seatLayout", "currentTableKey")
     local tableCfg = U.Type(currentTableKey) == "string" and C.Tables[currentTableKey] or nil
-    ---@diagnostic disable-next-line: undefined-field
-    local tableMap = U.Type(tableCfg) == "table" and tableCfg.seatToPositionMap or nil
-    if U.Type(tableMap) ~= "table" or tableMap[seatKey] == nil then
+    local FSL = require("lib.figurine_seat_layout")
+    if U.Type(tableCfg) ~= "table" or not FSL.seatIsOnTable(seatKey, tableCfg) then
         return false
     end
     return true

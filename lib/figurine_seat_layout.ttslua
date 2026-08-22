@@ -1,0 +1,867 @@
+--[[
+    Figurine-anchored numbered-slot layout (lib/figurine_seat_layout.ttslua) — TOR-507.
+
+    Occupancy lives on sessionScene.seatSlots[occupant].tableSlot.
+    Geometry: slot 1 = C.Tables[].referenceFigurine; even slots walk right, odd slots >1 walk left.
+    Satellites: C.SeatRoleOffsets (extraByOccupant → player → shared).
+]]
+
+local U = require("lib.util")
+local C = require("lib.constants")
+local S = require("core.state")
+local SRI = require("lib.seat-role-identity")
+local G = require("lib.guids")
+local TarotObjects = require("lib.tarot_objects")
+
+local FSL = {}
+
+FSL.DEFAULT_TABLE_SLOTS = C.DefaultTableSlots or {
+    Red = 1,
+    Orange = 2,
+    Pink = 3,
+    Brown = 4,
+    Purple = 5,
+    NPC1 = 6,
+    NPC2 = 7,
+    NPC3 = 8,
+    NPC4 = 9,
+}
+
+local HIDE_Y_FLOOR = -199
+local PC_FIGURINE_Y = -55.8166
+local HAND_TO_FIG_X = 0.5035
+local HAND_TO_FIG_Z = 3.8752
+local MAX_SLOT_ANY_TABLE = 10
+
+local function shortestSignedDelta(fromDeg, toDeg)
+    local d = toDeg - fromDeg
+    while d > 180 do
+        d = d - 360
+    end
+    while d < -180 do
+        d = d + 360
+    end
+    return d
+end
+
+local function wrapSeg(seg, numSegments)
+    local n = math.floor(tonumber(numSegments) or 1)
+    if n < 1 then
+        n = 1
+    end
+    local s = math.floor(tonumber(seg) or 1)
+    s = ((s - 1) % n) + 1
+    return s
+end
+
+--- Slot 1 = refSeg. Even slots walk right (decreasing segment); odd slots >1 walk left (increasing).
+local function circularSegmentForSlot(refSeg, numSegments, slot)
+    if slot == 1 then
+        return wrapSeg(refSeg, numSegments)
+    end
+    if slot % 2 == 0 then
+        return wrapSeg(refSeg - (slot / 2), numSegments)
+    end
+    return wrapSeg(refSeg + ((slot - 1) / 2), numSegments)
+end
+
+local function fanIndex(centerIndex, localSlot)
+    if localSlot == 1 then
+        return centerIndex
+    end
+    if localSlot % 2 == 0 then
+        return centerIndex - (localSlot / 2)
+    end
+    return centerIndex + ((localSlot - 1) / 2)
+end
+
+local function isPlayerSeatKey(seatKey)
+    return U.isIn(seatKey, C.PlayerColors or {})
+end
+
+local function isNpcSeatKey(seatKey)
+    return U.isIn(seatKey, C.NPCSeats or {})
+end
+
+local function liveSeatSlots()
+    local ss = S.getStateVal("sessionScene", "seatSlots")
+    if U.Type(ss) ~= "table" then
+        return {}
+    end
+    return ss
+end
+
+local function ensureSeatRow(ss, occupant)
+    local row = ss[occupant]
+    if U.Type(row) ~= "table" then
+        row = {}
+        ss[occupant] = row
+    end
+    return row
+end
+
+local function npcRowHasCharacter(row, occupiedNPCSlots, npcKey)
+    if U.Type(row) == "table" then
+        if row.slotEmpty == true then
+            return false
+        end
+        if type(row.characterKey) == "string" and row.characterKey ~= "" then
+            return true
+        end
+    end
+    if U.Type(occupiedNPCSlots) == "table" then
+        local occ = occupiedNPCSlots[npcKey]
+        return type(occ) == "string" and occ ~= ""
+    end
+    return false
+end
+
+--- @param tableCfg table|nil
+--- @return number
+function FSL.getSlotCapacity(tableCfg)
+    if U.Type(tableCfg) == "table" and type(tableCfg.slotCapacity) == "number" then
+        return math.floor(tableCfg.slotCapacity)
+    end
+    return 9
+end
+
+--- @param tableCfg table|nil
+--- @return table frame { position, rotation }
+function FSL.getReferenceFigurineFrame(tableCfg)
+    if U.Type(tableCfg) == "table" and U.Type(tableCfg.referenceFigurine) == "table"
+        and tableCfg.referenceFigurine.position ~= nil then
+        local rf = tableCfg.referenceFigurine
+        return {
+            position = Vector(rf.position),
+            rotation = Vector(rf.rotation or { 0, 180, 0 }),
+        }
+    end
+    local rh = tableCfg and tableCfg.referenceHand
+    if U.Type(rh) ~= "table" or rh.position == nil then
+        error("figurine_seat_layout: table is missing referenceFigurine and referenceHand")
+    end
+    local hp = Vector(rh.position)
+    local hr = Vector(rh.rotation or { 0, 0, 0 })
+    return {
+        position = Vector({ x = hp.x + HAND_TO_FIG_X, y = PC_FIGURINE_Y, z = hp.z + HAND_TO_FIG_Z }),
+        rotation = Vector({ x = 0, y = hr.y + 180, z = 0 }),
+    }
+end
+
+--- @param opts table|nil `{ occupiedNPCSlots = table? }`
+--- @return table[] { occupantKey, tableSlot, isPlayer }
+function FSL.collectOccupants(opts)
+    opts = U.Type(opts) == "table" and opts or {}
+    local ss = liveSeatSlots()
+    local occupiedNPC = opts.occupiedNPCSlots
+    if U.Type(occupiedNPC) ~= "table" then
+        occupiedNPC = S.getStateVal("seatLayout", "occupiedNPCSlots")
+    end
+    local out = {}
+    for _, color in ipairs(C.PlayerColors or {}) do
+        local row = ss[color]
+        if U.Type(row) == "table" and row.absentFromSession ~= true then
+            local slot = tonumber(row.tableSlot)
+            if type(slot) == "number" then
+                out[#out + 1] = { occupantKey = color, tableSlot = math.floor(slot), isPlayer = true }
+            end
+        end
+    end
+    for _, npc in ipairs(C.NPCSeats or {}) do
+        local row = ss[npc]
+        if npcRowHasCharacter(row, occupiedNPC, npc) then
+            local slot = U.Type(row) == "table" and tonumber(row.tableSlot) or nil
+            if type(slot) == "number" then
+                out[#out + 1] = { occupantKey = npc, tableSlot = math.floor(slot), isPlayer = false }
+            end
+        end
+    end
+    return out
+end
+
+--- @param opts table|nil forwarded to collectOccupants
+--- @return number 0 when nobody in session
+function FSL.highestOccupiedTableSlot(opts)
+    local maxSlot = 0
+    local occ = FSL.collectOccupants(opts)
+    for i = 1, #occ do
+        if occ[i].tableSlot > maxSlot then
+            maxSlot = occ[i].tableSlot
+        end
+    end
+    return maxSlot
+end
+
+--- Family `"Table B"` → B0 when highest slot is 0–5, B1 at 6, … B4 at 9.
+--- @param opts table|nil
+--- @return number 0..4
+function FSL.tableBVariantIndex(opts)
+    local h = FSL.highestOccupiedTableSlot(opts)
+    local seats = math.max(5, h)
+    local idx = seats - 5
+    if idx > 4 then
+        idx = 4
+    end
+    if idx < 0 then
+        idx = 0
+    end
+    return idx
+end
+
+--- True when this occupant currently has a tableSlot within this table's capacity.
+--- @param seatKey string
+--- @param tableCfg table|nil
+--- @param opts table|nil
+--- @return boolean
+function FSL.seatIsOnTable(seatKey, tableCfg, opts)
+    if U.Type(seatKey) ~= "string" or seatKey == "" then
+        return false
+    end
+    local cap = FSL.getSlotCapacity(tableCfg)
+    local occ = FSL.collectOccupants(opts)
+    for i = 1, #occ do
+        if occ[i].occupantKey == seatKey then
+            local slot = occ[i].tableSlot
+            return slot >= 1 and slot <= cap
+        end
+    end
+    return false
+end
+
+function FSL.seedDefaultTableSlots()
+    local ss = S.getStateVal("sessionScene", "seatSlots")
+    if U.Type(ss) ~= "table" then
+        ss = {}
+        S.setStateVal(ss, "sessionScene", "seatSlots")
+    end
+    local occupiedNPC = S.getStateVal("seatLayout", "occupiedNPCSlots")
+    local used = {}
+    for occupant, row in pairs(ss) do
+        if U.Type(row) == "table" and row.absentFromSession ~= true then
+            local slot = tonumber(row.tableSlot)
+            if type(slot) == "number" then
+                used[math.floor(slot)] = occupant
+            end
+        end
+    end
+    local function claimSlot(occupant, preferred)
+        local row = ensureSeatRow(ss, occupant)
+        if row.absentFromSession == true then
+            row.tableSlot = nil
+            return
+        end
+        if tonumber(row.tableSlot) ~= nil then
+            return
+        end
+        local pick = preferred
+        if type(pick) ~= "number" or used[pick] ~= nil then
+            pick = nil
+            for slot = 1, 9 do
+                if used[slot] == nil then
+                    pick = slot
+                    break
+                end
+            end
+        end
+        if pick == nil then
+            error("sessionScene.seatSlots." .. occupant .. ".tableSlot: no free numbered slot left to seed")
+        end
+        row.tableSlot = pick
+        used[pick] = occupant
+    end
+    for _, color in ipairs(C.PlayerColors or {}) do
+        local row = ss[color]
+        if not (U.Type(row) == "table" and row.absentFromSession == true) then
+            claimSlot(color, FSL.DEFAULT_TABLE_SLOTS[color])
+        end
+    end
+    for _, npc in ipairs(C.NPCSeats or {}) do
+        if npcRowHasCharacter(ss[npc], occupiedNPC, npc) then
+            claimSlot(npc, FSL.DEFAULT_TABLE_SLOTS[npc])
+        end
+    end
+end
+
+--- @param seatSlots table|nil
+--- @param occupiedNPCSlots table|nil
+--- @param tableCfg table|nil
+--- @param opts table|nil `{ forImport = boolean? }`
+--- @return boolean ok
+--- @return string|nil err
+function FSL.checkOccupancy(seatSlots, occupiedNPCSlots, tableCfg, opts)
+    opts = U.Type(opts) == "table" and opts or {}
+    local ss = U.Type(seatSlots) == "table" and seatSlots or {}
+    local cap = FSL.getSlotCapacity(tableCfg)
+    if opts.forImport == true and tableCfg == nil then
+        cap = MAX_SLOT_ANY_TABLE
+    end
+    local used = {}
+
+    local function checkRow(occupant, row, requireSlot)
+        if U.Type(row) ~= "table" then
+            if requireSlot then
+                return false, "sessionScene.seatSlots." .. occupant .. ".tableSlot: required for in-session occupants"
+            end
+            return true
+        end
+        if row.absentFromSession == true then
+            if row.tableSlot ~= nil then
+                return false, "sessionScene.seatSlots." .. occupant
+                    .. ": absentFromSession cannot be set together with tableSlot"
+            end
+            return true
+        end
+        if not requireSlot then
+            return true
+        end
+        local slot = tonumber(row.tableSlot)
+        if slot == nil then
+            return false, "sessionScene.seatSlots." .. occupant .. ".tableSlot: required for in-session occupants"
+        end
+        slot = math.floor(slot)
+        if slot < 1 or slot > cap then
+            return false, "sessionScene.seatSlots." .. occupant .. ".tableSlot: " .. tostring(slot)
+                .. " is outside 1.." .. tostring(cap) .. " for this table"
+        end
+        if used[slot] ~= nil then
+            return false, "sessionScene.seatSlots." .. occupant .. ".tableSlot: " .. tostring(slot)
+                .. " is already used by " .. used[slot]
+        end
+        used[slot] = occupant
+        return true
+    end
+
+    for _, color in ipairs(C.PlayerColors or {}) do
+        local ok, err = checkRow(color, ss[color], true)
+        if not ok then
+            return false, err
+        end
+    end
+    for _, npc in ipairs(C.NPCSeats or {}) do
+        local row = ss[npc]
+        local hasChar = npcRowHasCharacter(row, occupiedNPCSlots, npc)
+        local ok, err = checkRow(npc, row, hasChar)
+        if not ok then
+            return false, err
+        end
+    end
+    return true, nil
+end
+
+--- @param tableCfg table|nil
+function FSL.validateOccupancy(tableCfg)
+    local ok, err = FSL.checkOccupancy(
+        liveSeatSlots(),
+        S.getStateVal("seatLayout", "occupiedNPCSlots"),
+        tableCfg,
+        { forImport = false }
+    )
+    if not ok then
+        error(err or "figurine_seat_layout: occupancy validation failed")
+    end
+end
+
+--- @param occupantKey string
+--- @param roleKey string
+--- @return table|nil
+function FSL.lookupOffset(occupantKey, roleKey)
+    local pack = C.SeatRoleOffsets
+    if U.Type(pack) ~= "table" then
+        return nil
+    end
+    local extra = pack.extraByOccupant and pack.extraByOccupant[occupantKey]
+    if U.Type(extra) == "table" and extra[roleKey] ~= nil then
+        return extra[roleKey]
+    end
+    if isPlayerSeatKey(occupantKey) and pack.player and pack.player[roleKey] ~= nil then
+        return pack.player[roleKey]
+    end
+    if pack.shared and pack.shared[roleKey] ~= nil then
+        return pack.shared[roleKey]
+    end
+    return nil
+end
+
+local function worldFromFigurineLocal(figFrame, figObj, localXZ)
+    local lx = tonumber(localXZ.x) or 0
+    local lz = tonumber(localXZ.z) or 0
+    if figObj ~= nil and type(figObj.positionToWorld) == "function" then
+        local wp = figObj.positionToWorld(Vector({ x = lx, y = 0, z = lz }))
+        return Vector(wp)
+    end
+    local pos = Vector(figFrame.position)
+    local yaw = math.rad(tonumber(figFrame.rotation.y) or 0)
+    local c = math.cos(yaw)
+    local s = math.sin(yaw)
+    return Vector({
+        x = pos.x + lx * c + lz * s,
+        y = pos.y,
+        z = pos.z - lx * s + lz * c,
+    })
+end
+
+local function addRot(figRot, localRot)
+    local fr = Vector(figRot)
+    local lr = localRot or { x = 0, y = 0, z = 0 }
+    return Vector({
+        x = (tonumber(fr.x) or 0) + (tonumber(lr.x) or 0),
+        y = (tonumber(fr.y) or 0) + (tonumber(lr.y) or 0),
+        z = (tonumber(fr.z) or 0) + (tonumber(lr.z) or 0),
+    })
+end
+
+local function liveYIsHidden(y)
+    local n = tonumber(y)
+    return n ~= nil and n <= HIDE_Y_FLOOR
+end
+
+local function findFigurine(occupantKey)
+    local tag = occupantKey .. "Object"
+    local tagged = getObjectsWithTag(tag) or {}
+    for i = 1, #tagged do
+        local obj = tagged[i]
+        if obj ~= nil and U.isGameObject(obj) then
+            local disp = SRI.readRoleColorIdentity(obj)
+            if disp ~= nil then
+                local roleKey = SRI.parseRoleAndSuffix(disp)
+                if roleKey == "SEAT_FIGURE" then
+                    return obj
+                end
+            end
+        end
+    end
+    if isPlayerSeatKey(occupantKey) then
+        local guid = G.GUIDS and G.GUIDS["SEAT_FIGURE_" .. string.upper(occupantKey)]
+        if type(guid) == "string" then
+            local obj = G.getObject(guid)
+            if obj ~= nil then
+                return obj
+            end
+        end
+    end
+    return nil
+end
+
+local function placeObjectExact(obj, pos, rot)
+    obj.setPosition({ x = pos.x, y = pos.y, z = pos.z })
+    obj.setRotation({ x = rot.x, y = rot.y, z = rot.z })
+end
+
+local function shouldSkipSatellite(obj, roleKey)
+    if obj ~= nil and obj.hasTag ~= nil then
+        if obj.hasTag("d10Preload") or obj.hasTag("d10") then
+            return true
+        end
+    end
+    if type(roleKey) == "string" and string.find(roleKey, "PRELOAD", 1, true) then
+        return true
+    end
+    return false
+end
+
+local function applyOffsetToObject(obj, figFrame, figObj, offset, roleKey)
+    local livePos = Vector(obj.getPosition())
+    local world = worldFromFigurineLocal(figFrame, figObj, offset.localXZ or { x = 0, z = 0 })
+    local y = tonumber(offset.defaultY) or world.y
+    if liveYIsHidden(livePos.y) then
+        y = livePos.y
+    end
+    local rot = addRot(figFrame.rotation, offset.localRotation)
+    placeObjectExact(obj, Vector({ x = world.x, y = y, z = world.z }), rot)
+    if offset.scale ~= nil and type(obj.setScale) == "function" and roleKey ~= "SIGNAL_FIRE" then
+        obj.setScale(Vector(offset.scale))
+    end
+end
+
+--- Compute figurine frames + occupant rigid transforms for cameras.
+--- @param tableCfg table
+--- @param facingBounds table|nil `{ xMin, xMax }` from live table
+--- @param opts table|nil forwarded to collectOccupants
+--- @return table `{ framesBySlot, seatRigidByKey, slot1Rigid, occupants }`
+function FSL.computeSlotFrames(tableCfg, facingBounds, opts)
+    local refFig = FSL.getReferenceFigurineFrame(tableCfg)
+    local center = Vector(tableCfg.centerPoint)
+    local cap = FSL.getSlotCapacity(tableCfg)
+    local framesBySlot = {}
+    local shape = tableCfg.shape
+    local facingShape = C.TableShapes and C.TableShapes.FACING
+    local refSeg = tableCfg.referenceSeatSegment
+
+    if shape == facingShape then
+        local refSide = 180
+        local refIndex = 3
+        if U.Type(refSeg) == "table" then
+            refSide = tonumber(refSeg.side) or refSide
+            refIndex = tonumber(refSeg.index) or refIndex
+        end
+        local oppSide = (refSide + 180) % 360
+        local xMin = facingBounds and facingBounds.xMin or -40
+        local xMax = facingBounds and facingBounds.xMax or 40
+        local function facingFrame(side, index, nSeats)
+            local deltaDeg = shortestSignedDelta(refSide, side)
+            local rotated = U.frameAfterRigidYawAboutCenter(center, refFig, deltaDeg)
+            local width = xMax - xMin
+            local step = nSeats > 0 and (width / nSeats) or width
+            local targetX = xMin + (index - 0.5) * step
+            local desired = Vector({ x = targetX, y = rotated.position.y, z = rotated.position.z })
+            local shift = desired - rotated.position
+            local frame = U.frameAfterRigidYawAboutCenter(center, refFig, deltaDeg)
+            frame.position = frame.position + shift
+            return frame, { deltaDeg = deltaDeg, shift = shift }
+        end
+        for slot = 1, cap do
+            local localSlot = slot
+            local side = refSide
+            if slot >= 6 then
+                localSlot = slot - 5
+                side = oppSide
+            end
+            local idx = fanIndex(refIndex, localSlot)
+            if idx < 1 then
+                idx = 1
+            end
+            if idx > 5 then
+                idx = 5
+            end
+            local frame, rigid = facingFrame(side, idx, 5)
+            framesBySlot[slot] = { frame = frame, rigid = rigid }
+        end
+    else
+        local numSegments = tonumber(tableCfg.numSegments) or cap
+        local angleSegmentOne = tonumber(tableCfg.angleSegmentOne) or 0
+        local refSegN = tonumber(refSeg) or 1
+        local dx = refFig.position.x - center.x
+        local dz = refFig.position.z - center.z
+        local radius = math.sqrt(dx * dx + dz * dz)
+        local function circularFrame(slot)
+            local seatSeg = circularSegmentForSlot(refSegN, numSegments, slot)
+            local thetaK = angleSegmentOne + (seatSeg - 1) * (360 / numSegments)
+            local thetaRef = angleSegmentOne + (refSegN - 1) * (360 / numSegments)
+            local deltaDeg = shortestSignedDelta(thetaRef, thetaK)
+            local rotated = U.frameAfterRigidYawAboutCenter(center, refFig, deltaDeg)
+            local desired = Vector({
+                x = center.x + math.sin(math.rad(thetaK)) * radius,
+                y = rotated.position.y,
+                z = center.z + math.cos(math.rad(thetaK)) * radius,
+            })
+            local shift = desired - rotated.position
+            local frame = U.frameAfterRigidYawAboutCenter(center, refFig, deltaDeg)
+            frame.position = frame.position + shift
+            return frame, { deltaDeg = deltaDeg, shift = shift }
+        end
+        for slot = 1, cap do
+            local frame, rigid = circularFrame(slot)
+            framesBySlot[slot] = { frame = frame, rigid = rigid }
+        end
+    end
+
+    local occupants = FSL.collectOccupants(opts)
+    local seatRigidByKey = {}
+    for i = 1, #occupants do
+        local occ = occupants[i]
+        local packed = framesBySlot[occ.tableSlot]
+        if packed ~= nil then
+            seatRigidByKey[occ.occupantKey] = packed.rigid
+            local figOff = FSL.lookupOffset(occ.occupantKey, "SEAT_FIGURE")
+            if figOff ~= nil and tonumber(figOff.defaultY) ~= nil then
+                packed.frame.position = Vector({
+                    x = packed.frame.position.x,
+                    y = figOff.defaultY,
+                    z = packed.frame.position.z,
+                })
+            end
+        end
+    end
+    local slot1 = framesBySlot[1]
+    return {
+        framesBySlot = framesBySlot,
+        seatRigidByKey = seatRigidByKey,
+        slot1Rigid = slot1 and slot1.rigid or { deltaDeg = 0, shift = Vector(0, 0, 0) },
+        occupants = occupants,
+        referenceFigurine = refFig,
+        centerPoint = center,
+    }
+end
+
+--- @param occupantKey string
+--- @param figFrame table
+--- @param figObj Object|nil
+--- @param helpers table `{ moveHandZone = fn }`
+local function layoutOccupantSatellites(occupantKey, figFrame, figObj, helpers)
+    local tag = occupantKey .. "Object"
+    local tagged = getObjectsWithTag(tag) or {}
+    local seen = {}
+    local function handle(obj, roleKey)
+        if obj == nil or not U.isGameObject(obj) then
+            return
+        end
+        local guid = obj.getGUID and obj.getGUID() or ""
+        if guid ~= "" then
+            if seen[guid] then
+                return
+            end
+            seen[guid] = true
+        end
+        if roleKey == "SEAT_FIGURE" then
+            return
+        end
+        if shouldSkipSatellite(obj, roleKey) then
+            return
+        end
+        local offset = FSL.lookupOffset(occupantKey, roleKey)
+        if offset == nil then
+            return
+        end
+        if roleKey == "HAND_ZONE" and type(helpers.moveHandZone) == "function" then
+            local world = worldFromFigurineLocal(figFrame, figObj, offset.localXZ or { x = 0, z = 0 })
+            local rot = addRot(figFrame.rotation, offset.localRotation)
+            local y = tonumber(offset.defaultY) or world.y
+            helpers.moveHandZone(obj, Vector({ x = world.x, y = y, z = world.z }), rot)
+            return
+        end
+        applyOffsetToObject(obj, figFrame, figObj, offset, roleKey)
+    end
+
+    for i = 1, #tagged do
+        local obj = tagged[i]
+        local disp = SRI.readRoleColorIdentity(obj)
+        local roleKey = nil
+        if disp ~= nil then
+            roleKey = SRI.parseRoleAndSuffix(disp)
+        end
+        if roleKey ~= nil then
+            handle(obj, roleKey)
+        end
+    end
+
+    if isPlayerSeatKey(occupantKey) then
+        local hz = U.getHandZone(occupantKey)
+        if hz ~= nil then
+            handle(hz, "HAND_ZONE")
+        end
+    end
+
+    if occupantKey == "Pink" then
+        local deck = TarotObjects.resolveByGuidsKey and TarotObjects.resolveByGuidsKey(TarotObjects.GUIDS_KEY_DECK_PINK)
+        if deck == nil then
+            local taggedPink = getObjectsWithTag("PinkObject") or {}
+            for i = 1, #taggedPink do
+                local o = taggedPink[i]
+                if o ~= nil and o.hasTag and o.hasTag("Tarot") then
+                    local notes = o.getGMNotes and o.getGMNotes() or ""
+                    if notes == "" then
+                        deck = o
+                        break
+                    end
+                end
+            end
+        end
+        if deck ~= nil then
+            handle(deck, "TAROT_DECK")
+        end
+    end
+end
+
+local function allLayerColors()
+    return { "White", "Brown", "Red", "Orange", "Yellow", "Green", "Teal", "Blue", "Purple", "Pink", "Grey", "Black" }
+end
+
+--- @param occupantKey string
+--- @param visible boolean
+function FSL.setOccupantPileVisible(occupantKey, visible)
+    local tag = occupantKey .. "Object"
+    local objs = getObjectsWithTag(tag) or {}
+    local hiddenSeatY = -200
+    local layers = allLayerColors()
+    for i = 1, #objs do
+        local obj = objs[i]
+        if obj ~= nil and obj.setInvisibleTo ~= nil then
+            local isPooledFig = obj.hasTag ~= nil and obj.hasTag("npc_figurine")
+            if visible then
+                obj.setInvisibleTo({})
+            else
+                obj.setInvisibleTo(layers)
+                if not isPooledFig then
+                    local p = obj.getPosition and obj.getPosition() or nil
+                    if p ~= nil and obj.setPosition ~= nil then
+                        obj.setPosition({ x = p.x, y = hiddenSeatY, z = p.z })
+                    end
+                end
+            end
+        end
+    end
+    if isPlayerSeatKey(occupantKey) then
+        local hz = U.getHandZone(occupantKey)
+        if hz ~= nil and hz.setInvisibleTo ~= nil then
+            if visible then
+                hz.setInvisibleTo({})
+            else
+                hz.setInvisibleTo(layers)
+            end
+        end
+    end
+end
+
+--- @param bundle table from computeSlotFrames
+--- @param helpers table `{ moveHandZone = fn }`
+function FSL.applyOccupantRigs(bundle, helpers)
+    helpers = helpers or {}
+    local anchors = {}
+    local occupied = {}
+
+    for i = 1, #bundle.occupants do
+        local occ = bundle.occupants[i]
+        local packed = bundle.framesBySlot[occ.tableSlot]
+        if packed == nil then
+            -- Occupant’s numbered slot is outside this table’s capacity (e.g. slot 6 on B0).
+        else
+            occupied[occ.occupantKey] = true
+            local figFrame = packed.frame
+            local figObj = findFigurine(occ.occupantKey)
+            if figObj ~= nil then
+                placeObjectExact(figObj, figFrame.position, figFrame.rotation)
+            else
+                anchors[occ.occupantKey] = {
+                    position = { x = figFrame.position.x, y = figFrame.position.y, z = figFrame.position.z },
+                    rotation = { x = figFrame.rotation.x, y = figFrame.rotation.y, z = figFrame.rotation.z },
+                }
+            end
+            layoutOccupantSatellites(occ.occupantKey, figFrame, figObj, helpers)
+            FSL.setOccupantPileVisible(occ.occupantKey, true)
+        end
+    end
+
+    for _, color in ipairs(C.PlayerColors or {}) do
+        if occupied[color] ~= true then
+            FSL.setOccupantPileVisible(color, false)
+        end
+    end
+    for _, npc in ipairs(C.NPCSeats or {}) do
+        if occupied[npc] ~= true then
+            FSL.setOccupantPileVisible(npc, false)
+        end
+    end
+
+    S.setStateVal(anchors, "seatLayout", "virtualFigurineAnchors")
+end
+
+--- Lowest unused slot in 1..cap, or nil.
+function FSL.lowestFreeTableSlot(tableCfg, opts)
+    local cap = FSL.getSlotCapacity(tableCfg)
+    local used = {}
+    local occ = FSL.collectOccupants(opts)
+    for i = 1, #occ do
+        used[occ[i].tableSlot] = true
+    end
+    for slot = 1, cap do
+        if used[slot] ~= true then
+            return slot
+        end
+    end
+    return nil
+end
+
+--- Leaf is on when highest occupied slot is at least `usedBySlot`.
+--- @param componentCfg table
+--- @param highestSlot number
+--- @return boolean
+function FSL.componentUsedByOccupied(componentCfg, highestSlot)
+    if U.Type(componentCfg) ~= "table" then
+        return true
+    end
+    local usedBySlot = tonumber(componentCfg.usedBySlot)
+    if usedBySlot == nil then
+        return true
+    end
+    return (tonumber(highestSlot) or 0) >= usedBySlot
+end
+
+--- Stable occupancy lines for layout fingerprint.
+--- @param opts table|nil
+--- @return string
+function FSL.occupancyFingerprint(opts)
+    local occ = FSL.collectOccupants(opts)
+    table.sort(occ, function(a, b)
+        return a.occupantKey < b.occupantKey
+    end)
+    local lines = { "slots:" }
+    for i = 1, #occ do
+        lines[#lines + 1] = occ[i].occupantKey .. "=" .. tostring(occ[i].tableSlot)
+    end
+    local ss = liveSeatSlots()
+    local absent = {}
+    for _, color in ipairs(C.PlayerColors or {}) do
+        local row = ss[color]
+        if U.Type(row) == "table" and row.absentFromSession == true then
+            absent[#absent + 1] = color
+        end
+    end
+    table.sort(absent)
+    if #absent > 0 then
+        lines[#lines + 1] = "absent:" .. table.concat(absent, ",")
+    end
+    return table.concat(lines, "\n")
+end
+
+local function currentTableCfg()
+    local key = S.getStateVal("seatLayout", "currentTableKey")
+    if type(key) == "string" and C.Tables and C.Tables[key] then
+        return C.Tables[key], key
+    end
+    return nil, key
+end
+
+--- @param occupantKey string
+--- @param slot number
+--- @return boolean ok
+--- @return string|nil err
+function FSL.tryAssignTableSlot(occupantKey, slot)
+    slot = math.floor(tonumber(slot) or 0)
+    local tableCfg = currentTableCfg()
+    local cap = FSL.getSlotCapacity(tableCfg)
+    if slot < 1 or slot > cap then
+        return false, occupantKey .. " table slot " .. tostring(slot)
+            .. " is outside 1.." .. tostring(cap) .. " for this table"
+    end
+    local ss = liveSeatSlots()
+    local occ = FSL.collectOccupants()
+    for i = 1, #occ do
+        if occ[i].tableSlot == slot and occ[i].occupantKey ~= occupantKey then
+            return false, occupantKey .. " table slot " .. tostring(slot)
+                .. " is already used by " .. occ[i].occupantKey
+        end
+    end
+    local row = ensureSeatRow(ss, occupantKey)
+    row.absentFromSession = nil
+    row.tableSlot = slot
+    return true, nil
+end
+
+--- @param color string
+--- @param absent boolean
+--- @return boolean ok
+--- @return string|nil err
+function FSL.setPlayerAbsentFromSession(color, absent)
+    if not isPlayerSeatKey(color) then
+        return false, "absentFromSession is only for player seats"
+    end
+    local ss = liveSeatSlots()
+    local row = ensureSeatRow(ss, color)
+    if absent then
+        row.absentFromSession = true
+        row.tableSlot = nil
+        return true, nil
+    end
+    row.absentFromSession = nil
+    local tableCfg = currentTableCfg()
+    local free = FSL.lowestFreeTableSlot(tableCfg)
+    if free == nil then
+        row.absentFromSession = true
+        row.tableSlot = nil
+        return false, "No free table slot for " .. color .. " on this table. They stay Absent."
+    end
+    row.tableSlot = free
+    return true, nil
+end
+
+return FSL

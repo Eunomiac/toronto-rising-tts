@@ -4475,12 +4475,8 @@ local function debugIsSeatPresentInActiveLayout(seatKey)
     if type(tableCfg) ~= "table" then
         return true
     end
-    ---@diagnostic disable-next-line: undefined-field
-    local map = tableCfg.seatToPositionMap
-    if type(map) ~= "table" then
-        return true
-    end
-    return map[seatKey] ~= nil
+    local FSL = require("lib.figurine_seat_layout")
+    return FSL.seatIsOnTable(seatKey, tableCfg)
 end
 
 --- @param seatKey string

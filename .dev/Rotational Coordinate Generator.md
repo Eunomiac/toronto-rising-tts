@@ -8,17 +8,19 @@ Read this when:
 - debugging `RSL.SetTableTo`, table family resolution, or seat rig movement
 
 Source of truth:
-- `lib/rotational-seat-layout.ttslua`
-- `lib/constants.ttslua` (`C.Tables`)
+- `lib/figurine_seat_layout.ttslua` (numbered slots + figurine offsets, TOR-507)
+- `lib/rotational-seat-layout.ttslua` (SetTableTo / SyncTable wrapper, cameras, table family)
+- `lib/constants.ttslua` (`C.Tables`, `C.SeatRoleOffsets`, `C.DefaultTableSlots`)
+- `lib/seat_role_offsets.ttslua`
 - `core/debug.ttslua` layout/debug helpers
 
 Verification:
-- `rg -n "SetTableTo|generateRotationalCoordinates|resolveTableKey|sourceObjects|seatToPositionMap|referenceSeatSegment" lib core`
-- relevant Scenes/Gameboard E2E or step-by-step table-layout verification
+- `rg -n "SetTableTo|resolveTableKey|referenceFigurine|tableSlot|SeatRoleOffsets" lib core`
+- Save & Play table A/B/C seat order; Scenes table buttons; PCs panel Absent + Slot
 
-Status: current layout reference; verify implementation details against `lib/rotational-seat-layout.ttslua`.
+Status: current layout reference; production placement is figurine-offset (TOR-507). Generator helpers in `rotational-seat-layout.ttslua` remain for debug/compare.
 
-This document describes layout math for player object groups around a table center, and the **implemented** API in [`lib/rotational-seat-layout.ttslua`](../lib/rotational-seat-layout.ttslua).
+This document describes layout math for player object groups around a table center, and the **implemented** API in [`lib/rotational-seat-layout.ttslua`](../lib/rotational-seat-layout.ttslua) plus [`lib/figurine_seat_layout.ttslua`](../lib/figurine_seat_layout.ttslua).
 
 ## Current production path
 
@@ -28,19 +30,20 @@ Use the table-driven entrypoints for production layout:
 - `R.SyncTable(tableKey?)`
 - `R.resolveSeatObjectsFromTable(tableRef, sourceObjects?, options?)`
 
-`resolveSeatObjectsFromTable` is the production wrapper. It uses table config fields from `C.Tables`:
+`resolveSeatObjectsFromTable` is the production wrapper. Occupancy is `sessionScene.seatSlots[occupant].tableSlot` (and `absentFromSession` for PCs). Geometry comes from `C.Tables`:
 
-- `referenceHand`
+- `referenceFigurine` (slot 1)
 - `referenceSeatSegment`
-- `seatToPositionMap`
+- `slotCapacity`
+- `usedBySlot` on Table A leaves
+
+Satellites use `C.SeatRoleOffsets` (local XZ + rotation vs the occupant figurine; absolute `defaultY`). Table B family size is `highestOccupiedTableSlot` (B0 when the highest chair is 1–5, B1 at 6, … B4 at 9).
 
 Current placement behavior:
 
-- PC seats use hand-delta placement: move the hand zone, then rigid-follow `{seatKey}Object` tagged objects.
-- **Y-as-state roles** (`CSHEET_PAGE_*`, `SIGNAL_FIRE`): layout copies XZ/rot from the reference seat but **preserves each seat's own Y** (and re-applies hide from Y) so page navigation / signal on-off are not fan-out from the reference (TOR-343, TOR-380).
-- NPC seats use reference-role copy from the authored reference segment, then `postCorrections` / `postCorrectionsBySeatRole`.
-- Production passes `skipPcPostCorrections = true` for figurine/other PC rows, but **PC `SEAT_CHAIR_*` throne `postCorrections` still run** (TOR-378 — Orange/Brown/Pink rotation+Y).
-- Manual drift repair uses `R.refreshSeatRigsFromReferenceSegment(opts)` or `DEBUG.refreshSeatRigsFromReference(opts)`.
+- Each in-session occupant is moved to their numbered slot; satellites follow figurine-local offsets.
+- Live Y at or below −199 is left as a hide override (character-sheet pages, disabled bags).
+- Hand zones still use the dedicated hand-zone mover so cards in hand stay with the zone.
 
 Low-level helpers such as `generateRotationalCoordinates` and `resolveSeatObjects` still exist for debug/geometry workflows, but new production code should use the table-driven wrapper unless the task explicitly concerns those low-level helpers.
 

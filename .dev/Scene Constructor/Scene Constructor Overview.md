@@ -188,7 +188,8 @@ Each key is a **seat id** (`C.PlayerColors` + `C.NPCSeats`). **Import** (`SceneL
   "characterKey": "lordLucien",
   "isPlayingNPC": true,
   "npcCharacterKey": "myleneHamelin",
-  "isPresent": true
+  "isPresent": true,
+  "tableSlot": 1
 }
 ```
 
@@ -196,18 +197,22 @@ Each key is a **seat id** (`C.PlayerColors` + `C.NPCSeats`). **Import** (`SceneL
 - `isPlayingNPC` — optional boolean; when **`true`**, **`npcCharacterKey`** is **required** on import (non-empty string): NPC `characterKey` played at this PC seat; drives **`npcRoleOverride`** for this color after sync.
 - `npcCharacterKey` — required when `isPlayingNPC` is true; ignored when `isPlayingNPC` is not true. Not used for NPC bench seats (`NPC1`…`NPC4`).
 - `isPresent` — optional boolean or null-equivalent: when **set**, drives `sessionScene.seatPresent[seat]` and thus lighting “present” checks.
+- `tableSlot` — integer chair number on the active table (1 is the reference figurine; even slots walk right, odd slots greater than 1 walk left). Required on import for every PC who is not `absentFromSession`. Live saves that omit it are filled from `C.DefaultTableSlots`.
+- `absentFromSession` — PC only. When **true**, this seat has no chair (`tableSlot` must be omitted). Distinct from `isPresent` (narrative lighting). The PCs panel **Absent** toggle writes this field.
 
 **NPC seats (`NPC1` … `NPC4`):**
 
 ```jsonc
 "NPC1": {
   "characterKey": "adrianVarga",
-  "isPresent": true
+  "isPresent": true,
+  "tableSlot": 6
 },
 "NPC2": { "slotEmpty": true }
 ```
 
 - `characterKey` — non-empty string occupies the slot (`gameState.seatLayout.occupiedNPCSlots` updated on validate when this row is present).
+- `tableSlot` — required on import when the row has a `characterKey` (same numbered chairs as PCs; NPC identity is not tied to a geometric wing).
 - `slotEmpty` — `true` marks the slot empty in **imported** / authored JSON (`occupiedNPCSlots` → `false` on validate when no live gameboard assignment exists).
 - On **import**, omit an `NPC1…NPC4` key when you want that slot stored as **empty** (the importer adds `{ "slotEmpty": true }`).
 - In **`normalizeLiveSessionSceneSeatSlots`** (`core/state.ttslua`), an existing `seatSlots[NPCn]` row with `slotEmpty == true` clears `occupiedNPCSlots` only when that seat has **no** live string assignment; gameboard **Apply** backfills `characterKey` from `occupiedNPCSlots` when the two drift (TOR-311). A non-empty `characterKey` always wins. A **missing** NPC key does not change `occupiedNPCSlots` in that pass.

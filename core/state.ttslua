@@ -313,7 +313,8 @@ function S.GetDefaultGameState()
               NPC3 = false, -- false if the slot is empty, or a key in D.characters of `npcs_data.ttslua` if the slot is occupied by an NPC
               NPC4 = false -- false if the slot is empty, or a key in D.characters of `npcs_data.ttslua` if the slot is occupied by an NPC
             },
-            universalCameraAngles = {}
+            universalCameraAngles = {},
+            virtualFigurineAnchors = {},
         },
         --- Single live PC roll (TOR-262): seat color in ROLLING until post-broadcast cleanup.
         rollConcurrency = {
@@ -373,6 +374,7 @@ function S.GetDefaultGameState()
             tableKey = nil,
             seatPresent = {},
             --- Per-seat narrative/config (Scene Constructor + panel). When `isPresent` is set here, it wins over `seatPresent` after backfill (see `normalizeLiveSessionSceneSeatSlots`).
+            --- `tableSlot` is the numbered chair (1 = reference figurine). `absentFromSession` (PC only) means no chair — distinct from `isPresent`.
             seatSlots = {},
             --- Sparse map: keys in `C.PlayerColors`, values NPC `characterKey` strings when a PC is playing as that NPC (`seatSlots[color].isPlayingNPC` + `npcCharacterKey`). Rebuilt from `seatSlots` in `SceneLibrary.syncNpcRoleOverrideFromSeatSlots` and on Scene Constructor import.
             npcRoleOverride = {},
@@ -687,6 +689,12 @@ local function normalizeLiveSessionSceneSeatSlots()
             layout.occupiedNPCSlots[npcSeat] = row.characterKey
         end
     end
+
+    -- Live saves: fill missing tableSlot from the default occupant map so the current game still loads (TOR-507).
+    do
+        local FSL = require("lib.figurine_seat_layout")
+        FSL.seedDefaultTableSlots()
+    end
 end
 
 --- Validates and sanitizes game state
@@ -887,6 +895,9 @@ function S.validateState()
     end
     if type(gameState.seatLayout.universalCameraAngles) ~= "table" then
         gameState.seatLayout.universalCameraAngles = {}
+    end
+    if type(gameState.seatLayout.virtualFigurineAnchors) ~= "table" then
+        gameState.seatLayout.virtualFigurineAnchors = {}
     end
 
     normalizeLiveSessionSceneSeatSlots()

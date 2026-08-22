@@ -1362,10 +1362,42 @@ C.CameraModes = {
 --[[ To be clear, after R.resolveSeatObjectsFromTable() is called, the "universal" camera modes will include one of every entry in C.UniversalCameraAngles, plus the following: "facingRed", "facingBrown", "facingOrange", "facingPink" and "facingPurple", as well as some number of "facingNPC1", "facingNPC2", "facingNPC3" and "facingNPC4" depending on which slots are open in the seatToPositionMap of the new table configuration -- and then the same for "sheetRed", "sheetBrown", ... and "diceTrayRed", "diceTrayBrown", ... etc. ]]
 
 --- World-space position of the reference seat hand zone when `C.ReferenceCameraAngles` was authored.
---- `lib.rotational-seat-layout` adds `(activeTable.referenceHand.position - this)` to **position** only for
---- presets with `isRelativeToReferenceHandPosition == true` (reference-seat-derived and selected `C.UniversalCameraAngles`).
---- Keep in sync with the canonical layout table (currently `Table A` `referenceHand.position`).
+--- `lib.rotational-seat-layout` adds `(activeTable.referenceFigurine.position - C.CameraAuthoringReferenceFigurinePosition)`
+--- to **position** only for presets with `isRelativeToReferenceHandPosition == true`.
+--- Keep in sync with the canonical layout table (currently `Table A` slot-1 figurine).
 C.CameraAuthoringReferenceHandPosition = Vector({ 0.00, 3.22, -76.61 })
+C.CameraAuthoringReferenceFigurinePosition = Vector({ 0.5035, -55.8166, -72.7348 })
+
+--- Default occupant → numbered tableSlot (Red at slot 1, Orange right, Pink left). Live saves seed missing slots from this map.
+C.DefaultTableSlots = {
+  Red = 1,
+  Orange = 2,
+  Pink = 3,
+  Brown = 4,
+  Purple = 5,
+  NPC1 = 6,
+  NPC2 = 7,
+  NPC3 = 8,
+  NPC4 = 9,
+}
+
+C.SeatRoleOffsets = require("lib.seat_role_offsets")
+
+local FIGURINE_FROM_HAND_DX = 0.5035
+local FIGURINE_FROM_HAND_DZ = 3.8752
+local FIGURINE_DEFAULT_Y = -55.8166
+
+local function referenceFigurineFromHand(rh)
+  local hp = rh.position
+  local hy = 0
+  if type(rh.rotation) == "table" then
+    hy = rh.rotation.y or 0
+  end
+  return {
+    position = Vector({ x = hp.x + FIGURINE_FROM_HAND_DX, y = FIGURINE_DEFAULT_Y, z = hp.z + FIGURINE_FROM_HAND_DZ }),
+    rotation = Vector({ x = 0, y = hy + 180, z = 0 }),
+  }
+end
 
 C.ReferenceCameraAngles = {
   default = {
@@ -1658,9 +1690,9 @@ end
 
 ]]
 C.TableShapes = {
-  CIRCULAR = "circular", -- Seats should be arranged via the rotational seat layout coordinate generator. Configurations of CIRCULAR tables must include `numSegments` and `angleSegmentOne` fields, with a `seatToPositionMap` field that defines each seat's position on the table as an index value (1..numSegments).
-  RECTANGULAR = "rectangular", -- Does not include `numSegments` and `angleSegmentOne` fields. Instead, seat positons must be defined under `seatToPositionMap` in the table configuration (instead of an index integer). Each seat position's definition includes a "side" field, defined as an angle in multiples of 90 degrees pointing from the origin to the side of the table that the seat is on, following standard conventions (where 0° is the +Z axis, 90° is the +X axis, 180° is the -Z axis, and 270° is the -X axis), and an "index" value indicating the position of that seat along that side, moving clockwise from the origin (e.g. side = 0, index = 1 means the seat is the left-most position on the +Z side of the table).
-  FACING = "facing" -- As with rectangular, except there are only two sides (0 and 180 degrees). Configurations of FACING tables must include a `seatToPositionMap` field that defines each seat's position on the table in the same way as RECTANGULAR tables.
+  CIRCULAR = "circular", -- Numbered slots walk around centerPoint from referenceFigurine (slot 1). Configurations must include `numSegments`, `angleSegmentOne`, `referenceSeatSegment`, and `slotCapacity`.
+  RECTANGULAR = "rectangular", -- Reserved; not used by current tables.
+  FACING = "facing", -- Two sides (0 and 180). Slot 1 is `referenceSeatSegment`; slots 6+ sit on the opposite side. Requires `slotCapacity`.
 }
 
 C.Tables = {
@@ -1688,35 +1720,41 @@ C.Tables = {
       Purple = 13
     },
     referenceSeatSegment = 11,
+    slotCapacity = 9,
     referenceHand = {
       position = Vector({ 0.00, 3.22, -76.61 }),
       rotation = Vector(0, 0, 0),
+    },
+    -- Table A dump (TOR-496): slot-1 figurine world pose.
+    referenceFigurine = {
+      position = Vector({ 0.5035, -55.8166, -72.7348 }),
+      rotation = Vector({ 0, 180, 0 }),
     },
     components = {
       ["Table Leaf Near Left"] = {
         guid = G.GUIDS.TABLES.TABLE_A_LEAF_NEAR_LEFT,
         activePosition = Vector({ 0.00, 0.00, 53.66 }),
         inactivePosition = Vector({ 0.00, -200, 100 }),
-        usedBy = "NPC2"
+        usedBySlot = 7,
       },
       ["Table Leaf Near Right"] = {
         guid = G.GUIDS.TABLES.TABLE_A_LEAF_NEAR_RIGHT,
         activePosition = Vector({ 0.00, 0.00, 53.66 }),
         inactivePosition = Vector({ 0.00, -200, 100 }),
-        usedBy = "NPC1"
+        usedBySlot = 6,
       },
       ["Table Leaf Far Left"] = {
         guid = G.GUIDS.TABLES.TABLE_A_LEAF_FAR_LEFT,
         activePosition = Vector({ 0.00, 0.00, 53.66 }),
         inactivePosition = Vector({ 0.00, -200, 100 }),
-        usedBy = "NPC4",
+        usedBySlot = 9,
         alsoEnable = "Table Leaf Near Left"
       },
       ["Table Leaf Far Right"] = {
         guid = G.GUIDS.TABLES.TABLE_A_LEAF_FAR_RIGHT,
         activePosition = Vector({ 0.00, 0.00, 53.66 }),
         inactivePosition = Vector({ 0.00, -200, 100 }),
-        usedBy = "NPC3",
+        usedBySlot = 8,
         alsoEnable = "Table Leaf Near Left"
       }
     },
@@ -1750,8 +1788,8 @@ C.Tables = {
     }
   },
   -- "Table B" is intentionally NOT a C.Tables entry: it is a dynamic family key resolved to
-  -- "Table B<highest occupied NPC slot index>" (B0-B4) by lib/rotational-seat-layout `resolveTableKey`.
-  -- "Table B5" remains manually selectable but is never auto-selected (NPC count caps at 4).
+  -- "Table B<variant>" (B0-B4) from highest occupied numbered tableSlot by lib/rotational-seat-layout `resolveTableKey`.
+  -- "Table B5" remains manually selectable but is never auto-selected.
   ["Table B0"] = {
     guid = G.GUIDS.TABLES.TABLE_B0,
     shape = C.TableShapes.CIRCULAR,
@@ -1768,6 +1806,7 @@ C.Tables = {
       Purple = 5
     },
     referenceSeatSegment = 3,
+    slotCapacity = 5,
     referenceHand = {
       position = Vector({ 0.00, 3.22, -115.54 }),
       rotation = Vector(0, 0, 0),
@@ -1818,6 +1857,7 @@ C.Tables = {
       Purple = 6,
     },
     referenceSeatSegment = 4,
+    slotCapacity = 6,
     referenceHand = {
       position = Vector({ 0.00, 3.22, -146.61 }),
       rotation = Vector(0, 0, 0),
@@ -1869,6 +1909,7 @@ C.Tables = {
       Purple = 6,
     },
     referenceSeatSegment = 4,
+    slotCapacity = 7,
     referenceHand = {
       position = Vector({ 0.00, 3.22, -146.61 }),
       rotation = Vector(0, 0, 0),
@@ -1921,6 +1962,7 @@ C.Tables = {
       Purple = 7,
     },
     referenceSeatSegment = 5,
+    slotCapacity = 8,
     referenceHand = {
       position = Vector({ 0.00, 3.22, -166.61 }),
       rotation = Vector(0, 0, 0),
@@ -1974,6 +2016,7 @@ C.Tables = {
       Purple = 7,
     },
     referenceSeatSegment = 5,
+    slotCapacity = 9,
     referenceHand = {
       position = Vector({ 0.00, 3.22, -156.61 }),
       rotation = Vector(0, 0, 0),
@@ -2028,6 +2071,7 @@ C.Tables = {
       Purple = 8
     },
     referenceSeatSegment = 6,
+    slotCapacity = 10,
     referenceHand = {
       position = Vector({ 0.00, 3.22, -162 }),
       rotation = Vector(0, 0, 0),
@@ -2080,6 +2124,7 @@ C.Tables = {
       Purple = {side = 180, index = 5}
     },
     referenceSeatSegment = { side = 180, index = 3 },
+    slotCapacity = 10,
     referenceHand = {
       position = Vector({ 0.00, 3.22, -135.77 }),
       rotation = Vector(0, 0, 0),
@@ -2114,6 +2159,12 @@ C.Tables = {
     }
   }
 }
+
+for _, _tableCfg in pairs(C.Tables) do
+  if type(_tableCfg) == "table" and _tableCfg.referenceFigurine == nil and type(_tableCfg.referenceHand) == "table" then
+    _tableCfg.referenceFigurine = referenceFigurineFromHand(_tableCfg.referenceHand)
+  end
+end
 
 -- Default Table Source Objects
 -- During a table transition, if a sourceObjects table is not provided, the default table source objects will be used.

@@ -1,0 +1,1687 @@
+-- Phase 0 seat-role offset dump (current layout still running).
+-- lua DEBUG.dumpSeatRoleOffsets("Red")
+-- Hidden objects may have defaultY = -200; replace those with the in-use height before pasting.
+-- Copy roles into C.SeatRoleOffsets.shared / .player / .extraByOccupant["Red"].
+-- occupant=Red tableKey=Table A figurineGuid=1e70cf
+local DUMP_SEAT_ROLE_OFFSETS_RED = {
+  occupant = "Red",
+  tableKey = "Table A",
+  referenceFigurine = {
+    guid = "1e70cf",
+    position = Vector({ x = 0.5035, y = -55.8166, z = -72.7348 }),
+    rotation = Vector({ x = 0.0000, y = 180.0000, z = 0.0000 }),
+  },
+  roles = {
+    ["COMPANION_TOGGLE_A"] = {
+      roleKey = "COMPANION_TOGGLE_A",
+      guid = "84f7d4",
+      localXZ = { x = -8.9286, z = -32.6911 },
+      localRotation = { x = 0.0000, y = 0.0428, z = 0.0000 },
+      defaultY = 6.0050,
+      -- world 8.6697, 6.0050, -42.8353
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_CARD_1_ANCHOR"] = {
+      roleKey = "COMPULSION_CARD_1_ANCHOR",
+      guid = "12b9e9",
+      localXZ = { x = 9.2974, z = -23.6876 },
+      localRotation = { x = 60.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world -8.0000, 200.0000, -51.0699
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_CARD_2_ANCHOR"] = {
+      roleKey = "COMPULSION_CARD_2_ANCHOR",
+      guid = "fb1c4f",
+      localXZ = { x = 0.5505, z = -25.9400 },
+      localRotation = { x = 60.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world 0.0000, 200.0000, -49.0099
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_CARD_3_ANCHOR"] = {
+      roleKey = "COMPULSION_CARD_3_ANCHOR",
+      guid = "91adac",
+      localXZ = { x = -8.1964, z = -23.6876 },
+      localRotation = { x = 60.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world 8.0000, 200.0000, -51.0699
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_CARD_4_ANCHOR"] = {
+      roleKey = "COMPULSION_CARD_4_ANCHOR",
+      guid = "a3eb03",
+      localXZ = { x = 0.5505, z = -21.4244 },
+      localRotation = { x = 60.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world 0.0000, 200.0000, -53.1399
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_CARD_DRAWN_ANCHOR"] = {
+      roleKey = "COMPULSION_CARD_DRAWN_ANCHOR",
+      guid = "47301f",
+      localXZ = { x = 0.5505, z = -23.6876 },
+      localRotation = { x = 60.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world 0.0000, 200.0000, -51.0699
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_CARD_SELECTED_ANCHOR"] = {
+      roleKey = "COMPULSION_CARD_SELECTED_ANCHOR",
+      guid = "423677",
+      localXZ = { x = 11.1561, z = -35.3319 },
+      localRotation = { x = 60.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world -9.7000, 200.0000, -40.4200
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_CARD_SELECTED_LIVEROLL_ANCHOR"] = {
+      roleKey = "COMPULSION_CARD_SELECTED_LIVEROLL_ANCHOR",
+      guid = "49c88c",
+      localXZ = { x = 17.7163, z = -35.3319 },
+      localRotation = { x = 60.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world -15.7000, 200.0000, -40.4200
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_DECK"] = {
+      roleKey = "COMPULSION_DECK",
+      guid = "49bfb7",
+      localXZ = { x = 11.1561, z = -34.9737 },
+      localRotation = { x = 90.0000, y = -179.9857, z = 0.0000 },
+      defaultY = 5.5400,
+      -- world -9.7000, 5.5400, -40.7476
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_LIGHT"] = {
+      roleKey = "COMPULSION_LIGHT",
+      guid = "2867e9",
+      localXZ = { x = 10.4458, z = -31.4603 },
+      localRotation = { x = 90.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 9.3048,
+      -- world -9.0503, 9.3048, -43.9610
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["CSHEET_BASE"] = {
+      roleKey = "CSHEET_BASE",
+      guid = "bcc1e6",
+      localXZ = { x = 0.5505, z = -21.3246 },
+      localRotation = { x = -19.4400, y = -180.0000, z = 0.0000 },
+      defaultY = -1.2000,
+      -- world 0.0000, -1.2000, -53.2312
+      scale = { x = 25.0800, y = 7.6000, z = 10.7191 },
+    },
+    ["CSHEET_BASE_BACK"] = {
+      roleKey = "CSHEET_BASE_BACK",
+      guid = "a97528",
+      localXZ = { x = 0.5505, z = -33.0253 },
+      localRotation = { x = 0.0000, y = -180.0000, z = 0.0000 },
+      defaultY = 1.4300,
+      -- world 0.0000, 1.4300, -42.5296
+      scale = { x = 25.0799, y = 8.9500, z = 2.0799 },
+    },
+    ["CSHEET_DICE_DRAWER"] = {
+      roleKey = "CSHEET_DICE_DRAWER",
+      guid = "8ae9ac",
+      localXZ = { x = 0.5505, z = -21.3246 },
+      localRotation = { x = 0.0000, y = -180.0000, z = 0.0000 },
+      defaultY = -1.0000,
+      -- world 0.0000, -1.0000, -53.2312
+      scale = { x = 23.5700, y = 0.1000, z = 7.6800 },
+    },
+    ["CSHEET_DICE_DRAWER_ANCHOR_OFF"] = {
+      roleKey = "CSHEET_DICE_DRAWER_ANCHOR_OFF",
+      guid = "960d6e",
+      localXZ = { x = 0.5505, z = -21.3246 },
+      localRotation = { x = 0.0000, y = -180.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world 0.0000, 200.0000, -53.2312
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["CSHEET_DICE_DRAWER_ANCHOR_ON"] = {
+      roleKey = "CSHEET_DICE_DRAWER_ANCHOR_ON",
+      guid = "e9c449",
+      localXZ = { x = 0.5505, z = -44.0890 },
+      localRotation = { x = 0.0000, y = -180.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world 0.0000, 200.0000, -32.4107
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["CSHEET_PAGE_1"] = {
+      roleKey = "CSHEET_PAGE_1",
+      guid = "f10182",
+      localXZ = { x = 7.2419, z = -22.6708 },
+      localRotation = { x = 19.4400, y = 0.0000, z = 0.0000 },
+      defaultY = 3.1900,
+      -- world -6.1200, 3.1900, -51.9999
+      scale = { x = 8.0000, y = 1.0000, z = 8.0000 },
+    },
+    ["CSHEET_PAGE_2"] = {
+      roleKey = "CSHEET_PAGE_2",
+      guid = "8a59a9",
+      localXZ = { x = -6.1409, z = -22.6694 },
+      localRotation = { x = 19.4400, y = 0.0000, z = 0.0000 },
+      defaultY = 3.1900,
+      -- world 6.1200, 3.1900, -52.0012
+      scale = { x = 8.0000, y = 1.0000, z = 8.0000 },
+    },
+    ["CSHEET_PAGE_3"] = {
+      roleKey = "CSHEET_PAGE_3",
+      guid = "d405a8",
+      localXZ = { x = 7.2435, z = -22.6694 },
+      localRotation = { x = 19.4360, y = 0.0000, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world -6.1215, -200.0000, -52.0012
+      scale = { x = 8.0000, y = 1.0000, z = 8.0000 },
+    },
+    ["CSHEET_PAGE_4"] = {
+      roleKey = "CSHEET_PAGE_4",
+      guid = "5badcc",
+      localXZ = { x = -6.1409, z = -22.6694 },
+      localRotation = { x = 19.4400, y = 0.0000, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world 6.1200, -200.0000, -52.0012
+      scale = { x = 8.0000, y = 1.0000, z = 8.0000 },
+    },
+    ["CSHEET_PAGE_5"] = {
+      roleKey = "CSHEET_PAGE_5",
+      guid = "421bfb",
+      localXZ = { x = 7.2435, z = -22.6694 },
+      localRotation = { x = 19.4360, y = 0.0000, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world -6.1215, -200.0000, -52.0012
+      scale = { x = 8.0000, y = 1.0000, z = 8.0000 },
+    },
+    ["CSHEET_PAGE_6"] = {
+      roleKey = "CSHEET_PAGE_6",
+      guid = "515b16",
+      localXZ = { x = -6.1409, z = -22.6694 },
+      localRotation = { x = 19.4400, y = 0.0000, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world 6.1200, -200.0000, -52.0012
+      scale = { x = 8.0000, y = 1.0000, z = 8.0000 },
+    },
+    ["CSHEET_PAGE_7"] = {
+      roleKey = "CSHEET_PAGE_7",
+      guid = "edb0b1",
+      localXZ = { x = 7.2435, z = -22.6694 },
+      localRotation = { x = 19.4360, y = 0.0000, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world -6.1215, -200.0000, -52.0012
+      scale = { x = 8.0000, y = 1.0000, z = 8.0000 },
+    },
+    ["CSHEET_PAGE_8"] = {
+      roleKey = "CSHEET_PAGE_8",
+      guid = "f93aea",
+      localXZ = { x = -6.1409, z = -22.6694 },
+      localRotation = { x = 19.4400, y = 0.0000, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world 6.1200, -200.0000, -52.0012
+      scale = { x = 8.0000, y = 1.0000, z = 8.0000 },
+    },
+    ["DICEBAG_HUNGER"] = {
+      roleKey = "DICEBAG_HUNGER",
+      guid = "6d1c15",
+      localXZ = { x = -3.7018, z = -33.0384 },
+      localRotation = { x = 0.0000, y = 0.0193, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world 3.8892, -200.0000, -42.5176
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["DICEBAG_NORMAL"] = {
+      roleKey = "DICEBAG_NORMAL",
+      guid = "a3ae6c",
+      localXZ = { x = -1.0170, z = -32.5657 },
+      localRotation = { x = 0.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 5.9800,
+      -- world 1.4337, 5.9800, -42.9500
+      scale = { x = 1.3500, y = 1.3500, z = 1.3500 },
+    },
+    ["DICEBAG_ROUSE"] = {
+      roleKey = "DICEBAG_ROUSE",
+      guid = "77f88c",
+      localXZ = { x = 2.1589, z = -32.5661 },
+      localRotation = { x = 0.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 5.9800,
+      -- world -1.4711, 5.9800, -42.9496
+      scale = { x = 1.3500, y = 1.3500, z = 1.3500 },
+    },
+    ["FAMULUS_FIGURINE"] = {
+      roleKey = "FAMULUS_FIGURINE",
+      guid = "2c2301",
+      localXZ = { x = -9.0646, z = -35.5265 },
+      localRotation = { x = 0.0000, y = -180.0000, z = 0.0000 },
+      defaultY = -1.0300,
+      -- world 8.7940, -1.0300, -40.2420
+      scale = { x = 0.3000, y = 0.3000, z = 0.3000 },
+    },
+    ["FAMULUS_LIGHT_1"] = {
+      roleKey = "FAMULUS_LIGHT_1",
+      guid = "a751b5",
+      localXZ = { x = -9.6725, z = -42.8019 },
+      localRotation = { x = 31.8995, y = 0.0000, z = 180.0000 },
+      defaultY = 0.6400,
+      -- world 9.3500, 0.6400, -33.5879
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["FAMULUS_LIGHT_2"] = {
+      roleKey = "FAMULUS_LIGHT_2",
+      guid = "dd1763",
+      localXZ = { x = -9.6725, z = -17.0075 },
+      localRotation = { x = 90.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 14.8500,
+      -- world 9.3500, 14.8500, -57.1796
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["HAND_ZONE"] = {
+      roleKey = "HAND_ZONE",
+      guid = "b13642",
+      localXZ = { x = 0.5505, z = 4.2370 },
+      localRotation = { x = 0.0000, y = -180.0000, z = 0.0000 },
+      defaultY = 3.2200,
+      -- world 0.0000, 3.2200, -76.6100
+      scale = { x = 29.8700, y = 6.6900, z = 11.6200 },
+    },
+    ["HUNGER_SMOKE"] = {
+      roleKey = "HUNGER_SMOKE",
+      guid = "5d1338",
+      localXZ = { x = 0.5505, z = -33.4599 },
+      localRotation = { x = 0.0000, y = -180.0000, z = 0.0000 },
+      defaultY = 1.8700,
+      -- world 0.0000, 1.8700, -42.1321
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["PRINCE_CURTAIN"] = {
+      roleKey = "PRINCE_CURTAIN",
+      guid = "d175e4",
+      localXZ = { x = 0.5570, z = 17.3137 },
+      localRotation = { x = 0.0000, y = -179.9714, z = 0.0000 },
+      defaultY = -37.9311,
+      -- world -0.0060, -37.9311, -88.5700
+      scale = { x = 12.0000, y = 15.0000, z = 10.0000 },
+    },
+    ["PRINCE_SIGNET"] = {
+      roleKey = "PRINCE_SIGNET",
+      guid = "9a2f2d",
+      localXZ = { x = 0.5553, z = 13.9620 },
+      localRotation = { x = 90.0000, y = -179.9714, z = 0.0000 },
+      defaultY = 46.5711,
+      -- world -0.0044, 46.5711, -85.5046
+      scale = { x = 6.0000, y = 1.0000, z = 6.0000 },
+    },
+    ["PRINCE_SIGNET_BORDER"] = {
+      roleKey = "PRINCE_SIGNET_BORDER",
+      guid = "4506f3",
+      localXZ = { x = 0.5556, z = 14.6093 },
+      localRotation = { x = 0.0000, y = 0.0286, z = 0.0000 },
+      defaultY = 26.8937,
+      -- world -0.0047, 26.8937, -86.0966
+      scale = { x = 18.0000, y = 18.0000, z = 18.0000 },
+    },
+    ["SEAT_CHAIR"] = {
+      roleKey = "SEAT_CHAIR",
+      guid = "474c0d",
+      localXZ = { x = 0.5505, z = 14.3069 },
+      localRotation = { x = 0.0000, y = -180.0000, z = 0.0000 },
+      defaultY = -31.9300,
+      -- world 0.0000, -31.9300, -85.8200
+      scale = { x = 15.0000, y = 20.0000, z = 15.0000 },
+    },
+    ["SEAT_FIGURE"] = {
+      roleKey = "SEAT_FIGURE",
+      guid = "1e70cf",
+      localXZ = { x = 0.0000, z = 0.0000 },
+      localRotation = { x = 0.0000, y = 0.0000, z = 0.0000 },
+      defaultY = -55.8166,
+      -- world 0.5035, -55.8166, -72.7348
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["SEAT_LIGHT_1"] = {
+      roleKey = "SEAT_LIGHT_1",
+      guid = "0cd76a",
+      localXZ = { x = 0.5505, z = -8.4574 },
+      localRotation = { x = -10.0000, y = -180.0000, z = 0.0000 },
+      defaultY = 23.0000,
+      -- world 0.0000, 23.0000, -64.9996
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["SEAT_LIGHT_2"] = {
+      roleKey = "SEAT_LIGHT_2",
+      guid = "41bbba",
+      localXZ = { x = 0.5505, z = -35.3196 },
+      localRotation = { x = 64.7800, y = 0.0000, z = 180.0000 },
+      defaultY = 17.0400,
+      -- world 0.0000, 17.0400, -40.4312
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["SEAT_LIGHT_3"] = {
+      roleKey = "SEAT_LIGHT_3",
+      guid = "ba0598",
+      localXZ = { x = 0.5505, z = 4.2370 },
+      localRotation = { x = 0.0000, y = 0.0000, z = 180.0000 },
+      defaultY = -5.0000,
+      -- world 0.0000, -5.0000, -76.6100
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["SIGNAL_CANDLE"] = {
+      roleKey = "SIGNAL_CANDLE",
+      guid = "c81772",
+      localXZ = { x = 12.4572, z = -32.5643 },
+      localRotation = { x = 0.0000, y = -180.0000, z = 0.0000 },
+      defaultY = 4.7388,
+      -- world -10.8900, 4.7388, -42.9512
+      scale = { x = 1.6500, y = 5.0000, z = 1.6500 },
+    },
+    ["SIGNAL_FIRE"] = {
+      roleKey = "SIGNAL_FIRE",
+      guid = "cc2959",
+      localXZ = { x = 12.4572, z = -32.5643 },
+      localRotation = { x = 0.0000, y = -180.0000, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world -10.8900, -200.0000, -42.9512
+      scale = { x = 0.0100, y = 0.0100, z = 0.0100 },
+    },
+    ["STORAGE_TOME"] = {
+      roleKey = "STORAGE_TOME",
+      guid = "ff0153",
+      localXZ = { x = -14.7790, z = -16.5718 },
+      localRotation = { x = 0.0000, y = 0.0143, z = 0.0000 },
+      defaultY = -0.0146,
+      -- world 14.0205, -0.0146, -57.5781
+      scale = { x = 10.0000, y = 15.0000, z = 10.0000 },
+    },
+  },
+  skippedNoRole = {
+    { guid = "04e847", name = "Normal Die", tags = "d10Preload,NormalDie,RedObject" },
+    { guid = "155dc6", name = "Rouse Die", tags = "d10Preload,RedObject,RouseDie" },
+    { guid = "1a5561", name = "Hunger Die", tags = "d10Preload,HungerDie,RedObject" },
+    { guid = "1fc146", name = "Normal Die", tags = "d10Preload,NormalDie,RedObject" },
+    { guid = "358641", name = "Rouse Die", tags = "d10Preload,RedObject,RouseDie" },
+    { guid = "36a18b", name = "Rouse Die", tags = "d10Preload,RedObject,RouseDie" },
+    { guid = "4070ee", name = "Hunger Die", tags = "d10Preload,HungerDie,RedObject" },
+    { guid = "430e58", name = "Rouse Die", tags = "d10Preload,RedObject,RouseDie" },
+    { guid = "4c8508", name = "Hunger Die", tags = "d10Preload,HungerDie,RedObject" },
+    { guid = "5486cc", name = "Rouse Die", tags = "d10Preload,RedObject,RouseDie" },
+    { guid = "5cbb89", name = "Rouse Die", tags = "d10Preload,RedObject,RouseDie" },
+    { guid = "6ae004", name = "Rouse Die", tags = "d10Preload,RedObject,RouseDie" },
+    { guid = "70ca67", name = "Hunger Die", tags = "d10Preload,HungerDie,RedObject" },
+    { guid = "7d1087", name = "Hunger Die", tags = "d10Preload,HungerDie,RedObject" },
+    { guid = "8592f4", name = "Rouse Die", tags = "d10Preload,RedObject,RouseDie" },
+    { guid = "90fff0", name = "Normal Die", tags = "d10Preload,NormalDie,RedObject" },
+    { guid = "97c1d7", name = "Hunger Die", tags = "d10Preload,HungerDie,RedObject" },
+    { guid = "a2697f", name = "Normal Die", tags = "d10Preload,NormalDie,RedObject" },
+    { guid = "ab1d11", name = "Normal Die", tags = "d10Preload,NormalDie,RedObject" },
+    { guid = "b76d0f", name = "Rouse Die", tags = "d10Preload,RedObject,RouseDie" },
+    { guid = "bba7c3", name = "Normal Die", tags = "d10Preload,NormalDie,RedObject" },
+    { guid = "bbb297", name = "Normal Die", tags = "d10Preload,NormalDie,RedObject" },
+    { guid = "cf575a", name = "Normal Die", tags = "d10Preload,NormalDie,RedObject" },
+    { guid = "d244a4", name = "Normal Die", tags = "d10Preload,NormalDie,RedObject" },
+    { guid = "db9526", name = "Rouse Die", tags = "d10Preload,RedObject,RouseDie" },
+    { guid = "df3ecd", name = "Normal Die", tags = "d10Preload,NormalDie,RedObject" },
+    { guid = "df4095", name = "Rouse Die", tags = "d10Preload,RedObject,RouseDie" },
+    { guid = "e3b895", name = "Hunger Die", tags = "d10Preload,HungerDie,RedObject" },
+    { guid = "e61e1c", name = "Hunger Die", tags = "d10Preload,HungerDie,RedObject" },
+    { guid = "e8e08e", name = "Hunger Die", tags = "d10Preload,HungerDie,RedObject" },
+    { guid = "ed001e", name = "Normal Die", tags = "d10Preload,NormalDie,RedObject" },
+    { guid = "eeaa9c", name = "Hunger Die", tags = "d10Preload,HungerDie,RedObject" },
+    { guid = "ef1cf2", name = "Normal Die", tags = "d10Preload,NormalDie,RedObject" },
+    { guid = "f0d2ef", name = "Hunger Die", tags = "d10Preload,HungerDie,RedObject" },
+    { guid = "f1d180", name = "Rouse Die", tags = "d10Preload,RedObject,RouseDie" },
+    { guid = "f351f9", name = "Hunger Die", tags = "d10Preload,HungerDie,RedObject" },
+  },
+}
+
+-- lua DEBUG.dumpSeatRoleOffsets("Pink")
+-- Hidden objects may have defaultY = -200; replace those with the in-use height before pasting.
+-- Copy roles into C.SeatRoleOffsets.shared / .player / .extraByOccupant["Pink"].
+-- occupant=Pink tableKey=Table A figurineGuid=390349
+local DUMP_SEAT_ROLE_OFFSETS_PINK = {
+  occupant = "Pink",
+  tableKey = "Table A",
+  referenceFigurine = {
+    guid = "390349",
+    position = Vector({ x = -37.4483, y = -55.8166, z = -66.8833 }),
+    rotation = Vector({ x = 0.0000, y = 198.0000, z = 0.0000 }),
+  },
+  roles = {
+    ["COMPULSION_CARD_1_ANCHOR"] = {
+      roleKey = "COMPULSION_CARD_1_ANCHOR",
+      guid = "0e4ba8",
+      localXZ = { x = 9.2974, z = -23.6876 },
+      localRotation = { x = 60.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world -38.8408, 200.0000, -43.6511
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_CARD_2_ANCHOR"] = {
+      roleKey = "COMPULSION_CARD_2_ANCHOR",
+      guid = "04cd7b",
+      localXZ = { x = 0.5505, z = -25.9400 },
+      localRotation = { x = 60.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world -30.5957, 200.0000, -44.1640
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_CARD_3_ANCHOR"] = {
+      roleKey = "COMPULSION_CARD_3_ANCHOR",
+      guid = "c6fe51",
+      localXZ = { x = -8.1964, z = -23.6876 },
+      localRotation = { x = 60.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world -23.6239, 200.0000, -48.5953
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_CARD_4_ANCHOR"] = {
+      roleKey = "COMPULSION_CARD_4_ANCHOR",
+      guid = "eedd02",
+      localXZ = { x = 0.5505, z = -21.4244 },
+      localRotation = { x = 60.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world -31.8720, 200.0000, -48.0919
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_CARD_DRAWN_ANCHOR"] = {
+      roleKey = "COMPULSION_CARD_DRAWN_ANCHOR",
+      guid = "a7ddd9",
+      localXZ = { x = 0.5505, z = -23.6876 },
+      localRotation = { x = 60.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world -31.2323, 200.0000, -46.1232
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_CARD_SELECTED_ANCHOR"] = {
+      roleKey = "COMPULSION_CARD_SELECTED_ANCHOR",
+      guid = "a78358",
+      localXZ = { x = 11.1561, z = -35.3319 },
+      localRotation = { x = 60.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world -37.1666, 200.0000, -32.9971
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_CARD_SELECTED_LIVEROLL_ANCHOR"] = {
+      roleKey = "COMPULSION_CARD_SELECTED_LIVEROLL_ANCHOR",
+      guid = "188c1d",
+      localXZ = { x = 17.7163, z = -35.3319 },
+      localRotation = { x = 60.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world -42.8729, 200.0000, -31.1430
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_DECK"] = {
+      roleKey = "COMPULSION_DECK",
+      guid = "221f0f",
+      localXZ = { x = 11.1561, z = -34.9737 },
+      localRotation = { x = 90.0000, y = -179.9857, z = 0.0000 },
+      defaultY = 5.5400,
+      -- world -37.2678, 5.5400, -33.3087
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_LIGHT"] = {
+      roleKey = "COMPULSION_LIGHT",
+      guid = "c1abf7",
+      localXZ = { x = 10.4458, z = -31.4603 },
+      localRotation = { x = 90.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 9.3048,
+      -- world -37.6429, 9.3048, -36.5655
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["CSHEET_BASE"] = {
+      roleKey = "CSHEET_BASE",
+      guid = "d0b68a",
+      localXZ = { x = 0.5505, z = -21.3246 },
+      localRotation = { x = -19.4400, y = -180.0000, z = 0.0000 },
+      defaultY = -1.2000,
+      -- world -31.9002, -1.2000, -48.1787
+      scale = { x = 25.0800, y = 7.6000, z = 10.7191 },
+    },
+    ["CSHEET_BASE_BACK"] = {
+      roleKey = "CSHEET_BASE_BACK",
+      guid = "6d0572",
+      localXZ = { x = 0.5505, z = -33.0253 },
+      localRotation = { x = 0.0000, y = -180.0000, z = 0.0000 },
+      defaultY = 1.4300,
+      -- world -28.5932, 1.4300, -38.0009
+      scale = { x = 25.0800, y = 8.9500, z = 2.0777 },
+    },
+    ["CSHEET_DICE_DRAWER"] = {
+      roleKey = "CSHEET_DICE_DRAWER",
+      guid = "248013",
+      localXZ = { x = 0.5505, z = -21.3246 },
+      localRotation = { x = 0.0000, y = -180.0000, z = 0.0000 },
+      defaultY = -1.0000,
+      -- world -31.9002, -1.0000, -48.1787
+      scale = { x = 23.5700, y = 0.1000, z = 7.6800 },
+    },
+    ["CSHEET_DICE_DRAWER_ANCHOR_OFF"] = {
+      roleKey = "CSHEET_DICE_DRAWER_ANCHOR_OFF",
+      guid = "880abb",
+      localXZ = { x = 0.5505, z = -21.3246 },
+      localRotation = { x = 0.0000, y = -180.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world -31.9002, 200.0000, -48.1787
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["CSHEET_DICE_DRAWER_ANCHOR_ON"] = {
+      roleKey = "CSHEET_DICE_DRAWER_ANCHOR_ON",
+      guid = "47b608",
+      localXZ = { x = 0.5505, z = -44.0890 },
+      localRotation = { x = 0.0000, y = -180.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world -25.4663, 200.0000, -28.3772
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["CSHEET_PAGE_1"] = {
+      roleKey = "CSHEET_PAGE_1",
+      guid = "c4abec",
+      localXZ = { x = 7.2419, z = -22.6708 },
+      localRotation = { x = 19.4400, y = 0.0000, z = 0.0000 },
+      defaultY = 3.1900,
+      -- world -37.3402, 3.1900, -45.1165
+      scale = { x = 8.0000, y = 1.0000, z = 8.0000 },
+    },
+    ["CSHEET_PAGE_2"] = {
+      roleKey = "CSHEET_PAGE_2",
+      guid = "c0f4b5",
+      localXZ = { x = -6.1409, z = -22.6694 },
+      localRotation = { x = 19.4400, y = 0.0000, z = 0.0000 },
+      defaultY = 3.1900,
+      -- world -25.6996, 3.1900, -48.9001
+      scale = { x = 8.0000, y = 1.0000, z = 8.0000 },
+    },
+    ["CSHEET_PAGE_3"] = {
+      roleKey = "CSHEET_PAGE_3",
+      guid = "5166e7",
+      localXZ = { x = 7.2435, z = -22.6694 },
+      localRotation = { x = 19.4360, y = 0.0000, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world -37.3420, -200.0000, -45.1172
+      scale = { x = 8.0000, y = 1.0000, z = 8.0000 },
+    },
+    ["CSHEET_PAGE_4"] = {
+      roleKey = "CSHEET_PAGE_4",
+      guid = "802d14",
+      localXZ = { x = -6.1409, z = -22.6694 },
+      localRotation = { x = 19.4400, y = 0.0000, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world -25.6996, -200.0000, -48.9001
+      scale = { x = 8.0000, y = 1.0000, z = 8.0000 },
+    },
+    ["CSHEET_PAGE_5"] = {
+      roleKey = "CSHEET_PAGE_5",
+      guid = "00fc87",
+      localXZ = { x = 7.2435, z = -22.6694 },
+      localRotation = { x = 19.4360, y = 0.0000, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world -37.3420, -200.0000, -45.1172
+      scale = { x = 8.0000, y = 1.0000, z = 8.0000 },
+    },
+    ["CSHEET_PAGE_6"] = {
+      roleKey = "CSHEET_PAGE_6",
+      guid = "555372",
+      localXZ = { x = -6.1409, z = -22.6694 },
+      localRotation = { x = 19.4400, y = 0.0000, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world -25.6996, -200.0000, -48.9001
+      scale = { x = 8.0000, y = 1.0000, z = 8.0000 },
+    },
+    ["CSHEET_PAGE_7"] = {
+      roleKey = "CSHEET_PAGE_7",
+      guid = "f38d69",
+      localXZ = { x = 7.2435, z = -22.6694 },
+      localRotation = { x = 19.4360, y = 0.0000, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world -37.3420, -200.0000, -45.1172
+      scale = { x = 8.0000, y = 1.0000, z = 8.0000 },
+    },
+    ["CSHEET_PAGE_8"] = {
+      roleKey = "CSHEET_PAGE_8",
+      guid = "645189",
+      localXZ = { x = -6.1409, z = -22.6694 },
+      localRotation = { x = 19.4400, y = 0.0000, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world -25.6996, -200.0000, -48.9001
+      scale = { x = 8.0000, y = 1.0000, z = 8.0000 },
+    },
+    ["DICEBAG_HUNGER"] = {
+      roleKey = "DICEBAG_HUNGER",
+      guid = "90f17d",
+      localXZ = { x = -3.7018, z = -33.0384 },
+      localRotation = { x = 0.0000, y = 0.0193, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world -24.8907, -200.0000, -39.1913
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["DICEBAG_NORMAL"] = {
+      roleKey = "DICEBAG_NORMAL",
+      guid = "4637da",
+      localXZ = { x = -1.0170, z = -32.5657 },
+      localRotation = { x = 0.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 5.9800,
+      -- world -27.3596, 5.9800, -38.8437
+      scale = { x = 1.3500, y = 1.3500, z = 1.3500 },
+    },
+    ["DICEBAG_ROUSE"] = {
+      roleKey = "DICEBAG_ROUSE",
+      guid = "1f5ceb",
+      localXZ = { x = 2.1589, z = -32.5661 },
+      localRotation = { x = 0.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 5.9800,
+      -- world -30.1221, 5.9800, -37.9458
+      scale = { x = 1.3500, y = 1.3500, z = 1.3500 },
+    },
+    ["HAND_ZONE"] = {
+      roleKey = "HAND_ZONE",
+      guid = "8fe0fe",
+      localXZ = { x = 0.5505, z = 4.2370 },
+      localRotation = { x = 0.0000, y = -180.0000, z = 0.0000 },
+      defaultY = 3.2200,
+      -- world -39.1246, 3.2200, -70.4133
+      scale = { x = 29.8700, y = 6.6900, z = 11.6200 },
+    },
+    ["HUNGER_SMOKE"] = {
+      roleKey = "HUNGER_SMOKE",
+      guid = "fb25b1",
+      localXZ = { x = 0.5505, z = -33.4599 },
+      localRotation = { x = 0.0000, y = -180.0000, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world -28.4704, -200.0000, -37.6228
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["SEAT_CHAIR"] = {
+      roleKey = "SEAT_CHAIR",
+      guid = "570f9b",
+      localXZ = { x = 0.5505, z = 14.3069 },
+      localRotation = { x = 0.0000, y = 0.0000, z = 0.0000 },
+      defaultY = -20.2900,
+      -- world -41.9707, -20.2900, -79.1725
+      scale = { x = 14.9244, y = 21.4949, z = 0.5365 },
+    },
+    ["SEAT_FIGURE"] = {
+      roleKey = "SEAT_FIGURE",
+      guid = "390349",
+      localXZ = { x = 0.0000, z = 0.0000 },
+      localRotation = { x = 0.0000, y = 0.0000, z = 0.0000 },
+      defaultY = -55.8166,
+      -- world -37.4483, -55.8166, -66.8833
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["SEAT_LIGHT_1"] = {
+      roleKey = "SEAT_LIGHT_1",
+      guid = "937fac",
+      localXZ = { x = 0.5505, z = -8.4574 },
+      localRotation = { x = -10.0000, y = -180.0000, z = 0.0000 },
+      defaultY = 23.0000,
+      -- world -35.5368, 23.0000, -59.3711
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["SEAT_LIGHT_2"] = {
+      roleKey = "SEAT_LIGHT_2",
+      guid = "1736cb",
+      localXZ = { x = 0.5505, z = -35.3196 },
+      localRotation = { x = 64.7800, y = 0.0000, z = 180.0000 },
+      defaultY = 17.0400,
+      -- world -27.9448, 17.0400, -36.0052
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["SEAT_LIGHT_3"] = {
+      roleKey = "SEAT_LIGHT_3",
+      guid = "7d3caf",
+      localXZ = { x = 0.5505, z = 4.2370 },
+      localRotation = { x = 0.0000, y = 0.0000, z = 180.0000 },
+      defaultY = -5.0000,
+      -- world -39.1246, -5.0000, -70.4133
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["SIGNAL_CANDLE"] = {
+      roleKey = "SIGNAL_CANDLE",
+      guid = "e6836c",
+      localXZ = { x = 12.4572, z = -32.5643 },
+      localRotation = { x = 0.0000, y = -180.0000, z = 0.0000 },
+      defaultY = 4.7388,
+      -- world -39.0805, 4.7388, -35.0367
+      scale = { x = 2.0000, y = 5.0000, z = 2.0000 },
+    },
+    ["SIGNAL_FIRE"] = {
+      roleKey = "SIGNAL_FIRE",
+      guid = "f1b7af",
+      localXZ = { x = 12.4572, z = -32.5643 },
+      localRotation = { x = 0.0000, y = -180.0000, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world -39.0805, -200.0000, -35.0367
+      scale = { x = 0.0100, y = 0.0100, z = 0.0100 },
+    },
+    ["STORAGE_TOME"] = {
+      roleKey = "STORAGE_TOME",
+      guid = "e57e55",
+      localXZ = { x = -14.7790, z = -16.5718 },
+      localRotation = { x = 0.0000, y = 0.0143, z = 0.0000 },
+      defaultY = -0.0146,
+      -- world -19.9092, -0.0146, -56.6454
+      scale = { x = 10.0000, y = 15.0000, z = 10.0000 },
+    },
+    ["TAROT_BUTTON"] = {
+      roleKey = "TAROT_BUTTON",
+      guid = "4dc8ad",
+      localXZ = { x = -9.0703, z = -32.7675 },
+      localRotation = { x = 0.0000, y = 179.9863, z = 0.0000 },
+      defaultY = 6.0000,
+      -- world -20.2975, 6.0000, -40.9443
+      scale = { x = 0.7000, y = 1.0000, z = 0.7000 },
+    },
+    ["TAROT_BUTTON_ANCHOR_OFF"] = {
+      roleKey = "TAROT_BUTTON_ANCHOR_OFF",
+      guid = "542096",
+      localXZ = { x = -9.0703, z = -32.7675 },
+      localRotation = { x = 0.0000, y = 179.9863, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world -20.2975, 200.0000, -40.9443
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["TAROT_BUTTON_ANCHOR_ON"] = {
+      roleKey = "TAROT_BUTTON_ANCHOR_ON",
+      guid = "a1c043",
+      localXZ = { x = -9.0703, z = -32.7675 },
+      localRotation = { x = 0.0000, y = -0.0140, z = 180.0000 },
+      defaultY = 202.0000,
+      -- world -20.2975, 202.0000, -40.9443
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["TAROT_DECK_ANCHOR"] = {
+      roleKey = "TAROT_DECK_ANCHOR",
+      guid = "764db1",
+      localXZ = { x = -6.1674, z = -40.5600 },
+      localRotation = { x = 17.6000, y = -0.0141, z = 180.0000 },
+      defaultY = 200.0000,
+      -- world -20.6202, 200.0000, -33.3456
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["TAROT_DRAWER"] = {
+      roleKey = "TAROT_DRAWER",
+      guid = "7f0246",
+      localXZ = { x = -6.1716, z = -27.7090 },
+      localRotation = { x = 0.0000, y = 179.9863, z = 0.0000 },
+      defaultY = 2.4100,
+      -- world -24.2486, 2.4100, -44.5251
+      scale = { x = 7.4900, y = 0.0100, z = 5.7200 },
+    },
+    ["TAROT_DRAWER_ANCHOR_OFF"] = {
+      roleKey = "TAROT_DRAWER_ANCHOR_OFF",
+      guid = "c1f530",
+      localXZ = { x = -6.1716, z = -27.7090 },
+      localRotation = { x = 0.0000, y = 179.9863, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world -24.2486, 200.0000, -44.5251
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["TAROT_DRAWER_ANCHOR_ON"] = {
+      roleKey = "TAROT_DRAWER_ANCHOR_ON",
+      guid = "936758",
+      localXZ = { x = -6.1674, z = -40.5432 },
+      localRotation = { x = -14.6501, y = 179.9863, z = 0.0000 },
+      defaultY = 202.0000,
+      -- world -20.6249, 202.0000, -33.3602
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+  },
+  skippedNoRole = {
+    { guid = "032194", name = "Hunger Die", tags = "d10Preload,HungerDie,PinkObject" },
+    { guid = "0423db", name = "Normal Die", tags = "d10Preload,NormalDie,PinkObject" },
+    { guid = "0aef5a", name = "Hunger Die", tags = "d10Preload,HungerDie,PinkObject" },
+    { guid = "1354ba", name = "Normal Die", tags = "d10Preload,NormalDie,PinkObject" },
+    { guid = "185122", name = "Normal Die", tags = "d10Preload,NormalDie,PinkObject" },
+    { guid = "188ae1", name = "Hunger Die", tags = "d10Preload,HungerDie,PinkObject" },
+    { guid = "2e49b8", name = "Rouse Die", tags = "d10Preload,PinkObject,RouseDie" },
+    { guid = "3a814a", name = "Normal Die", tags = "d10Preload,NormalDie,PinkObject" },
+    { guid = "3c6ce3", name = "Hunger Die", tags = "d10Preload,HungerDie,PinkObject" },
+    { guid = "43f72e", name = "Hunger Die", tags = "d10Preload,HungerDie,PinkObject" },
+    { guid = "46d348", name = "Hunger Die", tags = "d10Preload,HungerDie,PinkObject" },
+    { guid = "48c234", name = "Rouse Die", tags = "d10Preload,PinkObject,RouseDie" },
+    { guid = "48eeb3", name = "Rouse Die", tags = "d10Preload,PinkObject,RouseDie" },
+    { guid = "4d9f2b", name = "Hunger Die", tags = "d10Preload,HungerDie,PinkObject" },
+    { guid = "508c02", name = "Rouse Die", tags = "d10Preload,PinkObject,RouseDie" },
+    { guid = "607a1a", name = "Hunger Die", tags = "d10Preload,HungerDie,PinkObject" },
+    { guid = "621579", name = "Normal Die", tags = "d10Preload,NormalDie,PinkObject" },
+    { guid = "6b0659", name = "Hunger Die", tags = "d10Preload,HungerDie,PinkObject" },
+    { guid = "6dec47", name = "Rouse Die", tags = "d10Preload,PinkObject,RouseDie" },
+    { guid = "73ff51", name = "Rouse Die", tags = "d10Preload,PinkObject,RouseDie" },
+    { guid = "75d30b", name = "", tags = "PinkObject,Tarot" },
+    { guid = "797b4f", name = "Rouse Die", tags = "d10Preload,PinkObject,RouseDie" },
+    { guid = "7a6774", name = "Normal Die", tags = "d10Preload,NormalDie,PinkObject" },
+    { guid = "833077", name = "Normal Die", tags = "d10Preload,NormalDie,PinkObject" },
+    { guid = "898511", name = "Rouse Die", tags = "d10Preload,PinkObject,RouseDie" },
+    { guid = "98d072", name = "Rouse Die", tags = "d10Preload,PinkObject,RouseDie" },
+    { guid = "a3bc3b", name = "Hunger Die", tags = "d10Preload,HungerDie,PinkObject" },
+    { guid = "a41eda", name = "Normal Die", tags = "d10Preload,NormalDie,PinkObject" },
+    { guid = "b54e2c", name = "Rouse Die", tags = "d10Preload,PinkObject,RouseDie" },
+    { guid = "b830a0", name = "Normal Die", tags = "d10Preload,NormalDie,PinkObject" },
+    { guid = "b9cd1e", name = "Hunger Die", tags = "d10Preload,HungerDie,PinkObject" },
+    { guid = "bd5188", name = "Rouse Die", tags = "d10Preload,PinkObject,RouseDie" },
+    { guid = "cadc0f", name = "Rouse Die", tags = "d10Preload,PinkObject,RouseDie" },
+    { guid = "ce1122", name = "Normal Die", tags = "d10Preload,NormalDie,PinkObject" },
+    { guid = "eea53c", name = "Hunger Die", tags = "d10Preload,HungerDie,PinkObject" },
+    { guid = "ef7cb5", name = "Normal Die", tags = "d10Preload,NormalDie,PinkObject" },
+    { guid = "fe41ff", name = "Normal Die", tags = "d10Preload,NormalDie,PinkObject" },
+  },
+}
+
+-- lua DEBUG.dumpSeatRoleOffsets("Purple")
+-- Hidden objects may have defaultY = -200; replace those with the in-use height before pasting.
+-- Copy roles into C.SeatRoleOffsets.shared / .player / .extraByOccupant["Purple"].
+-- occupant=Purple tableKey=Table A figurineGuid=923872
+local DUMP_SEAT_ROLE_OFFSETS_PURPLE = {
+  occupant = "Purple",
+  tableKey = "Table A",
+  referenceFigurine = {
+    guid = "923872",
+    position = Vector({ x = -71.7344, y = -55.8166, z = -49.5905 }),
+    rotation = Vector({ x = 0.0000, y = 216.0000, z = 0.0000 }),
+  },
+  roles = {
+    ["COMPANION_TOGGLE_A"] = {
+      roleKey = "COMPANION_TOGGLE_A",
+      guid = "7b1ac2",
+      localXZ = { x = -7.0349, z = -33.2104 },
+      localRotation = { x = 0.0000, y = 0.0428, z = 180.0000 },
+      defaultY = 6.0050,
+      -- world -48.6754, 6.0050, -28.7989
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPANION_TOGGLE_B"] = {
+      roleKey = "COMPANION_TOGGLE_B",
+      guid = "a61620",
+      localXZ = { x = -9.4428, z = -33.1775 },
+      localRotation = { x = 0.0000, y = 0.0000, z = 180.0000 },
+      defaultY = 6.0000,
+      -- world -46.9114, 6.0000, -30.1177
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPANION_TOGGLE_C"] = {
+      roleKey = "COMPANION_TOGGLE_C",
+      guid = "12606b",
+      localXZ = { x = -11.7173, z = -33.1775 },
+      localRotation = { x = 0.0000, y = 0.0000, z = 180.0000 },
+      defaultY = 6.0050,
+      -- world -45.2284, 6.0050, -31.3405
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_CARD_1_ANCHOR"] = {
+      roleKey = "COMPULSION_CARD_1_ANCHOR",
+      guid = "32ab4e",
+      localXZ = { x = 9.2974, z = -23.6876 },
+      localRotation = { x = 60.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world -65.8795, 200.0000, -27.0650
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_CARD_2_ANCHOR"] = {
+      roleKey = "COMPULSION_CARD_2_ANCHOR",
+      guid = "fd61bf",
+      localXZ = { x = 0.5505, z = -25.9400 },
+      localRotation = { x = 60.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world -58.1966, 200.0000, -30.1007
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_CARD_3_ANCHOR"] = {
+      roleKey = "COMPULSION_CARD_3_ANCHOR",
+      guid = "64ed88",
+      localXZ = { x = -8.1965, z = -23.6876 },
+      localRotation = { x = 60.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world -52.9353, 200.0000, -36.4696
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_CARD_4_ANCHOR"] = {
+      roleKey = "COMPULSION_CARD_4_ANCHOR",
+      guid = "2b078b",
+      localXZ = { x = 0.5505, z = -21.4244 },
+      localRotation = { x = 60.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world -60.6241, 200.0000, -33.4419
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_CARD_DRAWN_ANCHOR"] = {
+      roleKey = "COMPULSION_CARD_DRAWN_ANCHOR",
+      guid = "33682f",
+      localXZ = { x = 0.5505, z = -23.6876 },
+      localRotation = { x = 60.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world -59.4074, 200.0000, -31.7673
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_CARD_SELECTED_ANCHOR"] = {
+      roleKey = "COMPULSION_CARD_SELECTED_ANCHOR",
+      guid = "979f8d",
+      localXZ = { x = 11.1561, z = -35.3319 },
+      localRotation = { x = 60.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world -60.9950, 200.0000, -17.4498
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_CARD_SELECTED_LIVEROLL_ANCHOR"] = {
+      roleKey = "COMPULSION_CARD_SELECTED_LIVEROLL_ANCHOR",
+      guid = "0ad6bd",
+      localXZ = { x = 17.7163, z = -35.3319 },
+      localRotation = { x = 60.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world -65.8491, 200.0000, -13.9231
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_DECK"] = {
+      roleKey = "COMPULSION_DECK",
+      guid = "dcb7fa",
+      localXZ = { x = 11.1561, z = -34.9737 },
+      localRotation = { x = 90.0000, y = -179.9857, z = 0.0000 },
+      defaultY = 5.5400,
+      -- world -61.1876, 5.5400, -17.7149
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_LIGHT"] = {
+      roleKey = "COMPULSION_LIGHT",
+      guid = "07c81e",
+      localXZ = { x = 10.4458, z = -31.4603 },
+      localRotation = { x = 90.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 9.3048,
+      -- world -62.5508, 9.3048, -20.6964
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["CSHEET_BASE"] = {
+      roleKey = "CSHEET_BASE",
+      guid = "bbb40e",
+      localXZ = { x = 0.5505, z = -21.3246 },
+      localRotation = { x = -19.4400, y = -180.0000, z = 0.0000 },
+      defaultY = -1.2000,
+      -- world -60.6778, -1.2000, -33.5158
+      scale = { x = 25.0800, y = 7.6000, z = 10.7191 },
+    },
+    ["CSHEET_BASE_BACK"] = {
+      roleKey = "CSHEET_BASE_BACK",
+      guid = "adce6b",
+      localXZ = { x = 0.5505, z = -33.0253 },
+      localRotation = { x = 0.0000, y = -180.0000, z = 0.0000 },
+      defaultY = 1.4300,
+      -- world -54.3876, 1.4300, -24.8580
+      scale = { x = 25.0800, y = 8.9500, z = 2.0770 },
+    },
+    ["CSHEET_DICE_DRAWER"] = {
+      roleKey = "CSHEET_DICE_DRAWER",
+      guid = "fea8f6",
+      localXZ = { x = 0.5505, z = -21.3246 },
+      localRotation = { x = 0.0000, y = -180.0000, z = 0.0000 },
+      defaultY = -1.0000,
+      -- world -60.6778, -1.0000, -33.5158
+      scale = { x = 23.5700, y = 0.1000, z = 7.6800 },
+    },
+    ["CSHEET_DICE_DRAWER_ANCHOR_OFF"] = {
+      roleKey = "CSHEET_DICE_DRAWER_ANCHOR_OFF",
+      guid = "cf33ad",
+      localXZ = { x = 0.5505, z = -21.3246 },
+      localRotation = { x = 0.0000, y = -180.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world -60.6778, 200.0000, -33.5158
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["CSHEET_DICE_DRAWER_ANCHOR_ON"] = {
+      roleKey = "CSHEET_DICE_DRAWER_ANCHOR_ON",
+      guid = "7bc6f6",
+      localXZ = { x = 0.5505, z = -44.0890 },
+      localRotation = { x = 0.0000, y = -180.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world -48.4398, 200.0000, -16.6716
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["CSHEET_PAGE_1"] = {
+      roleKey = "CSHEET_PAGE_1",
+      guid = "0bdb4a",
+      localXZ = { x = 7.2419, z = -22.6708 },
+      localRotation = { x = 19.4400, y = 0.0000, z = 0.0000 },
+      defaultY = 3.1900,
+      -- world -64.9052, 3.1900, -28.9224
+      scale = { x = 8.0000, y = 1.0000, z = 8.0000 },
+    },
+    ["CSHEET_PAGE_2"] = {
+      roleKey = "CSHEET_PAGE_2",
+      guid = "7ac353",
+      localXZ = { x = -6.1409, z = -22.6694 },
+      localRotation = { x = 19.4400, y = 0.0000, z = 0.0000 },
+      defaultY = 3.1900,
+      -- world -55.0036, 3.1900, -36.1179
+      scale = { x = 8.0000, y = 1.0000, z = 8.0000 },
+    },
+    ["CSHEET_PAGE_3"] = {
+      roleKey = "CSHEET_PAGE_3",
+      guid = "631323",
+      localXZ = { x = 7.2435, z = -22.6694 },
+      localRotation = { x = 19.4360, y = 0.0000, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world -64.9072, -200.0000, -28.9226
+      scale = { x = 8.0000, y = 1.0000, z = 8.0000 },
+    },
+    ["CSHEET_PAGE_4"] = {
+      roleKey = "CSHEET_PAGE_4",
+      guid = "edf063",
+      localXZ = { x = -6.1409, z = -22.6694 },
+      localRotation = { x = 19.4400, y = 0.0000, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world -55.0036, -200.0000, -36.1179
+      scale = { x = 8.0000, y = 1.0000, z = 8.0000 },
+    },
+    ["CSHEET_PAGE_5"] = {
+      roleKey = "CSHEET_PAGE_5",
+      guid = "199d9f",
+      localXZ = { x = 7.2435, z = -22.6694 },
+      localRotation = { x = 19.4360, y = 0.0000, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world -64.9072, -200.0000, -28.9226
+      scale = { x = 8.0000, y = 1.0000, z = 8.0000 },
+    },
+    ["CSHEET_PAGE_6"] = {
+      roleKey = "CSHEET_PAGE_6",
+      guid = "1c72c5",
+      localXZ = { x = -6.1409, z = -22.6694 },
+      localRotation = { x = 19.4400, y = 0.0000, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world -55.0036, -200.0000, -36.1179
+      scale = { x = 8.0000, y = 1.0000, z = 8.0000 },
+    },
+    ["CSHEET_PAGE_7"] = {
+      roleKey = "CSHEET_PAGE_7",
+      guid = "f85e4f",
+      localXZ = { x = 7.2435, z = -22.6694 },
+      localRotation = { x = 19.4360, y = 0.0000, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world -64.9072, -200.0000, -28.9226
+      scale = { x = 8.0000, y = 1.0000, z = 8.0000 },
+    },
+    ["CSHEET_PAGE_8"] = {
+      roleKey = "CSHEET_PAGE_8",
+      guid = "ceb48e",
+      localXZ = { x = -6.1409, z = -22.6694 },
+      localRotation = { x = 19.4400, y = 0.0000, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world -55.0036, -200.0000, -36.1179
+      scale = { x = 8.0000, y = 1.0000, z = 8.0000 },
+    },
+    ["DICEBAG_HUNGER"] = {
+      roleKey = "DICEBAG_HUNGER",
+      guid = "496dd5",
+      localXZ = { x = -3.7018, z = -33.0384 },
+      localRotation = { x = 0.0000, y = 0.0193, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world -51.2341, -200.0000, -27.1343
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["DICEBAG_NORMAL"] = {
+      roleKey = "DICEBAG_NORMAL",
+      guid = "03cb81",
+      localXZ = { x = -1.0170, z = -32.5657 },
+      localRotation = { x = 0.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 5.9800,
+      -- world -53.4748, 5.9800, -26.0408
+      scale = { x = 1.3500, y = 1.3500, z = 1.3500 },
+    },
+    ["DICEBAG_OBLIVROUSE"] = {
+      roleKey = "DICEBAG_OBLIVROUSE",
+      guid = "0b6b1e",
+      localXZ = { x = 4.8645, z = -33.0450 },
+      localRotation = { x = 0.0000, y = -0.0143, z = 0.0000 },
+      defaultY = 5.9800,
+      -- world -57.5690, 5.9800, -22.5243
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["DICEBAG_ROUSE"] = {
+      roleKey = "DICEBAG_ROUSE",
+      guid = "70c7cf",
+      localXZ = { x = 2.1589, z = -32.5661 },
+      localRotation = { x = 0.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 5.9800,
+      -- world -55.8245, 5.9800, -24.3332
+      scale = { x = 1.3500, y = 1.3500, z = 1.3500 },
+    },
+    ["HAND_ZONE"] = {
+      roleKey = "HAND_ZONE",
+      guid = "d087d1",
+      localXZ = { x = 0.5505, z = 4.2370 },
+      localRotation = { x = 0.0000, y = -180.0000, z = 0.0000 },
+      defaultY = 3.2200,
+      -- world -74.4195, 3.2200, -52.4296
+      scale = { x = 29.8700, y = 6.6900, z = 11.6200 },
+    },
+    ["HUNGER_SMOKE"] = {
+      roleKey = "HUNGER_SMOKE",
+      guid = "f20164",
+      localXZ = { x = 0.5505, z = -33.4599 },
+      localRotation = { x = 0.0000, y = -180.0000, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world -54.1539, -200.0000, -24.5364
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["SEAT_CHAIR"] = {
+      roleKey = "SEAT_CHAIR",
+      guid = "ede3ce",
+      localXZ = { x = 0.5505, z = 14.3069 },
+      localRotation = { x = 0.0000, y = -180.0000, z = 0.0000 },
+      defaultY = -37.0800,
+      -- world -79.8330, -37.0800, -59.8807
+      scale = { x = 35.0000, y = 35.0000, z = 12.1044 },
+    },
+    ["SEAT_FIGURE"] = {
+      roleKey = "SEAT_FIGURE",
+      guid = "923872",
+      localXZ = { x = 0.0000, z = 0.0000 },
+      localRotation = { x = 0.0000, y = 0.0000, z = 0.0000 },
+      defaultY = -55.8166,
+      -- world -71.7344, -55.8166, -49.5905
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["SEAT_LIGHT_1"] = {
+      roleKey = "SEAT_LIGHT_1",
+      guid = "86117d",
+      localXZ = { x = 0.5505, z = -8.4574 },
+      localRotation = { x = -10.0000, y = -180.0000, z = 0.0000 },
+      defaultY = 23.0000,
+      -- world -67.5951, 23.0000, -43.0366
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["SEAT_LIGHT_2"] = {
+      roleKey = "SEAT_LIGHT_2",
+      guid = "cf2fe0",
+      localXZ = { x = 0.5505, z = -35.3196 },
+      localRotation = { x = 64.7800, y = 0.0000, z = 180.0000 },
+      defaultY = 17.0400,
+      -- world -53.1541, 17.0400, -23.1604
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["SEAT_LIGHT_3"] = {
+      roleKey = "SEAT_LIGHT_3",
+      guid = "2ebbcc",
+      localXZ = { x = 0.5505, z = 4.2370 },
+      localRotation = { x = 0.0000, y = 0.0000, z = 180.0000 },
+      defaultY = -5.0000,
+      -- world -74.4195, -5.0000, -52.4296
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["SIGNAL_CANDLE"] = {
+      roleKey = "SIGNAL_CANDLE",
+      guid = "99d5f2",
+      localXZ = { x = 12.4572, z = -32.5643 },
+      localRotation = { x = 0.0000, y = -180.0000, z = 0.0000 },
+      defaultY = 4.7388,
+      -- world -63.4456, 4.7388, -18.7981
+      scale = { x = 2.0000, y = 5.0000, z = 2.0000 },
+    },
+    ["SIGNAL_FIRE"] = {
+      roleKey = "SIGNAL_FIRE",
+      guid = "b646b4",
+      localXZ = { x = 12.4572, z = -32.5643 },
+      localRotation = { x = 0.0000, y = -180.0000, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world -63.4456, -200.0000, -18.7981
+      scale = { x = 0.0100, y = 0.0100, z = 0.0100 },
+    },
+    ["STORAGE_TOME"] = {
+      roleKey = "STORAGE_TOME",
+      guid = "4afa4a",
+      localXZ = { x = -14.7790, z = -16.5718 },
+      localRotation = { x = 0.0000, y = 0.0143, z = 0.0000 },
+      defaultY = -0.0146,
+      -- world -51.8900, -0.0146, -45.2735
+      scale = { x = 10.0000, y = 15.0000, z = 10.0000 },
+    },
+  },
+  skippedNoRole = {
+    { guid = "01c57e", name = "Rouse Die", tags = "d10Preload,PurpleObject,RouseDie" },
+    { guid = "086e41", name = "Oblivion-Rouse Die", tags = "d10Preload,OblivRouseDie,PurpleObject" },
+    { guid = "0d790b", name = "Normal Die", tags = "d10Preload,NormalDie,PurpleObject" },
+    { guid = "13e699", name = "Hunger Die", tags = "d10Preload,HungerDie,PurpleObject" },
+    { guid = "31a964", name = "Oblivion-Rouse Die", tags = "d10Preload,OblivRouseDie,PurpleObject" },
+    { guid = "405e36", name = "Rouse Die", tags = "d10Preload,PurpleObject,RouseDie" },
+    { guid = "4b6bc5", name = "Hunger Die", tags = "d10Preload,HungerDie,PurpleObject" },
+    { guid = "4ba597", name = "Rouse Die", tags = "d10Preload,PurpleObject,RouseDie" },
+    { guid = "4e28a8", name = "Hunger Die", tags = "d10Preload,HungerDie,PurpleObject" },
+    { guid = "55292a", name = "Rouse Die", tags = "d10Preload,PurpleObject,RouseDie" },
+    { guid = "566547", name = "Oblivion-Rouse Die", tags = "d10Preload,OblivRouseDie,PurpleObject" },
+    { guid = "5aa293", name = "Rouse Die", tags = "d10Preload,PurpleObject,RouseDie" },
+    { guid = "64a266", name = "Oblivion-Rouse Die", tags = "d10Preload,OblivRouseDie,PurpleObject" },
+    { guid = "68a86e", name = "Normal Die", tags = "d10Preload,NormalDie,PurpleObject" },
+    { guid = "6b3e5e", name = "Rouse Die", tags = "d10Preload,PurpleObject,RouseDie" },
+    { guid = "6b8ff4", name = "Hunger Die", tags = "d10Preload,HungerDie,PurpleObject" },
+    { guid = "6d13f8", name = "Oblivion-Rouse Die", tags = "d10Preload,OblivRouseDie,PurpleObject" },
+    { guid = "6eecb1", name = "Normal Die", tags = "d10Preload,NormalDie,PurpleObject" },
+    { guid = "752d0d", name = "Rouse Die", tags = "d10Preload,PurpleObject,RouseDie" },
+    { guid = "76eeb4", name = "Normal Die", tags = "d10Preload,NormalDie,PurpleObject" },
+    { guid = "908adf", name = "Normal Die", tags = "d10Preload,NormalDie,PurpleObject" },
+    { guid = "928c29", name = "Hunger Die", tags = "d10Preload,HungerDie,PurpleObject" },
+    { guid = "94869f", name = "Normal Die", tags = "d10Preload,NormalDie,PurpleObject" },
+    { guid = "9ca4e2", name = "Hunger Die", tags = "d10Preload,HungerDie,PurpleObject" },
+    { guid = "a48738", name = "Normal Die", tags = "d10Preload,NormalDie,PurpleObject" },
+    { guid = "a66828", name = "Rouse Die", tags = "d10Preload,PurpleObject,RouseDie" },
+    { guid = "ad1a03", name = "Oblivion-Rouse Die", tags = "d10Preload,OblivRouseDie,PurpleObject" },
+    { guid = "b0f2f0", name = "Oblivion-Rouse Die", tags = "d10Preload,OblivRouseDie,PurpleObject" },
+    { guid = "b8aeb7", name = "Normal Die", tags = "d10Preload,NormalDie,PurpleObject" },
+    { guid = "ba36b8", name = "Hunger Die", tags = "d10Preload,HungerDie,PurpleObject" },
+    { guid = "ba929e", name = "Oblivion-Rouse Die", tags = "d10Preload,OblivRouseDie,PurpleObject" },
+    { guid = "ca1896", name = "Hunger Die", tags = "d10Preload,HungerDie,PurpleObject" },
+    { guid = "cce2a1", name = "Hunger Die", tags = "d10Preload,HungerDie,PurpleObject" },
+    { guid = "cd8218", name = "Normal Die", tags = "d10Preload,NormalDie,PurpleObject" },
+    { guid = "d56c94", name = "Rouse Die", tags = "d10Preload,PurpleObject,RouseDie" },
+    { guid = "d8988a", name = "Rouse Die", tags = "d10Preload,PurpleObject,RouseDie" },
+    { guid = "db7480", name = "Normal Die", tags = "d10Preload,NormalDie,PurpleObject" },
+    { guid = "e4f1a7", name = "Oblivion-Rouse Die", tags = "d10Preload,OblivRouseDie,PurpleObject" },
+    { guid = "e6cacc", name = "Rouse Die", tags = "d10Preload,PurpleObject,RouseDie" },
+    { guid = "ea0cfc", name = "Oblivion-Rouse Die", tags = "d10Preload,OblivRouseDie,PurpleObject" },
+    { guid = "ee0941", name = "Normal Die", tags = "d10Preload,NormalDie,PurpleObject" },
+    { guid = "ee40f5", name = "Rouse Die", tags = "d10Preload,PurpleObject,RouseDie" },
+    { guid = "ee6d90", name = "Oblivion-Rouse Die", tags = "d10Preload,OblivRouseDie,PurpleObject" },
+    { guid = "ef4c8e", name = "Oblivion-Rouse Die", tags = "d10Preload,OblivRouseDie,PurpleObject" },
+    { guid = "f8eefd", name = "Hunger Die", tags = "d10Preload,HungerDie,PurpleObject" },
+    { guid = "fc0e80", name = "Normal Die", tags = "d10Preload,NormalDie,PurpleObject" },
+    { guid = "fe3ecb", name = "Hunger Die", tags = "d10Preload,HungerDie,PurpleObject" },
+    { guid = "febeb0", name = "Hunger Die", tags = "d10Preload,HungerDie,PurpleObject" },
+  },
+}
+
+-- lua DEBUG.dumpSeatRoleOffsets("Brown")
+-- Hidden objects may have defaultY = -200; replace those with the in-use height before pasting.
+-- Copy roles into C.SeatRoleOffsets.shared / .player / .extraByOccupant["Brown"].
+-- occupant=Brown tableKey=Table A figurineGuid=1c5b18
+local DUMP_SEAT_ROLE_OFFSETS_BROWN = {
+  occupant = "Brown",
+  tableKey = "Table A",
+  referenceFigurine = {
+    guid = "1c5b18",
+    position = Vector({ x = 72.5490, y = -55.8166, z = -48.9986 }),
+    rotation = Vector({ x = 0.0000, y = 144.0000, z = 0.0000 }),
+  },
+  roles = {
+    ["COMPANION_TOGGLE_A"] = {
+      roleKey = "COMPANION_TOGGLE_A",
+      guid = "b1f52e",
+      localXZ = { x = -8.9288, z = -32.6908 },
+      localRotation = { x = 0.0000, y = 0.0429, z = 0.0000 },
+      defaultY = 6.0050,
+      -- world 61.5814, 6.0050, -20.0095
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_CARD_1_ANCHOR"] = {
+      roleKey = "COMPULSION_CARD_1_ANCHOR",
+      guid = "af6350",
+      localXZ = { x = 9.2974, z = -23.6876 },
+      localRotation = { x = 60.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world 52.9353, 200.0000, -36.4696
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_CARD_2_ANCHOR"] = {
+      roleKey = "COMPULSION_CARD_2_ANCHOR",
+      guid = "65b695",
+      localXZ = { x = 0.5505, z = -25.9400 },
+      localRotation = { x = 60.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world 58.1966, 200.0000, -30.1007
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_CARD_3_ANCHOR"] = {
+      roleKey = "COMPULSION_CARD_3_ANCHOR",
+      guid = "ca6352",
+      localXZ = { x = -8.1964, z = -23.6876 },
+      localRotation = { x = 60.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world 65.8795, 200.0000, -27.0650
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_CARD_4_ANCHOR"] = {
+      roleKey = "COMPULSION_CARD_4_ANCHOR",
+      guid = "b0722e",
+      localXZ = { x = 0.5505, z = -21.4244 },
+      localRotation = { x = 60.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world 60.6241, 200.0000, -33.4419
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_CARD_DRAWN_ANCHOR"] = {
+      roleKey = "COMPULSION_CARD_DRAWN_ANCHOR",
+      guid = "db4147",
+      localXZ = { x = 0.5505, z = -23.6876 },
+      localRotation = { x = 60.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world 59.4074, 200.0000, -31.7673
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_CARD_SELECTED_ANCHOR"] = {
+      roleKey = "COMPULSION_CARD_SELECTED_ANCHOR",
+      guid = "41c3ec",
+      localXZ = { x = 11.1561, z = -35.3319 },
+      localRotation = { x = 60.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world 45.3001, 200.0000, -28.8528
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_CARD_SELECTED_LIVEROLL_ANCHOR"] = {
+      roleKey = "COMPULSION_CARD_SELECTED_LIVEROLL_ANCHOR",
+      guid = "32a58c",
+      localXZ = { x = 17.7163, z = -35.3319 },
+      localRotation = { x = 60.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world 40.4460, 200.0000, -32.3795
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_DECK"] = {
+      roleKey = "COMPULSION_DECK",
+      guid = "ed58a8",
+      localXZ = { x = 11.1561, z = -34.9737 },
+      localRotation = { x = 90.0000, y = -179.9857, z = 0.0000 },
+      defaultY = 5.5400,
+      -- world 45.4927, 5.5400, -29.1179
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["COMPULSION_LIGHT"] = {
+      roleKey = "COMPULSION_LIGHT",
+      guid = "ea2e32",
+      localXZ = { x = 10.4458, z = -31.4603 },
+      localRotation = { x = 90.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 9.3048,
+      -- world 47.9070, 9.3048, -31.3357
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["CSHEET_BASE"] = {
+      roleKey = "CSHEET_BASE",
+      guid = "61b047",
+      localXZ = { x = 0.5505, z = -21.3246 },
+      localRotation = { x = -19.4400, y = 180.0000, z = 0.0000 },
+      defaultY = -1.2000,
+      -- world 60.6778, -1.2000, -33.5158
+      scale = { x = 25.0800, y = 7.6000, z = 10.7191 },
+    },
+    ["CSHEET_BASE_BACK"] = {
+      roleKey = "CSHEET_BASE_BACK",
+      guid = "398b83",
+      localXZ = { x = 0.5505, z = -33.0253 },
+      localRotation = { x = 0.0000, y = 180.0000, z = 0.0000 },
+      defaultY = 1.4300,
+      -- world 54.3876, 1.4300, -24.8581
+      scale = { x = 25.0801, y = 8.9500, z = 2.0846 },
+    },
+    ["CSHEET_DICE_DRAWER"] = {
+      roleKey = "CSHEET_DICE_DRAWER",
+      guid = "4cd6ed",
+      localXZ = { x = 0.5505, z = -21.3246 },
+      localRotation = { x = 0.0000, y = 180.0000, z = 0.0000 },
+      defaultY = -1.0000,
+      -- world 60.6778, -1.0000, -33.5158
+      scale = { x = 23.5700, y = 0.1000, z = 7.6800 },
+    },
+    ["CSHEET_DICE_DRAWER_ANCHOR_OFF"] = {
+      roleKey = "CSHEET_DICE_DRAWER_ANCHOR_OFF",
+      guid = "96ab73",
+      localXZ = { x = 0.5505, z = -21.3246 },
+      localRotation = { x = 0.0000, y = 180.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world 60.6778, 200.0000, -33.5158
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["CSHEET_DICE_DRAWER_ANCHOR_ON"] = {
+      roleKey = "CSHEET_DICE_DRAWER_ANCHOR_ON",
+      guid = "2f15c3",
+      localXZ = { x = 0.5505, z = -44.0890 },
+      localRotation = { x = 0.0000, y = 180.0000, z = 0.0000 },
+      defaultY = 200.0000,
+      -- world 48.4398, 200.0000, -16.6716
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["CSHEET_PAGE_1"] = {
+      roleKey = "CSHEET_PAGE_1",
+      guid = "21d213",
+      localXZ = { x = 7.2419, z = -22.6708 },
+      localRotation = { x = 19.4400, y = 0.0000, z = 0.0000 },
+      defaultY = 3.1900,
+      -- world 55.0029, 3.1900, -36.1169
+      scale = { x = 8.0000, y = 1.0000, z = 8.0000 },
+    },
+    ["CSHEET_PAGE_2"] = {
+      roleKey = "CSHEET_PAGE_2",
+      guid = "c80132",
+      localXZ = { x = -6.1409, z = -22.6694 },
+      localRotation = { x = 19.4400, y = 0.0000, z = 0.0000 },
+      defaultY = 3.1900,
+      -- world 64.9060, 3.1900, -28.9234
+      scale = { x = 8.0000, y = 1.0000, z = 8.0000 },
+    },
+    ["CSHEET_PAGE_3"] = {
+      roleKey = "CSHEET_PAGE_3",
+      guid = "f8e50c",
+      localXZ = { x = 7.2435, z = -22.6694 },
+      localRotation = { x = 19.4360, y = 0.0000, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world 55.0024, -200.0000, -36.1188
+      scale = { x = 8.0000, y = 1.0000, z = 8.0000 },
+    },
+    ["CSHEET_PAGE_4"] = {
+      roleKey = "CSHEET_PAGE_4",
+      guid = "a88138",
+      localXZ = { x = -6.1409, z = -22.6694 },
+      localRotation = { x = 19.4400, y = 0.0000, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world 64.9060, -200.0000, -28.9234
+      scale = { x = 8.0000, y = 1.0000, z = 8.0000 },
+    },
+    ["CSHEET_PAGE_5"] = {
+      roleKey = "CSHEET_PAGE_5",
+      guid = "f7ab1b",
+      localXZ = { x = 7.2435, z = -22.6694 },
+      localRotation = { x = 19.4360, y = 0.0000, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world 55.0024, -200.0000, -36.1188
+      scale = { x = 8.0000, y = 1.0000, z = 8.0000 },
+    },
+    ["CSHEET_PAGE_6"] = {
+      roleKey = "CSHEET_PAGE_6",
+      guid = "f36758",
+      localXZ = { x = -6.1409, z = -22.6694 },
+      localRotation = { x = 19.4400, y = 0.0000, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world 64.9060, -200.0000, -28.9234
+      scale = { x = 8.0000, y = 1.0000, z = 8.0000 },
+    },
+    ["CSHEET_PAGE_7"] = {
+      roleKey = "CSHEET_PAGE_7",
+      guid = "35df08",
+      localXZ = { x = 7.2435, z = -22.6694 },
+      localRotation = { x = 19.4360, y = 0.0000, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world 55.0024, -200.0000, -36.1188
+      scale = { x = 8.0000, y = 1.0000, z = 8.0000 },
+    },
+    ["CSHEET_PAGE_8"] = {
+      roleKey = "CSHEET_PAGE_8",
+      guid = "07ead9",
+      localXZ = { x = -6.1409, z = -22.6694 },
+      localRotation = { x = 19.4400, y = 0.0000, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world 64.9060, -200.0000, -28.9234
+      scale = { x = 8.0000, y = 1.0000, z = 8.0000 },
+    },
+    ["DICEBAG_HUNGER"] = {
+      roleKey = "DICEBAG_HUNGER",
+      guid = "2cb469",
+      localXZ = { x = -3.7018, z = -33.0384 },
+      localRotation = { x = 0.0000, y = 0.0193, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world 57.5269, -200.0000, -22.5623
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["DICEBAG_NORMAL"] = {
+      roleKey = "DICEBAG_NORMAL",
+      guid = "b5b3bd",
+      localXZ = { x = -1.0170, z = -32.5657 },
+      localRotation = { x = 0.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 5.9800,
+      -- world 55.7945, 5.9800, -24.3554
+      scale = { x = 1.3500, y = 1.3500, z = 1.3500 },
+    },
+    ["DICEBAG_ROUSE"] = {
+      roleKey = "DICEBAG_ROUSE",
+      guid = "992733",
+      localXZ = { x = 2.1589, z = -32.5661 },
+      localRotation = { x = 0.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 5.9800,
+      -- world 53.4443, 5.9800, -26.0625
+      scale = { x = 1.3500, y = 1.3500, z = 1.3500 },
+    },
+    ["FAMULUS_FIGURINE"] = {
+      roleKey = "FAMULUS_FIGURINE",
+      guid = "923797",
+      localXZ = { x = -9.0646, z = -35.5265 },
+      localRotation = { x = 0.0000, y = 180.0000, z = 0.0000 },
+      defaultY = -1.0300,
+      -- world 60.1574, -1.0300, -17.8384
+      scale = { x = 0.3000, y = 0.3000, z = 0.3000 },
+    },
+    ["FAMULUS_LIGHT_1"] = {
+      roleKey = "FAMULUS_LIGHT_1",
+      guid = "645352",
+      localXZ = { x = -9.6725, z = -42.8019 },
+      localRotation = { x = 31.8995, y = 0.0000, z = 180.0000 },
+      defaultY = 0.6400,
+      -- world 56.6960, 0.6400, -12.1282
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["FAMULUS_LIGHT_2"] = {
+      roleKey = "FAMULUS_LIGHT_2",
+      guid = "c78daf",
+      localXZ = { x = -9.6725, z = -17.0075 },
+      localRotation = { x = 90.0000, y = 0.0000, z = 0.0000 },
+      defaultY = 14.8500,
+      -- world 70.5629, 14.8500, -31.2143
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["HAND_ZONE"] = {
+      roleKey = "HAND_ZONE",
+      guid = "a30107",
+      localXZ = { x = 0.5505, z = 4.2370 },
+      localRotation = { x = 0.0000, y = 180.0000, z = 0.0000 },
+      defaultY = 3.2200,
+      -- world 74.4195, 3.2200, -52.4296
+      scale = { x = 29.8700, y = 7.0000, z = 11.6200 },
+    },
+    ["HUNGER_SMOKE"] = {
+      roleKey = "HUNGER_SMOKE",
+      guid = "6ab1fb",
+      localXZ = { x = 0.5505, z = -33.4599 },
+      localRotation = { x = 0.0000, y = 180.0000, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world 54.1539, -200.0000, -24.5365
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["SEAT_CHAIR"] = {
+      roleKey = "SEAT_CHAIR",
+      guid = "3da314",
+      localXZ = { x = 0.5505, z = 14.3069 },
+      localRotation = { x = 0.0000, y = 0.0000, z = 0.0000 },
+      defaultY = -44.8600,
+      -- world 79.8330, -44.8600, -59.8807
+      scale = { x = 20.0000, y = 54.8221, z = 14.8888 },
+    },
+    ["SEAT_FIGURE"] = {
+      roleKey = "SEAT_FIGURE",
+      guid = "1c5b18",
+      localXZ = { x = 0.0000, z = 0.0000 },
+      localRotation = { x = 0.0000, y = 0.0000, z = 0.0000 },
+      defaultY = -55.8166,
+      -- world 72.5490, -55.8166, -48.9986
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["SEAT_LIGHT_1"] = {
+      roleKey = "SEAT_LIGHT_1",
+      guid = "f251e0",
+      localXZ = { x = 0.5505, z = -8.4574 },
+      localRotation = { x = -10.0000, y = 180.0000, z = 0.0000 },
+      defaultY = 23.0000,
+      -- world 67.5951, 23.0000, -43.0366
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["SEAT_LIGHT_2"] = {
+      roleKey = "SEAT_LIGHT_2",
+      guid = "9b5685",
+      localXZ = { x = 0.5505, z = -35.3196 },
+      localRotation = { x = 64.7800, y = 0.0000, z = 180.0000 },
+      defaultY = 17.0400,
+      -- world 53.1541, 17.0400, -23.1604
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["SEAT_LIGHT_3"] = {
+      roleKey = "SEAT_LIGHT_3",
+      guid = "daa1ad",
+      localXZ = { x = 0.5505, z = 4.2370 },
+      localRotation = { x = 0.0000, y = 0.0000, z = 180.0000 },
+      defaultY = -5.0000,
+      -- world 74.4195, -5.0000, -52.4296
+      scale = { x = 1.0000, y = 1.0000, z = 1.0000 },
+    },
+    ["SIGNAL_CANDLE"] = {
+      roleKey = "SIGNAL_CANDLE",
+      guid = "083515",
+      localXZ = { x = 12.4572, z = -32.5643 },
+      localRotation = { x = 0.0000, y = 180.0000, z = 0.0000 },
+      defaultY = 4.7388,
+      -- world 45.8252, 4.7388, -31.6001
+      scale = { x = 2.0000, y = 5.0000, z = 2.0000 },
+    },
+    ["SIGNAL_FIRE"] = {
+      roleKey = "SIGNAL_FIRE",
+      guid = "b0ffa8",
+      localXZ = { x = 12.4572, z = -32.5643 },
+      localRotation = { x = 0.0000, y = 180.0000, z = 0.0000 },
+      defaultY = -200.0000,
+      -- world 45.8252, -200.0000, -31.6001
+      scale = { x = 0.0100, y = 0.0100, z = 0.0100 },
+    },
+    ["STORAGE_TOME"] = {
+      roleKey = "STORAGE_TOME",
+      guid = "41d532",
+      localXZ = { x = -14.7790, z = -16.5718 },
+      localRotation = { x = 0.0000, y = 0.0143, z = 0.0000 },
+      defaultY = -0.0146,
+      -- world 74.5756, -0.0146, -28.7915
+      scale = { x = 10.0000, y = 15.0000, z = 10.0000 },
+    },
+  },
+  skippedNoRole = {
+    { guid = "0004d8", name = "Normal Die", tags = "BrownObject,d10Preload,NormalDie" },
+    { guid = "039413", name = "Rouse Die", tags = "BrownObject,d10Preload,RouseDie" },
+    { guid = "05f997", name = "Normal Die", tags = "BrownObject,d10Preload,NormalDie" },
+    { guid = "078f26", name = "Rouse Die", tags = "BrownObject,d10Preload,RouseDie" },
+    { guid = "1121ba", name = "Normal Die", tags = "BrownObject,d10Preload,NormalDie" },
+    { guid = "229e1f", name = "Normal Die", tags = "BrownObject,d10Preload,NormalDie" },
+    { guid = "2684f6", name = "Normal Die", tags = "BrownObject,d10Preload,NormalDie" },
+    { guid = "2e5be7", name = "Rouse Die", tags = "BrownObject,d10Preload,RouseDie" },
+    { guid = "30a1ba", name = "Rouse Die", tags = "BrownObject,d10Preload,RouseDie" },
+    { guid = "38e843", name = "Hunger Die", tags = "BrownObject,d10Preload,HungerDie" },
+    { guid = "3d04e6", name = "Normal Die", tags = "BrownObject,d10Preload,NormalDie" },
+    { guid = "4ee1aa", name = "Hunger Die", tags = "BrownObject,d10Preload,HungerDie" },
+    { guid = "50f2bc", name = "Hunger Die", tags = "BrownObject,d10Preload,HungerDie" },
+    { guid = "511942", name = "Normal Die", tags = "BrownObject,d10Preload,NormalDie" },
+    { guid = "57546d", name = "Hunger Die", tags = "BrownObject,d10Preload,HungerDie" },
+    { guid = "5eca9a", name = "Hunger Die", tags = "BrownObject,d10Preload,HungerDie" },
+    { guid = "624d83", name = "Hunger Die", tags = "BrownObject,d10Preload,HungerDie" },
+    { guid = "6f23c9", name = "Normal Die", tags = "BrownObject,d10Preload,NormalDie" },
+    { guid = "707fc0", name = "Normal Die", tags = "BrownObject,d10Preload,NormalDie" },
+    { guid = "78a2b5", name = "Rouse Die", tags = "BrownObject,d10Preload,RouseDie" },
+    { guid = "7c6de7", name = "Normal Die", tags = "BrownObject,d10Preload,NormalDie" },
+    { guid = "8a6570", name = "Hunger Die", tags = "BrownObject,d10Preload,HungerDie" },
+    { guid = "8c2da9", name = "Normal Die", tags = "BrownObject,d10Preload,NormalDie" },
+    { guid = "91f0b9", name = "Rouse Die", tags = "BrownObject,d10Preload,RouseDie" },
+    { guid = "928b4f", name = "Rouse Die", tags = "BrownObject,d10Preload,RouseDie" },
+    { guid = "98c145", name = "Hunger Die", tags = "BrownObject,d10Preload,HungerDie" },
+    { guid = "a35ac9", name = "Hunger Die", tags = "BrownObject,d10Preload,HungerDie" },
+    { guid = "b0b959", name = "Normal Die", tags = "BrownObject,d10Preload,NormalDie" },
+    { guid = "b25055", name = "Hunger Die", tags = "BrownObject,d10Preload,HungerDie" },
+    { guid = "ba84f7", name = "Rouse Die", tags = "BrownObject,d10Preload,RouseDie" },
+    { guid = "bb459a", name = "Hunger Die", tags = "BrownObject,d10Preload,HungerDie" },
+    { guid = "bf1fb9", name = "Hunger Die", tags = "BrownObject,d10Preload,HungerDie" },
+    { guid = "debc4f", name = "Rouse Die", tags = "BrownObject,d10Preload,RouseDie" },
+    { guid = "df1a5f", name = "Rouse Die", tags = "BrownObject,d10Preload,RouseDie" },
+    { guid = "dfe57b", name = "Rouse Die", tags = "BrownObject,d10Preload,RouseDie" },
+    { guid = "ed54e6", name = "Rouse Die", tags = "BrownObject,d10Preload,RouseDie" },
+  },
+}

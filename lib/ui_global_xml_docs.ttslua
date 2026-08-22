@@ -7194,6 +7194,8 @@ UI.setAttributes("overlay_globalBlindfold", {color = "rgba(1, 1, 1, 0.25)"})
   <Button class="pcs_btn_auto_seat" preferredWidth="88" minWidth="80" fontSize="10" height="26" text="Auto-Seat" />
   <Button class="pcs_btn_connect" preferredWidth="72" minWidth="64" fontSize="10" height="26" text="Connect" />
   <Toggle class="pcs_join_toggle" preferredWidth="128" minWidth="110" fontSize="11" textColor="#FFFFFF" />
+  <Toggle class="pcs_absent_toggle" preferredWidth="72" minWidth="64" fontSize="11" textColor="#FFFFFF" />
+  <InputField class="pcs_slot_input" fontSize="12" minWidth="36" preferredWidth="40" characterValidation="Integer" textAlignment="MiddleCenter" />
 
   <Button class="pcs_btn_palette_agg" colors="#662222|#883333|#991111|rgba(0.5,0.1,0.1,0.4)" />
   <Button class="pcs_btn_palette_sup" colors="#444444|#555555|#666666|rgba(0.2,0.2,0.2,0.4)" />
@@ -8438,9 +8440,13 @@ UI.setAttributes("storytellerToolbarRoot", {width = "1100"})
   </HorizontalLayout>
   <HorizontalLayout id="db_panel_scenes_seat_presence_npc_buttons" class="hud_storyteller_button_row" spacing="3" childForceExpandWidth="false">
     <Button id="scenes_seat_NPC1" text="NPC1" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+    <InputField id="scenes_tableSlot_NPC1" text="6" minWidth="32" preferredWidth="36" characterValidation="Integer" onEndEdit="HUD_scenesTableSlot" />
     <Button id="scenes_seat_NPC2" text="NPC2" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+    <InputField id="scenes_tableSlot_NPC2" text="7" minWidth="32" preferredWidth="36" characterValidation="Integer" onEndEdit="HUD_scenesTableSlot" />
     <Button id="scenes_seat_NPC3" text="NPC3" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+    <InputField id="scenes_tableSlot_NPC3" text="8" minWidth="32" preferredWidth="36" characterValidation="Integer" onEndEdit="HUD_scenesTableSlot" />
     <Button id="scenes_seat_NPC4" text="NPC4" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+    <InputField id="scenes_tableSlot_NPC4" text="9" minWidth="32" preferredWidth="36" characterValidation="Integer" onEndEdit="HUD_scenesTableSlot" />
   </HorizontalLayout>
 
   <Text id="db_panel_scenes_location_header" class="hud_storyteller_label">Scene Location</Text>
@@ -8844,6 +8850,9 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
           <Button class="pcs_btn pcs_btn_auto_seat pcs_btn_palette_join" id="pcs_Brown_autoSeat" />
           <Toggle class="pcs_join_toggle" id="pcs_deferConnect_Brown" isOn="false" onValueChanged="HUD_pcsDeferConnect">Defer Connect</Toggle>
           <Button class="pcs_btn pcs_btn_connect pcs_btn_palette_join" id="pcs_Brown_connect" />
+          <Toggle class="pcs_absent_toggle" id="pcs_absent_Brown" isOn="false" onValueChanged="HUD_pcsAbsentFromSession">Absent</Toggle>
+          <Text class="pcs_prefix_wide">Slot:</Text>
+          <InputField class="pcs_slot_input" id="pcs_tableSlot_Brown" text="4" onEndEdit="HUD_pcsTableSlot" />
         </HorizontalLayout>
         <!-- Roll initiation row: each button starts a roll of that type in SETUP -->
         <HorizontalLayout class="pcs_stat_row">
@@ -8929,6 +8938,9 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
           <Button class="pcs_btn pcs_btn_auto_seat pcs_btn_palette_join" id="pcs_Orange_autoSeat" />
           <Toggle class="pcs_join_toggle" id="pcs_deferConnect_Orange" isOn="false" onValueChanged="HUD_pcsDeferConnect">Defer Connect</Toggle>
           <Button class="pcs_btn pcs_btn_connect pcs_btn_palette_join" id="pcs_Orange_connect" />
+          <Toggle class="pcs_absent_toggle" id="pcs_absent_Orange" isOn="false" onValueChanged="HUD_pcsAbsentFromSession">Absent</Toggle>
+          <Text class="pcs_prefix_wide">Slot:</Text>
+          <InputField class="pcs_slot_input" id="pcs_tableSlot_Orange" text="2" onEndEdit="HUD_pcsTableSlot" />
         </HorizontalLayout>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">Roll:</Text>
@@ -9013,6 +9025,9 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
           <Button class="pcs_btn pcs_btn_auto_seat pcs_btn_palette_join" id="pcs_Red_autoSeat" />
           <Toggle class="pcs_join_toggle" id="pcs_deferConnect_Red" isOn="false" onValueChanged="HUD_pcsDeferConnect">Defer Connect</Toggle>
           <Button class="pcs_btn pcs_btn_connect pcs_btn_palette_join" id="pcs_Red_connect" />
+          <Toggle class="pcs_absent_toggle" id="pcs_absent_Red" isOn="false" onValueChanged="HUD_pcsAbsentFromSession">Absent</Toggle>
+          <Text class="pcs_prefix_wide">Slot:</Text>
+          <InputField class="pcs_slot_input" id="pcs_tableSlot_Red" text="1" onEndEdit="HUD_pcsTableSlot" />
         </HorizontalLayout>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">Roll:</Text>
@@ -9097,6 +9112,9 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
           <Button class="pcs_btn pcs_btn_auto_seat pcs_btn_palette_join" id="pcs_Pink_autoSeat" />
           <Toggle class="pcs_join_toggle" id="pcs_deferConnect_Pink" isOn="false" onValueChanged="HUD_pcsDeferConnect">Defer Connect</Toggle>
           <Button class="pcs_btn pcs_btn_connect pcs_btn_palette_join" id="pcs_Pink_connect" />
+          <Toggle class="pcs_absent_toggle" id="pcs_absent_Pink" isOn="false" onValueChanged="HUD_pcsAbsentFromSession">Absent</Toggle>
+          <Text class="pcs_prefix_wide">Slot:</Text>
+          <InputField class="pcs_slot_input" id="pcs_tableSlot_Pink" text="3" onEndEdit="HUD_pcsTableSlot" />
         </HorizontalLayout>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">Roll:</Text>
@@ -9181,6 +9199,9 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
           <Button class="pcs_btn pcs_btn_auto_seat pcs_btn_palette_join" id="pcs_Purple_autoSeat" />
           <Toggle class="pcs_join_toggle" id="pcs_deferConnect_Purple" isOn="false" onValueChanged="HUD_pcsDeferConnect">Defer Connect</Toggle>
           <Button class="pcs_btn pcs_btn_connect pcs_btn_palette_join" id="pcs_Purple_connect" />
+          <Toggle class="pcs_absent_toggle" id="pcs_absent_Purple" isOn="false" onValueChanged="HUD_pcsAbsentFromSession">Absent</Toggle>
+          <Text class="pcs_prefix_wide">Slot:</Text>
+          <InputField class="pcs_slot_input" id="pcs_tableSlot_Purple" text="5" onEndEdit="HUD_pcsTableSlot" />
         </HorizontalLayout>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">Roll:</Text>

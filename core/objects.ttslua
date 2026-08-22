@@ -219,12 +219,8 @@ local function isPcSeatInActiveTableLayout(seatColor)
     if U.Type(tableCfg) ~= "table" then
         return true
     end
-    ---@diagnostic disable-next-line: undefined-field
-    local map = tableCfg.seatToPositionMap
-    if U.Type(map) ~= "table" then
-        return true
-    end
-    return map[seatColor] ~= nil
+    local FSL = require("lib.figurine_seat_layout")
+    return FSL.seatIsOnTable(seatColor, tableCfg)
 end
 
 --- Narrative presence for one seat (`seatSlots.isPresent` wins over `seatPresent`).

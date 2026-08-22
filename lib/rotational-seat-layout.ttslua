@@ -35,6 +35,7 @@ local SRI = require("lib.seat-role-identity")
 local TarotObjects = require("lib.tarot_objects")
 local CompulsionObjects = require("lib.compulsion_objects")
 local G = require("lib.guids")
+local FSL = require("lib.figurine_seat_layout")
 
 --- Lazy load: core.debug is large; only needed for workspace file export helpers.
 --- @return table
@@ -1040,15 +1041,15 @@ local function cameraPositionWorldOffsetForActiveTable(tableCfg)
     return Vector(0, 0, 0)
   end
   ---@cast tableCfg table
-  local refHand = M.getReferenceHand(tableCfg)
-  if refHand == nil or refHand.position == nil then
+  local refFig = FSL.getReferenceFigurineFrame(tableCfg)
+  if refFig == nil or refFig.position == nil then
     return Vector(0, 0, 0)
   end
-  local base = C.CameraAuthoringReferenceHandPosition
+  local base = C.CameraAuthoringReferenceFigurinePosition or C.CameraAuthoringReferenceHandPosition
   if base == nil then
     return Vector(0, 0, 0)
   end
-  return Vector(refHand.position) - Vector(base)
+  return Vector(refFig.position) - Vector(base)
 end
 
 --- Apply a seat's precomputed **rigid transform** (yaw `deltaDeg` about `centerPoint`, then `shift`) to
@@ -1087,9 +1088,12 @@ local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOff
   if U.Type(seatRigidByKey) ~= "table" then
     error("rotational-seat-layout: applyCameraModesForSeats requires computed.seatRigidByKey (from a layout generator)")
   end
-  local referenceRigid = seatRigidByKey[referenceColor]
+  local referenceRigid = computed.slot1Rigid
   if U.Type(referenceRigid) ~= "table" or referenceRigid.shift == nil then
-    error("rotational-seat-layout: applyCameraModesForSeats missing rigid transform for reference seat '" ..
+    referenceRigid = seatRigidByKey[referenceColor]
+  end
+  if U.Type(referenceRigid) ~= "table" or referenceRigid.shift == nil then
+    error("rotational-seat-layout: applyCameraModesForSeats missing rigid transform for slot 1 / reference seat '" ..
       tostring(referenceColor) .. "'")
   end
   local centerPoint = Vector(computed.centerPoint)
@@ -1811,9 +1815,9 @@ function M.facingSeatWorldXZ(tableCfg, sideAngleDeg, index1Based)
   local nSeats = facingMaxIndexForSide(M.getSeatToPositionMap(tableCfg), sideAngleDeg)
   local x = facingSegmentCenterX(sideAngleDeg, index1Based, nSeats, xMin, xMax)
   local rowDist = 0
-  local refHand = M.getReferenceHand(tableCfg)
-  if refHand ~= nil and refHand.position ~= nil then
-    rowDist = U.HorizontalDistance(cp, Vector(refHand.position))
+  local refFig = FSL.getReferenceFigurineFrame(tableCfg)
+  if refFig ~= nil and refFig.position ~= nil then
+    rowDist = U.HorizontalDistance(cp, Vector(refFig.position))
   end
   local z = cp.z + math.cos(math.rad(sideAngleDeg)) * rowDist
   return Vector(x, cp.y, z)
@@ -2471,8 +2475,8 @@ end
 
 --- Resolve a table key to a concrete `C.Tables` key.
 --- Exact keys (incl. explicit `Table B4`) return unchanged. Family keys (no exact entry, but numbered
---- variants exist) resolve to `familyKey .. highestOccupiedNpcSlotIndex` (override via
---- `opts.occupiedCount` or `opts.occupiedSlotIndex`).
+--- variants exist) resolve to `familyKey .. tableBVariantIndex` from highest occupied numbered tableSlot
+--- (override via `opts.occupiedCount` or `opts.occupiedSlotIndex`).
 --- @param tableKey string
 --- @param opts table|nil `{ occupiedCount = number?, occupiedSlotIndex = number? }`
 --- @return string concreteKey
@@ -2496,11 +2500,11 @@ local function resolveTableKey(tableKey, opts)
     slotIndex = opts.occupiedCount
   end
   if U.Type(slotIndex) ~= "number" then
-    slotIndex = highestOccupiedNpcSlotIndex()
+    slotIndex = FSL.tableBVariantIndex()
   end
   local candidate = variants[slotIndex]
   if candidate == nil then
-    error("rotational-seat-layout: no '" .. tableKey .. "' variant for highest occupied NPC slot "
+    error("rotational-seat-layout: no '" .. tableKey .. "' variant for highest occupied table slot index "
       .. tostring(slotIndex) .. " (expected '" .. tableKey .. tostring(slotIndex) .. "')")
   end
   return candidate, tableKey
@@ -2563,17 +2567,14 @@ end
 --- @return table<string, boolean>
 local function collectSeatPresenceMap(tableCfg)
   local present = {}
-  local map = nil
-  if U.Type(tableCfg) == "table" then
-    ---@cast tableCfg table
-    map = M.getSeatToPositionMap(tableCfg)
+  for _, color in ipairs(C.PlayerColors or {}) do
+    if FSL.seatIsOnTable(color, tableCfg) then
+      present[color] = true
+    end
   end
-  if U.Type(map) == "table" then
-    ---@cast map table
-    for seatKey, _ in pairs(map) do
-      if U.Type(seatKey) == "string" then
-        present[seatKey] = true
-      end
+  for _, npc in ipairs(C.NPCSeats or {}) do
+    if FSL.seatIsOnTable(npc, tableCfg) then
+      present[npc] = true
     end
   end
   return present
@@ -2679,28 +2680,12 @@ local function computeLayoutSyncFingerprint(tableKey)
   if U.Type(tableKey) ~= "string" or tableKey == "" then
     return nil
   end
-  local key, tableCfg = resolveTableRef(tableKey)
+  local key = resolveTableRef(tableKey)
   local occupied = getOccupiedNPCSlots({ forFingerprint = true })
-  local filtered = buildFilteredSeatMap(tableCfg, occupied, { forFingerprint = true })
-  local mapKeys = {}
-  for seatKey in pairs(filtered) do
-    mapKeys[#mapKeys + 1] = seatKey
-  end
-  table.sort(mapKeys)
-  local lines = { "table:" .. key, "map:" }
-  for i = 1, #mapKeys do
-    local seatKey = mapKeys[i]
-    local seg = filtered[seatKey]
-    local segStr
-    if U.Type(seg) == "table" then
-      -- FACING/RECTANGULAR seats: serialize { side, index } stably (raw tostring is an address).
-      segStr = "side=" .. tostring(seg.side) .. ",index=" .. tostring(seg.index)
-    else
-      segStr = tostring(seg)
-    end
-    lines[#lines + 1] = seatKey .. "=" .. segStr
-  end
-  return table.concat(lines, "\n")
+  return table.concat({
+    "table:" .. key,
+    FSL.occupancyFingerprint({ occupiedNPCSlots = occupied }),
+  }, "\n")
 end
 
 --- Clear layout-sync fingerprint so the next `SyncTable` / `resolveSeatObjectsFromTable` runs fully.
@@ -2759,11 +2744,8 @@ end
 --- @param occupiedNPCSlots table<string, string|boolean>
 --- @param isActive boolean
 local function componentUsedByOccupied(componentCfg, occupiedNPCSlots)
-  local usedBy = componentCfg.usedBy
-  if U.Type(usedBy) ~= "string" then
-    return true
-  end
-  return occupiedNPCSlots[usedBy] ~= nil and occupiedNPCSlots[usedBy] ~= false
+  local highest = FSL.highestOccupiedTableSlot({ occupiedNPCSlots = occupiedNPCSlots })
+  return FSL.componentUsedByOccupied(componentCfg, highest)
 end
 
 --- @param tableCfg table|nil
@@ -3486,31 +3468,62 @@ function M.resolveSeatObjectsFromTable(tableRef, sourceObjects, options)
   if U.Type(previousTableKey) == "string" and U.Type(C.Tables and C.Tables[previousTableKey]) == "table" then
     previousTableCfg = C.Tables[previousTableKey]
   end
-  -- Snap reference hand + RedObject rig to destination referenceHand before simplified layout.
-  applyReferenceHandPositionDelta(previousTableKey, tableKey)
   -- Persist target table before any step that reads `gameState.seatLayout.currentTableKey`
   -- (lighting seat-presence, HUD consumers, etc.) so mid-resolve code sees the destination layout.
   S.setStateVal(tableKey, "seatLayout", "currentTableKey")
+  FSL.seedDefaultTableSlots()
   local occupiedNPCSlots = getOccupiedNPCSlots()
-  local filteredMap = buildFilteredSeatMap(tableCfg, occupiedNPCSlots)
+  FSL.validateOccupancy(tableCfg)
   -- Activate the target table (instant setPosition) BEFORE layout so FACING bounds reads are valid.
   applyAllTablesVisualState(tableKey, occupiedNPCSlots)
   syncSharedFloorAndPlinthToTableOrigin(tableCfg)
 
-  local referenceSeatKey, refKeyErr = M.resolveReferenceSeatKey(tableCfg)
-  if referenceSeatKey == nil then
-    error("rotational-seat-layout: table missing reference seat key: " .. tostring(refKeyErr))
+  local facingBounds = nil
+  if tableCfg.shape == (C.TableShapes and C.TableShapes.FACING) then
+    if U.Type(tableCfg.guid) ~= "string" or tableCfg.guid == "" then
+      error("rotational-seat-layout: FACING table is missing guid (needed to read active bounds)")
+    end
+    local tableObj = G.getObject(tableCfg.guid)
+    if tableObj == nil or type(tableObj.getBounds) ~= "function" then
+      error("rotational-seat-layout: FACING table object '" .. tostring(tableCfg.guid) ..
+        "' is not present; cannot read bounds")
+    end
+    local bounds = tableObj.getBounds()
+    if U.Type(bounds) ~= "table" or bounds.center == nil or bounds.size == nil then
+      error("rotational-seat-layout: FACING table getBounds() returned no center/size")
+    end
+    local boundsCenter = Vector(bounds.center)
+    local boundsSize = Vector(bounds.size)
+    facingBounds = {
+      xMin = boundsCenter.x - boundsSize.x / 2,
+      xMax = boundsCenter.x + boundsSize.x / 2,
+    }
   end
 
-  local handBundle = M.computeHandFrames(tableCfg, filteredMap, opts)
-  local computed = buildLayoutComputedContext(tableCfg, filteredMap, handBundle, referenceSeatKey)
+  local occOpts = { occupiedNPCSlots = occupiedNPCSlots }
+  local bundle = FSL.computeSlotFrames(tableCfg, facingBounds, occOpts)
+  FSL.applyOccupantRigs(bundle, {
+    moveHandZone = moveHandZoneAndContainedCards,
+  })
 
-  local layoutOpts = U.clone(opts, true)
-  layoutOpts.handBundle = handBundle
-  layoutOpts.sourceObjects = src
-  M.applySimplifiedSeatLayout(tableCfg, filteredMap, layoutOpts)
-
-  applyPostCorrections(src, computed, { skipPcPostCorrections = true })
+  local slot1Occupant = nil
+  for i = 1, #bundle.occupants do
+    if bundle.occupants[i].tableSlot == 1 then
+      slot1Occupant = bundle.occupants[i].occupantKey
+      break
+    end
+  end
+  local computed = {
+    referenceSeatKey = slot1Occupant or "Red",
+    referencePlayerColor = slot1Occupant or "Red",
+    seatRigidByKey = bundle.seatRigidByKey,
+    slot1Rigid = bundle.slot1Rigid,
+    centerPoint = bundle.centerPoint,
+    seatToPositionMap = {},
+  }
+  for i = 1, #bundle.occupants do
+    computed.seatToPositionMap[bundle.occupants[i].occupantKey] = bundle.occupants[i].tableSlot
+  end
   applyTableConfigObjectPositions(tableCfg)
   do
     local Compulsions = require("core.compulsions")
@@ -3993,7 +4006,7 @@ local function getReferenceHandFromCfg(tableCfg)
   }
 end
 
---- Inverse lookup: seat key whose map entry equals `referenceSeatSegment`.
+--- Inverse lookup: occupant currently in tableSlot 1, else Red.
 --- @param tableCfg table|nil
 --- @return string|nil referenceSeatKey
 --- @return string|nil errorMessage when ambiguous
@@ -4001,24 +4014,13 @@ local function resolveReferenceSeatKeyFromCfg(tableCfg)
   if U.Type(tableCfg) ~= "table" then
     return nil, "tableCfg must be a table"
   end
-  local refSeg = getReferenceSeatSegmentFromCfg(tableCfg)
-  if refSeg == nil then
-    return nil, "referenceSeatSegment is missing"
-  end
-  local map = getSeatToPositionMapFromCfg(tableCfg)
-  local foundKey = nil
-  for seatKey, seg in pairs(map) do
-    if U.Type(seatKey) == "string" and seatSegmentDescriptorsEqual(seg, refSeg) then
-      if foundKey ~= nil then
-        return nil, "ambiguous referenceSeatSegment (matches '" .. foundKey .. "' and '" .. seatKey .. "')"
-      end
-      foundKey = seatKey
+  local occ = FSL.collectOccupants()
+  for i = 1, #occ do
+    if occ[i].tableSlot == 1 then
+      return occ[i].occupantKey, nil
     end
   end
-  if foundKey == nil then
-    return nil, "no seatToPositionMap entry matches referenceSeatSegment"
-  end
-  return foundKey, nil
+  return "Red", nil
 end
 
 --- Public: seat map for layout (`seatToPositionMap` preferred).

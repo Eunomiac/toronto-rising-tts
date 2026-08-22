@@ -1312,6 +1312,15 @@ function StorytellerScenesPanel.refresh()
     end
     for _, seatKey in ipairs(C.NPCSeats or {}) do
         syncSeatButton(seatKey, "scenes_seat_" .. seatKey)
+        local slotText = ""
+        local ss = type(displayBundle) == "table" and displayBundle.seatSlots or nil
+        local row = type(ss) == "table" and ss[seatKey] or nil
+        if type(row) == "table" and tonumber(row.tableSlot) ~= nil then
+            slotText = tostring(math.floor(row.tableSlot))
+        elseif C.DefaultTableSlots and C.DefaultTableSlots[seatKey] ~= nil then
+            slotText = tostring(C.DefaultTableSlots[seatKey])
+        end
+        U.setAttributes("scenes_tableSlot_" .. seatKey, { text = slotText })
     end
 
     local dk = type(displayBundle) == "table" and displayBundle.districtKey or nil
@@ -1807,6 +1816,33 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
         return
     end
 
+    do
+        local FSL = require("lib.figurine_seat_layout")
+        local tableKey = ent.sessionScene.tableKey
+        local tableCfg = nil
+        if type(tableKey) == "string" then
+            if C.Tables and C.Tables[tableKey] then
+                tableCfg = C.Tables[tableKey]
+            elseif RSL.isDynamicTableFamilyKey and RSL.isDynamicTableFamilyKey(tableKey) then
+                local concrete = RSL.resolveTableKey(tableKey)
+                tableCfg = C.Tables and C.Tables[concrete] or nil
+            end
+        end
+        local occupied = {}
+        local slots = ent.sessionScene.seatSlots
+        for _, npc in ipairs(C.NPCSeats or {}) do
+            local row = type(slots) == "table" and slots[npc] or nil
+            if type(row) == "table" and type(row.characterKey) == "string" and row.characterKey ~= "" then
+                occupied[npc] = row.characterKey
+            end
+        end
+        local okOcc, errOcc = FSL.checkOccupancy(slots, occupied, tableCfg, { forImport = true })
+        if not okOcc then
+            U.AlertGM(errOcc or "This library scene is missing numbered table slots.")
+            return
+        end
+    end
+
     if RSL.alertAndBlockIfDiceOnTable("apply a library scene") then
         return
     end
@@ -2133,6 +2169,39 @@ function StorytellerScenesPanel.onHudClick(player, button, id)
         reconcileHostedSyncAndPresentSheets("StorytellerScenesPanel.seatPresence")
         return
     end
+end
+
+--- Numbered tableSlot for an NPC identity (Seat Activation row). TOR-507.
+--- @param player Player
+--- @param value string|nil
+--- @param id string|nil
+function StorytellerScenesPanel.onTableSlotInput(player, value, id)
+    if type(id) ~= "string" then
+        return
+    end
+    local seatKey = string.match(id, "^scenes_tableSlot_(.+)$")
+    if seatKey == nil or not U.isIn(seatKey, C.NPCSeats or {}) then
+        return
+    end
+    local slot = tonumber(value)
+    if slot == nil then
+        U.AlertGM("NPC table slot must be a number.")
+        StorytellerScenesPanel.refresh()
+        return
+    end
+    local FSL = require("lib.figurine_seat_layout")
+    local ok, err = FSL.tryAssignTableSlot(seatKey, slot)
+    if not ok then
+        U.AlertGM(err or ("Could not assign table slot for " .. seatKey))
+        StorytellerScenesPanel.refresh()
+        return
+    end
+    S.validateState()
+    if RSL.invalidateLayoutSyncCache then
+        RSL.invalidateLayoutSyncCache()
+    end
+    RSL.SyncTable(nil, { force = true })
+    StorytellerScenesPanel.refresh()
 end
 
 --- Site-modal buckets are flowing `<VerticalLayout>` containers (TOR-83); toggling `active`/`visibility="None"` removes the inactive district buckets from layout so only the matching district bucket and the generic bucket render, stacked without overlap.

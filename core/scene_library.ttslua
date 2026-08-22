@@ -581,6 +581,28 @@ function SceneLibrary.validateAndNormalizeImportPayload(raw)
         end
     end
 
+    do
+        local FSL = require("lib.figurine_seat_layout")
+        local occupied = {}
+        for _, npcSeat in ipairs(C.NPCSeats or {}) do
+            local npcRow = slots[npcSeat]
+            if type(npcRow) == "table" and isNonEmptyString(npcRow.characterKey) then
+                occupied[npcSeat] = npcRow.characterKey
+            end
+        end
+        local tableCfg = nil
+        local tableKey = sessionScene.tableKey
+        if type(tableKey) == "string" and C.Tables and C.Tables[tableKey] then
+            tableCfg = C.Tables[tableKey]
+        elseif tableKey == "Table B" then
+            tableCfg = { slotCapacity = 9 }
+        end
+        local okSlots, errSlots = FSL.checkOccupancy(slots, occupied, tableCfg, { forImport = true })
+        if not okSlots then
+            return false, errSlots, nil
+        end
+    end
+
     local okWeather, errWeather = validateSoundscapeWeatherTrioForImport(sessionScene)
     if not okWeather then
         return false, errWeather or "sessionScene.soundscapeNarrative: weather trio validation failed.", nil

@@ -422,13 +422,9 @@ local function buildTableComponentActivationMap(parentTable, activeTable)
         if type(componentCfg) == "table" and type(componentCfg.guid) == "string" then
             local active = isActiveTable
             if active then
-                local usedBy = componentCfg.usedBy
-                if type(usedBy) ~= "string" or usedBy == "" then
-                    active = true
-                else
-                    local assigned = occupied[usedBy]
-                    active = type(assigned) == "string" and assigned ~= ""
-                end
+                local FSL = require("lib.figurine_seat_layout")
+                local highest = FSL.highestOccupiedTableSlot({ occupiedNPCSlots = occupied })
+                active = FSL.componentUsedByOccupied(componentCfg, highest)
             end
             activateByName[componentName] = active
         end
@@ -943,15 +939,16 @@ local function describeTableComponentMarker(marker, activeTable)
     if row.componentExists ~= true then
         row.reasons[#row.reasons + 1] = "component_cfg_missing"
     end
-    local usedBy = row.componentExists and comp.usedBy or nil
-    row.usedBy = usedBy
+    local usedBySlot = row.componentExists and tonumber(comp.usedBySlot) or nil
+    row.usedBySlot = usedBySlot
     local usedByOccupied = nil
-    if type(usedBy) == "string" and usedBy ~= "" then
-        usedByOccupied = npcSeatOccupiedOnTable(usedBy)
+    if usedBySlot ~= nil then
+        local FSL = require("lib.figurine_seat_layout")
+        usedByOccupied = FSL.componentUsedByOccupied(comp, FSL.highestOccupiedTableSlot())
     end
     row.usedByOccupied = usedByOccupied
     if usedByOccupied == false then
-        row.reasons[#row.reasons + 1] = "used_by_seat_empty"
+        row.reasons[#row.reasons + 1] = "used_by_slot_below_threshold"
     end
     local show = tableComponentActiveForOccupiedSlots(parentTable, componentName, activeTable)
     row.show = show
@@ -996,7 +993,7 @@ local function printTableComponentMarkerRow(row)
             .. " table=" .. tostring(row.parentTable or "")
             .. " activeTable=" .. tostring(row.activeTable or "")
             .. " show=" .. tostring(row.show == true)
-            .. " usedBy=" .. tostring(row.usedBy or "")
+            .. " usedBySlot=" .. tostring(row.usedBySlot or "")
             .. " occupied=" .. tostring(row.usedByOccupied)
             .. " uv=(" .. tostring(row.targetU) .. "," .. tostring(row.targetV) .. ")"
             .. " tableSource=" .. tostring(row.tableSourceGuid or "")
