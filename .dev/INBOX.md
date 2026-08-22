@@ -44,6 +44,8 @@ Verification:
 
 ## Processed
 
+2026-08-22 late inbox follow-up — PAVE ✅ **TOR-506** (End→Intermission audio with the cover). **TOR-439** remains the multiclient gate.
+
 2026-08-22 late `/tr-inbox` — capture empty. PAVE ✅ cleared **TOR-503** (catalog load), **TOR-502** (End→Intermission cover settle), **TOR-504** (Play seat lights), **TOR-492** (queued roll broadcasts), **TOR-493** (concurrent idle Rouse), **TOR-505** (frenzy hides Rouse bags), **TOR-498** (rain particles). Added Outstanding **TOR-506** (End→Intermission audio with cover). Focus → **TOR-507**, **TOR-81**, **TOR-98**. **TOR-439** remains the multiclient gate.
 
 2026-08-22 evening inbox follow-up — frenzy disables Rouse checks → **TOR-505** (shipped; pending Save & Play).
