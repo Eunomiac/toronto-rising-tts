@@ -804,11 +804,13 @@ Catalog.TRACKS = {
   }
 }
 
-local function getTracks(type, subType, playMode)
+-- Do not name the first argument `type`: that shadows Lua's builtin `type()`
+-- and catalog load then fails (`attempt to call a string value` in getTracks).
+local function getTracks(trackType, subType, playMode)
   local tracks = {}
   local usedSequenceOrders = {}
   for _, track in pairs(Catalog.TRACKS) do
-    if track.type == type and (subType == nil or track.subType == subType) then
+    if track.type == trackType and (subType == nil or track.subType == subType) then
       if playMode == "SEQUENCE" then
         local order = tonumber(track.order) or 1
         if usedSequenceOrders[order] ~= nil then
@@ -816,7 +818,7 @@ local function getTracks(type, subType, playMode)
             "Duplicate soundscape sequence order "
             .. tostring(order)
             .. " for playlist "
-            .. tostring(type)
+            .. tostring(trackType)
             .. "."
             .. tostring(subType or "")
             .. ": "

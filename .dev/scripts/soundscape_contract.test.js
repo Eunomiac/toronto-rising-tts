@@ -433,6 +433,16 @@ test("session-start overture uses Music C and holds Main until the sting ends", 
   const phases = readRepoFile("core/phases.ttslua");
   const constants = readRepoFile("lib/constants.ttslua");
 
+  assert.equal(
+    catalog.includes("local function getTracks(type,"),
+    false,
+    "getTracks first arg must not be named type (that shadows Lua type() and catalog load fails)",
+  );
+  assert.ok(
+    catalog.includes("local function getTracks(trackType,"),
+    "getTracks should take trackType so type() remains the builtin",
+  );
+
   [
     "guidKey = \"SOUNDSCAPE_MUSIC_C\"",
     "kind = \"sessionIntro\"",
