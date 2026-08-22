@@ -345,6 +345,8 @@ end
 
 --- Play enter: Intermission AdminDark → OutdoorDim under the global cover (no SetTableTo).
 --- Table/skybox prep already ran on Intermission enter (TOR-497).
+--- Ambient/main lights apply in Scenes.reconcileFromState; player seat lights need
+--- L.reconcileAllPlayers because U.applyLightingPreset only stores the seat preset map (TOR-504).
 function Phases.applyPlayEnterNoSceneLights(_ctx)
     S.setStateVal("default", "currentScene")
     S.setStateVal(nil, "sceneTransition")
@@ -357,6 +359,13 @@ function Phases.applyPlayEnterNoSceneLights(_ctx)
     end
     if type(Scenes.reconcileFromState) == "function" then
         Scenes.reconcileFromState({ force = true })
+    end
+    local L = require("core.lighting")
+    if type(L.invalidateReconcileCache) == "function" then
+        L.invalidateReconcileCache()
+    end
+    if type(L.reconcileAllPlayers) == "function" then
+        L.reconcileAllPlayers({ force = true })
     end
     return true
 end

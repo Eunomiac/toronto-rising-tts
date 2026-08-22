@@ -61,7 +61,7 @@ Ending events of the previous phase run before starting events of the new phase 
 * When advancing from Intermission with exactly one connected player who is the Host, auto-enable DEBUG **Assume Players Connected** (TOR-429 / TOR-293).
 * Re-assert the global blindfold (already up from Intermission).
 * **Intermission → Play audio (TOR-497):** TR Loop fades out over **0.5s** and the Music C session-start overture (`C.SessionStartIntroKey`, 71s) starts **immediately** at full volume with no fade-in. Main mood is **not** started under the sting (`sessionIntroActive` holds reconcile).
-* Switch lights AdminDark → OutdoorDim under the cover (no `SetTableTo`; table/skybox already applied on Intermission enter).
+* Switch lights AdminDark → OutdoorDim under the cover (no `SetTableTo`; table/skybox already applied on Intermission enter). Then run player/NPC seat-light reconcile so OutdoorDim STANDARD actually reaches the `playerLight*` objects (preset apply only stores the seat map; TOR-504).
 * After **~69s** (71 minus 2): global blindfold hidden (`overlay_globalBlindfold`). Competing auto-hide from `applyGlobalBlindfoldFromPhase` is suppressed while `Phases.isAdvancing()` (TOR-363). Advance `U.chain` `maxWait` is overture duration + 15s so this wait is not killed by the default 60s cap (TOR-501).
 * After the remaining **2s** (sting end): fade in Main mood, then all players heal Superficial Willpower equal to max(Resolve, Composure) (temp dots included); if anyone healed, show `session_start_heal_broadcast.xml` briefly.
 

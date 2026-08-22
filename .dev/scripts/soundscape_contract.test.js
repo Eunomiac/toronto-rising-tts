@@ -503,6 +503,20 @@ test("session-start overture uses Music C and holds Main until the sting ends", 
     "old 5s Loop↔Main crossfade constant should be gone",
   );
 
+  const playLightsStart = phases.indexOf("function Phases.applyPlayEnterNoSceneLights");
+  const playLightsEnd = phases.indexOf("function Phases.fireSessionIntro");
+  assert.ok(
+    playLightsStart >= 0 && playLightsEnd > playLightsStart,
+    "missing applyPlayEnterNoSceneLights body",
+  );
+  const playLights = phases.slice(playLightsStart, playLightsEnd);
+  const sceneLightIdx = playLights.indexOf("Scenes.reconcileFromState");
+  const seatLightIdx = playLights.indexOf("L.reconcileAllPlayers");
+  assert.ok(
+    sceneLightIdx >= 0 && seatLightIdx > sceneLightIdx,
+    "Play enter lights should apply OutdoorDim then reconcile player seat lights (TOR-504)",
+  );
+
   const intermissionEnterStart = phases.indexOf("Phases.onEnter[C.Phases.INTERMISSION]");
   const intermissionEnterEnd = phases.indexOf("Phases.onEnter[C.Phases.PLAY]");
   assert.ok(
