@@ -945,7 +945,7 @@ U.chain({
   function()
     rollE2eSeatPrep("Brown")
     M.setCamera("ALL", "rollBrown")
-    printHeader("[HUMAN] Right-click Rouse bag 1 time (no live roll). Wait until the die tosses and the result appears.", 3)
+    printHeader("[HUMAN] Right-click Rouse bag 1 time (no live roll). Player roll panel should stay hidden. Wait until the die tosses and the result appears.", 3)
   end
 })
 ```
@@ -963,7 +963,7 @@ U.chain({
   function()
     rollE2eSeatPrep("Purple")
     M.setCamera("ALL", "rollPurple")
-    printHeader("[HUMAN] Right-click Oblivion-Rouse bag 1 time (no live roll). Wait until the die tosses and the result appears.", 3)
+    printHeader("[HUMAN] Right-click Oblivion-Rouse bag 1 time (no live roll). Player roll panel should stay hidden. Wait until the die tosses and the result appears.", 3)
   end
 })
 ```

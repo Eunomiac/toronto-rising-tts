@@ -486,9 +486,13 @@ local function maybeQueueFrenzyOnHungerCap(color, hungerBefore)
     if before < C.MAX_HUNGER then
         return
     end
+    -- Hunger-cap frenzy is ST-forced: already Open at Difficulty 4, no player Cancel (TOR-499).
     RC.queueRoll(color, {
-        rollType = C.RollType.FRENZY,
-        label    = "Frenzy Resist (Hunger at maximum)",
+        rollType   = C.RollType.FRENZY,
+        label      = "Frenzy Resist (Hunger at maximum)",
+        difficulty = 4,
+        initiator  = "storyteller",
+        autoOpen   = true,
     })
 end
 
@@ -1014,7 +1018,8 @@ end
 -- @param config table
 --   Required: rollType (C.RollType value)
 --   Optional: label (string), difficulty (number), pool ({normal, hunger}),
---             idleBagAutoRouse (boolean) — idle Rouse bag right-click shortcut (TOR-493)
+--             idleBagAutoRouse (boolean) — idle Rouse bag right-click shortcut (TOR-493),
+--             autoOpen (boolean) — skip ST Open (Hunger-cap Frenzy, TOR-499)
 -- @return boolean
 -- @usage RC.initiateRoll("Red", { rollType = C.RollType.STANDARD, label = "Stealth" })
 function RC.initiateRoll(color, config)
@@ -1103,6 +1108,11 @@ function RC.initiateRoll(color, config)
     end
     if RC.shouldResolvePhysicalPrepAtInitiate(active) then
         resolvePhysicalPrep(color, active)
+    end
+
+    -- Forced queued rolls (Hunger-cap Frenzy) skip the ST Open click.
+    if config.autoOpen == true and active.phase == C.RollPhase.SETUP then
+        RC.openRoll(color)
     end
 
     -- Dev/debug: when Auto-ST mode is on, automatically open the roll after a

@@ -1374,6 +1374,12 @@ local function refreshPcRollControlPanel(color, active)
         return
     end
 
+    -- Idle Rouse / Oblivion-Rouse bag shortcut: toss + broadcast only (TOR-500).
+    if PRTL.isIdleBagAutoRouse(active) then
+        uiSetActive(panelId, false)
+        return
+    end
+
     local showInSetup = active.initiator == "player"
     if active.phase == C.RollPhase.SETUP and not showInSetup then
         uiSetActive(panelId, false)
@@ -1469,6 +1475,7 @@ local function refreshPcRollControlPanel(color, active)
     refreshPendingResolutionButtons(color, active, true)
     local showCancel = active.takeHalfAwaitingRouse ~= true
         and active.initiator == "player"
+        and not PRTL.isIdleBagAutoRouse(active)
         and (active.phase == C.RollPhase.PRE_ROLL
             or (active.phase == C.RollPhase.SETUP and active.initiator == "player"))
     uiSetActive(string.format("rollControl_btnCancel_%s", color), showCancel)
@@ -1526,6 +1533,7 @@ function RUI.inventoryPcRollActions(active, color)
     local canConfirm = showConfirm and (playerHoldsBaton or isWpWaveRolling)
     local showCancel = active.takeHalfAwaitingRouse ~= true
         and active.initiator == "player"
+        and not PRTL.isIdleBagAutoRouse(active)
         and (active.phase == C.RollPhase.PRE_ROLL
             or (active.phase == C.RollPhase.SETUP and active.initiator == "player"))
 
