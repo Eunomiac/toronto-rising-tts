@@ -472,6 +472,8 @@ test("session-start overture uses Music C and holds Main until the sting ends", 
     "resumeBackground = false",
     "PHASE_ADVANCE_CHAIN_MAX_WAIT_SEC",
     "maxWait = PHASE_ADVANCE_CHAIN_MAX_WAIT_SEC",
+    "local INTERMISSION_BLINDFOLD_SETTLE_SEC = 2",
+    "return INTERMISSION_BLINDFOLD_SETTLE_SEC",
   ].forEach((needle) => {
     assert.ok(phases.includes(needle), `missing phase session intro: ${needle}`);
   });
@@ -489,6 +491,21 @@ test("session-start overture uses Music C and holds Main until the sting ends", 
     phases.includes("INTERMISSION_TO_PLAY_CROSSFADE_SEC"),
     false,
     "old 5s Loop↔Main crossfade constant should be gone",
+  );
+
+  const intermissionEnterStart = phases.indexOf("Phases.onEnter[C.Phases.INTERMISSION]");
+  const intermissionEnterEnd = phases.indexOf("Phases.onEnter[C.Phases.PLAY]");
+  assert.ok(
+    intermissionEnterStart >= 0 && intermissionEnterEnd > intermissionEnterStart,
+    "missing Intermission enter steps",
+  );
+  const intermissionEnter = phases.slice(intermissionEnterStart, intermissionEnterEnd);
+  const showIdx = intermissionEnter.indexOf("Phases.showGlobalBlindfold");
+  const settleIdx = intermissionEnter.indexOf("return INTERMISSION_BLINDFOLD_SETTLE_SEC");
+  const prepIdx = intermissionEnter.indexOf("Phases.applyNoSceneDefault");
+  assert.ok(
+    showIdx >= 0 && settleIdx > showIdx && prepIdx > settleIdx,
+    "Intermission enter should show the cover, wait ~2s, then run no-scene prep",
   );
 });
 

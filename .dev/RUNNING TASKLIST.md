@@ -216,6 +216,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 
 - [x] **Intermission→Play session-start overture:** Fade TR_Loop 0.5s, immediately play Music C 71s sting at full volume, lift global blindfold ~2s before the sting ends; move no-scene table prep to Intermission enter. relatedTo **TOR-445**, **TOR-143**. Pending Save & Play. _(TOR-497)_
 - [x] **Advance overture wait vs 60s chain cap:** Play enter's ~69s cover hold no longer dies at the default `U.chain` 60s timeout; `maxWait` follows sting duration. relatedTo **TOR-497**. Pending Save & Play. _(TOR-501)_
+- [x] **End→Intermission cover settle:** After showing the global cover, wait ~2s (`U.chain`) before no-scene table prep so FadeIn is not hitch-interrupted. relatedTo **TOR-497**. Pending Save & Play. _(TOR-502)_
 
 - [x] **Featured tracks fade location ambience:** Sounds-panel featured songs duck `locationA`/`locationB` as well as mood/playlist music; restore on natural end or Stop feat. Ravenwing nightclub bed is location, not Main. Pending Save & Play. _(TOR-494)_
 

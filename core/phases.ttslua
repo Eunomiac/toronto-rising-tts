@@ -21,6 +21,9 @@ local HEAL_BROADCAST_HOLD_SEC = 6
 local INTERMISSION_THEME_FADE_SEC = 2
 --- Intermission → Play: TR_Loop fade-out while Music C overture starts immediately (TOR-497).
 local INTERMISSION_TO_PLAY_LOOP_FADE_SEC = 0.5
+--- End → Intermission: wait after showing the global cover so FadeIn (and camera) can finish
+--- before no-scene table/skybox work (TOR-502).
+local INTERMISSION_BLINDFOLD_SETTLE_SEC = 2
 --- Per-step U.chain cap. Must exceed Play-enter overture hold (~69s); default chainWait is 60s.
 local PHASE_ADVANCE_CHAIN_MAX_WAIT_SEC = (tonumber(C.SessionStartIntroDurationSec) or 71) + 15
 
@@ -508,8 +511,9 @@ end
 Phases.onEnter[C.Phases.INTERMISSION] = function(ctx)
     return {
         function()
-            -- Cover the table before no-scene world work (TOR-497).
-            return Phases.showGlobalBlindfold(ctx)
+            -- Cover the table, then wait so FadeIn is not hitch-interrupted by table prep.
+            Phases.showGlobalBlindfold(ctx)
+            return INTERMISSION_BLINDFOLD_SETTLE_SEC
         end,
         function()
             return Phases.applyNoSceneDefault(ctx, {

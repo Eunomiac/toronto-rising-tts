@@ -13,7 +13,7 @@ Source of truth:
 
 Verification:
 - Save & Play → Host Phases panel → **Advance →** (panel closes immediately) through Intermission → Play → Spotlight → End → Intermission
-- Confirm Intermission: global blindfold first, then no-scene table prep under cover, AdminDark, TR_Loop. Play: TR_Loop fades ~0.5s, Music C overture starts immediately at full volume, global blindfold lifts ~2s before the 71s sting ends, then Main fades in and the Willpower heal overlay can appear
+- Confirm Intermission: global blindfold first, wait ~2s, then no-scene table prep under cover, AdminDark, TR_Loop. Play: TR_Loop fades ~0.5s, Music C overture starts immediately at full volume, global blindfold lifts ~2s before the 71s sting ends, then Main fades in and the Willpower heal overlay can appear
 - Solo Host verified only until **TOR-144** (multiplayer E2E) — multiclient connect blindfold + Advance replication: [Multiclient Session Script](../E2E%20Playbooks/Multiplayer-Session.md) (A4, B0, D1)
 
 Status: current (TOR-143 / TOR-361 / TOR-362 / TOR-497)
@@ -90,6 +90,7 @@ Ending events of the previous phase run before starting events of the new phase 
 ### Starting Events: `INTERMISSION`
 
 * **Show the global blindfold first** (`overlay_globalBlindfold`) so table work is not visible.
+* Wait **~2s** (`INTERMISSION_BLINDFOLD_SETTLE_SEC`) so the cover FadeIn can finish before no-scene table/skybox work (Advance already sequences this with `U.chain`).
 * Apply the no-scene default environment under that cover (table, seats, generic skybox, overlay; soundscape skipped) so next week's session start does not reshuffle the table (TOR-497).
 * All lights dark (`AdminDark` phase override).
 * Fade out all emitters, then start Intermission theme (`C.IntermissionThemeFeaturedKey` = `TR_Loop`, looping at catalog volume 0.5).

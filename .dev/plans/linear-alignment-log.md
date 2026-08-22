@@ -670,6 +670,7 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-08-22 | CREATE | TOR-497 | Intermission→Play 71s Music C session-start overture; parent TOR-36; relatedTo TOR-445 / TOR-143 |
 | 2026-08-22 | SHIP | TOR-497 | Music C session-intro channel + Intermission prep / Play overture timing. Pending Save & Play. |
 | 2026-08-22 | CREATE+SHIP | TOR-501 | Intermission→Play overture wait vs U.chain 60s cap (cover never lifts). Pending Save & Play. |
+| 2026-08-22 | CREATE+SHIP | TOR-502 | End→Intermission wait ~2s after global cover before table prep; relatedTo TOR-497. Pending Save & Play. |
 | 2026-08-22 | CREATE | TOR-498 | Outdoor rain particles follow weather audio (INBOX Immediate → Focus #1 High; parent TOR-36; relatedTo TOR-280 / TOR-463) |
 | 2026-08-22 | CREATE+SHIP | TOR-499 | Hunger-5 failed Rouse auto-opens Frenzy D4, no Cancel (INBOX Immediate; relatedTo TOR-159 / TOR-203 / TOR-332). Pending Save & Play. |
 | 2026-08-22 | CREATE+SHIP | TOR-500 | Hide player roll panel on idle Rouse/Oblivion-Rouse right-click (INBOX Immediate; relatedTo TOR-490 / TOR-491 / TOR-493). Pending Save & Play. |
