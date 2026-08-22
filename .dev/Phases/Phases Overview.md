@@ -13,7 +13,7 @@ Source of truth:
 
 Verification:
 - Save & Play → Host Phases panel → **Advance →** (panel closes immediately) through Intermission → Play → Spotlight → End → Intermission
-- Confirm Intermission: global blindfold first, wait ~2s, then no-scene table prep under cover, AdminDark, TR_Loop. Play: TR_Loop fades ~0.5s, Music C overture starts immediately at full volume, global blindfold lifts ~2s before the 71s sting ends, then Main fades in and the Willpower heal overlay can appear
+- Confirm Intermission: global cover comes down together with leftover-audio fade-out and TR_Loop fade-in (~2s), then no-scene table prep under cover, AdminDark. Play: TR_Loop fades ~0.5s, Music C overture starts immediately at full volume, global blindfold lifts ~2s before the 71s sting ends, then Main fades in and the Willpower heal overlay can appear
 - Solo Host verified only until **TOR-144** (multiplayer E2E) — multiclient connect blindfold + Advance replication: [Multiclient Session Script](../E2E%20Playbooks/Multiplayer-Session.md) (A4, B0, D1)
 
 Status: current (TOR-143 / TOR-361 / TOR-362 / TOR-497)
@@ -31,7 +31,7 @@ Status: current (TOR-143 / TOR-361 / TOR-362 / TOR-497)
 
 There are four top-level phases, advanced by the Storyteller **Advance** button in a loop:
 
-1. `INTERMISSION` — Between sessions: **global blindfold shown first**, then no-scene table/skybox/overlay under that cover, AdminDark, theme playlist; connect keeps global blindfold up (TOR-319 / TOR-497).
+1. `INTERMISSION` — Between sessions: **global cover + Intermission theme handoff first**, then no-scene table/skybox/overlay under that cover, AdminDark; connect keeps global blindfold up (TOR-319 / TOR-497 / TOR-506).
 2. `PLAY` — Session start: Music C overture (TR_Loop 0.5s fade + immediate sting), OutdoorDim lights under cover, **then** hide global blindfold ~2s before the sting ends, Main playlist, Superficial WP heal + optional broadcast. Contains most gameplay.
 3. `SPOTLIGHT` — End-of-session player vignettes: silence emitters, apply Spotlight scene (soft-fail if missing), freeze clock.
 4. `END` — Remorse / session-end bookkeeping phase. **Advance Spotlight → End** runs a staged transition blindfold while applying the default no-scene environment (TOR-459), then enters End. Leaving End increments `sessionNum` (global blindfold restored on next Intermission enter).
@@ -89,11 +89,9 @@ Ending events of the previous phase run before starting events of the new phase 
 
 ### Starting Events: `INTERMISSION`
 
-* **Show the global blindfold first** (`overlay_globalBlindfold`) so table work is not visible.
-* Wait **~2s** (`INTERMISSION_BLINDFOLD_SETTLE_SEC`) so the cover FadeIn can finish before no-scene table/skybox work (Advance already sequences this with `U.chain`).
+* **Show the global blindfold and start the audio handoff together** (`overlay_globalBlindfold` + leftover session audio fading out while Intermission theme `TR_Loop` fades in over ~2s). Table work must not start until this settle finishes (TOR-502 / TOR-506).
 * Apply the no-scene default environment under that cover (table, seats, generic skybox, overlay; soundscape skipped) so next week's session start does not reshuffle the table (TOR-497).
 * All lights dark (`AdminDark` phase override).
-* Fade out all emitters, then start Intermission theme (`C.IntermissionThemeFeaturedKey` = `TR_Loop`, looping at catalog volume 0.5).
 * Countdown timer: deferred (optional TBD on **TOR-319**).
 
 ### Connect / load policy (TOR-319 / TOR-143)

@@ -382,6 +382,7 @@ test("soundscape music exclusivity uses generic featured sequencing", () => {
     "scheduleNextFeaturedTrack",
     "pauseBackgroundForFeatured",
     "pauseLocationForFeatured",
+    "opts.outgoingFadeSeconds",
     "resumeBackgroundAfterFeatured",
     "resumeAmbientAfterFeatured",
     "stopFeaturedMusicInternal",
@@ -483,7 +484,8 @@ test("session-start overture uses Music C and holds Main until the sting ends", 
     "PHASE_ADVANCE_CHAIN_MAX_WAIT_SEC",
     "maxWait = PHASE_ADVANCE_CHAIN_MAX_WAIT_SEC",
     "local INTERMISSION_BLINDFOLD_SETTLE_SEC = 2",
-    "return INTERMISSION_BLINDFOLD_SETTLE_SEC",
+    "function Phases.beginIntermissionCoverAndTheme(_ctx)",
+    "outgoingFadeSeconds = INTERMISSION_THEME_FADE_SEC",
   ].forEach((needle) => {
     assert.ok(phases.includes(needle), `missing phase session intro: ${needle}`);
   });
@@ -524,12 +526,18 @@ test("session-start overture uses Music C and holds Main until the sting ends", 
     "missing Intermission enter steps",
   );
   const intermissionEnter = phases.slice(intermissionEnterStart, intermissionEnterEnd);
-  const showIdx = intermissionEnter.indexOf("Phases.showGlobalBlindfold");
-  const settleIdx = intermissionEnter.indexOf("return INTERMISSION_BLINDFOLD_SETTLE_SEC");
+  const coverIdx = intermissionEnter.indexOf("Phases.beginIntermissionCoverAndTheme");
   const prepIdx = intermissionEnter.indexOf("Phases.applyNoSceneDefault");
+  const darkIdx = intermissionEnter.indexOf("Phases.applyAllLightsDark");
   assert.ok(
-    showIdx >= 0 && settleIdx > showIdx && prepIdx > settleIdx,
-    "Intermission enter should show the cover, wait ~2s, then run no-scene prep",
+    coverIdx >= 0 && prepIdx > coverIdx && darkIdx > prepIdx,
+    "Intermission enter should start cover+theme handoff, then no-scene prep, then AdminDark",
+  );
+  assert.equal(
+    intermissionEnter.includes("Phases.fadeOutAllEmitters")
+      || intermissionEnter.includes("Phases.startIntermissionThemePlaylistLoop"),
+    false,
+    "Intermission enter must not fade/start theme after table prep",
   );
 });
 

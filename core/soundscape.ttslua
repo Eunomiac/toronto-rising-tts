@@ -995,7 +995,8 @@ local function silenceMusicChannelsAfterFade(generation, fadeSeconds)
     end, fadeSeconds)
 end
 
-local function pauseBackgroundForFeatured()
+--- @param fadeSecondsOverride number|nil when set, used instead of catalog music fade
+local function pauseBackgroundForFeatured(fadeSecondsOverride)
     local state = ensureState()
     if state.backgroundMusicEnabled ~= true then
         return false
@@ -1003,7 +1004,10 @@ local function pauseBackgroundForFeatured()
 
     musicGeneration = musicGeneration + 1
     local thisGeneration = musicGeneration
-    local fadeSeconds = tonumber(Catalog.DEFAULTS.fadeSeconds.music) or 0
+    local fadeSeconds = tonumber(fadeSecondsOverride)
+    if fadeSeconds == nil then
+        fadeSeconds = tonumber(Catalog.DEFAULTS.fadeSeconds.music) or 0
+    end
     for _, channelKey in ipairs({ "musicA", "musicB" }) do
         local obj = resolveEmitter(channelKey)
         if obj ~= nil then
@@ -1020,8 +1024,9 @@ end
 
 --- Fade site ambience (`locationA`/`locationB`) while featured music plays (TOR-494).
 -- Keeps `state.location` so the same track can fade back in afterward.
+-- @param fadeSecondsOverride number|nil when set, used instead of catalog location fade
 -- @return boolean
-local function pauseLocationForFeatured()
+local function pauseLocationForFeatured(fadeSecondsOverride)
     local state = ensureState()
     if type(state.location) ~= "string" or state.location == Catalog.DEFAULTS.location then
         return false
@@ -1032,7 +1037,10 @@ local function pauseLocationForFeatured()
 
     locationPauseGeneration = locationPauseGeneration + 1
     local thisGeneration = locationPauseGeneration
-    local fadeSeconds = tonumber(Catalog.DEFAULTS.fadeSeconds.location) or 0
+    local fadeSeconds = tonumber(fadeSecondsOverride)
+    if fadeSeconds == nil then
+        fadeSeconds = tonumber(Catalog.DEFAULTS.fadeSeconds.location) or 0
+    end
     for _, channelKey in ipairs({ "locationA", "locationB" }) do
         local obj = resolveEmitter(channelKey)
         if obj ~= nil then
@@ -1260,8 +1268,9 @@ end
 function playFeaturedTrack(feature, playlist, trackIndex, options)
     local opts = type(options) == "table" and options or {}
     if opts.keepBackgroundPaused ~= true then
-        pauseBackgroundForFeatured()
-        pauseLocationForFeatured()
+        local outgoingFade = tonumber(opts.outgoingFadeSeconds)
+        pauseBackgroundForFeatured(outgoingFade)
+        pauseLocationForFeatured(outgoingFade)
     end
 
     featuredGeneration = featuredGeneration + 1
@@ -2265,7 +2274,9 @@ end
 
 --- Plays a featured music effect on the dedicated featured lane.
 -- @param featureKey string
--- @param opts table|nil `{ incomingFadeSeconds?: number }` — TOR-366 Intermission fade-in
+-- @param opts table|nil `{ incomingFadeSeconds?: number, outgoingFadeSeconds?: number, keepBackgroundPaused?: boolean }`
+--   `incomingFadeSeconds` — TOR-366 Intermission fade-in from silence
+--   `outgoingFadeSeconds` — fade Main/location out over this many seconds (default catalog fades)
 -- @return boolean
 -- @return string
 function Soundscape.playFeaturedMusic(featureKey, opts)

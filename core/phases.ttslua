@@ -178,17 +178,34 @@ function Phases.applyAllLightsDark(_ctx)
     return true
 end
 
-function Phases.fadeOutAllEmitters(_ctx)
+--- End → Intermission: drop the cover and start the audio handoff in one step (TOR-506).
+--- Outgoing session audio fades out while TR_Loop fades in; wait covers both plus cover settle.
+--- Does not `stopAll` — that would hard-cut the outgoing fade.
+function Phases.beginIntermissionCoverAndTheme(_ctx)
+    Phases.showGlobalBlindfold(_ctx)
     local Soundscape = require("core.soundscape")
+    local key = C.IntermissionThemeFeaturedKey or "TR_Loop"
+    local ok, msg = Soundscape.playFeaturedMusic(key, {
+        incomingFadeSeconds = INTERMISSION_THEME_FADE_SEC,
+        outgoingFadeSeconds = INTERMISSION_THEME_FADE_SEC,
+    })
+    if ok ~= true then
+        U.AlertGM("Intermission theme: " .. tostring(msg or "playFeaturedMusic failed"))
+    end
+    -- Weather leftovers (Main/location already started fading via outgoingFadeSeconds).
     if type(Soundscape.fadeOutTransitionAmbient) == "function" then
         Soundscape.fadeOutTransitionAmbient({ seconds = INTERMISSION_THEME_FADE_SEC })
-        return INTERMISSION_THEME_FADE_SEC
     end
-    if type(Soundscape.stopAll) == "function" then
-        Soundscape.stopAll()
-        Soundscape.commitEagerSteadyState(true)
+    if type(Soundscape.commitEagerSteadyState) == "function" then
+        Soundscape.commitEagerSteadyState(ok == true)
+    elseif type(Soundscape.markReconciledToCurrentState) == "function" then
+        Soundscape.markReconciledToCurrentState()
     end
-    return true
+    local waitSec = INTERMISSION_BLINDFOLD_SETTLE_SEC
+    if INTERMISSION_THEME_FADE_SEC > waitSec then
+        waitSec = INTERMISSION_THEME_FADE_SEC
+    end
+    return waitSec
 end
 
 --- Starts looping TR_Loop on the featured lane (Intermission ambient).
@@ -213,7 +230,7 @@ function Phases.startIntermissionThemePlaylistLoop(_ctx)
     return true
 end
 
---- Load-time Intermission ambient: same featured theme path as phase enter (fade-in from 0).
+--- Load-time Intermission ambient: hard-reset emitters then fade in TR_Loop (no cover to sync with).
 function Phases.reconcileIntermissionAmbientOnLoad()
     if S.getStateVal("currentPhase") ~= C.Phases.INTERMISSION then
         return false
@@ -520,9 +537,7 @@ end
 Phases.onEnter[C.Phases.INTERMISSION] = function(ctx)
     return {
         function()
-            -- Cover the table, then wait so FadeIn is not hitch-interrupted by table prep.
-            Phases.showGlobalBlindfold(ctx)
-            return INTERMISSION_BLINDFOLD_SETTLE_SEC
+            return Phases.beginIntermissionCoverAndTheme(ctx)
         end,
         function()
             return Phases.applyNoSceneDefault(ctx, {
@@ -532,12 +547,6 @@ Phases.onEnter[C.Phases.INTERMISSION] = function(ctx)
         end,
         function()
             return Phases.applyAllLightsDark(ctx)
-        end,
-        function()
-            return Phases.fadeOutAllEmitters(ctx)
-        end,
-        function()
-            return Phases.startIntermissionThemePlaylistLoop(ctx)
         end,
     }
 end
