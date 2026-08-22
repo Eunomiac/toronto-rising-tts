@@ -44,6 +44,8 @@ Verification:
 
 ## Processed
 
+2026-08-22 `/tr-inbox` Immediate — outdoor rain particles → **TOR-498** (Focus #1 High); hide player roll panel on idle auto-Rouse → **TOR-500** (shipped); Hunger-5 Frenzy auto-open D4 + no Cancel → **TOR-499** (shipped). PAVE added **TOR-492** / **TOR-493** / **TOR-494** / **TOR-496** / **TOR-497** / **TOR-501** / **TOR-499** / **TOR-500**. **TOR-439** remains the multiclient gate.
+
 2026-08-18 Immediate — featured tracks fade location ambience (Ravenwing nightclub bed) → **TOR-494** (shipped; pending Save & Play)
 
 2026-08-18 afternoon `/tr-inbox` Immediate — queue overlapping roll broadcasts → **TOR-492** (Focus #1 High); PAVE ✅ cleared **TOR-487** (Take Half + Rouse auto-confirm), **TOR-491** (idle Oblivion-Rouse bag), **TOR-482** (Daysleep Refresh), **TOR-486** (Clear right-click)

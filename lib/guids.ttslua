@@ -292,6 +292,10 @@ G.GUIDS = {
     HUNGER_SMOKE_PINK = "fb25b1",
     HUNGER_SMOKE_PURPLE = "f20164",
 
+    -- Particle Effect Emitters
+    PARTICLES_WEATHER_RAIN = "098667",
+
+
     -- Dice bags (one per seat color).
     -- Each bag is a TTS object that spawns d10s when rolled by the player.
     -- Used by the Dice System to attribute settled dice to their owner.
