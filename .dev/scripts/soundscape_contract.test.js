@@ -481,3 +481,115 @@ test("session-start overture uses Music C and holds Main until the sting ends", 
     "old 5s Loop↔Main crossfade constant should be gone",
   );
 });
+
+test("outdoor rain particles map live weather to 0-based looping indexes (TOR-498)", () => {
+  const catalog = readRepoFile("lib/soundscape_catalog.ttslua");
+  const soundscape = readRepoFile("core/soundscape.ttslua");
+
+  [
+    "function Catalog.resolveRainParticleLoopingIndex(opts)",
+    "Catalog.RAIN_PARTICLE_NONE_INDEX = 0",
+    "windWinterLow = 1",
+    "windWinterMax = 3",
+    "return 9 + band",
+    "return 5 + band",
+    "return 1 + band",
+  ].forEach((needle) => {
+    assert.ok(catalog.includes(needle), `missing rain particle catalog map: ${needle}`);
+  });
+
+  [
+    "local function applyRainParticlesFromState()",
+    "local function finishWeatherLayer(ok, message)",
+    "G.GUIDS.PARTICLES_WEATHER_RAIN",
+    "ab.getLoopingEffectIndex",
+    "ab.playLoopingEffect(desired)",
+    "return finishWeatherLayer(okRain, message)",
+    "return finishWeatherLayer(okWind, message)",
+    'return finishWeatherLayer(true, "Thunder enabled: " .. tostring(isEnabled))',
+    "playRainParticleLoopingIndex(Catalog.RAIN_PARTICLE_NONE_INDEX, \"bootstrap silence\")",
+  ].forEach((needle) => {
+    assert.ok(soundscape.includes(needle), `missing rain particle runtime hook: ${needle}`);
+  });
+
+  const setIndoorsStart = soundscape.indexOf("function Soundscape.setIndoors(isIndoors)");
+  assert.ok(setIndoorsStart >= 0, "missing Soundscape.setIndoors");
+  const setIndoorsEnd = soundscape.indexOf("\nfunction Soundscape.stopAll()", setIndoorsStart);
+  const setIndoors = setIndoorsEnd >= 0 ? soundscape.slice(setIndoorsStart, setIndoorsEnd) : soundscape.slice(setIndoorsStart);
+  assert.ok(setIndoors.includes("applyRainParticlesFromState()"), "setIndoors should apply rain particles");
+
+  const silentStart = soundscape.indexOf("local function applySilentSiteAmbient()");
+  assert.ok(silentStart >= 0, "missing applySilentSiteAmbient");
+  const silentEnd = soundscape.indexOf("\n-- ============================================================================\n-- PUBLIC API", silentStart);
+  const silent = silentEnd >= 0 ? soundscape.slice(silentStart, silentEnd) : soundscape.slice(silentStart);
+  assert.ok(silent.includes("applyRainParticlesFromState()"), "silent site should clear rain particles");
+
+  const stopAllStart = soundscape.indexOf("function Soundscape.stopAll()");
+  assert.ok(stopAllStart >= 0, "missing Soundscape.stopAll");
+  const stopAllEnd = soundscape.indexOf("\nfunction Soundscape.inspectEmitters()", stopAllStart);
+  const stopAll = stopAllEnd >= 0 ? soundscape.slice(stopAllStart, stopAllEnd) : soundscape.slice(stopAllStart);
+  assert.ok(stopAll.includes("applyRainParticlesFromState()"), "stopAll should clear rain particles");
+
+  // Keep in sync with Catalog.resolveRainParticleLoopingIndex.
+  const WIND_BAND = {
+    none: 0,
+    windLow: 1,
+    windWinterLow: 1,
+    windMed: 2,
+    windWinterMed: 2,
+    windMax: 3,
+    windWinterMax: 3,
+  };
+  function resolveRainParticleLoopingIndex(opts) {
+    const o = opts || {};
+    if (o.isIndoors === true || o.siteSilent === true) {
+      return 0;
+    }
+    const rain = o.rain;
+    if (rain !== "rainLight" && rain !== "rainHeavy") {
+      return 0;
+    }
+    let band = WIND_BAND[o.wind];
+    if (typeof band !== "number") {
+      band = 0;
+    }
+    if (o.thunderEnabled === true && rain === "rainHeavy") {
+      return 9 + band;
+    }
+    if (rain === "rainHeavy") {
+      return 5 + band;
+    }
+    return 1 + band;
+  }
+
+  const cases = [
+    [{}, 0],
+    [{ rain: "none", wind: "windMax", thunderEnabled: true }, 0],
+    [{ isIndoors: true, rain: "rainHeavy", wind: "windMax", thunderEnabled: true }, 0],
+    [{ siteSilent: true, rain: "rainLight" }, 0],
+    [{ rain: "rainLight" }, 1],
+    [{ rain: "rainLight", wind: "none" }, 1],
+    [{ rain: "rainLight", wind: "windLow" }, 2],
+    [{ rain: "rainLight", wind: "windWinterLow" }, 2],
+    [{ rain: "rainLight", wind: "windMed" }, 3],
+    [{ rain: "rainLight", wind: "windWinterMed" }, 3],
+    [{ rain: "rainLight", wind: "windMax" }, 4],
+    [{ rain: "rainLight", wind: "windWinterMax" }, 4],
+    [{ rain: "rainLight", thunderEnabled: true, wind: "windMax" }, 4],
+    [{ rain: "rainHeavy" }, 5],
+    [{ rain: "rainHeavy", wind: "windLow" }, 6],
+    [{ rain: "rainHeavy", wind: "windMed" }, 7],
+    [{ rain: "rainHeavy", wind: "windMax" }, 8],
+    [{ rain: "rainHeavy", thunderEnabled: true }, 9],
+    [{ rain: "rainHeavy", thunderEnabled: true, wind: "windLow" }, 10],
+    [{ rain: "rainHeavy", thunderEnabled: true, wind: "windWinterMed" }, 11],
+    [{ rain: "rainHeavy", thunderEnabled: true, wind: "windWinterMax" }, 12],
+  ];
+  for (const [opts, expected] of cases) {
+    assert.equal(
+      resolveRainParticleLoopingIndex(opts),
+      expected,
+      `rain particle index for ${JSON.stringify(opts)}`,
+    );
+  }
+});

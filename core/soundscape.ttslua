@@ -31,6 +31,10 @@ local playCatalogEntryGeneration = {}
 --- Let Unity finish AssetBundle clip swap before unmute/fade (~one frame at 30fps).
 local EMITTER_POST_SWAP_ARM_SECONDS = 0.034
 local cachedEmitters = {}
+--- Cached Custom AssetBundle for outdoor rain particles (`G.GUIDS.PARTICLES_WEATHER_RAIN`).
+local cachedRainParticleObj = nil
+--- Last 0-based looping index applied to the rain particle object (fallback when `getLoopingEffectIndex` is missing).
+local lastAppliedRainParticleIndex = nil
 
 --- When non-nil (seconds >= 0), scene-transition flows use this fade duration for music/location/weather
 --- crossfades instead of the longer catalog defaults (TOR-147). nil = use catalog defaults.
@@ -853,11 +857,94 @@ local function forceSilentLoopPhysicalOnly(channelKey)
     return true
 end
 
+--- Resolves the outdoor rain particle AssetBundle by GUID (no world scan).
+--- @return Object|nil
+--- @return string|nil
+local function resolveRainParticleObject()
+    local guidRef = G.GUIDS.PARTICLES_WEATHER_RAIN
+    if not G.isGuidRef(guidRef) then
+        return nil, "Missing G.GUIDS.PARTICLES_WEATHER_RAIN"
+    end
+    local cached = cachedRainParticleObj
+    if cached ~= nil then
+        local g = cached.getGUID and cached.getGUID() or nil
+        if type(g) == "string" and g ~= "" then
+            return cached, nil
+        end
+        cachedRainParticleObj = nil
+    end
+    local obj = G.getObject(guidRef)
+    if obj ~= nil then
+        cachedRainParticleObj = obj
+        return obj, nil
+    end
+    local activeGuid = G.getActiveGuid(guidRef)
+    return nil, "No object found for G.GUIDS.PARTICLES_WEATHER_RAIN GUID " .. tostring(activeGuid or guidRef)
+end
+
+--- Plays a 0-based looping effect on the rain particle object. Skips when already active.
+--- @param index0 number
+--- @param reason string|nil
+--- @return boolean
+local function playRainParticleLoopingIndex(index0, reason)
+    local desired = math.floor(tonumber(index0) or Catalog.RAIN_PARTICLE_NONE_INDEX)
+    local obj, resolveError = resolveRainParticleObject()
+    if obj == nil then
+        print("[Soundscape] Rain particles: " .. tostring(resolveError or "missing object") .. (type(reason) == "string" and (" (" .. reason .. ")") or ""))
+        return false
+    end
+    if obj.AssetBundle == nil or obj.AssetBundle.playLoopingEffect == nil then
+        local guid = obj.getGUID and obj.getGUID() or "?"
+        print("[Soundscape] Rain particles: object " .. tostring(guid) .. " has no AssetBundle.playLoopingEffect")
+        return false
+    end
+    local ab = obj.AssetBundle
+    local current = nil
+    if ab.getLoopingEffectIndex ~= nil then
+        current = tonumber(ab.getLoopingEffectIndex())
+    end
+    if current == nil then
+        current = lastAppliedRainParticleIndex
+    end
+    if current == desired then
+        lastAppliedRainParticleIndex = desired
+        return true
+    end
+    ab.playLoopingEffect(desired)
+    lastAppliedRainParticleIndex = desired
+    return true
+end
+
+--- Matches outdoor rain particles to persisted weather intent (indoor / silent / no rain → None).
+--- @return boolean
+local function applyRainParticlesFromState()
+    local state = ensureState()
+    local desired = Catalog.resolveRainParticleLoopingIndex({
+        isIndoors = state.isIndoors == true,
+        siteSilent = state.siteSilent == true,
+        rain = state.rain,
+        wind = state.wind,
+        thunderEnabled = state.thunderEnabled == true,
+    })
+    return playRainParticleLoopingIndex(desired, "weather")
+end
+
+--- Weather setters return through here so particles switch in the same tick as rain/wind/thunder intent.
+--- @param ok boolean
+--- @param message string|nil
+--- @return boolean
+--- @return string|nil
+local function finishWeatherLayer(ok, message)
+    applyRainParticlesFromState()
+    return ok, message
+end
+
 --- Run once after load: cancel stale deferred playback and kill Unity-resumed stray loops
 --- until `reconcileFromState` applies saved soundscape.
 --- Must appear after `cancelSingleEmitterTransition` (Lua 5.1 lexical scope).
 function Soundscape.bootstrapSilenceStrayEmitterLoops()
     cachedEmitters = {}
+    cachedRainParticleObj = nil
     musicGeneration = musicGeneration + 1
     featuredGeneration = featuredGeneration + 1
     weatherGeneration = weatherGeneration + 1
@@ -866,11 +953,13 @@ function Soundscape.bootstrapSilenceStrayEmitterLoops()
     for _, channelKey in ipairs(BOOTSTRAP_LOOP_CHANNELS) do
         forceSilentLoopPhysicalOnly(channelKey)
     end
+    playRainParticleLoopingIndex(Catalog.RAIN_PARTICLE_NONE_INDEX, "bootstrap silence")
 end
 
 --- Drop cached emitter Object refs (after destroy/restore of AssetBundle objects). TOR-439.
 function Soundscape.clearEmitterObjectCache()
     cachedEmitters = {}
+    cachedRainParticleObj = nil
 end
 
 --- Physical-only: silence the music channel not currently active in `gameState.soundscape`.
@@ -1358,6 +1447,7 @@ local function applySilentSiteAmbient()
         state.backgroundPausedForFeatured = false
         state.locationPausedForFeatured = false
     end
+    applyRainParticlesFromState()
 end
 
 -- ============================================================================
@@ -1410,6 +1500,7 @@ local function soundscapeReconcileFingerprint(state)
         tostring(state.rain or ""),
         tostring(state.wind or ""),
         state.thunderEnabled == true and "1" or "0",
+        state.isIndoors == true and "1" or "0",
     }
     return table.concat(parts, "\t")
 end
@@ -1624,6 +1715,7 @@ function Soundscape.reconcileFromState(opts)
     pendingSoundscapeReconcileFingerprint = desiredFingerprint
 
     cachedEmitters = {}
+    cachedRainParticleObj = nil
     local fp = desiredFingerprint
     local function runApply()
         if myGeneration ~= soundscapeReconcileGeneration then
@@ -2332,7 +2424,7 @@ function Soundscape.setRainLayer(rainKey)
         if okStop then
             ensureState().rain = Catalog.DEFAULTS.rain
         end
-        return okStop, stopMessage
+        return finishWeatherLayer(okStop, stopMessage)
     end
     local rain = Catalog.getWeatherTrack("rain", rainKey)
     if rain == nil then
@@ -2350,7 +2442,7 @@ function Soundscape.setRainLayer(rainKey)
         if okVolume then
             ensureState().rain = rainKey
         end
-        return okVolume, volumeMessage or ("Rain layer held: " .. rainKey)
+        return finishWeatherLayer(okVolume, volumeMessage or ("Rain layer held: " .. rainKey))
     end
     local okRain, message = playSingleEmitterFadeOutIn(
         "weatherRain",
@@ -2361,7 +2453,7 @@ function Soundscape.setRainLayer(rainKey)
     if okRain then
         ensureState().rain = rainKey
     end
-    return okRain, message
+    return finishWeatherLayer(okRain, message)
 end
 
 --- Sets the looping wind layer.
@@ -2378,7 +2470,7 @@ function Soundscape.setWindLayer(windKey)
         if okStop then
             ensureState().wind = Catalog.DEFAULTS.wind
         end
-        return okStop, stopMessage
+        return finishWeatherLayer(okStop, stopMessage)
     end
     local wind = Catalog.getWeatherTrack("wind", windKey)
     if wind == nil then
@@ -2396,7 +2488,7 @@ function Soundscape.setWindLayer(windKey)
         if okVolume then
             ensureState().wind = windKey
         end
-        return okVolume, volumeMessage or ("Wind layer held: " .. windKey)
+        return finishWeatherLayer(okVolume, volumeMessage or ("Wind layer held: " .. windKey))
     end
     local okWind, message = playSingleEmitterFadeOutIn(
         "weatherWind",
@@ -2407,7 +2499,7 @@ function Soundscape.setWindLayer(windKey)
     if okWind then
         ensureState().wind = windKey
     end
-    return okWind, message
+    return finishWeatherLayer(okWind, message)
 end
 
 --- Enables or disables scheduled thunder one-shots.
@@ -2427,7 +2519,7 @@ function Soundscape.setThunderEnabled(isEnabled)
     if isEnabled then
         scheduleThunder()
     end
-    return true, "Thunder enabled: " .. tostring(isEnabled)
+    return finishWeatherLayer(true, "Thunder enabled: " .. tostring(isEnabled))
 end
 
 --- Plays one thunder trigger immediately, choosing randomly when no key is given.
@@ -2538,6 +2630,7 @@ function Soundscape.setIndoors(isIndoors)
     local state = ensureState()
     state.isIndoors = isIndoors
     local ok, message = Soundscape.reapplyWeatherNaturalVolumes()
+    applyRainParticlesFromState()
     return ok, "Indoors set to " .. tostring(isIndoors) .. " | " .. tostring(message)
 end
 
@@ -2589,6 +2682,7 @@ function Soundscape.stopAll()
     state.location = Catalog.DEFAULTS.location
     state.siteSilent = false
     state.backgroundMusicSuppressed = false
+    applyRainParticlesFromState()
     return ok, table.concat(messages, " | ")
 end
 

@@ -57,6 +57,7 @@ The current Lua implementation includes:
 - After **`Soundscape.applyContext`** drives emitters to match persisted `gameState.soundscape`, callers that immediately run **`Sync.full`** should invoke **`Soundscape.markReconciledToCurrentState()`** so incremental `Soundscape.reconcileFromState` does not queue a duplicate fade (scene / library apply used to stack three fades: site context, narrative context, reconcile snapshot). On library **Apply active scene**, defer **`markReconciledToCurrentState`** until after chronicle weather / final **`applyContext`** so the fingerprint matches post-weather emitters (see `StorytellerScenesPanel.sceneLibraryApply`).
 - **Looping clip swaps (`playCatalogEntry`):** Before a non-silent looping effect, swap to the catalog **`silent`** stub at zero gain, then call `playLoopingEffect` for the target clip with **`armEmitterSilentBeforePlayback`** (mute + volume 0). Unmute or fade-in runs after **`U.await(..., EMITTER_POST_SWAP_ARM_SECONDS)`** (~one frame) so Unity does not audibly crossfade old→new at full gain. **`playCatalogEntryGeneration`** per channel invalidates stale delayed arms when a newer swap or **`cancelSingleEmitterTransition`** occurs. **`setChannelImmediateVolume`** and weather hold paths use the same silence-first policy (TOR-270).
 - **Weather rain/wind on scene switch:** **`setRainLayer`** / **`setWindLayer`** skip clip restart when the channel already plays the same catalog effect; they adjust volume via **`setChannelImmediateVolume`** or **`fadeWeatherHoldToNatural`** during staged transitions (indoor ducking changes without a burst-prone restart). _(TOR-136 / TOR-270.)_
+- **Outdoor rain particles (TOR-498):** The table object `G.GUIDS.PARTICLES_WEATHER_RAIN` is a Custom AssetBundle looping list (author slots 1–13 → TTS indexes **0–12**). `Soundscape.setRainLayer` / `setWindLayer` / `setThunderEnabled` / `setIndoors` (and silent-site / `stopAll`) apply the matching index in the same tick as weather intent. Indoor, silent site, or no rain → index 0 (None). Thunderstorm rows require live thunder **and** heavy rain. Skip `playLoopingEffect` when `getLoopingEffectIndex` already matches. Snow is out of scope (**TOR-463**).
 - `core/debug.ttslua` exposes console helpers such as `inspectSoundscapeAudio()`,
   `soundscapeRain()`, `soundscapeWind()`,
   `soundscapeThunder()`, and `soundscapeFeatured()`.
@@ -103,6 +104,8 @@ Unity/TTS verification:
   schedules thunder.
 - `lua soundscapeWeather("<storm preset>", true)` keeps the same weather but applies
   indoor ducking.
+- Outdoor rainy Apply / `soundscapeWeather` should switch `PARTICLES_WEATHER_RAIN` while
+  cover is down; indoor or `soundscapeWeather("none")` should show None (no rain).
 - `lua soundscapeFeatured("<feature key>")` plays featured music (location ambience and mood/playlist music fade out).
 - `lua soundscapeStopFeatured()` returns to the previous background music **and** location ambience.
 - `lua soundscapeStopAll()` silences all loop layers and cancels pending music,

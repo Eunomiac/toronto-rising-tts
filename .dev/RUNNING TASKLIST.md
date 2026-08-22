@@ -44,7 +44,7 @@ _Deferral note:_ **TOR-439** (join-stress re-verify after TOR-444) is **deferred
 
 | # | Issue | Why now |
 | --- | --- | --- |
-| 1 | **TOR-498** (outdoor rain particles follow weather) | Immediate: outdoor rain visuals should match live rain/wind/thunder during the blindfold-down transition. |
+| 1 | **TOR-498** (outdoor rain particles follow weather) | Shipped pending Save & Play: outdoor rain visuals follow live rain/wind/thunder during blindfold-down. |
 | 2 | **TOR-81** (centralize light modes) | Solo cleanup/unblock work (also gates TOR-320/TOR-321). |
 | 3 | **TOR-98** (Spotlight phase remaining UX) | Standalone UX polish in its domain. |
 | 4 | **TOR-168** (Sync.full call-site audit) | Low-risk sync hygiene; helps prevent future regressions. |
@@ -212,7 +212,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 
 ## Soundscape
 
-- [ ] **Outdoor rain particles follow weather audio:** When the live site is outdoors, `G.GUIDS.PARTICLES_WEATHER_RAIN` looping effect matches rain/wind/thunder (indoor or no rain → None). Switch during the blindfold-down weather apply, not after lift. relatedTo **TOR-136**, **TOR-147**, **TOR-463**. _(TOR-498)_
+- [x] **Outdoor rain particles follow weather audio:** When the live site is outdoors, `G.GUIDS.PARTICLES_WEATHER_RAIN` looping effect matches rain/wind/thunder (indoor or no rain → None). Switch during the blindfold-down weather apply, not after lift. relatedTo **TOR-136**, **TOR-147**, **TOR-463**. Pending Save & Play. _(TOR-498)_
 
 - [x] **Intermission→Play session-start overture:** Fade TR_Loop 0.5s, immediately play Music C 71s sting at full volume, lift global blindfold ~2s before the sting ends; move no-scene table prep to Intermission enter. relatedTo **TOR-445**, **TOR-143**. Pending Save & Play. _(TOR-497)_
 - [x] **Advance overture wait vs 60s chain cap:** Play enter's ~69s cover hold no longer dies at the default `U.chain` 60s timeout; `maxWait` follows sting duration. relatedTo **TOR-497**. Pending Save & Play. _(TOR-501)_

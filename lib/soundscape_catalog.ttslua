@@ -1,9 +1,10 @@
 --[[
     Soundscape Catalog (lib/soundscape_catalog.ttslua)
 
-    Static definitions for layered, non-positional audio. Runtime control lives in
-    core/soundscape.ttslua; future weather/site/calendar systems should express
-    intent through that module instead of playing AssetBundle effects directly.
+    Static definitions for layered, non-positional audio and the outdoor rain-particle
+    index map (TOR-498). Runtime control lives in core/soundscape.ttslua; other systems
+    should express intent through that module instead of playing AssetBundle effects
+    directly.
 
     Effect names are the external contract with the Unity AssetBundle and must
     match `.dev/Soundscape & Audio/Audio Tracks.md` exactly, including casing.
@@ -1047,6 +1048,47 @@ Catalog.WEATHER_CONDITIONS = {
   wind = { label = "Wind", rain = "none", wind = "windMed", thunderEnabled = false, volume = 0.5 },
   thunderstorm = { label = "Thunderstorm", rain = "rainHeavy", wind = "windWinterMax", thunderEnabled = true, volume = 0.5 },
 }
+
+--- 0-based `AssetBundle.playLoopingEffect` index for `G.GUIDS.PARTICLES_WEATHER_RAIN`.
+--- Author list 1–13 maps to TTS indexes 0–12 (slot 1 = None).
+Catalog.RAIN_PARTICLE_NONE_INDEX = 0
+
+local RAIN_PARTICLE_WIND_BAND = {
+  none = 0,
+  windLow = 1,
+  windWinterLow = 1,
+  windMed = 2,
+  windWinterMed = 2,
+  windMax = 3,
+  windWinterMax = 3,
+}
+
+--- Outdoor rain particle looping index from live weather intent (TOR-498).
+--- Indoor, silent site, or no rain → None (0). Thunderstorm rows require `thunderEnabled` and `rainHeavy`;
+--- thunder with `rainLight` uses the light-rain row. Unknown / missing wind → no-wind column.
+--- @param opts table|nil `{ isIndoors?: boolean, siteSilent?: boolean, rain?: string, wind?: string, thunderEnabled?: boolean }`
+--- @return integer 0–12
+function Catalog.resolveRainParticleLoopingIndex(opts)
+  opts = type(opts) == "table" and opts or {}
+  if opts.isIndoors == true or opts.siteSilent == true then
+    return Catalog.RAIN_PARTICLE_NONE_INDEX
+  end
+  local rain = opts.rain
+  if rain ~= "rainLight" and rain ~= "rainHeavy" then
+    return Catalog.RAIN_PARTICLE_NONE_INDEX
+  end
+  local band = RAIN_PARTICLE_WIND_BAND[opts.wind]
+  if type(band) ~= "number" then
+    band = 0
+  end
+  if opts.thunderEnabled == true and rain == "rainHeavy" then
+    return 9 + band
+  end
+  if rain == "rainHeavy" then
+    return 5 + band
+  end
+  return 1 + band
+end
 
 local function getByStringKey(group, key)
   if type(group) ~= "table" or type(key) ~= "string" then

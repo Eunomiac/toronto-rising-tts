@@ -674,6 +674,7 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-08-22 | CREATE+SHIP | TOR-499 | Hunger-5 failed Rouse auto-opens Frenzy D4, no Cancel (INBOX Immediate; relatedTo TOR-159 / TOR-203 / TOR-332). Pending Save & Play. |
 | 2026-08-22 | CREATE+SHIP | TOR-500 | Hide player roll panel on idle Rouse/Oblivion-Rouse right-click (INBOX Immediate; relatedTo TOR-490 / TOR-491 / TOR-493). Pending Save & Play. |
 | 2026-08-22 | PAVE+FOCUS | `/tr-inbox` | Capture Immediate processed. Focus → TOR-498, TOR-81, TOR-98, TOR-168. PAVE Outstanding + TOR-492/493/494/496/497/501/499/500; TOR-439 remains. |
+| 2026-08-22 | SHIP | TOR-498 | Outdoor rain particles follow weather audio (`PARTICLES_WEATHER_RAIN` 0–12). Pending Save & Play. |
 | 2026-08-22 | CREATE+SHIP | TOR-501 | Phase Advance U.chain 60s cap aborted 69s overture wait; relatedTo TOR-497. Pending Save & Play. |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
