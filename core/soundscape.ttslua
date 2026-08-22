@@ -890,7 +890,11 @@ local function playRainParticleLoopingIndex(index0, reason)
     local desired = math.floor(tonumber(index0) or Catalog.RAIN_PARTICLE_NONE_INDEX)
     local obj, resolveError = resolveRainParticleObject()
     if obj == nil then
-        print("[Soundscape] Rain particles: " .. tostring(resolveError or "missing object") .. (type(reason) == "string" and (" (" .. reason .. ")") or ""))
+        -- Chunk/onLoad bootstrap often runs before getObjectFromGUID works (same window as
+        -- audio emitters). That is not a missing GUID — stay quiet. Weather apply still prints.
+        if reason ~= "bootstrap silence" then
+            print("[Soundscape] Rain particles: " .. tostring(resolveError or "missing object") .. (type(reason) == "string" and (" (" .. reason .. ")") or ""))
+        end
         return false
     end
     if obj.AssetBundle == nil or obj.AssetBundle.playLoopingEffect == nil then
@@ -953,6 +957,8 @@ function Soundscape.bootstrapSilenceStrayEmitterLoops()
     for _, channelKey in ipairs(BOOTSTRAP_LOOP_CHANNELS) do
         forceSilentLoopPhysicalOnly(channelKey)
     end
+    -- Visual rain particles (not an audio channel): set None if the object is live.
+    -- Skip quietly when GUID lookup is still cold — same window as audio emitters.
     playRainParticleLoopingIndex(Catalog.RAIN_PARTICLE_NONE_INDEX, "bootstrap silence")
 end
 

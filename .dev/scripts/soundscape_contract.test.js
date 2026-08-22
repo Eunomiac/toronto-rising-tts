@@ -567,6 +567,7 @@ test("outdoor rain particles map live weather to 0-based looping indexes (TOR-49
     "return finishWeatherLayer(okWind, message)",
     'return finishWeatherLayer(true, "Thunder enabled: " .. tostring(isEnabled))',
     "playRainParticleLoopingIndex(Catalog.RAIN_PARTICLE_NONE_INDEX, \"bootstrap silence\")",
+    "if reason ~= \"bootstrap silence\" then",
   ].forEach((needle) => {
     assert.ok(soundscape.includes(needle), `missing rain particle runtime hook: ${needle}`);
   });
