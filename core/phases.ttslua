@@ -21,6 +21,8 @@ local HEAL_BROADCAST_HOLD_SEC = 6
 local INTERMISSION_THEME_FADE_SEC = 2
 --- Intermission → Play: TR_Loop fade-out while Music C overture starts immediately (TOR-497).
 local INTERMISSION_TO_PLAY_LOOP_FADE_SEC = 0.5
+--- Per-step U.chain cap. Must exceed Play-enter overture hold (~69s); default chainWait is 60s.
+local PHASE_ADVANCE_CHAIN_MAX_WAIT_SEC = (tonumber(C.SessionStartIntroDurationSec) or 71) + 15
 
 --- Single in-flight top-level transition token.
 local advancing = false
@@ -679,13 +681,20 @@ function Phases.advanceTo(newPhase, opts)
     end
     appendSteps(steps, buildSteps(Phases.onEnter, newPhase, ctx))
     steps[#steps + 1] = function()
-        advancing = false
-        syncPhaseUi()
         print("Phases: Advanced " .. tostring(oldPhase) .. " → " .. tostring(newPhase))
         return true
     end
 
-    U.chain(steps)
+    U.chain(steps, {
+        maxWait = PHASE_ADVANCE_CHAIN_MAX_WAIT_SEC,
+        onComplete = function(ok, detail)
+            advancing = false
+            syncPhaseUi()
+            if ok ~= true then
+                U.AlertGM("Phase advance stopped (" .. tostring(detail or "unknown") .. "). Cover or music may still be mid-sequence.")
+            end
+        end,
+    })
     return true
 end
 

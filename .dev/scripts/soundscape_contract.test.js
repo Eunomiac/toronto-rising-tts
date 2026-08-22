@@ -460,6 +460,8 @@ test("session-start overture uses Music C and holds Main until the sting ends", 
     "function Phases.applyPlayEnterNoSceneLights(_ctx)",
     "Soundscape.playSessionIntro(key, { fadeSeconds = 0 })",
     "resumeBackground = false",
+    "PHASE_ADVANCE_CHAIN_MAX_WAIT_SEC",
+    "maxWait = PHASE_ADVANCE_CHAIN_MAX_WAIT_SEC",
   ].forEach((needle) => {
     assert.ok(phases.includes(needle), `missing phase session intro: ${needle}`);
   });

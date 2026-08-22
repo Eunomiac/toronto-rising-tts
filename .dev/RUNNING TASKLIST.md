@@ -79,6 +79,8 @@ _Deferral note:_ **TOR-439** (join-stress re-verify after TOR-444) is **deferred
 - [x] **Roll broadcast without difficulty:** Unset difficulty ? default 1 for display; show dice images + successes; omit margin. _(TOR-163)_
 - [x] **Queue roll-result broadcasts:** When several rolls finish in a row (especially auto Rouse), each fullscreen result stays up for the full six seconds, then a 1s fade gap, then the next. relatedTo **TOR-156**, **TOR-490**. Pending Save & Play. _(TOR-492)_
 - [x] **Concurrent idle-bag auto-Rouse:** Idle Rouse / Oblivion-Rouse bag right-clicks may overlap when every live player roll is also that shortcut. Ordinary rolls stay one-at-a-time. Same seat cannot start a second auto-Rouse while one is live or cleaning up. relatedTo **TOR-262**, **TOR-490**, **TOR-492**. Pending Save & Play. _(TOR-493)_
+- [x] **Hide player roll panel on idle auto-Rouse:** Right-click idle Rouse / Oblivion-Rouse does not show `rollControl_root_*`; Cancel is omitted so TOR-328 auto-confirm still fires. relatedTo **TOR-490**, **TOR-491**. Pending Save & Play. _(TOR-500)_
+- [x] **Hunger-5 failed Rouse auto-opens Frenzy D4, no Cancel:** Queued Frenzy Resist is Storyteller-initiated, Difficulty 4, already Open. relatedTo **TOR-159**, **TOR-203**, **TOR-332**. Pending Save & Play. _(TOR-499)_
 - [x] **Roll result broadcast trim:** Fullscreen `rollRes_*` panel ? split header, figure cutout, offset rouse strips, standard dice row; `UI.show`/`UI.hide` fade. _(TOR-156)_
 - [x] **WP reroll wave partial settle:** Count randomized dice; lock each die after settle; **Confirm** during WP **ROLLING** wave; wave must end at cap or early confirm. Found Dice-E2E I1. Author verified 2026-06-25. _(TOR-165)_
 - [x] **ST normal pool grid labels include hunger offset:** Normal strip cell labels shift by selected hunger count to show total pool on click; default hunger strip 1?4. _(TOR-251)_
@@ -128,7 +130,7 @@ _Deferral note:_ **TOR-439** (join-stress re-verify after TOR-444) is **deferred
 - [x] **Open player dice tray on roll initiate:** Tray on player bag click + ST `openRoll`; ST SETUP defers bags/tray; `changeRollType`?PRE_ROLL opens tray. Author verified 2026-07-08. _(TOR-305)_
 - [x] **Take Half auto-broadcast:** Pure Take Half confirms/broadcasts without extra Confirm; tray force-closes on cleanup. Author verified 2026-07-08. _(TOR-306)_
 - [x] **Take Half with Rouse auto-rolls:** Rouse / Obliv-Rouse leftover dice toss automatically (same as right-click Roll). After settle, sole Confirm auto-broadcasts (TOR-328). Dice-E2E H2/H2b assert `noActive` (no Confirm click). relatedTo **TOR-317**. Author confirmed 2026-08-18. _(TOR-487)_
-- [x] **Hunger 5 voluntary rouse lockout:** At Hunger 5, Blood Surge + Obliv-Rouse locked; forced standard Rouse allowed; failed rouse ? Frenzy Resist D4 queue. _(TOR-203 ? 2026-06-15)_
+- [x] **Hunger 5 voluntary rouse lockout:** At Hunger 5, Blood Surge + Obliv-Rouse locked; forced standard Rouse allowed; failed rouse → Frenzy Resist D4 queue. Auto-open + no Cancel completed in **TOR-499**. _(TOR-203 ? 2026-06-15)_
 - [x] **Hunger 4 ? block Blood Surge + manual Rouse combo; Hunger 5 ? block Blood Surge:** At Hunger 4, disallow Blood Surge + separate manual Rouse in one roll; at Hunger 5, block Blood Surge (forced Rouse OK). Extends **TOR-203**. _(TOR-331)_
 - [x] **Hide player Cancel on Storyteller-initiated rolls:** Player roll panel hides Cancel when roll is ST-initiated; single-button auto-proceed when only one action remains (**TOR-328** / **TOR-306**). _(TOR-332)_
 - [x] **ST roll dash ? sync baked-in roll conditions on initiate:** Baked-in roll-type conditions green on Roll Conditions; dash summary complete; This Roll ? Roll Conditions linked; resync on type change. _(TOR-335)_
@@ -211,6 +213,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 ## Soundscape
 
 - [x] **Intermission→Play session-start overture:** Fade TR_Loop 0.5s, immediately play Music C 71s sting at full volume, lift global blindfold ~2s before the sting ends; move no-scene table prep to Intermission enter. relatedTo **TOR-445**, **TOR-143**. Pending Save & Play. _(TOR-497)_
+- [x] **Advance overture wait vs 60s chain cap:** Play enter's ~69s cover hold no longer dies at the default `U.chain` 60s timeout; `maxWait` follows sting duration. relatedTo **TOR-497**. Pending Save & Play. _(TOR-501)_
 
 - [x] **Featured tracks fade location ambience:** Sounds-panel featured songs duck `locationA`/`locationB` as well as mood/playlist music; restore on natural end or Stop feat. Ravenwing nightclub bed is location, not Main. Pending Save & Play. _(TOR-494)_
 

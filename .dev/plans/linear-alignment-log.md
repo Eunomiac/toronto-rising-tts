@@ -669,5 +669,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-08-18 | CREATE+SHIP | TOR-494 | Featured tracks fade location ambience (Ravenwing nightclub); INBOX Immediate. Pending Save & Play. |
 | 2026-08-22 | CREATE | TOR-497 | Intermission→Play 71s Music C session-start overture; parent TOR-36; relatedTo TOR-445 / TOR-143 |
 | 2026-08-22 | SHIP | TOR-497 | Music C session-intro channel + Intermission prep / Play overture timing. Pending Save & Play. |
+| 2026-08-22 | CREATE+SHIP | TOR-501 | Phase Advance U.chain 60s cap aborted 69s overture wait; relatedTo TOR-497. Pending Save & Play. |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
