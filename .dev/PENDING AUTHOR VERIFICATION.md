@@ -17,11 +17,11 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-08-22 evening inbox follow-up — added **TOR-505** (frenzy hides Rouse bags). **TOR-439** remains a multiclient gate (not a solo Save & Play)._
+_Last populated: 2026-08-22 late inbox — cleared seven author-confirmed rows (catalog load, cover settle, seat lights, dice broadcasts, frenzy bags, rain particles). Added **TOR-506** (End→Intermission audio with the cover). **TOR-439** remains a multiclient gate (not a solo Save & Play)._
 
 ### High — session / join / first-load
 
-#### TOR-439 — Join-stress re-verify after Global HUD remount weight cut
+#### ⌚ TOR-439 — Join-stress re-verify after Global HUD remount weight cut
 
 **Status:** Linear **In Progress** (verification gate; code already shipped). Needs other people at the table — not a solo Save & Play.
 
@@ -29,51 +29,11 @@ _Last populated: 2026-08-22 evening inbox follow-up — added **TOR-505** (frenz
 
 **Context:** Earlier run: Assets, Emitters, and Figurines restore steps succeeded; step 2 timed out and drove **TOR-444**. Deferred from Focus until you can gather testers.
 
-#### TOR-503 — Catalog load must not crash (no `getTracks` / sheet spam)
+#### ✅ TOR-506 — End→Intermission music should change with the cover
 
-**How to verify:** Save & Play so this script is in the table. On load you should **not** see `getTracks` / `attempt to call a string value` in the console, and character sheets should **not** spam `GlobalResolveSheetPlayerID`. The table should finish loading normally. Then from **Intermission**, click **Advance**: Loop should duck, the Session Starter piece should play, and the cover should lift near the end.
+**How to verify:** Save & Play. From **End**, click **Advance**. As the full-screen cover comes down, the leftover session music should fade out and the Intermission loop (TR_Loop) should fade in **at the same time**. Only after about two seconds should the table reshuffle happen underneath. You should not get silence until after the table work, and the Intermission theme should not wait until the lights go dark.
 
-**Context:** This is the load-breaker that showed up while testing the Intermission→Play overture. A helper had named its first argument `type`, which hid Lua’s built-in `type()` and stopped the sound catalog (and then Global) from finishing.
-
-#### TOR-502 — End→Intermission cover should finish before table prep
-
-**How to verify:** Save & Play. From **End**, click **Advance**. The full-screen cover should drop and finish fading first. Only after about two seconds should the table and skybox reshuffle happen underneath. You should not see table or skybox work start on a still-visible table in the middle of the fade.
-
-**Context:** Follow-up to **TOR-497**. Table prep now waits on Intermission enter so the cover animation is not hitch-interrupted.
-
-#### TOR-504 — Intermission→Play restores player seat lights
-
-**How to verify:** Save & Play. From **End**, click **Advance** to **Intermission** (the table goes dark under the cover). Then click **Advance** to **Play**. While the cover is still up, or as soon as it lifts near the end of the sting, each occupied player seat should have its normal seat lights on again — not stay black like Intermission. Hunger-4+ seats can still look Hungry. Empty seats can stay off.
-
-**Context:** Follow-up to **TOR-497**. Intermission turns seat lights off; Play was only applying the outdoor dim ambient and never switching the seat-light objects back on.
-
----
-
-### Dice
-
-#### TOR-492 — Queue roll-result broadcasts so each plays the full six seconds
-
-**How to verify:** Save & Play. Sit two seats (or use the same seat twice if that is easier). Right-click idle **Rouse** so two checks auto-toss and auto-confirm in quick succession. You should see the first result for about six seconds, a short fade, then the second for about six seconds — not a flicker of only the last roll. One ordinary Confirm should still look like today: one message, about six seconds, then it fades away.
-
-#### TOR-493 — Concurrent idle-bag auto-Rouse checks
-
-**How to verify:** Save & Play. Sit two different player seats. Right-click idle **Rouse** (or one Rouse and one Oblivion-Rouse) on both seats in quick succession. Both checks should toss. You should then see the first fullscreen result for about six seconds, a short fade, then the second. Right-click the same seat’s Rouse bag twice very quickly: only one check should start. Start an ordinary Standard roll on one seat, then try an idle Rouse right-click on another seat while that Standard roll is still going. The Rouse shortcut should still do nothing until the Standard roll is confirmed.
-
-#### TOR-505 — Frenzy overlay hides Rouse and Oblivion-Rouse bags
-
-**How to verify:** Save & Play so this script is in the table. Sit a player who is not in frenzy. Confirm their Rouse bag (and Oblivion-Rouse bag, if Hunger is below 5) is visible. On the PCs panel, click **Frenzy** so the frenzy overlay appears. Both Rouse bags should disappear under the table. Click **Frenzy** again to clear the overlay. The Rouse bag should come back. If Hunger is below 5, Oblivion-Rouse should come back too; at Hunger 5 it should stay hidden. Optionally fail a Frenzy Resist roll: the overlay should appear and the same bags should hide without using the PCs-panel toggle.
-
-**Context:** Hunger bag is unchanged. Idle right-click auto-Rouse should do nothing while frenzy is on, because the bags are gone.
-
----
-
-### Sound / debug
-
-#### TOR-498 — Outdoor rain particles follow weather audio
-
-**How to verify:** Save & Play so this script is live. Apply an **outdoor** site with **light rain**, then with **heavy rain**, then with a **thunderstorm**. The rain particles should match the rain strength and the wind band (none / low / med / max) at the same time the weather audio changes — including while the cover is still down during a staged Apply. Then apply an **indoor** site (or a silent site): particles should go to none, even if rain audio is still stored and ducked. Apply a location with **no rain**: particles should stay off.
-
-**Context:** Snow and other weather particles are not part of this check.
+**Context:** Follow-up to **TOR-502** (cover wait before table prep). This pass is specifically the audio handoff riding along with the cover.
 
 ---
 

@@ -44,6 +44,8 @@ Verification:
 
 ## Processed
 
+2026-08-22 late `/tr-inbox` — capture empty. PAVE ✅ cleared **TOR-503** (catalog load), **TOR-502** (End→Intermission cover settle), **TOR-504** (Play seat lights), **TOR-492** (queued roll broadcasts), **TOR-493** (concurrent idle Rouse), **TOR-505** (frenzy hides Rouse bags), **TOR-498** (rain particles). Added Outstanding **TOR-506** (End→Intermission audio with cover). Focus → **TOR-507**, **TOR-81**, **TOR-98**. **TOR-439** remains the multiclient gate.
+
 2026-08-22 evening inbox follow-up — frenzy disables Rouse checks → **TOR-505** (shipped; pending Save & Play).
 
 2026-08-22 evening `/tr-inbox` — capture empty. PAVE ✅ cleared **TOR-497** (Intermission→Play overture), **TOR-501** (Advance wait past 60s), **TOR-500** (idle Rouse panel hide), **TOR-499** (Hunger-5 Frenzy auto-open), **TOR-494** (featured tracks fade location), **TOR-496** (seat-role offset dump). Added Outstanding **TOR-498** (rain particles), **TOR-502** (End→Intermission cover settle), **TOR-503** (catalog load / getTracks), **TOR-504** (Play seat lights). Focus → **TOR-81**, **TOR-98**, **TOR-168**. **TOR-439** remains the multiclient gate.
