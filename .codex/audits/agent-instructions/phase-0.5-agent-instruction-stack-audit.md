@@ -109,9 +109,9 @@ Instruction conflict to note:
 
 - GitHub `yeet` skill says to confirm intended scope and avoid staging unrelated changes.
 - Repo `.cursor/rules/toronto-rising-git.mdc` says to commit aggressively without asking.
-- Current Codex runtime/developer policy still requires respecting user scope and not silently staging unrelated changes.
+- Current Codex runtime/developer policy still requires respecting the author's working-tree scope and not silently staging unrelated changes.
 
-Recommended Phase 1 wording: root `AGENTS.md` should state that repo-local workflow favors frequent commits in Cursor sessions, but agents must still preserve user changes, respect explicit "do not commit" instructions, and stage only intended files.
+Recommended Phase 1 wording: root `AGENTS.md` should state that repo-local workflow favors frequent commits in Cursor sessions, but agents must still preserve the author's uncommitted changes, respect explicit "do not commit" instructions, and stage only intended files.
 
 ## Cursor User Settings
 
@@ -202,7 +202,7 @@ Phase 1 implication:
 
 For Toronto Rising work, the desired practical precedence should be:
 
-1. Current chat/user request.
+1. Current chat/author request.
 2. System/developer/runtime constraints.
 3. Root `AGENTS.md` for repo-specific agent entrypoint.
 4. `.cursor/rules/*` for always-on local Cursor policies.
@@ -229,7 +229,7 @@ Required files:
 Required content:
 
 - State that docs are agent-first by default.
-- State that user/player docs are intentionally minimal.
+- State that player docs are intentionally minimal.
 - Route agents to `.cursor/rules/*` and `.cursor/skills/*`.
 - State that `/tr-start` is the current "next task" workflow and `/tr-inbox` is the current markdown capture to Linear/tasklist workflow, while leaving room to replace or retire them after the reorganization.
 - Mark `.dev` as untrusted until verified against code.

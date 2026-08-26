@@ -9,7 +9,7 @@
  *   3. ./.tools/tts-cloud/tts-assets.config.json (repo layout)
  *   4. ~/.tts-assets/config.json
  *
- * If none exists, interactive setup walks the user through Saves folder + default save slot.
+ * If none exists, interactive setup walks the author through Saves folder + default save slot.
  */
 
 const fs = require("fs");

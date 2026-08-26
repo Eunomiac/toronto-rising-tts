@@ -16,7 +16,7 @@ Verification:
 - `rg -n "XYZToCylindrical|XYZToSpherical|resolvePositionData|GetEasedPath|LerpPath|LerpDeferred|lookAtRotation" lib/util.ttslua core/debug.ttslua`
 - run relevant in-TTS positioning/debug checks after code changes
 
-Status: current coordinate utility guide; user-readable but maintained for agent implementation support.
+Status: current coordinate utility guide; author-readable but maintained for agent implementation support.
 
 This guide summarizes the existing 3D positioning helpers in `lib/util.ttslua`, with a focus on cylindrical and spherical coordinates for smooth motion/orbits in Tabletop Simulator (TTS).
 

@@ -8,7 +8,7 @@ Read this when:
 - deciding what evidence to collect before changing code
 
 Source of truth:
-- current symptom artifacts from the user/TTS/logs
+- current symptom artifacts from the author/TTS/logs
 - `.cursor/rules/toronto-rising-author-session.mdc`
 - `docs/solutions/lua-local-function-order.md`
 - affected subsystem code
@@ -81,8 +81,8 @@ Quick chat commands: `/dbcheck` (compact) and `/dbfullcheck` (full).
 
 - [ ] Color -> player ID resolution is deterministic and stable during load.
 - [ ] No logic is accidentally keyed to wrong seat/player.
-- [ ] No hard-coded Steam IDs block the current user.
-- [ ] User is seated in the required color/role for this test path.
+- [ ] No hard-coded Steam IDs block the current player (including the author).
+- [ ] The author is seated in the required color/role for this test path.
 - [ ] Host-only vs player-visible behavior is explicitly validated.
 
 ## F) TTS/load-order and timing checks

@@ -18,7 +18,7 @@ Verification:
 
 Status: audit/survey; verify rows against current code before acting.
 
-**Purpose:** Find places where persisted `gameState` is correct but **two code paths** drive the same **physical** channel (emitters, lights, spawns, `Wait.time` fades) in one user flow—usually **eager apply** plus **`Sync.full` → `reconcileFromState`**.
+**Purpose:** Find places where persisted `gameState` is correct but **two code paths** drive the same **physical** channel (emitters, lights, spawns, `Wait.time` fades) in one interaction flow—usually **eager apply** plus **`Sync.full` → `reconcileFromState`**.
 
 **Method:** Inventory [`core/sync.ttslua`](../../core/sync.ttslua), bounded ripgrep for `applyContext`, `Soundscape.*` + `Sync.full`, `L.SetLightMode` / `reconcileAllPlayers`, spawn APIs, `U.applyLightingPreset`, `UpdateUIDisplays` / `HO.syncAll`, and read hot handlers in [`core/global_script.ttslua`](../../core/global_script.ttslua), [`core/storyteller_scenes_panel.ttslua`](../../core/storyteller_scenes_panel.ttslua), [`lib/chronicle_weather.ttslua`](../../lib/chronicle_weather.ttslua), [`core/scenes.ttslua`](../../core/scenes.ttslua), [`core/lighting.ttslua`](../../core/lighting.ttslua), and [`core/npcs.ttslua`](../../core/npcs.ttslua).
 

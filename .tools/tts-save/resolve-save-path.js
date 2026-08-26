@@ -16,7 +16,7 @@ const {
 const DEFAULT_SAVES_DIR = "D:/Owner/Documents/My Games/Tabletop Simulator/Saves";
 
 /**
- * Normalize user-entered save identifier into TS save JSON filename.
+ * Normalize author-entered save identifier into TS save JSON filename.
  * Accepts examples: "123", "TS_Save_123", "TS_Save_123.json"
  * @param {string} raw
  * @returns {string}

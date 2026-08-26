@@ -5,12 +5,12 @@ description: Using Compound Engineering workflows (sessions, plan, review, ship)
 
 # Toronto Rising — Compound Engineering (proactive use)
 
-The **Compound Engineering** Cursor plugin adds skills and slash commands for planning, debugging, session continuity, code review, git/PR flows, and related workflows. The user should **not** need to memorize `/ce:…` names for agents to do the right thing.
+The **Compound Engineering** Cursor plugin adds skills and slash commands for planning, debugging, session continuity, code review, git/PR flows, and related workflows. The author should **not** need to memorize `/ce:…` names for agents to do the right thing.
 
 ## Default behavior for agents
 
 - **Infer the workflow from the task**, then use the matching Compound Engineering **skill** (read and follow it) or equivalent capability. Natural-language requests count: e.g. “check past sessions,” “structured review before PR,” “plan the implementation,” “commit and open a PR” map to the same outcomes as `/ce:sessions`, `/ce:review`, `/ce:plan`, `/git-commit-push-pr`, etc.
-- **Do not wait** for the user to type slash commands unless they prefer that. Prefer acting over asking “should I run `/ce:…`?”
+- **Do not wait** for the author to type slash commands unless they prefer that. Prefer acting over asking “should I run `/ce:…`?”
 
 ## When to reach for it (this repo)
 
@@ -35,6 +35,6 @@ This project has **long-running** Tabletop Simulator systems (dice, roll pipelin
 - **Do not** invoke every subagent or skill on every tiny edit.
 - **Do** use session lookup and planning/review when uncertainty, scope, or blast radius are high.
 
-## Slash commands (optional for the user)
+## Slash commands (optional for the author)
 
-Slash commands are a **convenience** for humans (e.g. `/ce:sessions`, `/ce:plan`, `/ce:review`, `/git-commit`). Agents should meet the same intent via **skills and tools** without requiring the user to remember syntax.
+Slash commands are a **convenience** for humans (e.g. `/ce:sessions`, `/ce:plan`, `/ce:review`, `/git-commit`). Agents should meet the same intent via **skills and tools** without requiring the author to remember syntax.

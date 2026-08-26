@@ -95,7 +95,7 @@ Discard the drafted question if the intended correct answer matches and the test
 
 3.5 If matches feel noisy or irrelevant, tighten the subject term list and rerun the action for that drafted question.
 
-3.6 If the action fails or returns unusable data, stop. Prompt the user for further instructions.
+3.6 If the action fails or returns unusable data, stop. Prompt the author for further instructions.
 
 3.7 Keep the final subject term list for each drafted question. Output the final list later in the Subject column.
 
@@ -135,7 +135,7 @@ Question|Option A|Option B|Option C|Option D|Option E|Option F|Option G|Correct 
 8.3 Do not include the header row in the output rows.
 
 9. Respond with two outputs
-9.1 A readable summary for the user.
+9.1 A readable summary for the author.
 - Show approved questions first.
 - Then show discarded questions and the discard reason.
 9.2 A single code block with one pipe-delimited row per drafted question.
@@ -152,7 +152,7 @@ Goal: create the next infographic entry in the "Sites of Toronto" series.
 0.2 Treat entries with paragraph descriptions as completed examples.
 0.3 Treat entries with bullet points only as incomplete.
 0.4 Locate the entry for: BAY WELLINGTON TOWER
-0.5 If the site value given in step 0.4 starts with "SITE_SELECTION_ERROR:", stop and ask the user which site to use tonight.
+0.5 If the site value given in step 0.4 starts with "SITE_SELECTION_ERROR:", stop and ask the author which site to use tonight.
 0.6 Use any bullet point guidance under that site header as requirements.
 
 1. Study the completed examples
@@ -333,6 +333,6 @@ Task: Generate a photorealistic nighttime image representing a district of Toron
 - Variation in tone.
 
 6. Image Request
-- Now refer back to the user's prompt, which will contain the specific district for which you will be generating an image, as well as the district's assigned theme
-- Perform any necessary research to gather distinct characteristics to depict in the image, and ask any clarifying questions you need of the user
+- Now refer back to the author's prompt, which will contain the specific district for which you will be generating an image, as well as the district's assigned theme
+- Perform any necessary research to gather distinct characteristics to depict in the image, and ask any clarifying questions you need of the author
 - Once you have the information you need, proceed immediately to generate the image.

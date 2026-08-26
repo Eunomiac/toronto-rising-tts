@@ -154,4 +154,4 @@ Use for manuals/playbooks/registries that are **never “finished”** (e.g. **T
 - **Never** edit [PENDING AUTHOR VERIFICATION.md](../../.dev/PENDING%20AUTHOR%20VERIFICATION.md) outside **`/tr-inbox`** / “process the inbox” (author owns the checklist between passes; Done how-to-verify lives in Linear comments until inbox syncs the list).
 - **Never** delete Linear issues; cancel or close with reason.
 - **Never** skip creating a Done issue for shipped work — completed features are bug anchors.
-- **Do not** wait for the user to ask for Linear updates; sync is part of the definition of done.
+- **Do not** wait for the author to ask for Linear updates; sync is part of the definition of done.

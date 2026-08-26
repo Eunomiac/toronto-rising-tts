@@ -433,7 +433,7 @@ async function requireWriteConfirmation(skipConfirm, summaryQuestion) {
   }
   const ok = await confirmYesNo(summaryQuestion);
   if (!ok) {
-    const err = new Error("Aborted by user (write not confirmed).");
+    const err = new Error("Aborted by the author (write not confirmed).");
     /** @type {Error & { code?: string }} */ (err).code = "USER_ABORT";
     throw err;
   }

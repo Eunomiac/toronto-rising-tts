@@ -1908,7 +1908,7 @@ function HUD_playerRightSidebar_mouseUp(player, value, id)
     if action.kind == "reference" and action.nested == false then
         -- Nestedless references are "hold-to-show" overlays.
         -- Clear the temp hold on *any* mouseUp for any nestedless ref button.
-        -- This prevents a stuck overlay when the user drags off one nestedless panel
+        -- This prevents a stuck overlay when the player drags off one nestedless panel
         -- and releases on a different nestedless panel.
         if tempHoldRefByPlayerID[playerID] ~= nil then
             tempHoldRefByPlayerID[playerID] = nil
@@ -2233,11 +2233,11 @@ function HUD_playerMap_districtToggle_mouseDown(player, value, id)
 
     HUDP.updatePlayerMapPanelUI(player, seatColor)
 
-    -- User clicked a district: cancel any active nav up/down position.
+    -- Player clicked a district: cancel any active nav up/down position.
     mapPanNavIsActiveByPlayerID[playerID] = false
     mapPanNavYByPlayerID[playerID] = nil
 
-    -- Click should pan immediately (no debounce), unless user has dragged manually.
+    -- Click should pan immediately (no debounce), unless the player has dragged manually.
     local next = mapActiveDistrictByPlayerID[playerID]
     if type(next) ~= "string" then
         next = getPersistedMapDistrictKeyForPlayer(playerID)
@@ -2298,7 +2298,7 @@ function HUD_playerMap_panUp_mouseUp(player, value, id)
     mapPanNavYByPlayerID[playerID] = MAP_PAN_TOP_Y
 
     -- Clear only transient hover highlight.
-    -- Keep active selected district so pan-button usage doesn't wipe user selection.
+    -- Keep active selected district so pan-button usage doesn't wipe player selection.
     mapHoverDistrictKeyByPlayerID[playerID] = nil
 
     animateMapPanTo(playerID, seatColor, MAP_PAN_TOP_Y, 0.18)
@@ -2350,7 +2350,7 @@ function HUD_playerMap_panDown_mouseUp(player, value, id)
     mapPanNavYByPlayerID[playerID] = MAP_PAN_BOTTOM_Y
 
     -- Clear only transient hover highlight.
-    -- Keep active selected district so pan-button usage doesn't wipe user selection.
+    -- Keep active selected district so pan-button usage doesn't wipe player selection.
     mapHoverDistrictKeyByPlayerID[playerID] = nil
 
     animateMapPanTo(playerID, seatColor, MAP_PAN_BOTTOM_Y, 0.18)
@@ -2393,7 +2393,7 @@ function HUD_playerMap_recenter_mouseUp(player, value, id)
     mapPanHoverTokenByPlayerID[playerID] = (mapPanHoverTokenByPlayerID[playerID] or 0) + 1
     mapPanAnimTokenByPlayerID[playerID] = (mapPanAnimTokenByPlayerID[playerID] or 0) + 1
 
-    -- User action: cancel nav position override so hover-off returns to persisted selection.
+    -- Player action: cancel nav position override so hover-off returns to persisted selection.
     mapPanNavIsActiveByPlayerID[playerID] = false
     mapPanNavYByPlayerID[playerID] = nil
 

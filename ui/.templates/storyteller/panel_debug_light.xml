@@ -81,7 +81,7 @@ BUTTONS - concatenated renders of `./partials/debug_button_light.xml` (60-slot p
     - The "LIGHT CONTROL PANEL" XML should be updated to reflect the current status of the selected light, and should be constantly and dynamically updated for as long as the panel is opened whenever the light is moved or its configuration adjusted.
 
   **OTHER BUTTONS**
-  - [Done] - Closes the light selection panel, returning the user to the world viewportData. (Note: Parameter sent is 'close', to avoid conflict with the 'done' button in the light control panel.)
+  - [Done] - Closes the light selection panel, returning the author to the world viewportData. (Note: Parameter sent is 'close', to avoid conflict with the 'done' button in the light control panel.)
 -->
 
   <GridLayout id="panel_debug_light_selection" class="panel_debug_light_selection">
@@ -189,7 +189,7 @@ BUTTONS - concatenated renders of `./partials/debug_button_light.xml` (60-slot p
   NOTE: When first initialized, the G.GUIDS.DEBUG_LIGHT_FOCAL_POINT object is positioned 5 units "downstream" of the light (in the direction it is pointing), `.highlightOn("Green")`'d, and rotated to match the orientation of the spotlight object. This means that distance will be initialized to 5, while pitch and yaw should be derived by a coordinate conversion from the light's position relative to the focal point object.
 
   == SLIDER INTERACTIONS ==
-  Because the light's position and rotation can be controlled by multiple sliders, it is important to ensure that all sliders are synchronized and dynamically updated to always align with the position and orientation of the light. For example, if the user moves any of the FOCAL POINT SLIDERS, this will likely require updating all POSITION and ROTATION sliders as the light orbits around the focal point object, always facing it. Likewise, if the user moves any of the POSITION or ROTATION sliders, this will likely require updating the FOCAL POINT SLIDERS as the light's position and orientation change relative to the focal point object. (NOTE: The light should not snap to point at the focal point object when the user moves the POSITION or ROTATION sliders; only when the FOCAL POINT sliders are moved should the light snap to point at the focal point object.)
+  Because the light's position and rotation can be controlled by multiple sliders, it is important to ensure that all sliders are synchronized and dynamically updated to always align with the position and orientation of the light. For example, if the author moves any of the FOCAL POINT SLIDERS, this will likely require updating all POSITION and ROTATION sliders as the light orbits around the focal point object, always facing it. Likewise, if the author moves any of the POSITION or ROTATION sliders, this will likely require updating the FOCAL POINT SLIDERS as the light's position and orientation change relative to the focal point object. (NOTE: The light should not snap to point at the focal point object when the author moves the POSITION or ROTATION sliders; only when the FOCAL POINT sliders are moved should the light snap to point at the focal point object.)
 
   IMPORTANT: In addition to updating the sliders, the text elements displaying the actual values must also be updated, and they should be displayed with the same precision as the sliders. If negative values are possible, the text elements associated with that slider should always be signed (e.g. "+500", not "500"). If the minimum value is 0 or greater, no signs are necessary.
 
@@ -198,7 +198,7 @@ BUTTONS - concatenated renders of `./partials/debug_button_light.xml` (60-slot p
   - [Refresh] - Refreshes the values of all sliders to match the current position and orientation of the light, ADDITIONALLY checking the position of the G.GUIDS.DEBUG_LIGHT_FOCAL_POINT object and updating the FOCAL POINT SLIDERS to match, in case that object has been moved manually.
   - [Discard] - Discards all changes made to the light's configuration by the debug control panel, restoring it to its initial state.
   - [Snapshot] - Sends a lua-table formatted configuration of the light's current state to the IDE, so it can be copied into the various LightMode definitions.
-  - [Done] - Closes the debug control panel, returning the user to the light selection panel.
+  - [Done] - Closes the debug control panel, returning the author to the light selection panel.
 -->
 
   <GridLayout id="panel_debug_light_control" class="panel_debug_light_control" active="false">

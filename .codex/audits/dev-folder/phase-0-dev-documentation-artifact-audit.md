@@ -10,7 +10,7 @@ Change policy: this report began as a read-only Phase 0 audit; later cleanup com
 
 This report converts the initial Phase 0 chat reply into a durable audit document. It should be used as a planning reference for reorganizing `.dev/` in later phases.
 
-The project is agent-built and agent-maintained. Documentation decisions should optimize for agent retrieval, task routing, and correctness checks, not broad public or user documentation. Human/player documentation should stay minimal and should be isolated from canonical engineering guidance.
+The project is agent-built and agent-maintained. Documentation decisions should optimize for agent retrieval, task routing, and correctness checks, not broad public or player documentation. Human/player documentation should stay minimal and should be isolated from canonical engineering guidance.
 
 ## Evidence
 
@@ -54,7 +54,7 @@ For this repo, documentation should be designed as an agent operating layer:
 - optimize for "what should an agent read before touching this area?"
 - avoid broad prose that looks canonical but is not tied to code
 - mark generated artifacts clearly and remove stale planning material instead of preserving legacy notes
-- keep user/player docs light and isolated
+- keep player docs light and isolated
 - prefer task routing and verification commands over narrative explanations
 - keep canonical technical docs in Git, with Notion acting only as an index/dashboard
 
@@ -277,7 +277,7 @@ The target structure should favor agent retrieval and routing over public docs p
 │  ├─ testing/
 │  ├─ troubleshooting/
 │  ├─ reference/
-│  └─ user/
+│  └─ player/
 ├─ plans/
 │  ├─ active/
 │  ├─ parked/
@@ -297,7 +297,7 @@ The target structure should favor agent retrieval and routing over public docs p
 
 Notes:
 
-- `docs/user/` should exist only for complex player-facing or private reference material that is genuinely useful to humans.
+- `docs/player/` should exist only for complex player-facing or private reference material that is genuinely useful to humans.
 - Most engineering docs should be written for agents.
 - `.dev/README.md` should explain trust levels and cleanup policy.
 - `.dev/DOCS_INDEX.md` should be task-oriented: "if touching X, read Y".

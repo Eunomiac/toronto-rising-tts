@@ -4,7 +4,7 @@ alwaysApply: true
 
 ## Cursor repo policy
 
-This rule exists for Cursor sessions in this repository. It supersedes generic/global Cursor rules that say to ask before every commit, but it does not supersede an explicit current user request not to commit or higher-priority platform/tool safety rules.
+This rule exists for Cursor sessions in this repository. It supersedes generic/global Cursor rules that say to ask before every commit, but it does not supersede an explicit current author request not to commit or higher-priority platform/tool safety rules.
 
 ### Commit aggressively — without asking or waiting
 

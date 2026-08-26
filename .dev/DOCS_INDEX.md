@@ -83,7 +83,7 @@ Always verify important claims against code before changing behavior.
 |---|---|---|
 | Chronicle/campaign material | [`Chronicle Data/`](Chronicle%20Data/) | Human review preferred; not engineering source of truth unless code explicitly consumes generated data |
 | TTS API reference | [`tts-api/`](tts-api/) and [`TTS-Scripting-Guide.htm`](TTS-Scripting-Guide.htm) | Vendored/reference material |
-| Positioning user guide | [`User Guides/TTS-3D-Positioning-Coordinate-Utilities.md`](User%20Guides/TTS-3D-Positioning-Coordinate-Utilities.md) | Useful for coordinate/math tasks |
+| Positioning guide | [`User Guides/TTS-3D-Positioning-Coordinate-Utilities.md`](User%20Guides/TTS-3D-Positioning-Coordinate-Utilities.md) | Useful for coordinate/math tasks |
 
 ## Path-Sensitive Notes
 

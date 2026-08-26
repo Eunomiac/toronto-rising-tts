@@ -46,8 +46,8 @@ Use this checklist when a debugging exchange is stalling, looping, or accumulati
 
 - [ ] Color -> player ID resolution is deterministic and stable during load.
 - [ ] No logic is accidentally keyed to wrong seat/player.
-- [ ] No hard-coded Steam IDs block the current user.
-- [ ] User is seated in the required color/role for this test path.
+- [ ] No hard-coded Steam IDs block the current player (including the author).
+- [ ] The author is seated in the required color/role for this test path.
 - [ ] Host-only vs player-visible behavior is explicitly validated.
 
 ## F) TTS/load-order and timing checks

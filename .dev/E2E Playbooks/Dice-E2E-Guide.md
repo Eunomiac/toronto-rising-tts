@@ -55,7 +55,7 @@ Cross-playbook rules: [TESTING.md § Streamlined block workflow](../TESTING.md#s
 
 ---
 
-> **NOTE FOR AGENTS:** User edits to this document are called out via the "😀" emoji. When you find one, process it immediately if possible. When such a user comment is fully integrated (i.e. requested changes implemented, reported bugs fixed, etc.), delete the user comment.
+> **NOTE FOR AGENTS:** Author edits to this document are called out via the "😀" emoji. When you find one, process it immediately if possible. When such an author comment is fully integrated (i.e. requested changes implemented, reported bugs fixed, etc.), delete the author comment.
 >
 > **NOTE FOR AGENTS:** A passed test will be marked beneath the "Pass If" line with a "✅". If that symbol appears without further comment, the entire test passed. If a test partially passed, it will still receive a "✅", but may be accompanied by comments describing where it did not meet requirements -- these will be called out with the "⚠️" emoji. If a test fails completely, it will be marked with an "❌", and a description of the failure will accompany the emoji.
 
@@ -287,7 +287,7 @@ RC.setRollOptions("Brown", { wpReroll = true, numberOfDiceRerolled = 3, canRerol
 
 ## Agent maintenance
 
-User edits marked with 😀: integrate then delete the comment.
+Author edits marked with 😀: integrate then delete the comment.
 Passed tests: ✅ beneath Pass if. Partial: ✅ + ⚠️. Failed: ❌ + notes.
 
 ## Sign-off

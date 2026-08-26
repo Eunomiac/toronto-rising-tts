@@ -20,11 +20,13 @@ Multi-root Cursor workspaces may include **Toronto Rising (Project)** and **TTS 
 
 This is a first-class project rule: [`.cursor/rules/toronto-rising-author-voice.mdc`](.cursor/rules/toronto-rising-author-voice.mdc). It applies to **all author-facing writing** (chat, status summaries, Linear comments, Pending Author Verification, author playbooks), not only verify checklists. It overrides generic “be terse” defaults when terseness would feel like jargon.
 
+**Preferred terms:** **Author** = the chronicle owner talking to agents (in chat, **you**). **Player** = a seated TTS participant. **Storyteller / ST** = the in-game seat and permission, not the person in Cursor. Do not call the author **user**. Keep **user** only for Cursor/TTS/API/git/OS product wording. Full table: [toronto-rising-author-voice.mdc](.cursor/rules/toronto-rising-author-voice.mdc) § Preferred terms.
+
 Agent-first `.dev` routing docs may stay compact for other agents; anything the author is expected to act on must stay readable.
 
 ## Current Workflows
 
-`/tr-start` is the current start command when the user wants to work on "the next task." It reads Focus, Linear context, and architecture policies before implementation.
+`/tr-start` is the current start command when the author wants to work on "the next task." It reads Focus, Linear context, and architecture policies before implementation.
 
 `/tr-inbox` is the current capture-processing command. It turns markdown notes in `.dev/INBOX.md` into Linear issues, tasklist updates, and Focus stack changes.
 
@@ -40,7 +42,7 @@ For Codex/API sessions where slash commands are not available, mirror the same b
 
 Use this order when sources disagree:
 
-1. Current user request and active system/developer instructions.
+1. Current author request and active system/developer instructions.
 2. Current code and generated source inputs.
 3. This `AGENTS.md`.
 4. `.cursor/rules/*` and `.cursor/skills/*` for repo-local agent workflows.
@@ -53,7 +55,7 @@ Notion is an index/planning layer, not the source of truth for code-adjacent doc
 
 ## Documentation Policy
 
-Docs are agent-first by default. Optimize for routing, source-of-truth clarity, verification steps, and "read this before touching X." Do not create broad user manuals unless the user asks or a complex private reference genuinely needs human-facing prose.
+Docs are agent-first by default. Optimize for routing, source-of-truth clarity, verification steps, and "read this before touching X." Do not create broad player manuals unless the author asks or a complex private reference genuinely needs human-facing prose.
 
 **Exception — author-facing surfaces:** Chat, Linear comments meant for the author, [PENDING AUTHOR VERIFICATION](.dev/PENDING%20AUTHOR%20VERIFICATION.md) (checklist), and step-by-step / author playbooks must use **plain English** per [`.cursor/rules/toronto-rising-author-voice.mdc`](.cursor/rules/toronto-rising-author-voice.mdc). Prefer clarity over brevity when those conflict.
 
@@ -109,4 +111,4 @@ See `.cursor/rules/` and `.dev/DOCS_INDEX.md` for task-specific policy routing.
 
 ## Git And Scope
 
-Cursor repo rules favor frequent commits after logical units. Codex/API sessions must still preserve user changes, respect explicit "do not commit" or audit-only instructions, and stage only intended files. Never silently include unrelated worktree changes.
+Cursor repo rules favor frequent commits after logical units. Codex/API sessions must still preserve the author's uncommitted changes, respect explicit "do not commit" or audit-only instructions, and stage only intended files. Never silently include unrelated worktree changes.

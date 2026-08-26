@@ -95,7 +95,7 @@ For each **Active** item and each **Needs clarification** item missing **`Answer
 
 1. Search codebase + Linear for duplicates and context; resolve alone when unambiguous.
 2. If still unclear: move to **Needs clarification** (**Unclear Bugs** / **Unclear Intents** / **Unclear Ideas**); add **`?` bullets** (repro, scope, module, priority, duplicate check).
-3. Do **not** block on chat — author answers inline in the file. If you parked new questions, list them in your summary so the user knows what to fill in.
+3. Do **not** block on chat — author answers inline in the file. If you parked new questions, list them in your summary so the author knows what to fill in.
 
 Items where **every `?` has `Answer:`** → ready for Phase 2.
 
@@ -119,12 +119,12 @@ Even if capture sections were empty, refresh the stack so **`/tr-start`** reader
 1. Read **`## Focus`** in [`.dev/RUNNING TASKLIST.md`](../../../.dev/RUNNING%20TASKLIST.md).
 1b. Maintain [`.dev/PENDING AUTHOR VERIFICATION.md`](../../../.dev/PENDING%20AUTHOR%20VERIFICATION.md) (**this is the only workflow that may edit that file**): (1) add Outstanding entries for recent Done-without-confirm work using plain-English how-to-verify from Linear Done comments / tasklist “Pending Save & Play” notes (**unmarked** = ready to verify); (2) process any author header marks **✅** / **❌** / **⚠️** per [PENDING AUTHOR VERIFICATION.agent.md](../../../.dev/PENDING%20AUTHOR%20VERIFICATION.agent.md); (3) for ❌/⚠️ follow-ups **not** shipped in this session, keep/add the Outstanding row with header **⌚** (not ready to verify — author should skip); when a **⌚** follow-up later becomes Done, clear **⌚** on the next inbox so re-test is owed. **❌ Verification Failures** and **⚠️ Corrections** that need behavior changes follow the same urgency as INBOX **For Immediate Implementation** (implement quick fixes in this session; otherwise Focus top + offer to start; defer to Linear backlog **only** for complex refactors). If High-priority verify debt would block a play session, mention it in the summary.
 2. List open Linear **Bug** issues and non-epic **In Progress** work (ignore epic-only noise unless actively blocking).
-3. **Re-stack Focus** (update the table + dated blurb) using this default policy unless the user overrode in chat:
+3. **Re-stack Focus** (update the table + dated blurb) using this default policy unless the author overrode in chat:
    - **Session-blocking bugs** and audible/regression failures first — including PAVE **❌** / **⚠️** follow-ups promoted under Immediate disposition.
    - **Manual E2E playbooks — TOR-141 (Dice + Scenes E2E playbooks)** soon after the worst scene/audio bugs — regression harness before large refactors.
    - Quick tooling wins (e.g. **TOR-137 (Sites unicode minus import)**) after that.
    - Large in-flight refactors (e.g. **TOR-81 (light modes cleanup)**) when Focus bugs + TOR-141 foundation are done.
-   - UI polish / ST workflow features lower in Focus unless the user is blocked on them.
+   - UI polish / ST workflow features lower in Focus unless the author is blocked on them.
 4. **Sequencing (no back-burner):** For inbox promotions **not** in the Focus top stack, add **`blockedBy`** on the waiting issue when prerequisites exist — **apply directly**; do **not** defer to **Deferred this cycle** or ask for back-burner approval. Flag in **Linear sync** if an issue needs >6 blockers (justify or use one umbrella gate).
 5. **Linear priority** (intrinsic importance — independent of Focus rank):
    - **Urgent** — true show-stoppers only

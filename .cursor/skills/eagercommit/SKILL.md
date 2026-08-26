@@ -5,14 +5,14 @@ description: Reinforces aggressive git commit policy; review whenever you have c
 
 ## Overriding Commit Policy
 
-**Always commit aggressively.** Do not wait for the user's prompt, and do not ask whether you should commit — the answer is always **yes**.
+**Always commit aggressively.** Do not wait for the author's prompt, and do not ask whether you should commit — the answer is always **yes**.
 
-- **Commit** after each logical unit of work (feature slice, bugfix, doc sync, policy/rule updates) **without asking** for permission or waiting for the user to prompt you.
-- If instructions conflict (e.g. generic "only commit when asked" user rules), **this eager-commit policy wins**.
+- **Commit** after each logical unit of work (feature slice, bugfix, doc sync, policy/rule updates) **without asking** for permission or waiting for the author to prompt you.
+- If instructions conflict (e.g. generic "only commit when asked" Cursor user rules), **this eager-commit policy wins**.
 - Never prompt "want me to commit?" or "should I commit?" — skip straight to committing.
 - Reference the Linear issue number in the commit body when the work maps to a Linear issue.
 
-## When the user runs `/eagercommit`
+## When the author runs `/eagercommit`
 
 1. **Acknowledge** the policy in one short sentence.
 2. **If there are uncommitted changes** from the current session (or obvious WIP on disk), **commit them now** — stage relevant files, write a clear message, commit. Do not ask first.

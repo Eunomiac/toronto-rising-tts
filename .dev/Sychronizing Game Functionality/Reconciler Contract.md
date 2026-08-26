@@ -155,7 +155,7 @@ When `Sync.full({ force = true })`, `Sync.invalidateAllReconcileCaches()` runs b
 
 ## Mutation -> reconcile cheat sheet
 
-| User action / feature | Required mutation | Required sync sequence | Notes |
+| Action / feature | Required mutation | Required sync sequence | Notes |
 |---|---|---|---|
 | Hunger change from PC/ST panel or rouse | `S.setPlayerVal(color, "hunger", nextValue)` | `Sync.player(color)`; ST `hungerApply` also `P.refreshHudOverlaysForSeat(color)` (TOR-340) | Covers seat light priority, player HUD, overlays, and hunger smoke. Existing examples: `core/pc_storyteller_panel.ttslua`, `core/roll_controller.ttslua`, `core/debug.ttslua`. |
 | Condition changes with HUD or lighting effects | Write condition data under `gameState.playerData[id].conditions` through the owning condition/stat API | `Sync.player(color)` | Lighting reads `lightingModeChanges`; overlays read `hudChanges`. |

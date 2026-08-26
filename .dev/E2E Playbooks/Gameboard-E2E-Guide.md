@@ -185,7 +185,7 @@ Use two fixture rows with visibly different stage placements and NPC/PC seat pre
 
 ### Optional reload gate
 
-`gbE2eRunFull()` still prints an optional reload gate for direct macro users. In addition to the normal prereq check, Save & Play while THERE once: the persisted draft must restore to the board and remain isolated from live state. Treat it as an ad-hoc follow-up, not part of the generated default `RunTest("Gameboard")` pass:
+`gbE2eRunFull()` still prints an optional reload gate for the author running the macro directly. In addition to the normal prereq check, Save & Play while THERE once: the persisted draft must restore to the board and remain isolated from live state. Treat it as an ad-hoc follow-up, not part of the generated default `RunTest("Gameboard")` pass:
 
 ```lua
 lua gbE2eRunFull()

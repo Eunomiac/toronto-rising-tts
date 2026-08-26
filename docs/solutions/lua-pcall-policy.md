@@ -74,4 +74,4 @@ Each site above has a `-- pcall: …` comment **immediately** above the `pcall(`
 
 - **Optional resolution**: add `*OrNil` / boolean-return helpers instead of `pcall(f)` around callers that throw.
 - **Optional modules**: prefer one top-level guarded `require` with a clear `if not mod then … end` rather than scattered `pcall(require, …)` unless the module is intentionally absent in some bundles (then document that in the annotation).
-- **Coroutine / callback harnesses**: `lib/util.ttslua` uses `pcall` around user-supplied callbacks; shrinking that surface is a larger refactor; annotate each site until replaced.
+- **Coroutine / callback harnesses**: `lib/util.ttslua` uses `pcall` around caller-supplied callbacks; shrinking that surface is a larger refactor; annotate each site until replaced.

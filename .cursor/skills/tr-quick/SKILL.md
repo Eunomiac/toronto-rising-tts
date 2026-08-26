@@ -2,7 +2,7 @@
 name: tr-quick
 description: >-
   Assess Linear Focus issues for a combined small-batch implementation, then
-  switch to Plan mode and draft one plan. Use when the user runs /tr-quick,
+  switch to Plan mode and draft one plan. Use when the author runs /tr-quick,
   with or without TOR-* ids.
 disable-model-invocation: true
 ---

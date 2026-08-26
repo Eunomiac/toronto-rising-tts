@@ -55,7 +55,7 @@ Recommended target surfaces:
 - `.dev/Sychronizing Game Functionality/TTS-API-Heavy-Workload-Usage-Inventory.md` only if refreshing current call-site inventory or adding a “how to rescan” note.
 - `.dev/DOCS_INDEX.md` if routing should point agents to the new guardrails.
 
-Do not create broad user-facing manuals. This should be agent-first guidance: routing, source-of-truth clarity, checklist-style guardrails, and verification steps.
+Do not create broad player-facing manuals. This should be agent-first guidance: routing, source-of-truth clarity, checklist-style guardrails, and verification steps.
 
 ## Guardrail principles to document
 
@@ -91,7 +91,7 @@ Heavy or moderate TTS API usage should usually have at least one of:
 
 Add a compact checklist agents can apply before merging any Lua/XML change that touches TTS API calls:
 
-- Is this call in a hot callback, timer, repeated reconciler, or user-drag/type path?
+- Is this call in a hot callback, timer, repeated reconciler, or drag/type path?
 - Is this call bounded by color, seat, GUID, tag, or known object identity before expensive work starts?
 - Is unchanged work skipped by a fingerprint, cache, dirty check, or previous-value comparison?
 - Is a broad refresh being duplicated immediately after `Sync.full`, `Sync.player`, or another reconciler?

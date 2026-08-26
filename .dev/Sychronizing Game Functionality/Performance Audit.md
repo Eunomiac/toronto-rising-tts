@@ -58,7 +58,7 @@ Resolved:
 
 Deferred:
 
-- `HUD_selectStorytellerPanel` one-frame delayed refreshes remain unchanged. They are visibility/layout refreshes after panel selection, and this pass did not find a concrete mutation path that double-refreshes the same panel in one user action.
+- `HUD_selectStorytellerPanel` one-frame delayed refreshes remain unchanged. They are visibility/layout refreshes after panel selection, and this pass did not find a concrete mutation path that double-refreshes the same panel in one interaction.
 - Broader HUD decomposition (`reconcileSeatHud`, `reconcileCrossSeatRows`, location dock split) remains deferred. TOR-391 removed duplicate broad calls without changing cross-seat HUD ownership.
 - Temporary sequence instrumentation was not added because the duplicate call chains were clear from the current call graph and the fixes were local.
 
@@ -84,7 +84,7 @@ Do not reintroduce TOR-391 duplicates: no broad `StorytellerScenesPanel.refresh(
 
 ### Pre-merge checklist for Lua/XML touching TTS APIs
 
-- Is this call in a hot callback, timer, repeated reconciler, or user-drag/type path?
+- Is this call in a hot callback, timer, repeated reconciler, or drag/type path?
 - Is it bounded by color, seat, GUID, tag, known object identity, or a board-local bounds check before expensive work starts?
 - Is unchanged work skipped by a fingerprint, cache, dirty check, or previous-value comparison?
 - Is a broad refresh duplicated immediately after `Sync.full`, `Sync.player`, or another reconciler?

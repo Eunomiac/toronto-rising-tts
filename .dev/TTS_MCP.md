@@ -3,7 +3,7 @@
 ## Agent Routing
 
 Read this when:
-- the user explicitly asks to use the TTS MCP bridge
+- the author explicitly asks to use the TTS MCP bridge
 - changing `.tools/tts-mcp/` or `.tools/tts-bridge/`
 - debugging External Editor message flow or `.dev/.debug/` writes
 
@@ -17,7 +17,7 @@ Verification:
 - `npm run tts-mcp:build`
 - manual TTS session with External Editor enabled and port `39998` free
 
-Status: current manual-only MCP guide; do not enable/call MCP unless the user explicitly asks.
+Status: current manual-only MCP guide; do not enable/call MCP unless the author explicitly asks.
 
 This repo includes an optional **Model Context Protocol** server that runs **Tabletop Simulator** Lua via the [External Editor API](tts-api/Getting%20Started/External%20Editor%20API.md) (localhost **39999** → TTS, **39998** ← TTS).
 
@@ -68,7 +68,7 @@ Only when you want MCP in Cursor **and** the extension is disabled. Point at the
 }
 ```
 
-Agents should not enable or call MCP unless the user explicitly requests it.
+Agents should not enable or call MCP unless the author explicitly requests it.
 
 ## Tools exposed
 

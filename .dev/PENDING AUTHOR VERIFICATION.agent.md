@@ -91,7 +91,7 @@ As the author works through the checklist in Tabletop Simulator, they will prefi
 
 Treat **Verification Failures** and **Corrections** that need code or behavior changes like bullets under [INBOX.md](INBOX.md) **For Immediate Implementation**:
 
-> After registering each issue with Linear in the ordinary fashion, briefly review it: If it is a quick or easy fix, **implement it immediately** without waiting for user confirmation. Otherwise, promote it to the **top of the Focus Stack**, and offer to begin work on it immediately when summarizing inbox processing. If multiple items need promotion this way, consider how best to resolve them quickly, and offer to draft an implementation plan in the summary.
+> After registering each issue with Linear in the ordinary fashion, briefly review it: If it is a quick or easy fix, **implement it immediately** without waiting for author confirmation. Otherwise, promote it to the **top of the Focus Stack**, and offer to begin work on it immediately when summarizing inbox processing. If multiple items need promotion this way, consider how best to resolve them quickly, and offer to draft an implementation plan in the summary.
 
 | Disposition | When | Agent action |
 | --- | --- | --- |

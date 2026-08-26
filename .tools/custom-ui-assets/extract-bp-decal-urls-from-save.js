@@ -252,7 +252,7 @@ function toLuaTable(found) {
 }
 
 /**
- * Normalize user-entered save identifier into TS save JSON filename.
+ * Normalize author-entered save identifier into TS save JSON filename.
  * @param {string} raw
  * @returns {string}
  */

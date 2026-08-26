@@ -281,14 +281,14 @@ end
 --- Plays background music track (if configured)
 -- Uses TTS MusicPlayer API to play a specific track
 -- Note: TTS uses 0-based indexing for tracks (0 = first track, 9 = 10th track)
--- Note: Scene presets use 1-based indexing (1 = first track) for user-friendliness
+-- Note: Scene presets use 1-based indexing (1 = first track) for readability
 -- @param trackIndex number Optional. Music track index (1-10, converted to 0-9). If nil, pauses music.
 local function playSceneMusic(trackIndex)
     if trackIndex == nil then
         -- Pause music
         MusicPlayer.pause()
     else
-        -- Convert 1-based (user-friendly) to 0-based (TTS API)
+        -- Convert 1-based (readable) to 0-based (TTS API)
         -- Scene presets use 1-10, but TTS API uses 0-9
         local apiTrackIndex = trackIndex - 1
 

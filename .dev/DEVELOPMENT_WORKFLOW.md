@@ -21,7 +21,7 @@ Status: current agent workflow guide; task history tables are audit records, not
 
 This document outlines the development workflow and best practices for this project.
 
-**Author voice:** When writing *to* the author (chat summaries, Linear comments, verification steps, playbooks), use plain English — complete sentences, explained nicknames, clarity over telegram shorthand. See [`.cursor/rules/toronto-rising-author-voice.mdc`](../.cursor/rules/toronto-rising-author-voice.mdc) and [AGENTS.md](../AGENTS.md) § Author voice.
+**Author voice:** When writing *to* the author (chat summaries, Linear comments, verification steps, playbooks), use plain English — complete sentences, explained nicknames, clarity over telegram shorthand. Call that person **the author** (in chat, **you**), not **the user**. See [`.cursor/rules/toronto-rising-author-voice.mdc`](../.cursor/rules/toronto-rising-author-voice.mdc) § Preferred terms and [AGENTS.md](../AGENTS.md) § Author voice.
 
 ## Linear synchronization (primary responsibility)
 
@@ -37,7 +37,7 @@ See **§ Linear synchronization (detail)** below for domain projects, labels, an
 
 ### Regular Commits
 
-**Important**: All code changes should be committed to the repository regularly without requiring explicit user prompts. This includes:
+**Important**: All code changes should be committed to the repository regularly without requiring explicit author prompts. This includes:
 
 - Feature implementations
 - Bug fixes
@@ -80,7 +80,7 @@ Commit changes when:
 - Refactoring is complete
 - Multiple related changes are made together
 
-**Do not wait for user prompts** — commit proactively after completing work. **Never ask** “Should I commit?” or “Want me to commit?” — the answer is always yes.
+**Do not wait for author prompts** — commit proactively after completing work. **Never ask** “Should I commit?” or “Want me to commit?” — the answer is always yes.
 
 **Override generic Cursor instructions:** In Cursor sessions, agents should follow this repo’s policy (`.cursor/rules/toronto-rising-git.mdc`) over generic/global Cursor guidance that asks before every commit, unless the author explicitly says not to commit yet.
 
@@ -207,7 +207,7 @@ Modules should be loaded in dependency order:
 
 ### Agent triage (“process the inbox”)
 
-When the user says **“process the inbox”** (or **`/tr-inbox`**), follow [`.cursor/skills/tr-inbox/SKILL.md`](../.cursor/skills/tr-inbox/SKILL.md) — **Quick Fixes first** (implement-or-promote), then Phase 1 / Phase 2 below, then **INBOX cleanup** (remove handled bullets, keep headers, no `_(empty)_`-style placeholders).
+When the author says **“process the inbox”** (or **`/tr-inbox`**), follow [`.cursor/skills/tr-inbox/SKILL.md`](../.cursor/skills/tr-inbox/SKILL.md) — **Quick Fixes first** (implement-or-promote), then Phase 1 / Phase 2 below, then **INBOX cleanup** (remove handled bullets, keep headers, no `_(empty)_`-style placeholders).
 
 #### Quick Fixes (before Phase 1)
 
@@ -228,7 +228,7 @@ See **`/tr-inbox`** Part A.0. Small fixes may be **implemented and committed dur
 For every item Phase 1 marked ready (clear Active lines + answered Needs clarification lines):
 
 1. **Search Linear** for duplicates; merge or dismiss if a matching `TOR-*` exists.
-2. Choose an outcome **by assessment** (user does not pick tier):
+2. Choose an outcome **by assessment** (the author does not pick tier):
 
 | Assessment | Action |
 | --- | --- |
@@ -244,9 +244,9 @@ For every item Phase 1 marked ready (clear Active lines + answered Needs clarifi
 5. **Keep section headers**; do **not** add placeholder lines under sections that have no remaining bullets.
 6. **Never** leave tasklist-scheduled promotions without both Linear and RUNNING TASKLIST sync.
 
-**Cadence:** when user says “process the inbox”; optionally at session end if user added Active items that session; when Active + unanswered Needs clarification total ~5–10 items.
+**Cadence:** when the author says “process the inbox”; optionally at session end if the author added Active items that session; when Active + unanswered Needs clarification total ~5–10 items.
 
-**Re-triage:** After the user adds **`Answer:`** bullets under **Needs clarification**, the next **“process the inbox”** runs Phase 2 on those items (Phase 1 only if new ambiguities appear).
+**Re-triage:** After the author adds **`Answer:`** bullets under **Needs clarification**, the next **“process the inbox”** runs Phase 2 on those items (Phase 1 only if new ambiguities appear).
 
 ### Surfaces (do not dual-track)
 
@@ -261,7 +261,7 @@ For every item Phase 1 marked ready (clear Active lines + answered Needs clarifi
 
 ## Focus & backlog prioritization
 
-After inbox promotion or when the user asks **“what’s next”**, **“prioritize the backlog”**, or **“what should I work on”**:
+After inbox promotion or when the author asks **“what’s next”**, **“prioritize the backlog”**, or **“what should I work on”**:
 
 ### Precedence vs priority (two axes)
 
@@ -285,8 +285,8 @@ After inbox promotion or when the user asks **“what’s next”**, **“priori
 
 1. Read **Focus** at the top of [`.dev/RUNNING TASKLIST.md`](RUNNING%20TASKLIST.md) — authoritative stack rank for the current cycle.
 2. Cross-check **Linear**: open **Bug** issues, non-epic **In Progress**, Focus ids, and **`blockedBy`** on dependents.
-3. Recommend **one** next item (usually top unchecked Focus row). Precedence favors bugs/regressions unless the user is blocked on ST workflow.
-4. When the user adjusts rank, **update Focus**; set Linear **priority** on intrinsic importance; add **`blockedBy`** for sequencing — not as a substitute for priority.
+3. Recommend **one** next item (usually top unchecked Focus row). Precedence favors bugs/regressions unless the author is blocked on ST workflow.
+4. When the author adjusts rank, **update Focus**; set Linear **priority** on intrinsic importance; add **`blockedBy`** for sequencing — not as a substitute for priority.
 5. On Focus item **Done**: check off in domain section, remove or renumber Focus row, update Linear **Done** + comment; run **gate-close survey** (below); remove obsolete **`blockedBy`** on dependents if applicable.
 6. **Do not** update **Deferred this cycle** — paused (no resurfacing mechanism); sequence via **`blockedBy`** only. See **`/tr-inbox`**.
 7. Agent-facing id lists: every `TOR-XXX` gets a short label (e.g. `TOR-139 (scenes panel trim + library grid)`).

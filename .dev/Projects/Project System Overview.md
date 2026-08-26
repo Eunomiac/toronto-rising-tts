@@ -3,7 +3,7 @@
 ## Agent Routing
 
 Read this when:
-- the user explicitly asks to plan or implement the Projects system
+- the author explicitly asks to plan or implement the Projects system
 - changing coterie data that overlaps future project stakes
 - triaging TOR-231 / implementing TOR-232
 

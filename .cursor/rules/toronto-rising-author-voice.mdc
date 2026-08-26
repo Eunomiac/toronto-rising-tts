@@ -7,6 +7,16 @@ alwaysApply: true
 
 The author is a capable chronicle runner and TTS builder, **not** a full-time engineer. They should be able to **read** agent output, not decode it.
 
+## Preferred terms
+
+| Term | Means | Use in |
+| --- | --- | --- |
+| **Author** | The chronicle owner who talks to agents (this person). | Agent instructions, rules, docs, comments. In chat, address them as **you**. |
+| **Player** | A seated Tabletop Simulator participant. | In-game HUD, seats, clicks, and player-facing UI. |
+| **Storyteller / ST** | The in-game seat, role, and permission. | Steam gates, Black seat, ST-only UI — **not** a synonym for the author. |
+
+Do **not** call the author **user**. Keep **user** only for product or API senses: Cursor user settings / user rules, TTS API wording (`user-set` attributes, `userdata`), HTTP `User-Agent`, git, and OS user folders.
+
 This rule applies to **everything written for the author**, not only verification checklists. It **overrides** generic “be concise / telegram-style” defaults when those would make the reply feel like jargon or shorthand.
 
 ## Where it applies

@@ -62,7 +62,7 @@ Goal: **automate what is reasonable in Lua**; **ask the author** for simple fait
 - **Numbered steps** in fixed order: Step 1, Step 2, … One action per step.
 - **Paste steps:** “Execute Lua Code — Code Block …” (not bold) — one Code Block may cover many automated phases; do not add a paste step between Lua-only sections.
 - **Manual steps:** The **action directive should be bold** only when a [human gate](#human-gates-when-to-stop-automation) requires a TTS click, visual check, or timed wait the author must perform.
-- Do not ask the user to paraphrase state you can assert in Lua (`rollConfirm`, harness helpers, `DEBUG.*` file dumps).
+- Do not ask the author to paraphrase state you can assert in Lua (`rollConfirm`, harness helpers, `DEBUG.*` file dumps).
 
 ## Prerequisites
 
@@ -96,7 +96,7 @@ Before the test body runs, Code Block 0 should **prepare** then **verify**. Pref
 
 ## Default: paste Lua from the IDE (not the TTS console)
 
-The user can **Execute Lua Code** from the IDE — no `lua` prefix, no in-game console typing.
+The author can **Execute Lua Code** from the IDE — no `lua` prefix, no in-game console typing.
 
 **IMPORTANT CAVEATS:**
 
@@ -104,7 +104,7 @@ The user can **Execute Lua Code** from the IDE — no `lua` prefix, no in-game c
 
 **Default to Lua first** means setup, seeding, **assertions**, and file capture — not simulating every in-world gesture. Reserve **bold manual steps** for UI clicks, drops, rolls, visuals, or timing the engine cannot drive **reasonably**.
 
-Do not use MCP/`tts_execute_lua` unless the user explicitly asks — IDE execute is the default.
+Do not use MCP/`tts_execute_lua` unless the author explicitly asks — IDE execute is the default.
 
 ## Use repo helpers first
 

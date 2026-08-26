@@ -80,7 +80,7 @@ const buildSystemPrompt = (config: DashboardConfig): string => {
     "Use V5-like dice pools as short labels such as \"Insight 6\", \"Subterfuge 5\", \"Firearms 4\".",
     "For mortals, write \"None\" for disciplines unless supernatural traits are truly justified.",
     "For unknown chronicle references, do not invent definitive continuity. Mark uncertain ties as Storyteller hooks.",
-    "The user often enters rushed fragments or keywords. Preserve useful constraints and fill gaps with playable tension."
+    "The author often enters rushed fragments or keywords. Preserve useful constraints and fill gaps with playable tension."
   ];
   const extension = chronicleSystemPromptExtension(config);
   if (extension.length > 0) {
@@ -152,7 +152,7 @@ export const generateNpcs = async (config: DashboardConfig, request: GenerateNpc
             `Generate ${request.count} NPC card(s).`,
             `Quick controls: ${quickTagSummary(request.quickTags)}.`,
             request.direction ? `Regeneration direction: ${request.direction}.` : "",
-            `User prompt: ${request.prompt}`,
+            `Author prompt: ${request.prompt}`,
             `Chronicle context: ${chronicle.promptText}`
           ].filter((line) => line.length > 0).join("\n\n")
         }

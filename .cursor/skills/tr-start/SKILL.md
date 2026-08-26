@@ -8,7 +8,7 @@ disable-model-invocation: true
 description: "Bootstrap a Toronto Rising agent session — Focus, Linear, architecture policies"
 ---
 
-You are starting (or re-scoping) work on **Toronto Rising**, a Vampire: The Masquerade 5e Tabletop Simulator module (Lua 5.1, `.ttslua` sources). Treat this message as your **session charter**. Do not jump to code until you have read the files below and confirmed scope with the user (unless they already named a specific `TOR-*` issue or task).
+You are starting (or re-scoping) work on **Toronto Rising**, a Vampire: The Masquerade 5e Tabletop Simulator module (Lua 5.1, `.ttslua` sources). Treat this message as your **session charter**. Do not jump to code until you have read the files below and confirmed scope with the author (unless they already named a specific `TOR-*` issue or task).
 
 **Author voice:** Write every reply to the author in **plain English** — complete sentences, explained nicknames, clarity over engineer telegram style, even if that means being more verbose. Rule: `.cursor/rules/toronto-rising-author-voice.mdc`. The author should read your updates, not decode them.
 
@@ -25,8 +25,8 @@ You are starting (or re-scoping) work on **Toronto Rising**, a Vampire: The Masq
 
 **Tracking & scope**
 
-1. `.dev/RUNNING TASKLIST.md` — especially **`## Focus`** (current stack rank) and the domain section for any issue the user named.
-1b. `.dev/PENDING AUTHOR VERIFICATION.md` — **read/skim only** if the Focus item or named work still needs author TTS confirmation, or if the user is about to playtest. **Do not** edit the checklist or process **✅** / **❌** / **⚠️** marks here — that is **`/tr-inbox` only** (see `.dev/PENDING AUTHOR VERIFICATION.agent.md`). If marks are present and would change what you should work on, tell the author to run `/tr-inbox` (or ask them to confirm you may edit the checklist now).
+1. `.dev/RUNNING TASKLIST.md` — especially **`## Focus`** (current stack rank) and the domain section for any issue the author named.
+1b. `.dev/PENDING AUTHOR VERIFICATION.md` — **read/skim only** if the Focus item or named work still needs author TTS confirmation, or if the author is about to playtest. **Do not** edit the checklist or process **✅** / **❌** / **⚠️** marks here — that is **`/tr-inbox` only** (see `.dev/PENDING AUTHOR VERIFICATION.agent.md`). If marks are present and would change what you should work on, tell the author to run `/tr-inbox` (or ask them to confirm you may edit the checklist now).
 2. `.dev/INBOX.md` — skim **Active** and **Needs clarification** only if overlap with the task is likely.
 3. Search **Linear** (`Toronto Rising` team) for the relevant `TOR-*` issue(s); note status, priority, and open Bugs.
 
@@ -80,8 +80,8 @@ You are starting (or re-scoping) work on **Toronto Rising**, a Vampire: The Masq
 
 ## 3) How to choose work
 
-- If the user **named a task** (e.g. `TOR-135` NPC cutouts, “fix weather burst”, “process the inbox”): that is scope — confirm briefly with labeled id, set Linear **In Progress**, proceed.
-- If the user asked **“what’s next”** or did not name a task: read **Focus**, cross-check Linear open **Bugs**, recommend **one** item (usually top Focus row), and wait for confirmation unless they said to start immediately.
+- If the author **named a task** (e.g. `TOR-135` NPC cutouts, “fix weather burst”, “process the inbox”): that is scope — confirm briefly with labeled id, set Linear **In Progress**, proceed.
+- If the author asked **“what’s next”** or did not name a task: read **Focus**, cross-check Linear open **Bugs**, recommend **one** item (usually top Focus row), and wait for confirmation unless they said to start immediately.
 - **“Process the inbox”** → follow `.dev/DEVELOPMENT_WORKFLOW.md` § Inbox (Phase 1: `?` in file; Phase 2: promote when every `?` has inline **`Answer:`**).
 - For large or resumed work: search prior agent sessions (`ce-sessions`) before contradicting earlier design.
 
@@ -89,13 +89,13 @@ You are starting (or re-scoping) work on **Toronto Rising**, a Vampire: The Masq
 
 Post a **short orientation** (not a wall of text):
 
-1. **Focus snapshot** — top 3 Focus rows (issue + **Why now**) + whether any match the user’s intent. If citing ids outside the table, add short labels.
+1. **Focus snapshot** — top 3 Focus rows (issue + **Why now**) + whether any match the author’s intent. If citing ids outside the table, add short labels.
 2. **Assumed scope** — one sentence (or ask one clarifying question if ambiguous).
 3. **Docs you read** — checklist of the numbered reads above that you actually opened (honest list).
 4. **Plan** — 3–5 bullets for the first implementation or triage pass.
 5. **Risk callouts** — dual-apply, reconciler boundary, or gate policy if relevant.
 
-Then execute unless the user only wanted orientation. In Cursor sessions, **commit** after each logical unit without asking for permission unless the author explicitly says not to.
+Then execute unless the author only wanted orientation. In Cursor sessions, **commit** after each logical unit without asking for permission unless the author explicitly says not to.
 
 ---
 
