@@ -3,7 +3,8 @@
 /**
  * Builds `ui/storyteller/panel_scenes_location_modals.xml` from
  * `lib/constants.ttslua` (`C.Districts` + `C.Sites`) and
- * `lib/skyboxes_catalog.ttslua` (`SkyboxesCatalog.Skyboxes` keys and display labels).
+ * `lib/skyboxes_catalog.ttslua` (`SkyboxesCatalog.Skyboxes` keys and display labels;
+ * catalog rows with `isShown = false` are omitted from the skybox picker).
  *
  * Run from repo root: node .dev/scripts/generate_scenes_location_modals_xml.js
  * (Also chained from `npm run skyboxes:import`.)
@@ -151,6 +152,23 @@ function xmlEscapeAttr(s) {
 }
 
 /**
+ * Lua catalog boolean (`isShown = true`). Missing field defaults to shown so an
+ * older catalog still fills the picker until the next Sheet import.
+ *
+ * @param {string} entryBody
+ * @param {string} fieldName
+ * @param {boolean} defaultValue
+ * @returns {boolean}
+ */
+function parseLuaBooleanField(entryBody, fieldName, defaultValue) {
+  const match = entryBody.match(new RegExp(`${fieldName}\\s*=\\s*(true|false)\\b`));
+  if (!match) {
+    return defaultValue;
+  }
+  return match[1] === "true";
+}
+
+/**
  * Grid of picker buttons: `BUTTONS_PER_ROW` per row. Display text is human label only;
  * lua handlers still read the canonical key from `id` (`scenes_pick_*_<key>`).
  *
@@ -257,11 +275,15 @@ const siteEntries = parseTopLevelEntries(siteBlock).map((entry) => {
   return { key: entry.key, label, districtKey: parseSiteDistrictKey(entry.body) };
 });
 
-/** @type {{ key: string, label: string }[]} */
+/** @type {{ key: string, label: string, isShown: boolean }[]} */
 const skyboxEntries = parseTopLevelEntries(skyboxBlock).map((entry) => {
   const displayMatch = entry.body.match(/display\s*=\s*"([^"]*)"/);
   const label = displayMatch ? displayMatch[1] : entry.key;
-  return { key: entry.key, label };
+  return {
+    key: entry.key,
+    label,
+    isShown: parseLuaBooleanField(entry.body, "isShown", true),
+  };
 });
 
 /** Sort key: ignore a leading "The " (e.g. "The Discovery District" → "discovery district, the"). */
@@ -307,11 +329,13 @@ for (const d of districtEntries) {
 genericSites.sort(sortByLabel);
 disambiguateDuplicatePickerLabels(genericSites);
 
-skyboxEntries.sort(sortByLabel);
-disambiguateDuplicatePickerLabels(skyboxEntries);
+/** Picker omits `isShown = false` catalog rows; they remain in `C.Skyboxes` for site defaults / overrides. */
+const shownSkyboxEntries = skyboxEntries.filter((row) => row.isShown !== false);
+shownSkyboxEntries.sort(sortByLabel);
+disambiguateDuplicatePickerLabels(shownSkyboxEntries);
 
 /** Leading Generic sentinel (C.SKYBOX_GENERIC_KEY), then catalog entries. */
-const skyboxPickerRows = [{ key: "Generic", label: "Generic" }, ...skyboxEntries];
+const skyboxPickerRows = [{ key: "Generic", label: "Generic" }, ...shownSkyboxEntries];
 
 const header = `<!-- AUTO-GENERATED — do not edit by hand. Sources: lib/constants.ttslua (districts/sites), lib/skyboxes_catalog.ttslua (skyboxes) -->
 <!-- Regenerate: node .dev/scripts/generate_scenes_location_modals_xml.js (or npm run skyboxes:import) -->
@@ -368,5 +392,5 @@ ${renderPickerButtons(skyboxPickerRows, "skybox")}
 fs.writeFileSync(outPath, xml, "utf8");
 const districtSiteCount = siteEntries.length - genericSites.length;
 console.log(
-  `Wrote ${outPath} (${districtEntries.length} districts, ${siteEntries.length} sites: ${districtSiteCount} district-scoped, ${genericSites.length} general; ${skyboxEntries.length} skyboxes + Generic)`,
+  `Wrote ${outPath} (${districtEntries.length} districts, ${siteEntries.length} sites: ${districtSiteCount} district-scoped, ${genericSites.length} general; ${shownSkyboxEntries.length} skyboxes + Generic, ${skyboxEntries.length - shownSkyboxEntries.length} hidden)`,
 );

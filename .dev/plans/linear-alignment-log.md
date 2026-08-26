@@ -685,5 +685,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-08-22 | PAVE+FOCUS | `/tr-inbox` late | Capture empty. Author ✅ TOR-503 / TOR-502 / TOR-504 / TOR-492 / TOR-493 / TOR-505 / TOR-498. PAVE added TOR-506. Focus → TOR-507, TOR-81, TOR-98. TOR-247 blockedBy TOR-507. |
 | 2026-08-22 | PAVE | late inbox follow-up | Author ✅ TOR-506 (End→Intermission audio with cover). Focus unchanged. TOR-439 remains the multiclient gate. |
 | 2026-08-22 | CREATE+SHIP | TOR-508 | Rain particle missing-GUID print during load bootstrap (cold getObjectFromGUID). relatedTo TOR-498. Pending Save & Play. |
+| 2026-08-26 | CREATE+SHIP | TOR-509 | Skybox catalog `isShown` flag; hidden rows omitted from Scenes picker. relatedTo TOR-422. Pending Save & Play. |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

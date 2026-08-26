@@ -11,7 +11,7 @@ Read this when:
 
 Source of truth (authoring):
 - Google Sheet (link-viewable): spreadsheet id `1mzgMSivCYvTfYAQNL61oApAvTHUbEi7YoiwZFr7PPo4`
-- Named ranges: `SKYBOXCSV` (`Key,Display,URL`), `SKYBOXGENERICCSV` (`URL`)
+- Named ranges: `SKYBOXCSV` (`Key,Display,isShown,URL`), `SKYBOXGENERICCSV` (`URL`)
 
 Runtime source of truth (repo artifact):
 - `lib/skyboxes_catalog.ttslua` (generated) → re-exported as `C.Skyboxes` / `C.GenericSkyboxes`
@@ -29,7 +29,8 @@ Skybox catalog entries are hand-maintained in `lib/constants.ttslua`. The author
 - VS Code task + npm script: fetch → validate → write generated Lua
 - No credentials (sheet is “anyone with the link can view”)
 - Configurable spreadsheet id / range names (defaults baked in; overrides via CLI flags and/or env)
-- Preserve existing runtime shape: `C.Skyboxes[key] = { key, display, url }`, `C.GenericSkyboxes = { url, ... }`
+- Preserve existing runtime shape: `C.Skyboxes[key] = { key, display, isShown, url }`, `C.GenericSkyboxes = { url, ... }`
+- `isShown = false` stays in the catalog (site defaults / existing overrides still resolve) but is omitted from the Scenes skybox picker modal
 - Keep resolve helpers (`C.SKYBOX_GENERIC_KEY`, `pickRandomGenericSkyboxURL`, `isValidSkyboxKey`, `resolveSkyboxURLFromKey`, `resolveSkyboxURLForSite`) in Constants
 - After import, regenerate Scenes skybox modal XML so the picker stays in sync
 
@@ -67,11 +68,12 @@ Fail loudly on non-200, empty body, or HTML/login error pages.
 
 **`SKYBOXCSV`**
 
-- Header row must be `Key,Display,URL` (case-insensitive; trim cells)
-- Data rows: non-empty Key, Display, URL
+- Header row must be `Key,Display,isShown,URL` (case-insensitive; trim cells)
+- Data rows: non-empty Key, Display, URL; `isShown` must be `TRUE` or `FALSE` (Google Sheets checkbox export; case-insensitive)
 - Keys unique; Key must be a valid Lua identifier suitable as a table key (reject spaces / punctuation that would require bracket quoting — match current catalog style, e.g. `CLGreatHall`)
-- Emit entry `{ key = Key, display = Display, url = URL }` under table key `Key`
+- Emit entry `{ key = Key, display = Display, isShown = boolean, url = URL }` under table key `Key`
 - Stable sort by Key for deterministic diffs (or preserve sheet order — prefer **sheet row order** so author ordering is intentional; document which)
+- Scenes skybox picker (`generate_scenes_location_modals_xml.js`) includes only rows where `isShown` is true, plus the leading Generic sentinel
 
 **`SKYBOXGENERICCSV`**
 
@@ -92,6 +94,7 @@ SkyboxesCatalog.Skyboxes = {
   SomeKey = {
     key = "SomeKey",
     display = "Human label",
+    isShown = true,
     url = "https://..."
   },
 }
@@ -125,7 +128,7 @@ C.GenericSkyboxes = SkyboxesCatalog.GenericSkyboxes
 
 ### Modal generator
 
-`generate_scenes_location_modals_xml.js` currently reads `C.Skyboxes =` from `lib/constants.ttslua`. After the move it must read `SkyboxesCatalog.Skyboxes =` from `lib/skyboxes_catalog.ttslua` (Districts/Sites still from Constants). Update the AUTO-GENERATED header comment accordingly.
+`generate_scenes_location_modals_xml.js` currently reads `C.Skyboxes =` from `lib/constants.ttslua`. After the move it must read `SkyboxesCatalog.Skyboxes =` from `lib/skyboxes_catalog.ttslua` (Districts/Sites still from Constants). Update the AUTO-GENERATED header comment accordingly. Omit catalog rows with `isShown = false` from the skybox picker buttons.
 
 ### Task / npm
 

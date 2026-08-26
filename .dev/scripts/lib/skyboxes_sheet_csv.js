@@ -78,8 +78,25 @@ function trimCell(value) {
 const LUA_IDENT_RE = /^[A-Za-z_][A-Za-z0-9_]*$/;
 
 /**
+ * Google Sheets checkbox / boolean cells export as TRUE/FALSE.
+ * @param {string} raw
+ * @param {string} rowLabel
+ * @returns {boolean}
+ */
+function parseSheetBoolean(raw, rowLabel) {
+  const v = trimCell(raw).toLowerCase();
+  if (v === "true") {
+    return true;
+  }
+  if (v === "false") {
+    return false;
+  }
+  throw new Error(`${rowLabel} isShown must be TRUE or FALSE; got ${JSON.stringify(raw)}`);
+}
+
+/**
  * @param {string} csvText
- * @returns {{ key: string, display: string, url: string }[]}
+ * @returns {{ key: string, display: string, isShown: boolean, url: string }[]}
  */
 function parseSkyboxCatalogRows(csvText) {
   const rows = parseCsv(csvText);
@@ -87,12 +104,18 @@ function parseSkyboxCatalogRows(csvText) {
     throw new Error("SKYBOXCSV: empty CSV");
   }
   const header = rows[0].map((c) => trimCell(c).toLowerCase());
-  if (header.length < 3 || header[0] !== "key" || header[1] !== "display" || header[2] !== "url") {
+  if (
+    header.length < 4 ||
+    header[0] !== "key" ||
+    header[1] !== "display" ||
+    header[2] !== "isshown" ||
+    header[3] !== "url"
+  ) {
     throw new Error(
-      `SKYBOXCSV: expected header Key,Display,URL; got ${JSON.stringify(rows[0])}`,
+      `SKYBOXCSV: expected header Key,Display,isShown,URL; got ${JSON.stringify(rows[0])}`,
     );
   }
-  /** @type {{ key: string, display: string, url: string }[]} */
+  /** @type {{ key: string, display: string, isShown: boolean, url: string }[]} */
   const out = [];
   const seen = new Set();
   for (let r = 1; r < rows.length; r += 1) {
@@ -102,12 +125,14 @@ function parseSkyboxCatalogRows(csvText) {
     }
     const key = trimCell(cells[0]);
     const display = trimCell(cells[1]);
-    const url = trimCell(cells[2]);
+    const isShownRaw = cells[2];
+    const url = trimCell(cells[3]);
     if (!key || !display || !url) {
       throw new Error(
         `SKYBOXCSV: row ${r + 1} missing Key, Display, or URL: ${JSON.stringify(cells)}`,
       );
     }
+    const isShown = parseSheetBoolean(isShownRaw, `SKYBOXCSV: row ${r + 1}`);
     if (!LUA_IDENT_RE.test(key)) {
       throw new Error(
         `SKYBOXCSV: row ${r + 1} key "${key}" must be a Lua identifier (A-Za-z_[A-Za-z0-9_]*)`,
@@ -117,7 +142,7 @@ function parseSkyboxCatalogRows(csvText) {
       throw new Error(`SKYBOXCSV: duplicate key "${key}" at row ${r + 1}`);
     }
     seen.add(key);
-    out.push({ key, display, url });
+    out.push({ key, display, isShown, url });
   }
   if (out.length < 1) {
     throw new Error("SKYBOXCSV: no data rows");
@@ -169,7 +194,7 @@ function escapeLuaString(value) {
 
 /**
  * @param {{
- *   skyboxes: { key: string, display: string, url: string }[],
+ *   skyboxes: { key: string, display: string, isShown?: boolean, url: string }[],
  *   generics: string[],
  *   meta: { sheetId: string, catalogRange: string, genericsRange: string },
  * }} args
@@ -182,7 +207,7 @@ function renderSkyboxesCatalogLua(args) {
   lines.push("    Toronto Rising — skybox catalog (keyed assets + generic URL pool).");
   lines.push("    AUTO-GENERATED from Google Sheet — DO NOT EDIT BY HAND.");
   lines.push(`    Sheet id: ${meta.sheetId}`);
-  lines.push(`    Ranges: ${meta.catalogRange} (Key,Display,URL), ${meta.genericsRange} (URL)`);
+  lines.push(`    Ranges: ${meta.catalogRange} (Key,Display,isShown,URL), ${meta.genericsRange} (URL)`);
   lines.push("    Regenerate: npm run skyboxes:import");
   lines.push("    Script: .dev/scripts/import_skyboxes_from_sheet.js");
   lines.push("]]");
@@ -191,9 +216,11 @@ function renderSkyboxesCatalogLua(args) {
   lines.push("");
   lines.push("SkyboxesCatalog.Skyboxes = {");
   for (const entry of skyboxes) {
+    const isShown = entry.isShown !== false;
     lines.push(`  ${entry.key} = {`);
     lines.push(`    key = "${escapeLuaString(entry.key)}",`);
     lines.push(`    display = "${escapeLuaString(entry.display)}",`);
+    lines.push(`    isShown = ${isShown ? "true" : "false"},`);
     lines.push(`    url = "${escapeLuaString(entry.url)}"`);
     lines.push("  },");
   }

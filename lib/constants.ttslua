@@ -2963,6 +2963,7 @@ C.SKYBOX_GENERIC_KEY = "Generic"
 
 -- Catalog of skybox assets (AUTO-GENERATED module). Regenerate: npm run skyboxes:import
 -- Site `skybox` fields reference these by key; resolve via `C.Skyboxes[key].url`.
+-- `isShown = false` keeps the asset in the catalog but omits it from the Scenes skybox picker.
 local SkyboxesCatalog = require("lib.skyboxes_catalog")
 C.Skyboxes = SkyboxesCatalog.Skyboxes
 C.GenericSkyboxes = SkyboxesCatalog.GenericSkyboxes

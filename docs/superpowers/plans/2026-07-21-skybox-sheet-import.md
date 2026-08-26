@@ -16,7 +16,7 @@
 
 - Public CSV only — no OAuth
 - Defaults: sheet id `1mzgMSivCYvTfYAQNL61oApAvTHUbEi7YoiwZFr7PPo4`, ranges `SKYBOXCSV` / `SKYBOXGENERICCSV`
-- Preserve entry shape `{ key, display, url }` and array generics
+- Preserve entry shape `{ key, display, isShown, url }` and array generics
 - Fail loud; do not write partial catalog; atomic write when practical
 - Not part of `npm run build`
 - Preserve sheet row order for catalog entries

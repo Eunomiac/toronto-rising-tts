@@ -47,7 +47,7 @@ function parseArgs(argv) {
 
 Options:
   --sheet-id <id>           Spreadsheet id (default / env SKYBOX_SHEET_ID)
-  --catalog-range <name>    Named range for Key,Display,URL (default SKYBOXCSV)
+  --catalog-range <name>    Named range for Key,Display,isShown,URL (default SKYBOXCSV)
   --generics-range <name>   Named range for URL list (default SKYBOXGENERICCSV)
 `);
       process.exit(0);
