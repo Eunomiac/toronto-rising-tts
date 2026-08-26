@@ -1,7 +1,7 @@
 # Skybox Google Sheet → Lua catalog import
 
-**Date:** 2026-07-21
-**Status:** implemented (TOR-422)
+**Date:** 2026-07-21 (Memoriam range added 2026-08-26, TOR-510)
+**Status:** implemented (TOR-422, TOR-509, TOR-510)
 **Approach:** B — generated standalone catalog; Constants re-exports; Sheet is sole source of truth
 
 ## Agent Routing
@@ -11,10 +11,10 @@ Read this when:
 
 Source of truth (authoring):
 - Google Sheet (link-viewable): spreadsheet id `1mzgMSivCYvTfYAQNL61oApAvTHUbEi7YoiwZFr7PPo4`
-- Named ranges: `SKYBOXCSV` (`Key,Display,isShown,URL`), `SKYBOXGENERICCSV` (`URL`)
+- Named ranges: `SKYBOXCSV` (`Key,Display,isShown,URL`), `SKYBOXGENERICCSV` (`URL`), `SKYBOXMEMORIAMCSV` (Key, Characters, years, Location, Panel A–D)
 
 Runtime source of truth (repo artifact):
-- `lib/skyboxes_catalog.ttslua` (generated) → re-exported as `C.Skyboxes` / `C.GenericSkyboxes`
+- `lib/skyboxes_catalog.ttslua` (generated) → re-exported as `C.Skyboxes` / `C.GenericSkyboxes` / `C.MemoriamSkyboxes`
 
 Verification:
 - VS Code task / `npm run skyboxes:import` fetches CSV, writes catalog, regenerates Scenes location modals
@@ -29,7 +29,7 @@ Skybox catalog entries are hand-maintained in `lib/constants.ttslua`. The author
 - VS Code task + npm script: fetch → validate → write generated Lua
 - No credentials (sheet is “anyone with the link can view”)
 - Configurable spreadsheet id / range names (defaults baked in; overrides via CLI flags and/or env)
-- Preserve existing runtime shape: `C.Skyboxes[key] = { key, display, isShown, url }`, `C.GenericSkyboxes = { url, ... }`
+- Preserve existing runtime shape: `C.Skyboxes[key] = { key, display, isShown, url }`, `C.GenericSkyboxes = { url, ... }`, nested `C.MemoriamSkyboxes[character][key]`
 - `isShown = false` stays in the catalog (site defaults / existing overrides still resolve) but is omitted from the Scenes skybox picker modal
 - Keep resolve helpers (`C.SKYBOX_GENERIC_KEY`, `pickRandomGenericSkyboxURL`, `isValidSkyboxKey`, `resolveSkyboxURLFromKey`, `resolveSkyboxURLForSite`) in Constants
 - After import, regenerate Scenes skybox modal XML so the picker stays in sync
@@ -59,8 +59,9 @@ Defaults:
 | Spreadsheet id | `1mzgMSivCYvTfYAQNL61oApAvTHUbEi7YoiwZFr7PPo4` |
 | Catalog range | `SKYBOXCSV` |
 | Generics range | `SKYBOXGENERICCSV` |
+| Memoriam range | `SKYBOXMEMORIAMCSV` |
 
-Overrides (implementation may support any/all): `--sheet-id`, `--catalog-range`, `--generics-range`, and/or env `SKYBOX_SHEET_ID`, `SKYBOX_CATALOG_RANGE`, `SKYBOX_GENERICS_RANGE`.
+Overrides (implementation may support any/all): `--sheet-id`, `--catalog-range`, `--generics-range`, `--memoriam-range`, and/or env `SKYBOX_SHEET_ID`, `SKYBOX_CATALOG_RANGE`, `SKYBOX_GENERICS_RANGE`, `SKYBOX_MEMORIAM_RANGE`.
 
 Fail loudly on non-200, empty body, or HTML/login error pages.
 
@@ -79,6 +80,19 @@ Fail loudly on non-200, empty body, or HTML/login error pages.
 
 - Header `URL`; each non-empty data cell becomes one array element
 - Reject empty list (at least one URL required so site-fallback random pick cannot go nil unexpectedly)
+
+**`SKYBOXMEMORIAMCSV`** (TOR-510)
+
+- Header must include `Key`, `Characters`, `Start Year`, `End Year`, `Location`, then for panels A–D: `Display`, `isOutdoors`, `isDaytime`, `Weather`, `Location Audio`, `URL` (case-insensitive; extra columns ignored)
+- `startYear` / `endYear` parse as integers
+- Panel `isOutdoors` / `isDaytime` parse as booleans (`TRUE`/`FALSE`)
+- Panel `Weather` is a pipe-delimited list of strings; a blank cell becomes an empty array
+- Panel URL may be blank (empty string) until assets are uploaded
+- Panels A and B require a non-empty Display; if panel C or D Display is blank, omit that panel entirely
+- `Characters` is a pipe-delimited list of Lua identifiers. Duplicate the whole row under each character (same skybox key). Example: `lucien14` with `lucien|fomorach` writes both `MemoriamSkyboxes.lucien.lucien14` and `MemoriamSkyboxes.fomorach.lucien14`
+- Rows with a blank Key are skipped (named ranges often include a draft/next row)
+- Rows with both Panel A and Panel B Display blank are skipped (key/years stub with no panels yet)
+- Reject duplicate key under the same character; preserve first-seen character order and sheet row order within each character
 
 No intermediate file on disk: CSV stays in memory.
 
@@ -103,6 +117,30 @@ SkyboxesCatalog.GenericSkyboxes = {
   "https://...",
 }
 
+SkyboxesCatalog.MemoriamSkyboxes = {
+  aishe = {
+    aishe2 = {
+      key = "aishe2",
+      startYear = 1799,
+      endYear = 1833,
+      location = "Brașov, Romania",
+      panelA = {
+        display = "Father's townhouse",
+        isOutdoors = false,
+        isDaytime = true,
+        weather = {
+          "windLow",
+          "rainLight"
+        },
+        locationAudio = "quietIndoor",
+        url = ""
+      },
+      panelB = { -- ...
+      },
+    },
+  },
+}
+
 return SkyboxesCatalog
 ```
 
@@ -121,6 +159,7 @@ In `lib/constants.ttslua` (Skyboxes region):
 local SkyboxesCatalog = require("lib.skyboxes_catalog")
 C.Skyboxes = SkyboxesCatalog.Skyboxes
 C.GenericSkyboxes = SkyboxesCatalog.GenericSkyboxes
+C.MemoriamSkyboxes = SkyboxesCatalog.MemoriamSkyboxes
 ```
 
 - Leave resolve helpers immediately below, unchanged in behavior

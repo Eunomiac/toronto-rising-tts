@@ -26,6 +26,19 @@ Verification:
 
 ## Future Features (Set STATUS to "Future")
 
+## Author Workspace
+> _Do NOT process these items during any INBOX processing, unless explicitly instructed to by the author: They are works-in-progress, and will be moved into the processing area above when completed._
+
+### Spotlight Phase
+Upon transitioning from the PLAY phase to the SPOTLIGHT phase, the following should be done while the blindfold is up:
+
+1. All NPCs should be cleared from the table (i.e. their seats should be completely unoccupied, not merely disabled/blacked out)
+2. The table should be switched to Table A.
+3. The Skybox should be switched to `Spotlight`
+
+### Generic NPCs & Stage Control Panel
+### Memoriam Phase
+
 
 
 ## Needs clarification
@@ -43,6 +56,8 @@ Verification:
 
 
 ## Processed
+
+2026-08-26 Immediate — Memoriam skybox sheet import (`SKYBOXMEMORIAMCSV` → `SkyboxesCatalog.MemoriamSkyboxes` / `C.MemoriamSkyboxes`) → **TOR-510** (shipped)
 
 2026-08-22 late inbox follow-up — PAVE ✅ **TOR-506** (End→Intermission audio with the cover). **TOR-439** remains the multiclient gate.
 
