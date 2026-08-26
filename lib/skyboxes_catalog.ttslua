@@ -1205,52 +1205,6 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         url = ""
       },
     },
-    fomorach1 = {
-      key = "fomorach1",
-      startYear = 1769,
-      endYear = 1786,
-      location = "Belfast to the East Coast Colonies",
-      panelA = {
-        display = "Belfast family yard",
-        isOutdoors = true,
-        isDaytime = true,
-        weather = {
-          "windLow"
-        },
-        locationAudio = "marketCrowd",
-        url = ""
-      },
-      panelB = {
-        display = "Atlantic emigrant ship",
-        isOutdoors = true,
-        isDaytime = true,
-        weather = {
-          "windMed"
-        },
-        locationAudio = "shipDeck",
-        url = ""
-      },
-      panelC = {
-        display = "Colonial harbor",
-        isOutdoors = true,
-        isDaytime = true,
-        weather = {
-          "windLow"
-        },
-        locationAudio = "waterside",
-        url = ""
-      },
-      panelD = {
-        display = "Colonial settlement",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windLow"
-        },
-        locationAudio = "frontierSettlement",
-        url = ""
-      },
-    },
     fomorach5 = {
       key = "fomorach5",
       startYear = 1786,
@@ -1339,50 +1293,6 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         isDaytime = false,
         weather = {},
         locationAudio = "sewers",
-        url = ""
-      },
-    },
-    fomorach15 = {
-      key = "fomorach15",
-      startYear = 1838,
-      endYear = 1841,
-      location = "United Kingdom",
-      panelA = {
-        display = "Ruined Belfast homestead",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windMed"
-        },
-        locationAudio = "eerieForest",
-        url = ""
-      },
-      panelB = {
-        display = "Dockside rookery",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "oldAlley",
-        url = ""
-      },
-      panelC = {
-        display = "Lodging house and gin room",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "diveBar",
-        url = ""
-      },
-      panelD = {
-        display = "Merritt's Elysium",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "softIndoor",
         url = ""
       },
     },
@@ -2684,49 +2594,8 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         url = ""
       },
     },
-    rashid9 = {
-      key = "rashid9",
-      startYear = 1839,
-      endYear = 1893,
-      location = "Constantinople, Ottoman Empire",
-      panelA = {
-        display = "Bosphorus salon",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "quietIndoor",
-        url = ""
-      },
-      panelB = {
-        display = "Nephilim library",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "library",
-        url = ""
-      },
-      panelC = {
-        display = "Ministry avenue",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "horseDrawnTraffic",
-        url = ""
-      },
-      panelD = {
-        display = "Bazaar and quay",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "indoorMarket",
-        url = ""
-      },
-    },
-    rashid12b = {
-      key = "rashid12b",
+    rashid12 = {
+      key = "rashid12",
       startYear = 1893,
       endYear = 1901,
       location = "Alamut, Afghanistan",
@@ -2764,53 +2633,6 @@ SkyboxesCatalog.MemoriamSkyboxes = {
           "windMed"
         },
         locationAudio = "weaponsTraining",
-        url = ""
-      },
-    },
-    rashid13 = {
-      key = "rashid13",
-      startYear = 1893,
-      endYear = 1922,
-      location = "Constantinople, Ottoman Empire",
-      panelA = {
-        display = "Blood-memory chamber",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "ritualRoom",
-        url = ""
-      },
-      panelB = {
-        display = "Newspaper avenue",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "horseDrawnTraffic",
-        url = ""
-      },
-      panelC = {
-        display = "Wartime harbor",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windMed"
-        },
-        locationAudio = "waterside",
-        url = ""
-      },
-      panelD = {
-        display = "Occupation checkpoint",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "militaryOccupation",
         url = ""
       },
     },
