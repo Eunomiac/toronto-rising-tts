@@ -90,7 +90,7 @@ Keep these in sync with `lib/e2e_gameboard.ttslua`.
 | `gbE2eReset()` | Empty `placements`, fixture NPCs in preload |
 | `gbE2eRunSmoke()` | Automated S0-S7 + scene Apply human gate |
 | `gbE2eContinue()` | Continue after pending human gate (`scene_apply` or `reload`) |
-| `gbE2eVerifyPcTokens()` | PC tokens pinned + flip matches `seatSlots[color].isPresent` |
+| `gbE2eVerifyPcTokens()` | PC tokens pinned to occupancy home + flip matches `seatSlots[color].isPresent` |
 | `gbE2eRunFull()` | Deep F/G/H suites, then optional reload gate |
 | `gbE2eRunDeferred()` | Deferred probes; expected FAIL while linked work remains open |
 | `gbConfirm(label, { ... })` | Single-step assert |

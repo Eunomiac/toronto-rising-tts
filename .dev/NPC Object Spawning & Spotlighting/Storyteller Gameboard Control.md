@@ -52,21 +52,20 @@ Two distinct control-token tags share the CONTROL_BOARD minimap. Minimap snaps a
 | --- | --- | --- |
 | GM Notes | `npcToken:<characterKey>` (`npcToken:myleneHamelin`) | `pcToken:<Color>` (`pcToken:Red`) — color-bound to one PC seat |
 | Roster source | `npcs_data` NPCs (`D.getNpcCharacters()` — excludes `isPC`) | one per PC player color (`C.PlayerColors`) |
-| Home | palette group slot / polar placement / homeland seat-row column | its PC seat-row column (`Purple/Pink/Red/Orange/Brown`), always pinned |
+| Home | palette group slot / polar placement / homeland numbered chair (`tableSlot`) | numbered chair from `seatSlots[color].tableSlot`, or park below the default-labeled column when Absent |
 
 | Handler / path | `npc_control_token` | `pc_control_token` |
 | --- | --- | --- |
 | Polar/stage scan → `placements` (`scanControlBoardTokens`) | scanned (u,v,yaw,`npcLightMode` from flip) | **ignored** (scan iterates `npc_control_token` only) |
-| Seat-row scan (NPC columns) | `scanSeatRowTokensBySeatKey` → `occupiedNPCSlots` + presence | n/a |
-| Seat-row scan (PC columns) | n/a | `scanSeatRowPcTokensByColor` → HERE Apply writes live `seatSlots[color].isPresent`; THERE settled drop/rotate capture writes draft presence |
+| Seat-row scan | `scanSeatRowOccupancyByTableSlot` → numbered `tableSlot` occupancy for PC **and** NPC tokens | same scan; identity stays on the token (`pcToken:<Color>` / `npcToken:<key>`) |
 | Flip meaning | stage light mode (`STANDARD` face-up / `OFF` face-down) | PC seat **presence** (no stage light) |
-| Reconcile pin | placement rows + homeland seat mirror | each color-bound PC token pinned to its column; flip set to **match** current `seatSlots[color].isPresent` (state authoritative) |
-| Scale | seat 0.7 / polar 0.2 (TOR-199) | seat-row scale (0.7) on its column |
-| ST dice-bag drop → roll | `tryNpcControlTokenDroppedOnStorytellerDiceBag` (restore home + roll type from bag + `Werewolf` tag via `STR.rollTypeForStorytellerBagDrop`) | `tryPcControlTokenDroppedOnStorytellerDiceBag` — **always** return token to its column home (present/absent flip); roll type from bag + `Werewolf` tag via `STR.rollTypeForStorytellerBagDrop` (caller `RC.initiateRoll`) |
+| Reconcile pin | placement rows + homeland chair matching `tableSlot` | token pinned to that color's `tableSlot` chair (or park pose if Absent); flip matches `seatSlots[color].isPresent` |
+| Scale | seat 0.7 / polar 0.2 (TOR-199) | seat-row scale (0.7) on a chair snap |
+| ST dice-bag drop → roll | `tryNpcControlTokenDroppedOnStorytellerDiceBag` (restore home + roll type from bag + `Werewolf` tag via `STR.rollTypeForStorytellerBagDrop`) | `tryPcControlTokenDroppedOnStorytellerDiceBag` — return token to occupancy home (chair or Absent park); roll type from bag + `Werewolf` tag via `STR.rollTypeForStorytellerBagDrop` (caller `RC.initiateRoll`) |
 | Anchor-family spread / pick-up light | NPC-only (`onNpcControlTokenDropped` / `onNpcControlTokenPickUp`) | **no-op** |
 | Palette / preload generation | one token + preload figurine per NPC | none (PCs excluded by `D.getNpcCharacters()`; PC tokens authored in workshop) |
 
-**Scope of the current contract (Apply-time + mirror):** Apply reads PC columns and sets `seatSlots[color].isPresent` from the token flip; reconcile keeps each PC token pinned to its column with the flip mirroring state. PCs **without** a token on their column are left untouched, so connection-driven presence is not clobbered. Making the `pc_control_token` the **sole** presence authority (force-absent when no face-up token, snap stray tokens face-down) is deferred to **TOR-247** (rotational seat-index layout / PC seat decoupling). Play-as-NPC role swap is **TOR-95** (`blockedBy` TOR-247).
+**Scope of the current contract (Apply-time occupancy + mirror):** Each seat-row snap is a numbered table chair (`tableSlot`). Token identity is the occupant. HERE Apply reads every PC and NPC token on those snaps and writes `sessionScene.seatSlots` (`tableSlot` / `absentFromSession` / `isPresent` from flip). A PC token that is not on any chair snap is Absent (pile under the table). Reconcile pins tokens to match that state: in-session PCs on their chair, Absent PCs parked below their default-labeled column (not on a chair, so the next Apply does not re-seat them). Two tokens on one snap fail loud and abort Apply. Slot number fields are not on the PCs or Scenes panels — move tokens, then Apply. The PCs panel **Absent** toggle remains and moves the matching token. Play-as-NPC role swap is **TOR-95**.
 
 ## Coordinate mapping (STAGE ↔ CONTROL)
 
@@ -106,14 +105,14 @@ Table markers: active table only on minimap (`centerPoint` → `uvFromWorld` →
 
 **NPC token → ST dice bag (TOR-174):** Host/Black drops an `npc_control_token` on a Storyteller dice bag → token immediately returns to its active board-model home (live HERE or persisted draft THERE: placement, homeland seat, then palette) via `Gameboard.restoreNpcControlTokenHome`; roll initiation remains live. Roll type comes from `STR.rollTypeForStorytellerBagDrop`: **Normal** → Standard, **Hunger** → Discipline, **Werewolf bag** → Willpower, **Rage** → Frenzy, **Rouse** → Rouse, **Oblivion-Rouse** → Remorse at `End` else Oblivion-Rouse.
 
-**PC token → ST dice bag (TOR-236):** Host/Black drops a `pc_control_token` on a Storyteller dice bag → token is **always** re-pinned to its color seat-row column with the present/absent flip mirroring `seatSlots[color].isPresent` (`Gameboard.restorePcControlTokenHome`, same as reconcile). Roll type comes from `STR.rollTypeForStorytellerBagDrop` (same mapping as NPC tokens and bag modal): **Normal** → Standard, **Hunger** → Discipline, **Werewolf bag** → Willpower, **Rage** → Frenzy, **Rouse** → Rouse, **Oblivion-Rouse** → Remorse at `End` else Oblivion-Rouse. Tokens tagged **`Werewolf`** always start a **Werewolf** roll regardless of bag. `GlobalGameboardPcTokenDroppedOnDiceBag` calls `RC.initiateRoll(color, { rollType, initiator = "storyteller" })` + `GlobalSpawnDefaultPoolDiceForActive` — same path as `HUD_rollInitiate`. `onObjectDrop` gates tag + Host/Black + bag proximity. Entry: `GlobalGameboardPcTokenDroppedOnDiceBag` → `Gameboard.tryPcControlTokenDroppedOnStorytellerDiceBag` (returns `consumed, rollColor, rollType`).
+**PC token → ST dice bag (TOR-236 / TOR-247):** Host/Black drops a `pc_control_token` on a Storyteller dice bag → token is **always** re-pinned to its occupancy home (numbered chair from `tableSlot`, or the Absent park pose) with the present/absent flip mirroring `seatSlots[color].isPresent` (`Gameboard.restorePcControlTokenHome`, same as reconcile). Roll type comes from `STR.rollTypeForStorytellerBagDrop` (same mapping as NPC tokens and bag modal): **Normal** → Standard, **Hunger** → Discipline, **Werewolf bag** → Willpower, **Rage** → Frenzy, **Rouse** → Rouse, **Oblivion-Rouse** → Remorse at `End` else Oblivion-Rouse. Tokens tagged **`Werewolf`** always start a **Werewolf** roll regardless of bag. `GlobalGameboardPcTokenDroppedOnDiceBag` calls `RC.initiateRoll(color, { rollType, initiator = "storyteller" })` + `GlobalSpawnDefaultPoolDiceForActive` — same path as `HUD_rollInitiate`. `onObjectDrop` gates tag + Host/Black + bag proximity. Entry: `GlobalGameboardPcTokenDroppedOnDiceBag` → `Gameboard.tryPcControlTokenDroppedOnStorytellerDiceBag` (returns `consumed, rollColor, rollType`).
 
 ## Workshop tags
 
 | Tag | GM notes example |
 | --- | --- |
 | `npc_control_token` | `npcToken:myleneHamelin` |
-| `pc_control_token` | `pcToken:Red` — color-bound to a PC seat-row column (snaps accept both token tags). Must **not** also carry `npc_control_token`. |
+| `pc_control_token` | `pcToken:Red` — color-bound occupant identity. Chair occupancy is whichever numbered snap the token sits on at Apply. Must **not** also carry `npc_control_token`. |
 | `gameboard_table` | `gameboardTable:Table A` |
 | `gameboard_table_component` | `gameboardComponent:Table A\|Table Leaf Near Left` |
 | `gameboard_pc_seat` | `gameboardPcSeat:Red` |

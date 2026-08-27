@@ -265,7 +265,9 @@ Cheap enough to include: it is the same hide/park path as an unused NPC pile, pl
 
 **Live `tableSlot` edits (phase 1)**
 
-PCs panel and NPC seat rows get a slot control listing `1 .. slotCapacity` for the **current** table. Changing it validates, then relayouts. Occupant identity (Red, NPC1) does not change.
+Chair occupancy is edited on the **stage control board**: move a PC or NPC token onto a numbered chair snap, then **Apply**. The PCs and Scenes panels do not have slot number fields. The PCs panel **Absent** toggle remains (parks the pile and the control-board token). Duplicate tokens on one snap fail loud.
+
+Occupant identity (Red, NPC1) does not change when the token moves to a different chair.
 
 #### Delivery phases
 

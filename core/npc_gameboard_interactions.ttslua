@@ -156,10 +156,15 @@ local function restoreNpcControlTokenHome(token, characterKey)
     if type(seatKey) == "string" and seatKey ~= "" then
         local board = Board.getControlBoard()
         if Board.isGameObject(board) then
-            local seatCatalog = Snaps.getSeatRowCatalogMaps(board).npc
-            local entry = seatCatalog[seatKey]
+            local maps = Snaps.getSeatRowCatalogMaps(board)
+            local byTableSlot = type(maps.byTableSlot) == "table" and maps.byTableSlot or {}
+            local row = type(model.seatSlots) == "table" and model.seatSlots[seatKey] or {}
+            local slot = tonumber(row.tableSlot)
+            local entry = slot ~= nil and byTableSlot[math.floor(slot)] or nil
+            if type(entry) ~= "table" then
+                entry = type(maps.npc) == "table" and maps.npc[seatKey] or nil
+            end
             if type(entry) == "table" then
-                local row = type(model.seatSlots) == "table" and model.seatSlots[seatKey] or {}
                 local present = row.isPresent == true
                 Tokens.mirrorSeatRowControlToken(token, board, entry, present)
                 Reconcile.schedulePreviewDraftCapture()
@@ -246,9 +251,9 @@ end
 Interactions.restoreNpcControlTokenHome = restoreNpcControlTokenHome
 Interactions.tryNpcControlTokenDroppedOnStorytellerDiceBag = tryNpcControlTokenDroppedOnStorytellerDiceBag
 
---- Re-pin a `pc_control_token` to its color seat-row column; flip matches current
---- `seatSlots[color].isPresent` (state authoritative — TOR-236). This is the token's home,
---- so it doubles as "return to previous position and orientation".
+--- Re-pin a `pc_control_token` to the numbered chair in `seatSlots[color].tableSlot`
+--- (or the park pose below that color's default-labeled column when Absent). Flip matches
+--- `seatSlots[color].isPresent` (state authoritative — TOR-247).
 --- @param token Object
 --- @param color string|nil player seat color (defaults to GM Notes `pcToken:<Color>`)
 --- @return boolean restored
@@ -264,13 +269,24 @@ local function restorePcControlTokenHome(token, color)
     if not Board.isGameObject(board) then
         return false
     end
-    local pcCatalog = Snaps.getSeatRowCatalogMaps(board).pc
-    local entry = pcCatalog[color]
+    local model = Reconcile.getActiveBoardModel()
+    local row = type(model.seatSlots) == "table" and model.seatSlots[color] or {}
+    local maps = Snaps.getSeatRowCatalogMaps(board)
+    local byTableSlot = type(maps.byTableSlot) == "table" and maps.byTableSlot or {}
+    local entry = nil
+    local slot = tonumber(row.tableSlot)
+    if row.absentFromSession ~= true and slot ~= nil then
+        entry = byTableSlot[math.floor(slot)]
+    end
+    if entry == nil then
+        local park = Snaps.seatRowParkPoseForPcColor(color)
+        if type(park) == "table" then
+            entry = park
+        end
+    end
     if type(entry) ~= "table" then
         return false
     end
-    local model = Reconcile.getActiveBoardModel()
-    local row = type(model.seatSlots) == "table" and model.seatSlots[color] or {}
     Tokens.mirrorSeatRowControlToken(token, board, entry, row.isPresent == true)
     Reconcile.schedulePreviewDraftCapture()
     return true
@@ -1388,7 +1404,8 @@ function Interactions.onPcControlTokenDropped(token, playerColor)
 end
 
 --- Live seat-row presence from a dropped NPC control token (TOR-333).
---- Assignment / figurine spawn still require Apply (`applySeatRowFromControlBoard`).
+--- Assignment / chair occupancy still require Apply (`applyOccupancyFromSeatRow`).
+--- Presence updates for an already-seated NPC on any numbered chair snap.
 --- @param token Object
 --- @param board Object
 --- @param fuzziness number
@@ -1405,9 +1422,7 @@ local function applyNpcSeatRowFromDroppedToken(token, board, fuzziness)
         return false
     end
     local entry = Snaps.resolveTokenSnapCatalogEntry(board, token, fuzziness, nil)
-    if type(entry) ~= "table"
-        or entry.snapKind ~= Snaps.SNAP_KIND_SEAT
-        or not Snaps.isNpcSeatRowColumn({ seatKey = entry.seatKey, kind = "npc" }) then
+    if type(entry) ~= "table" or entry.snapKind ~= Snaps.SNAP_KIND_SEAT then
         return false
     end
     local characterKey = Tokens.resolveTokenCharacterKey(token)
@@ -1415,16 +1430,24 @@ local function applyNpcSeatRowFromDroppedToken(token, board, fuzziness)
         return false
     end
     local occupied = stateModule().getStateVal("seatLayout", "occupiedNPCSlots")
-    local current = type(occupied) == "table" and occupied[entry.seatKey] or nil
-    if type(current) ~= "string" or current == "" or current ~= characterKey then
+    local seatKey = nil
+    if type(occupied) == "table" then
+        for _, cand in ipairs(C.NPCSeats or {}) do
+            if occupied[cand] == characterKey then
+                seatKey = cand
+                break
+            end
+        end
+    end
+    if type(seatKey) ~= "string" or seatKey == "" then
         return false
     end
     local faceUp = Tokens.tokenRotationIsFaceUp(token)
     local NPCS = require("core.npcs")
-    if NPCS.resolveSeatNarrativePresence(entry.seatKey) == faceUp then
+    if NPCS.resolveSeatNarrativePresence(seatKey) == faceUp then
         return false
     end
-    NPCS.setNpcSeatNarrativePresence(entry.seatKey, faceUp)
+    NPCS.setNpcSeatNarrativePresence(seatKey, faceUp)
     local Sync = require("core.sync")
     Sync.npcs({ onlySteps = { 4 }, reason = "Interactions.npcSeatRowDropPresence" })
     local SSP = require("core.storyteller_scenes_panel")

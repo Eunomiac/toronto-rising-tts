@@ -43,7 +43,6 @@
   <Button class="pcs_btn_connect" preferredWidth="72" minWidth="64" fontSize="10" height="26" text="Connect" />
   <Toggle class="pcs_join_toggle" preferredWidth="128" minWidth="110" fontSize="11" textColor="#FFFFFF" />
   <Toggle class="pcs_absent_toggle" preferredWidth="72" minWidth="64" fontSize="11" textColor="#FFFFFF" />
-  <InputField class="pcs_slot_input" fontSize="12" minWidth="36" preferredWidth="40" characterValidation="Integer" textAlignment="MiddleCenter" />
 
   <Button class="pcs_btn_palette_agg" colors="#662222|#883333|#991111|rgba(0.5,0.1,0.1,0.4)" />
   <Button class="pcs_btn_palette_sup" colors="#444444|#555555|#666666|rgba(0.2,0.2,0.2,0.4)" />

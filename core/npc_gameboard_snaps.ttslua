@@ -642,7 +642,22 @@ isNpcSeatRowColumn = function(col)
     return type(col) == "table" and col.kind == "npc" and U.isIn(col.seatKey, C.NPCSeats or {})
 end
 
+--- Live table `slotCapacity` (fingerprint only; all nine chairs are always installed).
+--- @return number
+local function currentTableSlotCapacity()
+    local FSL = require("lib.figurine_seat_layout")
+    local S = stateModule()
+    local key = nil
+    if type(S) == "table" and type(S.getStateVal) == "function" then
+        key = S.getStateVal("seatLayout", "currentTableKey")
+    end
+    local cfg = type(key) == "string" and C.Tables[key] or nil
+    return FSL.getSlotCapacity(cfg)
+end
+
 --- Seat-row catalog entries appended after polar rings (TOR-180).
+--- All nine numbered chairs are installed so a token can occupy a chair beyond the live
+--- table's `slotCapacity`; Apply grows Table B before writing occupancy (TOR-247 / TOR-258).
 --- @param board Object
 --- @param polarCount number snaps already in catalog
 --- @return table[]
@@ -659,34 +674,37 @@ local function buildSeatRowSnapEntries(board, polarCount)
     if uMax < uMin then
         uMin, uMax = uMax, uMin
     end
-    -- Seat-row: fixed board-local yaw (offsets CONTROL_BOARD world Y=180°); PC columns add Z flip.
     local yawDeg = ((tonumber(seatCfg.snapYawOffsetDeg) or 0) % 360 + 360) % 360
     local pcSnapZDeg = ((tonumber(seatCfg.pcSnapZDeg) or 0) % 360 + 360) % 360
     local entries = {}
     for i = 1, n do
         local col = columns[i]
-        local kind = col.kind or "pc"
-        local snapZDeg = kind == "pc" and pcSnapZDeg or 0
-        local u = (uMin + uMax) * 0.5
-        if n > 1 then
-            u = uMin + (i - 1) * (uMax - uMin) / (n - 1)
+        local tableSlot = math.floor(tonumber(col.tableSlot) or 0)
+        if tableSlot >= 1 then
+            local kind = col.kind or "pc"
+            local snapZDeg = kind == "pc" and pcSnapZDeg or 0
+            local u = (uMin + uMax) * 0.5
+            if n > 1 then
+                u = uMin + (i - 1) * (uMax - uMin) / (n - 1)
+            end
+            local lp = Board.boardLocalFromUv(board, u, v)
+            entries[#entries + 1] = {
+                snapKind = SNAP_KIND_SEAT,
+                seatKey = col.seatKey,
+                columnKind = kind,
+                tableSlot = tableSlot,
+                u = u,
+                v = v,
+                yawDeg = yawDeg,
+                snapZDeg = snapZDeg,
+                localPos = lp,
+                worldPos = Board.boardLocalToWorld(board, lp),
+                groundLevel = nil,
+                defaultLightMode = nil,
+                isAnchor = false,
+                snapIndex = polarCount + #entries + 1,
+            }
         end
-        local lp = Board.boardLocalFromUv(board, u, v)
-        entries[#entries + 1] = {
-            snapKind = SNAP_KIND_SEAT,
-            seatKey = col.seatKey,
-            columnKind = kind,
-            u = u,
-            v = v,
-            yawDeg = yawDeg,
-            snapZDeg = snapZDeg,
-            localPos = lp,
-            worldPos = Board.boardLocalToWorld(board, lp),
-            groundLevel = nil,
-            defaultLightMode = nil,
-            isAnchor = false,
-            snapIndex = polarCount + #entries + 1,
-        }
     end
     return entries
 end
@@ -716,12 +734,64 @@ local function seatRowCatalogByPcColor(catalog)
     return out
 end
 
---- Cached seat-row catalog slices (npc seatKey + PC color columns).
+--- Park pose under a PC's default-labeled column (not on a chair snap).
+--- @param color string
+--- @return table|nil `{ u, v, yawDeg }`
+local function seatRowParkPoseForPcColor(color)
+    if type(color) ~= "string" or color == "" then
+        return nil
+    end
+    local seatCfg = resolveControlBoardSeatRowConfig()
+    if seatCfg == nil then
+        return nil
+    end
+    local columns = seatCfg.columns
+    local n = #columns
+    local v = tonumber(seatCfg.v) or 0.12
+    local uMin = tonumber(seatCfg.uMin) or 0.05
+    local uMax = tonumber(seatCfg.uMax) or 0.35
+    if uMax < uMin then
+        uMin, uMax = uMax, uMin
+    end
+    local delta = tonumber(seatCfg.absentParkVDelta) or 0.10
+    local yawDeg = ((tonumber(seatCfg.snapYawOffsetDeg) or 0) % 360 + 360) % 360
+    for i = 1, n do
+        local col = columns[i]
+        if type(col) == "table" and col.seatKey == color then
+            local u = (uMin + uMax) * 0.5
+            if n > 1 then
+                u = uMin + (i - 1) * (uMax - uMin) / (n - 1)
+            end
+            return { u = u, v = v - delta, yawDeg = yawDeg }
+        end
+    end
+    return nil
+end
+
+--- @param catalog table[]
+--- @return table<number, table> tableSlot -> catalog entry
+local function seatRowCatalogByTableSlot(catalog)
+    local out = {}
+    for _, entry in ipairs(catalog) do
+        if entry.snapKind == SNAP_KIND_SEAT then
+            local slot = tonumber(entry.tableSlot)
+            if slot == nil then
+                slot = DATA.tableSlotForSeatRowSeatKey(entry.seatKey)
+            end
+            if slot ~= nil then
+                out[math.floor(slot)] = entry
+            end
+        end
+    end
+    return out
+end
+
+--- Cached seat-row catalog slices (npc seatKey + PC color columns + tableSlot).
 --- @param board Object
---- @return table { npc: table<string, table>, pc: table<string, table> }
+--- @return table `{ npc, pc, byTableSlot }`
 local function getSeatRowCatalogMaps(board)
     if not Board.isGameObject(board) then
-        return { npc = {}, pc = {} }
+        return { npc = {}, pc = {}, byTableSlot = {} }
     end
     local fp = controlBoardSnapFingerprintFor(board, nil)
     local cacheKey = tostring(board.getGUID()) .. ":" .. fp
@@ -733,6 +803,7 @@ local function getSeatRowCatalogMaps(board)
     cached = {
         npc = seatRowCatalogByNpcSeatKey(catalog),
         pc = seatRowCatalogByPcColor(catalog),
+        byTableSlot = seatRowCatalogByTableSlot(catalog),
     }
     seatRowCatalogCache[cacheKey] = cached
     return cached
@@ -1083,9 +1154,11 @@ controlBoardSnapFingerprintFor = function(board, config)
         parts[#parts + 1] = "seatRow:v:" .. tostring(seatCfg.v)
         parts[#parts + 1] = "seatRow:yaw:" .. tostring(tonumber(seatCfg.snapYawOffsetDeg) or 0)
         parts[#parts + 1] = "seatRow:pcZ:" .. tostring(tonumber(seatCfg.pcSnapZDeg) or 0)
+        parts[#parts + 1] = "seatRow:cap:" .. tostring(currentTableSlotCapacity())
         for i = 1, #(seatCfg.columns or {}) do
             local col = seatCfg.columns[i]
             parts[#parts + 1] = "seatCol:" .. tostring(i) .. "=" .. tostring(col.seatKey) .. ":" .. tostring(col.kind)
+                .. ":s" .. tostring(col.tableSlot)
         end
     end
     return table.concat(parts, ":")
@@ -2035,6 +2108,8 @@ Snaps.resolveSnapGroupGroundLevel = resolveSnapGroupGroundLevel
 Snaps.isNpcSeatRowColumn = isNpcSeatRowColumn
 Snaps.seatRowCatalogByNpcSeatKey = seatRowCatalogByNpcSeatKey
 Snaps.seatRowCatalogByPcColor = seatRowCatalogByPcColor
+Snaps.seatRowCatalogByTableSlot = seatRowCatalogByTableSlot
+Snaps.seatRowParkPoseForPcColor = seatRowParkPoseForPcColor
 Snaps.getSeatRowCatalogMaps = getSeatRowCatalogMaps
 Snaps.controlBoardSnapFingerprintFor = controlBoardSnapFingerprintFor
 Snaps.parkNpcTokenOnPalette = parkNpcTokenOnPalette

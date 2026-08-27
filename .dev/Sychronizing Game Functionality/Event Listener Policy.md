@@ -129,8 +129,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | --- | --- | --- | --- |
 | `HUD_selectStorytellerPanel` | A | — | panel visibility |
 | `HUD_pcPanel` | B+C | Yes | PCs tracker apply; Desire Clear (`pcs_<Color>_desireClear`, TOR-97) |
-| `HUD_pcsAbsentFromSession` / `HUD_pcsTableSlot` | B+C | Yes | TOR-507 numbered table occupancy (Absent + slot) |
-| `HUD_scenesTableSlot` | B+C | Yes | TOR-507 NPC identity tableSlot on Scenes Seat Activation |
+| `HUD_pcsAbsentFromSession` | B+C | Yes | TOR-507 / TOR-247 numbered table occupancy (Absent toggle; chairs are control-board tokens) |
 | `HUD_togglePanel` | A | — | XmlUI collapse |
 | `HUD_changeScene` | B+C | Yes | |
 | `HUD_selectAdminLightingScene` | B+C | Yes | |

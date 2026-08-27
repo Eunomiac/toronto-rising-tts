@@ -300,16 +300,45 @@ local function findPcTokenByColor(color)
 end
 
 --- @param catalog table[]
---- @return table<string, table> color -> seat-row catalog entry
-local function seatRowCatalogByPcColor(catalog)
+--- @return table<number, table> tableSlot -> seat-row catalog entry
+local function seatRowCatalogByTableSlot(catalog)
     local out = {}
     for _, entry in ipairs(catalog or {}) do
-        if entry.snapKind == "seat" and entry.columnKind == "pc"
-            and U.isIn(entry.seatKey, C.PlayerColors or {}) then
-            out[entry.seatKey] = entry
+        if entry.snapKind == "seat" then
+            local slot = tonumber(entry.tableSlot)
+            if slot ~= nil then
+                out[math.floor(slot)] = entry
+            end
         end
     end
     return out
+end
+
+--- Expected control-board pose for a PC token: numbered chair, or park below the default column when Absent.
+--- @param board Object
+--- @param color string
+--- @return table|nil `{ u, v }`
+local function pcTokenHomePose(board, color)
+    local ss = S.getStateVal("sessionScene", "seatSlots")
+    local row = type(ss) == "table" and ss[color] or nil
+    local maps = type(Gameboard.getSeatRowCatalogMaps) == "function"
+        and Gameboard.getSeatRowCatalogMaps(board)
+        or nil
+    local byTableSlot = type(maps) == "table" and maps.byTableSlot or nil
+    if byTableSlot == nil then
+        byTableSlot = seatRowCatalogByTableSlot(Gameboard.buildControlBoardSnapCatalog(board, nil))
+    end
+    if type(row) == "table" and row.absentFromSession ~= true then
+        local slot = tonumber(row.tableSlot)
+        local entry = slot ~= nil and byTableSlot[math.floor(slot)] or nil
+        if type(entry) == "table" then
+            return entry
+        end
+    end
+    if type(Gameboard.seatRowParkPoseForPcColor) == "function" then
+        return Gameboard.seatRowParkPoseForPcColor(color)
+    end
+    return nil
 end
 
 --- @return table<string, boolean> canonical color -> narrative present
@@ -330,7 +359,6 @@ local function assertPcTokensMatchSeatPresence(failures, labelPrefix)
         failures[#failures + 1] = prefix .. ": CONTROL_BOARD missing"
         return
     end
-    local pcCatalog = seatRowCatalogByPcColor(Gameboard.buildControlBoardSnapCatalog(board, nil))
     local tol = fixture().worldTol * 2
     for _, color in ipairs(C.PlayerColors or {}) do
         local token = findPcTokenByColor(color)
@@ -348,9 +376,9 @@ local function assertPcTokensMatchSeatPresence(failures, labelPrefix)
                     .. " but seat present="
                     .. tostring(present)
             end
-            local entry = pcCatalog[color]
+            local entry = pcTokenHomePose(board, color)
             if entry == nil then
-                failures[#failures + 1] = prefix .. ": no PC seat-row catalog entry for " .. color
+                failures[#failures + 1] = prefix .. ": no control-board home pose for " .. color
             else
                 local want = Gameboard.worldOnControlBoard(board, entry.u, entry.v)
                 local d = dist3(token.getPosition(), want)
@@ -358,7 +386,7 @@ local function assertPcTokensMatchSeatPresence(failures, labelPrefix)
                     failures[#failures + 1] = prefix
                         .. ": "
                         .. color
-                        .. " token not pinned to seat-row column (dist="
+                        .. " token not pinned to occupancy home (dist="
                         .. tostring(d)
                         .. ")"
                 end
@@ -622,7 +650,7 @@ function E2E_GB.probeNpcSeatFigurineCount(seatKey)
     return E2E_GB.probeDuplicateSeatFigure(seatKey)
 end
 
---- Probe one color-bound `pc_control_token` vs `seatSlots[color].isPresent` (TOR-236 / TOR-152).
+--- Probe one color-bound `pc_control_token` vs occupancy home + `seatSlots[color].isPresent` (TOR-247).
 --- @param color string
 --- @return table|nil `{ color, faceUp, present, onColumn, columnDist }`
 function E2E_GB.probePcControlToken(color)
@@ -634,8 +662,7 @@ function E2E_GB.probePcControlToken(color)
     if board == nil or token == nil then
         return nil
     end
-    local pcCatalog = seatRowCatalogByPcColor(Gameboard.buildControlBoardSnapCatalog(board, nil))
-    local entry = pcCatalog[color]
+    local entry = pcTokenHomePose(board, color)
     local columnDist = nil
     local onColumn = false
     if entry ~= nil then
@@ -655,7 +682,7 @@ function E2E_GB.probePcControlToken(color)
     }
 end
 
---- Assert every workshop `pc_control_token` is pinned to its PC column with flip matching seat presence.
+--- Assert every workshop `pc_control_token` is pinned to its occupancy home with flip matching seat presence.
 --- @return boolean
 function E2E_GB.verifyPcTokensFromSeatState()
     local failures = {}

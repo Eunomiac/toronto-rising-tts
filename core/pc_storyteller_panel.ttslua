@@ -215,11 +215,6 @@ function PCST.refreshRow(color)
   local row = U.Type(ss) == "table" and ss[color] or nil
   local absent = U.Type(row) == "table" and row.absentFromSession == true
   U.setAttributes("pcs_absent_" .. color, { isOn = absent })
-  local slotText = ""
-  if not absent and U.Type(row) == "table" and tonumber(row.tableSlot) ~= nil then
-    slotText = tostring(math.floor(row.tableSlot))
-  end
-  safeSetValue("pcs_tableSlot_" .. color, slotText)
 
   if pid == nil or pid == C.StorytellerID then
     safeSetValue("pcs_hungerDots_" .. color, "")

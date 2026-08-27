@@ -30,13 +30,9 @@
   </HorizontalLayout>
   <HorizontalLayout id="db_panel_scenes_seat_presence_npc_buttons" class="hud_storyteller_button_row" spacing="3" childForceExpandWidth="false">
     <Button id="scenes_seat_NPC1" text="NPC1" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-    <InputField id="scenes_tableSlot_NPC1" text="6" minWidth="32" preferredWidth="36" characterValidation="Integer" onEndEdit="HUD_scenesTableSlot" />
     <Button id="scenes_seat_NPC2" text="NPC2" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-    <InputField id="scenes_tableSlot_NPC2" text="7" minWidth="32" preferredWidth="36" characterValidation="Integer" onEndEdit="HUD_scenesTableSlot" />
     <Button id="scenes_seat_NPC3" text="NPC3" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-    <InputField id="scenes_tableSlot_NPC3" text="8" minWidth="32" preferredWidth="36" characterValidation="Integer" onEndEdit="HUD_scenesTableSlot" />
     <Button id="scenes_seat_NPC4" text="NPC4" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-    <InputField id="scenes_tableSlot_NPC4" text="9" minWidth="32" preferredWidth="36" characterValidation="Integer" onEndEdit="HUD_scenesTableSlot" />
   </HorizontalLayout>
 
   <Text id="db_panel_scenes_location_header" class="hud_storyteller_label">Scene Location</Text>

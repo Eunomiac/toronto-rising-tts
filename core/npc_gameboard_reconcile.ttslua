@@ -103,6 +103,61 @@ local function scanSeatRowPcTokensByColor(board)
     return out
 end
 
+--- Occupancy of numbered table chairs from any PC/NPC token on a seat-row snap (TOR-247).
+--- @param board Object
+--- @return table bySlot `[tableSlot] = { kind, color?, characterKey?, present, guid }`
+--- @return table[] duplicates `{ slot, guid }`
+local function scanSeatRowOccupancyByTableSlot(board)
+    local bySlot = {}
+    local duplicates = {}
+    if not Board.isGameObject(board) then
+        return bySlot, duplicates
+    end
+    local fuzziness = Board.snapMatchFuzzinessForBoard(board)
+    local function consider(obj, kind, color, characterKey)
+        if not Board.isGameObject(obj) or not Board.isTokenOnMinimapTokenSurface(board, obj) then
+            return
+        end
+        local entry = Snaps.resolveTokenSnapCatalogEntry(board, obj, fuzziness, nil)
+        if type(entry) ~= "table" or entry.snapKind ~= Snaps.SNAP_KIND_SEAT then
+            return
+        end
+        local slot = tonumber(entry.tableSlot)
+        if slot == nil then
+            slot = DATA.tableSlotForSeatRowSeatKey(entry.seatKey)
+        end
+        if slot == nil then
+            return
+        end
+        slot = math.floor(slot)
+        local guid = obj.getGUID and obj.getGUID() or ""
+        if bySlot[slot] ~= nil then
+            duplicates[#duplicates + 1] = { slot = slot, guid = guid }
+            return
+        end
+        bySlot[slot] = {
+            kind = kind,
+            color = color,
+            characterKey = characterKey,
+            present = Tokens.tokenRotationIsFaceUp(obj),
+            guid = guid,
+        }
+    end
+    for _, obj in ipairs(getObjectsWithTag(TAG_PC_TOKEN) or {}) do
+        local color = Tokens.resolvePcTokenSeatColor(obj)
+        if type(color) == "string" and color ~= "" then
+            consider(obj, "pc", color, nil)
+        end
+    end
+    for _, obj in ipairs(getObjectsWithTag(TAG_TOKEN) or {}) do
+        local characterKey = Tokens.resolveTokenCharacterKey(obj)
+        if type(characterKey) == "string" and characterKey ~= "" then
+            consider(obj, "npc", nil, characterKey)
+        end
+    end
+    return bySlot, duplicates
+end
+
 --- @param board Object
 --- @return table[] rows with characterKey, u, v, yaw, npcLightMode (polar/stage snaps only; not seat row)
 function Reconcile.scanControlBoardTokens(board)
@@ -122,7 +177,7 @@ function Reconcile.scanControlBoardTokens(board)
                 if type(u) == "number" and type(v) == "number" then
                     local entry = Snaps.resolveTokenSnapCatalogEntry(board, obj, fuzziness, nil)
                     if type(entry) == "table" and entry.snapKind == Snaps.SNAP_KIND_SEAT then
-                        -- Seat row: assign/presence via `applySeatRowFromControlBoard`, not `placements`.
+                        -- Seat row: assign/occupancy via `applyOccupancyFromSeatRow`, not `placements`.
                     else
                         local groundLevel = Snaps.groundLevelForSnapUv(u, v)
                         local row = {
@@ -316,31 +371,70 @@ end
 function Reconcile.buildParticipantSnapshot(board, baseSeatSlots)
     baseSeatSlots = type(baseSeatSlots) == "table" and baseSeatSlots or {}
     local placements = placementsMapFromRows(Reconcile.scanControlBoardTokens(board))
-    local npcBySeat = scanSeatRowTokensBySeatKey(board)
-    local pcByColor = scanSeatRowPcTokensByColor(board)
+    local bySlot = scanSeatRowOccupancyByTableSlot(board)
     local seatSlots = {}
+
+    local pcOnSlot = {}
+    local npcOnSlot = {}
+    for slot, rec in pairs(bySlot) do
+        if type(rec) == "table" then
+            if rec.kind == "pc" and type(rec.color) == "string" then
+                pcOnSlot[rec.color] = { tableSlot = slot, present = rec.present == true }
+            elseif rec.kind == "npc" and type(rec.characterKey) == "string" then
+                npcOnSlot[rec.characterKey] = { tableSlot = slot, present = rec.present == true }
+            end
+        end
+    end
+
+    local claimedNpc = {}
     for _, seatKey in ipairs(C.NPCSeats or {}) do
         local base = type(baseSeatSlots[seatKey]) == "table" and U.merge({}, baseSeatSlots[seatKey]) or {}
-        local scan = npcBySeat[seatKey]
-        if type(scan) == "table" then
-            base.characterKey = scan.characterKey
+        local ck = type(base.characterKey) == "string" and base.characterKey or nil
+        local occ = ck ~= nil and npcOnSlot[ck] or nil
+        if occ ~= nil then
+            base.characterKey = ck
             base.slotEmpty = nil
-            base.isPresent = scan.present == true
-        elseif type(base.characterKey) == "string" and type(placements[base.characterKey]) == "table" then
+            base.isPresent = occ.present
+            base.tableSlot = occ.tableSlot
+            claimedNpc[ck] = true
+        elseif ck ~= nil and type(placements[ck]) == "table" then
             base.slotEmpty = nil
             base.isPresent = false
+            claimedNpc[ck] = true
         else
             base.characterKey = nil
             base.slotEmpty = true
             base.isPresent = false
+            base.tableSlot = nil
         end
         seatSlots[seatKey] = base
     end
+    for ck, occ in pairs(npcOnSlot) do
+        if claimedNpc[ck] ~= true then
+            for _, seatKey in ipairs(C.NPCSeats or {}) do
+                local row = seatSlots[seatKey]
+                if type(row) == "table" and (row.slotEmpty == true or row.characterKey == nil) then
+                    row.characterKey = ck
+                    row.slotEmpty = nil
+                    row.isPresent = occ.present
+                    row.tableSlot = occ.tableSlot
+                    claimedNpc[ck] = true
+                    break
+                end
+            end
+        end
+    end
+
     for _, color in ipairs(C.PlayerColors or {}) do
         local base = type(baseSeatSlots[color]) == "table" and U.merge({}, baseSeatSlots[color]) or {}
-        local scan = pcByColor[color]
-        if type(scan) == "table" then
-            base.isPresent = scan.present == true
+        local occ = pcOnSlot[color]
+        if occ ~= nil then
+            base.absentFromSession = nil
+            base.tableSlot = occ.tableSlot
+            base.isPresent = occ.present
+        else
+            base.absentFromSession = true
+            base.tableSlot = nil
         end
         seatSlots[color] = base
     end
@@ -1054,7 +1148,9 @@ function Reconcile.mirrorControlBoardTokensFromModel(board, model)
     local placements = type(model.placements) == "table" and model.placements or {}
     local seatSlots = type(model.seatSlots) == "table" and model.seatSlots or {}
     local byChar = buildTokenByCharacterKey()
-    local seatCatalog = Snaps.seatRowCatalogByNpcSeatKey(Snaps.buildControlBoardSnapCatalog(board, nil))
+    local maps = Snaps.getSeatRowCatalogMaps(board)
+    local byTableSlot = type(maps.byTableSlot) == "table" and maps.byTableSlot or {}
+    local seatCatalog = maps.npc
     --- Character keys that should remain on the minimap (seat row or stage); all other NPC tokens
     --- currently on the board are orphaned (e.g. scene change reduced occupied NPC seats) and are parked.
     local keepOnBoard = {}
@@ -1063,7 +1159,11 @@ function Reconcile.mirrorControlBoardTokensFromModel(board, model)
         local ck = type(row) == "table" and row.characterKey or nil
         if type(ck) == "string" and ck ~= "" and row.slotEmpty ~= true then
                 keepOnBoard[ck] = true
-                local entry = seatCatalog[seatKey]
+                local slot = tonumber(row.tableSlot)
+                local entry = slot ~= nil and byTableSlot[math.floor(slot)] or nil
+                if entry == nil then
+                    entry = seatCatalog[seatKey]
+                end
                 local token = byChar[ck]
                 --- Place the token onto the seat row even when it is currently parked on the
                 --- palette: scene transitions and Load make the board reflect state, so an
@@ -1102,15 +1202,26 @@ function Reconcile.mirrorControlBoardTokensFromModel(board, model)
         end
         print("[Gameboard] mirror: parked " .. tostring(#orphaned) .. " orphaned NPC token(s) to palette")
     end
-    local pcCatalog = Snaps.getSeatRowCatalogMaps(board).pc
-    if next(pcCatalog) ~= nil then
-        for _, obj in ipairs(getObjectsWithTag(TAG_PC_TOKEN) or {}) do
-            if Board.isGameObject(obj) then
-                local color = Tokens.resolvePcTokenSeatColor(obj)
-                local entry = color ~= nil and pcCatalog[color] or nil
+    local maps = Snaps.getSeatRowCatalogMaps(board)
+    local byTableSlot = type(maps.byTableSlot) == "table" and maps.byTableSlot or {}
+    for _, obj in ipairs(getObjectsWithTag(TAG_PC_TOKEN) or {}) do
+        if Board.isGameObject(obj) then
+            local color = Tokens.resolvePcTokenSeatColor(obj)
+            if type(color) == "string" then
+                local row = type(seatSlots[color]) == "table" and seatSlots[color] or {}
+                local absent = row.absentFromSession == true
+                local slot = tonumber(row.tableSlot)
+                local entry = nil
+                if not absent and slot ~= nil then
+                    entry = byTableSlot[math.floor(slot)]
+                end
                 if entry ~= nil then
-                    local row = type(seatSlots[color]) == "table" and seatSlots[color] or {}
                     Tokens.mirrorSeatRowControlToken(obj, board, entry, row.isPresent == true)
+                else
+                    local park = Snaps.seatRowParkPoseForPcColor(color)
+                    if type(park) == "table" then
+                        Tokens.mirrorSeatRowControlToken(obj, board, park, row.isPresent == true)
+                    end
                 end
             end
         end
@@ -1292,6 +1403,7 @@ end
 
 Reconcile.scanSeatRowTokensBySeatKey = scanSeatRowTokensBySeatKey
 Reconcile.scanSeatRowPcTokensByColor = scanSeatRowPcTokensByColor
+Reconcile.scanSeatRowOccupancyByTableSlot = scanSeatRowOccupancyByTableSlot
 Reconcile.normalizePlacementRow = normalizePlacementRow
 Reconcile.placementRowsEqual = placementRowsEqual
 Reconcile.placementsMapsEqual = placementsMapsEqual

@@ -4313,13 +4313,6 @@ function HUD_scenesPanelInput(player, value, id)
     StorytellerScenesPanel.onClockInputChanged(player, value, id)
 end
 
-function HUD_scenesTableSlot(player, value, id)
-    if not requireStorytellerForMutation(player, "HUD_scenesTableSlot") then
-        return
-    end
-    StorytellerScenesPanel.onTableSlotInput(player, value, id)
-end
-
 function HUD_scenesApplyLocation(player, button, id)
     if not requireStorytellerForMutation(player, "HUD_scenesApplyLocation") then
         return
@@ -4835,6 +4828,10 @@ local function relayoutSeatsAfterOccupancyChange()
     if type(RSL.SyncTable) == "function" then
         RSL.SyncTable(nil, { force = true })
     end
+    local Gameboard = require("core.npc_gameboard")
+    if type(Gameboard.reconcileControlBoardFromState) == "function" then
+        Gameboard.reconcileControlBoardFromState({ force = true, forceTokenMirror = true })
+    end
 end
 
 --- PCs panel: mark a player seat Absent (no numbered table slot). TOR-507.
@@ -4854,38 +4851,6 @@ function HUD_pcsAbsentFromSession(player, value, id)
     local ok, err = FSL.setPlayerAbsentFromSession(color, on)
     if not ok then
         U.AlertGM(err or ("Could not change Absent for " .. color))
-        if PCST and PCST.refreshRow then
-            PCST.refreshRow(color)
-        end
-        return
-    end
-    relayoutSeatsAfterOccupancyChange()
-    if PCST and PCST.refreshRow then
-        PCST.refreshRow(color)
-    end
-end
-
---- PCs panel: assign numbered tableSlot for a player seat. TOR-507.
-function HUD_pcsTableSlot(player, value, id)
-    if not requireStorytellerForMutation(player, "HUD_pcsTableSlot") then
-        return
-    end
-    local color = type(id) == "string" and id:match("^pcs_tableSlot_(%a+)$") or nil
-    if color == nil or not U.isIn(color, C.PlayerColors) then
-        return
-    end
-    local slot = tonumber(value)
-    if slot == nil then
-        U.AlertGM("Table slot for " .. color .. " must be a number.")
-        if PCST and PCST.refreshRow then
-            PCST.refreshRow(color)
-        end
-        return
-    end
-    local FSL = require("lib.figurine_seat_layout")
-    local ok, err = FSL.tryAssignTableSlot(color, slot)
-    if not ok then
-        U.AlertGM(err or ("Could not assign table slot for " .. color))
         if PCST and PCST.refreshRow then
             PCST.refreshRow(color)
         end

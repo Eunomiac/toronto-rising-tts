@@ -5,6 +5,7 @@
 
 local Apply = {}
 
+local U = require("lib.util")
 local C = require("lib.constants")
 local G = require("lib.guids")
 local Palette = require("lib.npc_control_board_palette")
@@ -94,87 +95,155 @@ local function shouldUnassignNpcSeatWhenSnapEmpty(characterKey, polarOnBoardByCh
     return true
 end
 
---- Seat-row Apply: assign/unassign NPC seats and narrative presence from seat snaps (TOR-180).
+--- Seat-row Apply: numbered table chairs from PC/NPC tokens (TOR-247).
 --- @param board Object
---- @param polarOnBoardByCharacter table<string, boolean> characters on polar snaps (live scan)
---- @return boolean changed, string[] vacatedCharacterKeys
-local function applySeatRowFromControlBoard(board, polarOnBoardByCharacter)
+--- @param polarOnBoardByCharacter table<string, boolean>
+--- @return boolean ok
+--- @return boolean changed
+--- @return string[] vacatedCharacterKeys
+--- @return string|nil err
+local function applyOccupancyFromSeatRow(board, polarOnBoardByCharacter)
     polarOnBoardByCharacter = type(polarOnBoardByCharacter) == "table" and polarOnBoardByCharacter or {}
-    local bySeat = Reconcile.scanSeatRowTokensBySeatKey(board)
+    local bySlot, duplicates = Reconcile.scanSeatRowOccupancyByTableSlot(board)
+    if type(duplicates) == "table" and #duplicates > 0 then
+        local slot = duplicates[1].slot
+        local msg = "Two tokens are on the same table chair (slot " .. tostring(slot)
+            .. "). Move one, then Apply."
+        U.AlertGM(msg)
+        return false, false, {}, msg
+    end
+
+    local pcByColor = {}
+    local npcByCharacter = {}
+    for slot, rec in pairs(bySlot) do
+        if type(rec) == "table" then
+            if rec.kind == "pc" and type(rec.color) == "string" then
+                pcByColor[rec.color] = { tableSlot = slot, present = rec.present == true }
+            elseif rec.kind == "npc" and type(rec.characterKey) == "string" then
+                npcByCharacter[rec.characterKey] = { tableSlot = slot, present = rec.present == true }
+            end
+        end
+    end
+
     local NPCS = require("core.npcs")
-    local occupied = stateModule().getStateVal("seatLayout", "occupiedNPCSlots")
+    local FSL = require("lib.figurine_seat_layout")
+    local S = stateModule()
+    local occupied = S.getStateVal("seatLayout", "occupiedNPCSlots")
     if type(occupied) ~= "table" then
         occupied = {}
+        S.setStateVal(occupied, "seatLayout", "occupiedNPCSlots")
     end
+    local ss = S.getStateVal("sessionScene", "seatSlots")
+    if type(ss) ~= "table" then
+        ss = {}
+        S.setStateVal(ss, "sessionScene", "seatSlots")
+    end
+
     local changed = false
     local vacatedKeys = {}
+
     for _, seatKey in ipairs(C.NPCSeats or {}) do
-        local scan = bySeat[seatKey]
         local current = occupied[seatKey]
         if type(current) ~= "string" or current == "" then
             current = nil
         end
-        if scan == nil then
-            if current ~= nil and shouldUnassignNpcSeatWhenSnapEmpty(current, polarOnBoardByCharacter) then
-                local ok, err = NPCS.unseatNpc(current)
-                if not ok then
-                    print("[Gameboard] Apply seat row: unseat " .. tostring(current) .. ": " .. tostring(err))
-                else
-                    changed = true
-                    vacatedKeys[#vacatedKeys + 1] = current
+        if current ~= nil and npcByCharacter[current] == nil
+            and shouldUnassignNpcSeatWhenSnapEmpty(current, polarOnBoardByCharacter)
+        then
+            local ok, err = NPCS.unseatNpc(current)
+            if not ok then
+                print("[Gameboard] Apply occupancy: unseat " .. tostring(current) .. ": " .. tostring(err))
+            else
+                changed = true
+                vacatedKeys[#vacatedKeys + 1] = current
+            end
+        end
+    end
+
+    local function identityForCharacter(characterKey)
+        for _, seatKey in ipairs(C.NPCSeats or {}) do
+            if occupied[seatKey] == characterKey then
+                return seatKey
+            end
+        end
+        return nil
+    end
+
+    for ck, rec in pairs(npcByCharacter) do
+        local seatKey = identityForCharacter(ck)
+        if seatKey == nil then
+            for _, cand in ipairs(C.NPCSeats or {}) do
+                local cur = occupied[cand]
+                if type(cur) ~= "string" or cur == "" then
+                    seatKey = cand
+                    break
                 end
             end
-        else
-            local ck = scan.characterKey
-            if current ~= ck then
-                local ok, err = NPCS.assignNpcToSeat(ck, seatKey, { deferLayoutSync = true })
-                if not ok then
-                    print("[Gameboard] Apply seat row: assign " .. tostring(ck) .. " → " .. seatKey .. ": " .. tostring(err))
-                else
-                    changed = true
-                end
-            end
-            local wantPresent = scan.present == true
-            local wasPresent = NPCS.resolveSeatNarrativePresence(seatKey)
-            if wantPresent ~= wasPresent then
-                NPCS.setNpcSeatNarrativePresence(seatKey, wantPresent)
+        end
+        if seatKey == nil then
+            local msg = "No free NPC seat identity for " .. tostring(ck)
+                .. ". At most four NPCs can sit at the table."
+            U.AlertGM(msg)
+            return false, changed, vacatedKeys, msg
+        end
+        if occupied[seatKey] ~= ck then
+            local ok, err = NPCS.assignNpcToSeat(ck, seatKey, { deferLayoutSync = true })
+            if not ok then
+                print("[Gameboard] Apply occupancy: assign " .. tostring(ck) .. " → " .. seatKey .. ": " .. tostring(err))
+            else
                 changed = true
             end
         end
+        local row = ss[seatKey]
+        if type(row) ~= "table" then
+            row = {}
+            ss[seatKey] = row
+        end
+        if tonumber(row.tableSlot) ~= rec.tableSlot then
+            row.tableSlot = rec.tableSlot
+            changed = true
+        end
+        local wantPresent = rec.present
+        if NPCS.resolveSeatNarrativePresence(seatKey) ~= wantPresent then
+            NPCS.setNpcSeatNarrativePresence(seatKey, wantPresent)
+            changed = true
+        end
     end
-    if changed then
-        print("[Gameboard] Apply: seat row updated")
-    end
-    return changed, vacatedKeys
-end
 
---- Seat-row Apply for PC columns: `pc_control_token` flip → `seatSlots[color].isPresent` (TOR-236).
---- Apply-time only — sets presence for colors that have a PC token on their column; PCs without a
---- token are left untouched (connection-driven presence stays intact pre-TOR-247 seat decoupling).
---- @param board Object
---- @return boolean changed
-local function applyPcSeatRowFromControlBoard(board)
-    local byColor = Reconcile.scanSeatRowPcTokensByColor(board)
-    if next(byColor) == nil then
-        return false
-    end
-    local NPCS = require("core.npcs")
-    local changed = false
     for _, color in ipairs(C.PlayerColors or {}) do
-        local scan = byColor[color]
-        if scan ~= nil then
-            local wantPresent = scan.present == true
-            if NPCS.resolvePlayerSeatPresence(color) ~= wantPresent then
-                if NPCS.setPlayerSeatPresence(color, wantPresent) then
+        local rec = pcByColor[color]
+        local row = ss[color]
+        if type(row) ~= "table" then
+            row = {}
+            ss[color] = row
+        end
+        if rec ~= nil then
+            if row.absentFromSession == true or tonumber(row.tableSlot) ~= rec.tableSlot then
+                row.absentFromSession = nil
+                row.tableSlot = rec.tableSlot
+                changed = true
+            end
+            if NPCS.resolvePlayerSeatPresence(color) ~= rec.present then
+                if NPCS.setPlayerSeatPresence(color, rec.present) then
+                    changed = true
+                end
+            end
+        else
+            if row.absentFromSession ~= true then
+                local ok, err = FSL.setPlayerAbsentFromSession(color, true)
+                if not ok then
+                    print("[Gameboard] Apply occupancy: Absent " .. color .. ": " .. tostring(err))
+                else
                     changed = true
                 end
             end
         end
     end
+
     if changed then
-        print("[Gameboard] Apply: PC seat row updated")
+        print("[Gameboard] Apply: table occupancy updated from control-board tokens")
     end
-    return changed
+    return true, changed, vacatedKeys, nil
 end
 
 --- Homeland seat assigned but figurine on stage: deactivate narrative presence (TOR-250).
@@ -233,77 +302,54 @@ local function applyHomelandSeatPresenceAfterStageClear(placements)
     return changed
 end
 
---- True when Apply would need a dynamic-table grow for the given (post-scan) occupied slot map.
---- Used to preflight dice-on-table before committing seat/placement state (TOR-304).
---- @param occupiedSlots table|nil
+--- True when occupancy would need a larger Table B variant than the live table.
+--- @param highestSlot number|nil
 --- @return boolean
-local function applyWouldRequireDynamicTableGrow(occupiedSlots)
+local function applyWouldRequireDynamicTableGrow(highestSlot)
     local RSL = require("lib.rotational-seat-layout")
+    local FSL = require("lib.figurine_seat_layout")
     local intent = stateModule().getStateVal("sessionScene", "tableKey")
     if not RSL.isDynamicTableFamilyKey(intent) then
         return false
     end
-    local slotIndex = RSL.highestOccupiedNpcSlotIndex(occupiedSlots)
     local currentKey = stateModule().getStateVal("seatLayout", "currentTableKey")
     local currentCfg = type(currentKey) == "string" and C.Tables[currentKey] or nil
-    if slotIndex <= RSL.tableNpcSlotCapacity(currentCfg) then
-        return false
-    end
-    local targetKey = RSL.resolveTableKey(intent, { occupiedSlotIndex = slotIndex })
-    return type(targetKey) == "string" and targetKey ~= currentKey
+    local cap = FSL.getSlotCapacity(currentCfg)
+    return (tonumber(highestSlot) or 0) > cap
 end
 
---- Build the occupied-NPC slot map that Apply would produce from the live seat-row scan (dry-run; no state writes).
+--- Highest numbered chair that Apply would occupy from the live token scan.
 --- @param board Object
---- @param polarOnBoardByCharacter table<string, boolean>
---- @return table slotKey → characterKey
-local function previewOccupiedNpcSlotsAfterSeatRowApply(board, polarOnBoardByCharacter)
-    polarOnBoardByCharacter = type(polarOnBoardByCharacter) == "table" and polarOnBoardByCharacter or {}
-    local bySeat = Reconcile.scanSeatRowTokensBySeatKey(board)
-    local occupied = stateModule().getStateVal("seatLayout", "occupiedNPCSlots")
-    local nextOccupied = {}
-    if type(occupied) == "table" then
-        for seatKey, characterKey in pairs(occupied) do
-            if type(characterKey) == "string" and characterKey ~= "" then
-                nextOccupied[seatKey] = characterKey
-            end
+--- @return number
+local function previewHighestTableSlotAfterOccupancy(board)
+    local bySlot = Reconcile.scanSeatRowOccupancyByTableSlot(board)
+    local maxSlot = 0
+    for slot, _ in pairs(bySlot) do
+        local n = tonumber(slot)
+        if n ~= nil and n > maxSlot then
+            maxSlot = n
         end
     end
-    for _, seatKey in ipairs(C.NPCSeats or {}) do
-        local scan = bySeat[seatKey]
-        if scan == nil then
-            local current = nextOccupied[seatKey]
-            if type(current) == "string"
-                and current ~= ""
-                and shouldUnassignNpcSeatWhenSnapEmpty(current, polarOnBoardByCharacter)
-            then
-                nextOccupied[seatKey] = nil
-            end
-        else
-            nextOccupied[seatKey] = scan.characterKey
-        end
-    end
-    return nextOccupied
+    return maxSlot
 end
 
---- Grow-only dynamic table transition on Apply (TOR-258): when the table intent (`sessionScene.tableKey`)
---- is a dynamic family key (e.g. "Table B") and occupied NPC seats now exceed the active table's NPC
---- capacity, switch up to the larger variant. Never shrinks when seats are removed — table switches are
---- expensive and the author wants them only when strictly required.
+--- Grow-only dynamic table transition on Apply (TOR-258 / TOR-507): when the table intent is a
+--- dynamic family and occupied numbered chairs now exceed this variant's `slotCapacity`, switch up.
+--- Never shrinks when seats are removed.
+--- Grow from the token-scan highest chair *before* occupancy writes, so `tableSlot` stays
+--- within the live table's capacity.
+--- @param highestSlot number|nil
 --- @return boolean true when a table transition was triggered
-local function maybeGrowDynamicTableForOccupiedSeats()
+local function maybeGrowDynamicTableForOccupiedSeats(highestSlot)
     local RSL = require("lib.rotational-seat-layout")
+    local FSL = require("lib.figurine_seat_layout")
     local intent = stateModule().getStateVal("sessionScene", "tableKey")
     if not RSL.isDynamicTableFamilyKey(intent) then
         return false
     end
-    local slotIndex = RSL.highestOccupiedNpcSlotIndex()
     local currentKey = stateModule().getStateVal("seatLayout", "currentTableKey")
-    local currentCfg = type(currentKey) == "string" and C.Tables[currentKey] or nil
-    if slotIndex <= RSL.tableNpcSlotCapacity(currentCfg) then
-        return false
-    end
-    local targetKey = RSL.resolveTableKey(intent, { occupiedSlotIndex = slotIndex })
+    local idx = FSL.tableBVariantIndexFromHighest(highestSlot)
+    local targetKey = RSL.resolveTableKey(intent, { occupiedSlotIndex = idx })
     if type(targetKey) ~= "string" or targetKey == currentKey then
         return false
     end
@@ -347,16 +393,21 @@ function Apply.applyFromControlBoard()
     -- TOR-304: if Apply would grow the dynamic table while dice are loose, abort BEFORE seat/placement
     -- mutations. Otherwise state + Sync fingerprints advance with the old table and the next Apply
     -- early-exits as "unchanged" without ever growing.
-    local previewOccupied = previewOccupiedNpcSlotsAfterSeatRowApply(board, polarOnBoardByCharacter)
-    if applyWouldRequireDynamicTableGrow(previewOccupied) then
+    local previewHighest = previewHighestTableSlotAfterOccupancy(board)
+    if applyWouldRequireDynamicTableGrow(previewHighest) then
         local RSL = require("lib.rotational-seat-layout")
         if RSL.alertAndBlockIfDiceOnTable("apply control board (table grow)") then
             Apply.finishInteractionProfile(t0)
             return false, "blocked: loose dice on table (dynamic table grow required)"
         end
+        maybeGrowDynamicTableForOccupiedSeats(previewHighest)
     end
-    local seatChanged, vacatedKeys = applySeatRowFromControlBoard(board, polarOnBoardByCharacter)
-    local pcSeatChanged = applyPcSeatRowFromControlBoard(board)
+    local occOk, seatChanged, vacatedKeys, occErr = applyOccupancyFromSeatRow(board, polarOnBoardByCharacter)
+    if not occOk then
+        Apply.finishInteractionProfile(t0)
+        return false, occErr or "occupancy apply failed"
+    end
+    local pcSeatChanged = seatChanged
     local placements = Reconcile.placementsMapFromRows(rows)
     if deactivateHomelandSeatsForStagePlacements(placements) then
         seatChanged = true
@@ -391,7 +442,8 @@ function Apply.applyFromControlBoard()
         Conditions.reconcileHostedForSession()
     end
     if seatChanged then
-        maybeGrowDynamicTableForOccupiedSeats()
+        local FSL = require("lib.figurine_seat_layout")
+        maybeGrowDynamicTableForOccupiedSeats(FSL.highestOccupiedTableSlot())
     end
     syncNpcsFromControlBoard("gameboard_apply", {
         seatMutation = seatMutated,

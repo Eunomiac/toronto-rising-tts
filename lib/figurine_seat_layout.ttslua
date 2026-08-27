@@ -197,10 +197,10 @@ function FSL.highestOccupiedTableSlot(opts)
 end
 
 --- Family `"Table B"` → B0 when highest slot is 0–5, B1 at 6, … B4 at 9.
---- @param opts table|nil
+--- @param highestSlot number|nil
 --- @return number 0..4
-function FSL.tableBVariantIndex(opts)
-    local h = FSL.highestOccupiedTableSlot(opts)
+function FSL.tableBVariantIndexFromHighest(highestSlot)
+    local h = tonumber(highestSlot) or 0
     local seats = math.max(5, h)
     local idx = seats - 5
     if idx > 4 then
@@ -210,6 +210,13 @@ function FSL.tableBVariantIndex(opts)
         idx = 0
     end
     return idx
+end
+
+--- Family `"Table B"` → B0 when highest slot is 0–5, B1 at 6, … B4 at 9.
+--- @param opts table|nil
+--- @return number 0..4
+function FSL.tableBVariantIndex(opts)
+    return FSL.tableBVariantIndexFromHighest(FSL.highestOccupiedTableSlot(opts))
 end
 
 --- True when this occupant currently has a tableSlot within this table's capacity.

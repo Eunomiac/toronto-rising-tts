@@ -1162,7 +1162,7 @@ function DEBUG.gbE2eContinue()
     return E2E_GB.runContinue()
 end
 
---- Verify each `pc_control_token` is pinned to its PC seat-row column with flip matching `seatSlots[color].isPresent` (TOR-152 / TOR-236).
+--- Verify each `pc_control_token` is pinned to its occupancy chair (or Absent park pose) with flip matching `seatSlots[color].isPresent` (TOR-247).
 --- @return boolean
 function DEBUG.gbE2eVerifyPcTokens()
     return E2E_GB.verifyPcTokensFromSeatState()
@@ -5958,7 +5958,7 @@ function DEBUG.help()
     print("  gbE2eRunFull()           - Deep reconcile suites (+ optional reload gate)")
     print("  gbE2eRunDeferred()       - Expected FAIL until TOR-172/173/175/174 dedupe")
     print("  gbE2eContinue()          - Resume after HUMAN GATE (scene_apply / reload)")
-    print("  gbE2eVerifyPcTokens()    - PC control tokens pinned + flip matches seat presence")
+    print("  gbE2eVerifyPcTokens()    - PC control tokens pinned to occupancy home + flip matches seat presence")
     print("  gbConfirm(label, expected) - Single assert (placements, intent, probes)")
     print("  dumpNpcPlacements()      - Print sessionScene.npcWorld.placements")
     print("  profileGameboardApply()  - Apply + hitch profile (phaseA_ms, catalog_builds) _(TOR-201)_")

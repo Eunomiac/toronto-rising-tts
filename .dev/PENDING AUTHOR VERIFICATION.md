@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-08-27 — added **TOR-98** (Spotlight phase ritual). Linear Done-without-confirm sweep on 2026-08-26 added **TOR-507**, **TOR-508**, **TOR-509**, and **TOR-510**. Author confirmed **TOR-506** (End→Intermission audio with the cover) on 2026-08-22. **TOR-439** remains a multiclient gate (not a solo Save & Play)._
+_Last populated: 2026-08-27 — added **TOR-247** (control-board token occupancy). Linear Done-without-confirm sweep on 2026-08-26 added **TOR-507**, **TOR-508**, **TOR-509**, and **TOR-510**. Author confirmed **TOR-506** (End→Intermission audio with the cover) on 2026-08-22. **TOR-439** remains a multiclient gate (not a solo Save & Play)._
 
 ### High — session / join / first-load
 
@@ -43,13 +43,23 @@ Pink’s tarot deck should stay **put away** (down in the table, not sitting out
 
 **Context:** Turning Absent off was putting the figurine back on the chair but leaving everything else (including lights) buried under the table. The tarot dump had captured the deck while it was out, so layout was also putting it into the Consult pose by default.
 
+#### TOR-247 — Seat occupancy from control-board tokens
+
+**How to verify:** Save & Play so the new scripts and HUD load. Slot number boxes should be gone from the PCs panel and the Scenes panel Seat Activation row. The **Absent** toggle on the PCs panel should still be there.
+
+On the stage control board, drag Red’s token onto a different chair snap (for example Orange’s old chair), then click **Apply**. Red’s pile on the live table should move to that numbered chair. Drag an NPC token onto the center-front chair (slot 1) and Apply: that NPC should sit there. Drag a PC token off the chair row (park it below the row, not on a chair) and Apply: that player should go Absent (pile under the table). Turn **Absent** on from the PCs panel: that color’s token should leave the chair snap and sit in the park strip below its default-labeled column. Turn Absent off: the token should jump onto the chair they were assigned.
+
+Put two tokens on the same chair snap and Apply: you should get a named error, and seats should not change. On Table B, you can still drop a token on chair 6 (beyond the small table) and Apply — the live table should grow if there are no loose dice on it.
+
+**Context:** Chairs are the snaps; who sits there is whichever token you put on that snap. The HUD no longer types slot numbers.
+
 ---
 
 ### Medium — load console / Scenes picker
 
 #### TOR-98 — Spotlight phase (carousel, overlay, Host strip)
 
-**How to verify:** First park **five** Spotlight player figurines and **five** matching stage lights in the preload zone (world Y about −200), same images as the seat figures, tagged `spotlight_figurine` / `spotlight_light` (not `npc_figurine`). Put their GUIDs into `lib/guids.ttslua` (`SPOTLIGHT_FIGURE_*` and `SPOTLIGHT_LIGHT_*` for Brown, Orange, Pink, Purple, Red), then Save & Play.
+**How to verify:** In the Host console run `lua DEBUG.populateSpotlightFigurines()`. Five Spotlight figurines and five stage lights should appear in the preload zone (world Y about −200), tagged `spotlight_figurine` / `spotlight_light` (not `npc_figurine`). The console should print paste-ready GUID lines. Copy those into `lib/guids.ttslua` (`SPOTLIGHT_FIGURE_*` and `SPOTLIGHT_LIGHT_*` for Brown, Orange, Pink, Purple, Red), save the table, then Save & Play. Do **not** run the helper twice without deleting the previous copies — it will duplicate objects. Advancing into Spotlight does **not** spawn them automatically.
 
 From Play, click **Advance →**. A scene-style cover should come down. When it lifts: the table should be Table A with the Spotlight skybox; Main music should still be playing (location/weather faded out, Main not restarted); seat figures should be hidden from player colors; bags, companions, and compulsion decks should be under the table; in-session stand-ins should sit on a ring in front of the table (one person at the front if only one is in session). The overlay should show **S P O T L I G H T** and the front character's name. A seven-button strip at the bottom of the Host view should rotate the ring over about two seconds (arrows do nothing at the ends; clicking the current color does nothing).
 
