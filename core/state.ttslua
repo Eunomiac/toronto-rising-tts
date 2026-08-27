@@ -315,6 +315,9 @@ function S.GetDefaultGameState()
             },
             universalCameraAngles = {},
             virtualFigurineAnchors = {},
+            --- Per-occupant per-role Y snapshot taken when occupancy-stashing a pile at −200 (TOR-512).
+            --- Distinguishes occupancy bury from feature-hide (CSHEET pages, signal fire, hunger smoke).
+            absentPileY = {},
         },
         --- Single live PC roll (TOR-262): seat color in ROLLING until post-broadcast cleanup.
         rollConcurrency = {

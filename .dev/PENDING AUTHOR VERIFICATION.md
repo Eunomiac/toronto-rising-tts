@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-08-26 — Linear Done-without-confirm sweep. Added **TOR-507**, **TOR-508**, **TOR-509**, and **TOR-510**. Author confirmed **TOR-506** (End→Intermission audio with the cover) on 2026-08-22. **TOR-439** remains a multiclient gate (not a solo Save & Play)._
+_Last populated: 2026-08-27 — added **TOR-512** (Absent off restores full seat pile). Linear Done-without-confirm sweep on 2026-08-26 added **TOR-507**, **TOR-508**, **TOR-509**, and **TOR-510**. Author confirmed **TOR-506** (End→Intermission audio with the cover) on 2026-08-22. **TOR-439** remains a multiclient gate (not a solo Save & Play)._
 
 ### High — session / join / first-load
 
@@ -35,6 +35,14 @@ _Last populated: 2026-08-26 — Linear Done-without-confirm sweep. Added **TOR-5
 
 **Context:** Phase 1 of the player-positioning redesign. Scatter, orbit, and join seating are still Phase 2.
 
+#### TOR-512 — Absent off restores the full seat pile, including lights
+
+**How to verify:** Save & Play so the new scripts load. On the PCs panel, turn **Absent** on for one player who is sitting at the table. Their whole pile should drop under the table and disappear, the same way an unused NPC seat does. Turn **Absent** off. That player should come back with the full pile at table height — figurine, character sheet, bags, chair, hand zone, **and seat lights** — not just the figurine. Lights should behave like a normal in-session seat. A sheet page that was already hidden should stay hidden; the page that was showing should still be showing. If a signal fire or hunger smoke was on before Absent, it should still be on after they return.
+
+Pink’s tarot deck should stay **put away** (down in the table, not sitting out at Consult height) after Save & Play, table change, and after turning Pink Absent off — unless you had already clicked **Consult the Tarot**. Click that button: the deck should still come out; click again: it should go away.
+
+**Context:** Turning Absent off was putting the figurine back on the chair but leaving everything else (including lights) buried under the table. The tarot dump had captured the deck while it was out, so layout was also putting it into the Consult pose by default.
+
 ---
 
 ### Medium — load console / Scenes picker
@@ -45,7 +53,7 @@ _Last populated: 2026-08-26 — Linear Done-without-confirm sweep. Added **TOR-5
 
 **Context:** The rain-particle object was always in the save. During load the script asked for it before Tabletop Simulator had objects ready, and printed a missing-GUID error. Audio emitters already skipped that quietly; rain particles now do the same. A later weather apply still prints if the GUID is truly gone after objects exist.
 
-#### TOR-509 — Hidden skyboxes stay out of the Scenes picker
+#### ✅ TOR-509 — Hidden skyboxes stay out of the Scenes picker
 
 **How to verify:** Save & Play, open the Storyteller Scenes panel, and click Skyboxes. Spotlight should not appear in the list. Other skyboxes should still be there. A scene or site that already uses Spotlight should still apply that skybox.
 

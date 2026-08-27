@@ -3505,6 +3505,12 @@ function M.resolveSeatObjectsFromTable(tableRef, sourceObjects, options)
   FSL.applyOccupantRigs(bundle, {
     moveHandZone = moveHandZoneAndContainedCards,
   })
+  do
+    local TarotToggle = require("lib.tarot_toggle")
+    if TarotToggle ~= nil and type(TarotToggle.syncDeckInteractableFromInfer) == "function" then
+      TarotToggle.syncDeckInteractableFromInfer(G.GUIDS.TAROT_BUTTON_PINK, false)
+    end
+  end
 
   local slot1Occupant = nil
   for i = 1, #bundle.occupants do

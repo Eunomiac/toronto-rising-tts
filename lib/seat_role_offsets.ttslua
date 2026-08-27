@@ -55,7 +55,7 @@ local offsets = {
       TAROT_BUTTON_ANCHOR_OFF = { localXZ = { x = -9.0703, z = -32.7675 }, localRotation = { x = 0.0000, y = 179.9863, z = 0.0000 }, defaultY = 200.0000 },
       TAROT_BUTTON_ANCHOR_ON = { localXZ = { x = -9.0703, z = -32.7675 }, localRotation = { x = 0.0000, y = -0.0140, z = 180.0000 }, defaultY = 202.0000 },
       TAROT_DECK_ANCHOR = { localXZ = { x = -6.1674, z = -40.5600 }, localRotation = { x = 17.6000, y = -0.0141, z = 180.0000 }, defaultY = 200.0000 },
-      TAROT_DECK = { localXZ = { x = -6.1674, z = -40.5600 }, localRotation = { x = 17.6000, y = -0.0141, z = 180.0000 }, defaultY = 7.7000 },
+      TAROT_DECK = { localXZ = { x = -6.1674, z = -40.5600 }, localRotation = { x = 17.6000, y = -0.0141, z = 180.0000 }, defaultY = -10.0000 }, -- inactive; on Y is ObjectPositions.TAROT_DECK_PINK.on
       TAROT_DRAWER = { localXZ = { x = -6.1716, z = -27.7090 }, localRotation = { x = 0.0000, y = 179.9863, z = 0.0000 }, defaultY = 2.4100, scale = { x = 7.4900, y = 0.0100, z = 5.7200 } },
       TAROT_DRAWER_ANCHOR_OFF = { localXZ = { x = -6.1716, z = -27.7090 }, localRotation = { x = 0.0000, y = 179.9863, z = 0.0000 }, defaultY = 200.0000 },
       TAROT_DRAWER_ANCHOR_ON = { localXZ = { x = -6.1674, z = -40.5432 }, localRotation = { x = -14.6501, y = 179.9863, z = 0.0000 }, defaultY = 202.0000 },

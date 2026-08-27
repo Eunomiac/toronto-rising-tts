@@ -4,6 +4,10 @@
     Occupancy lives on sessionScene.seatSlots[occupant].tableSlot.
     Geometry: slot 1 = C.Tables[].referenceFigurine; even slots walk right, odd slots >1 walk left.
     Satellites: C.SeatRoleOffsets (extraByOccupant → player → shared).
+    Occupancy hide (Absent / unused pile) stashes Y=-200 and records in-session Y on
+    seatLayout.absentPileY so restore can lift table-height roles without flattening
+    feature-hide Y (CSHEET pages, SIGNAL_FIRE, HUNGER_SMOKE) — TOR-512.
+    Pink TAROT_DECK layout Y follows Consult-the-Tarot (ObjectPositions on/off), default off.
 ]]
 
 local U = require("lib.util")
@@ -415,6 +419,168 @@ local function liveYIsHidden(y)
     return n ~= nil and n <= HIDE_Y_FLOOR
 end
 
+--- Roles whose on/off (or page show/hide) is encoded in world Y — occupancy stash must not flatten these.
+--- @param roleKey string|nil
+--- @return boolean
+local function isFeatureHideRoleKey(roleKey)
+    if type(roleKey) ~= "string" then
+        return false
+    end
+    if roleKey == "SIGNAL_FIRE" or roleKey == "HUNGER_SMOKE" then
+        return true
+    end
+    return string.match(roleKey, "^CSHEET_PAGE_%d+$") ~= nil
+end
+
+--- @param obj Object|nil
+--- @return string|nil
+local function readSatelliteRoleKey(obj)
+    if obj == nil then
+        return nil
+    end
+    local disp = SRI.readRoleColorIdentity(obj)
+    if disp == nil then
+        return nil
+    end
+    return SRI.parseRoleAndSuffix(disp)
+end
+
+--- Runtime snapshot of per-role Y taken when an occupant pile is occupancy-stashed at −200.
+--- Survives Save & Play so Absent off can tell occupancy bury from page/fire/smoke hide.
+--- @return table
+local function absentPileYMap()
+    local map = S.getStateVal("seatLayout", "absentPileY")
+    if U.Type(map) ~= "table" then
+        map = {}
+        S.setStateVal(map, "seatLayout", "absentPileY")
+    end
+    return map
+end
+
+--- First occupancy hide keeps the live Y; later hides while still buried must not overwrite with −200.
+--- @param occupantKey string
+--- @param roleKey string|nil
+--- @param y number|nil
+local function captureOccupantPileY(occupantKey, roleKey, y)
+    if type(occupantKey) ~= "string" or occupantKey == "" then
+        return
+    end
+    if type(roleKey) ~= "string" or roleKey == "" then
+        return
+    end
+    local n = tonumber(y)
+    if n == nil then
+        return
+    end
+    local map = absentPileYMap()
+    local row = map[occupantKey]
+    if U.Type(row) ~= "table" then
+        row = {}
+        map[occupantKey] = row
+    end
+    if row[roleKey] == nil then
+        row[roleKey] = n
+    end
+end
+
+--- @param occupantKey string
+--- @param roleKey string|nil
+--- @return number|nil
+local function peekOccupantPileY(occupantKey, roleKey)
+    if type(occupantKey) ~= "string" or type(roleKey) ~= "string" then
+        return nil
+    end
+    local map = S.getStateVal("seatLayout", "absentPileY")
+    if U.Type(map) ~= "table" then
+        return nil
+    end
+    local row = map[occupantKey]
+    if U.Type(row) ~= "table" then
+        return nil
+    end
+    return tonumber(row[roleKey])
+end
+
+--- @param occupantKey string
+local function clearOccupantPileY(occupantKey)
+    if type(occupantKey) ~= "string" then
+        return
+    end
+    local map = S.getStateVal("seatLayout", "absentPileY")
+    if U.Type(map) == "table" then
+        map[occupantKey] = nil
+    end
+end
+
+--- Pink tarot on/off is encoded in Y (on ≈ 7.7, off = −10). Occupancy bury (−200) is not “on”.
+--- @return number
+local function tarotDeckOnY()
+    local entry = C.ObjectPositions and C.ObjectPositions.TAROT_DECK_PINK
+    if U.Type(entry) == "table" and U.Type(entry.on) == "table" and U.Type(entry.on.position) == "table" then
+        local y = tonumber(entry.on.position.y)
+        if y ~= nil then
+            return y
+        end
+    end
+    return 7.7
+end
+
+--- @return number
+local function tarotDeckOffY()
+    local entry = C.ObjectPositions and C.ObjectPositions.TAROT_DECK_PINK
+    if U.Type(entry) == "table" and U.Type(entry.off) == "table" and U.Type(entry.off.position) == "table" then
+        local y = tonumber(entry.off.position.y)
+        if y ~= nil then
+            return y
+        end
+    end
+    return -10
+end
+
+--- Same midpoint rule as TarotToggle.inferCurrentState.
+--- @param y number|nil
+--- @return boolean
+local function yLooksLikeTarotOn(y)
+    local n = tonumber(y)
+    if n == nil then
+        return false
+    end
+    local onY = tarotDeckOnY()
+    local offY = tarotDeckOffY()
+    return n >= ((onY + offY) / 2)
+end
+
+--- Occupancy stash Y vs feature-hide Y vs authored defaultY.
+--- TAROT_DECK defaults to inactive (Consult the Tarot); layout must not lift it to the on pose.
+--- @param occupantKey string
+--- @param roleKey string|nil
+--- @param liveY number
+--- @param defaultY number
+--- @return number
+local function resolveSatelliteY(occupantKey, roleKey, liveY, defaultY)
+    if roleKey == "TAROT_DECK" then
+        local sample = peekOccupantPileY(occupantKey, roleKey)
+        if sample == nil then
+            sample = liveY
+        end
+        if yLooksLikeTarotOn(sample) then
+            return tarotDeckOnY()
+        end
+        return tarotDeckOffY()
+    end
+    local stashY = peekOccupantPileY(occupantKey, roleKey)
+    if stashY ~= nil then
+        if liveYIsHidden(stashY) then
+            return stashY
+        end
+        return defaultY
+    end
+    if liveYIsHidden(liveY) and isFeatureHideRoleKey(roleKey) then
+        return liveY
+    end
+    return defaultY
+end
+
 local function findFigurine(occupantKey)
     local tag = occupantKey .. "Object"
     local tagged = getObjectsWithTag(tag) or {}
@@ -459,15 +625,20 @@ local function shouldSkipSatellite(obj, roleKey)
     return false
 end
 
-local function applyOffsetToObject(obj, figFrame, figObj, offset, roleKey)
+local function applyOffsetToObject(obj, figFrame, figObj, offset, roleKey, occupantKey)
     local livePos = Vector(obj.getPosition())
     local world = worldFromFigurineLocal(figFrame, figObj, offset.localXZ or { x = 0, z = 0 })
-    local y = tonumber(offset.defaultY) or world.y
-    if liveYIsHidden(livePos.y) then
-        y = livePos.y
-    end
+    local defaultY = tonumber(offset.defaultY) or world.y
+    local y = resolveSatelliteY(occupantKey, roleKey, livePos.y, defaultY)
     local rot = addRot(figFrame.rotation, offset.localRotation)
     placeObjectExact(obj, Vector({ x = world.x, y = y, z = world.z }), rot)
+    if roleKey == "TAROT_DECK" then
+        local on = yLooksLikeTarotOn(y)
+        if type(obj.setLock) == "function" then
+            obj.setLock(not on)
+        end
+        obj.interactable = on
+    end
     if offset.scale ~= nil and type(obj.setScale) == "function" and roleKey ~= "SIGNAL_FIRE" then
         obj.setScale(Vector(offset.scale))
     end
@@ -615,11 +786,13 @@ local function layoutOccupantSatellites(occupantKey, figFrame, figObj, helpers)
         if roleKey == "HAND_ZONE" and type(helpers.moveHandZone) == "function" then
             local world = worldFromFigurineLocal(figFrame, figObj, offset.localXZ or { x = 0, z = 0 })
             local rot = addRot(figFrame.rotation, offset.localRotation)
-            local y = tonumber(offset.defaultY) or world.y
+            local defaultY = tonumber(offset.defaultY) or world.y
+            local livePos = Vector(obj.getPosition())
+            local y = resolveSatelliteY(occupantKey, roleKey, livePos.y, defaultY)
             helpers.moveHandZone(obj, Vector({ x = world.x, y = y, z = world.z }), rot)
             return
         end
-        applyOffsetToObject(obj, figFrame, figObj, offset, roleKey)
+        applyOffsetToObject(obj, figFrame, figObj, offset, roleKey, occupantKey)
     end
 
     for i = 1, #tagged do
@@ -684,6 +857,9 @@ function FSL.setOccupantPileVisible(occupantKey, visible)
                 if not isPooledFig then
                     local p = obj.getPosition and obj.getPosition() or nil
                     if p ~= nil and obj.setPosition ~= nil then
+                        if not liveYIsHidden(p.y) then
+                            captureOccupantPileY(occupantKey, readSatelliteRoleKey(obj), p.y)
+                        end
                         obj.setPosition({ x = p.x, y = hiddenSeatY, z = p.z })
                     end
                 end
@@ -697,6 +873,10 @@ function FSL.setOccupantPileVisible(occupantKey, visible)
                 hz.setInvisibleTo({})
             else
                 hz.setInvisibleTo(layers)
+                local p = hz.getPosition and hz.getPosition() or nil
+                if p ~= nil then
+                    captureOccupantPileY(occupantKey, "HAND_ZONE", p.y)
+                end
             end
         end
     end
@@ -728,6 +908,7 @@ function FSL.applyOccupantRigs(bundle, helpers)
             end
             layoutOccupantSatellites(occ.occupantKey, figFrame, figObj, helpers)
             FSL.setOccupantPileVisible(occ.occupantKey, true)
+            clearOccupantPileY(occ.occupantKey)
         end
     end
 
