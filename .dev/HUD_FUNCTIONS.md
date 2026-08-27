@@ -187,7 +187,7 @@ Storyteller **Stats** panel: edit PC backgrounds/merits/flaws and coterie advant
 | `HUD_phaseRestoreJoinFigurines` | `phase_restoreJoinFigurines` | `(player, button, id)` | ST-gated. Staged restore **4/4**: warm preload figurines/lights (GUID keep). |
 | `HUD_pcsDeferAutoSeat` | `pcs_deferAutoSeat_<Color>` | `(player, value, id)` | ST-gated. Persists `connectionControls.deferAutoSeatByColor[color]` (TOR-428). |
 | `HUD_pcsDeferConnect` | `pcs_deferConnect_<Color>` | `(player, value, id)` | ST-gated. Persists `connectionControls.deferConnectByColor[color]`; when on, `onPlayerConnect` O(1)-exits for that chronicle PC (TOR-430). |
-| `HUD_pcsAbsentFromSession` | `pcs_absent_<Color>` | `(player, value, id)` | ST-gated. Marks a PC seat Absent (no numbered table chair) and mirrors the control-board token to the park pose. Turning it off claims the lowest free slot, or stays Absent if the table is full (TOR-507 / TOR-247). |
+| `HUD_pcsAbsentFromSession` | `pcs_absent_<Color>` | `(player, value, id)` | ST-gated. Marks a PC seat Absent (no numbered table chair), stashes the pile (including hand zone and cards), and locks the control-board token at Y = −200. Turning it off claims the lowest free slot, or stays Absent if the table is full (TOR-507 / TOR-247 / TOR-513). |
 | `HUD_pcPanel` | `pcs_<Color>_<action>` incl. `pcs_<Color>_desireClear` | `(player, button, id)` | ST-gated. Tracker buffers/apply; **Desire Clear** sets `playerData[pid].desire` to `""` and refreshes sheet + ST row (TOR-97). |
 
 ## Character sheet Desire (object UI — not Global HUD)

@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-08-27 — added **TOR-247** (control-board token occupancy). Linear Done-without-confirm sweep on 2026-08-26 added **TOR-507**, **TOR-508**, **TOR-509**, and **TOR-510**. Author confirmed **TOR-506** (End→Intermission audio with the cover) on 2026-08-22. **TOR-439** remains a multiclient gate (not a solo Save & Play)._
+_Last populated: 2026-08-27 — added **TOR-513** (Absent hand/token stash + Apply PC reseat). Linear Done-without-confirm sweep on 2026-08-26 added **TOR-507**, **TOR-508**, **TOR-509**, and **TOR-510**. Author confirmed **TOR-506** (End→Intermission audio with the cover) on 2026-08-22. **TOR-439** remains a multiclient gate (not a solo Save & Play)._
 
 ### High — session / join / first-load
 
@@ -47,11 +47,19 @@ Pink’s tarot deck should stay **put away** (down in the table, not sitting out
 
 **How to verify:** Save & Play so the new scripts and HUD load. Slot number boxes should be gone from the PCs panel and the Scenes panel Seat Activation row. The **Absent** toggle on the PCs panel should still be there.
 
-On the stage control board, drag Red’s token onto a different chair snap (for example Orange’s old chair), then click **Apply**. Red’s pile on the live table should move to that numbered chair. Drag an NPC token onto the center-front chair (slot 1) and Apply: that NPC should sit there. Drag a PC token off the chair row (park it below the row, not on a chair) and Apply: that player should go Absent (pile under the table). Turn **Absent** on from the PCs panel: that color’s token should leave the chair snap and sit in the park strip below its default-labeled column. Turn Absent off: the token should jump onto the chair they were assigned.
+On the stage control board, drag Red’s token onto a different chair snap (for example Orange’s old chair), then click **Apply**. Red’s pile on the live table should move to that numbered chair. Drag an NPC token onto the center-front chair (slot 1) and Apply: that NPC should sit there. Drag a PC token off the chair row (not onto another chair) and Apply: that player should go Absent (pile under the table, token locked out of sight). Turn **Absent** on from the PCs panel: that color’s token should leave the chair snap and disappear under the table (locked at Y about −200). Turn Absent off: the token should jump onto the chair they were assigned.
 
 Put two tokens on the same chair snap and Apply: you should get a named error, and seats should not change. On Table B, you can still drop a token on chair 6 (beyond the small table) and Apply — the live table should grow if there are no loose dice on it.
 
 **Context:** Chairs are the snaps; who sits there is whichever token you put on that snap. The HUD no longer types slot numbers.
+
+#### TOR-513 — Absent hand zone, PC token stash, and Apply PC reseat
+
+**How to verify:** Save & Play so the new scripts load. Put a few cards in Red’s hand. On the PCs panel, turn **Absent** on for Red. Red’s pile should drop under the table, the **hand zone should go with it** (Y about −200), and **those cards should move under the table too** — they should not stay floating at table height. Red’s PC token on the stage control board should disappear (locked under the board, not sitting in a park strip below the chairs). Turn Absent off: pile, hand zone, cards, and the PC token should all come back to Red’s chair.
+
+Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a different empty chair snap and click **Apply**. Red’s **live pile** on the table should move to that numbered chair, not only the token on the control board.
+
+**Context:** Absent was hiding the pile but leaving the hand zone (and often the cards) at the table, and parking the PC token on the board. Apply that only moved PC tokens also skipped seat layout because the NPC reconciler thought nothing had changed.
 
 ---
 

@@ -1162,7 +1162,7 @@ function DEBUG.gbE2eContinue()
     return E2E_GB.runContinue()
 end
 
---- Verify each `pc_control_token` is pinned to its occupancy chair (or Absent park pose) with flip matching `seatSlots[color].isPresent` (TOR-247).
+--- Verify each `pc_control_token` is pinned to its occupancy chair (or stashed at Y=−200 when Absent) with flip matching `seatSlots[color].isPresent` (TOR-247 / TOR-513).
 --- @return boolean
 function DEBUG.gbE2eVerifyPcTokens()
     return E2E_GB.verifyPcTokensFromSeatState()

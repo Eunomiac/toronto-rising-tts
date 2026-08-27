@@ -127,7 +127,7 @@ D.CONTROL_BOARD_PALETTE_SNAP = {
 --- Horizontal seat-assignment row on CONTROL_BOARD (TOR-180 / TOR-247).
 --- Each column is a numbered table chair (`tableSlot`). Token identity (pcToken color /
 --- npcToken character) is the occupant; Apply writes `seatSlots` / `occupiedNPCSlots`.
---- `seatKey` is the default occupant for that chair (minimap labels + absent-PC parking).
+--- `seatKey` is the default occupant for that chair (minimap labels).
 --- PC token flip still drives `isPresent` (TOR-236). Slot > current table `slotCapacity` is not installed.
 D.CONTROL_BOARD_SEAT_ROW = {
   v = 0.12,
@@ -137,8 +137,6 @@ D.CONTROL_BOARD_SEAT_ROW = {
   snapYawOffsetDeg = 180,
   --- PC seat snaps use Z=180 so `rotation_snap` lands tokens face-up (NPC columns use 0).
   pcSnapZDeg = 180,
-  --- UV below the seat row where an Absent PC token parks (must not match a seat snap).
-  absentParkVDelta = 0.10,
   columns = {
     { seatKey = "NPC4", kind = "npc", tableSlot = 9 },
     { seatKey = "NPC2", kind = "npc", tableSlot = 7 },

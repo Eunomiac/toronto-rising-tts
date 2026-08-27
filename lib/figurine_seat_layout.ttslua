@@ -4,9 +4,10 @@
     Occupancy lives on sessionScene.seatSlots[occupant].tableSlot.
     Geometry: slot 1 = C.Tables[].referenceFigurine; even slots walk right, odd slots >1 walk left.
     Satellites: C.SeatRoleOffsets (extraByOccupant → player → shared).
-    Occupancy hide (Absent / unused pile) stashes Y=-200 and records in-session Y on
-    seatLayout.absentPileY so restore can lift table-height roles without flattening
-    feature-hide Y (CSHEET pages, SIGNAL_FIRE, HUNGER_SMOKE) — TOR-512.
+    Occupancy hide (Absent / unused pile) stashes Y=-200 — including the player hand
+    zone and cards in that hand — and records in-session Y on seatLayout.absentPileY
+    so restore can lift table-height roles without flattening feature-hide Y
+    (CSHEET pages, SIGNAL_FIRE, HUNGER_SMOKE) — TOR-512 / TOR-513.
     Pink TAROT_DECK layout Y follows Consult-the-Tarot (ObjectPositions on/off), default off.
 ]]
 
@@ -846,6 +847,128 @@ local function allLayerColors()
     return { "White", "Brown", "Red", "Orange", "Yellow", "Green", "Teal", "Blue", "Purple", "Pink", "Grey", "Black" }
 end
 
+--- @param obj Object|nil
+--- @return boolean
+local function isCardLikeObject(obj)
+    if obj == nil then
+        return false
+    end
+    local tagVal = obj.tag
+    if tagVal == "Card" or tagVal == "Deck" then
+        return true
+    end
+    local typeVal = obj.type
+    if typeVal == "Card" or typeVal == "Deck" then
+        return true
+    end
+    return false
+end
+
+--- @param obj Object|nil
+--- @return boolean
+local function isHandZoneObject(obj)
+    if obj == nil then
+        return false
+    end
+    return obj.tag == "Hand" or obj.type == "Hand"
+end
+
+--- @param obj Object
+--- @return boolean
+local function tryGetObjectLockState(obj)
+    if obj.getLock ~= nil then
+        local lockVal = obj.getLock()
+        if type(lockVal) == "boolean" then
+            return lockVal
+        end
+    end
+    local lockedVal = obj.locked
+    if type(lockedVal) == "boolean" then
+        return lockedVal
+    end
+    return false
+end
+
+--- Cards do not always follow a hand-zone Y move; collect zone contents and Player.getHandObjects.
+--- @param occupantKey string
+--- @param hz Object
+--- @return Object[]
+local function collectHandCards(occupantKey, hz)
+    local seen = {}
+    local out = {}
+    local function consider(obj)
+        if not isCardLikeObject(obj) then
+            return
+        end
+        local guid = obj.getGUID and obj.getGUID() or nil
+        if type(guid) == "string" and guid ~= "" then
+            if seen[guid] == true then
+                return
+            end
+            seen[guid] = true
+        end
+        out[#out + 1] = obj
+    end
+    if hz.getObjects ~= nil then
+        local zoneObjects = hz.getObjects()
+        if U.Type(zoneObjects) == "table" then
+            for i = 1, #zoneObjects do
+                consider(zoneObjects[i])
+            end
+        end
+    end
+    local player = Player[occupantKey]
+    if player ~= nil and type(player.getHandObjects) == "function" then
+        local handObjects = player.getHandObjects()
+        if U.Type(handObjects) == "table" then
+            for i = 1, #handObjects do
+                consider(handObjects[i])
+            end
+        end
+    end
+    return out
+end
+
+--- Stash the player's hand zone and every card in that hand to occupancy Y (TOR-513).
+--- @param occupantKey string
+--- @param hiddenSeatY number
+--- @param layers string[]
+local function stashHandZoneAndCards(occupantKey, hiddenSeatY, layers)
+    local hz = U.getHandZone(occupantKey)
+    if hz == nil then
+        return
+    end
+    if hz.setInvisibleTo ~= nil then
+        hz.setInvisibleTo(layers)
+    end
+    local p = hz.getPosition and hz.getPosition() or nil
+    if p == nil or hz.setPosition == nil then
+        return
+    end
+    if not liveYIsHidden(p.y) then
+        captureOccupantPileY(occupantKey, "HAND_ZONE", p.y)
+    end
+    local dy = hiddenSeatY - p.y
+    local cards = collectHandCards(occupantKey, hz)
+    for i = 1, #cards do
+        local obj = cards[i]
+        if obj.setPosition ~= nil and obj.getPosition ~= nil then
+            local wasLocked = tryGetObjectLockState(obj)
+            if obj.setLock ~= nil then
+                obj.setLock(true)
+            end
+            local cp = obj.getPosition()
+            if cp ~= nil then
+                obj.setPosition({ x = cp.x, y = cp.y + dy, z = cp.z })
+            end
+            if obj.setLock ~= nil then
+                obj.setLock(wasLocked)
+            end
+        end
+    end
+    hz.setPosition({ x = p.x, y = hiddenSeatY, z = p.z })
+end
+
 --- @param occupantKey string
 --- @param visible boolean
 function FSL.setOccupantPileVisible(occupantKey, visible)
@@ -859,7 +982,7 @@ function FSL.setOccupantPileVisible(occupantKey, visible)
             local isPooledFig = obj.hasTag ~= nil and obj.hasTag("npc_figurine")
             if visible then
                 obj.setInvisibleTo({})
-            else
+            elseif not isCardLikeObject(obj) and not isHandZoneObject(obj) then
                 obj.setInvisibleTo(layers)
                 if not isPooledFig then
                     local p = obj.getPosition and obj.getPosition() or nil
@@ -875,16 +998,12 @@ function FSL.setOccupantPileVisible(occupantKey, visible)
     end
     if isPlayerSeatKey(occupantKey) then
         local hz = U.getHandZone(occupantKey)
-        if hz ~= nil and hz.setInvisibleTo ~= nil then
-            if visible then
+        if visible then
+            if hz ~= nil and hz.setInvisibleTo ~= nil then
                 hz.setInvisibleTo({})
-            else
-                hz.setInvisibleTo(layers)
-                local p = hz.getPosition and hz.getPosition() or nil
-                if p ~= nil then
-                    captureOccupantPileY(occupantKey, "HAND_ZONE", p.y)
-                end
             end
+        else
+            stashHandZoneAndCards(occupantKey, hiddenSeatY, layers)
         end
     end
 end

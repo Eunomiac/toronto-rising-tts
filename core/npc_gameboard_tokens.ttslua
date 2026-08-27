@@ -417,6 +417,28 @@ local function isNearSeatRowUv(board, u, v)
     return math.abs(v - rowV) <= 0.08 and u >= (uMin - 0.05) and u <= (uMax + 0.05)
 end
 
+--- @param token Object
+--- @param locked boolean
+local function setControlTokenLock(token, locked)
+    if not Board.isGameObject(token) or token.setLock == nil then
+        return
+    end
+    token.setLock(locked == true)
+end
+
+--- Disable an Absent PC control token (locked, Y = −200). Keep last XZ so restore
+--- can still snap to the occupancy chair (TOR-513).
+--- @param token Object
+local function stashAbsentPcControlToken(token)
+    if not Board.isGameObject(token) or token.setPosition == nil then
+        return
+    end
+    local stashY = tonumber(DATA.MARKER_STASH_WORLD_Y) or -200
+    local pos = token.getPosition()
+    setControlTokenLock(token, true)
+    token.setPosition(Vector({ x = pos.x, y = stashY, z = pos.z }))
+end
+
 --- Programmatic mirror onto a seat-row catalog entry (Apply / Clear / reconcile — manual drops use `rotation_snap` only).
 --- @param token Object
 --- @param board Object
@@ -429,6 +451,7 @@ local function mirrorSeatRowControlToken(token, board, entry, faceUp)
     if faceUp == nil then
         faceUp = tokenRotationIsFaceUp(token)
     end
+    setControlTokenLock(token, false)
     token.setPosition(Board.worldOnControlBoard(board, entry.u, entry.v))
     applySeatRowNpcControlTokenScale(token)
     local boardYaw = Board.objectYawDeg(board)
@@ -472,6 +495,7 @@ Tokens.applySeatRowNpcControlTokenScale = applySeatRowNpcControlTokenScale
 Tokens.controlTokenScaleForCatalogEntry = controlTokenScaleForCatalogEntry
 Tokens.isNearSeatRowUv = isNearSeatRowUv
 Tokens.mirrorSeatRowControlToken = mirrorSeatRowControlToken
+Tokens.stashAbsentPcControlToken = stashAbsentPcControlToken
 Tokens.tokenPlacementOnBoard = tokenPlacementOnBoard
 Tokens.playerColorsHiddenFromControlBoard = playerColorsHiddenFromControlBoard
 Tokens.setHiddenFromPlayerColors = setHiddenFromPlayerColors

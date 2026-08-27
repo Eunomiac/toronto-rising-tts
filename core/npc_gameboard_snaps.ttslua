@@ -734,40 +734,6 @@ local function seatRowCatalogByPcColor(catalog)
     return out
 end
 
---- Park pose under a PC's default-labeled column (not on a chair snap).
---- @param color string
---- @return table|nil `{ u, v, yawDeg }`
-local function seatRowParkPoseForPcColor(color)
-    if type(color) ~= "string" or color == "" then
-        return nil
-    end
-    local seatCfg = resolveControlBoardSeatRowConfig()
-    if seatCfg == nil then
-        return nil
-    end
-    local columns = seatCfg.columns
-    local n = #columns
-    local v = tonumber(seatCfg.v) or 0.12
-    local uMin = tonumber(seatCfg.uMin) or 0.05
-    local uMax = tonumber(seatCfg.uMax) or 0.35
-    if uMax < uMin then
-        uMin, uMax = uMax, uMin
-    end
-    local delta = tonumber(seatCfg.absentParkVDelta) or 0.10
-    local yawDeg = ((tonumber(seatCfg.snapYawOffsetDeg) or 0) % 360 + 360) % 360
-    for i = 1, n do
-        local col = columns[i]
-        if type(col) == "table" and col.seatKey == color then
-            local u = (uMin + uMax) * 0.5
-            if n > 1 then
-                u = uMin + (i - 1) * (uMax - uMin) / (n - 1)
-            end
-            return { u = u, v = v - delta, yawDeg = yawDeg }
-        end
-    end
-    return nil
-end
-
 --- @param catalog table[]
 --- @return table<number, table> tableSlot -> catalog entry
 local function seatRowCatalogByTableSlot(catalog)
@@ -2109,7 +2075,6 @@ Snaps.isNpcSeatRowColumn = isNpcSeatRowColumn
 Snaps.seatRowCatalogByNpcSeatKey = seatRowCatalogByNpcSeatKey
 Snaps.seatRowCatalogByPcColor = seatRowCatalogByPcColor
 Snaps.seatRowCatalogByTableSlot = seatRowCatalogByTableSlot
-Snaps.seatRowParkPoseForPcColor = seatRowParkPoseForPcColor
 Snaps.getSeatRowCatalogMaps = getSeatRowCatalogMaps
 Snaps.controlBoardSnapFingerprintFor = controlBoardSnapFingerprintFor
 Snaps.parkNpcTokenOnPalette = parkNpcTokenOnPalette

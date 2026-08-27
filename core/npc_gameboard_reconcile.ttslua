@@ -1218,10 +1218,7 @@ function Reconcile.mirrorControlBoardTokensFromModel(board, model)
                 if entry ~= nil then
                     Tokens.mirrorSeatRowControlToken(obj, board, entry, row.isPresent == true)
                 else
-                    local park = Snaps.seatRowParkPoseForPcColor(color)
-                    if type(park) == "table" then
-                        Tokens.mirrorSeatRowControlToken(obj, board, park, row.isPresent == true)
-                    end
+                    Tokens.stashAbsentPcControlToken(obj)
                 end
             end
         end

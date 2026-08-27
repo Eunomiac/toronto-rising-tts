@@ -265,7 +265,7 @@ Cheap enough to include: it is the same hide/park path as an unused NPC pile, pl
 
 **Live `tableSlot` edits (phase 1)**
 
-Chair occupancy is edited on the **stage control board**: move a PC or NPC token onto a numbered chair snap, then **Apply**. The PCs and Scenes panels do not have slot number fields. The PCs panel **Absent** toggle remains (parks the pile and the control-board token). Duplicate tokens on one snap fail loud.
+Chair occupancy is edited on the **stage control board**: move a PC or NPC token onto a numbered chair snap, then **Apply**. The PCs and Scenes panels do not have slot number fields. The PCs panel **Absent** toggle remains (stashes the pile, hand zone and cards, and locks the control-board token at Y = −200). Duplicate tokens on one snap fail loud.
 
 Occupant identity (Red, NPC1) does not change when the token moves to a different chair.
 

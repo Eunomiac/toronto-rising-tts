@@ -252,8 +252,8 @@ Interactions.restoreNpcControlTokenHome = restoreNpcControlTokenHome
 Interactions.tryNpcControlTokenDroppedOnStorytellerDiceBag = tryNpcControlTokenDroppedOnStorytellerDiceBag
 
 --- Re-pin a `pc_control_token` to the numbered chair in `seatSlots[color].tableSlot`
---- (or the park pose below that color's default-labeled column when Absent). Flip matches
---- `seatSlots[color].isPresent` (state authoritative — TOR-247).
+--- (or stash it locked at Y = −200 when Absent). Flip matches
+--- `seatSlots[color].isPresent` (state authoritative — TOR-247 / TOR-513).
 --- @param token Object
 --- @param color string|nil player seat color (defaults to GM Notes `pcToken:<Color>`)
 --- @return boolean restored
@@ -273,21 +273,16 @@ local function restorePcControlTokenHome(token, color)
     local row = type(model.seatSlots) == "table" and model.seatSlots[color] or {}
     local maps = Snaps.getSeatRowCatalogMaps(board)
     local byTableSlot = type(maps.byTableSlot) == "table" and maps.byTableSlot or {}
-    local entry = nil
     local slot = tonumber(row.tableSlot)
+    local entry = nil
     if row.absentFromSession ~= true and slot ~= nil then
         entry = byTableSlot[math.floor(slot)]
     end
-    if entry == nil then
-        local park = Snaps.seatRowParkPoseForPcColor(color)
-        if type(park) == "table" then
-            entry = park
-        end
+    if type(entry) == "table" then
+        Tokens.mirrorSeatRowControlToken(token, board, entry, row.isPresent == true)
+    else
+        Tokens.stashAbsentPcControlToken(token)
     end
-    if type(entry) ~= "table" then
-        return false
-    end
-    Tokens.mirrorSeatRowControlToken(token, board, entry, row.isPresent == true)
     Reconcile.schedulePreviewDraftCapture()
     return true
 end

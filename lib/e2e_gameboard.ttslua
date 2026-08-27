@@ -314,13 +314,17 @@ local function seatRowCatalogByTableSlot(catalog)
     return out
 end
 
---- Expected control-board pose for a PC token: numbered chair, or park below the default column when Absent.
+--- Expected control-board pose for an in-session PC token (numbered chair).
+--- Absent tokens are stashed at Y = −200, not parked on the board (TOR-513).
 --- @param board Object
 --- @param color string
 --- @return table|nil `{ u, v }`
 local function pcTokenHomePose(board, color)
     local ss = S.getStateVal("sessionScene", "seatSlots")
     local row = type(ss) == "table" and ss[color] or nil
+    if type(row) ~= "table" or row.absentFromSession == true then
+        return nil
+    end
     local maps = type(Gameboard.getSeatRowCatalogMaps) == "function"
         and Gameboard.getSeatRowCatalogMaps(board)
         or nil
@@ -328,15 +332,10 @@ local function pcTokenHomePose(board, color)
     if byTableSlot == nil then
         byTableSlot = seatRowCatalogByTableSlot(Gameboard.buildControlBoardSnapCatalog(board, nil))
     end
-    if type(row) == "table" and row.absentFromSession ~= true then
-        local slot = tonumber(row.tableSlot)
-        local entry = slot ~= nil and byTableSlot[math.floor(slot)] or nil
-        if type(entry) == "table" then
-            return entry
-        end
-    end
-    if type(Gameboard.seatRowParkPoseForPcColor) == "function" then
-        return Gameboard.seatRowParkPoseForPcColor(color)
+    local slot = tonumber(row.tableSlot)
+    local entry = slot ~= nil and byTableSlot[math.floor(slot)] or nil
+    if type(entry) == "table" then
+        return entry
     end
     return nil
 end
@@ -376,19 +375,37 @@ local function assertPcTokensMatchSeatPresence(failures, labelPrefix)
                     .. " but seat present="
                     .. tostring(present)
             end
-            local entry = pcTokenHomePose(board, color)
-            if entry == nil then
-                failures[#failures + 1] = prefix .. ": no control-board home pose for " .. color
-            else
-                local want = Gameboard.worldOnControlBoard(board, entry.u, entry.v)
-                local d = dist3(token.getPosition(), want)
-                if d == nil or d > tol then
+            local ss = S.getStateVal("sessionScene", "seatSlots")
+            local row = type(ss) == "table" and ss[color] or nil
+            local absent = type(row) == "table" and row.absentFromSession == true
+            if absent then
+                local p = token.getPosition()
+                if p == nil or p.y == nil or p.y > -199 then
                     failures[#failures + 1] = prefix
                         .. ": "
                         .. color
-                        .. " token not pinned to occupancy home (dist="
-                        .. tostring(d)
+                        .. " Absent token not stashed at Y=-200 (y="
+                        .. tostring(p and p.y)
                         .. ")"
+                end
+                if token.getLock ~= nil and token.getLock() ~= true then
+                    failures[#failures + 1] = prefix .. ": " .. color .. " Absent token is not locked"
+                end
+            else
+                local entry = pcTokenHomePose(board, color)
+                if entry == nil then
+                    failures[#failures + 1] = prefix .. ": no control-board home pose for " .. color
+                else
+                    local want = Gameboard.worldOnControlBoard(board, entry.u, entry.v)
+                    local d = dist3(token.getPosition(), want)
+                    if d == nil or d > tol then
+                        failures[#failures + 1] = prefix
+                            .. ": "
+                            .. color
+                            .. " token not pinned to occupancy home (dist="
+                            .. tostring(d)
+                            .. ")"
+                    end
                 end
             end
         end

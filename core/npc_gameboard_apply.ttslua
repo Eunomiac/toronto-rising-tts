@@ -55,7 +55,9 @@ end
 
 --- Shared fast Sync.npcs path used by control-board interactions.
 --- Orchestrator fingerprint skip (npcReconcileFingerprint) applies when force is false.
---- RSL layout force inside commitNpcSeatLayout (TOR-210) is separate and unchanged.
+--- That fingerprint includes PC occupancy (`tableSlot` / Absent) so PC-only Apply still
+--- reaches seat layout (TOR-513). RSL layout force inside commitNpcSeatLayout (TOR-210)
+--- is separate and unchanged.
 --- @param reason string
 --- @param opts table|nil `{ seatMutation?: boolean, placementMutation?: boolean }`
 local function syncNpcsFromControlBoard(reason, opts)
@@ -104,6 +106,13 @@ end
 --- @return string|nil err
 local function applyOccupancyFromSeatRow(board, polarOnBoardByCharacter)
     polarOnBoardByCharacter = type(polarOnBoardByCharacter) == "table" and polarOnBoardByCharacter or {}
+    local function floorSlot(val)
+        local n = tonumber(val)
+        if n == nil then
+            return nil
+        end
+        return math.floor(n)
+    end
     local bySlot, duplicates = Reconcile.scanSeatRowOccupancyByTableSlot(board)
     if type(duplicates) == "table" and #duplicates > 0 then
         local slot = duplicates[1].slot
@@ -199,7 +208,7 @@ local function applyOccupancyFromSeatRow(board, polarOnBoardByCharacter)
             row = {}
             ss[seatKey] = row
         end
-        if tonumber(row.tableSlot) ~= rec.tableSlot then
+        if floorSlot(row.tableSlot) ~= floorSlot(rec.tableSlot) then
             row.tableSlot = rec.tableSlot
             changed = true
         end
@@ -218,7 +227,7 @@ local function applyOccupancyFromSeatRow(board, polarOnBoardByCharacter)
             ss[color] = row
         end
         if rec ~= nil then
-            if row.absentFromSession == true or tonumber(row.tableSlot) ~= rec.tableSlot then
+            if row.absentFromSession == true or floorSlot(row.tableSlot) ~= floorSlot(rec.tableSlot) then
                 row.absentFromSession = nil
                 row.tableSlot = rec.tableSlot
                 changed = true
@@ -438,6 +447,10 @@ function Apply.applyFromControlBoard()
         Reconcile.lastControlBoardMirrorFingerprint = nil
     end
     if pcSeatChanged then
+        local RSL = require("lib.rotational-seat-layout")
+        if type(RSL.invalidateLayoutSyncCache) == "function" then
+            RSL.invalidateLayoutSyncCache()
+        end
         local Conditions = require("core.conditions")
         Conditions.reconcileHostedForSession()
     end

@@ -93,7 +93,6 @@ Gameboard.exportSnapFamiliesByRole = Snaps.exportSnapFamiliesByRole
 Gameboard.formatSnapFamiliesLua = Snaps.formatSnapFamiliesLua
 Gameboard.formatSnapFamiliesCsv = Snaps.formatSnapFamiliesCsv
 Gameboard.getSeatRowCatalogMaps = Snaps.getSeatRowCatalogMaps
-Gameboard.seatRowParkPoseForPcColor = Snaps.seatRowParkPoseForPcColor
 Gameboard.buildControlBoardSnapPoints = Snaps.buildControlBoardSnapPoints
 Gameboard.areControlBoardSnapsEnabled = Snaps.areControlBoardSnapsEnabled
 Gameboard.setControlBoardSnapsEnabled = Snaps.setControlBoardSnapsEnabled

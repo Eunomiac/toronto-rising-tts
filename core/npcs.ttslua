@@ -2941,7 +2941,9 @@ occupiedNpcSeatsFingerprint = function()
     return table.concat(lines, "\n")
 end
 
---- Unified reconcile fingerprint: placements + seats + table + NPC presence.
+--- Unified reconcile fingerprint: placements + seats + table + NPC presence + PC occupancy.
+--- PC `tableSlot` / Absent must be included so Apply that only moves PC tokens still
+--- reaches Step Three `commitNpcSeatLayout` (TOR-513).
 --- @return string
 local function npcReconcileFingerprint()
     local lines = {}
@@ -2952,6 +2954,8 @@ local function npcReconcileFingerprint()
     for _, seatKey in ipairs(C.NPCSeats or {}) do
         lines[#lines + 1] = "present:" .. seatKey .. "=" .. tostring(resolveSeatPresenceForSeat(seatKey))
     end
+    local FSL = require("lib.figurine_seat_layout")
+    lines[#lines + 1] = "occupancy:\n" .. FSL.occupancyFingerprint()
     return table.concat(lines, "\n")
 end
 

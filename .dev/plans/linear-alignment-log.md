@@ -691,5 +691,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-08-26 | CREATE+SHIP | TOR-510 | Memoriam skybox sheet import (`SKYBOXMEMORIAMCSV` → nested `C.MemoriamSkyboxes`). relatedTo TOR-422 / TOR-509. |
 | 2026-08-26 | PAVE | author request | Linear Done-without-confirm sweep. Outstanding + TOR-507 (numbered slots), TOR-508 (rain particle bootstrap miss), TOR-509 (skybox isShown picker), TOR-510 (Memoriam catalog import). TOR-439 remains the multiclient gate. |
 | 2026-08-27 | SHIP | TOR-247 | Control-board token occupancy (chair = snap, occupant = token). Slot HUD inputs removed. Pending Save & Play. Unblocks TOR-95. |
+| 2026-08-27 | CREATE+SHIP | TOR-513 | Absent stashes hand zone + cards and locks PC token at Y=−200; npcReconcileFingerprint includes PC occupancy so Apply reseats PCs. relatedTo TOR-247. Pending Save & Play. |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

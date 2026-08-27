@@ -252,7 +252,7 @@ A single entry point (e.g. `NPCS.reconcileAllFromState`) should run Steps Zero �
 
 ### Implementation status
 
-`Sync.full` calls **`NPCS.reconcileAllFromState`** once after seat presentation. The orchestrator runs Steps Zero → Five in order; legacy `reconcileSessionSceneNpcWorldFromState` and `reconcileOccupiedNpcSeatsFromState` forward to the same entry point. Unified fingerprint: `lastNpcReconcileFingerprint` (placements + occupied seats + table key + NPC presence).
+`Sync.full` calls **`NPCS.reconcileAllFromState`** once after seat presentation. The orchestrator runs Steps Zero → Five in order; legacy `reconcileSessionSceneNpcWorldFromState` and `reconcileOccupiedNpcSeatsFromState` forward to the same entry point. Unified fingerprint: `lastNpcReconcileFingerprint` (placements + occupied seats + table key + NPC presence + PC occupancy `tableSlot` / Absent — TOR-513).
 
 ---
 

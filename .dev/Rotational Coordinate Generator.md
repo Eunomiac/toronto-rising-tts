@@ -42,7 +42,7 @@ Satellites use `C.SeatRoleOffsets` (local XZ + rotation vs the occupant figurine
 Current placement behavior:
 
 - Each in-session occupant is moved to their numbered slot; satellites follow figurine-local offsets.
-- Live Y at or below −199 is a **feature-hide** override for character-sheet pages, signal fire, and hunger smoke — occupancy stash (Absent / unused NPC pile at Y=−200) is a different writer. On hide, in-session Y is stored on `seatLayout.absentPileY`; on restore, table-height roles use authored `defaultY` so lights, bags, and the chair come back with the figurine (TOR-512).
+- Live Y at or below −199 is a **feature-hide** override for character-sheet pages, signal fire, and hunger smoke — occupancy stash (Absent / unused NPC pile at Y=−200) is a different writer. On hide, in-session Y is stored on `seatLayout.absentPileY`; on restore, table-height roles use authored `defaultY` so lights, bags, and the chair come back with the figurine (TOR-512). The player hand zone also moves to Y=−200, and cards in that hand are moved with it (TOR-513).
 - Pink’s tarot deck uses the **inactive** ObjectPositions Y (−10), not the dumped Consult-the-Tarot height. Layout only keeps the on pose if the deck was already consulting.
 - Hand zones still use the dedicated hand-zone mover so cards in hand stay with the zone.
 
