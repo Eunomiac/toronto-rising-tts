@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-08-27 — added **TOR-514** (global blindfold stacked panel). Linear Done-without-confirm sweep on 2026-08-26 added **TOR-507**, **TOR-508**, **TOR-509**, and **TOR-510**. Author confirmed **TOR-506** (End→Intermission audio with the cover) on 2026-08-22. **TOR-439** remains a multiclient gate (not a solo Save & Play)._
+_Last populated: 2026-08-27 — added **TOR-515** (session-start overture opening drum). Added **TOR-514** (global blindfold stacked panel). Linear Done-without-confirm sweep on 2026-08-26 added **TOR-507**, **TOR-508**, **TOR-509**, and **TOR-510**. Author confirmed **TOR-506** (End→Intermission audio with the cover) on 2026-08-22. **TOR-439** remains a multiclient gate (not a solo Save & Play)._
 
 ### High — session / join / first-load
 
@@ -28,6 +28,12 @@ _Last populated: 2026-08-27 — added **TOR-514** (global blindfold stacked pane
 **How to verify:** Run the multiclient control/treatment playbook in [TOR-439-join-xml-spike-verify.md](Step-By-Step Playbooks/TOR-439-join-xml-spike-verify.md). On the Host, arm the minimal join XML, have the struggling client connect, then restore in stages. Especially watch **step 2 (HUD / Refresh UI)** after the **TOR-444** remount-weight reduction: does that client stay connected through the full Global HUD remount? Optionally also try a normal (unarmed) full-HUD join to see whether the Arm pipeline is still needed at all.
 
 **Context:** Earlier run: Assets, Emitters, and Figurines restore steps succeeded; step 2 timed out and drove **TOR-444**. Deferred from Focus until you can gather testers.
+
+#### TOR-515 — Session-start overture opening drum
+
+**How to verify:** Save & Play so the new scripts load. You should be in Intermission (cover up, TR Loop playing). Click **Advance** into Play. The 71-second session-start track should hit the opening drum immediately at full volume — no fade-in, and not a half-second late. TR Loop should still fade out underneath over about half a second. The rest of the overture, the cover lift near the end, and Main fading in afterward should be unchanged.
+
+**Context:** The shared audio helper was silencing Music C and raising volume a frame later (a safeguard meant for looping weather/music swaps). That ate the drum at the start of this one-shot. Gain is now set to full before the track starts.
 
 #### TOR-514 — Global blindfold is a stacked panel
 

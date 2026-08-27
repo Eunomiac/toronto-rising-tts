@@ -693,5 +693,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-08-27 | SHIP | TOR-247 | Control-board token occupancy (chair = snap, occupant = token). Slot HUD inputs removed. Pending Save & Play. Unblocks TOR-95. |
 | 2026-08-27 | CREATE+SHIP | TOR-513 | Absent stashes hand zone + cards and locks PC token at Y=−200; npcReconcileFingerprint includes PC occupancy so Apply reseats PCs. relatedTo TOR-247. Pending Save & Play. |
 | 2026-08-27 | CREATE+SHIP | TOR-514 | Global blindfold Lua targets stacked `overlay_globalBlindfold_panel`; Overlay Alpha tints child Images. Pending Save & Play. |
+| 2026-08-27 | CREATE+SHIP | TOR-515 | Session-start Music C one-shot was silent-armed then unmuted a frame later; opening drum missing. relatedTo TOR-497. Pending Save & Play. |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

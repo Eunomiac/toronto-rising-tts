@@ -166,7 +166,7 @@ Occasionally a scene will call for a specific piece of music to be played. Unlik
 
 ### Session-start overture (Music C)
 
-One-shot Intermission→Play lead-in on emitter `SOUNDSCAPE_MUSIC_C` (`musicC`). Not featured music and not a Main playlist track. Lua catalog key `TR_SessionStart`; live Trigger Effect name is **`Session Starter`**. TTS `playTriggerEffect` indexes start at **0**, so object UI slot **2** is Lua index **1**. Duration **71s**, volume **1**, no fade-in. Prefer **Preload Audio Data** so the first session start does not hitch.
+One-shot Intermission→Play lead-in on emitter `SOUNDSCAPE_MUSIC_C` (`musicC`). Not featured music and not a Main playlist track. Lua catalog key `TR_SessionStart`; live Trigger Effect name is **`Session Starter`**. TTS `playTriggerEffect` indexes start at **0**, so object UI slot **2** is Lua index **1**. Duration **71s**, volume **1**, no fade-in. Lua sets emitter gain to that volume **before** `playTriggerEffect` (TOR-515); do not reintroduce the looping silent-arm delay on this clip. Prefer **Preload Audio Data** so the first session start does not hitch.
 
 | Effect Name     | Effect List     | TTS UI slot | Lua index | Duration | isLoop | Load Type            | Preload Audio Data |
 | --------------- | --------------- | ----------: | --------: | -------: | :----: | -------------------- | ------------------ |

@@ -535,7 +535,9 @@ local function normalizeEntry(entry)
     }
 end
 
---- `fromVolume` is ignored at playback time: clips always start at zero gain, then fade to target.
+--- Looping swaps still start at zero gain, then fade or snap after one frame (TOR-270).
+--- Trigger one-shots with fadeSeconds <= 0 and fromVolume > 0 arm at target gain *before*
+--- playTriggerEffect so the first samples are audible (session-start drum; TOR-515).
 local function playCatalogEntry(channelKey, entry, volume, fadeSeconds, fromVolume)
     local channelDef = Catalog.CHANNELS[channelKey]
     if channelDef == nil then
@@ -585,20 +587,30 @@ local function playCatalogEntry(channelKey, entry, volume, fadeSeconds, fromVolu
     end
 
     local fadeSec = tonumber(fadeSeconds) or 0
-    armEmitterSilentBeforePlayback(obj)
-    -- Looping swaps: drop to the silent stub first so Unity does not crossfade old→new at full gain.
-    if effectList == Catalog.EFFECT_LIST.LOOPING and track.effect ~= Catalog.SILENT_EFFECT then
-        local silentIndex = resolveEffectIndex(obj, Catalog.SILENT_EFFECT, Catalog.EFFECT_LIST.LOOPING)
-        if silentIndex ~= nil then
-            obj.AssetBundle.playLoopingEffect(silentIndex)
-            armEmitterSilentBeforePlayback(obj)
+    local startAtTarget = fadeSec <= 0
+        and effectList == Catalog.EFFECT_LIST.TRIGGER
+        and (tonumber(fromVolume) or 0) > 0
+
+    if startAtTarget then
+        setEmitterVolume(obj, emitterTarget)
+    else
+        armEmitterSilentBeforePlayback(obj)
+        -- Looping swaps: drop to the silent stub first so Unity does not crossfade old→new at full gain.
+        if effectList == Catalog.EFFECT_LIST.LOOPING and track.effect ~= Catalog.SILENT_EFFECT then
+            local silentIndex = resolveEffectIndex(obj, Catalog.SILENT_EFFECT, Catalog.EFFECT_LIST.LOOPING)
+            if silentIndex ~= nil then
+                obj.AssetBundle.playLoopingEffect(silentIndex)
+                armEmitterSilentBeforePlayback(obj)
+            end
         end
     end
     playCatalogEntryGeneration[channelKey] = (playCatalogEntryGeneration[channelKey] or 0) + 1
     local thisPlayGeneration = playCatalogEntryGeneration[channelKey]
 
     obj.AssetBundle[apiName](index)
-    armEmitterSilentBeforePlayback(obj)
+    if not startAtTarget then
+        armEmitterSilentBeforePlayback(obj)
+    end
 
     local patch = {
         effect = track.effect,
@@ -614,7 +626,7 @@ local function playCatalogEntry(channelKey, entry, volume, fadeSeconds, fromVolu
     end
     updateChannelState(channelKey, patch)
 
-    --- Unity may audibly unmute new clips for one frame if gain is raised in the same tick as `playLoopingEffect`.
+    --- Unity may audibly unmute new looping clips for one frame if gain is raised in the same tick as `playLoopingEffect`.
     local function armEmitterVolumeAfterClipSwap()
         if thisPlayGeneration ~= playCatalogEntryGeneration[channelKey] then
             return
@@ -628,7 +640,9 @@ local function playCatalogEntry(channelKey, entry, volume, fadeSeconds, fromVolu
         updateChannelState(channelKey, { volumeControl = didSetVolume })
     end
 
-    if U ~= nil and type(U.await) == "function" then
+    if startAtTarget then
+        armEmitterVolumeAfterClipSwap()
+    elseif U ~= nil and type(U.await) == "function" then
         U.await(armEmitterVolumeAfterClipSwap, EMITTER_POST_SWAP_ARM_SECONDS)
     else
         armEmitterVolumeAfterClipSwap()
@@ -2388,9 +2402,9 @@ function Soundscape.describeSessionIntro()
     return describeSessionIntroState()
 end
 
---- Plays the session-start overture on Music C at full volume (TOR-497).
+--- Plays the session-start overture on Music C at full volume (TOR-497 / TOR-515).
 -- @param trackKey string|nil catalog key; defaults to `C.SessionStartIntroKey`
--- @param opts table|nil `{ fadeSeconds?: number }` — 0 = snap to full after one-frame silent arm
+-- @param opts table|nil `{ fadeSeconds?: number }` — 0 = full volume before play, no fade-in
 -- @return boolean
 -- @return string
 function Soundscape.playSessionIntro(trackKey, opts)
