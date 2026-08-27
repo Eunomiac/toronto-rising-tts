@@ -41,6 +41,16 @@ local PARK_X0 = 140
 local PARK_Z = 0
 local PARK_SPACING = 14
 
+--- Companion toggle tiles to park in Spotlight/End. Purple A/B/C must be listed
+--- here: `C.CompanionToggleToFigurineMap` drops those keys when figurine GUIDs are nil.
+local COMPANION_TOGGLE_GUID_KEYS = {
+    "COMPANION_TOGGLE_TOKEN_A_RED",
+    "COMPANION_TOGGLE_TOKEN_A_BROWN",
+    "COMPANION_TOGGLE_TOKEN_A_PURPLE",
+    "COMPANION_TOGGLE_TOKEN_B_PURPLE",
+    "COMPANION_TOGGLE_TOKEN_C_PURPLE",
+}
+
 local CONTROLS_ROOT_ID = "spotlightControls_root"
 local SEAT_BUTTON_PREFIX = "spotlight_seat_"
 
@@ -422,13 +432,17 @@ local function eachDiceBag(fn)
 end
 
 local function eachCompanionObject(fn)
+    for i = 1, #COMPANION_TOGGLE_GUID_KEYS do
+        fn(G.getObject(G.GUIDS[COMPANION_TOGGLE_GUID_KEYS[i]]))
+    end
     local map = C.CompanionToggleToFigurineMap
     if type(map) ~= "table" then
         return
     end
-    for toggleRef, figRef in pairs(map) do
-        fn(G.getObject(toggleRef))
-        fn(G.getObject(figRef))
+    for _, figRef in pairs(map) do
+        if figRef ~= nil and figRef ~= false then
+            fn(G.getObject(figRef))
+        end
     end
 end
 
