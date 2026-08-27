@@ -36,7 +36,7 @@ Read first:
 2. Matching Linear issues (`get_issue` / `list_issues`)
 3. Enough code to judge size (owning files, overlap, dual-apply / bundling risk)
 
-Do **not** edit [PENDING AUTHOR VERIFICATION.md](../../../.dev/PENDING%20AUTHOR%20VERIFICATION.md) (inbox-only). Do **not** re-stack Focus or set Linear **Deferred this cycle** (paused). “Defer” below means **leave out of this batch** — issues stay on Focus / domain sections.
+Do **not** edit [PENDING AUTHOR VERIFICATION.md](../../../.dev/PENDING%20AUTHOR%20VERIFICATION.md) during this **plan-only** command. When the later implementation ships, add an Outstanding checklist row in **that** session (see [PENDING AUTHOR VERIFICATION.agent.md](../../../.dev/PENDING%20AUTHOR%20VERIFICATION.agent.md)). Do **not** re-stack Focus or set Linear **Deferred this cycle** (paused). “Defer” below means **leave out of this batch** — issues stay on Focus / domain sections.
 
 ### With issue ids (`/tr-quick TOR-487 TOR-488 …`)
 

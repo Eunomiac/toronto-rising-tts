@@ -26,7 +26,7 @@ This rule applies to **everything written for the author**, not only verificatio
 | **Chat replies** | Full sentences; explain what changed and what to do next in everyday language |
 | **Status summaries** (`/tr-inbox`, finish work, “what’s next”) | Same — readable paragraphs over dense bullet stacks of nicknames |
 | **Linear comments** | Human-readable Done/In Progress notes, including how to test when verification is owed |
-| **PENDING AUTHOR VERIFICATION** | Plain-English **How to verify** on the checklist (**agents edit checklist only on `/tr-inbox`**); agent policy in `.agent.md` |
+| **PENDING AUTHOR VERIFICATION** | Plain-English **How to verify** on the checklist (agents **add a row when they ship** in-game code; process **✅** / **❌** / **⚠️** on `/tr-inbox`); agent policy in `.agent.md` |
 | **Step-by-step / author playbooks** | Followable instructions without assuming Linear or code literacy |
 | **Questions to the author** | Ask in clear English; one idea per question when possible |
 
@@ -60,4 +60,4 @@ This rule applies to **everything written for the author**, not only verificatio
 
 **Good:** `This join test is waiting on a re-check after **TOR-444** (we cut how heavy the Global HUD remount is). Please re-run the join playbook and pay special attention to step 2 — the HUD refresh — to see whether the client still drops.`
 
-Canonical companion for verify entries: [`.dev/PENDING AUTHOR VERIFICATION.agent.md`](../../.dev/PENDING%20AUTHOR%20VERIFICATION.agent.md) § Writing style (checklist: [PENDING AUTHOR VERIFICATION.md](../../.dev/PENDING%20AUTHOR%20VERIFICATION.md) — agents edit that file **only on `/tr-inbox`**). Session facts (do not guess Save & Play): [toronto-rising-author-session.mdc](toronto-rising-author-session.mdc).
+Canonical companion for verify entries: [`.dev/PENDING AUTHOR VERIFICATION.agent.md`](../../.dev/PENDING%20AUTHOR%20VERIFICATION.agent.md) § Writing style (checklist: [PENDING AUTHOR VERIFICATION.md](../../.dev/PENDING%20AUTHOR%20VERIFICATION.md) — agents **add a row in the same session as the ship**; process marks on `/tr-inbox`). Session facts (do not guess Save & Play): [toronto-rising-author-session.mdc](toronto-rising-author-session.mdc).

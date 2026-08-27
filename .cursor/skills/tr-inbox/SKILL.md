@@ -9,7 +9,7 @@ Follow `.cursor/rules/toronto-rising-linear.mdc` and `.dev/DEVELOPMENT_WORKFLOW.
 
 **Author voice:** Your final summary and any Linear notes written for the author must be **plain English** — readable paragraphs, labeled `TOR-*` ids, explained nicknames — not engineer telegram style. See `.cursor/rules/toronto-rising-author-voice.mdc`.
 
-**PENDING AUTHOR VERIFICATION checklist:** This command is the **only** agent workflow that may edit [`.dev/PENDING AUTHOR VERIFICATION.md`](../../../.dev/PENDING%20AUTHOR%20VERIFICATION.md). See Part B step 1b and [PENDING AUTHOR VERIFICATION.agent.md](../../../.dev/PENDING%20AUTHOR%20VERIFICATION.agent.md).
+**PENDING AUTHOR VERIFICATION checklist:** Ship sessions add Outstanding rows immediately (see [PENDING AUTHOR VERIFICATION.agent.md](../../../.dev/PENDING%20AUTHOR%20VERIFICATION.agent.md)). This command processes author marks **✅** / **❌** / **⚠️** and catch-up any shipped work a previous agent forgot to list. See Part B step 1b. Quick Fixes shipped in Part A.0 must also get a checklist row in this session.
 
 **Multiplayer authority:** When promoting or prioritizing work that touches events, load/bootstrap, HUD, or world I/O, ensure **`blockedBy`** reflects host-authority prerequisites (e.g. **TOR-221** bootstrap audit, **TOR-144** multiplayer E2E) where appropriate. Agents implementing promoted items must uphold **P1–P10** — [`.cursor/rules/toronto-rising-multiplayer-authority.mdc`](../../../.cursor/rules/toronto-rising-multiplayer-authority.mdc), [Preparing For Multiplayer §1](../../../.dev/Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md).
 
@@ -84,6 +84,7 @@ For each bullet under **Quick Fixes**:
    - Patch the repo; run `npm run build` when Lua/XML/build inputs change.
    - **Commit** without asking (Quick Fixes grants commit permission during `/tr-inbox`).
    - If a matching open Linear issue exists → mark **Done** with a short comment; else log in [`.dev/plans/linear-alignment-log.md`](../../../.dev/plans/linear-alignment-log.md) as shipped (create a **Bug** issue only when you want a bug anchor).
+   - Add an unmarked Outstanding row to [PENDING AUTHOR VERIFICATION.md](../../../.dev/PENDING%20AUTHOR%20VERIFICATION.md) **now** (same-session add — do not wait for Part B catch-up).
    - Do **not** add a Focus row for work already shipped here unless the author should verify in TTS.
 3. **Promote** when not a quick fix → same as Active (Linear + RUNNING TASKLIST + alignment log).
 
@@ -117,7 +118,7 @@ After Quick Fixes + Phase 1/2, apply **INBOX cleanup** (Conventions above): remo
 Even if capture sections were empty, refresh the stack so **`/tr-start`** readers get current truth:
 
 1. Read **`## Focus`** in [`.dev/RUNNING TASKLIST.md`](../../../.dev/RUNNING%20TASKLIST.md).
-1b. Maintain [`.dev/PENDING AUTHOR VERIFICATION.md`](../../../.dev/PENDING%20AUTHOR%20VERIFICATION.md) (**this is the only workflow that may edit that file**): (1) add Outstanding entries for recent Done-without-confirm work using plain-English how-to-verify from Linear Done comments / tasklist “Pending Save & Play” notes (**unmarked** = ready to verify); (2) process any author header marks **✅** / **❌** / **⚠️** per [PENDING AUTHOR VERIFICATION.agent.md](../../../.dev/PENDING%20AUTHOR%20VERIFICATION.agent.md); (3) for ❌/⚠️ follow-ups **not** shipped in this session, keep/add the Outstanding row with header **⌚** (not ready to verify — author should skip); when a **⌚** follow-up later becomes Done, clear **⌚** on the next inbox so re-test is owed. **❌ Verification Failures** and **⚠️ Corrections** that need behavior changes follow the same urgency as INBOX **For Immediate Implementation** (implement quick fixes in this session; otherwise Focus top + offer to start; defer to Linear backlog **only** for complex refactors). If High-priority verify debt would block a play session, mention it in the summary.
+1b. Maintain [`.dev/PENDING AUTHOR VERIFICATION.md`](../../../.dev/PENDING%20AUTHOR%20VERIFICATION.md): process author header marks **✅** / **❌** / **⚠️**, catch up any shipped work a previous agent forgot to list, and set **⌚** on unshipped ❌/⚠️ follow-ups — per [PENDING AUTHOR VERIFICATION.agent.md](../../../.dev/PENDING%20AUTHOR%20VERIFICATION.agent.md). Ship sessions should already have added Outstanding rows; this step is catch-up plus mark processing. **❌ Verification Failures** and **⚠️ Corrections** that need behavior changes follow the same urgency as INBOX **For Immediate Implementation** (implement quick fixes in this session and leave the row unmarked; otherwise Focus top + offer to start; defer to Linear backlog **only** for complex refactors). If High-priority verify debt would block a play session, mention it in the summary.
 2. List open Linear **Bug** issues and non-epic **In Progress** work (ignore epic-only noise unless actively blocking).
 3. **Re-stack Focus** (update the table + dated blurb) using this default policy unless the author overrode in chat:
    - **Session-blocking bugs** and audible/regression failures first — including PAVE **❌** / **⚠️** follow-ups promoted under Immediate disposition.
@@ -149,7 +150,7 @@ Before your final reply, verify and report:
 | **Processed** | New session entries appended for handled items |
 | **RUNNING TASKLIST** | New `[ ]` bullets for every scheduled promotion |
 | **Focus** | Dated stack rank; top row is the recommended next task |
-| **PENDING AUTHOR VERIFICATION** | **Only edit path for the checklist:** add Done-without-confirm entries in **plain English**; process **✅** / **❌** / **⚠️** per [PENDING AUTHOR VERIFICATION.agent.md](../../../.dev/PENDING%20AUTHOR%20VERIFICATION.agent.md); mark unshipped follow-ups **⌚** (skip verify); **❌**/**⚠️** follow Immediate Implementation disposition (ship quick fixes here; Focus top otherwise; defer only complex refactors) |
+| **PENDING AUTHOR VERIFICATION** | Process **✅** / **❌** / **⚠️** per [PENDING AUTHOR VERIFICATION.agent.md](../../../.dev/PENDING%20AUTHOR%20VERIFICATION.agent.md); catch-up any shipped work missing a row; mark unshipped follow-ups **⌚** (skip verify); Quick Fixes / Immediate ships in this session get an **unmarked** row now; **❌**/**⚠️** follow Immediate Implementation disposition (ship quick fixes here; Focus top otherwise; defer only complex refactors) |
 | **Linear** | Priorities reflect **importance**; **`blockedBy`** reflects **precedence**; no orphan promoted ids |
 
 If unanswered **`?`** remain, say so explicitly — repo is still **`/tr-start`-ready** for implementation on existing Focus items; promotion waits for **`Answer:`** + re-run **`/tr-inbox`**.

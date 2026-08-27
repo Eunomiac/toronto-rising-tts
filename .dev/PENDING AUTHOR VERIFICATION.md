@@ -11,7 +11,7 @@ Your TTS checklist for shipped work that still needs Save & Play / in-game confi
 | **⚠️** | Author | Bad expectations (+ **Corrections:**) |
 | **⌚** | Agent | Not ready to verify yet — fix is open in Linear / Focus; **do not** Save & Play for this row until the watch is cleared |
 
-Unmarked = shipped (or verification gate) and waiting for your first pass. Agent policy: [PENDING AUTHOR VERIFICATION.agent.md](PENDING AUTHOR VERIFICATION.agent.md).
+Unmarked = shipped (or verification gate) and waiting for your first pass. Agents add a new unmarked row whenever they ship in-game code; they process your **✅** / **❌** / **⚠️** marks on the next inbox. Agent policy: [PENDING AUTHOR VERIFICATION.agent.md](PENDING AUTHOR VERIFICATION.agent.md).
 
 ---
 
@@ -39,7 +39,7 @@ _Last populated: 2026-08-26 — Linear Done-without-confirm sweep. Added **TOR-5
 
 ### Medium — load console / Scenes picker
 
-#### TOR-508 — Rain particles no longer print a missing GUID on load
+#### ✅ TOR-508 — Rain particles no longer print a missing GUID on load
 
 **How to verify:** Save & Play. On load you should **not** see `[Soundscape] Rain particles: No object found ... (bootstrap silence)` in the console. Outdoor rain and weather should still switch the rain-particle visual while the scene cover is down, the same way they did after the outdoor-rain work.
 
@@ -51,7 +51,7 @@ _Last populated: 2026-08-26 — Linear Done-without-confirm sweep. Added **TOR-5
 
 **Context:** The sheet now has an `isShown` column. Hidden rows stay in the catalog so existing overrides still work; they are only omitted from the picker. Live import had 95 catalog skyboxes, 94 in the picker plus Generic, and 1 hidden (Spotlight).
 
-#### TOR-510 — Memoriam skybox catalog import
+#### ✅ TOR-510 — Memoriam skybox catalog import
 
 **How to verify:** This does not change anything you click in the Scenes panel yet. After Save & Play, the game should still load normally. To inspect the data, open `lib/skyboxes_catalog.ttslua` and look at `SkyboxesCatalog.MemoriamSkyboxes` — for example `aishe.aishe2`, and `lucien14` under both `lucien` and `fomorach`. After you add Keys or URLs on the sheet, run `npm run skyboxes:import` again (or the usual build pipeline) to refresh.
 
