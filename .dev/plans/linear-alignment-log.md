@@ -695,5 +695,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-08-27 | CREATE+SHIP | TOR-514 | Global blindfold Lua targets stacked `overlay_globalBlindfold_panel`; Overlay Alpha tints child Images. Pending Save & Play. |
 | 2026-08-27 | CREATE+SHIP | TOR-516 | Intermission→Play stacked cover explode in the same step as Music C sting. relatedTo TOR-497 / TOR-514 / TOR-515. Pending Save & Play. |
 | 2026-08-27 | CREATE+SHIP | TOR-515 | Session-start Music C one-shot was silent-armed then unmuted a frame later; opening drum missing. relatedTo TOR-497. Pending Save & Play. |
+| 2026-08-27 | CONFIRM | TOR-516, TOR-515, TOR-514 | Author confirmed Intermission→Play explode, overture opening drum, and stacked global cover. |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

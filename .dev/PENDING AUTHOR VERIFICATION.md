@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-08-27 — added **TOR-516** (Intermission→Play session-start explode). Added **TOR-515** (session-start overture opening drum). Added **TOR-514** (global blindfold stacked panel). Linear Done-without-confirm sweep on 2026-08-26 added **TOR-507**, **TOR-508**, **TOR-509**, and **TOR-510**. Author confirmed **TOR-506** (End→Intermission audio with the cover) on 2026-08-22. **TOR-439** remains a multiclient gate (not a solo Save & Play)._
+_Last populated: 2026-08-27 — author confirmed **TOR-516** (session-start explode), **TOR-515** (overture opening drum), and **TOR-514** (stacked global cover). Linear Done-without-confirm sweep on 2026-08-26 added **TOR-507**, **TOR-508**, **TOR-509**, and **TOR-510**. Author confirmed **TOR-506** (End→Intermission audio with the cover) on 2026-08-22. **TOR-439** remains a multiclient gate (not a solo Save & Play)._
 
 ### High — session / join / first-load
 
@@ -28,24 +28,6 @@ _Last populated: 2026-08-27 — added **TOR-516** (Intermission→Play session-s
 **How to verify:** Run the multiclient control/treatment playbook in [TOR-439-join-xml-spike-verify.md](Step-By-Step Playbooks/TOR-439-join-xml-spike-verify.md). On the Host, arm the minimal join XML, have the struggling client connect, then restore in stages. Especially watch **step 2 (HUD / Refresh UI)** after the **TOR-444** remount-weight reduction: does that client stay connected through the full Global HUD remount? Optionally also try a normal (unarmed) full-HUD join to see whether the Arm pipeline is still needed at all.
 
 **Context:** Earlier run: Assets, Emitters, and Figurines restore steps succeeded; step 2 timed out and drove **TOR-444**. Deferred from Focus until you can gather testers.
-
-#### TOR-516 — Intermission→Play session-start explode
-
-**How to verify:** Save & Play so the new scripts load. You should be in Intermission with the session cover up and TR Loop playing. Click **Advance** into Play. The session-start track and the cover explode should start together: the opening drum at full volume, and the cover image scaling up and fading out at that same instant. After that, character pairs should appear about every 12 seconds (name text held still, portrait art waving a little, then each pair scaling up and fading). Near the end of the 71-second track the session number and title should explode, the whole panel should hide, and Main should fade in. Lights should still come up under the cover during the sting. Advance again into Intermission later: you should get a normal opaque cover, not leftover faded splash layers.
-
-**Context:** Play enter used to FadeOut the whole stacked panel at once near the end of the sting. It now runs the author-tuned per-image explode in the same step as the Music C overture.
-
-#### TOR-515 — Session-start overture opening drum
-
-**How to verify:** Save & Play so the new scripts load. You should be in Intermission (cover up, TR Loop playing). Click **Advance** into Play. The 71-second session-start track should hit the opening drum immediately at full volume — no fade-in, and not a half-second late. TR Loop should still fade out underneath over about half a second. The stacked cover should explode with that same start (see **TOR-516**), and Main should fade in after the sting.
-
-**Context:** The shared audio helper was silencing Music C and raising volume a frame later (a safeguard meant for looping weather/music swaps). That ate the drum at the start of this one-shot. Gain is now set to full before the track starts.
-
-#### TOR-514 — Global blindfold is a stacked panel
-
-**How to verify:** Save & Play so the new scripts and HUD load. You should be in Intermission with the session cover up — the stacked splash art should appear as one full-screen cover, and you should not be able to click through it. Click **Overlay Alpha** on the Storyteller debug column: the cover should go translucent (you can see the table through all of the stacked images) and clicks should pass through; click again and it should go fully opaque and block clicks again. Click **Clear Loading Overlay**: the whole cover (every stacked image) should fade out together, not leave a splash layer behind. Intermission → Play explode timing is **TOR-516**, not this row.
-
-**Context:** The global cover is now a panel with several splash images stacked inside it. Show, hide, and click-blocking run on that panel so FadeIn/FadeOut apply to the whole stack.
 
 #### TOR-507 — Numbered table slots and figurine offsets
 
@@ -83,7 +65,7 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 ### Medium — load console / Scenes picker
 
-#### TOR-98 — Spotlight phase (carousel, overlay, Host strip)
+#### ✅ TOR-98 — Spotlight phase (carousel, overlay, Host strip)
 
 **How to verify:** In the Host console run `lua DEBUG.populateSpotlightFigurines()`. Five Spotlight figurines and five stage lights should appear in the preload zone (world Y about −200), tagged `spotlight_figurine` / `spotlight_light` (not `npc_figurine`). The console should print paste-ready GUID lines. Copy those into `lib/guids.ttslua` (`SPOTLIGHT_FIGURE_*` and `SPOTLIGHT_LIGHT_*` for Brown, Orange, Pink, Purple, Red), save the table, then Save & Play. Do **not** run the helper twice without deleting the previous copies — it will duplicate objects. Advancing into Spotlight does **not** spawn them automatically.
 
