@@ -171,6 +171,7 @@ lua showScene()
 lua inspectSoundscapeAudio()
 lua DEBUG.dumpConditions("Brown")
 lua DEBUG.dumpRollPolicy("Brown")
+lua DEBUG.populateSpotlightFigurines()
 ```
 
 `printTable(value, label?)` pretty-prints via `JSON.encode_pretty` (also `DEBUG.printTable`). `showScene()` prints `sessionScene` + `sceneLibrary` keys (not legacy preset names).

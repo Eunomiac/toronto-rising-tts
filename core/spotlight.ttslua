@@ -1,9 +1,13 @@
 --[[
     Spotlight phase carousel (TOR-98).
 
-    Dedicated workshop stand-ins (not seat-figurine clones) rotate on a 36° arc
-    during the Spotlight phase. State is the source of truth; this module applies
-    world pose, stage lights, Host controls, and the playfield hide-list.
+    Dedicated workshop stand-ins rotate on a 36° arc during the Spotlight phase.
+    State is the source of truth; this module applies world pose, stage lights,
+    Host controls, and the playfield hide-list.
+
+    Workshop copies are created only by DEBUG.populateSpotlightFigurines()
+    (Spotlight.populateWorkshopStandins). Play → Spotlight never auto-spawns;
+    missing GUIDs abort the carousel loudly so duplicates cannot pile up.
 
     Agent guidance: .dev/Phases/Phases Overview.md; hide-list must run after
     seat layout in Sync.full so bags/figurines stay stashed while phase is Spotlight.
@@ -19,6 +23,7 @@ local L = require("core.lighting")
 local NPCS = require("core.npcs")
 local O = require("core.objects")
 local SRI = require("lib.seat-role-identity")
+local NLIGHT = require("lib.npcs_light_spawn_defaults")
 
 Spotlight.FIGURE_TAG = "spotlight_figurine"
 Spotlight.LIGHT_TAG = "spotlight_light"
@@ -594,6 +599,184 @@ local function rotateByDelta(delta)
     return true
 end
 
+--- Deep-clone TTS object state for spawnObjectData. Clears GUID and object scripts.
+--- @param data table
+--- @return table
+local function cloneObjectDataForSpawn(data)
+    if type(data) ~= "table" then
+        error("Spotlight.populateWorkshopStandins: getData did not return a table")
+    end
+    local encoded = JSON.encode(data)
+    if type(encoded) ~= "string" then
+        error("Spotlight.populateWorkshopStandins: JSON.encode of object data failed")
+    end
+    local decoded = JSON.decode(encoded)
+    if type(decoded) ~= "table" then
+        error("Spotlight.populateWorkshopStandins: JSON.decode of object data failed")
+    end
+    decoded.GUID = ""
+    decoded.LuaScript = ""
+    decoded.LuaScriptState = ""
+    decoded.XmlUI = ""
+    decoded.AttachedJoints = nil
+    decoded.States = nil
+    return decoded
+end
+
+--- @param color string
+--- @return Object
+local function seatFigureObject(color)
+    local key = "SEAT_FIGURE_" .. string.upper(color)
+    local guid = G.GUIDS[key]
+    if type(guid) ~= "string" or guid == "" then
+        error("Spotlight.populateWorkshopStandins: missing GUID " .. key)
+    end
+    local obj = G.getObject(guid)
+    if not U.isGameObject(obj) then
+        error("Spotlight.populateWorkshopStandins: seat figurine not in-world for " .. color .. " (" .. key .. "=" .. guid .. ")")
+    end
+    if obj.getData == nil then
+        error("Spotlight.populateWorkshopStandins: seat figurine has no getData for " .. color)
+    end
+    return obj
+end
+
+--- @param obj Object
+--- @param tag string
+--- @param pos Vector
+--- @param rot Vector
+local function finishSpawnedStandIn(obj, tag, pos, rot)
+    if not U.isGameObject(obj) then
+        error("Spotlight.populateWorkshopStandins: spawnObjectData returned a non-object")
+    end
+    if obj.setTags ~= nil then
+        obj.setTags({ tag })
+    else
+        ensureTag(obj, tag)
+    end
+    snapObject(obj, pos, rot)
+    if obj.setInvisibleTo ~= nil then
+        obj.setInvisibleTo({})
+    end
+    local guid = obj.getGUID and obj.getGUID() or ""
+    if type(guid) ~= "string" or guid == "" then
+        error("Spotlight.populateWorkshopStandins: spawned object has no GUID")
+    end
+    return guid
+end
+
+--- @param color string
+--- @return string guid
+local function spawnStandInFigurine(color)
+    local seat = seatFigureObject(color)
+    local data = cloneObjectDataForSpawn(seat.getData())
+    data.Tags = { Spotlight.FIGURE_TAG }
+    data.Locked = true
+    data.Hands = false
+    data.GMNotes = Spotlight.FIGURE_TAG .. ":" .. color
+    data.Nickname = "Spotlight " .. charNameForColor(color)
+    local pos = parkPosition(color)
+    local rot = Vector(0, 180, 0)
+    ---@diagnostic disable-next-line: undefined-global
+    local obj = spawnObjectData({
+        data = data,
+        position = { pos.x, pos.y, pos.z },
+        rotation = { rot.x, rot.y, rot.z },
+    })
+    return finishSpawnedStandIn(obj, Spotlight.FIGURE_TAG, pos, rot)
+end
+
+--- @param color string
+--- @return string guid
+local function spawnStandInLight(color)
+    local defaults = NLIGHT.NPC_LIGHT_OBJECT_DATA_DEFAULTS
+    if type(defaults) ~= "table" then
+        error("Spotlight.populateWorkshopStandins: NPC_LIGHT_OBJECT_DATA_DEFAULTS missing")
+    end
+    local data = cloneObjectDataForSpawn(defaults)
+    data.Tags = { Spotlight.LIGHT_TAG }
+    data.Nickname = "Spotlight Light " .. color
+    data.Locked = true
+    data.Hands = false
+    local pos = parkPosition(color)
+    local rot = Vector(0, 0, 0)
+    ---@diagnostic disable-next-line: undefined-global
+    local obj = spawnObjectData({
+        data = data,
+        position = { pos.x, pos.y, pos.z },
+        rotation = { rot.x, rot.y, rot.z },
+    })
+    return finishSpawnedStandIn(obj, Spotlight.LIGHT_TAG, pos, rot)
+end
+
+--- Clone seat figurines and spawn matching stage lights into the preload grid.
+--- Cold/setup only — never called from Play → Spotlight. Running twice duplicates
+--- objects unless the previous copies are deleted first.
+--- @return nil
+function Spotlight.populateWorkshopStandins()
+    local colors = C.PlayerColors or {}
+    if #colors == 0 then
+        error("Spotlight.populateWorkshopStandins: C.PlayerColors is empty")
+    end
+    for i = 1, #colors do
+        seatFigureObject(colors[i])
+    end
+
+    local existingFigs = getObjectsWithTag(Spotlight.FIGURE_TAG) or {}
+    local existingLits = getObjectsWithTag(Spotlight.LIGHT_TAG) or {}
+    local snippetLines = {}
+    local steps = {}
+
+    steps[#steps + 1] = function()
+        print("[Spotlight.populateWorkshopStandins] Cloning seat figurines and spawning stage lights. Running this twice will duplicate objects unless you delete the previous copies first.")
+        return true
+    end
+    if #existingFigs > 0 or #existingLits > 0 then
+        steps[#steps + 1] = function()
+            print("[Spotlight.populateWorkshopStandins] Warning: already found "
+                .. tostring(#existingFigs) .. " tagged " .. Spotlight.FIGURE_TAG
+                .. " and " .. tostring(#existingLits) .. " tagged " .. Spotlight.LIGHT_TAG
+                .. " objects. This run will spawn another set.")
+            return true
+        end
+    end
+
+    for i = 1, #colors do
+        local color = colors[i]
+        steps[#steps + 1] = function()
+            local figGuid = spawnStandInFigurine(color)
+            snippetLines[#snippetLines + 1] = "    " .. figureGuidKey(color) .. " = \"" .. figGuid .. "\","
+            return 0.2
+        end
+        steps[#steps + 1] = function()
+            local litGuid = spawnStandInLight(color)
+            snippetLines[#snippetLines + 1] = "    " .. lightGuidKey(color) .. " = \"" .. litGuid .. "\","
+            return 0.2
+        end
+    end
+
+    steps[#steps + 1] = function()
+        print("[Spotlight.populateWorkshopStandins] Paste these GUID lines into lib/guids.ttslua, save the table, then Save & Play:")
+        return true
+    end
+    steps[#steps + 1] = function()
+        print(table.concat(snippetLines, "\n"))
+        return true
+    end
+    steps[#steps + 1] = function()
+        U.AlertGM("Spotlight stand-in GUIDs are in the console. Paste them into lib/guids.ttslua, save the table, then Save & Play.")
+        return true
+    end
+
+    U.chain(steps, {
+        onComplete = function(ok, detail)
+            if ok ~= true then
+                U.AlertGM("Spotlight.populateWorkshopStandins failed (" .. tostring(detail) .. "). Check the console.")
+            end
+        end,
+    })
+end
+
 --- @return boolean, string|nil
 function Spotlight.auditStandins()
     local missing = {}
@@ -611,7 +794,7 @@ function Spotlight.auditStandins()
     end
     local msg = "Spotlight stand-ins are missing from the save: "
         .. table.concat(missing, "; ")
-        .. ". Park five tagged spotlight_figurine objects and five spotlight_light objects in the preload zone and put their GUIDs in lib/guids.ttslua."
+        .. ". In the Host console run lua DEBUG.populateSpotlightFigurines(), paste the printed GUIDs into lib/guids.ttslua, save the table, then Save & Play."
     return false, msg
 end
 

@@ -1408,6 +1408,16 @@ function DEBUG.toggleAllSpotlightArrows()
     return summary
 end
 
+--- Workshop-only: clone the five seat figurines, spawn matching stage lights, tag them
+--- `spotlight_figurine` / `spotlight_light`, park them in the preload grid, and print
+--- paste-ready GUIDs for `lib/guids.ttslua`. Does **not** run on Play → Spotlight.
+--- Running twice duplicates objects unless you delete the previous copies first.
+--- @usage lua DEBUG.populateSpotlightFigurines()
+function DEBUG.populateSpotlightFigurines()
+    local Spotlight = require("core.spotlight")
+    Spotlight.populateWorkshopStandins()
+end
+
 --- Set every Spotlight-tagged object to Looping Effect UI slot 2 (invisible arrow).
 --- Same object set as `DEBUG.toggleAllSpotlightArrows` (`getObjectsWithTag("Spotlight")`).
 --- UI slot 2 → API index 1 (0-based), matching the Toggle Spotlights debug control.
@@ -6001,6 +6011,8 @@ function DEBUG.help()
     print("                          - After upload+extract, refresh token images from hosted URLs")
     print("  DEBUG.clearCustomUiUploadTokens()")
     print("                          - Delete temporary upload tokens created by debug uploader")
+    print("\nSPOTLIGHT WORKSHOP:")
+    print("  DEBUG.populateSpotlightFigurines() - Clone seat figures + spawn stage lights; print GUIDs")
     print("\nLIGHT FEASIBILITY (workshop investigation):")
     print("  testSpawnLightType(), testCloneLight(guid), testInspectLight(guid)")
     print("  testSpawnLight(...), testCompareStructures(guid), findPotentialLights()")
@@ -6110,6 +6122,7 @@ logAllToFiles = DEBUG.logAllToFiles
 debugHelp = DEBUG.help
 
 -- Expose light feasibility helpers
+populateSpotlightFigurines = DEBUG.populateSpotlightFigurines
 testSpawnLightType = DEBUG.testSpawnLightType
 testCloneLight = DEBUG.testCloneLight
 testInspectLight = DEBUG.testInspectLight
