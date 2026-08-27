@@ -432,7 +432,7 @@ _Blocked: author must define data binding approach before substantial implementa
 ## New Features (pending design)
 
 - [x] **Desires** ? page1 InputField ? `playerData[pid].desire`; unset class via `UI.setClass`; ST PCs row + Clear. Author verified 2026-07-26. _(TOR-97)_
-- [x] **Spotlight phase** — Play→Spotlight staged cover: narrative clear, Table A, Spotlight skybox, Main-only audio (no silence-all), in-session carousel + Host strip, ritual overlay. Spotlight→End parks toys, keeps Table A + Main. Workshop stand-ins come from `DEBUG.populateSpotlightFigurines()` (paste GUIDs into `lib/guids.ttslua`); Advance does not auto-spawn. Pending Save & Play. _(TOR-98)_
+- [x] **Spotlight phase** — Play→Spotlight staged cover: narrative clear, Table A, Spotlight skybox, Main-only audio (no silence-all), in-session carousel + Host strip, ritual overlay. Spotlight→End parks toys, Table B0 + Generic skybox (NPC seats stay empty), Main keeps playing, overlay **DEBRIEF**. Workshop stand-ins come from `DEBUG.populateSpotlightFigurines()` (paste GUIDs into `lib/guids.ttslua`); Advance does not auto-spawn. Pending Save & Play. _(TOR-98)_
 - [ ] **Memoriam toggle** ? Play sub-phase placement in TOR-143; global LUT + HUD overlay when Memoriam active still TBD. _(TOR-101)_
 
 ## Agent Reviews

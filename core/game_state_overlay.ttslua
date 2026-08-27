@@ -241,7 +241,7 @@ local function shouldShowNarrativeClockOnOverlay()
     return phase == C.Phases.PLAY
 end
 
---- Time/location panel presenter: Play (clock), Spotlight (ritual), End (session name), or hidden.
+--- Time/location panel presenter: Play (clock), Spotlight (ritual), End (session name + DEBRIEF), or hidden.
 --- @return string "play"|"spotlight"|"sessionEnd"|"hidden"
 local function overlayTimeLocationKind()
     local phase = S.getStateVal("currentPhase")
@@ -657,7 +657,7 @@ function GameStateOverlay.reconcileFromState()
             sessionName = ""
         end
         pushOverlayText("gameStateOverlay_datetime", sessionName)
-        pushOverlayText("gameStateOverlay_time", "END")
+        pushOverlayText("gameStateOverlay_time", "DEBRIEF")
         pushOverlayActive(OVERLAY_WEATHER_ID, false)
         return
     end

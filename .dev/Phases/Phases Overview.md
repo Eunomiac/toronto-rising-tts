@@ -16,7 +16,7 @@ Source of truth:
 Verification:
 - Save & Play → Host Phases panel → **Advance →** (panel closes immediately) through Intermission → Play → Spotlight → End → Intermission
 - Confirm Intermission: global cover comes down together with leftover-audio fade-out and TR_Loop fade-in (~2s), then no-scene table prep under cover, AdminDark. Play: TR_Loop fades ~0.5s, Music C overture starts immediately at full volume, global blindfold lifts ~2s before the 71s sting ends, then Main fades in and the Willpower heal overlay can appear
-- Play → Spotlight: staged transition cover; Table A + Spotlight skybox; Main keeps playing; in-session stand-ins on the carousel; overlay shows the session name in the diamond slot, **S P O T L I G H T** in gold, and the front character name in white. Spotlight → End: same cover; Main and Table A stay; overlay shows the session name and **END**
+- Play → Spotlight: staged transition cover; Table A + Spotlight skybox; Main keeps playing; in-session stand-ins on the carousel; overlay shows the session name in the diamond slot, **S P O T L I G H T** in gold, and the front character name in white. Spotlight → End: same cover; Main keeps playing; table becomes B0 (PC seats only, NPCs stay off the table); Generic skybox is selected; overlay shows the session name and **DEBRIEF**
 - Workshop: Host console `lua DEBUG.populateSpotlightFigurines()` clones seat figures and spawns tagged lights, then prints GUIDs for `lib/guids.ttslua`. Play → Spotlight does **not** auto-spawn (duplicates if GUIDs are forgotten).
 - Solo Host verified only until **TOR-144** (multiplayer E2E) — multiclient connect blindfold + Advance replication: [Multiclient Session Script](../E2E%20Playbooks/Multiplayer-Session.md) (A4, B0, D1)
 
@@ -86,11 +86,11 @@ Ending events of the previous phase run before starting events of the new phase 
 ### Ending Events: `SPOTLIGHT`
 
 * Staged HUDBF cover. Park stand-ins/lights in the preload zone, hide the Host strip, restore the hide-list.
-* Keep Table A and Main audio. Do **not** fade Main, do **not** apply no-scene Table B0 / random skybox (Intermission enter owns that prep).
+* Keep Main audio (do **not** fade Main or restart it). Apply no-scene table prep under the cover: Table B0 (dynamic Table B, zero NPC seats — NPCs are not restored after Spotlight), OutdoorDim, Generic skybox selected (`skyboxOverride` Generic; one random generic URL). `Scenes.applyDefaultNoSceneEnvironment({ skipSoundscape = true, skipTransitionBlindfold = true, activateGenericSkybox = true })`.
 
 ### Starting Events: `END`
 
-* Overlay: datetime = `sessionName` (blank until the Storyteller types one in the Phases panel), time = `END`, location row empty, weather hidden. Session roman stays.
+* Overlay: datetime = `sessionName` (blank until the Storyteller types one in the Phases panel), time = `DEBRIEF`, location row empty, weather hidden. Session roman stays.
 
 ### Ending Events: `END`
 

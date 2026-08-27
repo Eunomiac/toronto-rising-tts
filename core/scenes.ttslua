@@ -909,11 +909,17 @@ local function syncFullForce(reason, opts)
 end
 
 --- Writes live `sessionScene` / `seatLayout` fields for the no-scene steady state (no world I/O).
-local function mutateDefaultNoSceneSessionState()
+--- @param opts table|nil `{ activateGenericSkybox?: boolean }`
+local function mutateDefaultNoSceneSessionState(opts)
+    opts = type(opts) == "table" and opts or {}
     S.setStateVal(Scenes.DEFAULT_NO_SCENE_TABLE_KEY, "sessionScene", "tableKey")
     S.setStateVal(nil, "sessionScene", "districtKey")
     S.setStateVal(nil, "sessionScene", "siteKey")
-    S.setStateVal(nil, "sessionScene", "skyboxOverride")
+    if opts.activateGenericSkybox == true then
+        S.setStateVal(C.SKYBOX_GENERIC_KEY, "sessionScene", "skyboxOverride")
+    else
+        S.setStateVal(nil, "sessionScene", "skyboxOverride")
+    end
     S.setStateVal({}, "sessionScene", "conditions")
     S.setStateVal({}, "sessionScene", "soundscapeNarrative")
     S.setStateVal(false, "sessionScene", "isTopFogActive")
@@ -993,8 +999,9 @@ end
 
 --- Applies the defined no-scene environment: Table B0 (dynamic Table B, zero NPC seats), five PCs, empty NPC world, OutdoorDim, Main only.
 --- Does not mutate library rows, PC map pins, or present-day clock.
---- @param opts table|nil `{ reason?: string, skipTransitionBlindfold?: boolean, skipSoundscape?: boolean }`
+--- @param opts table|nil `{ reason?: string, skipTransitionBlindfold?: boolean, skipSoundscape?: boolean, activateGenericSkybox?: boolean }`
 ---   `skipSoundscape` defers the Main ambient apply to the caller (staged transition fade-in, TOR-147).
+---   `activateGenericSkybox` persists picker Generic (`C.SKYBOX_GENERIC_KEY`); `Sync.full` applies one random generic URL.
 --- @return boolean
 function Scenes.applyDefaultNoSceneEnvironment(opts)
     opts = type(opts) == "table" and opts or {}
@@ -1003,7 +1010,7 @@ function Scenes.applyDefaultNoSceneEnvironment(opts)
     -- (overlay shows Jan 1 2026 defaults) and mirror would write cleared keys into the library row (TOR-362).
     SceneLibrary.detachLiveTableFromLibraryMirror()
 
-    mutateDefaultNoSceneSessionState()
+    mutateDefaultNoSceneSessionState(opts)
 
     Scenes.invalidateReconcileCache()
     if type(Soundscape.invalidateReconcileCache) == "function" then
@@ -1021,7 +1028,9 @@ function Scenes.applyDefaultNoSceneEnvironment(opts)
         })
     end
 
-    applyRandomGenericSkybox()
+    if opts.activateGenericSkybox ~= true then
+        applyRandomGenericSkybox()
+    end
     reconcileHostedConditionsSkipPresentation()
 
     local GameStateOverlay = require("core.game_state_overlay")

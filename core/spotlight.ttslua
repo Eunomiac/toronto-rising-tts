@@ -895,6 +895,7 @@ function Spotlight.applyEnterWorld()
 end
 
 --- Spotlight → End work under the existing cover. Flips phase first so hide-list restores while still covered.
+--- Table B0 + Generic skybox (NPC seats stay empty); Main is not restarted.
 --- @return boolean, string|nil
 function Spotlight.applyExitWorld()
     S.setCurrentPhase(C.Phases.END)
@@ -905,13 +906,14 @@ function Spotlight.applyExitWorld()
     end
     applyPlayfieldToysFromPhase()
     refreshHostControls()
-    local Sync = syncModule()
-    if type(Sync.full) == "function" then
-        Sync.full({ force = true, skipSoundscape = true, reason = "spotlight_exit" })
-    end
-    local GameStateOverlay = require("core.game_state_overlay")
-    if type(GameStateOverlay.reconcileFromState) == "function" then
-        GameStateOverlay.reconcileFromState()
+    local Scenes = require("core.scenes")
+    if type(Scenes.applyDefaultNoSceneEnvironment) == "function" then
+        Scenes.applyDefaultNoSceneEnvironment({
+            reason = "spotlight_exit",
+            skipTransitionBlindfold = true,
+            skipSoundscape = true,
+            activateGenericSkybox = true,
+        })
     end
     return true, nil
 end

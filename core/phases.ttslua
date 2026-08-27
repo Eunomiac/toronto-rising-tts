@@ -318,7 +318,7 @@ local function runSpotlightExitToEndTransition(ctx)
             return Spotlight.applyExitWorld()
         end,
         fadeIn = function()
-            -- Do not apply no-scene soundscape (Table B0 / random skybox / Main restart).
+            -- Keep Main. Table B0 + Generic skybox already ran in applyExitWorld (skipSoundscape).
         end,
     })
     if type(HUDBF.estimateStagedTransitionSec) == "function" then
