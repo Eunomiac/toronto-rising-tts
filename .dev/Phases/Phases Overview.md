@@ -80,7 +80,7 @@ Ending events of the previous phase run before starting events of the new phase 
 * TOR-101: when Memoriam LUT/overlay exists, reverse it in that same narrative-clear cover. Downtime clock/overlay (no Linear issue yet) must reverse here as well once it ships.
 * Table A if not already A; skybox `Spotlight`; fade location/weather out on the way in; **do not** restart Main if it is already playing; **do not** silence all emitters.
 * Hide-list while `currentPhase == Spotlight` (reconciler after seat layout in `Sync.full`): seat figurines invisible to PC colors + White/Grey; dice bags, companion toggles/figurines, and compulsion decks parked at `y = -200`.
-* Shuffle in-session PCs (`absentFromSession ~= true`) once; snap dedicated workshop stand-ins onto a 36° carousel (front at 180°). Create those stand-ins with `lua DEBUG.populateSpotlightFigurines()` (paste GUIDs into `lib/guids.ttslua`, save the table, Save & Play). Missing stand-in GUIDs fail loudly and lift the cover; Advance never auto-spawns.
+* Shuffle in-session PCs (`absentFromSession ~= true`) once; snap dedicated workshop stand-ins onto a 36° carousel (front at 180°), facing **outward** from the ring (not toward the origin). Create those stand-ins with `lua DEBUG.populateSpotlightFigurines()` (paste GUIDs into `lib/guids.ttslua`, save the table, Save & Play). Missing stand-in GUIDs fail loudly and lift the cover; Advance never auto-spawns.
 * Overlay: empty location row, weather hidden, datetime `S P O T L I G H T`, time = front character's `charName`. Host strip (`Black|Host`, bottom center) for prev / color chips / next.
 
 ### Ending Events: `SPOTLIGHT`

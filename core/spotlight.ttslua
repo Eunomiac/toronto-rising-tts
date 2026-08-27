@@ -190,10 +190,12 @@ local function xzAtAngle(angleDeg)
 end
 
 --- World yaw so the figurine faces outward from the carousel origin.
+--- Seat/custom figurines look along −Z at yaw 0, so outward radial facing is the
+--- placement angle plus 180° (yaw = angle alone aimed them at the origin).
 --- @param angleDeg number
 --- @return number
 local function outwardYaw(angleDeg)
-    return angleDeg % 360
+    return (angleDeg + 180) % 360
 end
 
 --- @param color string
