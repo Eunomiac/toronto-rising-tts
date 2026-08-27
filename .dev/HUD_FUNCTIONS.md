@@ -177,6 +177,8 @@ Storyteller **Stats** panel: edit PC backgrounds/merits/flaws and coterie advant
 | `HUD_advancePhase` | _(legacy alias)_ | `(player, button, id)` | Calls `HUD_phaseAdvance` (free-jump removed). |
 | `HUD_setPlaySubPhase` | `phase_sub_Main`, `phase_sub_Downtime`, `phase_sub_Memoriam` | `(player, button, id)` | ST-gated. Free switch among Play subphases via `Phases.setPlaySubPhase`. |
 | `HUD_sessionNumInput` | `input_sessionNum` | `(player, value, id)` | ST-gated. Persists `sessionNum` (≥1); refreshes phase UI + game-state overlay roman. |
+| `HUD_sessionNameInput` | `input_sessionName` | `(player, value, id)` | ST-gated. Persists `sessionName` (may be empty); refreshes phase UI + End overlay datetime. |
+| `HUD_spotlightClick` | `spotlight_prev`, `spotlight_next`, `spotlight_seat_1`…`5` | `(player, button, id)` | ST-gated. Host carousel strip during Spotlight: arrows step one slot along the occupied arc (no wrap); color chips jump to that seat; current-color and in-flight rotate are no-ops. |
 | `HUD_phaseDeferSetXml` | `phase_deferSetXml` | `(player, value, id)` | ST-gated. Persists `connectionControls.deferSetXml`; when on, cancels pending deferred Global full UI remount and blocks future automatic ones (TOR-428). |
 | `HUD_phaseRefreshXml` / `HUD_phaseRestoreJoinHud` | `phase_refreshXml` / `phase_restoreJoinHud` | `(player, button, id)` | ST-gated. Staged restore **2/4**: remounts **full** Global XmlUI; clears `joinXmlArmed`. Does **not** restore CustomUIAssets or cold pools (TOR-439). |
 | `HUD_phaseArmJoinXml` | `phase_armJoinXml` | `(player, button, id)` | ST-gated. Arms minimal XmlUI + slim assets + cold preload NPCs/emitters (TOR-439). |

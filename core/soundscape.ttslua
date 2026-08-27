@@ -31,7 +31,7 @@ local playCatalogEntryGeneration = {}
 --- Let Unity finish AssetBundle clip swap before unmute/fade (~one frame at 30fps).
 local EMITTER_POST_SWAP_ARM_SECONDS = 0.034
 local cachedEmitters = {}
---- Cached Custom AssetBundle for outdoor rain particles (`G.GUIDS.PARTICLES_WEATHER_RAIN`).
+--- Cached Custom AssetBundle for outdoor rain particles (`G.GUIDS.PARTICLE_EMITTER`).
 local cachedRainParticleObj = nil
 --- Last 0-based looping index applied to the rain particle object (fallback when `getLoopingEffectIndex` is missing).
 local lastAppliedRainParticleIndex = nil
@@ -861,9 +861,9 @@ end
 --- @return Object|nil
 --- @return string|nil
 local function resolveRainParticleObject()
-    local guidRef = G.GUIDS.PARTICLES_WEATHER_RAIN
+    local guidRef = G.GUIDS.PARTICLE_EMITTER
     if not G.isGuidRef(guidRef) then
-        return nil, "Missing G.GUIDS.PARTICLES_WEATHER_RAIN"
+        return nil, "Missing G.GUIDS.PARTICLE_EMITTER"
     end
     local cached = cachedRainParticleObj
     if cached ~= nil then
@@ -879,7 +879,7 @@ local function resolveRainParticleObject()
         return obj, nil
     end
     local activeGuid = G.getActiveGuid(guidRef)
-    return nil, "No object found for G.GUIDS.PARTICLES_WEATHER_RAIN GUID " .. tostring(activeGuid or guidRef)
+    return nil, "No object found for G.GUIDS.PARTICLE_EMITTER GUID " .. tostring(activeGuid or guidRef)
 end
 
 --- Plays a 0-based looping effect on the rain particle object. Skips when already active.
@@ -1669,7 +1669,7 @@ function Soundscape.fadeOutTransitionAmbient(opts)
         return false
     end
 
-    if state.backgroundMusicEnabled == true then
+    if opts.skipBackground ~= true and state.backgroundMusicEnabled == true then
         local musicCh = resolveActiveMusicChannel(state)
         local musicObj = resolveEmitter(musicCh)
         if musicObj ~= nil then

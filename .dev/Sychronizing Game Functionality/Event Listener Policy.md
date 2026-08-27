@@ -142,7 +142,8 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `HUD_projectsTarget` / `HUD_projectsBack` | A | — | Projects panel navigation |
 | `HUD_projectsAdd` / `HUD_projectsEdit` / `HUD_projectEditorConfirm` / `HUD_projectEditorDelete` / `HUD_projectEditorBegin` / `HUD_projectEditorComplete` / `HUD_projectEditorLaunchR` | B+C | Yes | project mutations / Launch roll |
 | `HUD_projectEditorField` / `HUD_projectDropdown` / `HUD_projectStakeDropdown` / `HUD_projectStakeAdvOpen` / `HUD_projectAdvPick` / `HUD_projectAdvPickCancel` / `HUD_projectEditorCancel` | A/B | Yes (field persist) | live project editor writes; advantage picker uses Buttons (TTS Dropdown Options do not refresh labels); Cancel may delete pre-inProgress |
-| `HUD_phaseAdvance` / `HUD_setPlaySubPhase` / `HUD_sessionNumInput` | B | Yes | TOR-143 phase Advance + Play subphases + sessionNum |
+| `HUD_phaseAdvance` / `HUD_setPlaySubPhase` / `HUD_sessionNumInput` / `HUD_sessionNameInput` | B | Yes | TOR-143 phase Advance + Play subphases + sessionNum; TOR-98 sessionName |
+| `HUD_spotlightClick` | B+C | Yes | TOR-98 Host carousel strip (prev / color chips / next); clicker-only, ST-gated |
 | `HUD_advancePhase` | B | Yes | legacy alias → `HUD_phaseAdvance` |
 | `HUD_phaseDeferSetXml` / `HUD_phaseRefreshXml` / `HUD_phaseArmJoinXml` / `HUD_phaseRestoreJoinAssets` / `HUD_phaseRestoreJoinHud` / `HUD_phaseRestoreJoinEmitters` / `HUD_phaseRestoreJoinFigurines` | A/B + C (remount / spawn) | Yes | TOR-428 defer; TOR-439 Arm + staged restore (assets → HUD → emitters → figurines) |
 | `HUD_resetGame` / `HUD_syncAll` | B+C | Yes | |

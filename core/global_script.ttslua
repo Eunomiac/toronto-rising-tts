@@ -3995,6 +3995,16 @@ syncStorytellerPhaseButtons = function()
     if UI ~= nil and UI.setValue ~= nil then
         UI.setValue("input_sessionNum", sessionNumText)
     end
+    local sessionName = S.getStateVal("sessionName")
+    if type(sessionName) ~= "string" then
+        sessionName = ""
+    end
+    if UI ~= nil and UI.setAttribute ~= nil then
+        UI.setAttribute("input_sessionName", "text", sessionName)
+    end
+    if UI ~= nil and UI.setValue ~= nil then
+        UI.setValue("input_sessionName", sessionName)
+    end
     local deferSetXml = S.getStateVal("connectionControls", "deferSetXml") == true
     U.setAttributes("phase_deferSetXml", { isOn = deferSetXml })
     local joinXmlArmed = S.getStateVal("connectionControls", "joinXmlArmed") == true
@@ -4626,6 +4636,29 @@ function HUD_sessionNumInput(player, value, id)
     S.setSessionNum(n)
     UpdateUIDisplays({ phase = true, gameStateOverlay = true })
     syncStorytellerPhaseButtons()
+end
+
+--- Session name InputField (TOR-98). Shown on the End overlay datetime row.
+function HUD_sessionNameInput(player, value, id)
+    if not requireStorytellerForMutation(player, "HUD_sessionNameInput") then
+        return
+    end
+    local name = value
+    if type(name) ~= "string" then
+        name = ""
+    end
+    S.setSessionName(name)
+    UpdateUIDisplays({ phase = true, gameStateOverlay = true })
+    syncStorytellerPhaseButtons()
+end
+
+--- Host Spotlight carousel strip (TOR-98).
+function HUD_spotlightClick(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_spotlightClick") then
+        return
+    end
+    local Spotlight = require("core.spotlight")
+    Spotlight.onHudClick(player, id)
 end
 
 --- Parse XmlUI Toggle onValueChanged payloads to boolean (TOR-428).

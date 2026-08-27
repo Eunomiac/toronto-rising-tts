@@ -293,7 +293,7 @@ G.GUIDS = {
     HUNGER_SMOKE_PURPLE = "f20164",
 
     -- Particle Effect Emitters
-    PARTICLES_WEATHER_RAIN = "098667",
+    PARTICLE_EMITTER = "098667",
 
 
     -- Dice bags (one per seat color).
@@ -337,6 +337,19 @@ G.GUIDS = {
     SEAT_FIGURE_PINK = "390349",
     SEAT_FIGURE_PURPLE = "923872",
     SEAT_FIGURE_RED = "1e70cf",
+
+    -- Spotlight-phase stand-ins (TOR-98). Workshop objects in the preload zone
+    -- tagged spotlight_figurine / spotlight_light. Fill GUIDs after they exist in the save.
+    SPOTLIGHT_FIGURE_BROWN = "",
+    SPOTLIGHT_FIGURE_ORANGE = "",
+    SPOTLIGHT_FIGURE_PINK = "",
+    SPOTLIGHT_FIGURE_PURPLE = "",
+    SPOTLIGHT_FIGURE_RED = "",
+    SPOTLIGHT_LIGHT_BROWN = "",
+    SPOTLIGHT_LIGHT_ORANGE = "",
+    SPOTLIGHT_LIGHT_PINK = "",
+    SPOTLIGHT_LIGHT_PURPLE = "",
+    SPOTLIGHT_LIGHT_RED = "",
 
     -- Player-Specific Objects
     PRINCE_SIGNET_BORDER_RED = "4506f3",

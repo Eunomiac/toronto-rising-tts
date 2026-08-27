@@ -239,43 +239,6 @@ function Phases.reconcileIntermissionAmbientOnLoad()
     return Phases.startIntermissionThemePlaylistLoop(nil)
 end
 
-function Phases.silenceAllSoundEmitters(_ctx)
-    local Soundscape = require("core.soundscape")
-    if type(Soundscape.stopAll) == "function" then
-        Soundscape.stopAll()
-        Soundscape.commitEagerSteadyState(true)
-    end
-    return true
-end
-
-function Phases.applySpotlightSceneOrBroadcast(_ctx)
-    local key = C.SpotlightSceneLibraryKey
-    local SceneLibrary = require("core.scene_library")
-    local row = nil
-    if type(key) == "string" and key ~= "" and type(SceneLibrary.getRow) == "function" then
-        row = SceneLibrary.getRow(key)
-    elseif type(key) == "string" and key ~= "" and type(SceneLibrary.get) == "function" then
-        row = SceneLibrary.get(key)
-    end
-    if type(row) ~= "table" then
-        local lib = S.getStateVal("sceneLibrary")
-        if type(lib) == "table" and type(lib.rows) == "table" then
-            row = lib.rows[key]
-        end
-    end
-    if type(row) ~= "table" then
-        broadcastToAll(
-            "Spotlight scene `" .. tostring(key) .. "` is not defined yet — phase advanced without scene apply.",
-            { r = 1, g = 0.85, b = 0.4 }
-        )
-        U.AlertGM("Spotlight scene library key missing: " .. tostring(key))
-        return true
-    end
-    -- Soft apply path reserved for when the hardcoded row exists (author workshop).
-    U.AlertGM("Spotlight scene `" .. tostring(key) .. "` found — full Apply wiring TBD; clock freeze still runs.")
-    return true
-end
-
 function Phases.freezeClock(_ctx)
     S.setStateVal(false, "sessionScene", "clock", "useRealTime")
     S.setStateVal(0, "sessionScene", "clock", "speed")
@@ -300,38 +263,62 @@ function Phases.applyNoSceneDefault(_ctx, opts)
     return true
 end
 
---- Spotlight → End: staged transition blindfold + no-scene apply (TOR-459), same shape as End scene.
---- Starts `HUDBF.runStagedTransition` and returns the wait so Advance does not enter End early.
+--- Play → Spotlight: staged transition cover (same lead-in as scene Apply). Destination cards stay Clear.
 --- @param ctx table|nil
 --- @return number|boolean
-local function runSpotlightExitToEndTransition(ctx)
+local function runSpotlightEnterFromPlayTransition(ctx)
     local HUDBF = require("core.hud_blindfold")
     local SS = require("core.soundscape")
     local Scenes = require("core.scenes")
+    local Spotlight = require("core.spotlight")
+    local mood = S.getStateVal("soundscape", "musicMood")
     HUDBF.runStagedTransition({
         fadeOut = function()
             if type(SS.fadeOutTransitionAmbient) == "function" then
-                SS.fadeOutTransitionAmbient({ seconds = HUDBF.TRANSITION_FADE_OUT_SEC })
+                SS.fadeOutTransitionAmbient({
+                    seconds = HUDBF.TRANSITION_FADE_OUT_SEC,
+                    skipBackground = mood == "main",
+                })
             end
         end,
         work = function()
-            Scenes.applyDefaultNoSceneEnvironment({
-                reason = (type(ctx) == "table" and ctx.reason) or "phase_spotlight_exit",
-                skipTransitionBlindfold = true,
-                skipSoundscape = true,
-            })
-            return true
+            return Spotlight.applyEnterWorld()
         end,
         fadeIn = function()
             if type(SS.beginTransitionFadeWindow) == "function" then
                 SS.beginTransitionFadeWindow(HUDBF.TRANSITION_FADE_IN_SEC)
             end
-            if type(Scenes.applyNoSceneSoundscape) == "function" then
-                Scenes.applyNoSceneSoundscape()
+            if type(Scenes.applyMainOnlySoundscape) == "function" then
+                Scenes.applyMainOnlySoundscape({ skipMoodIfAlreadyMain = true })
             end
             if type(SS.endTransitionFadeWindow) == "function" then
                 SS.endTransitionFadeWindow()
             end
+        end,
+    })
+    if type(HUDBF.estimateStagedTransitionSec) == "function" then
+        return HUDBF.estimateStagedTransitionSec()
+    end
+    return (HUDBF.BLINDFOLD_DOWN_COMPLETE_SEC or 4)
+        + (HUDBF.TRANSITION_FADE_OUT_SEC or 1)
+        + (HUDBF.TRANSITION_SETTLE_DELAY_SEC or 10)
+end
+
+--- Spotlight → End: staged transition cover. Park carousel under the cover; keep Table A and Main audio.
+--- @param ctx table|nil
+--- @return number|boolean
+local function runSpotlightExitToEndTransition(ctx)
+    local HUDBF = require("core.hud_blindfold")
+    local Spotlight = require("core.spotlight")
+    HUDBF.runStagedTransition({
+        fadeOut = function()
+            -- Keep Main playing; do not fade location/weather again (already main-only from Spotlight enter).
+        end,
+        work = function()
+            return Spotlight.applyExitWorld()
+        end,
+        fadeIn = function()
+            -- Do not apply no-scene soundscape (Table B0 / random skybox / Main restart).
         end,
     })
     if type(HUDBF.estimateStagedTransitionSec) == "function" then
@@ -599,13 +586,7 @@ end
 Phases.onEnter[C.Phases.SPOTLIGHT] = function(ctx)
     return {
         function()
-            return Phases.silenceAllSoundEmitters(ctx)
-        end,
-        function()
-            return Phases.applySpotlightSceneOrBroadcast(ctx)
-        end,
-        function()
-            return Phases.freezeClock(ctx)
+            return runSpotlightEnterFromPlayTransition(ctx)
         end,
     }
 end
@@ -613,7 +594,7 @@ end
 Phases.onExit[C.Phases.SPOTLIGHT] = function(ctx)
     return {
         function()
-            -- Default Advance path is Spotlight → End. Use scene-like staged blindfold (TOR-459).
+            -- Default Advance path is Spotlight → End. Keep Table A + Main; park carousel under cover (TOR-98).
             if type(ctx) == "table" and ctx.to ~= nil and ctx.to ~= C.Phases.END then
                 return Phases.applyNoSceneDefault(ctx, { reason = "phase_spotlight_exit" })
             end

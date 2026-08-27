@@ -259,6 +259,11 @@ function S.GetDefaultGameState()
         currentPhase = C.Phases.INTERMISSION,
         playSubPhase = C.PlaySubPhases.MAIN,
         sessionNum = 1,
+        sessionName = "",
+        spotlight = {
+            order = {},
+            frontIndex = 1,
+        },
         playerData = playerData, -- Keyed by player ID, only dynamic values
         lights = {}, -- Light states will be stored here
         scene = {
@@ -744,6 +749,21 @@ function S.validateState()
         gameState.sessionNum = 1
     else
         gameState.sessionNum = math.floor(sessionNum)
+    end
+    if type(gameState.sessionName) ~= "string" then
+        gameState.sessionName = ""
+    end
+    if type(gameState.spotlight) ~= "table" then
+        gameState.spotlight = { order = {}, frontIndex = 1 }
+    end
+    if type(gameState.spotlight.order) ~= "table" then
+        gameState.spotlight.order = {}
+    end
+    local frontIndex = tonumber(gameState.spotlight.frontIndex)
+    if frontIndex == nil or frontIndex < 1 then
+        gameState.spotlight.frontIndex = 1
+    else
+        gameState.spotlight.frontIndex = math.floor(frontIndex)
     end
 
     -- Ensure playerData table exists and has correct structure
@@ -1677,6 +1697,14 @@ function S.setSessionNum(n)
         v = 1
     end
     S.setStateVal(v, "sessionNum")
+end
+
+--- @param name string|nil
+function S.setSessionName(name)
+    if type(name) ~= "string" then
+        name = ""
+    end
+    S.setStateVal(name, "sessionName")
 end
 
 --- Checks if the game is currently in a specific phase

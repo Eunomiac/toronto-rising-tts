@@ -782,12 +782,17 @@ local function clearLiveNpcWorldPlacements()
 end
 
 --- Persisted + eager apply: Main BGM only, no location/weather (TOR-151 / TOR-152 no-scene branch).
-local function applyMainOnlySoundscapeIntent()
+--- @param opts table|nil `{ skipMoodIfAlreadyMain?: boolean }` — do not restart the main playlist when it is already the mood.
+local function applyMainOnlySoundscapeIntent(opts)
+    opts = type(opts) == "table" and opts or {}
+    local alreadyMain = S.getStateVal("soundscape", "musicMood") == "main"
     S.setStateVal("main", "soundscape", "musicMood")
     S.setStateVal(nil, "soundscape", "lastAppliedSiteKey")
     S.setStateVal(nil, "soundscape", "lastAppliedDistrictKey")
     Soundscape.setLocationAudio("none")
-    Soundscape.setMusicMood("main")
+    if not (opts.skipMoodIfAlreadyMain == true and alreadyMain) then
+        Soundscape.setMusicMood("main")
+    end
     Soundscape.setWeatherCondition("none")
     if type(Soundscape.silenceInactiveMusicChannel) == "function" then
         Soundscape.silenceInactiveMusicChannel()
@@ -803,8 +808,66 @@ local function applyMainOnlySoundscapeIntent()
 end
 
 --- Public wrapper for staged Play enter (fade window already open) or callers that deferred soundscape.
-function Scenes.applyMainOnlySoundscape()
-    applyMainOnlySoundscapeIntent()
+--- @param opts table|nil forwarded to `applyMainOnlySoundscapeIntent`
+function Scenes.applyMainOnlySoundscape(opts)
+    applyMainOnlySoundscapeIntent(opts)
+end
+
+--- Strip live narrative without the End-scene table/skybox/audio default (TOR-98 Spotlight enter).
+--- Detach library, empty NPC world/seats, clear location/weather extras, stop the overlay ticker.
+--- Does **not** set Table B0, pick a random generic skybox, or change Main music.
+--- @param opts table|nil `{ reason?: string }`
+--- @return boolean
+function Scenes.clearLiveNarrativeForPhaseTransition(opts)
+    opts = type(opts) == "table" and opts or {}
+    -- TOR-101: when Memoriam LUT/overlay exists, reverse it here under the same cover.
+    -- Downtime: when a dedicated clock/overlay ships, reverse it here (no Linear issue yet).
+
+    local PresentDayClock = require("core.present_day_clock")
+    if type(PresentDayClock.cancelCatchUpOnLiveClock) == "function" then
+        PresentDayClock.cancelCatchUpOnLiveClock()
+    end
+    local flushKey = nil
+    if type(SceneLibrary.resolveMirrorSceneKey) == "function" then
+        flushKey = SceneLibrary.resolveMirrorSceneKey()
+    end
+    if type(flushKey) ~= "string" or flushKey == "" then
+        flushKey = S.getStateVal("sceneLibrary", "lastAppliedKey")
+    end
+    if type(flushKey) == "string" and flushKey ~= "" and type(PresentDayClock.flushLibraryRowClock) == "function" then
+        PresentDayClock.flushLibraryRowClock(flushKey)
+    end
+
+    SceneLibrary.detachLiveTableFromLibraryMirror()
+
+    local StorytellerScenesPanel = require("core.storyteller_scenes_panel")
+    if type(StorytellerScenesPanel.deselectPendingPreview) == "function" then
+        StorytellerScenesPanel.deselectPendingPreview({ silent = true, clearActiveKey = true })
+    end
+
+    S.setStateVal(nil, "sessionScene", "districtKey")
+    S.setStateVal(nil, "sessionScene", "siteKey")
+    S.setStateVal({}, "sessionScene", "conditions")
+    S.setStateVal({}, "sessionScene", "soundscapeNarrative")
+    S.setStateVal(false, "sessionScene", "isTopFogActive")
+
+    clearLiveNpcWorldPlacements()
+    clearNpcSeatSlotsForNoScene()
+    if type(SceneLibrary.syncOccupiedNpcSlotsFromSeatSlots) == "function" then
+        SceneLibrary.syncOccupiedNpcSlotsFromSeatSlots(S.getStateVal("sessionScene"))
+    end
+    clearLiveClockDatetimeForOverlay()
+
+    local GameStateOverlay = require("core.game_state_overlay")
+    if type(GameStateOverlay.stopTicker) == "function" then
+        GameStateOverlay.stopTicker()
+    end
+    if type(GameStateOverlay.resetRealTimeCarry) == "function" then
+        GameStateOverlay.resetRealTimeCarry()
+    end
+
+    S.validateState()
+    return true
 end
 
 --- Random generic skybox when no narrative site is active (TOR-151).

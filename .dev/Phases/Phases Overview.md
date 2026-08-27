@@ -8,22 +8,26 @@ Read this when:
 
 Source of truth:
 - `core/phases.ttslua` (lifecycle registries + `advanceTo` / `setPlaySubPhase`)
+- `core/spotlight.ttslua` (Spotlight carousel, hide-list, Host strip)
 - `lib/constants.ttslua` (`C.Phases`, `C.PhaseSequence`, `C.PlaySubPhases`)
 - `ui/storyteller/panel_phases.xml`
+- `ui/storyteller/panel_spotlight_controls.xml`
 
 Verification:
 - Save & Play → Host Phases panel → **Advance →** (panel closes immediately) through Intermission → Play → Spotlight → End → Intermission
 - Confirm Intermission: global cover comes down together with leftover-audio fade-out and TR_Loop fade-in (~2s), then no-scene table prep under cover, AdminDark. Play: TR_Loop fades ~0.5s, Music C overture starts immediately at full volume, global blindfold lifts ~2s before the 71s sting ends, then Main fades in and the Willpower heal overlay can appear
+- Play → Spotlight: staged transition cover; Table A + Spotlight skybox; Main keeps playing; in-session stand-ins on the carousel; overlay shows **S P O T L I G H T** and the front character name. Spotlight → End: same cover; Main and Table A stay; overlay shows the session name and **END**
+- Workshop: five `spotlight_figurine` + five `spotlight_light` objects with GUIDs in `lib/guids.ttslua` before the carousel can appear
 - Solo Host verified only until **TOR-144** (multiplayer E2E) — multiclient connect blindfold + Advance replication: [Multiclient Session Script](../E2E%20Playbooks/Multiplayer-Session.md) (A4, B0, D1)
 
-Status: current (TOR-143 / TOR-361 / TOR-362 / TOR-497)
+Status: current (TOR-143 / TOR-361 / TOR-362 / TOR-497 / TOR-98)
 
 ## Blindfolds (do not conflate)
 
 | Kind | XML | Phase system |
 | --- | --- | --- |
 | **Global blindfold** | `ui/shared/panel_overlay_global_blindfold.xml` (`overlay_globalBlindfold`, `active=true` by default) | **Yes** — hide on Play enter **after** Intermission→Play overture hold (~69s of the 71s Music C sting, TOR-497); show on Intermission enter **before** no-scene table prep; connect during Intermission leaves it up; connect elsewhere hides it. **No** timed onLoad auto-hide. Show/hide are idempotent (TOR-398): no FadeIn when already up; hide sequences do not stack. |
-| **Per-player transition blindfolds** | `ui/.templates/panel_overlay_blindfold.xml` → parent Panel `UI.show`/`UI.hide` via `core/hud_blindfold.ttslua` + `hud_overlays` (optional destination cards, TOR-425 / TOR-431) | **Spotlight → End Advance** uses the same staged path as End scene / library Apply (TOR-459). Other phase enters still use global blindfold only. |
+| **Per-player transition blindfolds** | `ui/.templates/panel_overlay_blindfold.xml` → parent Panel `UI.show`/`UI.hide` via `core/hud_blindfold.ttslua` + `hud_overlays` (optional destination cards, TOR-425 / TOR-431) | **Play → Spotlight** and **Spotlight → End** use the same staged path as End scene / library Apply (TOR-98 / TOR-459). Destination cards stay Clear. Other phase enters still use global blindfold only. |
 
 ## General Phase Structure
 
@@ -33,8 +37,8 @@ There are four top-level phases, advanced by the Storyteller **Advance** button 
 
 1. `INTERMISSION` — Between sessions: **global cover + Intermission theme handoff first**, then no-scene table/skybox/overlay under that cover, AdminDark; connect keeps global blindfold up (TOR-319 / TOR-497 / TOR-506).
 2. `PLAY` — Session start: Music C overture (TR_Loop 0.5s fade + immediate sting), OutdoorDim lights under cover, **then** hide global blindfold ~2s before the sting ends, Main playlist, Superficial WP heal + optional broadcast. Contains most gameplay.
-3. `SPOTLIGHT` — End-of-session player vignettes: silence emitters, apply Spotlight scene (soft-fail if missing), freeze clock.
-4. `END` — Remorse / session-end bookkeeping phase. **Advance Spotlight → End** runs a staged transition blindfold while applying the default no-scene environment (TOR-459), then enters End. Leaving End increments `sessionNum` (global blindfold restored on next Intermission enter).
+3. `SPOTLIGHT` — End-of-session player vignettes: narrative clear (not End-scene Table B0), Table A + Spotlight skybox, Main-only music, in-session PC stand-ins on a 36° carousel, Host strip, ritual overlay.
+4. `END` — Remorse / session-end bookkeeping. **Advance Spotlight → End** keeps Table A and Main, parks the carousel, and shows the session name + **END** on the overlay. Leaving End increments `sessionNum` (global blindfold restored on next Intermission enter). Intermission enter then applies the real no-scene table prep.
 
 Advancing from `END` returns to `INTERMISSION`.
 
@@ -71,17 +75,22 @@ Ending events of the previous phase run before starting events of the new phase 
 
 ### Starting Events: `SPOTLIGHT`
 
-* Silence all soundscape emitters.
-* Apply hardcoded Spotlight scene (`C.SpotlightSceneLibraryKey`); if missing, ST broadcast + AlertGM, Advance still completes.
-* Freeze the narrative clock.
+* Staged HUDBF cover (same lead-in as a scene Apply; destination cards stay Clear). Default cameras snap at work start (HUDBF).
+* Under the cover: **narrative clear** (`Scenes.clearLiveNarrativeForPhaseTransition`) — detach the live library, flush the library clock if a scene was live, empty NPC world/seats, clear live location/weather extras, freeze the overlay ticker. Does **not** call `Scenes.applyDefaultNoSceneEnvironment` (that is Table B0 + random generic skybox).
+* TOR-101: when Memoriam LUT/overlay exists, reverse it in that same narrative-clear cover. Downtime clock/overlay (no Linear issue yet) must reverse here as well once it ships.
+* Table A if not already A; skybox `Spotlight`; fade location/weather out on the way in; **do not** restart Main if it is already playing; **do not** silence all emitters.
+* Hide-list while `currentPhase == Spotlight` (reconciler after seat layout in `Sync.full`): seat figurines invisible to PC colors + White/Grey; dice bags, companion toggles/figurines, and compulsion decks parked at `y = -200`.
+* Shuffle in-session PCs (`absentFromSession ~= true`) once; snap dedicated workshop stand-ins onto a 36° carousel (front at 180°). Missing stand-in GUIDs fail loudly and lift the cover.
+* Overlay: empty location row, weather hidden, datetime `S P O T L I G H T`, time = front character's `charName`. Host strip (`Black|Host`, bottom center) for prev / color chips / next.
 
 ### Ending Events: `SPOTLIGHT`
 
-* Apply "no scene" default.
+* Staged HUDBF cover. Park stand-ins/lights in the preload zone, hide the Host strip, restore the hide-list.
+* Keep Table A and Main audio. Do **not** fade Main, do **not** apply no-scene Table B0 / random skybox (Intermission enter owns that prep).
 
 ### Starting Events: `END`
 
-(None)
+* Overlay: datetime = `sessionName` (blank until the Storyteller types one in the Phases panel), time = `END`, location row empty, weather hidden. Session roman stays.
 
 ### Ending Events: `END`
 

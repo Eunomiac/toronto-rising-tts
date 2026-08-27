@@ -27,7 +27,7 @@
     <Text id="gameStateOverlay_sesionNumber" class="small_red_text" text="− Ⅰ −" />
     <HorizontalLayout class="gameStateOverlay_location" spacing="5" childAlignment="UpperCenter">
       <Text id="gameStateOverlay_district" class="small_white_text" text="" />
-      <Text class="small_red_text" text="◆" />
+      <Text id="gameStateOverlay_districtSeparator" class="small_red_text" text="◆" />
       <Text id="gameStateOverlay_parentSite" class="small_white_text" text="" active="false" />
       <Text id="gameStateOverlay_parentSiteSeparator" class="small_red_text" text="◆" active="false" />
       <Text id="gameStateOverlay_site" class="small_white_text" text="" />

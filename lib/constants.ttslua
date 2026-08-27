@@ -284,8 +284,7 @@ C.SessionStartIntroKey = "TR_SessionStart"
 C.SessionStartIntroDurationSec = 71
 C.SessionStartBlindfoldLeadSec = 2
 
---- Hardcoded Spotlight scene library key (author fills row later; soft-fail if missing).
-C.SpotlightSceneLibraryKey = "spotlight_session"
+--- Spotlight phase uses a dedicated environment (Table A + Spotlight skybox), not a scene library row.
 
 -- PC name/color/keys: C.PlayerData + charKey; full stat blocks: lib/pcs_data.ttslua (from lib/json/PCS.json).
 C.CHRONICLE_DATA = {

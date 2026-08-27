@@ -158,6 +158,8 @@ function Sync.invalidateAllReconcileCaches()
     callIfFunction(HO.invalidateOverlayInputCache)
     callIfFunction(NPCS.invalidateHomelandStageBoundSpotlightsCache)
     callIfFunction(Coterie.invalidateReconcileCache)
+    local Spotlight = require("core.spotlight")
+    callIfFunction(Spotlight.invalidateReconcileCache)
     invalidateSeatPresentationFingerprint()
 end
 
@@ -400,6 +402,10 @@ function Sync.full(opts)
         deferUiRefresh = true,
         force = force,
     })
+
+    -- TOR-98: hide-list is phase-derived. Run after seat layout so bags/figurines stay stashed in Spotlight.
+    local Spotlight = require("core.spotlight")
+    callIfFunction(Spotlight.reconcileFromState)
 
     if not didBootstrapFullSync then
         callIfFunction(HUDP.reconcileCameraOverlaySelfMatchRowsFromXmlDefaults)

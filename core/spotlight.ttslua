@@ -1,0 +1,762 @@
+--[[
+    Spotlight phase carousel (TOR-98).
+
+    Dedicated workshop stand-ins (not seat-figurine clones) rotate on a 36° arc
+    during the Spotlight phase. State is the source of truth; this module applies
+    world pose, stage lights, Host controls, and the playfield hide-list.
+
+    Agent guidance: .dev/Phases/Phases Overview.md; hide-list must run after
+    seat layout in Sync.full so bags/figurines stay stashed while phase is Spotlight.
+]]
+
+local Spotlight = {}
+
+local C = require("lib.constants")
+local G = require("lib.guids")
+local U = require("lib.util")
+local S = require("core.state")
+local L = require("core.lighting")
+local NPCS = require("core.npcs")
+local O = require("core.objects")
+local SRI = require("lib.seat-role-identity")
+
+Spotlight.FIGURE_TAG = "spotlight_figurine"
+Spotlight.LIGHT_TAG = "spotlight_light"
+
+local CAROUSEL_CENTER_X = 0
+local CAROUSEL_CENTER_Z = 75
+local CAROUSEL_RADIUS = 50
+local CAROUSEL_Y = -30
+local SLOT_STEP_DEG = 36
+local FRONT_ANGLE_DEG = 180
+local ROTATE_SEC = 2
+local PARK_Y = -200
+local PARK_X0 = 140
+local PARK_Z = 0
+local PARK_SPACING = 14
+
+local CONTROLS_ROOT_ID = "spotlightControls_root"
+local SEAT_BUTTON_PREFIX = "spotlight_seat_"
+
+local SEAT_BUTTON_COLORS = {
+    Red = "#B22222|#C42828|#901818|#B22222",
+    Orange = "#E67300|#F08010|#CC6600|#E67300",
+    Brown = "#6B4423|#7A5030|#5A3820|#6B4423",
+    Pink = "#C71585|#D02090|#B01075|#C71585",
+    Purple = "#5E2A7E|#6E358E|#4E2070|#5E2A7E",
+}
+
+local rotating = false
+local lastPlayfieldFingerprint = nil
+local lastControlsFingerprint = nil
+local lastCarouselFingerprint = nil
+
+local function syncModule()
+    return require("core.sync")
+end
+
+--- @param color string
+--- @return string
+local function figureGuidKey(color)
+    return "SPOTLIGHT_FIGURE_" .. string.upper(color)
+end
+
+--- @param color string
+--- @return string
+local function lightGuidKey(color)
+    return "SPOTLIGHT_LIGHT_" .. string.upper(color)
+end
+
+--- @param color string
+--- @return string|nil
+local function figureGuid(color)
+    local key = figureGuidKey(color)
+    local guid = G.GUIDS[key]
+    if type(guid) == "string" and guid ~= "" then
+        return guid
+    end
+    return nil
+end
+
+--- @param color string
+--- @return string|nil
+local function lightGuid(color)
+    local key = lightGuidKey(color)
+    local guid = G.GUIDS[key]
+    if type(guid) == "string" and guid ~= "" then
+        return guid
+    end
+    return nil
+end
+
+--- @param color string
+--- @return Object|nil
+local function figureObject(color)
+    local guid = figureGuid(color)
+    if guid == nil then
+        return nil
+    end
+    return G.getObject(guid)
+end
+
+--- @param color string
+--- @return Object|nil
+local function lightObject(color)
+    local guid = lightGuid(color)
+    if guid == nil then
+        return nil
+    end
+    return G.getObject(guid)
+end
+
+--- @return boolean
+local function isSpotlightPhase()
+    return S.getStateVal("currentPhase") == C.Phases.SPOTLIGHT
+end
+
+--- @param color string
+--- @return boolean
+local function isColorInSession(color)
+    local slots = S.getStateVal("sessionScene", "seatSlots")
+    if type(slots) == "table" then
+        local row = slots[color]
+        if type(row) == "table" and row.absentFromSession == true then
+            return false
+        end
+    end
+    return true
+end
+
+--- @param color string
+--- @return string
+local function charNameForColor(color)
+    local dataById = C.PlayerData
+    if type(dataById) == "table" then
+        for _, data in pairs(dataById) do
+            if type(data) == "table" and data.color == color then
+                if type(data.charName) == "string" and data.charName ~= "" then
+                    return data.charName
+                end
+            end
+        end
+    end
+    return color
+end
+
+--- @return string[]
+local function inSessionColors()
+    local out = {}
+    for i = 1, #(C.PlayerColors or {}) do
+        local color = C.PlayerColors[i]
+        if isColorInSession(color) then
+            out[#out + 1] = color
+        end
+    end
+    return out
+end
+
+--- @return table
+local function ensureSpotlightState()
+    local rec = S.getStateVal("spotlight")
+    if type(rec) ~= "table" then
+        rec = {}
+        S.setStateVal(rec, "spotlight")
+        rec = S.getStateVal("spotlight")
+    end
+    if type(rec.order) ~= "table" then
+        rec.order = {}
+    end
+    local front = tonumber(rec.frontIndex)
+    if front == nil or front < 1 then
+        rec.frontIndex = 1
+    else
+        rec.frontIndex = math.floor(front)
+    end
+    return rec
+end
+
+--- @param angleDeg number compass degrees (0 = +Z, clockwise)
+--- @return number, number
+local function xzAtAngle(angleDeg)
+    local rad = math.rad(angleDeg)
+    local x = CAROUSEL_CENTER_X + CAROUSEL_RADIUS * math.sin(rad)
+    local z = CAROUSEL_CENTER_Z + CAROUSEL_RADIUS * math.cos(rad)
+    return x, z
+end
+
+--- World yaw so the figurine faces outward from the carousel origin.
+--- @param angleDeg number
+--- @return number
+local function outwardYaw(angleDeg)
+    return angleDeg % 360
+end
+
+--- @param color string
+--- @return number
+local function parkIndexForColor(color)
+    for i = 1, #(C.PlayerColors or {}) do
+        if C.PlayerColors[i] == color then
+            return i
+        end
+    end
+    return 1
+end
+
+--- @param color string
+--- @return Vector
+local function parkPosition(color)
+    local i = parkIndexForColor(color)
+    return Vector(PARK_X0 + (i - 1) * PARK_SPACING, PARK_Y, PARK_Z)
+end
+
+--- @param slotOffset number 0 = front (180°)
+--- @return Vector, Vector
+local function carouselPoseForSlot(slotOffset)
+    local angle = FRONT_ANGLE_DEG + slotOffset * SLOT_STEP_DEG
+    local x, z = xzAtAngle(angle)
+    local pos = Vector(x, CAROUSEL_Y, z)
+    local rot = Vector(0, outwardYaw(angle), 0)
+    return pos, rot
+end
+
+--- @param obj Object|nil
+--- @param tag string
+local function ensureTag(obj, tag)
+    if not U.isGameObject(obj) or obj.hasTag == nil or obj.addTag == nil then
+        return
+    end
+    if obj.hasTag(tag) ~= true then
+        obj.addTag(tag)
+    end
+end
+
+--- @param obj Object|nil
+--- @param pos Vector
+--- @param rot Vector|nil
+local function snapObject(obj, pos, rot)
+    if not U.isGameObject(obj) then
+        return
+    end
+    if obj.setLock ~= nil then
+        obj.setLock(true)
+    end
+    obj.interactable = false
+    if obj.setPosition ~= nil then
+        obj.setPosition(pos)
+    end
+    if rot ~= nil and obj.setRotation ~= nil then
+        obj.setRotation(rot)
+    end
+end
+
+--- @param modeKey string
+--- @return table|nil
+local function lightModeTemplate(modeKey)
+    local lights = NPCS.lights
+    if type(lights) ~= "table" then
+        return nil
+    end
+    local src = lights[modeKey]
+    if type(src) ~= "table" then
+        return nil
+    end
+    return U.clone(src, true)
+end
+
+--- @param fig Object
+--- @param modeKey string
+--- @return table|nil
+local function resolvedLightModeTable(fig, modeKey)
+    local mode = lightModeTemplate(modeKey)
+    if type(mode) ~= "table" then
+        return nil
+    end
+    local pose = NPCS.resolveFigurineLightPose(fig, mode.positioning, nil)
+    if type(pose) == "table" then
+        mode.position = pose.position
+        mode.rotation = pose.rotation
+    end
+    return mode
+end
+
+--- @param color string
+--- @param modeKey string
+--- @param transitionTime number
+local function applyStandInLight(color, modeKey, transitionTime)
+    local fig = figureObject(color)
+    local lit = lightObject(color)
+    local guid = lightGuid(color)
+    if not U.isGameObject(fig) or not U.isGameObject(lit) or guid == nil then
+        return
+    end
+    ensureTag(lit, Spotlight.LIGHT_TAG)
+    if lit.setLock ~= nil then
+        lit.setLock(true)
+    end
+    lit.interactable = false
+    local modeTable = resolvedLightModeTable(fig, modeKey)
+    if type(modeTable) ~= "table" then
+        return
+    end
+    local sec = tonumber(transitionTime) or 0
+    L.SetLightMode(guid, modeTable, nil, sec)
+end
+
+--- @param color string
+--- @param slotOffset number|nil nil parks under the table
+--- @param lightMode string|nil
+local function placeStandIn(color, slotOffset, lightMode)
+    local fig = figureObject(color)
+    if not U.isGameObject(fig) then
+        return
+    end
+    ensureTag(fig, Spotlight.FIGURE_TAG)
+    fig.setInvisibleTo({})
+    if slotOffset == nil then
+        snapObject(fig, parkPosition(color), Vector(0, 180, 0))
+        local lit = lightObject(color)
+        if U.isGameObject(lit) then
+            snapObject(lit, parkPosition(color), Vector(0, 0, 0))
+            applyStandInLight(color, "OFF", 0)
+        end
+        return
+    end
+    local pos, rot = carouselPoseForSlot(slotOffset)
+    snapObject(fig, pos, rot)
+    applyStandInLight(color, lightMode or "OFF", 0)
+end
+
+--- @param order table
+--- @param frontIndex number
+--- @param color string
+--- @return number|nil slot offset or nil when not on the carousel
+local function slotOffsetForColor(order, frontIndex, color)
+    for i = 1, #order do
+        if order[i] == color then
+            return (i - frontIndex)
+        end
+    end
+    return nil
+end
+
+--- @param slotOffset number|nil
+--- @param n number
+--- @return string
+local function lightModeForSlot(slotOffset, n)
+    if slotOffset == nil then
+        return "OFF"
+    end
+    if slotOffset == 0 then
+        return "SPOTLIGHT"
+    end
+    if slotOffset == 1 and n > 1 then
+        return "STANDARD"
+    end
+    return "OFF"
+end
+
+local function applyCarouselSnapFromState()
+    local rec = ensureSpotlightState()
+    local order = rec.order
+    local n = #order
+    local front = rec.frontIndex
+    if front > n and n > 0 then
+        front = 1
+        rec.frontIndex = 1
+    end
+    for i = 1, #(C.PlayerColors or {}) do
+        local color = C.PlayerColors[i]
+        local slot = slotOffsetForColor(order, front, color)
+        if isSpotlightPhase() and slot ~= nil then
+            placeStandIn(color, slot, lightModeForSlot(slot, n))
+        else
+            placeStandIn(color, nil, "OFF")
+        end
+    end
+    lastCarouselFingerprint = table.concat({
+        tostring(S.getStateVal("currentPhase")),
+        table.concat(order, ","),
+        tostring(front),
+    }, "|")
+end
+
+--- @param obj Object|nil
+--- @param y number
+local function setWorldY(obj, y)
+    if not U.isGameObject(obj) or obj.getPosition == nil or obj.setPosition == nil then
+        return
+    end
+    local p = obj.getPosition()
+    obj.setPosition(Vector(p.x, y, p.z))
+end
+
+local function eachDiceBag(fn)
+    for i = 1, #(C.PlayerColors or {}) do
+        local color = C.PlayerColors[i]
+        local bags = G.GetAllPlayerDiceBagGUIDs(color)
+        if type(bags) == "table" then
+            for _, guid in pairs(bags) do
+                fn(G.getObject(guid))
+            end
+        end
+    end
+end
+
+local function eachCompanionObject(fn)
+    local map = C.CompanionToggleToFigurineMap
+    if type(map) ~= "table" then
+        return
+    end
+    for toggleRef, figRef in pairs(map) do
+        fn(G.getObject(toggleRef))
+        fn(G.getObject(figRef))
+    end
+end
+
+local function eachCompulsionDeck(fn)
+    for i = 1, #(C.PlayerColors or {}) do
+        local color = C.PlayerColors[i]
+        fn(SRI.findObjectByRoleIdentity("COMPULSION_DECK_" .. string.upper(color)))
+    end
+end
+
+local function applyHideListOn()
+    local hideColors = C.HideFromPcSeatsAndSpectators or {}
+    for i = 1, #(C.PlayerColors or {}) do
+        local color = C.PlayerColors[i]
+        local fig = G.getObject(G.GUIDS["SEAT_FIGURE_" .. string.upper(color)])
+        if U.isGameObject(fig) and fig.setInvisibleTo ~= nil then
+            fig.setInvisibleTo(hideColors)
+        end
+    end
+    eachDiceBag(function(obj)
+        setWorldY(obj, PARK_Y)
+    end)
+    eachCompanionObject(function(obj)
+        setWorldY(obj, PARK_Y)
+    end)
+    eachCompulsionDeck(function(obj)
+        setWorldY(obj, PARK_Y)
+    end)
+end
+
+local function applyHideListOff()
+    if type(O.reconcilePcSeatHiddenObjectsFromState) == "function" then
+        O.reconcilePcSeatHiddenObjectsFromState()
+    end
+end
+
+local function playfieldFingerprint()
+    return tostring(S.getStateVal("currentPhase"))
+end
+
+local function applyPlayfieldToysFromPhase()
+    local fp = playfieldFingerprint()
+    if fp == lastPlayfieldFingerprint then
+        return
+    end
+    if isSpotlightPhase() then
+        applyHideListOn()
+    else
+        applyHideListOff()
+    end
+    lastPlayfieldFingerprint = fp
+end
+
+local function setControlsActive(active)
+    if UI == nil or UI.setAttribute == nil then
+        return
+    end
+    UI.setAttribute(CONTROLS_ROOT_ID, "active", active and "true" or "false")
+end
+
+local function refreshHostControls()
+    local rec = ensureSpotlightState()
+    local order = rec.order
+    local n = #order
+    local front = rec.frontIndex
+    local show = isSpotlightPhase()
+    local fp = table.concat({
+        tostring(show),
+        table.concat(order, ","),
+        tostring(front),
+    }, "|")
+    if fp == lastControlsFingerprint then
+        return
+    end
+    lastControlsFingerprint = fp
+    setControlsActive(show)
+    if UI == nil or UI.setAttribute == nil then
+        return
+    end
+    for slot = 1, 5 do
+        local id = SEAT_BUTTON_PREFIX .. tostring(slot)
+        local color = order[slot]
+        if show and type(color) == "string" then
+            local colors = SEAT_BUTTON_COLORS[color] or "#555555|#666666|#444444|#333333"
+            UI.setAttribute(id, "active", "true")
+            UI.setAttribute(id, "colors", colors)
+            UI.setAttribute(id, "text", "")
+        else
+            UI.setAttribute(id, "active", "false")
+        end
+    end
+end
+
+local function shuffleAndCommitOrder()
+    local order = inSessionColors()
+    U.shuffle(order)
+    local rec = ensureSpotlightState()
+    rec.order = order
+    rec.frontIndex = 1
+    S.setStateVal(rec, "spotlight")
+end
+
+--- @param delta number integer step along the occupied arc (no wrap)
+--- @return boolean
+local function rotateByDelta(delta)
+    if rotating then
+        return false
+    end
+    if not isSpotlightPhase() then
+        return false
+    end
+    delta = math.floor(tonumber(delta) or 0)
+    if delta == 0 then
+        return false
+    end
+    local rec = ensureSpotlightState()
+    local n = #rec.order
+    if n < 1 then
+        return false
+    end
+    local dest = rec.frontIndex + delta
+    if dest < 1 or dest > n then
+        return false
+    end
+    local startFront = rec.frontIndex
+    rec.frontIndex = dest
+    S.setStateVal(rec, "spotlight")
+    rotating = true
+
+    local starts = {}
+    local ends = {}
+    for i = 1, n do
+        local color = rec.order[i]
+        local fig = figureObject(color)
+        local startSlot = i - startFront
+        local endSlot = i - dest
+        local startPos, startRot = carouselPoseForSlot(startSlot)
+        local endPos, endRot = carouselPoseForSlot(endSlot)
+        if U.isGameObject(fig) then
+            startPos = fig.getPosition()
+            startRot = fig.getRotation()
+        end
+        starts[color] = { pos = startPos, rot = startRot, endSlot = endSlot }
+        ends[color] = { pos = endPos, rot = endRot }
+        -- Intensity / cone ease on the same 2s sine-in-out as the move (pose from live figurine at start).
+        applyStandInLight(color, lightModeForSlot(endSlot, n), ROTATE_SEC)
+    end
+
+    U.Lerp(function(t)
+        for i = 1, n do
+            local color = rec.order[i]
+            local fig = figureObject(color)
+            local lit = lightObject(color)
+            local st = starts[color]
+            local en = ends[color]
+            if U.isGameObject(fig) and type(st) == "table" and type(en) == "table" then
+                fig.setPosition(st.pos:lerp(en.pos, t))
+                fig.setRotation(U.lerpRotationShortest(st.rot, en.rot, t))
+                local destMode = lightModeTemplate(lightModeForSlot(st.endSlot, n))
+                if U.isGameObject(lit) and type(destMode) == "table" then
+                    local pose = NPCS.resolveFigurineLightPose(fig, destMode.positioning, nil)
+                    if type(pose) == "table" then
+                        lit.setPosition(pose.position)
+                        if pose.rotation ~= nil then
+                            lit.setRotation(pose.rotation)
+                        end
+                    end
+                end
+            end
+        end
+    end, 0, 1, ROTATE_SEC, false, "sineInOut")
+
+    U.await(function()
+        rotating = false
+        applyCarouselSnapFromState()
+        refreshHostControls()
+        local overlay = require("core.game_state_overlay")
+        if type(overlay.reconcileFromState) == "function" then
+            overlay.reconcileFromState()
+        end
+    end, ROTATE_SEC + 0.05)
+    return true
+end
+
+--- @return boolean, string|nil
+function Spotlight.auditStandins()
+    local missing = {}
+    for i = 1, #(C.PlayerColors or {}) do
+        local color = C.PlayerColors[i]
+        if figureGuid(color) == nil or figureObject(color) == nil then
+            missing[#missing + 1] = "figurine " .. color .. " (" .. figureGuidKey(color) .. ")"
+        end
+        if lightGuid(color) == nil or lightObject(color) == nil then
+            missing[#missing + 1] = "light " .. color .. " (" .. lightGuidKey(color) .. ")"
+        end
+    end
+    if #missing == 0 then
+        return true, nil
+    end
+    local msg = "Spotlight stand-ins are missing from the save: "
+        .. table.concat(missing, "; ")
+        .. ". Park five tagged spotlight_figurine objects and five spotlight_light objects in the preload zone and put their GUIDs in lib/guids.ttslua."
+    return false, msg
+end
+
+function Spotlight.invalidateReconcileCache()
+    lastPlayfieldFingerprint = nil
+    lastControlsFingerprint = nil
+    lastCarouselFingerprint = nil
+end
+
+function Spotlight.activeCharName()
+    if not isSpotlightPhase() then
+        return ""
+    end
+    local rec = ensureSpotlightState()
+    local color = rec.order[rec.frontIndex]
+    if type(color) ~= "string" then
+        return ""
+    end
+    return charNameForColor(color)
+end
+
+--- Snap or park stand-ins, apply hide-list, refresh Host strip. Idempotent.
+function Spotlight.reconcileFromState()
+    if isSpotlightPhase() then
+        local ok = Spotlight.auditStandins()
+        if ok == true then
+            local rec = ensureSpotlightState()
+            local fp = table.concat({
+                "on",
+                table.concat(rec.order, ","),
+                tostring(rec.frontIndex),
+            }, "|")
+            if fp ~= lastCarouselFingerprint and not rotating then
+                applyCarouselSnapFromState()
+            end
+        end
+    else
+        if not rotating then
+            for i = 1, #(C.PlayerColors or {}) do
+                placeStandIn(C.PlayerColors[i], nil, "OFF")
+            end
+            lastCarouselFingerprint = "off"
+        end
+    end
+    applyPlayfieldToysFromPhase()
+    refreshHostControls()
+end
+
+--- Play → Spotlight work under the transition cover.
+--- Narrative clear + Table A + Spotlight skybox + hide-list always run.
+--- Missing workshop stand-ins still fail loudly so the cover lifts (`ok == false`).
+--- @return boolean, string|nil
+function Spotlight.applyEnterWorld()
+    local ok, err = Spotlight.auditStandins()
+
+    local Scenes = require("core.scenes")
+    if type(Scenes.clearLiveNarrativeForPhaseTransition) == "function" then
+        Scenes.clearLiveNarrativeForPhaseTransition({ reason = "spotlight_enter" })
+    end
+
+    local RSL = require("lib.rotational-seat-layout")
+    local currentTable = S.getStateVal("seatLayout", "currentTableKey")
+    S.setStateVal("Table A", "sessionScene", "tableKey")
+    if currentTable ~= "Table A" then
+        RSL.SetTableTo("Table A", { skipTransitionBlindfold = true })
+    end
+    S.setStateVal("Spotlight", "sessionScene", "skyboxOverride")
+    if type(Scenes.invalidateReconcileCache) == "function" then
+        Scenes.invalidateReconcileCache()
+    end
+
+    shuffleAndCommitOrder()
+    Spotlight.invalidateReconcileCache()
+
+    local Phases = require("core.phases")
+    if type(Phases.freezeClock) == "function" then
+        Phases.freezeClock(nil)
+    end
+
+    local Sync = syncModule()
+    if type(Sync.full) == "function" then
+        Sync.full({ force = true, skipSoundscape = true, reason = "spotlight_enter" })
+    end
+
+    if ok == true then
+        applyCarouselSnapFromState()
+    end
+    applyPlayfieldToysFromPhase()
+    refreshHostControls()
+
+    local GameStateOverlay = require("core.game_state_overlay")
+    if type(GameStateOverlay.reconcileFromState) == "function" then
+        GameStateOverlay.reconcileFromState()
+    end
+    return ok == true, err
+end
+
+--- Spotlight → End work under the existing cover. Flips phase first so hide-list restores while still covered.
+--- @return boolean, string|nil
+function Spotlight.applyExitWorld()
+    S.setCurrentPhase(C.Phases.END)
+    rotating = false
+    Spotlight.invalidateReconcileCache()
+    for i = 1, #(C.PlayerColors or {}) do
+        placeStandIn(C.PlayerColors[i], nil, "OFF")
+    end
+    applyPlayfieldToysFromPhase()
+    refreshHostControls()
+    local Sync = syncModule()
+    if type(Sync.full) == "function" then
+        Sync.full({ force = true, skipSoundscape = true, reason = "spotlight_exit" })
+    end
+    local GameStateOverlay = require("core.game_state_overlay")
+    if type(GameStateOverlay.reconcileFromState) == "function" then
+        GameStateOverlay.reconcileFromState()
+    end
+    return true, nil
+end
+
+--- @param player any
+--- @param id string
+function Spotlight.onHudClick(player, id)
+    if not U.isStorytellerSteamPlayer(player) then
+        return
+    end
+    if not isSpotlightPhase() then
+        return
+    end
+    if type(id) ~= "string" then
+        return
+    end
+    if id == "spotlight_prev" then
+        rotateByDelta(-1)
+        return
+    end
+    if id == "spotlight_next" then
+        rotateByDelta(1)
+        return
+    end
+    local slot = tonumber(string.match(id, "^spotlight_seat_(%d+)$"))
+    if slot == nil then
+        return
+    end
+    local rec = ensureSpotlightState()
+    rotateByDelta(slot - rec.frontIndex)
+end
+
+return Spotlight

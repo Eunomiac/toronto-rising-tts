@@ -1,0 +1,28 @@
+<!-- Host-only Spotlight carousel strip (TOR-98). Hidden unless currentPhase is Spotlight. -->
+
+<Panel id="spotlightControls_root"
+  visibility="Black|Host"
+  active="false"
+  rectAlignment="LowerCenter"
+  offsetXY="0 28"
+  width="460"
+  height="40"
+  color="rgba(0,0,0,0)"
+  raycastTarget="false">
+  <HorizontalLayout spacing="6" childAlignment="MiddleCenter" childForceExpandWidth="false" childForceExpandHeight="true">
+    <Button id="spotlight_prev" text="‹" fontSize="22" fontStyle="Bold" minWidth="36" preferredWidth="36"
+      colors="#333333|#555555|#222222|#333333" textColor="#FFFFFF" onClick="HUD_spotlightClick" />
+    <Button id="spotlight_seat_1" text="" minWidth="36" preferredWidth="36"
+      colors="#555555|#666666|#444444|#333333" textColor="#FFFFFF" onClick="HUD_spotlightClick" />
+    <Button id="spotlight_seat_2" text="" minWidth="36" preferredWidth="36"
+      colors="#555555|#666666|#444444|#333333" textColor="#FFFFFF" onClick="HUD_spotlightClick" />
+    <Button id="spotlight_seat_3" text="" minWidth="36" preferredWidth="36"
+      colors="#555555|#666666|#444444|#333333" textColor="#FFFFFF" onClick="HUD_spotlightClick" />
+    <Button id="spotlight_seat_4" text="" minWidth="36" preferredWidth="36"
+      colors="#555555|#666666|#444444|#333333" textColor="#FFFFFF" onClick="HUD_spotlightClick" />
+    <Button id="spotlight_seat_5" text="" minWidth="36" preferredWidth="36"
+      colors="#555555|#666666|#444444|#333333" textColor="#FFFFFF" onClick="HUD_spotlightClick" />
+    <Button id="spotlight_next" text="›" fontSize="22" fontStyle="Bold" minWidth="36" preferredWidth="36"
+      colors="#333333|#555555|#222222|#333333" textColor="#FFFFFF" onClick="HUD_spotlightClick" />
+  </HorizontalLayout>
+</Panel>

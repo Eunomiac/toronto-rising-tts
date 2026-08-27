@@ -35,6 +35,7 @@ Status: audit/survey; verify rows against current code before acting.
 - **Mitigated:** `Soundscape.reconcileFromState` uses pending fingerprint + generation token so duplicate deferred applies within the defer window do not stack fades.
 - **Mitigated:** `Sync.player` uses per-seat overlay/pulse reconcilers and scoped `UpdateUIDisplays` (no second `HO.syncAll` from UI delta).
 - **Mitigated:** `NPCS.reconcileSessionSceneNpcWorldFromState` stash → preload → place; fingerprint only on full success; `auditPreloadPoolFigurines` on load; adopt-only `ensureNpcInPreloadZone` on failed move.
+- **Mitigated (TOR-98):** Spotlight carousel lerp is the physical channel for stand-in pose and stage lights. `Spotlight.reconcileFromState` fingerprints `order|frontIndex` and skips while a 2s rotate is in flight so `Sync.full` does not snap mid-move.
 - **Open (P2):** Bootstrap still runs multiple timed retries (now one unified schedule); measure with `sync_metrics` before reducing offsets.
 
 ## Risk matrix

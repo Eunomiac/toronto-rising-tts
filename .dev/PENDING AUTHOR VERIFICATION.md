@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-08-27 — added **TOR-512** (Absent off restores full seat pile). Linear Done-without-confirm sweep on 2026-08-26 added **TOR-507**, **TOR-508**, **TOR-509**, and **TOR-510**. Author confirmed **TOR-506** (End→Intermission audio with the cover) on 2026-08-22. **TOR-439** remains a multiclient gate (not a solo Save & Play)._
+_Last populated: 2026-08-27 — added **TOR-98** (Spotlight phase ritual). Linear Done-without-confirm sweep on 2026-08-26 added **TOR-507**, **TOR-508**, **TOR-509**, and **TOR-510**. Author confirmed **TOR-506** (End→Intermission audio with the cover) on 2026-08-22. **TOR-439** remains a multiclient gate (not a solo Save & Play)._
 
 ### High — session / join / first-load
 
@@ -46,6 +46,16 @@ Pink’s tarot deck should stay **put away** (down in the table, not sitting out
 ---
 
 ### Medium — load console / Scenes picker
+
+#### TOR-98 — Spotlight phase (carousel, overlay, Host strip)
+
+**How to verify:** First park **five** Spotlight player figurines and **five** matching stage lights in the preload zone (world Y about −200), same images as the seat figures, tagged `spotlight_figurine` / `spotlight_light` (not `npc_figurine`). Put their GUIDs into `lib/guids.ttslua` (`SPOTLIGHT_FIGURE_*` and `SPOTLIGHT_LIGHT_*` for Brown, Orange, Pink, Purple, Red), then Save & Play.
+
+From Play, click **Advance →**. A scene-style cover should come down. When it lifts: the table should be Table A with the Spotlight skybox; Main music should still be playing (location/weather faded out, Main not restarted); seat figures should be hidden from player colors; bags, companions, and compulsion decks should be under the table; in-session stand-ins should sit on a ring in front of the table (one person at the front if only one is in session). The overlay should show **S P O T L I G H T** and the front character's name. A seven-button strip at the bottom of the Host view should rotate the ring over about two seconds (arrows do nothing at the ends; clicking the current color does nothing).
+
+Type a session name next to the session number on the Phases panel. Advance to End: Main should keep playing, Table A should stay, the carousel should go away, bags and seat figures should return, and the overlay should show that session name plus **END**. If the workshop objects are missing, Advance should still lift the cover and show a clear error instead of hanging.
+
+**Context:** Spotlight is no longer “silence everything and hope a library scene exists.” It is its own phase ritual. Memoriam LUT (**TOR-101**) and a future Downtime clock are not reversed yet — comments are in the narrative-clear path.
 
 #### ✅ TOR-508 — Rain particles no longer print a missing GUID on load
 

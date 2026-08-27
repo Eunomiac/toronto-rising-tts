@@ -1,6 +1,6 @@
 --[[
     Center-top overlay: district / site (split on first ":" when present) and in-game date + 12-hour clock
-    during **Play** only (any Play subphase). TOR-143.
+    during **Play**. Spotlight and End use the same panel with ritual copy (TOR-98).
 
     Single writer: `GameStateOverlay.reconcileFromState()` — driven from `UpdateUIDisplays` / `Sync.ui`
     (see `core/sync.ttslua` incremental delta `gameStateOverlay`) so nothing else fights the overlay.
@@ -127,7 +127,19 @@ local function sessionSceneOverlayFingerprint()
         ckParts.h = tostring(ck.hour)
         ckParts.m = tostring(ck.minute)
     end
+    local spotlight = S.getStateVal("spotlight")
+    local spotlightFp = ""
+    if type(spotlight) == "table" then
+        local order = spotlight.order
+        local orderText = ""
+        if type(order) == "table" then
+            orderText = table.concat(order, ",")
+        end
+        spotlightFp = orderText .. "|" .. tostring(spotlight.frontIndex)
+    end
     return table.concat({
+        tostring(S.getStateVal("currentPhase") or ""),
+        tostring(S.getStateVal("sessionName") or ""),
         dKey,
         sKey,
         ckParts.y,
@@ -135,6 +147,7 @@ local function sessionSceneOverlayFingerprint()
         ckParts.d,
         ckParts.h,
         ckParts.m,
+        spotlightFp,
     }, "|")
 end
 
@@ -157,6 +170,22 @@ end
 local function shouldShowNarrativeClockOnOverlay()
     local phase = S.getStateVal("currentPhase")
     return phase == C.Phases.PLAY
+end
+
+--- Time/location panel presenter: Play (clock), Spotlight (ritual), End (session name), or hidden.
+--- @return string "play"|"spotlight"|"end"|"hidden"
+local function overlayTimeLocationKind()
+    local phase = S.getStateVal("currentPhase")
+    if phase == C.Phases.PLAY then
+        return "play"
+    end
+    if phase == C.Phases.SPOTLIGHT then
+        return "spotlight"
+    end
+    if phase == C.Phases.END then
+        return "end"
+    end
+    return "hidden"
 end
 
 --- @param hour24 number
@@ -446,11 +475,23 @@ local function reconcileSessionNumberFromState()
     pushOverlayText("gameStateOverlay_sesionNumber", "− " .. roman .. " −")
 end
 
+--- Empty district/site row (Spotlight / End ritual overlay).
+local function pushEmptyLocationRow()
+    reconcileSessionNumberFromState()
+    pushOverlayText("gameStateOverlay_district", "")
+    pushOverlayText("gameStateOverlay_parentSite", "")
+    pushOverlayText("gameStateOverlay_site", "")
+    pushOverlayActive("gameStateOverlay_districtSeparator", false)
+    pushOverlayActive("gameStateOverlay_parentSite", false)
+    pushOverlayActive("gameStateOverlay_parentSiteSeparator", false)
+end
+
 --- Push district / site row (parent site + separator only when the site name contains a ":" split).
 local function reconcileLocationRowFromState()
     reconcileSessionNumberFromState()
     local districtLabel, siteFull = resolveLocationLabelsFromState()
     pushOverlayText("gameStateOverlay_district", districtLabel)
+    pushOverlayActive("gameStateOverlay_districtSeparator", true)
 
     local hasParent, parentText, siteProper = splitSiteNameForOverlay(siteFull)
     if hasParent then
@@ -476,7 +517,8 @@ function GameStateOverlay.reconcileFromState()
     -- (e.g. Intermission edits to sessionNum) so Play reveal is not stale (TOR-362).
     reconcileSessionNumberFromState()
 
-    if not shouldShowNarrativeClockOnOverlay() then
+    local kind = overlayTimeLocationKind()
+    if kind == "hidden" then
         pushOverlayActive(OVERLAY_TIME_LOCATION_ID, false)
         pushOverlayActive(OVERLAY_WEATHER_ID, false)
         pushOverlayText("gameStateOverlay_datetime", "")
@@ -487,7 +529,36 @@ function GameStateOverlay.reconcileFromState()
         return
     end
 
-    -- No live library scene: time is undefined — blank clock, hide weather (TOR-151 / TOR-245).
+    if kind == "spotlight" then
+        bustTextCacheIfSessionSceneChanged()
+        pushOverlayActive(OVERLAY_TIME_LOCATION_ID, true)
+        pushEmptyLocationRow()
+        pushOverlayText("gameStateOverlay_datetime", "S P O T L I G H T")
+        local Spotlight = require("core.spotlight")
+        local charName = ""
+        if type(Spotlight.activeCharName) == "function" then
+            charName = Spotlight.activeCharName() or ""
+        end
+        pushOverlayText("gameStateOverlay_time", charName)
+        pushOverlayActive(OVERLAY_WEATHER_ID, false)
+        return
+    end
+
+    if kind == "end" then
+        bustTextCacheIfSessionSceneChanged()
+        pushOverlayActive(OVERLAY_TIME_LOCATION_ID, true)
+        pushEmptyLocationRow()
+        local sessionName = S.getStateVal("sessionName")
+        if type(sessionName) ~= "string" then
+            sessionName = ""
+        end
+        pushOverlayText("gameStateOverlay_datetime", sessionName)
+        pushOverlayText("gameStateOverlay_time", "END")
+        pushOverlayActive(OVERLAY_WEATHER_ID, false)
+        return
+    end
+
+    -- Play: existing clock / location / weather.
     if SceneLibrary.hasLiveSceneOnTable() ~= true then
         bustTextCacheIfSessionSceneChanged()
         pushOverlayActive(OVERLAY_TIME_LOCATION_ID, true)

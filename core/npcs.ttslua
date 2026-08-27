@@ -602,6 +602,9 @@ function NPCS.isPooledFigurineObject(obj)
     if not U.isGameObject(obj) then
         return false
     end
+    if obj.hasTag ~= nil and obj.hasTag("spotlight_figurine") == true then
+        return false
+    end
     if obj.getCustomObject == nil or U.Type(obj.getCustomObject()) ~= "table" then
         return false
     end
