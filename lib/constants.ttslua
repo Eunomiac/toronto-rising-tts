@@ -1402,10 +1402,10 @@ end
 C.ReferenceCameraAngles = {
   default = {
     cameraMode = "ThirdPerson",
-    position = Vector({ 0, 28.5760, -54.5664 }),
+    position = Vector({ 0, 18.5760, -54.5664 }),
     pitch = 0,
     yaw = 0,
-    distance = 27.6598,
+    distance = 17.6598,
     isRelativeToReferenceHandPosition = true
   },
   sheet = {

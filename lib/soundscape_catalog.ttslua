@@ -1057,7 +1057,7 @@ Catalog.WEATHER_CONDITIONS = {
   thunderstorm = { label = "Thunderstorm", rain = "rainHeavy", wind = "windWinterMax", thunderEnabled = true, volume = 0.5 },
 }
 
---- 0-based `AssetBundle.playLoopingEffect` index for `G.GUIDS.PARTICLES_WEATHER_RAIN`.
+--- 0-based `AssetBundle.playLoopingEffect` index for `G.GUIDS.PARTICLE_EMITTER`.
 --- Author list 1–13 maps to TTS indexes 0–12 (slot 1 = None).
 Catalog.RAIN_PARTICLE_NONE_INDEX = 0
 

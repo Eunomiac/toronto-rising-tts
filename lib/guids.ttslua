@@ -338,18 +338,18 @@ G.GUIDS = {
     SEAT_FIGURE_PURPLE = "923872",
     SEAT_FIGURE_RED = "1e70cf",
 
-    -- Spotlight-phase stand-ins (TOR-98). Workshop objects in the preload zone
-    -- tagged spotlight_figurine / spotlight_light. Fill GUIDs after they exist in the save.
-    SPOTLIGHT_FIGURE_BROWN = "",
-    SPOTLIGHT_FIGURE_ORANGE = "",
-    SPOTLIGHT_FIGURE_PINK = "",
-    SPOTLIGHT_FIGURE_PURPLE = "",
-    SPOTLIGHT_FIGURE_RED = "",
-    SPOTLIGHT_LIGHT_BROWN = "",
-    SPOTLIGHT_LIGHT_ORANGE = "",
-    SPOTLIGHT_LIGHT_PINK = "",
-    SPOTLIGHT_LIGHT_PURPLE = "",
-    SPOTLIGHT_LIGHT_RED = "",
+    -- Spotlight-phase stand-ins. Workshop objects in the preload zone
+    -- tagged spotlight_figurine / spotlight_light.
+    SPOTLIGHT_FIGURE_BROWN = "6ab32d",
+    SPOTLIGHT_LIGHT_BROWN = "8fa314",
+    SPOTLIGHT_FIGURE_ORANGE = "f97704",
+    SPOTLIGHT_LIGHT_ORANGE = "90119a",
+    SPOTLIGHT_FIGURE_RED = "19ac51",
+    SPOTLIGHT_LIGHT_RED = "80cc8e",
+    SPOTLIGHT_FIGURE_PINK = "358075",
+    SPOTLIGHT_LIGHT_PINK = "90a660",
+    SPOTLIGHT_FIGURE_PURPLE = "5628dd",
+    SPOTLIGHT_LIGHT_PURPLE = "b9055a",
 
     -- Player-Specific Objects
     PRINCE_SIGNET_BORDER_RED = "4506f3",

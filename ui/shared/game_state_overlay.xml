@@ -37,6 +37,19 @@
     <Text id="gameStateOverlay_time" class="large_red_text" text="" />
   </VerticalLayout>
 
+<!--
+UI.setAttributes("gameStateOverlay_district", {text = ""})
+UI.setAttributes("gameStateOverlay_districtSeparator", {text = "The Devils You Know", active="true", fontStyle="Normal"})
+UI.setAttributes("gameStateOverlay_parentSite", {text = "The Devil's Bargain"})
+UI.setAttributes("gameStateOverlay_parentSiteSeparator", {text = "◆"})
+UI.setAttributes("gameStateOverlay_site", {text = "The Devil's Bargain"})
+UI.setAttributes("gameStateOverlay_datetime", {color = "#d3ba50", fontStyle = "BoldAndItalic"})
+UI.setAttributes("gameStateOverlay_time", {color="#FFFFFF", fontSize = "42", minHeight = "", preferredHeight = "", flexibleHeight = "0", text="DEBRIEF"})
+UI.setAttributes("gameStateOverlay_timeAndLocation", {offsetXY = "0 20", spacing="0"})
+UI.setAttributes("gameStateOverlay_timeAndLocation_background", {offsetXY = "7 10"})
+-->
+
+
   <VerticalLayout id="gameStateOverlay_weather" class="gameStateOverlay_topRight">
     <Image class="gameStateOverlay_background" image="bg_playerOverlay_weather" />
     <HorizontalLayout class="gameStateOverlay_weather" spacing="5">

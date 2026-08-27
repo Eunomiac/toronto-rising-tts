@@ -1205,6 +1205,53 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         url = ""
       },
     },
+    fomorach1 = {
+      key = "fomorach1",
+      startYear = 1769,
+      endYear = 1786,
+      location = "Belfast to the East Coast Colonies",
+      panelA = {
+        display = "Belfast family yard",
+        isOutdoors = true,
+        isDaytime = true,
+        weather = {
+          "windLow"
+        },
+        locationAudio = "marketCrowd",
+        url = ""
+      },
+      panelB = {
+        display = "Ruined Belfast homestead",
+        isOutdoors = true,
+        isDaytime = false,
+        weather = {
+          "rainLight",
+          "windMed"
+        },
+        locationAudio = "eerieForest",
+        url = ""
+      },
+      panelC = {
+        display = "Atlantic emigrant ship",
+        isOutdoors = true,
+        isDaytime = true,
+        weather = {
+          "windMed"
+        },
+        locationAudio = "shipDeck",
+        url = ""
+      },
+      panelD = {
+        display = "Colonial settlement",
+        isOutdoors = true,
+        isDaytime = false,
+        weather = {
+          "windLow"
+        },
+        locationAudio = "frontierSettlement",
+        url = ""
+      },
+    },
     fomorach5 = {
       key = "fomorach5",
       startYear = 1786,
@@ -2555,7 +2602,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
     rashid7 = {
       key = "rashid7",
       startYear = 1819,
-      endYear = 1838,
+      endYear = 1839,
       location = "Alamut, Afghanistan",
       panelA = {
         display = "Fortress courtyard",
@@ -2591,6 +2638,47 @@ SkyboxesCatalog.MemoriamSkyboxes = {
           "windMed"
         },
         locationAudio = "weaponsTraining",
+        url = ""
+      },
+    },
+    rashid9 = {
+      key = "rashid9",
+      startYear = 1839,
+      endYear = 1893,
+      location = "Constantinople, Ottoman Empire",
+      panelA = {
+        display = "Bosphorus salon",
+        isOutdoors = false,
+        isDaytime = false,
+        weather = {},
+        locationAudio = "quietIndoor",
+        url = ""
+      },
+      panelB = {
+        display = "Nephilim library",
+        isOutdoors = false,
+        isDaytime = false,
+        weather = {},
+        locationAudio = "library",
+        url = ""
+      },
+      panelC = {
+        display = "Ministry avenue",
+        isOutdoors = true,
+        isDaytime = false,
+        weather = {
+          "rainLight",
+          "windLow"
+        },
+        locationAudio = "horseDrawnTraffic",
+        url = ""
+      },
+      panelD = {
+        display = "Bazaar and quay",
+        isOutdoors = false,
+        isDaytime = false,
+        weather = {},
+        locationAudio = "indoorMarket",
         url = ""
       },
     },
@@ -2633,6 +2721,179 @@ SkyboxesCatalog.MemoriamSkyboxes = {
           "windMed"
         },
         locationAudio = "weaponsTraining",
+        url = ""
+      },
+    },
+    rashid13 = {
+      key = "rashid13",
+      startYear = 1901,
+      endYear = 1922,
+      location = "Constantinople, Ottoman Empire",
+      panelA = {
+        display = "Blood-memory chamber",
+        isOutdoors = false,
+        isDaytime = false,
+        weather = {},
+        locationAudio = "ritualRoom",
+        url = ""
+      },
+      panelB = {
+        display = "Newspaper avenue",
+        isOutdoors = true,
+        isDaytime = false,
+        weather = {
+          "rainLight",
+          "windLow"
+        },
+        locationAudio = "horseDrawnTraffic",
+        url = ""
+      },
+      panelC = {
+        display = "Wartime harbor",
+        isOutdoors = true,
+        isDaytime = false,
+        weather = {
+          "rainLight",
+          "windMed"
+        },
+        locationAudio = "waterside",
+        url = ""
+      },
+      panelD = {
+        display = "Occupation checkpoint",
+        isOutdoors = true,
+        isDaytime = false,
+        weather = {
+          "rainLight",
+          "windLow"
+        },
+        locationAudio = "militaryOccupation",
+        url = ""
+      },
+    },
+    rashid18 = {
+      key = "rashid18",
+      startYear = 1922,
+      endYear = 1952,
+      location = "Various Locations, Europe",
+      panelA = {
+        display = "Continental occult archive",
+        isOutdoors = false,
+        isDaytime = false,
+        weather = {},
+        locationAudio = "library",
+        url = ""
+      },
+      panelB = {
+        display = "Interwar hotel café",
+        isOutdoors = false,
+        isDaytime = false,
+        weather = {},
+        locationAudio = "diveBar",
+        url = ""
+      },
+      panelC = {
+        display = "Old-city tram square",
+        isOutdoors = true,
+        isDaytime = false,
+        weather = {
+          "rainLight",
+          "windLow"
+        },
+        locationAudio = "historicStreet",
+        url = ""
+      },
+      panelD = {
+        display = "International border station",
+        isOutdoors = true,
+        isDaytime = false,
+        weather = {
+          "rainLight",
+          "windMed"
+        },
+        locationAudio = "railwayStation",
+        url = ""
+      },
+    },
+    rashid21 = {
+      key = "rashid21",
+      startYear = 1952,
+      endYear = 1997,
+      location = "Toronto, Canada",
+      panelA = {
+        display = "Hidden court",
+        isOutdoors = false,
+        isDaytime = false,
+        weather = {},
+        locationAudio = "quietIndoor",
+        url = ""
+      },
+      panelB = {
+        display = "Immigrant commercial street",
+        isOutdoors = true,
+        isDaytime = false,
+        weather = {
+          "rainLight",
+          "windLow"
+        },
+        locationAudio = "streetcarTraffic",
+        url = ""
+      },
+      panelC = {
+        display = "Training room",
+        isOutdoors = false,
+        isDaytime = false,
+        weather = {},
+        locationAudio = "weaponsTraining",
+        url = ""
+      },
+      panelD = {
+        display = "Operations archive",
+        isOutdoors = false,
+        isDaytime = false,
+        weather = {},
+        locationAudio = "office",
+        url = ""
+      },
+    },
+    rashid26 = {
+      key = "rashid26",
+      startYear = 2013,
+      endYear = 2013,
+      location = "Odense, Denmark",
+      panelA = {
+        display = "Pact negotiation chamber",
+        isOutdoors = false,
+        isDaytime = false,
+        weather = {},
+        locationAudio = "softIndoor",
+        url = ""
+      },
+      panelB = {
+        display = "Odense old town",
+        isOutdoors = true,
+        isDaytime = false,
+        weather = {
+          "rainLight",
+          "windLow"
+        },
+        locationAudio = "cityChatter",
+        url = ""
+      },
+      panelC = {
+        display = "Hotel caucus lounge",
+        isOutdoors = false,
+        isDaytime = false,
+        weather = {},
+        locationAudio = "softIndoor",
+        url = ""
+      },
+      panelD = {
+        display = "Harbor Kindred venue",
+        isOutdoors = false,
+        isDaytime = false,
+        weather = {},
+        locationAudio = "nightclub",
         url = ""
       },
     },
