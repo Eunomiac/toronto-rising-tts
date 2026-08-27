@@ -30,9 +30,9 @@ Spotlight.FIGURE_TAG = "spotlight_figurine"
 Spotlight.LIGHT_TAG = "spotlight_light"
 
 local CAROUSEL_CENTER_X = 0
-local CAROUSEL_CENTER_Z = 75
-local CAROUSEL_RADIUS = 50
-local CAROUSEL_Y = -30
+local CAROUSEL_CENTER_Z = 175
+local CAROUSEL_RADIUS = 100
+local CAROUSEL_Y = -45
 local SLOT_STEP_DEG = 36
 local FRONT_ANGLE_DEG = 180
 local ROTATE_SEC = 2
