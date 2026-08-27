@@ -686,6 +686,8 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-08-22 | PAVE | late inbox follow-up | Author ✅ TOR-506 (End→Intermission audio with cover). Focus unchanged. TOR-439 remains the multiclient gate. |
 | 2026-08-22 | CREATE+SHIP | TOR-508 | Rain particle missing-GUID print during load bootstrap (cold getObjectFromGUID). relatedTo TOR-498. Pending Save & Play. |
 | 2026-08-26 | CREATE+SHIP | TOR-509 | Skybox catalog `isShown` flag; hidden rows omitted from Scenes picker. relatedTo TOR-422. Pending Save & Play. |
+| 2026-08-27 | CREATE+SHIP | TOR-511 | Skybox picker HUD snapshot baked before catalog import; embed after generate. relatedTo TOR-509. Pending Save & Play. |
+
 | 2026-08-26 | CREATE+SHIP | TOR-510 | Memoriam skybox sheet import (`SKYBOXMEMORIAMCSV` → nested `C.MemoriamSkyboxes`). relatedTo TOR-422 / TOR-509. |
 | 2026-08-26 | PAVE | author request | Linear Done-without-confirm sweep. Outstanding + TOR-507 (numbered slots), TOR-508 (rain particle bootstrap miss), TOR-509 (skybox isShown picker), TOR-510 (Memoriam catalog import). TOR-439 remains the multiclient gate. |
 | 2026-08-27 | DOC | PENDING AUTHOR VERIFICATION | Same-session add: shipping TTS-observable code must add an Outstanding checklist row immediately (any path). Inbox is catch-up plus **✅** / **❌** / **⚠️** mark processing, not the primary add path. |

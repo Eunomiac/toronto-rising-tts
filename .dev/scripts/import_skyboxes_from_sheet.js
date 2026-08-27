@@ -4,7 +4,7 @@
  * Fetch public Google Sheet CSV ranges → lib/skyboxes_catalog.ttslua (TOR-422, TOR-510).
  *
  * Run from repo root: node .dev/scripts/import_skyboxes_from_sheet.js
- * Prefer: npm run skyboxes:import (also regenerates Scenes location modals)
+ * Prefer: npm run skyboxes:import (regenerates Scenes location modals, then embeds Global XmlUI)
  */
 
 const fs = require("fs");

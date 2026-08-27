@@ -7,7 +7,8 @@
  * catalog rows with `isShown = false` are omitted from the skybox picker).
  *
  * Run from repo root: node .dev/scripts/generate_scenes_location_modals_xml.js
- * (Also chained from `npm run skyboxes:import`.)
+ * Chained from `npm run skyboxes:import` (which then embeds Global XmlUI for remount).
+ * Must run before `npm run ui-global-xml:embed` — Save & Play Lua does not replace a mounted HUD.
  */
 
 const fs = require("fs");

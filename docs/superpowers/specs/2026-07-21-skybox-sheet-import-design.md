@@ -172,11 +172,11 @@ C.MemoriamSkyboxes = SkyboxesCatalog.MemoriamSkyboxes
 ### Task / npm
 
 - Script: `.dev/scripts/import_skyboxes_from_sheet.js` (name may vary slightly; keep npm key stable)
-- `package.json`: `"skyboxes:import": "node .dev/scripts/import_skyboxes_from_sheet.js && node .dev/scripts/generate_scenes_location_modals_xml.js"`
-- VS Code / Cursor default build (**BUILD PIPELINE** / `npm run build`) runs `npm run skyboxes:import`
-- Standalone: `npm run skyboxes:import`
+- `package.json`: `"skyboxes:import": "node .dev/scripts/import_skyboxes_from_sheet.js && npm run scenes-location-modals:generate && npm run ui-global-xml:embed"`
+- VS Code / Cursor default build (**BUILD PIPELINE** / `npm run build`) runs `npm run skyboxes:import` **before** the Global XmlUI embed (TOR-511)
+- Standalone: `npm run skyboxes:import` (also refreshes `lib/ui_global_xml_docs.ttslua` so Phases **Refresh XML** picks up the new picker)
 
-- Not part of default `build:all-tooling` (network-dependent)
+The live Scenes picker is HUD XmlUI, not the Lua catalog. After Save & Play, click **Refresh XML** on the Phases panel (or remount) so the table drops the previous HUD snapshot.
 
 ### Docs
 

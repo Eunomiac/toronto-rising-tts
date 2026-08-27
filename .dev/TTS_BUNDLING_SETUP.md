@@ -400,7 +400,7 @@ Some panels are assembled at runtime via `UI.setXml` (character sheet **pages 3�
 - **Parameters**: `@@NAME@@` tokens substituted by `lib/ui_xml_template.ttslua` at runtime.
 - **Conditionals**: `##IF @@NAME@@##` … `##ENDIF##` — inner XML is kept only when the caller included `NAME` in the params table (omit keys you do not want rendered).
 - **Build**: `npm run ui-xml-templates:embed` (also in `npm run build`) writes **per-consumer packs**:
-- **Global remount docs (TOR-439):** `npm run ui-global-xml:embed` expands `ui/Global.xml` + `ui/Global.join_minimal.xml` into `lib/ui_global_xml_docs.ttslua` for Host Arm/Refresh remount (also in `build:all-tooling`).
+- **Global remount docs (TOR-439):** `npm run ui-global-xml:embed` expands `ui/Global.xml` + `ui/Global.join_minimal.xml` into `lib/ui_global_xml_docs.ttslua` for Host Arm/Refresh remount (also in `build:all-tooling`). Run generated HUD Includes **before** this embed — `debug-light-panel:generate`, `roll-dashboard:generate`, `roll-options-modal:generate`, `skyboxes:import` / `scenes-location-modals:generate` (TOR-511). Save & Play updates Lua; an already-mounted HUD keeps the previous XmlUI until **Refresh XML** or a canary remount.
   - `lib/ui_xml_templates_csheet_page3.ttslua` — page 3 + bg/merit/flaw partials
   - `lib/ui_xml_templates_csheet_page4.ttslua` — page 4 + relationship partials
   - `lib/ui_xml_templates_csheet_page5.ttslua` — page 5 + project_block (Global `Projects.buildPage5DocumentXml`)
