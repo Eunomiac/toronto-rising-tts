@@ -48,7 +48,7 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 
 | Handler | File | Delivery | Tier | Guards | World I/O | Risk | Phase |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `onLoad` | `global_script` | Host | B+C | Startup readiness: TOR-384 Global HUD canary remount before gate Sync.full when `overlay_globalBlindfold` missing | bootstrap | Low | Done |
+| `onLoad` | `global_script` | Host | B+C | Startup readiness: TOR-384 Global HUD canary remount before gate Sync.full when `overlay_globalBlindfold_panel` missing | bootstrap | Low | Done |
 | `onSave` | `global_script` | Save | B | — | lights state | Med | 4 |
 | `onObjectPickUp` | `global_script` | Host | C | Steam + tag | Gameboard flags | High | 4 |
 | `onObjectDrop` | `global_script` | Host | C | Steam + tag | Gameboard/NPCS | High | 4 |
@@ -147,7 +147,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `HUD_phaseDeferSetXml` / `HUD_phaseRefreshXml` / `HUD_phaseArmJoinXml` / `HUD_phaseRestoreJoinAssets` / `HUD_phaseRestoreJoinHud` / `HUD_phaseRestoreJoinEmitters` / `HUD_phaseRestoreJoinFigurines` | A/B + C (remount / spawn) | Yes | TOR-428 defer; TOR-439 Arm + staged restore (assets → HUD → emitters → figurines) |
 | `HUD_resetGame` / `HUD_syncAll` | B+C | Yes | |
 | `HUD_saveState` / `HUD_logState` / `HUD_printState` | A/B | — | encode/log |
-| `HUD_toggleOverlayAlpha` | A | Yes | debug: Full↔Min alpha/`raycastTarget` on `overlay_globalBlindfold` |
+| `HUD_toggleOverlayAlpha` | A | Yes | debug: Full↔Min child-image alpha + panel `raycastTarget` on `overlay_globalBlindfold_panel` |
 | `HUD_toggleAllAnchors` / `HUD_toggleAllSpotlights` | C | Yes | |
 | `HUD_clearLoadingOverlay` | A | Yes | hide + `active=false` on startup loading screen |
 | `HUD_toggleDebugAmbient` | C | Yes | ambient intensity 0↔2 (debug, not persisted) |
@@ -253,7 +253,7 @@ Snap default cameras **under** the transition blindfold after early XmlUI FadeIn
 
 | Raise path | File | When |
 | --- | --- | --- |
-| Global overlay show | `global_script.showStartupLoadingOverlays` | after `UI.show(overlay_globalBlindfold)`, then `U.await(1.5)` |
+| Global overlay show | `global_script.showStartupLoadingOverlays` | after `UI.show(overlay_globalBlindfold_panel)`, then `U.await(1.5)` |
 | Staged scene transition (Apply / End) | `HUDBF.runStagedTransition` | After TOR-434 lead-in (~5.0s) + ambient fade-out (~1s); default camera at **start of heavy work**, then Sync/table work. `beginTransition` arms UI only (no early camera await). |
 | Simple / lead-in transition settle | `HUDBF.scheduleEnd` | When settle delay > 0, snap default cameras at the start of the settle wait (after work). |
 | PCs panel Blind toggle on | `PCST` `blindfoldToggle` | after `Conditions.setManual(hudBlindfold)`, then `U.await(1.5)` |

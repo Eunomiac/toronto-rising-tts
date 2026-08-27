@@ -26,7 +26,7 @@ Status: current (TOR-143 / TOR-361 / TOR-362 / TOR-497 / TOR-98)
 
 | Kind | XML | Phase system |
 | --- | --- | --- |
-| **Global blindfold** | `ui/shared/panel_overlay_global_blindfold.xml` (`overlay_globalBlindfold`, `active=true` by default) | **Yes** — hide on Play enter **after** Intermission→Play overture hold (~69s of the 71s Music C sting, TOR-497); show on Intermission enter **before** no-scene table prep; connect during Intermission leaves it up; connect elsewhere hides it. **No** timed onLoad auto-hide. Show/hide are idempotent (TOR-398): no FadeIn when already up; hide sequences do not stack. |
+| **Global blindfold** | `ui/shared/panel_overlay_global_blindfold.xml` (`overlay_globalBlindfold_panel`, `active=true` by default; stacked splash Images inside) | **Yes** — hide on Play enter **after** Intermission→Play overture hold (~69s of the 71s Music C sting, TOR-497); show on Intermission enter **before** no-scene table prep; connect during Intermission leaves it up; connect elsewhere hides it. **No** timed onLoad auto-hide. Show/hide are idempotent (TOR-398): no FadeIn when already up; hide sequences do not stack. Parent Panel owns FadeIn/FadeOut + click-blocking (TOR-514). |
 | **Per-player transition blindfolds** | `ui/.templates/panel_overlay_blindfold.xml` → parent Panel `UI.show`/`UI.hide` via `core/hud_blindfold.ttslua` + `hud_overlays` (optional destination cards, TOR-425 / TOR-431) | **Play → Spotlight** and **Spotlight → End** use the same staged path as End scene / library Apply (TOR-98 / TOR-459). Destination cards stay Clear. Other phase enters still use global blindfold only. |
 
 ## General Phase Structure
@@ -66,7 +66,7 @@ Ending events of the previous phase run before starting events of the new phase 
 * Re-assert the global blindfold (already up from Intermission).
 * **Intermission → Play audio (TOR-497):** TR Loop fades out over **0.5s** and the Music C session-start overture (`C.SessionStartIntroKey`, 71s) starts **immediately** at full volume with no fade-in. Main mood is **not** started under the sting (`sessionIntroActive` holds reconcile).
 * Switch lights AdminDark → OutdoorDim under the cover (no `SetTableTo`; table/skybox already applied on Intermission enter). Then run player/NPC seat-light reconcile so OutdoorDim STANDARD actually reaches the `playerLight*` objects (preset apply only stores the seat map; TOR-504).
-* After **~69s** (71 minus 2): global blindfold hidden (`overlay_globalBlindfold`). Competing auto-hide from `applyGlobalBlindfoldFromPhase` is suppressed while `Phases.isAdvancing()` (TOR-363). Advance `U.chain` `maxWait` is overture duration + 15s so this wait is not killed by the default 60s cap (TOR-501).
+* After **~69s** (71 minus 2): global blindfold hidden (`overlay_globalBlindfold_panel`). Competing auto-hide from `applyGlobalBlindfoldFromPhase` is suppressed while `Phases.isAdvancing()` (TOR-363). Advance `U.chain` `maxWait` is overture duration + 15s so this wait is not killed by the default 60s cap (TOR-501).
 * After the remaining **2s** (sting end): fade in Main mood, then all players heal Superficial Willpower equal to max(Resolve, Composure) (temp dots included); if anyone healed, show `session_start_heal_broadcast.xml` briefly.
 
 ### Ending Events: `PLAY`
@@ -98,7 +98,7 @@ Ending events of the previous phase run before starting events of the new phase 
 
 ### Starting Events: `INTERMISSION`
 
-* **Show the global blindfold and start the audio handoff together** (`overlay_globalBlindfold` + leftover session audio fading out while Intermission theme `TR_Loop` fades in over ~2s). Table work must not start until this settle finishes (TOR-502 / TOR-506).
+* **Show the global blindfold and start the audio handoff together** (`overlay_globalBlindfold_panel` + leftover session audio fading out while Intermission theme `TR_Loop` fades in over ~2s). Table work must not start until this settle finishes (TOR-502 / TOR-506).
 * Apply the no-scene default environment under that cover (table, seats, generic skybox, overlay; soundscape skipped) so next week's session start does not reshuffle the table (TOR-497). Spotlight-parked dice bags, companions, and compulsion decks restore here (after the cover is down), not during End.
 * All lights dark (`AdminDark` phase override).
 * Countdown timer: deferred (optional TBD on **TOR-319**).

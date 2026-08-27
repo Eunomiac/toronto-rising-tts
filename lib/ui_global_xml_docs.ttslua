@@ -776,7 +776,7 @@ M.full = [=[
     preserveAspect="false"
   />
 
-  <!-- Transition blindfold Panel: same art box as overlay_globalBlindfold (root sibling in Global.xml, TOR-436).
+  <!-- Transition blindfold Panel: same art box as overlay_globalBlindfold_panel (root sibling in Global.xml, TOR-436).
 
   Testing possible bug with slide animations. Temp change
    from `showAnimation="SlideIn_Top"` and `hideAnimation="SlideOut_Top"`.
@@ -1294,7 +1294,7 @@ M.full = [=[
 <Panel id="gameStateOverlay_root" class="gameStateOverlay">
 
   <VerticalLayout id="gameStateOverlay_timeAndLocation" class="gameStateOverlay_topCenter">
-    <Image id="gameStateOverlay_timeAndLocation_background" class="gameStateOverlay_background" image="bg_playerOverlay_timeLocation" offsetXY="0 10"/>
+    <Image id="gameStateOverlay_timeAndLocation_background" class="gameStateOverlay_background" image="bg_playerOverlay_timeLocation" offsetXY="7 10"/>
     <Text id="gameStateOverlay_sesionNumber" class="small_red_text" text="− Ⅰ −" />
     <HorizontalLayout class="gameStateOverlay_location" spacing="5" childAlignment="UpperCenter">
       <Text id="gameStateOverlay_district" class="small_white_text" text="" />
@@ -1309,9 +1309,15 @@ M.full = [=[
   </VerticalLayout>
 
 <!--
-UI.setAttributes("gameStateOverlay_timeSpacer", {minHeight = "10", preferredHeight="10"})
+UI.setAttributes("gameStateOverlay_district", {text = ""})
+UI.setAttributes("gameStateOverlay_districtSeparator", {text = "The Devils You Know", active="true", fontStyle="Normal"})
+UI.setAttributes("gameStateOverlay_parentSite", {text = "The Devil's Bargain"})
+UI.setAttributes("gameStateOverlay_parentSiteSeparator", {text = "◆"})
+UI.setAttributes("gameStateOverlay_site", {text = "The Devil's Bargain"})
+UI.setAttributes("gameStateOverlay_datetime", {color = "#d3ba50", fontStyle = "BoldAndItalic"})
+UI.setAttributes("gameStateOverlay_time", {color="#FFFFFF", fontSize = "42", minHeight = "", preferredHeight = "", flexibleHeight = "0", text="DEBRIEF"})
 UI.setAttributes("gameStateOverlay_timeAndLocation", {offsetXY = "0 20", spacing="0"})
-UI.setAttributes("gameStateOverlay_timeAndLocation_background", {offsetXY = "0 10"})
+UI.setAttributes("gameStateOverlay_timeAndLocation_background", {offsetXY = "7 10"})
 -->
 
 
@@ -6930,27 +6936,45 @@ UI.setAttributes("playerHud_refPanel_princesCourt_Red", {offsetXY = "-50 0"})
 <!-- Lua: hideStartupLoadingOverlays() / showStartupLoadingOverlaysForPhases (Play hide / Intermission show). -->
 <!-- Per-player transition blinds: ui/.templates/panel_overlay_blindfold.xml — root sibling beside this file (TOR-436). -->
 <!-- Placed last among blindfolds in ui/Global.xml so it draws above transition blinds when both are up. -->
+<!-- Parent Panel owns show/hide + FadeIn/FadeOut + raycast; child Images are stacked splash art. -->
 <!--
-UI.show("overlay_globalBlindfold")
+UI.show("overlay_globalBlindfold_panel")
 -->
 
 <!--
-UI.hide("overlay_globalBlindfold")
-UI.setAttributes("overlay_globalBlindfold", {color = "rgba(1, 1, 1, 0.25)"})
+UI.hide("overlay_globalBlindfold_panel")
+UI.setAttributes("overlay_globalBlindfold_panel", {raycastTarget = "false"})
 -->
 
-<Image id="overlay_globalBlindfold"
-  image="global_blindfold_session_1"
-  active="true"
-  width="1920"
-  height="1200"
-  preserveAspect="true"
-  raycastTarget="true"
-  rectAlignment="MiddleCenter"
-  showAnimation="FadeIn"
-  hideAnimation="FadeOut"
-  animationDuration="0.3"
-/>
+<Defaults>
+  <Panel class="global_blindfold_panel"
+    active = "true"
+    width = "1920"
+    height = "1200"
+    rectAlignment = "MiddleCenter"
+    raycastTarget = "true"
+    showAnimation = "FadeIn"
+    hideAnimation = "FadeOut"
+    animationDuration = "0.3"
+  />
+  <Image class="global_blindfold"
+    active = "true"
+    width = "1920"
+    height = "1200"
+    rectAlignment = "MiddleCenter"
+    preserveAspect = "true"
+    raycastTarget = "false"
+  />
+</Defaults>
+
+<Panel id="overlay_globalBlindfold_panel" class="global_blindfold_panel">
+  <Image id="overlay_globalBlindfold_sessionSplash_1_5" class="global_blindfold" image="overlay_blindfold_21" />
+  <Image id="overlay_globalBlindfold_sessionSplash_1_4" class="global_blindfold" image="overlay_blindfold_18" />
+  <Image id="overlay_globalBlindfold_sessionSplash_1_3" class="global_blindfold" image="overlay_blindfold_15" />
+  <Image id="overlay_globalBlindfold_sessionSplash_1_2" class="global_blindfold" image="overlay_blindfold_12" />
+  <Image id="overlay_globalBlindfold_sessionSplash_1_1" class="global_blindfold" image="overlay_blindfold_9" />
+  <Image id="overlay_globalBlindfold" class="global_blindfold" image="global_blindfold_session_1" />
+</Panel>
 
 <!-- /include ui/shared/panel_overlay_global_blindfold.xml -->
 
@@ -13316,7 +13340,7 @@ M.minimal = [=[
 <!-- Not the permanent save default — Remount with full embed via Refresh / Disarm. -->
 <!-- Include paths: same rules as ui/Global.xml (relative to this file's directory / ui/). -->
 <!-- Stacking: Global XmlUI draws later siblings above earlier ones. Keep blindfold BEFORE Host chrome -->
-<!-- (same as ui/Global.xml: overlay_globalBlindfold, then HUD_PANEL_BLACK / ST toolbar). -->
+<!-- (same as ui/Global.xml: overlay_globalBlindfold_panel, then HUD_PANEL_BLACK / ST toolbar). -->
 
 <!-- 1. Tag-based defaults -->
 
@@ -14080,27 +14104,45 @@ M.minimal = [=[
 <!-- Lua: hideStartupLoadingOverlays() / showStartupLoadingOverlaysForPhases (Play hide / Intermission show). -->
 <!-- Per-player transition blinds: ui/.templates/panel_overlay_blindfold.xml — root sibling beside this file (TOR-436). -->
 <!-- Placed last among blindfolds in ui/Global.xml so it draws above transition blinds when both are up. -->
+<!-- Parent Panel owns show/hide + FadeIn/FadeOut + raycast; child Images are stacked splash art. -->
 <!--
-UI.show("overlay_globalBlindfold")
+UI.show("overlay_globalBlindfold_panel")
 -->
 
 <!--
-UI.hide("overlay_globalBlindfold")
-UI.setAttributes("overlay_globalBlindfold", {color = "rgba(1, 1, 1, 0.25)"})
+UI.hide("overlay_globalBlindfold_panel")
+UI.setAttributes("overlay_globalBlindfold_panel", {raycastTarget = "false"})
 -->
 
-<Image id="overlay_globalBlindfold"
-  image="global_blindfold_session_1"
-  active="true"
-  width="1920"
-  height="1200"
-  preserveAspect="true"
-  raycastTarget="true"
-  rectAlignment="MiddleCenter"
-  showAnimation="FadeIn"
-  hideAnimation="FadeOut"
-  animationDuration="0.3"
-/>
+<Defaults>
+  <Panel class="global_blindfold_panel"
+    active = "true"
+    width = "1920"
+    height = "1200"
+    rectAlignment = "MiddleCenter"
+    raycastTarget = "true"
+    showAnimation = "FadeIn"
+    hideAnimation = "FadeOut"
+    animationDuration = "0.3"
+  />
+  <Image class="global_blindfold"
+    active = "true"
+    width = "1920"
+    height = "1200"
+    rectAlignment = "MiddleCenter"
+    preserveAspect = "true"
+    raycastTarget = "false"
+  />
+</Defaults>
+
+<Panel id="overlay_globalBlindfold_panel" class="global_blindfold_panel">
+  <Image id="overlay_globalBlindfold_sessionSplash_1_5" class="global_blindfold" image="overlay_blindfold_21" />
+  <Image id="overlay_globalBlindfold_sessionSplash_1_4" class="global_blindfold" image="overlay_blindfold_18" />
+  <Image id="overlay_globalBlindfold_sessionSplash_1_3" class="global_blindfold" image="overlay_blindfold_15" />
+  <Image id="overlay_globalBlindfold_sessionSplash_1_2" class="global_blindfold" image="overlay_blindfold_12" />
+  <Image id="overlay_globalBlindfold_sessionSplash_1_1" class="global_blindfold" image="overlay_blindfold_9" />
+  <Image id="overlay_globalBlindfold" class="global_blindfold" image="global_blindfold_session_1" />
+</Panel>
 
 <!-- /include ui/shared/panel_overlay_global_blindfold.xml -->
 
@@ -14185,6 +14227,11 @@ M.minimalAssetNames = {
     "dot_white",
     "dot_yellow",
     "global_blindfold_session_1",
+    "overlay_blindfold_12",
+    "overlay_blindfold_15",
+    "overlay_blindfold_18",
+    "overlay_blindfold_21",
+    "overlay_blindfold_9",
 }
 
 --- @return string

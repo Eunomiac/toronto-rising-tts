@@ -908,8 +908,8 @@ function DEBUG.showGlobalHudCanaries()
         end
         return UI.getAttribute(id, a)
     end
-    print("blindfold active=" .. tostring(attr("overlay_globalBlindfold", "active")))
-    print("blindfold visibility=" .. tostring(attr("overlay_globalBlindfold", "visibility")))
+    print("blindfold active=" .. tostring(attr("overlay_globalBlindfold_panel", "active")))
+    print("blindfold visibility=" .. tostring(attr("overlay_globalBlindfold_panel", "visibility")))
     print("HUD_PANEL_BLACK visibility=" .. tostring(attr("HUD_PANEL_BLACK", "visibility")))
     print("HUD_PANEL_BLACK active=" .. tostring(attr("HUD_PANEL_BLACK", "active")))
     print("currentPhase=" .. tostring(S.getStateVal("currentPhase")))
@@ -1812,7 +1812,7 @@ local function rollE2eSeatPrepInternal(targetColor)
         end
     end
 
-    UI.hide("overlay_globalBlindfold")
+    UI.hide("overlay_globalBlindfold_panel")
 
     local CameraDebugFocus = require("core.camera_debug_focus")
     local ok = CameraDebugFocus.onSpoofColor(hostPlayer, targetColor)

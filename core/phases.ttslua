@@ -134,7 +134,7 @@ function Phases.incrementSessionNum()
     S.setSessionNum(n + 1)
 end
 
---- Call Global-script helpers for `overlay_globalBlindfold` only.
+--- Call Global-script helpers for `overlay_globalBlindfold_panel` only.
 --- Never touch per-player transition blindfolds (`hudBlindfold` / panel_overlay_blindfold).
 local function callGlobalBlindfoldHelper(name)
     local fn = rawget(_G, name)

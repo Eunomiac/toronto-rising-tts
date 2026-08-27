@@ -4,7 +4,7 @@
   runs synchronous work, then lifts blindfolds after a settle delay.
   Optional destination District/Site cards (TOR-425 / TOR-431) are armed on the parent Panel before
   one UI.show; End scene / table-only / no-location keep cards Clear (invisible if animated).
-  Global session blindfold (`overlay_globalBlindfold` in Global.xml) is phase-owned
+  Global session blindfold (`overlay_globalBlindfold_panel` in Global.xml) is phase-owned
   (Intermission show / Play hide / connect policy) — never by this module or a timed onLoad hide.
   Agent guidance: .dev/Scene Constructor/Scene Constructor Overview.md; .dev/HUD_FUNCTIONS.md.
 ]]

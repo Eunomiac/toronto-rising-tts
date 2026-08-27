@@ -431,7 +431,27 @@ local function startupSeatLightsReadyForReveal()
     return L.seatSpotlightsResolvable() == true
 end
 
-local STARTUP_LOADING_OVERLAY_ID = "overlay_globalBlindfold"
+--- Parent Panel of the stacked session-splash Images (FadeIn/FadeOut + click-blocking).
+local STARTUP_LOADING_OVERLAY_ID = "overlay_globalBlindfold_panel"
+--- Child splash Images (art tint only; Overlay Alpha Full/Min).
+local STARTUP_LOADING_OVERLAY_IMAGE_IDS = {
+    "overlay_globalBlindfold_sessionSplash_1_5",
+    "overlay_globalBlindfold_sessionSplash_1_4",
+    "overlay_globalBlindfold_sessionSplash_1_3",
+    "overlay_globalBlindfold_sessionSplash_1_2",
+    "overlay_globalBlindfold_sessionSplash_1_1",
+    "overlay_globalBlindfold",
+}
+
+local function setGlobalBlindfoldImageColor(color)
+    for i = 1, #STARTUP_LOADING_OVERLAY_IMAGE_IDS do
+        if type(U.setAttribute) == "function" then
+            U.setAttribute(STARTUP_LOADING_OVERLAY_IMAGE_IDS[i], "color", color)
+        elseif type(UI.setAttribute) == "function" then
+            UI.setAttribute(STARTUP_LOADING_OVERLAY_IMAGE_IDS[i], "color", color)
+        end
+    end
+end
 
 --- Per connected player: seat colors that already received seat-HUD visibility reveal this session (TOR-285 / TOR-375).
 local seatHudRevealDoneByPlayer = {}
@@ -459,7 +479,7 @@ local function invalidateGlobalBlindfoldAppliedState()
     globalBlindfoldAppliedVisible = nil
 end
 
---- Force-hide global blindfold (`overlay_globalBlindfold`) for all clients.
+--- Force-hide global blindfold (`overlay_globalBlindfold_panel`) for all clients.
 --- Idempotent (TOR-398): skip if already hidden or a hide sequence is in flight.
 --- `U.chain`: hide (FadeOut) → wait 1s → clear `active` so a later seat HUD reveal
 --- cannot resurrect the overlay with `active` still true.
@@ -927,7 +947,7 @@ local function isGlobalHudDocumentMounted()
     if UI == nil or type(UI.getAttribute) ~= "function" then
         return false
     end
-    return UI.getAttribute("overlay_globalBlindfold", "active") ~= nil
+    return UI.getAttribute(STARTUP_LOADING_OVERLAY_ID, "active") ~= nil
 end
 
 --- TOR-384: if Global canary is missing, remount full embedded Global XmlUI once (same path as
@@ -976,7 +996,7 @@ local function waitEnsureGlobalHudDocumentMounted()
             return false
         end
         error(
-            "[TOR-384] Global HUD still missing after remount (canary overlay_globalBlindfold)."
+            "[TOR-384] Global HUD still missing after remount (canary overlay_globalBlindfold_panel)."
         )
     end
 end
@@ -4916,7 +4936,8 @@ function HUD_logState(player, button, id)
 end
 
 --- Toggle global blindfold overlay between Full (opaque + raycast) and Min (25% alpha, no raycast).
--- Reads `raycastTarget` on `overlay_globalBlindfold` so the button label stays synced with overlay state.
+-- Reads `raycastTarget` on `overlay_globalBlindfold_panel` so the button label stays synced with overlay state.
+-- Tint is applied to child splash Images; the panel owns click-blocking.
 -- @param player Player The player who clicked (Host/Black)
 -- @param button string Button value
 -- @param id string The UI element ID
@@ -4924,20 +4945,20 @@ function HUD_toggleOverlayAlpha(player, button, id)
     if not requireStorytellerForMutation(player, "HUD_toggleOverlayAlpha") then
         return
     end
-    local raycast = UI.getAttribute("overlay_globalBlindfold", "raycastTarget")
+    local raycast = UI.getAttribute(STARTUP_LOADING_OVERLAY_ID, "raycastTarget")
     local isFull = string.lower(tostring(raycast or "")) == "true"
     if isFull then
-        UI.setAttributes("overlay_globalBlindfold", {
-            color = "rgba(1, 1, 1, 0.25)",
+        UI.setAttributes(STARTUP_LOADING_OVERLAY_ID, {
             raycastTarget = "false",
         })
+        setGlobalBlindfoldImageColor("rgba(1, 1, 1, 0.25)")
         U.setAttribute("debug_overlayAlpha", "text", "Overlay Alpha: Min")
         broadcastToColor("Overlay alpha: Min (25%, raycast off).", player.color, {0, 1, 1})
     else
-        UI.setAttributes("overlay_globalBlindfold", {
-            color = "White",
+        UI.setAttributes(STARTUP_LOADING_OVERLAY_ID, {
             raycastTarget = "true",
         })
+        setGlobalBlindfoldImageColor("White")
         U.setAttribute("debug_overlayAlpha", "text", "Overlay Alpha: Full")
         broadcastToColor("Overlay alpha: Full (opaque, raycast on).", player.color, {0, 1, 1})
     end
@@ -5004,7 +5025,7 @@ function HUD_updateCoterieData(player, button, id)
     )
 end
 
---- Manual hide for global blindfold (`overlay_globalBlindfold`).
+--- Manual hide for global blindfold (`overlay_globalBlindfold_panel`).
 -- Escape hatch when phase sync appears stuck; normal path is phase-owned (Intermission show / Play hide).
 -- @param player Player The player who clicked (Host/Black)
 -- @param button string Button value

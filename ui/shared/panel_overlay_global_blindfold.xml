@@ -2,24 +2,42 @@
 <!-- Lua: hideStartupLoadingOverlays() / showStartupLoadingOverlaysForPhases (Play hide / Intermission show). -->
 <!-- Per-player transition blinds: ui/.templates/panel_overlay_blindfold.xml — root sibling beside this file (TOR-436). -->
 <!-- Placed last among blindfolds in ui/Global.xml so it draws above transition blinds when both are up. -->
+<!-- Parent Panel owns show/hide + FadeIn/FadeOut + raycast; child Images are stacked splash art. -->
 <!--
-UI.show("overlay_globalBlindfold")
+UI.show("overlay_globalBlindfold_panel")
 -->
 
 <!--
-UI.hide("overlay_globalBlindfold")
-UI.setAttributes("overlay_globalBlindfold", {color = "rgba(1, 1, 1, 0.25)"})
+UI.hide("overlay_globalBlindfold_panel")
+UI.setAttributes("overlay_globalBlindfold_panel", {raycastTarget = "false"})
 -->
 
-<Image id="overlay_globalBlindfold"
-  image="global_blindfold_session_1"
-  active="true"
-  width="1920"
-  height="1200"
-  preserveAspect="true"
-  raycastTarget="true"
-  rectAlignment="MiddleCenter"
-  showAnimation="FadeIn"
-  hideAnimation="FadeOut"
-  animationDuration="0.3"
-/>
+<Defaults>
+  <Panel class="global_blindfold_panel"
+    active = "true"
+    width = "1920"
+    height = "1200"
+    rectAlignment = "MiddleCenter"
+    raycastTarget = "true"
+    showAnimation = "FadeIn"
+    hideAnimation = "FadeOut"
+    animationDuration = "0.3"
+  />
+  <Image class="global_blindfold"
+    active = "true"
+    width = "1920"
+    height = "1200"
+    rectAlignment = "MiddleCenter"
+    preserveAspect = "true"
+    raycastTarget = "false"
+  />
+</Defaults>
+
+<Panel id="overlay_globalBlindfold_panel" class="global_blindfold_panel">
+  <Image id="overlay_globalBlindfold_sessionSplash_1_5" class="global_blindfold" image="overlay_blindfold_21" />
+  <Image id="overlay_globalBlindfold_sessionSplash_1_4" class="global_blindfold" image="overlay_blindfold_18" />
+  <Image id="overlay_globalBlindfold_sessionSplash_1_3" class="global_blindfold" image="overlay_blindfold_15" />
+  <Image id="overlay_globalBlindfold_sessionSplash_1_2" class="global_blindfold" image="overlay_blindfold_12" />
+  <Image id="overlay_globalBlindfold_sessionSplash_1_1" class="global_blindfold" image="overlay_blindfold_9" />
+  <Image id="overlay_globalBlindfold" class="global_blindfold" image="global_blindfold_session_1" />
+</Panel>

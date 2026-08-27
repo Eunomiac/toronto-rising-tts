@@ -13,7 +13,7 @@ Per-color loading overlays inside `visibility="<Color>"` parents never show for 
 
 ## Fix (TOR-285 → TOR-375)
 
-1. **Global session blindfold** — `ui/shared/panel_overlay_global_blindfold.xml`, included **last** in `ui/Global.xml` (`overlay_globalBlindfold`, no `visibility`). Visibility is **phase-owned** (shown in Intermission; hidden on Play enter / connect outside Intermission).
+1. **Global session blindfold** — `ui/shared/panel_overlay_global_blindfold.xml`, included **last** in `ui/Global.xml` (`overlay_globalBlindfold_panel`, no `visibility`). Visibility is **phase-owned** (shown in Intermission; hidden on Play enter / connect outside Intermission).
 2. **Seat-assignment UI refresh** — `refreshGlobalUiAfterSeatAssignment` in `core/global_script.ttslua`:
    - `onPlayerChangeColor` (after `M.onPlayerChangeColor`) for **join clients** and **first seat change after connect** (`pendingConnectSeatRefreshByPlayer`). **Host hotseat swaps** skip auto-refresh — use debug panel **Refresh UI** (`HUD_refreshUi`).
    - `GlobalRefreshUiAfterSeatAssignment` from `core/main.ttslua` when auto-assign skips `changeColor` (already on target seat)
@@ -23,7 +23,7 @@ Per-color loading overlays inside `visibility="<Color>"` parents never show for 
 
 ## Cold-load Global missing (TOR-384)
 
-Distinct from seat-visibility snapshot: Host **first load from main menu** can leave Global XmlUI unmounted (`UI.getAttribute("overlay_globalBlindfold", "active") == nil`) while object XmlUI works; plain reload often attaches. Startup readiness gate runs `waitEnsureGlobalHudDocumentMounted` **before** gate `Sync.full`: if the canary is missing, one full `performFullUiResync("onLoad missing Global HUD")` (same embed path as Phases **Refresh XML**) — **without** waiting for `UI.loading` (cold-load can leave `UI.loading` stuck true; waiting first timed out the gate with no remount). Once the canary is present, the gate continues even if `UI.loading` is still true. Remount failure with canary still absent errors loudly.
+Distinct from seat-visibility snapshot: Host **first load from main menu** can leave Global XmlUI unmounted (`UI.getAttribute("overlay_globalBlindfold_panel", "active") == nil`) while object XmlUI works; plain reload often attaches. Startup readiness gate runs `waitEnsureGlobalHudDocumentMounted` **before** gate `Sync.full`: if the canary is missing, one full `performFullUiResync("onLoad missing Global HUD")` (same embed path as Phases **Refresh XML**) — **without** waiting for `UI.loading` (cold-load can leave `UI.loading` stuck true; waiting first timed out the gate with no remount). Once the canary is present, the gate continues even if `UI.loading` is still true. Remount failure with canary still absent errors loudly.
 
 ## Multiclient note (TOR-374 / TOR-375 / TOR-381 / TOR-428)
 

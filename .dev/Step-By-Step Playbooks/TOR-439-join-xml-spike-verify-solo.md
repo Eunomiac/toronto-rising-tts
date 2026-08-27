@@ -107,8 +107,8 @@ U.chain({
     S.setStateVal(false, "connectionControls", "joinXmlArmed")
     -- Solo smoke only: keep Intermission blindfold up but nearly transparent so Host sees the table.
     -- Remount resets Image attrs — Code Blocks A/B/C re-apply after each remount.
+    UI.setAttribute("overlay_globalBlindfold_panel", "raycastTarget", "false")
     UI.setAttribute("overlay_globalBlindfold", "color", "rgba(1, 1, 1, 0.1)")
-    UI.setAttribute("overlay_globalBlindfold", "raycastTarget", "false")
     if UI ~= nil and UI.setAttribute ~= nil then
       UI.setAttribute("storytellerToolbarBody", "active", "true")
       UI.setAttribute("storytellerContentArea", "active", "true")
@@ -152,8 +152,8 @@ HUD_phaseRestoreJoinFigurines(Player["Black"])
 Any remount resets the Intermission blindfold. Re-fade mid-sequence if needed:
 
 ```lua
+UI.setAttribute("overlay_globalBlindfold_panel", "raycastTarget", "false")
 UI.setAttribute("overlay_globalBlindfold", "color", "rgba(1, 1, 1, 0.1)")
-UI.setAttribute("overlay_globalBlindfold", "raycastTarget", "false")
 log(UI.getCustomAssets())
 ```
 
@@ -183,8 +183,8 @@ U.chain({
     if S.getStateVal("connectionControls", "deferSetXml") ~= true then
       error("[FAIL] deferSetXml should be true after Arm")
     end
+    UI.setAttribute("overlay_globalBlindfold_panel", "raycastTarget", "false")
     UI.setAttribute("overlay_globalBlindfold", "color", "rgba(1, 1, 1, 0.1)")
-    UI.setAttribute("overlay_globalBlindfold", "raycastTarget", "false")
     if UI ~= nil and UI.setAttribute ~= nil then
       UI.setAttribute("storytellerToolbarBody", "active", "true")
       UI.setAttribute("storytellerContentArea", "active", "true")
@@ -225,8 +225,8 @@ U.chain({
     if type(assetsBackup) == "table" and #assetsBackup > 0 then
       error("[FAIL] CustomUIAssets backup still present — press 1 Assets first")
     end
+    UI.setAttribute("overlay_globalBlindfold_panel", "raycastTarget", "false")
     UI.setAttribute("overlay_globalBlindfold", "color", "rgba(1, 1, 1, 0.1)")
-    UI.setAttribute("overlay_globalBlindfold", "raycastTarget", "false")
     if UI ~= nil and UI.setAttribute ~= nil then
       UI.setAttribute("storytellerToolbarBody", "active", "true")
       UI.setAttribute("storytellerContentArea", "active", "true")
@@ -266,8 +266,8 @@ U.chain({
     if S.getStateVal("connectionControls", "joinXmlArmed") == true then
       error("[FAIL] joinXmlArmed still true")
     end
+    UI.setAttribute("overlay_globalBlindfold_panel", "raycastTarget", "false")
     UI.setAttribute("overlay_globalBlindfold", "color", "rgba(1, 1, 1, 0.1)")
-    UI.setAttribute("overlay_globalBlindfold", "raycastTarget", "false")
     if UI ~= nil and UI.setAttribute ~= nil then
       UI.setAttribute("storytellerToolbarBody", "active", "true")
       UI.setAttribute("storytellerContentArea", "active", "true")

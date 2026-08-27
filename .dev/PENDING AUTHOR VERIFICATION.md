@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-08-27 — added **TOR-513** (Absent hand/token stash + Apply PC reseat). Linear Done-without-confirm sweep on 2026-08-26 added **TOR-507**, **TOR-508**, **TOR-509**, and **TOR-510**. Author confirmed **TOR-506** (End→Intermission audio with the cover) on 2026-08-22. **TOR-439** remains a multiclient gate (not a solo Save & Play)._
+_Last populated: 2026-08-27 — added **TOR-514** (global blindfold stacked panel). Linear Done-without-confirm sweep on 2026-08-26 added **TOR-507**, **TOR-508**, **TOR-509**, and **TOR-510**. Author confirmed **TOR-506** (End→Intermission audio with the cover) on 2026-08-22. **TOR-439** remains a multiclient gate (not a solo Save & Play)._
 
 ### High — session / join / first-load
 
@@ -28,6 +28,12 @@ _Last populated: 2026-08-27 — added **TOR-513** (Absent hand/token stash + App
 **How to verify:** Run the multiclient control/treatment playbook in [TOR-439-join-xml-spike-verify.md](Step-By-Step Playbooks/TOR-439-join-xml-spike-verify.md). On the Host, arm the minimal join XML, have the struggling client connect, then restore in stages. Especially watch **step 2 (HUD / Refresh UI)** after the **TOR-444** remount-weight reduction: does that client stay connected through the full Global HUD remount? Optionally also try a normal (unarmed) full-HUD join to see whether the Arm pipeline is still needed at all.
 
 **Context:** Earlier run: Assets, Emitters, and Figurines restore steps succeeded; step 2 timed out and drove **TOR-444**. Deferred from Focus until you can gather testers.
+
+#### TOR-514 — Global blindfold is a stacked panel
+
+**How to verify:** Save & Play so the new scripts and HUD load. You should be in Intermission with the session cover up — the stacked splash art should appear as one full-screen cover, and you should not be able to click through it. Click **Overlay Alpha** on the Storyteller debug column: the cover should go translucent (you can see the table through all of the stacked images) and clicks should pass through; click again and it should go fully opaque and block clicks again. Click **Clear Loading Overlay**: the whole cover (every stacked image) should fade out together, not leave a splash layer behind. Advance Intermission → Play: after the overture hold, the whole stacked cover should lift together.
+
+**Context:** The global cover is now a panel with several splash images stacked inside it. Show, hide, and click-blocking run on that panel so FadeIn/FadeOut apply to the whole stack.
 
 #### TOR-507 — Numbered table slots and figurine offsets
 

@@ -3,7 +3,7 @@
 <!-- Not the permanent save default — Remount with full embed via Refresh / Disarm. -->
 <!-- Include paths: same rules as ui/Global.xml (relative to this file's directory / ui/). -->
 <!-- Stacking: Global XmlUI draws later siblings above earlier ones. Keep blindfold BEFORE Host chrome -->
-<!-- (same as ui/Global.xml: overlay_globalBlindfold, then HUD_PANEL_BLACK / ST toolbar). -->
+<!-- (same as ui/Global.xml: overlay_globalBlindfold_panel, then HUD_PANEL_BLACK / ST toolbar). -->
 
 <!-- 1. Tag-based defaults -->
 <Include src="defaults_tags.xml" />
