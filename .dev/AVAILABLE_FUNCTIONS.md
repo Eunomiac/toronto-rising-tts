@@ -375,6 +375,20 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 | `Soundscape.inspectEmitters()` | List hidden emitters, effects, and AudioSources | Debug verification |
 | `Soundscape.testLayeredPlayback()` | Start music, weather, and location together | Live soundscape smoke test |
 
+### Session explode (`core/session_explode.ttslua`)
+
+**Require:** `local SessionExplode = require("core.session_explode")`
+
+Play enter starts `SessionExplode.play()` in the same step as `Phases.fireSessionIntro` (Music C sting). Returns immediately so OutdoorDim can apply under the cover; wait `sequenceDurationSec()` (~71.5s) on the Play-enter chain.
+
+| Function | Description | Usage Example |
+| :--------- | :------------- | :--------------- |
+| `SessionExplode.play()` | Start the stacked cover explode (cover, then five still-text / wavering-art pairs, then session number/title). Hides the panel near the end and resets layers. | Play enter after `fireSessionIntro` |
+| `SessionExplode.sequenceDurationSec()` | Wall-clock seconds Play enter should wait after `play()` | `Phases.sessionIntroBlindfoldHoldSec` |
+| `SessionExplode.resetLayers()` | Opaque session cover, splash layers transparent, scale 1 | Intermission show |
+| `SessionExplode.cancel()` | Stop in-flight lerps (does not snap attrs) | Play exit; `HUD_clearLoadingOverlay` |
+| `SessionExplode.explodeImage(id, waverDur, scaleDur, waverLimit?)` | Waver then scale-and-fade one XmlUI image. `waverDur` 0 skips waver; `waverLimit` 0 holds still. | Used by `play()` |
+
 ### Chronicle weather (`lib/chronicle_weather.ttslua`)
 
 **Require:** `local ChronicleWeather = require("lib.chronicle_weather")`

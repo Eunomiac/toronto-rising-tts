@@ -553,8 +553,8 @@ local function showStartupLoadingOverlays()
 end
 
 --- Global blindfold follows phase: visible in Intermission; hidden otherwise (TOR-143 / TOR-319).
---- While a top-level phase Advance is in flight, do not auto-hide — Play enter owns the delayed
---- lift after Intermission→Play audio (Music C overture, then lift ~2s before it ends). Auto-show for Intermission is OK.
+--- While a top-level phase Advance is in flight, do not auto-hide — Play enter owns the
+--- session-start explode + delayed panel hide after Intermission→Play audio. Auto-show for Intermission is OK.
 local function applyGlobalBlindfoldFromPhase()
     local phase = S.getStateVal("currentPhase")
     if phase == nil or phase == C.Phases.INTERMISSION then
@@ -5026,13 +5026,18 @@ function HUD_updateCoterieData(player, button, id)
 end
 
 --- Manual hide for global blindfold (`overlay_globalBlindfold_panel`).
--- Escape hatch when phase sync appears stuck; normal path is phase-owned (Intermission show / Play hide).
+-- Escape hatch when phase sync appears stuck; cancels an in-flight session explode first.
+-- Normal path is phase-owned (Intermission show / Play explode + hide).
 -- @param player Player The player who clicked (Host/Black)
 -- @param button string Button value
 -- @param id string The UI element ID
 function HUD_clearLoadingOverlay(player, button, id)
     if not requireStorytellerForMutation(player, "HUD_clearLoadingOverlay") then
         return
+    end
+    local SE = require("core.session_explode")
+    if type(SE.cancel) == "function" then
+        SE.cancel()
     end
     hideStartupLoadingOverlays()
     broadcastToColor("Global blindfold manually hidden.", player.color, {1, 0.85, 0.2})

@@ -477,6 +477,7 @@ test("session-start overture uses Music C and holds Main until the sting ends", 
     "local INTERMISSION_TO_PLAY_LOOP_FADE_SEC = 0.5",
     "function Phases.fireSessionIntro(_ctx)",
     "function Phases.sessionIntroBlindfoldHoldSec(_ctx)",
+    "SE.play()",
     "function Phases.startPlayMainAfterSessionIntro(_ctx)",
     "function Phases.applyPlayEnterNoSceneLights(_ctx)",
     "Soundscape.playSessionIntro(key, { fadeSeconds = 0 })",
@@ -491,14 +492,30 @@ test("session-start overture uses Music C and holds Main until the sting ends", 
   });
 
   const playEnterStart = phases.indexOf("Phases.onEnter[C.Phases.PLAY]");
-  const playEnterEnd = phases.indexOf("Phases.onEnter[C.Phases.SPOTLIGHT]");
+  const playEnterEnd = phases.indexOf("Phases.onExit[C.Phases.PLAY]");
   assert.ok(playEnterStart >= 0 && playEnterEnd > playEnterStart, "missing Play enter steps");
   const playEnter = phases.slice(playEnterStart, playEnterEnd);
+  assert.ok(playEnter.includes("SE.play()"), "Play enter should start SessionExplode.play with the overture");
+  assert.equal(
+    playEnter.includes("Phases.hideGlobalBlindfold"),
+    false,
+    "Play enter should not FadeOut the whole cover; SessionExplode hides the panel near sting end",
+  );
   assert.equal(
     playEnter.includes("applyNoSceneDefault") || playEnter.includes("applyDefaultNoSceneEnvironment"),
     false,
     "Play enter should not reshuffle the table during the overture",
   );
+
+  const explode = readRepoFile("core/session_explode.ttslua");
+  [
+    "function SessionExplode.play()",
+    "function SessionExplode.explodeImage(id, waverDur, scaleDur, waverLimit)",
+    "overlay_globalBlindfold_sessionSplash_1_1_A",
+    "overlay_globalBlindfold_sessionSplash_1_6_B",
+  ].forEach((needle) => {
+    assert.ok(explode.includes(needle), `missing session explode: ${needle}`);
+  });
   assert.equal(
     phases.includes("INTERMISSION_TO_PLAY_CROSSFADE_SEC"),
     false,

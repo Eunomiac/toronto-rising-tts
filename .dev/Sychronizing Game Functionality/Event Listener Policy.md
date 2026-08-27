@@ -149,7 +149,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `HUD_saveState` / `HUD_logState` / `HUD_printState` | A/B | — | encode/log |
 | `HUD_toggleOverlayAlpha` | A | Yes | debug: Full↔Min child-image alpha + panel `raycastTarget` on `overlay_globalBlindfold_panel` |
 | `HUD_toggleAllAnchors` / `HUD_toggleAllSpotlights` | C | Yes | |
-| `HUD_clearLoadingOverlay` | A | Yes | hide + `active=false` on startup loading screen |
+| `HUD_clearLoadingOverlay` | A | Yes | `SessionExplode.cancel` then hide `overlay_globalBlindfold_panel` |
 | `HUD_toggleDebugAmbient` | C | Yes | ambient intensity 0↔2 (debug, not persisted) |
 | `HUD_toggleRunTestPanel` / `HUD_runtest` / `HUD_runtest_step` | A | Yes | Host RunTest strip; arms/continues/stops `DEBUG.RunTest` (TOR-347) |
 | `HUD_STcamera` | A | Yes | Host ST camera strip → `M.setCamera(Black, mode)` from `C.StorytellerCameraAngles` (TOR-348) |

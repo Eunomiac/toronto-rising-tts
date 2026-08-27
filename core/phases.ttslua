@@ -24,7 +24,7 @@ local INTERMISSION_TO_PLAY_LOOP_FADE_SEC = 0.5
 --- End → Intermission: wait after showing the global cover so FadeIn (and camera) can finish
 --- before no-scene table/skybox work (TOR-502).
 local INTERMISSION_BLINDFOLD_SETTLE_SEC = 2
---- Per-step U.chain cap. Must exceed Play-enter overture hold (~69s); default chainWait is 60s.
+--- Per-step U.chain cap. Must exceed Play-enter explode wait (~71.5s); default chainWait is 60s.
 local PHASE_ADVANCE_CHAIN_MAX_WAIT_SEC = (tonumber(C.SessionStartIntroDurationSec) or 71) + 15
 
 --- Single in-flight top-level transition token.
@@ -146,13 +146,17 @@ local function callGlobalBlindfoldHelper(name)
     return true
 end
 
---- Hide global blindfold (Play enter / connect outside Intermission).
+--- Hide global blindfold (Play exit, connect outside Intermission, explode sequence).
 function Phases.hideGlobalBlindfold(_ctx)
     return callGlobalBlindfoldHelper("hideStartupLoadingOverlaysForPhases")
 end
 
 --- Show global blindfold (Intermission enter).
 function Phases.showGlobalBlindfold(_ctx)
+    local SE = require("core.session_explode")
+    if type(SE.resetLayers) == "function" then
+        SE.resetLayers()
+    end
     return callGlobalBlindfoldHelper("showStartupLoadingOverlaysForPhases")
 end
 
@@ -401,15 +405,11 @@ function Phases.fireSessionIntro(_ctx)
     return true
 end
 
---- Seconds to keep the global blindfold up after the overture starts (duration minus lead).
+--- Seconds to keep Play-enter waiting after the overture and explode start.
+--- Matches SessionExplode.sequenceDurationSec (cover hide + reset live inside that sequence).
 function Phases.sessionIntroBlindfoldHoldSec(_ctx)
-    local duration = tonumber(C.SessionStartIntroDurationSec) or 71
-    local lead = tonumber(C.SessionStartBlindfoldLeadSec) or 2
-    local waitUntilLift = duration - lead
-    if waitUntilLift < 0 then
-        waitUntilLift = 0
-    end
-    return waitUntilLift
+    local SE = require("core.session_explode")
+    return SE.sequenceDurationSec()
 end
 
 --- After the overture finishes: clear the intro latch and fade in Main (Play default).
@@ -551,25 +551,18 @@ Phases.onEnter[C.Phases.PLAY] = function(ctx)
             return Phases.showGlobalBlindfold(ctx)
         end,
         function()
-            -- 0.5s Loop fade + immediate Music C sting (do not wait on the fade).
-            return Phases.fireSessionIntro(ctx)
+            -- 0.5s Loop fade + immediate Music C sting; explode starts on the same beat.
+            Phases.fireSessionIntro(ctx)
+            local SE = require("core.session_explode")
+            SE.play()
+            return true
         end,
         function()
-            -- Lighting only (AdminDark → OutdoorDim) while the sting is already playing.
+            -- Lighting only (AdminDark → OutdoorDim) while the sting and explode are already playing.
             return Phases.applyPlayEnterNoSceneLights(ctx)
         end,
         function()
             return Phases.sessionIntroBlindfoldHoldSec(ctx)
-        end,
-        function()
-            return Phases.hideGlobalBlindfold(ctx)
-        end,
-        function()
-            local lead = tonumber(C.SessionStartBlindfoldLeadSec) or 2
-            if lead < 0 then
-                lead = 0
-            end
-            return lead
         end,
         function()
             return Phases.startPlayMainAfterSessionIntro(ctx)
@@ -579,6 +572,16 @@ Phases.onEnter[C.Phases.PLAY] = function(ctx)
         end,
         function()
             return hideSessionStartHealPanel()
+        end,
+    }
+end
+
+Phases.onExit[C.Phases.PLAY] = function(ctx)
+    return {
+        function()
+            local SE = require("core.session_explode")
+            SE.cancel()
+            return Phases.hideGlobalBlindfold(ctx)
         end,
     }
 end

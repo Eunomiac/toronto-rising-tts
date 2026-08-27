@@ -1,0 +1,329 @@
+--[[
+    Session-start explode for the stacked global cover (Intermission → Play).
+
+    Starts in the same Play-enter step as the Music C session-starter sting.
+    Layer timings match the author-tuned testbed sequence.
+]]
+
+local SessionExplode = {}
+
+local U = require("lib.util")
+
+local PANEL_ID = "overlay_globalBlindfold_panel"
+local COVER_ID = "overlay_globalBlindfold"
+
+local WAVER_TIME = 12
+local SCALE_TIME = 1.2
+local DELAY_TIME = 12
+local COVER_SCALE_DUR = 0.8
+local TITLE_WAVER = 2
+local TITLE_SCALE = 2.5
+local TITLE_DELAY = 2
+local NUM_WAVER = 3
+local NUM_SCALE = 3.5
+local NUM_DELAY = 6.5
+local HIDE_SETTLE = 3
+local SCALE_END = 2
+local SCALE_EASE = "powerIn"
+local WAVER_SPEED = 0.2
+local DEFAULT_WAVER_LIMIT = 50
+
+local SPLASH_IDS = {
+    "overlay_globalBlindfold_sessionSplash_1_1_A",
+    "overlay_globalBlindfold_sessionSplash_1_1_B",
+    "overlay_globalBlindfold_sessionSplash_1_2_A",
+    "overlay_globalBlindfold_sessionSplash_1_2_B",
+    "overlay_globalBlindfold_sessionSplash_1_3_A",
+    "overlay_globalBlindfold_sessionSplash_1_3_B",
+    "overlay_globalBlindfold_sessionSplash_1_4_A",
+    "overlay_globalBlindfold_sessionSplash_1_4_B",
+    "overlay_globalBlindfold_sessionSplash_1_5_A",
+    "overlay_globalBlindfold_sessionSplash_1_5_B",
+    "overlay_globalBlindfold_sessionSplash_1_6_A",
+    "overlay_globalBlindfold_sessionSplash_1_6_B",
+}
+
+local explodeGenById = {}
+local sequenceGen = 0
+
+local function hideGlobalPanel()
+    local fn = rawget(_G, "hideStartupLoadingOverlaysForPhases")
+    if type(fn) == "function" then
+        fn()
+        return
+    end
+    if type(UI.hide) == "function" then
+        UI.hide(PANEL_ID)
+    end
+end
+
+local function clampWaver(limit, v)
+    if v > limit then
+        return limit
+    end
+    if v < -limit then
+        return -limit
+    end
+    return v
+end
+
+local function randRange(lo, hi)
+    return lo + math.random() * (hi - lo)
+end
+
+local function stillCurrent(id, gen)
+    return explodeGenById[id] == gen
+end
+
+local function applyIdleAttrs(id, color)
+    U.setAttributes(id, {
+        active = "true",
+        color = color,
+        scale = "1",
+        offsetXY = "0 0",
+    })
+end
+
+--- Restore Intermission look: opaque session cover, splash layers fully transparent.
+function SessionExplode.resetLayers()
+    applyIdleAttrs(COVER_ID, "rgba(1, 1, 1, 1)")
+    for i = 1, #SPLASH_IDS do
+        applyIdleAttrs(SPLASH_IDS[i], "rgba(1, 1, 1, 0)")
+    end
+end
+
+--- Stop in-flight layer lerps. Does not snap attrs (hide first, then resetLayers when showing Intermission).
+function SessionExplode.cancel()
+    sequenceGen = sequenceGen + 1
+    for id, gen in pairs(explodeGenById) do
+        explodeGenById[id] = gen + 1
+    end
+end
+
+--- Waver then scale-and-fade one XmlUI image. waverDur 0 skips waver. waverLimit 0 holds still.
+-- @param id string
+-- @param waverDur number
+-- @param scaleDur number
+-- @param waverLimit number|nil
+function SessionExplode.explodeImage(id, waverDur, scaleDur, waverLimit)
+    if type(id) ~= "string" or id == "" then
+        error("SessionExplode.explodeImage: id must be a non-empty string")
+    end
+    if type(waverDur) ~= "number" or waverDur < 0 then
+        error("SessionExplode.explodeImage: waverDur must be 0 or a positive number of seconds")
+    end
+    if type(scaleDur) ~= "number" or scaleDur <= 0 then
+        error("SessionExplode.explodeImage: scaleDur must be a positive number of seconds")
+    end
+    if waverLimit == nil then
+        waverLimit = DEFAULT_WAVER_LIMIT
+    end
+    if type(waverLimit) ~= "number" or waverLimit < 0 then
+        error("SessionExplode.explodeImage: waverLimit must be 0 or a positive pixel distance")
+    end
+    if type(U.Lerp) ~= "function" or type(U.chain) ~= "function" then
+        error("SessionExplode.explodeImage: U.Lerp / U.chain are not loaded")
+    end
+
+    local waverUnit
+    if waverLimit > 0 then
+        local octaves = {}
+        local axSum = 0
+        local aySum = 0
+        local ampLo = { 0.75, 0.25 }
+        for i = 1, 2 do
+            local ax = ampLo[i] * randRange(0.85, 1.15)
+            local ay = ampLo[i] * randRange(0.85, 1.15)
+            axSum = axSum + ax
+            aySum = aySum + ay
+            local speedMul = 1 + (i - 1) * 0.6
+            octaves[i] = {
+                ax = ax,
+                ay = ay,
+                wx = randRange(0.7, 1.1) * WAVER_SPEED * speedMul,
+                wy = randRange(0.7, 1.1) * WAVER_SPEED * speedMul,
+                px = randRange(0, math.pi * 2),
+                py = randRange(0, math.pi * 2),
+            }
+        end
+        for i = 1, 2 do
+            octaves[i].ax = octaves[i].ax / axSum
+            octaves[i].ay = octaves[i].ay / aySum
+        end
+        waverUnit = function(seconds)
+            local x = 0
+            local y = 0
+            for i = 1, 2 do
+                local o = octaves[i]
+                x = x + o.ax * math.sin(seconds * o.wx + o.px)
+                y = y + o.ay * math.sin(seconds * o.wy + o.py)
+            end
+            return x, y
+        end
+    end
+
+    explodeGenById[id] = (explodeGenById[id] or 0) + 1
+    local gen = explodeGenById[id]
+    local lastX = 0
+    local lastY = 0
+
+    local steps = {
+        function()
+            U.setAttributes(id, {
+                active = "true",
+                color = "rgba(1, 1, 1, 1)",
+                scale = "1",
+                offsetXY = "0 0",
+            })
+            return 0
+        end,
+    }
+
+    if waverDur > 0 then
+        if waverLimit > 0 then
+            table.insert(steps, function()
+                return U.Lerp(function(rawT)
+                    if not stillCurrent(id, gen) then
+                        return
+                    end
+                    local ux, uy = waverUnit(rawT * waverDur)
+                    lastX = clampWaver(waverLimit, ux * waverLimit)
+                    lastY = clampWaver(waverLimit, uy * waverLimit)
+                    U.setAttribute(id, "offsetXY", string.format("%.2f %.2f", lastX, lastY))
+                end, 0, 1, waverDur, false, "linear")
+            end)
+        else
+            table.insert(steps, function()
+                return waverDur
+            end)
+        end
+    end
+
+    table.insert(steps, function()
+        return U.Lerp(function(t)
+            if not stillCurrent(id, gen) then
+                return
+            end
+            local scale = 1 + t * (SCALE_END - 1)
+            local alpha = 1 - t
+            local x = lastX * (1 - t)
+            local y = lastY * (1 - t)
+            U.setAttributes(id, {
+                scale = string.format("%.4f", scale),
+                color = string.format("rgba(1, 1, 1, %.4f)", alpha),
+                offsetXY = string.format("%.2f %.2f", x, y),
+            })
+        end, 0, 1, scaleDur, false, SCALE_EASE)
+    end)
+
+    table.insert(steps, function()
+        if not stillCurrent(id, gen) then
+            return
+        end
+        U.setAttributes(id, {
+            scale = tostring(SCALE_END),
+            color = "rgba(1, 1, 1, 0)",
+            offsetXY = "0 0",
+        })
+    end)
+
+    U.chain(steps, { maxWait = math.max(60, waverDur + scaleDur + 5) })
+end
+
+--- Wall-clock seconds the Play-enter chain should wait after play() is started.
+function SessionExplode.sequenceDurationSec()
+    return (DELAY_TIME * 5) + TITLE_DELAY + NUM_DELAY + HIDE_SETTLE
+end
+
+local function explodePair(index)
+    local prefix = "overlay_globalBlindfold_sessionSplash_1_" .. tostring(index)
+    SessionExplode.explodeImage(prefix .. "_A", WAVER_TIME, SCALE_TIME, 0)
+    SessionExplode.explodeImage(prefix .. "_B", WAVER_TIME, SCALE_TIME)
+end
+
+--- Start the Intermission→Play explode. Returns immediately; wait sequenceDurationSec() on the caller.
+-- @return number sequenceDurationSec
+function SessionExplode.play()
+    sequenceGen = sequenceGen + 1
+    local gen = sequenceGen
+    for id, idGen in pairs(explodeGenById) do
+        explodeGenById[id] = idGen + 1
+    end
+    SessionExplode.resetLayers()
+
+    U.chain({
+        function()
+            if sequenceGen ~= gen then
+                return
+            end
+            SessionExplode.explodeImage(COVER_ID, 0, COVER_SCALE_DUR)
+            return 0
+        end,
+        function()
+            if sequenceGen ~= gen then
+                return
+            end
+            explodePair(1)
+            return DELAY_TIME
+        end,
+        function()
+            if sequenceGen ~= gen then
+                return
+            end
+            explodePair(2)
+            return DELAY_TIME
+        end,
+        function()
+            if sequenceGen ~= gen then
+                return
+            end
+            explodePair(3)
+            return DELAY_TIME
+        end,
+        function()
+            if sequenceGen ~= gen then
+                return
+            end
+            explodePair(4)
+            return DELAY_TIME
+        end,
+        function()
+            if sequenceGen ~= gen then
+                return
+            end
+            explodePair(5)
+            return DELAY_TIME
+        end,
+        function()
+            if sequenceGen ~= gen then
+                return
+            end
+            SessionExplode.explodeImage("overlay_globalBlindfold_sessionSplash_1_6_A", TITLE_WAVER, TITLE_SCALE, 0)
+            return TITLE_DELAY
+        end,
+        function()
+            if sequenceGen ~= gen then
+                return
+            end
+            SessionExplode.explodeImage("overlay_globalBlindfold_sessionSplash_1_6_B", NUM_WAVER, NUM_SCALE, 0)
+            return NUM_DELAY
+        end,
+        function()
+            if sequenceGen ~= gen then
+                return
+            end
+            hideGlobalPanel()
+            return HIDE_SETTLE
+        end,
+        function()
+            if sequenceGen ~= gen then
+                return
+            end
+            SessionExplode.resetLayers()
+        end,
+    }, { maxWait = math.max(60, SessionExplode.sequenceDurationSec() + 5) })
+
+    return SessionExplode.sequenceDurationSec()
+end
+
+return SessionExplode

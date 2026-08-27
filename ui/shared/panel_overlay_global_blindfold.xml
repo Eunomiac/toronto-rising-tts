@@ -1,5 +1,5 @@
 <!-- Global session blindfold — no visibility filter (all clients). active=true by default / on connect. -->
-<!-- Lua: hideStartupLoadingOverlays() / showStartupLoadingOverlaysForPhases (Play hide / Intermission show). -->
+<!-- Lua: hideStartupLoadingOverlays() / showStartupLoadingOverlaysForPhases; session explode: core/session_explode.ttslua (Play enter). -->
 <!-- Per-player transition blinds: ui/.templates/panel_overlay_blindfold.xml — root sibling beside this file (TOR-436). -->
 <!-- Placed last among blindfolds in ui/Global.xml so it draws above transition blinds when both are up. -->
 <!-- Parent Panel owns show/hide + FadeIn/FadeOut + raycast; child Images are stacked splash art. -->
@@ -22,6 +22,7 @@ UI.setAttributes("overlay_globalBlindfold_panel", {raycastTarget = "false"})
     showAnimation = "FadeIn"
     hideAnimation = "FadeOut"
     animationDuration = "0.3"
+    color = "#000000"
   />
   <Image class="global_blindfold"
     active = "true"
@@ -30,14 +31,22 @@ UI.setAttributes("overlay_globalBlindfold_panel", {raycastTarget = "false"})
     rectAlignment = "MiddleCenter"
     preserveAspect = "true"
     raycastTarget = "false"
+    color = "rgba(1, 1, 1, 0)"
   />
 </Defaults>
 
 <Panel id="overlay_globalBlindfold_panel" class="global_blindfold_panel">
-  <Image id="overlay_globalBlindfold_sessionSplash_1_5" class="global_blindfold" image="overlay_blindfold_21" />
-  <Image id="overlay_globalBlindfold_sessionSplash_1_4" class="global_blindfold" image="overlay_blindfold_18" />
-  <Image id="overlay_globalBlindfold_sessionSplash_1_3" class="global_blindfold" image="overlay_blindfold_15" />
-  <Image id="overlay_globalBlindfold_sessionSplash_1_2" class="global_blindfold" image="overlay_blindfold_12" />
-  <Image id="overlay_globalBlindfold_sessionSplash_1_1" class="global_blindfold" image="overlay_blindfold_9" />
-  <Image id="overlay_globalBlindfold" class="global_blindfold" image="global_blindfold_session_1" />
+  <Image id="overlay_globalBlindfold_sessionSplash_1_6_B" class="global_blindfold" image="overlay_explode_sessionTitle" />
+  <Image id="overlay_globalBlindfold_sessionSplash_1_6_A" class="global_blindfold" image="overlay_explode_sessionNum" />
+  <Image id="overlay_globalBlindfold_sessionSplash_1_5_B" class="global_blindfold" image="overlay_explode_image_lordLucien" />
+  <Image id="overlay_globalBlindfold_sessionSplash_1_5_A" class="global_blindfold" image="overlay_explode_text_lordLucien" />
+  <Image id="overlay_globalBlindfold_sessionSplash_1_4_B" class="global_blindfold" image="overlay_explode_image_rashid" />
+  <Image id="overlay_globalBlindfold_sessionSplash_1_4_A" class="global_blindfold" image="overlay_explode_text_rashid" />
+  <Image id="overlay_globalBlindfold_sessionSplash_1_3_B" class="global_blindfold" image="overlay_explode_image_aishe" />
+  <Image id="overlay_globalBlindfold_sessionSplash_1_3_A" class="global_blindfold" image="overlay_explode_text_aishe" />
+  <Image id="overlay_globalBlindfold_sessionSplash_1_2_B" class="global_blindfold" image="overlay_explode_image_fomorach" />
+  <Image id="overlay_globalBlindfold_sessionSplash_1_2_A" class="global_blindfold" image="overlay_explode_text_fomorach" />
+  <Image id="overlay_globalBlindfold_sessionSplash_1_1_B" class="global_blindfold" image="overlay_explode_image_blackCaesar" />
+  <Image id="overlay_globalBlindfold_sessionSplash_1_1_A" class="global_blindfold" image="overlay_explode_text_blackCaesar" />
+  <Image id="overlay_globalBlindfold" class="global_blindfold" image="global_blindfold_session_1" color="rgba(1, 1, 1, 1)" />
 </Panel>
