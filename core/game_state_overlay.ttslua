@@ -41,6 +41,15 @@ local lastRealTickClock = nil
 --- Last pushed UI text values to avoid redundant `UI.setValue` on hot paths (RT tick).
 local overlayTextCache = {}
 
+--- Last district-separator and datetime/time chrome fingerprints (avoid `UI.setAttributes` on every Sync.full).
+local lastDistrictSeparatorFingerprint = nil
+local lastOverlayChromeFingerprint = nil
+
+local DISTRICT_SEPARATOR_DIAMOND = "◆"
+local OVERLAY_DATETIME_PLAY_COLOR = "#FF0000"
+local OVERLAY_TIME_PLAY_COLOR = "#FF0000"
+local OVERLAY_DATETIME_SPOTLIGHT_COLOR = "#d3ba50"
+
 --- Last session-scene fingerprint; bust text cache when district/site/clock changes.
 local lastSessionSceneOverlayFingerprint = nil
 
@@ -105,6 +114,66 @@ local function pushOverlayActive(id, active)
     end
     -- Always write active flags (no cache): scene/phase changes must not be skipped after a prior hide.
     U.setAttribute(id, "active", active and "true" or "false")
+end
+
+--- @param attrs table `{ text: string, fontStyle: string, active: boolean }`
+local function pushDistrictSeparator(attrs)
+    if UI == nil or UI.setAttributes == nil then
+        return
+    end
+    local text = attrs.text
+    if type(text) ~= "string" then
+        text = DISTRICT_SEPARATOR_DIAMOND
+    end
+    local fontStyle = attrs.fontStyle
+    if type(fontStyle) ~= "string" or fontStyle == "" then
+        fontStyle = "Bold"
+    end
+    local active = attrs.active == true
+    local fp = table.concat({ text, fontStyle, active and "1" or "0" }, "|")
+    if fp == lastDistrictSeparatorFingerprint then
+        return
+    end
+    lastDistrictSeparatorFingerprint = fp
+    U.setAttributes("gameStateOverlay_districtSeparator", {
+        active = active and "true" or "false",
+        text = text,
+        fontStyle = fontStyle,
+    })
+    overlayTextCache["gameStateOverlay_districtSeparator"] = text
+end
+
+--- Spotlight datetime/time chrome vs Play/End restore. Fingerprinted so Sync.full does not rewrite every pass.
+--- @param isSpotlight boolean
+local function applyOverlayPhaseChrome(isSpotlight)
+    if UI == nil or UI.setAttributes == nil then
+        return
+    end
+    local fp = isSpotlight and "spotlight" or "play"
+    if fp == lastOverlayChromeFingerprint then
+        return
+    end
+    lastOverlayChromeFingerprint = fp
+    if isSpotlight then
+        U.setAttributes("gameStateOverlay_datetime", {
+            color = OVERLAY_DATETIME_SPOTLIGHT_COLOR,
+            fontStyle = "BoldAndItalic",
+        })
+        U.setAttributes("gameStateOverlay_time", {
+            color = "#FFFFFF",
+            fontSize = "29",
+            minHeight = "42",
+        })
+        return
+    end
+    U.setAttributes("gameStateOverlay_datetime", {
+        color = OVERLAY_DATETIME_PLAY_COLOR,
+        fontStyle = "Bold",
+    })
+    U.setAttributes("gameStateOverlay_time", {
+        color = OVERLAY_TIME_PLAY_COLOR,
+        fontSize = "42",
+    })
 end
 
 --- Build a cheap fingerprint for session scene fields that drive the center overlay.
@@ -475,13 +544,36 @@ local function reconcileSessionNumberFromState()
     pushOverlayText("gameStateOverlay_sesionNumber", "− " .. roman .. " −")
 end
 
---- Empty district/site row (Spotlight / End ritual overlay).
+--- Spotlight location row: session name in the district-separator slot (not the diamond).
+local function pushSpotlightLocationRow()
+    reconcileSessionNumberFromState()
+    pushOverlayText("gameStateOverlay_district", "")
+    pushOverlayText("gameStateOverlay_parentSite", "")
+    pushOverlayText("gameStateOverlay_site", "")
+    pushOverlayActive("gameStateOverlay_parentSite", false)
+    pushOverlayActive("gameStateOverlay_parentSiteSeparator", false)
+    local sessionName = S.getStateVal("sessionName")
+    if type(sessionName) ~= "string" then
+        sessionName = ""
+    end
+    pushDistrictSeparator({
+        text = sessionName,
+        fontStyle = "Normal",
+        active = true,
+    })
+end
+
+--- Empty district/site row (End ritual overlay). Diamond separator stays off without a live scene.
 local function pushEmptyLocationRow()
     reconcileSessionNumberFromState()
     pushOverlayText("gameStateOverlay_district", "")
     pushOverlayText("gameStateOverlay_parentSite", "")
     pushOverlayText("gameStateOverlay_site", "")
-    pushOverlayActive("gameStateOverlay_districtSeparator", false)
+    pushDistrictSeparator({
+        text = DISTRICT_SEPARATOR_DIAMOND,
+        fontStyle = "Bold",
+        active = false,
+    })
     pushOverlayActive("gameStateOverlay_parentSite", false)
     pushOverlayActive("gameStateOverlay_parentSiteSeparator", false)
 end
@@ -491,7 +583,11 @@ local function reconcileLocationRowFromState()
     reconcileSessionNumberFromState()
     local districtLabel, siteFull = resolveLocationLabelsFromState()
     pushOverlayText("gameStateOverlay_district", districtLabel)
-    pushOverlayActive("gameStateOverlay_districtSeparator", true)
+    pushDistrictSeparator({
+        text = DISTRICT_SEPARATOR_DIAMOND,
+        fontStyle = "Bold",
+        active = true,
+    })
 
     local hasParent, parentText, siteProper = splitSiteNameForOverlay(siteFull)
     if hasParent then
@@ -519,6 +615,12 @@ function GameStateOverlay.reconcileFromState()
 
     local kind = overlayTimeLocationKind()
     if kind == "hidden" then
+        applyOverlayPhaseChrome(false)
+        pushDistrictSeparator({
+            text = DISTRICT_SEPARATOR_DIAMOND,
+            fontStyle = "Bold",
+            active = false,
+        })
         pushOverlayActive(OVERLAY_TIME_LOCATION_ID, false)
         pushOverlayActive(OVERLAY_WEATHER_ID, false)
         pushOverlayText("gameStateOverlay_datetime", "")
@@ -531,8 +633,9 @@ function GameStateOverlay.reconcileFromState()
 
     if kind == "spotlight" then
         bustTextCacheIfSessionSceneChanged()
+        applyOverlayPhaseChrome(true)
         pushOverlayActive(OVERLAY_TIME_LOCATION_ID, true)
-        pushEmptyLocationRow()
+        pushSpotlightLocationRow()
         pushOverlayText("gameStateOverlay_datetime", "S P O T L I G H T")
         local Spotlight = require("core.spotlight")
         local charName = ""
@@ -546,6 +649,7 @@ function GameStateOverlay.reconcileFromState()
 
     if kind == "sessionEnd" then
         bustTextCacheIfSessionSceneChanged()
+        applyOverlayPhaseChrome(false)
         pushOverlayActive(OVERLAY_TIME_LOCATION_ID, true)
         pushEmptyLocationRow()
         local sessionName = S.getStateVal("sessionName")
@@ -559,6 +663,7 @@ function GameStateOverlay.reconcileFromState()
     end
 
     -- Play: existing clock / location / weather.
+    applyOverlayPhaseChrome(false)
     if SceneLibrary.hasLiveSceneOnTable() ~= true then
         bustTextCacheIfSessionSceneChanged()
         pushOverlayActive(OVERLAY_TIME_LOCATION_ID, true)

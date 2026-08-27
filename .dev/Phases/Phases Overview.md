@@ -16,7 +16,7 @@ Source of truth:
 Verification:
 - Save & Play → Host Phases panel → **Advance →** (panel closes immediately) through Intermission → Play → Spotlight → End → Intermission
 - Confirm Intermission: global cover comes down together with leftover-audio fade-out and TR_Loop fade-in (~2s), then no-scene table prep under cover, AdminDark. Play: TR_Loop fades ~0.5s, Music C overture starts immediately at full volume, global blindfold lifts ~2s before the 71s sting ends, then Main fades in and the Willpower heal overlay can appear
-- Play → Spotlight: staged transition cover; Table A + Spotlight skybox; Main keeps playing; in-session stand-ins on the carousel; overlay shows **S P O T L I G H T** and the front character name. Spotlight → End: same cover; Main and Table A stay; overlay shows the session name and **END**
+- Play → Spotlight: staged transition cover; Table A + Spotlight skybox; Main keeps playing; in-session stand-ins on the carousel; overlay shows the session name in the diamond slot, **S P O T L I G H T** in gold, and the front character name in white. Spotlight → End: same cover; Main and Table A stay; overlay shows the session name and **END**
 - Workshop: Host console `lua DEBUG.populateSpotlightFigurines()` clones seat figures and spawns tagged lights, then prints GUIDs for `lib/guids.ttslua`. Play → Spotlight does **not** auto-spawn (duplicates if GUIDs are forgotten).
 - Solo Host verified only until **TOR-144** (multiplayer E2E) — multiclient connect blindfold + Advance replication: [Multiclient Session Script](../E2E%20Playbooks/Multiplayer-Session.md) (A4, B0, D1)
 
@@ -81,7 +81,7 @@ Ending events of the previous phase run before starting events of the new phase 
 * Table A if not already A; skybox `Spotlight`; fade location/weather out on the way in; **do not** restart Main if it is already playing; **do not** silence all emitters.
 * Hide-list while `currentPhase == Spotlight` (reconciler after seat layout in `Sync.full`): seat figurines invisible to PC colors + White/Grey; dice bags, companion toggles/figurines, and compulsion decks parked at `y = -200`.
 * Shuffle in-session PCs (`absentFromSession ~= true`) once; snap dedicated workshop stand-ins onto a 36° carousel (front at 180°), facing **outward** from the ring (not toward the origin). Create those stand-ins with `lua DEBUG.populateSpotlightFigurines()` (paste GUIDs into `lib/guids.ttslua`, save the table, Save & Play). Missing stand-in GUIDs fail loudly and lift the cover; Advance never auto-spawns.
-* Overlay: empty location row, weather hidden, datetime `S P O T L I G H T`, time = front character's `charName`. Host strip (`Black|Host`, bottom center) for prev / color chips / next.
+* Overlay: location diamond slot shows `sessionName` (normal weight); datetime `S P O T L I G H T` in gold italic-bold; time = front character's `charName` in white at 29pt. Host strip (`Black|Host`, bottom center) for prev / color chips / next. Play/End restore the red diamond, red date/time, and 42pt clock.
 
 ### Ending Events: `SPOTLIGHT`
 

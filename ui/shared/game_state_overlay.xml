@@ -23,7 +23,7 @@
 <Panel id="gameStateOverlay_root" class="gameStateOverlay">
 
   <VerticalLayout id="gameStateOverlay_timeAndLocation" class="gameStateOverlay_topCenter">
-    <Image id="gameStateOverlay_timeAndLocation_background" class="gameStateOverlay_background" image="bg_playerOverlay_timeLocation" offsetXY="0 10"/>
+    <Image id="gameStateOverlay_timeAndLocation_background" class="gameStateOverlay_background" image="bg_playerOverlay_timeLocation" offsetXY="7 10"/>
     <Text id="gameStateOverlay_sesionNumber" class="small_red_text" text="− Ⅰ −" />
     <HorizontalLayout class="gameStateOverlay_location" spacing="5" childAlignment="UpperCenter">
       <Text id="gameStateOverlay_district" class="small_white_text" text="" />
@@ -36,13 +36,6 @@
     <Panel id="gameStateOverlay_timeSpacer" minHeight="10" preferredHeight="10" flexibleHeight="0" />
     <Text id="gameStateOverlay_time" class="large_red_text" text="" />
   </VerticalLayout>
-
-<!--
-UI.setAttributes("gameStateOverlay_timeSpacer", {minHeight = "10", preferredHeight="10"})
-UI.setAttributes("gameStateOverlay_timeAndLocation", {offsetXY = "0 20", spacing="0"})
-UI.setAttributes("gameStateOverlay_timeAndLocation_background", {offsetXY = "0 10"})
--->
-
 
   <VerticalLayout id="gameStateOverlay_weather" class="gameStateOverlay_topRight">
     <Image class="gameStateOverlay_background" image="bg_playerOverlay_weather" />
