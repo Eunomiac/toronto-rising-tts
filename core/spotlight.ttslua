@@ -10,7 +10,8 @@
     missing GUIDs abort the carousel loudly so duplicates cannot pile up.
 
     Agent guidance: .dev/Phases/Phases Overview.md; hide-list must run after
-    seat layout in Sync.full so bags/figurines stay stashed while phase is Spotlight.
+    seat layout in Sync.full so bags/companions/compulsion decks stay stashed
+    while phase is Spotlight or End (restore on Intermission enter, after the cover).
 ]]
 
 local Spotlight = {}
@@ -117,6 +118,17 @@ end
 --- @return boolean
 local function isSpotlightPhase()
     return S.getStateVal("currentPhase") == C.Phases.SPOTLIGHT
+end
+
+--- @return boolean
+local function isEndPhase()
+    return S.getStateVal("currentPhase") == C.Phases.END
+end
+
+--- Bags / companions / compulsion decks stay parked through Spotlight and End.
+--- @return boolean
+local function shouldParkPlayfieldToys()
+    return isSpotlightPhase() or isEndPhase()
 end
 
 --- @param color string
@@ -427,15 +439,7 @@ local function eachCompulsionDeck(fn)
     end
 end
 
-local function applyHideListOn()
-    local hideColors = C.HideFromPcSeatsAndSpectators or {}
-    for i = 1, #(C.PlayerColors or {}) do
-        local color = C.PlayerColors[i]
-        local fig = G.getObject(G.GUIDS["SEAT_FIGURE_" .. string.upper(color)])
-        if U.isGameObject(fig) and fig.setInvisibleTo ~= nil then
-            fig.setInvisibleTo(hideColors)
-        end
-    end
+local function parkPlayfieldToys()
     eachDiceBag(function(obj)
         setWorldY(obj, PARK_Y)
     end)
@@ -445,6 +449,18 @@ local function applyHideListOn()
     eachCompulsionDeck(function(obj)
         setWorldY(obj, PARK_Y)
     end)
+end
+
+local function applyHideListOn()
+    local hideColors = C.HideFromPcSeatsAndSpectators or {}
+    for i = 1, #(C.PlayerColors or {}) do
+        local color = C.PlayerColors[i]
+        local fig = G.getObject(G.GUIDS["SEAT_FIGURE_" .. string.upper(color)])
+        if U.isGameObject(fig) and fig.setInvisibleTo ~= nil then
+            fig.setInvisibleTo(hideColors)
+        end
+    end
+    parkPlayfieldToys()
 end
 
 local function applyHideListOff()
@@ -457,16 +473,23 @@ local function playfieldFingerprint()
     return tostring(S.getStateVal("currentPhase"))
 end
 
+--- Seat layout restores bag Y; re-park after every layout pass while Spotlight or End.
 local function applyPlayfieldToysFromPhase()
     local fp = playfieldFingerprint()
+    if shouldParkPlayfieldToys() then
+        if isSpotlightPhase() then
+            applyHideListOn()
+        else
+            applyHideListOff()
+            parkPlayfieldToys()
+        end
+        lastPlayfieldFingerprint = fp
+        return
+    end
     if fp == lastPlayfieldFingerprint then
         return
     end
-    if isSpotlightPhase() then
-        applyHideListOn()
-    else
-        applyHideListOff()
-    end
+    applyHideListOff()
     lastPlayfieldFingerprint = fp
 end
 
@@ -894,7 +917,8 @@ function Spotlight.applyEnterWorld()
     return ok == true, err
 end
 
---- Spotlight → End work under the existing cover. Flips phase first so hide-list restores while still covered.
+--- Spotlight → End work under the existing cover. Flips phase first so the Host strip hides
+--- and seat-figure invisibility can restore; bags/companions/decks stay parked until Intermission.
 --- Table B0 + Generic skybox (NPC seats stay empty); Main is not restarted.
 --- @return boolean, string|nil
 function Spotlight.applyExitWorld()
@@ -904,7 +928,6 @@ function Spotlight.applyExitWorld()
     for i = 1, #(C.PlayerColors or {}) do
         placeStandIn(C.PlayerColors[i], nil, "OFF")
     end
-    applyPlayfieldToysFromPhase()
     refreshHostControls()
     local Scenes = require("core.scenes")
     if type(Scenes.applyDefaultNoSceneEnvironment) == "function" then

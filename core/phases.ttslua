@@ -594,7 +594,7 @@ end
 Phases.onExit[C.Phases.SPOTLIGHT] = function(ctx)
     return {
         function()
-            -- Default Advance path is Spotlight → End. Keep Table A + Main; park carousel under cover (TOR-98).
+            -- Default Advance path is Spotlight → End. Park carousel under cover; keep Main (TOR-98).
             if type(ctx) == "table" and ctx.to ~= nil and ctx.to ~= C.Phases.END then
                 return Phases.applyNoSceneDefault(ctx, { reason = "phase_spotlight_exit" })
             end

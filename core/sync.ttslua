@@ -403,7 +403,8 @@ function Sync.full(opts)
         force = force,
     })
 
-    -- TOR-98: hide-list is phase-derived. Run after seat layout so bags/figurines stay stashed in Spotlight.
+    -- TOR-98: hide-list is phase-derived. Run after seat layout so bags/companions/decks
+    -- stay stashed in Spotlight and End (restore on Intermission after the cover).
     local Spotlight = require("core.spotlight")
     callIfFunction(Spotlight.reconcileFromState)
 
