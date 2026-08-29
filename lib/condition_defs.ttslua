@@ -283,8 +283,8 @@ CD.Defs = {
     priority = 10,
     statChanges = { awareness = -2 },
   },
-  bonusWpReroll = {
-    id = "bonusWpReroll",
+  bonusWPReroll = {
+    id = "bonusWPReroll",
     type = "roll",
     displayName = "Bonus WP Reroll",
     canApplyManually = true,
