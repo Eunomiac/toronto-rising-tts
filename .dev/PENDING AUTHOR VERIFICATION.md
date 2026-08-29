@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-08-29 — inbox Immediate polish shipped (**TOR-517**–**TOR-525**). Author confirmed **TOR-98** (Spotlight phase), **TOR-508** (rain particle bootstrap miss), **TOR-509** (hidden skyboxes), and **TOR-510** (Memoriam skybox catalog). **TOR-439** remains a multiclient gate (not a solo Save & Play)._
+_Last populated: 2026-08-29 — **TOR-528** (`DEBUG.resetToIntermission`). Inbox Immediate polish shipped (**TOR-517**–**TOR-525**). Author confirmed **TOR-98** (Spotlight phase), **TOR-508** (rain particle bootstrap miss), **TOR-509** (hidden skyboxes), and **TOR-510** (Memoriam skybox catalog). **TOR-439** remains a multiclient gate (not a solo Save & Play)._
 
 ### High — session / join / first-load
 
@@ -118,6 +118,12 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 **How to verify:** Save & Play. Advance Intermission → Play and watch the session-start explode. The session number and the session title should grow toward the camera at the same speed. Character still-text / art pairs earlier in the sequence should be unchanged.
 
 **Context:** They previously used different scale and waver timings.
+
+#### TOR-528 — DEBUG.resetToIntermission for intro re-tests
+
+**How to verify:** Save & Play. In the Host console run `lua DEBUG.resetToIntermission()`. The global session cover should come back with the usual session-start art (not the End blindfold). You should hear the looping Intermission theme (TR_Loop), not the session-start overture or Main. The Phases panel should show Intermission. Click **Advance →**: the intro animation and overture should play again. You can run the console command again after the intro — or even while it is still playing — to jump back without going through Spotlight and End. Tables, skyboxes, and seat piles should stay where they were.
+
+**Context:** Debug helper only. It does not run the full Intermission enter (no no-scene table prep).
 
 ---
 

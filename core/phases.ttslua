@@ -17,6 +17,8 @@ local U = require("lib.util")
 local S = require("core.state")
 
 local SESSION_START_HEAL_PANEL = "sessionStartHeal_panel"
+--- XML default on `overlay_globalBlindfold` (session-start cover, not End art).
+local SESSION_COVER_IMAGE = "global_blindfold_session_1"
 local HEAL_BROADCAST_HOLD_SEC = 6
 local INTERMISSION_THEME_FADE_SEC = 2
 --- Intermission → Play: TR_Loop fade-out while Music C overture starts immediately (TOR-497).
@@ -29,10 +31,24 @@ local PHASE_ADVANCE_CHAIN_MAX_WAIT_SEC = (tonumber(C.SessionStartIntroDurationSe
 
 --- Single in-flight top-level transition token.
 local advancing = false
+--- Shared with `U.chain` so debug snap can abort a mid-Play intro without cycling phases.
+local advanceCancel = { cancelled = false, reason = nil }
 
 --- True while `Phases.advanceTo` / `advanceNext` U.chain is in flight (exit → mutate → enter).
 function Phases.isAdvancing()
     return advancing == true
+end
+
+--- Best-effort abort of the in-flight Advance chain (explode wait, Main fade, heal overlay).
+-- @param reason string|nil Stored on the chain cancel registry (e.g. `"debug_reset"`).
+-- @return boolean true if a transition was in flight
+function Phases.abortAdvance(reason)
+    if advancing ~= true then
+        return false
+    end
+    advanceCancel.cancelled = true
+    advanceCancel.reason = reason or "aborted"
+    return true
 end
 
 --- @type table<string, fun(ctx: table): table>
@@ -631,6 +647,24 @@ local function syncPhaseUi()
     end
 end
 
+--- Debug: snap to Intermission so Intermission→Play can be re-tested without Spotlight/End.
+--- Does not move tables, skyboxes, or seat piles. Restores the session-start cover image.
+-- @return boolean
+function Phases.debugSnapToIntermission()
+    Phases.abortAdvance("debug_reset")
+    local SE = require("core.session_explode")
+    if type(SE.cancel) == "function" then
+        SE.cancel()
+    end
+    S.setCurrentPhase(C.Phases.INTERMISSION)
+    U.setAttribute("overlay_globalBlindfold", "image", SESSION_COVER_IMAGE)
+    Phases.showGlobalBlindfold(nil)
+    hideSessionStartHealPanel()
+    Phases.startIntermissionThemePlaylistLoop(nil)
+    syncPhaseUi()
+    return true
+end
+
 --- Promote to Play without enter/exit events (scene Apply already owns the world).
 function Phases.ensurePlayPhaseForSceneApply()
     local phase = S.getStateVal("currentPhase")
@@ -668,6 +702,8 @@ function Phases.advanceTo(newPhase, opts)
     end
 
     advancing = true
+    advanceCancel.cancelled = false
+    advanceCancel.reason = nil
     local ctx = {
         from = oldPhase,
         to = newPhase,
@@ -695,10 +731,11 @@ function Phases.advanceTo(newPhase, opts)
 
     U.chain(steps, {
         maxWait = PHASE_ADVANCE_CHAIN_MAX_WAIT_SEC,
+        cancelRegistry = advanceCancel,
         onComplete = function(ok, detail)
             advancing = false
             syncPhaseUi()
-            if ok ~= true then
+            if ok ~= true and detail ~= "debug_reset" then
                 U.AlertGM("Phase advance stopped (" .. tostring(detail or "unknown") .. "). Cover or music may still be mid-sequence.")
             end
         end,
@@ -741,10 +778,6 @@ function Phases.setPlaySubPhase(subPhase)
     end
     U.chain(steps)
     return true
-end
-
-function Phases.isAdvancing()
-    return advancing == true
 end
 
 return Phases

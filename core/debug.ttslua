@@ -1509,6 +1509,24 @@ function DEBUG.soundscapeStopSessionIntro()
     printTestResult("Session intro stop", ok, message)
 end
 
+--- Snap to Intermission so Intermission→Play Advance can be re-tested without Spotlight/End.
+--- Stops an in-flight intro, restores the session cover, and starts TR_Loop. Does not move the table world.
+-- @return boolean
+function DEBUG.resetToIntermission()
+    printTestHeader("Reset to Intermission")
+    local Phases = require("core.phases")
+    if type(Phases.debugSnapToIntermission) ~= "function" then
+        error("DEBUG.resetToIntermission: Phases.debugSnapToIntermission missing — Save & Play")
+    end
+    local ok = Phases.debugSnapToIntermission()
+    printTestResult(
+        "Reset to Intermission",
+        ok == true,
+        "phase=Intermission, session cover, TR_Loop — Advance to replay the intro"
+    )
+    return ok
+end
+
 --- Quick test: set a Storyteller-controlled background playlist.
 -- @param moodKey string One of: main, intrigue, combat
 function DEBUG.soundscapeMusic(moodKey)
@@ -5976,6 +5994,7 @@ function DEBUG.help()
     print("  soundscapeSessionIntro(key?) - Play Music C overture (same path as Advance); omit key for TR_SessionStart")
     print("  inspectSessionIntro()    - Dump Music C triggers/resolve path without playing")
     print("  soundscapeStopSessionIntro() - Silence Music C")
+    print("  resetToIntermission()    - Snap to Intermission (cover + TR_Loop) so Advance can replay the intro")
     print("  soundscapeStopFeatured() - Stop featured lane only")
     print("  soundscapeResumeBackground() - Resume saved background music context")
     print("  soundscapeLocation(key)  - Set location ambience: airport, industrial, sewers, warehouse, none")

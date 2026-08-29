@@ -702,4 +702,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-08-29 | CREATE | TOR-526 | Auto Rouse lock 0.5s after table hit + 1s broadcast. Focus #1 High. relatedTo TOR-490 / TOR-492. |
 | 2026-08-29 | CREATE | TOR-527 | Downtime subphase spec (default when no scene, downtimeClock, overlay). Focus #2 High. relatedTo TOR-143. |
 
+| 2026-08-29 | CREATE+SHIP | TOR-528 | DEBUG.resetToIntermission: snap to Intermission cover + TR_Loop to re-test intro. relatedTo TOR-516. Pending Save & Play. |
+
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

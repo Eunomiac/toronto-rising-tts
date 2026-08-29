@@ -388,6 +388,7 @@ Play enter starts `SessionExplode.play()` in the same step as `Phases.fireSessio
 | `SessionExplode.resetLayers()` | Opaque session cover, splash layers transparent, scale 1 | Intermission show |
 | `SessionExplode.cancel()` | Stop in-flight lerps (does not snap attrs) | Play exit; `HUD_clearLoadingOverlay` |
 | `SessionExplode.explodeImage(id, waverDur, scaleDur, waverLimit?)` | Waver then scale-and-fade one XmlUI image. `waverDur` 0 skips waver; `waverLimit` 0 holds still. | Used by `play()` |
+| `DEBUG.resetToIntermission()` | Snap to Intermission: session cover + TR_Loop; aborts an in-flight Play intro. Does not move tables/skyboxes. | Host console: re-test Intermission→Play Advance |
 
 ### Chronicle weather (`lib/chronicle_weather.ttslua`)
 
