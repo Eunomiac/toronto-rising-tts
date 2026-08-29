@@ -20,27 +20,7 @@ Verification:
 ## For Immediate Implementation
 > _After registering each of these issues with Linear in the ordinary fashion, before updating the Focus Stack, briefly review the issue: If it is a quick or easy fix, implement it immediately without waiting for author confirmation. Otherwise, promote it to the top of the Focus Stack, and offer to begin work on it immediately when summarizing your work processing `INBOX.md` to the author. If multiple issues require promotion in this way, consider how best to resolve them as quickly as possible, and offer to draft an implementation plan in your response to the author._
 
-- [End Phase Game State Display] The time element in `game_state_overlay.xml` should be set to "DEBRIEF" (currently it is set to "END")
-- [Weather Display] Remove display of humidity from the weather panel: delete the `gameStateOverlay_weatherHumidity` element from `game_state_overlay.xml`, and remove any code that references that element.
-- [PCs Panel Layout] The PCs panel takes up too much vertical space. I currently have it scaled down to fit, but that results in the text being difficult to read. Review the XML attributes for the PCs panel and minimize vertical spacing, padding, row and button `preferredHeight` values, and anything else that will help to reduce the vertical space it requires, without reducing the font size of text or buttons.
-- [Scenes Panel] Remove all text other than the name of the scene from the scene selection buttons in the scene library (the color changes already confer enough information)
-- [Session Starter Track] When the phase is advanced from INTERMISSION to PLAY, the session starter music should be set to maximum volume before playback begins. Additionally, confirm that there should be no fade in of the session starter track: It should play from the start, at max volume.
-- [Weather Particle Emitter] The weather particle emitter (`G.GUIDS.PARTICLE_EMITTER`) should always share the same x and z position coordinates as the table origin, and should be moved whenever the table changes, leaving y-position unchanged.
-
 ## Active
-
-### Downtime Phase Behavior
-
-1. During the PLAY phase, whenever there is no live scene, the default subphase should be Downtime. (This includes after a scene has been ended, and after a session is started -- i.e. whenever the 'no scene' game state is active.) When a scene is activated, the subphase should automatically switch to Main.
-2. Whenever Downtime is activated, the present-day clock should be copied into state under a new `downtimeClock` entry, and this `downtimeClock` should be used as the clock during downtime -- i.e. whenever Downtime begins, the clock is set to the present-day clock, which can then be manipulated during downtime without affecting the "real" present-day clock.
-3. During Downtime, elements in `game_state_overlay.xml` should be modified as follows:
-  - set the following elements to `active = "false"`: `gameStateOverlay_districtSeparator`, `gameStateOverlay_parentSite` and `gameStateOverlay_parentSiteSeparator`
-  - set text elements `gameStateOverlay_district` and `gameStateOverlay_site` to an empty string (currently, they are set to an em-dash when no scene is live)
-  - set `gameStateOverlay_datetime` to display the `downtimeClock` date (in the same format as would be used during a live scene)
-  - set `gameStateOverlay_time` to the string `"DOWNTIME"` (time -- as in hours and minutes -- is not displayed during downtime)
-4. During Downtime, clock controls should still function as normal, always operating on `downtimeClock`, but only the date should be displayed (i.e. the time display element should continue to display "DOWNTIME").
-5. Whenever a location is set, `gameStateOverlay_districtSeparator` should be set to `active = "true"` along with the other element activations (originally, this element was always left active, so we need to add reactivating it to the location setting process), and clock behavior should be restored to normal behavior.
-
 
 ## External Work (Set STATUS to "External To Do")
 
@@ -69,6 +49,8 @@ When the subphase is switched to Memoriam, the Host should be presented with a p
 
 
 ## Processed
+
+2026-08-29 `/tr-inbox` Immediate — humidity overlay hide → **TOR-517** (shipped); PCs panel vertical trim → **TOR-518** (shipped); scene library name-only → **TOR-519** (shipped); rain particle X/Z follow table → **TOR-520** (shipped); camera-button right-click default → **TOR-521** (shipped); CSHEET strip right-click roll camera → **TOR-522** (shipped); Spotlight carousel Y −55 / Z 125 → **TOR-523** (shipped); End→Intermission `overlay_blindfold_end` → **TOR-524** (shipped); session num/title grow rates → **TOR-525** (shipped). Auto Rouse lock+1s broadcast → **TOR-526** (Focus #1). Downtime subphase spec → **TOR-527** (Focus #2). End overlay **DEBRIEF** already shipped in **TOR-98**. Session starter max volume / no fade already shipped in **TOR-497** / **TOR-515**. PAVE ✅ cleared **TOR-98**, **TOR-508**, **TOR-509**, **TOR-510**.
 
 2026-08-26 Immediate — Memoriam skybox sheet import (`SKYBOXMEMORIAMCSV` → `SkyboxesCatalog.MemoriamSkyboxes` / `C.MemoriamSkyboxes`) → **TOR-510** (shipped)
 

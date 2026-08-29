@@ -54,7 +54,6 @@ UI.setAttributes("gameStateOverlay_timeAndLocation_background", {offsetXY = "7 1
     <Image class="gameStateOverlay_background" image="bg_playerOverlay_weather" />
     <HorizontalLayout class="gameStateOverlay_weather" spacing="5">
       <Text id="gameStateOverlay_weatherBase" class="small_red_text" text="" />
-      <Text id="gameStateOverlay_weatherHumidity" class="small_red_text" text="" />
       <Text id="gameStateOverlay_weatherWind" class="small_red_text" text="" />
     </HorizontalLayout>
     <HorizontalLayout class="gameStateOverlay_temperature" spacing="5" childAlignment="UpperRight">

@@ -5746,7 +5746,7 @@ To derive the weather for a given hour from its five-character code, the hour's 
 
 - Character 1 & Character 2: Base weather string. Lookup in `C.WEATHER.Base`. Each entry contains a descriptive text string to be added to the associated element in the HUD, the audio key for the rain emitter, and a boolean indicating whether there is thunder.
 - Character 3: Temperature delta. Lookup in `C.WEATHER.TemperatureDelta`, then add to `"avgTemp"` for the month. This value is in Celsius, so convert to Fahrenheit by multiplying by 1.8 and adding 32 to provide both temperatures in the HUD.
-- Character 4: Humidity. Lookup in `C.WEATHER.Humidity`. This is a descriptive text string to be added to the associated HUD element.
+- Character 4: Humidity. Lookup in `C.WEATHER.Humidity` (parsed for weather codes; not shown on the overlay HUD).
 - Character 5: Wind. Lookup in `C.WEATHER.Wind`. Each entry contains a descriptive text string to be added to the associated HUD element, as well as two audio keys for the wind emitter: `"windAudioIfWarm"` and `"windAudioIfCold"`. The warm audio key is used if the temperature is above `C.WEATHER.WARM_TEMPERATURE_THRESHOLD`, the cold audio key is used if the temperature is at or below.
 ]]
 
@@ -5880,7 +5880,7 @@ C.WEATHER = {
     z = -26
   },
   Humidity = {
-    x = nil, -- The humidity text element should be set inactive if the humidity is nil.
+    x = nil, -- Humidity is parsed from the weather code but is not shown on the overlay HUD.
     d = " ◆ Dry",
     h = " ◆ Humid",
     m = " ◆ Muggy",

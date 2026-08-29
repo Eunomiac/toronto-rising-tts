@@ -697,4 +697,9 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-08-27 | CREATE+SHIP | TOR-515 | Session-start Music C one-shot was silent-armed then unmuted a frame later; opening drum missing. relatedTo TOR-497. Pending Save & Play. |
 | 2026-08-27 | CONFIRM | TOR-516, TOR-515, TOR-514 | Author confirmed Intermission→Play explode, overture opening drum, and stacked global cover. |
 
+| 2026-08-29 | CONFIRM | TOR-98, TOR-508, TOR-509, TOR-510 | Author ✅ Spotlight phase, rain particle bootstrap miss, hidden skybox picker, Memoriam catalog import. |
+| 2026-08-29 | CREATE+SHIP | TOR-517–TOR-525 | Inbox Immediate: humidity hide, PCs panel trim, library names, particle XZ, camera default, CSHEET roll camera, carousel Y/Z, End cover art, explode grow rates. Pending Save & Play. |
+| 2026-08-29 | CREATE | TOR-526 | Auto Rouse lock 0.5s after table hit + 1s broadcast. Focus #1 High. relatedTo TOR-490 / TOR-492. |
+| 2026-08-29 | CREATE | TOR-527 | Downtime subphase spec (default when no scene, downtimeClock, overlay). Focus #2 High. relatedTo TOR-143. |
+
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

@@ -154,7 +154,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `HUD_toggleRunTestPanel` / `HUD_runtest` / `HUD_runtest_step` | A | Yes | Host RunTest strip; arms/continues/stops `DEBUG.RunTest` (TOR-347) |
 | `HUD_STcamera` | A | Yes | Host ST camera strip → `M.setCamera(Black, mode)` from `C.StorytellerCameraAngles` (TOR-348) |
 | `HUD_cameraControl_click` | A | — | Player camera overlay; MAIN left=`default`, right=`wideFacing` |
-| `HUD_popoutCameraControl_click` / `HUD_alphaControl_hover*` | A | — | Camera picker expand + idle tint |
+| `HUD_popoutCameraControl_click` / `HUD_alphaControl_hover*` | A | — | Camera picker expand; popout right-click → `default` camera + close picker |
 | `HUD_debugLightActivate/ButtonClick/Slider` | C | Yes | Tuner select / sliders / Zero / Discard / close; `getObjectsWithTag("Spotlight")` on open and when returning to the grid |
 | `HUD_debugLightGuidInput/Enabled/ResetRow/Done/Snapshot` | A | — | Guid/Enabled/ResetRow are leftover no-ops; Done returns to selection; Snapshot writes workspace Lua |
 | `HUD_debugCamera*` / `HUD_debugCaptureCameraPreset` | A | — | local camera |
@@ -208,7 +208,7 @@ Per-object scripts (`objects/*.ttslua`, `ui/ui_*.ttslua`) run in **isolated chun
 | `objects/npc_control_board_palette.ttslua` | onLoad | One-time install via Global.call |
 | `ui/ui_signal_candle.ttslua` | click | Object GUID / color from name |
 | `ui/ui_tarot_button.ttslua` | click | Pink/Black → `GlobalApplyTarotState` |
-| `ui/ui_csheet_core.ttslua` | click, onLoad | Global mutators; layout onLoad |
+| `ui/ui_csheet_core.ttslua` | click, onLoad | Global mutators; layout onLoad; inner-strip right-click → seat `roll` camera |
 
 ## Forbidden patterns
 

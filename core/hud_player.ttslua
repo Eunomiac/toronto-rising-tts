@@ -1712,12 +1712,18 @@ function HUD_alphaControl_hoverOff(player, value, id)
 end
 
 --- Toggle the camera preset picker panel for this seat's HUD.
+--- Right-click (`-2`) snaps this player to their `default` camera and closes the picker.
 function HUD_popoutCameraControl_click(player, value, id)
     if type(id) ~= "string" then
         return
     end
     local seatColor = parseSeatColorFromPopoutCameraId(id)
     if seatColor == nil then
+        return
+    end
+    if value == "-2" or value == -2 then
+        Main.setCamera(player, "default")
+        setCameraControlsPanelExpanded(seatColor, false)
         return
     end
     local panelId = "playerHud_overlay_cameraControls_" .. seatColor

@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-08-27 — author confirmed **TOR-516** (session-start explode), **TOR-515** (overture opening drum), and **TOR-514** (stacked global cover). Linear Done-without-confirm sweep on 2026-08-26 added **TOR-507**, **TOR-508**, **TOR-509**, and **TOR-510**. Author confirmed **TOR-506** (End→Intermission audio with the cover) on 2026-08-22. **TOR-439** remains a multiclient gate (not a solo Save & Play)._
+_Last populated: 2026-08-29 — inbox Immediate polish shipped (**TOR-517**–**TOR-525**). Author confirmed **TOR-98** (Spotlight phase), **TOR-508** (rain particle bootstrap miss), **TOR-509** (hidden skyboxes), and **TOR-510** (Memoriam skybox catalog). **TOR-439** remains a multiclient gate (not a solo Save & Play)._
 
 ### High — session / join / first-load
 
@@ -63,35 +63,61 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 ---
 
-### Medium — load console / Scenes picker
+### Medium — overlay / HUD / Spotlight
 
-#### ✅ TOR-98 — Spotlight phase (carousel, overlay, Host strip)
+#### TOR-517 — Hide humidity on the weather overlay
 
-**How to verify:** In the Host console run `lua DEBUG.populateSpotlightFigurines()`. Five Spotlight figurines and five stage lights should appear in the preload zone (world Y about −200), tagged `spotlight_figurine` / `spotlight_light` (not `npc_figurine`). The console should print paste-ready GUID lines. Copy those into `lib/guids.ttslua` (`SPOTLIGHT_FIGURE_*` and `SPOTLIGHT_LIGHT_*` for Brown, Orange, Pink, Purple, Red), save the table, then Save & Play. Do **not** run the helper twice without deleting the previous copies — it will duplicate objects. Advancing into Spotlight does **not** spawn them automatically.
+**How to verify:** Save & Play. During a live outdoor scene, the weather panel should still show the weather words, wind, and temperatures. Humidity text (damp / dry / etc.) should no longer appear next to them.
 
-From Play, click **Advance →**. A scene-style cover should come down. When it lifts: the table should be Table A with the Spotlight skybox; Main music should still be playing (location/weather faded out, Main not restarted); seat figures should be hidden from player colors; bags, companions (including Purple’s three companion tiles), and compulsion decks should be under the table; in-session stand-ins should sit on a larger ring farther from the table (center at Z 175, radius 100, figurines at Y −45), one person at the front if only one is in session, **facing away from the ring’s center** (the front person looks toward the table / Host). The overlay should show the **session name** where the red diamond usually sits (normal weight, not bold), **S P O T L I G H T** in gold italic on the date line, and the front character's name in white on the time line (smaller than the Play clock). A seven-button strip at the bottom of the Host view should rotate the ring over about two seconds (arrows do nothing at the ends; clicking the current color does nothing).
+**Context:** Humidity is still stored in the chronicle weather codes; it is just not shown on the overlay.
 
-Type a session name next to the session number on the Phases panel. Advance to End: Main should keep playing, the table should become **B0** (room for the five PCs only — NPCs should not come back onto seats), the Scenes skybox picker should show **Generic**, the carousel should go away, **seat figures** should be visible again, but **dice bags, companions, and compulsion decks should stay under the table**. Overlay: session name plus **DEBRIEF**. Advance again into Intermission: after the global cover comes down, those bags / companions / decks should return to the table. If the workshop objects are missing on Spotlight enter, Advance should still lift the cover and show a clear error instead of hanging.
+#### TOR-518 — Tighten PCs panel vertical spacing
 
-**Context:** Spotlight is no longer “silence everything and hope a library scene exists.” It is its own phase ritual. Memoriam LUT (**TOR-101**) and a future Downtime clock are not reversed yet — comments are in the narrative-clear path.
+**How to verify:** Save & Play. Open the Storyteller PCs panel. You should be able to leave it at full size and still fit it on screen. Seat names, Desire, track glyphs, and button labels should be the same font size as before, not smaller. Rows and buttons should sit closer together vertically.
 
-#### ✅ TOR-508 — Rain particles no longer print a missing GUID on load
+**Context:** The panel was scaled down to 0.75 so it would fit, which made the text hard to read.
 
-**How to verify:** Save & Play. On load you should **not** see `[Soundscape] Rain particles: No object found ... (bootstrap silence)` in the console. Outdoor rain and weather should still switch the rain-particle visual while the scene cover is down, the same way they did after the outdoor-rain work.
+#### TOR-519 — Scene library buttons show the scene name only
 
-**Context:** The rain-particle object was always in the save. During load the script asked for it before Tabletop Simulator had objects ready, and printed a missing-GUID error. Audio emitters already skipped that quietly; rain particles now do the same. A later weather apply still prints if the GUID is truly gone after objects exist.
+**How to verify:** Save & Play. Open the Scenes panel. Each library button should show only the scene name (or a short truncation). Green/blue/grey colors should still mark selected, pending, and unlinked rows. You should not see “· live”, “· mirror”, or “· unlink” on the buttons.
 
-#### ✅ TOR-509 — Hidden skyboxes stay out of the Scenes picker
+**Context:** Color already tells you selected vs unlinked.
 
-**How to verify:** Save & Play, open the Storyteller Scenes panel, and click Skyboxes. Spotlight should not appear in the list. Other skyboxes should still be there. A scene or site that already uses Spotlight should still apply that skybox.
+#### TOR-520 — Rain particle emitter follows the table
 
-**Context:** The sheet now has an `isShown` column. Hidden rows stay in the catalog so existing overrides still work; they are only omitted from the picker. Live import had 95 catalog skyboxes, 94 in the picker plus Generic, and 1 hidden (Spotlight).
+**How to verify:** Save & Play. Switch Table A → B → C from the Scenes panel. The rain particle object should stay centered over the current table. Its height should not jump.
 
-#### ✅ TOR-510 — Memoriam skybox catalog import
+**Context:** Floor and plinth already followed the table origin; the rain particles now do the same on X and Z.
 
-**How to verify:** This does not change anything you click in the Scenes panel yet. After Save & Play, the game should still load normally. To inspect the data, open `lib/skyboxes_catalog.ttslua` and look at `SkyboxesCatalog.MemoriamSkyboxes` — for example `aishe.aishe2`, and `lucien14` under both `lucien` and `fomorach`. After you add Keys or URLs on the sheet, run `npm run skyboxes:import` again (or the usual build pipeline) to refresh.
+#### TOR-521 — Right-click the player camera button for default view
 
-**Context:** Catalog import only. Draft rows without a Key or panel labels are skipped so they do not block the import. Live import wrote 51 Memoriam entries across five characters.
+**How to verify:** Save & Play while seated as a player (or hotseat a player color). Left-click the camera icon still opens the picker. Right-click the camera icon should jump you to that seat’s default table camera and close the picker.
+
+**Context:** The camera icon is the one on the player overlay, not the inner default/dice/sheet buttons.
+
+#### TOR-522 — Character-sheet center-strip right-click uses roll camera
+
+**How to verify:** Save & Play. Right-click the inner/center strip of a character sheet. Your camera should move to that character’s roll view (the lower, closer roll preset), not the high dice-tray preset. Left-click on the strip should still go to the sheet camera.
+
+**Context:** This amends the earlier dice-tray right-click on the same strip.
+
+#### TOR-523 — Spotlight carousel Y −55, center Z 125
+
+**How to verify:** Save & Play. Advance into Spotlight. The stand-in figurines should sit on a ring whose center is at X 0, Z 125, with figurines at Y about −55. Rotation and facing (outward / front person toward the table) should still work.
+
+**Context:** Earlier Spotlight work used Z 175 and Y −45.
+
+#### TOR-524 — End→Intermission cover uses overlay_blindfold_end
+
+**How to verify:** Save & Play. From End, click Advance into Intermission. As the global cover comes down, the top image should be the End blindfold art (`overlay_blindfold_end`), not the session-start cover. After a full reload from the main menu, the default session cover should be back.
+
+**Context:** The script does not switch the image back; a reload restores the XML default.
+
+#### TOR-525 — Session number and title grow at the same rate
+
+**How to verify:** Save & Play. Advance Intermission → Play and watch the session-start explode. The session number and the session title should grow toward the camera at the same speed. Character still-text / art pairs earlier in the sequence should be unchanged.
+
+**Context:** They previously used different scale and waver timings.
 
 ---
 

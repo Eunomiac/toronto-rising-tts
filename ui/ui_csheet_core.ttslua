@@ -762,7 +762,7 @@ function CSHEET.onPageBack()
   navigateCsheetPagePair(colorUpper, pageNum, pageNum + 1, pageNum - 2, pageNum - 1)
 end
 
---- UI: inner spine click — left → that seat's sheet camera; right → that seat's diceTray camera.
+--- UI: inner spine click — left → that seat's sheet camera; right → that seat's roll camera.
 --- XmlUI onClick value: "-1" left, "-2" right (TTS UI Attributes).
 --- @param player table TTS player who clicked
 function CSHEET.onPageInnerClick(player, value, id)
@@ -781,7 +781,7 @@ function CSHEET.onPageInnerClick(player, value, id)
     Global.call("GlobalSetSheetCamera", {
       clickerColor = player.color,
       sheetSeatColor = seatColor,
-      modeStem = "diceTray",
+      modeStem = "roll",
     })
     return
   end

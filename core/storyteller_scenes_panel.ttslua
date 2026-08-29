@@ -1431,9 +1431,8 @@ function StorytellerScenesPanel.refresh()
     refreshDaysleepRefreshButtonColor()
 end
 
---- Pushes `sceneLibrary.order` into fixed `scenes_lib_slot_*` buttons.
---- Selected = green when live, blue when pending library preview (TOR-244); dimmer + ` · unlinked` = not mirroring;
---- ` · live` = on-table scene when another row is selected; ` · mirroring` only while a scene is on the table.
+--- Pushes `sceneLibrary.order` into fixed `scenes_lib_slot_*` buttons (scene name only).
+--- Selected = green when live, blue when pending library preview (TOR-244); dimmer when not mirroring.
 function StorytellerScenesPanel.refreshSceneLibraryRows()
     if UI == nil or UI.setAttribute == nil then
         return
@@ -1443,9 +1442,6 @@ function StorytellerScenesPanel.refreshSceneLibraryRows()
     local order = type(lib) == "table" and lib.order or nil
     local scenes = type(lib) == "table" and lib.scenes or nil
     local activeKey = type(lib) == "table" and lib.activeKey or nil
-    local lastAppliedKey = type(lib) == "table" and lib.lastAppliedKey or nil
-    local onTableKey = type(lastAppliedKey) == "string" and lastAppliedKey ~= "" and lastAppliedKey or nil
-    local mirrorKey = onTableKey ~= nil and SceneLibrary.resolveMirrorSceneKey() or nil
     local pendingSelection = isPendingSceneActivation(activeKey)
     local selectedOnColors = panelOnColors(pendingSelection)
     if type(order) ~= "table" then
@@ -1467,25 +1463,14 @@ function StorytellerScenesPanel.refreshSceneLibraryRows()
             end
             local isSelected = activeKey == key
             local isLinked = ent.receivesLiveWrites == true
-            local isLiveOnTable = lastAppliedKey == key
-            local isMirroring = mirrorKey == key
             local colors = GREY
             if isSelected then
                 colors = selectedOnColors
             elseif not isLinked then
                 colors = "#333333|#444444|#555555|rgba(0.25,0.25,0.25,0.5)"
             end
-            -- TOR-139: one short status token for narrow 3-column cells (prefer live > mirroring > unlinked).
-            local suffix = ""
-            if isLiveOnTable and not isSelected then
-                suffix = " · live"
-            elseif isMirroring then
-                suffix = " · mirror"
-            elseif not isLinked then
-                suffix = " · unlink"
-            end
             U.setAttributes(bid, {
-                text = line .. suffix,
+                text = line,
                 colors = colors,
                 fontStyle = isSelected and "Bold" or "Normal",
                 textColor = "#FFFFFF",

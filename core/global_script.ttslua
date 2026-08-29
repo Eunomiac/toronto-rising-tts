@@ -2812,9 +2812,9 @@ function GlobalCollectSheetImageUpdates(params)
     return PSC.collectSheetImageUpdates(ctx.stats, ctx.statChanges, params.pageNum)
 end
 
---- Switch clicking player to a seat's sheet or diceTray camera (sheetRed / diceTrayBrown, …).
+--- Switch clicking player to a seat's sheet, roll, or diceTray camera (sheetRed / rollBrown, …).
 --- TOR-483: right-click must use the *clicked* sheet seat, not the clicker's own tray.
---- @param params table { clickerColor: string, sheetSeatColor: string, modeStem?: "sheet"|"diceTray" }
+--- @param params table { clickerColor: string, sheetSeatColor: string, modeStem?: "sheet"|"diceTray"|"roll" }
 function GlobalSetSheetCamera(params)
     if type(params) ~= "table" then
         error("GlobalSetSheetCamera: params must be a table")
@@ -2828,7 +2828,7 @@ function GlobalSetSheetCamera(params)
         error("GlobalSetSheetCamera: sheetSeatColor is required")
     end
     local modeStem = params.modeStem
-    if modeStem ~= "diceTray" then
+    if modeStem ~= "diceTray" and modeStem ~= "roll" then
         modeStem = "sheet"
     end
     local canonSeat = nil

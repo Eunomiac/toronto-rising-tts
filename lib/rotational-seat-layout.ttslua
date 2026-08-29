@@ -3380,6 +3380,7 @@ local function syncSharedFloorAndPlinthToTableOrigin(tableCfg)
   local guids = {
     G.GUIDS.THE_FLOOR,
     G.GUIDS.TABLE_PLINTH,
+    G.GUIDS.PARTICLE_EMITTER,
   }
   for i = 1, #guids do
     local obj = G.getObject(guids[i])

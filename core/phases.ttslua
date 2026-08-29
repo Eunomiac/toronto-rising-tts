@@ -186,6 +186,8 @@ end
 --- Outgoing session audio fades out while TR_Loop fades in; wait covers both plus cover settle.
 --- Does not `stopAll` — that would hard-cut the outgoing fade.
 function Phases.beginIntermissionCoverAndTheme(_ctx)
+    -- End cover art on the stacked global image (session explode resets this on next Play load).
+    U.setAttribute("overlay_globalBlindfold", "image", "overlay_blindfold_end")
     Phases.showGlobalBlindfold(_ctx)
     local Soundscape = require("core.soundscape")
     local key = C.IntermissionThemeFeaturedKey or "TR_Loop"

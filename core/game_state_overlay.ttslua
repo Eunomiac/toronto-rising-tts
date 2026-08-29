@@ -498,8 +498,6 @@ function GameStateOverlay.reconcileWeatherFromState()
     local ck = S.getStateVal("sessionScene", "clock")
     if type(ck) ~= "table" then
         pushOverlayText("gameStateOverlay_weatherBase", "")
-        pushOverlayActive("gameStateOverlay_weatherHumidity", false)
-        pushOverlayText("gameStateOverlay_weatherHumidity", "")
         pushOverlayText("gameStateOverlay_weatherWind", "")
         pushOverlayText("gameStateOverlay_temperatureC", "")
         pushOverlayText("gameStateOverlay_temperatureF", "")
@@ -509,8 +507,6 @@ function GameStateOverlay.reconcileWeatherFromState()
     local resolved = ChronicleWeather.resolveHudForClock(ck.month, ck.day, ck.hour)
     if resolved == nil then
         pushOverlayText("gameStateOverlay_weatherBase", "")
-        pushOverlayActive("gameStateOverlay_weatherHumidity", false)
-        pushOverlayText("gameStateOverlay_weatherHumidity", "")
         pushOverlayText("gameStateOverlay_weatherWind", "")
         pushOverlayText("gameStateOverlay_temperatureC", "")
         pushOverlayText("gameStateOverlay_temperatureF", "")
@@ -518,16 +514,6 @@ function GameStateOverlay.reconcileWeatherFromState()
     end
 
     pushOverlayText("gameStateOverlay_weatherBase", resolved.baseText or "")
-
-    local humidityText = resolved.humidityText
-    if type(humidityText) == "string" and humidityText ~= "" then
-        pushOverlayActive("gameStateOverlay_weatherHumidity", true)
-        pushOverlayText("gameStateOverlay_weatherHumidity", humidityText)
-    else
-        pushOverlayActive("gameStateOverlay_weatherHumidity", false)
-        pushOverlayText("gameStateOverlay_weatherHumidity", "")
-    end
-
     pushOverlayText("gameStateOverlay_weatherWind", resolved.windText or "")
     pushOverlayText("gameStateOverlay_temperatureC", string.format("%d°C", resolved.tempC or 0))
     pushOverlayText("gameStateOverlay_temperatureF", string.format("(%d°F)", resolved.tempF or 0))

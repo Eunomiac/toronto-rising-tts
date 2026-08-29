@@ -1325,7 +1325,6 @@ UI.setAttributes("gameStateOverlay_timeAndLocation_background", {offsetXY = "7 1
     <Image class="gameStateOverlay_background" image="bg_playerOverlay_weather" />
     <HorizontalLayout class="gameStateOverlay_weather" spacing="5">
       <Text id="gameStateOverlay_weatherBase" class="small_red_text" text="" />
-      <Text id="gameStateOverlay_weatherHumidity" class="small_red_text" text="" />
       <Text id="gameStateOverlay_weatherWind" class="small_red_text" text="" />
     </HorizontalLayout>
     <HorizontalLayout class="gameStateOverlay_temperature" spacing="5" childAlignment="UpperRight">
@@ -7186,17 +7185,17 @@ UI.setAttributes("overlay_globalBlindfold_panel", {raycastTarget = "false"})
 <!-- Classes for Storyteller PCs panel (`panel_pcs.xml`). Seat tint `color` stays per-Panel; ids and row label text stay on elements. -->
 <!-- Agent guidance: .dev/tts-api/UI API/Defaults.md -->
 <Defaults>
-  <Panel class="pcs_panel_root" padding="6 6 6 6" scale="0.75" pivot="0 1" width="680" color="rgba(0, 0, 0, 0.8)" />
-  <VerticalLayout class="pcs_root_vl" spacing="8" childAlignment="UpperLeft" childForceExpandWidth="false" />
+  <Panel class="pcs_panel_root" padding="3 3 3 3" scale="1" pivot="0 1" width="680" color="rgba(0, 0, 0, 0.8)" />
+  <VerticalLayout class="pcs_root_vl" spacing="3" childAlignment="UpperLeft" childForceExpandWidth="false" />
 
-  <Panel class="pcs_seat_block" padding="6 8 6 8" />
-  <VerticalLayout class="pcs_seat_column" spacing="4" flexibleWidth="1" childForceExpandWidth="false" />
+  <Panel class="pcs_seat_block" padding="2 6 2 6" />
+  <VerticalLayout class="pcs_seat_column" spacing="2" flexibleWidth="1" childForceExpandWidth="false" />
 
   <Text class="pcs_row_title" fontSize="13" fontStyle="Bold" color="#F5F5F5" />
   <Text class="pcs_char_title" fontSize="17" fontStyle="Bold" color="#FFFFFF" />
   <Text class="pcs_desire_text" fontSize="12" color="#FCE5C1" preferredWidth="480" minWidth="200" flexibleWidth="1" alignment="MiddleLeft" />
 
-  <HorizontalLayout class="pcs_stat_row" spacing="3" height="26" childForceExpandWidth="false" />
+  <HorizontalLayout class="pcs_stat_row" spacing="3" height="22" childForceExpandWidth="false" />
 
   <Text class="pcs_prefix_wide" fontSize="11" fontStyle="Bold" color="#FFFFFF" preferredWidth="42" minWidth="42" flexibleWidth="0" alignment="MiddleLeft" />
   <Text class="pcs_prefix_desire" fontSize="11" fontStyle="Bold" color="#FFFFFF" preferredWidth="56" minWidth="56" flexibleWidth="0" alignment="MiddleLeft" />
@@ -7217,15 +7216,15 @@ UI.setAttributes("overlay_globalBlindfold_panel", {raycastTarget = "false"})
   <Text class="pcs_torpor_lbl" fontSize="11" color="#F0F0F0" preferredWidth="72" minWidth="72" flexibleWidth="0" alignment="MiddleLeft" />
 
   <!-- Shared button base; pair with a palette class. `text` and `id` stay on the element. -->
-  <Button class="pcs_btn" onClick="HUD_pcPanel" textColor="#FFFFFFFF" height="26" fontSize="12" flexibleWidth="0" />
+  <Button class="pcs_btn" onClick="HUD_pcPanel" textColor="#FFFFFFFF" height="22" fontSize="12" flexibleWidth="0" />
   <Button class="pcs_btn_arrow" preferredWidth="30" minWidth="30" />
   <Button class="pcs_btn_apply_64" preferredWidth="64" minWidth="64" text="Apply" />
   <Button class="pcs_btn_apply_58" preferredWidth="58" minWidth="58" text="Apply" />
   <Button class="pcs_btn_clear_52" preferredWidth="52" minWidth="52" text="Clear" />
   <Button class="pcs_btn_torpor" preferredWidth="76" minWidth="76" text="Torpor" />
-  <Button class="pcs_btn_cond" preferredWidth="86" minWidth="80" fontSize="10" height="26" />
-  <Button class="pcs_btn_auto_seat" preferredWidth="88" minWidth="80" fontSize="10" height="26" text="Auto-Seat" />
-  <Button class="pcs_btn_connect" preferredWidth="72" minWidth="64" fontSize="10" height="26" text="Connect" />
+  <Button class="pcs_btn_cond" preferredWidth="86" minWidth="80" fontSize="10" height="22" />
+  <Button class="pcs_btn_auto_seat" preferredWidth="88" minWidth="80" fontSize="10" height="22" text="Auto-Seat" />
+  <Button class="pcs_btn_connect" preferredWidth="72" minWidth="64" fontSize="10" height="22" text="Connect" />
   <Toggle class="pcs_join_toggle" preferredWidth="128" minWidth="110" fontSize="11" textColor="#FFFFFF" />
   <Toggle class="pcs_absent_toggle" preferredWidth="72" minWidth="64" fontSize="11" textColor="#FFFFFF" />
 
@@ -7243,7 +7242,7 @@ UI.setAttributes("overlay_globalBlindfold_panel", {raycastTarget = "false"})
   <Button class="pcs_btn_palette_join" colors="#1A3A4A|#285060|#3A7080|rgba(0.1,0.2,0.25,0.5)" />
 
   <!-- Roll initiation buttons: compact, shared base size -->
-  <Button class="pcs_btn_roll" preferredWidth="52" minWidth="46" fontSize="10" height="26" onClick="HUD_rollInitiate" />
+  <Button class="pcs_btn_roll" preferredWidth="52" minWidth="46" fontSize="10" height="22" onClick="HUD_rollInitiate" />
   <Button class="pcs_btn_palette_roll_std"     colors="#1A3A1A|#285028|#3A7A3A|rgba(0.1,0.25,0.1,0.5)"  />
   <Button class="pcs_btn_palette_roll_simple"  colors="#1A1A3A|#282850|#3A3A7A|rgba(0.1,0.1,0.25,0.5)"  />
   <Button class="pcs_btn_palette_roll_rouse"   colors="#3A1A0A|#502810|#7A3A10|rgba(0.25,0.1,0.04,0.5)" />
