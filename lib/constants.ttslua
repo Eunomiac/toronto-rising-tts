@@ -3,7 +3,7 @@
 -- Game constants, configuration values, and lookup tables for VTM5E module.
 -- Shared constants and lookup tables for this VTM5E Tabletop Simulator module.
 --
--- Agent guidance: .dev/HUDs & Overlays/Player HUD Overview.md (C.CHRONICLE_DATA.coteries/disciplines, phases); lib/json/PCS.json + lib/pcs_data.ttslua for PCs; lib/skyboxes_catalog.ttslua via npm run skyboxes:import for C.Skyboxes / C.GenericSkyboxes / C.MemoriamSkyboxes.
+-- Agent guidance: .dev/HUDs & Overlays/Player HUD Overview.md (C.CHRONICLE_DATA.coteries/disciplines, phases); lib/json/PCS.json + lib/pcs_data.ttslua for PCs; lib/skyboxes_catalog.ttslua via npm run skyboxes:import for C.Skyboxes / C.GenericSkyboxes / C.MemoriamSkyboxes. Per-character chronology: C.MemoriamSkyboxKeysByCharacter / C.getMemoriamSkyboxesForCharacter.
 
 local C = {}
 
@@ -2970,6 +2970,63 @@ C.Skyboxes = SkyboxesCatalog.Skyboxes
 C.GenericSkyboxes = SkyboxesCatalog.GenericSkyboxes
 C.MemoriamSkyboxes = SkyboxesCatalog.MemoriamSkyboxes
 
+--- @param entry table|nil
+--- @return number
+local function memoriamSkyboxStartYear(entry)
+  if type(entry) ~= "table" or type(entry.startYear) ~= "number" then
+    return 0
+  end
+  return entry.startYear
+end
+
+--- Build `character → { skyboxKey, ... }` lists from `C.MemoriamSkyboxes`, sorted by `startYear` then key.
+--- @param catalog table
+--- @return table
+local function buildMemoriamSkyboxKeysByCharacter(catalog)
+  if type(catalog) ~= "table" then
+    error("MemoriamSkyboxes catalog is missing")
+  end
+  local byCharacter = {}
+  for key, entry in pairs(catalog) do
+    if type(key) == "string" and type(entry) == "table" and type(entry.characters) == "table" then
+      for i = 1, #entry.characters do
+        local character = entry.characters[i]
+        if type(character) == "string" and character ~= "" then
+          local list = byCharacter[character]
+          if list == nil then
+            list = {}
+            byCharacter[character] = list
+          end
+          local alreadyListed = false
+          for j = 1, #list do
+            if list[j] == key then
+              alreadyListed = true
+              break
+            end
+          end
+          if not alreadyListed then
+            list[#list + 1] = key
+          end
+        end
+      end
+    end
+  end
+  for _, keys in pairs(byCharacter) do
+    table.sort(keys, function(a, b)
+      local yearA = memoriamSkyboxStartYear(catalog[a])
+      local yearB = memoriamSkyboxStartYear(catalog[b])
+      if yearA ~= yearB then
+        return yearA < yearB
+      end
+      return a < b
+    end)
+  end
+  return byCharacter
+end
+
+-- Ordered Memoriam skybox keys per character (`lucien`, `aishe`, …). Shared rows appear on every listed character.
+C.MemoriamSkyboxKeysByCharacter = buildMemoriamSkyboxKeysByCharacter(C.MemoriamSkyboxes)
+
 -- #region Sites
 
 -- Sites
@@ -3075,6 +3132,30 @@ function C.resolveSkyboxURLForSite(siteKey)
   end
 
   return C.pickRandomGenericSkyboxURL()
+end
+
+--- Ordered Memoriam catalog entries for a character key (`lucien`, `aishe`, `fomorach`, `blackCaesar`, `rashid`, …).
+--- Sorted by `startYear` ascending (then skybox key). Unknown or blank character returns `{}`.
+--- @param characterKey string|nil
+--- @return table
+function C.getMemoriamSkyboxesForCharacter(characterKey)
+  if type(characterKey) ~= "string" or characterKey == "" then
+    return {}
+  end
+  local keys = C.MemoriamSkyboxKeysByCharacter[characterKey]
+  if type(keys) ~= "table" then
+    return {}
+  end
+  local out = {}
+  for i = 1, #keys do
+    local skyboxKey = keys[i]
+    local entry = C.MemoriamSkyboxes[skyboxKey]
+    if type(entry) ~= "table" then
+      error("Memoriam skybox `" .. tostring(skyboxKey) .. "` is missing from the catalog")
+    end
+    out[#out + 1] = entry
+  end
+  return out
 end
 
 --- Resolves `C.Districts` table key for a district object reference from `C.Sites[*].district`.
