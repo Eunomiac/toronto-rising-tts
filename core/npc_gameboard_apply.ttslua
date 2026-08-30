@@ -366,6 +366,14 @@ local function maybeGrowDynamicTableForOccupiedSeats(highestSlot)
     return true
 end
 
+--- Overlay camera right-click cycles occupied stage faces; Apply resets that walk (TOR-538).
+local function resetPlayerStageLookCycle()
+    local HUDP = require("core.hud_player")
+    if type(HUDP) == "table" and type(HUDP.resetStageLookCycle) == "function" then
+        HUDP.resetStageLookCycle()
+    end
+end
+
 --- Apply CONTROL_BOARD tokens → state → Sync.npcs.
 --- @return boolean ok, string|nil message
 function Apply.applyFromControlBoard()
@@ -434,6 +442,7 @@ function Apply.applyFromControlBoard()
     local seatMutated = seatChanged or pcSeatChanged
     if not seatMutated and not placementChanged then
         print("[Gameboard] Apply: placements and seat row unchanged — skipped figurine reconcile")
+        resetPlayerStageLookCycle()
         Apply.finishInteractionProfile(t0)
         return true, nil
     end
@@ -469,6 +478,7 @@ function Apply.applyFromControlBoard()
             .. (seatMutated and "; seat row" or "")
             .. " → Sync.npcs"
     )
+    resetPlayerStageLookCycle()
     Apply.finishInteractionProfile(t0)
     return true, nil
 end

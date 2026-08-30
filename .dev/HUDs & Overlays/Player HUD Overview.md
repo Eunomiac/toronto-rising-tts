@@ -512,6 +512,11 @@ Per-seat overlay picker (`ui/.templates/panel_overlay_camera.xml` → `HUD_camer
 - Other controls map to `diceTray` / `sheet` (self or other-seat suffixes) via `parseCameraControlIdToMode`.
 - Each click calls `Main.setCamera` and collapses the picker.
 
+The overlay **camera icon** (`popout_cameraPanel_*` / `HUD_popoutCameraControl_click`):
+
+- **Left-click:** opens the preset picker **and** snaps that player to their `default` table camera.
+- **Right-click:** FirstPerson at that seat’s `default` camera location, pitched up toward the **face** of the group-move leader figurine in the next occupied NPC stage area (Center → Center Left → … → Far Right, skipping empty). Further right-clicks advance and loop. Control-board Apply resets the cycle. If the stage is empty, FirstPerson with the default framing. ThirdPerson cannot pitch above the horizon, so this path is how players look at life-sized figurine faces (TOR-538).
+
 ## LEFT SIDEBAR
 
 Each of the following sets of buttons should be grouped via a divider/spacer image.

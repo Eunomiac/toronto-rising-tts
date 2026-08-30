@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-08-30 — **TOR-537** (randomize Table B seating on cover transition). PAVE follow-ups **TOR-518** (PCs panel spacing) and **TOR-528** (resetToIntermission console-only). Author confirmed Intermission→Play explode chain (**TOR-531**–**TOR-536**), scene-library names, rain follow, camera defaults, CSHEET roll camera, Spotlight carousel, session explode grow, and control-board occupancy (**TOR-247**). **TOR-439** remains a multiclient gate (not a solo Save & Play)._
+_Last populated: 2026-08-30 — **TOR-538** (overlay camera FirstPerson face-look cycle). **TOR-537** (randomize Table B seating). PAVE follow-ups **TOR-518** (PCs panel spacing) and **TOR-528** (resetToIntermission console-only). Author confirmed Intermission→Play explode chain (**TOR-531**–**TOR-536**), scene-library names, rain follow, camera defaults, CSHEET roll camera, Spotlight carousel, session explode grow, and control-board occupancy (**TOR-247**). **TOR-439** remains a multiclient gate (not a solo Save & Play)._
 
 ### High — session / join / first-load
 
@@ -56,6 +56,12 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 **How to verify:** Save & Play so the new scripts load. Seat a mix of player characters and NPCs at the table, and mark one player **Absent** on the PCs panel. Apply a library scene that uses Table B, or click **Table B** on the Scenes panel so the cover comes down. When the cover lifts, the people who were sitting should be in a new random order, with no empty chairs in the middle of the ring. The physical table should match how many people are actually sitting (the small five-chair table if five or fewer). On the stage control board, the chair-row tokens should match that new order. The Absent player’s token should stay hidden under the board, not sitting on a chair. Click **Apply** on the control board without a cover: seats should stay where you put the tokens, not reshuffle.
 
 **Context:** Table B is the round “everyone sits in a packed ring” family. Cover transitions shuffle PCs and NPCs together; Absent players do not take a chair.
+
+#### TOR-538 — Overlay camera FirstPerson face-look cycle
+
+**How to verify:** Save & Play so the new scripts load. Sit as a player with NPCs on the stage (at least two different polar areas, e.g. Center and Mid Left). Left-click the overlay camera button: the picker should open **and** your view should snap to your usual default table camera. Right-click that same button: you should be in FirstPerson, still sitting at your default camera location, looking **up at the face** of the lead figurine in the first occupied stage area (not at their feet). Right-click again: you should look at the next occupied area in order (Center, Center Left, Center Right, Mid Center, Mid Left, Mid Right, Far Center-Left, Far Center-Right, Far Left, Far Right), skipping empty ones, then loop. Click **Apply** on the stage control board, then right-click again: the cycle should start over from the first occupied area. Clear the stage and right-click: FirstPerson with your default framing (looking at the table, not a missing NPC).
+
+**Context:** ThirdPerson cannot pitch above the horizon, so this is how players look at life-sized figurine faces. Right-click no longer jumps to the old default table camera (that was TOR-521).
 
 ---
 

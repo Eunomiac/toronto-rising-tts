@@ -224,6 +224,97 @@ end
 
     Applies preset positions from `C.CameraAngles` (or a custom look-at).
 ]]
+
+--- Resolve a named camera preset for an already-converted Player object.
+--- @param player Player
+--- @param cameraMode string
+--- @return table|nil cloned preset
+function M.resolveCameraPreset(player, cameraMode)
+  if not U.isPlayer(player) or type(cameraMode) ~= "string" or cameraMode == "" then
+    return nil
+  end
+  local mergedUniversal = U.clone(C.UniversalCameraAngles or {}, true)
+  local dynamicUniversal = S.getStateVal("seatLayout", "universalCameraAngles")
+  if type(dynamicUniversal) == "table" then
+    for key, val in pairs(dynamicUniversal) do
+      mergedUniversal[key] = val
+    end
+  end
+  -- Prefer merged universal data when present. Do not gate on C.CameraModes alone —
+  -- a "universal" label with nil data must fall through to Black/ST/per-seat resolution.
+  if type(mergedUniversal[cameraMode]) == "table" then
+    return U.clone(mergedUniversal[cameraMode])
+  end
+  if player.color == "Black"
+      and type(C.StorytellerCameraAngles) == "table"
+      and type(C.StorytellerCameraAngles[cameraMode]) == "table"
+  then
+    return U.clone(C.StorytellerCameraAngles[cameraMode])
+  end
+  local playerData = S.getPlayerData(player)
+  if type(playerData) ~= "table" then
+    U.AlertGM("M.setCamera: No player data found for player '" .. tostring(player.color) .. "'")
+    return nil
+  end
+  local playerCameraAngles = type(playerData.cameraAngles) == "table" and playerData.cameraAngles or nil
+  if playerCameraAngles == nil then
+    U.AlertGM("M.setCamera: No cameraAngles found for player '" .. tostring(player.color) .. "'")
+    return nil
+  end
+  local seatColor = nil
+  if C ~= nil and type(C.GetPlayerColor) == "function" then
+    seatColor = C.GetPlayerColor(player)
+  end
+  if type(seatColor) ~= "string" or seatColor == "" then
+    seatColor = player.color
+  end
+  local suffixedMode = cameraMode .. tostring(seatColor)
+  local cameraPreset = U.clone(playerCameraAngles[cameraMode])
+  if type(cameraPreset) ~= "table" then
+    cameraPreset = U.clone(playerCameraAngles[suffixedMode])
+  end
+  if type(cameraPreset) ~= "table" then
+    cameraPreset = U.clone(mergedUniversal[suffixedMode])
+  end
+  if type(cameraPreset) ~= "table"
+      and type(C.StorytellerCameraAngles) == "table"
+      and type(C.StorytellerCameraAngles[cameraMode]) == "table"
+  then
+    cameraPreset = U.clone(C.StorytellerCameraAngles[cameraMode])
+  end
+  if type(cameraPreset) ~= "table" then
+    local modeKind = (C ~= nil and type(C.CameraModes) == "table" and C.CameraModes[cameraMode]) or nil
+    if modeKind == "universal" then
+      U.AlertGM("M.setCamera: Camera mode '" .. tostring(cameraMode) .. "' is marked universal but has no UniversalCameraAngles / seatLayout entry for player '" .. tostring(player.color) .. "'")
+    else
+      U.AlertGM("M.setCamera: No camera angle data found for player '" .. tostring(player.color) .. "' and camera mode '" .. tostring(cameraMode) .. "'")
+    end
+    return nil
+  end
+  return cameraPreset
+end
+
+--- `Player.lookAt` forces ThirdPerson; restore FirstPerson so the view can pitch above the horizon (TOR-538).
+--- @param player Player
+--- @param cameraData table `{ position, pitch?, yaw?, distance? }`
+function M.applyFirstPersonLook(player, cameraData)
+  if not U.isPlayer(player) or type(cameraData) ~= "table" or cameraData.position == nil then
+    return
+  end
+  player.lookAt({
+    position = cameraData.position,
+    pitch = tonumber(cameraData.pitch) or 0,
+    yaw = tonumber(cameraData.yaw) or 0,
+    distance = tonumber(cameraData.distance) or 0,
+  })
+  player.setCameraMode("FirstPerson")
+  U.await(function()
+    if U.isPlayer(player) then
+      player.setCameraMode("FirstPerson")
+    end
+  end, 0.5)
+end
+
 function M.setCamera(player, cameraMode, lookAtPos)
 
   -- Handle "ALL" case
@@ -260,70 +351,11 @@ function M.setCamera(player, cameraMode, lookAtPos)
     return
   end
 
-  -- If the camera mode is universal, use the UniversalCameraAngles data
   local cameraPreset = nil
   if cameraMode ~= nil and cameraMode ~= "" then
-    local mergedUniversal = U.clone(C.UniversalCameraAngles or {}, true)
-    local dynamicUniversal = S.getStateVal("seatLayout", "universalCameraAngles")
-    if type(dynamicUniversal) == "table" then
-      for key, val in pairs(dynamicUniversal) do
-        mergedUniversal[key] = val
-      end
-    end
-    -- Prefer merged universal data when present. Do not gate on C.CameraModes alone —
-    -- a "universal" label with nil data must fall through to Black/ST/per-seat resolution.
-    if type(mergedUniversal[cameraMode]) == "table" then
-      cameraPreset = U.clone(mergedUniversal[cameraMode])
-    elseif player.color == "Black"
-        and type(C.StorytellerCameraAngles) == "table"
-        and type(C.StorytellerCameraAngles[cameraMode]) == "table"
-    then
-      -- Black / Storyteller seat: authored presets in C.StorytellerCameraAngles (TOR-348).
-      cameraPreset = U.clone(C.StorytellerCameraAngles[cameraMode])
-    else
-      -- Otherwise, use per-player camera data from state (and seat-suffixed universal keys for the live seat).
-      local playerData = S.getPlayerData(player)
-      if type(playerData) ~= "table" then
-        U.AlertGM("M.setCamera: No player data found for player '" .. tostring(player.color) .. "'")
-        return
-      end
-      local playerCameraAngles = type(playerData.cameraAngles) == "table" and playerData.cameraAngles or nil
-      if playerCameraAngles == nil then
-        U.AlertGM("M.setCamera: No cameraAngles found for player '" .. tostring(player.color) .. "'")
-        return
-      end
-      local seatColor = nil
-      if C ~= nil and type(C.GetPlayerColor) == "function" then
-        seatColor = C.GetPlayerColor(player)
-      end
-      if type(seatColor) ~= "string" or seatColor == "" then
-        seatColor = player.color
-      end
-      local suffixedMode = (cameraMode ~= nil and seatColor ~= nil) and (cameraMode .. seatColor) or nil
-
-      cameraPreset = U.clone(playerCameraAngles[cameraMode])
-      if type(cameraPreset) ~= "table" and suffixedMode ~= nil then
-        cameraPreset = U.clone(playerCameraAngles[suffixedMode])
-      end
-      if type(cameraPreset) ~= "table" and suffixedMode ~= nil then
-        cameraPreset = U.clone(mergedUniversal[suffixedMode])
-      end
-      -- ST-only modes (mid / stage_control / palette / rolls) when Host is hotseated off Black.
-      if type(cameraPreset) ~= "table"
-          and type(C.StorytellerCameraAngles) == "table"
-          and type(C.StorytellerCameraAngles[cameraMode]) == "table"
-      then
-        cameraPreset = U.clone(C.StorytellerCameraAngles[cameraMode])
-      end
-      if type(cameraPreset) ~= "table" then
-        local modeKind = (C ~= nil and type(C.CameraModes) == "table" and C.CameraModes[cameraMode]) or nil
-        if modeKind == "universal" then
-          U.AlertGM("M.setCamera: Camera mode '" .. tostring(cameraMode) .. "' is marked universal but has no UniversalCameraAngles / seatLayout entry for player '" .. tostring(player.color) .. "'")
-        else
-          U.AlertGM("M.setCamera: No camera angle data found for player '" .. tostring(player.color) .. "' and camera mode '" .. tostring(cameraMode) .. "'")
-        end
-        return
-      end
+    cameraPreset = M.resolveCameraPreset(player, cameraMode)
+    if cameraPreset == nil then
+      return
     end
   end
 

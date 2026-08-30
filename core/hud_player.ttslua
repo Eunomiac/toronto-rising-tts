@@ -1691,6 +1691,318 @@ local function setCameraControlsPanelExpanded(seatColor, expanded)
     end
 end
 
+--- Right-click cycle through occupied polar stage areas (TOR-538). Apply resets this.
+local stageLookCycleIndexBySeat = {}
+
+--- Fraction of figurine bounds height below the top — aims at the face, not the feet.
+local STAGE_LOOK_FACE_Y_SHIFT = 0.12
+
+local STAGE_LOOK_AREA_ORDER = {
+    "Center",
+    "Center Left",
+    "Center Right",
+    "Mid Center",
+    "Mid Left",
+    "Mid Right",
+    "Far Center-Left",
+    "Far Center-Right",
+    "Far Left",
+    "Far Right",
+}
+
+function HUDP.resetStageLookCycle()
+    stageLookCycleIndexBySeat = {}
+end
+
+--- @param catalog table[]
+--- @param ringIndex number
+--- @return table[] `{ familyId, u }`
+local function polarFamiliesOnRingByU(catalog, ringIndex)
+    local seen = {}
+    local rows = {}
+    for i = 1, #catalog do
+        local entry = catalog[i]
+        if type(entry) == "table"
+            and type(entry.familyId) == "string"
+            and entry.familyId ~= ""
+            and tonumber(entry.ringIndex) == ringIndex
+        then
+            if seen[entry.familyId] ~= true then
+                seen[entry.familyId] = true
+                local u = tonumber(entry.u)
+                if entry.isAnchor == true then
+                    u = tonumber(entry.u)
+                end
+                rows[#rows + 1] = { familyId = entry.familyId, u = u or 0.5 }
+            end
+        end
+    end
+    for i = 1, #rows do
+        local familyId = rows[i].familyId
+        for j = 1, #catalog do
+            local entry = catalog[j]
+            if type(entry) == "table" and entry.familyId == familyId and entry.isAnchor == true then
+                rows[i].u = tonumber(entry.u) or rows[i].u
+                break
+            end
+        end
+    end
+    table.sort(rows, function(a, b)
+        if math.abs(a.u - b.u) > 1e-6 then
+            return a.u < b.u
+        end
+        return a.familyId < b.familyId
+    end)
+    return rows
+end
+
+--- @param catalog table[]
+--- @param familyId string
+--- @return string|nil named polar area
+local function polarAreaNameForFamily(catalog, familyId)
+    local ring = nil
+    local u = 0.5
+    for i = 1, #catalog do
+        local entry = catalog[i]
+        if type(entry) == "table" and entry.familyId == familyId then
+            ring = tonumber(entry.ringIndex)
+            if entry.isAnchor == true then
+                u = tonumber(entry.u) or u
+                break
+            end
+            u = tonumber(entry.u) or u
+        end
+    end
+    if ring == 3 then
+        return "Far Left"
+    end
+    if ring == 6 then
+        return "Far Right"
+    end
+    if ring == 4 then
+        return "Far Center-Left"
+    end
+    if ring == 5 then
+        return "Far Center-Right"
+    end
+    if ring == 1 or ring == 2 then
+        local rows = polarFamiliesOnRingByU(catalog, ring)
+        local centerId = nil
+        local centerU = 0.5
+        local bestDist = math.huge
+        for i = 1, #rows do
+            local dist = math.abs(rows[i].u - 0.5)
+            if dist < bestDist then
+                bestDist = dist
+                centerId = rows[i].familyId
+                centerU = rows[i].u
+            end
+        end
+        if familyId == centerId then
+            if ring == 1 then
+                return "Center"
+            end
+            return "Mid Center"
+        end
+        if u < centerU then
+            if ring == 1 then
+                return "Center Left"
+            end
+            return "Mid Left"
+        end
+        if ring == 1 then
+            return "Center Right"
+        end
+        return "Mid Right"
+    end
+    return nil
+end
+
+--- @param preset table
+--- @return table `{ x, y, z }` camera eye
+local function cameraEyeFromLookAtPreset(preset)
+    local pos = preset.position
+    local tx = tonumber(pos and (pos.x or pos[1])) or 0
+    local ty = tonumber(pos and (pos.y or pos[2])) or 0
+    local tz = tonumber(pos and (pos.z or pos[3])) or 0
+    local pitch = math.rad(tonumber(preset.pitch) or 0)
+    local yaw = math.rad(tonumber(preset.yaw) or 0)
+    local dist = tonumber(preset.distance) or 0
+    local h = dist * math.cos(pitch)
+    return {
+        x = tx - h * math.sin(yaw),
+        y = ty + h * math.tan(pitch),
+        z = tz - h * math.cos(yaw),
+    }
+end
+
+--- @param eye table
+--- @param target Vector|table
+--- @return table lookAt fields, camera sits at `eye` (distance 0)
+local function lookAtFromEyeToward(eye, target)
+    local tx = tonumber(target.x or target[1]) or 0
+    local ty = tonumber(target.y or target[2]) or 0
+    local tz = tonumber(target.z or target[3]) or 0
+    local dx = tx - eye.x
+    local dy = ty - eye.y
+    local dz = tz - eye.z
+    local horiz = math.sqrt(dx * dx + dz * dz)
+    local yaw = math.deg(math.atan2(dx, dz))
+    local pitch = 0
+    if horiz > 0.001 then
+        pitch = -math.deg(math.atan2(dy, horiz))
+    end
+    return {
+        position = Vector(eye.x, eye.y, eye.z),
+        pitch = pitch,
+        yaw = yaw,
+        distance = 0,
+    }
+end
+
+--- @param fig Object
+--- @return Vector|nil face world position
+local function figurineFaceWorldPos(fig)
+    if not U.isGameObject(fig) or fig.getBounds == nil then
+        return nil
+    end
+    local b = fig.getBounds()
+    if b == nil or b.center == nil or b.size == nil then
+        return nil
+    end
+    local cx = tonumber(b.center.x or b.center[1]) or 0
+    local cy = tonumber(b.center.y or b.center[2]) or 0
+    local cz = tonumber(b.center.z or b.center[3]) or 0
+    local sy = tonumber(b.size.y or b.size[2]) or 1
+    local topY = cy + sy / 2
+    return Vector(cx, topY - STAGE_LOOK_FACE_Y_SHIFT * sy, cz)
+end
+
+--- @param catalog table[]
+--- @return table[] occupied area names in STAGE_LOOK_AREA_ORDER, each `{ areaName, characterKey }`
+local function collectOccupiedStageLookTargets(catalog)
+    local NPCS = require("core.npcs")
+    local Gmod = require("lib.guids")
+    local placements = S.getStateVal("sessionScene", "npcWorld", "placements")
+    if type(placements) ~= "table" then
+        return {}
+    end
+    local bestByArea = {}
+    for characterKey, row in pairs(placements) do
+        if type(characterKey) == "string" and characterKey ~= "" and type(row) == "table" then
+            local u = tonumber(row.u)
+            local v = tonumber(row.v)
+            if u ~= nil and v ~= nil then
+                local bestEntry = nil
+                local bestDist = math.huge
+                for i = 1, #catalog do
+                    local entry = catalog[i]
+                    if type(entry) == "table" and type(entry.familyId) == "string" and entry.familyId ~= "" then
+                        local eu = tonumber(entry.u)
+                        local ev = tonumber(entry.v)
+                        if eu ~= nil and ev ~= nil then
+                            local du = eu - u
+                            local dv = ev - v
+                            local dist = du * du + dv * dv
+                            if dist < bestDist then
+                                bestDist = dist
+                                bestEntry = entry
+                            end
+                        end
+                    end
+                end
+                local areaName = bestEntry ~= nil and polarAreaNameForFamily(catalog, bestEntry.familyId) or nil
+                if type(areaName) == "string" then
+                    local rec = NPCS.getInstanceRecord(characterKey)
+                    local fig = nil
+                    if type(rec) == "table" and type(rec.figurineGuid) == "string" then
+                        fig = Gmod.getObject(rec.figurineGuid)
+                    end
+                    if U.isGameObject(fig) then
+                        local familyK = tonumber(bestEntry.familyK) or 99
+                        local isAnchor = bestEntry.isAnchor == true
+                        local scoreU = tonumber(bestEntry.u) or 0.5
+                        local prev = bestByArea[areaName]
+                        local take = prev == nil
+                        if prev ~= nil then
+                            local prevCenter = math.abs(prev.scoreU - 0.5)
+                            local thisCenter = math.abs(scoreU - 0.5)
+                            if thisCenter < prevCenter - 1e-6 then
+                                take = true
+                            elseif math.abs(thisCenter - prevCenter) <= 1e-6 then
+                                if isAnchor and prev.isAnchor ~= true then
+                                    take = true
+                                elseif isAnchor == prev.isAnchor and math.abs(familyK) < math.abs(prev.familyK) then
+                                    take = true
+                                end
+                            end
+                        end
+                        if take then
+                            bestByArea[areaName] = {
+                                characterKey = characterKey,
+                                familyK = familyK,
+                                isAnchor = isAnchor,
+                                scoreU = scoreU,
+                                fig = fig,
+                            }
+                        end
+                    end
+                end
+            end
+        end
+    end
+    local out = {}
+    for i = 1, #STAGE_LOOK_AREA_ORDER do
+        local name = STAGE_LOOK_AREA_ORDER[i]
+        local rec = bestByArea[name]
+        if rec ~= nil then
+            out[#out + 1] = { areaName = name, characterKey = rec.characterKey, fig = rec.fig }
+        end
+    end
+    return out
+end
+
+--- Right-click: FirstPerson at default eye, pitched toward the lead figurine's face (TOR-538).
+--- @param player Player
+--- @param seatColor string
+local function applyOverlayCameraStageLook(player, seatColor)
+    local preset = Main.resolveCameraPreset(player, "default")
+    if type(preset) ~= "table" then
+        return
+    end
+    local Board = require("core.npc_gameboard_board")
+    local Snaps = require("core.npc_gameboard_snaps")
+    local board = Board.getControlBoard()
+    local occupied = {}
+    if Board.isGameObject(board) then
+        local catalog = Snaps.buildControlBoardSnapCatalog(board, nil)
+        occupied = collectOccupiedStageLookTargets(catalog)
+    end
+    if #occupied == 0 then
+        local cameraData = U.clone(preset)
+        cameraData.cameraMode = nil
+        Main.applyFirstPersonLook(player, cameraData)
+        stageLookCycleIndexBySeat[seatColor] = 0
+        return
+    end
+    local last = tonumber(stageLookCycleIndexBySeat[seatColor]) or 0
+    local nextIndex = last + 1
+    if nextIndex > #occupied then
+        nextIndex = 1
+    end
+    stageLookCycleIndexBySeat[seatColor] = nextIndex
+    local target = occupied[nextIndex]
+    local face = figurineFaceWorldPos(target.fig)
+    if face == nil then
+        local cameraData = U.clone(preset)
+        cameraData.cameraMode = nil
+        Main.applyFirstPersonLook(player, cameraData)
+        return
+    end
+    local eye = cameraEyeFromLookAtPreset(preset)
+    Main.applyFirstPersonLook(player, lookAtFromEyeToward(eye, face))
+end
+
 -- ============================================================================
 -- Global UI EVENT HANDLERS (referenced by XML)
 -- ============================================================================
@@ -1712,7 +2024,8 @@ function HUD_alphaControl_hoverOff(player, value, id)
 end
 
 --- Toggle the camera preset picker panel for this seat's HUD.
---- Right-click (`-2`) snaps this player to their `default` camera and closes the picker.
+--- Left-click opens the picker and snaps this player to `default`.
+--- Right-click (`-2`) FirstPerson at the default location, looking at the next occupied stage face (TOR-538).
 function HUD_popoutCameraControl_click(player, value, id)
     if type(id) ~= "string" then
         return
@@ -1722,17 +2035,12 @@ function HUD_popoutCameraControl_click(player, value, id)
         return
     end
     if value == "-2" or value == -2 then
-        Main.setCamera(player, "default")
+        applyOverlayCameraStageLook(player, seatColor)
         setCameraControlsPanelExpanded(seatColor, false)
         return
     end
-    local panelId = "playerHud_overlay_cameraControls_" .. seatColor
-    if UI == nil or UI.getAttribute == nil then
-        return
-    end
-    local raw = UI.getAttribute(panelId, "active")
-    local isOpen = string.lower(tostring(raw)) == "true"
-    setCameraControlsPanelExpanded(seatColor, not isOpen)
+    Main.setCamera(player, "default")
+    setCameraControlsPanelExpanded(seatColor, true)
 end
 
 --- Apply a camera preset for the clicking player and collapse the picker.

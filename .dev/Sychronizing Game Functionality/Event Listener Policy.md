@@ -154,7 +154,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `HUD_toggleRunTestPanel` / `HUD_runtest` / `HUD_runtest_step` | A | Yes | Host RunTest strip; arms/continues/stops `DEBUG.RunTest` (TOR-347) |
 | `HUD_STcamera` | A | Yes | Host ST camera strip → `M.setCamera(Black, mode)` from `C.StorytellerCameraAngles` (TOR-348) |
 | `HUD_cameraControl_click` | A | — | Player camera overlay; MAIN left=`default`, right=`wideFacing` |
-| `HUD_popoutCameraControl_click` / `HUD_alphaControl_hover*` | A | — | Camera picker expand; popout right-click → `default` camera + close picker |
+| `HUD_popoutCameraControl_click` / `HUD_alphaControl_hover*` | A | — | Camera picker: left-click opens + `default`; right-click FirstPerson at default eye looking at next occupied stage face (TOR-538); Apply resets cycle |
 | `HUD_debugLightActivate/ButtonClick/Slider` | C | Yes | Tuner select / sliders / Zero / Discard / close; `getObjectsWithTag("Spotlight")` on open and when returning to the grid |
 | `HUD_debugLightGuidInput/Enabled/ResetRow/Done/Snapshot` | A | — | Guid/Enabled/ResetRow are leftover no-ops; Done returns to selection; Snapshot writes workspace Lua |
 | `HUD_debugCamera*` / `HUD_debugCaptureCameraPreset` | A | — | local camera |

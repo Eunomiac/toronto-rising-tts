@@ -41,10 +41,6 @@ When the subphase is switched to Memoriam, the Host should be presented with a p
 
 ### Unclear Intents
 
-- [Camera Angles] Overlay camera button: left-click opens the picker **and** snaps to default view. Right-click uses FirstPerson at that seat’s `default` position, looking at the **primary/lead figurine** in an occupied NPC stage area. Walk occupied areas in this order (skip empty): Center, Center Left, Center Right, Mid Center, Mid Left, Mid Right, Far Center-Left, Far Center-Right, Far Left, Far Right. Each further right-click advances to the next occupied area and loops. Applying the stage control board resets the cycle.
-  - ? Confirm this **replaces** today’s right-click-default behavior (**TOR-521** camera-button right-click default).
-  - ? When several NPCs share one stage area, who is the “primary/lead figurine” — the group-move leader, the first token in that area, or something else?
-  - ? If **no** NPC is on any of those stage areas, what should right-click look at (keep last view, look at table center, no-op)?
 
 ### Unclear Ideas
 
@@ -55,6 +51,8 @@ When the subphase is switched to Memoriam, the Host should be presented with a p
 
 
 ## Processed
+
+2026-08-30 `/tr-inbox` follow-up — overlay camera left-click default + FirstPerson face-look cycle → **TOR-538** (shipped). Replaces **TOR-521** right-click-default.
 
 2026-08-30 `/tr-inbox` Immediate — randomized Table B seating on cover transition → **TOR-537** (shipped). PAVE ❌ **TOR-518** (PCs panel vertical spacing) follow-up shipped. PAVE ⚠️ **TOR-528** (DEBUG.resetToIntermission) print-to-file removed. Camera overlay button capture parked in Needs clarification (still being typed). PAVE ✅ cleared **TOR-247**, **TOR-531**, **TOR-532**, **TOR-533**, **TOR-534**, **TOR-535**, **TOR-536**, **TOR-519**, **TOR-520**, **TOR-521**, **TOR-522**, **TOR-523**, **TOR-525**.
 
