@@ -1513,17 +1513,17 @@ end
 --- Stops an in-flight intro, restores the session cover, and starts TR_Loop. Does not move the table world.
 -- @return boolean
 function DEBUG.resetToIntermission()
-    printTestHeader("Reset to Intermission")
+    print("Reset to Intermission")
     local Phases = require("core.phases")
     if type(Phases.debugSnapToIntermission) ~= "function" then
         error("DEBUG.resetToIntermission: Phases.debugSnapToIntermission missing — Save & Play")
     end
     local ok = Phases.debugSnapToIntermission()
-    printTestResult(
-        "Reset to Intermission",
-        ok == true,
-        "phase=Intermission, session cover, TR_Loop — Advance to replay the intro"
-    )
+    if ok == true then
+        print("Reset to Intermission: phase=Intermission, session cover, TR_Loop — Advance to replay the intro")
+    else
+        print("Reset to Intermission failed")
+    end
     return ok
 end
 
