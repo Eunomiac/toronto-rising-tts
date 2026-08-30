@@ -706,4 +706,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-08-30 | CREATE+SHIP | TOR-529 | Flatten Memoriam skybox catalog by key; `characters` array; blindfold/splash + ten NPC slots. relatedTo TOR-510. |
 | 2026-08-30 | CREATE+SHIP | TOR-530 | Per-character ordered Memoriam skybox keys + `C.getMemoriamSkyboxesForCharacter`. relatedTo TOR-529 / TOR-510. |
 
+| 2026-08-30 | CREATE+SHIP | TOR-531 | Wire TEST BED session-start explode into Play enter; intro key/duration from SessionStartAnimationData[sessionNum]. relatedTo TOR-516 / TOR-497. Pending Save & Play. |
+
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

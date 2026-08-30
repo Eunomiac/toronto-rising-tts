@@ -2337,10 +2337,15 @@ local function formatEffectIndexList(rows)
     return table.concat(parts, ",")
 end
 
---- Probe Music C: GUID, live trigger/loop names, and how TR_SessionStart would resolve.
+local function defaultSessionIntroKey()
+    local SE = require("core.session_explode")
+    return SE.resolveAnimationData().introKey
+end
+
+--- Probe Music C: GUID, live trigger/loop names, and how the current session intro would resolve.
 -- @return table
 local function describeSessionIntroState()
-    local key = C.SessionStartIntroKey or "TR_SessionStart"
+    local key = defaultSessionIntroKey()
     local track = Catalog.getSessionIntroTrack(key)
     local channelDef = Catalog.CHANNELS.musicC
     local obj, resolveError = resolveEmitter("musicC")
@@ -2403,7 +2408,7 @@ function Soundscape.describeSessionIntro()
 end
 
 --- Plays the session-start overture on Music C at full volume (TOR-497 / TOR-515).
--- @param trackKey string|nil catalog key; defaults to `C.SessionStartIntroKey`
+-- @param trackKey string|nil catalog key; defaults to the current session's introKey
 -- @param opts table|nil `{ fadeSeconds?: number }` — 0 = full volume before play, no fade-in
 -- @return boolean
 -- @return string
@@ -2411,7 +2416,7 @@ function Soundscape.playSessionIntro(trackKey, opts)
     opts = type(opts) == "table" and opts or {}
     local key = trackKey
     if type(key) ~= "string" or key == "" then
-        key = C.SessionStartIntroKey or "TR_SessionStart"
+        key = defaultSessionIntroKey()
     end
     local track = Catalog.getSessionIntroTrack(key)
     if track == nil then

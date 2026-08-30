@@ -469,6 +469,8 @@ test("session-start overture uses Music C and holds Main until the sting ends", 
     "C.SessionStartIntroKey = \"TR_SessionStart\"",
     "C.SessionStartIntroDurationSec = 71",
     "C.SessionStartBlindfoldLeadSec = 2",
+    "C.SessionStartBaseDuration = 71",
+    "C.SessionStartAnimationData = {",
   ].forEach((needle) => {
     assert.ok(constants.includes(needle), `missing session intro constant: ${needle}`);
   });
@@ -510,7 +512,8 @@ test("session-start overture uses Music C and holds Main until the sting ends", 
   const explode = readRepoFile("core/session_explode.ttslua");
   [
     "function SessionExplode.play()",
-    "function SessionExplode.explodeImage(id, waverDur, scaleDur, waverLimit)",
+    "function SessionExplode.explodeImage(id, config)",
+    "function SessionExplode.resolveAnimationData()",
     "overlay_globalBlindfold_sessionSplash_1_1_A",
     "overlay_globalBlindfold_sessionSplash_1_6_B",
   ].forEach((needle) => {

@@ -48,5 +48,6 @@ UI.setAttributes("overlay_globalBlindfold_panel", {raycastTarget = "false"})
   <Image id="overlay_globalBlindfold_sessionSplash_1_2_A" class="global_blindfold" image="overlay_explode_text_fomorach" />
   <Image id="overlay_globalBlindfold_sessionSplash_1_1_B" class="global_blindfold" image="overlay_explode_image_blackCaesar" />
   <Image id="overlay_globalBlindfold_sessionSplash_1_1_A" class="global_blindfold" image="overlay_explode_text_blackCaesar" />
+  <Image id="overlay_globalBlindfold_frame" class="global_blindfold" image="overlay_explode_frame" color="rgba(1, 1, 1, 1)" />
   <Image id="overlay_globalBlindfold" class="global_blindfold" image="global_blindfold_session_1" color="rgba(1, 1, 1, 1)" />
 </Panel>

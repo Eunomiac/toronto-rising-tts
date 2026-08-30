@@ -260,6 +260,25 @@ C.Phases = {
   END = "End",
 }
 
+-- Session start animation data (TOR-531).
+-- Play enter looks up `gameState.sessionNum` in this table; missing index falls back to [1].
+-- Base duration in seconds the explode sequence was authored against.
+C.SessionStartBaseDuration = 71
+-- Per-session intro track + song length. Times in SessionExplode scale by
+-- songDuration / C.SessionStartBaseDuration.
+-- - introKey: catalog key for Soundscape.playSessionIntro (Music C).
+-- - songDuration: wall-clock seconds of that track (drives time dilation).
+C.SessionStartAnimationData = {
+  [1] = {
+    introKey = "TR_SessionStart",
+    songDuration = 71
+  },
+  [2] = {
+    introKey = "TR_SessionStart",
+    songDuration = 71
+  }
+}
+
 --- Ordered top-level advance loop (Storyteller Advance button).
 C.PhaseSequence = {
   C.Phases.INTERMISSION,
@@ -278,9 +297,12 @@ C.PlaySubPhases = {
 --- Featured track for Intermission ambient (looping TR Loop only; no Intro→Loop handoff).
 C.IntermissionThemeFeaturedKey = "TR_Loop"
 
---- Intermission→Play session-start overture on Music C (TOR-497). Lua catalog key `TR_SessionStart`;
+--- Fallback Music C catalog key when playSessionIntro is called without a key.
+--- Play enter uses C.SessionStartAnimationData[sessionNum].introKey (TOR-531).
 --- Unity Trigger Effect name is `Session Starter`. Fallback `effectIndex` is 0-based (UI slot 2 → 1).
 C.SessionStartIntroKey = "TR_SessionStart"
+--- Legacy 71s sting length alias of C.SessionStartBaseDuration. Play-enter wait uses
+--- SessionStartAnimationData.songDuration via SessionExplode.sequenceDurationSec (TOR-531).
 C.SessionStartIntroDurationSec = 71
 C.SessionStartBlindfoldLeadSec = 2
 

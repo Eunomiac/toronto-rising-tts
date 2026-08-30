@@ -359,7 +359,7 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 | `Soundscape.setLocationMusic(playlistKey)` | Set site-specific background music playlist | `Soundscape.setLocationMusic("CasaLoma")` |
 | `Soundscape.playFeaturedMusic(featureKey)` | Play featured music on the dedicated lane | `Soundscape.playFeaturedMusic("TR_Intro")` |
 | `Soundscape.stopFeaturedMusic(opts?)` | Stop the featured lane only; optional `{ fadeSeconds, resumeBackground }` | Intro/song cleanup; Intermission→Play uses `resumeBackground=false`. Default resume also restores location ambience (TOR-494). |
-| `Soundscape.playSessionIntro(trackKey?, opts?)` | Play the Intermission→Play overture on Music C at full volume (`fadeSeconds` 0 = set gain to catalog volume before `playTriggerEffect`, no fade-in). Holds Main via `sessionIntroActive`. | `Soundscape.playSessionIntro("TR_SessionStart", { fadeSeconds = 0 })` |
+| `Soundscape.playSessionIntro(trackKey?, opts?)` | Play the Intermission→Play overture on Music C at full volume (`fadeSeconds` 0 = set gain to catalog volume before `playTriggerEffect`, no fade-in). Omit key to use `C.SessionStartAnimationData[sessionNum].introKey`. Holds Main via `sessionIntroActive`. | `Soundscape.playSessionIntro("TR_SessionStart", { fadeSeconds = 0 })` |
 | `Soundscape.describeSessionIntro()` | Probe Music C GUID, live trigger/loop names, and name vs index resolve | Console: `inspectSessionIntro()` |
 | `Soundscape.stopSessionIntro(opts?)` | Silence Music C and clear the session-intro latch | Intermission enter / Spotlight silence |
 | `Soundscape.finishSessionIntro()` | Clear the session-intro latch after the sting ends (does not cut the clip) | Play enter after 71s, before Main |
@@ -379,15 +379,16 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 
 **Require:** `local SessionExplode = require("core.session_explode")`
 
-Play enter starts `SessionExplode.play()` in the same step as `Phases.fireSessionIntro` (Music C sting). Returns immediately so OutdoorDim can apply under the cover; wait `sequenceDurationSec()` (~71.5s) on the Play-enter chain.
+Play enter starts `SessionExplode.play()` in the same step as `Phases.fireSessionIntro` (Music C sting). Returns immediately so OutdoorDim can apply under the cover; wait `sequenceDurationSec()` on the Play-enter chain (scales with that session's `songDuration`).
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
-| `SessionExplode.play()` | Start the stacked cover explode (cover, then five still-text / wavering-art pairs, then session number/title). Hides the panel near the end and resets layers. | Play enter after `fireSessionIntro` |
-| `SessionExplode.sequenceDurationSec()` | Wall-clock seconds Play enter should wait after `play()` | `Phases.sessionIntroBlindfoldHoldSec` |
+| `SessionExplode.resolveAnimationData()` | `introKey` + `songDuration` for current `sessionNum`; missing index uses `[1]` | `Phases.fireSessionIntro` |
+| `SessionExplode.play()` | Start the stacked cover explode (cover, then five still-text / wavering-art pairs, then session number/title together). Hides the panel near the end and resets layers. Times scale by `songDuration / C.SessionStartBaseDuration`. | Play enter after `fireSessionIntro` |
+| `SessionExplode.sequenceDurationSec(songDuration?)` | Wall-clock seconds Play enter should wait after `play()` | `Phases.sessionIntroBlindfoldHoldSec` |
 | `SessionExplode.resetLayers()` | Opaque session cover, splash layers transparent, scale 1 | Intermission show |
 | `SessionExplode.cancel()` | Stop in-flight lerps (does not snap attrs) | Play exit; `HUD_clearLoadingOverlay` |
-| `SessionExplode.explodeImage(id, waverDur, scaleDur, waverLimit?)` | Waver then scale-and-fade one XmlUI image. `waverDur` 0 skips waver; `waverLimit` 0 holds still. | Used by `play()` |
+| `SessionExplode.explodeImage(id, config?)` | Waver then scale-and-fade one XmlUI image. Config: `waverTime`, `scaleTime`, `waverLimit`, `waverSpeed`, `fadeOutRatio`, `fadeInTime`, `startDelay`, `scaleEase`, `songDuration`. | Used by `play()` |
 | `DEBUG.resetToIntermission()` | Snap to Intermission: session cover + TR_Loop; aborts an in-flight Play intro. Does not move tables/skyboxes. | Host console: re-test Intermission→Play Advance |
 
 ### Chronicle weather (`lib/chronicle_weather.ttslua`)

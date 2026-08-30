@@ -26,8 +26,8 @@ local INTERMISSION_TO_PLAY_LOOP_FADE_SEC = 0.5
 --- End → Intermission: wait after showing the global cover so FadeIn (and camera) can finish
 --- before no-scene table/skybox work (TOR-502).
 local INTERMISSION_BLINDFOLD_SETTLE_SEC = 2
---- Per-step U.chain cap. Must exceed Play-enter explode wait (~71.5s); default chainWait is 60s.
-local PHASE_ADVANCE_CHAIN_MAX_WAIT_SEC = (tonumber(C.SessionStartIntroDurationSec) or 71) + 15
+--- Per-step U.chain cap is computed in advanceTo from SessionExplode.sequenceDurationSec + 15
+--- so a longer per-session song is not killed by the default 60s chainWait (TOR-501 / TOR-531).
 
 --- Single in-flight top-level transition token.
 local advancing = false
@@ -412,7 +412,9 @@ function Phases.fireSessionIntro(_ctx)
         U.AlertGM("Intermission→Play Loop fade-out: " .. tostring(stopMsg or "stopFeaturedMusic failed"))
     end
 
-    local key = C.SessionStartIntroKey or "TR_SessionStart"
+    local SE = require("core.session_explode")
+    local anim = SE.resolveAnimationData()
+    local key = anim.introKey
     local okPlay, playMsg = Soundscape.playSessionIntro(key, { fadeSeconds = 0 })
     if okPlay ~= true then
         U.AlertGM("Session start overture: " .. tostring(playMsg or "playSessionIntro failed"))
@@ -729,6 +731,8 @@ function Phases.advanceTo(newPhase, opts)
         return true
     end
 
+    local SEWait = require("core.session_explode")
+    local PHASE_ADVANCE_CHAIN_MAX_WAIT_SEC = SEWait.sequenceDurationSec() + 15
     U.chain(steps, {
         maxWait = PHASE_ADVANCE_CHAIN_MAX_WAIT_SEC,
         cancelRegistry = advanceCancel,

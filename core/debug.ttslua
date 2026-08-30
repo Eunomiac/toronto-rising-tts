@@ -1480,7 +1480,7 @@ function DEBUG.inspectSessionIntro()
 end
 
 --- Play the session-start overture on Music C (same path as Intermission→Play Advance).
--- @param trackKey string|nil catalog key; defaults to TR_SessionStart
+-- @param trackKey string|nil catalog key; defaults to the current session's introKey
 function DEBUG.soundscapeSessionIntro(trackKey)
     U.chain({
         function()
@@ -5991,7 +5991,7 @@ function DEBUG.help()
     print("  soundscapeWind(key)      - Set wind layer: none, lowWindAmbient, whistlingWind1/2/3, windyLeaves1/2")
     print("  soundscapeThunder(mode, hit?) - Enable/disable scheduled thunder, or mode='hit' to trigger one")
     print("  soundscapeFeatured(key)  - Play featured music: TR_Full, TR_Intro, STB_HouseOfTheRisingSun")
-    print("  soundscapeSessionIntro(key?) - Play Music C overture (same path as Advance); omit key for TR_SessionStart")
+    print("  soundscapeSessionIntro(key?) - Play Music C overture (same path as Advance); omit key for the current session's introKey")
     print("  inspectSessionIntro()    - Dump Music C triggers/resolve path without playing")
     print("  soundscapeStopSessionIntro() - Silence Music C")
     print("  resetToIntermission()    - Snap to Intermission (cover + TR_Loop) so Advance can replay the intro")

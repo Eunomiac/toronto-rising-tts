@@ -16,13 +16,13 @@ Source of truth:
 
 Verification:
 - Save & Play → Host Phases panel → **Advance →** (panel closes immediately) through Intermission → Play → Spotlight → End → Intermission
-- Confirm Intermission: global cover comes down together with leftover-audio fade-out and TR_Loop fade-in (~2s), then no-scene table prep under cover, AdminDark. Play: TR_Loop fades ~0.5s, Music C overture **and** the stacked cover explode start together; the panel hides near the end of the sting (~68.5s), layers reset, then Main fades in and the Willpower heal overlay can appear
+- Confirm Intermission: global cover comes down together with leftover-audio fade-out and TR_Loop fade-in (~2s), then no-scene table prep under cover, AdminDark. Play: TR_Loop fades ~0.5s, Music C overture **and** the stacked cover explode start together (track + timing from `C.SessionStartAnimationData[sessionNum]`); the panel hides near the end of that session's song, layers reset, then Main fades in and the Willpower heal overlay can appear
 - Play → Spotlight: staged transition cover; Table A + Spotlight skybox; Main keeps playing; in-session stand-ins on the carousel; overlay shows the session name in the diamond slot, **S P O T L I G H T** in gold, and the front character name in white. Spotlight → End: same cover; Main keeps playing; table becomes B0 (PC seats only, NPCs stay off the table); Generic skybox is selected; overlay shows the session name and **DEBRIEF**; bags/companions/compulsion decks stay under the table until Intermission cover
 - Workshop: Host console `lua DEBUG.populateSpotlightFigurines()` clones seat figures and spawns tagged lights, then prints GUIDs for `lib/guids.ttslua`. Play → Spotlight does **not** auto-spawn (duplicates if GUIDs are forgotten).
 - Re-test Intermission→Play without cycling Spotlight/End: Host console `lua DEBUG.resetToIntermission()` (session cover + TR_Loop, no table/skybox move). Then **Advance →**.
 - Solo Host verified only until **TOR-144** (multiplayer E2E) — multiclient connect blindfold + Advance replication: [Multiclient Session Script](../E2E%20Playbooks/Multiplayer-Session.md) (A4, B0, D1)
 
-Status: current (TOR-143 / TOR-361 / TOR-362 / TOR-497 / TOR-516 / TOR-98)
+Status: current (TOR-143 / TOR-361 / TOR-362 / TOR-497 / TOR-516 / TOR-531 / TOR-98)
 
 ## Blindfolds (do not conflate)
 
@@ -66,10 +66,10 @@ Ending events of the previous phase run before starting events of the new phase 
 
 * When advancing from Intermission with exactly one connected player who is the Host, auto-enable DEBUG **Assume Players Connected** (TOR-429 / TOR-293).
 * Re-assert the global blindfold (already up from Intermission).
-* **Intermission → Play audio (TOR-497 / TOR-515):** TR Loop fades out over **0.5s** and the Music C session-start overture (`C.SessionStartIntroKey`, 71s) starts **immediately** at full volume with no fade-in (gain is set to catalog volume **before** `playTriggerEffect`; looping silent-arm is skipped). Main mood is **not** started under the sting (`sessionIntroActive` holds reconcile).
-* **Cover explode (TOR-516):** the same Play-enter step starts `SessionExplode.play()` so the stacked splash images explode in the author-tuned stagger (cover first, then five still-text / wavering-art pairs on 12s, then session number and title). Lighting still applies under the cover while this runs.
+* **Intermission → Play audio (TOR-497 / TOR-515 / TOR-531):** TR Loop fades out over **0.5s** and the Music C session-start overture starts **immediately** at full volume with no fade-in. The catalog key and song length come from `C.SessionStartAnimationData` for the current `sessionNum` (missing index uses `[1]`). Gain is set to catalog volume **before** `playTriggerEffect`; looping silent-arm is skipped. Main mood is **not** started under the sting (`sessionIntroActive` holds reconcile).
+* **Cover explode (TOR-516 / TOR-531):** the same Play-enter step starts `SessionExplode.play()` so the stacked splash images explode in the TEST BED stagger (cover first, then five still-text / wavering-art pairs, then session number and title together). Pair spacing, waver, and scale times multiply by `songDuration / C.SessionStartBaseDuration`. Lighting still applies under the cover while this runs.
 * Switch lights AdminDark → OutdoorDim under the cover (no `SetTableTo`; table/skybox already applied on Intermission enter). Then run player/NPC seat-light reconcile so OutdoorDim STANDARD actually reaches the `playerLight*` objects (preset apply only stores the seat map; TOR-504).
-* Play-enter waits `SessionExplode.sequenceDurationSec()` (~71.5s). The explode sequence hides `overlay_globalBlindfold_panel` itself near the end (~68.5s) and resets layer attrs for the next Intermission. Competing auto-hide from `applyGlobalBlindfoldFromPhase` is suppressed while `Phases.isAdvancing()` (TOR-363). Advance `U.chain` `maxWait` is overture duration + 15s so this wait is not killed by the default 60s cap (TOR-501).
+* Play-enter waits `SessionExplode.sequenceDurationSec()` (about `68.5 * songDuration/71 + 3` seconds at the current session). The explode sequence hides `overlay_globalBlindfold_panel` itself near the end and resets layer attrs for the next Intermission. Competing auto-hide from `applyGlobalBlindfoldFromPhase` is suppressed while `Phases.isAdvancing()` (TOR-363). Advance `U.chain` `maxWait` is that wait plus 15s so this wait is not killed by the default 60s cap (TOR-501 / TOR-531).
 * After that wait (sting end): fade in Main mood, then all players heal Superficial Willpower equal to max(Resolve, Composure) (temp dots included); if anyone healed, show `session_start_heal_broadcast.xml` briefly.
 
 ### Ending Events: `PLAY`

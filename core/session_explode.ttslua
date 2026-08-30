@@ -2,31 +2,35 @@
     Session-start explode for the stacked global cover (Intermission → Play).
 
     Starts in the same Play-enter step as the Music C session-starter sting.
-    Layer timings match the author-tuned testbed sequence.
+    Layer timings match the author-tuned TEST BED sequence. Wall-clock times
+    scale by songDuration / C.SessionStartBaseDuration for the current session.
 ]]
 
 local SessionExplode = {}
 
 local U = require("lib.util")
+local C = require("lib.constants")
+local S = require("core.state")
 
 local PANEL_ID = "overlay_globalBlindfold_panel"
 local COVER_ID = "overlay_globalBlindfold"
 
-local WAVER_TIME = 12
-local SCALE_TIME = 1.2
+-- Unscaled author timings (71s base). explodeImage and play() apply durationMultiplier.
 local DELAY_TIME = 12
+local TEXT_DELAY_RATIO = 0.25
+local TEXT_FADE_IN = 2
 local COVER_SCALE_DUR = 0.8
-local TITLE_WAVER = 2
-local TITLE_SCALE = 2.5
-local TITLE_DELAY = 2
-local NUM_WAVER = 2
-local NUM_SCALE = 2.5
-local NUM_DELAY = 6.5
+local PAIR_WAVER_TIME = 12
+local PAIR_SCALE_TIME = 1.2
+local PAIR_WAVER_SPEED = 0.5
+local DEFAULT_WAVER_SPEED = 0.2
+local DEFAULT_WAVER_LIMIT = 50
+local SESSION_NUM_SCALE_DUR = 4.5
+local SESSION_TITLE_SCALE_DUR = 9
+local AFTER_TITLE_WAIT = 8.5
 local HIDE_SETTLE = 3
 local SCALE_END = 2
-local SCALE_EASE = "powerIn"
-local WAVER_SPEED = 0.2
-local DEFAULT_WAVER_LIMIT = 50
+local DEFAULT_SCALE_EASE = "powerIn"
 
 local SPLASH_IDS = {
     "overlay_globalBlindfold_sessionSplash_1_1_A",
@@ -100,29 +104,199 @@ function SessionExplode.cancel()
     end
 end
 
---- Waver then scale-and-fade one XmlUI image. waverDur 0 skips waver. waverLimit 0 holds still.
--- @param id string
--- @param waverDur number
--- @param scaleDur number
--- @param waverLimit number|nil
-function SessionExplode.explodeImage(id, waverDur, scaleDur, waverLimit)
+--- introKey + songDuration for the current `sessionNum`. Missing index falls back to [1].
+-- @return table `{ sessionNum, introKey, songDuration, usedIndex }`
+function SessionExplode.resolveAnimationData()
+    local sessionNum = math.floor(tonumber(S.getStateVal("sessionNum")) or 1)
+    if sessionNum < 1 then
+        sessionNum = 1
+    end
+    local tableData = C.SessionStartAnimationData
+    if type(tableData) ~= "table" then
+        error("SessionExplode.resolveAnimationData: C.SessionStartAnimationData is missing")
+    end
+    local usedIndex = sessionNum
+    local entry = tableData[sessionNum]
+    if type(entry) ~= "table" then
+        usedIndex = 1
+        entry = tableData[1]
+    end
+    if type(entry) ~= "table" then
+        error("SessionExplode.resolveAnimationData: no animation data for session " .. tostring(sessionNum) .. " and index 1 is missing")
+    end
+    local introKey = entry.introKey
+    if type(introKey) ~= "string" or introKey == "" then
+        error("SessionExplode.resolveAnimationData: introKey missing for index " .. tostring(usedIndex))
+    end
+    local songDuration = tonumber(entry.songDuration)
+    if songDuration == nil or songDuration <= 0 then
+        error("SessionExplode.resolveAnimationData: songDuration must be a positive number of seconds for index " .. tostring(usedIndex))
+    end
+    return {
+        sessionNum = sessionNum,
+        introKey = introKey,
+        songDuration = songDuration,
+        usedIndex = usedIndex,
+    }
+end
+
+--- songDuration / C.SessionStartBaseDuration. Omitting songDuration reads the current session.
+-- @param songDuration number|nil
+-- @return number
+function SessionExplode.durationMultiplier(songDuration)
+    local base = tonumber(C.SessionStartBaseDuration)
+    if base == nil or base <= 0 then
+        error("SessionExplode.durationMultiplier: C.SessionStartBaseDuration must be a positive number of seconds")
+    end
+    if songDuration == nil then
+        songDuration = SessionExplode.resolveAnimationData().songDuration
+    end
+    if type(songDuration) ~= "number" or songDuration <= 0 then
+        error("SessionExplode.durationMultiplier: songDuration must be a positive number of seconds")
+    end
+    return songDuration / base
+end
+
+--- Wall-clock seconds the Play-enter chain should wait after play() is started.
+-- @param songDuration number|nil
+-- @return number
+function SessionExplode.sequenceDurationSec(songDuration)
+    local mul = SessionExplode.durationMultiplier(songDuration)
+    return (DELAY_TIME * 5) * mul + AFTER_TITLE_WAIT * mul + HIDE_SETTLE
+end
+
+--- Waver then scale-and-fade one XmlUI image.
+-- @param id string XmlUI element id
+-- @param config table|nil Keys: waverTime, scaleTime, waverLimit, waverSpeed, fadeOutRatio, fadeInTime, startDelay, scaleEase, songDuration
+function SessionExplode.explodeImage(id, config)
     if type(id) ~= "string" or id == "" then
         error("SessionExplode.explodeImage: id must be a non-empty string")
     end
-    if type(waverDur) ~= "number" or waverDur < 0 then
-        error("SessionExplode.explodeImage: waverDur must be 0 or a positive number of seconds")
+    if config == nil then
+        config = {}
     end
-    if type(scaleDur) ~= "number" or scaleDur <= 0 then
-        error("SessionExplode.explodeImage: scaleDur must be a positive number of seconds")
+    if type(config) ~= "table" then
+        error("SessionExplode.explodeImage: config must be a table")
     end
+
+    local waverTime = config.waverTime
+    if waverTime == nil then
+        waverTime = PAIR_WAVER_TIME
+    end
+    local scaleTime = config.scaleTime
+    if scaleTime == nil then
+        scaleTime = PAIR_SCALE_TIME
+    end
+    local waverLimit = config.waverLimit
     if waverLimit == nil then
         waverLimit = DEFAULT_WAVER_LIMIT
     end
+    local waverSpeed = config.waverSpeed
+    if waverSpeed == nil then
+        waverSpeed = DEFAULT_WAVER_SPEED
+    end
+    local fadeOutRatio = config.fadeOutRatio
+    if fadeOutRatio == nil then
+        fadeOutRatio = 0
+    end
+    local fadeInTime = config.fadeInTime
+    if fadeInTime == nil then
+        fadeInTime = 0
+    end
+    local startDelay = config.startDelay
+    if startDelay == nil then
+        startDelay = 0
+    end
+    local scaleEase = config.scaleEase
+    if scaleEase == nil then
+        scaleEase = DEFAULT_SCALE_EASE
+    end
+    local songDuration = config.songDuration
+    if songDuration == nil then
+        songDuration = SessionExplode.resolveAnimationData().songDuration
+    end
+
+    if type(songDuration) ~= "number" or songDuration <= 0 then
+        error("SessionExplode.explodeImage: songDuration must be a positive number of seconds")
+    end
+    local durationMultiplier = SessionExplode.durationMultiplier(songDuration)
+
+    if type(waverTime) ~= "number" or waverTime < 0 then
+        error("SessionExplode.explodeImage: waverTime must be 0 or a positive number of seconds")
+    end
+    waverTime = waverTime * durationMultiplier
+    if type(scaleTime) ~= "number" or scaleTime <= 0 then
+        error("SessionExplode.explodeImage: scaleTime must be a positive number of seconds")
+    end
+    scaleTime = scaleTime * durationMultiplier
     if type(waverLimit) ~= "number" or waverLimit < 0 then
         error("SessionExplode.explodeImage: waverLimit must be 0 or a positive pixel distance")
     end
+    if type(waverSpeed) ~= "number" or waverSpeed <= 0 then
+        error("SessionExplode.explodeImage: waverSpeed must be a positive number")
+    end
+    if type(fadeOutRatio) ~= "number" or fadeOutRatio < 0 or fadeOutRatio > 1 then
+        error("SessionExplode.explodeImage: fadeOutRatio must be a number between 0 and 1")
+    end
+    if type(fadeInTime) ~= "number" or fadeInTime < 0 then
+        error("SessionExplode.explodeImage: fadeInTime must be 0 or a positive number of seconds")
+    end
+    fadeInTime = fadeInTime * durationMultiplier
+    if type(startDelay) ~= "number" or startDelay < 0 then
+        error("SessionExplode.explodeImage: startDelay must be 0 or a positive number of seconds")
+    end
+    startDelay = startDelay * durationMultiplier
+    if type(scaleEase) ~= "string" or scaleEase == "" then
+        error("SessionExplode.explodeImage: scaleEase must be a non-empty ease name (e.g. \"powerIn\", \"powerOut\")")
+    end
     if type(U.Lerp) ~= "function" or type(U.chain) ~= "function" then
         error("SessionExplode.explodeImage: U.Lerp / U.chain are not loaded")
+    end
+
+    local origWaver = waverTime
+    local origScale = scaleTime
+    local totalTime = origWaver + origScale
+    if startDelay > totalTime then
+        error("SessionExplode.explodeImage: startDelay cannot exceed waverTime + scaleTime (" .. tostring(totalTime) .. "s)")
+    end
+    if startDelay <= waverTime then
+        waverTime = waverTime - startDelay
+    else
+        local scaleEat = startDelay - waverTime
+        waverTime = 0
+        scaleTime = scaleTime - scaleEat
+    end
+
+    local function fadeInAlpha(elapsed)
+        if fadeInTime <= 0 then
+            return 1
+        end
+        local a = elapsed / fadeInTime
+        if a > 1 then
+            return 1
+        end
+        if a < 0 then
+            return 0
+        end
+        return a
+    end
+
+    -- tScale is nil during waver (fade-out is relative to the scale phase only).
+    local function fadeOutAlpha(tScale)
+        if tScale == nil then
+            return 1
+        end
+        if fadeOutRatio >= 1 then
+            return 1
+        end
+        if tScale <= fadeOutRatio then
+            return 1
+        end
+        return 1 - (tScale - fadeOutRatio) / (1 - fadeOutRatio)
+    end
+
+    local function displayAlpha(elapsed, tScale)
+        return fadeInAlpha(elapsed) * fadeOutAlpha(tScale)
     end
 
     local waverUnit
@@ -140,8 +314,8 @@ function SessionExplode.explodeImage(id, waverDur, scaleDur, waverLimit)
             octaves[i] = {
                 ax = ax,
                 ay = ay,
-                wx = randRange(0.7, 1.1) * WAVER_SPEED * speedMul,
-                wy = randRange(0.7, 1.1) * WAVER_SPEED * speedMul,
+                wx = randRange(0.7, 1.1) * waverSpeed * speedMul,
+                wy = randRange(0.7, 1.1) * waverSpeed * speedMul,
                 px = randRange(0, math.pi * 2),
                 py = randRange(0, math.pi * 2),
             }
@@ -162,16 +336,40 @@ function SessionExplode.explodeImage(id, waverDur, scaleDur, waverLimit)
         end
     end
 
+    -- Peak offset is the slowest point (velocity 0). Start a quarter-cycle later:
+    -- near the zero crossing, already moving at full speed.
+    local waverT0 = 0
+    if waverUnit ~= nil then
+        local bestMag = -1
+        local tPeak = 0
+        local sampleSpan = (math.pi * 2) / waverSpeed
+        for i = 0, 32 do
+            local t = (i / 32) * sampleSpan
+            local x, y = waverUnit(t)
+            local mag = x * x + y * y
+            if mag > bestMag then
+                bestMag = mag
+                tPeak = t
+            end
+        end
+        waverT0 = tPeak + 0.25 * sampleSpan
+    end
+
     explodeGenById[id] = (explodeGenById[id] or 0) + 1
     local gen = explodeGenById[id]
+
     local lastX = 0
     local lastY = 0
+    local startAlpha = 1
+    if fadeInTime > 0 then
+        startAlpha = 0
+    end
 
     local steps = {
         function()
             U.setAttributes(id, {
                 active = "true",
-                color = "rgba(1, 1, 1, 1)",
+                color = string.format("rgba(1, 1, 1, %.4f)", startAlpha),
                 scale = "1",
                 offsetXY = "0 0",
             })
@@ -179,71 +377,119 @@ function SessionExplode.explodeImage(id, waverDur, scaleDur, waverLimit)
         end,
     }
 
-    if waverDur > 0 then
-        if waverLimit > 0 then
+    if startDelay > 0 then
+        table.insert(steps, function()
+            local holdAlpha = startAlpha
+            return U.Lerp(function()
+                if not stillCurrent(id, gen) then
+                    return
+                end
+                U.setAttributes(id, {
+                    color = string.format("rgba(1, 1, 1, %.4f)", holdAlpha),
+                    scale = "1",
+                    offsetXY = "0 0",
+                })
+            end, 0, 1, startDelay, false, "linear")
+        end)
+    end
+
+    if waverTime > 0 then
+        if waverLimit > 0 or fadeInTime > 0 then
+            table.insert(steps, function()
+                if waverLimit > 0 then
+                    local ux, uy = waverUnit(waverT0)
+                    lastX = clampWaver(waverLimit, ux * waverLimit)
+                    lastY = clampWaver(waverLimit, uy * waverLimit)
+                    U.setAttribute(id, "offsetXY", string.format("%.2f %.2f", lastX, lastY))
+                end
+                return 0
+            end)
             table.insert(steps, function()
                 return U.Lerp(function(rawT)
                     if not stillCurrent(id, gen) then
                         return
                     end
-                    local ux, uy = waverUnit(rawT * waverDur)
-                    lastX = clampWaver(waverLimit, ux * waverLimit)
-                    lastY = clampWaver(waverLimit, uy * waverLimit)
-                    U.setAttribute(id, "offsetXY", string.format("%.2f %.2f", lastX, lastY))
-                end, 0, 1, waverDur, false, "linear")
+                    local elapsed = rawT * waverTime
+                    if waverLimit > 0 then
+                        local ux, uy = waverUnit(elapsed + waverT0)
+                        lastX = clampWaver(waverLimit, ux * waverLimit)
+                        lastY = clampWaver(waverLimit, uy * waverLimit)
+                    end
+                    U.setAttributes(id, {
+                        offsetXY = string.format("%.2f %.2f", lastX, lastY),
+                        color = string.format("rgba(1, 1, 1, %.4f)", displayAlpha(elapsed, nil)),
+                    })
+                end, 0, 1, waverTime, false, "linear")
             end)
         else
             table.insert(steps, function()
-                return waverDur
+                return waverTime
             end)
         end
     end
 
-    table.insert(steps, function()
-        return U.Lerp(function(t)
-            if not stillCurrent(id, gen) then
-                return
-            end
-            local scale = 1 + t * (SCALE_END - 1)
-            local alpha = 1 - t
-            local x = lastX * (1 - t)
-            local y = lastY * (1 - t)
-            U.setAttributes(id, {
-                scale = string.format("%.4f", scale),
-                color = string.format("rgba(1, 1, 1, %.4f)", alpha),
-                offsetXY = string.format("%.2f %.2f", x, y),
-            })
-        end, 0, 1, scaleDur, false, SCALE_EASE)
-    end)
+    if scaleTime > 0 then
+        table.insert(steps, function()
+            return U.Lerp(function(t)
+                if not stillCurrent(id, gen) then
+                    return
+                end
+                local elapsed = waverTime + t * scaleTime
+                local scale = 1 + t * (SCALE_END - 1)
+                local x = lastX * (1 - t)
+                local y = lastY * (1 - t)
+                U.setAttributes(id, {
+                    scale = string.format("%.4f", scale),
+                    color = string.format("rgba(1, 1, 1, %.4f)", displayAlpha(elapsed, t)),
+                    offsetXY = string.format("%.2f %.2f", x, y),
+                })
+            end, 0, 1, scaleTime, false, scaleEase)
+        end)
+    end
 
     table.insert(steps, function()
         if not stillCurrent(id, gen) then
             return
         end
+        local endAlpha = displayAlpha(waverTime + scaleTime, 1)
         U.setAttributes(id, {
             scale = tostring(SCALE_END),
-            color = "rgba(1, 1, 1, 0)",
+            color = string.format("rgba(1, 1, 1, %.4f)", endAlpha),
             offsetXY = "0 0",
         })
     end)
 
-    U.chain(steps, { maxWait = math.max(60, waverDur + scaleDur + 5) })
+    U.chain(steps, { maxWait = math.max(60, origWaver + origScale + 5) })
 end
 
---- Wall-clock seconds the Play-enter chain should wait after play() is started.
-function SessionExplode.sequenceDurationSec()
-    return (DELAY_TIME * 5) + TITLE_DELAY + NUM_DELAY + HIDE_SETTLE
-end
-
-local function explodePair(index)
+local function explodePair(index, songDuration)
     local prefix = "overlay_globalBlindfold_sessionSplash_1_" .. tostring(index)
-    SessionExplode.explodeImage(prefix .. "_A", WAVER_TIME, SCALE_TIME, 0)
-    SessionExplode.explodeImage(prefix .. "_B", WAVER_TIME, SCALE_TIME)
+    SessionExplode.explodeImage(prefix .. "_B", {
+        waverTime = PAIR_WAVER_TIME,
+        scaleTime = PAIR_SCALE_TIME,
+        waverSpeed = PAIR_WAVER_SPEED,
+        songDuration = songDuration,
+    })
+    SessionExplode.explodeImage(prefix .. "_A", {
+        waverTime = PAIR_WAVER_TIME,
+        scaleTime = PAIR_SCALE_TIME,
+        waverLimit = 0,
+        startDelay = DELAY_TIME * TEXT_DELAY_RATIO,
+        fadeInTime = TEXT_FADE_IN,
+        songDuration = songDuration,
+    })
 end
 
 --- Start the Intermission→Play explode. Returns immediately; wait sequenceDurationSec() on the caller.
 -- @return number sequenceDurationSec
 function SessionExplode.play()
+    local anim = SessionExplode.resolveAnimationData()
+    local songDuration = anim.songDuration
+    local mul = SessionExplode.durationMultiplier(songDuration)
+    local delayTime = DELAY_TIME * mul
+    local afterTitleWait = AFTER_TITLE_WAIT * mul
+    local waitSec = SessionExplode.sequenceDurationSec(songDuration)
+
     sequenceGen = sequenceGen + 1
     local gen = sequenceGen
     for id, idGen in pairs(explodeGenById) do
@@ -256,57 +502,73 @@ function SessionExplode.play()
             if sequenceGen ~= gen then
                 return
             end
-            SessionExplode.explodeImage(COVER_ID, 0, COVER_SCALE_DUR)
+            SessionExplode.explodeImage(COVER_ID, {
+                waverTime = 0,
+                scaleTime = COVER_SCALE_DUR,
+                songDuration = songDuration,
+            })
             return 0
         end,
         function()
             if sequenceGen ~= gen then
                 return
             end
-            explodePair(1)
-            return DELAY_TIME
+            explodePair(1, songDuration)
+            return delayTime
         end,
         function()
             if sequenceGen ~= gen then
                 return
             end
-            explodePair(2)
-            return DELAY_TIME
+            explodePair(2, songDuration)
+            return delayTime
         end,
         function()
             if sequenceGen ~= gen then
                 return
             end
-            explodePair(3)
-            return DELAY_TIME
+            explodePair(3, songDuration)
+            return delayTime
         end,
         function()
             if sequenceGen ~= gen then
                 return
             end
-            explodePair(4)
-            return DELAY_TIME
+            explodePair(4, songDuration)
+            return delayTime
         end,
         function()
             if sequenceGen ~= gen then
                 return
             end
-            explodePair(5)
-            return DELAY_TIME
+            explodePair(5, songDuration)
+            return delayTime
         end,
         function()
             if sequenceGen ~= gen then
                 return
             end
-            SessionExplode.explodeImage("overlay_globalBlindfold_sessionSplash_1_6_A", TITLE_WAVER, TITLE_SCALE, 0)
-            return TITLE_DELAY
+            SessionExplode.explodeImage("overlay_globalBlindfold_sessionSplash_1_6_A", {
+                waverTime = 0,
+                scaleTime = SESSION_NUM_SCALE_DUR,
+                waverLimit = 0,
+                scaleEase = "linear",
+                fadeOutRatio = 0.55,
+                songDuration = songDuration,
+            })
+            return 0
         end,
         function()
             if sequenceGen ~= gen then
                 return
             end
-            SessionExplode.explodeImage("overlay_globalBlindfold_sessionSplash_1_6_B", NUM_WAVER, NUM_SCALE, 0)
-            return NUM_DELAY
+            SessionExplode.explodeImage("overlay_globalBlindfold_sessionSplash_1_6_B", {
+                waverTime = 0,
+                scaleTime = SESSION_TITLE_SCALE_DUR,
+                waverLimit = 0,
+                songDuration = songDuration,
+            })
+            return afterTitleWait
         end,
         function()
             if sequenceGen ~= gen then
@@ -321,9 +583,9 @@ function SessionExplode.play()
             end
             SessionExplode.resetLayers()
         end,
-    }, { maxWait = math.max(60, SessionExplode.sequenceDurationSec() + 5) })
+    }, { maxWait = math.max(60, waitSec + 5) })
 
-    return SessionExplode.sequenceDurationSec()
+    return waitSec
 end
 
 return SessionExplode
