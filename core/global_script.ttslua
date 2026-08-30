@@ -170,6 +170,7 @@ local syncDebugLastLoadClockLabel
 local syncDebugSeatColorButtons
 local StorytellerStatsPanel = require("core.storyteller_stats_panel")
 local StorytellerProjectsPanel = require("core.storyteller_projects_panel")
+local MemoriamModal = require("core.memoriam_modal")
 local GameStateOverlay = require("core.game_state_overlay")
 local HUDP = require("core.hud_player")
 local Coterie = require("core.coterie")
@@ -4633,8 +4634,86 @@ function HUD_setPlaySubPhase(player, button, id)
         U.AlertGM("HUD_setPlaySubPhase: Invalid subphase: " .. tostring(tail))
         return
     end
+    if target == C.PlaySubPhases.MEMORIAM then
+        MemoriamModal.open()
+        return
+    end
+    if MemoriamModal.isOpen() then
+        MemoriamModal.close()
+    end
     local Phases = require("core.phases")
     Phases.setPlaySubPhase(target)
+end
+
+--- Memoriam configuration popup (TOR-539). ST-gated; draft is modal-local until Advance.
+function HUD_memoriamModalPcDropdown(player, value, id)
+    if not requireStorytellerForMutation(player, "HUD_memoriamModalPcDropdown") then
+        return
+    end
+    MemoriamModal.onPcDropdown(value)
+end
+
+function HUD_memoriamModalSlider(player, value, id)
+    if not requireStorytellerForMutation(player, "HUD_memoriamModalSlider") then
+        return
+    end
+    MemoriamModal.onSlider(value)
+end
+
+function HUD_memoriamModalSceneButton(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_memoriamModalSceneButton") then
+        return
+    end
+    MemoriamModal.onSceneButton(id)
+end
+
+function HUD_memoriamModalNpcPlus(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_memoriamModalNpcPlus") then
+        return
+    end
+    MemoriamModal.onNpcPlus(id)
+end
+
+function HUD_memoriamModalNpcPick(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_memoriamModalNpcPick") then
+        return
+    end
+    MemoriamModal.onNpcPick(id)
+end
+
+function HUD_memoriamModalNpcInput(player, value, id)
+    if not requireStorytellerForMutation(player, "HUD_memoriamModalNpcInput") then
+        return
+    end
+    MemoriamModal.onNpcInput(value)
+end
+
+function HUD_memoriamModalNpcConfirm(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_memoriamModalNpcConfirm") then
+        return
+    end
+    MemoriamModal.onNpcConfirm()
+end
+
+function HUD_memoriamModalNpcCancel(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_memoriamModalNpcCancel") then
+        return
+    end
+    MemoriamModal.onNpcCancel()
+end
+
+function HUD_memoriamModalConfirm(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_memoriamModalConfirm") then
+        return
+    end
+    MemoriamModal.onConfirm()
+end
+
+function HUD_memoriamModalCancel(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_memoriamModalCancel") then
+        return
+    end
+    MemoriamModal.onCancel()
 end
 
 --- Session number InputField (TOR-263 / TOR-143).

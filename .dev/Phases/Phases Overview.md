@@ -46,11 +46,11 @@ Advancing from `END` returns to `INTERMISSION`.
 
 ### Subphases
 
-Only `PLAY` has subphases. They switch freely (no top-level enter/exit):
+Only `PLAY` has subphases. They switch freely (no top-level enter/exit), except **Memoriam** is gated by the configuration popup:
 
 1. _(default)_ `MAIN`
 2. `DOWNTIME`
-3. `MEMORIAM` (LUT/overlay deferred — **TOR-101**)
+3. `MEMORIAM` — clicking Memoriam on the Phases panel opens `ui/storyteller/memoriam_modal.xml` (**TOR-539**). The Play subphase does **not** change until Advance; Cancel (or switching to Main / Downtime) leaves the current subphase in place. LUT/overlay when Memoriam is active is still deferred — **TOR-101**.
 
 Scene library **Apply** promotes to Play via `Phases.ensurePlayPhaseForSceneApply()` (silent — does **not** re-run Play enter events).
 

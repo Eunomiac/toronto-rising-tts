@@ -1,0 +1,322 @@
+<Defaults>
+
+  <VerticalLayout class="memoriam_modal_container"
+    rectAlignment = "MiddleCenter"
+    width = "1240"
+    height = "800"
+    padding = "20 20 20 20"
+    color = "#000000"
+    childAlignment = "UpperCenter"
+    spacing = "10"
+    childForceExpandWidth = "true"
+    childForceExpandHeight = "false"
+   />
+
+  <Text class="memoriam_modal_title"
+    alignment = "MiddleCenter"
+    color = "#cb995c"
+    fontStyle = "Bold"
+    fontSize = "24"
+  />
+
+  <Dropdown class="memoriam_modal_pc_selection"
+    flexibleWidth = "0"
+    preferredWidth = "200"
+    minWidth = "200"
+    preferredHeight = "40"
+    width = "200"
+    height = "40"
+    onValueChanged = "HUD_memoriamModalPcDropdown"
+  />
+
+  <VerticalLayout class="memoriam_modal_period_selection"
+    preferredHeight = "180"
+    flexibleHeight = "0"
+    minHeight = "180"
+    spacing = "0"
+    padding = "0 0 0 0"
+    childAlignment = "UpperCenter"
+    childForceExpandWidth = "true"
+    childForceExpandHeight = "true"
+  />
+
+  <Text class="memoriam_modal_selected_date"
+    alignment = "MiddleCenter"
+    color = "#FFFFFF"
+    fontSize = "30"
+    fontStyle = "BoldAndItalic"
+  />
+
+  <HorizontalLayout class="memoriam_modal_period_indicator_bar"
+    childForceExpandHeight = "true"
+    childForceExpandWidth = "false"
+    spacing = "0"
+    padding = "0 0 0 0"
+    childAlignment = "MiddleLeft"
+  />
+
+  <Panel class="memoriam_modal_period_indicator"
+    flexibleHeight = "1"
+    flexibleWidth = "0"
+  />
+
+  <Slider class="memoriam_modal_period_selection_slider"
+    minValue = "0"
+    maxValue = "1200"
+    direction = "RightToLeft"
+    value = "0"
+    onValueChanged = "HUD_memoriamModalSlider"
+    flexibleHeight = "1"
+    flexibleWidth = "1"
+  />
+
+  <GridLayout class="memoriam_modal_scene_selection_grid"
+    padding = "0 0 0 0"
+    spacing = "0 0"
+    cellSize = "85 40"
+    startCorner = "UpperLeft"
+    startAxis = "Vertical"
+    childAlignment = "MiddleCenter"
+    constraint = "FixedRowCount"
+    constraintCount = "4"
+    childForceExpandWidth = "true"
+    childForceExpandHeight = "true"
+  />
+
+  <Button class="memoriam_modal_scene_selection_button"
+    textAlignment = "MiddleCenter"
+    fontSize = "12"
+    fontStyle = "Bold"
+    color = "#999999"
+    onClick = "HUD_memoriamModalSceneButton"
+  />
+
+  <Button class="selection_button_highlighted"
+    color = "#00FF00" />
+
+  <Button class="selection_button_selected"
+    color = "#FFFF00" />
+
+  <VerticalLayout class="memoriam_modal_npc_assignment"
+    childForceExpandWidth = "false"
+    childAlignment = "MiddleCenter"
+  />
+  <HorizontalLayout class="memoriam_modal_npc_assignment"
+    spacing = "20"
+    padding = "10 10 10 10"
+  />
+  <Text class="memoriam_modal_npc_assignment_label"
+    fontSize = "24"
+    fontStyle = "Bold"
+    color = "#FFFFFF"
+    minWidth = "400"
+    alignment = "MiddleLeft"
+  />
+  <Text class="memoriam_modal_npc_assignment_value"
+    fontSize = "24"
+    fontStyle = "Bold"
+    color = "#cb995c"
+    minWidth = "400"
+    alignment = "MiddleLeft"
+  />
+  <Button class="memoriam_modal_npc_assignment_button"
+    flexibleWidth = "0"
+    minWidth = "30"
+    preferredWidth = "30"
+  />
+
+  <Button class="memoriam_npc"
+    onClick = "HUD_memoriamModalNpcPick"
+  />
+
+</Defaults>
+
+<!--
+
+UI.setAttributes("memoriam_modal", {width = "1240", spacing = "10"})
+UI.setAttributes("db_memoriam_scene_selection_grid", {})
+UI.setAttributes("memoriam_modal_selected_date", {fontSize = "32"})
+UI.setAttributes("memoriam_modal_pc_selection", {flexibleWidth = "0", preferredWidth = "200", minWidth = "200", preferredHeight = "40"})
+UI.hide("memoriam_modal")
+UI.show("memoriam_modal")
+-->
+
+
+<VerticalLayout id="memoriam_modal" class="memoriam_modal_container" visibility="Black|Host" active="false">
+  <Text id="db_memoriam_modal_title" class="memoriam_modal_title" text="Memoriam" />
+
+  <!-- PC Selection Dropdown -->
+  <Dropdown id="memoriam_modal_pc_selection" class="memoriam_modal_pc_selection" onValueChanged="HUD_memoriamModalPcDropdown">
+    <Option selected="true"> </Option>
+    <Option>Lord Lucien</Option>
+    <Option>Rashid Abdulrahman</Option>
+    <Option>Aishe Tache</Option>
+    <Option>Fomórach</Option>
+    <Option>Black Caesar</Option>
+  </Dropdown>
+
+  <!-- Period Selection Slider -->
+  <!-- Set active=true when a PC is selected; otherwise active=false. -->
+  <VerticalLayout id="memoriam_modal_period_selection" class="memoriam_modal_period_selection">
+    <Text id="memoriam_modal_selected_date" class="memoriam_modal_selected_date">September 27, 1854</Text>
+    <HorizontalLayout id="db_memoriam_period_indicator_bar" class="memoriam_modal_period_indicator_bar">
+      <Panel id="memoriam_period_1" class="memoriam_period_indicator" color="#777777" minWidth="100" />
+      <Panel id="memoriam_period_2" class="memoriam_period_indicator" color="#CCCCCC" minWidth="200" />
+      <Panel id="memoriam_period_3" class="memoriam_period_indicator" color="#777777" minWidth="100" />
+      <Panel id="memoriam_period_4" class="memoriam_period_indicator" color="#CCCCCC" minWidth="200" />
+      <Panel id="memoriam_period_5" class="memoriam_period_indicator" color="#777777" minWidth="100" />
+      <Panel id="memoriam_period_6" class="memoriam_period_indicator" color="#CCCCCC" minWidth="200" />
+      <Panel id="memoriam_period_7" class="memoriam_period_indicator" color="#777777" />
+      <Panel id="memoriam_period_8" class="memoriam_period_indicator" color="#CCCCCC" minWidth="200" />
+      <Panel id="memoriam_period_9" class="memoriam_period_indicator" color="#777777" minWidth="100" />
+      <Panel id="memoriam_period_10" class="memoriam_period_indicator" color="#CCCCCC" />
+      <Panel id="memoriam_period_11" class="memoriam_period_indicator" color="#777777" />
+      <Panel id="memoriam_period_12" class="memoriam_period_indicator" color="#CCCCCC" />
+      <Panel id="memoriam_period_13" class="memoriam_period_indicator" color="#777777" />
+      <Panel id="memoriam_period_14" class="memoriam_period_indicator" color="#CCCCCC" />
+      <Panel id="memoriam_period_15" class="memoriam_period_indicator" color="#777777" />
+      <Panel id="memoriam_period_16" class="memoriam_period_indicator" color="#CCCCCC" />
+      <Panel id="memoriam_period_17" class="memoriam_period_indicator" color="#777777" />
+      <Panel id="memoriam_period_18" class="memoriam_period_indicator" color="#CCCCCC" />
+      <Panel id="memoriam_period_19" class="memoriam_period_indicator" color="#777777" />
+      <Panel id="memoriam_period_20" class="memoriam_period_indicator" color="#CCCCCC" />
+      <Panel id="memoriam_period_21" class="memoriam_period_indicator" color="#777777" />
+      <Panel id="memoriam_period_22" class="memoriam_period_indicator" color="#CCCCCC" />
+      <Panel id="memoriam_period_23" class="memoriam_period_indicator" color="#777777" />
+      <Panel id="memoriam_period_24" class="memoriam_period_indicator" color="#CCCCCC" />
+      <Panel id="memoriam_period_25" class="memoriam_period_indicator" color="#777777" />
+      <Panel id="memoriam_period_26" class="memoriam_period_indicator" color="#CCCCCC" />
+      <Panel id="memoriam_period_27" class="memoriam_period_indicator" color="#777777" />
+      <Panel id="memoriam_period_28" class="memoriam_period_indicator" color="#CCCCCC" />
+      <Panel id="memoriam_period_29" class="memoriam_period_indicator" color="#777777" />
+      <Panel id="memoriam_period_30" class="memoriam_period_indicator" color="#CCCCCC" />
+    </HorizontalLayout>
+    <Slider id="memoriam_modal_period_selection_slider" class="memoriam_modal_period_selection_slider" />
+  </VerticalLayout>
+
+  <!-- Scene Selection Grid -->
+  <!-- Set active=true when a PC is selected; otherwise active=false. -->
+  <GridLayout id="db_memoriam_scene_selection_grid" class="memoriam_modal_scene_selection_grid">
+    <Button id="memoriam_period_1_panelA_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 1, Panel A"/>
+    <Button id="memoriam_period_1_panelB_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 1, Panel B"/>
+    <Button id="memoriam_period_1_panelC_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 1, Panel C"/>
+    <Button id="memoriam_period_1_panelD_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 1, Panel D"/>
+    <Button id="memoriam_period_2_panelA_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 2, Panel A"/>
+    <Button id="memoriam_period_2_panelB_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 2, Panel B"/>
+    <Button id="memoriam_period_2_panelC_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 2, Panel C"/>
+    <Button id="memoriam_period_2_panelD_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 2, Panel D"/>
+    <Button id="memoriam_period_3_panelA_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 3, Panel A"/>
+    <Button id="memoriam_period_3_panelB_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 3, Panel B"/>
+    <Button id="memoriam_period_3_panelC_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 3, Panel C"/>
+    <Button id="memoriam_period_3_panelD_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 3, Panel D"/>
+    <Button id="memoriam_period_4_panelA_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 4, Panel A"/>
+    <Button id="memoriam_period_4_panelB_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 4, Panel B"/>
+    <Button id="memoriam_period_4_panelC_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 4, Panel C"/>
+    <Button id="memoriam_period_4_panelD_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 4, Panel D"/>
+    <Button id="memoriam_period_5_panelA_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 5, Panel A"/>
+    <Button id="memoriam_period_5_panelB_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 5, Panel B"/>
+    <Button id="memoriam_period_5_panelC_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 5, Panel C"/>
+    <Button id="memoriam_period_5_panelD_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 5, Panel D"/>
+    <Button id="memoriam_period_6_panelA_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 6, Panel A"/>
+    <Button id="memoriam_period_6_panelB_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 6, Panel B"/>
+    <Button id="memoriam_period_6_panelC_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 6, Panel C"/>
+    <Button id="memoriam_period_6_panelD_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 6, Panel D"/>
+    <Button id="memoriam_period_7_panelA_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 7, Panel A" />
+    <Button id="memoriam_period_7_panelB_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 7, Panel B" />
+    <Button id="memoriam_period_7_panelC_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 7, Panel C" />
+    <Button id="memoriam_period_7_panelD_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 7, Panel D" />
+    <Button id="memoriam_period_8_panelA_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 8, Panel A" />
+    <Button id="memoriam_period_8_panelB_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 8, Panel B" />
+    <Button id="memoriam_period_8_panelC_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 8, Panel C" />
+    <Button id="memoriam_period_8_panelD_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 8, Panel D" />
+    <Button id="memoriam_period_9_panelA_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 9, Panel A" />
+    <Button id="memoriam_period_9_panelB_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 9, Panel B" />
+    <Button id="memoriam_period_9_panelC_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 9, Panel C" />
+    <Button id="memoriam_period_9_panelD_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 9, Panel D" />
+    <Button id="memoriam_period_10_panelA_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 10, Panel A" />
+    <Button id="memoriam_period_10_panelB_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 10, Panel B" />
+    <Button id="memoriam_period_10_panelC_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 10, Panel C" />
+    <Button id="memoriam_period_10_panelD_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 10, Panel D" />
+    <Button id="memoriam_period_11_panelA_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 11, Panel A" />
+    <Button id="memoriam_period_11_panelB_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 11, Panel B" />
+    <Button id="memoriam_period_11_panelC_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 11, Panel C" />
+    <Button id="memoriam_period_11_panelD_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 11, Panel D" />
+    <Button id="memoriam_period_12_panelA_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 12, Panel A" />
+    <Button id="memoriam_period_12_panelB_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 12, Panel B" />
+    <Button id="memoriam_period_12_panelC_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 12, Panel C" />
+    <Button id="memoriam_period_12_panelD_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 12, Panel D" />
+    <Button id="memoriam_period_13_panelA_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 13, Panel A" />
+    <Button id="memoriam_period_13_panelB_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 13, Panel B" />
+    <Button id="memoriam_period_13_panelC_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 13, Panel C" />
+    <Button id="memoriam_period_13_panelD_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 13, Panel D" />
+    <Button id="memoriam_period_14_panelA_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 14, Panel A" />
+    <Button id="memoriam_period_14_panelB_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 14, Panel B" />
+    <Button id="memoriam_period_14_panelC_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 14, Panel C" />
+    <Button id="memoriam_period_14_panelD_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 14, Panel D" />
+  </GridLayout>
+
+  <!-- PC-as-NPC Assignment
+  Set active=true when a panel has been selected, otherwise active=false. -->
+  <VerticalLayout id="memoriam_modal_npc_assignment" class="memoriam_modal_npc_assignment">
+    <HorizontalLayout id="memoriam_modal_npc_assignment_lucien" class="memoriam_modal_npc_assignment">
+      <Text id="db_memoriam_modal_npc_assignment_lucien_label" class="memoriam_modal_npc_assignment_label" text="Lord Lucien" />
+      <Text id="memoriam_modal_npc_assignment_lucien_npc_name" class="memoriam_modal_npc_assignment_value" text="Mylene Hamelin" />
+      <Button id="memoriam_modal_npc_assignment_lucien_button" class="memoriam_modal_npc_assignment_button" text="+" onClick="HUD_memoriamModalNpcPlus" />
+    </HorizontalLayout>
+    <HorizontalLayout id="memoriam_modal_npc_assignment_rashid" class="memoriam_modal_npc_assignment">
+      <Text id="db_memoriam_modal_npc_assignment_rashid_label" class="memoriam_modal_npc_assignment_label" text="Rashid Abdulrahman" />
+      <Text id="memoriam_modal_npc_assignment_rashid_npc_name" class="memoriam_modal_npc_assignment_value" text="—" />
+      <Button id="memoriam_modal_npc_assignment_rashid_button" class="memoriam_modal_npc_assignment_button" text="+" onClick="HUD_memoriamModalNpcPlus" />
+    </HorizontalLayout>
+    <HorizontalLayout id="memoriam_modal_npc_assignment_aishe" class="memoriam_modal_npc_assignment">
+      <Text id="db_memoriam_modal_npc_assignment_aishe_label" class="memoriam_modal_npc_assignment_label" text="Aishe Tache" />
+      <Text id="memoriam_modal_npc_assignment_aishe_npc_name" class="memoriam_modal_npc_assignment_value" text="—" />
+      <Button id="memoriam_modal_npc_assignment_aishe_button" class="memoriam_modal_npc_assignment_button" text="+" onClick="HUD_memoriamModalNpcPlus" />
+    </HorizontalLayout>
+    <HorizontalLayout id="memoriam_modal_npc_assignment_fomorach" class="memoriam_modal_npc_assignment">
+      <Text id="db_memoriam_modal_npc_assignment_fomorach_label" class="memoriam_modal_npc_assignment_label" text="Fomórach" />
+      <Text id="memoriam_modal_npc_assignment_fomorach_npc_name" class="memoriam_modal_npc_assignment_value" text="—" />
+      <Button id="memoriam_modal_npc_assignment_fomorach_button" class="memoriam_modal_npc_assignment_button" text="+" onClick="HUD_memoriamModalNpcPlus" />
+    </HorizontalLayout>
+    <HorizontalLayout id="memoriam_modal_npc_assignment_blackCaesar" class="memoriam_modal_npc_assignment">
+      <Text id="db_memoriam_modal_npc_assignment_blackCaesar_label" class="memoriam_modal_npc_assignment_label" text="Black Caesar" />
+      <Text id="memoriam_modal_npc_assignment_blackCaesar_npc_name" class="memoriam_modal_npc_assignment_value" text="—" />
+      <Button id="memoriam_modal_npc_assignment_blackCaesar_button" class="memoriam_modal_npc_assignment_button" text="+" onClick="HUD_memoriamModalNpcPlus" />
+    </HorizontalLayout>
+  </VerticalLayout>
+
+  <!-- Confirmation & Cancel Button Row -->
+  <HorizontalLayout id="db_memoriam_modal_confirmation_cancel_button_row" class="memoriam_modal_confirmation_cancel_button_row">
+    <Button id="memoriam_modal_confirmation_button" class="memoriam_modal_confirmation_button" text="Advance" onClick="HUD_memoriamModalConfirm" />
+    <Button id="memoriam_modal_cancel_button" class="memoriam_modal_cancel_button" text="Cancel" onClick="HUD_memoriamModalCancel" />
+  </HorizontalLayout>
+
+
+
+</VerticalLayout>
+
+<!-- Set active when one of the `memoriam_modal_npc_assignment_button` elements is clicked; button click in this modal will apply to associated PC in `memoriam_modal_npc_assignment` -->
+<VerticalLayout id="memoriam_modal_npc_assignment_grid_container" class="memoriam_modal_npc_assignment_grid_container" visibility="Black|Host" active="false">
+  <Text id="memoriam_modal_npc_assignment_label" class="memoriam_modal_npc_assignment_label" text="Assigning To:" /> <!-- Change text to "Assigning To: <PC's name>" when a PC is selected in the `memoriam_modal_npc_assignment` vertical layout -->
+  <GridLayout id="memoriam_modal_npc_assignment_grid" class="memoriam_modal_npc_assignment_grid">
+    <!-- Button elements as direct children of the GridLayout. -->
+
+    <!-- Memoriam NPCs: Set enough buttons active to include all NPCs included in the selected period in the memoriams data, and set their text to the NPC's name. -->
+    <Button id="memoriam_modal_npc_assignment_memoriamNPC_1" class="memoriam_modal_npc_assignment_button memoriam_npc" text="Memoriam NPC 1" onClick="HUD_memoriamModalNpcPick" />
+    <Button id="memoriam_modal_npc_assignment_memoriamNPC_2" class="memoriam_modal_npc_assignment_button memoriam_npc" text="Memoriam NPC 2" onClick="HUD_memoriamModalNpcPick" />
+    <Button id="memoriam_modal_npc_assignment_memoriamNPC_3" class="memoriam_modal_npc_assignment_button memoriam_npc" text="Memoriam NPC 3" onClick="HUD_memoriamModalNpcPick" />
+    <Button id="memoriam_modal_npc_assignment_memoriamNPC_4" class="memoriam_modal_npc_assignment_button memoriam_npc" text="Memoriam NPC 4" onClick="HUD_memoriamModalNpcPick" />
+    <Button id="memoriam_modal_npc_assignment_memoriamNPC_5" class="memoriam_modal_npc_assignment_button memoriam_npc" text="Memoriam NPC 5" onClick="HUD_memoriamModalNpcPick" />
+    <Button id="memoriam_modal_npc_assignment_memoriamNPC_6" class="memoriam_modal_npc_assignment_button memoriam_npc" text="Memoriam NPC 6" onClick="HUD_memoriamModalNpcPick" />
+    <Button id="memoriam_modal_npc_assignment_memoriamNPC_7" class="memoriam_modal_npc_assignment_button memoriam_npc" text="Memoriam NPC 7" onClick="HUD_memoriamModalNpcPick" />
+    <Button id="memoriam_modal_npc_assignment_memoriamNPC_8" class="memoriam_modal_npc_assignment_button memoriam_npc" text="Memoriam NPC 8" onClick="HUD_memoriamModalNpcPick" />
+    <Button id="memoriam_modal_npc_assignment_memoriamNPC_9" class="memoriam_modal_npc_assignment_button memoriam_npc" text="Memoriam NPC 9" onClick="HUD_memoriamModalNpcPick" />
+    <Button id="memoriam_modal_npc_assignment_memoriamNPC_10" class="memoriam_modal_npc_assignment_button memoriam_npc" text="Memoriam NPC 10" onClick="HUD_memoriamModalNpcPick" />
+  </GridLayout>
+
+  <!-- Alternatively, a PC can be assigned a different NPC by entering the NPC key in the input field and clicking the confirm button.
+    If the NPC key is not found in the library, a clear message should be broadcast to the Host and the modal should refuse to close. -->
+  <InputField id="memoriam_modal_npc_assignment_input" class="memoriam_modal_npc_assignment_input" placeholder="Enter NPC key" onValueChanged="HUD_memoriamModalNpcInput" onEndEdit="HUD_memoriamModalNpcInput" />
+  <Button id="memoriam_modal_npc_assignment_confirm_button" class="memoriam_modal_npc_assignment_confirm_button" text="OK" onClick="HUD_memoriamModalNpcConfirm" />
+  <Button id="memoriam_modal_npc_assignment_cancel_button" class="memoriam_modal_npc_assignment_cancel_button" text="Cancel" onClick="HUD_memoriamModalNpcCancel" />
+</VerticalLayout>
