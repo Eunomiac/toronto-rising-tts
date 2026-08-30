@@ -8,6 +8,7 @@
     zone and cards in that hand — and records in-session Y on seatLayout.absentPileY
     so restore can lift table-height roles without flattening feature-hide Y
     (CSHEET pages, SIGNAL_FIRE, HUNGER_SMOKE) — TOR-512 / TOR-513.
+    Cover transitions onto `isRandomSeating` tables (Table B) shuffle packed occupancy (TOR-537).
     Pink TAROT_DECK layout Y follows Consult-the-Tarot (ObjectPositions on/off), default off.
 ]]
 
@@ -292,6 +293,49 @@ function FSL.seedDefaultTableSlots()
             claimSlot(npc, FSL.DEFAULT_TABLE_SLOTS[npc])
         end
     end
+end
+
+--- True when this table (or the Table B family) shuffles occupants on a cover transition.
+--- @param tableKey string|nil
+--- @return boolean
+function FSL.tableUsesRandomSeating(tableKey)
+    if U.Type(tableKey) ~= "string" or tableKey == "" then
+        return false
+    end
+    local cfg = C.Tables and C.Tables[tableKey]
+    if U.Type(cfg) == "table" and cfg.isRandomSeating == true then
+        return true
+    end
+    if tableKey == "Table B" then
+        local b0 = C.Tables and C.Tables["Table B0"]
+        return U.Type(b0) == "table" and b0.isRandomSeating == true
+    end
+    return false
+end
+
+--- Shuffle in-session occupants (PCs who are not Absent, plus occupied NPCs) into packed chairs 1..N.
+--- Absent players keep no `tableSlot`. Call after `seedDefaultTableSlots`.
+--- @return number packedCount
+function FSL.randomizePackedOccupancy()
+    FSL.seedDefaultTableSlots()
+    local occ = FSL.collectOccupants()
+    for i = #occ, 2, -1 do
+        local j = math.random(i)
+        occ[i], occ[j] = occ[j], occ[i]
+    end
+    local ss = liveSeatSlots()
+    local packed = {}
+    for i = 1, #occ do
+        local row = ensureSeatRow(ss, occ[i].occupantKey)
+        row.tableSlot = i
+        packed[occ[i].occupantKey] = true
+    end
+    for occupant, row in pairs(ss) do
+        if U.Type(row) == "table" and packed[occupant] ~= true then
+            row.tableSlot = nil
+        end
+    end
+    return #occ
 end
 
 --- @param seatSlots table|nil

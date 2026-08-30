@@ -716,6 +716,7 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 
 | 2026-08-30 | CREATE+SHIP | TOR-535 | Play-enter OutdoorDim behind cover before explode/sting; sting delay 0.25s. relatedTo TOR-534 / TOR-533 / TOR-504. Pending Save & Play. |
 
-| 2026-08-30 | CREATE+SHIP | TOR-536 | Play-enter settle 0.5s + instant seat lights before explode. relatedTo TOR-535. Pending Save & Play. |
+| 2026-08-30 | `/tr-inbox` | PAVE | ✅ cleared TOR-247, TOR-531–TOR-536, TOR-519–TOR-523, TOR-525. ❌ TOR-518 follow-up shipped (tighter PCs panel heights). ⚠️ TOR-528 print-to-file removed. |
+| 2026-08-30 | CREATE+SHIP | TOR-537 | Randomize Table B seating on cover transition; pack 1..N; control-board tokens follow; Absent stay hidden. relatedTo TOR-507 / TOR-247 / TOR-334. Pending Save & Play. |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

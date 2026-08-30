@@ -950,6 +950,7 @@ function Spotlight.applyExitWorld()
             skipTransitionBlindfold = true,
             skipSoundscape = true,
             activateGenericSkybox = true,
+            randomizeSeating = true,
         })
     end
     return true, nil

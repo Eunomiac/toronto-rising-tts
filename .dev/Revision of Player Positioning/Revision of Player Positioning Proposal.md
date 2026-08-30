@@ -191,9 +191,9 @@ Scatter, orbit, and join are **not** in this phase. Phase 1 is: capture offsets 
 
 `seatToPositionMap` is removed. Occupancy is not stored on the table.
 
-**Table B family:** intent key `"Table B"` resolves from `highestOccupiedTableSlot` (in-session occupants only; absent players and empty NPC identities do not count):
+**Table B family:** intent key `"Table B"` resolves from occupied in-session chairs (absent players and empty NPC identities do not count). On a **cover/blindfold transition** to Table B, occupants are shuffled and packed into chairs `1..N` (TOR-537), so the variant follows **occupied count** (highest packed slot equals N). Control-board Apply still grows by the highest occupied chair and does not reshuffle.
 
-| Highest occupied slot | Seat count used | Concrete key |
+| Occupied count (after pack) / highest occupied slot | Seat count used | Concrete key |
 | --- | --- | --- |
 | none, or 1–5 | 5 (minimum clamp) | `Table B0` |
 | 6 | 6 | `Table B1` |

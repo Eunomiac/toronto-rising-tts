@@ -20,6 +20,7 @@ Verification:
 ## For Immediate Implementation
 > _After registering each of these issues with Linear in the ordinary fashion, before updating the Focus Stack, briefly review the issue: If it is a quick or easy fix, implement it immediately without waiting for author confirmation. Otherwise, promote it to the top of the Focus Stack, and offer to begin work on it immediately when summarizing your work processing `INBOX.md` to the author. If multiple issues require promotion in this way, consider how best to resolve them as quickly as possible, and offer to draft an implementation plan in your response to the author._
 
+
 ## Active
 
 ## External Work (Set STATUS to "External To Do")
@@ -40,6 +41,11 @@ When the subphase is switched to Memoriam, the Host should be presented with a p
 
 ### Unclear Intents
 
+- [Camera Angles] Overlay camera button: left-click opens the picker **and** snaps to default view. Right-click uses FirstPerson at that seat’s `default` position, looking at the **primary/lead figurine** in an occupied NPC stage area. Walk occupied areas in this order (skip empty): Center, Center Left, Center Right, Mid Center, Mid Left, Mid Right, Far Center-Left, Far Center-Right, Far Left, Far Right. Each further right-click advances to the next occupied area and loops. Applying the stage control board resets the cycle.
+  - ? Confirm this **replaces** today’s right-click-default behavior (**TOR-521** camera-button right-click default).
+  - ? When several NPCs share one stage area, who is the “primary/lead figurine” — the group-move leader, the first token in that area, or something else?
+  - ? If **no** NPC is on any of those stage areas, what should right-click look at (keep last view, look at table center, no-op)?
+
 ### Unclear Ideas
 
 
@@ -49,6 +55,8 @@ When the subphase is switched to Memoriam, the Host should be presented with a p
 
 
 ## Processed
+
+2026-08-30 `/tr-inbox` Immediate — randomized Table B seating on cover transition → **TOR-537** (shipped). PAVE ❌ **TOR-518** (PCs panel vertical spacing) follow-up shipped. PAVE ⚠️ **TOR-528** (DEBUG.resetToIntermission) print-to-file removed. Camera overlay button capture parked in Needs clarification (still being typed). PAVE ✅ cleared **TOR-247**, **TOR-531**, **TOR-532**, **TOR-533**, **TOR-534**, **TOR-535**, **TOR-536**, **TOR-519**, **TOR-520**, **TOR-521**, **TOR-522**, **TOR-523**, **TOR-525**.
 
 2026-08-29 `/tr-inbox` Immediate — humidity overlay hide → **TOR-517** (shipped); PCs panel vertical trim → **TOR-518** (shipped); scene library name-only → **TOR-519** (shipped); rain particle X/Z follow table → **TOR-520** (shipped); camera-button right-click default → **TOR-521** (shipped); CSHEET strip right-click roll camera → **TOR-522** (shipped); Spotlight carousel Y −55 / Z 125 → **TOR-523** (shipped); End→Intermission `overlay_blindfold_end` → **TOR-524** (shipped); session num/title grow rates → **TOR-525** (shipped). Auto Rouse lock+1s broadcast → **TOR-526** (Focus #1). Downtime subphase spec → **TOR-527** (Focus #2). End overlay **DEBRIEF** already shipped in **TOR-98**. Session starter max volume / no fade already shipped in **TOR-497** / **TOR-515**. PAVE ✅ cleared **TOR-98**, **TOR-508**, **TOR-509**, **TOR-510**.
 

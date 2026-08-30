@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-08-30 — **TOR-536** (0.5s settle behind cover before explode). Inbox Immediate polish shipped (**TOR-517**–**TOR-525**). Author confirmed **TOR-98** (Spotlight phase), **TOR-508** (rain particle bootstrap miss), **TOR-509** (hidden skyboxes), and **TOR-510** (Memoriam skybox catalog). **TOR-439** remains a multiclient gate (not a solo Save & Play)._
+_Last populated: 2026-08-30 — **TOR-537** (randomize Table B seating on cover transition). PAVE follow-ups **TOR-518** (PCs panel spacing) and **TOR-528** (resetToIntermission console-only). Author confirmed Intermission→Play explode chain (**TOR-531**–**TOR-536**), scene-library names, rain follow, camera defaults, CSHEET roll camera, Spotlight carousel, session explode grow, and control-board occupancy (**TOR-247**). **TOR-439** remains a multiclient gate (not a solo Save & Play)._
 
 ### High — session / join / first-load
 
@@ -31,7 +31,7 @@ _Last populated: 2026-08-30 — **TOR-536** (0.5s settle behind cover before exp
 
 #### TOR-507 — Numbered table slots and figurine offsets
 
-**How to verify:** Save & Play so the new scripts load. On Table A, Red should still sit in the center-front chair, Orange on Red’s right, and Pink on Red’s left; empty chairs should be plain wood with no spare throne. Switch to Table B and Table C from the Scenes panel — the same occupant order should hold, and cameras should still look at the person in that chair. On the PCs panel, turn Absent on for one player: their pile should drop under the table like an unused NPC. Turn Absent off: they should take the lowest free chair, or you should get an error if the table is full. Hidden character-sheet pages should stay hidden. The signal fire should sit at table height (about Y 7.85), not the tiny hide scale. If you Import or Apply a library scene that is missing a chair number on an in-session PC, you should get a named error, not a silent fallback.
+**How to verify:** Save & Play so the new scripts load. On Table A, Red should still sit in the center-front chair, Orange on Red’s right, and Pink on Red’s left; empty chairs should be plain wood with no spare throne. Switch to Table C from the Scenes panel — the same occupant order should hold, and cameras should still look at the person in that chair. Switching to Table B now randomizes packed seating (**TOR-537**). On the PCs panel, turn Absent on for one player: their pile should drop under the table like an unused NPC. Turn Absent off: they should take the lowest free chair, or you should get an error if the table is full. Hidden character-sheet pages should stay hidden. The signal fire should sit at table height (about Y 7.85), not the tiny hide scale. If you Import or Apply a library scene that is missing a chair number on an in-session PC, you should get a named error, not a silent fallback.
 
 **Context:** Phase 1 of the player-positioning redesign. Scatter, orbit, and join seating are still Phase 2.
 
@@ -43,16 +43,6 @@ Pink’s tarot deck should stay **put away** (down in the table, not sitting out
 
 **Context:** Turning Absent off was putting the figurine back on the chair but leaving everything else (including lights) buried under the table. The tarot dump had captured the deck while it was out, so layout was also putting it into the Consult pose by default.
 
-#### TOR-247 — Seat occupancy from control-board tokens
-
-**How to verify:** Save & Play so the new scripts and HUD load. Slot number boxes should be gone from the PCs panel and the Scenes panel Seat Activation row. The **Absent** toggle on the PCs panel should still be there.
-
-On the stage control board, drag Red’s token onto a different chair snap (for example Orange’s old chair), then click **Apply**. Red’s pile on the live table should move to that numbered chair. Drag an NPC token onto the center-front chair (slot 1) and Apply: that NPC should sit there. Drag a PC token off the chair row (not onto another chair) and Apply: that player should go Absent (pile under the table, token locked out of sight). Turn **Absent** on from the PCs panel: that color’s token should leave the chair snap and disappear under the table (locked at Y about −200). Turn Absent off: the token should jump onto the chair they were assigned.
-
-Put two tokens on the same chair snap and Apply: you should get a named error, and seats should not change. On Table B, you can still drop a token on chair 6 (beyond the small table) and Apply — the live table should grow if there are no loose dice on it.
-
-**Context:** Chairs are the snaps; who sits there is whichever token you put on that snap. The HUD no longer types slot numbers.
-
 #### TOR-513 — Absent hand zone, PC token stash, and Apply PC reseat
 
 **How to verify:** Save & Play so the new scripts load. Put a few cards in Red’s hand. On the PCs panel, turn **Absent** on for Red. Red’s pile should drop under the table, the **hand zone should go with it** (Y about −200), and **those cards should move under the table too** — they should not stay floating at table height. Red’s PC token on the stage control board should disappear (locked under the board, not sitting in a park strip below the chairs). Turn Absent off: pile, hand zone, cards, and the PC token should all come back to Red’s chair.
@@ -61,39 +51,15 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 **Context:** Absent was hiding the pile but leaving the hand zone (and often the cards) at the table, and parking the PC token on the board. Apply that only moved PC tokens also skipped seat layout because the NPC reconciler thought nothing had changed.
 
+#### TOR-537 — Randomize Table B seating on cover transition
+
+**How to verify:** Save & Play so the new scripts load. Seat a mix of player characters and NPCs at the table, and mark one player **Absent** on the PCs panel. Apply a library scene that uses Table B, or click **Table B** on the Scenes panel so the cover comes down. When the cover lifts, the people who were sitting should be in a new random order, with no empty chairs in the middle of the ring. The physical table should match how many people are actually sitting (the small five-chair table if five or fewer). On the stage control board, the chair-row tokens should match that new order. The Absent player’s token should stay hidden under the board, not sitting on a chair. Click **Apply** on the control board without a cover: seats should stay where you put the tokens, not reshuffle.
+
+**Context:** Table B is the round “everyone sits in a packed ring” family. Cover transitions shuffle PCs and NPCs together; Absent players do not take a chair.
+
 ---
 
 ### Medium — overlay / HUD / Spotlight
-
-#### TOR-536 — Cover stays still half a second, then explode starts smoothly
-
-**How to verify:** Save & Play. Follow [.dev/Step-By-Step Playbooks/TOR-536-play-enter-settle-before-explode-verify.md](Step-By-Step%20Playbooks/TOR-536-play-enter-settle-before-explode-verify.md). After the setup paste, Advance starts on its own. The cover should stay fully up for about half a second after lighting. Then it should start scaling smoothly — no stutter or freeze in the middle. About a quarter-second after that first visible scale, the session-start song’s opening drum should hit.
-
-**Context:** The behind-cover wait was only a twentieth of a second, and seat lights were still easing over two seconds. Lights now snap instantly behind the cover, then Play enter waits 0.5s before fade/explode/sting.
-
-#### TOR-535 — Play-enter work finishes behind the cover; opening drum waits 0.25s
-
-**How to verify:** Save & Play. Follow [.dev/Step-By-Step Playbooks/TOR-535-play-enter-work-before-explode-verify.md](Step-By-Step%20Playbooks/TOR-535-play-enter-work-before-explode-verify.md). After the setup paste, Advance starts on its own. The table should stay fully covered while lighting finishes. Then the cover starts scaling and the Intermission loop fades. About a quarter-second later, the session-start song’s opening drum should hit with that first visible scale. The first cover scale should not hitch or freeze in the middle.
-
-**Context:** Lighting used to run about halfway through the first cover explode (that was the hitch). Play enter now finishes OutdoorDim and seat lights behind the cover first, then starts the explode and waits 0.25s before the sting.
-
-#### TOR-534 — Opening drum waits 0.5s so it hits with the cover explode
-
-**How to verify:** Save & Play. Follow [.dev/Step-By-Step Playbooks/TOR-534-sting-delay-cover-sync-verify.md](Step-By-Step%20Playbooks/TOR-534-sting-delay-cover-sync-verify.md). After the setup paste, Advance starts on its own. The Intermission loop should fade as the cover begins to scale. About half a second later, the session-start song’s opening drum should hit with that first visible scale — not before it.
-
-**Context:** The sting was still beating the animation by about half a second. Play enter now waits 0.5s after the explode starts before triggering the track.
-
-#### TOR-533 — First cover explode hits with the session-start drum
-
-**How to verify:** Save & Play. Follow [.dev/Step-By-Step Playbooks/TOR-533-cover-explode-drum-sync-verify.md](Step-By-Step%20Playbooks/TOR-533-cover-explode-drum-sync-verify.md) (same Advance as TOR-532). Listen for the opening drum of the session-start song: the front cover image should start its scale-and-fade on that hit, not a moment later.
-
-**Context:** The sting used to start first; Lua then still had to reset layers and wait a chain step before the cover lerp. The explode now starts, then the sting.
-
-#### ✅ TOR-532 — Clock overlay already painted when the session-start cover lifts
-
-**How to verify:** Save & Play. Follow [.dev/Step-By-Step Playbooks/TOR-532-hud-behind-cover-verify.md](Step-By-Step%20Playbooks/TOR-532-hud-behind-cover-verify.md). After the setup paste, Intermission→Play Advance starts on its own. About two seconds in, the console should say the clock/location overlay is already on while the stacked cover is still up. Keep watching until the cover hides near the end of the song: the overlay (and the rest of the HUD) should already be there — it should not pop in after the cover lifts.
-
-**Context:** Overlay visibility is Play-gated, so it used to wait until Advance finished (after the cover hide). It now turns on behind the cover at the start of Play enter.
 
 #### TOR-517 — Hide humidity on the weather overlay
 
@@ -101,43 +67,11 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 **Context:** Humidity is still stored in the chronicle weather codes; it is just not shown on the overlay.
 
-#### ❌ TOR-518 — Tighten PCs panel vertical spacing
+#### TOR-518 — Tighten PCs panel vertical spacing
 
-**How to verify:** Save & Play. Open the Storyteller PCs panel. You should be able to leave it at full size and still fit it on screen. Seat names, Desire, track glyphs, and button labels should be the same font size as before, not smaller. Rows and buttons should sit closer together vertically.
+**How to verify:** Save & Play. Open the Storyteller PCs panel at full size. Seat names, Desire, track glyphs, and button labels should keep the same font sizes as before. Rows and buttons should sit tighter vertically (less padding, shorter row heights). You should still be able to read the health / willpower / humanity glyph rows without clipping.
 
-**Context:** The panel was scaled down to 0.75 so it would fit, which made the text hard to read.
-
-**Validation Failures:** The panels still take up too much vertical space. It looks like there's still some spacing/padding that could be removed, and the heights of each row could also be reduced a fair bit (this will require adjusting preferredHeight and minHeight attributes, of both the container elements and the child elements).
-
-#### ✅ TOR-519 — Scene library buttons show the scene name only
-
-**How to verify:** Save & Play. Open the Scenes panel. Each library button should show only the scene name (or a short truncation). Green/blue/grey colors should still mark selected, pending, and unlinked rows. You should not see “· live”, “· mirror”, or “· unlink” on the buttons.
-
-**Context:** Color already tells you selected vs unlinked.
-
-#### ✅ TOR-520 — Rain particle emitter follows the table
-
-**How to verify:** Save & Play. Switch Table A → B → C from the Scenes panel. The rain particle object should stay centered over the current table. Its height should not jump.
-
-**Context:** Floor and plinth already followed the table origin; the rain particles now do the same on X and Z.
-
-#### ✅ TOR-521 — Right-click the player camera button for default view
-
-**How to verify:** Save & Play while seated as a player (or hotseat a player color). Left-click the camera icon still opens the picker. Right-click the camera icon should jump you to that seat’s default table camera and close the picker.
-
-**Context:** The camera icon is the one on the player overlay, not the inner default/dice/sheet buttons.
-
-#### ✅ TOR-522 — Character-sheet center-strip right-click uses roll camera
-
-**How to verify:** Save & Play. Right-click the inner/center strip of a character sheet. Your camera should move to that character’s roll view (the lower, closer roll preset), not the high dice-tray preset. Left-click on the strip should still go to the sheet camera.
-
-**Context:** This amends the earlier dice-tray right-click on the same strip.
-
-#### ✅ TOR-523 — Spotlight carousel Y −55, center Z 125
-
-**How to verify:** Save & Play. Advance into Spotlight. The stand-in figurines should sit on a ring whose center is at X 0, Z 125, with figurines at Y about −55. Rotation and facing (outward / front person toward the table) should still work.
-
-**Context:** Earlier Spotlight work used Z 175 and Y −45.
+**Context:** The first trim still left too much vertical space. Row containers and children now have explicit preferred/min heights; button rows are shorter than the glyph rows.
 
 #### TOR-524 — End→Intermission cover uses overlay_blindfold_end
 
@@ -145,25 +79,11 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 **Context:** The script does not switch the image back; a reload restores the XML default.
 
-#### ✅ TOR-525 — Session number and title grow at the same rate
+#### TOR-528 — DEBUG.resetToIntermission for intro re-tests
 
-**How to verify:** Save & Play. Advance Intermission → Play and watch the session-start explode. The session number and the session title should grow toward the camera at the same speed. Character still-text / art pairs earlier in the sequence should be unchanged.
+**How to verify:** Save & Play. In the Host console run `lua DEBUG.resetToIntermission()`. The global session cover should come back with the usual session-start art (not the End blindfold). You should hear the looping Intermission theme (TR_Loop), not the session-start overture or Main. The Phases panel should show Intermission. Click **Advance →**: the intro animation and overture should play again. You can run the console command again after the intro — or even while it is still playing — to jump back without going through Spotlight and End. Tables, skyboxes, and seat piles should stay where they were. The Host console should print a short status line; it should not write a test-results file under `.dev/.debug`.
 
-**Context:** They previously used different scale and waver timings.
-
-#### ⚠️ TOR-528 — DEBUG.resetToIntermission for intro re-tests
-
-**How to verify:** Save & Play. In the Host console run `lua DEBUG.resetToIntermission()`. The global session cover should come back with the usual session-start art (not the End blindfold). You should hear the looping Intermission theme (TR_Loop), not the session-start overture or Main. The Phases panel should show Intermission. Click **Advance →**: the intro animation and overture should play again. You can run the console command again after the intro — or even while it is still playing — to jump back without going through Spotlight and End. Tables, skyboxes, and seat piles should stay where they were.
-
-**Context:** Debug helper only. It does not run the full Intermission enter (no no-scene table prep).
-
-**Correction:** Remove the print-to-file debug output.
-
-#### ✅ TOR-531 — Session-start explode matches TEST BED; intro follows session number
-
-**How to verify:** Save & Play. Follow [.dev/Step-By-Step Playbooks/TOR-531-session-start-explode-verify.md](Step-By-Step%20Playbooks/TOR-531-session-start-explode-verify.md). After the setup paste, click **Advance →** from Intermission. The looping Intermission theme should fade, the session-start song should start immediately, and the stacked cover should explode the way it did in the TEST BED: front cover first, then five character pairs (the art drifts; the name text fades in a moment later), then the session number and title grow together. The global cover should hide near the end of the song. You can also set the session number to something with no row in the constants table (for example 99); Advance should still play the session-1 track instead of erroring.
-
-**Context:** Production now uses `C.SessionStartAnimationData` for the current session number, and scales the explode to that song’s length. Jump snaps from the TEST BED were not shipped.
+**Context:** Debug helper only. It does not run the full Intermission enter (no no-scene table prep). Console-only; the print-to-file path was removed.
 
 ---
 

@@ -1360,7 +1360,7 @@ C.CompanionToggleToFigurineMap = {
 
 -- #endregion
 
--- #region Camera Modes
+ -- #region Camera Modes
 
 -- Camera Modes
 -- These are the camera modes that can be used to control the camera. This object contains the mode as the key, and either "bySeat" if the camera angle should be determined by the table seating functionality, or "universal" if the camera angle is the same for all players.
@@ -1397,6 +1397,7 @@ C.CameraAuthoringReferenceHandPosition = Vector({ 0.00, 3.22, -76.61 })
 C.CameraAuthoringReferenceFigurinePosition = Vector({ 0.5035, -55.8166, -72.7348 })
 
 --- Default occupant → numbered tableSlot (Red at slot 1, Orange right, Pink left). Live saves seed missing slots from this map.
+--- Does not apply to tables with `isRandomSeating = true`.
 C.DefaultTableSlots = {
   Red = 1,
   Orange = 2,
@@ -1816,8 +1817,12 @@ C.Tables = {
     }
   },
   -- "Table B" is intentionally NOT a C.Tables entry: it is a dynamic family key resolved to
-  -- "Table B<variant>" (B0-B4) from highest occupied numbered tableSlot by lib/rotational-seat-layout `resolveTableKey`.
+  -- "Table B<variant>" (B0-B4) from packed occupied-seat count after a random-seating
+  -- cover transition (TOR-537), or from highest occupied numbered tableSlot on control-board Apply (TOR-334).
   -- "Table B5" remains manually selectable but is never auto-selected.
+  -- The Table B family is randomized seating, with `isRandomSeating = true`. Meaning: Whenever there is a
+  -- cover transition to one of the Table B tables, randomize occupied, non-Absent seats (PC and NPC together)
+  -- into packed chairs 1..N. Because that leaves no holes, the table variant follows occupied count.
   ["Table B0"] = {
     guid = G.GUIDS.TABLES.TABLE_B0,
     shape = C.TableShapes.CIRCULAR,
@@ -1826,6 +1831,7 @@ C.Tables = {
     inactivePosition = Vector({ 0.00, -200, 0 }),
     numSegments = 5,
     angleSegmentOne = 36,
+    isRandomSeating = true,
     seatToPositionMap = {
       Brown = 1,
       Orange = 2,
@@ -1876,6 +1882,7 @@ C.Tables = {
     inactivePosition = Vector({ 0.00, -200, 100 }),
     numSegments = 6,
     angleSegmentOne = 0,
+    isRandomSeating = true,
     seatToPositionMap = {
       NPC1 = 1,
       Brown = 2,
@@ -1927,6 +1934,7 @@ C.Tables = {
     inactivePosition = Vector({ 0.00, -200, 100 }),
     numSegments = 7,
     angleSegmentOne = 25.7,
+    isRandomSeating = true,
     seatToPositionMap = {
       NPC1 = 1,
       NPC2 = 7,
@@ -1979,6 +1987,7 @@ C.Tables = {
     inactivePosition = Vector({ 0.00, -200, 100 }),
     numSegments = 8,
     angleSegmentOne = 0,
+    isRandomSeating = true,
     seatToPositionMap = {
       NPC1 = 2,
       NPC2 = 8,
@@ -2032,6 +2041,7 @@ C.Tables = {
     inactivePosition = Vector({ 0.00, -200, 100 }),
     numSegments = 9,
     angleSegmentOne = 20,
+    isRandomSeating = true,
     seatToPositionMap = {
       NPC1 = 2,
       NPC2 = 8,
@@ -2086,6 +2096,7 @@ C.Tables = {
     inactivePosition = Vector({ 0.00, -200, 50 }),
     numSegments = 10,
     angleSegmentOne = 0,
+    isRandomSeating = true,
     seatToPositionMap = {
       NPC1 = 3,
       NPC2 = 9,

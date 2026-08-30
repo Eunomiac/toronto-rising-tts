@@ -1948,7 +1948,7 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
             -- Accept explicit `C.Tables` keys and dynamic family keys (e.g. "Table B" → "Table B<N>");
             -- SetTableTo resolves family → concrete by occupied NPC seat count.
             if C.Tables[tk] ~= nil or RSL.isDynamicTableFamilyKey(tk) then
-                RSL.SetTableTo(tk, { skipTransitionBlindfold = true })
+                RSL.SetTableTo(tk, { skipTransitionBlindfold = true, randomizeSeating = true })
             else
                 U.AlertGM("Scene bundle has unknown tableKey `" .. tk .. "` — seating layout was not switched.")
             end
@@ -2067,6 +2067,7 @@ function StorytellerScenesPanel.endSceneNarrative(player)
                 reason = "StorytellerScenesPanel.endScene",
                 skipTransitionBlindfold = true,
                 skipSoundscape = true,
+                randomizeSeating = true,
             })
             StorytellerScenesPanel.refresh()
             return true
@@ -2113,7 +2114,7 @@ function StorytellerScenesPanel.onHudClick(player, button, id)
         HUDBF.runTransition(function()
             -- Store the clicked key as intent (family or explicit); SetTableTo resolves family → concrete.
             S.setStateVal(tableKey, "sessionScene", "tableKey")
-            RSL.SetTableTo(tableKey, { skipTransitionBlindfold = true })
+            RSL.SetTableTo(tableKey, { skipTransitionBlindfold = true, randomizeSeating = true })
             reconcileHostedSyncAndPresentSheets("StorytellerScenesPanel.table")
             return true
         end)

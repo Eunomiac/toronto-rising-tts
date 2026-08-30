@@ -281,6 +281,7 @@ function Phases.applyNoSceneDefault(_ctx, opts)
         reason = opts.reason or "phase_play_enter",
         skipTransitionBlindfold = true,
         skipSoundscape = opts.skipSoundscape == true,
+        randomizeSeating = true,
     })
     return true
 end

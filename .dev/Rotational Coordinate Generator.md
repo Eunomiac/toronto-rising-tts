@@ -287,10 +287,10 @@ A **family key** is a string with **no** exact `C.Tables` entry but with numbere
 (e.g. `"Table B"` → `Table B0`…`Table B5`). `R.resolveTableKey(tableKey, opts)` resolves it:
 
 * **Exact key** (incl. explicit `"Table B4"`, `"Table A"`, `"Table C"`) → returned unchanged; no counting.
-* **Family key** (`"Table B"`) → `tableKey .. highestOccupiedNpcSlotIndex()` (override via
-  `opts.occupiedSlotIndex` or legacy `opts.occupiedCount`). Index = highest occupied `NPCn` slot
-  (e.g. only NPC2 occupied → `Table B2`), not seat count. Occupied = truthy character key in
-  `gameState.seatLayout.occupiedNPCSlots` over `C.NPCSeats` (NPC1–NPC4). Missing variant → **error**.
+* **Family key** (`"Table B"`) → `tableKey .. tableBVariantIndex` from highest occupied numbered `tableSlot`
+  (override via `opts.occupiedSlotIndex` or legacy `opts.occupiedCount`). After a Table B cover transition
+  (TOR-537), occupants are packed into `1..N`, so that index matches occupied count. Control-board Apply
+  still grows by the highest occupied chair and does not reshuffle. Missing variant → **error**.
 
 `resolveTableRef` and therefore `SetTableTo` / `SyncTable` resolve family → concrete automatically, so
 callers may pass `"Table B"`. **Intent** (`sessionScene.tableKey`) stores the clicked key (family or explicit);

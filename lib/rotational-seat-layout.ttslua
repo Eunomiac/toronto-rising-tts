@@ -3654,26 +3654,91 @@ function M.alertAndBlockIfDiceOnTable(operationLabel)
   return true
 end
 
+--- Table B0–B4 auto-size from packed occupancy; B5 stays an explicit pick.
+--- @param tableKey string
+--- @return string
+local function randomSeatingResolveKey(tableKey)
+  tableKey = normalizeTableKeyInput(tableKey)
+  if tableKey == "Table B" then
+    return "Table B"
+  end
+  local n = tonumber(string.match(tableKey, "^Table B(%d+)$") or "")
+  if n ~= nil and n >= 0 and n <= 4 then
+    return "Table B"
+  end
+  return tableKey
+end
+
+--- @param tableKey string
+--- @param opts table
+--- @return boolean
+local function shouldRandomizeSeating(tableKey, opts)
+  if FSL.tableUsesRandomSeating(tableKey) ~= true then
+    return false
+  end
+  if opts.randomizeSeating == true then
+    return true
+  end
+  if opts.skipTransitionBlindfold ~= true then
+    return true
+  end
+  return false
+end
+
+--- @param tableKey string
+--- @return string key to resolve after packing
+local function applyRandomSeatingOccupancy(tableKey)
+  FSL.seedDefaultTableSlots()
+  FSL.randomizePackedOccupancy()
+  local resolveKey = randomSeatingResolveKey(tableKey)
+  if resolveKey == "Table B" then
+    S.setStateVal("Table B", "sessionScene", "tableKey")
+  end
+  return resolveKey
+end
+
+local function mirrorControlBoardAfterRandomSeating()
+  local Gameboard = require("core.npc_gameboard")
+  if type(Gameboard) == "table" and type(Gameboard.reconcileControlBoardFromState) == "function" then
+    Gameboard.reconcileControlBoardFromState({ force = true, forceTokenMirror = true })
+  end
+end
+
 --- Production entrypoint for table switching.
 --- If `tableKey` is already active, a full sync is run in case the scene drifted.
 --- Otherwise resolves seat geometry synchronously; transition blindfold is owned by `core.hud_blindfold`
 --- (scene apply and manual table toggles call `HUDBF.runTransition` with `skipTransitionBlindfold`).
+--- `opts.randomizeSeating` shuffles packed Table B occupancy (TOR-537) and mirrors control-board tokens.
 --- @param tableKey string
---- @param opts table|nil { skipTransitionBlindfold = boolean }
+--- @param opts table|nil { skipTransitionBlindfold = boolean, randomizeSeating = boolean }
 --- @return table|nil computed when immediate sync/switch path is used
 function M.SetTableTo(tableKey, opts)
   opts = opts or {}
   if M.alertAndBlockIfDiceOnTable("switch table layout") then
     return nil
   end
-  local resolvedKey, _ = resolveTableRef(tableKey)
-  local currentTableKey = S.getStateVal("seatLayout", "currentTableKey")
-  if currentTableKey == resolvedKey then
-    return M.SyncTable(resolvedKey, { force = true })
+  local destKey = normalizeTableKeyInput(tableKey)
+  local shuffled = false
+  if shouldRandomizeSeating(destKey, opts) then
+    destKey = applyRandomSeatingOccupancy(destKey)
+    shuffled = true
   end
+  local resolvedKey, _ = resolveTableRef(destKey)
+  local currentTableKey = S.getStateVal("seatLayout", "currentTableKey")
 
   local function doSwitch()
     M.resolveSeatObjectsFromTable(resolvedKey, nil, { force = true })
+    if shuffled then
+      mirrorControlBoardAfterRandomSeating()
+    end
+  end
+
+  if currentTableKey == resolvedKey then
+    local computed = M.SyncTable(resolvedKey, { force = true })
+    if shuffled then
+      mirrorControlBoardAfterRandomSeating()
+    end
+    return computed
   end
 
   if opts.skipTransitionBlindfold == true then
