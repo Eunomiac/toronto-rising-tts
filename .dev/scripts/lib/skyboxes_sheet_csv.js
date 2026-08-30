@@ -168,7 +168,15 @@ const MEMORIAM_REQUIRED_HEADERS = [
   "panel d weather",
   "panel d location audio",
   "panel d url",
+  "blindfold url",
+  "splash text",
 ];
+
+const MEMORIAM_NPC_SLOT_COUNT = 10;
+
+for (let n = 1; n <= MEMORIAM_NPC_SLOT_COUNT; n += 1) {
+  MEMORIAM_REQUIRED_HEADERS.push(`npc ${n} label`, `npc ${n} token url`, `npc ${n} figurine url`);
+}
 
 /**
  * @param {string[]} headerRow
@@ -186,7 +194,7 @@ function memoriamHeaderIndex(headerRow) {
   const missing = MEMORIAM_REQUIRED_HEADERS.filter((name) => map[name] == null);
   if (missing.length > 0) {
     throw new Error(
-      `SKYBOXMEMORIAMCSV: expected header Key, Characters, Start Year, End Year, Location, Panel A–D fields; missing ${JSON.stringify(missing)}; got ${JSON.stringify(headerRow)}`,
+      `SKYBOXMEMORIAMCSV: expected header Key, Characters, Start Year, End Year, Location, Panel A–D, Blindfold URL, Splash Text, NPC 1–10 fields; missing ${JSON.stringify(missing)}; got ${JSON.stringify(headerRow)}`,
     );
   }
   return map;
@@ -247,49 +255,28 @@ function parseMemoriamPanel(cells, cols, rowLabel, letter, opts) {
 }
 
 /**
- * @param {{
- *   key: string,
- *   startYear: number,
- *   endYear: number,
- *   location: string,
- *   panelA: object,
- *   panelB: object,
- *   panelC?: object,
- *   panelD?: object,
- * }} entry
- * @returns {typeof entry}
+ * @param {string[]} cells
+ * @param {Record<string, number>} cols
+ * @returns {{ label: string, tokenURL: string, figurineURL: string }[]}
  */
-function cloneMemoriamEntry(entry) {
-  /** @param {object} panel */
-  const clonePanel = (panel) => ({
-    display: panel.display,
-    isOutdoors: panel.isOutdoors,
-    isDaytime: panel.isDaytime,
-    weather: panel.weather.slice(),
-    locationAudio: panel.locationAudio,
-    url: panel.url,
-  });
-  const cloned = {
-    key: entry.key,
-    startYear: entry.startYear,
-    endYear: entry.endYear,
-    location: entry.location,
-    panelA: clonePanel(entry.panelA),
-    panelB: clonePanel(entry.panelB),
-  };
-  if (entry.panelC) {
-    cloned.panelC = clonePanel(entry.panelC);
+function parseMemoriamNpcs(cells, cols) {
+  /** @type {{ label: string, tokenURL: string, figurineURL: string }[]} */
+  const npcs = [];
+  for (let n = 1; n <= MEMORIAM_NPC_SLOT_COUNT; n += 1) {
+    npcs.push({
+      label: trimCell(cellAt(cells, cols[`npc ${n} label`])),
+      tokenURL: trimCell(cellAt(cells, cols[`npc ${n} token url`])),
+      figurineURL: trimCell(cellAt(cells, cols[`npc ${n} figurine url`])),
+    });
   }
-  if (entry.panelD) {
-    cloned.panelD = clonePanel(entry.panelD);
-  }
-  return cloned;
+  return npcs;
 }
 
 /**
  * @param {string} csvText
- * @returns {Record<string, Record<string, {
+ * @returns {Record<string, {
  *   key: string,
+ *   characters: string[],
  *   startYear: number,
  *   endYear: number,
  *   location: string,
@@ -297,7 +284,10 @@ function cloneMemoriamEntry(entry) {
  *   panelB: object,
  *   panelC?: object,
  *   panelD?: object,
- * }>>}
+ *   blindfoldURL: string,
+ *   splashText: string,
+ *   npcs: { label: string, tokenURL: string, figurineURL: string }[],
+ * }>}
  */
 function parseMemoriamSkyboxRows(csvText) {
   const rows = parseCsv(csvText);
@@ -305,7 +295,7 @@ function parseMemoriamSkyboxRows(csvText) {
     throw new Error("SKYBOXMEMORIAMCSV: empty CSV");
   }
   const cols = memoriamHeaderIndex(rows[0]);
-  /** @type {Record<string, Record<string, object>>} */
+  /** @type {Record<string, object>} */
   const out = {};
   let dataRows = 0;
   for (let r = 1; r < rows.length; r += 1) {
@@ -329,6 +319,9 @@ function parseMemoriamSkyboxRows(csvText) {
       throw new Error(
         `${rowLabel} key "${key}" must be a Lua identifier (A-Za-z_[A-Za-z0-9_]*)`,
       );
+    }
+    if (out[key]) {
+      throw new Error(`${rowLabel} duplicate key "${key}"`);
     }
     const characters = [];
     const seenCharacters = new Set();
@@ -358,11 +351,15 @@ function parseMemoriamSkyboxRows(csvText) {
     const panelD = parseMemoriamPanel(cells, cols, rowLabel, "D", { optional: true });
     const entry = {
       key,
+      characters,
       startYear,
       endYear,
       location,
       panelA,
       panelB,
+      blindfoldURL: trimCell(cellAt(cells, cols["blindfold url"])),
+      splashText: trimCell(cellAt(cells, cols["splash text"])),
+      npcs: parseMemoriamNpcs(cells, cols),
     };
     if (panelC) {
       entry.panelC = panelC;
@@ -370,15 +367,7 @@ function parseMemoriamSkyboxRows(csvText) {
     if (panelD) {
       entry.panelD = panelD;
     }
-    for (const character of characters) {
-      if (!out[character]) {
-        out[character] = {};
-      }
-      if (out[character][key]) {
-        throw new Error(`${rowLabel} duplicate key "${key}" under character "${character}"`);
-      }
-      out[character][key] = cloneMemoriamEntry(entry);
-    }
+    out[key] = entry;
     dataRows += 1;
   }
   if (dataRows < 1) {
@@ -519,11 +508,37 @@ function renderMemoriamPanelLua(lines, name, panel, indent) {
 }
 
 /**
+ * @param {string[]} values
+ * @returns {string}
+ */
+function renderLuaQuotedList(values) {
+  return `{${values.map((v) => `"${escapeLuaString(v)}"`).join(", ")}}`;
+}
+
+/**
+ * @param {string[]} lines
+ * @param {{ label: string, tokenURL: string, figurineURL: string }[]} npcs
+ * @param {string} indent
+ */
+function renderMemoriamNpcsLua(lines, npcs, indent) {
+  lines.push(`${indent}npcs = {`);
+  for (const npc of npcs) {
+    lines.push(`${indent}  {`);
+    lines.push(`${indent}    label = "${escapeLuaString(npc.label)}",`);
+    lines.push(`${indent}    tokenURL = "${escapeLuaString(npc.tokenURL)}",`);
+    lines.push(`${indent}    figurineURL = "${escapeLuaString(npc.figurineURL)}",`);
+    lines.push(`${indent}  },`);
+  }
+  lines.push(`${indent}},`);
+}
+
+/**
  * @param {{
  *   skyboxes: { key: string, display: string, isShown?: boolean, url: string }[],
  *   generics: string[],
- *   memoriam?: Record<string, Record<string, {
+ *   memoriam?: Record<string, {
  *     key: string,
+ *     characters: string[],
  *     startYear: number,
  *     endYear: number,
  *     location: string,
@@ -531,7 +546,10 @@ function renderMemoriamPanelLua(lines, name, panel, indent) {
  *     panelB: object,
  *     panelC?: object,
  *     panelD?: object,
- *   }>>,
+ *     blindfoldURL: string,
+ *     splashText: string,
+ *     npcs: { label: string, tokenURL: string, figurineURL: string }[],
+ *   }>,
  *   meta: { sheetId: string, catalogRange: string, genericsRange: string, memoriamRange?: string },
  * }} args
  * @returns {string}
@@ -545,7 +563,7 @@ function renderSkyboxesCatalogLua(args) {
   lines.push("    AUTO-GENERATED from Google Sheet — DO NOT EDIT BY HAND.");
   lines.push(`    Sheet id: ${meta.sheetId}`);
   lines.push(
-    `    Ranges: ${meta.catalogRange} (Key,Display,isShown,URL), ${meta.genericsRange} (URL), ${memoriamRange} (Key,Characters,Start Year,End Year,Location,Panel A–D)`,
+    `    Ranges: ${meta.catalogRange} (Key,Display,isShown,URL), ${meta.genericsRange} (URL), ${memoriamRange} (Key,Characters,Start Year,End Year,Location,Panel A–D,Blindfold URL,Splash Text,NPC 1–10)`,
   );
   lines.push("    Regenerate: npm run skyboxes:import");
   lines.push("    Script: .dev/scripts/import_skyboxes_from_sheet.js");
@@ -572,26 +590,25 @@ function renderSkyboxesCatalogLua(args) {
   lines.push("}");
   lines.push("");
   lines.push("SkyboxesCatalog.MemoriamSkyboxes = {");
-  for (const character of Object.keys(memoriam)) {
-    const byKey = memoriam[character] || {};
-    lines.push(`  ${character} = {`);
-    for (const key of Object.keys(byKey)) {
-      const entry = byKey[key];
-      lines.push(`    ${key} = {`);
-      lines.push(`      key = "${escapeLuaString(entry.key)}",`);
-      lines.push(`      startYear = ${entry.startYear},`);
-      lines.push(`      endYear = ${entry.endYear},`);
-      lines.push(`      location = "${escapeLuaString(entry.location)}",`);
-      renderMemoriamPanelLua(lines, "panelA", entry.panelA, "      ");
-      renderMemoriamPanelLua(lines, "panelB", entry.panelB, "      ");
-      if (entry.panelC) {
-        renderMemoriamPanelLua(lines, "panelC", entry.panelC, "      ");
-      }
-      if (entry.panelD) {
-        renderMemoriamPanelLua(lines, "panelD", entry.panelD, "      ");
-      }
-      lines.push("    },");
+  for (const key of Object.keys(memoriam)) {
+    const entry = memoriam[key];
+    lines.push(`  ${key} = {`);
+    lines.push(`    key = "${escapeLuaString(entry.key)}",`);
+    lines.push(`    characters = ${renderLuaQuotedList(entry.characters || [])},`);
+    lines.push(`    startYear = ${entry.startYear},`);
+    lines.push(`    endYear = ${entry.endYear},`);
+    lines.push(`    location = "${escapeLuaString(entry.location)}",`);
+    renderMemoriamPanelLua(lines, "panelA", entry.panelA, "    ");
+    renderMemoriamPanelLua(lines, "panelB", entry.panelB, "    ");
+    if (entry.panelC) {
+      renderMemoriamPanelLua(lines, "panelC", entry.panelC, "    ");
     }
+    if (entry.panelD) {
+      renderMemoriamPanelLua(lines, "panelD", entry.panelD, "    ");
+    }
+    lines.push(`    blindfoldURL = "${escapeLuaString(entry.blindfoldURL || "")}",`);
+    lines.push(`    splashText = "${escapeLuaString(entry.splashText || "")}",`);
+    renderMemoriamNpcsLua(lines, entry.npcs || [], "    ");
     lines.push("  },");
   }
   lines.push("}");

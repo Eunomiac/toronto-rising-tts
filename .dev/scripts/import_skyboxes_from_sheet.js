@@ -140,13 +140,8 @@ async function main() {
   });
 
   writeAtomic(outPath, lua);
-  const memoriamCharacters = Object.keys(memoriam).length;
-  let memoriamEntries = 0;
-  for (const character of Object.keys(memoriam)) {
-    memoriamEntries += Object.keys(memoriam[character]).length;
-  }
   console.log(
-    `[skyboxes:import] Wrote ${path.relative(root, outPath)} (${skyboxes.length} skyboxes, ${generics.length} generics, ${memoriamEntries} memoriam entries across ${memoriamCharacters} characters)`,
+    `[skyboxes:import] Wrote ${path.relative(root, outPath)} (${skyboxes.length} skyboxes, ${generics.length} generics, ${Object.keys(memoriam).length} memoriam entries)`,
   );
 }
 

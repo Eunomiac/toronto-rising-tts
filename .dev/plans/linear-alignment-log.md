@@ -703,5 +703,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-08-29 | CREATE | TOR-527 | Downtime subphase spec (default when no scene, downtimeClock, overlay). Focus #2 High. relatedTo TOR-143. |
 
 | 2026-08-29 | CREATE+SHIP | TOR-528 | DEBUG.resetToIntermission: snap to Intermission cover + TR_Loop to re-test intro. relatedTo TOR-516. Pending Save & Play. |
+| 2026-08-30 | CREATE+SHIP | TOR-529 | Flatten Memoriam skybox catalog by key; `characters` array; blindfold/splash + ten NPC slots. relatedTo TOR-510. |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

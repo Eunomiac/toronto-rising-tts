@@ -264,6 +264,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Skybox isShown picker filter:** Sheet `isShown` column → catalog boolean; `isShown = false` stays in catalog but is omitted from the Scenes skybox picker. Follow-up **TOR-511** (embed after generate). _(TOR-509)_
 - [x] **Skybox picker HUD snapshot:** Location-modal generate + skybox import run before Global XmlUI embed; standalone import also embeds. After Save & Play, Phases **Refresh XML** remounts the picker. Pending Save & Play. _(TOR-511)_
 - [x] **Memoriam skybox Sheet import:** `SKYBOXMEMORIAMCSV` → nested `SkyboxesCatalog.MemoriamSkyboxes` / `C.MemoriamSkyboxes`; pipe-delimited characters duplicate a row; blank panel C/D display omits that panel. Pending Save & Play. _(TOR-510)_
+- [x] **Memoriam catalog flatten + extra columns:** Top-level key; `characters` array; `blindfoldURL`, `splashText`, ten `npcs` (`label` / `tokenURL` / `figurineURL`). _(TOR-529)_
 
 ## Scenes Panel & Scene State
 

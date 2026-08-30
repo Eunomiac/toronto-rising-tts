@@ -29,7 +29,7 @@ Skybox catalog entries are hand-maintained in `lib/constants.ttslua`. The author
 - VS Code task + npm script: fetch → validate → write generated Lua
 - No credentials (sheet is “anyone with the link can view”)
 - Configurable spreadsheet id / range names (defaults baked in; overrides via CLI flags and/or env)
-- Preserve existing runtime shape: `C.Skyboxes[key] = { key, display, isShown, url }`, `C.GenericSkyboxes = { url, ... }`, nested `C.MemoriamSkyboxes[character][key]`
+- Preserve existing runtime shape: `C.Skyboxes[key] = { key, display, isShown, url }`, `C.GenericSkyboxes = { url, ... }`, `C.MemoriamSkyboxes[key]` with `characters` array
 - `isShown = false` stays in the catalog (site defaults / existing overrides still resolve) but is omitted from the Scenes skybox picker modal
 - Keep resolve helpers (`C.SKYBOX_GENERIC_KEY`, `pickRandomGenericSkyboxURL`, `isValidSkyboxKey`, `resolveSkyboxURLFromKey`, `resolveSkyboxURLForSite`) in Constants
 - After import, regenerate Scenes skybox modal XML so the picker stays in sync
@@ -81,18 +81,20 @@ Fail loudly on non-200, empty body, or HTML/login error pages.
 - Header `URL`; each non-empty data cell becomes one array element
 - Reject empty list (at least one URL required so site-fallback random pick cannot go nil unexpectedly)
 
-**`SKYBOXMEMORIAMCSV`** (TOR-510)
+**`SKYBOXMEMORIAMCSV`** (TOR-510, flattened in TOR-529)
 
-- Header must include `Key`, `Characters`, `Start Year`, `End Year`, `Location`, then for panels A–D: `Display`, `isOutdoors`, `isDaytime`, `Weather`, `Location Audio`, `URL` (case-insensitive; extra columns ignored)
+- Header must include `Key`, `Characters`, `Start Year`, `End Year`, `Location`, then for panels A–D: `Display`, `isOutdoors`, `isDaytime`, `Weather`, `Location Audio`, `URL`, then `Blindfold URL`, `Splash Text`, then for NPC 1–10: `Label`, `Token URL`, `Figurine URL` (case-insensitive)
+- Entries are stored **by skybox key** at the top of `SkyboxesCatalog.MemoriamSkyboxes` (no character nesting)
+- `characters` is a string array from the pipe-delimited `Characters` column (Lua identifiers). Example: `lucien14` with `lucien|fomorach` writes one entry `MemoriamSkyboxes.lucien14` whose `characters` is `{ "lucien", "fomorach" }`
 - `startYear` / `endYear` parse as integers
 - Panel `isOutdoors` / `isDaytime` parse as booleans (`TRUE`/`FALSE`)
 - Panel `Weather` is a pipe-delimited list of strings; a blank cell becomes an empty array
-- Panel URL may be blank (empty string) until assets are uploaded
+- Panel URL, `blindfoldURL`, `splashText`, and NPC `label` / `tokenURL` / `figurineURL` may be blank (empty string)
 - Panels A and B require a non-empty Display; if panel C or D Display is blank, omit that panel entirely
-- `Characters` is a pipe-delimited list of Lua identifiers. Duplicate the whole row under each character (same skybox key). Example: `lucien14` with `lucien|fomorach` writes both `MemoriamSkyboxes.lucien.lucien14` and `MemoriamSkyboxes.fomorach.lucien14`
+- Always emit ten `npcs` tables, in sheet order 1–10
 - Rows with a blank Key are skipped (named ranges often include a draft/next row)
 - Rows with both Panel A and Panel B Display blank are skipped (key/years stub with no panels yet)
-- Reject duplicate key under the same character; preserve first-seen character order and sheet row order within each character
+- Reject duplicate skybox keys; preserve sheet row order
 
 No intermediate file on disk: CSV stays in memory.
 
@@ -118,25 +120,19 @@ SkyboxesCatalog.GenericSkyboxes = {
 }
 
 SkyboxesCatalog.MemoriamSkyboxes = {
-  aishe = {
-    aishe2 = {
-      key = "aishe2",
-      startYear = 1799,
-      endYear = 1833,
-      location = "Brașov, Romania",
-      panelA = {
-        display = "Father's townhouse",
-        isOutdoors = false,
-        isDaytime = true,
-        weather = {
-          "windLow",
-          "rainLight"
-        },
-        locationAudio = "quietIndoor",
-        url = ""
-      },
-      panelB = { -- ...
-      },
+  lucien14 = {
+    key = "lucien14",
+    characters = {"lucien", "fomorach"},
+    startYear = 1955,
+    endYear = 1958,
+    location = "Mojave Desert, USA",
+    panelA = { -- ...
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      { label = "", tokenURL = "", figurineURL = "" },
+      -- ... ten slots
     },
   },
 }

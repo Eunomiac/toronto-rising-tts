@@ -2,7 +2,7 @@
     Toronto Rising — skybox catalog (keyed assets + generic URL pool).
     AUTO-GENERATED from Google Sheet — DO NOT EDIT BY HAND.
     Sheet id: 1mzgMSivCYvTfYAQNL61oApAvTHUbEi7YoiwZFr7PPo4
-    Ranges: SKYBOXCSV (Key,Display,isShown,URL), SKYBOXGENERICCSV (URL), SKYBOXMEMORIAMCSV (Key,Characters,Start Year,End Year,Location,Panel A–D)
+    Ranges: SKYBOXCSV (Key,Display,isShown,URL), SKYBOXGENERICCSV (URL), SKYBOXMEMORIAMCSV (Key,Characters,Start Year,End Year,Location,Panel A–D,Blindfold URL,Splash Text,NPC 1–10)
     Regenerate: npm run skyboxes:import
     Script: .dev/scripts/import_skyboxes_from_sheet.js
 ]]
@@ -597,2304 +597,4808 @@ SkyboxesCatalog.GenericSkyboxes = {
 }
 
 SkyboxesCatalog.MemoriamSkyboxes = {
-  lucien = {
-    lucien2 = {
-      key = "lucien2",
-      startYear = 1884,
-      endYear = 1899,
-      location = "Paris, France",
-      panelA = {
-        display = "Outdoor boulevard",
-        isOutdoors = true,
-        isDaytime = true,
-        weather = {},
-        locationAudio = "horseDrawnTraffic",
-        url = ""
-      },
-      panelB = {
-        display = "Boarding house",
-        isOutdoors = false,
-        isDaytime = true,
-        weather = {},
-        locationAudio = "quietIndoor",
-        url = ""
-      },
-      panelC = {
-        display = "Gagnon's salon",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "quietIndoor",
-        url = ""
-      },
-      panelD = {
-        display = "Nighttime alleyway",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight"
-        },
-        locationAudio = "oldAlley",
-        url = ""
-      },
+  lucien2 = {
+    key = "lucien2",
+    characters = {"lucien"},
+    startYear = 1884,
+    endYear = 1899,
+    location = "Paris, France",
+    panelA = {
+      display = "Outdoor boulevard",
+      isOutdoors = true,
+      isDaytime = true,
+      weather = {},
+      locationAudio = "horseDrawnTraffic",
+      url = "👤 Panel A Skybox URL"
     },
-    lucien6 = {
-      key = "lucien6",
-      startYear = 1899,
-      endYear = 1915,
-      location = "Paris, France",
-      panelA = {
-        display = "Blackout boulevard",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "wartimeStreet",
-        url = ""
-      },
-      panelB = {
-        display = "Gagnon's townhouse",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "quietIndoor",
-        url = ""
-      },
-      panelC = {
-        display = "Gare de l'Est",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "railwayStation",
-        url = ""
-      },
-      panelD = {
-        display = "Military hospital",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "fieldHospital",
-        url = ""
-      },
+    panelB = {
+      display = "Boarding house",
+      isOutdoors = false,
+      isDaytime = true,
+      weather = {},
+      locationAudio = "quietIndoor",
+      url = "👤 Panel B Skybox URL"
     },
-    lucien7 = {
-      key = "lucien7",
-      startYear = 1915,
-      endYear = 1930,
-      location = "Celaya, Mexico",
-      panelA = {
-        display = "Occupied central plaza",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "militaryOccupation",
-        url = ""
-      },
-      panelB = {
-        display = "Bombarded rail yard",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainHeavy",
-          "windMed"
-        },
-        locationAudio = "distantBattle",
-        url = ""
-      },
-      panelC = {
-        display = "Cantina courtyard",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "diveBar",
-        url = ""
-      },
-      panelD = {
-        display = "Field hospital camp",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "fieldHospital",
-        url = ""
-      },
+    panelC = {
+      display = "Gagnon's salon",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "quietIndoor",
+      url = "👤 Panel C Skybox URL"
     },
-    lucien11 = {
-      key = "lucien11",
-      startYear = 1930,
-      endYear = 1944,
-      location = "Los Angeles, United States",
-      panelA = {
-        display = "Anarch nightclub",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "jazzClub",
-        url = ""
+    panelD = {
+      display = "Nighttime alleyway",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight"
       },
-      panelB = {
-        display = "Ruined Elysium",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "quietIndoor",
-        url = ""
-      },
-      panelC = {
-        display = "Revolt-torn boulevard",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windMed"
-        },
-        locationAudio = "wartimeStreet",
-        url = ""
-      },
-      panelD = {
-        display = "Intact Elysium",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "quietIndoor",
-        url = ""
-      },
+      locationAudio = "oldAlley",
+      url = "👤 Panel D Skybox URL"
     },
-    lucien14 = {
-      key = "lucien14",
-      startYear = 1955,
-      endYear = 1958,
-      location = "Mojave Desert, USA",
-      panelA = {
-        display = "Desert excavation",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windMed"
-        },
-        locationAudio = "lowWindAmbient",
-        url = ""
+    blindfoldURL = "👤 Splash Image URL",
+    splashText = "Splash Text",
+    npcs = {
+      {
+        label = "NPC 1 Label",
+        tokenURL = "👤 NPC 1 Token URL",
+        figurineURL = "👤 NPC 1 Figurine URL",
       },
-      panelB = {
-        display = "Abandoned mining camp",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windMed"
-        },
-        locationAudio = "lowWindAmbient",
-        url = ""
+      {
+        label = "NPC 2 Label",
+        tokenURL = "👤 NPC 2 Token URL",
+        figurineURL = "👤 NPC 2 Figurine URL",
       },
-      panelC = {
-        display = "Desert search camp",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windLow"
-        },
-        locationAudio = "crickets",
-        url = ""
+      {
+        label = "NPC 3 Label",
+        tokenURL = "👤 NPC 3 Token URL",
+        figurineURL = "👤 NPC 3 Figurine URL",
       },
-      panelD = {
-        display = "Collapsed mine chamber",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "dungeon",
-        url = ""
+      {
+        label = "NPC 4 Label",
+        tokenURL = "👤 NPC 4 Token URL",
+        figurineURL = "👤 NPC 4 Figurine URL",
       },
-    },
-    lucien15 = {
-      key = "lucien15",
-      startYear = 1958,
-      endYear = 1962,
-      location = "On the Road, Lower USA",
-      panelA = {
-        display = "Route 66 motor court",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windLow"
-        },
-        locationAudio = "roadsideTraffic",
-        url = ""
+      {
+        label = "NPC 5 Label",
+        tokenURL = "👤 NPC 5 Token URL",
+        figurineURL = "👤 NPC 5 Figurine URL",
       },
-      panelB = {
-        display = "Roadside diner",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {
-          "rainLight"
-        },
-        locationAudio = "diveBar",
-        url = ""
+      {
+        label = "NPC 6 Label",
+        tokenURL = "👤 NPC 6 Token URL",
+        figurineURL = "👤 NPC 6 Figurine URL",
       },
-      panelC = {
-        display = "Southern gas station",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "roadsideTraffic",
-        url = ""
+      {
+        label = "NPC 7 Label",
+        tokenURL = "👤 NPC 7 Token URL",
+        figurineURL = "👤 NPC 7 Figurine URL",
       },
-      panelD = {
-        display = "Pine campsite",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windLow"
-        },
-        locationAudio = "crickets",
-        url = ""
+      {
+        label = "NPC 8 Label",
+        tokenURL = "👤 NPC 8 Token URL",
+        figurineURL = "👤 NPC 8 Figurine URL",
       },
-    },
-    lucien16 = {
-      key = "lucien16",
-      startYear = 1962,
-      endYear = 1967,
-      location = "On the Road, Upper USA",
-      panelA = {
-        display = "Great Lakes motor court",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windMed"
-        },
-        locationAudio = "roadsideTraffic",
-        url = ""
+      {
+        label = "NPC 9 Label",
+        tokenURL = "👤 NPC 9 Token URL",
+        figurineURL = "👤 NPC 9 Figurine URL",
       },
-      panelB = {
-        display = "Interstate restaurant",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {
-          "rainLight"
-        },
-        locationAudio = "diveBar",
-        url = ""
-      },
-      panelC = {
-        display = "Industrial waterfront",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windMed"
-        },
-        locationAudio = "industry",
-        url = ""
-      },
-      panelD = {
-        display = "Border crossing",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windMed"
-        },
-        locationAudio = "cityTraffic",
-        url = ""
-      },
-    },
-    lucien17 = {
-      key = "lucien17",
-      startYear = 1967,
-      endYear = 1980,
-      location = "Toronto, Canada",
-      panelA = {
-        display = "Union Station",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "railwayStation",
-        url = ""
-      },
-      panelB = {
-        display = "Downtown street",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "streetcarTraffic",
-        url = ""
-      },
-      panelC = {
-        display = "Camarilla receiving room",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "quietIndoor",
-        url = ""
-      },
-      panelD = {
-        display = "Rail-corridor haven",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "industry",
-        url = ""
-      },
-    },
-    lucien19 = {
-      key = "lucien19",
-      startYear = 1980,
-      endYear = 1999,
-      location = "Montreal, Canada",
-      panelA = {
-        display = "Neon nightlife street",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "cityTraffic",
-        url = ""
-      },
-      panelB = {
-        display = "Biker clubhouse",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "diveBar",
-        url = ""
-      },
-      panelC = {
-        display = "Jazz club",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "jazzClub",
-        url = ""
-      },
-      panelD = {
-        display = "Sabbat chapel",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "ritualRoom",
-        url = ""
-      },
-    },
-    lucien23 = {
-      key = "lucien23",
-      startYear = 1999,
-      endYear = 1999,
-      location = "Kingston, Canada",
-      panelA = {
-        display = "Illusory service station",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainHeavy",
-          "windMax",
-          "thunder"
-        },
-        locationAudio = "roadsideTraffic",
-        url = ""
-      },
-      panelB = {
-        display = "Illusory quarry campground",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainHeavy",
-          "windMax",
-          "thunder"
-        },
-        locationAudio = "eerieForest",
-        url = ""
+      {
+        label = "NPC 10 Label",
+        tokenURL = "👤 NPC 10 Token URL",
+        figurineURL = "👤 NPC 10 Figurine URL",
       },
     },
   },
-  fomorach = {
-    lucien14 = {
-      key = "lucien14",
-      startYear = 1955,
-      endYear = 1958,
-      location = "Mojave Desert, USA",
-      panelA = {
-        display = "Desert excavation",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windMed"
-        },
-        locationAudio = "lowWindAmbient",
-        url = ""
+  lucien6 = {
+    key = "lucien6",
+    characters = {"lucien"},
+    startYear = 1899,
+    endYear = 1915,
+    location = "Paris, France",
+    panelA = {
+      display = "Blackout boulevard",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
       },
-      panelB = {
-        display = "Abandoned mining camp",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windMed"
-        },
-        locationAudio = "lowWindAmbient",
-        url = ""
-      },
-      panelC = {
-        display = "Desert search camp",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windLow"
-        },
-        locationAudio = "crickets",
-        url = ""
-      },
-      panelD = {
-        display = "Collapsed mine chamber",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "dungeon",
-        url = ""
-      },
+      locationAudio = "wartimeStreet",
+      url = ""
     },
-    lucien15 = {
-      key = "lucien15",
-      startYear = 1958,
-      endYear = 1962,
-      location = "On the Road, Lower USA",
-      panelA = {
-        display = "Route 66 motor court",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windLow"
-        },
-        locationAudio = "roadsideTraffic",
-        url = ""
-      },
-      panelB = {
-        display = "Roadside diner",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {
-          "rainLight"
-        },
-        locationAudio = "diveBar",
-        url = ""
-      },
-      panelC = {
-        display = "Southern gas station",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "roadsideTraffic",
-        url = ""
-      },
-      panelD = {
-        display = "Pine campsite",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windLow"
-        },
-        locationAudio = "crickets",
-        url = ""
-      },
+    panelB = {
+      display = "Gagnon's townhouse",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "quietIndoor",
+      url = ""
     },
-    lucien16 = {
-      key = "lucien16",
-      startYear = 1962,
-      endYear = 1967,
-      location = "On the Road, Upper USA",
-      panelA = {
-        display = "Great Lakes motor court",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windMed"
-        },
-        locationAudio = "roadsideTraffic",
-        url = ""
-      },
-      panelB = {
-        display = "Interstate restaurant",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {
-          "rainLight"
-        },
-        locationAudio = "diveBar",
-        url = ""
-      },
-      panelC = {
-        display = "Industrial waterfront",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windMed"
-        },
-        locationAudio = "industry",
-        url = ""
-      },
-      panelD = {
-        display = "Border crossing",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windMed"
-        },
-        locationAudio = "cityTraffic",
-        url = ""
-      },
+    panelC = {
+      display = "Gare de l'Est",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "railwayStation",
+      url = ""
     },
-    lucien17 = {
-      key = "lucien17",
-      startYear = 1967,
-      endYear = 1980,
-      location = "Toronto, Canada",
-      panelA = {
-        display = "Union Station",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "railwayStation",
-        url = ""
-      },
-      panelB = {
-        display = "Downtown street",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "streetcarTraffic",
-        url = ""
-      },
-      panelC = {
-        display = "Camarilla receiving room",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "quietIndoor",
-        url = ""
-      },
-      panelD = {
-        display = "Rail-corridor haven",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "industry",
-        url = ""
-      },
+    panelD = {
+      display = "Military hospital",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "fieldHospital",
+      url = ""
     },
-    fomorach1 = {
-      key = "fomorach1",
-      startYear = 1769,
-      endYear = 1786,
-      location = "Belfast to the East Coast Colonies",
-      panelA = {
-        display = "Belfast family yard",
-        isOutdoors = true,
-        isDaytime = true,
-        weather = {
-          "windLow"
-        },
-        locationAudio = "marketCrowd",
-        url = ""
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-      panelB = {
-        display = "Ruined Belfast homestead",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windMed"
-        },
-        locationAudio = "eerieForest",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-      panelC = {
-        display = "Atlantic emigrant ship",
-        isOutdoors = true,
-        isDaytime = true,
-        weather = {
-          "windMed"
-        },
-        locationAudio = "shipDeck",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-      panelD = {
-        display = "Colonial settlement",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windLow"
-        },
-        locationAudio = "frontierSettlement",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-    },
-    fomorach5 = {
-      key = "fomorach5",
-      startYear = 1786,
-      endYear = 1793,
-      location = "East Coast Colonies, United States",
-      panelA = {
-        display = "Early settlement",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windLow"
-        },
-        locationAudio = "frontierSettlement",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-      panelB = {
-        display = "Winter collapse",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windWinterMed"
-        },
-        locationAudio = "lowWindAmbient",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-      panelC = {
-        display = "Settlement meetinghouse",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "fireplace",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-      panelD = {
-        display = "Ravine refuge",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windWinterMed"
-        },
-        locationAudio = "eerieForest",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-    },
-    fomorach8 = {
-      key = "fomorach8",
-      startYear = 1793,
-      endYear = 1838,
-      location = "Toronto, Canada",
-      panelA = {
-        display = "Fort York landing",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "waterside",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-      panelB = {
-        display = "War-damaged fort",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windMed"
-        },
-        locationAudio = "militaryCamp",
-        url = ""
-      },
-      panelC = {
-        display = "Market and civic street",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "horseDrawnTraffic",
-        url = ""
-      },
-      panelD = {
-        display = "Underground refuge",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "sewers",
-        url = ""
-      },
-    },
-    fomorach22 = {
-      key = "fomorach22",
-      startYear = 1841,
-      endYear = 1958,
-      location = "Toronto, Canada",
-      panelA = {
-        display = "Railway and sewer works",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "sewers",
-        url = ""
-      },
-      panelB = {
-        display = "Great Fire cellar",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "urbanFire",
-        url = ""
-      },
-      panelC = {
-        display = "Streetcar tunnel cache",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "industry",
-        url = ""
-      },
-      panelD = {
-        display = "Postwar utility room",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "industry",
-        url = ""
-      },
-    },
-    fomorach23 = {
-      key = "fomorach23",
-      startYear = 1932,
-      endYear = 1936,
-      location = "Kharkiv, Ukraine",
-      panelA = {
-        display = "Starving village",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windWinterMed"
-        },
-        locationAudio = "lowWindAmbient",
-        url = ""
-      },
-      panelB = {
-        display = "Empty farmhouse",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {
-          "windLow"
-        },
-        locationAudio = "lowWindAmbient",
-        url = ""
-      },
-      panelC = {
-        display = "Grain depot",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windWinterLow"
-        },
-        locationAudio = "railwayStation",
-        url = ""
-      },
-      panelD = {
-        display = "Soviet office and clinic",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "fieldHospital",
-        url = ""
-      },
-    },
-    fomorach24 = {
-      key = "fomorach24",
-      startYear = 1945,
-      endYear = 1951,
-      location = "Jaffa, Israel",
-      panelA = {
-        display = "War-damaged street",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windMed"
-        },
-        locationAudio = "distantBattle",
-        url = ""
-      },
-      panelB = {
-        display = "Jaffa port",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windMed"
-        },
-        locationAudio = "waterside",
-        url = ""
-      },
-      panelC = {
-        display = "Refugee shelter",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "militaryCamp",
-        url = ""
-      },
-      panelD = {
-        display = "Checkpoint clinic",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "fieldHospital",
-        url = ""
-      },
-    },
-    fomorach27 = {
-      key = "fomorach27",
-      startYear = 1967,
-      endYear = 1998,
-      location = "Toronto, Canada",
-      panelA = {
-        display = "Subway excavation",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "industry",
-        url = ""
-      },
-      panelB = {
-        display = "Subway maintenance depot",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "subway",
-        url = ""
-      },
-      panelC = {
-        display = "Utility nexus",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "industry",
-        url = ""
-      },
-      panelD = {
-        display = "Intelligence refuge",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "office",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
     },
   },
-  aishe = {
-    aishe2 = {
-      key = "aishe2",
-      startYear = 1799,
-      endYear = 1833,
-      location = "Brașov, Romania",
-      panelA = {
-        display = "Father's townhouse",
-        isOutdoors = false,
-        isDaytime = true,
-        weather = {},
-        locationAudio = "quietIndoor",
-        url = ""
+  lucien7 = {
+    key = "lucien7",
+    characters = {"lucien"},
+    startYear = 1915,
+    endYear = 1930,
+    location = "Celaya, Mexico",
+    panelA = {
+      display = "Occupied central plaza",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
       },
-      panelB = {
-        display = "Strandza townhouse",
-        isOutdoors = false,
-        isDaytime = true,
-        weather = {},
-        locationAudio = "quietIndoor",
-        url = ""
-      },
-      panelC = {
-        display = "Market square",
-        isOutdoors = true,
-        isDaytime = true,
-        weather = {
-          "windLow"
-        },
-        locationAudio = "marketCrowd",
-        url = ""
-      },
-      panelD = {
-        display = "Posting-inn courtyard",
-        isOutdoors = true,
-        isDaytime = true,
-        weather = {
-          "windLow"
-        },
-        locationAudio = "horseDrawnTraffic",
-        url = ""
-      },
+      locationAudio = "militaryOccupation",
+      url = ""
     },
-    aishe7 = {
-      key = "aishe7",
-      startYear = 1833,
-      endYear = 1865,
-      location = "New Orleans, United States",
-      panelA = {
-        display = "French Quarter courtyard",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "historicStreet",
-        url = ""
+    panelB = {
+      display = "Bombarded rail yard",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainHeavy",
+        "windMed"
       },
-      panelB = {
-        display = "Aveline's salon",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "quietIndoor",
-        url = ""
-      },
-      panelC = {
-        display = "Mississippi levee",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windMed"
-        },
-        locationAudio = "waterside",
-        url = ""
-      },
-      panelD = {
-        display = "Union-occupied mansion",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "militaryOccupation",
-        url = ""
-      },
+      locationAudio = "distantBattle",
+      url = ""
     },
-    aishe13 = {
-      key = "aishe13",
-      startYear = 1865,
-      endYear = 1911,
-      location = "New Orleans, United States",
-      panelA = {
-        display = "Bayou trading post",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windLow"
-        },
-        locationAudio = "waterside",
-        url = ""
+    panelC = {
+      display = "Cantina courtyard",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
       },
-      panelB = {
-        display = "Boardinghouse fortune room",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "quietIndoor",
-        url = ""
-      },
-      panelC = {
-        display = "Doran's Elysium",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "softIndoor",
-        url = ""
-      },
-      panelD = {
-        display = "Oracle theatre",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "historicStreet",
-        url = ""
-      },
+      locationAudio = "diveBar",
+      url = ""
     },
-    aishe18 = {
-      key = "aishe18",
-      startYear = 1911,
-      endYear = 1931,
-      location = "New Orleans, United States",
-      panelA = {
-        display = "Consultation salon",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "quietIndoor",
-        url = ""
+    panelD = {
+      display = "Field hospital camp",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
       },
-      panelB = {
-        display = "Wartime port ward",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windMed"
-        },
-        locationAudio = "waterside",
-        url = ""
-      },
-      panelC = {
-        display = "Jazz Age Elysium",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "jazzClub",
-        url = ""
-      },
-      panelD = {
-        display = "Flood relief camp",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainHeavy",
-          "windMed"
-        },
-        locationAudio = "waterside",
-        url = ""
-      },
+      locationAudio = "fieldHospital",
+      url = ""
     },
-    aishe22 = {
-      key = "aishe22",
-      startYear = 1931,
-      endYear = 1955,
-      location = "New Orleans, United States",
-      panelA = {
-        display = "Depression-era Elysium",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "quietIndoor",
-        url = ""
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-      panelB = {
-        display = "Wartime shipyard",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windMed"
-        },
-        locationAudio = "industry",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-      panelC = {
-        display = "Postwar neighborhood",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "streetcarTraffic",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-      panelD = {
-        display = "Doran's funeral Elysium",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "quietIndoor",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-    },
-    aishe26 = {
-      key = "aishe26",
-      startYear = 1955,
-      endYear = 1983,
-      location = "New Orleans, United States",
-      panelA = {
-        display = "Fortune shop",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "quietIndoor",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-      panelB = {
-        display = "Civil-rights meeting room",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "cityChatter",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-      panelC = {
-        display = "Disco club",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "nightclub",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-      panelD = {
-        display = "Guilbeau's court",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "softIndoor",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-    },
-    aishe28 = {
-      key = "aishe28",
-      startYear = 1983,
-      endYear = 1997,
-      location = "New Orleans, United States",
-      panelA = {
-        display = "Guilbeau's Elysium",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "softIndoor",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-      panelB = {
-        display = "Fortune shop",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "quietIndoor",
-        url = ""
-      },
-      panelC = {
-        display = "Nightlife street",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "cityRevelers",
-        url = ""
-      },
-      panelD = {
-        display = "1997 back office",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {
-          "rainHeavy"
-        },
-        locationAudio = "quietIndoor",
-        url = ""
-      },
-    },
-    aishe30 = {
-      key = "aishe30",
-      startYear = 1997,
-      endYear = 2016,
-      location = "Toronto, Canada",
-      panelA = {
-        display = "Union Station arrival",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "cityTraffic",
-        url = ""
-      },
-      panelB = {
-        display = "Occult storefront",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "quietIndoor",
-        url = ""
-      },
-      panelC = {
-        display = "Iron Prince's court",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "softIndoor",
-        url = ""
-      },
-      panelD = {
-        display = "Condominium haven",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "softHum",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
     },
   },
-  blackCaesar = {
-    blackCaesar6 = {
-      key = "blackCaesar6",
-      startYear = 1720,
-      endYear = 1734,
-      location = "Carribean",
-      panelA = {
-        display = "Pirate deck",
-        isOutdoors = true,
-        isDaytime = true,
-        weather = {
-          "windMed"
-        },
-        locationAudio = "shipDeck",
-        url = ""
-      },
-      panelB = {
-        display = "Nassau tavern",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "diveBar",
-        url = ""
-      },
-      panelC = {
-        display = "Captured ship interior",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "shipDeck",
-        url = ""
-      },
-      panelD = {
-        display = "Mangrove hideout",
-        isOutdoors = true,
-        isDaytime = true,
-        weather = {
-          "windLow"
-        },
-        locationAudio = "waterside",
-        url = ""
-      },
+  lucien11 = {
+    key = "lucien11",
+    characters = {"lucien"},
+    startYear = 1930,
+    endYear = 1944,
+    location = "Los Angeles, United States",
+    panelA = {
+      display = "Anarch nightclub",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "jazzClub",
+      url = ""
     },
-    blackCaesar8 = {
-      key = "blackCaesar8",
-      startYear = 1734,
-      endYear = 1744,
-      location = "St. Augustine, United States",
-      panelA = {
-        display = "Maroon refuge",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windLow"
-        },
-        locationAudio = "crickets",
-        url = ""
-      },
-      panelB = {
-        display = "Castillo prison yard",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "dungeon",
-        url = ""
-      },
-      panelC = {
-        display = "Harbor tavern street",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "oldAlley",
-        url = ""
-      },
-      panelD = {
-        display = "Jervais's haven",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "ritualRoom",
-        url = ""
-      },
+    panelB = {
+      display = "Ruined Elysium",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "quietIndoor",
+      url = ""
     },
-    blackCaesar9 = {
-      key = "blackCaesar9",
-      startYear = 1744,
-      endYear = 1752,
-      location = "Vienna, Austria",
-      panelA = {
-        display = "Prime Chantry archive",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "library",
-        url = ""
+    panelC = {
+      display = "Revolt-torn boulevard",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windMed"
       },
-      panelB = {
-        display = "Audience chamber",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "softIndoor",
-        url = ""
-      },
-      panelC = {
-        display = "Alchemical laboratory",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "apothecary",
-        url = ""
-      },
-      panelD = {
-        display = "Palace street café",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "horseDrawnTraffic",
-        url = ""
-      },
+      locationAudio = "wartimeStreet",
+      url = ""
     },
-    blackCaesar10 = {
-      key = "blackCaesar10",
-      startYear = 1752,
-      endYear = 1789,
-      location = "Sailing the Oceans",
-      panelA = {
-        display = "Corsair deck",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windMed"
-        },
-        locationAudio = "shipDeck",
-        url = ""
-      },
-      panelB = {
-        display = "Kingston naval shipyard",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windLow"
-        },
-        locationAudio = "waterside",
-        url = ""
-      },
+    panelD = {
+      display = "Intact Elysium",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "quietIndoor",
+      url = ""
     },
-    blackCaesar13 = {
-      key = "blackCaesar13",
-      startYear = 1789,
-      endYear = 1796,
-      location = "New South Wales, Australia",
-      panelA = {
-        display = "Penal settlement",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windLow"
-        },
-        locationAudio = "frontierSettlement",
-        url = ""
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-      panelB = {
-        display = "Harbor boatyard",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windLow"
-        },
-        locationAudio = "waterside",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-      panelC = {
-        display = "Bush frontier",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windLow"
-        },
-        locationAudio = "eerieForest",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-      panelD = {
-        display = "Government compound",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windLow"
-        },
-        locationAudio = "frontierSettlement",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-    },
-    blackCaesar18 = {
-      key = "blackCaesar18",
-      startYear = 1796,
-      endYear = 1846,
-      location = "Port-au-Prince, Haiti",
-      panelA = {
-        display = "Revolutionary square",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windMed"
-        },
-        locationAudio = "distantBattle",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-      panelB = {
-        display = "House High Saturday",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "ritualDrums",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-      panelC = {
-        display = "Harbor district",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windMed"
-        },
-        locationAudio = "waterside",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-      panelD = {
-        display = "Market and civic street",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "marketCrowd",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-    },
-    blackCaesar19 = {
-      key = "blackCaesar19",
-      startYear = 1846,
-      endYear = 1871,
-      location = "Sailing the Oceans",
-      panelA = {
-        display = "Sailing vessel deck",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windMed"
-        },
-        locationAudio = "shipDeck",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-      panelB = {
-        display = "Captain's ritual cabin",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "shipDeck",
-        url = ""
-      },
-      panelC = {
-        display = "Port-au-Prince harbor",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windMed"
-        },
-        locationAudio = "waterside",
-        url = ""
-      },
-      panelD = {
-        display = "Pirate attack deck",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windMed"
-        },
-        locationAudio = "navalBattle",
-        url = ""
-      },
-    },
-    blackCaesar21 = {
-      key = "blackCaesar21",
-      startYear = 1871,
-      endYear = 1880,
-      location = "St. Augustine, United States",
-      panelA = {
-        display = "Plaza and harbor street",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "horseDrawnTraffic",
-        url = ""
-      },
-      panelB = {
-        display = "Coastal house office",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "quietIndoor",
-        url = ""
-      },
-      panelC = {
-        display = "Empty waterfront warehouse",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "quietWarehouse",
-        url = ""
-      },
-      panelD = {
-        display = "Black church and school",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "church",
-        url = ""
-      },
-    },
-    blackCaesar22 = {
-      key = "blackCaesar22",
-      startYear = 1880,
-      endYear = 1894,
-      location = "New Orleans, United States",
-      panelA = {
-        display = "Creole townhouse",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "quietIndoor",
-        url = ""
-      },
-      panelB = {
-        display = "Mississippi riverfront",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windMed"
-        },
-        locationAudio = "waterside",
-        url = ""
-      },
-      panelC = {
-        display = "Cemetery ritual grounds",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "eerieForest",
-        url = ""
-      },
-      panelD = {
-        display = "Market entertainment street",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "historicStreet",
-        url = ""
-      },
-    },
-    blackCaesar23 = {
-      key = "blackCaesar23",
-      startYear = 1894,
-      endYear = 1912,
-      location = "Vienna, Austria",
-      panelA = {
-        display = "Chantry audience chamber",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "softIndoor",
-        url = ""
-      },
-      panelB = {
-        display = "Intelligence archive",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "library",
-        url = ""
-      },
-      panelC = {
-        display = "Occult laboratory",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "apothecary",
-        url = ""
-      },
-      panelD = {
-        display = "Boulevard railway café",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "horseDrawnTraffic",
-        url = ""
-      },
-    },
-    blackCaesar27 = {
-      key = "blackCaesar27",
-      startYear = 1912,
-      endYear = 1930,
-      location = "Milwaukee, United States",
-      panelA = {
-        display = "Tremere chantry",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "ritualRoom",
-        url = ""
-      },
-      panelB = {
-        display = "Industrial freight corridor",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windMed"
-        },
-        locationAudio = "industry",
-        url = ""
-      },
-      panelC = {
-        display = "Prohibition speakeasy",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "jazzClub",
-        url = ""
-      },
-      panelD = {
-        display = "Farmhouse forest road",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windMed"
-        },
-        locationAudio = "eerieForest",
-        url = ""
-      },
-    },
-    blackCaesar28 = {
-      key = "blackCaesar28",
-      startYear = 1930,
-      endYear = 1936,
-      location = "Toledo, Spain",
-      panelA = {
-        display = "Cloister ritual cellar",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "ritualRoom",
-        url = ""
-      },
-      panelB = {
-        display = "Toledo street plaza",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "horseDrawnTraffic",
-        url = ""
-      },
-      panelC = {
-        display = "Union tavern",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "diveBar",
-        url = ""
-      },
-      panelD = {
-        display = "Railway checkpoint",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windMed"
-        },
-        locationAudio = "railwayStation",
-        url = ""
-      },
-    },
-    blackCaesar29 = {
-      key = "blackCaesar29",
-      startYear = 1936,
-      endYear = 1998,
-      location = "Montreal, Canada",
-      panelA = {
-        display = "Sabbat temple",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "ritualRoom",
-        url = ""
-      },
-      panelB = {
-        display = "Wartime harbor district",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windMed"
-        },
-        locationAudio = "industry",
-        url = ""
-      },
-      panelC = {
-        display = "Neon club district",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "cityRevelers",
-        url = ""
-      },
-      panelD = {
-        display = "Goratrix laboratory",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "laboratory",
-        url = ""
-      },
-    },
-    blackCaesar37 = {
-      key = "blackCaesar37",
-      startYear = 1998,
-      endYear = 2002,
-      location = "Milwaukee, United States",
-      panelA = {
-        display = "Milwaukee safehouse",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "office",
-        url = ""
-      },
-      panelB = {
-        display = "Tremere archive",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "library",
-        url = ""
-      },
-      panelC = {
-        display = "Diner and bar",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "diveBar",
-        url = ""
-      },
-      panelD = {
-        display = "Waterfront parking structure",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windMed"
-        },
-        locationAudio = "waterside",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
     },
   },
-  rashid = {
-    rashid1 = {
-      key = "rashid1",
-      startYear = 1774,
-      endYear = 1811,
-      location = "Diriyah, the First Saudi State",
-      panelA = {
-        display = "Family courtyard",
-        isOutdoors = true,
-        isDaytime = true,
-        weather = {
-          "windLow"
-        },
-        locationAudio = "residentialCourtyard",
-        url = ""
+  lucien14 = {
+    key = "lucien14",
+    characters = {"lucien", "fomorach"},
+    startYear = 1955,
+    endYear = 1958,
+    location = "Mojave Desert, USA",
+    panelA = {
+      display = "Desert excavation",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "windMed"
       },
-      panelB = {
-        display = "Night souq",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windLow"
-        },
-        locationAudio = "indoorMarket",
-        url = ""
+      locationAudio = "lowWindAmbient",
+      url = ""
+    },
+    panelB = {
+      display = "Abandoned mining camp",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "windMed"
       },
-      panelC = {
-        display = "Sufi study",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "library",
-        url = ""
+      locationAudio = "lowWindAmbient",
+      url = ""
+    },
+    panelC = {
+      display = "Desert search camp",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "windLow"
       },
-      panelD = {
-        display = "Oasis city gate",
-        isOutdoors = true,
-        isDaytime = true,
-        weather = {
-          "windMed"
-        },
-        locationAudio = "marketCrowd",
-        url = ""
+      locationAudio = "crickets",
+      url = ""
+    },
+    panelD = {
+      display = "Collapsed mine chamber",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "dungeon",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
     },
-    rashid4 = {
-      key = "rashid4",
-      startYear = 1811,
-      endYear = 1818,
-      location = "Diriyah, the First Saudi State",
-      panelA = {
-        display = "Warrior Caste residence",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windLow"
-        },
-        locationAudio = "weaponsTraining",
-        url = ""
+  },
+  lucien15 = {
+    key = "lucien15",
+    characters = {"lucien", "fomorach"},
+    startYear = 1958,
+    endYear = 1962,
+    location = "On the Road, Lower USA",
+    panelA = {
+      display = "Route 66 motor court",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "windLow"
       },
-      panelB = {
-        display = "Wartime ration market",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windMed"
-        },
-        locationAudio = "indoorMarket",
-        url = ""
+      locationAudio = "roadsideTraffic",
+      url = ""
+    },
+    panelB = {
+      display = "Roadside diner",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {
+        "rainLight"
       },
-      panelC = {
-        display = "Gatehouse watchtower",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windMed"
-        },
-        locationAudio = "lowWindAmbient",
-        url = ""
+      locationAudio = "diveBar",
+      url = ""
+    },
+    panelC = {
+      display = "Southern gas station",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
       },
-      panelD = {
-        display = "Intelligence study",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "library",
-        url = ""
+      locationAudio = "roadsideTraffic",
+      url = ""
+    },
+    panelD = {
+      display = "Pine campsite",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "windLow"
+      },
+      locationAudio = "crickets",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
     },
-    rashid6 = {
-      key = "rashid6",
-      startYear = 1818,
-      endYear = 1818,
-      location = "Diriyah, the First Saudi State",
-      panelA = {
-        display = "Ruined district",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windMed"
-        },
-        locationAudio = "distantBattle",
-        url = ""
+  },
+  lucien16 = {
+    key = "lucien16",
+    characters = {"lucien", "fomorach"},
+    startYear = 1962,
+    endYear = 1967,
+    location = "On the Road, Upper USA",
+    panelA = {
+      display = "Great Lakes motor court",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windMed"
       },
-      panelB = {
-        display = "Military camp",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windMed"
-        },
-        locationAudio = "militaryCamp",
-        url = ""
+      locationAudio = "roadsideTraffic",
+      url = ""
+    },
+    panelB = {
+      display = "Interstate restaurant",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {
+        "rainLight"
       },
-      panelC = {
-        display = "Shattered mosque",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windLow"
-        },
-        locationAudio = "church",
-        url = ""
+      locationAudio = "diveBar",
+      url = ""
+    },
+    panelC = {
+      display = "Industrial waterfront",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windMed"
       },
-      panelD = {
-        display = "Burial ground",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windMed"
-        },
-        locationAudio = "lowWindAmbient",
-        url = ""
+      locationAudio = "industry",
+      url = ""
+    },
+    panelD = {
+      display = "Border crossing",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windMed"
+      },
+      locationAudio = "cityTraffic",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
     },
-    rashid7 = {
-      key = "rashid7",
-      startYear = 1819,
-      endYear = 1839,
-      location = "Alamut, Afghanistan",
-      panelA = {
-        display = "Fortress courtyard",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windMed"
-        },
-        locationAudio = "lowWindAmbient",
-        url = ""
+  },
+  lucien17 = {
+    key = "lucien17",
+    characters = {"lucien", "fomorach"},
+    startYear = 1967,
+    endYear = 1980,
+    location = "Toronto, Canada",
+    panelA = {
+      display = "Union Station",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "railwayStation",
+      url = ""
+    },
+    panelB = {
+      display = "Downtown street",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
       },
-      panelB = {
-        display = "Manuscript library",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "library",
-        url = ""
+      locationAudio = "streetcarTraffic",
+      url = ""
+    },
+    panelC = {
+      display = "Camarilla receiving room",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "quietIndoor",
+      url = ""
+    },
+    panelD = {
+      display = "Rail-corridor haven",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "industry",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-      panelC = {
-        display = "Blood Sorcery chamber",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "ritualRoom",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-      panelD = {
-        display = "Mountain training yard",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windMed"
-        },
-        locationAudio = "weaponsTraining",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
     },
-    rashid9 = {
-      key = "rashid9",
-      startYear = 1839,
-      endYear = 1893,
-      location = "Constantinople, Ottoman Empire",
-      panelA = {
-        display = "Bosphorus salon",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "quietIndoor",
-        url = ""
+  },
+  lucien19 = {
+    key = "lucien19",
+    characters = {"lucien"},
+    startYear = 1980,
+    endYear = 1999,
+    location = "Montreal, Canada",
+    panelA = {
+      display = "Neon nightlife street",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
       },
-      panelB = {
-        display = "Nephilim library",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "library",
-        url = ""
+      locationAudio = "cityTraffic",
+      url = ""
+    },
+    panelB = {
+      display = "Biker clubhouse",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "diveBar",
+      url = ""
+    },
+    panelC = {
+      display = "Jazz club",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "jazzClub",
+      url = ""
+    },
+    panelD = {
+      display = "Sabbat chapel",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "ritualRoom",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-      panelC = {
-        display = "Ministry avenue",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "horseDrawnTraffic",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-      panelD = {
-        display = "Bazaar and quay",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "indoorMarket",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
     },
-    rashid12 = {
-      key = "rashid12",
-      startYear = 1893,
-      endYear = 1901,
-      location = "Alamut, Afghanistan",
-      panelA = {
-        display = "Fortress courtyard",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windMed"
-        },
-        locationAudio = "lowWindAmbient",
-        url = ""
+  },
+  lucien23 = {
+    key = "lucien23",
+    characters = {"lucien"},
+    startYear = 1999,
+    endYear = 1999,
+    location = "Kingston, Canada",
+    panelA = {
+      display = "Illusory service station",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainHeavy",
+        "windMax",
+        "thunder"
       },
-      panelB = {
-        display = "Manuscript library",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "library",
-        url = ""
+      locationAudio = "roadsideTraffic",
+      url = ""
+    },
+    panelB = {
+      display = "Illusory quarry campground",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainHeavy",
+        "windMax",
+        "thunder"
       },
-      panelC = {
-        display = "Blood Sorcery chamber",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "ritualRoom",
-        url = ""
+      locationAudio = "eerieForest",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-      panelD = {
-        display = "Mountain training yard",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "windMed"
-        },
-        locationAudio = "weaponsTraining",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
     },
-    rashid13 = {
-      key = "rashid13",
-      startYear = 1901,
-      endYear = 1922,
-      location = "Constantinople, Ottoman Empire",
-      panelA = {
-        display = "Blood-memory chamber",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "ritualRoom",
-        url = ""
+  },
+  aishe2 = {
+    key = "aishe2",
+    characters = {"aishe"},
+    startYear = 1799,
+    endYear = 1833,
+    location = "Brașov, Romania",
+    panelA = {
+      display = "Father's townhouse",
+      isOutdoors = false,
+      isDaytime = true,
+      weather = {},
+      locationAudio = "quietIndoor",
+      url = ""
+    },
+    panelB = {
+      display = "Strandza townhouse",
+      isOutdoors = false,
+      isDaytime = true,
+      weather = {},
+      locationAudio = "quietIndoor",
+      url = ""
+    },
+    panelC = {
+      display = "Market square",
+      isOutdoors = true,
+      isDaytime = true,
+      weather = {
+        "windLow"
       },
-      panelB = {
-        display = "Newspaper avenue",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "horseDrawnTraffic",
-        url = ""
+      locationAudio = "marketCrowd",
+      url = ""
+    },
+    panelD = {
+      display = "Posting-inn courtyard",
+      isOutdoors = true,
+      isDaytime = true,
+      weather = {
+        "windLow"
       },
-      panelC = {
-        display = "Wartime harbor",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windMed"
-        },
-        locationAudio = "waterside",
-        url = ""
+      locationAudio = "horseDrawnTraffic",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-      panelD = {
-        display = "Occupation checkpoint",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "militaryOccupation",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
     },
-    rashid18 = {
-      key = "rashid18",
-      startYear = 1922,
-      endYear = 1952,
-      location = "Various Locations, Europe",
-      panelA = {
-        display = "Continental occult archive",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "library",
-        url = ""
+  },
+  aishe7 = {
+    key = "aishe7",
+    characters = {"aishe"},
+    startYear = 1833,
+    endYear = 1865,
+    location = "New Orleans, United States",
+    panelA = {
+      display = "French Quarter courtyard",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
       },
-      panelB = {
-        display = "Interwar hotel café",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "diveBar",
-        url = ""
+      locationAudio = "historicStreet",
+      url = ""
+    },
+    panelB = {
+      display = "Aveline's salon",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "quietIndoor",
+      url = ""
+    },
+    panelC = {
+      display = "Mississippi levee",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windMed"
       },
-      panelC = {
-        display = "Old-city tram square",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "historicStreet",
-        url = ""
+      locationAudio = "waterside",
+      url = ""
+    },
+    panelD = {
+      display = "Union-occupied mansion",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
       },
-      panelD = {
-        display = "International border station",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windMed"
-        },
-        locationAudio = "railwayStation",
-        url = ""
+      locationAudio = "militaryOccupation",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
     },
-    rashid21 = {
-      key = "rashid21",
-      startYear = 1952,
-      endYear = 1997,
-      location = "Toronto, Canada",
-      panelA = {
-        display = "Hidden court",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "quietIndoor",
-        url = ""
+  },
+  aishe13 = {
+    key = "aishe13",
+    characters = {"aishe"},
+    startYear = 1865,
+    endYear = 1911,
+    location = "New Orleans, United States",
+    panelA = {
+      display = "Bayou trading post",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "windLow"
       },
-      panelB = {
-        display = "Immigrant commercial street",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "streetcarTraffic",
-        url = ""
+      locationAudio = "waterside",
+      url = ""
+    },
+    panelB = {
+      display = "Boardinghouse fortune room",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "quietIndoor",
+      url = ""
+    },
+    panelC = {
+      display = "Doran's Elysium",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "softIndoor",
+      url = ""
+    },
+    panelD = {
+      display = "Oracle theatre",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
       },
-      panelC = {
-        display = "Training room",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "weaponsTraining",
-        url = ""
+      locationAudio = "historicStreet",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-      panelD = {
-        display = "Operations archive",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "office",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
     },
-    rashid26 = {
-      key = "rashid26",
-      startYear = 2013,
-      endYear = 2013,
-      location = "Odense, Denmark",
-      panelA = {
-        display = "Pact negotiation chamber",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "softIndoor",
-        url = ""
+  },
+  aishe18 = {
+    key = "aishe18",
+    characters = {"aishe"},
+    startYear = 1911,
+    endYear = 1931,
+    location = "New Orleans, United States",
+    panelA = {
+      display = "Consultation salon",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "quietIndoor",
+      url = ""
+    },
+    panelB = {
+      display = "Wartime port ward",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windMed"
       },
-      panelB = {
-        display = "Odense old town",
-        isOutdoors = true,
-        isDaytime = false,
-        weather = {
-          "rainLight",
-          "windLow"
-        },
-        locationAudio = "cityChatter",
-        url = ""
+      locationAudio = "waterside",
+      url = ""
+    },
+    panelC = {
+      display = "Jazz Age Elysium",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "jazzClub",
+      url = ""
+    },
+    panelD = {
+      display = "Flood relief camp",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainHeavy",
+        "windMed"
       },
-      panelC = {
-        display = "Hotel caucus lounge",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "softIndoor",
-        url = ""
+      locationAudio = "waterside",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
-      panelD = {
-        display = "Harbor Kindred venue",
-        isOutdoors = false,
-        isDaytime = false,
-        weather = {},
-        locationAudio = "nightclub",
-        url = ""
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  aishe22 = {
+    key = "aishe22",
+    characters = {"aishe"},
+    startYear = 1931,
+    endYear = 1955,
+    location = "New Orleans, United States",
+    panelA = {
+      display = "Depression-era Elysium",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "quietIndoor",
+      url = ""
+    },
+    panelB = {
+      display = "Wartime shipyard",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windMed"
+      },
+      locationAudio = "industry",
+      url = ""
+    },
+    panelC = {
+      display = "Postwar neighborhood",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
+      },
+      locationAudio = "streetcarTraffic",
+      url = ""
+    },
+    panelD = {
+      display = "Doran's funeral Elysium",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "quietIndoor",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  aishe26 = {
+    key = "aishe26",
+    characters = {"aishe"},
+    startYear = 1955,
+    endYear = 1983,
+    location = "New Orleans, United States",
+    panelA = {
+      display = "Fortune shop",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "quietIndoor",
+      url = ""
+    },
+    panelB = {
+      display = "Civil-rights meeting room",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
+      },
+      locationAudio = "cityChatter",
+      url = ""
+    },
+    panelC = {
+      display = "Disco club",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "nightclub",
+      url = ""
+    },
+    panelD = {
+      display = "Guilbeau's court",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "softIndoor",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  aishe28 = {
+    key = "aishe28",
+    characters = {"aishe"},
+    startYear = 1983,
+    endYear = 1997,
+    location = "New Orleans, United States",
+    panelA = {
+      display = "Guilbeau's Elysium",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "softIndoor",
+      url = ""
+    },
+    panelB = {
+      display = "Fortune shop",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "quietIndoor",
+      url = ""
+    },
+    panelC = {
+      display = "Nightlife street",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
+      },
+      locationAudio = "cityRevelers",
+      url = ""
+    },
+    panelD = {
+      display = "1997 back office",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {
+        "rainHeavy"
+      },
+      locationAudio = "quietIndoor",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  aishe30 = {
+    key = "aishe30",
+    characters = {"aishe"},
+    startYear = 1997,
+    endYear = 2016,
+    location = "Toronto, Canada",
+    panelA = {
+      display = "Union Station arrival",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
+      },
+      locationAudio = "cityTraffic",
+      url = ""
+    },
+    panelB = {
+      display = "Occult storefront",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "quietIndoor",
+      url = ""
+    },
+    panelC = {
+      display = "Iron Prince's court",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "softIndoor",
+      url = ""
+    },
+    panelD = {
+      display = "Condominium haven",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "softHum",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  blackCaesar6 = {
+    key = "blackCaesar6",
+    characters = {"blackCaesar"},
+    startYear = 1720,
+    endYear = 1734,
+    location = "Carribean",
+    panelA = {
+      display = "Pirate deck",
+      isOutdoors = true,
+      isDaytime = true,
+      weather = {
+        "windMed"
+      },
+      locationAudio = "shipDeck",
+      url = ""
+    },
+    panelB = {
+      display = "Nassau tavern",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "diveBar",
+      url = ""
+    },
+    panelC = {
+      display = "Captured ship interior",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "shipDeck",
+      url = ""
+    },
+    panelD = {
+      display = "Mangrove hideout",
+      isOutdoors = true,
+      isDaytime = true,
+      weather = {
+        "windLow"
+      },
+      locationAudio = "waterside",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  blackCaesar8 = {
+    key = "blackCaesar8",
+    characters = {"blackCaesar"},
+    startYear = 1734,
+    endYear = 1744,
+    location = "St. Augustine, United States",
+    panelA = {
+      display = "Maroon refuge",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "windLow"
+      },
+      locationAudio = "crickets",
+      url = ""
+    },
+    panelB = {
+      display = "Castillo prison yard",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
+      },
+      locationAudio = "dungeon",
+      url = ""
+    },
+    panelC = {
+      display = "Harbor tavern street",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
+      },
+      locationAudio = "oldAlley",
+      url = ""
+    },
+    panelD = {
+      display = "Jervais's haven",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "ritualRoom",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  blackCaesar9 = {
+    key = "blackCaesar9",
+    characters = {"blackCaesar"},
+    startYear = 1744,
+    endYear = 1752,
+    location = "Vienna, Austria",
+    panelA = {
+      display = "Prime Chantry archive",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "library",
+      url = ""
+    },
+    panelB = {
+      display = "Audience chamber",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "softIndoor",
+      url = ""
+    },
+    panelC = {
+      display = "Alchemical laboratory",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "apothecary",
+      url = ""
+    },
+    panelD = {
+      display = "Palace street café",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
+      },
+      locationAudio = "horseDrawnTraffic",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  blackCaesar10 = {
+    key = "blackCaesar10",
+    characters = {"blackCaesar"},
+    startYear = 1752,
+    endYear = 1789,
+    location = "Sailing the Oceans",
+    panelA = {
+      display = "Corsair deck",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "windMed"
+      },
+      locationAudio = "shipDeck",
+      url = ""
+    },
+    panelB = {
+      display = "Kingston naval shipyard",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "windLow"
+      },
+      locationAudio = "waterside",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  blackCaesar13 = {
+    key = "blackCaesar13",
+    characters = {"blackCaesar"},
+    startYear = 1789,
+    endYear = 1796,
+    location = "New South Wales, Australia",
+    panelA = {
+      display = "Penal settlement",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "windLow"
+      },
+      locationAudio = "frontierSettlement",
+      url = ""
+    },
+    panelB = {
+      display = "Harbor boatyard",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "windLow"
+      },
+      locationAudio = "waterside",
+      url = ""
+    },
+    panelC = {
+      display = "Bush frontier",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "windLow"
+      },
+      locationAudio = "eerieForest",
+      url = ""
+    },
+    panelD = {
+      display = "Government compound",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "windLow"
+      },
+      locationAudio = "frontierSettlement",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  blackCaesar18 = {
+    key = "blackCaesar18",
+    characters = {"blackCaesar"},
+    startYear = 1796,
+    endYear = 1846,
+    location = "Port-au-Prince, Haiti",
+    panelA = {
+      display = "Revolutionary square",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windMed"
+      },
+      locationAudio = "distantBattle",
+      url = ""
+    },
+    panelB = {
+      display = "House High Saturday",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
+      },
+      locationAudio = "ritualDrums",
+      url = ""
+    },
+    panelC = {
+      display = "Harbor district",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windMed"
+      },
+      locationAudio = "waterside",
+      url = ""
+    },
+    panelD = {
+      display = "Market and civic street",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
+      },
+      locationAudio = "marketCrowd",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  blackCaesar19 = {
+    key = "blackCaesar19",
+    characters = {"blackCaesar"},
+    startYear = 1846,
+    endYear = 1871,
+    location = "Sailing the Oceans",
+    panelA = {
+      display = "Sailing vessel deck",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "windMed"
+      },
+      locationAudio = "shipDeck",
+      url = ""
+    },
+    panelB = {
+      display = "Captain's ritual cabin",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "shipDeck",
+      url = ""
+    },
+    panelC = {
+      display = "Port-au-Prince harbor",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windMed"
+      },
+      locationAudio = "waterside",
+      url = ""
+    },
+    panelD = {
+      display = "Pirate attack deck",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "windMed"
+      },
+      locationAudio = "navalBattle",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  blackCaesar21 = {
+    key = "blackCaesar21",
+    characters = {"blackCaesar"},
+    startYear = 1871,
+    endYear = 1880,
+    location = "St. Augustine, United States",
+    panelA = {
+      display = "Plaza and harbor street",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
+      },
+      locationAudio = "horseDrawnTraffic",
+      url = ""
+    },
+    panelB = {
+      display = "Coastal house office",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "quietIndoor",
+      url = ""
+    },
+    panelC = {
+      display = "Empty waterfront warehouse",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "quietWarehouse",
+      url = ""
+    },
+    panelD = {
+      display = "Black church and school",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
+      },
+      locationAudio = "church",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  blackCaesar22 = {
+    key = "blackCaesar22",
+    characters = {"blackCaesar"},
+    startYear = 1880,
+    endYear = 1894,
+    location = "New Orleans, United States",
+    panelA = {
+      display = "Creole townhouse",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "quietIndoor",
+      url = ""
+    },
+    panelB = {
+      display = "Mississippi riverfront",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windMed"
+      },
+      locationAudio = "waterside",
+      url = ""
+    },
+    panelC = {
+      display = "Cemetery ritual grounds",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
+      },
+      locationAudio = "eerieForest",
+      url = ""
+    },
+    panelD = {
+      display = "Market entertainment street",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
+      },
+      locationAudio = "historicStreet",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  blackCaesar23 = {
+    key = "blackCaesar23",
+    characters = {"blackCaesar"},
+    startYear = 1894,
+    endYear = 1912,
+    location = "Vienna, Austria",
+    panelA = {
+      display = "Chantry audience chamber",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "softIndoor",
+      url = ""
+    },
+    panelB = {
+      display = "Intelligence archive",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "library",
+      url = ""
+    },
+    panelC = {
+      display = "Occult laboratory",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "apothecary",
+      url = ""
+    },
+    panelD = {
+      display = "Boulevard railway café",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
+      },
+      locationAudio = "horseDrawnTraffic",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  blackCaesar27 = {
+    key = "blackCaesar27",
+    characters = {"blackCaesar"},
+    startYear = 1912,
+    endYear = 1930,
+    location = "Milwaukee, United States",
+    panelA = {
+      display = "Tremere chantry",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "ritualRoom",
+      url = ""
+    },
+    panelB = {
+      display = "Industrial freight corridor",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windMed"
+      },
+      locationAudio = "industry",
+      url = ""
+    },
+    panelC = {
+      display = "Prohibition speakeasy",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "jazzClub",
+      url = ""
+    },
+    panelD = {
+      display = "Farmhouse forest road",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windMed"
+      },
+      locationAudio = "eerieForest",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  blackCaesar28 = {
+    key = "blackCaesar28",
+    characters = {"blackCaesar"},
+    startYear = 1930,
+    endYear = 1936,
+    location = "Toledo, Spain",
+    panelA = {
+      display = "Cloister ritual cellar",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "ritualRoom",
+      url = ""
+    },
+    panelB = {
+      display = "Toledo street plaza",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
+      },
+      locationAudio = "horseDrawnTraffic",
+      url = ""
+    },
+    panelC = {
+      display = "Union tavern",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "diveBar",
+      url = ""
+    },
+    panelD = {
+      display = "Railway checkpoint",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windMed"
+      },
+      locationAudio = "railwayStation",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  blackCaesar29 = {
+    key = "blackCaesar29",
+    characters = {"blackCaesar"},
+    startYear = 1936,
+    endYear = 1998,
+    location = "Montreal, Canada",
+    panelA = {
+      display = "Sabbat temple",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "ritualRoom",
+      url = ""
+    },
+    panelB = {
+      display = "Wartime harbor district",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windMed"
+      },
+      locationAudio = "industry",
+      url = ""
+    },
+    panelC = {
+      display = "Neon club district",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
+      },
+      locationAudio = "cityRevelers",
+      url = ""
+    },
+    panelD = {
+      display = "Goratrix laboratory",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "laboratory",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  blackCaesar37 = {
+    key = "blackCaesar37",
+    characters = {"blackCaesar"},
+    startYear = 1998,
+    endYear = 2002,
+    location = "Milwaukee, United States",
+    panelA = {
+      display = "Milwaukee safehouse",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "office",
+      url = ""
+    },
+    panelB = {
+      display = "Tremere archive",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "library",
+      url = ""
+    },
+    panelC = {
+      display = "Diner and bar",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "diveBar",
+      url = ""
+    },
+    panelD = {
+      display = "Waterfront parking structure",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windMed"
+      },
+      locationAudio = "waterside",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  fomorach1 = {
+    key = "fomorach1",
+    characters = {"fomorach"},
+    startYear = 1769,
+    endYear = 1786,
+    location = "Belfast to the East Coast Colonies",
+    panelA = {
+      display = "Belfast family yard",
+      isOutdoors = true,
+      isDaytime = true,
+      weather = {
+        "windLow"
+      },
+      locationAudio = "marketCrowd",
+      url = ""
+    },
+    panelB = {
+      display = "Ruined Belfast homestead",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windMed"
+      },
+      locationAudio = "eerieForest",
+      url = ""
+    },
+    panelC = {
+      display = "Atlantic emigrant ship",
+      isOutdoors = true,
+      isDaytime = true,
+      weather = {
+        "windMed"
+      },
+      locationAudio = "shipDeck",
+      url = ""
+    },
+    panelD = {
+      display = "Colonial settlement",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "windLow"
+      },
+      locationAudio = "frontierSettlement",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  fomorach5 = {
+    key = "fomorach5",
+    characters = {"fomorach"},
+    startYear = 1786,
+    endYear = 1793,
+    location = "East Coast Colonies, United States",
+    panelA = {
+      display = "Early settlement",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "windLow"
+      },
+      locationAudio = "frontierSettlement",
+      url = ""
+    },
+    panelB = {
+      display = "Winter collapse",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "windWinterMed"
+      },
+      locationAudio = "lowWindAmbient",
+      url = ""
+    },
+    panelC = {
+      display = "Settlement meetinghouse",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "fireplace",
+      url = ""
+    },
+    panelD = {
+      display = "Ravine refuge",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "windWinterMed"
+      },
+      locationAudio = "eerieForest",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  fomorach8 = {
+    key = "fomorach8",
+    characters = {"fomorach"},
+    startYear = 1793,
+    endYear = 1838,
+    location = "Toronto, Canada",
+    panelA = {
+      display = "Fort York landing",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
+      },
+      locationAudio = "waterside",
+      url = ""
+    },
+    panelB = {
+      display = "War-damaged fort",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windMed"
+      },
+      locationAudio = "militaryCamp",
+      url = ""
+    },
+    panelC = {
+      display = "Market and civic street",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
+      },
+      locationAudio = "horseDrawnTraffic",
+      url = ""
+    },
+    panelD = {
+      display = "Underground refuge",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "sewers",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  fomorach22 = {
+    key = "fomorach22",
+    characters = {"fomorach"},
+    startYear = 1841,
+    endYear = 1958,
+    location = "Toronto, Canada",
+    panelA = {
+      display = "Railway and sewer works",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "sewers",
+      url = ""
+    },
+    panelB = {
+      display = "Great Fire cellar",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "urbanFire",
+      url = ""
+    },
+    panelC = {
+      display = "Streetcar tunnel cache",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "industry",
+      url = ""
+    },
+    panelD = {
+      display = "Postwar utility room",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "industry",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  fomorach23 = {
+    key = "fomorach23",
+    characters = {"fomorach"},
+    startYear = 1932,
+    endYear = 1936,
+    location = "Kharkiv, Ukraine",
+    panelA = {
+      display = "Starving village",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "windWinterMed"
+      },
+      locationAudio = "lowWindAmbient",
+      url = ""
+    },
+    panelB = {
+      display = "Empty farmhouse",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {
+        "windLow"
+      },
+      locationAudio = "lowWindAmbient",
+      url = ""
+    },
+    panelC = {
+      display = "Grain depot",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "windWinterLow"
+      },
+      locationAudio = "railwayStation",
+      url = ""
+    },
+    panelD = {
+      display = "Soviet office and clinic",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "fieldHospital",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  fomorach24 = {
+    key = "fomorach24",
+    characters = {"fomorach"},
+    startYear = 1945,
+    endYear = 1951,
+    location = "Jaffa, Israel",
+    panelA = {
+      display = "War-damaged street",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windMed"
+      },
+      locationAudio = "distantBattle",
+      url = ""
+    },
+    panelB = {
+      display = "Jaffa port",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windMed"
+      },
+      locationAudio = "waterside",
+      url = ""
+    },
+    panelC = {
+      display = "Refugee shelter",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
+      },
+      locationAudio = "militaryCamp",
+      url = ""
+    },
+    panelD = {
+      display = "Checkpoint clinic",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
+      },
+      locationAudio = "fieldHospital",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  fomorach27 = {
+    key = "fomorach27",
+    characters = {"fomorach"},
+    startYear = 1967,
+    endYear = 1998,
+    location = "Toronto, Canada",
+    panelA = {
+      display = "Subway excavation",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "industry",
+      url = ""
+    },
+    panelB = {
+      display = "Subway maintenance depot",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "subway",
+      url = ""
+    },
+    panelC = {
+      display = "Utility nexus",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "industry",
+      url = ""
+    },
+    panelD = {
+      display = "Intelligence refuge",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "office",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  rashid1 = {
+    key = "rashid1",
+    characters = {"rashid"},
+    startYear = 1774,
+    endYear = 1811,
+    location = "Diriyah, the First Saudi State",
+    panelA = {
+      display = "Family courtyard",
+      isOutdoors = true,
+      isDaytime = true,
+      weather = {
+        "windLow"
+      },
+      locationAudio = "residentialCourtyard",
+      url = ""
+    },
+    panelB = {
+      display = "Night souq",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "windLow"
+      },
+      locationAudio = "indoorMarket",
+      url = ""
+    },
+    panelC = {
+      display = "Sufi study",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "library",
+      url = ""
+    },
+    panelD = {
+      display = "Oasis city gate",
+      isOutdoors = true,
+      isDaytime = true,
+      weather = {
+        "windMed"
+      },
+      locationAudio = "marketCrowd",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  rashid4 = {
+    key = "rashid4",
+    characters = {"rashid"},
+    startYear = 1811,
+    endYear = 1818,
+    location = "Diriyah, the First Saudi State",
+    panelA = {
+      display = "Warrior Caste residence",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "windLow"
+      },
+      locationAudio = "weaponsTraining",
+      url = ""
+    },
+    panelB = {
+      display = "Wartime ration market",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "windMed"
+      },
+      locationAudio = "indoorMarket",
+      url = ""
+    },
+    panelC = {
+      display = "Gatehouse watchtower",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "windMed"
+      },
+      locationAudio = "lowWindAmbient",
+      url = ""
+    },
+    panelD = {
+      display = "Intelligence study",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "library",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  rashid6 = {
+    key = "rashid6",
+    characters = {"rashid"},
+    startYear = 1818,
+    endYear = 1818,
+    location = "Diriyah, the First Saudi State",
+    panelA = {
+      display = "Ruined district",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "windMed"
+      },
+      locationAudio = "distantBattle",
+      url = ""
+    },
+    panelB = {
+      display = "Military camp",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "windMed"
+      },
+      locationAudio = "militaryCamp",
+      url = ""
+    },
+    panelC = {
+      display = "Shattered mosque",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "windLow"
+      },
+      locationAudio = "church",
+      url = ""
+    },
+    panelD = {
+      display = "Burial ground",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "windMed"
+      },
+      locationAudio = "lowWindAmbient",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  rashid7 = {
+    key = "rashid7",
+    characters = {"rashid"},
+    startYear = 1819,
+    endYear = 1839,
+    location = "Alamut, Afghanistan",
+    panelA = {
+      display = "Fortress courtyard",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "windMed"
+      },
+      locationAudio = "lowWindAmbient",
+      url = ""
+    },
+    panelB = {
+      display = "Manuscript library",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "library",
+      url = ""
+    },
+    panelC = {
+      display = "Blood Sorcery chamber",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "ritualRoom",
+      url = ""
+    },
+    panelD = {
+      display = "Mountain training yard",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "windMed"
+      },
+      locationAudio = "weaponsTraining",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  rashid9 = {
+    key = "rashid9",
+    characters = {"rashid"},
+    startYear = 1839,
+    endYear = 1893,
+    location = "Constantinople, Ottoman Empire",
+    panelA = {
+      display = "Bosphorus salon",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "quietIndoor",
+      url = ""
+    },
+    panelB = {
+      display = "Nephilim library",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "library",
+      url = ""
+    },
+    panelC = {
+      display = "Ministry avenue",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
+      },
+      locationAudio = "horseDrawnTraffic",
+      url = ""
+    },
+    panelD = {
+      display = "Bazaar and quay",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "indoorMarket",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  rashid12 = {
+    key = "rashid12",
+    characters = {"rashid"},
+    startYear = 1893,
+    endYear = 1901,
+    location = "Alamut, Afghanistan",
+    panelA = {
+      display = "Fortress courtyard",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "windMed"
+      },
+      locationAudio = "lowWindAmbient",
+      url = ""
+    },
+    panelB = {
+      display = "Manuscript library",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "library",
+      url = ""
+    },
+    panelC = {
+      display = "Blood Sorcery chamber",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "ritualRoom",
+      url = ""
+    },
+    panelD = {
+      display = "Mountain training yard",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "windMed"
+      },
+      locationAudio = "weaponsTraining",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  rashid13 = {
+    key = "rashid13",
+    characters = {"rashid"},
+    startYear = 1901,
+    endYear = 1922,
+    location = "Constantinople, Ottoman Empire",
+    panelA = {
+      display = "Blood-memory chamber",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "ritualRoom",
+      url = ""
+    },
+    panelB = {
+      display = "Newspaper avenue",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
+      },
+      locationAudio = "horseDrawnTraffic",
+      url = ""
+    },
+    panelC = {
+      display = "Wartime harbor",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windMed"
+      },
+      locationAudio = "waterside",
+      url = ""
+    },
+    panelD = {
+      display = "Occupation checkpoint",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
+      },
+      locationAudio = "militaryOccupation",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  rashid18 = {
+    key = "rashid18",
+    characters = {"rashid"},
+    startYear = 1922,
+    endYear = 1952,
+    location = "Various Locations, Europe",
+    panelA = {
+      display = "Continental occult archive",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "library",
+      url = ""
+    },
+    panelB = {
+      display = "Interwar hotel café",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "diveBar",
+      url = ""
+    },
+    panelC = {
+      display = "Old-city tram square",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
+      },
+      locationAudio = "historicStreet",
+      url = ""
+    },
+    panelD = {
+      display = "International border station",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windMed"
+      },
+      locationAudio = "railwayStation",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  rashid21 = {
+    key = "rashid21",
+    characters = {"rashid"},
+    startYear = 1952,
+    endYear = 1997,
+    location = "Toronto, Canada",
+    panelA = {
+      display = "Hidden court",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "quietIndoor",
+      url = ""
+    },
+    panelB = {
+      display = "Immigrant commercial street",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
+      },
+      locationAudio = "streetcarTraffic",
+      url = ""
+    },
+    panelC = {
+      display = "Training room",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "weaponsTraining",
+      url = ""
+    },
+    panelD = {
+      display = "Operations archive",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "office",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+    },
+  },
+  rashid26 = {
+    key = "rashid26",
+    characters = {"rashid"},
+    startYear = 2013,
+    endYear = 2013,
+    location = "Odense, Denmark",
+    panelA = {
+      display = "Pact negotiation chamber",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "softIndoor",
+      url = ""
+    },
+    panelB = {
+      display = "Odense old town",
+      isOutdoors = true,
+      isDaytime = false,
+      weather = {
+        "rainLight",
+        "windLow"
+      },
+      locationAudio = "cityChatter",
+      url = ""
+    },
+    panelC = {
+      display = "Hotel caucus lounge",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "softIndoor",
+      url = ""
+    },
+    panelD = {
+      display = "Harbor Kindred venue",
+      isOutdoors = false,
+      isDaytime = false,
+      weather = {},
+      locationAudio = "nightclub",
+      url = ""
+    },
+    blindfoldURL = "",
+    splashText = "",
+    npcs = {
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
+      },
+      {
+        label = "",
+        tokenURL = "",
+        figurineURL = "",
       },
     },
   },
