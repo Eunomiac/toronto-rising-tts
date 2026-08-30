@@ -472,6 +472,7 @@ test("session-start overture uses Music C and holds Main until the sting ends", 
     "C.SessionStartBaseDuration = 71",
     "C.SessionStartAnimationData = {",
     "C.SessionStartIntroDelaySec = 0.25",
+    "C.SessionStartPlayEnterSettleSec = 0.5",
   ].forEach((needle) => {
     assert.ok(constants.includes(needle), `missing session intro constant: ${needle}`);
   });
@@ -511,6 +512,10 @@ test("session-start overture uses Music C and holds Main until the sting ends", 
   assert.ok(
     lightsKick >= 0 && explodeKick > lightsKick,
     "Play enter should apply OutdoorDim behind the cover before explode/sting (TOR-535)",
+  );
+  assert.ok(
+    playEnter.includes("return C.SessionStartPlayEnterSettleSec"),
+    "Play enter should wait SessionStartPlayEnterSettleSec after lights before explode (TOR-536)",
   );
   assert.ok(
     playEnter.includes("return C.SessionStartIntroDelaySec"),
@@ -559,6 +564,10 @@ test("session-start overture uses Music C and holds Main until the sting ends", 
   assert.ok(
     sceneLightIdx >= 0 && seatLightIdx > sceneLightIdx,
     "Play enter lights should apply OutdoorDim then reconcile player seat lights (TOR-504)",
+  );
+  assert.ok(
+    playLights.includes("transitionTime = 0"),
+    "Play enter seat lights should snap instantly behind the cover (TOR-536)",
   );
 
   const intermissionEnterStart = phases.indexOf("Phases.onEnter[C.Phases.INTERMISSION]");

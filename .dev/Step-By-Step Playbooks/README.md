@@ -53,6 +53,7 @@ Do not conflate **Steps** (author paste/click order), **Code Blocks** (IDE paste
 | --- | --- | --- |
 | [TOR-417-control-board-preview-verify.md](TOR-417-control-board-preview-verify.md) | **TOR-417** Control Board HERE/THERE preview editor | Draft isolation and commit lifecycle, Reset/Clear/Load, scene Apply, and one-shot Lock merge |
 | [TOR-281-clear-seat-verify.md](TOR-281-clear-seat-verify.md) | **TOR-281** Clear stage → return NPC to seat + library persistence | Sign-off when clearing stage returns seated NPCs correctly and seat toggles survive re-Apply |
+| [TOR-536-play-enter-settle-before-explode-verify.md](TOR-536-play-enter-settle-before-explode-verify.md) | **TOR-536** 0.5s settle behind cover before explode | Cover stays still, then first scale is smooth |
 | [TOR-535-play-enter-work-before-explode-verify.md](TOR-535-play-enter-work-before-explode-verify.md) | **TOR-535** Play-enter work behind cover; sting delay 0.25s | No hitch mid-first-cover; opening drum ~0.25s after scale starts |
 | [TOR-534-sting-delay-cover-sync-verify.md](TOR-534-sting-delay-cover-sync-verify.md) | **TOR-534** 0.5s delay before session-start sting | Opening drum hits with the first visible cover scale |
 | [TOR-533-cover-explode-drum-sync-verify.md](TOR-533-cover-explode-drum-sync-verify.md) | **TOR-533** Cover explode on the intro drum | First cover scale-and-fade hits with the session-start opening drum |

@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-08-30 — **TOR-535** (Play-enter lights behind cover; sting delay 0.25s). Inbox Immediate polish shipped (**TOR-517**–**TOR-525**). Author confirmed **TOR-98** (Spotlight phase), **TOR-508** (rain particle bootstrap miss), **TOR-509** (hidden skyboxes), and **TOR-510** (Memoriam skybox catalog). **TOR-439** remains a multiclient gate (not a solo Save & Play)._
+_Last populated: 2026-08-30 — **TOR-536** (0.5s settle behind cover before explode). Inbox Immediate polish shipped (**TOR-517**–**TOR-525**). Author confirmed **TOR-98** (Spotlight phase), **TOR-508** (rain particle bootstrap miss), **TOR-509** (hidden skyboxes), and **TOR-510** (Memoriam skybox catalog). **TOR-439** remains a multiclient gate (not a solo Save & Play)._
 
 ### High — session / join / first-load
 
@@ -64,6 +64,12 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 ---
 
 ### Medium — overlay / HUD / Spotlight
+
+#### TOR-536 — Cover stays still half a second, then explode starts smoothly
+
+**How to verify:** Save & Play. Follow [.dev/Step-By-Step Playbooks/TOR-536-play-enter-settle-before-explode-verify.md](Step-By-Step%20Playbooks/TOR-536-play-enter-settle-before-explode-verify.md). After the setup paste, Advance starts on its own. The cover should stay fully up for about half a second after lighting. Then it should start scaling smoothly — no stutter or freeze in the middle. About a quarter-second after that first visible scale, the session-start song’s opening drum should hit.
+
+**Context:** The behind-cover wait was only a twentieth of a second, and seat lights were still easing over two seconds. Lights now snap instantly behind the cover, then Play enter waits 0.5s before fade/explode/sting.
 
 #### TOR-535 — Play-enter work finishes behind the cover; opening drum waits 0.25s
 

@@ -374,6 +374,8 @@ end
 --- Ambient/main lights apply in Scenes.reconcileFromState; player seat lights need
 --- L.reconcileAllPlayers because U.applyLightingPreset only stores the seat preset map (TOR-504).
 --- Runs before explode/sting so this force-reconcile cannot hitch the cover lerp (TOR-535).
+--- Seat lights snap instantly (`transitionTime = 0`) so the default 2s lerp cannot overlap
+--- the explode (TOR-536).
 function Phases.applyPlayEnterNoSceneLights(_ctx)
     S.setStateVal("default", "currentScene")
     S.setStateVal(nil, "sceneTransition")
@@ -392,7 +394,7 @@ function Phases.applyPlayEnterNoSceneLights(_ctx)
         L.invalidateReconcileCache()
     end
     if type(L.reconcileAllPlayers) == "function" then
-        L.reconcileAllPlayers({ force = true })
+        L.reconcileAllPlayers({ force = true, transitionTime = 0 })
     end
     return true
 end
@@ -601,9 +603,9 @@ Phases.onEnter[C.Phases.PLAY] = function(ctx)
         end,
         function()
             -- OutdoorDim + seat lights behind the cover before explode/sting (TOR-535).
-            -- Brief settle so TTS lighting work is not on the same tick as the cover lerp.
+            -- Then wait so TTS can finish those applies before fade/explode (TOR-536).
             Phases.applyPlayEnterNoSceneLights(ctx)
-            return 0.05
+            return C.SessionStartPlayEnterSettleSec
         end,
         function()
             -- Cover scale-and-fade first; Loop fade starts now. Sting waits 0.25s so the

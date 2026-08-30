@@ -379,7 +379,7 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 
 **Require:** `local SessionExplode = require("core.session_explode")`
 
-Play enter paints HUD behind the cover first (`Phases.armPlayHudBehindCover`, TOR-532), then applies OutdoorDim + seat lights (`Phases.applyPlayEnterNoSceneLights`, TOR-535) while the cover is still up. Then it kicks `SessionExplode.play()` (cover lerp starts immediately) and fades Intermission Loop. After `C.SessionStartIntroDelaySec` (0.25s) it runs `Phases.fireSessionIntro` (Music C sting) so the opening drum hits with the first visible cover scale (TOR-534 / TOR-535). Wait `sequenceDurationSec()` on the Play-enter chain (scales with that session's `songDuration`).
+Play enter paints HUD behind the cover first (`Phases.armPlayHudBehindCover`, TOR-532), then applies OutdoorDim + seat lights (`Phases.applyPlayEnterNoSceneLights`, TOR-535) while the cover is still up. Seat lights snap instantly; Play enter then waits `C.SessionStartPlayEnterSettleSec` (0.5s) before fade/explode (TOR-536). Then it kicks `SessionExplode.play()` (cover lerp starts immediately) and fades Intermission Loop. After `C.SessionStartIntroDelaySec` (0.25s) it runs `Phases.fireSessionIntro` (Music C sting) so the opening drum hits with the first visible cover scale (TOR-534 / TOR-535). Wait `sequenceDurationSec()` on the Play-enter chain (scales with that session's `songDuration`).
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
