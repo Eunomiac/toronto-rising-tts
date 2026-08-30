@@ -373,6 +373,7 @@ end
 --- Table/skybox prep already ran on Intermission enter (TOR-497).
 --- Ambient/main lights apply in Scenes.reconcileFromState; player seat lights need
 --- L.reconcileAllPlayers because U.applyLightingPreset only stores the seat preset map (TOR-504).
+--- Runs before explode/sting so this force-reconcile cannot hitch the cover lerp (TOR-535).
 function Phases.applyPlayEnterNoSceneLights(_ctx)
     S.setStateVal("default", "currentScene")
     S.setStateVal(nil, "sceneTransition")
@@ -396,8 +397,8 @@ function Phases.applyPlayEnterNoSceneLights(_ctx)
     return true
 end
 
---- Intermission → Play: start TR_Loop fade-out when the cover explode starts so the
---- fade finishes as the delayed Music C sting begins (TOR-534).
+--- Intermission → Play: start TR_Loop fade-out when the cover explode starts (TOR-534).
+--- Sting waits `C.SessionStartIntroDelaySec` after that.
 -- @param _ctx table|nil
 -- @return boolean
 function Phases.fadeIntermissionLoopForPlayEnter(_ctx)
@@ -599,8 +600,14 @@ Phases.onEnter[C.Phases.PLAY] = function(ctx)
             return Phases.armPlayHudBehindCover(ctx)
         end,
         function()
-            -- Cover scale-and-fade first; Loop fade starts now. Sting waits 0.5s so the
-            -- opening drum hits with the first visible cover scale (TOR-533 / TOR-534).
+            -- OutdoorDim + seat lights behind the cover before explode/sting (TOR-535).
+            -- Brief settle so TTS lighting work is not on the same tick as the cover lerp.
+            Phases.applyPlayEnterNoSceneLights(ctx)
+            return 0.05
+        end,
+        function()
+            -- Cover scale-and-fade first; Loop fade starts now. Sting waits 0.25s so the
+            -- opening drum hits with the first visible cover scale (TOR-533 / TOR-535).
             local SE = require("core.session_explode")
             SE.play()
             Phases.fadeIntermissionLoopForPlayEnter(ctx)
@@ -608,10 +615,6 @@ Phases.onEnter[C.Phases.PLAY] = function(ctx)
         end,
         function()
             return Phases.fireSessionIntro(ctx)
-        end,
-        function()
-            -- Lighting only (AdminDark → OutdoorDim) while the sting and explode are already playing.
-            return Phases.applyPlayEnterNoSceneLights(ctx)
         end,
         function()
             return Phases.sessionIntroBlindfoldHoldSec(ctx)
