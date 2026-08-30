@@ -708,4 +708,8 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 
 | 2026-08-30 | CREATE+SHIP | TOR-531 | Wire TEST BED session-start explode into Play enter; intro key/duration from SessionStartAnimationData[sessionNum]. relatedTo TOR-516 / TOR-497. Pending Save & Play. |
 
+| 2026-08-30 | CREATE+SHIP | TOR-532 | Arm Play HUD behind Intermission→Play cover; skip unchanged overlay active writes. relatedTo TOR-531 / TOR-362. Pending Save & Play. |
+
+| 2026-08-30 | CREATE+SHIP | TOR-533 | Kick cover explode before session-start sting so the opening drum matches the first scale. relatedTo TOR-531 / TOR-515. Pending Save & Play. |
+
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

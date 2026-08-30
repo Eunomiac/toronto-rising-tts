@@ -41,6 +41,10 @@ local lastRealTickClock = nil
 --- Last pushed UI text values to avoid redundant `UI.setValue` on hot paths (RT tick).
 local overlayTextCache = {}
 
+--- Last pushed `active` flags. Skip unchanged writes so Advance `onComplete` cannot
+--- retrigger a TTS show after Play enter already armed the overlay behind the cover (TOR-532).
+local overlayActiveCache = {}
+
 --- Last district-separator and datetime/time chrome fingerprints (avoid `UI.setAttributes` on every Sync.full).
 local lastDistrictSeparatorFingerprint = nil
 local lastOverlayChromeFingerprint = nil
@@ -112,8 +116,12 @@ local function pushOverlayActive(id, active)
     if UI == nil or UI.setAttribute == nil then
         return
     end
-    -- Always write active flags (no cache): scene/phase changes must not be skipped after a prior hide.
-    U.setAttribute(id, "active", active and "true" or "false")
+    local nextVal = active and "true" or "false"
+    if overlayActiveCache[id] == nextVal then
+        return
+    end
+    U.setAttribute(id, "active", nextVal)
+    overlayActiveCache[id] = nextVal
 end
 
 --- @param attrs table `{ text: string, fontStyle: string, active: boolean }`

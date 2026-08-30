@@ -479,6 +479,7 @@ test("session-start overture uses Music C and holds Main until the sting ends", 
     "local INTERMISSION_TO_PLAY_LOOP_FADE_SEC = 0.5",
     "function Phases.fireSessionIntro(_ctx)",
     "function Phases.sessionIntroBlindfoldHoldSec(_ctx)",
+    "function Phases.armPlayHudBehindCover(_ctx)",
     "SE.play()",
     "function Phases.startPlayMainAfterSessionIntro(_ctx)",
     "function Phases.applyPlayEnterNoSceneLights(_ctx)",
@@ -498,6 +499,16 @@ test("session-start overture uses Music C and holds Main until the sting ends", 
   assert.ok(playEnterStart >= 0 && playEnterEnd > playEnterStart, "missing Play enter steps");
   const playEnter = phases.slice(playEnterStart, playEnterEnd);
   assert.ok(playEnter.includes("SE.play()"), "Play enter should start SessionExplode.play with the overture");
+  const explodeKick = playEnter.indexOf("SE.play()");
+  const stingKick = playEnter.indexOf("Phases.fireSessionIntro(ctx)");
+  assert.ok(
+    explodeKick >= 0 && stingKick > explodeKick,
+    "Play enter should kick the cover explode before the Music C sting (TOR-533)",
+  );
+  assert.ok(
+    playEnter.includes("Phases.armPlayHudBehindCover"),
+    "Play enter should arm HUD behind the cover before the explode hide",
+  );
   assert.equal(
     playEnter.includes("Phases.hideGlobalBlindfold"),
     false,

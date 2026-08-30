@@ -558,6 +558,23 @@ Phases.onEnter[C.Phases.INTERMISSION] = function(ctx)
     }
 end
 
+--- Paint Play HUD while the global cover is still up so the explode hide does not
+--- reveal a blank overlay (TOR-532). Phase is already PLAY (set before enter steps).
+--- Overlay and player HUD live behind the cover; they can be shown at any time.
+-- @param _ctx table|nil
+-- @return boolean
+function Phases.armPlayHudBehindCover(_ctx)
+    if type(UpdateUIDisplays) == "function" then
+        UpdateUIDisplays({
+            phase = true,
+            gameStateOverlay = true,
+            playerHud = true,
+            overlays = true,
+        })
+    end
+    return true
+end
+
 Phases.onEnter[C.Phases.PLAY] = function(ctx)
     return {
         function()
@@ -571,10 +588,14 @@ Phases.onEnter[C.Phases.PLAY] = function(ctx)
             return Phases.showGlobalBlindfold(ctx)
         end,
         function()
-            -- 0.5s Loop fade + immediate Music C sting; explode starts on the same beat.
-            Phases.fireSessionIntro(ctx)
+            return Phases.armPlayHudBehindCover(ctx)
+        end,
+        function()
+            -- Cover scale-and-fade first, then the Music C sting, so the opening drum
+            -- is not already playing while explodeImage is still setting up (TOR-533).
             local SE = require("core.session_explode")
             SE.play()
+            Phases.fireSessionIntro(ctx)
             return true
         end,
         function()

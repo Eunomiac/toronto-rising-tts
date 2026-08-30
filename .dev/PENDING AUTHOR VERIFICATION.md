@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-08-30 — **TOR-531** (TEST BED session-start explode + per-session intro data). Inbox Immediate polish shipped (**TOR-517**–**TOR-525**). Author confirmed **TOR-98** (Spotlight phase), **TOR-508** (rain particle bootstrap miss), **TOR-509** (hidden skyboxes), and **TOR-510** (Memoriam skybox catalog). **TOR-439** remains a multiclient gate (not a solo Save & Play)._
+_Last populated: 2026-08-30 — **TOR-533** (cover explode on the intro drum) and **TOR-532** (HUD ready behind Intermission→Play cover). Inbox Immediate polish shipped (**TOR-517**–**TOR-525**). Author confirmed **TOR-98** (Spotlight phase), **TOR-508** (rain particle bootstrap miss), **TOR-509** (hidden skyboxes), and **TOR-510** (Memoriam skybox catalog). **TOR-439** remains a multiclient gate (not a solo Save & Play)._
 
 ### High — session / join / first-load
 
@@ -65,43 +65,57 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 ### Medium — overlay / HUD / Spotlight
 
+#### TOR-533 — First cover explode hits with the session-start drum
+
+**How to verify:** Save & Play. Follow [.dev/Step-By-Step Playbooks/TOR-533-cover-explode-drum-sync-verify.md](Step-By-Step%20Playbooks/TOR-533-cover-explode-drum-sync-verify.md) (same Advance as TOR-532). Listen for the opening drum of the session-start song: the front cover image should start its scale-and-fade on that hit, not a moment later.
+
+**Context:** The sting used to start first; Lua then still had to reset layers and wait a chain step before the cover lerp. The explode now starts, then the sting.
+
+#### TOR-532 — Clock overlay already painted when the session-start cover lifts
+
+**How to verify:** Save & Play. Follow [.dev/Step-By-Step Playbooks/TOR-532-hud-behind-cover-verify.md](Step-By-Step%20Playbooks/TOR-532-hud-behind-cover-verify.md). After the setup paste, Intermission→Play Advance starts on its own. About two seconds in, the console should say the clock/location overlay is already on while the stacked cover is still up. Keep watching until the cover hides near the end of the song: the overlay (and the rest of the HUD) should already be there — it should not pop in after the cover lifts.
+
+**Context:** Overlay visibility is Play-gated, so it used to wait until Advance finished (after the cover hide). It now turns on behind the cover at the start of Play enter.
+
 #### TOR-517 — Hide humidity on the weather overlay
 
 **How to verify:** Save & Play. During a live outdoor scene, the weather panel should still show the weather words, wind, and temperatures. Humidity text (damp / dry / etc.) should no longer appear next to them.
 
 **Context:** Humidity is still stored in the chronicle weather codes; it is just not shown on the overlay.
 
-#### TOR-518 — Tighten PCs panel vertical spacing
+#### ❌ TOR-518 — Tighten PCs panel vertical spacing
 
 **How to verify:** Save & Play. Open the Storyteller PCs panel. You should be able to leave it at full size and still fit it on screen. Seat names, Desire, track glyphs, and button labels should be the same font size as before, not smaller. Rows and buttons should sit closer together vertically.
 
 **Context:** The panel was scaled down to 0.75 so it would fit, which made the text hard to read.
 
-#### TOR-519 — Scene library buttons show the scene name only
+**Validation Failures:** The panels still take up too much vertical space. It looks like there's still some spacing/padding that could be removed, and the heights of each row could also be reduced a fair bit (this will require adjusting preferredHeight and minHeight attributes, of both the container elements and the child elements).
+
+#### ✅ TOR-519 — Scene library buttons show the scene name only
 
 **How to verify:** Save & Play. Open the Scenes panel. Each library button should show only the scene name (or a short truncation). Green/blue/grey colors should still mark selected, pending, and unlinked rows. You should not see “· live”, “· mirror”, or “· unlink” on the buttons.
 
 **Context:** Color already tells you selected vs unlinked.
 
-#### TOR-520 — Rain particle emitter follows the table
+#### ✅ TOR-520 — Rain particle emitter follows the table
 
 **How to verify:** Save & Play. Switch Table A → B → C from the Scenes panel. The rain particle object should stay centered over the current table. Its height should not jump.
 
 **Context:** Floor and plinth already followed the table origin; the rain particles now do the same on X and Z.
 
-#### TOR-521 — Right-click the player camera button for default view
+#### ✅ TOR-521 — Right-click the player camera button for default view
 
 **How to verify:** Save & Play while seated as a player (or hotseat a player color). Left-click the camera icon still opens the picker. Right-click the camera icon should jump you to that seat’s default table camera and close the picker.
 
 **Context:** The camera icon is the one on the player overlay, not the inner default/dice/sheet buttons.
 
-#### TOR-522 — Character-sheet center-strip right-click uses roll camera
+#### ✅ TOR-522 — Character-sheet center-strip right-click uses roll camera
 
 **How to verify:** Save & Play. Right-click the inner/center strip of a character sheet. Your camera should move to that character’s roll view (the lower, closer roll preset), not the high dice-tray preset. Left-click on the strip should still go to the sheet camera.
 
 **Context:** This amends the earlier dice-tray right-click on the same strip.
 
-#### TOR-523 — Spotlight carousel Y −55, center Z 125
+#### ✅ TOR-523 — Spotlight carousel Y −55, center Z 125
 
 **How to verify:** Save & Play. Advance into Spotlight. The stand-in figurines should sit on a ring whose center is at X 0, Z 125, with figurines at Y about −55. Rotation and facing (outward / front person toward the table) should still work.
 
@@ -113,19 +127,21 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 **Context:** The script does not switch the image back; a reload restores the XML default.
 
-#### TOR-525 — Session number and title grow at the same rate
+#### ✅ TOR-525 — Session number and title grow at the same rate
 
 **How to verify:** Save & Play. Advance Intermission → Play and watch the session-start explode. The session number and the session title should grow toward the camera at the same speed. Character still-text / art pairs earlier in the sequence should be unchanged.
 
 **Context:** They previously used different scale and waver timings.
 
-#### TOR-528 — DEBUG.resetToIntermission for intro re-tests
+#### ⚠️ TOR-528 — DEBUG.resetToIntermission for intro re-tests
 
 **How to verify:** Save & Play. In the Host console run `lua DEBUG.resetToIntermission()`. The global session cover should come back with the usual session-start art (not the End blindfold). You should hear the looping Intermission theme (TR_Loop), not the session-start overture or Main. The Phases panel should show Intermission. Click **Advance →**: the intro animation and overture should play again. You can run the console command again after the intro — or even while it is still playing — to jump back without going through Spotlight and End. Tables, skyboxes, and seat piles should stay where they were.
 
 **Context:** Debug helper only. It does not run the full Intermission enter (no no-scene table prep).
 
-#### TOR-531 — Session-start explode matches TEST BED; intro follows session number
+**Correction:** Remove the print-to-file debug output.
+
+#### ✅ TOR-531 — Session-start explode matches TEST BED; intro follows session number
 
 **How to verify:** Save & Play. Follow [.dev/Step-By-Step Playbooks/TOR-531-session-start-explode-verify.md](Step-By-Step%20Playbooks/TOR-531-session-start-explode-verify.md). After the setup paste, click **Advance →** from Intermission. The looping Intermission theme should fade, the session-start song should start immediately, and the stacked cover should explode the way it did in the TEST BED: front cover first, then five character pairs (the art drifts; the name text fades in a moment later), then the session number and title grow together. The global cover should hide near the end of the song. You can also set the session number to something with no row in the constants table (for example 99); Advance should still play the session-1 track instead of erroring.
 

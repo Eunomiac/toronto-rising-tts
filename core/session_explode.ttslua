@@ -2,8 +2,10 @@
     Session-start explode for the stacked global cover (Intermission → Play).
 
     Starts in the same Play-enter step as the Music C session-starter sting.
-    Layer timings match the author-tuned TEST BED sequence. Wall-clock times
-    scale by songDuration / C.SessionStartBaseDuration for the current session.
+    Cover explode is kicked first so the opening drum is not already playing
+    while the lerp is still being set up (TOR-533). Layer timings match the
+    author-tuned TEST BED sequence. Wall-clock times scale by
+    songDuration / C.SessionStartBaseDuration for the current session.
 ]]
 
 local SessionExplode = {}
@@ -365,17 +367,27 @@ function SessionExplode.explodeImage(id, config)
         startAlpha = 0
     end
 
-    local steps = {
-        function()
-            U.setAttributes(id, {
-                active = "true",
-                color = string.format("rgba(1, 1, 1, %.4f)", startAlpha),
-                scale = "1",
-                offsetXY = "0 0",
-            })
+    -- Cover explode has no delay/waver: fold the reset into the scale lerp's first (sync)
+    -- chain step so U.Lerp starts in the same tick as explodeImage(), not after `return 0`
+    -- (numeric 0 still goes through chainWait / a nested coroutine — TOR-533).
+    local combineSetupWithScale = startDelay <= 0 and waverTime <= 0 and scaleTime > 0
+
+    local function applyStartAttrs()
+        U.setAttributes(id, {
+            active = "true",
+            color = string.format("rgba(1, 1, 1, %.4f)", startAlpha),
+            scale = "1",
+            offsetXY = "0 0",
+        })
+    end
+
+    local steps = {}
+    if not combineSetupWithScale then
+        table.insert(steps, function()
+            applyStartAttrs()
             return 0
-        end,
-    }
+        end)
+    end
 
     if startDelay > 0 then
         table.insert(steps, function()
@@ -430,6 +442,9 @@ function SessionExplode.explodeImage(id, config)
 
     if scaleTime > 0 then
         table.insert(steps, function()
+            if combineSetupWithScale then
+                applyStartAttrs()
+            end
             return U.Lerp(function(t)
                 if not stillCurrent(id, gen) then
                     return
@@ -496,19 +511,15 @@ function SessionExplode.play()
         explodeGenById[id] = idGen + 1
     end
     SessionExplode.resetLayers()
+    -- Cover lerp starts here (same tick as play()) so Play enter can fire the sting
+    -- immediately after, on the opening drum (TOR-533).
+    SessionExplode.explodeImage(COVER_ID, {
+        waverTime = 0,
+        scaleTime = COVER_SCALE_DUR,
+        songDuration = songDuration,
+    })
 
     U.chain({
-        function()
-            if sequenceGen ~= gen then
-                return
-            end
-            SessionExplode.explodeImage(COVER_ID, {
-                waverTime = 0,
-                scaleTime = COVER_SCALE_DUR,
-                songDuration = songDuration,
-            })
-            return 0
-        end,
         function()
             if sequenceGen ~= gen then
                 return
