@@ -6981,6 +6981,7 @@ UI.setAttributes("overlay_globalBlindfold_panel", {raycastTarget = "false"})
   <Image id="overlay_globalBlindfold_sessionSplash_1_2_A" class="global_blindfold" image="overlay_explode_text_fomorach" />
   <Image id="overlay_globalBlindfold_sessionSplash_1_1_B" class="global_blindfold" image="overlay_explode_image_blackCaesar" />
   <Image id="overlay_globalBlindfold_sessionSplash_1_1_A" class="global_blindfold" image="overlay_explode_text_blackCaesar" />
+  <Image id="overlay_globalBlindfold_frame" class="global_blindfold" image="overlay_explode_frame" color="rgba(1, 1, 1, 1)" />
   <Image id="overlay_globalBlindfold" class="global_blindfold" image="global_blindfold_session_1" color="rgba(1, 1, 1, 1)" />
 </Panel>
 
@@ -7185,24 +7186,25 @@ UI.setAttributes("overlay_globalBlindfold_panel", {raycastTarget = "false"})
 <!-- Classes for Storyteller PCs panel (`panel_pcs.xml`). Seat tint `color` stays per-Panel; ids and row label text stay on elements. -->
 <!-- Agent guidance: .dev/tts-api/UI API/Defaults.md -->
 <Defaults>
-  <Panel class="pcs_panel_root" padding="3 3 3 3" scale="1" pivot="0 1" width="680" color="rgba(0, 0, 0, 0.8)" />
-  <VerticalLayout class="pcs_root_vl" spacing="3" childAlignment="UpperLeft" childForceExpandWidth="false" />
+  <Panel class="pcs_panel_root" padding="1 2 1 2" scale="1" pivot="0 1" width="680" color="rgba(0, 0, 0, 0.8)" />
+  <VerticalLayout class="pcs_root_vl" spacing="1" childAlignment="UpperLeft" childForceExpandWidth="false" />
 
-  <Panel class="pcs_seat_block" padding="2 6 2 6" />
-  <VerticalLayout class="pcs_seat_column" spacing="2" flexibleWidth="1" childForceExpandWidth="false" />
+  <Panel class="pcs_seat_block" padding="1 2 1 2" />
+  <VerticalLayout class="pcs_seat_column" spacing="1" flexibleWidth="1" childForceExpandWidth="false" />
 
-  <Text class="pcs_row_title" fontSize="13" fontStyle="Bold" color="#F5F5F5" />
-  <Text class="pcs_char_title" fontSize="17" fontStyle="Bold" color="#FFFFFF" />
-  <Text class="pcs_desire_text" fontSize="12" color="#FCE5C1" preferredWidth="480" minWidth="200" flexibleWidth="1" alignment="MiddleLeft" />
+  <Text class="pcs_row_title" fontSize="13" fontStyle="Bold" color="#F5F5F5" preferredHeight="16" minHeight="16" />
+  <Text class="pcs_char_title" fontSize="17" fontStyle="Bold" color="#FFFFFF" preferredHeight="20" minHeight="20" />
+  <Text class="pcs_desire_text" fontSize="12" color="#FCE5C1" preferredWidth="480" minWidth="200" preferredHeight="18" minHeight="16" flexibleWidth="1" alignment="MiddleLeft" />
 
-  <HorizontalLayout class="pcs_stat_row" spacing="3" height="22" childForceExpandWidth="false" />
+  <HorizontalLayout class="pcs_stat_row" spacing="2" height="18" preferredHeight="18" minHeight="18" childForceExpandWidth="false" />
+  <HorizontalLayout class="pcs_track_row" spacing="2" height="28" preferredHeight="28" minHeight="28" childForceExpandWidth="false" />
 
   <Text class="pcs_prefix_wide" fontSize="11" fontStyle="Bold" color="#FFFFFF" preferredWidth="42" minWidth="42" flexibleWidth="0" alignment="MiddleLeft" />
   <Text class="pcs_prefix_desire" fontSize="11" fontStyle="Bold" color="#FFFFFF" preferredWidth="56" minWidth="56" flexibleWidth="0" alignment="MiddleLeft" />
   <Text class="pcs_prefix_hg" fontSize="11" fontStyle="Bold" color="#FFFFFF" preferredWidth="36" minWidth="36" flexibleWidth="0" alignment="MiddleLeft" />
 
-  <Text class="pcs_track_damage" fontSize="27" fontStyle="Bold" color="#EEEEEE" preferredWidth="280" minWidth="280" flexibleWidth="0" alignment="MiddleLeft" />
-  <Text class="pcs_track_hum" fontSize="27" fontStyle="Bold"  color="#E8DDFF" preferredWidth="280" minWidth="280" flexibleWidth="0" alignment="MiddleLeft" />
+  <Text class="pcs_track_damage" fontSize="27" fontStyle="Bold" color="#EEEEEE" preferredWidth="280" minWidth="280" preferredHeight="28" minHeight="28" flexibleWidth="0" alignment="MiddleLeft" />
+  <Text class="pcs_track_hum" fontSize="27" fontStyle="Bold"  color="#E8DDFF" preferredWidth="280" minWidth="280" preferredHeight="28" minHeight="28" flexibleWidth="0" alignment="MiddleLeft" />
 
   <Text class="pcs_buf_agg" fontSize="11" color="#FFCCCC" preferredWidth="34" minWidth="34" flexibleWidth="0" alignment="MiddleCenter" />
   <Text class="pcs_buf_neutral" fontSize="11" color="#EEEEEE" preferredWidth="34" minWidth="34" flexibleWidth="0" alignment="MiddleCenter" />
@@ -7216,17 +7218,17 @@ UI.setAttributes("overlay_globalBlindfold_panel", {raycastTarget = "false"})
   <Text class="pcs_torpor_lbl" fontSize="11" color="#F0F0F0" preferredWidth="72" minWidth="72" flexibleWidth="0" alignment="MiddleLeft" />
 
   <!-- Shared button base; pair with a palette class. `text` and `id` stay on the element. -->
-  <Button class="pcs_btn" onClick="HUD_pcPanel" textColor="#FFFFFFFF" height="22" fontSize="12" flexibleWidth="0" />
+  <Button class="pcs_btn" onClick="HUD_pcPanel" textColor="#FFFFFFFF" height="18" preferredHeight="18" minHeight="18" fontSize="12" flexibleWidth="0" />
   <Button class="pcs_btn_arrow" preferredWidth="30" minWidth="30" />
   <Button class="pcs_btn_apply_64" preferredWidth="64" minWidth="64" text="Apply" />
   <Button class="pcs_btn_apply_58" preferredWidth="58" minWidth="58" text="Apply" />
   <Button class="pcs_btn_clear_52" preferredWidth="52" minWidth="52" text="Clear" />
   <Button class="pcs_btn_torpor" preferredWidth="76" minWidth="76" text="Torpor" />
-  <Button class="pcs_btn_cond" preferredWidth="86" minWidth="80" fontSize="10" height="22" />
-  <Button class="pcs_btn_auto_seat" preferredWidth="88" minWidth="80" fontSize="10" height="22" text="Auto-Seat" />
-  <Button class="pcs_btn_connect" preferredWidth="72" minWidth="64" fontSize="10" height="22" text="Connect" />
-  <Toggle class="pcs_join_toggle" preferredWidth="128" minWidth="110" fontSize="11" textColor="#FFFFFF" />
-  <Toggle class="pcs_absent_toggle" preferredWidth="72" minWidth="64" fontSize="11" textColor="#FFFFFF" />
+  <Button class="pcs_btn_cond" preferredWidth="86" minWidth="80" fontSize="10" height="18" preferredHeight="18" minHeight="18" />
+  <Button class="pcs_btn_auto_seat" preferredWidth="88" minWidth="80" fontSize="10" height="18" preferredHeight="18" minHeight="18" text="Auto-Seat" />
+  <Button class="pcs_btn_connect" preferredWidth="72" minWidth="64" fontSize="10" height="18" preferredHeight="18" minHeight="18" text="Connect" />
+  <Toggle class="pcs_join_toggle" preferredWidth="128" minWidth="110" fontSize="11" height="18" preferredHeight="18" minHeight="18" textColor="#FFFFFF" />
+  <Toggle class="pcs_absent_toggle" preferredWidth="72" minWidth="64" fontSize="11" height="18" preferredHeight="18" minHeight="18" textColor="#FFFFFF" />
 
   <Button class="pcs_btn_palette_agg" colors="#662222|#883333|#991111|rgba(0.5,0.1,0.1,0.4)" />
   <Button class="pcs_btn_palette_sup" colors="#444444|#555555|#666666|rgba(0.2,0.2,0.2,0.4)" />
@@ -7242,7 +7244,7 @@ UI.setAttributes("overlay_globalBlindfold_panel", {raycastTarget = "false"})
   <Button class="pcs_btn_palette_join" colors="#1A3A4A|#285060|#3A7080|rgba(0.1,0.2,0.25,0.5)" />
 
   <!-- Roll initiation buttons: compact, shared base size -->
-  <Button class="pcs_btn_roll" preferredWidth="52" minWidth="46" fontSize="10" height="22" onClick="HUD_rollInitiate" />
+  <Button class="pcs_btn_roll" preferredWidth="52" minWidth="46" fontSize="10" height="18" preferredHeight="18" minHeight="18" onClick="HUD_rollInitiate" />
   <Button class="pcs_btn_palette_roll_std"     colors="#1A3A1A|#285028|#3A7A3A|rgba(0.1,0.25,0.1,0.5)"  />
   <Button class="pcs_btn_palette_roll_simple"  colors="#1A1A3A|#282850|#3A3A7A|rgba(0.1,0.1,0.25,0.5)"  />
   <Button class="pcs_btn_palette_roll_rouse"   colors="#3A1A0A|#502810|#7A3A10|rgba(0.25,0.1,0.04,0.5)" />
@@ -8926,7 +8928,7 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_launch_Brown"     text="Launch" />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_goal_Brown"       text="Goal"   />
         </HorizontalLayout>
-        <HorizontalLayout class="pcs_stat_row">
+        <HorizontalLayout class="pcs_track_row">
           <Text class="pcs_prefix_wide">HP:</Text>
           <Text class="pcs_track_damage" id="pcs_hpTrack_Brown"></Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Brown_hpAggUp" text="▲" />
@@ -8937,7 +8939,7 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Brown_hpSupDown" text="▼" />
           <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_track_apply" id="pcs_Brown_hpApply" />
         </HorizontalLayout>
-        <HorizontalLayout class="pcs_stat_row">
+        <HorizontalLayout class="pcs_track_row">
           <Text class="pcs_prefix_wide">WP:</Text>
           <Text class="pcs_track_damage" id="pcs_wpTrack_Brown"> </Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Brown_wpAggUp" text="▲" />
@@ -8948,7 +8950,7 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Brown_wpSupDown" text="▼" />
           <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_track_apply" id="pcs_Brown_wpApply" />
         </HorizontalLayout>
-        <HorizontalLayout class="pcs_stat_row">
+        <HorizontalLayout class="pcs_track_row">
           <Text class="pcs_prefix_wide">Hum:</Text>
           <Text class="pcs_track_hum" id="pcs_humTrack_Brown"> </Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum" id="pcs_Brown_humUp" text="▲" />
@@ -9011,7 +9013,7 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_launch_Orange"     text="Launch" />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_goal_Orange"       text="Goal"   />
         </HorizontalLayout>
-        <HorizontalLayout class="pcs_stat_row">
+        <HorizontalLayout class="pcs_track_row">
           <Text class="pcs_prefix_wide">HP:</Text>
           <Text class="pcs_track_damage" id="pcs_hpTrack_Orange"> </Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Orange_hpAggUp" text="▲" />
@@ -9022,7 +9024,7 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Orange_hpSupDown" text="▼" />
           <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_track_apply" id="pcs_Orange_hpApply" />
         </HorizontalLayout>
-        <HorizontalLayout class="pcs_stat_row">
+        <HorizontalLayout class="pcs_track_row">
           <Text class="pcs_prefix_wide">WP:</Text>
           <Text class="pcs_track_damage" id="pcs_wpTrack_Orange"> </Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Orange_wpAggUp" text="▲" />
@@ -9033,7 +9035,7 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Orange_wpSupDown" text="▼" />
           <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_track_apply" id="pcs_Orange_wpApply" />
         </HorizontalLayout>
-        <HorizontalLayout class="pcs_stat_row">
+        <HorizontalLayout class="pcs_track_row">
           <Text class="pcs_prefix_wide">Hum:</Text>
           <Text class="pcs_track_hum" id="pcs_humTrack_Orange"> </Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum" id="pcs_Orange_humUp" text="▲" />
@@ -9096,7 +9098,7 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_launch_Red"     text="Launch" />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_goal_Red"       text="Goal"   />
         </HorizontalLayout>
-        <HorizontalLayout class="pcs_stat_row">
+        <HorizontalLayout class="pcs_track_row">
           <Text class="pcs_prefix_wide">HP:</Text>
           <Text class="pcs_track_damage" id="pcs_hpTrack_Red"> </Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Red_hpAggUp" text="▲" />
@@ -9107,7 +9109,7 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Red_hpSupDown" text="▼" />
           <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_track_apply" id="pcs_Red_hpApply" />
         </HorizontalLayout>
-        <HorizontalLayout class="pcs_stat_row">
+        <HorizontalLayout class="pcs_track_row">
           <Text class="pcs_prefix_wide">WP:</Text>
           <Text class="pcs_track_damage" id="pcs_wpTrack_Red"> </Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Red_wpAggUp" text="▲" />
@@ -9118,7 +9120,7 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Red_wpSupDown" text="▼" />
           <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_track_apply" id="pcs_Red_wpApply" />
         </HorizontalLayout>
-        <HorizontalLayout class="pcs_stat_row">
+        <HorizontalLayout class="pcs_track_row">
           <Text class="pcs_prefix_wide">Hum:</Text>
           <Text class="pcs_track_hum" id="pcs_humTrack_Red"> </Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum" id="pcs_Red_humUp" text="▲" />
@@ -9181,7 +9183,7 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_launch_Pink"     text="Launch" />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_goal_Pink"       text="Goal"   />
         </HorizontalLayout>
-        <HorizontalLayout class="pcs_stat_row">
+        <HorizontalLayout class="pcs_track_row">
           <Text class="pcs_prefix_wide">HP:</Text>
           <Text class="pcs_track_damage" id="pcs_hpTrack_Pink"> </Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Pink_hpAggUp" text="▲" />
@@ -9192,7 +9194,7 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Pink_hpSupDown" text="▼" />
           <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_track_apply" id="pcs_Pink_hpApply" />
         </HorizontalLayout>
-        <HorizontalLayout class="pcs_stat_row">
+        <HorizontalLayout class="pcs_track_row">
           <Text class="pcs_prefix_wide">WP:</Text>
           <Text class="pcs_track_damage" id="pcs_wpTrack_Pink"> </Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Pink_wpAggUp" text="▲" />
@@ -9203,7 +9205,7 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Pink_wpSupDown" text="▼" />
           <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_track_apply" id="pcs_Pink_wpApply" />
         </HorizontalLayout>
-        <HorizontalLayout class="pcs_stat_row">
+        <HorizontalLayout class="pcs_track_row">
           <Text class="pcs_prefix_wide">Hum:</Text>
           <Text class="pcs_track_hum" id="pcs_humTrack_Pink"> </Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum" id="pcs_Pink_humUp" text="▲" />
@@ -9266,7 +9268,7 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_launch_Purple"     text="Launch" />
           <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_goal_Purple"       text="Goal"   />
         </HorizontalLayout>
-        <HorizontalLayout class="pcs_stat_row">
+        <HorizontalLayout class="pcs_track_row">
           <Text class="pcs_prefix_wide">HP:</Text>
           <Text class="pcs_track_damage" id="pcs_hpTrack_Purple"> </Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Purple_hpAggUp" text="▲" />
@@ -9277,7 +9279,7 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Purple_hpSupDown" text="▼" />
           <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_track_apply" id="pcs_Purple_hpApply" />
         </HorizontalLayout>
-        <HorizontalLayout class="pcs_stat_row">
+        <HorizontalLayout class="pcs_track_row">
           <Text class="pcs_prefix_wide">WP:</Text>
           <Text class="pcs_track_damage" id="pcs_wpTrack_Purple"> </Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Purple_wpAggUp" text="▲" />
@@ -9288,7 +9290,7 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Purple_wpSupDown" text="▼" />
           <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_track_apply" id="pcs_Purple_wpApply" />
         </HorizontalLayout>
-        <HorizontalLayout class="pcs_stat_row">
+        <HorizontalLayout class="pcs_track_row">
           <Text class="pcs_prefix_wide">Hum:</Text>
           <Text class="pcs_track_hum" id="pcs_humTrack_Purple"> </Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum" id="pcs_Purple_humUp" text="▲" />
@@ -14158,6 +14160,7 @@ UI.setAttributes("overlay_globalBlindfold_panel", {raycastTarget = "false"})
   <Image id="overlay_globalBlindfold_sessionSplash_1_2_A" class="global_blindfold" image="overlay_explode_text_fomorach" />
   <Image id="overlay_globalBlindfold_sessionSplash_1_1_B" class="global_blindfold" image="overlay_explode_image_blackCaesar" />
   <Image id="overlay_globalBlindfold_sessionSplash_1_1_A" class="global_blindfold" image="overlay_explode_text_blackCaesar" />
+  <Image id="overlay_globalBlindfold_frame" class="global_blindfold" image="overlay_explode_frame" color="rgba(1, 1, 1, 1)" />
   <Image id="overlay_globalBlindfold" class="global_blindfold" image="global_blindfold_session_1" color="rgba(1, 1, 1, 1)" />
 </Panel>
 
@@ -14244,6 +14247,7 @@ M.minimalAssetNames = {
     "dot_white",
     "dot_yellow",
     "global_blindfold_session_1",
+    "overlay_explode_frame",
     "overlay_explode_image_aishe",
     "overlay_explode_image_blackCaesar",
     "overlay_explode_image_fomorach",
