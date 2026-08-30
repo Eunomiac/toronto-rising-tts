@@ -1981,7 +1981,7 @@ local function applyOverlayCameraStageLook(player, seatColor)
     if #occupied == 0 then
         local cameraData = U.clone(preset)
         cameraData.cameraMode = nil
-        Main.applyFirstPersonLook(player, cameraData)
+        Main.applyFirstPersonLook(player, cameraData, nil)
         stageLookCycleIndexBySeat[seatColor] = 0
         return
     end
@@ -1993,14 +1993,14 @@ local function applyOverlayCameraStageLook(player, seatColor)
     stageLookCycleIndexBySeat[seatColor] = nextIndex
     local target = occupied[nextIndex]
     local face = figurineFaceWorldPos(target.fig)
+    local moveData = U.clone(preset)
+    moveData.cameraMode = nil
     if face == nil then
-        local cameraData = U.clone(preset)
-        cameraData.cameraMode = nil
-        Main.applyFirstPersonLook(player, cameraData)
+        Main.applyFirstPersonLook(player, moveData, nil)
         return
     end
     local eye = cameraEyeFromLookAtPreset(preset)
-    Main.applyFirstPersonLook(player, lookAtFromEyeToward(eye, face))
+    Main.applyFirstPersonLook(player, moveData, lookAtFromEyeToward(eye, face))
 end
 
 -- ============================================================================

@@ -515,7 +515,7 @@ Per-seat overlay picker (`ui/.templates/panel_overlay_camera.xml` → `HUD_camer
 The overlay **camera icon** (`popout_cameraPanel_*` / `HUD_popoutCameraControl_click`):
 
 - **Left-click:** opens the preset picker **and** snaps that player to their `default` table camera.
-- **Right-click:** FirstPerson at that seat’s `default` camera location, pitched up toward the **face** of the group-move leader figurine in the next occupied NPC stage area (Center → Center Left → … → Far Right, skipping empty). Further right-clicks advance and loop. Control-board Apply resets the cycle. If the stage is empty, FirstPerson with the default framing. ThirdPerson cannot pitch above the horizon, so this path is how players look at life-sized figurine faces (TOR-538).
+- **Right-click:** FirstPerson at that seat’s `default` camera location, pitched up toward the **face** of the group-move leader figurine in the next occupied NPC stage area (Center → Center Left → … → Far Right, skipping empty). The camera **moves** to default first, waits half a second in FirstPerson, then pitches (pitching while still in ThirdPerson is clamped at the horizon). Further right-clicks advance and loop. Control-board Apply resets the cycle. If the stage is empty, FirstPerson with the default framing.
 
 ## LEFT SIDEBAR
 

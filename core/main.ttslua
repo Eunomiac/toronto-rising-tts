@@ -294,25 +294,49 @@ function M.resolveCameraPreset(player, cameraMode)
   return cameraPreset
 end
 
---- `Player.lookAt` forces ThirdPerson; restore FirstPerson so the view can pitch above the horizon (TOR-538).
+--- Per-player generation so a rapid second right-click cancels an in-flight settle.
+local firstPersonLookGen = {}
+
+--- Move to `moveData` and switch to FirstPerson, wait so the mode actually sticks, then optionally
+--- apply `aimData` (pitch-up toward a figurine face). Pitching while still in ThirdPerson is clamped
+--- at the horizon (TOR-538).
 --- @param player Player
---- @param cameraData table `{ position, pitch?, yaw?, distance? }`
-function M.applyFirstPersonLook(player, cameraData)
-  if not U.isPlayer(player) or type(cameraData) ~= "table" or cameraData.position == nil then
+--- @param moveData table `{ position, pitch?, yaw?, distance? }`
+--- @param aimData table|nil same shape; nil = stay on the moved pose
+function M.applyFirstPersonLook(player, moveData, aimData)
+  if not U.isPlayer(player) or type(moveData) ~= "table" or moveData.position == nil then
     return
   end
-  player.lookAt({
-    position = cameraData.position,
-    pitch = tonumber(cameraData.pitch) or 0,
-    yaw = tonumber(cameraData.yaw) or 0,
-    distance = tonumber(cameraData.distance) or 0,
-  })
-  player.setCameraMode("FirstPerson")
-  U.await(function()
-    if U.isPlayer(player) then
+  local genKey = tostring(player.color or "")
+  firstPersonLookGen[genKey] = (tonumber(firstPersonLookGen[genKey]) or 0) + 1
+  local gen = firstPersonLookGen[genKey]
+  local function lookAtTable(data)
+    player.lookAt({
+      position = data.position,
+      pitch = tonumber(data.pitch) or 0,
+      yaw = tonumber(data.yaw) or 0,
+      distance = tonumber(data.distance) or 0,
+    })
+  end
+  U.chain({
+    function()
+      if not U.isPlayer(player) then
+        return
+      end
+      lookAtTable(moveData)
       player.setCameraMode("FirstPerson")
-    end
-  end, 0.5)
+      return 0.5
+    end,
+    function()
+      if firstPersonLookGen[genKey] ~= gen or not U.isPlayer(player) then
+        return
+      end
+      if type(aimData) == "table" and aimData.position ~= nil then
+        lookAtTable(aimData)
+      end
+      player.setCameraMode("FirstPerson")
+    end,
+  })
 end
 
 function M.setCamera(player, cameraMode, lookAtPos)
