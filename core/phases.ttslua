@@ -21,7 +21,7 @@ local SESSION_START_HEAL_PANEL = "sessionStartHeal_panel"
 local SESSION_COVER_IMAGE = "global_blindfold_session_1"
 local HEAL_BROADCAST_HOLD_SEC = 6
 local INTERMISSION_THEME_FADE_SEC = 2
---- Intermission → Play: TR_Loop fade-out while Music C overture starts immediately (TOR-497).
+--- Intermission → Play: TR_Loop fade-out while waiting to start Music C (TOR-497 / TOR-534).
 local INTERMISSION_TO_PLAY_LOOP_FADE_SEC = 0.5
 --- End → Intermission: wait after showing the global cover so FadeIn (and camera) can finish
 --- before no-scene table/skybox work (TOR-502).
@@ -396,21 +396,29 @@ function Phases.applyPlayEnterNoSceneLights(_ctx)
     return true
 end
 
---- Intermission → Play: fade TR_Loop 0.5s and immediately start the Music C overture at full volume.
---- Returns true immediately so lighting can run under the cover without delaying the sting.
---- @param _ctx table|nil
---- @return boolean
-function Phases.fireSessionIntro(_ctx)
+--- Intermission → Play: start TR_Loop fade-out when the cover explode starts so the
+--- fade finishes as the delayed Music C sting begins (TOR-534).
+-- @param _ctx table|nil
+-- @return boolean
+function Phases.fadeIntermissionLoopForPlayEnter(_ctx)
     local Soundscape = require("core.soundscape")
-    local fadeSec = INTERMISSION_TO_PLAY_LOOP_FADE_SEC
-
     local okStop, stopMsg = Soundscape.stopFeaturedMusic({
-        fadeSeconds = fadeSec,
+        fadeSeconds = INTERMISSION_TO_PLAY_LOOP_FADE_SEC,
         resumeBackground = false,
     })
     if okStop ~= true then
         U.AlertGM("Intermission→Play Loop fade-out: " .. tostring(stopMsg or "stopFeaturedMusic failed"))
     end
+    return true
+end
+
+--- Intermission → Play: start the Music C overture at full volume.
+--- Loop fade is started earlier (`fadeIntermissionLoopForPlayEnter`) so this can wait
+--- `C.SessionStartIntroDelaySec` after explode without leaving Loop at full volume.
+--- @param _ctx table|nil
+--- @return boolean
+function Phases.fireSessionIntro(_ctx)
+    local Soundscape = require("core.soundscape")
 
     local SE = require("core.session_explode")
     local anim = SE.resolveAnimationData()
@@ -591,12 +599,15 @@ Phases.onEnter[C.Phases.PLAY] = function(ctx)
             return Phases.armPlayHudBehindCover(ctx)
         end,
         function()
-            -- Cover scale-and-fade first, then the Music C sting, so the opening drum
-            -- is not already playing while explodeImage is still setting up (TOR-533).
+            -- Cover scale-and-fade first; Loop fade starts now. Sting waits 0.5s so the
+            -- opening drum hits with the first visible cover scale (TOR-533 / TOR-534).
             local SE = require("core.session_explode")
             SE.play()
-            Phases.fireSessionIntro(ctx)
-            return true
+            Phases.fadeIntermissionLoopForPlayEnter(ctx)
+            return C.SessionStartIntroDelaySec
+        end,
+        function()
+            return Phases.fireSessionIntro(ctx)
         end,
         function()
             -- Lighting only (AdminDark → OutdoorDim) while the sting and explode are already playing.

@@ -305,6 +305,9 @@ C.SessionStartIntroKey = "TR_SessionStart"
 --- SessionStartAnimationData.songDuration via SessionExplode.sequenceDurationSec (TOR-531).
 C.SessionStartIntroDurationSec = 71
 C.SessionStartBlindfoldLeadSec = 2
+--- Play enter waits this many seconds after the cover explode starts before the Music C
+--- sting, so the opening drum lines up with the first visible scale (TOR-534).
+C.SessionStartIntroDelaySec = 0.5
 
 --- Spotlight phase uses a dedicated environment (Table A + Spotlight skybox), not a scene library row.
 

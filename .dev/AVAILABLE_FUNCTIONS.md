@@ -379,13 +379,14 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 
 **Require:** `local SessionExplode = require("core.session_explode")`
 
-Play enter paints HUD behind the cover first (`Phases.armPlayHudBehindCover`, TOR-532), then kicks `SessionExplode.play()` (cover lerp starts immediately) and only then `Phases.fireSessionIntro` (Music C sting) so the opening drum hits with the first cover scale (TOR-533). Explode returns immediately so OutdoorDim can apply under the cover; wait `sequenceDurationSec()` on the Play-enter chain (scales with that session's `songDuration`).
+Play enter paints HUD behind the cover first (`Phases.armPlayHudBehindCover`, TOR-532), then kicks `SessionExplode.play()` (cover lerp starts immediately) and fades Intermission Loop. After `C.SessionStartIntroDelaySec` (0.5s) it runs `Phases.fireSessionIntro` (Music C sting) so the opening drum hits with the first visible cover scale (TOR-534). Explode returns immediately so OutdoorDim can apply under the cover; wait `sequenceDurationSec()` on the Play-enter chain (scales with that session's `songDuration`).
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
 | `SessionExplode.resolveAnimationData()` | `introKey` + `songDuration` for current `sessionNum`; missing index uses `[1]` | `Phases.fireSessionIntro` |
 | `Phases.armPlayHudBehindCover(_ctx)` | Paint game-state overlay + player HUD/overlays while the global cover is still up | Play enter after `showGlobalBlindfold` (TOR-532) |
-| `SessionExplode.play()` | Start the stacked cover explode (cover lerp starts immediately, then five still-text / wavering-art pairs, then session number/title together). Hides the panel near the end and resets layers. Times scale by `songDuration / C.SessionStartBaseDuration`. | Play enter **before** `fireSessionIntro` (TOR-533) |
+| `Phases.fadeIntermissionLoopForPlayEnter(_ctx)` | Start TR_Loop 0.5s fade when the cover explode starts | Play enter with `SE.play()` (TOR-534) |
+| `SessionExplode.play()` | Start the stacked cover explode (cover lerp starts immediately, then five still-text / wavering-art pairs, then session number/title together). Hides the panel near the end and resets layers. Times scale by `songDuration / C.SessionStartBaseDuration`. | Play enter **before** `fireSessionIntro` (TOR-533); sting waits `C.SessionStartIntroDelaySec` (TOR-534) |
 | `SessionExplode.sequenceDurationSec(songDuration?)` | Wall-clock seconds Play enter should wait after `play()` | `Phases.sessionIntroBlindfoldHoldSec` |
 | `SessionExplode.resetLayers()` | Opaque session cover, splash layers transparent, scale 1 | Intermission show |
 | `SessionExplode.cancel()` | Stop in-flight lerps (does not snap attrs) | Play exit; `HUD_clearLoadingOverlay` |

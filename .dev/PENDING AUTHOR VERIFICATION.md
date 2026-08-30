@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-08-30 — **TOR-533** (cover explode on the intro drum) and **TOR-532** (HUD ready behind Intermission→Play cover). Inbox Immediate polish shipped (**TOR-517**–**TOR-525**). Author confirmed **TOR-98** (Spotlight phase), **TOR-508** (rain particle bootstrap miss), **TOR-509** (hidden skyboxes), and **TOR-510** (Memoriam skybox catalog). **TOR-439** remains a multiclient gate (not a solo Save & Play)._
+_Last populated: 2026-08-30 — **TOR-534** (0.5s delay before session-start sting). Inbox Immediate polish shipped (**TOR-517**–**TOR-525**). Author confirmed **TOR-98** (Spotlight phase), **TOR-508** (rain particle bootstrap miss), **TOR-509** (hidden skyboxes), and **TOR-510** (Memoriam skybox catalog). **TOR-439** remains a multiclient gate (not a solo Save & Play)._
 
 ### High — session / join / first-load
 
@@ -65,13 +65,19 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 ### Medium — overlay / HUD / Spotlight
 
+#### TOR-534 — Opening drum waits 0.5s so it hits with the cover explode
+
+**How to verify:** Save & Play. Follow [.dev/Step-By-Step Playbooks/TOR-534-sting-delay-cover-sync-verify.md](Step-By-Step%20Playbooks/TOR-534-sting-delay-cover-sync-verify.md). After the setup paste, Advance starts on its own. The Intermission loop should fade as the cover begins to scale. About half a second later, the session-start song’s opening drum should hit with that first visible scale — not before it.
+
+**Context:** The sting was still beating the animation by about half a second. Play enter now waits 0.5s after the explode starts before triggering the track.
+
 #### TOR-533 — First cover explode hits with the session-start drum
 
 **How to verify:** Save & Play. Follow [.dev/Step-By-Step Playbooks/TOR-533-cover-explode-drum-sync-verify.md](Step-By-Step%20Playbooks/TOR-533-cover-explode-drum-sync-verify.md) (same Advance as TOR-532). Listen for the opening drum of the session-start song: the front cover image should start its scale-and-fade on that hit, not a moment later.
 
 **Context:** The sting used to start first; Lua then still had to reset layers and wait a chain step before the cover lerp. The explode now starts, then the sting.
 
-#### TOR-532 — Clock overlay already painted when the session-start cover lifts
+#### ✅ TOR-532 — Clock overlay already painted when the session-start cover lifts
 
 **How to verify:** Save & Play. Follow [.dev/Step-By-Step Playbooks/TOR-532-hud-behind-cover-verify.md](Step-By-Step%20Playbooks/TOR-532-hud-behind-cover-verify.md). After the setup paste, Intermission→Play Advance starts on its own. About two seconds in, the console should say the clock/location overlay is already on while the stacked cover is still up. Keep watching until the cover hides near the end of the song: the overlay (and the rest of the HUD) should already be there — it should not pop in after the cover lifts.
 

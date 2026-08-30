@@ -471,6 +471,7 @@ test("session-start overture uses Music C and holds Main until the sting ends", 
     "C.SessionStartBlindfoldLeadSec = 2",
     "C.SessionStartBaseDuration = 71",
     "C.SessionStartAnimationData = {",
+    "C.SessionStartIntroDelaySec = 0.5",
   ].forEach((needle) => {
     assert.ok(constants.includes(needle), `missing session intro constant: ${needle}`);
   });
@@ -478,6 +479,7 @@ test("session-start overture uses Music C and holds Main until the sting ends", 
   [
     "local INTERMISSION_TO_PLAY_LOOP_FADE_SEC = 0.5",
     "function Phases.fireSessionIntro(_ctx)",
+    "function Phases.fadeIntermissionLoopForPlayEnter(_ctx)",
     "function Phases.sessionIntroBlindfoldHoldSec(_ctx)",
     "function Phases.armPlayHudBehindCover(_ctx)",
     "SE.play()",
@@ -504,6 +506,10 @@ test("session-start overture uses Music C and holds Main until the sting ends", 
   assert.ok(
     explodeKick >= 0 && stingKick > explodeKick,
     "Play enter should kick the cover explode before the Music C sting (TOR-533)",
+  );
+  assert.ok(
+    playEnter.includes("return C.SessionStartIntroDelaySec"),
+    "Play enter should wait SessionStartIntroDelaySec after explode before the sting (TOR-534)",
   );
   assert.ok(
     playEnter.includes("Phases.armPlayHudBehindCover"),

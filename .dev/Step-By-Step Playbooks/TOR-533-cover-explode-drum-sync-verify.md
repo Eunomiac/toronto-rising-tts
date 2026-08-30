@@ -56,7 +56,7 @@ U.chain({
     Phases.advanceTo(C.Phases.PLAY)
   end,
   function()
-    print("   ▶▶▶ HUMAN ▶▶▶ Listen for the opening drum of the session-start song. The front cover image should start its scale-and-fade on that hit, not a moment later.")
+    print("   ▶▶▶ HUMAN ▶▶▶ Listen for the opening drum of the session-start song. It should wait about half a second after the cover starts scaling, then hit with that first visible scale (TOR-534).")
   end,
 })
 ```

@@ -712,4 +712,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 
 | 2026-08-30 | CREATE+SHIP | TOR-533 | Kick cover explode before session-start sting so the opening drum matches the first scale. relatedTo TOR-531 / TOR-515. Pending Save & Play. |
 
+| 2026-08-30 | CREATE+SHIP | TOR-534 | Delay session-start sting 0.5s after cover explode so the opening drum matches the first visible scale. relatedTo TOR-533 / TOR-531. Pending Save & Play. |
+
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
