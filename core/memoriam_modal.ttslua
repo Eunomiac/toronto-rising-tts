@@ -52,14 +52,6 @@ local PC_DISPLAY = {
     blackCaesar = "Black Caesar",
 }
 
-local DISPLAY_TO_KEY = {
-    ["Lord Lucien"] = "lucien",
-    ["Rashid Abdulrahman"] = "rashid",
-    ["Aishe Tache"] = "aishe",
-    ["Fomórach"] = "fomorach",
-    ["Black Caesar"] = "blackCaesar",
-}
-
 local MONTH_NAMES = {
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December",
@@ -81,16 +73,22 @@ local SCENE_BUTTON_CLASS_IDLE = SCENE_BUTTON_CLASS .. " selection_button_idle"
 local SCENE_BUTTON_CLASS_HIGHLIGHTED = SCENE_BUTTON_CLASS .. " selection_button_highlighted"
 local SCENE_BUTTON_CLASS_SELECTED = SCENE_BUTTON_CLASS .. " selection_button_selected"
 local SCENE_BUTTON_CLASS_DUMMY = SCENE_BUTTON_CLASS .. " selection_button_dummy"
+local PC_BUTTON_CLASS = "memoriam_modal_pc_selection_button"
+local PC_BUTTON_CLASS_IDLE = PC_BUTTON_CLASS .. " selection_button_idle"
+local PC_BUTTON_CLASS_SELECTED = PC_BUTTON_CLASS .. " selection_button_selected"
 -- Keep these hex values in sync with the matching Defaults in memoriam_modal.xml.
 local SCENE_BUTTON_FACE = {
     [SCENE_BUTTON_CLASS_IDLE] = "#999999",
     [SCENE_BUTTON_CLASS_HIGHLIGHTED] = "#FFFF00",
     [SCENE_BUTTON_CLASS_SELECTED] = "#00FF00",
     [SCENE_BUTTON_CLASS_DUMMY] = "#000000",
+    [PC_BUTTON_CLASS_IDLE] = "#999999",
+    [PC_BUTTON_CLASS_SELECTED] = "#00FF00",
 }
 local EMPTY_NPC_TEXT = "—"
 local PANEL_BUTTON_FONT_SIZE = "10"
 local PANEL_BUTTON_FONT_STYLE = "Bold"
+local PC_BUTTON_FONT_SIZE = "14"
 
 local modalOpen = false
 local subjectKey = nil
@@ -135,6 +133,7 @@ local clearNpcAssignments
 local fillPickerFromPeriod
 local showNpcAssignmentRows
 local configureForSubject
+local paintPcButtons
 local mapSliderToSegment
 local calendarYearInSegment
 local currentPeriodIndex
@@ -931,6 +930,27 @@ local function applyPanelButton(id, className, attrs)
     end
 end
 
+local function pcButtonId(key)
+    return "memoriam_modal_pc_" .. tostring(key) .. "_button"
+end
+
+paintPcButtons = function()
+    for i = 1, #PC_KEYS do
+        local key = PC_KEYS[i]
+        local className = PC_BUTTON_CLASS_IDLE
+        if subjectKey == key then
+            className = PC_BUTTON_CLASS_SELECTED
+        end
+        applyPanelButton(pcButtonId(key), className, {
+            active = "true",
+            interactable = "true",
+            text = PC_DISPLAY[key] or key,
+            fontSize = PC_BUTTON_FONT_SIZE,
+            fontStyle = "Bold",
+        })
+    end
+end
+
 local function applySceneButtonState(periodIndex, panelKey, defined, label)
     local id = sceneButtonId(periodIndex, panelKey)
     if not defined then
@@ -1192,6 +1212,7 @@ configureForSubject = function(characterKey)
     setAttr("memoriam_modal_period_selection_slider", "maxValue", tostring(SLIDER_MAX))
     setAttr("memoriam_modal_period_selection_slider", "value", tostring(SLIDER_MAX))
     applyDateAndHighlights()
+    paintPcButtons()
     scheduleSceneGridCatchUp()
 end
 
@@ -1234,7 +1255,7 @@ function MemoriamModal.open()
     hideConfiguration()
     setAttr("memoriam_modal_selected_date", "text", "")
     setAttr("memoriam_modal_selected_location", "text", "")
-    setAttr("memoriam_modal_pc_selection", "value", " ")
+    paintPcButtons()
     setAttr("memoriam_modal", "active", "true")
 end
 
@@ -1245,29 +1266,19 @@ function MemoriamModal.close()
     resetDraft()
 end
 
-function MemoriamModal.onPcDropdown(value)
+function MemoriamModal.onPcButton(id)
     if not modalOpen then
         return
     end
-    local label = trimString(value)
-    if label == "" then
-        subjectKey = nil
-        catalogEntries = {}
-        segments = {}
-        selectedPeriodIndex = nil
-        selectedPanelKey = nil
-        selectedJustSmoke = false
-        hideConfiguration()
-        setAttr("memoriam_modal_selected_date", "text", "")
-        setAttr("memoriam_modal_selected_location", "text", "")
+    local key = string.match(tostring(id or ""), "^memoriam_modal_pc_(.+)_button$")
+    if key == nil or PC_DISPLAY[key] == nil then
         return
     end
-    local key = DISPLAY_TO_KEY[label]
-    if key == nil then
-        U.AlertGM("Unknown Memoriam character: " .. label)
-        return
+    if subjectKey ~= key then
+        configureForSubject(key)
     end
-    configureForSubject(key)
+    paintPcButtons()
+    reapplySelectedClassAfterClick(pcButtonId(key), paintPcButtons)
 end
 
 function MemoriamModal.onSlider(value)

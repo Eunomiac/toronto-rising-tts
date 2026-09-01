@@ -19,14 +19,21 @@
     fontSize = "24"
   />
 
-  <Dropdown class="memoriam_modal_pc_selection"
-    flexibleWidth = "0"
-    preferredWidth = "200"
-    minWidth = "200"
+  <HorizontalLayout class="memoriam_modal_pc_selection"
     preferredHeight = "40"
-    width = "200"
-    height = "40"
-    onValueChanged = "HUD_memoriamModalPcDropdown"
+    minHeight = "40"
+    flexibleHeight = "0"
+    spacing = "8"
+    childForceExpandWidth = "true"
+    childForceExpandHeight = "true"
+    childAlignment = "MiddleCenter"
+  />
+
+  <Button class="memoriam_modal_pc_selection_button"
+    textAlignment = "MiddleCenter"
+    fontSize = "14"
+    fontStyle = "Bold"
+    onClick = "HUD_memoriamModalPcButton"
   />
 
   <VerticalLayout class="memoriam_modal_period_selection"
@@ -155,7 +162,7 @@
 UI.setAttributes("memoriam_modal", {width = "1240", spacing = "10"})
 UI.setAttributes("db_memoriam_scene_selection_grid", {})
 UI.setAttributes("memoriam_modal_selected_date", {fontSize = "32"})
-UI.setAttributes("memoriam_modal_pc_selection", {flexibleWidth = "0", preferredWidth = "200", minWidth = "200", preferredHeight = "40"})
+UI.setAttributes("memoriam_modal_pc_selection", {preferredHeight = "40", minHeight = "40", spacing = "8"})
 UI.hide("memoriam_modal")
 UI.show("memoriam_modal")
 -->
@@ -164,20 +171,19 @@ UI.show("memoriam_modal")
 <VerticalLayout id="memoriam_modal" class="memoriam_modal_container" visibility="Black|Host" active="false">
   <Text id="db_memoriam_modal_title" class="memoriam_modal_title" text="Memoriam" />
 
-  <!-- PC Selection Dropdown -->
-  <Dropdown id="memoriam_modal_pc_selection" class="memoriam_modal_pc_selection" onValueChanged="HUD_memoriamModalPcDropdown">
-    <Option selected="true"> </Option>
-    <Option>Lord Lucien</Option>
-    <Option>Rashid Abdulrahman</Option>
-    <Option>Aishe Tache</Option>
-    <Option>Fomórach</Option>
-    <Option>Black Caesar</Option>
-  </Dropdown>
+  <!-- PC selection: exclusive idle grey / selected green, one character at a time. -->
+  <HorizontalLayout id="memoriam_modal_pc_selection" class="memoriam_modal_pc_selection">
+    <Button id="memoriam_modal_pc_lucien_button" class="memoriam_modal_pc_selection_button selection_button_idle" text="Lord Lucien" onClick="HUD_memoriamModalPcButton" />
+    <Button id="memoriam_modal_pc_rashid_button" class="memoriam_modal_pc_selection_button selection_button_idle" text="Rashid Abdulrahman" onClick="HUD_memoriamModalPcButton" />
+    <Button id="memoriam_modal_pc_aishe_button" class="memoriam_modal_pc_selection_button selection_button_idle" text="Aishe Tache" onClick="HUD_memoriamModalPcButton" />
+    <Button id="memoriam_modal_pc_fomorach_button" class="memoriam_modal_pc_selection_button selection_button_idle" text="Fomórach" onClick="HUD_memoriamModalPcButton" />
+    <Button id="memoriam_modal_pc_blackCaesar_button" class="memoriam_modal_pc_selection_button selection_button_idle" text="Black Caesar" onClick="HUD_memoriamModalPcButton" />
+  </HorizontalLayout>
 
   <!-- Period Selection Slider -->
   <!-- Set active=true when a PC is selected; otherwise active=false.
 
-  UI.setAttributes("memoriam_modal_pc_selection", {preferredHeight = "20", fontSize = "12"})
+  UI.setAttributes("memoriam_modal_pc_selection", {preferredHeight = "40"})
   UI.setAttributes("memoriam_modal_period_selection", {childForceExpandHeight = "true", color = "rgba(1, 0, 0, 0)", spacing = "0", preferredHeight = "150", flexibleHeight = "0", minHeight = "0"})
   UI.setAttributes("memoriam_modal_selected_date", {flexibleHeight = "1", preferredHeight = "40", alignment = "LowerCenter"})
   UI.setAttributes("memoriam_modal_selected_location", {flexibleHeight = "1", preferredHeight = "30", alignment = "MiddleCenter"})

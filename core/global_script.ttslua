@@ -4646,11 +4646,11 @@ function HUD_setPlaySubPhase(player, button, id)
 end
 
 --- Memoriam configuration popup (TOR-539). ST-gated; draft is modal-local until Advance.
-function HUD_memoriamModalPcDropdown(player, value, id)
-    if not requireStorytellerForMutation(player, "HUD_memoriamModalPcDropdown") then
+function HUD_memoriamModalPcButton(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_memoriamModalPcButton") then
         return
     end
-    MemoriamModal.onPcDropdown(value)
+    MemoriamModal.onPcButton(id)
 end
 
 function HUD_memoriamModalSlider(player, value, id)
