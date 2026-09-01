@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-01 — **TOR-541** (Memoriam slider present on the right). **TOR-540** (Memoriam popup bar/nested/Just Smoke/location). **TOR-539** (Memoriam configuration popup). **TOR-538** (overlay camera FirstPerson face-look cycle). **TOR-537** (randomize Table B seating). PAVE follow-ups **TOR-518** (PCs panel spacing) and **TOR-528** (resetToIntermission console-only). Author confirmed Intermission→Play explode chain (**TOR-531**–**TOR-536**), scene-library names, rain follow, camera defaults, CSHEET roll camera, Spotlight carousel, session explode grow, and control-board occupancy (**TOR-247**). **TOR-439** remains a multiclient gate (not a solo Save & Play)._
+_Last populated: 2026-09-01 — **TOR-542** (Memoriam slider 0–5000). **TOR-541** (Memoriam slider present on the right). **TOR-540** (Memoriam popup bar/nested/Just Smoke/location). **TOR-539** (Memoriam configuration popup). **TOR-538** (overlay camera FirstPerson face-look cycle). **TOR-537** (randomize Table B seating). PAVE follow-ups **TOR-518** (PCs panel spacing) and **TOR-528** (resetToIntermission console-only). Author confirmed Intermission→Play explode chain (**TOR-531**–**TOR-536**), scene-library names, rain follow, camera defaults, CSHEET roll camera, Spotlight carousel, session explode grow, and control-board occupancy (**TOR-247**). **TOR-439** remains a multiclient gate (not a solo Save & Play)._
 
 ### High — session / join / first-load
 
@@ -108,6 +108,12 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 **How to verify:** Save & Play. During Play, open Phases → **Memoriam** and pick a character. The slider handle should start on the **right** (present day). The gold bar block should sit under that handle on the right. Drag the handle left: dates should go backward, and the gold block should follow to the left. The scene-button columns should still run earliest on the left and latest on the right, lining up with the strip. If two periods share a start year, the one that ends sooner should appear first (left of the other).
 
 **Context:** Follow-up to TOR-540 after the Photoshop mockup. Dragging left is how you move into the past; the strip and handle stay together.
+
+#### TOR-542 — Memoriam slider range 0–5000
+
+**How to verify:** Save & Play. Open Memoriam, pick a character, and move the slider slowly across a long period. Dates and the gold block should still line up with the strip the same way as before, just with finer steps. The handle should still start on the right (present). Clicking a dim scene button should still jump into that period.
+
+**Context:** You raised the slider max from 2400 to 5000. The year mapping now fills that full range; the colored strip is still 1200 pixels wide.
 
 ---
 

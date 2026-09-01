@@ -7,7 +7,7 @@
 
     Nested periods: shortest inclusive span wins each year; longer periods split
     into chunks. Earliest years sit on the left of the strip; present sits on the
-    right (slider 0 → 2400). Agent guidance: .dev/Phases/Phases Overview.md;
+    right (slider 0 → 5000). Agent guidance: .dev/Phases/Phases Overview.md;
     C.getMemoriamSkyboxesForCharacter.
 ]]
 
@@ -19,7 +19,7 @@ local S = require("core.state")
 local NarrativeCalendar = require("lib.narrative_calendar")
 local NPCS_DATA = require("lib.npcs_data")
 
-local SLIDER_MAX = 2400
+local SLIDER_MAX = 5000
 local BAR_PIXEL_TOTAL = 1200
 local MIN_PERIOD_UNITS = 10
 local BAR_SLOT_COUNT = 30

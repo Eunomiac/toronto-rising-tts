@@ -30,9 +30,8 @@
   />
 
   <VerticalLayout class="memoriam_modal_period_selection"
-    preferredHeight = "220"
+    preferredHeight = "150"
     flexibleHeight = "0"
-    minHeight = "220"
     spacing = "0"
     padding = "0 0 0 0"
     childAlignment = "UpperCenter"
@@ -41,16 +40,18 @@
   />
 
   <Text class="memoriam_modal_selected_date"
-    alignment = "MiddleCenter"
+    alignment = "LowerCenter"
     color = "#FFFFFF"
     fontSize = "30"
     fontStyle = "BoldAndItalic"
+    preferredHeight = "40"
   />
   <Text class="memoriam_modal_selected_location"
     alignment = "MiddleCenter"
     color = "#FFFFFF"
     fontSize = "24"
     fontStyle = "BoldAndItalic"
+    preferredHeight = "30"
   />
 
   <HorizontalLayout class="memoriam_modal_period_indicator_bar"
@@ -59,6 +60,7 @@
     spacing = "0"
     padding = "0 0 0 0"
     childAlignment = "MiddleLeft"
+    preferredHeight = "40"
   />
 
   <Panel class="memoriam_modal_period_indicator"
@@ -68,13 +70,14 @@
 
   <Slider class="memoriam_modal_period_selection_slider"
     minValue = "0"
-    maxValue = "2400"
+    maxValue = "5000"
     wholeNumbers = "true"
     direction = "LeftToRight"
     value = "0"
     onValueChanged = "HUD_memoriamModalSlider"
     flexibleHeight = "1"
     flexibleWidth = "1"
+    preferredHeight = "40"
   />
 
   <GridLayout class="memoriam_modal_scene_selection_grid"
@@ -99,10 +102,10 @@
   />
 
   <Button class="selection_button_highlighted"
-    color = "#00FF00" />
+    color = "#FFFF00" />
 
   <Button class="selection_button_selected"
-    color = "#FFFF00" />
+    color = "#00FF00" />
 
   <VerticalLayout class="memoriam_modal_npc_assignment"
     childForceExpandWidth = "false"
@@ -163,7 +166,17 @@ UI.show("memoriam_modal")
   </Dropdown>
 
   <!-- Period Selection Slider -->
-  <!-- Set active=true when a PC is selected; otherwise active=false. -->
+  <!-- Set active=true when a PC is selected; otherwise active=false.
+
+  UI.setAttributes("memoriam_modal_pc_selection", {preferredHeight = "20", fontSize = "12"})
+  UI.setAttributes("memoriam_modal_period_selection", {childForceExpandHeight = "true", color = "rgba(1, 0, 0, 0)", spacing = "0", preferredHeight = "150", flexibleHeight = "0", minHeight = "0"})
+  UI.setAttributes("memoriam_modal_selected_date", {flexibleHeight = "1", preferredHeight = "40", alignment = "LowerCenter"})
+  UI.setAttributes("memoriam_modal_selected_location", {flexibleHeight = "1", preferredHeight = "30", alignment = "MiddleCenter"})
+  UI.setAttributes("db_memoriam_period_indicator_bar", {preferredHeight = "40"})
+  UI.setAttributes("memoriam_modal_period_selection_slider", {preferredHeight = "40"})
+
+
+   -->
   <VerticalLayout id="memoriam_modal_period_selection" class="memoriam_modal_period_selection">
     <Text id="memoriam_modal_selected_date" class="memoriam_modal_selected_date">September 27, 1854</Text>
     <Text id="memoriam_modal_selected_location" class="memoriam_modal_selected_location">Celaya, Mexico</Text>
