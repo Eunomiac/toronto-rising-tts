@@ -723,5 +723,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-09-01 | CREATE+SHIP | TOR-540 | Memoriam popup follow-up: reverse bar, nested shortest-wins, Just Smoke, 2400 slider, location label. relatedTo TOR-539. Pending Save & Play. |
 | 2026-09-01 | CREATE+SHIP | TOR-541 | Memoriam slider: present on the right (LeftToRight); same startYear sorts by earlier endYear. relatedTo TOR-540 / TOR-539. Pending Save & Play. |
 | 2026-09-01 | CREATE+SHIP | TOR-542 | Memoriam slider range 0–5000 with the same year-to-strip mapping. relatedTo TOR-541. Pending Save & Play. |
+| 2026-09-01 | CREATE+SHIP | TOR-543 | Memoriam scene buttons use UI.setClass; XML Defaults control highlight/selected colors. relatedTo TOR-540 / TOR-539. Pending Save & Play. |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

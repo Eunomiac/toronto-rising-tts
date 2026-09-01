@@ -71,11 +71,10 @@ local PERIOD_COLOR_A = "#777777"
 local PERIOD_COLOR_B = "#CCCCCC"
 local GAP_COLOR = "#000000"
 local CURRENT_PERIOD_COLOR = "#FFDD00"
-local BUTTON_DEFAULT_COLOR = "#999999"
-local BUTTON_HIGHLIGHT_COLOR = "#00FF00"
-local BUTTON_SELECTED_COLOR = "#FFFF00"
 local BUTTON_DUMMY_COLOR = "#000000"
 local EMPTY_NPC_TEXT = "—"
+local PANEL_BUTTON_FONT_SIZE = "10"
+local PANEL_BUTTON_FONT_STYLE = "Bold"
 
 local modalOpen = false
 local subjectKey = nil
@@ -770,23 +769,31 @@ local function sceneButtonId(periodIndex, panelKey)
     return "memoriam_period_" .. tostring(periodIndex) .. "_" .. panelKey .. "_button"
 end
 
+-- Class list drives highlight/selected color from XML Defaults. Do not write `color`
+-- here: U.setAttributes also restores a button's last color, which would override
+-- the class. Dummy C/D cells are the exception (explicit black).
+local function applyPanelButton(id, className, attrs)
+    attrs.fontSize = attrs.fontSize or PANEL_BUTTON_FONT_SIZE
+    attrs.fontStyle = attrs.fontStyle or PANEL_BUTTON_FONT_STYLE
+    UI.setAttributes(id, attrs)
+    UI.setClass(id, className)
+end
+
 local function applySceneButtonState(periodIndex, panelKey, defined, label)
     local id = sceneButtonId(periodIndex, panelKey)
     if not defined then
         if panelKey == "panelC" or panelKey == "panelD" then
-            setAttrs(id, {
+            applyPanelButton(id, "memoriam_modal_scene_selection_button", {
                 active = "true",
                 interactable = "false",
                 text = "",
                 color = BUTTON_DUMMY_COLOR,
-                class = "memoriam_modal_scene_selection_button",
             })
         else
-            setAttrs(id, {
+            applyPanelButton(id, "memoriam_modal_scene_selection_button", {
                 active = "false",
                 interactable = "false",
                 text = "",
-                class = "memoriam_modal_scene_selection_button",
             })
         end
         return
@@ -795,36 +802,27 @@ local function applySceneButtonState(periodIndex, panelKey, defined, label)
     local currentSeg = currentSegmentIndex ~= nil and segments[currentSegmentIndex] or nil
     local inCurrentPeriod = currentSeg ~= nil and currentSeg.kind == "period" and currentSeg.periodIndex == periodIndex
     local className = "memoriam_modal_scene_selection_button"
-    local color = BUTTON_DEFAULT_COLOR
     if isSelected then
         className = "memoriam_modal_scene_selection_button selection_button_selected"
-        color = BUTTON_SELECTED_COLOR
     elseif inCurrentPeriod then
         className = "memoriam_modal_scene_selection_button selection_button_highlighted"
-        color = BUTTON_HIGHLIGHT_COLOR
     end
-    setAttrs(id, {
+    applyPanelButton(id, className, {
         active = "true",
         interactable = "true",
         text = label,
-        color = color,
-        class = className,
     })
 end
 
 applyJustSmokeButtonState = function()
     local className = "memoriam_modal_scene_selection_button selection_button_highlighted"
-    local color = BUTTON_HIGHLIGHT_COLOR
     if selectedJustSmoke then
         className = "memoriam_modal_scene_selection_button selection_button_selected"
-        color = BUTTON_SELECTED_COLOR
     end
-    setAttrs(JUST_SMOKE_BUTTON_ID, {
+    applyPanelButton(JUST_SMOKE_BUTTON_ID, className, {
         active = "true",
         interactable = "true",
         text = "Just Smoke",
-        color = color,
-        class = className,
     })
 end
 
@@ -834,11 +832,10 @@ fillSceneGrid = function()
         if entry == nil then
             for p = 1, #PANEL_KEYS do
                 local id = sceneButtonId(periodIndex, PANEL_KEYS[p])
-                setAttrs(id, {
+                applyPanelButton(id, "memoriam_modal_scene_selection_button", {
                     active = "false",
                     interactable = "false",
                     text = "",
-                    class = "memoriam_modal_scene_selection_button",
                 })
             end
         else
