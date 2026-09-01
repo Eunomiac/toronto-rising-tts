@@ -13366,7 +13366,7 @@ UI.hide("sessionStartHeal_playerContainer_Orange")
     childForceExpandHeight = "true"
     childForceExpandWidth = "false"
     spacing = "0"
-    padding = "0 0 0 0"
+    padding = "10 10 0 0"
     childAlignment = "MiddleLeft"
     preferredHeight = "40"
   />
@@ -13405,15 +13405,20 @@ UI.hide("sessionStartHeal_playerContainer_Orange")
     textAlignment = "MiddleCenter"
     fontSize = "10"
     fontStyle = "Bold"
-    color = "#999999"
     onClick = "HUD_memoriamModalSceneButton"
   />
 
+  <Button class="selection_button_idle"
+    color = "#999999"
+    colors = "#999999|#999999|#999999|#999999" />
+
   <Button class="selection_button_highlighted"
-    color = "#FFFF00" />
+    color = "#FFFF00"
+    colors = "#FFFF00|#FFFF00|#FFFF00|#FFFF00" />
 
   <Button class="selection_button_selected"
-    color = "#00FF00" />
+    color = "#00FF00"
+    colors = "#00FF00|#00FF00|#00FF00|#00FF00" />
 
   <VerticalLayout class="memoriam_modal_npc_assignment"
     childForceExpandWidth = "false"
@@ -13480,7 +13485,7 @@ UI.show("memoriam_modal")
   UI.setAttributes("memoriam_modal_period_selection", {childForceExpandHeight = "true", color = "rgba(1, 0, 0, 0)", spacing = "0", preferredHeight = "150", flexibleHeight = "0", minHeight = "0"})
   UI.setAttributes("memoriam_modal_selected_date", {flexibleHeight = "1", preferredHeight = "40", alignment = "LowerCenter"})
   UI.setAttributes("memoriam_modal_selected_location", {flexibleHeight = "1", preferredHeight = "30", alignment = "MiddleCenter"})
-  UI.setAttributes("db_memoriam_period_indicator_bar", {preferredHeight = "40"})
+  UI.setAttributes("db_memoriam_period_indicator_bar", {preferredHeight = "40", padding = "10 10 0 0", childForceExpandWidth = false})
   UI.setAttributes("memoriam_modal_period_selection_slider", {preferredHeight = "40"})
 
 

@@ -6,9 +6,11 @@
     Phases.setPlaySubPhase(Memoriam). LUT / skybox / overlay remain TOR-101.
 
     Nested periods: shortest inclusive span wins each year; longer periods split
-    into chunks. Nested/overlapping shorter periods paint white on the strip when
-    not gold. Earliest years sit on the left; present sits on the right
-    (slider 0 → 5000). Agent guidance: .dev/Phases/Phases Overview.md;
+    into chunks. Idle strip uses four greys: two for base (non-nested) periods
+    and two for overlapping/nested shorter periods, alternating within each pair.
+    Periods that only share a boundary year are adjacent, not nested.
+    Earliest years sit on the left; present sits on the right (slider 0 → 5000).
+    Agent guidance: .dev/Phases/Phases Overview.md;
     C.getMemoriamSkyboxesForCharacter.
 ]]
 
@@ -68,12 +70,17 @@ local MONTH_ABBR = {
     jul = 7, aug = 8, sep = 9, oct = 10, nov = 11, dec = 12,
 }
 
-local PERIOD_COLOR_A = "#777777"
-local PERIOD_COLOR_B = "#CCCCCC"
-local PERIOD_COLOR_OVERLAY = "#FFFFFF"
+local PERIOD_COLOR_BASE_A = "#777777"
+local PERIOD_COLOR_BASE_B = "#9E9E9E"
+local PERIOD_COLOR_OVERLAY_A = "#C8C8C8"
+local PERIOD_COLOR_OVERLAY_B = "#F2F2F2"
 local GAP_COLOR = "#000000"
 local CURRENT_PERIOD_COLOR = "#FFDD00"
 local BUTTON_DUMMY_COLOR = "#000000"
+local SCENE_BUTTON_CLASS = "memoriam_modal_scene_selection_button"
+local SCENE_BUTTON_CLASS_IDLE = SCENE_BUTTON_CLASS .. " selection_button_idle"
+local SCENE_BUTTON_CLASS_HIGHLIGHTED = SCENE_BUTTON_CLASS .. " selection_button_highlighted"
+local SCENE_BUTTON_CLASS_SELECTED = SCENE_BUTTON_CLASS .. " selection_button_selected"
 local EMPTY_NPC_TEXT = "—"
 local PANEL_BUTTON_FONT_SIZE = "10"
 local PANEL_BUTTON_FONT_STYLE = "Bold"
@@ -449,6 +456,64 @@ local function normalizeSegmentWidths(list)
     return true, nil
 end
 
+-- Alternate within the base pair and within the overlay pair separately, so
+-- adjacent nested panels never share a shade. Reuse the same stripe for later
+-- chunks of the same catalog period (a long span split by a nested hole).
+local function assignPeriodStripeColors(list)
+    local baseN = 0
+    local overlayN = 0
+    local baseStripe = {}
+    local overlayStripe = {}
+    for i = 1, #list do
+        local seg = list[i]
+        if seg.kind == "period" then
+            local periodIndex = seg.periodIndex
+            if seg.isOverlay then
+                if overlayStripe[periodIndex] == nil then
+                    overlayStripe[periodIndex] = overlayN % 2
+                    overlayN = overlayN + 1
+                end
+                seg.stripeIndex = overlayStripe[periodIndex]
+            else
+                if baseStripe[periodIndex] == nil then
+                    baseStripe[periodIndex] = baseN % 2
+                    baseN = baseN + 1
+                end
+                seg.stripeIndex = baseStripe[periodIndex]
+            end
+        end
+    end
+end
+
+-- Inclusive catalog years. A shared boundary year (1949–1955 then 1955–1965)
+-- is not overlap. A shorter span that sits inside another (including 1999–1999
+-- inside 1990–2010) is overlap. Same-year periods stay [Y, Y] so they never
+-- invert the way start+0.6 / end+0.5 would.
+local function periodRangesOverlap(a, b)
+    local a0 = a.start
+    local a1 = a.finish - 1
+    local b0 = b.start
+    local b1 = b.finish - 1
+    local inter0 = a0
+    if b0 > inter0 then
+        inter0 = b0
+    end
+    local inter1 = a1
+    if b1 < inter1 then
+        inter1 = b1
+    end
+    if inter0 > inter1 then
+        return false
+    end
+    if inter0 < inter1 then
+        return true
+    end
+    local year = inter0
+    local aInterior = a0 < year and year < a1
+    local bInterior = b0 < year and year < b1
+    return aInterior or bInterior
+end
+
 local function buildTimeline(entries, presentYear)
     local ranges = {}
     for i = 1, #entries do
@@ -504,7 +569,7 @@ local function buildTimeline(entries, presentYear)
         for j = 1, #kept do
             if i ~= j then
                 local other = kept[j]
-                if r.start < other.finish and other.start < r.finish then
+                if periodRangesOverlap(r, other) then
                     if spanR < (other.finish - other.start) then
                         r.isOverlay = true
                         break
@@ -526,18 +591,30 @@ local function buildTimeline(entries, presentYear)
         for i = 1, #kept do
             local r = kept[i]
             if year >= r.start and year < r.finish then
-                if best == nil then
-                    best = r
-                else
-                    local spanR = r.finish - r.start
-                    local spanB = best.finish - best.start
-                    if spanR < spanB then
+                local skip = false
+                if year == r.start then
+                    for j = 1, #kept do
+                        local other = kept[j]
+                        if i ~= j and year == (other.finish - 1) and not periodRangesOverlap(r, other) then
+                            skip = true
+                            break
+                        end
+                    end
+                end
+                if not skip then
+                    if best == nil then
                         best = r
-                    elseif spanR == spanB then
-                        if r.start > best.start then
+                    else
+                        local spanR = r.finish - r.start
+                        local spanB = best.finish - best.start
+                        if spanR < spanB then
                             best = r
-                        elseif r.start == best.start and r.periodIndex > best.periodIndex then
-                            best = r
+                        elseif spanR == spanB then
+                            if r.start > best.start then
+                                best = r
+                            elseif r.start == best.start and r.periodIndex > best.periodIndex then
+                                best = r
+                            end
                         end
                     end
                 end
@@ -583,11 +660,12 @@ local function buildTimeline(entries, presentYear)
                 duration = yearCursor - runStart,
                 entry = winner.entry,
                 periodIndex = winner.periodIndex,
-                periodColorIndex = winner.periodIndex,
                 isOverlay = winner.isOverlay == true,
             }
         end
     end
+
+    assignPeriodStripeColors(out)
 
     if #out > BAR_SLOT_COUNT then
         return nil, "This timeline needs " .. tostring(#out) .. " bar slots; only " .. tostring(BAR_SLOT_COUNT) .. " exist."
@@ -750,11 +828,18 @@ jumpSliderToPeriod = function(periodIndex)
     return true
 end
 
-local function periodBaseColor(periodColorIndex)
-    if (periodColorIndex % 2) == 1 then
-        return PERIOD_COLOR_A
+local function periodIdleColor(seg)
+    local stripe = seg.stripeIndex or 0
+    if seg.isOverlay then
+        if (stripe % 2) == 1 then
+            return PERIOD_COLOR_OVERLAY_B
+        end
+        return PERIOD_COLOR_OVERLAY_A
     end
-    return PERIOD_COLOR_B
+    if (stripe % 2) == 1 then
+        return PERIOD_COLOR_BASE_B
+    end
+    return PERIOD_COLOR_BASE_A
 end
 
 paintBar = function()
@@ -771,11 +856,7 @@ paintBar = function()
         else
             local color = GAP_COLOR
             if seg.kind == "period" then
-                if seg.isOverlay then
-                    color = PERIOD_COLOR_OVERLAY
-                else
-                    color = periodBaseColor(seg.periodColorIndex or seg.periodIndex or vis)
-                end
+                color = periodIdleColor(seg)
                 if highlightPeriod ~= nil and seg.periodIndex == highlightPeriod then
                     color = CURRENT_PERIOD_COLOR
                 end
@@ -793,28 +874,35 @@ local function sceneButtonId(periodIndex, panelKey)
     return "memoriam_period_" .. tostring(periodIndex) .. "_" .. panelKey .. "_button"
 end
 
--- Class list drives highlight/selected color from XML Defaults. Do not write `color`
--- here: U.setAttributes also restores a button's last color, which would override
--- the class. Dummy C/D cells are the exception (explicit black).
+-- Visual color comes from exclusive XML Default classes (idle / highlighted /
+-- selected). The layout class has no color: stacking it with a color class used
+-- to leave #999999 on the button, and a TTS click restores that after onClick.
+-- Dummy C/D cells still set black after setClass. Do not write `color` through
+-- U.setAttributes: that wrapper restores the last color and overrides the class.
 local function applyPanelButton(id, className, attrs)
     attrs.fontSize = attrs.fontSize or PANEL_BUTTON_FONT_SIZE
     attrs.fontStyle = attrs.fontStyle or PANEL_BUTTON_FONT_STYLE
+    local explicitColor = attrs.color
+    attrs.color = nil
     UI.setAttributes(id, attrs)
     UI.setClass(id, className)
+    if explicitColor ~= nil then
+        UI.setAttribute(id, "color", explicitColor)
+    end
 end
 
 local function applySceneButtonState(periodIndex, panelKey, defined, label)
     local id = sceneButtonId(periodIndex, panelKey)
     if not defined then
         if panelKey == "panelC" or panelKey == "panelD" then
-            applyPanelButton(id, "memoriam_modal_scene_selection_button", {
+            applyPanelButton(id, SCENE_BUTTON_CLASS, {
                 active = "true",
                 interactable = "false",
                 text = "",
                 color = BUTTON_DUMMY_COLOR,
             })
         else
-            applyPanelButton(id, "memoriam_modal_scene_selection_button", {
+            applyPanelButton(id, SCENE_BUTTON_CLASS, {
                 active = "false",
                 interactable = "false",
                 text = "",
@@ -825,11 +913,11 @@ local function applySceneButtonState(periodIndex, panelKey, defined, label)
     local isSelected = selectedPeriodIndex == periodIndex and selectedPanelKey == panelKey
     local currentSeg = currentSegmentIndex ~= nil and segments[currentSegmentIndex] or nil
     local inCurrentPeriod = currentSeg ~= nil and currentSeg.kind == "period" and currentSeg.periodIndex == periodIndex
-    local className = "memoriam_modal_scene_selection_button"
+    local className = SCENE_BUTTON_CLASS_IDLE
     if isSelected then
-        className = "memoriam_modal_scene_selection_button selection_button_selected"
+        className = SCENE_BUTTON_CLASS_SELECTED
     elseif inCurrentPeriod then
-        className = "memoriam_modal_scene_selection_button selection_button_highlighted"
+        className = SCENE_BUTTON_CLASS_HIGHLIGHTED
     end
     applyPanelButton(id, className, {
         active = "true",
@@ -839,9 +927,9 @@ local function applySceneButtonState(periodIndex, panelKey, defined, label)
 end
 
 applyJustSmokeButtonState = function()
-    local className = "memoriam_modal_scene_selection_button selection_button_highlighted"
+    local className = SCENE_BUTTON_CLASS_HIGHLIGHTED
     if selectedJustSmoke then
-        className = "memoriam_modal_scene_selection_button selection_button_selected"
+        className = SCENE_BUTTON_CLASS_SELECTED
     end
     applyPanelButton(JUST_SMOKE_BUTTON_ID, className, {
         active = "true",
@@ -850,13 +938,24 @@ applyJustSmokeButtonState = function()
     })
 end
 
+-- TTS restores a Button's idle color after onClick. Re-apply the selected class
+-- on the next tick so that restore cannot leave the clicked panel grey.
+local function reapplySelectedClassAfterClick(id, className)
+    U.await(function()
+        if not modalOpen then
+            return
+        end
+        UI.setClass(id, className)
+    end, 0)
+end
+
 fillSceneGrid = function()
     for periodIndex = 1, SCENE_COLUMN_COUNT do
         local entry = catalogEntries[periodIndex]
         if entry == nil then
             for p = 1, #PANEL_KEYS do
                 local id = sceneButtonId(periodIndex, PANEL_KEYS[p])
-                applyPanelButton(id, "memoriam_modal_scene_selection_button", {
+                applyPanelButton(id, SCENE_BUTTON_CLASS, {
                     active = "false",
                     interactable = "false",
                     text = "",
@@ -1152,6 +1251,7 @@ function MemoriamModal.onSceneButton(id)
     fillPickerFromPeriod(periodIndex)
     showNpcAssignmentRows()
     applyDateAndHighlights()
+    reapplySelectedClassAfterClick(id, SCENE_BUTTON_CLASS_SELECTED)
 end
 
 function MemoriamModal.onJustSmoke()
@@ -1165,6 +1265,7 @@ function MemoriamModal.onJustSmoke()
     fillPickerFromPeriod(nil)
     showNpcAssignmentRows()
     applyDateAndHighlights()
+    reapplySelectedClassAfterClick(JUST_SMOKE_BUTTON_ID, SCENE_BUTTON_CLASS_SELECTED)
 end
 
 function MemoriamModal.onNpcPlus(id)

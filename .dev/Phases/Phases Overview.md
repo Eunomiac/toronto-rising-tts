@@ -50,7 +50,7 @@ Only `PLAY` has subphases. They switch freely (no top-level enter/exit), except 
 
 1. _(default)_ `MAIN`
 2. `DOWNTIME`
-3. `MEMORIAM` — clicking Memoriam on the Phases panel opens `ui/storyteller/memoriam_modal.xml` (**TOR-539** / **TOR-540**). The Play subphase does **not** change until Advance; Cancel (or switching to Main / Downtime) leaves the current subphase in place. Nested catalog years use shortest-span priority; Just Smoke is a valid destination in gaps. LUT/overlay when Memoriam is active is still deferred — **TOR-101**.
+3. `MEMORIAM` — clicking Memoriam on the Phases panel opens `ui/storyteller/memoriam_modal.xml` (**TOR-539** / **TOR-540**). The Play subphase does **not** change until Advance; Cancel (or switching to Main / Downtime) leaves the current subphase in place. Nested catalog years use shortest-span priority; periods that only share a boundary year sit next to each other, not inside each other (**TOR-547**). Just Smoke is a valid destination in gaps. The period strip uses four greys (two for base periods, two for nested/overlapping shorter periods) so adjacent panels in each set do not match (**TOR-545**). LUT/overlay when Memoriam is active is still deferred — **TOR-101**.
 
 Scene library **Apply** promotes to Play via `Phases.ensurePlayPhaseForSceneApply()` (silent — does **not** re-run Play enter events).
 

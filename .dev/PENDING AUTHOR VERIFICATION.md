@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-01 — **TOR-544** (Memoriam bar white nested periods). **TOR-543** (Memoriam scene button class colors). **TOR-542** (Memoriam slider 0–5000). **TOR-541** (Memoriam slider present on the right). **TOR-540** (Memoriam popup bar/nested/Just Smoke/location). **TOR-539** (Memoriam configuration popup). **TOR-538** (overlay camera FirstPerson face-look cycle). **TOR-537** (randomize Table B seating). PAVE follow-ups **TOR-518** (PCs panel spacing) and **TOR-528** (resetToIntermission console-only). Author confirmed Intermission→Play explode chain (**TOR-531**–**TOR-536**), scene-library names, rain follow, camera defaults, CSHEET roll camera, Spotlight carousel, session explode grow, and control-board occupancy (**TOR-247**). **TOR-439** remains a multiclient gate (not a solo Save & Play)._
+_Last populated: 2026-09-01 — **TOR-547** (Memoriam abutting years not overlap). **TOR-546** (Memoriam scene buttons stay selected). **TOR-545** (Memoriam bar four greys). **TOR-544** (Memoriam bar white nested periods). **TOR-543** (Memoriam scene button class colors). **TOR-542** (Memoriam slider 0–5000). **TOR-541** (Memoriam slider present on the right). **TOR-540** (Memoriam popup bar/nested/Just Smoke/location). **TOR-539** (Memoriam configuration popup). **TOR-538** (overlay camera FirstPerson face-look cycle). **TOR-537** (randomize Table B seating). PAVE follow-ups **TOR-518** (PCs panel spacing) and **TOR-528** (resetToIntermission console-only). Author confirmed Intermission→Play explode chain (**TOR-531**–**TOR-536**), scene-library names, rain follow, camera defaults, CSHEET roll camera, Spotlight carousel, session explode grow, and control-board occupancy (**TOR-247**). **TOR-439** remains a multiclient gate (not a solo Save & Play)._
 
 ### High — session / join / first-load
 
@@ -126,6 +126,24 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 **How to verify:** Save & Play. Open Memoriam and pick **Fomórach**. On the period strip, Kharkiv and Jaffa (the short periods nested inside the long Toronto span) should be **white** when the gold handle is not on them. Toronto’s remaining gray chunks should still alternate with the other non-nested periods. Sliding onto Kharkiv or Jaffa should gold those white blocks as usual.
 
 **Context:** Nested periods skip the two-gray stripe so they stay readable against the longer period they sit inside.
+
+#### TOR-545 — Memoriam bar: four greys so nested panels can alternate
+
+**How to verify:** Save & Play. Open Memoriam and pick **Fomórach**. On the period strip, Toronto (the long span) should use the two darker greys for its chunks, and Kharkiv and Jaffa (the nested shorts) should use the two lighter greys — not the same light shade next to each other. Sliding onto a nested period should still gold that block as usual. Empty years stay black.
+
+**Context:** One white for every nested period made adjacent nested panels look like one block. Base periods and nested periods now each have their own alternating pair.
+
+#### TOR-546 — Memoriam scene buttons go grey when selected
+
+**How to verify:** Save & Play. Open Memoriam and pick a character. Scene buttons in the current period should be yellow. Click one: that button should turn green and stay green (not drop back to grey). The other current-period buttons should stay yellow. Click Just Smoke: it should turn green the same way. You can still change the highlighted/selected colors in the modal XML Defaults.
+
+**Context:** The layout class was painting grey, and a TTS button click puts that grey back after Lua sets the selected class. Idle, highlighted, and selected are now separate color classes.
+
+#### TOR-547 — Memoriam bar: abutting years are not overlapping
+
+**How to verify:** Save & Play. Open Memoriam and pick a character who has two periods that only meet at a year (one ends the year the next begins, for example 1949–1955 then 1955–1965). Those two blocks should sit side by side in the darker base greys, not jump to the lighter nested greys. A period that is truly inside a longer one (including a single year in the middle of a longer span) should still use the lighter nested greys.
+
+**Context:** Sharing only a start/end year is adjacent time, not a nested overlay.
 
 ---
 
