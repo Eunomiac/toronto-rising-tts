@@ -6,8 +6,8 @@
     Phases.setPlaySubPhase(Memoriam). LUT / skybox / overlay remain TOR-101.
 
     Nested periods: shortest inclusive span wins each year; longer periods split
-    into chunks. The period bar paints present on the left to match the
-    RightToLeft slider. Agent guidance: .dev/Phases/Phases Overview.md;
+    into chunks. Earliest years sit on the left of the strip; present sits on the
+    right (slider 0 → 2400). Agent guidance: .dev/Phases/Phases Overview.md;
     C.getMemoriamSkyboxesForCharacter.
 ]]
 
@@ -743,8 +743,7 @@ paintBar = function()
     local highlightPeriod = currentPeriodIndex()
     for vis = 1, BAR_SLOT_COUNT do
         local id = "memoriam_period_" .. tostring(vis)
-        local segIndex = n - vis + 1
-        local seg = (vis <= n and segIndex >= 1) and segments[segIndex] or nil
+        local seg = (vis <= n) and segments[vis] or nil
         if seg == nil then
             setAttrs(id, {
                 active = "false",
@@ -1016,6 +1015,7 @@ configureForSubject = function(characterKey)
     setAttr("memoriam_modal_period_selection", "active", "true")
     setAttr("memoriam_modal_scene_selection", "active", "true")
     setAttr("memoriam_modal_npc_assignment", "active", "false")
+    setAttr("memoriam_modal_period_selection_slider", "direction", "LeftToRight")
     setAttr("memoriam_modal_period_selection_slider", "maxValue", tostring(SLIDER_MAX))
     setAttr("memoriam_modal_period_selection_slider", "value", tostring(SLIDER_MAX))
     applyDateAndHighlights()

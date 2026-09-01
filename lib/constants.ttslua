@@ -3018,7 +3018,19 @@ local function memoriamSkyboxStartYear(entry)
   return entry.startYear
 end
 
---- Build `character → { skyboxKey, ... }` lists from `C.MemoriamSkyboxes`, sorted by `startYear` then key.
+--- @param entry table|nil
+--- @return number
+local function memoriamSkyboxEndYear(entry)
+  if type(entry) ~= "table" then
+    return 0
+  end
+  if type(entry.endYear) == "number" then
+    return entry.endYear
+  end
+  return memoriamSkyboxStartYear(entry)
+end
+
+--- Build `character → { skyboxKey, ... }` lists from `C.MemoriamSkyboxes`, sorted by `startYear`, then `endYear`, then key.
 --- @param catalog table
 --- @return table
 local function buildMemoriamSkyboxKeysByCharacter(catalog)
@@ -3052,10 +3064,15 @@ local function buildMemoriamSkyboxKeysByCharacter(catalog)
   end
   for _, keys in pairs(byCharacter) do
     table.sort(keys, function(a, b)
-      local yearA = memoriamSkyboxStartYear(catalog[a])
-      local yearB = memoriamSkyboxStartYear(catalog[b])
-      if yearA ~= yearB then
-        return yearA < yearB
+      local startA = memoriamSkyboxStartYear(catalog[a])
+      local startB = memoriamSkyboxStartYear(catalog[b])
+      if startA ~= startB then
+        return startA < startB
+      end
+      local endA = memoriamSkyboxEndYear(catalog[a])
+      local endB = memoriamSkyboxEndYear(catalog[b])
+      if endA ~= endB then
+        return endA < endB
       end
       return a < b
     end)
@@ -3174,7 +3191,7 @@ function C.resolveSkyboxURLForSite(siteKey)
 end
 
 --- Ordered Memoriam catalog entries for a character key (`lucien`, `aishe`, `fomorach`, `blackCaesar`, `rashid`, …).
---- Sorted by `startYear` ascending (then skybox key). Unknown or blank character returns `{}`.
+--- Sorted by `startYear` ascending, then `endYear` ascending, then skybox key. Unknown or blank character returns `{}`.
 --- @param characterKey string|nil
 --- @return table
 function C.getMemoriamSkyboxesForCharacter(characterKey)

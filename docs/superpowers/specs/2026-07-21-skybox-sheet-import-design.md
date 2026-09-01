@@ -32,7 +32,7 @@ Skybox catalog entries are hand-maintained in `lib/constants.ttslua`. The author
 - Preserve existing runtime shape: `C.Skyboxes[key] = { key, display, isShown, url }`, `C.GenericSkyboxes = { url, ... }`, `C.MemoriamSkyboxes[key]` with `characters` array
 - `isShown = false` stays in the catalog (site defaults / existing overrides still resolve) but is omitted from the Scenes skybox picker modal
 - Keep resolve helpers (`C.SKYBOX_GENERIC_KEY`, `pickRandomGenericSkyboxURL`, `isValidSkyboxKey`, `resolveSkyboxURLFromKey`, `resolveSkyboxURLForSite`) in Constants
-- Derive `C.MemoriamSkyboxKeysByCharacter` and `C.getMemoriamSkyboxesForCharacter` from `C.MemoriamSkyboxes` (sort by `startYear`, then skybox key)
+- Derive `C.MemoriamSkyboxKeysByCharacter` and `C.getMemoriamSkyboxesForCharacter` from `C.MemoriamSkyboxes` (sort by `startYear`, then `endYear`, then skybox key)
 - After import, regenerate Scenes skybox modal XML so the picker stays in sync
 
 ## Non-goals
@@ -159,7 +159,7 @@ C.GenericSkyboxes = SkyboxesCatalog.GenericSkyboxes
 C.MemoriamSkyboxes = SkyboxesCatalog.MemoriamSkyboxes
 ```
 
-- Derive `C.MemoriamSkyboxKeysByCharacter` at Constants load: for each catalog entry, add its key to every listed character, then sort each list by `startYear` ascending (tie-break by skybox key). Shared rows (e.g. `lucien14`) appear on every listed character.
+- Derive `C.MemoriamSkyboxKeysByCharacter` at Constants load: for each catalog entry, add its key to every listed character, then sort each list by `startYear` ascending, then `endYear` ascending, then skybox key. Shared rows (e.g. `lucien14`) appear on every listed character.
 - `C.getMemoriamSkyboxesForCharacter(characterKey)` returns the matching catalog tables in that same order. Unknown or blank character returns `{}`.
 - Leave resolve helpers immediately below, unchanged in behavior
 - Comment pointing agents at the import script / VS Code task

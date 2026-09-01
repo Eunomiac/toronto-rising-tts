@@ -721,5 +721,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-08-30 | CREATE+SHIP | TOR-537 | Randomize Table B seating on cover transition; pack 1..N; control-board tokens follow; Absent stay hidden. relatedTo TOR-507 / TOR-247 / TOR-334. Pending Save & Play. |
 | 2026-08-30 | CREATE+SHIP | TOR-539 | Memoriam configuration popup gates Phases Memoriam until Advance; prints payload; LUT still TOR-101. relatedTo TOR-143 / TOR-101 / TOR-530. Pending Save & Play. |
 | 2026-09-01 | CREATE+SHIP | TOR-540 | Memoriam popup follow-up: reverse bar, nested shortest-wins, Just Smoke, 2400 slider, location label. relatedTo TOR-539. Pending Save & Play. |
+| 2026-09-01 | CREATE+SHIP | TOR-541 | Memoriam slider: present on the right (LeftToRight); same startYear sorts by earlier endYear. relatedTo TOR-540 / TOR-539. Pending Save & Play. |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

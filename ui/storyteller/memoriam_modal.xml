@@ -70,7 +70,7 @@
     minValue = "0"
     maxValue = "2400"
     wholeNumbers = "true"
-    direction = "RightToLeft"
+    direction = "LeftToRight"
     value = "0"
     onValueChanged = "HUD_memoriamModalSlider"
     flexibleHeight = "1"
