@@ -4,6 +4,8 @@
     Draft lives in this module until Advance. Cancel / Main / Downtime leave the
     Play subphase unchanged. Advance prints the collected payload, then
     Phases.setPlaySubPhase(Memoriam). LUT / skybox / overlay remain TOR-101.
+    Assignments always include the subject (`kind = "self"` unless they play an
+    NPC). Non-subject PCs may be marked present as themselves or assigned an NPC.
 
     Nested periods: shortest inclusive span wins each year; longer periods split
     into chunks. Idle strip uses four greys: two for base (non-nested) periods
@@ -76,6 +78,9 @@ local SCENE_BUTTON_CLASS_DUMMY = SCENE_BUTTON_CLASS .. " selection_button_dummy"
 local PC_BUTTON_CLASS = "memoriam_modal_pc_selection_button"
 local PC_BUTTON_CLASS_IDLE = PC_BUTTON_CLASS .. " selection_button_idle"
 local PC_BUTTON_CLASS_SELECTED = PC_BUTTON_CLASS .. " selection_button_selected"
+local PRESENCE_BUTTON_CLASS = "memoriam_modal_npc_presence_button"
+local PRESENCE_BUTTON_CLASS_IDLE = PRESENCE_BUTTON_CLASS .. " selection_button_idle"
+local PRESENCE_BUTTON_CLASS_SELECTED = PRESENCE_BUTTON_CLASS .. " selection_button_selected"
 -- Keep these hex values in sync with the matching Defaults in memoriam_modal.xml.
 local SCENE_BUTTON_FACE = {
     [SCENE_BUTTON_CLASS_IDLE] = "#999999",
@@ -84,8 +89,12 @@ local SCENE_BUTTON_FACE = {
     [SCENE_BUTTON_CLASS_DUMMY] = "#000000",
     [PC_BUTTON_CLASS_IDLE] = "#999999",
     [PC_BUTTON_CLASS_SELECTED] = "#00FF00",
+    [PRESENCE_BUTTON_CLASS_IDLE] = "#999999",
+    [PRESENCE_BUTTON_CLASS_SELECTED] = "#00FF00",
 }
 local EMPTY_NPC_TEXT = "—"
+local SUBJECT_LABEL_COLOR = "#00FF00"
+local OTHER_LABEL_COLOR = "#FFFFFF"
 local PANEL_BUTTON_FONT_SIZE = "10"
 local PANEL_BUTTON_FONT_STYLE = "Bold"
 local PC_BUTTON_FONT_SIZE = "14"
@@ -134,6 +143,7 @@ local fillPickerFromPeriod
 local showNpcAssignmentRows
 local configureForSubject
 local paintPcButtons
+local paintPresenceButtons
 local mapSliderToSegment
 local calendarYearInSegment
 local currentPeriodIndex
@@ -951,6 +961,39 @@ paintPcButtons = function()
     end
 end
 
+local function presenceButtonId(key)
+    return "memoriam_modal_npc_presence_" .. tostring(key) .. "_button"
+end
+
+local function isSelfAssignment(key)
+    local row = assignments[key]
+    return type(row) == "table" and row.kind == "self"
+end
+
+paintPresenceButtons = function()
+    for i = 1, #PC_KEYS do
+        local key = PC_KEYS[i]
+        local id = presenceButtonId(key)
+        if key == subjectKey then
+            applyPanelButton(id, PRESENCE_BUTTON_CLASS_IDLE, {
+                active = "false",
+                interactable = "false",
+                text = "",
+            })
+        else
+            local className = PRESENCE_BUTTON_CLASS_IDLE
+            if isSelfAssignment(key) then
+                className = PRESENCE_BUTTON_CLASS_SELECTED
+            end
+            applyPanelButton(id, className, {
+                active = "true",
+                interactable = "true",
+                text = "",
+            })
+        end
+    end
+end
+
 local function applySceneButtonState(periodIndex, panelKey, defined, label)
     local id = sceneButtonId(periodIndex, panelKey)
     if not defined then
@@ -1159,13 +1202,14 @@ showNpcAssignmentRows = function()
     setAttr("memoriam_modal_npc_assignment", "active", "true")
     for i = 1, #PC_KEYS do
         local key = PC_KEYS[i]
-        local rowId = "memoriam_modal_npc_assignment_" .. key
+        setAttr("memoriam_modal_npc_assignment_" .. key, "active", "true")
+        local nameColor = OTHER_LABEL_COLOR
         if key == subjectKey then
-            setAttr(rowId, "active", "false")
-        else
-            setAttr(rowId, "active", "true")
+            nameColor = SUBJECT_LABEL_COLOR
         end
+        setAttr("memoriam_modal_npc_assignment_" .. key .. "_pc_name", "color", nameColor)
     end
+    paintPresenceButtons()
 end
 
 configureForSubject = function(characterKey)
@@ -1341,18 +1385,8 @@ function MemoriamModal.onNpcPlus(id)
     if not modalOpen or (selectedPeriodIndex == nil and not selectedJustSmoke) then
         return
     end
-    local key = string.match(tostring(id or ""), "^memoriam_modal_npc_assignment_([A-Za-z]+)_button$")
-    if key == nil or key == subjectKey then
-        return
-    end
-    local known = false
-    for i = 1, #PC_KEYS do
-        if PC_KEYS[i] == key then
-            known = true
-            break
-        end
-    end
-    if not known then
+    local key = string.match(tostring(id or ""), "^memoriam_modal_npc_assignment_(.+)_button$")
+    if key == nil or PC_DISPLAY[key] == nil then
         return
     end
     pickerTargetKey = key
@@ -1360,6 +1394,24 @@ function MemoriamModal.onNpcPlus(id)
     setAttr("memoriam_modal_npc_assignment_input", "text", "")
     setAttr("memoriam_modal_npc_assignment_label", "text", "Assigning To: " .. (PC_DISPLAY[key] or key))
     setAttr("memoriam_modal_npc_assignment_grid_container", "active", "true")
+end
+
+function MemoriamModal.onPcPresence(id)
+    if not modalOpen or (selectedPeriodIndex == nil and not selectedJustSmoke) then
+        return
+    end
+    local key = string.match(tostring(id or ""), "^memoriam_modal_npc_presence_(.+)_button$")
+    if key == nil or PC_DISPLAY[key] == nil or key == subjectKey then
+        return
+    end
+    if isSelfAssignment(key) then
+        assignments[key] = nil
+    else
+        assignments[key] = { kind = "self" }
+        setAttr("memoriam_modal_npc_assignment_" .. key .. "_npc_name", "text", EMPTY_NPC_TEXT)
+    end
+    paintPresenceButtons()
+    reapplySelectedClassAfterClick(presenceButtonId(key), paintPresenceButtons)
 end
 
 function MemoriamModal.onNpcPick(id)
@@ -1377,6 +1429,7 @@ function MemoriamModal.onNpcPick(id)
         label = label,
     }
     setAttr("memoriam_modal_npc_assignment_" .. pickerTargetKey .. "_npc_name", "text", label)
+    paintPresenceButtons()
     hidePicker()
 end
 
@@ -1399,6 +1452,7 @@ function MemoriamModal.onNpcConfirm()
         label = resolved.label,
     }
     setAttr("memoriam_modal_npc_assignment_" .. pickerTargetKey .. "_npc_name", "text", resolved.label)
+    paintPresenceButtons()
     hidePicker()
 end
 
@@ -1408,6 +1462,31 @@ end
 
 function MemoriamModal.onCancel()
     MemoriamModal.close()
+end
+
+local function assignmentPayloadForKey(key)
+    local row = assignments[key]
+    if key == subjectKey then
+        if type(row) == "table" and row.kind ~= nil and row.kind ~= "self" then
+            return {
+                kind = row.kind,
+                key = row.key,
+                label = row.label,
+            }
+        end
+        return { kind = "self" }
+    end
+    if type(row) ~= "table" then
+        return nil
+    end
+    if row.kind == "self" then
+        return { kind = "self" }
+    end
+    return {
+        kind = row.kind,
+        key = row.key,
+        label = row.label,
+    }
 end
 
 function MemoriamModal.onConfirm()
@@ -1423,15 +1502,9 @@ function MemoriamModal.onConfirm()
     local assignmentOut = {}
     for i = 1, #PC_KEYS do
         local key = PC_KEYS[i]
-        if key ~= subjectKey then
-            local row = assignments[key]
-            if type(row) == "table" then
-                assignmentOut[key] = {
-                    kind = row.kind,
-                    key = row.key,
-                    label = row.label,
-                }
-            end
+        local row = assignmentPayloadForKey(key)
+        if row ~= nil then
+            assignmentOut[key] = row
         end
     end
     local payload

@@ -4681,6 +4681,13 @@ function HUD_memoriamModalNpcPlus(player, button, id)
     MemoriamModal.onNpcPlus(id)
 end
 
+function HUD_memoriamModalPcPresence(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_memoriamModalPcPresence") then
+        return
+    end
+    MemoriamModal.onPcPresence(id)
+end
+
 function HUD_memoriamModalNpcPick(player, button, id)
     if not requireStorytellerForMutation(player, "HUD_memoriamModalNpcPick") then
         return
