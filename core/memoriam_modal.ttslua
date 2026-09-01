@@ -6,8 +6,9 @@
     Phases.setPlaySubPhase(Memoriam). LUT / skybox / overlay remain TOR-101.
 
     Nested periods: shortest inclusive span wins each year; longer periods split
-    into chunks. Earliest years sit on the left of the strip; present sits on the
-    right (slider 0 → 5000). Agent guidance: .dev/Phases/Phases Overview.md;
+    into chunks. Nested/overlapping shorter periods paint white on the strip when
+    not gold. Earliest years sit on the left; present sits on the right
+    (slider 0 → 5000). Agent guidance: .dev/Phases/Phases Overview.md;
     C.getMemoriamSkyboxesForCharacter.
 ]]
 
@@ -69,6 +70,7 @@ local MONTH_ABBR = {
 
 local PERIOD_COLOR_A = "#777777"
 local PERIOD_COLOR_B = "#CCCCCC"
+local PERIOD_COLOR_OVERLAY = "#FFFFFF"
 local GAP_COLOR = "#000000"
 local CURRENT_PERIOD_COLOR = "#FFDD00"
 local BUTTON_DUMMY_COLOR = "#000000"
@@ -495,6 +497,23 @@ local function buildTimeline(entries, presentYear)
         return nil, "No Memoriam periods fall on or before the present-day clock."
     end
 
+    for i = 1, #kept do
+        local r = kept[i]
+        r.isOverlay = false
+        local spanR = r.finish - r.start
+        for j = 1, #kept do
+            if i ~= j then
+                local other = kept[j]
+                if r.start < other.finish and other.start < r.finish then
+                    if spanR < (other.finish - other.start) then
+                        r.isOverlay = true
+                        break
+                    end
+                end
+            end
+        end
+    end
+
     firstStart = kept[1].start
     for i = 2, #kept do
         if kept[i].start < firstStart then
@@ -565,6 +584,7 @@ local function buildTimeline(entries, presentYear)
                 entry = winner.entry,
                 periodIndex = winner.periodIndex,
                 periodColorIndex = winner.periodIndex,
+                isOverlay = winner.isOverlay == true,
             }
         end
     end
@@ -751,7 +771,11 @@ paintBar = function()
         else
             local color = GAP_COLOR
             if seg.kind == "period" then
-                color = periodBaseColor(seg.periodColorIndex or seg.periodIndex or vis)
+                if seg.isOverlay then
+                    color = PERIOD_COLOR_OVERLAY
+                else
+                    color = periodBaseColor(seg.periodColorIndex or seg.periodIndex or vis)
+                end
                 if highlightPeriod ~= nil and seg.periodIndex == highlightPeriod then
                     color = CURRENT_PERIOD_COLOR
                 end
