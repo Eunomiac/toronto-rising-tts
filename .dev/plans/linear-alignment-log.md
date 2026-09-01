@@ -729,5 +729,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-09-01 | CREATE+SHIP | TOR-546 | Memoriam scene buttons: exclusive idle/highlight/selected classes; re-apply selected after click. relatedTo TOR-543. Pending Save & Play. |
 | 2026-09-01 | CREATE+SHIP | TOR-547 | Memoriam bar: abutting years (endYear = next startYear) are not overlay. relatedTo TOR-544 / TOR-545. Pending Save & Play. |
 | 2026-09-01 | CREATE+SHIP | TOR-548 | Memoriam scene labels from catalog; unused columns 13–14 hide; dummy C/D clear on PC change. relatedTo TOR-546 / TOR-543. Pending Save & Play. |
+| 2026-09-01 | CREATE+SHIP | TOR-549 | Memoriam bar: same-year period on a neighbor’s last year still appears (lucien23). relatedTo TOR-547. Pending Save & Play. |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

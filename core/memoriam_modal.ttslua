@@ -498,10 +498,9 @@ local function assignPeriodStripeColors(list)
     end
 end
 
--- Inclusive catalog years. A shared boundary year (1949–1955 then 1955–1965)
--- is not overlap. A shorter span that sits inside another (including 1999–1999
--- inside 1990–2010) is overlap. Same-year periods stay [Y, Y] so they never
--- invert the way start+0.6 / end+0.5 would.
+-- Inclusive catalog years. A shared boundary year between two multi-year
+-- periods (1949–1955 then 1955–1965) is not overlap. A same-year period
+-- (1999–1999 at the end of 1980–1999, or in the middle of 1990–2010) is.
 local function periodRangesOverlap(a, b)
     local a0 = a.start
     local a1 = a.finish - 1
@@ -524,6 +523,11 @@ local function periodRangesOverlap(a, b)
     local year = inter0
     local aInterior = a0 < year and year < a1
     local bInterior = b0 < year and year < b1
+    -- A same-year period (1999–1999) whose only year is another period’s last
+    -- or first year still counts as nested so it can paint on the bar.
+    if a0 == a1 or b0 == b1 then
+        return true
+    end
     return aInterior or bInterior
 end
 
@@ -605,7 +609,11 @@ local function buildTimeline(entries, presentYear)
             local r = kept[i]
             if year >= r.start and year < r.finish then
                 local skip = false
-                if year == r.start then
+                -- A later multi-year period that only begins on someone else's last
+                -- year does not take that year (1949–1955 then 1955–1965). A
+                -- same-year period (1999–1999 at the end of 1980–1999) still can;
+                -- skipping it would remove it from the bar entirely.
+                if year == r.start and r.start < (r.finish - 1) then
                     for j = 1, #kept do
                         local other = kept[j]
                         if i ~= j and year == (other.finish - 1) and not periodRangesOverlap(r, other) then

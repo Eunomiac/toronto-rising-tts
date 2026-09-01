@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-01 — **TOR-548** (Memoriam scene labels, columns 13–14, dummy C/D). **TOR-547** (Memoriam abutting years not overlap). **TOR-546** (Memoriam scene buttons stay selected). **TOR-545** (Memoriam bar four greys). **TOR-544** (Memoriam bar white nested periods). **TOR-543** (Memoriam scene button class colors). **TOR-542** (Memoriam slider 0–5000). **TOR-541** (Memoriam slider present on the right). **TOR-540** (Memoriam popup bar/nested/Just Smoke/location). **TOR-539** (Memoriam configuration popup). **TOR-538** (overlay camera FirstPerson face-look cycle). **TOR-537** (randomize Table B seating). PAVE follow-ups **TOR-518** (PCs panel spacing) and **TOR-528** (resetToIntermission console-only). Author confirmed Intermission→Play explode chain (**TOR-531**–**TOR-536**), scene-library names, rain follow, camera defaults, CSHEET roll camera, Spotlight carousel, session explode grow, and control-board occupancy (**TOR-247**). **TOR-439** remains a multiclient gate (not a solo Save & Play)._
+_Last populated: 2026-09-01 — **TOR-549** (Memoriam same-year period on a neighbor’s last year). **TOR-548** (Memoriam scene labels, columns 13–14, dummy C/D). **TOR-547** (Memoriam abutting years not overlap). **TOR-546** (Memoriam scene buttons stay selected). **TOR-545** (Memoriam bar four greys). **TOR-544** (Memoriam bar white nested periods). **TOR-543** (Memoriam scene button class colors). **TOR-542** (Memoriam slider 0–5000). **TOR-541** (Memoriam slider present on the right). **TOR-540** (Memoriam popup bar/nested/Just Smoke/location). **TOR-539** (Memoriam configuration popup). **TOR-538** (overlay camera FirstPerson face-look cycle). **TOR-537** (randomize Table B seating). PAVE follow-ups **TOR-518** (PCs panel spacing) and **TOR-528** (resetToIntermission console-only). Author confirmed Intermission→Play explode chain (**TOR-531**–**TOR-536**), scene-library names, rain follow, camera defaults, CSHEET roll camera, Spotlight carousel, session explode grow, and control-board occupancy (**TOR-247**). **TOR-439** remains a multiclient gate (not a solo Save & Play)._
 
 ### High — session / join / first-load
 
@@ -150,6 +150,12 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 **How to verify:** Save & Play. Open Memoriam and pick a character. Scene buttons should show the catalog panel names, not “Period 3, Panel A”. Unused columns, including 13 and 14, should disappear. Pick a character whose period has only A/B: C and D in that column should be empty black placeholders. Switch to a character who has C/D (or fewer periods so that column is unused): those C/D cells should become real named buttons, or hide, and must not stay black from the previous character.
 
 **Context:** Lua was applying class after text, so XML placeholders came back. Dummy C/D had been painted black as a leftover color that survived a PC change.
+
+#### TOR-549 — Memoriam bar drops a same-year period on a neighbor’s last year
+
+**How to verify:** Save & Play. Open Memoriam and pick **Lord Lucien**. On the period strip, 1999 should show a short Kingston block (`lucien23`) sitting on the last year of Montreal (`lucien19`, 1980–1999), not disappear into Montreal. Rashid’s single-year 2013 period should still appear as before. Two multi-year periods that only meet at a year (1949–1955 then 1955–1965) should still sit side by side.
+
+**Context:** The abutting-year skip was hiding any period that started on another period’s last year, including a 1999–1999 period whose only year is that shared year.
 
 ---
 
