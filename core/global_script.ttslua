@@ -4667,6 +4667,13 @@ function HUD_memoriamModalSceneButton(player, button, id)
     MemoriamModal.onSceneButton(id)
 end
 
+function HUD_memoriamModalJustSmoke(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_memoriamModalJustSmoke") then
+        return
+    end
+    MemoriamModal.onJustSmoke()
+end
+
 function HUD_memoriamModalNpcPlus(player, button, id)
     if not requireStorytellerForMutation(player, "HUD_memoriamModalNpcPlus") then
         return

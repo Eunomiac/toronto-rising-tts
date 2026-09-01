@@ -30,9 +30,9 @@
   />
 
   <VerticalLayout class="memoriam_modal_period_selection"
-    preferredHeight = "180"
+    preferredHeight = "220"
     flexibleHeight = "0"
-    minHeight = "180"
+    minHeight = "220"
     spacing = "0"
     padding = "0 0 0 0"
     childAlignment = "UpperCenter"
@@ -44,6 +44,12 @@
     alignment = "MiddleCenter"
     color = "#FFFFFF"
     fontSize = "30"
+    fontStyle = "BoldAndItalic"
+  />
+  <Text class="memoriam_modal_selected_location"
+    alignment = "MiddleCenter"
+    color = "#FFFFFF"
+    fontSize = "24"
     fontStyle = "BoldAndItalic"
   />
 
@@ -62,7 +68,8 @@
 
   <Slider class="memoriam_modal_period_selection_slider"
     minValue = "0"
-    maxValue = "1200"
+    maxValue = "2400"
+    wholeNumbers = "true"
     direction = "RightToLeft"
     value = "0"
     onValueChanged = "HUD_memoriamModalSlider"
@@ -85,7 +92,7 @@
 
   <Button class="memoriam_modal_scene_selection_button"
     textAlignment = "MiddleCenter"
-    fontSize = "12"
+    fontSize = "10"
     fontStyle = "Bold"
     color = "#999999"
     onClick = "HUD_memoriamModalSceneButton"
@@ -159,6 +166,7 @@ UI.show("memoriam_modal")
   <!-- Set active=true when a PC is selected; otherwise active=false. -->
   <VerticalLayout id="memoriam_modal_period_selection" class="memoriam_modal_period_selection">
     <Text id="memoriam_modal_selected_date" class="memoriam_modal_selected_date">September 27, 1854</Text>
+    <Text id="memoriam_modal_selected_location" class="memoriam_modal_selected_location">Celaya, Mexico</Text>
     <HorizontalLayout id="db_memoriam_period_indicator_bar" class="memoriam_modal_period_indicator_bar">
       <Panel id="memoriam_period_1" class="memoriam_period_indicator" color="#777777" minWidth="100" />
       <Panel id="memoriam_period_2" class="memoriam_period_indicator" color="#CCCCCC" minWidth="200" />
@@ -196,7 +204,8 @@ UI.show("memoriam_modal")
 
   <!-- Scene Selection Grid -->
   <!-- Set active=true when a PC is selected; otherwise active=false. -->
-  <GridLayout id="db_memoriam_scene_selection_grid" class="memoriam_modal_scene_selection_grid">
+  <VerticalLayout id="memoriam_modal_scene_selection" spacing="10" childForceExpandHeight="false" childForceExpandWidth="true">
+    <GridLayout id="db_memoriam_scene_selection_grid" class="memoriam_modal_scene_selection_grid">
     <Button id="memoriam_period_1_panelA_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 1, Panel A"/>
     <Button id="memoriam_period_1_panelB_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 1, Panel B"/>
     <Button id="memoriam_period_1_panelC_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 1, Panel C"/>
@@ -253,7 +262,13 @@ UI.show("memoriam_modal")
     <Button id="memoriam_period_14_panelB_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 14, Panel B" />
     <Button id="memoriam_period_14_panelC_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 14, Panel C" />
     <Button id="memoriam_period_14_panelD_button" class="memoriam_modal_scene_selection_button" onClick="HUD_memoriamModalSceneButton" text="Period 14, Panel D" />
-  </GridLayout>
+    </GridLayout>
+    <HorizontalLayout id="memoriam_modal_just_smoke_row" preferredHeight="40" minHeight="40" flexibleHeight="0" childForceExpandWidth="true" childForceExpandHeight="false" childAlignment="MiddleCenter">
+      <Panel flexibleWidth="1" />
+      <Button id="memoriam_modal_just_smoke_button" class="memoriam_modal_scene_selection_button" preferredWidth="85" minWidth="85" preferredHeight="40" minHeight="40" flexibleWidth="0" text="Just Smoke" onClick="HUD_memoriamModalJustSmoke" />
+      <Panel flexibleWidth="1" />
+    </HorizontalLayout>
+  </VerticalLayout>
 
   <!-- PC-as-NPC Assignment
   Set active=true when a panel has been selected, otherwise active=false. -->

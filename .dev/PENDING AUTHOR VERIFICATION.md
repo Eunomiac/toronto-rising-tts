@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-08-30 — **TOR-539** (Memoriam configuration popup). **TOR-538** (overlay camera FirstPerson face-look cycle). **TOR-537** (randomize Table B seating). PAVE follow-ups **TOR-518** (PCs panel spacing) and **TOR-528** (resetToIntermission console-only). Author confirmed Intermission→Play explode chain (**TOR-531**–**TOR-536**), scene-library names, rain follow, camera defaults, CSHEET roll camera, Spotlight carousel, session explode grow, and control-board occupancy (**TOR-247**). **TOR-439** remains a multiclient gate (not a solo Save & Play)._
+_Last populated: 2026-09-01 — **TOR-540** (Memoriam popup bar/nested/Just Smoke/location). **TOR-539** (Memoriam configuration popup). **TOR-538** (overlay camera FirstPerson face-look cycle). **TOR-537** (randomize Table B seating). PAVE follow-ups **TOR-518** (PCs panel spacing) and **TOR-528** (resetToIntermission console-only). Author confirmed Intermission→Play explode chain (**TOR-531**–**TOR-536**), scene-library names, rain follow, camera defaults, CSHEET roll camera, Spotlight carousel, session explode grow, and control-board occupancy (**TOR-247**). **TOR-439** remains a multiclient gate (not a solo Save & Play)._
 
 ### High — session / join / first-load
 
@@ -96,6 +96,12 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 **How to verify:** Save & Play so the new scripts load. During Play, open the Phases panel and click **Memoriam**. The Memoriam popup should appear, and the Phases label should still show the subphase you were already on (Main or Downtime). Pick a character from the dropdown. The timeline bar and scene grid should fill, and the slider should sit at the right (present day). Move the slider: the date should change, the gold bar segment should follow (black gaps stay black), and that period's scene buttons should turn green. Click a scene: the NPC assignment rows should appear **without** the character you picked. Click **+** on another character, then pick a listed NPC or type a library key and OK. Click **Advance** with the slider in a black gap, or with no scene chosen: the popup should stay open and you should get a Host message. Fill those in and click **Advance**: the Host console should print a one-line summary, the popup should close, and Phases should show Memoriam. Click **Memoriam** again, fill partway, then **Cancel**: the popup should close and the subphase should stay Memoriam.
 
 **Context:** The popup is the gate for entering Memoriam. Skybox, LUT, and overlay still wait on TOR-101. NPC names in the catalog are often still blank, so the picker list can be empty.
+
+#### TOR-540 — Memoriam popup: reverse bar, nested periods, Just Smoke, location
+
+**How to verify:** Save & Play so the new scripts load. During Play, open the Phases panel and click **Memoriam**, then pick **Fomórach**. The date and the location line under it should update as you move the slider; the location should match the gold period (for example Toronto, Kharkiv, or Jaffa) and go blank in a black gap. The gold bar should sit on the same side of the strip as the slider handle (present toward the left, matching the right-to-left slider). The long Toronto years should split around Kharkiv and Jaffa, and sliding onto any Toronto chunk should gold **all** of Toronto's chunks together. Click a scene button that is not green: the slider should jump into that period (not into a nested hole), that column should highlight, and the location should match. Move the slider into a different period: the old yellow button should clear. **Just Smoke** sits centered under the grid and stays green; click it, drag through a gap, and it should stay selected. **Advance** with Just Smoke in a gap should succeed and print a Host line that includes `justSmoke` and a default panel. The slider range is now 0–2400.
+
+**Context:** Follow-up to TOR-539 after the first in-game look. The default Just Smoke panel in Lua is a placeholder for you to fill in.
 
 ---
 

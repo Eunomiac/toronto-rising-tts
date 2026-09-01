@@ -1,11 +1,14 @@
 --[[
-    Memoriam configuration popup (TOR-539).
+    Memoriam configuration popup (TOR-539 / TOR-540).
 
     Draft lives in this module until Advance. Cancel / Main / Downtime leave the
     Play subphase unchanged. Advance prints the collected payload, then
     Phases.setPlaySubPhase(Memoriam). LUT / skybox / overlay remain TOR-101.
 
-    Agent guidance: .dev/Phases/Phases Overview.md; C.getMemoriamSkyboxesForCharacter.
+    Nested periods: shortest inclusive span wins each year; longer periods split
+    into chunks. The period bar paints present on the left to match the
+    RightToLeft slider. Agent guidance: .dev/Phases/Phases Overview.md;
+    C.getMemoriamSkyboxesForCharacter.
 ]]
 
 local MemoriamModal = {}
@@ -16,11 +19,24 @@ local S = require("core.state")
 local NarrativeCalendar = require("lib.narrative_calendar")
 local NPCS_DATA = require("lib.npcs_data")
 
-local SLIDER_MAX = 1200
+local SLIDER_MAX = 2400
+local BAR_PIXEL_TOTAL = 1200
 local MIN_PERIOD_UNITS = 10
 local BAR_SLOT_COUNT = 30
 local SCENE_COLUMN_COUNT = 14
 local NPC_PICKER_SLOTS = 10
+local JUST_SMOKE_BUTTON_ID = "memoriam_modal_just_smoke_button"
+
+-- Placeholder default panel for Just Smoke. Fill in chronicle details later.
+local JUST_SMOKE_PANEL = {
+    display = "Just Smoke",
+    isOutdoors = false,
+    isDaytime = false,
+    weather = {},
+    locationAudio = "",
+    url = "",
+    location = "",
+}
 
 local PANEL_KEYS = { "panelA", "panelB", "panelC", "panelD" }
 local PC_KEYS = { "lucien", "rashid", "aishe", "fomorach", "blackCaesar" }
@@ -69,6 +85,7 @@ local sliderValue = SLIDER_MAX
 local currentSegmentIndex = nil
 local selectedPeriodIndex = nil
 local selectedPanelKey = nil
+local selectedJustSmoke = false
 local assignments = {}
 local pickerTargetKey = nil
 local npcInputDraft = ""
@@ -78,6 +95,7 @@ local lastRandomMonth = nil
 local lastRandomDay = nil
 local lastRandomSegmentIndex = nil
 local dateDisplay = ""
+local locationDisplay = ""
 
 local trimString
 local setAttr
@@ -101,6 +119,14 @@ local showNpcAssignmentRows
 local configureForSubject
 local mapSliderToSegment
 local calendarYearInSegment
+local currentPeriodIndex
+local exclusiveYearsForPeriod
+local sliderValueForYearInPeriod
+local jumpSliderToPeriod
+local copyJustSmokePanel
+local periodLocation
+local applyJustSmokeButtonState
+local hideNpcAssignment
 local encodePayload
 local missingAdvanceReasons
 
@@ -243,6 +269,8 @@ resetDraft = function()
     lastRandomDay = nil
     lastRandomSegmentIndex = nil
     dateDisplay = ""
+    locationDisplay = ""
+    selectedJustSmoke = false
 end
 
 hidePicker = function()
@@ -254,7 +282,37 @@ end
 
 hideConfiguration = function()
     setAttr("memoriam_modal_period_selection", "active", "false")
-    setAttr("db_memoriam_scene_selection_grid", "active", "false")
+    setAttr("memoriam_modal_scene_selection", "active", "false")
+    setAttr("memoriam_modal_npc_assignment", "active", "false")
+    hidePicker()
+end
+
+copyJustSmokePanel = function()
+    local weather = {}
+    if type(JUST_SMOKE_PANEL.weather) == "table" then
+        for i = 1, #JUST_SMOKE_PANEL.weather do
+            weather[i] = JUST_SMOKE_PANEL.weather[i]
+        end
+    end
+    return {
+        display = JUST_SMOKE_PANEL.display,
+        isOutdoors = JUST_SMOKE_PANEL.isOutdoors,
+        isDaytime = JUST_SMOKE_PANEL.isDaytime,
+        weather = weather,
+        locationAudio = JUST_SMOKE_PANEL.locationAudio,
+        url = JUST_SMOKE_PANEL.url,
+        location = JUST_SMOKE_PANEL.location,
+    }
+end
+
+periodLocation = function(entry)
+    if type(entry) ~= "table" then
+        return ""
+    end
+    return trimString(entry.location)
+end
+
+hideNpcAssignment = function()
     setAttr("memoriam_modal_npc_assignment", "active", "false")
     hidePicker()
 end
@@ -378,8 +436,14 @@ local function normalizeSegmentWidths(list)
     end
 
     local widths = snapWidthsToTotal(raw, SLIDER_MAX)
+    local pxRaw = {}
     for i = 1, #list do
         list[i].width = widths[i]
+        pxRaw[i] = widths[i] * BAR_PIXEL_TOTAL / SLIDER_MAX
+    end
+    local px = snapWidthsToTotal(pxRaw, BAR_PIXEL_TOTAL)
+    for i = 1, #list do
+        list[i].barPx = px[i]
     end
     return true, nil
 end
@@ -410,16 +474,6 @@ local function buildTimeline(entries, presentYear)
         }
     end
 
-    for i = 1, #ranges - 1 do
-        local a = ranges[i]
-        local b = ranges[i + 1]
-        if a.finish > b.start then
-            local mid = (b.start + a.finish) / 2
-            a.finish = mid
-            b.start = mid
-        end
-    end
-
     local presentEnd = presentYear + 1
     local firstStart = ranges[1].start
     if firstStart > presentEnd then
@@ -442,39 +496,78 @@ local function buildTimeline(entries, presentYear)
         return nil, "No Memoriam periods fall on or before the present-day clock."
     end
 
+    firstStart = kept[1].start
+    for i = 2, #kept do
+        if kept[i].start < firstStart then
+            firstStart = kept[i].start
+        end
+    end
+
+    local function winnerForYear(year)
+        local best = nil
+        for i = 1, #kept do
+            local r = kept[i]
+            if year >= r.start and year < r.finish then
+                if best == nil then
+                    best = r
+                else
+                    local spanR = r.finish - r.start
+                    local spanB = best.finish - best.start
+                    if spanR < spanB then
+                        best = r
+                    elseif spanR == spanB then
+                        if r.start > best.start then
+                            best = r
+                        elseif r.start == best.start and r.periodIndex > best.periodIndex then
+                            best = r
+                        end
+                    end
+                end
+            end
+        end
+        return best
+    end
+
+    local function sameWinner(a, b)
+        if a == nil and b == nil then
+            return true
+        end
+        if a == nil or b == nil then
+            return false
+        end
+        return a.periodIndex == b.periodIndex
+    end
+
     local out = {}
-    local cursor = kept[1].start
-    local ri = 1
-    while ri <= #kept do
-        local r = kept[ri]
-        if cursor < r.start then
+    local yearCursor = firstStart
+    while yearCursor < presentEnd do
+        local winner = winnerForYear(yearCursor)
+        local runStart = yearCursor
+        yearCursor = yearCursor + 1
+        while yearCursor < presentEnd do
+            if not sameWinner(winner, winnerForYear(yearCursor)) then
+                break
+            end
+            yearCursor = yearCursor + 1
+        end
+        if winner == nil then
             out[#out + 1] = {
                 kind = "gap",
-                calendarStart = cursor,
-                calendarEnd = r.start,
-                duration = r.start - cursor,
+                calendarStart = runStart,
+                calendarEnd = yearCursor,
+                duration = yearCursor - runStart,
             }
-            cursor = r.start
+        else
+            out[#out + 1] = {
+                kind = "period",
+                calendarStart = runStart,
+                calendarEnd = yearCursor,
+                duration = yearCursor - runStart,
+                entry = winner.entry,
+                periodIndex = winner.periodIndex,
+                periodColorIndex = winner.periodIndex,
+            }
         end
-        out[#out + 1] = {
-            kind = "period",
-            calendarStart = r.start,
-            calendarEnd = r.finish,
-            duration = r.finish - r.start,
-            entry = r.entry,
-            periodIndex = r.periodIndex,
-            periodColorIndex = r.periodIndex,
-        }
-        cursor = r.finish
-        ri = ri + 1
-    end
-    if cursor < presentEnd then
-        out[#out + 1] = {
-            kind = "gap",
-            calendarStart = cursor,
-            calendarEnd = presentEnd,
-            duration = presentEnd - cursor,
-        }
     end
 
     if #out > BAR_SLOT_COUNT then
@@ -537,6 +630,107 @@ calendarYearInSegment = function(seg, t)
     return year
 end
 
+currentPeriodIndex = function()
+    local seg = currentSegmentIndex ~= nil and segments[currentSegmentIndex] or nil
+    if seg ~= nil and seg.kind == "period" then
+        return seg.periodIndex
+    end
+    return nil
+end
+
+exclusiveYearsForPeriod = function(periodIndex)
+    local years = {}
+    for i = 1, #segments do
+        local seg = segments[i]
+        if seg.kind == "period" and seg.periodIndex == periodIndex then
+            local y0 = math.floor(seg.calendarStart)
+            local y1 = math.floor(seg.calendarEnd) - 1
+            for y = y0, y1 do
+                years[#years + 1] = y
+            end
+        end
+    end
+    return years
+end
+
+sliderValueForYearInPeriod = function(periodIndex, year)
+    local cursor = 0
+    for i = 1, #segments do
+        local seg = segments[i]
+        local width = seg.width or 0
+        if seg.kind == "period" and seg.periodIndex == periodIndex then
+            local y0 = math.floor(seg.calendarStart)
+            local y1 = math.floor(seg.calendarEnd) - 1
+            if year >= y0 and year <= y1 then
+                local span = (seg.calendarEnd or 0) - (seg.calendarStart or 0)
+                local t = 0.5
+                if span > 0 then
+                    t = ((year + 0.5) - seg.calendarStart) / span
+                    if t < 0 then
+                        t = 0
+                    elseif t > 1 then
+                        t = 1
+                    end
+                end
+                local pos = cursor + t * width
+                if width > 0 and pos >= cursor + width then
+                    pos = cursor + width - 0.001
+                end
+                return pos, i
+            end
+        end
+        cursor = cursor + width
+    end
+    return nil, nil
+end
+
+jumpSliderToPeriod = function(periodIndex)
+    local years = exclusiveYearsForPeriod(periodIndex)
+    if #years < 1 then
+        U.AlertGM("That period has no years left after nested periods take priority.")
+        return false
+    end
+    local entry = catalogEntries[periodIndex]
+    local year
+    local month
+    local day
+    local specific = parseSpecificDate(type(entry) == "table" and entry.specificDate or nil)
+    if specific ~= nil then
+        for i = 1, #years do
+            if years[i] == specific.year then
+                year = specific.year
+                month = specific.month
+                day = specific.day
+                break
+            end
+        end
+    end
+    if year == nil then
+        year = years[math.random(1, #years)]
+        month = math.random(1, 12)
+        local dim = NarrativeCalendar.daysInMonth(year, month)
+        day = math.random(1, dim)
+    end
+    local pos, segIndex = sliderValueForYearInPeriod(periodIndex, year)
+    if pos == nil then
+        U.AlertGM("Could not map that period onto the slider.")
+        return false
+    end
+    pos = math.floor(pos + 0.5)
+    if pos < 0 then
+        pos = 0
+    elseif pos > SLIDER_MAX then
+        pos = SLIDER_MAX
+    end
+    sliderValue = pos
+    lastRandomYear = year
+    lastRandomMonth = month
+    lastRandomDay = day
+    lastRandomSegmentIndex = segIndex
+    setAttr("memoriam_modal_period_selection_slider", "value", tostring(pos))
+    return true
+end
+
 local function periodBaseColor(periodColorIndex)
     if (periodColorIndex % 2) == 1 then
         return PERIOD_COLOR_A
@@ -545,9 +739,12 @@ local function periodBaseColor(periodColorIndex)
 end
 
 paintBar = function()
-    for i = 1, BAR_SLOT_COUNT do
-        local id = "memoriam_period_" .. tostring(i)
-        local seg = segments[i]
+    local n = #segments
+    local highlightPeriod = currentPeriodIndex()
+    for vis = 1, BAR_SLOT_COUNT do
+        local id = "memoriam_period_" .. tostring(vis)
+        local segIndex = n - vis + 1
+        local seg = (vis <= n and segIndex >= 1) and segments[segIndex] or nil
         if seg == nil then
             setAttrs(id, {
                 active = "false",
@@ -556,14 +753,14 @@ paintBar = function()
         else
             local color = GAP_COLOR
             if seg.kind == "period" then
-                color = periodBaseColor(seg.periodColorIndex or i)
-                if currentSegmentIndex == i then
+                color = periodBaseColor(seg.periodColorIndex or seg.periodIndex or vis)
+                if highlightPeriod ~= nil and seg.periodIndex == highlightPeriod then
                     color = CURRENT_PERIOD_COLOR
                 end
             end
             setAttrs(id, {
                 active = "true",
-                minWidth = tostring(seg.width or 0),
+                minWidth = tostring(seg.barPx or 0),
                 color = color,
             })
         end
@@ -616,6 +813,22 @@ local function applySceneButtonState(periodIndex, panelKey, defined, label)
     })
 end
 
+applyJustSmokeButtonState = function()
+    local className = "memoriam_modal_scene_selection_button selection_button_highlighted"
+    local color = BUTTON_HIGHLIGHT_COLOR
+    if selectedJustSmoke then
+        className = "memoriam_modal_scene_selection_button selection_button_selected"
+        color = BUTTON_SELECTED_COLOR
+    end
+    setAttrs(JUST_SMOKE_BUTTON_ID, {
+        active = "true",
+        interactable = "true",
+        text = "Just Smoke",
+        color = color,
+        class = className,
+    })
+end
+
 fillSceneGrid = function()
     for periodIndex = 1, SCENE_COLUMN_COUNT do
         local entry = catalogEntries[periodIndex]
@@ -637,6 +850,7 @@ fillSceneGrid = function()
             end
         end
     end
+    applyJustSmokeButtonState()
 end
 
 applyDateAndHighlights = function()
@@ -646,10 +860,24 @@ applyDateAndHighlights = function()
     local seg = segIndex ~= nil and segments[segIndex] or nil
     if seg == nil then
         dateDisplay = ""
+        locationDisplay = ""
         setAttr("memoriam_modal_selected_date", "text", "")
+        setAttr("memoriam_modal_selected_location", "text", "")
         paintBar()
         fillSceneGrid()
         return
+    end
+
+    if not selectedJustSmoke and selectedPeriodIndex ~= nil then
+        local newPeriod = nil
+        if seg.kind == "period" then
+            newPeriod = seg.periodIndex
+        end
+        if newPeriod ~= selectedPeriodIndex then
+            selectedPeriodIndex = nil
+            selectedPanelKey = nil
+            hideNpcAssignment()
+        end
     end
 
     local year = calendarYearInSegment(seg, t)
@@ -658,13 +886,17 @@ applyDateAndHighlights = function()
     if seg.kind == "period" and type(seg.entry) == "table" then
         local specific = parseSpecificDate(seg.entry.specificDate)
         if specific ~= nil then
-            year = specific.year
-            month = specific.month
-            day = specific.day
-            lastRandomYear = year
-            lastRandomMonth = month
-            lastRandomDay = day
-            lastRandomSegmentIndex = segIndex
+            local y0 = math.floor(seg.calendarStart)
+            local y1 = math.floor(seg.calendarEnd) - 1
+            if specific.year >= y0 and specific.year <= y1 then
+                year = specific.year
+                month = specific.month
+                day = specific.day
+                lastRandomYear = year
+                lastRandomMonth = month
+                lastRandomDay = day
+                lastRandomSegmentIndex = segIndex
+            end
         end
     end
     if month == nil then
@@ -682,7 +914,12 @@ applyDateAndHighlights = function()
         end
     end
     dateDisplay = formatFullDate(year, month, day)
+    locationDisplay = ""
+    if seg.kind == "period" then
+        locationDisplay = periodLocation(seg.entry)
+    end
     setAttr("memoriam_modal_selected_date", "text", dateDisplay)
+    setAttr("memoriam_modal_selected_location", "text", locationDisplay)
     paintBar()
     fillSceneGrid()
 end
@@ -767,16 +1004,19 @@ configureForSubject = function(characterKey)
     segments = built
     selectedPeriodIndex = nil
     selectedPanelKey = nil
+    selectedJustSmoke = false
     sliderValue = SLIDER_MAX
     lastRandomYear = nil
     lastRandomMonth = nil
     lastRandomDay = nil
     lastRandomSegmentIndex = nil
+    locationDisplay = ""
     clearNpcAssignments()
 
     setAttr("memoriam_modal_period_selection", "active", "true")
-    setAttr("db_memoriam_scene_selection_grid", "active", "true")
+    setAttr("memoriam_modal_scene_selection", "active", "true")
     setAttr("memoriam_modal_npc_assignment", "active", "false")
+    setAttr("memoriam_modal_period_selection_slider", "maxValue", tostring(SLIDER_MAX))
     setAttr("memoriam_modal_period_selection_slider", "value", tostring(SLIDER_MAX))
     applyDateAndHighlights()
 end
@@ -792,6 +1032,9 @@ missingAdvanceReasons = function()
     local missing = {}
     if subjectKey == nil or subjectKey == "" then
         missing[#missing + 1] = "a character"
+    end
+    if selectedJustSmoke then
+        return missing
     end
     local seg = currentSegmentIndex ~= nil and segments[currentSegmentIndex] or nil
     if seg == nil or seg.kind ~= "period" then
@@ -816,6 +1059,7 @@ function MemoriamModal.open()
     modalOpen = true
     hideConfiguration()
     setAttr("memoriam_modal_selected_date", "text", "")
+    setAttr("memoriam_modal_selected_location", "text", "")
     setAttr("memoriam_modal_pc_selection", "value", " ")
     setAttr("memoriam_modal", "active", "true")
 end
@@ -838,8 +1082,10 @@ function MemoriamModal.onPcDropdown(value)
         segments = {}
         selectedPeriodIndex = nil
         selectedPanelKey = nil
+        selectedJustSmoke = false
         hideConfiguration()
         setAttr("memoriam_modal_selected_date", "text", "")
+        setAttr("memoriam_modal_selected_location", "text", "")
         return
     end
     local key = DISPLAY_TO_KEY[label]
@@ -873,6 +1119,12 @@ function MemoriamModal.onSceneButton(id)
     if label == nil then
         return
     end
+    if currentPeriodIndex() ~= periodIndex then
+        if not jumpSliderToPeriod(periodIndex) then
+            return
+        end
+    end
+    selectedJustSmoke = false
     selectedPeriodIndex = periodIndex
     selectedPanelKey = panelKey
     clearNpcAssignments()
@@ -881,8 +1133,21 @@ function MemoriamModal.onSceneButton(id)
     applyDateAndHighlights()
 end
 
+function MemoriamModal.onJustSmoke()
+    if not modalOpen or subjectKey == nil then
+        return
+    end
+    selectedJustSmoke = true
+    selectedPeriodIndex = nil
+    selectedPanelKey = nil
+    clearNpcAssignments()
+    fillPickerFromPeriod(nil)
+    showNpcAssignmentRows()
+    applyDateAndHighlights()
+end
+
 function MemoriamModal.onNpcPlus(id)
-    if not modalOpen or selectedPeriodIndex == nil then
+    if not modalOpen or (selectedPeriodIndex == nil and not selectedJustSmoke) then
         return
     end
     local key = string.match(tostring(id or ""), "^memoriam_modal_npc_assignment_([A-Za-z]+)_button$")
@@ -978,15 +1243,29 @@ function MemoriamModal.onConfirm()
             end
         end
     end
-    local payload = {
-        subjectKey = subjectKey,
-        date = dateDisplay,
-        sliderValue = sliderValue,
-        skyboxKey = seg.entry.key,
-        periodIndex = selectedPeriodIndex,
-        panel = selectedPanelKey,
-        assignments = assignmentOut,
-    }
+    local payload
+    if selectedJustSmoke then
+        payload = {
+            subjectKey = subjectKey,
+            date = dateDisplay,
+            location = locationDisplay,
+            sliderValue = sliderValue,
+            justSmoke = true,
+            panel = copyJustSmokePanel(),
+            assignments = assignmentOut,
+        }
+    else
+        payload = {
+            subjectKey = subjectKey,
+            date = dateDisplay,
+            location = locationDisplay,
+            sliderValue = sliderValue,
+            skyboxKey = seg.entry.key,
+            periodIndex = selectedPeriodIndex,
+            panel = selectedPanelKey,
+            assignments = assignmentOut,
+        }
+    end
     print("[Memoriam] " .. encodePayload(payload))
     MemoriamModal.close()
     local Phases = require("core.phases")
