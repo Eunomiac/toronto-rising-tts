@@ -112,6 +112,10 @@
     color = "#00FF00"
     colors = "#00FF00|#00FF00|#00FF00|#00FF00" />
 
+  <Button class="selection_button_dummy"
+    color = "#000000"
+    colors = "#000000|#000000|#000000|#000000" />
+
   <VerticalLayout class="memoriam_modal_npc_assignment"
     childForceExpandWidth = "false"
     childAlignment = "MiddleCenter"

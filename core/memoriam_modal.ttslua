@@ -76,11 +76,18 @@ local PERIOD_COLOR_OVERLAY_A = "#C8C8C8"
 local PERIOD_COLOR_OVERLAY_B = "#F2F2F2"
 local GAP_COLOR = "#000000"
 local CURRENT_PERIOD_COLOR = "#FFDD00"
-local BUTTON_DUMMY_COLOR = "#000000"
 local SCENE_BUTTON_CLASS = "memoriam_modal_scene_selection_button"
 local SCENE_BUTTON_CLASS_IDLE = SCENE_BUTTON_CLASS .. " selection_button_idle"
 local SCENE_BUTTON_CLASS_HIGHLIGHTED = SCENE_BUTTON_CLASS .. " selection_button_highlighted"
 local SCENE_BUTTON_CLASS_SELECTED = SCENE_BUTTON_CLASS .. " selection_button_selected"
+local SCENE_BUTTON_CLASS_DUMMY = SCENE_BUTTON_CLASS .. " selection_button_dummy"
+-- Keep these hex values in sync with the matching Defaults in memoriam_modal.xml.
+local SCENE_BUTTON_FACE = {
+    [SCENE_BUTTON_CLASS_IDLE] = "#999999",
+    [SCENE_BUTTON_CLASS_HIGHLIGHTED] = "#FFFF00",
+    [SCENE_BUTTON_CLASS_SELECTED] = "#00FF00",
+    [SCENE_BUTTON_CLASS_DUMMY] = "#000000",
+}
 local EMPTY_NPC_TEXT = "—"
 local PANEL_BUTTON_FONT_SIZE = "10"
 local PANEL_BUTTON_FONT_STYLE = "Bold"
@@ -104,6 +111,9 @@ local lastRandomDay = nil
 local lastRandomSegmentIndex = nil
 local dateDisplay = ""
 local locationDisplay = ""
+local sceneButtonPaint = {}
+local sceneButtonClass = {}
+local barPaint = {}
 
 local trimString
 local setAttr
@@ -279,6 +289,9 @@ resetDraft = function()
     dateDisplay = ""
     locationDisplay = ""
     selectedJustSmoke = false
+    sceneButtonPaint = {}
+    sceneButtonClass = {}
+    barPaint = {}
 end
 
 hidePicker = function()
@@ -849,10 +862,14 @@ paintBar = function()
         local id = "memoriam_period_" .. tostring(vis)
         local seg = (vis <= n) and segments[vis] or nil
         if seg == nil then
-            setAttrs(id, {
-                active = "false",
-                minWidth = "0",
-            })
+            local fp = "off"
+            if barPaint[id] ~= fp then
+                setAttrs(id, {
+                    active = "false",
+                    minWidth = "0",
+                })
+                barPaint[id] = fp
+            end
         else
             local color = GAP_COLOR
             if seg.kind == "period" then
@@ -861,11 +878,15 @@ paintBar = function()
                     color = CURRENT_PERIOD_COLOR
                 end
             end
-            setAttrs(id, {
-                active = "true",
-                minWidth = tostring(seg.barPx or 0),
-                color = color,
-            })
+            local fp = "on|" .. tostring(seg.barPx or 0) .. "|" .. color
+            if barPaint[id] ~= fp then
+                setAttrs(id, {
+                    active = "true",
+                    minWidth = tostring(seg.barPx or 0),
+                    color = color,
+                })
+                barPaint[id] = fp
+            end
         end
     end
 end
@@ -874,20 +895,31 @@ local function sceneButtonId(periodIndex, panelKey)
     return "memoriam_period_" .. tostring(periodIndex) .. "_" .. panelKey .. "_button"
 end
 
--- Visual color comes from exclusive XML Default classes (idle / highlighted /
--- selected). The layout class has no color: stacking it with a color class used
--- to leave #999999 on the button, and a TTS click restores that after onClick.
--- Dummy C/D cells still set black after setClass. Do not write `color` through
--- U.setAttributes: that wrapper restores the last color and overrides the class.
+-- setClass first, then text/active. setClass after attributes re-cascades XML
+-- placeholder labels. Face color is written with the class so a dummy C/D black
+-- cannot stick after the selected PC changes. Skip unchanged ids.
 local function applyPanelButton(id, className, attrs)
     attrs.fontSize = attrs.fontSize or PANEL_BUTTON_FONT_SIZE
     attrs.fontStyle = attrs.fontStyle or PANEL_BUTTON_FONT_STYLE
-    local explicitColor = attrs.color
-    attrs.color = nil
-    UI.setAttributes(id, attrs)
-    UI.setClass(id, className)
-    if explicitColor ~= nil then
-        UI.setAttribute(id, "color", explicitColor)
+    local face = SCENE_BUTTON_FACE[className]
+    if face ~= nil then
+        attrs.color = face
+        attrs.colors = face .. "|" .. face .. "|" .. face .. "|" .. face
+    end
+    local fp = tostring(className) .. "|" .. tostring(attrs.active) .. "|" .. tostring(attrs.text) .. "|" .. tostring(attrs.interactable) .. "|" .. tostring(attrs.color or "")
+    if sceneButtonPaint[id] == fp then
+        return
+    end
+    local classOk = true
+    if sceneButtonClass[id] ~= className then
+        classOk = UI.setClass(id, className)
+        if classOk ~= false then
+            sceneButtonClass[id] = className
+        end
+    end
+    local attrOk = U.setAttributes(id, attrs)
+    if classOk ~= false and attrOk ~= false then
+        sceneButtonPaint[id] = fp
     end
 end
 
@@ -895,11 +927,10 @@ local function applySceneButtonState(periodIndex, panelKey, defined, label)
     local id = sceneButtonId(periodIndex, panelKey)
     if not defined then
         if panelKey == "panelC" or panelKey == "panelD" then
-            applyPanelButton(id, SCENE_BUTTON_CLASS, {
+            applyPanelButton(id, SCENE_BUTTON_CLASS_DUMMY, {
                 active = "true",
                 interactable = "false",
                 text = "",
-                color = BUTTON_DUMMY_COLOR,
             })
         else
             applyPanelButton(id, SCENE_BUTTON_CLASS, {
@@ -938,14 +969,16 @@ applyJustSmokeButtonState = function()
     })
 end
 
--- TTS restores a Button's idle color after onClick. Re-apply the selected class
--- on the next tick so that restore cannot leave the clicked panel grey.
-local function reapplySelectedClassAfterClick(id, className)
+-- TTS restores a Button's idle color after onClick. Re-paint that button on the
+-- next tick (setClass then text/active) so the restore cannot leave it grey.
+local function reapplySelectedClassAfterClick(id, paintAgain)
     U.await(function()
         if not modalOpen then
             return
         end
-        UI.setClass(id, className)
+        sceneButtonPaint[id] = nil
+        sceneButtonClass[id] = nil
+        paintAgain()
     end, 0)
 end
 
@@ -972,6 +1005,15 @@ fillSceneGrid = function()
     applyJustSmokeButtonState()
 end
 
+local function scheduleSceneGridCatchUp()
+    U.await(function()
+        if not modalOpen or subjectKey == nil then
+            return
+        end
+        fillSceneGrid()
+    end, 0)
+end
+
 applyDateAndHighlights = function()
     local segIndex, t, pos = mapSliderToSegment(sliderValue)
     sliderValue = pos
@@ -982,8 +1024,8 @@ applyDateAndHighlights = function()
         locationDisplay = ""
         setAttr("memoriam_modal_selected_date", "text", "")
         setAttr("memoriam_modal_selected_location", "text", "")
-        paintBar()
         fillSceneGrid()
+        paintBar()
         return
     end
 
@@ -1039,8 +1081,8 @@ applyDateAndHighlights = function()
     end
     setAttr("memoriam_modal_selected_date", "text", dateDisplay)
     setAttr("memoriam_modal_selected_location", "text", locationDisplay)
-    paintBar()
     fillSceneGrid()
+    paintBar()
 end
 
 clearNpcAssignments = function()
@@ -1130,6 +1172,9 @@ configureForSubject = function(characterKey)
     lastRandomDay = nil
     lastRandomSegmentIndex = nil
     locationDisplay = ""
+    sceneButtonPaint = {}
+    sceneButtonClass = {}
+    barPaint = {}
     clearNpcAssignments()
 
     setAttr("memoriam_modal_period_selection", "active", "true")
@@ -1139,6 +1184,7 @@ configureForSubject = function(characterKey)
     setAttr("memoriam_modal_period_selection_slider", "maxValue", tostring(SLIDER_MAX))
     setAttr("memoriam_modal_period_selection_slider", "value", tostring(SLIDER_MAX))
     applyDateAndHighlights()
+    scheduleSceneGridCatchUp()
 end
 
 encodePayload = function(payload)
@@ -1251,7 +1297,9 @@ function MemoriamModal.onSceneButton(id)
     fillPickerFromPeriod(periodIndex)
     showNpcAssignmentRows()
     applyDateAndHighlights()
-    reapplySelectedClassAfterClick(id, SCENE_BUTTON_CLASS_SELECTED)
+    reapplySelectedClassAfterClick(id, function()
+        applySceneButtonState(periodIndex, panelKey, true, label)
+    end)
 end
 
 function MemoriamModal.onJustSmoke()
@@ -1265,7 +1313,9 @@ function MemoriamModal.onJustSmoke()
     fillPickerFromPeriod(nil)
     showNpcAssignmentRows()
     applyDateAndHighlights()
-    reapplySelectedClassAfterClick(JUST_SMOKE_BUTTON_ID, SCENE_BUTTON_CLASS_SELECTED)
+    reapplySelectedClassAfterClick(JUST_SMOKE_BUTTON_ID, function()
+        applyJustSmokeButtonState()
+    end)
 end
 
 function MemoriamModal.onNpcPlus(id)
