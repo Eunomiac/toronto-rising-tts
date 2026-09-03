@@ -14,32 +14,36 @@
     </nav>
 
     <section id="panel-stage-npcs" class="tab-panel stage-npcs-panel" role="tabpanel" aria-labelledby="tab-stage-npcs">
-      <div class="stage-npcs-toolbar">
-        <input id="generic-npc-search" type="search" placeholder="Search NPCs…" autocomplete="off" />
-        <div class="status idle" id="generic-npc-status">Ready.</div>
-      </div>
-      <div class="generic-npc-grid" id="generic-npc-grid" aria-label="Generic NPCs"></div>
-      <footer class="generic-npc-queue">
-        <div class="generic-npc-queue-list" id="generic-npc-queue-list"></div>
-        <div class="generic-npc-queue-actions">
-          <span id="generic-npc-queue-count">No NPCs selected</span>
-          <button id="generic-npc-clear" type="button" disabled>Clear</button>
-          <button id="generic-npc-copy" type="button" disabled>Copy</button>
+      <aside class="saved-tags-rail" aria-label="Saved search tags">
+        <div class="saved-tags-list" id="saved-tags-list"></div>
+      </aside>
+      <div class="stage-npcs-main">
+        <div class="stage-npcs-toolbar">
+          <div class="stage-npcs-search-row">
+            <input id="generic-npc-search" type="search" placeholder="Search NPCs…" autocomplete="off" />
+            <button id="generic-npc-save-tags" type="button" title="Save current search terms as tags">+</button>
+          </div>
+          <div class="status idle" id="generic-npc-status">Ready.</div>
         </div>
-      </footer>
+        <div class="generic-npc-grid" id="generic-npc-grid" aria-label="Generic NPCs"></div>
+        <footer class="generic-npc-queue">
+          <div class="generic-npc-queue-list" id="generic-npc-queue-list"></div>
+          <div class="generic-npc-queue-actions">
+            <span id="generic-npc-queue-count">No NPCs selected</span>
+            <button id="generic-npc-clear" type="button" disabled>Clear</button>
+            <button id="generic-npc-copy" type="button" disabled>Copy</button>
+          </div>
+        </footer>
+      </div>
     </section>
 
-    <section id="panel-lua" class="tab-panel" role="tabpanel" aria-labelledby="tab-lua" hidden>
-      <article class="npc-card">
-        <header class="npc-card-header">
-          <div>
-            <p class="eyebrow">Toronto Rising</p>
-            <h2>Lua</h2>
-          </div>
-        </header>
-        <p class="overview">Placeholder. This tab is not implemented yet.</p>
-        <div class="status idle">Coming soon.</div>
-      </article>
+    <section id="panel-lua" class="tab-panel lua-panel" role="tabpanel" aria-labelledby="tab-lua" hidden>
+      <div class="lua-toolbar">
+        <button id="lua-run" type="button">Run</button>
+        <div class="status idle" id="lua-status">Uses the same External Editor hook as Execute Code. Disable the TTS Tools extension first — only one editor can listen on 39998.</div>
+      </div>
+      <textarea id="lua-script" spellcheck="false" placeholder="print(&quot;Hello from the Storyteller Dashboard&quot;)"></textarea>
+      <pre class="lua-output" id="lua-output"></pre>
     </section>
 
     <section id="panel-generate-npc" class="tab-panel" role="tabpanel" aria-labelledby="tab-generate-npc" hidden>

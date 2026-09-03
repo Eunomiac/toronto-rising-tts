@@ -1,3 +1,5 @@
+const SAVED_TAGS_KEY = "tr-dashboard-saved-search-tags";
+
 type GenericNpc = {
   readonly filename: string;
   readonly label: string;
@@ -24,21 +26,73 @@ const requiredElement = <T extends HTMLElement>(id: string): T => {
   return element as T;
 };
 
+const splitTerms = (query: string): string[] => query.trim().split(/\s+/).filter(Boolean);
+
 const withSearchText = (npc: { filename: string; label: string; key: string; tags: string }): GenericNpc => ({
   ...npc,
   searchText: [npc.label, npc.tags, npc.key, npc.filename].join(" ").toLowerCase()
 });
 
 const matchesQuery = (npc: GenericNpc, query: string): boolean => {
-  const terms = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
+  const terms = splitTerms(query).map((term) => term.toLowerCase());
   if (terms.length === 0) {
     return true;
   }
   return terms.every((term) => npc.searchText.includes(term));
 };
 
+const sortTags = (tags: readonly string[]): string[] =>
+  [...tags].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+
+const loadSavedTags = (): string[] => {
+  try {
+    const raw = window.localStorage.getItem(SAVED_TAGS_KEY);
+    if (!raw) {
+      return [];
+    }
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+    return sortTags(parsed.filter((item): item is string => typeof item === "string" && item.trim().length > 0).map((item) => item.trim()));
+  } catch {
+    return [];
+  }
+};
+
+const persistSavedTags = (tags: readonly string[]): void => {
+  window.localStorage.setItem(SAVED_TAGS_KEY, JSON.stringify(sortTags(tags)));
+};
+
+const queryHasTerm = (query: string, tag: string): boolean =>
+  splitTerms(query).some((term) => term.toLowerCase() === tag.toLowerCase());
+
+const toggleTermInQuery = (query: string, tag: string): string => {
+  const terms = splitTerms(query);
+  if (terms.some((term) => term.toLowerCase() === tag.toLowerCase())) {
+    return terms.filter((term) => term.toLowerCase() !== tag.toLowerCase()).join(" ");
+  }
+  return [...terms, tag].join(" ");
+};
+
+const mergeSavedTags = (existing: readonly string[], incoming: readonly string[]): string[] => {
+  const byLower = new Map<string, string>();
+  for (const tag of existing) {
+    byLower.set(tag.toLowerCase(), tag);
+  }
+  for (const tag of incoming) {
+    const key = tag.toLowerCase();
+    if (!byLower.has(key)) {
+      byLower.set(key, tag);
+    }
+  }
+  return sortTags([...byLower.values()]);
+};
+
 export const initStageNpcs = async (): Promise<void> => {
   const search = requiredElement<HTMLInputElement>("generic-npc-search");
+  const saveTagsButton = requiredElement<HTMLButtonElement>("generic-npc-save-tags");
+  const savedTagsList = requiredElement<HTMLDivElement>("saved-tags-list");
   const grid = requiredElement<HTMLDivElement>("generic-npc-grid");
   const queueList = requiredElement<HTMLDivElement>("generic-npc-queue-list");
   const queueCount = requiredElement<HTMLSpanElement>("generic-npc-queue-count");
@@ -48,6 +102,7 @@ export const initStageNpcs = async (): Promise<void> => {
 
   let allNpcs: GenericNpc[] = [];
   let selectedKeys: string[] = [];
+  let savedTags = loadSavedTags();
 
   const setStatus = (kind: "idle" | "loading" | "error" | "success", message: string): void => {
     status.className = `status ${kind}`;
@@ -60,6 +115,30 @@ export const initStageNpcs = async (): Promise<void> => {
   const toggleKey = (key: string): void => {
     selectedKeys = selectedKeys.includes(key) ? selectedKeys.filter((item) => item !== key) : [...selectedKeys, key];
     render();
+  };
+
+  const renderSavedTags = (): void => {
+    if (savedTags.length === 0) {
+      const empty = document.createElement("p");
+      empty.className = "saved-tags-empty";
+      empty.textContent = "Saved tags";
+      savedTagsList.replaceChildren(empty);
+      return;
+    }
+
+    savedTagsList.replaceChildren(...savedTags.map((tag) => {
+      const active = queryHasTerm(search.value, tag);
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = active ? "saved-tag lock active" : "saved-tag";
+      button.setAttribute("aria-pressed", active ? "true" : "false");
+      button.textContent = tag;
+      button.addEventListener("click", () => {
+        search.value = toggleTermInQuery(search.value, tag);
+        render();
+      });
+      return button;
+    }));
   };
 
   const renderGrid = (): void => {
@@ -118,15 +197,16 @@ export const initStageNpcs = async (): Promise<void> => {
   };
 
   const render = (): void => {
+    renderSavedTags();
     renderGrid();
     renderQueue();
   };
 
-  search.addEventListener("input", () => renderGrid());
+  search.addEventListener("input", () => render());
   search.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       search.value = "";
-      renderGrid();
+      render();
     }
   });
   document.addEventListener("keydown", (event) => {
@@ -139,6 +219,17 @@ export const initStageNpcs = async (): Promise<void> => {
     }
     event.preventDefault();
     search.focus();
+  });
+  saveTagsButton.addEventListener("click", () => {
+    const terms = splitTerms(search.value);
+    if (terms.length === 0) {
+      setStatus("error", "Type search terms before saving them as tags.");
+      return;
+    }
+    savedTags = mergeSavedTags(savedTags, terms);
+    persistSavedTags(savedTags);
+    setStatus("success", `Saved ${terms.length} tag${terms.length === 1 ? "" : "s"}.`);
+    render();
   });
   clearButton.addEventListener("click", () => {
     selectedKeys = [];

@@ -8,6 +8,7 @@ import { getConfig } from "./config.js";
 import { loadEnvFile } from "./loadEnv.js";
 import { generateNpcImage, generateNpcs, rerollNpcField } from "./npcService.js";
 import { loadGenericNpcCatalog, resolveGenericNpcImagePath } from "./genericNpcCatalog.js";
+import { dashboardTtsBridge } from "./ttsExecuteLua.js";
 import { parseGenerateImageRequest, parseGenerateNpcRequest, parseRerollFieldRequest } from "../shared/npc.js";
 
 loadEnvFile();
@@ -99,6 +100,18 @@ const handleApi = async (request: IncomingMessage, response: ServerResponse, pat
       const message = error instanceof Error ? error.message : "Could not load generic NPC catalog.";
       sendJson(response, 500, { error: message });
     }
+    return;
+  }
+
+  if (request.method === "POST" && pathname === "/api/tts/execute-lua") {
+    const body = await readRequestJson(request);
+    const script = typeof body === "object" && body !== null && "script" in body ? (body as { script: unknown }).script : undefined;
+    if (typeof script !== "string") {
+      sendJson(response, 400, { error: "Request must include a script string." });
+      return;
+    }
+    const result = await dashboardTtsBridge.executeLua(script);
+    sendJson(response, 200, result);
     return;
   }
 

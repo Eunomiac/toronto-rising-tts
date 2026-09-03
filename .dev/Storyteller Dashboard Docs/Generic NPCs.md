@@ -97,7 +97,8 @@ civilianChildBoy_01,dogAngry_02,crimePolice_03
 - Click a tile to add/remove it from the bottom queue. Click a queue chip to remove it.
 - **Copy** writes keys in queue order; does not clear the queue. Disabled when empty.
 - **Clear** empties the queue.
+- **+** next to search saves every current space-delimited term into a persistent left-column tag list (browser local storage, A–Z). Click a saved tag to add that term to search; click again to remove it. Newly saved tags stay selected because they are already in the search box.
 - Escape clears the search box. Opening Stage NPCs focuses search. `/` focuses search when you are not already typing in a field. Enter does not copy.
 - Missing image files log a warning and show a placeholder; they do not crash the tab.
 
-Lua tab remains a placeholder.
+The **Lua** tab sends Execute Code over the External Editor ports (TTS on **39999**, this dashboard listening on **39998**). That conflicts with the TTS Tools extension — disable the extension while using the tab.

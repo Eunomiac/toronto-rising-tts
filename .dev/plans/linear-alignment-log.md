@@ -734,5 +734,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-09-01 | CREATE+SHIP | TOR-551 | Memoriam: present-as-self toggles; subject stays in assignment list (green name, NPC-assignable); payload always includes subject. relatedTo TOR-539. Pending Save & Play. |
 | 2026-09-03 | CREATE+SHIP | TOR-552 | Storyteller Dashboard tab shell (Stage NPCs default, Lua, Generate NPC). |
 | 2026-09-03 | SHIP | TOR-554 | Storyteller Dashboard Stage NPCs generic catalogue; public Generics Export CSV now in `build:all-tooling`. |
+| 2026-09-03 | CREATE+SHIP | TOR-555 | Storyteller Dashboard saved search tags + Lua Execute Code (External Editor 39998/39999). |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

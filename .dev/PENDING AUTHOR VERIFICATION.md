@@ -17,7 +17,17 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-01 — **TOR-551** (Memoriam present-as-self toggles and subject NPC assignment). **TOR-550** (Memoriam PC row of five buttons). **TOR-549** (Memoriam same-year period on a neighbor’s last year). **TOR-548** (Memoriam scene labels, columns 13–14, dummy C/D). **TOR-547** (Memoriam abutting years not overlap). **TOR-546** (Memoriam scene buttons stay selected). **TOR-545** (Memoriam bar four greys). **TOR-544** (Memoriam bar white nested periods). **TOR-543** (Memoriam scene button class colors). **TOR-542** (Memoriam slider 0–5000). **TOR-541** (Memoriam slider present on the right). **TOR-540** (Memoriam popup bar/nested/Just Smoke/location). **TOR-539** (Memoriam configuration popup). **TOR-538** (overlay camera FirstPerson face-look cycle). **TOR-537** (randomize Table B seating). PAVE follow-ups **TOR-518** (PCs panel spacing) and **TOR-528** (resetToIntermission console-only). Author confirmed Intermission→Play explode chain (**TOR-531**–**TOR-536**), scene-library names, rain follow, camera defaults, CSHEET roll camera, Spotlight carousel, session explode grow, and control-board occupancy (**TOR-247**). **TOR-439** remains a multiclient gate (not a solo Save & Play)._
+_Last populated: 2026-09-03 — **TOR-555** (Storyteller Dashboard saved tags + Lua Execute Code)._
+
+### Dashboard
+
+#### TOR-555 — Saved search tags and Lua Execute Code
+
+**How to verify:** Restart the **STORYTELLER DASHBOARD** task. On **Stage NPCs**, type `dog angry` and click **+**. Both words should appear as buttons on the left, sorted A–Z, and stay selected. Click **angry** — it should leave the search box and the grid should widen; click it again to put it back. Tags should still be there after a browser refresh.
+
+Then **disable the TTS Tools extension** (only one editor can listen on 39998). Load the chronicle in Tabletop Simulator with External Editor on. Open the **Lua** tab, type `print("hello")`, click **Run**. The output box should show `hello`. If the extension is still on, the tab should tell you port 39998 is in use.
+
+**Context:** Same External Editor hook as Execute Code. TTS listens on 39999; this dashboard listens on 39998 while it is running.
 
 ### High — session / join / first-load
 

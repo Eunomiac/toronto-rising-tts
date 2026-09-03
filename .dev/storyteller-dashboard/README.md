@@ -25,8 +25,8 @@ Runs on **port 8788** by default.
 
 A compact tab row sits flush with the top of the viewport:
 
-1. **Stage NPCs** (default) — searchable generic cutout grid, selection queue, copy comma-separated keys. Catalogue from the **Generics Export** tab via `npm run generic-npcs:import` (also runs in `npm run build`). Images stay in `assets/images/NPCs/Generic`. See [Generic NPCs.md](../Storyteller%20Dashboard%20Docs/Generic%20NPCs.md).
-2. **Lua** — placeholder until that tool is defined.
+1. **Stage NPCs** (default) — searchable generic cutout grid, saved search tags, selection queue, copy comma-separated keys. Catalogue from the **Generics Export** tab via `npm run generic-npcs:import`. See [Generic NPCs.md](../Storyteller%20Dashboard%20Docs/Generic%20NPCs.md).
+2. **Lua** — Execute Code into a live TTS session (same External Editor hook as the TTS Tools extension). Disable the extension first; only one process can listen on port 39998.
 3. **Generate NPC** — the existing OpenAI NPC generator (prompt, cards, session history).
 
 ## What is included

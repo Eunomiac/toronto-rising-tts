@@ -19,6 +19,25 @@ declare module "node:path" {
   const path: { join(...parts: string[]): string; resolve(...parts: string[]): string; relative(from: string, to: string): string; normalize(filePath: string): string; extname(filePath: string): string; dirname(filePath: string): string; isAbsolute(filePath: string): boolean };
   export default path;
 }
+declare module "node:net" {
+  type Socket = {
+    on(event: string, cb: (data: Uint8Array) => void): void;
+    once(event: string, cb: (err?: Error) => void): void;
+    connect(port: number, host: string, cb: () => void): void;
+    write(payload: string, encoding: "utf8", cb: (err: Error | null | undefined) => void): void;
+    end(): void;
+    destroy(): void;
+  };
+  type Server = {
+    once(event: string, cb: (err: Error) => void): void;
+    listen(port: number, host: string, cb: () => void): void;
+  };
+  const net: {
+    Socket: new () => Socket;
+    createServer(handler: (socket: Socket) => void): Server;
+  };
+  export default net;
+}
 declare module "node:url" { export function fileURLToPath(url: string): string; }
 declare const process: { readonly cwd: () => string; readonly env: Record<string, string | undefined> };
 declare const console: { log(message: string): void };

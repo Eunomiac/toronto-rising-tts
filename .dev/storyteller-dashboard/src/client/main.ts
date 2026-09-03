@@ -13,6 +13,7 @@ import {
   type QuickTags
 } from "../shared/npc.js";
 import { initStageNpcs } from "./stageNpcs.js";
+import { initLuaTab } from "./luaTab.js";
 
 type LockMap = Partial<Record<keyof Npc, boolean>>;
 type NpcArrayField = "roleplay" | "mannerisms" | "sampleDialogue" | "notableDicePools" | "disciplines" | "sceneHooks";
@@ -108,6 +109,7 @@ const initTabs = (): void => {
 
 initTabs();
 void initStageNpcs();
+initLuaTab();
 
 const promptElement = requiredElement<HTMLTextAreaElement>("prompt");
 const quickGrid = requiredElement<HTMLDivElement>("quick-grid");
