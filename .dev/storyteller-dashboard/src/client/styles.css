@@ -14,7 +14,7 @@
 
 * { box-sizing: border-box; }
 html, body { height: 100%; }
-body { margin: 0; min-width: 1400px; display: flex; flex-direction: column; overflow: hidden; background: radial-gradient(circle at top left, #261014 0, #060607 34rem); }
+body { margin: 0; min-width: 1200px; display: flex; flex-direction: column; overflow: hidden; background: radial-gradient(circle at top left, #261014 0, #060607 34rem); }
 button, select, textarea { font: inherit; }
 button { border: 1px solid var(--line); background: #18181e; color: #f7f7f7; padding: 0.55rem 0.75rem; border-radius: 0.4rem; cursor: pointer; font-weight: 800; letter-spacing: 0.04em; }
 button:hover:not(:disabled) { border-color: var(--red-bright); color: #fff; }
@@ -29,7 +29,7 @@ select { padding: 0.55rem; }
 .tab-panel[hidden] { display: none; }
 .tab-panel > .npc-card { margin: 1rem; max-width: 32rem; }
 
-.stage-npcs-panel { display: grid; grid-template-columns: 120px minmax(0, 1fr) 500px; overflow: hidden; }
+.stage-npcs-panel { display: grid; grid-template-columns: 120px minmax(0, 1fr) 300px; overflow: hidden; }
 .generic-npc-preview { min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem; border-left: 1px solid var(--line); background: #0a0a0d; overflow: hidden; }
 .generic-npc-preview img { max-width: 100%; max-height: calc(100% - 2.5rem); width: auto; height: auto; object-fit: contain; object-position: center top; display: block; }
 .generic-npc-preview-empty, .generic-npc-preview-label { margin: 0; text-align: center; }

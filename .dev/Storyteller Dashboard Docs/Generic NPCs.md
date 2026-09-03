@@ -93,7 +93,7 @@ civilianChildBoy_01,dogAngry_02,crimePolice_03
 ## Dashboard behavior
 
 - Live search: every whitespace-separated term must match (AND) against label + tags + key + filename (case-insensitive).
-- Hovering a thumbnail (or a selected-queue chip) shows the **full uncropped cutout** in a 500px-wide column on the right.
+- Hovering a thumbnail (or a selected-queue chip) shows the **full uncropped cutout** in a 300px-wide column on the right.
 - Thumbnails: CSS crop (`object-fit: cover; object-position: center top`). No generated thumbnail files. Images are served from the existing Generic folder (`/generic-npc-images/…`).
 - Click a tile to add/remove it from the bottom queue. Click a queue chip to remove it.
 - **Copy** writes keys in queue order; does not clear the queue. Disabled when empty.
