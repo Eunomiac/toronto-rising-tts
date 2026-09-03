@@ -94,6 +94,9 @@ export const initStageNpcs = async (): Promise<void> => {
   const saveTagsButton = requiredElement<HTMLButtonElement>("generic-npc-save-tags");
   const savedTagsList = requiredElement<HTMLDivElement>("saved-tags-list");
   const grid = requiredElement<HTMLDivElement>("generic-npc-grid");
+  const previewImage = requiredElement<HTMLImageElement>("generic-npc-preview-image");
+  const previewEmpty = requiredElement<HTMLParagraphElement>("generic-npc-preview-empty");
+  const previewLabel = requiredElement<HTMLParagraphElement>("generic-npc-preview-label");
   const queueList = requiredElement<HTMLDivElement>("generic-npc-queue-list");
   const queueCount = requiredElement<HTMLSpanElement>("generic-npc-queue-count");
   const copyButton = requiredElement<HTMLButtonElement>("generic-npc-copy");
@@ -111,6 +114,15 @@ export const initStageNpcs = async (): Promise<void> => {
 
   const selectedNpcs = (): GenericNpc[] =>
     selectedKeys.map((key) => allNpcs.find((npc) => npc.key === key)).filter((npc): npc is GenericNpc => npc !== undefined);
+
+  const showPreview = (npc: GenericNpc): void => {
+    previewImage.src = `/generic-npc-images/${encodeURIComponent(npc.filename)}`;
+    previewImage.alt = npc.label;
+    previewImage.hidden = false;
+    previewEmpty.hidden = true;
+    previewLabel.hidden = false;
+    previewLabel.textContent = npc.label;
+  };
 
   const toggleKey = (key: string): void => {
     selectedKeys = selectedKeys.includes(key) ? selectedKeys.filter((item) => item !== key) : [...selectedKeys, key];
@@ -172,6 +184,8 @@ export const initStageNpcs = async (): Promise<void> => {
       label.textContent = npc.label;
       button.append(wrap, label);
       button.addEventListener("click", () => toggleKey(npc.key));
+      button.addEventListener("mouseenter", () => showPreview(npc));
+      button.addEventListener("focus", () => showPreview(npc));
       return button;
     }));
   };
@@ -192,6 +206,7 @@ export const initStageNpcs = async (): Promise<void> => {
       chip.className = "generic-npc-chip";
       chip.textContent = `${npc.label} ×`;
       chip.addEventListener("click", () => toggleKey(npc.key));
+      chip.addEventListener("mouseenter", () => showPreview(npc));
       return chip;
     }));
   };

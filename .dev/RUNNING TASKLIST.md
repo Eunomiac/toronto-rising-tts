@@ -458,6 +458,7 @@ Standalone second-monitor web app (`.dev/storyteller-dashboard/`). Not the in-ta
 
 - [x] **Tab shell:** Top flush tabs — Stage NPCs (default), Lua, Generate NPC. Existing generator lives under Generate NPC; the other two tabs are placeholders. _(TOR-552)_
 - [x] **Stage NPCs generic catalogue:** Searchable cutout grid + copy keys. Sheet import clones skyboxes (`Generics Export` Visualization CSV → `data/generic-npcs.json`); runs in `build:all-tooling`. _(TOR-554)_
+- [x] **Stage NPCs hover preview:** 500px right column shows the full cutout on thumbnail hover. _(TOR-556)_
 - [ ] **Stage NPCs saved tags + Lua Execute Code:** Persistent A–Z tag rail; Lua tab uses External Editor 39998/39999 (conflicts with TTS Tools extension — one at a time). Pending dashboard/TTS check. _(TOR-555)_
 
 ## Table Objects
