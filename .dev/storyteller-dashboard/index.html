@@ -13,17 +13,20 @@
       <button id="tab-generate-npc" type="button" role="tab" aria-controls="panel-generate-npc" aria-selected="false" tabindex="-1">Generate NPC</button>
     </nav>
 
-    <section id="panel-stage-npcs" class="tab-panel" role="tabpanel" aria-labelledby="tab-stage-npcs">
-      <article class="npc-card">
-        <header class="npc-card-header">
-          <div>
-            <p class="eyebrow">Toronto Rising</p>
-            <h2>Stage NPCs</h2>
-          </div>
-        </header>
-        <p class="overview">Placeholder. This tab is not implemented yet.</p>
-        <div class="status idle">Coming soon.</div>
-      </article>
+    <section id="panel-stage-npcs" class="tab-panel stage-npcs-panel" role="tabpanel" aria-labelledby="tab-stage-npcs">
+      <div class="stage-npcs-toolbar">
+        <input id="generic-npc-search" type="search" placeholder="Search NPCs…" autocomplete="off" />
+        <div class="status idle" id="generic-npc-status">Ready.</div>
+      </div>
+      <div class="generic-npc-grid" id="generic-npc-grid" aria-label="Generic NPCs"></div>
+      <footer class="generic-npc-queue">
+        <div class="generic-npc-queue-list" id="generic-npc-queue-list"></div>
+        <div class="generic-npc-queue-actions">
+          <span id="generic-npc-queue-count">No NPCs selected</span>
+          <button id="generic-npc-clear" type="button" disabled>Clear</button>
+          <button id="generic-npc-copy" type="button" disabled>Copy</button>
+        </div>
+      </footer>
     </section>
 
     <section id="panel-lua" class="tab-panel" role="tabpanel" aria-labelledby="tab-lua" hidden>

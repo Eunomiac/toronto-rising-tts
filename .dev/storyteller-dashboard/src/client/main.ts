@@ -12,6 +12,7 @@ import {
   type Npc,
   type QuickTags
 } from "../shared/npc.js";
+import { initStageNpcs } from "./stageNpcs.js";
 
 type LockMap = Partial<Record<keyof Npc, boolean>>;
 type NpcArrayField = "roleplay" | "mannerisms" | "sampleDialogue" | "notableDicePools" | "disciplines" | "sceneHooks";
@@ -79,6 +80,10 @@ const activateTab = (tabId: string): void => {
       panel.hidden = !selected;
     }
   }
+
+  if (selectedTab.id === DEFAULT_TAB_ID) {
+    document.getElementById("generic-npc-search")?.focus();
+  }
 };
 
 const initTabs = (): void => {
@@ -102,6 +107,7 @@ const initTabs = (): void => {
 };
 
 initTabs();
+void initStageNpcs();
 
 const promptElement = requiredElement<HTMLTextAreaElement>("prompt");
 const quickGrid = requiredElement<HTMLDivElement>("quick-grid");

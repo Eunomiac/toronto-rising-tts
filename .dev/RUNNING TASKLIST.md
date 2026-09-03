@@ -457,6 +457,7 @@ _Blocked: author must define data binding approach before substantial implementa
 Standalone second-monitor web app (`.dev/storyteller-dashboard/`). Not the in-table Storyteller HUD.
 
 - [x] **Tab shell:** Top flush tabs — Stage NPCs (default), Lua, Generate NPC. Existing generator lives under Generate NPC; the other two tabs are placeholders. _(TOR-552)_
+- [x] **Stage NPCs generic catalogue:** Searchable cutout grid + copy keys. Sheet import clones skyboxes (`GENERICNPCCSV` → `data/generic-npcs.json`). Not on `build:all-tooling` until the Toronto Rising sheet is anyone-with-link. _(TOR-554)_
 
 ## Table Objects
 

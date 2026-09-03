@@ -16,7 +16,7 @@ declare module "node:http" {
   export function createServer(handler: (request: IncomingMessage, response: ServerResponse) => void): { listen(port: number, host: string, callback: () => void): void };
 }
 declare module "node:path" {
-  const path: { join(...parts: string[]): string; resolve(...parts: string[]): string; relative(from: string, to: string): string; normalize(filePath: string): string; extname(filePath: string): string; dirname(filePath: string): string };
+  const path: { join(...parts: string[]): string; resolve(...parts: string[]): string; relative(from: string, to: string): string; normalize(filePath: string): string; extname(filePath: string): string; dirname(filePath: string): string; isAbsolute(filePath: string): boolean };
   export default path;
 }
 declare module "node:url" { export function fileURLToPath(url: string): string; }

@@ -25,7 +25,7 @@ Runs on **port 8788** by default.
 
 A compact tab row sits flush with the top of the viewport:
 
-1. **Stage NPCs** (default) — placeholder until the stage NPC browser is built.
+1. **Stage NPCs** (default) — searchable generic cutout grid, selection queue, copy comma-separated keys. Catalogue from Google Sheet named range `GENERICNPCCSV` via `npm run generic-npcs:import` (same public CSV export as skyboxes). Images stay in `assets/images/NPCs/Generic`. See [Generic NPCs.md](../Storyteller%20Dashboard%20Docs/Generic%20NPCs.md).
 2. **Lua** — placeholder until that tool is defined.
 3. **Generate NPC** — the existing OpenAI NPC generator (prompt, cards, session history).
 
@@ -36,6 +36,7 @@ A compact tab row sits flush with the top of the viewport:
 - NPC text generation through the OpenAI Responses API with structured JSON output and **vector-store `file_search`** chronicle retrieval.
 - Optional NPC portrait generation through the OpenAI Images API.
 - Compact NPC cards, full screen-pin-friendly modal export cards, local browser-session history, pinned/favorite NPCs, field reroll buttons, and field locks for mass rerolls.
+- Stage NPCs generic catalogue (`data/generic-npcs.json`) plus images served from the repo Generic folder.
 
 ## Repository placement
 

@@ -7,17 +7,22 @@ import { chronicleHealthInfo } from "./chronicleContext.js";
 import { getConfig } from "./config.js";
 import { loadEnvFile } from "./loadEnv.js";
 import { generateNpcImage, generateNpcs, rerollNpcField } from "./npcService.js";
+import { loadGenericNpcCatalog, resolveGenericNpcImagePath } from "./genericNpcCatalog.js";
 import { parseGenerateImageRequest, parseGenerateNpcRequest, parseRerollFieldRequest } from "../shared/npc.js";
 
 loadEnvFile();
 const config = getConfig();
 const distDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const dashboardRoot = path.resolve(distDir, "..");
+const genericNpcCatalogPath = path.join(dashboardRoot, "data", "generic-npcs.json");
+const genericNpcImageDir = path.resolve(dashboardRoot, "..", "..", "assets", "images", "NPCs", "Generic");
 
 const contentTypes: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
   ".css": "text/css; charset=utf-8",
-  ".json": "application/json; charset=utf-8"
+  ".json": "application/json; charset=utf-8",
+  ".webp": "image/webp"
 };
 
 const sendJson = (response: ServerResponse, statusCode: number, body: unknown): void => {
@@ -64,7 +69,39 @@ const serveFile = async (response: ServerResponse, requestPath: string): Promise
   }
 };
 
+const serveGenericNpcImage = async (response: ServerResponse, pathname: string): Promise<void> => {
+  const filename = decodeURIComponent(pathname.slice("/generic-npc-images/".length));
+  const filePath = resolveGenericNpcImagePath(genericNpcImageDir, filename);
+  if (!filePath) {
+    sendJson(response, 400, { error: "Invalid generic NPC image filename." });
+    return;
+  }
+
+  try {
+    const fileStat = await stat(filePath);
+    if (!fileStat.isFile()) {
+      sendJson(response, 404, { error: "Image not found." });
+      return;
+    }
+    response.writeHead(200, { "Content-Type": "image/webp" });
+    createReadStream(filePath).pipe(response);
+  } catch {
+    sendJson(response, 404, { error: "Image not found." });
+  }
+};
+
 const handleApi = async (request: IncomingMessage, response: ServerResponse, pathname: string): Promise<void> => {
+  if (request.method === "GET" && pathname === "/api/generic-npcs") {
+    try {
+      const catalog = await loadGenericNpcCatalog(genericNpcCatalogPath);
+      sendJson(response, 200, catalog);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Could not load generic NPC catalog.";
+      sendJson(response, 500, { error: message });
+    }
+    return;
+  }
+
   if (request.method === "GET" && pathname === "/api/health") {
     sendJson(response, 200, {
       ok: true,
@@ -103,6 +140,11 @@ createServer((request, response) => {
       const url = new URL(request.url ?? "/", `http://${request.headers.host ?? "127.0.0.1"}`);
       if (url.pathname.startsWith("/api/")) {
         await handleApi(request, response, url.pathname);
+        return;
+      }
+
+      if (request.method === "GET" && url.pathname.startsWith("/generic-npc-images/")) {
+        await serveGenericNpcImage(response, url.pathname);
         return;
       }
 

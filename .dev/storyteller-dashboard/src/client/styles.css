@@ -29,6 +29,20 @@ select { padding: 0.55rem; }
 .tab-panel[hidden] { display: none; }
 .tab-panel > .npc-card { margin: 1rem; max-width: 32rem; }
 
+.stage-npcs-panel { display: flex; flex-direction: column; overflow: hidden; }
+.stage-npcs-toolbar { display: grid; grid-template-columns: minmax(16rem, 1fr) minmax(14rem, 22rem); gap: 0.75rem; align-items: center; padding: 0.65rem 0.75rem; border-bottom: 1px solid var(--line); background: var(--panel); }
+.stage-npcs-toolbar input[type="search"] { width: 100%; border: 1px solid var(--line); border-radius: 0.4rem; background: #0c0c10; color: #fff; padding: 0.55rem 0.75rem; }
+.generic-npc-grid { flex: 1 1 auto; min-height: 0; overflow: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(7.25rem, 1fr)); gap: 0.5rem; align-content: start; padding: 0.75rem; }
+.generic-npc-tile { display: grid; gap: 0.3rem; padding: 0.35rem; text-align: center; background: #101015; }
+.generic-npc-thumb { width: 100%; aspect-ratio: 1; overflow: hidden; background: #000; display: grid; place-items: center; color: var(--muted); font-size: 0.72rem; }
+.generic-npc-thumb img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+.generic-npc-label { font-size: 0.72rem; line-height: 1.1; font-weight: 700; letter-spacing: 0; }
+.generic-npc-queue { flex: 0 0 auto; border-top: 1px solid var(--line); background: var(--panel); padding: 0.55rem 0.75rem; display: grid; gap: 0.45rem; }
+.generic-npc-queue-list { display: flex; flex-wrap: wrap; gap: 0.35rem; min-height: 1.6rem; }
+.generic-npc-chip { padding: 0.35rem 0.55rem; font-size: 0.78rem; }
+.generic-npc-queue-actions { display: flex; flex-wrap: wrap; gap: 0.45rem; align-items: center; justify-content: flex-end; }
+.generic-npc-queue-actions span { margin-right: auto; color: var(--muted); font-size: 0.82rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+
 .dashboard-shell { display: grid; grid-template-columns: 22rem 1fr 18rem; gap: 1rem; min-height: 100%; padding: 1rem; }
 .control-panel, .history-panel, .npc-card, .modal-card { background: color-mix(in srgb, var(--panel) 94%, black); border: 1px solid var(--line); box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.35); }
 .control-panel, .history-panel { position: sticky; top: 1rem; height: calc(100vh - var(--tab-bar-height) - 2rem); overflow: auto; border-radius: 0.75rem; padding: 1rem; }
