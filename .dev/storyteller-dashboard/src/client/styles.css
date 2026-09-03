@@ -9,10 +9,12 @@
   --panel-soft: #19191f;
   --line: #2a2a32;
   --muted: #a8a8b2;
+  --tab-bar-height: 2.35rem;
 }
 
 * { box-sizing: border-box; }
-body { margin: 0; min-width: 1180px; background: radial-gradient(circle at top left, #261014 0, #060607 34rem); }
+html, body { height: 100%; }
+body { margin: 0; min-width: 1180px; display: flex; flex-direction: column; overflow: hidden; background: radial-gradient(circle at top left, #261014 0, #060607 34rem); }
 button, select, textarea { font: inherit; }
 button { border: 1px solid var(--line); background: #18181e; color: #f7f7f7; padding: 0.55rem 0.75rem; border-radius: 0.4rem; cursor: pointer; font-weight: 800; letter-spacing: 0.04em; }
 button:hover:not(:disabled) { border-color: var(--red-bright); color: #fff; }
@@ -21,9 +23,15 @@ textarea, select { width: 100%; border: 1px solid var(--line); border-radius: 0.
 textarea { resize: vertical; padding: 1rem; font-size: 1.2rem; line-height: 1.4; border-color: #4f1d23; }
 select { padding: 0.55rem; }
 
-.dashboard-shell { display: grid; grid-template-columns: 22rem 1fr 18rem; gap: 1rem; min-height: 100vh; padding: 1rem; }
+.app-tabs { flex: 0 0 var(--tab-bar-height); z-index: 5; display: flex; align-items: stretch; margin: 0; padding: 0; background: var(--panel); border-bottom: 1px solid var(--line); }
+.app-tabs button { border-radius: 0; border: none; border-right: 1px solid var(--line); height: 100%; padding: 0 1rem; }
+.tab-panel { flex: 1 1 auto; min-height: 0; overflow: auto; }
+.tab-panel[hidden] { display: none; }
+.tab-panel > .npc-card { margin: 1rem; max-width: 32rem; }
+
+.dashboard-shell { display: grid; grid-template-columns: 22rem 1fr 18rem; gap: 1rem; min-height: 100%; padding: 1rem; }
 .control-panel, .history-panel, .npc-card, .modal-card { background: color-mix(in srgb, var(--panel) 94%, black); border: 1px solid var(--line); box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.35); }
-.control-panel, .history-panel { position: sticky; top: 1rem; height: calc(100vh - 2rem); overflow: auto; border-radius: 0.75rem; padding: 1rem; }
+.control-panel, .history-panel { position: sticky; top: 1rem; height: calc(100vh - var(--tab-bar-height) - 2rem); overflow: auto; border-radius: 0.75rem; padding: 1rem; }
 .brand-block h1 { margin: 0.1rem 0; font-size: 1.6rem; }
 .brand-block p:last-child { color: var(--muted); }
 .eyebrow { margin: 0; color: var(--red-bright); text-transform: uppercase; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.15em; }

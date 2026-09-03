@@ -4,6 +4,7 @@
 
 Read this when:
 - running or modifying the standalone Storyteller second-monitor dashboard
+- adding a dashboard tab or moving tools between tabs
 - debugging OpenAI-backed NPC generation, image generation, local server behavior, or vector-store chronicle retrieval
 
 Source of truth:
@@ -16,9 +17,17 @@ Verification:
 - `npm run build`
 - local app at `http://127.0.0.1:8788`
 
-A standalone second-monitor web dashboard for live Vampire: the Masquerade 5th Edition play. This MVP is intentionally independent from Tabletop Simulator and focuses on fast AI-assisted NPC generation.
+A standalone second-monitor web dashboard for live Vampire: the Masquerade 5th Edition play. It is independent from Tabletop Simulator. The window is tabbed so later play tools can sit beside NPC generation without spending vertical space on a page header.
 
 Runs on **port 8788** by default.
+
+## Tabs
+
+A compact tab row sits flush with the top of the viewport:
+
+1. **Stage NPCs** (default) — placeholder until the stage NPC browser is built.
+2. **Lua** — placeholder until that tool is defined.
+3. **Generate NPC** — the existing OpenAI NPC generator (prompt, cards, session history).
 
 ## What is included
 

@@ -45,6 +45,7 @@ const state: {
 };
 
 const mutationDirections = ["Make more political", "Make more monstrous", "Make more sympathetic", "Tie harder to existing chronicle"] as const;
+const DEFAULT_TAB_ID = "tab-stage-npcs";
 
 const requiredElement = <T extends HTMLElement>(id: string): T => {
   const element = document.getElementById(id);
@@ -54,6 +55,53 @@ const requiredElement = <T extends HTMLElement>(id: string): T => {
 
   return element as T;
 };
+
+const activateTab = (tabId: string): void => {
+  const tabs = [...document.querySelectorAll<HTMLButtonElement>(".app-tabs [role='tab']")];
+  const selectedTab = tabs.find((tab) => tab.id === tabId) ?? tabs.find((tab) => tab.id === DEFAULT_TAB_ID);
+  if (!selectedTab) {
+    return;
+  }
+
+  for (const tab of tabs) {
+    const selected = tab.id === selectedTab.id;
+    tab.setAttribute("aria-selected", selected ? "true" : "false");
+    tab.classList.toggle("lock", selected);
+    tab.classList.toggle("active", selected);
+    tab.tabIndex = selected ? 0 : -1;
+    const panelId = tab.getAttribute("aria-controls");
+    if (!panelId) {
+      continue;
+    }
+
+    const panel = document.getElementById(panelId);
+    if (panel) {
+      panel.hidden = !selected;
+    }
+  }
+};
+
+const initTabs = (): void => {
+  const tabs = [...document.querySelectorAll<HTMLButtonElement>(".app-tabs [role='tab']")];
+  for (const tab of tabs) {
+    tab.addEventListener("click", () => activateTab(tab.id));
+    tab.addEventListener("keydown", (event) => {
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") {
+        return;
+      }
+
+      event.preventDefault();
+      const index = tabs.indexOf(tab);
+      const next = tabs[(index + (event.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length];
+      if (next) {
+        next.focus();
+        activateTab(next.id);
+      }
+    });
+  }
+};
+
+initTabs();
 
 const promptElement = requiredElement<HTMLTextAreaElement>("prompt");
 const quickGrid = requiredElement<HTMLDivElement>("quick-grid");

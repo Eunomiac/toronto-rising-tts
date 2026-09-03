@@ -452,6 +452,12 @@ _Blocked: author must define data binding approach before substantial implementa
 - [x] **Global XmlUI remount weight:** Dramatic Image-node reduction via stacks/chrome tint/shared visibility. Author confirmed 2026-08-03. See [Global-UI-Image-Stacks](HUDs%20%26%20Overlays/Global-UI-Image-Stacks.md). _(TOR-444)_
 - [ ] **Play as NPC:** Control-board `pc_control_token` seat activate/deactivate (baseline shipped TOR-236); play-as-NPC swaps sheet by tag; `sessionScene.npcRoleOverride` / `seatSlots`; lighting exception per Scene Constructor spec ([Scene Constructor Overview](Scene%20Constructor/Scene%20Constructor%20Overview.md)). Unblocked after **TOR-247** (control-board occupancy). _(TOR-95)_
 
+## Storyteller Dashboard
+
+Standalone second-monitor web app (`.dev/storyteller-dashboard/`). Not the in-table Storyteller HUD.
+
+- [x] **Tab shell:** Top flush tabs — Stage NPCs (default), Lua, Generate NPC. Existing generator lives under Generate NPC; the other two tabs are placeholders. _(TOR-552)_
+
 ## Table Objects
 
 - [x] **Seat-color gate ? player dice bags + signal candles:** Only the seated owner can click their seat's bag buttons or signal candle. _(INBOX 2026-07-05 quick fix)_

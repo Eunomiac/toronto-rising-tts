@@ -732,5 +732,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-09-01 | CREATE+SHIP | TOR-549 | Memoriam bar: same-year period on a neighbor’s last year still appears (lucien23). relatedTo TOR-547. Pending Save & Play. |
 | 2026-09-01 | CREATE+SHIP | TOR-550 | Memoriam popup: PC dropdown replaced with five exclusive idle/selected buttons. relatedTo TOR-539. Pending Save & Play. |
 | 2026-09-01 | CREATE+SHIP | TOR-551 | Memoriam: present-as-self toggles; subject stays in assignment list (green name, NPC-assignable); payload always includes subject. relatedTo TOR-539. Pending Save & Play. |
+| 2026-09-03 | CREATE+SHIP | TOR-552 | Storyteller Dashboard tab shell (Stage NPCs default, Lua, Generate NPC). |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

@@ -7,30 +7,65 @@
     <link rel="stylesheet" href="/client/styles.css" />
   </head>
   <body>
-    <main class="dashboard-shell">
-      <section class="control-panel">
-        <div class="brand-block">
-          <p class="eyebrow">Toronto Rising</p>
-          <h1>Storyteller Dashboard</h1>
-          <p>Second-monitor V5 NPC generator. No Tabletop Simulator integration in this MVP.</p>
-        </div>
-        <textarea id="prompt" placeholder="18, girl, has beef with Aishe, mortal…" rows="4"></textarea>
-        <div class="shortcut-bar">
-          <button id="generate-one" type="button">ENTER Generate</button>
-          <button id="generate-many" type="button">SHIFT+ENTER x3</button>
-          <button id="generate-image" type="button">CTRL+ENTER + Image</button>
-          <button id="generate-many-image" type="button">CTRL+SHIFT Both</button>
-        </div>
-        <div class="quick-grid" id="quick-grid"></div>
-        <div class="status idle" id="status">Ready.</div>
-        <div class="mutation-row" id="mutation-row"></div>
-      </section>
-      <section class="npc-grid" id="npc-grid" aria-label="Generated NPCs"></section>
-      <aside class="history-panel">
-        <h2>Session History</h2>
-        <div id="history-list"><p>No generated NPCs yet.</p></div>
-      </aside>
-    </main>
+    <nav class="app-tabs" role="tablist" aria-label="Storyteller Dashboard">
+      <button id="tab-stage-npcs" class="lock active" type="button" role="tab" aria-controls="panel-stage-npcs" aria-selected="true" tabindex="0">Stage NPCs</button>
+      <button id="tab-lua" type="button" role="tab" aria-controls="panel-lua" aria-selected="false" tabindex="-1">Lua</button>
+      <button id="tab-generate-npc" type="button" role="tab" aria-controls="panel-generate-npc" aria-selected="false" tabindex="-1">Generate NPC</button>
+    </nav>
+
+    <section id="panel-stage-npcs" class="tab-panel" role="tabpanel" aria-labelledby="tab-stage-npcs">
+      <article class="npc-card">
+        <header class="npc-card-header">
+          <div>
+            <p class="eyebrow">Toronto Rising</p>
+            <h2>Stage NPCs</h2>
+          </div>
+        </header>
+        <p class="overview">Placeholder. This tab is not implemented yet.</p>
+        <div class="status idle">Coming soon.</div>
+      </article>
+    </section>
+
+    <section id="panel-lua" class="tab-panel" role="tabpanel" aria-labelledby="tab-lua" hidden>
+      <article class="npc-card">
+        <header class="npc-card-header">
+          <div>
+            <p class="eyebrow">Toronto Rising</p>
+            <h2>Lua</h2>
+          </div>
+        </header>
+        <p class="overview">Placeholder. This tab is not implemented yet.</p>
+        <div class="status idle">Coming soon.</div>
+      </article>
+    </section>
+
+    <section id="panel-generate-npc" class="tab-panel" role="tabpanel" aria-labelledby="tab-generate-npc" hidden>
+      <main class="dashboard-shell">
+        <section class="control-panel">
+          <div class="brand-block">
+            <p class="eyebrow">Toronto Rising</p>
+            <h1>Storyteller Dashboard</h1>
+            <p>Second-monitor V5 NPC generator. No Tabletop Simulator integration in this MVP.</p>
+          </div>
+          <textarea id="prompt" placeholder="18, girl, has beef with Aishe, mortal…" rows="4"></textarea>
+          <div class="shortcut-bar">
+            <button id="generate-one" type="button">ENTER Generate</button>
+            <button id="generate-many" type="button">SHIFT+ENTER x3</button>
+            <button id="generate-image" type="button">CTRL+ENTER + Image</button>
+            <button id="generate-many-image" type="button">CTRL+SHIFT Both</button>
+          </div>
+          <div class="quick-grid" id="quick-grid"></div>
+          <div class="status idle" id="status">Ready.</div>
+          <div class="mutation-row" id="mutation-row"></div>
+        </section>
+        <section class="npc-grid" id="npc-grid" aria-label="Generated NPCs"></section>
+        <aside class="history-panel">
+          <h2>Session History</h2>
+          <div id="history-list"><p>No generated NPCs yet.</p></div>
+        </aside>
+      </main>
+    </section>
+
     <div id="modal-root"></div>
     <script type="module" src="/client/main.js"></script>
   </body>
