@@ -93,7 +93,7 @@ function parseGenericNpcRows(csvText) {
 /**
  * @param {{
  *   npcs: { filename: string, label: string, key: string, tags: string }[],
- *   meta: { sheetId: string, rangeName: string }
+ *   meta: { sheetId: string, rangeName: string, tabName?: string }
  * }} payload
  * @returns {string}
  */
@@ -103,6 +103,7 @@ function renderGenericNpcCatalogJson(payload) {
       generatedBy: "npm run generic-npcs:import",
       sheetId: payload.meta.sheetId,
       rangeName: payload.meta.rangeName,
+      tabName: payload.meta.tabName || "",
       npcs: payload.npcs,
     },
     null,

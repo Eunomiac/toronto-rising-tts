@@ -12,6 +12,7 @@ export type GenericNpcCatalog = {
   readonly generatedBy: string;
   readonly sheetId: string;
   readonly rangeName: string;
+  readonly tabName: string;
   readonly npcs: readonly GenericNpc[];
 };
 
@@ -40,6 +41,7 @@ export const parseGenericNpcCatalog = (payload: unknown): GenericNpcCatalog => {
     generatedBy: typeof payload.generatedBy === "string" ? payload.generatedBy : "",
     sheetId: typeof payload.sheetId === "string" ? payload.sheetId : "",
     rangeName: typeof payload.rangeName === "string" ? payload.rangeName : "",
+    tabName: typeof payload.tabName === "string" ? payload.tabName : "",
     npcs: payload.npcs.map(parseNpc)
   };
 };

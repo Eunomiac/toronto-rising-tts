@@ -74,7 +74,7 @@ Always verify important claims against code before changing behavior.
 | TTS Assets Toolkit (public release scaffold) | [`tts-assets-toolkit/README.md`](tts-assets-toolkit/README.md) | Future public workspace root; scripts still live under `.tools/tts-cloud` + `.tools/custom-ui-assets` |
 | TTS save inventory | [`TTS_BUNDLING_SETUP.md`](TTS_BUNDLING_SETUP.md), [`custom-ui-assets/README.md`](custom-ui-assets/README.md) | `.dev/TS_Save_230.json` is a local ignored working snapshot used by save-analysis scripts |
 | CSV to Markdown parser | [`CSV to Markdown Parser/README.md`](CSV%20to%20Markdown%20Parser/README.md) | Local app; package scripts use this path |
-| Storyteller dashboard | [`storyteller-dashboard/README.md`](storyteller-dashboard/README.md), [`Storyteller Dashboard Docs/Generic NPCs.md`](Storyteller%20Dashboard%20Docs/Generic%20NPCs.md) | Second-monitor tabbed dashboard (Stage NPCs / Lua / Generate NPC). Generic NPC rows: `npm run generic-npcs:import` (skyboxes-style public CSV; not in `build:all-tooling` until the Toronto Rising sheet is link-viewable). |
+| Storyteller dashboard | [`storyteller-dashboard/README.md`](storyteller-dashboard/README.md), [`Storyteller Dashboard Docs/Generic NPCs.md`](Storyteller%20Dashboard%20Docs/Generic%20NPCs.md) | Second-monitor tabbed dashboard (Stage NPCs / Lua / Generate NPC). Generic NPC rows: `npm run generic-npcs:import` (public Visualization CSV of **Generics Export**; also in `build:all-tooling`). |
 | Sheets Obsidian dashboard | [`sheets-obsidian-dashboard/README.md`](sheets-obsidian-dashboard/README.md) | Local app with ignored runtime outputs |
 
 ## Chronicle And Reference Data

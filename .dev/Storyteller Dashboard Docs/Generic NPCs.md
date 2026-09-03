@@ -36,19 +36,25 @@ Generate NPC (OpenAI) stays on its own tab.
 
 Skyboxes already refresh from a Google Sheet at build time with **no OAuth**:
 
-1. Named range on a spreadsheet that is **anyone with the link can view**.
-2. Public export URL: `https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&range={RANGE_NAME}`
-3. Node script fetches that CSV, rejects HTML/login pages, parses with the shared `parseCsv` helper, writes a generated file.
+1. Spreadsheet is **anyone with the link can view**.
+2. Script fetches a public CSV URL, rejects HTML/login/error pages, parses with the shared `parseCsv` helper, writes a generated file.
 
-Generic NPCs use the same three steps. Design notes for skyboxes: [`docs/superpowers/specs/2026-07-21-skybox-sheet-import-design.md`](../../docs/superpowers/specs/2026-07-21-skybox-sheet-import-design.md). Script to copy: `.dev/scripts/import_skyboxes_from_sheet.js`.
+Generic NPCs use those same rules. Skyboxes can use `/export?format=csv&range=SKYBOXCSV`. That named-range export returns **HTTP 400** on the Toronto Rising workbook (unbounded `A:D` named ranges often do), so this importer uses the public Visualization CSV for the **Generics Export** tab instead — still no login, still no extra libraries.
+
+```text
+https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Generics%20Export
+```
+
+Design notes for skyboxes: [`docs/superpowers/specs/2026-07-21-skybox-sheet-import-design.md`](../../docs/superpowers/specs/2026-07-21-skybox-sheet-import-design.md).
 
 | | Skyboxes | Generic NPCs |
 | --- | --- | --- |
 | Spreadsheet | Skyboxes sheet (`1mzgMSivCYvTfYAQNL61oApAvTHUbEi7YoiwZFr7PPo4`) | Toronto Rising sheet (`10Ehs7cMR7016QYYW5TzT0mfmrc8XoGmfDlwz_Zh15Gs`) |
-| Named range | `SKYBOXCSV` (and others) | `GENERICNPCCSV` |
+| Authoring | Named ranges `SKYBOXCSV` etc. | Named range `GENERICNPCCSV` on tab **Generics Export** |
+| Fetch | `/export?format=csv&range=…` | `/gviz/tq?tqx=out:csv&sheet=Generics Export` |
 | Output | `lib/skyboxes_catalog.ttslua` | `.dev/storyteller-dashboard/data/generic-npcs.json` |
 | npm | `skyboxes:import` | `generic-npcs:import` |
-| In `build:all-tooling` today | Yes (that sheet is already link-viewable) | **Not yet** — the Toronto Rising sheet is private, so the same export URL returns a login/error page |
+| In `build:all-tooling` | Yes | Yes |
 
 Do **not** add Drive MCP, Google OAuth, Papa Parse, or a second CSV parser. Do **not** keep a hand-edited CSV next to the dashboard as a second source of truth.
 
@@ -61,15 +67,7 @@ npm run generic-npcs:import:test
 npm run generic-npcs:import
 ```
 
-Overrides (same style as skyboxes): `--sheet-id`, `--range`, or env `GENERIC_NPC_SHEET_ID` / `GENERIC_NPC_RANGE`.
-
-### Sharing gate (required before this can join `npm run build`)
-
-`skyboxes:import` works because that spreadsheet is **anyone with the link can view**. The Toronto Rising spreadsheet is not. Until you share it the same way (or put `GENERICNPCCSV` on the public skyboxes sheet), `generic-npcs:import` will fail loudly with an HTML/login error — by design, matching skyboxes.
-
-When that fetch succeeds, add `npm run generic-npcs:import` next to `skyboxes:import` in `build:all-tooling`. Do not add it earlier or every `npm run build` will fail.
-
-The JSON currently in the repo is a snapshot of `GENERICNPCCSV` so the dashboard can run before that share is done. Re-run `generic-npcs:import` after sharing so the snapshot matches the live sheet.
+Overrides: `--sheet-id`, `--tab`, `--range`, or env `GENERIC_NPC_SHEET_ID` / `GENERIC_NPC_TAB` / `GENERIC_NPC_RANGE`.
 
 ---
 

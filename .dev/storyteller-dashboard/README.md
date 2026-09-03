@@ -25,7 +25,7 @@ Runs on **port 8788** by default.
 
 A compact tab row sits flush with the top of the viewport:
 
-1. **Stage NPCs** (default) — searchable generic cutout grid, selection queue, copy comma-separated keys. Catalogue from Google Sheet named range `GENERICNPCCSV` via `npm run generic-npcs:import` (same public CSV export as skyboxes). Images stay in `assets/images/NPCs/Generic`. See [Generic NPCs.md](../Storyteller%20Dashboard%20Docs/Generic%20NPCs.md).
+1. **Stage NPCs** (default) — searchable generic cutout grid, selection queue, copy comma-separated keys. Catalogue from the **Generics Export** tab via `npm run generic-npcs:import` (also runs in `npm run build`). Images stay in `assets/images/NPCs/Generic`. See [Generic NPCs.md](../Storyteller%20Dashboard%20Docs/Generic%20NPCs.md).
 2. **Lua** — placeholder until that tool is defined.
 3. **Generate NPC** — the existing OpenAI NPC generator (prompt, cards, session history).
 

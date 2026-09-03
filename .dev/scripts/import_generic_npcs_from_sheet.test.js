@@ -41,9 +41,10 @@ test("parseGenericNpcRows rejects path-like filenames", () => {
 test("renderGenericNpcCatalogJson is stable JSON", () => {
   const text = renderGenericNpcCatalogJson({
     npcs: parseGenericNpcRows(SAMPLE),
-    meta: { sheetId: "sheet", rangeName: "GENERICNPCCSV" },
+    meta: { sheetId: "sheet", rangeName: "GENERICNPCCSV", tabName: "Generics Export" },
   });
   const parsed = JSON.parse(text);
   assert.equal(parsed.npcs.length, 3);
   assert.equal(parsed.rangeName, "GENERICNPCCSV");
+  assert.equal(parsed.tabName, "Generics Export");
 });

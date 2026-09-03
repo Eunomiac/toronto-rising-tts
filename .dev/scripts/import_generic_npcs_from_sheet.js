@@ -1,9 +1,12 @@
 "use strict";
 
 /**
- * Fetch public Google Sheet named-range CSV → Storyteller Dashboard generic NPC catalog.
+ * Fetch public Google Sheet CSV → Storyteller Dashboard generic NPC catalog.
  *
- * Same fetch pattern as skyboxes:import (link-viewable sheet, no OAuth).
+ * Same contract as skyboxes:import: link-viewable sheet, no OAuth, fail loudly
+ * on HTML/login. This workbook's named-range `/export?format=csv&range=` URL
+ * returns HTTP 400 (unbounded A:D named ranges often do), so we use the public
+ * Visualization CSV for the Generics Export tab instead.
  *
  * Run from repo root:
  *   node .dev/scripts/import_generic_npcs_from_sheet.js
@@ -19,14 +22,16 @@ const outPath = path.join(root, ".dev", "storyteller-dashboard", "data", "generi
 
 const DEFAULT_SHEET_ID = "10Ehs7cMR7016QYYW5TzT0mfmrc8XoGmfDlwz_Zh15Gs";
 const DEFAULT_RANGE = "GENERICNPCCSV";
+const DEFAULT_TAB = "Generics Export";
 
 /**
  * @param {string[]} argv
- * @returns {{ sheetId: string, rangeName: string }}
+ * @returns {{ sheetId: string, rangeName: string, tabName: string }}
  */
 function parseArgs(argv) {
   let sheetId = process.env.GENERIC_NPC_SHEET_ID || DEFAULT_SHEET_ID;
   let rangeName = process.env.GENERIC_NPC_RANGE || DEFAULT_RANGE;
+  let tabName = process.env.GENERIC_NPC_TAB || DEFAULT_TAB;
 
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
@@ -36,12 +41,16 @@ function parseArgs(argv) {
     } else if (a === "--range" && argv[i + 1]) {
       rangeName = argv[i + 1];
       i += 1;
+    } else if (a === "--tab" && argv[i + 1]) {
+      tabName = argv[i + 1];
+      i += 1;
     } else if (a === "--help" || a === "-h") {
       console.log(`Usage: node .dev/scripts/import_generic_npcs_from_sheet.js [options]
 
 Options:
   --sheet-id <id>   Spreadsheet id (default / env GENERIC_NPC_SHEET_ID)
-  --range <name>    Named range (default GENERICNPCCSV / env GENERIC_NPC_RANGE)
+  --tab <name>      Worksheet tab (default Generics Export / env GENERIC_NPC_TAB)
+  --range <name>    Named range recorded in catalog meta (default GENERICNPCCSV)
 
 The spreadsheet must be anyone-with-the-link can view, same as skyboxes:import.
 `);
@@ -49,16 +58,22 @@ The spreadsheet must be anyone-with-the-link can view, same as skyboxes:import.
     }
   }
 
-  return { sheetId: String(sheetId).trim(), rangeName: String(rangeName).trim() };
+  return {
+    sheetId: String(sheetId).trim(),
+    rangeName: String(rangeName).trim(),
+    tabName: String(tabName).trim(),
+  };
 }
 
 /**
+ * Public Visualization CSV. Named-range /export?format=csv 400s on this workbook.
+ *
  * @param {string} sheetId
- * @param {string} rangeName
+ * @param {string} tabName
  * @returns {string}
  */
-function exportCsvUrl(sheetId, rangeName) {
-  return `https://docs.google.com/spreadsheets/d/${encodeURIComponent(sheetId)}/export?format=csv&range=${encodeURIComponent(rangeName)}`;
+function exportCsvUrl(sheetId, tabName) {
+  return `https://docs.google.com/spreadsheets/d/${encodeURIComponent(sheetId)}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tabName)}`;
 }
 
 /**
@@ -79,11 +94,13 @@ async function fetchCsv(url, label) {
   if (
     trimmed.startsWith("<!DOCTYPE") ||
     trimmed.startsWith("<html") ||
+    trimmed.startsWith(")]}'") ||
     trimmed.includes("Sign in to your Google Account") ||
-    trimmed.includes("Cannot load spreadsheet")
+    trimmed.includes("Cannot load spreadsheet") ||
+    trimmed.includes('"status":"error"')
   ) {
     throw new Error(
-      `${label}: response looks like HTML/login/error, not CSV. Check sheet sharing (anyone with link can view) and range name. URL: ${url}`,
+      `${label}: response looks like HTML/login/error, not CSV. Check sheet sharing (anyone with link can view) and tab name. URL: ${url}`,
     );
   }
   if (trimmed.length < 1) {
@@ -105,13 +122,13 @@ function writeAtomic(filePath, contents) {
 }
 
 async function main() {
-  const { sheetId, rangeName } = parseArgs(process.argv.slice(2));
-  const url = exportCsvUrl(sheetId, rangeName);
+  const { sheetId, rangeName, tabName } = parseArgs(process.argv.slice(2));
+  const url = exportCsvUrl(sheetId, tabName);
 
-  console.log(`[generic-npcs:import] Fetching ${rangeName} …`);
-  const csv = await fetchCsv(url, rangeName);
+  console.log(`[generic-npcs:import] Fetching tab "${tabName}" (${rangeName}) …`);
+  const csv = await fetchCsv(url, tabName);
   const npcs = parseGenericNpcRows(csv);
-  const json = renderGenericNpcCatalogJson({ npcs, meta: { sheetId, rangeName } });
+  const json = renderGenericNpcCatalogJson({ npcs, meta: { sheetId, rangeName, tabName } });
 
   writeAtomic(outPath, json);
   console.log(`[generic-npcs:import] Wrote ${path.relative(root, outPath)} (${npcs.length} NPCs)`);
