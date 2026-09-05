@@ -15,7 +15,9 @@ Scripts that edit **CustomUIAssets** on a TTS save (`TS_Save_*.json`):
 | **[Assets 2] Purge Assets from Save** | Pattern, save name, optional GUIDs, dry-run vs write |
 | **[Assets 3] Add Cloud Assets to Save** | CSV path, name-match, name-replace, save name, optional GUIDs, dry-run vs write |
 | **Clear TTS Image Cache** | (none) |
-| **BUILD PIPELINE** | Full `npm run build` (includes skyboxes Sheet import, UI/PCS generate, stubs, …) |
+| **BUILD PIPELINE (Main)** | Default: backup + gates + stub fix (`npm run build`) |
+| **BUILD PIPELINE (XML)** | Main + UI XML/template generators (`npm run build:xml`) |
+| **BUILD PIPELINE (Full)** | Full tooling including sheets/JSON/CustomUIAssets (`npm run build:full`) |
 
 Leave **GUIDs** blank for global mode. Prefer **Dry run** first; write mode still asks **Y/N** in the terminal.
 

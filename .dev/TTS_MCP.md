@@ -25,7 +25,7 @@ This repo includes an optional **Model Context Protocol** server that runs **Tab
 
 ## Not in the main build
 
-`npm run build` / `build:all-tooling` / Ctrl+Shift+B **do not** compile or start MCP. Build MCP only when you change bridge code:
+`npm run build` / `build:xml` / `build:full` / Ctrl+Shift+B **do not** compile or start MCP. Build MCP only when you change bridge code:
 
 ```bash
 npm run tts-mcp:build
@@ -190,8 +190,10 @@ Multi-step table logic in this project often uses [`U.chain`](../lib/util.ttslua
 | `npm run tts-bridge:test` | Vitest suite for the bridge (mock TTS, no game). |
 | `npm run tts-mcp:compile` | Compile only `tts-mcp` (assumes `tts-bridge` already built). |
 | `npm run tts-mcp:build` | Build bridge + MCP (`tts-bridge:build` then `tts-mcp:compile`). |
-| `npm run build` | **Default module tooling build** (same as `build:all-tooling`): **`check:tts-object-stub-guids`**, then **`check:pcall-gate`**, then PCS/CSheet/UI/NPC generators and object stubs. Bound to **Ctrl+Shift+B** via `.vscode/tasks.json`. Does **not** compile MCP. |
-| `npm run build:all-tooling` | Same pipeline as `npm run build` (explicit name). |
+| `npm run build` | **Main** pipeline (default Ctrl+Shift+B): daily save backup, gates, object stub fix. Does **not** compile MCP. |
+| `npm run build:xml` | Main + UI XML / template generators + Global XmlUI embed. |
+| `npm run build:full` | Full tooling (backup + `build:all-tooling`): sheets, JSON embeds, XML, stubs, CustomUIAssets merge. |
+| `npm run build:all-tooling` | Full generator chain without the daily backup. |
 | `npm run tts-mcp:start` | Run the MCP server on stdio (normally Cursor spawns this; useful for debugging). |
 | `npm run tts-bridge:listen` | Bridge only: listen on **39998** and persist Lua **`sendExternalMessage`** `type: "write"` to **`.dev/.debug/`** (no MCP). |
 

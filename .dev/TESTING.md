@@ -92,7 +92,7 @@ Re-arming with `RunTest("<Campaign>")` resets index and cancels any in-flight st
 
 **Stop rule:** After a step prints a **level-1** `printHeader` (suite banner: line begins with ten `*`), `RunTest` arms FAIL-abort for that step only. While armed, any console line containing the case-sensitive substring `FAIL` (e.g. `[rollConfirm] FAIL`) cancels the in-flight `U.chain` and prints `[RunTest] Stopped at step N/total: FAIL detected in output`. Lines before the suite banner (or mid-playbook `RunTest("<Campaign>", N)` jumps without a fresh suite header) do **not** abort — prerequisite checks may FAIL without stopping the harness. Re-arm at the same step after fixing.
 
-Regenerate after editing `Dice-E2E.md`, `Scenes-E2E.md`, or `Gameboard-E2E.md`: `npm run e2e-playbook:generate` (included in `npm run build`), then **Save & Play**.
+Regenerate after editing `Dice-E2E.md`, `Scenes-E2E.md`, or `Gameboard-E2E.md`: `npm run e2e-playbook:generate` (included in `npm run build:full`), then **Save & Play**.
 
 Manual paste workflow (same blocks):
 

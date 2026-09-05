@@ -149,7 +149,7 @@ require("objects.npc_control_board")
 <Include src="ui/objects/npc_control_board.xml" />
 ```
 
-The extension may mirror these under `.tts/objects/CONTROL_BOARD.bea29a.*` (gitignored) when the object is named with GUID `bea29a`. **`npm run build`** (via `fix_tts_object_stubs.js`) normalizes scrambled extension stubs:
+The extension may mirror these under `.tts/objects/CONTROL_BOARD.bea29a.*` (gitignored) when the object is named with GUID `bea29a`. **`npm run build`** / **`build:xml`** / **`build:full`** (via `fix_tts_object_stubs.js`) normalizes scrambled extension stubs:
 
 | Object | `.tts/objects` Lua stub | `.tts/objects` XML stub |
 | --- | --- | --- |
@@ -171,7 +171,7 @@ The scope button displays the current mode: green **HERE** or blue **THERE**. Cl
 | **Runtime install** | [`objects/npc_control_board_ui.ttslua`](../../objects/npc_control_board_ui.ttslua) — `installObjectUi` applies embedded XML via `UI.setXml` (skips when unchanged) |
 | **Csheet reference** | [`ui/player/csheets/csheet_defaults.xml`](../../ui/player/csheets/csheet_defaults.xml) — same embed pattern via `npm run csheet-defaults:generate` |
 
-**Workflow:** edit `ui/objects/npc_control_board.xml` → `npm run npc-control-board-ui:generate` (or `npm run build`) → **Save & Play** → reconcile installs toolbar from embedded XML. Console: **`XmlUI installed from ui/objects/npc_control_board.xml`** after first install each session.
+**Workflow:** edit `ui/objects/npc_control_board.xml` → `npm run npc-control-board-ui:generate` (or `npm run build:xml` / `build:full`) → **Save & Play** → reconcile installs toolbar from embedded XML. Console: **`XmlUI installed from ui/objects/npc_control_board.xml`** after first install each session.
 
 **Apply click error (`click_apply` is not a function):** The save often has **empty** `LuaScript` on `bea29a` while Global still installs 3D buttons that reference `click_apply` on the board object. After **Save & Play** with the bundled stub, handlers live in the object script. Until then, the first `Sync.npcs` / reconcile injects a minimal `click_*` script via `setLuaScript` (`Gameboard.ensureControlBoardObjectCallbacks`). **XmlUI toolbar** passes `(player, value, id)` to `click_*` — use `player.color`, not createButton’s `(_, player_color)` signature. Console: `lua GlobalGameboardApply()` / `lua GlobalGameboardClearClick({ player_color = "Black" })` (double-click Clear confirm).
 

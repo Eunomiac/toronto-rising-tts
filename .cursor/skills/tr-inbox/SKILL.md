@@ -81,7 +81,7 @@ For each bullet under **Quick Fixes**:
 
 1. Inspect the codebase; decide **implement now** vs **promote to Linear**.
 2. **Implement now** when the fix is clearly small (typically one file, a few lines, no design fork):
-   - Patch the repo; run `npm run build` when Lua/XML/build inputs change.
+   - Patch the repo; run `npm run build` (Main) before Save & Play; use `npm run build:xml` when Lua/XML HUD templates changed, or `npm run build:full` when JSON/sheet/constants/CustomUIAssets inputs changed.
    - **Commit** without asking (Quick Fixes grants commit permission during `/tr-inbox`).
    - If a matching open Linear issue exists → mark **Done** with a short comment; else log in [`.dev/plans/linear-alignment-log.md`](../../../.dev/plans/linear-alignment-log.md) as shipped (create a **Bug** issue only when you want a bug anchor).
    - Add an unmarked Outstanding row to [PENDING AUTHOR VERIFICATION.md](../../../.dev/PENDING%20AUTHOR%20VERIFICATION.md) **now** (same-session add — do not wait for Part B catch-up).

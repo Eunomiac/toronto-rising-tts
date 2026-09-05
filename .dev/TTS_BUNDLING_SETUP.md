@@ -15,11 +15,27 @@ Source of truth:
 - `core/global_script.ttslua`
 
 Verification:
-- `npm run build`
+- `npm run build` (Main — default Ctrl+Shift+B)
+- `npm run build:xml` after XML / HUD template edits
+- `npm run build:full` after JSON / sheet / constants / CustomUIAssets inputs
 - `npm run check:bundle-size-gate`
 - Save & Play in TTS for runtime bundling behavior
 
 Status: current workflow guide; generated outputs and save snapshots are local/ignored unless a script writes committed stubs.
+
+## Build pipelines
+
+Three npm scripts / VS Code tasks (`.vscode/tasks.json`):
+
+| Pipeline | npm | VS Code task | When to run |
+| --- | --- | --- | --- |
+| **Main** (default) | `npm run build` | **BUILD PIPELINE (Main)** | Before most Save & Play — daily save backup, gates, object stub fix |
+| **XML** | `npm run build:xml` | **BUILD PIPELINE (XML)** | After UI XML / template / Global HUD edits (includes Main) |
+| **Full** | `npm run build:full` | **BUILD PIPELINE (Full)** | After JSON data, Google Sheet imports, constants cleanup, CustomUIAssets merge, E2E playbook markdown — same coverage as the former single `npm run build` |
+
+Helpers: `build:gates`, `build:stubs`, `build:xml-tooling`, `build:all-tooling` (Full without the daily backup; `build:full` = backup + `build:all-tooling`).
+
+**XML pipeline** runs: CSHEET defaults + NPC control board embeds, `ui-xml-templates:embed`, debug light + Prince’s Court placeholders + color template expansion, roll dashboard/options, then `ui-global-xml:embed`. It does **not** fetch sheets or regenerate location modals from constants (use Full / `skyboxes:import` for that).
 
 ## Overview
 
@@ -255,7 +271,7 @@ See [TTS_MCP.md](TTS_MCP.md) for setup and Cursor configuration.
 - **TTS runtime**: `UI.setXml(...)` cannot resolve `<Include>` from runtime strings, so dynamic character sheet pages use generated Lua defaults:
   - From repo root: `node .dev/scripts/generate_csheet_defaults_lua.js`
   - This rewrites **`lib/csheet_defaults_xml.ttslua`** (committed) so dynamic XML builders can embed the same defaults while XML remains the source of truth.
-- The default VS Code build task runs `npm run csheet-defaults:generate` as part of `npm run build`.
+- The default VS Code build task runs **Main** (`npm run build`: gates + stub fix). CSHEET defaults / XML generators run in **`npm run build:xml`** or **`npm run build:full`**.
 
 ## Character sheet pages 1–8 (object UI)
 
@@ -278,7 +294,7 @@ require("ui.ui_csheet")
 
 The TTS extension often scrambles these (e.g. pasting a csheet `<Include>` or the Global-injected fallback `click_*` script onto the board object). Run **`npm run tts-objects:fix-stubs`** after Save & Play if stub **content** drifts; the build task also **deletes** stray `.xml` stubs on Lua-only objects when the extension copies csheet UI onto dice bags, candles, etc.
 
-**Stub filenames vs GUIDs:** TTS Tools syncs `.tts/objects/{displayNickname}.{guid}.lua` (and `.xml`, `.data.json`). Display nicknames are free-form (e.g. `Aishe - p.1.c4abec.lua`); **role identity** for build tooling comes from the companion `.data.json` → **`GMNotes`** (e.g. `CSHEET_PAGE_1_PINK`). `fix_tts_object_stubs` normalizes stub **content** from that role; **`check:tts-object-stub-guids`** verifies the filename `{guid}` suffix matches `lib/guids.ttslua` for that role. After workshop edits or a partial sync, the wrong GUID can land on a nickname — Save & Play then never repairs the broken object. **`npm run build`** runs the stub GUID gate **first** (then pcall/effective-stats gates; skips when `.tts/objects` is absent). On failure: **Get Lua Scripts** from TTS to refresh from the save, then `npm run tts-objects:fix-stubs`, then Save & Play.
+**Stub filenames vs GUIDs:** TTS Tools syncs `.tts/objects/{displayNickname}.{guid}.lua` (and `.xml`, `.data.json`). Display nicknames are free-form (e.g. `Aishe - p.1.c4abec.lua`); **role identity** for build tooling comes from the companion `.data.json` → **`GMNotes`** (e.g. `CSHEET_PAGE_1_PINK`). `fix_tts_object_stubs` normalizes stub **content** from that role; **`check:tts-object-stub-guids`** verifies the filename `{guid}` suffix matches `lib/guids.ttslua` for that role. After workshop edits or a partial sync, the wrong GUID can land on a nickname — Save & Play then never repairs the broken object. **`npm run build`** (Main) runs the stub GUID gate **first** (then other gates; skips when `.tts/objects` is absent). On failure: **Get Lua Scripts** from TTS to refresh from the save, then `npm run tts-objects:fix-stubs`, then Save & Play.
 
 **Pages 3–6** (`CSHEET_PAGE_3_*` … `CSHEET_PAGE_6_*`) use separate entries so each page’s XML builder (and embedded templates when shipped) is **not** bundled into all ~80 sheet objects:
 
@@ -311,7 +327,7 @@ npm run tts-save:measure-bundles        # sizes + regression checks
 npm run tts-save:measure-bundles -- --estimate   # require-tree only
 ```
 
-Baseline: `.dev/build-logs/bundle-size-gate.json` (updated on each passing `npm run build`). Fails on hard byte ceilings, `core.*` / `lib.constants` in thin object bundles, or **>20% / >8 KB** growth vs baseline (catches dice-bag-style regressions without Save & Play).
+Baseline: `.dev/build-logs/bundle-size-gate.json` (updated on each passing Main/XML/Full build that runs the gate). Fails on hard byte ceilings, `core.*` / `lib.constants` in thin object bundles, or **>20% / >8 KB** growth vs baseline (catches dice-bag-style regressions without Save & Play).
 
 Without `.tts/bundled/` output, the script prints a **require-tree estimate** from `ui.ui_csheet` and flags heavy modules (`core.*`, `lib.pc_stats`, `lib.constants`, …). `lib.blood_potency_constants` is allowed on the CSHEET path. After Save & Play bundles one CSHEET object, it also reports `.tts/bundled/CSHEET_*.lua` sizes and regression checks. NPC Control Board bundles must stay under 10 KB with no `core.*` modules.
 
@@ -399,8 +415,8 @@ Some panels are assembled at runtime via `UI.setXml` (character sheet **pages 3�
 - **Authoring**: Edit templates under **`ui/.templates/csheet/`** or **`ui/.templates/princes_court/`** (for example `page3.xml` and `partials/*.xml`). The embed script does not read top-level `ui/.templates/*.xml` (those are color-expansion sources).
 - **Parameters**: `@@NAME@@` tokens substituted by `lib/ui_xml_template.ttslua` at runtime.
 - **Conditionals**: `##IF @@NAME@@##` … `##ENDIF##` — inner XML is kept only when the caller included `NAME` in the params table (omit keys you do not want rendered).
-- **Build**: `npm run ui-xml-templates:embed` (also in `npm run build`) writes **per-consumer packs**:
-- **Global remount docs (TOR-439):** `npm run ui-global-xml:embed` expands `ui/Global.xml` + `ui/Global.join_minimal.xml` into `lib/ui_global_xml_docs.ttslua` for Host Arm/Refresh remount (also in `build:all-tooling`). Run generated HUD Includes **before** this embed — `debug-light-panel:generate`, `roll-dashboard:generate`, `roll-options-modal:generate`, `skyboxes:import` / `scenes-location-modals:generate` (TOR-511). Save & Play updates Lua; an already-mounted HUD keeps the previous XmlUI until **Refresh XML** or a canary remount.
+- **Build**: `npm run ui-xml-templates:embed` (also in `npm run build:xml` / `build:full`) writes **per-consumer packs**:
+- **Global remount docs (TOR-439):** `npm run ui-global-xml:embed` expands `ui/Global.xml` + `ui/Global.join_minimal.xml` into `lib/ui_global_xml_docs.ttslua` for Host Arm/Refresh remount (also in `build:xml` / `build:full`; Full runs it via `skyboxes:import` after location modals). Run generated HUD Includes **before** this embed — `debug-light-panel:generate`, `roll-dashboard:generate`, `roll-options-modal:generate`, and on Full also `skyboxes:import` / `scenes-location-modals:generate` (TOR-511). Save & Play updates Lua; an already-mounted HUD keeps the previous XmlUI until **Refresh XML** or a canary remount.
   - `lib/ui_xml_templates_csheet_page3.ttslua` — page 3 + bg/merit/flaw partials
   - `lib/ui_xml_templates_csheet_page4.ttslua` — page 4 + relationship partials
   - `lib/ui_xml_templates_csheet_page5.ttslua` — page 5 + project_block (Global `Projects.buildPage5DocumentXml`)

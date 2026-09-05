@@ -37,7 +37,7 @@ Always verify important claims against code before changing behavior.
 | Debugging a runtime issue | [`SOLVING ISSUES & DEBUGGING.md`](SOLVING%20ISSUES%20%26%20DEBUGGING.md), [`DEBUG_FILE_LOGGING.md`](DEBUG_FILE_LOGGING.md) | `core/debug.ttslua`, relevant system docs |
 | Running or writing tests/playbooks | [`TESTING.md`](TESTING.md) (incl. [Console print ordering](TESTING.md#console-print-ordering-tts)), [`E2E Playbooks/README.md`](E2E%20Playbooks/README.md), [`Step-By-Step Playbooks/README.md`](Step-By-Step%20Playbooks/README.md) | [`../.cursor/skills/step-by-step-guidance/SKILL.md`](../.cursor/skills/step-by-step-guidance/SKILL.md) |
 | Lua/XML changes touching TTS APIs or UI fan-out | [`Sychronizing Game Functionality/TTS-API-Heavy-Workload-Catalog.md`](Sychronizing%20Game%20Functionality/TTS-API-Heavy-Workload-Catalog.md), [`Sychronizing Game Functionality/TTS-API-Heavy-Workload-Usage-Inventory.md`](Sychronizing%20Game%20Functionality/TTS-API-Heavy-Workload-Usage-Inventory.md), [`Sychronizing Game Functionality/Performance Audit.md`](Sychronizing%20Game%20Functionality/Performance%20Audit.md), [`Sychronizing Game Functionality/Event Listener Policy.md`](Sychronizing%20Game%20Functionality/Event%20Listener%20Policy.md) | `core/`, `lib/`, `objects/`, `ui/`, `docs/solutions/lua-ui-full-xml-policy.md` |
-| Bundling, Save & Play, or TTS extension issues | [`TTS_BUNDLING_SETUP.md`](TTS_BUNDLING_SETUP.md), [`TTS_MCP.md`](TTS_MCP.md) | `package.json`, `.tools/tts-save/`, `.tts/` |
+| Bundling, Save & Play, or TTS extension issues | [`TTS_BUNDLING_SETUP.md`](TTS_BUNDLING_SETUP.md) (§ Build pipelines: Main / XML / Full), [`TTS_MCP.md`](TTS_MCP.md) | `package.json`, `.tools/tts-save/`, `.tts/` |
 | Reusing helpers or avoiding duplicate utilities | [`AVAILABLE_FUNCTIONS.md`](AVAILABLE_FUNCTIONS.md) | `lib/util.ttslua`, relevant modules |
 | Timing utilities (`U.stagger` / `U.chain` / `U.await`) | [`Timing Optimizations/Agent-Handoff-Timing-API.md`](Timing%20Optimizations/Agent-Handoff-Timing-API.md), [`Timing Optimizations/Timing-Utilities-Plan.md`](Timing%20Optimizations/Timing-Utilities-Plan.md) | `lib/util.ttslua`, [`../docs/solutions/lua-wait-api-policy.md`](../docs/solutions/lua-wait-api-policy.md) |
 
@@ -70,11 +70,11 @@ Always verify important claims against code before changing behavior.
 | Area | Read first | Notes |
 |---|---|---|
 | Build/generator scripts | `package.json`, [`scripts/`](scripts/) | Path-sensitive; many package scripts call `.dev/scripts/*` |
-| Custom UI assets | [`custom-ui-assets/README.md`](custom-ui-assets/README.md) | Workflow docs are versioned; generated manifests/reports are ignored |
+| Custom UI assets | [`custom-ui-assets/README.md`](custom-ui-assets/README.md), [`custom-ui-assets/Cloud-Asset-Sync-Plan.md`](custom-ui-assets/Cloud-Asset-Sync-Plan.md) (config-driven Cloud sync plan) | Workflow docs are versioned; generated manifests/reports are ignored |
 | TTS Assets Toolkit (public release scaffold) | [`tts-assets-toolkit/README.md`](tts-assets-toolkit/README.md) | Future public workspace root; scripts still live under `.tools/tts-cloud` + `.tools/custom-ui-assets` |
 | TTS save inventory | [`TTS_BUNDLING_SETUP.md`](TTS_BUNDLING_SETUP.md), [`custom-ui-assets/README.md`](custom-ui-assets/README.md) | `.dev/TS_Save_230.json` is a local ignored working snapshot used by save-analysis scripts |
 | CSV to Markdown parser | [`CSV to Markdown Parser/README.md`](CSV%20to%20Markdown%20Parser/README.md) | Local app; package scripts use this path |
-| Storyteller dashboard | [`storyteller-dashboard/README.md`](storyteller-dashboard/README.md), [`Storyteller Dashboard Docs/Generic NPCs.md`](Storyteller%20Dashboard%20Docs/Generic%20NPCs.md) | Second-monitor tabbed dashboard (Stage NPCs / Lua / Generate NPC). Generic NPC rows: `npm run generic-npcs:import` (public Visualization CSV of **Generics Export**; also in `build:all-tooling`). |
+| Storyteller dashboard | [`storyteller-dashboard/README.md`](storyteller-dashboard/README.md), [`Storyteller Dashboard Docs/Generic NPCs.md`](Storyteller%20Dashboard%20Docs/Generic%20NPCs.md) | Second-monitor tabbed dashboard (Stage NPCs / Lua / Generate NPC). Generic NPC rows: `npm run generic-npcs:import` (public Visualization CSV of **Generics Export**; also in `build:full` / `build:all-tooling`). |
 | Sheets Obsidian dashboard | [`sheets-obsidian-dashboard/README.md`](sheets-obsidian-dashboard/README.md) | Local app with ignored runtime outputs |
 
 ## Chronicle And Reference Data

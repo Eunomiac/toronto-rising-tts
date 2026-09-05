@@ -5,7 +5,7 @@
 Read this when:
 - changing the Storyteller Dashboard **Stage NPCs** tab
 - refreshing generic NPC rows from the Google Sheet
-- adding that refresh to `npm run build` / `build:all-tooling`
+- adding that refresh to `npm run build:full` / `build:all-tooling`
 
 Source of truth:
 - Sheet named range `GENERICNPCCSV` (columns `filename,label,key,tags`)
@@ -54,7 +54,7 @@ Design notes for skyboxes: [`docs/superpowers/specs/2026-07-21-skybox-sheet-impo
 | Fetch | `/export?format=csv&range=…` | `/gviz/tq?tqx=out:csv&sheet=Generics Export` |
 | Output | `lib/skyboxes_catalog.ttslua` | `.dev/storyteller-dashboard/data/generic-npcs.json` |
 | npm | `skyboxes:import` | `generic-npcs:import` |
-| In `build:all-tooling` | Yes | Yes |
+| In `build:full` / `build:all-tooling` | Yes | Yes |
 
 Do **not** add Drive MCP, Google OAuth, Papa Parse, or a second CSV parser. Do **not** keep a hand-edited CSV next to the dashboard as a second source of truth.
 

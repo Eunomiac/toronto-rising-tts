@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "BUILD PIPELINE",
+      "label": "BUILD PIPELINE (Main)",
       "type": "shell",
       "command": "npm run build",
       "options": {
@@ -20,6 +20,58 @@
         "kind": "build",
         "isDefault": true
       },
+      "problemMatcher": [],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "dedicated",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "BUILD PIPELINE (XML)",
+      "type": "shell",
+      "command": "npm run build:xml",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "windows": {
+        "options": {
+          "shell": {
+            "executable": "cmd.exe",
+            "args": ["/d", "/c"]
+          }
+        }
+      },
+      "group": "build",
+      "problemMatcher": [],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "dedicated",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "BUILD PIPELINE (Full)",
+      "type": "shell",
+      "command": "npm run build:full",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "windows": {
+        "options": {
+          "shell": {
+            "executable": "cmd.exe",
+            "args": ["/d", "/c"]
+          }
+        }
+      },
+      "group": "build",
       "problemMatcher": [],
       "presentation": {
         "echo": true,

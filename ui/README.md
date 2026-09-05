@@ -165,7 +165,7 @@ Storyteller **Active Rolls** dashboard rows (`rollDash_row_*`, slot strip) are c
 - **Composer:** `ui/.templates/roll/dash_body.xml` (`<!-- TARGET: ui/shared/roll_dash_generated.xml -->`)
 - **Script:** `.dev/scripts/generate_roll_dashboard_xml.js` (uses `.dev/scripts/ui_xml_template_engine.js` — same `@@KEY@@` + `##IF @@KEY@@##` semantics as `lib/ui_xml_template.ttslua`)
 - **Output:** `ui/shared/roll_dash_generated.xml` — included from `rollDash_ST` in `ui/shared/roll_panels.xml`
-- **Run:** `npm run roll-dashboard:generate` (also in `npm run build`)
+- **Run:** `npm run roll-dashboard:generate` (also in `npm run build:xml` / `build:full`)
 
 Edit partials to change layout (`offsetXY`, `preferredWidth`/`preferredHeight`); `RUI.refreshSTDashboard()` still drives labels and visibility via element ids (no Global `setXml`). Dashboard content width is `DASH_LAYOUT.WIDTH` in `generate_roll_dashboard_xml.js` (730px today = `rollPanel_ST` outer 750px minus 10px horizontal padding each side); change `ST_PANEL_OUTER_WIDTH` / `ST_PANEL_PADDING_H` and `rollPanel_ST` width together.
 
@@ -177,7 +177,7 @@ Storyteller **Debug Light** selection buttons are composed at **build time** fro
 - **Composer:** `ui/.templates/storyteller/panel_debug_light.xml` (`<!-- TARGET: ui/storyteller/panel_debug_light.xml -->`)
 - **Script:** `.dev/scripts/generate_debug_light_panel_xml.js`
 - **Output:** `ui/storyteller/panel_debug_light.xml` — included from `hud_storyteller.xml`
-- **Run:** `npm run debug-light-panel:generate` (also in `npm run build`, before Global XML embed)
+- **Run:** `npm run debug-light-panel:generate` (also in `npm run build:xml` / `build:full`, before Global XML embed)
 
 Lua maps filled slots to spotlight GUIDs when the panel opens. Keep `POOL_SIZE` in the generator in sync with `SELECTION_POOL_SIZE` in `core/light_debug_focus.ttslua`. Nested `ui/.templates/storyteller/` is **not** scanned by the color generator or the csheet/princes_court embed packs.
 
