@@ -5,7 +5,7 @@
 Read this when:
 - changing the Storyteller Dashboard **Stage NPCs** tab
 - refreshing generic NPC rows from the Google Sheet
-- adding that refresh to `npm run build:full` / `build:all-tooling`
+- changing when the Generics Export sheet is refreshed into `generic-npcs.json`
 
 Source of truth:
 - Sheet named range `GENERICNPCCSV` (columns `filename,label,key,tags`)
@@ -13,12 +13,13 @@ Source of truth:
 - Cutouts already in the repo: `assets/images/NPCs/Generic/*.webp` (do not copy or duplicate)
 - Import: `.dev/scripts/import_generic_npcs_from_sheet.js` (same public CSV export as skyboxes)
 - Parse: `.dev/scripts/lib/generic_npcs_sheet_csv.js` (reuses `parseCsv` from `.dev/scripts/lib/skyboxes_sheet_csv.js`)
-- Dashboard UI: `.dev/storyteller-dashboard/` (port 8788)
+- Dashboard UI: `.dev/storyteller-dashboard/` (port 8788) — **refreshes the catalog on server startup**
 
 Verification:
+- Restart **STORYTELLER DASHBOARD** and confirm the console logs a catalog refresh
 - `npm run generic-npcs:import:test`
-- `npm run generic-npcs:import` (needs a **link-viewable** sheet, same as skyboxes)
-- VS Code task **STORYTELLER DASHBOARD** → Stage NPCs tab
+- Optional manual: `npm run generic-npcs:import`
+- Stage NPCs tab shows the latest sheet rows
 
 Status: current
 
@@ -53,14 +54,18 @@ Design notes for skyboxes: [`docs/superpowers/specs/2026-07-21-skybox-sheet-impo
 | Authoring | Named ranges `SKYBOXCSV` etc. | Named range `GENERICNPCCSV` on tab **Generics Export** |
 | Fetch | `/export?format=csv&range=…` | `/gviz/tq?tqx=out:csv&sheet=Generics Export` |
 | Output | `lib/skyboxes_catalog.ttslua` | `.dev/storyteller-dashboard/data/generic-npcs.json` |
-| npm | `skyboxes:import` | `generic-npcs:import` |
-| In `build:full` / `build:all-tooling` | Yes | Yes |
+| npm | `skyboxes:import` | `generic-npcs:import` (optional manual) |
+| When it runs | `build:full` / `build:all-tooling` | **Storyteller Dashboard server startup** (not the TTS build) |
+
+If the sheet fetch fails at startup but `generic-npcs.json` already exists, the dashboard keeps serving that last good file and prints an error. If there is no file yet, startup fails.
 
 Do **not** add Drive MCP, Google OAuth, Papa Parse, or a second CSV parser. Do **not** keep a hand-edited CSV next to the dashboard as a second source of truth.
 
 ### Commands
 
-From repo root:
+Restart the dashboard (VS Code task **STORYTELLER DASHBOARD**, or `npm run storyteller-dashboard:dev`) to refresh from the sheet.
+
+Optional manual refresh from repo root:
 
 ```powershell
 npm run generic-npcs:import:test

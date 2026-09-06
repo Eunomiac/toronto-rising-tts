@@ -4,6 +4,9 @@ declare module "node:fs" {
   export function existsSync(path: string): boolean;
   export function readFileSync(path: string, encoding: "utf8"): string;
 }
+declare module "node:module" {
+  export function createRequire(filename: string | URL): (id: string) => unknown;
+}
 declare module "node:fs/promises" {
   export const promises: { readdir(directory: string, options: { withFileTypes: true }): Promise<{ name: string; isDirectory(): boolean; isFile(): boolean }[]>; readFile(file: string, encoding: "utf8"): Promise<string> };
   export function stat(path: string): Promise<{ isFile(): boolean }>;
@@ -39,6 +42,6 @@ declare module "node:net" {
   export default net;
 }
 declare module "node:url" { export function fileURLToPath(url: string): string; }
-declare const process: { readonly cwd: () => string; readonly env: Record<string, string | undefined> };
-declare const console: { log(message: string): void };
+declare const process: { readonly cwd: () => string; readonly env: Record<string, string | undefined>; exit(code?: number): never };
+declare const console: { log(message: string): void; error(message: string): void };
 declare const Buffer: { isBuffer(value: unknown): value is Uint8Array; from(value: Uint8Array | string): Uint8Array; concat(chunks: readonly Uint8Array[]): { toString(encoding: "utf8"): string } };

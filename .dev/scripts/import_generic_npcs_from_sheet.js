@@ -8,9 +8,8 @@
  * returns HTTP 400 (unbounded A:D named ranges often do), so we use the public
  * Visualization CSV for the Generics Export tab instead.
  *
- * Run from repo root:
- *   node .dev/scripts/import_generic_npcs_from_sheet.js
- * Prefer: npm run generic-npcs:import
+ * Primary refresh: Storyteller Dashboard server startup.
+ * Manual: npm run generic-npcs:import
  */
 
 const fs = require("fs");
@@ -18,7 +17,7 @@ const path = require("path");
 const { parseGenericNpcRows, renderGenericNpcCatalogJson } = require("./lib/generic_npcs_sheet_csv.js");
 
 const root = path.resolve(__dirname, "..", "..");
-const outPath = path.join(root, ".dev", "storyteller-dashboard", "data", "generic-npcs.json");
+const defaultOutPath = path.join(root, ".dev", "storyteller-dashboard", "data", "generic-npcs.json");
 
 const DEFAULT_SHEET_ID = "10Ehs7cMR7016QYYW5TzT0mfmrc8XoGmfDlwz_Zh15Gs";
 const DEFAULT_RANGE = "GENERICNPCCSV";
@@ -53,6 +52,7 @@ Options:
   --range <name>    Named range recorded in catalog meta (default GENERICNPCCSV)
 
 The spreadsheet must be anyone-with-the-link can view, same as skyboxes:import.
+The Storyteller Dashboard also runs this refresh on server startup.
 `);
       process.exit(0);
     }
@@ -121,20 +121,54 @@ function writeAtomic(filePath, contents) {
   fs.renameSync(tmp, filePath);
 }
 
-async function main() {
-  const { sheetId, rangeName, tabName } = parseArgs(process.argv.slice(2));
+/**
+ * @param {{
+ *   sheetId?: string,
+ *   rangeName?: string,
+ *   tabName?: string,
+ *   outPath?: string,
+ *   quiet?: boolean
+ * }} [options]
+ * @returns {Promise<{ npcCount: number, outPath: string, sheetId: string, tabName: string, rangeName: string }>}
+ */
+async function importGenericNpcs(options = {}) {
+  const sheetId = String(options.sheetId || process.env.GENERIC_NPC_SHEET_ID || DEFAULT_SHEET_ID).trim();
+  const rangeName = String(options.rangeName || process.env.GENERIC_NPC_RANGE || DEFAULT_RANGE).trim();
+  const tabName = String(options.tabName || process.env.GENERIC_NPC_TAB || DEFAULT_TAB).trim();
+  const outPath = options.outPath || defaultOutPath;
   const url = exportCsvUrl(sheetId, tabName);
 
-  console.log(`[generic-npcs:import] Fetching tab "${tabName}" (${rangeName}) …`);
+  if (!options.quiet) {
+    console.log(`[generic-npcs:import] Fetching tab "${tabName}" (${rangeName}) …`);
+  }
   const csv = await fetchCsv(url, tabName);
   const npcs = parseGenericNpcRows(csv);
   const json = renderGenericNpcCatalogJson({ npcs, meta: { sheetId, rangeName, tabName } });
 
   writeAtomic(outPath, json);
-  console.log(`[generic-npcs:import] Wrote ${path.relative(root, outPath)} (${npcs.length} NPCs)`);
+  if (!options.quiet) {
+    console.log(`[generic-npcs:import] Wrote ${path.relative(root, outPath)} (${npcs.length} NPCs)`);
+  }
+  return { npcCount: npcs.length, outPath, sheetId, tabName, rangeName };
 }
 
-main().catch((err) => {
-  console.error(`[generic-npcs:import] FAIL: ${err && err.message ? err.message : err}`);
-  process.exit(1);
-});
+async function main() {
+  await importGenericNpcs(parseArgs(process.argv.slice(2)));
+}
+
+module.exports = {
+  importGenericNpcs,
+  parseArgs,
+  exportCsvUrl,
+  fetchCsv,
+  DEFAULT_SHEET_ID,
+  DEFAULT_RANGE,
+  DEFAULT_TAB,
+};
+
+if (require.main === module) {
+  main().catch((err) => {
+    console.error(`[generic-npcs:import] FAIL: ${err && err.message ? err.message : err}`);
+    process.exit(1);
+  });
+}

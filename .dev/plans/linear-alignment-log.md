@@ -734,6 +734,7 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-09-01 | CREATE+SHIP | TOR-551 | Memoriam: present-as-self toggles; subject stays in assignment list (green name, NPC-assignable); payload always includes subject. relatedTo TOR-539. Pending Save & Play. |
 | 2026-09-03 | CREATE+SHIP | TOR-552 | Storyteller Dashboard tab shell (Stage NPCs default, Lua, Generate NPC). |
 | 2026-09-03 | SHIP | TOR-554 | Storyteller Dashboard Stage NPCs generic catalogue; public Generics Export CSV now in `build:all-tooling`. |
+| 2026-09-06 | UPDATE | TOR-554 | Generic NPC sheet refresh relocated to Storyteller Dashboard server startup (removed from build:all-tooling). |
 | 2026-09-03 | CREATE+SHIP | TOR-555 | Storyteller Dashboard saved search tags + Lua Execute Code (External Editor 39998/39999). |
 | 2026-09-03 | CREATE+SHIP | TOR-556 | Storyteller Dashboard Stage NPCs 500px hover preview of the full cutout. |
 

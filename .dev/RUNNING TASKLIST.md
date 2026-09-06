@@ -457,7 +457,7 @@ _Blocked: author must define data binding approach before substantial implementa
 Standalone second-monitor web app (`.dev/storyteller-dashboard/`). Not the in-table Storyteller HUD.
 
 - [x] **Tab shell:** Top flush tabs — Stage NPCs (default), Lua, Generate NPC. Existing generator lives under Generate NPC; the other two tabs are placeholders. _(TOR-552)_
-- [x] **Stage NPCs generic catalogue:** Searchable cutout grid + copy keys. Sheet import clones skyboxes (`Generics Export` Visualization CSV → `data/generic-npcs.json`); runs in `build:full` / `build:all-tooling`. _(TOR-554)_
+- [x] **Stage NPCs generic catalogue:** Searchable cutout grid + copy keys. Sheet import clones skyboxes (`Generics Export` Visualization CSV → `data/generic-npcs.json`); refreshes when the Storyteller Dashboard server starts. _(TOR-554)_
 - [x] **Build pipelines Main / XML / Full:** Default Ctrl+Shift+B is Main (backup + gates + stubs); `build:xml` adds UI/XML generators; `build:full` is the former all-tooling chain. _(TOR-557)_
 - [x] **Stage NPCs hover preview:** 300px right column shows the full cutout on thumbnail hover. _(TOR-556)_
 - [ ] **Stage NPCs saved tags + Lua Execute Code:** Persistent A–Z tag rail; Lua tab uses External Editor 39998/39999 (conflicts with TTS Tools extension — one at a time). Pending dashboard/TTS check. _(TOR-555)_

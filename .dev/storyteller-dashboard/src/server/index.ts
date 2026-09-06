@@ -8,6 +8,7 @@ import { getConfig } from "./config.js";
 import { loadEnvFile } from "./loadEnv.js";
 import { generateNpcImage, generateNpcs, rerollNpcField } from "./npcService.js";
 import { loadGenericNpcCatalog, resolveGenericNpcImagePath } from "./genericNpcCatalog.js";
+import { refreshGenericNpcCatalogOnStartup } from "./refreshGenericNpcCatalog.js";
 import { dashboardTtsBridge } from "./ttsExecuteLua.js";
 import { parseGenerateImageRequest, parseGenerateNpcRequest, parseRerollFieldRequest } from "../shared/npc.js";
 
@@ -147,26 +148,32 @@ const handleApi = async (request: IncomingMessage, response: ServerResponse, pat
   sendJson(response, 404, { error: "API route not found" });
 };
 
-createServer((request, response) => {
-  void (async () => {
-    try {
-      const url = new URL(request.url ?? "/", `http://${request.headers.host ?? "127.0.0.1"}`);
-      if (url.pathname.startsWith("/api/")) {
-        await handleApi(request, response, url.pathname);
-        return;
-      }
+void (async () => {
+  await refreshGenericNpcCatalogOnStartup(genericNpcCatalogPath);
+  createServer((request, response) => {
+    void (async () => {
+      try {
+        const url = new URL(request.url ?? "/", `http://${request.headers.host ?? "127.0.0.1"}`);
+        if (url.pathname.startsWith("/api/")) {
+          await handleApi(request, response, url.pathname);
+          return;
+        }
 
-      if (request.method === "GET" && url.pathname.startsWith("/generic-npc-images/")) {
-        await serveGenericNpcImage(response, url.pathname);
-        return;
-      }
+        if (request.method === "GET" && url.pathname.startsWith("/generic-npc-images/")) {
+          await serveGenericNpcImage(response, url.pathname);
+          return;
+        }
 
-      await serveFile(response, url.pathname);
-    } catch (error: unknown) {
-      sendError(response, error);
-    }
-  })();
-}).listen(config.port, "127.0.0.1", () => {
-  console.log(`Storyteller dashboard listening on http://127.0.0.1:${config.port}`);
-  console.log(chronicleHealthInfo(config).chronicleStatus);
+        await serveFile(response, url.pathname);
+      } catch (error: unknown) {
+        sendError(response, error);
+      }
+    })();
+  }).listen(config.port, "127.0.0.1", () => {
+    console.log(`Storyteller dashboard listening on http://127.0.0.1:${config.port}`);
+    console.log(chronicleHealthInfo(config).chronicleStatus);
+  });
+})().catch((error: unknown) => {
+  console.error(error instanceof Error ? error.message : String(error));
+  process.exit(1);
 });
