@@ -6957,6 +6957,13 @@ UI.setAttributes("overlay_globalBlindfold_panel", {raycastTarget = "false"})
     animationDuration = "0.3"
     color = "#000000"
   />
+  <Panel class="global_blindfold_image_panel"
+    active = "true"
+    width = "1920"
+    height = "1200"
+    rectAlignment = "MiddleCenter"
+    color = "#000000"
+  />
   <Image class="global_blindfold"
     active = "true"
     width = "1920"
@@ -6964,25 +6971,325 @@ UI.setAttributes("overlay_globalBlindfold_panel", {raycastTarget = "false"})
     rectAlignment = "MiddleCenter"
     preserveAspect = "true"
     raycastTarget = "false"
-    color = "rgba(1, 1, 1, 0)"
   />
 </Defaults>
 
+<!--
+UI.setAttributes("overlay_globalBlindfold", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_base", {active = "false"})
+
+
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_base", {showAnimation = "SlideIn_Left", hideAnimation = "SlideOut_Right", hideAnimationDelay = 0, animationDuration = 40})
+UI.setAttributes("overlay_globalBlindfold", {showAnimation = "FadeIn", hideAnimation = "FadeOut", showAnimationDelay = 35, hideAnimationDelay = 0, animationDuration = 4})
+
+SO: Image panels should slide in very early with very long durations. Interior fade should start almost at the end of the slide-in duration.
+
+
+
+-->
+
+
+<!--
+
+UI.setAttributes("overlay_globalBlindfold_panel", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_base", {})
+UI.setAttributes("overlay_globalBlindfold", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_frame", {})
+UI.setAttributes("overlay_globalBlindfold_frame", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_6_A", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_6_A", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_6_B", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_6_B", {})
+
+
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_5_A", {})
+Start Animation = 0
+Lead-In Time for Text Panel 1_1 = 0
+Duration for Text Panel 1_1 = 20
+Lead-In Time for Other Text Panels = 20
+Duration for Other Text Panels = 40
+Duration of Text Fade In = 5
+Duration of Text Fade Out = 5
+Text Total Duration = 10
+Text Starts at Sequence Second = 10
+
+
+Animation Start Time = 0
+
+Sequence 1 ACTUAL Start Time = 0
+Sequence 2 ACTUAL Start Time = 20
+Sequence 1 ACTUAL Hide Time = 35
+Sequence 3 ACTUAL Start Time = 40
+Sequence 2 ACTUAL Hide Time = 55
+Sequence 4 ACTUAL Start Time = 60
+Sequence 3 ACTUAL Hide Time = 75
+Sequence 5 ACTUAL Start Time = 80
+Sequence 4 ACTUAL Hide Time = 95
+Sequence 5 ACTUAL Hide Time = 115
+
+
+Animation Start Time = 0
+
+Sequence 1 Start Time = 20
+Sequence 1 End Time = 40
+Panel 1_1 TextPanel SlideIn Start Time = 0 for 40 = 40
+Panel 1_1 Text FadeIn Start Time = 30 for 5 = 35
+Panel 1_1 Text FadeOut Start Time = 35 for 5 = 40
+Panel 1_1 ImagePanel Grow Start Time = 0 for 25 = 25
+Panel 1_1 Image FadeIn Start Time = 20 for 5 = 25
+Panel 1_1 Image FadeOut Start Time = 35 for 5 = 40
+Sequence 1 ACTUAL Start Time = 0
+Sequence 1 ACTUAL Hide Time = 35
+
+Sequence 2 Start Time = 40
+Sequence 2 End Time = 60
+Panel 1_2 TextPanel SlideIn Start Time = 20 for 40 = 60
+Panel 1_2 Text FadeIn Start Time = 50 for 5 = delay: 30, duration: 5 = 55
+Panel 1_2 ImagePanel Grow Start Time = 20 for 25 = delay: 0, duration: 25 = 45
+Panel 1_2 Image FadeIn Start Time = 40 for 5 = delay: 20, duration: 5 = 45
+Panel 1_2 Text FadeOut Start Time = 55 for 5 = 60
+Panel 1_2 Image FadeOut Start Time = 55 for 5 = 60
+Sequence 2 ACTUAL Start Time = 20
+Sequence 2 ACTUAL Hide Time = 55
+
+Sequence 3 Start Time = 60
+Sequence 3 End Time = 80
+Panel 1_3 TextPanel SlideIn Start Time = 40 for 40 = 80
+Panel 1_3 Text FadeIn Start Time = 70 for 5 = 75
+Panel 1_3 Text FadeOut Start Time = 75 for 5 = 80
+Panel 1_3 ImagePanel Grow Start Time = 40 for 25 = 65
+Panel 1_3 Image FadeIn Start Time = 60 for 5 = 65
+Panel 1_3 Image FadeOut Start Time = 75 for 5 = 80
+Sequence 3 ACTUAL Start Time = 40
+Sequence 3 ACTUAL Hide Time = 75
+
+Sequence 4 Start Time = 80
+Sequence 4 End Time = 100
+Panel 1_4 TextPanel SlideIn Start Time = 60 for 40 = 100
+Panel 1_4 Text FadeIn Start Time = 90 for 5 = 95
+Panel 1_4 Text FadeOut Start Time = 95 for 5 = 100
+Panel 1_4 ImagePanel Grow Start Time = 60 for 25 = 85
+Panel 1_4 Image FadeIn Start Time = 80 for 5 = 85
+Panel 1_4 Image FadeOut Start Time = 95 for 5 = 100
+Sequence 4 ACTUAL Start Time = 60
+Sequence 4 ACTUAL Hide Time = 95
+
+Sequence 5 Start Time = 100
+Sequence 5 End Time = 120
+Panel 1_4 TextPanel SlideIn Start Time = 80 for 40 = 120
+Panel 1_4 Text FadeIn Start Time = 110 for 5 = 115
+Panel 1_4 Text FadeOut Start Time = 115 for 5 = 120
+Panel 1_5 ImagePanel Grow Start Time = 80 for 25 = 105
+Panel 1_5 Image FadeIn Start Time = 100 for 5 = 105
+Panel 1_5 Image FadeOut Start Time = 115 for 5 = 120
+Sequence 5 ACTUAL Start Time = 80
+Sequence 5 ACTUAL Hide Time = 115
+
+
+
+== TEXT PANELS ==
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_1_A", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_2_A", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_3_A", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_4_A", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_5_A", {})
+
+== TEXT IMAGES ==
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_1_A", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_2_A", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_3_A", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_4_A", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_5_A", {})
+
+== IMAGE PANELS ==
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_1_B", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_2_B", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_3_B", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_4_B", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_5_B", {})
+
+== IMAGE IMAGES ==
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_1_B", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_2_B", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_3_B", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_4_B", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_5_B", {})
+
+
+
+
+-->
+
+<!--
+UI.setAttributes("overlay_globalBlindfold_panel", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_base", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_frame", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_frame", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_1_B", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_1_B", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_1_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_1_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_2_B", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_2_B", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_2_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_2_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_3_B", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_3_B", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_3_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_3_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_4_B", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_4_B", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_4_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_4_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_5_B", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_5_B", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_5_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_5_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_6_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_6_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_6_B", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_6_B", {active = "true"})
+
+
+UI.setAttributes("overlay_globalBlindfold_panel", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_base", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_frame", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_frame", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_1_B", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_1_B", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_1_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_1_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_2_B", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_2_B", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_2_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_2_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_3_B", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_3_B", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_3_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_3_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_4_B", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_4_B", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_4_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_4_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_5_B", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_5_B", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_5_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_5_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_6_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_6_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_6_B", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_6_B", {active = "false"})
+
+
+UI.show("overlay_globalBlindfold_panel")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_base")
+UI.show("overlay_globalBlindfold")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_frame")
+UI.show("overlay_globalBlindfold_frame")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_1_B")
+UI.show("overlay_globalBlindfold_sessionSplash_1_1_B")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_1_A")
+UI.show("overlay_globalBlindfold_sessionSplash_1_1_A")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_2_B")
+UI.show("overlay_globalBlindfold_sessionSplash_1_2_B")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_2_A")
+UI.show("overlay_globalBlindfold_sessionSplash_1_2_A")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_3_B")
+UI.show("overlay_globalBlindfold_sessionSplash_1_3_B")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_3_A")
+UI.show("overlay_globalBlindfold_sessionSplash_1_3_A")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_4_B")
+UI.show("overlay_globalBlindfold_sessionSplash_1_4_B")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_4_A")
+UI.show("overlay_globalBlindfold_sessionSplash_1_4_A")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_5_B")
+UI.show("overlay_globalBlindfold_sessionSplash_1_5_B")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_5_A")
+UI.show("overlay_globalBlindfold_sessionSplash_1_5_A")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_6_A")
+UI.show("overlay_globalBlindfold_sessionSplash_1_6_A")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_6_B")
+UI.show("overlay_globalBlindfold_sessionSplash_1_6_B")
+
+
+UI.hide("overlay_globalBlindfold_panel")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_base")
+UI.hide("overlay_globalBlindfold")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_frame")
+UI.hide("overlay_globalBlindfold_frame")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_1_B")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_1_B")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_1_A")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_1_A")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_2_B")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_2_B")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_2_A")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_2_A")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_3_B")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_3_B")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_3_A")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_3_A")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_4_B")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_4_B")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_4_A")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_4_A")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_5_B")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_5_B")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_5_A")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_5_A")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_6_A")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_6_A")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_6_B")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_6_B")
+-->
+
+
 <Panel id="overlay_globalBlindfold_panel" class="global_blindfold_panel">
-  <Image id="overlay_globalBlindfold_sessionSplash_1_6_B" class="global_blindfold" image="overlay_explode_sessionTitle" />
-  <Image id="overlay_globalBlindfold_sessionSplash_1_6_A" class="global_blindfold" image="overlay_explode_sessionNum" />
-  <Image id="overlay_globalBlindfold_sessionSplash_1_5_B" class="global_blindfold" image="overlay_explode_image_lordLucien" />
-  <Image id="overlay_globalBlindfold_sessionSplash_1_5_A" class="global_blindfold" image="overlay_explode_text_lordLucien" />
-  <Image id="overlay_globalBlindfold_sessionSplash_1_4_B" class="global_blindfold" image="overlay_explode_image_rashid" />
-  <Image id="overlay_globalBlindfold_sessionSplash_1_4_A" class="global_blindfold" image="overlay_explode_text_rashid" />
-  <Image id="overlay_globalBlindfold_sessionSplash_1_3_B" class="global_blindfold" image="overlay_explode_image_aishe" />
-  <Image id="overlay_globalBlindfold_sessionSplash_1_3_A" class="global_blindfold" image="overlay_explode_text_aishe" />
-  <Image id="overlay_globalBlindfold_sessionSplash_1_2_B" class="global_blindfold" image="overlay_explode_image_fomorach" />
-  <Image id="overlay_globalBlindfold_sessionSplash_1_2_A" class="global_blindfold" image="overlay_explode_text_fomorach" />
-  <Image id="overlay_globalBlindfold_sessionSplash_1_1_B" class="global_blindfold" image="overlay_explode_image_blackCaesar" />
-  <Image id="overlay_globalBlindfold_sessionSplash_1_1_A" class="global_blindfold" image="overlay_explode_text_blackCaesar" />
-  <Image id="overlay_globalBlindfold_frame" class="global_blindfold" image="overlay_explode_frame" color="rgba(1, 1, 1, 1)" />
-  <Image id="overlay_globalBlindfold" class="global_blindfold" image="global_blindfold_session_1" color="rgba(1, 1, 1, 1)" />
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_base" class="global_blindfold_image_panel">
+    <Image id="overlay_globalBlindfold" class="global_blindfold" image="global_blindfold_session_1" />
+  </Panel>
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_1_B" class="global_blindfold_image_panel" active = "false">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_1_B" class="global_blindfold" image="overlay_explode_image_blackCaesar" active = "false" />
+  </Panel>
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_1_A" class="global_blindfold_image_panel" active = "false">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_1_A" class="global_blindfold" image="overlay_explode_text_blackCaesar" active = "false" />
+  </Panel>
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_2_B" class="global_blindfold_image_panel" active = "false">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_2_B" class="global_blindfold" image="overlay_explode_image_fomorach" active = "false" />
+  </Panel>
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_2_A" class="global_blindfold_image_panel" active = "false">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_2_A" class="global_blindfold" image="overlay_explode_text_fomorach" active = "false" />
+  </Panel>
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_3_B" class="global_blindfold_image_panel" active = "false">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_3_B" class="global_blindfold" image="overlay_explode_image_aishe" active = "false" />
+  </Panel>
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_3_A" class="global_blindfold_image_panel" active = "false">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_3_A" class="global_blindfold" image="overlay_explode_text_aishe" active = "false" />
+  </Panel>
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_4_B" class="global_blindfold_image_panel" active = "false">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_4_B" class="global_blindfold" image="overlay_explode_image_rashid" active = "false" />
+  </Panel>
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_4_A" class="global_blindfold_image_panel" active = "false">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_4_A" class="global_blindfold" image="overlay_explode_text_rashid" active = "false" />
+  </Panel>
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_5_B" class="global_blindfold_image_panel" active = "false">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_5_B" class="global_blindfold" image="overlay_explode_image_lordLucien" active = "false" />
+  </Panel>
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_5_A" class="global_blindfold_image_panel" active = "false">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_5_A" class="global_blindfold" image="overlay_explode_text_lordLucien" active = "false" />
+  </Panel>
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_6_A" class="global_blindfold_image_panel" active = "false">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_6_A" class="global_blindfold" image="overlay_explode_sessionNum" active = "false" />
+  </Panel>
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_6_B" class="global_blindfold_image_panel" active = "false">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_6_B" class="global_blindfold" image="overlay_explode_sessionTitle" active = "false" />
+  </Panel>
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_frame" class="global_blindfold_image_panel" active = "false">
+    <Image id="overlay_globalBlindfold_frame" class="global_blindfold" image="overlay_explode_frame" />
+  </Panel>
 </Panel>
 
 <!-- /include ui/shared/panel_overlay_global_blindfold.xml -->
@@ -9340,6 +9647,8 @@ UI.setAttributes("input_sessionNum", {minHeight = "30", fontStyle = "Bold"})
     <HorizontalLayout class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
       <Button id="phase_Advance" text="Advance →" minWidth="120" preferredWidth="120" onClick="HUD_phaseAdvance"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+      <Toggle id="phase_sessionStartLerp" isOn="false" onValueChanged="HUD_phaseSessionStartLerp"
+        minWidth="140" preferredWidth="160" textColor="#FFFFFF">Lerp explode</Toggle>
     </HorizontalLayout>
     <Text fontSize="12" color="#AAAAAA">Play subphase</Text>
     <HorizontalLayout id="phase_subphaseRow" class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
@@ -12813,63 +13122,63 @@ UI.hide("sessionStartHeal_playerContainer_Orange")
       <VerticalLayout spacing="4" padding="4" childForceExpandWidth="true">
         <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
           <Button id="scenes_pick_skybox_Generic" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Generic" onClick="HUD_scenesPickSkybox" />
+          <Button id="scenes_pick_skybox_WarrensAntechamber" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="#N/A" onClick="HUD_scenesPickSkybox" />
+          <Button id="scenes_pick_skybox_WarrensDrakes" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="#N/A 2" onClick="HUD_scenesPickSkybox" />
+          <Button id="scenes_pick_skybox_WarrensLabyrinth" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="#N/A 3" onClick="HUD_scenesPickSkybox" />
+          <Button id="scenes_pick_skybox_WarrensSpawningPool" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="#N/A 4" onClick="HUD_scenesPickSkybox" />
+          <Button id="scenes_pick_skybox_WarrensTunnelJunction" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="#N/A 5" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_AnarchBar" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Anarch Dive Bar" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_AptStreetside" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Apartment Streetside" onClick="HUD_scenesPickSkybox" />
+        </HorizontalLayout>
+        <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
           <Button id="scenes_pick_skybox_BackAlley1" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Back Alley" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_BackAlley2" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Back Alley 2" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_BayTower" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Bay Wellington Tower" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_BillyBishopAirport" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Billy Bishop Airport" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_BillyBishopFerry" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Billy Bishop Ferry" onClick="HUD_scenesPickSkybox" />
-        </HorizontalLayout>
-        <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
           <Button id="scenes_pick_skybox_CLGrounds" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Casa Loma: Estate Grounds" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_CLGallery" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Casa Loma: Gallery of Mirrors" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_CLGreatHall" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Casa Loma: Great Hall" onClick="HUD_scenesPickSkybox" />
+        </HorizontalLayout>
+        <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
           <Button id="scenes_pick_skybox_CLDrawingRoom" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Casa Loma: Maximillian Steele Drawing Room" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_CLTerrace" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Casa Loma: Moonlit Terrace" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_CLOverlook" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Casa Loma: Overlook" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_CLLibrary" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Casa Loma: Tacettin Ayhan Library" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_CLVestibule" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Casa Loma: Vestibule" onClick="HUD_scenesPickSkybox" />
-        </HorizontalLayout>
-        <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
           <Button id="scenes_pick_skybox_Cemetery" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Cemetery" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_CityApt1" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="City Apartment" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_CityHall" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="City Hall" onClick="HUD_scenesPickSkybox" />
+        </HorizontalLayout>
+        <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
           <Button id="scenes_pick_skybox_CityPark" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="City Park" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_CoachHouseEmbassy" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Coach House Embassy" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_CrowdOfSilhouettes" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Crowd of Silhouettes" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_Docks" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Docks" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_HemovoreResearch" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Douglas Netchurch Facility for Hemovore Research" onClick="HUD_scenesPickSkybox" />
-        </HorizontalLayout>
-        <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
           <Button id="scenes_pick_skybox_EatonCentre" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Eaton Centre" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_BrickWorks" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Evergreen Brick Works" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_EvergreenPalisades" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Evergreen Palisades" onClick="HUD_scenesPickSkybox" />
+        </HorizontalLayout>
+        <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
           <Button id="scenes_pick_skybox_FireSaleChantry" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Fire Sale Chantry" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_GEDiningHall" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Giovanni Estate: Dining Hall" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_GEEstateGrounds" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Giovanni Estate: Estate Grounds" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_GETowerRoom" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Giovanni Estate: Tower Room" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_GraffitiAlley" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Graffiti Alley" onClick="HUD_scenesPickSkybox" />
-        </HorizontalLayout>
-        <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
           <Button id="scenes_pick_skybox_Distillery" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Historic Distillery" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_SickKids" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Hospital for Sick Children" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_JustSmoke" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Just Smoke" onClick="HUD_scenesPickSkybox" />
+        </HorizontalLayout>
+        <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
           <Button id="scenes_pick_skybox_Kensington" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Kensington Market" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_Keyhouse" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Keyhouse" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_Laboratory" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Laboratory" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_Library" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Library" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_Limousine" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Limousine" onClick="HUD_scenesPickSkybox" />
-        </HorizontalLayout>
-        <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
           <Button id="scenes_pick_skybox_Yacht" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Luxury Yacht" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_MadinaMasjid" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Madina Masjid" onClick="HUD_scenesPickSkybox" />
           <Button id="scenes_pick_skybox_Nightclub1" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Nightclub" onClick="HUD_scenesPickSkybox" />
-          <Button id="scenes_pick_skybox_WarrensAntechamber" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Nosferatu Warrens: Antechamber" onClick="HUD_scenesPickSkybox" />
-          <Button id="scenes_pick_skybox_WarrensDrakes" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Nosferatu Warrens: Drake's" onClick="HUD_scenesPickSkybox" />
-          <Button id="scenes_pick_skybox_WarrensLabyrinth" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Nosferatu Warrens: Labyrinth" onClick="HUD_scenesPickSkybox" />
-          <Button id="scenes_pick_skybox_WarrensSpawningPool" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Nosferatu Warrens: Spawning Pool" onClick="HUD_scenesPickSkybox" />
-          <Button id="scenes_pick_skybox_WarrensTunnelJunction" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Nosferatu Warrens: Tunnel Junction" onClick="HUD_scenesPickSkybox" />
         </HorizontalLayout>
         <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
           <Button id="scenes_pick_skybox_Office" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Office" onClick="HUD_scenesPickSkybox" />
@@ -14472,6 +14781,13 @@ UI.setAttributes("overlay_globalBlindfold_panel", {raycastTarget = "false"})
     animationDuration = "0.3"
     color = "#000000"
   />
+  <Panel class="global_blindfold_image_panel"
+    active = "true"
+    width = "1920"
+    height = "1200"
+    rectAlignment = "MiddleCenter"
+    color = "#000000"
+  />
   <Image class="global_blindfold"
     active = "true"
     width = "1920"
@@ -14479,25 +14795,325 @@ UI.setAttributes("overlay_globalBlindfold_panel", {raycastTarget = "false"})
     rectAlignment = "MiddleCenter"
     preserveAspect = "true"
     raycastTarget = "false"
-    color = "rgba(1, 1, 1, 0)"
   />
 </Defaults>
 
+<!--
+UI.setAttributes("overlay_globalBlindfold", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_base", {active = "false"})
+
+
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_base", {showAnimation = "SlideIn_Left", hideAnimation = "SlideOut_Right", hideAnimationDelay = 0, animationDuration = 40})
+UI.setAttributes("overlay_globalBlindfold", {showAnimation = "FadeIn", hideAnimation = "FadeOut", showAnimationDelay = 35, hideAnimationDelay = 0, animationDuration = 4})
+
+SO: Image panels should slide in very early with very long durations. Interior fade should start almost at the end of the slide-in duration.
+
+
+
+-->
+
+
+<!--
+
+UI.setAttributes("overlay_globalBlindfold_panel", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_base", {})
+UI.setAttributes("overlay_globalBlindfold", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_frame", {})
+UI.setAttributes("overlay_globalBlindfold_frame", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_6_A", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_6_A", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_6_B", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_6_B", {})
+
+
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_5_A", {})
+Start Animation = 0
+Lead-In Time for Text Panel 1_1 = 0
+Duration for Text Panel 1_1 = 20
+Lead-In Time for Other Text Panels = 20
+Duration for Other Text Panels = 40
+Duration of Text Fade In = 5
+Duration of Text Fade Out = 5
+Text Total Duration = 10
+Text Starts at Sequence Second = 10
+
+
+Animation Start Time = 0
+
+Sequence 1 ACTUAL Start Time = 0
+Sequence 2 ACTUAL Start Time = 20
+Sequence 1 ACTUAL Hide Time = 35
+Sequence 3 ACTUAL Start Time = 40
+Sequence 2 ACTUAL Hide Time = 55
+Sequence 4 ACTUAL Start Time = 60
+Sequence 3 ACTUAL Hide Time = 75
+Sequence 5 ACTUAL Start Time = 80
+Sequence 4 ACTUAL Hide Time = 95
+Sequence 5 ACTUAL Hide Time = 115
+
+
+Animation Start Time = 0
+
+Sequence 1 Start Time = 20
+Sequence 1 End Time = 40
+Panel 1_1 TextPanel SlideIn Start Time = 0 for 40 = 40
+Panel 1_1 Text FadeIn Start Time = 30 for 5 = 35
+Panel 1_1 Text FadeOut Start Time = 35 for 5 = 40
+Panel 1_1 ImagePanel Grow Start Time = 0 for 25 = 25
+Panel 1_1 Image FadeIn Start Time = 20 for 5 = 25
+Panel 1_1 Image FadeOut Start Time = 35 for 5 = 40
+Sequence 1 ACTUAL Start Time = 0
+Sequence 1 ACTUAL Hide Time = 35
+
+Sequence 2 Start Time = 40
+Sequence 2 End Time = 60
+Panel 1_2 TextPanel SlideIn Start Time = 20 for 40 = 60
+Panel 1_2 Text FadeIn Start Time = 50 for 5 = delay: 30, duration: 5 = 55
+Panel 1_2 ImagePanel Grow Start Time = 20 for 25 = delay: 0, duration: 25 = 45
+Panel 1_2 Image FadeIn Start Time = 40 for 5 = delay: 20, duration: 5 = 45
+Panel 1_2 Text FadeOut Start Time = 55 for 5 = 60
+Panel 1_2 Image FadeOut Start Time = 55 for 5 = 60
+Sequence 2 ACTUAL Start Time = 20
+Sequence 2 ACTUAL Hide Time = 55
+
+Sequence 3 Start Time = 60
+Sequence 3 End Time = 80
+Panel 1_3 TextPanel SlideIn Start Time = 40 for 40 = 80
+Panel 1_3 Text FadeIn Start Time = 70 for 5 = 75
+Panel 1_3 Text FadeOut Start Time = 75 for 5 = 80
+Panel 1_3 ImagePanel Grow Start Time = 40 for 25 = 65
+Panel 1_3 Image FadeIn Start Time = 60 for 5 = 65
+Panel 1_3 Image FadeOut Start Time = 75 for 5 = 80
+Sequence 3 ACTUAL Start Time = 40
+Sequence 3 ACTUAL Hide Time = 75
+
+Sequence 4 Start Time = 80
+Sequence 4 End Time = 100
+Panel 1_4 TextPanel SlideIn Start Time = 60 for 40 = 100
+Panel 1_4 Text FadeIn Start Time = 90 for 5 = 95
+Panel 1_4 Text FadeOut Start Time = 95 for 5 = 100
+Panel 1_4 ImagePanel Grow Start Time = 60 for 25 = 85
+Panel 1_4 Image FadeIn Start Time = 80 for 5 = 85
+Panel 1_4 Image FadeOut Start Time = 95 for 5 = 100
+Sequence 4 ACTUAL Start Time = 60
+Sequence 4 ACTUAL Hide Time = 95
+
+Sequence 5 Start Time = 100
+Sequence 5 End Time = 120
+Panel 1_4 TextPanel SlideIn Start Time = 80 for 40 = 120
+Panel 1_4 Text FadeIn Start Time = 110 for 5 = 115
+Panel 1_4 Text FadeOut Start Time = 115 for 5 = 120
+Panel 1_5 ImagePanel Grow Start Time = 80 for 25 = 105
+Panel 1_5 Image FadeIn Start Time = 100 for 5 = 105
+Panel 1_5 Image FadeOut Start Time = 115 for 5 = 120
+Sequence 5 ACTUAL Start Time = 80
+Sequence 5 ACTUAL Hide Time = 115
+
+
+
+== TEXT PANELS ==
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_1_A", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_2_A", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_3_A", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_4_A", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_5_A", {})
+
+== TEXT IMAGES ==
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_1_A", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_2_A", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_3_A", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_4_A", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_5_A", {})
+
+== IMAGE PANELS ==
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_1_B", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_2_B", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_3_B", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_4_B", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_5_B", {})
+
+== IMAGE IMAGES ==
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_1_B", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_2_B", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_3_B", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_4_B", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_5_B", {})
+
+
+
+
+-->
+
+<!--
+UI.setAttributes("overlay_globalBlindfold_panel", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_base", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_frame", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_frame", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_1_B", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_1_B", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_1_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_1_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_2_B", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_2_B", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_2_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_2_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_3_B", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_3_B", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_3_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_3_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_4_B", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_4_B", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_4_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_4_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_5_B", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_5_B", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_5_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_5_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_6_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_6_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_6_B", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_6_B", {active = "true"})
+
+
+UI.setAttributes("overlay_globalBlindfold_panel", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_base", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_frame", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_frame", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_1_B", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_1_B", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_1_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_1_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_2_B", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_2_B", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_2_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_2_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_3_B", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_3_B", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_3_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_3_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_4_B", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_4_B", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_4_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_4_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_5_B", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_5_B", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_5_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_5_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_6_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_6_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_6_B", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_6_B", {active = "false"})
+
+
+UI.show("overlay_globalBlindfold_panel")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_base")
+UI.show("overlay_globalBlindfold")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_frame")
+UI.show("overlay_globalBlindfold_frame")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_1_B")
+UI.show("overlay_globalBlindfold_sessionSplash_1_1_B")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_1_A")
+UI.show("overlay_globalBlindfold_sessionSplash_1_1_A")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_2_B")
+UI.show("overlay_globalBlindfold_sessionSplash_1_2_B")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_2_A")
+UI.show("overlay_globalBlindfold_sessionSplash_1_2_A")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_3_B")
+UI.show("overlay_globalBlindfold_sessionSplash_1_3_B")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_3_A")
+UI.show("overlay_globalBlindfold_sessionSplash_1_3_A")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_4_B")
+UI.show("overlay_globalBlindfold_sessionSplash_1_4_B")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_4_A")
+UI.show("overlay_globalBlindfold_sessionSplash_1_4_A")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_5_B")
+UI.show("overlay_globalBlindfold_sessionSplash_1_5_B")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_5_A")
+UI.show("overlay_globalBlindfold_sessionSplash_1_5_A")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_6_A")
+UI.show("overlay_globalBlindfold_sessionSplash_1_6_A")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_6_B")
+UI.show("overlay_globalBlindfold_sessionSplash_1_6_B")
+
+
+UI.hide("overlay_globalBlindfold_panel")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_base")
+UI.hide("overlay_globalBlindfold")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_frame")
+UI.hide("overlay_globalBlindfold_frame")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_1_B")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_1_B")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_1_A")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_1_A")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_2_B")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_2_B")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_2_A")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_2_A")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_3_B")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_3_B")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_3_A")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_3_A")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_4_B")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_4_B")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_4_A")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_4_A")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_5_B")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_5_B")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_5_A")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_5_A")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_6_A")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_6_A")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_6_B")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_6_B")
+-->
+
+
 <Panel id="overlay_globalBlindfold_panel" class="global_blindfold_panel">
-  <Image id="overlay_globalBlindfold_sessionSplash_1_6_B" class="global_blindfold" image="overlay_explode_sessionTitle" />
-  <Image id="overlay_globalBlindfold_sessionSplash_1_6_A" class="global_blindfold" image="overlay_explode_sessionNum" />
-  <Image id="overlay_globalBlindfold_sessionSplash_1_5_B" class="global_blindfold" image="overlay_explode_image_lordLucien" />
-  <Image id="overlay_globalBlindfold_sessionSplash_1_5_A" class="global_blindfold" image="overlay_explode_text_lordLucien" />
-  <Image id="overlay_globalBlindfold_sessionSplash_1_4_B" class="global_blindfold" image="overlay_explode_image_rashid" />
-  <Image id="overlay_globalBlindfold_sessionSplash_1_4_A" class="global_blindfold" image="overlay_explode_text_rashid" />
-  <Image id="overlay_globalBlindfold_sessionSplash_1_3_B" class="global_blindfold" image="overlay_explode_image_aishe" />
-  <Image id="overlay_globalBlindfold_sessionSplash_1_3_A" class="global_blindfold" image="overlay_explode_text_aishe" />
-  <Image id="overlay_globalBlindfold_sessionSplash_1_2_B" class="global_blindfold" image="overlay_explode_image_fomorach" />
-  <Image id="overlay_globalBlindfold_sessionSplash_1_2_A" class="global_blindfold" image="overlay_explode_text_fomorach" />
-  <Image id="overlay_globalBlindfold_sessionSplash_1_1_B" class="global_blindfold" image="overlay_explode_image_blackCaesar" />
-  <Image id="overlay_globalBlindfold_sessionSplash_1_1_A" class="global_blindfold" image="overlay_explode_text_blackCaesar" />
-  <Image id="overlay_globalBlindfold_frame" class="global_blindfold" image="overlay_explode_frame" color="rgba(1, 1, 1, 1)" />
-  <Image id="overlay_globalBlindfold" class="global_blindfold" image="global_blindfold_session_1" color="rgba(1, 1, 1, 1)" />
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_base" class="global_blindfold_image_panel">
+    <Image id="overlay_globalBlindfold" class="global_blindfold" image="global_blindfold_session_1" />
+  </Panel>
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_1_B" class="global_blindfold_image_panel" active = "false">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_1_B" class="global_blindfold" image="overlay_explode_image_blackCaesar" active = "false" />
+  </Panel>
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_1_A" class="global_blindfold_image_panel" active = "false">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_1_A" class="global_blindfold" image="overlay_explode_text_blackCaesar" active = "false" />
+  </Panel>
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_2_B" class="global_blindfold_image_panel" active = "false">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_2_B" class="global_blindfold" image="overlay_explode_image_fomorach" active = "false" />
+  </Panel>
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_2_A" class="global_blindfold_image_panel" active = "false">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_2_A" class="global_blindfold" image="overlay_explode_text_fomorach" active = "false" />
+  </Panel>
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_3_B" class="global_blindfold_image_panel" active = "false">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_3_B" class="global_blindfold" image="overlay_explode_image_aishe" active = "false" />
+  </Panel>
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_3_A" class="global_blindfold_image_panel" active = "false">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_3_A" class="global_blindfold" image="overlay_explode_text_aishe" active = "false" />
+  </Panel>
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_4_B" class="global_blindfold_image_panel" active = "false">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_4_B" class="global_blindfold" image="overlay_explode_image_rashid" active = "false" />
+  </Panel>
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_4_A" class="global_blindfold_image_panel" active = "false">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_4_A" class="global_blindfold" image="overlay_explode_text_rashid" active = "false" />
+  </Panel>
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_5_B" class="global_blindfold_image_panel" active = "false">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_5_B" class="global_blindfold" image="overlay_explode_image_lordLucien" active = "false" />
+  </Panel>
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_5_A" class="global_blindfold_image_panel" active = "false">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_5_A" class="global_blindfold" image="overlay_explode_text_lordLucien" active = "false" />
+  </Panel>
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_6_A" class="global_blindfold_image_panel" active = "false">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_6_A" class="global_blindfold" image="overlay_explode_sessionNum" active = "false" />
+  </Panel>
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_6_B" class="global_blindfold_image_panel" active = "false">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_6_B" class="global_blindfold" image="overlay_explode_sessionTitle" active = "false" />
+  </Panel>
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_frame" class="global_blindfold_image_panel" active = "false">
+    <Image id="overlay_globalBlindfold_frame" class="global_blindfold" image="overlay_explode_frame" />
+  </Panel>
 </Panel>
 
 <!-- /include ui/shared/panel_overlay_global_blindfold.xml -->
@@ -14527,6 +15143,8 @@ UI.setAttributes("input_sessionNum", {minHeight = "30", fontStyle = "Bold"})
     <HorizontalLayout class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
       <Button id="phase_Advance" text="Advance →" minWidth="120" preferredWidth="120" onClick="HUD_phaseAdvance"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+      <Toggle id="phase_sessionStartLerp" isOn="false" onValueChanged="HUD_phaseSessionStartLerp"
+        minWidth="140" preferredWidth="160" textColor="#FFFFFF">Lerp explode</Toggle>
     </HorizontalLayout>
     <Text fontSize="12" color="#AAAAAA">Play subphase</Text>
     <HorizontalLayout id="phase_subphaseRow" class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">

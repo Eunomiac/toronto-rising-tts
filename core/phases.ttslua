@@ -33,6 +33,19 @@ local INTERMISSION_BLINDFOLD_SETTLE_SEC = 2
 local advancing = false
 --- Shared with `U.chain` so debug snap can abort a mid-Play intro without cycling phases.
 local advanceCancel = { cancelled = false, reason = nil }
+--- Phases panel: when true, Intermission→Play uses the lerp explode; when false (default),
+--- uses TTS showAnimation attrs (TOR-559). Host-only preference; resets on Save & Play.
+local useLerpSessionStartAnimation = false
+
+--- @param on boolean
+function Phases.setUseLerpSessionStartAnimation(on)
+    useLerpSessionStartAnimation = on == true
+end
+
+--- @return boolean
+function Phases.useLerpSessionStartAnimation()
+    return useLerpSessionStartAnimation == true
+end
 
 --- True while `Phases.advanceTo` / `advanceNext` U.chain is in flight (exit → mutate → enter).
 function Phases.isAdvancing()
@@ -588,7 +601,7 @@ function Phases.armPlayHudBehindCover(_ctx)
 end
 
 Phases.onEnter[C.Phases.PLAY] = function(ctx)
-    return {
+    local steps = {
         function()
             -- Before lighting apply so chronicle seats stay present under TOR-293.
             return Phases.maybeEnableAssumePlayersConnectedForSoloHost(ctx)
@@ -608,30 +621,39 @@ Phases.onEnter[C.Phases.PLAY] = function(ctx)
             Phases.applyPlayEnterNoSceneLights(ctx)
             return C.SessionStartPlayEnterSettleSec
         end,
-        function()
-            -- Cover scale-and-fade first; Loop fade starts now. Sting waits 0.25s so the
+    }
+    if Phases.useLerpSessionStartAnimation() then
+        steps[#steps + 1] = function()
+            -- Cover scale-and-fade first; Loop fade starts now. Sting waits so the
             -- opening drum hits with the first visible cover scale (TOR-533 / TOR-535).
             local SE = require("core.session_explode")
             SE.play()
             Phases.fadeIntermissionLoopForPlayEnter(ctx)
             return C.SessionStartIntroDelaySec
-        end,
-        function()
+        end
+        steps[#steps + 1] = function()
             return Phases.fireSessionIntro(ctx)
-        end,
-        function()
+        end
+        steps[#steps + 1] = function()
             return Phases.sessionIntroBlindfoldHoldSec(ctx)
-        end,
-        function()
-            return Phases.startPlayMainAfterSessionIntro(ctx)
-        end,
-        function()
-            return Phases.runSessionStartWillpowerHeal(ctx)
-        end,
-        function()
-            return hideSessionStartHealPanel()
-        end,
-    }
+        end
+    else
+        steps[#steps + 1] = function()
+            -- TTS-attribute path (default): song + Loop fade fire mid-sequence (TOR-559).
+            local SE = require("core.session_explode")
+            return SE.playAttribute()
+        end
+    end
+    steps[#steps + 1] = function()
+        return Phases.startPlayMainAfterSessionIntro(ctx)
+    end
+    steps[#steps + 1] = function()
+        return Phases.runSessionStartWillpowerHeal(ctx)
+    end
+    steps[#steps + 1] = function()
+        return hideSessionStartHealPanel()
+    end
+    return steps
 end
 
 Phases.onExit[C.Phases.PLAY] = function(ctx)
@@ -770,7 +792,7 @@ function Phases.advanceTo(newPhase, opts)
     end
 
     local SEWait = require("core.session_explode")
-    local PHASE_ADVANCE_CHAIN_MAX_WAIT_SEC = SEWait.sequenceDurationSec() + 15
+    local PHASE_ADVANCE_CHAIN_MAX_WAIT_SEC = SEWait.maxPlayEnterWaitSec() + 15
     U.chain(steps, {
         maxWait = PHASE_ADVANCE_CHAIN_MAX_WAIT_SEC,
         cancelRegistry = advanceCancel,

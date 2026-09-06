@@ -504,31 +504,31 @@ SkyboxesCatalog.Skyboxes = {
   },
   WarrensAntechamber = {
     key = "WarrensAntechamber",
-    display = "The Nosferatu Warrens: Antechamber",
+    display = "#N/A",
     isShown = true,
     url = "https://steamusercontent-a.akamaihd.net/ugc/14555875740175570437/7AC25B00AFE8B2F5767101D00AF6AEACC69F2A65/"
   },
   WarrensDrakes = {
     key = "WarrensDrakes",
-    display = "The Nosferatu Warrens: Drake's",
+    display = "#N/A",
     isShown = true,
     url = "https://steamusercontent-a.akamaihd.net/ugc/15823724815521326152/CF673DABB0E144F941D31DBDA53409C9B6F6ABED/"
   },
   WarrensLabyrinth = {
     key = "WarrensLabyrinth",
-    display = "The Nosferatu Warrens: Labyrinth",
+    display = "#N/A",
     isShown = true,
     url = "https://steamusercontent-a.akamaihd.net/ugc/9807534811910580231/5A8F9F3F926AADA4F4CADD1E1416100C610483F4/"
   },
   WarrensSpawningPool = {
     key = "WarrensSpawningPool",
-    display = "The Nosferatu Warrens: Spawning Pool",
+    display = "#N/A",
     isShown = true,
     url = "https://steamusercontent-a.akamaihd.net/ugc/18444022992114838216/8293AF8A3CA4657BF14CDF525CE60D5A1D532959/"
   },
   WarrensTunnelJunction = {
     key = "WarrensTunnelJunction",
-    display = "The Nosferatu Warrens: Tunnel Junction",
+    display = "#N/A",
     isShown = true,
     url = "https://steamusercontent-a.akamaihd.net/ugc/10514672785003801373/3A4FE7F0E73170C5EA6B3861A05286E36249624B/"
   },

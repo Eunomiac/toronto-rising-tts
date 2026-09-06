@@ -174,6 +174,7 @@ Storyteller **Stats** panel: edit PC backgrounds/merits/flaws and coterie advant
 | Handler | XML Element(s) | Params | Behavior |
 | ------- | ---------------- | ------ | -------- |
 | `HUD_phaseAdvance` | `phase_Advance` | `(player, button, id)` | ST-gated. Closes storyteller panels immediately, then `Phases.advanceNext()` — Intermission → Play → Spotlight → End → Intermission (TOR-143 / TOR-364). |
+| `HUD_phaseSessionStartLerp` | `phase_sessionStartLerp` | `(player, value, id)` | ST-gated. When on, Intermission→Play uses the attribute-lerp explode; when off (default), uses TTS showAnimation attrs (TOR-559). Host preference; resets on Save & Play. |
 | `HUD_advancePhase` | _(legacy alias)_ | `(player, button, id)` | Calls `HUD_phaseAdvance` (free-jump removed). |
 | `HUD_setPlaySubPhase` | `phase_sub_Main`, `phase_sub_Downtime`, `phase_sub_Memoriam` | `(player, button, id)` | ST-gated. Main / Downtime call `Phases.setPlaySubPhase` (closes an open Memoriam popup first). Memoriam opens `memoriam_modal.xml` and does **not** change the subphase until Advance (TOR-539). |
 | `HUD_memoriamModalPcButton` | `memoriam_modal_pc_*_button` | `(player, button, id)` | ST-gated. Selects one PC (grey idle / green selected, exclusive). Builds that PC's timeline bar, date slider, and scene grid (`core/memoriam_modal.ttslua`). |

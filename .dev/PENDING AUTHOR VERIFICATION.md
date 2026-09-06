@@ -39,6 +39,12 @@ Then **disable the TTS Tools extension** (only one editor can listen on 39998). 
 
 ### High — session / join / first-load
 
+#### TOR-559 — TTS-attribute session-start animation (Phases Lerp explode toggle)
+
+**How to verify:** Save & Play so the new scripts and Phases XML load. Open **Phases**. Next to **Advance →** you should see a **Lerp explode** checkbox that starts unchecked. From Intermission, click **Advance →** into Play with that box still off. You should see the simpler splash sequence (Grow / FadeIn on the panels), and the session-starter track should kick in when the second pair appears — with the Intermission loop fading out at that same moment, not at the very start. When the sequence finishes, the cover should lift and Main music should come in as usual. Then run `lua DEBUG.resetToIntermission()`, turn **Lerp explode** on, and Advance again: you should get the older wavering attribute-lerp explode, with the sting timed to the first cover scale like before.
+
+**Context:** Default path uses TTS animation attributes so join clients do less per-frame XmlUI attribute traffic. Toggle on keeps the previous lerp explode for comparison.
+
 #### ⌚ TOR-439 — Join-stress re-verify after Global HUD remount weight cut
 
 **Status:** Linear **In Progress** (verification gate; code already shipped). Needs other people at the table — not a solo Save & Play.

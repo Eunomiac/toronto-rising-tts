@@ -44,65 +44,317 @@ UI.setAttributes("overlay_globalBlindfold_panel", {raycastTarget = "false"})
 <!--
 UI.setAttributes("overlay_globalBlindfold", {active = "true"})
 UI.setAttributes("overlay_globalBlindfold", {active = "false"})
-UI.setAttributes("overlay_globalBlindfold", {showAnimation = "SlideIn_Left", hideAnimation = "SlideOut_Right", showAnimationDelay = 0, hideAnimationDelay = 0, animationDuration = 40})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_base", {active = "false"})
 
-U.chain({
-  function()
-    UI.show("overlay_globalBlindfold")
-    return 15
-  end,
-  function()
-    UI.setAttributes("overlay_globalBlindfold", {animationDuration = 5})
-    UI.hide("overlay_globalBlindfold")
-  end
-})
-UI.show("overlay_globalBlindfold")
-UI.hide("overlay_globalBlindfold")
+
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_base", {showAnimation = "SlideIn_Left", hideAnimation = "SlideOut_Right", hideAnimationDelay = 0, animationDuration = 40})
+UI.setAttributes("overlay_globalBlindfold", {showAnimation = "FadeIn", hideAnimation = "FadeOut", showAnimationDelay = 35, hideAnimationDelay = 0, animationDuration = 4})
+
+SO: Image panels should slide in very early with very long durations. Interior fade should start almost at the end of the slide-in duration.
+
 
 
 -->
 
+
+<!--
+
+UI.setAttributes("overlay_globalBlindfold_panel", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_base", {})
+UI.setAttributes("overlay_globalBlindfold", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_frame", {})
+UI.setAttributes("overlay_globalBlindfold_frame", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_6_A", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_6_A", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_6_B", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_6_B", {})
+
+
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_5_A", {})
+Start Animation = 0
+Lead-In Time for Text Panel 1_1 = 0
+Duration for Text Panel 1_1 = 20
+Lead-In Time for Other Text Panels = 20
+Duration for Other Text Panels = 40
+Duration of Text Fade In = 5
+Duration of Text Fade Out = 5
+Text Total Duration = 10
+Text Starts at Sequence Second = 10
+
+
+Animation Start Time = 0
+
+Sequence 1 ACTUAL Start Time = 0
+Sequence 2 ACTUAL Start Time = 20
+Sequence 1 ACTUAL Hide Time = 35
+Sequence 3 ACTUAL Start Time = 40
+Sequence 2 ACTUAL Hide Time = 55
+Sequence 4 ACTUAL Start Time = 60
+Sequence 3 ACTUAL Hide Time = 75
+Sequence 5 ACTUAL Start Time = 80
+Sequence 4 ACTUAL Hide Time = 95
+Sequence 5 ACTUAL Hide Time = 115
+
+
+Animation Start Time = 0
+
+Sequence 1 Start Time = 20
+Sequence 1 End Time = 40
+Panel 1_1 TextPanel SlideIn Start Time = 0 for 40 = 40
+Panel 1_1 Text FadeIn Start Time = 30 for 5 = 35
+Panel 1_1 Text FadeOut Start Time = 35 for 5 = 40
+Panel 1_1 ImagePanel Grow Start Time = 0 for 25 = 25
+Panel 1_1 Image FadeIn Start Time = 20 for 5 = 25
+Panel 1_1 Image FadeOut Start Time = 35 for 5 = 40
+Sequence 1 ACTUAL Start Time = 0
+Sequence 1 ACTUAL Hide Time = 35
+
+Sequence 2 Start Time = 40
+Sequence 2 End Time = 60
+Panel 1_2 TextPanel SlideIn Start Time = 20 for 40 = 60
+Panel 1_2 Text FadeIn Start Time = 50 for 5 = delay: 30, duration: 5 = 55
+Panel 1_2 ImagePanel Grow Start Time = 20 for 25 = delay: 0, duration: 25 = 45
+Panel 1_2 Image FadeIn Start Time = 40 for 5 = delay: 20, duration: 5 = 45
+Panel 1_2 Text FadeOut Start Time = 55 for 5 = 60
+Panel 1_2 Image FadeOut Start Time = 55 for 5 = 60
+Sequence 2 ACTUAL Start Time = 20
+Sequence 2 ACTUAL Hide Time = 55
+
+Sequence 3 Start Time = 60
+Sequence 3 End Time = 80
+Panel 1_3 TextPanel SlideIn Start Time = 40 for 40 = 80
+Panel 1_3 Text FadeIn Start Time = 70 for 5 = 75
+Panel 1_3 Text FadeOut Start Time = 75 for 5 = 80
+Panel 1_3 ImagePanel Grow Start Time = 40 for 25 = 65
+Panel 1_3 Image FadeIn Start Time = 60 for 5 = 65
+Panel 1_3 Image FadeOut Start Time = 75 for 5 = 80
+Sequence 3 ACTUAL Start Time = 40
+Sequence 3 ACTUAL Hide Time = 75
+
+Sequence 4 Start Time = 80
+Sequence 4 End Time = 100
+Panel 1_4 TextPanel SlideIn Start Time = 60 for 40 = 100
+Panel 1_4 Text FadeIn Start Time = 90 for 5 = 95
+Panel 1_4 Text FadeOut Start Time = 95 for 5 = 100
+Panel 1_4 ImagePanel Grow Start Time = 60 for 25 = 85
+Panel 1_4 Image FadeIn Start Time = 80 for 5 = 85
+Panel 1_4 Image FadeOut Start Time = 95 for 5 = 100
+Sequence 4 ACTUAL Start Time = 60
+Sequence 4 ACTUAL Hide Time = 95
+
+Sequence 5 Start Time = 100
+Sequence 5 End Time = 120
+Panel 1_4 TextPanel SlideIn Start Time = 80 for 40 = 120
+Panel 1_4 Text FadeIn Start Time = 110 for 5 = 115
+Panel 1_4 Text FadeOut Start Time = 115 for 5 = 120
+Panel 1_5 ImagePanel Grow Start Time = 80 for 25 = 105
+Panel 1_5 Image FadeIn Start Time = 100 for 5 = 105
+Panel 1_5 Image FadeOut Start Time = 115 for 5 = 120
+Sequence 5 ACTUAL Start Time = 80
+Sequence 5 ACTUAL Hide Time = 115
+
+
+
+== TEXT PANELS ==
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_1_A", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_2_A", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_3_A", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_4_A", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_5_A", {})
+
+== TEXT IMAGES ==
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_1_A", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_2_A", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_3_A", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_4_A", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_5_A", {})
+
+== IMAGE PANELS ==
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_1_B", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_2_B", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_3_B", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_4_B", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_5_B", {})
+
+== IMAGE IMAGES ==
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_1_B", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_2_B", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_3_B", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_4_B", {})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_5_B", {})
+
+
+
+
+-->
+
+<!--
+UI.setAttributes("overlay_globalBlindfold_panel", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_base", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_frame", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_frame", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_1_B", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_1_B", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_1_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_1_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_2_B", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_2_B", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_2_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_2_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_3_B", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_3_B", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_3_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_3_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_4_B", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_4_B", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_4_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_4_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_5_B", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_5_B", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_5_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_5_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_6_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_6_A", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_6_B", {active = "true"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_6_B", {active = "true"})
+
+
+UI.setAttributes("overlay_globalBlindfold_panel", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_base", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_frame", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_frame", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_1_B", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_1_B", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_1_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_1_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_2_B", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_2_B", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_2_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_2_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_3_B", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_3_B", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_3_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_3_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_4_B", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_4_B", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_4_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_4_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_5_B", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_5_B", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_5_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_5_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_6_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_6_A", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_6_B", {active = "false"})
+UI.setAttributes("overlay_globalBlindfold_sessionSplash_1_6_B", {active = "false"})
+
+
+UI.show("overlay_globalBlindfold_panel")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_base")
+UI.show("overlay_globalBlindfold")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_frame")
+UI.show("overlay_globalBlindfold_frame")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_1_B")
+UI.show("overlay_globalBlindfold_sessionSplash_1_1_B")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_1_A")
+UI.show("overlay_globalBlindfold_sessionSplash_1_1_A")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_2_B")
+UI.show("overlay_globalBlindfold_sessionSplash_1_2_B")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_2_A")
+UI.show("overlay_globalBlindfold_sessionSplash_1_2_A")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_3_B")
+UI.show("overlay_globalBlindfold_sessionSplash_1_3_B")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_3_A")
+UI.show("overlay_globalBlindfold_sessionSplash_1_3_A")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_4_B")
+UI.show("overlay_globalBlindfold_sessionSplash_1_4_B")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_4_A")
+UI.show("overlay_globalBlindfold_sessionSplash_1_4_A")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_5_B")
+UI.show("overlay_globalBlindfold_sessionSplash_1_5_B")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_5_A")
+UI.show("overlay_globalBlindfold_sessionSplash_1_5_A")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_6_A")
+UI.show("overlay_globalBlindfold_sessionSplash_1_6_A")
+UI.show("overlay_globalBlindfold_sessionSplashPanel_1_6_B")
+UI.show("overlay_globalBlindfold_sessionSplash_1_6_B")
+
+
+UI.hide("overlay_globalBlindfold_panel")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_base")
+UI.hide("overlay_globalBlindfold")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_frame")
+UI.hide("overlay_globalBlindfold_frame")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_1_B")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_1_B")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_1_A")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_1_A")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_2_B")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_2_B")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_2_A")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_2_A")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_3_B")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_3_B")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_3_A")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_3_A")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_4_B")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_4_B")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_4_A")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_4_A")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_5_B")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_5_B")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_5_A")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_5_A")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_6_A")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_6_A")
+UI.hide("overlay_globalBlindfold_sessionSplashPanel_1_6_B")
+UI.hide("overlay_globalBlindfold_sessionSplash_1_6_B")
+-->
+
+
 <Panel id="overlay_globalBlindfold_panel" class="global_blindfold_panel">
-  <Panel class="global_blindfold_image_panel" id="overlay_globalBlindfold_sessionSplashPanel_base">
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_base" class="global_blindfold_image_panel">
     <Image id="overlay_globalBlindfold" class="global_blindfold" image="global_blindfold_session_1" />
   </Panel>
-  <Panel class="global_blindfold_image_panel" id="overlay_globalBlindfold_sessionSplashPanel_frame" active = "false">
-    <Image id="overlay_globalBlindfold_frame" class="global_blindfold" image="overlay_explode_frame" />
-  </Panel>
-  <Panel class="global_blindfold_image_panel" id="overlay_globalBlindfold_sessionSplashPanel_1_1_B" active = "false">
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_1_B" class="global_blindfold_image_panel" active = "false">
     <Image id="overlay_globalBlindfold_sessionSplash_1_1_B" class="global_blindfold" image="overlay_explode_image_blackCaesar" active = "false" />
   </Panel>
-  <Panel class="global_blindfold_image_panel" id="overlay_globalBlindfold_sessionSplashPanel_1_1_A" active = "false">
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_1_A" class="global_blindfold_image_panel" active = "false">
     <Image id="overlay_globalBlindfold_sessionSplash_1_1_A" class="global_blindfold" image="overlay_explode_text_blackCaesar" active = "false" />
   </Panel>
-  <Panel class="global_blindfold_image_panel" id="overlay_globalBlindfold_sessionSplashPanel_1_2_B" active = "false">
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_2_B" class="global_blindfold_image_panel" active = "false">
     <Image id="overlay_globalBlindfold_sessionSplash_1_2_B" class="global_blindfold" image="overlay_explode_image_fomorach" active = "false" />
   </Panel>
-  <Panel class="global_blindfold_image_panel" id="overlay_globalBlindfold_sessionSplashPanel_1_2_A" active = "false">
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_2_A" class="global_blindfold_image_panel" active = "false">
     <Image id="overlay_globalBlindfold_sessionSplash_1_2_A" class="global_blindfold" image="overlay_explode_text_fomorach" active = "false" />
   </Panel>
-  <Panel class="global_blindfold_image_panel" id="overlay_globalBlindfold_sessionSplashPanel_1_3_B" active = "false">
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_3_B" class="global_blindfold_image_panel" active = "false">
     <Image id="overlay_globalBlindfold_sessionSplash_1_3_B" class="global_blindfold" image="overlay_explode_image_aishe" active = "false" />
   </Panel>
-  <Panel class="global_blindfold_image_panel" id="overlay_globalBlindfold_sessionSplashPanel_1_3_A" active = "false">
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_3_A" class="global_blindfold_image_panel" active = "false">
     <Image id="overlay_globalBlindfold_sessionSplash_1_3_A" class="global_blindfold" image="overlay_explode_text_aishe" active = "false" />
   </Panel>
-  <Panel class="global_blindfold_image_panel" id="overlay_globalBlindfold_sessionSplashPanel_1_4_B" active = "false">
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_4_B" class="global_blindfold_image_panel" active = "false">
     <Image id="overlay_globalBlindfold_sessionSplash_1_4_B" class="global_blindfold" image="overlay_explode_image_rashid" active = "false" />
   </Panel>
-  <Panel class="global_blindfold_image_panel" id="overlay_globalBlindfold_sessionSplashPanel_1_4_A" active = "false">
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_4_A" class="global_blindfold_image_panel" active = "false">
     <Image id="overlay_globalBlindfold_sessionSplash_1_4_A" class="global_blindfold" image="overlay_explode_text_rashid" active = "false" />
   </Panel>
-  <Panel class="global_blindfold_image_panel" id="overlay_globalBlindfold_sessionSplashPanel_1_5_B" active = "false">
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_5_B" class="global_blindfold_image_panel" active = "false">
     <Image id="overlay_globalBlindfold_sessionSplash_1_5_B" class="global_blindfold" image="overlay_explode_image_lordLucien" active = "false" />
   </Panel>
-  <Panel class="global_blindfold_image_panel" id="overlay_globalBlindfold_sessionSplashPanel_1_5_A" active = "false">
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_5_A" class="global_blindfold_image_panel" active = "false">
     <Image id="overlay_globalBlindfold_sessionSplash_1_5_A" class="global_blindfold" image="overlay_explode_text_lordLucien" active = "false" />
   </Panel>
-  <Panel class="global_blindfold_image_panel" id="overlay_globalBlindfold_sessionSplashPanel_1_6_A" active = "false">
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_6_A" class="global_blindfold_image_panel" active = "false">
     <Image id="overlay_globalBlindfold_sessionSplash_1_6_A" class="global_blindfold" image="overlay_explode_sessionNum" active = "false" />
   </Panel>
-  <Panel class="global_blindfold_image_panel" id="overlay_globalBlindfold_sessionSplashPanel_1_6_B" active = "false">
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_6_B" class="global_blindfold_image_panel" active = "false">
     <Image id="overlay_globalBlindfold_sessionSplash_1_6_B" class="global_blindfold" image="overlay_explode_sessionTitle" active = "false" />
+  </Panel>
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_frame" class="global_blindfold_image_panel" active = "false">
+    <Image id="overlay_globalBlindfold_frame" class="global_blindfold" image="overlay_explode_frame" />
   </Panel>
 </Panel>

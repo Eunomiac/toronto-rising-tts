@@ -10,6 +10,8 @@ UI.setAttributes("input_sessionNum", {minHeight = "30", fontStyle = "Bold"})
     <HorizontalLayout class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
       <Button id="phase_Advance" text="Advance →" minWidth="120" preferredWidth="120" onClick="HUD_phaseAdvance"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+      <Toggle id="phase_sessionStartLerp" isOn="false" onValueChanged="HUD_phaseSessionStartLerp"
+        minWidth="140" preferredWidth="160" textColor="#FFFFFF">Lerp explode</Toggle>
     </HorizontalLayout>
     <Text fontSize="12" color="#AAAAAA">Play subphase</Text>
     <HorizontalLayout id="phase_subphaseRow" class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
