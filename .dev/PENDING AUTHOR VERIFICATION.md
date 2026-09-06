@@ -17,7 +17,15 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-03 — **TOR-555** (Storyteller Dashboard saved tags + Lua Execute Code)._
+_Last populated: 2026-09-05 — cloud asset sync (Full build)._
+
+### Tooling / assets
+
+#### TOR-558 — Cloud asset sync (CustomUIAssets + Cloud catalog)
+
+**How to verify:** With Steam running and logged into the chronicle account, run `npm run cloud-asset-sync:dry-run` from the repo root. You should see the `siteCards` job keep ~170 Sites images and list any stale `siteCard_*` names, plus a `LuaCatalog` plan for `Cloud.Sites`. Then either run `npm run cloud-asset-sync` in a normal terminal (answer **y** if it asks about removing stale names) or run **BUILD PIPELINE (Full)** / `npm run build:full` (that path auto-accepts purges). Reload save **230** in Tabletop Simulator. Site card art should still resolve; after a catalog write, `print(Cloud.Sites and Cloud.Sites.AnarchBar and Cloud.Sites.AnarchBar.URL)` in the TTS console should show a hosted URL.
+
+**Context:** Replaces the manual Assets 1→2→3 loop for configured jobs. Main and XML builds do not run this.
 
 ### Dashboard
 

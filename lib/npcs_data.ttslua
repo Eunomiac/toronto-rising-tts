@@ -1812,6 +1812,110 @@ D.characters = {
   }
 }
 
+D.genericNpcs = nil
+
+function D.initGenericNPCs()
+  local figurineFronts = Cloud.GenericNpcFigurines
+  if figurineFronts == nil then
+    -- broadcast a warning, but don't error out, just return early as no-op
+    U.AlertGM("WARNING: Cloud.GenericNpcFigurines is nil, skipping generic NPC initialization")
+    return
+  end
+  if Cloud.GenericNpcFigurines.Back_00 == nil then
+    error("Cloud.GenericNpcFigurines.Back_00 is nil")
+  end
+  local figurineBackURL = Cloud.GenericNpcFigurines.Back_00.URL
+  local tokenFronts = Cloud.GenericNpcTokenFronts
+  if tokenFronts == nil then
+    error("Cloud.GenericNpcTokenFronts is nil")
+  end
+  local tokenBacks = Cloud.GenericNpcTokenBacks
+  if tokenBacks == nil then
+    error("Cloud.GenericNpcTokenBacks is nil")
+  end
+
+  local genericNpcs = {}
+
+  --[[
+  Using data from `Cloud`, construct a table of generic NPCs, indexed by key to indexed arrays, skipping any entries with an index of 00 (e.g. the "Back" figurine entry):
+
+  E.g.
+
+  genericNpcs.academicsProfessor = {
+    {
+      figurine = {
+        front = figurineFronts.academicsProfessor_01.URL,
+        back = figurineBackURL,
+      },
+      token = {
+        front = tokenFronts.academicsProfessor_01.URL,
+        back = tokenBacks.academicsProfessor_01.URL,
+      },
+    },
+    {
+      figurine = {
+        front = figurineFronts.academicsProfessor_02.URL,
+        back = figurineBackURL,
+      },
+      token = {
+        front = tokenFronts.academicsProfessor_02.URL,
+        back = tokenBacks.academicsProfessor_02.URL,
+      },
+    },
+    ...
+  }
+
+  ]]
+
+  local genericNpcGroups = {}
+
+  -- For each key in figurineFronts, filter out any without a two-digit suffix greater than 00. Then remove the suffix and condense the list to unique values.
+
+  for key, value in pairs(figurineFronts) do
+    if key:match("^[^_]+_01$") then
+      local stem = key:match("^([^_]+)_01$")
+      if stem ~= nil then
+        table.insert(genericNpcGroups, stem)
+      end
+    end
+  end
+
+  -- Now, for each group, iterate over the figurineFronts and tokenFronts, applying prefixes from 01 to 99 until no matching entry is found
+  for _, group in ipairs(genericNpcGroups) do
+    local figurineData = {}
+    local index = 1
+    while true do
+      local figurineKey = group .. "_" .. string.format("%02d", index)
+      local figurineFront = figurineFronts[figurineKey]
+      if figurineFront == nil then break end
+      local tokenFront = tokenFronts[figurineKey]
+      if tokenFront == nil then
+        -- throw an error: there must be a matching token if there is a figurine front
+        error("Figurine '" .. figurineKey .. "' has no matching token front image.")
+      end
+      local tokenBack = tokenBacks[figurineKey]
+      if tokenBack == nil then
+        -- throw an error: there must be a matching token back if there is a token front
+        error("Token '" .. figurineKey .. "' has no matching token back image.")
+      end
+      table.insert(figurineData, {
+        figurine = {
+          front = figurineFront.URL,
+          back = figurineBackURL,
+        },
+        token = {
+          front = tokenFront.URL,
+          back = tokenBack.URL,
+        },
+      })
+      index = index + 1
+    end
+    genericNpcs[group] = figurineData
+  end
+
+  D.genericNpcs = genericNpcs
+end
+
 --- NPC-only view of `D.characters` (excludes PCs flagged `isPC = true`).
 --- Stage management — preload pool, control-board palette/token generation, NPC group
 --- enumeration — must use this so PC characters do not generate NPC figurines or palette tokens.

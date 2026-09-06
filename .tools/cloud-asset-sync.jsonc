@@ -1,0 +1,59 @@
+{
+  // Cloud → CustomUIAssets / Lua catalog sync jobs.
+  // Plan: .tools/Cloud-Asset-Sync-Plan.md
+  // Save path: tts-assets.config.json (savesDir + defaultSaveName), or set saveFileLocation below.
+
+  // "saveFileLocation": "C:/Users/.../Saves/TS_Save_230.json",
+
+  "jobs": [
+    {
+      "id": "siteCards",
+      "cloudFolder": "Sites",
+      "recurIntoSubfolders": false,
+      "output": "GlobalCustomUIAssets",
+      "filenameToNameSearchPattern": "^(.*)\\.[^.]+$",
+      "filenameToNameReplacePattern": "siteCard_$1"
+      // Purge family derived → ^siteCard_(.*)$
+    },
+    {
+      "id": "cloudSitesCatalog",
+      "cloudFolder": "Sites",
+      "recurIntoSubfolders": false,
+      "output": "LuaCatalog",
+      "tableName": "Sites",
+      "filenameToNameSearchPattern": "^(.*)\\.[^.]+$",
+      "filenameToNameReplacePattern": "$1"
+      // → Cloud.Sites.<stem> = { filename, key, URL }
+    },
+    {
+      "id": "genericNpcFigurines",
+      "cloudFolder": "NPC Cutouts/Generic/Figurines",
+      "recurIntoSubfolders": false,
+      "output": "LuaCatalog",
+      "tableName": "GenericNpcFigurines",
+      "filenameToNameSearchPattern": "^([^_]+_\\d{2})\\.[^.]+$",
+      "filenameToNameReplacePattern": "$1"
+      // → Cloud.GenericNpcFigurines.<stem> = { filename, key, URL }
+    },
+    {
+      "id": "genericNpcTokenFronts",
+      "cloudFolder": "NPC Cutouts/Generic/Tokens",
+      "recurIntoSubfolders": false,
+      "output": "LuaCatalog",
+      "tableName": "GenericNpcTokenFronts",
+      "filenameToNameSearchPattern": "^tokenFront_([^_]+_\\d{2})\\.[^.]+$",
+      "filenameToNameReplacePattern": "$1"
+      // → Cloud.GenericNpcTokenFronts.<stem> = { filename, key, URL }
+    },
+    {
+      "id": "genericNpcTokenBacks",
+      "cloudFolder": "NPC Cutouts/Generic/Tokens",
+      "recurIntoSubfolders": false,
+      "output": "LuaCatalog",
+      "tableName": "GenericNpcTokenBacks",
+      "filenameToNameSearchPattern": "^tokenBack_([^_]+_\\d{2})\\.[^.]+$",
+      "filenameToNameReplacePattern": "$1"
+      // → Cloud.GenericNpcTokenBacks.<stem> = { filename, key, URL }
+    }
+  ]
+}

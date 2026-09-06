@@ -20,6 +20,10 @@ Verification:
 ## For Immediate Implementation
 > _After registering each of these issues with Linear in the ordinary fashion, before updating the Focus Stack, briefly review the issue: If it is a quick or easy fix, implement it immediately without waiting for author confirmation. Otherwise, promote it to the top of the Focus Stack, and offer to begin work on it immediately when summarizing your work processing `INBOX.md` to the author. If multiple issues require promotion in this way, consider how best to resolve them as quickly as possible, and offer to draft an implementation plan in your response to the author._
 
+- [Phases Panel] Add a click-again-to-confirm functionality to the "Advance ->" button, with the message "Click Again to Confirm" appearing in red text to the immediate right of the Advance button after the first click, and disappearing after the confirmation OR after the second click window closes.
+- [Main & Downtime Phases] Tightly couple the Main subphase to the existence of an active scene: When a scene is applied, the subphase should be switched to "Main", and when a scene is ended (or whenever there is no established scene), the subphase should switch to "Downtime". The "Main" and "Downtime" buttons in the Phases panel should only ever switch to the appropriate subphase, regardless of which one is clicked, and if this would result in no change of phase, the button should no-op.  (E.g. clicking "Main" during a Memoriam subphase should end the Memoriam subphase, but return to "Downtime" if the Memoriam subphase was started outside of an active scene, and to "Main" if there was an active scene when Memoriam was initialized, restoring that scene as it was.)
+- [Dice Bag Rescaling] Player dice bags and companion toggles should never have their scale changed at any point in the script. Please confirm scale remains unchanged — I'm not sure how it happened, but Blood Surge bags in particular were scaled up at some point by a script action.
+
 
 ## Active
 
@@ -30,10 +34,75 @@ Verification:
 ## Author Workspace
 > _Do NOT process these items during any INBOX processing, unless explicitly instructed to by the author: They are works-in-progress, and will be moved into the processing area above when completed._
 
-### Generic NPCs & Stage Control Panel
 ### Memoriam Phase
-When the subphase is switched to Memoriam, the Host should be presented with a pop-up modal
+When the subphase is advanced to "Memoriam" in the "Phases" menu, the Memoriam modal (`memoriam_modal.xml`) is revealed to the Host to configure the Memoriam scene. The modal will return a table with the following format:
 
+```lua
+{
+  assignments = {
+    aishe = {
+      kind = "self"
+    },
+    lucien = {
+      key = "jesseSharp",
+      kind = "library",
+      label = "Jesse Sharp"
+    },
+    rashid = {
+      key = "myleneHamelin",
+      kind = "library",
+      label = "Mylene 'the Puck' Hamelin"
+    }
+  },
+  date = "September 20, 1820",
+  location = "Alamut, Afghanistan",
+  panel = "panelA",
+  periodIndex = 4,
+  skyboxKey = "rashid7",
+  sliderValue = 920,
+  subjectKey = "rashid"
+}
+```
+
+#### `subjectKey`
+Defines which of the five PCs is the subject character of the Memoriam.
+
+#### `skyboxKey` and `panel`
+Together with `subjectKey`, these values access the specific data for the Memoriam scene being displayed, via the Memoriam data helper function in `constants.ttslua`:
+
+- `(data).[subjectKey].[skyboxKey]` -- Contains the URL for the transition blindfold image (`blindfoldURL`), and the `npcs` array containing data for NPCs specifically defined for this Memoriam time period. (Note: Full implementation of `npcs` will require placeholder figurines and tokens in the game world, stored in `guids.ttslua`, which have yet to be implemented.)
+- `(data).[subjectKey].[skyboxKey].[panel]` -- Contains the data for initializing the game space for the Memoriam scene: `isOutdoors` for weather audio ducking, `weather` to define the weather audio and particles, `locationAudio` to define the key of the ambient looping audio track, and `url` to define the URL for the skybox background image. All of these should be initialized while the transition blindfold is down, following the same procedure for switching scenes. (Note: Some of the location audio tracks are not yet implemented. Location audio should default to the silent track if the indicated key cannot be found.)
+
+#### `assignments`
+Contains optional keys for the five PCs, defining whether they are present in the Memoriam as themselves, or the `key` of the NPC they have been assigned to play for the Memoriam. (PC-as-NPC assignment has yet to be implemented, but preparations should be made for its addition in the near future.) `kind` will be one of `"self"` (defining a PC who is present in the Memoriam scene as themselves), `"library"` (defining an NPC that exists in the primary NPC pool), `"generic"` (defining a generic NPC, yet to be implemented) or `"memoriam"` (defining an npc whose details are specific to this Memoriam scene, and can be found via the memoriam data return helper function in `constants.ttslua`). PCs assigned to `"self"` should have their seats remaining activated, while PCs assigned to an NPC should be assigned to play the indicated NPC (once PC-as-NPC is implemented). PCs who are not listed in this table should have their seats deactivated (not unoccupied/absent, just deactivated, as if running a scene that they are not present at). Absent PCs included in `assignments` should be ignored (i.e. they should remain absent). Note: The subject character should always be assumed to be `{kind = "self"}`, unless defined as playing an NPC in the modal return data; in this event, the player is entering Memoriam as the assigned NPC (a rare possibility in the rules, but not impossible).
+
+#### `date`, `location` and Clock Interaction
+In the game state overlay, the date element should be set to the `date` string returned in the modal data. `time` should default to a random time between midnight and 2:00 AM, or from between ~1h after dusk until midnight. The district text element should be set to the `location` string, and all other elements in that row should be hidden.
+
+The scene clock should then be set to the displayed `time` and `date`, leaving the present-day clock unchanged (i.e. as it currently behaves). Clock controls work as normal during a Memoriam phase, including multiple-year jumps. Do not update the Memoriam time period or otherwise change the details initially returned by the Memoriam modal data when the scene clock is changed via the clock controls.
+
+The real-time clock mode should default to active, at the default clock rate for an active present-day scene (i.e. not the accelerated 'catch-up' rate used for flashback scenes)
+
+#### Re-selecting Memoriam
+Memoriam can be re-selected by the Host from within an already-running Memoriam subphase. When this happens, the Memoriam initialization procedure should be rerun (including a blindfolded transition), allowing the Memoriam subphase to be redefined with the new data from the modal return.
+
+#### Memoriam Initialization
+- Unless otherwise indicated, transition should generally behave like a scene transition, using the blindfold image defined in the skybox data.
+- **Starting PC Stats:** PCs who are playing themselves should retain the Hunger values they had when entering Memoriam, but their Health and Willpower trackers should be completely restored (saving the initial damage values, so they can be restored when Memoriam ends).
+- **Default to Table B0:** A Memoriam phase should never begin with NPCs occupying seats at the table (other than NPCs assigned to PCs to play), and it should always begin at **Table B0** (i.e. **Table B** with zero seated NPCs). Additionally, the subject character of the Memoriam should begin seated at seat slot 1. Tables can be changed, PCs can be repositioned, and NPCs can be seated after a Memoriam scene has begun, but Memoriam should always start with these defaults.
+- **Scenes Do Not Apply:** The Memoriam subphase is its own scene: There cannot be an active scene while the game is in the Memoriam subphase. Applying a scene from the "Scenes" panel should end the Memoriam subphase (as described below) and return the game to the "Main" subphase with the chosen scene activated, setting the time and date in accordance with the chosen application button, where "NOW" is defined as the time that was displayed just before the Memoriam subphase was initialized. Selecting "End Scene" should end the Memoriam subphase as described below.
+- **Ending Memoriam:** When the Memoriam subphase is ended (by selecting "Main"/"Downtime" in the "Phases" menu, or by applying/ending a scene from the "Scenes" menu), PC-as-NPC assignments should be reversed and the game should return to "Main" (if a scene was just applied, or Memoriam was started during an active scene) or "Downtime" (if there was no active scene when Memoriam was initialized). If there was an active scene when Memoriam began and the Memoriam phase was not ended by applying a new scene, the game should be returned to the same state that it was when Memoriam was initialized: Same time, date, staged NPCs, NPCs-at-the-table, PC-as-NPC assignments, light modes, etc. Damage to Health and Willpower trackers sustained while in Memoriam should be locally stored, then the Health and Willpower trackers should be returned to what they were when entering Memoriam. Finally, the recorded Health damage sustained while in Memoriam should be converted to Willpower damage (summing with any Willpower damage suffered), and then that total Willpower damage should be applied to the character's restored Willpower tracker (looping superficial damage into aggravated damage and applying impaired status as required). Hunger should remain unchanged (i.e. Hunger and Willpower damage sustained in Memoriam remains in the present; Health damage is converted to Willpower damage in the present).  PCs who were assigned NPCs to play (yet to be implemented) should not have damage suffered by that NPC applied to the PC trackers, though.
+
+### Generic NPCs
+Generic NPCs are NPCs that represent classes or categories of character, such as "police officer" or "dog", and as such multiple copies of these NPCs can exist simultaneously in the game world.
+
+#### Generic NPC Assets
+Where named NPCs have a figurine and a token already in the game world, generic NPCs do not: When they are initialized via the Generic NPC Palette (see below), their assets need to be created by cloning two template objects (the figurine, and the control board token), and then assigning the front and back faces of both from URLs stored in the constants library.
+
+* **Generic NPC Figurines** —
+
+
+### PC-as-NPC Assignment
 
 ## Needs clarification
 

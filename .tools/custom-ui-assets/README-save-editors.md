@@ -17,7 +17,7 @@ Scripts that edit **CustomUIAssets** on a TTS save (`TS_Save_*.json`):
 | **Clear TTS Image Cache** | (none) |
 | **BUILD PIPELINE (Main)** | Default: backup + gates + stub fix (`npm run build`) |
 | **BUILD PIPELINE (XML)** | Main + UI XML/template generators (`npm run build:xml`) |
-| **BUILD PIPELINE (Full)** | Full tooling including sheets/JSON/CustomUIAssets (`npm run build:full`) |
+| **BUILD PIPELINE (Full)** | Full tooling including sheets/JSON/CustomUIAssets + Cloud asset sync (`npm run build:full`) |
 
 Leave **GUIDs** blank for global mode. Prefer **Dry run** first; write mode still asks **Y/N** in the terminal.
 

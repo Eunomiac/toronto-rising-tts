@@ -31,7 +31,7 @@ Three npm scripts / VS Code tasks (`.vscode/tasks.json`):
 | --- | --- | --- | --- |
 | **Main** (default) | `npm run build` | **BUILD PIPELINE (Main)** | Before most Save & Play — daily save backup, gates, object stub fix |
 | **XML** | `npm run build:xml` | **BUILD PIPELINE (XML)** | After UI XML / template / Global HUD edits (includes Main) |
-| **Full** | `npm run build:full` | **BUILD PIPELINE (Full)** | After JSON data, Google Sheet imports, constants cleanup, CustomUIAssets merge, E2E playbook markdown — same coverage as the former single `npm run build` |
+| **Full** | `npm run build:full` | **BUILD PIPELINE (Full)** | After JSON data, Google Sheet imports, constants cleanup, CustomUIAssets merge, Cloud asset sync, E2E playbook markdown — same coverage as the former single `npm run build` |
 
 Helpers: `build:gates`, `build:stubs`, `build:xml-tooling`, `build:all-tooling` (Full without the daily backup; `build:full` = backup + `build:all-tooling`).
 

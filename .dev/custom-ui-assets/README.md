@@ -6,6 +6,7 @@ Read this when:
 - extracting, pruning, uploading, or merging TTS Custom UI assets
 - changing `.tools/custom-ui-assets/` scripts or manifest outputs
 - updating site-card image names or hosted URL manifests
+- designing config-driven Cloud → CustomUIAssets sync (see [`.tools/Cloud-Asset-Sync-Plan.md`](../../.tools/Cloud-Asset-Sync-Plan.md); runner `npm run cloud-asset-sync`, Full build only)
 
 Source of truth:
 - `.tools/custom-ui-assets/`

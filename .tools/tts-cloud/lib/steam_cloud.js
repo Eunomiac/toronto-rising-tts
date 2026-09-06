@@ -238,6 +238,30 @@ function filterByFolder(rows, cloudFolder) {
 }
 
 /**
+ * Exact folder match, or any nested Cloud folder under that path when recursive.
+ * @param {{ Folder: string, Name: string }[]} rows
+ * @param {string} cloudFolder
+ * @param {boolean} [recursive]
+ */
+function filterByFolderScope(rows, cloudFolder, recursive) {
+  if (!recursive) {
+    return filterByFolder(rows, cloudFolder);
+  }
+  const target = normalizeCloudPath(cloudFolder).toLowerCase();
+  const prefix = `${target}/`;
+  return rows
+    .filter((r) => {
+      const f = r.Folder.toLowerCase();
+      return f === target || f.startsWith(prefix);
+    })
+    .sort((a, b) => {
+      const byFolder = a.Folder.localeCompare(b.Folder);
+      if (byFolder !== 0) return byFolder;
+      return a.Name.localeCompare(b.Name);
+    });
+}
+
+/**
  * CSV with columns Name,URL (Name = full cloud filename including extension).
  * @param {{ Name: string, URL: string }[]} rows
  * @returns {string}
@@ -286,6 +310,7 @@ module.exports = {
   joinCloudFolder,
   openCloudInfo,
   filterByFolder,
+  filterByFolderScope,
   toNameUrlCsv,
   listFolders,
 };

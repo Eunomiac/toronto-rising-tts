@@ -13,6 +13,8 @@ local S = require("core.state")
 local C = require("lib.constants")
 local L = require("core.lighting")
 local DATA = require("lib.npcs_data")
+-- Build D.genericNpcs from Cloud.* catalogs (no-op if GenericNpcFigurines missing).
+DATA.initGenericNPCs()
 local NLIGHT = require("lib.npcs_light_spawn_defaults")
 local SRI = require("lib.seat-role-identity")
 local G = require("lib.guids")
