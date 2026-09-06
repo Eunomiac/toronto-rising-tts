@@ -1,0 +1,1320 @@
+--[[
+    Toronto Rising — generic NPC sheet labels (key → label).
+    AUTO-GENERATED from Google Sheet — DO NOT EDIT BY HAND.
+    Sheet id: 10Ehs7cMR7016QYYW5TzT0mfmrc8XoGmfDlwz_Zh15Gs
+    Range/tab: GENERICNPCCSV / Generics Export (filename,label,key,tags)
+    Regenerate: npm run generic-npcs:import
+    Script: .dev/scripts/import_generic_npcs_from_sheet.js
+]]
+
+local GenericNpcsCatalog = {}
+
+--- Stable catalog key → { key, label } (tags are Dashboard-only).
+GenericNpcsCatalog.ByKey = {
+  aapiluPossessed_01 = {
+    key = "aapiluPossessed_01",
+    label = "Aapilu Possession",
+  },
+  aapiluPossessed_02 = {
+    key = "aapiluPossessed_02",
+    label = "Aapilu Possession",
+  },
+  aapiluPossessed_03 = {
+    key = "aapiluPossessed_03",
+    label = "Aapilu Possession",
+  },
+  aapiluPossessed_04 = {
+    key = "aapiluPossessed_04",
+    label = "Aapilu Possession",
+  },
+  aapiluPossessed_05 = {
+    key = "aapiluPossessed_05",
+    label = "Aapilu Possession",
+  },
+  academicsProfessor_01 = {
+    key = "academicsProfessor_01",
+    label = "Professor",
+  },
+  academicsProfessor_02 = {
+    key = "academicsProfessor_02",
+    label = "Professor",
+  },
+  academicsProfessor_03 = {
+    key = "academicsProfessor_03",
+    label = "Professor",
+  },
+  academicsProfessor_04 = {
+    key = "academicsProfessor_04",
+    label = "Professor",
+  },
+  academicsScientist_01 = {
+    key = "academicsScientist_01",
+    label = "Scientist",
+  },
+  academicsScientist_02 = {
+    key = "academicsScientist_02",
+    label = "Scientist",
+  },
+  academicsScientist_03 = {
+    key = "academicsScientist_03",
+    label = "Scientist",
+  },
+  academicsScientist_04 = {
+    key = "academicsScientist_04",
+    label = "Scientist",
+  },
+  academicsScientist_05 = {
+    key = "academicsScientist_05",
+    label = "Scientist",
+  },
+  academicsScientist_06 = {
+    key = "academicsScientist_06",
+    label = "Scientist",
+  },
+  academicsScientist_07 = {
+    key = "academicsScientist_07",
+    label = "Scientist",
+  },
+  academicsScientist_08 = {
+    key = "academicsScientist_08",
+    label = "Scientist",
+  },
+  academicsScientist_09 = {
+    key = "academicsScientist_09",
+    label = "Scientist",
+  },
+  academicsStudent_01 = {
+    key = "academicsStudent_01",
+    label = "Student",
+  },
+  academicsStudent_02 = {
+    key = "academicsStudent_02",
+    label = "Student",
+  },
+  academicsStudent_03 = {
+    key = "academicsStudent_03",
+    label = "Student",
+  },
+  academicsStudent_04 = {
+    key = "academicsStudent_04",
+    label = "Student",
+  },
+  civilianTeenBoy_01 = {
+    key = "civilianTeenBoy_01",
+    label = "Teen (Boy)",
+  },
+  civilianTeenBoy_02 = {
+    key = "civilianTeenBoy_02",
+    label = "Teen (Boy)",
+  },
+  civilianTeenBoy_03 = {
+    key = "civilianTeenBoy_03",
+    label = "Teen (Boy)",
+  },
+  civilianTeenBoy_04 = {
+    key = "civilianTeenBoy_04",
+    label = "Teen (Boy)",
+  },
+  civilianTeenBoy_05 = {
+    key = "civilianTeenBoy_05",
+    label = "Teen (Boy)",
+  },
+  civilianTeenBoy_06 = {
+    key = "civilianTeenBoy_06",
+    label = "Teen (Boy)",
+  },
+  civilianTeenGirl_01 = {
+    key = "civilianTeenGirl_01",
+    label = "Teen (Girl)",
+  },
+  civilianTeenGirl_02 = {
+    key = "civilianTeenGirl_02",
+    label = "Teen (Girl)",
+  },
+  civilianTeenGirl_03 = {
+    key = "civilianTeenGirl_03",
+    label = "Teen (Girl)",
+  },
+  civilianTeenGirl_04 = {
+    key = "civilianTeenGirl_04",
+    label = "Teen (Girl)",
+  },
+  dogAngry_01 = {
+    key = "dogAngry_01",
+    label = "Guard Dog (Angry)",
+  },
+  dogAngry_02 = {
+    key = "dogAngry_02",
+    label = "Guard Dog (Angry)",
+  },
+  dogAngry_03 = {
+    key = "dogAngry_03",
+    label = "Guard Dog (Angry)",
+  },
+  dogAngry_04 = {
+    key = "dogAngry_04",
+    label = "Guard Dog (Angry)",
+  },
+  dogGuard_01 = {
+    key = "dogGuard_01",
+    label = "Guard Dog",
+  },
+  dogGuard_02 = {
+    key = "dogGuard_02",
+    label = "Guard Dog",
+  },
+  dogGuard_03 = {
+    key = "dogGuard_03",
+    label = "Guard Dog",
+  },
+  dogGuard_04 = {
+    key = "dogGuard_04",
+    label = "Guard Dog",
+  },
+  bloodDoll_01 = {
+    key = "bloodDoll_01",
+    label = "Blood Doll",
+  },
+  bloodDoll_02 = {
+    key = "bloodDoll_02",
+    label = "Blood Doll",
+  },
+  bloodDoll_03 = {
+    key = "bloodDoll_03",
+    label = "Blood Doll",
+  },
+  bloodDoll_04 = {
+    key = "bloodDoll_04",
+    label = "Blood Doll",
+  },
+  bloodDoll_05 = {
+    key = "bloodDoll_05",
+    label = "Blood Doll",
+  },
+  bloodDoll_06 = {
+    key = "bloodDoll_06",
+    label = "Blood Doll",
+  },
+  bloodDoll_07 = {
+    key = "bloodDoll_07",
+    label = "Blood Doll",
+  },
+  bloodDoll_08 = {
+    key = "bloodDoll_08",
+    label = "Blood Doll",
+  },
+  bloodDoll_09 = {
+    key = "bloodDoll_09",
+    label = "Blood Doll",
+  },
+  blueCollarCourier_01 = {
+    key = "blueCollarCourier_01",
+    label = "Courier",
+  },
+  blueCollarCourier_02 = {
+    key = "blueCollarCourier_02",
+    label = "Courier",
+  },
+  blueCollarCourier_03 = {
+    key = "blueCollarCourier_03",
+    label = "Courier",
+  },
+  blueCollarCourier_04 = {
+    key = "blueCollarCourier_04",
+    label = "Courier",
+  },
+  blueCollarDockworker_01 = {
+    key = "blueCollarDockworker_01",
+    label = "Dockworker",
+  },
+  blueCollarDockworker_02 = {
+    key = "blueCollarDockworker_02",
+    label = "Dockworker",
+  },
+  blueCollarDockworker_03 = {
+    key = "blueCollarDockworker_03",
+    label = "Dockworker",
+  },
+  blueCollarDockworker_04 = {
+    key = "blueCollarDockworker_04",
+    label = "Dockworker",
+  },
+  blueCollarHandyman_01 = {
+    key = "blueCollarHandyman_01",
+    label = "Handyman",
+  },
+  blueCollarHandyman_02 = {
+    key = "blueCollarHandyman_02",
+    label = "Handyman",
+  },
+  blueCollarHandyman_03 = {
+    key = "blueCollarHandyman_03",
+    label = "Handyman",
+  },
+  blueCollarHandyman_04 = {
+    key = "blueCollarHandyman_04",
+    label = "Handyman",
+  },
+  blueCollarJanitor_01 = {
+    key = "blueCollarJanitor_01",
+    label = "Janitor",
+  },
+  blueCollarJanitor_02 = {
+    key = "blueCollarJanitor_02",
+    label = "Janitor",
+  },
+  blueCollarJanitor_03 = {
+    key = "blueCollarJanitor_03",
+    label = "Janitor",
+  },
+  blueCollarMaintenance_01 = {
+    key = "blueCollarMaintenance_01",
+    label = "Maintenance / Construction",
+  },
+  blueCollarMaintenance_02 = {
+    key = "blueCollarMaintenance_02",
+    label = "Maintenance / Construction",
+  },
+  civilianCaptive_01 = {
+    key = "civilianCaptive_01",
+    label = "Moon Club Captive",
+  },
+  civilianCaptive_02 = {
+    key = "civilianCaptive_02",
+    label = "Moon Club Captive",
+  },
+  civilianCaptive_03 = {
+    key = "civilianCaptive_03",
+    label = "Moon Club Captive",
+  },
+  civilianCaptive_04 = {
+    key = "civilianCaptive_04",
+    label = "Moon Club Captive",
+  },
+  civilianCaptive_05 = {
+    key = "civilianCaptive_05",
+    label = "Moon Club Captive",
+  },
+  civilianCaptive_06 = {
+    key = "civilianCaptive_06",
+    label = "Moon Club Captive",
+  },
+  civilianCaptive_07 = {
+    key = "civilianCaptive_07",
+    label = "Moon Club Captive",
+  },
+  civilianCaptive_08 = {
+    key = "civilianCaptive_08",
+    label = "Moon Club Captive",
+  },
+  TremereApprentice_01 = {
+    key = "TremereApprentice_01",
+    label = "Tremere Apprentice",
+  },
+  TremereApprentice_02 = {
+    key = "TremereApprentice_02",
+    label = "Tremere Apprentice",
+  },
+  TremereApprentice_03 = {
+    key = "TremereApprentice_03",
+    label = "Tremere Apprentice",
+  },
+  TremereGhoul_01 = {
+    key = "TremereGhoul_01",
+    label = "Ghoul (Tremere)",
+  },
+  TremereGhoul_02 = {
+    key = "TremereGhoul_02",
+    label = "Ghoul (Tremere)",
+  },
+  TremereGhoul_03 = {
+    key = "TremereGhoul_03",
+    label = "Ghoul (Tremere)",
+  },
+  TremereGhoul_04 = {
+    key = "TremereGhoul_04",
+    label = "Ghoul (Tremere)",
+  },
+  TremereGhoul_05 = {
+    key = "TremereGhoul_05",
+    label = "Ghoul (Tremere)",
+  },
+  civilianChildBoy_01 = {
+    key = "civilianChildBoy_01",
+    label = "Child (Boy)",
+  },
+  civilianChildBoy_02 = {
+    key = "civilianChildBoy_02",
+    label = "Child (Boy)",
+  },
+  civilianChildBoy_03 = {
+    key = "civilianChildBoy_03",
+    label = "Child (Boy)",
+  },
+  civilianChildBoy_04 = {
+    key = "civilianChildBoy_04",
+    label = "Child (Boy)",
+  },
+  civilianChildBoy_05 = {
+    key = "civilianChildBoy_05",
+    label = "Child (Boy)",
+  },
+  civilianChildBoy_06 = {
+    key = "civilianChildBoy_06",
+    label = "Child (Boy)",
+  },
+  civilianChildGirl_01 = {
+    key = "civilianChildGirl_01",
+    label = "Child (Girl)",
+  },
+  civilianChildGirl_02 = {
+    key = "civilianChildGirl_02",
+    label = "Child (Girl)",
+  },
+  civilianChildGirl_03 = {
+    key = "civilianChildGirl_03",
+    label = "Child (Girl)",
+  },
+  civilianChildGirl_04 = {
+    key = "civilianChildGirl_04",
+    label = "Child (Girl)",
+  },
+  whiteCollarCivilServant_01 = {
+    key = "whiteCollarCivilServant_01",
+    label = "Civil Servant",
+  },
+  whiteCollarCivilServant_02 = {
+    key = "whiteCollarCivilServant_02",
+    label = "Civil Servant",
+  },
+  whiteCollarCivilServant_03 = {
+    key = "whiteCollarCivilServant_03",
+    label = "Civil Servant",
+  },
+  whiteCollarCivilServant_04 = {
+    key = "whiteCollarCivilServant_04",
+    label = "Civil Servant",
+  },
+  whiteCollarCivilServant_05 = {
+    key = "whiteCollarCivilServant_05",
+    label = "Civil Servant",
+  },
+  whiteCollarCivilServant_06 = {
+    key = "whiteCollarCivilServant_06",
+    label = "Civil Servant",
+  },
+  whiteCollarCivilServant_07 = {
+    key = "whiteCollarCivilServant_07",
+    label = "Civil Servant",
+  },
+  whiteCollarCivilServant_08 = {
+    key = "whiteCollarCivilServant_08",
+    label = "Civil Servant",
+  },
+  churchNun_01 = {
+    key = "churchNun_01",
+    label = "Nun",
+  },
+  churchNun_02 = {
+    key = "churchNun_02",
+    label = "Nun",
+  },
+  churchPriest_01 = {
+    key = "churchPriest_01",
+    label = "Priest",
+  },
+  churchPriest_02 = {
+    key = "churchPriest_02",
+    label = "Priest",
+  },
+  churchPriest_03 = {
+    key = "churchPriest_03",
+    label = "Priest",
+  },
+  civilianCommuter_01 = {
+    key = "civilianCommuter_01",
+    label = "Commuter",
+  },
+  civilianCommuter_02 = {
+    key = "civilianCommuter_02",
+    label = "Commuter",
+  },
+  civilianCommuter_03 = {
+    key = "civilianCommuter_03",
+    label = "Commuter",
+  },
+  civilianCommuter_04 = {
+    key = "civilianCommuter_04",
+    label = "Commuter",
+  },
+  civilianCommuter_05 = {
+    key = "civilianCommuter_05",
+    label = "Commuter",
+  },
+  churchCongregant_01 = {
+    key = "churchCongregant_01",
+    label = "Congregant",
+  },
+  churchCongregant_02 = {
+    key = "churchCongregant_02",
+    label = "Congregant",
+  },
+  churchCongregant_03 = {
+    key = "churchCongregant_03",
+    label = "Congregant",
+  },
+  churchCongregant_04 = {
+    key = "churchCongregant_04",
+    label = "Congregant",
+  },
+  churchCongregant_05 = {
+    key = "churchCongregant_05",
+    label = "Congregant",
+  },
+  crimeCoroner_01 = {
+    key = "crimeCoroner_01",
+    label = "Coroner",
+  },
+  crimeCoroner_02 = {
+    key = "crimeCoroner_02",
+    label = "Coroner",
+  },
+  crimeCoroner_03 = {
+    key = "crimeCoroner_03",
+    label = "Coroner",
+  },
+  crimeCoroner_04 = {
+    key = "crimeCoroner_04",
+    label = "Coroner",
+  },
+  crimeDetective_01 = {
+    key = "crimeDetective_01",
+    label = "Detective",
+  },
+  crimeDetective_02 = {
+    key = "crimeDetective_02",
+    label = "Detective",
+  },
+  crimeDetective_03 = {
+    key = "crimeDetective_03",
+    label = "Detective",
+  },
+  crimeDetective_04 = {
+    key = "crimeDetective_04",
+    label = "Detective",
+  },
+  crimeDetective_05 = {
+    key = "crimeDetective_05",
+    label = "Detective",
+  },
+  crimeThug_01 = {
+    key = "crimeThug_01",
+    label = "Thug",
+  },
+  crimeThug_02 = {
+    key = "crimeThug_02",
+    label = "Thug",
+  },
+  crimeThug_03 = {
+    key = "crimeThug_03",
+    label = "Thug",
+  },
+  crimeThug_04 = {
+    key = "crimeThug_04",
+    label = "Thug",
+  },
+  crimeThug_05 = {
+    key = "crimeThug_05",
+    label = "Thug",
+  },
+  crimeThug_06 = {
+    key = "crimeThug_06",
+    label = "Thug",
+  },
+  crimeThug_07 = {
+    key = "crimeThug_07",
+    label = "Thug",
+  },
+  crimeThug_08 = {
+    key = "crimeThug_08",
+    label = "Thug",
+  },
+  civilianElderlyMan_01 = {
+    key = "civilianElderlyMan_01",
+    label = "Elderly (Man)",
+  },
+  civilianElderlyMan_02 = {
+    key = "civilianElderlyMan_02",
+    label = "Elderly (Man)",
+  },
+  civilianElderlyMan_03 = {
+    key = "civilianElderlyMan_03",
+    label = "Elderly (Man)",
+  },
+  civilianElderlyWoman_01 = {
+    key = "civilianElderlyWoman_01",
+    label = "Elderly (Woman)",
+  },
+  civilianElderlyWoman_02 = {
+    key = "civilianElderlyWoman_02",
+    label = "Elderly (Woman)",
+  },
+  emergencyFirefighter_01 = {
+    key = "emergencyFirefighter_01",
+    label = "Firefighter",
+  },
+  emergencyFirefighter_02 = {
+    key = "emergencyFirefighter_02",
+    label = "Firefighter",
+  },
+  emergencyFirefighter_03 = {
+    key = "emergencyFirefighter_03",
+    label = "Firefighter",
+  },
+  emergencyFirefighter_04 = {
+    key = "emergencyFirefighter_04",
+    label = "Firefighter",
+  },
+  emergencyParamedic_01 = {
+    key = "emergencyParamedic_01",
+    label = "Paramedic",
+  },
+  emergencyParamedic_02 = {
+    key = "emergencyParamedic_02",
+    label = "Paramedic",
+  },
+  emergencyParamedic_03 = {
+    key = "emergencyParamedic_03",
+    label = "Paramedic",
+  },
+  emergencyParamedic_04 = {
+    key = "emergencyParamedic_04",
+    label = "Paramedic",
+  },
+  luxuryEventStaff_01 = {
+    key = "luxuryEventStaff_01",
+    label = "Event Staff",
+  },
+  luxuryEventStaff_02 = {
+    key = "luxuryEventStaff_02",
+    label = "Event Staff",
+  },
+  luxuryEventStaff_03 = {
+    key = "luxuryEventStaff_03",
+    label = "Event Staff",
+  },
+  luxuryEventStaff_04 = {
+    key = "luxuryEventStaff_04",
+    label = "Event Staff",
+  },
+  luxuryEventStaff_05 = {
+    key = "luxuryEventStaff_05",
+    label = "Event Staff",
+  },
+  luxuryEventStaff_06 = {
+    key = "luxuryEventStaff_06",
+    label = "Event Staff",
+  },
+  luxuryEventStaff_07 = {
+    key = "luxuryEventStaff_07",
+    label = "Event Staff",
+  },
+  civilianFrightened_01 = {
+    key = "civilianFrightened_01",
+    label = "Frightened Civilian",
+  },
+  civilianFrightened_02 = {
+    key = "civilianFrightened_02",
+    label = "Frightened Civilian",
+  },
+  civilianFrightened_03 = {
+    key = "civilianFrightened_03",
+    label = "Frightened Civilian",
+  },
+  civilianFrightened_04 = {
+    key = "civilianFrightened_04",
+    label = "Frightened Civilian",
+  },
+  civilianFrightened_05 = {
+    key = "civilianFrightened_05",
+    label = "Frightened Civilian",
+  },
+  ghoulGuard_01 = {
+    key = "ghoulGuard_01",
+    label = "Guard Ghoul",
+  },
+  ghoulGuard_02 = {
+    key = "ghoulGuard_02",
+    label = "Guard Ghoul",
+  },
+  ghoulGuard_03 = {
+    key = "ghoulGuard_03",
+    label = "Guard Ghoul",
+  },
+  ghoulGuard_04 = {
+    key = "ghoulGuard_04",
+    label = "Guard Ghoul",
+  },
+  ghoulGuard_05 = {
+    key = "ghoulGuard_05",
+    label = "Guard Ghoul",
+  },
+  ghoulGuard_06 = {
+    key = "ghoulGuard_06",
+    label = "Guard Ghoul",
+  },
+  ghoulGuard_07 = {
+    key = "ghoulGuard_07",
+    label = "Guard Ghoul",
+  },
+  ghoulGuard_08 = {
+    key = "ghoulGuard_08",
+    label = "Guard Ghoul",
+  },
+  ghoulHecata_01 = {
+    key = "ghoulHecata_01",
+    label = "Ghoul (Hecata)",
+  },
+  ghoulHecata_02 = {
+    key = "ghoulHecata_02",
+    label = "Ghoul (Hecata)",
+  },
+  ghoulHecata_03 = {
+    key = "ghoulHecata_03",
+    label = "Ghoul (Hecata)",
+  },
+  ghoulHecata_04 = {
+    key = "ghoulHecata_04",
+    label = "Ghoul (Hecata)",
+  },
+  ghoulHecata_05 = {
+    key = "ghoulHecata_05",
+    label = "Ghoul (Hecata)",
+  },
+  ghoulHecata_06 = {
+    key = "ghoulHecata_06",
+    label = "Ghoul (Hecata)",
+  },
+  ghoulHecata_07 = {
+    key = "ghoulHecata_07",
+    label = "Ghoul (Hecata)",
+  },
+  ghoulHecata_08 = {
+    key = "ghoulHecata_08",
+    label = "Ghoul (Hecata)",
+  },
+  ghoulHecata_09 = {
+    key = "ghoulHecata_09",
+    label = "Ghoul (Hecata)",
+  },
+  civilianHomeless_01 = {
+    key = "civilianHomeless_01",
+    label = "Homeless Civilian",
+  },
+  civilianHomeless_02 = {
+    key = "civilianHomeless_02",
+    label = "Homeless Civilian",
+  },
+  civilianHomeless_03 = {
+    key = "civilianHomeless_03",
+    label = "Homeless Civilian",
+  },
+  civilianHomeless_04 = {
+    key = "civilianHomeless_04",
+    label = "Homeless Civilian",
+  },
+  civilianHomeless_05 = {
+    key = "civilianHomeless_05",
+    label = "Homeless Civilian",
+  },
+  ghostHue_01 = {
+    key = "ghostHue_01",
+    label = "Hue",
+  },
+  ghostHue_02 = {
+    key = "ghostHue_02",
+    label = "Hue",
+  },
+  ghostHue_03 = {
+    key = "ghostHue_03",
+    label = "Hue",
+  },
+  ghostHue_04 = {
+    key = "ghostHue_04",
+    label = "Hue",
+  },
+  ghostHue_05 = {
+    key = "ghostHue_05",
+    label = "Hue",
+  },
+  ghostHue_06 = {
+    key = "ghostHue_06",
+    label = "Hue",
+  },
+  ghostHue_07 = {
+    key = "ghostHue_07",
+    label = "Hue",
+  },
+  ghostHue_08 = {
+    key = "ghostHue_08",
+    label = "Hue",
+  },
+  ghostHue_09 = {
+    key = "ghostHue_09",
+    label = "Hue",
+  },
+  ghostHue_10 = {
+    key = "ghostHue_10",
+    label = "Hue",
+  },
+  luxuryGuest_01 = {
+    key = "luxuryGuest_01",
+    label = "Luxury Guest",
+  },
+  luxuryGuest_02 = {
+    key = "luxuryGuest_02",
+    label = "Luxury Guest",
+  },
+  luxuryGuest_03 = {
+    key = "luxuryGuest_03",
+    label = "Luxury Guest",
+  },
+  luxuryGuest_04 = {
+    key = "luxuryGuest_04",
+    label = "Luxury Guest",
+  },
+  luxuryGuest_05 = {
+    key = "luxuryGuest_05",
+    label = "Luxury Guest",
+  },
+  luxuryGuest_06 = {
+    key = "luxuryGuest_06",
+    label = "Luxury Guest",
+  },
+  luxuryGuest_07 = {
+    key = "luxuryGuest_07",
+    label = "Luxury Guest",
+  },
+  luxuryGuest_08 = {
+    key = "luxuryGuest_08",
+    label = "Luxury Guest",
+  },
+  luxuryStaff_01 = {
+    key = "luxuryStaff_01",
+    label = "Luxury Staff",
+  },
+  luxuryStaff_02 = {
+    key = "luxuryStaff_02",
+    label = "Luxury Staff",
+  },
+  luxuryStaff_03 = {
+    key = "luxuryStaff_03",
+    label = "Luxury Staff",
+  },
+  luxuryStaff_04 = {
+    key = "luxuryStaff_04",
+    label = "Luxury Staff",
+  },
+  luxuryStaff_05 = {
+    key = "luxuryStaff_05",
+    label = "Luxury Staff",
+  },
+  luxuryStaff_06 = {
+    key = "luxuryStaff_06",
+    label = "Luxury Staff",
+  },
+  luxuryStaff_07 = {
+    key = "luxuryStaff_07",
+    label = "Luxury Staff",
+  },
+  mediaCameraman_01 = {
+    key = "mediaCameraman_01",
+    label = "Cameraman",
+  },
+  mediaCameraman_02 = {
+    key = "mediaCameraman_02",
+    label = "Cameraman",
+  },
+  mediaCameraman_03 = {
+    key = "mediaCameraman_03",
+    label = "Cameraman",
+  },
+  mediaCameraman_04 = {
+    key = "mediaCameraman_04",
+    label = "Cameraman",
+  },
+  mediaCameraman_05 = {
+    key = "mediaCameraman_05",
+    label = "Cameraman",
+  },
+  mediaJournalist_01 = {
+    key = "mediaJournalist_01",
+    label = "Journalist",
+  },
+  mediaJournalist_02 = {
+    key = "mediaJournalist_02",
+    label = "Journalist",
+  },
+  hospitalPatient_01 = {
+    key = "hospitalPatient_01",
+    label = "Patient",
+  },
+  hospitalPatient_02 = {
+    key = "hospitalPatient_02",
+    label = "Patient",
+  },
+  hospitalPatient_03 = {
+    key = "hospitalPatient_03",
+    label = "Patient",
+  },
+  hospitalPatient_04 = {
+    key = "hospitalPatient_04",
+    label = "Patient",
+  },
+  hospitalPatient_05 = {
+    key = "hospitalPatient_05",
+    label = "Patient",
+  },
+  hospitalPatient_06 = {
+    key = "hospitalPatient_06",
+    label = "Patient",
+  },
+  hospitalPatient_07 = {
+    key = "hospitalPatient_07",
+    label = "Patient",
+  },
+  hospitalPatient_08 = {
+    key = "hospitalPatient_08",
+    label = "Patient",
+  },
+  hospitalDoctor_01 = {
+    key = "hospitalDoctor_01",
+    label = "Doctor",
+  },
+  hospitalDoctor_02 = {
+    key = "hospitalDoctor_02",
+    label = "Doctor",
+  },
+  hospitalDoctor_03 = {
+    key = "hospitalDoctor_03",
+    label = "Doctor",
+  },
+  hospitalNurse_01 = {
+    key = "hospitalNurse_01",
+    label = "Nurse",
+  },
+  hospitalNurse_02 = {
+    key = "hospitalNurse_02",
+    label = "Nurse",
+  },
+  hospitalNurse_03 = {
+    key = "hospitalNurse_03",
+    label = "Nurse",
+  },
+  hospitalNurse_04 = {
+    key = "hospitalNurse_04",
+    label = "Nurse",
+  },
+  hospitalOrderly_01 = {
+    key = "hospitalOrderly_01",
+    label = "Orderly",
+  },
+  ghoulMinistry_01 = {
+    key = "ghoulMinistry_01",
+    label = "Ghoul (Ministry)",
+  },
+  ghoulMinistry_02 = {
+    key = "ghoulMinistry_02",
+    label = "Ghoul (Ministry)",
+  },
+  ghoulMinistry_03 = {
+    key = "ghoulMinistry_03",
+    label = "Ghoul (Ministry)",
+  },
+  ghoulMinistry_04 = {
+    key = "ghoulMinistry_04",
+    label = "Ghoul (Ministry)",
+  },
+  ghoulMinistry_05 = {
+    key = "ghoulMinistry_05",
+    label = "Ghoul (Ministry)",
+  },
+  ghoulMinistry_06 = {
+    key = "ghoulMinistry_06",
+    label = "Ghoul (Ministry)",
+  },
+  ghoulMinistry_07 = {
+    key = "ghoulMinistry_07",
+    label = "Ghoul (Ministry)",
+  },
+  ghoulMinistry_08 = {
+    key = "ghoulMinistry_08",
+    label = "Ghoul (Ministry)",
+  },
+  nightlifePatron_01 = {
+    key = "nightlifePatron_01",
+    label = "Clubber",
+  },
+  nightlifePatron_02 = {
+    key = "nightlifePatron_02",
+    label = "Clubber",
+  },
+  nightlifePatron_03 = {
+    key = "nightlifePatron_03",
+    label = "Clubber",
+  },
+  nightlifePatron_04 = {
+    key = "nightlifePatron_04",
+    label = "Clubber",
+  },
+  nightlifePatron_05 = {
+    key = "nightlifePatron_05",
+    label = "Clubber",
+  },
+  nightlifePatron_06 = {
+    key = "nightlifePatron_06",
+    label = "Clubber",
+  },
+  nightlifePatron_07 = {
+    key = "nightlifePatron_07",
+    label = "Clubber",
+  },
+  nightlifePatron_08 = {
+    key = "nightlifePatron_08",
+    label = "Clubber",
+  },
+  nightlifeBartender_01 = {
+    key = "nightlifeBartender_01",
+    label = "Bartender",
+  },
+  nightlifeBartender_02 = {
+    key = "nightlifeBartender_02",
+    label = "Bartender",
+  },
+  nightlifeBartender_03 = {
+    key = "nightlifeBartender_03",
+    label = "Bartender",
+  },
+  nightlifeBouncer_01 = {
+    key = "nightlifeBouncer_01",
+    label = "Bouncer",
+  },
+  nightlifeBouncer_02 = {
+    key = "nightlifeBouncer_02",
+    label = "Bouncer",
+  },
+  nightlifeBouncer_03 = {
+    key = "nightlifeBouncer_03",
+    label = "Bouncer",
+  },
+  nightlifeBouncer_04 = {
+    key = "nightlifeBouncer_04",
+    label = "Bouncer",
+  },
+  nightlifeServer_01 = {
+    key = "nightlifeServer_01",
+    label = "Server",
+  },
+  nightlifeServer_02 = {
+    key = "nightlifeServer_02",
+    label = "Server",
+  },
+  civilianDogWalker_01 = {
+    key = "civilianDogWalker_01",
+    label = "Dog Walker",
+  },
+  civilianDogWalker_02 = {
+    key = "civilianDogWalker_02",
+    label = "Dog Walker",
+  },
+  civilianJogger_01 = {
+    key = "civilianJogger_01",
+    label = "Jogger",
+  },
+  civilianJogger_02 = {
+    key = "civilianJogger_02",
+    label = "Jogger",
+  },
+  civilianJogger_03 = {
+    key = "civilianJogger_03",
+    label = "Jogger",
+  },
+  civilianParkWalker_01 = {
+    key = "civilianParkWalker_01",
+    label = "Park Walker",
+  },
+  civilianParkWalker_02 = {
+    key = "civilianParkWalker_02",
+    label = "Park Walker",
+  },
+  civilianParkWalker_03 = {
+    key = "civilianParkWalker_03",
+    label = "Park Walker",
+  },
+  civilianParkWalker_04 = {
+    key = "civilianParkWalker_04",
+    label = "Park Walker",
+  },
+  civilianParkWalker_05 = {
+    key = "civilianParkWalker_05",
+    label = "Park Walker",
+  },
+  crimePolice_01 = {
+    key = "crimePolice_01",
+    label = "Police",
+  },
+  crimePolice_02 = {
+    key = "crimePolice_02",
+    label = "Police",
+  },
+  crimePolice_03 = {
+    key = "crimePolice_03",
+    label = "Police",
+  },
+  crimePolice_04 = {
+    key = "crimePolice_04",
+    label = "Police",
+  },
+  crimePolice_05 = {
+    key = "crimePolice_05",
+    label = "Police",
+  },
+  crimePolice_06 = {
+    key = "crimePolice_06",
+    label = "Police",
+  },
+  crimePolice_07 = {
+    key = "crimePolice_07",
+    label = "Police",
+  },
+  crimePolice_08 = {
+    key = "crimePolice_08",
+    label = "Police",
+  },
+  civilianProtester_01 = {
+    key = "civilianProtester_01",
+    label = "Protester",
+  },
+  civilianProtester_02 = {
+    key = "civilianProtester_02",
+    label = "Protester",
+  },
+  civilianProtester_03 = {
+    key = "civilianProtester_03",
+    label = "Protester",
+  },
+  civilianProtester_04 = {
+    key = "civilianProtester_04",
+    label = "Protester",
+  },
+  civilianProtester_05 = {
+    key = "civilianProtester_05",
+    label = "Protester",
+  },
+  civilianProtester_06 = {
+    key = "civilianProtester_06",
+    label = "Protester",
+  },
+  civilianProtester_07 = {
+    key = "civilianProtester_07",
+    label = "Protester",
+  },
+  civilianProtester_08 = {
+    key = "civilianProtester_08",
+    label = "Protester",
+  },
+  civilianProtester_09 = {
+    key = "civilianProtester_09",
+    label = "Protester",
+  },
+  civilianRestrained_01 = {
+    key = "civilianRestrained_01",
+    label = "Restrained Civilian",
+  },
+  civilianRestrained_02 = {
+    key = "civilianRestrained_02",
+    label = "Restrained Civilian",
+  },
+  civilianRestrained_03 = {
+    key = "civilianRestrained_03",
+    label = "Restrained Civilian",
+  },
+  nightlifeSexWorker_01 = {
+    key = "nightlifeSexWorker_01",
+    label = "Sex Worker",
+  },
+  nightlifeSexWorker_02 = {
+    key = "nightlifeSexWorker_02",
+    label = "Sex Worker",
+  },
+  nightlifeSexWorker_03 = {
+    key = "nightlifeSexWorker_03",
+    label = "Sex Worker",
+  },
+  nightlifeSexWorker_04 = {
+    key = "nightlifeSexWorker_04",
+    label = "Sex Worker",
+  },
+  nightlifeSexWorker_05 = {
+    key = "nightlifeSexWorker_05",
+    label = "Sex Worker",
+  },
+  nightlifeSexWorker_06 = {
+    key = "nightlifeSexWorker_06",
+    label = "Sex Worker",
+  },
+  civilianShelterStaff_01 = {
+    key = "civilianShelterStaff_01",
+    label = "Shelter Staff",
+  },
+  civilianShelterStaff_02 = {
+    key = "civilianShelterStaff_02",
+    label = "Shelter Staff",
+  },
+  civilianShelterStaff_03 = {
+    key = "civilianShelterStaff_03",
+    label = "Shelter Staff",
+  },
+  civilianShelterStaff_04 = {
+    key = "civilianShelterStaff_04",
+    label = "Shelter Staff",
+  },
+  civilianSocialWorker_01 = {
+    key = "civilianSocialWorker_01",
+    label = "Social Worker",
+  },
+  civilianSocialWorker_02 = {
+    key = "civilianSocialWorker_02",
+    label = "Social Worker",
+  },
+  blueCollarTransitWorker_01 = {
+    key = "blueCollarTransitWorker_01",
+    label = "Transit Worker",
+  },
+  blueCollarTransitWorker_02 = {
+    key = "blueCollarTransitWorker_02",
+    label = "Transit Worker",
+  },
+  blueCollarTransitWorker_03 = {
+    key = "blueCollarTransitWorker_03",
+    label = "Transit Worker",
+  },
+  blueCollarTransitWorker_04 = {
+    key = "blueCollarTransitWorker_04",
+    label = "Transit Worker",
+  },
+  blueCollarTransitWorker_05 = {
+    key = "blueCollarTransitWorker_05",
+    label = "Transit Worker",
+  },
+  whiteCollarCorporate_01 = {
+    key = "whiteCollarCorporate_01",
+    label = "Corporate Suit",
+  },
+  whiteCollarCorporate_02 = {
+    key = "whiteCollarCorporate_02",
+    label = "Corporate Suit",
+  },
+  whiteCollarCorporate_03 = {
+    key = "whiteCollarCorporate_03",
+    label = "Corporate Suit",
+  },
+  whiteCollarCorporate_04 = {
+    key = "whiteCollarCorporate_04",
+    label = "Corporate Suit",
+  },
+  whiteCollarCorporate_05 = {
+    key = "whiteCollarCorporate_05",
+    label = "Corporate Suit",
+  },
+  whiteCollarCorporate_06 = {
+    key = "whiteCollarCorporate_06",
+    label = "Corporate Suit",
+  },
+  whiteCollarCorporate_07 = {
+    key = "whiteCollarCorporate_07",
+    label = "Corporate Suit",
+  },
+  whiteCollarCorporate_08 = {
+    key = "whiteCollarCorporate_08",
+    label = "Corporate Suit",
+  },
+  whiteCollarCorporate_09 = {
+    key = "whiteCollarCorporate_09",
+    label = "Corporate Suit",
+  },
+  civilianWounded_01 = {
+    key = "civilianWounded_01",
+    label = "Wounded Civilian",
+  },
+  civilianWounded_02 = {
+    key = "civilianWounded_02",
+    label = "Wounded Civilian",
+  },
+  civilianWounded_03 = {
+    key = "civilianWounded_03",
+    label = "Wounded Civilian",
+  },
+  civilianWounded_04 = {
+    key = "civilianWounded_04",
+    label = "Wounded Civilian",
+  },
+  civilianWounded_05 = {
+    key = "civilianWounded_05",
+    label = "Wounded Civilian",
+  },
+  civilianWounded_06 = {
+    key = "civilianWounded_06",
+    label = "Wounded Civilian (Seated)",
+  },
+  civilianWounded_07 = {
+    key = "civilianWounded_07",
+    label = "Wounded Civilian (Seated)",
+  },
+  civilianWounded_08 = {
+    key = "civilianWounded_08",
+    label = "Wounded Civilian (Seated)",
+  },
+  civilianWounded_09 = {
+    key = "civilianWounded_09",
+    label = "Wounded Civilian (Seated)",
+  },
+  civilianWounded_10 = {
+    key = "civilianWounded_10",
+    label = "Wounded Civilian (Seated)",
+  },
+  ghostWraith_01 = {
+    key = "ghostWraith_01",
+    label = "Wraith",
+  },
+  ghostWraith_02 = {
+    key = "ghostWraith_02",
+    label = "Wraith",
+  },
+  ghostWraith_03 = {
+    key = "ghostWraith_03",
+    label = "Wraith",
+  },
+  ghostWraith_04 = {
+    key = "ghostWraith_04",
+    label = "Wraith",
+  },
+  ghostWraith_05 = {
+    key = "ghostWraith_05",
+    label = "Wraith",
+  },
+  ghostWraith_06 = {
+    key = "ghostWraith_06",
+    label = "Wraith",
+  },
+  ghostWraith_07 = {
+    key = "ghostWraith_07",
+    label = "Wraith",
+  },
+  ghostWraith_08 = {
+    key = "ghostWraith_08",
+    label = "Wraith",
+  },
+}
+
+return GenericNpcsCatalog

@@ -14,10 +14,15 @@
 
 const fs = require("fs");
 const path = require("path");
-const { parseGenericNpcRows, renderGenericNpcCatalogJson } = require("./lib/generic_npcs_sheet_csv.js");
+const {
+  parseGenericNpcRows,
+  renderGenericNpcCatalogJson,
+  renderGenericNpcsCatalogLua,
+} = require("./lib/generic_npcs_sheet_csv.js");
 
 const root = path.resolve(__dirname, "..", "..");
 const defaultOutPath = path.join(root, ".dev", "storyteller-dashboard", "data", "generic-npcs.json");
+const defaultLuaOutPath = path.join(root, "lib", "generic_npcs_catalog.ttslua");
 
 const DEFAULT_SHEET_ID = "10Ehs7cMR7016QYYW5TzT0mfmrc8XoGmfDlwz_Zh15Gs";
 const DEFAULT_RANGE = "GENERICNPCCSV";
@@ -127,29 +132,35 @@ function writeAtomic(filePath, contents) {
  *   rangeName?: string,
  *   tabName?: string,
  *   outPath?: string,
+ *   luaOutPath?: string,
  *   quiet?: boolean
  * }} [options]
- * @returns {Promise<{ npcCount: number, outPath: string, sheetId: string, tabName: string, rangeName: string }>}
+ * @returns {Promise<{ npcCount: number, outPath: string, luaOutPath: string, sheetId: string, tabName: string, rangeName: string }>}
  */
 async function importGenericNpcs(options = {}) {
   const sheetId = String(options.sheetId || process.env.GENERIC_NPC_SHEET_ID || DEFAULT_SHEET_ID).trim();
   const rangeName = String(options.rangeName || process.env.GENERIC_NPC_RANGE || DEFAULT_RANGE).trim();
   const tabName = String(options.tabName || process.env.GENERIC_NPC_TAB || DEFAULT_TAB).trim();
   const outPath = options.outPath || defaultOutPath;
+  const luaOutPath = options.luaOutPath || defaultLuaOutPath;
   const url = exportCsvUrl(sheetId, tabName);
+  const meta = { sheetId, rangeName, tabName };
 
   if (!options.quiet) {
     console.log(`[generic-npcs:import] Fetching tab "${tabName}" (${rangeName}) …`);
   }
   const csv = await fetchCsv(url, tabName);
   const npcs = parseGenericNpcRows(csv);
-  const json = renderGenericNpcCatalogJson({ npcs, meta: { sheetId, rangeName, tabName } });
+  const json = renderGenericNpcCatalogJson({ npcs, meta });
+  const lua = renderGenericNpcsCatalogLua({ npcs, meta });
 
   writeAtomic(outPath, json);
+  writeAtomic(luaOutPath, lua);
   if (!options.quiet) {
     console.log(`[generic-npcs:import] Wrote ${path.relative(root, outPath)} (${npcs.length} NPCs)`);
+    console.log(`[generic-npcs:import] Wrote ${path.relative(root, luaOutPath)}`);
   }
-  return { npcCount: npcs.length, outPath, sheetId, tabName, rangeName };
+  return { npcCount: npcs.length, outPath, luaOutPath, sheetId, tabName, rangeName };
 }
 
 async function main() {

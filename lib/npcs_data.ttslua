@@ -1814,6 +1814,32 @@ D.characters = {
 
 D.genericNpcs = nil
 
+--- Resolve a paste/catalog key `stem_NN` → entry in `D.genericNpcs[stem][index]`.
+--- @param fullKey string e.g. "academicsProfessor_02"
+--- @return table|nil entry, string|nil stem, number|nil index
+function D.resolveGenericNpcEntry(fullKey)
+  if type(fullKey) ~= "string" then
+    return nil, nil, nil
+  end
+  local stem, indexStr = fullKey:match("^([%a_][%w]*)_(%d%d)$")
+  if stem == nil or indexStr == nil then
+    return nil, nil, nil
+  end
+  local index = tonumber(indexStr)
+  if index == nil or index < 1 then
+    return nil, stem, nil
+  end
+  local group = D.genericNpcs and D.genericNpcs[stem]
+  if type(group) ~= "table" then
+    return nil, stem, index
+  end
+  local entry = group[index]
+  if type(entry) ~= "table" then
+    return nil, stem, index
+  end
+  return entry, stem, index
+end
+
 function D.initGenericNPCs()
   local figurineFronts = Cloud.GenericNpcFigurines
   if figurineFronts == nil then
@@ -1834,6 +1860,12 @@ function D.initGenericNPCs()
     error("Cloud.GenericNpcTokenBacks is nil")
   end
 
+  local GenericNpcsCatalog = require("lib.generic_npcs_catalog")
+  local labelsByKey = GenericNpcsCatalog and GenericNpcsCatalog.ByKey or nil
+  if type(labelsByKey) ~= "table" then
+    error("lib.generic_npcs_catalog.ByKey is missing — run npm run generic-npcs:import")
+  end
+
   local genericNpcs = {}
 
   --[[
@@ -1843,6 +1875,8 @@ function D.initGenericNPCs()
 
   genericNpcs.academicsProfessor = {
     {
+      key = "academicsProfessor_01",
+      label = "Academics Professor",
       figurine = {
         front = figurineFronts.academicsProfessor_01.URL,
         back = figurineBackURL,
@@ -1850,16 +1884,6 @@ function D.initGenericNPCs()
       token = {
         front = tokenFronts.academicsProfessor_01.URL,
         back = tokenBacks.academicsProfessor_01.URL,
-      },
-    },
-    {
-      figurine = {
-        front = figurineFronts.academicsProfessor_02.URL,
-        back = figurineBackURL,
-      },
-      token = {
-        front = tokenFronts.academicsProfessor_02.URL,
-        back = tokenBacks.academicsProfessor_02.URL,
       },
     },
     ...
@@ -1898,7 +1922,17 @@ function D.initGenericNPCs()
         -- throw an error: there must be a matching token back if there is a token front
         error("Token '" .. figurineKey .. "' has no matching token back image.")
       end
+      local sheetRow = labelsByKey[figurineKey]
+      if type(sheetRow) ~= "table" or type(sheetRow.label) ~= "string" or sheetRow.label == "" then
+        error(
+          "Generic NPC '"
+            .. figurineKey
+            .. "' has Cloud assets but no sheet label — run npm run generic-npcs:import"
+        )
+      end
       table.insert(figurineData, {
+        key = figurineKey,
+        label = sheetRow.label,
         figurine = {
           front = figurineFront.URL,
           back = figurineBackURL,

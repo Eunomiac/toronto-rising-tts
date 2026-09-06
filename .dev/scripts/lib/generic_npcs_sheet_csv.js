@@ -111,7 +111,60 @@ function renderGenericNpcCatalogJson(payload) {
   )}\n`;
 }
 
+/**
+ * @param {string} value
+ * @returns {string}
+ */
+function escapeLuaString(value) {
+  return String(value)
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, '\\"')
+    .replace(/\r/g, "\\r")
+    .replace(/\n/g, "\\n");
+}
+
+/**
+ * Lua module of sheet key → label for `D.initGenericNPCs` (Cloud URLs stay in cloud_catalog).
+ *
+ * @param {{
+ *   npcs: { filename: string, label: string, key: string, tags: string }[],
+ *   meta: { sheetId: string, rangeName: string, tabName?: string }
+ * }} payload
+ * @returns {string}
+ */
+function renderGenericNpcsCatalogLua(payload) {
+  const lines = [];
+  lines.push("--[[");
+  lines.push("    Toronto Rising — generic NPC sheet labels (key → label).");
+  lines.push("    AUTO-GENERATED from Google Sheet — DO NOT EDIT BY HAND.");
+  lines.push(`    Sheet id: ${payload.meta.sheetId}`);
+  lines.push(
+    `    Range/tab: ${payload.meta.rangeName} / ${payload.meta.tabName || ""} (filename,label,key,tags)`,
+  );
+  lines.push("    Regenerate: npm run generic-npcs:import");
+  lines.push("    Script: .dev/scripts/import_generic_npcs_from_sheet.js");
+  lines.push("]]");
+  lines.push("");
+  lines.push("local GenericNpcsCatalog = {}");
+  lines.push("");
+  lines.push("--- Stable catalog key → { key, label } (tags are Dashboard-only).");
+  lines.push("GenericNpcsCatalog.ByKey = {");
+  for (const npc of payload.npcs) {
+    lines.push(`  ${npc.key} = {`);
+    lines.push(`    key = "${escapeLuaString(npc.key)}",`);
+    lines.push(`    label = "${escapeLuaString(npc.label)}",`);
+    lines.push("  },");
+  }
+  lines.push("}");
+  lines.push("");
+  lines.push("return GenericNpcsCatalog");
+  lines.push("");
+  return lines.join("\n");
+}
+
 module.exports = {
   parseGenericNpcRows,
   renderGenericNpcCatalogJson,
+  renderGenericNpcsCatalogLua,
+  escapeLuaString,
 };
