@@ -93,13 +93,144 @@ Memoriam can be re-selected by the Host from within an already-running Memoriam 
 - **Scenes Do Not Apply:** The Memoriam subphase is its own scene: There cannot be an active scene while the game is in the Memoriam subphase. Applying a scene from the "Scenes" panel should end the Memoriam subphase (as described below) and return the game to the "Main" subphase with the chosen scene activated, setting the time and date in accordance with the chosen application button, where "NOW" is defined as the time that was displayed just before the Memoriam subphase was initialized. Selecting "End Scene" should end the Memoriam subphase as described below.
 - **Ending Memoriam:** When the Memoriam subphase is ended (by selecting "Main"/"Downtime" in the "Phases" menu, or by applying/ending a scene from the "Scenes" menu), PC-as-NPC assignments should be reversed and the game should return to "Main" (if a scene was just applied, or Memoriam was started during an active scene) or "Downtime" (if there was no active scene when Memoriam was initialized). If there was an active scene when Memoriam began and the Memoriam phase was not ended by applying a new scene, the game should be returned to the same state that it was when Memoriam was initialized: Same time, date, staged NPCs, NPCs-at-the-table, PC-as-NPC assignments, light modes, etc. Damage to Health and Willpower trackers sustained while in Memoriam should be locally stored, then the Health and Willpower trackers should be returned to what they were when entering Memoriam. Finally, the recorded Health damage sustained while in Memoriam should be converted to Willpower damage (summing with any Willpower damage suffered), and then that total Willpower damage should be applied to the character's restored Willpower tracker (looping superficial damage into aggravated damage and applying impaired status as required). Hunger should remain unchanged (i.e. Hunger and Willpower damage sustained in Memoriam remains in the present; Health damage is converted to Willpower damage in the present).  PCs who were assigned NPCs to play (yet to be implemented) should not have damage suffered by that NPC applied to the PC trackers, though.
 
-### Generic NPCs
-Generic NPCs are NPCs that represent classes or categories of character, such as "police officer" or "dog", and as such multiple copies of these NPCs can exist simultaneously in the game world.
+### Generic NPCs — actionable plan
 
-#### Generic NPC Assets
-Where named NPCs have a figurine and a token already in the game world, generic NPCs do not: When they are initialized via the Generic NPC Palette (see below), their assets need to be created by cloning two template objects (the figurine, and the control board token), and then assigning the front and back faces of both from URLs stored in the constants library.
+#### Intent
 
-* **Generic NPC Figurines** —
+Generic NPCs are category/class characters (e.g. police officer, dog). Unlike named NPCs, they have **no** workshop-baked figurine/token in the save. Each catalog key (`stem_NN`, e.g. `dogGuard_03`) is a **unique** identity: at most one live instance of that key per scene. Multiple stems (many `dogGuard_*` variants) may coexist; the same exact key may not be imported twice.
+
+After import, generics support **token flips, stage placement, and lights** like named staged NPCs. **Seating**, **PC-as-NPC**, and Memoriam `kind: "generic"` are **out of scope** for v1.
+
+This is an intentional **runtime spawn exception** to the named-NPC preload-pool rule. Do not redesign named preload for this feature.
+
+---
+
+#### Contracts
+
+**Catalog key:** `stem` + `_` + two-digit index → `D.genericNpcs[stem][index]`
+Example: `academicsProfessor_02` → `D.genericNpcs.academicsProfessor[2]`.
+
+**Entry shape (target):**
+```lua
+D.genericNpcs.academicsProfessor[2] = {
+  key = "academicsProfessor_02",
+  label = "Academics Professor", -- from GENERICNPCCSV; default display name
+  figurine = { front = <URL>, back = <shared figurine back URL> },
+  token = { front = <URL>, back = <URL> },
+}
+```
+
+**Tags** from the sheet: Dashboard search only; ignore in Lua.
+
+**Invalid keys:** skip; import all valid; `AlertGM` with the bad keys listed.
+**Duplicate keys** already in the current scene’s generic membership: skip + warn.
+
+**Default light/token state:** always face-down / light **OFF** on import (and on respawn until Apply says otherwise).
+
+**Spawn method:** clone from **hidden save templates** (figurine, control token, npc light) via `cloneObjectDataForSpawn` + `spawnObjectData`, then apply Cloud images (`setCustomObject` + `reload` as needed). Batch all at once.
+
+**Placement after import:**
+- Figurines (+ lights): under-table **preload** zone
+- Tokens: **CONTROL_BOARD** top-right row (away from snaps, not on palette), face-down
+
+**Persistence:**
+| Event | Behavior |
+| --- | --- |
+| Import confirmed | Spawn objects; write scene-library membership (key + label override; placement/flip once Apply runs) |
+| Save & Play / revisit scene | Recreate missing generic objects from library (same spawn path) |
+| Leave scene / scene change | **Destroy** that scene’s generic figurine/token/light trio; keep library rows for later respawn |
+| Removed from Stage Control board mid-scene | Destroy associated objects; remove key from scene generic membership |
+
+Named NPCs stay on the workshop preload path.
+
+---
+
+#### Work packages (implement in this order)
+
+##### WP0 — Build: labels into Lua catalog
+
+Augment the generic-NPC import/build path so sheet `label` (and stable `key`) land in data Lua can read—not only Dashboard `generic-npcs.json`.
+
+- Extend `GENERICNPCCSV` consumption / Cloud or sibling generated table so `D.initGenericNPCs()` can set `label` (and `key`) on each variant.
+- Prefer generating a small Lua/JSON artifact from the same sheet parse used by `generic-npcs:import`, then merge in `initGenericNPCs` (Cloud URLs + sheet label/key). Fail loudly if a Cloud variant lacks a sheet label.
+- Update `.dev/Storyteller Dashboard Docs/Generic NPCs.md` and any build README notes.
+- Verify: `D.genericNpcs.academicsProfessor[2].label` is a real string after load.
+
+##### WP1 — Lua: shared import entry + Global API
+
+Single host-side entry that both the board paste field and the Dashboard bridge call:
+
+```lua
+-- Global.* name TBD; must be callable from External Editor / Dashboard execute-lua
+-- e.g. GlobalImportGenericNpcs("academicsProfessor_02,dogGuard_03")
+-- or GlobalImportGenericNpcs({ keys = "..." }) — pick one and document it
+```
+
+Behavior:
+1. Parse comma-delimited keys; resolve via `D.genericNpcs`; collect valid + invalid.
+2. Drop duplicates already in the active scene; warn.
+3. If zero valid keys → AlertGM and stop.
+4. Open **ST-only label modal** with one row per valid key, input pre-filled from `entry.label`.
+5. Confirm → spawn batch + library write. Cancel → no objects, no library write.
+
+Expose this as a **`Global*` function** (and thin `Global.call` alias if needed) so the Storyteller Dashboard can `executeLua` it when the IDE extension is **not** holding port 39998. Document that only one of Dashboard bridge vs TTS IDE extension can listen at a time (existing `DashboardTtsBridge` contract).
+
+ST identity: gate interactive board/modal paths with `U.isStorytellerSteamPlayer`. Bridge/execute-lua runs on host; treat as ST-initiated.
+
+##### WP2 — CONTROL_BOARD UI + label modal
+
+- **Paste InputField** on CONTROL_BOARD XmlUI, row above existing buttons; submit/Import calls the shared entry (WP1). ST-only visibility.
+- **Label override modal** (pattern like Memoriam): ST-only; Confirm / Cancel.
+- Event Listener Policy rows for new handlers.
+- Object script: thin UI only; mutate via `Global.call` (no heavy `require`).
+
+##### WP3 — Spawn / register / destroy
+
+- Add hidden template objects in the save (or adopt existing debug templates); record GUIDs/nicknames in `lib/guids` (or npc constants).
+- Clone + image apply + tags/GM Notes so stage board treats tokens like `npc_control_token` with identity = catalog key.
+- Register figurine/light with NPC instance machinery enough for stage Apply/Clear and lights (v1).
+- Implement destroy path on scene leave and on mid-scene removal from the board.
+- Scene library schema: store generic membership (`key`, `displayName` / label override; reuse placement fields after Apply).
+- Dual-apply: prime/invalidate reconcile fingerprints after eager spawn.
+- Smoke: import → tokens top-right face-down → figurines in preload lights OFF → Apply places from token positions → leave scene destroys objects → re-apply scene respawns from library.
+
+##### WP4 — Storyteller Dashboard (client)
+
+Does **not** need live confirmation from Lua game state (author keeps gold list honest).
+
+1. **Bridge readiness probe (safe, localhost-only):** add a small status API (e.g. `GET /api/tts-bridge-status`) that reports:
+   - **`editorPort` (39998):** free / held by Dashboard / in use by something else (usually TTS IDE extension) — detect via “already listening” or a non-destructive bind attempt (`EADDRINUSE` ⇒ blocked). Prefer keeping the Dashboard listener up once acquired so Spawn stays ready.
+   - **`commandPort` (39999):** TTS reachable or not — TCP connect to localhost; `ECONNREFUSED` ⇒ External Editor / game not available.
+   - Poll from the Stage NPCs (and Lua) UI on an interval + on focus; never treat a failed probe as proof of game-state contents.
+2. **Grey-out TTS-dependent controls** when the bridge is not usable: Spawn-to-TTS (and the Lua Execute path’s primary action) disabled when 39998 is held by the IDE **or** 39999 is unreachable. Show a short status line (“TTS Tools extension is using port 39998 — disable it to spawn from the Dashboard” / “TTS External Editor not reachable on 39999”). **Copy** and **Clear Generics** stay enabled (clipboard / localStorage only).
+3. **Spawn via bridge:** when enabled, call the Global import function with the selection’s comma-delimited keys. On successful *send*, mark keys gold. Copy+paste path always remains available.
+4. **Gold “already added” highlights:** Copied **or** successfully sent via Spawn → persist keys in `localStorage`; gold ≠ red selected. Selecting/deselecting must not clear gold.
+5. **Clear Generics** button: wipe local gold/added set only (no Lua round-trip).
+6. Update Stage NPCs UI copy and `.dev/Storyteller Dashboard Docs/Generic NPCs.md` (ports 39998/39999, grey-out rules, gold vs red, Clear Generics).
+
+---
+
+#### Explicitly out of scope (v1)
+
+- Seating generics at the table
+- PC-as-NPC assignment
+- Memoriam `kind: "generic"` wiring
+- Per-NPC lighting / scale overrides (children, animals) — plan hooks later; not required to ship import
+- Dashboard ↔ Lua bidirectional sync of which generics exist in the live scene
+- Replacing named-NPC preload with spawn-on-demand
+
+---
+
+#### Acceptance (v1 done when)
+
+1. Sheet labels appear on `D.genericNpcs[*][*].label` after build/load.
+2. Paste on CONTROL_BOARD **or** Dashboard → Global import opens label modal with correct defaults.
+3. Confirm spawns token (board top-right, face-down) + figurine/light (preload, OFF); library row written.
+4. Apply/Clear/flip behave like other stage NPCs for those tokens.
+5. Scene change destroys generic objects; revisiting the scene recreates them from library (including label overrides).
+6. Dashboard: copy → gold; Clear Generics → gold cleared; Spawn uses Global API when bridge is free.
+7. Dashboard greys out Spawn (and other TTS-bridge actions) when 39998 is held by the IDE or 39999 is unreachable; Copy remains usable.
+
 
 
 ### PC-as-NPC Assignment

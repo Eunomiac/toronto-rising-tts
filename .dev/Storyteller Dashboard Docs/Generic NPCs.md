@@ -100,11 +100,15 @@ civilianChildBoy_01,dogAngry_02,crimePolice_03
 - Live search: every whitespace-separated term must match (AND) against label + tags + key + filename (case-insensitive).
 - Hovering a thumbnail (or a selected-queue chip) shows the **full uncropped cutout** in a 300px-wide column on the right.
 - Thumbnails: CSS crop (`object-fit: cover; object-position: center top`). No generated thumbnail files. Images are served from the existing Generic folder (`/generic-npc-images/…`).
-- Click a tile to add/remove it from the bottom queue. Click a queue chip to remove it.
-- **Copy** writes keys in queue order; does not clear the queue. Disabled when empty.
-- **Clear** empties the queue.
+- Click a tile to add/remove it from the bottom queue. Click a queue chip to remove it. Selected tiles use a **red** highlight.
+- **Copy** writes keys in queue order and marks those keys **gold** (“already added”, localStorage). Does not clear the queue. Disabled when empty.
+- **Spawn in TTS** calls `GlobalImportGenericNpcs` via the External Editor bridge when ports allow; also marks keys gold on successful send. Greyed out when 39998 is held by the TTS Tools extension or 39999 is unreachable (`GET /api/tts-bridge-status`).
+- **Clear** empties the selection queue only.
+- **Clear Generics** clears gold “added” highlights only (local; does not talk to Lua).
 - **+** next to search saves every current space-delimited term into a persistent left-column tag list (browser local storage, A–Z). Click a saved tag to add that term to search; click again to remove it. Newly saved tags stay selected because they are already in the search box.
 - Escape clears the search box. Opening Stage NPCs focuses search. `/` focuses search when you are not already typing in a field. Enter does not copy.
 - Missing image files log a warning and show a placeholder; they do not crash the tab.
 
-The **Lua** tab sends Execute Code over the External Editor ports (TTS on **39999**, this dashboard listening on **39998**). That conflicts with the TTS Tools extension — disable the extension while using the tab.
+**Sheet → Lua labels:** `npm run generic-npcs:import` also writes `lib/generic_npcs_catalog.ttslua` so `D.initGenericNPCs()` can attach `key` / `label` on each Cloud variant (TOR-560).
+
+The **Lua** tab and **Spawn in TTS** share the External Editor ports (TTS on **39999**, this dashboard listening on **39998**). That conflicts with the TTS Tools extension — disable the extension while using those controls. Both UIs poll bridge status and grey out TTS-dependent buttons when the bridge is unavailable.

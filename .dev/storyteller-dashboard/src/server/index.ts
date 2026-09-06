@@ -104,6 +104,12 @@ const handleApi = async (request: IncomingMessage, response: ServerResponse, pat
     return;
   }
 
+  if (request.method === "GET" && pathname === "/api/tts-bridge-status") {
+    const status = await dashboardTtsBridge.getBridgeStatus();
+    sendJson(response, 200, status);
+    return;
+  }
+
   if (request.method === "POST" && pathname === "/api/tts/execute-lua") {
     const body = await readRequestJson(request);
     const script = typeof body === "object" && body !== null && "script" in body ? (body as { script: unknown }).script : undefined;

@@ -17,7 +17,17 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-05 — cloud asset sync (Full build)._
+_Last populated: 2026-09-06 — TOR-560 generic NPC import._
+
+### NPC / stage
+
+#### TOR-560 — Generic NPC import (spawn, scene library, Dashboard bridge)
+
+**How to verify:** Save & Play so Global + CONTROL_BOARD UI update. On the stage control board, paste a short key list from the Storyteller Dashboard (for example `dogGuard_01,academicsProfessor_02`) into the new Import field and click **Import** (or press Enter in the field). A Storyteller-only name popup should open with those rows pre-filled from sheet labels — change a name if you like, then confirm. You should get face-down tokens along the top-right of the control board and figurines under the table with lights off. Apply should place them from token positions like other stage NPCs. Leaving the scene (or Clear) should destroy those generic objects; applying that library scene again should recreate them with the same display names.
+
+Separately, restart the Storyteller Dashboard with the TTS Tools extension **disabled**. Gold highlights should appear after **Copy** or **Spawn in TTS**. **Clear Generics** should clear gold only. With the extension enabled again, **Spawn in TTS** and Lua **Run** should grey out and explain that port 39998 is busy.
+
+**Context:** Runtime spawn exception to the named-NPC preload pool. Seating / PC-as-NPC / Memoriam generics are still out of scope.
 
 ### Tooling / assets
 

@@ -1,0 +1,624 @@
+--[[
+    Generic NPC import / spawn / destroy (TOR-560).
+
+    Runtime spawn exception to the named-NPC workshop preload pool.
+    Catalog: D.genericNpcs (Cloud URLs + sheet labels via lib.generic_npcs_catalog).
+]]
+
+local U = require("lib.util")
+local G = require("lib.guids")
+local S = require("core.state")
+local DATA = require("lib.npcs_data")
+
+local GenericNpcs = {}
+
+local TAG_FIG = "npc_figurine"
+local TAG_LIT = "npc_light"
+local TAG_TOKEN = "npc_control_token"
+local TAG_GENERIC = "generic_npc"
+local GM_FIG_PREFIX = "npcInstance:"
+local GM_TOKEN_PREFIX = "npcToken:"
+
+local TOKEN_TILE_TYPE = 2
+local TOKEN_TILE_THICKNESS = 0.1
+local TOKEN_SCALE = 0.38
+local FIGURINE_IMAGE_SCALAR = 1
+local FIGURINE_PRELOAD_TRANSFORM_SCALE = 0.12
+
+--- @type table|nil { keys = string[], defaults = table<string,string> }
+local pendingImport = nil
+
+local function npcsModule()
+    return require("core.npcs")
+end
+
+--- @return table
+local function getMembership()
+    local npcWorld = S.getStateVal("sessionScene", "npcWorld")
+    if type(npcWorld) ~= "table" then
+        return {}
+    end
+    local membership = npcWorld.genericMembership
+    if type(membership) ~= "table" then
+        return {}
+    end
+    return membership
+end
+
+--- @param membership table
+local function setMembership(membership)
+    local npcWorld = S.getStateVal("sessionScene", "npcWorld")
+    if type(npcWorld) ~= "table" then
+        npcWorld = { placements = {}, controlBoardSnapsEnabled = true }
+    end
+    npcWorld.genericMembership = membership
+    S.setStateVal(npcWorld, "sessionScene", "npcWorld")
+end
+
+--- @param fullKey string
+--- @return boolean
+function GenericNpcs.isMember(fullKey)
+    local membership = getMembership()
+    return type(fullKey) == "string" and type(membership[fullKey]) == "table"
+end
+
+--- Parse comma-delimited catalog keys; resolve via D.genericNpcs.
+--- @param keysString string
+--- @return table[] validRows { key, label, entry }
+--- @return string[] invalidKeys
+--- @return string[] duplicateKeys already in membership
+function GenericNpcs.parseImportKeys(keysString)
+    local valid = {}
+    local invalid = {}
+    local duplicates = {}
+    local seen = {}
+    if type(keysString) ~= "string" then
+        return valid, { tostring(keysString) }, duplicates
+    end
+    local membership = getMembership()
+    for raw in string.gmatch(keysString, "[^,]+") do
+        local key = string.match(raw, "^%s*(.-)%s*$") or ""
+        if key ~= "" then
+            if seen[key] then
+                -- ignore repeat in same paste
+            else
+                seen[key] = true
+                local entry = DATA.resolveGenericNpcEntry(key)
+                if entry == nil then
+                    invalid[#invalid + 1] = key
+                elseif type(membership[key]) == "table" then
+                    duplicates[#duplicates + 1] = key
+                else
+                    valid[#valid + 1] = {
+                        key = key,
+                        label = entry.label,
+                        entry = entry,
+                    }
+                end
+            end
+        end
+    end
+    return valid, invalid, duplicates
+end
+
+--- @param board Object
+--- @param index number 1-based
+--- @param total number
+--- @return table|nil world pos
+local function tokenWorldPosOnControlBoard(board, index, total)
+    if board == nil or board.getPosition == nil or board.getBounds == nil then
+        return nil
+    end
+    local pos = board.getPosition()
+    local bounds = board.getBounds()
+    local size = bounds and bounds.size or nil
+    local sx = (size and tonumber(size.x)) or 8
+    local sz = (size and tonumber(size.z)) or 8
+    local sy = (size and tonumber(size.y)) or 0.2
+    -- Top-right of board face, away from polar snaps (local +X / +Z corner band).
+    local col = ((index - 1) % 8)
+    local row = math.floor((index - 1) / 8)
+    local x = pos.x + sx * 0.32 - col * 0.55
+    local z = pos.z + sz * 0.38 - row * 0.55
+    local y = pos.y + sy * 0.5 + 0.15
+    return { x = x, y = y, z = z }
+end
+
+--- @param worldPos table
+--- @param yawDeg number
+--- @param characterKey string
+--- @param frontUrl string
+--- @param backUrl string
+--- @param displayName string
+--- @return table
+local function buildTokenSpawnData(worldPos, yawDeg, characterKey, frontUrl, backUrl, displayName)
+    return {
+        GUID = "",
+        Name = "Custom_Tile",
+        Transform = {
+            posX = worldPos.x,
+            posY = worldPos.y,
+            posZ = worldPos.z,
+            rotX = 0,
+            rotY = yawDeg,
+            rotZ = 180, -- face-down = OFF
+            scaleX = TOKEN_SCALE,
+            scaleY = 1,
+            scaleZ = TOKEN_SCALE,
+        },
+        Nickname = displayName,
+        Description = "",
+        GMNotes = GM_TOKEN_PREFIX .. characterKey,
+        AltLookAngle = { x = 0, y = 0, z = 0 },
+        ColorDiffuse = { r = 1, g = 1, b = 1 },
+        LayoutGroupSortIndex = 0,
+        Value = 0,
+        Locked = false,
+        Grid = false,
+        Snap = false,
+        IgnoreFoW = false,
+        MeasureMovement = false,
+        DragSelectable = true,
+        Autoraise = true,
+        Sticky = false,
+        Tooltip = true,
+        GridProjection = false,
+        HideWhenFaceDown = false,
+        Hands = false,
+        CustomImage = {
+            ImageURL = frontUrl,
+            ImageSecondaryURL = backUrl,
+            ImageScalar = 1,
+            WidthScale = 0,
+            CustomTile = {
+                Type = TOKEN_TILE_TYPE,
+                Thickness = TOKEN_TILE_THICKNESS,
+                Stackable = false,
+                Stretch = true,
+            },
+        },
+        LuaScript = "",
+        LuaScriptState = "",
+        XmlUI = "",
+        Tags = { TAG_TOKEN, TAG_GENERIC },
+    }
+end
+
+--- @param obj Object
+--- @param frontUrl string
+--- @param backUrl string
+local function applyTokenTileShape(obj, frontUrl, backUrl)
+    if obj == nil or obj.setCustomObject == nil then
+        return
+    end
+    obj.setCustomObject({
+        image = frontUrl,
+        image_bottom = backUrl,
+        type = TOKEN_TILE_TYPE,
+        thickness = TOKEN_TILE_THICKNESS,
+        stackable = false,
+        stretch = true,
+    })
+    if obj.reload ~= nil then
+        obj.reload()
+    end
+end
+
+--- @param characterKey string
+--- @param frontUrl string
+--- @param backUrl string
+--- @param displayName string
+--- @param worldPos table
+--- @return Object|nil
+local function spawnFigurine(characterKey, frontUrl, backUrl, displayName, worldPos)
+    ---@diagnostic disable-next-line: undefined-global
+    local obj = spawnObject({
+        type = "Figurine_Custom",
+        position = worldPos,
+        rotation = { 0, 180, 0 },
+        scale = {
+            FIGURINE_PRELOAD_TRANSFORM_SCALE,
+            FIGURINE_PRELOAD_TRANSFORM_SCALE,
+            FIGURINE_PRELOAD_TRANSFORM_SCALE,
+        },
+        sound = false,
+    })
+    if obj == nil then
+        return nil
+    end
+    if obj.setName ~= nil then
+        obj.setName(displayName)
+    end
+    if obj.setGMNotes ~= nil then
+        obj.setGMNotes(GM_FIG_PREFIX .. characterKey)
+    end
+    if obj.setTags ~= nil then
+        obj.setTags({ TAG_FIG, TAG_GENERIC })
+    end
+    if obj.setLock ~= nil then
+        obj.setLock(true)
+    end
+    if obj.setCustomObject ~= nil then
+        obj.setCustomObject({
+            image = frontUrl,
+            image_secondary = backUrl,
+            image_scalar = FIGURINE_IMAGE_SCALAR,
+        })
+        if obj.reload ~= nil then
+            obj.reload()
+        end
+    end
+    return obj
+end
+
+--- @param characterKey string
+--- @return Object|nil token
+local function findTokenForKey(characterKey)
+    ---@diagnostic disable-next-line: undefined-global
+    local objs = getObjectsWithTag(TAG_TOKEN) or {}
+    local want = GM_TOKEN_PREFIX .. characterKey
+    for _, obj in ipairs(objs) do
+        if obj ~= nil and obj.getGMNotes ~= nil and obj.getGMNotes() == want then
+            return obj
+        end
+    end
+    return nil
+end
+
+--- Destroy figurine, light, and token for one catalog key; unregister from NPCS.characters.
+--- @param characterKey string
+--- @param opts table|nil { keepMembership?: boolean }
+function GenericNpcs.destroyLiveKey(characterKey, opts)
+    opts = type(opts) == "table" and opts or {}
+    if type(characterKey) ~= "string" or characterKey == "" then
+        return
+    end
+    local NPCS = npcsModule()
+    if type(NPCS.removeNpc) == "function" then
+        NPCS.removeNpc(characterKey, { hardDestroy = true, skipSeatSync = true, skipUiRefresh = true })
+    end
+    -- removeNpc may no-op if instance missing; still try figurine/token by identity
+    ---@diagnostic disable-next-line: undefined-global
+    local figs = getObjectsWithTag(TAG_FIG) or {}
+    local wantFig = GM_FIG_PREFIX .. characterKey
+    for _, obj in ipairs(figs) do
+        if obj ~= nil and obj.getGMNotes ~= nil and obj.getGMNotes() == wantFig and obj.destruct ~= nil then
+            obj.destruct()
+        end
+    end
+    local token = findTokenForKey(characterKey)
+    if token ~= nil and token.destruct ~= nil then
+        token.destruct()
+    end
+    if type(NPCS.unregisterGenericCharacter) == "function" then
+        NPCS.unregisterGenericCharacter(characterKey)
+    end
+
+    if opts.keepMembership ~= true then
+        local membership = getMembership()
+        membership[characterKey] = nil
+        setMembership(membership)
+        local placements = S.getStateVal("sessionScene", "npcWorld", "placements")
+        if type(placements) == "table" and placements[characterKey] ~= nil then
+            placements[characterKey] = nil
+            S.setStateVal(placements, "sessionScene", "npcWorld", "placements")
+        end
+    end
+end
+
+--- Destroy all live generic objects for current membership (does not clear membership table).
+function GenericNpcs.destroyAllLiveObjectsKeepMembership()
+    local membership = getMembership()
+    local keys = {}
+    for key, _ in pairs(membership) do
+        if type(key) == "string" then
+            keys[#keys + 1] = key
+        end
+    end
+    for i = 1, #keys do
+        GenericNpcs.destroyLiveKey(keys[i], { keepMembership = true })
+    end
+end
+
+--- Destroy all live generics and clear membership (Clear board / unload from scene).
+function GenericNpcs.destroyAllLiveAndClearMembership()
+    local membership = getMembership()
+    local keys = {}
+    for key, _ in pairs(membership) do
+        if type(key) == "string" then
+            keys[#keys + 1] = key
+        end
+    end
+    for i = 1, #keys do
+        GenericNpcs.destroyLiveKey(keys[i], { keepMembership = false })
+    end
+    setMembership({})
+end
+
+--- @param characterKey string
+--- @param displayName string
+--- @param entry table
+--- @param board Object
+--- @param tokenIndex number
+--- @param tokenTotal number
+--- @return boolean ok
+--- @return string|nil err
+local function spawnOne(characterKey, displayName, entry, board, tokenIndex, tokenTotal)
+    local NPCS = npcsModule()
+    if type(NPCS.registerGenericCharacter) ~= "function" then
+        return false, "NPCS.registerGenericCharacter missing"
+    end
+    NPCS.registerGenericCharacter(characterKey, displayName)
+
+    local tokenPos = tokenWorldPosOnControlBoard(board, tokenIndex, tokenTotal)
+    if tokenPos == nil then
+        NPCS.unregisterGenericCharacter(characterKey)
+        return false, "CONTROL_BOARD missing for token placement"
+    end
+    local boardRot = board.getRotation and board.getRotation() or { y = 0 }
+    local yaw = (boardRot and boardRot.y) or 0
+    local tokenData = buildTokenSpawnData(
+        tokenPos,
+        yaw,
+        characterKey,
+        entry.token.front,
+        entry.token.back,
+        displayName
+    )
+    ---@diagnostic disable-next-line: undefined-global
+    local tokenObj = spawnObjectData({ data = tokenData })
+    if tokenObj == nil then
+        NPCS.unregisterGenericCharacter(characterKey)
+        return false, "token spawn failed for " .. characterKey
+    end
+    applyTokenTileShape(tokenObj, entry.token.front, entry.token.back)
+    local Gameboard = require("core.npc_gameboard")
+    if type(Gameboard.setHiddenFromPlayerColors) == "function" then
+        Gameboard.setHiddenFromPlayerColors(tokenObj)
+    end
+
+    local slot = nil
+    -- ensureNpcInPreloadZone assigns stable slot after figurine exists
+    local figPos = { x = 0, y = -200, z = 0 }
+    if type(NPCS.computeSlotWorldPosition) == "function" then
+        -- provisional park under table; adopt moves to stable slot
+        figPos = NPCS.computeSlotWorldPosition("preload", 1) or figPos
+    end
+    local fig = spawnFigurine(
+        characterKey,
+        entry.figurine.front,
+        entry.figurine.back,
+        displayName,
+        figPos
+    )
+    if fig == nil then
+        if tokenObj.destruct ~= nil then
+            tokenObj.destruct()
+        end
+        NPCS.unregisterGenericCharacter(characterKey)
+        return false, "figurine spawn failed for " .. characterKey
+    end
+
+    local ok, err = NPCS.ensureNpcInPreloadZone(characterKey, {
+        deferUiRefresh = true,
+        skipSeatSync = true,
+        forceNpcLightMode = "OFF",
+    })
+    if not ok then
+        if fig.destruct ~= nil then
+            fig.destruct()
+        end
+        if tokenObj.destruct ~= nil then
+            tokenObj.destruct()
+        end
+        NPCS.unregisterGenericCharacter(characterKey)
+        return false, err or ("preload adopt failed for " .. characterKey)
+    end
+    return true, nil
+end
+
+--- Confirm pending import with optional label overrides (key → display name).
+--- @param labelOverrides table|nil
+--- @return boolean ok
+--- @return string|nil message
+function GenericNpcs.confirmImport(labelOverrides)
+    if pendingImport == nil or type(pendingImport.keys) ~= "table" or #pendingImport.keys < 1 then
+        return false, "No pending generic NPC import."
+    end
+    local board = G.getObject(G.GUIDS.CONTROL_BOARD)
+    if board == nil then
+        return false, "CONTROL_BOARD not found."
+    end
+    labelOverrides = type(labelOverrides) == "table" and labelOverrides or {}
+    local membership = getMembership()
+    local total = #pendingImport.keys
+    local spawned = 0
+    local errors = {}
+    for i = 1, total do
+        local key = pendingImport.keys[i]
+        local entry = DATA.resolveGenericNpcEntry(key)
+        if entry == nil then
+            errors[#errors + 1] = key .. " (missing catalog)"
+        else
+            local displayName = labelOverrides[key]
+            if type(displayName) ~= "string" or string.match(displayName, "^%s*$") then
+                displayName = pendingImport.defaults[key] or entry.label or key
+            end
+            displayName = string.match(displayName, "^%s*(.-)%s*$") or displayName
+            local ok, err = spawnOne(key, displayName, entry, board, i, total)
+            if ok then
+                membership[key] = { key = key, displayName = displayName }
+                spawned = spawned + 1
+            else
+                errors[#errors + 1] = tostring(err)
+            end
+        end
+    end
+    setMembership(membership)
+    pendingImport = nil
+    GenericNpcs.hideLabelModal()
+    if #errors > 0 then
+        U.AlertGM(
+            "Generic NPC import: spawned "
+                .. tostring(spawned)
+                .. "/"
+                .. tostring(total)
+                .. ". Errors: "
+                .. table.concat(errors, "; ")
+        )
+    else
+        print("[GenericNpcs] Imported " .. tostring(spawned) .. " generic NPC(s).")
+    end
+    return spawned > 0, nil
+end
+
+function GenericNpcs.cancelImport()
+    pendingImport = nil
+    GenericNpcs.hideLabelModal()
+end
+
+local MAX_MODAL_ROWS = 24
+
+function GenericNpcs.hideLabelModal()
+    ---@diagnostic disable-next-line: undefined-global
+    if UI == nil then
+        return
+    end
+    UI.setAttribute("generic_npc_import_modal", "active", "false")
+    for i = 1, MAX_MODAL_ROWS do
+        local id = string.format("genericImport_row_%02d", i)
+        UI.setAttribute(id, "active", "false")
+    end
+end
+
+--- @param rows table[]
+local function showLabelModal(rows)
+    ---@diagnostic disable-next-line: undefined-global
+    if UI == nil then
+        U.AlertGM("Generic NPC label modal unavailable (UI missing).")
+        return false
+    end
+    local n = math.min(#rows, MAX_MODAL_ROWS)
+    if #rows > MAX_MODAL_ROWS then
+        U.AlertGM(
+            "Generic NPC import supports at most "
+                .. tostring(MAX_MODAL_ROWS)
+                .. " keys per batch; extra keys were ignored."
+        )
+    end
+    for i = 1, MAX_MODAL_ROWS do
+        local id = string.format("genericImport_row_%02d", i)
+        local keyId = string.format("genericImport_key_%02d", i)
+        local inputId = string.format("genericImport_label_%02d", i)
+        if i <= n then
+            local row = rows[i]
+            UI.setAttribute(id, "active", "true")
+            UI.setAttribute(keyId, "text", row.key)
+            UI.setAttribute(inputId, "text", row.label)
+            UI.setValue(inputId, row.label)
+        else
+            UI.setAttribute(id, "active", "false")
+        end
+    end
+    UI.setAttribute("generic_npc_import_modal", "active", "true")
+    return true
+end
+
+--- Shared entry: paste field + Dashboard bridge.
+--- @param keysString string|table
+--- @return boolean startedModalOrSpawned
+--- @return string|nil message
+function GenericNpcs.beginImport(keysString)
+    if type(keysString) == "table" then
+        keysString = keysString.keys or keysString[1] or ""
+    end
+    if type(keysString) ~= "string" or string.match(keysString, "^%s*$") then
+        U.AlertGM("Generic NPC import: paste a comma-delimited list of catalog keys.")
+        return false, "empty"
+    end
+    local valid, invalid, duplicates = GenericNpcs.parseImportKeys(keysString)
+    if #invalid > 0 then
+        U.AlertGM("Generic NPC import: unknown keys skipped — " .. table.concat(invalid, ", "))
+    end
+    if #duplicates > 0 then
+        U.AlertGM("Generic NPC import: already in this scene — " .. table.concat(duplicates, ", "))
+    end
+    if #valid < 1 then
+        U.AlertGM("Generic NPC import: no valid new keys to import.")
+        return false, "none"
+    end
+    local keys = {}
+    local defaults = {}
+    for i = 1, #valid do
+        keys[i] = valid[i].key
+        defaults[valid[i].key] = valid[i].label
+    end
+    pendingImport = { keys = keys, defaults = defaults }
+    if not showLabelModal(valid) then
+        pendingImport = nil
+        return false, "modal"
+    end
+    return true, nil
+end
+
+--- Read label modal inputs and confirm.
+--- @return boolean
+function GenericNpcs.confirmImportFromModal()
+    if pendingImport == nil then
+        return false
+    end
+    ---@diagnostic disable-next-line: undefined-global
+    local overrides = {}
+    for i = 1, #pendingImport.keys do
+        local key = pendingImport.keys[i]
+        local inputId = string.format("genericImport_label_%02d", i)
+        local value = nil
+        if UI ~= nil and UI.getValue ~= nil then
+            value = UI.getValue(inputId)
+        end
+        if type(value) == "string" and value ~= "" then
+            overrides[key] = value
+        end
+    end
+    return GenericNpcs.confirmImport(overrides)
+end
+
+--- Ensure membership keys have live objects (scene apply / restore).
+--- @return number spawnedOrAdopted
+function GenericNpcs.ensureLiveFromMembership()
+    local membership = getMembership()
+    local board = G.getObject(G.GUIDS.CONTROL_BOARD)
+    if board == nil then
+        return 0
+    end
+    local NPCS = npcsModule()
+    local keys = {}
+    for key, _ in pairs(membership) do
+        if type(key) == "string" then
+            keys[#keys + 1] = key
+        end
+    end
+    table.sort(keys)
+    local count = 0
+    for i = 1, #keys do
+        local key = keys[i]
+        local row = membership[key]
+        local entry = DATA.resolveGenericNpcEntry(key)
+        if type(entry) == "table" then
+            local displayName = (type(row) == "table" and row.displayName) or entry.label or key
+            local hasInstance = type(NPCS.getInstanceRecord) == "function"
+                and NPCS.getInstanceRecord(key) ~= nil
+            if not hasInstance then
+                local ok, err = spawnOne(key, displayName, entry, board, i, #keys)
+                if ok then
+                    count = count + 1
+                elseif err ~= nil then
+                    print("[GenericNpcs] ensureLiveFromMembership " .. key .. ": " .. tostring(err))
+                end
+            end
+        end
+    end
+    return count
+end
+
+return GenericNpcs

@@ -125,6 +125,50 @@ export class DashboardTtsBridge {
     });
   }
 
+  /** Non-destructive probe of ports 39998 / 39999 for UI grey-out (TOR-560). */
+  async getBridgeStatus(): Promise<{
+    editorPort: "held_by_dashboard" | "free" | "in_use";
+    commandPort: "reachable" | "unreachable";
+    usable: boolean;
+    message: string;
+  }> {
+    let editorPort: "held_by_dashboard" | "free" | "in_use" = "free";
+    if (this.server !== null) {
+      editorPort = "held_by_dashboard";
+    } else {
+      editorPort = await new Promise((resolve) => {
+        const probe = net.createServer();
+        probe.once("error", (error?: Error) => {
+          const detail = error?.message ?? "";
+          resolve(detail.includes("EADDRINUSE") ? "in_use" : "free");
+        });
+        probe.listen(TTS_EDITOR_PORT, "127.0.0.1", () => {
+          probe.close(() => resolve("free"));
+        });
+      });
+    }
+
+    const commandPort = await new Promise<"reachable" | "unreachable">((resolve) => {
+      const client = net.connect({ host: "127.0.0.1", port: TTS_COMMAND_PORT }, () => {
+        client.end();
+        resolve("reachable");
+      });
+      client.once("error", () => resolve("unreachable"));
+    });
+
+    let message = "TTS bridge ready.";
+    if (editorPort === "in_use") {
+      message = "TTS Tools extension is using port 39998 — disable it to spawn from the Dashboard.";
+    } else if (commandPort === "unreachable") {
+      message = "TTS External Editor not reachable on 39999 — load a game with External Editor enabled.";
+    } else if (editorPort === "held_by_dashboard") {
+      message = "Dashboard holds port 39998; TTS command port is reachable.";
+    }
+
+    const usable = editorPort !== "in_use" && commandPort === "reachable";
+    return { editorPort, commandPort, usable, message };
+  }
+
   executeLua(script: string): Promise<ExecuteResult> {
     const next = this.chain.then(() => this.runExecute(script));
     this.chain = next.then(

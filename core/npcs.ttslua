@@ -4388,6 +4388,10 @@ function NPCS.restoreAfterStateLoad()
     NPCS.registerRestoredInstancesFromState()
     NPCS.auditDuplicatePooledSpotlights({ phase = "load-after-register" })
     NPCS.auditPreloadPoolFigurines({ deferUiRefresh = true, auditAfterPreload = true, hardError = true })
+    do
+        local GenericNpcs = require("core.generic_npcs")
+        GenericNpcs.ensureLiveFromMembership()
+    end
 end
 
 --- Verify every `NPCS.characters` key has an in-world `npc_figurine`; adopt instance rows when needed.
@@ -4409,7 +4413,10 @@ function NPCS.auditPreloadPoolFigurines(opts)
 
     local missingFigurines = {}
     for _, name in ipairs(names) do
-        if validateNpcNameKey(name) and findExistingPooledFigurineForNpcName(name) == nil then
+        if validateNpcNameKey(name)
+            and NPCS.isGenericCharacter(name) ~= true
+            and findExistingPooledFigurineForNpcName(name) == nil
+        then
             missingFigurines[#missingFigurines + 1] = name
         end
     end
@@ -4429,7 +4436,10 @@ function NPCS.auditPreloadPoolFigurines(opts)
 
     local adoptFailures = {}
     for _, name in ipairs(names) do
-        if validateNpcNameKey(name) and getInstances()[name] == nil then
+        if validateNpcNameKey(name)
+            and NPCS.isGenericCharacter(name) ~= true
+            and getInstances()[name] == nil
+        then
             local ok, err = NPCS.ensureNpcInPreloadZone(name, { deferUiRefresh = true, skipSeatSync = true })
             if not ok then
                 adoptFailures[#adoptFailures + 1] = tostring(name) .. ": " .. tostring(err)
@@ -4519,6 +4529,46 @@ function NPCS.displayStats(npcName, maxDepth)
     table.insert(lines, (def.fullName or npcName) .. " — stats")
     walk(def.stats, 0, 0)
     return table.concat(lines, "\n")
+end
+
+--- Runtime-only roster entry for generic NPCs (TOR-560). Skipped by workshop preload audit.
+--- @param characterKey string
+--- @param displayName string
+function NPCS.registerGenericCharacter(characterKey, displayName)
+    if not validateNpcNameKey(characterKey) then
+        error("[NPCS] registerGenericCharacter: invalid key " .. tostring(characterKey), 2)
+    end
+    if U.Type(displayName) ~= "string" or displayName == "" then
+        displayName = characterKey
+    end
+    NPCS.characters[characterKey] = {
+        name = characterKey,
+        fullName = displayName,
+        figurine = { scale = 1 },
+        isGeneric = true,
+    }
+    ensurePreloadLayoutCapacity()
+end
+
+--- @param characterKey string
+function NPCS.unregisterGenericCharacter(characterKey)
+    if U.Type(characterKey) ~= "string" or characterKey == "" then
+        return
+    end
+    local def = NPCS.characters[characterKey]
+    if type(def) == "table" and def.isGeneric == true then
+        NPCS.characters[characterKey] = nil
+    end
+end
+
+--- @param characterKey string|nil
+--- @return boolean
+function NPCS.isGenericCharacter(characterKey)
+    if U.Type(characterKey) ~= "string" then
+        return false
+    end
+    local def = NPCS.characters[characterKey]
+    return type(def) == "table" and def.isGeneric == true
 end
 
 return NPCS

@@ -69,6 +69,7 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | Function | Tier | Phase | Notes |
 | --- | --- | --- | --- |
 | `GlobalGameboardApply/Clear/ClearClick/RecoverStrays/Save/Load/ToggleLayoutLock/ToggleControlBoardSnaps/TokenDroppedOnDiceBag/StageLerpOrchestrator` | C | 5 | Gameboard; Save is state-only (B); RecoverStrays = right-click Clear (TOR-485) |
+| `GlobalImportGenericNpcs` / `HUD_genericNpcImportConfirm` / `HUD_genericNpcImportCancel` | B+C | 5 | TOR-560 generic import: parse keys → ST label modal → spawn token/figurine/light; Dashboard executeLua |
 | `GlobalGameboardInstallPaletteSnaps` | C | Done | palette snap install |
 | `GlobalGameboardSyncSnapsToggleLabel` | A | — | snaps + layout-lock toolbar labels |
 | `GlobalToggleSignalFireState` | C | 5 | signal lights; on/off = world Y — seat layout preserves per-seat Y (TOR-380), no gameState reconciler |
@@ -207,7 +208,7 @@ Per-object scripts (`objects/*.ttslua`, `ui/ui_*.ttslua`) run in **isolated chun
 | Script | Events | Guard pattern |
 | --- | --- | --- |
 | `objects/dice_bag.ttslua` | `click_roll`, spawn, onLoad | tags; spawn via Global.call |
-| `objects/npc_control_board.ttslua` | `click_apply`, `click_clear` | Steam via `GlobalIsStorytellerSteamPlayer`; mutators via Global.call; Clear right-click (`-2`) → `GlobalGameboardRecoverStrays` (TOR-485 stray park + TOR-486 palette re-snap + ST feedback) |
+| `objects/npc_control_board.ttslua` | `click_apply`, `click_clear`, `click_generic_import` | Steam via `GlobalIsStorytellerSteamPlayer`; mutators via Global.call; Clear right-click (`-2`) → `GlobalGameboardRecoverStrays` (TOR-485 stray park + TOR-486 palette re-snap + ST feedback); Import → `GlobalImportGenericNpcs` (TOR-560) |
 | `objects/npc_control_board_palette.ttslua` | onLoad | One-time install via Global.call |
 | `ui/ui_signal_candle.ttslua` | click | Object GUID / color from name |
 | `ui/ui_tarot_button.ttslua` | click | Pink/Black → `GlobalApplyTarotState` |

@@ -1261,6 +1261,41 @@ function GlobalGameboardApply(params)
     return ok == true
 end
 
+--- Generic NPC import (CONTROL_BOARD paste / Storyteller Dashboard executeLua). TOR-560.
+--- Opens the ST label modal; Confirm spawns token+figurine+light.
+--- @param params string|table|nil comma-delimited keys, or `{ keys = "..." }`
+--- @return boolean
+function GlobalImportGenericNpcs(params)
+    local GenericNpcs = require("core.generic_npcs")
+    local keys = params
+    if type(params) == "table" then
+        keys = params.keys or params[1]
+    end
+    local ok = GenericNpcs.beginImport(keys)
+    return ok == true
+end
+
+--- Alias for External Editor / Dashboard: `lua GlobalImportGenericNpcs("key_01,key_02")`
+function GlobalImportGenericNpcsFromString(keysString)
+    return GlobalImportGenericNpcs(keysString)
+end
+
+function HUD_genericNpcImportConfirm(player, button, id)
+    if not U.isStorytellerSteamPlayer(player) then
+        return
+    end
+    local GenericNpcs = require("core.generic_npcs")
+    GenericNpcs.confirmImportFromModal()
+end
+
+function HUD_genericNpcImportCancel(player, button, id)
+    if not U.isStorytellerSteamPlayer(player) then
+        return
+    end
+    local GenericNpcs = require("core.generic_npcs")
+    GenericNpcs.cancelImport()
+end
+
 --- TOR-173: single orchestrator coroutine for stage placement lerp batches on Apply.
 function GlobalStageLerpOrchestrator()
     local NPCStageLerp = require("core.npc_stage_lerp")

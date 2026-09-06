@@ -1,0 +1,171 @@
+<!-- Generic NPC import label override modal (TOR-560). Source: ui/storyteller/generic_npc_import_modal.xml -->
+<Defaults>
+  <VerticalLayout class="genericImport_modal"
+    rectAlignment="MiddleCenter"
+    width="720"
+    height="640"
+    padding="20 20 20 20"
+    color="#000000EE"
+    childAlignment="UpperCenter"
+    spacing="10"
+    childForceExpandWidth="true"
+    childForceExpandHeight="false"
+  />
+  <Text class="genericImport_title"
+    alignment="MiddleCenter"
+    color="#cb995c"
+    fontStyle="Bold"
+    fontSize="26"
+    preferredHeight="40"
+  />
+  <Text class="genericImport_hint"
+    alignment="MiddleCenter"
+    color="#AAAAAA"
+    fontSize="14"
+    preferredHeight="28"
+  />
+  <HorizontalLayout class="genericImport_row"
+    preferredHeight="40"
+    minHeight="40"
+    spacing="10"
+    childForceExpandWidth="false"
+    childForceExpandHeight="true"
+    childAlignment="MiddleLeft"
+  />
+  <Text class="genericImport_key"
+    alignment="MiddleLeft"
+    color="#FFFFFF"
+    fontSize="14"
+    preferredWidth="220"
+    minWidth="180"
+  />
+  <InputField class="genericImport_label"
+    fontSize="16"
+    preferredHeight="36"
+    minHeight="36"
+    flexibleWidth="1"
+    colors="#222222|#333333|#111111|#555555"
+    textColor="#FFFFFF"
+  />
+  <HorizontalLayout class="genericImport_buttons"
+    preferredHeight="48"
+    minHeight="48"
+    spacing="16"
+    childForceExpandWidth="false"
+    childAlignment="MiddleCenter"
+  />
+  <Button class="genericImport_btn"
+    preferredWidth="160"
+    preferredHeight="44"
+    fontSize="18"
+    fontStyle="Bold"
+    textColor="#FFFFFF"
+  />
+</Defaults>
+
+<VerticalLayout id="generic_npc_import_modal" class="genericImport_modal" visibility="Black|Host" active="false">
+  <Text class="genericImport_title" text="Generic NPC Names" />
+  <Text class="genericImport_hint" text="Edit display names (optional), then Import. Cancel discards the batch." />
+  <VerticalLayout spacing="6" childForceExpandHeight="false" flexibleHeight="1">
+    <HorizontalLayout id="genericImport_row_01" class="genericImport_row" active="false">
+      <Text id="genericImport_key_01" class="genericImport_key" text="" />
+      <InputField id="genericImport_label_01" class="genericImport_label" text="" />
+    </HorizontalLayout>
+    <HorizontalLayout id="genericImport_row_02" class="genericImport_row" active="false">
+      <Text id="genericImport_key_02" class="genericImport_key" text="" />
+      <InputField id="genericImport_label_02" class="genericImport_label" text="" />
+    </HorizontalLayout>
+    <HorizontalLayout id="genericImport_row_03" class="genericImport_row" active="false">
+      <Text id="genericImport_key_03" class="genericImport_key" text="" />
+      <InputField id="genericImport_label_03" class="genericImport_label" text="" />
+    </HorizontalLayout>
+    <HorizontalLayout id="genericImport_row_04" class="genericImport_row" active="false">
+      <Text id="genericImport_key_04" class="genericImport_key" text="" />
+      <InputField id="genericImport_label_04" class="genericImport_label" text="" />
+    </HorizontalLayout>
+    <HorizontalLayout id="genericImport_row_05" class="genericImport_row" active="false">
+      <Text id="genericImport_key_05" class="genericImport_key" text="" />
+      <InputField id="genericImport_label_05" class="genericImport_label" text="" />
+    </HorizontalLayout>
+    <HorizontalLayout id="genericImport_row_06" class="genericImport_row" active="false">
+      <Text id="genericImport_key_06" class="genericImport_key" text="" />
+      <InputField id="genericImport_label_06" class="genericImport_label" text="" />
+    </HorizontalLayout>
+    <HorizontalLayout id="genericImport_row_07" class="genericImport_row" active="false">
+      <Text id="genericImport_key_07" class="genericImport_key" text="" />
+      <InputField id="genericImport_label_07" class="genericImport_label" text="" />
+    </HorizontalLayout>
+    <HorizontalLayout id="genericImport_row_08" class="genericImport_row" active="false">
+      <Text id="genericImport_key_08" class="genericImport_key" text="" />
+      <InputField id="genericImport_label_08" class="genericImport_label" text="" />
+    </HorizontalLayout>
+    <HorizontalLayout id="genericImport_row_09" class="genericImport_row" active="false">
+      <Text id="genericImport_key_09" class="genericImport_key" text="" />
+      <InputField id="genericImport_label_09" class="genericImport_label" text="" />
+    </HorizontalLayout>
+    <HorizontalLayout id="genericImport_row_10" class="genericImport_row" active="false">
+      <Text id="genericImport_key_10" class="genericImport_key" text="" />
+      <InputField id="genericImport_label_10" class="genericImport_label" text="" />
+    </HorizontalLayout>
+    <HorizontalLayout id="genericImport_row_11" class="genericImport_row" active="false">
+      <Text id="genericImport_key_11" class="genericImport_key" text="" />
+      <InputField id="genericImport_label_11" class="genericImport_label" text="" />
+    </HorizontalLayout>
+    <HorizontalLayout id="genericImport_row_12" class="genericImport_row" active="false">
+      <Text id="genericImport_key_12" class="genericImport_key" text="" />
+      <InputField id="genericImport_label_12" class="genericImport_label" text="" />
+    </HorizontalLayout>
+    <HorizontalLayout id="genericImport_row_13" class="genericImport_row" active="false">
+      <Text id="genericImport_key_13" class="genericImport_key" text="" />
+      <InputField id="genericImport_label_13" class="genericImport_label" text="" />
+    </HorizontalLayout>
+    <HorizontalLayout id="genericImport_row_14" class="genericImport_row" active="false">
+      <Text id="genericImport_key_14" class="genericImport_key" text="" />
+      <InputField id="genericImport_label_14" class="genericImport_label" text="" />
+    </HorizontalLayout>
+    <HorizontalLayout id="genericImport_row_15" class="genericImport_row" active="false">
+      <Text id="genericImport_key_15" class="genericImport_key" text="" />
+      <InputField id="genericImport_label_15" class="genericImport_label" text="" />
+    </HorizontalLayout>
+    <HorizontalLayout id="genericImport_row_16" class="genericImport_row" active="false">
+      <Text id="genericImport_key_16" class="genericImport_key" text="" />
+      <InputField id="genericImport_label_16" class="genericImport_label" text="" />
+    </HorizontalLayout>
+    <HorizontalLayout id="genericImport_row_17" class="genericImport_row" active="false">
+      <Text id="genericImport_key_17" class="genericImport_key" text="" />
+      <InputField id="genericImport_label_17" class="genericImport_label" text="" />
+    </HorizontalLayout>
+    <HorizontalLayout id="genericImport_row_18" class="genericImport_row" active="false">
+      <Text id="genericImport_key_18" class="genericImport_key" text="" />
+      <InputField id="genericImport_label_18" class="genericImport_label" text="" />
+    </HorizontalLayout>
+    <HorizontalLayout id="genericImport_row_19" class="genericImport_row" active="false">
+      <Text id="genericImport_key_19" class="genericImport_key" text="" />
+      <InputField id="genericImport_label_19" class="genericImport_label" text="" />
+    </HorizontalLayout>
+    <HorizontalLayout id="genericImport_row_20" class="genericImport_row" active="false">
+      <Text id="genericImport_key_20" class="genericImport_key" text="" />
+      <InputField id="genericImport_label_20" class="genericImport_label" text="" />
+    </HorizontalLayout>
+    <HorizontalLayout id="genericImport_row_21" class="genericImport_row" active="false">
+      <Text id="genericImport_key_21" class="genericImport_key" text="" />
+      <InputField id="genericImport_label_21" class="genericImport_label" text="" />
+    </HorizontalLayout>
+    <HorizontalLayout id="genericImport_row_22" class="genericImport_row" active="false">
+      <Text id="genericImport_key_22" class="genericImport_key" text="" />
+      <InputField id="genericImport_label_22" class="genericImport_label" text="" />
+    </HorizontalLayout>
+    <HorizontalLayout id="genericImport_row_23" class="genericImport_row" active="false">
+      <Text id="genericImport_key_23" class="genericImport_key" text="" />
+      <InputField id="genericImport_label_23" class="genericImport_label" text="" />
+    </HorizontalLayout>
+    <HorizontalLayout id="genericImport_row_24" class="genericImport_row" active="false">
+      <Text id="genericImport_key_24" class="genericImport_key" text="" />
+      <InputField id="genericImport_label_24" class="genericImport_label" text="" />
+    </HorizontalLayout>
+  </VerticalLayout>
+  <HorizontalLayout class="genericImport_buttons">
+    <Button class="genericImport_btn" colors="#663333|#884444|#AA5555|#333333" text="Cancel" onClick="HUD_genericNpcImportCancel" />
+    <Button class="genericImport_btn" colors="#336644|#448855|#55AA66|#333333" text="Import" onClick="HUD_genericNpcImportConfirm" />
+  </HorizontalLayout>
+</VerticalLayout>

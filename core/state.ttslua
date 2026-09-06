@@ -414,6 +414,7 @@ function S.GetDefaultGameState()
             npcWorld = {
                 placements = {},
                 byArea = {},
+                genericMembership = {},
                 --- When false, CONTROL_BOARD polar snaps are cleared (tokens stay put).
                 controlBoardSnapsEnabled = true,
             },

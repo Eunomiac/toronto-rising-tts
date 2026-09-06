@@ -32,12 +32,14 @@ declare module "node:net" {
     destroy(): void;
   };
   type Server = {
-    once(event: string, cb: (err: Error) => void): void;
+    once(event: string, cb: (err?: Error) => void): void;
     listen(port: number, host: string, cb: () => void): void;
+    close(cb?: () => void): void;
   };
   const net: {
     Socket: new () => Socket;
-    createServer(handler: (socket: Socket) => void): Server;
+    createServer(handler?: (socket: Socket) => void): Server;
+    connect(options: { host: string; port: number }, cb: () => void): Socket;
   };
   export default net;
 }

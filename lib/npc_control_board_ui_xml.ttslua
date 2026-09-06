@@ -12,22 +12,31 @@ D.XML = [=[
 <!-- Same pattern as csheet_defaults `page_root`: large pixels + scale 0.1 + rotation 0 0 180 -->
 <Defaults>
   <Button class="gb_toolbar_btn" fontSize="52" preferredHeight="72" minHeight="60" preferredWidth="170" minWidth="140" textColor="#FFFFFF" />
+  <InputField class="gb_generic_import_field" fontSize="36" preferredHeight="64" minHeight="56" preferredWidth="520" minWidth="400" colors="#222222|#333333|#111111|#555555" textColor="#FFFFFF" placeholderText="generic keys…" />
+  <Button class="gb_generic_import_btn" fontSize="40" preferredHeight="64" minHeight="56" preferredWidth="140" minWidth="120" textColor="#FFFFFF" />
 </Defaults>
-<Panel id="gb_root" visibility="Black" active="true" rectAlignment="LowerLeft" width="1280" height="100" scale="0.1 0.1 0.1" position="-25 -100 -22" pivot="0 0">
-  <HorizontalLayout spacing="18" padding="8 8 8 8" childAlignment="MiddleCenter" childForceExpandWidth="false" height="100%" width="100%">
-    <Button id="gb_apply" class="gb_toolbar_btn" onClick="click_apply"
-      colors="#336644|#448855|#55AA66|#333333">Apply</Button>
-    <Button id="gb_clear" class="gb_toolbar_btn" onClick="click_clear"
-      colors="#663333|#884444|#AA5555|#333333">Clear</Button>
-    <Button id="gb_snaps" class="gb_toolbar_btn" onClick="click_snaps_toggle"
-      colors="#336644|#448855|#55AA66|#333333">Snaps On</Button>
-    <Button id="gb_scope" class="gb_toolbar_btn" onClick="click_scope" fontSize="40" preferredWidth="150"
-      colors="#336644|#448855|#55AA66|#333333">HERE</Button>
-    <Button id="gb_lock" class="gb_toolbar_btn" onClick="click_lock" fontSize="32" preferredWidth="180"
-      colors="#336644|#448855|#55AA66|#333333">Unlocked</Button>
-    <Button id="gb_load" class="gb_toolbar_btn" onClick="click_load" fontSize="40" preferredWidth="150"
-      colors="#336644|#448855|#55AA66|#333333">Load</Button>
-  </HorizontalLayout>
+<Panel id="gb_root" visibility="Black" active="true" rectAlignment="LowerLeft" width="1280" height="180" scale="0.1 0.1 0.1" position="-25 -100 -22" pivot="0 0">
+  <VerticalLayout spacing="10" padding="8 8 8 8" childAlignment="MiddleCenter" childForceExpandWidth="true" height="100%" width="100%">
+    <HorizontalLayout spacing="12" childAlignment="MiddleCenter" childForceExpandWidth="false" preferredHeight="64">
+      <InputField id="gb_generic_import_keys" class="gb_generic_import_field" text="" onEndEdit="click_generic_import_end" />
+      <Button id="gb_generic_import" class="gb_generic_import_btn" onClick="click_generic_import"
+        colors="#445566|#556677|#667788|#333333">Import</Button>
+    </HorizontalLayout>
+    <HorizontalLayout spacing="18" childAlignment="MiddleCenter" childForceExpandWidth="false" preferredHeight="80">
+      <Button id="gb_apply" class="gb_toolbar_btn" onClick="click_apply"
+        colors="#336644|#448855|#55AA66|#333333">Apply</Button>
+      <Button id="gb_clear" class="gb_toolbar_btn" onClick="click_clear"
+        colors="#663333|#884444|#AA5555|#333333">Clear</Button>
+      <Button id="gb_snaps" class="gb_toolbar_btn" onClick="click_snaps_toggle"
+        colors="#336644|#448855|#55AA66|#333333">Snaps On</Button>
+      <Button id="gb_scope" class="gb_toolbar_btn" onClick="click_scope" fontSize="40" preferredWidth="150"
+        colors="#336644|#448855|#55AA66|#333333">HERE</Button>
+      <Button id="gb_lock" class="gb_toolbar_btn" onClick="click_lock" fontSize="32" preferredWidth="180"
+        colors="#336644|#448855|#55AA66|#333333">Unlocked</Button>
+      <Button id="gb_load" class="gb_toolbar_btn" onClick="click_load" fontSize="40" preferredWidth="150"
+        colors="#336644|#448855|#55AA66|#333333">Load</Button>
+    </HorizontalLayout>
+  </VerticalLayout>
 </Panel>
 ]=]
 

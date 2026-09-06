@@ -852,6 +852,10 @@ function Scenes.clearLiveNarrativeForPhaseTransition(opts)
     S.setStateVal(false, "sessionScene", "isTopFogActive")
 
     clearLiveNpcWorldPlacements()
+    do
+        local GenericNpcs = require("core.generic_npcs")
+        GenericNpcs.destroyAllLiveAndClearMembership()
+    end
     clearNpcSeatSlotsForNoScene()
     if type(SceneLibrary.syncOccupiedNpcSlotsFromSeatSlots) == "function" then
         SceneLibrary.syncOccupiedNpcSlotsFromSeatSlots(S.getStateVal("sessionScene"))
@@ -925,6 +929,10 @@ local function mutateDefaultNoSceneSessionState(opts)
     S.setStateVal(false, "sessionScene", "isTopFogActive")
     S.setStateVal("OutdoorDim", "sessionScene", "lightingPresetKey")
     clearLiveNpcWorldPlacements()
+    do
+        local GenericNpcs = require("core.generic_npcs")
+        GenericNpcs.destroyAllLiveAndClearMembership()
+    end
     clearNpcSeatSlotsForNoScene()
     applyDefaultPcSeatPresence()
     SceneLibrary.syncOccupiedNpcSlotsFromSeatSlots(S.getStateVal("sessionScene"))

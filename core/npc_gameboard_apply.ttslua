@@ -591,6 +591,10 @@ function Apply.clearControlBoard()
         seatPresenceChanged = applyHomelandSeatPresenceAfterStageClear(existingPlacements)
         stateModule().setStateVal({}, "sessionScene", "npcWorld", "placements")
     end
+    do
+        local GenericNpcs = require("core.generic_npcs")
+        GenericNpcs.destroyAllLiveAndClearMembership()
+    end
     local board = Board.getControlBoard()
     local seatReleased = Tokens.releaseHomelandSeatsForOffBoardTokens(board)
     local palette = Board.getControlBoardPalette()

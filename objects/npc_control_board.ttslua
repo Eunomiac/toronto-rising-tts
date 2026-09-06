@@ -125,3 +125,30 @@ function click_load(player, value, id)
         broadcastToColor(msg, player_color, ok == true and { 0, 1, 1 } or { 1, 0.35, 0.35 })
     end
 end
+
+local function readGenericImportKeysFromUi()
+    if self == nil or self.UI == nil or self.UI.getValue == nil then
+        return ""
+    end
+    local value = self.UI.getValue("gb_generic_import_keys")
+    if type(value) ~= "string" then
+        return ""
+    end
+    return value
+end
+
+function click_generic_import(player, value, id)
+    if not isStorytellerSteamClick(player, value) then
+        return
+    end
+    Global.call("GlobalImportGenericNpcs", { keys = readGenericImportKeysFromUi() })
+end
+
+function click_generic_import_end(player, value, id)
+    if not isStorytellerSteamClick(player, value) then
+        return
+    end
+    -- onEndEdit: value is the field text
+    local keys = type(value) == "string" and value or readGenericImportKeysFromUi()
+    Global.call("GlobalImportGenericNpcs", { keys = keys })
+end

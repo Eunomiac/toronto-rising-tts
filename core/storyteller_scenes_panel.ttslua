@@ -1890,6 +1890,11 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
         PresentDayClock.cancelCatchUpOnLiveClock()
         PresentDayClock.flushPreviousAppliedScene(K)
 
+        do
+            local GenericNpcs = require("core.generic_npcs")
+            GenericNpcs.destroyAllLiveObjectsKeepMembership()
+        end
+
         -- Deep copy: `U.clone(..., true)` is shallow only (see `lib/util.ttslua`); `U.merge` recurses nested tables.
         local bundle = U.merge({}, ent.sessionScene)
         local lockNextSceneApply = S.getStateVal("controlBoard", "lockNextSceneApply") == true
@@ -1928,6 +1933,10 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
         SceneLibrary.setExclusiveLiveMirror(K)
         S.setStateVal(K, "sceneLibrary", "activeKey")
         S.validateState()
+        do
+            local GenericNpcs = require("core.generic_npcs")
+            GenericNpcs.ensureLiveFromMembership()
+        end
         PresentDayClock.markApplied(K)
         clockDraft.sceneKey = K
         clockDraft.dirty = false
