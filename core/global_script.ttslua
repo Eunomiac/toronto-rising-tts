@@ -435,6 +435,9 @@ end
 
 --- Parent Panel of the stacked session-splash Images (FadeIn/FadeOut + click-blocking).
 local STARTUP_LOADING_OVERLAY_ID = "overlay_globalBlindfold_panel"
+--- Session-end cover panel (End → Intermission only; inactive by default). TOR-561.
+local END_GLOBAL_BLINDFOLD_PANEL_ID = "overlay_globalBlindfold_panel_end"
+local END_GLOBAL_BLINDFOLD_IMAGE_ID = "overlay_globalBlindfold_end"
 --- Child splash Images (art tint only; Overlay Alpha Full/Min).
 local STARTUP_LOADING_OVERLAY_IMAGE_IDS = {
     "overlay_globalBlindfold_sessionSplash_1_5",
@@ -443,6 +446,7 @@ local STARTUP_LOADING_OVERLAY_IMAGE_IDS = {
     "overlay_globalBlindfold_sessionSplash_1_2",
     "overlay_globalBlindfold_sessionSplash_1_1",
     "overlay_globalBlindfold",
+    END_GLOBAL_BLINDFOLD_IMAGE_ID,
 }
 
 local function setGlobalBlindfoldImageColor(color)
@@ -461,11 +465,17 @@ local seatHudRevealDoneByPlayer = {}
 --- First `onPlayerChangeColor` after `onPlayerConnect` still auto-refreshes UI (including Host connect).
 local pendingConnectSeatRefreshByPlayer = {}
 
---- Last applied global-blindfold visibility. `nil` = unknown after XML load (defaults
+--- Last applied session-start cover visibility. `nil` = unknown after XML load (defaults
 --- `active=true` → treat as already ON so re-show does not re-trigger FadeIn). TOR-398.
 local globalBlindfoldAppliedVisible = nil
 local globalBlindfoldHideInFlight = false
 local globalBlindfoldHideCancel = nil
+--- When true, Intermission phase policy shows the end cover instead of the session-start panel (TOR-561).
+local globalBlindfoldUseEndCover = false
+--- Last applied end-cover visibility (`overlay_globalBlindfold_panel_end`). TOR-561.
+local endGlobalBlindfoldAppliedVisible = nil
+local endGlobalBlindfoldHideInFlight = false
+local endGlobalBlindfoldHideCancel = nil
 
 local function setGlobalBlindfoldActive(isActive)
     local value = isActive and "true" or "false"
@@ -476,16 +486,62 @@ local function setGlobalBlindfoldActive(isActive)
     end
 end
 
+local function setEndGlobalBlindfoldActive(isActive)
+    local value = isActive and "true" or "false"
+    if type(U.setAttribute) == "function" then
+        U.setAttribute(END_GLOBAL_BLINDFOLD_PANEL_ID, "active", value)
+    elseif type(UI.setAttribute) == "function" then
+        UI.setAttribute(END_GLOBAL_BLINDFOLD_PANEL_ID, "active", value)
+    end
+end
+
 --- After `UI.setXml`, Lua applied state may not match the reset document — re-sync via apply.
 local function invalidateGlobalBlindfoldAppliedState()
     globalBlindfoldAppliedVisible = nil
+    endGlobalBlindfoldAppliedVisible = nil
+    globalBlindfoldUseEndCover = false
 end
 
---- Force-hide global blindfold (`overlay_globalBlindfold_panel`) for all clients.
---- Idempotent (TOR-398): skip if already hidden or a hide sequence is in flight.
+--- Force-hide session-end cover. Idempotent; cancels an in-flight end hide.
+local function hideEndGlobalBlindfold()
+    if endGlobalBlindfoldHideInFlight and endGlobalBlindfoldHideCancel ~= nil then
+        endGlobalBlindfoldHideCancel.cancelled = true
+        endGlobalBlindfoldHideCancel.reason = "force_hide"
+        endGlobalBlindfoldHideInFlight = false
+        endGlobalBlindfoldHideCancel = nil
+    end
+    if endGlobalBlindfoldAppliedVisible == false then
+        setEndGlobalBlindfoldActive(false)
+        return
+    end
+    if type(UI.hide) == "function" then
+        UI.hide(END_GLOBAL_BLINDFOLD_PANEL_ID)
+    end
+    setEndGlobalBlindfoldActive(false)
+    endGlobalBlindfoldAppliedVisible = false
+end
+
+--- Force-hide session-start cover immediately (no FadeOut wait). Used when swapping to end cover.
+local function forceHideSessionStartGlobalBlindfold()
+    if globalBlindfoldHideInFlight and globalBlindfoldHideCancel ~= nil then
+        globalBlindfoldHideCancel.cancelled = true
+        globalBlindfoldHideCancel.reason = "force_hide"
+        globalBlindfoldHideInFlight = false
+        globalBlindfoldHideCancel = nil
+    end
+    if type(UI.hide) == "function" then
+        UI.hide(STARTUP_LOADING_OVERLAY_ID)
+    end
+    setGlobalBlindfoldActive(false)
+    globalBlindfoldAppliedVisible = false
+end
+
+--- Force-hide both global covers (`overlay_globalBlindfold_panel` + end panel).
+--- Idempotent (TOR-398): skip main FadeOut chain if already hidden or a hide sequence is in flight.
 --- `U.chain`: hide (FadeOut) → wait 1s → clear `active` so a later seat HUD reveal
 --- cannot resurrect the overlay with `active` still true.
 local function hideStartupLoadingOverlays()
+    hideEndGlobalBlindfold()
     if globalBlindfoldAppliedVisible == false then
         return
     end
@@ -521,9 +577,13 @@ local function hideStartupLoadingOverlays()
     })
 end
 
---- Restore global blindfold for all clients (Intermission enter / connect policy).
+--- Restore session-start global cover for all clients (cold Intermission / Play re-assert / debug).
 --- Idempotent (TOR-398): if already ON (or XML-default unknown), ensure `active` only — no FadeIn.
+--- Clears end-cover mode and hides the end panel (TOR-561).
 local function showStartupLoadingOverlays()
+    globalBlindfoldUseEndCover = false
+    hideEndGlobalBlindfold()
+
     local interruptedHide = false
     if globalBlindfoldHideInFlight and globalBlindfoldHideCancel ~= nil then
         globalBlindfoldHideCancel.cancelled = true
@@ -554,13 +614,59 @@ local function showStartupLoadingOverlays()
     end
 end
 
---- Global blindfold follows phase: visible in Intermission; hidden otherwise (TOR-143 / TOR-319).
+--- Show session-end cover for End → Intermission (TOR-561). Hides the session-start panel.
+--- Idempotent: if already ON, ensure `active` only — no FadeIn.
+local function showEndGlobalBlindfold()
+    globalBlindfoldUseEndCover = true
+    forceHideSessionStartGlobalBlindfold()
+
+    local interruptedHide = false
+    if endGlobalBlindfoldHideInFlight and endGlobalBlindfoldHideCancel ~= nil then
+        endGlobalBlindfoldHideCancel.cancelled = true
+        endGlobalBlindfoldHideCancel.reason = "show"
+        endGlobalBlindfoldHideInFlight = false
+        endGlobalBlindfoldHideCancel = nil
+        interruptedHide = true
+    end
+
+    if not interruptedHide and endGlobalBlindfoldAppliedVisible == true then
+        setEndGlobalBlindfoldActive(true)
+        return
+    end
+
+    setEndGlobalBlindfoldActive(true)
+    if type(UI.show) == "function" then
+        UI.show(END_GLOBAL_BLINDFOLD_PANEL_ID)
+    end
+    endGlobalBlindfoldAppliedVisible = true
+    local Main = require("core.main")
+    if type(Main.setDefaultCameraBeforeBlindfold) == "function" then
+        U.await(function()
+            Main.setDefaultCameraBeforeBlindfold("ALL")
+        end, 1.5)
+    end
+end
+
+--- Apply session-number CustomUIAsset names on both cover Images (TOR-561).
+local function applySessionBlindfoldImagesFromState()
+    local PhasesMod = require("core.phases")
+    if type(PhasesMod.applySessionBlindfoldImages) == "function" then
+        PhasesMod.applySessionBlindfoldImages(nil)
+    end
+end
+
+--- Global cover follows phase: visible in Intermission; hidden otherwise (TOR-143 / TOR-319 / TOR-561).
+--- Intermission uses session-start cover after load; end cover after End → Intermission until next remount.
 --- While a top-level phase Advance is in flight, do not auto-hide — Play enter owns the
 --- session-start explode + delayed panel hide after Intermission→Play audio. Auto-show for Intermission is OK.
 local function applyGlobalBlindfoldFromPhase()
     local phase = S.getStateVal("currentPhase")
     if phase == nil or phase == C.Phases.INTERMISSION then
-        showStartupLoadingOverlays()
+        if globalBlindfoldUseEndCover == true then
+            showEndGlobalBlindfold()
+        else
+            showStartupLoadingOverlays()
+        end
         return
     end
     local PhasesMod = require("core.phases")
@@ -577,6 +683,10 @@ end
 
 function showStartupLoadingOverlaysForPhases()
     showStartupLoadingOverlays()
+end
+
+function showEndGlobalBlindfoldForPhases()
+    showEndGlobalBlindfold()
 end
 
 local function seatAssignmentPlayerKey(player)
@@ -693,6 +803,7 @@ end
 -- @param armedMinimal boolean
 local function postMountGlobalUi(reason, armedMinimal)
     invalidateGlobalBlindfoldAppliedState()
+    applySessionBlindfoldImagesFromState()
     applyGlobalBlindfoldFromPhase()
     if armedMinimal == true and UI ~= nil and UI.setAttribute ~= nil then
         -- Force Phases chrome above Intermission blindfold (XML order + raise after blindfold apply).
@@ -3112,6 +3223,8 @@ function onLoad(saved_data)
                     .. tostring(warmed)
                     .. " bag(s)."
             )
+            setStartupAction("startup-ready-apply-session-blindfold-images")
+            applySessionBlindfoldImagesFromState()
             setStartupAction("startup-ready-apply-global-blindfold-from-phase")
             applyGlobalBlindfoldFromPhase()
             local phase = S.getStateVal("currentPhase")
@@ -4772,7 +4885,7 @@ function HUD_memoriamModalCancel(player, button, id)
     MemoriamModal.onCancel()
 end
 
---- Session number InputField (TOR-263 / TOR-143).
+--- Session number InputField (TOR-263 / TOR-143 / TOR-561).
 function HUD_sessionNumInput(player, value, id)
     if not requireStorytellerForMutation(player, "HUD_sessionNumInput") then
         return
@@ -4782,6 +4895,12 @@ function HUD_sessionNumInput(player, value, id)
         n = 1
     end
     S.setSessionNum(n)
+    if S.getStateVal("currentPhase") == C.Phases.INTERMISSION then
+        local PhasesMod = require("core.phases")
+        if type(PhasesMod.applySessionBlindfoldImages) == "function" then
+            PhasesMod.applySessionBlindfoldImages(n)
+        end
+    end
     UpdateUIDisplays({ phase = true, gameStateOverlay = true })
     syncStorytellerPhaseButtons()
 end

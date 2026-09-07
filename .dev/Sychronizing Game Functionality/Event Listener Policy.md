@@ -142,7 +142,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `HUD_projectsTarget` / `HUD_projectsBack` | A | — | Projects panel navigation |
 | `HUD_projectsAdd` / `HUD_projectsEdit` / `HUD_projectEditorConfirm` / `HUD_projectEditorDelete` / `HUD_projectEditorBegin` / `HUD_projectEditorComplete` / `HUD_projectEditorLaunchR` | B+C | Yes | project mutations / Launch roll |
 | `HUD_projectEditorField` / `HUD_projectDropdown` / `HUD_projectStakeDropdown` / `HUD_projectStakeAdvOpen` / `HUD_projectAdvPick` / `HUD_projectAdvPickCancel` / `HUD_projectEditorCancel` | A/B | Yes (field persist) | live project editor writes; advantage picker uses Buttons (TTS Dropdown Options do not refresh labels); Cancel may delete pre-inProgress |
-| `HUD_phaseAdvance` / `HUD_setPlaySubPhase` / `HUD_sessionNumInput` / `HUD_sessionNameInput` / `HUD_phaseSessionStartLerp` | B | Yes | TOR-143 phase Advance + Play subphases + sessionNum; TOR-98 sessionName; TOR-559 Lerp explode toggle (Intermission→Play animation path). Memoriam click is a UI gate (TOR-539) — does not set subphase until modal Advance. |
+| `HUD_phaseAdvance` / `HUD_setPlaySubPhase` / `HUD_sessionNumInput` / `HUD_sessionNameInput` / `HUD_phaseSessionStartLerp` | B | Yes | TOR-143 phase Advance + Play subphases + sessionNum; TOR-98 sessionName; TOR-559 Lerp explode toggle (Intermission→Play animation path). TOR-561: Intermission-only rewrite of both global cover Images when sessionNum changes. Memoriam click is a UI gate (TOR-539) — does not set subphase until modal Advance. |
 | `HUD_memoriamModalPcButton` / `HUD_memoriamModalSlider` / `HUD_memoriamModalSceneButton` / `HUD_memoriamModalJustSmoke` / `HUD_memoriamModalPcPresence` / `HUD_memoriamModalNpcPlus` / `HUD_memoriamModalNpcPick` / `HUD_memoriamModalNpcInput` / `HUD_memoriamModalNpcConfirm` / `HUD_memoriamModalNpcCancel` | A | Yes | TOR-539 / TOR-540 / TOR-550 / TOR-551 Memoriam popup draft (clicker, ST-gated). Slider is not a hot path. |
 | `HUD_memoriamModalConfirm` | B | Yes | TOR-539: print payload then `Phases.setPlaySubPhase(Memoriam)` |
 | `HUD_memoriamModalCancel` | A | Yes | TOR-539: close popup; subphase unchanged |
@@ -153,7 +153,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `HUD_saveState` / `HUD_logState` / `HUD_printState` | A/B | — | encode/log |
 | `HUD_toggleOverlayAlpha` | A | Yes | debug: Full↔Min child-image alpha + panel `raycastTarget` on `overlay_globalBlindfold_panel` |
 | `HUD_toggleAllAnchors` / `HUD_toggleAllSpotlights` | C | Yes | |
-| `HUD_clearLoadingOverlay` | A | Yes | `SessionExplode.cancel` then hide `overlay_globalBlindfold_panel` |
+| `HUD_clearLoadingOverlay` | A | Yes | `SessionExplode.cancel` then hide both global covers (`overlay_globalBlindfold_panel` + `_panel_end`) |
 | `HUD_toggleDebugAmbient` | C | Yes | ambient intensity 0↔2 (debug, not persisted) |
 | `HUD_toggleRunTestPanel` / `HUD_runtest` / `HUD_runtest_step` | A | Yes | Host RunTest strip; arms/continues/stops `DEBUG.RunTest` (TOR-347) |
 | `HUD_STcamera` | A | Yes | Host ST camera strip → `M.setCamera(Black, mode)` from `C.StorytellerCameraAngles` (TOR-348) |

@@ -28,7 +28,8 @@ Status: current (TOR-143 / TOR-361 / TOR-362 / TOR-497 / TOR-516 / TOR-531 / TOR
 
 | Kind | XML | Phase system |
 | --- | --- | --- |
-| **Global blindfold** | `ui/shared/panel_overlay_global_blindfold.xml` (`overlay_globalBlindfold_panel`, `active=true` by default; stacked splash Images inside) | **Yes** — Intermission→Play runs the session-start animation with the Music C sting (TOR-516 / TOR-559); the panel hides near the end of that sequence instead of one FadeOut of the whole stack. Default path uses TTS `showAnimation` attrs (`SessionExplode.playAttribute`); Phases **Lerp explode** toggle uses the older `SessionExplode.play()` attribute-lerp explode. Show on Intermission enter **before** no-scene table prep; connect during Intermission leaves it up; connect elsewhere hides it. **No** timed onLoad auto-hide. Show/hide are idempotent (TOR-398): no FadeIn when already up; hide sequences do not stack. Parent Panel owns FadeIn/FadeOut + click-blocking (TOR-514). |
+| **Global blindfold (session start)** | `ui/shared/panel_overlay_global_blindfold.xml` (`overlay_globalBlindfold_panel`, `active=true` by default; stacked splash Images inside) | **Yes** — cold load / Intermission→Play only. Images: `overlay_blindfold_session_<sessionNum>` on `overlay_globalBlindfold` (set on load + Intermission sessionNum edit). Intermission→Play runs the session-start animation with the Music C sting (TOR-516 / TOR-559); the panel hides near the end of that sequence and is **not** reused until UI refresh on load (TOR-561). Default path uses TTS `showAnimation` attrs (`SessionExplode.playAttribute`); Phases **Lerp explode** toggle uses the older `SessionExplode.play()` attribute-lerp explode. Connect during Intermission leaves the active cover up; connect elsewhere hides both covers. **No** timed onLoad auto-hide. Show/hide are idempotent (TOR-398). Parent Panel owns FadeIn/FadeOut + click-blocking (TOR-514). |
+| **Global blindfold (session end)** | `ui/shared/panel_overlay_global_blindfold_end.xml` (`overlay_globalBlindfold_panel_end`, `active=false` by default; single Image `overlay_globalBlindfold_end`) | **Yes** — End → Intermission only (TOR-561). Image: `overlay_blindfold_end_session_<sessionNum>` (set on load + Intermission sessionNum edit). Shown instead of restoring the session-start panel; left up until refresh-on-load. |
 | **Per-player transition blindfolds** | `ui/.templates/panel_overlay_blindfold.xml` → parent Panel `UI.show`/`UI.hide` via `core/hud_blindfold.ttslua` + `hud_overlays` (optional destination cards, TOR-425 / TOR-431) | **Play → Spotlight** and **Spotlight → End** use the same staged path as End scene / library Apply (TOR-98 / TOR-459). Destination cards stay Clear. Other phase enters still use global blindfold only. |
 
 ## General Phase Structure
@@ -40,7 +41,7 @@ There are four top-level phases, advanced by the Storyteller **Advance** button 
 1. `INTERMISSION` — Between sessions: **global cover + Intermission theme handoff first**, then no-scene table/skybox/overlay under that cover, AdminDark; connect keeps global blindfold up (TOR-319 / TOR-497 / TOR-506).
 2. `PLAY` — Session start: OutdoorDim lights and HUD behind the cover first, then stacked cover explode, Intermission Loop fades 0.5s, Music C overture (opening drum delayed 0.25s to match the first visible cover scale), panel hide near sting end, Main playlist, Superficial WP heal + optional broadcast. Contains most gameplay.
 3. `SPOTLIGHT` — End-of-session player vignettes: narrative clear (not End-scene Table B0), Table A + Spotlight skybox, Main-only music, in-session PC stand-ins on a 36° carousel, Host strip, ritual overlay.
-4. `END` — Remorse / session-end bookkeeping. **Advance Spotlight → End** keeps Table A and Main, parks the carousel, and shows the session name + **END** on the overlay. Leaving End increments `sessionNum` (global blindfold restored on next Intermission enter). Intermission enter then applies the real no-scene table prep.
+4. `END` — Remorse / session-end bookkeeping. **Advance Spotlight → End** keeps Table A and Main, parks the carousel, and shows the session name + **END** on the overlay. Leaving End increments `sessionNum`. Intermission enter then shows the **session-end** global cover (`overlay_globalBlindfold_panel_end`) and applies the real no-scene table prep (TOR-561).
 
 Advancing from `END` returns to `INTERMISSION`.
 
@@ -104,13 +105,14 @@ Ending events of the previous phase run before starting events of the new phase 
 
 ### Starting Events: `INTERMISSION`
 
-* **Show the global blindfold and start the audio handoff together** (`overlay_globalBlindfold_panel` + leftover session audio fading out while Intermission theme `TR_Loop` fades in over ~2s). Table work must not start until this settle finishes (TOR-502 / TOR-506).
+* **Show the session-end global cover and start the audio handoff together** (`overlay_globalBlindfold_panel_end` + leftover session audio fading out while Intermission theme `TR_Loop` fades in over ~2s) — TOR-561 / TOR-502 / TOR-506. Do **not** restore `overlay_globalBlindfold_panel` here (session-start explode leaves that panel unrestorable until UI refresh on load). Table work must not start until this settle finishes.
 * Apply the no-scene default environment under that cover (table, seats, generic skybox, overlay; soundscape skipped) so next week's session start does not reshuffle the table (TOR-497). Spotlight-parked dice bags, companions, and compulsion decks restore here (after the cover is down), not during End.
 * All lights dark (`AdminDark` phase override).
 * Countdown timer: deferred (optional TBD on **TOR-319**).
 
-### Connect / load policy (TOR-319 / TOR-143)
+### Connect / load policy (TOR-319 / TOR-143 / TOR-561)
 
-* Connect during **Intermission**: leave global blindfold up.
-* Connect during any other phase: hide global blindfold (`Phases.lowerBlindfoldForConnectingPlayer` → `hideGlobalBlindfold`). Shared overlay — not per-seat.
-* **Load** while phase is Intermission: after startup readiness, `Phases.reconcileIntermissionAmbientOnLoad()` applies AdminDark + the same featured theme (`C.IntermissionThemeFeaturedKey` = `TR_Loop`) as Intermission enter. No timed overlay hide.
+* Connect during **Intermission**: leave the active global cover up (session-start or session-end).
+* Connect during any other phase: hide both global covers (`Phases.lowerBlindfoldForConnectingPlayer` → `hideGlobalBlindfold`). Shared overlay — not per-seat.
+* **Load:** set `overlay_globalBlindfold` → `overlay_blindfold_session_<sessionNum>` and `overlay_globalBlindfold_end` → `overlay_blindfold_end_session_<sessionNum>`. While phase is Intermission, after startup readiness, `Phases.reconcileIntermissionAmbientOnLoad()` applies AdminDark + the same featured theme (`C.IntermissionThemeFeaturedKey` = `TR_Loop`) as Intermission enter. Session-start panel is XML-default visible; end panel stays inactive. No timed overlay hide.
+* **Phases panel `sessionNum` edit during Intermission:** rewrite both cover Images immediately. Other phases: leave Images unchanged.

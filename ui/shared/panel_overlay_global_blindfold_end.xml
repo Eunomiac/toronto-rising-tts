@@ -1,0 +1,27 @@
+<Defaults>
+  <Panel class="global_blindfold_panel_end"
+    active = "false"
+    width = "1920"
+    height = "1200"
+    rectAlignment = "MiddleCenter"
+    raycastTarget = "true"
+    showAnimation = "FadeIn"
+    hideAnimation = "FadeOut"
+    animationDuration = "0.3"
+    color = "#000000"
+  />
+  <Image class="global_blindfold"
+    active = "true"
+    width = "1920"
+    height = "1200"
+    rectAlignment = "MiddleCenter"
+    preserveAspect = "true"
+    raycastTarget = "false"
+  />
+</Defaults>
+
+<Panel id="overlay_globalBlindfold_panel_end" class="global_blindfold_panel_end">
+  <!-- image set on load / Intermission sessionNum edit: overlay_blindfold_end_session_<sessionNum> -->
+  <!-- Shown on End → Intermission; left up until refresh-on-load (not the session-start panel). -->
+  <Image id="overlay_globalBlindfold_end" class="global_blindfold" />
+</Panel>

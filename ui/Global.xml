@@ -60,6 +60,9 @@
 <!-- 6. Startup loading screen (last among blindfolds — draws above transition blinds when both up). -->
 <Include src="shared/panel_overlay_global_blindfold.xml" />
 
+<!-- 7. Ending session blindfold (last among blindfolds — draws above transition blinds when both up). -->
+<Include src="shared/panel_overlay_global_blindfold_end.xml" />
+
 <!-- 3. Storyteller HUD (Black): admin panel + sidebar + camera defaults -->
 <Panel id="HUD_PANEL_BLACK" class="hud_root_panel" visibility="Black|Host">
   <!-- 3a. Storyteller HUD defaults -->

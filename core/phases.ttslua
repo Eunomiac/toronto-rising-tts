@@ -17,8 +17,8 @@ local U = require("lib.util")
 local S = require("core.state")
 
 local SESSION_START_HEAL_PANEL = "sessionStartHeal_panel"
---- XML default on `overlay_globalBlindfold` (session-start cover, not End art).
-local SESSION_COVER_IMAGE = "global_blindfold_session_1"
+local SESSION_COVER_IMAGE_ID = "overlay_globalBlindfold"
+local END_COVER_IMAGE_ID = "overlay_globalBlindfold_end"
 local HEAL_BROADCAST_HOLD_SEC = 6
 local INTERMISSION_THEME_FADE_SEC = 2
 --- Intermission → Play: TR_Loop fade-out while waiting to start Music C (TOR-497 / TOR-534).
@@ -163,7 +163,43 @@ function Phases.incrementSessionNum()
     S.setSessionNum(n + 1)
 end
 
---- Call Global-script helpers for `overlay_globalBlindfold_panel` only.
+--- Normalize sessionNum for CustomUIAsset image names (TOR-561).
+-- @param sessionNum number|nil
+-- @return number
+local function normalizeSessionNum(sessionNum)
+    local n = math.floor(tonumber(sessionNum) or tonumber(S.getStateVal("sessionNum")) or 1)
+    if n < 1 then
+        n = 1
+    end
+    return n
+end
+
+--- Session-start cover CustomUIAsset name for `overlay_globalBlindfold`.
+-- @param sessionNum number|nil
+-- @return string
+function Phases.sessionBlindfoldImageName(sessionNum)
+    return "overlay_blindfold_session_" .. tostring(normalizeSessionNum(sessionNum))
+end
+
+--- Session-end cover CustomUIAsset name for `overlay_globalBlindfold_end`.
+-- @param sessionNum number|nil
+-- @return string
+function Phases.endBlindfoldImageName(sessionNum)
+    return "overlay_blindfold_end_session_" .. tostring(normalizeSessionNum(sessionNum))
+end
+
+--- Set both global cover Images from `sessionNum` (load / Intermission panel edit).
+-- Does not show or hide either panel.
+-- @param sessionNum number|nil
+-- @return boolean
+function Phases.applySessionBlindfoldImages(sessionNum)
+    local n = normalizeSessionNum(sessionNum)
+    U.setAttribute(SESSION_COVER_IMAGE_ID, "image", Phases.sessionBlindfoldImageName(n))
+    U.setAttribute(END_COVER_IMAGE_ID, "image", Phases.endBlindfoldImageName(n))
+    return true
+end
+
+--- Call Global-script helpers for global cover panels only.
 --- Never touch per-player transition blindfolds (`hudBlindfold` / panel_overlay_blindfold).
 local function callGlobalBlindfoldHelper(name)
     local fn = rawget(_G, name)
@@ -175,18 +211,24 @@ local function callGlobalBlindfoldHelper(name)
     return true
 end
 
---- Hide global blindfold (Play exit, connect outside Intermission, explode sequence).
+--- Hide both global covers (Play exit, connect outside Intermission, explode sequence).
 function Phases.hideGlobalBlindfold(_ctx)
     return callGlobalBlindfoldHelper("hideStartupLoadingOverlaysForPhases")
 end
 
---- Show global blindfold (Intermission enter).
+--- Show session-start global cover (`overlay_globalBlindfold_panel`).
+--- Used for cold Intermission / Play-enter re-assert / debug snap — not End → Intermission.
 function Phases.showGlobalBlindfold(_ctx)
     local SE = require("core.session_explode")
     if type(SE.resetLayers) == "function" then
         SE.resetLayers()
     end
     return callGlobalBlindfoldHelper("showStartupLoadingOverlaysForPhases")
+end
+
+--- Show session-end global cover (`overlay_globalBlindfold_panel_end`) for End → Intermission (TOR-561).
+function Phases.showEndGlobalBlindfold(_ctx)
+    return callGlobalBlindfoldHelper("showEndGlobalBlindfoldForPhases")
 end
 
 --- Connect outside Intermission: hide global blindfold (shared overlay — not per-seat).
@@ -211,13 +253,13 @@ function Phases.applyAllLightsDark(_ctx)
     return true
 end
 
---- End → Intermission: drop the cover and start the audio handoff in one step (TOR-506).
+--- End → Intermission: drop the end cover and start the audio handoff in one step (TOR-506 / TOR-561).
+--- Uses `overlay_globalBlindfold_panel_end` (not the session-start explode panel).
 --- Outgoing session audio fades out while TR_Loop fades in; wait covers both plus cover settle.
 --- Does not `stopAll` — that would hard-cut the outgoing fade.
 function Phases.beginIntermissionCoverAndTheme(_ctx)
-    -- End cover art on the stacked global image (session explode resets this on next Play load).
-    U.setAttribute("overlay_globalBlindfold", "image", "overlay_blindfold_end")
-    Phases.showGlobalBlindfold(_ctx)
+    -- Image attrs were set on load / Intermission sessionNum edit; do not rewrite here.
+    Phases.showEndGlobalBlindfold(_ctx)
     local Soundscape = require("core.soundscape")
     local key = C.IntermissionThemeFeaturedKey or "TR_Loop"
     local ok, msg = Soundscape.playFeaturedMusic(key, {
@@ -710,7 +752,7 @@ local function syncPhaseUi()
 end
 
 --- Debug: snap to Intermission so Intermission→Play can be re-tested without Spotlight/End.
---- Does not move tables, skyboxes, or seat piles. Restores the session-start cover image.
+--- Does not move tables, skyboxes, or seat piles. Restores the session-start cover (not end cover).
 -- @return boolean
 function Phases.debugSnapToIntermission()
     Phases.abortAdvance("debug_reset")
@@ -719,7 +761,7 @@ function Phases.debugSnapToIntermission()
         SE.cancel()
     end
     S.setCurrentPhase(C.Phases.INTERMISSION)
-    U.setAttribute("overlay_globalBlindfold", "image", SESSION_COVER_IMAGE)
+    Phases.applySessionBlindfoldImages(nil)
     Phases.showGlobalBlindfold(nil)
     hideSessionStartHealPanel()
     Phases.startIntermissionThemePlaylistLoop(nil)
