@@ -23,19 +23,21 @@ _Last populated: 2026-09-06 — TOR-560 generic NPC import._
 
 #### TOR-560 — Generic NPC import (spawn, scene library, Dashboard bridge)
 
-**How to verify:** Save & Play so Global + CONTROL_BOARD UI update. On the stage control board, paste a short key list from the Storyteller Dashboard (for example `dogGuard_01,academicsProfessor_02`) into the new Import field and click **Import** (or press Enter in the field). A Storyteller-only name popup should open with those rows pre-filled from sheet labels — change a name if you like, then confirm. You should get face-down tokens along the top-right of the control board and figurines under the table with lights off. Apply should place them from token positions like other stage NPCs. Leaving the scene (or Clear) should destroy those generic objects; applying that library scene again should recreate them with the same display names.
+**How to verify:** Save & Play so Global + CONTROL_BOARD UI update. The **Import** field should sit on the control-board edge **opposite** the Apply/Clear row (not stacked above those buttons). Paste a short key list from the Storyteller Dashboard (for example `dogGuard_01,academicsProfessor_02`) and click **Import** (or press Enter in the field). A Storyteller-only name popup should open with those rows pre-filled from sheet labels — change a name if you like, then confirm. You should get face-down tokens in a spaced row on the edge **opposite** the PC seat-token row (not on top of the PCs), with tooltip nicknames matching whatever you typed in the popup, rotation `{0, 0, 180}`, and they should snap onto control-board snap points. Figurines should park under the table with lights off. Apply should place them from token positions like other stage NPCs. Leaving the scene (or Clear) should destroy those generic objects; applying that library scene again should recreate them with the same display names.
 
 Separately, restart the Storyteller Dashboard with the TTS Tools extension **disabled**. Gold highlights should appear after **Copy** or **Spawn in TTS**. **Clear Generics** should clear gold only. With the extension enabled again, **Spawn in TTS** and Lua **Run** should grey out and explain that port 39998 is busy.
 
-**Context:** Runtime spawn exception to the named-NPC preload pool. Seating / PC-as-NPC / Memoriam generics are still out of scope.
+**Context:** Runtime spawn exception to the named-NPC preload pool. Seating / PC-as-NPC / Memoriam generics are still out of scope. Post-ship polish: import UI edge, spawn row flip/spacing, nickname after reload, fixed rotation, snap tags on CONTROL_BOARD snaps.
 
 ### Tooling / assets
 
-#### TOR-558 — Cloud asset sync (CustomUIAssets + Cloud catalog)
+#### ⚠️ TOR-558 — Cloud asset sync (CustomUIAssets + Cloud catalog)
 
 **How to verify:** With Steam running and logged into the chronicle account, run `npm run cloud-asset-sync:dry-run` from the repo root. You should see the `siteCards` job keep ~170 Sites images and list any stale `siteCard_*` names, plus a `LuaCatalog` plan for `Cloud.Sites`. Then either run `npm run cloud-asset-sync` in a normal terminal (answer **y** if it asks about removing stale names) or run **BUILD PIPELINE (Full)** / `npm run build:full` (that path auto-accepts purges). Reload save **230** in Tabletop Simulator. Site card art should still resolve; after a catalog write, `print(Cloud.Sites and Cloud.Sites.AnarchBar and Cloud.Sites.AnarchBar.URL)` in the TTS console should show a hosted URL.
 
 **Context:** Replaces the manual Assets 1→2→3 loop for configured jobs. Main and XML builds do not run this.
+
+**Correction:** If "the manual Assets 1→2→3 loop" has been replaced by this new build process, remove the obsolete tasks from the `tasks.json` config file.
 
 ### Dashboard
 
@@ -49,7 +51,7 @@ Then **disable the TTS Tools extension** (only one editor can listen on 39998). 
 
 ### High — session / join / first-load
 
-#### TOR-559 — TTS-attribute session-start animation (Phases Lerp explode toggle)
+#### ✅ TOR-559 — TTS-attribute session-start animation (Phases Lerp explode toggle)
 
 **How to verify:** Save & Play so the new scripts and Phases XML load. Open **Phases**. Next to **Advance →** you should see a **Lerp explode** checkbox that starts unchecked. From Intermission, click **Advance →** into Play with that box still off. You should see the simpler splash sequence (Grow / FadeIn on the panels), and the session-starter track should kick in when the second pair appears — with the Intermission loop fading out at that same moment, not at the very start. When the sequence finishes, the cover should lift and Main music should come in as usual. Then run `lua DEBUG.resetToIntermission()`, turn **Lerp explode** on, and Advance again: you should get the older wavering attribute-lerp explode, with the sting timed to the first cover scale like before.
 
@@ -119,7 +121,7 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 **Context:** The script does not switch the image back; a reload restores the XML default.
 
-#### TOR-528 — DEBUG.resetToIntermission for intro re-tests
+#### ✅ TOR-528 — DEBUG.resetToIntermission for intro re-tests
 
 **How to verify:** Save & Play. In the Host console run `lua DEBUG.resetToIntermission()`. The global session cover should come back with the usual session-start art (not the End blindfold). You should hear the looping Intermission theme (TR_Loop), not the session-start overture or Main. The Phases panel should show Intermission. Click **Advance →**: the intro animation and overture should play again. You can run the console command again after the intro — or even while it is still playing — to jump back without going through Spotlight and End. Tables, skyboxes, and seat piles should stay where they were. The Host console should print a short status line; it should not write a test-results file under `.dev/.debug`.
 
@@ -137,67 +139,67 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 **Context:** Follow-up to TOR-539 after the first in-game look. The default Just Smoke panel in Lua is a placeholder for you to fill in.
 
-#### TOR-541 — Memoriam slider: present on the right; sort ties by endYear
+#### ✅ TOR-541 — Memoriam slider: present on the right; sort ties by endYear
 
 **How to verify:** Save & Play. During Play, open Phases → **Memoriam** and pick a character. The slider handle should start on the **right** (present day). The gold bar block should sit under that handle on the right. Drag the handle left: dates should go backward, and the gold block should follow to the left. The scene-button columns should still run earliest on the left and latest on the right, lining up with the strip. If two periods share a start year, the one that ends sooner should appear first (left of the other).
 
 **Context:** Follow-up to TOR-540 after the Photoshop mockup. Dragging left is how you move into the past; the strip and handle stay together.
 
-#### TOR-542 — Memoriam slider range 0–5000
+#### ✅ TOR-542 — Memoriam slider range 0–5000
 
 **How to verify:** Save & Play. Open Memoriam, pick a character, and move the slider slowly across a long period. Dates and the gold block should still line up with the strip the same way as before, just with finer steps. The handle should still start on the right (present). Clicking a dim scene button should still jump into that period.
 
 **Context:** You raised the slider max from 2400 to 5000. The year mapping now fills that full range; the colored strip is still 1200 pixels wide.
 
-#### TOR-543 — Memoriam scene buttons ignore XML highlight/selected colors
+#### ✅ TOR-543 — Memoriam scene buttons ignore XML highlight/selected colors
 
 **How to verify:** Save & Play. Open Memoriam and pick a character. Scene buttons in the current period should use the color from `selection_button_highlighted` in the modal XML (currently yellow). The one you click should use `selection_button_selected` (currently green). Just Smoke should follow the same two classes. Empty dummy C/D cells can stay black.
 
 **Context:** Lua was painting button colors directly, so XML Default class colors never showed. It now switches classes with `UI.setClass` and leaves color to those Defaults.
 
-#### TOR-544 — Memoriam bar: white for nested/overlapping shorter periods
+#### ✅ TOR-544 — Memoriam bar: white for nested/overlapping shorter periods
 
 **How to verify:** Save & Play. Open Memoriam and pick **Fomórach**. On the period strip, Kharkiv and Jaffa (the short periods nested inside the long Toronto span) should be **white** when the gold handle is not on them. Toronto’s remaining gray chunks should still alternate with the other non-nested periods. Sliding onto Kharkiv or Jaffa should gold those white blocks as usual.
 
 **Context:** Nested periods skip the two-gray stripe so they stay readable against the longer period they sit inside.
 
-#### TOR-545 — Memoriam bar: four greys so nested panels can alternate
+#### ✅ TOR-545 — Memoriam bar: four greys so nested panels can alternate
 
 **How to verify:** Save & Play. Open Memoriam and pick **Fomórach**. On the period strip, Toronto (the long span) should use the two darker greys for its chunks, and Kharkiv and Jaffa (the nested shorts) should use the two lighter greys — not the same light shade next to each other. Sliding onto a nested period should still gold that block as usual. Empty years stay black.
 
 **Context:** One white for every nested period made adjacent nested panels look like one block. Base periods and nested periods now each have their own alternating pair.
 
-#### TOR-546 — Memoriam scene buttons go grey when selected
+#### ✅ TOR-546 — Memoriam scene buttons go grey when selected
 
 **How to verify:** Save & Play. Open Memoriam and pick a character. Scene buttons in the current period should be yellow. Click one: that button should turn green and stay green (not drop back to grey). The other current-period buttons should stay yellow. Click Just Smoke: it should turn green the same way. You can still change the highlighted/selected colors in the modal XML Defaults.
 
 **Context:** The layout class was painting grey, and a TTS button click puts that grey back after Lua sets the selected class. Idle, highlighted, and selected are now separate color classes.
 
-#### TOR-547 — Memoriam bar: abutting years are not overlapping
+#### ✅ TOR-547 — Memoriam bar: abutting years are not overlapping
 
 **How to verify:** Save & Play. Open Memoriam and pick a character who has two periods that only meet at a year (one ends the year the next begins, for example 1949–1955 then 1955–1965). Those two blocks should sit side by side in the darker base greys, not jump to the lighter nested greys. A period that is truly inside a longer one (including a single year in the middle of a longer span) should still use the lighter nested greys.
 
 **Context:** Sharing only a start/end year is adjacent time, not a nested overlay.
 
-#### TOR-548 — Memoriam scene buttons keep XML labels; dummy C/D stay dark
+#### ✅ TOR-548 — Memoriam scene buttons keep XML labels; dummy C/D stay dark
 
 **How to verify:** Save & Play. Open Memoriam and pick a character. Scene buttons should show the catalog panel names, not “Period 3, Panel A”. Unused columns, including 13 and 14, should disappear. Pick a character whose period has only A/B: C and D in that column should be empty black placeholders. Switch to a character who has C/D (or fewer periods so that column is unused): those C/D cells should become real named buttons, or hide, and must not stay black from the previous character.
 
 **Context:** Lua was applying class after text, so XML placeholders came back. Dummy C/D had been painted black as a leftover color that survived a PC change.
 
-#### TOR-549 — Memoriam bar drops a same-year period on a neighbor’s last year
+#### ✅ TOR-549 — Memoriam bar drops a same-year period on a neighbor’s last year
 
 **How to verify:** Save & Play. Open Memoriam and pick **Lord Lucien**. On the period strip, 1999 should show a short Kingston block (`lucien23`) sitting on the last year of Montreal (`lucien19`, 1980–1999), not disappear into Montreal. Rashid’s single-year 2013 period should still appear as before. Two multi-year periods that only meet at a year (1949–1955 then 1955–1965) should still sit side by side.
 
 **Context:** The abutting-year skip was hiding any period that started on another period’s last year, including a 1999–1999 period whose only year is that shared year.
 
-#### TOR-550 — Memoriam popup: PC row of five exclusive buttons
+#### ✅ TOR-550 — Memoriam popup: PC row of five exclusive buttons
 
 **How to verify:** Save & Play so the new scripts load. During Play, open Phases → **Memoriam**. Instead of a dropdown, you should see a row of five grey buttons: Lord Lucien, Rashid Abdulrahman, Aishe Tache, Fomórach, and Black Caesar. Click one: that button should turn green and the others should stay grey. The timeline, date slider, and scene grid should fill for that character, the same as the old dropdown did. Click a different character: the first should go grey, the new one green, and the strip should rebuild. Clicking the already-green button should leave it green (only one character selected at a time).
 
 **Context:** Follow-up to TOR-539. Same idle grey / selected green classes as the scene panel buttons.
 
-#### TOR-551 — Memoriam: present-as-self toggles and subject NPC assignment
+#### ✅ TOR-551 — Memoriam: present-as-self toggles and subject NPC assignment
 
 **How to verify:** Save & Play so the new scripts load. During Play, open Phases → **Memoriam**, pick a character, then pick a scene (or Just Smoke). All five names should appear. The character you picked should have a **green** name and **no** square to the left; the other four should have a small empty grey square before their names. Click a square: it should turn green, and that character is coming as themselves. Click it again: it should go grey. Click **+** on the subject (green name) and assign an NPC: Advance should still print `subjectKey` as that PC, and their `assignments` entry should be the NPC (`kind` / `key` / `label`), not `self`. Advance with no NPC on the subject: their assignment should be `{kind = "self"}`. A non-subject with a green square should also be `{kind = "self"}`. A non-subject with neither a green square nor an NPC should be missing from `assignments`. Assigning an NPC to someone who had a green square should clear the square (they are playing the NPC, not themselves).
 

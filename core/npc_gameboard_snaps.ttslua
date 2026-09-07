@@ -1055,12 +1055,17 @@ function Snaps.buildControlBoardSnapPoints(board, config)
     local cfg, rings = validateControlBoardSnapConfig(resolveControlBoardSnapConfig(config))
     local entries = buildControlBoardSnapEntries(board, cfg, rings)
     local points = {}
+    local snapTags = {
+        DATA.TAG_NPC_CONTROL_TOKEN,
+        DATA.TAG_PC_CONTROL_TOKEN,
+    }
     for _, entry in ipairs(entries) do
         local snapZ = tonumber(entry.snapZDeg) or 0
         points[#points + 1] = {
             position = { entry.localPos.x, entry.localPos.y, entry.localPos.z },
             rotation = { 0, entry.yawDeg, snapZ },
             rotation_snap = true,
+            tags = snapTags,
         }
     end
     return points
@@ -1113,7 +1118,7 @@ controlBoardSnapFingerprintFor = function(board, config)
                 .. tostring(group.defaultLightMode or "")
         end
     end
-    parts[#parts + 1] = "snapTag:none"
+    parts[#parts + 1] = "snapTag:npc+pc"
     parts[#parts + 1] = "yawOff:" .. tostring(tonumber(cfg.snapYawOffsetDeg) or 0)
     local seatCfg = resolveControlBoardSeatRowConfig()
     if seatCfg ~= nil then

@@ -101,12 +101,36 @@ function GenericNpcs.parseImportKeys(keysString)
     return valid, invalid, duplicates
 end
 
+--- World spacing between spawn centers (token scale ~0.38 needs more than polar 0.2 chips).
+local TOKEN_SPAWN_SPACING = 0.9
+--- Seat-row is at board v=0.12; spawn generics mirrored across v=0.5 → v=0.88.
+local TOKEN_SPAWN_V = 0.88
+local TOKEN_SPAWN_U_START = 0.72
+local TOKEN_SPAWN_U_STEP = 0.085
+local TOKEN_SPAWN_COLS = 8
+
 --- @param board Object
 --- @param index number 1-based
 --- @param total number
 --- @return table|nil world pos
 local function tokenWorldPosOnControlBoard(board, index, total)
-    if board == nil or board.getPosition == nil or board.getBounds == nil then
+    if board == nil then
+        return nil
+    end
+    local Board = require("core.npc_gameboard_board")
+    if type(Board.worldOnControlBoard) == "function" and type(Board.isGameObject) == "function"
+        and Board.isGameObject(board) then
+        local col = ((index - 1) % TOKEN_SPAWN_COLS)
+        local row = math.floor((index - 1) / TOKEN_SPAWN_COLS)
+        local u = TOKEN_SPAWN_U_START - col * TOKEN_SPAWN_U_STEP
+        local v = TOKEN_SPAWN_V - row * (TOKEN_SPAWN_U_STEP * 0.9)
+        local world = Board.worldOnControlBoard(board, u, v, { extraLocalY = 0.02 })
+        if world ~= nil then
+            return { x = world.x, y = world.y, z = world.z }
+        end
+    end
+    -- Fallback: keep world X band; flip depth across board center (opposite the PC seat row).
+    if board.getPosition == nil or board.getBounds == nil then
         return nil
     end
     local pos = board.getPosition()
@@ -115,23 +139,22 @@ local function tokenWorldPosOnControlBoard(board, index, total)
     local sx = (size and tonumber(size.x)) or 8
     local sz = (size and tonumber(size.z)) or 8
     local sy = (size and tonumber(size.y)) or 0.2
-    -- Top-right of board face, away from polar snaps (local +X / +Z corner band).
-    local col = ((index - 1) % 8)
-    local row = math.floor((index - 1) / 8)
-    local x = pos.x + sx * 0.32 - col * 0.55
-    local z = pos.z + sz * 0.38 - row * 0.55
+    local col = ((index - 1) % TOKEN_SPAWN_COLS)
+    local row = math.floor((index - 1) / TOKEN_SPAWN_COLS)
+    local x = pos.x + sx * 0.32 - col * TOKEN_SPAWN_SPACING
+    local z = pos.z - sz * 0.38 + row * TOKEN_SPAWN_SPACING
     local y = pos.y + sy * 0.5 + 0.15
     return { x = x, y = y, z = z }
 end
 
+--- Face-down control token at fixed world rotation {0, 0, 180} (do not inherit board yaw).
 --- @param worldPos table
---- @param yawDeg number
 --- @param characterKey string
 --- @param frontUrl string
 --- @param backUrl string
 --- @param displayName string
 --- @return table
-local function buildTokenSpawnData(worldPos, yawDeg, characterKey, frontUrl, backUrl, displayName)
+local function buildTokenSpawnData(worldPos, characterKey, frontUrl, backUrl, displayName)
     return {
         GUID = "",
         Name = "Custom_Tile",
@@ -140,7 +163,7 @@ local function buildTokenSpawnData(worldPos, yawDeg, characterKey, frontUrl, bac
             posY = worldPos.y,
             posZ = worldPos.z,
             rotX = 0,
-            rotY = yawDeg,
+            rotY = 0,
             rotZ = 180, -- face-down = OFF
             scaleX = TOKEN_SCALE,
             scaleY = 1,
@@ -155,7 +178,7 @@ local function buildTokenSpawnData(worldPos, yawDeg, characterKey, frontUrl, bac
         Value = 0,
         Locked = false,
         Grid = false,
-        Snap = false,
+        Snap = true,
         IgnoreFoW = false,
         MeasureMovement = false,
         DragSelectable = true,
@@ -180,6 +203,7 @@ local function buildTokenSpawnData(worldPos, yawDeg, characterKey, frontUrl, bac
         LuaScript = "",
         LuaScriptState = "",
         XmlUI = "",
+        -- Match CONTROL_BOARD snap tags (npc_control_token + pc_control_token) so tokens can snap.
         Tags = { TAG_TOKEN, TAG_GENERIC },
     }
 end
@@ -187,7 +211,8 @@ end
 --- @param obj Object
 --- @param frontUrl string
 --- @param backUrl string
-local function applyTokenTileShape(obj, frontUrl, backUrl)
+--- @param displayName string|nil
+local function applyTokenTileShape(obj, frontUrl, backUrl, displayName)
     if obj == nil or obj.setCustomObject == nil then
         return
     end
@@ -201,6 +226,16 @@ local function applyTokenTileShape(obj, frontUrl, backUrl)
     })
     if obj.reload ~= nil then
         obj.reload()
+    end
+    -- reload can drop Nickname / tags / rotation; re-apply after shape settle.
+    if type(displayName) == "string" and displayName ~= "" and obj.setName ~= nil then
+        obj.setName(displayName)
+    end
+    if obj.setTags ~= nil then
+        obj.setTags({ TAG_TOKEN, TAG_GENERIC })
+    end
+    if obj.setRotation ~= nil then
+        obj.setRotation({ 0, 0, 180 })
     end
 end
 
@@ -226,14 +261,8 @@ local function spawnFigurine(characterKey, frontUrl, backUrl, displayName, world
     if obj == nil then
         return nil
     end
-    if obj.setName ~= nil then
-        obj.setName(displayName)
-    end
     if obj.setGMNotes ~= nil then
         obj.setGMNotes(GM_FIG_PREFIX .. characterKey)
-    end
-    if obj.setTags ~= nil then
-        obj.setTags({ TAG_FIG, TAG_GENERIC })
     end
     if obj.setLock ~= nil then
         obj.setLock(true)
@@ -247,6 +276,12 @@ local function spawnFigurine(characterKey, frontUrl, backUrl, displayName, world
         if obj.reload ~= nil then
             obj.reload()
         end
+    end
+    if obj.setName ~= nil then
+        obj.setName(displayName)
+    end
+    if obj.setTags ~= nil then
+        obj.setTags({ TAG_FIG, TAG_GENERIC })
     end
     return obj
 end
@@ -355,11 +390,8 @@ local function spawnOne(characterKey, displayName, entry, board, tokenIndex, tok
         NPCS.unregisterGenericCharacter(characterKey)
         return false, "CONTROL_BOARD missing for token placement"
     end
-    local boardRot = board.getRotation and board.getRotation() or { y = 0 }
-    local yaw = (boardRot and boardRot.y) or 0
     local tokenData = buildTokenSpawnData(
         tokenPos,
-        yaw,
         characterKey,
         entry.token.front,
         entry.token.back,
@@ -371,7 +403,7 @@ local function spawnOne(characterKey, displayName, entry, board, tokenIndex, tok
         NPCS.unregisterGenericCharacter(characterKey)
         return false, "token spawn failed for " .. characterKey
     end
-    applyTokenTileShape(tokenObj, entry.token.front, entry.token.back)
+    applyTokenTileShape(tokenObj, entry.token.front, entry.token.back, displayName)
     local Gameboard = require("core.npc_gameboard")
     if type(Gameboard.setHiddenFromPlayerColors) == "function" then
         Gameboard.setHiddenFromPlayerColors(tokenObj)
