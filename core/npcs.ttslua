@@ -385,7 +385,19 @@ local function validateNpcNameKey(npcName)
     return U.Type(npcName) == "string" and string.match(npcName, "^[%a_][%w_]*$") ~= nil
 end
 
---- Deterministic preload grid slot per character key (sorted `NPCS.characters` keys).
+--- Runtime generic roster entries (`isGeneric`) do not own sorted preload bays.
+--- @param npcName string|nil
+--- @return boolean
+local function characterIsGeneric(npcName)
+    if U.Type(npcName) ~= "string" or npcName == "" then
+        return false
+    end
+    local def = NPCS.characters[npcName]
+    return U.Type(def) == "table" and def.isGeneric == true
+end
+
+--- Deterministic preload grid slot per **named** character key (sorted non-generic `NPCS.characters` keys).
+--- Generics return nil — they park in the next free bay via `resolvePreloadSlotForMove`.
 --- Must precede `assignNpcToSeat` / `resolvePreloadSlotForMove` (Lua local scope).
 --- @param npcName string
 --- @return number|nil
@@ -393,9 +405,14 @@ local function stablePreloadSlotIndex(npcName)
     if not validateNpcNameKey(npcName) or NPCS.characters[npcName] == nil then
         return nil
     end
+    if characterIsGeneric(npcName) then
+        return nil
+    end
     local keys = {}
-    for k, _ in pairs(NPCS.characters or {}) do
-        keys[#keys + 1] = k
+    for k, def in pairs(NPCS.characters or {}) do
+        if U.Type(def) == "table" and def.isGeneric ~= true then
+            keys[#keys + 1] = k
+        end
     end
     table.sort(keys)
     for i, k in ipairs(keys) do
@@ -696,7 +713,15 @@ local function parkPooledSpotlightForSeatedNpc(npcName, lit)
         return
     end
     deferredLightAlignGeneration[npcName] = (deferredLightAlignGeneration[npcName] or 0) + 1
+    -- Named: stable bay. Generic / no stable: keep instance preload slot (avoid calling
+    -- resolvePreloadSlotForMove here — it is defined later in this chunk).
     local slot = stablePreloadSlotIndex(npcName)
+    if slot == nil then
+        local recForSlot = getInstances()[npcName]
+        if U.Type(recForSlot) == "table" and U.Type(recForSlot.slotIndex) == "number" then
+            slot = recForSlot.slotIndex
+        end
+    end
     if U.Type(slot) == "number" then
         local pos = NPCS.computeSlotWorldPosition(PRELOAD_AREA_KEY, slot)
         if lit.setPosition ~= nil then
@@ -1752,12 +1777,25 @@ local function resolveSlotForMove(areaKey, preferred, excludeNpcName)
     return NPCS.findNextFreeSlotIndex(areaKey)
 end
 
---- Stable preload slot when free; otherwise first free slot in the preload grid (same occupancy rules as play areas).
+--- Named NPCs: stable sorted bay when free; otherwise first free slot.
+--- Generics: keep current preload bay if already parked; otherwise first free (never enter the named index).
 --- @param npcName string
 --- @param preferredSlot number|nil optional override (e.g. scene stash)
 --- @return number|nil
 local function resolvePreloadSlotForMove(npcName, preferredSlot)
     ensurePreloadLayoutCapacity()
+    if characterIsGeneric(npcName) then
+        local rec = getInstances()[npcName]
+        if U.Type(rec) == "table"
+            and rec.areaKey == PRELOAD_AREA_KEY
+            and U.Type(rec.slotIndex) == "number" then
+            return resolveSlotForMove(PRELOAD_AREA_KEY, rec.slotIndex, npcName)
+        end
+        if U.Type(preferredSlot) == "number" then
+            return resolveSlotForMove(PRELOAD_AREA_KEY, preferredSlot, npcName)
+        end
+        return NPCS.findNextFreeSlotIndex(PRELOAD_AREA_KEY)
+    end
     local preferred = U.Type(preferredSlot) == "number" and preferredSlot or stablePreloadSlotIndex(npcName)
     return resolveSlotForMove(PRELOAD_AREA_KEY, preferred, npcName)
 end
@@ -2445,11 +2483,12 @@ local function npcWorldHasPlacementIntent()
     return #collectSessionStagePlacements() > 0
 end
 
---- Park every spawned NPC into the deterministic under-table preload grid before stage `placements` apply.
+--- Park every spawned NPC into the under-table preload grid before stage `placements` apply.
+--- Named NPCs use stable sorted bays; generics keep their bay or take the next free slot.
 local function stashAllNpcFigurinesForSessionSceneLayout()
     for name, rec in pairs(getInstances()) do
         if U.Type(name) == "string" and U.Type(rec) == "table" and U.Type(rec.figurineGuid) == "string" and rec.figurineGuid ~= "" then
-            local slot = stablePreloadSlotIndex(name)
+            local slot = resolvePreloadSlotForMove(name, stablePreloadSlotIndex(name))
             if slot ~= nil then
                 local ok, err = NPCS.moveNpcToArea(name, PRELOAD_AREA_KEY, {
                     preferredSlot = slot,
@@ -2796,7 +2835,21 @@ local function adoptExistingPooledFigurineAtPreloadSlot(npcName, figurine, slotI
         requestSeatLayoutSync()
     end
     NPCS.applyCurrentLightMode(npcName, 0)
-    print("[NPCS] adopted existing figurine for " .. tostring(npcName) .. " at preload slot " .. tostring(slotIndex))
+    if characterIsGeneric(npcName) then
+        print(
+            "[NPCS] registered spawned figurine for "
+                .. tostring(npcName)
+                .. " at preload slot "
+                .. tostring(slotIndex)
+        )
+    else
+        print(
+            "[NPCS] adopted existing figurine for "
+                .. tostring(npcName)
+                .. " at preload slot "
+                .. tostring(slotIndex)
+        )
+    end
     return true, nil
 end
 
@@ -2859,9 +2912,12 @@ function NPCS.ensureNpcInPreloadZone(npcName, opts)
         return false, "preload area missing from npcs_data.areas."
     end
     opts = U.Type(opts) == "table" and opts or {}
-    local slot = stablePreloadSlotIndex(npcName)
-    if slot == nil then
-        return false, "NPC preload: no stable slot."
+    local preferredSlot = nil
+    if not characterIsGeneric(npcName) then
+        preferredSlot = stablePreloadSlotIndex(npcName)
+        if preferredSlot == nil then
+            return false, "NPC preload: no stable slot."
+        end
     end
     local rec = getInstances()[npcName]
     if rec ~= nil then
@@ -2869,7 +2925,7 @@ function NPCS.ensureNpcInPreloadZone(npcName, opts)
         if fig == nil then
             return false, missingPooledFigurineErr(npcName)
         end
-        local resolvedSlot = resolvePreloadSlotForMove(npcName, slot)
+        local resolvedSlot = resolvePreloadSlotForMove(npcName, preferredSlot)
         if resolvedSlot == nil then
             return false, "No free slot in preload pool."
         end
@@ -2906,7 +2962,7 @@ function NPCS.ensureNpcInPreloadZone(npcName, opts)
             forceSessionLayoutStash = true,
         })
     end
-    local spawnSlot = resolvePreloadSlotForMove(npcName, slot)
+    local spawnSlot = resolvePreloadSlotForMove(npcName, preferredSlot)
     if spawnSlot == nil then
         return false, "No free slot in preload pool."
     end
@@ -3565,7 +3621,9 @@ function NPCS.moveNpcToArea(npcName, areaKey, opts)
     end
     local slot
     if areaKey == PRELOAD_AREA_KEY then
-        if stablePreloadSlotIndex(npcName) == nil and U.Type(opts.preferredSlot) ~= "number" then
+        if not characterIsGeneric(npcName)
+            and stablePreloadSlotIndex(npcName) == nil
+            and U.Type(opts.preferredSlot) ~= "number" then
             return false, "No stable preload slot for NPC."
         end
         slot = resolvePreloadSlotForMove(npcName, opts.preferredSlot)
@@ -3923,9 +3981,9 @@ function NPCS.retreatNpcInstanceToPreloadPool(npcName, opts)
         end
         setOccupiedNpcSeatMap(occ)
     end
-    local slot = stablePreloadSlotIndex(npcName)
+    local slot = resolvePreloadSlotForMove(npcName, stablePreloadSlotIndex(npcName))
     if slot == nil then
-        return false, "No stable preload slot."
+        return false, "No free preload slot."
     end
     return NPCS.moveNpcToArea(npcName, PRELOAD_AREA_KEY, {
         preferredSlot = slot,

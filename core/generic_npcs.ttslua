@@ -411,10 +411,10 @@ local function spawnOne(characterKey, displayName, entry, board, tokenIndex, tok
     end
 
     local slot = nil
-    -- ensureNpcInPreloadZone assigns stable slot after figurine exists
+    -- Provisional park under table; ensureNpcInPreloadZone assigns next free preload bay
+    -- (generics do not use named-NPC sorted stable indices).
     local figPos = { x = 0, y = -200, z = 0 }
     if type(NPCS.computeSlotWorldPosition) == "function" then
-        -- provisional park under table; adopt moves to stable slot
         figPos = NPCS.computeSlotWorldPosition("preload", 1) or figPos
     end
     local fig = spawnFigurine(
