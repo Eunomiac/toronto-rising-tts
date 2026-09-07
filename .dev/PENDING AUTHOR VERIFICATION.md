@@ -101,9 +101,9 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 #### TOR-562 — Overlay camera right-click: horizon yaw (keep default distance)
 
-**How to verify:** Save & Play so Global scripts reload. Sit as a player with at least one NPC on the stage. Look around so you are not already on default, then right-click the overlay camera icon. Your view should stay on that seat’s usual default focus in the XZ plane (same `distance` as default), with the look-at point raised, pitch flat on the horizon, and yaw turned toward the lead figurine in the current cycle area — not pitched up at a face, and not snapped with `distance = 0`. After about a quarter-second you should be in FirstPerson so you can tilt up yourself if you need to. Right-click again to confirm the next occupied area gets a new yaw while the focus XZ / distance still feel like a turn, not a teleport.
+**How to verify:** Save & Play so Global scripts reload. Sit as a player with at least one NPC on the stage. Look around so you are not already on default, then right-click the overlay camera icon. Your view should stay on that seat’s usual default focus in the XZ plane (same `distance` as default), with the look-at point raised, pitch flat on the horizon, and yaw turned **toward** the lead figurine (not 180° the other way). After about a quarter-second you should be in FirstPerson so you can tilt up yourself if you need to. Right-click again to confirm the next occupied area gets a new yaw while the focus XZ / distance still feel like a turn, not a teleport.
 
-**Context:** Replaces the old pitch-up face-look path. TTS cannot script a pitch above the horizon; players finish the look in FirstPerson.
+**Context:** Replaces the old pitch-up face-look path. TTS cannot script a pitch above the horizon; players finish the look in FirstPerson. Yaw uses the heading as-is (the previous `180 − heading` flip was backwards in-game).
 
 ---
 

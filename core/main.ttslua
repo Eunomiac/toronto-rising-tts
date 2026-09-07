@@ -323,7 +323,7 @@ function M.lookAtNPC(player, npcPositionVector)
     local npcPosition = Vector(npcPositionVector):setAt("y", LOOK_AT_NPC_Y)
     local headingVector = npcPosition - cameraPosition
     if headingVector:magnitude() >= 0.001 then
-      lookData.yaw = U.cycle(180 - headingVector:heading("y"), 0, 360)
+      lookData.yaw = U.cycle(headingVector:heading("y"), 0, 360)
     end
   end
 
