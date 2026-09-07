@@ -178,6 +178,7 @@ local function buildTokenSpawnData(worldPos, characterKey, frontUrl, backUrl, di
         Value = 0,
         Locked = false,
         Grid = false,
+        -- Object Toggles → Snap (attraction to snap points). Named workshop tokens have this on.
         Snap = true,
         IgnoreFoW = false,
         MeasureMovement = false,
@@ -203,7 +204,6 @@ local function buildTokenSpawnData(worldPos, characterKey, frontUrl, backUrl, di
         LuaScript = "",
         LuaScriptState = "",
         XmlUI = "",
-        -- Match CONTROL_BOARD snap tags (npc_control_token + pc_control_token) so tokens can snap.
         Tags = { TAG_TOKEN, TAG_GENERIC },
     }
 end
@@ -227,15 +227,16 @@ local function applyTokenTileShape(obj, frontUrl, backUrl, displayName)
     if obj.reload ~= nil then
         obj.reload()
     end
-    -- reload can drop Nickname / tags / rotation; re-apply after shape settle.
+    -- reload can drop Nickname / rotation; re-apply after shape settle.
     if type(displayName) == "string" and displayName ~= "" and obj.setName ~= nil then
         obj.setName(displayName)
     end
-    if obj.setTags ~= nil then
-        obj.setTags({ TAG_TOKEN, TAG_GENERIC })
-    end
     if obj.setRotation ~= nil then
         obj.setRotation({ 0, 0, 180 })
+    end
+    -- Ensure Toggles → Snap stays on after reload (spawnObjectData Snap can be lost).
+    if obj.use_snap_points ~= nil then
+        obj.use_snap_points = true
     end
 end
 

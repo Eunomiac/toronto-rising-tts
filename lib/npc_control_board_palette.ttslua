@@ -497,7 +497,6 @@ local function snapPointForGridIndex(board, snapIndex, usedRowCount)
         --- Match `rotationForPaletteParking` (board-local Y offset; Z=0 = face-up / lights-on art).
         rotation = { 0, yawDeg, 0 },
         rotation_snap = true,
-        tags = { "npc_control_token", "pc_control_token" },
     }
 end
 

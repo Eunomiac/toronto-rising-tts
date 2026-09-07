@@ -17,17 +17,17 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-06 — TOR-560 generic NPC import._
+_Last populated: 2026-09-07 — TOR-561 dual global blindfolds._
 
 ### NPC / stage
 
 #### TOR-560 — Generic NPC import (spawn, scene library, Dashboard bridge)
 
-**How to verify:** Save & Play so Global + CONTROL_BOARD UI update. The **Import** field should sit on the control-board edge **opposite** the Apply/Clear row (not stacked above those buttons). Paste a short key list from the Storyteller Dashboard (for example `dogGuard_01,academicsProfessor_02`) and click **Import** (or press Enter in the field). A Storyteller-only name popup should open with those rows pre-filled from sheet labels — change a name if you like, then confirm. You should get face-down tokens in a spaced row on the edge **opposite** the PC seat-token row (not on top of the PCs), with tooltip nicknames matching whatever you typed in the popup, rotation `{0, 0, 180}`, and they should snap onto control-board snap points. Figurines should park under the table with lights off. Apply should place them from token positions like other stage NPCs. Leaving the scene (or Clear) should destroy those generic objects; applying that library scene again should recreate them with the same display names.
+**How to verify:** Save & Play so Global + CONTROL_BOARD UI update. The **Import** field should sit on the control-board edge **opposite** the Apply/Clear row (not stacked above those buttons). Paste a short key list from the Storyteller Dashboard (for example `dogGuard_01,academicsProfessor_02`) and click **Import** (or press Enter in the field). A Storyteller-only name popup should open with those rows pre-filled from sheet labels — change a name if you like, then confirm. You should get face-down tokens in a spaced row on the edge **opposite** the PC seat-token row (not on top of the PCs), with tooltip nicknames matching whatever you typed in the popup, rotation `{0, 0, 180}`, and **Toggles → Snap** on so they pull onto control-board snap points. Figurines should park under the table with lights off. Apply should place them from token positions like other stage NPCs. Leaving the scene (or Clear) should destroy those generic objects; applying that library scene again should recreate them with the same display names.
 
 Separately, restart the Storyteller Dashboard with the TTS Tools extension **disabled**. Gold highlights should appear after **Copy** or **Spawn in TTS**. **Clear Generics** should clear gold only. With the extension enabled again, **Spawn in TTS** and Lua **Run** should grey out and explain that port 39998 is busy.
 
-**Context:** Runtime spawn exception to the named-NPC preload pool. Seating / PC-as-NPC / Memoriam generics are still out of scope. Post-ship polish: import UI edge, spawn row flip/spacing, nickname after reload, fixed rotation, snap tags on CONTROL_BOARD snaps.
+**Context:** Runtime spawn exception to the named-NPC preload pool. Seating / PC-as-NPC / Memoriam generics are still out of scope. Post-ship polish: import UI edge, spawn row flip/spacing, nickname after reload, fixed rotation, Snap toggle on at spawn.
 
 ### Tooling / assets
 
@@ -115,11 +115,17 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 **Context:** The first trim still left too much vertical space. Row containers and children now have explicit preferred/min heights; button rows are shorter than the glyph rows.
 
-#### TOR-524 — End→Intermission cover uses overlay_blindfold_end
+#### TOR-561 — Separate session-start and session-end global blindfolds
 
-**How to verify:** Save & Play. From End, click Advance into Intermission. As the global cover comes down, the top image should be the End blindfold art (`overlay_blindfold_end`), not the session-start cover. After a full reload from the main menu, the default session cover should be back.
+**How to verify:** Save & Play so the new Global XML and scripts load. Confirm CustomUIAssets include `overlay_blindfold_session_<N>` and `overlay_blindfold_end_session_<N>` for your current session number.
 
-**Context:** The script does not switch the image back; a reload restores the XML default.
+1. **Cold load in Intermission:** From the main menu, load the save. You should see the session-start cover art for the current session number (not a blank Image). The end cover should stay hidden.
+2. **Intermission session number edit:** On the Phases panel, change the session number while still in Intermission. Both cover Images should update immediately (you can use Overlay Alpha / a brief peek if needed to confirm the start cover changed). Change the number again during Play: the cover Images should **not** change until you return to Intermission or reload.
+3. **End → Intermission:** Advance through Play → Spotlight → End, then Advance into Intermission. The cover that comes down should be the **end** panel (`overlay_globalBlindfold_panel_end`) with that session’s end art — not the session-start explode stack. Leave it up; do not expect the start cover to return without a reload.
+4. **Reload after End:** Load from the main menu again. The start cover should be back (XML default), the end cover hidden, and both Images should match the (already incremented) session number.
+5. **Optional:** `lua DEBUG.resetToIntermission()` should bring back the session-start cover (for intro re-tests), not the end cover.
+
+**Context:** Replaces the TOR-524 approach of swapping the image on the session-start panel. Session-start explode animations left that panel hard to restore cleanly.
 
 #### ✅ TOR-528 — DEBUG.resetToIntermission for intro re-tests
 
