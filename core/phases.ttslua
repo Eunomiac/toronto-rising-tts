@@ -189,12 +189,16 @@ function Phases.endBlindfoldImageName(sessionNum)
 end
 
 --- Set both global cover Images from `sessionNum` (load / Intermission panel edit).
--- Does not show or hide either panel.
+-- Does not show or hide either panel. Start cover Image starts `active=false` in XML so a
+-- missing image does not flash white; activate it together with the asset name.
 -- @param sessionNum number|nil
 -- @return boolean
 function Phases.applySessionBlindfoldImages(sessionNum)
     local n = normalizeSessionNum(sessionNum)
-    U.setAttribute(SESSION_COVER_IMAGE_ID, "image", Phases.sessionBlindfoldImageName(n))
+    UI.setAttributes(SESSION_COVER_IMAGE_ID, {
+        image = Phases.sessionBlindfoldImageName(n),
+        active = "true",
+    })
     U.setAttribute(END_COVER_IMAGE_ID, "image", Phases.endBlindfoldImageName(n))
     return true
 end

@@ -6968,8 +6968,8 @@ UI.setAttributes("playerHud_refPanel_princesCourt_Red", {offsetXY = "-50 0"})
 
 <Panel id="overlay_globalBlindfold_panel" class="global_blindfold_panel">
   <Panel id="overlay_globalBlindfold_sessionSplashPanel_base" class="global_blindfold_image_panel">
-    <!-- image set on load / Intermission sessionNum edit: overlay_blindfold_session_<sessionNum> -->
-    <Image id="overlay_globalBlindfold" class="global_blindfold" />
+    <!-- image + active set together on load / Intermission sessionNum edit (inactive until then so missing art is black, not white) -->
+    <Image id="overlay_globalBlindfold" class="global_blindfold" active = "false" />
   </Panel>
   <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_1_B" class="global_blindfold_image_panel" active = "false">
     <Image id="overlay_globalBlindfold_sessionSplash_1_1_B" class="global_blindfold" image="overlay_explode_image_blackCaesar" active = "false" />
@@ -14724,8 +14724,8 @@ M.minimal = [=[
 
 <Panel id="overlay_globalBlindfold_panel" class="global_blindfold_panel">
   <Panel id="overlay_globalBlindfold_sessionSplashPanel_base" class="global_blindfold_image_panel">
-    <!-- image set on load / Intermission sessionNum edit: overlay_blindfold_session_<sessionNum> -->
-    <Image id="overlay_globalBlindfold" class="global_blindfold" />
+    <!-- image + active set together on load / Intermission sessionNum edit (inactive until then so missing art is black, not white) -->
+    <Image id="overlay_globalBlindfold" class="global_blindfold" active = "false" />
   </Panel>
   <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_1_B" class="global_blindfold_image_panel" active = "false">
     <Image id="overlay_globalBlindfold_sessionSplash_1_1_B" class="global_blindfold" image="overlay_explode_image_blackCaesar" active = "false" />
