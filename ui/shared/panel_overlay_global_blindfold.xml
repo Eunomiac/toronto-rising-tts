@@ -33,6 +33,10 @@
   />
 </Defaults>
 
+<!--
+UI.setAttributes("overlay_globalBlindfold", { active = "true"})
+-->
+
 <Panel id="overlay_globalBlindfold_panel" class="global_blindfold_panel">
   <Panel id="overlay_globalBlindfold_sessionSplashPanel_base" class="global_blindfold_image_panel">
     <!-- image + active set together on load / Intermission sessionNum edit (inactive until then so missing art is black, not white) -->

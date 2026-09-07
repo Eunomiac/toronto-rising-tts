@@ -7,7 +7,7 @@
     raycastTarget = "true"
     showAnimation = "FadeIn"
     hideAnimation = "FadeOut"
-    animationDuration = "0.3"
+    animationDuration = "2"
     color = "#000000"
   />
   <Image class="global_blindfold"
