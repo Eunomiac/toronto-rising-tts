@@ -153,7 +153,8 @@ function click_generic_import(player, value, id)
     if not isStorytellerSteamClick(player, value) then
         return
     end
-    Global.call("GlobalImportGenericNpcs", { keys = readGenericImportKeysFromUi() })
+    local keys = readGenericImportKeysFromUi()
+    Global.call("GlobalImportGenericNpcs", { keys = keys })
     clearGenericImportKeysUi()
 end
 
@@ -161,8 +162,11 @@ function click_generic_import_end(player, value, id)
     if not isStorytellerSteamClick(player, value) then
         return
     end
-    -- onEndEdit: value is the field text
+    -- onEndEdit: value is the field text. Empty means focus-loss or post-Import clear — do not re-run.
     local keys = type(value) == "string" and value or readGenericImportKeysFromUi()
+    if type(keys) ~= "string" or string.match(keys, "^%s*$") then
+        return
+    end
     Global.call("GlobalImportGenericNpcs", { keys = keys })
     clearGenericImportKeysUi()
 end
