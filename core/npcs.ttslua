@@ -4614,7 +4614,8 @@ function NPCS.registerGenericCharacter(characterKey, displayName)
     NPCS.characters[characterKey] = {
         name = characterKey,
         fullName = displayName,
-        figurine = { scale = 1 },
+        -- Card Scale (ImageScalar); matches named NPC default in npcs_data. Per-key overrides later.
+        figurine = { scale = 53 },
         isGeneric = true,
     }
     ensurePreloadLayoutCapacity()

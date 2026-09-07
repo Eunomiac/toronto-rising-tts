@@ -22,7 +22,7 @@ local GM_TOKEN_PREFIX = "npcToken:"
 local TOKEN_TILE_TYPE = 2
 local TOKEN_TILE_THICKNESS = 0.1
 local TOKEN_SCALE = 0.38
-local FIGURINE_IMAGE_SCALAR = 1
+local FIGURINE_IMAGE_SCALAR = 53
 local FIGURINE_PRELOAD_TRANSFORM_SCALE = 0.12
 
 --- @type table|nil { keys = string[], defaults = table<string,string> }
