@@ -137,11 +137,24 @@ local function readGenericImportKeysFromUi()
     return value
 end
 
+local function clearGenericImportKeysUi()
+    if self == nil or self.UI == nil then
+        return
+    end
+    if self.UI.setValue ~= nil then
+        self.UI.setValue("gb_generic_import_keys", "")
+    end
+    if self.UI.setAttribute ~= nil then
+        self.UI.setAttribute("gb_generic_import_keys", "text", "")
+    end
+end
+
 function click_generic_import(player, value, id)
     if not isStorytellerSteamClick(player, value) then
         return
     end
     Global.call("GlobalImportGenericNpcs", { keys = readGenericImportKeysFromUi() })
+    clearGenericImportKeysUi()
 end
 
 function click_generic_import_end(player, value, id)
@@ -151,4 +164,5 @@ function click_generic_import_end(player, value, id)
     -- onEndEdit: value is the field text
     local keys = type(value) == "string" and value or readGenericImportKeysFromUi()
     Global.call("GlobalImportGenericNpcs", { keys = keys })
+    clearGenericImportKeysUi()
 end
