@@ -49,6 +49,8 @@
     flexibleWidth="1"
     colors="#222222|#333333|#111111|#555555"
     textColor="#FFFFFF"
+    onValueChanged="HUD_genericNpcImportLabelChanged"
+    onEndEdit="HUD_genericNpcImportLabelChanged"
   />
   <HorizontalLayout class="genericImport_buttons"
     preferredHeight="48"

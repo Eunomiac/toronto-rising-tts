@@ -1407,6 +1407,17 @@ function HUD_genericNpcImportCancel(player, button, id)
     GenericNpcs.cancelImport()
 end
 
+--- InputField onValueChanged / onEndEdit for generic import label modal (stash typed text).
+function HUD_genericNpcImportLabelChanged(player, value, id)
+    if not U.isStorytellerSteamPlayer(player) then
+        return
+    end
+    local GenericNpcs = require("core.generic_npcs")
+    if type(GenericNpcs.onLabelFieldChanged) == "function" then
+        GenericNpcs.onLabelFieldChanged(player, value, id)
+    end
+end
+
 --- TOR-173: single orchestrator coroutine for stage placement lerp batches on Apply.
 function GlobalStageLerpOrchestrator()
     local NPCStageLerp = require("core.npc_stage_lerp")

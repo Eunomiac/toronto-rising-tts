@@ -6966,6 +6966,10 @@ UI.setAttributes("playerHud_refPanel_princesCourt_Red", {offsetXY = "-50 0"})
   />
 </Defaults>
 
+<!--
+UI.setAttributes("overlay_globalBlindfold", { active = "true"})
+-->
+
 <Panel id="overlay_globalBlindfold_panel" class="global_blindfold_panel">
   <Panel id="overlay_globalBlindfold_sessionSplashPanel_base" class="global_blindfold_image_panel">
     <!-- image + active set together on load / Intermission sessionNum edit (inactive until then so missing art is black, not white) -->
@@ -7027,7 +7031,7 @@ UI.setAttributes("playerHud_refPanel_princesCourt_Red", {offsetXY = "-50 0"})
     raycastTarget = "true"
     showAnimation = "FadeIn"
     hideAnimation = "FadeOut"
-    animationDuration = "0.3"
+    animationDuration = "2"
     color = "#000000"
   />
   <Image class="global_blindfold"
@@ -13792,6 +13796,8 @@ UI.hide("sessionStartHeal_playerContainer_Orange")
     flexibleWidth="1"
     colors="#222222|#333333|#111111|#555555"
     textColor="#FFFFFF"
+    onValueChanged="HUD_genericNpcImportLabelChanged"
+    onEndEdit="HUD_genericNpcImportLabelChanged"
   />
   <HorizontalLayout class="genericImport_buttons"
     preferredHeight="48"
@@ -14721,6 +14727,10 @@ M.minimal = [=[
     raycastTarget = "false"
   />
 </Defaults>
+
+<!--
+UI.setAttributes("overlay_globalBlindfold", { active = "true"})
+-->
 
 <Panel id="overlay_globalBlindfold_panel" class="global_blindfold_panel">
   <Panel id="overlay_globalBlindfold_sessionSplashPanel_base" class="global_blindfold_image_panel">

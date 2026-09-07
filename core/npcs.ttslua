@@ -2797,7 +2797,14 @@ local function adoptExistingPooledFigurineAtPreloadSlot(npcName, figurine, slotI
     if getInstances()[npcName] ~= nil then
         return false, "NPC already has instance record."
     end
-    if not U.isGameObject(figurine) or not NPCS.isPooledFigurineObject(figurine) then
+    local figOk = U.isGameObject(figurine) and NPCS.isPooledFigurineObject(figurine)
+    if not figOk and characterIsGeneric(npcName) and U.isGameObject(figurine) then
+        -- Fresh spawn: CustomObject table may lag; require tag + matching GM notes.
+        local notes = figurine.getGMNotes ~= nil and tostring(figurine.getGMNotes() or "") or ""
+        local hasTag = figurine.hasTag ~= nil and figurine.hasTag(TAG_FIG) == true
+        figOk = hasTag and notes == (GM_PREFIX .. npcName)
+    end
+    if not figOk then
         return false, "Not a pooled NPC figurine."
     end
     ensureNpcFigurinePhysicsLocked(figurine)
@@ -2966,7 +2973,12 @@ function NPCS.ensureNpcInPreloadZone(npcName, opts)
     if spawnSlot == nil then
         return false, "No free slot in preload pool."
     end
-    local existingFig = findExistingPooledFigurineForNpcName(npcName)
+    local existingFig = nil
+    if U.isGameObject(opts.figurine) then
+        existingFig = opts.figurine
+    else
+        existingFig = findExistingPooledFigurineForNpcName(npcName)
+    end
     if existingFig ~= nil then
         return adoptExistingPooledFigurineAtPreloadSlot(npcName, existingFig, spawnSlot, opts)
     end

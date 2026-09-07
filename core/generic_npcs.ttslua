@@ -27,6 +27,9 @@ local FIGURINE_PRELOAD_TRANSFORM_SCALE = 0.12
 
 --- @type table|nil { keys = string[], defaults = table<string,string> }
 local pendingImport = nil
+--- Live typed names from modal InputFields (TTS does not expose InputField text via UI.getValue).
+--- @type table<string,string>
+local pendingLabelDrafts = {}
 
 local function npcsModule()
     return require("core.npcs")
@@ -212,9 +215,10 @@ end
 --- @param frontUrl string
 --- @param backUrl string
 --- @param displayName string|nil
+--- @return Object|nil refreshed object after reload
 local function applyTokenTileShape(obj, frontUrl, backUrl, displayName)
     if obj == nil or obj.setCustomObject == nil then
-        return
+        return obj
     end
     obj.setCustomObject({
         image = frontUrl,
@@ -225,19 +229,28 @@ local function applyTokenTileShape(obj, frontUrl, backUrl, displayName)
         stretch = true,
     })
     if obj.reload ~= nil then
-        obj.reload()
+        local reloaded = obj.reload()
+        if reloaded ~= nil then
+            obj = reloaded
+        end
     end
-    -- reload can drop Nickname / rotation; re-apply after shape settle.
+    -- reload can drop Nickname / Snap / tags; re-apply on the live object.
     if type(displayName) == "string" and displayName ~= "" and obj.setName ~= nil then
         obj.setName(displayName)
+    end
+    if obj.setTags ~= nil then
+        obj.setTags({ TAG_TOKEN, TAG_GENERIC })
     end
     if obj.setRotation ~= nil then
         obj.setRotation({ 0, 0, 180 })
     end
-    -- Ensure Toggles → Snap stays on after reload (spawnObjectData Snap can be lost).
     if obj.use_snap_points ~= nil then
         obj.use_snap_points = true
     end
+    if obj.tooltip ~= nil then
+        obj.tooltip = true
+    end
+    return obj
 end
 
 --- @param characterKey string
@@ -262,12 +275,6 @@ local function spawnFigurine(characterKey, frontUrl, backUrl, displayName, world
     if obj == nil then
         return nil
     end
-    if obj.setGMNotes ~= nil then
-        obj.setGMNotes(GM_FIG_PREFIX .. characterKey)
-    end
-    if obj.setLock ~= nil then
-        obj.setLock(true)
-    end
     if obj.setCustomObject ~= nil then
         obj.setCustomObject({
             image = frontUrl,
@@ -275,14 +282,27 @@ local function spawnFigurine(characterKey, frontUrl, backUrl, displayName, world
             image_scalar = FIGURINE_IMAGE_SCALAR,
         })
         if obj.reload ~= nil then
-            obj.reload()
+            local reloaded = obj.reload()
+            if reloaded ~= nil then
+                obj = reloaded
+            end
         end
+    end
+    -- Identity must land on the post-reload object (reload returns a new ref).
+    if obj.setGMNotes ~= nil then
+        obj.setGMNotes(GM_FIG_PREFIX .. characterKey)
     end
     if obj.setName ~= nil then
         obj.setName(displayName)
     end
     if obj.setTags ~= nil then
         obj.setTags({ TAG_FIG, TAG_GENERIC })
+    end
+    if obj.setLock ~= nil then
+        obj.setLock(true)
+    end
+    if obj.tooltip ~= nil then
+        obj.tooltip = true
     end
     return obj
 end
@@ -354,9 +374,11 @@ function GenericNpcs.destroyAllLiveObjectsKeepMembership()
     for i = 1, #keys do
         GenericNpcs.destroyLiveKey(keys[i], { keepMembership = true })
     end
+    GenericNpcs.destroyOrphanGenericTaggedObjects()
 end
 
 --- Destroy all live generics and clear membership (Clear board / unload from scene).
+--- Also sweeps orphan `generic_npc`-tagged objects left by a failed import (no membership row).
 function GenericNpcs.destroyAllLiveAndClearMembership()
     local membership = getMembership()
     local keys = {}
@@ -369,6 +391,19 @@ function GenericNpcs.destroyAllLiveAndClearMembership()
         GenericNpcs.destroyLiveKey(keys[i], { keepMembership = false })
     end
     setMembership({})
+    GenericNpcs.destroyOrphanGenericTaggedObjects()
+end
+
+--- Remove any leftover objects tagged `generic_npc` (failed import / stale refs).
+function GenericNpcs.destroyOrphanGenericTaggedObjects()
+    ---@diagnostic disable-next-line: undefined-global
+    local objs = getObjectsWithTag(TAG_GENERIC) or {}
+    for i = 1, #objs do
+        local obj = objs[i]
+        if obj ~= nil and obj.destruct ~= nil then
+            obj.destruct()
+        end
+    end
 end
 
 --- @param characterKey string
@@ -404,13 +439,16 @@ local function spawnOne(characterKey, displayName, entry, board, tokenIndex, tok
         NPCS.unregisterGenericCharacter(characterKey)
         return false, "token spawn failed for " .. characterKey
     end
-    applyTokenTileShape(tokenObj, entry.token.front, entry.token.back, displayName)
+    tokenObj = applyTokenTileShape(tokenObj, entry.token.front, entry.token.back, displayName) or tokenObj
     local Gameboard = require("core.npc_gameboard")
     if type(Gameboard.setHiddenFromPlayerColors) == "function" then
         Gameboard.setHiddenFromPlayerColors(tokenObj)
     end
+    -- Hide helper may not change the ref; re-assert nickname after any world tweaks.
+    if tokenObj.setName ~= nil then
+        tokenObj.setName(displayName)
+    end
 
-    local slot = nil
     -- Provisional park under table; ensureNpcInPreloadZone assigns next free preload bay
     -- (generics do not use named-NPC sorted stable indices).
     local figPos = { x = 0, y = -200, z = 0 }
@@ -436,6 +474,7 @@ local function spawnOne(characterKey, displayName, entry, board, tokenIndex, tok
         deferUiRefresh = true,
         skipSeatSync = true,
         forceNpcLightMode = "OFF",
+        figurine = fig,
     })
     if not ok then
         if fig.destruct ~= nil then
@@ -489,6 +528,7 @@ function GenericNpcs.confirmImport(labelOverrides)
     end
     setMembership(membership)
     pendingImport = nil
+    pendingLabelDrafts = {}
     GenericNpcs.hideLabelModal()
     if #errors > 0 then
         U.AlertGM(
@@ -507,10 +547,35 @@ end
 
 function GenericNpcs.cancelImport()
     pendingImport = nil
+    pendingLabelDrafts = {}
     GenericNpcs.hideLabelModal()
 end
 
 local MAX_MODAL_ROWS = 24
+
+--- Stash typed modal label text (InputField onValueChanged / onEndEdit).
+--- @param player table|nil
+--- @param value string|nil
+--- @param id string|nil e.g. genericImport_label_03
+function GenericNpcs.onLabelFieldChanged(player, value, id)
+    if pendingImport == nil or type(pendingImport.keys) ~= "table" then
+        return
+    end
+    if type(id) ~= "string" then
+        return
+    end
+    local rowIndex = tonumber(string.match(id, "^genericImport_label_(%d+)$"))
+    if rowIndex == nil or rowIndex < 1 or rowIndex > #pendingImport.keys then
+        return
+    end
+    local key = pendingImport.keys[rowIndex]
+    if type(key) ~= "string" or key == "" then
+        return
+    end
+    if type(value) == "string" then
+        pendingLabelDrafts[key] = value
+    end
+end
 
 function GenericNpcs.hideLabelModal()
     ---@diagnostic disable-next-line: undefined-global
@@ -539,16 +604,20 @@ local function showLabelModal(rows)
                 .. " keys per batch; extra keys were ignored."
         )
     end
+    pendingLabelDrafts = {}
     for i = 1, MAX_MODAL_ROWS do
         local id = string.format("genericImport_row_%02d", i)
         local keyId = string.format("genericImport_key_%02d", i)
         local inputId = string.format("genericImport_label_%02d", i)
         if i <= n then
             local row = rows[i]
+            pendingLabelDrafts[row.key] = row.label
             UI.setAttribute(id, "active", "true")
             UI.setAttribute(keyId, "text", row.key)
             UI.setAttribute(inputId, "text", row.label)
-            UI.setValue(inputId, row.label)
+            if UI.setValue ~= nil then
+                UI.setValue(inputId, row.label)
+            end
         else
             UI.setAttribute(id, "active", "false")
         end
@@ -600,17 +669,13 @@ function GenericNpcs.confirmImportFromModal()
     if pendingImport == nil then
         return false
     end
-    ---@diagnostic disable-next-line: undefined-global
+    -- Prefer stashed onValueChanged drafts — UI.getValue does not return live InputField text.
     local overrides = {}
     for i = 1, #pendingImport.keys do
         local key = pendingImport.keys[i]
-        local inputId = string.format("genericImport_label_%02d", i)
-        local value = nil
-        if UI ~= nil and UI.getValue ~= nil then
-            value = UI.getValue(inputId)
-        end
-        if type(value) == "string" and value ~= "" then
-            overrides[key] = value
+        local draft = pendingLabelDrafts[key]
+        if type(draft) == "string" and not string.match(draft, "^%s*$") then
+            overrides[key] = draft
         end
     end
     return GenericNpcs.confirmImport(overrides)
