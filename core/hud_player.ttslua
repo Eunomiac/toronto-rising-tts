@@ -1691,11 +1691,8 @@ local function setCameraControlsPanelExpanded(seatColor, expanded)
     end
 end
 
---- Right-click cycle through occupied polar stage areas (TOR-538). Apply resets this.
+--- Right-click cycle through occupied polar stage areas (TOR-538 / TOR-562). Apply resets this.
 local stageLookCycleIndexBySeat = {}
-
---- Fraction of figurine bounds height below the top — aims at the face, not the feet.
-local STAGE_LOOK_FACE_Y_SHIFT = 0.12
 
 local STAGE_LOOK_AREA_ORDER = {
     "Center",
@@ -1818,68 +1815,8 @@ local function polarAreaNameForFamily(catalog, familyId)
     return nil
 end
 
---- @param preset table
---- @return table `{ x, y, z }` camera eye
-local function cameraEyeFromLookAtPreset(preset)
-    local pos = preset.position
-    local tx = tonumber(pos and (pos.x or pos[1])) or 0
-    local ty = tonumber(pos and (pos.y or pos[2])) or 0
-    local tz = tonumber(pos and (pos.z or pos[3])) or 0
-    local pitch = math.rad(tonumber(preset.pitch) or 0)
-    local yaw = math.rad(tonumber(preset.yaw) or 0)
-    local dist = tonumber(preset.distance) or 0
-    local h = dist * math.cos(pitch)
-    return {
-        x = tx - h * math.sin(yaw),
-        y = ty + h * math.tan(pitch),
-        z = tz - h * math.cos(yaw),
-    }
-end
-
---- @param eye table
---- @param target Vector|table
---- @return table lookAt fields, camera sits at `eye` (distance 0)
-local function lookAtFromEyeToward(eye, target)
-    local tx = tonumber(target.x or target[1]) or 0
-    local ty = tonumber(target.y or target[2]) or 0
-    local tz = tonumber(target.z or target[3]) or 0
-    local dx = tx - eye.x
-    local dy = ty - eye.y
-    local dz = tz - eye.z
-    local horiz = math.sqrt(dx * dx + dz * dz)
-    local yaw = math.deg(math.atan2(dx, dz))
-    local pitch = 0
-    if horiz > 0.001 then
-        pitch = -math.deg(math.atan2(dy, horiz))
-    end
-    return {
-        position = Vector(eye.x, eye.y, eye.z),
-        pitch = pitch,
-        yaw = yaw,
-        distance = 0,
-    }
-end
-
---- @param fig Object
---- @return Vector|nil face world position
-local function figurineFaceWorldPos(fig)
-    if not U.isGameObject(fig) or fig.getBounds == nil then
-        return nil
-    end
-    local b = fig.getBounds()
-    if b == nil or b.center == nil or b.size == nil then
-        return nil
-    end
-    local cx = tonumber(b.center.x or b.center[1]) or 0
-    local cy = tonumber(b.center.y or b.center[2]) or 0
-    local cz = tonumber(b.center.z or b.center[3]) or 0
-    local sy = tonumber(b.size.y or b.size[2]) or 1
-    local topY = cy + sy / 2
-    return Vector(cx, topY - STAGE_LOOK_FACE_Y_SHIFT * sy, cz)
-end
-
 --- @param catalog table[]
---- @return table[] occupied area names in STAGE_LOOK_AREA_ORDER, each `{ areaName, characterKey }`
+--- @return table[] occupied area names in STAGE_LOOK_AREA_ORDER, each `{ areaName, characterKey, fig }`
 local function collectOccupiedStageLookTargets(catalog)
     local NPCS = require("core.npcs")
     local Gmod = require("lib.guids")
@@ -1962,14 +1899,10 @@ local function collectOccupiedStageLookTargets(catalog)
     return out
 end
 
---- Right-click: FirstPerson at default eye, pitched toward the lead figurine's face (TOR-538).
+--- Right-click: clone default lookAt, raise focus, yaw toward lead figurine on the horizon, then FirstPerson (TOR-562).
 --- @param player Player
 --- @param seatColor string
 local function applyOverlayCameraStageLook(player, seatColor)
-    local preset = Main.resolveCameraPreset(player, "default")
-    if type(preset) ~= "table" then
-        return
-    end
     local Board = require("core.npc_gameboard_board")
     local Snaps = require("core.npc_gameboard_snaps")
     local board = Board.getControlBoard()
@@ -1979,9 +1912,7 @@ local function applyOverlayCameraStageLook(player, seatColor)
         occupied = collectOccupiedStageLookTargets(catalog)
     end
     if #occupied == 0 then
-        local cameraData = U.clone(preset)
-        cameraData.cameraMode = nil
-        Main.applyFirstPersonLook(player, cameraData, nil)
+        Main.lookAtNPC(player, nil)
         stageLookCycleIndexBySeat[seatColor] = 0
         return
     end
@@ -1992,15 +1923,12 @@ local function applyOverlayCameraStageLook(player, seatColor)
     end
     stageLookCycleIndexBySeat[seatColor] = nextIndex
     local target = occupied[nextIndex]
-    local face = figurineFaceWorldPos(target.fig)
-    local moveData = U.clone(preset)
-    moveData.cameraMode = nil
-    if face == nil then
-        Main.applyFirstPersonLook(player, moveData, nil)
-        return
+    local fig = target.fig
+    local npcPos = nil
+    if U.isGameObject(fig) and fig.getPosition ~= nil then
+        npcPos = fig.getPosition()
     end
-    local eye = cameraEyeFromLookAtPreset(preset)
-    Main.applyFirstPersonLook(player, moveData, lookAtFromEyeToward(eye, face))
+    Main.lookAtNPC(player, npcPos)
 end
 
 -- ============================================================================
@@ -2025,7 +1953,7 @@ end
 
 --- Toggle the camera preset picker panel for this seat's HUD.
 --- Left-click opens the picker and snaps this player to `default`.
---- Right-click (`-2`) FirstPerson at the default location, looking at the next occupied stage face (TOR-538).
+--- Right-click (`-2`) FirstPerson at elevated default focus, yawed toward the next occupied stage NPC (TOR-562).
 function HUD_popoutCameraControl_click(player, value, id)
     if type(id) ~= "string" then
         return

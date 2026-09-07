@@ -27,7 +27,7 @@ _Last populated: 2026-09-07 — TOR-561 dual global blindfolds._
 
 Separately, restart the Storyteller Dashboard with the TTS Tools extension **disabled**. Gold highlights should appear after **Copy** or **Spawn in TTS**. **Clear Generics** should clear gold only. With the extension enabled again, **Spawn in TTS** and Lua **Run** should grey out and explain that port 39998 is busy.
 
-**Context:** Runtime spawn exception to the named-NPC preload pool. Seating / PC-as-NPC / Memoriam generics are still out of scope. Post-ship polish: import UI edge, spawn row flip/spacing, nickname after reload, fixed rotation, Snap toggle on at spawn.
+**Context:** Runtime spawn exception to the named-NPC preload pool. Seating / PC-as-NPC / Memoriam generics are still out of scope. Post-ship polish: import UI edge, spawn row flip/spacing, nickname after reload, fixed rotation, Snap toggle on at spawn. Generics park in the next free under-table bay (named NPCs keep their sorted stable slots).
 
 ### Tooling / assets
 
@@ -93,11 +93,17 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 **Context:** Table B is the round “everyone sits in a packed ring” family. Cover transitions shuffle PCs and NPCs together; Absent players do not take a chair.
 
-#### TOR-538 — Overlay camera FirstPerson face-look cycle
+#### TOR-538 — Overlay camera left-click default + right-click stage cycle
 
-**How to verify:** Save & Play so the new scripts load. Sit as a player with NPCs on the stage (at least two different polar areas, e.g. Center and Mid Left). Switch to a seat whose camera is *not* already at default (for example, look around, then sit Red). Left-click the overlay camera button: the picker should open **and** your view should snap to that seat’s usual default table camera. Right-click that same button: you should first move to that default location in FirstPerson, then after a short beat look **up at the face** of the lead figurine (not stay at the horizon, and not stay at the old camera position). Right-click again: you should look at the next occupied area in order (Center, Center Left, Center Right, Mid Center, Mid Left, Mid Right, Far Center-Left, Far Center-Right, Far Left, Far Right), skipping empty ones, then loop. Click **Apply** on the stage control board, then right-click again: the cycle should start over from the first occupied area. Clear the stage and right-click: FirstPerson with your default framing (looking at the table, not a missing NPC).
+**How to verify:** Save & Play so the new scripts load. Sit as a player with NPCs on the stage (at least two different polar areas, e.g. Center and Mid Left). Left-click the overlay camera button: the picker should open **and** your view should snap to that seat’s usual default table camera. Right-click again after Apply on the control board: the area cycle should restart from the first occupied polar area. Further right-clicks should advance Center → Center Left → … → Far Right, skipping empty areas, then loop. Clear the stage and right-click: elevated default framing with no NPC yaw retarget.
 
-**Context:** ThirdPerson cannot pitch above the horizon, so this is how players look at life-sized figurine faces. Right-click no longer jumps to the old default table camera (that was TOR-521).
+**Context:** Cycle / Apply-reset behavior from the original overlay camera work. Aim math is covered by **TOR-562** below.
+
+#### TOR-562 — Overlay camera right-click: horizon yaw (keep default distance)
+
+**How to verify:** Save & Play so Global scripts reload. Sit as a player with at least one NPC on the stage. Look around so you are not already on default, then right-click the overlay camera icon. Your view should stay on that seat’s usual default focus in the XZ plane (same `distance` as default), with the look-at point raised, pitch flat on the horizon, and yaw turned toward the lead figurine in the current cycle area — not pitched up at a face, and not snapped with `distance = 0`. After about a quarter-second you should be in FirstPerson so you can tilt up yourself if you need to. Right-click again to confirm the next occupied area gets a new yaw while the focus XZ / distance still feel like a turn, not a teleport.
+
+**Context:** Replaces the old pitch-up face-look path. TTS cannot script a pitch above the horizon; players finish the look in FirstPerson.
 
 ---
 

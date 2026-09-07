@@ -140,7 +140,8 @@ _Deferral note:_ **TOR-439** (join-stress re-verify after TOR-444) is **deferred
 
 ## Camera
 
-- [x] **Overlay camera icon: left-click default + picker; right-click FirstPerson face cycle:** Opens the picker and snaps to `default`. Right-click sits at that seat’s default location in FirstPerson, pitched toward the group-move leader’s **face** in the next occupied stage area (Center → … → Far Right). Apply resets the cycle. Empty stage: FirstPerson with default framing. Replaces TOR-521 right-click-default. Pending Save & Play. _(TOR-538)_
+- [x] **Overlay camera icon: left-click default + picker; right-click FirstPerson face cycle:** Opens the picker and snaps to `default`. Right-click cycles occupied stage areas. Aim path superseded by **TOR-562**. Pending Save & Play. _(TOR-538)_
+- [x] **Overlay camera right-click: horizon yaw via Vector:heading (keep default distance):** Clone `default` lookAt; raise focus y=30; pitch 0; yaw from same-height heading; keep distance; then FirstPerson. Pending Save & Play. _(TOR-562)_
 - [x] **Player overlay camera icon right-click → default:** Closes the picker and snaps that player to their default table camera. Replaced by **TOR-538**. _(TOR-521)_
 - [x] **CSHEET center-strip right-click → roll camera:** Uses the clicked sheet's `roll` preset (not `diceTray`). relatedTo **TOR-483**, **TOR-460**. Pending Save & Play. _(TOR-522)_
 - [x] **Remove FirstPerson force on blindfold/scene transition:** Keep TOR-368 default lookAt; reverse TOR-443 `setCameraMode("FirstPerson")`. Author confirmed 2026-08-03. _(TOR-446)_

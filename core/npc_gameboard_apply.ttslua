@@ -366,7 +366,7 @@ local function maybeGrowDynamicTableForOccupiedSeats(highestSlot)
     return true
 end
 
---- Overlay camera right-click cycles occupied stage faces; Apply resets that walk (TOR-538).
+--- Overlay camera right-click cycles occupied stage NPCs; Apply resets that walk (TOR-538 / TOR-562).
 local function resetPlayerStageLookCycle()
     local HUDP = require("core.hud_player")
     if type(HUDP) == "table" and type(HUDP.resetStageLookCycle) == "function" then

@@ -515,7 +515,7 @@ Per-seat overlay picker (`ui/.templates/panel_overlay_camera.xml` → `HUD_camer
 The overlay **camera icon** (`popout_cameraPanel_*` / `HUD_popoutCameraControl_click`):
 
 - **Left-click:** opens the preset picker **and** snaps that player to their `default` table camera.
-- **Right-click:** FirstPerson at that seat’s `default` camera location, pitched up toward the **face** of the group-move leader figurine in the next occupied NPC stage area (Center → Center Left → … → Far Right, skipping empty). The camera **moves** to default first, waits half a second in FirstPerson, then pitches (pitching while still in ThirdPerson is clamped at the horizon). Further right-clicks advance and loop. Control-board Apply resets the cycle. If the stage is empty, FirstPerson with the default framing.
+- **Right-click:** clones that seat’s `default` lookAt preset, raises the focus to **y = 30**, sets **pitch = 0**, retargets **yaw** toward the lead figurine in the next occupied stage area (same-height `Vector:heading("y")` with `U.cycle(180 - heading, 0, 360)`), and **keeps `distance` unchanged** so the view turns around the usual focus. After a short settle, switches to FirstPerson so the player can pitch up manually (scripted lookAt cannot aim above the horizon). Further right-clicks advance Center → Center Left → … → Far Right (skip empty) and loop. Control-board Apply resets the cycle. Empty stage: same elevate + FirstPerson, default yaw kept.
 
 ## LEFT SIDEBAR
 
